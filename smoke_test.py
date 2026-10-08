@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.5.py"
+SRC = HERE / "元DGTF-V1.23.6.py"
 
 os.environ.setdefault("DGTF_API_KEY", "sk-smoke-test-key")
 
@@ -5044,7 +5044,10 @@ def check_v72_bbarrier_semantics():
     if st2:
         bad.append(f"[#13] 不限预算也有层被预算停掉：{st2}")
     _src = _ins.getsource(mod.MetaDGTF._run_parallel_B)
-    if "[v1.21.72 #13]" not in _src:
+    # [v1.23.6] 判据随实现更新（不是放宽）：原锚点 `[v1.21.72 #13]` 是**版次
+    #   标签**，已被「代码正文不留版次批注」清掉 ⇒ 换成本条注释里的两条内容
+    #   短语（下一条仍查「同时停掉所有层」），判别力不减。
+    if "刻意的 barrier" not in _src:
         bad.append("[#13] 注释没写进 _run_parallel_B（没接线）")
     if "同时停掉所有层" not in _src:
         bad.append("[#13] 注释没写明「同时停掉所有层」")
@@ -7610,9 +7613,10 @@ def check_v123_w2(SRC=None):
              '            if _wi >= 20:\n'
              '                break\n',
              '            pass\n'),
+            # [v1.23.6] 锚点从「注释 + 代码」改成**只锚代码行**：原锚点里的两行
+            #   注释已被「代码正文不留版次批注」清掉 ⇒ 锚点 0 次。变异体意图
+            #   （把摘要注入那段变成空操作）一字未改。
             ("M3 摘要注入",
-             '                # [v1.23.0 W2] 外部检索摘要（**参照**）。未开联网时\n'
-             '                #   它是空串 ⇒ prompt 逐字不变（加性）。\n'
              '                + (getattr(self, "_web_digest", "") or ""))\n',
              '                )\n'),
         )
@@ -8768,6 +8772,74 @@ def check_v1235_pending_fix():
           "；低置信差异保留；单票仍在且登记 2 项；布尔兼容留痕/不误报")
     return True
 
+# [v1.23.6] 版次标记：方括号短标签 `[v122 P6 G6.2]` ｜ 裸 v+数字 `v1.21.59`/`v59`
+#   两侧的 lookbehind/lookahead 挡掉 `deepseek-v4-pro` 这类假阳性（实测）。
+#   ★ 口径与 `_mk_v1236_strip.py` 里的 TAG 必须逐字一致 —— 判据与清理工具同一把尺子。
+V1236_TAG = (r"\[v\d[^\]]*\]|(?<![A-Za-z0-9_\-])v\d+(?:\.\d+)*(?![A-Za-z0-9_\-])")
+
+
+def check_v1236_no_version_tags():
+    """[v1.23.6] 代码正文（模块 docstring 之外）不留版次批注。
+
+    抠掉模块 docstring 后：
+      ① 注释里不得出现版次标记（含 `# [vX.Y.Z …]` 与行尾批注）；
+      ② 不得有**以版次标记开头**的 docstring。
+    ★ 负对照打在**上一版文件**上：v1.23.5 必须被判红 —— 这条负对照是本判据
+      判别力的来源，缺了它「全绿」只说明判据没跑（本项目的经典假绿）。
+    ★ 抠 docstring 前先归一化换行：`doc in raw` 在 CRLF 原文里是 False，
+      会静默退化成「全文件扫描」。
+    """
+    TAG = re.compile(V1236_TAG)
+    bad = []
+    raw = SRC.read_bytes().decode("utf-8")
+    src = raw.replace("\r\n", "\n")
+    i = src.index('"""')
+    j = src.index('"""', i + 3)
+    body_len = len(src) - (j + 3)
+    if not (0 < body_len < len(src) - 3):
+        bad.append("抠模块 docstring 没生效（抠法自证失败）")
+    de = src[:j].count("\n")
+    lines = src.split("\n")
+    hits = [k + 1 for k in range(de + 1, len(lines))
+            if lines[k].lstrip().startswith("#") and TAG.search(lines[k])]
+    trail = [k + 1 for k in range(de + 1, len(lines))
+             if not lines[k].lstrip().startswith("#") and "#" in lines[k]
+             and TAG.search(lines[k].split("#", 1)[1])]
+    if hits or trail:
+        bad.append("正文注释里仍有版次批注：%d 行成块 + %d 行行尾，前 5 个行号 %s"
+                   % (len(hits), len(trail), (hits + trail)[:5]))
+    leads = []
+    import ast as _ast
+    for node in _ast.walk(_ast.parse(src)):
+        if isinstance(node, _ast.Constant) and isinstance(node.value, str):
+            if node.lineno > de + 1 and re.match(r"\s*(?:" + V1236_TAG + r")", node.value):
+                leads.append(node.lineno)
+    if leads:
+        bad.append("仍有以版次标记开头的 docstring %d 处，前 5 个行号 %s"
+                   % (len(leads), leads[:5]))
+    # ---- 负对照：上一版必须判红 ----
+    prev = HERE / "元DGTF-V1.23.5.py"
+    pn = 0
+    if not prev.is_file():
+        bad.append("负对照文件缺失 %s —— 判据判别力无法自证" % prev.name)
+    else:
+        psrc = prev.read_bytes().decode("utf-8").replace("\r\n", "\n")
+        pi = psrc.index('"""')
+        pj = psrc.index('"""', pi + 3)
+        pde = psrc[:pj].count("\n")
+        plines = psrc.split("\n")
+        pn = sum(1 for k in range(pde + 1, len(plines))
+                 if plines[k].lstrip().startswith("#") and TAG.search(plines[k]))
+        if pn == 0:
+            bad.append("负对照失效：上一版 %s 一条都没扫到 —— 判据没有判别力" % prev.name)
+    if bad:
+        for m in bad:
+            print("  \u2717 [v1236] %s" % m)
+        return False
+    print("  \u2713 [v1236] 正文注释 0 处版次批注、docstring 0 处前导标记；"
+          "负对照（v1.23.5）判红 %d 行成块批注" % pn)
+    return True
+
 # <<<end v123 checks>>>
 
 def main():
@@ -8957,6 +9029,8 @@ def main():
     if not check_v1234_runtime():
         return 1
     if not check_v1235_pending_fix():
+        return 1
+    if not check_v1236_no_version_tags():
         return 1
     q = "测试问题：AI 在数字 IC 设计里到底能做什么，哪些已经量产？"
     rows = []
