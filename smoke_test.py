@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.6.py"
+SRC = HERE / "元DGTF-V1.23.7.py"
 
 os.environ.setdefault("DGTF_API_KEY", "sk-smoke-test-key")
 
@@ -5060,43 +5060,73 @@ def check_v72_bbarrier_semantics():
     return True
 
 
-def check_v72_changelog_hygiene():
-    """[v1.21.72 #20] changelog 不得有重复的「★ vX 收束摘要」段，
-    版本段序必须按版本号**严格递减**。
+def _changelog_text() -> str:
+    """changelog 正文。★ v1.23.7 起它在仓库根目录 `CHANGELOG.md`，不在代码里。"""
+    p = HERE / "CHANGELOG.md"
+    if not p.is_file():
+        return ""
+    return p.read_text(encoding="utf-8").replace("\r\n", "\n")
 
-    ★ 判别力来源（也是它的负对照）：把 `SRC` 指回 v1.21.71 时，
-      改前实测是「`★ v1.21.63 收束摘要` ×2 + 段序 70→68→69」，
-      这条必须判红（见 `_probe_v72_before.txt` [C]）。
+
+def _changelog_lint(doc: str):
+    """纯函数：返回（版本段标题, 收束摘要标题, 重复的收束摘要标题）。
+
+    ★ 抽成纯函数是为了让**负对照可以喂合成坏样本** —— changelog 搬到外部文件后，
+    「把 SRC 指回旧版」的旧负对照手法失效（取源不再是被测文件），
+    没有新负对照的「全绿」只说明判据没跑。
+    """
+    sums = [ln.strip() for ln in doc.split("\n")
+            if "★ v1.2" in ln and "收束摘要" in ln]
+    dup = {t: sums.count(t) for t in set(sums) if sums.count(t) > 1}
+    secs = re.findall(r"^v(\d+(?:\.\d+)+) 相对", doc, re.M)
+    return secs, sums, dup
+
+
+def check_v72_changelog_hygiene():
+    """[v1.21.72 #20 起；v1.23.7 改取源] changelog 不得有重复的「★ vX 收束摘要」
+    段，版本段序必须按版本号**严格递减**。
+
+    ★ v1.23.7：changelog 从模块 docstring 搬到了 `CHANGELOG.md` ⇒ 本判据的**取源**
+      跟着改。**判据意图一字未改**（是位置变了，不是放宽）。
+    ★ 判别力（负对照）：喂一份**合成坏样本**（重复的收束标题 + 段序 71→68→69），
+      同一个 `_changelog_lint` 必须报出重复、且段序必须被判为**非**严格递减。
     """
     bad = []
-    eng, _exec = _v72_engine_src()
-    i = eng.index('"""')
-    j = eng.index('"""', i + 3)
-    doc = eng[i:j + 3]
-    sums = [ln.strip() for ln in doc.split("\n")
-            if "★ v1.21." in ln and "收束摘要" in ln]
-    dup = {t: sums.count(t) for t in set(sums) if sums.count(t) > 1}
-    if dup:
-        bad.append(f"[#20] 收束摘要标题重复：{dup}")
-    secs = re.findall(r"^v(1\.21\.\d+) 相对", doc, re.M)
-    ver = [tuple(int(x) for x in v.split(".")) for v in secs]
-    if not ver:
-        bad.append("[#20] 一个版本段标题都没找到 —— 判据前提不成立")
+    doc = _changelog_text()
+    if not doc:
+        bad.append("[#20] CHANGELOG.md 不存在或为空 —— 判据前提不成立")
+        secs, sums = [], []
     else:
-        if len(secs) != len(set(secs)):
-            bad.append(f"[#20] 版本段有重复：{secs}")
-        for k in range(len(ver) - 1):
-            if ver[k] <= ver[k + 1]:
-                bad.append(f"[#20] 段序不是严格递减：{secs[k]} → {secs[k + 1]}")
-                break
-    if "_v72_engine_src" and not doc:
-        bad.append("[#20] docstring 为空")
+        secs, sums, dup = _changelog_lint(doc)
+        if dup:
+            bad.append(f"[#20] 收束摘要标题重复：{dup}")
+        if not secs:
+            bad.append("[#20] 一个版本段标题都没找到 —— 判据前提不成立")
+        else:
+            if len(secs) != len(set(secs)):
+                bad.append(f"[#20] 版本段有重复：{secs}")
+            ver = [tuple(int(x) for x in s.split(".")) for s in secs]
+            for k in range(len(ver) - 1):
+                if ver[k] <= ver[k + 1]:
+                    bad.append(f"[#20] 段序不是严格递减：{secs[k]} → {secs[k + 1]}")
+                    break
+    # ---- 负对照：合成坏样本必须被判出来 ----
+    _bad = ("v1.21.71 相对 v1.21.70\n★ v1.21.63 收束摘要\n"
+            "v1.21.68 相对 v1.21.67\n★ v1.21.63 收束摘要\n"
+            "v1.21.69 相对 v1.21.68\n")
+    _s, _sm, _d = _changelog_lint(_bad)
+    _desc = all(tuple(int(x) for x in _s[k].split("."))
+                > tuple(int(x) for x in _s[k + 1].split("."))
+                for k in range(len(_s) - 1)) if len(_s) > 1 else True
+    if not _d or _desc:
+        bad.append("[#20] ★ 负对照失效：合成坏样本没被检出（重复=%r 递减=%r）"
+                   % (bool(_d), _desc))
     if bad:
         for m in bad:
             print(f"  \u2717 [v72 #20] {m}")
         return False
-    print(f"  \u2713 [v72 #20] {len(secs)} 个版本段严格递减、"
-          f"{len(sums)} 个收束摘要标题无重复（首段 v{secs[0]}）")
+    print(f"  \u2713 [v72 #20] CHANGELOG.md：{len(secs)} 个版本段严格递减、"
+          f"{len(sums)} 个收束摘要标题无重复（首段 v{secs[0]}）；负对照判红")
     return True
 
 
@@ -5611,7 +5641,7 @@ def _re_find(pat: str, text: str) -> bool:
 def check_v76_changelog_wording():
     """[v1.21.76 B1] changelog 不许说「重做/改到池」—— 外判接入点还在。"""
     print("\n[v1.21.76 B1] changelog 措辞与实现一致")
-    raw = _v76_src()
+    raw = _changelog_text()   # v1.23.7：changelog 已搬到 CHANGELOG.md
     bad = []
     if "重做**锚点接入" in raw or "接入点从「外判」改到「池」" in raw:
         bad.append("[B1] 仍有「重做锚点接入 / 改到池」的旧措辞")
@@ -8840,6 +8870,38 @@ def check_v1236_no_version_tags():
           "负对照（v1.23.5）判红 %d 行成块批注" % pn)
     return True
 
+def check_v1237_changelog_outside_code():
+    """[v1.23.7] changelog 不得再写在代码文件里。
+
+    抠掉模块 docstring 后的源码里：① 不得有版本段标题 `^vX.Y.Z 相对`；
+    ② 不得出现「收束摘要」。
+    **两向对账**：`CHANGELOG.md` 必须存在且版本段 ≥ 10（防「搬出去」变「删掉」）。
+    ★ 变异体见 `_probe_v1237_mutants.py`（往源码注入一段版本段必须判红）。
+    """
+    bad = []
+    raw = SRC.read_bytes().decode("utf-8").replace("\r\n", "\n")
+    i = raw.index('"""')
+    j = raw.index('"""', i + 3)
+    body = raw[j + 3:]
+    assert 0 < len(body) < len(raw), "抠模块 docstring 没生效（抠法自证失败）"
+    hits = [k + 1 for k, ln in enumerate(body.split("\n"))
+            if re.match(r"^v\d+(?:\.\d+)+ 相对", ln)]
+    if hits:
+        bad.append("代码里仍有版本段标题 %d 处，前 3 个行号 %s" % (len(hits), hits[:3]))
+    if "收束摘要" in body:
+        bad.append("代码里仍出现「收束摘要」")
+    cl = _changelog_text()
+    n = len(re.findall(r"^v\d+(?:\.\d+)+ 相对", cl, re.M))
+    if n < 10:
+        bad.append("CHANGELOG.md 版本段只有 %d 段 —— 像被删而不是被搬" % n)
+    if bad:
+        for m in bad:
+            print("  \u2717 [v1237] %s" % m)
+        return False
+    print("  \u2713 [v1237] 代码里 0 处版本段 / 0 处收束摘要；"
+          "CHANGELOG.md %d 段（两向对账）" % n)
+    return True
+
 # <<<end v123 checks>>>
 
 def main():
@@ -9031,6 +9093,8 @@ def main():
     if not check_v1235_pending_fix():
         return 1
     if not check_v1236_no_version_tags():
+        return 1
+    if not check_v1237_changelog_outside_code():
         return 1
     q = "测试问题：AI 在数字 IC 设计里到底能做什么，哪些已经量产？"
     rows = []
