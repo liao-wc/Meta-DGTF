@@ -1,0 +1,43 @@
+# position_all_same 诊断
+entry=all
+round=3
+anchor=多个部门各自建系统、数据不互通，要不要强行统一平台
+same_position=0
+candidate_count=9
+
+[1] attr=0 pos=0 src=阳
+    desc: all 撤掉原问句后，还剩下一个已发生的次序和一个未生成的载体，这两样不构成同一个整体，各自停在自己的位置上，没有东西把它们连起来
+    why_position: 
+
+[2] attr=1 pos=0 src=阳
+    desc: all 的整体身份没有出处，也没有一份载体记下最初把多个部门各自建系统写成整体的那一笔落在谁手上
+    why_position: 记下最初把多部门写成整体那一笔的载体不存在，未进all
+
+[3] attr=1 pos=0 src=阳
+    desc: 并发的多份签字互不承认效力，这件事没有哪一份载体接过去当自己的事，它只在两边都不接的位置上持续发生
+    why_position: 无载体接手，现象在两边不接处持续，未收进all
+
+[4] attr=1 pos=0 src=阳
+    desc: all 的悬空清单里没有资格栏，谁有权说这件事算不算全部，这个发声位置在三个局部里都没有出现过
+    why_position: 资格栏／发声位置在三个局部里都没出现，未进all
+
+[5] attr=1 pos=0 src=阳
+    desc: all 降时态接受已经怎样即全部，这条路的终点是什么，没有走过
+    why_position: 降时态这条路的终点从未生成，未走过，未进all
+
+[6] attr=0 pos=0 src=阴
+    desc: all 从尚未发生出发的那一类局部一个都没进来，这不是漏收，是这一类没有入口——未来态在三个局部里都没有生成位置，all 也拼不出来
+    why_position: 未来态局部没有入口，一个都没进来，all拼不出
+
+[7] attr=0 pos=0 src=阴
+    desc: all 里没有任何一条候选以「谁有权说这件事算不算全部」为主语，这个发声位置在整体里没有落点
+    why_position: 同一发声位置在整体里没有落点，未进all
+
+[8] attr=0 pos=0 src=阴
+    desc: 并发的多份签字互不承认效力，这件事至今没有一份载体接过去，它悬在 all 之外
+    why_position: 明言悬在all之外，无载体接过去
+
+[9] attr=0 pos=0 src=阴
+    desc: all 撤掉原问句后剩下的是一个已发生的次序加一个未生成的载体，两者不构成同一个整体，它们各停各的位置，没有东西把它们连起来
+    why_position: 
+

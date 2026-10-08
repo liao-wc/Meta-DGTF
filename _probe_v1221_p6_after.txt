@@ -1,0 +1,17 @@
+{
+  "A1_src_字段": true,
+  "A2_src_头部行": true,
+  "A3_src_pack_字段": true,
+  "A4_src_原始条目计数": true,
+  "B1_计数在_load_anchors 内": true,
+  "B2_在原始条目上判": true,
+  "C1_模块可加载": true,
+  "C0_属性存在": true,
+  "C2_全缺省_警告": true,
+  "C3_有tier_警告": false,
+  "C4_无tier_进表": false,
+  "D1_真跑产物": {
+    "p6_notier": true,
+    "p6_tier": true
+  }
+}

@@ -1,0 +1,10 @@
+# [v122 bench] eng_003 · 桥梁维护优先级
+id: eng_003
+domain: eng
+question: "在役桥梁数量多、预算有限，维护优先级怎么排"
+orientation: decision
+budget:
+  profile: balanced
+  max_calls: 180
+  rounds: "0:5,1:5,both:5,all:6"
+  mode: serial

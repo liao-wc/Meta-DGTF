@@ -1,0 +1,287 @@
+{
+  "rows": [
+    {
+      "id": "biz_001",
+      "score": 2,
+      "n_actions": 5,
+      "n_not_do": 0,
+      "dp_actions": 5,
+      "answered": 5,
+      "subs": 6,
+      "und": 1,
+      "flags": [
+        "not_do_missing"
+      ],
+      "cause": "有产出"
+    },
+    {
+      "id": "biz_002",
+      "score": 2,
+      "n_actions": 3,
+      "n_not_do": 0,
+      "dp_actions": 3,
+      "answered": 2,
+      "subs": 6,
+      "und": 4,
+      "flags": [
+        "not_do_missing"
+      ],
+      "cause": "有产出"
+    },
+    {
+      "id": "biz_003",
+      "score": 2,
+      "n_actions": 4,
+      "n_not_do": 0,
+      "dp_actions": 4,
+      "answered": 4,
+      "subs": 6,
+      "und": 2,
+      "flags": [
+        "not_do_missing"
+      ],
+      "cause": "有产出"
+    },
+    {
+      "id": "eng_001",
+      "score": 0,
+      "n_actions": 0,
+      "n_not_do": 0,
+      "dp_actions": 0,
+      "answered": 0,
+      "subs": 6,
+      "und": 6,
+      "flags": [
+        "action_incomplete",
+        "not_do_missing"
+      ],
+      "cause": "没有可产的动作（子问题全 undecidable、答出 0）"
+    },
+    {
+      "id": "eng_002",
+      "score": 2,
+      "n_actions": 5,
+      "n_not_do": 0,
+      "dp_actions": 5,
+      "answered": 5,
+      "subs": 6,
+      "und": 1,
+      "flags": [],
+      "cause": "有产出"
+    },
+    {
+      "id": "eng_003",
+      "score": 2,
+      "n_actions": 4,
+      "n_not_do": 0,
+      "dp_actions": 4,
+      "answered": 6,
+      "subs": 6,
+      "und": 2,
+      "flags": [
+        "not_do_missing"
+      ],
+      "cause": "有产出"
+    },
+    {
+      "id": "eng_004",
+      "score": 2,
+      "n_actions": 4,
+      "n_not_do": 0,
+      "dp_actions": 4,
+      "answered": 4,
+      "subs": 6,
+      "und": 2,
+      "flags": [
+        "not_do_missing"
+      ],
+      "cause": "有产出"
+    },
+    {
+      "id": "law_001",
+      "score": 2,
+      "n_actions": 4,
+      "n_not_do": 0,
+      "dp_actions": 4,
+      "answered": 3,
+      "subs": 6,
+      "und": 4,
+      "flags": [
+        "not_do_missing"
+      ],
+      "cause": "有产出"
+    },
+    {
+      "id": "law_002",
+      "score": 2,
+      "n_actions": 4,
+      "n_not_do": 0,
+      "dp_actions": 4,
+      "answered": 6,
+      "subs": 6,
+      "und": 1,
+      "flags": [],
+      "cause": "有产出"
+    },
+    {
+      "id": "law_003",
+      "score": 0,
+      "n_actions": 0,
+      "n_not_do": 0,
+      "dp_actions": 0,
+      "answered": 1,
+      "subs": 6,
+      "und": 5,
+      "flags": [
+        "action_incomplete",
+        "not_do_missing"
+      ],
+      "cause": "模型没按 schema 产出（answered>0 但 actions=0）"
+    },
+    {
+      "id": "med_001",
+      "score": 2,
+      "n_actions": 4,
+      "n_not_do": 0,
+      "dp_actions": 4,
+      "answered": 1,
+      "subs": 6,
+      "und": 2,
+      "flags": [
+        "not_do_missing"
+      ],
+      "cause": "有产出"
+    },
+    {
+      "id": "med_002",
+      "score": 0,
+      "n_actions": 0,
+      "n_not_do": 0,
+      "dp_actions": 0,
+      "answered": 0,
+      "subs": 6,
+      "und": 6,
+      "flags": [
+        "action_incomplete",
+        "not_do_missing"
+      ],
+      "cause": "没有可产的动作（子问题全 undecidable、答出 0）"
+    },
+    {
+      "id": "med_003",
+      "score": 2,
+      "n_actions": 4,
+      "n_not_do": 0,
+      "dp_actions": 4,
+      "answered": 5,
+      "subs": 6,
+      "und": 1,
+      "flags": [],
+      "cause": "有产出"
+    },
+    {
+      "id": "org_001",
+      "score": 2,
+      "n_actions": 6,
+      "n_not_do": 0,
+      "dp_actions": 6,
+      "answered": 0,
+      "subs": 6,
+      "und": 1,
+      "flags": [
+        "not_do_missing"
+      ],
+      "cause": "有产出"
+    },
+    {
+      "id": "org_002",
+      "score": 1,
+      "n_actions": 2,
+      "n_not_do": 0,
+      "dp_actions": 2,
+      "answered": 1,
+      "subs": 6,
+      "und": 5,
+      "flags": [
+        "action_incomplete",
+        "not_do_missing"
+      ],
+      "cause": "有产出（rubric 低）"
+    },
+    {
+      "id": "org_003",
+      "score": 2,
+      "n_actions": 4,
+      "n_not_do": 0,
+      "dp_actions": 4,
+      "answered": 6,
+      "subs": 6,
+      "und": 0,
+      "flags": [],
+      "cause": "有产出"
+    },
+    {
+      "id": "tech_001",
+      "score": 1,
+      "n_actions": 2,
+      "n_not_do": 0,
+      "dp_actions": 2,
+      "answered": 2,
+      "subs": 6,
+      "und": 1,
+      "flags": [
+        "action_incomplete",
+        "not_do_missing"
+      ],
+      "cause": "有产出（rubric 低）"
+    },
+    {
+      "id": "tech_002",
+      "score": 2,
+      "n_actions": 3,
+      "n_not_do": 0,
+      "dp_actions": 3,
+      "answered": 5,
+      "subs": 6,
+      "und": 0,
+      "flags": [
+        "not_do_missing"
+      ],
+      "cause": "有产出"
+    },
+    {
+      "id": "tech_003",
+      "score": 2,
+      "n_actions": 4,
+      "n_not_do": 0,
+      "dp_actions": 4,
+      "answered": 6,
+      "subs": 6,
+      "und": 2,
+      "flags": [
+        "not_do_missing"
+      ],
+      "cause": "有产出"
+    },
+    {
+      "id": "tech_004",
+      "score": 2,
+      "n_actions": 3,
+      "n_not_do": 0,
+      "dp_actions": 3,
+      "answered": 1,
+      "subs": 6,
+      "und": 5,
+      "flags": [],
+      "cause": "有产出"
+    }
+  ],
+  "avg": 1.6,
+  "n_ok": 15,
+  "cause_dist": {
+    "有产出": 15,
+    "没有可产的动作（子问题全 undecidable、答出 0）": 2,
+    "模型没按 schema 产出（answered>0 但 actions=0）": 1,
+    "有产出（rubric 低）": 2
+  }
+}

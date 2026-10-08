@@ -1,0 +1,30 @@
+{
+  "id": "org_001",
+  "domain": "org",
+  "question": "多个部门各自建系统、数据不互通，要不要强行统一平台",
+  "orientation": "decision",
+  "route": [
+    "0",
+    "1",
+    "both",
+    "all"
+  ],
+  "rounds": "0:2,1:2,both:2,all:3",
+  "mock": false,
+  "ok": true,
+  "error": "",
+  "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\bench\\runs\\v1221_full\\org_001\\20261005_104407_多个部门各自建系统数据不互通要不要强.md",
+  "calls": 80,
+  "tokens": 531212,
+  "layers_seen": [
+    "0",
+    "1",
+    "all",
+    "both"
+  ],
+  "missing": [],
+  "elapsed_s": 1270.1,
+  "elapsed": 1270.1,
+  "objective_lines": 4,
+  "objective_block": "**分层目标**：\n  - 修行层（显形过程 · objective=manifest）：& 5 / 线头 4 / 悬置 1 / 探针 3\n  - 研究层（逼近真理 · objective=truth）：覆盖率 50% · distance 0.9\n  - 对撞层（第三者 · objective=collision）：third ✓ · 张力 3\n  - 元层（闭环清算 · objective=closure）：clean True · 未交代 0 类\n"
+}

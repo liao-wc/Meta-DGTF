@@ -1,0 +1,14 @@
+{
+  "A1_开关在DEFAULT_CONFIG": true,
+  "A2_调用点_action_on": true,
+  "B1_stability_写入处": {
+    "multi 路径": 1,
+    "single 路径": 0
+  },
+  "B2_multi_写_stability": true,
+  "B3_single_写_stability": false,
+  "C1_头部读_stability": true,
+  "C2_头部按零渲染": true,
+  "D1_consistency_json": true,
+  "E1_DEFAULT_tri_multi_vote": true
+}

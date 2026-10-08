@@ -1,0 +1,30 @@
+{
+  "id": "med_001",
+  "domain": "med",
+  "question": "社区医院人力有限，慢性病管理推远程监测还是加派人手上门随访",
+  "orientation": "decision",
+  "route": [
+    "0",
+    "1",
+    "both",
+    "all"
+  ],
+  "rounds": "0:2,1:2,both:2,all:3",
+  "mock": false,
+  "ok": true,
+  "error": "",
+  "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\bench\\runs\\v1221_full\\med_001\\20261005_104114_社区医院人力有限慢性病管理推远程监测还.md",
+  "calls": 97,
+  "tokens": 687799,
+  "layers_seen": [
+    "0",
+    "1",
+    "all",
+    "both"
+  ],
+  "missing": [],
+  "elapsed_s": 1517.3,
+  "elapsed": 1517.3,
+  "objective_lines": 4,
+  "objective_block": "**分层目标**：\n  - 修行层（显形过程 · objective=manifest）：& 7 / 线头 6 / 悬置 0 / 探针 3\n  - 研究层（逼近真理 · objective=truth）：覆盖率 52% · distance 0.4\n  - 对撞层（第三者 · objective=collision）：third ✓ · 张力 3\n  - 元层（闭环清算 · objective=closure）：clean True · 未交代 0 类\n"
+}

@@ -1,0 +1,236 @@
+{
+ "tag": "D4_v63",
+ "src": "元DGTF-V1.21.63.py",
+ "route": "0,1,both,all",
+ "rounds": "0:3,1:4,both:5,all:5",
+ "mode": "serial",
+ "orientation": "boundary",
+ "llm_calls": 159,
+ "tri_state": [
+  5,
+  6
+ ],
+ "meta_closure_all": {
+  "clean": true,
+  "unsettled": 0,
+  "total": 4,
+  "uncovered": [],
+  "closed": 4,
+  "duel_total": 8,
+  "by_id": 4,
+  "covered_ids": 4,
+  "by_id_inactive": 0,
+  "by_id_unknown": 0
+ },
+ "duel_suspensions_both": [
+  {
+   "id": "t_001",
+   "target": "'此刻'在0端指文本未变、1端指执行在变",
+   "status": "active",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_002",
+   "target": "0悬置1的分布不对称能否量化",
+   "status": "revoked",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_003",
+   "target": "'待外部文件填充'在0端无格可安放",
+   "status": "revoked",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_004",
+   "target": "判定资格落到哪个主体这一格两边都未生成",
+   "status": "revoked",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_005",
+   "target": "外部文件发布事件是否同时改两端可判数",
+   "status": "active",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_006",
+   "target": "无受理口是文本沉默还是机构缺失",
+   "status": "revoked",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_007",
+   "target": "'待外部文件填充'若为第三类空值，0端两格是否本身不足以承载GPAI合规全部空值类型",
+   "status": "active",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_008",
+   "target": "10^25 FLOP可算与高影响能力判不出，两view都列代表项却未放进同一张判定表比较",
+   "status": "active",
+   "quadrant": "③"
+  }
+ ],
+ "engagements_by_view": {
+  "0": [
+   {
+    "target": "第53条'公开'的措辞落点",
+    "tension_id": null
+   },
+   {
+    "target": "第113条生效条款的过渡期字样",
+    "tension_id": null
+   },
+   {
+    "target": "10^25 FLOP句的修饰语位置",
+    "tension_id": null
+   }
+  ],
+  "1": [
+   {
+    "target": "第53条技术文档'公开'义务中，'向公众'三字修饰的是'公开'还是'提供'？修饰位置改变后，判定对象是否从AI办公室缩回公众？",
+    "tension_id": null
+   },
+   {
+    "target": "10^25 FLOP阈值条款中，'合理可预见'是紧贴'风险'还是紧贴'模型'？修饰语落点不同时，判定对象是能力范围还是一份模型卡文件？",
+    "tension_id": null
+   },
+   {
+    "target": "授权法案未落定期间，执行端此刻按什么在走？条文里是否有'过渡期'字样在替授权法案占位？",
+    "tension_id": null
+   }
+  ],
+  "both": [],
+  "all": [
+   {
+    "target": "'此刻'在0端指文本未变、1端指执行在变",
+    "tension_id": "t_001"
+   },
+   {
+    "target": "10^25 FLOP可算与高影响能力判不出，两view都列代表项却未放进同一张判定表比较",
+    "tension_id": "t_008"
+   }
+  ]
+ },
+ "suspensions_with_tid": {
+  "0": [
+   {
+    "target": "不可判定是暂时还是结构性",
+    "tension_id": null,
+    "status": "stable"
+   }
+  ],
+  "1": [],
+  "both": [],
+  "all": [
+   {
+    "target": "'此刻'在0端指文本未变、1端指执行在变",
+    "tension_id": null,
+    "status": "resolved"
+   },
+   {
+    "target": "外部文件发布事件是否同时改两端可判数",
+    "tension_id": null,
+    "status": "resolved"
+   },
+   {
+    "target": "10^25 FLOP可算与高影响能力判不出，两view都列代表项却未放进同一张判定表比较",
+    "tension_id": null,
+    "status": "resolved"
+   },
+   {
+    "target": "外部文件发布事件是否同时改两端可判数",
+    "tension_id": null,
+    "status": "resolved"
+   },
+   {
+    "target": "'待外部文件填充'若为第三类空值，0端两格是否本身不足以承载GPAI合规全部空值类型",
+    "tension_id": null,
+    "status": "resolved"
+   },
+   {
+    "target": "外部文件发布事件是否同时改两端可判数",
+    "tension_id": null,
+    "status": "active"
+   },
+   {
+    "target": "'待外部文件填充'若为第三类空值，0端两格是否本身不足以承载GPAI合规全部空值类型",
+    "tension_id": null,
+    "status": "active"
+   }
+  ]
+ },
+ "pools_all_engagements": [
+  {
+   "target": "'待外部文件填充'若为第三类空值，0端两格是否本身不足以承载GPAI合规全部空值类型",
+   "tension_id": "t_007"
+  },
+  {
+   "target": "'此刻'在0端指文本未变、1端指执行在变",
+   "tension_id": "t_001"
+  },
+  {
+   "target": "外部文件发布事件是否同时改两端可判数",
+   "tension_id": "t_005"
+  },
+  {
+   "target": "10^25 FLOP可算与高影响能力判不出，两view都列代表项却未放进同一张判定表比较",
+   "tension_id": "t_008"
+  },
+  {
+   "target": "判定主体与判定时点的耦合",
+   "tension_id": null
+  },
+  {
+   "target": "T11 第53条公开义务的判定对象",
+   "tension_id": null
+  },
+  {
+   "target": "第53条'公开'的措辞落点",
+   "tension_id": null
+  },
+  {
+   "target": "第113条生效条款的过渡期字样",
+   "tension_id": null
+  },
+  {
+   "target": "10^25 FLOP句的修饰语位置",
+   "tension_id": null
+  },
+  {
+   "target": "第53条技术文档'公开'义务中，'向公众'三字修饰的是'公开'还是'提供'？修饰位置改变后，判定对象是否从AI办公室缩回公众？",
+   "tension_id": null
+  },
+  {
+   "target": "第113条生效条款中，通用AI条款的适用日与授权法案的通过日，哪个被写成前提、哪个被写成结果？措辞里是否存在'一旦'或'在……之前'？",
+   "tension_id": null
+  },
+  {
+   "target": "授权法案未落定期间，执行端此刻按什么在走？条文里是否有'过渡期'字样在替授权法案占位？",
+   "tension_id": null
+  },
+  {
+   "target": "10^25 FLOP阈值条款中，'合理可预见'是紧贴'风险'还是紧贴'模型'？修饰语落点不同时，判定对象是能力范围还是一份模型卡文件？",
+   "tension_id": null
+  }
+ ],
+ "views_errors": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": []
+ },
+ "pools_meta_p16": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": []
+ },
+ "pools_meta_len": {
+  "0": 6,
+  "1": 8,
+  "both": 10,
+  "all": 18
+ }
+}

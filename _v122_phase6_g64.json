@@ -1,0 +1,70 @@
+{
+  "rc1_vs_final": {
+    "lines_a": 3856,
+    "lines_b": 4138,
+    "changed_lines": 3927,
+    "same_lines": 1565
+  },
+  "rc1_struct": {
+    "head_marks": {
+      "**路由**": false,
+      "**调度**": true,
+      "**并行模式**": true,
+      "**成本档位**": true,
+      "**分层目标**": true,
+      "**三态多票**": true,
+      "**冻结**": true,
+      "**机制审计**": true,
+      "## 落地层": true
+    },
+    "has_4_layer_targets": true,
+    "decision_landing": true,
+    "action_section": true,
+    "audit_line_pending": true
+  },
+  "final_struct": {
+    "head_marks": {
+      "**路由**": false,
+      "**调度**": true,
+      "**并行模式**": true,
+      "**成本档位**": true,
+      "**分层目标**": true,
+      "**三态多票**": true,
+      "**冻结**": true,
+      "**机制审计**": true,
+      "## 落地层": true
+    },
+    "has_4_layer_targets": true,
+    "decision_landing": true,
+    "action_section": true,
+    "audit_line_pending": true
+  },
+  "rc1_vs_final_struct_equal": true,
+  "same_file_negative_control": {
+    "lines_a": 4198,
+    "lines_b": 4309,
+    "changed_lines": 5989,
+    "same_lines": 978
+  },
+  "same_file_struct_equal": true,
+  "head_diff_lines": [
+    "-   - 修行层（显形过程 · objective=manifest）：& 6 / 线头 7 / 悬置 0 / 探针 3",
+    "-   - 研究层（逼近真理 · objective=truth）：覆盖率 100% · distance 0.2",
+    "- **三态多票**：high 1 / medium 5 / low 0（共 6 条）　一致率 100%",
+    "- **三态多票**（3 票）：一致 1 / 多数 5 / 分裂 0　**冻结**：sha256=477b142ccf4a163b…（64 位）　校准队列 6 条",
+    "- **理由**: 候选多为1×0/1×1可判点；大量0×0是缺数据、缺调查的未决，补测即可定。&印记指出议程与显形次序问题，属结构性延误而非原则判不出；ing已给出'把两种时间尺度分开写'的可判出路。",
+    "- - 📗 可判定：管网年代/管径/合流现状可查，决定局部改造是否接得上",
+    "- - 📗 可判定：积水点位、深度、退水时间等实测记录可查，用于判系统缺口",
+    "- - 📗 可判定：重建与海绵的显形代价与成熟手段均可列出并比较",
+    "- - 📗 可判定：雨型、渗透面落点等约束可通过补充测量与调查确定",
+    "+   - 修行层（显形过程 · objective=manifest）：& 5 / 线头 10 / 悬置 1 / 探针 2",
+    "+   - 研究层（逼近真理 · objective=truth）：覆盖率 83% · distance 0.3",
+    "+ **三态多票**：high 0 / medium 4 / low 2（共 6 条）　一致率 67%",
+    "+ **三态多票**（3 票）：一致 0 / 多数 4 / 分裂 2　**冻结**：sha256=d59475521a596df9…（64 位）　校准队列 6 条",
+    "+ **理由**: 池中20个候选多数判出明确0/1；&印记均为数据未生成、定义/权限未定、量纲不可比可分别报告这类未决项，无自指循环或无共同参照系结构，核心诉求可由实测数据判出。",
+    "+ - 📗 可判定：既有物理条件（管龄、管径、雨污合流）可实测判定",
+    "+ - 📗 可判定：重建与海绵措施的显性代价、做法可分别报告",
+    "+ - 📗 可判定：两方案时间尺度差异可分别列出比较",
+    "+ - 📗 可判定：积水点与内涝事件记录是判断改哪里的直接依据"
+  ]
+}

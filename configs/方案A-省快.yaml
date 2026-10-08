@@ -1,0 +1,77 @@
+# ============================================================
+# 方案 A · 省快（探索性 / 可重跑 / 要快速筛选）
+#   配套文档：元DGTF-参数全景与影响面分析-v1.21.61.md §10
+# ============================================================
+# 定位：把调用和 token 压到最低，用于「先看一眼系统对这题的反应」、
+#       批量跑、以及任何可以重跑的场景。
+#
+# 预计成本（估算，非实测）：
+#   总圈数 = 3+3+3+(3+1) = 13
+#   调用   ≈ 13 × 9.6 × 0.86（economy） ≈ 107 次
+#   token  ≈ 0.51 M
+#   墙钟   ≈ 15-16 min（serial）
+#
+# ⚠️ 用这套就别指望覆盖率：economy 会砍探针（仅在收束/复裁圈），
+#    这是 §七 实测过的取舍 —— 资源被从「问方向」挪到「沉淀内容」。
+#    想要覆盖请上 方案 C。
+# ============================================================
+
+cost_profile: economy          # ①阴阳合并 ②按角色跳探针 ③候选截断6 ④shape×0.55 ⑤every_n+1
+
+api:
+  timeout: 180                 # 省快场景不需要长等待，快速失败快速重试
+  max_retries: 2               # 省快：少重试一次，崩了就崩了
+
+output:
+  verbose: false               # 批量跑时别刷屏
+  show_dual_judge: false
+  show_ing: false
+  show_manifest: false
+  show_probe_diag: false
+  self_check: true             # ★ 质量核心，任何档都不降频（源码作者明示）
+
+actions:
+  parallel_mode: serial        # 省快场景不上并行：并行省的是墙钟不是钱
+  parallel_expand: false       # 单序列即可
+  input_sanity: true           # [P1-6] 废题早拦，白跑一圈最贵
+  # ★ 下面这三个是「哪怕省也要留」的：
+  #   self_check   —— carry_feedback 的源头，关了等于质量裸奔
+  #   phase_probe  —— 覆盖率的主要来源，economy 已经按角色跳过了一部分
+  #   ing          —— 下游圈的素材整合（探针省了还行，ing 省了内容会散）
+  phase_probe: true
+  ing: true
+  self_check: true
+  he: true
+  dual_judge: true
+
+memory:
+  # ⚠️ economy 会在 __init__ 就地改写这两个值（×0.55），这里写了也没用。
+  #    留着是为了标注「我知道它会被改成 shape_chars≈495 / shape_items≈3」。
+  shape_items: 6
+  shape_chars: 900
+  self_layers: 4               # ★ 别动：这是唯一的自我记忆深度，缩了是永久丢历史
+  carry_feedback: true
+
+spiral:
+  # ★ 全局 hard_max 只在「per_entry 没写那一层」时兜底，这里把它压到 3，
+  #   防止任何漏写的层滑向上限 12（§3.3 实测：漏两层 → 20.7min vs 9.7min）
+  hard_max: 3
+  # ★ soft_max 必须 < 每层 hard_max，否则「自然安住」判据永远触发不了（§8 陷阱 1）
+  soft_max: 2
+  all_extra_rounds: 1
+
+  per_entry:
+    "0":    {hard_max: 3, soft_max: 2}
+    "1":    {hard_max: 3, soft_max: 2}
+    "both": {hard_max: 3, soft_max: 2}
+    "all":  {hard_max: 3, soft_max: 2}
+
+  # economy 下这两个值会被 _lazy_every_n 自动 +1：
+  #   写 2 → 实际 3；写 3 → 实际 4
+  structure_saturation_every_n: 2
+  re_eval_every_n: 2           # 写 2 → 实际每 3 圈一次
+
+  re_eval_recent_k: 6          # 省快：重估只看最近 6 条（默认 10，线性乘 token）
+
+# ★ 安全绳：预算用尽会留痕写「预算用尽」，不会伪装成自然停止（源码:10431）
+max_calls: 110

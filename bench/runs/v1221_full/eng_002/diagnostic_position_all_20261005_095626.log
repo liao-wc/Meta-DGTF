@@ -1,0 +1,79 @@
+# position_all_same 诊断
+entry=all
+round=5
+anchor=早高峰地铁站台拥挤越来越严重，运营效率该怎么提升
+same_position=0
+candidate_count=18
+
+[1] attr=1 pos=0 src=阳
+    desc: all 作为整体，其闭合方式是让三个切口的局部副作用彼此抵消，但抵消条件本身不在 all 内，all 无法把自身闭合当作对象
+    why_position: 抵消条件本身不在 all 内，闭合成不了对象
+
+[2] attr=0 pos=0 src=阳
+    desc: all 内所有效率提升被自动改写为读数改善，实际人数改善必须走 all 外的动作通道，这条改写发生在 all 的入口而非出口
+    why_position: 
+
+[3] attr=1 pos=0 src=阳
+    desc: 每扇门前的可转化0数分布被三处同时点名，却始终停在数据缺口，未转化为可处置单元，是 all 内唯一反复出现却无人认领的局部
+    why_position: 三处点名却停在数据缺口，未成可处置单元
+
+[4] attr=1 pos=0 src=阳
+    desc: all 的可入账性筛选机制先于记录真值之争，筛选把物理干预排除在外，被筛掉的部分构成 all 的隐形外壁
+    why_position: 被筛掉的部分构成外壁，未进 all
+
+[5] attr=1 pos=0 src=阳
+    desc: all 的边界由未入账的权限划出，划界动作发生在 all 之外，all 因此缺一个自指位置，无法追问自己够不够
+    why_position: 划界动作在 all 之外，缺自指位置
+
+[6] attr=1 pos=0 src=阳
+    desc: all 缺站台层之外任何一层的有效动作清单，三个切口都在站台层内闭合，站台层如何被划出未被任何一处认领
+    why_position: 站台层如何被划出，三切口均未认领
+
+[7] attr=1 pos=0 src=阳
+    desc: 站外排队与站台人数下降之间的转移量三处识别却无一收进台账，它是 all 内被看见但未被吸收的局部，悬在 all 之外
+    why_position: 转移量未被任何台账吸收，悬在 all 外
+
+[8] attr=1 pos=0 src=阳
+    desc: all 的采样口收窄到车门线时，测量对象发生类别转换，被转换掉的站台拥挤本体没有留在 all 内
+    why_position: 被类别转换掉的拥挤本体没留在 all
+
+[9] attr=1 pos=0 src=阳
+    desc: all 的可行动集合被成文口径截断而非被物理上限截断，截断动作在 all 外完成，all 内看不到自己被截
+    why_position: 截断在 all 外完成，all 内看不见
+
+[10] attr=1 pos=0 src=阳
+    desc: 门区截面位置带偏置，越靠车门越清楚漏得越多，这个偏置本身在 all 内被识别却被当作技术细节，未升为边界条件
+    why_position: 偏置被识别却未升为边界条件
+
+[11] attr=1 pos=0 src=阳
+    desc: 若把原始问题从读数不可信改读成站台不够用，三切口里哪些稳定部分会失效，这个改读动作不在 all 内
+    why_position: 改读动作不在 all 内，未展开
+
+[12] attr=0 pos=0 src=阴
+    desc: all 的闭合条件在 all 外，三局部副作用相消是 all 的成立方式而非 all 能追问的对象
+    why_position: 闭合条件在 all 外，非追问对象
+
+[13] attr=0 pos=0 src=阴
+    desc: 每扇门前的可转化0数分布被三处点名却无一处收进台账，是 all 内反复出现却无人认领的局部
+    why_position: 被三处点名未收进台账，无人认领
+
+[14] attr=0 pos=0 src=阴
+    desc: 物理干预产生的实际人数改善不进入 all 的入账通道，这条通道在 all 外，all 看不到自己被筛选
+    why_position: 实际人数改善不进 all 入账通道
+
+[15] attr=0 pos=0 src=阴
+    desc: all 的站台层边界由谁划、划在哪，一问就出 all，这条界本身能否当对象未被展开
+    why_position: 边界一问就出 all，未成为对象
+
+[16] attr=0 pos=0 src=阴
+    desc: all 内可入账性与可行动作重合度低，增加记录项不自动提高重合度，此低重合度不在 all 的调节范围内
+    why_position: 
+
+[17] attr=0 pos=0 src=阴
+    desc: 若把站台层改划为门区层，all 的缺自指位置能否补上，门区分布三处点名未成单元
+    why_position: 门区分布未成单元，自指位未补上
+
+[18] attr=0 pos=0 src=阴
+    desc: 残影期若能被间接标记识别，是否说明 all 内还有未被吸收的可观测局部，未检验
+    why_position: 标记识别出的未吸收局部，未检验
+

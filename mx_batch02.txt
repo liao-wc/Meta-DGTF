@@ -1,0 +1,22 @@
+# mx batch02 —— 判定环节思考开关对照（2 档 × 3 题 × 3 次 = 18 跑）
+# 生成：seed=2026100207；ON=默认 6 环节开 / OFF=V60_STAGE_THINKING=off
+# 格式：[V60_STAGE_THINKING=off|]<mode> <rounds> <tag> <question>
+
+A 5 mx2_on_tls_2 TLS 1.3 相比 TLS 1.2 做了哪些关键改动？
+V60_STAGE_THINKING=off|A 5 mx2_off_ip_1 IPv6 相比 IPv4 到底改了什么？
+V60_STAGE_THINKING=off|A 5 mx2_off_tls_3 TLS 1.3 相比 TLS 1.2 做了哪些关键改动？
+A 5 mx2_on_tls_1 TLS 1.3 相比 TLS 1.2 做了哪些关键改动？
+V60_STAGE_THINKING=off|A 5 mx2_off_eu_3 欧盟《人工智能法案》对高风险 AI 系统规定了哪些主要义务？
+A 5 mx2_on_eu_1 欧盟《人工智能法案》对高风险 AI 系统规定了哪些主要义务？
+A 5 mx2_on_ip_2 IPv6 相比 IPv4 到底改了什么？
+A 5 mx2_on_eu_2 欧盟《人工智能法案》对高风险 AI 系统规定了哪些主要义务？
+A 5 mx2_on_eu_3 欧盟《人工智能法案》对高风险 AI 系统规定了哪些主要义务？
+V60_STAGE_THINKING=off|A 5 mx2_off_eu_2 欧盟《人工智能法案》对高风险 AI 系统规定了哪些主要义务？
+V60_STAGE_THINKING=off|A 5 mx2_off_eu_1 欧盟《人工智能法案》对高风险 AI 系统规定了哪些主要义务？
+V60_STAGE_THINKING=off|A 5 mx2_off_tls_2 TLS 1.3 相比 TLS 1.2 做了哪些关键改动？
+A 5 mx2_on_ip_1 IPv6 相比 IPv4 到底改了什么？
+V60_STAGE_THINKING=off|A 5 mx2_off_tls_1 TLS 1.3 相比 TLS 1.2 做了哪些关键改动？
+A 5 mx2_on_tls_3 TLS 1.3 相比 TLS 1.2 做了哪些关键改动？
+A 5 mx2_on_ip_3 IPv6 相比 IPv4 到底改了什么？
+V60_STAGE_THINKING=off|A 5 mx2_off_ip_2 IPv6 相比 IPv4 到底改了什么？
+V60_STAGE_THINKING=off|A 5 mx2_off_ip_3 IPv6 相比 IPv4 到底改了什么？

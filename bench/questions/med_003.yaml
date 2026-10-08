@@ -1,0 +1,10 @@
+# [v122 bench] med_003 · 急救资源调度
+id: med_003
+domain: med
+question: "城区急救车响应时间不均衡，调度该怎么改"
+orientation: boundary
+budget:
+  profile: balanced
+  max_calls: 180
+  rounds: "0:5,1:5,both:5,all:6"
+  mode: serial

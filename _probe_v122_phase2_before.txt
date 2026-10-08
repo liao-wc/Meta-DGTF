@@ -1,0 +1,20 @@
+{
+  "src": "_baseline_v12177.py",
+  "version": "1.21.77",
+  "A_tri_vote_prompts": "AttributeError: module 'dgtf_probe2' has no attribute '_TRI_VOTE_PROMPTS'",
+  "A2_tri_vote_prompts_distinct": "AttributeError: module 'dgtf_probe2' has no attribute '_TRI_VOTE_PROMPTS'",
+  "B_multi_method": false,
+  "B2_single_method_still_there": true,
+  "C_freeze": "AttributeError: module 'dgtf_probe2' has no attribute 'DecidabilityFreeze'",
+  "D_cov_frozen": "AttributeError: module 'dgtf_probe2' has no attribute 'DecidabilityFreeze'",
+  "E_calib_roundtrip": {
+    "export_rc": 0,
+    "rows": 12,
+    "import_rc": 0,
+    "verdicts_n": 1
+  },
+  "F_header_src_三态多票": false,
+  "F2_header_src_冻结": false,
+  "G_action_switch": null,
+  "G2_pack_keys": []
+}

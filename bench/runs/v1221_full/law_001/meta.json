@@ -1,0 +1,30 @@
+{
+  "id": "law_001",
+  "domain": "law",
+  "question": "业务要接欧洲用户，数据跨境传输怎么合规落地",
+  "orientation": "decision",
+  "route": [
+    "0",
+    "1",
+    "both",
+    "all"
+  ],
+  "rounds": "0:2,1:2,both:2,all:3",
+  "mock": false,
+  "ok": true,
+  "error": "",
+  "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\bench\\runs\\v1221_full\\law_001\\20261005_102450_业务要接欧洲用户数据跨境传输怎么合规落.md",
+  "calls": 96,
+  "tokens": 715310,
+  "layers_seen": [
+    "0",
+    "1",
+    "all",
+    "both"
+  ],
+  "missing": [],
+  "elapsed_s": 1671.0,
+  "elapsed": 1671.0,
+  "objective_lines": 4,
+  "objective_block": "**分层目标**：\n  - 修行层（显形过程 · objective=manifest）：& 8 / 线头 6 / 悬置 3 / 探针 3\n  - 研究层（逼近真理 · objective=truth）：覆盖率 60% · distance 0.4\n  - 对撞层（第三者 · objective=collision）：third ✓ · 张力 3\n  - 元层（闭环清算 · objective=closure）：clean True · 未交代 0 类\n"
+}

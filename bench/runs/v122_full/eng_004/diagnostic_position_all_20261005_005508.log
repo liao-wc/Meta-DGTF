@@ -1,0 +1,47 @@
+# position_all_same 诊断
+entry=all
+round=2
+anchor=老城区地下管线反复开挖，要不要改成综合管廊
+same_position=0
+candidate_count=10
+
+[1] attr=0 pos=0 src=阳
+    desc: all 是一张账：三条通道各自记下自己那一笔，但没有任何一条记下这张账本身归谁持有
+    why_position: 
+
+[2] attr=0 pos=0 src=阳
+    desc: all 里已固定的几笔是判死项，未固定的几笔只能挂空，挂空不是因为查不到，是因为该栏还没有栏名
+    why_position: 
+
+[3] attr=1 pos=0 src=阳
+    desc: 三个空位各自指向的相邻者不同：记账位要贴管线单位，签字职务要贴权责节点，第三对齐位要贴什么至今没有相邻物
+    why_position: 第三对齐位至今无相邻物，未入账
+
+[4] attr=1 pos=0 src=阳
+    desc: 反复开挖的具体原因这一格从始至终空着，它是 all 里唯一没有被任何一条通道写过的格
+    why_position: 该格从未被任何通道写过，仍未吸收
+
+[5] attr=0 pos=0 src=阳
+    desc: all 被摆成可比较的形状，靠的是把「尚未同时在场」当成一个已填项写在结论栏，而不是填在前提栏
+    why_position: 
+
+[6] attr=0 pos=0 src=阴
+    desc: all 缺的不是某几笔账，是这张账没有封面——没有持有者、没有科目、没有年度，所以任何新笔落上去都不改变它还不是账
+    why_position: 
+
+[7] attr=0 pos=0 src=阴
+    desc: 被三个 view 同时写下的那几笔因此获得了印记的外形，但它们的来历是各写各的，不是同一处签出
+    why_position: 
+
+[8] attr=0 pos=0 src=阴
+    desc: 「同时在场」的判定标准没定，all 因此无法确认自己是在比较两个对象还是在比较一个对象和一个意图
+    why_position: 同时在场的判定标准未定，未被吸收
+
+[9] attr=0 pos=0 src=阴
+    desc: all 里悬在外面的局部是那条未被评估的对照路径，它既不属于0也不属于1，也没有被吸收进任何一笔账
+    why_position: 该对照路径未入任何一笔账，悬在账外
+
+[10] attr=0 pos=0 src=阴
+    desc: 反复开挖这一格空白，是否正是使 all 无法收拢的那个未被打开的变量，目前无人处理
+    why_position: 该空白变量无人处理，尚未被吸收
+

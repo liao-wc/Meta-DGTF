@@ -1,0 +1,312 @@
+Building prefix dict from the default dictionary ...
+Loading model from cache C:\Users\18432\AppData\Local\Temp\jieba.cache
+Loading model cost 0.818 seconds.
+Prefix dict has been built successfully.
+02:18:33 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
+02:18:33 [INFO] dgtf: position 诊断已写：C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_outputs\diagnostic_position_0_20261004_021833.log
+02:18:33 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
+02:18:33 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
+02:18:33 [INFO] dgtf: position 诊断已写：C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_outputs\diagnostic_position_1_20261004_021833.log
+02:18:33 [INFO] dgtf: position 诊断已写：C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_outputs\diagnostic_position_both_20261004_021833.log
+02:18:33 [INFO] dgtf: position 诊断已写：C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_outputs\diagnostic_position_all_20261004_021833.log
+02:18:33 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
+02:18:33 [INFO] dgtf: position 诊断已写：C:\Users\18432\AppData\Local\Temp\probe71_run_svfv9egr\diagnostic_position_0_20261004_021833.log
+02:18:33 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
+02:18:33 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
+02:18:33 [INFO] dgtf: position 诊断已写：C:\Users\18432\AppData\Local\Temp\probe71_run_svfv9egr\diagnostic_position_1_20261004_021833.log
+02:18:33 [INFO] dgtf: position 诊断已写：C:\Users\18432\AppData\Local\Temp\probe71_run_svfv9egr\diagnostic_position_both_20261004_021833.log
+02:18:34 [INFO] dgtf: position 诊断已写：C:\Users\18432\AppData\Local\Temp\probe71_run_svfv9egr\diagnostic_position_all_20261004_021834.log
+02:18:34 [INFO] dgtf: 自动调度漏层，按中位数 5 补齐：{'0': 5, '1': 5, 'both': 5, 'all': 5}
+02:18:34 [INFO] dgtf: 自动调度漏层，按中位数 4 补齐：{'0': 4, 'both': 4, 'all': 4, '1': 4}
+
+==================================================================
+## [A] F1 · 四层各请求 1 圈时，收尾字段在不在
+==================================================================
+   层 0     roles_run=0 rounds_cap=0 round_log=0 stop_reason=''
+   层 1     roles_run=0 rounds_cap=0 round_log=0 stop_reason=''
+   层 both  roles_run=0 rounds_cap=0 round_log=0 stop_reason=''
+   层 all   roles_run=0 rounds_cap=0 round_log=0 stop_reason='连续 2 轮无新 &（沉淀完了） + 连续 2 轮无线头新增（方向走'
+   _b_finalize_layer(total_rounds=1) → roles_run=[] rounds_cap=0 round_log=0
+
+==================================================================
+## [B] F2 · main() 保存失败时的兜底
+==================================================================
+   假保存失败 → SystemExit.code=None 未捕获异常='OSError: 探针：模拟磁盘写失败' 打印里提到保存失败=False
+   保存成功（打桩成 no-op）→ SystemExit.code=None 未捕获异常=None
+
+==================================================================
+## [C] F3 · 上游 view 的 entry 非法（'9'）时
+==================================================================
+   _build_inp_meta  → {'exc': "KeyError: '9'"}
+   _build_inp_duel  → {'exc': None, 'upstream_views': []}   （对照：duel 用的是固定 [0,1] 池，本来就没有这个风险）
+
+==================================================================
+## [D] F4 · load_config 的空路径 / 坏 yaml
+==================================================================
+   empty_path     警告=True  head='⚠️  读取  失败：FileNotFoundError: [Errno 2] No such file or '
+   bad_yaml       警告=True  head='⚠️  配置文件解析失败：C:\\Users\\18432\\AppData\\Local\\Temp\\probe71_q'
+   good_yaml      警告=False  head=''
+   missing_yaml   警告=False  head=''
+
+==================================================================
+## [E] F5 · active 为空时的 packed['dispatch']
+==================================================================
+   _run_parallel_C      → {'keys': [], 'mode_value': None, 'has_guard_keys': False}
+   _run_parallel_stage  → {'keys': [], 'mode_value': None, 'has_guard_keys': False}
+
+==================================================================
+## [F] F6 · 外部 _assess_decidability 的调用次数（同一次 run）
+==================================================================
+   外部评估调用次数 = 2 （按站点 {'route_by_decidability': 1, 'assess_dynamic': 1, 'other': 0}；判定源 'pool+external'）
+   MetaDGTF 实例上有 _ext_assess_cache：False
+
+==================================================================
+## [G] F7 · evidence 长 9 条时，缓存 / 兜底两条路的 _und_untraced
+==================================================================
+   cached_path_untraced = []
+   fallback_path_untraced = ['清分规则未定，断面客流与线路客流不可互证']
+   consistent = False
+   pool_assess_full_untraced = []
+   pool_assess_emits_evidence_full = False
+
+==================================================================
+## [H] F9 · _tokenize 的停用词过滤
+==================================================================
+   n_tokens = 12
+   has_stop_multi = {'的话': True, '一种': True, '进行': True, '我们': True, '通过': True, '这个': False}
+   keeps_content = {'螺旋': True, '结构': True, '整理': True}
+   stopwords_is_chars = True
+   分词结果：['如果', '我们', '通过', '一种', '方式', '进行', '整理', '的话', '螺旋', '结构', '浮现', '出来']
+
+==================================================================
+## [I] F10 · coverage_parts 的 cfg 参数是否可选
+==================================================================
+   pass_none = 'ok'
+   omit_cfg = "EXC TypeError: coverage_parts() missing 1 required positional argument: 'cfg'"
+   sig = "(pool, cfg: 'dict')"
+   refresh_passes_config = False
+   refresh_passes_empty = True
+
+==================================================================
+## [J] F11 · 收尾二次 _quality_check 会不会多写一份诊断
+==================================================================
+   run_dump_attempts = {'in_round': 0, 'in_finalize': 4, 'qc_calls': 13, 'qc_wdiag_false': 0, 'in_finalize_flag': False}
+   run_diag_files = 4
+   finalize_passes_write_diag_false = False
+   ↑ 文件数会被**秒级时间戳撞名**吃掉，所以判据取 dump **尝试次数**：in_finalize 必须为 0
+
+==================================================================
+## [K] F8 · 两份调度实现在同一输入下的 mode / rounds
+==================================================================
+   full_4keys     方法 G/{'0': 4, '1': 5, 'both': 4, 'all': 6}  模块 G/{'0': 4, '1': 5, 'both': 4, 'all': 6}  一致=True
+   partial_2keys  方法 G/{'0': 5, '1': 5, 'both': 5, 'all': 5}  模块 G/{'0': 5, '1': 5, 'both': 5, 'all': 5}  一致=True
+   out_of_range   方法 G/{'0': 4, 'both': 4, 'all': 5, '1': 4}  模块 G/{'0': 4, 'both': 4, 'all': 5, '1': 4}  一致=True
+   负对照（人为把方法级的圈数改坏）一致=False  ← 必须为 False，否则这条判据没有判别力
+
+==================================================================
+## 摘要（机器可读）
+==================================================================
+{
+ "A": {
+  "layer_0": {
+   "roles_run": 0,
+   "rounds_cap": 0,
+   "round_log": 0,
+   "stop_reason": ""
+  },
+  "layer_1": {
+   "roles_run": 0,
+   "rounds_cap": 0,
+   "round_log": 0,
+   "stop_reason": ""
+  },
+  "layer_both": {
+   "roles_run": 0,
+   "rounds_cap": 0,
+   "round_log": 0,
+   "stop_reason": ""
+  },
+  "layer_all": {
+   "roles_run": 0,
+   "rounds_cap": 0,
+   "round_log": 0,
+   "stop_reason": "连续 2 轮无新 &（沉淀完了） + 连续 2 轮无线头新增（方向走"
+  },
+  "b_finalize_gate": {
+   "roles_run": [],
+   "rounds_cap": 0,
+   "round_log": 0,
+   "stop_reason": ""
+  }
+ },
+ "B": {
+  "fail_exit_code": null,
+  "fail_uncaught": "OSError: 探针：模拟磁盘写失败",
+  "fail_mentions_save": false,
+  "ok_exit_code": null,
+  "ok_uncaught": null
+ },
+ "C": {
+  "meta": {
+   "exc": "KeyError: '9'"
+  },
+  "duel": {
+   "exc": null,
+   "upstream_views": []
+  }
+ },
+ "D": {
+  "empty_path": {
+   "warn": true,
+   "head": "⚠️  读取  失败：FileNotFoundError: [Errno 2] No such file or "
+  },
+  "bad_yaml": {
+   "warn": true,
+   "head": "⚠️  配置文件解析失败：C:\\Users\\18432\\AppData\\Local\\Temp\\probe71_q"
+  },
+  "good_yaml": {
+   "warn": false,
+   "head": ""
+  },
+  "missing_yaml": {
+   "warn": false,
+   "head": ""
+  }
+ },
+ "E": {
+  "_run_parallel_C": {
+   "keys": [],
+   "mode_value": null,
+   "has_guard_keys": false
+  },
+  "_run_parallel_stage": {
+   "keys": [],
+   "mode_value": null,
+   "has_guard_keys": false
+  }
+ },
+ "F": {
+  "ext_assess_calls": 2,
+  "site_breakdown": {
+   "route_by_decidability": 1,
+   "assess_dynamic": 1,
+   "other": 0
+  },
+  "dec_source": "pool+external",
+  "has_cache_attr_source": false
+ },
+ "G": {
+  "cached_path_untraced": [],
+  "fallback_path_untraced": [
+   "清分规则未定，断面客流与线路客流不可互证"
+  ],
+  "consistent": false,
+  "pool_assess_full_untraced": [],
+  "pool_assess_emits_evidence_full": false
+ },
+ "H": {
+  "n_tokens": 12,
+  "has_stop_multi": {
+   "的话": true,
+   "一种": true,
+   "进行": true,
+   "我们": true,
+   "通过": true,
+   "这个": false
+  },
+  "keeps_content": {
+   "螺旋": true,
+   "结构": true,
+   "整理": true
+  },
+  "stopwords_is_chars": true
+ },
+ "I": {
+  "pass_none": "ok",
+  "omit_cfg": "EXC TypeError: coverage_parts() missing 1 required positional argument: 'cfg'",
+  "sig": "(pool, cfg: 'dict')",
+  "refresh_passes_config": false,
+  "refresh_passes_empty": true
+ },
+ "J": {
+  "run_dump_attempts": {
+   "in_round": 0,
+   "in_finalize": 4,
+   "qc_calls": 13,
+   "qc_wdiag_false": 0,
+   "in_finalize_flag": false
+  },
+  "run_diag_files": 4,
+  "finalize_passes_write_diag_false": false
+ },
+ "K": {
+  "full_4keys": {
+   "method_mode": "G",
+   "method_rounds": {
+    "0": 4,
+    "1": 5,
+    "both": 4,
+    "all": 6
+   },
+   "module_mode": "G",
+   "module_rounds": {
+    "0": 4,
+    "1": 5,
+    "both": 4,
+    "all": 6
+   },
+   "agree": true
+  },
+  "partial_2keys": {
+   "method_mode": "G",
+   "method_rounds": {
+    "0": 5,
+    "1": 5,
+    "both": 5,
+    "all": 5
+   },
+   "module_mode": "G",
+   "module_rounds": {
+    "0": 5,
+    "1": 5,
+    "both": 5,
+    "all": 5
+   },
+   "agree": true
+  },
+  "out_of_range": {
+   "method_mode": "G",
+   "method_rounds": {
+    "0": 4,
+    "both": 4,
+    "all": 5,
+    "1": 4
+   },
+   "module_mode": "G",
+   "module_rounds": {
+    "0": 4,
+    "both": 4,
+    "all": 5,
+    "1": 4
+   },
+   "agree": true
+  },
+  "drift_negative_control": {
+   "method_mode": "G",
+   "method_rounds": {
+    "0": 5,
+    "1": 6,
+    "both": 5,
+    "all": 7
+   },
+   "module_mode": "G",
+   "module_rounds": {
+    "0": 4,
+    "1": 5,
+    "both": 4,
+    "all": 6
+   },
+   "agree": false
+  }
+ }
+}

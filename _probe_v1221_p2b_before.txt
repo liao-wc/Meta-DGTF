@@ -1,0 +1,9 @@
+{
+  "A1_hit_by_answers": false,
+  "A2_hit_by_claim": false,
+  "C1_claim_0.6_intact": false,
+  "C2_answers_uses_UNTRACED": true,
+  "D1_answers_in_crosscheck": false,
+  "D2_claim_in_crosscheck": false,
+  "E1_answers_key": true
+}

@@ -1,0 +1,61 @@
+{
+  "_ts": 1791247076.246094,
+  "results": [
+    {
+      "claim": "No information is available for this page.",
+      "url": "https://planning.lacounty.gov/zh/disaster-recovery/pre-approved-standard-plans",
+      "source": "https://planning.lacounty.gov/zh/disaster-recovery/pre-approved-standard-plans",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "联合国人居署是联合国系统内负责协调人类住区领域活动的牵头机构。《人居议程》规定联合国人居署在人类住区的灾害、减灾和危机后重建能力等方面起领导作用。",
+      "url": "https://unhabitat.org/cn/node/3772",
+      "source": "https://unhabitat.org/cn/node/3772",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "at this time 目前沒有定義 [...] Layout 產品安裝Product Installation 產品檢驗Product Inspection 施工問題Construction Issue 產品零件類型Product Type Parts 產品類型保修Product Type Warranty 產品類型維護Product Type Maintenance 系統操作System Operation 空間狀態Space Condition 產品零件更換Product Parts Replacement 空間佔有率Space Occupancy 空間裝修能動性 Space Activity Renovation Renovation 設備類型資訊Type 設備名稱Name RP - - - - C C CU CU R U C R U R R R R R R R R - RU -",
+      "url": "https://udd.gov.taipei/assets/50-10660/Documents/%E7%AB%A3%E5%B7%A5%E6%A8%A1%E5%9E%8B%E5%B1%AC%E6%80%A7%E8%B3%87%E6%96%99%E4%BD%9C%E6%A5%AD%E8%A6%8F%E7%AF%84v2.0_20181109_new.pdf",
+      "source": "https://udd.gov.taipei/assets/50-10660/Documents/%E7%AB%A3%E5%B7%A5%E6%A8%A1%E5%9E%8B%E5%B1%AC%E6%80%A7%E8%B3%87%E6%96%99%E4%BD%9C%E6%A5%AD%E8%A6%8F%E7%AF%84v2.0_20181109_new.pdf",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "三类模型在工程实现中缺乏统一的闭环反馈机制,导致从“预测”到“真实世界交互”之间存在着结构性的断裂。",
+      "url": "https://zhuanlan.zhihu.com/p/2050240322903478614",
+      "source": "https://zhuanlan.zhihu.com/p/2050240322903478614",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "### Full text\n\nFull-text not available, please contact library@unesco.org and archives@unesco.org for more information\n\n### Epub Document\n\n### Source document\n\n### Contains\n\nkeyboard_arrow_down Show all keyboard_arrow_up Fold up all\n\nWe use cookies on this site to enhance your user experience. For more information on how we use cookies, read our privacy notice.\n\nContinue\n\nImage 2 [...] # 工程—支持可持续发",
+      "url": "https://unesdoc.unesco.org/ark:/48223/pf0000375684",
+      "source": "https://unesdoc.unesco.org/ark:/48223/pf0000375684",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "No information is available for this page.",
+      "url": "https://aistudio.baidu.com/aistudio/projectdetail/4132862",
+      "source": "https://aistudio.baidu.com/aistudio/projectdetail/4132862",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "### 盘点：哪些模块还在被真实使用\n\n改造前先拉出近一段时间的访问日志、接口调用量和工单数据，把系统模块按使用频率和业务重要性排序。很多长期运行的企业内部系统，真正被高频使用的模块往往只占少数，大量功能处于没人用但不敢删的状态。先识别出这批模块，改造范围就能明显收窄，也避免把 AI 编码的生成能力浪费在无人使用的功能上。\n\n### 分层：数据、接口、逻辑、界面分开评估\n\n同一套系统里，各层的腐化程度通常不一样。数据层要看表结构是否有文档、主外键关系是否清晰；接口层要看上下游依赖有多少、调用方分别是谁；逻辑层要看业务规则是否有出处可查；界面层则更多是体验问题而非正确性问题。分层评估的结论直接决定改造路径：界面陈旧而逻辑稳定的系统，改造成本低得多；业务规则散落多处且无人能完整解释的系统，要先补需求梳理，而不是急着生成代码。\n\n### 定边界：保留、重建、下线三类处置 [...] 评估完成后，",
+      "url": "https://codewave.163.com/info/legacy-system-ai-coding-modernization-path.html",
+      "source": "https://codewave.163.com/info/legacy-system-ai-coding-modernization-path.html",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "检查上下文模型中的ExternalSystem和Actor元素与System之间是否通过接口相关联，与接口之间存在使用，实现或者依赖关系连线，如果存在其它类型的连线也不",
+      "url": "https://support.huaweicloud.com/usermanual-codeartsmodeling/modeling_ug_0002_9_1_2_7.html",
+      "source": "https://support.huaweicloud.com/usermanual-codeartsmodeling/modeling_ug_0002_9_1_2_7.html",
+      "kind": "web",
+      "tier": 3
+    }
+  ]
+}

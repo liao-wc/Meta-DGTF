@@ -1,0 +1,55 @@
+# position_all_same 诊断
+entry=all
+round=3
+anchor=在役桥梁数量多、预算有限，维护优先级怎么排
+same_position=0
+candidate_count=12
+
+[1] attr=1 pos=0 src=阳
+    desc: all 是一个尚无人宣布"就是这些"的集合，边界虽被反复触碰却无授权动作落定，整体因此带着一个未完成的封口
+    why_position: 未完成的封口无授权动作落定，未收进all
+
+[2] attr=1 pos=0 src=阳
+    desc: 交付要求 0 端停止触碰与 1 端持续维持在役同时成立，两者没有共同执行者，all 在这个矛盾上是开口的
+    why_position: 0收束与1维持无共同执行者，未进all
+
+[3] attr=1 pos=0 src=阳
+    desc: 签收只关闭本次交付，不分配未进入切片者的后果，排除动作与承接动作在 all 里不重合
+    why_position: 承接动作未入all，与排除动作不重合
+
+[4] attr=1 pos=0 src=阳
+    desc: all 里施工按实体、预算按行两套账都成立，却无并账动作走完，整体因此停在两套账并列的状态
+    why_position: 并账动作未走完，并列态仍悬在all外
+
+[5] attr=0 pos=0 src=阴
+    desc: 这四个 view 之所以是这几个，因为它们各自只覆盖了 all 的一个触碰面：记录层、边界层、字段层、交付层，没有一个是宣布"全部在此"的那一面
+    why_position: 宣布全部在此的那一面未被任何view收进
+
+[6] attr=0 pos=0 src=阴
+    desc: all 缺的是封口动作本身——谁在什么时点说"就是这些"，这个动作不在任何 view 内，也不在四周期任何一格内
+    why_position: 封口动作不在任何view与周期格内
+
+[7] attr=0 pos=0 src=阴
+    desc: all 的局部里没有一个位置同时容纳 0 端收束与 1 端维持在役，这个矛盾悬在整体上，没被任何 view 吸收
+    why_position: 容纳0收束与1维持的位置空着，未被吸收
+
+[8] attr=0 pos=0 src=阴
+    desc: 未进入切片者的承接位在 all 里始终空着，签收动作不覆盖它，排除与承接的错位没有被任何 view 收进去
+    why_position: 未进入切片者的承接位空着，签收不覆盖
+
+[9] attr=0 pos=0 src=阴
+    desc: 两套账并列时是否存在并账动作，这一步在所有 view 里都没走完，all 因此停在一个未收敛的并列状态
+    why_position: 并账步骤未走完，未收敛态未被all吸收
+
+[10] attr=0 pos=0 src=阴
+    desc: 若把"排哪座先修"反成"排哪座可以继续不修"，承接位会长在哪个格，这个问题在四个 view 里都未被追问
+    why_position: 承接位落点未被追问，未进all
+
+[11] attr=0 pos=0 src=阴
+    desc: 四周期强制对齐时先崩哪一个，两方共同悬置却都没给崩点，崩点作为 all 的下界仍未显形
+    why_position: 崩点未显形，作为下界未被吸收
+
+[12] attr=0 pos=0 src=阴
+    desc: all 里 0 端停止触碰的信号由谁发出、与签收是否同一主体，这一步在所有局部材料里都空着，是整体未被吸收的局部
+    why_position: 0端停止触碰的发出者空着，未被吸收
+

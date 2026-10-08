@@ -1,0 +1,61 @@
+{
+  "escalate_starve_rounds": {
+    "triggered": true,
+    "differential": {
+      "N": 2,
+      "starve_in": 1,
+      "starve_after": 0
+    },
+    "evidence": "stats.escalated=1，decidability_log 条数=1，sq.decidability=undecidable",
+    "input": "1 条 decidable 未答子问题 + 1 笔 deferred 账 + 无任何 touched",
+    "verdict": "条件窄但成立",
+    "next": "保留（不删）"
+  },
+  "no_push_when_idle": {
+    "triggered": true,
+    "differential": {
+      "no_push_when_idle=1 → note": "",
+      "no_push_when_idle=0 → note": "连续 2 轮有新增但无推进（修行层无新增或无推进）",
+      "off_streak": 1,
+      "on_streak": 0
+    },
+    "evidence": "ON: reasons 原样=True note=''；OFF: note='连续 2 轮有新增但无推进（修行层无新增或无推进）' streak=1",
+    "input": "1 条「有新增但无推进」空转判据 + 2 条未深入方向（首测）",
+    "verdict": "条件窄但成立",
+    "next": "保留（不删）"
+  },
+  "_reopen_closed_debt": {
+    "triggered": true,
+    "differential": {
+      "有 escalated 记录 → 新 id": "d_002",
+      "无任何记录 → 新 id": ""
+    },
+    "evidence": "新增债务 d_002（status=deferred，reopened_from=d_001）；负对照（没欠过账）返回 ''",
+    "input": "sub 7 名下有一笔 status=escalated 的旧账、且当前无 deferred 账",
+    "verdict": "条件窄但成立",
+    "next": "保留（不删）"
+  },
+  "both_tighten_ratio": {
+    "triggered": true,
+    "differential": {
+      "超阈值 both": "5 → 1",
+      "不超阈值 both": "1 原样"
+    },
+    "evidence": "max_ratio=0.3、5 条全 both → 改判后 both=1（positions=['both', '0', '0', '0', '0']）",
+    "input": "5 条候选全部 position=both，why_0/why_1 各 ≥12 字且不重合",
+    "verdict": "条件窄但成立",
+    "next": "保留（不删）"
+  },
+  "_all_settle_streak": {
+    "triggered": false,
+    "reachable": false,
+    "differential": {
+      "可单独调用的宿主函数": "无（内联）"
+    },
+    "evidence": "守卫链五项齐备：内联在 _run_layer 圈循环=True；入口守卫 entry == 'all'=True；层圈未满 layer_no < _total_rounds=True；要求 clean=False 且 unsettled>0=True；要求 unsettled 不下降=True。要触达必须同时满足「元层产生停止判据 + 未跑满预定圈数 + _settle_meta 报未清算 + 连续两次 unsettled 不下降」；审计语料 316 日志 / 296 产物里 0 命中。",
+    "input": "（无法构造可直接调用的输入 —— 判据内联在圈循环里）",
+    "note": "本项是**分析式判定**，不是实测触发；按任务书第三类归档。",
+    "verdict": "条件不可达",
+    "next": "归档（进 pending_fix，本版不删）"
+  }
+}

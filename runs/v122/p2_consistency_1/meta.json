@@ -1,0 +1,44 @@
+{
+  "tag": "p2_consistency_1",
+  "question": "订单系统要保证不超卖又要不卡顿。CAP 约束下，下单链路怎么设计？",
+  "route": [
+    "1"
+  ],
+  "rounds": "1:4",
+  "profile": "economy",
+  "ok": true,
+  "error": "",
+  "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\runs\\v122\\p2_consistency_1\\20261004_234611_订单系统要保证不超卖又要不卡顿CAP.md",
+  "calls": 42,
+  "tokens": 210584,
+  "layers": [
+    "1"
+  ],
+  "n_subs": 6,
+  "stability": {
+    "high": 6,
+    "medium": 0,
+    "low": 0
+  },
+  "tri_consensus": [
+    6,
+    0,
+    0
+  ],
+  "calibration_queue": 6,
+  "freeze_sig_len": 64,
+  "n_actions": 0,
+  "n_not_do": 0,
+  "view1_errors": [
+    "decision 模式行动清单不足（0 < 3），需补 A1~A3",
+    "decision 模式未交代「不做什么」，需补该清单"
+  ],
+  "quality_flags": [],
+  "as_evidence": null,
+  "tier_floor": null,
+  "triage_downgrades": null,
+  "conflicts": null,
+  "anchor_used": null,
+  "pool1_meta": [],
+  "elapsed_s": 652.2
+}

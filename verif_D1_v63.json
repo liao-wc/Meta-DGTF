@@ -1,0 +1,207 @@
+{
+ "tag": "D1_v63",
+ "src": "元DGTF-V1.21.63.py",
+ "route": "0,1,both,all",
+ "rounds": "0:4,1:4,both:5,all:5",
+ "mode": "serial",
+ "orientation": "boundary",
+ "llm_calls": 166,
+ "tri_state": [
+  4,
+  6
+ ],
+ "meta_closure_all": {
+  "clean": true,
+  "unsettled": 0,
+  "total": 1,
+  "uncovered": [],
+  "closed": 6,
+  "duel_total": 7,
+  "by_id": 0,
+  "covered_ids": 2,
+  "by_id_inactive": 2,
+  "by_id_unknown": 0
+ },
+ "duel_suspensions_both": [
+  {
+   "id": "t_001",
+   "target": "痕迹与余量能否分开指认",
+   "status": "resolved",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_002",
+   "target": "停止点缺席能否当标记用",
+   "status": "revoked",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_003",
+   "target": "剩余作为后沿是否与0侧时态悬着同源",
+   "status": "resolved",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_004",
+   "target": "分层入口只在一侧悬着能否共处理",
+   "status": "revoked",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_005",
+   "target": "「一次」是否只在加的落点处可数",
+   "status": "resolved",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_006",
+   "target": "未验证属性即介质能否当介质标记落点",
+   "status": "revoked",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_007",
+   "target": "折中位置能否被命名为「整体」",
+   "status": "active",
+   "quadrant": "③"
+  }
+ ],
+ "engagements_by_view": {
+  "0": [
+   {
+    "target": "介质标记的当场性",
+    "tension_id": null
+   }
+  ],
+  "1": [
+   {
+    "target": "汇总各部分结论时出现的矛盾，能否被定位到汇总表的某个具体条目或某组条目之间的冲突上？还是说它只能被描述为「不属于任何单独部分也不属于汇总表」的残留？",
+    "tension_id": null
+   },
+   {
+    "target": "拆分动作所发生的介质（纸面、分类、因果结构）是否可以被操作性地标记出来，使得「剩下」的形状随介质不同而可被区分？",
+    "tension_id": null
+   },
+   {
+    "target": "把「加」的动作本身也当作可拆部分加回去，剩下的边界是随每次加而移动，还是在加的动作发生的当场就消失？",
+    "tension_id": null
+   }
+  ],
+  "both": [],
+  "all": [
+   {
+    "target": "剩余作为后沿是否与0侧时态悬着同源",
+    "tension_id": "t_001"
+   },
+   {
+    "target": "「一次」是否只在加的落点处可数",
+    "tension_id": "t_002"
+   }
+  ]
+ },
+ "suspensions_with_tid": {
+  "0": [
+   {
+    "target": "提问者位置是否即整体的一部分",
+    "tension_id": null,
+    "status": "active"
+   },
+   {
+    "target": "T8 复裁轮0/1收敛",
+    "tension_id": null,
+    "status": "revoked"
+   },
+   {
+    "target": "T5 计数历史里没有可数动作",
+    "tension_id": null,
+    "status": "active"
+   }
+  ],
+  "1": [],
+  "both": [],
+  "all": [
+   {
+    "target": "折中位置能否被命名为「整体」",
+    "tension_id": null,
+    "status": "resolved"
+   },
+   {
+    "target": "「一次」是否只在加的落点处可数",
+    "tension_id": null,
+    "status": "resolved"
+   },
+   {
+    "target": "折中位置能否被命名为「整体」——命名动作预设可命名性，当前无入口",
+    "tension_id": null,
+    "status": "stable"
+   }
+  ]
+ },
+ "pools_all_engagements": [
+  {
+   "target": "折中位置能否被命名为「整体」",
+   "tension_id": "t_001"
+  },
+  {
+   "target": "剩余作为后沿是否与0侧时态悬着同源",
+   "tension_id": "t_001"
+  },
+  {
+   "target": "「一次」是否只在加的落点处可数",
+   "tension_id": "t_002"
+  },
+  {
+   "target": "拆分介质（纸面/分类/因果结构）",
+   "tension_id": null
+  },
+  {
+   "target": "维持动作的时态与「剩下」的关系",
+   "tension_id": null
+  },
+  {
+   "target": "T10 拆分前是否被数过",
+   "tension_id": null
+  },
+  {
+   "target": "T13 加留下的间隙",
+   "tension_id": null
+  },
+  {
+   "target": "介质标记的当场性",
+   "tension_id": null
+  },
+  {
+   "target": "汇总各部分结论时出现的矛盾，能否被定位到汇总表的某个具体条目或某组条目之间的冲突上？还是说它只能被描述为「不属于任何单独部分也不属于汇总表」的残留？",
+   "tension_id": null
+  },
+  {
+   "target": "拆分动作所发生的介质（纸面、分类、因果结构）是否可以被操作性地标记出来，使得「剩下」的形状随介质不同而可被区分？",
+   "tension_id": null
+  },
+  {
+   "target": "把「加」的动作本身也当作可拆部分加回去，剩下的边界是随每次加而移动，还是在加的动作发生的当场就消失？",
+   "tension_id": null
+  }
+ ],
+ "views_errors": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": [
+   "元层 tension_id 定位不到：'t_001'（清单里只有 []）",
+   "元层 tension_id 定位不到：'t_002'（清单里只有 []）"
+  ]
+ },
+ "pools_meta_p16": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": []
+ },
+ "pools_meta_len": {
+  "0": 8,
+  "1": 6,
+  "both": 9,
+  "all": 13
+ }
+}

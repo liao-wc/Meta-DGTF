@@ -1,0 +1,51 @@
+# position_all_same 诊断
+entry=all
+round=5
+anchor=集团内部各子公司数据共享的合法边界在哪里
+same_position=0
+candidate_count=11
+
+[1] attr=1 pos=0 src=阳
+    desc: all 本身是一次无主语的翻译动作，不留记录、不被自证，因此没有持有者，也清点不了自己收了什么
+    why_position: all不留记录，自身收不进自身，无持有者
+
+[2] attr=1 pos=0 src=阳
+    desc: all 与每个局部互为外部：局部拿 all 没有的坐标问 all，all 拿无发出者的读法问局部
+    why_position: 互为外部即未内化，局部不入all
+
+[3] attr=1 pos=0 src=阳
+    desc: 未记接收方ID的那次写入，既不在可定位地址集也不在追认队列，整体没有把它收进任何局部
+    why_position: 明言整体未把它收进任何局部
+
+[4] attr=1 pos=0 src=阳
+    desc: 记录资格先于写入是否成立：集团边界是否应改按“谁有资格记录”切，而非按动作或公司切
+    why_position: 该切法只是提案，尚未定，未并入
+
+[5] attr=0 pos=0 src=阴
+    desc: 为什么恰好是写入位置竞争这几个切口，而不是别的——切口来源无归属，清点本身无主语
+    why_position: 切口来源无归属，清点本身无主语
+
+[6] attr=0 pos=0 src=阴
+    desc: 四套坐标之间缺的不是主体或公共点，是可互译关系；新建公共坐标立即成第五套待互译坐标
+    why_position: 可互译关系仍缺，未并入整体
+
+[7] attr=0 pos=0 src=阴
+    desc: 读法需坐标才能被记，坐标需读法才能被认作坐标，任一方在自身坐标内起不了头
+    why_position: 双方在自身坐标内都起不了头
+
+[8] attr=0 pos=0 src=阴
+    desc: “已发生但不可引用”这个状态在两个体系里都没有名字，整体也没有为它留出一个位置
+    why_position: 该状态无名，整体也未为它留位
+
+[9] attr=0 pos=0 src=阴
+    desc: 补记若被放行，是否也需要一次写前标注；若是，补记与追认是否同一动作的两次命名
+    why_position: 补记是否需标注仍是问句，未收
+
+[10] attr=0 pos=0 src=阴
+    desc: 追认者自身需被追认，链条在第一次追认处断掉，这个断点没有主体，整体没有覆盖它
+    why_position: 断点无主体，整体没有覆盖它
+
+[11] attr=0 pos=0 src=阴
+    desc: 0的识别动作与记录接收方ID动作谁在先，两边无材料，可能互为前提，整体未裁
+    why_position: 整体未裁两动作谁在先
+

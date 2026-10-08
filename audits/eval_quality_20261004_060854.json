@@ -1,0 +1,230 @@
+{
+ "meta": {
+  "target_py": "元DGTF-V1.21.72.py",
+  "target_version": "1.21.72",
+  "audit_ts": "2026-10-04T06:08:53",
+  "mode": "static",
+  "repeat": 0,
+  "sample": 0,
+  "question": "现金流紧张的中小制造企业，上自动化产线还是维持人工加局部优化？怎么决策？",
+  "n_views": 4,
+  "view_layer": "0"
+ },
+ "summary": {
+  "usable": "warning",
+  "main_issue": "AA4 两路分叉：池判=decidable / 外判=partial",
+  "suggested_action": "可用但带警示：读逐条明细确认清单质量",
+  "stability_verdict": "—"
+ },
+ "structure": {
+  "A1": {
+   "value": true,
+   "display": true,
+   "verdict": "✅",
+   "basis": "归一化重放复现 partial（自洽）"
+  },
+  "A2": {
+   "value": null,
+   "display": null,
+   "verdict": "—",
+   "basis": "无对应日志（A2 需 --log，本版未接）"
+  },
+  "A3": {
+   "value": "pool+external",
+   "display": "pool+external",
+   "verdict": "✅",
+   "basis": "池判 + 外判都在，分叉可查"
+  },
+  "A4": {
+   "value": true,
+   "display": true,
+   "verdict": "⚠️",
+   "basis": "两路分叉：池判=decidable / 外判=partial"
+  },
+  "A5": {
+   "value": true,
+   "display": true,
+   "verdict": "✅",
+   "basis": "_ext_status=partial"
+  }
+ },
+ "traceability": {
+  "B1": {
+   "value": 0.0,
+   "display": 0.0,
+   "verdict": "✅",
+   "basis": "池判侧无 und 条目（分母 0）"
+  },
+  "B2": {
+   "value": 0,
+   "display": 0,
+   "verdict": "✅",
+   "basis": "（无）"
+  },
+  "B3": {
+   "value": 0.38461538461538464,
+   "display": 0.38461538461538464,
+   "verdict": "⚠️",
+   "basis": "5/13 条清单有 evidence"
+  },
+  "B4": {
+   "value": 0.8,
+   "display": 0.8,
+   "verdict": "✅",
+   "basis": "4/5 条 source 可定位到池内对象"
+  },
+  "B5": {
+   "value": 0.6153846153846154,
+   "display": 0.6153846153846154,
+   "verdict": "—",
+   "basis": "8/13 条来自外判并集（分叉痕迹）"
+  }
+ },
+ "stability": {},
+ "quality": {
+  "D1": {
+   "value": 0.23076923076923078,
+   "display": 0.23076923076923078,
+   "verdict": "❌",
+   "basis": "3/13 条含可指认对象"
+  },
+  "D2": {
+   "value": 0,
+   "display": 0,
+   "verdict": "✅",
+   "basis": "0 条命中口号词/BOILERPLATE"
+  },
+  "D3": {
+   "value": 0.0,
+   "display": 0.0,
+   "verdict": "✅",
+   "basis": "0/78 对 overlap≥0.7"
+  },
+  "D4": {
+   "value": true,
+   "display": true,
+   "verdict": "—",
+   "basis": "静态单样本：dec=8/und=5（≥5 为顶到上限；填满倾向需 --repeat 才分档）"
+  },
+  "D5": {
+   "value": 1.9411764705882353,
+   "display": 1.9411764705882353,
+   "verdict": "✅",
+   "basis": "最长 33 / 最短 17 字符"
+  },
+  "D6": {
+   "value": 0,
+   "display": 0,
+   "verdict": "✅",
+   "basis": "0 对 dec↔und 近义（应互斥）"
+  },
+  "_verdict": "✅"
+ },
+ "two_way": {
+  "E1": {
+   "value": true,
+   "display": true,
+   "verdict": "—",
+   "basis": "池判=decidable / 外判=partial / 合并=partial"
+  },
+  "E2": {
+   "value": 0.011111111111111112,
+   "display": 0.011111111111111112,
+   "verdict": "❌",
+   "basis": "dec Jaccard=0.02；und Jaccard=0.00"
+  },
+  "E3": {
+   "value": 0.0,
+   "display": 0.0,
+   "verdict": "✅",
+   "basis": "池判侧 0/0；外判侧无池可追溯（不适用）"
+  },
+  "E4": {
+   "value": true,
+   "display": true,
+   "verdict": "—",
+   "basis": "池有内容"
+  }
+ },
+ "details": {
+  "dec_aspects": [
+   {
+    "text": "可延期付款清单能把两端支出分成刚性/可撤回，是核心决策抓手",
+    "specificity": 1.0
+   },
+   {
+    "text": "客户回款到账日、供应商是否接受回款后付款，均可查可谈",
+    "specificity": 0.0
+   },
+   {
+    "text": "隐性成本、融资审批、订单波动、人工弹性均可测算或调研",
+    "specificity": 0.0
+   },
+   {
+    "text": "最小工位试点/按件试跑能用真实数据验证，再决定铺开",
+    "specificity": 0.0
+   },
+   {
+    "text": "同行死因多为设备月供与客户账期错配，可访谈验证",
+    "specificity": 1.0
+   },
+   {
+    "text": "[外] 可建立投资决策框架：NPV、IRR、回收期、现金流压力测试",
+    "specificity": 0.0
+   },
+   {
+    "text": "[外] 可比较自动化产线与人工加局部优化的成本、产能、质量差异",
+    "specificity": 0.0
+   },
+   {
+    "text": "[外] 可设计分阶段试点与退出机制",
+    "specificity": 0.0
+   }
+  ],
+  "und_aspects": [
+   {
+    "text": "[外] 该企业具体应选哪条路线，因内部现金流、订单稳定性未知",
+    "traced": true
+   },
+   {
+    "text": "[外] 融资渠道、利率与供应商报价等外部具体条件未知",
+    "traced": true
+   },
+   {
+    "text": "[外] 未来市场需求、原材料价格与劳动力成本不确定",
+    "traced": true
+   },
+   {
+    "text": "[外] 企业主风险偏好与组织执行力无法量化",
+    "traced": true
+   },
+   {
+    "text": "[外] 具体工艺瓶颈与自动化适配度需现场诊断",
+    "traced": true
+   }
+  ],
+  "evidence": [
+   {
+    "aspect": "可延期付款清单能把两端支出分成刚性/可撤回",
+    "source": "ing生成物A"
+   },
+   {
+    "aspect": "客户回款到账日、供应商是否接受回款后付款可查可谈",
+    "source": "ing第六节两个闸门"
+   },
+   {
+    "aspect": "隐性成本、融资审批、订单波动、人工弹性可测算",
+    "source": "候选1/3/4/5/12"
+   },
+   {
+    "aspect": "最小工位试点/按件试跑可产出真实数据",
+    "source": "候选16/ing生成物B、C"
+   },
+   {
+    "aspect": "同行死因多为月供与账期错配，可访谈验证",
+    "source": "候选17/18"
+   }
+  ]
+ },
+ "errors": []
+}

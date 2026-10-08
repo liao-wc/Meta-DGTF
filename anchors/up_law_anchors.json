@@ -1,0 +1,104 @@
+{
+  "question": "企业出海欧洲面临 GDPR 合规，数据本地化和跨境传输两难，怎么设计合规方案？",
+  "retrieved_at": "2026-10-04T10:20:00+0800",
+  "retriever": "agent WebSearch（4 次检索：生效时点与罚款上限 / adequacy 现状与 SCC 版本 / Schrems II 判决 / TikTok 罚款案）",
+  "retriever_note": "本快照是**检索结果的事实摘录**，且是五个领域里『官方/监管口径』比例最高的一档：罚款上限、生效时点、adequacy 名单、判决与执法决定均可直接引用原文。跨境传输题的硬边界不在『要不要合规』，而在：① 目的地国是否在充分性名单（中国不在）；② 中企的母国法（反恐/反间谍/网络安全/国家情报法）会成为被否定的具体理由（见 a8/a9）；③ adequacy 本身可被推翻（Schrems 系列）。",
+  "anchors": [
+    {
+      "id": "a1",
+      "kind": "官方媒体转述（官方文件）",
+      "claim": "生效时点与体量：GDPR（Regulation (EU) 2016/679）2016 年由欧洲议会通过并给出两年过渡期，2018 年 5 月 25 日正式生效；序言 173 条、正文 11 章 99 条。这是所有后续义务与执法的时间基准。",
+      "source": "中央网信办（CAC）转载科技日报《最严数据保护法案 GDPR 正式生效》（官方媒体转述官方文件）",
+      "url": "https://www.cac.gov.cn/2018-06/11/c_1122965697.htm",
+      "as_of": "2018-06"
+    },
+    {
+      "id": "a2",
+      "kind": "官方文件（条例原文）",
+      "claim": "罚款两档上限（Article 83）：第一档最高 1000 万欧元，或企业上一财年全球总营业额 2%（取高者）；第二档最高 2000 万欧元，或全球年营业额 4%（取高者）。关键口径：基数用的是『全球营业额（annual turnover）』而非欧盟境内营业额、也非净利润；罚款须『有效、成比例、具威慑性』。",
+      "source": "gdpr-info.eu Art. 83 GDPR 原文；另见中华工商网对该条的中文拆解（官方文件 + 专业解读）",
+      "url": "https://gdpr-info.eu/art-83-gdpr/",
+      "as_of": "2016（条文）/ 持续有效"
+    },
+    {
+      "id": "a3",
+      "kind": "官方媒体转述（条例解读）",
+      "claim": "长臂管辖（域外效力）：GDPR 不限于欧盟境内机构，适用于任何为欧盟境内数据主体提供服务、或收集/持有/处理其数据的企业；管辖对象包括欧盟公民及『在欧盟居住 3 个月以上的任何人』。含义：中国出海企业的欧洲用户数据一旦落入处理范围，即直接受 GDPR 约束，不论公司注册地。",
+      "source": "中国青年网《『花总』个人信息泄露后发律师函 或将启动跨国诉讼》（官方媒体转述条例管辖条款）",
+      "url": "https://news.youth.cn/sh/201812/t20181208_11808611.htm",
+      "as_of": "2018-12"
+    },
+    {
+      "id": "a4",
+      "kind": "监管机构/司法口径（原始文件）",
+      "claim": "Schrems II 判决（硬时点+硬后果）：2020 年 7 月 16 日，欧盟法院（CJEU）在 C-311/18 案中判决 EU-US Privacy Shield（欧委会决定 (EU) 2016/1250）无效，理由是美国的监控法（PRISM/UPSTREAM 等）不满足必要性、相称性，且欧盟主体缺乏可诉救济；同时确认 SCC（决定 2010/87/EU）原则上有效，但要求出口方在传输前逐案核查目的地国能否提供『基本等同』保护，必要时采取补充措施；做不到就必须中止或终止传输，否则通知监管机构。",
+      "source": "欧洲数据保护监督局（EDPS）Schrems II 应对策略文件；欧洲议会研究服务处简报（监管机构/司法口径，原始文件）",
+      "url": "https://www.edps.europa.eu/sites/default/files/publication/2020-10-29_edps_strategy_schremsii_en_0.pdf",
+      "as_of": "2020-07-16"
+    },
+    {
+      "id": "a5",
+      "kind": "律所/合规专业机构解读",
+      "claim": "SCC 现行版本（硬版本号与时点）：现行欧盟标准合同条款由欧委会 2021 年 6 月 4 日决定 (EU) 2021/914 发布，取代旧版（2010/87 等），旧版已不合规；采用模块化四类——C2C（控制者到控制者）、C2P（控制者到处理者）、P2P（处理者到处理者/转委托）、P2C（处理者到控制者）。含不可修改的强制条款（如 Clause 2 不可变更、Clause 7 附入条款、Clause 9 转委托授权、Clause 17 准据法）。",
+      "source": "ECOSIRE《Cross-Border Data Transfer: SCCs, BCRs, and Adequacy Decisions》（合规专业机构解读，引欧委会决定编号）",
+      "url": "https://ecosire.com/blog/cross-border-data-transfer-mechanisms",
+      "as_of": "2026-03"
+    },
+    {
+      "id": "a6",
+      "kind": "监管机构官方文件",
+      "claim": "充分性认定（adequacy）名单现状：欧委会依 Article 45 作出充分性认定的国家和地区包括——安道尔、阿根廷、巴西、加拿大（商业组织）、法罗群岛、根西、以色列、马恩岛、日本、泽西、新西兰、韩国、瑞士、英国、乌拉圭、欧洲专利组织，以及美国（仅限加入 EU-US DPF 的自认证企业）。中国不在名单内。充分性决定意味着数据可像在欧盟内部一样自由流动、无需额外保障措施。",
+      "source": "European Commission 官网『Adequacy decisions』页面（监管机构官方文件）",
+      "url": "https://commission.europa.eu/law/law-topic/data-protection/international-dimension-data-protection/adequacy-decisions_sv",
+      "as_of": "2026-07"
+    },
+    {
+      "id": "a7",
+      "kind": "监管机构官方文件 + 专业解读",
+      "claim": "EU-US DPF 的条件与风险：美国数据隐私框架的充分性决定 2023 年 7 月 10 日生效，取代被推翻的 Privacy Shield；但只覆盖『自愿向美国商务部自认证』的企业，且须年度再认证，一旦从名单移除须立即停止援引；未认证的美国企业仍需 SCC/BCR。DPF 仍面临司法挑战（Schrems III），存在被暂停/推翻的可能。",
+      "source": "LegalClarity《GDPR Article 44: Rules for International Data Transfers》（合规专业机构，引欧委会 DPF 决定与官方参与者名单）",
+      "url": "https://legalclarity.org/gdpr-article-44-rules-for-international-data-transfers",
+      "as_of": "2026"
+    },
+    {
+      "id": "a8",
+      "kind": "监管机构官方文件（执法决定）",
+      "claim": "TikTok 案（对中国出海企业最直接的执法标杆）：2025 年 5 月 2 日，爱尔兰数据保护委员会（DPC，TikTok 的牵头监管机构）作出最终决定，就 TikTok 将欧洲经济区（EEA）用户数据传至中国，合计罚款 5.3 亿欧元——其中违反 Article 46(1)（适当保障措施）罚 4.85 亿欧元，违反 Article 13(1)(f)（透明度告知）罚 4500 万欧元；并责令其在 6 个月内合规，否则暂停数据传输。原因是其未能核实、保证并证明 SCC 与补充措施能让经『远程访问』传输的 EEA 数据获得『基本等同』的保护。",
+      "source": "欧洲数据保护委员会（EDPB）官方新闻《Irish Supervisory Authority fines TikTok €530 million...》（监管机构官方文件）",
+      "url": "https://www.edpb.europa.eu/news/news/2025/irish-supervisory-authority-fines-tiktok-eu530-million-and-orders-corrective_en",
+      "as_of": "2025-05-02"
+    },
+    {
+      "id": "a9",
+      "kind": "监管机构口径（转述）",
+      "claim": "『基本等同』被否定的具体法律依据（硬条款清单）：DPC 在 TikTok 案中援引中方《反恐怖主义法》《反间谍法》《网络安全法》《国家情报法》，认定这些法律框架的若干方面妨碍了『与欧盟法基本等同』的认定——即中国当局可能访问被处理的 EEA 个人数据。含义：中企跨境的最大障碍不是缺 SCC 文件，而是母国法本身被监管机构列为『无法提供基本等同保护』的理由。",
+      "source": "欧盟中国商会《周·知》对 DPC 决定的摘要（转述监管机构口径，引具体法律名称）",
+      "url": "http://www.ccceu.eu/2025-05/03/c_4699.htm",
+      "as_of": "2025-05"
+    },
+    {
+      "id": "a10",
+      "kind": "合规专业机构解读（引 EDPB）",
+      "claim": "TIA（传输影响评估）义务：依 EDPB Recommendations 01/2020，凡不依赖充分性决定、而依赖 SCC 或 BCR 的传输，传输前必须做传输影响评估——识别数据与目的地、识别目的地国相关法律（尤其监控/获取法律，如美国 FISA 702、EO 12333）、评估是否有现实风险削弱 SCC 保障、必要时采取补充措施。补充措施分三类：技术（如接收方不持有解密密钥的端到端加密）、合同（超出标准条款的额外承诺）、组织（内部访问控制与审计）。无可补充措施则不得传输。",
+      "source": "LegalClarity / ComplyOne 指南（合规专业机构解读，引 EDPB Recommendations 01/2020）",
+      "url": "https://legalclarity.org/gdpr-article-44-rules-for-international-data-transfers",
+      "as_of": "2026"
+    },
+    {
+      "id": "a11",
+      "kind": "合规专业机构解读（引 EDPB）",
+      "claim": "BCR（约束性公司规则）的现实成本（反面条件）：BCR 需欧盟牵头监管机构审批并经 EDPB 合作程序，通常要一年以上、法律投入巨大，仅适合有欧盟实体的跨国集团；EDPB 直到 2026 年 4 月仍在处理批准意见（如 Santander 等）。对多数中小企业/初创，现实路径是 DPF 认证或 SCC，而不是 BCR。",
+      "source": "LegalClarity 指南（引 EDPB BCR 合作程序与批准意见）",
+      "url": "https://legalclarity.org/gdpr-article-44-rules-for-international-data-transfers",
+      "as_of": "2026-04"
+    },
+    {
+      "id": "a12",
+      "kind": "监管机构官方文件",
+      "claim": "充分性的『有效期』属性（硬时点）：英国充分性决定 2021 年 6 月通过，含四年日落条款；2025 年 12 月 19 日欧委会以一份 GDPR 续期决定和一份 LED 续期决定延长其效力。韩国 2021 年充分性决定于 2026 年 7 月完成首次定期复审。含义：adequacy 不是永久状态，会被定期复审、修订或撤销——依赖它的企业应保留 SCC 作为后备。",
+      "source": "European Commission 官网『Adequacy decisions』页面（监管机构官方文件，含各项决定时点）",
+      "url": "https://commission.europa.eu/law/law-topic/data-protection/international-dimension-data-protection/adequacy-decisions_sv",
+      "as_of": "2025-12-19 / 2026-07"
+    }
+  ]
+}

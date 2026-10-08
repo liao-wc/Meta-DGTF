@@ -1,0 +1,1269 @@
+{
+  "question": "老城区暴雨内涝频发，排水系统要不要整体翻新，怎么定优先级",
+  "route": [
+    "0",
+    "1",
+    "both",
+    "all"
+  ],
+  "keep": {
+    "0": "all",
+    "1": "all",
+    "both": "all",
+    "all": "all"
+  },
+  "rounds": {
+    "0": 1,
+    "1": 1,
+    "both": 1,
+    "all": 1
+  },
+  "dispatch": {
+    "requested": [
+      "0",
+      "1",
+      "both",
+      "all"
+    ],
+    "order": [
+      "0",
+      "1",
+      "both",
+      "all"
+    ],
+    "ran": [
+      "0",
+      "1",
+      "both",
+      "all"
+    ],
+    "missing": [],
+    "failed": {},
+    "skipped": [],
+    "_parallel_mode": "serial"
+  },
+  "channels": [
+    "content",
+    "context",
+    "self"
+  ],
+  "self_text": [
+    "[修行层] 这是一段用于冒烟测试的中文输出文本，长度足够通过各类检查。它不需要有真实含义，只要不触发解析分支的异常即可。",
+    "[研究层] 这是一段用于冒烟测试的中文输出文本，长度足够通过各类检查。它不需要有真实含义，只要不触发解析分支的异常即可。\n\n## 七、原始问题覆盖率\n无 decidable 子问题（可判定通道不适用）。\n研究层不可判定通道：清晰度 0.00（模型自评，累计 1 次记录）｜结构覆盖率 0.00（代码实算，已对上 0/1 个不可判定方面）｜对齐覆盖率 0.00（代码实算，已对上 0/1 个不可判定方面）\n",
+    "[对撞层] 这是一段用于冒烟测试的中文输出文本，长度足够通过各类检查。它不需要有真实含义，只要不触发解析分支的异常即可。",
+    "[元层] 这是一段用于冒烟测试的中文输出文本，长度足够通过各类检查。它不需要有真实含义，只要不触发解析分支的异常即可。\n\n## 七、原始问题覆盖率\n无 decidable 子问题（可判定通道不适用）。\n研究层不可判定通道：清晰度 0.00（模型自评，累计 1 次记录）｜结构覆盖率 0.00（代码实算，已对上 0/1 个不可判定方面）｜对齐覆盖率 0.00（代码实算，已对上 0/1 个不可判定方面）\n"
+  ],
+  "decidability": {
+    "decidability": "partial",
+    "reason": "冒烟测试固定输出",
+    "features": [
+      "测试特征"
+    ],
+    "decidable_aspects": [
+      "可判定方面甲"
+    ],
+    "undecidable_aspects": [
+      "不可判定方面乙"
+    ],
+    "evidence": [],
+    "_evidence_full": [],
+    "_source": "pool+external",
+    "_und_untraced": [
+      "不可判定方面乙"
+    ],
+    "_und_traced": [],
+    "_ext_status": "partial",
+    "_ext_reason": "冒烟测试固定输出",
+    "_ext_features": [
+      "测试特征"
+    ],
+    "_divergent": false,
+    "_pool_status": "partial"
+  },
+  "views": {
+    "0": {
+      "entry": "0",
+      "anchor": "测试锚点：它到底在问什么",
+      "candidates": [
+        {
+          "desc": "阴视角候选甲：这是一条用于冒烟测试的候选描述",
+          "kind": "concept",
+          "attribute": "0",
+          "position": "1",
+          "yin": "0",
+          "yang": "0",
+          "source": "阴",
+          "attribute_anchored": true,
+          "why_attribute": "来源：阴展开",
+          "why_position": "锚点已触及",
+          "why_0": "",
+          "why_1": "",
+          "is_amp_candidate": true
+        },
+        {
+          "desc": "阳视角候选甲：第三条候选描述长度合格",
+          "kind": "event",
+          "attribute": "1",
+          "position": "1",
+          "yin": "0",
+          "yang": "0",
+          "source": "阳",
+          "attribute_anchored": true,
+          "why_attribute": "来源：阳展开",
+          "why_position": "锚点已触及",
+          "why_0": "",
+          "why_1": "",
+          "is_amp_candidate": false
+        }
+      ],
+      "collision": "这是一段用于冒烟测试的中文输出文本，长度足够通过各类检查。它不需要有真实含义，只要不触发解析分支的异常即可。",
+      "amps": [],
+      "threads": [
+        {
+          "desc": "冒烟硬边界：EDA 闭源许可读不到，工具限制推不动",
+          "kind": "thread",
+          "source": "probe_boundary"
+        }
+      ],
+      "probes": [
+        {
+          "question": "冒烟探针：这条边界先推到哪一步",
+          "link": "回到原始问题",
+          "expected_gain": 0.8,
+          "covers": [
+            "T1"
+          ]
+        }
+      ],
+      "meta": [
+        "[P3] & 候选（各圈累计）2 条 / 本层 amps 0 条（比值 0.00；amps 可能含 adjudications/上游合并的贡献，比值只作方向参考） ⚠️ 候选有但 amps 一条都没落地（语义不一致没变成结构信号）"
+      ],
+      "decidable_product": {},
+      "undecidable_product": {},
+      "distance_to_question": 1.0,
+      "covered_aspects": [],
+      "uncovered_aspects": [],
+      "untouched": [
+        {
+          "desc": "尚未触及的方面甲",
+          "source": "anchor"
+        },
+        {
+          "desc": "尚未触及的方面乙",
+          "source": "anchor"
+        },
+        {
+          "desc": "阴视角候选乙：另一条不同的候选描述供去重",
+          "source": "judge"
+        },
+        {
+          "desc": "阳视角候选乙：第四条候选描述长度合格",
+          "source": "judge"
+        }
+      ],
+      "suspensions": [
+        {
+          "id": "s_001",
+          "target": "冒烟主动悬置：看清了但选择不碰",
+          "reason": "我看清了它，可以碰，但选择不碰，因为本层只问入口",
+          "reason_type": "explicit",
+          "layer": 1,
+          "last_confirmed_layer": 1,
+          "confirmed_layers": [
+            1
+          ],
+          "status": "active",
+          "revoked_at": null,
+          "revoke_reason": "",
+          "resolved_at": null,
+          "stable_since": null,
+          "needs_review": false
+        }
+      ],
+      "engagements": [
+        {
+          "target": "冒烟碰了一个点",
+          "how": "推了一步"
+        }
+      ],
+      "refinements": [],
+      "reconfirmations": [],
+      "revocations": [],
+      "deferrals": [],
+      "resolutions": [],
+      "escalations": [],
+      "reclassifications": [],
+      "settlement": {},
+      "adjudications": [],
+      "both_quota": {},
+      "carry": [
+        {
+          "question": "上面这几条候选被判为「后补／换说法复述」，本圈禁止以任何形式重述它们——原样、换说法、扩写都算。只交真的长出来的新东西：阴视角候选甲：这是一条用于冒烟测试的候选描述；阴视角候选乙：另一条不同的候选描述供去重；阳视角候选甲：第三条候选描述长度合格；阳视角候选乙：第四条候选描述长度合格",
+          "link": "self-check 判定的复述条目，绕开去重就能喷更多，但那不叫展开",
+          "expected_gain": 0.6,
+          "kind": "candidate",
+          "text": "上面这几条候选被判为「后补／换说法复述」，本圈禁止以任何形式重述它们——原样、换说法、扩写都算。只交真的长出来的新东西：阴视角候选甲：这是一条用于冒烟测试的候选描述；阴视角候选乙：另一条不同的候选描述供去重；阳视角候选甲：第三条候选描述长度合格；阳视角候选乙：第四条候选描述长度合格",
+          "banned": [
+            "阴视角候选甲：这是一条用于冒烟测试的候选描述",
+            "阴视角候选乙：另一条不同的候选描述供去重",
+            "阳视角候选甲：第三条候选描述长度合格",
+            "阳视角候选乙：第四条候选描述长度合格"
+          ]
+        },
+        {
+          "question": "上一圈 ing 输出超过一半是上游 view 的复述。本圈 ing 必须写出上游 view 里没有的句子；写不出就明说「此处未生」，不要用换个说法顶替。",
+          "link": "复述不产生距离，只会把空转记成推进",
+          "expected_gain": 0.7,
+          "kind": "ing",
+          "text": "上一圈 ing 输出超过一半是上游 view 的复述。本圈 ing 必须写出上游 view 里没有的句子；写不出就明说「此处未生」，不要用换个说法顶替。",
+          "banned": []
+        },
+        {
+          "question": "上一圈出现 4 处「此处未生」，已超过阈值 3——这一圈不许再拿它收尾。先把上一圈标了未生的地方真的推一遍，推不动要说清卡在哪一步，不是写一句「未生」就交卷。",
+          "link": "「此处未生」是诚实姿态，用成套路就是逃避",
+          "expected_gain": 0.75,
+          "kind": "any",
+          "text": "上一圈出现 4 处「此处未生」，已超过阈值 3——这一圈不许再拿它收尾。先把上一圈标了未生的地方真的推一遍，推不动要说清卡在哪一步，不是写一句「未生」就交卷。",
+          "banned": []
+        }
+      ],
+      "carry_check": {},
+      "carry_checks": [],
+      "carry_dropped": [],
+      "carry_dropped_all": [],
+      "rephrase_ratio": null,
+      "probe_skipped": false,
+      "rounds_cap": 1,
+      "duel_suspensions": [],
+      "meta_closure": {},
+      "stop_reason": "体力耗尽（1 圈走满，未触发任何停止判据，是被截断不是自然停止）\n  本轮显形：& 0 / 线头 1 / 悬置 1 / 探针 1\n  未生质量：real",
+      "rounds_run": 1,
+      "roles_run": [
+        "摊开"
+      ],
+      "closure_reason": "",
+      "round_log": [
+        {
+          "round": 1,
+          "role": "摊开",
+          "new_amps": 0,
+          "new_threads": 1,
+          "idle_amp": 1,
+          "idle_thread": 0,
+          "idle_stall": 0,
+          "why": ""
+        }
+      ],
+      "rehashed": [],
+      "idle": false,
+      "rendered": "━━━ 修行 · entry=0 ━━━\n\n【锚点】测试锚点：它到底在问什么\n\n【候选】\n  [0×1] 阴视角候选甲：这是一条用于冒烟测试的候选描述  ⚡& 属性◈阴展开\n  [0×0] 阴视角候选乙：另一条不同的候选描述供去重  属性◈阴展开\n  [1×1] 阳视角候选甲：第三条候选描述长度合格  属性◈阳展开\n  [1×0] 阳视角候选乙：第四条候选描述长度合格  ⚡& 属性◈阳展开\n\n【ing 对撞】\n这是一段用于冒烟测试的中文输出文本，长度足够通过各类检查。它不需要有真实含义，只要不触发解析分支的异常即可。\n\n【& 印记】\n  （无）\n\n【悬空线头】\n  💭 冒烟硬边界：EDA 闭源许可读不到，工具限制推不动\n\n【探针回归】\n  ? 冒烟探针：这条边界先推到哪一步（回来：回到原始问题｜增益0.8）\n\n【尚未触及的方面】\n  💭 尚未触及的方面甲（anchor）\n  💭 尚未触及的方面乙（anchor）\n  💭 阴视角候选乙：另一条不同的候选描述供去重（judge）\n  💭 阳视角候选乙：第四条候选描述长度合格（judge）\n\n【本层碰了】\n  - 冒烟碰了一个点：推了一步\n\n【主动悬置（决定不碰）】\n  - 冒烟主动悬置：看清了但选择不碰：我看清了它，可以碰，但选择不碰，因为本层只问入口[explicit]\n\n【view】\n这是一段用于冒烟测试的中文输出文本，长度足够通过各类检查。它不需要有真实含义，只要不触发解析分支的异常即可。\n\n【质量线索】unsaid_overused(4), candidates_backfilled(sc:5)\n\n【质量评价】候选后补（candidates_backfilled(sc:5)）\n\n【自省】冒烟 self-check\n\n【「此处未生」计数】本圈 4 处（阈值 3）　⚠ 判为逃避：探针没有真的往里推\n  分布：冒烟：ing×2、线头×2",
+      "manifest": "这是一段用于冒烟测试的中文输出文本，长度足够通过各类检查。它不需要有真实含义，只要不触发解析分支的异常即可。",
+      "quality_flags": [
+        "position_all_same_structural",
+        "unsaid_overused(4)",
+        "candidates_backfilled(sc:5)"
+      ],
+      "quality_verdict": "候选后补（candidates_backfilled(sc:5)）",
+      "self_check": {
+        "suspicious_candidates": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "suspicious_amps": [
+          1
+        ],
+        "ing_rephrased": true,
+        "honest_about_empty": true,
+        "unsaid_count": 4,
+        "unsaid_is_escape": true,
+        "unsaid_where": "冒烟：ing×2、线头×2",
+        "flow_verdict": "冒烟：判定为凑数",
+        "view_verdict": "冒烟",
+        "amp_ratio_verdict": "冒烟",
+        "notes": "冒烟 self-check"
+      },
+      "errors": [],
+      "anchor_touched": [
+        {
+          "desc": "已被触及的方面甲",
+          "source": "anchor"
+        },
+        {
+          "desc": "已被触及的方面乙",
+          "source": "anchor"
+        }
+      ],
+      "ing_structured": {}
+    },
+    "1": {
+      "entry": "1",
+      "anchor": "测试锚点：它到底在问什么",
+      "candidates": [
+        {
+          "desc": "阳视角候选甲：这是一条用于冒烟测试的候选描述",
+          "kind": "concept",
+          "attribute": "1",
+          "position": "1",
+          "yin": "0",
+          "yang": "0",
+          "source": "阳",
+          "attribute_anchored": true,
+          "why_attribute": "来源：阳展开",
+          "why_position": "锚点已触及",
+          "why_0": "",
+          "why_1": "",
+          "is_amp_candidate": false
+        },
+        {
+          "desc": "阴视角候选甲：第三条候选描述长度合格",
+          "kind": "event",
+          "attribute": "0",
+          "position": "1",
+          "yin": "0",
+          "yang": "0",
+          "source": "阴",
+          "attribute_anchored": true,
+          "why_attribute": "来源：阴展开",
+          "why_position": "锚点已触及",
+          "why_0": "",
+          "why_1": "",
+          "is_amp_candidate": true
+        }
+      ],
+      "collision": "这是一段用于冒烟测试的中文输出文本，长度足够通过各类检查。它不需要有真实含义，只要不触发解析分支的异常即可。",
+      "amps": [],
+      "threads": [],
+      "probes": [],
+      "meta": [
+        "[P3] & 候选（各圈累计）2 条 / 本层 amps 0 条（比值 0.00；amps 可能含 adjudications/上游合并的贡献，比值只作方向参考） ⚠️ 候选有但 amps 一条都没落地（语义不一致没变成结构信号）"
+      ],
+      "decidable_product": {
+        "answer": "",
+        "answered_sub_ids": [],
+        "evidence": [],
+        "distance": 1.0
+      },
+      "undecidable_product": {
+        "why_undecidable": "",
+        "structural_amps": [],
+        "aligned_amps": [],
+        "clarity": 0.0,
+        "distance": 1.0
+      },
+      "distance_to_question": 1.0,
+      "covered_aspects": [],
+      "uncovered_aspects": [],
+      "untouched": [
+        {
+          "desc": "尚未触及的方面甲",
+          "source": "anchor"
+        },
+        {
+          "desc": "尚未触及的方面乙",
+          "source": "anchor"
+        },
+        {
+          "desc": "阳视角候选乙：另一条不同的候选描述供去重",
+          "source": "judge"
+        },
+        {
+          "desc": "阴视角候选乙：第四条候选描述长度合格",
+          "source": "judge"
+        }
+      ],
+      "suspensions": [],
+      "engagements": [],
+      "refinements": [],
+      "reconfirmations": [],
+      "revocations": [],
+      "deferrals": [],
+      "resolutions": [],
+      "escalations": [],
+      "reclassifications": [],
+      "settlement": {
+        "clean": true,
+        "leftover": 0,
+        "coverage": null,
+        "answered": 0,
+        "total": 0,
+        "decidable_channel": {
+          "answers": [],
+          "coverage_history": [],
+          "last_coverage": 0.0
+        },
+        "undecidable_channel": {
+          "structural_amps": [],
+          "clarity_history": [
+            0.0
+          ],
+          "last_clarity": 0.0,
+          "und_aspects": [
+            "不可判定方面乙"
+          ],
+          "struct_coverage_history": [
+            0.0
+          ],
+          "last_struct_coverage": 0.0,
+          "aligned_amps": [],
+          "last_struct_hit": 0,
+          "last_aligned_hit": 0,
+          "aligned_coverage_history": [
+            0.0
+          ],
+          "last_aligned_coverage": 0.0,
+          "aspect_first_hit": {},
+          "struct_trace": [
+            {
+              "layer": 1,
+              "hit": 0,
+              "total": 1,
+              "cov": 0.0,
+              "newly": []
+            }
+          ],
+          "aligned_first_hit": {},
+          "aligned_trace": [
+            {
+              "layer": 1,
+              "hit": 0,
+              "total": 1,
+              "cov": 0.0,
+              "newly": []
+            }
+          ]
+        },
+        "snapshot_coverage": null
+      },
+      "adjudications": [],
+      "both_quota": {},
+      "carry": [
+        {
+          "question": "上面这几条候选被判为「后补／换说法复述」，本圈禁止以任何形式重述它们——原样、换说法、扩写都算。只交真的长出来的新东西：阳视角候选甲：这是一条用于冒烟测试的候选描述；阳视角候选乙：另一条不同的候选描述供去重；阴视角候选甲：第三条候选描述长度合格；阴视角候选乙：第四条候选描述长度合格",
+          "link": "self-check 判定的复述条目，绕开去重就能喷更多，但那不叫展开",
+          "expected_gain": 0.6,
+          "kind": "candidate",
+          "text": "上面这几条候选被判为「后补／换说法复述」，本圈禁止以任何形式重述它们——原样、换说法、扩写都算。只交真的长出来的新东西：阳视角候选甲：这是一条用于冒烟测试的候选描述；阳视角候选乙：另一条不同的候选描述供去重；阴视角候选甲：第三条候选描述长度合格；阴视角候选乙：第四条候选描述长度合格",
+          "banned": [
+            "阳视角候选甲：这是一条用于冒烟测试的候选描述",
+            "阳视角候选乙：另一条不同的候选描述供去重",
+            "阴视角候选甲：第三条候选描述长度合格",
+            "阴视角候选乙：第四条候选描述长度合格"
+          ]
+        },
+        {
+          "question": "上一圈 ing 输出超过一半是上游 view 的复述。本圈 ing 必须写出上游 view 里没有的句子；写不出就明说「此处未生」，不要用换个说法顶替。",
+          "link": "复述不产生距离，只会把空转记成推进",
+          "expected_gain": 0.7,
+          "kind": "ing",
+          "text": "上一圈 ing 输出超过一半是上游 view 的复述。本圈 ing 必须写出上游 view 里没有的句子；写不出就明说「此处未生」，不要用换个说法顶替。",
+          "banned": []
+        },
+        {
+          "question": "上一圈出现 4 处「此处未生」，已超过阈值 3——这一圈不许再拿它收尾。先把上一圈标了未生的地方真的推一遍，推不动要说清卡在哪一步，不是写一句「未生」就交卷。",
+          "link": "「此处未生」是诚实姿态，用成套路就是逃避",
+          "expected_gain": 0.75,
+          "kind": "any",
+          "text": "上一圈出现 4 处「此处未生」，已超过阈值 3——这一圈不许再拿它收尾。先把上一圈标了未生的地方真的推一遍，推不动要说清卡在哪一步，不是写一句「未生」就交卷。",
+          "banned": []
+        }
+      ],
+      "carry_check": {},
+      "carry_checks": [],
+      "carry_dropped": [],
+      "carry_dropped_all": [],
+      "rephrase_ratio": null,
+      "probe_skipped": false,
+      "rounds_cap": 1,
+      "duel_suspensions": [],
+      "meta_closure": {},
+      "stop_reason": "体力耗尽（1 圈走满，未触发任何停止判据，是被截断不是自然停止）",
+      "rounds_run": 1,
+      "roles_run": [
+        "摊开"
+      ],
+      "closure_reason": "",
+      "round_log": [
+        {
+          "round": 1,
+          "role": "摊开",
+          "new_amps": 0,
+          "new_threads": 0,
+          "idle_amp": 1,
+          "idle_thread": 1,
+          "idle_stall": 0,
+          "why": ""
+        }
+      ],
+      "rehashed": [],
+      "idle": false,
+      "rendered": "━━━ 研究 · entry=1 ━━━\n\n【锚点】测试锚点：它到底在问什么\n\n【候选】\n  [1×1] 阳视角候选甲：这是一条用于冒烟测试的候选描述  属性◈阳展开\n  [1×0] 阳视角候选乙：另一条不同的候选描述供去重  ⚡& 属性◈阳展开\n  [0×1] 阴视角候选甲：第三条候选描述长度合格  ⚡& 属性◈阴展开\n  [0×0] 阴视角候选乙：第四条候选描述长度合格  属性◈阴展开\n\n【ing 对撞】\n这是一段用于冒烟测试的中文输出文本，长度足够通过各类检查。它不需要有真实含义，只要不触发解析分支的异常即可。\n\n【& 印记】\n  （无）\n\n【悬空线头】\n  （无）\n\n【探针回归】\n  （此处无自问可回归）\n\n【尚未触及的方面】\n  💭 尚未触及的方面甲（anchor）\n  💭 尚未触及的方面乙（anchor）\n  💭 阳视角候选乙：另一条不同的候选描述供去重（judge）\n  💭 阴视角候选乙：第四条候选描述长度合格（judge）\n\n【view】\n这是一段用于冒烟测试的中文输出文本，长度足够通过各类检查。它不需要有真实含义，只要不触发解析分支的异常即可。\n\n【质量线索】unsaid_overused(4), candidates_backfilled(sc:5)\n\n【质量评价】候选后补（candidates_backfilled(sc:5)）\n\n【自省】冒烟 self-check\n\n【「此处未生」计数】本圈 4 处（阈值 3）　⚠ 判为逃避：探针没有真的往里推\n  分布：冒烟：ing×2、线头×2",
+      "manifest": "这是一段用于冒烟测试的中文输出文本，长度足够通过各类检查。它不需要有真实含义，只要不触发解析分支的异常即可。\n\n## 七、原始问题覆盖率\n无 decidable 子问题（可判定通道不适用）。\n研究层不可判定通道：清晰度 0.00（模型自评，累计 1 次记录）｜结构覆盖率 0.00（代码实算，已对上 0/1 个不可判定方面）｜对齐覆盖率 0.00（代码实算，已对上 0/1 个不可判定方面）\n",
+      "quality_flags": [
+        "position_all_same_structural",
+        "unsaid_overused(4)",
+        "candidates_backfilled(sc:5)",
+        "action_incomplete",
+        "not_do_missing"
+      ],
+      "quality_verdict": "候选后补（candidates_backfilled(sc:5)）",
+      "self_check": {
+        "suspicious_candidates": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "suspicious_amps": [
+          1
+        ],
+        "ing_rephrased": true,
+        "honest_about_empty": true,
+        "unsaid_count": 4,
+        "unsaid_is_escape": true,
+        "unsaid_where": "冒烟：ing×2、线头×2",
+        "flow_verdict": "冒烟：判定为凑数",
+        "view_verdict": "冒烟",
+        "amp_ratio_verdict": "冒烟",
+        "notes": "冒烟 self-check"
+      },
+      "errors": [
+        "decision 模式行动清单不足（0 < 3），需补 A1~A3",
+        "decision 模式未交代「不做什么」，需补该清单"
+      ],
+      "anchor_touched": [
+        {
+          "desc": "已被触及的方面甲",
+          "source": "anchor"
+        },
+        {
+          "desc": "已被触及的方面乙",
+          "source": "anchor"
+        }
+      ],
+      "ing_structured": {},
+      "_actions": [],
+      "_not_do": []
+    },
+    "both": {
+      "entry": "both",
+      "anchor": "老城区暴雨内涝频发，排水系统要不要整体翻新，怎么定优先级",
+      "candidates": [
+        {
+          "desc": "阴视角候选甲：这是一条用于冒烟测试的候选描述",
+          "kind": "concept",
+          "attribute": "0",
+          "position": "1",
+          "yin": "0",
+          "yang": "0",
+          "source": "阴",
+          "attribute_anchored": true,
+          "why_attribute": "来源：阴展开",
+          "why_position": "锚点已触及",
+          "why_0": "",
+          "why_1": "",
+          "is_amp_candidate": true
+        },
+        {
+          "desc": "阳视角候选甲：第三条候选描述长度合格",
+          "kind": "event",
+          "attribute": "1",
+          "position": "1",
+          "yin": "0",
+          "yang": "0",
+          "source": "阳",
+          "attribute_anchored": true,
+          "why_attribute": "来源：阳展开",
+          "why_position": "锚点已触及",
+          "why_0": "",
+          "why_1": "",
+          "is_amp_candidate": false
+        }
+      ],
+      "collision": "这是一段用于冒烟测试的中文输出文本，长度足够通过各类检查。它不需要有真实含义，只要不触发解析分支的异常即可。\n===ING-STRUCT===\n{\"shared\": [\"两边都指向的共同点\"], \"tensions\": [{\"name\": \"冒烟张力\", \"a\": \"0面说甲\", \"b\": \"1面说乙\"}], \"third\": \"冒烟撞出的第三者\"}",
+      "amps": [],
+      "threads": [],
+      "probes": [],
+      "meta": [
+        "[P3] & 候选（各圈累计）2 条 / 本层 amps 0 条（比值 0.00；amps 可能含 adjudications/上游合并的贡献，比值只作方向参考） ⚠️ 候选有但 amps 一条都没落地（语义不一致没变成结构信号）"
+      ],
+      "decidable_product": {},
+      "undecidable_product": {},
+      "distance_to_question": 1.0,
+      "covered_aspects": [],
+      "uncovered_aspects": [],
+      "untouched": [
+        {
+          "desc": "阴视角候选乙：另一条不同的候选描述供去重",
+          "source": "judge"
+        },
+        {
+          "desc": "阳视角候选乙：第四条候选描述长度合格",
+          "source": "judge"
+        }
+      ],
+      "suspensions": [],
+      "engagements": [],
+      "refinements": [],
+      "reconfirmations": [],
+      "revocations": [],
+      "deferrals": [],
+      "resolutions": [],
+      "escalations": [],
+      "reclassifications": [],
+      "settlement": {},
+      "adjudications": [],
+      "both_quota": {},
+      "carry": [
+        {
+          "question": "上面这几条候选被判为「后补／换说法复述」，本圈禁止以任何形式重述它们——原样、换说法、扩写都算。只交真的长出来的新东西：阴视角候选甲：这是一条用于冒烟测试的候选描述；阴视角候选乙：另一条不同的候选描述供去重；阳视角候选甲：第三条候选描述长度合格；阳视角候选乙：第四条候选描述长度合格",
+          "link": "self-check 判定的复述条目，绕开去重就能喷更多，但那不叫展开",
+          "expected_gain": 0.6,
+          "kind": "candidate",
+          "text": "上面这几条候选被判为「后补／换说法复述」，本圈禁止以任何形式重述它们——原样、换说法、扩写都算。只交真的长出来的新东西：阴视角候选甲：这是一条用于冒烟测试的候选描述；阴视角候选乙：另一条不同的候选描述供去重；阳视角候选甲：第三条候选描述长度合格；阳视角候选乙：第四条候选描述长度合格",
+          "banned": [
+            "阴视角候选甲：这是一条用于冒烟测试的候选描述",
+            "阴视角候选乙：另一条不同的候选描述供去重",
+            "阳视角候选甲：第三条候选描述长度合格",
+            "阳视角候选乙：第四条候选描述长度合格"
+          ]
+        },
+        {
+          "question": "上一圈 ing 输出超过一半是上游 view 的复述。本圈 ing 必须写出上游 view 里没有的句子；写不出就明说「此处未生」，不要用换个说法顶替。",
+          "link": "复述不产生距离，只会把空转记成推进",
+          "expected_gain": 0.7,
+          "kind": "ing",
+          "text": "上一圈 ing 输出超过一半是上游 view 的复述。本圈 ing 必须写出上游 view 里没有的句子；写不出就明说「此处未生」，不要用换个说法顶替。",
+          "banned": []
+        },
+        {
+          "question": "上一圈出现 4 处「此处未生」，已超过阈值 3——这一圈不许再拿它收尾。先把上一圈标了未生的地方真的推一遍，推不动要说清卡在哪一步，不是写一句「未生」就交卷。",
+          "link": "「此处未生」是诚实姿态，用成套路就是逃避",
+          "expected_gain": 0.75,
+          "kind": "any",
+          "text": "上一圈出现 4 处「此处未生」，已超过阈值 3——这一圈不许再拿它收尾。先把上一圈标了未生的地方真的推一遍，推不动要说清卡在哪一步，不是写一句「未生」就交卷。",
+          "banned": []
+        }
+      ],
+      "carry_check": {},
+      "carry_checks": [],
+      "carry_dropped": [],
+      "carry_dropped_all": [],
+      "rephrase_ratio": 0.5,
+      "probe_skipped": false,
+      "rounds_cap": 1,
+      "duel_suspensions": [],
+      "meta_closure": {},
+      "stop_reason": "体力耗尽（1 圈走满，未触发任何停止判据，是被截断不是自然停止）",
+      "rounds_run": 1,
+      "roles_run": [
+        "摊开"
+      ],
+      "closure_reason": "",
+      "round_log": [
+        {
+          "round": 1,
+          "role": "摊开",
+          "new_amps": 0,
+          "new_threads": 0,
+          "idle_amp": 1,
+          "idle_thread": 1,
+          "idle_stall": 0,
+          "why": ""
+        }
+      ],
+      "rehashed": [],
+      "idle": true,
+      "rendered": "━━━ 对撞 · entry=both ━━━\n\n【锚点】老城区暴雨内涝频发，排水系统要不要整体翻新，怎么定优先级\n\n【候选】\n  [0×1] 阴视角候选甲：这是一条用于冒烟测试的候选描述  ⚡& 属性◈阴展开\n  [0×0] 阴视角候选乙：另一条不同的候选描述供去重  属性◈阴展开\n  [1×1] 阳视角候选甲：第三条候选描述长度合格  属性◈阳展开\n  [1×0] 阳视角候选乙：第四条候选描述长度合格  ⚡& 属性◈阳展开\n\n【ing 对撞】\n这是一段用于冒烟测试的中文输出文本，长度足够通过各类检查。它不需要有真实含义，只要不触发解析分支的异常即可。\n===ING-STRUCT===\n{\"shared\": [\"两边都指向的共同点\"], \"tensions\": [{\"name\": \"冒烟张力\", \"a\": \"0面说甲\", \"b\": \"1面说乙\"}], \"third\": \"冒烟撞出的第三者\"}\n\n【& 印记】\n  （无）\n\n【悬空线头】\n  （无）\n\n【探针回归】\n  （此处无自问可回归）\n\n【尚未触及的方面】\n  💭 阴视角候选乙：另一条不同的候选描述供去重（judge）\n  💭 阳视角候选乙：第四条候选描述长度合格（judge）\n\n【view】\n这是一段用于冒烟测试的中文输出文本，长度足够通过各类检查。它不需要有真实含义，只要不触发解析分支的异常即可。\n\n【质量线索】ing_rephrased_direct(50%), unsaid_overused(4), candidates_backfilled(sc:5)\n\n【质量评价】候选后补（candidates_backfilled(sc:5)）；ing 复述（ing_rephrased_direct(50%)）\n\n【自省】冒烟 self-check\n\n【「此处未生」计数】本圈 4 处（阈值 3）　⚠ 判为逃避：探针没有真的往里推\n  分布：冒烟：ing×2、线头×2",
+      "manifest": "这是一段用于冒烟测试的中文输出文本，长度足够通过各类检查。它不需要有真实含义，只要不触发解析分支的异常即可。",
+      "quality_flags": [
+        "ing_rephrased_direct(50%)",
+        "position_all_same_structural",
+        "unsaid_overused(4)",
+        "candidates_backfilled(sc:5)"
+      ],
+      "quality_verdict": "候选后补（candidates_backfilled(sc:5)）；ing 复述（ing_rephrased_direct(50%)）",
+      "self_check": {
+        "suspicious_candidates": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "suspicious_amps": [
+          1
+        ],
+        "ing_rephrased": true,
+        "honest_about_empty": true,
+        "unsaid_count": 4,
+        "unsaid_is_escape": true,
+        "unsaid_where": "冒烟：ing×2、线头×2",
+        "flow_verdict": "冒烟：判定为凑数",
+        "view_verdict": "冒烟",
+        "amp_ratio_verdict": "冒烟",
+        "notes": "冒烟 self-check"
+      },
+      "errors": [],
+      "anchor_touched": [],
+      "ing_structured": {
+        "shared": [
+          "两边都指向的共同点"
+        ],
+        "tensions": [
+          {
+            "name": "冒烟张力",
+            "a": "0面说甲",
+            "b": "1面说乙"
+          }
+        ],
+        "third": "冒烟撞出的第三者"
+      }
+    },
+    "all": {
+      "entry": "all",
+      "anchor": "老城区暴雨内涝频发，排水系统要不要整体翻新，怎么定优先级",
+      "candidates": [
+        {
+          "desc": "阳视角候选甲：这是一条用于冒烟测试的候选描述",
+          "kind": "concept",
+          "attribute": "1",
+          "position": "1",
+          "yin": "0",
+          "yang": "0",
+          "source": "阳",
+          "attribute_anchored": true,
+          "why_attribute": "来源：阳展开",
+          "why_position": "锚点已触及",
+          "why_0": "",
+          "why_1": "",
+          "is_amp_candidate": false
+        },
+        {
+          "desc": "阴视角候选甲：第三条候选描述长度合格",
+          "kind": "event",
+          "attribute": "0",
+          "position": "1",
+          "yin": "0",
+          "yang": "0",
+          "source": "阴",
+          "attribute_anchored": true,
+          "why_attribute": "来源：阴展开",
+          "why_position": "锚点已触及",
+          "why_0": "",
+          "why_1": "",
+          "is_amp_candidate": true
+        }
+      ],
+      "collision": "这是一段用于冒烟测试的中文输出文本，长度足够通过各类检查。它不需要有真实含义，只要不触发解析分支的异常即可。\n===ING-STRUCT===\n{\"shared\": [\"两边都指向的共同点\"], \"tensions\": [{\"name\": \"冒烟张力\", \"a\": \"0面说甲\", \"b\": \"1面说乙\"}], \"third\": \"冒烟撞出的第三者\"}",
+      "amps": [],
+      "threads": [],
+      "probes": [
+        {
+          "question": "冒烟探针：这条边界先推到哪一步",
+          "link": "回到原始问题",
+          "expected_gain": 0.8
+        }
+      ],
+      "meta": [
+        "[P3] & 候选（各圈累计）3 条 / 本层 amps 0 条（比值 0.00；amps 可能含 adjudications/上游合并的贡献，比值只作方向参考） ⚠️ 候选有但 amps 一条都没落地（语义不一致没变成结构信号）"
+      ],
+      "decidable_product": {},
+      "undecidable_product": {},
+      "distance_to_question": 1.0,
+      "covered_aspects": [],
+      "uncovered_aspects": [],
+      "untouched": [
+        {
+          "desc": "阳视角候选乙：另一条不同的候选描述供去重",
+          "source": "judge"
+        }
+      ],
+      "suspensions": [
+        {
+          "id": "s_001",
+          "target": "冒烟主动悬置：看清了但选择不碰",
+          "reason": "我看清了它，可以碰，但选择不碰，因为本层只问入口",
+          "reason_type": "explicit",
+          "layer": 1,
+          "last_confirmed_layer": 1,
+          "confirmed_layers": [
+            1
+          ],
+          "status": "active",
+          "revoked_at": null,
+          "revoke_reason": "",
+          "resolved_at": null,
+          "stable_since": null,
+          "needs_review": false
+        }
+      ],
+      "engagements": [
+        {
+          "target": "冒烟碰了一个点",
+          "how": "推了一步",
+          "tension_id": ""
+        }
+      ],
+      "refinements": [],
+      "reconfirmations": [],
+      "revocations": [],
+      "deferrals": [],
+      "resolutions": [],
+      "escalations": [],
+      "reclassifications": [],
+      "settlement": {},
+      "adjudications": [],
+      "both_quota": {},
+      "carry": [
+        {
+          "question": "上面这几条候选被判为「后补／换说法复述」，本圈禁止以任何形式重述它们——原样、换说法、扩写都算。只交真的长出来的新东西：阳视角候选甲：这是一条用于冒烟测试的候选描述；阳视角候选乙：另一条不同的候选描述供去重",
+          "link": "self-check 判定的复述条目，绕开去重就能喷更多，但那不叫展开",
+          "expected_gain": 0.6,
+          "kind": "candidate",
+          "text": "上面这几条候选被判为「后补／换说法复述」，本圈禁止以任何形式重述它们——原样、换说法、扩写都算。只交真的长出来的新东西：阳视角候选甲：这是一条用于冒烟测试的候选描述；阳视角候选乙：另一条不同的候选描述供去重",
+          "banned": [
+            "阳视角候选甲：这是一条用于冒烟测试的候选描述",
+            "阳视角候选乙：另一条不同的候选描述供去重"
+          ]
+        },
+        {
+          "question": "上一圈 ing 输出超过一半是上游 view 的复述。本圈 ing 必须写出上游 view 里没有的句子；写不出就明说「此处未生」，不要用换个说法顶替。",
+          "link": "复述不产生距离，只会把空转记成推进",
+          "expected_gain": 0.7,
+          "kind": "ing",
+          "text": "上一圈 ing 输出超过一半是上游 view 的复述。本圈 ing 必须写出上游 view 里没有的句子；写不出就明说「此处未生」，不要用换个说法顶替。",
+          "banned": []
+        },
+        {
+          "question": "上一圈出现 4 处「此处未生」，已超过阈值 3——这一圈不许再拿它收尾。先把上一圈标了未生的地方真的推一遍，推不动要说清卡在哪一步，不是写一句「未生」就交卷。",
+          "link": "「此处未生」是诚实姿态，用成套路就是逃避",
+          "expected_gain": 0.75,
+          "kind": "any",
+          "text": "上一圈出现 4 处「此处未生」，已超过阈值 3——这一圈不许再拿它收尾。先把上一圈标了未生的地方真的推一遍，推不动要说清卡在哪一步，不是写一句「未生」就交卷。",
+          "banned": []
+        }
+      ],
+      "carry_check": {
+        "checked": 2,
+        "violations": 2,
+        "items": [
+          "禁条目重现·已拦下2条：阴视角候选甲：第三条候选描述长度合格",
+          "ing 复述率仍 100%"
+        ],
+        "notes": "注入 3 条、可核对 2 条，违例 2 条：禁条目重现·已拦下2条：阴视角候选甲：第三条候选描述长度合格；ing 复述率仍 100%",
+        "round": 2
+      },
+      "carry_checks": [
+        {
+          "checked": 2,
+          "violations": 2,
+          "items": [
+            "禁条目重现·已拦下2条：阴视角候选甲：第三条候选描述长度合格",
+            "ing 复述率仍 100%"
+          ],
+          "notes": "注入 3 条、可核对 2 条，违例 2 条：禁条目重现·已拦下2条：阴视角候选甲：第三条候选描述长度合格；ing 复述率仍 100%",
+          "round": 2
+        }
+      ],
+      "carry_dropped": [
+        {
+          "desc": "阴视角候选甲：第三条候选描述长度合格",
+          "ban": "阴视角候选甲：第三条候选描述长度合格"
+        },
+        {
+          "desc": "阴视角候选乙：第四条候选描述长度合格",
+          "ban": "阴视角候选甲：第三条候选描述长度合格"
+        }
+      ],
+      "carry_dropped_all": [
+        {
+          "desc": "阴视角候选甲：第三条候选描述长度合格",
+          "ban": "阴视角候选甲：第三条候选描述长度合格",
+          "round": 2
+        },
+        {
+          "desc": "阴视角候选乙：第四条候选描述长度合格",
+          "ban": "阴视角候选甲：第三条候选描述长度合格",
+          "round": 2
+        }
+      ],
+      "rephrase_ratio": 1.0,
+      "probe_skipped": false,
+      "rounds_cap": 2,
+      "duel_suspensions": [],
+      "meta_closure": {
+        "clean": true,
+        "unsettled": 0,
+        "total": 0,
+        "uncovered": [],
+        "closed": 0,
+        "duel_total": 0,
+        "by_id": 0,
+        "covered_ids": 0,
+        "by_id_inactive": 0,
+        "by_id_unknown": 0
+      },
+      "stop_reason": "连续 2 轮无新 &（沉淀完了） + 连续 2 轮无线头新增（方向走完了），螺旋停止",
+      "rounds_run": 2,
+      "roles_run": [
+        "摊开",
+        "转向"
+      ],
+      "closure_reason": "",
+      "round_log": [
+        {
+          "round": 1,
+          "role": "摊开",
+          "new_amps": 0,
+          "new_threads": 0,
+          "idle_amp": 1,
+          "idle_thread": 1,
+          "idle_stall": 0,
+          "why": ""
+        },
+        {
+          "round": 2,
+          "role": "转向",
+          "new_amps": 0,
+          "new_threads": 0,
+          "idle_amp": 2,
+          "idle_thread": 2,
+          "idle_stall": 0,
+          "why": ""
+        }
+      ],
+      "rehashed": [],
+      "idle": true,
+      "rendered": "━━━ 元 · entry=all ━━━\n\n【锚点】老城区暴雨内涝频发，排水系统要不要整体翻新，怎么定优先级\n\n【候选】\n  [1×1] 阳视角候选甲：这是一条用于冒烟测试的候选描述  属性◈阳展开\n  [1×0] 阳视角候选乙：另一条不同的候选描述供去重  ⚡& 属性◈阳展开\n\n【ing 对撞】\n这是一段用于冒烟测试的中文输出文本，长度足够通过各类检查。它不需要有真实含义，只要不触发解析分支的异常即可。\n===ING-STRUCT===\n{\"shared\": [\"两边都指向的共同点\"], \"tensions\": [{\"name\": \"冒烟张力\", \"a\": \"0面说甲\", \"b\": \"1面说乙\"}], \"third\": \"冒烟撞出的第三者\"}\n\n【& 印记】\n  （无）\n\n【悬空线头】\n  （无）\n\n【探针回归】\n  ? 冒烟探针：这条边界先推到哪一步（回来：回到原始问题｜增益0.8）\n\n【尚未触及的方面】\n  💭 阳视角候选乙：另一条不同的候选描述供去重（judge）\n\n【本层碰了】\n  - 冒烟碰了一个点：推了一步\n\n【决定不消解（元决策 · 这类张力是结构性的）】\n  - 冒烟主动悬置：看清了但选择不碰：我看清了它，可以碰，但选择不碰，因为本层只问入口[explicit]\n\n【view】\n这是一段用于冒烟测试的中文输出文本，长度足够通过各类检查。它不需要有真实含义，只要不触发解析分支的异常即可。\n\n【质量线索】ing_rephrased_direct(100%), expand_imbalanced, unsaid_overused(4), candidates_backfilled(sc:5)\n\n【质量评价】候选后补（candidates_backfilled(sc:5)）；ing 复述（ing_rephrased_direct(100%)）\n\n【自省】冒烟 self-check\n\n【「此处未生」计数】本圈 4 处（阈值 3）　⚠ 判为逃避：探针没有真的往里推\n  分布：冒烟：ing×2、线头×2",
+      "manifest": "这是一段用于冒烟测试的中文输出文本，长度足够通过各类检查。它不需要有真实含义，只要不触发解析分支的异常即可。\n\n## 七、原始问题覆盖率\n无 decidable 子问题（可判定通道不适用）。\n研究层不可判定通道：清晰度 0.00（模型自评，累计 1 次记录）｜结构覆盖率 0.00（代码实算，已对上 0/1 个不可判定方面）｜对齐覆盖率 0.00（代码实算，已对上 0/1 个不可判定方面）\n",
+      "quality_flags": [
+        "ing_rephrased_direct(100%)",
+        "position_all_same_structural",
+        "unsaid_overused(4)",
+        "candidates_backfilled(sc:5)"
+      ],
+      "quality_verdict": "候选后补（candidates_backfilled(sc:5)）；ing 复述（ing_rephrased_direct(100%)）",
+      "self_check": {
+        "suspicious_candidates": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "suspicious_amps": [
+          1
+        ],
+        "ing_rephrased": true,
+        "honest_about_empty": true,
+        "unsaid_count": 4,
+        "unsaid_is_escape": true,
+        "unsaid_where": "冒烟：ing×2、线头×2",
+        "flow_verdict": "冒烟：判定为凑数",
+        "view_verdict": "冒烟",
+        "amp_ratio_verdict": "冒烟",
+        "notes": "冒烟 self-check"
+      },
+      "errors": [],
+      "anchor_touched": [],
+      "ing_structured": {
+        "shared": [
+          "两边都指向的共同点"
+        ],
+        "tensions": [
+          {
+            "name": "冒烟张力",
+            "a": "0面说甲",
+            "b": "1面说乙"
+          }
+        ],
+        "third": "冒烟撞出的第三者"
+      }
+    }
+  },
+  "pools": {
+    "0": {
+      "amps": [],
+      "threads": [
+        {
+          "desc": "冒烟硬边界：EDA 闭源许可读不到，工具限制推不动",
+          "kind": "thread",
+          "source": "probe_boundary"
+        }
+      ],
+      "probes": [
+        {
+          "question": "冒烟探针：这条边界先推到哪一步",
+          "link": "回到原始问题",
+          "expected_gain": 0.8,
+          "covers": [
+            "T1"
+          ]
+        }
+      ],
+      "meta": [
+        "[上一圈 self-check 反馈] ing 被判定为复述；可疑候选 [1, 2, 3, 4, 5]"
+      ],
+      "suspensions": [
+        {
+          "id": "s_001",
+          "target": "冒烟主动悬置：看清了但选择不碰",
+          "reason": "我看清了它，可以碰，但选择不碰，因为本层只问入口",
+          "reason_type": "explicit",
+          "layer": 1,
+          "last_confirmed_layer": 1,
+          "confirmed_layers": [
+            1
+          ],
+          "status": "active",
+          "revoked_at": null,
+          "revoke_reason": "",
+          "resolved_at": null,
+          "stable_since": null,
+          "needs_review": false
+        }
+      ],
+      "sub_questions": [],
+      "deferrals": [],
+      "escalations": [],
+      "decidability_log": [],
+      "duel_suspensions": [],
+      "duel_alignment": {},
+      "engagements": [
+        {
+          "target": "冒烟碰了一个点",
+          "how": "推了一步"
+        }
+      ],
+      "refinements": [],
+      "decidable_channel": {},
+      "undecidable_channel": {}
+    },
+    "1": {
+      "amps": [],
+      "threads": [],
+      "probes": [],
+      "meta": [
+        "[上一圈 self-check 反馈] ing 被判定为复述；可疑候选 [1, 2, 3, 4, 5]"
+      ],
+      "suspensions": [],
+      "sub_questions": [],
+      "deferrals": [],
+      "escalations": [],
+      "decidability_log": [],
+      "duel_suspensions": [],
+      "duel_alignment": {},
+      "engagements": [],
+      "refinements": [],
+      "decidable_channel": {
+        "answers": [],
+        "coverage_history": [],
+        "last_coverage": 0.0
+      },
+      "undecidable_channel": {
+        "structural_amps": [],
+        "clarity_history": [
+          0.0
+        ],
+        "last_clarity": 0.0,
+        "und_aspects": [
+          "不可判定方面乙"
+        ],
+        "struct_coverage_history": [
+          0.0
+        ],
+        "last_struct_coverage": 0.0,
+        "aligned_amps": [],
+        "last_struct_hit": 0,
+        "last_aligned_hit": 0,
+        "aligned_coverage_history": [
+          0.0
+        ],
+        "last_aligned_coverage": 0.0,
+        "aspect_first_hit": {},
+        "struct_trace": [
+          {
+            "layer": 1,
+            "hit": 0,
+            "total": 1,
+            "cov": 0.0,
+            "newly": []
+          }
+        ],
+        "aligned_first_hit": {},
+        "aligned_trace": [
+          {
+            "layer": 1,
+            "hit": 0,
+            "total": 1,
+            "cov": 0.0,
+            "newly": []
+          }
+        ]
+      }
+    },
+    "both": {
+      "amps": [],
+      "threads": [],
+      "probes": [],
+      "meta": [
+        "[上一圈 self-check 反馈] ing 被判定为复述；可疑候选 [1, 2, 3, 4, 5]"
+      ],
+      "suspensions": [],
+      "sub_questions": [],
+      "deferrals": [],
+      "escalations": [],
+      "decidability_log": [],
+      "duel_suspensions": [],
+      "duel_alignment": {
+        "quality": "unaligned",
+        "match_rate": 0.0,
+        "quadrants": [],
+        "practice_n": 2,
+        "research_n": 0,
+        "best_score": 0.0,
+        "consumed": true
+      },
+      "engagements": [],
+      "refinements": [],
+      "decidable_channel": {},
+      "undecidable_channel": {}
+    },
+    "all": {
+      "amps": [],
+      "threads": [
+        {
+          "desc": "冒烟硬边界：EDA 闭源许可读不到，工具限制推不动",
+          "kind": "thread",
+          "source": "probe_boundary"
+        }
+      ],
+      "probes": [
+        {
+          "question": "冒烟探针：这条边界先推到哪一步",
+          "link": "回到原始问题",
+          "expected_gain": 0.8
+        }
+      ],
+      "meta": [
+        "[上一圈 self-check 反馈] ing 被判定为复述；可疑候选 [1, 2, 3, 4, 5]",
+        "[上一圈 self-check 反馈] ing 被判定为复述；可疑候选 [1, 2, 3, 4, 5]",
+        "[自省回流未生效] 注入 3 条、可核对 2 条，违例 2 条：禁条目重现·已拦下2条：阴视角候选甲：第三条候选描述长度合格；ing 复述率仍 100%"
+      ],
+      "suspensions": [
+        {
+          "id": "s_001",
+          "target": "冒烟主动悬置：看清了但选择不碰",
+          "reason": "我看清了它，可以碰，但选择不碰，因为本层只问入口",
+          "reason_type": "explicit",
+          "layer": 1,
+          "last_confirmed_layer": 1,
+          "confirmed_layers": [
+            1
+          ],
+          "status": "active",
+          "revoked_at": null,
+          "revoke_reason": "",
+          "resolved_at": null,
+          "stable_since": null,
+          "needs_review": false
+        }
+      ],
+      "sub_questions": [],
+      "deferrals": [],
+      "escalations": [],
+      "decidability_log": [],
+      "duel_suspensions": [],
+      "duel_alignment": {},
+      "engagements": [
+        {
+          "target": "冒烟碰了一个点",
+          "how": "推了一步",
+          "tension_id": ""
+        }
+      ],
+      "refinements": [],
+      "decidable_channel": {},
+      "undecidable_channel": {}
+    }
+  },
+  "llm_calls": 39,
+  "llm_tokens": 429,
+  "tri_state": [
+    0,
+    0
+  ],
+  "layer_contribution": {
+    "0": {
+      "rounds": 1,
+      "stop": "体力耗尽（1 圈走满，未触发任何停止判据，是被截",
+      "idle": false
+    },
+    "1": {
+      "rounds": 1,
+      "stop": "体力耗尽（1 圈走满，未触发任何停止判据，是被截",
+      "idle": false
+    },
+    "both": {
+      "rounds": 1,
+      "stop": "体力耗尽（1 圈走满，未触发任何停止判据，是被截",
+      "idle": true
+    },
+    "all": {
+      "rounds": 2,
+      "stop": "连续 2 轮无新 &（沉淀完了） + 连续 2 ",
+      "idle": true
+    }
+  },
+  "orientation": "decision",
+  "_config": {
+    "actions": {
+      "assess_decidability": true,
+      "decompose_question": true,
+      "decidability_source": "pool",
+      "decompose_source": "pool",
+      "parallel_mode": "auto",
+      "parallel_warmup_rounds": 1,
+      "pipeline_gate_timeout": 900,
+      "parallel_expand": true,
+      "input_sanity": true,
+      "tri_multi_vote": true,
+      "landing_decision": true,
+      "re_anchor": true,
+      "expand_yin": true,
+      "expand_yang": true,
+      "dual_judge": true,
+      "ing": true,
+      "he": true,
+      "phase_probe": true,
+      "manifest": true,
+      "self_check": true,
+      "re_evaluate_pool": true,
+      "settle_research": true
+    }
+  },
+  "tri_consensus": [],
+  "freeze": {
+    "signature": "65de76ecb71b40e067214b749b3096d92486d29b11c0a05907f1ad5fe09e31d5",
+    "layer": 1,
+    "n": 0,
+    "frozen_at": "2026-10-05T00:42:58.288498",
+    "items": []
+  },
+  "calibration_queue": [],
+  "cost_profile": "economy",
+  "input_sanity": {
+    "issues": [
+      {
+        "term": "PN",
+        "why": "不是任何标准复杂度类，疑似 NP 的笔误"
+      }
+    ],
+    "note": "如为笔误请重跑",
+    "checked": true
+  }
+}

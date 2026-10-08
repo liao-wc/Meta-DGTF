@@ -1,0 +1,252 @@
+{
+ "src": "元DGTF-V1.23.3.py",
+ "confirmed": {
+  "ycxb.xml-journal.net": 1,
+  "hjgc.ic-mag.com": 4,
+  "news.cctv.com": 4,
+  "zcsvillages.com": 4,
+  "researchgate.net": 4,
+  "jnr.ac.cn": 4,
+  "pdf.dfcfw.com": 4,
+  "cn.investing.com": 4,
+  "www-file.huawei.com": 4
+ },
+ "run": {
+  "secs": 292.5,
+  "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\outputs\\v1233_tier_apply\\20261006_233703_老城区暴雨内涝频发排水系统重建还是局部.md",
+  "n_web": 12,
+  "items": [
+   {
+    "id": "W1",
+    "domain": "ycxb.xml-journal.net",
+    "tier": 3,
+    "tier_effective": 1,
+    "enters": true
+   },
+   {
+    "id": "W2",
+    "domain": "hjgc.ic-mag.com",
+    "tier": 3,
+    "tier_effective": 4,
+    "enters": false
+   },
+   {
+    "id": "W3",
+    "domain": "news.cctv.com",
+    "tier": 3,
+    "tier_effective": 4,
+    "enters": false
+   },
+   {
+    "id": "W4",
+    "domain": "hjgc.ic-mag.com",
+    "tier": 3,
+    "tier_effective": 4,
+    "enters": false
+   },
+   {
+    "id": "W5",
+    "domain": "ttbz.org.cn",
+    "tier": 3,
+    "tier_effective": null,
+    "enters": false
+   },
+   {
+    "id": "W6",
+    "domain": "researchgate.net",
+    "tier": 3,
+    "tier_effective": 4,
+    "enters": false
+   },
+   {
+    "id": "W7",
+    "domain": "ttm.com",
+    "tier": 3,
+    "tier_effective": null,
+    "enters": false
+   },
+   {
+    "id": "W8",
+    "domain": "resdc.cn",
+    "tier": 3,
+    "tier_effective": null,
+    "enters": false
+   },
+   {
+    "id": "W9",
+    "domain": "unfccc.int",
+    "tier": 3,
+    "tier_effective": null,
+    "enters": false
+   },
+   {
+    "id": "W10",
+    "domain": "ycxb.xml-journal.net",
+    "tier": 3,
+    "tier_effective": 1,
+    "enters": true
+   },
+   {
+    "id": "W11",
+    "domain": "hjgc.ic-mag.com",
+    "tier": 3,
+    "tier_effective": 4,
+    "enters": false
+   },
+   {
+    "id": "W12",
+    "domain": "news.cctv.com",
+    "tier": 3,
+    "tier_effective": 4,
+    "enters": false
+   }
+  ],
+  "citation_table": [
+   "P1",
+   "P2",
+   "P3",
+   "A1",
+   "A2",
+   "A3",
+   "A4",
+   "T1",
+   "T2",
+   "T3",
+   "X1",
+   "X2",
+   "W1",
+   "W10"
+  ],
+  "w_in_table": [
+   "W1",
+   "W10"
+  ],
+  "tier_meta": [
+   "[W-TIER✓] 人工确认表生效 3 条：ycxb.xml-journal.net→1、hjgc.ic-mag.com→4、news.cctv.com→4",
+   "[W-TIER✓] 人工确认表生效 2 条：hjgc.ic-mag.com→4、researchgate.net→4",
+   "[W-TIER✓] 人工确认表生效 3 条：ycxb.xml-journal.net→1、hjgc.ic-mag.com→4、news.cctv.com→4"
+  ],
+  "tier_confirmed_used": {
+   "ycxb.xml-journal.net": 1,
+   "hjgc.ic-mag.com": 4,
+   "news.cctv.com": 4,
+   "zcsvillages.com": 4,
+   "researchgate.net": 4,
+   "jnr.ac.cn": 4,
+   "pdf.dfcfw.com": 4,
+   "cn.investing.com": 4,
+   "www-file.huawei.com": 4
+  },
+  "tier_floor": 2,
+  "anchor_triage": 1,
+  "calls": 26
+ },
+ "baseline": {
+  "secs": 322.8,
+  "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\outputs\\v1233_tier_collect\\20261006_232937_老城区暴雨内涝频发排水系统重建还是局部.md",
+  "n_web": 12,
+  "items": [
+   {
+    "id": "W1",
+    "domain": "ycxb.xml-journal.net",
+    "tier": 3,
+    "tier_effective": null,
+    "enters": false
+   },
+   {
+    "id": "W2",
+    "domain": "hjgc.ic-mag.com",
+    "tier": 3,
+    "tier_effective": null,
+    "enters": false
+   },
+   {
+    "id": "W3",
+    "domain": "news.cctv.com",
+    "tier": 3,
+    "tier_effective": null,
+    "enters": false
+   },
+   {
+    "id": "W4",
+    "domain": "zcsvillages.com",
+    "tier": 3,
+    "tier_effective": null,
+    "enters": false
+   },
+   {
+    "id": "W5",
+    "domain": "researchgate.net",
+    "tier": 3,
+    "tier_effective": null,
+    "enters": false
+   },
+   {
+    "id": "W6",
+    "domain": "jnr.ac.cn",
+    "tier": 3,
+    "tier_effective": null,
+    "enters": false
+   },
+   {
+    "id": "W7",
+    "domain": "pdf.dfcfw.com",
+    "tier": 3,
+    "tier_effective": null,
+    "enters": false
+   },
+   {
+    "id": "W8",
+    "domain": "cn.investing.com",
+    "tier": 3,
+    "tier_effective": null,
+    "enters": false
+   },
+   {
+    "id": "W9",
+    "domain": "www-file.huawei.com",
+    "tier": 3,
+    "tier_effective": null,
+    "enters": false
+   },
+   {
+    "id": "W10",
+    "domain": "ycxb.xml-journal.net",
+    "tier": 3,
+    "tier_effective": null,
+    "enters": false
+   },
+   {
+    "id": "W11",
+    "domain": "hjgc.ic-mag.com",
+    "tier": 3,
+    "tier_effective": null,
+    "enters": false
+   },
+   {
+    "id": "W12",
+    "domain": "news.cctv.com",
+    "tier": 3,
+    "tier_effective": null,
+    "enters": false
+   }
+  ],
+  "citation_table": [
+   "P1",
+   "P2",
+   "P3",
+   "A1",
+   "A2",
+   "T1",
+   "T2",
+   "X1",
+   "X2"
+  ],
+  "w_in_table": [],
+  "tier_meta": [],
+  "tier_confirmed_used": {},
+  "tier_floor": 2,
+  "anchor_triage": 1,
+  "calls": 26
+ }
+}

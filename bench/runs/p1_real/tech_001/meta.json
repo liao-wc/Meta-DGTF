@@ -1,0 +1,33 @@
+{
+  "id": "tech_001",
+  "domain": "分布式系统",
+  "question": "订单系统该选一致性还是可用性，CAP 怎么取舍",
+  "orientation": "boundary",
+  "route": [
+    "0",
+    "1",
+    "both",
+    "all"
+  ],
+  "rounds": {
+    "0": 1,
+    "1": 2,
+    "both": 1,
+    "all": 1
+  },
+  "mock": false,
+  "ok": true,
+  "error": "",
+  "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\bench\\runs\\p1_real\\tech_001\\20261004_224837_订单系统该选一致性还是可用性CAP怎.md",
+  "calls": 61,
+  "tokens": 386865,
+  "layers_seen": [
+    "0",
+    "1",
+    "all",
+    "both"
+  ],
+  "missing": [],
+  "elapsed_s": 844.9,
+  "objective_lines": 4
+}

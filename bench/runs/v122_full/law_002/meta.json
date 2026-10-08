@@ -1,0 +1,30 @@
+{
+  "id": "law_002",
+  "domain": "law",
+  "question": "集团内部各子公司数据共享的合法边界在哪里",
+  "orientation": "boundary",
+  "route": [
+    "0",
+    "1",
+    "both",
+    "all"
+  ],
+  "rounds": "0:1,1:1,both:1,all:1",
+  "mock": false,
+  "ok": true,
+  "error": "",
+  "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\bench\\runs\\v122_full\\law_002\\20261005_010627_集团内部各子公司数据共享的合法边界在哪里.md",
+  "calls": 52,
+  "tokens": 338792,
+  "layers_seen": [
+    "0",
+    "1",
+    "all",
+    "both"
+  ],
+  "missing": [],
+  "elapsed_s": 726.4,
+  "elapsed": 726.4,
+  "objective_lines": 4,
+  "objective_block": "**分层目标**：\n  - 修行层（显形过程 · objective=manifest）：& 3 / 线头 4 / 悬置 2 / 探针 3\n  - 研究层（逼近真理 · objective=truth）：覆盖率 41% · distance 0.3\n  - 对撞层（第三者 · objective=collision）：third ✓ · 张力 2\n  - 元层（闭环清算 · objective=closure）：clean True · 未交代 0 类\n"
+}

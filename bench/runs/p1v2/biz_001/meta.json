@@ -1,0 +1,30 @@
+{
+  "id": "biz_001",
+  "domain": "biz",
+  "question": "一家现金流紧张的中小制造企业，该先裁员还是先砍产线",
+  "orientation": "decision",
+  "route": [
+    "0",
+    "1",
+    "both",
+    "all"
+  ],
+  "rounds": "0:5,1:5,both:5,all:6",
+  "mock": false,
+  "ok": true,
+  "error": "",
+  "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\bench\\runs\\p1v2\\biz_001\\20261004_235417_一家现金流紧张的中小制造企业该先裁员还.md",
+  "calls": 184,
+  "tokens": 1546964,
+  "layers_seen": [
+    "0",
+    "1",
+    "all",
+    "both"
+  ],
+  "missing": [],
+  "elapsed_s": 2647.1,
+  "elapsed": 2647.1,
+  "objective_lines": 4,
+  "objective_block": "**分层目标**：\n  - 修行层（显形过程 · objective=manifest）：& 20 / 线头 10 / 悬置 3 / 探针 3\n  - 研究层（逼近真理 · objective=truth）：覆盖率 54% · distance 0.4\n  - 对撞层（第三者 · objective=collision）：third ✓ · 张力 3\n  - 元层（闭环清算 · objective=closure）：clean True · 未交代 0 类\n"
+}

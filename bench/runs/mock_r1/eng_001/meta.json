@@ -1,0 +1,30 @@
+{
+  "id": "eng_001",
+  "domain": "eng",
+  "question": "老城区暴雨内涝频发，排水系统要不要整体翻新，怎么定优先级",
+  "orientation": "decision",
+  "route": [
+    "0",
+    "1",
+    "both",
+    "all"
+  ],
+  "rounds": "0:1,1:1,both:1,all:1",
+  "mock": true,
+  "ok": true,
+  "error": "",
+  "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\bench\\runs\\mock_r1\\eng_001\\20261005_004258_老城区暴雨内涝频发排水系统要不要整体翻.md",
+  "calls": 39,
+  "tokens": 429,
+  "layers_seen": [
+    "0",
+    "1",
+    "all",
+    "both"
+  ],
+  "missing": [],
+  "elapsed_s": 1.1,
+  "elapsed": 1.1,
+  "objective_lines": 4,
+  "objective_block": "**分层目标**：\n  - 修行层（显形过程 · objective=manifest）：& 0 / 线头 1 / 悬置 1 / 探针 1\n  - 研究层（逼近真理 · objective=truth）：覆盖率 N/A · distance 1.0\n  - 对撞层（第三者 · objective=collision）：third ✓ · 张力 1\n  - 元层（闭环清算 · objective=closure）：clean True · 未交代 0 类\n"
+}

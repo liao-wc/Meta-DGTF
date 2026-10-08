@@ -1,0 +1,10 @@
+# [v122 bench] med_002 · 慢病随访分层
+id: med_002
+domain: med
+question: "慢病随访人数太多随访质量下降，分层策略怎么定"
+orientation: decision
+budget:
+  profile: balanced
+  max_calls: 180
+  rounds: "0:5,1:5,both:5,all:6"
+  mode: serial

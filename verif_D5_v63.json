@@ -1,0 +1,215 @@
+{
+ "tag": "D5_v63",
+ "src": "元DGTF-V1.21.63.py",
+ "route": "0,1,both,all",
+ "rounds": "0:3,1:4,both:5,all:5",
+ "mode": "serial",
+ "orientation": "boundary",
+ "llm_calls": 154,
+ "tri_state": [
+  4,
+  6
+ ],
+ "meta_closure_all": {
+  "clean": true,
+  "unsettled": 0,
+  "total": 2,
+  "uncovered": [],
+  "closed": 5,
+  "duel_total": 7,
+  "by_id": 2,
+  "covered_ids": 2,
+  "by_id_inactive": 0,
+  "by_id_unknown": 0
+ },
+ "duel_suspensions_both": [
+  {
+   "id": "t_001",
+   "target": "不签的理由是否进触发链",
+   "status": "resolved",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_002",
+   "target": "间隔本身是不是一件东西",
+   "status": "revoked",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_003",
+   "target": "产线替稳定段还是波动段",
+   "status": "resolved",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_004",
+   "target": "同一份分类文件在0端是公告栏、在1端是承重凭证",
+   "status": "resolved",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_005",
+   "target": "产线替代稳定段还是波动段",
+   "status": "revoked",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_006",
+   "target": "银行对未验收设备的会计定性先于授信",
+   "status": "active",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_007",
+   "target": "增容/环评不可逆节点与旧线质量责任谁先逼出签字",
+   "status": "active",
+   "quadrant": "③"
+  }
+ ],
+ "engagements_by_view": {
+  "0": [
+   {
+    "target": "T4/T7 租金科目落点",
+    "tension_id": null
+   }
+  ],
+  "1": [
+   {
+    "target": "设备尾款通知单与客户验收单的先后顺序由什么触发？该顺序是否决定哪一方先被现金流压力逼到墙角？",
+    "tension_id": null
+   },
+   {
+    "target": "从0到1的间隔期（如验收单未签但已按签排产）内，垫付成本由谁承担？财务科目是否记录该垫付？",
+    "tension_id": null
+   },
+   {
+    "target": "客户验收单签字人的KPI是交期还是成本？该KPI是否会导致签字时点被推迟到交期考核点？",
+    "tension_id": null
+   }
+  ],
+  "both": [],
+  "all": [
+   {
+    "target": "银行对未验收设备的会计定性先于授信",
+    "tension_id": "t_006"
+   }
+  ]
+ },
+ "suspensions_with_tid": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": [
+   {
+    "target": "银行对未验收设备的会计定性先于授信",
+    "tension_id": null,
+    "status": "resolved"
+   },
+   {
+    "target": "增容/环评不可逆节点与旧线质量责任谁先逼出签字",
+    "tension_id": null,
+    "status": "resolved"
+   },
+   {
+    "target": "银行对未验收设备的会计定性先于授信",
+    "tension_id": null,
+    "status": "resolved"
+   },
+   {
+    "target": "增容/环评不可逆节点与旧线质量责任谁先逼出签字",
+    "tension_id": null,
+    "status": "resolved"
+   },
+   {
+    "target": "银行对未验收设备的会计定性先于授信",
+    "tension_id": null,
+    "status": "resolved"
+   },
+   {
+    "target": "银行对未验收设备的会计定性先于授信",
+    "tension_id": null,
+    "status": "resolved"
+   },
+   {
+    "target": "增容/环评不可逆节点与旧线质量责任谁先逼出签字",
+    "tension_id": null,
+    "status": "resolved"
+   },
+   {
+    "target": "银行对未验收设备的会计定性先于授信",
+    "tension_id": null,
+    "status": "resolved"
+   },
+   {
+    "target": "增容/环评不可逆节点与旧线质量责任谁先逼出签字",
+    "tension_id": null,
+    "status": "resolved"
+   },
+   {
+    "target": "增容/环评不可逆节点与旧线质量责任谁先逼出签字",
+    "tension_id": null,
+    "status": "active"
+   }
+  ]
+ },
+ "pools_all_engagements": [
+  {
+   "target": "银行对未验收设备的会计定性先于授信",
+   "tension_id": "t_006"
+  },
+  {
+   "target": "增容/环评不可逆节点与旧线质量责任谁先逼出签字",
+   "tension_id": "t_007"
+  },
+  {
+   "target": "验收单与尾款通知单的先后",
+   "tension_id": null
+  },
+  {
+   "target": "T4/T7 租金科目落点",
+   "tension_id": null
+  },
+  {
+   "target": "设备尾款通知单与客户验收单的先后顺序由什么触发？该顺序是否决定哪一方先被现金流压力逼到墙角？",
+   "tension_id": null
+  },
+  {
+   "target": "从0到1的间隔期（如验收单未签但已按签排产）内，垫付成本由谁承担？财务科目是否记录该垫付？",
+   "tension_id": null
+  },
+  {
+   "target": "只租瓶颈工序产能时，出租方按月收还是按件收？若按件收，波动工序的人工成本与租金是否落在同一科目？",
+   "tension_id": null
+  },
+  {
+   "target": "出租方中途撤租时，波动工序从新节拍切回旧节拍需要几天？切换期内是否有单据在走？",
+   "tension_id": null
+  },
+  {
+   "target": "客户验收单签字人的KPI是交期还是成本？该KPI是否会导致签字时点被推迟到交期考核点？",
+   "tension_id": null
+  },
+  {
+   "target": "若验收单签字人KPI为交期，其签字行为是否可被合同条款（如'验收单副本即触发'）改变？",
+   "tension_id": null
+  }
+ ],
+ "views_errors": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": []
+ },
+ "pools_meta_p16": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": []
+ },
+ "pools_meta_len": {
+  "0": 4,
+  "1": 9,
+  "both": 11,
+  "all": 15
+ }
+}

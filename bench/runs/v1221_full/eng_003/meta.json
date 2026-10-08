@@ -1,0 +1,30 @@
+{
+  "id": "eng_003",
+  "domain": "eng",
+  "question": "在役桥梁数量多、预算有限，维护优先级怎么排",
+  "orientation": "decision",
+  "route": [
+    "0",
+    "1",
+    "both",
+    "all"
+  ],
+  "rounds": "0:2,1:2,both:2,all:3",
+  "mock": false,
+  "ok": true,
+  "error": "",
+  "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\bench\\runs\\v1221_full\\eng_003\\20261005_101556_在役桥梁数量多预算有限维护优先级怎么.md",
+  "calls": 81,
+  "tokens": 531406,
+  "layers_seen": [
+    "0",
+    "1",
+    "all",
+    "both"
+  ],
+  "missing": [],
+  "elapsed_s": 1268.7,
+  "elapsed": 1268.7,
+  "objective_lines": 4,
+  "objective_block": "**分层目标**：\n  - 修行层（显形过程 · objective=manifest）：& 9 / 线头 9 / 悬置 0 / 探针 3\n  - 研究层（逼近真理 · objective=truth）：覆盖率 47% · distance 0.4\n  - 对撞层（第三者 · objective=collision）：third ✓ · 张力 4\n  - 元层（闭环清算 · objective=closure）：clean True · 未交代 0 类\n"
+}

@@ -1,0 +1,12 @@
+=== 并行跑批 3 个 run，并发上限 3 ===
+=== 开始 2026-10-01 04:13:25 ===
+✓ [fhgF/F] 14.5min
+    [fhgF/F] OK  14.5min  calls=159  → v60_fhgF_r4_F.log
+       missing=[]  skipped=[]
+✓ [fhgH/H] 17.2min
+    [fhgH/H] OK  17.1min  calls=159  → v60_fhgH_r4_H.log
+       missing=[]  skipped=[]
+✓ [fhgG/G] 17.3min
+    [fhgG/G] OK  17.3min  calls=159  → v60_fhgG_r4_G.log
+       missing=[]  skipped=[]
+=== 结束 2026-10-01 04:30:45 ===

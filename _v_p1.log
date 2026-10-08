@@ -1,0 +1,29 @@
+═══ v1.22 验收 · phase=p1 · src=元DGTF-V1.22.1.py ═══
+  ℹ️  模块加载成功
+  ✅ [G.crlf] CRLF 一致：bare_lf=0 crr_lf=0
+  ✅ [G.parse] AST 可解析
+  ℹ️  差异规模：66 块 / +1661 -186（19609 → 21084 行）
+  ✅ [G.smokeSRC] smoke_test.SRC = 元DGTF-V1.22.1.py
+  ✅ [G.del] 纯删除行 0（≤0）；改写行 186（如实报，不计删）
+  ✅ [G.mech] 机制未被移除（符号消失 0 项）
+  ℹ️  函数体骤减 2 项：render_landing 259 → 8；_auto_plan 142 → 15（须在报告里解释）
+
+── 阶段 p1 ──
+  ✅ [P1.1.a] decidable_product 骨架里有 actions 键
+  ✅ [P1.1.b] 骨架里六字段齐（缺 []）
+  ✅ [P1.1.c] prompt 约束段在
+  ✅ [P1.2.a] schema 有 actions → 三条且 _source=schema（实测 ['schema', 'schema', 'schema']）
+  ✅ [P1.2.b] schema 无 actions → 走词法并带 _source=lexical（实测 ['lexical']）
+  ✅ [P1.2.c] 负对照 空 answer → []（实测 []）
+  ✅ [P1.2.d] 负对照 schema 缺字段 → _missing 标出（实测 ['owner_role', 'deadline_hint', 'acceptance', 'fallback']）
+  ✅ [P1.3.a] action_incomplete 语义注释已改写
+  ✅ [P1.3.b] action_fields_missing 字面串在
+  ✅ [P1.3.c] 负对照 三条全字段齐全 → 不满足 action_incomplete 触发条件（schema 3 条 / 有缺字段 False）
+  ✅ [P1.3.d] 正对照 只给 2 条 → 满足触发条件（实测 2）
+  ✅ [P1.3.e] 新 flag 在 _V122_HARD_FLAGS 里（否则被 quality_flags 重算冲掉）
+  ✅ [P1.4.a] 三题 action 均 ≥ 3（实测 [5, 6, 4]）
+  ✅ [P1.4.b] 三题 rubric 平均 ≥ 2/3（实测 2.00；各项 [2, 2, 2]）
+  ✅ [P1.4.c] 三题 action_incomplete 均为 0（实测 [False, False, False]）
+  ℹ️  P1.4 详情：p1_run1 n=5 rubric=2 不做=0；p1_run2 n=6 rubric=2 不做=0；p1_run3 n=4 rubric=2 不做=0
+
+━━━ PASS 20 / FAIL 0 ━━━

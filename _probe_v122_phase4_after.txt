@@ -1,0 +1,27 @@
+{
+  "src": "元DGTF-V1.22.0.py",
+  "version": "1.22.0",
+  "A_as_evidence_default": "off",
+  "A2_tier_floor": 2,
+  "A3_api_key_env": "TAVILY_API_KEY",
+  "A4_retriever": "snapshot",
+  "B_tier_fn": "evidence",
+  "B2_tier_fn_bool_false": "off",
+  "B3_tier_fn_illegal": "off",
+  "C_enters_t1": true,
+  "C2_enters_t4": false,
+  "C3_enters_no_tier": false,
+  "D_citation_X_t1t4": [
+    "X1"
+  ],
+  "D2_citation_X_off": [],
+  "E_retriever_cls": true,
+  "E2_snapshot_zero_calls": [],
+  "E3_unknown_backend_raises": "RuntimeError: external_anchor.retriever='web_search' 尚未实现（当前只有 'snapshot' 与 'tavily'）；不静默降级",
+  "F_src_五档": true,
+  "F2_src_锚点分级": true,
+  "F3_src_triage": true,
+  "F4_src_冲突留痕三处": true,
+  "G_crosscheck_triage_source": true,
+  "G2_ok": true
+}

@@ -1,0 +1,252 @@
+{
+ "tag": "C2_tension",
+ "src": "元DGTF-V1.21.62.py",
+ "route": "0,1,both,all",
+ "rounds": "0:4,1:4,both:5,all:5",
+ "mode": "serial",
+ "orientation": "boundary",
+ "llm_calls": 187,
+ "tri_state": [
+  2,
+  6
+ ],
+ "meta_closure_all": {
+  "clean": false,
+  "unsettled": 3,
+  "total": 5,
+  "uncovered": [
+   "减法起步所需编号是否即0不能回说那步",
+   "槽位是连续介质还是每次重造",
+   "停点归属先后：停点先于占槽 / 占槽先于停点"
+  ],
+  "closed": 5,
+  "duel_total": 10,
+  "by_id": 0,
+  "covered_ids": 5
+ },
+ "duel_suspensions_both": [
+  {
+   "id": "t_001",
+   "target": "不同学科剩余物是否同一（④都不碰）",
+   "status": "resolved",
+   "quadrant": "④"
+  },
+  {
+   "id": "t_002",
+   "target": "空位后移与位置成1是否同一步",
+   "status": "revoked",
+   "quadrant": "②"
+  },
+  {
+   "id": "t_003",
+   "target": "切换点与末端0是否同一不可编号位",
+   "status": "resolved",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_004",
+   "target": "减法起步所需编号是否即0不能回说那步",
+   "status": "active",
+   "quadrant": "②"
+  },
+  {
+   "id": "t_005",
+   "target": "词槽过载是两套语法挤一槽还是槽只有一个",
+   "status": "revoked",
+   "quadrant": "②"
+  },
+  {
+   "id": "t_006",
+   "target": "槽位是连续介质还是每次重造",
+   "status": "active",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_007",
+   "target": "未占槽与空槽读数同形下的整体命题",
+   "status": "revoked",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_008",
+   "target": "取样位是否只能是下一次拆分动作本身",
+   "status": "active",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_009",
+   "target": "不可观察末端0与不可指认差位是否同一不可编号位",
+   "status": "active",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_010",
+   "target": "停点归属先后：停点先于占槽 / 占槽先于停点",
+   "status": "active",
+   "quadrant": "③"
+  }
+ ],
+ "engagements_by_view": {
+  "0": [
+   {
+    "target": "T4 不可编号自证其反",
+    "tension_id": null
+   }
+  ],
+  "1": [
+   {
+    "target": "追认动作若无法被编号，它是否仍能被指认为一个事件？指认与编号在追认发生的时刻是否分岔？",
+    "tension_id": null
+   },
+   {
+    "target": "拆分实践停下的那处，在事后被指认为「拆到哪算拆完」的答案时，这个指认是否依赖一个不换手的观察者？该观察者能否在任何一次拆分现场被定位？",
+    "tension_id": null
+   },
+   {
+    "target": "「剩余」在被命名之前，是否已经以某种未标记的身份存在于清单之外？若存在，该身份能否通过任何拆分实验被独立检测？",
+    "tension_id": null
+   },
+   {
+    "target": "拆分动作完成后留下的空位，能否被下一个拆分动作指认？指认之后，该空位是否必然进入下一个动作并后移一格？",
+    "tension_id": null
+   }
+  ],
+  "both": [],
+  "all": [
+   {
+    "target": "all 与局部位的同一次对表是否可能——元层不消解，因为划分者位置本身在清单外",
+    "tension_id": "s_003"
+   }
+  ]
+ },
+ "suspensions_with_tid": {
+  "0": [
+   {
+    "target": "不同学科剩余物是否同一",
+    "tension_id": null,
+    "status": "stable"
+   },
+   {
+    "target": "T11 说清即编号的两难",
+    "tension_id": null,
+    "status": "active"
+   }
+  ],
+  "1": [],
+  "both": [],
+  "all": [
+   {
+    "target": "末端0与不可指认的差位是否同一个不可编号位",
+    "tension_id": null,
+    "status": "resolved"
+   },
+   {
+    "target": "all与局部位的同一次对表是否可能",
+    "tension_id": null,
+    "status": "resolved"
+   },
+   {
+    "target": "all与局部位的同一次对表是否可能——元层不消解，因为划分者位置本身在清单外",
+    "tension_id": null,
+    "status": "resolved"
+   },
+   {
+    "target": "all与局部位的同一次对表——元层不消解，因划分者位置本身在清单外",
+    "tension_id": null,
+    "status": "resolved"
+   }
+  ]
+ },
+ "pools_all_engagements": [
+  {
+   "target": "取样位是否只能由下一次拆分动作充当",
+   "tension_id": "t_001"
+  },
+  {
+   "target": "末端0与不可指认的差位是否同一个不可编号位",
+   "tension_id": "s_001"
+  },
+  {
+   "target": "对撞层未给出编号张力，本层只对元层之前的悬置决定s_002做回应",
+   "tension_id": "（无）"
+  },
+  {
+   "target": "all与局部位的同一次对表是否可能",
+   "tension_id": "s_002"
+  },
+  {
+   "target": "all与局部位的同一次对表——元层不消解，因划分者位置本身在清单外",
+   "tension_id": "s_003"
+  },
+  {
+   "target": "all 与局部位的同一次对表是否可能——元层不消解，因为划分者位置本身在清单外",
+   "tension_id": "s_003"
+  },
+  {
+   "target": "追认动作与0/1转换的关系",
+   "tension_id": null
+  },
+  {
+   "target": "追认命名剩余的时刻",
+   "tension_id": null
+  },
+  {
+   "target": "执行拆分的不拆部分",
+   "tension_id": null
+  },
+  {
+   "target": "追认动作的时刻结构",
+   "tension_id": null
+  },
+  {
+   "target": "不拆部分的借用关系",
+   "tension_id": null
+  },
+  {
+   "target": "T4 不可编号自证其反",
+   "tension_id": null
+  },
+  {
+   "target": "追认动作若无法被编号，它是否仍能被指认为一个事件？指认与编号在追认发生的时刻是否分岔？",
+   "tension_id": null
+  },
+  {
+   "target": "拆分实践停下的那处，在事后被指认为「拆到哪算拆完」的答案时，这个指认是否依赖一个不换手的观察者？该观察者能否在任何一次拆分现场被定位？",
+   "tension_id": null
+  },
+  {
+   "target": "「剩余」在被命名之前，是否已经以某种未标记的身份存在于清单之外？若存在，该身份能否通过任何拆分实验被独立检测？",
+   "tension_id": null
+  },
+  {
+   "target": "不同学科拆解同一问题时，各自剩下的「整体」是否指向同一个东西？若指向不同，差异是否源于拆分视角而非对象本身？",
+   "tension_id": null
+  },
+  {
+   "target": "执行拆分的那个「不拆的部分」，在多次拆分实践中是同一个东西被反复留用，还是每次更换？若同一，它是否就是原始问题中「整体」的候选？",
+   "tension_id": null
+  },
+  {
+   "target": "拆分动作完成后留下的空位，能否被下一个拆分动作指认？指认之后，该空位是否必然进入下一个动作并后移一格？",
+   "tension_id": null
+  }
+ ],
+ "views_errors": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": []
+ },
+ "pools_meta_p16": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": []
+ },
+ "pools_meta_len": {
+  "0": 11,
+  "1": 6,
+  "both": 10,
+  "all": 15
+ }
+}

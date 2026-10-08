@@ -1,0 +1,73 @@
+{
+ "tag": "V68R1",
+ "src": "元DGTF-V1.21.68.py",
+ "route": "0,1",
+ "rounds": "0:2,1:2",
+ "mode": "serial",
+ "orientation": "auto",
+ "llm_calls": 43,
+ "tri_state": [
+  1,
+  6
+ ],
+ "meta_closure_all": null,
+ "duel_suspensions_both": [],
+ "engagements_by_view": {
+  "0": [
+   {
+    "target": "按失守环节拆解方案选择",
+    "tension_id": null
+   }
+  ],
+  "1": [
+   {
+    "target": "在合流制老城区，若重建方案不包含清污分流，污水厂雨季溢流峰值时刻是否前移？前移量能否用泵站调度记录与截流倍数反推？",
+    "tension_id": null
+   },
+   {
+    "target": "退水时长超过阈值的积水点，其下游出口断面是否受外江水位顶托？若顶托存在，入口改造与管径扩容对该点退水时长的边际改善是否为零？",
+    "tension_id": null
+   },
+   {
+    "target": "施工期暴雨落在未完工区域时，临时淹水范围能否用现有积水点清单外推？若不能，两方案的风险暴露期是否不可比？",
+    "tension_id": null
+   },
+   {
+    "target": "清淤周期与海绵设施堵塞周期若没有同场次雨量校正，0方案的效果衰减是否会被误记到降雨强度上，从而系统性高估1方案的必要性？",
+    "tension_id": null
+   }
+  ]
+ },
+ "suspensions_with_tid": {
+  "0": [
+   {
+    "target": "外江水位与流域调度",
+    "tension_id": null,
+    "status": "active"
+   },
+   {
+    "target": "设计降雨标准的外部锁定",
+    "tension_id": null,
+    "status": "active"
+   }
+  ],
+  "1": []
+ },
+ "pools_all_engagements": [],
+ "views_errors": {
+  "0": [],
+  "1": []
+ },
+ "pools_meta_p16": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": []
+ },
+ "pools_meta_len": {
+  "0": 4,
+  "1": 5,
+  "both": 0,
+  "all": 0
+ }
+}

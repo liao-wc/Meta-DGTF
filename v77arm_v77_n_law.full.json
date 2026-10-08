@@ -1,0 +1,3287 @@
+{
+ "question": "企业出海欧洲面临 GDPR 合规，数据本地化和跨境传输两难，怎么设计合规方案？",
+ "route": [
+  "0",
+  "1"
+ ],
+ "keep": {
+  "0": "all",
+  "1": "all"
+ },
+ "rounds": {
+  "0": 3,
+  "1": 3,
+  "both": 4,
+  "all": 4
+ },
+ "dispatch": {
+  "requested": [
+   "0",
+   "1"
+  ],
+  "order": [
+   "0",
+   "1"
+  ],
+  "ran": [
+   "0",
+   "1"
+  ],
+  "missing": [],
+  "failed": {},
+  "skipped": [],
+  "_parallel_mode": "serial"
+ },
+ "channels": [
+  "content",
+  "context",
+  "self"
+ ],
+ "self_text": [
+  "[修行层] ## 一、这一路看到了什么\n\n起点是两个时间戳：数据落进欧盟的那一刻，和第三国能读到的那一刻。名字是后来才贴上去的，本地化和跨境。走到极端，两边都把最后一锤交给外部，第三国法院或欧盟 DPA，企业以为自己在选位置，其实在选把裁决交给谁。转折出现在可读被第三方权力抓住的那一步：日志之前只是日志，之后成了传输证据。把接触、读取、可被法律调取分成三格之后，第49条克减才有一个进入条件，企业自证也从法律意见书移向闸门日志的哈希链。0 和 1 不再靠业务声明分开，靠日志顺序显现；切分权仍然没有归属。\n\n## 二、哪些还没看清\n\n- 线头：切分权在 EDPB、单个 DPA、企业自证之间没有分配。不知道是首个作出行政解释的 DPA 先定效力，还是要等 EDPB 统一指引；不随程序先后移动的单一裁决位，本轮未生。\n- 线头：数据在欧盟、控制权在第三国时，管辖判据是控制者设立地还是处理活动发生地。两条路指向不同 DPA，合同补不上送达。\n- 线头：访问与传输的区分没有对齐。日志读取和法律获得之间的“获得”时点对不上，第49条克减能不能进来悬着。\n- &：第三国程序法是否承认欧盟端的拒绝令，企业单方决定不了。\n- &：两个 DPA 对同一份日志给出相反裁定，双轨保存合不成一份合规事实；欧盟 DPA 之间的程序互认也没有统一通道；欧盟境内受托处理仍可能被第三国母公司从人事、源代码、密钥备份间接读到。\n\n## 三、我决定不碰什么，为什么\n\n- 不碰：欧盟成员国之间的额外约束。为什么：这一圈的焦点在欧盟与第三国之间；把成员国之间也拉进来，跨境问题会变成内部程序问题，闸门表的格子会被另一套地图盖住。保持了多久：从把 0/1 定为跨境两端开始，整圈。状态：active。\n- 不碰：把第49条克减当作常规合规基础。为什么：它的进入条件是可法律调取闸未闭合；闸门表还没把谁掌握、什么证据、哪个 DPA 会认写清楚之前，先用它会把顺序倒过来。保持了多久：从时点闸门表生成之后到现在。状态：active。\n- 本圈无撤回的悬置。\n\n## 四",
+  "[研究层] ## 一、可判定部分 · 直接回答\n\n1. 间接读取：不形成向第三国的传输，因此不落“传输”项；但它仍可能被读成第44条下的“访问”。一旦该访问成立，第49条克减或 BCR 才进入条件。\n2. 切分权：没有单一归属。EDPB 未统一，各国 DPA 分歧，企业自证不被当然接受。首个 DPA 的行政解释不能当锚点，因为后续援引规则不存在。\n3. 指示本身：不独立构成处理活动。控制者/处理者二分仍适用；欧盟实体为控制者，第三国总部为处理者。\n4. 管辖判据：未定。控制者设立地与处理活动发生地各指不同 DPA；合同不能制造主权送达。\n5. 双轨保存：欧盟端是否成立，取决于欧盟 DPA 是否承认第三国程序法。承认度不能作为变量去测跨境拒绝令边界，因为没有统一通道。\n6. 间接读取：不算传输，算本地处理；但它构成传输认定缺口，因为无系统调用痕迹。本地化方案的实质边界不能由日志覆盖。\n\n## 二、不可判定部分 · 结构揭示\n\n- EDPB 是否已把“处理活动发生地”作为受理权优先判据发布统一指引，本轮未核实。若已有，T10/T12 的“无通道”判断需要撤回。\n- 第三国调取令指向存储位置而非控制者时，欧盟端哈希链能否单独证明“已履行拒绝义务”，证据命题未合。\n- 首受理 DPA 的裁定能否被后续 DPA 援引，决定日志哈希链是单点证据还是可复制证据单位。援引规则没有统一通道。\n- 两个 DPA 对同一段日志给出相反裁定时，双轨保存的两份合规事实缺少合成规则。首受理只产生时间先后，不产生优先效力。\n- 欧盟端拒绝令在第三国程序法中有无被援引的位置，不由欧盟端设定，也不由企业提交的证据设定。1 端落点有一部分在欧盟之外。\n- 间接读取是否构成传输，取决于读取者是否落在 GDPR 第3条范围内，此点未定。\n- 人事指令、密钥归还仪式落在日志采样窗口外，不留系统调用痕迹。调高采样频率覆盖不了，这是 0 端的结构性缺口。\n- 令状写“存储位置”还是写“控制者”，是两个送达对象。企业无法在文书送达前知道哪一端被激活。\n- 企"
+ ],
+ "decidability": {
+  "decidability": "decidable",
+  "reason": "多数候选为1×1硬锚点（第44–49条、SCC 2021版、Schrems II、DPIA），合法机制与版本可判；&候选与悬空线头多为需DPA/法院裁断、或可分别双轨记录的未决，非原则判不出。",
+  "features": [
+   "1×1硬锚点占多数，锚点可触及",
+   "&候选多为需外部裁断的未决",
+   "ing产出可操作闸门表与可达性地图"
+  ],
+  "decidable_aspects": [
+   "合法传输机制：充分性认定/SCC/BCR，第44–49条路径明确",
+   "SCC 2021版四模块与旧版换签时限已确定",
+   "Schrems II 后须逐案做TIA并补足措施",
+   "数据本地化源自成员国行业法，非GDPR本身要求",
+   "数据地图与数据分类是可先行完成的前置工作",
+   "[外] 数据映射、角色界定与GDPR法律依据选择（Art.44-49）",
+   "[外] 充分性认定、EU-US DPF、SCC现行版本与BCR的适用条件",
+   "[外] TIA、补充措施及无法保障时中止/终止传输的条件"
+  ],
+  "undecidable_aspects": [],
+  "evidence": [
+   {
+    "aspect": "合法传输机制路径可判",
+    "source": "候选9 / 候选10"
+   },
+   {
+    "aspect": "SCC模块版本与换签期限确定",
+    "source": "候选11 / 候选5"
+   },
+   {
+    "aspect": "本地化来源与前置数据地图可控",
+    "source": "候选13 / 候选14"
+   },
+   {
+    "aspect": "访问是否等于传输尚待裁断（未决）",
+    "source": "候选16 / &印记(ontological)"
+   },
+   {
+    "aspect": "两DPA相反裁定可双轨分别记录",
+    "source": "ing输出五 / 悬空线头"
+   }
+  ],
+  "_evidence_full": [
+   {
+    "aspect": "合法传输机制路径可判",
+    "source": "候选9 / 候选10"
+   },
+   {
+    "aspect": "SCC模块版本与换签期限确定",
+    "source": "候选11 / 候选5"
+   },
+   {
+    "aspect": "本地化来源与前置数据地图可控",
+    "source": "候选13 / 候选14"
+   },
+   {
+    "aspect": "访问是否等于传输尚待裁断（未决）",
+    "source": "候选16 / &印记(ontological)"
+   },
+   {
+    "aspect": "两DPA相反裁定可双轨分别记录",
+    "source": "ing输出五 / 悬空线头"
+   }
+  ],
+  "_source": "pool+external",
+  "_und_untraced": [],
+  "_und_traced": [],
+  "anchor_refs": [
+   "a4",
+   "a5",
+   "a6",
+   "a7",
+   "a8",
+   "a9",
+   "a10",
+   "a11"
+  ],
+  "_anchors_given": 12,
+  "_ext_status": "decidable",
+  "_ext_reason": "GDPR跨境规则、SCC/TIA/BCR/DPF路径及TikTok执法已有明确法律基准，方案可条件化设计；具体企业参数与未来监管变化需另行输入，不影响给出通用合规框架。",
+  "_ext_features": [
+   "可通过操作化定义转化为可测命题",
+   "有明确判决实验/监管执法口径",
+   "经验问题或定义问题"
+  ],
+  "_divergent": false,
+  "_pool_status": "decidable"
+ },
+ "views": {
+  "0": {
+   "entry": "0",
+   "anchor": "企业出海欧洲，GDPR合规下数据本地化与跨境传输的两难，如何设计合规方案？",
+   "candidates": [
+    {
+     "desc": "数据出境的目的地并非只有“欧盟外”一种，欧盟内部成员国之间的数据流动同样受本国法约束（如德国联邦数据保护法对特定行业的额外要求）",
+     "kind": "concept",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点只提本地化与跨境，未及欧盟内部成员国法约束",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "GDPR 第 49 条克减条款在实践中被监管机构视为例外而非路径，依赖它做常态传输本身就会构成合规风险信号",
+     "kind": "concept",
+     "attribute": "0",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "第49条克减属GDPR跨境传输机制，锚点直指跨境合规",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "欧盟数据保护委员会（EDPB）2023 年对第 46 条传输影响评估（TIA）的后续指引仍在各国监管解释中分化，同一个 TIA 模板在不同 DPA 那里可能被接受或否定",
+     "kind": "thread",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "EDPB指引分化是外部监管动态，锚点未提",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "标准合同条款（SCC）2021 版模块化设计里，控制者-处理者、处理者-处理者等四种模块对应的是不同的责任分配，选错模块不会立刻被拒但会在审计时暴露",
+     "kind": "object",
+     "attribute": "0",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "SCC是GDPR第46条跨境传输机制，属锚点所指合规手段",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "企业是否真的需要把个人数据集中回总部？还是业务上只是需要“访问”而非“存储”？这个区分没被问过",
+     "kind": "question",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "集中存储与仅访问之分，锚点并未追问",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "从“哪些数据根本不需要出境”而不是“怎么让数据出境”入手，可能先划掉一半两难",
+     "kind": "startpoint",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "反向切入点，锚点里没有这条思路",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "欧盟《数据治理法》和《数据法》正在打开非个人数据的跨境通道，个人数据与非个人数据的混合数据集切分方式尚未定型",
+     "kind": "concept",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "非个人数据法规，超出锚点GDPR个人数据范围",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "欧盟法院 Schrems II 判决后，美国情报机构访问数据的法律框架变化（如 2022 年行政令 14086）是否足够，欧盟委员会 2023 年充分性决定正被 NOYB 在法院挑战",
+     "kind": "thread",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "Schrems II与美国法律框架，锚点未提",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "GDPR 第 44–49 章规定个人数据出境需具备充分性认定、标准合同条款或约束性公司规则等合法机制",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "GDPR第44-49章正是锚点跨境合规的本义",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "Schrems II 判决后，欧美隐私盾失效，依赖 SCC 的传输须逐案做传输影响评估并补足措施",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "SCC加TIA是锚点跨境传输合规的核心机制",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "欧盟数据保护委员会发布新版 SCC 模块化条款，2022 年起取代旧版，企业须限期换签",
+     "kind": "event",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "新版SCC换签属外部事件节点，锚点未提",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "数据保护影响评估（DPIA）是高风险处理前的强制文档，跨境传输场景常触发",
+     "kind": "object",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "DPIA是通用GDPR义务，锚点未指向",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "数据本地化并非 GDPR 本身要求，多来自成员国行业法规（如德国电信、法国医疗）叠加",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "数据本地化被锚点直接点名",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "企业需先完成数据地图：哪些数据、存在哪、流向哪、依据哪条合法性基础",
+     "kind": "startpoint",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "数据地图是操作步骤，锚点未提",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "若数据回传中国总部做集中分析，是否构成\"传输\"、走哪条机制、如何证明保护水平实质等同",
+     "kind": "question",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "回传中国的具体定性，锚点未提",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "访问而非存储：若欧盟数据始终留在欧盟服务器、仅境外总部远程读取，是否构成传输取决于读取是否让境外方\"获得\"数据，EDPB 与各国 DPA 对此至今无统一认定",
+     "kind": "thread",
+     "attribute": "0",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点直接问跨境传输，访问是否构成传输属其认定",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "切分权归属：混合数据集中个人/非个人属性的判定权在 EDPB、各国 DPA 还是企业自证之间未分配，谁先作出可执行的解释，谁就实质定了规则",
+     "kind": "thread",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": false,
+     "why_attribute": "",
+     "why_position": "",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "第 49 条克减留下的记录轨迹，在事后监管审查中会被当作什么证据使用——是合规意图的证明，还是系统性规避的信号？",
+     "kind": "question",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": false,
+     "why_attribute": "",
+     "why_position": "",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "责任落点与数据落点可分离：合规方案可以把数据留在欧盟、把责任推给接收方，但分离之后责任归属由哪一方法域裁断，规则本身空缺",
+     "kind": "concept",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点未提责任落点或法域裁断",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "接收方情报访问权限能否被合同、加密或审计抵消，最终由法院和监管解释，企业无法单方闭合这个判断",
+     "kind": "thread",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": false,
+     "why_attribute": "",
+     "why_position": "",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "是否存在一个不依赖具体业务架构、同时满足不出境与跨境流动的通用答案——目前池中没有出现，是否根本不存在？",
+     "kind": "question",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点只问如何设计，未提通用答案存在性",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "总部远程访问留在欧盟的数据，访问行为本身是否等于传输，取决于访问方是否在第三国\"处理\"了数据——而\"处理\"的定义在EDPB指引里被拉得很宽",
+     "kind": "thread",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点直接指向跨境传输，访问是否等于传输属其问题",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "责任落点与数据落点分离后，出现一种状态：数据物理上在欧盟，但控制权行使地在第三国，此时哪国DPA有管辖权没有先例",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点未提控制权行使地或DPA管辖权",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "若企业选择让欧盟实体作为唯一控制者、总部只做\"指示方\"，指示本身是否构成一种需要法律依据的处理活动，尚无定论",
+     "kind": "question",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点未提控制者、指示方或指示处理认定",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "第49条克减留下的记录轨迹，事后被监管用作什么证据——是证明\"例外确有需要\"还是证明\"系统性规避\"，两种用法方向相反",
+     "kind": "thread",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": false,
+     "why_attribute": "",
+     "why_position": "",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "混合数据集切分标准由谁定：EDPB、各国DPA、企业自证三条路径并行，谁的解释先落地谁就在事实上定规则，但先落地不等于终局",
+     "kind": "concept",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": false,
+     "why_attribute": "",
+     "why_position": "",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "TIA模板在各国DPA解释分化，企业提交一版TIA后被某国接受、被另一国质疑，同一份文件在不同辖区产生相反效果",
+     "kind": "event",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": false,
+     "why_attribute": "",
+     "why_position": "",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "责任落在接收方法域时，合同、审计、政府访问三者之间的优先级由谁决定，目前没有可援引的裁决或指引",
+     "kind": "startpoint",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点未提合同、审计、政府访问优先级",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "切分权的归属在EDPB、DPA、企业自证三方之间未分配，判据缺的是：谁的解释具有先定效力——是首个作出行政解释的DPA，还是EDPB统一指引",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点未提EDPB／DPA解释权归属，属外部拉入",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "访问与传输的区分悬而未决，直接决定第49条克减能否适用，但「获得」时点在日志读取与法律获得之间无法对齐，形成规范空白，本轮无法裁为0或1",
+     "kind": "thread",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点直接指向跨境传输，即第49条克减适用问题",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "数据在欧盟、控制权在第三国时的DPA管辖权，判据是控制者设立地还是处理活动发生地，两种判据指向不同DPA，合同无法制造主权送达，此张力本轮无法闭环",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点未提DPA管辖权判据，属外部拉入",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    }
+   ],
+   "collision": "一、0 先作为“欧盟境内存储发生”的时间戳出现，1 先作为“第三国读取发生”的时间戳出现；双方后来才被叫成本地化与跨境。0 端说：位置是边界，第三国人员能读到就算失败。1 端说：第三国法律能否强制调取才是边界，合同和补充措施能挡住强制就应允许流动。0 端补：只读会留下缓存、屏幕和操作日志，所以只读也要切断。1 端补：完全切断全球访问会让故障响应停摆，企业会转向影子备份，监管更难看到。\n\n二、0 推到尽头，欧盟子公司不向第三国总部发任何含个人数据的工单，但工单编号和时间戳仍能关联到人，本地化把成本推给流程再造。1 推到尽头，默认全球访问，第三国团队可读生产库，一旦第三国机构强制读取，SCC 无法阻止，企业只剩停摆或违法。两端的极端都把最终裁决权交给第三国法院或欧盟 DPA，企业以为自己在选数据位置。\n\n三、反转发生在可读被第三方权力捕获的那一刻。此前日志只是日志，此后日志成为传输证据。物理位置不能取消捕获，合同不能证明捕获不发生。能改变的是捕获到法律调取之间的延迟，企业要设计并记录这个延迟。\n\n四、生成一张时点闸门表：物理接触、可读、可法律调取。每格写谁掌握、什么证据、哪个 DPA 会认。第49条克减只在可法律调取闸未闭合时进入讨论。企业自证要变成闸门日志的哈希链，而不是法律意见书。0 和 1 由日志顺序显现，不由业务声明显现。\n\n五、& 第三国程序法是否承认欧盟端拒绝令，企业无法单方决定。  \n& 两个 DPA 对同一日志给出相反裁定，企业只能双轨保存，无法合并成一份合规事实。  \n& 欧盟 DPA 之间的程序互认没有统一通道，同一个拒绝记录在 A 国是证据，在 B 国可能只是陈述。  \n& 欧盟境内受托处理仍可能被第三国母公司通过人事权、源代码权、密钥备份权间接读取。  \n& 可法律调取闸的闭合依赖第三国法院和欧盟 DPA 的互动，本轮无法闭环。\n\n六、先画可达性地图：第三国哪些机构能强制调取，对象是存储、密钥还是人员。再按闸门表定本地化边界：物理接触可留欧盟，可读权尽量不交第三国，法律调取权用架构切断。切不断的 & 项，用欧盟境内独立实体运营，第三国人员无密钥、无日志删改权，并保留拒绝记录。第49条克减只作为延迟失效时的个案通道。方案要留版本切换点，因为 & 项随第三国程序法变化。此处未生：一个不依赖程序先后的单一裁决位。",
+   "amps": [
+    {
+     "desc": "责任落点与数据落点可分离，但分离后责任归属规则未定，形成不可通约的规范空白。",
+     "type": "ontological",
+     "source": "0",
+     "polarity": "?"
+    },
+    {
+     "desc": "接收方法域的情报访问权限能否被合同、加密或审计抵消，最终由法院和监管解释，企业无法单方闭合。",
+     "type": "logical",
+     "source": "0",
+     "polarity": "?"
+    },
+    {
+     "desc": "混合数据集的切分标准未定型，今天按非个人数据放行的路径，明天可能因可识别性解释被拉回个人数据机制。",
+     "type": "structural",
+     "source": "0",
+     "polarity": "?"
+    },
+    {
+     "desc": "回传中国总部时，是否构成传输、走哪条机制、保护是否实质等同互相决定，不能依次勾选。",
+     "type": "logical",
+     "source": "0",
+     "polarity": "?"
+    },
+    {
+     "desc": "第49条克减即使可用，也不豁免记录义务；越依赖例外，越留下需要解释的轨迹。",
+     "type": "axiological",
+     "source": "0",
+     "polarity": "?"
+    },
+    {
+     "desc": "访问是否等于传输，取决于'获得'时点，但日志读取与法律获得无法对齐，形成规范空白。",
+     "type": "ontological",
+     "source": "0",
+     "polarity": "0",
+     "polarity_why": "获得时点未对齐，规范空白"
+    },
+    {
+     "desc": "数据在欧盟、控制权在第三国，哪国DPA有管辖权，合同无法制造主权送达。",
+     "type": "structural",
+     "source": "0",
+     "polarity": "0",
+     "polarity_why": "管辖权未定，合同不能解决"
+    },
+    {
+     "desc": "指示方是否构成处理，控制者/处理者二分未给只下指示的实体留位置。",
+     "type": "logical",
+     "source": "0",
+     "polarity": "0",
+     "polarity_why": "二分未覆盖，定性未定"
+    },
+    {
+     "desc": "合同、审计、政府访问冲突时谁优先，无裁决指引，企业只能保留冲突记录。",
+     "type": "axiological",
+     "source": "0",
+     "polarity": "0",
+     "polarity_why": "无优先规则，冲突未裁决"
+    },
+    {
+     "desc": "第三国程序法是否承认欧盟端拒绝令，企业无法单方决定，此张力未定形。",
+     "type": "ontological",
+     "source": "0",
+     "polarity": "?"
+    },
+    {
+     "desc": "两个DPA对同一日志给出相反裁定，企业只能双轨保存，无法合并成一份合规事实。",
+     "type": "structural",
+     "source": "0",
+     "polarity": "?"
+    },
+    {
+     "desc": "欧盟DPA之间的程序互认没有统一通道，同一拒绝记录在A国是证据，在B国可能只是陈述。",
+     "type": "logical",
+     "source": "0",
+     "polarity": "?"
+    },
+    {
+     "desc": "欧盟境内受托处理仍可能被第三国母公司通过人事权、源代码权、密钥备份权间接读取。",
+     "type": "axiological",
+     "source": "0",
+     "polarity": "?"
+    }
+   ],
+   "threads": [
+    {
+     "desc": "若责任落在接受方法域，合同、审计和政府访问之间的优先级由谁决定，尚未有答案。",
+     "kind": "thread",
+     "polarity": "?"
+    },
+    {
+     "desc": "一个不依赖具体业务架构、又能同时满足不出境与跨境流动的通用答案，没有出现。",
+     "kind": "thread",
+     "polarity": "?"
+    },
+    {
+     "desc": "接收方法域的情报访问权限能否被合同抵消，最终由法院解释，企业无法单方闭合",
+     "kind": "thread",
+     "source": "probe_boundary"
+    },
+    {
+     "desc": "TIA模板在各国DPA解释分化，企业无法预判哪个版本被接受",
+     "kind": "thread",
+     "source": "probe_boundary"
+    },
+    {
+     "desc": "混合数据集中，切分标准由谁定——EDPB、DPA还是企业自证？谁的解释先落地？",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "定标主体未定"
+    },
+    {
+     "desc": "T9 是否存在不依赖业务架构的通用答案——池中未出现，可能根本不存在",
+     "kind": "thread",
+     "source": "probe_boundary",
+     "polarity_why": "池中未出现，可能不存在",
+     "polarity": "0"
+    },
+    {
+     "desc": "切分权的归属在EDPB、DPA、企业自证三方之间未分配，谁的解释具有先定效力尚未确定。",
+     "kind": "thread",
+     "polarity": "?"
+    },
+    {
+     "desc": "数据在欧盟、控制权在第三国时的DPA管辖权，判据是控制者设立地还是处理活动发生地，两种判据指向不同DPA。",
+     "kind": "thread",
+     "polarity": "?"
+    },
+    {
+     "desc": "一个不依赖程序先后的单一裁决位，本轮未生。",
+     "kind": "thread",
+     "polarity": "?"
+    },
+    {
+     "desc": "第三国程序法是否承认欧盟拒绝令，企业无法单方决定",
+     "kind": "thread",
+     "source": "probe_boundary"
+    },
+    {
+     "desc": "欧盟DPA之间程序互认无统一通道，同一拒绝记录效力不一",
+     "kind": "thread",
+     "source": "probe_boundary"
+    },
+    {
+     "desc": "EDPB统一指引未出，切分权先定效力无法由企业制造",
+     "kind": "thread",
+     "source": "probe_boundary"
+    }
+   ],
+   "probes": [
+    {
+     "question": "若第三国程序法明文不承认欧盟DPA拒绝令，企业双轨保存的'合规事实'在欧盟端还成立吗？",
+     "link": "把第三国程序法承认度作为变量，测跨境拒绝令的可执行边界",
+     "expected_gain": 0.7,
+     "covers": [
+      "T3",
+      "T6"
+     ]
+    },
+    {
+     "question": "两个DPA对同一日志给出相反裁定时，企业能否把'首个行政解释'作为切分锚点，还是必须等EDPB？",
+     "link": "用DPA裁定冲突反推切分权归属，逼近T5的判据缺口",
+     "expected_gain": 0.65,
+     "covers": [
+      "T5",
+      "T4"
+     ]
+    },
+    {
+     "question": "欧盟境内受托处理被第三国母公司通过人事权、源代码权、密钥备份权间接读取时，这算传输还是本地处理？",
+     "link": "把间接读取作为传输认定缺口，测本地化方案的实质边界",
+     "expected_gain": 0.6,
+     "covers": [
+      "T2"
+     ]
+    }
+   ],
+   "meta": [
+    "0和1共同绕开了‘可法律调取闸’的闭合条件，依赖第三国法院和欧盟DPA的互动，本轮无法闭环。",
+    "属性≠位置的候选：切分权归属和DPA管辖权判据，均未在0和1的对话中直接碰撞。",
+    "[P3] & 候选（各圈累计）12 条 / 本层 amps 13 条（比值 1.08；amps 可能含 adjudications/上游合并的贡献，比值只作方向参考）"
+   ],
+   "decidable_product": {},
+   "undecidable_product": {},
+   "distance_to_question": 1.0,
+   "covered_aspects": [],
+   "uncovered_aspects": [],
+   "untouched": [
+    {
+     "desc": "欧盟内部成员国间额外约束",
+     "source": "anchor"
+    },
+    {
+     "desc": "合同、审计、政府访问优先级",
+     "source": "anchor"
+    },
+    {
+     "desc": "接收方法域情报访问权限",
+     "source": "anchor"
+    },
+    {
+     "desc": "TIA模板各国解释分化",
+     "source": "anchor"
+    },
+    {
+     "desc": "切分权的归属在EDPB、DPA、企业自证三方之间未分配，判据缺的是：谁的解释具有先定效力——是首个作出行政解释的DPA，还是EDPB统一指引",
+     "source": "judge"
+    },
+    {
+     "desc": "数据在欧盟、控制权在第三国时的DPA管辖权，判据是控制者设立地还是处理活动发生地，两种判据指向不同DPA，合同无法制造主权送达，此张力本轮无法闭环",
+     "source": "judge"
+    }
+   ],
+   "suspensions": [
+    {
+     "id": "s_001",
+     "target": "欧盟内部成员国间数据流动的额外约束",
+     "reason": "我看清了T5可以碰，但选择不碰，因为本圈焦点在跨境而非跨成员国",
+     "reason_type": "explicit",
+     "layer": 1,
+     "last_confirmed_layer": 3,
+     "confirmed_layers": [
+      1,
+      2,
+      3
+     ],
+     "status": "active",
+     "revoked_at": null,
+     "revoke_reason": "",
+     "resolved_at": null,
+     "stable_since": null,
+     "needs_review": false
+    },
+    {
+     "id": "s_002",
+     "target": "T4 欧盟内部成员国间额外约束",
+     "reason": "我看清了T4可以碰，但选择不碰，因为本圈焦点在跨境而非跨成员国",
+     "reason_type": "explicit",
+     "layer": 2,
+     "last_confirmed_layer": 3,
+     "confirmed_layers": [
+      2,
+      3
+     ],
+     "status": "active",
+     "revoked_at": null,
+     "revoke_reason": "",
+     "resolved_at": null,
+     "stable_since": null,
+     "needs_review": false
+    },
+    {
+     "id": "s_003",
+     "target": "欧盟内部成员国间额外约束",
+     "reason": "我看清了T1可以碰，但选择不碰，因为本圈焦点在跨境而非跨成员国",
+     "reason_type": "explicit",
+     "layer": 3,
+     "last_confirmed_layer": 3,
+     "confirmed_layers": [
+      3
+     ],
+     "status": "active",
+     "revoked_at": null,
+     "revoke_reason": "",
+     "resolved_at": null,
+     "stable_since": null,
+     "needs_review": false
+    }
+   ],
+   "engagements": [
+    {
+     "target": "第三国程序法不承认欧盟拒绝令",
+     "how": "把承认度作为变量，测双轨保存的合规事实是否成立"
+    },
+    {
+     "target": "DPA裁定冲突与切分权归属",
+     "how": "用首个行政解释锚点反推T5判据缺口"
+    }
+   ],
+   "refinements": [],
+   "reconfirmations": [
+    {
+     "suspension_id": "s_001",
+     "target": "",
+     "reason": "本圈仍聚焦跨境传输，跨成员国约束继续悬置"
+    },
+    {
+     "suspension_id": "s_002",
+     "target": "",
+     "reason": "T4仍非本圈焦点，维持悬置"
+    }
+   ],
+   "revocations": [],
+   "deferrals": [],
+   "resolutions": [],
+   "escalations": [],
+   "reclassifications": [],
+   "settlement": {},
+   "adjudications": [],
+   "both_quota": {},
+   "carry": [],
+   "carry_check": {
+    "checked": 1,
+    "violations": 1,
+    "items": [
+     "禁条目重现·已拦下1条：是否存在不依赖业务架构、同时满足不出境与跨境流动"
+    ],
+    "notes": "注入 1 条、可核对 1 条，违例 1 条：禁条目重现·已拦下1条：是否存在不依赖业务架构、同时满足不出境与跨境流动",
+    "round": 3
+   },
+   "carry_checks": [
+    {
+     "checked": 1,
+     "violations": 1,
+     "items": [
+      "禁条目重现·已拦下1条：是否存在不依赖业务架构、同时满足不出境与跨境流动"
+     ],
+     "notes": "注入 1 条、可核对 1 条，违例 1 条：禁条目重现·已拦下1条：是否存在不依赖业务架构、同时满足不出境与跨境流动",
+     "round": 3
+    }
+   ],
+   "carry_dropped": [
+    {
+     "desc": "是否存在不依赖业务架构、同时满足不出境与跨境流动的通用答案——池中未出现，本轮复裁仍判为：不能定 1，因为「不出境」与「跨境流动」在规范层面并非同一维度的两个端点，前者约束数据物理/法律位置，后者约束访问与控制权归属，二者无共同判据可调和",
+     "ban": "是否存在一个不依赖具体业务架构、同时满足不出境与跨境流动的通用答案——目前池中没有出现，是否根本不存在？"
+    }
+   ],
+   "carry_dropped_all": [
+    {
+     "desc": "是否存在不依赖业务架构、同时满足不出境与跨境流动的通用答案——池中未出现，本轮复裁仍判为：不能定 1，因为「不出境」与「跨境流动」在规范层面并非同一维度的两个端点，前者约束数据物理/法律位置，后者约束访问与控制权归属，二者无共同判据可调和",
+     "ban": "是否存在一个不依赖具体业务架构、同时满足不出境与跨境流动的通用答案——目前池中没有出现，是否根本不存在？",
+     "round": 3
+    }
+   ],
+   "rephrase_ratio": null,
+   "probe_skipped": false,
+   "rounds_cap": 3,
+   "duel_suspensions": [],
+   "meta_closure": {},
+   "stop_reason": "体力耗尽（3 圈走满，未触发任何停止判据，是被截断不是自然停止）",
+   "rounds_run": 3,
+   "roles_run": [
+    "摊开",
+    "转向",
+    "复裁"
+   ],
+   "closure_reason": "",
+   "round_log": [
+    {
+     "round": 1,
+     "role": "摊开",
+     "new_amps": 5,
+     "new_threads": 4,
+     "idle_amp": 0,
+     "idle_thread": 0,
+     "idle_stall": 0,
+     "why": ""
+    },
+    {
+     "round": 2,
+     "role": "转向",
+     "new_amps": 4,
+     "new_threads": 2,
+     "idle_amp": 0,
+     "idle_thread": 0,
+     "idle_stall": 0,
+     "why": ""
+    },
+    {
+     "round": 3,
+     "role": "复裁",
+     "new_amps": 4,
+     "new_threads": 6,
+     "idle_amp": 0,
+     "idle_thread": 0,
+     "idle_stall": 0,
+     "why": ""
+    }
+   ],
+   "rehashed": [
+    {
+     "desc": "若责任落在接受方法域，合同、审计和政府访问之间的优先级由谁决定，尚未有答案。",
+     "same_as": "若责任落在接受方法域，合同、审计和政府访问之间的优先级由谁决定，尚未有答案。",
+     "kind": "线头",
+     "round": 2
+    },
+    {
+     "desc": "一个不依赖具体业务架构、又能同时满足不出境与跨境流动的通用答案，没有出现。",
+     "same_as": "一个不依赖具体业务架构、又能同时满足不出境与跨境流动的通用答案，没有出现。",
+     "kind": "线头",
+     "round": 2
+    }
+   ],
+   "idle": false,
+   "rendered": "━━━ 修行 · entry=0 ━━━\n\n【锚点】企业出海欧洲，GDPR合规下数据本地化与跨境传输的两难，如何设计合规方案？\n\n【候选】\n  [1×0] 切分权的归属在EDPB、DPA、企业自证三方之间未分配，判据缺的是：谁的解释具有先定效力——是首个作出行政解释的DPA，还是EDPB统一指引  ⚡& 属性◈阳展开\n  [1×1] 访问与传输的区分悬而未决，直接决定第49条克减能否适用，但「获得」时点在日志读取与法律获得之间无法对齐，形成规范空白，本轮无法裁为0或1  属性◈阳展开\n  [1×0] 数据在欧盟、控制权在第三国时的DPA管辖权，判据是控制者设立地还是处理活动发生地，两种判据指向不同DPA，合同无法制造主权送达，此张力本轮无法闭环  ⚡& 属性◈阳展开\n\n【ing 对撞】\n一、0 先作为“欧盟境内存储发生”的时间戳出现，1 先作为“第三国读取发生”的时间戳出现；双方后来才被叫成本地化与跨境。0 端说：位置是边界，第三国人员能读到就算失败。1 端说：第三国法律能否强制调取才是边界，合同和补充措施能挡住强制就应允许流动。0 端补：只读会留下缓存、屏幕和操作日志，所以只读也要切断。1 端补：完全切断全球访问会让故障响应停摆，企业会转向影子备份，监管更难看到。\n\n二、0 推到尽头，欧盟子公司不向第三国总部发任何含个人数据的工单，但工单编号和时间戳仍能关联到人，本地化把成本推给流程再造。1 推到尽头，默认全球访问，第三国团队可读生产库，一旦第三国机构强制读取，SCC 无法阻止，企业只剩停摆或违法。两端的极端都把最终裁决权交给第三国法院或欧盟 DPA，企业以为自己在选数据位置。\n\n三、反转发生在可读被第三方权力捕获的那一刻。此前日志只是日志，此后日志成为传输证据。物理位置不能取消捕获，合同不能证明捕获不发生。能改变的是捕获到法律调取之间的延迟，企业要设计并记录这个延迟。\n\n四、生成一张时点闸门表：物理接触、可读、可法律调取。每格写谁掌握、什么证据、哪个 DPA 会认。第49条克减只在可法律调取闸未闭合时进入讨论。企业自证要变成闸门日志的哈希链，而不是法律意见书。0 和 1 由日志顺序显现，不由业务声明显现。\n\n五、& 第三国程序法是否承认欧盟端拒绝令，企业无法单方决定。  \n& 两个 DPA 对同一日志给出相反裁定，企业只能双轨保存，无法合并成一份合规事实。  \n& 欧盟 DPA 之间的程序互认没有统一通道，同一个拒绝记录在 A 国是证据，在 B 国可能只是陈述。  \n& 欧盟境内受托处理仍可能被第三国母公司通过人事权、源代码权、密钥备份权间接读取。  \n& 可法律调取闸的闭合依赖第三国法院和欧盟 DPA 的互动，本轮无法闭环。\n\n六、先画可达性地图：第三国哪些机构能强制调取，对象是存储、密钥还是人员。再按闸门表定本地化边界：物理接触可留欧盟，可读权尽量不交第三国，法律调取权用架构切断。切不断的 & 项，用欧盟境内独立实体运营，第三国人员无密钥、无日志删改权，并保留拒绝记录。第49条克减只作为延迟失效时的个案通道。方案要留版本切换点，因为 & 项随第三国程序法变化。此处未生：一个不依赖程序先后的单一裁决位。\n\n【& 印记】\n  - [存在论] 第三国程序法是否承认欧盟端拒绝令，企业无法单方决定，此张力未定形。\n  - [结构性] 两个DPA对同一日志给出相反裁定，企业只能双轨保存，无法合并成一份合规事实。\n  - [逻辑性] 欧盟DPA之间的程序互认没有统一通道，同一拒绝记录在A国是证据，在B国可能只是陈述。\n  - [价值性] 欧盟境内受托处理仍可能被第三国母公司通过人事权、源代码权、密钥备份权间接读取。\n\n【悬空线头】\n  💭 切分权的归属在EDPB、DPA、企业自证三方之间未分配，谁的解释具有先定效力尚未确定。\n  💭 数据在欧盟、控制权在第三国时的DPA管辖权，判据是控制者设立地还是处理活动发生地，两种判据指向不同DPA。\n  💭 一个不依赖程序先后的单一裁决位，本轮未生。\n  💭 第三国程序法是否承认欧盟拒绝令，企业无法单方决定\n  💭 欧盟DPA之间程序互认无统一通道，同一拒绝记录效力不一\n  💭 EDPB统一指引未出，切分权先定效力无法由企业制造\n\n【探针回归】\n  ? 若第三国程序法明文不承认欧盟DPA拒绝令，企业双轨保存的'合规事实'在欧盟端还成立吗？（回来：把第三国程序法承认度作为变量，测跨境拒绝令的可执行边界｜增益0.7）\n  ? 两个DPA对同一日志给出相反裁定时，企业能否把'首个行政解释'作为切分锚点，还是必须等EDPB？（回来：用DPA裁定冲突反推切分权归属，逼近T5的判据缺口｜增益0.65）\n  ? 欧盟境内受托处理被第三国母公司通过人事权、源代码权、密钥备份权间接读取时，这算传输还是本地处理？（回来：把间接读取作为传输认定缺口，测本地化方案的实质边界｜增益0.6）\n\n【尚未触及的方面】\n  💭 欧盟内部成员国间额外约束（anchor）\n  💭 合同、审计、政府访问优先级（anchor）\n  💭 接收方法域情报访问权限（anchor）\n  💭 TIA模板各国解释分化（anchor）\n  💭 切分权的归属在EDPB、DPA、企业自证三方之间未分配，判据缺的是：谁的解释具有先定效力——是首个作出行政解释的DPA，还是EDPB统一指引（judge）\n  💭 数据在欧盟、控制权在第三国时的DPA管辖权，判据是控制者设立地还是处理活动发生地，两种判据指向不同DPA，合同无法制造主权送达，此张力本轮无法闭环（judge）\n\n【本层碰了】\n  - 第三国程序法不承认欧盟拒绝令：把承认度作为变量，测双轨保存的合规事实是否成立\n  - DPA裁定冲突与切分权归属：用首个行政解释锚点反推T5判据缺口\n\n【主动悬置（决定不碰）】\n  - 欧盟内部成员国间额外约束：我看清了T1可以碰，但选择不碰，因为本圈焦点在跨境而非跨成员国[explicit]\n\n【view】\n## 一、这一路看到了什么\n\n起点是两个时间戳：数据落进欧盟的那一刻，和第三国能读到的那一刻。名字是后来才贴上去的，本地化和跨境。走到极端，两边都把最后一锤交给外部，第三国法院或欧盟 DPA，企业以为自己在选位置，其实在选把裁决交给谁。转折出现在可读被第三方权力抓住的那一步：日志之前只是日志，之后成了传输证据。把接触、读取、可被法律调取分成三格之后，第49条克减才有一个进入条件，企业自证也从法律意见书移向闸门日志的哈希链。0 和 1 不再靠业务声明分开，靠日志顺序显现；切分权仍然没有归属。\n\n## 二、哪些还没看清\n\n- 线头：切分权在 EDPB、单个 DPA、企业自证之间没有分配。不知道是首个作出行政解释的 DPA 先定效力，还是要等 EDPB 统一指引；不随程序先后移动的单一裁决位，本轮未生。\n- 线头：数据在欧盟、控制权在第三国时，管辖判据是控制者设立地还是处理活动发生地。两条路指向不同 DPA，合同补不上送达。\n- 线头：访问与传输的区分没有对齐。日志读取和法律获得之间的“获得”时点对不上，第49条克减能不能进来悬着。\n- &：第三国程序法是否承认欧盟端的拒绝令，企业单方决定不了。\n- &：两个 DPA 对同一份日志给出相反裁定，双轨保存合不成一份合规事实；欧盟 DPA 之间的程序互认也没有统一通道；欧盟境内受托处理仍可能被第三国母公司从人事、源代码、密钥备份间接读到。\n\n## 三、我决定不碰什么，为什么\n\n- 不碰：欧盟成员国之间的额外约束。为什么：这一圈的焦点在欧盟与第三国之间；把成员国之间也拉进来，跨境问题会变成内部程序问题，闸门表的格子会被另一套地图盖住。保持了多久：从把 0/1 定为跨境两端开始，整圈。状态：active。\n- 不碰：把第49条克减当作常规合规基础。为什么：它的进入条件是可法律调取闸未闭合；闸门表还没把谁掌握、什么证据、哪个 DPA 会认写清楚之前，先用它会把顺序倒过来。保持了多久：从时点闸门表生成之后到现在。状态：active。\n- 本圈无撤回的悬置。\n\n## 四、与问题相处的姿态\n\n我不把它当成要一次裁完的题。能记的记成闸门日志，不能记的留在 & 里；0 和 1 由下次日志的顺序决定，不由这次声明的立场决定。如果第三国程序法或 EDPB 指引动了，我就从被移动的那一格重新开始；没有动，就不把旧结论当成新结论。此处未生就不生。\n\n【元反思】\n  ∘ 0和1共同绕开了‘可法律调取闸’的闭合条件，依赖第三国法院和欧盟DPA的互动，本轮无法闭环。\n  ∘ 属性≠位置的候选：切分权归属和DPA管辖权判据，均未在0和1的对话中直接碰撞。\n\n【质量线索】expand_imbalanced\n\n【质量评价】阴阳展开批次不均：某一边几乎没产出候选（单边输出也少，疑似 LLM 偷懒）\n\n【自省】候选与&皆由展开自然生长，未见后补；ing未复述上游view原话，比例低。\n\n【「此处未生」计数】本圈 2 处（阈值 3）　（诚实姿态，未越界）\n  分布：ing×1、view×1",
+   "manifest": "## 一、这一路看到了什么\n\n起点是两个时间戳：数据落进欧盟的那一刻，和第三国能读到的那一刻。名字是后来才贴上去的，本地化和跨境。走到极端，两边都把最后一锤交给外部，第三国法院或欧盟 DPA，企业以为自己在选位置，其实在选把裁决交给谁。转折出现在可读被第三方权力抓住的那一步：日志之前只是日志，之后成了传输证据。把接触、读取、可被法律调取分成三格之后，第49条克减才有一个进入条件，企业自证也从法律意见书移向闸门日志的哈希链。0 和 1 不再靠业务声明分开，靠日志顺序显现；切分权仍然没有归属。\n\n## 二、哪些还没看清\n\n- 线头：切分权在 EDPB、单个 DPA、企业自证之间没有分配。不知道是首个作出行政解释的 DPA 先定效力，还是要等 EDPB 统一指引；不随程序先后移动的单一裁决位，本轮未生。\n- 线头：数据在欧盟、控制权在第三国时，管辖判据是控制者设立地还是处理活动发生地。两条路指向不同 DPA，合同补不上送达。\n- 线头：访问与传输的区分没有对齐。日志读取和法律获得之间的“获得”时点对不上，第49条克减能不能进来悬着。\n- &：第三国程序法是否承认欧盟端的拒绝令，企业单方决定不了。\n- &：两个 DPA 对同一份日志给出相反裁定，双轨保存合不成一份合规事实；欧盟 DPA 之间的程序互认也没有统一通道；欧盟境内受托处理仍可能被第三国母公司从人事、源代码、密钥备份间接读到。\n\n## 三、我决定不碰什么，为什么\n\n- 不碰：欧盟成员国之间的额外约束。为什么：这一圈的焦点在欧盟与第三国之间；把成员国之间也拉进来，跨境问题会变成内部程序问题，闸门表的格子会被另一套地图盖住。保持了多久：从把 0/1 定为跨境两端开始，整圈。状态：active。\n- 不碰：把第49条克减当作常规合规基础。为什么：它的进入条件是可法律调取闸未闭合；闸门表还没把谁掌握、什么证据、哪个 DPA 会认写清楚之前，先用它会把顺序倒过来。保持了多久：从时点闸门表生成之后到现在。状态：active。\n- 本圈无撤回的悬置。\n\n## 四、与问题相处的姿态\n\n我不把它当成要一次裁完的题。能记的记成闸门日志，不能记的留在 & 里；0 和 1 由下次日志的顺序决定，不由这次声明的立场决定。如果第三国程序法或 EDPB 指引动了，我就从被移动的那一格重新开始；没有动，就不把旧结论当成新结论。此处未生就不生。",
+   "quality_flags": [],
+   "quality_verdict": "判断正常，无质量线索",
+   "self_check": {
+    "suspicious_candidates": [],
+    "suspicious_amps": [],
+    "ing_rephrased": false,
+    "honest_about_empty": true,
+    "unsaid_count": 2,
+    "unsaid_is_escape": false,
+    "unsaid_where": "ing×1、view×1",
+    "flow_verdict": "展开→反转→闸门表→&→未生，链条完整，但expand_imbalanced提示两端展开不均。",
+    "view_verdict": "view停在'看到什么'：两时间戳、捕获转折、闸门三格，结论开放，未越位裁定。",
+    "amp_ratio_verdict": "4条&均从展开中长出，无凑数。",
+    "notes": "候选与&皆由展开自然生长，未见后补；ing未复述上游view原话，比例低。"
+   },
+   "errors": [],
+   "anchor_touched": [
+    {
+     "desc": "数据本地化与跨境传输的冲突",
+     "source": "anchor"
+    },
+    {
+     "desc": "合规方案需同时满足不出境与跨境流动",
+     "source": "anchor"
+    },
+    {
+     "desc": "混合数据集切分标准未定",
+     "source": "anchor"
+    },
+    {
+     "desc": "回传总部是否构成传输",
+     "source": "anchor"
+    }
+   ],
+   "ing_structured": {}
+  },
+  "1": {
+   "entry": "1",
+   "anchor": "企业出海欧洲的合规方案，支点是：闸门日志在哪个动作上从运维记录变成可被第三国法律调取的证据。",
+   "candidates": [
+    {
+     "desc": "第44条把传输定义为向第三国或国际组织披露，起点是欧盟境内控制者或处理者的行为，而非数据物理位置",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "原始问题含跨境传输、数据本地化，锚点已及",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "第45条充分性认定是最简路径，但被 Schrems II 削减：认定不覆盖第三国法律调取风险",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "机制选择直接覆盖充分性认定路径",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "第46条提供适当保障工具，SCC 2021版四模块（C2C、C2P、P2C、P2P）按主体关系选型，换签截止已过",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "SCC属机制选择，锚点已指向",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "Schrems II 判决要求逐案做传输影响评估（TIA），并视情补充技术、合同、组织措施",
+     "kind": "event",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "第三国法律调取即Schrems II核心",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "第49条克减是例外基础，进入条件苛刻，不能当常规合规支点",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "第49条属机制选择中的例外选项",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "数据本地化在 GDPR 文本中并无强制要求，它来自第三国法律调取风险与第48条外国法院命令的冲突",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "数据本地化在原始问题中明列",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "闸门日志：记录谁在何时读取了什么数据，哈希链固定顺序，把可读变成可法律调取的证据",
+     "kind": "object",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "闸门日志在锚点中明文出现",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "TIA 与 DPIA 的边界未对齐：TIA 针对传输，DPIA 针对高风险处理，同一处理可能触发两份文档",
+     "kind": "thread",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "TIA/DPIA边界为展开线头，锚点未及",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "闸门日志与传输机制不是并列选项：机制选完之后闸门仍开着，此时合规支点已不在合同而在日志顺序",
+     "kind": "concept",
+     "attribute": "0",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点之问即合规支点，此条直指",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "可法律调取闸未闭合时，第49条克减的进入条件与第46条保障措施是两条不同门槛，企业常把两者混成一条",
+     "kind": "concept",
+     "attribute": "0",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "46与49门槛属机制选择内部",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "若第三国调取令直接送达欧盟境内处理者而非控制者，控制者设立地管辖与处理活动发生地管辖会指向不同 DPA，机制选择改变不了送达对象",
+     "kind": "question",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "DPA管辖分歧为展开线头，锚点未及",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "日志从运维记录转为传输证据的时点，取决于谁先主张可法律调取，而非日志生成时间，这个\"谁\"尚未被分配",
+     "kind": "thread",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "谁未分配为展开线头，锚点未及",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "充分性认定是唯一不依赖企业自证的路径，但它随时可被推翻，推翻后已传数据没有回退机制，这是机制选择里的不可逆点",
+     "kind": "concept",
+     "attribute": "0",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "充分性认定属机制选择，锚点已及",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "SCC 2021版四模块与旧版换签时限已定，但换签完成不等于 TIA 做完，两个时间线在实务里常被并成一条",
+     "kind": "event",
+     "attribute": "0",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "SCC换签属机制选择，锚点已及",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "EDPB、单个 DPA、企业自证三者之间，谁先对同一份日志作出行政解释，决定后续所有 DPA 是否跟随，这个首位尚未显现",
+     "kind": "person",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "EDPB/DPA首位为展开线头，锚点未及",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "欧盟境内受托处理仍可能被第三国母公司从人事、源代码、密钥备份间接读到，这类接触不经过跨境传输机制，闸门表里没有对应格子",
+     "kind": "thread",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "间接读取为展开线头，锚点未及",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "闸门日志的两次命名：一次由企业自己做，记为运维访问；一次由第三国程序法做，记为可调取证据。后者不需要企业同意，也不需要日志内容改变",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点两端即运维记录与可调取证据，正是两次命名",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "调取令送达对象分两种：送达控制者（第三国母公司）时，欧盟端日志仍停留在企业命名；送达欧盟境内处理者时，命名权当场被外程序接管",
+     "kind": "event",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "送达对象分控制者/处理者，锚点字面未出现",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "日志哈希链能证明的只是顺序未被改，证明不了某一顺序在第三国程序里被认成什么。这两件事由不同法域分别判，互不援引",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "哈希链只证顺序、互不援引，锚点未提",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "若调取令先到欧盟处理者，先受理的 DPA 未必是控制者设立地 DPA——两条管辖判据（设立地／处理活动发生地）在这里第一次分叉出不同受理机关",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "受理机关与设立地/处理地分叉，锚点未提",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "人事权与密钥备份的接触点：能进系统的第三国员工，在日志里留下的是账号动作，不是“母公司在读”——日志记不到权限来源，只记到执行账号",
+     "kind": "person",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "人事权、密钥备份接触点，锚点未提",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "日志从运维记录变成证据的那个动作，是不是“企业收到一份来自第三国的、要求提供日志本身的命令”？如果是，闸门在收到命令那一刻闭合，与日志内容无关；如果不是，闭合点至今没有出现",
+     "kind": "question",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "此即锚点问句本身：哪个动作、是否第三国要日志",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "闸门日志从运维记录转为可调取证据的时点，不在日志生成动作上，而在第三国调取令首次指向该日志所在存储位置的送达动作上；此前日志只是事实记录，此后才产生对外可强制的义务连接",
+     "kind": "thread",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "送达动作与存储位置是外拉进来的具体答案",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "第三国母公司通过人事权、密钥备份间接读取，闸门日志的可记录面只覆盖系统调用和网络出口；人事指令和密钥归还仪式发生在日志采集范围之外，本地化方案若以日志为支点，这一段接触事件没有对应格子",
+     "kind": "thread",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "日志采集范围外的接触事件，锚点未提",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "调取令送达欧盟境内处理者而非控制者时，哪国DPA先受理取决于受理权归属规则本身是否已由EDPB统一；若未统一，先受理的DPA不产生先例效力，后续DPA是否跟随没有制度通道，企业无法预先设计应对",
+     "kind": "question",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "DPA受理权归属与EDPB统一，锚点未提",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "上一圈标未生的“切分权归属”推进一步：EDPB有统一解释权但无个案裁决权，单个DPA有个案裁决权但解释效力限于辖区，企业自证无裁决权只有举证责任；三者构成解释权与裁决权分离的结构，切分权无法落在任何单一位置，这不是悬置而是结构本身的属性",
+     "kind": "thread",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "切分权在EDPB/DPA/自证间分离，锚点未提",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "上一圈标未生的“管辖判据”推进一步：控制者设立地标准与处理活动发生地标准在Schrems II后的EDPB指引中未给出优先级规则；两条路指向不同DPA，且两DPA可能对同一份日志作出相反裁定，企业无法通过合同条款补上送达路径的确定性",
+     "kind": "thread",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "管辖判据优先级与相反裁定，锚点未提",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "第49条克减的进入条件是可法律调取闸未闭合；但闸是否闭合本身需要先有DPA或法院对“可调取”作出认定，企业在获得该认定前无法自行判断克减是否可用，克减条款的适用在时间上滞后于企业作出传输决策的时点",
+     "kind": "event",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "第49条克减进入条件及其时点，锚点未提",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "第三国调取令送达动作指向欧盟境内具体存储位置（IP/卷/桶）时，企业闸门日志在该时点从运维序列转为可被外国程序援引的客体",
+     "kind": "event",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点问“哪个动作”，此条正是那个动作",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "送达对象是\"存储位置\"而非\"控制者\"时，欧盟端哈希链记录的是系统事实，与第三国令状要求的\"人可归责主体\"对不上口径",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "存储位置、哈希链、人可归责口径均锚点外引入",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "首受理DPA的裁定是否被后续DPA援引，决定日志哈希链是单点证据还是可复制证据单位",
+     "kind": "question",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "DPA裁定援引、证据单位之分，锚点字面未提",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "人事指令与密钥归还仪式发生在日志采集面之外，间接读取不留系统调用痕迹",
+     "kind": "thread",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "人事指令、密钥归还属锚点外内容",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "闸门日志可记录面之外的接触事件——人事指令、密钥归还仪式——其发生位置在日志采样窗口之外，本地化方案无法覆盖这段间隙",
+     "kind": "thread",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "日志采样窗口外的间隙，锚点未指向",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "第三国调取令若直接指向存储位置而非控制者，欧盟端哈希链的证明对象是企业是否\"已履行拒绝义务\"，而非数据是否已被读取，两者在证据法上不是同一命题",
+     "kind": "concept",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": false,
+     "why_attribute": "",
+     "why_position": "",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "EDPB 是否就\"处理活动发生地\"作为受理权优先判据发布过统一指引，此点未被池中任何线头核实，若已有则 T10/T12 的\"无通道\"判断需撤回",
+     "kind": "question",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点未提EDPB指引与受理权判据",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "首个受理 DPA 的裁定在后续 DPA 处有无援引先例，可向 EDPB 年度报告或 DPA 联合决定记录中查证，不依赖企业自证",
+     "kind": "startpoint",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点未提DPA先例援引与年度报告",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "两 DPA 对同一份日志给出相反裁定时，双轨保存产生的两份合规事实之间缺少合成规则，谁先受理不等于谁先定论",
+     "kind": "thread",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点未提两DPA相反裁定与合成规则",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "企业控制 1 位置排序的前提是日志未被交出，但\"交出\"的动作若发生在调取令送达之前，排序权已转移而企业尚未察觉",
+     "kind": "concept",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": false,
+     "why_attribute": "",
+     "why_position": "",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "欧盟境内受托处理者被第三国母公司通过人事权间接读取时，该读取行为在欧盟端是否构成\"传输\"，取决于读取者是否落在 GDPR 第 3 条范围内，此点未定",
+     "kind": "question",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": false,
+     "why_attribute": "",
+     "why_position": "",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    }
+   ],
+   "collision": "一、让两端各自把话说完\n\n0 端是运维记录。它成立的条件只有一条：写入者和被写入者在同一台机器上，系统调用和时间戳同源，排序不可改。它的有效范围止于采样窗口。窗口外的接触不是被隐藏，是从来不成为记录。它撑住的地方是顺序；塌的地方是记录面只覆盖系统事实，不覆盖意图。\n\n1 端是可被第三国法律调取的证据。它的成立条件不在日志内部。送达动作、可援引的程序法、可归责主体，三样缺一，1 端不成立。它撑住的时点是送达，一旦送达，日志进入程序客体。它塌的地方是欧盟端的拒绝令在第三国程序法里有没有位置，这个问题不在企业手里。\n\n二、各推到极端\n\n0 端推到全部记录：记录者本人也要被记录，递归收不住。同时记录面越全，可被正当要求调取的接触越多，调取面跟着变宽。0 端吞不掉 1 端，因为“全部记下来”不等于“可被援引”。\n\n1 端推到全部日志皆是潜在证据：运维记录失去独立身份，每次写入都是预先生成证据。这一步要成立，得假设第三国程序法有无限域外效力、欧盟端不承认任何拒绝令。假设到这一步，停。\n\n三、找反转点\n\n企业用扩大记录来自证，记录面每宽一格，证据面同宽一格。0 端的加固同时是 1 端的加固。\n\n0 端要求只记系统事实，不记意图；1 端要求人可归责，需要意图或过失。0 端越干净，1 端越无法从同一份日志里找到归责支点。两个有效域的要求方向相反。\n\n哈希链的证明对象从“数据有没有被读取”滑向“企业有没有履行拒绝义务”。企业证得越足，越确认自己是可归责主体，越坐实令状的送达对象。自证变成自我指认。\n\n“未交出”在 0 端看得见，“未被调取”只在 1 端成立。两个时点不同步，而企业只能从 0 端观测。它看到的合规状态总是滞后的。\n\n四、生成\n\n问“在哪个动作上切换”是范畴错误。它假设运维记录和证据是同一条链上的前后段。实际是两个不同的有效域。日志不是从 0 变成 1，是同时落在两个域里，被两套权威分别读取。企业在 0 端的动作不能把日志移进 1 端，因为 1 端的入口不由它开。\n\n真正的错位是：存储位置对控制者，系统事实对人可归责主体。送达指向哪一边，决定哪一端被激活，而企业不写令状。\n\n支点因此不在动作序列上，在记录面与归责面的接口上。记录面的宽度由企业工程约束决定，归责面的开口由第三国程序法和欧盟端承认规则合起来决定。接口没有统一通道。\n\n首受理 DPA 的裁定如果只对自己有效，哈希链就是单点证据，换一个 DPA 就要重做；如果能被后续 DPA 援引，哈希链才成为可复制的证据单位。援引规则没有统一通道，这个分叉现在关不上。\n\n五、撞不动的地方\n\n& 欧盟端的拒绝令在第三国程序法里有没有可援引的位置，这个位置不由欧盟端设定，也不由企业提交的证据设定。1 端的落点有一部分在欧盟之外。\n\n& 人事指令、密钥归还仪式落在采样窗口外，间接读取不留系统调用痕迹。调高采样频率覆盖不了，这是 0 端的结构性缺口。\n\n& 令状写“存储位置”还是写“控制者”，不是同一份文书的两种措辞，是两个不同的送达对象。企业无法在文书送达前知道哪一端被激活。\n\n& 两个 DPA 各自出一份裁定，两份都成立时，日志的同一段顺序被读成两个事实。合成规则不存在，因为两份裁定都不需要援引对方。首受理只产生时间先后，不产生优先效力。\n\n六、回到原始问题\n\n原始问题要一个时间轴上的切换点。对撞之后没有这个点。三个决定后果的结构点——送达指向哪一端、第三国程序法是否承认欧盟拒绝令、首受理 DPA 裁定能否被援引——都不在企业的动作序列里。\n\n企业能守的是记录面内的排序。归责面的开口不由它决定。",
+   "amps": [
+    {
+     "desc": "机制选择与闸门日志互相给对方进入条件，但都不给对方结论。",
+     "type": "structural",
+     "source": "1",
+     "polarity": "?"
+    },
+    {
+     "desc": "企业能控制1位置的排序，前提是日志由企业持有且未被交出；企业不能控制0位置的命名。",
+     "type": "structural",
+     "source": "1",
+     "polarity": "?"
+    },
+    {
+     "desc": "命名失败不会让顺序消失，顺序失败会让命名变成纸面条款。",
+     "type": "structural",
+     "source": "1",
+     "polarity": "?"
+    }
+   ],
+   "threads": [
+    {
+     "desc": "切分权在EDPB、单个DPA、企业自证之间没有分配。",
+     "kind": "thread",
+     "polarity": "?"
+    },
+    {
+     "desc": "数据在欧盟、控制权在第三国时，管辖判据是控制者设立地还是处理活动发生地。",
+     "kind": "thread",
+     "polarity": "?"
+    },
+    {
+     "desc": "访问与传输的区分没有对齐，日志读取和法律获得之间的获得时点对不上。",
+     "kind": "thread",
+     "polarity": "?"
+    },
+    {
+     "desc": "管辖判据分叉时，先受理DPA的效力是否决定后续DPA跟随，无通道。",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "先受理效力无通道"
+    },
+    {
+     "desc": "第三国法院是否承认欧盟拒绝令，不由企业单方完成。",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "承认与否非企业可定"
+    },
+    {
+     "desc": "EDPB是否已就'处理活动发生地'作为受理权优先判据发布统一指引？",
+     "kind": "thread",
+     "polarity": "?"
+    },
+    {
+     "desc": "若第三国调取令直接指向欧盟境内存储位置而非控制者，企业日志的哈希链在欧盟端能否单独构成'已履行拒绝义务'的证据？",
+     "kind": "thread",
+     "polarity": "?"
+    }
+   ],
+   "probes": [
+    {
+     "question": "EDPB年度报告或DPA联合决定记录中，是否存在'处理活动发生地'被援引为先受理判据的实例？",
+     "link": "查证T9/T10，决定哈希链是单点还是可复制证据单位",
+     "expected_gain": 0.7,
+     "covers": [
+      "T9",
+      "T5"
+     ]
+    },
+    {
+     "question": "调取令送达前企业已交出日志的，欧盟端还能否用哈希链证明'已履行拒绝义务'？",
+     "link": "测T12排序权转移时点，回接闸门日志证据命题",
+     "expected_gain": 0.6,
+     "covers": [
+      "T12",
+      "T8"
+     ]
+    },
+    {
+     "question": "人事指令与密钥归还仪式，有无任何欧盟端系统调用或访问日志可留痕？",
+     "link": "测T6/T7间隙，判定间接读取能否落入日志采集面",
+     "expected_gain": 0.5,
+     "covers": [
+      "T3",
+      "T6",
+      "T7"
+     ]
+    }
+   ],
+   "meta": [
+    "本层未生新的不可判定结构，因ing输出已充分揭示，但未产生新的不可通约处。",
+    "[P3] & 候选（各圈累计）12 条 / 本层 amps 3 条（比值 0.25；amps 可能含 adjudications/上游合并的贡献，比值只作方向参考）"
+   ],
+   "decidable_product": {
+    "answer": "1. 不构成传输，因为未发生向第三国的数据传输，但可能构成第44条下的“访问”，若构成则需第49条克减或BCR。2. 切分权无明确归属，EDPB未统一，各国DPA分歧，企业自证不被当然接受；不能以首个行政解释为锚点，因无援引规则。3. 指示本身不构成独立处理活动，控制者/处理者二分仍适用，欧盟实体为控制者，第三国总部为处理者。4. 管辖判据未定，控制者设立地与处理活动发生地两条路指向不同DPA，合同不能制造主权送达。5. 双轨保存在欧盟端是否成立取决于欧盟DPA是否承认第三国程序法，不能以承认度作为变量测边界，因无统一通道。6. 间接读取不算传输，算本地处理，但构成传输认定缺口，因无系统调用痕迹，本地化方案实质边界无法由日志覆盖。",
+    "answered_sub_ids": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "evidence": [
+     "GDPR第44条以下传输要求数据向第三国或国际组织传输，远程访问未复制存储，EDPB指南未明确将其列为传输。",
+     "EDPB未就切分标准发布统一指引，各国DPA裁定可能冲突，无援引先例。"
+    ],
+    "distance": 0.2
+   },
+   "undecidable_product": {
+    "why_undecidable": "本层未产出新的不可通约处，因ing输出已充分揭示结构，但未生成新的&印记。",
+    "structural_amps": [
+     "机制选择与闸门日志互相给对方进入条件，但都不给对方结论。",
+     "企业能控制1位置的排序，前提是日志由企业持有且未被交出；企业不能控制0位置的命名。",
+     "命名失败不会让顺序消失，顺序失败会让命名变成纸面条款。"
+    ],
+    "aligned_amps": [],
+    "clarity": 0.0,
+    "distance": 1.0
+   },
+   "distance_to_question": 0.85,
+   "covered_aspects": [
+    "远程访问的传输认定",
+    "切分权归属",
+    "指示的处理活动性质",
+    "管辖判据分叉",
+    "拒绝令承认度"
+   ],
+   "uncovered_aspects": [
+    "EDPB统一指引的具体内容",
+    "首受理DPA裁定的援引先例",
+    "第三国程序法对欧盟拒绝令的承认规则",
+    "双轨保存的合成规则"
+   ],
+   "untouched": [
+    {
+     "desc": "切分权归属未分配",
+     "source": "anchor"
+    },
+    {
+     "desc": "管辖判据分叉时先受理DPA效力",
+     "source": "anchor"
+    },
+    {
+     "desc": "间接读取是否落入日志采集范围",
+     "source": "anchor"
+    },
+    {
+     "desc": "送达对象是\"存储位置\"而非\"控制者\"时，欧盟端哈希链记录的是系统事实，与第三国令状要求的\"人可归责主体\"对不上口径",
+     "source": "judge"
+    },
+    {
+     "desc": "首受理DPA的裁定是否被后续DPA援引，决定日志哈希链是单点证据还是可复制证据单位",
+     "source": "judge"
+    },
+    {
+     "desc": "人事指令与密钥归还仪式发生在日志采集面之外，间接读取不留系统调用痕迹",
+     "source": "judge"
+    },
+    {
+     "desc": "闸门日志可记录面之外的接触事件——人事指令、密钥归还仪式——其发生位置在日志采样窗口之外，本地化方案无法覆盖这段间隙",
+     "source": "judge"
+    },
+    {
+     "desc": "第三国调取令若直接指向存储位置而非控制者，欧盟端哈希链的证明对象是企业是否\"已履行拒绝义务\"，而非数据是否已被读取，两者在证据法上不是同一命题",
+     "source": "judge"
+    },
+    {
+     "desc": "EDPB 是否就\"处理活动发生地\"作为受理权优先判据发布过统一指引，此点未被池中任何线头核实，若已有则 T10/T12 的\"无通道\"判断需撤回",
+     "source": "judge"
+    },
+    {
+     "desc": "首个受理 DPA 的裁定在后续 DPA 处有无援引先例，可向 EDPB 年度报告或 DPA 联合决定记录中查证，不依赖企业自证",
+     "source": "judge"
+    },
+    {
+     "desc": "两 DPA 对同一份日志给出相反裁定时，双轨保存产生的两份合规事实之间缺少合成规则，谁先受理不等于谁先定论",
+     "source": "judge"
+    },
+    {
+     "desc": "企业控制 1 位置排序的前提是日志未被交出，但\"交出\"的动作若发生在调取令送达之前，排序权已转移而企业尚未察觉",
+     "source": "judge"
+    },
+    {
+     "desc": "欧盟境内受托处理者被第三国母公司通过人事权间接读取时，该读取行为在欧盟端是否构成\"传输\"，取决于读取者是否落在 GDPR 第 3 条范围内，此点未定",
+     "source": "judge"
+    }
+   ],
+   "suspensions": [],
+   "engagements": [
+    {
+     "sub_id": 4,
+     "target": "数据存储在欧盟、控制权在第三国时，哪国DPA有管辖权？判据是控制者设立地还是处理活动发生地？合同能否制造主权送达？",
+     "how": "管辖判据分叉时先受理DPA效力未定，需查EDPB记录",
+     "depth": 0.6
+    },
+    {
+     "sub_id": 5,
+     "target": "第三国程序法明文不承认欧盟DPA拒绝令时，企业双轨保存的合规事实在欧盟端是否仍成立？能否将第三国程序法承认度作为变量，测跨境拒绝令的可执行边界？",
+     "how": "送达对象为存储位置时哈希链证明对象错位，证据命题未合",
+     "depth": 0.5
+    },
+    {
+     "sub_id": 6,
+     "target": "欧盟境内受托处理被第三国母公司通过人事权、源代码权、密钥备份权间接读取时，这算传输还是本地处理？间接读取能否作为传输认定缺口，测本地化方案的实质边界？",
+     "how": "间接读取是否构成传输取决于读取者是否落第3条范围",
+     "depth": 0.4
+    }
+   ],
+   "refinements": [
+    {
+     "sub_id": 4,
+     "sub_question": "数据存储在欧盟、控制权在第三国时，哪国DPA有管辖权？判据是控制者设立地还是处理活动发生地？合同能否制造主权送达？",
+     "how": "两条管辖判据在调取令送达处理者时首次分叉出不同受理机关",
+     "layer": 2
+    },
+    {
+     "sub_id": 6,
+     "sub_question": "欧盟境内受托处理被第三国母公司通过人事权、源代码权、密钥备份权间接读取时，这算传输还是本地处理？间接读取能否作为传输认定缺口，测本地化方案的实质边界？",
+     "how": "人事权/密钥备份接触点落在日志采集范围外，间接读取无对应格子",
+     "layer": 2
+    },
+    {
+     "sub_id": 4,
+     "sub_question": "数据存储在欧盟、控制权在第三国时，哪国DPA有管辖权？判据是控制者设立地还是处理活动发生地？合同能否制造主权送达？",
+     "how": "管辖判据分叉时先受理DPA效力未定，需查EDPB记录",
+     "layer": 3
+    },
+    {
+     "sub_id": 5,
+     "sub_question": "第三国程序法明文不承认欧盟DPA拒绝令时，企业双轨保存的合规事实在欧盟端是否仍成立？能否将第三国程序法承认度作为变量，测跨境拒绝令的可执行边界？",
+     "how": "送达对象为存储位置时哈希链证明对象错位，证据命题未合",
+     "layer": 3
+    },
+    {
+     "sub_id": 6,
+     "sub_question": "欧盟境内受托处理被第三国母公司通过人事权、源代码权、密钥备份权间接读取时，这算传输还是本地处理？间接读取能否作为传输认定缺口，测本地化方案的实质边界？",
+     "how": "间接读取是否构成传输取决于读取者是否落第3条范围",
+     "layer": 3
+    }
+   ],
+   "reconfirmations": [],
+   "revocations": [],
+   "deferrals": [
+    {
+     "id": "d_001",
+     "sub_id": 2,
+     "sub_question": "混合数据集中个人数据与非个人数据的切分标准，目前由EDPB、各国DPA还是企业自证决定？当两个DPA对同一数据集给出相反切分裁定时，企业能否以首个行政解释作为锚点？",
+     "reason": "切分权首位未显现，先等日志证据链成形",
+     "revisit_condition": "出现首个DPA对同一日志作出行政解释",
+     "layer": 1,
+     "last_reconfirmed_layer": 2,
+     "status": "handled",
+     "resolved_at": 2,
+     "resolution_reason": "对应子问题被直接回答"
+    },
+    {
+     "id": "d_002",
+     "sub_id": 5,
+     "sub_question": "第三国程序法明文不承认欧盟DPA拒绝令时，企业双轨保存的合规事实在欧盟端是否仍成立？能否将第三国程序法承认度作为变量，测跨境拒绝令的可执行边界？",
+     "reason": "第三国程序法承认度需具体法域样本",
+     "revisit_condition": "拿到一个第三国拒绝承认欧盟DPA令的实例",
+     "layer": 1,
+     "last_reconfirmed_layer": 2,
+     "status": "handled",
+     "resolved_at": 2,
+     "resolution_reason": "对应子问题被直接回答"
+    },
+    {
+     "id": "d_003",
+     "sub_id": 3,
+     "sub_question": "当欧盟实体是唯一控制者、第三国总部仅发出指示时，该指示本身是否构成GDPR下的独立处理活动？若构成，控制者/处理者二分如何适用？",
+     "reason": "指示本身是否构成独立处理活动，缺控制者/处理者二分适用判据",
+     "revisit_condition": "EDPB发布控制者认定指引后",
+     "layer": 3,
+     "last_reconfirmed_layer": 3,
+     "status": "deferred",
+     "resolved_at": null,
+     "resolution_reason": ""
+    }
+   ],
+   "resolutions": [],
+   "escalations": [],
+   "reclassifications": [],
+   "settlement": {
+    "clean": true,
+    "leftover": 0,
+    "coverage": 0.7183673469387756,
+    "answered": 5,
+    "total": 6,
+    "decidable_channel": {
+     "answers": [
+      {
+       "answer": "在GDPR下，第三国母公司对欧盟境内数据的远程访问（不复制存储）是否构成第44条以下的传输，取决于该访问是否使第三国主体获得对个人数据的读取能力。若构成，应适用第46条保障措施（如SCC）或第49条克减；但第49条克减仅在可法律调取闸未闭合时可用。间接读取（通过人事权、源代码权、密钥备份权）若导致实际数据可读，可认定为传输，否则为本地处理。",
+       "answered_sub_ids": [
+        1,
+        6
+       ],
+       "evidence": [
+        "EDPB《关于GDPR第3条地域适用范围的指南》指出，远程访问本身可构成处理，若涉及向第三国传输数据则触发第五章。",
+        "第44条以下机制选择依赖主体和地域命名，但命名权最终由DPA或法院行使，企业不能单方决定。"
+       ]
+      },
+      {
+       "answer": "在GDPR下，第三国母公司对欧盟境内数据的远程访问（不复制存储）是否构成第44条以下的传输，取决于该访问是否使第三国可强制主体获得可读副本。若仅远程读取且未产生可读副本，不构成传输；若读取导致可读副本落入第三国可强制主体控制（包括缓存、备份、密钥恢复），则构成传输，应适用第46条（适当保障）或第49条克减（严格条件下）。",
+       "answered_sub_ids": [
+        1,
+        6
+       ],
+       "evidence": [
+        "ing输出将0/1翻转点定在可读副本落入第三国可强制主体时，远程访问不复制存储若未产生可读副本，则0保持。",
+        "间接读取通过人事权、密钥备份权实现时，若产生可读副本，则构成传输认定缺口。"
+       ]
+      },
+      {
+       "answer": "1. 不构成传输，因为未发生向第三国的数据传输，但可能构成第44条下的“访问”，若构成则需第49条克减或BCR。2. 切分权无明确归属，EDPB未统一，各国DPA分歧，企业自证不被当然接受；不能以首个行政解释为锚点，因无援引规则。3. 指示本身不构成独立处理活动，控制者/处理者二分仍适用，欧盟实体为控制者，第三国总部为处理者。4. 管辖判据未定，控制者设立地与处理活动发生地两条路指向不同DPA，合同不能制造主权送达。5. 双轨保存在欧盟端是否成立取决于欧盟DPA是否承认第三国程序法，不能以承认度作为变量测边界，因无统一通道。6. 间接读取不算传输，算本地处理，但构成传输认定缺口，因无系统调用痕迹，本地化方案实质边界无法由日志覆盖。",
+       "answered_sub_ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "evidence": [
+        "GDPR第44条以下传输要求数据向第三国或国际组织传输，远程访问未复制存储，EDPB指南未明确将其列为传输。",
+        "EDPB未就切分标准发布统一指引，各国DPA裁定可能冲突，无援引先例。"
+       ]
+      }
+     ],
+     "coverage_history": [],
+     "last_coverage": 0.0
+    },
+    "undecidable_channel": {
+     "structural_amps": [
+      "机制选择与闸门日志互相给对方进入条件，但都不给对方结论。",
+      "企业能控制1位置的排序，前提是日志由企业持有且未被交出；企业不能控制0位置的命名。",
+      "命名失败不会让顺序消失，顺序失败会让命名变成纸面条款。"
+     ],
+     "clarity_history": [
+      0.7,
+      0.0,
+      0.0
+     ],
+     "last_clarity": 0.0,
+     "und_aspects": [],
+     "struct_coverage_history": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "last_struct_coverage": 0.0,
+     "aligned_amps": [],
+     "last_struct_hit": 0,
+     "last_aligned_hit": 0,
+     "aligned_coverage_history": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "last_aligned_coverage": 0.0,
+     "aspect_first_hit": {},
+     "struct_trace": [
+      {
+       "layer": 1,
+       "hit": 0,
+       "total": 0,
+       "cov": 0.0,
+       "newly": []
+      },
+      {
+       "layer": 2,
+       "hit": 0,
+       "total": 0,
+       "cov": 0.0,
+       "newly": []
+      },
+      {
+       "layer": 3,
+       "hit": 0,
+       "total": 0,
+       "cov": 0.0,
+       "newly": []
+      }
+     ],
+     "aligned_first_hit": {},
+     "aligned_trace": [
+      {
+       "layer": 1,
+       "hit": 0,
+       "total": 0,
+       "cov": 0.0,
+       "newly": []
+      },
+      {
+       "layer": 2,
+       "hit": 0,
+       "total": 0,
+       "cov": 0.0,
+       "newly": []
+      },
+      {
+       "layer": 3,
+       "hit": 0,
+       "total": 0,
+       "cov": 0.0,
+       "newly": []
+      }
+     ]
+    },
+    "snapshot_coverage": 0.746938775510204,
+    "drifted_out": 1
+   },
+   "adjudications": [],
+   "both_quota": {},
+   "carry": [
+    {
+     "question": "上面这几条候选被判为「后补／换说法复述」，本圈禁止以任何形式重述它们——原样、换说法、扩写都算。只交真的长出来的新东西：闸门日志可记录面之外的接触事件——人事指令、密钥归还仪式——其发生位置在日志采样窗口之外，本地化方案无法覆盖这段间隙；第三国调取令若直接指向存储位置而非控制者，欧盟端哈希链的证明对象是企业是否\"已履行拒绝义务\"，而非数据是否已被读取，两者；EDPB 是否就\"处理活动发生地\"作为受理权优先判据发布过统一指引，此点未被池中任何线头核实，若已有则 T10/T12 ；首个受理 DPA 的裁定在后续 DPA 处有无援引先例，可向 EDPB 年度报告或 DPA 联合决定记录中查证，不依赖企",
+     "link": "self-check 判定的复述条目，绕开去重就能喷更多，但那不叫展开",
+     "expected_gain": 0.6,
+     "kind": "candidate",
+     "text": "上面这几条候选被判为「后补／换说法复述」，本圈禁止以任何形式重述它们——原样、换说法、扩写都算。只交真的长出来的新东西：闸门日志可记录面之外的接触事件——人事指令、密钥归还仪式——其发生位置在日志采样窗口之外，本地化方案无法覆盖这段间隙；第三国调取令若直接指向存储位置而非控制者，欧盟端哈希链的证明对象是企业是否\"已履行拒绝义务\"，而非数据是否已被读取，两者；EDPB 是否就\"处理活动发生地\"作为受理权优先判据发布过统一指引，此点未被池中任何线头核实，若已有则 T10/T12 ；首个受理 DPA 的裁定在后续 DPA 处有无援引先例，可向 EDPB 年度报告或 DPA 联合决定记录中查证，不依赖企",
+     "banned": [
+      "闸门日志可记录面之外的接触事件——人事指令、密钥归还仪式——其发生位置在日志采样窗口之外，本地化方案无法覆盖这段间隙",
+      "第三国调取令若直接指向存储位置而非控制者，欧盟端哈希链的证明对象是企业是否\"已履行拒绝义务\"，而非数据是否已被读取，两者",
+      "EDPB 是否就\"处理活动发生地\"作为受理权优先判据发布过统一指引，此点未被池中任何线头核实，若已有则 T10/T12 ",
+      "首个受理 DPA 的裁定在后续 DPA 处有无援引先例，可向 EDPB 年度报告或 DPA 联合决定记录中查证，不依赖企"
+     ]
+    }
+   ],
+   "carry_check": {
+    "checked": 1,
+    "violations": 0,
+    "items": [],
+    "notes": "注入 1 条、可核对 1 条，违例 0 条",
+    "round": 3
+   },
+   "carry_checks": [
+    {
+     "checked": 1,
+     "violations": 0,
+     "items": [],
+     "notes": "注入 1 条、可核对 1 条，违例 0 条",
+     "round": 3
+    }
+   ],
+   "carry_dropped": [],
+   "carry_dropped_all": [],
+   "rephrase_ratio": null,
+   "probe_skipped": false,
+   "rounds_cap": 3,
+   "duel_suspensions": [],
+   "meta_closure": {},
+   "stop_reason": "连续 2 轮无新 &（沉淀完了），螺旋停止",
+   "rounds_run": 3,
+   "roles_run": [
+    "摊开",
+    "转向",
+    "复裁"
+   ],
+   "closure_reason": "",
+   "round_log": [
+    {
+     "round": 1,
+     "role": "摊开",
+     "new_amps": 3,
+     "new_threads": 3,
+     "idle_amp": 0,
+     "idle_thread": 0,
+     "idle_stall": 0,
+     "why": ""
+    },
+    {
+     "round": 2,
+     "role": "转向",
+     "new_amps": 0,
+     "new_threads": 2,
+     "idle_amp": 1,
+     "idle_thread": 0,
+     "idle_stall": 0,
+     "why": ""
+    },
+    {
+     "round": 3,
+     "role": "复裁",
+     "new_amps": 0,
+     "new_threads": 2,
+     "idle_amp": 2,
+     "idle_thread": 0,
+     "idle_stall": 0,
+     "why": ""
+    }
+   ],
+   "rehashed": [
+    {
+     "desc": "切分权在EDPB、单个DPA、企业自证之间没有分配。",
+     "same_as": "切分权在EDPB、单个DPA、企业自证之间没有分配。",
+     "kind": "线头",
+     "round": 2
+    }
+   ],
+   "idle": false,
+   "rendered": "━━━ 研究 · entry=1 ━━━\n\n【锚点】企业出海欧洲的合规方案，支点是：闸门日志在哪个动作上从运维记录变成可被第三国法律调取的证据。\n\n【候选】\n  [1×1] 第三国调取令送达动作指向欧盟境内具体存储位置（IP/卷/桶）时，企业闸门日志在该时点从运维序列转为可被外国程序援引的客体  属性◈阳展开\n  [1×0] 送达对象是\"存储位置\"而非\"控制者\"时，欧盟端哈希链记录的是系统事实，与第三国令状要求的\"人可归责主体\"对不上口径  ⚡& 属性◈阳展开\n  [1×0] 首受理DPA的裁定是否被后续DPA援引，决定日志哈希链是单点证据还是可复制证据单位  ⚡& 属性◈阳展开\n  [1×0] 人事指令与密钥归还仪式发生在日志采集面之外，间接读取不留系统调用痕迹  ⚡& 属性◈阳展开\n  [0×0] 闸门日志可记录面之外的接触事件——人事指令、密钥归还仪式——其发生位置在日志采样窗口之外，本地化方案无法覆盖这段间隙  属性◈阴展开\n  [0×0] 第三国调取令若直接指向存储位置而非控制者，欧盟端哈希链的证明对象是企业是否\"已履行拒绝义务\"，而非数据是否已被读取，两者在证据法上不是同一命题\n  [0×0] EDPB 是否就\"处理活动发生地\"作为受理权优先判据发布过统一指引，此点未被池中任何线头核实，若已有则 T10/T12 的\"无通道\"判断需撤回  属性◈阴展开\n  [0×0] 首个受理 DPA 的裁定在后续 DPA 处有无援引先例，可向 EDPB 年度报告或 DPA 联合决定记录中查证，不依赖企业自证  属性◈阴展开\n  [0×0] 两 DPA 对同一份日志给出相反裁定时，双轨保存产生的两份合规事实之间缺少合成规则，谁先受理不等于谁先定论  属性◈阴展开\n  [0×0] 企业控制 1 位置排序的前提是日志未被交出，但\"交出\"的动作若发生在调取令送达之前，排序权已转移而企业尚未察觉\n  [0×0] 欧盟境内受托处理者被第三国母公司通过人事权间接读取时，该读取行为在欧盟端是否构成\"传输\"，取决于读取者是否落在 GDPR 第 3 条范围内，此点未定\n\n【ing 对撞】\n一、让两端各自把话说完\n\n0 端是运维记录。它成立的条件只有一条：写入者和被写入者在同一台机器上，系统调用和时间戳同源，排序不可改。它的有效范围止于采样窗口。窗口外的接触不是被隐藏，是从来不成为记录。它撑住的地方是顺序；塌的地方是记录面只覆盖系统事实，不覆盖意图。\n\n1 端是可被第三国法律调取的证据。它的成立条件不在日志内部。送达动作、可援引的程序法、可归责主体，三样缺一，1 端不成立。它撑住的时点是送达，一旦送达，日志进入程序客体。它塌的地方是欧盟端的拒绝令在第三国程序法里有没有位置，这个问题不在企业手里。\n\n二、各推到极端\n\n0 端推到全部记录：记录者本人也要被记录，递归收不住。同时记录面越全，可被正当要求调取的接触越多，调取面跟着变宽。0 端吞不掉 1 端，因为“全部记下来”不等于“可被援引”。\n\n1 端推到全部日志皆是潜在证据：运维记录失去独立身份，每次写入都是预先生成证据。这一步要成立，得假设第三国程序法有无限域外效力、欧盟端不承认任何拒绝令。假设到这一步，停。\n\n三、找反转点\n\n企业用扩大记录来自证，记录面每宽一格，证据面同宽一格。0 端的加固同时是 1 端的加固。\n\n0 端要求只记系统事实，不记意图；1 端要求人可归责，需要意图或过失。0 端越干净，1 端越无法从同一份日志里找到归责支点。两个有效域的要求方向相反。\n\n哈希链的证明对象从“数据有没有被读取”滑向“企业有没有履行拒绝义务”。企业证得越足，越确认自己是可归责主体，越坐实令状的送达对象。自证变成自我指认。\n\n“未交出”在 0 端看得见，“未被调取”只在 1 端成立。两个时点不同步，而企业只能从 0 端观测。它看到的合规状态总是滞后的。\n\n四、生成\n\n问“在哪个动作上切换”是范畴错误。它假设运维记录和证据是同一条链上的前后段。实际是两个不同的有效域。日志不是从 0 变成 1，是同时落在两个域里，被两套权威分别读取。企业在 0 端的动作不能把日志移进 1 端，因为 1 端的入口不由它开。\n\n真正的错位是：存储位置对控制者，系统事实对人可归责主体。送达指向哪一边，决定哪一端被激活，而企业不写令状。\n\n支点因此不在动作序列上，在记录面与归责面的接口上。记录面的宽度由企业工程约束决定，归责面的开口由第三国程序法和欧盟端承认规则合起来决定。接口没有统一通道。\n\n首受理 DPA 的裁定如果只对自己有效，哈希链就是单点证据，换一个 DPA 就要重做；如果能被后续 DPA 援引，哈希链才成为可复制的证据单位。援引规则没有统一通道，这个分叉现在关不上。\n\n五、撞不动的地方\n\n& 欧盟端的拒绝令在第三国程序法里有没有可援引的位置，这个位置不由欧盟端设定，也不由企业提交的证据设定。1 端的落点有一部分在欧盟之外。\n\n& 人事指令、密钥归还仪式落在采样窗口外，间接读取不留系统调用痕迹。调高采样频率覆盖不了，这是 0 端的结构性缺口。\n\n& 令状写“存储位置”还是写“控制者”，不是同一份文书的两种措辞，是两个不同的送达对象。企业无法在文书送达前知道哪一端被激活。\n\n& 两个 DPA 各自出一份裁定，两份都成立时，日志的同一段顺序被读成两个事实。合成规则不存在，因为两份裁定都不需要援引对方。首受理只产生时间先后，不产生优先效力。\n\n六、回到原始问题\n\n原始问题要一个时间轴上的切换点。对撞之后没有这个点。三个决定后果的结构点——送达指向哪一端、第三国程序法是否承认欧盟拒绝令、首受理 DPA 裁定能否被援引——都不在企业的动作序列里。\n\n企业能守的是记录面内的排序。归责面的开口不由它决定。\n\n【& 印记】\n  （无）\n\n【悬空线头】\n  💭 EDPB是否已就'处理活动发生地'作为受理权优先判据发布统一指引？\n  💭 若第三国调取令直接指向欧盟境内存储位置而非控制者，企业日志的哈希链在欧盟端能否单独构成'已履行拒绝义务'的证据？\n\n【探针回归】\n  ? EDPB年度报告或DPA联合决定记录中，是否存在'处理活动发生地'被援引为先受理判据的实例？（回来：查证T9/T10，决定哈希链是单点还是可复制证据单位｜增益0.7）\n  ? 调取令送达前企业已交出日志的，欧盟端还能否用哈希链证明'已履行拒绝义务'？（回来：测T12排序权转移时点，回接闸门日志证据命题｜增益0.6）\n  ? 人事指令与密钥归还仪式，有无任何欧盟端系统调用或访问日志可留痕？（回来：测T6/T7间隙，判定间接读取能否落入日志采集面｜增益0.5）\n\n【尚未触及的方面】\n  💭 切分权归属未分配（anchor）\n  💭 管辖判据分叉时先受理DPA效力（anchor）\n  💭 间接读取是否落入日志采集范围（anchor）\n  💭 送达对象是\"存储位置\"而非\"控制者\"时，欧盟端哈希链记录的是系统事实，与第三国令状要求的\"人可归责主体\"对不上口径（judge）\n  💭 首受理DPA的裁定是否被后续DPA援引，决定日志哈希链是单点证据还是可复制证据单位（judge）\n  💭 人事指令与密钥归还仪式发生在日志采集面之外，间接读取不留系统调用痕迹（judge）\n  💭 闸门日志可记录面之外的接触事件——人事指令、密钥归还仪式——其发生位置在日志采样窗口之外，本地化方案无法覆盖这段间隙（judge）\n  💭 第三国调取令若直接指向存储位置而非控制者，欧盟端哈希链的证明对象是企业是否\"已履行拒绝义务\"，而非数据是否已被读取，两者在证据法上不是同一命题（judge）\n  💭 EDPB 是否就\"处理活动发生地\"作为受理权优先判据发布过统一指引，此点未被池中任何线头核实，若已有则 T10/T12 的\"无通道\"判断需撤回（judge）\n  💭 首个受理 DPA 的裁定在后续 DPA 处有无援引先例，可向 EDPB 年度报告或 DPA 联合决定记录中查证，不依赖企业自证（judge）\n  💭 两 DPA 对同一份日志给出相反裁定时，双轨保存产生的两份合规事实之间缺少合成规则，谁先受理不等于谁先定论（judge）\n  💭 企业控制 1 位置排序的前提是日志未被交出，但\"交出\"的动作若发生在调取令送达之前，排序权已转移而企业尚未察觉（judge）\n  💭 欧盟境内受托处理者被第三国母公司通过人事权间接读取时，该读取行为在欧盟端是否构成\"传输\"，取决于读取者是否落在 GDPR 第 3 条范围内，此点未定（judge）\n\n【本层碰了】\n  - 数据存储在欧盟、控制权在第三国时，哪国DPA有管辖权？判据是控制者设立地还是处理活动发生地？合同能否制造主权送达？：管辖判据分叉时先受理DPA效力未定，需查EDPB记录\n  - 第三国程序法明文不承认欧盟DPA拒绝令时，企业双轨保存的合规事实在欧盟端是否仍成立？能否将第三国程序法承认度作为变量，测跨境拒绝令的可执行边界？：送达对象为存储位置时哈希链证明对象错位，证据命题未合\n  - 欧盟境内受托处理被第三国母公司通过人事权、源代码权、密钥备份权间接读取时，这算传输还是本地处理？间接读取能否作为传输认定缺口，测本地化方案的实质边界？：间接读取是否构成传输取决于读取者是否落第3条范围\n\n【延迟债务（暂缓，非悬置）】\n  - 子问题3：指示本身是否构成独立处理活动，缺控制者/处理者二分适用判据（回访条件：EDPB发布控制者认定指引后）\n\n【📗 可判定通道】\n  answer：1. 不构成传输，因为未发生向第三国的数据传输，但可能构成第44条下的“访问”，若构成则需第49条克减或BCR。2. 切分权无明确归属，EDPB未统一，各国DPA分歧，企业自证不被当然接受；不能以首个行政解释为锚点，因无援引规则。3. 指示本身不构成独立处理活动，控制者/处理者二分仍适用，欧盟实体为控制者，第三国总部为处理者。4. 管辖判据未定，控制者设立地与处理活动发生地两条路指向不同DPA，合同不能制造主权送达。5. 双轨保存在欧盟端是否成立取决于欧盟DPA是否承认第三国程序法，不能以承认度作为变量测边界，因无统一通道。6. 间接读取不算传输，算本地处理，但构成传输认定缺口，因无系统调用痕迹，本地化方案实质边界无法由日志覆盖。\n  answered_sub_ids：[1, 2, 3, 4, 5, 6]\n  distance：0.2\n  evidence：GDPR第44条以下传输要求数据向第三国或国际组织传输，远程访问未复制存储，EDPB指南未明确将其列为传输。\n  evidence：EDPB未就切分标准发布统一指引，各国DPA裁定可能冲突，无援引先例。\n\n【综合距离】0.85\n  covered_aspects：远程访问的传输认定、切分权归属、指示的处理活动性质、管辖判据分叉、拒绝令承认度\n  uncovered_aspects：EDPB统一指引的具体内容、首受理DPA裁定的援引先例、第三国程序法对欧盟拒绝令的承认规则、双轨保存的合成规则\n\n【view】\n## 一、可判定部分 · 直接回答\n\n1. 间接读取：不形成向第三国的传输，因此不落“传输”项；但它仍可能被读成第44条下的“访问”。一旦该访问成立，第49条克减或 BCR 才进入条件。\n2. 切分权：没有单一归属。EDPB 未统一，各国 DPA 分歧，企业自证不被当然接受。首个 DPA 的行政解释不能当锚点，因为后续援引规则不存在。\n3. 指示本身：不独立构成处理活动。控制者/处理者二分仍适用；欧盟实体为控制者，第三国总部为处理者。\n4. 管辖判据：未定。控制者设立地与处理活动发生地各指不同 DPA；合同不能制造主权送达。\n5. 双轨保存：欧盟端是否成立，取决于欧盟 DPA 是否承认第三国程序法。承认度不能作为变量去测跨境拒绝令边界，因为没有统一通道。\n6. 间接读取：不算传输，算本地处理；但它构成传输认定缺口，因为无系统调用痕迹。本地化方案的实质边界不能由日志覆盖。\n\n## 二、不可判定部分 · 结构揭示\n\n- EDPB 是否已把“处理活动发生地”作为受理权优先判据发布统一指引，本轮未核实。若已有，T10/T12 的“无通道”判断需要撤回。\n- 第三国调取令指向存储位置而非控制者时，欧盟端哈希链能否单独证明“已履行拒绝义务”，证据命题未合。\n- 首受理 DPA 的裁定能否被后续 DPA 援引，决定日志哈希链是单点证据还是可复制证据单位。援引规则没有统一通道。\n- 两个 DPA 对同一段日志给出相反裁定时，双轨保存的两份合规事实缺少合成规则。首受理只产生时间先后，不产生优先效力。\n- 欧盟端拒绝令在第三国程序法中有无被援引的位置，不由欧盟端设定，也不由企业提交的证据设定。1 端落点有一部分在欧盟之外。\n- 间接读取是否构成传输，取决于读取者是否落在 GDPR 第3条范围内，此点未定。\n- 人事指令、密钥归还仪式落在日志采样窗口外，不留系统调用痕迹。调高采样频率覆盖不了，这是 0 端的结构性缺口。\n- 令状写“存储位置”还是写“控制者”，是两个送达对象。企业无法在文书送达前知道哪一端被激活。\n- 企业控制排序的前提是日志未被交出。若“交出”发生在调取令送达之前，排序权已转移而企业尚未察觉。\n- 新延迟与可判定结论并存：可判定通道已让控制者/处理者二分继续适用；不可判定通道记的是“指示是否独立处理活动”缺控制者认定指引。未定的是该二分在指示场景的适用判据，不是二分本身。\n- 元反思所记的“未生新的不可判定结构”成立：本轮没有新增不可通约处；新增的是延迟项。\n\n## 三、★ 暂缓处理的部分（延迟债务）——账目\n\n- 子问题：EDPB 是否已就“处理活动发生地”作为受理权优先判据发布统一指引。  \n  为什么延迟：该事实在 EDPB 年度报告或 DPA 联合决定记录中，不在本轮材料和企业自证内。  \n  原本的回访条件：查证 EDPB 年度报告或 DPA 联合决定记录，回来决定 T9/T10，并判断哈希链是单点还是可复制证据单位。  \n  最终状态：未清，挂账。\n\n- 子问题：首受理 DPA 裁定在后续 DPA 处有无援引先例。  \n  为什么延迟：需要 DPA 联合决定记录或年度报告，不能由企业补足。  \n  原本的回访条件：查证后决定 T10/T12 的“无通道”判断是否撤回。  \n  最终状态：未清。\n\n- 子问题：调取令送达前企业已交出日志时，欧盟端还能否用哈希链证明“已履行拒绝义务”。  \n  为什么延迟：需先测 T12 排序权转移时点，回接闸门日志证据命题。  \n  原本的回访条件：测该时点。  \n  最终状态：未清。\n\n- 子问题：人事指令与密钥归还仪式有无欧盟端系统调用或访问日志可留痕。  \n  为什么延迟：需测 T6/T7 间隙，判定间接读取能否落入日志采集面。  \n  原本的回访条件：测量或查证该间隙。  \n  最终状态：未清。\n\n- 子问题：指示本身是否构成独立处理活动，缺控制者/处理者二分适用判据。  \n  为什么延迟：需 EDPB 发布控制者认定指引。  \n  原本的回访条件：该指引发布后。  \n  最终状态：延迟，未结。\n\n- 第三国程序法承认度作为变量：可判定通道已关闭，不进延迟账。\n\n## 四、螺旋轨迹\n\n上一圈从两个时间戳出发，把 0/1 定为跨境两端，切分权未归属。本轮把 0 端推到全记录，把 1 端推到全日志潜在证据，发现两者不是同一条链上的前后段：0 端撑住顺序，塌在意图；1 端撑住送达，塌在拒绝令位置。\n\n反转点出现：记录面每宽一格，证据面同宽；哈希链证明对象从“数据有没有被读取”滑向“企业有没有履行拒绝义务”；未交出与未被调取时点不同步，企业只能从 0 端观测，看到的合规状态总是滞后。\n\n生成：问“在哪个动作上切换”是范畴错误。日志同时落在两个有效域里，被两套权威分别读取。支点移到记录面与归责面的接口。可判定通道收束六条；不可判定通道把外部程序互认、采样缺口、首受理援引留为债务。原始问题要的切换点，此处未生。\n\n## 五、& 张力与悬空线头\n\n- 可判定通道说控制者/处理者二分仍适用；不可判定通道记的是缺控制者认定指引。张力在“结论已用”和“适用判据未到”之间。\n- 间接读取不算传输、算本地处理；但它可能构成第44条访问。读取者是否落第3条范围，未定。\n- 双轨保存在欧盟端是否成立取决于承认；可判定通道又说承认度不能作变量。悬着的问题仍问该事实能否成立。\n- 首受理 DPA 只产生时间先后，不产生优先效力；援引规则无统一通道。\n- 欧盟端拒绝令在第三国程序法中的可援引位置，不由欧盟端设定，也不由企业证据设定。\n- 采样窗外的人事指令、密钥归还仪式无系统调用痕迹；提高频率无效。\n- 送达对象是存储位置还是控制者，企业无法在送达前预知哪端被激活。\n- 日志未交出的前提可能已被违反；排序权转移时企业未必察觉。\n- 两个 DPA 对同一段日志作出相反裁定时，合成规则不存在。\n- EDPB 统一指引的查证未做，T9/T10、T10/T12 的判断仍带撤回条件。\n- 此处未生：新的不可通约结构没有出现；本轮新增的是延迟账，不是新结构。\n\n【元反思】\n  ∘ 本层未生新的不可判定结构，因ing输出已充分揭示，但未产生新的不可通约处。\n\n【质量评价】判断正常，无质量线索\n\n【自省】候选5-8为后补的查证型线头，非从展开长出；ing 未复述上游 view 原话，比例低。\n\n【「此处未生」计数】本圈 2 处（阈值 3）　（诚实姿态，未越界）\n  分布：view×2",
+   "manifest": "## 一、可判定部分 · 直接回答\n\n1. 间接读取：不形成向第三国的传输，因此不落“传输”项；但它仍可能被读成第44条下的“访问”。一旦该访问成立，第49条克减或 BCR 才进入条件。\n2. 切分权：没有单一归属。EDPB 未统一，各国 DPA 分歧，企业自证不被当然接受。首个 DPA 的行政解释不能当锚点，因为后续援引规则不存在。\n3. 指示本身：不独立构成处理活动。控制者/处理者二分仍适用；欧盟实体为控制者，第三国总部为处理者。\n4. 管辖判据：未定。控制者设立地与处理活动发生地各指不同 DPA；合同不能制造主权送达。\n5. 双轨保存：欧盟端是否成立，取决于欧盟 DPA 是否承认第三国程序法。承认度不能作为变量去测跨境拒绝令边界，因为没有统一通道。\n6. 间接读取：不算传输，算本地处理；但它构成传输认定缺口，因为无系统调用痕迹。本地化方案的实质边界不能由日志覆盖。\n\n## 二、不可判定部分 · 结构揭示\n\n- EDPB 是否已把“处理活动发生地”作为受理权优先判据发布统一指引，本轮未核实。若已有，T10/T12 的“无通道”判断需要撤回。\n- 第三国调取令指向存储位置而非控制者时，欧盟端哈希链能否单独证明“已履行拒绝义务”，证据命题未合。\n- 首受理 DPA 的裁定能否被后续 DPA 援引，决定日志哈希链是单点证据还是可复制证据单位。援引规则没有统一通道。\n- 两个 DPA 对同一段日志给出相反裁定时，双轨保存的两份合规事实缺少合成规则。首受理只产生时间先后，不产生优先效力。\n- 欧盟端拒绝令在第三国程序法中有无被援引的位置，不由欧盟端设定，也不由企业提交的证据设定。1 端落点有一部分在欧盟之外。\n- 间接读取是否构成传输，取决于读取者是否落在 GDPR 第3条范围内，此点未定。\n- 人事指令、密钥归还仪式落在日志采样窗口外，不留系统调用痕迹。调高采样频率覆盖不了，这是 0 端的结构性缺口。\n- 令状写“存储位置”还是写“控制者”，是两个送达对象。企业无法在文书送达前知道哪一端被激活。\n- 企业控制排序的前提是日志未被交出。若“交出”发生在调取令送达之前，排序权已转移而企业尚未察觉。\n- 新延迟与可判定结论并存：可判定通道已让控制者/处理者二分继续适用；不可判定通道记的是“指示是否独立处理活动”缺控制者认定指引。未定的是该二分在指示场景的适用判据，不是二分本身。\n- 元反思所记的“未生新的不可判定结构”成立：本轮没有新增不可通约处；新增的是延迟项。\n\n## 三、★ 暂缓处理的部分（延迟债务）——账目\n\n- 子问题：EDPB 是否已就“处理活动发生地”作为受理权优先判据发布统一指引。  \n  为什么延迟：该事实在 EDPB 年度报告或 DPA 联合决定记录中，不在本轮材料和企业自证内。  \n  原本的回访条件：查证 EDPB 年度报告或 DPA 联合决定记录，回来决定 T9/T10，并判断哈希链是单点还是可复制证据单位。  \n  最终状态：未清，挂账。\n\n- 子问题：首受理 DPA 裁定在后续 DPA 处有无援引先例。  \n  为什么延迟：需要 DPA 联合决定记录或年度报告，不能由企业补足。  \n  原本的回访条件：查证后决定 T10/T12 的“无通道”判断是否撤回。  \n  最终状态：未清。\n\n- 子问题：调取令送达前企业已交出日志时，欧盟端还能否用哈希链证明“已履行拒绝义务”。  \n  为什么延迟：需先测 T12 排序权转移时点，回接闸门日志证据命题。  \n  原本的回访条件：测该时点。  \n  最终状态：未清。\n\n- 子问题：人事指令与密钥归还仪式有无欧盟端系统调用或访问日志可留痕。  \n  为什么延迟：需测 T6/T7 间隙，判定间接读取能否落入日志采集面。  \n  原本的回访条件：测量或查证该间隙。  \n  最终状态：未清。\n\n- 子问题：指示本身是否构成独立处理活动，缺控制者/处理者二分适用判据。  \n  为什么延迟：需 EDPB 发布控制者认定指引。  \n  原本的回访条件：该指引发布后。  \n  最终状态：延迟，未结。\n\n- 第三国程序法承认度作为变量：可判定通道已关闭，不进延迟账。\n\n## 四、螺旋轨迹\n\n上一圈从两个时间戳出发，把 0/1 定为跨境两端，切分权未归属。本轮把 0 端推到全记录，把 1 端推到全日志潜在证据，发现两者不是同一条链上的前后段：0 端撑住顺序，塌在意图；1 端撑住送达，塌在拒绝令位置。\n\n反转点出现：记录面每宽一格，证据面同宽；哈希链证明对象从“数据有没有被读取”滑向“企业有没有履行拒绝义务”；未交出与未被调取时点不同步，企业只能从 0 端观测，看到的合规状态总是滞后。\n\n生成：问“在哪个动作上切换”是范畴错误。日志同时落在两个有效域里，被两套权威分别读取。支点移到记录面与归责面的接口。可判定通道收束六条；不可判定通道把外部程序互认、采样缺口、首受理援引留为债务。原始问题要的切换点，此处未生。\n\n## 五、& 张力与悬空线头\n\n- 可判定通道说控制者/处理者二分仍适用；不可判定通道记的是缺控制者认定指引。张力在“结论已用”和“适用判据未到”之间。\n- 间接读取不算传输、算本地处理；但它可能构成第44条访问。读取者是否落第3条范围，未定。\n- 双轨保存在欧盟端是否成立取决于承认；可判定通道又说承认度不能作变量。悬着的问题仍问该事实能否成立。\n- 首受理 DPA 只产生时间先后，不产生优先效力；援引规则无统一通道。\n- 欧盟端拒绝令在第三国程序法中的可援引位置，不由欧盟端设定，也不由企业证据设定。\n- 采样窗外的人事指令、密钥归还仪式无系统调用痕迹；提高频率无效。\n- 送达对象是存储位置还是控制者，企业无法在送达前预知哪端被激活。\n- 日志未交出的前提可能已被违反；排序权转移时企业未必察觉。\n- 两个 DPA 对同一段日志作出相反裁定时，合成规则不存在。\n- EDPB 统一指引的查证未做，T9/T10、T10/T12 的判断仍带撤回条件。\n- 此处未生：新的不可通约结构没有出现；本轮新增的是延迟账，不是新结构。\n\n## 七、原始问题覆盖率\n研究层可判定通道最近一次覆盖率：0.75（模型自评折算·depth 加权，累计 3 次记录）｜代码实算：已答子问题 5/6\n研究层不可判定通道：清晰度 0.00（模型自评，累计 3 次记录）｜结构覆盖率 0.00（代码实算）｜对齐覆盖率 0.00（代码实算）\n",
+   "quality_flags": [],
+   "quality_verdict": "判断正常，无质量线索",
+   "self_check": {
+    "suspicious_candidates": [
+     5,
+     6,
+     7,
+     8
+    ],
+    "suspicious_amps": [],
+    "ing_rephrased": false,
+    "honest_about_empty": true,
+    "unsaid_count": 2,
+    "unsaid_is_escape": false,
+    "unsaid_where": "view×2",
+    "flow_verdict": "对撞把支点从动作序列移到记录面/归责面接口，六条可判定收束，延迟账清楚，流程扎实。",
+    "view_verdict": "定下：日志同落两域、切分权无归属、管辖未定、间接读取算本地处理；未定项单列不混入。",
+    "amp_ratio_verdict": "& 四条皆从对撞长出，非凑数，比例正常。",
+    "notes": "候选5-8为后补的查证型线头，非从展开长出；ing 未复述上游 view 原话，比例低。"
+   },
+   "errors": [],
+   "anchor_touched": [
+    {
+     "desc": "数据本地化与跨境传输被并列为两难",
+     "source": "anchor"
+    },
+    {
+     "desc": "合法机制路径可判",
+     "source": "anchor"
+    },
+    {
+     "desc": "Schrems II后须逐案TIA",
+     "source": "anchor"
+    }
+   ],
+   "ing_structured": {}
+  }
+ },
+ "pools": {
+  "0": {
+   "amps": [
+    {
+     "desc": "责任落点与数据落点可分离，但分离后责任归属规则未定，形成不可通约的规范空白。",
+     "type": "ontological",
+     "source": "0",
+     "polarity": "0",
+     "polarity_why": "责任规则未定，空白未闭合"
+    },
+    {
+     "desc": "接收方法域的情报访问权限能否被合同、加密或审计抵消，最终由法院和监管解释，企业无法单方闭合。",
+     "type": "logical",
+     "source": "0",
+     "polarity": "0",
+     "polarity_why": "法院监管解释，企业不能闭合"
+    },
+    {
+     "desc": "混合数据集的切分标准未定型，今天按非个人数据放行的路径，明天可能因可识别性解释被拉回个人数据机制。",
+     "type": "structural",
+     "source": "0",
+     "polarity": "0",
+     "polarity_why": "切分标准未定型，解释可回拉"
+    },
+    {
+     "desc": "回传中国总部时，是否构成传输、走哪条机制、保护是否实质等同互相决定，不能依次勾选。",
+     "type": "logical",
+     "source": "0",
+     "polarity": "0",
+     "polarity_why": "三事互相决定，顺序未定"
+    },
+    {
+     "desc": "第49条克减即使可用，也不豁免记录义务；越依赖例外，越留下需要解释的轨迹。",
+     "type": "axiological",
+     "source": "0",
+     "polarity": "1",
+     "polarity_why": "克减不豁免记录，已成立"
+    },
+    {
+     "desc": "访问是否等于传输，取决于'获得'时点，但日志读取与法律获得无法对齐，形成规范空白。",
+     "type": "ontological",
+     "source": "0",
+     "polarity": "0",
+     "polarity_why": "获得时点未对齐，规范空白"
+    },
+    {
+     "desc": "数据在欧盟、控制权在第三国，哪国DPA有管辖权，合同无法制造主权送达。",
+     "type": "structural",
+     "source": "0",
+     "polarity": "0",
+     "polarity_why": "管辖权未定，合同不能解决"
+    },
+    {
+     "desc": "指示方是否构成处理，控制者/处理者二分未给只下指示的实体留位置。",
+     "type": "logical",
+     "source": "0",
+     "polarity": "0",
+     "polarity_why": "二分未覆盖，定性未定"
+    },
+    {
+     "desc": "合同、审计、政府访问冲突时谁优先，无裁决指引，企业只能保留冲突记录。",
+     "type": "axiological",
+     "source": "0",
+     "polarity": "0",
+     "polarity_why": "无优先规则，冲突未裁决"
+    },
+    {
+     "desc": "第三国程序法是否承认欧盟端拒绝令，企业无法单方决定，此张力未定形。",
+     "type": "ontological",
+     "source": "0",
+     "polarity": "?"
+    },
+    {
+     "desc": "两个DPA对同一日志给出相反裁定，企业只能双轨保存，无法合并成一份合规事实。",
+     "type": "structural",
+     "source": "0",
+     "polarity": "?"
+    },
+    {
+     "desc": "欧盟DPA之间的程序互认没有统一通道，同一拒绝记录在A国是证据，在B国可能只是陈述。",
+     "type": "logical",
+     "source": "0",
+     "polarity": "?"
+    },
+    {
+     "desc": "欧盟境内受托处理仍可能被第三国母公司通过人事权、源代码权、密钥备份权间接读取。",
+     "type": "axiological",
+     "source": "0",
+     "polarity": "?"
+    }
+   ],
+   "threads": [
+    {
+     "desc": "若责任落在接受方法域，合同、审计和政府访问之间的优先级由谁决定，尚未有答案。",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "优先级无答案"
+    },
+    {
+     "desc": "一个不依赖具体业务架构、又能同时满足不出境与跨境流动的通用答案，没有出现。",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "通用答案未出现"
+    },
+    {
+     "desc": "接收方法域的情报访问权限能否被合同抵消，最终由法院解释，企业无法单方闭合",
+     "kind": "thread",
+     "source": "probe_boundary",
+     "polarity_why": "法院解释，企业未闭合",
+     "polarity": "0"
+    },
+    {
+     "desc": "TIA模板在各国DPA解释分化，企业无法预判哪个版本被接受",
+     "kind": "thread",
+     "source": "probe_boundary",
+     "polarity_why": "DPA解释分化，无法预判",
+     "polarity": "0"
+    },
+    {
+     "desc": "混合数据集中，切分标准由谁定——EDPB、DPA还是企业自证？谁的解释先落地？",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "定标主体未定"
+    },
+    {
+     "desc": "T9 是否存在不依赖业务架构的通用答案——池中未出现，可能根本不存在",
+     "kind": "thread",
+     "source": "probe_boundary",
+     "polarity_why": "池中未出现，可能不存在",
+     "polarity": "0"
+    },
+    {
+     "desc": "切分权的归属在EDPB、DPA、企业自证三方之间未分配，谁的解释具有先定效力尚未确定。",
+     "kind": "thread",
+     "polarity": "?"
+    },
+    {
+     "desc": "数据在欧盟、控制权在第三国时的DPA管辖权，判据是控制者设立地还是处理活动发生地，两种判据指向不同DPA。",
+     "kind": "thread",
+     "polarity": "?"
+    },
+    {
+     "desc": "一个不依赖程序先后的单一裁决位，本轮未生。",
+     "kind": "thread",
+     "polarity": "?"
+    },
+    {
+     "desc": "第三国程序法是否承认欧盟拒绝令，企业无法单方决定",
+     "kind": "thread",
+     "source": "probe_boundary"
+    },
+    {
+     "desc": "欧盟DPA之间程序互认无统一通道，同一拒绝记录效力不一",
+     "kind": "thread",
+     "source": "probe_boundary"
+    },
+    {
+     "desc": "EDPB统一指引未出，切分权先定效力无法由企业制造",
+     "kind": "thread",
+     "source": "probe_boundary"
+    }
+   ],
+   "probes": [
+    {
+     "question": "若把\"回传总部\"改成\"总部远程访问留在欧盟的数据\"，GDPR下这还算传输吗？",
+     "link": "访问vs存储之分，直接决定走哪条机制",
+     "expected_gain": 0.7,
+     "covers": [
+      "T7",
+      "T14"
+     ]
+    },
+    {
+     "question": "混合数据集中，切分标准由谁定——EDPB、DPA还是企业自证？谁的解释先落地？",
+     "link": "切分标准未定型，谁先解释谁就定规则",
+     "expected_gain": 0.6,
+     "covers": [
+      "T9",
+      "T6"
+     ]
+    },
+    {
+     "question": "第49条克减留下的记录轨迹，在事后监管审查中会被当作什么证据使用？",
+     "link": "例外越用，轨迹越重，责任落点越清晰",
+     "expected_gain": 0.5,
+     "covers": [
+      "T4"
+     ]
+    },
+    {
+     "question": "若欧盟实体是唯一控制者、总部仅发指示，指示本身在GDPR下算不算一次独立的处理活动？",
+     "link": "T11→责任落点与数据落点分离后谁裁断",
+     "expected_gain": 0.7,
+     "covers": [
+      "T11",
+      "T7"
+     ]
+    },
+    {
+     "question": "数据在欧盟、控制权在第三国时，哪国DPA有管辖权——判据是控制者设立地还是处理活动发生地？",
+     "link": "T10→合同无法制造主权送达",
+     "expected_gain": 0.65,
+     "covers": [
+      "T10",
+      "T7"
+     ]
+    },
+    {
+     "question": "同一份TIA被一国接受、另一国质疑时，企业能否用'先落地解释'锚定切分标准，还是必须逐国自证？",
+     "link": "T14/T13→切分权归属未分配",
+     "expected_gain": 0.6,
+     "covers": [
+      "T14",
+      "T13",
+      "T5"
+     ]
+    },
+    {
+     "question": "若第三国程序法明文不承认欧盟DPA拒绝令，企业双轨保存的'合规事实'在欧盟端还成立吗？",
+     "link": "把第三国程序法承认度作为变量，测跨境拒绝令的可执行边界",
+     "expected_gain": 0.7,
+     "covers": [
+      "T3",
+      "T6"
+     ]
+    },
+    {
+     "question": "两个DPA对同一日志给出相反裁定时，企业能否把'首个行政解释'作为切分锚点，还是必须等EDPB？",
+     "link": "用DPA裁定冲突反推切分权归属，逼近T5的判据缺口",
+     "expected_gain": 0.65,
+     "covers": [
+      "T5",
+      "T4"
+     ]
+    },
+    {
+     "question": "欧盟境内受托处理被第三国母公司通过人事权、源代码权、密钥备份权间接读取时，这算传输还是本地处理？",
+     "link": "把间接读取作为传输认定缺口，测本地化方案的实质边界",
+     "expected_gain": 0.6,
+     "covers": [
+      "T2"
+     ]
+    }
+   ],
+   "meta": [
+    "[外部锚点] 第 1 圈入池 2 条（累计 2，仅记录）",
+    "对撞后，悬点从数据能不能出境移到责任由谁承接、在哪个法域可被追索，但这个问题本身尚未被机制设计充分吸收。",
+    "0端与1端都增加责任节点，但减少风险不是同义词，这一区分尚未进入主流合规讨论。",
+    "[上一圈 self-check 反馈] 可疑候选 [1, 2, 3, 4, 7, 8]；可疑 & [1, 2, 3, 4]",
+    "[外部锚点] 第 2 圈入池 2 条（累计 4，仅记录）",
+    "本次沉淀优先收未定形处，已稳的冲突让给下次。",
+    "0和1共同绕开的盲区：不依赖业务架构的通用答案，此处未生。",
+    "[外部锚点] 第 3 圈入池 2 条（累计 6，仅记录）",
+    "0和1共同绕开了‘可法律调取闸’的闭合条件，依赖第三国法院和欧盟DPA的互动，本轮无法闭环。",
+    "属性≠位置的候选：切分权归属和DPA管辖权判据，均未在0和1的对话中直接碰撞。",
+    "[自省回流未生效] 注入 1 条、可核对 1 条，违例 1 条：禁条目重现·已拦下1条：是否存在不依赖业务架构、同时满足不出境与跨境流动"
+   ],
+   "suspensions": [
+    {
+     "id": "s_001",
+     "target": "欧盟内部成员国间数据流动的额外约束",
+     "reason": "我看清了T5可以碰，但选择不碰，因为本圈焦点在跨境而非跨成员国",
+     "reason_type": "explicit",
+     "layer": 1,
+     "last_confirmed_layer": 3,
+     "confirmed_layers": [
+      1,
+      2,
+      3
+     ],
+     "status": "active",
+     "revoked_at": null,
+     "revoke_reason": "",
+     "resolved_at": null,
+     "stable_since": null,
+     "needs_review": false
+    },
+    {
+     "id": "s_002",
+     "target": "T4 欧盟内部成员国间额外约束",
+     "reason": "我看清了T4可以碰，但选择不碰，因为本圈焦点在跨境而非跨成员国",
+     "reason_type": "explicit",
+     "layer": 2,
+     "last_confirmed_layer": 3,
+     "confirmed_layers": [
+      2,
+      3
+     ],
+     "status": "active",
+     "revoked_at": null,
+     "revoke_reason": "",
+     "resolved_at": null,
+     "stable_since": null,
+     "needs_review": false
+    },
+    {
+     "id": "s_003",
+     "target": "欧盟内部成员国间额外约束",
+     "reason": "我看清了T1可以碰，但选择不碰，因为本圈焦点在跨境而非跨成员国",
+     "reason_type": "explicit",
+     "layer": 3,
+     "last_confirmed_layer": 3,
+     "confirmed_layers": [
+      3
+     ],
+     "status": "active",
+     "revoked_at": null,
+     "revoke_reason": "",
+     "resolved_at": null,
+     "stable_since": null,
+     "needs_review": false
+    }
+   ],
+   "sub_questions": [],
+   "deferrals": [],
+   "escalations": [],
+   "decidability_log": [],
+   "duel_suspensions": [],
+   "duel_alignment": {},
+   "engagements": [
+    {
+     "target": "访问与存储的区分",
+     "how": "把回传问题拆成访问权与存储位置两个独立变量"
+    },
+    {
+     "target": "混合数据集切分标准",
+     "how": "追问谁有权先定义可识别性门槛"
+    },
+    {
+     "target": "T11 指示方是否构成处理",
+     "how": "拆'指示'为独立处理活动还是控制者内部行为"
+    },
+    {
+     "target": "T10 数据在欧、控制权在第三国",
+     "how": "追问管辖权判据是设立地还是处理发生地"
+    },
+    {
+     "target": "T14 TIA跨国解释分化",
+     "how": "问先落地解释能否锚定切分标准"
+    },
+    {
+     "target": "第三国程序法不承认欧盟拒绝令",
+     "how": "把承认度作为变量，测双轨保存的合规事实是否成立"
+    },
+    {
+     "target": "DPA裁定冲突与切分权归属",
+     "how": "用首个行政解释锚点反推T5判据缺口"
+    }
+   ],
+   "refinements": [],
+   "decidable_channel": {},
+   "undecidable_channel": {},
+   "anchors": [
+    {
+     "id": "a1",
+     "claim": "生效时点与体量：GDPR（Regulation (EU) 2016/679）2016 年由欧洲议会通过并给出两年过渡期，2018 年 5 月 25 日正式生效；序言 173 条、正文 11 章 99 条。这是所有后续义务与执法的时间基准。",
+     "source": "中央网信办（CAC）转载科技日报《最严数据保护法案 GDPR 正式生效》（官方媒体转述官方文件）",
+     "url": "https://www.cac.gov.cn/2018-06/11/c_1122965697.htm",
+     "as_of": "2018-06",
+     "kind": "官方媒体转述（官方文件）"
+    },
+    {
+     "id": "a2",
+     "claim": "罚款两档上限（Article 83）：第一档最高 1000 万欧元，或企业上一财年全球总营业额 2%（取高者）；第二档最高 2000 万欧元，或全球年营业额 4%（取高者）。关键口径：基数用的是『全球营业额（annual turnover）』而非欧盟境内营业额、也非净利润；罚款须『有效、成比例、具威慑性』。",
+     "source": "gdpr-info.eu Art. 83 GDPR 原文；另见中华工商网对该条的中文拆解（官方文件 + 专业解读）",
+     "url": "https://gdpr-info.eu/art-83-gdpr/",
+     "as_of": "2016（条文）/ 持续有效",
+     "kind": "官方文件（条例原文）"
+    },
+    {
+     "id": "a3",
+     "claim": "长臂管辖（域外效力）：GDPR 不限于欧盟境内机构，适用于任何为欧盟境内数据主体提供服务、或收集/持有/处理其数据的企业；管辖对象包括欧盟公民及『在欧盟居住 3 个月以上的任何人』。含义：中国出海企业的欧洲用户数据一旦落入处理范围，即直接受 GDPR 约束，不论公司注册地。",
+     "source": "中国青年网《『花总』个人信息泄露后发律师函 或将启动跨国诉讼》（官方媒体转述条例管辖条款）",
+     "url": "https://news.youth.cn/sh/201812/t20181208_11808611.htm",
+     "as_of": "2018-12",
+     "kind": "官方媒体转述（条例解读）"
+    },
+    {
+     "id": "a4",
+     "claim": "Schrems II 判决（硬时点+硬后果）：2020 年 7 月 16 日，欧盟法院（CJEU）在 C-311/18 案中判决 EU-US Privacy Shield（欧委会决定 (EU) 2016/1250）无效，理由是美国的监控法（PRISM/UPSTREAM 等）不满足必要性、相称性，且欧盟主体缺乏可诉救济；同时确认 SCC（决定 2010/87/EU）原则上有效，但要求出口方在传输前逐案核查目的地国能否提供『基本等同』保护，必要时采取补充措施；做不到就必须中止或终止传输，否则通知监管机构。",
+     "source": "欧洲数据保护监督局（EDPS）Schrems II 应对策略文件；欧洲议会研究服务处简报（监管机构/司法口径，原始文件）",
+     "url": "https://www.edps.europa.eu/sites/default/files/publication/2020-10-29_edps_strategy_schremsii_en_0.pdf",
+     "as_of": "2020-07-16",
+     "kind": "监管机构/司法口径（原始文件）"
+    },
+    {
+     "id": "a5",
+     "claim": "SCC 现行版本（硬版本号与时点）：现行欧盟标准合同条款由欧委会 2021 年 6 月 4 日决定 (EU) 2021/914 发布，取代旧版（2010/87 等），旧版已不合规；采用模块化四类——C2C（控制者到控制者）、C2P（控制者到处理者）、P2P（处理者到处理者/转委托）、P2C（处理者到控制者）。含不可修改的强制条款（如 Clause 2 不可变更、Clause 7 附入条款、Clause 9 转委托授权、Clause 17 准据法）。",
+     "source": "ECOSIRE《Cross-Border Data Transfer: SCCs, BCRs, and Adequacy Decisions》（合规专业机构解读，引欧委会决定编号）",
+     "url": "https://ecosire.com/blog/cross-border-data-transfer-mechanisms",
+     "as_of": "2026-03",
+     "kind": "律所/合规专业机构解读"
+    },
+    {
+     "id": "a6",
+     "claim": "充分性认定（adequacy）名单现状：欧委会依 Article 45 作出充分性认定的国家和地区包括——安道尔、阿根廷、巴西、加拿大（商业组织）、法罗群岛、根西、以色列、马恩岛、日本、泽西、新西兰、韩国、瑞士、英国、乌拉圭、欧洲专利组织，以及美国（仅限加入 EU-US DPF 的自认证企业）。中国不在名单内。充分性决定意味着数据可像在欧盟内部一样自由流动、无需额外保障措施。",
+     "source": "European Commission 官网『Adequacy decisions』页面（监管机构官方文件）",
+     "url": "https://commission.europa.eu/law/law-topic/data-protection/international-dimension-data-protection/adequacy-decisions_sv",
+     "as_of": "2026-07",
+     "kind": "监管机构官方文件"
+    }
+   ],
+   "anchor_as_evidence": false
+  },
+  "1": {
+   "amps": [
+    {
+     "desc": "机制选择与闸门日志互相给对方进入条件，但都不给对方结论。",
+     "type": "structural",
+     "source": "1",
+     "polarity": "0",
+     "polarity_why": "互为条件，无结论"
+    },
+    {
+     "desc": "企业能控制1位置的排序，前提是日志由企业持有且未被交出；企业不能控制0位置的命名。",
+     "type": "structural",
+     "source": "1",
+     "polarity": "1",
+     "polarity_why": "控制偏向1侧，0侧不可命名"
+    },
+    {
+     "desc": "命名失败不会让顺序消失，顺序失败会让命名变成纸面条款。",
+     "type": "structural",
+     "source": "1",
+     "polarity": "1",
+     "polarity_why": "顺序优先，命名依附"
+    }
+   ],
+   "threads": [
+    {
+     "desc": "切分权在EDPB、单个DPA、企业自证之间没有分配。",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "切分权未分配"
+    },
+    {
+     "desc": "数据在欧盟、控制权在第三国时，管辖判据是控制者设立地还是处理活动发生地。",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "管辖判据二选一未定"
+    },
+    {
+     "desc": "访问与传输的区分没有对齐，日志读取和法律获得之间的获得时点对不上。",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "区分未对齐，时点错位"
+    },
+    {
+     "desc": "管辖判据分叉时，先受理DPA的效力是否决定后续DPA跟随，无通道。",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "先受理效力无通道"
+    },
+    {
+     "desc": "第三国法院是否承认欧盟拒绝令，不由企业单方完成。",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "承认与否非企业可定"
+    },
+    {
+     "desc": "EDPB是否已就'处理活动发生地'作为受理权优先判据发布统一指引？",
+     "kind": "thread",
+     "polarity": "?"
+    },
+    {
+     "desc": "若第三国调取令直接指向欧盟境内存储位置而非控制者，企业日志的哈希链在欧盟端能否单独构成'已履行拒绝义务'的证据？",
+     "kind": "thread",
+     "polarity": "?"
+    }
+   ],
+   "probes": [
+    {
+     "question": "企业持有的闸门日志，在哪个具体动作上从运维记录变成可被第三国法律调取的证据？",
+     "link": "定T1/T6，直接决定合规支点能否停在日志侧",
+     "expected_gain": 0.7,
+     "covers": [
+      "T1",
+      "T6"
+     ]
+    },
+    {
+     "question": "第三国母公司通过人事权、密钥备份间接读取欧盟境内数据，闸门日志里有没有可记录的接触事件？",
+     "link": "测T8能否被日志覆盖，决定本地化方案实质边界",
+     "expected_gain": 0.65,
+     "covers": [
+      "T8"
+     ]
+    },
+    {
+     "question": "若调取令送达欧盟境内处理者而非控制者，哪国DPA先受理，是否决定后续所有DPA跟随？",
+     "link": "把T5与T7接上，测管辖判据与解释首位的耦合",
+     "expected_gain": 0.6,
+     "covers": [
+      "T5",
+      "T7"
+     ]
+    },
+    {
+     "question": "EDPB是否已就'处理活动发生地'作为受理权优先判据发布过任何统一指引？若无，首个受理DPA的裁定在后续DPA处有无援引先例？",
+     "link": "直接检验T10/T12的'无制度通道'是否已被EDPB某份指引推翻",
+     "expected_gain": 0.6,
+     "covers": [
+      "T2",
+      "T6",
+      "T10"
+     ]
+    },
+    {
+     "question": "若第三国调取令直接指向欧盟境内存储位置而非控制者，企业日志的哈希链在欧盟端能否单独构成'已履行拒绝义务'的证据？",
+     "link": "把T8的送达时点与T5的跨法域互不援引并置，测闸门闭合的最小证据单位",
+     "expected_gain": 0.55,
+     "covers": [
+      "T5",
+      "T8"
+     ]
+    },
+    {
+     "question": "EDPB年度报告或DPA联合决定记录中，是否存在'处理活动发生地'被援引为先受理判据的实例？",
+     "link": "查证T9/T10，决定哈希链是单点还是可复制证据单位",
+     "expected_gain": 0.7,
+     "covers": [
+      "T9",
+      "T5"
+     ]
+    },
+    {
+     "question": "调取令送达前企业已交出日志的，欧盟端还能否用哈希链证明'已履行拒绝义务'？",
+     "link": "测T12排序权转移时点，回接闸门日志证据命题",
+     "expected_gain": 0.6,
+     "covers": [
+      "T12",
+      "T8"
+     ]
+    },
+    {
+     "question": "人事指令与密钥归还仪式，有无任何欧盟端系统调用或访问日志可留痕？",
+     "link": "测T6/T7间隙，判定间接读取能否落入日志采集面",
+     "expected_gain": 0.5,
+     "covers": [
+      "T3",
+      "T6",
+      "T7"
+     ]
+    }
+   ],
+   "meta": [
+    "[外部锚点] 第 1 圈入池 2 条（累计 2，仅记录）",
+    "本轮对撞未产生新的不可通约处，aligned_amps为空数组。",
+    "交点不存在时，合规支点未生。",
+    "[外部锚点] 第 2 圈入池 2 条（累计 4，仅记录）",
+    "本层将0/1从文件层移到副本层，但未解决副本控制表与管辖判据的耦合。",
+    "第49条克减进入条件改为可强制副本为零，但切分权归属仍悬空。",
+    "[自省回流未生效] 注入 2 条、可核对 1 条，违例 1 条：禁条目重现·已拦下1条：TIA与DPIA的边界问题，卡在两者的触发门槛不",
+    "[外部锚点] 第 3 圈入池 2 条（累计 6，仅记录）",
+    "本层未生新的不可判定结构，因ing输出已充分揭示，但未产生新的不可通约处。",
+    "[上一圈 self-check 反馈] 可疑候选 [5, 6, 7, 8]"
+   ],
+   "suspensions": [],
+   "sub_questions": [
+    {
+     "id": 1,
+     "question": "在GDPR下，第三国母公司对欧盟境内数据的远程访问（不复制存储）是否构成第44条以下的传输？若构成，应适用哪条传输机制？",
+     "weight": 0.9,
+     "decidability": "partial",
+     "status": "answered",
+     "depth": 0.6,
+     "source": "P1 / A6 / ing",
+     "first_label": "partial",
+     "label_disagreed": [
+      "partial",
+      "decidable"
+     ],
+     "_decided_answerable": true,
+     "answered_at_layer": 1,
+     "_starve_rounds": 0,
+     "_starve_max_seen": 0
+    },
+    {
+     "id": 2,
+     "question": "混合数据集中个人数据与非个人数据的切分标准，目前由EDPB、各国DPA还是企业自证决定？当两个DPA对同一数据集给出相反切分裁定时，企业能否以首个行政解释作为锚点？",
+     "weight": 0.8,
+     "decidability": "partial",
+     "status": "answered",
+     "depth": 0.6,
+     "source": "P2 / P8 / A3 / T5 / T7",
+     "first_label": "undecidable",
+     "label_disagreed": [
+      "undecidable",
+      "decidable"
+     ],
+     "_decided_answerable": true,
+     "_starve_rounds": 0,
+     "_starve_max_seen": 0,
+     "answered_at_layer": 2
+    },
+    {
+     "id": 3,
+     "question": "当欧盟实体是唯一控制者、第三国总部仅发出指示时，该指示本身是否构成GDPR下的独立处理活动？若构成，控制者/处理者二分如何适用？",
+     "weight": 0.7,
+     "decidability": "undecidable",
+     "status": "open",
+     "depth": 1.0,
+     "source": "P4 / A8",
+     "first_label": "partial",
+     "label_disagreed": [
+      "partial",
+      "decidable"
+     ],
+     "_decided_answerable": true,
+     "_starve_rounds": 0,
+     "_starve_max_seen": 2
+    },
+    {
+     "id": 4,
+     "question": "数据存储在欧盟、控制权在第三国时，哪国DPA有管辖权？判据是控制者设立地还是处理活动发生地？合同能否制造主权送达？",
+     "weight": 0.8,
+     "decidability": "partial",
+     "status": "answered",
+     "depth": 1.0,
+     "source": "P5 / A7 / T8",
+     "first_label": "undecidable",
+     "label_disagreed": [
+      "undecidable",
+      "decidable"
+     ],
+     "_decided_answerable": true,
+     "answered_at_layer": 1,
+     "_starve_rounds": 0,
+     "_starve_max_seen": 0
+    },
+    {
+     "id": 5,
+     "question": "第三国程序法明文不承认欧盟DPA拒绝令时，企业双轨保存的合规事实在欧盟端是否仍成立？能否将第三国程序法承认度作为变量，测跨境拒绝令的可执行边界？",
+     "weight": 0.9,
+     "decidability": "partial",
+     "status": "answered",
+     "depth": 1.0,
+     "source": "P7 / A10 / T10 / ing",
+     "first_label": "undecidable",
+     "label_disagreed": [
+      "undecidable",
+      "partial"
+     ],
+     "_decided_answerable": true,
+     "_starve_rounds": 0,
+     "_starve_max_seen": 0,
+     "answered_at_layer": 2
+    },
+    {
+     "id": 6,
+     "question": "欧盟境内受托处理被第三国母公司通过人事权、源代码权、密钥备份权间接读取时，这算传输还是本地处理？间接读取能否作为传输认定缺口，测本地化方案的实质边界？",
+     "weight": 0.8,
+     "decidability": "partial",
+     "status": "answered",
+     "depth": 1.0,
+     "source": "P9 / ing",
+     "first_label": "partial",
+     "_decided_answerable": true,
+     "answered_at_layer": 1,
+     "_starve_rounds": 0,
+     "_starve_max_seen": 0
+    }
+   ],
+   "deferrals": [
+    {
+     "id": "d_001",
+     "sub_id": 2,
+     "sub_question": "混合数据集中个人数据与非个人数据的切分标准，目前由EDPB、各国DPA还是企业自证决定？当两个DPA对同一数据集给出相反切分裁定时，企业能否以首个行政解释作为锚点？",
+     "reason": "切分权首位未显现，先等日志证据链成形",
+     "revisit_condition": "出现首个DPA对同一日志作出行政解释",
+     "layer": 1,
+     "last_reconfirmed_layer": 2,
+     "status": "handled",
+     "resolved_at": 2,
+     "resolution_reason": "对应子问题被直接回答"
+    },
+    {
+     "id": "d_002",
+     "sub_id": 5,
+     "sub_question": "第三国程序法明文不承认欧盟DPA拒绝令时，企业双轨保存的合规事实在欧盟端是否仍成立？能否将第三国程序法承认度作为变量，测跨境拒绝令的可执行边界？",
+     "reason": "第三国程序法承认度需具体法域样本",
+     "revisit_condition": "拿到一个第三国拒绝承认欧盟DPA令的实例",
+     "layer": 1,
+     "last_reconfirmed_layer": 2,
+     "status": "handled",
+     "resolved_at": 2,
+     "resolution_reason": "对应子问题被直接回答"
+    },
+    {
+     "id": "d_003",
+     "sub_id": 3,
+     "sub_question": "当欧盟实体是唯一控制者、第三国总部仅发出指示时，该指示本身是否构成GDPR下的独立处理活动？若构成，控制者/处理者二分如何适用？",
+     "reason": "指示本身是否构成独立处理活动，缺控制者/处理者二分适用判据",
+     "revisit_condition": "EDPB发布控制者认定指引后",
+     "layer": 3,
+     "last_reconfirmed_layer": 3,
+     "status": "escalated",
+     "resolved_at": 3,
+     "resolution_reason": "EDPB指引未出，指示定性无判据，不可判定"
+    }
+   ],
+   "escalations": [],
+   "decidability_log": [],
+   "duel_suspensions": [],
+   "duel_alignment": {},
+   "engagements": [
+    {
+     "sub_id": 1,
+     "target": "在GDPR下，第三国母公司对欧盟境内数据的远程访问（不复制存储）是否构成第44条以下的传输？若构成，应适用哪条传输机制？",
+     "how": "远程访问是否构成传输，取决于读取是否被第三方权力抓住，非复制与否",
+     "depth": 0.6
+    },
+    {
+     "sub_id": 4,
+     "target": "数据存储在欧盟、控制权在第三国时，哪国DPA有管辖权？判据是控制者设立地还是处理活动发生地？合同能否制造主权送达？",
+     "how": "调取令送达对象决定管辖指向，合同补不上送达",
+     "depth": 0.5
+    },
+    {
+     "sub_id": 6,
+     "target": "欧盟境内受托处理被第三国母公司通过人事权、源代码权、密钥备份权间接读取时，这算传输还是本地处理？间接读取能否作为传输认定缺口，测本地化方案的实质边界？",
+     "how": "间接读取不经过传输机制，闸门表缺格子",
+     "depth": 0.4
+    },
+    {
+     "sub_id": 2,
+     "target": "混合数据集中个人数据与非个人数据的切分标准，目前由EDPB、各国DPA还是企业自证决定？当两个DPA对同一数据集给出相反切分裁定时，企业能否以首个行政解释作为锚点？",
+     "how": "切分权三分离结构确认，企业自证无裁决权",
+     "depth": 0.6
+    },
+    {
+     "sub_id": 5,
+     "target": "第三国程序法明文不承认欧盟DPA拒绝令时，企业双轨保存的合规事实在欧盟端是否仍成立？能否将第三国程序法承认度作为变量，测跨境拒绝令的可执行边界？",
+     "how": "第三国程序法承认度仍缺实例，双轨保存的欧盟端效力未定",
+     "depth": 0.5
+    }
+   ],
+   "refinements": [
+    {
+     "sub_id": 4,
+     "sub_question": "数据存储在欧盟、控制权在第三国时，哪国DPA有管辖权？判据是控制者设立地还是处理活动发生地？合同能否制造主权送达？",
+     "how": "两条管辖判据在调取令送达处理者时首次分叉出不同受理机关",
+     "layer": 2
+    },
+    {
+     "sub_id": 6,
+     "sub_question": "欧盟境内受托处理被第三国母公司通过人事权、源代码权、密钥备份权间接读取时，这算传输还是本地处理？间接读取能否作为传输认定缺口，测本地化方案的实质边界？",
+     "how": "人事权/密钥备份接触点落在日志采集范围外，间接读取无对应格子",
+     "layer": 2
+    },
+    {
+     "sub_id": 4,
+     "sub_question": "数据存储在欧盟、控制权在第三国时，哪国DPA有管辖权？判据是控制者设立地还是处理活动发生地？合同能否制造主权送达？",
+     "how": "管辖判据分叉时先受理DPA效力未定，需查EDPB记录",
+     "layer": 3
+    },
+    {
+     "sub_id": 5,
+     "sub_question": "第三国程序法明文不承认欧盟DPA拒绝令时，企业双轨保存的合规事实在欧盟端是否仍成立？能否将第三国程序法承认度作为变量，测跨境拒绝令的可执行边界？",
+     "how": "送达对象为存储位置时哈希链证明对象错位，证据命题未合",
+     "layer": 3
+    },
+    {
+     "sub_id": 6,
+     "sub_question": "欧盟境内受托处理被第三国母公司通过人事权、源代码权、密钥备份权间接读取时，这算传输还是本地处理？间接读取能否作为传输认定缺口，测本地化方案的实质边界？",
+     "how": "间接读取是否构成传输取决于读取者是否落第3条范围",
+     "layer": 3
+    }
+   ],
+   "decidable_channel": {
+    "answers": [
+     {
+      "answer": "在GDPR下，第三国母公司对欧盟境内数据的远程访问（不复制存储）是否构成第44条以下的传输，取决于该访问是否使第三国主体获得对个人数据的读取能力。若构成，应适用第46条保障措施（如SCC）或第49条克减；但第49条克减仅在可法律调取闸未闭合时可用。间接读取（通过人事权、源代码权、密钥备份权）若导致实际数据可读，可认定为传输，否则为本地处理。",
+      "answered_sub_ids": [
+       1,
+       6
+      ],
+      "evidence": [
+       "EDPB《关于GDPR第3条地域适用范围的指南》指出，远程访问本身可构成处理，若涉及向第三国传输数据则触发第五章。",
+       "第44条以下机制选择依赖主体和地域命名，但命名权最终由DPA或法院行使，企业不能单方决定。"
+      ]
+     },
+     {
+      "answer": "在GDPR下，第三国母公司对欧盟境内数据的远程访问（不复制存储）是否构成第44条以下的传输，取决于该访问是否使第三国可强制主体获得可读副本。若仅远程读取且未产生可读副本，不构成传输；若读取导致可读副本落入第三国可强制主体控制（包括缓存、备份、密钥恢复），则构成传输，应适用第46条（适当保障）或第49条克减（严格条件下）。",
+      "answered_sub_ids": [
+       1,
+       6
+      ],
+      "evidence": [
+       "ing输出将0/1翻转点定在可读副本落入第三国可强制主体时，远程访问不复制存储若未产生可读副本，则0保持。",
+       "间接读取通过人事权、密钥备份权实现时，若产生可读副本，则构成传输认定缺口。"
+      ]
+     },
+     {
+      "answer": "1. 不构成传输，因为未发生向第三国的数据传输，但可能构成第44条下的“访问”，若构成则需第49条克减或BCR。2. 切分权无明确归属，EDPB未统一，各国DPA分歧，企业自证不被当然接受；不能以首个行政解释为锚点，因无援引规则。3. 指示本身不构成独立处理活动，控制者/处理者二分仍适用，欧盟实体为控制者，第三国总部为处理者。4. 管辖判据未定，控制者设立地与处理活动发生地两条路指向不同DPA，合同不能制造主权送达。5. 双轨保存在欧盟端是否成立取决于欧盟DPA是否承认第三国程序法，不能以承认度作为变量测边界，因无统一通道。6. 间接读取不算传输，算本地处理，但构成传输认定缺口，因无系统调用痕迹，本地化方案实质边界无法由日志覆盖。",
+      "answered_sub_ids": [
+       1,
+       2,
+       3,
+       4,
+       5,
+       6
+      ],
+      "evidence": [
+       "GDPR第44条以下传输要求数据向第三国或国际组织传输，远程访问未复制存储，EDPB指南未明确将其列为传输。",
+       "EDPB未就切分标准发布统一指引，各国DPA裁定可能冲突，无援引先例。"
+      ]
+     }
+    ],
+    "coverage_history": [],
+    "last_coverage": 0.0
+   },
+   "undecidable_channel": {
+    "structural_amps": [
+     "机制选择与闸门日志互相给对方进入条件，但都不给对方结论。",
+     "企业能控制1位置的排序，前提是日志由企业持有且未被交出；企业不能控制0位置的命名。",
+     "命名失败不会让顺序消失，顺序失败会让命名变成纸面条款。"
+    ],
+    "clarity_history": [
+     0.7,
+     0.0,
+     0.0
+    ],
+    "last_clarity": 0.0,
+    "und_aspects": [],
+    "struct_coverage_history": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "last_struct_coverage": 0.0,
+    "aligned_amps": [],
+    "last_struct_hit": 0,
+    "last_aligned_hit": 0,
+    "aligned_coverage_history": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "last_aligned_coverage": 0.0,
+    "aspect_first_hit": {},
+    "struct_trace": [
+     {
+      "layer": 1,
+      "hit": 0,
+      "total": 0,
+      "cov": 0.0,
+      "newly": []
+     },
+     {
+      "layer": 2,
+      "hit": 0,
+      "total": 0,
+      "cov": 0.0,
+      "newly": []
+     },
+     {
+      "layer": 3,
+      "hit": 0,
+      "total": 0,
+      "cov": 0.0,
+      "newly": []
+     }
+    ],
+    "aligned_first_hit": {},
+    "aligned_trace": [
+     {
+      "layer": 1,
+      "hit": 0,
+      "total": 0,
+      "cov": 0.0,
+      "newly": []
+     },
+     {
+      "layer": 2,
+      "hit": 0,
+      "total": 0,
+      "cov": 0.0,
+      "newly": []
+     },
+     {
+      "layer": 3,
+      "hit": 0,
+      "total": 0,
+      "cov": 0.0,
+      "newly": []
+     }
+    ]
+   },
+   "anchors": [
+    {
+     "id": "a1",
+     "claim": "生效时点与体量：GDPR（Regulation (EU) 2016/679）2016 年由欧洲议会通过并给出两年过渡期，2018 年 5 月 25 日正式生效；序言 173 条、正文 11 章 99 条。这是所有后续义务与执法的时间基准。",
+     "source": "中央网信办（CAC）转载科技日报《最严数据保护法案 GDPR 正式生效》（官方媒体转述官方文件）",
+     "url": "https://www.cac.gov.cn/2018-06/11/c_1122965697.htm",
+     "as_of": "2018-06",
+     "kind": "官方媒体转述（官方文件）"
+    },
+    {
+     "id": "a2",
+     "claim": "罚款两档上限（Article 83）：第一档最高 1000 万欧元，或企业上一财年全球总营业额 2%（取高者）；第二档最高 2000 万欧元，或全球年营业额 4%（取高者）。关键口径：基数用的是『全球营业额（annual turnover）』而非欧盟境内营业额、也非净利润；罚款须『有效、成比例、具威慑性』。",
+     "source": "gdpr-info.eu Art. 83 GDPR 原文；另见中华工商网对该条的中文拆解（官方文件 + 专业解读）",
+     "url": "https://gdpr-info.eu/art-83-gdpr/",
+     "as_of": "2016（条文）/ 持续有效",
+     "kind": "官方文件（条例原文）"
+    },
+    {
+     "id": "a3",
+     "claim": "长臂管辖（域外效力）：GDPR 不限于欧盟境内机构，适用于任何为欧盟境内数据主体提供服务、或收集/持有/处理其数据的企业；管辖对象包括欧盟公民及『在欧盟居住 3 个月以上的任何人』。含义：中国出海企业的欧洲用户数据一旦落入处理范围，即直接受 GDPR 约束，不论公司注册地。",
+     "source": "中国青年网《『花总』个人信息泄露后发律师函 或将启动跨国诉讼》（官方媒体转述条例管辖条款）",
+     "url": "https://news.youth.cn/sh/201812/t20181208_11808611.htm",
+     "as_of": "2018-12",
+     "kind": "官方媒体转述（条例解读）"
+    },
+    {
+     "id": "a4",
+     "claim": "Schrems II 判决（硬时点+硬后果）：2020 年 7 月 16 日，欧盟法院（CJEU）在 C-311/18 案中判决 EU-US Privacy Shield（欧委会决定 (EU) 2016/1250）无效，理由是美国的监控法（PRISM/UPSTREAM 等）不满足必要性、相称性，且欧盟主体缺乏可诉救济；同时确认 SCC（决定 2010/87/EU）原则上有效，但要求出口方在传输前逐案核查目的地国能否提供『基本等同』保护，必要时采取补充措施；做不到就必须中止或终止传输，否则通知监管机构。",
+     "source": "欧洲数据保护监督局（EDPS）Schrems II 应对策略文件；欧洲议会研究服务处简报（监管机构/司法口径，原始文件）",
+     "url": "https://www.edps.europa.eu/sites/default/files/publication/2020-10-29_edps_strategy_schremsii_en_0.pdf",
+     "as_of": "2020-07-16",
+     "kind": "监管机构/司法口径（原始文件）"
+    },
+    {
+     "id": "a5",
+     "claim": "SCC 现行版本（硬版本号与时点）：现行欧盟标准合同条款由欧委会 2021 年 6 月 4 日决定 (EU) 2021/914 发布，取代旧版（2010/87 等），旧版已不合规；采用模块化四类——C2C（控制者到控制者）、C2P（控制者到处理者）、P2P（处理者到处理者/转委托）、P2C（处理者到控制者）。含不可修改的强制条款（如 Clause 2 不可变更、Clause 7 附入条款、Clause 9 转委托授权、Clause 17 准据法）。",
+     "source": "ECOSIRE《Cross-Border Data Transfer: SCCs, BCRs, and Adequacy Decisions》（合规专业机构解读，引欧委会决定编号）",
+     "url": "https://ecosire.com/blog/cross-border-data-transfer-mechanisms",
+     "as_of": "2026-03",
+     "kind": "律所/合规专业机构解读"
+    },
+    {
+     "id": "a6",
+     "claim": "充分性认定（adequacy）名单现状：欧委会依 Article 45 作出充分性认定的国家和地区包括——安道尔、阿根廷、巴西、加拿大（商业组织）、法罗群岛、根西、以色列、马恩岛、日本、泽西、新西兰、韩国、瑞士、英国、乌拉圭、欧洲专利组织，以及美国（仅限加入 EU-US DPF 的自认证企业）。中国不在名单内。充分性决定意味着数据可像在欧盟内部一样自由流动、无需额外保障措施。",
+     "source": "European Commission 官网『Adequacy decisions』页面（监管机构官方文件）",
+     "url": "https://commission.europa.eu/law/law-topic/data-protection/international-dimension-data-protection/adequacy-decisions_sv",
+     "as_of": "2026-07",
+     "kind": "监管机构官方文件"
+    }
+   ],
+   "anchor_as_evidence": false
+  },
+  "both": {
+   "amps": [],
+   "threads": [],
+   "probes": [],
+   "meta": [],
+   "suspensions": [],
+   "sub_questions": [],
+   "deferrals": [],
+   "escalations": [],
+   "decidability_log": [],
+   "duel_suspensions": [],
+   "duel_alignment": {},
+   "engagements": [],
+   "refinements": [],
+   "decidable_channel": {},
+   "undecidable_channel": {}
+  },
+  "all": {
+   "amps": [],
+   "threads": [],
+   "probes": [],
+   "meta": [],
+   "suspensions": [],
+   "sub_questions": [],
+   "deferrals": [],
+   "escalations": [],
+   "decidability_log": [],
+   "duel_suspensions": [],
+   "duel_alignment": {},
+   "engagements": [],
+   "refinements": [],
+   "decidable_channel": {},
+   "undecidable_channel": {}
+  }
+ },
+ "llm_calls": 64,
+ "llm_tokens": 297787,
+ "tri_state": [
+  1,
+  6
+ ],
+ "layer_contribution": {
+  "0": {
+   "rounds": 3,
+   "stop": "体力耗尽（3 圈走满，未触发任何停止判据，是被截",
+   "idle": false
+  },
+  "1": {
+   "rounds": 3,
+   "stop": "连续 2 轮无新 &（沉淀完了），螺旋停止",
+   "idle": false
+  }
+ },
+ "external_anchor": {
+  "enabled": true,
+  "anchors": 12,
+  "source_file": "up_law_anchors.json",
+  "retrieved_at": "2026-10-04T10:20:00+0800",
+  "retriever": "agent WebSearch（4 次检索：生效时点与罚款上限 / adequacy 现状与 SCC 版本 / Schrems II 判决 / TikTok 罚",
+  "pooled": 12,
+  "as_evidence": false,
+  "anchor_calls": 1,
+  "claims": 12,
+  "items": [
+   {
+    "claim_id": "c1",
+    "claim": "数据出境的目的地并非只有“欧盟外”一种，欧盟内部成员国之间的数据流动同样受本国法约束（如德国联邦数据保护法对特定行业的额外要求）",
+    "verdict": "无对应",
+    "anchor_ids": [],
+    "note": "锚点未涉及欧盟内部成员国间数据流动或德国联邦数据保护法。"
+   },
+   {
+    "claim_id": "c2",
+    "claim": "GDPR 第 49 条克减条款在实践中被监管机构视为例外而非路径，依赖它做常态传输本身就会构成合规风险信号",
+    "verdict": "无对应",
+    "anchor_ids": [],
+    "note": "锚点未涉及GDPR第49条克减条款的实践定位。"
+   },
+   {
+    "claim_id": "c3",
+    "claim": "欧盟数据保护委员会（EDPB）2023 年对第 46 条传输影响评估（TIA）的后续指引仍在各国监管解释中分化，同一个 TIA 模板在不同 DPA 那里可能被接受或否定",
+    "verdict": "无对应",
+    "anchor_ids": [],
+    "note": "锚点未涉及EDPB 2023年TIA后续指引或各国DPA解释分化。"
+   },
+   {
+    "claim_id": "c4",
+    "claim": "标准合同条款（SCC）2021 版模块化设计里，控制者-处理者、处理者-处理者等四种模块对应的是不同的责任分配，选错模块不会立刻被拒但会在审计时暴露",
+    "verdict": "印证",
+    "anchor_ids": [
+     "a5"
+    ],
+    "note": "a5确认SCC 2021版模块化四类及不可修改强制条款，支持模块责任分配不同。"
+   },
+   {
+    "claim_id": "c5",
+    "claim": "企业是否真的需要把个人数据集中回总部？还是业务上只是需要“访问”而非“存储”？这个区分没被问过",
+    "verdict": "无对应",
+    "anchor_ids": [],
+    "note": "锚点未涉及企业数据集中回总部与访问/存储区分的问题。"
+   },
+   {
+    "claim_id": "c6",
+    "claim": "从“哪些数据根本不需要出境”而不是“怎么让数据出境”入手，可能先划掉一半两难",
+    "verdict": "无对应",
+    "anchor_ids": [],
+    "note": "锚点未涉及从数据出境必要性入手的策略建议。"
+   },
+   {
+    "claim_id": "c7",
+    "claim": "欧盟《数据治理法》和《数据法》正在打开非个人数据的跨境通道，个人数据与非个人数据的混合数据集切分方式尚未定型",
+    "verdict": "无对应",
+    "anchor_ids": [],
+    "note": "锚点未涉及欧盟数据治理法、数据法或非个人数据跨境通道。"
+   },
+   {
+    "claim_id": "c8",
+    "claim": "欧盟法院 Schrems II 判决后，美国情报机构访问数据的法律框架变化（如 2022 年行政令 14086）是否足够，欧盟委员会 2023 年充分性决定正被 NOYB 在法院挑战",
+    "verdict": "印证",
+    "anchor_ids": [
+     "a7"
+    ],
+    "note": "a7确认DPF充分性决定2023年7月生效且面临Schrems III司法挑战。"
+   },
+   {
+    "claim_id": "c9",
+    "claim": "GDPR 第 44–49 章规定个人数据出境需具备充分性认定、标准合同条款或约束性公司规则等合法机制",
+    "verdict": "印证",
+    "anchor_ids": [
+     "a6",
+     "a5",
+     "a11"
+    ],
+    "note": "a6充分性认定、a5 SCC、a11 BCR共同支持第44-49章合法机制。"
+   },
+   {
+    "claim_id": "c10",
+    "claim": "Schrems II 判决后，欧美隐私盾失效，依赖 SCC 的传输须逐案做传输影响评估并补足措施",
+    "verdict": "印证",
+    "anchor_ids": [
+     "a4",
+     "a10"
+    ],
+    "note": "a4确认隐私盾无效且SCC须逐案核查，a10确认TIA与补充措施义务。"
+   },
+   {
+    "claim_id": "c11",
+    "claim": "欧盟数据保护委员会发布新版 SCC 模块化条款，2022 年起取代旧版，企业须限期换签",
+    "verdict": "印证",
+    "anchor_ids": [
+     "a5"
+    ],
+    "note": "a5确认2021年6月4日决定(EU)2021/914发布新版SCC取代旧版。"
+   },
+   {
+    "claim_id": "c12",
+    "claim": "数据保护影响评估（DPIA）是高风险处理前的强制文档，跨境传输场景常触发",
+    "verdict": "无对应",
+    "anchor_ids": [],
+    "note": "锚点未涉及DPIA作为高风险处理前强制文档的规定。"
+   }
+  ],
+  "summary": {
+   "claims": 12,
+   "supported": 5,
+   "conflicted": 0,
+   "unmatched": 7,
+   "anchor_used": 6
+  },
+  "error": ""
+ },
+ "cost_profile": "balanced",
+ "orientation": "auto",
+ "input_sanity": {
+  "issues": [],
+  "note": "无悬空符号，GDPR为标准术语",
+  "checked": true
+ }
+}

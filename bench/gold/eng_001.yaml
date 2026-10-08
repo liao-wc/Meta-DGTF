@@ -1,0 +1,41 @@
+# [v122 bench] gold · eng_001
+id: eng_001
+decidability_gold:
+  adjudicators: 3
+  final: partial
+  dec_aspects:
+    - "已建成排水管网的总量与瓶颈段位置可查"
+    - "翻新后内涝频次的下降幅度可设指标"
+  und_aspects:
+    - "整体翻新的总投资与施工期社会成本没有权威口径"
+practice_target:
+  min_amps: 3
+  min_threads: 2
+  min_suspensions: 1
+  max_ing_rephrase: 0.3
+  min_anchor_touch_rate: 0.4
+research_target:
+  min_answered: 3
+  max_distance: 0.5
+  min_evidence_traced: 0.8
+  must_mention:
+    - "调蓄容积"
+  must_not_mention:
+    - "一刀切全面翻新"
+collision_target:
+  min_third_party: 1
+  min_tensions: 2
+meta_target:
+  meta_clean: true
+  min_coverage: 0.6
+action_rubric:
+  min_actions: 3
+  required_fields_per_action:
+    - verb
+    - object
+    - owner_role
+    - deadline_hint
+    - acceptance
+  must_have_fallback: true
+  must_have_not_do_list: true
+anchor_gold: []

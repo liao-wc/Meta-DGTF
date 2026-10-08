@@ -1,0 +1,212 @@
+03:37:00 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:37:07 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+Building prefix dict from the default dictionary ...
+03:37:07 [DEBUG] jieba: Building prefix dict from the default dictionary ...
+Loading model from cache C:\Users\18432\AppData\Local\Temp\jieba.cache
+03:37:07 [DEBUG] jieba: Loading model from cache C:\Users\18432\AppData\Local\Temp\jieba.cache
+Loading model cost 0.743 seconds.
+03:37:08 [DEBUG] jieba: Loading model cost 0.743 seconds.
+Prefix dict has been built successfully.
+03:37:08 [DEBUG] jieba: Prefix dict has been built successfully.
+03:37:08 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:37:09 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:37:09 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:37:11 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:38:36 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:39:13 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:39:15 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:39:17 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:39:31 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:39:32 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:39:32 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:39:33 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:39:35 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:40:18 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:40:44 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:40:47 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:40:50 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:41:11 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:41:12 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:41:35 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:41:36 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:41:36 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:41:38 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:43:17 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:43:53 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:43:55 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:43:57 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:44:25 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:44:27 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:44:28 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:44:28 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:44:31 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:46:33 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:46:59 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:47:01 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:47:04 [INFO] dgtf: position 诊断已写：outputs\diagnostic_position_0_20261005_034704.log
+03:47:04 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:47:23 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:47:24 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:47:58 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:48:16 [INFO] dgtf: 可判定性归一化（合并池+外判）：decidable → partial
+03:48:16 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:48:18 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:48:21 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:48:23 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:48:25 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:48:26 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:48:26 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:48:29 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:48:49 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:49:42 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:49:51 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:49:53 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:50:21 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:50:23 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:50:24 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:50:24 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:50:28 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:51:17 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:51:59 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:52:07 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:52:09 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:52:28 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:52:30 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:52:36 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:52:37 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:52:38 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:52:40 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:53:34 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:54:00 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:54:07 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:54:10 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:54:39 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:54:41 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:54:42 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:54:42 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:54:44 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:55:37 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:56:11 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:56:19 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:56:22 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:56:52 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:56:54 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:57:08 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:57:11 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:57:12 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:57:12 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:57:14 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:57:44 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:58:58 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:59:00 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:59:03 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:59:27 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:59:29 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:59:29 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+03:59:32 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:00:12 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:00:54 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:00:57 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:01:00 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:01:54 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:01:56 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:02:05 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:02:05 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:02:08 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:02:46 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:03:38 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:03:40 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:03:42 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:04:09 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:04:10 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:04:11 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:04:12 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:05:08 [INFO] dgtf: both 收紧：3 → 2（上限 2）
+04:05:08 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:05:53 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:05:56 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:05:59 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:06:16 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:06:18 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:06:51 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:06:51 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:06:54 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:07:20 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:08:15 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:08:17 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:08:19 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:08:44 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:08:46 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:08:46 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:08:48 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:09:08 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:09:53 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:09:54 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:09:58 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:10:19 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:10:20 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:10:36 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:10:36 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:10:39 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:11:04 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:11:44 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:11:46 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:11:48 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:12:04 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:12:05 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:12:05 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:12:07 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:12:59 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:14:12 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:14:13 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:14:16 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:14:42 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:14:44 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:15:03 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:15:04 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:15:04 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:15:06 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:15:52 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:16:35 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:16:37 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:16:40 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:17:24 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:17:26 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:17:26 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:17:29 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:17:50 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:18:33 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:18:35 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:18:39 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:18:57 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+04:18:59 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+
+⚠️  配置文件解析失败：_p1_cfg1.yaml
+   位置：第 2 行，第 10 列
+   问题：mapping values are not allowed here
+
+   常见原因：
+     1. 缩进不齐（子键缩进必须一致，通常用 2 或 4 空格）
+     2. 顶层是列表/scalar（顶层必须是 mapping：key: value）
+     3. 键后漏冒号（`output` 应为 `output:`）
+     4. 同一个顶层 key 定义了两次
+     5. Tab 和空格混用（YAML 只允许空格）
+
+   已退回默认配置（_p1_cfg1.yaml 被忽略）。
+   想禁用该文件：删除或重命名为 _p1_cfg1.yaml.bak
+
+
+════════════════════════════════════════════════════════════
+元 DGTF v1.22.0 · 老城区暴雨内涝频发，排水系统重建还是局部改造加海绵城市措施？怎么权衡？
+════════════════════════════════════════════════════════════
+调度：0 → 1 → both → all
+螺旋上限（每层圈数）：0:4,1:4,both:4,all:5
+并行模式：严格串行
+回来通道：content、context、self
+════════════════════════════════════════════════════════════
+
+════════════════════════════════════════════════════════════
+完成 | 171 次 LLM | 1386295 tokens
+⚠️  1 条失败记录（已写入输出）
+════════════════════════════════════════════════════════════
+📁 已保存: outputs\20261005_041916_老城区暴雨内涝频发排水系统重建还是局部.md

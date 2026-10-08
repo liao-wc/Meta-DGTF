@@ -1,0 +1,46 @@
+{
+  "src": "元DGTF-V1.22.0-rc1.py",
+  "n_top_symbols": 201,
+  "n_edges": 384,
+  "n_mutual_edges": 10,
+  "n_cross_edges": 185,
+  "cross_ratio": 0.482,
+  "modules": {
+    "other": 136,
+    "render": 18,
+    "decidability": 12,
+    "main": 12,
+    "pools": 9,
+    "anchors": 4,
+    "meta": 4,
+    "config": 3,
+    "spiral": 2,
+    "llm": 1
+  },
+  "top_cross_pairs": {
+    "meta <-> other": 71,
+    "other <-> render": 21,
+    "other <-> pools": 14,
+    "decidability <-> other": 12,
+    "main <-> other": 11,
+    "decidability <-> meta": 8,
+    "config <-> meta": 6,
+    "llm <-> other": 5,
+    "config <-> other": 4,
+    "meta <-> pools": 4,
+    "anchors <-> other": 3,
+    "llm <-> meta": 3
+  },
+  "mutual_sample": [
+    "DGTF <-> LLM",
+    "DGTF <-> Pool",
+    "DGTF <-> dump_view_fields",
+    "MetaDGTF <-> Pool",
+    "MetaDGTF <-> main",
+    "_pool_meta_summary <-> _render_landing_boundary",
+    "_render_landing_boundary <-> render_landing",
+    "_render_landing_decision <-> render_landing",
+    "_reopen_closed_debt <-> apply_decidability_change",
+    "coverage_of <-> coverage_parts"
+  ]
+}

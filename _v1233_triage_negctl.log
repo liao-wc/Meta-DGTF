@@ -1,0 +1,11 @@
+[tri] src=元DGTF-V1.23.3.py mode=negctl n=3 anchors=5
+Building prefix dict from the default dictionary ...
+Loading model from cache C:\Users\18432\AppData\Local\Temp\jieba.cache
+Loading model cost 0.724 seconds.
+Prefix dict has been built successfully.
+[tri] rep 1/3 外部标准缺依据 ok=True triage=0 claims=12 secs=223.0 err=
+[tri] rep 2/3 外部规范+历史数据双缺 ok=True triage=0 claims=12 secs=241.5 err=
+对偶判断命中 0/16，降级重试（候选减半）
+[tri] rep 3/3 外部标准缺依据 ok=True triage=0 claims=12 secs=223.6 err=
+[tri] 频度 = 0 / 3 = 0.0（Wilson 95% [0.0, 0.562]）
+TRIAGE_RUNS_DONE

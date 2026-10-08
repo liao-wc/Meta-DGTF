@@ -1,0 +1,137 @@
+Building prefix dict from the default dictionary ...
+Loading model from cache C:\Users\18432\AppData\Local\Temp\jieba.cache
+Loading model cost 0.947 seconds.
+Prefix dict has been built successfully.
+
+==================================================================
+## [A] #13 · B 模式预算耗尽时停了哪些层
+==================================================================
+   不限预算     → {'active': 4, 'budget_stopped': [], 'calls': 78}
+   预算 30    → {'active': 4, 'budget_stopped': ['0', '1', 'all', 'both'], 'calls': 47}
+   ⇒ 判据：预算触发时 `budget_stopped` 要么为空（没触发），要么等于全部 active 层（barrier）。出现 1..n-1 就是语义被改坏。
+
+==================================================================
+## [B] #24 · 一次 mock 跑里的字段长度谱
+==================================================================
+   _OVERSIZED（从 dump_view_fields 源码里取）= ['manifest', 'rendered']
+   字符串字段 ≥2000 字的（字段, 最大长度）：
+   字段总数 8；≥2000 字 0 个
+
+==================================================================
+## [C] #20 · docstring 卫生（重复段 / 版本段序）
+==================================================================
+   summary_headers = 14
+   duplicated = {}
+   section_order = ['1.21.72', '1.21.71', '1.21.70', '1.21.69', '1.21.68', '1.21.67', '1.21.66', '1.21.65', '1.21.64', '1.21.63', '1.21.62'
+   order_ok = True
+   n_sections = 22
+   ⇒ 判据：`duplicated` 必须为空；`order_ok` 必须为 True
+
+==================================================================
+## [D] #22 · 关键机制的定义点数 / 第二实现点
+==================================================================
+   _normalize_decidability            = 1
+   _untraced_undecidable              = 1
+   _stop_reasons                      = 1
+   _finalize_layer_common             = 1
+   _cached_ext_assess                 = 1
+   _dispatch_for_pack                 = 1
+   _layer_guard                       = 1
+   _quality_check                     = 1
+   _merge_decidability                = 1
+   _assess_decidability_dynamic       = 1
+   _assess_decidability_def           = 1
+   _assess_decidability_call_sites    = 1
+   finalize_call_sites                = 2
+   stop_reasons_call_sites            = 2
+   old_finalize_gate_serial           = 0
+   old_finalize_gate_B                = 0
+   b_barrier_comment                  = True
+   v72_13_tag                         = 1
+   ⇒ 判据：各机制定义点 == 1；`_assess_decidability` 的调用点 == 1（F6 的唯一入口）；finalize / stop_reasons 各 2 个调用点但只有 1 份实现；两处旧门 == 0。
+
+==================================================================
+## [E] AST 逐节点比对（docstring 归一化后）
+==================================================================
+   本版 AST 指纹 64f91b00  节点数 1735681
+   与上一版比：见 _probe_v72_astcmp.txt（由 _cmp_v72_ast.py 生成）
+
+==================================================================
+## 摘要（机器可读）
+==================================================================
+{
+ "A": {
+  "不限预算": {
+   "active": 4,
+   "budget_stopped": [],
+   "calls": 78
+  },
+  "预算 30": {
+   "active": 4,
+   "budget_stopped": [
+    "0",
+    "1",
+    "all",
+    "both"
+   ],
+   "calls": 47
+  }
+ },
+ "B": {
+  "big_fields": [],
+  "oversized": [
+   "manifest",
+   "rendered"
+  ]
+ },
+ "C": {
+  "summary_headers": 14,
+  "duplicated": {},
+  "section_order": [
+   "1.21.72",
+   "1.21.71",
+   "1.21.70",
+   "1.21.69",
+   "1.21.68",
+   "1.21.67",
+   "1.21.66",
+   "1.21.65",
+   "1.21.64",
+   "1.21.63",
+   "1.21.62",
+   "1.21.61",
+   "1.21.60",
+   "1.21.59",
+   "1.21.58",
+   "1.21.57",
+   "1.21.56",
+   "1.21.55",
+   "1.21.54",
+   "1.21.53",
+   "1.21.52",
+   "1.21.51"
+  ],
+  "order_ok": true,
+  "n_sections": 22
+ },
+ "D": {
+  "_normalize_decidability": 1,
+  "_untraced_undecidable": 1,
+  "_stop_reasons": 1,
+  "_finalize_layer_common": 1,
+  "_cached_ext_assess": 1,
+  "_dispatch_for_pack": 1,
+  "_layer_guard": 1,
+  "_quality_check": 1,
+  "_merge_decidability": 1,
+  "_assess_decidability_dynamic": 1,
+  "_assess_decidability_def": 1,
+  "_assess_decidability_call_sites": 1,
+  "finalize_call_sites": 2,
+  "stop_reasons_call_sites": 2,
+  "old_finalize_gate_serial": 0,
+  "old_finalize_gate_B": 0,
+  "b_barrier_comment": true,
+  "v72_13_tag": 1
+ }
+}

@@ -1,0 +1,14 @@
+报告已定稿（240 行）
+| 项 | 命令 | 结果 |
+|---|---|---|
+| 冒烟全套（`smoke_test.py`） | `python smoke_test.py` | EXIT=0，✓=199，✗=0 |
+| 7 个探针（全部 0 FAIL） | `python _probe_*.py 元DGTF-V1.23.4.py` | v1234_runtime 26/0；v1232_audit 67/0；v1233_voteids 16/0；v1231_left 30/0；v123_w34 34/0；v123_w2 42/0；v123_w1 59/0 |
+| 验收档（全量） | `python _v122_verify.py --phase all` | EXIT=0，FAIL=0，PASS 315 |
+| 验收档（本版） | `python _v122_verify.py --phase v1234` | EXIT=0，PASS 26 / FAIL 0 |
+| 出厂配置「行为不变」 | `load_config 前后逐键对比` | 差异 **0 项**（yaml 的 `runtime` 三项 = auto ⇒ 恒等） |
+| AST 登记表两向对账 | `_v122_ast_registry.json` | added 90 / 未登记 0 / 过期 0 |
+| **真跑旁证**（端到端） | `python 元DGTF-V1.23.4.py … --web on --thinking off --effort high` | 横幅：联网 开 | 思考 关（0 个环节开档 / 25 关）| 强度 high；产物 `_runtime`：web_enabled=true / thinking_default=disabled / effort=low |
+
+真跑横幅： 运行期总控：联网 开 | 思考 关（0 个环节开档 / 25 关）| 强度 high
+产物 _runtime： ('20261007_052706_老城区暴雨内涝频发排水系统重建还是局部.md', ('true', 'disabled', 'low'))
+FILL_EXIT=0

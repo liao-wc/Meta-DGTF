@@ -1,0 +1,30 @@
+{
+  "id": "med_002",
+  "domain": "med",
+  "question": "慢病随访人数太多随访质量下降，分层策略怎么定",
+  "orientation": "decision",
+  "route": [
+    "0",
+    "1",
+    "both",
+    "all"
+  ],
+  "rounds": "0:2,1:2,both:2,all:3",
+  "mock": false,
+  "ok": true,
+  "error": "",
+  "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\bench\\runs\\v1221_full\\med_002\\20261005_104536_慢病随访人数太多随访质量下降分层策略怎.md",
+  "calls": 98,
+  "tokens": 670747,
+  "layers_seen": [
+    "0",
+    "1",
+    "all",
+    "both"
+  ],
+  "missing": [],
+  "elapsed_s": 1541.9,
+  "elapsed": 1541.9,
+  "objective_lines": 4,
+  "objective_block": "**分层目标**：\n  - 修行层（显形过程 · objective=manifest）：& 6 / 线头 5 / 悬置 1 / 探针 3\n  - 研究层（逼近真理 · objective=truth）：覆盖率 N/A · distance 1.0\n  - 对撞层（第三者 · objective=collision）：third ✓ · 张力 3\n  - 元层（闭环清算 · objective=closure）：clean True · 未交代 0 类\n"
+}

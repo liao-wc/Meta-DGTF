@@ -1,0 +1,30 @@
+{
+  "id": "eng_002",
+  "domain": "eng",
+  "question": "早高峰地铁站台拥挤越来越严重，运营效率该怎么提升",
+  "orientation": "boundary",
+  "route": [
+    "0",
+    "1",
+    "both",
+    "all"
+  ],
+  "rounds": "0:1,1:1,both:1,all:1",
+  "mock": false,
+  "ok": true,
+  "error": "",
+  "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\bench\\runs\\v122_full\\eng_002\\20261005_005750_早高峰地铁站台拥挤越来越严重运营效率该.md",
+  "calls": 55,
+  "tokens": 382898,
+  "layers_seen": [
+    "0",
+    "1",
+    "all",
+    "both"
+  ],
+  "missing": [],
+  "elapsed_s": 879.0,
+  "elapsed": 879.0,
+  "objective_lines": 4,
+  "objective_block": "**分层目标**：\n  - 修行层（显形过程 · objective=manifest）：& 4 / 线头 4 / 悬置 1 / 探针 3\n  - 研究层（逼近真理 · objective=truth）：覆盖率 20% · distance 0.6\n  - 对撞层（第三者 · objective=collision）：third ✓ · 张力 3\n  - 元层（闭环清算 · objective=closure）：clean True · 未交代 0 类\n"
+}

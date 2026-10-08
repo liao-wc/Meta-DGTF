@@ -1,0 +1,31 @@
+# position_all_same 诊断
+entry=all
+round=3
+anchor=老城区地下管线反复开挖，要不要改成综合管廊
+same_position=0
+candidate_count=6
+
+[1] attr=0 pos=0 src=阳
+    desc: all 作为整体，其可比较性建立在一条未被填的前提上：比较所需的坐标系本身还没被选定
+    why_position: 
+
+[2] attr=1 pos=0 src=阳
+    desc: 三个被让出的空位——记账位、签字职务、第三对齐位——是否同一个空缺，没有任何一条通道把三者并置过
+    why_position: 三个空位各自在册，三者并置从未发生，未被收进 all
+
+[3] attr=1 pos=0 src=阳
+    desc: 「同时在场」的判定标准未定：时间同刻与同一套账上可并表，两者不等价，all 悬在两者之间
+    why_position: 两种在场的等价判定无通道写过，all 未吸收
+
+[4] attr=0 pos=0 src=阴
+    desc: 三个局部各自让出的空位是否指向同一空缺，没有任何通道并置过；all 缺的正是这个并置动作本身
+    why_position: 
+
+[5] attr=0 pos=0 src=阴
+    desc: 「反复开挖的具体原因」这一格空着，是缺数据还是缺科目——空的是格还是栏，没有任何通道走到这一问
+    why_position: 该格从未被任何通道写过，all 里仍是空格
+
+[6] attr=0 pos=0 src=阴
+    desc: 若要看清 all 的形状，需要一个既不在局部也不在整体的位置；该位置不是未想到的职务，是观察者本身不存在
+    why_position: 观察者位置未被任何通道提出，all 中不存在
+

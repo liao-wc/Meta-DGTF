@@ -1,0 +1,67 @@
+# position_all_same 诊断
+entry=all
+round=3
+anchor=城区急救车响应时间不均衡，调度该怎么改
+same_position=0
+candidate_count=15
+
+[1] attr=0 pos=0 src=阳
+    desc: 作为整体，all 的形状由“谁定观察窗”这个未进入构成的空缺位决定：缺位一换，慢名单就换，而 all 自身不记录换过几次
+    why_position: 
+
+[2] attr=0 pos=0 src=阳
+    desc: all 里两套切分（动作层与字段层）各有各的元件，但没有一张表把动作映射到字段，整体因此不是一套而是两套并行，缝未合
+    why_position: 
+
+[3] attr=1 pos=0 src=阳
+    desc: all 与外部材料（制度生效日、地理人口）之间是边界互锁：材料在 all 外，all 落地又要它，边界画在哪本身就是未决
+    why_position: 外部材料与边界未进入 all，落地时仍缺
+
+[4] attr=1 pos=0 src=阳
+    desc: all 对自身的省略不留痕，被砍掉的条目不可召回；整体成形时缺一份“被砍过什么”的记录
+    why_position: 被砍条目不可召回，未进 all
+
+[5] attr=1 pos=0 src=阳
+    desc: all 的悬置没有起止，局部的冻结有起止；把挂载失败写成冻结需要一次 all 内部做不出的决定
+    why_position: 把挂载失败写成冻结的决定未进 all
+
+[6] attr=1 pos=0 src=阳
+    desc: all 依赖价值序来排入口优先级，而解构只产空缺位置不产生序；排序依据不在 all 的任何一侧内部
+    why_position: 价值序不在 all 内部，排序依据缺
+
+[7] attr=1 pos=0 src=阳
+    desc: 站点迁移抹掉对照后，前后两个 all 不共享同一对象，覆盖判断只能在迁移后单独重估，无法在同一 all 内对照
+    why_position: 迁移前对照不可得，未共享对象
+
+[8] attr=0 pos=0 src=阴
+    desc: 作为整体，all 没有被看见的部分里有一块是“谁在承受这种不均衡”：受影响者从未进入构成，慢名单只到片区不到人
+    why_position: 受影响者从未进入构成，名单只到片区
+
+[9] attr=0 pos=0 src=阴
+    desc: all 缺一个把慢时段与高需求时段对照的判据，因此名单换批时无法区分是切分不稳还是被覆盖人群真的换了
+    why_position: 慢时段与高需求对照判据未进 all
+
+[10] attr=0 pos=0 src=阴
+    desc: all 只由已被命名的切面拼成，未被任何一侧命名的议题——比如增车与改调度谁优先——不在整体里，也不在悬置里
+    why_position: 未命名议题不在整体也不在悬置
+
+[11] attr=0 pos=0 src=阴
+    desc: all 里“成本”这一维没有位置：改派车、改路网、加站点各要付什么、谁付，整套记录不承载
+    why_position: 成本维度无位置，记录不承载
+
+[12] attr=0 pos=0 src=阴
+    desc: all 的时间基准缺一个共同刻度源，制度生效日这类外部时刻被划在边界外，整体因此没有可对齐的钟
+    why_position: 共同刻度源在边界外，未进 all
+
+[13] attr=0 pos=0 src=阴
+    desc: all 的边界是事后画的：哪几条被收进来取决于哪几个 view 被生成，没被生成的角度不会以“缺”的形式出现在 all 里
+    why_position: 未生成角度不以缺出现，未进 all
+
+[14] attr=0 pos=0 src=阴
+    desc: 慢名单的生成过程本身可能改变被观察对象——调度员看到月报后调整行为，下一窗的记录已是反应后的记录，all 未处理这种反馈
+    why_position: 调度员反馈未处理，未进 all
+
+[15] attr=0 pos=0 src=阴
+    desc: all 收进来的都是可被记录的项，不可记录的东西（经验、口头交接、临时决定）连“缺”都算不上，整体因此在记录层封顶
+    why_position: 不可记录项连缺都不是，未进 all
+

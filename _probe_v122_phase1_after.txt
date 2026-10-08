@@ -1,0 +1,50 @@
+{
+  "src": "元DGTF-V1.22.0-rc1.py",
+  "version": "1.22.0-rc1",
+  "A_objective": {
+    "0": "manifest",
+    "1": "truth",
+    "both": "collision",
+    "all": "closure"
+  },
+  "B_cov_entry": {
+    "0": null,
+    "1": null,
+    "both": null,
+    "all": null
+  },
+  "B2_cov_entry_passed_positionally": null,
+  "B3_cov_parts_entry0": [
+    0,
+    0,
+    null
+  ],
+  "C_classify_view_empty": "lazy",
+  "C_classify_view_real": "real",
+  "C_classify_view_unsaid_kw": "lazy",
+  "C_classify_dict_real": "real",
+  "C_classify_dict_empty": "lazy",
+  "D_header_has_layer_target": true,
+  "D2_layer_objective_lines": 4,
+  "E_stop_reason_src_未生质量": true,
+  "E2_stop_reason_src_修行层不追求收敛": true,
+  "F_settle_meta_ref_p0": false,
+  "G_route_boundary": [
+    "0",
+    "1",
+    "both",
+    "all"
+  ],
+  "G2_route_two_layers": [
+    "0",
+    "1"
+  ],
+  "H_bench_questions": 20,
+  "H2_bench_gold": 3,
+  "D3_legend": [
+    "- **修行层**：objective=`manifest` —— 把处境显形 —— 不求答案，因此不计覆盖率",
+    "- **研究层**：objective=`truth` —— 求可判定的真 —— 覆盖率只对这一层算",
+    "- **对撞层**：objective=`collision` —— 求不可通约处 —— 对撞不改判定，只暴露张力",
+    "- **元层**：objective=`closure` —— 求整体闭环 —— 不评价修行层，只交代留没留账"
+  ]
+}

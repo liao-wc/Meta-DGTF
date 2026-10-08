@@ -1,0 +1,15 @@
+# position_all_same 诊断
+entry=all
+round=3
+anchor=早高峰地铁站台拥挤越来越严重，运营效率该怎么提升
+same_position=0
+candidate_count=2
+
+[1] attr=1 pos=0 src=阳
+    desc: 站台拥挤的缓解动作里有一部分物理干预（如加宽楼梯、改闸机）不产生可入账记录，因此整个 all 的可行动集合被这个成文口径截断，而非被物理上限截断
+    why_position: 该物理干预无入账接口，此局部未被all吸收
+
+[2] attr=0 pos=0 src=阴
+    desc: 每扇门前的可转化0数分布若可测，受影响的判断不是"该不该调度"，而是"站台层是否还有独立于记录权的可归因变量"——这一条从未被追问
+    why_position: 门前分布的可测反事实从未被追问，局部未吸收
+

@@ -1,0 +1,94 @@
+23:43:38 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+Building prefix dict from the default dictionary ...
+23:43:39 [DEBUG] jieba: Building prefix dict from the default dictionary ...
+Loading model from cache C:\Users\18432\AppData\Local\Temp\jieba.cache
+23:43:39 [DEBUG] jieba: Loading model from cache C:\Users\18432\AppData\Local\Temp\jieba.cache
+Loading model cost 0.788 seconds.
+23:43:39 [DEBUG] jieba: Loading model cost 0.788 seconds.
+Prefix dict has been built successfully.
+23:43:39 [DEBUG] jieba: Prefix dict has been built successfully.
+23:43:39 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:43:40 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:43:40 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:43:43 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:44:24 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:45:00 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:45:02 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:45:04 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:45:20 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:45:22 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:45:23 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:45:23 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:45:25 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:45:37 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:46:14 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:46:15 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:46:18 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:46:45 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:46:46 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:46:56 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:46:58 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:46:58 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:47:00 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:47:22 [WARNING] dgtf: 对偶判断命中 1/3，降级重试（候选减半）
+23:47:22 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:47:26 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:47:38 [INFO] dgtf: 降级重试后命中 2/3
+23:47:38 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:48:15 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:48:16 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:48:18 [INFO] dgtf: position 诊断已写：outputs\diagnostic_position_0_20261004_234818.log
+23:48:18 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:48:41 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:48:44 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:48:54 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:49:14 [INFO] dgtf: 可判定性归一化（合并池+外判）：decidable → partial
+23:49:14 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:49:16 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:49:18 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:49:21 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:49:23 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:49:24 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:49:25 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:49:26 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:49:50 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:50:24 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:50:28 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:50:31 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:51:04 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:51:05 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:51:06 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:51:06 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:51:10 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:52:09 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:52:44 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:52:48 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:52:50 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:53:20 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:53:22 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:53:45 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:53:46 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:53:47 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:53:47 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:53:50 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:54:31 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:55:09 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:55:14 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:55:17 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:55:33 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+23:55:37 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+   ✓ 成本档位：balanced
+
+════════════════════════════════════════════════════════════
+元 DGTF v1.22.0 · 老城区暴雨内涝频发，排水系统重建还是局部改造加海绵措施？
+════════════════════════════════════════════════════════════
+调度：0 → 1
+螺旋上限（每层圈数）：0:3,1:3
+并行模式：严格串行
+回来通道：content、context、self
+════════════════════════════════════════════════════════════
+
+════════════════════════════════════════════════════════════
+完成 | 67 次 LLM | 269602 tokens
+════════════════════════════════════════════════════════════
+📁 已保存: outputs\20261004_235537_老城区暴雨内涝频发排水系统重建还是局部.md

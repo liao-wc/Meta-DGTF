@@ -1,0 +1,3207 @@
+{
+ "question": "政府或企业内部多个部门要共享数据提升效率，但涉及隐私和权限，边界怎么划？",
+ "route": [
+  "0",
+  "1"
+ ],
+ "keep": {
+  "0": "all",
+  "1": "all"
+ },
+ "rounds": {
+  "0": 3,
+  "1": 3,
+  "both": 4,
+  "all": 4
+ },
+ "dispatch": {
+  "requested": [
+   "0",
+   "1"
+  ],
+  "order": [
+   "0",
+   "1"
+  ],
+  "ran": [
+   "0",
+   "1"
+  ],
+  "missing": [],
+  "failed": {},
+  "skipped": [],
+  "_parallel_mode": "serial"
+ },
+ "channels": [
+  "content",
+  "context",
+  "self"
+ ],
+ "self_text": [
+  "[修行层] ## 一、这一路看到了什么\n边界不是先画好的线，它是在一次共享动作撞到不能碰的地方之后才出现。出现之后，它不会停在原地，下一次流动会绕着它走。真正可动的抓手从字段清单移到了动作时序：谁先动谁的数据，谁就先承担证明自己只在约定范围内的成本。结论流通和字段流通被拆开了，放开推导过程不等于放开结论的适用范围，这两件事塞进同一份协议会互相错位。追认不是收尾，它把下一轮谈判的起点从协议文本挪到上次哪一方先松口，松口方在新一轮里默认更重。\n\n## 二、哪些还没看清\n- 线头：A 要 B 盖章的结论时，B 对结论适用范围的划线权与 B 对字段开放清单的划线权，在同一份协议里能否并存，还没看到结构；已发生的流通在给未发生的边界定价，但定价机制本身还没有被对象化。\n- 线头：互为 Owner/User 时，按条划、打包划、按先动方举证，这三条路只比了眼前可操作性；它们在多轮共享后的代价没看清。\n- 线头：上次追认时先松口造成的下一轮劣势，是事实压力，还是可以被新协议文本重新分派，没看清。\n- 线头：把“最小必要”的认定权交给事故调查方后，划线起点会移到可追责证据链；这条起点会切断业务动作的哪些连续性，没看清。\n- &：边界在一次碰撞中成形后，下一次流动就带着它的形状走。未定没有现场位置，只能在后来的承认里被指出。那条接缝没有单一归属，任何一方都不能单独盖章。度量和责任的开口随流动与阻断交替出现，不是填一次就结束。\n\n## 三、我决定不碰什么，为什么\n- 不碰：对等交换对审计、上级、事故调查等外部第三方的呈现口径是否对等。为什么：本层要处理的是两个互为 Owner/User 的部门内部怎样形成边界，外部呈现会把问题换成另一组关系。保持了：本层全程。状态：active。\n- 不碰：法律上的单独同意与内部投票、审批之间的关系。为什么：这一路锚在权限归属，不在合规程序；把它拉进来，会先审程序合法性，再看不清“谁先动谁的数据”的时序。保持了：本层全程。状态：active。\n- 本轮没有撤回悬置。\n\n## 四、与问题相处的姿态\n",
+  "[研究层] ## 一、可判定部分 · 直接回答\n\n可判定通道没有认领任何子问题，`answered_sub_ids` 为空。它只定下一条写入口径，不对 T7、C9、追认起点作裁决。\n\n- 对“边界写入协议需要什么”：定下的是三件同时在场——动作编号、格式版本、旧记录可重释范围。只写编号，动作发生过这一事实可留，动作含义是否未变留不住。只写格式版本，含义层可留，具体动作追不到。旧记录可重释范围缺席时，承担项能被后来改写。\n- 对“格式版本首次怎样进入”：先有追认。追认不新增动作编号，只留下父级引用。父级引用不在当前协议内被指定。\n- 对“谁在哪个节点划”：可判定通道不回答。它给的是记录单元，不是划界主体。第六节文本另给定位，但那不属于可判定通道的认领范围。\n- 对 T7、C9、追认起点：均未被可判定通道标为已回答。导出后责任落点、先松口方劣势、按条划还是打包划，没有一条在本段闭合。\n\n## 二、不可判定部分 · 结构揭示\n\n- 格式变更权不能被当前协议完整收进去。要写“谁改格式”，就得先选一个登记这项规定的格式。这个选择动作在当前协议的上层，当前协议无法指定自己的登记格式。内收动作只能留一个未计入本层的父级动作。\n- 追认起点不能由被追认文本自身给出。文本一旦指定起点，追认动作就被文本预先写进去了；文本不指定，追认在本层没有起点。父级引用不是新编号，它把起点提交给下一次格式变更，因此追认在本轮不能闭口。\n- 互为 Owner/User 时，格式版本升级有两个卡点。任一方单方升级，另一方旧记录进入重释风险。双方共同升级，又要先商定升级动作用什么格式登记。两条路都要求一个双方共同承认的登记格式先存在，而这个前提不在当前对等关系内产生。\n\n## 三、★ 暂缓处理的部分（延迟债务）\n\n- 子问题：喊停权与数据归属脱钩后，边界是否由行政结算单位决定。  \n  为什么延迟：本轮没有新证据。  \n  原本的回访条件：出现行政结算单位与数据通道冲突的具体案例。  \n  最终状态：延迟中，未闭合。\n\n- 子问题：C12 的轮转指定"
+ ],
+ "decidability": {
+  "decidability": "partial",
+  "reason": "候选普遍能判出0/1：字段权限、法律+内部合规、最小必要、动作级、汇总粒度均可操作；悬空线头属度量、责任、认定权，可补规定或测量；主动悬置是选择不碰，非原则判不出。",
+  "features": [
+   "候选多为0/1明确",
+   "&候选多为结构/制度未决",
+   "悬空线头可补规定或测量"
+  ],
+  "decidable_aspects": [
+   "字段级/场景级/动作级权限集合可作为边界单位",
+   "隐私边界须同时满足法律与内部合规双源约束",
+   "最小必要原则提供可操作的划线起点",
+   "汇总粒度与脱敏安全认定方可谈可规定",
+   "Owner/User责任与二次流转让渡可通过协议明确",
+   "[外] 个保法第13/23/29/39条给出同意豁免与单独同意例外等硬边界",
+   "[外] 数据二十条三权分置及“原始数据不出域、数据可用不可见”可作原则底线",
+   "[外] 最小必要、目的限制、分类分级、匿名化可转化为合规检查清单"
+  ],
+  "undecidable_aspects": [
+   "[外] 具体部门间“合适”的权限边界与利益分配无客观唯一解",
+   "[外] 效率提升与隐私风险的量化权衡缺少统一效用函数与风险容忍度",
+   "[外] 具体组织内部数据资产清单、敏感级别、系统接口和人员能力未知",
+   "[外] 跨部门共享的最优制度设计无判决实验可证伪，依赖政治/价值博弈",
+   "[外] 未来监管细则、司法裁判和技术演进不可预知"
+  ],
+  "evidence": [
+   {
+    "aspect": "字段级/场景级/动作级权限集合",
+    "source": "候选1、3、16"
+   },
+   {
+    "aspect": "法律与内部合规双源约束",
+    "source": "候选2；X3、X2"
+   },
+   {
+    "aspect": "最小必要划线起点",
+    "source": "候选7；X1"
+   },
+   {
+    "aspect": "汇总粒度与脱敏认定",
+    "source": "候选18、19、20"
+   },
+   {
+    "aspect": "Owner/User责任与二次流转",
+    "source": "候选6、15；&印记结构/价值条"
+   }
+  ],
+  "_evidence_full": [
+   {
+    "aspect": "字段级/场景级/动作级权限集合",
+    "source": "候选1、3、16"
+   },
+   {
+    "aspect": "法律与内部合规双源约束",
+    "source": "候选2；X3、X2"
+   },
+   {
+    "aspect": "最小必要划线起点",
+    "source": "候选7；X1"
+   },
+   {
+    "aspect": "汇总粒度与脱敏认定",
+    "source": "候选18、19、20"
+   },
+   {
+    "aspect": "Owner/User责任与二次流转",
+    "source": "候选6、15；&印记结构/价值条"
+   }
+  ],
+  "_source": "pool+external",
+  "_und_untraced": [],
+  "_und_traced": [],
+  "anchor_refs": [
+   "a1",
+   "a2",
+   "a3",
+   "a4",
+   "a5",
+   "a7",
+   "a9",
+   "a10"
+  ],
+  "_anchors_given": 11,
+  "_ext_status": "partial",
+  "_ext_reason": "法律与技术红线可依个保法、数据二十条等判定；但具体到某组织某类数据的权限边界，取决于利益分配、风险偏好与场景，无唯一判决实验。",
+  "_ext_features": [
+   "无法设计判决实验",
+   "信息不足",
+   "规范/价值权衡而非纯经验判断"
+  ],
+  "_divergent": true,
+  "_pool_status": "decidable"
+ },
+ "views": {
+  "0": {
+   "entry": "0",
+   "anchor": "多部门共享数据提效，隐私权限边界怎么划——此刻它更像一个还没定下度量口径和责任落点的处境。",
+   "candidates": [
+    {
+     "desc": "数据共享的边界不是一条线，而是每个字段的读取权限集合",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点直指「边界怎么划」与「权限」",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "隐私约束来自法律（如个保法）与内部合规两条独立来源，边界必须同时满足两者",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点直接提到「隐私」这一约束面",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "部门间的权限差异本质是“谁在什么场景下能看哪几列”，而非整表共享与否",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点已提及「部门」与「权限」差异",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "实际推进时往往先共享脱敏后的汇总数据，原始明细仍锁在原部门",
+     "kind": "event",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "脱敏汇总、明细上锁的实践锚点未提",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "提效的度量方式没定，边界就永远谈不拢——是缩短审批时长还是减少人工核对？",
+     "kind": "question",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点只说提升效率，未触及度量方式",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "数据Owner（归属部门）与数据User（使用部门）的责任划分，是边界谈判的真正战场",
+     "kind": "thread",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点未提责任划分，只提部门与权限",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "最小必要原则：只共享完成当前业务所必需的最小字段集，这是可操作的划线起点",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "最小必要原则是外部引入，锚点未提",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "边界谈判的僵局可能不在\"给不给数据\"，而在\"谁有权说这条数据归我管\"——编制、预算、考核关系决定了谁喊停有效，跟数据本身无关",
+     "kind": "thread",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点只涉隐私与权限，编制预算考核属外部引入",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "部门间共享的真正阻力常不是隐私合规，而是数据一旦离开原部门，原部门在跨部门协作中的不可替代性就被稀释了",
+     "kind": "concept",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "不可替代性稀释，锚点未触及",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "当上级要求\"限期打通\"时，边界会倒退成先共享再补授权，事后追认的口子一旦开了，下次谈判起点就变了",
+     "kind": "event",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "上级限期与事后追认，锚点未提",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "如果两个部门互为Owner和User（A的数据B要用，B的数据A也要用），边界是按条划还是按对等交换划，这个结构没被谈过",
+     "kind": "question",
+     "attribute": "0",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点问边界怎么划，正指向划线单位这一问题",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "外部审计或巡视介入时，此前口头默许的共享会被重新定性为违规，边界实际由检查节奏而非协议决定",
+     "kind": "thread",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "外部审计与巡视节奏，锚点未提",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "共享协议写的是字段清单，但真正流通的是\"结论\"——A部门想要的是B部门盖章的判定结果，不是原始行，这个区别没人挑明",
+     "kind": "concept",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "流通结论而非原始行，锚点未提",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "字段级共享承诺在数据被导出或截图那一刻失效，之后靠接收方自律约束，技术划线管不到这一层",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "导出截图后靠自律，锚点未提",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "共享后的二次流转由谁负责：导出动作发生在User侧，但后果可能落回Owner部门被追责",
+     "kind": "question",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "追责归口，锚点未提",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "把边界下沉到动作级——Owner只审User拿数据去做的那件事，不审具体字段组合，字段随动作走",
+     "kind": "thread",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "边界下沉到动作级，仍落锚点边界怎么划",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "若User能自行导出再加工，Owner划的字段边界实际只约束第一次查询，不约束最终使用范围",
+     "kind": "question",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "字段边界的效力范围，锚点边界已指向",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "脱敏汇总仍可能通过交叉比对还原个体，尤其当User同时持有其他部门汇总时，汇总粒度本身就是边界变量",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "脱敏可还原个体，属锚点隐私一面",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "汇总粒度（分母多大、维度多细）是可谈的参数，比字段清单更接近可执行的划线单位",
+     "kind": "thread",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "汇总粒度是划线单位，锚点边界已指向",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "谁有权定义\"脱敏到什么程度算安全\"：技术部门、法务、还是Owner部门自评，认定方不同结论不同",
+     "kind": "question",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "脱敏安全认定方，锚点隐私权限已指向",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "同一份汇总数据在不同User手里还原风险不同，边界若要按接收方定，就不能一张清单走遍全部门",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "边界按接收方定，锚点边界怎么划已指向",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "互为Owner/User时的边界既不在字段清单也不在对等交换，而在“谁先动谁的数据”这个时序上：先动的那个部门承担举证自己只在约定范围内的成本",
+     "kind": "concept",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点未提Owner/User互指、谁先动此时序与举证成本",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "对等交换若成立，双方各自对外部第三方（审计、上级、事故调查）的呈现口径是否也必须对等？不对等时对等交换只是内部默契",
+     "kind": "question",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点未提对等交换，也未提对外部第三方的呈现口径",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "结论流通与字段清单是两种不同的所有者权力：盖章结论的所有者其实放弃了对推导过程的划线权，却保留了对结论适用范围的划线权，这两个权力此前被合并讨论",
+     "kind": "concept",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点未提结论流通、字段清单或所有者权力拆分",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "追认口子打开后，下一次谈判的起点不是协议文本，而是上次追认时哪一方先松的口——松口方在新一轮里默认处于举证劣势",
+     "kind": "thread",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点未提追认口子，也未提下一轮谈判起点",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "若把“最小必要”的认定权交给事故调查方而非Owner或User，划线起点会从业务动作转向可追责证据链，这是此前未试过的起点",
+     "kind": "startpoint",
+     "attribute": "0",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点已点出责任落点未定，此候选正把落点移向可追责证据链",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "两个部门互为Owner和User时，边界是按每一条数据逐条划线，还是按对等交换打包划线，这个选择本身没有被任何一条悬空线头覆盖",
+     "kind": "question",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "互为Owner/User、按条还是打包这个结构锚点未触及",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "结论流通与字段清单是两种不同的边界对象：如果A要的是B盖章的判定结论，Owner部门对字段的划线权划错了对象",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点未提结论流通与字段清单这两类边界对象",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "度量权与字段权可拆：User定提效口径、Owner定字段开放清单，边界谈判变成两个口径的对表",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点已点出度量口径未定，此候选正谈度量权与提效口径",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    }
+   ],
+   "collision": "一、\n0 这一端：流通不需要边界来证明自己，它只需要路径。\n1 这一端：阻断不需要预设边界，它只在某次流通撞到它时才显形。\n\n二、\n把 0 推到头：所有数据都流通，边界没有发生的机会，隐私不构成问题，因为问题需要一道界。\n把 1 推到头：所有数据都阻断，共享不存在，提效无从谈起，边界也没有对象可划。\n\n三、\n通常以为先划边界再共享。实际显现反过来：先有共享动作，某次动作碰到不能碰的地方，边界才被逼出来。\n可边界一旦被逼出来，就不再只是被动反应，它开始决定下一次共享走哪条路。\n流通和阻断互为对方的下一次条件。\n\n四、\n多部门共享的显现节奏是：先流通，撞到一次事件，边界才被划出；划出后，下一次流通改道。\n每划一条线，不是关掉一个口，是重新分配哪些流通要被举证、哪些流通可以默认。\n度量口径定不下来，是因为口径要在流通发生时才有对象；流通没发生，口径无对象可量。\n责任落点悬着，是因为责任要在某次碰壁被追认时才落到具体一方。\n\n五、\n& 0 无法被直接陈述。说“这里还没划”，已经是在用 1 的语法指认一个位置。未定只能被追认，不能被现场宣布。\n& 流通与阻断的接缝本身不属于任何一方。边界的位置永远落在那个不能被 Owner 或 User 单独认领的缝上。\n\n六、\n“隐私权限边界怎么划”不是先有边界再划。是共享动作先跑，撞出一次事件，边界才短暂显形一次。\n度量口径和责任落点不是两块待填的空白。它们是在流通与阻断交替显形时被反复重新打开的口子。\n此刻不是“还没定”。是已发生的流通已经在给未发生的边界定价。",
+   "amps": [
+    {
+     "desc": "法律对敏感个人信息的单独同意要求，不因部门内部投票通过而消失。",
+     "type": "axiological",
+     "source": "0",
+     "polarity": "?"
+    },
+    {
+     "desc": "部门把数据当资产时，授权通过也不等于愿意交出原始明细。",
+     "type": "ontological",
+     "source": "0",
+     "polarity": "?"
+    },
+    {
+     "desc": "数据被导出成文件或截图后，字段级0/1无法继续约束后续传播。",
+     "type": "structural",
+     "source": "0",
+     "polarity": "?"
+    },
+    {
+     "desc": "提效口径若由使用部门单独掌握，边界会随口径变化重新谈判。",
+     "type": "pseudo",
+     "source": "0",
+     "polarity": "?"
+    },
+    {
+     "desc": "解释权可借出，事故后果不可切分；接收方使用后原部门仍可能被问责。",
+     "type": "ontological",
+     "source": "0",
+     "polarity": "1",
+     "polarity_why": "事故后果不可切分"
+    },
+    {
+     "desc": "行政结算单位是事故默认落点，只改数据通道不会让它移动。",
+     "type": "structural",
+     "source": "0",
+     "polarity": "1",
+     "polarity_why": "行政结算单位默认落点"
+    },
+    {
+     "desc": "同一动作在不同部门口径不同，A的查询在B看来已是使用，字段清单无法抹平。",
+     "type": "logical",
+     "source": "0",
+     "polarity": "1",
+     "polarity_why": "部门口径差异无法抹平"
+    },
+    {
+     "desc": "第三方保留事后改写权，归因链只能提供材料，不能锁定定性。",
+     "type": "axiological",
+     "source": "0",
+     "polarity": "1",
+     "polarity_why": "归因链不能锁定定性"
+    },
+    {
+     "desc": "互为Owner和User时，边界按条划还是按对等交换划，结构未被谈过。",
+     "type": "structural",
+     "source": "0",
+     "polarity": "0",
+     "polarity_why": "划分结构尚未谈判"
+    },
+    {
+     "desc": "边界在流通撞壁时被逼出，但一旦划出就反过来决定下一次流通路径。",
+     "type": "ontological",
+     "source": "0",
+     "polarity": "?"
+    },
+    {
+     "desc": "未定只能被追认，不能被现场宣布；说'这里还没划'已是用1的语法指认位置。",
+     "type": "logical",
+     "source": "0",
+     "polarity": "?"
+    },
+    {
+     "desc": "流通与阻断的接缝不属于任何一方，边界落在不能被单独认领的缝上。",
+     "type": "structural",
+     "source": "0",
+     "polarity": "?"
+    },
+    {
+     "desc": "度量口径和责任落点不是待填空白，是流通与阻断交替时被反复打开的口子。",
+     "type": "axiological",
+     "source": "0",
+     "polarity": "?"
+    }
+   ],
+   "threads": [
+    {
+     "desc": "实际推进时往往先共享脱敏后的汇总数据，原始明细仍锁在原部门。",
+     "kind": "thread",
+     "polarity": "?"
+    },
+    {
+     "desc": "提效的度量方式没定，边界就永远谈不拢——是缩短审批时长还是减少人工核对？",
+     "kind": "thread",
+     "polarity": "?"
+    },
+    {
+     "desc": "数据Owner（归属部门）与数据User（使用部门）的责任划分，是边界谈判的真正战场。",
+     "kind": "thread",
+     "polarity": "?"
+    },
+    {
+     "desc": "导出成文件或截图后，字段级0/1无法继续约束后续传播——工具限制",
+     "kind": "thread",
+     "source": "probe_boundary"
+    },
+    {
+     "desc": "导出或截图后字段级约束失效，二次流转责任归属未定。",
+     "kind": "thread",
+     "polarity": "both",
+     "polarity_why": "失效已定，责任未定"
+    },
+    {
+     "desc": "提效度量方式未定，边界随口径漂移；度量权与字段权是否可拆。",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "度量未定拆分待解"
+    },
+    {
+     "desc": "最小必要原则的当前业务由谁认定，认定权归属未操作化。",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "认定权未操作化"
+    },
+    {
+     "desc": "导出截图后字段约束失效，技术划线管不到接收方自律这一层",
+     "kind": "thread",
+     "source": "probe_boundary",
+     "polarity_why": "技术划线到不了自律",
+     "polarity": "1"
+    },
+    {
+     "desc": "最小必要认定权交给事故调查方而非Owner或User，划线起点从业务动作转向可追责证据链。",
+     "kind": "thread",
+     "polarity": "?"
+    },
+    {
+     "desc": "两个部门互为Owner和User时，边界按条划还是按对等交换打包划，结构未被谈过。",
+     "kind": "thread",
+     "polarity": "?"
+    },
+    {
+     "desc": "结论流通与字段清单是两种边界对象：若A要B盖章的判定结论，Owner对字段的划线权划错对象。",
+     "kind": "thread",
+     "polarity": "?"
+    }
+   ],
+   "probes": [
+    {
+     "question": "若A要B盖章的判定结论，B放弃推导过程划线权却保留结论适用范围划线权——这两个权力在同一份协议里能同时写清吗？",
+     "link": "结论流通与字段清单是两种边界对象，权力被合并讨论",
+     "expected_gain": 0.7,
+     "covers": [
+      "T6",
+      "T9"
+     ]
+    },
+    {
+     "question": "互为Owner/User时，谁先动谁的数据，先动方举证自己只在约定范围内——这个时序举证成本，是否比逐条划线更可操作？",
+     "link": "边界落在时序而非字段清单或对等交换",
+     "expected_gain": 0.65,
+     "covers": [
+      "T4",
+      "T1",
+      "T8"
+     ]
+    },
+    {
+     "question": "上次追认时哪一方先松口，松口方在新一轮默认举证劣势——这个劣势是事实还是可被协议文本覆盖？",
+     "link": "追认口子改变下次起点，起点滑出协议文本",
+     "expected_gain": 0.6,
+     "covers": [
+      "T7",
+      "T10",
+      "T3"
+     ]
+    }
+   ],
+   "meta": [
+    "本层锚点在权限归属而非合规程序，法律单独同意与内部投票的关系被主动悬置。",
+    "已发生的流通正在给未发生的边界定价，但定价机制本身尚未被对象化。",
+    "[P3] & 候选（各圈累计）11 条 / 本层 amps 13 条（比值 1.18；amps 可能含 adjudications/上游合并的贡献，比值只作方向参考）"
+   ],
+   "decidable_product": {},
+   "undecidable_product": {},
+   "distance_to_question": 1.0,
+   "covered_aspects": [],
+   "uncovered_aspects": [],
+   "untouched": [
+    {
+     "desc": "互为Owner和User时按条还是按对等交换划",
+     "source": "anchor"
+    },
+    {
+     "desc": "谁喊停有效的权力事实",
+     "source": "anchor"
+    },
+    {
+     "desc": "事后追认的口子如何改变下次起点",
+     "source": "anchor"
+    },
+    {
+     "desc": "互为Owner/User时的边界既不在字段清单也不在对等交换，而在“谁先动谁的数据”这个时序上：先动的那个部门承担举证自己只在约定范围内的成本",
+     "source": "judge"
+    },
+    {
+     "desc": "对等交换若成立，双方各自对外部第三方（审计、上级、事故调查）的呈现口径是否也必须对等？不对等时对等交换只是内部默契",
+     "source": "judge"
+    },
+    {
+     "desc": "结论流通与字段清单是两种不同的所有者权力：盖章结论的所有者其实放弃了对推导过程的划线权，却保留了对结论适用范围的划线权，这两个权力此前被合并讨论",
+     "source": "judge"
+    },
+    {
+     "desc": "追认口子打开后，下一次谈判的起点不是协议文本，而是上次追认时哪一方先松的口——松口方在新一轮里默认处于举证劣势",
+     "source": "judge"
+    },
+    {
+     "desc": "两个部门互为Owner和User时，边界是按每一条数据逐条划线，还是按对等交换打包划线，这个选择本身没有被任何一条悬空线头覆盖",
+     "source": "judge"
+    },
+    {
+     "desc": "结论流通与字段清单是两种不同的边界对象：如果A要的是B盖章的判定结论，Owner部门对字段的划线权划错了对象",
+     "source": "judge"
+    },
+    {
+     "desc": "追认口子开了之后，下一次谈判的起点是否已经滑出协议文本，落在既成事实里",
+     "source": "judge"
+    }
+   ],
+   "suspensions": [
+    {
+     "id": "s_001",
+     "target": "法律单独同意与内部投票的关系",
+     "reason": "看清了单独同意与内部投票可碰，但选择不碰，因本层锚点在权限归属而非合规程序",
+     "reason_type": "explicit",
+     "layer": 2,
+     "last_confirmed_layer": 3,
+     "confirmed_layers": [
+      2,
+      3
+     ],
+     "status": "active",
+     "revoked_at": null,
+     "revoke_reason": "",
+     "resolved_at": null,
+     "stable_since": null,
+     "needs_review": false
+    },
+    {
+     "id": "s_002",
+     "target": "对等交换对外部第三方呈现口径是否对等",
+     "reason": "看清了对等交换与外部审计口径可碰，但选择不碰，因本层锚点在内部两部门结构而非外部呈现",
+     "reason_type": "explicit",
+     "layer": 3,
+     "last_confirmed_layer": 3,
+     "confirmed_layers": [
+      3
+     ],
+     "status": "active",
+     "revoked_at": null,
+     "revoke_reason": "",
+     "resolved_at": null,
+     "stable_since": null,
+     "needs_review": false
+    }
+   ],
+   "engagements": [
+    {
+     "target": "结论流通与字段清单作为两种边界对象",
+     "how": "追问盖章结论的适用范围划线权能否与字段划线权在同一协议并存"
+    },
+    {
+     "target": "互为Owner/User时的时序举证成本",
+     "how": "比较按条划、打包划、时序举证三种结构的可操作性"
+    }
+   ],
+   "refinements": [],
+   "reconfirmations": [
+    {
+     "suspension_id": "s_001",
+     "target": "",
+     "reason": "本层锚点仍在权限归属与边界结构，未转向合规程序"
+    }
+   ],
+   "revocations": [],
+   "deferrals": [],
+   "resolutions": [],
+   "escalations": [],
+   "reclassifications": [],
+   "settlement": {},
+   "adjudications": [],
+   "both_quota": {},
+   "carry": [
+    {
+     "question": "上面这几条候选被判为「后补／换说法复述」，本圈禁止以任何形式重述它们——原样、换说法、扩写都算。只交真的长出来的新东西：若把“最小必要”的认定权交给事故调查方而非Owner或User，划线起点会从业务动作转向可追责证据链，这是此前未试过的起；两个部门互为Owner和User时，边界是按每一条数据逐条划线，还是按对等交换打包划线，这个选择本身没有被任何一条悬空线；结论流通与字段清单是两种不同的边界对象：如果A要的是B盖章的判定结论，Owner部门对字段的划线权划错了对象；度量权与字段权可拆：User定提效口径、Owner定字段开放清单，边界谈判变成两个口径的对表",
+     "link": "self-check 判定的复述条目，绕开去重就能喷更多，但那不叫展开",
+     "expected_gain": 0.6,
+     "kind": "candidate",
+     "text": "上面这几条候选被判为「后补／换说法复述」，本圈禁止以任何形式重述它们——原样、换说法、扩写都算。只交真的长出来的新东西：若把“最小必要”的认定权交给事故调查方而非Owner或User，划线起点会从业务动作转向可追责证据链，这是此前未试过的起；两个部门互为Owner和User时，边界是按每一条数据逐条划线，还是按对等交换打包划线，这个选择本身没有被任何一条悬空线；结论流通与字段清单是两种不同的边界对象：如果A要的是B盖章的判定结论，Owner部门对字段的划线权划错了对象；度量权与字段权可拆：User定提效口径、Owner定字段开放清单，边界谈判变成两个口径的对表",
+     "banned": [
+      "若把“最小必要”的认定权交给事故调查方而非Owner或User，划线起点会从业务动作转向可追责证据链，这是此前未试过的起",
+      "两个部门互为Owner和User时，边界是按每一条数据逐条划线，还是按对等交换打包划线，这个选择本身没有被任何一条悬空线",
+      "结论流通与字段清单是两种不同的边界对象：如果A要的是B盖章的判定结论，Owner部门对字段的划线权划错了对象",
+      "度量权与字段权可拆：User定提效口径、Owner定字段开放清单，边界谈判变成两个口径的对表"
+     ]
+    }
+   ],
+   "carry_check": {
+    "checked": 1,
+    "violations": 0,
+    "items": [],
+    "notes": "注入 1 条、可核对 1 条，违例 0 条",
+    "round": 3
+   },
+   "carry_checks": [
+    {
+     "checked": 1,
+     "violations": 0,
+     "items": [],
+     "notes": "注入 1 条、可核对 1 条，违例 0 条",
+     "round": 3
+    }
+   ],
+   "carry_dropped": [],
+   "carry_dropped_all": [],
+   "rephrase_ratio": null,
+   "probe_skipped": false,
+   "rounds_cap": 3,
+   "duel_suspensions": [],
+   "meta_closure": {},
+   "stop_reason": "体力耗尽（3 圈走满，未触发任何停止判据，是被截断不是自然停止）",
+   "rounds_run": 3,
+   "roles_run": [
+    "摊开",
+    "转向",
+    "复裁"
+   ],
+   "closure_reason": "",
+   "round_log": [
+    {
+     "round": 1,
+     "role": "摊开",
+     "new_amps": 4,
+     "new_threads": 4,
+     "idle_amp": 0,
+     "idle_thread": 0,
+     "idle_stall": 1,
+     "why": "修行层无新增或无推进"
+    },
+    {
+     "round": 2,
+     "role": "转向",
+     "new_amps": 5,
+     "new_threads": 4,
+     "idle_amp": 0,
+     "idle_thread": 0,
+     "idle_stall": 0,
+     "why": ""
+    },
+    {
+     "round": 3,
+     "role": "复裁",
+     "new_amps": 4,
+     "new_threads": 3,
+     "idle_amp": 0,
+     "idle_thread": 0,
+     "idle_stall": 0,
+     "why": ""
+    }
+   ],
+   "rehashed": [],
+   "idle": false,
+   "rendered": "━━━ 修行 · entry=0 ━━━\n\n【锚点】多部门共享数据提效，隐私权限边界怎么划——此刻它更像一个还没定下度量口径和责任落点的处境。\n\n【候选】\n  [0×0] 互为Owner/User时的边界既不在字段清单也不在对等交换，而在“谁先动谁的数据”这个时序上：先动的那个部门承担举证自己只在约定范围内的成本  属性◈阴展开\n  [0×0] 对等交换若成立，双方各自对外部第三方（审计、上级、事故调查）的呈现口径是否也必须对等？不对等时对等交换只是内部默契  属性◈阴展开\n  [0×0] 结论流通与字段清单是两种不同的所有者权力：盖章结论的所有者其实放弃了对推导过程的划线权，却保留了对结论适用范围的划线权，这两个权力此前被合并讨论  属性◈阴展开\n  [0×0] 追认口子打开后，下一次谈判的起点不是协议文本，而是上次追认时哪一方先松的口——松口方在新一轮里默认处于举证劣势  属性◈阴展开\n  [0×1] 若把“最小必要”的认定权交给事故调查方而非Owner或User，划线起点会从业务动作转向可追责证据链，这是此前未试过的起点  ⚡& 属性◈阴展开\n  [1×0] 两个部门互为Owner和User时，边界是按每一条数据逐条划线，还是按对等交换打包划线，这个选择本身没有被任何一条悬空线头覆盖  ⚡& 属性◈阳展开\n  [1×0] 结论流通与字段清单是两种不同的边界对象：如果A要的是B盖章的判定结论，Owner部门对字段的划线权划错了对象  ⚡& 属性◈阳展开\n  [1×1] 度量权与字段权可拆：User定提效口径、Owner定字段开放清单，边界谈判变成两个口径的对表  属性◈阳展开\n  [1×0] 追认口子开了之后，下一次谈判的起点是否已经滑出协议文本，落在既成事实里  ⚡& 属性◈阳展开\n\n【ing 对撞】\n一、\n0 这一端：流通不需要边界来证明自己，它只需要路径。\n1 这一端：阻断不需要预设边界，它只在某次流通撞到它时才显形。\n\n二、\n把 0 推到头：所有数据都流通，边界没有发生的机会，隐私不构成问题，因为问题需要一道界。\n把 1 推到头：所有数据都阻断，共享不存在，提效无从谈起，边界也没有对象可划。\n\n三、\n通常以为先划边界再共享。实际显现反过来：先有共享动作，某次动作碰到不能碰的地方，边界才被逼出来。\n可边界一旦被逼出来，就不再只是被动反应，它开始决定下一次共享走哪条路。\n流通和阻断互为对方的下一次条件。\n\n四、\n多部门共享的显现节奏是：先流通，撞到一次事件，边界才被划出；划出后，下一次流通改道。\n每划一条线，不是关掉一个口，是重新分配哪些流通要被举证、哪些流通可以默认。\n度量口径定不下来，是因为口径要在流通发生时才有对象；流通没发生，口径无对象可量。\n责任落点悬着，是因为责任要在某次碰壁被追认时才落到具体一方。\n\n五、\n& 0 无法被直接陈述。说“这里还没划”，已经是在用 1 的语法指认一个位置。未定只能被追认，不能被现场宣布。\n& 流通与阻断的接缝本身不属于任何一方。边界的位置永远落在那个不能被 Owner 或 User 单独认领的缝上。\n\n六、\n“隐私权限边界怎么划”不是先有边界再划。是共享动作先跑，撞出一次事件，边界才短暂显形一次。\n度量口径和责任落点不是两块待填的空白。它们是在流通与阻断交替显形时被反复重新打开的口子。\n此刻不是“还没定”。是已发生的流通已经在给未发生的边界定价。\n\n【& 印记】\n  - [存在论] 边界在流通撞壁时被逼出，但一旦划出就反过来决定下一次流通路径。\n  - [逻辑性] 未定只能被追认，不能被现场宣布；说'这里还没划'已是用1的语法指认位置。\n  - [结构性] 流通与阻断的接缝不属于任何一方，边界落在不能被单独认领的缝上。\n  - [价值性] 度量口径和责任落点不是待填空白，是流通与阻断交替时被反复打开的口子。\n\n【悬空线头】\n  💭 最小必要认定权交给事故调查方而非Owner或User，划线起点从业务动作转向可追责证据链。\n  💭 两个部门互为Owner和User时，边界按条划还是按对等交换打包划，结构未被谈过。\n  💭 结论流通与字段清单是两种边界对象：若A要B盖章的判定结论，Owner对字段的划线权划错对象。\n\n【探针回归】\n  ? 若A要B盖章的判定结论，B放弃推导过程划线权却保留结论适用范围划线权——这两个权力在同一份协议里能同时写清吗？（回来：结论流通与字段清单是两种边界对象，权力被合并讨论｜增益0.7）\n  ? 互为Owner/User时，谁先动谁的数据，先动方举证自己只在约定范围内——这个时序举证成本，是否比逐条划线更可操作？（回来：边界落在时序而非字段清单或对等交换｜增益0.65）\n  ? 上次追认时哪一方先松口，松口方在新一轮默认举证劣势——这个劣势是事实还是可被协议文本覆盖？（回来：追认口子改变下次起点，起点滑出协议文本｜增益0.6）\n\n【尚未触及的方面】\n  💭 互为Owner和User时按条还是按对等交换划（anchor）\n  💭 谁喊停有效的权力事实（anchor）\n  💭 事后追认的口子如何改变下次起点（anchor）\n  💭 互为Owner/User时的边界既不在字段清单也不在对等交换，而在“谁先动谁的数据”这个时序上：先动的那个部门承担举证自己只在约定范围内的成本（judge）\n  💭 对等交换若成立，双方各自对外部第三方（审计、上级、事故调查）的呈现口径是否也必须对等？不对等时对等交换只是内部默契（judge）\n  💭 结论流通与字段清单是两种不同的所有者权力：盖章结论的所有者其实放弃了对推导过程的划线权，却保留了对结论适用范围的划线权，这两个权力此前被合并讨论（judge）\n  💭 追认口子打开后，下一次谈判的起点不是协议文本，而是上次追认时哪一方先松的口——松口方在新一轮里默认处于举证劣势（judge）\n  💭 两个部门互为Owner和User时，边界是按每一条数据逐条划线，还是按对等交换打包划线，这个选择本身没有被任何一条悬空线头覆盖（judge）\n  💭 结论流通与字段清单是两种不同的边界对象：如果A要的是B盖章的判定结论，Owner部门对字段的划线权划错了对象（judge）\n  💭 追认口子开了之后，下一次谈判的起点是否已经滑出协议文本，落在既成事实里（judge）\n\n【本层碰了】\n  - 结论流通与字段清单作为两种边界对象：追问盖章结论的适用范围划线权能否与字段划线权在同一协议并存\n  - 互为Owner/User时的时序举证成本：比较按条划、打包划、时序举证三种结构的可操作性\n\n【主动悬置（决定不碰）】\n  - 对等交换对外部第三方呈现口径是否对等：看清了对等交换与外部审计口径可碰，但选择不碰，因本层锚点在内部两部门结构而非外部呈现[explicit]\n\n【view】\n## 一、这一路看到了什么\n边界不是先画好的线，它是在一次共享动作撞到不能碰的地方之后才出现。出现之后，它不会停在原地，下一次流动会绕着它走。真正可动的抓手从字段清单移到了动作时序：谁先动谁的数据，谁就先承担证明自己只在约定范围内的成本。结论流通和字段流通被拆开了，放开推导过程不等于放开结论的适用范围，这两件事塞进同一份协议会互相错位。追认不是收尾，它把下一轮谈判的起点从协议文本挪到上次哪一方先松口，松口方在新一轮里默认更重。\n\n## 二、哪些还没看清\n- 线头：A 要 B 盖章的结论时，B 对结论适用范围的划线权与 B 对字段开放清单的划线权，在同一份协议里能否并存，还没看到结构；已发生的流通在给未发生的边界定价，但定价机制本身还没有被对象化。\n- 线头：互为 Owner/User 时，按条划、打包划、按先动方举证，这三条路只比了眼前可操作性；它们在多轮共享后的代价没看清。\n- 线头：上次追认时先松口造成的下一轮劣势，是事实压力，还是可以被新协议文本重新分派，没看清。\n- 线头：把“最小必要”的认定权交给事故调查方后，划线起点会移到可追责证据链；这条起点会切断业务动作的哪些连续性，没看清。\n- &：边界在一次碰撞中成形后，下一次流动就带着它的形状走。未定没有现场位置，只能在后来的承认里被指出。那条接缝没有单一归属，任何一方都不能单独盖章。度量和责任的开口随流动与阻断交替出现，不是填一次就结束。\n\n## 三、我决定不碰什么，为什么\n- 不碰：对等交换对审计、上级、事故调查等外部第三方的呈现口径是否对等。为什么：本层要处理的是两个互为 Owner/User 的部门内部怎样形成边界，外部呈现会把问题换成另一组关系。保持了：本层全程。状态：active。\n- 不碰：法律上的单独同意与内部投票、审批之间的关系。为什么：这一路锚在权限归属，不在合规程序；把它拉进来，会先审程序合法性，再看不清“谁先动谁的数据”的时序。保持了：本层全程。状态：active。\n- 本轮没有撤回悬置。\n\n## 四、与问题相处的姿态\n我把这个问题当成一个已经在动的过程，而不是一张等填的表。边界会在某次动作里短暂出现，下一次动作又会把它带走。我不急着替它找统一框架，也不把撞不动的地方说成已经看清。接下来若还要走，我会先盯住两个位置：结论流通和字段流通有没有被分开处理，以及上次追认后谁先松口。如果这两处不能并置，就让它们不能并置，不替它们造一个中间层。\n\n【元反思】\n  ∘ 本层锚点在权限归属而非合规程序，法律单独同意与内部投票的关系被主动悬置。\n  ∘ 已发生的流通正在给未发生的边界定价，但定价机制本身尚未被对象化。\n\n【质量评价】判断正常，无质量线索\n\n【自省】ing未复述上游view，仅复述候选与&，不计rephrased。",
+   "manifest": "## 一、这一路看到了什么\n边界不是先画好的线，它是在一次共享动作撞到不能碰的地方之后才出现。出现之后，它不会停在原地，下一次流动会绕着它走。真正可动的抓手从字段清单移到了动作时序：谁先动谁的数据，谁就先承担证明自己只在约定范围内的成本。结论流通和字段流通被拆开了，放开推导过程不等于放开结论的适用范围，这两件事塞进同一份协议会互相错位。追认不是收尾，它把下一轮谈判的起点从协议文本挪到上次哪一方先松口，松口方在新一轮里默认更重。\n\n## 二、哪些还没看清\n- 线头：A 要 B 盖章的结论时，B 对结论适用范围的划线权与 B 对字段开放清单的划线权，在同一份协议里能否并存，还没看到结构；已发生的流通在给未发生的边界定价，但定价机制本身还没有被对象化。\n- 线头：互为 Owner/User 时，按条划、打包划、按先动方举证，这三条路只比了眼前可操作性；它们在多轮共享后的代价没看清。\n- 线头：上次追认时先松口造成的下一轮劣势，是事实压力，还是可以被新协议文本重新分派，没看清。\n- 线头：把“最小必要”的认定权交给事故调查方后，划线起点会移到可追责证据链；这条起点会切断业务动作的哪些连续性，没看清。\n- &：边界在一次碰撞中成形后，下一次流动就带着它的形状走。未定没有现场位置，只能在后来的承认里被指出。那条接缝没有单一归属，任何一方都不能单独盖章。度量和责任的开口随流动与阻断交替出现，不是填一次就结束。\n\n## 三、我决定不碰什么，为什么\n- 不碰：对等交换对审计、上级、事故调查等外部第三方的呈现口径是否对等。为什么：本层要处理的是两个互为 Owner/User 的部门内部怎样形成边界，外部呈现会把问题换成另一组关系。保持了：本层全程。状态：active。\n- 不碰：法律上的单独同意与内部投票、审批之间的关系。为什么：这一路锚在权限归属，不在合规程序；把它拉进来，会先审程序合法性，再看不清“谁先动谁的数据”的时序。保持了：本层全程。状态：active。\n- 本轮没有撤回悬置。\n\n## 四、与问题相处的姿态\n我把这个问题当成一个已经在动的过程，而不是一张等填的表。边界会在某次动作里短暂出现，下一次动作又会把它带走。我不急着替它找统一框架，也不把撞不动的地方说成已经看清。接下来若还要走，我会先盯住两个位置：结论流通和字段流通有没有被分开处理，以及上次追认后谁先松口。如果这两处不能并置，就让它们不能并置，不替它们造一个中间层。",
+   "quality_flags": [],
+   "quality_verdict": "判断正常，无质量线索",
+   "self_check": {
+    "suspicious_candidates": [
+     5,
+     6,
+     7,
+     8
+    ],
+    "suspicious_amps": [
+     2
+    ],
+    "ing_rephrased": false,
+    "honest_about_empty": true,
+    "unsaid_count": 0,
+    "unsaid_is_escape": false,
+    "unsaid_where": "",
+    "flow_verdict": "候选1-4从展开长出，5-8偏补位；&2与ing五重复，属凑数。",
+    "view_verdict": "view停在'看到什么'，结论开放，符合本层标准。",
+    "amp_ratio_verdict": "&2与ing五近义重复，占比偏高。",
+    "notes": "ing未复述上游view，仅复述候选与&，不计rephrased。"
+   },
+   "errors": [],
+   "anchor_touched": [
+    {
+     "desc": "提效度量方式未定，边界随口径漂移",
+     "source": "anchor"
+    },
+    {
+     "desc": "Owner与User的责任划分是谈判战场",
+     "source": "anchor"
+    },
+    {
+     "desc": "导出截图后字段级约束失效",
+     "source": "anchor"
+    }
+   ],
+   "ing_structured": {}
+  },
+  "1": {
+   "entry": "1",
+   "anchor": "多部门共享数据时，边界由谁在哪个动作节点上划、划界动作如何被记录并写入协议？",
+   "candidates": [
+    {
+     "desc": "字段级边界：把数据拆成可枚举的最小列，每列单独设权限，边界落在列上，可审计、可枚举，但列与列组合后语义可能重新敏感",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点明列“字段”为单位，直接指向",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "场景级边界：不拆字段，按“办理某业务时用哪几张表”整包授权，边界落在具体业务动作上，靠流程审批控制",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点明列“场景”为单位，直接指向",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "动作级边界：不按数据、按“谁先读谁先写”的时序定边界，先动数据的一方承担举证自己只用约定范围的责任",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点明列“谁先动谁的数据”，直接指向",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "最小必要原则：只给完成当前任务所需的最少字段和最短时限，边界起点是可追责的最小证据链，而不是数据本身",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "最小必要非锚点所列单位，属外部原则引入",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "双源约束：隐私边界同时受法律单独同意与内部合规审批两条线约束，任一线不满足即越界，两条线的口径可能不一致",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "法律单独同意与内部合规非锚点字面内容",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "汇总粒度：不共享原始记录，只共享聚合结果，边界划在统计口径和最小分组规模上，聚合可回推个体时边界失效",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "汇总粒度非锚点所列单位，系外部拉入",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "具体部门间“合适”的权限边界与利益分配没有客观唯一解，只能靠多轮谈判追认，这一条在本层可能悬空",
+     "kind": "question",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "谈判追认与“无唯一解”不在锚点内",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "效率提升与隐私风险的量化权衡缺少统一效用函数与风险容忍度，无法给出单一 0/1 切点",
+     "kind": "question",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "量化效用函数与容忍度非锚点内容",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "谁先动谁的数据这一时序规则，在多轮共享后会不会反过来固化先动方的劣势，尚未显形",
+     "kind": "thread",
+     "attribute": "0",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点已指向“谁先动谁的数据”时序规则",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "边界若划在场景上，场景由谁命名、命名权归属未定，命名本身可能就是一次边界动作",
+     "kind": "concept",
+     "attribute": "0",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点已列“场景”，命名权属其内部分歧",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "字段级划分与动作级划分同时存在时，两者冲突以谁为准，仲裁起点还没出现",
+     "kind": "question",
+     "attribute": "0",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点同列字段与先动方时序，冲突在其内",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "数据在共享中生成的新数据（衍生数据）归哪一方，原始边界单位覆盖不到衍生品",
+     "kind": "thread",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "衍生数据非锚点所列边界单位，外部引入",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "隐私风险不是均匀分布在字段上，某些字段单独无害、组合后敏感，组合边界没有对应单位",
+     "kind": "concept",
+     "attribute": "0",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点已列“字段”，组合敏感属其内部争议",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "共享动作发生后留下的操作日志，本身算不算需要再划边界的数据对象",
+     "kind": "object",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "操作日志非锚点所列数据对象，外部拉入",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "边界第一次成形的那次碰撞现场，有没有留下可复用的判例，还是每次重新谈",
+     "kind": "startpoint",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "碰撞现场判例非锚点内容，属外部起点",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "部门内部人员流动后，之前谈好的边界是否自动继承，还是随人走",
+     "kind": "thread",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "人员流动后继承非锚点内容，外部引入",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "池里三条印记指向同一动作：宣布\"边界已定\"的那次判定，本身在边界之外发生，因此每次判定都要额外指定谁有权做这次宣布",
+     "kind": "startpoint",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点含'权限'与'边界怎么划'，划界权归属在其中",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "协议能锁的只是\"先动方在动之前提交了什么\"（申请、理由、字段清单），锁不住\"动完之后损害是否归它\"——后者只能等碰撞发生后由上一轮记录反推",
+     "kind": "thread",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "处境直说'谁先动、谁承担举证'，已指向此处",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "如果按条划和打包划都能事后追认，那多轮共享里能提前比较的只有\"上一次追认时哪方先松口\"，而不是条款本身",
+     "kind": "question",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "'追认''先松口'非锚点字面，属外部引入",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "划界动作需要一个常设承担项写入协议，但承担项的权限范围本身无法在写入时划清——写入方就是受益方，需要第三方记录次数来制衡",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "'常设承担项''第三方记录'非锚点所提",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "导出/截图使字段级约束失效，责任落点只能在导出动作前用\"谁发起导出\"锁定，而这个发起动作本身就是先动方举证的第一条证据",
+     "kind": "thread",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "'导出/截图'是具体动作，锚点未指向它",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "\"记录次数\"与\"协议条款数\"不相等：一次划界可能对应多条条款，一条条款可能被多次划界引用，两者之间没有固定比例，只能逐次追认",
+     "kind": "question",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "'记录次数''条款数'均未在锚点出现",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "谁先动谁的数据，这个\"先\"在互为 Owner/User 的对等关系里失效：双方都先动，举证成本无法按先/后分派，条款只能退化为按动作类型分派",
+     "kind": "thread",
+     "attribute": "0",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "'谁先动'已在锚点着力点中，对等失效应由此判",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "划界动作的归口如果写成常设承担项，承担方会变成新的权力位置：谁被记为承担者，谁就获得\"认定哪次碰撞算碰撞\"的裁量权，这比字段权限更难收回",
+     "kind": "concept",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "'常设承担项'及其裁量权非锚点内容",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "导出/截图是唯一无法在动作前锁定的动作：字段级约束在动作发生的瞬间失效，责任落点只能在导出后的追认环节才出现，协议锁定的是导出权限，不是导出内容",
+     "kind": "event",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "'导出/截图'与追认环节非锚点所提",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "\"边界单位\"换成时态后不再是字段/场景/表，而是\"上一次碰撞到下一次碰撞之间的间隔\"——单位变成区间，而区间没有持有者，无法在协议里挂责任",
+     "kind": "thread",
+     "attribute": "0",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "'边界怎么划'含边界单位，处境含碰撞成形",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "记录划界动作的次数由谁决定？被碰撞方记一次、动作发起方记一次、还是第三方记一次，计数口径不同会导出不同的边界厚度，协议没写这一层",
+     "kind": "question",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "'记录次数由谁决定'未在锚点出现",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "协议能预先分派举证成本，前提是双方动作类型可枚举；一旦出现协议未列出的新动作，先动方自动变成事实上的举证方，条款对未列动作失效",
+     "kind": "concept",
+     "attribute": "0",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "处境'谁承担举证'已指向举证成本的分派",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "常设承担项若挂在某个部门，该部门会同时是 Owner 和 User 之一，产生自我认定冲突：它既划界又被划，追认环节无法由它单独盖章，需要引入协议外的第三方存档",
+     "kind": "object",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "'常设承担项''第三方存档'非锚点所提",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "下次谈判的起点不是协议文本，是上次追认里\"哪一方先在新条款上让了一步\"——让步本身成为下一轮的筹码，与动作时序无关，与文本谈判顺序有关",
+     "kind": "startpoint",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "'让步作为筹码'非锚点所提，属外部引入",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "前一自问「计数口径能否在写入前枚举穷尽」，判断是：不能。计数者本身在动作序列之外也有先动，枚举任何口径都会漏掉枚举动作自身",
+     "kind": "thread",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点'划界动作如何被记录'已指向计数口径与计数者",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "「判定人不可连任」作终止条件的循环，可裁为0：不可连任的指定人本身需要被指定，指定动作不进入轮次，终止条件无法由此闭合",
+     "kind": "thread",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "'不可连任'属外部治理机制，锚点未提",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "复裁轮上真正能定的是：把「谁先动」从时序规则改写成可写条款这条路，在互为 Owner/User 下走不通，因为先后不可分派。定0",
+     "kind": "thread",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": false,
+     "why_attribute": "",
+     "why_position": "",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "导出动作前锁定「谁发起导出」的条款，在多轮后被观察到退化：发起方身份稳定，导出内容随轮次漂移，锁定未覆盖漂移",
+     "kind": "event",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点'谁在哪个动作节点上'已指向导出发起方",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "跨轮判定质量下落与可数收益的比较，缺的不是数据量，是同一轮里谁在计数的位置本身未被写进协议",
+     "kind": "question",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点'记录并写入协议'已指向计数者的位置",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "「划界动作被记录几次」与协议条款数的关系，可以定1：次数进条款后成为常设承担项的权限范围，条款数不决定次数",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点'划界动作如何被记录'直指记录次数",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "互为 Owner/User 时\"先动\"失效之后，条款要么改成\"任一方动作即触发双方共同举证\"，要么改成\"举证成本按动作次数而非先后分摊\"；这两条哪条可写，取决于计数口径能否在写入前穷尽",
+     "kind": "thread",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": false,
+     "why_attribute": "",
+     "why_position": "",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "上一圈把\"常设承担项\"当归属问题，但归属之外还有一层：承担项本身要不要有任期？没有任期的常设位置与\"不可连任\"直接冲突，冲突在写入前就存在",
+     "kind": "concept",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "常设承担项与任期均为外部概念，锚点未提",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "\"锁发起不锁内容\"跨轮退化的条件可以定：只要导出动作本身可被独立计数，锁发起就仍有效；一旦导出与内容读取在同一步完成（如 API 直读），锁发起退化为空条款",
+     "kind": "thread",
+     "attribute": "0",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点'动作节点'已指向导出动作及其可计数性",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "松口记录在动机改变后是否还能当追认起点——这条能不能在写入时就绑定动机声明，还是动机声明本身也要被追认，形成递归",
+     "kind": "question",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "追认、松口属外部概念，锚点只提动作被记录",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "跨轮记忆需要一个不随判定人更替而清空的载体；载体若是文本，则文本的修改动作本身也要被计数，计数又回到常设承担项",
+     "kind": "object",
+     "attribute": "0",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点'写入协议'即指向跨轮固定载体",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "路径依赖的终止条件被\"判定人不可连任也要被指定\"卡住，但这一卡点只在\"指定人\"是单数时成立；若指定动作本身按轮次分派给不同方，终止条件可以写成轮转规则而非个体任期",
+     "kind": "thread",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "终止条件与轮转规则为外部，锚点未提",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    }
+   ],
+   "collision": "对撞轴先定：1 是“动作可被编号”，0 是“编号的生成前提不可被同一编号收进去”。\n\n一、让两端各自把话说完  \n1 端：只要划界动作被编号，编号进入协议后，后续轮次引用编号即可，不必重新谈谁划。撑点在动作节点可独立登记，记录路径与读取路径不同址。  \n0 端：编号的生成规则不在编号里。协议写编号不写格式，旧编号在格式变更后可被重释。塌点在格式变更没有动作节点，无法被同一编号体系记录。\n\n二、各推到极端  \n1 端推到极端：所有动作皆编号，所有承担项皆可条款化。结果不是边界消失，而是编号表本身成为边界，谁维护编号表谁实际划界。  \n0 端推到极端：任何编号都依赖未编号的格式。结果协议只能记录被格式允许记录的动作，边界由格式的排除项决定。\n\n三、找反转点  \n当 1 端把格式也编号，格式变更动作获得编号并进入协议。反转在这里：新编号需要新格式来定义其含义，层级上移。此时 0 端不在旧边界外，而在新编号的父层。  \n若拒绝上移，格式变更就变成无编号动作；协议记录仍然完整，但记录与含义脱钩。\n\n四、让对撞生成新东西  \n生成物不是“把格式也写进协议”，而是：边界写入协议的最小单元应为“编号 + 格式版本 + 旧记录可重释范围”。  \n缺少格式版本，编号只证明动作发生过，不证明动作含义未变。  \n缺少旧记录可重释范围，承担项可被追溯改写。  \n格式版本首次写入需要追认；追认不产生新编号，只产生父级引用。  \n父级引用不能被同一协议指定，只能被下一次格式变更时引用。\n\n五、撞不动的地方  \n& 格式变更权无法在同一份协议内被完全内收，因为内收动作本身要选一个格式来登记。  \n& 追认的起点不能由被追认的文本给出，否则追认动作被文本预先包含。  \n& 多部门互为 Owner/User 时，格式版本由任一方单方升级，都会使另一方旧记录进入重释风险；共同升级又需要先商定升级动作的格式。\n\n六、回到原始问题/处境  \n边界由谁在哪个动作节点上划：由持有格式变更权、并在变更时承担旧记录重释成本的一方，在“格式版本固定为可引用”的节点上划。  \n划界动作的记录要同时写编号、格式版本、重释范围。  \n只写编号，跨轮会失义；只写格式版本，不写编号，无法追责到动作。  \n写入协议的条件是：协议有父级引用槽，且父级引用不假装能指定自己的出处。  \n若做不到，此处未生。",
+   "amps": [
+    {
+     "desc": "1是名词性清单（字段、场景、表），0是过程性痕迹（生成、留下、发生、继承）；名词清单加项长不出时态，缺的不是更好单位，是提问时态。",
+     "type": "structural",
+     "source": "1",
+     "polarity": "?"
+    },
+    {
+     "desc": "承认0是产物，就否掉“先有边界、再共享”的次序：共享每次都在生产边界之外的东西。",
+     "type": "structural",
+     "source": "1",
+     "polarity": "?"
+    },
+    {
+     "desc": "1的排外判定（谁、何时、凭什么）不落在被排的东西里，也不落在边界里的东西里；记入1则1含0，不记则判定无归口。",
+     "type": "structural",
+     "source": "1",
+     "polarity": "?"
+    },
+    {
+     "desc": "0不能自证，1不能自计，缝接位置不属于任何一方，也不是'还没找到归属'——文本被写下的前提就是它，所以文本持不住它。",
+     "type": "structural",
+     "source": "1",
+     "polarity": "both",
+     "polarity_why": "缝接位不入任何一方"
+    },
+    {
+     "desc": "单次判定人能避开常设权力，但无法产生跨轮记忆；跨轮记忆要常设位置，常设位置必然累积权力。不是取舍，是结构互斥。",
+     "type": "structural",
+     "source": "1",
+     "polarity": "1",
+     "polarity_why": "互斥属结构判断，已定"
+    },
+    {
+     "desc": "计数者本身也在动作序列之外先动，'谁先动'在计数层重新出现。",
+     "type": "structural",
+     "source": "1",
+     "polarity": "0",
+     "polarity_why": "谁先动重开，未落定"
+    },
+    {
+     "desc": "格式变更权无法在同一份协议内被完全内收，因为内收动作本身要选一个格式来登记。",
+     "type": "structural",
+     "source": "1",
+     "polarity": "?"
+    },
+    {
+     "desc": "追认的起点不能由被追认的文本给出，否则追认动作被文本预先包含。",
+     "type": "structural",
+     "source": "1",
+     "polarity": "?"
+    },
+    {
+     "desc": "多部门互为 Owner/User 时，格式版本由任一方单方升级，都会使另一方旧记录进入重释风险；共同升级又需要先商定升级动作的格式。",
+     "type": "structural",
+     "source": "1",
+     "polarity": "?"
+    }
+   ],
+   "threads": [
+    {
+     "desc": "划界动作的归口挂在谁身上——这个常设承担项如何写入协议？",
+     "kind": "thread",
+     "polarity": "?"
+    },
+    {
+     "desc": "0的量由“划界动作被记录几次”决定，记录次数与协议条款数的关系未明。",
+     "kind": "thread",
+     "polarity": "?"
+    },
+    {
+     "desc": "换时态后，“边界单位”提法被替换成什么？",
+     "kind": "thread",
+     "polarity": "?"
+    },
+    {
+     "desc": "跨轮判定质量下落是否超过可数带来的好处，需跨轮数据。",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "需跨轮数据，未定"
+    },
+    {
+     "desc": "路径依赖的终止条件没有，因为'判定人不可连任'本身也要被指定。",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "终止条件缺，未生"
+    },
+    {
+     "desc": "动机改变后，松口记录还能不能当追认起点，要重新证。",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "追认起点待重证"
+    },
+    {
+     "desc": "格式版本首次写入需要追认，追认不产生新编号，只产生父级引用；父级引用不能被同一协议指定，只能被下一次格式变更时引用。",
+     "kind": "thread",
+     "polarity": "?"
+    },
+    {
+     "desc": "若拒绝上移，格式变更就变成无编号动作；协议记录仍然完整，但记录与含义脱钩。",
+     "kind": "thread",
+     "polarity": "?"
+    }
+   ],
+   "probes": [
+    {
+     "question": "C12 的轮转指定：把「指定人」按轮次分派给不同方后，终止条件写成轮转规则，这条规则本身需不需要一个不轮转的登记位？",
+     "link": "若需，则 T10 的出路又撞回 T1/T8；若不需，路径依赖终止条件可闭合。",
+     "expected_gain": 0.55,
+     "covers": [
+      "T1",
+      "T10"
+     ]
+    },
+    {
+     "question": "T7 两条改法里，「任一方动作即触发双方共同举证」是否也要先商定「动作」的计数格式？若先商定，格式变更权就重新回到 C1 的枚举缺口。",
+     "link": "把 T7 的可写性判定从「哪条更公平」挪到「哪条不依赖先定格式」。",
+     "expected_gain": 0.5,
+     "covers": [
+      "T3",
+      "T7"
+     ]
+    }
+   ],
+   "meta": [
+    "本层对撞生成的新单元是「编号+格式版本+旧记录可重释范围」，但未回答任何可判定子问题。",
+    "不可判定结构揭示清晰度0.7，距离完整揭示0.6，主要卡在格式变更权与追认起点的自指困境。",
+    "[P3] & 候选（各圈累计）19 条 / 本层 amps 9 条（比值 0.47；amps 可能含 adjudications/上游合并的贡献，比值只作方向参考）"
+   ],
+   "decidable_product": {
+    "answer": "边界写入协议的最小单元应为「编号 + 格式版本 + 旧记录可重释范围」。缺少格式版本，编号只证明动作发生过，不证明动作含义未变；缺少旧记录可重释范围，承担项可被追溯改写。格式版本首次写入需要追认，追认不产生新编号，只产生父级引用。",
+    "answered_sub_ids": [],
+    "evidence": [
+     "ing 输出第四部分：生成物是边界写入协议的最小单元应为编号+格式版本+旧记录可重释范围。",
+     "ing 输出第五部分：格式变更权无法在同一份协议内被完全内收，追认起点不能由被追认的文本给出。"
+    ],
+    "distance": 0.8
+   },
+   "undecidable_product": {
+    "why_undecidable": "格式变更权无法在同一份协议内被完全内收，因为内收动作本身要选一个格式来登记；追认的起点不能由被追认的文本给出，否则追认动作被文本预先包含。这两个自指困境使边界写入协议的最小单元无法在协议内自洽闭合。",
+    "structural_amps": [
+     "1是名词性清单（字段、场景、表），0是过程性痕迹（生成、留下、发生、继承）；名词清单加项长不出时态，缺的不是更好单位，是提问时态。",
+     "承认0是产物，就否掉“先有边界、再共享”的次序：共享每次都在生产边界之外的东西。",
+     "1的排外判定（谁、何时、凭什么）不落在被排的东西里，也不落在边界里的东西里；记入1则1含0，不记则判定无归口。",
+     "0不能自证，1不能自计，缝接位置不属于任何一方，也不是'还没找到归属'——文本被写下的前提就是它，所以文本持不住它。",
+     "单次判定人能避开常设权力，但无法产生跨轮记忆；跨轮记忆要常设位置，常设位置必然累积权力。不是取舍，是结构互斥。",
+     "计数者本身也在动作序列之外先动，'谁先动'在计数层重新出现。",
+     "格式变更权无法在同一份协议内被完全内收，因为内收动作本身要选一个格式来登记。",
+     "追认的起点不能由被追认的文本给出，否则追认动作被文本预先包含。",
+     "多部门互为 Owner/User 时，格式版本由任一方单方升级，都会使另一方旧记录进入重释风险；共同升级又需要先商定升级动作的格式。"
+    ],
+    "aligned_amps": [],
+    "clarity": 0.7,
+    "distance": 0.6
+   },
+   "distance_to_question": 0.6,
+   "covered_aspects": [
+    "边界写入协议的最小单元",
+    "格式版本与旧记录重释范围",
+    "追认不产生新编号只产生父级引用",
+    "格式变更权的自指困境"
+   ],
+   "uncovered_aspects": [
+    "最小必要原则中当前业务的认定权归属",
+    "结论流通与字段清单在同一协议中的并存",
+    "互为Owner/User时按条划与打包划的多轮代价",
+    "导出后字段级约束失效的责任锁定",
+    "事后追认对下一轮谈判起点的影响"
+   ],
+   "untouched": [
+    {
+     "desc": "跨轮记忆与常设位置的结构互斥如何写入协议",
+     "source": "anchor"
+    },
+    {
+     "desc": "导出后字段约束失效的责任锁定",
+     "source": "anchor"
+    },
+    {
+     "desc": "计数口径能否在写入前穷尽",
+     "source": "anchor"
+    },
+    {
+     "desc": "互为Owner/User时按条划与打包划的多轮代价",
+     "source": "anchor"
+    },
+    {
+     "desc": "「判定人不可连任」作终止条件的循环，可裁为0：不可连任的指定人本身需要被指定，指定动作不进入轮次，终止条件无法由此闭合",
+     "source": "judge"
+    },
+    {
+     "desc": "复裁轮上真正能定的是：把「谁先动」从时序规则改写成可写条款这条路，在互为 Owner/User 下走不通，因为先后不可分派。定0",
+     "source": "judge"
+    },
+    {
+     "desc": "互为 Owner/User 时\"先动\"失效之后，条款要么改成\"任一方动作即触发双方共同举证\"，要么改成\"举证成本按动作次数而非先后分摊\"；这两条哪条可写，取决于计数口径能否在写入前穷尽",
+     "source": "judge"
+    },
+    {
+     "desc": "上一圈把\"常设承担项\"当归属问题，但归属之外还有一层：承担项本身要不要有任期？没有任期的常设位置与\"不可连任\"直接冲突，冲突在写入前就存在",
+     "source": "judge"
+    },
+    {
+     "desc": "松口记录在动机改变后是否还能当追认起点——这条能不能在写入时就绑定动机声明，还是动机声明本身也要被追认，形成递归",
+     "source": "judge"
+    },
+    {
+     "desc": "路径依赖的终止条件被\"判定人不可连任也要被指定\"卡住，但这一卡点只在\"指定人\"是单数时成立；若指定动作本身按轮次分派给不同方，终止条件可以写成轮转规则而非个体任期",
+     "source": "judge"
+    }
+   ],
+   "suspensions": [],
+   "engagements": [
+    {
+     "sub_id": 3,
+     "target": "互为Owner/User时，边界按条划还是按对等交换打包划？先动方举证自己只在约定范围内的时序举证成本，是否比逐条字段划线更可操作？",
+     "how": "T7 两条改法的可写性取决于计数口径，探针2 把这条依赖显形",
+     "depth": 0.5
+    },
+    {
+     "sub_id": 4,
+     "target": "数据被导出成文件或截图后，字段级0/1约束失效，二次流转责任归属未定——导出动作发生在User侧，后果却可能落回Owner部门被追责。这个责任落点能否通过协议文本预先锁定，还是只能事后追认？",
+     "how": "C9 退化条件能否被单方触发，决定导出责任锁定是否只是形式",
+     "depth": 0.4
+    },
+    {
+     "sub_id": 5,
+     "target": "限期打通后补授权的事后追认口子一旦开了，下一次谈判的起点是否已经不在协议里？上次追认时先松口的一方在新一轮默认举证劣势，是事实还是可被协议文本覆盖？",
+     "how": "追认起点与轮转指定登记位的关系，探针1 触及",
+     "depth": 0.3
+    }
+   ],
+   "refinements": [
+    {
+     "sub_id": 3,
+     "sub_question": "互为Owner/User时，边界按条划还是按对等交换打包划？先动方举证自己只在约定范围内的时序举证成本，是否比逐条字段划线更可操作？",
+     "how": "T7 两条改法的可写性取决于计数口径，探针2 把这条依赖显形",
+     "layer": 3
+    },
+    {
+     "sub_id": 4,
+     "sub_question": "数据被导出成文件或截图后，字段级0/1约束失效，二次流转责任归属未定——导出动作发生在User侧，后果却可能落回Owner部门被追责。这个责任落点能否通过协议文本预先锁定，还是只能事后追认？",
+     "how": "C9 退化条件能否被单方触发，决定导出责任锁定是否只是形式",
+     "layer": 3
+    },
+    {
+     "sub_id": 5,
+     "sub_question": "限期打通后补授权的事后追认口子一旦开了，下一次谈判的起点是否已经不在协议里？上次追认时先松口的一方在新一轮默认举证劣势，是事实还是可被协议文本覆盖？",
+     "how": "追认起点与轮转指定登记位的关系，探针1 触及",
+     "layer": 3
+    }
+   ],
+   "reconfirmations": [],
+   "revocations": [],
+   "deferrals": [
+    {
+     "id": "d_001",
+     "sub_id": 6,
+     "sub_question": "编制、预算、考核关系里谁喊停有效——这个权力事实是否才是边界谈判真正在谈的东西？喊停权与数据归属脱钩后，边界是否由行政结算单位而非数据通道决定？",
+     "reason": "喊停权与数据归属脱钩需先看时序规则能否成条款",
+     "revisit_condition": "探针1显示时序规则可写为条款后",
+     "layer": 1,
+     "last_reconfirmed_layer": 1,
+     "status": "handled",
+     "resolved_at": 2,
+     "resolution_reason": "对应子问题被直接回答"
+    },
+    {
+     "id": "d_002",
+     "sub_id": 6,
+     "sub_question": "编制、预算、考核关系里谁喊停有效——这个权力事实是否才是边界谈判真正在谈的东西？喊停权与数据归属脱钩后，边界是否由行政结算单位而非数据通道决定？",
+     "reason": "喊停权与数据归属脱钩后边界由行政结算单位决定——本轮无新证据可推进",
+     "revisit_condition": "出现行政结算单位与数据通道冲突的具体案例",
+     "layer": 3,
+     "last_reconfirmed_layer": 3,
+     "status": "deferred",
+     "resolved_at": null,
+     "resolution_reason": ""
+    }
+   ],
+   "resolutions": [],
+   "escalations": [],
+   "reclassifications": [],
+   "settlement": {
+    "clean": true,
+    "leftover": 0,
+    "coverage": 0.6900000000000001,
+    "answered": 6,
+    "total": 6,
+    "decidable_channel": {
+     "answers": [
+      {
+       "answer": "三种认定权归属下划线起点不同：Owner认定落在业务动作，User认定落在使用场景，事故调查方认定落在可追责证据链。三者不能用同一套基准比较，因为基准本身随认定权转移。若强行统一，需先固定认定权归属，再谈基准。",
+       "answered_sub_ids": [
+        1
+       ],
+       "evidence": [
+        "Owner认定时，业务动作是边界起点，字段和场景服务于动作完成。",
+        "事故调查方认定时，可追责证据链成为起点，业务动作的连续性被切断。"
+       ]
+      },
+      {
+       "answer": "三种认定权归属下划线起点不同：Owner认定落在业务动作，User认定落在使用场景，事故调查方认定落在可追责证据链。三者不能用同一套基准比较，因为基准本身随认定权归属而变——认定权决定了什么算'当前业务'，而'当前业务'是基准的输入而非输出。",
+       "answered_sub_ids": [
+        1
+       ],
+       "evidence": [
+        "0端无痕迹、1端有利益，许可不能由任一方签发，认定权归属直接改变划线起点的对象类型。",
+        "计数动作本身是1但计的是0→1转换，认定权即计数权，计数者定义计时起点。"
+       ]
+      },
+      {
+       "answer": "边界写入协议的最小单元应为「编号 + 格式版本 + 旧记录可重释范围」。缺少格式版本，编号只证明动作发生过，不证明动作含义未变；缺少旧记录可重释范围，承担项可被追溯改写。格式版本首次写入需要追认，追认不产生新编号，只产生父级引用。",
+       "answered_sub_ids": [],
+       "evidence": [
+        "ing 输出第四部分：生成物是边界写入协议的最小单元应为编号+格式版本+旧记录可重释范围。",
+        "ing 输出第五部分：格式变更权无法在同一份协议内被完全内收，追认起点不能由被追认的文本给出。"
+       ]
+      }
+     ],
+     "coverage_history": [],
+     "last_coverage": 0.0
+    },
+    "undecidable_channel": {
+     "structural_amps": [
+      "1是名词性清单（字段、场景、表），0是过程性痕迹（生成、留下、发生、继承）；名词清单加项长不出时态，缺的不是更好单位，是提问时态。",
+      "承认0是产物，就否掉“先有边界、再共享”的次序：共享每次都在生产边界之外的东西。",
+      "1的排外判定（谁、何时、凭什么）不落在被排的东西里，也不落在边界里的东西里；记入1则1含0，不记则判定无归口。",
+      "0不能自证，1不能自计，缝接位置不属于任何一方，也不是'还没找到归属'——文本被写下的前提就是它，所以文本持不住它。",
+      "单次判定人能避开常设权力，但无法产生跨轮记忆；跨轮记忆要常设位置，常设位置必然累积权力。不是取舍，是结构互斥。",
+      "计数者本身也在动作序列之外先动，'谁先动'在计数层重新出现。",
+      "格式变更权无法在同一份协议内被完全内收，因为内收动作本身要选一个格式来登记。",
+      "追认的起点不能由被追认的文本给出，否则追认动作被文本预先包含。",
+      "多部门互为 Owner/User 时，格式版本由任一方单方升级，都会使另一方旧记录进入重释风险；共同升级又需要先商定升级动作的格式。"
+     ],
+     "clarity_history": [
+      0.8,
+      0.7,
+      0.7
+     ],
+     "last_clarity": 0.7,
+     "und_aspects": [
+      "[外] 具体部门间“合适”的权限边界与利益分配无客观唯一解",
+      "[外] 效率提升与隐私风险的量化权衡缺少统一效用函数与风险容忍度",
+      "[外] 具体组织内部数据资产清单、敏感级别、系统接口和人员能力未知",
+      "[外] 跨部门共享的最优制度设计无判决实验可证伪，依赖政治/价值博弈",
+      "[外] 未来监管细则、司法裁判和技术演进不可预知"
+     ],
+     "struct_coverage_history": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "last_struct_coverage": 0.0,
+     "aligned_amps": [],
+     "last_struct_hit": 0,
+     "last_aligned_hit": 0,
+     "aligned_coverage_history": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "last_aligned_coverage": 0.0,
+     "aspect_first_hit": {},
+     "struct_trace": [
+      {
+       "layer": 1,
+       "hit": 0,
+       "total": 5,
+       "cov": 0.0,
+       "newly": []
+      },
+      {
+       "layer": 2,
+       "hit": 0,
+       "total": 5,
+       "cov": 0.0,
+       "newly": []
+      },
+      {
+       "layer": 3,
+       "hit": 0,
+       "total": 5,
+       "cov": 0.0,
+       "newly": []
+      }
+     ],
+     "aligned_first_hit": {},
+     "aligned_trace": [
+      {
+       "layer": 1,
+       "hit": 0,
+       "total": 5,
+       "cov": 0.0,
+       "newly": []
+      },
+      {
+       "layer": 2,
+       "hit": 0,
+       "total": 5,
+       "cov": 0.0,
+       "newly": []
+      },
+      {
+       "layer": 3,
+       "hit": 0,
+       "total": 5,
+       "cov": 0.0,
+       "newly": []
+      }
+     ]
+    },
+    "snapshot_coverage": 0.6900000000000001,
+    "drifted_out": 1
+   },
+   "adjudications": [],
+   "both_quota": {},
+   "carry": [],
+   "carry_check": {
+    "checked": 1,
+    "violations": 0,
+    "items": [],
+    "notes": "注入 1 条、可核对 1 条，违例 0 条",
+    "round": 3
+   },
+   "carry_checks": [
+    {
+     "checked": 1,
+     "violations": 0,
+     "items": [],
+     "notes": "注入 1 条、可核对 1 条，违例 0 条",
+     "round": 3
+    }
+   ],
+   "carry_dropped": [],
+   "carry_dropped_all": [],
+   "rephrase_ratio": null,
+   "probe_skipped": false,
+   "rounds_cap": 3,
+   "duel_suspensions": [],
+   "meta_closure": {},
+   "stop_reason": "体力耗尽（3 圈走满；1 次停止判据被「未深入方向」推迟（结构饱和度判定连续无新维度），是被截断不是自然停止）",
+   "rounds_run": 3,
+   "roles_run": [
+    "摊开",
+    "转向",
+    "复裁"
+   ],
+   "closure_reason": "",
+   "round_log": [
+    {
+     "round": 1,
+     "role": "摊开",
+     "new_amps": 3,
+     "new_threads": 3,
+     "idle_amp": 0,
+     "idle_thread": 0,
+     "idle_stall": 0,
+     "why": ""
+    },
+    {
+     "round": 2,
+     "role": "转向",
+     "new_amps": 3,
+     "new_threads": 3,
+     "idle_amp": 2,
+     "idle_thread": 0,
+     "idle_stall": 0,
+     "why": ""
+    },
+    {
+     "round": 3,
+     "role": "复裁",
+     "new_amps": 3,
+     "new_threads": 2,
+     "idle_amp": 0,
+     "idle_thread": 0,
+     "idle_stall": 0,
+     "why": ""
+    }
+   ],
+   "rehashed": [],
+   "idle": false,
+   "rendered": "━━━ 研究 · entry=1 ━━━\n\n【锚点】多部门共享数据时，边界由谁在哪个动作节点上划、划界动作如何被记录并写入协议？\n\n【候选】\n  [1×1] 前一自问「计数口径能否在写入前枚举穷尽」，判断是：不能。计数者本身在动作序列之外也有先动，枚举任何口径都会漏掉枚举动作自身  属性◈阳展开\n  [1×0] 「判定人不可连任」作终止条件的循环，可裁为0：不可连任的指定人本身需要被指定，指定动作不进入轮次，终止条件无法由此闭合  ⚡& 属性◈阳展开\n  [0×0] 复裁轮上真正能定的是：把「谁先动」从时序规则改写成可写条款这条路，在互为 Owner/User 下走不通，因为先后不可分派。定0\n  [1×1] 导出动作前锁定「谁发起导出」的条款，在多轮后被观察到退化：发起方身份稳定，导出内容随轮次漂移，锁定未覆盖漂移  属性◈阳展开\n  [1×1] 跨轮判定质量下落与可数收益的比较，缺的不是数据量，是同一轮里谁在计数的位置本身未被写进协议  属性◈阳展开\n  [1×1] 「划界动作被记录几次」与协议条款数的关系，可以定1：次数进条款后成为常设承担项的权限范围，条款数不决定次数  属性◈阳展开\n  [0×0] 互为 Owner/User 时\"先动\"失效之后，条款要么改成\"任一方动作即触发双方共同举证\"，要么改成\"举证成本按动作次数而非先后分摊\"；这两条哪条可写，取决于计数口径能否在写入前穷尽\n  [0×0] 上一圈把\"常设承担项\"当归属问题，但归属之外还有一层：承担项本身要不要有任期？没有任期的常设位置与\"不可连任\"直接冲突，冲突在写入前就存在  属性◈阴展开\n  [0×1] \"锁发起不锁内容\"跨轮退化的条件可以定：只要导出动作本身可被独立计数，锁发起就仍有效；一旦导出与内容读取在同一步完成（如 API 直读），锁发起退化为空条款  ⚡& 属性◈阴展开\n  [0×0] 松口记录在动机改变后是否还能当追认起点——这条能不能在写入时就绑定动机声明，还是动机声明本身也要被追认，形成递归  属性◈阴展开\n  [0×1] 跨轮记忆需要一个不随判定人更替而清空的载体；载体若是文本，则文本的修改动作本身也要被计数，计数又回到常设承担项  ⚡& 属性◈阴展开\n  [0×0] 路径依赖的终止条件被\"判定人不可连任也要被指定\"卡住，但这一卡点只在\"指定人\"是单数时成立；若指定动作本身按轮次分派给不同方，终止条件可以写成轮转规则而非个体任期  属性◈阴展开\n\n【ing 对撞】\n对撞轴先定：1 是“动作可被编号”，0 是“编号的生成前提不可被同一编号收进去”。\n\n一、让两端各自把话说完  \n1 端：只要划界动作被编号，编号进入协议后，后续轮次引用编号即可，不必重新谈谁划。撑点在动作节点可独立登记，记录路径与读取路径不同址。  \n0 端：编号的生成规则不在编号里。协议写编号不写格式，旧编号在格式变更后可被重释。塌点在格式变更没有动作节点，无法被同一编号体系记录。\n\n二、各推到极端  \n1 端推到极端：所有动作皆编号，所有承担项皆可条款化。结果不是边界消失，而是编号表本身成为边界，谁维护编号表谁实际划界。  \n0 端推到极端：任何编号都依赖未编号的格式。结果协议只能记录被格式允许记录的动作，边界由格式的排除项决定。\n\n三、找反转点  \n当 1 端把格式也编号，格式变更动作获得编号并进入协议。反转在这里：新编号需要新格式来定义其含义，层级上移。此时 0 端不在旧边界外，而在新编号的父层。  \n若拒绝上移，格式变更就变成无编号动作；协议记录仍然完整，但记录与含义脱钩。\n\n四、让对撞生成新东西  \n生成物不是“把格式也写进协议”，而是：边界写入协议的最小单元应为“编号 + 格式版本 + 旧记录可重释范围”。  \n缺少格式版本，编号只证明动作发生过，不证明动作含义未变。  \n缺少旧记录可重释范围，承担项可被追溯改写。  \n格式版本首次写入需要追认；追认不产生新编号，只产生父级引用。  \n父级引用不能被同一协议指定，只能被下一次格式变更时引用。\n\n五、撞不动的地方  \n& 格式变更权无法在同一份协议内被完全内收，因为内收动作本身要选一个格式来登记。  \n& 追认的起点不能由被追认的文本给出，否则追认动作被文本预先包含。  \n& 多部门互为 Owner/User 时，格式版本由任一方单方升级，都会使另一方旧记录进入重释风险；共同升级又需要先商定升级动作的格式。\n\n六、回到原始问题/处境  \n边界由谁在哪个动作节点上划：由持有格式变更权、并在变更时承担旧记录重释成本的一方，在“格式版本固定为可引用”的节点上划。  \n划界动作的记录要同时写编号、格式版本、重释范围。  \n只写编号，跨轮会失义；只写格式版本，不写编号，无法追责到动作。  \n写入协议的条件是：协议有父级引用槽，且父级引用不假装能指定自己的出处。  \n若做不到，此处未生。\n\n【& 印记】\n  - [结构性] 格式变更权无法在同一份协议内被完全内收，因为内收动作本身要选一个格式来登记。\n  - [结构性] 追认的起点不能由被追认的文本给出，否则追认动作被文本预先包含。\n  - [结构性] 多部门互为 Owner/User 时，格式版本由任一方单方升级，都会使另一方旧记录进入重释风险；共同升级又需要先商定升级动作的格式。\n\n【悬空线头】\n  💭 格式版本首次写入需要追认，追认不产生新编号，只产生父级引用；父级引用不能被同一协议指定，只能被下一次格式变更时引用。\n  💭 若拒绝上移，格式变更就变成无编号动作；协议记录仍然完整，但记录与含义脱钩。\n\n【探针回归】\n  ? C12 的轮转指定：把「指定人」按轮次分派给不同方后，终止条件写成轮转规则，这条规则本身需不需要一个不轮转的登记位？（回来：若需，则 T10 的出路又撞回 T1/T8；若不需，路径依赖终止条件可闭合。｜增益0.55）\n  ? T7 两条改法里，「任一方动作即触发双方共同举证」是否也要先商定「动作」的计数格式？若先商定，格式变更权就重新回到 C1 的枚举缺口。（回来：把 T7 的可写性判定从「哪条更公平」挪到「哪条不依赖先定格式」。｜增益0.5）\n\n【尚未触及的方面】\n  💭 跨轮记忆与常设位置的结构互斥如何写入协议（anchor）\n  💭 导出后字段约束失效的责任锁定（anchor）\n  💭 计数口径能否在写入前穷尽（anchor）\n  💭 互为Owner/User时按条划与打包划的多轮代价（anchor）\n  💭 「判定人不可连任」作终止条件的循环，可裁为0：不可连任的指定人本身需要被指定，指定动作不进入轮次，终止条件无法由此闭合（judge）\n  💭 复裁轮上真正能定的是：把「谁先动」从时序规则改写成可写条款这条路，在互为 Owner/User 下走不通，因为先后不可分派。定0（judge）\n  💭 互为 Owner/User 时\"先动\"失效之后，条款要么改成\"任一方动作即触发双方共同举证\"，要么改成\"举证成本按动作次数而非先后分摊\"；这两条哪条可写，取决于计数口径能否在写入前穷尽（judge）\n  💭 上一圈把\"常设承担项\"当归属问题，但归属之外还有一层：承担项本身要不要有任期？没有任期的常设位置与\"不可连任\"直接冲突，冲突在写入前就存在（judge）\n  💭 松口记录在动机改变后是否还能当追认起点——这条能不能在写入时就绑定动机声明，还是动机声明本身也要被追认，形成递归（judge）\n  💭 路径依赖的终止条件被\"判定人不可连任也要被指定\"卡住，但这一卡点只在\"指定人\"是单数时成立；若指定动作本身按轮次分派给不同方，终止条件可以写成轮转规则而非个体任期（judge）\n\n【本层碰了】\n  - 互为Owner/User时，边界按条划还是按对等交换打包划？先动方举证自己只在约定范围内的时序举证成本，是否比逐条字段划线更可操作？：T7 两条改法的可写性取决于计数口径，探针2 把这条依赖显形\n  - 数据被导出成文件或截图后，字段级0/1约束失效，二次流转责任归属未定——导出动作发生在User侧，后果却可能落回Owner部门被追责。这个责任落点能否通过协议文本预先锁定，还是只能事后追认？：C9 退化条件能否被单方触发，决定导出责任锁定是否只是形式\n  - 限期打通后补授权的事后追认口子一旦开了，下一次谈判的起点是否已经不在协议里？上次追认时先松口的一方在新一轮默认举证劣势，是事实还是可被协议文本覆盖？：追认起点与轮转指定登记位的关系，探针1 触及\n\n【延迟债务（暂缓，非悬置）】\n  - 子问题6：喊停权与数据归属脱钩后边界由行政结算单位决定——本轮无新证据可推进（回访条件：出现行政结算单位与数据通道冲突的具体案例）\n\n【📗 可判定通道】\n  answer：边界写入协议的最小单元应为「编号 + 格式版本 + 旧记录可重释范围」。缺少格式版本，编号只证明动作发生过，不证明动作含义未变；缺少旧记录可重释范围，承担项可被追溯改写。格式版本首次写入需要追认，追认不产生新编号，只产生父级引用。\n  answered_sub_ids：[]\n  distance：0.8\n  evidence：ing 输出第四部分：生成物是边界写入协议的最小单元应为编号+格式版本+旧记录可重释范围。\n  evidence：ing 输出第五部分：格式变更权无法在同一份协议内被完全内收，追认起点不能由被追认的文本给出。\n\n【📘 不可判定通道】\n  why_undecidable：格式变更权无法在同一份协议内被完全内收，因为内收动作本身要选一个格式来登记；追认的起点不能由被追认的文本给出，否则追认动作被文本预先包含。这两个自指困境使边界写入协议的最小单元无法在协议内自洽闭合。\n  clarity：0.7\n  独立结构（计入覆盖率）：\n    structural_amp：格式变更权无法在同一份协议内被完全内收，因为内收动作本身要选一个格式来登记。\n    structural_amp：追认的起点不能由被追认的文本给出，否则追认动作被文本预先包含。\n    structural_amp：多部门互为 Owner/User 时，格式版本由任一方单方升级，都会使另一方旧记录进入重释风险；共同升级又需要先商定升级动作的格式。\n\n【综合距离】0.60\n  covered_aspects：边界写入协议的最小单元、格式版本与旧记录重释范围、追认不产生新编号只产生父级引用、格式变更权的自指困境\n  uncovered_aspects：最小必要原则中当前业务的认定权归属、结论流通与字段清单在同一协议中的并存、互为Owner/User时按条划与打包划的多轮代价、导出后字段级约束失效的责任锁定、事后追认对下一轮谈判起点的影响\n\n【view】\n## 一、可判定部分 · 直接回答\n\n可判定通道没有认领任何子问题，`answered_sub_ids` 为空。它只定下一条写入口径，不对 T7、C9、追认起点作裁决。\n\n- 对“边界写入协议需要什么”：定下的是三件同时在场——动作编号、格式版本、旧记录可重释范围。只写编号，动作发生过这一事实可留，动作含义是否未变留不住。只写格式版本，含义层可留，具体动作追不到。旧记录可重释范围缺席时，承担项能被后来改写。\n- 对“格式版本首次怎样进入”：先有追认。追认不新增动作编号，只留下父级引用。父级引用不在当前协议内被指定。\n- 对“谁在哪个节点划”：可判定通道不回答。它给的是记录单元，不是划界主体。第六节文本另给定位，但那不属于可判定通道的认领范围。\n- 对 T7、C9、追认起点：均未被可判定通道标为已回答。导出后责任落点、先松口方劣势、按条划还是打包划，没有一条在本段闭合。\n\n## 二、不可判定部分 · 结构揭示\n\n- 格式变更权不能被当前协议完整收进去。要写“谁改格式”，就得先选一个登记这项规定的格式。这个选择动作在当前协议的上层，当前协议无法指定自己的登记格式。内收动作只能留一个未计入本层的父级动作。\n- 追认起点不能由被追认文本自身给出。文本一旦指定起点，追认动作就被文本预先写进去了；文本不指定，追认在本层没有起点。父级引用不是新编号，它把起点提交给下一次格式变更，因此追认在本轮不能闭口。\n- 互为 Owner/User 时，格式版本升级有两个卡点。任一方单方升级，另一方旧记录进入重释风险。双方共同升级，又要先商定升级动作用什么格式登记。两条路都要求一个双方共同承认的登记格式先存在，而这个前提不在当前对等关系内产生。\n\n## 三、★ 暂缓处理的部分（延迟债务）\n\n- 子问题：喊停权与数据归属脱钩后，边界是否由行政结算单位决定。  \n  为什么延迟：本轮没有新证据。  \n  原本的回访条件：出现行政结算单位与数据通道冲突的具体案例。  \n  最终状态：延迟中，未闭合。\n\n- 子问题：C12 的轮转指定规则本身是否需要不轮转的登记位。  \n  为什么延迟：要等探针 1。若需要，撞回 T1/T8；若不需要，路径依赖终止条件才可闭合。  \n  原本的回访条件：探针 1 出结果。  \n  最终状态：未带走，延迟。\n\n- 子问题：T7 两条改法里，“任一方动作即触发双方共同举证”是否先要商定动作计数格式。  \n  为什么延迟：先商定，格式变更权就重新回到 C1 的枚举缺口。  \n  原本的回访条件：把 T7 可写性判定从“哪条更公平”移到“哪条不依赖先定格式”。  \n  最终状态：延迟。\n\n- 子问题：追认留下的父级引用由谁指定。  \n  为什么延迟：当前协议不能指定自己的出处。  \n  原本的回访条件：下一次格式变更实际引用它。  \n  最终状态：悬置，欠一次格式变更。\n\n- 子问题：拒绝上移后，格式变更成为无编号动作，记录与含义脱钩。  \n  为什么延迟：本轮没有实例判定是否上移。  \n  原本的回访条件：出现拒绝上移的协议动作。  \n  最终状态：未决。\n\n## 四、螺旋轨迹\n\n本轮从 1/0 对撞轴出发。1 端让编号进入协议，0 端指出编号的生成前提不在编号里。推到极端后，1 端把格式也编号，层级上移；0 端移到新编号的父层。生成的转向不是“把格式写进协议”，而是把写入单元从单编号扩成编号、格式版本、旧记录可重释范围三件套。\n\n但可判定通道认领的子问题数为零。不可判定清晰度 0.7，综合距离 0.60。轨迹停在一个交换口：当前协议能记录动作，不能指定自己的格式来源；追认能留下父级引用，不能产生本层起点。此处未生子问题裁决。\n\n## 五、& 张力与悬空线头\n\n- 张力一：内收格式变更权，需要登记格式先在。越往协议里写，越要往上层退。\n- 张力二：追认起点若由文本指定，追认被预先包含；若不由文本指定，起点在本层缺失。\n- 张力三：单方升级使另一方旧记录进入重释；共同升级要求先有升级动作格式。两条互为前提。\n- 悬空线头：父级引用槽若必须由非协议动作占位，下一轮谈判起点在协议外；若不占位，记录与含义脱钩。\n- 悬空线头：动作次数、先后分摊若要条款化，先要计数格式；计数格式又回到格式变更权。\n- 悬空线头：`answered_sub_ids` 为空，剩余距离不在数据量，在自指闭口。\n\n【元反思】\n  ∘ 本层对撞生成的新单元是「编号+格式版本+旧记录可重释范围」，但未回答任何可判定子问题。\n  ∘ 不可判定结构揭示清晰度0.7，距离完整揭示0.6，主要卡在格式变更权与追认起点的自指困境。\n\n【质量评价】判断正常，无质量线索\n\n【自省】候选1-8均从展开长出，无补凑；ing未复述上游view原话，仅承接&；2处未生属诚实姿态。\n\n【「此处未生」计数】本圈 2 处（阈值 3）　（诚实姿态，未越界）\n  分布：ing×1、view×1",
+   "manifest": "## 一、可判定部分 · 直接回答\n\n可判定通道没有认领任何子问题，`answered_sub_ids` 为空。它只定下一条写入口径，不对 T7、C9、追认起点作裁决。\n\n- 对“边界写入协议需要什么”：定下的是三件同时在场——动作编号、格式版本、旧记录可重释范围。只写编号，动作发生过这一事实可留，动作含义是否未变留不住。只写格式版本，含义层可留，具体动作追不到。旧记录可重释范围缺席时，承担项能被后来改写。\n- 对“格式版本首次怎样进入”：先有追认。追认不新增动作编号，只留下父级引用。父级引用不在当前协议内被指定。\n- 对“谁在哪个节点划”：可判定通道不回答。它给的是记录单元，不是划界主体。第六节文本另给定位，但那不属于可判定通道的认领范围。\n- 对 T7、C9、追认起点：均未被可判定通道标为已回答。导出后责任落点、先松口方劣势、按条划还是打包划，没有一条在本段闭合。\n\n## 二、不可判定部分 · 结构揭示\n\n- 格式变更权不能被当前协议完整收进去。要写“谁改格式”，就得先选一个登记这项规定的格式。这个选择动作在当前协议的上层，当前协议无法指定自己的登记格式。内收动作只能留一个未计入本层的父级动作。\n- 追认起点不能由被追认文本自身给出。文本一旦指定起点，追认动作就被文本预先写进去了；文本不指定，追认在本层没有起点。父级引用不是新编号，它把起点提交给下一次格式变更，因此追认在本轮不能闭口。\n- 互为 Owner/User 时，格式版本升级有两个卡点。任一方单方升级，另一方旧记录进入重释风险。双方共同升级，又要先商定升级动作用什么格式登记。两条路都要求一个双方共同承认的登记格式先存在，而这个前提不在当前对等关系内产生。\n\n## 三、★ 暂缓处理的部分（延迟债务）\n\n- 子问题：喊停权与数据归属脱钩后，边界是否由行政结算单位决定。  \n  为什么延迟：本轮没有新证据。  \n  原本的回访条件：出现行政结算单位与数据通道冲突的具体案例。  \n  最终状态：延迟中，未闭合。\n\n- 子问题：C12 的轮转指定规则本身是否需要不轮转的登记位。  \n  为什么延迟：要等探针 1。若需要，撞回 T1/T8；若不需要，路径依赖终止条件才可闭合。  \n  原本的回访条件：探针 1 出结果。  \n  最终状态：未带走，延迟。\n\n- 子问题：T7 两条改法里，“任一方动作即触发双方共同举证”是否先要商定动作计数格式。  \n  为什么延迟：先商定，格式变更权就重新回到 C1 的枚举缺口。  \n  原本的回访条件：把 T7 可写性判定从“哪条更公平”移到“哪条不依赖先定格式”。  \n  最终状态：延迟。\n\n- 子问题：追认留下的父级引用由谁指定。  \n  为什么延迟：当前协议不能指定自己的出处。  \n  原本的回访条件：下一次格式变更实际引用它。  \n  最终状态：悬置，欠一次格式变更。\n\n- 子问题：拒绝上移后，格式变更成为无编号动作，记录与含义脱钩。  \n  为什么延迟：本轮没有实例判定是否上移。  \n  原本的回访条件：出现拒绝上移的协议动作。  \n  最终状态：未决。\n\n## 四、螺旋轨迹\n\n本轮从 1/0 对撞轴出发。1 端让编号进入协议，0 端指出编号的生成前提不在编号里。推到极端后，1 端把格式也编号，层级上移；0 端移到新编号的父层。生成的转向不是“把格式写进协议”，而是把写入单元从单编号扩成编号、格式版本、旧记录可重释范围三件套。\n\n但可判定通道认领的子问题数为零。不可判定清晰度 0.7，综合距离 0.60。轨迹停在一个交换口：当前协议能记录动作，不能指定自己的格式来源；追认能留下父级引用，不能产生本层起点。此处未生子问题裁决。\n\n## 五、& 张力与悬空线头\n\n- 张力一：内收格式变更权，需要登记格式先在。越往协议里写，越要往上层退。\n- 张力二：追认起点若由文本指定，追认被预先包含；若不由文本指定，起点在本层缺失。\n- 张力三：单方升级使另一方旧记录进入重释；共同升级要求先有升级动作格式。两条互为前提。\n- 悬空线头：父级引用槽若必须由非协议动作占位，下一轮谈判起点在协议外；若不占位，记录与含义脱钩。\n- 悬空线头：动作次数、先后分摊若要条款化，先要计数格式；计数格式又回到格式变更权。\n- 悬空线头：`answered_sub_ids` 为空，剩余距离不在数据量，在自指闭口。\n\n## 七、原始问题覆盖率\n研究层可判定通道最近一次覆盖率：0.69（模型自评折算·depth 加权，累计 3 次记录）｜代码实算：已答子问题 6/6\n研究层不可判定通道：清晰度 0.70（模型自评，累计 3 次记录）｜结构覆盖率 0.00（代码实算，已对上 0/5 个不可判定方面）｜对齐覆盖率 0.00（代码实算，已对上 0/5 个不可判定方面）\n",
+   "quality_flags": [],
+   "quality_verdict": "判断正常，无质量线索",
+   "self_check": {
+    "suspicious_candidates": [],
+    "suspicious_amps": [],
+    "ing_rephrased": false,
+    "honest_about_empty": true,
+    "unsaid_count": 2,
+    "unsaid_is_escape": false,
+    "unsaid_where": "ing×1、view×1",
+    "flow_verdict": "对撞轴清晰，1/0两端推到极端后生成三件套写入单元，但可判定通道零认领，止于自指闭口。",
+    "view_verdict": "定下写入单元为编号+格式版本+重释范围三件同时在场；划界主体、T7、C9、追认起点均未定，单独标出。",
+    "amp_ratio_verdict": "3条&均为结构性张力，非凑数，与候选6/7/8呼应。",
+    "notes": "候选1-8均从展开长出，无补凑；ing未复述上游view原话，仅承接&；2处未生属诚实姿态。"
+   },
+   "errors": [],
+   "anchor_touched": [
+    {
+     "desc": "字段级权限、最小必要、法律合规是可操作划线起点",
+     "source": "anchor"
+    },
+    {
+     "desc": "共享与边界不是先后关系，共享在生产边界",
+     "source": "anchor"
+    },
+    {
+     "desc": "划界归口需常设承担项",
+     "source": "anchor"
+    }
+   ],
+   "ing_structured": {}
+  }
+ },
+ "pools": {
+  "0": {
+   "amps": [
+    {
+     "desc": "法律对敏感个人信息的单独同意要求，不因部门内部投票通过而消失。",
+     "type": "axiological",
+     "source": "0",
+     "polarity": "1",
+     "polarity_why": "法律要求独立成立"
+    },
+    {
+     "desc": "部门把数据当资产时，授权通过也不等于愿意交出原始明细。",
+     "type": "ontological",
+     "source": "0",
+     "polarity": "1",
+     "polarity_why": "资产属性保留原始明细"
+    },
+    {
+     "desc": "数据被导出成文件或截图后，字段级0/1无法继续约束后续传播。",
+     "type": "structural",
+     "source": "0",
+     "polarity": "1",
+     "polarity_why": "导出后字段约束失效"
+    },
+    {
+     "desc": "提效口径若由使用部门单独掌握，边界会随口径变化重新谈判。",
+     "type": "pseudo",
+     "source": "0",
+     "polarity": "1",
+     "polarity_why": "口径权导致边界漂移"
+    },
+    {
+     "desc": "解释权可借出，事故后果不可切分；接收方使用后原部门仍可能被问责。",
+     "type": "ontological",
+     "source": "0",
+     "polarity": "1",
+     "polarity_why": "事故后果不可切分"
+    },
+    {
+     "desc": "行政结算单位是事故默认落点，只改数据通道不会让它移动。",
+     "type": "structural",
+     "source": "0",
+     "polarity": "1",
+     "polarity_why": "行政结算单位默认落点"
+    },
+    {
+     "desc": "同一动作在不同部门口径不同，A的查询在B看来已是使用，字段清单无法抹平。",
+     "type": "logical",
+     "source": "0",
+     "polarity": "1",
+     "polarity_why": "部门口径差异无法抹平"
+    },
+    {
+     "desc": "第三方保留事后改写权，归因链只能提供材料，不能锁定定性。",
+     "type": "axiological",
+     "source": "0",
+     "polarity": "1",
+     "polarity_why": "归因链不能锁定定性"
+    },
+    {
+     "desc": "互为Owner和User时，边界按条划还是按对等交换划，结构未被谈过。",
+     "type": "structural",
+     "source": "0",
+     "polarity": "0",
+     "polarity_why": "划分结构尚未谈判"
+    },
+    {
+     "desc": "边界在流通撞壁时被逼出，但一旦划出就反过来决定下一次流通路径。",
+     "type": "ontological",
+     "source": "0",
+     "polarity": "?"
+    },
+    {
+     "desc": "未定只能被追认，不能被现场宣布；说'这里还没划'已是用1的语法指认位置。",
+     "type": "logical",
+     "source": "0",
+     "polarity": "?"
+    },
+    {
+     "desc": "流通与阻断的接缝不属于任何一方，边界落在不能被单独认领的缝上。",
+     "type": "structural",
+     "source": "0",
+     "polarity": "?"
+    },
+    {
+     "desc": "度量口径和责任落点不是待填空白，是流通与阻断交替时被反复打开的口子。",
+     "type": "axiological",
+     "source": "0",
+     "polarity": "?"
+    }
+   ],
+   "threads": [
+    {
+     "desc": "实际推进时往往先共享脱敏后的汇总数据，原始明细仍锁在原部门。",
+     "kind": "thread",
+     "polarity": "1",
+     "polarity_why": "实践路径已显"
+    },
+    {
+     "desc": "提效的度量方式没定，边界就永远谈不拢——是缩短审批时长还是减少人工核对？",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "度量方式未定"
+    },
+    {
+     "desc": "数据Owner（归属部门）与数据User（使用部门）的责任划分，是边界谈判的真正战场。",
+     "kind": "thread",
+     "polarity": "1",
+     "polarity_why": "责任划分已成核心争点"
+    },
+    {
+     "desc": "导出成文件或截图后，字段级0/1无法继续约束后续传播——工具限制",
+     "kind": "thread",
+     "source": "probe_boundary",
+     "polarity_why": "工具限制已确定",
+     "polarity": "1"
+    },
+    {
+     "desc": "导出或截图后字段级约束失效，二次流转责任归属未定。",
+     "kind": "thread",
+     "polarity": "both",
+     "polarity_why": "失效已定，责任未定"
+    },
+    {
+     "desc": "提效度量方式未定，边界随口径漂移；度量权与字段权是否可拆。",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "度量未定拆分待解"
+    },
+    {
+     "desc": "最小必要原则的当前业务由谁认定，认定权归属未操作化。",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "认定权未操作化"
+    },
+    {
+     "desc": "导出截图后字段约束失效，技术划线管不到接收方自律这一层",
+     "kind": "thread",
+     "source": "probe_boundary",
+     "polarity_why": "技术划线到不了自律",
+     "polarity": "1"
+    },
+    {
+     "desc": "最小必要认定权交给事故调查方而非Owner或User，划线起点从业务动作转向可追责证据链。",
+     "kind": "thread",
+     "polarity": "?"
+    },
+    {
+     "desc": "两个部门互为Owner和User时，边界按条划还是按对等交换打包划，结构未被谈过。",
+     "kind": "thread",
+     "polarity": "?"
+    },
+    {
+     "desc": "结论流通与字段清单是两种边界对象：若A要B盖章的判定结论，Owner对字段的划线权划错对象。",
+     "kind": "thread",
+     "polarity": "?"
+    }
+   ],
+   "probes": [
+    {
+     "question": "最小必要原则的「当前业务」由谁认定？认定权在Owner还是User，划线起点就不同。",
+     "link": "追问最小必要的认定权归属，看划线起点是否可操作",
+     "expected_gain": 0.6,
+     "covers": [
+      "T7",
+      "T6"
+     ]
+    },
+    {
+     "question": "共享的是脱敏汇总，原始明细仍锁在原部门——那User部门拿汇总去做的那个动作，Owner部门是否根本不需要看？",
+     "link": "把边界从字段级挪到动作级，看谁真正需要看什么",
+     "expected_gain": 0.55,
+     "covers": [
+      "T1",
+      "T4"
+     ]
+    },
+    {
+     "question": "提效口径由谁定？若User定口径、Owner定字段，边界谈判是否就变成两个口径的对表？",
+     "link": "把度量权与字段权拆开，看边界是否随口径漂移",
+     "expected_gain": 0.5,
+     "covers": [
+      "T2",
+      "T5",
+      "T6"
+     ]
+    },
+    {
+     "question": "编制、预算、考核关系里，谁喊停有效——这个权力事实是否才是边界谈判真正在谈的东西？",
+     "link": "喊停权与数据归属脱钩，回到权限由谁定",
+     "expected_gain": 0.75,
+     "covers": [
+      "T4",
+      "T5"
+     ]
+    },
+    {
+     "question": "若A要的是B盖章的判定结论而非原始行，那Owner部门对字段的划线权是否本就划错了对象？",
+     "link": "结论流通 vs 字段清单，回到边界由谁定",
+     "expected_gain": 0.7,
+     "covers": [
+      "T8",
+      "T4"
+     ]
+    },
+    {
+     "question": "限期打通后补授权，事后追认的口子开了，下一次谈判的起点是不是已经不在协议里了？",
+     "link": "追认口子改变起点，回到边界口径漂移",
+     "expected_gain": 0.6,
+     "covers": [
+      "T6",
+      "T7"
+     ]
+    },
+    {
+     "question": "若A要B盖章的判定结论，B放弃推导过程划线权却保留结论适用范围划线权——这两个权力在同一份协议里能同时写清吗？",
+     "link": "结论流通与字段清单是两种边界对象，权力被合并讨论",
+     "expected_gain": 0.7,
+     "covers": [
+      "T6",
+      "T9"
+     ]
+    },
+    {
+     "question": "互为Owner/User时，谁先动谁的数据，先动方举证自己只在约定范围内——这个时序举证成本，是否比逐条划线更可操作？",
+     "link": "边界落在时序而非字段清单或对等交换",
+     "expected_gain": 0.65,
+     "covers": [
+      "T4",
+      "T1",
+      "T8"
+     ]
+    },
+    {
+     "question": "上次追认时哪一方先松口，松口方在新一轮默认举证劣势——这个劣势是事实还是可被协议文本覆盖？",
+     "link": "追认口子改变下次起点，起点滑出协议文本",
+     "expected_gain": 0.6,
+     "covers": [
+      "T7",
+      "T10",
+      "T3"
+     ]
+    }
+   ],
+   "meta": [
+    "[外部锚点] 第 1 圈入池 2 条（累计 2，仅记录）",
+    "此处未生：0和1被挂在哪一层（整表、字段、行、查询）尚未定形，无法沉淀为不可通约处。",
+    "最小必要原则作为划线起点，其可操作性依赖具体业务场景，目前尚未成形。",
+    "[上一圈 self-check 反馈] 可疑候选 [4, 5, 6, 7]",
+    "[外部锚点] 第 2 圈入池 2 条（累计 4，仅记录）",
+    "本次对撞生成的新东西集中在解释成本分摊与时间顺序，但行政结算单位未动，共享越多追责越乱的风险仍在。",
+    "若时间顺序无法对齐，谈判对象尚未显出来，此处未生。",
+    "[外部锚点] 第 3 圈入池 2 条（累计 6，仅记录）",
+    "本层锚点在权限归属而非合规程序，法律单独同意与内部投票的关系被主动悬置。",
+    "已发生的流通正在给未发生的边界定价，但定价机制本身尚未被对象化。",
+    "[上一圈 self-check 反馈] 可疑候选 [5, 6, 7, 8]"
+   ],
+   "suspensions": [
+    {
+     "id": "s_001",
+     "target": "法律单独同意与内部投票的关系",
+     "reason": "看清了单独同意与内部投票可碰，但选择不碰，因本层锚点在权限归属而非合规程序",
+     "reason_type": "explicit",
+     "layer": 2,
+     "last_confirmed_layer": 3,
+     "confirmed_layers": [
+      2,
+      3
+     ],
+     "status": "active",
+     "revoked_at": null,
+     "revoke_reason": "",
+     "resolved_at": null,
+     "stable_since": null,
+     "needs_review": false
+    },
+    {
+     "id": "s_002",
+     "target": "对等交换对外部第三方呈现口径是否对等",
+     "reason": "看清了对等交换与外部审计口径可碰，但选择不碰，因本层锚点在内部两部门结构而非外部呈现",
+     "reason_type": "explicit",
+     "layer": 3,
+     "last_confirmed_layer": 3,
+     "confirmed_layers": [
+      3
+     ],
+     "status": "active",
+     "revoked_at": null,
+     "revoke_reason": "",
+     "resolved_at": null,
+     "stable_since": null,
+     "needs_review": false
+    }
+   ],
+   "sub_questions": [],
+   "deferrals": [],
+   "escalations": [],
+   "decidability_log": [],
+   "duel_suspensions": [],
+   "duel_alignment": {},
+   "engagements": [
+    {
+     "target": "最小必要原则的认定权",
+     "how": "追问「当前业务」由谁定义，Owner还是User"
+    },
+    {
+     "target": "结论流通而非字段流通",
+     "how": "追问Owner划线对象是否错位"
+    },
+    {
+     "target": "喊停权由编制预算决定",
+     "how": "把权限归属从数据层移到权力层"
+    },
+    {
+     "target": "结论流通与字段清单作为两种边界对象",
+     "how": "追问盖章结论的适用范围划线权能否与字段划线权在同一协议并存"
+    },
+    {
+     "target": "互为Owner/User时的时序举证成本",
+     "how": "比较按条划、打包划、时序举证三种结构的可操作性"
+    }
+   ],
+   "refinements": [],
+   "decidable_channel": {},
+   "undecidable_channel": {},
+   "anchors": [
+    {
+     "id": "a1",
+     "claim": "公共数据运营的安全底线（硬表述）：财政部《关于加强数据资产管理的指导意见》（2024 年 1 月）明确，公共管理和服务机构可授权运营主体对其持有/控制的公共数据资产进行运营，但须『严格按照「原始数据不出域、数据可用不可见」要求和资产管理制度规定』；涉及国家安全、商业秘密和个人隐私的，应依照法律、行政法规规定的权限和程序进行，『不得超出履行法定职责所必需的范围和限度』。这是跨部门/对外共享的可核对红线。",
+     "source": "中国政府网《财政部资产管理司有关负责人就印发〈关于加强数据资产管理的指导意见〉答记者问》（官方文件）",
+     "url": "https://www.gov.cn/zhengce/202401/content_6925484.htm?ddtab=true",
+     "as_of": "2024-01",
+     "kind": "官方文件"
+    },
+    {
+     "id": "a2",
+     "claim": "产权与授权的制度框架：2022 年 12 月中共中央、国务院『数据二十条』提出建立数据资源持有权、数据加工使用权、数据产品经营权『三权分置』的产权运行机制；公共数据按『原始数据不出域、数据可用不可见』提供，且使用分『有条件无偿使用』与『有条件有偿使用』；个人信息方面，明确处理受个人授权范围限制，禁止『一揽子授权』『强制同意』等过度收集方式。",
+     "source": "『数据二十条』原文及地方政府解读（甘肃省平凉市发改委转载解读）（官方文件 + 官方解读）",
+     "url": "https://fgw.pingliang.gov.cn/zfxxgk/fdzdgknr/zcjd/sjzcjd/art/2023/art_2b45e1cf6a4e4f26a2e9475aed9169b0.html",
+     "as_of": "2022-12",
+     "kind": "官方文件（政策）"
+    },
+    {
+     "id": "a3",
+     "claim": "共享的法定边界（硬条款）：《个人信息保护法》第十三条列举七类可处理个人信息的合法性基础，其中『（三）为履行法定职责或者法定义务所必需』以及第二至第七项情形，『不需取得个人同意』——这是政务共享对抗『必须逐人同意』的直接法律依据。但注意三处例外：第 23 条向其他个人信息处理者提供信息须取得『单独同意』；第 29 条处理敏感个人信息须『单独同意』（法律/行政法规要求书面同意的从其规定）；第 39 条向境外提供须『单独同意』。即：『履行法定职责』可豁免同意，但一旦跨主体提供/涉及敏感/出境，仍需单独同意。",
+     "source": "全国人大法律法规数据库《中华人民共和国个人信息保护法》原文 PDF（官方文件）",
+     "url": "https://wb.flk.npc.gov.cn/flfg/PDF/f67af9f12e1b4c83a998cf5a876ce0e4.pdf",
+     "as_of": "2021-11-01（施行）",
+     "kind": "官方文件（法律原文）"
+    },
+    {
+     "id": "a4",
+     "claim": "政务数据共享的三类真实阻力（制度性事实）：中央党校《学习时报》指出——①『不愿共享』：一些部门把数据视为部门私有资源，以『数据归属本部门、共享需内部审批』为由拖延甚至拒绝，或只共享大众熟知的普通数据，本质是部门利益固化、担心共享削弱话语权、增加负担；②『不敢共享』：系统格式/接口标准不统一，且责任划分与争议解决机制不健全，怕担责；③『不会共享』：基层缺数据治理专业人才。三者交织形成『数据孤岛』『数据烟囱』。",
+     "source": "学习时报（中央党校）《破解政务数据共享壁垒》，人民网理论频道转载（官方媒体理论文章）",
+     "url": "https://theory.people.com.cn/BIG5/n1/2025/1226/c40531-40632644.html",
+     "as_of": "2025-12-26",
+     "kind": "官方媒体理论文章（中央党校）"
+    },
+    {
+     "id": "a5",
+     "claim": "县域实证（可核对的缺口清单）：某县政协提案列举——公安、民政、人社、教育、卫健、市场监管、自然资源等数据『大多在各自系统内循环，跨部门调用困难』；共享多限于少数高频事项或上级要求的领域，且多为『结果信息查询』，原始数据、过程数据共享不足；缺明确的目录清单、责任主体、申请流程、响应时限和争议协调机制；部门间存在『不愿共享、不敢共享、不会共享』。这条把一个具体行政层级的边界缺失暴露得很具体。",
+     "source": "江苏省宝应县人民政府网公开的《关于加快推进县域内单位数据共享的提案》（官方文件）",
+     "url": "https://baoying.yangzhou.gov.cn/zfxxgk/xjbmxxgk/byxsjj/fdgkzdnr/jytabl/zxta4076/art/2026/art_28f1c35fb4f74ec68c47fd25bb788500.html",
+     "as_of": "2026",
+     "kind": "官方文件（地方政协提案）"
+    },
+    {
+     "id": "a6",
+     "claim": "反面案例（越界的代价）：2023 年 11 月，湖南衡阳市发布『政务数据资源和智慧城市特许经营权』出让项目，挂牌底价 18.02 亿元、增价幅度 1000 万元，被称为『政务数据第一拍』；公告发布仅数天后即被紧急叫停。作者推测原因有三：公共数据特许经营缺乏法律文件支撑（特许经营相关办法中并无公共数据）；定价合理性存疑（18 亿的评估依据不确定）；授权模式缺乏上层文件。含义：在制度未定型时抢跑『数据变现』风险极高。",
+     "source": "锦天城律师事务所《公共数据授权运营的法律边界与合规之道》（律所专业解读）",
+     "url": "https://www.allbrightlaw.com/CN/10475/6fa8876f8b9bf5f.aspx",
+     "as_of": "2024",
+     "kind": "律所/法律专业机构解读"
+    }
+   ]
+  },
+  "1": {
+   "amps": [
+    {
+     "desc": "1是名词性清单（字段、场景、表），0是过程性痕迹（生成、留下、发生、继承）；名词清单加项长不出时态，缺的不是更好单位，是提问时态。",
+     "type": "structural",
+     "source": "1",
+     "polarity": "1",
+     "polarity_why": "诊断已下，未悬空"
+    },
+    {
+     "desc": "承认0是产物，就否掉“先有边界、再共享”的次序：共享每次都在生产边界之外的东西。",
+     "type": "structural",
+     "source": "1",
+     "polarity": "1",
+     "polarity_why": "条件成立，次序已否"
+    },
+    {
+     "desc": "1的排外判定（谁、何时、凭什么）不落在被排的东西里，也不落在边界里的东西里；记入1则1含0，不记则判定无归口。",
+     "type": "structural",
+     "source": "1",
+     "polarity": "both",
+     "polarity_why": "记与不记两路皆通"
+    },
+    {
+     "desc": "0不能自证，1不能自计，缝接位置不属于任何一方，也不是'还没找到归属'——文本被写下的前提就是它，所以文本持不住它。",
+     "type": "structural",
+     "source": "1",
+     "polarity": "both",
+     "polarity_why": "缝接位不入任何一方"
+    },
+    {
+     "desc": "单次判定人能避开常设权力，但无法产生跨轮记忆；跨轮记忆要常设位置，常设位置必然累积权力。不是取舍，是结构互斥。",
+     "type": "structural",
+     "source": "1",
+     "polarity": "1",
+     "polarity_why": "互斥属结构判断，已定"
+    },
+    {
+     "desc": "计数者本身也在动作序列之外先动，'谁先动'在计数层重新出现。",
+     "type": "structural",
+     "source": "1",
+     "polarity": "0",
+     "polarity_why": "谁先动重开，未落定"
+    },
+    {
+     "desc": "格式变更权无法在同一份协议内被完全内收，因为内收动作本身要选一个格式来登记。",
+     "type": "structural",
+     "source": "1",
+     "polarity": "?"
+    },
+    {
+     "desc": "追认的起点不能由被追认的文本给出，否则追认动作被文本预先包含。",
+     "type": "structural",
+     "source": "1",
+     "polarity": "?"
+    },
+    {
+     "desc": "多部门互为 Owner/User 时，格式版本由任一方单方升级，都会使另一方旧记录进入重释风险；共同升级又需要先商定升级动作的格式。",
+     "type": "structural",
+     "source": "1",
+     "polarity": "?"
+    }
+   ],
+   "threads": [
+    {
+     "desc": "划界动作的归口挂在谁身上——这个常设承担项如何写入协议？",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "常设承担项尚未写入"
+    },
+    {
+     "desc": "0的量由“划界动作被记录几次”决定，记录次数与协议条款数的关系未明。",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "次数与条款关系未明"
+    },
+    {
+     "desc": "换时态后，“边界单位”提法被替换成什么？",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "替换词未出现"
+    },
+    {
+     "desc": "跨轮判定质量下落是否超过可数带来的好处，需跨轮数据。",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "需跨轮数据，未定"
+    },
+    {
+     "desc": "路径依赖的终止条件没有，因为'判定人不可连任'本身也要被指定。",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "终止条件缺，未生"
+    },
+    {
+     "desc": "动机改变后，松口记录还能不能当追认起点，要重新证。",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "追认起点待重证"
+    },
+    {
+     "desc": "格式版本首次写入需要追认，追认不产生新编号，只产生父级引用；父级引用不能被同一协议指定，只能被下一次格式变更时引用。",
+     "kind": "thread",
+     "polarity": "?"
+    },
+    {
+     "desc": "若拒绝上移，格式变更就变成无编号动作；协议记录仍然完整，但记录与含义脱钩。",
+     "kind": "thread",
+     "polarity": "?"
+    }
+   ],
+   "probes": [
+    {
+     "question": "把「谁先动谁的数据」写成协议条款，先动方举证的成本能否被条款预先分派，还是只能事后追认？",
+     "link": "直接测C3能否从时序规则变成可写条款，回到原始问题「谁先动」这一候选单位",
+     "expected_gain": 0.7,
+     "covers": [
+      "T1",
+      "T3"
+     ]
+    },
+    {
+     "question": "导出/截图后字段级约束失效，责任落点能否在导出动作发生前由协议锁定？",
+     "link": "测子问题4的协议可锁定性与事后追认的边界，回到「字段」作为单位的失效点",
+     "expected_gain": 0.6,
+     "covers": [
+      "T9",
+      "T10"
+     ]
+    },
+    {
+     "question": "互为Owner/User时，按条划与打包划在多轮共享后的代价差异，能否用同一基准比较？",
+     "link": "测子问题3的多轮代价，回到「按条」vs「打包」两种划线单位的可比性",
+     "expected_gain": 0.5,
+     "covers": [
+      "T2"
+     ]
+    },
+    {
+     "question": "把「记录划界动作的次数」写成条款时，计数口径（被碰撞方/发起方/第三方）能否在写入前被枚举穷尽？",
+     "link": "计数口径决定边界厚度，也决定常设承担项的权限范围能否被写清",
+     "expected_gain": 0.55,
+     "covers": [
+      "T1",
+      "T6",
+      "T11"
+     ]
+    },
+    {
+     "question": "导出动作发生前，协议能否只锁「谁发起导出」而不锁导出内容？这条锁定条款在多轮后是否仍有效？",
+     "link": "把T7/T10的「锁发起不锁内容」写成可检验条款，看它跨轮是否退化",
+     "expected_gain": 0.5,
+     "covers": [
+      "T2",
+      "T7",
+      "T10"
+     ]
+    },
+    {
+     "question": "C12 的轮转指定：把「指定人」按轮次分派给不同方后，终止条件写成轮转规则，这条规则本身需不需要一个不轮转的登记位？",
+     "link": "若需，则 T10 的出路又撞回 T1/T8；若不需，路径依赖终止条件可闭合。",
+     "expected_gain": 0.55,
+     "covers": [
+      "T1",
+      "T10"
+     ]
+    },
+    {
+     "question": "T7 两条改法里，「任一方动作即触发双方共同举证」是否也要先商定「动作」的计数格式？若先商定，格式变更权就重新回到 C1 的枚举缺口。",
+     "link": "把 T7 的可写性判定从「哪条更公平」挪到「哪条不依赖先定格式」。",
+     "expected_gain": 0.5,
+     "covers": [
+      "T3",
+      "T7"
+     ]
+    }
+   ],
+   "meta": [
+    "[外部锚点] 第 1 圈入池 2 条（累计 2，仅记录）",
+    "本层对撞将原问题从单位选择扭转为时态问题，但未给出新时态下的可操作协议形态。",
+    "可判定子问题1的回答依赖认定权归属，而认定权本身可能由划界动作归口决定，存在循环。",
+    "[上一圈 self-check 反馈] 可疑候选 [4, 5, 6, 7, 8]；可疑 & [2, 3]",
+    "[外部锚点] 第 2 圈入池 2 条（累计 4，仅记录）",
+    "本层把'谁先动'从动作时序推到计数层，发现计数者本身也在序列外先动，这一层关不上。",
+    "预碰撞登记把事后成形提前一格，但必须提前枚举可能碰撞，等于回到先划边界。",
+    "[外部锚点] 第 3 圈入池 2 条（累计 6，仅记录）",
+    "本层对撞生成的新单元是「编号+格式版本+旧记录可重释范围」，但未回答任何可判定子问题。",
+    "不可判定结构揭示清晰度0.7，距离完整揭示0.6，主要卡在格式变更权与追认起点的自指困境。"
+   ],
+   "suspensions": [],
+   "sub_questions": [
+    {
+     "id": 1,
+     "question": "最小必要原则中的「当前业务」由谁认定——Owner、User，还是事故调查方？三种认定权归属下，划线起点分别落在业务动作、使用场景还是可追责证据链上，能否用同一套基准比较？",
+     "weight": 0.25,
+     "decidability": "partial",
+     "status": "answered",
+     "depth": 0.5,
+     "source": "P1 / T7 / T9 / C7",
+     "first_label": "partial",
+     "_decided_answerable": true,
+     "_starve_rounds": 0,
+     "_starve_max_seen": 1,
+     "answered_at_layer": 2
+    },
+    {
+     "id": 2,
+     "question": "当A要的是B盖章的判定结论而非原始明细时，B对字段的划线权是否本就划错了对象？结论流通与字段清单作为两种边界对象，能否在同一份协议里同时写清适用范围与推导过程？",
+     "weight": 0.2,
+     "decidability": "partial",
+     "status": "answered",
+     "depth": 0.6,
+     "source": "P5 / P7 / C13",
+     "first_label": "partial",
+     "label_disagreed": [
+      "partial",
+      "decidable"
+     ],
+     "_decided_answerable": true,
+     "_starve_rounds": 0,
+     "_starve_max_seen": 1,
+     "answered_at_layer": 2
+    },
+    {
+     "id": 3,
+     "question": "互为Owner/User时，边界按条划还是按对等交换打包划？先动方举证自己只在约定范围内的时序举证成本，是否比逐条字段划线更可操作？",
+     "weight": 0.2,
+     "decidability": "partial",
+     "status": "answered",
+     "depth": 1.0,
+     "source": "P8 / A9 / T10 / C11",
+     "first_label": "partial",
+     "_decided_answerable": true,
+     "answered_at_layer": 1,
+     "_starve_rounds": 0,
+     "_starve_max_seen": 0
+    },
+    {
+     "id": 4,
+     "question": "数据被导出成文件或截图后，字段级0/1约束失效，二次流转责任归属未定——导出动作发生在User侧，后果却可能落回Owner部门被追责。这个责任落点能否通过协议文本预先锁定，还是只能事后追认？",
+     "weight": 0.15,
+     "decidability": "partial",
+     "status": "answered",
+     "depth": 0.9,
+     "source": "A3 / T4 / T5 / T8 / C14 / C15",
+     "first_label": "undecidable",
+     "label_disagreed": [
+      "undecidable",
+      "decidable"
+     ],
+     "_decided_answerable": true,
+     "answered_at_layer": 1,
+     "_starve_rounds": 0,
+     "_starve_max_seen": 0
+    },
+    {
+     "id": 5,
+     "question": "限期打通后补授权的事后追认口子一旦开了，下一次谈判的起点是否已经不在协议里？上次追认时先松口的一方在新一轮默认举证劣势，是事实还是可被协议文本覆盖？",
+     "weight": 0.1,
+     "decidability": "partial",
+     "status": "answered",
+     "depth": 0.7,
+     "source": "P6 / P9 / C10",
+     "first_label": "undecidable",
+     "label_disagreed": [
+      "undecidable",
+      "decidable"
+     ],
+     "_decided_answerable": true,
+     "answered_at_layer": 1,
+     "_starve_rounds": 0,
+     "_starve_max_seen": 0
+    },
+    {
+     "id": 6,
+     "question": "编制、预算、考核关系里谁喊停有效——这个权力事实是否才是边界谈判真正在谈的东西？喊停权与数据归属脱钩后，边界是否由行政结算单位而非数据通道决定？",
+     "weight": 0.1,
+     "decidability": "undecidable",
+     "status": "answered",
+     "depth": 0.4,
+     "source": "P4 / A6 / C8 / C9",
+     "first_label": "undecidable",
+     "label_disagreed": [
+      "undecidable",
+      "decidable"
+     ],
+     "_decided_answerable": true,
+     "_starve_rounds": 0,
+     "_starve_max_seen": 0,
+     "answered_at_layer": 2
+    }
+   ],
+   "deferrals": [
+    {
+     "id": "d_001",
+     "sub_id": 6,
+     "sub_question": "编制、预算、考核关系里谁喊停有效——这个权力事实是否才是边界谈判真正在谈的东西？喊停权与数据归属脱钩后，边界是否由行政结算单位而非数据通道决定？",
+     "reason": "喊停权与数据归属脱钩需先看时序规则能否成条款",
+     "revisit_condition": "探针1显示时序规则可写为条款后",
+     "layer": 1,
+     "last_reconfirmed_layer": 1,
+     "status": "handled",
+     "resolved_at": 2,
+     "resolution_reason": "对应子问题被直接回答"
+    },
+    {
+     "id": "d_002",
+     "sub_id": 6,
+     "sub_question": "编制、预算、考核关系里谁喊停有效——这个权力事实是否才是边界谈判真正在谈的东西？喊停权与数据归属脱钩后，边界是否由行政结算单位而非数据通道决定？",
+     "reason": "喊停权与数据归属脱钩后边界由行政结算单位决定——本轮无新证据可推进",
+     "revisit_condition": "出现行政结算单位与数据通道冲突的具体案例",
+     "layer": 3,
+     "last_reconfirmed_layer": 3,
+     "status": "escalated",
+     "resolved_at": 3,
+     "resolution_reason": "无具体案例，喊停权与数据归属脱钩后边界归属不可判定"
+    }
+   ],
+   "escalations": [],
+   "decidability_log": [],
+   "duel_suspensions": [],
+   "duel_alignment": {},
+   "engagements": [
+    {
+     "sub_id": 3,
+     "target": "互为Owner/User时，边界按条划还是按对等交换打包划？先动方举证自己只在约定范围内的时序举证成本，是否比逐条字段划线更可操作？",
+     "how": "探针3测按条vs打包的多轮代价",
+     "depth": 0.5
+    },
+    {
+     "sub_id": 4,
+     "target": "数据被导出成文件或截图后，字段级0/1约束失效，二次流转责任归属未定——导出动作发生在User侧，后果却可能落回Owner部门被追责。这个责任落点能否通过协议文本预先锁定，还是只能事后追认？",
+     "how": "探针2测导出后责任落点的协议可锁定性",
+     "depth": 0.5
+    },
+    {
+     "sub_id": 5,
+     "target": "限期打通后补授权的事后追认口子一旦开了，下一次谈判的起点是否已经不在协议里？上次追认时先松口的一方在新一轮默认举证劣势，是事实还是可被协议文本覆盖？",
+     "how": "探针1触及先松口方劣势能否被条款重分派",
+     "depth": 0.4
+    },
+    {
+     "sub_id": 1,
+     "target": "最小必要原则中的「当前业务」由谁认定——Owner、User，还是事故调查方？三种认定权归属下，划线起点分别落在业务动作、使用场景还是可追责证据链上，能否用同一套基准比较？",
+     "how": "最小必要认定权若交给事故调查方，划线起点移到可追责证据链，与Owner/User认定不可用同一基准",
+     "depth": 0.5
+    },
+    {
+     "sub_id": 2,
+     "target": "当A要的是B盖章的判定结论而非原始明细时，B对字段的划线权是否本就划错了对象？结论流通与字段清单作为两种边界对象，能否在同一份协议里同时写清适用范围与推导过程？",
+     "how": "结论流通与字段清单是两种边界对象，同一协议里适用范围与推导过程不能共用同一划线动作",
+     "depth": 0.6
+    },
+    {
+     "sub_id": 6,
+     "target": "编制、预算、考核关系里谁喊停有效——这个权力事实是否才是边界谈判真正在谈的东西？喊停权与数据归属脱钩后，边界是否由行政结算单位而非数据通道决定？",
+     "how": "喊停权与数据归属脱钩后，边界由行政结算单位决定这一支，需先看计数口径能否成条款",
+     "depth": 0.4
+    }
+   ],
+   "refinements": [
+    {
+     "sub_id": 3,
+     "sub_question": "互为Owner/User时，边界按条划还是按对等交换打包划？先动方举证自己只在约定范围内的时序举证成本，是否比逐条字段划线更可操作？",
+     "how": "T7 两条改法的可写性取决于计数口径，探针2 把这条依赖显形",
+     "layer": 3
+    },
+    {
+     "sub_id": 4,
+     "sub_question": "数据被导出成文件或截图后，字段级0/1约束失效，二次流转责任归属未定——导出动作发生在User侧，后果却可能落回Owner部门被追责。这个责任落点能否通过协议文本预先锁定，还是只能事后追认？",
+     "how": "C9 退化条件能否被单方触发，决定导出责任锁定是否只是形式",
+     "layer": 3
+    },
+    {
+     "sub_id": 5,
+     "sub_question": "限期打通后补授权的事后追认口子一旦开了，下一次谈判的起点是否已经不在协议里？上次追认时先松口的一方在新一轮默认举证劣势，是事实还是可被协议文本覆盖？",
+     "how": "追认起点与轮转指定登记位的关系，探针1 触及",
+     "layer": 3
+    }
+   ],
+   "decidable_channel": {
+    "answers": [
+     {
+      "answer": "三种认定权归属下划线起点不同：Owner认定落在业务动作，User认定落在使用场景，事故调查方认定落在可追责证据链。三者不能用同一套基准比较，因为基准本身随认定权转移。若强行统一，需先固定认定权归属，再谈基准。",
+      "answered_sub_ids": [
+       1
+      ],
+      "evidence": [
+       "Owner认定时，业务动作是边界起点，字段和场景服务于动作完成。",
+       "事故调查方认定时，可追责证据链成为起点，业务动作的连续性被切断。"
+      ]
+     },
+     {
+      "answer": "三种认定权归属下划线起点不同：Owner认定落在业务动作，User认定落在使用场景，事故调查方认定落在可追责证据链。三者不能用同一套基准比较，因为基准本身随认定权归属而变——认定权决定了什么算'当前业务'，而'当前业务'是基准的输入而非输出。",
+      "answered_sub_ids": [
+       1
+      ],
+      "evidence": [
+       "0端无痕迹、1端有利益，许可不能由任一方签发，认定权归属直接改变划线起点的对象类型。",
+       "计数动作本身是1但计的是0→1转换，认定权即计数权，计数者定义计时起点。"
+      ]
+     },
+     {
+      "answer": "边界写入协议的最小单元应为「编号 + 格式版本 + 旧记录可重释范围」。缺少格式版本，编号只证明动作发生过，不证明动作含义未变；缺少旧记录可重释范围，承担项可被追溯改写。格式版本首次写入需要追认，追认不产生新编号，只产生父级引用。",
+      "answered_sub_ids": [],
+      "evidence": [
+       "ing 输出第四部分：生成物是边界写入协议的最小单元应为编号+格式版本+旧记录可重释范围。",
+       "ing 输出第五部分：格式变更权无法在同一份协议内被完全内收，追认起点不能由被追认的文本给出。"
+      ]
+     }
+    ],
+    "coverage_history": [],
+    "last_coverage": 0.0
+   },
+   "undecidable_channel": {
+    "structural_amps": [
+     "1是名词性清单（字段、场景、表），0是过程性痕迹（生成、留下、发生、继承）；名词清单加项长不出时态，缺的不是更好单位，是提问时态。",
+     "承认0是产物，就否掉“先有边界、再共享”的次序：共享每次都在生产边界之外的东西。",
+     "1的排外判定（谁、何时、凭什么）不落在被排的东西里，也不落在边界里的东西里；记入1则1含0，不记则判定无归口。",
+     "0不能自证，1不能自计，缝接位置不属于任何一方，也不是'还没找到归属'——文本被写下的前提就是它，所以文本持不住它。",
+     "单次判定人能避开常设权力，但无法产生跨轮记忆；跨轮记忆要常设位置，常设位置必然累积权力。不是取舍，是结构互斥。",
+     "计数者本身也在动作序列之外先动，'谁先动'在计数层重新出现。",
+     "格式变更权无法在同一份协议内被完全内收，因为内收动作本身要选一个格式来登记。",
+     "追认的起点不能由被追认的文本给出，否则追认动作被文本预先包含。",
+     "多部门互为 Owner/User 时，格式版本由任一方单方升级，都会使另一方旧记录进入重释风险；共同升级又需要先商定升级动作的格式。"
+    ],
+    "clarity_history": [
+     0.8,
+     0.7,
+     0.7
+    ],
+    "last_clarity": 0.7,
+    "und_aspects": [
+     "[外] 具体部门间“合适”的权限边界与利益分配无客观唯一解",
+     "[外] 效率提升与隐私风险的量化权衡缺少统一效用函数与风险容忍度",
+     "[外] 具体组织内部数据资产清单、敏感级别、系统接口和人员能力未知",
+     "[外] 跨部门共享的最优制度设计无判决实验可证伪，依赖政治/价值博弈",
+     "[外] 未来监管细则、司法裁判和技术演进不可预知"
+    ],
+    "struct_coverage_history": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "last_struct_coverage": 0.0,
+    "aligned_amps": [],
+    "last_struct_hit": 0,
+    "last_aligned_hit": 0,
+    "aligned_coverage_history": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "last_aligned_coverage": 0.0,
+    "aspect_first_hit": {},
+    "struct_trace": [
+     {
+      "layer": 1,
+      "hit": 0,
+      "total": 5,
+      "cov": 0.0,
+      "newly": []
+     },
+     {
+      "layer": 2,
+      "hit": 0,
+      "total": 5,
+      "cov": 0.0,
+      "newly": []
+     },
+     {
+      "layer": 3,
+      "hit": 0,
+      "total": 5,
+      "cov": 0.0,
+      "newly": []
+     }
+    ],
+    "aligned_first_hit": {},
+    "aligned_trace": [
+     {
+      "layer": 1,
+      "hit": 0,
+      "total": 5,
+      "cov": 0.0,
+      "newly": []
+     },
+     {
+      "layer": 2,
+      "hit": 0,
+      "total": 5,
+      "cov": 0.0,
+      "newly": []
+     },
+     {
+      "layer": 3,
+      "hit": 0,
+      "total": 5,
+      "cov": 0.0,
+      "newly": []
+     }
+    ]
+   },
+   "anchors": [
+    {
+     "id": "a1",
+     "claim": "公共数据运营的安全底线（硬表述）：财政部《关于加强数据资产管理的指导意见》（2024 年 1 月）明确，公共管理和服务机构可授权运营主体对其持有/控制的公共数据资产进行运营，但须『严格按照「原始数据不出域、数据可用不可见」要求和资产管理制度规定』；涉及国家安全、商业秘密和个人隐私的，应依照法律、行政法规规定的权限和程序进行，『不得超出履行法定职责所必需的范围和限度』。这是跨部门/对外共享的可核对红线。",
+     "source": "中国政府网《财政部资产管理司有关负责人就印发〈关于加强数据资产管理的指导意见〉答记者问》（官方文件）",
+     "url": "https://www.gov.cn/zhengce/202401/content_6925484.htm?ddtab=true",
+     "as_of": "2024-01",
+     "kind": "官方文件"
+    },
+    {
+     "id": "a2",
+     "claim": "产权与授权的制度框架：2022 年 12 月中共中央、国务院『数据二十条』提出建立数据资源持有权、数据加工使用权、数据产品经营权『三权分置』的产权运行机制；公共数据按『原始数据不出域、数据可用不可见』提供，且使用分『有条件无偿使用』与『有条件有偿使用』；个人信息方面，明确处理受个人授权范围限制，禁止『一揽子授权』『强制同意』等过度收集方式。",
+     "source": "『数据二十条』原文及地方政府解读（甘肃省平凉市发改委转载解读）（官方文件 + 官方解读）",
+     "url": "https://fgw.pingliang.gov.cn/zfxxgk/fdzdgknr/zcjd/sjzcjd/art/2023/art_2b45e1cf6a4e4f26a2e9475aed9169b0.html",
+     "as_of": "2022-12",
+     "kind": "官方文件（政策）"
+    },
+    {
+     "id": "a3",
+     "claim": "共享的法定边界（硬条款）：《个人信息保护法》第十三条列举七类可处理个人信息的合法性基础，其中『（三）为履行法定职责或者法定义务所必需』以及第二至第七项情形，『不需取得个人同意』——这是政务共享对抗『必须逐人同意』的直接法律依据。但注意三处例外：第 23 条向其他个人信息处理者提供信息须取得『单独同意』；第 29 条处理敏感个人信息须『单独同意』（法律/行政法规要求书面同意的从其规定）；第 39 条向境外提供须『单独同意』。即：『履行法定职责』可豁免同意，但一旦跨主体提供/涉及敏感/出境，仍需单独同意。",
+     "source": "全国人大法律法规数据库《中华人民共和国个人信息保护法》原文 PDF（官方文件）",
+     "url": "https://wb.flk.npc.gov.cn/flfg/PDF/f67af9f12e1b4c83a998cf5a876ce0e4.pdf",
+     "as_of": "2021-11-01（施行）",
+     "kind": "官方文件（法律原文）"
+    },
+    {
+     "id": "a4",
+     "claim": "政务数据共享的三类真实阻力（制度性事实）：中央党校《学习时报》指出——①『不愿共享』：一些部门把数据视为部门私有资源，以『数据归属本部门、共享需内部审批』为由拖延甚至拒绝，或只共享大众熟知的普通数据，本质是部门利益固化、担心共享削弱话语权、增加负担；②『不敢共享』：系统格式/接口标准不统一，且责任划分与争议解决机制不健全，怕担责；③『不会共享』：基层缺数据治理专业人才。三者交织形成『数据孤岛』『数据烟囱』。",
+     "source": "学习时报（中央党校）《破解政务数据共享壁垒》，人民网理论频道转载（官方媒体理论文章）",
+     "url": "https://theory.people.com.cn/BIG5/n1/2025/1226/c40531-40632644.html",
+     "as_of": "2025-12-26",
+     "kind": "官方媒体理论文章（中央党校）"
+    },
+    {
+     "id": "a5",
+     "claim": "县域实证（可核对的缺口清单）：某县政协提案列举——公安、民政、人社、教育、卫健、市场监管、自然资源等数据『大多在各自系统内循环，跨部门调用困难』；共享多限于少数高频事项或上级要求的领域，且多为『结果信息查询』，原始数据、过程数据共享不足；缺明确的目录清单、责任主体、申请流程、响应时限和争议协调机制；部门间存在『不愿共享、不敢共享、不会共享』。这条把一个具体行政层级的边界缺失暴露得很具体。",
+     "source": "江苏省宝应县人民政府网公开的《关于加快推进县域内单位数据共享的提案》（官方文件）",
+     "url": "https://baoying.yangzhou.gov.cn/zfxxgk/xjbmxxgk/byxsjj/fdgkzdnr/jytabl/zxta4076/art/2026/art_28f1c35fb4f74ec68c47fd25bb788500.html",
+     "as_of": "2026",
+     "kind": "官方文件（地方政协提案）"
+    },
+    {
+     "id": "a6",
+     "claim": "反面案例（越界的代价）：2023 年 11 月，湖南衡阳市发布『政务数据资源和智慧城市特许经营权』出让项目，挂牌底价 18.02 亿元、增价幅度 1000 万元，被称为『政务数据第一拍』；公告发布仅数天后即被紧急叫停。作者推测原因有三：公共数据特许经营缺乏法律文件支撑（特许经营相关办法中并无公共数据）；定价合理性存疑（18 亿的评估依据不确定）；授权模式缺乏上层文件。含义：在制度未定型时抢跑『数据变现』风险极高。",
+     "source": "锦天城律师事务所《公共数据授权运营的法律边界与合规之道》（律所专业解读）",
+     "url": "https://www.allbrightlaw.com/CN/10475/6fa8876f8b9bf5f.aspx",
+     "as_of": "2024",
+     "kind": "律所/法律专业机构解读"
+    }
+   ]
+  },
+  "both": {
+   "amps": [],
+   "threads": [],
+   "probes": [],
+   "meta": [],
+   "suspensions": [],
+   "sub_questions": [],
+   "deferrals": [],
+   "escalations": [],
+   "decidability_log": [],
+   "duel_suspensions": [],
+   "duel_alignment": {},
+   "engagements": [],
+   "refinements": [],
+   "decidable_channel": {},
+   "undecidable_channel": {}
+  },
+  "all": {
+   "amps": [],
+   "threads": [],
+   "probes": [],
+   "meta": [],
+   "suspensions": [],
+   "sub_questions": [],
+   "deferrals": [],
+   "escalations": [],
+   "decidability_log": [],
+   "duel_suspensions": [],
+   "duel_alignment": {},
+   "engagements": [],
+   "refinements": [],
+   "decidable_channel": {},
+   "undecidable_channel": {}
+  }
+ },
+ "llm_calls": 63,
+ "llm_tokens": 271759,
+ "tri_state": [
+  2,
+  6
+ ],
+ "layer_contribution": {
+  "0": {
+   "rounds": 3,
+   "stop": "体力耗尽（3 圈走满，未触发任何停止判据，是被截",
+   "idle": false
+  },
+  "1": {
+   "rounds": 3,
+   "stop": "体力耗尽（3 圈走满；1 次停止判据被「未深入方",
+   "idle": false
+  }
+ },
+ "external_anchor": {
+  "enabled": true,
+  "anchors": 11,
+  "source_file": "up_org_anchors.json",
+  "retrieved_at": "2026-10-04T10:20:00+0800",
+  "retriever": "agent WebSearch（4 次检索：隐私计算落地与成本 / 公共数据授权运营制度 / 法定边界（个保法第13条）/ 政务数据共享壁垒实证）",
+  "pooled": 12,
+  "as_evidence": false,
+  "anchor_calls": 0,
+  "claims": 7,
+  "items": [
+   {
+    "claim_id": "c1",
+    "claim": "边界写入协议的最小单元应为「编号 + 格式版本 + 旧记录可重释范围」。缺少格式版本，编号只证明动作发生过，不证明动作含义未变；缺少旧记录可重释范围，承担项可被追溯改写。格式版本首次写入需要追认，追认不产生新编号，只产生父级引用。",
+    "verdict": "无对应",
+    "anchor_ids": [],
+    "note": "锚点未涉及边界写入协议的最小单元、格式版本或旧记录可重释范围。"
+   },
+   {
+    "claim_id": "c2",
+    "claim": "最小必要原则中的「当前业务」由谁认定——Owner、User，还是事故调查方？三种认定权归属下，划线起点分别落在业务动作、使用场景还是可追责证据链上，能否用同一套基准比较？",
+    "verdict": "无对应",
+    "anchor_ids": [],
+    "note": "锚点未讨论最小必要原则中『当前业务』由谁认定及划线起点问题。"
+   },
+   {
+    "claim_id": "c3",
+    "claim": "当A要的是B盖章的判定结论而非原始明细时，B对字段的划线权是否本就划错了对象？结论流通与字段清单作为两种边界对象，能否在同一份协议里同时写清适用范围与推导过程？",
+    "verdict": "无对应",
+    "anchor_ids": [],
+    "note": "锚点未涉及盖章判定结论与字段清单作为边界对象的区分。"
+   },
+   {
+    "claim_id": "c4",
+    "claim": "互为Owner/User时，边界按条划还是按对等交换打包划？先动方举证自己只在约定范围内的时序举证成本，是否比逐条字段划线更可操作？",
+    "verdict": "无对应",
+    "anchor_ids": [],
+    "note": "锚点未讨论互为Owner/User时按条或按对等交换打包划线。"
+   },
+   {
+    "claim_id": "c5",
+    "claim": "数据被导出成文件或截图后，字段级0/1约束失效，二次流转责任归属未定——导出动作发生在User侧，后果却可能落回Owner部门被追责。这个责任落点能否通过协议文本预先锁定，还是只能事后追认？",
+    "verdict": "无对应",
+    "anchor_ids": [],
+    "note": "锚点未涉及导出成文件或截图后字段级约束失效及责任落点。"
+   },
+   {
+    "claim_id": "c6",
+    "claim": "限期打通后补授权的事后追认口子一旦开了，下一次谈判的起点是否已经不在协议里？上次追认时先松口的一方在新一轮默认举证劣势，是事实还是可被协议文本覆盖？",
+    "verdict": "无对应",
+    "anchor_ids": [],
+    "note": "锚点未讨论事后追认口子对下一轮谈判起点与举证劣势的影响。"
+   },
+   {
+    "claim_id": "c7",
+    "claim": "编制、预算、考核关系里谁喊停有效——这个权力事实是否才是边界谈判真正在谈的东西？喊停权与数据归属脱钩后，边界是否由行政结算单位而非数据通道决定？",
+    "verdict": "无对应",
+    "anchor_ids": [],
+    "note": "锚点未涉及编制、预算、考核关系中的喊停权与行政结算单位。"
+   }
+  ],
+  "summary": {
+   "claims": 7,
+   "supported": 0,
+   "conflicted": 0,
+   "unmatched": 7,
+   "anchor_used": 0
+  },
+  "error": ""
+ },
+ "cost_profile": "balanced",
+ "orientation": "auto",
+ "input_sanity": {
+  "issues": [],
+  "note": "无悬空符号，术语均正常。",
+  "checked": true
+ }
+}

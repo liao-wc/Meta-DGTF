@@ -1,0 +1,10 @@
+# [v122 bench] biz_001 · 现金流自动化
+id: biz_001
+domain: biz
+question: "一家现金流紧张的中小制造企业，该先裁员还是先砍产线"
+orientation: decision
+budget:
+  profile: balanced
+  max_calls: 180
+  rounds: "0:5,1:5,both:5,all:6"
+  mode: serial

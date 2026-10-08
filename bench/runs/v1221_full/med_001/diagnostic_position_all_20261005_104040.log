@@ -1,0 +1,63 @@
+# position_all_same 诊断
+entry=all
+round=5
+anchor=社区医院人力有限，慢性病管理推远程监测还是加派人手上门随访
+same_position=0
+candidate_count=14
+
+[1] attr=1 pos=0 src=阳
+    desc: all 的边界由排除动作画定，排除发生在字段之外，因此 all 对自身边界不可查
+    why_position: 排除动作在字段之外，未被收进all
+
+[2] attr=1 pos=0 src=阳
+    desc: all 包含切痕，但切痕无行号、无切者、无执行动作，不占排他格
+    why_position: 切痕无行号无执行动作，未被吸收
+
+[3] attr=1 pos=0 src=阳
+    desc: 局部可排性来自取走动作，取走动作不在局部内，也不在 all 的账上
+    why_position: 取走动作不在all账上，未吸收
+
+[4] attr=1 pos=0 src=阳
+    desc: all 的起点资格未定：谁有权把一个名字排进次日名单，不能由任一局部推出
+    why_position: 起点资格未定，不能由局部推出
+
+[5] attr=1 pos=0 src=阳
+    desc: all 那句『非二选一』带着一次未申报的选词（先读格子还是先读权限），谁在 all 外面识别这次选词，未定
+    why_position: 识别者在all外，选词未申报
+
+[6] attr=1 pos=0 src=阳
+    desc: 已知但未入列的人没有0/1状态；两个局部都从已入列名单开始，阈值筛不到入列前，谁决定入列
+    why_position: 入列前无0/1，入列权未入all
+
+[7] attr=0 pos=0 src=阴
+    desc: all 作为整体还缺一个执行位：让 0 被看见的动作有代价、占排他格，但两端账上都没有这个格的行号
+    why_position: 两端账上都没有该格行号
+
+[8] attr=0 pos=0 src=阴
+    desc: all 的划分由谁画定未显形：远程与上门这条边界被整体使用，却没有任何一处记录画定者与排除动作发生在哪个字段之外
+    why_position: 画定者与排除动作无一处记录
+
+[9] attr=0 pos=0 src=阴
+    desc: all 里『算不算在工作』这一判断悬在整体之外：它决定 0 是否入月报，却不落在排班容量或优先级任何一格上
+    why_position: 判断悬在整体之外，不落任何格
+
+[10] attr=0 pos=0 src=阴
+    desc: all 里读法切换不占 1、不计工时、无执行人，却决定 0 是否算冲突；排班表按什么切它，整体未给
+    why_position: 读法切换无执行人，整体未给
+
+[11] attr=0 pos=0 src=阴
+    desc: all 里未入列名单的人没有 0/1 状态，阈值筛不到入列前；入列权挂在哪个字段之外，使整体无法自查边界
+    why_position: 入列权挂在字段之外，未吸收
+
+[12] attr=0 pos=0 src=阴
+    desc: all 的边界由排除动作画定却不可查：排除动作发生在哪个字段之外、由谁执行，整体自身给不出
+    why_position: 排除动作在字段外且不可查
+
+[13] attr=0 pos=0 src=阴
+    desc: all 里可见性成本占的那个排他 1 格被划掉后，那段时间由谁填——整体里是否根本没有填格人这一格
+    why_position: 整体里没有填格人这一格
+
+[14] attr=0 pos=0 src=阴
+    desc: all 的『算不算在工作』若先填维护人再看月报认不认，顺序倒过来哪端先塌，整体未演算
+    why_position: 顺序未演算，未落格
+

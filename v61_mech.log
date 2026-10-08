@@ -1,0 +1,12 @@
+=== 并行跑批 3 个 run，并发上限 3 ===
+=== 开始 2026-10-01 08:00:44 ===
+✓ [m61team/auto] 9.3min
+    [m61team/B] OK  9.2min  calls=179  → v60_m61team_rauto_B.log
+       missing=[]  skipped=[]
+✓ [m61self/auto] 10.1min
+    [m61self/B] OK  10.0min  calls=182  → v60_m61self_rauto_B.log
+       missing=[]  skipped=[]
+✓ [m61koan/serial] 25.1min
+    [m61koan/serial] OK  25.1min  calls=164  → v60_m61koan_r4_serial.log
+       missing=[]  skipped=[]
+=== 结束 2026-10-01 08:25:50 ===

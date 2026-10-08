@@ -1,0 +1,521 @@
+{
+  "tag": "v122_full",
+  "src": "元DGTF-V1.22.0.py",
+  "mock": false,
+  "n": 17,
+  "ok": 17,
+  "profile_override": "economy",
+  "rounds_override": "0:1,1:1,both:1,all:1",
+  "items": [
+    {
+      "id": "eng_001",
+      "domain": "eng",
+      "question": "老城区暴雨内涝频发，排水系统要不要整体翻新，怎么定优先级",
+      "orientation": "decision",
+      "route": [
+        "0",
+        "1",
+        "both",
+        "all"
+      ],
+      "rounds": "0:1,1:1,both:1,all:1",
+      "mock": false,
+      "ok": true,
+      "error": "",
+      "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\bench\\runs\\v122_full\\eng_001\\20261005_005500_老城区暴雨内涝频发排水系统要不要整体翻.md",
+      "calls": 55,
+      "tokens": 348785,
+      "layers_seen": [
+        "0",
+        "1",
+        "all",
+        "both"
+      ],
+      "missing": [],
+      "elapsed_s": 709.5,
+      "elapsed": 709.5,
+      "objective_lines": 4,
+      "objective_block": "**分层目标**：\n  - 修行层（显形过程 · objective=manifest）：& 4 / 线头 3 / 悬置 0 / 探针 3\n  - 研究层（逼近真理 · objective=truth）：覆盖率 55% · distance 0.3\n  - 对撞层（第三者 · objective=collision）：third ✓ · 张力 3\n  - 元层（闭环清算 · objective=closure）：clean True · 未交代 0 类\n"
+    },
+    {
+      "id": "eng_002",
+      "domain": "eng",
+      "question": "早高峰地铁站台拥挤越来越严重，运营效率该怎么提升",
+      "orientation": "boundary",
+      "route": [
+        "0",
+        "1",
+        "both",
+        "all"
+      ],
+      "rounds": "0:1,1:1,both:1,all:1",
+      "mock": false,
+      "ok": true,
+      "error": "",
+      "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\bench\\runs\\v122_full\\eng_002\\20261005_005750_早高峰地铁站台拥挤越来越严重运营效率该.md",
+      "calls": 55,
+      "tokens": 382898,
+      "layers_seen": [
+        "0",
+        "1",
+        "all",
+        "both"
+      ],
+      "missing": [],
+      "elapsed_s": 879.0,
+      "elapsed": 879.0,
+      "objective_lines": 4,
+      "objective_block": "**分层目标**：\n  - 修行层（显形过程 · objective=manifest）：& 4 / 线头 4 / 悬置 1 / 探针 3\n  - 研究层（逼近真理 · objective=truth）：覆盖率 20% · distance 0.6\n  - 对撞层（第三者 · objective=collision）：third ✓ · 张力 3\n  - 元层（闭环清算 · objective=closure）：clean True · 未交代 0 类\n"
+    },
+    {
+      "id": "eng_003",
+      "domain": "eng",
+      "question": "在役桥梁数量多、预算有限，维护优先级怎么排",
+      "orientation": "decision",
+      "route": [
+        "0",
+        "1",
+        "both",
+        "all"
+      ],
+      "rounds": "0:1,1:1,both:1,all:1",
+      "mock": false,
+      "ok": true,
+      "error": "",
+      "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\bench\\runs\\v122_full\\eng_003\\20261005_005600_在役桥梁数量多预算有限维护优先级怎么.md",
+      "calls": 54,
+      "tokens": 362887,
+      "layers_seen": [
+        "0",
+        "1",
+        "all",
+        "both"
+      ],
+      "missing": [],
+      "elapsed_s": 769.1,
+      "elapsed": 769.1,
+      "objective_lines": 4,
+      "objective_block": "**分层目标**：\n  - 修行层（显形过程 · objective=manifest）：& 4 / 线头 4 / 悬置 2 / 探针 3\n  - 研究层（逼近真理 · objective=truth）：覆盖率 41% · distance 0.6\n  - 对撞层（第三者 · objective=collision）：third ✓ · 张力 2\n  - 元层（闭环清算 · objective=closure）：clean True · 未交代 0 类\n"
+    },
+    {
+      "id": "eng_004",
+      "domain": "eng",
+      "question": "老城区地下管线反复开挖，要不要改成综合管廊",
+      "orientation": "decision",
+      "route": [
+        "0",
+        "1",
+        "both",
+        "all"
+      ],
+      "rounds": "0:1,1:1,both:1,all:1",
+      "mock": false,
+      "ok": true,
+      "error": "",
+      "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\bench\\runs\\v122_full\\eng_004\\20261005_005805_老城区地下管线反复开挖要不要改成综合管.md",
+      "calls": 54,
+      "tokens": 387018,
+      "layers_seen": [
+        "0",
+        "1",
+        "all",
+        "both"
+      ],
+      "missing": [],
+      "elapsed_s": 893.8,
+      "elapsed": 893.8,
+      "objective_lines": 4,
+      "objective_block": "**分层目标**：\n  - 修行层（显形过程 · objective=manifest）：& 3 / 线头 4 / 悬置 2 / 探针 3\n  - 研究层（逼近真理 · objective=truth）：覆盖率 44% · distance 0.9\n  - 对撞层（第三者 · objective=collision）：third ✓ · 张力 4\n  - 元层（闭环清算 · objective=closure）：clean True · 未交代 0 类\n"
+    },
+    {
+      "id": "law_001",
+      "domain": "law",
+      "question": "业务要接欧洲用户，数据跨境传输怎么合规落地",
+      "orientation": "decision",
+      "route": [
+        "0",
+        "1",
+        "both",
+        "all"
+      ],
+      "rounds": "0:1,1:1,both:1,all:1",
+      "mock": false,
+      "ok": true,
+      "error": "",
+      "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\bench\\runs\\v122_full\\law_001\\20261005_005421_业务要接欧洲用户数据跨境传输怎么合规落.md",
+      "calls": 54,
+      "tokens": 329819,
+      "layers_seen": [
+        "0",
+        "1",
+        "all",
+        "both"
+      ],
+      "missing": [],
+      "elapsed_s": 669.8,
+      "elapsed": 669.8,
+      "objective_lines": 4,
+      "objective_block": "**分层目标**：\n  - 修行层（显形过程 · objective=manifest）：& 4 / 线头 4 / 悬置 2 / 探针 3\n  - 研究层（逼近真理 · objective=truth）：覆盖率 55% · distance 0.2\n  - 对撞层（第三者 · objective=collision）：third ✓ · 张力 3\n  - 元层（闭环清算 · objective=closure）：clean True · 未交代 0 类\n"
+    },
+    {
+      "id": "law_002",
+      "domain": "law",
+      "question": "集团内部各子公司数据共享的合法边界在哪里",
+      "orientation": "boundary",
+      "route": [
+        "0",
+        "1",
+        "both",
+        "all"
+      ],
+      "rounds": "0:1,1:1,both:1,all:1",
+      "mock": false,
+      "ok": true,
+      "error": "",
+      "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\bench\\runs\\v122_full\\law_002\\20261005_010627_集团内部各子公司数据共享的合法边界在哪里.md",
+      "calls": 52,
+      "tokens": 338792,
+      "layers_seen": [
+        "0",
+        "1",
+        "all",
+        "both"
+      ],
+      "missing": [],
+      "elapsed_s": 726.4,
+      "elapsed": 726.4,
+      "objective_lines": 4,
+      "objective_block": "**分层目标**：\n  - 修行层（显形过程 · objective=manifest）：& 3 / 线头 4 / 悬置 2 / 探针 3\n  - 研究层（逼近真理 · objective=truth）：覆盖率 41% · distance 0.3\n  - 对撞层（第三者 · objective=collision）：third ✓ · 张力 2\n  - 元层（闭环清算 · objective=closure）：clean True · 未交代 0 类\n"
+    },
+    {
+      "id": "law_003",
+      "domain": "law",
+      "question": "法务人手不足，合同能不能用模型自动审查，风险怎么控",
+      "orientation": "decision",
+      "route": [
+        "0",
+        "1",
+        "both",
+        "all"
+      ],
+      "rounds": "0:1,1:1,both:1,all:1",
+      "mock": false,
+      "ok": true,
+      "error": "",
+      "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\bench\\runs\\v122_full\\law_003\\20261005_010551_法务人手不足合同能不能用模型自动审查.md",
+      "calls": 53,
+      "tokens": 323556,
+      "layers_seen": [
+        "0",
+        "1",
+        "all",
+        "both"
+      ],
+      "missing": [],
+      "elapsed_s": 650.0,
+      "elapsed": 650.0,
+      "objective_lines": 4,
+      "objective_block": "**分层目标**：\n  - 修行层（显形过程 · objective=manifest）：& 4 / 线头 3 / 悬置 1 / 探针 3\n  - 研究层（逼近真理 · objective=truth）：覆盖率 35% · distance 0.3\n  - 对撞层（第三者 · objective=collision）：third ✓ · 张力 4\n  - 元层（闭环清算 · objective=closure）：clean True · 未交代 0 类\n"
+    },
+    {
+      "id": "med_001",
+      "domain": "med",
+      "question": "社区医院人力有限，慢性病管理推远程监测还是加派人手上门随访",
+      "orientation": "decision",
+      "route": [
+        "0",
+        "1",
+        "both",
+        "all"
+      ],
+      "rounds": "0:1,1:1,both:1,all:1",
+      "mock": false,
+      "ok": true,
+      "error": "",
+      "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\bench\\runs\\v122_full\\med_001\\20261005_011354_社区医院人力有限慢性病管理推远程监测还.md",
+      "calls": 53,
+      "tokens": 422935,
+      "layers_seen": [
+        "0",
+        "1",
+        "all",
+        "both"
+      ],
+      "missing": [],
+      "elapsed_s": 1074.5,
+      "elapsed": 1074.5,
+      "objective_lines": 4,
+      "objective_block": "**分层目标**：\n  - 修行层（显形过程 · objective=manifest）：& 5 / 线头 5 / 悬置 0 / 探针 3\n  - 研究层（逼近真理 · objective=truth）：覆盖率 26% · distance 0.4\n  - 对撞层（第三者 · objective=collision）：third ✓ · 张力 4\n  - 元层（闭环清算 · objective=closure）：clean True · 未交代 0 类\n"
+    },
+    {
+      "id": "med_002",
+      "domain": "med",
+      "question": "慢病随访人数太多随访质量下降，分层策略怎么定",
+      "orientation": "decision",
+      "route": [
+        "0",
+        "1",
+        "both",
+        "all"
+      ],
+      "rounds": "0:1,1:1,both:1,all:1",
+      "mock": false,
+      "ok": true,
+      "error": "",
+      "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\bench\\runs\\v122_full\\med_002\\20261005_011110_慢病随访人数太多随访质量下降分层策略怎.md",
+      "calls": 53,
+      "tokens": 361835,
+      "layers_seen": [
+        "0",
+        "1",
+        "all",
+        "both"
+      ],
+      "missing": [],
+      "elapsed_s": 799.5,
+      "elapsed": 799.5,
+      "objective_lines": 4,
+      "objective_block": "**分层目标**：\n  - 修行层（显形过程 · objective=manifest）：& 5 / 线头 4 / 悬置 0 / 探针 3\n  - 研究层（逼近真理 · objective=truth）：覆盖率 19% · distance 0.3\n  - 对撞层（第三者 · objective=collision）：third ✓ · 张力 4\n  - 元层（闭环清算 · objective=closure）：clean True · 未交代 0 类\n"
+    },
+    {
+      "id": "med_003",
+      "domain": "med",
+      "question": "城区急救车响应时间不均衡，调度该怎么改",
+      "orientation": "boundary",
+      "route": [
+        "0",
+        "1",
+        "both",
+        "all"
+      ],
+      "rounds": "0:1,1:1,both:1,all:1",
+      "mock": false,
+      "ok": true,
+      "error": "",
+      "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\bench\\runs\\v122_full\\med_003\\20261005_011232_城区急救车响应时间不均衡调度该怎么改.md",
+      "calls": 56,
+      "tokens": 388709,
+      "layers_seen": [
+        "0",
+        "1",
+        "all",
+        "both"
+      ],
+      "missing": [],
+      "elapsed_s": 866.5,
+      "elapsed": 866.5,
+      "objective_lines": 4,
+      "objective_block": "**分层目标**：\n  - 修行层（显形过程 · objective=manifest）：& 3 / 线头 4 / 悬置 2 / 探针 3\n  - 研究层（逼近真理 · objective=truth）：覆盖率 32% · distance 0.4\n  - 对撞层（第三者 · objective=collision）：third ✓ · 张力 3\n  - 元层（闭环清算 · objective=closure）：clean True · 未交代 0 类\n"
+    },
+    {
+      "id": "org_001",
+      "domain": "org",
+      "question": "多个部门各自建系统、数据不互通，要不要强行统一平台",
+      "orientation": "decision",
+      "route": [
+        "0",
+        "1",
+        "both",
+        "all"
+      ],
+      "rounds": "0:1,1:1,both:1,all:1",
+      "mock": false,
+      "ok": true,
+      "error": "",
+      "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\bench\\runs\\v122_full\\org_001\\20261005_011757_多个部门各自建系统数据不互通要不要强.md",
+      "calls": 55,
+      "tokens": 344664,
+      "layers_seen": [
+        "0",
+        "1",
+        "all",
+        "both"
+      ],
+      "missing": [],
+      "elapsed_s": 726.2,
+      "elapsed": 726.2,
+      "objective_lines": 4,
+      "objective_block": "**分层目标**：\n  - 修行层（显形过程 · objective=manifest）：& 4 / 线头 3 / 悬置 1 / 探针 3\n  - 研究层（逼近真理 · objective=truth）：覆盖率 25% · distance 0.7\n  - 对撞层（第三者 · objective=collision）：third ✓ · 张力 2\n  - 元层（闭环清算 · objective=closure）：clean True · 未交代 0 类\n"
+    },
+    {
+      "id": "org_002",
+      "domain": "org",
+      "question": "内部推荐招人质量下滑，内推机制该怎么改",
+      "orientation": "decision",
+      "route": [
+        "0",
+        "1",
+        "both",
+        "all"
+      ],
+      "rounds": "0:1,1:1,both:1,all:1",
+      "mock": false,
+      "ok": true,
+      "error": "",
+      "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\bench\\runs\\v122_full\\org_002\\20261005_011846_内部推荐招人质量下滑内推机制该怎么改.md",
+      "calls": 53,
+      "tokens": 341835,
+      "layers_seen": [
+        "0",
+        "1",
+        "all",
+        "both"
+      ],
+      "missing": [],
+      "elapsed_s": 738.1,
+      "elapsed": 738.1,
+      "objective_lines": 4,
+      "objective_block": "**分层目标**：\n  - 修行层（显形过程 · objective=manifest）：& 4 / 线头 5 / 悬置 1 / 探针 3\n  - 研究层（逼近真理 · objective=truth）：覆盖率 24% · distance 0.6\n  - 对撞层（第三者 · objective=collision）：third ✓ · 张力 3\n  - 元层（闭环清算 · objective=closure）：clean True · 未交代 0 类\n"
+    },
+    {
+      "id": "org_003",
+      "domain": "org",
+      "question": "跨团队协作长期卡在交接环节，边界责任该怎么划",
+      "orientation": "boundary",
+      "route": [
+        "0",
+        "1",
+        "both",
+        "all"
+      ],
+      "rounds": "0:1,1:1,both:1,all:1",
+      "mock": false,
+      "ok": true,
+      "error": "",
+      "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\bench\\runs\\v122_full\\org_003\\20261005_012325_跨团队协作长期卡在交接环节边界责任该怎.md",
+      "calls": 53,
+      "tokens": 332317,
+      "layers_seen": [
+        "0",
+        "1",
+        "all",
+        "both"
+      ],
+      "missing": [],
+      "elapsed_s": 735.1,
+      "elapsed": 735.1,
+      "objective_lines": 4,
+      "objective_block": "**分层目标**：\n  - 修行层（显形过程 · objective=manifest）：& 3 / 线头 3 / 悬置 0 / 探针 3\n  - 研究层（逼近真理 · objective=truth）：覆盖率 44% · distance 0.4\n  - 对撞层（第三者 · objective=collision）：third ✓ · 张力 2\n  - 元层（闭环清算 · objective=closure）：clean True · 未交代 0 类\n"
+    },
+    {
+      "id": "tech_001",
+      "domain": "tech",
+      "question": "订单系统要保证不超卖又要不卡顿，下单链路怎么设计",
+      "orientation": "decision",
+      "route": [
+        "0",
+        "1",
+        "both",
+        "all"
+      ],
+      "rounds": "0:1,1:1,both:1,all:1",
+      "mock": false,
+      "ok": true,
+      "error": "",
+      "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\bench\\runs\\v122_full\\tech_001\\20261005_012313_订单系统要保证不超卖又要不卡顿下单链路.md",
+      "calls": 53,
+      "tokens": 313919,
+      "layers_seen": [
+        "0",
+        "1",
+        "all",
+        "both"
+      ],
+      "missing": [],
+      "elapsed_s": 641.8,
+      "elapsed": 641.8,
+      "objective_lines": 4,
+      "objective_block": "**分层目标**：\n  - 修行层（显形过程 · objective=manifest）：& 4 / 线头 3 / 悬置 0 / 探针 3\n  - 研究层（逼近真理 · objective=truth）：覆盖率 26% · distance 0.4\n  - 对撞层（第三者 · objective=collision）：third ✓ · 张力 2\n  - 元层（闭环清算 · objective=closure）：clean True · 未交代 0 类\n"
+    },
+    {
+      "id": "tech_002",
+      "domain": "tech",
+      "question": "分布式订单系统在 CAP 约束下该牺牲哪一端",
+      "orientation": "decision",
+      "route": [
+        "0",
+        "1",
+        "both",
+        "all"
+      ],
+      "rounds": "0:1,1:1,both:1,all:1",
+      "mock": false,
+      "ok": true,
+      "error": "",
+      "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\bench\\runs\\v122_full\\tech_002\\20261005_012809_分布式订单系统在CAP约束下该牺牲哪.md",
+      "calls": 55,
+      "tokens": 366167,
+      "layers_seen": [
+        "0",
+        "1",
+        "all",
+        "both"
+      ],
+      "missing": [],
+      "elapsed_s": 853.5,
+      "elapsed": 853.5,
+      "objective_lines": 4,
+      "objective_block": "**分层目标**：\n  - 修行层（显形过程 · objective=manifest）：& 3 / 线头 3 / 悬置 0 / 探针 3\n  - 研究层（逼近真理 · objective=truth）：覆盖率 21% · distance 0.4\n  - 对撞层（第三者 · objective=collision）：third ✓ · 张力 3\n  - 元层（闭环清算 · objective=closure）：clean True · 未交代 0 类\n"
+    },
+    {
+      "id": "tech_003",
+      "domain": "tech",
+      "question": "业务量上涨，主键自增成瓶颈，分布式 ID 方案怎么选",
+      "orientation": "decision",
+      "route": [
+        "0",
+        "1",
+        "both",
+        "all"
+      ],
+      "rounds": "0:1,1:1,both:1,all:1",
+      "mock": false,
+      "ok": true,
+      "error": "",
+      "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\bench\\runs\\v122_full\\tech_003\\20261005_012834_业务量上涨主键自增成瓶颈分布式ID.md",
+      "calls": 54,
+      "tokens": 323179,
+      "layers_seen": [
+        "0",
+        "1",
+        "all",
+        "both"
+      ],
+      "missing": [],
+      "elapsed_s": 636.8,
+      "elapsed": 636.8,
+      "objective_lines": 4,
+      "objective_block": "**分层目标**：\n  - 修行层（显形过程 · objective=manifest）：& 4 / 线头 4 / 悬置 0 / 探针 3\n  - 研究层（逼近真理 · objective=truth）：覆盖率 28% · distance 0.6\n  - 对撞层（第三者 · objective=collision）：third ✓ · 张力 2\n  - 元层（闭环清算 · objective=closure）：clean True · 未交代 0 类\n"
+    },
+    {
+      "id": "tech_004",
+      "domain": "tech",
+      "question": "灰度发布出错时回滚边界该怎么定义",
+      "orientation": "boundary",
+      "route": [
+        "0",
+        "1",
+        "both",
+        "all"
+      ],
+      "rounds": "0:1,1:1,both:1,all:1",
+      "mock": false,
+      "ok": true,
+      "error": "",
+      "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\bench\\runs\\v122_full\\tech_004\\20261005_013130_灰度发布出错时回滚边界该怎么定义.md",
+      "calls": 53,
+      "tokens": 343614,
+      "layers_seen": [
+        "0",
+        "1",
+        "all",
+        "both"
+      ],
+      "missing": [],
+      "elapsed_s": 764.5,
+      "elapsed": 764.5,
+      "objective_lines": 4,
+      "objective_block": "**分层目标**：\n  - 修行层（显形过程 · objective=manifest）：& 4 / 线头 3 / 悬置 0 / 探针 3\n  - 研究层（逼近真理 · objective=truth）：覆盖率 31% · distance 0.4\n  - 对撞层（第三者 · objective=collision）：third ✓ · 张力 4\n  - 元层（闭环清算 · objective=closure）：clean True · 未交代 0 类\n"
+    }
+  ]
+}

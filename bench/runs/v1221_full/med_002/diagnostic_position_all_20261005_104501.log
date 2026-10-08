@@ -1,0 +1,35 @@
+# position_all_same 诊断
+entry=all
+round=5
+anchor=慢病随访人数太多随访质量下降，分层策略怎么定
+same_position=0
+candidate_count=7
+
+[1] attr=1 pos=0 src=阳
+    desc: 全部四份待调材料都在执行侧，缺少一个规定"合格/不合格"的判据来源，分层因此只能签出现签、签不了合格签
+    why_position: 判据来源不在四份材料里，从未被收进
+
+[2] attr=1 pos=0 src=阳
+    desc: 接表人执行下一次却不签任何东西，在岗位表、动作清单、接口三处都不出现，是空缺还是被默认未定
+    why_position: 接表人未进任何名单，席位空着
+
+[3] attr=1 pos=0 src=阳
+    desc: 若系统动作清单把"不续"与"不合格"合并为一个动作，两签在系统层面是否还能分开追责
+    why_position: 两签能否分开追责系于未到的动作清单
+
+[4] attr=0 pos=0 src=阴
+    desc: 这几个局部加在一起仍只覆盖执行侧与写入侧，判据侧与命名侧整体缺席，谁定"合格"不在其中
+    why_position: 
+
+[5] attr=0 pos=0 src=阴
+    desc: 次序持有者这一席悬在所有局部之外，既不在待调材料也不在任何一方的名单里，整体收不进它
+    why_position: 
+
+[6] attr=0 pos=0 src=阴
+    desc: 接表人执行下一次却不签任何东西，这个位置在所有局部和整体名单中都不出现，是空缺还是被默认未定
+    why_position: 整体名单不出现此位置，未收进
+
+[7] attr=0 pos=0 src=阴
+    desc: 若次序持有者出现，第一个能被称为策略的写入由谁签，尚未进入任何局部的视野
+    why_position: 
+

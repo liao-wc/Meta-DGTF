@@ -1,0 +1,63 @@
+# position_all_same 诊断
+entry=all
+round=2
+anchor=一家现金流紧张的中小制造企业，该先裁员还是先砍产线
+same_position=0
+candidate_count=14
+
+[1] attr=0 pos=0 src=阳
+    desc: all 已确立为不可逆时点比较，发薪日、罚则起算日、还贷生效日三者最早者决定先后
+    why_position: 
+
+[2] attr=0 pos=0 src=阳
+    desc: all 的动作拆段：可逆部分先走、不可逆部分押后，稳定成立
+    why_position: 
+
+[3] attr=0 pos=0 src=阳
+    desc: all 的不可逆单位异质，劳动关系与产能客户合同不并轴比早晚，已裁决为 both
+    why_position: 
+
+[4] attr=0 pos=0 src=阳
+    desc: all 里工资到集体停工线时通知期不存在，只剩付钱或破裂，已双方确认
+    why_position: 
+
+[5] attr=0 pos=0 src=阳
+    desc: all 里设备抵押下银行处置权先于内部顺序生效，内部排序改不了这条边界
+    why_position: 
+
+[6] attr=0 pos=0 src=阳
+    desc: all 的缺口落在外部文本与日期上，补排序补不出，须先取合同与日期
+    why_position: 
+
+[7] attr=0 pos=0 src=阴
+    desc: all 尚缺一个裁决：现金吃紧的定义由谁给出，老板、债权人还是事实默认，未定
+    why_position: 现金吃紧定义未定，此局部未被 all 吸收
+
+[8] attr=0 pos=0 src=阴
+    desc: all 尚缺四份文件（厂房租约、抵押合同、订单归属表、工资拖欠记录）中哪份先到手的排序
+    why_position: 四份文件先后无比较基准，未吸收
+
+[9] attr=0 pos=0 src=阴
+    desc: all 尚缺决策者是谁：一人拍板还是需股东家属同意，会拖动最早不可逆时点
+    why_position: 决策者与同意链未定，未吸收
+
+[10] attr=0 pos=0 src=阴
+    desc: all 尚缺时间窗：从今日到最近发薪日剩几天，决定可逆动作够不够走完
+    why_position: 时间窗天数未定，未吸收
+
+[11] attr=0 pos=0 src=阴
+    desc: all 尚缺订单端形状：需求整体塌了还是只是回款慢，决定砍线该不该进候选
+    why_position: 订单形状缺料，未吸收
+
+[12] attr=0 pos=0 src=阴
+    desc: all 尚缺"付一笔保哪笔"的排序雏形与找最近0闭合前现金是否同一动作的验证
+    why_position: 是否同一动作未验证，未吸收
+
+[13] attr=0 pos=0 src=阴
+    desc: all 尚缺受理入口四栏齐备后能否真挂上最近队列的验证
+    why_position: 入口能否挂上最近队列未验证，未吸收
+
+[14] attr=0 pos=0 src=阴
+    desc: all 尚缺现金的账面、授信、回款预期三者哪个算"手里有的钱"的定义
+    why_position: 手里有钱的定义未定，未吸收
+

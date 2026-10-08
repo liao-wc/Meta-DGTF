@@ -1,0 +1,9 @@
+Building prefix dict from the default dictionary ...
+Loading model from cache C:\Users\18432\AppData\Local\Temp\jieba.cache
+Loading model cost 1.100 seconds.
+Prefix dict has been built successfully.
+对偶判断命中 4/10，降级重试（候选减半）
+[OFF 1] ok=True calls=44 md={"high": 0, "medium": 0, "low": 0, "total": 6, "consistency": 0.0} err=
+[OFF 2] ok=True calls=44 md={"high": 0, "medium": 0, "low": 0, "total": 5, "consistency": 0.0} err=
+[OFF 3] ok=True calls=45 md={"high": 0, "medium": 0, "low": 0, "total": 5, "consistency": 0.0} err=
+P4_OFF_DONE

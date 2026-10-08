@@ -1,0 +1,129 @@
+Building prefix dict from the default dictionary ...
+Loading model from cache C:\Users\18432\AppData\Local\Temp\jieba.cache
+Loading model cost 0.814 seconds.
+Prefix dict has been built successfully.
+
+==============================================================
+## [F] 轨迹是否拆成两条（structural / aligned）
+==============================================================
+   trace_keys = ['struct_trace']
+   first_hit_keys = ['aspect_first_hit']
+   struct_trace_len = 2
+   aligned_trace_len = 0
+   aspect_first_hit = {}
+   aligned_first_hit = None
+   last_struct_coverage = 0.0
+   last_aligned_coverage = 0.5
+📁 已保存: C:\Users\18432\AppData\Local\Temp\tmpnmkp40we\20261004_013343_轨迹渲染探针.md
+   渲染出的覆盖轨迹行（1 行）：
+      - 📘 不可判定覆盖轨迹：L1 0/2 → L2 0/2
+
+==============================================================
+## [K] _coverage_segment 在哪些 entry 收尾时被调
+==============================================================
+   entry=1     收尾后 manifest 含覆盖率段：False
+   entry=all   收尾后 manifest 含覆盖率段：True
+
+==============================================================
+## [G] 锚点重述的 touched/untouched 是否挡占位符
+==============================================================
+   case1_touched = ['此处未生', '正常方面']
+   case1_untouched = ['（无）', '另一个方面']
+   case2_touched = ['此处未生', '（无）']
+   case2_untouched = ['(此处未生)', '无', 'N/A']
+
+==============================================================
+## [H] rendered / manifest 是否只打长度
+==============================================================
+   out_chars = 9499
+   has_rendered_lenline = False
+   has_manifest_lenline = False
+   leaks_rendered_body = True
+   leaks_manifest_body = True
+   field_line_count = 51
+   负对照 · collision 正文仍在留痕里：True
+
+==============================================================
+## [I] dump_round 是否有本圈留痕说明
+==============================================================
+   note_in_output = False
+   note_in_source = False
+
+==============================================================
+## [J] 合并时是否复用池评估算好的 _und_untraced
+==============================================================
+   cached_used = False
+   merged_und_untraced = ['凭空说的一条']
+   fallback_without_cache = ['凭空说的一条']
+   source_reads_cache = False
+   前提 · 池评估返回值里带 _und_untraced：True
+
+==============================================================
+## 摘要（机器可读）
+==============================================================
+{
+ "F": {
+  "trace_keys": [
+   "struct_trace"
+  ],
+  "first_hit_keys": [
+   "aspect_first_hit"
+  ],
+  "struct_trace_len": 2,
+  "aligned_trace_len": 0,
+  "aspect_first_hit": {},
+  "aligned_first_hit": null,
+  "last_struct_coverage": 0.0,
+  "last_aligned_coverage": 0.5,
+  "render_lines": [
+   "- 📘 不可判定覆盖轨迹：L1 0/2 → L2 0/2"
+  ]
+ },
+ "K": {
+  "entry=1": false,
+  "entry=all": true
+ },
+ "G": {
+  "case1_touched": [
+   "此处未生",
+   "正常方面"
+  ],
+  "case1_untouched": [
+   "（无）",
+   "另一个方面"
+  ],
+  "case2_touched": [
+   "此处未生",
+   "（无）"
+  ],
+  "case2_untouched": [
+   "(此处未生)",
+   "无",
+   "N/A"
+  ]
+ },
+ "H": {
+  "out_chars": 9499,
+  "has_rendered_lenline": false,
+  "has_manifest_lenline": false,
+  "leaks_rendered_body": true,
+  "leaks_manifest_body": true,
+  "field_line_count": 51,
+  "collision_body_kept": true
+ },
+ "I": {
+  "note_in_output": false,
+  "note_in_source": false
+ },
+ "J": {
+  "cached_used": false,
+  "merged_und_untraced": [
+   "凭空说的一条"
+  ],
+  "fallback_without_cache": [
+   "凭空说的一条"
+  ],
+  "source_reads_cache": false,
+  "pool_assess_emits_key": true
+ }
+}

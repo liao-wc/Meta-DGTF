@@ -1,0 +1,21 @@
+=== 并行跑批 6 个 run，并发上限 4 ===
+=== 开始 2026-10-02 00:25:45 ===
+✓ [s2_4/A] 8.7min
+    [s2_4/A] OK  8.7min  calls=138  → v60_s2_4_r5_A.log
+       missing=[]  skipped=[]
+✓ [s3_4/A] 13.1min
+    [s3_4/A] OK  13.1min  calls=175  → v60_s3_4_r5_A.log
+       missing=[]  skipped=[]
+✓ [f1_4/A] 13.4min
+    [f1_4/A] OK  13.4min  calls=196  → v60_f1_4_r5_A.log
+       missing=[]  skipped=[]
+✓ [s1_4/A] 15.1min
+    [s1_4/A] OK  15.0min  calls=206  → v60_s1_4_r5_A.log
+       missing=[]  skipped=[]
+✓ [f2_4/A] 16.3min
+    [f2_4/A] OK  16.3min  calls=204  → v60_f2_4_r5_A.log
+       missing=[]  skipped=[]
+✓ [f3_4/A] 14.2min
+    [f3_4/A] OK  14.1min  calls=192  → v60_f3_4_r5_A.log
+       missing=[]  skipped=[]
+=== 结束 2026-10-02 00:53:01 ===

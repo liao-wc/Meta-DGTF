@@ -1,0 +1,6 @@
+Building prefix dict from the default dictionary ...
+Loading model from cache C:\Users\18432\AppData\Local\Temp\jieba.cache
+Loading model cost 1.042 seconds.
+Prefix dict has been built successfully.
+[老城区内涝] ok=True triage=1 calls=65 err=
+P2B_RUNS_DONE

@@ -1,0 +1,99 @@
+{
+  "tag": "p1v2",
+  "src": "元DGTF-V1.22.0-rc1.py",
+  "mock": false,
+  "n": 3,
+  "ok": 3,
+  "items": [
+    {
+      "id": "biz_001",
+      "domain": "biz",
+      "question": "一家现金流紧张的中小制造企业，该先裁员还是先砍产线",
+      "orientation": "decision",
+      "route": [
+        "0",
+        "1",
+        "both",
+        "all"
+      ],
+      "rounds": "0:5,1:5,both:5,all:6",
+      "mock": false,
+      "ok": true,
+      "error": "",
+      "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\bench\\runs\\p1v2\\biz_001\\20261004_235417_一家现金流紧张的中小制造企业该先裁员还.md",
+      "calls": 184,
+      "tokens": 1546964,
+      "layers_seen": [
+        "0",
+        "1",
+        "all",
+        "both"
+      ],
+      "missing": [],
+      "elapsed_s": 2647.1,
+      "elapsed": 2647.1,
+      "objective_lines": 4,
+      "objective_block": "**分层目标**：\n  - 修行层（显形过程 · objective=manifest）：& 20 / 线头 10 / 悬置 3 / 探针 3\n  - 研究层（逼近真理 · objective=truth）：覆盖率 54% · distance 0.4\n  - 对撞层（第三者 · objective=collision）：third ✓ · 张力 3\n  - 元层（闭环清算 · objective=closure）：clean True · 未交代 0 类\n"
+    },
+    {
+      "id": "eng_001",
+      "domain": "eng",
+      "question": "老城区暴雨内涝频发，排水系统要不要整体翻新，怎么定优先级",
+      "orientation": "decision",
+      "route": [
+        "0",
+        "1",
+        "both",
+        "all"
+      ],
+      "rounds": "0:5,1:5,both:5,all:6",
+      "mock": false,
+      "ok": true,
+      "error": "",
+      "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\bench\\runs\\p1v2\\eng_001\\20261004_235918_老城区暴雨内涝频发排水系统要不要整体翻.md",
+      "calls": 190,
+      "tokens": 1637821,
+      "layers_seen": [
+        "0",
+        "1",
+        "all",
+        "both"
+      ],
+      "missing": [],
+      "elapsed_s": 2948.1,
+      "elapsed": 2948.1,
+      "objective_lines": 4,
+      "objective_block": "**分层目标**：\n  - 修行层（显形过程 · objective=manifest）：& 19 / 线头 15 / 悬置 1 / 探针 3\n  - 研究层（逼近真理 · objective=truth）：覆盖率 75% · distance 0.4\n  - 对撞层（第三者 · objective=collision）：third ✓ · 张力 2\n  - 元层（闭环清算 · objective=closure）：clean True · 未交代 0 类\n"
+    },
+    {
+      "id": "tech_001",
+      "domain": "tech",
+      "question": "订单系统要保证不超卖又要不卡顿，下单链路怎么设计",
+      "orientation": "decision",
+      "route": [
+        "0",
+        "1",
+        "both",
+        "all"
+      ],
+      "rounds": "0:5,1:5,both:5,all:6",
+      "mock": false,
+      "ok": true,
+      "error": "",
+      "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\bench\\runs\\p1v2\\tech_001\\20261005_000047_订单系统要保证不超卖又要不卡顿下单链路.md",
+      "calls": 199,
+      "tokens": 1696805,
+      "layers_seen": [
+        "0",
+        "1",
+        "all",
+        "both"
+      ],
+      "missing": [],
+      "elapsed_s": 3037.2,
+      "elapsed": 3037.2,
+      "objective_lines": 4,
+      "objective_block": "**分层目标**：\n  - 修行层（显形过程 · objective=manifest）：& 19 / 线头 15 / 悬置 4 / 探针 3\n  - 研究层（逼近真理 · objective=truth）：覆盖率 100% · distance 0.6\n  - 对撞层（第三者 · objective=collision）：third ✓ · 张力 1\n  - 元层（闭环清算 · objective=closure）：clean True · 未交代 0 类\n"
+    }
+  ]
+}

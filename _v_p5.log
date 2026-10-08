@@ -1,0 +1,22 @@
+═══ v1.22 验收 · phase=p5 · src=元DGTF-V1.22.1.py ═══
+  ℹ️  模块加载成功
+  ✅ [G.crlf] CRLF 一致：bare_lf=0 crr_lf=0
+  ✅ [G.parse] AST 可解析
+  ℹ️  差异规模：66 块 / +1661 -186（19609 → 21084 行）
+  ✅ [G.smokeSRC] smoke_test.SRC = 元DGTF-V1.22.1.py
+  ✅ [G.del] 纯删除行 0（≤0）；改写行 186（如实报，不计删）
+  ✅ [G.mech] 机制未被移除（符号消失 0 项）
+  ℹ️  函数体骤减 2 项：render_landing 259 → 8；_auto_plan 142 → 15（须在报告里解释）
+
+── 阶段 p5 ──
+  ✅ [P5.1.a] run() 记 _auto_plan_used
+  ✅ [P5.1.b] 头部两行（取向判定 / 取向错配）都在
+  ✅ [P5.1.c] _pack_result 挂 _auto_plan_used
+  ✅ [P5.2.a] auto_plan 解析 orientation
+  ✅ [P5.2.b] auto_plan 的早退分支也带出 orientation
+  ✅ [P5.2.c] 打桩：带出 boundary / 只调一次 / prompt 要了取向 / 非法归一
+  ✅ [P5.3.a] auto 真跑产物含「取向判定」（实测 {"取向判定（plan_orientation）": true, "取向错配": true, "锚点 tier 警告": false}）
+  ✅ [P5.3.b] 负对照：显式 boundary 时不含「取向错配」
+  ✅ [P5.3.c] auto 判为 'boundary' → 错配告警 应出现且已出现
+
+━━━ PASS 14 / FAIL 0 ━━━

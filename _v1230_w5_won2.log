@@ -1,0 +1,10 @@
+[1] 真后端单点：KEY 长度 58
+[1] 首次：kind='' n=3 calls=0 0.0s
+[1] 二次：kind='' n=3 calls=0 cache_hits=2
+Building prefix dict from the default dictionary ...
+Loading model from cache C:\Users\18432\AppData\Local\Temp\jieba.cache
+Loading model cost 0.760 seconds.
+Prefix dict has been built successfully.
+📁 已保存: C:\Users\18432\Desktop\元DGTF-多模并行架构\outputs\v1230_w5\WON\20261005_231950_老城区排水管网的现有设计标准是多少年一遇.md
+[2] WON：subs=6 web=12 ids=['W1', 'W2', 'W3', 'W4', 'W5', 'W6', 'W7', 'W8'] errors=0 stages=['research_decompose', 'research_evidence', 'research_precedent'] calls=49 576s
+已写 _v1230_w5_consistency.json

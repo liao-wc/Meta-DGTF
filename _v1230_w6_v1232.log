@@ -1,0 +1,16 @@
+[w6] src=元DGTF-V1.23.2.py key_len=58
+Building prefix dict from the default dictionary ...
+Loading model from cache C:\Users\18432\AppData\Local\Temp\jieba.cache
+Loading model cost 0.587 seconds.
+Prefix dict has been built successfully.
+[W6_1_OFF1] ok=True subs=6 W#=0 stages=[] rounds=[] kinds=[] empty=0 skip=0 err=[] triage=0 drift=None 684s
+[W6_1_ON1] ok=True subs=6 W#=12 stages=['research_decompose', 'research_evidence', 'research_precedent'] rounds=[0] kinds=['pre'] empty=0 skip=1 err=[] triage=0 drift=None 707s
+[W6_1_ON2] ok=True subs=6 W#=12 stages=['research_decompose', 'research_evidence', 'research_precedent'] rounds=[0] kinds=['pre'] empty=0 skip=1 err=[] triage=0 drift=None 505s
+[W6_2_OFF1] ok=True subs=6 W#=0 stages=[] rounds=[] kinds=[] empty=0 skip=0 err=[] triage=0 drift=None 731s
+[W6_2_ON1] ok=True subs=6 W#=12 stages=['research_decompose', 'research_evidence', 'research_precedent'] rounds=[0] kinds=['pre'] empty=0 skip=1 err=[] triage=0 drift=None 597s
+[W6_2_ON2] ok=True subs=6 W#=6 stages=['research_decompose', 'research_evidence'] rounds=[0] kinds=['pre'] empty=0 skip=0 err=[] triage=0 drift=None 603s
+[W6_3_OFF1] ok=True subs=6 W#=0 stages=[] rounds=[] kinds=[] empty=0 skip=0 err=[] triage=0 drift=None 768s
+[W6_3_ON1] ok=True subs=6 W#=12 stages=['research_decompose', 'research_evidence', 'research_precedent'] rounds=[0] kinds=['pre'] empty=0 skip=1 err=[] triage=0 drift=None 594s
+[W6_3_ON2] ok=True subs=6 W#=12 stages=['research_decompose', 'research_evidence', 'research_precedent'] rounds=[0] kinds=['pre'] empty=0 skip=1 err=[] triage=0 drift=None 582s
+[W6_FULL_ON1] ok=True subs=6 W#=18 stages=['duel_arbitration', 'research_decompose', 'research_evidence', 'research_precedent'] rounds=[0, 3] kinds=['in', 'pre'] empty=0 skip=1 err=[] triage=1 drift=None 1311s
+W6_RUNS_DONE

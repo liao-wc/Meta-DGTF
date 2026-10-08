@@ -1,0 +1,8 @@
+  [biz_002] ok=True calls=94 1389.5s 
+
+# [bench] 以下摘录自产物头部：20261005_095855_关键元器件只有一家供应商要不要强行多源.md
+**分层目标**：
+  - 修行层（显形过程 · objective=manifest）：& 8 / 线头 9 / 悬置 1 / 探针 3
+  - 研究层（逼近真理 · objective=truth）：覆盖率 82% · distance 0.3
+  - 对撞层（第三者 · objective=collision）：third ✓ · 张力 4
+  - 元层（闭环清算 · objective=closure）：clean True · 未交代 0 类

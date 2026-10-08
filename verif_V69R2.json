@@ -1,0 +1,58 @@
+{
+ "tag": "V69R2",
+ "src": "元DGTF-V1.21.69.py",
+ "route": "0,1",
+ "rounds": "0:2,1:2",
+ "mode": "serial",
+ "orientation": "auto",
+ "llm_calls": 44,
+ "tri_state": [
+  2,
+  6
+ ],
+ "meta_closure_all": null,
+ "duel_suspensions_both": [],
+ "engagements_by_view": {
+  "0": [
+   {
+    "target": "可逆层与不可逆约束的遮盖关系",
+    "tension_id": null
+   }
+  ],
+  "1": [
+   {
+    "target": "主干管走向与排口标高在现有条件下是未测还是测不了？若测不了，具体卡在哪个物理或制度条件上？",
+    "tension_id": null
+   },
+   {
+    "target": "外江水位顶托时，透水铺装与蓄水模块的削峰能力是否仍可实测？若可测，其削峰量能否抵消顶托造成的排水受阻？",
+    "tension_id": null
+   },
+   {
+    "target": "先施工的可逆层（透水铺装、蓄水模块）是否在物理上封住主干管走向或排口标高的后续测量窗口？封住后，后动方案的前提通道是否被关闭？",
+    "tension_id": null
+   }
+  ]
+ },
+ "suspensions_with_tid": {
+  "0": [],
+  "1": []
+ },
+ "pools_all_engagements": [],
+ "views_errors": {
+  "0": [],
+  "1": []
+ },
+ "pools_meta_p16": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": []
+ },
+ "pools_meta_len": {
+  "0": 5,
+  "1": 5,
+  "both": 0,
+  "all": 0
+ }
+}

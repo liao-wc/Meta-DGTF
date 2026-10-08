@@ -1,0 +1,8 @@
+Building prefix dict from the default dictionary ...
+Loading model from cache C:\Users\18432\AppData\Local\Temp\jieba.cache
+Loading model cost 1.242 seconds.
+Prefix dict has been built successfully.
+对偶判断命中 0/2，降级重试（候选减半）
+[p5_auto] ok=True calls=45 hits={"取向判定（plan_orientation）": true, "取向错配": true, "锚点 tier 警告": false} err=
+[p5_boundary] ok=True calls=39 hits={"取向判定（plan_orientation）": true, "取向错配": false, "锚点 tier 警告": false} err=
+P56_P5_DONE

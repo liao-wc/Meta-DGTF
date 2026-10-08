@@ -1,0 +1,61 @@
+{
+  "_ts": 1791332959.425336,
+  "results": [
+    {
+      "claim": "|  |  |  |\n --- \n| 电影类型 | 有零食 | 无零食 |\n| 操作 | 实际：50 期望：64.58 | 实际：75 期望：60.42 |\n| 差异：50 – 64.58 = -14.58  差异的平方：212.67  除以期望值：212.67/64.58 = 3.29 | 差异：75 – 60.42 = 14.58  差异的平方：212.67  除以期望值：212.67/60.42 = 3.52 |\n| 喜剧 | 实际：125 期望：155 | 实际：175 期望：145 |\n| 差异：125 – 155 = -30  差异的平方：900  除以期望值：900/155 = 5.81 | 差异：175 – 145 = 30  差异的平方：900  除以期望值：900/145 = 6.21 |\n| 家庭片 | 实际：90 期望：62 | 实际：30 期望：58 | [...",
+      "url": "https://www.jmp.com/zh-hans/statistics-knowledge-portal/chi-square-test/chi-square-test-of-independence",
+      "source": "https://www.jmp.com/zh-hans/statistics-knowledge-portal/chi-square-test/chi-square-test-of-independence",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "中国10年期国债\n           美国10年期T-Note\n           美国30年期T-Bond\n           英国公债\n           长期欧元债券\n           短期欧元债券\n\n       加密货币\n\n           所有加密货币\n           加密货币对\n           比特币\n           以太坊\n           bitcoin-cash\n           Dogecoin\n           OFFICIAL TRUMP\n           永续期货\n           货币转换器\n\n           比特币/美元\n           以太坊/美元\n           比特币现金/美元\n           莱特币/美元\n           狗狗币/美元\n           以太坊经典",
+      "url": "https://cn.investing.com/news/stock-market-news/article-3136776",
+      "source": "https://cn.investing.com/news/stock-market-news/article-3136776",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "Close\n\n对此内容进行评价\n\n感谢您的反馈！\n\n在您的帮助下，我们会继续改进 IBM Documentation。\n\n返回到主题\n\nFocus sentinel\n\nFocus sentinel\n\nClose\n\n## 感谢您的提交。\n\n每个主题的提交数限制为每天 1 个。\n\nFocus sentinel\n\nFocus sentinel\n\nClose\n\n## 提交评级时出错\n\n向团队发送反馈时发生错误。您的评论已保存在本地（如果不在隐身浏览器中），并且将在尝试重新提交反馈时提供。\n\n请稍后重试。\n\nFocus sentinel\n\n恢复为英语\n\nFocus sentinel\n\n# 独立性卡方检验\n\n上次更新时间: 2025-07-03\n\n独立性卡方检验确定两个分类字段是否独立。 如果这些字段不独立，那么它们相关联。\n\n以下过程描述如何计算卡方值： [...] 以下过程描述如何计算卡方值：\n\n",
+      "url": "https://www.ibm.com/docs/zh/cognos-analytics/11.2.x?topic=tests-chi-square-test-independence",
+      "source": "https://www.ibm.com/docs/zh/cognos-analytics/11.2.x?topic=tests-chi-square-test-independence",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "第六条 同一资产管理产品存在多个信息披露义务人时，各信息披露义务人应当合理划分各方权责，在相关协议中约定信息披露相关事项和责任义务，并按照法律法规、监管规定和协议约定承担信息披露管理责任。法律法规、监管规定要求的信息披露事项，相关协议未明确信息披露义务人的，由产品管理人承担信息披露义务。\n\n广告\n\n各信息披露义务人应当积极协助相关资产管理产品的其他信息披露义务人履行信息披露义务，及时提供必要信息。对于投向其他适用《指导意见》的产品的资产管理产品，其信息披露义务人在按照本办法规定进行穿透披露时，被投资产品（公开募集证券投资基金除外）的管理人应当及时为穿透披露提供协助，提供真实、准确、完整的信息。\n\n为资产管理产品信息披露义务人披露信息出具审计意见、法律意见等文件的专业机构应当勤勉尽责，所出具的文件不得有虚假记载、误导性陈述或者重大遗漏。 [...] 广告\n\n第二十条 产品管理人应当披露公募产",
+      "url": "https://cn.investing.com/news/stock-market-news/article-3141843",
+      "source": "https://cn.investing.com/news/stock-market-news/article-3141843",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "皮尔森卡方检定，是最有名的卡方检验，有两种用途，分别是“适配度检定”（Goodness of Fit test）以及“独立性检定”。科学文章中，当提到卡方检定而没有特别注明是哪一种时，通常便是指皮尔森卡方检定。\n 叶氏连续性修正（英语：Yates's correction for continuity）：当用皮尔森卡方检定做独立性检定时，若任何一个栏位的期望次数小于5，会使“近似于卡方分配”的假设不可信，统计值会系统性地偏高，导致过度地拒绝虚无假设，此时可以做叶氏连续性修正。\n Cochran–Mantel–Haenszel chi-squared test（英语：Cochran–Mantel–Haenszel statistics）。\n McNemar's test（英语：McNemar's test），用于某些 2 × 2 表格的配对样本。\n Tukey's test of addit",
+      "url": "https://zh.wikipedia.org/zh-hans/%E5%8D%A1%E6%96%B9%E6%A3%80%E9%AA%8C",
+      "source": "https://zh.wikipedia.org/zh-hans/%E5%8D%A1%E6%96%B9%E6%A3%80%E9%AA%8C",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "更多工具\n\n选股器货币换算器\n\n安装我们的APP扫描二维码，安装APP [...] 2026年10月02日\n\n[](\n\n多重利空突袭！中国据传暂停成品油出口，美军增兵中东，国际油价单日飙升逾4%\n\n提供者 智通财经\n\n2026年10月01日\n\n[](\n\n专家与分析师解读9月非农就业报告\n\n提供者 Investing.co...\n\n2026年10月02日\n\n[](\n\n美债利率都5.5%了，全球资产为啥还没爆炸？\n\n提供者 格隆汇\n\n2026年9月27日\n\n[](\n\n特朗普宴请AI“半壁江山”，黄仁勋、扎克伯格等大佬齐聚白宫！\n\n提供者 格隆汇\n\n2026年9月29日\n\n[](\n\n美欧日央行均落地加息——全球货币转向跟踪第16期\n\n提供者 张瑜\n\n2026年9月29日\n\n[](\n\n油价与加息：双重叙事下的资产演绎\n\n提供者 陶川\n\n2026年9月27日\n\n[](\n\n中美元首会谈达成八点共识——",
+      "url": "https://cn.investing.com/news/stock-market-news/article-2730269",
+      "source": "https://cn.investing.com/news/stock-market-news/article-2730269",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "#### 【115年下半年蘆竹國民運動中心【顧客滿意度調查】】\n\n  15 9 月, 2026 | 0 條評論\n 【銀行IRB違約率模型中的CIER指標】\n\n  #### 【銀行IRB違約率模型中的CIER指標】\n\n  13 9 月, 2026 | 0 條評論\n 【認知網絡分析（ENA）介紹】\n\n  #### 【認知網絡分析（ENA）介紹】\n\n  2 9 月, 2026 | 0 條評論\n\nPage load link [...] Skip to content\n\n聯絡我們 0975495860|Paul@yongxi-stat.com\n\n永析統計及論文諮詢顧問 Logo 永析統計及論文諮詢顧問 Logo 永析統計及論文諮詢顧問 Logo\n\n# 【卡方檢定-獨立性檢定(The Chi-Squared Test of Independence)-統計說明與SPSS操作】\n\n主頁/卡方檢定, 最",
+      "url": "https://www.yongxi-stat.com/chi-squared-test-of-independence",
+      "source": "https://www.yongxi-stat.com/chi-squared-test-of-independence",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "市场资讯 \n\n市场资讯 \n       外汇\n       商品&期货\n       股市\n       经济指标\n       财经\n       加密货币\n       财经要闻\n       Pro资讯\n\n更多资讯\n\n       最新资讯\n       热门资讯\n       财经日历\n       财报\n       分析师评级\n       记录\n       公司资讯\n       内幕交易\n       投资灵感\n       SEC文件\n\n   分析评论 \n\n分析 \n       市场概况\n       外汇\n       股市\n       商品\n       债券\n       加密货币\n\n更多分析评论\n\n       最热门分析\n       编辑精选\n\n   技术分析 \n\n分析用具 \n       技术摘要\n       技术分析\n       枢轴点 - 经典\n",
+      "url": "https://cn.investing.com/news/stock-market-news/article-3190427",
+      "source": "https://cn.investing.com/news/stock-market-news/article-3190427",
+      "kind": "web",
+      "tier": 3
+    }
+  ]
+}

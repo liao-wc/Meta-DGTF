@@ -1,0 +1,30 @@
+{
+  "id": "biz_002",
+  "domain": "biz",
+  "question": "产品要出海，定价按成本加成还是按当地竞品锚定",
+  "orientation": "decision",
+  "route": [
+    "0",
+    "1",
+    "both",
+    "all"
+  ],
+  "rounds": "0:2,1:2,both:2,all:3",
+  "mock": false,
+  "ok": true,
+  "error": "",
+  "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\bench\\runs\\v122_full\\biz_002\\20261005_003649_产品要出海定价按成本加成还是按当地竞品.md",
+  "calls": 97,
+  "tokens": 686434,
+  "layers_seen": [
+    "0",
+    "1",
+    "all",
+    "both"
+  ],
+  "missing": [],
+  "elapsed_s": 1449.0,
+  "elapsed": 1449.0,
+  "objective_lines": 4,
+  "objective_block": "**分层目标**：\n  - 修行层（显形过程 · objective=manifest）：& 7 / 线头 6 / 悬置 1 / 探针 3\n  - 研究层（逼近真理 · objective=truth）：覆盖率 N/A · distance 0.4\n  - 对撞层（第三者 · objective=collision）：third ✓ · 张力 3\n  - 元层（闭环清算 · objective=closure）：clean True · 未交代 0 类\n"
+}

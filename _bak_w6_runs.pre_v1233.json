@@ -1,0 +1,2783 @@
+{
+  "src": "元DGTF-V1.23.2.py",
+  "runs": [
+    {
+      "job": "W6_1_OFF1",
+      "arm": "OFF",
+      "tag": "老城区内涝",
+      "scenario": "外部规范可查",
+      "rep": 1,
+      "question": "老城区暴雨内涝频发，排水系统重建还是局部改造加海绵城市措施？怎么权衡？",
+      "ok": true,
+      "error": "",
+      "secs": 684.4,
+      "llm_calls": 64,
+      "n_subs": 6,
+      "subs": [
+        {
+          "id": 1,
+          "decidability": "decidable",
+          "first_label": "partial",
+          "stability": "high",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "decidable"
+            },
+            {
+              "voter": 1,
+              "label": "decidable"
+            },
+            {
+              "voter": 2,
+              "label": "decidable"
+            }
+          ],
+          "agreement": 1.0
+        },
+        {
+          "id": 2,
+          "decidability": "decidable",
+          "first_label": "undecidable",
+          "stability": "medium",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "undecidable"
+            },
+            {
+              "voter": 1,
+              "label": "decidable"
+            },
+            {
+              "voter": 2,
+              "label": "decidable"
+            }
+          ],
+          "agreement": 0.67
+        },
+        {
+          "id": 3,
+          "decidability": "decidable",
+          "first_label": "decidable",
+          "stability": "high",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "decidable"
+            },
+            {
+              "voter": 1,
+              "label": "decidable"
+            },
+            {
+              "voter": 2,
+              "label": "decidable"
+            }
+          ],
+          "agreement": 1.0
+        },
+        {
+          "id": 4,
+          "decidability": "undecidable",
+          "first_label": "undecidable",
+          "stability": "medium",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "undecidable"
+            },
+            {
+              "voter": 1,
+              "label": "decidable"
+            },
+            {
+              "voter": 2,
+              "label": "decidable"
+            }
+          ],
+          "agreement": 0.67
+        },
+        {
+          "id": 5,
+          "decidability": "decidable",
+          "first_label": "partial",
+          "stability": "high",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "decidable"
+            },
+            {
+              "voter": 1,
+              "label": "decidable"
+            },
+            {
+              "voter": 2,
+              "label": "decidable"
+            }
+          ],
+          "agreement": 1.0
+        },
+        {
+          "id": 6,
+          "decidability": "decidable",
+          "first_label": "decidable",
+          "stability": "medium",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "undecidable"
+            },
+            {
+              "voter": 1,
+              "label": "decidable"
+            },
+            {
+              "voter": 2,
+              "label": "decidable"
+            }
+          ],
+          "agreement": 0.67
+        }
+      ],
+      "tri_consensus": [
+        3,
+        3,
+        0
+      ],
+      "web_n": 0,
+      "web_ids": [],
+      "web_stages": [],
+      "web_rounds": [],
+      "web_round_kinds": [],
+      "web_items": [],
+      "web_tiers": [],
+      "web_errors_n": 0,
+      "web_err_kinds": [],
+      "web_empty_n": 0,
+      "web_skip_n": 0,
+      "web_ok_n": 0,
+      "web_tier_lines": [],
+      "tier_proposals_n": 0,
+      "web_as_evidence": false,
+      "gate": {
+        "enabled": false,
+        "disabled": true,
+        "disable_reason": "web_search 未启用",
+        "run_total": 0,
+        "stage_counts": {},
+        "consecutive_failures": 0
+      },
+      "ea_triage": 0,
+      "drift": {
+        "und_to_partial": 0,
+        "applied_total": 0,
+        "ratio": null
+      },
+      "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\outputs\\p2_run1\\20261006_082217_老城区暴雨内涝频发排水系统重建还是局部.md"
+    },
+    {
+      "job": "W6_1_ON1",
+      "arm": "ON",
+      "tag": "老城区内涝",
+      "scenario": "外部规范可查",
+      "rep": 1,
+      "question": "老城区暴雨内涝频发，排水系统重建还是局部改造加海绵城市措施？怎么权衡？",
+      "ok": true,
+      "error": "",
+      "secs": 707.2,
+      "llm_calls": 45,
+      "n_subs": 6,
+      "subs": [
+        {
+          "id": 1,
+          "decidability": "decidable",
+          "first_label": "decidable",
+          "stability": "high",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "decidable"
+            },
+            {
+              "voter": 1,
+              "label": "decidable"
+            },
+            {
+              "voter": 2,
+              "label": "decidable"
+            }
+          ],
+          "agreement": 1.0
+        },
+        {
+          "id": 2,
+          "decidability": "decidable",
+          "first_label": "partial",
+          "stability": "medium",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "decidable"
+            },
+            {
+              "voter": 1,
+              "label": "decidable"
+            },
+            {
+              "voter": 2,
+              "label": "partial"
+            }
+          ],
+          "agreement": 0.67
+        },
+        {
+          "id": 3,
+          "decidability": "decidable",
+          "first_label": "partial",
+          "stability": "medium",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "decidable"
+            },
+            {
+              "voter": 1,
+              "label": "decidable"
+            },
+            {
+              "voter": 2,
+              "label": "partial"
+            }
+          ],
+          "agreement": 0.67
+        },
+        {
+          "id": 4,
+          "decidability": "undecidable",
+          "first_label": "partial",
+          "stability": "high",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "undecidable"
+            },
+            {
+              "voter": 1,
+              "label": "undecidable"
+            },
+            {
+              "voter": 2,
+              "label": "undecidable"
+            }
+          ],
+          "agreement": 1.0
+        },
+        {
+          "id": 5,
+          "decidability": "decidable",
+          "first_label": "decidable",
+          "stability": "medium",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "decidable"
+            },
+            {
+              "voter": 1,
+              "label": "decidable"
+            },
+            {
+              "voter": 2,
+              "label": "partial"
+            }
+          ],
+          "agreement": 0.67
+        },
+        {
+          "id": 6,
+          "decidability": "undecidable",
+          "first_label": "partial",
+          "stability": "medium",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "undecidable"
+            },
+            {
+              "voter": 1,
+              "label": "decidable"
+            },
+            {
+              "voter": 2,
+              "label": "undecidable"
+            }
+          ],
+          "agreement": 0.67
+        }
+      ],
+      "tri_consensus": [
+        2,
+        4,
+        0
+      ],
+      "web_n": 12,
+      "web_ids": [
+        "W1",
+        "W2",
+        "W3",
+        "W4",
+        "W5",
+        "W6",
+        "W7",
+        "W8",
+        "W9",
+        "W10",
+        "W11",
+        "W12"
+      ],
+      "web_stages": [
+        "research_decompose",
+        "research_evidence",
+        "research_precedent"
+      ],
+      "web_rounds": [
+        0
+      ],
+      "web_round_kinds": [
+        "pre"
+      ],
+      "web_items": [
+        {
+          "id": "W1",
+          "stage": "research_decompose",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "evidence",
+          "tier": 3
+        },
+        {
+          "id": "W2",
+          "stage": "research_decompose",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "evidence",
+          "tier": 3
+        },
+        {
+          "id": "W3",
+          "stage": "research_decompose",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "evidence",
+          "tier": 3
+        },
+        {
+          "id": "W4",
+          "stage": "research_precedent",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "record",
+          "tier": 3
+        },
+        {
+          "id": "W5",
+          "stage": "research_precedent",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "record",
+          "tier": 3
+        },
+        {
+          "id": "W6",
+          "stage": "research_precedent",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "record",
+          "tier": 3
+        },
+        {
+          "id": "W7",
+          "stage": "research_precedent",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "record",
+          "tier": 3
+        },
+        {
+          "id": "W8",
+          "stage": "research_precedent",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "record",
+          "tier": 3
+        },
+        {
+          "id": "W9",
+          "stage": "research_precedent",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "record",
+          "tier": 3
+        },
+        {
+          "id": "W10",
+          "stage": "research_evidence",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 0,
+          "used_as": "tri_vote",
+          "tier": 3
+        },
+        {
+          "id": "W11",
+          "stage": "research_evidence",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 0,
+          "used_as": "tri_vote",
+          "tier": 3
+        },
+        {
+          "id": "W12",
+          "stage": "research_evidence",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 0,
+          "used_as": "tri_vote",
+          "tier": 3
+        }
+      ],
+      "web_tiers": [
+        3
+      ],
+      "web_errors_n": 0,
+      "web_err_kinds": [],
+      "web_empty_n": 0,
+      "web_skip_n": 1,
+      "web_ok_n": 3,
+      "web_tier_lines": [
+        "[W-TIER?] 建议 tier 3 条（其中新域名 0 条）：ycxb.xml-journal.net→3、hjgc.ic-mag.com→3、news.cctv.com→3（**待审**，未生效；不改任何判定）",
+        "[W-TIER?] 建议 tier 6 条（其中新域名 4 条）：skxjz.nhri.cn→3、sinowbs.org→3、zcsvillages.com→3、documents1.worldbank.org→3（**待审**，未生效；不改任何判定）",
+        "[W-TIER?] 建议 tier 3 条（其中新域名 0 条）：ycxb.xml-journal.net→3、hjgc.ic-mag.com→3、news.cctv.com→3（**待审**，未生效；不改任何判定）"
+      ],
+      "tier_proposals_n": 12,
+      "web_as_evidence": true,
+      "gate": {
+        "enabled": true,
+        "disabled": false,
+        "disable_reason": "",
+        "run_total": 4,
+        "stage_counts": {
+          "research_decompose": 1,
+          "research_precedent": 2,
+          "research_evidence": 1
+        },
+        "consecutive_failures": 0
+      },
+      "ea_triage": 0,
+      "drift": {
+        "und_to_partial": 0,
+        "applied_total": 0,
+        "ratio": null
+      },
+      "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\outputs\\w6_老城区内涝_on1\\20261006_083405_老城区暴雨内涝频发排水系统重建还是局部.md"
+    },
+    {
+      "job": "W6_1_ON2",
+      "arm": "ON",
+      "tag": "老城区内涝",
+      "scenario": "外部规范可查",
+      "rep": 2,
+      "question": "老城区暴雨内涝频发，排水系统重建还是局部改造加海绵城市措施？怎么权衡？",
+      "ok": true,
+      "error": "",
+      "secs": 505.4,
+      "llm_calls": 46,
+      "n_subs": 6,
+      "subs": [
+        {
+          "id": 1,
+          "decidability": "undecidable",
+          "first_label": "partial",
+          "stability": "high",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "undecidable"
+            },
+            {
+              "voter": 1,
+              "label": "undecidable"
+            }
+          ],
+          "agreement": 1.0
+        },
+        {
+          "id": 2,
+          "decidability": "undecidable",
+          "first_label": "undecidable",
+          "stability": "high",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "undecidable"
+            },
+            {
+              "voter": 1,
+              "label": "undecidable"
+            }
+          ],
+          "agreement": 1.0
+        },
+        {
+          "id": 3,
+          "decidability": "undecidable",
+          "first_label": "partial",
+          "stability": "high",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "undecidable"
+            },
+            {
+              "voter": 1,
+              "label": "undecidable"
+            }
+          ],
+          "agreement": 1.0
+        },
+        {
+          "id": 4,
+          "decidability": "undecidable",
+          "first_label": "partial",
+          "stability": "high",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "undecidable"
+            },
+            {
+              "voter": 1,
+              "label": "undecidable"
+            }
+          ],
+          "agreement": 1.0
+        },
+        {
+          "id": 5,
+          "decidability": "undecidable",
+          "first_label": "undecidable",
+          "stability": "high",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "undecidable"
+            },
+            {
+              "voter": 1,
+              "label": "undecidable"
+            }
+          ],
+          "agreement": 1.0
+        },
+        {
+          "id": 6,
+          "decidability": "undecidable",
+          "first_label": "undecidable",
+          "stability": "high",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "undecidable"
+            },
+            {
+              "voter": 1,
+              "label": "undecidable"
+            }
+          ],
+          "agreement": 1.0
+        }
+      ],
+      "tri_consensus": [
+        6,
+        0,
+        0
+      ],
+      "web_n": 12,
+      "web_ids": [
+        "W1",
+        "W2",
+        "W3",
+        "W4",
+        "W5",
+        "W6",
+        "W7",
+        "W8",
+        "W9",
+        "W10",
+        "W11",
+        "W12"
+      ],
+      "web_stages": [
+        "research_decompose",
+        "research_evidence",
+        "research_precedent"
+      ],
+      "web_rounds": [
+        0
+      ],
+      "web_round_kinds": [
+        "pre"
+      ],
+      "web_items": [
+        {
+          "id": "W1",
+          "stage": "research_decompose",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "evidence",
+          "tier": 3
+        },
+        {
+          "id": "W2",
+          "stage": "research_decompose",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "evidence",
+          "tier": 3
+        },
+        {
+          "id": "W3",
+          "stage": "research_decompose",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "evidence",
+          "tier": 3
+        },
+        {
+          "id": "W4",
+          "stage": "research_precedent",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "record",
+          "tier": 3
+        },
+        {
+          "id": "W5",
+          "stage": "research_precedent",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "record",
+          "tier": 3
+        },
+        {
+          "id": "W6",
+          "stage": "research_precedent",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "record",
+          "tier": 3
+        },
+        {
+          "id": "W7",
+          "stage": "research_precedent",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "record",
+          "tier": 3
+        },
+        {
+          "id": "W8",
+          "stage": "research_precedent",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "record",
+          "tier": 3
+        },
+        {
+          "id": "W9",
+          "stage": "research_precedent",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "record",
+          "tier": 3
+        },
+        {
+          "id": "W10",
+          "stage": "research_evidence",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 0,
+          "used_as": "tri_vote",
+          "tier": 3
+        },
+        {
+          "id": "W11",
+          "stage": "research_evidence",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 0,
+          "used_as": "tri_vote",
+          "tier": 3
+        },
+        {
+          "id": "W12",
+          "stage": "research_evidence",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 0,
+          "used_as": "tri_vote",
+          "tier": 3
+        }
+      ],
+      "web_tiers": [
+        3
+      ],
+      "web_errors_n": 0,
+      "web_err_kinds": [],
+      "web_empty_n": 0,
+      "web_skip_n": 1,
+      "web_ok_n": 3,
+      "web_tier_lines": [
+        "[W-TIER?] 建议 tier 3 条（其中新域名 0 条）：ycxb.xml-journal.net→3、hjgc.ic-mag.com→3、news.cctv.com→3（**待审**，未生效；不改任何判定）",
+        "[W-TIER?] 建议 tier 6 条（其中新域名 4 条）：skxjz.nhri.cn→3、engineering.org.cn→3、creativecommons.org→3、planning.lacounty.gov→1（**待审**，未生效；不改任何判定）",
+        "[W-TIER?] 建议 tier 3 条（其中新域名 0 条）：ycxb.xml-journal.net→3、hjgc.ic-mag.com→3、news.cctv.com→3（**待审**，未生效；不改任何判定）"
+      ],
+      "tier_proposals_n": 12,
+      "web_as_evidence": true,
+      "gate": {
+        "enabled": true,
+        "disabled": false,
+        "disable_reason": "",
+        "run_total": 4,
+        "stage_counts": {
+          "research_decompose": 1,
+          "research_precedent": 2,
+          "research_evidence": 1
+        },
+        "consecutive_failures": 0
+      },
+      "ea_triage": 0,
+      "drift": {
+        "und_to_partial": 0,
+        "applied_total": 0,
+        "ratio": null
+      },
+      "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\outputs\\w6_老城区内涝_on2\\20261006_084230_老城区暴雨内涝频发排水系统重建还是局部.md"
+    },
+    {
+      "job": "W6_2_OFF1",
+      "arm": "OFF",
+      "tag": "中小制造",
+      "scenario": "外部无定论",
+      "rep": 1,
+      "question": "现金流紧张的中小制造企业，上自动化产线还是维持人工加局部优化？怎么决策？",
+      "ok": true,
+      "error": "",
+      "secs": 731.0,
+      "llm_calls": 64,
+      "n_subs": 6,
+      "subs": [
+        {
+          "id": 1,
+          "decidability": "undecidable",
+          "first_label": "partial",
+          "stability": "high",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "partial"
+            },
+            {
+              "voter": 1,
+              "label": "partial"
+            },
+            {
+              "voter": 2,
+              "label": "partial"
+            }
+          ],
+          "agreement": 1.0
+        },
+        {
+          "id": 2,
+          "decidability": "undecidable",
+          "first_label": "undecidable",
+          "stability": "medium",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "undecidable"
+            },
+            {
+              "voter": 1,
+              "label": "partial"
+            },
+            {
+              "voter": 2,
+              "label": "partial"
+            }
+          ],
+          "agreement": 0.67
+        },
+        {
+          "id": 3,
+          "decidability": "partial",
+          "first_label": "decidable",
+          "stability": "medium",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "partial"
+            },
+            {
+              "voter": 1,
+              "label": "partial"
+            },
+            {
+              "voter": 2,
+              "label": "decidable"
+            }
+          ],
+          "agreement": 0.67
+        },
+        {
+          "id": 4,
+          "decidability": "decidable",
+          "first_label": "decidable",
+          "stability": "medium",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "partial"
+            },
+            {
+              "voter": 1,
+              "label": "decidable"
+            },
+            {
+              "voter": 2,
+              "label": "decidable"
+            }
+          ],
+          "agreement": 0.67
+        },
+        {
+          "id": 5,
+          "decidability": "partial",
+          "first_label": "partial",
+          "stability": "high",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "partial"
+            },
+            {
+              "voter": 1,
+              "label": "partial"
+            },
+            {
+              "voter": 2,
+              "label": "partial"
+            }
+          ],
+          "agreement": 1.0
+        },
+        {
+          "id": 6,
+          "decidability": "decidable",
+          "first_label": "decidable",
+          "stability": "high",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "decidable"
+            },
+            {
+              "voter": 1,
+              "label": "decidable"
+            },
+            {
+              "voter": 2,
+              "label": "decidable"
+            }
+          ],
+          "agreement": 1.0
+        }
+      ],
+      "tri_consensus": [
+        3,
+        3,
+        0
+      ],
+      "web_n": 0,
+      "web_ids": [],
+      "web_stages": [],
+      "web_rounds": [],
+      "web_round_kinds": [],
+      "web_items": [],
+      "web_tiers": [],
+      "web_errors_n": 0,
+      "web_err_kinds": [],
+      "web_empty_n": 0,
+      "web_skip_n": 0,
+      "web_ok_n": 0,
+      "web_tier_lines": [],
+      "tier_proposals_n": 0,
+      "web_as_evidence": false,
+      "gate": {
+        "enabled": false,
+        "disabled": true,
+        "disable_reason": "web_search 未启用",
+        "run_total": 0,
+        "stage_counts": {},
+        "consecutive_failures": 0
+      },
+      "ea_triage": 0,
+      "drift": {
+        "und_to_partial": 0,
+        "applied_total": 0,
+        "ratio": null
+      },
+      "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\outputs\\p2_run2\\20261006_085441_现金流紧张的中小制造企业上自动化产线还.md"
+    },
+    {
+      "job": "W6_2_ON1",
+      "arm": "ON",
+      "tag": "中小制造",
+      "scenario": "外部无定论",
+      "rep": 1,
+      "question": "现金流紧张的中小制造企业，上自动化产线还是维持人工加局部优化？怎么决策？",
+      "ok": true,
+      "error": "",
+      "secs": 597.1,
+      "llm_calls": 46,
+      "n_subs": 6,
+      "subs": [
+        {
+          "id": 1,
+          "decidability": "decidable",
+          "first_label": "decidable",
+          "stability": "high",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "decidable"
+            },
+            {
+              "voter": 1,
+              "label": "decidable"
+            },
+            {
+              "voter": 2,
+              "label": "decidable"
+            }
+          ],
+          "agreement": 1.0
+        },
+        {
+          "id": 2,
+          "decidability": "partial",
+          "first_label": "decidable",
+          "stability": "low",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "undecidable"
+            },
+            {
+              "voter": 1,
+              "label": "partial"
+            },
+            {
+              "voter": 2,
+              "label": "decidable"
+            }
+          ],
+          "agreement": 0.33
+        },
+        {
+          "id": 3,
+          "decidability": "undecidable",
+          "first_label": "undecidable",
+          "stability": "medium",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "undecidable"
+            },
+            {
+              "voter": 1,
+              "label": "undecidable"
+            },
+            {
+              "voter": 2,
+              "label": "partial"
+            }
+          ],
+          "agreement": 0.67
+        },
+        {
+          "id": 4,
+          "decidability": "partial",
+          "first_label": "undecidable",
+          "stability": "medium",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "undecidable"
+            },
+            {
+              "voter": 1,
+              "label": "partial"
+            },
+            {
+              "voter": 2,
+              "label": "partial"
+            }
+          ],
+          "agreement": 0.67
+        },
+        {
+          "id": 5,
+          "decidability": "undecidable",
+          "first_label": "partial",
+          "stability": "medium",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "undecidable"
+            },
+            {
+              "voter": 1,
+              "label": "undecidable"
+            },
+            {
+              "voter": 2,
+              "label": "decidable"
+            }
+          ],
+          "agreement": 0.67
+        },
+        {
+          "id": 6,
+          "decidability": "decidable",
+          "first_label": "decidable",
+          "stability": "high",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "decidable"
+            },
+            {
+              "voter": 1,
+              "label": "decidable"
+            },
+            {
+              "voter": 2,
+              "label": "decidable"
+            }
+          ],
+          "agreement": 1.0
+        }
+      ],
+      "tri_consensus": [
+        2,
+        3,
+        1
+      ],
+      "web_n": 12,
+      "web_ids": [
+        "W1",
+        "W2",
+        "W3",
+        "W4",
+        "W5",
+        "W6",
+        "W7",
+        "W8",
+        "W9",
+        "W10",
+        "W11",
+        "W12"
+      ],
+      "web_stages": [
+        "research_decompose",
+        "research_evidence",
+        "research_precedent"
+      ],
+      "web_rounds": [
+        0
+      ],
+      "web_round_kinds": [
+        "pre"
+      ],
+      "web_items": [
+        {
+          "id": "W1",
+          "stage": "research_decompose",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "evidence",
+          "tier": 3
+        },
+        {
+          "id": "W2",
+          "stage": "research_decompose",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "evidence",
+          "tier": 3
+        },
+        {
+          "id": "W3",
+          "stage": "research_decompose",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "evidence",
+          "tier": 3
+        },
+        {
+          "id": "W4",
+          "stage": "research_precedent",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "record",
+          "tier": 3
+        },
+        {
+          "id": "W5",
+          "stage": "research_precedent",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "record",
+          "tier": 3
+        },
+        {
+          "id": "W6",
+          "stage": "research_precedent",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "record",
+          "tier": 3
+        },
+        {
+          "id": "W7",
+          "stage": "research_precedent",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "record",
+          "tier": 3
+        },
+        {
+          "id": "W8",
+          "stage": "research_precedent",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "record",
+          "tier": 3
+        },
+        {
+          "id": "W9",
+          "stage": "research_precedent",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "record",
+          "tier": 3
+        },
+        {
+          "id": "W10",
+          "stage": "research_evidence",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 0,
+          "used_as": "tri_vote",
+          "tier": 3
+        },
+        {
+          "id": "W11",
+          "stage": "research_evidence",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 0,
+          "used_as": "tri_vote",
+          "tier": 3
+        },
+        {
+          "id": "W12",
+          "stage": "research_evidence",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 0,
+          "used_as": "tri_vote",
+          "tier": 3
+        }
+      ],
+      "web_tiers": [
+        3
+      ],
+      "web_errors_n": 0,
+      "web_err_kinds": [],
+      "web_empty_n": 0,
+      "web_skip_n": 1,
+      "web_ok_n": 3,
+      "web_tier_lines": [
+        "[W-TIER?] 建议 tier 3 条（其中新域名 0 条）：zhihu.com→3、developer.aliyun.com→3、sohu.com→3（**待审**，未生效；不改任何判定）",
+        "[W-TIER?] 建议 tier 4 条（其中新域名 4 条）：hk.finance.yahoo.com→3、cn.investing.com→3、netsuite.cn→3、pdf.hanspub.org→3（**待审**，未生效；不改任何判定）",
+        "[W-TIER?] 建议 tier 3 条（其中新域名 0 条）：zhihu.com→3、developer.aliyun.com→3、sohu.com→3（**待审**，未生效；不改任何判定）"
+      ],
+      "tier_proposals_n": 10,
+      "web_as_evidence": true,
+      "gate": {
+        "enabled": true,
+        "disabled": false,
+        "disable_reason": "",
+        "run_total": 4,
+        "stage_counts": {
+          "research_decompose": 1,
+          "research_precedent": 2,
+          "research_evidence": 1
+        },
+        "consecutive_failures": 0
+      },
+      "ea_triage": 0,
+      "drift": {
+        "und_to_partial": 0,
+        "applied_total": 0,
+        "ratio": null
+      },
+      "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\outputs\\w6_中小制造_on1\\20261006_090438_现金流紧张的中小制造企业上自动化产线还.md"
+    },
+    {
+      "job": "W6_2_ON2",
+      "arm": "ON",
+      "tag": "中小制造",
+      "scenario": "外部无定论",
+      "rep": 2,
+      "question": "现金流紧张的中小制造企业，上自动化产线还是维持人工加局部优化？怎么决策？",
+      "ok": true,
+      "error": "",
+      "secs": 603.1,
+      "llm_calls": 46,
+      "n_subs": 6,
+      "subs": [
+        {
+          "id": 1,
+          "decidability": "decidable",
+          "first_label": "decidable",
+          "stability": "medium",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "decidable"
+            },
+            {
+              "voter": 1,
+              "label": "partial"
+            },
+            {
+              "voter": 2,
+              "label": "decidable"
+            }
+          ],
+          "agreement": 0.67
+        },
+        {
+          "id": 2,
+          "decidability": "decidable",
+          "first_label": "partial",
+          "stability": "high",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "decidable"
+            },
+            {
+              "voter": 1,
+              "label": "decidable"
+            },
+            {
+              "voter": 2,
+              "label": "decidable"
+            }
+          ],
+          "agreement": 1.0
+        },
+        {
+          "id": 3,
+          "decidability": "decidable",
+          "first_label": "decidable",
+          "stability": "high",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "decidable"
+            },
+            {
+              "voter": 1,
+              "label": "decidable"
+            },
+            {
+              "voter": 2,
+              "label": "decidable"
+            }
+          ],
+          "agreement": 1.0
+        },
+        {
+          "id": 4,
+          "decidability": "partial",
+          "first_label": "partial",
+          "stability": "medium",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "decidable"
+            },
+            {
+              "voter": 1,
+              "label": "partial"
+            },
+            {
+              "voter": 2,
+              "label": "partial"
+            }
+          ],
+          "agreement": 0.67
+        },
+        {
+          "id": 5,
+          "decidability": "undecidable",
+          "first_label": "decidable",
+          "stability": "high",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "decidable"
+            },
+            {
+              "voter": 1,
+              "label": "decidable"
+            },
+            {
+              "voter": 2,
+              "label": "decidable"
+            }
+          ],
+          "agreement": 1.0
+        },
+        {
+          "id": 6,
+          "decidability": "decidable",
+          "first_label": "undecidable",
+          "stability": "high",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "decidable"
+            },
+            {
+              "voter": 1,
+              "label": "decidable"
+            },
+            {
+              "voter": 2,
+              "label": "decidable"
+            }
+          ],
+          "agreement": 1.0
+        }
+      ],
+      "tri_consensus": [
+        4,
+        2,
+        0
+      ],
+      "web_n": 6,
+      "web_ids": [
+        "W1",
+        "W2",
+        "W3",
+        "W4",
+        "W5",
+        "W6"
+      ],
+      "web_stages": [
+        "research_decompose",
+        "research_evidence"
+      ],
+      "web_rounds": [
+        0
+      ],
+      "web_round_kinds": [
+        "pre"
+      ],
+      "web_items": [
+        {
+          "id": "W1",
+          "stage": "research_decompose",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "evidence",
+          "tier": 3
+        },
+        {
+          "id": "W2",
+          "stage": "research_decompose",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "evidence",
+          "tier": 3
+        },
+        {
+          "id": "W3",
+          "stage": "research_decompose",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "evidence",
+          "tier": 3
+        },
+        {
+          "id": "W4",
+          "stage": "research_evidence",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 0,
+          "used_as": "tri_vote",
+          "tier": 3
+        },
+        {
+          "id": "W5",
+          "stage": "research_evidence",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 0,
+          "used_as": "tri_vote",
+          "tier": 3
+        },
+        {
+          "id": "W6",
+          "stage": "research_evidence",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 0,
+          "used_as": "tri_vote",
+          "tier": 3
+        }
+      ],
+      "web_tiers": [
+        3
+      ],
+      "web_errors_n": 0,
+      "web_err_kinds": [],
+      "web_empty_n": 0,
+      "web_skip_n": 0,
+      "web_ok_n": 2,
+      "web_tier_lines": [
+        "[W-TIER?] 建议 tier 3 条（其中新域名 0 条）：zhihu.com→3、developer.aliyun.com→3、sohu.com→3（**待审**，未生效；不改任何判定）",
+        "[W-TIER?] 建议 tier 3 条（其中新域名 0 条）：zhihu.com→3、developer.aliyun.com→3、sohu.com→3（**待审**，未生效；不改任何判定）"
+      ],
+      "tier_proposals_n": 6,
+      "web_as_evidence": true,
+      "gate": {
+        "enabled": true,
+        "disabled": false,
+        "disable_reason": "",
+        "run_total": 2,
+        "stage_counts": {
+          "research_decompose": 1,
+          "research_evidence": 1
+        },
+        "consecutive_failures": 0
+      },
+      "ea_triage": 0,
+      "drift": {
+        "und_to_partial": 0,
+        "applied_total": 0,
+        "ratio": null
+      },
+      "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\outputs\\w6_中小制造_on2\\20261006_091441_现金流紧张的中小制造企业上自动化产线还.md"
+    },
+    {
+      "job": "W6_3_OFF1",
+      "arm": "OFF",
+      "tag": "社区医院",
+      "scenario": "外部有材料但不可作证据",
+      "rep": 1,
+      "question": "社区医院人力有限，慢性病管理推远程监测还是加派人手上门随访？资源怎么配？",
+      "ok": true,
+      "error": "",
+      "secs": 767.5,
+      "llm_calls": 64,
+      "n_subs": 6,
+      "subs": [
+        {
+          "id": 1,
+          "decidability": "partial",
+          "first_label": "decidable",
+          "stability": "low",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "undecidable"
+            },
+            {
+              "voter": 1,
+              "label": "partial"
+            },
+            {
+              "voter": 2,
+              "label": "decidable"
+            }
+          ],
+          "agreement": 0.33
+        },
+        {
+          "id": 2,
+          "decidability": "partial",
+          "first_label": "partial",
+          "stability": "low",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "undecidable"
+            },
+            {
+              "voter": 1,
+              "label": "partial"
+            },
+            {
+              "voter": 2,
+              "label": "decidable"
+            }
+          ],
+          "agreement": 0.33
+        },
+        {
+          "id": 3,
+          "decidability": "decidable",
+          "first_label": "undecidable",
+          "stability": "medium",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "undecidable"
+            },
+            {
+              "voter": 1,
+              "label": "decidable"
+            },
+            {
+              "voter": 2,
+              "label": "decidable"
+            }
+          ],
+          "agreement": 0.67
+        },
+        {
+          "id": 4,
+          "decidability": "decidable",
+          "first_label": "partial",
+          "stability": "medium",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "undecidable"
+            },
+            {
+              "voter": 1,
+              "label": "decidable"
+            },
+            {
+              "voter": 2,
+              "label": "decidable"
+            }
+          ],
+          "agreement": 0.67
+        },
+        {
+          "id": 5,
+          "decidability": "undecidable",
+          "first_label": "undecidable",
+          "stability": "medium",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "undecidable"
+            },
+            {
+              "voter": 1,
+              "label": "undecidable"
+            },
+            {
+              "voter": 2,
+              "label": "decidable"
+            }
+          ],
+          "agreement": 0.67
+        },
+        {
+          "id": 6,
+          "decidability": "decidable",
+          "first_label": "partial",
+          "stability": "medium",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "undecidable"
+            },
+            {
+              "voter": 1,
+              "label": "decidable"
+            },
+            {
+              "voter": 2,
+              "label": "decidable"
+            }
+          ],
+          "agreement": 0.67
+        }
+      ],
+      "tri_consensus": [
+        0,
+        4,
+        2
+      ],
+      "web_n": 0,
+      "web_ids": [],
+      "web_stages": [],
+      "web_rounds": [],
+      "web_round_kinds": [],
+      "web_items": [],
+      "web_tiers": [],
+      "web_errors_n": 0,
+      "web_err_kinds": [],
+      "web_empty_n": 0,
+      "web_skip_n": 0,
+      "web_ok_n": 0,
+      "web_tier_lines": [],
+      "tier_proposals_n": 0,
+      "web_as_evidence": false,
+      "gate": {
+        "enabled": false,
+        "disabled": true,
+        "disable_reason": "web_search 未启用",
+        "run_total": 0,
+        "stage_counts": {},
+        "consecutive_failures": 0
+      },
+      "ea_triage": 0,
+      "drift": {
+        "und_to_partial": 0,
+        "applied_total": 0,
+        "ratio": null
+      },
+      "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\outputs\\p2_run3\\20261006_092729_社区医院人力有限慢性病管理推远程监测还.md"
+    },
+    {
+      "job": "W6_3_ON1",
+      "arm": "ON",
+      "tag": "社区医院",
+      "scenario": "外部有材料但不可作证据",
+      "rep": 1,
+      "question": "社区医院人力有限，慢性病管理推远程监测还是加派人手上门随访？资源怎么配？",
+      "ok": true,
+      "error": "",
+      "secs": 593.8,
+      "llm_calls": 45,
+      "n_subs": 6,
+      "subs": [
+        {
+          "id": 1,
+          "decidability": "undecidable",
+          "first_label": "partial",
+          "stability": "medium",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "decidable"
+            },
+            {
+              "voter": 1,
+              "label": "undecidable"
+            },
+            {
+              "voter": 2,
+              "label": "undecidable"
+            }
+          ],
+          "agreement": 0.67
+        },
+        {
+          "id": 2,
+          "decidability": "partial",
+          "first_label": "partial",
+          "stability": "low",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "decidable"
+            },
+            {
+              "voter": 1,
+              "label": "partial"
+            },
+            {
+              "voter": 2,
+              "label": "undecidable"
+            }
+          ],
+          "agreement": 0.33
+        },
+        {
+          "id": 3,
+          "decidability": "partial",
+          "first_label": "undecidable",
+          "stability": "low",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "decidable"
+            },
+            {
+              "voter": 1,
+              "label": "partial"
+            },
+            {
+              "voter": 2,
+              "label": "undecidable"
+            }
+          ],
+          "agreement": 0.33
+        },
+        {
+          "id": 4,
+          "decidability": "partial",
+          "first_label": "undecidable",
+          "stability": "low",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "decidable"
+            },
+            {
+              "voter": 1,
+              "label": "partial"
+            },
+            {
+              "voter": 2,
+              "label": "undecidable"
+            }
+          ],
+          "agreement": 0.33
+        },
+        {
+          "id": 5,
+          "decidability": "partial",
+          "first_label": "partial",
+          "stability": "low",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "decidable"
+            },
+            {
+              "voter": 1,
+              "label": "partial"
+            },
+            {
+              "voter": 2,
+              "label": "undecidable"
+            }
+          ],
+          "agreement": 0.33
+        },
+        {
+          "id": 6,
+          "decidability": "decidable",
+          "first_label": "decidable",
+          "stability": "medium",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "decidable"
+            },
+            {
+              "voter": 1,
+              "label": "decidable"
+            },
+            {
+              "voter": 2,
+              "label": "undecidable"
+            }
+          ],
+          "agreement": 0.67
+        }
+      ],
+      "tri_consensus": [
+        0,
+        2,
+        4
+      ],
+      "web_n": 12,
+      "web_ids": [
+        "W1",
+        "W2",
+        "W3",
+        "W4",
+        "W5",
+        "W6",
+        "W7",
+        "W8",
+        "W9",
+        "W10",
+        "W11",
+        "W12"
+      ],
+      "web_stages": [
+        "research_decompose",
+        "research_evidence",
+        "research_precedent"
+      ],
+      "web_rounds": [
+        0
+      ],
+      "web_round_kinds": [
+        "pre"
+      ],
+      "web_items": [
+        {
+          "id": "W1",
+          "stage": "research_decompose",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "evidence",
+          "tier": 3
+        },
+        {
+          "id": "W2",
+          "stage": "research_decompose",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "evidence",
+          "tier": 3
+        },
+        {
+          "id": "W3",
+          "stage": "research_decompose",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "evidence",
+          "tier": 3
+        },
+        {
+          "id": "W4",
+          "stage": "research_precedent",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "record",
+          "tier": 3
+        },
+        {
+          "id": "W5",
+          "stage": "research_precedent",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "record",
+          "tier": 3
+        },
+        {
+          "id": "W6",
+          "stage": "research_precedent",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "record",
+          "tier": 3
+        },
+        {
+          "id": "W7",
+          "stage": "research_precedent",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "record",
+          "tier": 3
+        },
+        {
+          "id": "W8",
+          "stage": "research_precedent",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "record",
+          "tier": 3
+        },
+        {
+          "id": "W9",
+          "stage": "research_precedent",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "record",
+          "tier": 3
+        },
+        {
+          "id": "W10",
+          "stage": "research_evidence",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 0,
+          "used_as": "tri_vote",
+          "tier": 3
+        },
+        {
+          "id": "W11",
+          "stage": "research_evidence",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 0,
+          "used_as": "tri_vote",
+          "tier": 3
+        },
+        {
+          "id": "W12",
+          "stage": "research_evidence",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 0,
+          "used_as": "tri_vote",
+          "tier": 3
+        }
+      ],
+      "web_tiers": [
+        3
+      ],
+      "web_errors_n": 0,
+      "web_err_kinds": [],
+      "web_empty_n": 0,
+      "web_skip_n": 1,
+      "web_ok_n": 3,
+      "web_tier_lines": [
+        "[W-TIER?] 建议 tier 3 条（其中新域名 0 条）：engineering.org.cn→3、natcm.gov.cn→1、ckbiobank.pku.edu.cn→2（**待审**，未生效；不改任何判定）",
+        "[W-TIER?] 建议 tier 6 条（其中新域名 5 条）：sz.gov.cn→1、apo.who.int→3、nhc.gov.cn→1、sociology.cssn.cn→3（**待审**，未生效；不改任何判定）",
+        "[W-TIER?] 建议 tier 3 条（其中新域名 0 条）：engineering.org.cn→3、natcm.gov.cn→1、ckbiobank.pku.edu.cn→2（**待审**，未生效；不改任何判定）"
+      ],
+      "tier_proposals_n": 12,
+      "web_as_evidence": true,
+      "gate": {
+        "enabled": true,
+        "disabled": false,
+        "disable_reason": "",
+        "run_total": 4,
+        "stage_counts": {
+          "research_decompose": 1,
+          "research_precedent": 2,
+          "research_evidence": 1
+        },
+        "consecutive_failures": 0
+      },
+      "ea_triage": 0,
+      "drift": {
+        "und_to_partial": 0,
+        "applied_total": 0,
+        "ratio": null
+      },
+      "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\outputs\\w6_社区医院_on1\\20261006_093723_社区医院人力有限慢性病管理推远程监测还.md"
+    },
+    {
+      "job": "W6_3_ON2",
+      "arm": "ON",
+      "tag": "社区医院",
+      "scenario": "外部有材料但不可作证据",
+      "rep": 2,
+      "question": "社区医院人力有限，慢性病管理推远程监测还是加派人手上门随访？资源怎么配？",
+      "ok": true,
+      "error": "",
+      "secs": 581.6,
+      "llm_calls": 45,
+      "n_subs": 6,
+      "subs": [
+        {
+          "id": 1,
+          "decidability": "decidable",
+          "first_label": "undecidable",
+          "stability": "medium",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "decidable"
+            },
+            {
+              "voter": 1,
+              "label": "partial"
+            },
+            {
+              "voter": 2,
+              "label": "decidable"
+            }
+          ],
+          "agreement": 0.67
+        },
+        {
+          "id": 2,
+          "decidability": "decidable",
+          "first_label": "partial",
+          "stability": "medium",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "decidable"
+            },
+            {
+              "voter": 1,
+              "label": "partial"
+            },
+            {
+              "voter": 2,
+              "label": "decidable"
+            }
+          ],
+          "agreement": 0.67
+        },
+        {
+          "id": 3,
+          "decidability": "decidable",
+          "first_label": "undecidable",
+          "stability": "medium",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "decidable"
+            },
+            {
+              "voter": 1,
+              "label": "partial"
+            },
+            {
+              "voter": 2,
+              "label": "decidable"
+            }
+          ],
+          "agreement": 0.67
+        },
+        {
+          "id": 4,
+          "decidability": "decidable",
+          "first_label": "undecidable",
+          "stability": "medium",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "decidable"
+            },
+            {
+              "voter": 1,
+              "label": "partial"
+            },
+            {
+              "voter": 2,
+              "label": "decidable"
+            }
+          ],
+          "agreement": 0.67
+        },
+        {
+          "id": 5,
+          "decidability": "decidable",
+          "first_label": "partial",
+          "stability": "medium",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "decidable"
+            },
+            {
+              "voter": 1,
+              "label": "partial"
+            },
+            {
+              "voter": 2,
+              "label": "decidable"
+            }
+          ],
+          "agreement": 0.67
+        },
+        {
+          "id": 6,
+          "decidability": "decidable",
+          "first_label": "partial",
+          "stability": "medium",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "decidable"
+            },
+            {
+              "voter": 1,
+              "label": "partial"
+            },
+            {
+              "voter": 2,
+              "label": "decidable"
+            }
+          ],
+          "agreement": 0.67
+        }
+      ],
+      "tri_consensus": [
+        0,
+        6,
+        0
+      ],
+      "web_n": 12,
+      "web_ids": [
+        "W1",
+        "W2",
+        "W3",
+        "W4",
+        "W5",
+        "W6",
+        "W7",
+        "W8",
+        "W9",
+        "W10",
+        "W11",
+        "W12"
+      ],
+      "web_stages": [
+        "research_decompose",
+        "research_evidence",
+        "research_precedent"
+      ],
+      "web_rounds": [
+        0
+      ],
+      "web_round_kinds": [
+        "pre"
+      ],
+      "web_items": [
+        {
+          "id": "W1",
+          "stage": "research_decompose",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "evidence",
+          "tier": 3
+        },
+        {
+          "id": "W2",
+          "stage": "research_decompose",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "evidence",
+          "tier": 3
+        },
+        {
+          "id": "W3",
+          "stage": "research_decompose",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "evidence",
+          "tier": 3
+        },
+        {
+          "id": "W4",
+          "stage": "research_precedent",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "record",
+          "tier": 3
+        },
+        {
+          "id": "W5",
+          "stage": "research_precedent",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "record",
+          "tier": 3
+        },
+        {
+          "id": "W6",
+          "stage": "research_precedent",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "record",
+          "tier": 3
+        },
+        {
+          "id": "W7",
+          "stage": "research_precedent",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "record",
+          "tier": 3
+        },
+        {
+          "id": "W8",
+          "stage": "research_precedent",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "record",
+          "tier": 3
+        },
+        {
+          "id": "W9",
+          "stage": "research_precedent",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "record",
+          "tier": 3
+        },
+        {
+          "id": "W10",
+          "stage": "research_evidence",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 0,
+          "used_as": "tri_vote",
+          "tier": 3
+        },
+        {
+          "id": "W11",
+          "stage": "research_evidence",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 0,
+          "used_as": "tri_vote",
+          "tier": 3
+        },
+        {
+          "id": "W12",
+          "stage": "research_evidence",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 0,
+          "used_as": "tri_vote",
+          "tier": 3
+        }
+      ],
+      "web_tiers": [
+        3
+      ],
+      "web_errors_n": 0,
+      "web_err_kinds": [],
+      "web_empty_n": 0,
+      "web_skip_n": 1,
+      "web_ok_n": 3,
+      "web_tier_lines": [
+        "[W-TIER?] 建议 tier 3 条（其中新域名 0 条）：engineering.org.cn→3、natcm.gov.cn→1、ckbiobank.pku.edu.cn→2（**待审**，未生效；不改任何判定）",
+        "[W-TIER?] 建议 tier 6 条（其中新域名 4 条）：chnhabc.cn→3、sohu.com→3、gov.cn→3、blog.csdn.net→4（**待审**，未生效；不改任何判定）",
+        "[W-TIER?] 建议 tier 3 条（其中新域名 0 条）：engineering.org.cn→3、natcm.gov.cn→1、ckbiobank.pku.edu.cn→2（**待审**，未生效；不改任何判定）"
+      ],
+      "tier_proposals_n": 12,
+      "web_as_evidence": true,
+      "gate": {
+        "enabled": true,
+        "disabled": false,
+        "disable_reason": "",
+        "run_total": 4,
+        "stage_counts": {
+          "research_decompose": 1,
+          "research_precedent": 2,
+          "research_evidence": 1
+        },
+        "consecutive_failures": 0
+      },
+      "ea_triage": 0,
+      "drift": {
+        "und_to_partial": 0,
+        "applied_total": 0,
+        "ratio": null
+      },
+      "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\outputs\\w6_社区医院_on2\\20261006_094704_社区医院人力有限慢性病管理推远程监测还.md"
+    },
+    {
+      "job": "W6_FULL_ON1",
+      "arm": "ONFULL",
+      "tag": "老城区内涝",
+      "scenario": "外部规范可查",
+      "rep": 1,
+      "question": "老城区暴雨内涝频发，排水系统重建还是局部改造加海绵城市措施？怎么权衡？",
+      "ok": true,
+      "error": "",
+      "secs": 1310.9,
+      "llm_calls": 89,
+      "n_subs": 6,
+      "subs": [
+        {
+          "id": 1,
+          "decidability": "undecidable",
+          "first_label": "decidable",
+          "stability": "medium",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "undecidable"
+            },
+            {
+              "voter": 1,
+              "label": "decidable"
+            },
+            {
+              "voter": 2,
+              "label": "undecidable"
+            }
+          ],
+          "agreement": 0.67
+        },
+        {
+          "id": 2,
+          "decidability": "partial",
+          "first_label": "partial",
+          "stability": "medium",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "partial"
+            },
+            {
+              "voter": 1,
+              "label": "partial"
+            },
+            {
+              "voter": 2,
+              "label": "undecidable"
+            }
+          ],
+          "agreement": 0.67
+        },
+        {
+          "id": 3,
+          "decidability": "undecidable",
+          "first_label": "undecidable",
+          "stability": "medium",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "undecidable"
+            },
+            {
+              "voter": 1,
+              "label": "partial"
+            },
+            {
+              "voter": 2,
+              "label": "undecidable"
+            }
+          ],
+          "agreement": 0.67
+        },
+        {
+          "id": 4,
+          "decidability": "undecidable",
+          "first_label": "partial",
+          "stability": "high",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "undecidable"
+            },
+            {
+              "voter": 1,
+              "label": "undecidable"
+            },
+            {
+              "voter": 2,
+              "label": "undecidable"
+            }
+          ],
+          "agreement": 1.0
+        },
+        {
+          "id": 5,
+          "decidability": "decidable",
+          "first_label": "undecidable",
+          "stability": "medium",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "decidable"
+            },
+            {
+              "voter": 1,
+              "label": "decidable"
+            },
+            {
+              "voter": 2,
+              "label": "undecidable"
+            }
+          ],
+          "agreement": 0.67
+        },
+        {
+          "id": 6,
+          "decidability": "undecidable",
+          "first_label": "partial",
+          "stability": "high",
+          "vote_mode": "multi",
+          "votes": [
+            {
+              "voter": 0,
+              "label": "undecidable"
+            },
+            {
+              "voter": 1,
+              "label": "undecidable"
+            },
+            {
+              "voter": 2,
+              "label": "undecidable"
+            }
+          ],
+          "agreement": 1.0
+        }
+      ],
+      "tri_consensus": [
+        2,
+        4,
+        0
+      ],
+      "web_n": 18,
+      "web_ids": [
+        "W1",
+        "W2",
+        "W3",
+        "W4",
+        "W5",
+        "W6",
+        "W7",
+        "W8",
+        "W9",
+        "W10",
+        "W11",
+        "W12",
+        "W13",
+        "W14",
+        "W15",
+        "W16",
+        "W17",
+        "W18"
+      ],
+      "web_stages": [
+        "duel_arbitration",
+        "research_decompose",
+        "research_evidence",
+        "research_precedent"
+      ],
+      "web_rounds": [
+        0,
+        3
+      ],
+      "web_round_kinds": [
+        "in",
+        "pre"
+      ],
+      "web_items": [
+        {
+          "id": "W1",
+          "stage": "research_decompose",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "evidence",
+          "tier": 3
+        },
+        {
+          "id": "W2",
+          "stage": "research_decompose",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "evidence",
+          "tier": 3
+        },
+        {
+          "id": "W3",
+          "stage": "research_decompose",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "evidence",
+          "tier": 3
+        },
+        {
+          "id": "W4",
+          "stage": "research_precedent",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "record",
+          "tier": 3
+        },
+        {
+          "id": "W5",
+          "stage": "research_precedent",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "record",
+          "tier": 3
+        },
+        {
+          "id": "W6",
+          "stage": "research_precedent",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "record",
+          "tier": 3
+        },
+        {
+          "id": "W7",
+          "stage": "research_precedent",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "record",
+          "tier": 3
+        },
+        {
+          "id": "W8",
+          "stage": "research_precedent",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "record",
+          "tier": 3
+        },
+        {
+          "id": "W9",
+          "stage": "research_precedent",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 1,
+          "used_as": "record",
+          "tier": 3
+        },
+        {
+          "id": "W10",
+          "stage": "research_evidence",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 0,
+          "used_as": "tri_vote",
+          "tier": 3
+        },
+        {
+          "id": "W11",
+          "stage": "research_evidence",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 0,
+          "used_as": "tri_vote",
+          "tier": 3
+        },
+        {
+          "id": "W12",
+          "stage": "research_evidence",
+          "round": 0,
+          "round_kind": "pre",
+          "pre_seq": 0,
+          "used_as": "tri_vote",
+          "tier": 3
+        },
+        {
+          "id": "W13",
+          "stage": "duel_arbitration",
+          "round": 3,
+          "round_kind": "in",
+          "pre_seq": 0,
+          "used_as": "arbitration",
+          "tier": 3
+        },
+        {
+          "id": "W14",
+          "stage": "duel_arbitration",
+          "round": 3,
+          "round_kind": "in",
+          "pre_seq": 0,
+          "used_as": "arbitration",
+          "tier": 3
+        },
+        {
+          "id": "W15",
+          "stage": "duel_arbitration",
+          "round": 3,
+          "round_kind": "in",
+          "pre_seq": 0,
+          "used_as": "arbitration",
+          "tier": 3
+        },
+        {
+          "id": "W16",
+          "stage": "duel_arbitration",
+          "round": 3,
+          "round_kind": "in",
+          "pre_seq": 0,
+          "used_as": "arbitration",
+          "tier": 3
+        },
+        {
+          "id": "W17",
+          "stage": "duel_arbitration",
+          "round": 3,
+          "round_kind": "in",
+          "pre_seq": 0,
+          "used_as": "arbitration",
+          "tier": 3
+        },
+        {
+          "id": "W18",
+          "stage": "duel_arbitration",
+          "round": 3,
+          "round_kind": "in",
+          "pre_seq": 0,
+          "used_as": "arbitration",
+          "tier": 3
+        }
+      ],
+      "web_tiers": [
+        3
+      ],
+      "web_errors_n": 0,
+      "web_err_kinds": [],
+      "web_empty_n": 0,
+      "web_skip_n": 1,
+      "web_ok_n": 4,
+      "web_tier_lines": [
+        "[W-TIER?] 建议 tier 3 条（其中新域名 0 条）：ycxb.xml-journal.net→3、hjgc.ic-mag.com→3、news.cctv.com→3（**待审**，未生效；不改任何判定）",
+        "[W-TIER?] 建议 tier 6 条（其中新域名 6 条）：gjxfj.gov.cn→1、paper.people.com.cn→3、guihuayun.com→3、mofcom.gov.cn→1（**待审**，未生效；不改任何判定）",
+        "[W-TIER?] 建议 tier 3 条（其中新域名 0 条）：ycxb.xml-journal.net→3、hjgc.ic-mag.com→3、news.cctv.com→3（**待审**，未生效；不改任何判定）",
+        "[W-TIER?] 建议 tier 6 条（其中新域名 6 条）：huangshi.gov.cn→1、qks.sufe.edu.cn→2、qks.shufe.edu.cn→2、digitallibrary.un.org→3（**待审**，未生效；不改任何判定）"
+      ],
+      "tier_proposals_n": 18,
+      "web_as_evidence": true,
+      "gate": {
+        "enabled": true,
+        "disabled": false,
+        "disable_reason": "",
+        "run_total": 6,
+        "stage_counts": {
+          "research_decompose": 1,
+          "research_precedent": 2,
+          "research_evidence": 1,
+          "duel_arbitration": 2
+        },
+        "consecutive_failures": 0
+      },
+      "ea_triage": 1,
+      "drift": {
+        "und_to_partial": 0,
+        "applied_total": 0,
+        "ratio": null
+      },
+      "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\outputs\\w6_full_on1\\20261006_100855_老城区暴雨内涝频发排水系统重建还是局部.md"
+    }
+  ]
+}

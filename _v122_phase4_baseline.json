@@ -1,0 +1,67 @@
+{
+  "phase": 4,
+  "baseline_src": "_baseline_v12177.py",
+  "final_src": "元DGTF-V1.22.0.py",
+  "diff_stat": {
+    "blocks": 56,
+    "added": 1251,
+    "deleted": 185,
+    "lines_before": 19609,
+    "lines_after": 20675
+  },
+  "probe_before": {
+    "src": "_baseline_v12177.py",
+    "version": "1.21.77",
+    "A_as_evidence_default": false,
+    "A2_tier_floor": null,
+    "A3_api_key_env": null,
+    "A4_retriever": "snapshot",
+    "B_tier_fn": "AttributeError: module 'dgtf_probe4' has no attribute '_anchor_tier'",
+    "B2_tier_fn_bool_false": "AttributeError: module 'dgtf_probe4' has no attribute '_anchor_tier'",
+    "B3_tier_fn_illegal": "AttributeError: module 'dgtf_probe4' has no attribute '_anchor_tier'",
+    "C_enters_t1": "AttributeError: module 'dgtf_probe4' has no attribute '_anchor_enters_citation'",
+    "C2_enters_t4": "AttributeError: module 'dgtf_probe4' has no attribute '_anchor_enters_citation'",
+    "C3_enters_no_tier": "AttributeError: module 'dgtf_probe4' has no attribute '_anchor_enters_citation'",
+    "D_citation_X_t1t4": [
+      "X1",
+      "X2"
+    ],
+    "D2_citation_X_off": [],
+    "E_retriever_cls": false,
+    "E2_snapshot_zero_calls": "AttributeError: module 'dgtf_probe4' has no attribute 'AnchorRetriever'",
+    "E3_unknown_backend_raises": "AttributeError: module 'dgtf_probe4' has no attribute 'AnchorRetriever'",
+    "F_src_五档": false,
+    "F2_src_锚点分级": false,
+    "F3_src_triage": false,
+    "F4_src_冲突留痕三处": false,
+    "G_crosscheck_triage_source": false,
+    "G2_ok": true
+  },
+  "probe_after": {
+    "src": "元DGTF-V1.22.0.py",
+    "version": "1.22.0",
+    "A_as_evidence_default": "off",
+    "A2_tier_floor": 2,
+    "A3_api_key_env": "TAVILY_API_KEY",
+    "A4_retriever": "snapshot",
+    "B_tier_fn": "evidence",
+    "B2_tier_fn_bool_false": "off",
+    "B3_tier_fn_illegal": "off",
+    "C_enters_t1": true,
+    "C2_enters_t4": false,
+    "C3_enters_no_tier": false,
+    "D_citation_X_t1t4": [
+      "X1"
+    ],
+    "D2_citation_X_off": [],
+    "E_retriever_cls": true,
+    "E2_snapshot_zero_calls": [],
+    "E3_unknown_backend_raises": "RuntimeError: external_anchor.retriever='web_search' 尚未实现（当前只有 'snapshot' 与 'tavily'）；不静默降级",
+    "F_src_五档": true,
+    "F2_src_锚点分级": true,
+    "F3_src_triage": true,
+    "F4_src_冲突留痕三处": true,
+    "G_crosscheck_triage_source": true,
+    "G2_ok": true
+  }
+}

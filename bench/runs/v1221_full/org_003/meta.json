@@ -1,0 +1,30 @@
+{
+  "id": "org_003",
+  "domain": "org",
+  "question": "跨团队协作长期卡在交接环节，边界责任该怎么划",
+  "orientation": "boundary",
+  "route": [
+    "0",
+    "1",
+    "both",
+    "all"
+  ],
+  "rounds": "0:2,1:2,both:2,all:3",
+  "mock": false,
+  "ok": true,
+  "error": "",
+  "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\bench\\runs\\v1221_full\\org_003\\20261005_111053_跨团队协作长期卡在交接环节边界责任该怎.md",
+  "calls": 96,
+  "tokens": 725030,
+  "layers_seen": [
+    "0",
+    "1",
+    "all",
+    "both"
+  ],
+  "missing": [],
+  "elapsed_s": 1778.1,
+  "elapsed": 1778.1,
+  "objective_lines": 4,
+  "objective_block": "**分层目标**：\n  - 修行层（显形过程 · objective=manifest）：& 8 / 线头 7 / 悬置 2 / 探针 3\n  - 研究层（逼近真理 · objective=truth）：覆盖率 43% · distance 0.75\n  - 对撞层（第三者 · objective=collision）：third ✓ · 张力 3\n  - 元层（闭环清算 · objective=closure）：clean True · 未交代 0 类\n"
+}

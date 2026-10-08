@@ -1,0 +1,99 @@
+{
+  "real_backend": {
+    "key_len": 58,
+    "query": "GB 50014 室外排水设计标准 雨水管渠设计重现期",
+    "kind": "",
+    "n": 3,
+    "calls_after_first": 1,
+    "calls_total": 0,
+    "cache_hits": 2,
+    "secs": 0.0,
+    "first_claim": "刊物上,中华人民共和国住房和城乡建设部2014年2月10日修订说明.本次局部修订是根据住房和城乡建设部。关于请组织开展城市排水相关标准制,修,订工作的函，建标.2013,46号 的要求、由上海市政工程设计研究总院 集团 有限公司会同有关单位对 室外排水设计规范,GB,50014。2006 2011年版,进行修订而成,本次修订的主要技术内容是 补充规定排水工程设计应与相关专项规划协调 补充与内涝防治",
+    "first_url": "http://www.jianbiaoku.com/webarbs/book/54774.shtml"
+  },
+  "runs": [
+    {
+      "arm": "WOFF",
+      "web_enabled": false,
+      "secs": 689.8,
+      "llm_calls": 50,
+      "n_subs": 6,
+      "stability": [
+        "high",
+        "high",
+        "medium",
+        "medium",
+        "medium",
+        "low"
+      ],
+      "vote_mode": [
+        "multi"
+      ],
+      "web_results": 0,
+      "web_ids": [],
+      "web_errors": 0,
+      "web_err_kinds": [],
+      "web_stages": [],
+      "web_as_evidence": false,
+      "gate": {
+        "enabled": false,
+        "disabled": true,
+        "disable_reason": "web_search 未启用",
+        "run_total": 0,
+        "stage_counts": {},
+        "consecutive_failures": 0
+      },
+      "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\outputs\\v1230_w5\\WOFF\\20261005_225525_老城区排水管网的现有设计标准是多少年一遇.md"
+    },
+    {
+      "arm": "WON",
+      "web_enabled": true,
+      "secs": 576.1,
+      "llm_calls": 49,
+      "n_subs": 6,
+      "stability": [
+        "high",
+        "high",
+        "high",
+        "low",
+        "high",
+        "low"
+      ],
+      "vote_mode": [
+        "multi"
+      ],
+      "web_results": 12,
+      "web_ids": [
+        "W1",
+        "W2",
+        "W3",
+        "W4",
+        "W5",
+        "W6",
+        "W7",
+        "W8"
+      ],
+      "web_errors": 0,
+      "web_err_kinds": [],
+      "web_stages": [
+        "research_decompose",
+        "research_evidence",
+        "research_precedent"
+      ],
+      "web_as_evidence": true,
+      "gate": {
+        "enabled": true,
+        "disabled": false,
+        "disable_reason": "",
+        "run_total": 4,
+        "stage_counts": {
+          "research_decompose": 1,
+          "research_precedent": 2,
+          "research_evidence": 1
+        },
+        "consecutive_failures": 0
+      },
+      "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\outputs\\v1230_w5\\WON\\20261005_231950_老城区排水管网的现有设计标准是多少年一遇.md"
+    }
+  ]
+}

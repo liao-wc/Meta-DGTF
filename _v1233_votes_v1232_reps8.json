@@ -1,0 +1,3708 @@
+{
+  "src": "元DGTF-V1.23.2.py",
+  "reps": 8,
+  "n_subs": 12,
+  "arms": {
+    "w4_off_t0": {
+      "w4": false,
+      "temp": 0.0,
+      "reps": [
+        {
+          "votes": {
+            "1": {
+              "0": "decidable",
+              "1": "partial",
+              "2": "decidable"
+            },
+            "2": {
+              "0": "undecidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "3": {
+              "0": "undecidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "4": {
+              "0": "undecidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "5": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "6": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "7": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "8": {
+              "0": "undecidable",
+              "1": "partial",
+              "2": "partial"
+            },
+            "9": {
+              "0": "undecidable",
+              "1": "partial",
+              "2": "undecidable"
+            },
+            "10": {
+              "0": "undecidable",
+              "1": "partial",
+              "2": "undecidable"
+            },
+            "11": {
+              "0": "undecidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "12": {
+              "0": "undecidable",
+              "1": "partial",
+              "2": "undecidable"
+            }
+          },
+          "empty": 0,
+          "ids_meta": [
+            {
+              "voter": 0,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 1,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 2,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "votes": {
+            "1": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "2": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "3": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "4": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "5": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "6": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "7": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "8": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "9": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "10": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "11": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "12": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            }
+          },
+          "empty": 0,
+          "ids_meta": [
+            {
+              "voter": 0,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 1,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 2,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "votes": {
+            "1": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "2": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "3": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "4": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "5": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "6": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "7": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "8": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "9": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "10": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "11": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "12": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            }
+          },
+          "empty": 0,
+          "ids_meta": [
+            {
+              "voter": 0,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 1,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 2,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "votes": {
+            "1": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "2": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "3": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "4": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "5": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "6": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "7": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "8": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "9": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "10": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "11": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "12": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            }
+          },
+          "empty": 0,
+          "ids_meta": [
+            {
+              "voter": 0,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 1,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 2,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "votes": {
+            "1": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "2": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "3": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "4": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "5": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "6": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "7": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "8": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "9": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "10": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "11": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "12": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            }
+          },
+          "empty": 0,
+          "ids_meta": [
+            {
+              "voter": 0,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 1,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 2,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "votes": {
+            "1": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "2": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "3": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "4": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "5": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "6": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "7": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "8": {
+              "0": "decidable",
+              "1": "partial",
+              "2": "undecidable"
+            },
+            "9": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "10": {
+              "0": "undecidable",
+              "1": "partial",
+              "2": "undecidable"
+            },
+            "11": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "12": {
+              "0": "decidable",
+              "1": "partial",
+              "2": "undecidable"
+            }
+          },
+          "empty": 0,
+          "ids_meta": [
+            {
+              "voter": 0,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 1,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 2,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "votes": {
+            "1": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "2": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "3": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "4": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "5": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "6": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "7": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "8": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "9": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "10": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "11": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "12": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            }
+          },
+          "empty": 0,
+          "ids_meta": [
+            {
+              "voter": 0,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 1,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 2,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "votes": {
+            "1": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "2": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "3": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "4": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "5": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "6": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "7": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "8": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "9": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "10": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "11": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "12": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            }
+          },
+          "empty": 0,
+          "ids_meta": [
+            {
+              "voter": 0,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 1,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 2,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "w4_on_t0": {
+      "w4": true,
+      "temp": 0.0,
+      "reps": [
+        {
+          "votes": {
+            "1": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "2": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "3": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "partial"
+            },
+            "4": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "5": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "6": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "7": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "8": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "9": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "partial"
+            },
+            "10": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "11": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "12": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            }
+          },
+          "empty": 0,
+          "ids_meta": [
+            {
+              "voter": 0,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 1,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 2,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "votes": {
+            "1": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "2": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "3": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "partial"
+            },
+            "4": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "5": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "6": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "partial"
+            },
+            "7": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "8": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "9": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "partial"
+            },
+            "10": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "11": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "12": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            }
+          },
+          "empty": 0,
+          "ids_meta": [
+            {
+              "voter": 0,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 1,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 2,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "votes": {
+            "1": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "2": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "3": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "partial"
+            },
+            "4": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "5": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "6": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "partial"
+            },
+            "7": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "8": {
+              "0": "decidable",
+              "1": "partial",
+              "2": "undecidable"
+            },
+            "9": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "partial"
+            },
+            "10": {
+              "0": "decidable",
+              "1": "partial",
+              "2": "undecidable"
+            },
+            "11": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "12": {
+              "0": "decidable",
+              "1": "partial",
+              "2": "undecidable"
+            }
+          },
+          "empty": 0,
+          "ids_meta": [
+            {
+              "voter": 0,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 1,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 2,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "votes": {
+            "1": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "2": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "3": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "partial"
+            },
+            "4": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "5": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "6": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "7": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "8": {
+              "0": "decidable",
+              "1": "partial",
+              "2": "undecidable"
+            },
+            "9": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "partial"
+            },
+            "10": {
+              "0": "decidable",
+              "1": "partial",
+              "2": "undecidable"
+            },
+            "11": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "12": {
+              "0": "decidable",
+              "1": "partial",
+              "2": "undecidable"
+            }
+          },
+          "empty": 0,
+          "ids_meta": [
+            {
+              "voter": 0,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 1,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 2,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "votes": {
+            "1": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "2": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "3": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "partial"
+            },
+            "4": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "5": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "6": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "partial"
+            },
+            "7": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "8": {
+              "0": "decidable",
+              "1": "partial",
+              "2": "undecidable"
+            },
+            "9": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "partial"
+            },
+            "10": {
+              "0": "decidable",
+              "1": "partial",
+              "2": "undecidable"
+            },
+            "11": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "12": {
+              "0": "decidable",
+              "1": "partial",
+              "2": "undecidable"
+            }
+          },
+          "empty": 0,
+          "ids_meta": [
+            {
+              "voter": 0,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 1,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 2,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "votes": {
+            "1": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "2": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "3": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "partial"
+            },
+            "4": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "5": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "6": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "7": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "8": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "9": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "partial"
+            },
+            "10": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "11": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "12": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            }
+          },
+          "empty": 0,
+          "ids_meta": [
+            {
+              "voter": 0,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 1,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 2,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "votes": {
+            "1": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "2": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "3": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "partial"
+            },
+            "4": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "5": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "6": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "7": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "8": {
+              "0": "decidable",
+              "1": "partial",
+              "2": "undecidable"
+            },
+            "9": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "partial"
+            },
+            "10": {
+              "0": "decidable",
+              "1": "partial",
+              "2": "undecidable"
+            },
+            "11": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "12": {
+              "0": "decidable",
+              "1": "partial",
+              "2": "undecidable"
+            }
+          },
+          "empty": 0,
+          "ids_meta": [
+            {
+              "voter": 0,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 1,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 2,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "votes": {
+            "1": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "2": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "3": {
+              "0": "undecidable",
+              "1": "decidable",
+              "2": "partial"
+            },
+            "4": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "5": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "6": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "7": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "8": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "9": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "partial"
+            },
+            "10": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "11": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "12": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            }
+          },
+          "empty": 0,
+          "ids_meta": [
+            {
+              "voter": 0,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 1,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 2,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "w4_off_t7": {
+      "w4": false,
+      "temp": 0.7,
+      "reps": [
+        {
+          "votes": {
+            "1": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "2": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "decidable"
+            },
+            "3": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "decidable"
+            },
+            "4": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "5": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "6": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "7": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "decidable"
+            },
+            "8": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "decidable"
+            },
+            "9": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "decidable"
+            },
+            "10": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "decidable"
+            },
+            "11": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "12": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "decidable"
+            }
+          },
+          "empty": 0,
+          "ids_meta": [
+            {
+              "voter": 0,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 1,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 2,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "votes": {
+            "0": {
+              "0": "decidable"
+            },
+            "1": {
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "2": {
+              "1": "undecidable",
+              "2": "decidable"
+            },
+            "3": {
+              "1": "undecidable",
+              "2": "decidable"
+            },
+            "4": {
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "5": {
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "6": {
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "7": {
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "8": {
+              "1": "partial",
+              "2": "decidable"
+            },
+            "9": {
+              "1": "partial",
+              "2": "decidable"
+            },
+            "10": {
+              "1": "partial",
+              "2": "decidable"
+            },
+            "11": {
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "12": {
+              "1": "undecidable",
+              "2": "decidable"
+            }
+          },
+          "empty": 0,
+          "ids_meta": [
+            {
+              "voter": 0,
+              "status": "ok",
+              "base": 0,
+              "ids": [
+                0,
+                0,
+                0,
+                0,
+                "…",
+                0,
+                0
+              ]
+            },
+            {
+              "voter": 1,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 2,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "votes": {
+            "0": {
+              "0": "decidable"
+            },
+            "1": {
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "2": {
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "3": {
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "4": {
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "5": {
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "6": {
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "7": {
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "8": {
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "9": {
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "10": {
+              "1": "partial",
+              "2": "undecidable"
+            },
+            "11": {
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "12": {
+              "1": "partial",
+              "2": "undecidable"
+            }
+          },
+          "empty": 0,
+          "ids_meta": [
+            {
+              "voter": 0,
+              "status": "ok",
+              "base": 0,
+              "ids": [
+                0,
+                0,
+                0,
+                0,
+                "…",
+                0,
+                0
+              ]
+            },
+            {
+              "voter": 1,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 2,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "votes": {
+            "1": {
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "2": {
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "3": {
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "4": {
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "5": {
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "6": {
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "7": {
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "8": {
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "9": {
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "10": {
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "11": {
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "12": {
+              "1": "decidable",
+              "2": "decidable"
+            }
+          },
+          "empty": 0,
+          "ids_meta": [
+            {
+              "voter": 0,
+              "status": "非对象"
+            },
+            {
+              "voter": 1,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 2,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "votes": {
+            "1": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "2": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "3": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "4": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "5": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "6": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "7": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "8": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "9": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "10": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "11": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "12": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            }
+          },
+          "empty": 0,
+          "ids_meta": [
+            {
+              "voter": 0,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 1,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 2,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "votes": {
+            "1": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "2": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "3": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "partial"
+            },
+            "4": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "partial"
+            },
+            "5": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "6": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "7": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "8": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "partial"
+            },
+            "9": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "10": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "partial"
+            },
+            "11": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "partial"
+            },
+            "12": {
+              "0": "decidable",
+              "1": "partial",
+              "2": "undecidable"
+            }
+          },
+          "empty": 0,
+          "ids_meta": [
+            {
+              "voter": 0,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 1,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 2,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "votes": {
+            "1": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "2": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "decidable"
+            },
+            "3": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "decidable"
+            },
+            "4": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "decidable"
+            },
+            "5": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "6": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "7": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "8": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "decidable"
+            },
+            "9": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "decidable"
+            },
+            "10": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "11": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "decidable"
+            },
+            "12": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "decidable"
+            }
+          },
+          "empty": 0,
+          "ids_meta": [
+            {
+              "voter": 0,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 1,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 2,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "votes": {
+            "0": {
+              "0": "decidable"
+            },
+            "1": {
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "2": {
+              "1": "partial",
+              "2": "undecidable"
+            },
+            "3": {
+              "1": "partial",
+              "2": "decidable"
+            },
+            "4": {
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "5": {
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "6": {
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "7": {
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "8": {
+              "1": "partial",
+              "2": "decidable"
+            },
+            "9": {
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "10": {
+              "1": "partial",
+              "2": "decidable"
+            },
+            "11": {
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "12": {
+              "1": "partial",
+              "2": "decidable"
+            }
+          },
+          "empty": 0,
+          "ids_meta": [
+            {
+              "voter": 0,
+              "status": "ok",
+              "base": 0,
+              "ids": [
+                0,
+                0,
+                0,
+                0,
+                "…",
+                0,
+                0
+              ]
+            },
+            {
+              "voter": 1,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 2,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "w4_on_t7": {
+      "w4": true,
+      "temp": 0.7,
+      "reps": [
+        {
+          "votes": {
+            "1": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "2": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "3": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "4": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "5": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "6": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "7": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "8": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "9": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "10": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "11": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "12": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "partial"
+            }
+          },
+          "empty": 0,
+          "ids_meta": [
+            {
+              "voter": 0,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 1,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 2,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "votes": {
+            "1": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "2": {
+              "0": "undecidable",
+              "1": "partial",
+              "2": "undecidable"
+            },
+            "3": {
+              "0": "undecidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "4": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "5": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "6": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "7": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "8": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "9": {
+              "0": "undecidable",
+              "1": "partial",
+              "2": "undecidable"
+            },
+            "10": {
+              "0": "undecidable",
+              "1": "partial",
+              "2": "undecidable"
+            },
+            "11": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "12": {
+              "0": "undecidable",
+              "1": "partial",
+              "2": "undecidable"
+            }
+          },
+          "empty": 0,
+          "ids_meta": [
+            {
+              "voter": 0,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 1,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 2,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "votes": {
+            "1": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "2": {
+              "0": "undecidable",
+              "1": "partial",
+              "2": "undecidable"
+            },
+            "3": {
+              "0": "undecidable",
+              "1": "partial",
+              "2": "partial"
+            },
+            "4": {
+              "0": "decidable",
+              "1": "partial",
+              "2": "undecidable"
+            },
+            "5": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "6": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "7": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "8": {
+              "0": "undecidable",
+              "1": "partial",
+              "2": "undecidable"
+            },
+            "9": {
+              "0": "undecidable",
+              "1": "partial",
+              "2": "partial"
+            },
+            "10": {
+              "0": "undecidable",
+              "1": "partial",
+              "2": "undecidable"
+            },
+            "11": {
+              "0": "decidable",
+              "1": "partial",
+              "2": "undecidable"
+            },
+            "12": {
+              "0": "undecidable",
+              "1": "partial",
+              "2": "undecidable"
+            }
+          },
+          "empty": 0,
+          "ids_meta": [
+            {
+              "voter": 0,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 1,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 2,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "votes": {
+            "1": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "2": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "3": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "4": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "5": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "6": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "7": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "8": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "9": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "10": {
+              "0": "undecidable",
+              "1": "partial",
+              "2": "undecidable"
+            },
+            "11": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "12": {
+              "0": "decidable",
+              "1": "partial",
+              "2": "undecidable"
+            }
+          },
+          "empty": 0,
+          "ids_meta": [
+            {
+              "voter": 0,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 1,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 2,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "votes": {
+            "1": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "2": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "3": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "4": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "5": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "6": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "7": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "8": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "9": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "10": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "11": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "12": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            }
+          },
+          "empty": 0,
+          "ids_meta": [
+            {
+              "voter": 0,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 1,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 2,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "votes": {
+            "1": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "2": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "3": {
+              "0": "decidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "4": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "5": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "6": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "partial"
+            },
+            "7": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "8": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "9": {
+              "0": "decidable",
+              "1": "partial",
+              "2": "partial"
+            },
+            "10": {
+              "0": "undecidable",
+              "1": "partial",
+              "2": "undecidable"
+            },
+            "11": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "12": {
+              "0": "undecidable",
+              "1": "partial",
+              "2": "undecidable"
+            }
+          },
+          "empty": 0,
+          "ids_meta": [
+            {
+              "voter": 0,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 1,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 2,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "votes": {
+            "1": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "2": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "3": {
+              "0": "undecidable",
+              "1": "partial",
+              "2": "partial"
+            },
+            "4": {
+              "0": "undecidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "5": {
+              "0": "undecidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "6": {
+              "0": "undecidable",
+              "1": "decidable",
+              "2": "partial"
+            },
+            "7": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "8": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "9": {
+              "0": "undecidable",
+              "1": "partial",
+              "2": "partial"
+            },
+            "10": {
+              "0": "undecidable",
+              "1": "partial",
+              "2": "undecidable"
+            },
+            "11": {
+              "0": "undecidable",
+              "1": "partial",
+              "2": "undecidable"
+            },
+            "12": {
+              "0": "undecidable",
+              "1": "partial",
+              "2": "undecidable"
+            }
+          },
+          "empty": 0,
+          "ids_meta": [
+            {
+              "voter": 0,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 1,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 2,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "votes": {
+            "1": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "decidable"
+            },
+            "2": {
+              "0": "undecidable",
+              "1": "partial",
+              "2": "undecidable"
+            },
+            "3": {
+              "0": "undecidable",
+              "1": "decidable",
+              "2": "partial"
+            },
+            "4": {
+              "0": "undecidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "5": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "6": {
+              "0": "decidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "7": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "8": {
+              "0": "undecidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "9": {
+              "0": "undecidable",
+              "1": "partial",
+              "2": "undecidable"
+            },
+            "10": {
+              "0": "undecidable",
+              "1": "undecidable",
+              "2": "undecidable"
+            },
+            "11": {
+              "0": "undecidable",
+              "1": "decidable",
+              "2": "undecidable"
+            },
+            "12": {
+              "0": "undecidable",
+              "1": "partial",
+              "2": "undecidable"
+            }
+          },
+          "empty": 0,
+          "ids_meta": [
+            {
+              "voter": 0,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 1,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            },
+            {
+              "voter": 2,
+              "status": "ok",
+              "base": 1,
+              "ids": [
+                1,
+                2,
+                3,
+                4,
+                "…",
+                11,
+                12
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "metrics": {
+    "w4_off_t0": {
+      "agree12": 0.49,
+      "agree13": 0.552,
+      "agree23": 0.854,
+      "n12": 96,
+      "n13": 96,
+      "n23": 96,
+      "gap": 0.458,
+      "gap_n": 96
+    },
+    "w4_on_t0": {
+      "agree12": 0.604,
+      "agree13": 0.229,
+      "agree23": 0.406,
+      "n12": 96,
+      "n13": 96,
+      "n23": 96,
+      "gap": -0.198,
+      "gap_n": 96
+    },
+    "w4_off_t7": {
+      "agree12": 0.708,
+      "agree13": 0.792,
+      "agree23": 0.573,
+      "n12": 48,
+      "n13": 48,
+      "n23": 96,
+      "gap": 0.083,
+      "gap_n": 48
+    },
+    "w4_on_t7": {
+      "agree12": 0.646,
+      "agree13": 0.531,
+      "agree23": 0.354,
+      "n12": 96,
+      "n13": 96,
+      "n23": 96,
+      "gap": -0.052,
+      "gap_n": 96
+    }
+  },
+  "icc": {
+    "w4_off_t0": {
+      "a12": {
+        "icc": 0.806,
+        "ci": [
+          0.619,
+          0.922
+        ],
+        "verdict": "可判定 ✅ 组间 ≥ 组内（ICC 区间 [0.619, 0.922] 全在 0.5 之上）",
+        "within_max_range": 1,
+        "n": 96
+      },
+      "a13": {
+        "icc": 0.678,
+        "ci": [
+          0.453,
+          0.835
+        ],
+        "verdict": "**不可判定**（ICC 区间 [0.453, 0.835] 跨过 0.5）",
+        "within_max_range": 1,
+        "n": 96
+      },
+      "a23": {
+        "icc": -0.044,
+        "ci": [
+          -0.111,
+          0.023
+        ],
+        "verdict": "可判定 ✗ 组内 > 组间（ICC 区间 [-0.111, 0.023] 全在 0.5 之下）",
+        "within_max_range": 1,
+        "n": 96
+      }
+    },
+    "w4_on_t0": {
+      "a12": {
+        "icc": 0.588,
+        "ci": [
+          0.325,
+          0.746
+        ],
+        "verdict": "**不可判定**（ICC 区间 [0.325, 0.746] 跨过 0.5）",
+        "within_max_range": 1,
+        "n": 96
+      },
+      "a13": {
+        "icc": 0.716,
+        "ci": [
+          -0.023,
+          0.95
+        ],
+        "verdict": "**不可判定**（ICC 区间 [-0.023, 0.95] 跨过 0.5）",
+        "within_max_range": 1,
+        "n": 96
+      },
+      "a23": {
+        "icc": 0.633,
+        "ci": [
+          0.261,
+          0.906
+        ],
+        "verdict": "**不可判定**（ICC 区间 [0.261, 0.906] 跨过 0.5）",
+        "within_max_range": 1,
+        "n": 96
+      }
+    },
+    "w4_off_t7": {
+      "a12": {
+        "icc": 0.083,
+        "ci": [
+          -0.143,
+          0.288
+        ],
+        "verdict": "可判定 ✗ 组内 > 组间（ICC 区间 [-0.143, 0.288] 全在 0.5 之下）",
+        "within_max_range": 1,
+        "n": 48
+      },
+      "a13": {
+        "icc": -0.167,
+        "ci": [
+          -0.294,
+          -0.028
+        ],
+        "verdict": "可判定 ✗ 组内 > 组间（ICC 区间 [-0.294, -0.028] 全在 0.5 之下）",
+        "within_max_range": 1,
+        "n": 48
+      },
+      "a23": {
+        "icc": 0.398,
+        "ci": [
+          0.186,
+          0.531
+        ],
+        "verdict": "**不可判定**（ICC 区间 [0.186, 0.531] 跨过 0.5）",
+        "within_max_range": 1,
+        "n": 96
+      }
+    },
+    "w4_on_t7": {
+      "a12": {
+        "icc": 0.187,
+        "ci": [
+          0.004,
+          0.342
+        ],
+        "verdict": "可判定 ✗ 组内 > 组间（ICC 区间 [0.004, 0.342] 全在 0.5 之下）",
+        "within_max_range": 1,
+        "n": 96
+      },
+      "a13": {
+        "icc": 0.288,
+        "ci": [
+          -0.03,
+          0.502
+        ],
+        "verdict": "**不可判定**（ICC 区间 [-0.03, 0.502] 跨过 0.5）",
+        "within_max_range": 1,
+        "n": 96
+      },
+      "a23": {
+        "icc": 0.413,
+        "ci": [
+          -0.0,
+          0.684
+        ],
+        "verdict": "**不可判定**（ICC 区间 [-0.0, 0.684] 跨过 0.5）",
+        "within_max_range": 1,
+        "n": 96
+      }
+    }
+  },
+  "pair": {
+    "t0": {
+      "mean_w4_minus_off": -0.656,
+      "sd_within": 0.693,
+      "ratio": 0.95,
+      "verdict_B": "可判定 ✗ 组内 > 组间（|Δ|/σ = 0.95）",
+      "n": 96,
+      "ci": [
+        -0.865,
+        -0.427
+      ]
+    },
+    "t7": {
+      "mean_w4_minus_off": -0.229,
+      "sd_within": 0.951,
+      "ratio": 0.24,
+      "verdict_B": "可判定 ✗ 组内 > 组间（|Δ|/σ = 0.24）",
+      "n": 48,
+      "ci": [
+        -0.479,
+        0.021
+      ]
+    }
+  },
+  "flip": {
+    "t0": {
+      "changed": 0,
+      "total": 96,
+      "rate": 0.0
+    },
+    "t7": {
+      "changed": 0,
+      "total": 96,
+      "rate": 0.0
+    }
+  },
+  "id_base": {
+    "w4_off_t0": {
+      "1起": 24,
+      "0起": 0,
+      "越界/其他": 0,
+      "空票": 0,
+      "非对象": 0
+    },
+    "w4_on_t0": {
+      "1起": 24,
+      "0起": 0,
+      "越界/其他": 0,
+      "空票": 0,
+      "非对象": 0
+    },
+    "w4_off_t7": {
+      "1起": 20,
+      "0起": 3,
+      "越界/其他": 0,
+      "空票": 0,
+      "非对象": 1
+    },
+    "w4_on_t7": {
+      "1起": 24,
+      "0起": 0,
+      "越界/其他": 0,
+      "空票": 0,
+      "非对象": 0
+    }
+  }
+}

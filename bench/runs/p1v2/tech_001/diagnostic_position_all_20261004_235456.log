@@ -1,0 +1,39 @@
+# position_all_same 诊断
+entry=all
+round=5
+anchor=订单系统要保证不超卖又要不卡顿，下单链路怎么设计
+same_position=0
+candidate_count=8
+
+[1] attr=0 pos=0 src=阳
+    desc: all 只被读成先后关系，而先后要求一个能同时放置两侧事件的度量者，该度量者的缺席是 all 的构成条件，不是待补项
+    why_position: 
+
+[2] attr=1 pos=0 src=阳
+    desc: 三个局部借的空位若同一点则整体是单点，若不同点则整体是环；两种情形不可从局部材料分辨，all 的形状因此悬在可判之外
+    why_position: 环或单点由局部材料分辨不出，该空位未进 all
+
+[3] attr=1 pos=0 src=阳
+    desc: all 与局部之间不存在对撞可发生：all 不含包含动作，局部问 all 包含什么时无回答位
+    why_position: all 无包含动作，局部问包含什么无回答位
+
+[4] attr=1 pos=0 src=阳
+    desc: 借位动作由谁观测：若由设计者观测，设计者进入网络成为局部，被测的那个数被改写
+    why_position: 观测者未认领，设计者入网即改写被测数
+
+[5] attr=1 pos=0 src=阳
+    desc: 局部退出借位网络的时刻与被满足的时刻同一，无法分先后，all 无法把这两个动作排进同一轴
+    why_position: 退出与被满足同刻，排不进 all 的同一轴
+
+[6] attr=1 pos=0 src=阳
+    desc: 闭合条件与取消闭合的动作互为前提，链路上不存在一个先发生的闭合，all 若被读成已闭合即误读
+    why_position: 无先发生的闭合，收进 all 即误读
+
+[7] attr=1 pos=0 src=阳
+    desc: 整体从环退化为三份清单中间的空，这一退化是否可逆，无材料可判
+    why_position: 退化可逆性无材料，该退化未定入 all
+
+[8] attr=0 pos=0 src=阴
+    desc: all 的“先后”读法需要一个能在同一轴上同时放置库存侧与支付侧事件的度量者，该度量者不在任何一侧的清单里，也不是待补项
+    why_position: 
+

@@ -1,0 +1,30 @@
+{
+  "id": "tech_001",
+  "domain": "tech",
+  "question": "订单系统要保证不超卖又要不卡顿，下单链路怎么设计",
+  "orientation": "decision",
+  "route": [
+    "0",
+    "1",
+    "both",
+    "all"
+  ],
+  "rounds": "0:2,1:2,both:2,all:3",
+  "mock": false,
+  "ok": true,
+  "error": "",
+  "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\bench\\runs\\v1221_full\\tech_001\\20261005_110938_订单系统要保证不超卖又要不卡顿下单链路.md",
+  "calls": 88,
+  "tokens": 647904,
+  "layers_seen": [
+    "0",
+    "1",
+    "all",
+    "both"
+  ],
+  "missing": [],
+  "elapsed_s": 1551.5,
+  "elapsed": 1551.5,
+  "objective_lines": 4,
+  "objective_block": "**分层目标**：\n  - 修行层（显形过程 · objective=manifest）：& 4 / 线头 4 / 悬置 1 / 探针 3\n  - 研究层（逼近真理 · objective=truth）：覆盖率 38% · distance 0.4\n  - 对撞层（第三者 · objective=collision）：third ✓ · 张力 3\n  - 元层（闭环清算 · objective=closure）：clean True · 未交代 0 类\n"
+}

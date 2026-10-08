@@ -1,0 +1,29 @@
+{
+  "id": "eng_001",
+  "domain": "市政工程",
+  "question": "老城区暴雨内涝越来越频繁，排水系统要不要整体翻新，怎么定优先级",
+  "orientation": "decision",
+  "route": [
+    "0",
+    "1"
+  ],
+  "rounds": {
+    "0": 1,
+    "1": 2,
+    "both": 1,
+    "all": 1
+  },
+  "mock": true,
+  "ok": true,
+  "error": "",
+  "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\bench\\runs\\mock_p1\\eng_001\\20261004_223417_老城区暴雨内涝越来越频繁排水系统要不要.md",
+  "calls": 26,
+  "tokens": 286,
+  "layers_seen": [
+    "0",
+    "1"
+  ],
+  "missing": [],
+  "elapsed_s": 0.2,
+  "objective_lines": 4
+}

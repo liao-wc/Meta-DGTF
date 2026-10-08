@@ -1,0 +1,29 @@
+Building prefix dict from the default dictionary ...
+Loading model from cache C:\Users\18432\AppData\Local\Temp\jieba.cache
+Loading model cost 0.711 seconds.
+Prefix dict has been built successfully.
+== 真跑逐次：D 的反事实对照（同一份运行数据，分别用 V68 码 / V69 码 判）==
+tag     src    mode  calls tri     池判->外判              div   und池内   untraced(V68码)   untraced(V69码)  
+V68     V68    serial 43    [4, 6]  partial->partial    False       4 2                0               
+        ★ D 在这一跑上真的改到了：2 -> 0
+           救回：时间尺度（一场雨/汛期/管网寿命）结论相反且无仲裁规则
+           救回：行政档案与居民记忆两份留痕之差不能被对撞消掉
+V68R1   V68    serial 43    [1, 6]  decidable->partial  True        0 0                0               
+V68R2   V68    serial 44    [3, 5]  decidable->partial  True        0 0                0               
+V68R3   V68    serial 43    [2, 6]  decidable->partial  True        0 0                0               
+V69     V69    serial 43    [0, 6]  decidable->partial  True        0 0                0               
+V69R2   V69    serial 44    [2, 6]  decidable->partial  True        0 0                0               
+V69R3   V69    serial 43    [2, 6]  decidable->partial  True        0 0                0               
+V69B    V69    B     44    [2, 5]  decidable->partial  True        0 0                0               
+
+== 分组：tri_state（serial / 同题 / 同参数）==
+  V68     [4, 6]
+  V68R1   [1, 6]
+  V68R2   [3, 5]
+  V68R3   [2, 6]
+  V69     [0, 6]
+  V69R2   [2, 6]
+  V69R3   [2, 6]
+  V68（n=4）：agree=[4, 1, 3, 2] 范围 1-4 均值 2.50 极差 3
+  V69（n=3）：agree=[0, 2, 2] 范围 0-2 均值 1.33 极差 2
+  ★ 两组合并：组内极差 3（项目纪律：组内极差 < 想宣称的组间差 才有判别力）

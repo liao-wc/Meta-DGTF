@@ -1,0 +1,28 @@
+{
+  "A1_src_五机制全在": {
+    "escalate_starve_rounds": true,
+    "no_push_when_idle": true,
+    "_reopen_closed_debt": true,
+    "both_tighten_ratio": true,
+    "_all_settle_streak": true
+  },
+  "A2_negctl_json": true,
+  "A3_negctl_doc": true,
+  "A4_audit_doc": true,
+  "B1_negctl_条数": 5,
+  "B2_判定分布": {
+    "条件窄但成立": 4,
+    "条件不可达": 1
+  },
+  "C1_模块可加载": true,
+  "C2_AUDIT122_常量": [
+    3,
+    2
+  ],
+  "E1_src_名": "元DGTF-V1.22.1.py",
+  "E2_纯删除(对_v1220)": 0,
+  "E3_纯删除(对_v12177)": 0,
+  "D1_不删机制": {
+    "说明": "见 _v122_verify --phase p3 的 P3.5/P3.6（纯删除 == 0 且符号消失 == 0）"
+  }
+}

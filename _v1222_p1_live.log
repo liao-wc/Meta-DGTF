@@ -1,0 +1,12 @@
+Building prefix dict from the default dictionary ...
+Loading model from cache C:\Users\18432\AppData\Local\Temp\jieba.cache
+Loading model cost 0.894 seconds.
+Prefix dict has been built successfully.
+📁 已保存: C:\Users\18432\Desktop\元DGTF-多模并行架构\outputs\v1222_p1\ON_1\20261005_214600_老城区排水管网的现有设计标准是多少年一遇.md
+[ON #1] subs=6 vm=['multi'] st=['medium', 'medium', 'medium', 'medium', 'medium', 'medium']
+        头部：**三态判决（多票）**：high 0 / medium 6 / low 0（已判 6 条）　一致率 100%　口径=三票之间（共 6 条）
+📁 已保存: C:\Users\18432\Desktop\元DGTF-多模并行架构\outputs\v1222_p1\OFF_1\20261005_215655_老城区排水管网的现有设计标准是多少年一遇.md
+[OFF #1] subs=6 vm=['single'] st=['high', 'high', 'high', 'high', 'high', 'high']
+        头部：**三态判决（单票）**：high 6 / medium 0 / low 0（已判 6 条）　一致率 100%　口径=单票 vs 拆解原标签（共 6 条）
+已写 _v1222_p1_consistency.json
+两臂每跑都分口径印标题：True

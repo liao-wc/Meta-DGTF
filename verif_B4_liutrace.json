@@ -1,0 +1,78 @@
+{
+ "tag": "B4_liutrace",
+ "src": "_tmp_B_inject.py",
+ "route": "0,1",
+ "rounds": "0:2,1:4",
+ "mode": "serial",
+ "orientation": "decision",
+ "llm_calls": 66,
+ "tri_state": [
+  2,
+  6
+ ],
+ "meta_closure_all": null,
+ "duel_suspensions_both": [],
+ "engagements_by_view": {
+  "0": [
+   {
+    "target": "第53条摘要的判定尺子归属",
+    "tension_id": null
+   },
+   {
+    "target": "'合理努力'自证合规的接受依据",
+    "tension_id": null
+   }
+  ],
+  "1": [
+   {
+    "target": "第53条训练数据摘要的'足够详细'在无第二份独立记录时，监管方实际以什么作为比对容差？该容差是否可被形式化为可复现的判定规则？",
+    "tension_id": null
+   },
+   {
+    "target": "第51条10^25 FLOPs推定阈值在投放时可读，但阈值本身可被授权法案修改——该阈值的可判定性是否仅在其有效期内成立，到期后判定基准是否自动失效？",
+    "tension_id": null
+   },
+   {
+    "target": "第55条'适当措施'与'最先进'的合规判定依赖事后解释，事前无法判定——该事后解释权在委员会、标准机构、提供者、下游合同方之间的排序规则是否存在？",
+    "tension_id": null
+   }
+  ]
+ },
+ "suspensions_with_tid": {
+  "0": [
+   {
+    "target": "冻结解释权的排序规则",
+    "tension_id": null,
+    "status": "active"
+   }
+  ],
+  "1": []
+ },
+ "pools_all_engagements": [],
+ "views_errors": {
+  "0": [],
+  "1": [
+   "deferral 被拦（revisit_condition 不合格）：子问题[1] 条件='ZZTEST_INVALID（B 段注入：第 4 圈，必然不合格）'",
+   "deferral 被拦（revisit_condition 不合格）：子问题[1] 条件='ZZTEST_INVALID（B 段注入：第 1 圈，必然不合格）'",
+   "deferral 被拦（revisit_condition 不合格）：子问题[1] 条件='ZZTEST_INVALID（B 段注入：第 2 圈，必然不合格）'",
+   "deferral 被拦（revisit_condition 不合格）：子问题[1] 条件='ZZTEST_INVALID（B 段注入：第 3 圈，必然不合格）'"
+  ]
+ },
+ "pools_meta_p16": {
+  "0": [],
+  "1": [
+   "[P1-6] deferral 被拦（revisit_condition 不合格）：子问题[1] 条件='ZZTEST_INVALID（B 段注入：第 1 圈，必然不合格）'",
+   "[P1-6] deferral 被拦（revisit_condition 不合格）：子问题[1] 条件='ZZTEST_INVALID（B 段注入：第 2 圈，必然不合格）'",
+   "[P1-6] deferral 被拦（revisit_condition 不合格）：子问题[1] 条件='ZZTEST_INVALID（B 段注入：第 3 圈，必然不合格）'",
+   "[P1-6] deferral 被拦（revisit_condition 不合格）：子问题[1] 条件='ZZTEST_INVALID（B 段注入：第 4 圈，必然不合格）'"
+  ],
+  "both": [],
+  "all": []
+ },
+ "pools_meta_len": {
+  "0": 4,
+  "1": 14,
+  "both": 0,
+  "all": 0
+ }
+}

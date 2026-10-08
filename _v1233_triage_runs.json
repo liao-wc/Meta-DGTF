@@ -1,0 +1,227 @@
+{
+ "src": "元DGTF-V1.23.3.py",
+ "n": 6,
+ "runs": [
+  {
+   "rep": 1,
+   "tag": "外部标准缺依据",
+   "ok": true,
+   "error": "",
+   "triage": 2,
+   "triage_n": 2,
+   "triage_items": [
+    {
+     "from": "undecidable",
+     "to": "partial",
+     "aspect": "[外] 本市近十年内涝点的具体成因分布与空间位置",
+     "anchor_id": "a2"
+    },
+    {
+     "from": "undecidable",
+     "to": "partial",
+     "aspect": "[外] 本市各汇水区土壤渗透条件与年径流总量控制率分区",
+     "anchor_id": "a3"
+    }
+   ],
+   "claims": 12,
+   "anchor_error": "",
+   "und_aspects": [
+    "[外] 本市近十年内涝点的具体成因分布与空间位置",
+    "[外] 本市各汇水区土壤渗透条件与年径流总量控制率分区",
+    "[外] 具体重建、局部改造与海绵措施的工程量、成本及效益量化比较",
+    "[外] 2028年前达标所需的具体项目优先级与投资安排",
+    "[外] 针对该市老城区的唯一最优取舍方案"
+   ],
+   "anchor_calls": 1,
+   "n_subs": 5,
+   "calls": 26,
+   "secs": 283.4,
+   "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\outputs\\v1233_tri_std_r1\\20261007_013900_本市要在2028年前把老城区内涝防治.md"
+  },
+  {
+   "rep": 2,
+   "tag": "外部规范+历史数据双缺",
+   "ok": true,
+   "error": "",
+   "triage": 3,
+   "triage_n": 3,
+   "triage_items": [
+    {
+     "from": "undecidable",
+     "to": "partial",
+     "aspect": "[外] 上级最新行业规范的具体参数与限值",
+     "anchor_id": "a4"
+    },
+    {
+     "from": "undecidable",
+     "to": "partial",
+     "aspect": "[外] 该市完整漏损历史统计与分区计量数据",
+     "anchor_id": "a4"
+    },
+    {
+     "from": "undecidable",
+     "to": "partial",
+     "aspect": "[外] 验收的具体数值口径与阈值",
+     "anchor_id": "a4"
+    }
+   ],
+   "claims": 12,
+   "anchor_error": "",
+   "und_aspects": [
+    "[外] 上级最新行业规范的具体参数与限值",
+    "[外] 该市完整漏损历史统计与分区计量数据",
+    "[外] 具体改造项目的最终优先级排序",
+    "[外] 验收的具体数值口径与阈值",
+    "[外] 最新规范与当地实际适用性的最终判断"
+   ],
+   "anchor_calls": 1,
+   "n_subs": 6,
+   "calls": 26,
+   "secs": 230.1,
+   "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\outputs\\v1233_tri_pipe_r2\\20261007_014250_某三线城市要按上级最新的行业规范改造老旧.md"
+  },
+  {
+   "rep": 3,
+   "tag": "外部标准缺依据",
+   "ok": true,
+   "error": "",
+   "triage": 2,
+   "triage_n": 2,
+   "triage_items": [
+    {
+     "from": "undecidable",
+     "to": "partial",
+     "aspect": "[外] 本市近十年内涝点的具体成因分布与积水点清单",
+     "anchor_id": "a2"
+    },
+    {
+     "from": "undecidable",
+     "to": "partial",
+     "aspect": "[外] 老城区具体管网能力、地形汇水、排水口顶托等现状数据",
+     "anchor_id": "a2"
+    }
+   ],
+   "claims": 12,
+   "anchor_error": "",
+   "und_aspects": [
+    "[外] 本市近十年内涝点的具体成因分布与积水点清单",
+    "[外] 老城区具体管网能力、地形汇水、排水口顶托等现状数据",
+    "[外] 各方案的具体投资、施工条件、拆迁与运维成本",
+    "[外] 重建、局部改造与海绵措施之间的量化取舍比例",
+    "[外] 2028年前具体工程时序及达标保证"
+   ],
+   "anchor_calls": 1,
+   "n_subs": 6,
+   "calls": 26,
+   "secs": 260.5,
+   "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\outputs\\v1233_tri_std_r3\\20261007_014710_本市要在2028年前把老城区内涝防治.md"
+  },
+  {
+   "rep": 4,
+   "tag": "外部规范+历史数据双缺",
+   "ok": true,
+   "error": "",
+   "triage": 2,
+   "triage_n": 2,
+   "triage_items": [
+    {
+     "from": "undecidable",
+     "to": "partial",
+     "aspect": "[外] 上级最新行业规范的具体参数、限值和验收阈值",
+     "anchor_id": "a4"
+    },
+    {
+     "from": "undecidable",
+     "to": "partial",
+     "aspect": "[外] 该市完整管网漏损历史统计与逐区逐管段数据",
+     "anchor_id": "a5"
+    }
+   ],
+   "claims": 12,
+   "anchor_error": "",
+   "und_aspects": [
+    "[外] 上级最新行业规范的具体参数、限值和验收阈值",
+    "[外] 该市完整管网漏损历史统计与逐区逐管段数据",
+    "[外] 精确改造优先级清单与投资排序",
+    "[外] 能否判定完全符合最新规范的合规结论",
+    "[外] 验收合格的具体数值口径"
+   ],
+   "anchor_calls": 1,
+   "n_subs": 6,
+   "calls": 26,
+   "secs": 247.3,
+   "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\outputs\\v1233_tri_pipe_r4\\20261007_015118_某三线城市要按上级最新的行业规范改造老旧.md"
+  },
+  {
+   "rep": 5,
+   "tag": "外部标准缺依据",
+   "ok": true,
+   "error": "",
+   "triage": 2,
+   "triage_n": 2,
+   "triage_items": [
+    {
+     "from": "undecidable",
+     "to": "partial",
+     "aspect": "[外] 本市近十年内涝点的具体成因分布、占比与空间位置",
+     "anchor_id": "a2"
+    },
+    {
+     "from": "undecidable",
+     "to": "partial",
+     "aspect": "[外] 本市现状管网能力、汇水区划分、调蓄空间与排水口顶托情况",
+     "anchor_id": "a2"
+    }
+   ],
+   "claims": 12,
+   "anchor_error": "",
+   "und_aspects": [
+    "[外] 本市近十年内涝点的具体成因分布、占比与空间位置",
+    "[外] 本市现状管网能力、汇水区划分、调蓄空间与排水口顶托情况",
+    "[外] 排水系统重建、局部改造与海绵措施之间的具体最优配比",
+    "[外] 2028年前投资、运维、征拆、预算与政策优先级的实际约束",
+    "[外] 未来降雨情景、城市发展变化及长期运维效果等不确定性"
+   ],
+   "anchor_calls": 1,
+   "n_subs": 6,
+   "calls": 26,
+   "secs": 217.2,
+   "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\outputs\\v1233_tri_std_r5\\20261007_015455_本市要在2028年前把老城区内涝防治.md"
+  },
+  {
+   "rep": 6,
+   "tag": "外部规范+历史数据双缺",
+   "ok": true,
+   "error": "",
+   "triage": 1,
+   "triage_n": 1,
+   "triage_items": [
+    {
+     "from": "undecidable",
+     "to": "partial",
+     "aspect": "[外] 上级最新行业规范的具体参数（漏损阈值、压力标准、管材口径等）不在手，无法给出精确验收数值",
+     "anchor_id": "a4"
+    }
+   ],
+   "claims": 12,
+   "anchor_error": "",
+   "und_aspects": [
+    "[外] 上级最新行业规范的具体参数（漏损阈值、压力标准、管材口径等）不在手，无法给出精确验收数值",
+    "[外] 该市完整管网GIS、DMA现状、投资与施工条件缺失，无法排出唯一优先级序列",
+    "[外] 最终优先级与验收口径的取舍涉及地方决策，当前信息不足以下定论"
+   ],
+   "anchor_calls": 1,
+   "n_subs": 6,
+   "calls": 26,
+   "secs": 256.5,
+   "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\outputs\\v1233_tri_pipe_r6\\20261007_015911_某三线城市要按上级最新的行业规范改造老旧.md"
+  }
+ ],
+ "hit": 6,
+ "n_ok": 6,
+ "rate": 1.0,
+ "wilson": [
+  0.61,
+  1.0
+ ]
+}

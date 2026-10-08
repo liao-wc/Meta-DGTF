@@ -1,0 +1,48 @@
+
+────────────────────────────────────────────────────────────
+[0] 目标：元DGTF-V1.21.72.py   tag=before
+────────────────────────────────────────────────────────────
+    __version__ = 1.21.72
+
+────────────────────────────────────────────────────────────
+[1] 源码形态（抠掉 docstring 后数）
+────────────────────────────────────────────────────────────
+    全文 735381 字符 → 抠掉 docstring 后 583959 字符（必须变短，自证抠法有效）
+    external_anchor        全文=0    抠文档后=0
+    _load_anchors          全文=0    抠文档后=0
+    _anchor_crosscheck     全文=0    抠文档后=0
+    anchor_refs            全文=0    抠文档后=0
+    anchors=               全文=0    抠文档后=0
+    def _anchor            全文=0    抠文档后=0
+
+────────────────────────────────────────────────────────────
+[2] 配置键
+────────────────────────────────────────────────────────────
+    DEFAULT_CONFIG 顶层键(7): ['actions', 'api', 'cost_profile', 'memory', 'output', 'probe', 'spiral']
+    DEFAULT_CONFIG 有 external_anchor: False
+    dgtf_config.yaml 里 external_anchor 出现次数: 0
+
+────────────────────────────────────────────────────────────
+[3] 函数签名
+────────────────────────────────────────────────────────────
+    DGTF._assess_decidability     (self, question: 'str') -> 'dict'
+    MetaDGTF._load_anchors            不存在
+    MetaDGTF._anchor_crosscheck       不存在
+
+────────────────────────────────────────────────────────────
+[4][5] 生产跑（smoke harness 打桩，route 0,1 × 1 圈）
+────────────────────────────────────────────────────────────
+    harness 加载完毕，mod 来自 dgtf_mod
+    llm_calls=21 tokens=231
+    packed 顶层键(17): ['channels', 'cost_profile', 'decidability', 'dispatch', 'input_sanity', 'keep', 'layer_contribution', 'llm_calls', 'llm_tokens', 'orientation', 'pools', 'question', 'rounds', 'route', 'self_text', 'tri_state', 'views']
+    有 external_anchor 键: False
+    decidability 字段(15): ['_divergent', '_evidence_full', '_ext_features', '_ext_reason', '_ext_status', '_pool_status', '_source', '_und_traced', '_und_untraced', 'decidability', 'decidable_aspects', 'evidence', 'features', 'reason', 'undecidable_aspects']
+    decidability 值: {"decidability": "partial", "reason": "冒烟测试固定输出", "features": ["测试特征"], "decidable_aspects": ["可判定方面甲"], "undecidable_aspects": ["不可判定方面乙"], "evidence": []}
+    _source=pool+external _divergent=False
+    stage=assess_decidability 调用次数: 1
+      #1 sys_len=788 含「锚点」=False head=你是【问题可判定性评估者】。  判断一个问题的可判定性，输出
+    产物 20261004_074123_现金流紧张的中小制造企业上自动化产线还.md  21911 字符
+    md 里「外部锚点」出现次数: 2
+      · …**外部锚点**：无（本产物不含外部事实校验；所有结论的可信度取决于池内材料的一致性——这是设计边界，不是缺陷）…
+      · …- **外部锚点**：本次没有接入任何外部事实校验（DGTF 的设计目标是显形过程，不是逼近真理——结论的可信度取决于池内材料的一致性）…
+    md 里「anchor」出现次数: 24

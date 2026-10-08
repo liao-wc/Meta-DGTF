@@ -1,0 +1,8 @@
+Building prefix dict from the default dictionary ...
+Loading model from cache C:\Users\18432\AppData\Local\Temp\jieba.cache
+Loading model cost 1.133 seconds.
+Prefix dict has been built successfully.
+run1: ok=True triage=0 calls=66 err=
+run2: ok=True triage=0 calls=65 err=
+run3: ok=True triage=0 calls=66 err=
+P2_RUNS_DONE

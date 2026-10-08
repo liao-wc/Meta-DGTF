@@ -1,0 +1,881 @@
+
+
+########## MSG 0 [USER] id=59 len=16 ##########
+给出修复 P1-6 的完整提示词
+
+########## MSG 1 [ASSISTANT] id=60 len=22026 ##########
+用户要我给 P1-6 的完整修复提示词。我需要产出一份可直接交给编码助手的提示词。
+
+问题核心有两部分：
+1. 白名单过窄（98% 被拦）
+2. 被拦下的静默消失（不进产物）
+
+需要仔细设计修复方案。
+
+白名单改法思路：
+- 保留黑名单（"以后"/"适当时机"等纯空词）
+- 白名单从"必须匹配 6 条 pattern"改成"必须有可观测锚点"——但锚点的定义要宽得多
+- 或者更宽松：只要不是纯空词就放行
+
+我倾向于这样设计：
+- 明确列出"纯空词"黑名单（扩充）
+- 明确列出"可观测锚点"的宽特征：包含时间词（当/若/如果/一旦/后/前）、包含数字、包含具体动作、包含状态变化词（出现/完成/解决/得到/满足/达到/超过/变化/更新/补充）、包含引用（T#/P#/圈号/覆盖率）
+- 只要命中任一，放行
+
+留痕问题：
+- 被拦下的 deferral 必须写进 view.errors 或 pool.meta
+- 让它们出现在产物里
+
+具体改哪些位置：
+1. `_REVISIT_ANCHOR_PATTERNS` —— 大幅扩充
+2. `_valid_revisit` —— 逻辑调整
+3. `update_deferrals` 里 invalid 的处理 —— 加留痕
+
+我要给"完整提示词"，格式应该跟之前 P1-6 的提示词一致：位置、现状、目标、注意、验证。
+
+关键设计考虑：
+- 现有黑名单里的词基本不需要扩，那些就是纯空词
+- 白名单要做"宽特征"——不能要求"必须有 X"这种单一模式，要允许多种
+- 但如果完全去掉白名单，只保留黑名单，那就退化了——原 P1-6 的初衷是"必须有可观测锚点"。所以白名单要保留，但必须能覆盖真实数据里的绝大多数。
+
+我建议：
+- 白名单设计成"宽特征集"：只要含时间/条件词（当/若/如果/一旦/在…时/…后/…前/第N圈），或含状态变化词（出现/完成/解决/得到/满足/达到/超过/变化/更新/补充/积累/形成/产生/暴露/显形），或含引用（T#/P#/S#/C#/d_###/ing/覆盖率/距离/权重/数字），就通过。
+- 但不能只是列举，要用正则。
+
+或者更简单：白名单从"必须匹配"改成"不匹配则 reject"，但同时黑白名单的比重调整——黑名单严一点（严禁空词），白名单宽一点。
+
+再想一层：真正的判据是什么？
+
+"可观测锚点"的实质是：**这个回访条件能被检查是否满足**。检查需要：
+1. 一个可被引用的对象或状态
+2. 一个可被观察的变化（出现/达到/满足/变化）
+
+所以白名单可以设计成两类 pattern：
+- 时间/触发词 + 任何具体内容：`(当|若|如果|一旦|在).{1,40}(时|后|前|了)` 或者更宽：`(当|若|如果|一旦|在).{1,40}`
+- 状态变化动词：`(出现|完成|解决|得到|满足|达到|超过|变化|更新|补充|积累|形成|产生|暴露|显形|给出|确认|推翻|失效|成立|失败)`
+- 引用对象：`[TPSCd]_?\d+|ing|覆盖率|距离|权重|圈|层`
+
+任何一条命中就 pass。
+
+但这样会不会太宽？其实 P1-6 的初衷是"必须有可观测锚点"——如果这三类任一都没命中，那确实大概率是空词或者模糊词。所以只要宽度合适，就 OK。
+
+好，我要写一份完整的提示词。让我组织一下结构：
+
+1. 总则 / 背景
+2. 具体改动：
+   - 改动 1：`_REVISIT_ANCHOR_PATTERNS` 扩充
+   - 改动 2：`_valid_revisit` 逻辑调整
+   - 改动 3：`update_deferrals` 加留痕
+3. 验证清单
+4. changelog 写法
+
+要具体到代码级别——给出查找/替换。
+
+先看原代码：
+
+```python
+_BAD_REVISIT = ("以后", "适当时机", "待定", "稍后", "再说", "看情况")
+
+# [v1.21.62 P1-6] 白名单：revisit_condition 必须含**可观测锚点**
+#   —— 说得出一个具体的事件、观察、或状态变化。
+#   黑名单只挡"以后"这类空词，挡不住"当有新材料时"——那也无法判断
+#   它是否发生，等于没写。
+_REVISIT_ANCHOR_PATTERNS = (
+    r"当.{1,30}(出现|发生|完成|解决|给出|成立|失败|超过|达到)",
+    r"若.{1,30}(出现|发生|完成|解决|给出|成立|失败|超过|达到)",
+    r"第\s*\d+\s*圈后",
+    r"覆盖率.{0,10}(超过|达到|>|≥)",
+    r"有.{1,20}证据(时|后)",
+    r"[A-Za-z0-9]{2,}\s*(出现|变为|大于|小于|达到)",
+)
+
+
+def _valid_revisit(cond: str) -> bool:
+    c = (cond or "").strip()
+    if len(c) < 4:
+        return False
+    if any(b in c for b in _BAD_REVISIT):
+        return False
+    # [v1.21.62 P1-6] 必须有可观测锚点
+    if not any(re.search(p, c) for p in _REVISIT_ANCHOR_PATTERNS):
+        return False
+    return True
+```
+
+我要给新版。设计：
+
+```python
+_BAD_REVISIT = (
+    "以后", "适当时机", "待定", "稍后", "再说", "看情况",
+    "看时机", "等时机", "视情况", "待时机", "等以后",
+)
+
+# [v1.21.62 P1-6 修] 白名单：revisit_condition 必须含**可观测锚点**
+#   —— 说得出一个具体的事件、观察、或状态变化。
+#   ★ v1.21.62 初版只有 6 条 pattern（都要求"当X动词"一族句式），
+#     实测 1213 条真实 revisit_condition 里只放行 2%，98% 被静默吞掉。
+#     修法：白名单从"少数句式"改成**三类宽特征**任命中其一即放行：
+#       ① 时间/条件词（当/若/如果/一旦/在……时/……后/……前/第N圈）
+#       ② 状态变化动词（出现/完成/解决/得到/满足/达到/…）
+#       ③ 引用对象（T#/P#/S#/C#/d_###/ing/覆盖率/距离/权重/数字）
+#   只要命中其一，就认为有可观测锚点。
+#   黑名单保留（空词/模糊词），判断顺序：先黑名单排除，再白名单放行。
+_REVISIT_TIME_HINT = re.compile(
+    r"(当|若|如果|一旦|在).{0,60}(时|后|前|了|的话)"
+    r"|第\s*\d+\s*圈"
+    r"|.{1,40}之后"
+    r"|.{1,40}之前"
+    r"|(下|本|上)\s*\d*\s*圈"
+)
+
+_REVISIT_CHANGE_VERB = re.compile(
+    r"(出现|发生|完成|解决|给出|成立|失败|超过|达到|变化|更新|"
+    r"补充|积累|形成|产生|暴露|显形|确认|推翻|失效|回答|清偿|"
+    r"触发|发现|浮现|新增|消失|启动|落地|稳定)"
+)
+
+_REVISIT_CITATION = re.compile(
+    r"[TPSCd]_?\d+"
+    r"|ing\b"
+    r"|覆盖率"
+    r"|距离"
+    r"|权重"
+    r"|\d"
+)
+
+
+def _valid_revisit(cond: str) -> bool:
+    c = (cond or "").strip()
+    if len(c) < 4:
+        return False
+    if any(b in c for b in _BAD_REVISIT):
+        return False
+    # [v1.21.62 P1-6 修] 三类宽特征任命中其一即放行
+    if (_REVISIT_TIME_HINT.search(c)
+            or _REVISIT_CHANGE_VERB.search(c)
+            or _REVISIT_CITATION.search(c)):
+        return True
+    return False
+```
+
+等等，`_REVISIT_CITATION` 里的 `\d` 太宽了——任何含数字的都通过。这样"第 3 天"也通过，"3 小时后"也通过。其实这可能是我想要的——含数字本身就是一种"可指认"。但也要考虑"8 字以内"这种。不过既然是 revisit 条件，含数字基本都意味着可观测。
+
+不过，`\d` 太宽会漏掉"不得含数字"的合法条件吗？比如"当出现公共刻度时"——这类通过 `当...时` pattern 或"出现"动词通过。所以没问题。
+
+再审视一下——白名单过宽会不会放行真正的空词？
+- "以后" —— 黑名单拦
+- "待定" —— 黑名单拦
+- "看情况" —— 黑名单拦
+- "稍后" —— 黑名单拦
+- "当有新材料时" —— 命中 `(当).{0,60}(时)`，通过（**但这是旧版本要拦的！**）
+
+嗯，这里有个张力。旧版本白名单是"必须含具体锚点"，"当有新材料时"这种模糊的"新材料"其实也该拦。但如果这么严，就会拦掉大部分真实数据（因为真实数据里就是这种粒度）。
+
+看编码助手给的例子，被错杀的合法条件是：
+- "T2探针给出边界判据后" —— 命中"给出"和"T2"
+- "谓词类型区分完成后" —— 命中"完成"
+- "出现公共刻度或登记程序" —— 命中"出现"
+- "相对化屏障被形式化后" —— 命中"后"（"后"本身没命中，但"被形式化后"——"后"不在 pattern 里，可能要补）
+
+我要让这三类宽特征覆盖面足够。
+
+关于"当有新材料时"——这种其实算**可观测**（虽然模糊），它至少给了一个条件。而 revisit 条件的实质是"什么时候回来处理"，不是"必须精确"。所以我倾向于放行。
+
+OK。但要注意 `_REVISIT_TIME_HINT` 里 `.{0,60}` 匹配不到新行，可能有问题。用 `re.DOTALL` 吗？其实不建议——单行条件正常。保持默认即可。
+
+再修正一下：
+
+```python
+_REVISIT_TIME_HINT = re.compile(
+    r"(当|若|如果|一旦|在)[^。]{0,60}(时|后|前|了|的话)"
+    r"|第\s*\d+\s*圈"
+    r"|[^。]{1,40}之后"
+    r"|[^。]{1,40}之前"
+    r"|(下|本|上)\s*\d*\s*圈"
+)
+```
+
+用 `[^。]` 而不是 `.`，避免跨句匹配。
+
+`_REVISIT_CITATION` 里的 `\d` 会跟 `_REVISIT_TIME_HINT` 里的 `\d` 重复。而且单 `\d` 太宽。改成：
+
+```python
+_REVISIT_CITATION = re.compile(
+    r"[TPSCd]_?\d+"
+    r"|\bing\b"
+    r"|覆盖率"
+    r"|距离"
+    r"|权重"
+)
+```
+
+去掉单独 `\d` 的匹配——因为它跟时间 hint 里的数字有重叠。但如果用户写"3 次之后"，不含 T# 引用，那 `之后` 命中 time hint。所以没必要单独匹配数字。
+
+嗯，但"经过 3 轮迭代后"这种呢？"后"命中 time hint。OK。
+
+好，设计定稿：
+
+```python
+_BAD_REVISIT = (
+    "以后", "适当时机", "待定", "稍后", "再说", "看情况",
+    "看时机", "等时机", "视情况", "等以后",
+)
+
+_REVISIT_TIME_HINT = re.compile(
+    r"(当|若|如果|一旦|在)[^。]{0,60}(时|后|前|了|的话)"
+    r"|第\s*\d+\s*圈"
+    r"|[^。]{1,40}之后"
+    r"|[^。]{1,40}之前"
+    r"|(下|本|上)\s*\d*\s*圈"
+)
+
+_REVISIT_CHANGE_VERB = re.compile(
+    r"(出现|发生|完成|解决|给出|成立|失败|超过|达到|变化|更新|"
+    r"补充|积累|形成|产生|暴露|显形|确认|推翻|失效|回答|清偿|"
+    r"触发|发现|浮现|新增|消失|启动|落地|稳定|支持|反对)"
+)
+
+_REVISIT_CITATION = re.compile(
+    r"[TPSCd]_?\d+"
+    r"|\bing\b"
+    r"|覆盖率"
+    r"|距离"
+    r"|权重"
+)
+
+
+def _valid_revisit(cond: str) -> bool:
+    c = (cond or "").strip()
+    if len(c) < 4:
+        return False
+    if any(b in c for b in _BAD_REVISIT):
+        return False
+    if (_REVISIT_TIME_HINT.search(c)
+            or _REVISIT_CHANGE_VERB.search(c)
+            or _REVISIT_CITATION.search(c)):
+        return True
+    return False
+```
+
+现在看留痕问题。
+
+原代码：
+```python
+for d in (view.deferrals or []):
+    sid = d.get("sub_id")
+    sq = sub_by_id.get(sid)
+    if sq is None:
+        continue
+    cond = str(d.get("revisit_condition", "")).strip()
+    if not _valid_revisit(cond):
+        stats["invalid"] += 1
+        continue
+    reason = str(d.get("reason", "")).strip()
+    if len(reason) < 4:
+        stats["invalid"] += 1
+        continue
+    ...
+```
+
+改法：两种 invalid（条件不合格 / reason 太短）都要留痕。留痕位置选 view.errors + pool.meta。
+
+```python
+for d in (view.deferrals or []):
+    sid = d.get("sub_id")
+    sq = sub_by_id.get(sid)
+    if sq is None:
+        continue
+    cond = str(d.get("revisit_condition", "")).strip()
+    reason = str(d.get("reason", "")).strip()
+    # [v1.21.62 P1-6 修] 被拦下的 deferral 必须留痕 ——
+    # 旧版只 stats["invalid"] += 1，不进产物、不进日志、不进池，
+    # 于是 98% 的账静默消失（违反宪法级"失败必须留痕"）。
+    if not _valid_revisit(cond):
+        stats["invalid"] += 1
+        _note = (f"deferral 被拦（revisit_condition 不合格）："
+                 f"子问题[{sid}] 条件={cond[:60]!r}")
+        view.errors.append(_note)
+        pool.meta.append(f"[P1-6] {_note}")
+        continue
+    if len(reason) < 4:
+        stats["invalid"] += 1
+        _note = (f"deferral 被拦（reason 太短）："
+                 f"子问题[{sid}] reason={reason[:40]!r}")
+        view.errors.append(_note)
+        pool.meta.append(f"[P1-6] {_note}")
+        continue
+    ...
+```
+
+嗯，`view.errors` 会进产物的「失败记录」段。`pool.meta` 会进池段。两条都留。
+
+但要小心：`view.errors` 太多会污染产物。如果一次跑挂了几百个 deferral，errors 会很长。可以限个数——比如只记前 20 条。但简单起见，先都记。如果太长再截断。
+
+其实更优雅的方案是加一个新字段 `view.deferral_rejects`（或复用现有结构），渲染时单独一段。但那要改 View 类、save_result 渲染，改动大。用 view.errors 是最小改动。
+
+我倾向用 view.errors，但加个限流——只记前 20 条：
+
+```python
+if len([e for e in view.errors if "deferral 被拦" in e]) < 20:
+    view.errors.append(_note)
+```
+
+或者简单点，直接 append，产物里由渲染层处理。
+
+算了，简单点：直接 append。如果产物太长是渲染层的问题。
+
+不过为了不刷屏，我建议：
+
+```python
+_P1_6_LOG_LIMIT = 20
+
+# 在循环外计数器
+_invalid_logged = 0
+
+# 在循环内
+if not _valid_revisit(cond):
+    stats["invalid"] += 1
+    if _invalid_logged < _P1_6_LOG_LIMIT:
+        _invalid_logged += 1
+        _note = (f"deferral 被拦（revisit_condition 不合格）："
+                 f"子问题[{sid}] 条件={cond[:60]!r}")
+        view.errors.append(_note)
+        pool.meta.append(f"[P1-6] {_note}")
+    continue
+```
+
+嗯，`_invalid_logged` 是局部变量，要在循环前初始化。
+
+好。现在再想一个问题：白名单宽一点会不会太宽？
+
+如果太宽，那么 `_valid_revisit` 就等于只过滤黑名单了。这其实是可以的——因为 P1-6 的初衷是"必须有可观测锚点"，如果黑名单能挡掉大部分垃圾，白名单只在明显无锚点时拦，那也合理。
+
+但也要保持 P1-6 的一个精神：**不允许"完全说不出什么时候回来"**。如果条件是完全空白的、只有"待定"/"以后"这类，那确实该拦。
+
+我的宽白名单保证：只要条件里有一点点具体内容（时间词、状态词、引用），就通过。这个尺度是对的。
+
+再看编码助手给的被错杀例子：
+- "T2探针给出边界判据后" → T2 命中 CITATION，给出 命中 CHANGE_VERB，后 命中 TIME_HINT ✅
+- "谓词类型区分完成后" → 完成 命中 CHANGE_VERB ✅
+- "出现公共刻度或登记程序" → 出现 命中 CHANGE_VERB ✅
+- "相对化屏障被形式化后" → 后 命中 TIME_HINT（`[^。]{1,40}之后`——但这是"化后"不是"之后"）
+
+嗯，"形式化后"——不含"之后"，含"后"。`_REVISIT_TIME_HINT` 里 `(时|后|前|了|的话)` 是在 `(当|若|如果|一旦|在)....` 后面才匹配的。"相对化屏障被形式化后"不含"当/若/如果/一旦/在"。"[^。]{1,40}之后"要"之后"——"形式化后"只有"后"没"之后"。
+
+所以 "相对化屏障被形式化后" 会 FAIL 我设计的宽白名单？
+
+检查一下：
+- `_REVISIT_TIME_HINT.search("相对化屏障被形式化后")`
+  - 分支 1：`(当|若|如果|一旦|在)...` — 无
+  - 分支 2：`第\s*\d+\s*圈` — 无
+  - 分支 3：`[^。]{1,40}之后` — 无（"之后"没出现）
+  - 分支 4：`[^。]{1,40}之前` — 无
+  - 分支 5：`(下|本|上)\s*\d*\s*圈` — 无
+  - → None ❌
+- `_REVISIT_CHANGE_VERB.search("相对化屏障被形式化后")`
+  - 检查动词列表：出现/发生/完成/解决/给出/成立/失败/超过/达到/变化/更新/补充/积累/形成/产生/暴露/显形/确认/推翻/失效/回答/清偿/触发/发现/浮现/新增/消失/启动/落地/稳定/支持/反对
+  - 都不在 → None ❌
+- `_REVISIT_CITATION.search("相对化屏障被形式化后")`
+  - T#/P#/S#/C#/d_###: 无
+  - ing: 无
+  - 覆盖率/距离/权重: 无
+  - → None ❌
+
+**FAIL！** 这是被编码助手亲自提到的合法条件，我的宽白名单居然没覆盖。
+
+需要修补：加"简单的时间词" pattern：
+
+```python
+_REVISIT_TIME_HINT = re.compile(
+    r"(当|若|如果|一旦|在)[^。]{0,60}(时|后|前|了|的话)"
+    r"|第\s*\d+\s*圈"
+    r"|[^。]{1,40}(之后|之前|以后)"
+    r"|(下|本|上)\s*\d*\s*圈"
+    r"|[^，。]{2,40}(后|时|前)"
+)
+```
+
+嗯，最后一条 `[^，。]{2,40}(后|时|前)` 会匹配"形式化后"，但也会匹配"以后"（已由黑名单拦）、"稍后"（已拦）。
+
+但这一条会不会太宽？任何以"后/时/前"结尾的词组都通过——"明天后"、"下午"（"午"不是）、"后"（长度不够）。"形式化后"OK，"结果后"OK。
+
+我担心的是"以后"——但这个已经在黑名单里。检查顺序是先黑名单，如果黑名单命中就 return False，所以 OK。
+
+"看情况"——黑名单命中，OK。
+
+再想：有没有真的该拦但会通过的例子？
+- "等有新材料时" —— "有...时" 会被 `[^，。]{2,40}(后|时|前)` 匹配吗？"等有新材料时" 结尾是 "时"，前面至少 2 个字符 "有新材料" —— 匹配 ✅（通过）
+  但 "等有新材料时" 其实挺模糊的。不过它有"时"，是一个触发词，算可观测。
+- "在合适的时候" —— "当/在...时" 分支命中？"在...时"：`(当|若|如果|一旦|在)[^。]{0,60}(时|后|前|了|的话)` → "在合适的时候" 中 "在" 后跟 "合适的" 再 "时" → 匹配 ✅
+  "在合适的时候" 是不是太模糊？它是的。但按我的尺度，它含"时"，是一个时间点，可观测（虽然模糊）。
+
+好，我觉得这个宽松度是合适的。**P1-6 的初衷不是"让 revisit 条件精确"，是"挡住完全无法判断是否发生的空词"**。模糊但有时点的条件，允许通过。
+
+修正后的白名单：
+
+```python
+_REVISIT_TIME_HINT = re.compile(
+    r"(当|若|如果|一旦|在)[^。]{0,60}(时|后|前|了|的话)"
+    r"|第\s*\d+\s*圈"
+    r"|[^，。]{2,40}(之后|之前|以后)"
+    r"|(下|本|上)\s*\d*\s*圈"
+    r"|[^，。]{3,40}(后|时|前)"
+)
+```
+
+最后一条 `[^，。]{3,40}(后|时|前)` 前面至少 3 个字，避免"时"或"后"单字被匹配。
+
+其实"T2探针给出边界判据后"——"后"结尾，前面 "T2探针给出边界判据" 有好几个字 → 匹配 ✅
+
+嗯，还有一个问题：`[^，。]{3,40}(后|时|前)` 里的 `后|时|前` 会不会匹配"前面"里的"前"？"出现在前面" —— 匹配，通过。这也 OK。
+
+OK 我觉得设计差不多。但还想到一点：**判据要做"召回优先"**。宁可放过模糊的，也不能拦住合法的。因为拦住的后果是"账消失"。所以白名单要尽量宽。
+
+那我再加一条兜底：如果条件长度 ≥ 10（有一定具体描述），且不含黑名单词，放行。
+
+```python
+def _valid_revisit(cond: str) -> bool:
+    c = (cond or "").strip()
+    if len(c) < 4:
+        return False
+    if any(b in c for b in _BAD_REVISIT):
+        return False
+    # 三类宽特征任命中其一
+    if (_REVISIT_TIME_HINT.search(c)
+            or _REVISIT_CHANGE_VERB.search(c)
+            or _REVISIT_CITATION.search(c)):
+        return True
+    # 兜底：长度 ≥ 10 且不含黑名单词 → 视为有具体描述
+    if len(c) >= 10:
+        return True
+    return False
+```
+
+加个兜底会更宽。这个尺度我认。
+
+再想一下——`re` 在这个文件里已经 import 了吗？看文件顶部：
+
+```python
+import re
+```
+
+是的，已 import。
+
+现在还要考虑一件事：白名单改了以后，**判定失败的留痕**。上面设计好了。
+
+还有 changelog 需要更新。
+
+还有一点：**旧条件里的 `_BAD_REVISIT` 里我没有加"看时机"等词**。需要加吗？看看现在的：
+```python
+_BAD_REVISIT = ("以后", "适当时机", "待定", "稍后", "再说", "看情况")
+```
+可以加："看时机"、"等时机"、"视情况"、"等以后"、"看情况吧"。
+
+但也别过度——"等时机"是不是被误伤了？"等时机成熟"这种其实是模糊的。嗯，其实这个判断有点主观。我倾向保留原列表，或者只加几个最明显的。
+
+原 6 条就够。不加。
+
+好，现在组织提示词。
+
+格式参考之前的 P1-6 提示词：
+
+```
+### P1-6 · revisit_condition 白名单（修复版）
+
+**位置**：`_valid_revisit`（约 XXX 行）+ `update_deferrals`（约 XXX 行）
+
+**现状**：（贴出现有代码）
+
+**问题**：（说明）
+
+**目标**：（说明）
+
+**具体改动**：
+
+**改动 1：白名单扩充**
+**查找**：
+```
+...
+```
+**替换为**：
+```
+...
+```
+
+**改动 2：留痕**
+**查找**：
+```
+...
+```
+**替换为**：
+```
+...
+```
+
+**验证**：
+- ...
+
+**回归检查**：
+- ...
+
+**changelog**：
+- ...
+```
+
+要具体、可粘贴。
+
+我在想应该给出具体行数吗？我不知道 v1.21.62 的行号。用"查找这段"的方式更稳。
+
+好，开始写。
+
+再检查一遍：我要找的"查找"串是不是唯一的？`_BAD_REVISIT` 那段肯定唯一。`update_deferrals` 里的 `for d in (view.deferrals or []):` 会有多处吗？看代码，`update_deferrals` 里应该只有一处。但要确认是它。
+
+原代码：
+```python
+    for d in (view.deferrals or []):
+        sid = d.get("sub_id")
+        sq = sub_by_id.get(sid)
+        if sq is None:
+            continue
+        cond = str(d.get("revisit_condition", "")).strip()
+        if not _valid_revisit(cond):
+            stats["invalid"] += 1
+            continue
+        reason = str(d.get("reason", "")).strip()
+        if len(reason) < 4:
+            stats["invalid"] += 1
+            continue
+        if any(x.get("sub_id") == sid and x.get("status") == "deferred"
+               for x in pool.deferrals):
+            continue
+        pool.deferrals.append({...})
+        stats["new"] += 1
+```
+
+是的，这段是唯一的。
+
+好，我再检查一遍查找串的唯一性——`if not _valid_revisit(cond):` 应该只在 `update_deferrals` 里出现一次。OK。
+
+写。
+
+还要考虑一点：编码助手提到 "冒烟里放了金丝雀钉住该边界"——它说冒烟加了一条断言。如果我改了白名单，那条断言可能需要同步改。我要提醒编码助手：**冒烟里凡是断言"XX 应被拦下"或"XX 应通过"的，都要按新白名单重新核对**。
+
+好。开始最终组织。
+
+其实我还可以给"分级留痕"方案——统计意义上的留痕，比如产物里加一段"本层 deferral 统计：新增 N / 通过 M / 被拦 K"。
+
+但这需要动 `save_result` 渲染。简单起见，先做到"未通过都进 view.errors"。如果要统计行，可以在 `_finalize_layer_common` 里加一段——但那是下一轮的事。
+
+好，写提示词。要完整，要可执行。我控制在 200 行以内。
+# P1-6 修复 · 编码助手执行提示词
+
+## 一、背景与目标
+
+v1.21.62 的 P1-6 补丁做了两件事：给 `revisit_condition` 加白名单，让"必须有可观测锚点"。**结果是灾难性的**——编码助手实测全库 1213 条真实条件，**只放行 24 条（2.0%），拦下 1189 条（98.0%）**，其中大量是明显合法的（"T2探针给出边界判据后"、"谓词类型区分完成后"、"相对化屏障被形式化后"）。
+
+更严重的是：被拦下的 deferral 只 `stats["invalid"] += 1` 然后 `continue`，**不进 vp、不进产物、不进池**——98% 的账在用户完全不知情的情况下消失，**直接违反宪法级"失败必须留痕"**。
+
+本提示词做三件事：
+1. 把白名单从"少数句式"改成"**三类宽特征任命中其一即放行**"（召回优先）
+2. **被拦下的 deferral 必须留痕**（进 `view.errors` + `pool.meta`，产物里可见）
+3. 同步更新冒烟断言与 changelog
+
+**总原则**：**宁可放过模糊的，也不能拦住合法的**。判据失败的代价是"账消失"，比"放过一个模糊条件"严重得多。
+
+---
+
+## 二、改动 1 · 白名单扩充
+
+**位置**：`_BAD_REVISIT` 及其下方的 `_REVISIT_ANCHOR_PATTERNS` / `_valid_revisit`。
+
+**查找**（这段是 v1.21.62 引入的）：
+
+```python
+_BAD_REVISIT = ("以后", "适当时机", "待定", "稍后", "再说", "看情况")
+
+# [v1.21.62 P1-6] 白名单：revisit_condition 必须含**可观测锚点**
+#   —— 说得出一个具体的事件、观察、或状态变化。
+#   黑名单只挡"以后"这类空词，挡不住"当有新材料时"——那也无法判断
+#   它是否发生，等于没写。
+_REVISIT_ANCHOR_PATTERNS = (
+    r"当.{1,30}(出现|发生|完成|解决|给出|成立|失败|超过|达到)",
+    r"若.{1,30}(出现|发生|完成|解决|给出|成立|失败|超过|达到)",
+    r"第\s*\d+\s*圈后",
+    r"覆盖率.{0,10}(超过|达到|>|≥)",
+    r"有.{1,20}证据(时|后)",
+    r"[A-Za-z0-9]{2,}\s*(出现|变为|大于|小于|达到)",
+)
+
+
+def _valid_revisit(cond: str) -> bool:
+    c = (cond or "").strip()
+    if len(c) < 4:
+        return False
+    if any(b in c for b in _BAD_REVISIT):
+        return False
+    # [v1.21.62 P1-6] 必须有可观测锚点
+    if not any(re.search(p, c) for p in _REVISIT_ANCHOR_PATTERNS):
+        return False
+    return True
+```
+
+**替换为**：
+
+```python
+_BAD_REVISIT = ("以后", "适当时机", "待定", "稍后", "再说", "看情况")
+
+# [v1.21.62 P1-6 修] 白名单：revisit_condition 必须含**可观测锚点**。
+#
+# ★ 为什么改：v1.21.62 初版只有 6 条 pattern（全是"当X动词"一族句式），
+#   实测 1213 条真实条件只放行 2%，98% 被静默吞掉。被拦下的多是明显
+#   合法的可观测锚点（"T2探针给出边界判据后"、"谓词类型区分完成后"、
+#   "相对化屏障被形式化后"）。**判据太窄，反而制造了数据丢失**。
+#
+# ★ 修法：从"少数句式"改成**三类宽特征**，任命中其一即放行：
+#   ① 时间/条件词：当/若/如果/一旦/在…时（后/前）/…之后/第N圈/…后
+#   ② 状态变化动词：出现/完成/解决/给出/成立/变化/更新/…（约 30 个）
+#   ③ 引用对象：T#/P#/S#/C#/d_###/ing/覆盖率/距离/权重
+#   再加一层兜底：长度 ≥ 10 字且不含黑名单词 → 视为有具体描述。
+#
+# ★ 判据顺序：**先黑名单排除，再白名单放行**。黑名单挡"以后"这类纯空词，
+#   白名单 + 兜底保证合法条件不被误杀。**召回优先，不追求精确率**。
+#
+# ★ 保持的原则：不允许"完全说不出什么时候回来"（即纯空词被拦）。
+_REVISIT_TIME_HINT = re.compile(
+    r"(当|若|如果|一旦|在)[^。]{0,60}(时|后|前|了|的话)"
+    r"|第\s*\d+\s*圈"
+    r"|[^，。]{2,40}(之后|之前|以后)"
+    r"|(下|本|上)\s*\d*\s*圈"
+    # 兜底时间尾：含"后/时/前"结尾的短语（"形式化后"、"完成后"等）
+    # 前面要求 ≥3 字，避免单字"时/后/前"被误匹配
+    r"|[^，。]{3,40}(后|时|前)"
+)
+
+_REVISIT_CHANGE_VERB = re.compile(
+    r"(出现|发生|完成|解决|给出|成立|失败|超过|达到|变化|更新|"
+    r"补充|积累|形成|产生|暴露|显形|确认|推翻|失效|回答|清偿|"
+    r"触发|发现|浮现|新增|消失|启动|落地|稳定|支持|反对|通过|"
+    r"披露|揭示|证实|证伪|澄清|定位|锁定)"
+)
+
+_REVISIT_CITATION = re.compile(
+    r"[TPSCd]_?\d+"
+    r"|\bing\b"
+    r"|覆盖率"
+    r"|距离"
+    r"|权重"
+)
+
+
+def _valid_revisit(cond: str) -> bool:
+    """检查 revisit_condition 是否含**可观测锚点**。
+
+    ★ v1.21.62 P1-6 修：判据放宽成"三类宽特征任一命中即通过" +
+      "长度 ≥ 10 且不含黑名单词"兜底。**召回优先**——拦错了代价是
+      "账消失"，放过一个模糊条件只是"多挂一笔不太精确的账"。
+    """
+    c = (cond or "").strip()
+    if len(c) < 4:
+        return False
+    # 黑名单优先：纯空词一律拦
+    if any(b in c for b in _BAD_REVISIT):
+        return False
+    # 三类宽特征任一命中即通过
+    if (_REVISIT_TIME_HINT.search(c)
+            or _REVISIT_CHANGE_VERB.search(c)
+            or _REVISIT_CITATION.search(c)):
+        return True
+    # 兜底：长度 ≥ 10 字且不含黑名单词 → 视为有具体描述
+    if len(c) >= 10:
+        return True
+    return False
+```
+
+---
+
+## 三、改动 2 · `update_deferrals` 加留痕
+
+**位置**：`update_deferrals` 里处理 `view.deferrals` 的循环。
+
+**查找**（这段处理两处 invalid 都只累加 stats 不落痕）：
+
+```python
+    for d in (view.deferrals or []):
+        sid = d.get("sub_id")
+        sq = sub_by_id.get(sid)
+        if sq is None:
+            continue
+        cond = str(d.get("revisit_condition", "")).strip()
+        if not _valid_revisit(cond):
+            stats["invalid"] += 1
+            continue
+        reason = str(d.get("reason", "")).strip()
+        if len(reason) < 4:
+            stats["invalid"] += 1
+            continue
+        if any(x.get("sub_id") == sid and x.get("status") == "deferred"
+               for x in pool.deferrals):
+            continue
+```
+
+**替换为**：
+
+```python
+    # [v1.21.62 P1-6 修] 被拦下的 deferral 必须留痕 ——
+    #   旧版只 stats["invalid"] += 1，不进产物、不进日志、不进池，
+    #   于是 98% 的账在用户完全不知情的情况下消失（违反宪法级
+    #   "失败必须留痕"）。现在：既进 view.errors（产物【失败记录】段），
+    #   也进 pool.meta（池段），并限制日志条数避免刷屏。
+    _p16_log_limit = 20
+    _p16_logged = 0
+
+    for d in (view.deferrals or []):
+        sid = d.get("sub_id")
+        sq = sub_by_id.get(sid)
+        if sq is None:
+            continue
+        cond = str(d.get("revisit_condition", "")).strip()
+        if not _valid_revisit(cond):
+            stats["invalid"] += 1
+            if _p16_logged < _p16_log_limit:
+                _p16_logged += 1
+                _note = (f"deferral 被拦（revisit_condition 不合格）："
+                         f"子问题[{sid}] 条件={cond[:60]!r}")
+                view.errors.append(_note)
+                pool.meta.append(f"[P1-6] {_note}")
+            continue
+        reason = str(d.get("reason", "")).strip()
+        if len(reason) < 4:
+            stats["invalid"] += 1
+            if _p16_logged < _p16_log_limit:
+                _p16_logged += 1
+                _note = (f"deferral 被拦（reason 太短）："
+                         f"子问题[{sid}] reason={reason[:40]!r}")
+                view.errors.append(_note)
+                pool.meta.append(f"[P1-6] {_note}")
+            continue
+        if any(x.get("sub_id") == sid and x.get("status") == "deferred"
+               for x in pool.deferrals):
+            continue
+```
+
+**同时**，循环结束后加一行汇总留痕（这样即使超过 20 条也有总数可查）：
+
+**查找**（`update_deferrals` 末尾 `_starve_escalation` 调用前）：
+
+```python
+    # [v1.21.61] 反向触发点放最后：要先看完本圈的所有进展，才知道谁没动
+    _starve_escalation(pool, view, sub_by_id, layer, cfg, stats)
+    return stats
+```
+
+**替换为**：
+
+```python
+    # [v1.21.62 P1-6 修] 汇总留痕：被拦总数 > 0 时一定写进 meta，
+    #   避免"20 条上限"之外的拦下条目彻底无痕可查。
+    if stats["invalid"] > 0 and _p16_logged >= _p16_log_limit:
+        pool.meta.append(
+            f"[P1-6] 本层 deferral 被拦共 {stats['invalid']} 条，"
+            f"仅前 {_p16_log_limit} 条写入 view.errors；"
+            f"完整清单见 stats['invalid']")
+
+    # [v1.21.61] 反向触发点放最后：要先看完本圈的所有进展，才知道谁没动
+    _starve_escalation(pool, view, sub_by_id, layer, cfg, stats)
+    return stats
+```
+
+---
+
+## 四、改动 3 · 冒烟断言同步
+
+**位置**：`smoke_test.py` 里 `check_p162_units`（编码助手加的 P1-6 断言）。
+
+**问题**：编码助手加了一条断言"金丝雀钉住该边界"，它大概断言了"某些条件应被拦" / "某些条件应通过"。**这些断言的期望值是按旧白名单（超窄）写的**，一改白名单就会失败。
+
+**做法**：
+1. **找到所有涉及 `_valid_revisit` / `revisit_condition` 的断言**
+2. **按新白名单重新核对**，逐条确认：
+   - 期望"通过"的：现在还能通过吗？
+   - 期望"拦下"的：现在还被拦吗？被拦的理由还是原来那个吗？
+3. **新增一组边界断言**（至少 6 条）：
+
+```python
+# [v1.21.62 P1-6 修] 白名单边界 —— 双向钉死
+_revisit_cases = [
+    # (条件, 期望通过?, 说明)
+    ("以后", False, "纯空词，黑名单"),
+    ("看情况", False, "纯空词，黑名单"),
+    ("待定", False, "纯空词，黑名单"),
+    ("当子问题 1 解决后", True, "时间词 + 状态动词"),
+    ("T2 探针给出边界判据后", True, "引用 + 状态动词"),
+    ("谓词类型区分完成后", True, "状态动词 '完成'"),
+    ("相对化屏障被形式化后", True, "时间兜底词 '后'"),
+    ("出现公共刻度或登记程序", True, "状态动词 '出现'"),
+    ("覆盖率超过 0.7", True, "引用 '覆盖率'"),
+    ("只要有一点具体描述超过十字", True, "长度兜底"),
+    ("短", False, "长度不足"),
+]
+for _c, _expect, _why in _revisit_cases:
+    _got = _valid_revisit(_c)
+    assert _got == _expect, (
+        f"[P1-6 修] revisit_condition 边界错误：{_c!r} "
+        f"期望 {_expect}，实际 {_got}（{_why}）")
+```
+
+---
+
+## 五、验证清单
+
+改完后逐条核对：
+
+1. **AST 通过**：`python -c "import ast; ast.parse(open('元DGTF-V1.21.62.py', encoding='utf-8').read())"`
+2. **导入通过**：`python -c "import 元DGTF"`（不报错）
+3. **冒烟全绿**：`python smoke_test.py` 退出码 0
+4. **新旧白名单对照**：跑一遍原始 1213 条条件，记录：
+   - 新白名单放行数（预期 ≥ 1100，即 ≥ 90%）
+   - 新白名单拦下数（预期 ≤ 100，即 ≤ 10%）
+   - **被拦下的条目人工抽 10 条检查**，确认都是真正的纯空词或过短条件
+5. **留痕验证**：构造一个含 3 条 invalid deferral 的 mock，断言：
+   - `view.errors` 里有 3 条 "deferral 被拦" 记录
+   - `pool.meta` 里有 3 条 "[P1-6]" 记录
+   - 断言产物 md 里能找到 "deferral 被拦"
+6. **限流验证**：构造 30 条 invalid，断言 `view.errors` 里只有 20 条（上限内），但 `pool.meta` 里有一条汇总"共 30 条"
+
+---
+
+## 六、changelog 写法
+
+在 v1.21.62 段落末尾（`[应用记录]` 段之前）加：
+
+```
+  ────────────────────────────────────────────────────────
+  [P1-6 修] revisit_condition 白名单**做反了** —— 98% 真实条件被静默吞掉
+  ────────────────────────────────────────────────────────
+
+  **问题**：v1.21.62 初版白名单只有 6 条 pattern（全是"当X动词"一族句式），
+  实测全库 1213 条真实 revisit_condition **只放行 24 条（2.0%）**，
+  1189 条被拦下。被拦下的多是明显合法的（"T2探针给出边界判据后"、
+  "谓词类型区分完成后"、"相对化屏障被形式化后"）。
+  更严重的是被拦下的 deferral 只 `stats["invalid"] += 1` 然后 continue，
+  **不进 vp、不进产物、不进池**——98% 的账在用户不知情下消失，
+  违反宪法级"失败必须留痕"。
+
+  **修法**（两处）：
+  1. **白名单扩充成三类宽特征**（召回优先）：①时间/条件词；②状态变化
+     动词；③引用对象（T#/P#/S#/C#/d_###/ing/覆盖率/距离/权重）。
+     再加一层兜底：长度 ≥ 10 且不含黑名单词 → 视为有具体描述。
+     判据顺序：**先黑名单排除，再白名单放行**。目标召回 ≥ 90%。
+  2. **被拦下的必须留痕**：进 `view.errors`（产物【失败记录】段）
+     + `pool.meta`（池段），限流 20 条防刷屏；超过 20 条时写一条汇总。
+
+  **验证**：冒烟新增 11 条边界断言（纯空词拦 / 各类合法条件通过 /
+  长度兜底通过 / 长度不足拦）；新旧白名单对照跑 1213 条真实条件，
+  放行率应 ≥ 90%。
+```
+
+---
+
+## 七、一句话
+
+> **P1-6 的初版是"想精确，结果丢数据"。修法是把判据反过来**——**黑名单严、白名单宽、兜底宽松、失败必留痕**。目标不是"精确判断什么算可观测锚点"，是"**确保 90%+ 的合法条件不被误杀，且被拦的一定能在产物里看到**"。

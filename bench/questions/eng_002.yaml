@@ -1,0 +1,10 @@
+# [v122 bench] eng_002 · 地铁运营效率
+id: eng_002
+domain: eng
+question: "早高峰地铁站台拥挤越来越严重，运营效率该怎么提升"
+orientation: boundary
+budget:
+  profile: balanced
+  max_calls: 180
+  rounds: "0:5,1:5,both:5,all:6"
+  mode: serial

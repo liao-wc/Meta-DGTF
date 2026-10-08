@@ -1,0 +1,87 @@
+{
+ "tag": "V70",
+ "src": "元DGTF-V1.21.70.py",
+ "route": "0,1",
+ "rounds": "0:2,1:2",
+ "mode": "serial",
+ "orientation": "auto",
+ "llm_calls": 44,
+ "tri_state": [
+  3,
+  7
+ ],
+ "meta_closure_all": null,
+ "duel_suspensions_both": [],
+ "engagements_by_view": {
+  "0": [
+   {
+    "target": "T11 基线选项缺失",
+    "tension_id": null
+   },
+   {
+    "target": "T12 复盘归因落点",
+    "tension_id": null
+   },
+   {
+    "target": "T13 竣工年份分布图",
+    "tension_id": null
+   }
+  ],
+  "1": [
+   {
+    "target": "专项债与中央补贴的可获得性，是否在方案比选启动前就已锁定技术路线？若是，锁定发生在哪份文件、哪个会议？",
+    "tension_id": null
+   },
+   {
+    "target": "以“只改调度不动管网”为基线，重建与局部改造加海绵的增量收益（按积水深度削减、退水时间缩短、灾损折算）各是多少？",
+    "tension_id": null
+   },
+   {
+    "target": "海绵渗透率上限值（受地下空间与土壤约束）是否已被要求由地质勘察签字确认？若未被要求，是哪个环节把它排除在方案可行性论证之外？",
+    "tension_id": null
+   }
+  ]
+ },
+ "suspensions_with_tid": {
+  "0": [
+   {
+    "target": "海绵渗透率上限的具体取值",
+    "tension_id": null,
+    "status": "active"
+   },
+   {
+    "target": "未知到期日写入议程",
+    "tension_id": null,
+    "status": "active"
+   },
+   {
+    "target": "T9 暴雨第一道指令归属",
+    "tension_id": null,
+    "status": "active"
+   },
+   {
+    "target": "T15 责任追究与改造决策权责错位",
+    "tension_id": null,
+    "status": "active"
+   }
+  ],
+  "1": []
+ },
+ "pools_all_engagements": [],
+ "views_errors": {
+  "0": [],
+  "1": []
+ },
+ "pools_meta_p16": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": []
+ },
+ "pools_meta_len": {
+  "0": 5,
+  "1": 5,
+  "both": 0,
+  "all": 0
+ }
+}

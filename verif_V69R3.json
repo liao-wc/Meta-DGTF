@@ -1,0 +1,60 @@
+{
+ "tag": "V69R3",
+ "src": "元DGTF-V1.21.69.py",
+ "route": "0,1",
+ "rounds": "0:2,1:2",
+ "mode": "serial",
+ "orientation": "auto",
+ "llm_calls": 43,
+ "tri_state": [
+  2,
+  6
+ ],
+ "meta_closure_all": null,
+ "duel_suspensions_both": [],
+ "engagements_by_view": {
+  "0": [
+   {
+    "target": "中断清单制定主体",
+    "tension_id": null
+   }
+  ],
+  "1": [
+   {
+    "target": "若某产权人既不签也不卖，海绵容积重算后整片布局是否仍成立，还是必须整体重划？这个分叉在哪一步才显形——是在容积计算阶段，还是在签字权确认阶段？",
+    "tension_id": null
+   },
+   {
+    "target": "若积水点清单由现任运维方编制，他是否同时成为清单合法性的唯一背书人，从而在签字权讨论前就锁定责任归属？清单出处是否先于签字权决定谁被写进责任链？",
+    "tension_id": null
+   }
+  ]
+ },
+ "suspensions_with_tid": {
+  "0": [
+   {
+    "target": "重建边界（干管/支管/合流改分流）",
+    "tension_id": null,
+    "status": "active"
+   }
+  ],
+  "1": []
+ },
+ "pools_all_engagements": [],
+ "views_errors": {
+  "0": [],
+  "1": []
+ },
+ "pools_meta_p16": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": []
+ },
+ "pools_meta_len": {
+  "0": 4,
+  "1": 4,
+  "both": 0,
+  "all": 0
+ }
+}

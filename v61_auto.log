@@ -1,0 +1,9 @@
+=== 并行跑批 2 个 run，并发上限 2 ===
+=== 开始 2026-10-01 06:19:25 ===
+✓ [a61F/auto] 9.7min
+    [a61F/auto] OK  9.7min  calls=160  → v60_a61F_rauto_auto.log
+       missing=[]  skipped=[]
+✓ [a61H/auto] 20.7min
+    [a61H/auto] OK  20.7min  calls=239  → v60_a61H_rauto_auto.log
+       missing=[]  skipped=[]
+=== 结束 2026-10-01 06:40:09 ===

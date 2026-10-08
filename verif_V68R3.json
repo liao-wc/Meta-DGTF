@@ -1,0 +1,79 @@
+{
+ "tag": "V68R3",
+ "src": "元DGTF-V1.21.68.py",
+ "route": "0,1",
+ "rounds": "0:2,1:2",
+ "mode": "serial",
+ "orientation": "auto",
+ "llm_calls": 43,
+ "tri_state": [
+  2,
+  6
+ ],
+ "meta_closure_all": null,
+ "duel_suspensions_both": [],
+ "engagements_by_view": {
+  "0": [
+   {
+    "target": "T9必然进水门口与撤离赔付的触发",
+    "tension_id": null
+   }
+  ],
+  "1": [
+   {
+    "target": "若旧管位起点埋深已无余量，重建与局部改造的差别是否只在「能否借旧管位」——比选的分母换成「可借管位长度」后，需要哪些地下冲突点判定规则和更新机制来支撑这个可比量？",
+    "tension_id": null
+   },
+   {
+    "target": "方案空间为零的地块不进比选，比选表格里这一栏是留空、写「不适用」还是单列一张撤离赔付清单——哪种写法在预算里拿得到钱，且能通过审计？",
+    "tension_id": null
+   },
+   {
+    "target": "顶托下必然进水的三类门口（最低洼、无出路、被占压），撤离与赔付的触发是按雨量还是按水位，谁有权在雨前拍板启动——这个触发机制如何与监测和临时措施同步，而不是等雨点名后才启动？",
+    "tension_id": null
+   }
+  ]
+ },
+ "suspensions_with_tid": {
+  "0": [
+   {
+    "target": "历史保护范围锁死标高与埋深",
+    "tension_id": null,
+    "status": "active"
+   },
+   {
+    "target": "多产权主体下海绵清理频次无法约束",
+    "tension_id": null,
+    "status": "active"
+   },
+   {
+    "target": "T6井盖堵塞决定当晚哪片淹",
+    "tension_id": null,
+    "status": "active"
+   },
+   {
+    "target": "T7海绵下垫面参数用哪一年数据",
+    "tension_id": null,
+    "status": "active"
+   }
+  ],
+  "1": []
+ },
+ "pools_all_engagements": [],
+ "views_errors": {
+  "0": [],
+  "1": []
+ },
+ "pools_meta_p16": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": []
+ },
+ "pools_meta_len": {
+  "0": 4,
+  "1": 2,
+  "both": 0,
+  "all": 0
+ }
+}

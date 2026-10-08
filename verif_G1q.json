@@ -1,0 +1,46 @@
+{
+ "tag": "G1q",
+ "src": "元DGTF-V1.21.66.py",
+ "route": "1",
+ "rounds": "1:6",
+ "mode": "serial",
+ "orientation": "auto",
+ "llm_calls": 63,
+ "tri_state": [
+  4,
+  6
+ ],
+ "meta_closure_all": null,
+ "duel_suspensions_both": [],
+ "engagements_by_view": {
+  "1": [
+   {
+    "target": "海绵城市措施（如透水铺装、绿色屋顶、雨水花园等）在老城区特定条件下的适用性如何评估？",
+    "tension_id": null
+   },
+   {
+    "target": "未来暴雨情景与政策资金的不确定性如何影响方案选择？",
+    "tension_id": null
+   }
+  ]
+ },
+ "suspensions_with_tid": {
+  "1": []
+ },
+ "pools_all_engagements": [],
+ "views_errors": {
+  "1": []
+ },
+ "pools_meta_p16": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": []
+ },
+ "pools_meta_len": {
+  "0": 0,
+  "1": 15,
+  "both": 0,
+  "all": 0
+ }
+}

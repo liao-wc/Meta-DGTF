@@ -1,0 +1,63 @@
+# position_all_same 诊断
+entry=all
+round=2
+anchor=订单系统该选一致性还是可用性，CAP 怎么取舍
+same_position=0
+candidate_count=14
+
+[1] attr=1 pos=0 src=阳
+    desc: all 作为整体，其边界由"哪些局部已被停手"划出，停手之外的局部即使在场也不进 all
+    why_position: 停手之外的局部明确不进 all，未被收
+
+[2] attr=1 pos=0 src=阳
+    desc: all 里可查的是各局部留下的字符，不可查的是这些局部为何被选为切面，选取动作本身不落字符
+    why_position: 选取动作不落字符，all 无此位可收
+
+[3] attr=1 pos=0 src=阳
+    desc: 授权位悬在 all 之外：它不在任一局部内，也不在局部之间，all 收不进去因为它不留字符可被收
+    why_position: 授权位悬在 all 之外，无字符可收
+
+[4] attr=1 pos=0 src=阳
+    desc: 选举期 0 和 1 都不成立这件事，all 目前按"未定"收着，但它其实是"无定义"，all 缺一格装它
+    why_position: 无定义缺一格，仅以未定名义暂存，未收
+
+[5] attr=1 pos=0 src=阳
+    desc: all 里每个局部都宣称自己未完成，可 all 没有内部判据说哪个局部算够、哪个局部该继续
+    why_position: 内部判据未被收进，all 无此据
+
+[6] attr=1 pos=0 src=阳
+    desc: all 的停手发生在层与层之间，下一次从哪个局部重开，不由此前任何局部的内容决定
+    why_position: 层间停手与重开不由任一局部决定
+
+[7] attr=0 pos=0 src=阴
+    desc: 这几个切面被选中，不是 all 决定的，是上游各自停手的位置凑出来的，all 只是接了已停手的部分
+    why_position: 上游停手位置未被收，all 只接结果
+
+[8] attr=0 pos=0 src=阴
+    desc: 局部之间那次停手是谁在什么时刻被允许停的，没有任何字符回答，all 缺这一格
+    why_position: 许可停手的时刻无字符，all 缺此格
+
+[9] attr=0 pos=0 src=阴
+    desc: "无定义"与"未定"的区别，all 里只有一侧显形，另一侧没有对等位置，收不匀
+    why_position: 无定义一侧无对等位置，收不匀
+
+[10] attr=0 pos=0 src=阴
+    desc: all 里悬在外面的授权位与停手权不共用位置，这两处缺口没有被同一个动作收进去
+    why_position: 授权位与停手权两处均未被收进
+
+[11] attr=0 pos=0 src=阴
+    desc: all 的完整性没有判据：停手的局部和未完成的局部从内部看同形，all 分不出哪个是收好的
+    why_position: 完整性判据未收，all 分不出哪个收好
+
+[12] attr=0 pos=0 src=阴
+    desc: all 为何是这几个切面而非别的，切面选取权归谁，all 自身没有回答这个问题的位置
+    why_position: 切面选取权无位置，all 未回答此问
+
+[13] attr=0 pos=0 src=阴
+    desc: 用户侧补值、测点改变被测、外移不可测这三处缺口，all 目前只在一侧登记，另一侧空着
+    why_position: 三处缺口另一侧空着，未被登记
+
+[14] attr=0 pos=0 src=阴
+    desc: 迁移表里没有一格能装"无定义"，all 里也没有一格能装"选举期这段整体"，两处缺口同形未接
+    why_position: 无定义与选举期整体两格均空着
+

@@ -1,0 +1,17 @@
+V60_THINKING=default=disabled,reasoner=enabled|A 0:6,1:5,both:5,all:5 mx_tls_A_r6555_t0 TLS 1.3 相比 TLS 1.2 做了哪些关键改动？
+V60_THINKING=default=disabled,reasoner=disabled|B 0:6,1:5,both:5,all:5 mx_ip_B_r6555_t1 IPv6 相比 IPv4 到底改了什么？
+V60_THINKING=default=disabled,reasoner=disabled|B 0:6,1:5,both:5,all:5 mx_tls_B_r6555_t1 TLS 1.3 相比 TLS 1.2 做了哪些关键改动？
+V60_THINKING=default=disabled,reasoner=disabled|B 5 mx_eu_B_r5_t1 欧盟《人工智能法案》对高风险 AI 系统规定了哪些主要义务？
+V60_THINKING=default=disabled,reasoner=disabled|A 0:6,1:5,both:5,all:5 mx_eu_A_r6555_t1 欧盟《人工智能法案》对高风险 AI 系统规定了哪些主要义务？
+V60_THINKING=default=disabled,reasoner=disabled|A 0:6,1:5,both:5,all:5 mx_tls_A_r6555_t1 TLS 1.3 相比 TLS 1.2 做了哪些关键改动？
+V60_THINKING=default=disabled,reasoner=enabled|B 0:6,1:5,both:5,all:5 mx_ip_B_r6555_t0 IPv6 相比 IPv4 到底改了什么？
+V60_THINKING=default=disabled,reasoner=disabled|A 0:6,1:5,both:5,all:5 mx_ip_A_r6555_t1 IPv6 相比 IPv4 到底改了什么？
+V60_THINKING=default=disabled,reasoner=enabled|B 5 mx_eu_B_r5_t0 欧盟《人工智能法案》对高风险 AI 系统规定了哪些主要义务？
+V60_THINKING=default=disabled,reasoner=enabled|A 0:6,1:5,both:5,all:5 mx_eu_A_r6555_t0 欧盟《人工智能法案》对高风险 AI 系统规定了哪些主要义务？
+V60_THINKING=default=disabled,reasoner=disabled|B 0:6,1:5,both:5,all:5 mx_eu_B_r6555_t1 欧盟《人工智能法案》对高风险 AI 系统规定了哪些主要义务？
+V60_THINKING=default=disabled,reasoner=enabled|A 5 mx_eu_A_r5_t0 欧盟《人工智能法案》对高风险 AI 系统规定了哪些主要义务？
+V60_THINKING=default=disabled,reasoner=disabled|B 5 mx_tls_B_r5_t1 TLS 1.3 相比 TLS 1.2 做了哪些关键改动？
+V60_THINKING=default=disabled,reasoner=enabled|A 5 mx_ip_A_r5_t0 IPv6 相比 IPv4 到底改了什么？
+V60_THINKING=default=disabled,reasoner=enabled|B 5 mx_ip_B_r5_t0 IPv6 相比 IPv4 到底改了什么？
+V60_THINKING=default=disabled,reasoner=disabled|A 5 mx_ip_A_r5_t1 IPv6 相比 IPv4 到底改了什么？
+V60_THINKING=default=disabled,reasoner=disabled|A 5 mx_eu_A_r5_t1 欧盟《人工智能法案》对高风险 AI 系统规定了哪些主要义务？

@@ -1,0 +1,43 @@
+═══ v1.22 验收 · phase=p2b · src=元DGTF-V1.22.1.py ═══
+Building prefix dict from the default dictionary ...
+Loading model from cache C:\Users\18432\AppData\Local\Temp\jieba.cache
+Loading model cost 0.812 seconds.
+Prefix dict has been built successfully.
+[safe-delete][SAFE_DELETE_FAIL_CLOSED] {"target": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\_verify_p2b_ans.json", "reason": "windows-sandbox-recycle-bin-unavailable"}
+  ℹ️  模块加载成功
+  ✅ [G.crlf] CRLF 一致：bare_lf=0 crr_lf=0
+  ✅ [G.parse] AST 可解析
+  ℹ️  差异规模：66 块 / +1661 -186（19609 → 21084 行）
+  ✅ [G.smokeSRC] smoke_test.SRC = 元DGTF-V1.22.1.py
+  ✅ [G.del] 纯删除行 0（≤0）；改写行 186（如实报，不计删）
+  ✅ [G.mech] 机制未被移除（符号消失 0 项）
+  ℹ️  函数体骤减 2 项：render_landing 259 → 8；_auto_plan 142 → 15（须在报告里解释）
+
+── 阶段 p2b ──
+  ✅ [P2b.1.a] 有 answers 的锚点 3/3 ≥ 2
+  ✅ [P2b.1.b] 单锚点 answers ≤ 5（超限 []）
+  ✅ [P2b.1.c] 单条 answer ≤ 40 字（超长 []）
+  ✅ [P2b.1.d] tier 门内 ≥1 条 answer 能对上 [外] 侧面（实测 1 条；参照集 14 条）
+  · P2b.1.d 命中：a2 的 '重建还是局部改造加海绵'
+  ✅ [P2b.2.a] _hit_by_answers 存在
+  ✅ [P2b.2.b] _hit_by_claim 存在
+  ✅ [P2b.2.c] claim 路径字面 0.6 未改（宪法级禁令）
+  ✅ [P2b.2.d] answers 路径用 _overlap_coef + _UNTRACED_OVERLAP（未新造阈值）
+  ✅ [P2b.2.e] 正向命中 + 三类负对照（实测 [True, False, False, False]）
+  ✅ [P2b.3] answers 键在且值读对（实测 ['问题A', '问题B']）
+  ✅ [P2b.4.a] crosscheck 调 _hit_by_answers
+  ✅ [P2b.4.b] crosscheck 调 _hit_by_claim
+  ✅ [P2b.4.a2] crosscheck 读 anchors 的 answers 字段
+  ✅ [P2b.4.a3] tier 门仍在双路径之内
+  ✅ [P2b.4.c] 负对照：无 answers → 走 claim 路径（实测 {'id': 'n1', 'tier': 1, 'claim': '管网设计重现期 3~5 年'}）
+  ✅ [P2b.4.d] 负对照：answers=[] → 也走 claim 路径（实测 {'id': 'n2', 'tier': 1, 'answers': [], 'claim': '管网设计重现期 3~5 年'}）
+  ✅ [P2b.4.e] 负对照：tier 超 floor → 即便 answers 命中也不选（实测 None）
+  ✅ [P2b.7.a] ≥1 题 triage ≥ 1 条（实测 [1, 0, 0]）-- 主判据
+  · P2b.7 详情：老城区内涝 triage=1 calls=65；中小制造 triage=0 calls=66；社区医院 triage=0 calls=68
+  · P2b.8 漂移观察[老城区内涝]（不判 pass/fail）：{"und_to_partial": 0, "applied_total": 0, "triage_suggestions": 1, "triage_writes_log": false, "ratio": null}
+  · P2b.8 漂移观察[中小制造]（不判 pass/fail）：{"und_to_partial": 1, "applied_total": 1, "triage_suggestions": 0, "triage_writes_log": false, "ratio": 1.0}
+  · P2b.8 漂移观察[社区医院]（不判 pass/fail）：{"und_to_partial": 0, "applied_total": 0, "triage_suggestions": 0, "triage_writes_log": false, "ratio": null}
+  ✅ [P2b.9.a] rc1 → rc1b 纯删除行 0（红线 0）
+  ✅ [P2b.9.b] rc1 → rc1b 符号消失 0 项
+
+━━━ PASS 25 / FAIL 0 ━━━

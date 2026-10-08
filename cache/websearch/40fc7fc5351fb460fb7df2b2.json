@@ -1,0 +1,61 @@
+{
+  "_ts": 1791221888.068513,
+  "results": [
+    {
+      "claim": "选择排序（selection sort）—{\\displaystyle O(n^{2})}\n 希尔排序（shell sort）—{\\displaystyle O(n\\log ^{2}n)}如果使用最佳的现在版本\n 克洛弗排序（Clover sort）—{\\displaystyle O(n)}期望时间，{\\displaystyle O(n^{2})}最坏情况(/wiki/Wikipedia:%E5%88%97%E6%98%8E%E6%9D%A5%E6%BA%90 \"Wikipedia:列明来源\")\n 梳排序— {\\displaystyle O(n\\log n)}\n 堆排序（heap sort）—{\\displaystyle O(n\\log n)}\n 平滑排序（英语：Smoothsort）（smooth sort）— {\\displaystyle O(n\\log n)}\n 快速排序（quick",
+      "url": "https://zh.wikipedia.org/zh-hans/%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95",
+      "source": "https://zh.wikipedia.org/zh-hans/%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "二進位數字，基數β = 2，位數D = logᵦR。實務上取基數β = 256 = 2⁸，記憶體剛好是1 byte = 8 bit。\n\n也能處理二補數。仔細判讀正負號位置。\n\n也能處理浮點數。仔細判讀正負號位置、次方值位置。\n\n實務上速度最快的排序演算法。\n\nbucket sort\n\n桶排序。divide-and-conquer method。自訂桶子數量β、自訂桶子區間[a₀,a₁)到[aᵦ₋₁,aᵦ)。每個數字放到相符桶子。各個桶子各自排序。由小到大讀取各個桶子的數字。可以處理非整數。\n\n桶子區間，習慣遞迴等分。數字範圍，除以桶子數量，作為桶子區間寬度。每個數字經由除法運算、取整運算，求得相符桶子編號。\n\nflashsort\n\n閃排序。bucket sort加強版。預先求得最小值、最大值，作為數字範圍。最大值減最小值，除以桶子數量，作為桶子區間寬度。\n\nsamplesort\n\n抽樣排序",
+      "url": "https://web.ntnu.edu.tw/~algo/Sort.html",
+      "source": "https://web.ntnu.edu.tw/~algo/Sort.html",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "监管看的不是你口号怎么喊，而是你的资金怎么流、客户是谁、资产谁控制、风险谁承担。 你做支付，就要面对反洗钱和制裁筛查；你做托管，就要面对资产冻结和执法协助；你做交易，就要面对 KYC、KYT 和可疑交易识别；你做稳定币相关业务，就绕不开发行方、储备资产、赎回机制、黑名单机制和司法协助问题。\n\n对普通用户来说，这件事也有一个很朴素的提醒：USDT 不等于比特币。\n\n很多人买 USDT，只是觉得它方便、稳定、流动性好。这个判断没问题，USDT 的确在全球加密市场里承担了非常重要的流动性功能。但如果你把 USDT 理解成一种完全无法冻结、完全不受现实监管影响、完全独立于金融体系之外的资产，那就错了。\n\n稳定币的\"稳定\"，来自背后的中心化安排。也正是因为它有中心化安排，所以它才能稳定，才能赎回，才能大规模流通，也才能被发行方配合执法机构冻结。\n\n这不是简单的好坏问题，而是行业愈发现实的结构问题。 ",
+      "url": "http://www.tradingkey.com/zh-hans/analysis/cryptocurrencies/more/261823157-jinse",
+      "source": "http://www.tradingkey.com/zh-hans/analysis/cryptocurrencies/more/261823157-jinse",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "监管看的不是你口号怎么喊，而是你的资金怎么流、客户是谁、资产谁控制、风险谁承担。 你做支付，就要面对反洗钱和制裁筛查；你做托管，就要面对资产冻结和执法协助；你做交易，就要面对 KYC、KYT 和可疑交易识别；你做稳定币相关业务，就绕不开发行方、储备资产、赎回机制、黑名单机制和司法协助问题。\n\n对普通用户来说，这件事也有一个很朴素的提醒：USDT 不等于比特币。\n\n很多人买 USDT，只是觉得它方便、稳定、流动性好。这个判断没问题，USDT 的确在全球加密市场里承担了非常重要的流动性功能。但如果你把 USDT 理解成一种完全无法冻结、完全不受现实监管影响、完全独立于金融体系之外的资产，那就错了。\n\n稳定币的\"稳定\"，来自背后的中心化安排。也正是因为它有中心化安排，所以它才能稳定，才能赎回，才能大规模流通，也才能被发行方配合执法机构冻结。\n\n这不是简单的好坏问题，而是行业愈发现实的结构问题。 ",
+      "url": "https://www.tradingkey.com/zh-hans/analysis/cryptocurrencies/more/261823157-jinse",
+      "source": "https://www.tradingkey.com/zh-hans/analysis/cryptocurrencies/more/261823157-jinse",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "空数组或只有一个元素：直接返回。\n 已经有序或逆序：固定选择首尾元素做 pivot 容易退化。\n 大量重复元素：普通二路分区可能不够理想，可以了解三路快排。\n 面试官问稳定性时，不要说快排稳定；普通快排交换元素会打乱相等元素顺序。\n\n## 写在最后\n\n如果内容对你有帮助的话，欢迎顺手给 JavaGuide 点一个免费的 Star 支持一下：GitHub | Gitee。\n\nJavaGuide 已持续维护近七年，累计 6100+ 次提交，来自 620+ 位贡献者共同完善。你的 Star、反馈和 PR，都是这个项目继续更新的动力。\n\n如果你正在准备后端/AI 应用开发面试，也可以了解一下我的知识星球，里面包括后端和 AI 实战项目、简历优化、一对一提问和高频考点资料，已经持续维护六年。 [...] 几个高频追问：\n\n 快排为什么最坏是 `O(n^2)`？如何降低退化概率？可以随机选 pivot",
+      "url": "https://javaguide.cn/cs-basics/algorithms/10-classical-sorting-algorithms.html",
+      "source": "https://javaguide.cn/cs-basics/algorithms/10-classical-sorting-algorithms.html",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "# 文章總結 🔗\n\n在本文中，我們介紹了 10 種常見的排序演算法，每種演算法都有其優點和缺點。  \n 在實際應用中，需要根據具體的情況選擇最適合的排序演算法。  \n 如果你想學習排序演算法，我建議利用本文章及網路上各種資源，理解各個演算法中的原理，並且嘗試自己實作出這些演算法。  \n 通過不斷的練習，你將能更深入地理解這些排序演算法的原理和應用，或許能夠應用來解決現實中的問題，希望此篇文章能讓你有所收穫！\n\n# 參考資料 🔗\n\n 維基百科：排序算法\n 資料結構和演算法：排序演算法\n 菜鳥教程：排序算法\n 排序算法動畫\n Sorting Algorithm\n Sorting algorithms on GeeksforGeeks\n 15 Sorting Algorithms in 6 Minutes - YT\n\n> 此篇文章因內容繁多，所以在整理資料及撰寫上，可能會有些錯誤，也請大家多留言",
+      "url": "https://4yu.dev/post/Sort-Algorithm/index.html",
+      "source": "https://4yu.dev/post/Sort-Algorithm/index.html",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "时间复杂度分为最优时间复杂度、平均时间复杂度和最坏时间复杂度．OI 竞赛中要考虑的一般是最坏时间复杂度，因为它代表的是算法运行水平的下界，在评测中不会出现更差的结果了．\n\n基于比较的排序算法的时间复杂度下限是 𝑂(𝑛log⁡𝑛)\") 的．\n\n当然也有不是 𝑂(𝑛log⁡𝑛)\") 的．例如，计数排序 的时间复杂度是 𝑂(𝑛 +𝑤)\")，其中 𝑤 代表输入数据的值域大小．\n\n以下是几种排序算法的比较．\n\n### 空间复杂度\n\n与时间复杂度类似，空间复杂度用来描述算法空间消耗的规模．一般来说，空间复杂度越小，算法越好．\n\n## 外部链接\n\n 排序算法 - 维基百科，自由的百科全书 [...] 定义\n 性质 \n\n  + 稳定性\n  + 时间复杂度\n  + 空间复杂度\n 外部链接\n\n# 排序简介\n\n本页面将简要介绍排序算法．\n\n## 定义\n\n排序算法（英语：Sorting algorithm）是一种",
+      "url": "https://oi-wiki.org/basic/sort-intro",
+      "source": "https://oi-wiki.org/basic/sort-intro",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "·token 成本是你的顾虑\n\n·希望 agent 真正随时间学习你的工作流\n\n·刚刚入门，不想花数周配置\n\n·安全性和任务隔离对你很重要\n\n## 我的个人判断\n\n它们其实不是在竞争。至少现在还不是。\n\nOpenClaw 是更强大、更可定制、更深度集成的选择。如果你想要一个跨频道存在、能运行任意模型、处理复杂技能配置的 agent——OpenClaw 仍然是答案。\n\nHermes 是对大多数人而言更聪明的默认选择。更便宜，上手更快，能自我改进。我理解它为什么增长这么快。如果你因为感觉太复杂而一直没有真正把 agent 跑起来——Hermes 消除了大部分阻力。先试试，再决定要不要之后迁移到 OpenClaw。\n\n法拉利和本田。都开开看。\n\n来源：金色财经\n\n审核人Block Tao [...] 开箱即用\n\nHermes 内置 40 多个已可运行的工具——备忘录、iMessage、浏览器、图",
+      "url": "https://tradingkey.com/zh-hans/analysis/cryptocurrencies/more/261823883-jinse",
+      "source": "https://tradingkey.com/zh-hans/analysis/cryptocurrencies/more/261823883-jinse",
+      "kind": "web",
+      "tier": 3
+    }
+  ]
+}

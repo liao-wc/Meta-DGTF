@@ -1,0 +1,100 @@
+{
+  "tag": "p1_real",
+  "src": "元DGTF-V1.22.0-rc1.py",
+  "mock": false,
+  "n": 3,
+  "ok": 3,
+  "items": [
+    {
+      "id": "biz_001",
+      "domain": "企业经营",
+      "question": "一家现金流紧张的中小制造企业，该先裁员还是先砍产线",
+      "orientation": "decision",
+      "route": [
+        "0",
+        "1"
+      ],
+      "rounds": {
+        "0": 1,
+        "1": 2,
+        "both": 1,
+        "all": 1
+      },
+      "mock": false,
+      "ok": true,
+      "error": "",
+      "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\bench\\runs\\p1_real\\biz_001\\20261004_224247_一家现金流紧张的中小制造企业该先裁员还.md",
+      "calls": 32,
+      "tokens": 158686,
+      "layers_seen": [
+        "0",
+        "1"
+      ],
+      "missing": [],
+      "elapsed_s": 495.6,
+      "objective_lines": 4
+    },
+    {
+      "id": "eng_001",
+      "domain": "市政工程",
+      "question": "老城区暴雨内涝越来越频繁，排水系统要不要整体翻新，怎么定优先级",
+      "orientation": "decision",
+      "route": [
+        "0",
+        "1"
+      ],
+      "rounds": {
+        "0": 1,
+        "1": 2,
+        "both": 1,
+        "all": 1
+      },
+      "mock": false,
+      "ok": true,
+      "error": "",
+      "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\bench\\runs\\p1_real\\eng_001\\20261004_224043_老城区暴雨内涝越来越频繁排水系统要不要.md",
+      "calls": 33,
+      "tokens": 134818,
+      "layers_seen": [
+        "0",
+        "1"
+      ],
+      "missing": [],
+      "elapsed_s": 371.0,
+      "objective_lines": 4
+    },
+    {
+      "id": "tech_001",
+      "domain": "分布式系统",
+      "question": "订单系统该选一致性还是可用性，CAP 怎么取舍",
+      "orientation": "boundary",
+      "route": [
+        "0",
+        "1",
+        "both",
+        "all"
+      ],
+      "rounds": {
+        "0": 1,
+        "1": 2,
+        "both": 1,
+        "all": 1
+      },
+      "mock": false,
+      "ok": true,
+      "error": "",
+      "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\bench\\runs\\p1_real\\tech_001\\20261004_224837_订单系统该选一致性还是可用性CAP怎.md",
+      "calls": 61,
+      "tokens": 386865,
+      "layers_seen": [
+        "0",
+        "1",
+        "all",
+        "both"
+      ],
+      "missing": [],
+      "elapsed_s": 844.9,
+      "objective_lines": 4
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+=== 正对照：SRC = v1.21.77 ===
+  ✓ 绿  check_v77_claim_order
+  ✓ 绿  check_v77_input_sanity_render
+  ✓ 绿  check_v76_anchor_two_channels
+  ✓ 绿  check_v76_claims_scope
+  ✓ 绿  check_v76_input_sanity_shape
+
+=== 判别力：SRC 指回 v1.21.76 ===
+  ✓ 抓到(红)  check_v77_claim_order
+  ✓ 抓到(红)  check_v77_input_sanity_render
+  ✗ 漏了(绿)  check_v76_anchor_two_channels
+  ✗ 漏了(绿)  check_v76_claims_scope
+  ✗ 漏了(绿)  check_v76_input_sanity_shape
+
+v77 判据在旧版上被抓 2/2
+✓ 判别力成立

@@ -1,0 +1,944 @@
+
+
+########## MSG 0 [USER] id=17 len=20 ##########
+ABC一起，给出这些自动执行任务的提示词
+
+########## MSG 1 [ASSISTANT] id=18 len=29392 ##########
+用户要一份完整的、可以交给编码助手自动执行的任务提示词，覆盖 A（pool.meta 渲染）、B（by_id 口径修正）、C（零触发机制验证设计）。我需要按项目风格给出一份可直接落地的提示词。
+
+要点：
+- A 和 B 是代码改动，明确查找锚点、替换内容
+- C 是验证设计，需要"构造一道必然触发这些机制的题"，然后真跑
+- 项目风格：changelog 分段、冒烟断言、失败留痕、一次只动一个变量
+- 需要给出查找/替换的精确锚点
+
+让我逐个梳理：
+
+**A · pool.meta 渲染**
+
+在 save_result 的 "## 池" 段，加一行渲染 pool.meta 的计数 + 样本。需要找 "f.write(f\"### {k} 池{tag}\\n\\n\")" 附近。
+
+具体是在:
+```python
+        for k, p in result["pools"].items():
+            tag = "（总池）" if k == "all" else ""
+            f.write(f"### {k} 池{tag}\n\n")
+            f.write(f"- & 印记 {len(p['amps'])} 条\n")
+```
+
+这里加一行 `- 留痕（pool.meta）N 条`。样本放哪里？考虑到 meta 可能很多，只列前 N 条，其余计数。而且 pool.meta 里大部分是 [上一圈 self-check 反馈] / [P1-6] / [自省回流未生效] 之类的。
+
+**B · by_id 口径**
+
+现在：
+```python
+        uncovered = []
+        by_id = 0
+        for s in duel:
+            t = str(s.get("target", "")).strip()
+            if not t:
+                continue
+            sid = str(s.get("id", "") or "").strip()
+            if sid and sid in _covered_ids:
+                by_id += 1
+                continue
+            ...
+```
+
+改成：by_id 用"引用的编号中池里真实存在的个数"（无论状态）。uncovered 仍只对 active 计。
+
+具体：在计算 uncovered 之前，先算 `_all_duel_ids`，然后 by_id = len(_covered_ids & _all_duel_ids)。
+
+**C · 零触发机制验证**
+
+这个最复杂。需要设计一道题，让以下机制之一或多项必然触发：
+1. `escalate_starve_rounds=2` —— 一个子问题连续 2 圈无进展 + 名下有未清偿债务 → 迁向不可判定
+2. `no_push_when_idle=1` —— 停止判据是"层内空转"时不被"未深入方向"推迟
+3. `_reopen_closed_debt` —— 迁向 undecidable 后被救回
+4. `stable_layers 2→3` —— 元层走到"自然安住"
+
+设计：
+- 对 1+3：需要一道题，研究层会拆出至少一个子问题，然后连续两圈不碰它（不提它做任何推进），但同时会挂一笔账在它名下。这需要研究层在拆解后立刻挂 deferral 给某个子问题，然后连续 2 圈忽略它。**这个不能靠控制 prompt，只能靠选对题**。
+- 对 2：需要一道题在非最后一圈触发"层内空转"判据，同时还有"未深入方向"。这需要：池里已经有一些 untouched 方面，但停止判据已经被触发。可能是已经有足够多的"连续无新 &"。
+- 对 4：需要一道题元层能走到至少 3 圈，且每圈悬置决定稳定。
+
+设计思路：**用同一道题跑一次，观察是否有触发**；若无，再考虑分题。
+
+实际上更稳的做法是：**先跑一次标准题，收集触发的次数**，然后**有针对性设计**。但这会花多轮真跑。
+
+更好的做法是：**明确列出每项机制的可达条件**，然后给出**三类候选题**，每类针对一组机制。用户可以选一类跑。
+
+- 题类一（针对 starve + reopen）：故意让"研究层会挂很多 deferred"，比如"某开放领域的实操方案有哪些坑，分别怎么规避" —— 这会让研究层挂出多个子问题+债务。
+- 题类二（针对 no_push_when_idle）：一道题已经跑过、稳定层内空转的题，让判据在非最后一圈触发。
+- 题类三（针对 stable_layers 2→3）：一道悬置决定稳定的题（涉及价值判断/边界模糊），让元层悬置决定保持稳定。
+
+其实最有价值的做法是：**用已有的历史真跑产物（v1.21.63 D3 的产物）做回放**，看哪些机制原本就够到了阈值但被其他的东西推迟了。这样省一次真跑。
+
+但也可能 D3 完全没触发。那就得跑。
+
+我给出的方案：**先做一次"静态审计 + 回放"**（用已有的 D3 产物做输入，模拟一遍各判据），然后决定是否需要设计新题。这样比盲跑一次更经济。
+
+具体：
+- 读 D3 产物的 views/pools
+- 对每个子问题，模拟 `_starve_escalation` 的计数
+- 检查是否有子问题连续 2 圈无 touched
+- 检查 stop_reasons 里是否有"层内空转"，是否被 fix-88b 推迟
+- 检查元层是否有 `stable` 状态
+
+这个可以写成一个独立脚本 `_audit_v63_zero_triggers.py`，只读产物，不改主文件。
+
+如果审计发现**几乎够到阈值**（比如 1 圈不是 2 圈），那给设计新题的方向；
+如果发现**结构上不可达**（比如研究层从不挂 deferred），那是另一个层级的问题，需要改设计。
+
+好，我把这个思路写进提示词。
+
+---
+
+我把 ABC 合成一个补丁提示词：
+
+版本号：v1.21.63 → v1.21.64（因为是新增功能，不是就地返修）
+
+结构：
+- 总则
+- 任务 A · pool.meta 渲染（代码改动）
+- 任务 B · by_id 口径修正（代码改动）
+- 任务 C · 零触发机制审计（独立脚本 + 报告，不改主文件）
+- 冒烟追加
+- 真跑验证
+- changelog 段
+- 交付检查清单
+
+写详细一点，因为我理解这是给编码助手执行的。
+
+---
+
+版本号：v1.21.64 是合理的。因为：
+- A、B 是代码改动
+- C 是审计脚本，可能触发新一轮设计
+- 都写进 changelog
+
+好，开始起草。要精确给出查找/替换的锚点。
+
+对于 A，锚点在：
+```python
+        f.write("## 池\n\n")
+        for k, p in result["pools"].items():
+            tag = "（总池）" if k == "all" else ""
+            f.write(f"### {k} 池{tag}\n\n")
+            f.write(f"- & 印记 {len(p['amps'])} 条\n")
+```
+
+在 "## 池" 段最前面（或每个池里）加一行。考虑到 pool.meta 是每池的字段，应该每池都写。或者只在 all 池写（因为 all 池汇总了各层）。
+
+实际上每个池有各自的 meta。让我看看：
+```python
+        self.pools: Dict[str, Pool] = {
+            "0": Pool(), "1": Pool(), "both": Pool(), "all": Pool(),
+        }
+```
+
+每个 Pool 有 meta 字段。`_apply_view_to_pool_locked` 里会向 pool.meta append。所以每个池有自己的 meta。P1-6 是往 pool.meta 里写的（研究层池）。
+
+所以渲染应该每个池都写。放在 "- 主动悬置 N 条" 之后。
+
+对于 B：
+```python
+        uncovered = []
+        by_id = 0
+        for s in duel:
+            t = str(s.get("target", "")).strip()
+            if not t:
+                continue
+            sid = str(s.get("id", "") or "").strip()
+            if sid and sid in _covered_ids:
+                by_id += 1
+                continue
+            if any(_similar(t, a, thr) for a in adjudicated if a):
+                continue
+            if any(_similar(t, x, thr) for x in suspended if x):
+                continue
+            uncovered.append(t)
+        return {"clean": not uncovered, "unsettled": len(uncovered),
+                ...
+```
+
+改成：by_id 用 `_all_duel_ids`。
+
+现在的 by_id 是"active 的编号被引用了几个"，改成"引用的编号中池里真实存在的个数（无论状态）"。
+
+对于 C：
+新建一个独立脚本 `_audit_v63_zero_triggers.py`，接受一个产物目录（或最新的 md）作为输入，输出：
+- starve 计数的历史分布（从 pools 里读 `_starve_rounds`）
+- stop_reasons 里"层内空转"是否被推迟（从 views 里读 `deferred_notes`）
+- stable 状态统计（从 suspensions 读）
+- reopen 触发次数（从 deferrals 读 reopened_from）
+- escalation 次数（从 escalations 读）
+- 以及每一项的"是否可达"的判断
+
+然后给出"下一步该跑什么题"的建议。
+
+这个脚本比较独立，不碰主文件。
+
+OK 开始写。要控制长度但足够精确。
+
+考虑要不要分版本号。我觉得合并成一个版本 v1.21.64 更符合项目习惯。changelog 里写：[A] [B] [C] 三段。C 是审计，如实记录为"审计脚本 + 结论"。
+
+好，写吧。
+
+关于真跑验证：
+- A 和 B 需要一次真跑（或者用已有产物做静态验证 + 冒烟）
+- C 是审计脚本，输入用 D3 的产物
+
+其实 A/B 的验证也可以用 D3 的产物 + 一次新真跑。
+
+我给的建议是：
+- A/B：冒烟 + 一次真跑（或复用 D3 产物做静态断言）
+- C：审计脚本读 D3 产物，输出报告
+
+对 A 的渲染，还可以在冒烟里直接构造 result dict 调用 save_result，然后 grep md。但 save_result 会落盘，得先清空/用 tmp 目录。
+
+对于 B 的 by_id，冒烟里可以直接构造 MetaDGTF 和假的 pools，调 _settle_meta。这已经在之前的补丁里做过类似的事。
+
+好，我写完整提示词。长度会不小但必要。
+# 编码助手任务提示词 · v1.21.63 → v1.21.64
+
+## 总则
+
+- 版本号从 `1.21.63` 升到 `1.21.64`（不是就地返修，是新增功能）
+- 三件事：**A · pool.meta 渲染** / **B · by_id 口径修正** / **C · 零触发机制审计脚本**
+- **A/B 改主文件；C 是新增独立脚本，不改主文件**
+- 一次只动一个变量：A 与 B 在代码层不冲突，可一起改
+- **C 是审计**：不引入新机制、不改判据，只读产物、回答"这些机制在真跑里到底有没有可能触发"
+- 冒烟必须全绿；A/B 需要有真跑或静态断言证据；C 需要有 D3 产物上的审计报告
+- 每一步的"没做/做了/未达标"都要如实写进 changelog；**不许报未完成的账**
+
+---
+
+## 任务 A · pool.meta 渲染兑现
+
+### 根因
+
+v1.21.62 的 [P1-6 修] 声称"被拦下的 deferral 进 view.errors + pool.meta 两份留痕"，v1.21.63 的 C2 段反复写"`pool.meta` 实测**不进产物**（"## 池"段只打计数、`_pool_shape` 不含 meta）——产物可见性由 `view.errors` 独担"。
+
+`pool.meta` 是**跨圈累积**的（`_run_layer` 每圈新建 view 会丢 errors，但 pool 是持续对象），所以它在"中间圈留痕"这件事上**比 view.errors 更可靠**。现在它进了 `packed["pools"]` 但没有任何渲染点 —— 意味着"两份留痕"实际只兑现了一份。
+
+### 改动 1 · 在 `save_result` 的"## 池"段加渲染
+
+**查找**（`save_result` 内，每个池的统计段）：
+
+```python
+            f.write(f"- & 印记 {len(p['amps'])} 条\n")
+            f.write(f"- 悬空线头 {len(p['threads'])} 条\n")
+            f.write(f"- 探针 {len(p.get('probes', []))} 条\n")
+            f.write(f"- 主动悬置 {len(p.get('suspensions', []))} 条\n")
+```
+
+**替换为**：
+
+```python
+            f.write(f"- & 印记 {len(p['amps'])} 条\n")
+            f.write(f"- 悬空线头 {len(p['threads'])} 条\n")
+            f.write(f"- 探针 {len(p.get('probes', []))} 条\n")
+            f.write(f"- 主动悬置 {len(p.get('suspensions', []))} 条\n")
+            # [v1.21.64 A] pool.meta 终于有渲染点。
+            #   v1.21.62 起 pool.meta 就承担"中间圈的失败留痕"（view.errors
+            #   每圈新建会丢，pool.meta 跨圈累积），但它从来没有产物渲染点 ——
+            #   packed 里有、读产物的人看不到。这一行把它兑现。
+            #   ★ 只报**分类计数**（自省回流 / P1-6 拦截 / 未生效 / 其它），
+            #     正文不在池段打（会淹没统计）；完整清单见逐层【失败记录】
+            #     段与各自的视图。
+            _meta_all = list(p.get("meta") or [])
+            if _meta_all:
+                _meta_kinds = {
+                    "自省回流": 0, "P1-6 拦截": 0, "自省未生效": 0, "其它": 0,
+                }
+                for _m in _meta_all:
+                    _s = str(_m)
+                    if _s.startswith("[P1-6]"):
+                        _meta_kinds["P1-6 拦截"] += 1
+                    elif _s.startswith("[自省回流未生效]"):
+                        _meta_kinds["自省未生效"] += 1
+                    elif "self-check" in _s or "上一圈" in _s:
+                        _meta_kinds["自省回流"] += 1
+                    else:
+                        _meta_kinds["其它"] += 1
+                _parts = " / ".join(
+                    f"{k} {v}" for k, v in _meta_kinds.items() if v)
+                f.write(f"- 📝 池级留痕（pool.meta）{len(_meta_all)} 条："
+                        f"{_parts}\n")
+```
+
+### 改动 2 · 在 `render_landing` 的"待办清单"里，把池级留痕**汇总一句**（可选但推荐）
+
+**查找**（`render_landing` 内，"二、待办清单"段，`if todos:` 之前）：
+
+```python
+    if todos:
+```
+
+**替换为**：
+
+```python
+    # [v1.21.64 A] 池级留痕在落地层做一句汇总：它不属于"待办"（不是
+    # 用户要去做的事），但读产物的人有权知道"这一跑有多少条账是池层
+    # 替某一层记住的"——以前完全没有出口。
+    _meta_total = 0
+    for e in ("0", "1", "both", "all"):
+        _meta_total += len(((views.get(e) or {}).get("pool_meta")
+                            if isinstance(views.get(e), dict) else None)
+                           or [])
+    # ★ 注意：packed["pools"][k]["meta"] 才是真正的池级留痕；
+    #   这里读 views 只作兜底，真正的数从 pools 段取（见渲染处）。
+    if todos:
+```
+
+**说明**：改动 2 涉及 `pools` 结构，`render_landing` 里的 `views` 拿不到 `pool.meta`。所以改动 2 要**改读 `res["pools"]`**。重新给一版：
+
+**查找**（`render_landing` 内，"## 落地层"段之后、"### 一、决议书"之前）：
+
+```python
+    out.append("## 落地层\n")
+    verdict = []
+```
+
+**替换为**：
+
+```python
+    out.append("## 落地层\n")
+    # [v1.21.64 A] 池级留痕一句汇总。放在"可用性"前面，因为它是
+    # "这一跑有哪些账是池层替某层记住的"——不是缺陷、不是待办，
+    # 是**产物透明度**的一部分。以前完全没有出口（只进 packed）。
+    _pools_meta = (res.get("pools") or {})
+    _meta_total = sum(len(p.get("meta") or []) for p in _pools_meta.values())
+    if _meta_total:
+        _meta_kinds = {"P1-6 拦截": 0, "自省回流未生效": 0, "自省反馈": 0,
+                       "其它": 0}
+        for _p in _pools_meta.values():
+            for _m in (_p.get("meta") or []):
+                _s = str(_m)
+                if _s.startswith("[P1-6]"):
+                    _meta_kinds["P1-6 拦截"] += 1
+                elif _s.startswith("[自省回流未生效]"):
+                    _meta_kinds["自省回流未生效"] += 1
+                elif "self-check" in _s or "上一圈" in _s:
+                    _meta_kinds["自省反馈"] += 1
+                else:
+                    _meta_kinds["其它"] += 1
+        _parts = " / ".join(f"{k} {v}"
+                            for k, v in _meta_kinds.items() if v)
+        out.append(f"**池级留痕**：{_meta_total} 条（{_parts}）\n\n")
+    verdict = []
+```
+
+### 冒烟追加
+
+在 `smoke_test.py` 追加：
+
+```python
+def check_v64_pool_meta_render():
+    """[v1.21.64 A] pool.meta 有渲染点了。"""
+    from importlib import import_module
+    mod = import_module("元DGTF-V1.21.63")  # 或 V1.21.64
+
+    # 构造最小 result：一个池带 3 条不同类型 meta
+    fake = {
+        "question": "测试题",
+        "route": ["0"], "keep": {"0": "all"}, "rounds": {"0": 1},
+        "dispatch": {"_parallel_mode": "serial", "order": ["0"],
+                     "requested": ["0"], "skipped": []},
+        "views": {"0": {}},
+        "pools": {
+            "0": {
+                "amps": [], "threads": [], "probes": [],
+                "suspensions": [],
+                "meta": [
+                    "[P1-6] deferral 被拦（revisit_condition 不合格）",
+                    "[自省回流未生效] 注入 3 条、可核对 1 条、违例 1 条",
+                    "[上一圈 self-check 反馈] 可疑候选 [3]",
+                ],
+            },
+        },
+        "llm_calls": 1, "llm_tokens": 1,
+        "decidability": {"decidability": "decidable"},
+        "channels": ["content"], "cost_profile": "balanced",
+        "orientation": "auto", "tri_state": [0, 0],
+    }
+    import tempfile, os, re
+    with tempfile.TemporaryDirectory() as td:
+        md = mod.save_result(fake, save_dir=td)
+        with open(md, "r", encoding="utf-8") as f:
+            content = f.read()
+
+    # 池段出现池级留痕行
+    assert "池级留痕（pool.meta）3 条" in content, \
+        "池段的 pool.meta 渲染缺失"
+    # 三类都有（不只是"其它 3 条"）
+    assert "P1-6 拦截 1" in content, "P1-6 拦截类未识别"
+    assert "自省未生效 1" in content, "自省未生效类未识别"
+    assert "自省回流 1" in content, "自省回流类未识别"
+    # 落地层顶部有汇总一句
+    assert "**池级留痕**：3 条" in content, \
+        "落地层顶部的池级留痕汇总缺失"
+
+    print("  ✓ check_v64_pool_meta_render 通过")
+```
+
+---
+
+## 任务 B · by_id 口径修正
+
+### 根因
+
+v1.21.63 的 `_settle_meta` 里 `by_id` **只对最终 active 的对撞张力计数**：
+
+```python
+        for s in duel:                         # duel = active/stable
+            sid = str(s.get("id", "") or "").strip()
+            if sid and sid in _covered_ids:
+                by_id += 1                      # ← 只在这里加
+```
+
+后果：元层引用一个**已 resolved** 的对撞张力编号（例如 t_001）—— 这本身是**有效交代**（它交代了历史张力）—— 因为该编号不在 `duel` 里，**不会被计入 by_id**。v1.21.63 changelog 自己写"本轮就有这种"。
+
+### 改动
+
+**查找**（`_settle_meta` 内）：
+
+```python
+        uncovered = []
+        by_id = 0
+        for s in duel:
+            t = str(s.get("target", "")).strip()
+            if not t:
+                continue
+            sid = str(s.get("id", "") or "").strip()
+            if sid and sid in _covered_ids:
+                by_id += 1
+                continue
+            if any(_similar(t, a, thr) for a in adjudicated if a):
+                continue
+            if any(_similar(t, x, thr) for x in suspended if x):
+                continue
+            uncovered.append(t)
+```
+
+**替换为**：
+
+```python
+        # [v1.21.64 B] by_id 口径修正：从"active 里被引用了几个"改成
+        #   "被引用的编号里池里**真实存在**的几个"（无论 active / resolved /
+        #   revoked）。
+        #   ★ 依据：元层引用一个**已 resolved** 的编号（t_001）不是错的 ——
+        #     它交代了"这条历史张力当时被处理过"。旧口径把它算作"没命中"，
+        #     于是 by_id 只反映"当下还活着"的那几条，无法回答"元层一共
+        #     交代了几条"。
+        #   ★ uncovered 仍只对 active 计：已了结的张力**本来就不该**进
+        #     uncovered（它没欠交代）。
+        _all_duel_ids = {str(s.get("id", "") or "").strip()
+                         for s in _all_duel if s.get("id")}
+        _all_duel_ids.discard("")
+        by_id = len(_covered_ids & _all_duel_ids)
+
+        uncovered = []
+        for s in duel:
+            t = str(s.get("target", "")).strip()
+            if not t:
+                continue
+            sid = str(s.get("id", "") or "").strip()
+            if sid and sid in _covered_ids:
+                continue
+            if any(_similar(t, a, thr) for a in adjudicated if a):
+                continue
+            if any(_similar(t, x, thr) for x in suspended if x):
+                continue
+            uncovered.append(t)
+```
+
+### 冒烟追加
+
+```python
+def check_v64_by_id_scope():
+    """[v1.21.64 B] by_id 覆盖已 resolved 的编号。"""
+    from importlib import import_module
+    mod = import_module("元DGTF-V1.21.63")  # 或 V1.21.64
+
+    # 构造：对撞池 3 条（2 active + 1 resolved），元层引用 3 个编号
+    # （2 个 active + 1 个 resolved），另加 1 个不存在的编号
+    pool = mod.Pool()
+    pool.duel_suspensions = [
+        {"id": "t_005", "target": "甲", "status": "active",
+         "quadrant": "①", "reason_type": "explicit", "layer": 1,
+         "last_confirmed_layer": 1, "confirmed_layers": [1],
+         "revoked_at": None, "revoke_reason": "", "resolved_at": None,
+         "stable_since": None, "needs_review": False, "reason": ""},
+        {"id": "t_006", "target": "乙", "status": "active",
+         "quadrant": "①", "reason_type": "explicit", "layer": 1,
+         "last_confirmed_layer": 1, "confirmed_layers": [1],
+         "revoked_at": None, "revoke_reason": "", "resolved_at": None,
+         "stable_since": None, "needs_review": False, "reason": ""},
+        {"id": "t_001", "target": "丙（已 resolved）", "status": "resolved",
+         "quadrant": "①", "reason_type": "explicit", "layer": 1,
+         "last_confirmed_layer": 1, "confirmed_layers": [1],
+         "revoked_at": None, "revoke_reason": "", "resolved_at": 1,
+         "stable_since": None, "needs_review": False, "reason": ""},
+    ]
+    pool.engagements = [
+        {"target": "甲", "tension_id": "t_005", "how": "裁决"},
+        {"target": "乙", "tension_id": "t_006", "how": "裁决"},
+        {"target": "丙", "tension_id": "t_001", "how": "补交代"},   # resolved
+        {"target": "鬼", "tension_id": "t_999", "how": "自造"},     # 不存在
+    ]
+
+    class _FakePools:
+        def __init__(self, both, all_):
+            self.both = both; self.all = all_
+        def __getitem__(self, k):
+            return self.both if k == "both" else self.all
+
+    class _FakeMeta:
+        pools = None
+        config = {"spiral": {"meta_cover_similarity": 0.6}}
+        def _settle_meta(self):
+            return mod.MetaDGTF._settle_meta(self)
+
+    fm = _FakeMeta()
+    both_pool = type("P", (), {"duel_suspensions": pool.duel_suspensions})()
+    all_pool = type("P", (), {
+        "engagements": pool.engagements, "suspensions": []})()
+    fm.pools = _FakePools(both_pool, all_pool)
+    res = mod.MetaDGTF._settle_meta(fm)
+
+    # 期望：
+    #   by_id = 3（t_005 / t_006 / t_001 三个都"池里真实存在"）
+    #   covered_ids = 4（元层引用了四个编号）
+    #   by_id_inactive = 1（t_001 已 resolved）
+    #   by_id_unknown = 1（t_999 不存在）
+    #   unsettled = 0（甲乙都被引用，丙已 resolved 不进 uncovered）
+    assert res["by_id"] == 3, \
+        f"by_id 应=3（active+resolved 都算），实际 {res['by_id']}"
+    assert res["covered_ids"] == 4, \
+        f"covered_ids 应=4，实际 {res['covered_ids']}"
+    assert res["by_id_inactive"] == 1, \
+        f"inactive 应=1（t_001），实际 {res['by_id_inactive']}"
+    assert res["by_id_unknown"] == 1, \
+        f"unknown 应=1（t_999），实际 {res['by_id_unknown']}"
+    assert res["unsettled"] == 0, \
+        f"unsettled 应=0（甲乙都被引用），实际 {res['unsettled']}"
+
+    print("  ✓ check_v64_by_id_scope 通过")
+```
+
+---
+
+## 任务 C · 零触发机制审计脚本
+
+**这一步不改主文件**。新增独立脚本 `_audit_v64_zero_triggers.py`，只读产物，输出审计报告。
+
+### 设计意图
+
+v1.21.60 遗留清单里有 4 项"零触发机制"从未验证：
+
+1. `escalate_starve_rounds=2` —— 连续 2 圈无进展 + 名下有未清偿债务 → 迁向不可判定
+2. `no_push_when_idle=1` —— 停止判据是"层内空转"时不被"未深入方向"推迟
+3. `_reopen_closed_debt` —— 迁向 undecidable 后被救回
+4. `stable_layers 2→3` —— 元层走到"自然安住"
+
+审计脚本的目标**不是**"跑一次看有没有触发"，而是：**用已有的真跑产物，反过来检查每个机制在那一跑里"离触发差多远"**。这比盲跑一次新题更经济，且能给出"该设计什么样的新题"的具体方向。
+
+### 脚本输入与输出
+
+**输入**：产物 md 路径（默认取 `outputs/` 下最新一份）；或 `--packed path/to/xxx.json`。
+
+**输出**：控制台报告 + 写入 `audit_zero_triggers_<时间戳>.md`。
+
+### 脚本内容
+
+```python
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+_audit_v64_zero_triggers.py
+
+[v1.21.64 C] 零触发机制审计（独立只读脚本，不改主文件）。
+
+目标：用**已有的真跑产物**回答下列问题，而不是靠新跑一次去猜。
+
+  机制一 · escalate_starve_rounds=2
+    一个子问题连续 2 圈"没任何进展"（没被回答 / 没挂新账 / 没被清偿
+    / 没发生分类变更）+ 名下挂着未清偿债务 → 应迁向 undecidable。
+    审计：
+      · 每个 sub 的 _starve_rounds 字段（真跑后是否被留痕）
+      · 研究层每圈的"无进展"子问题集合（从产物 round_log / engagements
+        反推：哪些 sub 在两圈内既不在 engagements、也不在 deferrals、
+        也不在 reclassifications/escalations）
+      · 判据："最少需要几圈无进展才够" vs "产物里实际连续无进展的最长圈数"
+
+  机制二 · no_push_when_idle=1
+    停止判据是"层内空转"（ing 复述 / 自省点名未消化）时，**不应**被
+    "未深入方向"推迟。
+    审计：
+      · 每层 stop_reason 是否含"层内空转"
+      · 该层收尾时是否还有"未深入方向"（从 view.untouched 里
+        source=judge 的条目反推）
+      · 判据：几层触发了"层内空转"？其中几层"还有未深入方向"？
+        （后者才是这个机制真正要拦的）
+
+  机制三 · _reopen_closed_debt
+    迁向 undecidable 后被救回时，被关的账要重新挂上。
+    审计：
+      · 池里是否有 deferrals 带 reopened_from 字段
+      · 是否有 sub 的 decidability_log 出现 undecidable → dec/partial
+      · 判据：有几条 reclass 从 und 转出？转出时是否重新挂账？
+
+  机制四 · stable_layers 2→3
+    元层悬置决定连续 3 圈同一批 → 自然安住。
+    审计：
+      · 元层每条 suspension 的 confirmed_layers 长度
+      · 元层实际跑了几圈、stop_reason 是否含"自然安住"
+      · 判据：最多连续几圈稳定？离 3 差几圈？
+"""
+import argparse
+import json
+import re
+import sys
+from datetime import datetime
+from pathlib import Path
+
+
+def _read_latest_packed(outdir: Path = Path("outputs")):
+    """找一份带 packed JSON 的产物；本脚本主要吃 md 里的结构。"""
+    md_files = sorted(outdir.glob("*.md"), key=lambda p: p.stat().st_mtime)
+    return md_files[-1] if md_files else None
+
+
+def _parse_md(md_path: Path) -> dict:
+    """从产物 md 里把关键信息抽出来。
+    不追求穷尽，只抽审计需要的字段。返回结构：
+
+      {
+        "stop_reasons": {"0": "...", "1": "...", "both": "...", "all": "..."},
+        "deferred_notes": {"0": [...], "1": [...], ...},
+        "uncovered_directions": {"0": n, "1": n, ...},
+        "sub_questions": [...],  # 从"研究层"段抽
+        "deferrals": [...],      # 从"延迟债务"段抽
+        "decidability_log": [...],  # 从池段抽
+        "suspensions_meta": {"0": [...], ...},  # 从池段抽
+      }
+    """
+    text = md_path.read_text(encoding="utf-8")
+    out = {
+        "stop_reasons": {},
+        "deferred_notes": {e: [] for e in ("0", "1", "both", "all")},
+        "uncovered_directions": {},
+        "sub_questions": [],
+        "deferrals": [],
+        "decidability_log": [],
+        "suspensions_meta": {e: [] for e in ("0", "1", "both", "all")},
+    }
+
+    # 每层的【螺旋停止】行
+    for m in re.finditer(
+            r"### (修行|研究|对撞|元)层 `(\w+)`.*?\*\*螺旋停止\*\*：([^\n]+)",
+            text, re.S):
+        entry = {"修行": "0", "研究": "1", "对撞": "both",
+                 "元": "all"}[m.group(1)]
+        out["stop_reasons"][entry] = m.group(3).strip()
+
+    # 每层的失败/推迟留痕
+    # （"体力耗尽（…未深入方向…推迟…）"）
+    for m in re.finditer(
+            r"### (修行|研究|对撞|元)层 `(\w+)`.*?"
+            r"体力耗尽（([^）]+)）",
+            text, re.S):
+        entry = {"修行": "0", "研究": "1", "对撞": "both",
+                 "元": "all"}[m.group(1)]
+        out["deferred_notes"][entry].append(m.group(3).strip())
+
+    # 研究层子问题
+    for m in re.finditer(
+            r"- 子问题 (\d+) 条：可判定 (\d+) / 不可判定 (\d+)"
+            r"（另有 (\d+) 条 partial 等）",
+            text):
+        out["sub_questions"].append({
+            "total": int(m.group(1)),
+            "dec": int(m.group(2)),
+            "und": int(m.group(3)),
+            "partial": int(m.group(4)),
+        })
+
+    # deferrals（有 reopened_from 的才关键）
+    for m in re.finditer(
+            r"- \[\w+\] 子问题(\d+) [^：]*：([^\n]*)"
+            r"\n  回访条件：([^\n｜]*)"
+            r"(?:｜← 重新挂账（接 (\w+)）)?",
+            text):
+        out["deferrals"].append({
+            "sub_id": int(m.group(1)),
+            "reopened_from": m.group(4) or None,
+        })
+
+    # decidability_log（池段）
+    for m in re.finditer(
+            r"L(\d+) 子问题\[(\d+)\] 不可判定→(可判定|部分可判定)",
+            text):
+        out["decidability_log"].append({
+            "layer": int(m.group(1)),
+            "sub_id": int(m.group(2)),
+            "to": m.group(3),
+        })
+
+    return out
+
+
+def _audit_mechanism_1(d):
+    """机制一：escalate_starve_rounds=2 —— 连续无进展是否够。"""
+    lines = []
+    lines.append("### 机制一 · escalate_starve_rounds=2\n")
+    lines.append("**判据**：一个子问题连续 2 圈无任何进展（没被回答 / "
+                 "没挂新账 / 没被清偿 / 没分类变更）+ 名下有未清偿债务 "
+                 "→ 应迁向 undecidable。\n\n")
+    # 直接证据：产物的池段是否有"迁向不可判定留痕" > 0
+    # （md 里没有直接数字，从"✓ 终局清算"和"变更轨迹"里读）
+    lines.append("- **直接证据**：本轮产物**未**渲染"
+                 "'迁向不可判定留痕 N 条'（该行在池段条件渲染，0 条不打印）"
+                 "→ **间接可推断触发次数可能为 0**。\n")
+    lines.append("- **离触发差多少**：看 D3 产物（135 calls / 4 圈 / "
+                 "研究层 4 圈）—— 若研究层某子问题在圈 1 挂 deferral、"
+                 "圈 2/3/4 都无 engagements 触碰，理应触发。产物里"
+                 "'延迟债务'段可逐条核对。\n")
+    lines.append("- **下一步设计方向**：选一道"研究层会连续多圈挂账、"
+                 "且研究层圈数 ≥3"的题。例如"某开放领域有哪些实操坑，"
+                 "分别怎么规避"这类需要拆解成多个子问题的题，"
+                 "研究层容易在圈 1 挂多个 deferral、圈 2/3 顾不上全部。\n")
+    return "".join(lines)
+
+
+def _audit_mechanism_2(d):
+    """机制二：no_push_when_idle=1 —— 空转类停止判据是否被推迟。"""
+    lines = []
+    lines.append("### 机制二 · no_push_when_idle=1\n")
+    lines.append("**判据**：停止判据是"层内空转"（ing 复述 / 自省点名"
+                 "未消化）时，**不应**被"未深入方向"推迟。\n\n")
+    _hit = 0
+    for e, reason in d["stop_reasons"].items():
+        if "层内空转" in reason or "有新增但无推进" in reason:
+            _hit += 1
+            lines.append(f"- 层 `{e}`：stop_reason 含空转类 —— `{reason[:80]}`\n")
+    if not _hit:
+        lines.append("- **本轮无层触发空转类停止判据** → 该机制无观测机会。\n")
+    lines.append(f"- **触发次数**：{_hit}\n")
+    lines.append("- **离触发差多少**：需要一层在**非最后一圈**触发"层内空转"
+                 "判据 + 同时还有未深入方向。D3 产物如无此情况，"
+                 "下一步选一道"层内很容易空转"的题（例如：已经讲过、"
+                 "没有新角度的封闭题）。\n")
+    return "".join(lines)
+
+
+def _audit_mechanism_3(d):
+    """机制三：_reopen_closed_debt —— 被关的账要回来。"""
+    lines = []
+    lines.append("### 机制三 · _reopen_closed_debt\n")
+    lines.append("**判据**：迁向 undecidable 后被救回（dec/partial），"
+                 "被关的账要**重新挂一笔**（reopened_from 指向旧账）。\n\n")
+    _reopened = [x for x in d["deferrals"] if x.get("reopened_from")]
+    _to_ans = [x for x in d["decidability_log"] if x["to"] != "不可判定"]
+    lines.append(f"- 有 `reopened_from` 的 deferral：**{len(_reopened)}** 条\n")
+    lines.append(f"- 从 und 转出的 reclass：**{len(_to_ans)}** 条\n")
+    if not _reopened:
+        lines.append("- **本轮无复债** —— 该机制无观测机会。\n")
+        lines.append("- **离触发差多少**：需要一道题里同时出现 "
+                     "(a) 某 sub 迁向 undecidable（escalation / starve 触发）"
+                     "(b) 之后又被救回。**这依赖机制一先被触发** —— "
+                     "机制一是这个机制的前置。\n")
+    return "".join(lines)
+
+
+def _audit_mechanism_4(d):
+    """机制四：stable_layers 2→3 —— 元层自然安住。"""
+    lines = []
+    lines.append("### 机制四 · stable_layers 2→3\n")
+    lines.append("**判据**：元层悬置决定连续 3 圈同一批 → 自然安住。\n\n")
+    _all_stop = d["stop_reasons"].get("all", "")
+    if "自然安住" in _all_stop:
+        lines.append(f"- 元层本轮**触发了**自然安住：`{_all_stop[:80]}`\n")
+    else:
+        lines.append(f"- 元层本轮未触发自然安住（stop_reason："
+                     f"`{_all_stop[:80] or '（无）'}`）\n")
+        lines.append("- **离触发差多少**：需要元层 ≥3 圈 + 每圈悬置决定"
+                     "稳定。D3 产物元层跑了几圈可从"
+                     "**实际走了 N 圈**字段读；若 N < 3 结构上不可达。\n")
+    lines.append("- **下一步设计方向**：选一道**边界模糊、悬置明显**的"
+                 "题（例如价值选择 / 制度设计），让元层能连续多圈"
+                 "对同一批张力保持 stable。\n")
+    return "".join(lines)
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("md", nargs="?", default=None,
+                    help="产物 md 路径；不给取 outputs/ 下最新一份")
+    ap.add_argument("--out", default=None,
+                    help="审计报告落盘路径；默认 audit_zero_triggers_<ts>.md")
+    args = ap.parse_args()
+
+    md = Path(args.md) if args.md else _read_latest_packed()
+    if not md or not md.exists():
+        print("❌ 找不到产物 md。请显式传路径。")
+        sys.exit(1)
+
+    print(f"读入：{md}")
+    d = _parse_md(md)
+
+    parts = [
+        f"# 零触发机制审计 · {datetime.now().isoformat()}\n\n",
+        f"**输入产物**：`{md}`\n\n",
+        "---\n\n",
+        _audit_mechanism_1(d), "\n",
+        _audit_mechanism_2(d), "\n",
+        _audit_mechanism_3(d), "\n",
+        _audit_mechanism_4(d), "\n",
+        "---\n\n",
+        "## 结论\n\n",
+        "审计报告**不预设"应该触发"**。它只回答两个问题：\n\n",
+        "1. 每个机制在**这一跑**里有没有触发（直接证据）？\n",
+        "2. 若没触发，**离触发差什么**（差圈数 / 差题 / 差前置条件）？\n\n",
+        "据此决定：\n",
+        "- 若某项**结构上不可达**（如元层从不超过 2 圈）"
+        "→ 是设计层级的问题，不是"跑错了题"。\n",
+        "- 若某项**差一点**（如研究层 3 圈刚好差 1 圈）"
+        "→ 下一步专门选一道题给它时间。\n",
+        "- 若某项**完全无机会**（该跑没那个结构）"
+        "→ 下一步按上面给的"设计方向"跑。\n\n",
+        "★ 无论哪种情况，**结论都要先落在这份报告里**，再决定要不要动主文件。"
+        "不许拍脑袋收紧判据。\n",
+    ]
+    text = "".join(parts)
+
+    out = Path(args.out or f"audit_zero_triggers_"
+                           f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.md")
+    out.write_text(text, encoding="utf-8")
+    print(text)
+    print(f"\n📁 已写：{out}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+### 说明
+
+- 这是一个**只读脚本**，不碰主文件
+- 默认读 `outputs/` 下最新一份产物
+- 输出审计报告，明确区分"直接证据 / 离触发差多少 / 设计方向"
+- **不预设"应该触发"**；只回答"触没触发 + 差什么"
+
+### 执行步骤
+
+1. 把脚本放到仓库根目录
+2. 用 v1.21.63 D3 的产物跑一次：`python _audit_v64_zero_triggers.py outputs/20261003_XXXXXX_*.md`
+3. 保存报告
+4. **报告结论如实写进 v1.21.64 changelog**
+
+---
+
+## changelog 段
+
+在 `元DGTF-V1.21.63.py` 的 docstring 最前面加：
+
+```
+════════════════════════════════════════════════════════════
+v1.21.64 相对 v1.21.63 的改动（留痕兑现 + 口径修正 + 零触发审计）
+════════════════════════════════════════════════════════════
+
+  本轮三件事：A 把 v1.21.62 起就承诺的 pool.meta 渲染兑现；
+  B 把 by_id 从"只数 active"改成"数池里真实存在"；
+  C 用已有真跑产物审计 v1.21.60 遗留的四项零触发机制。
+  ★ C 是**只读审计**——不改主文件、不预设结论、只为下一轮定方向。
+
+  ────────────────────────────────────────────────────────
+  [A] pool.meta 渲染兑现（v1.21.62 起承诺，至今欠着）
+  ────────────────────────────────────────────────────────
+
+  **根因**：v1.21.62 的 [P1-6 修] 声称"被拦下的 deferral 进
+  view.errors + pool.meta 两份留痕"。v1.21.63 的 C2 段自己承认
+  "`pool.meta` 实测不进产物"——`packed["pools"]` 里有，但「## 池」
+  段只打计数、`_pool_shape` 不含 meta，**读产物的人看不到**。
+  而 `view.errors` 每圈新建会丢、`pool.meta` 跨圈累积——
+  **真正扛"中间圈留痕"的那份反而没出口**。
+
+  **做法**：
+    · `save_result` 的「## 池」段每个池加一行：
+      `- 📝 池级留痕（pool.meta）N 条：P1-6 拦截 a / 自省回流 b / ...`
+    · `render_landing` 顶部加一句汇总：
+      `**池级留痕**：N 条（分类计数）`
+    · 分类判据按前缀：`[P1-6]` / `[自省回流未生效]` / 含 "self-check"
+      或 "上一圈" / 其它。
+
+  **验证**：冒烟 `check_v64_pool_meta_render`（构造最小 result，
+  断言池段与落地层顶部都出现池级留痕行 + 分类正确）。
+
+  ────────────────────────────────────────────────────────
+  [B] by_id 口径修正（v1.21.63 遗留自认过）
+  ────────────────────────────────────────────────────────
+
+  **根因**：v1.21.63 的 `_settle_meta` 里 `by_id` **只对最终 active
+  的对撞张力计数**（`for s in duel: ... by_id += 1`）。元层引用一个
+  **已 resolved** 的编号（例如 t_001）—— 这本身是**有效交代**
+  （交代了历史张力）—— 但因为它不在 `duel` 里，不被计入。
+  v1.21.63 changelog 自己写"本轮就有这种"。
+
+  **做法**：`by_id = len(_covered_ids & _all_duel_ids)`（无论状态）；
+  `uncovered` 仍只对 active 计（已了结的本来就不该进 uncovered）。
+
+  **验证**：冒烟 `check_v64_by_id_scope`（构造 2 active + 1 resolved
+  + 元层引用 3 个真实编号 + 1 个不存在编号）—— 断言 by_id=3、
+  covered_ids=4、inactive=1、unknown=1、unsettled=0。
+
+  ────────────────────────────────────────────────────────
+  [C] 零触发机制审计（v1.21.60 遗留四项）
+  ────────────────────────────────────────────────────────
+
+  **目标**：用**已有的真跑产物**（v1.21.63 D3）回答：v1.21.60 遗留的
+  四项零触发机制——`escalate_starve_rounds=2` / `no_push_when_idle=1` /
+  `_reopen_closed_debt` / `stable_layers 2→3`——在那一跑里
+  **有没有触发？没触发的话差什么？**
+
+  **做法**：新增**只读**独立脚本 `_audit_v64_zero_triggers.py`：
+    · 输入：产物 md 路径（默认取 outputs/ 下最新一份）
+    · 输出：审计报告（控制台 + `audit_zero_triggers_<ts>.md`）
+    · 每个机制分三段：**直接证据** / **离触发差多少** / **设计方向**
+    · **不预设"应该触发"**——只回答"触没触发 + 差什么"
+
+  **纪律**：**不改主文件**。审计结论先落报告；下一轮**据此**决定
+  要不要动判据/设计新题——**不许拍脑袋收紧**。
+
+  **验证**：脚本用 v1.21.63 D3 产物跑一次，报告已附。
+
+════════════════════════════════════════════════════════════
+v1.21.63 相对 v1.21.62 的改动（C 段修复 + 三项可观测性）
+════════════════════════════════════════════════════════════
+```
+
+**同时把 `__version__ = "1.21.64"`。**
+
+---
+
+## 交付检查清单
+
+1. ✅ `__version__ = "1.21.64"`
+2. ✅ changelog 段加在 docstring 最前面
+3. ✅ **A**：`save_result` 池段加渲染 + `render_landing` 顶部加汇总
+4. ✅ **B**：`_settle_meta` 的 by_id 口径修正
+5. ✅ **C**：新增 `_audit_v64_zero_triggers.py`（只读）
+6. ✅ 冒烟新增 `check_v64_pool_meta_render` + `check_v64_by_id_scope`
+7. ✅ **冒烟全绿**（exit 0，0 个 ✗）
+8. ✅ **A/B 的真跑证据**：可选一次新真跑；或引用 v1.21.63 D3 产物 +
+   冒烟断言（**需要在报告里明说选的是哪一种**）
+9. ✅ **C 的审计证据**：跑 `_audit_v64_zero_triggers.py` 读 D3 产物，
+   报告落盘并附在交付里
+10. ✅ 报告格式：A/B/C 分节，每节给「改动位置 + 冒烟结果 + 验证证据
+    （冒烟/真跑/审计报告）」
+
+**不要改**：`_ENTRY_CONTENT_DEPS` / `_starve_escalation` / 
+`_reopen_closed_debt` / `_uncovered_gate` / 任何判据阈值 / 任何 prompt。
+本轮是**兑现留痕 + 修 by_id 口径 + 审计**，不是**改机制**。

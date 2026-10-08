@@ -1,0 +1,21 @@
+═══ v1.22 验收 · phase=p3 · src=元DGTF-V1.22.1.py ═══
+  ℹ️  模块加载成功
+  ✅ [G.crlf] CRLF 一致：bare_lf=0 crr_lf=0
+  ✅ [G.parse] AST 可解析
+  ℹ️  差异规模：66 块 / +1661 -186（19609 → 21084 行）
+  ✅ [G.smokeSRC] smoke_test.SRC = 元DGTF-V1.22.1.py
+  ✅ [G.del] 纯删除行 0（≤0）；改写行 186（如实报，不计删）
+  ✅ [G.mech] 机制未被移除（符号消失 0 项）
+  ℹ️  函数体骤减 2 项：render_landing 259 → 8；_auto_plan 142 → 15（须在报告里解释）
+
+── 阶段 p3 ──
+  ✅ [P3.1.a] _negctl_v1221_p3.py 存在
+  ✅ [P3.1.b] JSON=True 文档=True
+  ✅ [P3.2] 条数 5 ≥ 5
+  ✅ [P3.3] 判定全合法（非法 []）
+  ✅ [P3.4] 与审计报告两向对账一致（审计 ['_all_settle_streak', '_reopen_closed_debt', 'both_tighten_ratio', 'escalate_starve_rounds', 'no_push_when_idle']）
+  ℹ️  P3 汇总：条件窄但成立 4 / 机制没工作 0 / 条件不可达 1；进 pending_fix 的 1 项
+  ✅ [P3.5] 本版不删任何机制（纯删除行 0）
+  ✅ [P3.6] 符号消失 0 项（实测 0）
+
+━━━ PASS 12 / FAIL 0 ━━━
