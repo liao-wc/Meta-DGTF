@@ -1,7 +1,0 @@
-Building prefix dict from the default dictionary ...
-Loading model from cache C:\Users\18432\AppData\Local\Temp\jieba.cache
-Loading model cost 1.071 seconds.
-Prefix dict has been built successfully.
-对偶判断命中 5/13，降级重试（候选减半）
-[社区医院] ok=True triage=0 calls=68 err=
-P2B_RUNS_DONE

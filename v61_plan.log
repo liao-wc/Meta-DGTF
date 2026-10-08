@@ -1,9 +1,0 @@
-=== 并行跑批 2 个 run，并发上限 2 ===
-=== 开始 2026-10-01 07:09:27 ===
-✓ [p61F/auto] 9.3min
-    [p61F/B] OK  9.2min  calls=187  → v60_p61F_rauto_B.log
-       missing=[]  skipped=[]
-✓ [p61H/auto] 9.3min
-    [p61H/A] OK  9.3min  calls=137  → v60_p61H_rauto_A.log
-       missing=[]  skipped=[]
-=== 结束 2026-10-01 07:18:47 ===

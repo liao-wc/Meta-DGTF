@@ -1,9 +1,0 @@
-锚点 answers 全部缺失：全部 2 条锚点未声明 answers，triage 只能走 claim 路径（历史实测：claim 路径对「缺什么」型侧面命中率 ≈ 0）
-锚点 tier 全部缺省：全部 2 条锚点未显式声明 tier（缺省 3 > tier_floor 2），引用表将收不到任何锚点
-Building prefix dict from the default dictionary ...
-Loading model from cache C:\Users\18432\AppData\Local\Temp\jieba.cache
-Loading model cost 1.171 seconds.
-Prefix dict has been built successfully.
-[p6_notier] ok=True calls=12 hits={"取向判定（plan_orientation）": false, "取向错配": false, "锚点 tier 警告": true} err=
-[p6_tier] ok=True calls=12 hits={"取向判定（plan_orientation）": false, "取向错配": false, "锚点 tier 警告": false} err=
-P56_P6_DONE

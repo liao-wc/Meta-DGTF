@@ -1,9 +1,0 @@
-=== 并行跑批 2 个 run，并发上限 2 ===
-=== 开始 2026-10-01 08:17:25 ===
-✓ [b61b2/auto] 10.1min
-    [b61b2/B] OK  10.0min  calls=177  → v60_b61b2_rauto_B.log
-       missing=[]  skipped=[]
-✓ [b61b1/serial] 10.4min
-    [b61b1/serial] OK  10.3min  calls=69  → v60_b61b1_r4_serial.log
-       missing=[]  skipped=[]
-=== 结束 2026-10-01 08:27:49 ===

@@ -1360,7 +1360,8 @@ GUARD_BLOCK = ("    if not check_v123_w1():\n        return 1\n"
                "    if not check_v1232_tier():\n        return 1\n"
                "    if not check_v1232_retry():\n        return 1\n"
                "    if not check_v1233_vote_ids():\n        return 1\n"
-               "    if not check_v1234_runtime():\n        return 1\n")
+               "    if not check_v1234_runtime():\n        return 1\n"
+               "    if not check_v1235_pending_fix():\n        return 1\n")
 
 raw = SMOKE.read_bytes()
 src = raw.decode("utf-8")

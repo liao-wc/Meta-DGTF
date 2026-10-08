@@ -1,9 +1,0 @@
-=== 并行跑批 2 个 run，并发上限 2 ===
-=== 开始 2026-10-02 00:25:17 ===
-✓ [f3_2/A] 12.2min
-    [f3_2/A] OK  12.2min  calls=100  → v60_f3_2_r5_A.log
-       missing=[]  skipped=[]
-✓ [f2_2/A] 13.4min
-    [f2_2/A] OK  13.4min  calls=101  → v60_f2_2_r5_A.log
-       missing=[]  skipped=[]
-=== 结束 2026-10-02 00:38:42 ===

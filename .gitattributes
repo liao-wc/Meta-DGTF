@@ -1,0 +1,15 @@
+# 元 DGTF · 换行符与字节保真
+#
+# 为什么有这个文件：
+#   主文件（元DGTF-V1.23.NN.py）、smoke_test.py、dgtf_config.yaml 都要求
+#   **纯 CRLF**，而项目所有补丁脚本都会断言 `CRLF 数 == LF 数`、
+#   `CRCRLF == 0`。Git for Windows 安装时默认把 `core.autocrlf` 设成 true
+#   （checkout 转 CRLF / commit 转 LF）—— 那会让「工作区里的字节」和
+#   「仓库里的字节」不一致，直接打穿上面这套断言。
+#
+#   把保护写在**仓库里**而不是机器配置里：这样无论谁、在什么机器、
+#   `core.autocrlf` 设成什么，本仓库的行为都确定。
+#
+# `-text` 的含义：对该文件**不做任何换行符转换**（关的是 eol 转换）。
+#   它**不影响** diff —— 「当二进制」是 `-diff` / `binary`，不是这个。
+* -text

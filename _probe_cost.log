@@ -1,8 +1,0 @@
-═══ bench_run · src=元DGTF-V1.22.1.py · mock=False · 1 题 · jobs=1 · tag=probe_cost ═══
-Building prefix dict from the default dictionary ...
-Loading model from cache C:\Users\18432\AppData\Local\Temp\jieba.cache
-Loading model cost 0.791 seconds.
-Prefix dict has been built successfully.
-  模块 __version__=1.22.1
-  [eng_001] ok=True calls=53 672.3s 
-完成：1/1 题成功 → bench/runs/probe_cost/

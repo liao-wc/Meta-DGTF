@@ -1,7 +1,0 @@
-[tier] src=元DGTF-V1.23.3.py phase=collect floor=2
-Building prefix dict from the default dictionary ...
-Loading model from cache C:\Users\18432\AppData\Local\Temp\jieba.cache
-Loading model cost 0.777 seconds.
-Prefix dict has been built successfully.
-[tier] collect 完成 323s W#=12 域名={'ycxb.xml-journal.net': 2, 'hjgc.ic-mag.com': 2, 'news.cctv.com': 2, 'zcsvillages.com': 1, 'researchgate.net': 1, 'jnr.ac.cn': 1, 'pdf.dfcfw.com': 1, 'cn.investing.com': 1, 'www-file.huawei.com': 1}
-[tier] 引用表里的 W#：[]（预期：空 —— floor=2 而 tier 未确认=3）

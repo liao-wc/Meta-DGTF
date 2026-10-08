@@ -1,0 +1,94 @@
+======================================================================
+v1.23.5 挂账探针 [before]  src=元DGTF-V1.23.4.py
+======================================================================
+
+[A] 归一化规则形态计数（抠掉模块 docstring 后）
+    模式白名单(_up = mode.upper())                  3
+    圈数补漏(if rnd and len(rnd) < 4:)             2
+    圈数钳制(_layer_floor(k, hard, _floor))        2
+    conf 解析(conf = float(data.get()            3
+    低置信退serial(conf < _PARALLEL_CONF_MIN)      3
+
+[B] 同一份 mock payload 喂三处归一化（hard_max=12）
+  -- mode=G      四层齐
+       单目标决策        ('G', None, 0.8, 'probe')
+       两段式          ('G', {'0': 4, '1': 5, 'both': 4, 'all': 6}, 0.8, 'probe')
+       单调用          ('G', {'0': 4, '1': 5, 'both': 4, 'all': 6}, 0.8, 'probe')
+  -- mode=G      只给两层
+       单目标决策        ('G', None, 0.8, 'probe')
+       两段式          ('G', {'0': 5, '1': 5, 'both': 5, 'all': 5}, 0.8, 'probe')
+       单调用          ('G', {'0': 5, '1': 5, 'both': 5, 'all': 5}, 0.8, 'probe')
+  -- mode=G      越界值
+       单目标决策        ('G', None, 0.8, 'probe')
+       两段式          ('G', {'0': 4, 'both': 4, 'all': 5, '1': 4}, 0.8, 'probe')
+       单调用          ('G', {'0': 4, 'both': 4, 'all': 5, '1': 4}, 0.8, 'probe')
+  -- mode=G      空圈数
+       单目标决策        ('G', None, 0.8, 'probe')
+       两段式          ('G', {}, 0.8, 'probe')
+       单调用          ('G', {}, 0.8, 'probe')
+  -- mode=Z      四层齐
+       单目标决策        ('serial', None, 0.8, 'probe')
+       两段式          ('serial', {'0': 4, '1': 5, 'both': 4, 'all': 6}, 0.8, 'probe')
+       单调用          ('serial', {'0': 4, '1': 5, 'both': 4, 'all': 6}, 0.8, 'probe')
+  -- mode=Z      只给两层
+       单目标决策        ('serial', None, 0.8, 'probe')
+       两段式          ('serial', {'0': 5, '1': 5, 'both': 5, 'all': 5}, 0.8, 'probe')
+       单调用          ('serial', {'0': 5, '1': 5, 'both': 5, 'all': 5}, 0.8, 'probe')
+  -- mode=Z      越界值
+       单目标决策        ('serial', None, 0.8, 'probe')
+       两段式          ('serial', {'0': 4, 'both': 4, 'all': 5, '1': 4}, 0.8, 'probe')
+       单调用          ('serial', {'0': 4, 'both': 4, 'all': 5, '1': 4}, 0.8, 'probe')
+  -- mode=Z      空圈数
+       单目标决策        ('serial', None, 0.8, 'probe')
+       两段式          ('serial', {}, 0.8, 'probe')
+       单调用          ('serial', {}, 0.8, 'probe')
+  -- mode=h      四层齐
+       单目标决策        ('H', None, 0.8, 'probe')
+       两段式          ('H', {'0': 4, '1': 5, 'both': 4, 'all': 6}, 0.8, 'probe')
+       单调用          ('H', {'0': 4, '1': 5, 'both': 4, 'all': 6}, 0.8, 'probe')
+  -- mode=h      只给两层
+       单目标决策        ('H', None, 0.8, 'probe')
+       两段式          ('H', {'0': 5, '1': 5, 'both': 5, 'all': 5}, 0.8, 'probe')
+       单调用          ('H', {'0': 5, '1': 5, 'both': 5, 'all': 5}, 0.8, 'probe')
+  -- mode=h      越界值
+       单目标决策        ('H', None, 0.8, 'probe')
+       两段式          ('H', {'0': 4, 'both': 4, 'all': 5, '1': 4}, 0.8, 'probe')
+       单调用          ('H', {'0': 4, 'both': 4, 'all': 5, '1': 4}, 0.8, 'probe')
+  -- mode=h      空圈数
+       单目标决策        ('H', None, 0.8, 'probe')
+       两段式          ('H', {}, 0.8, 'probe')
+       单调用          ('H', {}, 0.8, 'probe')
+  -- mode=serial 四层齐
+       单目标决策        ('serial', None, 0.8, 'probe')
+       两段式          ('serial', {'0': 4, '1': 5, 'both': 4, 'all': 6}, 0.8, 'probe')
+       单调用          ('serial', {'0': 4, '1': 5, 'both': 4, 'all': 6}, 0.8, 'probe')
+  -- mode=serial 只给两层
+       单目标决策        ('serial', None, 0.8, 'probe')
+       两段式          ('serial', {'0': 5, '1': 5, 'both': 5, 'all': 5}, 0.8, 'probe')
+       单调用          ('serial', {'0': 5, '1': 5, 'both': 5, 'all': 5}, 0.8, 'probe')
+  -- mode=serial 越界值
+       单目标决策        ('serial', None, 0.8, 'probe')
+       两段式          ('serial', {'0': 4, 'both': 4, 'all': 5, '1': 4}, 0.8, 'probe')
+       单调用          ('serial', {'0': 4, 'both': 4, 'all': 5, '1': 4}, 0.8, 'probe')
+  -- mode=serial 空圈数
+       单目标决策        ('serial', None, 0.8, 'probe')
+       两段式          ('serial', {}, 0.8, 'probe')
+       单调用          ('serial', {}, 0.8, 'probe')
+
+[C] 低置信（conf=0.1，阈值 0.5）三处处置
+    单目标决策 {'mode': 'serial', 'reason': '低置信(0.10)，退回 serial：probe', 'confidence': 0.1}
+    两段式     {'route': ['0', '1', 'both', 'all'], 'mode': 'serial', 'rounds': {'0': 4, '1': 5, 'both': 4, 'all': 6}, 'confidence': 0.1, 'reason': 'probe'}
+    单调用     {'mode': 'serial', 'rounds': {'0': 4, '1': 5, 'both': 4, 'all': 6}, 'confidence': 0.1, 'reason': '低置信(0.10)，退回 serial：probe', 'orientation': 'decision'}
+
+[D] pending_fix #3 · _anchor_tier 布尔兼容（当前是否有留痕）
+    as_evidence=True         -> 'evidence'
+    as_evidence=False        -> 'off'
+    as_evidence="off"        -> 'off'
+    as_evidence="evidence"   -> 'evidence'
+    as_evidence="crosscheck" -> 'crosscheck'
+    as_evidence=垃圾值          -> 'off'
+    as_evidence=None         -> 'off'
+
+[E] DEFAULT_CONFIG 里 as_evidence 的取值（应为字符串档）
+    external_anchor    'off'
+    web_search         'crosscheck'

@@ -1,0 +1,23 @@
+合并 GitHub 自动生成的 Initial commit（保留 README，避免强推）
+
+liao-wc/meta-dgtf 已由 GitHub Desktop 于 05:30 创建，远程 main 上有一个
+自动生成的 Initial commit（127b60b，**仅含 README.md**，内容：
+「# meta-dgtf / 道生三阶模型」）。
+
+本仓库要推上去，与它**历史不相干**（unrelated histories）。两条路：
+  · 强推覆盖 —— 会丢掉那个 README；
+  · 合并（本次采用）—— 保留远程已有内容，且推送因此变成**普通快进**，
+    不需要 force。
+选后者：非破坏性，而且让你在 GitHub Desktop 里只需要点一次「Push origin」。
+
+★ 远程那个 commit **不含** `.gitattributes`（本地脚手架里那份带
+  `* text=auto` 的文件没有被提交），所以本仓库根的
+  `.gitattributes`（`* -text`，字节保真）不会被覆盖 —— 这一点很重要：
+  `* text=auto` 会打开换行符自动转换，直接打穿本项目所有「纯 CRLF」断言。
+
+★ 同时把 `meta-dgtf/` 加进 `.gitignore`：那是 GitHub Desktop 建的空脚手架
+  仓库（只有一个 .git，指向同一个远程），**嵌套 git 仓库不该被本仓库跟踪**
+  —— 否则它会被当成 submodule 记成一行 gitlink，状态永远是「脏」。
+  目录本身保留在磁盘上，Desktop 继续用它。
+
+本次合并只新增 README.md 一个文件，其余内容不变。

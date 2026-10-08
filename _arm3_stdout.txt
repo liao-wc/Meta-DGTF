@@ -1,7 +1,0 @@
-Building prefix dict from the default dictionary ...
-Loading model from cache C:\Users\18432\AppData\Local\Temp\jieba.cache
-Loading model cost 0.802 seconds.
-Prefix dict has been built successfully.
-对偶判断命中 5/12，降级重试（候选减半）
-📁 已保存: C:\Users\18432\Desktop\元DGTF-多模并行架构\outputs\20261004_052143_现金流紧张的中小制造企业上自动化产线还.md
-[cmp_bal_C] OK  14.3min  calls=123  tokens=1006856

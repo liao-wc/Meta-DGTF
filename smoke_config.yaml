@@ -1,5 +1,0 @@
-output:
-  save_dir: smoke_outputs
-  verbose: false
-actions:
-  parallel_mode: B

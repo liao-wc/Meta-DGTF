@@ -1,9 +1,0 @@
-=== 并行跑批 2 个 run，并发上限 2 ===
-=== 开始 2026-10-01 05:21:27 ===
-✓ [c61G/G] 17.7min
-    [c61G/G] OK  17.6min  calls=158  → v60_c61G_r4_G.log
-       missing=[]  skipped=[]
-✓ [c61H/H] 18.4min
-    [c61H/H] OK  18.3min  calls=159  → v60_c61H_r4_H.log
-       missing=[]  skipped=[]
-=== 结束 2026-10-01 05:39:50 ===

@@ -1,8 +1,0 @@
-- generic
-  - generic [ref=e1] clickable [onclick]
-    - generic [ref=e2] clickable [cursor:pointer, onclick]
-      - image
-    - image "Error"
-    - StaticText "你访问的链接不存在"
-    - button "新对话" [ref=e3]
-      - StaticText "新对话"

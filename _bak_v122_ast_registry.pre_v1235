@@ -1,0 +1,370 @@
+{
+  "added": 90,
+  "baseline": "_baseline_v12177.py",
+  "current": "元DGTF-V1.23.4.py",
+  "n_symbols_baseline": 290,
+  "n_symbols_current": 380,
+  "registry": {
+    "AnchorRetriever": {
+      "phase": "4",
+      "reason": "五档里的真检索后端（snapshot 零调用 / tavily + 缓存）"
+    },
+    "DecidabilityFreeze": {
+      "phase": "2",
+      "reason": "可判定性冻结：判定跑完那一刻的名单快照 + 防篡改签名"
+    },
+    "_act_text": {
+      "phase": "3",
+      "reason": "取结论文本（View / dict 两形态都要吃）"
+    },
+    "_adjudicate_sub_tristate_multi": {
+      "phase": "2",
+      "reason": "三态多票判决（3 票独立 → 多数）"
+    },
+    "_anchor_enters_citation": {
+      "phase": "4",
+      "reason": "tier 门的唯一判据：tier ≤ tier_floor 才进引用表"
+    },
+    "_anchor_tier": {
+      "phase": "4",
+      "reason": "as_evidence 五档归一（含 v1.21.75 布尔兼容）"
+    },
+    "_cache_path": {
+      "phase": "4",
+      "reason": "AnchorRetriever 的检索缓存路径（queries 的 sha256）"
+    },
+    "_classify_unsaid": {
+      "phase": "1",
+      "reason": "「此处未生」的 real/lazy 分类（G1.5）"
+    },
+    "_compute_rephrase_streak": {
+      "phase": "6",
+      "reason": "复述圈数的唯一实现（收口两处各一份的旧写法）"
+    },
+    "_digest": {
+      "phase": "2",
+      "reason": "DecidabilityFreeze 的 sha256 摘要"
+    },
+    "_extract_actions": {
+      "phase": "3",
+      "reason": "从结论文本抽行动条目（六字段，G3.4）"
+    },
+    "_extract_not_do": {
+      "phase": "3",
+      "reason": "抽「不做什么」清单（G3.5 的 not_do_missing 依据）"
+    },
+    "_g": {
+      "phase": "1",
+      "reason": "`_layer_objective_lines` 内的取视图小闭包（无副作用）"
+    },
+    "_guess_acceptance": {
+      "phase": "3",
+      "reason": "行动字段猜测：验收"
+    },
+    "_guess_deadline": {
+      "phase": "3",
+      "reason": "行动字段猜测：时限"
+    },
+    "_guess_fallback": {
+      "phase": "3",
+      "reason": "行动字段猜测：回退"
+    },
+    "_guess_role": {
+      "phase": "3",
+      "reason": "行动字段猜测：负责人角色"
+    },
+    "_layer_objective_lines": {
+      "phase": "1",
+      "reason": "分层目标四行（计数口径，G1.6）"
+    },
+    "_pool_meta_summary": {
+      "phase": "3",
+      "reason": "池级留痕汇总：两个落地层模板共用的一份实现"
+    },
+    "_render_landing_boundary": {
+      "phase": "3",
+      "reason": "原 render_landing 整体改名（老五块模板）"
+    },
+    "_render_landing_decision": {
+      "phase": "3",
+      "reason": "decision 模式的六段行动闭环模板"
+    },
+    "_tavily": {
+      "phase": "4",
+      "reason": "Tavily 检索实现（tier 缺省 3）"
+    },
+    "_tier_floor": {
+      "phase": "4",
+      "reason": "读 tier_floor 配置（带类型兜底）"
+    },
+    "_und_text": {
+      "phase": "3",
+      "reason": "取不可判定结论文本（不做什么可能落在这一侧）"
+    },
+    "freeze": {
+      "phase": "2",
+      "reason": "DecidabilityFreeze.freeze：写冻结键 → 再算签名"
+    },
+    "search": {
+      "phase": "4",
+      "reason": "AnchorRetriever.search：缓存 TTL + 后端分发"
+    },
+    "verify": {
+      "phase": "2",
+      "reason": "DecidabilityFreeze.verify：签名不匹配即 RuntimeError"
+    },
+    "_norm_schema_actions": {
+      "phase": "P1",
+      "reason": "schema 归一化白名单里保留 actions —— 不加就是**静默吞字段**"
+    },
+    "_extract_actions_lexical": {
+      "phase": "P1",
+      "reason": "原词法版行动抽取（schema 优先之后的兜底路径，正文一字未动）"
+    },
+    "_is_triage_candidate": {
+      "phase": "P2a",
+      "reason": "triage 触发条件改挂结构标签（[外] 前缀 ∪ 语义关键词）"
+    },
+    "_is_never_downgrade": {
+      "phase": "P2a",
+      "reason": "真·自指型不可判定不许降级（锚点无关）"
+    },
+    "_hit_by_answers": {
+      "phase": "P2b",
+      "reason": "triage 第二条匹配路径：锚点自报 answers（_overlap_coef + _UNTRACED_OVERLAP）"
+    },
+    "_hit_by_claim": {
+      "phase": "P2b",
+      "reason": "triage 原 claim 路径（阈值 0.6 一字不动，向后兼容）"
+    },
+    "_single_vote_stability": {
+      "phase": "v1222",
+      "reason": "单票路径的 stability 口径（弃权=abstained，与多票同层级但不同尺子）"
+    },
+    "_write_tri_stability": {
+      "phase": "v1222",
+      "reason": "给每条 sub 写 stability + _vote_mode；必须在**每个出口前**调（单票有 5 处早退）"
+    },
+    "_norm_schema_not_do": {
+      "phase": "v1222",
+      "reason": "decidable_product.not_do 的归一化（空 what 丢弃、最多 6 条）"
+    },
+    "_extract_not_do_lexical": {
+      "phase": "v1222",
+      "reason": "原 _extract_not_do 的词法版（改名保留，仅作 schema 缺失时的兜底）"
+    },
+    "WebSearchCache": {
+      "phase": "W1",
+      "reason": "检索缓存：sha256 + TTL，cache/websearch/（与 cache/anchors/ 分开）"
+    },
+    "WebSearchClient": {
+      "phase": "W1",
+      "reason": "HTTP 客户端：超时/重试/退避 + 五类失败分类（_http 是可打桩的缝）"
+    },
+    "WebSearchGate": {
+      "phase": "W1",
+      "reason": "授权 + 配额三层 + 连续失败降级（note_failure 显式置 disabled）"
+    },
+    "build_web_search": {
+      "phase": "W1",
+      "reason": "从配置造 Gate+Client+Cache；**不发起任何调用**"
+    },
+    "_endpoint": {
+      "phase": "W1",
+      "reason": "WebSearchClient 的端点解析（未知后端抛错，不静默降级）"
+    },
+    "_http": {
+      "phase": "W1",
+      "reason": "WebSearchClient 的可打桩缝：返回 (results, fail_kind)，映射 urllib 异常到五档"
+    },
+    "_i": {
+      "phase": "W1",
+      "reason": "WebSearchGate 读顶层整数键（auto_disable_after_failures）"
+    },
+    "_q": {
+      "phase": "W1",
+      "reason": "WebSearchGate 读配额三层（quota.*）"
+    },
+    "allow": {
+      "phase": "W1",
+      "reason": "WebSearchGate 的唯一准入判据：授权 + 三层配额 + 降级，三个否定方向均可读"
+    },
+    "get": {
+      "phase": "W1",
+      "reason": "WebSearchCache 读缓存（过期/损坏 → 未命中，不抛）"
+    },
+    "key": {
+      "phase": "W1",
+      "reason": "WebSearchCache 的 sha256(backend:query) 前 24 位"
+    },
+    "note_call": {
+      "phase": "W1",
+      "reason": "WebSearchGate 记一次调用（三层计数同时 +1）"
+    },
+    "note_failure": {
+      "phase": "W1",
+      "reason": "WebSearchGate 记一次失败；★ 达阈值时**显式置 disabled**（修正 B3）"
+    },
+    "note_success": {
+      "phase": "W1",
+      "reason": "WebSearchGate 清零连续失败计数"
+    },
+    "path_for": {
+      "phase": "W1",
+      "reason": "WebSearchCache 的落盘路径 cache/websearch/<key>.json"
+    },
+    "put": {
+      "phase": "W1",
+      "reason": "WebSearchCache 写缓存（写失败只告警，不影响本次结果）"
+    },
+    "summary": {
+      "phase": "W1",
+      "reason": "WebSearchGate 的状态快照（含 disable_reason，供产物留痕）"
+    },
+    "_next_web_id": {
+      "phase": "W2",
+      "reason": "W# 编号（跨层全局唯一）"
+    },
+    "_web_evidence_gate": {
+      "phase": "W2",
+      "reason": "web_search.as_evidence 是否属于「允许 W# 进引用表」的两档"
+    },
+    "_research_decompose_queries": {
+      "phase": "W2",
+      "reason": "[W2] 拆解前检索词（原问题 + 池内结构型印记）"
+    },
+    "_research_evidence_queries": {
+      "phase": "W2",
+      "reason": "[W2] 只对 →partial 的提案配检索词（方向纪律）"
+    },
+    "_research_precedent_queries": {
+      "phase": "W2",
+      "reason": "[W2] [外] 标签的不可判定方面 → 存在性问句"
+    },
+    "_web_digest_block": {
+      "phase": "W2",
+      "reason": "把 W# 渲染成【外部检索摘要】**参照**段（空→空串，加性）"
+    },
+    "_research_round_no": {
+      "phase": "W2",
+      "reason": "研究层圈序号（配额口径的 round）"
+    },
+    "_web_search": {
+      "phase": "W2",
+      "reason": "联网检索**唯一实现**：Gate→Client→W# 入池→失败留痕"
+    },
+    "_research_web_prep": {
+      "phase": "W2",
+      "reason": "拆解前的联网准备（decompose + precedent），返回可注入摘要"
+    },
+    "_research_decompose_with_web": {
+      "phase": "W2",
+      "reason": "研究层拆解的**唯一实现**（串行/并行两条通道共用）"
+    },
+    "_web_evidence_hook": {
+      "phase": "W2",
+      "reason": "research_evidence 接入点：提案应用前先做一次外部检索"
+    },
+    "_duel_arbitration_queries": {
+      "phase": "W3",
+      "reason": "[W3] 张力 → 「哪个更合理」仲裁问句（只作仲裁材料）"
+    },
+    "_meta_clean_queries": {
+      "phase": "W3",
+      "reason": "[W3] uncovered → 存在性问句（只用于核对，不用于清算）"
+    },
+    "_web_duel_arbitration": {
+      "phase": "W3",
+      "reason": "[W3] 对撞层第三方仲裁：入 pool.web_arbitration + [W-ARB] 留痕"
+    },
+    "_web_meta_clean_check": {
+      "phase": "W3",
+      "reason": "[W3] 元层缺失区间核对：入 pool.web_clean_check + [W-CHK] 留痕"
+    },
+    "_web_domain_of": {
+      "phase": "v1231",
+      "reason": "从 URL 取域名（tier 提案的输入规范化）"
+    },
+    "_web_tier_proposal": {
+      "phase": "v1231",
+      "reason": "★纯函数：tier **提案**（待审）。不改入参、不写盘、不进判定路径；同时接受完整 config 与 web_search 子段"
+    },
+    "domains_load": {
+      "phase": "v1231",
+      "reason": "WebSearchCache：已见域名（tier 提案的「首次出现」判据，只登记域名不存 tier）"
+    },
+    "domains_save": {
+      "phase": "v1231",
+      "reason": "WebSearchCache：把新域名并进 cache/websearch/_domains.json"
+    },
+    "_thinking_stage": {
+      "phase": "v1232",
+      "reason": "★ 环节名→thinking stage 键；**只在配置里声明过**时返回（否则 None）。修「15 个 stage 永远选不中」"
+    },
+    "_web_cfg_of": {
+      "phase": "v1232",
+      "reason": "把完整 config / web_search 子段归一成子段（两种写法都收，防静默读不到）"
+    },
+    "_web_tier_confirmed": {
+      "phase": "v1232",
+      "reason": "★ 只读**人工确认表**的 tier；绝不读提案（提案→生效无自动路径）"
+    },
+    "_web_tier_floor": {
+      "phase": "v1232",
+      "reason": "W# 进引用表的 tier 门（读 web_search.tier_floor；该键此前从未被读过）"
+    },
+    "_web_tier_effective": {
+      "phase": "v1232",
+      "reason": "W# 的有效 tier：人工确认值优先，否则它自带的 tier"
+    },
+    "_web_enters_citation": {
+      "phase": "v1232",
+      "reason": "W# 是否够格进引用表（与 X# 同纪律：tier ≤ floor）"
+    },
+    "_triage_suggestions": {
+      "phase": "v1232",
+      "reason": "★ 分诊降级建议清单（**纯函数**，从 _anchor_crosscheck 抽出）——让「能力存在性」可构造性验证，不必靠 n=3 采样"
+    },
+    "_normalize_judgment_ids": {
+      "phase": "v1233",
+      "reason": "★ 把一票的 {id: label} 归一到 1..n（1 起原样 / 0 起整体 +1 / 越界判 None） —— 修「模型给 0 起 id ⇒ 整票错位一格且无声」（受控实验抓到）"
+    },
+    "_canonical_sub_ids": {
+      "phase": "v1233",
+      "reason": "★ 子问题 id 按位置重编号成 1..n —— 原实现直接用模型给的 id（0 起/带洞/重复），而下游一律按 1..n 用"
+    },
+    "_apply_runtime": {
+      "phase": "v1234",
+      "reason": "★ 运行期三项总控的**唯一生效点**：深拷后写具体键，auto 一律不动。纯函数（不改入参）"
+    },
+    "_runtime_snapshot": {
+      "phase": "v1234",
+      "reason": "本跑实际生效的三项读数（写进产物 `_runtime`，供复盘）"
+    },
+    "_runtime_summary_line": {
+      "phase": "v1234",
+      "reason": "一行生效摘要；交互与 CLI **共用**同一个函数，避免两处走样"
+    },
+    "_runtime_thinking_on": {
+      "phase": "v1234",
+      "reason": "本跑思考是否开（看 default；stages 由总控同步过）"
+    },
+    "_normalize_runtime_switch": {
+      "phase": "v1234",
+      "reason": "开关归一 auto/on/off + 中文/字母别名；认不出返回 None（不静默）"
+    },
+    "_normalize_runtime_effort": {
+      "phase": "v1234",
+      "reason": "强度归一 auto/low/high/max；空输入(回车)=auto；集合外返回 None"
+    },
+    "_load_config_raw": {
+      "phase": "v1234",
+      "reason": "原 `load_config` 本体（改名）；外层 `load_config` 套运行期总控，覆盖它的**四个** return 出口"
+    },
+    "_ask_runtime": {
+      "phase": "v1234",
+      "reason": "★ 交互询问三项总控（回车=auto）；返回 dict，**不改 cfg**"
+    }
+  },
+  "removed": 0
+}

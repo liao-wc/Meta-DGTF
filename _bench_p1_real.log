@@ -1,9 +1,0 @@
-═══ bench_run · src=元DGTF-V1.22.0-rc1.py · mock=False · 3 题 · jobs=3 · tag=p1_real ═══
-Building prefix dict from the default dictionary ...
-Loading model from cache C:\Users\18432\AppData\Local\Temp\jieba.cache
-Loading model cost 0.698 seconds.
-Prefix dict has been built successfully.
-对偶判断命中 2/8，降级重试（候选减半）
-  模块 __version__=1.22.0-rc1
-  [biz_001] ok=True calls=32 495.6s 
-📁 已保存: C:\Users\18432\Desktop\元DGTF-多模并行架构\bench\runs\p1_real\tech_001\20261004_224837_订单系统该选一致性还是可用性CAP怎.md
