@@ -1,17 +1,57 @@
 {
- "added": 132,
+ "added": 142,
  "baseline": "_baseline_v12177.py",
- "current": "元DGTF-V1.23.13.py",
+ "current": "元DGTF-V1.23.14.py",
  "n_symbols_baseline": 290,
- "n_symbols_current": 422,
+ "n_symbols_current": 432,
  "registry": {
+  "_files": {
+   "phase": "14",
+   "reason": "局部便利函数（在 _auto_history 内）：按 mtime 倒序取最近 N 个文件"
+  },
+  "_put": {
+   "phase": "14",
+   "reason": "局部便利函数（在 _auto_history 内）：把一条记录按题型分桶累加"
+  },
+  "_hist_quant": {
+   "phase": "14",
+   "reason": "分位数（线性插值）：历史读数的 p50/p75"
+  },
+  "_hist_blank": {
+   "phase": "14",
+   "reason": "历史累加器的空模板"
+  },
+  "_hist_add": {
+   "phase": "14",
+   "reason": "把一条历史记录并进累加器（字段缺省一律容忍）"
+  },
+  "_hist_finish": {
+   "phase": "14",
+   "reason": "把累加器收成读数（含每层样本数，供策略判断可信度）"
+  },
+  "_hist_from_packed": {
+   "phase": "14",
+   "reason": "从 packed 抽一条（★ 实际停圈字段是 rounds_run）"
+  },
+  "_hist_from_md": {
+   "phase": "14",
+   "reason": "从产物 md 头部抽一条（只读 8KB；圈数归种子上限）"
+  },
+  "_hist_from_batch": {
+   "phase": "14",
+   "reason": "从跑批 JSON 抽记录（富字段、样本少）"
+  },
+  "_hist_for": {
+   "phase": "14",
+   "reason": "取与本题同题型的那份历史（无同型则退全语料）"
+  },
+  "_rounds_run_line": {
+   "phase": "14",
+   "reason": "产物「实际停圈」一行：rounds_run + rounds_cap"
+  },
   "_is_mine": {
    "phase": "13",
    "reason": "局部便利函数（在 _apply_auto_dispatch 内）：判断该项是否由调度器写入（auto 或显式）"
-  },
-  "_med": {
-   "phase": "13",
-   "reason": "局部便利函数（在 _auto_history 内）：取中位数"
   },
   "_auto_features": {
    "phase": "13",

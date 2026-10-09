@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.13.py"
+SRC = HERE / "元DGTF-V1.23.14.py"
 
 os.environ.setdefault("DGTF_API_KEY", "sk-smoke-test-key")
 
@@ -9427,8 +9427,12 @@ def check_v12313_auto_dispatch():
          "modes": {}, "profiles": {}, "web_hit": 12, "web_fail": 0,
          "web_empty": 0, "mismatch": 0}
     _ph = m.auto_dispatch(_FACT, cfg0, history=H)
-    if "中位" not in str(_pick(_ph, "rounds").get("reason")):
-        bad.append("有历史却没按中位数补圈")
+    # ★ [v1.23.14 判据随实现更新] 圈数改「三级回退 + 样本门槛」，理由串
+    #   由「历史各层停圈中位 …+1」变成「按层：…（实际停圈需 ≥N 份样本才采用）」。
+    #   这里给足样本（n≥3）⇒ 必须走「实际停圈」这一支。
+    if "实际停圈" not in str(_pick(_ph, "rounds").get("reason")):
+        bad.append("有足够历史却没走「实际停圈」分支：%r"
+                   % _pick(_ph, "rounds").get("reason"))
     if _val(_ph, "route") != ["0", "1", "both"]:
         bad.append("低截断率 + 事实短题应砍到 0/1/both，实得 %r"
                    % (_val(_ph, "route"),))
@@ -9439,10 +9443,13 @@ def check_v12313_auto_dispatch():
     if _val(m.auto_dispatch(_DEC, cfg0, history=H), "cost_profile") != \
             "balanced":
         bad.append("有限 token 的决策题不该降档（负对照失效）")
+    # ★ [v1.23.14 判据随实现更新] 成本档改**相对判据**：同类题中位 ≥
+    #   全语料 p75 才降档。夹具必须同时给 tokens_p75（原来没有 ⇒ 判据失效）。
     if _val(m.auto_dispatch(_DEC, cfg0,
-                            history=dict(H, tokens_med=900000)),
+                            history=dict(H, tokens_p75=400000,
+                                         tokens_med=900000)),
             "cost_profile") != "economy":
-        bad.append("高 token 中位数没有降档")
+        bad.append("同类题成本中位 ≥ 全语料 p75 时没有降档")
     if _val(m.auto_dispatch(_DEC, cfg0,
                             history=dict(H, tri_rate=0.2)),
             "cost_profile") != "balanced":
@@ -9508,7 +9515,8 @@ def check_v12313_auto_dispatch():
     with _tf.TemporaryDirectory() as td:
         Path(td, "x.packed.json").write_text(_json.dumps({
             "llm_calls": 7, "llm_tokens": 123456, "tri_state": [1, 2],
-            "views": {"1": {"stop_reason": "体力耗尽（被截断）", "rounds": 3}},
+            "views": {"1": {"stop_reason": "体力耗尽（被截断）",
+                            "rounds_run": 3, "rounds_cap": 6}},
             "dispatch": {"_parallel_mode": "A"}, "cost_profile": "economy",
             "pools": {"1": {"web_results": [{"id": "W1"}], "web_errors": [],
                             "meta": ["[W-EMPTY] x"]}},
@@ -9522,8 +9530,13 @@ def check_v12313_auto_dispatch():
         bad.append("历史联网入池读数读错：%r" % _h.get("web_hit"))
     if _h.get("cut_rate") != 1.0:
         bad.append("历史截断率算错：%r" % _h.get("cut_rate"))
-    if (_h.get("layer_rounds") or {}).get("1") != 3:
-        bad.append("历史各层停圈读错：%r" % _h.get("layer_rounds"))
+    # ★ [v1.23.14 判据随实现更新] 字段名是 `rounds_run`（原判据的夹具写的是
+    #   `rounds` —— 那正是本版修掉的静默 bug）。且「实际停圈」要 ≥3 份样本
+    #   才采纳：这里只有 1 份 ⇒ 样本数记 1、中位数不采纳（门槛生效）。
+    if (_h.get("layer_rounds_n") or {}).get("1") != 1:
+        bad.append("历史实际停圈样本数没记：%r" % _h.get("layer_rounds_n"))
+    if "1" in (_h.get("layer_rounds") or {}):
+        bad.append("只有 1 份样本却采纳了实际停圈（门槛失效）")
     if (_h.get("modes") or {}).get("A") != 1:
         bad.append("历史模式分布读错：%r" % _h.get("modes"))
     with _tf.TemporaryDirectory() as td:
@@ -9539,6 +9552,190 @@ def check_v12313_auto_dispatch():
         return False
     print("  \u2713 [v12313] 十二项逐项接管（10 项 CLI + 2 项配置）/ 总开关 / "
           "历史自适应（5 正 3 负）/ 技术债（唯一实现 + 两路同 schema）/ 产物表")
+    return True
+
+
+def check_v12314_history_corpus():
+    """[v1.23.14] 用真实历史语料校准调度：三源取样 + 字段名 + 相对判据。
+
+    ★ 背景（本版的两个真问题）：
+      ① `_auto_history` 只读 `**/*.packed.json` —— 而 `outputs/` 里有 368 份
+         产物 md、只落 1 份 packed ⇒ 历史几乎为空，十二项自适应形同虚设；
+      ② 它把「实际停圈」的字段名读成了 `rounds`，真实字段是 `rounds_run`
+         ⇒ `dict.get` 静默返回 None，「实际停圈」**永远取不到**。
+    ★ 负对照全部内置（没有负对照的「全绿」只说明判据没跑）：
+      · 关掉 md / 跑批两个源 ⇒ 样本必须掉回 1（证明样本量靠扩源拿到）；
+      · md 抽取给空串 / 无资源行 ⇒ 必须 `{}`；
+      · packed 里同时放 `rounds_run` 与 `rounds`：只准认前者；
+      · 「实际停圈」样本不足（1 份）⇒ 必须退回种子上限（不能被单条噪声带跑）；
+      · 成本档两向：同类偏贵降档 / 不贵不降 / 一致率低不降。
+    """
+    import json as _j
+    import tempfile as _tf
+    m = globals().get("mod")
+    bad = []
+    if m is None or not hasattr(m, "_hist_from_md"):
+        print("  \u2717 [v12314] 命名空间里没有历史三源函数")
+        return False
+    _F = "新中国的成立时间是什么时候"
+    _D = "这份方案怎么落地"
+    cfg0 = m.load_config("")
+
+    # ── A 三源 + 样本量 ───────────────────────────────────────
+    h = m._auto_history("outputs", 200, cfg=cfg0)
+    if h["n"] <= 100:
+        bad.append("历史样本仍太少（%d）—— 扩源没生效" % h["n"])
+    for _k in ("packed", "md", "batch"):
+        if not (h.get("sources") or {}).get(_k):
+            bad.append("缺历史来源：%s" % _k)
+    if not h.get("tokens_p75") or not h.get("calls_p75"):
+        bad.append("缺少 p75 分位读数")
+    if not h.get("cap_rounds"):
+        bad.append("缺少种子上限读数")
+    if not (h.get("by_type") or {}).get("fact", {}).get("n"):
+        bad.append("分题型桶为空（事实型）")
+    _p = m._auto_history("outputs", 200, cfg=cfg0,
+                         want_md=False, want_batch=False)
+    if _p["n"] != (h.get("sources") or {}).get("packed", 0):
+        bad.append("关掉两源后样本没掉回 packed 数（%d）" % _p["n"])
+
+    # ── B md 抽取 正/负对照 ──────────────────────────────────
+    HEAD = ("# 元 DGTF · 测试题\n\n**调度**：修行(4圈) → 研究(5圈) → "
+            "对撞(6圈) → 元(7圈)\n\n**并行模式**：A · 四层独立并行 + 汇流\n\n"
+            "**成本档位**：economy（再省调用次数）\n\n"
+            "**取向**：boundary（要边界清单）\n\n"
+            "**停止**：自然 2 层 / 被截断（体力耗尽）2 层\n\n"
+            "**资源**: 137 次 LLM | 654321 tokens\n")
+    r = m._hist_from_md(HEAD)
+    for _k, _v in (("calls", 137), ("tokens", 654321), ("mode", "A"),
+                   ("profile", "economy"), ("orientation", "boundary")):
+        if r.get(_k) != _v:
+            bad.append("md 抽取 %s 错：%r" % (_k, r.get(_k)))
+    if (r.get("cap_rounds") or {}).get("all") != 7:
+        bad.append("md 抽取种子上限错：%r" % (r.get("cap_rounds"),))
+    if [r.get("nat"), r.get("cut")] != [2, 2]:
+        bad.append("md 抽取停止分层错")
+    if m._hist_from_md("") != {} or m._hist_from_md("# 标题\n正文\n") != {}:
+        bad.append("md 抽取负对照失效（空输入该返回 {}）")
+
+    # ── C packed 抽取：只认 `rounds_run` ──────────────────────
+    P = {"question": _F, "llm_calls": 88, "llm_tokens": 123456,
+         "cost_profile": "balanced", "orientation": "boundary",
+         "dispatch": {"_parallel_mode": "B"}, "tri_state": [3, 4],
+         "views": {"0": {"rounds_run": 3, "rounds_cap": 6,
+                         "stop_reason": "连续 2 轮无新 &，螺旋停止"},
+                   "1": {"rounds": 5, "rounds_cap": 6,
+                         "stop_reason": "体力耗尽（6 圈走满）"}},
+         "pools": {"1": {"web_results": [{"id": "W1"}], "web_errors": [],
+                         "meta": ["[W-EMPTY] x"]}}}
+    rc = m._hist_from_packed(P)
+    if (rc.get("actual_rounds") or {}).get("0") != 3:
+        bad.append("packed 没读到实际停圈（rounds_run）：%r"
+                   % (rc.get("actual_rounds"),))
+    if "1" in (rc.get("actual_rounds") or {}):
+        bad.append("packed 认了错字段 `rounds`（实际字段是 `rounds_run`）")
+    if rc.get("tri") != 0.75:
+        bad.append("tri_state 读数错：%r" % rc.get("tri"))
+
+    # ── D 按题型取历史 ───────────────────────────────────────
+    f, d = m._auto_features(_F), m._auto_features(_D)
+    _bt = h.get("by_type") or {}
+    if m._hist_for(f, h) is not _bt.get("fact"):
+        bad.append("事实型没取 fact 桶")
+    if m._hist_for(d, h) is not _bt.get("nonfact"):
+        bad.append("决策型没取 nonfact 桶")
+    if m._hist_for(f, {"n": 9, "by_type": {"fact": {"n": 0}}})["n"] != 9:
+        bad.append("无同型样本时没退回全语料")
+
+    # ── E 圈数：三级回退 + 样本门槛（两向）──────────────────
+    _cap = {"n": 50, "cap_rounds": {"0": 2, "1": 2, "both": 5, "all": 6},
+            "cap_rounds_n": {"0": 40, "1": 40, "both": 10, "all": 10}}
+    _v, _why = m._auto_pick_rounds(f, _cap, cfg0)
+    if "种子上限" not in _why:
+        bad.append("只有种子上限时没报出来源")
+    # ★ 门槛要拿**钳制遮不住的那一层**（元层 floor=5）来测：
+    #   用 0/1 层测会被 floor(4) 兜住 —— 采纳与不采纳结果都是 4，判据分辨不出。
+    _few = {"n": 50, "layer_rounds": {"all": 1}, "layer_rounds_n": {"all": 1},
+            "cap_rounds": {"all": 6}, "cap_rounds_n": {"all": 30}}
+    if m._auto_pick_rounds(f, _few, cfg0)[0]["all"] != 6:
+        bad.append("实际停圈只有 1 份样本时不该采纳（应退回种子上限 6）")
+    _many = {"n": 50, "layer_rounds": {"0": 5}, "layer_rounds_n": {"0": 9},
+             "cap_rounds": {"0": 2}, "cap_rounds_n": {"0": 30}}
+    if m._auto_pick_rounds(f, _many, cfg0)[0]["0"] != 6:
+        bad.append("实际停圈样本足够时应采纳（5+1=6）")
+    for _e in m._ENTRIES:
+        if _e not in m._auto_pick_rounds(f, {}, cfg0)[0]:
+            bad.append("零历史时没给全四层的圈数")
+
+    # ── F 成本档：相对判据（两向 + 质量优先）────────────────
+    _base = {"n": 99, "tokens_p75": 500000, "calls_p75": 100}
+    _hi = dict(_base, by_type={"nonfact": {"n": 20, "tokens_med": 900000,
+                                          "calls_med": 50, "tri_n": 6,
+                                          "tri_rate": 0.9}})
+    _lo = dict(_base, by_type={"nonfact": {"n": 20, "tokens_med": 100000,
+                                          "calls_med": 10, "tri_n": 6,
+                                          "tri_rate": 0.9}})
+    _badq = dict(_base, by_type={"nonfact": {"n": 20, "tokens_med": 900000,
+                                            "calls_med": 50, "tri_n": 6,
+                                            "tri_rate": 0.2}})
+    if m._auto_pick_cost_profile(d, _hi, cfg0)[0] != "economy":
+        bad.append("同类题成本中位 ≥ 全语料 p75 时没降档")
+    if m._auto_pick_cost_profile(d, _lo, cfg0)[0] != "balanced":
+        bad.append("同类题不贵时不该降档（负对照失效）")
+    # ★ 判别「相对判据」vs「绝对阈值」的关键样例：同类中位 90 万，
+    #   但全语料 p75 是 500 万 ⇒ **相对不算贵** ⇒ 不该降档。
+    #   绝对阈值（40 万）会误降 —— 这一条就是为分辨它而设。
+    _mid = dict(_base, tokens_p75=5000000, calls_p75=10000,
+                by_type={"nonfact": {"n": 20, "tokens_med": 900000,
+                                     "calls_med": 50, "tri_n": 6,
+                                     "tri_rate": 0.9}})
+    if m._auto_pick_cost_profile(d, _mid, cfg0)[0] != "balanced":
+        bad.append("全语料基准高时，同类 90 万不算贵 —— 不该降档（绝对阈值会误降）")
+    if m._auto_pick_cost_profile(d, _badq, cfg0)[0] != "balanced":
+        bad.append("同类题三态一致率低时不该降档（质量优先）")
+    if m._auto_pick_cost_profile(f, _lo, cfg0)[0] != "economy":
+        bad.append("事实型短题应恒为 economy")
+
+    # ── G 「实际停圈」渲染 + 产物里真的有 ─────────────────────
+    _line = m._rounds_run_line({"1": {"rounds_run": 3, "rounds_cap": 6}})
+    if "**实际停圈**" not in _line or "研究 3 圈" not in _line:
+        bad.append("实际停圈渲染不对：%r" % _line)
+    if m._rounds_run_line({}) != "" or m._rounds_run_line(None) != "":
+        bad.append("空 views 时实际停圈行该为空串")
+    _pk = sorted((HERE / "outputs").glob("*.packed.json"),
+                 key=lambda q: q.stat().st_mtime)
+    if _pk:
+        try:
+            _real = _j.loads(_pk[-1].read_text(encoding="utf-8"))
+            _real["_auto_dispatch"] = m.auto_dispatch(
+                str(_real.get("question") or _F), cfg0, history=h)
+            with _tf.TemporaryDirectory() as td:
+                _t = Path(m.save_result(_real, save_dir=td)).read_text(
+                    encoding="utf-8")
+            if "**实际停圈**：" not in _t:
+                bad.append("产物里没有「实际停圈」行（信号落不了地）")
+            if "历史读数：**" not in _t or "p75" not in _t:
+                bad.append("产物的历史读数行没报来源数与 p75")
+        except Exception as _e:  # noqa: BLE001
+            bad.append("产物渲染异常：%s: %s" % (type(_e).__name__, _e))
+
+    # ── H 空/坏输入不崩 ─────────────────────────────────────
+    if m._auto_history(str(HERE / "__nope__"), 5, cfg=cfg0)["n"] >= 0:
+        pass
+    try:
+        m._hist_from_batch(None)
+        m._hist_from_batch({})
+        m._hist_from_packed(None)
+    except Exception as _e:  # noqa: BLE001
+        bad.append("历史抽取对空输入抛异常：%s" % type(_e).__name__)
+
+    if bad:
+        for _x in bad:
+            print("  \u2717 [v12314] %s" % _x)
+        return False
+    print("  \u2713 [v12314] 历史三源（%d 份）· rounds_run 字段 · 按题型分桶 · "
+          "圈数三级回退+样本门槛 · 成本档相对判据 · 实际停圈落产物"
+          % h["n"])
     return True
 
 
@@ -9963,6 +10160,8 @@ def main():
     if not check_v12312_anchor_lanes():
         return 1
     if not check_v12313_auto_dispatch():
+        return 1
+    if not check_v12314_history_corpus():
         return 1
     q = "测试问题：AI 在数字 IC 设计里到底能做什么，哪些已经量产？"
     rows = []
