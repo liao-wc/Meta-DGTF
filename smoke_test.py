@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.11.py"
+SRC = HERE / "元DGTF-V1.23.12.py"
 
 os.environ.setdefault("DGTF_API_KEY", "sk-smoke-test-key")
 
@@ -6219,8 +6219,16 @@ def check_v73_anchor():
         chk("锚点异常" in t_bad, "[C] 失败时产物没有「锚点异常」渲染")
         md_off = mod.save_result(res_off, str(td / "off"))
         t_off = Path(md_off).read_text(encoding="utf-8")
-        chk("**外部锚点**：无（本产物不含外部事实校验；" in t_off,
-            "[A] 关闭时产物文案变了（旧断言会回归）")
+        # [v1.23.12 判据随实现更新，语义不放宽]
+        #   旧断言查的是**单通道**文案「**外部锚点**：无（本产物不含外部
+        #   事实校验；」—— 那条文案把「联网到底跑没跑」整个吞掉了：
+        #   真跑里联网收了 6 条（W1–W6），产物仍只写「外部锚点：无」。
+        #   锚点改到新实现里那条**文本通道**的写法，并**新增**一条
+        #   「联网通道整条不许丢」。
+        chk("**外部锚点 · 文本**（锚点文件 `external_anchor`）：无" in t_off,
+            "[A] 关闭时文本通道没写「无」")
+        chk("**外部锚点 · 联网**" in t_off,
+            "[A] 关闭时联网通道整条丢了（读者又看不到这一路）")
         chk("已接入" not in t_off, "[A] 关闭时产物竟出现「已接入」")
     except Exception as exc:
         bad.append("[渲染] save_result 异常：%s: %s" % (type(exc).__name__, exc))
@@ -9113,6 +9121,176 @@ def check_v1239_orientation_guard():
     return True
 
 
+def check_v12312_anchor_lanes():
+    """[v1.23.12] 外部锚点分「文本 / 联网」两条通道分别写明（单一实现）。
+
+    ★ 负对照全部内置（没有负对照的「全绿」只说明判据没跑）：
+      · 两条通道都必须出现，且**各自**把「没有」写出来 —— 联网关时写
+        「**关**」，产物没写 `_runtime` 时写「未记录」，都不许静默省略。
+      · 联网**开**且收了 N 条：必须写出条数、W# 编号、环节数、失败数。
+      · 联网开时**不许**再出现「未接入外部校验」那句留痕 —— 旧实现口径
+        错位：联网明明跑了 6 条，产物仍写「本次未接入外部校验」。
+      · **四处渲染点**（产物头部 / 显化说明 / decision 落地 / boundary
+        落地）都要出现两条通道 —— 防「四个点只接了一处」。
+      · 真正驱动判据的是**真跑形态**：结果里没有 `external_anchor`、
+        但有 6 条 `web_results` —— 这正是原始 bug 的现场。
+    """
+    import tempfile as _tf
+    bad = []
+    m = globals().get("mod")
+    if m is None:
+        print("  \u2717 [v12312] 命名空间里没有 mod")
+        return False
+    for _fn in ("_anchor_lane_lines", "_web_lane_stats"):
+        if not hasattr(m, _fn):
+            print("  \u2717 [v12312] 缺 %s" % _fn)
+            return False
+
+    def _pool(**x):
+        p = {"amps": [], "threads": [], "probes": [], "suspensions": [],
+             "meta": [], "sub_questions": [], "deferrals": [],
+             "escalations": [], "decidability_log": [], "duel_suspensions": [],
+             "duel_alignment": [], "engagements": [], "refinements": [],
+             "decidable_channel": [], "undecidable_channel": []}
+        p.update(x)
+        return p
+
+    def _res(q, **kw):
+        d = {"question": q, "route": ["1"], "keep": {"1": "all"},
+             "rounds": {"1": 1},
+             "dispatch": {"_parallel_mode": "serial", "order": ["1"],
+                          "requested": ["1"], "skipped": []},
+             "views": {"1": {}}, "pools": {"1": _pool()},
+             "llm_calls": 1, "llm_tokens": 1,
+             "decidability": {"decidability": "decidable"},
+             "channels": ["content"], "tri_state": [0, 0], "_config": {}}
+        d.update(kw)
+        return d
+
+    _Q = "新中国的成立时间是什么时候"
+    _D = "这份方案怎么落地"
+    _ON = {"_runtime": {"web_enabled": True},
+           "pools": {"1": _pool(web_results=[
+               {"id": "W%d" % i,
+                "stage": ("research_decompose" if i <= 3
+                          else "research_evidence"), "tier": 3}
+               for i in range(1, 7)])}}
+
+    # ── A · 真跑形态：无锚点文件 + 联网 6 条 ────────────────────
+    _r = _res(_Q, **_ON)
+    _lanes = m._anchor_lane_lines(_r)
+    _j = "\n".join(_lanes)
+    if len(_lanes) != 2:
+        bad.append("两条通道没分开（得 %d 条）" % len(_lanes))
+    if "**外部锚点 · 文本**" not in _j or "**外部锚点 · 联网**" not in _j:
+        bad.append("缺「文本」或「联网」标题")
+    if "无 ——" not in _j:
+        bad.append("没有锚点文件时，文本通道没写「无」")
+    for _need in ("**开**", "收 6 条", "W1", "2 个环节", "失败 0 条"):
+        if _need not in _j:
+            bad.append("联网通道缺读数：%s" % _need)
+    _s = m._web_lane_stats(_r)
+    if (_s["ok"] != 6 or len(_s["ids"]) != 6 or len(_s["stages"]) != 2
+            or _s["tiers"] != {"3": 6} or _s["errs"]
+            or _s["enabled"] is not True):
+        bad.append("_web_lane_stats 读数不对：%r" % (_s,))
+
+    # ── B · 三态：关 / 未记录 ─────────────────────────────────
+    _off = "\n".join(m._anchor_lane_lines(
+        _res(_Q, **{"_runtime": {"web_enabled": False}})))
+    if "**关**" not in _off:
+        bad.append("联网关时没写「**关**」")
+    _na = "\n".join(m._anchor_lane_lines(_res(_Q)))
+    if "未记录" not in _na:
+        bad.append("产物没写 `_runtime` 时没写「未记录」")
+
+    # ── C · 失败条数 / 零条 ───────────────────────────────────
+    _er = "\n".join(m._anchor_lane_lines(_res(_Q, **{
+        "_runtime": {"web_enabled": True},
+        "pools": {"1": _pool(web_errors=[{"kind": "rate", "stage": "x"}])}})))
+    if "失败 1 条" not in _er or "[W-RATE]" not in _er:
+        bad.append("联网失败没写出条数与 kind")
+    _z = "\n".join(m._anchor_lane_lines(_res(_Q, **{
+        "_runtime": {"web_enabled": True},
+        "pools": {"1": _pool(web_results=[])}})))
+    if "收 0 条" not in _z:
+        bad.append("联网开而零条时没写「收 0 条」")
+    if "已接入" in _z:
+        bad.append("联网零条时文本通道混进了「已接入」")
+
+    # ── D · 锚点文件失败 ─────────────────────────────────────
+    _an = "\n".join(m._anchor_lane_lines(_res(_Q, **{
+        "_runtime": {"web_enabled": True},
+        "external_anchor": {"anchors": 0, "error": "FileNotFoundError: x"}})))
+    if "锚点异常" not in _an:
+        bad.append("锚点文件失败时没写「锚点异常」")
+
+    # ── E · 四处渲染点 ───────────────────────────────────────
+    _dec = dict(_r, orientation="decision",
+                _config={"actions": {"landing_decision": True}})
+    _bnd = dict(_r, orientation="boundary")
+    _sites = {"显化说明": m.render_manifestation(_r),
+              "落地(decision)": m.render_landing(_dec),
+              "落地(boundary)": m.render_landing(_bnd)}
+    with _tf.TemporaryDirectory() as td:
+        _prod = Path(m.save_result(_r, save_dir=td)).read_text(
+            encoding="utf-8")
+    # ★ 头部 = **首个二级标题之前**的区间。不能拿整篇产物查：正文后面还有
+    #   `render_manifestation` 的「显化说明」，两条通道会在那里再出现一次，
+    #   「头部那处调用被删」就被整段掩盖了（M5 变异体实测假绿）。
+    _sites["产物头部"] = _prod.split("\n## ")[0]
+    for _k, _v in _sites.items():
+        if "**外部锚点 · 文本**" not in _v or "**外部锚点 · 联网**" not in _v:
+            bad.append("[%s] 没有同时写出两条通道（渲染点漏接）" % _k)
+    for _k in ("落地(decision)", "落地(boundary)"):
+        if "### 七、外部锚点（两条通道分开记账）" not in _sites[_k]:
+            bad.append("[%s] 缺第七节" % _k)
+
+    # ── F · 口径不许打架（联网开 / 关 两种）────────────────────
+    if "未接入外部校验" in _prod:
+        bad.append("联网已经开了，产物仍写「未接入外部校验」——口径错位")
+    with _tf.TemporaryDirectory() as td:
+        _co = Path(m.save_result(
+            _res(_Q, **{"_runtime": {"web_enabled": False}}),
+            save_dir=td)).read_text(encoding="utf-8")
+    if "未接入外部校验" not in _co or "--web on" not in _co:
+        bad.append("联网关 + 事实题时缺留痕 / 指路")
+    # ── G · 锚点**明细**不许因为「两条通道」被吃掉 ───────────────
+    #   v1.23.12 首版真踩过：把 `锚点对照 / 锚点分级 / triage 降级 /
+    #   锚点入池` 当成「旧单通道块」整段撤掉 ⇒ `_v122_verify.py` 的
+    #   `[4.7]` 判红。两条通道是**多一条出口**，不是换掉这些读数。
+    _ra = _res(_Q, **{
+        "_runtime": {"web_enabled": True},
+        "external_anchor": {
+            "anchors": 3, "source_file": "a.json", "retrieved_at": "t0",
+            "as_evidence": "partial", "tier_floor": 2, "triage_downgrades": 1,
+            "pooled": 3,
+            "summary": {"claims": 2, "supported": 1, "conflicted": 0,
+                        "unmatched": 1, "anchor_used": 2}}})
+    with _tf.TemporaryDirectory() as td:
+        _pa = Path(m.save_result(_ra, save_dir=td)).read_text(
+            encoding="utf-8")
+    for _need in ("**锚点对照**", "**锚点分级**：partial", "**triage 降级**：1 条",
+                  "**锚点入池**", "已接入 3 条", "**外部锚点 · 联网**"):
+        if _need not in _pa:
+            bad.append("锚点明细被两条通道吃掉了（缺 %s）" % _need)
+
+    with _tf.TemporaryDirectory() as td:
+        _cd = Path(m.save_result(
+            _res(_D, **{"_runtime": {"web_enabled": False}}),
+            save_dir=td)).read_text(encoding="utf-8")
+    if "未接入外部校验" in _cd:
+        bad.append("决策题不该出现「未接入外部校验」留痕")
+
+    if bad:
+        for _x in bad:
+            print("  \u2717 [v12312] %s" % _x)
+        return False
+    print("  \u2713 [v12312] 外部锚点两条通道（文本/联网）分别写明 / "
+          "开·关·未记录三态 / 失败与零条读数 / 四处渲染点 / 口径不打架")
+    return True
+
+
 def check_v12310_render_ops():
     """[v1.23.10] 渲染层四项一次验收：形态声明 / 附录外置 / 成本自动档 / 未校验留痕。
 
@@ -9512,6 +9690,8 @@ def main():
     if not check_v12310_render_ops():
         return 1
     if not check_v12311_writeback_and_web():
+        return 1
+    if not check_v12312_anchor_lanes():
         return 1
     q = "测试问题：AI 在数字 IC 设计里到底能做什么，哪些已经量产？"
     rows = []

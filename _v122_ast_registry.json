@@ -1,10 +1,18 @@
 {
- "added": 102,
+ "added": 104,
  "baseline": "_baseline_v12177.py",
- "current": "元DGTF-V1.23.11.py",
+ "current": "元DGTF-V1.23.12.py",
  "n_symbols_baseline": 290,
- "n_symbols_current": 392,
+ "n_symbols_current": 394,
  "registry": {
+  "_web_lane_stats": {
+   "phase": "12",
+   "reason": "联网检索侧读数（纯函数）：条数/编号/环节/tier/失败，供两条通道渲染"
+  },
+  "_anchor_lane_lines": {
+   "phase": "12",
+   "reason": "外部锚点两条通道渲染（文本锚点 / 联网检索），四处共用单一实现"
+  },
   "_append_self_check_writeback": {
    "phase": "11",
    "reason": "自省回写：把高置信自省诊断提升为落地层里的可执行动作"
