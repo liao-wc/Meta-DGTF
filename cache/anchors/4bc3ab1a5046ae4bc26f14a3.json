@@ -1,0 +1,113 @@
+{
+  "_ts": 1791565232.8242693,
+  "anchors": [
+    {
+      "id": "t1",
+      "claim": "| 名詞解釋：  　　下水道工程中，輸送污水之主要管渠稱為主幹管，下水道工程計畫應於計畫區域內先設定主幹管之路線後，再配置次幹管及分支管。主幹管之配置，必須考慮下列幾點：a.依地形坡度配置管線系統、b.分管、次幹管、主幹管應能直接順利連接避免繞道、c.避免使用倒虹吸管、d.穿越河川、鐵路及寬大道路處應以集中配置為宜、e.寬廣之道路可於兩側人行道配設平行管、f.雨水管與污水管之交叉宜採立體狀並儘量減少交叉處數、g.主要地下埋設物之位置、深度應加以充分調查，以儘量避免遷移現有埋設物為原則、h.管渠埋設路線應先做地質鑽探，瞭解地質構造，以作為決定路線及施工方法之依據、i.地下水位高低之調查。 [...] 下水道工程中，輸送污水之主要管渠稱為主幹管，下水道工程計畫應於計畫區域內先設定主幹管之路線後，再配置次幹管及分支管。主幹管之配置，必須考慮下列幾點：a.依地形坡度配置管線系統、b.分管、次幹管、",
+      "source": "https://pedia.cloud.edu.tw/Entry/Detail?title=%E4%B8%BB%E5%B9%B9%E7%AE%A1",
+      "url": "https://pedia.cloud.edu.tw/Entry/Detail?title=%E4%B8%BB%E5%B9%B9%E7%AE%A1",
+      "as_of": "",
+      "kind": "tavily",
+      "tier": 3
+    },
+    {
+      "id": "t2",
+      "claim": "雨污. 分流改造不是单纯增设一根管线，而是把排水户源头、支管接. 入、主干输送、道路施工和后续运维放在同一汇水单元中重新. 组织。改造策略应兼顾法规约束、工程条件和",
+      "source": "https://www.2winpub.com/static/uploads/journalArticle/gcjsyfz0509063.pdf",
+      "url": "https://www.2winpub.com/static/uploads/journalArticle/gcjsyfz0509063.pdf",
+      "as_of": "",
+      "kind": "tavily",
+      "tier": 3
+    },
+    {
+      "id": "t3",
+      "claim": "本自治條例所定道路挖. 掘之申請受理、許可與施工、. 維護管理及裁罰之權限。 第二條本市轄管道路挖掘管. 理，除法律另有規定外依本自. 治",
+      "source": "https://exlaw.klcg.gov.tw/Download.ashx?FileID=13711&id=FL004308&type=LAW",
+      "url": "https://exlaw.klcg.gov.tw/Download.ashx?FileID=13711&id=FL004308&type=LAW",
+      "as_of": "",
+      "kind": "tavily",
+      "tier": 3
+    },
+    {
+      "id": "t4",
+      "claim": "二、新建房屋（以下簡稱建案）申請用戶分支管線接管（含電力、電信、 自來水、排水、污水及瓦斯等管線）時，該建案起造人應向各管線機 構同時提出申請，並彙整各管線",
+      "source": "https://lawsearch.chcg.gov.tw/GLRSNEWSOUT/LawContent.aspx?id=FL088190",
+      "url": "https://lawsearch.chcg.gov.tw/GLRSNEWSOUT/LawContent.aspx?id=FL088190",
+      "as_of": "",
+      "kind": "tavily",
+      "tier": 3
+    },
+    {
+      "id": "t5",
+      "claim": "第一章總則第一條為有效管理本市轄管道路之挖掘，以確保道路品質，並維護公共安全，特制定本自治條例。 第二條本自治條例之主管機關為本府工務局。 本自治條例所定道路",
+      "source": "https://outlaw.kcg.gov.tw/LawContent.aspx?id=GL000558",
+      "url": "https://outlaw.kcg.gov.tw/LawContent.aspx?id=GL000558",
+      "as_of": "",
+      "kind": "tavily",
+      "tier": 3
+    },
+    {
+      "id": "t6",
+      "claim": "連江縣管制挖掘道路工程處理自治條例. 第一條 為有效管制連江縣（以下簡稱本縣）轄內道路挖掘工程，以維護交通安全及提升道路品質，特制定本自治條例。",
+      "source": "https://law.matsu.gov.tw/LawContent.aspx?id=GL000110",
+      "url": "https://law.matsu.gov.tw/LawContent.aspx?id=GL000110",
+      "as_of": "",
+      "kind": "tavily",
+      "tier": 3
+    },
+    {
+      "id": "t7",
+      "claim": "第十六條挖掘道路前應先測定施工地點、標定管溝定線及寬度，其路面為瀝青混凝土面層者，應使用切割機按標定線平直全厚度切割後，再行挖掘路面、路基及路床，並不得挖損",
+      "source": "https://glrs.nantou.gov.tw/LawContent.aspx?id=FL027727",
+      "url": "https://glrs.nantou.gov.tw/LawContent.aspx?id=FL027727",
+      "as_of": "",
+      "kind": "tavily",
+      "tier": 3
+    },
+    {
+      "id": "t8",
+      "claim": "一、計畫概要：應敘明施工範圍位置圖、工期、管線類型、規格、數量。 二、機具設備。 三、施工方式。 四、品管作業。 五、預定開工、竣工日期及工程進度",
+      "source": "https://glrslaw.e-land.gov.tw/LawContent.aspx?id=FL023612&Range=1%7C11",
+      "url": "https://glrslaw.e-land.gov.tw/LawContent.aspx?id=FL023612&Range=1%7C11",
+      "as_of": "",
+      "kind": "tavily",
+      "tier": 3
+    },
+    {
+      "id": "t9",
+      "claim": "挖掘道路施工，應以切割機平直、全厚度切割，不得損毀其他管線及管溝範圍外之路面。施工中所挖除之土方及原有級配底層，隨即運離，不得堆放於管溝邊及道路上。 挖掘",
+      "source": "https://law.miaoli.gov.tw/glrsnewsout/LawContent.aspx?id=FL033724&KeyWord=%E8%AB%8B...",
+      "url": "https://law.miaoli.gov.tw/glrsnewsout/LawContent.aspx?id=FL033724&KeyWord=%E8%AB%8B...",
+      "as_of": "",
+      "kind": "tavily",
+      "tier": 3
+    },
+    {
+      "id": "t10",
+      "claim": "第四條、於本縣進行道路挖掘前，申請人應先檢具申請書、設計圖說及相關證明文件，向主管機關申請許可，核發道路挖掘許可證。但如屬緊急性搶修工程，得以網路、電話或傳真向",
+      "source": "https://pwd.kinmen.gov.tw/cp.aspx?n=43EB1C78FB0C10CC",
+      "url": "https://pwd.kinmen.gov.tw/cp.aspx?n=43EB1C78FB0C10CC",
+      "as_of": "",
+      "kind": "tavily",
+      "tier": 3
+    },
+    {
+      "id": "t11",
+      "claim": "業安全衛生等相關法令規定。 第二十一條 道路施工之土石方及廢棄物，事業機構應隨挖隨即運離， 並依有關規定處理，不得堆放於管溝邊及道路上。 ... 通行標準",
+      "source": "https://ptlaw.pthg.gov.tw/LawContent.aspx?id=GL000709",
+      "url": "https://ptlaw.pthg.gov.tw/LawContent.aspx?id=GL000709",
+      "as_of": "",
+      "kind": "tavily",
+      "tier": 3
+    },
+    {
+      "id": "t12",
+      "claim": "專人負責交管事宜。 二、無法當日回填時，人孔及管溝周圍應設立圍籬或遮欄，並掛相關警示燈。 三、挖掘深度在一公尺以上或有塌方之虞者，應設立臨時擋土設施以避免路基下陷",
+      "source": "https://hclaw.hsinchu.gov.tw/law/NewsContent.aspx?id=953",
+      "url": "https://hclaw.hsinchu.gov.tw/law/NewsContent.aspx?id=953",
+      "as_of": "",
+      "kind": "tavily",
+      "tier": 3
+    }
+  ]
+}

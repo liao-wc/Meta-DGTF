@@ -1,0 +1,61 @@
+{
+  "_ts": 1791566742.3766205,
+  "results": [
+    {
+      "claim": "All Out Docs\n\n`⌘Ctrl``k`\n\nFor the complete documentation index, see llms.txt. This page is also available as Markdown.\n\n# Windows Defender 排除项\n\n编辑器会创建并扫描许多项目文件。在某些系统上，Microsoft Defender 的实时扫描会使这些操作明显变慢。在添加排除项之前，请先测量问题；大多数项目不需要排除项。\n\n排除项会绕过该路径的实时恶意软件扫描。只排除最小范围、可信的项目或显示出性能下降的生成缓存文件夹。不要排除整个游戏目录、下载文件夹、仓库集合，或任何包含不受信任项目的位置。\n\n1\n\n#### 1）打开 Windows 安全中心\n\n打开 Windows 安全中心 ，在开始菜单中（或搜索它）。\n\n开始菜单中的 Windows 安全中心\n\n",
+      "url": "https://docs.allout.game/all-out-docs/docs-zh/can-kao/windows-defender-exclusion",
+      "source": "https://docs.allout.game/all-out-docs/docs-zh/can-kao/windows-defender-exclusion",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "`www.contoso.com/admin/`\n`www.contoso.com`\n\n如果文件或进程存在具有不同操作的类似指示器，则作用域为特定设备组的指示器优先于面向所有设备的指示器。\n\n### 自动调查和修正的工作原理\n\nDefender for Endpoint 中的自动调查和修正功能首先确定每条证据的判决，然后根据 Defender for Endpoint 指标采取操作。 因此，文件或进程可能会被判定为“良好”（即未发现威胁），但如果存在具有该操作的指示器，仍可能被阻止。 同样，某个实体可能会得到“不良”的判定（这意味着它被认定为恶意），但如果存在带有该操作的指示器，它仍然会被允许。\n\n有关详细信息，请参阅 自动调查和修正引擎。\n\n## 在创建排除项之前要考虑的替代项和步骤\n\n创建排除项或允许指示器会造成防护缺口。 只有在确定问题的根本原因后，才使用这些技术。 在此之前，请考虑",
+      "url": "https://learn.microsoft.com/zh-cn/defender-endpoint/defender-endpoint-exclusions-overview",
+      "source": "https://learn.microsoft.com/zh-cn/defender-endpoint/defender-endpoint-exclusions-overview",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "跳至主要內容\n\n保險相關法規查詢系統\n\n:::\n\n現在位置：1. 法規內容\n2. 所有條文\n\n無格式複製) 複製網址) 友善列印 \"另開新視窗\")\n\n## 所有條文 [...] 感度測試分析結果之聲明。上開分析應留存完整資料，供主管機關 查核，其應具備之內容詳附件二） （六）要保書，並應依其送審內容檢具下列文件： 1.如同時辦理新要保書送審者，需檢附其與要保書示範內容或經核 准要保書內容之差異對照表。 2.如同時辦理要保書部分變更者，需檢附要保書部分變更聲明書如 附表九。 3.如僅新送審要保書者，需檢附要保書送審聲明書如附表四。 （七）人身保險商品自行審核表（詳附表五）。 （八）辦理分紅人壽保險商品者，應檢送分紅人壽保險商品財務業務管理 辦法、分紅與不分紅人壽保險商品費用分攤與收入分配辦法、紅利 分配辦法（若非初次辦理者，以電子檔案檢送）。 （九）應依據已建立之商品利潤分析模型，檢附下列資",
+      "url": "https://law.lia-roc.org.tw/Law/Content?lsid=FL040352",
+      "source": "https://law.lia-roc.org.tw/Law/Content?lsid=FL040352",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "第七章　合同的权利义务终止\n\n　　第八章　违约责任\n\n　　第二分编　典型合同\n\n　　第九章　买卖合同\n\n　　第十章　供用电、水、气、热力合同\n\n　　第十一章　赠与合同\n\n　　第十二章　借款合同\n\n　　第十三章　保证合同\n\n　　第一节　一般规定\n\n　　第二节　保证责任\n\n　　第十四章　租赁合同\n\n　　第十五章　融资租赁合同\n\n　　第十六章　保理合同\n\n　　第十七章　承揽合同\n\n　　第十八章　建设工程合同\n\n　　第十九章　运输合同\n\n　　第一节　一般规定\n\n　　第二节　客运合同\n\n　　第三节　货运合同\n\n　　第四节　多式联运合同\n\n　　第二十章　技术合同\n\n　　第一节　一般规定\n\n　　第二节　技术开发合同\n\n　　第三节　技术转让合同和技术许可合同\n\n　　第四节　技术咨询合同和技术服务合同\n\n　　第二十一章　保管合同\n\n　　第二十二章　仓储合同\n\n　　第二十三章　委托合同\n\n　　第二十四章　物业",
+      "url": "https://www.moj.gov.cn/pub/sfbgw/zwgkztzl/2025nianzhuanti/2025mfdxcy/2025mfdxcy_mfdql/202505/t20250507_518708.html",
+      "source": "https://www.moj.gov.cn/pub/sfbgw/zwgkztzl/2025nianzhuanti/2025mfdxcy/2025mfdxcy_mfdql/202505/t20250507_518708.html",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "## 法規內容\n\n|  |  |\n --- |\n| 法規名稱： | 水污染防治法英 |\n| 公發布日： | 民國 63 年 07 月 11 日 |\n| 修正日期： | 民國 107 年 06 月 13 日 |\n| 發文字號： | 華總一義字第10700062361號令 |\n| 法規體系： | 水質保護/水污染防治 |\n| 立法理由： |  中華民國107年6月13日修正總說明及條文對照表.pdf  中華民國105年12月7日修正總說明及條文對照表.pdf  中華民國104年2月4日修正總說明及條文對照表.pdf  中華民國96年12月12日修正總說明及條文對照表.pdf  中華民國91年5月22日修正條文對照表.pdf  中華民國89年4月26日修正條文對照表.pdf  中華民國80年5月6日修正條文對照表.pdf  中華民國72年5月27日修正條文對照表.pdf  中華民國63年7月11",
+      "url": "https://oaout.moenv.gov.tw/law/LawContent.aspx?id=FL015486",
+      "source": "https://oaout.moenv.gov.tw/law/LawContent.aspx?id=FL015486",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "得依下列方式處理：  \n(一)違反相關法律或土地使用管制者，通知或協調主管機關依法處理。  \n(二)以民事訴訟排除。  \n(三)依中華民國刑法第三百二十條、第三百四十九條規定移請地方警察機關偵辦或  \n    逕向檢察機關告訴。占用情形影響國土保安或公共安全者，優先移送。  \n對占用作居住使用者，執行機關於排除占用前，調查占用人是否需協助安置，並就  \n需協助者協助依法向目的事業主管機關或民間機構申請公共租賃住宅、社會住宅、  \n榮民之家或社會福利機構或護理機構等進行安置，相關過程作成紀錄，以利日後查  \n考。  \n占用人有下列情形之一者，執行機關於排除占用前，協助依法向目的事業主管機關  \n申請相關補助、補貼或津貼，並將過程作成紀錄，以利日後查考：  \n(一)屬社會救助法規範之低收入戶或中低收入戶。  \n(二)屬特殊境遇家庭扶助條例規範之特殊境遇家庭成員。  \n(三)依身心障礙者權益保障",
+      "url": "https://law-out.mof.gov.tw/LawContent.aspx?id=FL020549",
+      "source": "https://law-out.mof.gov.tw/LawContent.aspx?id=FL020549",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "### 第五十二条\n\n　　一、本宪章不得认为排除区域办法或区域机关、用以应付关于维持国际和平及安全而宜于区域行动之事件者；但以此项办法或机关及其工作与联合国之宗旨及原则符合者为限。\n\n　　二、缔结此项办法或设立此项机关之联合国会员国，将地方争端提交安全理事会以前，应依该项区域办法，或由该项区域机关，力求和平解决。\n\n　　三、安全理事会对于依区域办法或由区域机关而求地方争端之和平解决，不论其系由关系国主动，或由安全理事会提交者，应鼓励其发展。\n\n　　四、本条绝不妨碍第三十四条及第三十五条之适用。\n\n### 第五十三条\n\n　　一、安全理事会对于职权内之执行行动，在适当情形下，应利用此项区域办法或区域机关。如无安全理事会之授权，不得依区域办法或由区域机关采取任何执行行动；但关于依第一百零七条之规定对付本条第二项所指之任何敌国之步骤，或在区域办法内所取防备此等国家再施其侵略政策之步骤，截至本组织经",
+      "url": "https://www.un.org/zh/about-us/un-charter/full-text",
+      "source": "https://www.un.org/zh/about-us/un-charter/full-text",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "# 教育部logo：回主管法規查詢系統首頁\n\n教育部logo：回主管法規查詢系統首頁\n主管法規查詢系統 Laws and Regulations Retrieving System\n\n## 法規內容\n\n|  |  |\n --- |\n| 法規名稱： | 學校訂定教師輔導與管教學生辦法注意事項 |\n| 公發布日： | 民國 92 年 05 月 30 日 |\n| 修正日期： | 民國 113 年 02 月 05 日 |\n| 發文字號： | 臺教學(二)字 第 1132800520 號函 |\n| 法規體系： | 學生事務及特殊教育 |\n| 圖表附件： |  1130205\\_學校訂定教師輔導與管教學生辦法注意事項-附表一.pdf  1130205\\_學校訂定教師輔導與管教學生辦法注意事項-附表二.pdf |\n\n通過A優先等級無障礙網頁檢測\n\n回上方",
+      "url": "https://edu.law.moe.gov.tw/LawContent.aspx?id=GL002147",
+      "source": "https://edu.law.moe.gov.tw/LawContent.aspx?id=GL002147",
+      "kind": "web",
+      "tier": 3
+    }
+  ]
+}
