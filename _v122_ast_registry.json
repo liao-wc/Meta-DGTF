@@ -1,10 +1,22 @@
 {
- "added": 142,
+ "added": 145,
  "baseline": "_baseline_v12177.py",
- "current": "元DGTF-V1.23.14.py",
+ "current": "元DGTF-V1.23.15.py",
  "n_symbols_baseline": 290,
- "n_symbols_current": 432,
+ "n_symbols_current": 435,
  "registry": {
+  "_hist_wquant": {
+   "phase": "15",
+   "reason": "加权分位数（时间衰减）：pairs=[(值,权重)]，as_int=False 用于比率"
+  },
+  "_hist_weight": {
+   "phase": "15",
+   "reason": "时间衰减权重 0.5**(age/半衰期)；半衰期≤0 或 mtime 缺失 → 1.0"
+  },
+  "_hist_decay": {
+   "phase": "15",
+   "reason": "取配置里的半衰期（auto.history_halflife_days，缺省 14）"
+  },
   "_files": {
    "phase": "14",
    "reason": "局部便利函数（在 _auto_history 内）：按 mtime 倒序取最近 N 个文件"
