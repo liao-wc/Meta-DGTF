@@ -1,0 +1,33 @@
+{
+ "v12317": {
+  "llm_calls": 168,
+  "llm_tokens": 2039789
+ },
+ "v12318": {
+  "llm_calls": 184,
+  "llm_tokens": 2236350
+ },
+ "ea": {
+  "enabled": true,
+  "anchors": 0,
+  "source_file": "",
+  "retrieved_at": "",
+  "retriever": "",
+  "answers_all_missing": false,
+  "answers_filtered": "",
+  "pooled": 0,
+  "unconfigured": true,
+  "as_evidence": "off",
+  "anchor_calls": 0,
+  "claims": 0,
+  "items": [],
+  "summary": {
+   "claims": 0,
+   "supported": 0,
+   "conflicted": 0,
+   "unmatched": 0,
+   "anchor_used": 0
+  },
+  "error": ""
+ }
+}
