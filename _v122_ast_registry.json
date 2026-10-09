@@ -1,10 +1,122 @@
 {
- "added": 104,
+ "added": 132,
  "baseline": "_baseline_v12177.py",
- "current": "元DGTF-V1.23.12.py",
+ "current": "元DGTF-V1.23.13.py",
  "n_symbols_baseline": 290,
- "n_symbols_current": 394,
+ "n_symbols_current": 422,
  "registry": {
+  "_is_mine": {
+   "phase": "13",
+   "reason": "局部便利函数（在 _apply_auto_dispatch 内）：判断该项是否由调度器写入（auto 或显式）"
+  },
+  "_med": {
+   "phase": "13",
+   "reason": "局部便利函数（在 _auto_history 内）：取中位数"
+  },
+  "_auto_features": {
+   "phase": "13",
+   "reason": "题型特征提取（纯规则）：事实/元/多分句/选择/过程/规模"
+  },
+  "_auto_history": {
+   "phase": "13",
+   "reason": "历史读数：扫最近 N 份 packed，抽成本/截断率/停圈/联网/取向错配"
+  },
+  "_normalize_orientation": {
+   "phase": "13",
+   "reason": "取向归一化唯一实现（合并前有三份，fallback 做成显式参数）"
+  },
+  "_assemble_plan": {
+   "phase": "13",
+   "reason": "唯一装配器：所有调度出口同 schema（清 auto_plan 双形状技术债）"
+  },
+  "_auto_enabled": {
+   "phase": "13",
+   "reason": "调度总开关缺省判定（auto.enabled）"
+  },
+  "_auto_save_dir": {
+   "phase": "13",
+   "reason": "取值：output.save_dir（历史扫描根）"
+  },
+  "_cfg_get_path": {
+   "phase": "13",
+   "reason": "嵌套配置取值"
+  },
+  "_cfg_has_path": {
+   "phase": "13",
+   "reason": "嵌套配置「改过没」（与 DEFAULT_CONFIG 比）"
+  },
+  "_cfg_overridden": {
+   "phase": "13",
+   "reason": "该项的任一配置路径被改过"
+  },
+  "_set_cfg_path": {
+   "phase": "13",
+   "reason": "嵌套配置写值"
+  },
+  "_auto_normalize_explicit": {
+   "phase": "13",
+   "reason": "命令行原值归一（auto/空 = 没给 ⇒ None）"
+  },
+  "_auto_pick_cost_profile": {
+   "phase": "13",
+   "reason": "策略·成本档"
+  },
+  "_auto_pick_web": {
+   "phase": "13",
+   "reason": "策略·联网"
+  },
+  "_auto_pick_thinking": {
+   "phase": "13",
+   "reason": "策略·思考"
+  },
+  "_auto_pick_effort": {
+   "phase": "13",
+   "reason": "策略·强度"
+  },
+  "_auto_pick_route": {
+   "phase": "13",
+   "reason": "策略·层集合"
+  },
+  "_auto_pick_orientation": {
+   "phase": "13",
+   "reason": "策略·取向路由"
+  },
+  "_auto_pick_mode": {
+   "phase": "13",
+   "reason": "策略·并行模式（规则优先，拿不准交 LLM）"
+  },
+  "_auto_pick_rounds": {
+   "phase": "13",
+   "reason": "策略·圈数（历史停圈 +1）"
+  },
+  "_auto_pick_stop": {
+   "phase": "13",
+   "reason": "策略·停止阈值"
+  },
+  "_auto_pick_web_downgrade": {
+   "phase": "13",
+   "reason": "策略·联网降级阈值与配额"
+  },
+  "_auto_pick_decidability": {
+   "phase": "13",
+   "reason": "策略·是否跑外部可判定性评估"
+  },
+  "_auto_pick_landing": {
+   "phase": "13",
+   "reason": "策略·落地层模板"
+  },
+  "auto_dispatch": {
+   "phase": "13",
+   "reason": "统一调度入口：十二项逐项来源（显式>配置>auto>默认）"
+  },
+  "_apply_auto_dispatch": {
+   "phase": "13",
+   "reason": "把 auto 项写进配置键（只写 auto 来源的项）"
+  },
+  "_auto_dispatch_lines": {
+   "phase": "13",
+   "reason": "产物头部「自动调度·逐项来源」表"
+  },
   "_web_lane_stats": {
    "phase": "12",
    "reason": "联网检索侧读数（纯函数）：条数/编号/环节/tier/失败，供两条通道渲染"

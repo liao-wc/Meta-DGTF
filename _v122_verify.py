@@ -1543,21 +1543,26 @@ def phase_p5(src, mod):
     _body = txt[_i0:_i1] if _i0 >= 0 and _i1 > _i0 else txt[_i0:]
     check("P5.2.a", ("data.get(" + Q + "orientation" + Q) in _body,
           "auto_plan 解析 orientation")
-    check("P5.2.b", _body.count(Q + "orientation" + Q + ": _ori") >= 2,
-          "auto_plan 的早退分支也带出 orientation")
+    # ★ [v1.23.13 判据随实现更新] 原 P5.2.b 数的是**源码字面**串
+    #   `"orientation": _ori` —— v1.23.13 把三条出口收进唯一装配器
+    #   `_assemble_plan(orientation=_ori)`，字面没了、**行为没变**。
+    #   改成行为判据：早退分支（低置信退回 serial）返回的 orientation
+    #   必须仍是解析出来的那个（下面 P5.2.b 的打桩段承担）。
 
     # 打桩行为：一次调用带出取向 + 只调一次 + 非法取向归一
     class _Stub:
-        def __init__(self, ori):
+        def __init__(self, ori, conf=0.9, mode="serial"):
             self.calls = []
             self.ori = ori
+            self.conf = conf
+            self.mode = mode
 
         def call(self, system, user, *a, **kw):
             self.calls.append((system, user))
             import json as _j
-            return _j.dumps({"mode": "serial", "orientation": self.ori,
+            return _j.dumps({"mode": self.mode, "orientation": self.ori,
                              "rounds": {"0": 4, "1": 4, "both": 4, "all": 5},
-                             "reason": "桩", "confidence": 0.9})
+                             "reason": "桩", "confidence": self.conf})
 
         def parse_json(self, raw):
             import json as _j
@@ -1573,6 +1578,14 @@ def phase_p5(src, mod):
               and len(_s1.calls) == 1 and not _p2.get("orientation")
               and "orientation" in _s1.calls[0][0],
               "打桩：带出 boundary / 只调一次 / prompt 要了取向 / 非法归一")
+        # ★ P5.2.b（行为版）：低置信 ⇒ 早退退回 serial，但**取向仍要带出**
+        _s3 = _Stub("boundary", conf=0.1, mode="A")
+        _p3 = mod.auto_plan("x", dict(mod.DEFAULT_CONFIG), llm=_s3)
+        check("P5.2.b", _p3.get("mode") == "serial"
+              and _p3.get("orientation") == "boundary",
+              "早退分支（低置信退回 serial）也带出取向：mode="
+              + repr(_p3.get("mode")) + " orientation="
+              + repr(_p3.get("orientation")))
     except Exception as e:  # noqa: BLE001
         check("P5.2.c", False, type(e).__name__ + ": " + str(e))
 
@@ -2397,11 +2410,25 @@ def phase_v1234(src, mod):
           _ok and hasattr(mod, "_load_config_raw"), "")
 
     # ---- V7 接线 ----
-    check("V7.a CLI 三开关已接线且 choices 收紧",
-          all(x in _txt for x in ("--web", "--thinking", "--effort"))
-          and "choices=list(_RUNTIME_SWITCHES)" in _txt
-          and "choices=list(_RUNTIME_EFFORTS)" in _txt
-          and "cfg, _rt_notes = _apply_runtime(cfg, {" in _txt, "")
+    # ★ [v1.23.13 判据随实现更新] 末一条从「接线字面」改成**行为**：
+    #   显式传三个开关 → 配置真的变（字面随重构消失，行为不变）。
+    _wired = (all(x in _txt for x in ("--web", "--thinking", "--effort"))
+              and "choices=list(_RUNTIME_SWITCHES)" in _txt
+              and "choices=list(_RUNTIME_EFFORTS)" in _txt)
+    try:
+        _c3 = json.loads(json.dumps(mod.DEFAULT_CONFIG))
+        _dp3 = mod.auto_dispatch("q", _c3, explicit={"web": "off",
+                                                     "thinking": "on",
+                                                     "effort": "max"})
+        mod._apply_auto_dispatch(_c3, _dp3)
+        _c3b, _ = mod._apply_runtime(_c3)
+        _wired = _wired and _c3b["web_search"]["enabled"] is False \
+            and _c3b["api"]["thinking"]["default"] == "enabled" \
+            and _c3b["api"]["thinking"]["effort"] == "max"
+    except Exception:  # noqa: BLE001
+        _wired = False
+    check("V7.a ★ CLI 三开关已接线（行为：显式值真落进配置）且 choices 收紧",
+          _wired, "")
     check("V7.b 交互：`_ask_runtime` + 5 元组 + **深拷副本** run_cfg",
           ("def _ask_runtime(cfg):" in _txt)
           and ("runtime = _ask_runtime(" in _txt)

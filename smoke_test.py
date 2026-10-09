@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.12.py"
+SRC = HERE / "元DGTF-V1.23.13.py"
 
 os.environ.setdefault("DGTF_API_KEY", "sk-smoke-test-key")
 
@@ -6932,22 +6932,27 @@ def check_v1221_p5(SRC=None):
         #   连右括号一起搜会匹配不到（第一版就这么误报过）。
         assert ("data.get(" + Q + "orientation" + Q) in _body, (
             "auto_plan 未解析 orientation")
-        assert _body.count(Q + "orientation" + Q + ": _ori") >= 2, (
-            "auto_plan 的早退分支没把 orientation 带出")
+        # ★ [v1.23.13 判据随实现更新] 这里原来数**源码字面**串
+        #   `"orientation": _ori` 出现 ≥2 次。v1.23.13 把三条出口收进唯一
+        #   装配器 `_assemble_plan(orientation=_ori)`，字面没了、**行为没变**
+        #   （早退分支照样带出取向）。判据搬到下面第 5 条：低置信打桩跑早退，
+        #   断言返回的 mode 与 orientation。**不是放宽**，是换成行为断言。
 
         # 4 行为：打桩一次调用，验带出 + 只调一次 + prompt 里要了取向
         class _StubLLM:
-            def __init__(self):
+            def __init__(self, mode="serial", conf=0.9):
                 self.calls = []
+                self.mode = mode
+                self.conf = conf
 
             def call(self, system, user, *a, **kw):
                 self.calls.append((system, user))
                 import json as _j
-                return _j.dumps({"mode": "serial",
+                return _j.dumps({"mode": self.mode,
                                  "orientation": "boundary",
                                  "rounds": {"0": 4, "1": 4,
                                             "both": 4, "all": 5},
-                                 "reason": "桩", "confidence": 0.9})
+                                 "reason": "桩", "confidence": self.conf})
 
             def parse_json(self, raw):
                 import json as _j
@@ -6960,6 +6965,15 @@ def check_v1221_p5(SRC=None):
             "orientation 未带出：" + repr(_plan.get("orientation")))
         assert len(_st.calls) == 1, "单调用路径被改成多次（成本变化）"
         assert "orientation" in _st.calls[0][0], "prompt 里没要取向"
+
+        # 4b ★ 早退分支（低置信 ⇒ 退回 serial）**也要带出取向** ——
+        #    这是原静态字面断言真正想测的行为。
+        _early = m.auto_plan("x", dict(m.DEFAULT_CONFIG),
+                             llm=_StubLLM(mode="A", conf=0.1))
+        assert _early.get("mode") == "serial", (
+            "低置信没退回 serial：" + repr(_early.get("mode")))
+        assert _early.get("orientation") == "boundary", (
+            "早退分支没把 orientation 带出：" + repr(_early.get("orientation")))
 
         # 5 负对照：桩回一个非法取向 → 归一成空串（不许把垃圾当取向）
         class _Stub2(_StubLLM):
@@ -8530,8 +8544,22 @@ def check_v1234_runtime(SRC=None):
             assert _flag in src, "CLI 缺 " + _flag
         assert "choices=list(_RUNTIME_SWITCHES)" in src, "CLI 开关没收紧取值"
         assert "choices=list(_RUNTIME_EFFORTS)" in src, "CLI 强度没收紧取值"
-        assert "cfg, _rt_notes = _apply_runtime(cfg, {" in src, (
-            "CLI 没有把三个开关应用下去")
+        # ★ [v1.23.13 判据随实现更新] 原来查的是接线**字面**
+        #   `cfg, _rt_notes = _apply_runtime(cfg, {` —— v1.23.13 改成
+        #   「调度器把显式值写进 cfg["runtime"]，再由 `_apply_runtime(cfg)` 落」，
+        #   字面没了。改成**端到端行为断言**：显式传三个开关，看配置有没有真变。
+        _c3 = _json.loads(_json.dumps(D))
+        _dp3 = m.auto_dispatch("q", _c3, explicit={"web": "off",
+                                                   "thinking": "on",
+                                                   "effort": "max"})
+        m._apply_auto_dispatch(_c3, _dp3)
+        _c3b, _ = m._apply_runtime(_c3)
+        assert _c3b["web_search"]["enabled"] is False, (
+            "CLI --web off 没有落到 web_search.enabled")
+        assert _c3b["api"]["thinking"]["default"] == "enabled", (
+            "CLI --thinking on 没有落到 thinking.default")
+        assert _c3b["api"]["thinking"]["effort"] == "max", (
+            "CLI --effort max 没有落到 thinking.effort")
         # 交互侧
         assert "def _ask_runtime(cfg):" in src, "缺 _ask_runtime"
         assert "runtime = _ask_runtime(" in src, "_ask_runtime 没被调用"
@@ -9291,6 +9319,229 @@ def check_v12312_anchor_lanes():
     return True
 
 
+def check_v12313_auto_dispatch():
+    """[v1.23.13] 统一自适应调度器：十二项逐项可单独接管 + 历史自适应 + 技术债。
+
+    ★ 负对照全部内置（没有负对照的「全绿」只说明判据没跑）：
+      · 十二项各自都有留痕（值 / 来源 / 理由），缺一项即判红；
+      · **逐项独立**：显式给一项，只改那一项，其余仍是 auto
+        —— 变异体「explicit 泄漏到全部项」必须判红；
+      · 总开关关掉 ⇒ 一项都不进 auto（回 v1.23.12 行为）；
+      · 历史自适应**两向**：高截断率不砍层 / 低截断率才砍；
+        高 token 降档 / 有限 token 不降；失败多则降级阈值收紧；
+      · 技术债：`_normalize_orientation` 与 `_assemble_plan` 各只有 1 处定义，
+        且 `auto_plan()` 两条路径的返回 **schema 逐键相同**。
+    """
+    import copy as _copy
+    import json as _json
+    m = globals().get("mod")
+    bad = []
+    if m is None or not hasattr(m, "auto_dispatch"):
+        print("  \u2717 [v12313] 命名空间里没有 auto_dispatch")
+        return False
+    _ORDER = m._AUTO_ITEM_ORDER
+    if len(_ORDER) != 12:
+        bad.append("十二项不齐：%d 项" % len(_ORDER))
+    _FACT = "新中国的成立时间是什么时候"
+    _DEC = "这份方案怎么落地"
+    cfg0 = m.load_config("")
+
+    def _pick(plan, k):
+        return (plan.get("_items") or {}).get(k) or {}
+
+    def _src(plan, k):
+        return _pick(plan, k).get("source")
+
+    def _val(plan, k):
+        return _pick(plan, k).get("value")
+
+    # ── A 十二项齐全 + 留痕 ───────────────────────────────────
+    p = m.auto_dispatch(_FACT, cfg0)
+    for k in _ORDER:
+        if k not in (p.get("_items") or {}):
+            bad.append("缺留痕：%s" % k)
+        elif not str(_pick(p, k).get("reason") or ""):
+            bad.append("留痕没有理由：%s" % k)
+    if not str(p.get("mode") or ""):
+        bad.append("事实短题的模式没定下来")
+    # 停止阈值必须**按题型动**（变异体「`_auto_pick_stop` 恒空」实测假绿，
+    # 因为没有一条判据真的去看它算出来的值）
+    _st = _val(p, "stop") or {}
+    if _st.get("round_stall_limit") != 1 or _st.get("round_idle_limit") != 1:
+        bad.append("事实型短题的停止阈值没收紧：%r" % (_st,))
+    _META = ("这本身算不算递归？如何界定，还是要靠整体，"
+             "到底谁说了算，怎么验证，为什么")
+    _stm = _val(m.auto_dispatch(_META, cfg0), "stop") or {}
+    if _stm.get("round_stall_limit") != 3:
+        bad.append("含元层的停止阈值没放宽：%r" % (_stm,))
+
+    # ── B 逐项显式接管：只改这一项 ────────────────────────────
+    _EX = {"route": ["0", "1"], "cost_profile": "quality", "mode": "A",
+           "rounds": "0:9,1:9,both:9,all:9", "orientation": "decision",
+           "web": "off", "thinking": "on", "effort": "max",
+           "landing": "decision", "decidability": "off"}
+    for _k, _v in _EX.items():
+        _p1 = m.auto_dispatch(_FACT, cfg0, explicit={_k: _v})
+        if _src(_p1, _k) != "explicit":
+            bad.append("显式给了 %s 但来源不是显式（%r）" % (_k, _src(_p1, _k)))
+        _leak = [x for x in _ORDER if x != _k
+                 and x not in ("stop", "web_downgrade")
+                 and _src(_p1, x) != "auto"]
+        if _leak:
+            bad.append("显式 %s 泄漏到了别的项：%s" % (_k, _leak))
+    # 配置级接管（stop / web_downgrade 无 CLI，靠配置改过）
+    _cs = _copy.deepcopy(cfg0)
+    _cs["spiral"]["round_stall_limit"] = 9
+    if _src(m.auto_dispatch(_FACT, _cs), "stop") != "config":
+        bad.append("配置改了 round_stall_limit，stop 来源却不是配置")
+
+    # ── B2 显式值必须真的落进配置 ─────────────────────────────
+    #   ★ 本版首版真 bug：`_apply_auto_dispatch` 只写「来源是 auto」的项 ⇒
+    #     `--web off` / `--profile quality` / `--thinking on` / `--effort max`
+    #     **全部失效**（`_apply_runtime` 读到的还是配置里的 `auto`）。
+    #     「来源」是给留痕用的，不是给「写不写」用的。
+    _c2 = _copy.deepcopy(cfg0)
+    _dp2 = m.auto_dispatch(_FACT, _c2, explicit={"web": "off",
+                                                 "cost_profile": "quality"})
+    m._apply_auto_dispatch(_c2, _dp2)
+    if _c2.get("runtime", {}).get("web") != "off":
+        bad.append("显式 --web off 没被写进 cfg[runtime][web]")
+    if _c2.get("cost_profile") != "quality":
+        bad.append("显式 --profile quality 没被写进 cfg[cost_profile]")
+    _c4 = _copy.deepcopy(cfg0)
+    m._apply_auto_dispatch(_c4, m.auto_dispatch(_FACT, _c4))
+    if _c4.get("cost_profile") != "economy":
+        bad.append("auto 项没被写进 cfg[cost_profile]")
+
+    # ── C 总开关 ─────────────────────────────────────────────
+    _co = _copy.deepcopy(cfg0)
+    _co["auto"]["enabled"] = False
+    _pf = m.auto_dispatch(_FACT, _co)
+    _hit = [k for k in _ORDER if _src(_pf, k) == "auto"]
+    if _hit:
+        bad.append("总开关关掉仍有 auto 项：%s" % _hit)
+
+    # ── D 历史自适应（正向 + 负对照）──────────────────────────
+    H = {"n": 5, "tokens_med": 100000, "tri_rate": 0.8, "cut_rate": 0.1,
+         "layer_rounds": {"0": 3, "1": 3, "both": 2, "all": 2},
+         "modes": {}, "profiles": {}, "web_hit": 12, "web_fail": 0,
+         "web_empty": 0, "mismatch": 0}
+    _ph = m.auto_dispatch(_FACT, cfg0, history=H)
+    if "中位" not in str(_pick(_ph, "rounds").get("reason")):
+        bad.append("有历史却没按中位数补圈")
+    if _val(_ph, "route") != ["0", "1", "both"]:
+        bad.append("低截断率 + 事实短题应砍到 0/1/both，实得 %r"
+                   % (_val(_ph, "route"),))
+    if _val(m.auto_dispatch(_FACT, cfg0,
+                            history=dict(H, cut_rate=0.9)), "route") != \
+            list(m._ENTRIES):
+        bad.append("高截断率时不该砍层（负对照失效）")
+    if _val(m.auto_dispatch(_DEC, cfg0, history=H), "cost_profile") != \
+            "balanced":
+        bad.append("有限 token 的决策题不该降档（负对照失效）")
+    if _val(m.auto_dispatch(_DEC, cfg0,
+                            history=dict(H, tokens_med=900000)),
+            "cost_profile") != "economy":
+        bad.append("高 token 中位数没有降档")
+    if _val(m.auto_dispatch(_DEC, cfg0,
+                            history=dict(H, tri_rate=0.2)),
+            "cost_profile") != "balanced":
+        bad.append("低三态一致率时不该降档（质量优先）")
+    if not _val(m.auto_dispatch(_FACT, cfg0,
+                                history=dict(H, web_fail=5)),
+                "web_downgrade").get("auto_disable_after_failures") == 2:
+        bad.append("历史联网失败多，降级阈值没收紧")
+    if _val(m.auto_dispatch(_FACT, cfg0,
+                            history=dict(H, n=4, web_hit=0,
+                                         web_empty=4)), "web") is not False:
+        bad.append("历史联网长期收 0 条，却仍自动接入")
+
+    # ── E 技术债：唯一实现 + 两条路径同 schema ────────────────
+    _src_txt = SRC.read_text(encoding="utf-8")
+    if _src_txt.count("def _normalize_orientation(") != 1:
+        bad.append("取向归一化不是唯一实现")
+    if _src_txt.count("def _assemble_plan(") != 1:
+        bad.append("装配器不是唯一实现")
+    _left = sum(_src_txt.count(x) for x in
+                ('if _o not in ("boundary", "decision"):',
+                 'if _ori not in ("decision", "boundary"):'))
+    if _left:
+        bad.append("旧的取向归一化残留 %d 处（没合并干净）" % _left)
+
+    class _Stub:
+        def call(self, *a, **kw):
+            return _json.dumps({"mode": "A", "orientation": "boundary",
+                                "rounds": {"0": 5, "1": 5, "both": 5,
+                                           "all": 5},
+                                "reason": "stub", "confidence": 0.9},
+                               ensure_ascii=False)
+
+        def parse_json(self, raw):
+            try:
+                return _json.loads(raw)
+            except Exception:  # noqa: BLE001
+                return {}
+
+    _p1 = m.auto_plan(_FACT, cfg0, llm=_Stub())
+    _p2 = m.auto_plan(_FACT, cfg0)          # 无 key ⇒ 两段式降级出口
+    if sorted(_p1) != sorted(_p2):
+        bad.append("auto_plan 两条路径 schema 不同：%s vs %s"
+                   % (sorted(_p1), sorted(_p2)))
+    for _k in ("route", "mode", "rounds", "cost_profile", "max_calls",
+               "orientation"):
+        if _k not in _p1:
+            bad.append("技术债未清：单调用路径缺键 %s" % _k)
+
+    # ── F 产物渲染 ───────────────────────────────────────────
+    _ls = "".join(m._auto_dispatch_lines({"_auto_dispatch": p}))
+    if "**自动调度**" not in _ls:
+        bad.append("产物没有「自动调度」表")
+    _rows = [l for l in _ls.split("\n") if l.startswith("| ") and "来源" not in l]
+    if len(_rows) != 12:
+        bad.append("调度表不是十二行（%d）" % len(_rows))
+    if m._auto_dispatch_lines({}) != []:
+        bad.append("没有 plan 时调度表不是空")
+
+    # ── G 历史**加载器**本身（★ 前面几组都是把 hist 直接喂进去，绕过了它
+    #     —— 变异体「`_auto_history` 恒返回空」实测假绿，所以必须单独驱动）──
+    import tempfile as _tf
+    with _tf.TemporaryDirectory() as td:
+        Path(td, "x.packed.json").write_text(_json.dumps({
+            "llm_calls": 7, "llm_tokens": 123456, "tri_state": [1, 2],
+            "views": {"1": {"stop_reason": "体力耗尽（被截断）", "rounds": 3}},
+            "dispatch": {"_parallel_mode": "A"}, "cost_profile": "economy",
+            "pools": {"1": {"web_results": [{"id": "W1"}], "web_errors": [],
+                            "meta": ["[W-EMPTY] x"]}},
+        }, ensure_ascii=False), encoding="utf-8")
+        _h = m._auto_history(td)
+    if _h.get("n") != 1:
+        bad.append("历史加载器没读到样本（n=%r）" % _h.get("n"))
+    if _h.get("tokens_med") != 123456:
+        bad.append("历史 tokens 中位数读错：%r" % _h.get("tokens_med"))
+    if _h.get("web_hit") != 1:
+        bad.append("历史联网入池读数读错：%r" % _h.get("web_hit"))
+    if _h.get("cut_rate") != 1.0:
+        bad.append("历史截断率算错：%r" % _h.get("cut_rate"))
+    if (_h.get("layer_rounds") or {}).get("1") != 3:
+        bad.append("历史各层停圈读错：%r" % _h.get("layer_rounds"))
+    if (_h.get("modes") or {}).get("A") != 1:
+        bad.append("历史模式分布读错：%r" % _h.get("modes"))
+    with _tf.TemporaryDirectory() as td:
+        _h0 = m._auto_history(td)          # 负对照：空目录必须不崩、n=0
+    if _h0.get("n") != 0:
+        bad.append("空目录不该有样本（n=%r）" % _h0.get("n"))
+    if m._auto_history(str(HERE / "__nope__")):
+        pass                               # 路径不存在：只要不抛就算过
+
+    if bad:
+        for _x in bad:
+            print("  \u2717 [v12313] %s" % _x)
+        return False
+    print("  \u2713 [v12313] 十二项逐项接管（10 项 CLI + 2 项配置）/ 总开关 / "
+          "历史自适应（5 正 3 负）/ 技术债（唯一实现 + 两路同 schema）/ 产物表")
+    return True
+
+
 def check_v12310_render_ops():
     """[v1.23.10] 渲染层四项一次验收：形态声明 / 附录外置 / 成本自动档 / 未校验留痕。
 
@@ -9424,8 +9675,11 @@ def check_v12311_writeback_and_web():
         `unsaid_is_escape=True` 与 `quality_flags=unsaid_overused(n)` 各测一次；
         回写块必须落在形态声明**之后**（顺序：模板声明 → 诊断动作）。
       · 事实题自动联网：`_web_auto_for_facts` 事实题 True / 决策题 False；
-        源码里必须真接线（`_web_auto_for_facts(" ".join(args.question))` 与
-        `"web": _web` 都在）——否则是死代码。
+        ★ [v1.23.13 判据随实现更新] 接线口径从「main 里直接传 `"web": _web`」
+        改成「经统一调度器」：`auto_dispatch` → `_apply_auto_dispatch` →
+        `_apply_runtime`。判据因此改成**端到端行为**：事实题走完整条链后
+        `web_search.enabled is True`，显式 `--web off` 时为 False。
+        （原来的字面检查在重构后必然误报，且它本来就只证明「写了那一行」。）
     """
     bad = []
     m = globals().get("mod")
@@ -9474,11 +9728,26 @@ def check_v12311_writeback_and_web():
             bad.append("事实题应自动接入外部校验")
         if m._web_auto_for_facts("这份方案怎么落地"):
             bad.append("决策题不该自动接入外部校验")
-    _src = SRC.read_text(encoding="utf-8")
-    if '_web_auto_for_facts(" ".join(args.question))' not in _src:
-        bad.append("main 里没调 _web_auto_for_facts（死代码）")
-    if '"web": _web' not in _src:
-        bad.append("main 里没把 _web 交给 _apply_runtime（接线断了）")
+    # ★ [v1.23.13 判据随实现更新] 原先查两处**接线字面**
+    #   （`_web_auto_for_facts(" ".join(args.question))` 与 `"web": _web`）——
+    #   本版把事实题联网收进统一调度器，字面没了、**行为没变**。
+    #   改成端到端行为：事实题走完整条调度链后联网真的开；显式 `--web off` 真的关。
+    try:
+        import copy as _cp2
+        _wq = "新中国的成立时间是什么时候"
+        _wc = _cp2.deepcopy(m.DEFAULT_CONFIG)
+        m._apply_auto_dispatch(_wc, m.auto_dispatch(_wq, _wc))
+        _wc2, _ = m._apply_runtime(_wc)
+        if _wc2["web_search"]["enabled"] is not True:
+            bad.append("事实题经调度链后联网没开")
+        _wc3 = _cp2.deepcopy(m.DEFAULT_CONFIG)
+        m._apply_auto_dispatch(_wc3, m.auto_dispatch(_wq, _wc3,
+                                                    explicit={"web": "off"}))
+        _wc4, _ = m._apply_runtime(_wc3)
+        if _wc4["web_search"]["enabled"] is not False:
+            bad.append("显式 --web off 经调度链后没生效")
+    except Exception as _e2:  # noqa: BLE001
+        bad.append("调度链接线断裂：%s: %s" % (type(_e2).__name__, _e2))
 
     if bad:
         for _m in bad:
@@ -9692,6 +9961,8 @@ def main():
     if not check_v12311_writeback_and_web():
         return 1
     if not check_v12312_anchor_lanes():
+        return 1
+    if not check_v12313_auto_dispatch():
         return 1
     q = "测试问题：AI 在数字 IC 设计里到底能做什么，哪些已经量产？"
     rows = []
