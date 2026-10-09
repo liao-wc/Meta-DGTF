@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.15.py"
+SRC = HERE / "元DGTF-V1.23.16.py"
 
 os.environ.setdefault("DGTF_API_KEY", "sk-smoke-test-key")
 
@@ -40,7 +40,6 @@ SEEN_SYSTEMS = set()
 THINK_SEEN = collections.Counter()   # [fix-111] 记录各 thinking 档被用的次数
 # [v1.21.62 P0-2] 探针桩的"第一次返回空"计数器，用来逼出硬约束重试。
 PROBE_EMPTY_SEEN = {"n": 0}
-
 
 def fake_call(self, system, user, temperature=0.6, max_tokens=3000,
               json_mode=False, model=None, thinking=None, stage=None):
@@ -252,15 +251,12 @@ def fake_call(self, system, user, temperature=0.6, max_tokens=3000,
     return ("这是一段用于冒烟测试的中文输出文本，长度足够通过各类检查。"
             "它不需要有真实含义，只要不触发解析分支的异常即可。")
 
-
 # [fix-111] 打桩前留一份真实实现：thinking 的解析逻辑（ canned 到 kwargs ）
 #   必须能被直接验，光看桩函数收到几个参数验不出来。
 mod.LLM._real_call = mod.LLM.call
 mod.LLM.call = fake_call
 
-
 _ALL_LAYERS = ("0", "1", "both", "all")
-
 
 def build_cfg(verbose=False):
     cfg = mod.load_config(str(HERE / "__nonexistent__.yaml"))
@@ -269,7 +265,6 @@ def build_cfg(verbose=False):
     _sd = os.environ.get("SMOKE_SAVE_DIR", "smoke_outputs")
     cfg["output"]["save_dir"] = str(HERE / _sd)
     return cfg
-
 
 def p2_stats(res):
     """v1.21.55 [P2-*] 的健康信号，全部从 packed 里直接读。
@@ -372,7 +367,6 @@ def run_mode(mode, question, rounds=None, verbose=False):
         "p2": p2_stats(res),
     }
 
-
 def check_cli():
     """端到端走 main()：验证 argparse、配置回落 [fix-105]、落盘。"""
     import contextlib
@@ -411,7 +405,6 @@ def check_cli():
         return False
     print("  ✓ CLI 端到端跑通，且 --parallel 回落配置（B）")
     return True
-
 
 def check_thread_isolation():
     """并发回归：[fix-98] 截断标志线程隔离 / [fix-99] self_text 不丢条目。"""
@@ -464,7 +457,6 @@ def check_thread_isolation():
     print(f"  ✓ self_text 按层隔离无丢失（4 线程 × 20 条 = {total}）")
     return True
 
-
 def check_both_quota():
     """[P1-4] 单元级验证：both 占比超限时强制补裁。
 
@@ -510,7 +502,6 @@ def check_both_quota():
               f"{n_missing} 条 missing，未超限不打扰")
     return ok
 
-
 def check_carry_feedback():
     """[P1-5] 单元级验证：self_check 结论翻译成下一圈约束探针。"""
     cfg = build_cfg(False)
@@ -546,7 +537,6 @@ def check_carry_feedback():
     print(f"  ✓ [P1-5] 自省回流：{len(carry)} 条约束"
           f"（禁重述 / ing 不复述 / both 缺什么），开关可关")
     return True
-
 
 def check_p2_units():
     """v1.21.55 [P2-*] 单元级验证。
@@ -745,7 +735,6 @@ def check_p2_units():
               f" / 停止理由分源 / 复述率 0% 可见 / 逐圈回流账"
               f" / 四象限可对上 / 悬置状态合并）")
     return ok
-
 
 def check_p0_156_units(src):
     """v1.21.56 的 P0/P1 单元验证。
@@ -991,7 +980,6 @@ def check_probe_skip_no_false_flag():
     print("  ✓ [成本档] 跳过探针不误报，未跳过仍照报")
     return True
 
-
 def check_merge_fallback():
     """[成本档 ①] 合并输出缺分段标记时必须补跑，不能静默丢阳视角。"""
     cfg = build_cfg(False)
@@ -1023,44 +1011,123 @@ def check_merge_fallback():
     print(f"  ✓ [成本档] 缺标记自动补跑，阴阳都在（{len(out)} 条候选）")
     return True
 
+def check_v12316_stop_therapy():
+    """[v1.23.16] 自然停治本三条 + 成本档维度已删除。
 
-def check_cost_profile():
-    """v1.21.56 三档成本：调用数应 quality >= balanced > economy。"""
-    q = "测试问题：AI 在数字 IC 设计里到底能做什么，哪些已经量产？"
-    rounds = {"0": 2, "1": 2, "both": 2, "all": 2}
-    calls = {}
-    for prof in ("quality", "balanced", "economy"):
-        CALLS["n"] = 0
-        cfg = build_cfg(False)
-        cfg["cost_profile"] = prof
-        meta = mod.MetaDGTF(cfg)
-        res = meta.run(q, route=["0", "1", "both", "all"],
-                       rounds=rounds, parallel_mode="serial")
-        assert isinstance(res, dict) and res.get("views"), \
-            f"{prof} 没跑出 view"
-        calls[prof] = res["llm_calls"]
-    if calls["quality"] < calls["balanced"]:
-        print(f"  ✗ [成本档] balanced 不应比 quality 更贵：{calls}")
-        return False
-    if calls["balanced"] <= calls["economy"]:
-        print(f"  ✗ [成本档] economy 应比 balanced 更省：{calls}")
-        return False
-    print(f"  ✓ [成本档] 调用数递减：quality={calls['quality']} "
-          f"balanced={calls['balanced']} economy={calls['economy']}")
+    ★ 判据不是「某个字符串不存在」，而是**维度不存在** + **行为变了**：
+      ① 档位维度：配置键 / auto 项 / 四个符号 / CLI 参数，四处都消失；
+      ② 惰性化：`_lazy_every_n` 恒等（含 0 / 1 / 3 三个输入）；
+      ③ sat 落点：`_sat_override` 是纯函数，四层同等生效（含 0 层走 stall）、
+         未判 / 判有新维度时**一律不动**（负对照）；
+      ④ 停止可达：把 sat 的效果喂给 `_stop_reasons`，元层必须给出理由
+         —— 这是「元层能不能自然停」的直接判据（旧实现下它恒为空）；
+      ⑤ 比对窗口：参照集是**池内全量**（源码里不再有 `win_amps[-r_window:]`），
+         且用引擎自己的判重函数证明「跨 3 圈的重复确实是重复」。
+    """
+    bad = []
+    _src_txt = SRC.read_text(encoding="utf-8")
 
-    # ---- [② 改版] 探针按角色跳，不再按圈号跳 ----
-    _eco = mod._profile_plan({"cost_profile": "economy"})
-    _qua = mod._profile_plan({"cost_profile": "quality"})
-    if _eco.get("probe_skip_roles") != ("收束", "复裁"):
-        print(f"  ✗ [成本档] economy 应只在收束/复裁圈跳探针，"
-              f"实际 {_eco.get('probe_skip_roles')}")
+    # ① 档位维度
+    if "cost_profile" in (mod.DEFAULT_CONFIG or {}):
+        bad.append("DEFAULT_CONFIG 仍有 cost_profile 键")
+    for _sym in ("_COST_PROFILES", "_profile_plan", "_PROBE_SKIP_ROLES",
+                 "_auto_pick_cost_profile", "_auto_profile"):
+        if hasattr(mod, _sym):
+            bad.append("维度残留：%s 仍在" % _sym)
+    if "cost_profile" in mod._AUTO_ITEM_ORDER:
+        bad.append("auto 项里仍有 cost_profile")
+    if len(mod._AUTO_ITEM_ORDER) != 11:
+        bad.append("auto 项数应为 11，实得 %d" % len(mod._AUTO_ITEM_ORDER))
+    if "--profile" in _src_txt:
+        bad.append("CLI 仍有 --profile")
+
+    # ② 惰性化：恒等
+    _m = mod.MetaDGTF(build_cfg(False))
+    if [_m._lazy_every_n(x) for x in (0, 1, 3)] != [0, 1, 3]:
+        bad.append("_lazy_every_n 仍会惰性化：%r"
+                   % [_m._lazy_every_n(x) for x in (0, 1, 3)])
+    _mm = mod.MetaDGTF(build_cfg(False))
+    if int(_mm._mcfg.get("shape_chars", 900)) != 900:
+        bad.append("shape_chars 仍被缩放：%r" % _mm._mcfg.get("shape_chars"))
+    if int(_mm._mcfg.get("shape_items", 6)) != 6:
+        bad.append("shape_items 仍被缩放：%r" % _mm._mcfg.get("shape_items"))
+    if 'in _plan["probe_skip_roles"]' in _src_txt:
+        bad.append("探针仍按角色跳过")
+    if "_cands = view.candidates if not _lim" in _src_txt:
+        bad.append("候选仍被截断")
+
+    # ③ sat 落点：四层同等 + 负对照
+    _so = getattr(mod, "_sat_override", None)
+    if not callable(_so):
+        bad.append("缺 _sat_override 纯函数")
+    else:
+        if _so("all", False, 0, 0, 2, 2) != (2, 2, True):
+            bad.append("元层判「无新维度」后没推计数：%r"
+                       % (_so("all", False, 0, 0, 2, 2),))
+        if _so("1", False, 0, 0, 2, 2) != (2, 2, True):
+            bad.append("研究层判「无新维度」后没推计数")
+        if _so("0", False, 0, 0, 2, 2) != (2, 2, False):
+            bad.append("0 层应走 idle_stall 且 sat_override=False：%r"
+                       % (_so("0", False, 0, 0, 2, 2),))
+        if _so("both", False, 5, 0, 2, 2) != (5, 2, True):
+            bad.append("对撞层同样该生效，且取 max 不缩：%r"
+                       % (_so("both", False, 5, 0, 2, 2),))
+        if _so("all", None, 0, 0, 2, 2) != (0, 0, False):
+            bad.append("未判定（None）时不该动任何计数")
+        if _so("all", True, 7, 3, 2, 2) != (7, 3, False):
+            bad.append("判「有新维度」时不该动任何计数")
+    # 接线：两处 sat 块都过它
+    if _src_txt.count("_sat_override(") < 3:
+        bad.append("sat 接线没走 _sat_override（源里出现 %d 次）"
+                   % _src_txt.count("_sat_override("))
+
+    # ④ 停止可达：sat 的效果 → 元层给出理由
+    try:
+        _mr = mod.MetaDGTF(build_cfg(False))
+        _rs, _ = _mr._stop_reasons(
+            entry="all", layer_no=3, rounds_n=3, total_rounds=3,
+            sp=dict(mod.DEFAULT_CONFIG["spiral"]), soft_max=3, sim_thr=0.8,
+            stable_need=2, idle_limit=2, r_idle_limit=2, r_stall_limit=2,
+            rephrase_streak=0, carry_streak=0,
+            idle_new_amp=2, idle_new_thread=0, idle_stall=0,
+            stall_why="", sat_override=True,
+            prev_product="", view=mod.View(entry="all"), idles=0)
+        if not any("结构饱和度" in str(x) for x in _rs):
+            bad.append("元层拿到 sat 结论后仍不停（理由 %r）" % (_rs,))
+    except Exception as _e:  # noqa: BLE001
+        bad.append("停止可达判据异常：%s: %s" % (type(_e).__name__, _e))
+
+    # ⑤ 比对窗口 = 池内全量
+    if "win_amps[-r_window:]" in _src_txt:
+        bad.append("serial 侧参照集仍是近 N 圈窗口")
+    if 'state["win_amps"][-r_window:]' in _src_txt:
+        bad.append("并行侧参照集仍是近 N 圈窗口")
+    # ★ 只看「窗口串没了」不够 —— 有人把参照集换成 `[]` 或别的弱形态也过。
+    #   必须断言它**真的是池内全量**（两处：serial + 并行 B）。
+    if _src_txt.count("recent_amps = list(snap_amps)") != 2:
+        bad.append("参照集不是池内全量（`recent_amps = list(snap_amps)` 出现 %d 次）"
+                   % _src_txt.count("recent_amps = list(snap_amps)"))
+    if _src_txt.count("recent_threads = list(snap_threads)") != 2:
+        bad.append("线头参照集不是池内全量")
+    # ★ `_is_dup` 是 `_run_layer` / `_b_check_stop` 里的**局部函数**，模块级取不到
+    #   ⇒ 用它的两个组成函数（模块级）复现同一口径：overlap ≥ thr 或 similar(thr)。
+    _sp0 = mod.DEFAULT_CONFIG.get("spiral") or {}
+    _ovthr = float(_sp0.get("new_item_overlap", 0.55) or 0.55)
+    _simthr = float(_sp0.get("new_item_similarity", 0.55) or 0.55)
+    _a1 = "槽位状态列可空但不能由人名填充，人名列可填但不能改写槽位状态"
+    _a4 = "槽位状态列可空但不能由人名填充，人名列可填但不能改写槽位状态列"
+    if not (mod._overlap_coef(_a4, _a1) >= _ovthr
+            or mod._similar(_a4, _a1, _simthr)):
+        bad.append("跨圈重复样例在引擎判重口径下不算重复 —— 判据前提不成立")
+
+    if bad:
+        for _x in bad:
+            print("  ✗ [v12316] %s" % _x)
         return False
-    if _qua.get("probe_skip_roles"):
-        print("  ✗ [成本档] quality 不该跳探针")
-        return False
-    if "深入" in _eco["probe_skip_roles"] or "转向" in _eco["probe_skip_roles"]:
-        print("  ✗ [成本档] 深入/转向是要铺方向的圈，不该跳探针")
-        return False
+    print("  ✓ [v12316] 档位维度已删（配置/auto 项/符号/CLI 四处）；"
+          "惰性化归零；sat 落点四层同等（含 0 层走 stall）；"
+          "元层拿到 sat 结论后会停；参照集改池内全量")
+    return True
 
     # ---- [覆盖率双口径] 自报值和代码实算必须同时出现 ----
     _m = mod.MetaDGTF(build_cfg(False))
@@ -1151,26 +1218,7 @@ def check_cost_profile():
         for t in _tr)
     print("  ✓ [轨迹] 不可判定命中轨迹逐圈记录：" + _disp)
 
-    # ---- [④ 修正] shape_scale 只能缩「表述长度」，不能缩「结构/历史」 ----
-    _c = build_cfg(False)
-    _c["cost_profile"] = "balanced"
-    _base_layers = int((_c.get("memory") or {}).get("self_layers", 4))
-    _mm = mod.MetaDGTF(_c)
-    _got_layers = int(_mm._mcfg.get("self_layers", 4))
-    if _got_layers != _base_layers:
-        print(f"  ✗ [成本档] shape_scale 缩了 self_layers"
-              f"（{_base_layers} → {_got_layers}），那是丢历史不是省表述")
-        return False
-    if int(_mm._mcfg.get("shape_chars", 900)) >= 900:
-        print("  ✗ [成本档] balanced 下 shape_chars 没被收紧")
-        return False
-    if int(_mm._mcfg.get("shape_items", 6)) >= 6:
-        print("  ✗ [成本档] balanced 下 shape_items 没被收紧")
-        return False
-    print(f"  ✓ [成本档] 只缩表述参数（chars/items），"
-          f"self_layers 保持 {_got_layers} 不变")
     return True
-
 
 def check_p23_units():
     """v1.21.57 的两条：[② 复查] min_rounds.all + [③] P2-3 条件回流。
@@ -1267,7 +1315,6 @@ def check_p23_units():
               "不漂不注入、非 all 不注入")
         print("  ✓ [drift] 题目自己的「两侧/上游」不算漂移，真漂移仍命中")
     return ok
-
 
 def check_stop_gate():
     """[v1.21.57] 停止判据可达性复查暴露的三件事。
@@ -1380,7 +1427,6 @@ def check_stop_gate():
         print("  ✓ [走满] 由公共收口点统一交代（含被推迟的理由），"
               "并行通道不再沉默")
     return ok
-
 
 def check_stop_reason_parity():
     """[v1.21.60] 停止理由必须**只有一处实现**，两条通道都调它。
@@ -1529,7 +1575,6 @@ def check_rounds_plan():
               "min_rounds 是下限不是预算")
     return ok
 
-
 def check_mode_tables():
     """[v1.21.57 自查-5] _MODE_GRAPH / _MODE_LABEL 必须同键、层名合法。
 
@@ -1562,7 +1607,6 @@ def check_mode_tables():
         print(f"  ✓ [模式表] _MODE_GRAPH 与 _MODE_LABEL 同键 "
               f"({len(g)} 个模式)，层名合法，时序图都能算")
     return ok
-
 
 def check_pool_sub_label():
     """池段的子问题行必须按 decidability 分开数。
@@ -1606,7 +1650,6 @@ def check_pool_sub_label():
     print("  ✓ [池段口径] 子问题行分开数（总 4：可判定 1 / 不可判定 2 / "
           "另有 1 条 partial 等），不再把总数冒充可判定数")
     return True
-
 
 def check_decidability_transitions():
     """[v1.21.59] 可判定性三态互转 + 证据强制。
@@ -1756,7 +1799,6 @@ def check_decidability_transitions():
         print("  ✓ [可判定性] 产物同时摆出变更轨迹与被驳回的提案")
     return ok
 
-
 def check_decidability_normalize():
     """[v1.21.59] 「三态 vs 方面清单」必须自洽，且**全项目一份归一化**。
 
@@ -1893,7 +1935,6 @@ def check_decidability_normalize():
         print("  ✓ [归一化] 没有硬编码的可回答集合，全部走 _DEC_ANSWERABLE")
     return ok
 
-
 def check_confluence_persisted():
     """[fix-101 回归] 汇流圈结果必须真的落进产物。
 
@@ -1930,7 +1971,6 @@ def check_confluence_persisted():
         traceback.print_exc()
         ok = False
     return ok
-
 
 def check_thinking_wiring():
     """[fix-111] thinking 必须能区分两档，且**不靠 model 名字**区分。
@@ -1974,7 +2014,6 @@ def check_thinking_wiring():
               f"而档位仍能分开 {dict(THINK_SEEN)} —— 不再依赖名字猜")
     ok = _check_thinking_kwargs() and ok
     return ok
-
 
 def _check_thinking_kwargs():
     """直接验真实 LLM.call 的 kwargs：thinking / temperature / max_tokens
@@ -2089,7 +2128,6 @@ def _check_thinking_kwargs():
               "；effort 只挂 enabled")
     return ok
 
-
 def check_meta_closure_by_id():
     """[v1.21.62] 元层闭环清算：按 tension_id 精确对账，不再只靠措辞。
 
@@ -2149,7 +2187,6 @@ def check_meta_closure_by_id():
         print("  ✓ [清算对账] 按 tension_id 精确对账（带编号判已交代、"
               "无编号退回措辞、只交代一条不算 clean）")
     return ok
-
 
 def check_starve_escalation():
     """[v1.21.61] 反向触发点：连续 N 圈无进展 → 迁向不可判定。
@@ -2275,7 +2312,6 @@ def check_starve_escalation():
         print("  ✓ [反向触发] 迁走后再救回 → 复债触发，"
               "escalation→复债 这条链通了")
     return ok
-
 
 def check_debt_reopen():
     """[v1.21.59] 从 undecidable 转回「欠答案」时，被关掉的账要重新挂起来。
@@ -2407,7 +2443,6 @@ def check_debt_reopen():
               "债务明细标出「← 重新挂账（接 d_001）」")
     return ok
 
-
 def check_layer_guard():
     """[v1.21.60] 某层失败必须**留痕 + 可见**，不许静默丢层。
 
@@ -2504,7 +2539,6 @@ def check_layer_guard():
               f"{str(_sk.get('reason'))[:26]}），且该层确实没跑")
     return ok
 
-
 def check_p162_units():
     """[v1.21.62] 本轮工艺项的单元断言（≥5 条，覆盖 P0-1/P0-2/P0-3/
     P1-4/P1-5/P1-6/P2-7/P2-8/P2-9/P3-11）。
@@ -2546,7 +2580,14 @@ def check_p162_units():
             else:
                 PROBE_EMPTY_SEEN["n"] = 0
             CALLS["n"] = 0
-            r = mod.MetaDGTF(build_cfg(False)).run(
+            _c0 = build_cfg(False)
+            # ★ [v1.23.16 判据随实现更新] 池重估的间隔曾随成本档
+            #   惰性化（balanced 下 1→2）；本版去惰性化 ⇒ 1 圈也会跑
+            #   重估，而「池空」时重估不适用（少一次调用）⇒ 两条路径的
+            #   调用数被这个**与重试无关**的变量拉开。判据只关心重试，
+            #   所以先把重估关掉再比（不是放宽阈值）。
+            _c0.setdefault("spiral", {})["re_eval_every_n"] = 0
+            r = mod.MetaDGTF(_c0).run(
                 "冒烟：至少碰一个", route=["0"], rounds={"0": n_rounds},
                 parallel_mode="serial")
             v = (r.get("views") or {}).get("0") or {}
@@ -2874,7 +2915,6 @@ def check_p162_units():
 
     return ok
 
-
 def check_p162_fix2_units():
     """[v1.21.62 收尾] 本轮三项修改的单元断言。
 
@@ -3005,7 +3045,6 @@ def check_p162_fix2_units():
             ok = False
 
     return ok
-
 
 def check_v63_c_fixes():
     """[v1.21.63 C] 第一批（C 段修复）的源码断言 —— 全是**结构属性**，
@@ -3208,7 +3247,6 @@ def check_v63_c_fixes():
         ok = False
     return ok
 
-
 def check_v63_observability():
     """[v1.21.63 P1/P2/P3] 三项可观测性补全的单元验证。
 
@@ -3346,7 +3384,6 @@ def check_v63_observability():
 
     return ok
 
-
 def check_v64_pool_meta_render():
     """[v1.21.64 A] pool.meta 有渲染点了（池段 + 落地层顶部）。"""
     import tempfile
@@ -3390,7 +3427,6 @@ def check_v64_pool_meta_render():
     print("  ✓ [v64 A] pool.meta 渲染兑现：池段分类计数 + 落地层顶部汇总"
           "（P1-6 拦截 1 / 自省未生效 1 / 自省回流 1，三类都识别对）")
     return True
-
 
 def check_v64_by_id_scope():
     """[v1.21.64 B] by_id 覆盖已 resolved 的编号。"""
@@ -3441,7 +3477,6 @@ def check_v64_by_id_scope():
     print("  ✓ [v64 B] by_id=3（active+resolved 都算）/ covered_ids=4 / "
           "inactive=1 / unknown=1 / unsettled=0 —— 口径已覆盖已了结的编号")
     return True
-
 
 def check_v65_starve_render():
     """[v1.21.65 A] `_starve_rounds` 有渲染出口了（机制一的「离门槛差多少」）。"""
@@ -3499,7 +3534,6 @@ def check_v65_starve_render():
     print("  ✓ [v65 A] 机制一的「离门槛差多少」有出口了："
           "分布 0/1/2 圈各 1 条、最高 2 圈、名下有挂账 1 条")
     return True
-
 
 def check_v66_starve_peak():
     """[v1.21.66] 机制一的计数改报**运行期峰值**（v1.21.65 遗留 1 的兑现）。
@@ -3583,7 +3617,6 @@ def check_v66_starve_peak():
           "旧前缀正则仍匹配；字段缺席时显式报「机制未运行」")
     return True
 
-
 def check_v66_starve_writes_key():
     """[v1.21.66] `_starve_escalation` 的**写入语义**（直调生产函数，不经产物）。
 
@@ -3623,7 +3656,6 @@ def check_v66_starve_writes_key():
         return False
     print("  ✓ [v66] 写入语义：计数无条件写（2/2 条）；被触碰清零后峰值仍留 1")
     return True
-
 
 def check_v67_full_appendix():
     """[v1.21.67；v1.23.10 改取源] 产物 md 的「全量字段」附录：必须**机械全量**。
@@ -3705,7 +3737,6 @@ def check_v67_full_appendix():
     print("  ✓ [v67] 全量附录：顶层键齐全、无渲染点的内部量也在、JSON 可解析")
     return True
 
-
 def check_v68_round_dump():
     """[v1.21.68] 每层每圈**全量留痕**：dump_round 必须把 view 的所有字段
     写进日志，**含 ing 正文（view.collision）**，且不截断；并且它真的被
@@ -3759,7 +3790,6 @@ def check_v68_round_dump():
     print("  \u2713 [v68] 每圈全量留痕：字段全覆盖、ing 正文在内、"
           "不截断、且真被 DGTF.run 调用")
     return True
-
 
 def check_v69_abcde():
     """[v1.21.69] A/B/C/D/E 五项：**先量后改**，每条判据都带**负对照**。
@@ -3978,7 +4008,6 @@ def check_v69_abcde():
     print("        E 收尾增量留痕真省略 + 累积字段有出口 + 接线在")
     return True
 
-
 def _v70_anchor(payload):
     """[v70 公用] 用桩 LLM 走生产入口 `DGTF._re_anchor`。"""
     import json as _json
@@ -4000,7 +4029,6 @@ def _v70_anchor(payload):
     import io as _io
     with _cl.redirect_stdout(_io.StringIO()):
         return dg._re_anchor(inp)
-
 
 def check_v70_f_trace():
     """[v1.21.70 F] 不可判定轨迹与 B 的双口径对齐：拆出 aligned_trace。
@@ -4111,7 +4139,6 @@ def check_v70_f_trace():
           "（加性成立）；接线在")
     return True
 
-
 def check_v70_k_coverage():
     """[v1.21.70 K] 覆盖率段不再只挂 all 层：研究层收尾也调一次。
 
@@ -4170,7 +4197,6 @@ def check_v70_k_coverage():
           "（entry=0 不追加，条目是定点的）；接线在")
     return True
 
-
 def check_v70_g_anchor():
     """[v1.21.70 G] 锚点重述的 _clean 加占位符黑名单（唯一还没修的真 bug）。
 
@@ -4209,7 +4235,6 @@ def check_v70_g_anchor():
     print("  \u2713 [v70 G] 占位符（含全角/半角）全挡、全占位符不留残渣；"
           "含「无」字的正常方面不被误杀；接线在")
     return True
-
 
 def check_v70_h_oversized():
     """[v1.21.70 H] rendered / manifest 只打长度，正文不落日志。
@@ -4264,7 +4289,6 @@ def check_v70_h_oversized():
           "collision/candidates 正文照旧全文在；字段覆盖计数未掉")
     return True
 
-
 def check_v70_i_note():
     """[v1.21.70 I] dump_round 顶部有「本圈留痕」说明，且在字段 dump **之前**。"""
     import contextlib
@@ -4297,7 +4321,6 @@ def check_v70_i_note():
     print("  \u2713 [v70 I] 「本圈留痕」说明打在字段 dump 之前，"
           "并点名跨圈回填字段")
     return True
-
 
 def check_v70_j_reuse():
     """[v1.21.70 J] _merge_decidability 复用池评估算好的 _und_untraced。
@@ -4340,14 +4363,12 @@ def check_v70_j_reuse():
           "无缓存时退回重算且值正确；接线在")
     return True
 
-
 # ======================================================================
 # [v1.21.71 F1~F11] 十一项缺陷修复的判据
 #   每条都配**反方向**（不该被放过的仍被放过）或**负对照**（把改坏的
 #   行为模拟出来，断言必须判失败）。
 # ======================================================================
 _V71_Q = "探针题：这套结构的边界在哪，哪些部分原则上判不出"
-
 
 def _v71_packed_run(rounds=None, mode="serial"):
     """走生产入口 MetaDGTF.run（LLM 已被桩换掉）拿 packed 本体。
@@ -4362,7 +4383,6 @@ def _v71_packed_run(rounds=None, mode="serial"):
                     rounds=rounds or {"0": 2, "1": 2, "both": 2, "all": 2},
                     parallel_mode=mode)
 
-
 def _v71_b_state(view, rounds_hist):
     """造一个 total_rounds=1 的层状态（定点测 _b_finalize_layer）。"""
     cfg = build_cfg(False)
@@ -4374,7 +4394,6 @@ def _v71_b_state(view, rounds_hist):
         "all_dec_products": [], "all_und_products": [], "all_view_errors": [],
         "round_log": [{"round": 1}], "deferred_notes": [],
         "r": 1, "rounds_n": 1, "sp": mod._spiral_for(cfg, "0")}
-
 
 def check_v71_single_round_finalize():
     """[v1.21.71 F1] 单圈层必须走完整收尾。
@@ -4451,7 +4470,6 @@ def check_v71_single_round_finalize():
           "（负对照有判别力）；两处旧写法都不在")
     return True
 
-
 def check_v71_main_save_guard():
     """[v1.21.71 F2] main() 里 save_result 失败必须有兜底 + 非零退出码。
 
@@ -4518,7 +4536,6 @@ def check_v71_main_save_guard():
           "try 接线在")
     return True
 
-
 def check_v71_build_inp_meta_filter():
     """[v1.21.71 F3] `_build_inp_meta` 的非法 entry 必须被**配对过滤**。
 
@@ -4567,7 +4584,6 @@ def check_v71_build_inp_meta_filter():
           "接线在")
     return True
 
-
 def check_v71_load_config_empty():
     """[v1.21.71 F4] `load_config("")` 不许报「读取  失败」。
 
@@ -4599,7 +4615,6 @@ def check_v71_load_config_empty():
         return False
     print("  \u2713 [v71 F4] 空路径静默回落；坏 yaml 仍报解析失败")
     return True
-
 
 def check_v71_early_dispatch():
     """[v1.21.71 F5] C / D-H 早退时 dispatch 不许为空。
@@ -4653,7 +4668,6 @@ def check_v71_early_dispatch():
     print("  \u2713 [v71 F5] 两条早退路径的 dispatch 齐全（C / G 模式名）；"
           "守卫在非空 dispatch 下真会记 layer_gap")
     return True
-
 
 def check_v71_ext_assess_cached():
     """[v1.21.71 F6] 同题的外部可判定性评估，一次 run 只跑一次。
@@ -4721,7 +4735,6 @@ def check_v71_ext_assess_cached():
           "跨 run 各自一次")
     return True
 
-
 def check_v71_evidence_full():
     """[v1.21.71 F7] 兜底重算与缓存同口径（用完整 evidence）。
 
@@ -4776,7 +4789,6 @@ def check_v71_evidence_full():
           "截断口径确有差异（负对照有判别力）")
     return True
 
-
 def check_v71_tokenize_stopwords():
     """[v1.21.71 F9] 停用词按**词**匹配。
 
@@ -4807,7 +4819,6 @@ def check_v71_tokenize_stopwords():
     print(f"  \u2713 [v71 F9] 停用词按词生效、内容词保留；"
           f"_STOPWORDS 全为多字（{len(mod._STOPWORDS)} 个）")
     return True
-
 
 def check_v71_coverage_cfg_optional():
     """[v1.21.71 F10] `coverage_parts` 的 cfg 可选 + 调用点传真配置。
@@ -4848,7 +4859,6 @@ def check_v71_coverage_cfg_optional():
     print("  \u2713 [v71 F10] cfg 可选（默认 None）且四种传法结果一致；"
           "调用点已传真配置")
     return True
-
 
 def check_v71_no_dup_position_diag():
     """[v1.21.71 F11] 收尾复核不许重复写 position 诊断。
@@ -4931,7 +4941,6 @@ def check_v71_no_dup_position_diag():
           f"圈内那条仍写（反向锁成立）")
     return True
 
-
 def check_v71_auto_plan_agreement():
     """[v1.21.71 F8] 模块级 `auto_plan` 与方法级 `_auto_plan` 的一致性检测器。
 
@@ -5002,7 +5011,6 @@ def check_v71_auto_plan_agreement():
           "关系已标注")
     return True
 
-
 # ======================================================================
 # [v1.21.72] 文档整理批 + 可观测性/形态断言窄版的判据
 #   四条：#13 barrier 语义 / #20 changelog 卫生 / #22 唯一实现点 /
@@ -5020,7 +5028,6 @@ def _v72_engine_src():
     i = eng.index('"""')
     j = eng.index('"""', i + 3)
     return eng, eng[j + 3:]
-
 
 def check_v72_bbarrier_semantics():
     """[v1.21.72 #13] B 模式预算耗尽必须**所有层一起停**（barrier 语义）。
@@ -5073,14 +5080,12 @@ def check_v72_bbarrier_semantics():
           f"不限预算 → 0 层；注释在位")
     return True
 
-
 def _changelog_text() -> str:
     """changelog 正文。★ v1.23.7 起它在仓库根目录 `CHANGELOG.md`，不在代码里。"""
     p = HERE / "CHANGELOG.md"
     if not p.is_file():
         return ""
     return p.read_text(encoding="utf-8").replace("\r\n", "\n")
-
 
 def _changelog_lint(doc: str):
     """纯函数：返回（版本段标题, 收束摘要标题, 重复的收束摘要标题）。
@@ -5094,7 +5099,6 @@ def _changelog_lint(doc: str):
     dup = {t: sums.count(t) for t in set(sums) if sums.count(t) > 1}
     secs = re.findall(r"^v(\d+(?:\.\d+)+) 相对", doc, re.M)
     return secs, sums, dup
-
 
 def check_v72_changelog_hygiene():
     """[v1.21.72 #20 起；v1.23.7 改取源] changelog 不得有重复的「★ vX 收束摘要」
@@ -5143,7 +5147,6 @@ def check_v72_changelog_hygiene():
           f"{len(sums)} 个收束摘要标题无重复（首段 v{secs[0]}）；负对照判红")
     return True
 
-
 def check_v72_mechanism_single_source():
     """[v1.21.72 #22 窄版] 「机制 → 唯一实现点」形态断言。
 
@@ -5191,7 +5194,6 @@ def check_v72_mechanism_single_source():
           f"_assess_decidability 调用点=1；finalize/stop 各 2 调用点 1 实现；"
           f"旧门未复活")
     return True
-
 
 def check_v72_len_anomaly_guard():
     """[v1.21.72 #24 窄版] 长度异常自动冒烟警告。
@@ -5276,7 +5278,6 @@ def check_v72_len_anomaly_guard():
           f"（负对照有判别力）；manifest 仍只打长度")
     return True
 
-
 def check_v74_anchor_refs():
     """[v1.21.74] 外判的锚点引用不许在合并时被丢掉 —— 双向判据。
 
@@ -5352,9 +5353,6 @@ def check_v74_anchor_refs():
         return False
     print("  ✓ A/B/C/D 四路全部符合")
     return True
-
-
-
 
 def check_v75_anchor_pool():
     """[v1.21.75] 锚点入池 —— 双向判据（关闭态加性 / 开启态可达 / 失败留痕）。
@@ -5495,8 +5493,6 @@ def check_v75_anchor_pool():
     print("  \u2713 [F] 关闭态 triage/ctx 均为空串（prompt 逐字不变）")
     return True
 
-
-
 def _v76_strip(src: str) -> str:
     """抠掉 docstring 与注释 —— 判据只能扫**代码**。
 
@@ -5536,11 +5532,9 @@ def _v76_strip(src: str) -> str:
     return "\n".join("" if (i + 1) in kill else l
                      for i, l in enumerate(lines))
 
-
 def _v76_src() -> str:
     raw = SRC.read_text(encoding="utf-8").replace("\r\r\n", "\n")
     return raw.replace("\r\n", "\n").replace("\r", "\n")
-
 
 def _v76_body(name: str) -> str:
     """取 SRC 里名为 name 的方法体（已抠文档）。"""
@@ -5561,7 +5555,6 @@ def _v76_body(name: str) -> str:
             end = j
             break
     return _v76_strip("\n".join(lines[start:end]))
-
 
 def check_v76_anchor_two_channels():
     """[v1.21.76 A1] 圈前动作只走一个入口 —— 防「只在一个通道接线」。
@@ -5611,7 +5604,6 @@ def check_v76_anchor_two_channels():
     print("  \u2713 serial(`_run_layer`) 与 B(`_run_one_round_B`) 都走统一入口")
     return True
 
-
 def check_v76_anchor_calls():
     """[v1.21.76 A2] `_anchor_calls` 必须**真的被赋值**，且不再挂预算空档。
 
@@ -5646,11 +5638,9 @@ def check_v76_anchor_calls():
     print("  \u2713 `_budget_exhausted` 已不再挂空档；收尾对照有独立预算判断")
     return True
 
-
 def _re_find(pat: str, text: str) -> bool:
     import re as _re
     return _re.search(pat, text) is not None
-
 
 def check_v76_changelog_wording():
     """[v1.21.76 B1] changelog 不许说「重做/改到池」—— 外判接入点还在。"""
@@ -5670,7 +5660,6 @@ def check_v76_changelog_wording():
     print("  \u2713 措辞已改为「新增池接入点」（外判接入点保留）")
     print("  \u2713 v1.21.76 changelog 段存在")
     return True
-
 
 def check_v76_anchor_visibility():
     """[v1.21.76 B2] 池判的可见性必须写清（只读第 1 圈）。"""
@@ -5696,7 +5685,6 @@ def check_v76_anchor_visibility():
     print("  \u2713 docstring 写明：池判只跑一次、只看得见第 1 圈那批"
           "（受 max_items 约束）")
     return True
-
 
 def check_v76_anchor_evidence_key():
     """[v1.21.76 B3] `Pool.to_dict` 必须挂 `anchor_as_evidence`，且受保护。"""
@@ -5728,7 +5716,6 @@ def check_v76_anchor_evidence_key():
           "（关闭态仍一个键不多）")
     return True
 
-
 def check_v76_anchor_retriever_stub():
     """[v1.21.76 B4] snapshot 不该走检索层；未实现的后端仍要抛错。"""
     print("\n[v1.21.76 B4] 检索层只在非 snapshot 走")
@@ -5758,7 +5745,6 @@ def check_v76_anchor_retriever_stub():
     print("  \u2713 snapshot 直接跳过检索层（零调用）；非 snapshot 抛错留痕")
     return True
 
-
 def check_v76_anchor_triage_cohesion():
     """[v1.21.76 B5] 分诊判据必须与锚点清单**同段**（不跨 system/user）。"""
     print("\n[v1.21.76 B5] 分诊判据不跨段")
@@ -5779,7 +5765,6 @@ def check_v76_anchor_triage_cohesion():
         return False
     print("  \u2713 `_anchor_triage_sys` 已空壳；判据与锚点清单同处 user 段")
     return True
-
 
 def check_v76_claims_scope():
     """[v1.21.76 M1] 对照条目必须含 `views[*].candidates`（领域事实层）。"""
@@ -5806,7 +5791,6 @@ def check_v76_claims_scope():
     print("  \u2713 `_anchor_claims` 三处来源齐备，candidates 优先")
     return True
 
-
 def check_v76_input_sanity_shape():
     """[v1.21.76 S1] 输入自检必须显式覆盖「形似标准记号的非标准记号」。"""
     print("\n[v1.21.76 S1] 输入自检补 P=PN 型判据")
@@ -5822,8 +5806,6 @@ def check_v76_input_sanity_shape():
         return False
     print("  \u2713 判据已显式覆盖伪专名，并写明 P=PN 漏报案例")
     return True
-
-
 
 def check_v77_claim_order():
     """[v1.21.77 M1'] `_anchor_claims` 取 candidates 时**层 0 必须排最前**。
@@ -5866,7 +5848,6 @@ def check_v77_claim_order():
     print("  \u2713 candidates 循环层顺序 = 0 优先；两处来源仍在")
     return True
 
-
 def check_v77_input_sanity_render():
     """[v1.21.77 S2] `input_sanity` 必须**无条件**渲染（三态可辨）。
 
@@ -5896,13 +5877,11 @@ def check_v77_input_sanity_render():
     print("  \u2713 三态齐备：未启用 / 已检查未发现问题 / 发现问题（列条目）")
     return True
 
-
 # [v122 环境] `dgtf_config.yaml` 相对 `DEFAULT_CONFIG` 的**已销账**手调项。
 #   表里每一项都是「有意为之」，理由写在值里。`check_config_parses`
 #   对**不在表里**的差异照旧判红，对**在表里但已不再差异**的条目也判红 —— 两向都要对上账，登记表才不会腐烂成一张什么都能过的名单。
 #   ★ 说明文字一律放注释，不要塞进 dict 当第一个元素：相邻的两个字符串
 #     字面量会被 Python **静默拼接**成一个键，dict 里就只剩一条巨型条目（实测踩过）。
-
 
 # [v122 环境] `dgtf_config.yaml` 相对 `DEFAULT_CONFIG` 的**已销账**手调项。
 #   表里每一项都是「有意为之」，理由写在值里。`check_config_parses`
@@ -5912,7 +5891,6 @@ def check_v77_input_sanity_render():
 CONFIG_TUNED = {
     "actions.parallel_warmup_rounds": "并行预热圈数手调",
     "api.thinking.effort": "thinking 强度 high（刻意不随档位降）",
-    "cost_profile": "质量档：手调 quality（默认 balanced 是省钱档）",
     "memory.shape_chars": "形状记忆条数与字数手调",
     "memory.shape_items": "形状记忆条数与字数手调",
     "output.show_ing": "调试期要看 ing / manifest / 探针诊断",
@@ -5937,7 +5915,6 @@ CONFIG_TUNED = {
     "spiral.qc_both_ratio": "螺旋停止 / 去重 / 对齐 / 漂移阈值手调（0.7 家族）",
     "spiral.qc_rephrase_ratio": "螺旋停止 / 去重 / 对齐 / 漂移阈值手调（0.7 家族）",
     "spiral.rehash_similarity": "螺旋停止 / 去重 / 对齐 / 漂移阈值手调（0.7 家族）",
-    "spiral.round_window": "螺旋停止 / 去重 / 对齐 / 漂移阈值手调（0.7 家族）",
     "spiral.stable_layers": "螺旋停止 / 去重 / 对齐 / 漂移阈值手调（0.7 家族）",
     "spiral.stable_need": "螺旋停止 / 去重 / 对齐 / 漂移阈值手调（0.7 家族）",
     "spiral.stop_similarity": "螺旋停止 / 去重 / 对齐 / 漂移阈值手调（0.7 家族）",
@@ -5950,9 +5927,6 @@ CONFIG_TUNED = {
 #   真要留一个键只给代码用，必须在这里登记并写清理由；登记了却已经写进
 #   yaml 的，同样判红（两向对账，和 CONFIG_TUNED 一个道理）。
 CONFIG_NOT_IN_YAML = {}
-
-
-
 
 def check_config_parses():
     """[v1.21.60] 出厂 yaml 必须能解析，且生效后与 DEFAULT_CONFIG 等价。
@@ -6039,7 +6013,6 @@ def check_config_parses():
             ok = False
     return ok
 
-
 def _v73_anchor_file(td, n=3):
     """写一个锚点快照到临时目录，返回路径。"""
     p = Path(td) / "anchors.json"
@@ -6056,7 +6029,6 @@ def _v73_anchor_file(td, n=3):
         "retriever": "smoke fixture", "anchors": items,
     }, ensure_ascii=False), encoding="utf-8")
     return p
-
 
 def _v73_stub_patch(orig, ids=None, spy=None):
     """[v1.21.73] 临时桩补丁：只补两条分支，其余原样转发。
@@ -6093,7 +6065,6 @@ def _v73_stub_patch(orig, ids=None, spy=None):
         return orig(self, system, user, *a, **kw)
     return _p
 
-
 def _v73_run(cfg, q, spy, anchor_ids=None, verdict="印证"):
     """跑一次 mock run；**临时**给桩补两条分支，退出即恢复。
 
@@ -6113,7 +6084,6 @@ def _v73_run(cfg, q, spy, anchor_ids=None, verdict="印证"):
     finally:
         mod.LLM.call = orig
     return res, m
-
 
 def check_v73_anchor():
     """[v1.21.73] 外部锚点：加性 / 挂键 / 失败留痕 / 编号校验 / 接线 / 只读。
@@ -6265,7 +6235,6 @@ def check_v73_anchor():
           "编号校验 / 接线 / 只读（六组各带负对照）")
     return True
 
-
 def check_v122_phase1(SRC=None):
     """[v122 阶段1] 四层 objective / 覆盖率只对研究层 / 未生分类 / 头部四行。"""
     print("  · v1.22 阶段1：四层 objective / 覆盖率归属 / 未生分类 / 头部四行")
@@ -6374,8 +6343,6 @@ def check_v122_phase1(SRC=None):
         import traceback
         traceback.print_exc()
         return False
-
-
 
 def check_v122_phase2(SRC=None):
     """[v122 阶段2] 三态多票 / 冻结条 / 校准队列。"""
@@ -6508,7 +6475,6 @@ def check_v122_phase2(SRC=None):
         traceback.print_exc()
         return False
 
-
 def _v122_mod(SRC):
     """取被测模块：优先 smoke 命名空间里已加载的 mod，其次按 SRC 现加载。"""
     import importlib.util
@@ -6524,7 +6490,6 @@ def _v122_mod(SRC):
     spec.loader.exec_module(m)
     return m
 
-
 def _v122_src_text(SRC):
     from pathlib import Path as _P
     if SRC is not None:
@@ -6534,7 +6499,6 @@ def _v122_src_text(SRC):
     if f:
         return _P(f).read_text(encoding="utf-8")
     return ""
-
 
 def check_v122_phase3(SRC=None):
     """[v122 阶段3] decision 行动闭环 / 分流壳 / 硬约束 / rubric。"""
@@ -6610,7 +6574,6 @@ def check_v122_phase3(SRC=None):
         traceback.print_exc()
         return False
 
-
 def _v1221_mod(SRC):
     """取被测模块：优先 smoke 命名空间里已加载的 mod，其次按 SRC 现加载。"""
     import importlib.util
@@ -6626,7 +6589,6 @@ def _v1221_mod(SRC):
     spec.loader.exec_module(m)
     return m
 
-
 def _v1221_src_text(SRC):
     from pathlib import Path as _P
     if SRC is not None:
@@ -6636,7 +6598,6 @@ def _v1221_src_text(SRC):
     if f:
         return _P(f).read_text(encoding="utf-8")
     return ""
-
 
 def check_v1221_p1(SRC=None):
     """[v1.22.1 P1] 研究层结构化 actions：schema 优先 / 词法兜底 / 两条负对照。"""
@@ -6703,7 +6664,6 @@ def check_v1221_p1(SRC=None):
         traceback.print_exc()
         return False
 
-
 def check_v1221_p2(SRC=None):
     """[v1.22.1 P2] triage 触发条件改挂结构标签（含三条负对照）。"""
     print("  · v1.22.1 P2：triage 挂结构标签（[外] 前缀 + 语义关键词 + 自指不降级）")
@@ -6739,7 +6699,6 @@ def check_v1221_p2(SRC=None):
         import traceback
         traceback.print_exc()
         return False
-
 
 def check_v1221_p3(SRC=None):
     """[v1.22.1 P3] 仅源码机制负对照：脚本/JSON/文档齐 + 判定合法 + 条数对账。"""
@@ -6777,7 +6736,6 @@ def check_v1221_p3(SRC=None):
         import traceback
         traceback.print_exc()
         return False
-
 
 def check_v1221_p2b(SRC=None):
     """[v1.22.1 P2b] triage 第二条路径：answers 匹配（端到端打通）。
@@ -6905,7 +6863,6 @@ def check_v1221_p2b(SRC=None):
         traceback.print_exc()
         return False
 
-
 def check_v1221_p5(SRC=None):
     """[v1.22.1 P5] auto 取向回填：判定留痕 + 错配告警。
 
@@ -6994,7 +6951,6 @@ def check_v1221_p5(SRC=None):
         traceback.print_exc()
         return False
 
-
 def check_v1221_p6(SRC=None):
     """[v1.22.1 P6] tier 全缺省时的显式提示。
 
@@ -7070,7 +7026,6 @@ def check_v1221_p6(SRC=None):
         traceback.print_exc()
         return False
 
-
 def check_v1221_p7(SRC=None):
     """[v1.22.1 P7] 明确不做（只出说明，不动代码）。
 
@@ -7100,7 +7055,6 @@ def check_v1221_p7(SRC=None):
         import traceback
         traceback.print_exc()
         return False
-
 
 # <<<v1222 checks>>>
 def check_v1222_p1(SRC=None):
@@ -7968,7 +7922,6 @@ def check_v1232_audit(SRC=None):
         print("  ✗ v1.23.2 整体审计失败：" + type(e).__name__ + ": " + str(e))
         return False
 
-
 def check_v1232_tier(SRC=None):
     """[v1.23.2 遗留3] tier **确认**才生效（默认零差异 + 不进判定路径）。
 
@@ -8103,7 +8056,6 @@ def check_v1232_tier(SRC=None):
         import traceback
         traceback.print_exc()
         return False
-
 
 def check_v1232_retry(SRC=None):
     """[v1.23.2 遗留1] 空票重试：默认 1 次；置 0 退回 v1.23.1 行为。
@@ -8337,7 +8289,6 @@ def check_v1233_vote_ids(SRC=None):
         import traceback
         traceback.print_exc()
         return False
-
 
 def check_v1234_runtime(SRC=None):
     """[v1.23.4] 运行期三项总控（联网 / 思考 / 强度）。
@@ -8650,7 +8601,6 @@ def check_v1234_runtime(SRC=None):
         traceback.print_exc()
         return False
 
-
 def check_v1235_pending_fix():
     '''[v1.23.5] 三条 pending_fix 的可证伪判据（含归一化唯一实现）。
 
@@ -8857,7 +8807,6 @@ def check_v1235_pending_fix():
 #   ★ 口径与 `_mk_v1236_strip.py` 里的 TAG 必须逐字一致 —— 判据与清理工具同一把尺子。
 V1236_TAG = (r"\[v\d[^\]]*\]|(?<![A-Za-z0-9_\-])v\d+(?:\.\d+)*(?![A-Za-z0-9_\-])")
 
-
 def check_v1236_no_version_tags():
     """[v1.23.6] 代码正文（模块 docstring 之外）不留版次批注。
 
@@ -8960,7 +8909,6 @@ def _v1238_sections(txt):
     for _i in range(1, len(parts) - 1, 2):
         out.append((parts[_i].strip(), len(parts[_i + 1].strip())))
     return out
-
 
 def check_v1238_render_guards():
     """[v1.23.8] 渲染层三处守卫：空节不留空 / 停因上头部 / 悬置渲染去重。
@@ -9074,7 +9022,6 @@ def check_v1238_render_guards():
           "悬置去重(真跑形态 3+2、异 target 不合) / 三处接线均在")
     return True
 
-
 def check_v1239_orientation_guard():
     """[v1.23.9] 取向分流守卫：`auto` + 无决策语境 → boundary 模板。
 
@@ -9147,7 +9094,6 @@ def check_v1239_orientation_guard():
     print("  \u2713 [v1239] 取向分流：事实题→boundary / 决策题→decision / "
           "显式 decision 不被覆盖 / 空题面保守走 boundary；词表 3+3 例；接线在")
     return True
-
 
 def check_v12312_anchor_lanes():
     """[v1.23.12] 外部锚点分「文本 / 联网」两条通道分别写明（单一实现）。
@@ -9318,12 +9264,11 @@ def check_v12312_anchor_lanes():
           "开·关·未记录三态 / 失败与零条读数 / 四处渲染点 / 口径不打架")
     return True
 
-
 def check_v12313_auto_dispatch():
-    """[v1.23.13] 统一自适应调度器：十二项逐项可单独接管 + 历史自适应 + 技术债。
+    """[v1.23.13] 统一自适应调度器：十一项逐项可单独接管 + 历史自适应 + 技术债。
 
     ★ 负对照全部内置（没有负对照的「全绿」只说明判据没跑）：
-      · 十二项各自都有留痕（值 / 来源 / 理由），缺一项即判红；
+      · 十一项各自都有留痕（值 / 来源 / 理由），缺一项即判红；
       · **逐项独立**：显式给一项，只改那一项，其余仍是 auto
         —— 变异体「explicit 泄漏到全部项」必须判红；
       · 总开关关掉 ⇒ 一项都不进 auto（回 v1.23.12 行为）；
@@ -9340,8 +9285,8 @@ def check_v12313_auto_dispatch():
         print("  \u2717 [v12313] 命名空间里没有 auto_dispatch")
         return False
     _ORDER = m._AUTO_ITEM_ORDER
-    if len(_ORDER) != 12:
-        bad.append("十二项不齐：%d 项" % len(_ORDER))
+    if len(_ORDER) != 11:
+        bad.append("十一项不齐：%d 项" % len(_ORDER))
     _FACT = "新中国的成立时间是什么时候"
     _DEC = "这份方案怎么落地"
     cfg0 = m.load_config("")
@@ -9376,7 +9321,7 @@ def check_v12313_auto_dispatch():
         bad.append("含元层的停止阈值没放宽：%r" % (_stm,))
 
     # ── B 逐项显式接管：只改这一项 ────────────────────────────
-    _EX = {"route": ["0", "1"], "cost_profile": "quality", "mode": "A",
+    _EX = {"route": ["0", "1"], "mode": "A",
            "rounds": "0:9,1:9,both:9,all:9", "orientation": "decision",
            "web": "off", "thinking": "on", "effort": "max",
            "landing": "decision", "decidability": "off"}
@@ -9397,21 +9342,14 @@ def check_v12313_auto_dispatch():
 
     # ── B2 显式值必须真的落进配置 ─────────────────────────────
     #   ★ 本版首版真 bug：`_apply_auto_dispatch` 只写「来源是 auto」的项 ⇒
-    #     `--web off` / `--profile quality` / `--thinking on` / `--effort max`
+    #     `--web off` / `--thinking on` / `--effort max`
     #     **全部失效**（`_apply_runtime` 读到的还是配置里的 `auto`）。
     #     「来源」是给留痕用的，不是给「写不写」用的。
     _c2 = _copy.deepcopy(cfg0)
-    _dp2 = m.auto_dispatch(_FACT, _c2, explicit={"web": "off",
-                                                 "cost_profile": "quality"})
+    _dp2 = m.auto_dispatch(_FACT, _c2, explicit={"web": "off"})
     m._apply_auto_dispatch(_c2, _dp2)
     if _c2.get("runtime", {}).get("web") != "off":
         bad.append("显式 --web off 没被写进 cfg[runtime][web]")
-    if _c2.get("cost_profile") != "quality":
-        bad.append("显式 --profile quality 没被写进 cfg[cost_profile]")
-    _c4 = _copy.deepcopy(cfg0)
-    m._apply_auto_dispatch(_c4, m.auto_dispatch(_FACT, _c4))
-    if _c4.get("cost_profile") != "economy":
-        bad.append("auto 项没被写进 cfg[cost_profile]")
 
     # ── C 总开关 ─────────────────────────────────────────────
     _co = _copy.deepcopy(cfg0)
@@ -9440,20 +9378,6 @@ def check_v12313_auto_dispatch():
                             history=dict(H, cut_rate=0.9, stop_n=40)), "route") != \
             list(m._ENTRIES):
         bad.append("高截断率时不该砍层（负对照失效）")
-    if _val(m.auto_dispatch(_DEC, cfg0, history=H), "cost_profile") != \
-            "balanced":
-        bad.append("有限 token 的决策题不该降档（负对照失效）")
-    # ★ [v1.23.14 判据随实现更新] 成本档改**相对判据**：同类题中位 ≥
-    #   全语料 p75 才降档。夹具必须同时给 tokens_p75（原来没有 ⇒ 判据失效）。
-    if _val(m.auto_dispatch(_DEC, cfg0,
-                            history=dict(H, tokens_p75=400000,
-                                         tokens_med=900000)),
-            "cost_profile") != "economy":
-        bad.append("同类题成本中位 ≥ 全语料 p75 时没有降档")
-    if _val(m.auto_dispatch(_DEC, cfg0,
-                            history=dict(H, tri_rate=0.2)),
-            "cost_profile") != "balanced":
-        bad.append("低三态一致率时不该降档（质量优先）")
     if not _val(m.auto_dispatch(_FACT, cfg0,
                                 history=dict(H, web_fail=5)),
                 "web_downgrade").get("auto_disable_after_failures") == 2:
@@ -9494,7 +9418,7 @@ def check_v12313_auto_dispatch():
     if sorted(_p1) != sorted(_p2):
         bad.append("auto_plan 两条路径 schema 不同：%s vs %s"
                    % (sorted(_p1), sorted(_p2)))
-    for _k in ("route", "mode", "rounds", "cost_profile", "max_calls",
+    for _k in ("route", "mode", "rounds", "max_calls",
                "orientation"):
         if _k not in _p1:
             bad.append("技术债未清：单调用路径缺键 %s" % _k)
@@ -9504,8 +9428,8 @@ def check_v12313_auto_dispatch():
     if "**自动调度**" not in _ls:
         bad.append("产物没有「自动调度」表")
     _rows = [l for l in _ls.split("\n") if l.startswith("| ") and "来源" not in l]
-    if len(_rows) != 12:
-        bad.append("调度表不是十二行（%d）" % len(_rows))
+    if len(_rows) != 11:
+        bad.append("调度表不是十一行（%d）" % len(_rows))
     if m._auto_dispatch_lines({}) != []:
         bad.append("没有 plan 时调度表不是空")
 
@@ -9553,7 +9477,6 @@ def check_v12313_auto_dispatch():
     print("  \u2713 [v12313] 十二项逐项接管（10 项 CLI + 2 项配置）/ 总开关 / "
           "历史自适应（5 正 3 负）/ 技术债（唯一实现 + 两路同 schema）/ 产物表")
     return True
-
 
 def check_v12314_history_corpus():
     """[v1.23.14] 用真实历史语料校准调度：三源取样 + 字段名 + 相对判据。
@@ -9678,10 +9601,6 @@ def check_v12314_history_corpus():
     _badq = dict(_base, by_type={"nonfact": {"n": 20, "tokens_med": 900000,
                                             "calls_med": 50, "tri_n": 40,
                                             "tri_rate": 0.10, "tri_p10": 0.167}})
-    if m._auto_pick_cost_profile(d, _hi, cfg0)[0] != "economy":
-        bad.append("同类题成本中位 ≥ 全语料 p75 时没降档")
-    if m._auto_pick_cost_profile(d, _lo, cfg0)[0] != "balanced":
-        bad.append("同类题不贵时不该降档（负对照失效）")
     # ★ 判别「相对判据」vs「绝对阈值」的关键样例：同类中位 90 万，
     #   但全语料 p75 是 500 万 ⇒ **相对不算贵** ⇒ 不该降档。
     #   绝对阈值（40 万）会误降 —— 这一条就是为分辨它而设。
@@ -9689,12 +9608,6 @@ def check_v12314_history_corpus():
                 by_type={"nonfact": {"n": 20, "tokens_med": 900000,
                                      "calls_med": 50, "tri_n": 6,
                                      "tri_rate": 0.9}})
-    if m._auto_pick_cost_profile(d, _mid, cfg0)[0] != "balanced":
-        bad.append("全语料基准高时，同类 90 万不算贵 —— 不该降档（绝对阈值会误降）")
-    if m._auto_pick_cost_profile(d, _badq, cfg0)[0] != "balanced":
-        bad.append("同类题三态一致率低时不该降档（质量优先）")
-    if m._auto_pick_cost_profile(f, _lo, cfg0)[0] != "economy":
-        bad.append("事实型短题应恒为 economy")
 
     # ── G 「实际停圈」渲染 + 产物里真的有 ─────────────────────
     _line = m._rounds_run_line({"1": {"rounds_run": 3, "rounds_cap": 6}})
@@ -9737,7 +9650,6 @@ def check_v12314_history_corpus():
           "圈数三级回退+样本门槛 · 成本档相对判据 · 实际停圈落产物"
           % h["n"])
     return True
-
 
 def check_v12315_history_calibration():
     """[v1.23.15] 分层抽样 + 时间衰减 + 三条规则的**实测**校准。
@@ -9870,16 +9782,10 @@ def check_v12315_history_calibration():
     _d = m._auto_features(_D)
     _lo = dict(_base, by_type={"nonfact": dict(_exp1, tri_n=40, tri_rate=0.10,
                                               tri_p10=0.167)})
-    if m._auto_pick_cost_profile(_d, _lo, cfg0)[0] != "balanced":
-        bad.append("一致率远低于 p10 时仍降档（质量保护失效）")
     _ok = dict(_base, by_type={"nonfact": dict(_exp1, tri_n=40, tri_rate=0.30,
                                               tri_p10=0.167)})
-    if m._auto_pick_cost_profile(_d, _ok, cfg0)[0] != "economy":
-        bad.append("一致率高于 p10 却不降档（门槛把降档废掉了）")
     _few = dict(_base, by_type={"nonfact": dict(_exp1, tri_n=5, tri_rate=0.10,
                                                tri_p10=0.167)})
-    if m._auto_pick_cost_profile(_d, _few, cfg0)[0] != "economy":
-        bad.append("一致率样本不足时不该表态（应照降）")
     if getattr(m, "_AUTO_TRI_FLOOR", None) != 0.167:
         bad.append("一致率异常线不是实测 p10（%r）"
                    % getattr(m, "_AUTO_TRI_FLOOR", None))
@@ -9905,7 +9811,6 @@ def check_v12315_history_calibration():
           % (h.get("_limit_per_type"), h.get("_half_life_days"),
              _big["tri_n"], _big["tri_p10"]))
     return True
-
 
 def check_v12310_render_ops():
     """[v1.23.10] 渲染层四项一次验收：形态声明 / 附录外置 / 成本自动档 / 未校验留痕。
@@ -9999,16 +9904,6 @@ def check_v12310_render_ops():
         bad.append("inline 模式不该产出旁挂文件")
 
     # ── R9 成本档自动路由 ────────────────────────────────────
-    if not hasattr(mod, "_auto_profile"):
-        bad.append("缺 _auto_profile")
-    else:
-        if mod._auto_profile(_FACT) != "economy":
-            bad.append("事实题应自动选 economy（实得 %r）" % mod._auto_profile(_FACT))
-        if mod._auto_profile(_DEC) != "balanced":
-            bad.append("决策题应自动选 balanced（实得 %r）" % mod._auto_profile(_DEC))
-    if '"auto", "quality", "balanced", "economy"' not in SRC.read_text(
-            encoding="utf-8"):
-        bad.append("--profile 的 choices 里没有 auto")
 
     # ── R10 未校验留痕（只对事实题）──────────────────────────
     if "未接入外部校验" not in _cf or "--web on" not in _cf:
@@ -10030,7 +9925,6 @@ def check_v12310_render_ops():
     print("  \u2713 [v12310] 形态声明(boundary+decision) / 附录两向对账(外置+内联) / "
           "成本档规则(事实 economy·决策 balanced) / 未校验留痕(仅事实题) / 接线在")
     return True
-
 
 def check_v12311_writeback_and_web():
     """[v1.23.11] 两件挂账一次做完：自省回写（R1 后半）+ 事实题自动联网（R10 后半）。
@@ -10122,7 +10016,6 @@ def check_v12311_writeback_and_web():
           "事实题自动联网(事实 True·决策 False + 源码接线在)")
     return True
 
-
 # <<<end v123 checks>>>
 
 def main():
@@ -10144,8 +10037,6 @@ def main():
     if not check_probe_skip_no_false_flag():
         return 1
     if not check_merge_fallback():
-        return 1
-    if not check_cost_profile():
         return 1
     if not check_p23_units():
         return 1
@@ -10333,6 +10224,8 @@ def main():
         return 1
     if not check_v12315_history_calibration():
         return 1
+    if not check_v12316_stop_therapy():
+        return 1
     q = "测试问题：AI 在数字 IC 设计里到底能做什么，哪些已经量产？"
     rows = []
     for mode in ("serial", "A", "B", "C", "D", "E",
@@ -10377,11 +10270,6 @@ def main():
             f"rounds 应钳到下限（元层 5，其余 4）：{p['rounds']}"
         assert p["rounds"]["all"] > p["rounds"]["0"], \
             f"元层下限应高于通用下限，否则又退回「实际5圈」坑：{p['rounds']}"
-        # ★ 成本档**不再问模型**：直接取配置。mock 里给的是 "economy"，
-        #   必须被无视（真跑里它一路漂到 quality，成本两道闸一起松开）。
-        _cfg_prof = str(build_cfg(False).get("cost_profile", "balanced"))
-        assert p["cost_profile"] == _cfg_prof, \
-            f"档位应取配置值 {_cfg_prof}，实得 {p['cost_profile']}"
         # [v1.21.61] 预算下限兜底：mock 给 150，但四层共 17 圈（元层下限
         #   抬到 5 之后：4+4+4+5）× 10/圈 = 170，150 不够跑完 —— 必须
         #   被抬到 170。
@@ -10424,17 +10312,17 @@ def main():
             "budget_per_round_cap", 12) or 0)
         assert p5["max_calls"] == int(sum(p5["rounds"].values()) * _cap), \
             f"「不限」应兜到 总圈数×{_cap:.0f}：{p5['max_calls']}"
-        # 脏值：非法档位/负预算/越界圈数/未知 route —— 都要被兜住
+        # 脏值：负预算/越界圈数/未知 route —— 都要被兜住
         os.environ["SMOKE_AUTO_PLAN"] = json.dumps({
             "route": "不存在的档", "mode": "Z", "rounds": {"0": 999},
-            "cost_profile": "luxury", "max_calls": -5,
+            "route": "不存在的档", "mode": "Z", "rounds": {"0": 999},
+            "max_calls": -5,
             "reason": "", "confidence": 0.1}, ensure_ascii=False)
         p2 = mod.auto_plan(q, build_cfg(False))
         assert p2["route"] == ["0", "1", "both", "all"], \
             f"未知 route 应退回 full：{p2['route']}"
         assert p2["mode"] == "serial", \
             f"非法 mode 应退回 serial：{p2['mode']}"
-        assert p2["cost_profile"] != "luxury", "非法档位不该被采纳"
         assert p2["max_calls"] == 0, f"负预算应为 0（不设限）：{p2['max_calls']}"
         # route 裁剪：rounds 只留真要跑的层
         os.environ["SMOKE_AUTO_PLAN"] = json.dumps({
@@ -10806,7 +10694,6 @@ def main():
     print("\n  ✓ P0-1 / P0-2 / P0-3（判定判据可查）/ P1-4 / P1-5 / P1-6 全部生效")
     print("落盘目录：", HERE / "smoke_outputs")
     return 0
-
 
 if __name__ == "__main__":
     sys.exit(main())

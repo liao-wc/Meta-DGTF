@@ -1,0 +1,31 @@
+[
+ {
+  "group": "auto",
+  "rc": 0,
+  "secs": 2421.7,
+  "args": [],
+  "dir": "outputs\\_v12315_auto"
+ },
+ {
+  "group": "up6",
+  "rc": 0,
+  "secs": 5306.3,
+  "args": [
+   "--route",
+   "0,1,both,all",
+   "--rounds",
+   "0:6,1:6,both:6,all:6",
+   "--parallel",
+   "serial",
+   "--profile",
+   "economy",
+   "--web",
+   "off",
+   "--orientation",
+   "decision",
+   "--landing",
+   "decision"
+  ],
+  "dir": "outputs\\_v12315_up6"
+ }
+]

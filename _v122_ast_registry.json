@@ -1,10 +1,14 @@
 {
- "added": 145,
+ "added": 144,
  "baseline": "_baseline_v12177.py",
- "current": "元DGTF-V1.23.15.py",
+ "current": "元DGTF-V1.23.16.py",
  "n_symbols_baseline": 290,
- "n_symbols_current": 435,
+ "n_symbols_current": 433,
  "registry": {
+  "_sat_override": {
+   "phase": "16",
+   "reason": "sat 判定 → 两条计数的唯一实现（四层同等；0 层走 stall）"
+  },
   "_hist_wquant": {
    "phase": "15",
    "reason": "加权分位数（时间衰减）：pairs=[(值,权重)]，as_int=False 用于比率"
@@ -109,10 +113,6 @@
    "phase": "13",
    "reason": "命令行原值归一（auto/空 = 没给 ⇒ None）"
   },
-  "_auto_pick_cost_profile": {
-   "phase": "13",
-   "reason": "策略·成本档"
-  },
   "_auto_pick_web": {
    "phase": "13",
    "reason": "策略·联网"
@@ -188,10 +188,6 @@
   "_appendix_to_file": {
    "phase": "10",
    "reason": "附录外置：内联全量 JSON 搬到旁挂 .packed.json，失败回退内联并留痕"
-  },
-  "_auto_profile": {
-   "phase": "10",
-   "reason": "成本档自动路由：按题面有无决策语境选 economy/balanced（纯函数）"
   },
   "_with_form_declaration": {
    "phase": "10",

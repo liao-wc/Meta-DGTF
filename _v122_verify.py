@@ -25,6 +25,34 @@ from typing import List, Optional
 
 HERE = Path(__file__).resolve().parent
 BASELINE = HERE / "_baseline_v12177.py"
+
+# ============================================================
+# ★ [v1.23.16] 授权删除清单
+# ============================================================
+# 本版**经用户明确要求**删除「成本档」这一维（只保留一种行为：不裁剪），
+# 于是 9 条「不删机制」类判据同时翻红。这里把「声明过的删除」与
+# 「偷偷删」分开：
+#   · 符号层：消失的符号必须 ⊆ 本清单 —— **清单外照旧判红**（判别力不减）；
+#   · 行数层：纯删除行从「== 0」改成「≤ 预算」（预算写死，下次多删就超）。
+# 清单来源：v12316_报告.md §三 的落点表。
+_V12316_AUTH_SYMBOLS = (
+    "_COST_PROFILES", "_PROBE_SKIP_ROLES", "_profile_plan",
+    "_auto_pick_cost_profile", "_auto_profile",
+)
+#: 授权删除的**行数预算**：上述清单对应的实现体量（本版实测纯删除行 1047~1166）。
+_V12316_AUTH_DEL_BUDGET = 1400
+#: 授权删除的**配置键**（V3 的允许差异集合）。
+_V12316_AUTH_KEYS = {"cost_profile", "spiral.round_window"}
+
+
+def _auth_removed(gone_list):
+    """过滤掉**授权清单**里的消失项；清单外的原样返回（由调用方判红）。
+
+    ★ `mechanism_removed()` 返回的是描述串（如 `_profile_plan(def) 消失`），
+      而 `_syms()` 的差集是纯符号名 —— 所以按**前缀**匹配，两种都吃。
+    """
+    return [g for g in gone_list
+            if not any(str(g).startswith(s) for s in _V12316_AUTH_SYMBOLS)]
 # [v1.22.1] P3 的「不删机制」按 v1.22.0 基线比（更贴近本版）
 BASELINE_V1220 = HERE / "_baseline_v1220.py"
 
@@ -688,7 +716,9 @@ def phase5(src, mod):
           f"常量定义 {_n_dual} 处")
     if BASELINE.is_file():
         d = count_del_lines(BASELINE, src)
-        check("5.6", d == 0, f"本版删除代码行 = {d}（期望 0）")
+        check("5.6", d <= _V12316_AUTH_DEL_BUDGET,
+              f"本版删除代码行 = {d}"
+              f"（授权预算 {_V12316_AUTH_DEL_BUDGET}）")
     else:
         check("5.6", False, "基线缺失")
 
@@ -740,7 +770,8 @@ def phase6(src, mod):
                 return {n.name for n in _ast.walk(t)
                         if isinstance(n, (_ast.FunctionDef, _ast.ClassDef))}
             _a, _b = _syms(BASELINE), _syms(src)
-            _added, _gone = sorted(_b - _a), sorted(_a - _b)
+            _added = sorted(_b - _a)
+            _gone = _auth_removed(sorted(_a - _b))
             _regf = HERE / "_v122_ast_registry.json"
             _reg = (_json.loads(_regf.read_text(encoding="utf-8")).get("registry")
                     if _regf.is_file() else {})
@@ -808,14 +839,16 @@ def global_checks(src):
     if BASELINE.is_file():
         nd = count_del_lines(BASELINE, src)
         nr = count_replaced_lines(BASELINE, src)
-        check("G.del", nd == 0,
-              f"纯删除行 {nd}（≤0）；改写行 {nr}（如实报，不计删）")
+        check("G.del", nd <= _V12316_AUTH_DEL_BUDGET,
+              f"纯删除行 {nd}"
+              f"（授权预算 {_V12316_AUTH_DEL_BUDGET}）；"
+              f"改写行 {nr}（如实报，不计删）")
         try:
-            gone = mechanism_removed(BASELINE, src)
+            gone = _auth_removed(mechanism_removed(BASELINE, src))
         except Exception as e:  # noqa: BLE001
             gone = [f"AST 对比失败：{e}"]
         check("G.mech", not gone,
-              f"机制未被移除（符号消失 {len(gone)} 项"
+              f"授权清单外的机制未被移除（符号消失 {len(gone)} 项"
               f"{('：' + '；'.join(gone[:4])) if gone else ''}）")
         sh = function_shrunk(BASELINE, src)
         print(f"  ℹ️  函数体骤减 {len(sh)} 项"
@@ -1384,10 +1417,13 @@ def phase_p2b(src, mod):
     _b1 = HERE / "元DGTF-V1.22.1-rc1.py"
     if _b1.is_file():
         _n_del = count_del_lines(str(_b1), src)
-        check("P2b.9.a", _n_del == 0, "rc1 → rc1b 纯删除行 " + str(_n_del) + "（红线 0）")
-        _gone = mechanism_removed(str(_b1), src)
+        check("P2b.9.a", _n_del <= _V12316_AUTH_DEL_BUDGET,
+              "rc1 → rc1b 删除行 " + str(_n_del)
+              + "（授权预算 " + str(_V12316_AUTH_DEL_BUDGET) + "）")
+        _gone = _auth_removed(mechanism_removed(str(_b1), src))
         check("P2b.9.b", not _gone,
-              "rc1 → rc1b 符号消失 " + str(len(_gone)) + " 项")
+              "rc1 → rc1b 授权清单外符号消失 "
+              + str(len(_gone)) + " 项")
     else:
         check("P2b.9.a", False, "缺 rc1 基线")
         check("P2b.9.b", False, "缺 rc1 基线")
@@ -1438,11 +1474,13 @@ def phase_p3(src, mod):
               f" / 机制没工作 {len(fx)} / 条件不可达 "
               f"{sum(1 for v in data.values() if v['verdict'] == '条件不可达')}"
               f"；进 pending_fix 的 {len(fx) + sum(1 for v in data.values() if v['verdict'] == '条件不可达')} 项")
-    check("P3.5", count_del_lines(str(BASELINE_V1220), src) == 0,
-          f"本版不删任何机制（纯删除行 "
-          f"{count_del_lines(str(BASELINE_V1220), src)}）")
-    gone = mechanism_removed(str(BASELINE_V1220), src)
-    check("P3.6", not gone, f"符号消失 0 项（实测 {len(gone)}）")
+    _n_p35 = count_del_lines(str(BASELINE_V1220), src)
+    check("P3.5", _n_p35 <= _V12316_AUTH_DEL_BUDGET,
+          f"本版删除行 {_n_p35}"
+          f"（授权预算 {_V12316_AUTH_DEL_BUDGET}）")
+    gone = _auth_removed(mechanism_removed(str(BASELINE_V1220), src))
+    check("P3.6", not gone,
+          f"授权清单外的符号消失应为 0（实测 {len(gone)}）")
 
 
 
@@ -2156,7 +2194,8 @@ def phase_v1232(src, mod):
 
     _fo, _fn = _flat(_old), _flat(_new)
     _chg = sorted(k for k in set(_fo) | set(_fn) if _fo.get(k) != _fn.get(k))
-    _allow = {"api.thinking.stages." + k for k in _wired} | {"web_search.tier_floor"}
+    _allow = ({"api.thinking.stages." + k for k in _wired}
+              | {"web_search.tier_floor"} | _V12316_AUTH_KEYS)
     _unexpected = [k for k in _chg if k not in _allow]
     check("V3 ★ 两版配置的差异**只允许**是「改前从未生效」的两类（thinking 接线 / tier_floor）",
           not _unexpected, "意外改动：" + repr(_unexpected[:5]))
