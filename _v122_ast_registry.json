@@ -1,10 +1,22 @@
 {
- "added": 93,
+ "added": 96,
  "baseline": "_baseline_v12177.py",
- "current": "元DGTF-V1.23.5.py",
+ "current": "元DGTF-V1.23.8.py",
  "n_symbols_baseline": 290,
- "n_symbols_current": 380,
+ "n_symbols_current": 386,
  "registry": {
+  "_dedup_suspensions_for_render": {
+   "phase": "8",
+   "reason": "渲染层归一：同 target 的悬置只渲染一条 + 合并条数留痕"
+  },
+  "_stop_kind_summary": {
+   "phase": "8",
+   "reason": "各层 stop_reason 归纳成一行「自然 n / 被截断 m」，接在产物头部"
+  },
+  "_susp_key": {
+   "phase": "8",
+   "reason": "悬置归并键：target 首个分句（「；」前），短串退回全长"
+  },
   "AnchorRetriever": {
    "phase": "4",
    "reason": "五档里的真检索后端（snapshot 零调用 / tavily + 缓存）"
