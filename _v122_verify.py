@@ -43,6 +43,10 @@ _V12316_AUTH_SYMBOLS = (
 _V12316_AUTH_DEL_BUDGET = 1400
 #: 授权删除的**配置键**（V3 的允许差异集合）。
 _V12316_AUTH_KEYS = {"cost_profile", "spiral.round_window"}
+# ★ [v1.23.17] 授权改动的**配置键**：本版把两个停止阈值/门槛调小（sat 间隔 3→2、
+#   soft_max 3→2），并顺带把出厂 yaml 的 sat 从 1 统一到 2。**清单外照旧判红。**
+_V12317_AUTH_KEYS = {"spiral.soft_max",
+                     "spiral.structure_saturation_every_n"}
 
 
 def _auth_removed(gone_list):
@@ -2195,7 +2199,8 @@ def phase_v1232(src, mod):
     _fo, _fn = _flat(_old), _flat(_new)
     _chg = sorted(k for k in set(_fo) | set(_fn) if _fo.get(k) != _fn.get(k))
     _allow = ({"api.thinking.stages." + k for k in _wired}
-              | {"web_search.tier_floor"} | _V12316_AUTH_KEYS)
+              | {"web_search.tier_floor"} | _V12316_AUTH_KEYS
+              | _V12317_AUTH_KEYS)
     _unexpected = [k for k in _chg if k not in _allow]
     check("V3 ★ 两版配置的差异**只允许**是「改前从未生效」的两类（thinking 接线 / tier_floor）",
           not _unexpected, "意外改动：" + repr(_unexpected[:5]))
