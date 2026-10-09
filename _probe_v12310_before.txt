@@ -1,0 +1,18 @@
+Building prefix dict from the default dictionary ...
+Loading model from cache C:\Users\18432\AppData\Local\Temp\jieba.cache
+Loading model cost 0.776 seconds.
+Prefix dict has been built successfully.
+📁 已保存: C:\Users\18432\AppData\Local\Temp\tmpkpaoncm2\20261009_114743_新中国的成立时间是什么时候.md
+产物行数 = 9987
+产物字节 = 544747
+附录存在 = True
+附录字节 = 407694
+附录占比 = 75%
+正文含json块 = True
+旁挂文件 = []
+旁挂字节 = 0
+R1_形态声明 = False
+R9_有函数 = False
+R10_未校验留痕 = False
+R10_开关提示 = False
+_render_full_appendix 签名 = (result: 'dict', md_text: 'str') -> 'str'

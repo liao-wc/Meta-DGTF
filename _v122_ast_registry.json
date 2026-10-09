@@ -1,10 +1,22 @@
 {
- "added": 97,
+ "added": 100,
  "baseline": "_baseline_v12177.py",
- "current": "元DGTF-V1.23.9.py",
+ "current": "元DGTF-V1.23.10.py",
  "n_symbols_baseline": 290,
- "n_symbols_current": 387,
+ "n_symbols_current": 390,
  "registry": {
+  "_appendix_to_file": {
+   "phase": "10",
+   "reason": "附录外置：内联全量 JSON 搬到旁挂 .packed.json，失败回退内联并留痕"
+  },
+  "_auto_profile": {
+   "phase": "10",
+   "reason": "成本档自动路由：按题面有无决策语境选 economy/balanced（纯函数）"
+  },
+  "_with_form_declaration": {
+   "phase": "10",
+   "reason": "落地层形态声明：写明本次用哪套模板与依据"
+  },
   "_has_decision_context": {
    "phase": "9",
    "reason": "取向分流守卫：题面有无决策语境（决定 decision 模板适不适用）"
