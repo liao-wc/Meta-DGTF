@@ -1,10 +1,14 @@
 {
- "added": 96,
+ "added": 97,
  "baseline": "_baseline_v12177.py",
- "current": "元DGTF-V1.23.8.py",
+ "current": "元DGTF-V1.23.9.py",
  "n_symbols_baseline": 290,
- "n_symbols_current": 386,
+ "n_symbols_current": 387,
  "registry": {
+  "_has_decision_context": {
+   "phase": "9",
+   "reason": "取向分流守卫：题面有无决策语境（决定 decision 模板适不适用）"
+  },
   "_dedup_suspensions_for_render": {
    "phase": "8",
    "reason": "渲染层归一：同 target 的悬置只渲染一条 + 合并条数留痕"

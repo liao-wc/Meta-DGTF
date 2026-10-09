@@ -1,0 +1,8 @@
+auto+事实题 = decision
+auto+决策题 = decision
+auto+无question键 = decision
+auto+空题面 = decision
+boundary+决策题 = boundary
+decision+事实题 = decision
+关开关+决策题 = boundary
+有函数 = False
