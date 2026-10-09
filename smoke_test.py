@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.10.py"
+SRC = HERE / "元DGTF-V1.23.11.py"
 
 os.environ.setdefault("DGTF_API_KEY", "sk-smoke-test-key")
 
@@ -9238,6 +9238,79 @@ def check_v12310_render_ops():
     return True
 
 
+def check_v12311_writeback_and_web():
+    """[v1.23.11] 两件挂账一次做完：自省回写（R1 后半）+ 事实题自动联网（R10 后半）。
+
+    ★ 负对照全部内置：
+      · 自省回写：**无**高置信诊断时不许渲染（防「无条件加一段动作」）；
+        `unsaid_is_escape=True` 与 `quality_flags=unsaid_overused(n)` 各测一次；
+        回写块必须落在形态声明**之后**（顺序：模板声明 → 诊断动作）。
+      · 事实题自动联网：`_web_auto_for_facts` 事实题 True / 决策题 False；
+        源码里必须真接线（`_web_auto_for_facts(" ".join(args.question))` 与
+        `"web": _web` 都在）——否则是死代码。
+    """
+    bad = []
+    m = globals().get("mod")
+    if m is None:
+        print("  \u2717 [v12311] 命名空间里没有 mod")
+        return False
+
+    _base = {"orientation": "decision",
+             "_config": {"actions": {"landing_decision": True}},
+             "decidability": {}, "question": "这份方案怎么落地"}
+
+    # ── A 自省回写 ────────────────────────────────────────────
+    _clean = dict(_base, views={"all": {"self_check": {"unsaid_is_escape": False},
+                                        "quality_flags": []}})
+    if "**自省回写**" in m.render_landing(_clean):
+        bad.append("无高置信诊断时不该渲染「自省回写」")
+
+    _esc = dict(_base, views={"all": {"self_check": {
+        "unsaid_is_escape": True, "unsaid_where": "用未生收尾"},
+        "quality_flags": []}})
+    _t1 = m.render_landing(_esc)
+    if "**自省回写**" not in _t1:
+        bad.append("unsaid_is_escape=True 时该渲染「自省回写」")
+    if "⇒ 动作" not in _t1:
+        bad.append("「自省回写」里没有可执行动作")
+
+    _flag = dict(_base, views={"all": {"self_check": {},
+                                       "quality_flags": ["unsaid_overused(8)"]}})
+    if "**自省回写**" not in m.render_landing(_flag):
+        bad.append("quality_flags=unsaid_overused(n) 时该渲染「自省回写」")
+    _hard = dict(_base, views={"1": {"self_check": {},
+                                     "quality_flags": ["action_incomplete"]}})
+    if "**自省回写**" not in m.render_landing(_hard):
+        bad.append("action_incomplete 时该渲染「自省回写」")
+
+    # 顺序：模板声明在前、诊断动作在后
+    if "**形态声明**" in _t1 and "**自省回写**" in _t1:
+        if _t1.index("**形态声明**") > _t1.index("**自省回写**"):
+            bad.append("「自省回写」跑到「形态声明」前面了（顺序反了）")
+
+    # ── B 事实题自动联网 ──────────────────────────────────────
+    if not hasattr(m, "_web_auto_for_facts"):
+        bad.append("缺 _web_auto_for_facts")
+    else:
+        if not m._web_auto_for_facts("新中国的成立时间是什么时候"):
+            bad.append("事实题应自动接入外部校验")
+        if m._web_auto_for_facts("这份方案怎么落地"):
+            bad.append("决策题不该自动接入外部校验")
+    _src = SRC.read_text(encoding="utf-8")
+    if '_web_auto_for_facts(" ".join(args.question))' not in _src:
+        bad.append("main 里没调 _web_auto_for_facts（死代码）")
+    if '"web": _web' not in _src:
+        bad.append("main 里没把 _web 交给 _apply_runtime（接线断了）")
+
+    if bad:
+        for _m in bad:
+            print("  \u2717 [v12311] %s" % _m)
+        return False
+    print("  \u2713 [v12311] 自省回写(逃避/质量线索/硬约束 三触发 + 无诊断不渲染 + 顺序) / "
+          "事实题自动联网(事实 True·决策 False + 源码接线在)")
+    return True
+
+
 # <<<end v123 checks>>>
 
 def main():
@@ -9437,6 +9510,8 @@ def main():
     if not check_v1239_orientation_guard():
         return 1
     if not check_v12310_render_ops():
+        return 1
+    if not check_v12311_writeback_and_web():
         return 1
     q = "测试问题：AI 在数字 IC 设计里到底能做什么，哪些已经量产？"
     rows = []

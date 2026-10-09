@@ -1,10 +1,18 @@
 {
- "added": 100,
+ "added": 102,
  "baseline": "_baseline_v12177.py",
- "current": "元DGTF-V1.23.10.py",
+ "current": "元DGTF-V1.23.11.py",
  "n_symbols_baseline": 290,
- "n_symbols_current": 390,
+ "n_symbols_current": 392,
  "registry": {
+  "_append_self_check_writeback": {
+   "phase": "11",
+   "reason": "自省回写：把高置信自省诊断提升为落地层里的可执行动作"
+  },
+  "_web_auto_for_facts": {
+   "phase": "11",
+   "reason": "事实题自动联网：--web auto 时事实型询问视同 on"
+  },
   "_appendix_to_file": {
    "phase": "10",
    "reason": "附录外置：内联全量 JSON 搬到旁挂 .packed.json，失败回退内联并留痕"
