@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.19.py"
+SRC = HERE / "元DGTF-V1.23.20.py"
 
 os.environ.setdefault("DGTF_API_KEY", "sk-smoke-test-key")
 
@@ -1563,6 +1563,92 @@ def check_v12319_anchor_retrieval_reachable():
           "未实现后端真抛错留痕；unconfigured 只在 snapshot；渲染给两条路")
     return True
 
+
+
+def check_v12320_quiet_output():
+    """[v1.23.20] 留痕从 verbose 拆出独立开关（默认关），进度不再被连坐。
+
+    ① `DEFAULT_CONFIG.output.dump_rounds` 默认 False；
+    ② `show_ing` / `show_manifest` 默认 False（不刷全文框）；
+    ③ 行为：verbose=True + dump_rounds=False ⇒ `dump_round` 在守卫处早退，
+       `dump_view_fields` **不被调用**、stdout 完全静音；
+    ④ 负对照：dump_rounds=True ⇒ 越过守卫、桩**被调用**（开关不是恒静音）；
+    ⑤ 接线：两个守卫都真读 `self.dump_rounds`；
+    ⑥ 出厂 yaml 三键与默认一致（免得引擎关了、yaml 又开回来）。
+    """
+    import contextlib
+    import inspect
+    import io
+    import types
+
+    bad = []
+    _o = mod.DEFAULT_CONFIG.get("output") or {}
+    for _k in ("dump_rounds", "show_ing", "show_manifest"):
+        if _o.get(_k) is not False:
+            bad.append("[①/②] DEFAULT_CONFIG.output.%s=%r（应 False）" % (_k, _o.get(_k)))
+
+    def _mk_dgtf(dump_on):
+        _c = build_cfg(True)                     # verbose=True
+        _c.setdefault("output", {})["dump_rounds"] = dump_on
+        return mod.DGTF("0", None, _c)
+
+    _view = types.SimpleNamespace()
+    _inp = types.SimpleNamespace(round_no=1, round_role="摊开")
+
+    _rec = {"n": 0}
+    _orig_dvf = mod.dump_view_fields
+
+    def _stub_dvf(view, emit, **kw):
+        _rec["n"] += 1
+
+    mod.dump_view_fields = _stub_dvf
+    try:
+        # ③ 关：守卫早退，桩不许被调，stdout 必须空
+        _rec["n"] = 0
+        _buf = io.StringIO()
+        with contextlib.redirect_stdout(_buf):
+            _mk_dgtf(False).dump_round(_view, _inp)
+        if _rec["n"] != 0:
+            bad.append("[③] dump_rounds=False 仍往下走（桩被调 %d 次）" % _rec["n"])
+        if _buf.getvalue().strip():
+            bad.append("[③] dump_rounds=False 还有输出：%r" % _buf.getvalue()[:80])
+
+        # ④ 负对照：开 ⇒ 越过守卫，桩被调 1 次
+        _rec["n"] = 0
+        with contextlib.redirect_stdout(io.StringIO()):
+            _mk_dgtf(True).dump_round(_view, _inp)
+        if _rec["n"] != 1:
+            bad.append("[④] dump_rounds=True 没往下走（桩被调 %d 次，应 1）" % _rec["n"])
+    finally:
+        mod.dump_view_fields = _orig_dvf
+
+    # ⑤ 两个守卫都读 self.dump_rounds
+    _src = (inspect.getsource(mod.DGTF.dump_round)
+            + inspect.getsource(mod.DGTF.dump_final))
+    if _src.count("self.dump_rounds") != 2:
+        bad.append("[⑤] 两个留痕守卫没都读 self.dump_rounds（命中 %d 次）"
+                   % _src.count("self.dump_rounds"))
+
+    # ⑥ 出厂 yaml 与默认一致
+    try:
+        _yl = [l.strip() for l in (HERE / "dgtf_config.yaml")
+               .read_text(encoding="utf-8").splitlines()]
+    except OSError:
+        _yl = []
+    for _k in ("show_ing: false", "show_manifest: false", "dump_rounds: false"):
+        if _k not in _yl:
+            bad.append("[⑥] 出厂 yaml 缺 %s" % _k)
+    for _k in ("show_ing: true", "show_manifest: true"):
+        if _k in _yl:
+            bad.append("[⑥] 出厂 yaml 仍开着 %s" % _k)
+
+    if bad:
+        for _x in bad:
+            print("  ✗ [v12320] %s" % _x)
+        return False
+    print("  ✓ [v12320] 留痕独立开关默认关：关时静音且不往下走、开时真打；"
+          "show_ing/show_manifest 默认 false；yaml 与默认一致")
+    return True
 
 
 def check_p23_units():
@@ -4110,6 +4196,7 @@ def check_v68_round_dump():
     cfg = build_cfg(False)
     dg = mod.DGTF("0", mod.LLM(cfg), cfg)
     dg.verbose = True
+    dg.dump_rounds = True  # 留痕另有独立开关（默认关）；这些检查测的是「开着时」的行为
     v = mod.View(entry="0")
     v.anchor = "锚点原文"
     v.collision = "ing 正文第一行\ning 正文第二行"
@@ -4307,6 +4394,7 @@ def check_v69_abcde():
     # ---------------- E ----------------
     dg = mod.DGTF("0", mod.LLM(cfg), cfg)
     dg.verbose = True
+    dg.dump_rounds = True  # 留痕另有独立开关（默认关）；这些检查测的是「开着时」的行为
     v = mod.View(entry="0")
     v.anchor = "锚点原文不改"
     v.collision = "ing 正文"
@@ -4609,6 +4697,7 @@ def check_v70_h_oversized():
     cfg = build_cfg(False)
     dg = mod.DGTF("0", mod.LLM(cfg), cfg)
     dg.verbose = True
+    dg.dump_rounds = True  # 留痕另有独立开关（默认关）；这些检查测的是「开着时」的行为
     v = mod.View(entry="0")
     v.rendered = "a" * 5000
     v.manifest = "m" * 3000
@@ -4663,6 +4752,7 @@ def check_v70_i_note():
     cfg = build_cfg(False)
     dg = mod.DGTF("0", mod.LLM(cfg), cfg)
     dg.verbose = True
+    dg.dump_rounds = True  # 留痕另有独立开关（默认关）；这些检查测的是「开着时」的行为
     v = mod.View(entry="0")
     inp = mod.Input(question="q", round_role="摊开", round_no=1)
     buf = io.StringIO()
@@ -5618,6 +5708,7 @@ def check_v72_len_anomaly_guard():
     _cfg = build_cfg(False)
     _dg = mod.DGTF("0", mod.LLM(_cfg), _cfg)
     _dg.verbose = True
+    _dg.dump_rounds = True
     _v1 = mod.View(entry="0")
     _v1.collision = "长正文" * 2000                    # 6000 字
     _buf = io.StringIO()
@@ -6265,8 +6356,6 @@ CONFIG_TUNED = {
     "api.thinking.effort": "thinking 强度 high（刻意不随档位降）",
     "memory.shape_chars": "形状记忆条数与字数手调",
     "memory.shape_items": "形状记忆条数与字数手调",
-    "output.show_ing": "调试期要看 ing / manifest / 探针诊断",
-    "output.show_manifest": "调试期要看 ing / manifest / 探针诊断",
     "output.show_probe_diag": "调试期要看 ing / manifest / 探针诊断",
     "probe.min_gain": "探针门限与选条手调",
     "probe.select_n": "探针门限与选条手调",
@@ -10623,6 +10712,8 @@ def main():
     if not check_v12318_anchor_default_on():
         return 1
     if not check_v12319_anchor_retrieval_reachable():
+        return 1
+    if not check_v12320_quiet_output():
         return 1
     q = "测试问题：AI 在数字 IC 设计里到底能做什么，哪些已经量产？"
     rows = []

@@ -1,0 +1,61 @@
+{
+  "_ts": 1791592893.9372318,
+  "results": [
+    {
+      "claim": "旧有的 API 接口的两个模型名 `deepseek-chat` 与 `deepseek-reasoner` 将于三个月后（2026-07-24）停止使用。当前阶段内，这两个模型名分别指向 `deepseek-v4-flash` 的非思考模式与思考模式。\n\n`deepseek-chat`\n`deepseek-reasoner`\n`deepseek-v4-flash`\n\n详细更新内容请参阅文档\n\n## 时间: 2025-12-01​\n\n### DeepSeek-V3.2​\n\n`deepseek-chat` 和 `deepseek-reasoner` 都已升级为 DeepSeek-V3.2.\n\n`deepseek-chat`\n`deepseek-reasoner`\n`deepseek-chat`\n`deepseek-reasoner`\n\n### DeepSeek-V3.2-Speciale​ ",
+      "url": "https://api-docs.deepseek.com/zh-cn/updates",
+      "source": "https://api-docs.deepseek.com/zh-cn/updates",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "\"display_name\": \"DeepSeek-Flash\",  \n \"description\": \"Latest frontier agentic coding model with image input.\",  \n \"default_reasoning_level\": \"high\",  \n \"supported_reasoning_levels\": [  \n {  \n \"effort\": \"low\",  \n \"description\": \"Fast responses with lighter reasoning\"  \n },  \n {  \n \"effort\": \"high\",  \n \"description\": \"Extra high reasoning depth for complex problems\"  \n },  \n {  \n \"effort\": \"max\",  \n ",
+      "url": "https://api-docs.deepseek.com/zh-cn/quick_start/agent_integrations/codex",
+      "source": "https://api-docs.deepseek.com/zh-cn/quick_start/agent_integrations/codex",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "请大家注意：旧有的 API 接口的两个模型名 deepseek-chat 与deepseek-reasoner 将于三个月后（2026-07-24）停止使用。当前阶段内，这两个模型名分别指向deepseek-v4-flash 的非思考模式与思考模式。\n\n## 开源权重和本地部署​\n\n「不诱于誉，不恐于诽，率道而行，端然正己。」\n\n感谢每一位用户的信任与支持，大家的肯定、建议和期许，是我们不竭探索、持续进步的动力，也让我们始终坚守初心，专注于不懈的创新。\n\n我们将始终秉持长期主义的原则理念，在尝试与思考中踏实前行，努力向实现 AGI 的目标不断靠近。\n\nWeChat QRcode [...] DeepSeek API 文档 Logo\nDeepSeek API 文档 Logo\n\n# DeepSeek-V4 预览版：迈入百万上下文普惠时代\n\n今天，我们全新系列模型 DeepSeek-V4 的预览",
+      "url": "https://api-docs.deepseek.com/zh-cn/news/news260424",
+      "source": "https://api-docs.deepseek.com/zh-cn/news/news260424",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "DeepSeek V4 Pro 官方 API 当前提供的版本已更新为 `DeepSeek-V4-Pro-0813`，调用模型名仍是 `deepseek-v4-pro`。 团队不需要自行拼接带日期的模型 ID，也无需重写模型选择逻辑。但稳定别名背后的模型已经变化，因此 Agent 任务完成率、工具调用、延迟、Token 消耗和回退策略都应该重新验证。\n\n另一个关键变化是协议支持。DeepSeek 已为 V4 Flash 和 V4 Pro 提供原生 Responses API，并给出官方 Codex 配置方式。这解决了此前 Codex 与 Chat Completions 协议不一致、开发者不得不部署转换代理的问题。\n\n对 EvoLink 用户而言，正确动作是保持现有模型路由稳定，在相同任务集上比较新版 Pro、Flash 和其他编码模型，并分别验证每个生产接口。DeepSeek 上游支持 R",
+      "url": "https://evolink.ai/zh/blog/deepseek-v4-release-window-prep",
+      "source": "https://evolink.ai/zh/blog/deepseek-v4-release-window-prep",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "这是最值得单独说清楚的地方。\n\n### 1. `DeepSeek-V4` 是产品/系列名\n\n你在官网、媒体、第三方模型页看到的“DeepSeek V4”，通常是系列名或展示名。\n\n### 2. 官方实际 API 模型 ID 是：\n\n `deepseek-v4-pro`\n `deepseek-v4-flash`\n\n### 3. 旧别名仍然存在，但不是新项目首选\n\n官方文档里仍能看到：\n\n `deepseek-chat`\n `deepseek-reasoner`\n\n但它们属于兼容保留名，官方已经注明未来将废弃。新项目最好直接用 V4 的正式模型 ID。\n\n## 价格和限制怎么看\n\n如果你准备正式接入，不要只看“这个平台有没有 DeepSeek V4”，还要看下面四件事：\n\n1. 输入 / 输出价格是否和你预期一致\n2. 缓存命中 / 未命中价格怎么计算\n3. 上下文窗口有多大\n4. 最大输出 ",
+      "url": "https://codepick.dev/zh/guides/deepseek-v4-api-platforms",
+      "source": "https://codepick.dev/zh/guides/deepseek-v4-api-platforms",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "## 更少缓存，更省成本​\n\n新一代模型大幅减少了 KV Cache 缓存的大小，与上一代模型相比，对 HBM 的需求减少到 1/4，对 SSD 的需求减少到 1/8。在 Agent 使用场景中，缓存命中的费用往往占比较高，对 KV Cache 的压缩大幅降低了 Agent 类任务的使用成本。\n\n## API 支持​\n\nDeepSeek V4.1 Flash 已同步上线 DeepSeek API，原生支持多模态，将模型名称更改为 `deepseek-flash` 即可调用最新的 V4.1 Flash 模型。旧版本模型 V4 Flash 与 V4 Flash Vision Exp 现已下线，出于兼容考虑，模型名 `deepseek-v4-flash`、`deepseek-v4-flash-vision-exp` 将被暂时路由到 V4.1 Flash。\n\n`deepseek-flash`\n`d",
+      "url": "https://api-docs.deepseek.com/zh-cn/news/news260910",
+      "source": "https://api-docs.deepseek.com/zh-cn/news/news260910",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "与之前的 DeepSeek 模型相比，通过后期训练优化，DeepSeek-V3.1 模型在工具使用和代理任务方面的性能得到了显著改善。此外，该模型还支持 100 多种语言，且语言熟练度接近母语水平，尤其在低资源语言（缺乏大型单语或并行语料库的语言）上的能力有明显增强。与之前的 DeepSeek 模型相比，您可以借助它来构建全球化应用程序，在提升结果准确性、减少幻觉输出的同时，清晰追踪其决策过程。\n\n以下是此模型的关键使用案例：\n\n正如我在上一篇文章中提到的，在生产环境中实施公开可用的模型时，需重点关注数据隐私要求，检查输出中是否存在偏见，并在数据安全、负责任的人工智能和模型评测方面监控结果。\n\n您可以访问 Amazon Bedrock 的企业级安全特征，并使用 Amazon Bedrock 护栏实施根据您的应用程序要求和负责任的人工智能政策定制的安全措施。您还可以使用 Amazon Bed",
+      "url": "https://aws.amazon.com/cn/blogs/china/deepseek-v3-1-now-available-in-amazon-bedrock",
+      "source": "https://aws.amazon.com/cn/blogs/china/deepseek-v3-1-now-available-in-amazon-bedrock",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "(1) 模型名请使用 `deepseek-flash`。旧模型名 `deepseek-v4-flash`、`deepseek-v4-flash-vision-exp` 仍可调用，但对应模型已下线，请求将由 DeepSeek-V4.1-Flash 模型提供服务，并按 Flash 价格计费。\n\n`deepseek-flash`\n`deepseek-v4-flash`\n`deepseek-v4-flash-vision-exp`\n\n## 接入 Agent 工具​\n\nDeepSeek Harness 开发者预览版面向全球 Harness 开发者开放测试。详见 DeepSeek Harness 入门。\n\nDeepSeek API 已接入多种主流 AI Agent 与编程助手工具。如果你使用 Claude Code、GitHub Copilot、OpenCode 等工具，可以直接将 DeepSeek ",
+      "url": "https://api-docs.deepseek.com/zh-cn",
+      "source": "https://api-docs.deepseek.com/zh-cn",
+      "kind": "web",
+      "tier": 3
+    }
+  ]
+}

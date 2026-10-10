@@ -12,6 +12,39 @@
 
 ---
 
+v1.23.20 相对 v1.23.19
+
+【要解决的问题】终端跑起来被两类大块刷屏，混得看不清进度：
+  ①`【ing 全文】` / `【view 全文】`（对撞/显形的全文框）—— 与产物略读重复；
+  ②`圈全量留痕` / `收尾留痕`（每层每圈把 view 的全部字段逐条打出来）。
+  结果是「想看进度就得忍受满屏留痕」。
+
+【改了哪几处】
+  1. 留痕（`dump_round` / `dump_final`）从 `verbose` 里拆出**独立开关**
+     `output.dump_rounds`，**默认 false**。`verbose` 仍管进度，
+     于是「有进度、无留痕」第一次能同时成立。
+  2. `DEFAULT_CONFIG.output` 新增键 `"dump_rounds": False`。
+  3. 出厂 `dgtf_config.yaml` 把 `output.show_ing` / `output.show_manifest`
+     改回 `false`（这两键注释里写的就是「【建议】默认：false」，
+     实际值在某轮调试里留成了 true）。
+
+【影响面】纯输出层：产物 md / packed.json 一字不变。要看留痕时把
+  `output.dump_rounds` 改 true 即恢复；留痕内容在产物 md 的
+  「全量字段」附录里本来就有副本。
+★ v1.23.20 收束摘要
+
+- **交付物**：`元DGTF-V1.23.20.py`（18321 行 / 纯 CRLF）
+- **改了哪几处（6）**：docstring 标题 · `__version__` · `DGTF.__init__` 新增
+  `self.dump_rounds` · `dump_round` 守卫 · `dump_final` 守卫 ·
+  `DEFAULT_CONFIG.output` 新增 `"dump_rounds": False`
+- **配置同步**：`dgtf_config.yaml` 的 `show_ing` / `show_manifest` 回 `false`、
+  新增 `dump_rounds: false`、头部版本 → v1.23.20
+- **验收数字**：冒烟 exit 0 / 0 ✗ / **PASS 213**；离线 E2E 全绿；
+  真跑 route 0（126s / 11 calls / 30445 tokens / 无异常）——
+  `圈全量留痕` **0** 次、`收尾留痕` **0** 次、`【ing 全文】`/`【view 全文】` **0** 次，
+  而 `━━━` 进度 **62** 次
+- **未做**：无遗留
+
 v1.23.19 相对 v1.23.18
 
 【要解决的问题】回答「锚点对照为什么没做」时查出一条**真缺陷**：

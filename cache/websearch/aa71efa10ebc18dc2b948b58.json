@@ -1,0 +1,61 @@
+{
+  "_ts": 1791592891.8594398,
+  "results": [
+    {
+      "claim": "首页 > 政民互动 > 问答知识库\n\n## Deepseek是什么\n\nDeepSeek 是杭州深度求索人工智能基础技术研究有限公司推出的一系列人工智能产品及相关技术的统称。具体介绍如下：\n\n成立背景：由梁文峰在2023年7月创立，总部位于浙江杭州。\n\n发展历程：2023年11月2日，DeepSeek 发布首个模型 DeepSeek Coder。2023 年 11 月 29 日，发布 DeepSeek-LLM 系列模型。2024 年 9 月发布 DeepSeek-V3模型，2025 年 1 月推出基于 DeepSeek-R1 模型的聊天机器人。\n\nDeepSeek 产品及技术\n\nDeepSeek APP：是一款 AI 助手软件，于 2025 年 1 月 10 日上线苹果 App Store、Google Play 等多个平台。用户可通过 APP 与 DeepSeek 的模型进行互动交流，支持",
+      "url": "https://www.szlh.gov.cn/zmhd/wdzsk/content/post_12009943.html",
+      "source": "https://www.szlh.gov.cn/zmhd/wdzsk/content/post_12009943.html",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "DeepSeek API 文档 Logo\nDeepSeek API 文档 Logo\n\n# 更新日志\n\n## 时间: 2026-09-10​\n\n### DeepSeek-V4.1-Flash 发布​\n\n今天，我们正式发布 DeepSeek-V4.1-Flash 模型。这是我们全新模型结构系列中的最小尺寸的模型，具备原生多模态视觉理解能力。新模型结构的设计初衷是：能力上限更高、推理速度更快、吞吐更大、可扩展到更大参数模型。\n\n\\ 表示仅在 HLE 评测集的纯文本子集上进行了测试。\n\nDeepSeek V4.1 Flash 已同步上线 DeepSeek API，原生支持多模态，将模型名称更改为 `deepseek-flash` 即可调用最新的 V4.1 Flash 模型。旧版本模型 V4 Flash 与 V4 Flash Vision Exp 现已下线，出于兼容考虑，模型名 `deepseek-",
+      "url": "https://api-docs.deepseek.com/zh-cn/updates",
+      "source": "https://api-docs.deepseek.com/zh-cn/updates",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "一群鲸鱼在蓝色海洋中一同游泳，阳光普照\n\nDave Bergmann \n\nSenior Staff Writer, AI Models\n\nIBM Think\n\n2025 年 1 月发布的 DeepSeek-R1 带来了大量报道 DeepSeek 的文章，其中可能会令人困惑的一点是：DeepSeek 深度求索即是一家公司的名称，也是该公司所制作模型的名称，DeepSeek 还是在此类模型上运行的聊天机器人的名称。鉴于报道的数量和人们对 AI 领域发生重大转变所带来的经济影响的兴奋，一般读者可能很难区分事实与猜测和虚构。\n\n下面是一个简单的指南，可帮助您冷静审视有关 DeepSeek 的其他文章，区分信号与噪声，避开炒作和夸张。我们首先将简要介绍 DeepSeek 公司的历史，解释 DeepSeek 每个新模型之间的区别，并展开说明其最有趣的创新（但不涉及太多技术细节）。 [...] 到 20",
+      "url": "https://www.ibm.com/cn-zh/think/topics/deepseek",
+      "source": "https://www.ibm.com/cn-zh/think/topics/deepseek",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "| 發佈日期 | 產品 | 描述 | 參考 | 版本迭代 |\n ---  --- \n| 2023年10月28日 | DeepSeek-Coder | 深度求索的第一個大模型 |  |  |\n| 2023年11月29日 | DeepSeek-LLM |  |  |  |\n| 2023年12月15日 | DreamCraft3D | 3D生成模型 |  |  |\n| 2024年1月11日 | DeepSeek-MoE | 性能超越Llama 2-7B，且計算量降低60% |  |  |\n| 2024年2月5日 | DeepSeekMath | 在競賽級MATH基準測試中取得了51.7%的優異成績，且未依賴外部工具包和投票技術，接近Gemini \"Gemini (语言模型)\")-Ultra和GPT-4的性能水平 |  |  |\n| 2024年3月11日 | DeepSeek-VL | 开源MoE",
+      "url": "https://zh.wikipedia.org/wiki/%E6%B7%B1%E5%BA%A6%E6%B1%82%E7%B4%A2",
+      "source": "https://zh.wikipedia.org/wiki/%E6%B7%B1%E5%BA%A6%E6%B1%82%E7%B4%A2",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "为什么我们确信 DeepSeek v4 将成为下一个行业颠覆者？因为它解决了行业最大的痛点：AI 需要记忆并理解项目的逻辑。\n\n📣 更新 — 2026 年 4 月 24 日： DeepSeek-V4 已正式发布。阅读我们关于其实际发布内容的全面报道，包括全新的稀疏注意力架构、1M token 上下文以及 Agent 基准测试结果 —— 请访问 DeepSeek-V4 预览版发布。\n\n## 技术深度解析：关键特性\n\n为了挑战 Claude Opus 4.5，DeepSeek 对模型进行了彻底的重构。泄露的论文显示，该模型在处理内存和逻辑稳定性方面发生了根本性转变。让我们深入了解此次更新的四大支柱。\n\n### 架构：卓越的逻辑推理\n\n流形约束超连接 (mHC)\n\nimage (25).png\n\nimage (25).png\n\n### 效率：更低的推理成本\n\n混合专家模型 (MoE) 2.0\n\n",
+      "url": "https://www.atlascloud.ai/zh/blog/ai-updates/what-is-deepseek-v4",
+      "source": "https://www.atlascloud.ai/zh/blog/ai-updates/what-is-deepseek-v4",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "DeepSeek API 文档 Logo\nDeepSeek API 文档 Logo\n\n# DeepSeek V3.2 正式版：强化 Agent 能力，融入思考推理\n\n两个月前，我们发布了实验性的 DeepSeek-V3.2-Exp，并收到了众多热心用户反馈的对比测试结果。目前未发现 V3.2-Exp 在任何特定场景中显著差于 V3.1-Terminus，这验证了 DSA 稀疏注意力机制的有效性。也感谢广大用户一直以来的积极反馈与支持，为我们的持续创新注入了更多信心与动力。\n\n今天，我们同时发布两个正式版模型：DeepSeek-V3.2 和 DeepSeek-V3.2-Speciale。官方网页端、App 和 API 均已更新为正式版 DeepSeek-V3.2，欢迎使用。Speciale 版本目前仅以临时 API 服务形式开放，以供社区评测与研究。\n\n新模型技术报告已同步发布：\n\n# 推理",
+      "url": "https://api-docs.deepseek.com/zh-cn/news/news251201",
+      "source": "https://api-docs.deepseek.com/zh-cn/news/news251201",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "DeepSeek API 文档 Logo\nDeepSeek API 文档 Logo\n\n# DeepSeek V4.1 Flash：更强、更快、更普惠\n\n今天，我们正式发布 DeepSeek V4.1 Flash 模型。这是我们全新模型结构系列中的最小尺寸的模型，具备原生多模态视觉理解能力。新模型结构的设计初衷是：能力上限更高、推理速度更快、吞吐更大、可扩展到更大参数模型。\n\n## 非对称模型结构，小成本大智能​\n\nDeepSeek V4.1 Flash 为 552B 参数的 MoE 模型，采用了全新的 Causal-Encoder-Decoder 结构，输入和输出不对称，输入激活只有 8B，输出激活 16B，成本显著低于已知的同尺寸模型。同时，V4.1 Flash 还采用了新的预训练方式、经过了更大规模的强化学习后训练，在基准测试中，成功超越了包括 DeepSeek V4 Pro 在内的一",
+      "url": "https://api-docs.deepseek.com/zh-cn/news/news260910",
+      "source": "https://api-docs.deepseek.com/zh-cn/news/news260910",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "HTTP 请求地址为`POST \n\nSDK 调用配置的`base_url`：`dashscope.base_http_api_url = \"\n\n## 快速开始\n\ndeepseek-v4-pro-0813 是 DeepSeek 系列旗舰模型，在编程、数学和通用任务方面表现出色。deepseek-v4-flash-0731 是Flash系列最新版本。您可以通过`enable_thinking`参数在思考与非思考模式之间切换。以下示例以 deepseek-v4-pro 模型为例展示思考模式的调用方式，您可以将 model 参数替换为其他 DeepSeek 模型。\n\n需要已获取与配置 API Key并完成配置API Key到环境变量。如果通过SDK调用，需要安装 OpenAI 或 DashScope SDK。\n\n#### OpenAI兼容 [...] AI 助理文档备案控制台\n\n首页   大模型服",
+      "url": "https://help.aliyun.com/zh/model-studio/deepseek-api",
+      "source": "https://help.aliyun.com/zh/model-studio/deepseek-api",
+      "kind": "web",
+      "tier": 3
+    }
+  ]
+}

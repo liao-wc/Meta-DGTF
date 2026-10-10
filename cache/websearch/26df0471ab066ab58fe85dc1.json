@@ -1,0 +1,61 @@
+{
+  "_ts": 1791570403.2915194,
+  "results": [
+    {
+      "claim": "提出全新推理范式：首次提出逆向推理机制（REER），突破传统“正向构建推理”的局限，从“已知高质量输出”反向推导潜在的、 step-by-step 的深度推理轨迹，",
+      "url": "https://zhuanlan.zhihu.com/p/1948848652907938167",
+      "source": "https://zhuanlan.zhihu.com/p/1948848652907938167",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "其他人都在看\n\n###  开源语言大模型的正确姿势  为什么开源大模型终将胜出  OpenAI规模经济与第二护城河  全面对比GPT-3.5与LLaMA 2微调  开源语言大模型演进史：早期革新  为什么GPT-3.5比LLaMA 2更便宜  LLVM之父:我的AI基础设施软件构建理念\n\n### 试用OneFlow: github.com/Oneflow-Inc/oneflow/\n\n内容中包含的图片若涉及版权问题，请及时与我们联系删除\n\n点赞   收藏   评论 分享到Link  \n\n举报反馈\n\n 样式问题\n 涉嫌广告\n 内容抄袭\n 内容侵权\n 政治相关\n 内容涉黄\n 其他\n\n### 评论列表\n\n### 评论\n\n登录后可提问交流\n\n沙发等你来抢\n\n跳过 [...] 表3展示了在1024个词元的序列长度的不同批大小下计算的GQA KV缓存大小。相比之下，LLaMA2模型（70B）的参数大小为",
+      "url": "https://hub.baai.ac.cn/view/31950",
+      "source": "https://hub.baai.ac.cn/view/31950",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "泛化曲线可以帮助您检测可能出现的过拟合。例如，以下泛化曲线表明出现过拟合，因为验证损失最终明显高于训练损失。\n\n直角坐标图，其中 y 轴标记为“损失”，x 轴标记为“迭代次数”。系统会显示两个图。一个图显示的是训练损失，另一个图显示的是验证损失。\n          这两个图刚开始相似，但训练损失最终会下降，远低于验证损失。\n\n直角坐标图，其中 y 轴标记为“损失”，x 轴标记为“迭代次数”。系统会显示两个图。一个图显示的是训练损失，另一个图显示的是验证损失。\n          这两个图刚开始相似，但训练损失最终会下降，远低于验证损失。\n\n如需了解详情，请参阅机器学习速成课程中的泛化。\n\n## 梯度下降法\n\n一种用于最大限度减少损失的数学技术。梯度下降法以迭代方式调整权重和偏差，逐渐找到可将损失降至最低的最佳组合。\n\n梯度下降法比机器学习早得多。\n\n如需了解详情，请参阅机器学习速成课程中",
+      "url": "https://developers.google.com/machine-learning/glossary/fundamentals?hl=zh-cn",
+      "source": "https://developers.google.com/machine-learning/glossary/fundamentals?hl=zh-cn",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "(3) 在实际中，与其在上述梯度中计算完整期望，不如采用随机梯度下降优化损失函 数，这在计算上更加高效。如果在每个时间步之后更新权重，并将期望替换为分 别来自行为分布ρ 与模拟器E 的单一样本，那么就得到熟知的Q-learning 算法26: θi+1 = θi −α∇θiLi(θi) = θi + 2α h\u0000r + γ max a′ Q(s′, a′; θi−1) −Q(s, a; θi) \u0001 ∇θiQ(s, a; θi) i , 即和环境交互一条轨迹，得到一个样本(s, a, r, s′), 用这个样本近似期望：y = r + γ maxa′ Q(s′, a′; θ−) 这里θ−是固定的旧参数。更新当前Q 网络，让Q(s, a; θ) 更接 近目标y。 需要注意的是，该算法是无模型(model-free) 的：它直接使用来自模拟器E 的 样本来解决强化学习问题，而无需显式构建E 的估计",
+      "url": "https://ai.nankai.edu.cn/bijiRL-I.pdf",
+      "source": "https://ai.nankai.edu.cn/bijiRL-I.pdf",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "## Keywords\n\n超高效液相色谱-高分辨质谱, 代谢组学, 渗透压, 归一化, 尿液, ultra performance liquid chromatography-high resolution mass spectrometry (UPLC-HRMS), metabolomics, osmolality, normalization, urine\n\n代谢组学(metabolomics)是通过对某一生物或细胞内所有相对分子质量较低(<1000)的代谢物质进行定性和定量分析,进而将内外因素作用下产生的代谢物质的动态变化与生理病理相关联的学科。作为系统生物学的最下游,代谢组学反映了生物体受到各种内外环境扰动后的实际状态和不同个体之间的表型差异。超高效液相色谱-高分辨质谱技术(UPLC-HRMS)具有灵敏度高、分析通量大、覆盖范围广的优势,是代谢组学采用的主要技术之一。代谢组学在生物",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9404146",
+      "source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9404146",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "iF 数字输入功能设置： (EA/bA/do/dF/Au/Hc) EA= 一般报警： “EA”符号会显示； bA= 严 重报警 “CA” 符号会显示； do=门开关报警功能；dF=激活一次融霜；Au =空着不 用； Hc=工作类型转换； di 数字输入报警延时： (0～99 分钟) 当iF=EA 或bA 时，是指从检测有报警到报警信 号输出间的延时。当 iF=do 时，则指从门开报警发生到确认报警间的延时。 dC 门开时压缩机和蒸发器风扇的状态： (no/Fn/cP/Fc)：no= 维持原来状态不变； Fn = 仅风扇关闭； cP =仅压缩机关闭； Fc =风扇压缩机都关闭。 rd 门开时的调节控制： (n/y) n =门开时无自动调节控制； y=门开时自动调节控制重 新启动； 其他参数 d1 库温探头读数（只读） d2 蒸发器探头读数（只读） Pt 参数表代码（只读） rL 软件版本（只",
+      "url": "https://webapps.copeland.com/Dixell/Content/Pages/Manuals/E-CLASS/XR06CX/XR06CX-CN.pdf",
+      "source": "https://webapps.copeland.com/Dixell/Content/Pages/Manuals/E-CLASS/XR06CX/XR06CX-CN.pdf",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "## 设置\n\n### 语速\n\n### 切换主题\n\n## 翻译类型\n\n# 文本翻译\n\n## 原文\n\n## 翻译结果\n\n# 文档翻译\n\n## 拖放\n\nGoogle Cloud 徽标\n\n# 网站翻译\n\n请输入网址\n\n# 图片翻译\n\n## 拖放\n\n## 侧边栏\n\n# 已保存\n\n# 历史记录",
+      "url": "https://translate.google.com?hl=zh-CN&langpair=en%7Cda%2F1000",
+      "source": "https://translate.google.com?hl=zh-CN&langpair=en%7Cda%2F1000",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "Document 校园招聘共0个职位",
+      "url": "https://portal-oss.zhiye.com/612672/resource/a02c5dd5-a126-4fd2-9a3e-b3b0e9c64ab3.html",
+      "source": "https://portal-oss.zhiye.com/612672/resource/a02c5dd5-a126-4fd2-9a3e-b3b0e9c64ab3.html",
+      "kind": "web",
+      "tier": 3
+    }
+  ]
+}
