@@ -99,24 +99,27 @@ h1,h2,h3,.task-q,.item .t,.md p{text-wrap:pretty}
 .dot.no{background:var(--err);box-shadow:0 0 0 3px rgba(248,81,73,.12)}
 
 /* ── 布局 ─────────────────────────────────────────────────────── */
-main{max-width:920px;margin:0 auto;padding:28px 22px 64px}
+main{max-width:1260px;margin:0 auto;padding:20px 14px 18px}
 .view{display:none}
 .view.active{display:block;animation:rise .35s var(--ease) both}
+/* 运行台：撑满视口，输入框靠底部（margin-top:auto 兜住中间的空） */
+#view-run.view.active{display:flex;flex-direction:column;min-height:calc(100vh - 126px)}
 @keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
 /* ── 运行台 ───────────────────────────────────────────────────── */
+/* 输入框：上下来收紧、左右尽量宽 */
 .composer{
   background:var(--s1);border:1px solid var(--hair);border-radius:var(--r-md);
-  padding:16px 16px 14px;box-shadow:var(--shadow);
+  margin-top:auto;padding:8px 10px 7px;box-shadow:var(--shadow);
   transition:border-color var(--dur) var(--ease);
 }
 .composer:focus-within{border-color:var(--hair-2)}
 textarea#question{
   width:100%;background:transparent;color:var(--t1);border:0;outline:none;resize:vertical;
-  font-size:15px;line-height:1.6;padding:2px 2px 10px;min-height:56px;
+  font-size:15px;line-height:1.5;padding:2px 2px 6px;min-height:34px;
 }
 textarea#question::placeholder{color:var(--t3)}
-.composer-actions{display:flex;align-items:center;gap:16px;padding-top:12px;border-top:1px solid var(--hair)}
+.composer-actions{display:flex;align-items:center;gap:16px;padding-top:8px;border-top:1px solid var(--hair)}
 
 /* 自绘 toggle */
 .mock-toggle{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--t2);cursor:pointer;user-select:none}
@@ -161,6 +164,22 @@ kbd{font-family:var(--f-mono);font-size:10.5px;line-height:1;color:var(--t2);
 .advanced[open] summary::before{transform:rotate(45deg)}
 .advanced summary:hover{color:var(--t1)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:12px;margin-top:14px}
+
+/* yaml 配置面板（按组折叠，展开后可滚） */
+.advanced{max-height:48vh;overflow:auto}
+.cfg-group{border-top:1px solid var(--hair);margin-top:10px;padding-top:8px}
+.cfg-group summary{cursor:pointer;color:var(--t3);font-size:12px;list-style:none;
+  display:flex;align-items:center;gap:7px}
+.cfg-group summary::-webkit-details-marker{display:none}
+.cfg-group summary::before{content:"";width:5px;height:5px;border-right:1.5px solid currentColor;
+  border-bottom:1.5px solid currentColor;transform:rotate(-45deg);
+  transition:transform var(--dur) var(--ease)}
+.cfg-group[open] summary::before{transform:rotate(45deg)}
+.cfg-group summary:hover{color:var(--t1)}
+.grid select{background:var(--ground);border:1px solid var(--hair);color:var(--t1);
+  border-radius:var(--r-sm);padding:7px 8px;font-size:12.5px;outline:none;font-family:var(--f-mono)}
+.grid label.pinned{color:var(--t1)}
+.grid label.pinned input,.grid label.pinned select{border-color:var(--hair-2)}
 .grid label{display:flex;flex-direction:column;gap:6px;font-size:11.5px;color:var(--t3);
   letter-spacing:.02em}
 .grid input{background:var(--ground);border:1px solid var(--hair);color:var(--t1);
@@ -187,10 +206,15 @@ kbd{font-family:var(--f-mono);font-size:10.5px;line-height:1;color:var(--t2);
    ★ 四卡**等高**：日志区给固定高度（不是 max-height）—— 否则「静默等待」的空卡
      只有一行，四张卡高低不齐。头/脚本来就同高，固定日志区后整卡一致。
    还没轮到的层用虚线 + 灰字区分。 */
-.lane{aspect-ratio:1 / 1;display:flex;flex-direction:column;min-width:0}
+.lane{display:flex;flex-direction:column;min-width:0;height:100%}  /* 高度由网格撑满，不再锁正方形 */
 .lane .lane-body{flex:1 1 auto;height:auto;min-height:0}
 .lane.idle{border-style:dashed}
 .lane.idle .lane-body{color:var(--t3)}
+/* 每张卡自己的读数（起始 / 该层 token）与产物入口 */
+.lane .lane-meta{font-family:var(--f-mono);font-size:10.5px;color:var(--t3);white-space:nowrap}
+.lane .lane-files{margin-left:auto;display:inline-flex;gap:9px}
+.lane .lane-files a{font-family:var(--f-mono);font-size:10.5px;color:var(--t3);text-decoration:none}
+.lane .lane-files a:hover{color:var(--accent)}
 @media (max-width:900px){ .tasks{grid-template-columns:repeat(2,1fr)} }
 
 /* ── 运行状态条（起始时间 / 已跑 / token / 花费）───────────────── */
@@ -201,7 +225,8 @@ kbd{font-family:var(--f-mono);font-size:10.5px;line-height:1;color:var(--t2);
 .run-meta .sep{color:var(--t3)}
 
 /* ── 任务卡 ───────────────────────────────────────────────────── */
-.tasks{margin-top:20px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.tasks{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;
+  flex:1 1 auto;min-height:0;margin-bottom:14px}   /* 撑满中间，上贴页面、下贴输入框 */
 .task{background:var(--s1);border:1px solid var(--hair);border-radius:var(--r-md);
   overflow:hidden;box-shadow:var(--shadow);animation:rise .35s var(--ease) both}
 .task-head{display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--hair)}
@@ -262,6 +287,17 @@ select:focus{border-color:var(--accent)}
 
 .muted{color:var(--t3)}
 #lib-count{font-size:12px;font-family:var(--f-mono);margin-bottom:10px;letter-spacing:.01em}
+
+/* 视图说明行 · 行内码 · 导入条 */
+.hint{font-size:12.5px;color:var(--t3);line-height:1.6;margin-bottom:12px}
+.hint strong{color:var(--t2)}
+.import-bar{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.import-bar input[type=file]{display:none}
+.import-bar .chk{cursor:pointer;background:var(--s2);border-color:var(--hair-2)}
+.item .del{color:var(--t3);text-decoration:none}
+.item .del:hover{color:var(--err)}
+.hint code{background:var(--s2);color:var(--code);padding:1px 6px;border-radius:4px;
+  font-size:12px;font-family:var(--f-mono)}
 
 /* 列表（不是卡片堆叠：一整块 + hairline 分隔行） */
 .lib-list{background:var(--s1);border:1px solid var(--hair);border-radius:var(--r-md);

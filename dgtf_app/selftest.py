@@ -71,6 +71,36 @@ def main() -> int:
     check("facets 含四个维度",
           set(fc.keys()) == {"decidability", "orientation", "parallel", "stop"})
 
+    s, lo = _get(base, "/api/library/local")
+    check("本地资料库接口可用（导入列表 + 锚点候选）",
+          s == 200 and isinstance(lo.get("items"), list)
+          and isinstance(lo.get("candidates"), list),
+          f"导入 {len(lo.get('items') or [])} / 候选 {len(lo.get('candidates') or [])}")
+    s, wb = _get(base, "/api/library/web")
+    check("联网检索库接口可用（历史命中汇总）",
+          s == 200 and isinstance(wb.get("items"), list),
+          f"{len(wb.get('items') or [])} 份产物")
+    if wb.get("items"):
+        _w = wb["items"][0]
+        check("联网读数解析出了条数/环节",
+              "收" in (_w.get("detail") or ""),
+              (_w.get("detail") or "")[:46])
+
+    # 本地资料库：导入 → 出现在列表 → 删除（用后即清，不留痕迹）
+    _s, _imp = _post(base, "/api/library/import",
+                     {"files": [{"name": "_selftest_anchor.md",
+                                 "content": "自检用锚点内容"}]})
+    check("本地资料库可导入文件",
+          _s == 200 and _imp.get("saved") == ["_selftest_anchor.md"],
+          str(_imp.get("saved")))
+    _s, _lo2 = _get(base, "/api/library/local")
+    check("导入后进了列表、锚点快照跟着重建",
+          any(i["name"] == "_selftest_anchor.md" for i in (_lo2.get("items") or []))
+          and _lo2.get("anchor_items", 0) >= 1,
+          f"锚点 {_lo2.get('anchor_items')} 条")
+    _s, _dl = _post(base, "/api/library/delete", {"name": "_selftest_anchor.md"})
+    check("本地资料库可删除导入", _s == 200 and bool(_dl.get("ok")), str(_dl))
+
     s, t = _post(base, "/api/tasks", {"question": "应用端到端自检 mock", "opts": {"mock": True}})
     check("创建任务返回 id", s == 201 and bool(t.get("id")), str(t.get("id")))
     tid = t["id"]
@@ -108,9 +138,15 @@ def main() -> int:
           f"calls={_tok.get('calls')} tokens={_tok.get('tokens')}")
     check("[tok] 读数行不进卡片日志",
           "[tok]" not in "".join(lyr["layers"].values()))
-    check("信息条数据齐（起始时间 + 余额字段）",
-          lyr.get("started_at") is not None and "balance" in lyr,
-          f"started_at={lyr.get('started_at')}")
+    _sx = (lyr.get("stats") or {}).get("修行") or {}
+    check("每层带自己的起始时间与 token 消耗",
+          _sx.get("since") is not None and _sx.get("tokens", 0) > 0,
+          f"since={_sx.get('since')} tokens={_sx.get('tokens')}")
+    _sum = sum(((lyr.get("stats") or {}).get(n) or {}).get("tokens", 0)
+               for n in ("修行", "研究", "对撞", "元"))
+    check("四层 token 之和 ≤ 全局读数",
+          _sum <= (lyr.get("tok") or {}).get("tokens", 0) + 1,
+          f"层和={_sum} 全局={(lyr.get('tok') or {}).get('tokens')}")
     check("跑完后日志已折叠留痕/全文框",
           folded > 0 and "留痕" not in text and "【ing 全文】" not in text
           and "【view 全文】" not in text and "不应出现在后台" not in text,

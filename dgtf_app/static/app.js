@@ -28,9 +28,39 @@ const ADV = [
   ['keep',        'keep（保留名单）',            '逗号分隔'],
 ];
 
-function buildAdv() {
-  $('#adv-grid').innerHTML = ADV.map(([k, label, ph]) =>
+/* yaml 配置面板：`/api/params` 把 dgtf_config.yaml 摊平后按组渲染。
+   改动不写回原文件 —— 启动时生成一份临时 config 用 --config 传给引擎。 */
+async function buildAdv() {
+  let groups = [];
+  try {
+    const r = await api('/api/params');
+    groups = r.groups || [];
+  } catch (_) { /* 忽略 */ }
+  const cli = ADV.map(([k, label, ph]) =>
     `<label>${label}<input data-adv="${k}" placeholder="${ph}"></label>`).join('');
+  const cfg = groups.map(g => {
+    const items = g.items.map(it => {
+      const v = it.value == null ? '' : String(it.value);
+      let field;
+      if (it.type === 'select') {
+        field = `<select data-cfg="${esc(it.key)}">` + (it.options || []).map(o =>
+          `<option value="${esc(o)}"${String(o) === v ? ' selected' : ''}>${esc(o)}</option>`).join('') + `</select>`;
+      } else if (it.type === 'bool') {
+        const on = (v === 'True' || v === 'true');
+        field = `<select data-cfg="${esc(it.key)}">`
+          + `<option value="true"${on ? ' selected' : ''}>true</option>`
+          + `<option value="false"${on ? '' : ' selected'}>false</option></select>`;
+      } else {
+        field = `<input data-cfg="${esc(it.key)}" value="${esc(v)}">`;
+      }
+      return `<label${it.pinned ? ' class="pinned"' : ''}>${esc(it.key)}${field}</label>`;
+    }).join('');
+    return `<details class="cfg-group"><summary>${esc(g.label)}（${g.items.length}）</summary>
+      <div class="grid">${items}</div></details>`;
+  }).join('');
+  $('#adv-grid').innerHTML =
+    `<details class="cfg-group" open><summary>CLI 参数（随任务传）</summary>
+       <div class="grid">${cli}</div></details>` + cfg;
 }
 
 function collectOpts() {
@@ -39,6 +69,15 @@ function collectOpts() {
     const v = el.value.trim();
     if (v) opts[el.dataset.adv] = v;
   });
+  const ov = {};
+  document.querySelectorAll('[data-cfg]').forEach(el => {
+    let v = el.value;
+    if (v === 'true') v = true;
+    else if (v === 'false') v = false;
+    else if (/^-?\d+(\.\d+)?$/.test(v)) v = Number(v);
+    ov[el.dataset.cfg] = v;
+  });
+  if (Object.keys(ov).length) opts.overrides = ov;   // → 后端生成临时 config
   if ($('#mock').checked) opts.mock = true;
   return opts;
 }
@@ -65,43 +104,65 @@ function fmtTime(ts) {
 const LANE_NAMES = ['修行', '研究', '对撞', '元'];
 const lanes = { tid: null, text: {}, stats: {}, meta: {} };
 
+/* 四张层卡。★ 增量更新：同一任务下**复用已有 DOM**，只改文本 ——
+   早前整块 innerHTML 重建会让卡片每 1.5s 抖一次（滚动位置也被拉到底）。 */
 function renderTasks() {
   const box = $('#tasks');
   if (!box) return;
   const ids = Object.keys(taskData);
   const empty = $('#tasks-empty');
   if (empty) empty.style.display = ids.length ? 'none' : 'block';
-  if (!ids.length) { box.innerHTML = ''; return; }
+  if (!ids.length) {
+    if (box.dataset.tid) { box.innerHTML = ''; box.dataset.tid = ''; }
+    return;
+  }
   const tid = ids.sort((a, b) => taskData[b].created_at - taskData[a].created_at)[0];
   const t = taskData[tid] || {};
   const running = t.status === 'running' || t.status === 'queued';
   const stamp = (t.output_name && t.output_name.endsWith('.md'))
     ? t.output_name.slice(0, -3) : '';
+  const reusable = box.dataset.tid === tid && box.children.length === LANE_NAMES.length;
 
-  box.innerHTML = LANE_NAMES.map(n => {
+  LANE_NAMES.forEach((n, i) => {
     const body = (lanes.text && lanes.text[n]) || '';
     const has = body.trim().length > 0;
     const st = (lanes.stats && lanes.stats[n]) || {};
-    let head;
-    if (!has) head = `<span class="badge">静默等待</span>`;
-    else if (running) head = `<span class="badge running">第 ${st.round || 1}/${st.rounds_cap || '?'} 圈</span>`;
-    else head = `<span class="badge done">共 ${st.round || 1} 圈</span>`;
-    const files = (t.layer_artifacts || []).includes(n) && stamp
-      ? `<span class="chip packed">产物</span>`
-        + `<a href="#" data-archive="${esc(stamp + '.' + n + '.md')}">md</a>`
-        + `<a href="#" data-archive="${esc(stamp + '.' + n + '.run.log')}">运行日志</a>`
-        + `<a href="#" data-archive="${esc(stamp + '.' + n + '.json')}">json</a>`
-      : `<span class="muted">${has ? '该层运行中…' : '有运行到才显示'}</span>`;
-    return `<div class="task lane${has ? '' : ' idle'}">
-      <div class="task-head">
-        <span class="task-q">${n}层</span>
-        ${head}
-      </div>
-      <pre class="log lane-body">${has ? esc(body) : '静默等待…'}</pre>
-      <div class="task-foot">${files}</div>
-    </div>`;
-  }).join('');
-  box.querySelectorAll('.lane-body').forEach(el => { el.scrollTop = el.scrollHeight; });
+    let card = reusable ? box.children[i] : null;
+    if (!card) {
+      card = document.createElement('div');
+      card.className = 'task lane';
+      card.innerHTML = '<div class="task-head"><span class="task-q"></span>'
+        + '<span class="lane-badge"></span></div>'
+        + '<pre class="log lane-body"></pre>'
+        + '<div class="task-foot"><span class="lane-meta"></span>'
+        + '<span class="lane-files"></span></div>';
+      box.appendChild(card);
+    }
+    card.classList.toggle('idle', !has);
+    card.querySelector('.task-q').textContent = n + '层';
+    card.querySelector('.lane-badge').innerHTML = !has
+      ? '<span class="badge">静默等待</span>'
+      : (running
+        ? `<span class="badge running">第 ${st.round || 1}/${st.rounds_cap || '?'} 圈</span>`
+        : `<span class="badge done">共 ${st.round || 1} 圈</span>`);
+    const el = card.querySelector('.lane-body');
+    const want = has ? body : '静默等待…';
+    if (el.textContent !== want) {
+      const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 24;
+      el.textContent = want;
+      if (atBottom) el.scrollTop = el.scrollHeight;   // 只在原本贴底时跟着到底
+    }
+    card.querySelector('.lane-meta').textContent = (has && st.since)
+      ? `${new Date(st.since * 1000).toLocaleTimeString('zh-CN', { hour12: false })} 起 · ${(st.tokens || 0).toLocaleString()} tok`
+      : '';
+    card.querySelector('.lane-files').innerHTML =
+      ((t.layer_artifacts || []).includes(n) && stamp)
+        ? `<a href="#" data-archive="${esc(stamp + '.' + n + '.md')}">md</a>`
+          + `<a href="#" data-archive="${esc(stamp + '.' + n + '.run.log')}">日志</a>`
+          + `<a href="#" data-archive="${esc(stamp + '.' + n + '.json')}">json</a>`
+        : '';
+  });
+  box.dataset.tid = tid;
 }
 
 /* 运行状态条：起始时间 / 已跑时长 / 实时 token / 累计花费 */
@@ -259,6 +320,98 @@ async function loadLib() {
   } catch (e) { $('#lib-list').innerHTML = `<div class="muted">出错：${esc(e.message)}</div>`; }
 }
 
+/* ── 本地资料库（导入本地文件 → 外部证据锚点）────────────────── */
+async function loadLocal() {
+  $('#local-list').innerHTML = '<div class="muted">读取中…</div>';
+  try {
+    const r = await api('/api/library/local');
+    const items = r.items || [];
+    $('#local-count').textContent =
+      `已导入 ${items.length} 个资料 · 合并快照 ${r.anchor_file}（${r.anchor_items} 条锚点）`;
+    $('#local-list').innerHTML = items.map(it =>
+      `<div class="item" data-local="${esc(it.name)}">
+        <div class="t">${esc(it.name)}</div>
+        <div class="m">
+          <span class="num">${(it.size / 1024).toFixed(1)} KB</span>
+          <span class="num">${new Date(it.mtime * 1000).toLocaleString('zh-CN')}</span>
+          <a href="#" class="del" data-del="${esc(it.name)}">删除</a>
+        </div>
+      </div>`).join('') || '<div class="muted empty">还没导入任何资料。上面「选择文件导入」即可。</div>';
+    const cands = r.candidates || [];
+    $('#local-cand-hint').textContent = `另有 ${cands.length} 个现成的锚点快照 JSON（只读，供参考）：`;
+    $('#local-cand').innerHTML = cands.map(c =>
+      `<div class="item" data-local="${esc(c.name)}">
+        <div class="t">${esc(c.name)}</div>
+        <div class="m"><span class="num">${esc(c.path)}</span>
+          <span>${c.items ? c.items + ' 条锚点' : '（名字带 anchor）'}</span></div>
+      </div>`).join('') || '<div class="muted empty">无</div>';
+  } catch (e) {
+    $('#local-list').innerHTML = `<div class="muted">出错：${esc(e.message)}</div>`;
+  }
+}
+
+async function importFiles(fileList) {
+  const files = [];
+  for (const f of fileList) files.push({ name: f.name, content: await f.text() });
+  if (!files.length) return;
+  $('#import-msg').textContent = `导入中（${files.length} 个）…`;
+  try {
+    const r = await api('/api/library/import', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ files }),
+    });
+    $('#import-msg').textContent = `已导入 ${r.saved.length} 个`;
+    await loadLocal();
+  } catch (e) {
+    $('#import-msg').textContent = '导入失败：' + e.message;
+  }
+}
+
+async function openLocal(name) {
+  $('#detail').classList.remove('hidden');
+  $('#detail-title').textContent = name;
+  $('#detail-body').innerHTML = '<div class="muted">加载中…</div>';
+  try {
+    const { body } = await api('/api/library/local/' + encodeURIComponent(name));
+    const clip = body.length > 300000;
+    $('#detail-body').innerHTML =
+      (clip ? '<p class="muted">（文件较大，仅示前 300 KB）</p>' : '')
+      + '<pre>' + esc(clip ? body.slice(0, 300000) : body) + '</pre>';
+  } catch (e) {
+    $('#detail-body').innerHTML = `<div class="muted">出错：${esc(e.message)}</div>`;
+  }
+}
+
+/* ── 联网检索库：命中条目（内容 + 链接）+ 历次跑圈读数 ───────── */
+async function loadWeb() {
+  $('#web-list').innerHTML = '<div class="muted">读取中…</div>';
+  try {
+    const r = await api('/api/library/web');
+    const hits = r.hits || [];
+    const items = r.items || [];
+    $('#web-count').textContent =
+      `命中条目 ${hits.length} 条 · 带联网读数的产物 ${items.length} 份`;
+    if (!hits.length) {
+      $('#web-list').innerHTML =
+        '<div class="muted empty">还没有命中条目（引擎 v1.23.22 起才会把命中落盘）。</div>';
+      return;
+    }
+    $('#web-list').innerHTML = hits.map(h =>
+      `<div class="item">
+        <div class="t">${esc(h.claim || '（无内容）')}</div>
+        <div class="m">
+          <span class="chip">${esc(h.kind || 'web')}</span>
+          ${h.tier != null ? `<span class="num">tier ${esc(String(h.tier))}</span>` : ''}
+          ${h.query ? `<span>检索：${esc(String(h.query).slice(0, 40))}</span>` : ''}
+          ${h.ts ? `<span class="num">${new Date(h.ts * 1000).toLocaleString('zh-CN')}</span>` : ''}
+          ${h.url ? `<a href="${esc(h.url)}" target="_blank" rel="noreferrer">打开链接</a>` : ''}
+        </div>
+      </div>`).join('');
+  } catch (e) {
+    $('#web-list').innerHTML = `<div class="muted">出错：${esc(e.message)}</div>`;
+  }
+}
+
 async function loadFacets() {
   try {
     const f = await api('/api/outputs/facets');
@@ -386,6 +539,11 @@ function init() {
   loadLib();
 
   $('#run-btn').addEventListener('click', startRun);
+  $('#anchor-file').addEventListener('change', e => {
+    const fs = e.target.files;
+    e.target.value = '';
+    if (fs && fs.length) importFiles(fs);
+  });
   $('#lib-search').addEventListener('click', loadLib);
   $('#lib-q').addEventListener('keydown', e => { if (e.key === 'Enter') loadLib(); });
   $('#lib-body').addEventListener('change', loadLib);
@@ -397,6 +555,8 @@ function init() {
     document.querySelectorAll('.view').forEach(v =>
       v.classList.toggle('active', v.id === 'view-' + tb.dataset.view));
     if (tb.dataset.view === 'lib') { loadFacets(); loadLib(); }
+    if (tb.dataset.view === 'local') loadLocal();
+    if (tb.dataset.view === 'web') loadWeb();
   }));
 
   document.body.addEventListener('click', async (e) => {
@@ -413,6 +573,20 @@ function init() {
       renderTasks();
       return;
     }
+    const del = e.target.closest('[data-del]');
+    if (del) {
+      e.preventDefault();
+      const n = del.dataset.del;
+      if (confirm('删除导入的资料「' + n + '」？')) {
+        api('/api/library/delete', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: n }),
+        }).then(() => loadLocal()).catch(err => alert('删除失败：' + err.message));
+      }
+      return;
+    }
+    const loc = e.target.closest('.item[data-local]');
+    if (loc) { openLocal(loc.dataset.local); return; }
     const item = e.target.closest('.item[data-name]');
     if (item) { openDetail(item.dataset.name); return; }
     const cancel = e.target.closest('[data-cancel]');

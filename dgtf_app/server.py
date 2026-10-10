@@ -36,7 +36,9 @@ STATIC_DIR = APP_DIR / "static"
 sys.path.insert(0, str(APP_DIR))
 
 import engine_runner as runner  # noqa: E402
+import library as lib  # noqa: E402
 import outputs_index as oi  # noqa: E402
+import params as prm  # noqa: E402
 
 _FACETS = ("decidability", "orientation", "parallel", "stop")
 
@@ -104,6 +106,9 @@ class Handler(BaseHTTPRequestHandler):
                 "max_concurrent": runner.MAX_CONCURRENT,
             })
 
+        if p == "/api/params":
+            return self._json(prm.load_params())
+
         if p == "/api/tasks":
             return self._json({"tasks": runner.list_tasks()})
 
@@ -162,6 +167,31 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"error": "not found"}, 404)
             return self._json({"name": Path(name).name, "body": body})
 
+        # 本地资料库（导入的资料 → 外部证据锚点）/ 联网检索库
+        if p == "/api/library/local":
+            try:
+                _obj = json.loads(lib.ANCHOR_FILE.read_text(
+                    encoding="utf-8", errors="replace"))
+                _n = lib._anchor_items(_obj)
+            except (OSError, ValueError):
+                _n = 0
+            return self._json({
+                "items": lib.imported_files(),
+                "candidates": lib.local_anchors(),
+                "anchor_file": str(lib.ANCHOR_FILE.relative_to(
+                    lib.PROJECT_ROOT)).replace("\\", "/"),
+                "anchor_items": _n,
+            })
+        if p == "/api/library/web":
+            return self._json({"items": lib.web_results(),
+                               "hits": lib.web_hits()})
+        m = re.match(r"^/api/library/local/(.+)$", p)
+        if m:
+            body = lib.read_local(unquote(m.group(1)))
+            if body is None:
+                return self._json({"error": "not found"}, 404)
+            return self._json({"name": Path(m.group(1)).name, "body": body})
+
         m = re.match(r"^/api/outputs/(.+)$", p)
         if m:
             name = unquote(m.group(1))
@@ -176,6 +206,19 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         u = urlparse(self.path)
         p = u.path
+
+        # 本地资料库：导入 / 删除
+        if p == "/api/library/import":
+            data = self._read_json()
+            files = data.get("files")
+            if not isinstance(files, list) or not files:
+                return self._json({"error": "files 不能为空"}, 400)
+            return self._json(lib.import_files(files))
+
+        if p == "/api/library/delete":
+            data = self._read_json()
+            ok = lib.delete_imported(str(data.get("name") or ""))
+            return self._json({"ok": ok}, 200 if ok else 404)
 
         m = re.match(r"^/api/tasks/([^/]+)/cancel$", p)
         if m:

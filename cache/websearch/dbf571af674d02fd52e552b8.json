@@ -1,0 +1,61 @@
+{
+  "_ts": 1791602180.7200382,
+  "results": [
+    {
+      "claim": "DeepSeek API 文档 Logo\nDeepSeek API 文档 Logo\n\n# 更新日志\n\n## 时间: 2026-09-10​\n\n### DeepSeek-V4.1-Flash 发布​\n\n今天，我们正式发布 DeepSeek-V4.1-Flash 模型。这是我们全新模型结构系列中的最小尺寸的模型，具备原生多模态视觉理解能力。新模型结构的设计初衷是：能力上限更高、推理速度更快、吞吐更大、可扩展到更大参数模型。\n\n\\ 表示仅在 HLE 评测集的纯文本子集上进行了测试。\n\nDeepSeek V4.1 Flash 已同步上线 DeepSeek API，原生支持多模态，将模型名称更改为 `deepseek-flash` 即可调用最新的 V4.1 Flash 模型。旧版本模型 V4 Flash 与 V4 Flash Vision Exp 现已下线，出于兼容考虑，模型名 `deepseek-",
+      "url": "https://api-docs.deepseek.com/zh-cn/updates",
+      "source": "https://api-docs.deepseek.com/zh-cn/updates",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "DeepSeek R1\n\n| 开发者 | 深度求索 |\n| 首次发布 | 2025年1月20日 (2025-01-20) |\n| 当前版本 |  1.0.0（2025年4月9日；稳定版本） 编辑维基数据链接 |\n| 源代码库 \"仓库 (版本控制)\") |  github.com/deepseek-ai/DeepSeek-R1 编辑维基数据链接 |\n| 前任 | DeepSeek-R1-Lite |\n| 继任 | DeepSeek-V3.1 |\n| 类型 |  大型语言模型  基于转换器的生成式预训练模型  基础模型 |\n| 许可协议 | MIT |\n| 网站 | www.deepseek.com |\n\nDeepSeek-R1是深度求索（DeepSeek）于2025年1月20日发布的人工智能大型语言模型，专门适用于数学、编码和逻辑等任务，性能对标OpenAI o1。\n\n## 训练\n\n[编辑]",
+      "url": "https://zh.wikipedia.org/zh-hans/DeepSeek-R1",
+      "source": "https://zh.wikipedia.org/zh-hans/DeepSeek-R1",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "Image 3作者实测发现，DeepSeek在问答中称，当前的版本很可能也不是V4，极有可能是V3系列的最终进化形态，或是V4正式亮相前的终极灰度版。\n\nImage 4\n\n野村证券于2月10日发布报告称，预计2026年2月中旬推出的DeepSeek V4模型，不会重现去年V3发布时引发的全球AI算力需求恐慌。该行认为，V4的核心价值在于通过底层架构创新推动AI应用商业化落地，而非颠覆现有AI价值链。\n\n据测评，新版本在复杂任务处理能力上已对齐Gemini 3 Pro及K2.5等主流闭源模型。野村进一步指出，V4预计将引入mHC与Engram两项创新技术，从算法与工程层面突破算力芯片与内存瓶颈。内部初步测试显示，V4在编程任务中的表现已超越Anthropic Claude及OpenAI GPT系列同代模型。\n\n此次发布的关键意义在于进一步压缩训练与推理成本，为全球大语言模型及AI应用企业缓解",
+      "url": "https://wallstreetcn.com/articles/3765514",
+      "source": "https://wallstreetcn.com/articles/3765514",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "为什么我们确信 DeepSeek v4 将成为下一个行业颠覆者？因为它解决了行业最大的痛点：AI 需要记忆并理解项目的逻辑。\n\n📣 更新 — 2026 年 4 月 24 日： DeepSeek-V4 已正式发布。阅读我们关于其实际发布内容的全面报道，包括全新的稀疏注意力架构、1M token 上下文以及 Agent 基准测试结果 —— 请访问 DeepSeek-V4 预览版发布。\n\n## 技术深度解析：关键特性\n\n为了挑战 Claude Opus 4.5，DeepSeek 对模型进行了彻底的重构。泄露的论文显示，该模型在处理内存和逻辑稳定性方面发生了根本性转变。让我们深入了解此次更新的四大支柱。\n\n### 架构：卓越的逻辑推理\n\n流形约束超连接 (mHC)\n\nimage (25).png\n\nimage (25).png\n\n### 效率：更低的推理成本\n\n混合专家模型 (MoE) 2.0\n\n",
+      "url": "https://www.atlascloud.ai/zh/blog/ai-updates/what-is-deepseek-v4",
+      "source": "https://www.atlascloud.ai/zh/blog/ai-updates/what-is-deepseek-v4",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "一群鲸鱼在蓝色海洋中一同游泳，阳光普照\n\nDave Bergmann \n\nSenior Staff Writer, AI Models\n\nIBM Think\n\n2025 年 1 月发布的 DeepSeek-R1 带来了大量报道 DeepSeek 的文章，其中可能会令人困惑的一点是：DeepSeek 深度求索即是一家公司的名称，也是该公司所制作模型的名称，DeepSeek 还是在此类模型上运行的聊天机器人的名称。鉴于报道的数量和人们对 AI 领域发生重大转变所带来的经济影响的兴奋，一般读者可能很难区分事实与猜测和虚构。\n\n下面是一个简单的指南，可帮助您冷静审视有关 DeepSeek 的其他文章，区分信号与噪声，避开炒作和夸张。我们首先将简要介绍 DeepSeek 公司的历史，解释 DeepSeek 每个新模型之间的区别，并展开说明其最有趣的创新（但不涉及太多技术细节）。 [...] 到 20",
+      "url": "https://www.ibm.com/cn-zh/think/topics/deepseek",
+      "source": "https://www.ibm.com/cn-zh/think/topics/deepseek",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "## API & 模型开源​\n\n### 模型开源​\n\nV3.1的 Base 模型在 V3 的基础上重新做了外扩训练，一共增加训练了 840B tokens。Base 模型与后训练模型均已在 Huggingface 与魔搭开源。\n\nBase 模型：\n\nHugging Face：\n\n魔搭：\n\n后训练模型：\n\nHugging Face：\n\n魔搭：\n\n需要注意的是，DeepSeek-V3.1 使用了 UE8M0 FP8 Scale 的参数精度。另外，V3.1 对分词器及 chat template 进行了较大调整，与 DeepSeek-V3 存在明显差异。建议有部署需求的用户仔细阅读新版说明文档。\n\n### 价格调整​\n\n我们将于北京时间 2025 年 9 月 6 日凌晨起，对 DeepSeek 开放平台 API 接口调用价格进行如下调整：\n\n在 9 月 6 日前，所有 API 服务仍按原价格政策",
+      "url": "https://api-docs.deepseek.com/zh-cn/news/news250821",
+      "source": "https://api-docs.deepseek.com/zh-cn/news/news250821",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "DeepSeek API 文档 Logo\nDeepSeek API 文档 Logo\n\n# DeepSeek V3.2 正式版：强化 Agent 能力，融入思考推理\n\n两个月前，我们发布了实验性的 DeepSeek-V3.2-Exp，并收到了众多热心用户反馈的对比测试结果。目前未发现 V3.2-Exp 在任何特定场景中显著差于 V3.1-Terminus，这验证了 DSA 稀疏注意力机制的有效性。也感谢广大用户一直以来的积极反馈与支持，为我们的持续创新注入了更多信心与动力。\n\n今天，我们同时发布两个正式版模型：DeepSeek-V3.2 和 DeepSeek-V3.2-Speciale。官方网页端、App 和 API 均已更新为正式版 DeepSeek-V3.2，欢迎使用。Speciale 版本目前仅以临时 API 服务形式开放，以供社区评测与研究。\n\n新模型技术报告已同步发布：\n\n# 推理",
+      "url": "https://api-docs.deepseek.com/zh-cn/news/news251201",
+      "source": "https://api-docs.deepseek.com/zh-cn/news/news251201",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "同时，经多方测试，V4.1 Flash 在性能、费用、速度、总用时等各项指标上已全面超越 V4 Pro，因此我们计划有序下线 V4 Pro 模型。北京时间 2026 年 9 月 14 日 12:00 之后，至未来 V4.1 Pro 上线之前，用户访问 `deepseek-v4-pro` 的请求将全部路由到 V4.1 Flash，并按 V4.1 Flash 单价计费。\n\n`deepseek-v4-pro`\n\n腾讯（WorkBuddy、CodeBuddy）和 OpenCode 作为官方合作伙伴，现已全量接入 DeepSeek V4.1 Flash，欢迎使用！\n\n## API 定价调整​\n\n得益于模型架构的创新，DeepSeek V4.1 Flash 能够以更低的成本服务更多的用户，因此我们相应下调了 V4.1 Flash 的定价。同时，为了更合理地调配资源，我们仍然采用峰谷定价，闲时价格为高峰",
+      "url": "https://api-docs.deepseek.com/zh-cn/news/news260910",
+      "source": "https://api-docs.deepseek.com/zh-cn/news/news260910",
+      "kind": "web",
+      "tier": 3
+    }
+  ]
+}

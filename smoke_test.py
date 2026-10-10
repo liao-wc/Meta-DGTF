@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.21.py"
+SRC = HERE / "元DGTF-V1.23.22.py"
 
 os.environ.setdefault("DGTF_API_KEY", "sk-smoke-test-key")
 
@@ -1673,6 +1673,63 @@ def check_v12321_tok_line():
             print("  \u2717 [v12321] %s" % _x)
         return False
     print("  \u2713 [v12321] LLM 调用后打 [tok] 累计行（logging、非 vp）")
+    return True
+
+
+def check_v12322_web_hits_dump():
+    """[v1.23.22] 联网命中必须落盘（JSONL：内容 + 链接）。
+
+    ① `_record_web_hits` 恰好定义 1 次；
+    ② 两条检索通道的成功返回前都调它；
+    ③ 行为：打桩 `_http` 返回一条命中 → `search()` → JSONL 多一行且含 url；
+    ④ 负对照：0 条命中**不写**（不留空行噪声）。
+    """
+    import json as _json
+    import tempfile
+    bad = []
+    src = SRC.read_text(encoding="utf-8").replace("\r\n", "\n")
+    if src.count("def _record_web_hits(") != 1:
+        bad.append("_record_web_hits 定义不是 1 处")
+    for _m in ("def _tavily(", "def _http("):
+        _i = src.find(_m)
+        if _i < 0 or "_record_web_hits(" not in src[_i:_i + 4000]:
+            bad.append("%s 之后没调 _record_web_hits" % _m)
+
+    _tmpdir = Path("_audit_tmp") / "webhits_test"
+    _tmpdir.mkdir(parents=True, exist_ok=True)
+    _tmp = _tmpdir / "hits.jsonl"
+    if _tmp.exists():
+        _tmp.write_text("", encoding="utf-8")  # 清空：本机沙箱会拦 unlink
+    _old = mod._WEB_HITS_PATH
+    mod._WEB_HITS_PATH = str(_tmp)
+    try:
+        # ★ 直接驱动落盘器：`_http` 是「可打桩的缝」，而落盘**就写在它里面** ——
+        #   打桩 _http 会把落盘一起覆盖掉（第一版就这么写错了，落盘 0 行）。
+        mod._record_web_hits("测试查询", [{"claim": "命中内容示例",
+                                          "url": "https://example.com/x",
+                                          "kind": "web", "tier": 3}])
+        _n1 = _tmp.read_text(encoding="utf-8").count("\n") if _tmp.exists() else 0
+        if _n1 != 1:
+            bad.append("落盘行数 = %d（应 1）" % _n1)
+        else:
+            _rec = _json.loads(_tmp.read_text(encoding="utf-8").splitlines()[0])
+            if "example.com" not in str(_rec.get("url", "")):
+                bad.append("落盘条目缺 url")
+            if not _rec.get("query"):
+                bad.append("落盘条目缺 query（没法按检索聚合）")
+        # 负对照：0 条不写（文件有没有都算过 —— 不该多行）
+        mod._record_web_hits("空结果", [])
+        _n2 = _tmp.read_text(encoding="utf-8").count("\n") if _tmp.exists() else 1
+        if _n2 != 1:
+            bad.append("0 条也写了（行数 %d）" % _n2)
+    finally:
+        mod._WEB_HITS_PATH = _old
+
+    if bad:
+        for _x in bad:
+            print("  \u2717 [v12322] %s" % _x)
+        return False
+    print("  \u2713 [v12322] 联网命中落盘 JSONL（内容 + 链接 + query）；0 条不写")
     return True
 
 
@@ -10741,6 +10798,8 @@ def main():
     if not check_v12320_quiet_output():
         return 1
     if not check_v12321_tok_line():
+        return 1
+    if not check_v12322_web_hits_dump():
         return 1
     q = "测试问题：AI 在数字 IC 设计里到底能做什么，哪些已经量产？"
     rows = []

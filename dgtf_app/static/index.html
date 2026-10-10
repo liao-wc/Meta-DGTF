@@ -19,15 +19,20 @@
   <nav class="tabs">
     <button class="tab active" data-view="run">运行台</button>
     <button class="tab" data-view="lib">产物库</button>
+    <button class="tab" data-view="local">本地资料库</button>
+    <button class="tab" data-view="web">联网检索库</button>
   </nav>
   <div class="env" id="env-info"></div>
 </header>
 
 <main>
-  <!-- 运行台 -->
+  <!-- 运行台：任务卡在上，输入框在下 -->
   <section id="view-run" class="view active">
+    <div id="tasks" class="tasks"></div>
+    <div id="tasks-empty" class="muted empty">还没有任务。在下面填一个问题、点「开始深究」。</div>
+
     <div class="composer">
-      <textarea id="question" rows="3" spellcheck="false"
+      <textarea id="question" rows="2" spellcheck="false"
         placeholder="输入要深究的问题，例如：AI 能否独立完成数字 IC 设计流程？"></textarea>
       <div class="composer-actions">
         <label class="mock-toggle">
@@ -43,13 +48,6 @@
       </details>
       <div class="warn" id="cost-warn"></div>
     </div>
-
-    <!-- 运行状态：起始时间 / 已跑时长 / 实时 token / 累计花费 -->
-    <div id="run-meta" class="run-meta"></div>
-
-    <!-- 四张卡（用回任务卡列表这套）：修行层 / 研究层 / 对撞层 / 元层 -->
-    <div id="tasks" class="tasks"></div>
-    <div id="tasks-empty" class="muted empty">还没有任务。填一个问题、点「开始深究」。</div>
   </section>
 
   <!-- 产物库 -->
@@ -72,6 +70,34 @@
     </div>
     <div id="lib-count" class="muted"></div>
     <div id="lib-list" class="lib-list"></div>
+  </section>
+
+  <!-- 本地资料库：导入本地文件 → 外部证据锚点 -->
+  <section id="view-local" class="view">
+    <div class="hint">
+      导入本地文件作为<strong>外部证据锚点</strong>：文件存进
+      <code>dgtf_app/anchors/</code>，并自动重建一份合并快照
+      <code>anchors/external_anchor.json</code> —— 把
+      <code>dgtf_config.yaml</code> 的 <code>external_anchor.path</code>
+      指到它即可当锚点用。
+    </div>
+    <div class="import-bar">
+      <label class="chk"><input type="file" id="anchor-file" multiple> 选择文件导入…</label>
+      <span class="muted" id="import-msg"></span>
+    </div>
+    <div id="local-count" class="muted"></div>
+    <div id="local-list" class="lib-list"></div>
+    <div class="hint" id="local-cand-hint" style="margin-top:18px"></div>
+    <div id="local-cand" class="lib-list"></div>
+  </section>
+
+  <!-- 联网检索库：历次跑圈的联网命中 -->
+  <section id="view-web" class="view">
+    <div class="hint">
+      从历次产物头部的「外部锚点 · 联网」读数汇总（收了多少条 / 几个环节 / tier）。
+    </div>
+    <div id="web-count" class="muted"></div>
+    <div id="web-list" class="lib-list"></div>
   </section>
 </main>
 

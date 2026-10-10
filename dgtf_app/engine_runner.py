@@ -149,6 +149,9 @@ def build_cmd(question: str, opts: dict) -> list[str]:
         cmd = [sys.executable, "-u", str(APP_DIR / "mock_engine.py"), question]
     else:
         cmd = [sys.executable, "-u", str(find_engine()), question]
+        _cfg = opts.get("_config")          # 参数面板改过 → 用临时配置
+        if _cfg:
+            cmd += ["--config", str(_cfg)]
     for key, flag in _ARG_SPEC.items():
         v = opts.get(key)
         if v not in (None, "", "auto"):
@@ -331,6 +334,14 @@ def start_task(question: str, opts: dict | None = None) -> str:
     tid = time.strftime("%Y%m%d_%H%M%S") + "_" + uuid.uuid4().hex[:6]
     log_path = RUNS_DIR / f"{tid}.log"
     status = "queued" if running >= MAX_CONCURRENT else "running"
+
+    # 参数面板传上来的 yaml 覆盖 → 生成一份临时配置（原 dgtf_config.yaml 不动）
+    overrides = opts.pop("overrides", None)
+    if isinstance(overrides, dict) and overrides:
+        import params as _P
+        _cfg = _P.build_temp_config(overrides, RUNS_DIR / f"{tid}.yaml")
+        if _cfg:
+            opts["_config"] = _cfg
 
     task = {
         "id": tid,
@@ -531,26 +542,43 @@ def read_layers(tid: str) -> dict | None:
             raw = path.read_text(encoding="utf-8", errors="replace")
         except OSError:
             raw = ""
-    # 与 read_log 同一把过滤器（丢留痕 / ing·view 全文框）
+    # 与 read_log 同一把过滤器（丢留痕 / ing·view 全文框 / [tok] 读数行）
     filtered, hidden = _filter_lines(raw, {"skip": False, "kind": None, "n": 0})
-    parts = layers.split_log(filtered)
+    parts = layers.split_log(filtered)       # 显示用：不含 [tok]
+    parts_raw = layers.split_log(raw)        # 统计用：含 [tok]，能按层算增量
     md = oi.read_body(task["output_name"]) if task.get("output_name") else ""
     calls, tokens = parse_tok(raw)
-    now_bal = current_balance()
-    start_bal = task.get("start_balance")
-    spent = None
-    if start_bal is not None and now_bal is not None:
-        spent = round(float(start_bal) - float(now_bal), 4)
+
+    # 每层消耗 = 该层区间内 [tok] 末值 − 进入该层前的 [tok] 末值
+    seg_tok: dict[str, int] = {}
+    _prev = 0
+    for _n in layers.LAYER_NAMES:
+        _c, _t = parse_tok(parts_raw.get(_n, ""))
+        seg_tok[_n] = max(0, _t - _prev) if _t else 0
+        if _t:
+            _prev = _t
+
+    # 每层起始：**首次**观测到该层有内容时记一次（内存态；服务重启后重记）
+    _since = task.setdefault("_layer_since", {})
+    _now = time.time()
+    for _n in layers.LAYER_NAMES:
+        if _n not in _since and parts.get(_n, "").strip():
+            _since[_n] = _now
+
+    _stats = layers.layer_stats(filtered, md)
+    for _n in layers.LAYER_NAMES:
+        _stats[_n]["tokens"] = seg_tok.get(_n, 0)
+        _stats[_n]["since"] = _since.get(_n)
+
     return {
         "head": parts.get("__head__", ""),
         "layers": {n: parts.get(n, "") for n in layers.LAYER_NAMES},
-        "stats": layers.layer_stats(filtered, md),
+        "stats": _stats,
         "hidden": hidden,
         "done": done,
         "status": task["status"],
         "started_at": task.get("started_at"),
         "tok": {"calls": calls, "tokens": tokens},
-        "balance": {"start": start_bal, "now": now_bal, "spent": spent},
     }
 
 

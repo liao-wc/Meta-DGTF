@@ -36,16 +36,16 @@ def main() -> int:
         rounds = random.randint(1, 3)
         rounds_run[name] = rounds
         for r in range(1, rounds + 1):
-            # 模拟引擎 v1.23.21 的实时读数列（应用层解析后从卡片日志滤掉）
-            _calls += random.randint(2, 5)
-            _toks += random.randint(2000, 6000)
-            log(f"[tok] calls={_calls} tokens={_toks}")
-            # 与真引擎同款的层进度条（分层面板就靠这行切）
+            # 与真引擎同款的层进度条（分层就靠这行切）
             log("")
             log("━" * 60)
             log(f"━━━ {name} · 第 {r}/{rounds} 圈 · 摊开 · view ━━━")
             log("━" * 60)
             log(f"   （mock）{name}层第 {r} 圈：锚点重述 → 阴阳展开 → 对撞 → 沉淀 & → 探针回归")
+            # 模拟 v1.23.21 的实时读数列；放在进度条**之后**，好归到本层
+            _calls += random.randint(2, 5)
+            _toks += random.randint(2000, 6000)
+            log(f"[tok] calls={_calls} tokens={_toks}")
             time.sleep(0.6)
             # 模拟真引擎在 verbose / show_ing / show_manifest 下的两类"大块"，
             # 供应用层过滤验证：后台不应看到它们（原始仍进归档 log）。

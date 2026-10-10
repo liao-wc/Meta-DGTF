@@ -1,0 +1,799 @@
+{
+ "question": "DeepSeek 最新模型是什么，什么时候发布的",
+ "route": [
+  "0"
+ ],
+ "keep": {
+  "0": "all"
+ },
+ "rounds": {
+  "0": 1,
+  "1": 4,
+  "both": 4,
+  "all": 4
+ },
+ "dispatch": {
+  "requested": [
+   "0"
+  ],
+  "order": [
+   "0"
+  ],
+  "ran": [
+   "0"
+  ],
+  "missing": [],
+  "failed": {},
+  "skipped": [],
+  "_parallel_mode": "serial"
+ },
+ "channels": [
+  "content",
+  "context",
+  "self"
+ ],
+ "self_text": [
+  "[修行层] ## 一、这一路看到了什么\n\n名字和日期没有出来。出来的是一个次序：取集合、套「最新」、得名字、读日期，四步不能换。同时撞出一件事——显现的时候槽先落地、集合后暴露，处理的顺序必须反过来，这两个方向都是真的。候选清单那十条放在一起看，做的动作是同一件：替那个没给的集合找一个能站的位置。& 那三条不是三个发现，是同一个边界从三个口子被碰到。\n\n## 二、哪些还没看清\n\n- 悬空线头：把「最新」拆成「发布最晚」和「能力最强」两槽之后，V 线和 R 线各填哪个——没走。\n- 悬空线头：「发布」落在权重开源、API 上线、发布会宣布这三个日期里的哪一个；三处口径不同步时听谁的——没走。\n- & 两样东西不在同一层：一个是问句形式给的槽，一个是比较级索要的集合。碰了，过不去。\n- & 让 0 开口做不到，它本来就是被缺的那一块；让 1 站成一端也做不到，它本来就是形式。硬让它们对话，出来的还是那个空缺。\n- & 外部发布记录本层拿不到，碰在这里。\n\n## 三、我决定不碰什么，为什么\n\n**用户真实处境（是选型还是追新）。** 不碰。问句里没有线索能定，往哪边猜都会偏。保持了整层。状态：active。\n\n**把跨层的东西当同层推。** 不碰。看清了推下去只是把撞不动呈现成撞得动，产出的对撞是假的。保持到这一层结束。状态：stable。\n\n撤回的悬置：无。\n\n## 四、与问题相处的姿态\n\n这个问题现在手里拿着的是一个次序加一个时刻，不是一个答案。谁问它，谁就是执行第一步的人；取哪个集合、什么时候取，问题本身不给，得由执行的人给出。我不替它把集合取来，也不把名字和日期当作答案交出去——交出去只是把 0 暂时按住。若只想要一个名字，0 还在原处。这一层里候选清单没有生成新东西，它没产出答案，只是替空缺找位置；真正生出来的只有那个次序，和次序带上来的那个时刻。"
+ ],
+ "decidability": {
+  "decidability": "partial",
+  "reason": "候选普遍指向经验事实，最新模型及发布时间可查官方记录；歧义属定义或口径问题，可通过规定或分别报告解决，无自指循环或本体论障碍。",
+  "features": [
+   "经验事实可查",
+   "歧义可规定",
+   "外部信息可得"
+  ],
+  "decidable_aspects": [
+   "在指定时间点，DeepSeek 最新模型名称可通过官方发布记录确定",
+   "发布日期可依据官方公告或开源仓库时间戳确定",
+   "‘最新’可按发布时间排序定义，或分通用/推理线分别报告",
+   "提问时间基准可明确或默认为回答时刻",
+   "发布含义（权重/API/发布会）可规定口径后确定",
+   "[外] 可定义“最新”为按官方发布时间排序",
+   "[外] 可通过官方公告核实，但当前无访问渠道"
+  ],
+  "undecidable_aspects": [
+   "[外] 具体最新模型名称",
+   "[外] 具体发布日期"
+  ],
+  "evidence": [
+   {
+    "aspect": "在指定时间点，DeepSeek 最新模型名称可通过官方发布记录确定",
+    "source": "候选7/8"
+   },
+   {
+    "aspect": "发布日期可依据官方公告或开源仓库时间戳确定",
+    "source": "候选8/悬空线头"
+   },
+   {
+    "aspect": "‘最新’可按发布时间排序定义，或分通用/推理线分别报告",
+    "source": "候选2/10"
+   },
+   {
+    "aspect": "提问时间基准可明确或默认为回答时刻",
+    "source": "候选3/9"
+   },
+   {
+    "aspect": "发布含义（权重/API/发布会）可规定口径后确定",
+    "source": "候选4"
+   }
+  ],
+  "_evidence_full": [
+   {
+    "aspect": "在指定时间点，DeepSeek 最新模型名称可通过官方发布记录确定",
+    "source": "候选7/8"
+   },
+   {
+    "aspect": "发布日期可依据官方公告或开源仓库时间戳确定",
+    "source": "候选8/悬空线头"
+   },
+   {
+    "aspect": "‘最新’可按发布时间排序定义，或分通用/推理线分别报告",
+    "source": "候选2/10"
+   },
+   {
+    "aspect": "提问时间基准可明确或默认为回答时刻",
+    "source": "候选3/9"
+   },
+   {
+    "aspect": "发布含义（权重/API/发布会）可规定口径后确定",
+    "source": "候选4"
+   }
+  ],
+  "_source": "pool+external",
+  "_und_untraced": [],
+  "_und_traced": [],
+  "_ext_status": "partial",
+  "_ext_reason": "“最新模型”依赖当前官方发布状态，我无法访问实时信息，知识截止后可能已更新，无法给出确切型号与日期。",
+  "_ext_features": [
+   "信息不足：无法获得具体答案",
+   "预设了无法获得的参照系（当前最新发布状态）"
+  ],
+  "_divergent": true,
+  "_pool_status": "decidable"
+ },
+ "views": {
+  "0": {
+   "entry": "0",
+   "anchor": "在问 DeepSeek 当下最新的模型是哪个、它是什么时候发布的。",
+   "candidates": [
+    {
+     "desc": "用户问的是\"最新\"，但\"最新\"指发布最晚还是能力最强，这两者在 DeepSeek 产品线里未必是同一个模型",
+     "kind": "question",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点未提'最新'含发布晚/能力强的歧义",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "DeepSeek 有 V 系列（通用）和 R 系列（推理）两条并行线，\"最新模型\"可能要分线各答一次",
+     "kind": "concept",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点未提 V 系/R 系两条并行线",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "需要确认提问的时间基准——同一个问题在不同月份问，答案会不同",
+     "kind": "thread",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点未提提问的时间基准",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "\"发布\"是指权重开源、API 上线，还是发布会宣布，三者日期常常错开",
+     "kind": "question",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点未区分开源/API/发布会三种发布口径",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "用户的真实意图可能是想知道该用哪个模型，而非单纯要一个名字和日期",
+     "kind": "concept",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点未提'该用哪个'的真实意图",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "DeepSeek 官网、GitHub、Hugging Face 三处的版本号更新并不同步，需要一个权威口径",
+     "kind": "object",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点未提官网/GitHub/HF 三个口径",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "用户想知道 DeepSeek 当前最新的模型是哪一个",
+     "kind": "question",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "与锚点'最新模型是什么'直接对应",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "用户想知道该最新模型的发布时间",
+     "kind": "question",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "与锚点'什么时候发布的'直接对应",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "\"最新\"的定义取决于提问时间点，答案会随 DeepSeek 发布节奏变化",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点未提'最新'随提问时间点变化",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "DeepSeek 的模型线包括通用对话模型和推理模型两类，需区分哪条线在问",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点未提通用/推理两类模型线之分",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "若无法确定\"最新\"，可退回到按发布时间排序的模型清单",
+     "kind": "thread",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点未提按发布时间排序的清单",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    }
+   ],
+   "collision": "一、让两端各自把话说完\n\n1 这一端：问句落地时，两个疑问词已经放好了两个位置。一个装名字，一个装日期。这两个位置不依赖 DeepSeek 的任何实际状况，它们随问句一起出现。所以在这句话里，1 是最早显出来的，早于任何关于模型的知识。\n\n0 这一端：0 不是被问者后来发现的分歧，是「最新」这个词自带的。「最新」要成立，得先有一组东西被拿来比较。问句没给这组东西。用一个比较级提问，等于同时交出一个没给的集合。0 和问句同时产生。\n\n二、各推到极端\n\n只留 1：问句变成「DeepSeek 的模型是哪个，什么时候发布的」。没有筛选，答案只能是全部。全 1 的问题不可答。\n\n只留 0：问题变成「最新的那个东西」。没有位置要填，问句不成立。全 0 的不成问。\n\n两端各自走到头，都落不到提问上。一头缺收窄，一头缺落点。\n\n三、找反转点\n\n显现的次序是 1 先、0 后：疑问词先落地，然后才暴露出「最新」没有作用对象。\n\n处理的次序必须反过来：先把集合取来，套上「最新」，名字才落进槽里，日期再从集合里读出来。\n\n显现是 1→0，处理是 0→1。翻转在这里。\n\n四、让对撞生成新东西\n\n对撞的结果不是「两个含义都答一遍」，也不是「看情况」。是一个次序。\n\n取集合 → 套「最新」 → 得名字 → 读日期。四步，顺序不能换。\n\n因为第一步发生在某一时刻，第四步读出的日期就带着那个时刻。日期不是答案旁边的附件，它是集合被取走时留下的时间戳。答案的生成里含着一个时刻，这个时刻不在问句里。\n\n五、标出撞不动的地方\n\n& 0 和 1 在这个问句里不在同一层。1 是句法的：疑问词给的槽。0 是语义的：比较级索要的集合。同层可以对撞，槽和槽互相约束，缺和缺互相牵扯；跨层撞不动。\n\n& 「让两端各自把话说完」这一步在这里做不满：0 没有话可说，它是一处空缺；1 也没有端可站，它只是疑问句自带的形式。硬要它们对话，出来的只是把空缺重讲一遍。\n\n& 到此为止，再往前推只会把撞不动当成撞得动。\n\n六、回到原始问题/处境\n\n回到「DeepSeek 当下最新的模型是哪个、什么时候发布的」。这一步能确定的只有一件事：这句话本身不携带答案，也不携带唯一解释。它携带的是一个待执行的次序。\n\n谁执行，谁就得在执行的那一刻把集合取来。所以能说的不是名字和日期，而是：取的是哪个集合、取的时刻是什么。这两点不给，名字和日期只是把 0 暂时按住，没有把它消掉。",
+   "amps": [
+    {
+     "desc": "1是句法槽位，0是语义空缺，两者不在同一层，无法对撞",
+     "type": "structural",
+     "source": "0",
+     "polarity": "0",
+     "polarity_why": "不同层，无法对撞，未成形"
+    },
+    {
+     "desc": "'最新'的比较级自带一个未给出的集合，这个集合与问句同时产生而非事后发现",
+     "type": "logical",
+     "source": "0",
+     "polarity": "both",
+     "polarity_why": "集合未给出，却与问句同生"
+    },
+    {
+     "desc": "显现次序1→0与处理次序0→1的翻转，生成一个不在问句内的时刻",
+     "type": "ontological",
+     "source": "0",
+     "polarity": "both",
+     "polarity_why": "翻转含1→0与0→1，时刻外生"
+    }
+   ],
+   "threads": [
+    {
+     "desc": "取哪个集合、取的时刻是什么——这两点未定，名字和日期只是暂时按住0",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "集合与时刻未定，仍悬空"
+    },
+    {
+     "desc": "模型线分通用与推理两类，问句未区分，这条分叉还没走完",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "问句未区分两线，分叉未走完"
+    },
+    {
+     "desc": "DeepSeek当前实际发布记录——材料在外部，本层不可得",
+     "kind": "thread",
+     "source": "probe_boundary",
+     "polarity_why": "材料在外部，本层不可得",
+     "polarity": "0"
+    }
+   ],
+   "probes": [
+    {
+     "question": "若把'最新'拆成'发布最晚'与'能力最强'两个独立槽，DeepSeek V线与R线各自填哪个？",
+     "link": "逼出T3/T4的分叉，看两线是否同模型",
+     "expected_gain": 0.7,
+     "covers": [
+      "T3",
+      "T4",
+      "T10"
+     ]
+    },
+    {
+     "question": "'发布'在权重开源、API上线、发布会宣布三个日期里，问句默认取哪一个？",
+     "link": "松开T6，让'时候'有可判定的锚",
+     "expected_gain": 0.6,
+     "covers": [
+      "T6",
+      "T5"
+     ]
+    },
+    {
+     "question": "若三处口径（官网/GitHub/HF）版本号不同步，哪个日期能同时满足'最新'与'发布'？",
+     "link": "把T8与T5接上，逼出权威口径的取舍",
+     "expected_gain": 0.5,
+     "covers": [
+      "T8",
+      "T9"
+     ]
+    }
+   ],
+   "meta": [
+    "'让两端各自把话说完'这一步做不满：0无话可说，1无端可站，硬对话只是重讲空缺",
+    "再往前推会把撞不动当成撞得动，此处应停",
+    "[P3] & 候选（各圈累计）3 条 / 本层 amps 3 条（比值 1.00；amps 可能含 adjudications/上游合并的贡献，比值只作方向参考）"
+   ],
+   "decidable_product": {},
+   "undecidable_product": {},
+   "distance_to_question": 1.0,
+   "covered_aspects": [],
+   "uncovered_aspects": [],
+   "untouched": [
+    {
+     "desc": "'最新'是按版本号、能力还是发布日算",
+     "source": "anchor"
+    },
+    {
+     "desc": "问的人是在选型、追新还是别的处境",
+     "source": "anchor"
+    },
+    {
+     "desc": "用户问的是\"最新\"，但\"最新\"指发布最晚还是能力最强，这两者在 DeepSeek 产品线里未必是同一个模型",
+     "source": "judge"
+    },
+    {
+     "desc": "DeepSeek 有 V 系列（通用）和 R 系列（推理）两条并行线，\"最新模型\"可能要分线各答一次",
+     "source": "judge"
+    },
+    {
+     "desc": "需要确认提问的时间基准——同一个问题在不同月份问，答案会不同",
+     "source": "judge"
+    },
+    {
+     "desc": "\"发布\"是指权重开源、API 上线，还是发布会宣布，三者日期常常错开",
+     "source": "judge"
+    },
+    {
+     "desc": "用户的真实意图可能是想知道该用哪个模型，而非单纯要一个名字和日期",
+     "source": "judge"
+    },
+    {
+     "desc": "DeepSeek 官网、GitHub、Hugging Face 三处的版本号更新并不同步，需要一个权威口径",
+     "source": "judge"
+    },
+    {
+     "desc": "\"最新\"的定义取决于提问时间点，答案会随 DeepSeek 发布节奏变化",
+     "source": "judge"
+    },
+    {
+     "desc": "DeepSeek 的模型线包括通用对话模型和推理模型两类，需区分哪条线在问",
+     "source": "judge"
+    },
+    {
+     "desc": "若无法确定\"最新\"，可退回到按发布时间排序的模型清单",
+     "source": "judge"
+    }
+   ],
+   "suspensions": [
+    {
+     "id": "s_001",
+     "target": "用户真实处境（选型/追新）",
+     "reason": "我看清T2可碰，但选择不碰，因为问句本身没给处境线索，硬猜会偏",
+     "reason_type": "explicit",
+     "layer": 1,
+     "last_confirmed_layer": 1,
+     "confirmed_layers": [
+      1
+     ],
+     "status": "active",
+     "revoked_at": null,
+     "revoke_reason": "",
+     "resolved_at": null,
+     "stable_since": null,
+     "needs_review": false
+    }
+   ],
+   "engagements": [
+    {
+     "target": "'最新'的集合与时刻",
+     "how": "拆成发布最晚/能力最强两槽，分线填"
+    }
+   ],
+   "refinements": [],
+   "reconfirmations": [],
+   "revocations": [],
+   "deferrals": [],
+   "resolutions": [],
+   "escalations": [],
+   "reclassifications": [],
+   "settlement": {},
+   "adjudications": [],
+   "both_quota": {},
+   "carry": [
+    {
+     "question": "上面这几条候选被判为「后补／换说法复述」，本圈禁止以任何形式重述它们——原样、换说法、扩写都算。只交真的长出来的新东西：用户想知道 DeepSeek 当前最新的模型是哪一个；用户想知道该最新模型的发布时间",
+     "link": "self-check 判定的复述条目，绕开去重就能喷更多，但那不叫展开",
+     "expected_gain": 0.6,
+     "kind": "candidate",
+     "text": "上面这几条候选被判为「后补／换说法复述」，本圈禁止以任何形式重述它们——原样、换说法、扩写都算。只交真的长出来的新东西：用户想知道 DeepSeek 当前最新的模型是哪一个；用户想知道该最新模型的发布时间",
+     "banned": [
+      "用户想知道 DeepSeek 当前最新的模型是哪一个",
+      "用户想知道该最新模型的发布时间"
+     ]
+    }
+   ],
+   "carry_check": {},
+   "carry_checks": [],
+   "carry_dropped": [],
+   "carry_dropped_all": [],
+   "rephrase_ratio": null,
+   "probe_skipped": false,
+   "rounds_cap": 1,
+   "duel_suspensions": [],
+   "meta_closure": {},
+   "stop_reason": "体力耗尽（1 圈走满，未触发任何停止判据，是被截断不是自然停止）\n  本轮显形：& 3 / 线头 3 / 悬置 1 / 探针 3\n  未生质量：real",
+   "rounds_run": 1,
+   "roles_run": [
+    "摊开"
+   ],
+   "closure_reason": "",
+   "round_log": [
+    {
+     "round": 1,
+     "role": "摊开",
+     "new_amps": 3,
+     "new_threads": 3,
+     "idle_amp": 0,
+     "idle_thread": 0,
+     "idle_stall": 0,
+     "why": ""
+    }
+   ],
+   "rehashed": [],
+   "idle": false,
+   "rendered": "━━━ 修行 · entry=0 ━━━\n\n【锚点】在问 DeepSeek 当下最新的模型是哪个、它是什么时候发布的。\n\n【候选】\n  [0×0] 用户问的是\"最新\"，但\"最新\"指发布最晚还是能力最强，这两者在 DeepSeek 产品线里未必是同一个模型  属性◈阴展开\n  [0×0] DeepSeek 有 V 系列（通用）和 R 系列（推理）两条并行线，\"最新模型\"可能要分线各答一次  属性◈阴展开\n  [0×0] 需要确认提问的时间基准——同一个问题在不同月份问，答案会不同  属性◈阴展开\n  [0×0] \"发布\"是指权重开源、API 上线，还是发布会宣布，三者日期常常错开  属性◈阴展开\n  [0×0] 用户的真实意图可能是想知道该用哪个模型，而非单纯要一个名字和日期  属性◈阴展开\n  [0×0] DeepSeek 官网、GitHub、Hugging Face 三处的版本号更新并不同步，需要一个权威口径  属性◈阴展开\n  [1×1] 用户想知道 DeepSeek 当前最新的模型是哪一个  属性◈阳展开\n  [1×1] 用户想知道该最新模型的发布时间  属性◈阳展开\n  [1×0] \"最新\"的定义取决于提问时间点，答案会随 DeepSeek 发布节奏变化  ⚡& 属性◈阳展开\n  [1×0] DeepSeek 的模型线包括通用对话模型和推理模型两类，需区分哪条线在问  ⚡& 属性◈阳展开\n  [1×0] 若无法确定\"最新\"，可退回到按发布时间排序的模型清单  ⚡& 属性◈阳展开\n\n【ing 对撞】\n一、让两端各自把话说完\n\n1 这一端：问句落地时，两个疑问词已经放好了两个位置。一个装名字，一个装日期。这两个位置不依赖 DeepSeek 的任何实际状况，它们随问句一起出现。所以在这句话里，1 是最早显出来的，早于任何关于模型的知识。\n\n0 这一端：0 不是被问者后来发现的分歧，是「最新」这个词自带的。「最新」要成立，得先有一组东西被拿来比较。问句没给这组东西。用一个比较级提问，等于同时交出一个没给的集合。0 和问句同时产生。\n\n二、各推到极端\n\n只留 1：问句变成「DeepSeek 的模型是哪个，什么时候发布的」。没有筛选，答案只能是全部。全 1 的问题不可答。\n\n只留 0：问题变成「最新的那个东西」。没有位置要填，问句不成立。全 0 的不成问。\n\n两端各自走到头，都落不到提问上。一头缺收窄，一头缺落点。\n\n三、找反转点\n\n显现的次序是 1 先、0 后：疑问词先落地，然后才暴露出「最新」没有作用对象。\n\n处理的次序必须反过来：先把集合取来，套上「最新」，名字才落进槽里，日期再从集合里读出来。\n\n显现是 1→0，处理是 0→1。翻转在这里。\n\n四、让对撞生成新东西\n\n对撞的结果不是「两个含义都答一遍」，也不是「看情况」。是一个次序。\n\n取集合 → 套「最新」 → 得名字 → 读日期。四步，顺序不能换。\n\n因为第一步发生在某一时刻，第四步读出的日期就带着那个时刻。日期不是答案旁边的附件，它是集合被取走时留下的时间戳。答案的生成里含着一个时刻，这个时刻不在问句里。\n\n五、标出撞不动的地方\n\n& 0 和 1 在这个问句里不在同一层。1 是句法的：疑问词给的槽。0 是语义的：比较级索要的集合。同层可以对撞，槽和槽互相约束，缺和缺互相牵扯；跨层撞不动。\n\n& 「让两端各自把话说完」这一步在这里做不满：0 没有话可说，它是一处空缺；1 也没有端可站，它只是疑问句自带的形式。硬要它们对话，出来的只是把空缺重讲一遍。\n\n& 到此为止，再往前推只会把撞不动当成撞得动。\n\n六、回到原始问题/处境\n\n回到「DeepSeek 当下最新的模型是哪个、什么时候发布的」。这一步能确定的只有一件事：这句话本身不携带答案，也不携带唯一解释。它携带的是一个待执行的次序。\n\n谁执行，谁就得在执行的那一刻把集合取来。所以能说的不是名字和日期，而是：取的是哪个集合、取的时刻是什么。这两点不给，名字和日期只是把 0 暂时按住，没有把它消掉。\n\n【& 印记】\n  - [结构性] 1是句法槽位，0是语义空缺，两者不在同一层，无法对撞\n  - [逻辑性] '最新'的比较级自带一个未给出的集合，这个集合与问句同时产生而非事后发现\n  - [存在论] 显现次序1→0与处理次序0→1的翻转，生成一个不在问句内的时刻\n\n【悬空线头】\n  💭 取哪个集合、取的时刻是什么——这两点未定，名字和日期只是暂时按住0\n  💭 模型线分通用与推理两类，问句未区分，这条分叉还没走完\n  💭 DeepSeek当前实际发布记录——材料在外部，本层不可得\n\n【探针回归】\n  ? 若把'最新'拆成'发布最晚'与'能力最强'两个独立槽，DeepSeek V线与R线各自填哪个？（回来：逼出T3/T4的分叉，看两线是否同模型｜增益0.7）\n  ? '发布'在权重开源、API上线、发布会宣布三个日期里，问句默认取哪一个？（回来：松开T6，让'时候'有可判定的锚｜增益0.6）\n  ? 若三处口径（官网/GitHub/HF）版本号不同步，哪个日期能同时满足'最新'与'发布'？（回来：把T8与T5接上，逼出权威口径的取舍｜增益0.5）\n\n【尚未触及的方面】\n  💭 '最新'是按版本号、能力还是发布日算（anchor）\n  💭 问的人是在选型、追新还是别的处境（anchor）\n  💭 用户问的是\"最新\"，但\"最新\"指发布最晚还是能力最强，这两者在 DeepSeek 产品线里未必是同一个模型（judge）\n  💭 DeepSeek 有 V 系列（通用）和 R 系列（推理）两条并行线，\"最新模型\"可能要分线各答一次（judge）\n  💭 需要确认提问的时间基准——同一个问题在不同月份问，答案会不同（judge）\n  💭 \"发布\"是指权重开源、API 上线，还是发布会宣布，三者日期常常错开（judge）\n  💭 用户的真实意图可能是想知道该用哪个模型，而非单纯要一个名字和日期（judge）\n  💭 DeepSeek 官网、GitHub、Hugging Face 三处的版本号更新并不同步，需要一个权威口径（judge）\n  💭 \"最新\"的定义取决于提问时间点，答案会随 DeepSeek 发布节奏变化（judge）\n  💭 DeepSeek 的模型线包括通用对话模型和推理模型两类，需区分哪条线在问（judge）\n  💭 若无法确定\"最新\"，可退回到按发布时间排序的模型清单（judge）\n\n【本层碰了】\n  - '最新'的集合与时刻：拆成发布最晚/能力最强两槽，分线填\n\n【主动悬置（决定不碰）】\n  - 用户真实处境（选型/追新）：我看清T2可碰，但选择不碰，因为问句本身没给处境线索，硬猜会偏[explicit]\n\n【view】\n## 一、这一路看到了什么\n\n名字和日期没有出来。出来的是一个次序：取集合、套「最新」、得名字、读日期，四步不能换。同时撞出一件事——显现的时候槽先落地、集合后暴露，处理的顺序必须反过来，这两个方向都是真的。候选清单那十条放在一起看，做的动作是同一件：替那个没给的集合找一个能站的位置。& 那三条不是三个发现，是同一个边界从三个口子被碰到。\n\n## 二、哪些还没看清\n\n- 悬空线头：把「最新」拆成「发布最晚」和「能力最强」两槽之后，V 线和 R 线各填哪个——没走。\n- 悬空线头：「发布」落在权重开源、API 上线、发布会宣布这三个日期里的哪一个；三处口径不同步时听谁的——没走。\n- & 两样东西不在同一层：一个是问句形式给的槽，一个是比较级索要的集合。碰了，过不去。\n- & 让 0 开口做不到，它本来就是被缺的那一块；让 1 站成一端也做不到，它本来就是形式。硬让它们对话，出来的还是那个空缺。\n- & 外部发布记录本层拿不到，碰在这里。\n\n## 三、我决定不碰什么，为什么\n\n**用户真实处境（是选型还是追新）。** 不碰。问句里没有线索能定，往哪边猜都会偏。保持了整层。状态：active。\n\n**把跨层的东西当同层推。** 不碰。看清了推下去只是把撞不动呈现成撞得动，产出的对撞是假的。保持到这一层结束。状态：stable。\n\n撤回的悬置：无。\n\n## 四、与问题相处的姿态\n\n这个问题现在手里拿着的是一个次序加一个时刻，不是一个答案。谁问它，谁就是执行第一步的人；取哪个集合、什么时候取，问题本身不给，得由执行的人给出。我不替它把集合取来，也不把名字和日期当作答案交出去——交出去只是把 0 暂时按住。若只想要一个名字，0 还在原处。这一层里候选清单没有生成新东西，它没产出答案，只是替空缺找位置；真正生出来的只有那个次序，和次序带上来的那个时刻。\n\n【元反思】\n  ∘ '让两端各自把话说完'这一步做不满：0无话可说，1无端可站，硬对话只是重讲空缺\n  ∘ 再往前推会把撞不动当成撞得动，此处应停\n\n【质量评价】判断正常，无质量线索\n\n【自省】ing未复述上游view原话，比例低；未生处为0，无套路收尾；整体流程诚实。",
+   "manifest": "## 一、这一路看到了什么\n\n名字和日期没有出来。出来的是一个次序：取集合、套「最新」、得名字、读日期，四步不能换。同时撞出一件事——显现的时候槽先落地、集合后暴露，处理的顺序必须反过来，这两个方向都是真的。候选清单那十条放在一起看，做的动作是同一件：替那个没给的集合找一个能站的位置。& 那三条不是三个发现，是同一个边界从三个口子被碰到。\n\n## 二、哪些还没看清\n\n- 悬空线头：把「最新」拆成「发布最晚」和「能力最强」两槽之后，V 线和 R 线各填哪个——没走。\n- 悬空线头：「发布」落在权重开源、API 上线、发布会宣布这三个日期里的哪一个；三处口径不同步时听谁的——没走。\n- & 两样东西不在同一层：一个是问句形式给的槽，一个是比较级索要的集合。碰了，过不去。\n- & 让 0 开口做不到，它本来就是被缺的那一块；让 1 站成一端也做不到，它本来就是形式。硬让它们对话，出来的还是那个空缺。\n- & 外部发布记录本层拿不到，碰在这里。\n\n## 三、我决定不碰什么，为什么\n\n**用户真实处境（是选型还是追新）。** 不碰。问句里没有线索能定，往哪边猜都会偏。保持了整层。状态：active。\n\n**把跨层的东西当同层推。** 不碰。看清了推下去只是把撞不动呈现成撞得动，产出的对撞是假的。保持到这一层结束。状态：stable。\n\n撤回的悬置：无。\n\n## 四、与问题相处的姿态\n\n这个问题现在手里拿着的是一个次序加一个时刻，不是一个答案。谁问它，谁就是执行第一步的人；取哪个集合、什么时候取，问题本身不给，得由执行的人给出。我不替它把集合取来，也不把名字和日期当作答案交出去——交出去只是把 0 暂时按住。若只想要一个名字，0 还在原处。这一层里候选清单没有生成新东西，它没产出答案，只是替空缺找位置；真正生出来的只有那个次序，和次序带上来的那个时刻。",
+   "quality_flags": [],
+   "quality_verdict": "判断正常，无质量线索",
+   "self_check": {
+    "suspicious_candidates": [
+     7,
+     8
+    ],
+    "suspicious_amps": [],
+    "ing_rephrased": false,
+    "honest_about_empty": true,
+    "unsaid_count": 0,
+    "unsaid_is_escape": false,
+    "unsaid_where": "",
+    "flow_verdict": "候选7、8是问句直译，非展开所得；其余候选与&印记从展开中长出，对撞生成了次序与时刻。",
+    "view_verdict": "view停在'次序+时刻'，未强答名字日期，符合'看到什么'而非'确定什么'，开放收束。",
+    "amp_ratio_verdict": "三条&是同一跨层边界的三次触碰，非凑数。",
+    "notes": "ing未复述上游view原话，比例低；未生处为0，无套路收尾；整体流程诚实。"
+   },
+   "errors": [],
+   "anchor_touched": [
+    {
+     "desc": "对 DeepSeek 模型序列有一个'最新'的预期",
+     "source": "anchor"
+    },
+    {
+     "desc": "想知道发布时间这个具体事实",
+     "source": "anchor"
+    }
+   ],
+   "ing_structured": {}
+  }
+ },
+ "pools": {
+  "0": {
+   "amps": [
+    {
+     "desc": "1是句法槽位，0是语义空缺，两者不在同一层，无法对撞",
+     "type": "structural",
+     "source": "0",
+     "polarity": "0",
+     "polarity_why": "不同层，无法对撞，未成形"
+    },
+    {
+     "desc": "'最新'的比较级自带一个未给出的集合，这个集合与问句同时产生而非事后发现",
+     "type": "logical",
+     "source": "0",
+     "polarity": "both",
+     "polarity_why": "集合未给出，却与问句同生"
+    },
+    {
+     "desc": "显现次序1→0与处理次序0→1的翻转，生成一个不在问句内的时刻",
+     "type": "ontological",
+     "source": "0",
+     "polarity": "both",
+     "polarity_why": "翻转含1→0与0→1，时刻外生"
+    }
+   ],
+   "threads": [
+    {
+     "desc": "取哪个集合、取的时刻是什么——这两点未定，名字和日期只是暂时按住0",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "集合与时刻未定，仍悬空"
+    },
+    {
+     "desc": "模型线分通用与推理两类，问句未区分，这条分叉还没走完",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "问句未区分两线，分叉未走完"
+    },
+    {
+     "desc": "DeepSeek当前实际发布记录——材料在外部，本层不可得",
+     "kind": "thread",
+     "source": "probe_boundary",
+     "polarity_why": "材料在外部，本层不可得",
+     "polarity": "0"
+    }
+   ],
+   "probes": [
+    {
+     "question": "若把'最新'拆成'发布最晚'与'能力最强'两个独立槽，DeepSeek V线与R线各自填哪个？",
+     "link": "逼出T3/T4的分叉，看两线是否同模型",
+     "expected_gain": 0.7,
+     "covers": [
+      "T3",
+      "T4",
+      "T10"
+     ]
+    },
+    {
+     "question": "'发布'在权重开源、API上线、发布会宣布三个日期里，问句默认取哪一个？",
+     "link": "松开T6，让'时候'有可判定的锚",
+     "expected_gain": 0.6,
+     "covers": [
+      "T6",
+      "T5"
+     ]
+    },
+    {
+     "question": "若三处口径（官网/GitHub/HF）版本号不同步，哪个日期能同时满足'最新'与'发布'？",
+     "link": "把T8与T5接上，逼出权威口径的取舍",
+     "expected_gain": 0.5,
+     "covers": [
+      "T8",
+      "T9"
+     ]
+    }
+   ],
+   "meta": [
+    "'让两端各自把话说完'这一步做不满：0无话可说，1无端可站，硬对话只是重讲空缺",
+    "再往前推会把撞不动当成撞得动，此处应停"
+   ],
+   "suspensions": [
+    {
+     "id": "s_001",
+     "target": "用户真实处境（选型/追新）",
+     "reason": "我看清T2可碰，但选择不碰，因为问句本身没给处境线索，硬猜会偏",
+     "reason_type": "explicit",
+     "layer": 1,
+     "last_confirmed_layer": 1,
+     "confirmed_layers": [
+      1
+     ],
+     "status": "active",
+     "revoked_at": null,
+     "revoke_reason": "",
+     "resolved_at": null,
+     "stable_since": null,
+     "needs_review": false
+    }
+   ],
+   "sub_questions": [],
+   "deferrals": [],
+   "escalations": [],
+   "decidability_log": [],
+   "duel_suspensions": [],
+   "duel_alignment": {},
+   "engagements": [
+    {
+     "target": "'最新'的集合与时刻",
+     "how": "拆成发布最晚/能力最强两槽，分线填"
+    }
+   ],
+   "refinements": [],
+   "decidable_channel": {},
+   "undecidable_channel": {}
+  },
+  "1": {
+   "amps": [],
+   "threads": [],
+   "probes": [],
+   "meta": [],
+   "suspensions": [],
+   "sub_questions": [],
+   "deferrals": [],
+   "escalations": [],
+   "decidability_log": [],
+   "duel_suspensions": [],
+   "duel_alignment": {},
+   "engagements": [],
+   "refinements": [],
+   "decidable_channel": {},
+   "undecidable_channel": {}
+  },
+  "both": {
+   "amps": [],
+   "threads": [],
+   "probes": [],
+   "meta": [],
+   "suspensions": [],
+   "sub_questions": [],
+   "deferrals": [],
+   "escalations": [],
+   "decidability_log": [],
+   "duel_suspensions": [],
+   "duel_alignment": {},
+   "engagements": [],
+   "refinements": [],
+   "decidable_channel": {},
+   "undecidable_channel": {}
+  },
+  "all": {
+   "amps": [],
+   "threads": [],
+   "probes": [],
+   "meta": [],
+   "suspensions": [],
+   "sub_questions": [],
+   "deferrals": [],
+   "escalations": [],
+   "decidability_log": [],
+   "duel_suspensions": [],
+   "duel_alignment": {},
+   "engagements": [],
+   "refinements": [],
+   "decidable_channel": {},
+   "undecidable_channel": {}
+  }
+ },
+ "llm_calls": 11,
+ "llm_tokens": 33511,
+ "tri_state": [
+  0,
+  0
+ ],
+ "layer_contribution": {
+  "0": {
+   "rounds": 1,
+   "stop": "体力耗尽（1 圈走满，未触发任何停止判据，是被截",
+   "idle": false
+  }
+ },
+ "orientation": "auto",
+ "_auto_plan_used": {},
+ "_auto_dispatch": {},
+ "_anchor_tier_warning": "",
+ "_config": {
+  "actions": {
+   "assess_decidability": true,
+   "decompose_question": true,
+   "decidability_source": "pool",
+   "decompose_source": "pool",
+   "parallel_mode": "auto",
+   "parallel_warmup_rounds": 3,
+   "pipeline_gate_timeout": 900,
+   "parallel_expand": true,
+   "input_sanity": true,
+   "tri_multi_vote": true,
+   "tri_vote_retry_empty": 1,
+   "landing_decision": true,
+   "re_anchor": true,
+   "expand_yin": true,
+   "expand_yang": true,
+   "dual_judge": true,
+   "ing": true,
+   "he": true,
+   "phase_probe": true,
+   "manifest": true,
+   "self_check": true,
+   "re_evaluate_pool": true,
+   "settle_research": true
+  }
+ },
+ "_runtime": {
+  "requested": {
+   "web": "auto",
+   "thinking": "auto",
+   "effort": "auto"
+  },
+  "web_enabled": false,
+  "thinking_default": "disabled",
+  "thinking_stages_enabled": [
+   "adjudicate_sub_tristate",
+   "assess_decidability",
+   "assess_decidability_from_pool_view",
+   "auto_plan",
+   "dual_judge",
+   "plan_orientation",
+   "plan_resources",
+   "re_evaluate_pool"
+  ],
+  "thinking_stages_off_n": 17,
+  "effort": "high"
+ },
+ "tri_consensus": [],
+ "freeze": {
+  "signature": "65de76ecb71b40e067214b749b3096d92486d29b11c0a05907f1ad5fe09e31d5",
+  "layer": 1,
+  "n": 0,
+  "frozen_at": "2026-10-10T11:12:50.852821",
+  "items": []
+ },
+ "calibration_queue": [],
+ "external_anchor": {
+  "enabled": true,
+  "anchors": 0,
+  "source_file": "",
+  "retrieved_at": "",
+  "retriever": "",
+  "answers_all_missing": false,
+  "answers_filtered": "",
+  "pooled": 0,
+  "unconfigured": true,
+  "retriever_mode": "snapshot",
+  "as_evidence": "off",
+  "anchor_calls": 0,
+  "claims": 0,
+  "items": [],
+  "summary": {
+   "claims": 0,
+   "supported": 0,
+   "conflicted": 0,
+   "unmatched": 0,
+   "anchor_used": 0
+  },
+  "error": ""
+ },
+ "cost_profile": "balanced",
+ "input_sanity": {
+  "issues": [],
+  "note": "无悬空符号，问题清晰",
+  "checked": true
+ }
+}

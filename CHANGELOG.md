@@ -12,6 +12,22 @@
 
 ---
 
+v1.23.22 相对 v1.23.21
+
+【要解决的问题】工作台的「联网检索库」要装**条目内容和链接**，但两条检索通道
+  （`AnchorRetriever._tavily` / `WebSearchClient._http`）返回的条目虽然**本来就带
+  `claim` + `url`**，却只在**失败**时留痕（成功时什么也不落）—— 应用层拿不到
+  「检索到了什么、来自哪」。
+
+【改了哪几处】
+  1. 新增模块级 `_record_web_hits(query, items)`：把命中**追加**到
+     `outputs/_web_hits.jsonl`（`ts` / `query` / `claim` / `url` / `tier` / `kind`）。
+     路径可用环境变量 `DGTF_OUTPUT_DIR` 覆盖；任何写失败都**静默**（不拖累检索）。
+  2. `AnchorRetriever._tavily` 与 `WebSearchClient._http` 的成功返回前各调一次。
+
+【影响面】纯**新增落盘**：检索行为、产物 md / packed.json 都不变；
+  0 条命中时不写文件（不留空行噪声）。
+
 v1.23.21 相对 v1.23.20
 
 【要解决的问题】工作台要「运行时实时显示消耗 token」，而引擎只在**结束**时打一次

@@ -1,0 +1,14 @@
+v1.23.21：LLM 调用后输出一行 token 累计（供工作台实时读数）
+
+- LLM 调用点（`total_calls` 累加处）补 `logger.info("[tok] calls=%d tokens=%d")`：
+  锁内取快照、锁外打。走 logging 不走 vp —— vp 受 output.verbose 控制，
+  而这是运行状态读数，关 verbose（v1.23.20 的默认姿态）也必须看得到。
+- 产物 md / packed.json 零改动（纯新增 stderr 输出）。
+- dgtf_config.yaml 头部版本 → v1.23.21；CHANGELOG.md 加段。
+- smoke_test：SRC → v1.23.21；新增 check_v12321_tok_line（出现 1 次 + 排在
+  total_calls 累加之后 + 不许用 vp）。
+- 验收：冒烟 exit 0 / 0 ✗ / PASS 214；真跑 route 0（122s / 11 calls）
+  得 [tok] 13 行、末行 calls=13 tokens=39378
+  （比 result 快照多 2 次 —— 收尾复核的调用，引擎既有行为）。
+- 应用层配套（dgtf_app）：四张层卡（修行/研究/对撞/元）+ 顶部运行状态条
+  （起始时间 / 已跑时长 / 实时 token / 余额差算出的花费）。
