@@ -58,53 +58,103 @@ function fmtTime(ts) {
   return d.toLocaleTimeString('zh-CN', { hour12: false });
 }
 
+
+/* ── 四张层卡（任务卡样式）：修行 / 研究 / 对撞 / 元 ─────────────
+   头 = 层名 + 圈数/状态；中间 = 该层日志；脚 = 该层产物（md/运行日志/json）。
+   没跑到的层显示「静默等待」。 */
+const LANE_NAMES = ['修行', '研究', '对撞', '元'];
+const lanes = { tid: null, text: {}, stats: {}, meta: {} };
+
 function renderTasks() {
-  // 本函数整块重建 DOM —— 先把各任务已累积的日志文本留住，否则只剩最后一次增量
-  const keep = {};
-  Object.keys(taskData).forEach(id => {
-    const el = $('#log-' + id);
-    if (el) keep[id] = el.textContent;
-  });
-  const ids = Object.keys(taskData).sort((a, b) => taskData[b].created_at - taskData[a].created_at);
-  $('#tasks-empty').style.display = ids.length ? 'none' : 'block';
   const box = $('#tasks');
-  box.innerHTML = ids.map(id => {
-    const t = taskData[id];
-    const p = polls[id] || {};
-    let foot;
-    if (t.status === 'done' && t.output_name) {
-      foot = `<span class="chip packed">产物</span> <a href="#" data-open="${esc(t.output_name)}">${esc(t.output_name)}</a>`;
-    } else if (t.status === 'error') {
-      foot = `<span class="err">${esc(t.error || '失败')}</span>`;
-    } else {
-      foot = t.mock ? '<span class="muted">演练中…</span>'
-                    : '<span class="muted">引擎运行中（真跑约 30–45 分钟，可离开页面，服务在后台跑）</span>';
-    }
-    if (t.archive_log) foot += ` <a href="#" data-archive="${esc(t.archive_log)}">运行日志</a>`;
-    if (t.archive_json) foot += ` <a href="#" data-archive="${esc(t.archive_json)}">运行 json</a>`;
-    const right = [];
-    if (p.hidden) right.push(`<span class="muted">已折叠 ${p.hidden} 行明细</span>`);
-    right.push(`<a href="#" data-expand="${id}">${p.expanded ? '收起日志' : '展开日志'}</a>`);
-    const cancel = (t.status === 'running' || t.status === 'queued')
-      ? `<button data-cancel="${id}">取消</button>` : '';
-    return `<div class="task" data-id="${id}">
-      <div class="task-head">${badge(t.status)}
-        <span class="task-q">${esc(t.question)}</span>
-        <span class="task-time">${fmtTime(t.created_at)}</span>
-        ${cancel}
+  if (!box) return;
+  const ids = Object.keys(taskData);
+  const empty = $('#tasks-empty');
+  if (empty) empty.style.display = ids.length ? 'none' : 'block';
+  if (!ids.length) { box.innerHTML = ''; return; }
+  const tid = ids.sort((a, b) => taskData[b].created_at - taskData[a].created_at)[0];
+  const t = taskData[tid] || {};
+  const running = t.status === 'running' || t.status === 'queued';
+  const stamp = (t.output_name && t.output_name.endsWith('.md'))
+    ? t.output_name.slice(0, -3) : '';
+
+  box.innerHTML = LANE_NAMES.map(n => {
+    const body = (lanes.text && lanes.text[n]) || '';
+    const has = body.trim().length > 0;
+    const st = (lanes.stats && lanes.stats[n]) || {};
+    let head;
+    if (!has) head = `<span class="badge">静默等待</span>`;
+    else if (running) head = `<span class="badge running">第 ${st.round || 1}/${st.rounds_cap || '?'} 圈</span>`;
+    else head = `<span class="badge done">共 ${st.round || 1} 圈</span>`;
+    const files = (t.layer_artifacts || []).includes(n) && stamp
+      ? `<span class="chip packed">产物</span>`
+        + `<a href="#" data-archive="${esc(stamp + '.' + n + '.md')}">md</a>`
+        + `<a href="#" data-archive="${esc(stamp + '.' + n + '.run.log')}">运行日志</a>`
+        + `<a href="#" data-archive="${esc(stamp + '.' + n + '.json')}">json</a>`
+      : `<span class="muted">${has ? '该层运行中…' : '有运行到才显示'}</span>`;
+    return `<div class="task lane${has ? '' : ' idle'}">
+      <div class="task-head">
+        <span class="task-q">${n}层</span>
+        ${head}
       </div>
-      <pre class="log${p.expanded ? ' expanded' : ''}" id="log-${id}"></pre>
-      <div class="task-foot">${foot}<span class="foot-right">${right.join('')}</span></div>
+      <pre class="log lane-body">${has ? esc(body) : '静默等待…'}</pre>
+      <div class="task-foot">${files}</div>
     </div>`;
   }).join('');
-  // 填回文本并滚到底
-  ids.forEach(id => {
-    const el = $('#log-' + id);
-    if (el) {
-      el.textContent = keep[id] || '';
-      el.scrollTop = el.scrollHeight;
+  box.querySelectorAll('.lane-body').forEach(el => { el.scrollTop = el.scrollHeight; });
+}
+
+/* 运行状态条：起始时间 / 已跑时长 / 实时 token / 累计花费 */
+function fmtDur(s) {
+  if (s < 60) return s + ' 秒';
+  const m = Math.floor(s / 60);
+  if (m < 60) return m + ' 分 ' + (s % 60) + ' 秒';
+  return Math.floor(m / 60) + ' 时 ' + (m % 60) + ' 分';
+}
+
+function renderMeta() {
+  const box = $('#run-meta');
+  if (!box) return;
+  const ids = Object.keys(taskData);
+  if (!ids.length) { box.innerHTML = ''; return; }
+  const t = taskData[ids.sort((a, b) => taskData[b].created_at - taskData[a].created_at)[0]] || {};
+  const m = lanes.meta || {};
+  const bits = [];
+  const st = m.started_at || t.started_at;
+  if (st) {
+    const d = new Date(st * 1000);
+    bits.push(`<span>起始 <b>${d.toLocaleTimeString('zh-CN', { hour12: false })}</b></span>`);
+    const secs = Math.max(0, Math.floor(Date.now() / 1000 - st));
+    bits.push(`<span>已跑 <b>${fmtDur(secs)}</b></span>`);
+  }
+  const tok = m.tok || {};
+  bits.push(`<span>消耗 <b>${(tok.tokens || 0).toLocaleString()}</b> tokens`
+    + (tok.calls ? ` · ${tok.calls} 次调用` : '') + `</span>`);
+  const bal = m.balance || {};
+  if (bal.spent != null) bits.push(`<span>花费 <b>¥${Number(bal.spent).toFixed(4)}</b></span>`);
+  else if (bal.now != null) bits.push(`<span>余额 <b>¥${Number(bal.now).toFixed(2)}</b></span>`);
+  box.innerHTML = bits.join('<span class="sep">·</span>');
+}
+
+async function pollLanes() {
+  const ids = Object.keys(taskData);
+  if (!ids.length) {
+    if (lanes.tid !== null) {
+      lanes.tid = null; lanes.text = {}; lanes.meta = {};
+      renderTasks(); renderMeta();
     }
-  });
+    return;
+  }
+  const tid = ids.sort((a, b) => taskData[b].created_at - taskData[a].created_at)[0];
+  if (tid !== lanes.tid) { lanes.tid = tid; lanes.text = {}; }
+  try {
+    const r = await api('/api/tasks/' + tid + '/layers');
+    lanes.text = r.layers || {};
+    lanes.stats = r.stats || {};
+    lanes.meta = { started_at: r.started_at, tok: r.tok, balance: r.balance };
+    renderTasks();
+    renderMeta();
+  } catch (_) { /* 忽略 */ }
 }
 
 async function pollTask(id) {
@@ -328,6 +378,8 @@ async function loadExistingTasks() {
 
 function init() {
   buildAdv();
+  pollLanes();
+  setInterval(pollLanes, 1500);
   loadConfig();
   loadFacets();
   loadExistingTasks();

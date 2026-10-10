@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.20.py"
+SRC = HERE / "元DGTF-V1.23.21.py"
 
 os.environ.setdefault("DGTF_API_KEY", "sk-smoke-test-key")
 
@@ -1648,6 +1648,31 @@ def check_v12320_quiet_output():
         return False
     print("  ✓ [v12320] 留痕独立开关默认关：关时静音且不往下走、开时真打；"
           "show_ing/show_manifest 默认 false；yaml 与默认一致")
+    return True
+
+
+def check_v12321_tok_line():
+    """[v1.23.21] LLM 调用点必须打一行 `[tok] calls=N tokens=M`（且走 logging 不走 vp）。
+
+    ① 该行在 LLM 调用点出现**恰好 1 次**；
+    ② 接线：它排在 `self.total_calls += 1` **之后**（打的是累计值）；
+    ③ 负对照：不许写成 `vp(...)` —— vp 受 verbose 控制，关了就看不见。
+    """
+    bad = []
+    src = SRC.read_text(encoding="utf-8").replace("\r\n", "\n")
+    if src.count('logger.info("[tok] calls=%d tokens=%d"') != 1:
+        bad.append("LLM 调用点没打 [tok] 行（或不止一处）")
+    i_tot = src.find("self.total_calls += 1")
+    i_tok = src.find("[tok] calls=%d")
+    if not (0 <= i_tot < i_tok):
+        bad.append("[tok] 行不在 total_calls 累加之后（打不到累计值）")
+    if 'vp("[tok]' in src or "vp('[tok]" in src:
+        bad.append("[tok] 用了 vp —— 关 verbose 就看不见了")
+    if bad:
+        for _x in bad:
+            print("  \u2717 [v12321] %s" % _x)
+        return False
+    print("  \u2713 [v12321] LLM 调用后打 [tok] 累计行（logging、非 vp）")
     return True
 
 
@@ -10714,6 +10739,8 @@ def main():
     if not check_v12319_anchor_retrieval_reachable():
         return 1
     if not check_v12320_quiet_output():
+        return 1
+    if not check_v12321_tok_line():
         return 1
     q = "测试问题：AI 在数字 IC 设计里到底能做什么，哪些已经量产？"
     rows = []

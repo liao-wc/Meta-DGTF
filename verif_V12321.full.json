@@ -1,0 +1,920 @@
+{
+ "question": "测试：LLM 调用后实时输出 token 累计",
+ "route": [
+  "0"
+ ],
+ "keep": {
+  "0": "all"
+ },
+ "rounds": {
+  "0": 1,
+  "1": 4,
+  "both": 4,
+  "all": 4
+ },
+ "dispatch": {
+  "requested": [
+   "0"
+  ],
+  "order": [
+   "0"
+  ],
+  "ran": [
+   "0"
+  ],
+  "missing": [],
+  "failed": {},
+  "skipped": [],
+  "_parallel_mode": "serial"
+ },
+ "channels": [
+  "content",
+  "context",
+  "self"
+ ],
+ "self_text": [
+  "[修行层] ## 一、这一路看到了什么\n\n能由 0/1 自己长出来的只有一个东西：提交线这个形式——先暂存、满足判据再提交、结算时线后移。其余全部内容都指向外部：token 边界、标签命名、单位容忍度、判据来源。这一层真正产出的不是答案，是一个待填槽位的形状，而填充物被反复指认为不在场。0/1 对撞在这里暴露了它的边界：它能把「增量如何被承认」形式化，但对「什么被计入」没有发言权。候选列表里那十几条，逐条拆开看，几乎每一条都是一个外部约定。\n\n## 二、哪些还没看清\n\n- 提交线判据的来源：tokenizer、API 约定、消费方口径，三者都不是本地能推出的，也没有一个已存在的约定可查——这条线头没有下一站的坐标。\n- 偏差校正的锚点：校正需要可比基准，但基准要么是最终 usage（末端才有），要么是本地 tokenizer（口径可能不同），两者不在同一时刻可用。\n- & token 边界不由 0/1 产生：碰到了，过不去；缺的不是推导，是授权。\n- & 显示数字一旦出现即获得独立时间戳：结算只能覆盖它，不能追溯判定它当时对错。整批产物里多次逼近这一点，每次停在同一个位置。\n\n## 三、我决定不碰什么，为什么\n\n- 不碰 usage 偏差校正机制。为什么：校正必须先有判据，判据未定前没有可比基准，写出来的只是又一层估算。保持了这一层全程。状态：active。\n- 不碰输出通道选型。为什么：stdout / SSE / 回调都不改变累计语义，选型不能推进这里任何一条悬空线。保持了这一层全程。状态：stable。\n- 不碰「替提交线指定一个判据」。为什么：这条是看清了、可以碰的——随便选定本地 tokenizer 就能跑起来。但一旦选定，整批产物里被标为外部赋予的部分就被一个未经验证的选择关掉，而这个选择在层内无法验证。状态：active。\n- 不碰把两条存在论 & 当作待解决的问题。为什么：它们描述的是形式限制，不是缺陷；去「解决」等于要求 0/1 生成它本来就不生成的语义。状态：stable。\n- 撤回：无。上一层的两条悬置在这层之后理由仍成立。\n\n## 四、与问题相处的姿态\n\n这个问题的形状是：内部能生成的只有形式，语义必须等外部。所以停在这里不是没走完，是卡在一个方法论不能提供的东西上。下一步要么从外部取一个约定进来，并承认它是一个选择而不是一个发现；要么让累计停在候选层，如实标注它是估算。这两条我都没有在这层里走。问题停在这个岔口，不需要被推着往前。"
+ ],
+ "decidability": {
+  "decidability": "decidable",
+  "reason": "候选7、8两面读同一答案可判；其余0×0与&候选均为单位/粒度/通道/提交线口径未定，可由tokenizer或API约定规定；印记指出的量纲差异可分别报告。核心诉求可判。",
+  "features": [
+   "1×1锚点两面同读，可判",
+   "对撞生成第三者：提交线",
+   "0×0与&候选均属可规定的定义/口径问题"
+  ],
+  "decidable_aspects": [
+   "实时累计语义（会话内 input/output 加总）两面一致，可判",
+   "流式响应即实时输出、token 随 chunk 递增，两面一致，可判",
+   "计数单位（usage 字段 vs 本地 tokenizer）可由外部规定",
+   "提交线判据可由 tokenizer/API 约定/消费方口径规定",
+   "观看/计费/进度条单位容忍度不同，可各自分别报告",
+   "[外] 能否在流式回调中逐步累计token数",
+   "[外] 累计值是否与最终usage一致",
+   "[外] 实时输出是否在每chunk后更新"
+  ],
+  "undecidable_aspects": [],
+  "evidence": [
+   {
+    "aspect": "实时累计语义两面同读",
+    "source": "候选7 [1×1]"
+   },
+   {
+    "aspect": "流式即实时、chunk 递增",
+    "source": "候选8 [1×1]"
+   },
+   {
+    "aspect": "计数单位可规定",
+    "source": "候选1 / &印记 ontological"
+   },
+   {
+    "aspect": "提交线判据可规定",
+    "source": "悬空线头1 / ing四"
+   },
+   {
+    "aspect": "多消费方单位可分别报告",
+    "source": "&印记 axiological / 悬空线头2"
+   }
+  ],
+  "_evidence_full": [
+   {
+    "aspect": "实时累计语义两面同读",
+    "source": "候选7 [1×1]"
+   },
+   {
+    "aspect": "流式即实时、chunk 递增",
+    "source": "候选8 [1×1]"
+   },
+   {
+    "aspect": "计数单位可规定",
+    "source": "候选1 / &印记 ontological"
+   },
+   {
+    "aspect": "提交线判据可规定",
+    "source": "悬空线头1 / ing四"
+   },
+   {
+    "aspect": "多消费方单位可分别报告",
+    "source": "&印记 axiological / 悬空线头2"
+   }
+  ],
+  "_source": "pool+external",
+  "_und_untraced": [],
+  "_und_traced": [],
+  "_ext_status": "decidable",
+  "_ext_reason": "该问题可操作化为对流式LLM调用中token计数是否随输出逐步更新的测试，有明确断言与判决实验。",
+  "_ext_features": [
+   "可通过操作化定义转化为可测命题",
+   "有明确的判决实验",
+   "是经验问题或定义问题"
+  ],
+  "_divergent": false,
+  "_pool_status": "decidable"
+ },
+ "views": {
+  "0": {
+   "entry": "0",
+   "anchor": "LLM 调用后实时输出 token 累计，这件事此刻还没被展开。",
+   "candidates": [
+    {
+     "desc": "token 累计的计数单位：是 LLM 返回的 usage 字段，还是本地 tokenizer 现算",
+     "kind": "concept",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点未提计数单位/usage/tokenizer",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "“实时”的粒度：每个 token 推一次，还是每 N 个 token / 每句话推一次",
+     "kind": "concept",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点未提实时输出的粒度",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "输出通道：stdout 原地刷新、SSE、WebSocket、还是回调函数",
+     "kind": "startpoint",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点未提输出通道",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "累计值的消费方是谁——终端用户观看、进度条、计费、还是日志",
+     "kind": "question",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点未提累计值消费方",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "流式响应中 usage 只在末尾返回，中途累计从哪来",
+     "kind": "thread",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点未提流式usage返回时机",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "承载累计状态的对象：全局计数器、闭包变量、还是 store",
+     "kind": "object",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点未提承载累计状态的对象",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "token 累计指一次会话内 input/output token 的加总，不是单次调用的用量",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点直接提到token累计，本条定义其范围",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "实时输出意味着流式响应，token 随 chunk 到达而递增，而非等完整响应返回后一次性计算",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点直接提到实时输出，本条解释其含义",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "LLM API 的 usage 字段通常在最后一个 chunk 或流结束后才给出精确值",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点未提LLM API usage字段",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "流式过程中只能估算 token，客户端要么用 tokenizer 本地计算，要么按 chunk 累积近似",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点未提流式估算token",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "估算值与最终 usage 的偏差如何校正，是一个需要处理的一致性问题",
+     "kind": "thread",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点未提估算值与usage偏差校正",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "累计的粒度是单次对话、单次请求，还是整个会话窗口",
+     "kind": "question",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点未提累计的粒度/范围",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "承载累计值的界面元素（状态栏、进度条、计数器）是这件事的可见产物",
+     "kind": "object",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点未提界面元素",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "从流式 chunk 事件里提取 delta 并累加，是最小可跑的起点",
+     "kind": "startpoint",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点未提chunk/delta提取累加",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    }
+   ],
+   "collision": "一、让两端各自把话说完  \n0 端：累计值在第一个可承认的 token 之前需要一个可加的空位；这个空位决定后续增量写到哪里。若没有这个空位，刷新动作没有旧值可替换。  \n1 端：每次增加都要绑定一个可指认的事件；事件不可指认时，加总只是在同一批数据上重复计数。1 端先要求“已经发生”的证据，再要求数字变化。\n\n二、各推到极端  \n0 推到极端：只承认最终结算，未确认一律不可计。每次刷新都必须先撤销上一次显示，因为上一次显示也未被最终确认；屏幕会变成连续撤销，无法稳定。  \n1 推到极端：任何到达的片段都先加一，token 边界未定也先计入。一次网络分片重传就会造成不可检测的双计，因为 0 侧没有保留“同一事件”的标识。\n\n三、找反转点  \n反转不在“先 0 后 1”，而在“为了让 1 可信，必须先让 0 停留一段时间”。等待确认会牺牲实时，却保护了计数。  \n另一个反转：显示越接近实时，越依赖未确认的 0；显示越接近结算，越不像实时。同一个刷新动作同时被这两个方向拉扯。\n\n四、让对撞生成新东西  \n生成物是一条提交线。delta 到达后先停在 0 侧；满足本地判据才提交为 1。屏幕只读已提交的 1，未提交的 delta 不进入数字，但可以留作待提交量。  \n最终结算到达时，提交线后移，把待提交量归入或剔除；显示必须允许回退，不能只允许递增。  \n刷新节奏由提交事件决定，不由 chunk 事件决定。提交太密时合帧，让数字在人类可读的间隔上变化。\n\n五、标出撞不动的地方  \n& 0 和 1 不能决定 token 的边界；边界来自 tokenizer、API 约定或消费方口径。  \n& 屏幕上的数字一旦显示，就获得了自己的时间戳；最终结算到达时只能覆盖它，不能证明当时那个数字是错的还是对的。  \n& 输入、输出、缓存、推理这些标签不在 0/1 对撞内产生，必须先由外部赋予。  \n& 观看、计费、进度条对“一个单位”的容忍度不同，一个计数器无法同时满足。  \n& 若消费方把最终结算当作唯一真值，实时数字只能被允许在事后被推翻，否则它就不是实时数字。\n\n六、回到原始问题/处境  \n这件事的显现次序是：先出现“什么算一次到达”的判定，再出现 0 侧暂存，再出现 1 侧提交，再出现显示刷新，最后出现结算回切。节奏不是 token 的节奏，而是提交事件的节奏；屏幕上的累计是提交线当前的位置。  \n此刻还没被展开的部分，是提交线的判据由谁定，以及显示是否允许在结算时向下跳。这两点不定，实时累计只能停在候选层。  \n此处未生：0 和 1 本身不产生 token 语义，只产生增量的形式。",
+   "amps": [
+    {
+     "desc": "token边界不由0/1对撞产生，需外部赋予；0和1只产生增量形式，不产生语义。",
+     "type": "ontological",
+     "source": "0",
+     "polarity": "1",
+     "polarity_why": "边界需外部赋予，0/1不产语义"
+    },
+    {
+     "desc": "显示的数字一旦出现就获得独立时间戳，结算只能覆盖，无法判定当时对错。",
+     "type": "ontological",
+     "source": "0",
+     "polarity": "1",
+     "polarity_why": "显示即独立，结算只覆盖"
+    },
+    {
+     "desc": "提交线判据未定，实时累计只能停在候选层，无法成为稳定计数。",
+     "type": "structural",
+     "source": "0",
+     "polarity": "0",
+     "polarity_why": "判据未定，累计停候选层"
+    },
+    {
+     "desc": "观看、计费、进度条对单位容忍度不同，一个计数器无法同时满足。",
+     "type": "axiological",
+     "source": "0",
+     "polarity": "1",
+     "polarity_why": "单位容忍不同，单计不可兼"
+    }
+   ],
+   "threads": [
+    {
+     "desc": "提交线的判据由谁定：tokenizer、API约定还是消费方口径？未定则实时累计无法稳定。",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "判据主体未定，累计不稳"
+    },
+    {
+     "desc": "显示是否允许在结算时向下跳？若不允许，实时数字与最终结算的冲突无法调和。",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "是否下跳未决，冲突悬置"
+    },
+    {
+     "desc": "估算值与最终usage的偏差校正机制尚未成形，影响提交线的可信度。",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "校正机制未成形，可信悬"
+    }
+   ],
+   "probes": [
+    {
+     "question": "若中途只能按 chunk 累积近似，那'实时累计'的最小可跑定义是不是就退化成'每 chunk 累加 delta 文本长度'？",
+     "link": "回到原始问题：实时累计的最小可跑起点",
+     "expected_gain": 0.7,
+     "covers": [
+      "T5",
+      "T8",
+      "T12"
+     ]
+    },
+    {
+     "question": "结算时数字向下跳，是显示层的问题还是累计状态对象的问题——状态里存的是估算还是最终值？",
+     "link": "回到原始问题：实时数字与结算冲突的落点",
+     "expected_gain": 0.65,
+     "covers": [
+      "T6",
+      "T9"
+     ]
+    },
+    {
+     "question": "提交线判据若由消费方口径定，观看/计费/进度条能否各自持有独立计数器而非共用一个？",
+     "link": "回到原始问题：一个计数器能否同时满足多方",
+     "expected_gain": 0.6,
+     "covers": [
+      "T4",
+      "T10",
+      "T11"
+     ]
+    }
+   ],
+   "meta": [
+    "本次对撞中，0和1共同绕开了token语义的生成问题，这属于外部赋予的盲区。",
+    "此处未生：0和1本身不产生token语义，只产生增量的形式。",
+    "[P3] & 候选（各圈累计）6 条 / 本层 amps 4 条（比值 0.67；amps 可能含 adjudications/上游合并的贡献，比值只作方向参考）"
+   ],
+   "decidable_product": {},
+   "undecidable_product": {},
+   "distance_to_question": 1.0,
+   "covered_aspects": [],
+   "uncovered_aspects": [],
+   "untouched": [
+    {
+     "desc": "token 累计的计数单位：是 LLM 返回的 usage 字段，还是本地 tokenizer 现算",
+     "source": "judge"
+    },
+    {
+     "desc": "“实时”的粒度：每个 token 推一次，还是每 N 个 token / 每句话推一次",
+     "source": "judge"
+    },
+    {
+     "desc": "输出通道：stdout 原地刷新、SSE、WebSocket、还是回调函数",
+     "source": "judge"
+    },
+    {
+     "desc": "累计值的消费方是谁——终端用户观看、进度条、计费、还是日志",
+     "source": "judge"
+    },
+    {
+     "desc": "流式响应中 usage 只在末尾返回，中途累计从哪来",
+     "source": "judge"
+    },
+    {
+     "desc": "承载累计状态的对象：全局计数器、闭包变量、还是 store",
+     "source": "judge"
+    },
+    {
+     "desc": "LLM API 的 usage 字段通常在最后一个 chunk 或流结束后才给出精确值",
+     "source": "judge"
+    },
+    {
+     "desc": "流式过程中只能估算 token，客户端要么用 tokenizer 本地计算，要么按 chunk 累积近似",
+     "source": "judge"
+    },
+    {
+     "desc": "估算值与最终 usage 的偏差如何校正，是一个需要处理的一致性问题",
+     "source": "judge"
+    },
+    {
+     "desc": "累计的粒度是单次对话、单次请求，还是整个会话窗口",
+     "source": "judge"
+    },
+    {
+     "desc": "承载累计值的界面元素（状态栏、进度条、计数器）是这件事的可见产物",
+     "source": "judge"
+    },
+    {
+     "desc": "从流式 chunk 事件里提取 delta 并累加，是最小可跑的起点",
+     "source": "judge"
+    }
+   ],
+   "suspensions": [
+    {
+     "id": "s_001",
+     "target": "usage 偏差校正机制",
+     "reason": "我看清了校正需要提交线判据，可以碰，但选择不碰，因为判据未定前校正无锚",
+     "reason_type": "explicit",
+     "layer": 1,
+     "last_confirmed_layer": 1,
+     "confirmed_layers": [
+      1
+     ],
+     "status": "active",
+     "revoked_at": null,
+     "revoke_reason": "",
+     "resolved_at": null,
+     "stable_since": null,
+     "needs_review": false
+    },
+    {
+     "id": "s_002",
+     "target": "输出通道选型",
+     "reason": "我看清了 stdout/SSE/回调都可承载，可以碰，但选择不碰，因为通道不改变累计语义",
+     "reason_type": "explicit",
+     "layer": 1,
+     "last_confirmed_layer": 1,
+     "confirmed_layers": [
+      1
+     ],
+     "status": "active",
+     "revoked_at": null,
+     "revoke_reason": "",
+     "resolved_at": null,
+     "stable_since": null,
+     "needs_review": false
+    }
+   ],
+   "engagements": [
+    {
+     "target": "实时累计的最小可跑起点",
+     "how": "从 chunk delta 累加出发，先不碰 usage 校正"
+    }
+   ],
+   "refinements": [],
+   "reconfirmations": [],
+   "revocations": [],
+   "deferrals": [],
+   "resolutions": [],
+   "escalations": [],
+   "reclassifications": [],
+   "settlement": {},
+   "adjudications": [],
+   "both_quota": {},
+   "carry": [
+    {
+     "question": "上面这几条候选被判为「后补／换说法复述」，本圈禁止以任何形式重述它们——原样、换说法、扩写都算。只交真的长出来的新东西：token 累计的计数单位：是 LLM 返回的 usage 字段，还是本地 tokenizer 现算；“实时”的粒度：每个 token 推一次，还是每 N 个 token / 每句话推一次；输出通道：stdout 原地刷新、SSE、WebSocket、还是回调函数；累计值的消费方是谁——终端用户观看、进度条、计费、还是日志；流式响应中 usage 只在末尾返回，中途累计从哪来；承载累计状态的对象：全局计数器、闭包变量、还是 store",
+     "link": "self-check 判定的复述条目，绕开去重就能喷更多，但那不叫展开",
+     "expected_gain": 0.6,
+     "kind": "candidate",
+     "text": "上面这几条候选被判为「后补／换说法复述」，本圈禁止以任何形式重述它们——原样、换说法、扩写都算。只交真的长出来的新东西：token 累计的计数单位：是 LLM 返回的 usage 字段，还是本地 tokenizer 现算；“实时”的粒度：每个 token 推一次，还是每 N 个 token / 每句话推一次；输出通道：stdout 原地刷新、SSE、WebSocket、还是回调函数；累计值的消费方是谁——终端用户观看、进度条、计费、还是日志；流式响应中 usage 只在末尾返回，中途累计从哪来；承载累计状态的对象：全局计数器、闭包变量、还是 store",
+     "banned": [
+      "token 累计的计数单位：是 LLM 返回的 usage 字段，还是本地 tokenizer 现算",
+      "“实时”的粒度：每个 token 推一次，还是每 N 个 token / 每句话推一次",
+      "输出通道：stdout 原地刷新、SSE、WebSocket、还是回调函数",
+      "累计值的消费方是谁——终端用户观看、进度条、计费、还是日志",
+      "流式响应中 usage 只在末尾返回，中途累计从哪来",
+      "承载累计状态的对象：全局计数器、闭包变量、还是 store"
+     ]
+    }
+   ],
+   "carry_check": {},
+   "carry_checks": [],
+   "carry_dropped": [],
+   "carry_dropped_all": [],
+   "rephrase_ratio": null,
+   "probe_skipped": false,
+   "rounds_cap": 1,
+   "duel_suspensions": [],
+   "meta_closure": {},
+   "stop_reason": "体力耗尽（1 圈走满，未触发任何停止判据，是被截断不是自然停止）\n  本轮显形：& 4 / 线头 4 / 悬置 2 / 探针 3\n  未生质量：real",
+   "rounds_run": 1,
+   "roles_run": [
+    "摊开"
+   ],
+   "closure_reason": "",
+   "round_log": [
+    {
+     "round": 1,
+     "role": "摊开",
+     "new_amps": 4,
+     "new_threads": 4,
+     "idle_amp": 0,
+     "idle_thread": 0,
+     "idle_stall": 0,
+     "why": ""
+    }
+   ],
+   "rehashed": [],
+   "idle": false,
+   "rendered": "━━━ 修行 · entry=0 ━━━\n\n【锚点】LLM 调用后实时输出 token 累计，这件事此刻还没被展开。\n\n【候选】\n  [0×0] token 累计的计数单位：是 LLM 返回的 usage 字段，还是本地 tokenizer 现算  属性◈阴展开\n  [0×0] “实时”的粒度：每个 token 推一次，还是每 N 个 token / 每句话推一次  属性◈阴展开\n  [0×0] 输出通道：stdout 原地刷新、SSE、WebSocket、还是回调函数  属性◈阴展开\n  [0×0] 累计值的消费方是谁——终端用户观看、进度条、计费、还是日志  属性◈阴展开\n  [0×0] 流式响应中 usage 只在末尾返回，中途累计从哪来  属性◈阴展开\n  [0×0] 承载累计状态的对象：全局计数器、闭包变量、还是 store  属性◈阴展开\n  [1×1] token 累计指一次会话内 input/output token 的加总，不是单次调用的用量  属性◈阳展开\n  [1×1] 实时输出意味着流式响应，token 随 chunk 到达而递增，而非等完整响应返回后一次性计算  属性◈阳展开\n  [1×0] LLM API 的 usage 字段通常在最后一个 chunk 或流结束后才给出精确值  ⚡& 属性◈阳展开\n  [1×0] 流式过程中只能估算 token，客户端要么用 tokenizer 本地计算，要么按 chunk 累积近似  ⚡& 属性◈阳展开\n  [1×0] 估算值与最终 usage 的偏差如何校正，是一个需要处理的一致性问题  ⚡& 属性◈阳展开\n  [1×0] 累计的粒度是单次对话、单次请求，还是整个会话窗口  ⚡& 属性◈阳展开\n  [1×0] 承载累计值的界面元素（状态栏、进度条、计数器）是这件事的可见产物  ⚡& 属性◈阳展开\n  [1×0] 从流式 chunk 事件里提取 delta 并累加，是最小可跑的起点  ⚡& 属性◈阳展开\n\n【ing 对撞】\n一、让两端各自把话说完  \n0 端：累计值在第一个可承认的 token 之前需要一个可加的空位；这个空位决定后续增量写到哪里。若没有这个空位，刷新动作没有旧值可替换。  \n1 端：每次增加都要绑定一个可指认的事件；事件不可指认时，加总只是在同一批数据上重复计数。1 端先要求“已经发生”的证据，再要求数字变化。\n\n二、各推到极端  \n0 推到极端：只承认最终结算，未确认一律不可计。每次刷新都必须先撤销上一次显示，因为上一次显示也未被最终确认；屏幕会变成连续撤销，无法稳定。  \n1 推到极端：任何到达的片段都先加一，token 边界未定也先计入。一次网络分片重传就会造成不可检测的双计，因为 0 侧没有保留“同一事件”的标识。\n\n三、找反转点  \n反转不在“先 0 后 1”，而在“为了让 1 可信，必须先让 0 停留一段时间”。等待确认会牺牲实时，却保护了计数。  \n另一个反转：显示越接近实时，越依赖未确认的 0；显示越接近结算，越不像实时。同一个刷新动作同时被这两个方向拉扯。\n\n四、让对撞生成新东西  \n生成物是一条提交线。delta 到达后先停在 0 侧；满足本地判据才提交为 1。屏幕只读已提交的 1，未提交的 delta 不进入数字，但可以留作待提交量。  \n最终结算到达时，提交线后移，把待提交量归入或剔除；显示必须允许回退，不能只允许递增。  \n刷新节奏由提交事件决定，不由 chunk 事件决定。提交太密时合帧，让数字在人类可读的间隔上变化。\n\n五、标出撞不动的地方  \n& 0 和 1 不能决定 token 的边界；边界来自 tokenizer、API 约定或消费方口径。  \n& 屏幕上的数字一旦显示，就获得了自己的时间戳；最终结算到达时只能覆盖它，不能证明当时那个数字是错的还是对的。  \n& 输入、输出、缓存、推理这些标签不在 0/1 对撞内产生，必须先由外部赋予。  \n& 观看、计费、进度条对“一个单位”的容忍度不同，一个计数器无法同时满足。  \n& 若消费方把最终结算当作唯一真值，实时数字只能被允许在事后被推翻，否则它就不是实时数字。\n\n六、回到原始问题/处境  \n这件事的显现次序是：先出现“什么算一次到达”的判定，再出现 0 侧暂存，再出现 1 侧提交，再出现显示刷新，最后出现结算回切。节奏不是 token 的节奏，而是提交事件的节奏；屏幕上的累计是提交线当前的位置。  \n此刻还没被展开的部分，是提交线的判据由谁定，以及显示是否允许在结算时向下跳。这两点不定，实时累计只能停在候选层。  \n此处未生：0 和 1 本身不产生 token 语义，只产生增量的形式。\n\n【& 印记】\n  - [存在论] token边界不由0/1对撞产生，需外部赋予；0和1只产生增量形式，不产生语义。\n  - [存在论] 显示的数字一旦出现就获得独立时间戳，结算只能覆盖，无法判定当时对错。\n  - [结构性] 提交线判据未定，实时累计只能停在候选层，无法成为稳定计数。\n  - [价值性] 观看、计费、进度条对单位容忍度不同，一个计数器无法同时满足。\n\n【悬空线头】\n  💭 提交线的判据由谁定：tokenizer、API约定还是消费方口径？未定则实时累计无法稳定。\n  💭 显示是否允许在结算时向下跳？若不允许，实时数字与最终结算的冲突无法调和。\n  💭 估算值与最终usage的偏差校正机制尚未成形，影响提交线的可信度。\n  💭 提交线判据由谁定——tokenizer/API/消费方口径，无外部约定可查\n\n【探针回归】\n  ? 若中途只能按 chunk 累积近似，那'实时累计'的最小可跑定义是不是就退化成'每 chunk 累加 delta 文本长度'？（回来：回到原始问题：实时累计的最小可跑起点｜增益0.7）\n  ? 结算时数字向下跳，是显示层的问题还是累计状态对象的问题——状态里存的是估算还是最终值？（回来：回到原始问题：实时数字与结算冲突的落点｜增益0.65）\n  ? 提交线判据若由消费方口径定，观看/计费/进度条能否各自持有独立计数器而非共用一个？（回来：回到原始问题：一个计数器能否同时满足多方｜增益0.6）\n\n【尚未触及的方面】\n  💭 token 累计的计数单位：是 LLM 返回的 usage 字段，还是本地 tokenizer 现算（judge）\n  💭 “实时”的粒度：每个 token 推一次，还是每 N 个 token / 每句话推一次（judge）\n  💭 输出通道：stdout 原地刷新、SSE、WebSocket、还是回调函数（judge）\n  💭 累计值的消费方是谁——终端用户观看、进度条、计费、还是日志（judge）\n  💭 流式响应中 usage 只在末尾返回，中途累计从哪来（judge）\n  💭 承载累计状态的对象：全局计数器、闭包变量、还是 store（judge）\n  💭 LLM API 的 usage 字段通常在最后一个 chunk 或流结束后才给出精确值（judge）\n  💭 流式过程中只能估算 token，客户端要么用 tokenizer 本地计算，要么按 chunk 累积近似（judge）\n  💭 估算值与最终 usage 的偏差如何校正，是一个需要处理的一致性问题（judge）\n  💭 累计的粒度是单次对话、单次请求，还是整个会话窗口（judge）\n  💭 承载累计值的界面元素（状态栏、进度条、计数器）是这件事的可见产物（judge）\n  💭 从流式 chunk 事件里提取 delta 并累加，是最小可跑的起点（judge）\n\n【本层碰了】\n  - 实时累计的最小可跑起点：从 chunk delta 累加出发，先不碰 usage 校正\n\n【主动悬置（决定不碰）】\n  - usage 偏差校正机制：我看清了校正需要提交线判据，可以碰，但选择不碰，因为判据未定前校正无锚[explicit]\n  - 输出通道选型：我看清了 stdout/SSE/回调都可承载，可以碰，但选择不碰，因为通道不改变累计语义[explicit]\n\n【view】\n## 一、这一路看到了什么\n\n能由 0/1 自己长出来的只有一个东西：提交线这个形式——先暂存、满足判据再提交、结算时线后移。其余全部内容都指向外部：token 边界、标签命名、单位容忍度、判据来源。这一层真正产出的不是答案，是一个待填槽位的形状，而填充物被反复指认为不在场。0/1 对撞在这里暴露了它的边界：它能把「增量如何被承认」形式化，但对「什么被计入」没有发言权。候选列表里那十几条，逐条拆开看，几乎每一条都是一个外部约定。\n\n## 二、哪些还没看清\n\n- 提交线判据的来源：tokenizer、API 约定、消费方口径，三者都不是本地能推出的，也没有一个已存在的约定可查——这条线头没有下一站的坐标。\n- 偏差校正的锚点：校正需要可比基准，但基准要么是最终 usage（末端才有），要么是本地 tokenizer（口径可能不同），两者不在同一时刻可用。\n- & token 边界不由 0/1 产生：碰到了，过不去；缺的不是推导，是授权。\n- & 显示数字一旦出现即获得独立时间戳：结算只能覆盖它，不能追溯判定它当时对错。整批产物里多次逼近这一点，每次停在同一个位置。\n\n## 三、我决定不碰什么，为什么\n\n- 不碰 usage 偏差校正机制。为什么：校正必须先有判据，判据未定前没有可比基准，写出来的只是又一层估算。保持了这一层全程。状态：active。\n- 不碰输出通道选型。为什么：stdout / SSE / 回调都不改变累计语义，选型不能推进这里任何一条悬空线。保持了这一层全程。状态：stable。\n- 不碰「替提交线指定一个判据」。为什么：这条是看清了、可以碰的——随便选定本地 tokenizer 就能跑起来。但一旦选定，整批产物里被标为外部赋予的部分就被一个未经验证的选择关掉，而这个选择在层内无法验证。状态：active。\n- 不碰把两条存在论 & 当作待解决的问题。为什么：它们描述的是形式限制，不是缺陷；去「解决」等于要求 0/1 生成它本来就不生成的语义。状态：stable。\n- 撤回：无。上一层的两条悬置在这层之后理由仍成立。\n\n## 四、与问题相处的姿态\n\n这个问题的形状是：内部能生成的只有形式，语义必须等外部。所以停在这里不是没走完，是卡在一个方法论不能提供的东西上。下一步要么从外部取一个约定进来，并承认它是一个选择而不是一个发现；要么让累计停在候选层，如实标注它是估算。这两条我都没有在这层里走。问题停在这个岔口，不需要被推着往前。\n\n【元反思】\n  ∘ 本次对撞中，0和1共同绕开了token语义的生成问题，这属于外部赋予的盲区。\n  ∘ 此处未生：0和1本身不产生token语义，只产生增量的形式。\n\n【质量线索】candidates_backfilled(sc:6)\n\n【质量评价】候选后补（candidates_backfilled(sc:6)）\n\n【自省】候选1-6为0×0纯展开项，非补写；ing未复述view原话，仅共享&印记。\n\n【「此处未生」计数】本圈 1 处（阈值 3）　（诚实姿态，未越界）\n  分布：ing×1",
+   "manifest": "## 一、这一路看到了什么\n\n能由 0/1 自己长出来的只有一个东西：提交线这个形式——先暂存、满足判据再提交、结算时线后移。其余全部内容都指向外部：token 边界、标签命名、单位容忍度、判据来源。这一层真正产出的不是答案，是一个待填槽位的形状，而填充物被反复指认为不在场。0/1 对撞在这里暴露了它的边界：它能把「增量如何被承认」形式化，但对「什么被计入」没有发言权。候选列表里那十几条，逐条拆开看，几乎每一条都是一个外部约定。\n\n## 二、哪些还没看清\n\n- 提交线判据的来源：tokenizer、API 约定、消费方口径，三者都不是本地能推出的，也没有一个已存在的约定可查——这条线头没有下一站的坐标。\n- 偏差校正的锚点：校正需要可比基准，但基准要么是最终 usage（末端才有），要么是本地 tokenizer（口径可能不同），两者不在同一时刻可用。\n- & token 边界不由 0/1 产生：碰到了，过不去；缺的不是推导，是授权。\n- & 显示数字一旦出现即获得独立时间戳：结算只能覆盖它，不能追溯判定它当时对错。整批产物里多次逼近这一点，每次停在同一个位置。\n\n## 三、我决定不碰什么，为什么\n\n- 不碰 usage 偏差校正机制。为什么：校正必须先有判据，判据未定前没有可比基准，写出来的只是又一层估算。保持了这一层全程。状态：active。\n- 不碰输出通道选型。为什么：stdout / SSE / 回调都不改变累计语义，选型不能推进这里任何一条悬空线。保持了这一层全程。状态：stable。\n- 不碰「替提交线指定一个判据」。为什么：这条是看清了、可以碰的——随便选定本地 tokenizer 就能跑起来。但一旦选定，整批产物里被标为外部赋予的部分就被一个未经验证的选择关掉，而这个选择在层内无法验证。状态：active。\n- 不碰把两条存在论 & 当作待解决的问题。为什么：它们描述的是形式限制，不是缺陷；去「解决」等于要求 0/1 生成它本来就不生成的语义。状态：stable。\n- 撤回：无。上一层的两条悬置在这层之后理由仍成立。\n\n## 四、与问题相处的姿态\n\n这个问题的形状是：内部能生成的只有形式，语义必须等外部。所以停在这里不是没走完，是卡在一个方法论不能提供的东西上。下一步要么从外部取一个约定进来，并承认它是一个选择而不是一个发现；要么让累计停在候选层，如实标注它是估算。这两条我都没有在这层里走。问题停在这个岔口，不需要被推着往前。",
+   "quality_flags": [
+    "candidates_backfilled(sc:6)"
+   ],
+   "quality_verdict": "候选后补（candidates_backfilled(sc:6)）",
+   "self_check": {
+    "suspicious_candidates": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "suspicious_amps": [
+     1,
+     2
+    ],
+    "ing_rephrased": false,
+    "honest_about_empty": true,
+    "unsaid_count": 1,
+    "unsaid_is_escape": false,
+    "unsaid_where": "ing×1",
+    "flow_verdict": "对撞真产出了提交线这一形式，并诚实标出外部依赖；候选层与ing衔接清楚。",
+    "view_verdict": "view停在待填槽位的形状上，开放且未越权确定，符合'看到什么'的标准。",
+    "amp_ratio_verdict": "4条&全部来自对撞撞不动处，非凑数。",
+    "notes": "候选1-6为0×0纯展开项，非补写；ing未复述view原话，仅共享&印记。"
+   },
+   "errors": [],
+   "anchor_touched": [
+    {
+     "desc": "LLM 调用",
+     "source": "anchor"
+    },
+    {
+     "desc": "token 累计",
+     "source": "anchor"
+    },
+    {
+     "desc": "实时输出",
+     "source": "anchor"
+    }
+   ],
+   "ing_structured": {}
+  }
+ },
+ "pools": {
+  "0": {
+   "amps": [
+    {
+     "desc": "token边界不由0/1对撞产生，需外部赋予；0和1只产生增量形式，不产生语义。",
+     "type": "ontological",
+     "source": "0",
+     "polarity": "1",
+     "polarity_why": "边界需外部赋予，0/1不产语义"
+    },
+    {
+     "desc": "显示的数字一旦出现就获得独立时间戳，结算只能覆盖，无法判定当时对错。",
+     "type": "ontological",
+     "source": "0",
+     "polarity": "1",
+     "polarity_why": "显示即独立，结算只覆盖"
+    },
+    {
+     "desc": "提交线判据未定，实时累计只能停在候选层，无法成为稳定计数。",
+     "type": "structural",
+     "source": "0",
+     "polarity": "0",
+     "polarity_why": "判据未定，累计停候选层"
+    },
+    {
+     "desc": "观看、计费、进度条对单位容忍度不同，一个计数器无法同时满足。",
+     "type": "axiological",
+     "source": "0",
+     "polarity": "1",
+     "polarity_why": "单位容忍不同，单计不可兼"
+    }
+   ],
+   "threads": [
+    {
+     "desc": "提交线的判据由谁定：tokenizer、API约定还是消费方口径？未定则实时累计无法稳定。",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "判据主体未定，累计不稳"
+    },
+    {
+     "desc": "显示是否允许在结算时向下跳？若不允许，实时数字与最终结算的冲突无法调和。",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "是否下跳未决，冲突悬置"
+    },
+    {
+     "desc": "估算值与最终usage的偏差校正机制尚未成形，影响提交线的可信度。",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "校正机制未成形，可信悬"
+    },
+    {
+     "desc": "提交线判据由谁定——tokenizer/API/消费方口径，无外部约定可查",
+     "kind": "thread",
+     "source": "probe_boundary",
+     "polarity_why": "无外部约定，判据悬空",
+     "polarity": "0"
+    }
+   ],
+   "probes": [
+    {
+     "question": "若中途只能按 chunk 累积近似，那'实时累计'的最小可跑定义是不是就退化成'每 chunk 累加 delta 文本长度'？",
+     "link": "回到原始问题：实时累计的最小可跑起点",
+     "expected_gain": 0.7,
+     "covers": [
+      "T5",
+      "T8",
+      "T12"
+     ]
+    },
+    {
+     "question": "结算时数字向下跳，是显示层的问题还是累计状态对象的问题——状态里存的是估算还是最终值？",
+     "link": "回到原始问题：实时数字与结算冲突的落点",
+     "expected_gain": 0.65,
+     "covers": [
+      "T6",
+      "T9"
+     ]
+    },
+    {
+     "question": "提交线判据若由消费方口径定，观看/计费/进度条能否各自持有独立计数器而非共用一个？",
+     "link": "回到原始问题：一个计数器能否同时满足多方",
+     "expected_gain": 0.6,
+     "covers": [
+      "T4",
+      "T10",
+      "T11"
+     ]
+    }
+   ],
+   "meta": [
+    "本次对撞中，0和1共同绕开了token语义的生成问题，这属于外部赋予的盲区。",
+    "此处未生：0和1本身不产生token语义，只产生增量的形式。",
+    "[上一圈 self-check 反馈] 可疑候选 [1, 2, 3, 4, 5, 6]；可疑 & [1, 2]"
+   ],
+   "suspensions": [
+    {
+     "id": "s_001",
+     "target": "usage 偏差校正机制",
+     "reason": "我看清了校正需要提交线判据，可以碰，但选择不碰，因为判据未定前校正无锚",
+     "reason_type": "explicit",
+     "layer": 1,
+     "last_confirmed_layer": 1,
+     "confirmed_layers": [
+      1
+     ],
+     "status": "active",
+     "revoked_at": null,
+     "revoke_reason": "",
+     "resolved_at": null,
+     "stable_since": null,
+     "needs_review": false
+    },
+    {
+     "id": "s_002",
+     "target": "输出通道选型",
+     "reason": "我看清了 stdout/SSE/回调都可承载，可以碰，但选择不碰，因为通道不改变累计语义",
+     "reason_type": "explicit",
+     "layer": 1,
+     "last_confirmed_layer": 1,
+     "confirmed_layers": [
+      1
+     ],
+     "status": "active",
+     "revoked_at": null,
+     "revoke_reason": "",
+     "resolved_at": null,
+     "stable_since": null,
+     "needs_review": false
+    }
+   ],
+   "sub_questions": [],
+   "deferrals": [],
+   "escalations": [],
+   "decidability_log": [],
+   "duel_suspensions": [],
+   "duel_alignment": {},
+   "engagements": [
+    {
+     "target": "实时累计的最小可跑起点",
+     "how": "从 chunk delta 累加出发，先不碰 usage 校正"
+    }
+   ],
+   "refinements": [],
+   "decidable_channel": {},
+   "undecidable_channel": {}
+  },
+  "1": {
+   "amps": [],
+   "threads": [],
+   "probes": [],
+   "meta": [],
+   "suspensions": [],
+   "sub_questions": [],
+   "deferrals": [],
+   "escalations": [],
+   "decidability_log": [],
+   "duel_suspensions": [],
+   "duel_alignment": {},
+   "engagements": [],
+   "refinements": [],
+   "decidable_channel": {},
+   "undecidable_channel": {}
+  },
+  "both": {
+   "amps": [],
+   "threads": [],
+   "probes": [],
+   "meta": [],
+   "suspensions": [],
+   "sub_questions": [],
+   "deferrals": [],
+   "escalations": [],
+   "decidability_log": [],
+   "duel_suspensions": [],
+   "duel_alignment": {},
+   "engagements": [],
+   "refinements": [],
+   "decidable_channel": {},
+   "undecidable_channel": {}
+  },
+  "all": {
+   "amps": [],
+   "threads": [],
+   "probes": [],
+   "meta": [],
+   "suspensions": [],
+   "sub_questions": [],
+   "deferrals": [],
+   "escalations": [],
+   "decidability_log": [],
+   "duel_suspensions": [],
+   "duel_alignment": {},
+   "engagements": [],
+   "refinements": [],
+   "decidable_channel": {},
+   "undecidable_channel": {}
+  }
+ },
+ "llm_calls": 11,
+ "llm_tokens": 33745,
+ "tri_state": [
+  0,
+  0
+ ],
+ "layer_contribution": {
+  "0": {
+   "rounds": 1,
+   "stop": "体力耗尽（1 圈走满，未触发任何停止判据，是被截",
+   "idle": false
+  }
+ },
+ "orientation": "auto",
+ "_auto_plan_used": {},
+ "_auto_dispatch": {},
+ "_anchor_tier_warning": "",
+ "_config": {
+  "actions": {
+   "assess_decidability": true,
+   "decompose_question": true,
+   "decidability_source": "pool",
+   "decompose_source": "pool",
+   "parallel_mode": "auto",
+   "parallel_warmup_rounds": 3,
+   "pipeline_gate_timeout": 900,
+   "parallel_expand": true,
+   "input_sanity": true,
+   "tri_multi_vote": true,
+   "tri_vote_retry_empty": 1,
+   "landing_decision": true,
+   "re_anchor": true,
+   "expand_yin": true,
+   "expand_yang": true,
+   "dual_judge": true,
+   "ing": true,
+   "he": true,
+   "phase_probe": true,
+   "manifest": true,
+   "self_check": true,
+   "re_evaluate_pool": true,
+   "settle_research": true
+  }
+ },
+ "_runtime": {
+  "requested": {
+   "web": "auto",
+   "thinking": "auto",
+   "effort": "auto"
+  },
+  "web_enabled": false,
+  "thinking_default": "disabled",
+  "thinking_stages_enabled": [
+   "adjudicate_sub_tristate",
+   "assess_decidability",
+   "assess_decidability_from_pool_view",
+   "auto_plan",
+   "dual_judge",
+   "plan_orientation",
+   "plan_resources",
+   "re_evaluate_pool"
+  ],
+  "thinking_stages_off_n": 17,
+  "effort": "high"
+ },
+ "tri_consensus": [],
+ "freeze": {
+  "signature": "65de76ecb71b40e067214b749b3096d92486d29b11c0a05907f1ad5fe09e31d5",
+  "layer": 1,
+  "n": 0,
+  "frozen_at": "2026-10-10T10:17:45.841824",
+  "items": []
+ },
+ "calibration_queue": [],
+ "external_anchor": {
+  "enabled": true,
+  "anchors": 0,
+  "source_file": "",
+  "retrieved_at": "",
+  "retriever": "",
+  "answers_all_missing": false,
+  "answers_filtered": "",
+  "pooled": 0,
+  "unconfigured": true,
+  "retriever_mode": "snapshot",
+  "as_evidence": "off",
+  "anchor_calls": 0,
+  "claims": 0,
+  "items": [],
+  "summary": {
+   "claims": 0,
+   "supported": 0,
+   "conflicted": 0,
+   "unmatched": 0,
+   "anchor_used": 0
+  },
+  "error": ""
+ },
+ "cost_profile": "balanced",
+ "input_sanity": {
+  "issues": [],
+  "note": "无悬空符号，token为常用术语",
+  "checked": true
+ }
+}

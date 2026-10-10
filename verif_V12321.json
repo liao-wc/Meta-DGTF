@@ -1,0 +1,53 @@
+{
+ "tag": "V12321",
+ "src": "元DGTF-V1.23.21.py",
+ "route": "0",
+ "rounds": "0:1",
+ "mode": "serial",
+ "orientation": "auto",
+ "llm_calls": 11,
+ "tri_state": [
+  0,
+  0
+ ],
+ "meta_closure_all": null,
+ "duel_suspensions_both": [],
+ "engagements_by_view": {
+  "0": [
+   {
+    "target": "实时累计的最小可跑起点",
+    "tension_id": null
+   }
+  ]
+ },
+ "suspensions_with_tid": {
+  "0": [
+   {
+    "target": "usage 偏差校正机制",
+    "tension_id": null,
+    "status": "active"
+   },
+   {
+    "target": "输出通道选型",
+    "tension_id": null,
+    "status": "active"
+   }
+  ]
+ },
+ "pools_all_engagements": [],
+ "views_errors": {
+  "0": []
+ },
+ "pools_meta_p16": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": []
+ },
+ "pools_meta_len": {
+  "0": 3,
+  "1": 0,
+  "both": 0,
+  "all": 0
+ }
+}

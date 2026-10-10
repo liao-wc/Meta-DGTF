@@ -21,6 +21,7 @@ import subprocess
 import sys
 import threading
 import time
+import urllib.request
 import uuid
 from pathlib import Path
 
@@ -30,6 +31,7 @@ RUNS_DIR = APP_DIR / "runs"
 RUNS_DIR.mkdir(exist_ok=True)
 
 sys.path.insert(0, str(APP_DIR))
+import layers  # noqa: E402
 import outputs_index as oi  # noqa: E402
 
 MAX_CONCURRENT = int(os.environ.get("DGTF_APP_MAX_CONCURRENT", "3"))
@@ -99,6 +101,42 @@ def credential_status() -> dict:
         "base_url": env.get("DGTF_BASE_URL", "https://api.deepseek.com/v1"),
         "tavily": bool(env.get("TAVILY_API_KEY")),
     }
+
+
+# ── 余额 / token 读数（给运行状态条）────────────────────────────
+_BAL: dict = {"t": 0.0, "val": None}
+
+
+def current_balance() -> float | None:
+    """查账户余额（CNY）。带 15s 缓存；失败返回 None（不抛、不阻断任务）。"""
+    now = time.time()
+    if now - _BAL["t"] < 15 and _BAL["val"] is not None:
+        return _BAL["val"]
+    env = load_dotenv()
+    base = env.get("DGTF_BASE_URL", "https://api.deepseek.com/v1").rstrip("/")
+    try:
+        req = urllib.request.Request(
+            base + "/user/balance",
+            headers={"Authorization": "Bearer " + env.get("DGTF_API_KEY", "")})
+        with urllib.request.urlopen(req, timeout=10) as r:
+            d = json.loads(r.read().decode("utf-8", "replace"))
+        bi = (d.get("balance_infos") or [{}])[0]
+        val = float(bi.get("total_balance") or 0)
+        _BAL.update(t=now, val=val)
+        return val
+    except Exception:  # noqa: BLE001
+        return None
+
+
+_TOK_RE = re.compile(r"\[tok\]\s*calls=(\d+)\s+tokens=(\d+)")
+
+
+def parse_tok(text: str) -> tuple[int, int]:
+    """从日志里取**最后一条** `[tok] calls=N tokens=M`（即当前累计）。"""
+    c = t = 0
+    for a, b in _TOK_RE.findall(text or ""):
+        c, t = int(a), int(b)
+    return c, t
 
 
 # ── 命令行构造 ───────────────────────────────────────────────────
@@ -193,6 +231,9 @@ def _filter_lines(text: str, st: dict) -> tuple[str, int]:
             st.update(skip=True, kind="box", n=1)
             hidden += 1
             continue
+        if ls.startswith("[tok]"):
+            hidden += 1          # 读数行：只喂状态条，不进卡片日志
+            continue
         out.append(line)
     res = "\n".join(out)
     return (res + "\n" if res else ""), hidden
@@ -230,6 +271,53 @@ def _archive(task: dict) -> None:
         task["archive_json"] = dstj.name
     except OSError:
         pass
+    _archive_layers(task, stamp)
+
+
+def _archive_layers(task: dict, stamp: str) -> None:
+    """按层落盘：`<stamp>.<层>.md` / `.<层>.run.log` / `.<层>.json`。
+
+    - md = 共有头部 + 该层段（头部与原总产物 md **逐字一致**）；
+    - log = 该层那一段日志（原始，含层出现前的空窗不算）；
+    - json = 该层的元信息与统计。
+    没跑到的层**不落盘**（面板上也是「静默等待」）。
+    """
+    try:
+        src = Path(task["log"])
+        raw = src.read_text(encoding="utf-8", errors="replace") if src.exists() else ""
+        name = task.get("output_name") or ""
+        md = oi.read_body(name) if name else ""
+        parts_log = layers.split_log(raw)
+        parts_md = layers.split_md(md)
+        head = parts_md.get("__head__", "")
+        stats = layers.layer_stats(raw, md)
+        written = []
+        for n in layers.LAYER_NAMES:
+            seg = parts_md.get(n, "")
+            if not seg.strip():
+                continue                      # 没跑到的层：静默
+            base = f"{stamp}.{n}"
+            (oi.OUTPUTS_DIR / f"{base}.md").write_text(
+                head + seg, encoding="utf-8", newline="")
+            lg = parts_log.get(n, "")
+            if lg.strip():
+                (oi.OUTPUTS_DIR / f"{base}.run.log").write_text(
+                    lg + "\n", encoding="utf-8", newline="")
+            meta = {
+                "layer": n, "entry": layers.ENTRY_OF_LAYER[n],
+                "task_id": task["id"], "question": task["question"],
+                "status": task["status"], "output_name": name,
+                "layer_md": f"{base}.md",
+                "layer_log": f"{base}.run.log",
+                "stats": stats.get(n, {}),
+            }
+            (oi.OUTPUTS_DIR / f"{base}.json").write_text(
+                json.dumps(meta, ensure_ascii=False, indent=2),
+                encoding="utf-8", newline="")
+            written.append(n)
+        task["layer_artifacts"] = written
+    except OSError:
+        pass
 
 
 # ── 任务生命周期 ─────────────────────────────────────────────────
@@ -260,6 +348,9 @@ def start_task(question: str, opts: dict | None = None) -> str:
         "cmd": build_cmd(question, opts),
         "before_outputs": _snapshot_outputs(),
         "pid": None,
+        "start_balance": current_balance(),   # 起始余额（花费用差额算）
+        "tok_calls": 0,
+        "tok_tokens": 0,
     }
     with _tasks_lock:
         _tasks[tid] = task
@@ -421,6 +512,46 @@ def read_archive(name: str) -> str | None:
         return (oi.OUTPUTS_DIR / n).read_text(encoding="utf-8", errors="replace")
     except OSError:
         return None
+
+
+def read_layers(tid: str) -> dict | None:
+    """四层各自的日志（**已过滤**）+ 统计，给运行台的四层面板用。
+
+    「有运行到就显示，没运行到就静默」——空层返回空字符串，前端自行显示占位。
+    """
+    with _tasks_lock:
+        task = _tasks.get(tid)
+    if task is None:
+        return None
+    done = task["status"] not in ("running", "queued")
+    path = Path(task["log"])
+    raw = ""
+    if path.exists():
+        try:
+            raw = path.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            raw = ""
+    # 与 read_log 同一把过滤器（丢留痕 / ing·view 全文框）
+    filtered, hidden = _filter_lines(raw, {"skip": False, "kind": None, "n": 0})
+    parts = layers.split_log(filtered)
+    md = oi.read_body(task["output_name"]) if task.get("output_name") else ""
+    calls, tokens = parse_tok(raw)
+    now_bal = current_balance()
+    start_bal = task.get("start_balance")
+    spent = None
+    if start_bal is not None and now_bal is not None:
+        spent = round(float(start_bal) - float(now_bal), 4)
+    return {
+        "head": parts.get("__head__", ""),
+        "layers": {n: parts.get(n, "") for n in layers.LAYER_NAMES},
+        "stats": layers.layer_stats(filtered, md),
+        "hidden": hidden,
+        "done": done,
+        "status": task["status"],
+        "started_at": task.get("started_at"),
+        "tok": {"calls": calls, "tokens": tokens},
+        "balance": {"start": start_bal, "now": now_bal, "spent": spent},
+    }
 
 
 if __name__ == "__main__":

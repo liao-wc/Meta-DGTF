@@ -99,7 +99,7 @@ h1,h2,h3,.task-q,.item .t,.md p{text-wrap:pretty}
 .dot.no{background:var(--err);box-shadow:0 0 0 3px rgba(248,81,73,.12)}
 
 /* ── 布局 ─────────────────────────────────────────────────────── */
-main{max-width:1120px;margin:0 auto;padding:32px 22px 80px}
+main{max-width:920px;margin:0 auto;padding:28px 22px 64px}
 .view{display:none}
 .view.active{display:block;animation:rise .35s var(--ease) both}
 @keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
@@ -171,8 +171,37 @@ kbd{font-family:var(--f-mono);font-size:10.5px;line-height:1;color:var(--t2);
 .warn{margin-top:12px;font-size:12.5px;color:var(--warn);min-height:0}
 .warn:empty{display:none}
 
+/* ── 状态条（页面只剩输入框 + 四窗口，任务卡列表已去掉）────────── */
+.run-status{display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  margin-top:16px;padding:10px 14px;background:var(--s1);
+  border:1px solid var(--hair);border-radius:var(--r-md);font-size:12.5px}
+.run-status:empty{display:none}
+.run-status .st-q{font-weight:500;font-size:13px;color:var(--t1);min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.run-status .st-time{font-family:var(--f-mono);color:var(--t3);font-size:11.5px}
+.run-status a{font-family:var(--f-mono);font-size:11.5px;text-decoration:none}
+.run-status a:hover{text-decoration:underline}
+.run-status button{height:26px;font-size:11.5px;padding:0 10px}
+
+/* 四张层卡复用 .tasks / .task 的外观（全宽、纵向堆叠）。
+   ★ 四卡**等高**：日志区给固定高度（不是 max-height）—— 否则「静默等待」的空卡
+     只有一行，四张卡高低不齐。头/脚本来就同高，固定日志区后整卡一致。
+   还没轮到的层用虚线 + 灰字区分。 */
+.lane{aspect-ratio:1 / 1;display:flex;flex-direction:column;min-width:0}
+.lane .lane-body{flex:1 1 auto;height:auto;min-height:0}
+.lane.idle{border-style:dashed}
+.lane.idle .lane-body{color:var(--t3)}
+@media (max-width:900px){ .tasks{grid-template-columns:repeat(2,1fr)} }
+
+/* ── 运行状态条（起始时间 / 已跑 / token / 花费）───────────────── */
+.run-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  margin-top:18px;font-size:12.5px;color:var(--t2)}
+.run-meta:empty{display:none}
+.run-meta b{color:var(--t1);font-family:var(--f-mono);font-weight:500}
+.run-meta .sep{color:var(--t3)}
+
 /* ── 任务卡 ───────────────────────────────────────────────────── */
-.tasks{margin-top:20px;display:flex;flex-direction:column;gap:14px}
+.tasks{margin-top:20px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
 .task{background:var(--s1);border:1px solid var(--hair);border-radius:var(--r-md);
   overflow:hidden;box-shadow:var(--shadow);animation:rise .35s var(--ease) both}
 .task-head{display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--hair)}

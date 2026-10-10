@@ -94,7 +94,23 @@ def main() -> int:
 
     check("任务跑完", bool(st) and st["status"] == "done",
           (st or {}).get("error") or str((st or {}).get("status")))
-    check("实时日志有分层输出", "修行层" in text and "元层" in text, f"{len(text)} 字节")
+    check("实时日志有分层输出", "━━━ 修行" in text and "━━━ 元" in text, f"{len(text)} 字节")
+    _, lyr = _get(base, f"/api/tasks/{tid}/layers")
+    check("分层接口：四层齐、且各层只落自己那段",
+          set(lyr["layers"].keys()) == {"修行", "研究", "对撞", "元"}
+          and "━━━ 修行" in lyr["layers"]["修行"]
+          and "━━━ 元" in lyr["layers"]["元"]
+          and "━━━ 元" not in lyr["layers"]["修行"],
+          "、".join(f"{k}:{len(v)}" for k, v in lyr["layers"].items()))
+    _tok = lyr.get("tok") or {}
+    check("分层接口带实时 token 读数",
+          _tok.get("tokens", 0) > 0 and _tok.get("calls", 0) > 0,
+          f"calls={_tok.get('calls')} tokens={_tok.get('tokens')}")
+    check("[tok] 读数行不进卡片日志",
+          "[tok]" not in "".join(lyr["layers"].values()))
+    check("信息条数据齐（起始时间 + 余额字段）",
+          lyr.get("started_at") is not None and "balance" in lyr,
+          f"started_at={lyr.get('started_at')}")
     check("跑完后日志已折叠留痕/全文框",
           folded > 0 and "留痕" not in text and "【ing 全文】" not in text
           and "【view 全文】" not in text and "不应出现在后台" not in text,
@@ -116,7 +132,25 @@ def main() -> int:
                   s == 200 and "全量留痕" in a["body"], f"{len(a['body'])} 字节")
         s, d = _get(base, "/api/outputs/" + urllib.parse.quote(st["output_name"]))
         check("产物详情接口可用", s == 200 and d["name"] == st["output_name"])
-        for _n in (st["output_name"], st.get("archive_log"), st.get("archive_json")):
+
+        stamp = st["output_name"][:-3] if st["output_name"].endswith(".md") else st["output_name"]
+        made = [n for n in ("修行", "研究", "对撞", "元")
+                if (oi.OUTPUTS_DIR / f"{stamp}.{n}.md").exists()
+                and (oi.OUTPUTS_DIR / f"{stamp}.{n}.json").exists()
+                and (oi.OUTPUTS_DIR / f"{stamp}.{n}.run.log").exists()]
+        check("每层产物已落盘（md / run.log / json）", len(made) == 4,
+              "、".join(made) if made else "无")
+        _lp = oi.OUTPUTS_DIR / f"{stamp}.修行.md"
+        _tot = (oi.OUTPUTS_DIR / st["output_name"]).read_text(encoding="utf-8", errors="replace")
+        _head = _tot[: _tot.find("### 修行层")] if "### 修行层" in _tot else ""
+        check("层 md 的共有头部与原总产物一致",
+              bool(_head) and _lp.exists()
+              and _lp.read_text(encoding="utf-8", errors="replace").startswith(_head),
+              f"头部 {len(_head)} 字符")
+        _victims = [st["output_name"], st.get("archive_log"), st.get("archive_json")]
+        for _n in ("修行", "研究", "对撞", "元"):
+            _victims += [f"{stamp}.{_n}.md", f"{stamp}.{_n}.json", f"{stamp}.{_n}.run.log"]
+        for _n in _victims:
             if not _n:
                 continue
             try:

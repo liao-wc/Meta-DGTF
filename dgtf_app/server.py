@@ -116,6 +116,11 @@ class Handler(BaseHTTPRequestHandler):
             r = runner.read_log(m.group(1), off, mode)
             return self._json(r) if r is not None else self._json({"error": "not found"}, 404)
 
+        m = re.match(r"^/api/tasks/([^/]+)/layers$", p)
+        if m:
+            r = runner.read_layers(m.group(1))
+            return self._json(r) if r is not None else self._json({"error": "not found"}, 404)
+
         m = re.match(r"^/api/tasks/([^/]+)/result$", p)
         if m:
             t = runner.get_task(m.group(1))

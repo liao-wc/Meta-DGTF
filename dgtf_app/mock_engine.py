@@ -30,11 +30,22 @@ def main() -> int:
 
     stop_kind = {}
     rounds_run = {}
+    _calls = 0
+    _toks = 0
     for name, _tag in _LAYERS:
         rounds = random.randint(1, 3)
         rounds_run[name] = rounds
         for r in range(1, rounds + 1):
-            log(f"[{name}层] 第 {r} 圈：锚点重述 → 阴阳展开 → 对撞 → 沉淀 & → 探针回归 → 渲染")
+            # 模拟引擎 v1.23.21 的实时读数列（应用层解析后从卡片日志滤掉）
+            _calls += random.randint(2, 5)
+            _toks += random.randint(2000, 6000)
+            log(f"[tok] calls={_calls} tokens={_toks}")
+            # 与真引擎同款的层进度条（分层面板就靠这行切）
+            log("")
+            log("━" * 60)
+            log(f"━━━ {name} · 第 {r}/{rounds} 圈 · 摊开 · view ━━━")
+            log("━" * 60)
+            log(f"   （mock）{name}层第 {r} 圈：锚点重述 → 阴阳展开 → 对撞 → 沉淀 & → 探针回归")
             time.sleep(0.6)
             # 模拟真引擎在 verbose / show_ing / show_manifest 下的两类"大块"，
             # 供应用层过滤验证：后台不应看到它们（原始仍进归档 log）。
@@ -93,6 +104,24 @@ def main() -> int:
 ## 二、原问题
 
 {question}
+
+## 附：逐层明细
+
+### 修行层 `0`
+
+（mock）修行层明细：& 4 / 线头 5 / 悬置 1。
+
+### 研究层 `1`
+
+（mock）研究层明细：覆盖率 41%。
+
+### 对撞层 `both`
+
+（mock）对撞层明细：第三者 ✓ / 张力 3。
+
+### 元层 `all`
+
+（mock）元层明细：clean True / 未交代 0 类。
 """
     OUTPUTS.mkdir(exist_ok=True)
     out.write_text(body, encoding="utf-8")
