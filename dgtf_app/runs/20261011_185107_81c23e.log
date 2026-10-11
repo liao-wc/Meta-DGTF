@@ -1,0 +1,72 @@
+   ✓ 自动调度：联网 开（事实型询问：史实结论需要外部证据支撑）
+   ✓ 自动调度：思考 on（事实型短题：一次判定够用，省 token）
+   ✓ 自动调度：思考强度 low（事实型短题：低强度）
+   ✓ 自动调度：联网降级（历史联网失败 0 条 ⇒ 连败阈值 4）
+   ✓ 自动调度：停止阈值（事实型短题：收紧停滞阈值，早停）
+   · 联网：强制**开**（runtime.web=on）
+   · 思考：强制**开**（runtime.thinking=on；25 个环节档位一并改写）
+   ·    ★ 思考开 ⇒ 每次调用 `max_tokens ≥ 32000`，成本显著上升（这是**成本决策**）。
+   · 思考强度：low（runtime.effort=low）
+   · 层集合由 auto 接管：0、1、both（事实型短题：元层不参与判定，砍掉省一段）
+
+════════════════════════════════════════════════════════════
+元 DGTF v1.23.22 · 中微子是什么，它有什么作用？
+════════════════════════════════════════════════════════════
+调度：0 → 1 → both
+螺旋上限（每层圈数）：{'0': 4, '1': 4, 'both': 4, 'all': 6}
+并行模式：严格串行（来自配置）
+回来通道：content、context、self
+运行期总控：联网 开 | 思考 开（25 个环节开档 / 0 关）| 强度 low
+════════════════════════════════════════════════════════════
+18:51:12 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
+
+📐 取向=boundary（要边界清单）→ 保留全四层（边界只有对撞/元层会认真做）
+
+🧵 并行模式：serial（用户指定）
+18:51:12 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+18:51:13 [WARNING] dgtf: 模型别名漂移：请求 deepseek-chat，实际服务 deepseek-flash
+18:51:13 [INFO] dgtf: [tok] calls=1 tokens=450
+Building prefix dict from the default dictionary ...
+18:51:13 [DEBUG] jieba: Building prefix dict from the default dictionary ...
+Loading model from cache C:\Users\18432\AppData\Local\Temp\jieba.cache
+18:51:13 [DEBUG] jieba: Loading model from cache C:\Users\18432\AppData\Local\Temp\jieba.cache
+Loading model cost 0.686 seconds.
+18:51:14 [DEBUG] jieba: Loading model cost 0.686 seconds.
+Prefix dict has been built successfully.
+18:51:14 [DEBUG] jieba: Prefix dict has been built successfully.
+
+────────────────────────────────────────────────────────────
+🎛 调度：修行 → 研究 → 对撞　圈数上限 修行4, 研究4, 对撞4
+
+════════════════════════════════════════════════════════════
+【0】修行 DGTF（螺旋上限 4 圈）
+════════════════════════════════════════════════════════════
+
+   ↻ 第 1/4 圈 · 摊开
+18:51:14 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+18:51:17 [WARNING] dgtf: 模型别名漂移：请求 deepseek-chat，实际服务 deepseek-flash
+18:51:17 [INFO] dgtf: [tok] calls=2 tokens=1588
+
+🪞 [锚点·重述] 此刻被问的是：中微子是什么，它有什么作用；这个问题正悬在这里。
+   🪞 锚点·触及 3 条 / 未触及 4 条
+18:51:18 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+18:51:18 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+18:51:26 [WARNING] dgtf: 模型别名漂移：请求 deepseek-chat，实际服务 deepseek-flash
+18:51:26 [INFO] dgtf: [tok] calls=3 tokens=3729
+18:51:28 [WARNING] dgtf: 模型别名漂移：请求 deepseek-chat，实际服务 deepseek-flash
+18:51:28 [INFO] dgtf: [tok] calls=4 tokens=6120
+
+💧 [阴视角]
+   - [question] "作用"可以指中微子在宇宙基本过程里担什么角色，也可以指人类拿它做什么，两种问法要的答案不一样，这里没分开。
+- [concept] 泡利1930年假设这个粒子是为了让能量守恒的账目对得上，它先以推算的产物出现，几十年后才有探测器接住。
+- [concept] 中微子几乎不与物质作用，正因如此探测它要万吨级靶体和地下极低本底，它的性质反过来决定了它是怎么被认知的。
+- [
+
+💧 [阳视角]
+   - [question] “中微子是什么”这一问悬着，已显形为对粒子身份、种类和基本属性的追问。
+- [question] “它有什么作用”这一问悬着，已显形为对它在自然过程和观测中角色的追问。
+- [concept] 中微子是基本粒子，属于轻子，不带电，自旋为半整数，质量极小但不为零。
+- [concept] 中微子分电子中微子、μ中微子和τ中微子三种味，飞行中可发生味振荡。
+- [event]
+   📋 展开候选 16 条
+18:51:28 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"

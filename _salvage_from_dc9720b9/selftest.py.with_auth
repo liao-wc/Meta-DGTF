@@ -1,0 +1,248 @@
+# -*- coding: utf-8 -*-
+"""元DGTF 应用层 · 端到端自检（需先启动 server.py）。
+
+用法：
+    python dgtf_app/server.py            # 另开一个终端
+    python dgtf_app/selftest.py [--base http://127.0.0.1:8765] [--user admin.aL] [--password XXX]
+
+走完「登录 → 提交 → 实时日志 → 完成 → 取产物 → 历史检索」全链路（mock，零花费），
+并在结束时删掉它自己产生的 mock 产物 —— 自检无副作用。
+
+⚠️ 认证改造后，除 /login 外所有接口都需登录态；本脚本会先登录再跑。
+   管理员密码可用 --password 传入，或用环境变量 DGTF_APP_SELFTEST_PW。
+"""
+
+from __future__ import annotations
+
+import argparse
+import http.cookiejar
+import json
+import os
+import sys
+import time
+import urllib.error
+import urllib.parse
+import urllib.request
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import outputs_index as oi  # noqa: E402
+
+PASS: list[str] = []
+FAIL: list[str] = []
+
+# 认证：全局 opener，带 cookie jar，登录后所有请求自动带上会话
+_OPENER = urllib.request.build_opener(
+    urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
+
+
+def check(name: str, cond: bool, detail: str = "") -> None:
+    (PASS if cond else FAIL).append(name)
+    print(("  \u2713 " if cond else "  \u2717 ") + name + (("  \u2014 " + detail) if detail else ""))
+
+
+def _get(base: str, path: str, raw: bool = False):
+    with _OPENER.open(base + path, timeout=15) as r:
+        body = r.read().decode("utf-8", "replace")
+        return r.status, (body if raw else json.loads(body))
+
+
+def _post(base: str, path: str, obj: dict):
+    req = urllib.request.Request(
+        base + path, data=json.dumps(obj).encode("utf-8"),
+        headers={"Content-Type": "application/json"}, method="POST")
+    with _OPENER.open(req, timeout=15) as r:
+        return r.status, json.loads(r.read().decode("utf-8"))
+
+
+def login(base: str, user: str, password: str) -> bool:
+    """先登录，后续请求共享会话。"""
+    try:
+        s, b = _post(base, "/api/auth/login", {"username": user, "password": password})
+        ok = s == 200
+        check(f"登录成功（{user}）", ok, str(b)[:120] if not ok else "")
+        return ok
+    except Exception as e:  # noqa: BLE001
+        check(f"登录成功（{user}）", False, str(e))
+        return False
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--base", default="http://127.0.0.1:8765")
+    ap.add_argument("--user", default="admin.aL", help="自检用的账号（默认管理员）")
+    ap.add_argument("--password", default=os.environ.get("DGTF_APP_SELFTEST_PW", ""),
+                    help="账号密码（也可用环境变量 DGTF_APP_SELFTEST_PW）")
+    args = ap.parse_args()
+    base, user, password = args.base, args.user, args.password
+
+    if not password:
+        print("未提供密码：请用 --password 或环境变量 DGTF_APP_SELFTEST_PW。")
+        return 2
+
+    try:
+        with urllib.request.urlopen(base + "/login", timeout=10) as r:
+            _ = r.status
+    except Exception as e:  # noqa: BLE001
+        print("服务不可达：", e)
+        return 2
+
+    # ⚠️ 认证改造后，未登录访问首页会 302 到 /login；先登录再断言首页
+    if not login(base, user, password):
+        return 2
+
+    # 用带 cookie 的 _OPENER，否则会被 302 到登录页（那里没有 app.js）
+    with _OPENER.open(base + "/", timeout=10) as r:
+        html = r.read().decode("utf-8")
+    check("首页可访问且含标题", r.status == 200 and "元DGTF" in html)
+    check("首页引用静态资源", "/static/app.js" in html and "/static/style.css" in html)
+
+    s, cfg = _get(base, "/api/config")
+    check("config 返回引擎名", s == 200 and str(cfg.get("engine", "")).endswith(".py"),
+          str(cfg.get("engine")))
+    check("config 不泄露密钥值", "DGTF_API_KEY" not in json.dumps(cfg))
+    check("config 带当前用户与配额", s == 200 and "quota" in cfg, str(cfg.get("quota")))
+
+    s, ol = _get(base, "/api/outputs")
+    check("产物列表接口可用（只读自己的）",
+          s == 200 and isinstance(ol.get("items"), list),
+          f"共 {ol.get('count', 0)} 份")
+    s, fc = _get(base, "/api/outputs?facets=1")
+    check("facets 含四个维度",
+          set(fc.keys()) >= {"decidability", "orientation", "parallel", "stop"})
+
+    s, lo = _get(base, "/api/library/local")
+    check("本地资料库接口可用（导入列表 + 锚点候选）",
+          s == 200 and isinstance(lo.get("items"), list)
+          and isinstance(lo.get("candidates"), list),
+          f"导入 {len(lo.get('items') or [])} / 候选 {len(lo.get('candidates') or [])}")
+    s, wb = _get(base, "/api/library/web")
+    check("联网检索库接口可用（历史命中汇总）",
+          s == 200 and isinstance(wb.get("items"), list),
+          f"{len(wb.get('items') or [])} 份产物")
+    if wb.get("items"):
+        _w = wb["items"][0]
+        check("联网读数解析出了条数/环节",
+              "收" in (_w.get("detail") or ""),
+              (_w.get("detail") or "")[:46])
+
+    # 本地资料库：导入 → 出现在列表 → 删除（用后即清，不留痕迹）
+    _s, _imp = _post(base, "/api/library/import",
+                     {"files": [{"name": "_selftest_anchor.md",
+                                 "content": "自检用锚点内容"}]})
+    check("本地资料库可导入文件",
+          _s == 200 and _imp.get("saved") == ["_selftest_anchor.md"],
+          str(_imp.get("saved")))
+    _s, _lo2 = _get(base, "/api/library/local")
+    check("导入后进了列表、锚点快照跟着重建",
+          any(i["name"] == "_selftest_anchor.md" for i in (_lo2.get("items") or []))
+          and _lo2.get("anchor_items", 0) >= 1,
+          f"锚点 {_lo2.get('anchor_items')} 条")
+    _s, _dl = _post(base, "/api/library/delete", {"name": "_selftest_anchor.md"})
+    check("本地资料库可删除导入", _s == 200 and bool(_dl.get("ok")), str(_dl))
+
+    s, t = _post(base, "/api/tasks", {"question": "应用端到端自检 mock", "opts": {"mock": True}})
+    check("创建任务返回 id", s == 201 and bool(t.get("id")), str(t.get("id")))
+    tid = t["id"]
+
+    off, text, st, folded = 0, "", None, 0
+    deadline = time.time() + 60
+    while time.time() < deadline:
+        _, st = _get(base, f"/api/tasks/{tid}")
+        running = st["status"] in ("running", "queued")
+        mode = "raw" if running else "filtered"
+        if not running and off != 0:        # 跑完 → 重拉整段折叠版
+            off = 0
+        _, lg = _get(base, f"/api/tasks/{tid}/log?offset={off}&mode={mode}")
+        off = lg["offset"]
+        if running:
+            text += lg["text"]              # 运行中：原始（含留痕）
+        else:
+            text, folded = lg["text"], lg.get("hidden", 0)
+            break
+        time.sleep(0.4)
+
+    check("任务跑完", bool(st) and st["status"] == "done",
+          (st or {}).get("error") or str((st or {}).get("status")))
+    check("实时日志有分层输出", "━━━ 修行" in text and "━━━ 元" in text, f"{len(text)} 字节")
+    _, lyr = _get(base, f"/api/tasks/{tid}/layers")
+    check("分层接口：四层齐、且各层只落自己那段",
+          set(lyr["layers"].keys()) == {"修行", "研究", "对撞", "元"}
+          and "━━━ 修行" in lyr["layers"]["修行"]
+          and "━━━ 元" in lyr["layers"]["元"]
+          and "━━━ 元" not in lyr["layers"]["修行"],
+          "、".join(f"{k}:{len(v)}" for k, v in lyr["layers"].items()))
+    _tok = lyr.get("tok") or {}
+    check("分层接口带实时 token 读数",
+          _tok.get("tokens", 0) > 0 and _tok.get("calls", 0) > 0,
+          f"calls={_tok.get('calls')} tokens={_tok.get('tokens')}")
+    check("[tok] 读数行不进卡片日志",
+          "[tok]" not in "".join(lyr["layers"].values()))
+    _sx = (lyr.get("stats") or {}).get("修行") or {}
+    check("每层带自己的起始时间与 token 消耗",
+          _sx.get("since") is not None and _sx.get("tokens", 0) > 0,
+          f"since={_sx.get('since')} tokens={_sx.get('tokens')}")
+    _sum = sum(((lyr.get("stats") or {}).get(n) or {}).get("tokens", 0)
+               for n in ("修行", "研究", "对撞", "元"))
+    check("四层 token 之和 ≤ 全局读数",
+          _sum <= (lyr.get("tok") or {}).get("tokens", 0) + 1,
+          f"层和={_sum} 全局={(lyr.get('tok') or {}).get('tokens')}")
+    check("跑完后日志已折叠留痕/全文框",
+          folded > 0 and "留痕" not in text and "【ing 全文】" not in text
+          and "【view 全文】" not in text and "不应出现在后台" not in text,
+          f"折叠 {folded} 行")
+    _, lgr = _get(base, f"/api/tasks/{tid}/log?offset=0&mode=raw")
+    check("原始模式保留完整内容（运行中用它）",
+          "全量留痕" in lgr["text"], f"{len(lgr['text'])} 字节")
+    check("任务定位到产物", bool(st and st.get("output_name")), str((st or {}).get("output_name")))
+
+    if st and st.get("output_name"):
+        s, res = _get(base, "/api/tasks/" + tid + "/result")
+        check("取回产物正文", s == 200 and len(res["body"]) > 0, f"{len(res['body'])} 字节")
+        check("运行归档已生成（log + json）",
+              bool(st.get("archive_log")) and bool(st.get("archive_json")),
+              f"{st.get('archive_log')} / {st.get('archive_json')}")
+        if st.get("archive_log"):
+            s, a = _get(base, "/api/archive/" + urllib.parse.quote(st["archive_log"]))
+            check("归档 log 可读且保留留痕原文",
+                  s == 200 and "全量留痕" in a["body"], f"{len(a['body'])} 字节")
+        s, d = _get(base, "/api/outputs/" + urllib.parse.quote(st["output_name"]))
+        check("产物详情接口可用", s == 200 and d["name"] == st["output_name"])
+
+        stamp = st["output_name"][:-3] if st["output_name"].endswith(".md") else st["output_name"]
+        # ⚠️ 认证改造后，产物落在 outputs/<用户名>/ 下
+        _out_dir = oi.owner_dir(user)
+        made = [n for n in ("修行", "研究", "对撞", "元")
+                if (_out_dir / f"{stamp}.{n}.md").exists()
+                and (_out_dir / f"{stamp}.{n}.json").exists()
+                and (_out_dir / f"{stamp}.{n}.run.log").exists()]
+        check("每层产物已落盘（md / run.log / json）", len(made) == 4,
+              "、".join(made) if made else f"无（目录 {_out_dir}）")
+        _lp = _out_dir / f"{stamp}.修行.md"
+        _tot = (_out_dir / st["output_name"]).read_text(encoding="utf-8", errors="replace")
+        _head = _tot[: _tot.find("### 修行层")] if "### 修行层" in _tot else ""
+        check("层 md 的共有头部与原总产物一致",
+              bool(_head) and _lp.exists()
+              and _lp.read_text(encoding="utf-8", errors="replace").startswith(_head),
+              f"头部 {len(_head)} 字符")
+        _victims = [st["output_name"], st.get("archive_log"), st.get("archive_json")]
+        for _n in ("修行", "研究", "对撞", "元"):
+            _victims += [f"{stamp}.{_n}.md", f"{stamp}.{_n}.json", f"{stamp}.{_n}.run.log"]
+        for _n in _victims:
+            if not _n:
+                continue
+            try:
+                (_out_dir / _n).unlink()
+            except OSError:
+                pass
+        print("  \u00b7 已清理自检产物与归档：" + st["output_name"])
+
+    print(f"\n结果：PASS {len(PASS)} / FAIL {len(FAIL)}")
+    if FAIL:
+        print("失败项：" + ", ".join(FAIL))
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

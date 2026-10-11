@@ -4,9 +4,11 @@
 - **本地资料库**：扫项目根与 `docs/` 下像「锚点快照」的 JSON
   （含 `anchors` 列表，或条目里带 `id`/`claim`，或文件名带 anchor）——
   列出 / 查看 / 选用（选用 = 告诉用户该填进 `external_anchor.path`）。
-- **联网检索库**：扫产物 md 头部那行
+- **联网检索库**：两路来源 —— ①产物 md 头部那行
   `**外部锚点 · 联网**（web_search）：**开** —— 收 N 条（…；M 个环节；tier 3×N）`
-  —— 汇总历次跑圈的联网命中。只读。
+  （汇总历次跑圈的联网读数）；②`outputs/_web_hits.jsonl` 的逐条命中
+  （引擎 v1.23.22 起落盘），由 `group_hits()` **按检索问题聚合、同链接去重**
+  成「结果库」。只读。
 """
 
 from __future__ import annotations
@@ -196,6 +198,45 @@ def web_hits(limit: int = 800) -> list[dict]:
         return []
     out.sort(key=lambda r: r.get("ts") or 0, reverse=True)
     return out[:limit]
+
+
+def group_hits(records: list[dict]) -> list[dict]:
+    """把联网命中**按检索问题聚合成组、组内按 url 去重**（结果库）。
+
+    纯函数（不吃全局状态），便于用合成样本验证「去重」真生效。
+    去重键：url 非空就用 url，否则退化成 claim 前 80 字。
+    返回 [{query, total(去重前), uniq(去重后), latest, items}]，按最新时间倒序。
+    """
+    groups: dict[str, dict] = {}
+    for rec in records or []:
+        if not isinstance(rec, dict):
+            continue
+        q = str(rec.get("query") or "").strip() or "(无检索问题)"
+        g = groups.get(q)
+        if g is None:
+            g = {"query": q, "total": 0, "uniq": 0, "latest": 0,
+                 "items": [], "_seen": set()}
+            groups[q] = g
+        g["total"] += 1
+        key = (str(rec.get("url") or "").strip()
+               or ("claim:" + str(rec.get("claim") or "")[:80]))
+        if key in g["_seen"]:
+            continue
+        g["_seen"].add(key)
+        g["uniq"] += 1
+        g["items"].append(rec)
+        g["latest"] = max(g["latest"], rec.get("ts") or 0)
+    out = []
+    for g in groups.values():
+        g.pop("_seen", None)
+        out.append(g)
+    out.sort(key=lambda x: x["latest"], reverse=True)
+    return out
+
+
+def web_hits_grouped(limit: int = 800) -> list[dict]:
+    """联网命中**结果库**：按问题/关键词聚合 + 同链接去重。"""
+    return group_hits(web_hits(limit))
 
 
 def web_results(limit: int = 300) -> list[dict]:

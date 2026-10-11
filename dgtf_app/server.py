@@ -12,6 +12,9 @@
   GET  /api/tasks/<id>/log?offset=N   → 日志增量（按字节偏移）
   POST /api/tasks/<id>/cancel         → 取消任务
   GET  /api/tasks/<id>/result         → 产物正文
+  GET  /api/chats                     → 历次「会话」（历史对话：内存任务 + 归档 run.json）
+  GET  /api/params                    → 高级参数（yaml 摊平 + 中文说明）
+  GET  /api/dashboard                 → 工作台读数
   GET  /api/outputs?q=&body=&days=…   → 历史产物列表 / 检索
   GET  /api/outputs/facets            → 筛选项集合
   GET  /api/outputs/<name>            → 单份产物正文
@@ -22,11 +25,15 @@
 from __future__ import annotations
 
 import argparse
+import io
 import json
 import mimetypes
 import os
 import re
 import sys
+import time
+import urllib.parse
+import zipfile
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote, parse_qs, urlparse
@@ -35,15 +42,21 @@ APP_DIR = Path(__file__).resolve().parent
 STATIC_DIR = APP_DIR / "static"
 sys.path.insert(0, str(APP_DIR))
 
+import dashboard as dash  # noqa: E402
 import engine_runner as runner  # noqa: E402
 import library as lib  # noqa: E402
 import outputs_index as oi  # noqa: E402
 import params as prm  # noqa: E402
 
-_FACETS = ("decidability", "orientation", "parallel", "stop")
+_FACETS = ("decidability", "orientation", "parallel", "stop", "kind", "layer")
 
 
 class Handler(BaseHTTPRequestHandler):
+    # ★ HTTP/1.1 = 默认**长连接**（HTTP/1.0 每请求一连接 ⇒ 关一次就进 TIME_WAIT）。
+    #   前端 1.5s 轮询 + 验收台密集轮询会把 TIME_WAIT 堆到上千条、把端口耗光，
+    #   表现是「某个 fetch 再也不返回」（无头里虚拟时间还会因此停住、dump 不出来）。
+    #   前提已满足：所有响应都显式带 Content-Length（见 _json / _serve_static）。
+    protocol_version = "HTTP/1.1"
     server_version = "DGTFApp/1.0"
 
     def log_message(self, fmt, *args):  # 默认静默，--verbose 才打访问日志
@@ -51,6 +64,19 @@ class Handler(BaseHTTPRequestHandler):
             super().log_message(fmt, *args)
 
     # ── 响应助手 ──────────────────────────────────────────────────
+    def _download(self, data: bytes, ctype: str, filename: str, code: int = 200):
+        """导出用的二进制响应（带 Content-Disposition）。"""
+        self.send_response(code)
+        self.send_header("Content-Type", ctype)
+        self.send_header("Content-Length", str(len(data)))
+        ascii_name = filename.encode("ascii", "ignore").decode() or "export"
+        self.send_header("Content-Disposition",
+                         "attachment; filename=\"%s\"; filename*=UTF-8''%s"
+                         % (ascii_name, urllib.parse.quote(filename)))
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
+        self.wfile.write(data)
+
     def _json(self, obj, code: int = 200):
         data = json.dumps(obj, ensure_ascii=False).encode("utf-8")
         self.send_response(code)
@@ -84,6 +110,11 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Content-Type", ctype)
         self.send_header("Content-Length", str(len(data)))
+        # ★ 静态资源**必须**禁缓存：这些文件是「每次请求现读磁盘」的开发产物，
+        #   浏览器一缓存，改完 CSS/JS 用户刷新拿到的还是旧版（改了半天看不到效果）。
+        #   API 那边本来就有 no-store，静态资源这里以前漏了。
+        self.send_header("Cache-Control", "no-store, must-revalidate")
+        self.send_header("Pragma", "no-cache")
         self.end_headers()
         self.wfile.write(data)
 
@@ -98,6 +129,10 @@ class Handler(BaseHTTPRequestHandler):
             return self._serve_static(p[len("/static/"):])
 
         if p == "/api/config":
+            try:
+                oi.reap_mock()          # 顺手回收过期的演练/验收产物
+            except Exception:  # noqa: BLE001
+                pass
             return self._json({
                 "engine": runner.find_engine().name,
                 "mock_default": os.environ.get("DGTF_APP_MOCK") == "1",
@@ -108,6 +143,17 @@ class Handler(BaseHTTPRequestHandler):
 
         if p == "/api/params":
             return self._json(prm.load_params())
+
+        if p == "/api/chats":
+            return self._json({"chats": dash.list_chats()})
+
+        if p == "/api/dashboard":
+            d = dash.scan()
+            d["engine"] = runner.find_engine().name
+            d["creds"] = runner.credential_status()
+            d["balance"] = runner.current_balance()
+            d["tasks"] = runner.list_tasks()
+            return self._json(d)
 
         if p == "/api/tasks":
             return self._json({"tasks": runner.list_tasks()})
@@ -140,6 +186,10 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(t) if t else self._json({"error": "not found"}, 404)
 
         if p == "/api/outputs":
+            try:
+                oi.reap_mock()
+            except Exception:  # noqa: BLE001
+                pass
             if (q.get("facets") or [""])[0] == "1":
                 return self._json(oi.facets())
             body = (q.get("body") or ["0"])[0] == "1"
@@ -184,13 +234,111 @@ class Handler(BaseHTTPRequestHandler):
             })
         if p == "/api/library/web":
             return self._json({"items": lib.web_results(),
-                               "hits": lib.web_hits()})
+                               "hits": lib.web_hits(),
+                               "groups": lib.web_hits_grouped()})
         m = re.match(r"^/api/library/local/(.+)$", p)
         if m:
             body = lib.read_local(unquote(m.group(1)))
             if body is None:
                 return self._json({"error": "not found"}, 404)
             return self._json({"name": Path(m.group(1)).name, "body": body})
+
+        # ── 导出：单份产物 ──────────────────────────────────────
+        if p == "/api/export/output":
+            name = Path((q.get("name") or [""])[0]).name
+            body = oi.read_body(name)
+            if not body:
+                return self._json({"error": "not found"}, 404)
+            return self._download(body.encode("utf-8"),
+                                  "text/markdown; charset=utf-8", name)
+
+        # ── 导出：当前筛选下的一批产物（含旁挂，打成一个 zip）────
+        if p == "/api/export/outputs":
+            # ★ R22：`names` 非空 ⇒ 只导**勾选的那几份**（并入同名旁挂文件）
+            picked = [n for n in (q.get("names") or []) if n.strip()]
+            if picked:
+                buf = io.BytesIO()
+                with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
+                    for raw in picked:
+                        nm = Path(raw).name
+                        stamp = nm[:-3] if nm.endswith(".md") else nm
+                        for f in sorted(oi.OUTPUTS_DIR.glob(stamp + "*")):
+                            if f.is_file():
+                                try:
+                                    z.write(f, arcname=f.name)
+                                except OSError:
+                                    pass
+                if not buf.getvalue():
+                    return self._json({"error": "没有可导出的产物"}, 404)
+                ts0 = time.strftime("%Y%m%d_%H%M%S")
+                return self._download(buf.getvalue(), "application/zip",
+                                      "元DGTF_选中产物_%s.zip" % ts0)
+            body = (q.get("body") or ["0"])[0] == "1"
+            filters: dict = {}
+            for k in _FACETS:
+                v = (q.get(k) or [""])[0]
+                if v:
+                    filters[k] = v
+            days = (q.get("days") or [""])[0]
+            if days:
+                filters["days"] = days
+            recs = oi.search((q.get("q") or [""])[0], with_body=body,
+                             filters=filters)
+            buf = io.BytesIO()
+            with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
+                for r in recs:
+                    stamp = r["name"][:-3] if r["name"].endswith(".md") else r["name"]
+                    for f in sorted(oi.OUTPUTS_DIR.glob(stamp + "*")):
+                        if f.is_file():
+                            try:
+                                z.write(f, arcname=f.name)
+                            except OSError:
+                                pass
+            if not buf.getvalue():
+                return self._json({"error": "没有可导出的产物"}, 404)
+            ts = time.strftime("%Y%m%d_%H%M%S")
+            return self._download(buf.getvalue(), "application/zip",
+                                  "元DGTF_产物_%s.zip" % ts)
+
+        # ── 导出：联网检索库（按问题聚合的 md）────────────────────
+        if p == "/api/export/web":
+            groups = lib.web_hits_grouped()
+            picked_q = [x for x in (q.get("qs") or []) if x]
+            picked_ts = {x for x in (q.get("ts") or []) if x}
+            kw = ((q.get("q") or [""])[0] or "").strip().lower()
+            lines = ["# 元DGTF · 联网检索库", "",
+                     "**导出时间**: " + time.strftime("%Y-%m-%dT%H:%M:%S"), ""]
+            n_g = 0
+            for g in groups:
+                # ★ 分组的字段是 query/items（不是 question/hits）—— 写错会让「只导勾选的组」
+                #   永远匹配不上（title 恒为空）⇒ 整份导出被判成空的 404。
+                title = str(g.get("query") or g.get("question") or "")
+                hits = g.get("items") or g.get("hits") or []
+                if picked_q:                      # ★ 只导勾选的组
+                    if title not in picked_q:
+                        continue
+                elif picked_ts:                   # ★ 平铺模式：只留勾选的命中
+                    hits = [h for h in hits if str(h.get("ts")) in picked_ts]
+                    if not hits:
+                        continue
+                elif kw and kw not in title.lower() and not any(
+                        kw in str(h.get("title", "")).lower() for h in hits):
+                    continue
+                n_g += 1
+                lines.append("## " + title)
+                lines.append("")
+                lines.append("- 去重后 %d 条 · 日期 %s · 检索模型 %s"
+                             % (len(hits), g.get("time", ""), g.get("model", "")))
+                lines.append("")
+                for h in hits:
+                    lines.append("- [%s](%s)" % (h.get("title", ""), h.get("url", "")))
+                lines.append("")
+            if not n_g:
+                return self._json({"error": "没有可导出的条目"}, 404)
+            ts = time.strftime("%Y%m%d_%H%M%S")
+            return self._download("\n".join(lines).encode("utf-8"),
+                                  "text/markdown; charset=utf-8",
+                                  "元DGTF_联网检索库_%s.md" % ts)
 
         m = re.match(r"^/api/outputs/(.+)$", p)
         if m:

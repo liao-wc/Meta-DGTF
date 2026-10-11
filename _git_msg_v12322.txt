@@ -1,0 +1,14 @@
+v1.23.22：联网命中落盘 JSONL（供工作台「联网检索库」）
+
+- 新增模块级 `_record_web_hits(query, items)`：把命中**追加**到
+  `outputs/_web_hits.jsonl`（`ts` / `query` / `claim` / `url` / `tier` / `kind`）；
+  路径可用 `DGTF_OUTPUT_DIR` 覆盖；任何写失败都静默。
+- `AnchorRetriever._tavily` 与 `WebSearchClient._http` 的成功返回前各调一次。
+- 产物 md / packed.json 零改动；0 条命中不建文件（负对照已断言）。
+- yaml 头部 → v1.23.22；CHANGELOG 加段；smoke_test：SRC + check_v12322_web_hits_dump。
+- 验收：冒烟 exit 0 / 0 ✗ / PASS 215。
+  真跑 `route 1` + `--web on` → `outputs/_web_hits.jsonl` **8 行**（含真实链接）。
+  注：`route 0`（只修行层）**本就不触发**联网 —— `_web_search` 调用点全在
+  研究/对撞/元层，所以「开但 0 条、不落盘」是正确行为。
+- 应用层配套：`/api/params`（164 键 / 10 组）+ 临时 config 机制（`--config` 传副本，
+  原 yaml 不动）+ 高级参数面板重做（模型 / 搜索模型成下拉）；联网检索库改为显示命中条目。

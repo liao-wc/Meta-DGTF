@@ -187,6 +187,55 @@ def _find_new_output(before: dict, since: float) -> str | None:
     return best
 
 
+# ── 手动终止：把「已经跑到的部分」落成一份部分产物 ──────────────────
+def _safe_name(q: str, n: int = 20) -> str:
+    """问题 → 可安全落盘的文件名片段（与引擎 / mock 同一套规则）。"""
+    s = "".join(c for c in (q or "") if c not in r'\/:*?"<>|').strip()
+    return s[:n] or "run"
+
+
+def _build_partial_md(task: dict, raw: str) -> str:
+    """被手动终止时，用**运行日志**重建一份部分产物；一层都没跑到的返回空串。
+
+    引擎只在**跑完**才写产物 md（实测 V1.23.20 / V1.23.22 都是收尾一次性写出），
+    中途被终止则 outputs/ 下什么都没有。所以这里由应用层把「进行到哪」落下：
+    每层的正文取自该层的日志段（引擎 verbose 会把层内容打进日志）。
+    头部显式写上 `**状态**：已终止（部分）`，产物库与详情页据此标注。
+    """
+    parts_log = layers.split_log(raw or "")
+
+    def _reached(seg: str) -> bool:
+        """这一段是否「真的跑到了」——只有层界那一行（`━━━ 修行 · …` / `[修行层] 停止：…`）
+        不算，必须有层界之外的正文行。否则会把「刚要开始就被终止」的层误报成已完成。"""
+        return any(l.strip() and not layers.layer_of_line(l)
+                   for l in (seg or "").splitlines())
+
+    done = [n for n in layers.LAYER_NAMES if _reached(parts_log.get(n, ""))]
+    if not done:
+        return ""                       # 一层都没跑到 ⇒ 不落空壳产物（别往产物库里塞垃圾）
+    head = [
+        f"# 元 DGTF · {task.get('question', '')}",
+        "",
+        f"**时间**: {time.strftime('%Y-%m-%dT%H:%M:%S')}",
+        "**状态**: 已终止（部分 · 手动停止）",
+        f"**已完成层**: {'、'.join(done)} / 共 {len(layers.LAYER_NAMES)} 层",
+        "**停止**: 手动终止",
+        "",
+        "> ⚠️ 本次运行由用户**手动终止**。下面是终止前已经产生的分层内容（取自运行日志），",
+        "> **不是完整产物**，请勿当作最终结论使用。",
+        "",
+        "## 附：逐层明细",
+        "",
+    ]
+    body: list[str] = []
+    for n in layers.LAYER_NAMES:
+        seg = parts_log.get(n, "")
+        if not _reached(seg):
+            continue                      # 没真跑到的层：不落
+        body += [f"### {n}层 `{layers.ENTRY_OF_LAYER[n]}`", "", "```", seg.rstrip(), "```", ""]
+    return "\n".join(head + body) + "\n"
+
+
 # ── 日志过滤（应用层）────────────────────────────────────────────
 # 引擎在 output.verbose / show_ing / show_manifest 打开时会打两类"大块"，
 # 后台只想看进度，故在应用层折叠（原始全文仍完整留在 runs/<id>.log，并归档）：
@@ -242,8 +291,13 @@ def _filter_lines(text: str, st: dict) -> tuple[str, int]:
     return (res + "\n" if res else ""), hidden
 
 
-def _archive(task: dict) -> None:
-    """跑完把「完整运行日志」与「运行元信息」单独落到 outputs/。"""
+def _archive(task: dict, status: str | None = None) -> None:
+    """跑完把「完整运行日志」与「运行元信息」单独落到 outputs/。
+
+    `status`：本轮跑完的**最终状态**。归档发生在 `task["status"]` 落定**之前**
+    （见 _run 里的调用），所以元信息不能现读 task["status"]（那时还是 running），
+    必须由调用方显式传进来。
+    """
     if not oi.OUTPUTS_DIR.is_dir():
         return
     name = task.get("output_name") or ""
@@ -257,7 +311,8 @@ def _archive(task: dict) -> None:
             task["archive_log"] = dst.name
         meta = {
             "id": task["id"], "question": task["question"],
-            "status": task["status"], "exit_code": task["exit_code"],
+            "status": status or task["status"], "exit_code": task["exit_code"],
+            "partial": bool(task.get("partial")),
             "mock": task["mock"],
             "engine": "mock_engine" if task["mock"] else find_engine().name,
             "opts": task["opts"],
@@ -274,10 +329,10 @@ def _archive(task: dict) -> None:
         task["archive_json"] = dstj.name
     except OSError:
         pass
-    _archive_layers(task, stamp)
+    _archive_layers(task, stamp, status)
 
 
-def _archive_layers(task: dict, stamp: str) -> None:
+def _archive_layers(task: dict, stamp: str, status: str | None = None) -> None:
     """按层落盘：`<stamp>.<层>.md` / `.<层>.run.log` / `.<层>.json`。
 
     - md = 共有头部 + 该层段（头部与原总产物 md **逐字一致**）；
@@ -309,7 +364,7 @@ def _archive_layers(task: dict, stamp: str) -> None:
             meta = {
                 "layer": n, "entry": layers.ENTRY_OF_LAYER[n],
                 "task_id": task["id"], "question": task["question"],
-                "status": task["status"], "output_name": name,
+                "status": status or task["status"], "output_name": name,
                 "layer_md": f"{base}.md",
                 "layer_log": f"{base}.run.log",
                 "stats": stats.get(n, {}),
@@ -353,6 +408,8 @@ def start_task(question: str, opts: dict | None = None) -> str:
         "started_at": None,
         "ended_at": None,
         "exit_code": None,
+        "cancelled": False,                  # 用户是否手动终止过
+        "partial": False,                    # 产物是否为「部分产物」
         "log": str(log_path),
         "output_name": None,
         "error": "",
@@ -384,7 +441,7 @@ def _run(tid: str) -> None:
             task["status"] = "running"
         else:
             time.sleep(1.0)
-    if task["status"] == "error":  # 排队期间被取消
+    if task["status"] in ("error", "cancelled"):  # 排队期间被取消 / 终止
         return
 
     env = dict(os.environ)
@@ -410,27 +467,55 @@ def _run(tid: str) -> None:
         return
 
     task["ended_at"] = time.time()
+    cancelled = bool(task.get("cancelled"))
     out = _find_new_output(task["before_outputs"], task["started_at"] or task["created_at"])
     if out:
         task["output_name"] = out
-    if code == 0:
-        task["status"] = "done"
+    elif cancelled:
+        # ★ 引擎只在跑完才写产物；中途被终止 ⇒ 由应用层按日志重建「部分产物」，
+        #   这样「进行到哪」的那部分也留在 outputs/ 里、并在产物库可见。
+        #   （一层都没跑到则不落壳产物 —— 别把空跑也塞进产物库。）
+        try:
+            raw = Path(task["log"]).read_text(encoding="utf-8", errors="replace")
+            partial = _build_partial_md(task, raw)
+            if partial:
+                name = (time.strftime("%Y%m%d_%H%M%S") + "_"
+                        + _safe_name(task.get("question", "")) + ".md")
+                (oi.OUTPUTS_DIR / name).write_text(partial, encoding="utf-8", newline="")
+                task["output_name"] = name
+                task["partial"] = True
+        except OSError:
+            pass
+    if cancelled:
+        final = "cancelled"
+    elif code == 0:
+        final = "done"
     else:
-        task["status"] = "error"
+        final = "error"
         if not task["error"]:
             task["error"] = f"引擎退出码 {code}"
-    _archive(task)  # 完整 log + 运行元信息 → outputs/
+    # ★ 顺序要紧：**先落盘归档，再对外宣布跑完**。
+    #   反过来的话，前端有可能在 status 还是 done 的那一次轮询就停掉轮询，
+    #   归档链接（archive_log / archive_json / layer_artifacts）就永远不出现了。
+    _archive(task, final)  # 完整 log + 运行元信息 → outputs/
+    task["status"] = final
 
 
 def cancel_task(tid: str) -> bool:
+    """手动终止：杀进程树，并把「已跑到的部分」落成部分产物（由 _run 收尾完成）。"""
+    pid = None
     with _tasks_lock:
         task = _tasks.get(tid)
-    if not task or task["status"] not in ("running", "queued"):
-        return False
-    task["error"] = "已手动取消"
-    task["status"] = "error"
-    task["ended_at"] = time.time()
-    pid = task.get("pid")
+        if not task or task["status"] not in ("running", "queued"):
+            return False
+        task["cancelled"] = True
+        task["error"] = "已手动终止"
+        if task["status"] == "queued":
+            # 还没起进程：直接落定；_run 的排队循环据此退出（不会跑到归档）
+            task["status"] = "cancelled"
+            task["ended_at"] = time.time()
+        else:
+            pid = task.get("pid")
     if pid:
         try:
             if os.name == "nt":

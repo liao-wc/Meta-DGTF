@@ -4,102 +4,320 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
-<title>元DGTF 工作台</title>
+<title>元DGTF 个人工作台</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/static/style.css">
 </head>
-<body>
-<header class="topbar">
-  <div class="brand">
-    <span class="glyph" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-    元DGTF <span class="sub">工作台</span>
+<body class="stage-empty">
+
+<!-- 左上角三个按钮：抽屉（面板）/ 搜索对话产物 / 开启新对话
+     ★ **只留图标**（文字去掉，说明走悬停气泡 `.tip`） -->
+<div class="corner-actions">
+  <button id="drawer-btn" class="icon-btn" data-tip="打开面板（读数台 · 产物库 · 资料库 · 检索库）" aria-label="打开面板">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="16" rx="2.5" stroke="currentColor" stroke-width="1.7"/>
+      <path d="M9.5 4v16" stroke="currentColor" stroke-width="1.7"/>
+    </svg>
+  </button>
+  <button id="search-btn" class="icon-btn" data-tip="搜索对话产物（标题 / 元数据 / 正文）" aria-label="搜索对话产物">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="11" cy="11" r="6.6" stroke="currentColor" stroke-width="1.8"/>
+      <path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </svg>
+  </button>
+  <button id="newchat-btn" class="icon-btn" data-tip="开启新对话（清空当前显示）" aria-label="开启新对话">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.3c-1.3 0-2.6-.3-3.7-.8L3 20.5l1.6-5.2a8.2 8.2 0 0 1-.9-3.8A8.4 8.4 0 0 1 12.5 3.2"
+            stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M18 2.6v5.6M15.2 5.4h5.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+    </svg>
+  </button>
+</div>
+
+<!-- 抽屉：只放**按钮**（点一个 → 对应的面板全屏铺开，见 #sheet） -->
+<aside id="drawer" class="drawer" aria-hidden="true">
+  <div class="drawer-head">
+    <span class="brand"><span class="glyph" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      元DGTF</span>
+    <button id="drawer-close" class="icon-btn" data-tip="收起面板（Esc）" aria-label="收起面板">
+      <!-- ★ R30：图形与左上角那个「面板」键**一致**（用户要求） -->
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <rect x="3" y="4" width="18" height="16" rx="2.5" stroke="currentColor" stroke-width="1.7"/>
+        <path d="M9.5 4v16" stroke="currentColor" stroke-width="1.7"/>
+      </svg>
+    </button>
   </div>
-  <nav class="tabs">
-    <button class="tab active" data-view="run">运行台</button>
-    <button class="tab" data-view="lib">产物库</button>
-    <button class="tab" data-view="local">本地资料库</button>
-    <button class="tab" data-view="web">联网检索库</button>
-  </nav>
-  <div class="env" id="env-info"></div>
-</header>
+  <div class="drawer-body scroll">
+    <div class="env" id="env-info"></div>
 
-<main>
-  <!-- 运行台：任务卡在上，输入框在下 -->
-  <section id="view-run" class="view active">
-    <div id="tasks" class="tasks"></div>
-    <div id="tasks-empty" class="muted empty">还没有任务。在下面填一个问题、点「开始深究」。</div>
+    <nav class="drawer-nav">
+      <button class="nav-btn" data-sheet="adv-panel" data-tip="模型 / 档位 / 开关，留空 = auto">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 7h10M18 7h2M4 17h4M12 17h8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          <circle cx="16" cy="7" r="2.3" stroke="currentColor" stroke-width="1.7"/>
+          <circle cx="10" cy="17" r="2.3" stroke="currentColor" stroke-width="1.7"/>
+        </svg>
+        <span class="nb-name">高级参数</span>
+      </button>
+      <button class="nav-btn" data-sheet="dash-stats" data-tip="深究轮次 / token / 跑完浅跑">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 19V9M10 19V4M16 19v-7M22 19H2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        </svg>
+        <span class="nb-name">读数台</span>
+      </button>
+      <button class="nav-btn" data-sheet="dash-history" data-tip="历次任务 / 状态 / 耗时">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="12" cy="12" r="8.4" stroke="currentColor" stroke-width="1.7"/>
+          <path d="M12 7.6V12l3 1.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        </svg>
+        <span class="nb-name">最近跑过</span>
+      </button>
+      <button class="nav-btn" data-sheet="view-chats" data-tip="历次会话 · 可回到当时的原始运行日志">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M21 12a8.4 8.4 0 0 1-8.5 8.3c-1.3 0-2.6-.3-3.7-.8L3 20.5l1.6-5.2a8.2 8.2 0 0 1-.9-3.8A8.4 8.4 0 0 1 12.5 3.2"
+                stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M12 7.6V12l3 1.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        </svg>
+        <span class="nb-name">历史对话</span>
+      </button>
+      <button class="nav-btn" data-sheet="view-lib" data-tip="历史产物检索">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H10l1.6 2H18.5A1.5 1.5 0 0 1 20 7.5V18a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18z"
+                stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+        </svg>
+        <span class="nb-name">产物库</span>
+      </button>
+      <button class="nav-btn" data-sheet="view-local" data-tip="导入文件当外部证据锚点">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 15.5V4m0 0L8 8m4-4l4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15"
+                stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        </svg>
+        <span class="nb-name">本地资料库</span>
+      </button>
+      <button class="nav-btn" data-sheet="view-web" data-tip="历次联网命中 · 去重">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="12" cy="12" r="8.4" stroke="currentColor" stroke-width="1.7"/>
+          <path d="M3.6 12h16.8M12 3.6c2.4 2.6 2.4 14.2 0 16.8M12 3.6c-2.4 2.6-2.4 14.2 0 16.8"
+                stroke="currentColor" stroke-width="1.7"/>
+        </svg>
+        <span class="nb-name">联网检索库</span>
+      </button>
+    </nav>
+  </div>
+  <div class="drawer-foot">个人工作台</div>
+</aside>
 
-    <div class="composer">
-      <textarea id="question" rows="2" spellcheck="false"
-        placeholder="输入要深究的问题，例如：AI 能否独立完成数字 IC 设计流程？"></textarea>
-      <div class="composer-actions">
-        <label class="mock-toggle">
-          <input type="checkbox" id="mock">
-          <span class="sw" aria-hidden="true"></span>
-          演练模式（mock：不花钱、几秒出结果，仅验证链路）
-        </label>
-        <button id="run-btn" class="primary">开始深究 <kbd>&#8984;/Ctrl+&#9166;</kbd></button>
+<!-- 全屏面板层：点抽屉里的按钮后，对应面板**铺满整页**，背景半透明、透出底下首屏 -->
+<div id="sheet" class="sheet hidden">
+  <div class="sheet-head">
+    <span id="sheet-title" class="sheet-title"></span>
+    <!-- ★ R28：各页的「计数 / 时间 / 说明」挪到标题旁当**描述**（面板内不再重复一条标题行） -->
+    <span id="sheet-desc" class="sheet-desc">
+      <span class="sd" data-for="dash-stats">更新时间 <span id="stats-asof"></span></span>
+      <span class="sd" data-for="dash-history">共 <span id="history-count"></span></span>
+      <span class="sd" data-for="view-chats"><span id="chats-count"></span> · 每次提交都是一次独立会话 —— 点开任意一条即可回到它当时的运行日志窗口与内容（归档的那份在服务重启后依然在）。</span>
+      <span class="sd" data-for="view-lib"><span id="lib-count"></span></span>
+      <span class="sd" data-for="view-local"><span id="local-count"></span></span>
+      <span class="sd" data-for="view-web"><span id="web-count"></span></span>
+    </span>
+    <button id="sheet-close" class="icon-btn" data-tip="关闭面板（Esc）" aria-label="关闭面板">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
+  <div class="sheet-body">
+
+    <!-- 高级参数：这一页只列**分组按钮**，点一个进下一层新页看该组参数 -->
+    <div class="advanced sheet-page" id="adv-panel">
+      <div class="adv-groups" id="adv-groups"></div>
+    </div>
+
+    <!-- 分组参数页：点某个分组后铺满显示该组参数（#adv-grid 是参数网格的容器） -->
+    <section class="panel sheet-page" id="adv-group-page">
+      <div class="panel-head">
+        <span class="panel-title" id="adv-group-title"></span>
+        <span class="muted">留空 = 交给引擎 auto 自决</span>
       </div>
-      <details class="advanced">
-        <summary>高级参数（留空 = 交给引擎 auto 自决）</summary>
+      <div class="adv-group-body scroll">
         <div class="grid" id="adv-grid"></div>
-      </details>
-      <div class="warn" id="cost-warn"></div>
-    </div>
-  </section>
-
-  <!-- 产物库 -->
-  <section id="view-lib" class="view">
-    <div class="searchbar">
-      <div class="search-wrap">
-        <input id="lib-q" placeholder="搜索标题 / 元数据 / 正文…">
-        <kbd>/</kbd>
       </div>
-      <label class="chk"><input type="checkbox" id="lib-body"> 搜正文</label>
-      <select id="lib-decid"><option value="">可判定性：全部</option></select>
-      <select id="lib-orient"><option value="">取向：全部</option></select>
-      <select id="lib-days">
-        <option value="">时间：全部</option>
-        <option value="7">最近 7 天</option>
-        <option value="30">最近 30 天</option>
-        <option value="90">最近 90 天</option>
-      </select>
-      <button id="lib-search">搜索</button>
-    </div>
-    <div id="lib-count" class="muted"></div>
-    <div id="lib-list" class="lib-list"></div>
-  </section>
+      <!-- ★ 右上角「← 返回」与「关闭」同义（都不保存）⇒ 这里只留「保存」：
+           底部居中、白字 + 透明底；说明走悬停气泡。-->
+      <div class="sheet-actions">
+        <button id="adv-save" class="ghost" data-tip="保存本组改动并返回上一级">保存</button>
+      </div>
+    </section>
 
-  <!-- 本地资料库：导入本地文件 → 外部证据锚点 -->
-  <section id="view-local" class="view">
-    <div class="hint">
-      导入本地文件作为<strong>外部证据锚点</strong>：文件存进
-      <code>dgtf_app/anchors/</code>，并自动重建一份合并快照
-      <code>anchors/external_anchor.json</code> —— 把
-      <code>dgtf_config.yaml</code> 的 <code>external_anchor.path</code>
-      指到它即可当锚点用。
-    </div>
-    <div class="import-bar">
-      <label class="chk"><input type="file" id="anchor-file" multiple> 选择文件导入…</label>
-      <span class="muted" id="import-msg"></span>
-    </div>
-    <div id="local-count" class="muted"></div>
-    <div id="local-list" class="lib-list"></div>
-    <div class="hint" id="local-cand-hint" style="margin-top:18px"></div>
-    <div id="local-cand" class="lib-list"></div>
-  </section>
+    <!-- ★ R28：面板里**不再重复一条标题行**（标题与计数在上面的 sheet-head），点开即内容 -->
+    <section id="dash-stats" class="panel sheet-page">
+      <div id="stats-body" class="stats-body scroll"></div>
+    </section>
 
-  <!-- 联网检索库：历次跑圈的联网命中 -->
-  <section id="view-web" class="view">
-    <div class="hint">
-      从历次产物头部的「外部锚点 · 联网」读数汇总（收了多少条 / 几个环节 / tier）。
+    <section id="dash-history" class="panel sheet-page">
+      <div id="history-list" class="hist-list scroll"></div>
+    </section>
+
+    <section id="view-chats" class="panel sheet-page">
+      <div id="chats-list" class="hist-list scroll"></div>
+    </section>
+
+    <section id="view-lib" class="panel sheet-page">
+      <div class="searchbar">
+        <div class="search-wrap">
+          <input id="lib-q" placeholder="搜索标题 / 元数据 / 正文…">
+          <kbd>/</kbd>
+        </div>
+        <label class="chk"><input type="checkbox" id="lib-body"> 搜正文</label>
+        <select id="lib-decid"><option value="">可判定性：全部</option></select>
+        <select id="lib-orient"><option value="">取向：全部</option></select>
+        <select id="lib-kind">
+          <option value="">分类：全部</option>
+          <option value="md">md</option>
+          <option value="log">log</option>
+          <option value="json">json</option>
+        </select>
+        <select id="lib-layer">
+          <option value="">层级：全部</option>
+          <option value="总">总</option>
+          <option value="修行">修行</option>
+          <option value="研究">研究</option>
+          <option value="对撞">对撞</option>
+          <option value="元">元</option>
+        </select>
+        <select id="lib-days">
+          <option value="">时间：全部</option>
+          <option value="7">最近 7 天</option>
+          <option value="30">最近 30 天</option>
+          <option value="90">最近 90 天</option>
+        </select>
+        <button id="lib-search">搜索</button>
+        <button id="lib-export" class="ghost" data-tip="把当前筛选下的产物打成 zip 导出">导出</button>
+      </div>
+      <div id="lib-list" class="lib-list scroll"></div>
+    </section>
+
+    <section id="view-local" class="panel sheet-page">
+      <div class="hint tight">
+        导入的文件存进 <code>dgtf_app/anchors/</code>，并重建合并快照
+        <code>anchors/external_anchor.json</code> —— 把 <code>dgtf_config.yaml</code>
+        的 <code>external_anchor.path</code> 指到它即可当锚点用。
+      </div>
+      <div class="import-bar">
+        <label class="chk"><input type="file" id="anchor-file" multiple> 选择文件导入…</label>
+        <span class="muted" id="import-msg"></span>
+      </div>
+      <div id="local-list" class="lib-list scroll"></div>
+      <details class="cand" open>
+        <summary id="local-cand-hint"></summary>
+        <div id="local-cand" class="lib-list scroll"></div>
+      </details>
+    </section>
+
+    <section id="view-web" class="panel sheet-page">
+      <div class="searchbar tight">
+        <div class="search-wrap">
+          <input id="web-q" placeholder="按问题 / 关键词过滤…">
+        </div>
+        <select id="web-mode">
+          <option value="group">按问题聚合 · 去重</option>
+          <option value="flat">平铺（原始顺序 · 不去重）</option>
+        </select>
+        <button id="web-search">刷新</button>
+        <button id="web-export" class="ghost" data-tip="把当前筛选下的检索结果导成 Markdown">导出</button>
+      </div>
+      <div id="web-list" class="lib-list scroll"></div>
+    </section>
+  </div>
+</div>
+
+<div id="drawer-mask" class="drawer-mask"></div>
+
+<main class="stage">
+  <!-- 首屏：只有欢迎语 + 输入框，其余留白 -->
+  <div id="welcome" class="welcome">
+    <span class="glyph big" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+    欢迎回来，随时开始吧
+  </div>
+
+  <!-- 运行日志：默认隐藏，点了「开始深究」才出现（四层日志合成一条流） -->
+  <div id="runlog" class="runlog hidden">
+    <!-- ★ R28：徽章贴左 · **题目与元信息同一栏、一起居中**（题目蓝色、与元信息同字号）· 链接贴右 -->
+    <div class="runlog-head">
+      <span class="rl-head-l"><span id="rl-badge" class="badge"></span></span>
+      <span class="rl-head-c"><span id="rl-question"></span><span id="rl-meta" class="rl-meta"></span></span>
+      <span class="rl-head-r"><span id="rl-files" class="rl-files"></span></span>
     </div>
-    <div id="web-count" class="muted"></div>
-    <div id="web-list" class="lib-list"></div>
-  </section>
+    <div id="runlog-body" class="runlog-body scroll"></div>
+    <!-- ★ R33：自绘的日志滚动指示（原生长条改成**短的椭圆点**，见 style.css #rl-bar） -->
+    <div id="rl-bar" class="rl-bar" aria-hidden="true"></div>
+  </div>
+
+  <div class="composer">
+    <textarea id="question" rows="1" spellcheck="false"
+      placeholder="给 元DGTF 发送消息，例如：AI 能否独立完成数字 IC 设计流程？"></textarea>
+    <div class="composer-row">
+      <button type="button" class="pill" id="pill-thinking" data-tip="提高推理强度：runtime.thinking = on">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 3l2.1 5.6L20 10l-5.9 1.4L12 17l-2.1-5.6L4 10l5.9-1.4L12 3z"
+                stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+        </svg>
+        <span class="p-name">深度思考</span>
+      </button>
+      <button type="button" class="pill" id="pill-web" data-tip="启用联网检索：runtime.web = on">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="12" cy="12" r="8.2" stroke="currentColor" stroke-width="1.6"/>
+          <path d="M3.8 12h16.4M12 3.8c2.4 2.4 2.4 13.9 0 16.4M12 3.8c-2.4 2.4-2.4 13.9 0 16.4"
+                stroke="currentColor" stroke-width="1.6"/>
+        </svg>
+        <span class="p-name">智能搜索</span>
+      </button>
+      <label class="pill mock-pill" id="mock-row" data-tip="不花钱、几秒出结果，只验证链路">
+        <input type="checkbox" id="mock">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M8 5.2v13.6l10-6.8z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+        </svg>
+        <span class="p-name">演练模式</span>
+      </label>
+      <button type="button" id="attach-btn" class="pill" data-tip="导入文件作为外部证据锚点（文本类，可多选）" aria-label="导入文件">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M20 11.5l-7.6 7.6a4.6 4.6 0 0 1-6.5-6.5l8-8a3.1 3.1 0 0 1 4.4 4.4l-8 8a1.6 1.6 0 0 1-2.2-2.2l7.3-7.3"
+                stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <button id="run-btn" class="send" data-tip="开始深究（⌘/Ctrl+↵）" aria-label="开始深究">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 19V5M6 11l6-6 6 6" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+    <div class="warn" id="cost-warn"></div>
+    <div class="attach-msg" id="attach-msg"></div>
+  </div>
 </main>
+
+<!-- 搜索对话产物：点左上角放大镜出现（居中搜索框 + 结果列表） -->
+<div id="search-overlay" class="search-overlay hidden">
+  <div class="search-panel">
+    <div class="search-box">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="sb-icon">
+        <circle cx="11" cy="11" r="6.6" stroke="currentColor" stroke-width="1.8"/>
+        <path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+      <input id="search-input" placeholder="搜索对话内容…" autocomplete="off" spellcheck="false">
+      <button id="search-close" class="icon-btn" aria-label="关闭搜索">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+    <div id="search-results" class="search-results scroll"></div>
+  </div>
+</div>
 
 <div id="detail" class="detail hidden">
   <div class="detail-inner">
@@ -110,6 +328,9 @@
     <div id="detail-body" class="md"></div>
   </div>
 </div>
+
+<!-- 悬停描述的承载元素（挂 body 的 fixed 气泡，不受抽屉 overflow 裁剪）+ 发送星光动画层 -->
+<div id="fx" class="fx" aria-hidden="true"></div>
 
 <script src="/static/app.js"></script>
 </body>

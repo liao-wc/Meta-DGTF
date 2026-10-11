@@ -13,14 +13,21 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
+import shutil
 import sys
 import time
 import urllib.parse
 import urllib.request
 from pathlib import Path
 
+import yaml  # noqa: E402
+
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import dashboard  # noqa: E402
+import library  # noqa: E402
 import outputs_index as oi  # noqa: E402
+import params as prm  # noqa: E402
 
 PASS: list[str] = []
 FAIL: list[str] = []
@@ -44,6 +51,22 @@ def _post(base: str, path: str, obj: dict):
         return r.status, json.loads(r.read().decode("utf-8"))
 
 
+def _raw(base: str, path: str) -> str:
+    with urllib.request.urlopen(base + path, timeout=15) as r:
+        return r.read().decode("utf-8", "replace")
+
+
+def _rule(css: str, sel: str) -> str:
+    """取某条 CSS 规则的声明体（第一条匹配）。"""
+    m = re.search(re.escape(sel) + r"\s*\{([^}]*)\}", css)
+    return m.group(1) if m else ""
+
+
+def _rules(css: str, sel: str) -> list[str]:
+    """同名选择器的**全部**规则体（.tasks 在媒体查询里还有一份，别被它命中）。"""
+    return [m.group(1) for m in re.finditer(re.escape(sel) + r"\s*\{([^}]*)\}", css)]
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--base", default="http://127.0.0.1:8765")
@@ -58,6 +81,508 @@ def main() -> int:
         print("服务不可达：", e)
         return 2
 
+    # ── 页面契约：四条改动必须落在真正被服务出去的静态资源上 ──────
+    #（文本判据只能证「接线在」，视觉最终由浏览器实拍确认）
+    css = _raw(base, "/static/style.css")
+    js = _raw(base, "/static/app.js")
+    _app = Path(__file__).resolve().parent
+    runner_src = (_app / "engine_runner.py").read_text(encoding="utf-8")
+    oi_src = (_app / "outputs_index.py").read_text(encoding="utf-8")
+    params_src = (_app / "params.py").read_text(encoding="utf-8")
+    dash_src = (_app / "dashboard.py").read_text(encoding="utf-8")
+    srv_src = (_app / "server.py").read_text(encoding="utf-8")
+    _, params_data = _get(base, "/api/params")
+    _, chats_data = _get(base, "/api/chats")
+    _rl = _rule(css, ".runlog-body")
+    check("运行日志：解掉 .log 的 264px 上限（否则日志区下半截留空）",
+          "max-height:none" in _rl, _rl.strip()[:64])
+    _run = _rule(css, ".runlog")
+    check("运行日志：面板在「深究」区撑满剩余高度",
+          "flex:1 1 auto" in _run, _run.strip()[:64])
+    check("运行日志：默认隐藏、点「开始深究」后才出现（四张层卡已从页面移除）",
+          'class="runlog hidden"' in html
+          and ".runlog.hidden{display:none}" in css.replace(" ", "")
+          and 'class="lane' not in html and 'id="tasks"' not in html,
+          "")
+    # 骨架：极简首屏 + 左侧抽屉（面板平时不占位）
+    check("极简首屏：面板收进左侧抽屉（默认移出屏外，.open 才拉进来）",
+          "translateX(-102%)" in _rule(css, ".drawer")
+          and ".drawer.open{transform:none}" in css
+          and 'id="drawer-btn"' in html,
+          _rule(css, ".drawer").strip()[:56])
+    check("极简首屏：空态居中、运行态日志占主位（body 上的 stage-* 切换）",
+          "body.stage-empty main.stage{justify-content:center" in css
+          and "body.stage-run .runlog{flex:1 1 auto" in css
+          and 'class="stage-empty"' in html,
+          "")
+    check("输入框为对话式（功能胶囊 + 圆形发送键；旧的 composer-actions 已移除）",
+          'id="pill-thinking"' in html and 'id="pill-web"' in html
+          and 'id="run-btn"' in html and "composer-actions" not in html)
+    check("首屏三个入口都在（抽屉 / 搜索对话产物 / 开启新对话），描述走**悬停气泡**",
+          all(k in html for k in ('id="drawer-btn"', 'id="search-btn"', 'id="newchat-btn"'))
+          and 'data-tip=' in html and 'class="btn-desc"' not in html,
+          "data-tip=" + str(html.count('data-tip=')))
+    check("搜索浮层 + 文件导入入口都在（浮层默认隐藏）",
+          'id="search-overlay" class="search-overlay hidden"' in html
+          and 'id="search-input"' in html and 'id="attach-btn"' in html,
+          "")
+    check("抽屉里是**七个**按钮（含历史对话）、各自指向一个面板",
+          html.count('class="nav-btn"') == 7
+          and 'data-sheet="adv-panel"' in html and 'data-sheet="view-lib"' in html,
+          f"nav-btn={html.count('nav-btn')}")
+    check("参数分组页只剩「保存」一个出口（顶部「← 返回」＝不保存退出），底部居中",
+          'id="adv-save"' in html and 'id="adv-cancel"' not in html
+          and ".sheet-actions{" in css
+          and "justify-content:center" in _rule(css, ".sheet-actions")
+          and "rollbackAdvGroup" in js,
+          "")
+    check("高级参数页只列分组按钮，点一个进新页看该组参数",
+          'id="adv-groups"' in html and 'id="adv-group-page"' in html
+          and 'id="adv-grid"' in html and "openAdvGroup" in js,
+          "")
+    check("按钮描述改成**悬停气泡**：背景透明 + **文字灰色**（.tip，挂 body 的 fixed 气泡）",
+          ".tip{" in css and "background:transparent" in _rule(css, ".tip")
+          and "color:#6B7280" in _rule(css, ".tip")
+          and "initTips" in js and "position:fixed" in _rule(css, ".tip")
+          and 'class="btn-desc"' not in html,
+          "data-tip=" + str(html.count('data-tip=')))
+    check("侧边栏按钮只留名字 ⇒ **高度自适应**（不再被描述撑成两行）",
+          ".nav-btn .nb-name" in css and ".nav-btn .btn-desc" not in css
+          and html.count('class="nb-name"') >= 6,
+          "nb-name=" + str(html.count('class="nb-name"')))
+    check("运行日志：层标题蓝粗、**名称与内容同一行**、正文只改绿",
+          "text-align:center" in _rule(css, ".rl-lane-head")
+          and "color:var(--log-blue)" in _rule(css, ".rl-lane-head")
+          and "font-weight:700" in _rule(css, ".rl-lane-head")
+          and "display:flex" in _rule(css, ".rl-line")
+          and "color:var(--log-blue)" in _rule(css, ".rl-lab")
+          and "color:var(--log-green)" in _rule(css, ".rl-txt")
+          and "pre-wrap" in _rule(css, ".rl-txt")
+          and "hlNums" in js,
+          "")
+    # ★ R21：日志**语义排版**（轮次/步骤/小标题蓝粗、噪声过滤、[N] 合并、view 默认展开）
+    check("日志语义排版：轮次/步骤/小标题**蓝粗**；噪声过滤；view 全文**默认展开**",
+          "function renderLogBody" in js and "function rlClass" in js
+          and ".rl-round" in css and ".rl-step" in css and ".rl-title" in css
+          and ".rl-summary" in css and ".rl-seq" in css
+          and ".rl-fold>summary" in css.replace(" ", "")
+          and 'class="rl-fold" open' in js
+          and "RL_NOISE" in js and "RL_BANNER" in js and "RL_VIEWBAR" in js
+          and "function rlSuspNames" in js,
+          "")
+    check("日志排版细则：`##` 去掉 / `🔥 │` 前缀去掉 / `[N]` 属性插在**序号与内容之间** / 悬置还原",
+          "replace(/^#{1,6}" in js
+          and "🔥\\s*│" in js
+          and ".rl-attr" in css and 'class="rl-line rl-seq"' in js
+          and ".rl-susp" in css and "原悬置" in js,
+          "")
+    check("日志头：题目**蓝色 + 与元信息同档字号**、与元信息**同栏居中**（`.rl-head-c`）+ 链接深绿/深蓝",
+          "color:var(--log-blue)" in _rule(css, "#rl-question")
+          and "clamp(13px,1.85vh,16.5px)" in _rule(css, "#rl-question")
+          and "clamp(13px,1.85vh,16.5px)" in _rule(css, ".rl-meta")
+          and "justify-content:center" in _rule(css, ".rl-head-c")
+          and "gap:clamp(" in _rule(css, ".rl-head-c")
+          and 'class="rl-head-c"' in html
+          and '<span id="rl-question"></span><span id="rl-meta"' in html
+          and "background:rgba(30,122,52,.14)" in _rule(css, ".rl-files a")
+          and "color:#1E7A34" in _rule(css, ".rl-files a"),
+          "")
+    check("详情卡片背景 **20% 不透明**（同类：搜索框 / 结果框一起，R24 统一）",
+          "rgba(22,23,28,.20)" in _rule(css, ".detail .md")
+          and "rgba(22,23,28,.20)" in _rule(css, ".search-box")
+          and "rgba(22,23,28,.20)" in _rule(css, ".search-results"),
+          "")
+    check("按钮**只留图标**（说明走 data-tip）+ 入口钮 34px + 发送键渐变 + 箭头 22px 加粗",
+          'class="btn-name"' not in html and 'class="p-name">导入锚点' not in html
+          and "height:34px" in _rule(css, ".icon-btn")
+          and "linear-gradient" in _rule(css, "#run-btn.send")
+          and "width:14px" in _rule(css, "#run-btn.send svg")
+          and "flex:0 0 auto" in _rule(css, "#run-btn.send svg")
+          and "stroke-width:3.2" in css,
+          "")
+    check("发送的**星光动画**：粒子 + 问题残影 + **落点后才露日志并点亮**",
+          'id="fx"' in html and ".spark{" in css and "@keyframes sparkfly" in css
+          and ".runlog.lit" in css and "function playSendFx" in js
+          and "playSendFx(question, ()" in js and "onDone" in js,
+          "")
+    check("侧边栏：头部/环境**居中**、按钮**图标贴左 + 文字居中**；环境白字、状态点按是否配置着色",
+          "justify-content:center" in _rule(css, ".drawer-head")
+          and "text-align:center" in _rule(css, ".env")
+          and "justify-content:flex-start" in _rule(css, ".nav-btn")
+          and "text-align:center" in _rule(css, ".nav-btn .nb-name")
+          and "color:var(--t1)" in _rule(css, ".env")
+          and ".dot.no{background:var(--t3)" in css.replace(" ", ""),
+          "")
+    check("元信息：**除数字外一律蓝 + 加大加粗**（含「秒/tokens」单位）、整栏居中、含「终止」时间",
+          "color:var(--log-blue)" in _rule(css, ".rl-meta")
+          and "font-weight:700" in _rule(css, ".rl-meta")
+          and "justify-content:center" in _rule(css, ".rl-meta")
+          and "color:var(--log-num)" in _rule(css, ".rl-meta b")
+          and "终止" in js and "ended_at || Date.now()" in js,
+          "")
+    check("参数面板：标签统一**居中**、行列自适应、保存按钮调大",
+          "text-align:center" in _rule(css, ".grid label,.grid .field")
+          and "height:38px" in _rule(css, ".sheet-actions button.ghost"),
+          "")
+    check("输入框：内容与占位**居中**，发送时问题先在框内散成星光再飞走（三段动画）",
+          "textarea#question{text-align:center}" in css.replace(" ", "")
+          and "--mx" in css and "var(--mx)" in css
+          and "34%" in css and "'--mx'" in js,
+          "")
+    check("内嵌图形（品牌/欢迎语方块标）**放大加粗**；文件链接**默认绿、悬停蓝**且贴右",
+          "width:18px;height:18px" in _rule(css, ".glyph")
+          and "width:32px;height:32px" in _rule(css, ".glyph.big")
+          and "background:rgba(30,122,52,.14)" in _rule(css, ".rl-files a"),
+          "")
+    check("mock（演练/验收）产物**不入产物库** + 5 分钟自动回收 + 导出接口齐备",
+          "if rec.get(\"mock\"):" in oi_src and "def reap_mock" in oi_src
+          and "/api/export/output" in srv_src and "/api/export/outputs" in srv_src
+          and "/api/export/web" in srv_src and "_download" in srv_src,
+          "")
+    # ★ 行为级（喂合成样本）：真踩过 `status, partial, mock = "", False, False` 整行把
+    #   「看内容判 mock」抹掉 ⇒ 逐层产物（X.<层>.md，只有 X.<层>.json、**没有** .run.json）
+    #   漏进产物库。这里直接造两份样本扫一遍，别只验源码里有没有那句话。
+    import tempfile as _tf
+    _bak_dir = oi.OUTPUTS_DIR
+    _tmp_dir = Path(_tf.mkdtemp(prefix="oi_mock_"))
+    try:
+        oi.OUTPUTS_DIR = _tmp_dir
+        _mm = "20260101_000000_验收样例"
+        (_tmp_dir / (_mm + ".md")).write_text(
+            "# 元 DGTF · 验收样例\n**状态**: 已终止（部分 · 手动停止）\n（mock）修行层第 1 圈\n",
+            encoding="utf-8")
+        (_tmp_dir / (_mm + ".run.json")).write_text(
+            json.dumps({"status": "cancelled", "partial": True, "mock": True}), encoding="utf-8")
+        (_tmp_dir / (_mm + ".修行.md")).write_text(
+            "# 元 DGTF · 验收样例\n（mock）修行层第 1 圈\n", encoding="utf-8")
+        (_tmp_dir / (_mm + ".修行.json")).write_text(
+            json.dumps({"layer": "修行", "status": "cancelled", "output_name": _mm + ".md"}),
+            encoding="utf-8")
+        _rr = "20260101_000001_真跑样例"
+        (_tmp_dir / (_rr + ".md")).write_text("# 元 DGTF · 真跑样例\n真结论。\n", encoding="utf-8")
+        (_tmp_dir / (_rr + ".run.json")).write_text(
+            json.dumps({"status": "done", "partial": False, "mock": False}), encoding="utf-8")
+        _names = {x["name"] for x in oi.scan(force=True)}
+        check("mock 识别**行为级**：逐层产物（无 .run.json）也拦得住；真跑产物照常入库",
+              (_mm + ".md") not in _names and (_mm + ".修行.md") not in _names
+              and (_rr + ".md") in _names,
+              "扫到=" + str(sorted(_names)))
+    finally:
+        oi.OUTPUTS_DIR = _bak_dir
+        oi.invalidate()
+        shutil.rmtree(_tmp_dir, ignore_errors=True)
+    # ★★ 真跑日志的「层界」有两代，**都要认**：老式 `━━━ 修行 · 第 r/N 圈 …` 进度条，
+    #    与现行（实测 V1.23.22 已取消进度条）的 `【0】修行 DGTF（螺旋上限 4 圈）` 层横幅。
+    #    不认后者 ⇒ 真跑日志整段落进「共有头」、四层全空（应用里只显示占位）。
+    import layers as _LY
+    _bar = "═" * 12
+    _log_old = ("头\n━━━ 修行 · 第 1/3 圈 · 摊开 · view ━━━\nA\n"
+                "━━━ 研究 · 第 1/3 圈 · 摊开 · view ━━━\nB\n")
+    _log_new = ("头\n" + _bar + "\n【0】修行 DGTF（螺旋上限 4 圈）\n" + _bar + "\n"
+                "   ↻ 第 1/4 圈 · 摊开\nA\n" + _bar + "\n【both】对撞 DGTF（螺旋上限 5 圈）\n"
+                + _bar + "\nB\n")
+    _so, _sn = _LY.split_log(_log_old), _LY.split_log(_log_new)
+    check("日志层界**两代都认**（老式 `━━━ 层 ·` + 现行 `【N】层 DGTF`），四层不再全空",
+          "A" in _so.get("修行", "") and "B" in _so.get("研究", "")
+          and "A" in _sn.get("修行", "") and "B" in _sn.get("对撞", "")
+          and _sn.get("研究", "") == "" and "头" in _sn.get("__head__", "")
+          and "【0】" not in _sn.get("__head__", ""),
+          "old[修行=%d,研究=%d] new[修行=%d,对撞=%d,研究=%d]"
+          % (len(_so.get("修行", "")), len(_so.get("研究", "")),
+             len(_sn.get("修行", "")), len(_sn.get("对撞", "")), len(_sn.get("研究", ""))))
+    # ★★ 「同类项一起改」：前端 `buildArchiveLanes` 是**第二份**切分器，必须与后端同口径，
+    #    否则归档会话（历史对话）仍然四层全空。
+    check("前端归档分层器**与后端同口径**（也认 `【N】层 DGTF` 横幅）",
+          "【\\s*(?:0|1|both|all)\\s*】" in js or "【\\s*(0|1|both|all)\\s*】" in js,
+          "")
+    # ★ R22：参数网格「控件竖直对齐」/ 头条与读数台居中 / 导出改两步勾选 /
+    #        日志·json 入产物 + 分类标签 / `[标志]` 蓝 + `属性=` 绿
+    check("参数面板：标签**定高两行** + 控件贴底 ⇒ 同一行的输入框/下拉**竖直对齐**",
+          "justify-content:flex-end" in _rule(css, ".grid label,.grid .field")
+          and "min-height:30px" in _rule(css, ".grid .lb")
+          and 'class="lb"' in js,
+          "")
+    check("日志头**三段自适应**（左：状态徽章 / 中：题目+元信息**同栏居中** / 右：三个链接）；读数台每行**居中自适应**",
+          "display:flex" in _rule(css, ".runlog-head")
+          and "flex:0 1 auto" in _rule(css, ".rl-head-c")
+          and "justify-content:center" in _rule(css, ".rl-head-c")
+          and "justify-content:center" in _rule(css, ".stat-row")
+          and "margin-left:auto" not in _rule(css, ".stat-v"),
+          "")
+    # ★ R23：日志页背景全透明 / 读数台 30% 不透明 + 放大居中 / 数字缩小 / 圆按钮加粗 /
+    #        逐字裂解 + 输入框寄语
+    check("日志页背景 **全透明** + 日志色板**加深**（深蓝/深绿/纯黑数字，白画布上读得清）",
+          "background:transparent;backdrop-filter:none;" in css
+          and "--log-blue:#232F9E" in css and "--log-green:#0E5A22" in css
+          and "--log-num:#000000" in css and "--log-hair:rgba(0,0,0,.12)" in css,
+          "")
+    check("日志字号**自适应调大**（clamp：正文字号随窗口高度伸缩）",
+          "clamp(" in _rule(css, ".rl-txt")
+          and "clamp(" in _rule(css, ".rl-lab")
+          and "clamp(" in _rule(css, ".rl-lane-head")
+          and "clamp(" in _rule(css, "#rl-question"),
+          _rule(css, ".rl-txt").strip()[:60])
+    # ★ R27：画布转**纯白** / 面板页改「本页内容」+ 浅色档
+    check("**画布底色**改成纯白（`--canvas`），暗面（抽屉/代码块）仍用 `--ground`",
+          "--canvas:#FFFFFF" in css
+          and "background:var(--canvas);   /* ★ R27" in css
+          and "background:var(--ground)" in _rule(css, ".drawer"),
+          "")
+    check("日志里的**数字统一墨黑**（原来白，在灰画布上不可见）",
+          "color:var(--log-num)}" in css
+          and ".rl-meta b{color:var(--log-num)" in css
+          and ".rl-lane-head b{color:var(--log-num)}" in css,
+          "")
+    check("抽屉：**环境信息贴顶**、七个按钮在剩余空间里**上下居中**、落款仍在最底",
+          'class="drawer-foot"' in html and "个人工作台" in html
+          and "margin-top:auto;margin-bottom:auto" in _rule(css, ".drawer-nav")
+          and ".drawer-body::before" not in css,
+          "")
+    check("画布变浅 ⇒ 落在画布上的前景改深：左上三个圆钮 + 欢迎语",
+          "color:#24272F" in _rule(css, ".corner-actions .icon-btn")
+          and "color:#1F2229" in _rule(css, ".welcome"),
+          "")
+    check("读数台：面板**不自己铺色**（整页那层 10% 就是背景）+ 内容**放大**（clamp）+ **竖向居中**",
+          "background:transparent" in _rule(css, "#dash-stats")
+          and "justify-content:center" in _rule(css, ".stats-body")
+          and "clamp(" in _rule(css, ".stat-v"),
+          "")
+    check("日志**数字统一缩小一档**（`.92em`）且**不加粗**（400）+ 行内 em 间距自适应",
+          ".runlog-body b,.rl-meta b{font-size:.92em;font-weight:400;" in css
+          and ".rl-num{color:var(--log-blue);font-weight:400" in css
+          and ".rl-line{gap:.42em" in css,
+          "")
+    # ★ R24：面板 20% / 滚动条半透明 / 文本域无滚动条 / 时长单位「秒」为蓝 / 参数标签单行
+    check("滚动条滑块是**中性灰**（纯白画布与暗抽屉上都看得见）",
+          "*::-webkit-scrollbar-track{background:transparent}" in css
+          and "rgba(128,132,140,.36)" in _rule(css, "*::-webkit-scrollbar-thumb"),
+          "")
+    check("输入框**不出滚动条**（textarea#question 的 webkit 滚动条已隐藏）",
+          "display:none" in _rule(css, "textarea#question::-webkit-scrollbar")
+          and "scrollbar-width:none;-ms-overflow-style:none" in css,
+          "")
+    check("时长单位「秒/分/时」**在 `<b>` 之外**（数字墨黑、单位蓝）",
+          "function fmtDurHtml" in js and "<b>${fmtDur(secs)}</b>" not in js
+          and "' 秒'" in js,
+          "")
+    check("参数标签**单行**（超长省略号）+ 完整文本挂 `title`",
+          "white-space:nowrap" in _rule(css, ".grid .lb")
+          and "text-overflow:ellipsis" in _rule(css, ".grid .lb")
+          and 'class="lb" title=' in js,
+          "")
+    check("三个圆按钮**加粗高亮**（笔画 2.1 / 图标 17px）",
+          ".icon-btn svg *{stroke-width:2.1}" in css
+          and "width:17px" in _rule(css, ".icon-btn svg"),
+          "")
+    check("发送：问题**逐字裂解成星光** + 输入框换上「引擎已启动」寄语（随进度轮换）",
+          ".q-char" in css and "@keyframes qchar" in css
+          and "RUN_WHISPER" in js and "function startWhisper" in js
+          and "function paintWhisper" in js and "元DGTF 引擎已启动" in js,
+          "")
+    check("批量导出改**两步勾选**：产物库与检索库都先进入选择模式、再导出选中的",
+          "let libExpOn = false" in js and "const libSel = new Set()" in js
+          and "let webExpOn = false" in js and "const webSel = new Set()" in js
+          and "导出选中 (${n})" in js
+          and "p2.append('names', n)" in js
+          and "p2.append('qs', x)" in js,
+          "")
+    check("导出按钮不再压住内容（条目 / 组头右侧让位）",
+          "74px" in _rule(css, ".web-group .wg-head")
+          and "9px 74px 9px 16px" in _rule(css, ".item"),
+          "")
+    check("日志 / json **也入产物库**，并带 `kind`(md/log/json) 与 `layer`(总/层) 分类标签",
+          "def kind_of" in oi_src and "def layer_of" in oi_src
+          and 'glob("*.run.log")' in oi_src and '".packed.json"' in oi_src
+          and "chipKind" in js and "chipLayer" in js
+          and 'id="lib-kind"' in html and 'id="lib-layer"' in html,
+          "")
+    check("日志产物的详情用**与日志页同一套**渲染（过滤 + 语义排版）",
+          "buildArchiveLanes(body, { created_at: null })" in js
+          and "renderLogBody(lines, rlSuspNames(lines))" in js,
+          "")
+    check("`[标志]` 统一蓝（标志蓝 + 内容绿）；`属性=/位置=` 归正文绿",
+          "RL_BRACKET" in js and "return 'bracket'" in js
+          and "color:var(--log-green)" in _rule(css, ".rl-attr"),
+          "")
+    check("会话**独立并行**：新对话不清空别的会话；点会话直接进会话（面板/抽屉都让位）",
+          "let followLatest = false" in js and "if (!followLatest) return" in js
+          and "taskData = {};" not in js.split("function newChat")[1][:400]
+          and "sheetFromDrawer = false;      // 选了会话就直接进会话" in js,
+          "")
+    check("历史对话：`/api/chats` 可用 + 面板页/按钮/打开逻辑都在（会话各自成页）",
+          'id="view-chats"' in html and 'id="chats-list"' in html
+          and 'data-sheet="view-chats"' in html
+          and "function openChat" in js and "function buildArchiveLanes" in js
+          and "def list_chats" in dash_src and isinstance(chats_data.get("chats"), list)
+          and all(("started_at" in c) for c in (chats_data.get("chats") or [])),
+          "会话 " + str(len(chats_data.get("chats") or [])) + " 条")
+    check("重发时**先收起日志**（只变透明、保留占位 ⇒ 输入框不跳位）+ 动画落点后再露",
+          "fxPending = true;" in js and "_lg.classList.add('fading')" in js
+          and "if (fxPending) return;" in js
+          and ".runlog.fading{opacity:0" in css.replace(" ", ""),
+          "")
+    check("参数标签统一成「键（中文说明）」（和 CLI 参数同格式）",
+          "KEY_CN" in params_src and "def label_for" in params_src
+          and all(("（" in (it.get("label") or "")) for g in (params_data.get("groups") or [])
+                  for it in g.get("items", [])),
+          "参数项 " + str(sum(len(g.get("items", [])) for g in (params_data.get("groups") or [])))
+          + " 项，全带中文说明")
+    check("发送键可切成**终止键**（同一按钮两形态 + 调 /cancel 终止）",
+          "setRunBtn" in js and "_SVG_STOP" in js and "/cancel" in js
+          and "function stopRun" in js,
+          "")
+    check("手动终止：按日志重建**部分产物**并标注状态（cancelled / partial）",
+          "_build_partial_md" in runner_src and "已终止（部分" in runner_src
+          and '"partial": bool(task.get("partial"))' in runner_src
+          and 'final = "cancelled"' in runner_src
+          and '"status": status' in oi_src and '"partial": partial' in oi_src,
+          "")
+    check("六个面板都在同一个面板页容器里（点按钮切换页）",
+          all(k in html for k in ('id="dash-stats"', 'id="dash-history"', 'id="view-lib"',
+                                  'id="view-local"', 'id="view-web"', 'id="adv-panel"'))
+          and 'id="sheet"' in html)
+    check("面板层 = **固定覆盖 + 80% 不透明浅色层**（主视图不隐藏 ⇒ 背景仍隐约可见）",
+          "position:fixed" in _rule(css, ".sheet")
+          and "inset:0" in _rule(css, ".sheet")
+          and "background:rgba(255,255,255,.85)" in _rule(css, ".sheet")
+          and "body.panel-open main.stage{display:none}" not in css
+          and ".sheet-page.active{display:flex" in css.replace(" ", ""),
+          _rule(css, ".sheet").strip()[:70])
+    check("**开面板把抽屉收回、关面板把抽屉弹回**（面板即本页内容，抽屉让位）",
+          "if (sheetFromDrawer) closeDrawer();" in js
+          and "if (sheetFromDrawer) { sheetFromDrawer = false; openDrawer(); }" in js
+          and "document.body.classList.add('panel-open')" in js
+          and "body.panel-open .corner-actions{display:none}" in css,
+          "")
+    check("面板页换**浅色档**（--t1/--hair/--s1 就地覆盖 ⇒ 纯白底上不会白字白线）",
+          "--t1:#10141A" in _rule(css, ".sheet")
+          and "--hair:rgba(0,0,0,.10)" in _rule(css, ".sheet")
+          and "color:var(--t1)" in _rule(css, ".sheet"),
+          "")
+    _cmp = html.split('class="composer-row"', 1)
+    check("演练模式已挪到输入框那一排（胶囊，与深度思考/智能搜索同排）",
+          len(_cmp) == 2 and 'id="mock-row"' in _cmp[1].split("</div>", 1)[0]
+          and 'class="pill mock-pill"' in html,
+          "")
+    check("**整体页面背景 85% 不透明**（`.sheet` 一层到底；卡片不再自己铺色）",
+          "background:rgba(255,255,255,.85)" in _rule(css, ".sheet")
+          and "background:transparent" in _rule(css, ".sheet .panel")
+          and "background:transparent" in _rule(css, ".sheet .advanced")
+          and "background:transparent" in _rule(css, ".web-group"),
+          _rule(css, ".sheet").strip()[:56])
+    check("列表行悬停**不再发白**（与高级参数的分组行同一深色洗底）",
+          "rgba(0,0,0,.06)" in _rule(css, ".sheet .hist:hover,.sheet .item:hover,.sheet .web-group .wg-head:hover"),
+          "")
+    check("面板/页面**内容字体加深**（--t1/--t2/--t3 各深一档 + 语义色换深档）",
+          "--t2:#333A44" in _rule(css, ".sheet") and "--t3:#666E79" in _rule(css, ".sheet")
+          and "--ok:#14682B" in _rule(css, ".sheet")
+          and "--accent-hi:#5E6AD2" in _rule(css, ".sheet"),
+          "")
+    check("层标题里的 token 单位**写全**（`tokens`，不再是 `tok`）",
+          ".toLocaleString()} tokens`" in js and "} tok`" not in js,
+          "")
+    check("**刷新页面回到首屏**（`followLatest` 初值 false ⇒ 不自动铺出上一条任务）",
+          "let followLatest = false" in js
+          and "★ R29：刷新页面**回到首屏**" in js,
+          "")
+    check("面板里**不再重复一条标题行**：计数/时间/说明挪到 sheet-head 当描述",
+          html.count('class="panel-head"') == 1          # 只剩「高级参数分组页」那一处
+          and html.count('class="panel-title"') == 1
+          and 'id="sheet-desc"' in html
+          and html.count('class="sd" data-for=') == 6
+          and "s.dataset.for === key" in js
+          and "flex:0 0 auto" in _rule(css, ".sheet-title"),
+          "panel-head=" + str(html.count('class="panel-head"'))
+          + " sd=" + str(html.count('class="sd" data-for=')))
+    check("抽屉顶部的按钮图形与左上角「面板」键**一致**（R30）",
+          html.count('<rect x="3" y="4" width="18" height="16" rx="2.5"') >= 2
+          and html.count('<path d="M9.5 4v16"') >= 2,
+          "面板图形出现 " + str(html.count('<rect x="3" y="4" width="18" height="16" rx="2.5"')) + " 次")
+    check("发送键：图标（箭头 / 终止方块）占**按钮的 25%**（32px 钮 → 14px 图标）+ 整个按钮高亮",
+          "width:14px" in _rule(css, "#run-btn.send svg")
+          and "flex:0 0 auto" in _rule(css, "#run-btn.send svg")
+          and "padding:0" in _rule(css, "#run-btn.send")
+          and "0 0 0 3px rgba(94,106,210,.20)" in _rule(css, "#run-btn.send"),
+          "")
+    check("三个链接与「运行状态」徽章**同一套绿**（字色/底色/描边都对齐）+ 前面一个灯",
+          "display:inline-flex" in _rule(css, ".rl-files a")
+          and "background:currentColor" in _rule(css, ".rl-files a::before")
+          and "border:1px solid rgba(30,122,52,.38)" in _rule(css, ".rl-files a")
+          and _rule(css, ".rl-files a").strip().count('rgba(30,122,52') >= 2,
+          "")
+    check("**运行中也能看见这三个按钮**（待生成态 .pend：降透明度、不可点）",
+          ".rl-filesa.pend{opacity:.55" in css.replace(" ", "")
+          and "const pend = stamp ? '' : ' pend'" in js,
+          "")
+    check("列表行：**时间/大小挪到标题同一行**、且上下边距收紧",
+          "9px 74px 9px 16px" in _rule(css, ".item")
+          and ".item .t .t-r" in css and ".hist .q .q-r" in css
+          and "padding:5px 14px" in _rule(css, ".hist")
+          and 'class="q-r"' in js and 'class="t-r"' in js,
+          "")
+    check("参数控件**内容居中**（输入框 / 下拉当前值）",
+          "text-align:center" in _rule(css, ".grid input")
+          and "text-align:center" in _rule(css, ".dd-cur"),
+          "")
+    check("下拉悬停背景＝**85% 透明的淡洗**（不再是近黑的 --ground）",
+          "rgba(22,23,28,.15)" in _rule(css, ".dd-btn:hover")
+          and "var(--ground)" not in _rule(css, ".dd-btn:hover"),
+          "")
+    check("日志**收官/结论句**（停止 / 产物已落盘 / 完成）改**蓝色加深**（不跟正文绿）",
+          "RL_MARK" in js and "rl-mark" in css
+          and "color:var(--log-blue)" in _rule(css, ".rl-mark")
+          and "RL_MARK.test(rest) ? 'rl-txt rl-mark'" in js,
+          "")
+    check("日志滚动条＝**短的椭圆点**（隐藏原生、自绘 #rl-bar 跟滚动走）",
+          'id="rl-bar"' in html and "function updateRlBar" in js
+          and "scrollbar-width:none" in _rule(css, "#runlog-body")
+          and "display:none" in _rule(css, "#runlog-body::-webkit-scrollbar")
+          and "border-radius:999px" in _rule(css, "#rl-bar"),
+          "")
+    check("抽屉按钮组居中后**整体上移一段**（transform:translateY(clamp(…))）",
+          "transform:translateY(clamp(" in _rule(css, ".drawer-nav")
+          and "margin-top:auto;margin-bottom:auto" in _rule(css, ".drawer-nav"),
+          _rule(css, ".drawer-nav").strip()[:60])
+    _flat = css.replace(" ", "").replace("\n", "")
+    check("面板内容区可滚（flex:1 + min-height:0，否则长列表被撑破裁掉）",
+          ".sheet.panel>.lib-list,.sheet.panel>.stats-body,.sheet.panel>.hist-list,"
+          ".sheet.panel>.adv-group-body{flex:11auto;min-height:0;overflow:auto}" in _flat,
+          "")
+    check("层级链正确：详情浮层 90 > 下拉菜单 80（面板已在本页流内，不再压浮层）",
+          "z-index:90" in _rule(css, ".detail")
+          and "z-index:80" in _rule(css, ".dd-menu"),
+          _rule(css, ".detail").strip()[:44])
+    check("参数**值**默认灰（标签深色 / 值灰，读起来分层）",
+          "color:var(--t2)" in _rule(css, ".grid input")
+          and "color:var(--t2)" in _rule(css, ".dd-cur"),
+          "")
+    check("下拉菜单是 **fixed 且层级 80**（跳出面板裁剪 / 不会被盖住）",
+          "position:fixed" in _rule(css, ".dd-menu")
+          and "z-index:80" in _rule(css, ".dd-menu"),
+          _rule(css, ".dd-menu").strip()[:48])
+    check("参数标签 / 读数台标签**默认白色**",
+          "color:var(--t1)" in _rule(css, ".grid label,.grid .field")
+          and "color:var(--t1)" in _rule(css, ".stat-k"),
+          "")
+    check("信息行：**只有时间日期**推到右边（.ms-right），其余一律靠左",
+          ".ms-right{margin-left:auto}" in _flat
+          and "justify-content:flex-end" not in _rule(css, ".item .m"),
+          "")
+    check("圆按钮统一：34px、背景透明、图标白色（只留图标）",
+          "width:34px" in _rule(css, ".icon-btn")
+          and "background:transparent" in _rule(css, ".icon-btn"),
+          _rule(css, ".icon-btn").strip()[:52])
+    check("抽屉打开时首屏让位（主区右移一个抽屉宽，不覆盖）",
+          "body.drawer-open main.stage{margin-left:var(--drawer-w)" in css
+          and "--drawer-w:" in css,
+          "")
+    check("本地资料库的「现成锚点快照」默认展开",
+          '<details class="cand" open>' in html)
+    check("联网检索结果库有聚合/过滤控件",
+          'id="web-q"' in html and 'id="web-mode"' in html)
+    check("高级参数下拉改自绘（原生 select + data-cfg 已不存在）",
+          "ddField" in js and "openDD" in js and "<select data-cfg=" not in js)
+
     s, cfg = _get(base, "/api/config")
     check("config 返回引擎名", s == 200 and str(cfg.get("engine", "")).endswith(".py"),
           str(cfg.get("engine")))
@@ -70,6 +595,64 @@ def main() -> int:
     s, fc = _get(base, "/api/outputs?facets=1")
     check("facets 含四个维度",
           set(fc.keys()) == {"decidability", "orientation", "parallel", "stop"})
+
+    # ── 个人工作台读数（/api/dashboard）────────────────────────────
+    s, db = _get(base, "/api/dashboard")
+    _c, _p, _st = db.get("counts") or {}, db.get("packed") or {}, db.get("stop") or {}
+    check("工作台读数接口可用（轮次 / 累计 / 跑完浅跑 / 历史）",
+          s == 200 and _c.get("main", 0) > 0
+          and _c.get("total_files", 0) >= _c.get("main", 0)
+          and isinstance(db.get("history"), list) and "covered" in _p,
+          f"轮次 {_c.get('main')} / 文件 {_c.get('total_files')} / 有读数 {_p.get('covered')}")
+    check("读数台报覆盖率（不把「有读数的几轮」当全体）",
+          _p.get("covered", 0) <= _c.get("main", 0)
+          and _st.get("known", 0) <= _c.get("main", 0),
+          f"packed {_p.get('covered')} · 停止可判 {_st.get('known')}")
+
+    # 下面三条是**合成样本**：不依赖真实 outputs 里恰好长什么样，
+    # 且每条都带「换个字段结论必须变」的对照（判别力，不是跑通就算过）
+    _m, _l = dashboard.classify(
+        ["20261010_125123_A.md", "20261010_125123_A.元.md", "readme.md"])
+    check("层产物不重复计入「深究轮次」（合成样本）",
+          _m == ["20261010_125123_A.md"] and _l == ["20261010_125123_A.元.md"],
+          f"主 {_m} / 层 {_l}")
+    _s1 = dashboard.parse_stop("**停止**：自然 4 层 / 被截断（体力耗尽）0 层")
+    _s2 = dashboard.parse_stop("**停止**：自然 2 层 / 被截断（体力耗尽）2 层")
+    _s3 = dashboard.parse_stop("**停止**: 自然 1 层 / 被截断（体力耗尽）1 层")  # 半角冒号
+    _s0 = dashboard.parse_stop("# 元DGTF · 没有停止那一行")
+    check("浅跑判据：被截断 N>0 才算浅跑，半角/全角冒号都认（合成样本）",
+          _s1["natural"] == 4 and _s1["cut"] == 0 and not _s1["shallow"] and _s1["known"]
+          and _s2["cut"] == 2 and _s2["shallow"] and _s3["shallow"] and not _s0["known"],
+          f"全角 {_s1['natural']}/{_s1['cut']} · 截断 {_s2['cut']} · 半角 {_s3['cut']}")
+    _sp = dashboard.sum_packed([
+        {"llm_calls": 3, "llm_tokens": 100},
+        {"llm_calls": None, "llm_tokens": None},
+    ])
+    check("累计 token 只累加有读数的轮次（合成样本：覆盖率 1/2）",
+          _sp["calls"] == 3 and _sp["tokens"] == 100 and _sp["covered"] == 1, str(_sp))
+
+    # ── 参数往返：列表型键不能被写成字符串 ─────────────────────────
+    # ★ 这是「通过工作台发起的真跑全部 2–7 秒即崩」的根因：
+    #   memory.channels 出厂是列表，经参数面板往返后变字符串 ⇒ 引擎
+    #   `for c in m` 逐字符迭代 ⇒ ValueError: 未知通道 'c'。
+    #   用**构造性**判据证明修好（不是「看起来对」，是产物里类型确实是列表）。
+    _tmpy = oi.PROJECT_ROOT / "_audit_tmp" / "_selftest_params.yaml"
+    _p1 = prm.build_temp_config(
+        {"memory.channels": "content,context,self",
+         "web_search.domain_tier_rules": "前端只会给字符串",
+         "runtime.effort": "high"}, _tmpy)
+    _d1 = yaml.safe_load(Path(_p1).read_text(encoding="utf-8"))
+    _ch = (_d1.get("memory") or {}).get("channels")
+    _ru = (_d1.get("web_search") or {}).get("domain_tier_rules")
+    check("参数往返：列表型键回写成列表、嵌套结构保持原样（真跑崩因）",
+          isinstance(_ch, list) and _ch == ["content", "context", "self"]
+          and isinstance(_ru, list) and bool(_ru) and isinstance(_ru[0], list),
+          f"channels={_ch!r}")
+    # 判别力对照：单值必须还原成 ['self']；若实现是「原样写字符串」，这里会拿到 'self'
+    _p2 = prm.build_temp_config({"memory.channels": "self"}, _tmpy)
+    _ch2 = yaml.safe_load(Path(_p2).read_text(encoding="utf-8"))["memory"]["channels"]
+    check("参数往返有判别力（单值 → ['self']，不是字符串 'self'）",
+          _ch2 == ["self"] and not isinstance(_ch2, str), repr(_ch2))
 
     s, lo = _get(base, "/api/library/local")
     check("本地资料库接口可用（导入列表 + 锚点候选）",
@@ -85,6 +668,42 @@ def main() -> int:
         check("联网读数解析出了条数/环节",
               "收" in (_w.get("detail") or ""),
               (_w.get("detail") or "")[:46])
+    _hits = wb.get("hits") or []
+    if _hits:
+        check("联网命中条目带内容与链接",
+              bool(_hits[0].get("claim")) and bool(_hits[0].get("url")),
+              f"{len(_hits)} 条 · {str(_hits[0].get('url'))[:36]}")
+    _grp = wb.get("groups") or []
+    if _grp:
+        _g0 = _grp[0]
+        check("联网命中按问题聚合（结果库接口）",
+              bool(_g0.get("query")) and _g0.get("uniq", 0) >= 1
+              and _g0.get("uniq", 0) <= _g0.get("total", 0),
+              f"{len(_grp)} 组 · 首组 {_g0.get('uniq')}/{_g0.get('total')} 条")
+
+    # 聚合去重的**判据自带样本**（不依赖真实 jsonl 里是否真有重复）：
+    #   Q1 有 3 条、其中 2 条同 url → 去重后 2；同一条 url 落在 Q2 里，
+    #   不能被 Q1「跨组吃掉」（否则就是全局去重，不是按问题聚合）。
+    _demo = library.group_hits([
+        {"ts": 1, "query": "Q1", "url": "u1", "claim": "a"},
+        {"ts": 2, "query": "Q1", "url": "u1", "claim": "a"},
+        {"ts": 3, "query": "Q1", "url": "u2", "claim": "b"},
+        {"ts": 4, "query": "Q2", "url": "u2", "claim": "c"},
+    ])
+    _m = {g["query"]: g for g in _demo}
+    check("聚合去重判据（合成样本：同问题同链接只留一条、跨组不吃）",
+          len(_demo) == 2 and _m["Q1"]["uniq"] == 2 and _m["Q1"]["total"] == 3
+          and _m["Q2"]["uniq"] == 1 and _m["Q2"]["total"] == 1,
+          "/".join(f"{g['query']}:{g['uniq']}of{g['total']}" for g in _demo))
+    # 同一份样本去掉重复那条 → 去重数必须变，否则说明「去重」是假的（变异对照）
+    _demo2 = library.group_hits([
+        {"ts": 1, "query": "Q1", "url": "u1", "claim": "a"},
+        {"ts": 2, "query": "Q1", "url": "u1x", "claim": "a"},
+        {"ts": 3, "query": "Q1", "url": "u2", "claim": "b"},
+    ])
+    check("聚合去重有判别力（换掉 url 后去重数必须变）",
+          _demo2[0]["uniq"] == 3 and _demo2[0]["total"] == 3,
+          f"{_demo2[0]['uniq']}of{_demo2[0]['total']}")
 
     # 本地资料库：导入 → 出现在列表 → 删除（用后即清，不留痕迹）
     _s, _imp = _post(base, "/api/library/import",
@@ -186,14 +805,38 @@ def main() -> int:
         _victims = [st["output_name"], st.get("archive_log"), st.get("archive_json")]
         for _n in ("修行", "研究", "对撞", "元"):
             _victims += [f"{stamp}.{_n}.md", f"{stamp}.{_n}.json", f"{stamp}.{_n}.run.log"]
+        # ★ 清理必须「既删又移」：隔离环境里 unlink 会被重定向到 overlay ——
+        #   脚本以为删了，真实盘上文件还在，于是**每跑一次自检，产物库就多一批垃圾**。
+        #   删不掉就移出 outputs/（移到 _audit_tmp/_selftest_trash/，可逆）。
+        _trash = oi.OUTPUTS_DIR.parent / "_audit_tmp" / "_selftest_trash"
+        _left = 0
         for _n in _victims:
             if not _n:
                 continue
+            _p = oi.OUTPUTS_DIR / _n
             try:
-                (oi.OUTPUTS_DIR / _n).unlink()
+                _p.unlink()
             except OSError:
                 pass
-        print("  \u00b7 已清理自检产物与归档：" + st["output_name"])
+            if _p.exists():                     # 还在 → 上一步被拦了，改走「移走」
+                try:
+                    _trash.mkdir(parents=True, exist_ok=True)
+                    shutil.move(str(_p), str(_trash / _n))
+                except OSError:
+                    _left += 1
+        # 参数往返判据留下的临时 config 也一并清掉（同一条「删不掉就移走」的路子）
+        try:
+            _tmpy.unlink()
+        except OSError:
+            pass
+        if _tmpy.exists():
+            try:
+                _trash.mkdir(parents=True, exist_ok=True)
+                shutil.move(str(_tmpy), str(_trash / _tmpy.name))
+            except OSError:
+                pass
+        print("  \u00b7 已清理自检产物与归档：" + st["output_name"]
+              + (f"（{_left} 个未删净）" if _left else ""))
 
     print(f"\n结果：PASS {len(PASS)} / FAIL {len(FAIL)}")
     if FAIL:

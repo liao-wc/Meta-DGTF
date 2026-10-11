@@ -1,0 +1,61 @@
+{
+  "_ts": 1791691426.3378506,
+  "results": [
+    {
+      "claim": "跳至導覽  跳過主要內容  跳至右欄 [...] 2. 1. 最新新聞\n   2. Yahoo財經\n   3. Yahoo Money Talk\n   4. Tech\n3. 1. 外幣報價\n   2. 外幣兌換攻略\n   3. 日圓兌港元\n   4. 英鎊兌港元\n   5. 澳元兌港元\n   6. 美元兌港元\n   7. 港元兌人民幣\n   8. 港元兌台幣\n   9. 加元兌港元\n   10. 歐元兌港元\n   11. 貨幣轉換器\n4. 1. 港股首頁\n   2. 恒指\n   3. 恒生科技指數\n   4. 最活躍股票排行\n   5. 最大升幅股票排行\n   6. 最大跌幅股票排行\n5. 1. 美股首頁\n   2. 美股日誌\n   3. 道指\n   4. 標普500\n   5. 納指\n6. 金價\n   1. 金價\n   2. 金價新聞\n   3. 銀價\n   4. 銅價\n7. 油價\n  ",
+      "url": "https://hk.finance.yahoo.com/news/关税重拳引发不安与忧虑-特朗普团队开始强调经济短期内难免经历阵痛-153508131.html",
+      "source": "https://hk.finance.yahoo.com/news/关税重拳引发不安与忧虑-特朗普团队开始强调经济短期内难免经历阵痛-153508131.html",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "在以太坊PoS机制下，所有质押者都必须至少存入32 ETH作为保证金，以此获得存储网络数据、处理交易和向链上添加区块的权限。质押者通过维护网络安全获得ETH奖励。\n\nETH质押最初是单向/仅存款的承诺机制，但2023年4月的Shapella升级使质押者能够从质押中提取ETH。\n\n为确保网络安全并防止非预期停机，以太坊网络对所有想要从验证节点提取ETH的质押者强制执行\"提款队列\"机制。\n\n## 2、提款队列如何运作？\n\n系统以钟表式轮询机制处理提款请求，每区块最多处理16笔部分或全额提款组合。处理顺序从最早建立的验证者开始，逐步处理至最新建立的验证者，随后重新循环。当前该机制需要约9天时间来完成对整个活跃验证者集合的完整\"扫描\"。\n\n若账户持有的ETH余额超过节点保证金，部分提款请求将自动进入提款队列。但进行全额提款时，质押者需先经过额外的退出队列审核。\n\n尽管退出队列容量会随活跃验证者数量",
+      "url": "https://cn.investing.com/analysis/article-200494457",
+      "source": "https://cn.investing.com/analysis/article-200494457",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "+0.14\n\n+0.09%\n\n澳大利亚元/美元\")\n\n0.6955\n\n-0.0008\n\n-0.11%\n\n英镑/美元\")\n\n1.3192\n\n-0.0030\n\n-0.23%\n\nBABA\n\n107.00\n\n-2.26\n\n-2.07%\n\n0700\n\n411.40\n\n-9.20\n\n-2.19%\n\nBIDU\n\n85.30\n\n-1.75\n\n-2.01%\n\nJD\n\n27.03\n\n+0.53\n\n+2.00%\n\nAMZN\n\n259.92\n\n+3.63\n\n+1.42%\n\nMETA\n\n721.31\n\n-17.57\n\n-2.38%\n\nAAPL\n\n336.67\n\n+3.04\n\n+0.91%\n\n最热门文章\n\n资讯\n\n分析评论\n\nQ3营收同比增51%超预期！市场紧盯2027资本开支、海外产能与晶圆定价\n\n提供者 智通财经\n\n2026年10月07日\n\n[](\n\n港股收评：恒科指大跌2.89%，半导体板块集体大跌，汇控渣打齐",
+      "url": "https://cn.investing.com/news/stock-market-news/article-3273446",
+      "source": "https://cn.investing.com/news/stock-market-news/article-3273446",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "提供者 格隆汇\n\n2026年10月08日\n\n[](\n\n海外五大要闻\n\n提供者 张瑜\n\n2026年10月07日\n\n[](\n\n9月全球投资十大主线\n\n提供者 张瑜\n\n2026年10月08日\n\n[](\n\n白银，值得重新关注了\n\n提供者 格隆汇\n\n2026年10月05日\n\n[](\n\nAI狂欢掩盖风险？美债正拉响警报\n\n提供者 格隆汇\n\n2026年10月07日\n\n[](\n\n517笔交易！特朗普8月重仓Meta、布局SpaceX债券\n\n提供者 格隆汇\n\n2026年10月08日\n\n更多资讯\n\n股市走势 [...] 广告\n\n相较之下，郑宇尘的轨迹更接近本土投研出身的典型路径。他在中德安联人寿保险系统内从研究员做到投资部总监，熟悉保险资金对久期、波动和流动性的偏好；后来在汇丰晋信基金负责固定收益、保险机构资产管理和整体投资管理等工作，经历了多个市场周期，积累了较完整的债券和多资产实战经验。\n\n加入安联投资后",
+      "url": "https://cn.investing.com/news/stock-market-news/article-3180365",
+      "source": "https://cn.investing.com/news/stock-market-news/article-3180365",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "英为财情的分析师都非常专业的，有的曾在摩根大通任职，有的曾为路透撰稿。分析师们会根据最新热点为大家分析市场风险、公司状况、股票趋势等，不管是纵横资本市场多年的老舵手，还是初来乍到的小菜鸟，英为财情APP都是你的投资小助手。\n\n个人中心 – 收藏列表\n\n看到喜欢的新闻或评论分析时，可以收藏起来。点击文章右上角保存文章，然后点击主页头像打开左侧边栏，收藏的文章列表都会显示在这，方便日后随时查看。\n\n三、工具\n\n 财经日历\n\n英为财情的财经日历功能很强大，相较于其他的财经日历，英为财情的财经日历更加全面、即时、详细、真实，是全球最好用的财经日历之一，连全球最大的财经资讯公司彭博都正在考虑采用。\n\n大到美国GDP，小到土耳其隔夜拆息利率，英为财情全都有！在数据的时效方面，英为财情更是不在话下，可以说英为财情的数据更新速度是目前市面上最快的。\n\n \n\n \n\n除了财经日历，更多工具都被隐藏在侧边栏，需",
+      "url": "https://cn.investing.com/blog/article-181",
+      "source": "https://cn.investing.com/blog/article-181",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "夏威夷 夏威夷 驾驶员手册 驾驶员手册 官方资料 内容包括 夏威夷 州交通局 完整的试卷问答 Of Transportation 5.20美元 SIMPLIFIED CHINESE 驾照办事处 檀香山市县  工作时间，周一至周五，假日除外，上午 8:00 – 下午 4:00 考试时间为上午8:00 -下午3:30pm Honolulu – Kapalama Hale,925 Dillingham Boulevard, Suite 101A 电话 768-9100 Downtown, 1000 Fort Steet Mall(更新与补办，上午 8:00– 下午 4:00),电话 768-4145 Hawaii Kai Town Center, 6600 Kalanianaole Highway #101, (更新与补办，上午 8:00– 下午 4:00),电话 768-4800 Aiea -",
+      "url": "https://hidot.hawaii.gov/highways/files/2021/11/CHINESE-SIMPLIFIED-Hawaii-Drivers-Manual.pdf",
+      "source": "https://hidot.hawaii.gov/highways/files/2021/11/CHINESE-SIMPLIFIED-Hawaii-Drivers-Manual.pdf",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "无家可归有多种定义。联邦定义仅包括无处栖身的家庭（睡在帐篷、汽车等地方）和居住在无家可归者收容所（历史上简称为“街道和收容所”）的家庭。旧金山的定义更为广泛，",
+      "url": "https://www.compass-sf.org/zh/family-services-faq",
+      "source": "https://www.compass-sf.org/zh/family-services-faq",
+      "kind": "web",
+      "tier": 3
+    },
+    {
+      "claim": "阅读更多>\n\n### 俄克拉荷马州 240 亿美元的 SNAP 成本转移意味着什么\n\n自补充营养援助计划（SNAP）启动以来，联邦政府承担了SNAP福利的全部费用，而各州则承担了部分管理费用。这种情况正在发生变化，对俄克拉荷马州而言，这笔费用可能相当可观。\n\n阅读更多>\n\n打电话的大学生\n\n### 大学生群体正在发生变化，大学饥饿政策也需要与时俱进。\n\n提到大学生，你可能想到的是一个住在宿舍、在食堂吃饭、经济上依赖父母的18岁年轻人。但这种形象如今已不再适用于大多数大学生。\n\n阅读更多>\n\n阅读我们的博客\n\n## 最新更新\n\n阅读我们的博客\n\n### 民调显示，超过半数的俄克拉荷马州选民难以负担食品开支。\n\n结果显示，保护营养计划获得广泛的两党支持 2026年9月8日：俄克拉荷马州塔尔萨——根据“消除饥饿俄克拉荷马”（Hunger Free Oklahoma）组织最近发布的一项民意调查显示",
+      "url": "https://www.hungerfreeok.org/zh-CN",
+      "source": "https://www.hungerfreeok.org/zh-CN",
+      "kind": "web",
+      "tier": 3
+    }
+  ]
+}
