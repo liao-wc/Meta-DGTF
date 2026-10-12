@@ -68,6 +68,121 @@ def _rules(css: str, sel: str) -> list[str]:
     return [m.group(1) for m in re.finditer(re.escape(sel) + r"\s*\{([^}]*)\}", css)]
 
 
+def check_r39_frontend(css: str, js: str, html: str) -> None:
+    """★R39 的界面判据（用户 16 图 / 9 条）—— 单独成函数，变异体可直接喂「改坏的」输入驱动。"""
+
+    # ── 需求 1/3：`**一、…**` 这类 markdown 粗体标题 ⇒ **蓝标题**、且不露 `**` ──
+    #   ★ 为什么不能用 `<b>` 当粗体：`.runlog-body b` 把 `<b>` 统一压成「数字黑」
+    #     （`color:var(--log-num)`）⇒ 拿它做粗体会把文字染黑。正解是**剥掉星号**，
+    #     再走 `.rl-title`（本身已经是蓝 + 700）。
+    check("★R39 `RL_STAR`：`**…**` 整行归 title（原来整行绿、`**` 原样露出）",
+          "const RL_STAR" in js and "if (RL_STAR.test(s)) return 'title';" in js, "")
+    check("★R39 `RL_SUBQ`：`子问题[5]` 这类带框序号小标题归 title",
+          "const RL_SUBQ" in js and "if (RL_SUBQ.test(s)) return 'title';" in js, "")
+    check("★R39 有 `deStar()`，且 title / rlInline / rlPlain 三处都调它（星号不许露出）",
+          "function deStar(" in js
+          and "hlNums(esc(deStar(lab.replace(" in js
+          and "esc(deStar(txt))" in js
+          and "esc(deStar(s.replace(" in js, "")
+    check("★R39 标题 / 步骤 / 轮次那一档是**蓝**（--log-blue + 700）",
+          "color:var(--log-blue)" in _rule(css, ".rl-round,.rl-title,.rl-step,.rl-summary")
+          and "font-weight:700" in _rule(css, ".rl-round,.rl-title,.rl-step,.rl-summary"),
+          _rule(css, ".rl-round,.rl-title,.rl-step,.rl-summary").strip()[:60])
+
+    # ── 需求 7：印记 / 带框头部统一**蓝**（`.rl-mark`）────────────────────────
+    #   真实日志里的行首标记（在 outputs/*.run.log 上按 `行首 + 可选 & + [..]` 计数）：
+    #     `[?→0]` 150 / `& [结构性]` 109 / `[?→1]` 103 / `& [1]` 80 / `& [0]` 32 /
+    #     `· [candidate]` / `· [any]` / `· [ing]`
+    #   原来只有「行首**就是** `[`」才走 bracket ⇒ 带 `&` / 列表点 / `子问题` 前缀的整行绿。
+    check("★R39 有 `rlMarked()` + `RL_MARK_HEAD`，`content` 分支改走它",
+          "function rlMarked(" in js and "const RL_MARK_HEAD" in js
+          and "out.push(rlMarked(s))" in js, "")
+    check("★R39 `RL_MARK_HEAD` = 可选 `&` + 可选列表点 + 可选前缀词 + `[框]`",
+          "RL_MARK_PRE" in js and "(?:子问题|问题|候选|条目|编号|序号)" in js
+          and "' + RL_MARK_PRE +" in js, "")
+    check("★R39 `.rl-mark` 也是**蓝**（与 `.rl-lab` 同源变量 --log-blue）",
+          "color:var(--log-blue)" in _rule(css, ".rl-mark"), _rule(css, ".rl-mark").strip()[:48])
+
+    # ── 需求 4：滚动点改**蓝** + 贴到日志区最右缘 ────────────────────────────
+    check("★R39 滚动点 `#rl-bar` 底色改**蓝**（不再是 rgba(0,0,0,.34) 黑点）",
+          "rgba(47,58,168" in _rule(css, "#rl-bar").replace(" ", "")
+          and "rgba(0,0,0,.34)" not in css.replace(" ", ""),
+          _rule(css, "#rl-bar").strip()[:70])
+    check("★R39 滚动点**贴最右缘**（`right:1px`，不再落在内侧悬空）",
+          "right:1px" in _rule(css, "#rl-bar").replace(" ", ""),
+          _rule(css, "#rl-bar").strip()[:70])
+
+    # ── 需求 4：左边徽章与右边「产物/运行日志/json」三胶囊**同色** ──────────
+    #   ★★ 用户连报两轮「两边不一致」 ⇒ 改成**同源 CSS 变量**：色值只写一次，
+    #     左右都 `var(...)` 引用 ⇒ 机制上不可能再不一致（不是「这次改齐了」）。
+    _hr = _rule(css, ".runlog-head").replace(" ", "")
+    check("★R39 `.runlog-head` 上定义四档状态色变量 --st-*-c/-bd/-bg",
+          all(k in _hr for k in ("--st-done-c:#1E7A34", "--st-done-bd:", "--st-done-bg:",
+                                 "--st-running-c:#2F3AA8", "--st-queued-c:#8A6414",
+                                 "--st-error-c:#B42318")),
+          "缺：" + "".join(k for k in ("--st-done-c:#1E7A34", "--st-running-c:#2F3AA8",
+                                      "--st-queued-c:#8A6414", "--st-error-c:#B42318")
+                          if k not in _hr))
+    check("★R39 徽章四档**引用**这组变量（不再各写一份硬编码色）",
+          all(("var(--st-%s-c)" % _k) in _rule(css, ".runlog-head .badge.%s" % _k)
+              and ("var(--st-%s-bg)" % _k) in _rule(css, ".runlog-head .badge.%s" % _k)
+              for _k in ("done", "running", "queued", "error")),
+          _rule(css, ".runlog-head .badge.running").strip()[:56])
+    check("★R39 三个胶囊（`.rl-files.st-* a`）引用**同一组**变量 ⇒ 左右同色",
+          all(("var(--st-%s-c)" % _k) in _rule(css, ".rl-files.st-%s a" % _k)
+              for _k in ("done", "running", "queued", "error")),
+          _rule(css, ".rl-files.st-running a").strip()[:56])
+
+    # ── 需求 5/6：阴阳视角「内容没显示完全」 ───────────────────────────────
+    #   ★ 根因有**两层**，两层都要钉：
+    #     ① 引擎侧 `raw[:200]` 把多行正文砍在行中间（见 `v12323_报告.md`）；
+    #     ② 前端 `.rl-fold{overflow:hidden}` 把小折叠块里溢出的行裁掉。
+    check("★R39 `.rl-fold` **不再** overflow:hidden（折叠块里的行不许被裁）",
+          "overflow:hidden" not in _rule(css, ".rl-fold"),
+          _rule(css, ".rl-fold").strip()[:64])
+
+    # ── 需求 8：保存按钮**底部居中** ────────────────────────────────────────
+    check("★R39 底栏改 `1fr auto 1fr` 三列网格：保存落在**中间列**（与右侧按钮宽无关）",
+          "grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);" in css
+          and "display:grid" in _rule(css, ".sheet-actions").replace(" ", "")
+          and ".sheet-actions #adv-save{grid-column:2;grid-row:1;justify-self:center}" in css
+          and ".sheet-actions #adv-reset{grid-column:3;grid-row:1;justify-self:start}" in css,
+          _rule(css, ".sheet-actions").strip()[:70])
+
+    # ── 需求 9：滚动圆点的上下行程 —— 两条路共用一条轨迹、且限在本窗口内 ────
+    #   ★★ 这是个**真 bug**：`updateRlBar()` 的 `top` 带「正文区顶 − 日志框顶」的偏移
+    #     （= 头栏高度），而拖拽的 `onMove` 钳在 `[0, 轨道]`（**少了那个偏移**）⇒
+    #     一按住圆点拖动它就往上跳约一个头栏，看着像「拖动不跟手 / 跑出范围」。
+    check("★R39 抽 `rlTrack()` 作**唯一**轨迹来源（滚动 + 拖拽共用同一 lo/hi）",
+          "function rlTrack()" in js
+          and "const base = Math.round(bd.getBoundingClientRect().top - "
+              "box.getBoundingClientRect().top);" in js
+          and js.count("rlTrack()") == 4,
+          "rlTrack() 出现 " + str(js.count("rlTrack()")) + " 次（应 1 定义 + 3 调用）")
+    check("★R39 拖拽改用 `[t.lo, t.hi]`，旧口径 `[0, track]` 已消失",
+          "Math.max(t.lo, Math.min(t.hi, startTop + dy))" in js
+          and "Math.max(0, Math.min(track, startTop + dy))" not in js
+          and "bd.scrollTop = (top / track) * over" not in js, "")
+    check("★R39 轨迹上端再按 `#runlog` 自身高度钳一次（圆点不许钻出日志窗口）",
+          "Math.min(base + bd.clientHeight, box.clientHeight) - RL_DOT" in js, "")
+
+    # ── 需求 2：日志头部（`__head__`）**真能**渲染出来 ───────────────────────
+    #   ★★ 根因是**字段断链**（R37 的判据只查了 `"src.head" in js` ——
+    #     字符串在、值**永远取不到**）：后端 `read_layers()` 一直返回 `"head"`，
+    #     但 `pollLanes()` 只读 `r.layers`（桶名是 `__head__`）⇒ `lanes.head` 恒
+    #     undefined ⇒ 开头块从来没渲染过。接线断言看不见「取不到值」，所以这里
+    #     把**两条取值路径**都钉住。
+    check("★R39 `pollLanes()` 把 `r.head` 并 `r.layers['__head__']` 接进 `lanes.head`",
+          "lanes.head = r.head || (r.layers || {})['__head__'] || '';" in js, "")
+    check("★R39 渲染侧再兜一次（`src.head || src['__head__']`），老后端也能出开头块",
+          "src.head || src['__head__']" in js, "")
+
+    # ── 需求 9b：首屏对话框文案（两处必须同步）──────────────────────────────
+    _ph = "这次又想到什么问题了？可以发给元DGTF  我们一起去探索吧"
+    check("★R39 首屏提示语**两处同步**（index.html 的 placeholder + app.js 的 Q_PLACEHOLDER）",
+          _ph in html and _ph in js, "html=" + str(_ph in html) + " js=" + str(_ph in js))
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--base", default="http://127.0.0.1:8765")
@@ -345,8 +460,8 @@ def main() -> int:
           and "gap:clamp(" in _rule(css, ".rl-head-c")
           and 'class="rl-head-c"' in html
           and '<span id="rl-question"></span><span id="rl-meta"' in html
-          and "background:rgba(30,122,52,.14)" in _rule(css, ".rl-files a")
-          and "color:#1E7A34" in _rule(css, ".rl-files a"),
+          and "var(--st-done-bg)" in _rule(css, ".rl-files a")
+          and "var(--st-done-c)" in _rule(css, ".rl-files a"),
           "")
     check("详情卡片背景 **20% 不透明**（同类：搜索框 / 结果框一起，R24 统一）",
           "rgba(22,23,28,.20)" in _rule(css, ".detail .md")
@@ -393,7 +508,7 @@ def main() -> int:
     check("内嵌图形（品牌/欢迎语方块标）**放大加粗**；文件链接**默认绿、悬停蓝**且贴右",
           "width:18px;height:18px" in _rule(css, ".glyph")
           and "width:32px;height:32px" in _rule(css, ".glyph.big")
-          and "background:rgba(30,122,52,.14)" in _rule(css, ".rl-files a"),
+          and "var(--st-done-bg)" in _rule(css, ".rl-files a"),
           "")
     check("mock（演练/验收）产物**不入产物库** + 5 分钟自动回收 + 导出接口齐备",
           "if rec.get(\"mock\"):" in oi_src and "def reap_mock" in oi_src
@@ -681,8 +796,8 @@ def main() -> int:
     check("三个链接与「运行状态」徽章**同一套绿**（字色/底色/描边都对齐）+ 前面一个灯",
           "display:inline-flex" in _rule(css, ".rl-files a")
           and "background:currentColor" in _rule(css, ".rl-files a::before")
-          and "border:1px solid rgba(30,122,52,.38)" in _rule(css, ".rl-files a")
-          and _rule(css, ".rl-files a").strip().count('rgba(30,122,52') >= 2,
+          and "border:1px solid var(--st-done-bd)" in _rule(css, ".rl-files a")
+          and _rule(css, ".rl-files a").strip().count("var(--st-done-") >= 3,
           "")
     check("**运行中也能看见这三个按钮**（待生成态 .pend：降透明度、不可点）",
           ".rl-filesa.pend{opacity:.55" in css.replace(" ", "")
@@ -932,23 +1047,37 @@ def main() -> int:
     # ★ 陷阱：`.badge.running` 的**第一条**同名规则是 `.badge.running{color:var(--accent)}`
     #   （浅底档），日志页那套在 `.runlog-head .badge.running`（#2F3AA8）。
     #   三胶囊对齐的**是日志页那套**（同一个 `.runlog-head` 里并排显示）⇒ 判据要读它。
-    check("⑤ `.rl-files.st-running` 与左徽章 `.runlog-head .badge.running` **同色**（#2F3AA8 紫）",
-          "#2F3AA8" in _rule(css, ".rl-files.st-running a")
-          and "#2F3AA8" in _rule(css, ".runlog-head .badge.running"),
+    # ★★ R39 口径升级（判据随实现更新，不是放宽）：两边改成**同源变量**后色值只剩一份
+    #   （在 `.runlog-head` 的变量块里）⇒ 判据比「两边引用**同一个变量名** + 该变量解析成那个色」，
+    #   并**补上背景一维** —— R38 只比文字色，所以「按钮背景没跟左边徽章一致」两轮都漏检。
+    _hrule = _rule(css, ".runlog-head")
+
+    def _stat_same(_st, _hex):
+        _a = ".rl-files.st-%s a" % _st
+        _b = ".runlog-head .badge.%s" % _st
+        return (("var(--st-%s-c)" % _st) in _rule(css, _a)
+                and ("var(--st-%s-c)" % _st) in _rule(css, _b)
+                and ("var(--st-%s-bg)" % _st) in _rule(css, _a)
+                and ("var(--st-%s-bg)" % _st) in _rule(css, _b)
+                and ("--st-%s-c:%s" % (_st, _hex)) in _hrule.replace(" ", ""))
+
+    check("⑤ `.rl-files.st-running` 与左徽章 `.runlog-head .badge.running` 同色**且同底**"
+          "（同源 --st-running-c/-bg，其值 #2F3AA8 紫）",
+          _stat_same("running", "#2F3AA8"),
           _rule(css, ".rl-files.st-running a").strip()[:64])
-    check("⑤ `.rl-files.st-queued` 与 `.runlog-head .badge.queued` **同色**（#8A6414 琥珀）",
-          "#8A6414" in _rule(css, ".rl-files.st-queued a")
-          and "#8A6414" in _rule(css, ".runlog-head .badge.queued"),
-          "")
-    check("⑤ `.rl-files.st-error` 与 `.runlog-head .badge.error` **同色**（#B42318 红）",
-          "#B42318" in _rule(css, ".rl-files.st-error a")
-          and "#B42318" in _rule(css, ".runlog-head .badge.error"),
-          "")
-    check("⑤ 取消 / 中断 / 已停 归到**同一档琥珀**（`.badge` 里也是这么归的）",
+    check("⑤ `.rl-files.st-queued` 与左徽章 `.runlog-head .badge.queued` 同色**且同底**"
+          "（同源 --st-queued-c/-bg，其值 #8A6414 琥珀）",
+          _stat_same("queued", "#8A6414"),
+          _rule(css, ".rl-files.st-queued a").strip()[:64])
+    check("⑤ `.rl-files.st-error` 与左徽章 `.runlog-head .badge.error` 同色**且同底**"
+          "（同源 --st-error-c/-bg，其值 #B42318 红）",
+          _stat_same("error", "#B42318"),
+          _rule(css, ".rl-files.st-error a").strip()[:64])
+    check("⑤ 取消 / 中断 / 已停 归到**同一档**（与 `.badge` 的归法一致：都走 --st-queued-*）",
           ".rl-files.st-cancelled a" in css and ".rl-files.st-canceled a" in css
           and ".rl-files.st-interrupted a" in css
-          and "#8A6414" in css[css.find(".rl-files.st-cancelled a"):
-                               css.find(".rl-files.st-cancelled a") + 220],
+          and "var(--st-queued-c)" in css[css.find(".rl-files.st-cancelled a"):
+                                          css.find(".rl-files.st-cancelled a") + 240],
           "")
     check("⑤ running 态的胶囊**灯在脉动**（与左徽章同一套 pulse，不是静态绿点）",
           "animation:pulse" in _rule(css, ".rl-files.st-running a::before"),
@@ -963,14 +1092,15 @@ def main() -> int:
                        if (".rl-files.st-" + s) not in css]))
     # ★ R38 补：既然「基线的绿是故意的」，就把它**锚起来** —— 基线的绿必须与左徽章
     #   done 档同色（R34 语义）。此前没有判据 ⇒ M39（把基线改成别的色）全绿漏检。
-    check("⑤ 三胶囊**完成态基线** = 左徽章同款绿（`.rl-files a` 与 `.runlog-head .badge.done` 同色）",
-          "#1E7A34" in _rule(css, ".rl-files a")
-          and "#1E7A34" in _rule(css, ".runlog-head .badge.done"),
+    check("⑤ 三胶囊**完成态基线** = 左徽章同款绿（`.rl-files a` 也走 --st-done-*）",
+          "var(--st-done-c)" in _rule(css, ".rl-files a")
+          and "var(--st-done-bg)" in _rule(css, ".rl-files a")
+          and _stat_same("done", "#1E7A34"),
           _rule(css, ".rl-files a").strip()[:64].replace("\n", " "))
-    check("⑤ `.rl-files.st-done` 与 `.runlog-head .badge.done` **同色**（#1E7A34 绿）",
-          "#1E7A34" in _rule(css, ".rl-files.st-done a")
-          and "#1E7A34" in _rule(css, ".runlog-head .badge.done"),
-          _rule(css, ".rl-files.st-done a").strip()[:56] if ".rl-files.st-done a{" in css else "无该规则")
+    check("⑤ `.rl-files.st-done` 与左徽章 `.runlog-head .badge.done` 同色**且同底**"
+          "（同源 --st-done-c/-bg，其值 #1E7A34 绿）",
+          _stat_same("done", "#1E7A34"),
+          _rule(css, ".rl-files.st-done a").strip()[:56])
     check("⑥ 原生细长滚动条**隐藏**（scrollbar-width:none + ::-webkit-scrollbar 宽 0）",
           "scrollbar-width:none" in _rule(css, "#runlog-body")
           and "width:0;height:0;display:none" in _rule(css, "#runlog-body::-webkit-scrollbar").replace(" ", ""),
@@ -1052,6 +1182,7 @@ def main() -> int:
     check("累计 token 只累加有读数的轮次（合成样本：覆盖率 1/2）",
           _sp["calls"] == 3 and _sp["tokens"] == 100 and _sp["covered"] == 1, str(_sp))
 
+    check_r39_frontend(css, js, html)
     # ── 参数往返：列表型键不能被写成字符串 ─────────────────────────
     # ★ 这是「通过工作台发起的真跑全部 2–7 秒即崩」的根因：
     #   memory.channels 出厂是列表，经参数面板往返后变字符串 ⇒ 引擎
@@ -1560,6 +1691,17 @@ def main() -> int:
           f"calls={_tok.get('calls')} tokens={_tok.get('tokens')}")
     check("[tok] 读数行不进卡片日志",
           "[tok]" not in "".join(lyr["layers"].values()))
+    # ★R39 需求 2：日志**共有头**（`__head__`）必须随 /layers 到前端 ——
+    #   用户报「日志头部不显示载入信息（调度配置等）」。★ 根因是**字段断链**：
+    #   桶名是 `__head__`，而前端 `pollLanes()` 只读 `r.layers` ⇒ `lanes.head` 恒
+    #   undefined ⇒ 开头块从来没渲染过（R37 的判据只查了 `"src.head" in js`，看不见「取不到值」）。
+    _rlhead = lyr.get("head") or ""
+    check("★R39 /layers 带**日志共有头**（载入调度配置 / 调度 / 并行模式 …）",
+          "载入调度配置" in _rlhead and "调度：" in _rlhead,
+          "%d 字符" % len(_rlhead))
+    check("★R39 负对照：这几行**不在四层里任何一层**（所以前端只能靠 `head` 那一条路拿到）",
+          all("载入调度配置" not in _v for _v in lyr["layers"].values()),
+          "")
     _sx = (lyr.get("stats") or {}).get("修行") or {}
     check("每层带自己的起始时间与 token 消耗",
           _sx.get("since") is not None and _sx.get("tokens", 0) > 0,

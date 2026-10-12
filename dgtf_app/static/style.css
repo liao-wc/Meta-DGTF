@@ -80,14 +80,17 @@ a{color:var(--accent)}
 #runlog{position:relative}
 #runlog-body{scrollbar-width:none}
 #runlog-body::-webkit-scrollbar{width:0;height:0;display:none}
-#rl-bar{position:absolute;right:5px;width:12px;height:12px;border-radius:50%;
-  background:rgba(0,0,0,.34);pointer-events:auto;cursor:grab;opacity:0;
+/* ★ R39：① 颜色改成**蓝色**（用户「滚动的点颜色改为蓝色」）；② 贴到日志区**最右侧边缘**
+   （原来 right:5px 落在内侧、看着「悬空」）；③ 上下范围仍然由 JS 按 `#runlog-body`
+   的轨道算（`top ∈ [head 之下, 正文区底部]`）⇒ 只在这一页的正文范围内滑动。 */
+#rl-bar{position:absolute;right:1px;width:12px;height:12px;border-radius:50%;
+  background:rgba(47,58,168,.55);pointer-events:auto;cursor:grab;opacity:0;
   touch-action:none;
   transition:opacity .15s var(--ease),background .15s var(--ease)}
 #rl-bar.on{opacity:1}
-#rl-bar:hover,#rl-bar.drag{background:rgba(0,0,0,.55)}
+#rl-bar:hover,#rl-bar.drag{background:rgba(35,47,158,.88)}
 #rl-bar.drag{cursor:grabbing}
-#rl-bar:hover{background:rgba(0,0,0,.34)}
+#rl-bar:hover{background:rgba(47,58,168,.75)}
 
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
 
@@ -329,11 +332,25 @@ body.panel-open .corner-actions{display:none}
    ★★ R38：它是 `.sheet` 的直接子项（`.sheet-body` 的**后一个兄弟**）——
      `.sheet` 是 `flex-direction:column`，`flex:0 0 auto` ⇒ 恒定贴在面板底部、
      不参与 `.sheet-body` 的溢出裁剪；参数相关的两页共用同一条，位置永远一致。 */
-.sheet-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;
+/* ★ R39：保存按钮**底部居中** —— 改成 `1fr auto 1fr` 三列网格（中间列恒为「保存」，
+   两侧等宽）⇒ 保存的位置与右边「恢复出厂设置」的宽度**无关**，恒在正中央。
+   原来靠 `.sa-spacer` 占位，但它的宽度是 `padding:0 22px`（恒 44px），**并不等于**
+   右侧按钮宽 ⇒ 保存只是「大致靠中、略偏左」（用户报「保存按钮底部居中」）。 */
+.sheet-actions{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  align-items:center;justify-content:center;
   gap:10px;flex:0 0 auto;padding:12px 18px;border-top:1px solid var(--hair-2)}
-/* 隐形占位：宽度随「恢复出厂设置」自动伸缩（flex-basis:auto 的分身），保证「保存」居中 */
-.sheet-actions .sa-spacer{visibility:hidden;height:0;overflow:hidden;
+/* 隐形占位（占第一列，`visibility:hidden`）—— 保留它让「保存」落在**第二列** */
+.sheet-actions .sa-spacer{grid-column:1;grid-row:1;visibility:hidden;height:0;overflow:hidden;
   flex:0 0 auto;padding:0 22px;font-size:14px;font-weight:600}
+.sheet-actions #adv-save{grid-column:2;grid-row:1;justify-self:center}
+.sheet-actions #adv-reset{grid-column:3;grid-row:1;justify-self:start}
+/* 窄屏兜底：三列排不下时退回两列（居中让位给「两个按钮都完整」） */
+@media (max-width:560px){
+  .sheet-actions{grid-template-columns:auto minmax(0,1fr)}
+  .sheet-actions .sa-spacer{display:none}
+  .sheet-actions #adv-save{grid-column:1;justify-self:start}
+  .sheet-actions #adv-reset{grid-column:2;justify-self:end}
+}
 .sheet-actions button.ghost{display:inline-flex;align-items:center;gap:9px;
   height:38px;padding:0 22px;font-size:14px;font-weight:600;
   background:transparent;border-color:transparent;color:var(--t1)}
@@ -683,7 +700,15 @@ kbd{font-family:var(--f-mono);font-size:10.5px;line-height:1;color:var(--t2);
 /* ★ R28：日志头 **flex 三段**：徽章贴左 / **题目 + 元信息同栏、一起居中** / 三个链接贴右。
    左右两组等权（flex:1 1 0）⇒ 中间那栏恒在页面正中。题目与元信息同色同字号（蓝）。 */
 .runlog-head{display:flex;align-items:center;gap:14px;padding:11px 16px;
-  border-bottom:1px solid var(--log-hair);flex:0 0 auto;position:relative}
+  border-bottom:1px solid var(--log-hair);flex:0 0 auto;position:relative;
+  /* ★★ R39：**状态色同源变量** —— 左边的状态徽章（`.runlog-head .badge.*`）与右边的
+     三个胶囊（`.rl-files.st-* a`）都引用**这同一组**，改一处两边同时变 ⇒
+     从机制上消灭「运行中两边颜色不一致」（用户连报两轮同一现象）。
+     色值 = 灰画布上的深档；底色 alpha 统一 `.12`（原来两边一个 .10 一个 .14）。 */
+  --st-done-c:#1E7A34;    --st-done-bd:rgba(30,122,52,.38);    --st-done-bg:rgba(30,122,52,.10);
+  --st-running-c:#2F3AA8; --st-running-bd:rgba(47,58,168,.36); --st-running-bg:rgba(47,58,168,.10);
+  --st-queued-c:#8A6414;  --st-queued-bd:rgba(138,100,20,.36); --st-queued-bg:rgba(210,153,34,.14);
+  --st-error-c:#B42318;   --st-error-bd:rgba(180,35,24,.36);   --st-error-bg:rgba(248,81,73,.12)}
 /* ★ R28：左右两组**等权（flex:1 1 0）** ⇒ 中间那栏恒在页面正中。
    ★ 但**不能缩到比内容还窄**：右组一旦窄过链接宽度，`justify-content:flex-end` 的溢出方向是
      **向左** ⇒ 链接会压到元信息上（实测踩到：`终止 17:10:16` 被「产物」盖住）。
@@ -739,9 +764,9 @@ kbd{font-family:var(--f-mono);font-size:10.5px;line-height:1;color:var(--t2);
   font-family:var(--f-mono);font-size:clamp(12px,1.7vh,14.5px);
   font-variant-numeric:tabular-nums;
   /* ★ R34：与运行状态徽章 `.badge.done` **同一套绿**（字色 / 底色 / 描边都对齐） */
-  color:#1E7A34;
-  font-weight:700;text-decoration:none;padding:3px 10px 3px 8px;border:1px solid rgba(30,122,52,.38);
-  border-radius:20px;background:rgba(30,122,52,.14);
+  color:var(--st-done-c);
+  font-weight:700;text-decoration:none;padding:3px 10px 3px 8px;border:1px solid var(--st-done-bd);
+  border-radius:20px;background:var(--st-done-bg);
   transition:color var(--dur) var(--ease),background var(--dur) var(--ease)}
 /* ★ R33：与「运行状态」徽章同一款式 —— **前面一个灯**，灯色 = 文字色（currentColor）。 */
 .rl-files a::before{content:"";width:6px;height:6px;border-radius:50%;
@@ -755,12 +780,14 @@ kbd{font-family:var(--f-mono);font-size:10.5px;line-height:1;color:var(--t2);
    就地压过基线，不必追加同选择器第二条规则）。
    色值与 `.badge.<st>` / `.runlog-head .badge.<st>` 那几档**逐字对齐**，
    于是左右两边「灯 + 字 + 描边 + 底」完全同步。 */
-.rl-files.st-done a{color:#1E7A34;border-color:rgba(30,122,52,.38);background:rgba(30,122,52,.14)}
-.rl-files.st-running a{color:#2F3AA8;border-color:rgba(47,58,168,.36);background:rgba(47,58,168,.12)}
-.rl-files.st-queued a{color:#8A6414;border-color:rgba(138,100,20,.36);background:rgba(138,100,20,.10)}
-.rl-files.st-error a{color:#B42318;border-color:rgba(180,35,24,.36);background:rgba(180,35,24,.10)}
+/* ★★ R39：四档**改引用 `.runlog-head` 上的同源变量**（与左边徽章 `.runlog-head .badge.*`
+   同一组值）—— 「灯 + 字 + 描边 + 底」两边逐项同步，且以后只改一处。 */
+.rl-files.st-done a{color:var(--st-done-c);border-color:var(--st-done-bd);background:var(--st-done-bg)}
+.rl-files.st-running a{color:var(--st-running-c);border-color:var(--st-running-bd);background:var(--st-running-bg)}
+.rl-files.st-queued a{color:var(--st-queued-c);border-color:var(--st-queued-bd);background:var(--st-queued-bg)}
+.rl-files.st-error a{color:var(--st-error-c);border-color:var(--st-error-bd);background:var(--st-error-bg)}
 .rl-files.st-cancelled a,.rl-files.st-canceled a,
-.rl-files.st-interrupted a{color:#8A6414;border-color:rgba(138,100,20,.36);background:rgba(138,100,20,.10)}
+.rl-files.st-interrupted a{color:var(--st-queued-c);border-color:var(--st-queued-bd);background:var(--st-queued-bg)}
 /* 运行中：灯与左徽章一样**脉动**（同步的视觉信号） */
 .rl-files.st-running a::before{animation:pulse 1.3s var(--ease) infinite}
 /* 悬停时仍按状态走（不是一律回绿）—— 只提亮，不换色相 */
@@ -832,8 +859,11 @@ kbd{font-family:var(--f-mono);font-size:10.5px;line-height:1;color:var(--t2);
 /* 悬置还原出的原内容：压暗一级，不抢正文 */
 .rl-susp{color:var(--log-dim);font-family:var(--f-mono);font-size:clamp(13px,1.8vh,16px);flex:0 1 auto;min-width:0}
 /* view 全文：**默认展开**的折叠块 */
+/* ★ R39：去掉 `overflow:hidden` —— 它会**裁掉折叠块内溢出的行**（用户报「阴视角 / 阳视角
+   内容没显示完全」：折叠块里的行一旦触发任何溢出就只显示半截）。
+   这里没有需要靠它兜住的出血内容（背景与边框都是元素自身的），去掉后零副作用。 */
 .rl-fold{width:100%;margin:7px 0;border:1px solid var(--log-hair);border-radius:8px;
-  background:rgba(0,0,0,.03);overflow:hidden}
+  background:rgba(0,0,0,.03)}
 .rl-fold>summary{cursor:pointer;list-style:none;
   color:var(--log-blue);font-weight:700;
   font-family:var(--f-mono);font-size:var(--rl-h2);padding:6px 10px}
@@ -865,18 +895,20 @@ kbd{font-family:var(--f-mono);font-size:10.5px;line-height:1;color:var(--t2);
 .badge.error{color:var(--err);border-color:rgba(248,81,73,.32);background:rgba(248,81,73,.10)}
 .badge.cancelled,.badge.canceled{color:var(--warn);
   border-color:rgba(210,153,34,.34);background:rgba(210,153,34,.10)}
-/* ★ R26：日志页全透明 ⇒ 徽章落在灰画布上，五个状态色都换成**深档**才读得清 */
+/* ★ R26：日志页全透明 ⇒ 徽章落在灰画布上，五个状态色都换成**深档**才读得清。
+   ★★ R39：五档**改引用 `.runlog-head` 上的同源变量** —— 与右边三个胶囊（`.rl-files.st-* a`）
+   用的是同一组值，两处不可能再不一致（用户要求「灯和字体颜色变化一致」）。 */
 .runlog-head .badge{color:#3A4048;border-color:rgba(0,0,0,.16)}
-.runlog-head .badge.done{color:#1E7A34;border-color:rgba(30,122,52,.38);
-  background:rgba(30,122,52,.10)}
-.runlog-head .badge.running{color:#2F3AA8;border-color:rgba(47,58,168,.36);
-  background:rgba(47,58,168,.10)}
-.runlog-head .badge.queued{color:#8A6414;border-color:rgba(138,100,20,.36);
-  background:rgba(210,153,34,.14)}
-.runlog-head .badge.cancelled,.runlog-head .badge.canceled{color:#8A6414;
-  border-color:rgba(138,100,20,.36);background:rgba(210,153,34,.14)}
-.runlog-head .badge.error{color:#B42318;border-color:rgba(180,35,24,.36);
-  background:rgba(248,81,73,.12)}
+.runlog-head .badge.done{color:var(--st-done-c);border-color:var(--st-done-bd);
+  background:var(--st-done-bg)}
+.runlog-head .badge.running{color:var(--st-running-c);border-color:var(--st-running-bd);
+  background:var(--st-running-bg)}
+.runlog-head .badge.queued{color:var(--st-queued-c);border-color:var(--st-queued-bd);
+  background:var(--st-queued-bg)}
+.runlog-head .badge.cancelled,.runlog-head .badge.canceled{color:var(--st-queued-c);
+  border-color:var(--st-queued-bd);background:var(--st-queued-bg)}
+.runlog-head .badge.error{color:var(--st-error-c);border-color:var(--st-error-bd);
+  background:var(--st-error-bg)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 
 .log{

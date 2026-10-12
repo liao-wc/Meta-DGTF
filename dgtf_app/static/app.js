@@ -389,7 +389,7 @@ function fmtTime(ts) {
    ★ 增量更新：只改文本、不做整块 DOM 重建 —— 否则每 1.5s 轮询都会抖一下，
      并把用户正在往上翻的滚动位置强行拉到底。 */
 const LANE_NAMES = ['修行', '研究', '对撞', '元'];
-const lanes = { tid: null, text: {}, stats: {}, meta: {} };
+const lanes = { tid: null, text: {}, stats: {}, meta: {}, head: '' };
 
 /* ── 「历史对话」：当前在看哪一次会话 ────────────────────────────
    chatMode: 'live'   —— 内存里的任务，日志实时跟随；
@@ -519,6 +519,11 @@ const RL_SUMMARY = /^(?:完成|失败|已终止)\s*\|/;
 const RL_MARK = /^(?:停止|产物已落盘|完成)(?:[：:]|\s|$)/;
 const RL_STRUCT  = /^={2,}\s*ING-STRUCT\s*={2,}$/;
 const RL_CNHEAD  = /^[一二三四五六七八九十]+、/;
+/* ★ R39：**`**标题**` 也要当标题**（用户图1：`**一、让两端各自把话说完**` 原样露出 `**` 且是绿字）。
+   引擎的 ing/view 正文里 markdown 粗体标题很常见，之前既没剥 `**`、也没归到蓝标题类。 */
+const RL_STAR    = /^\*\*.+\*\*$/;
+/* ★ R39：`子问题[5]` 这类**带框序号小标题**（用户图10）—— 归蓝标题，不当正文。 */
+const RL_SUBQ    = /^子问题\s*\[\d+\]\s*$/;
 const RL_SEQ     = /^\[(\d+)\]\s*(.*)$/;
 const RL_ATTR    = /^(?:属性|位置|来源|依据)\s*[=＝]/;
 const RL_LABELONLY = /^\[[^\]]{1,14}\]$/;
@@ -531,7 +536,7 @@ const RL_CONFIRM = /确认(?:元层)?悬置[：:]\s*(s_\d+)/;
 const RL_DIAG    = /^(?:\[fix-\d+\s*diag\]|🔬\s*rephrase)/;
 const RL_CONFIRM_ANY = /^[✓✗]\s*(?:确认|撤回)(?:元层)?悬置[：:]/;
 const RL_ING = /^(?:🔥\s*ing 输出|🌕\s*view 显形|📋\s*展开候选)/;
-const RL_NAME = '[\\u4e00-\\u9fa5A-Za-z0-9·]{1,14}(?:（[^）]{0,12}）)?';
+const RL_NAME = '[\\u4e00-\\u9fa5A-Za-z0-9·]{1,12}(?:\\s[\\u4e00-\\u9fa5]{1,6})?(?:（[^）]{0,12}）)?';
 /* 「名称：内容」同行（名称必须是短、纯文字：不含 = [ 」 ` 等） */
 const RL_INLINE = new RegExp('^((?:' + RL_EMOJI + ')?\\s*' + RL_NAME + ')\\s*[：:]\\s*(\\S.*)$', 'u');
 /* 「名称：」独占一行（内容在下一行 ⇒ 并上来） */
@@ -554,6 +559,9 @@ function rlClass(s) {
   if (RL_BRACKET.test(s)) return 'bracket';           // `[标志] …`
   if (/^#{1,6}\s*/.test(s)) return 'title';
   if (RL_CNHEAD.test(s)) return 'title';
+  /* ★ R39：`**一、…**` / `**标题**`、`子问题[5]` ⇒ 蓝标题（用户图 1/10） */
+  if (RL_STAR.test(s)) return 'title';
+  if (RL_SUBQ.test(s)) return 'title';
   if (RL_LABELONLY.test(s)) return 'step';
   if (RL_INLINE.test(s)) return 'inline';
   if (RL_LABELED.test(s)) return 'labeled';
@@ -577,13 +585,38 @@ function rlSuspNames(lines) {
 }
 function layers0(lines) { return lines.map(l => l.trim()).filter(Boolean); }
 
+/* ★ R39：引擎行内的 markdown 粗体标记 `**…**` 会**原样露出**（用户图 1：`**一、让两端…**`）。
+   只**去掉星号**、不加粗 —— 日志里的 `<b>` 被 `.runlog-body b` 统一压成「数字黑」，
+   拿 `<b>` 当粗体用会把文字染黑。 */
+function deStar(t) { return String(t == null ? '' : t).replace(/\*\*/g, ''); }
 function rlInline(lab, txt) {
   return '<div class="rl-line"><span class="rl-lab">'
-    + hlNums(esc(lab.replace(/[：:]\s*$/, '') + '：')) + '</span>'
-    + (txt ? '<span class="rl-txt">' + esc(txt) + '</span>' : '') + '</div>';
+    + hlNums(esc(deStar(lab.replace(/[：:]\s*$/, '')) + '：')) + '</span>'
+    + (txt ? '<span class="rl-txt">' + esc(deStar(txt)) + '</span>' : '') + '</div>';
 }
 function rlPlain(txt) {
-  return '<div class="rl-line"><span class="rl-txt">' + esc(txt) + '</span></div>';
+  return '<div class="rl-line"><span class="rl-txt">' + esc(deStar(txt)) + '</span></div>';
+}
+/* ★ R39：正文行开头的**印记/标记**统一**蓝**（用户图 7~14：「印记显蓝色」「带框的前面头部
+   部分也显示蓝色」）。此前只有「行首就是 `[xxx]`」才走 `bracket` ⇒ 带列表点（`- ` → `· `）
+   或 `& ` 前缀的行整行绿。这里把「可选 `&` / 列表点 + `[xxx]`」拆出来单独上色。 */
+/* ★ R39：前缀词表来自**真实日志/产物**（`子问题[5]` 见引擎正文），
+   只在**行首**生效，避免把句中任意 `词[3]` 都染蓝。 */
+const RL_MARK_PRE = '(?:子问题|问题|候选|条目|编号|序号)';
+const RL_MARK_HEAD = new RegExp(
+  '^(&\\s*)?([·•\\-*]\\s*)?(' + RL_MARK_PRE + '\\s*)?(\\[[^\\]]{1,16}\\])(.*)$');
+function rlMarked(s) {
+  const src = String(s || '').replace(/^-\s+/, '· ');
+  const m = RL_MARK_HEAD.exec(src);
+  if (!m) return rlPlain(src);
+  const amp = (m[1] || '').trim(), dot = (m[2] || '').trim();
+  const pre = (m[3] || '').trim(), rest = m[5] || '';
+  return '<div class="rl-line">'
+    + (amp ? '<span class="rl-mark">' + esc(amp) + '</span>' : '')
+    + (dot ? '<span class="rl-txt">' + esc(dot) + '</span>' : '')
+    + '<span class="rl-mark">' + esc(pre + m[4]) + '</span>'
+    + (rest ? '<span class="rl-txt">' + esc(deStar(rest)) + '</span>' : '')
+    + '</div>';
 }
 
 /* 一层的原始日志行 → 语义化 HTML */
@@ -625,7 +658,10 @@ function renderLogBody(lines, susp) {
 
     if (t === 'summary') { out.push('<div class="rl-summary">' + hlNums(esc(s)) + '</div>'); continue; }
     if (t === 'title') {
-      out.push('<div class="rl-title">' + esc(s.replace(/^#{1,6}\s*/, '').replace(/^=+|\s*=+$/g, '').trim()) + '</div>');
+      /* ★ R39：剥掉 `**`（markdown 粗体）后当标题 —— 标题本身就是蓝粗，不用再叠粗体 */
+      out.push('<div class="rl-title">'
+        + esc(deStar(s.replace(/^#{1,6}\s*/, '').replace(/^=+|\s*=+$/g, '').trim()))
+        + '</div>');
       continue;
     }
 
@@ -668,7 +704,8 @@ function renderLogBody(lines, susp) {
     }
 
     if (t === 'content') {
-      out.push(rlPlain(s.replace(/^-\s+/, '· ')));
+      /* ★ R39：正文行开头的 `[xxx]` 印记单独上蓝（见 rlMarked） */
+      out.push(rlMarked(s));
       continue;
     }
 
@@ -724,17 +761,30 @@ function renderLogBody(lines, susp) {
 const RL_DOT = 12;                 // 圆点直径（与 CSS #rl-bar 一致）
 let rlDragging = false;            // 拖动中：禁止滚动事件回写位置，避免抖动
 
-function updateRlBar() {
-  const box = $('#runlog'), bd = $('#runlog-body'), bar = $('#rl-bar');
-  if (!box || !bd || !bar) return;
-  if (rlDragging) return;          // 拖动中由 mousemove 主控，别被滚动事件抢
+/* ★ R39：轨迹的**唯一来源** —— 原来 `updateRlBar()` 把圆点放在
+   「正文区相对 `#runlog` 的偏移 + 比例 × 轨道」上，而拖拽的 `onMove` 却钳在
+   `[0, 轨道]`（**少了那个偏移**）⇒ 一按住圆点拖动，它先跳上去约等于头栏
+   （`.runlog-head`）那么高 —— 表现就是「拖动不跟手 / 跑出范围」。
+   现在两条路共用这一个口径：`top ∈ [lo, hi]`，`hi` 再按 `#runlog` 自身高度钳一次
+   ⇒ 圆点**只在这一个日志窗口的正文范围内**滑动（用户要求「限定在指定页面上下范围内」）。 */
+function rlTrack() {
+  const box = $('#runlog'), bd = $('#runlog-body');
+  if (!box || !bd) return null;
   const over = bd.scrollHeight - bd.clientHeight;
-  if (over <= 8 || bd.clientHeight < 60) { bar.classList.remove('on'); return; }
-  const rb = bd.getBoundingClientRect(), rbox = box.getBoundingClientRect();
-  /* 圆点沿轨道滑动：轨道高 = 可视区高 − 圆点直径 */
-  const track = Math.max(0, bd.clientHeight - RL_DOT);
-  const top = (rb.top - rbox.top) + Math.round((bd.scrollTop / over) * track);
-  bar.style.top = Math.round(top) + 'px';
+  const base = Math.round(bd.getBoundingClientRect().top - box.getBoundingClientRect().top);
+  const lo = Math.max(0, base);
+  const hi = Math.max(lo, Math.min(base + bd.clientHeight, box.clientHeight) - RL_DOT);
+  return { bd: bd, over: over, lo: lo, hi: hi };
+}
+
+function updateRlBar() {
+  const t = rlTrack(), bar = $('#rl-bar');
+  if (!t || !bar) return;
+  if (rlDragging) return;          // 拖动中由 pointermove 主控，别被滚动事件抢
+  const bd = t.bd;
+  if (t.over <= 8 || bd.clientHeight < 60) { bar.classList.remove('on'); return; }
+  const r = t.hi > t.lo ? Math.min(1, Math.max(0, bd.scrollTop / t.over)) : 0;
+  bar.style.top = Math.round(t.lo + r * (t.hi - t.lo)) + 'px';
   bar.classList.add('on');
 }
 
@@ -745,12 +795,12 @@ function bindRlBarDrag() {
   bar.dataset.dragBound = '1';
   let startY = 0, startTop = 0;
   const onMove = (ev) => {
-    const track = Math.max(1, bd.clientHeight - RL_DOT);
-    const over = bd.scrollHeight - bd.clientHeight;
+    const t = rlTrack();
+    if (!t || t.hi <= t.lo) return;
     const dy = ev.clientY - startY;
-    const top = Math.max(0, Math.min(track, startTop + dy));
+    const top = Math.max(t.lo, Math.min(t.hi, startTop + dy));
     bar.style.top = Math.round(top) + 'px';
-    bd.scrollTop = (top / track) * over;
+    t.bd.scrollTop = ((top - t.lo) / (t.hi - t.lo)) * t.over;
   };
   const onUp = () => {
     rlDragging = false;
@@ -765,7 +815,12 @@ function bindRlBarDrag() {
     rlDragging = true;
     bar.classList.add('drag');
     const rbox = box.getBoundingClientRect();
-    startTop = parseFloat(bar.style.top || '0') || (bar.getBoundingClientRect().top - rbox.top);
+    startTop = parseFloat(bar.style.top || '0')
+      || (bar.getBoundingClientRect().top - rbox.top);
+    /* ★ R39：起点也钳进本窗口的轨迹区间 —— 否则首帧 `bar.style.top` 还没算过，
+       就会从窗口外的位置开始跟手。 */
+    const t0 = rlTrack();
+    if (t0) startTop = Math.max(t0.lo, Math.min(t0.hi, startTop));
     startY = ev.clientY;
     try { bar._pid = ev.pointerId; bar.setPointerCapture(ev.pointerId); } catch (e) {}
     document.addEventListener('pointermove', onMove);
@@ -858,7 +913,7 @@ function renderTasks() {
      以前这一段被整个丢掉（只渲染 LANE_NAMES 里的层）⇒ 用户看不到「载入了什么配置」。
      现在渲染成**无标题的开头块**，走同一套语义排版（`名称：内容` 同行、蓝标签 + 绿内容）。 */
   {
-    const headRaw = (src.head || '')
+    const headRaw = (src.head || src['__head__'] || '')
       .split('\n')
       .filter(l => !/^\s*[━─—=]{3,}/.test(l))
       .map(l => l.replace(/\s+$/, ''))
@@ -976,6 +1031,11 @@ async function pollLanes() {
   try {
     const r = await api('/api/tasks/' + tid + '/layers');
     lanes.text = r.layers || {};
+    /* ★ R39：日志**开头块**（载入调度配置 / 调度模式 / 圈数上限…）——
+       后端 `layers.split_log()` 的桶名是 `__head__`，而这里原来只读 `r.head`
+       ⇒ 恒 `undefined` ⇒ `rl-boot` 块**从来没渲染过**（用户报「日志头部没显示载入信息」）。
+       两头都接上：新字段 `head` 优先，老桶名兜底。 */
+    lanes.head = r.head || (r.layers || {})['__head__'] || '';
     lanes.stats = r.stats || {};
     lanes.meta = { started_at: r.started_at, tok: r.tok, balance: r.balance };
     renderTasks();
@@ -1071,7 +1131,9 @@ async function stopRun() {
 /* ── 运行中的「输入框寄语」（R23）───────────────────────────────────
    发送后输入框清空，占位文字换成一句引领语，并**随运行进度**每隔一段时间换一句：
    进度取自「哪一层已经有内容」；用户一开始打字就让位（不动他自己的内容）。 */
-const Q_PLACEHOLDER = '给 元DGTF 发送消息，例如：AI 能否独立完成数字 IC 设计流程？';
+/* ★ R39：首屏输入框文案（用户指定原文，含中间两个空格）—— 与 index.html 的
+   `#question` placeholder **保持同一句**（跑完/新对话时 JS 会把它写回去）。 */
+const Q_PLACEHOLDER = '这次又想到什么问题了？可以发给元DGTF  我们一起去探索吧';
 const RUN_WHISPER = {
   boot: ['元DGTF 引擎已启动 · 您愿意和我一起探寻吗？',
          '我先把这个问题钉牢，再动手…',

@@ -48,3 +48,9 @@ cache/
 # GitHub Desktop 建的空脚手架仓库（指向同一个远程，含自己的 .git）
 # ★ 嵌套 git 仓库不跟踪：否则会被记成一行 gitlink，状态永远显示「脏」
 meta-dgtf/
+
+# 工作台「高级参数 → 保存」写出的**用户增量配置**（`params.USER_CFG`，仓库根）。
+# ★ 它是**每台机器 / 每个人自己的运行配置**，不是源码也不是文档 ——
+#   别人 clone 后应该从出厂 `dgtf_config.yaml` 起跑。
+# ★ 与 `dgtf_app/runs/`、`*.yaml.bak` 同一口径：本地保留，不进库。
+dgtf_config.user.yaml

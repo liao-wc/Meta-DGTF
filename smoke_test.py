@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.22.py"
+SRC = HERE / "元DGTF-V1.23.23.py"
 
 os.environ.setdefault("DGTF_API_KEY", "sk-smoke-test-key")
 
@@ -1673,6 +1673,102 @@ def check_v12321_tok_line():
             print("  \u2717 [v12321] %s" % _x)
         return False
     print("  \u2713 [v12321] LLM 调用后打 [tok] 累计行（logging、非 vp）")
+    return True
+
+
+def check_v12323_view_echo_full():
+    """[v1.23.23] 日志回显不再把正文按字符硬砍（阴阳视角「内容没显示完全」）。
+
+    用户实测：日志窗口里阴阳视角那块的**最后一行被砍在半句上**
+    （`- [concept] 纠缠熵面积律不能单`）。查下来**不是前端裁的** —— `.run.log`
+    里就是这行：四处回显写死了字符上限，而模型返回的是**多行正文**。
+
+    三层判据：
+      ① 结构：`self.vp(...)` 上不再出现按字符硬砍的上限；六处回显统一走
+         `_vp_preview`（1 定义 + 6 调用）；
+      ② 行为（**主路径**）：驱动生产入口 `DGTF._expand_pair`，桩住 LLM 返回一份
+         >200 字的 4 行正文，**捕获 stdout**，断言「旧实现会被砍掉的那一段」
+         真的出现在日志回显里（不是只在源码里多了个函数名）；
+      ③ 反面对照：同一份正文的 `raw[:200]` **必须**丢掉那一段
+         —— 保证这条样例在两个实现下会分岔（否则这条判据没有判别力）。
+    """
+    bad = []
+    src = SRC.read_text(encoding="utf-8", newline="")
+
+    # ① 结构 -----------------------------------------------------------------
+    _caps = re.findall(r"self\.vp\([^\n]{0,140}\[:\d+\]", src)
+    if _caps:
+        bad.append("`self.vp(...)` 上还有按字符硬砍的上限：%s" % _caps[:2])
+    if not hasattr(mod, "_vp_preview"):
+        bad.append("模块里没有 `_vp_preview`")
+    if src.count("_vp_preview(") != 7:
+        bad.append("`_vp_preview(` 出现 %d 次（应为 1 定义 + 6 调用）"
+                   % src.count("_vp_preview("))
+    _wired = len(re.findall(r"self\.vp\([^\n]*_vp_preview\(", src))
+    if _wired != 6:
+        bad.append("`self.vp(...)` 上接 `_vp_preview` 的有 %d 处（应为 6）" % _wired)
+
+    # ①b 行为：真截断时**切在换行上**且带可见痕（line-aware + 不静默丢）
+    #     为什么单列：主路径那份样例只有 ~231 字、够不到 limit ⇒ 「按 limit 硬切」
+    #     的坏实现也能通过 ② ⇒ 必须另喂一份**超过 limit** 的输入来分辨。
+    if hasattr(mod, "_vp_preview"):
+        _lm = "\n".join("- [concept] 第%d行候选：%s" % (_i, "字" * 60)
+                        for _i in range(1, 6))
+        _o = mod._vp_preview(_lm, limit=200)
+        _head = _o.split("\n   …（预览到此")[0]
+        if not (0 < len(_head) < len(_lm)):
+            bad.append("超长正文没被限流（limit=200 时保留了 %d/%d 字）"
+                       % (len(_head), len(_lm)))
+        elif not (_lm.startswith(_head) and _lm[len(_head)] == "\n"):
+            bad.append("超长正文没切在换行上（仍会砍出半行）")
+        if _o[len(_head):] != ("\n   …（预览到此，另有 %d 字未显示）"
+                               % (len(_lm) - len(_head))):
+            bad.append("截断痕迹不对：%r" % _o[len(_head):][:40])
+
+    # ②③ 行为（主路径）+ 反面对照 ------------------------------------------
+    RAW = "\n".join([
+        "- [thread] C1 点名方向已耗尽，本体层此处未生；本圈只列避开后的可判定侧残留：定义、痕迹、论证结构。",
+        "- [concept] 空间离散化若被观测，只支持底层自由度截断，不支持外部模拟器；因此该痕迹不能单独判决世界是虚拟的。",
+        "- [concept] 全息投影若无边界与体—边界字典，科学上不可检验；一切是全息投影作为字面命题当前不可判定。",
+        "- [concept] 纠缠熵面积律不能单独支持全息，因为普通局域场论也满足；需比较对数修正系数与符号。",
+    ])
+    CUT = "纠缠熵面积律不能单独支持全息"
+    if len(RAW) <= 200:
+        bad.append("样例只有 %d 字，够不到旧上限 ⇒ 无判别力" % len(RAW))
+    elif CUT in RAW[:200]:
+        bad.append("样例选错：`raw[:200]` 恰好没砍到那一段，两版结果相同 ⇒ 无判别力")
+    else:
+        cfg = build_cfg(False)
+        llm = mod.LLM(cfg)
+
+        def _fake_call(system, user, temperature=0.6, max_tokens=3000,
+                       json_mode=False, model=None):
+            return RAW
+
+        llm.call = _fake_call
+        dg = mod.DGTF("0", llm, cfg)
+        dg.verbose = True                       # vp 只在 verbose 下 print
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            dg._expand_pair([("阴", "阴视角指令")], lambda label: "USER")
+        out = buf.getvalue()
+        if "💧 [阴视角]" not in out:
+            bad.append("主路径没走到阴阳回显（stdout 里没有 `💧 [阴视角]`）")
+        _miss = [ln for ln in RAW.split("\n") if ln not in out]
+        if _miss:
+            bad.append("回显里丢了 %d 行，例如：%s" % (len(_miss), _miss[-1][:44]))
+        if CUT not in out:
+            bad.append("旧实现被砍掉的那一段没出现在回显里：%s" % CUT)
+        if "另有" in out:
+            bad.append("约 %d 字的正文不该触发截断（却出现了「另有 N 字未显示」）"
+                       % len(RAW))
+
+    if bad:
+        for _x in bad:
+            print("  \u2717 [v12323] %s" % _x)
+        return False
+    print("  \u2713 [v12323] 日志回显按整行截断：六处调用点统一 + 主路径实测不丢行"
+          "（旧上限下会丢「%s」）" % CUT)
     return True
 
 
@@ -10800,6 +10896,8 @@ def main():
     if not check_v12321_tok_line():
         return 1
     if not check_v12322_web_hits_dump():
+        return 1
+    if not check_v12323_view_echo_full():
         return 1
     q = "测试问题：AI 在数字 IC 设计里到底能做什么，哪些已经量产？"
     rows = []
