@@ -822,9 +822,11 @@ def read_log(tid: str, offset: int = 0, mode: str = "filtered",
 
 
 def read_archive(name: str) -> str | None:
-    """读 outputs/ 下的归档文件（只允许 .run.log / .run.json）。"""
+    """读 outputs/ 下的归档文件（只允许 .run.log / .run.json / .packed.json）。"""
     n = Path(name).name
-    if not (n.endswith(".run.log") or n.endswith(".run.json")):
+    # ★ R40：「json」胶囊要能直接打开 `<stamp>.packed.json`（引擎的 packed 原文）。
+    if not (n.endswith(".run.log") or n.endswith(".run.json")
+            or n.endswith(".packed.json")):
         return None
     try:
         return (oi.OUTPUTS_DIR / n).read_text(encoding="utf-8", errors="replace")

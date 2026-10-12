@@ -108,8 +108,11 @@ def check_r39_frontend(css: str, js: str, html: str) -> None:
           "rgba(47,58,168" in _rule(css, "#rl-bar").replace(" ", "")
           and "rgba(0,0,0,.34)" not in css.replace(" ", ""),
           _rule(css, "#rl-bar").strip()[:70])
-    check("★R39 滚动点**贴最右缘**（`right:1px`，不再落在内侧悬空）",
-          "right:1px" in _rule(css, "#rl-bar").replace(" ", ""),
+    # ★ R40 改口径：圆点从「日志框内的 `absolute`」提到**页面最右缘的 `fixed`**
+    #   （用户要求「滚动点改到外页面最右侧显示」）⇒ 判据改成 fixed + right:2px。
+    check("★R40 滚动点**贴页面最右缘**（`position:fixed` + `right:2px`）",
+          "position:fixed" in _rule(css, "#rl-bar").replace(" ", "")
+          and "right:2px" in _rule(css, "#rl-bar").replace(" ", ""),
           _rule(css, "#rl-bar").strip()[:70])
 
     # ── 需求 4：左边徽章与右边「产物/运行日志/json」三胶囊**同色** ──────────
@@ -142,29 +145,31 @@ def check_r39_frontend(css: str, js: str, html: str) -> None:
           _rule(css, ".rl-fold").strip()[:64])
 
     # ── 需求 8：保存按钮**底部居中** ────────────────────────────────────────
+    # ★ R40 改口径：「恢复出厂设置」从 `justify-self:start` 变成 **`end`（贴右）**
     check("★R39 底栏改 `1fr auto 1fr` 三列网格：保存落在**中间列**（与右侧按钮宽无关）",
           "grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);" in css
           and "display:grid" in _rule(css, ".sheet-actions").replace(" ", "")
           and ".sheet-actions #adv-save{grid-column:2;grid-row:1;justify-self:center}" in css
-          and ".sheet-actions #adv-reset{grid-column:3;grid-row:1;justify-self:start}" in css,
+          and ".sheet-actions #adv-reset{grid-column:3;grid-row:1;justify-self:end}" in css,
           _rule(css, ".sheet-actions").strip()[:70])
 
     # ── 需求 9：滚动圆点的上下行程 —— 两条路共用一条轨迹、且限在本窗口内 ────
     #   ★★ 这是个**真 bug**：`updateRlBar()` 的 `top` 带「正文区顶 − 日志框顶」的偏移
     #     （= 头栏高度），而拖拽的 `onMove` 钳在 `[0, 轨道]`（**少了那个偏移**）⇒
     #     一按住圆点拖动它就往上跳约一个头栏，看着像「拖动不跟手 / 跑出范围」。
-    check("★R39 抽 `rlTrack()` 作**唯一**轨迹来源（滚动 + 拖拽共用同一 lo/hi）",
+    # ★ R40 改口径：圆点 `fixed` ⇒ 轨迹用**视口坐标**（`rb.top` / `rb.bottom`），
+    #   不再减日志框顶；「只能在这个日志窗口的正文范围内滑动」的语义不变。
+    check("★R40 抽 `rlTrack()` 作**唯一**轨迹来源（视口坐标，滚动 + 拖拽共用同一 lo/hi）",
           "function rlTrack()" in js
-          and "const base = Math.round(bd.getBoundingClientRect().top - "
-              "box.getBoundingClientRect().top);" in js
+          and "const lo = Math.max(0, Math.round(rb.top));" in js
           and js.count("rlTrack()") == 4,
           "rlTrack() 出现 " + str(js.count("rlTrack()")) + " 次（应 1 定义 + 3 调用）")
     check("★R39 拖拽改用 `[t.lo, t.hi]`，旧口径 `[0, track]` 已消失",
           "Math.max(t.lo, Math.min(t.hi, startTop + dy))" in js
           and "Math.max(0, Math.min(track, startTop + dy))" not in js
           and "bd.scrollTop = (top / track) * over" not in js, "")
-    check("★R39 轨迹上端再按 `#runlog` 自身高度钳一次（圆点不许钻出日志窗口）",
-          "Math.min(base + bd.clientHeight, box.clientHeight) - RL_DOT" in js, "")
+    check("★R40 轨迹下端取 min(正文区底, 日志框底) − 直径（圆点不许钻出日志窗口）",
+          "Math.min(rb.bottom, rbox.bottom)) - RL_DOT" in js, "")
 
     # ── 需求 2：日志头部（`__head__`）**真能**渲染出来 ───────────────────────
     #   ★★ 根因是**字段断链**（R37 的判据只查了 `"src.head" in js` ——
@@ -181,6 +186,77 @@ def check_r39_frontend(css: str, js: str, html: str) -> None:
     _ph = "这次又想到什么问题了？可以发给元DGTF  我们一起去探索吧"
     check("★R39 首屏提示语**两处同步**（index.html 的 placeholder + app.js 的 Q_PLACEHOLDER）",
           _ph in html and _ph in js, "html=" + str(_ph in html) + " js=" + str(_ph in js))
+
+
+def check_r40_frontend(css: str, js: str, html: str, runner_src: str) -> None:
+    """★R40 的界面判据（用户 6 图 / 5 条）—— 单独成函数，变异体可直接喂坏输入驱动。"""
+
+    # ── 需求 1：底栏几何 + **只该出现在参数两页** ────────────────────────────
+    #   ① 保存与上方内容**同一中心轴**：`.sheet-actions` 的左右内边距必须与
+    #      `.sheet-body`（`padding:18px 22px 22px`）一致，否则中心轴差几像素。
+    _sb = _rule(css, ".sheet-body")
+    _act = _rule(css, ".sheet-actions")
+    check("★R40 底栏左右内边距**对齐 .sheet-body**（保存与上方内容同一中心轴）",
+          "padding:18px 22px 22px" in _sb
+          and "padding:12px 22px" in _act.replace(" ", " "),
+          "sheet-body=%r  actions=%r" % (_sb.strip()[:32], _act.strip()[:32]))
+    check("★R40 「恢复出厂设置」**贴右**（`justify-self:end`，不再停在中间偏右）",
+          "justify-self:end" in _rule(css, ".sheet-actions #adv-reset"),
+          _rule(css, ".sheet-actions #adv-reset").strip()[:60])
+    #   ② ★★ 真 bug：`.hidden` 对 `.sheet-actions` **从来没有过任何规则**
+    #      （文件里只有 `.sheet.hidden` / `.runlog.hidden` 这类**双类**规则），
+    #      于是 `syncAdvBar()` 加的类完全是空转 ⇒ 底栏在读数台 / 历史对话 / 产物库… 上照样显示。
+    #      判据分两层：这里查**规则在**且**特异性方向对**（`.sheet-actions.hidden` 是两类，
+    #      特异性 0,2,0 > `.sheet-actions` 的 0,1,0 ⇒ 必然胜出，与源顺序无关）；
+    #      「层叠后真是 display:none」由 node 探针 `_audit_tmp/_r40_css.js` 实测。
+    check("★R40 底栏**真能被隐藏**：`.sheet-actions.hidden{display:none}` 在（两类 > 单类）",
+          ".sheet-actions.hidden{display:none}" in css
+          and "display:none" in _rule(css, ".sheet-actions.hidden"),
+          "rule=%r" % _rule(css, ".sheet-actions.hidden").strip()[:40])
+    check("★R40 底栏显隐仍由 `syncAdvBar()` 按页控制（只在进阶参数两页显示）",
+          "function syncAdvBar(key) {" in js
+          and "classList.toggle('hidden', !on)" in js
+          and "'adv-panel'" in js and "'adv-group-page'" in js,
+          "")
+
+    # ── 需求 2：`json` 胶囊 → `<stamp>.packed.json` ──────────────────────────
+    check("★R40 json 胶囊指向 `*.packed.json`（不再是 `.run.json`）",
+          "data-archive=\"${esc(stamp + '.packed.json')}\"" in js
+          and "data-archive=\"${esc(stamp + '.run.json')}\"" not in js, "")
+    check("★R40 服务端放行 `.packed.json`（`read_archive` 的白名单）",
+          'n.endswith(".packed.json")' in runner_src, "")
+    check("★R40 JSON 打开时**美化**（`stringify(…, 2)`，否则 3000 行挤成一行）",
+          "JSON.stringify(JSON.parse(body), null, 2)" in js, "")
+    check("★R40 缺 `.packed.json`（mock / 早期产物）时**回落** `.run.json`，不报错",
+          "name.replace(/\\.packed\\.json$/, '.run.json')" in js, "")
+    #   产物 md 的「附录·全量字段」里，引擎把 packed 文件名**整块**放进代码框 —— 那里是**指路牌**。
+    check("★R40 产物 md 里「整块就是一个文件名」的代码框 → 可点链接（`linkifyFileBlocks`）",
+          "function linkifyFileBlocks(" in js and "FILE_BLOCK_RE" in js
+          and "linkifyFileBlocks(renderMd(body))" in js
+          and "packed\\.json|run\\.json|run\\.log|md" in js, "")
+
+    # ── 需求 3：圆点提到**页面最右缘**，功能不变 ─────────────────────────────
+    #   移出 `#runlog` + 挂 body 下：`main.stage` 有让位用的 transform，
+    #   挂在里面会让 `position:fixed` 以它为包含块 ⇒ 贴不到视口缘。
+    _a = html.index('<div id="runlog"') if '<div id="runlog"' in html else -1
+    _b = html.index('<div class="composer">') if '<div class="composer">' in html else -1
+    check("★R40 `#rl-bar` 移出 `#runlog`、挂到 body 下（否则 fixed 的包含块是 main）",
+          _a > 0 and _b > _a and 'id="rl-bar"' not in html[_a:_b],
+          "runlog=%d composer=%d" % (_a, _b))
+    check("★R40 圆点 `z-index` 低于全屏面板（`#sheet`=65 / `#detail`=90），高于正文",
+          "z-index:20" in _rule(css, "#rl-bar").replace(" ", ""), "")
+    check("★R40 页面滚动时圆点跟着重算（补了 window 的 scroll 监听，passive）",
+          "window.addEventListener('scroll', updateRlBar, { passive: true })" in js, "")
+
+    # ── 需求 5：首屏欢迎语**随时段变** ───────────────────────────────────────
+    check("★R40 欢迎语有独立节点（`#welcome-text`），文案由 JS 写",
+          'id="welcome-text"' in html and "function paintWelcome(" in js
+          and "$('#welcome-text')" in js, "")
+    check("★R40 欢迎语按**本地小时**分档（`pickWelcome(h)` 纯函数 + 24 小时全覆盖）",
+          "function pickWelcome(hour)" in js and "WELCOME_SLOTS" in js
+          and "h >= s[0][0] && h <= s[0][1]" in js, "")
+    check("★R40 欢迎语只在 `init()` 里写**一次**（不随日志渲染抖动）",
+          js.count("paintWelcome();") == 1 and "  paintWelcome();" in js, "")
 
 
 def main() -> int:
@@ -799,8 +875,12 @@ def main() -> int:
           and "border:1px solid var(--st-done-bd)" in _rule(css, ".rl-files a")
           and _rule(css, ".rl-files a").strip().count("var(--st-done-") >= 3,
           "")
-    check("**运行中也能看见这三个按钮**（待生成态 .pend：降透明度、不可点）",
-          ".rl-filesa.pend{opacity:.55" in css.replace(" ", "")
+    # ★ R40 改口径：`.pend` **不再降透明度** —— 运行中三胶囊要与左徽章**逐项同色**
+    #   （用户实测截图：徽章蓝、胶囊看着绿；量化像素后确认色相对，是 opacity 冲淡了）。
+    #   「还点不动」由 pointer-events + cursor 承担。
+    check("**运行中也能看见这三个按钮**（待生成态 .pend：不可点，但**不降透明度**）",
+          ".rl-filesa.pend{pointer-events:none;cursor:default}" in css.replace(" ", "")
+          and "opacity" not in css.replace(" ", "").split(".rl-filesa.pend{")[1][:60]
           and "const pend = stamp ? '' : ' pend'" in js,
           "")
     check("列表行：**时间/大小挪到标题同一行**、且上下边距收紧",
@@ -1183,6 +1263,7 @@ def main() -> int:
           _sp["calls"] == 3 and _sp["tokens"] == 100 and _sp["covered"] == 1, str(_sp))
 
     check_r39_frontend(css, js, html)
+    check_r40_frontend(css, js, html, runner_src)
     # ── 参数往返：列表型键不能被写成字符串 ─────────────────────────
     # ★ 这是「通过工作台发起的真跑全部 2–7 秒即崩」的根因：
     #   memory.channels 出厂是列表，经参数面板往返后变字符串 ⇒ 引擎

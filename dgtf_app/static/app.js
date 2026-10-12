@@ -771,9 +771,13 @@ function rlTrack() {
   const box = $('#runlog'), bd = $('#runlog-body');
   if (!box || !bd) return null;
   const over = bd.scrollHeight - bd.clientHeight;
-  const base = Math.round(bd.getBoundingClientRect().top - box.getBoundingClientRect().top);
-  const lo = Math.max(0, base);
-  const hi = Math.max(lo, Math.min(base + bd.clientHeight, box.clientHeight) - RL_DOT);
+  const rb = bd.getBoundingClientRect(), rbox = box.getBoundingClientRect();
+  /* ★ R40：圆点改成 `position:fixed`（贴页面最右缘，不再受日志框宽度约束）
+     ⇒ 轨迹必须改用**视口坐标**：上端 = 正文区顶（头栏之下），
+     下端 = min(正文区底, 日志框底) − 圆点直径。
+     语义（只在这一个日志窗口的正文范围内滑动）与 R39 完全一致。 */
+  const lo = Math.max(0, Math.round(rb.top));
+  const hi = Math.max(lo, Math.round(Math.min(rb.bottom, rbox.bottom)) - RL_DOT);
   return { bd: bd, over: over, lo: lo, hi: hi };
 }
 
@@ -814,9 +818,8 @@ function bindRlBarDrag() {
     ev.preventDefault();
     rlDragging = true;
     bar.classList.add('drag');
-    const rbox = box.getBoundingClientRect();
-    startTop = parseFloat(bar.style.top || '0')
-      || (bar.getBoundingClientRect().top - rbox.top);
+    /* ★ R40：圆点是 `position:fixed` ⇒ 它的视口坐标就是 `top` 本身，不用再减去日志框顶。 */
+    startTop = parseFloat(bar.style.top || '0') || bar.getBoundingClientRect().top;
     /* ★ R39：起点也钳进本窗口的轨迹区间 —— 否则首帧 `bar.style.top` 还没算过，
        就会从窗口外的位置开始跟手。 */
     const t0 = rlTrack();
@@ -900,7 +903,7 @@ function renderTasks() {
     files.innerHTML =
         `<a href="#" class="rl-file${pend}"${tip} ${stamp ? `data-open="${esc(t.output_name)}"` : 'aria-disabled="true"'}><span>产物</span></a>`
       + `<a href="#" class="rl-file${pend}"${tip} ${stamp ? `data-archive="${esc(stamp + '.run.log')}"` : 'aria-disabled="true"'}><span>运行日志</span></a>`
-      + `<a href="#" class="rl-file${pend}"${tip} ${stamp ? `data-archive="${esc(stamp + '.run.json')}"` : 'aria-disabled="true"'}><span>json</span></a>`;
+      + `<a href="#" class="rl-file${pend}"${tip} ${stamp ? `data-archive="${esc(stamp + '.packed.json')}"` : 'aria-disabled="true"'}><span>json</span></a>`;
   }
 
   /* 四层日志**按层分块**渲染；没跑到的层不出现。
@@ -1151,6 +1154,30 @@ const RUN_WHISPER = {
         '最后一步：核对结构饱和度…',
         '快成型了，我把话收住…'],
 };
+/* ★ R40：首屏欢迎语**随时段变**（用户要求「随时间变换打招呼等信息」）。
+   分档按**本地小时**；同一档内随机取一句 —— 只在页面初始化时写一次，
+   所以不会随日志渲染抖动。`pickWelcome(hour)` 是纯函数，便于探针逐小时驱动。 */
+const WELCOME_SLOTS = [
+  [[0, 3], ['夜深了，还在想什么？', '这个点还醒着的人，问题往往最好']],
+  [[4, 6], ['天快亮了，聊聊吧', '凌晨的安静最适合想硬问题']],
+  [[7, 10], ['早上好，今天想弄清什么？', '早，先把手里的困惑说给我听']],
+  [[11, 13], ['上午好，随时开始吧', '快到中午了，来一个能想透的问题']],
+  [[14, 17], ['下午好，想到什么就问吧', '下午适合把问题往下推一层']],
+  [[18, 20], ['傍晚好，今天有什么想问的？', '忙完了，换个问题想想']],
+  [[21, 22], ['晚上好，随时开始吧', '晚上的问题往往更深，开始吧']],
+  [[23, 23], ['夜深了，最后一问？', '这个点的问题，通常不轻']],
+];
+function pickWelcome(hour) {
+  const h = Number.isFinite(hour) ? hour : new Date().getHours();
+  const slot = WELCOME_SLOTS.find(s => h >= s[0][0] && h <= s[0][1]);
+  const pool = slot ? slot[1] : ['欢迎回来，随时开始吧'];
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+function paintWelcome() {
+  const el = $('#welcome-text');
+  if (el) el.textContent = pickWelcome(new Date().getHours());
+}
+
 let whisperTimer = null, whisperIdx = 0;
 
 /* 当前该说哪一组：取**最后一个已经有内容**的层 */
@@ -1654,7 +1681,7 @@ async function openDetail(name) {
       $('#detail-body').innerHTML = '<pre>' + esc(body.slice(0, 300000)) + '</pre>';
       return;
     }
-    $('#detail-body').innerHTML = renderMd(body);
+    $('#detail-body').innerHTML = linkifyFileBlocks(renderMd(body));
   } catch (e) { $('#detail-body').innerHTML = `<div class="muted">出错：${esc(e.message)}</div>`; }
 }
 
@@ -1664,13 +1691,41 @@ async function openArchive(name) {
   $('#detail-body').innerHTML = '<div class="muted">加载中…</div>';
   try {
     const { body } = await api('/api/archive/' + encodeURIComponent(name));
+    /* ★ R40：JSON 走**美化**（原来 3000+ 行挤成一行，等于打不开）——
+       解析得动就 `stringify(…, 2)`；解析不动（截断/非 JSON）就按原文。 */
+    let text = body;
+    if (/\.json$/.test(name)) {
+      try { text = JSON.stringify(JSON.parse(body), null, 2); } catch (_) { /* 原文 */ }
+    }
     const MAX = 300000;                 // 超大文件只给头部，避免页面卡死
-    const clip = body.length > MAX;
-    const head = clip ? body.slice(0, MAX) : body;
+    const clip = text.length > MAX;
+    const head = clip ? text.slice(0, MAX) : text;
     $('#detail-body').innerHTML =
       (clip ? `<p class="muted">（文件较大，仅显示前 ${Math.round(MAX / 1024)} KB；完整内容见 outputs/${esc(name)}）</p>` : '')
       + '<pre>' + esc(head) + '</pre>';
-  } catch (e) { $('#detail-body').innerHTML = `<div class="muted">出错：${esc(e.message)}</div>`; }
+  } catch (e) {
+    /* ★ R40：`<stamp>.packed.json` 只有**真跑**才有（mock / 早期产物没有）⇒
+       缺了就回落到老的那份 `<stamp>.run.json`，而不是给用户一句「出错」。 */
+    if (/\.packed\.json$/.test(name)) {
+      return openArchive(name.replace(/\.packed\.json$/, '.run.json'));
+    }
+    $('#detail-body').innerHTML = `<div class="muted">出错：${esc(e.message)}</div>`;
+  }
+}
+
+/* ★ R40：产物 md 的「附录 · 全量字段」里，引擎把 packed 文件名**整块**放进一个代码框：
+       ```text
+       20261012_121240_….packed.json
+       ```
+   那不是代码，是**指路牌** —— 用户要求「点它可以直接打开」。只在
+   「整块就是一个已知后缀的文件名」时生效（不碰正文里出现的文件名，避免误伤）。 */
+const FILE_BLOCK_RE = /^[\w\u4e00-\u9fa5（）()·.\-]{4,120}\.(?:packed\.json|run\.json|run\.log|md)$/;
+function linkifyFileBlocks(html) {
+  return String(html).replace(/<pre>([\s\S]*?)<\/pre>/g, (m, inner) => {
+    const name = inner.trim();
+    if (!name || name.indexOf('\n') >= 0 || !FILE_BLOCK_RE.test(name)) return m;
+    return '<pre class="file-block"><a href="#" data-archive="' + name + '">' + name + '</a></pre>';
+  });
 }
 
 /* ── 极简 Markdown 渲染（离线，无外部库）────────────────────────── */
@@ -2327,6 +2382,7 @@ function init() {
   loadLocal();
   loadWeb();
 
+  paintWelcome();                    // ★ R40：首屏欢迎语按时段写一次
   $('#run-btn').addEventListener('click', onRunBtn);
 
   /* ★ R33：日志滚动指示跟着走（滚动 / 尺寸变化 / 内容变化）
@@ -2334,6 +2390,9 @@ function init() {
   const _rlb = $('#runlog-body');
   if (_rlb) _rlb.addEventListener('scroll', updateRlBar);
   window.addEventListener('resize', updateRlBar);
+  /* ★ R40：圆点改成 `position:fixed`（视口坐标）⇒ 页面滚动时它的落点也会变，
+     补一个 window 的 scroll 监听（passive：绝不能拖慢滚动）。 */
+  window.addEventListener('scroll', updateRlBar, { passive: true });
   bindRlBarDrag();
 
   // 抽屉：左上角图标拉开 / 关闭键 / 点遮罩 / Esc 收起

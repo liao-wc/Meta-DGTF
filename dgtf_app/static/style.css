@@ -83,9 +83,15 @@ a{color:var(--accent)}
 /* ★ R39：① 颜色改成**蓝色**（用户「滚动的点颜色改为蓝色」）；② 贴到日志区**最右侧边缘**
    （原来 right:5px 落在内侧、看着「悬空」）；③ 上下范围仍然由 JS 按 `#runlog-body`
    的轨道算（`top ∈ [head 之下, 正文区底部]`）⇒ 只在这一页的正文范围内滑动。 */
-#rl-bar{position:absolute;right:1px;width:12px;height:12px;border-radius:50%;
+/* ★ R40：从「日志框自己的滚动条」改成**贴在页面最右缘的悬浮点** ——
+   `#rl-bar` 已移出 `#runlog`、挂到 `<body>` 下（`main.stage` 带 `transition:transform`
+   的让位动画，有 transform 的祖先会成为 `position:fixed` 的包含块，挂在里面就贴不到视口缘）
+   ⇒ 这里用 `fixed` + **视口坐标**（见 app.js `rlTrack()`）。
+   功能（跟滚动 / 可拖 / 限上下范围）一字未变，只有水平位置变了。
+   `z-index:20`：在正文之上、`#sheet`(65) / `#detail`(90) 之下。 */
+#rl-bar{position:fixed;right:2px;width:12px;height:12px;border-radius:50%;
   background:rgba(47,58,168,.55);pointer-events:auto;cursor:grab;opacity:0;
-  touch-action:none;
+  touch-action:none;z-index:20;
   transition:opacity .15s var(--ease),background .15s var(--ease)}
 #rl-bar.on{opacity:1}
 #rl-bar:hover,#rl-bar.drag{background:rgba(35,47,158,.88)}
@@ -336,14 +342,24 @@ body.panel-open .corner-actions{display:none}
    两侧等宽）⇒ 保存的位置与右边「恢复出厂设置」的宽度**无关**，恒在正中央。
    原来靠 `.sa-spacer` 占位，但它的宽度是 `padding:0 22px`（恒 44px），**并不等于**
    右侧按钮宽 ⇒ 保存只是「大致靠中、略偏左」（用户报「保存按钮底部居中」）。 */
+/* ★ R40：左右内边距**对齐 `.sheet-body`**（那边是 `padding:18px 22px 22px`）——
+   不然「保存」的中心轴会比上方内容偏 4px，看着没对齐（用户要求「与上面的按钮居中对齐」）。 */
 .sheet-actions{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
   align-items:center;justify-content:center;
-  gap:10px;flex:0 0 auto;padding:12px 18px;border-top:1px solid var(--hair-2)}
+  gap:10px;flex:0 0 auto;padding:12px 22px;border-top:1px solid var(--hair-2)}
+/* ★★ R40：**「不该出现的页面出现了」的根因就在这一条** ——
+   `syncAdvBar()` 一直老老实实在给底栏加/摘 `.hidden`，但这个文件里只有
+   `.sheet.hidden` / `.search-overlay.hidden` / `.runlog.hidden` / `.detail.hidden`
+   这类**双类**规则：`.hidden` 单独出现时**没有任何规则** ⇒ 那个类对 `.sheet-actions`
+   完全是空转，底栏在「读数台 / 最近跑过 / 历史对话 / 产物库 …」上照样显示（用户实测）。
+   ★ 判据教训：只查「html 里有 `sheet-actions hidden` 这个串」是**接线判据**，
+     看不见「这条类根本不起作用」—— 必须查**生效**（层叠后 `display:none` 胜出）。 */
+.sheet-actions.hidden{display:none}
 /* 隐形占位（占第一列，`visibility:hidden`）—— 保留它让「保存」落在**第二列** */
 .sheet-actions .sa-spacer{grid-column:1;grid-row:1;visibility:hidden;height:0;overflow:hidden;
   flex:0 0 auto;padding:0 22px;font-size:14px;font-weight:600}
 .sheet-actions #adv-save{grid-column:2;grid-row:1;justify-self:center}
-.sheet-actions #adv-reset{grid-column:3;grid-row:1;justify-self:start}
+.sheet-actions #adv-reset{grid-column:3;grid-row:1;justify-self:end}
 /* 窄屏兜底：三列排不下时退回两列（居中让位给「两个按钮都完整」） */
 @media (max-width:560px){
   .sheet-actions{grid-template-columns:auto minmax(0,1fr)}
@@ -773,7 +789,11 @@ kbd{font-family:var(--f-mono);font-size:10.5px;line-height:1;color:var(--t2);
   background:currentColor;box-shadow:0 0 5px currentColor;flex:0 0 auto}
 .rl-files a:hover{color:#186428;background:rgba(30,122,52,.24);border-color:rgba(30,122,52,.5)}
 /* ★ R34：**运行中也要看得见这三个按钮**（还没有产物 ⇒ 先给个待生成态） */
-.rl-files a.pend{opacity:.55;pointer-events:none;cursor:default}
+/* ★ R40：「待生成」**不再降透明度** —— 实测像素：三胶囊的色相本来就是对的（蓝），
+   是这里的 `opacity:.55` 把字色/底色/描边一起冲淡，看着与左徽章「不同色」
+   （用户报「运行中与左上角徽章字体颜色一致为蓝色，同理背景颜色也一致」）。
+   「还点不动」这层语义由 `pointer-events:none` + `cursor:default` + `title` 承担。 */
+.rl-files a.pend{pointer-events:none;cursor:default}
 /* ★★ R38：三个胶囊的**状态色档**（用户要求「右边三个按钮和左边按钮运行状态一致，
    灯和字体颜色变化一致」）—— 上面那条 `.rl-files a` 的绿色只是**完成态**的基线；
    这里按容器上的 `st-<status>` 一档一档改（**两级选择器**，特异性高于单级，

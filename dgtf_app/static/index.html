@@ -244,13 +244,20 @@
   </div>
 </div>
 
+<!-- ★ R40：日志滚动指示从 `#runlog` 里**提出来**挂到 body 下 ——
+     用户要求它贴在**页面最右缘**（原来受日志框 `max-width:1080px` 约束，落在内侧）。
+     为什么挂 body 而不是 `main`：`main.stage` 有让位用的 `transform` 过渡，
+     有 transform 的祖先会成为 `position:fixed` 的包含块 ⇒ 挂在里面贴不到视口缘。
+     `z-index:20`：在正文之上、全屏面板（`#sheet` 65 / `#detail` 90）之下。 -->
+<div id="rl-bar" class="rl-bar" aria-hidden="true"></div>
+
 <div id="drawer-mask" class="drawer-mask"></div>
 
 <main class="stage">
   <!-- 首屏：只有欢迎语 + 输入框，其余留白 -->
   <div id="welcome" class="welcome">
     <span class="glyph big" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-    欢迎回来，随时开始吧
+    <span id="welcome-text">欢迎回来，随时开始吧</span>
   </div>
 
   <!-- 运行日志：默认隐藏，点了「开始深究」才出现（四层日志合成一条流） -->
@@ -262,8 +269,6 @@
       <span class="rl-head-r"><span id="rl-files" class="rl-files"></span></span>
     </div>
     <div id="runlog-body" class="runlog-body scroll"></div>
-    <!-- ★ R33：自绘的日志滚动指示（原生长条改成**短的椭圆点**，见 style.css #rl-bar） -->
-    <div id="rl-bar" class="rl-bar" aria-hidden="true"></div>
   </div>
 
   <div class="composer">
