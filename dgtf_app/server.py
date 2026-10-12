@@ -63,6 +63,9 @@ _FACETS = ("decidability", "orientation", "parallel", "stop", "kind", "layer")
 # 删本地资料库导入的文件、翻全部产物。要收紧就 `--token <口令>`。
 _TOKEN = ""
 
+# ★ R44：导入是二进制上传（base64 后还要膨胀 1/3）⇒ 单独给一个大上限，超了 413。
+MAX_UPLOAD_BYTES = 200 * 1024 * 1024
+
 
 def _routable(ip: str) -> bool:
     """这个地址能不能出网（= 有没有 IPv4 默认路由）。
@@ -480,6 +483,11 @@ class Handler(BaseHTTPRequestHandler):
 
         # 本地资料库：导入 / 删除
         if p == "/api/library/import":
+            _n = int(self.headers.get("Content-Length") or 0)
+            if _n > MAX_UPLOAD_BYTES:
+                return self._json({"error": "请求体 %.1fMB 超过上限 %.0fMB（请分批导入）"
+                                            % (_n / 1048576.0, MAX_UPLOAD_BYTES / 1048576.0)},
+                                  413)
             data = self._read_json()
             files = data.get("files")
             if not isinstance(files, list) or not files:

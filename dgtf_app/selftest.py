@@ -183,7 +183,9 @@ def check_r39_frontend(css: str, js: str, html: str) -> None:
           "src.head || src['__head__']" in js, "")
 
     # ── 需求 9b：首屏对话框文案（两处必须同步）──────────────────────────────
-    _ph = "这次又想到什么问题了？可以发给元DGTF  我们一起去探索吧"
+    # ★ R44 改口径：文案本身换了（用户给定新文案），判据的**意图不变**
+    #   —— 仍然是「两处必须同步」，只是字面跟着新版走。
+    _ph = "此刻 你又想到了什么？ 可以发给元DGTF 我们一起去探索吧"
     check("★R39 首屏提示语**两处同步**（index.html 的 placeholder + app.js 的 Q_PLACEHOLDER）",
           _ph in html and _ph in js, "html=" + str(_ph in html) + " js=" + str(_ph in js))
 
@@ -319,6 +321,92 @@ def check_r42_server(srv_src: str) -> None:
           and "srv = make_server(host, args.port, token=token" in srv_src, "")
 
 
+def check_r44_frontend(css: str, js: str, html: str, srv_src: str,
+                       lib_src: str, dp_src: str) -> None:
+    """★R44 的界面 / 导入判据（用户 6 图 / 6 条）。"""
+
+    _lib, _dp = lib_src or "", dp_src or ""
+
+    # ── ① 读数台实时更新 ────────────────────────────────────────────────────
+    check("★R44 读数台**自动刷新**（5s 一轮，且只在「读数台」这页可见时拉）",
+          "setInterval(() => {" in js and "classList.contains('active')" in js
+          and "loadDash();" in js and "5000" in js, "")
+    check("★R44 切到「读数台」时**立刻**拉一次（不等下一个周期）",
+          "if (key === 'dash-stats') loadDash();" in js, "")
+
+    # ── ② 点对话框 / 发送键 / 首屏空白 ⇒ 抽屉自动收起 ──────────────────────
+    # ★ 钉**判断行本身**：变异体「if (false && …contains('drawer-open'))」串还在、
+    #   行为没了 —— 只查「串在不在」会被它穿过去（M39 实测）。
+    # ★ 锚点要钉「判断行」，但**换行必须归一**：selftest 的 `js` 是 HTTP 原文（CRLF），
+    #   带 `\n` 的锚点在 CRLF 上永远不命中（收紧后本轮实测翻红过一次）。
+    _js_n = js.replace("\r\n", "\n")
+    check("★R44 点**对话框**（含胶囊 / 回形针 / 发送键）⇒ 收起抽屉",
+          "if (document.body.classList.contains('drawer-open')\n" in _js_n
+          and "e.target.closest('.composer')" in js and "closeDrawer();" in js, "")
+    check("★R44 点**首屏空白区**也收起（只在空态判定，不动运行态）",
+          "stage-empty" in js and "e.target.closest('main.stage')" in js, "")
+
+    # ── ③ 首屏文案 + 字号 ───────────────────────────────────────────────────
+    _ph = "此刻 你又想到了什么？ 可以发给元DGTF 我们一起去探索吧"
+    check("★R44 首屏文案两处同步（index.html 的 placeholder + app.js 的 Q_PLACEHOLDER）",
+          _ph in html and _ph in js, "")
+    check("★R44 输入框字号**调小一档**（≤14px）",
+          re.search(r"font-size:\s*(1[0-4](\.\d+)?)px", _rule(css, "textarea#question")) is not None,
+          (_rule(css, "textarea#question") or "").strip()[:48])
+
+    # ── ④ 首屏不出现滚动点 ──────────────────────────────────────────────────
+    check("★R44 `updateRlBar()` 里判「日志窗口自己是否可见」（隐藏就一律不画点）",
+          "_box.classList.contains('hidden')" in js
+          and "const _box = $('#runlog');" in js, "")
+    check("★R44 空态那条**早返回**路径也会收一次点（否则点会留在上次的位置）",
+          "updateRlBar();   // ★ R44" in js, "")
+
+    # ── ⑥ 首屏以对话框为基准居中 + 上移 ────────────────────────────────────
+    check("★R44 首屏以**对话框**为基准居中并整体上移（下内边距顶高一半）",
+          "padding-bottom:calc(20px + 88px)" in css, "")
+
+    # ── ⑤ 导入：前端管线 ────────────────────────────────────────────────────
+    check("★R44 导入控件是**真按钮**点隐藏 input（不再靠 label 转发）",
+          'id="anchor-pick"' in html
+          and "if (_ap && _af) _ap.addEventListener('click', () => _af.click());" in js
+          and '<label class="chk"><input type="file"' not in html, "")
+    check("★R44 前端按**字节**读（`ArrayBuffer` + base64），不再 `File.text()`",
+          "function fileToB64(" in js and "readAsArrayBuffer" in js and "btoa(s)" in js
+          and "content: await f.text()" not in js, "")
+    check("★R44 前端有上限与分批（50 个 / 单文件 100MB / 每批 48MB）",
+          "LIB_MAX_FILES = 50, LIB_MAX_MB = 100" in js and "LIB_BATCH_MB = 48" in js
+          and "超过单文件上限" in js, "")
+    check("★R44 逐文件结果摆出来（成功 / 失败原因），不再「点了没反应」",
+          "function importPaint(" in js and ".import-detail" in css
+          and "r.results" in js and "importRows" in js, "")
+
+    # ── ⑤ 导入：服务端上限 + 解析 + 留档 ────────────────────────────────────
+    check("★R44 服务端上限：单次 50 个 / 单文件 100MB",
+          "MAX_FILES = 50" in _lib and "MAX_FILE_BYTES = 100 * 1024 * 1024" in _lib, "")
+    # ★ 同样钉**判断行**：常量定义还在文件里 ⇒ 只查名字的话「把 if 删掉」也能绿（M50 实测）。
+    check("★R44 上传体积闸（超过就 413，别把内存吃光）",
+          "if _n > MAX_UPLOAD_BYTES:" in srv_src and "413)" in srv_src, "")
+    check("★R44 入参**双形态**：`{name,b64}`（二进制）与 `{name,content}`（老的文本）都收",
+          "def _decode_entry(" in _lib and 'f.get("b64")' in _lib
+          and 'f.get("content")' in _lib, "")
+    check("★R44 原始文件留档 `anchors/_raw/`（解析失败也不丢原件）",
+          "RAW_DIR = ANCHORS_DIR" in _lib and "(RAW_DIR / n).write_bytes(data)" in _lib, "")
+    check("★R44 删除时**原件一起删**（不留孤儿）",
+          "_extras = [RAW_DIR / n]" in _lib, "")
+    check("★R44 长文档**分块**进锚点（原来只取前 2000 字）",
+          "CHUNK_CHARS = 2000" in _lib and '"part": k,' in _lib
+          and "chunks[:MAX_CHUNKS_PER_FILE]" in _lib, "")
+    check("★R44 解析器只依赖标准库（本机没有 pypdf/python-docx/PIL/tesseract）",
+          _dp != "" and "import zipfile" in _dp and "import zlib" in _dp
+          and not re.search(r"^import (pypdf|PyPDF2|docx|openpyxl|pptx|fitz|PIL|pytesseract)",
+                            _dp, re.M), "")
+    check("★R44 解析器覆盖 docx/xlsx/pptx/pdf/图片/OLE/纯文本",
+          all(k in _dp for k in ("def parse_docx", "def parse_xlsx", "def parse_pptx",
+                                 "def parse_pdf", "def parse_image", "def parse_ole")), "")
+    check("★R44 解析失败**不静默**：返回 ok=False + 原因（不抛异常）",
+          '"ok": False' in _dp and 'return {"ok": False' in _dp, "")
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--base", default="http://127.0.0.1:8765")
@@ -343,6 +431,17 @@ def main() -> int:
     params_src = (_app / "params.py").read_text(encoding="utf-8")
     dash_src = (_app / "dashboard.py").read_text(encoding="utf-8")
     srv_src = (_app / "server.py").read_text(encoding="utf-8")
+
+    # ★ R44：本地资料库导入的两份源码（library 的导入管线 + docparse 的各格式解析）。
+    #   读不到就给空串 —— 判据会如实翻红，而不是把整个自检炸掉。
+    def _r44_read(name: str) -> str:
+        try:
+            return (_app / name).read_text(encoding="utf-8")
+        except OSError:
+            return ""
+
+    lib_src = _r44_read("library.py")
+    dp_src = _r44_read("docparse.py")
     _, params_data = _get(base, "/api/params")
     _, chats_data = _get(base, "/api/chats")
     _rl = _rule(css, ".runlog-body")
@@ -1326,6 +1425,7 @@ def main() -> int:
     check_r40_frontend(css, js, html, runner_src)
     check_r41_frontend(css)
     check_r42_server(srv_src)
+    check_r44_frontend(css, js, html, srv_src, lib_src, dp_src)
     # ── 参数往返：列表型键不能被写成字符串 ─────────────────────────
     # ★ 这是「通过工作台发起的真跑全部 2–7 秒即崩」的根因：
     #   memory.channels 出厂是列表，经参数面板往返后变字符串 ⇒ 引擎

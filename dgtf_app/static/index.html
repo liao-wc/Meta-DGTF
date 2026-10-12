@@ -202,9 +202,15 @@
         的 <code>external_anchor.path</code> 指到它即可当锚点用。
       </div>
       <div class="import-bar">
-        <label class="chk"><input type="file" id="anchor-file" multiple> 选择文件导入…</label>
+        <!-- ★ R44：改成**真按钮**去点隐藏 input —— 原来靠 `<label>` 包着 `display:none`
+             的 input，用户报「点了没反应」（label 转发激活在样式/覆盖下会静默失效）。
+             多选、不限类型（文档 / 图片都收）；上限写在按钮说明与后端校验里。 -->
+        <button id="anchor-pick" class="ghost"
+          data-tip="支持文档与图片；单文件 ≤100MB，单次最多 50 个">选择文件导入…</button>
+        <input type="file" id="anchor-file" multiple hidden>
         <span class="muted" id="import-msg"></span>
       </div>
+      <div class="import-detail" id="import-detail"></div>
       <div id="local-list" class="lib-list scroll"></div>
       <details class="cand" open>
         <summary id="local-cand-hint"></summary>
@@ -273,7 +279,7 @@
 
   <div class="composer">
     <textarea id="question" rows="1" spellcheck="false"
-      placeholder="这次又想到什么问题了？可以发给元DGTF  我们一起去探索吧"></textarea>
+      placeholder="此刻 你又想到了什么？ 可以发给元DGTF 我们一起去探索吧"></textarea>
     <div class="composer-row">
       <button type="button" class="pill" id="pill-thinking" data-tip="提高推理强度：runtime.thinking = on">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">

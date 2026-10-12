@@ -443,7 +443,14 @@ body.drawer-open main.stage{
   transform:translateX(var(--shift-half));
   padding-left:calc(18px + var(--shift-half));
   padding-right:calc(18px + var(--shift-half))}
-body.stage-empty main.stage{justify-content:center;align-items:center}
+/* ★ R44：首屏**以对话框为基准**居中，并整体上移。
+   推导（这样写就有据可依，不是随手试数字）：空态这一组 = 欢迎语 + 间距(gap 14) + 对话框，
+   整组居中时**对话框的中心**会低于视口中线 ≈（欢迎语高 44 + 14）/ 2 ≈ **29px**；
+   用户还要「整体往上移」，再给 15px 余量 ⇒ 共上移 **44px**。
+   `justify-content:center` 是在**内容盒**里居中 ⇒ 下内边距每多 1px，内容被顶高 0.5px，
+   所以 44px 的上移 ⇔ `padding-bottom` 比原来多 **88px**（原来的 20px 保留）。 */
+body.stage-empty main.stage{justify-content:center;align-items:center;
+  padding-bottom:calc(20px + 88px)}
 body.stage-empty #welcome{display:flex}
 body.stage-empty .composer{width:100%;max-width:760px}
 body.stage-run #welcome{display:none}
@@ -498,7 +505,8 @@ details.cand .lib-list{margin-top:6px}
   box-shadow:0 0 0 3px rgba(94,106,210,.12),var(--shadow)}
 textarea#question{
   width:100%;background:transparent;color:var(--t1);border:0;outline:none;resize:none;
-  font-size:15px;line-height:1.55;padding:2px 4px 8px;min-height:26px;
+  /* ★ R44：输入框与占位文字**调小一档**（用户要求「字体改小一点」）：15 → 13.5px */
+  font-size:13.5px;line-height:1.55;padding:2px 4px 8px;min-height:26px;
   max-height:180px;overflow:auto;
 }
 textarea#question::placeholder{color:var(--t3)}
@@ -991,6 +999,17 @@ select:focus{border-color:var(--accent)}
 .import-bar{display:flex;align-items:center;gap:12px;margin-bottom:12px}
 .import-bar input[type=file]{display:none}
 .import-bar .chk{cursor:pointer;background:var(--s2);border-color:var(--hair-2)}
+/* ★ R44：导入控件改成「真按钮 + 隐藏 input」（见 index.html 的注释），按钮沿用胶囊观感；
+   下面那条是**逐文件结果**的展示区（成功/跳过/失败原因都摆出来，不再「点了没反应」）。 */
+.import-bar #anchor-pick{height:36px;padding:0 14px;border-radius:var(--r-sm);
+  background:var(--s2);border:1px solid var(--hair-2);color:var(--t1);
+  font-size:12.5px;cursor:pointer;white-space:nowrap}
+.import-bar #anchor-pick:hover{border-color:var(--accent);color:var(--accent-hi)}
+.import-bar #anchor-pick:disabled{opacity:.5;cursor:default}
+.import-detail{display:flex;flex-direction:column;gap:3px;margin:-4px 0 10px;
+  font-size:12px;color:var(--t3);max-height:132px;overflow:auto}
+.import-detail .ok{color:var(--t2)}
+.import-detail .bad{color:var(--err)}
 .item .del{color:var(--t3);text-decoration:none}
 .item .del:hover{color:var(--err)}
 .hint code{background:var(--s2);color:var(--code);padding:1px 6px;border-radius:4px;

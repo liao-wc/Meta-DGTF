@@ -786,7 +786,13 @@ function updateRlBar() {
   if (!t || !bar) return;
   if (rlDragging) return;          // 拖动中由 pointermove 主控，别被滚动事件抢
   const bd = t.bd;
-  if (t.over <= 8 || bd.clientHeight < 60) { bar.classList.remove('on'); return; }
+  /* ★ R44：**日志窗口自己没显示时不画点** —— 首屏（`body.stage-empty`）里 `#runlog`
+     是 `.hidden`（display:none），尺寸上也算得出来「不用显示」，但空态那条**早返回**路径
+     压根不会走到这个函数 ⇒ 点会**留在上一次的位置**（用户报「首屏不该有滚动点」）。
+     把「窗口是否可见」显式判掉，比依赖尺寸稳。 */
+  const _box = $('#runlog');
+  if (!_box || _box.classList.contains('hidden')
+      || t.over <= 8 || bd.clientHeight < 60) { bar.classList.remove('on'); return; }
   const r = t.hi > t.lo ? Math.min(1, Math.max(0, bd.scrollTop / t.over)) : 0;
   bar.style.top = Math.round(t.lo + r * (t.hi - t.lo)) + 'px';
   bar.classList.add('on');
@@ -850,6 +856,7 @@ function renderTasks() {
     document.body.classList.add('stage-empty');
     setRunBtn('send');
     stopWhisper();                       // ★ R23：空态 ⇒ 恢复默认占位
+    updateRlBar();   // ★ R44：空态要**主动收掉**滚动点（见 updateRlBar 的注释）
     return;
   }
   /* ★ 发送动画还没落点：日志区**先不露**（用户要求「动画完后再显示日志页面」）。
@@ -1136,7 +1143,7 @@ async function stopRun() {
    进度取自「哪一层已经有内容」；用户一开始打字就让位（不动他自己的内容）。 */
 /* ★ R39：首屏输入框文案（用户指定原文，含中间两个空格）—— 与 index.html 的
    `#question` placeholder **保持同一句**（跑完/新对话时 JS 会把它写回去）。 */
-const Q_PLACEHOLDER = '这次又想到什么问题了？可以发给元DGTF  我们一起去探索吧';
+const Q_PLACEHOLDER = '此刻 你又想到了什么？ 可以发给元DGTF 我们一起去探索吧';
 const RUN_WHISPER = {
   boot: ['元DGTF 引擎已启动 · 您愿意和我一起探寻吗？',
          '我先把这个问题钉牢，再动手…',
@@ -1476,30 +1483,108 @@ async function loadLocal() {
   }
 }
 
+/* ── ★ R44：本地资料库导入（二进制 + 分批 + 逐文件结果）────────────────────
+   老实现对**所有**文件都 `f.text()`：PDF / 图片读出来是乱码；也没有大小上限。
+   现在前端只做「选 → 读字节 → base64 → 分批发 → 报进度」，
+   **解析全在服务端**（`dgtf_app/docparse.py`：docx/xlsx/pptx/pdf/图片/OLE/纯文本），
+   并把每个文件的结果摆出来（成功 / 跳过 / 失败原因）—— 不再「点了没反应」。 */
+const LIB_MAX_FILES = 50, LIB_MAX_MB = 100, LIB_BATCH_MB = 48;
+let importRows = [];
+
+function importPaint(msg) {
+  const d = $('#import-detail');
+  if (d) {
+    d.innerHTML = importRows.map(r => r.ok
+      ? `<div class="ok">✓ ${esc(r.name)} — ${esc(r.kind || '')} · `
+        + `${Number(r.chars || 0).toLocaleString()} 字`
+        + `${r.saved_as && r.saved_as !== r.name ? '（存为 ' + esc(r.saved_as) + '）' : ''}</div>`
+      : `<div class="bad">✗ ${esc(r.name)} — ${esc(r.error || '失败')}</div>`).join('');
+  }
+  const box = $('#import-msg');
+  if (box && msg != null) box.textContent = msg;
+}
+
+/* File → base64（分块 String.fromCharCode：一次性 apply 大数组会爆栈） */
+function fileToB64(file) {
+  return new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onerror = () => reject(new Error('读取失败'));
+    fr.onload = () => {
+      const b = new Uint8Array(fr.result);
+      let s = '';
+      const CH = 0x8000;
+      for (let i = 0; i < b.length; i += CH) {
+        s += String.fromCharCode.apply(null, b.subarray(i, i + CH));
+      }
+      resolve(btoa(s));
+    };
+    fr.readAsArrayBuffer(file);
+  });
+}
+
 async function importFiles(fileList) {
   const all = [...fileList];
-  const list = all.slice(0, 50);              // 上限 50 个（对齐提示气泡的说明）
-  const files = [];
-  for (const f of list) files.push({ name: f.name, content: await f.text() });
-  if (!files.length) return;
-  const am = $('#attach-msg');
-  const more = all.length > list.length ? `（超出的 ${all.length - list.length} 个已忽略）` : '';
-  $('#import-msg').textContent = `导入中（${files.length} 个）…`;
-  if (am) am.textContent = `导入中（${files.length} 个）…`;
-  try {
-    const r = await api('/api/library/import', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ files }),
-    });
-    $('#import-msg').textContent = `已导入 ${r.saved.length} 个`;
-    if (am) {
-      am.textContent = `已导入 ${r.saved.length} 个文件，作为外部证据锚点`
-        + `（抽屉「本地资料库」里可查看 / 删除）${more}`;
+  const list = all.slice(0, LIB_MAX_FILES);
+  importRows = [];
+  if (all.length > list.length) {
+    importRows.push({ ok: false, name: `（另有 ${all.length - list.length} 个）`,
+      error: `单次最多 ${LIB_MAX_FILES} 个，超出的已忽略` });
+  }
+  const send = [];
+  list.forEach(f => {
+    if (!f.size) {
+      importRows.push({ ok: false, name: f.name, error: '空文件' });
+    } else if (f.size > LIB_MAX_MB * 1048576) {
+      importRows.push({ ok: false, name: f.name,
+        error: `文件 ${(f.size / 1048576).toFixed(1)}MB 超过单文件上限 ${LIB_MAX_MB}MB` });
+    } else {
+      send.push(f);
     }
+  });
+  const btn = $('#anchor-pick');
+  if (btn) btn.disabled = true;
+  const am = $('#attach-msg');
+  importPaint(send.length ? `导入中（共 ${send.length} 个）…` : '没有可导入的文件');
+  if (am) am.textContent = `导入中（共 ${send.length} 个）…`;
+  /* 按体积分批：单批 ≤ LIB_BATCH_MB，免得一个请求把内存顶起来 */
+  const batches = [];
+  let cur = [], bytes = 0;
+  send.forEach(f => {
+    if (cur.length && bytes + f.size > LIB_BATCH_MB * 1048576) {
+      batches.push(cur); cur = []; bytes = 0;
+    }
+    cur.push(f); bytes += f.size;
+  });
+  if (cur.length) batches.push(cur);
+  let done = 0;
+  try {
+    for (const batch of batches) {
+      const payload = [];
+      for (const f of batch) {
+        importPaint(`导入中（${done}/${send.length}）：${f.name}`);
+        payload.push({ name: f.name, size: f.size, b64: await fileToB64(f) });
+        done++;
+      }
+      const r = await api('/api/library/import', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ files: payload }),
+      });
+      (r.results || []).forEach(x => importRows.push(x));
+      importPaint(`导入中（${done}/${send.length}）…`);
+    }
+    const okN = importRows.filter(x => x.ok).length;
+    const badN = importRows.length - okN;
+    const tail = `完成：成功 ${okN} 个` + (badN ? `，失败/跳过 ${badN} 个（原因见下）` : '');
+    importPaint(tail);
+    if (am) am.textContent = tail + '（抽屉「本地资料库」里可查看 / 删除）';
     await loadLocal();
   } catch (e) {
-    $('#import-msg').textContent = '导入失败：' + e.message;
+    importRows.push({ ok: false, name: '(整批)', error: e.message });
+    importPaint('导入失败：' + e.message);
     if (am) am.textContent = '导入失败：' + e.message;
+  } finally {
+    if (btn) btn.disabled = false;
+    importPaint();
   }
 }
 
@@ -2182,6 +2267,8 @@ function openSheet(key) {
   /* ★ R38：参数页的**共用底栏**（保存 / 恢复出厂设置）只在这两页出现 ——
      它是 `.sheet` 的直接子项，不属于任何 `.sheet-page`，所以要显式开关。 */
   syncAdvBar(key);
+  /* ★ R44：切到「读数台」立刻拉一次（不用等下一个 5s 周期） */
+  if (key === 'dash-stats') loadDash();
   // 高级参数默认展开 —— 不然点进来只看到一行标题
   if (key === 'adv-panel') {
     const a = document.querySelector('.advanced');
@@ -2378,6 +2465,12 @@ function init() {
   loadExistingTasks();
   loadLib();
   loadDash();
+  /* ★ R44：读数台**实时更新** —— 5 秒一轮，且只在「读数台」这一页可见、页面不在后台时拉。
+     接口侧不用怕：`dashboard.scan()` 有**目录签名缓存**，余额自带 **15s 缓存** ⇒ 不会打爆。 */
+  setInterval(() => {
+    const p = $('#dash-stats');
+    if (p && p.classList.contains('active') && document.visibilityState !== 'hidden') loadDash();
+  }, 5000);
   loadChats();
   loadLocal();
   loadWeb();
@@ -2530,7 +2623,12 @@ function init() {
     ta.style.height = 'auto';
     ta.style.height = Math.min(ta.scrollHeight, 180) + 'px';
   });
-  $('#anchor-file').addEventListener('change', e => {
+  /* ★ R44：「选择文件导入」改成**真按钮**去点隐藏的 input —— 原来靠 `<label>` 包着
+     `display:none` 的 input，用户报「点了没反应」；按钮这条路最直、最不容易被样式影响。
+     `value=''` 保证同一个文件删了还能再选一次。 */
+  const _ap = $('#anchor-pick'), _af = $('#anchor-file');
+  if (_ap && _af) _ap.addEventListener('click', () => _af.click());
+  if (_af) _af.addEventListener('change', e => {
     const fs = e.target.files;
     e.target.value = '';
     if (fs && fs.length) importFiles(fs);
@@ -2578,6 +2676,15 @@ function init() {
      各面板自己的刷新按钮（搜索 / 刷新）仍然单独触发。 */
 
   document.body.addEventListener('click', async (e) => {
+    /* ★ R44：点**对话框**（含里面的功能胶囊 / 回形针 / 发送键）或**首屏空白区** ⇒ 抽屉自动收起。
+       **只做「收起」这一件事**：抽屉的开关仍由左上角图标 / 遮罩 / Esc 管，
+       被点的那个元素该有的行为（发消息、切胶囊…）一律照旧。 */
+    if (document.body.classList.contains('drawer-open')
+        && (e.target.closest('.composer')
+            || (document.body.classList.contains('stage-empty')
+                && e.target.closest('main.stage')))) {
+      closeDrawer();
+    }
     const open = e.target.closest('[data-open]');
     if (open) { e.preventDefault(); openDetail(open.dataset.open); return; }
     const arc = e.target.closest('[data-archive]');

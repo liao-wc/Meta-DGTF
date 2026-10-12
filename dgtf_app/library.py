@@ -13,10 +13,12 @@
 
 from __future__ import annotations
 
+import base64
 import json
 import re
 from pathlib import Path
 
+import docparse
 import outputs_index as oi
 
 PROJECT_ROOT = oi.PROJECT_ROOT
@@ -90,6 +92,14 @@ def read_local(name: str, limit: int = 200_000) -> str | None:
 # ── 本地导入：把本地文件变成「外部证据锚点」────────────────────
 ANCHORS_DIR = oi.APP_DIR / "anchors"
 ANCHOR_FILE = ANCHORS_DIR / "external_anchor.json"
+RAW_DIR = ANCHORS_DIR / "_raw"                      # 原始文件留档（解析失败也不丢原件）
+
+# ★ R44：用户定的上限 —— 单次最多 50 个、单文件 100MB。
+MAX_FILES = 50
+MAX_FILE_BYTES = 100 * 1024 * 1024
+# 长文档按块进锚点（引擎一次能读的量有限；分块后长文的覆盖面才够）
+CHUNK_CHARS = 2000
+MAX_CHUNKS_PER_FILE = 40
 
 
 def imported_files() -> list[dict]:
@@ -109,7 +119,13 @@ def imported_files() -> list[dict]:
 
 
 def _rebuild_anchor() -> None:
-    """扫导入目录 → 重建合并的锚点快照（引擎认这个格式）。"""
+    """扫导入目录 → 重建合并的锚点快照（引擎认这个格式）。
+
+    ★ R44：**长文档分块**（原来每份只取前 2000 字）—— 一份 5 万字的资料，
+    原来进锚点的只有开头那一屏；现在按 `CHUNK_CHARS` 切成多块（每份最多
+    `MAX_CHUNKS_PER_FILE` 块），`id` 形如 `L3-2`、`part` 标明第几块，
+    「运行时可读入」对长文才真的成立。`_raw/` 是目录，`is_file()` 天然跳过。
+    """
     items = []
     if ANCHORS_DIR.is_dir():
         for i, p in enumerate(sorted(ANCHORS_DIR.iterdir()), 1):
@@ -119,33 +135,112 @@ def _rebuild_anchor() -> None:
                 txt = p.read_text(encoding="utf-8", errors="replace")
             except OSError:
                 continue
-            items.append({"id": f"L{i}", "claim": txt[:400].strip(),
-                          "content": txt[:2000], "source": p.name,
-                          "kind": "local", "tier": 2})
+            chunks = [txt[j:j + CHUNK_CHARS] for j in range(0, len(txt), CHUNK_CHARS)] \
+                or [""]
+            chunks = chunks[:MAX_CHUNKS_PER_FILE]
+            for k, ch in enumerate(chunks, 1):
+                items.append({
+                    "id": f"L{i}-{k}" if len(chunks) > 1 else f"L{i}",
+                    "claim": ch.strip()[:400],
+                    "content": ch,
+                    "source": p.name,
+                    "part": k,
+                    "parts": len(chunks),
+                    "kind": "local",
+                    "tier": 2,
+                })
     ANCHOR_FILE.write_text(
         json.dumps({"anchors": items}, ensure_ascii=False, indent=2),
         encoding="utf-8", newline="")
 
 
+def _decode_entry(f: dict) -> tuple[bytes, str]:
+    """把一条入参还原成**原始字节**。
+
+    两种形态都收：
+      · `{name, b64}`   ← 前端现在这么发（二进制安全，PDF / 图片必须走这条）
+      · `{name, content}` ← 老的文本入参（`selftest.py` 在用，保持兼容）
+    """
+    if isinstance(f.get("b64"), str) and f["b64"]:
+        return base64.b64decode(f["b64"], validate=False), ""
+    if isinstance(f.get("content"), str):
+        return f["content"].encode("utf-8"), ""
+    return b"", "既没给 b64 也没给 content"
+
+
 def import_files(files: list[dict]) -> dict:
-    """导入本地文件：存原文 + 重建合并锚点快照。files=[{name, content}]。"""
+    """导入本地资料：**解析成文本** → 存进锚点目录 → 重建合并快照。
+
+    参数：`files=[{name, b64} | {name, content}, …]`（见 `_decode_entry`）。
+    返回：`{saved, skipped, results, anchor_file}` ——
+      `saved/skipped` 是老字段（兼容），`results` 是**逐文件**的明细：
+      `{name, ok, kind, chars, error, saved_as}`（失败也留痕，绝不静默）。
+
+    ★ 上限：单次 ≤ `MAX_FILES` 个、单文件 ≤ `MAX_FILE_BYTES`（100MB）。
+    ★ 原始文件一律留档到 `anchors/_raw/`：解析失败时**原件还在**，用户能换工具再试。
+    ★ 纯文本类直接按原名存（人看着舒服）；富格式存 `<原名>.txt`（解析稿）+ `_raw/<原名>`。
+    """
     ANCHORS_DIR.mkdir(exist_ok=True)
-    saved, skipped = [], []
-    for f in files or []:
-        n = Path(str((f or {}).get("name") or "")).name
-        if not n or n == ANCHOR_FILE.name:
+    RAW_DIR.mkdir(exist_ok=True)
+    saved: list[str] = []
+    skipped: list[str] = []
+    results: list[dict] = []
+
+    for f in (files or [])[:MAX_FILES]:
+        f = f or {}
+        n = Path(str(f.get("name") or "")).name
+        if not n or n == ANCHOR_FILE.name or n.startswith("."):
             skipped.append(n or "(无名)")
+            results.append({"name": n or "(无名)", "ok": False, "kind": "", "chars": 0,
+                            "error": "文件名非法", "saved_as": ""})
             continue
-        try:
-            (ANCHORS_DIR / n).write_text(str((f or {}).get("content") or ""),
-                                         encoding="utf-8", newline="")
-            saved.append(n)
-        except OSError:
+        data, why = _decode_entry(f)
+        if why:
             skipped.append(n)
+            results.append({"name": n, "ok": False, "kind": "", "chars": 0,
+                            "error": why, "saved_as": ""})
+            continue
+        if len(data) > MAX_FILE_BYTES:
+            skipped.append(n)
+            results.append({"name": n, "ok": False, "kind": "", "chars": 0,
+                            "error": "文件 %.1fMB 超过单文件上限 100MB"
+                                     % (len(data) / 1048576.0), "saved_as": ""})
+            continue
+
+        ext = Path(n).suffix.lower()
+        textish = ext in docparse.TEXT_EXT or not ext
+        parsed = docparse.extract(n, data)
+        # 原件留档（解析失败也留 —— 「失败留痕」且可回退）
+        try:
+            (RAW_DIR / n).write_bytes(data)
+        except OSError:
+            pass
+        if not parsed["ok"]:
+            skipped.append(n)
+            results.append({"name": n, "ok": False, "kind": parsed["kind"],
+                            "chars": 0, "error": parsed["error"],
+                            "saved_as": ""})
+            continue
+        saved_as = n if textish else n + ".txt"
+        try:
+            (ANCHORS_DIR / saved_as).write_text(parsed["text"], encoding="utf-8",
+                                                newline="")
+        except OSError as e:
+            skipped.append(n)
+            results.append({"name": n, "ok": False, "kind": parsed["kind"], "chars": 0,
+                            "error": "写盘失败：%s" % e, "saved_as": ""})
+            continue
+        saved.append(saved_as)
+        results.append({"name": n, "ok": True, "kind": parsed["kind"],
+                        "chars": parsed["chars"], "error": "",
+                        "saved_as": saved_as})
+
     _rebuild_anchor()
     return {
         "saved": saved,
         "skipped": skipped,
+        "results": results,
+        "limits": {"max_files": MAX_FILES, "max_file_mb": 100},
         "anchor_file": str(ANCHOR_FILE.relative_to(oi.PROJECT_ROOT)).replace("\\", "/"),
     }
 
@@ -162,6 +257,22 @@ def delete_imported(name: str) -> bool:
     p = ANCHORS_DIR / n
     if not p.is_file():
         return False
+    # ★ R44：富格式导入时原件留档在 `_raw/<原文件名>`，解析稿是 `<原名>.txt`
+    #   ⇒ 删的时候**两边一起删**，否则「列表里删了、原件还占着盘」。
+    _extras = [RAW_DIR / n]
+    if n.endswith(".txt"):
+        _extras.append(RAW_DIR / n[:-4])
+    for _x in _extras:
+        try:
+            if _x.is_file():
+                _x.unlink()
+        except Exception:  # noqa: BLE001
+            try:
+                trash = ANCHORS_DIR / "_removed"
+                trash.mkdir(exist_ok=True)
+                _x.replace(trash / _x.name)
+            except Exception:  # noqa: BLE001
+                pass
     try:
         p.unlink()
     except Exception:  # noqa: BLE001  删除被拦 → 退到移走

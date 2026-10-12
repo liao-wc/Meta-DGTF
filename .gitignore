@@ -54,3 +54,13 @@ meta-dgtf/
 #   别人 clone 后应该从出厂 `dgtf_config.yaml` 起跑。
 # ★ 与 `dgtf_app/runs/`、`*.yaml.bak` 同一口径：本地保留，不进库。
 dgtf_config.user.yaml
+
+# ★ R44：本地资料库导入时的**原始文件留档**（可能几十 MB 的 PDF/图片）与删除退避区 ——
+#   都是用户自己的资料 / 临时产物，不该进公开仓库（解析稿 anchors/*.txt 仍按原样跟库）。
+dgtf_app/anchors/_raw/
+dgtf_app/anchors/_removed/
+
+# ★ R44：提交说明的临时文件（另一个会话跑 `_git_save.py -F _commitmsg.txt` 留下的）。
+#   正经做法是把它放在**仓库外**（SKILL 里写过）；放仓库里就会被 `git add -A` 顺手提交，
+#   所以这里显式忽略 —— 免得把别人的临时文件混进下一次提交。
+_commitmsg.txt
