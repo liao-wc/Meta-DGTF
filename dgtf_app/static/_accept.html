@@ -31,6 +31,7 @@ const SKIPS = new Set(SKIP.split(',').map(x => x.trim()).filter(Boolean));
    取一次 CSS 文本，配一个和 selftest 里 `_rule()` 同款的取规则小助手。 */
 let CSS_TXT = '';
 let JS_TXT = '';
+let HTML_TXT = '';
 const cssRule = (sel) => {
   const esc = sel.replace(/\./g, '\\.');
   const m = CSS_TXT.match(new RegExp(esc + '\\s*\\{([^}]*)\\}'));
@@ -78,6 +79,9 @@ async function run() {
   /* ★ R37：app.js 的**源码文本**也要取一份 —— 有些判据只能落在接线处
      （元素此刻不在 DOM 里，比如「日志开头块」要等真跑才有）。 */
   JS_TXT = await w.fetch('/static/app.js').then(x => x.text()).catch(() => '');
+  /* ★ R38：index.html 源码文本 —— 判「底栏挂在 .sheet layer 上」这种**结构位置**，
+     拿 DOM 只能知道父子关系，拿源码才知道它排在 `.sheet-body` 之后。 */
+  HTML_TXT = await w.fetch('/static/index.html').then(x => x.text()).catch(() => '');
   await sleep(1500);
 
   if (MODE === 'dd') {
@@ -2012,6 +2016,25 @@ async function run() {
     chk('⑦ 操作条**居中**（justify-content:center）且有 `.sa-spacer` 让保存视觉居中',
         /justify-content:center/.test(cssRule('.sheet-actions'))
         && !!document.querySelector('#sheet .sheet-actions .sa-spacer'));
+    /* ★ R38：操作条**提到 `.sheet` 层**（两页共用一条），由 JS 按当前页显隐 —— 用户报的
+       「恢复出厂设置后按钮不见了」「CLM 参数保存不了」根因就是它原来只挂在分组页**内部**。 */
+    chk('⑦ ★R38 操作条是 `.sheet` 的**直接子项**（id=adv-actions，两页共用一条）',
+        (() => {
+          const a = d.querySelector('#adv-actions');
+          return !!a && a.parentElement && a.parentElement.id === 'sheet'
+            && a.classList.contains('hidden');
+        })(),
+        'adv-actions parent=' + (() => {
+          const a = d.querySelector('#adv-actions');
+          return a && a.parentElement ? a.parentElement.id : 'null';
+        })());
+    chk('⑦ ★R38 源码里 `.sheet-actions` 在 `.sheet-body` **之后**（挂在 layer 上，不在分组页里）',
+        HTML_TXT.indexOf('id="adv-actions"') > HTML_TXT.indexOf('class="sheet-body"')
+        && HTML_TXT.indexOf('id="adv-actions"') > 0);
+    chk('⑦ ★R38 底栏显隐由 `syncAdvBar` 按当前页控制（首页也显示）',
+        /function syncAdvBar/.test(JS_TXT)
+        && /syncAdvBar\(key\)/.test(JS_TXT)
+        && /adv-actions/.test(JS_TXT));
   }
 
   /* ── ⑥ 开启新对话：清掉当前显示、回到首屏 ──────────────────────

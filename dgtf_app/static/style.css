@@ -179,8 +179,12 @@ h1,h2,h3,.task-q,.item .t,.md p{text-wrap:pretty}
   max-width:94vw;
   display:flex;flex-direction:column;overflow:hidden;
   background:var(--ground);border-right:1px solid var(--hair-2);box-shadow:var(--shadow-lg);
-  transform:translateX(-102%);transition:transform .42s var(--ease)}
-.drawer.open{transform:none}
+  /* ★ R38：平移 + **淡出**（用户要求「侧边栏效果为淡出」）+ 放慢到 .6s
+     —— 与 main.stage 同一条时长，开门时「让位平移」与「抽屉淡入」同步落点。 */
+  opacity:0;
+  transform:translateX(-102%);
+  transition:transform .6s var(--ease),opacity .6s var(--ease)}
+.drawer.open{transform:none;opacity:1}
 /* 抽屉头：**内容整体居中**；关闭键绝对定位到右侧（不把标题挤偏） */
 .drawer-head{position:relative;display:flex;align-items:center;justify-content:center;
   gap:10px;padding:12px 14px;border-bottom:1px solid var(--hair);flex:0 0 auto}
@@ -321,9 +325,12 @@ body.panel-open .corner-actions{display:none}
    「恢复出厂设置」= 删用户配置、回落到后端出厂 yaml（危险操作，给了红字）。
    ★ R37：用户要求「**保存按钮居中**」+ 只留这两个按钮：
      排布 = `[隐形占位][保存][恢复出厂设置]` —— 左侧占位与「恢复」等宽，
-     于是「保存」落在整条栏的**正中**（而不是两个按钮整体居中）。 */
+     于是「保存」落在整条栏的**正中**（而不是两个按钮整体居中）。
+   ★★ R38：它是 `.sheet` 的直接子项（`.sheet-body` 的**后一个兄弟**）——
+     `.sheet` 是 `flex-direction:column`，`flex:0 0 auto` ⇒ 恒定贴在面板底部、
+     不参与 `.sheet-body` 的溢出裁剪；参数相关的两页共用同一条，位置永远一致。 */
 .sheet-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;
-  gap:10px;flex:0 0 auto;padding:12px 18px;border-top:1px solid var(--hair)}
+  gap:10px;flex:0 0 auto;padding:12px 18px;border-top:1px solid var(--hair-2)}
 /* 隐形占位：宽度随「恢复出厂设置」自动伸缩（flex-basis:auto 的分身），保证「保存」居中 */
 .sheet-actions .sa-spacer{visibility:hidden;height:0;overflow:hidden;
   flex:0 0 auto;padding:0 22px;font-size:14px;font-weight:600}
@@ -369,18 +376,29 @@ body.panel-open .corner-actions{display:none}
 /* ── 舞台：首屏居中（欢迎语 + 输入框）；跑起来后欢迎语收走、日志占主位 ── */
 main.stage{flex:1 1 auto;min-height:0;width:100%;display:flex;flex-direction:column;
   padding:20px 18px;gap:14px;
-  /* ★ R37：让位平移放慢（.24s → .42s）—— 用户报「平移太快、看不清」 */
-  transition:transform .42s var(--ease)}
-/* ★ R37：让位量用 --shift-w（= min(抽屉宽, 50vw)），保证右侧至少留一半视口可见；
-   同时给主区右缘补一段同量内边距 —— 内容不会被抽屉侧挤压贴边，「自适应调整边距」。
+  /* ★ R37：让位平移放慢（.24s → .42s）；★ R38：再放慢到 .6s 并**同时过渡 padding**
+     —— 让位时左右内边距一起补间，内容中心才是**连续**移过去的（只动 transform
+     会让「内容居中」跳一下：平移是补间的、padding 是瞬变的）。 */
+  transition:transform .6s var(--ease),padding .6s var(--ease)}
+/* ★ R38：让位半量 —— 内容要「居中被让出的那块区域的正中」，平移必须是**抽屉宽的一半**：
+     目标中心 = (抽屉宽 + 视口宽) / 2；不平移时中心在 视口宽/2
+     ⇒ 平移量 = 抽屉宽/2。同时左右各补等量 padding，内容可用宽度自是「视口 − 抽屉宽」。 */
+:root{--shift-half:calc(var(--shift-w) / 2)}
+/* ★ R37：让位量用 --shift-w（= min(抽屉宽, 50vw)），保证右侧至少留一半视口可见。
    ★★ R36 修「右边页面会跳」：原来让位同时改 `margin-left` 与 `width:calc(…减掉抽屉宽)`，
      而 `width` 没有过渡 ⇒ 一开一关时宽度**瞬变**、margin 才补间，两者不同步；
      再叠加 `body.stage-empty` 下 welcome/composer 是**居中**的（宽度一变位置就跳），
      视觉上就是「右边页面跳一下」。现在改成**只平移、不改宽度**（width 恒 100%），
      单一属性驱动 ⇒ 布局零重排、居中内容随整体平滑右移，不再抖。
+   ★★ R38：平移量改成**半量**（`--shift-half`）+ **左右对称等量内边距** ——
+     这样「内容中心」正好落在**被让出的可用区域的正中**（用户要求「始终居中自适应」）。
+     只平移不补 padding 时，内容中心停在 `抽屉宽/2 + 视口/2` 之外，视觉上偏右被顶出；
+     只补右侧 padding（R37 做法）又会把中心推偏左。左右等量 ⇒ 几何上严格居中。
    （`body{overflow:hidden}`，右缘探出视口不会产生滚动条。） */
-body.drawer-open main.stage{transform:translateX(var(--shift-w));
-  padding-right:calc(18px + min(var(--shift-w), 6vw))}
+body.drawer-open main.stage{
+  transform:translateX(var(--shift-half));
+  padding-left:calc(18px + var(--shift-half));
+  padding-right:calc(18px + var(--shift-half))}
 body.stage-empty main.stage{justify-content:center;align-items:center}
 body.stage-empty #welcome{display:flex}
 body.stage-empty .composer{width:100%;max-width:760px}
@@ -391,9 +409,12 @@ body.stage-run #welcome{display:none}
 body.stage-run .runlog{flex:1 1 auto;width:100%;max-width:1080px;margin:0 auto}
 body.stage-run .composer{width:100%;max-width:1080px;margin:0 auto}
 /* ★ R37：抽屉展开时主区内容宽度让出被平移占掉的那部分 —— 否则 max-width 太宽 ⇒
-   右缘仍被顶出视口（用户报「展开右边看不见了」）。左侧因为整体右移，留白够，不需补偿。 */
+   右缘仍被顶出视口（用户报「展开右边看不见了」）。
+   ★ R38：左右**对称**补偿之后，可用宽度已经是「视口 − 抽屉宽 − 36px」，
+     这里只需把上限跟着收一收（原来只减了右侧 + 固定 48px，会偏）。 */
 body.drawer-open.stage-run .runlog,
-body.drawer-open.stage-run .composer{max-width:min(1080px, calc(100vw - var(--shift-w) - 48px))}
+body.drawer-open.stage-run .composer{
+  max-width:min(1080px, calc(100vw - var(--shift-w) - 36px))}
 @keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
 .welcome{display:none;align-items:center;gap:12px;
@@ -728,6 +749,26 @@ kbd{font-family:var(--f-mono);font-size:10.5px;line-height:1;color:var(--t2);
 .rl-files a:hover{color:#186428;background:rgba(30,122,52,.24);border-color:rgba(30,122,52,.5)}
 /* ★ R34：**运行中也要看得见这三个按钮**（还没有产物 ⇒ 先给个待生成态） */
 .rl-files a.pend{opacity:.55;pointer-events:none;cursor:default}
+/* ★★ R38：三个胶囊的**状态色档**（用户要求「右边三个按钮和左边按钮运行状态一致，
+   灯和字体颜色变化一致」）—— 上面那条 `.rl-files a` 的绿色只是**完成态**的基线；
+   这里按容器上的 `st-<status>` 一档一档改（**两级选择器**，特异性高于单级，
+   就地压过基线，不必追加同选择器第二条规则）。
+   色值与 `.badge.<st>` / `.runlog-head .badge.<st>` 那几档**逐字对齐**，
+   于是左右两边「灯 + 字 + 描边 + 底」完全同步。 */
+.rl-files.st-done a{color:#1E7A34;border-color:rgba(30,122,52,.38);background:rgba(30,122,52,.14)}
+.rl-files.st-running a{color:#2F3AA8;border-color:rgba(47,58,168,.36);background:rgba(47,58,168,.12)}
+.rl-files.st-queued a{color:#8A6414;border-color:rgba(138,100,20,.36);background:rgba(138,100,20,.10)}
+.rl-files.st-error a{color:#B42318;border-color:rgba(180,35,24,.36);background:rgba(180,35,24,.10)}
+.rl-files.st-cancelled a,.rl-files.st-canceled a,
+.rl-files.st-interrupted a{color:#8A6414;border-color:rgba(138,100,20,.36);background:rgba(138,100,20,.10)}
+/* 运行中：灯与左徽章一样**脉动**（同步的视觉信号） */
+.rl-files.st-running a::before{animation:pulse 1.3s var(--ease) infinite}
+/* 悬停时仍按状态走（不是一律回绿）—— 只提亮，不换色相 */
+.rl-files.st-running a:hover{color:#232C86;background:rgba(47,58,168,.20);border-color:rgba(47,58,168,.5)}
+.rl-files.st-queued a:hover,
+.rl-files.st-cancelled a:hover,.rl-files.st-canceled a:hover,
+.rl-files.st-interrupted a:hover{color:#6E4F10;background:rgba(138,100,20,.18);border-color:rgba(138,100,20,.5)}
+.rl-files.st-error a:hover{color:#8F1C13;background:rgba(180,35,24,.18);border-color:rgba(180,35,24,.5)}
 /* ★ 选择器写两级（`.runlog .runlog-body`）：元素同时带着 `.log`，而 `.log` 的
    `max-height:264px` 定义在本段**之后** —— 同优先级按源顺序会被它盖掉，
    日志区就封顶在 264px、下半截留空。两级选择器特异性更高，稳压它。 */
@@ -906,7 +947,7 @@ select:focus{border-color:var(--accent)}
 .item .t .t-t{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:6px;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .item .t .t-r{flex:0 0 auto;display:inline-flex;align-items:center;gap:10px;
-  color:var(--t3);font-size:11.5px;font-weight:400}
+  color:var(--t1);font-size:11.5px;font-weight:500}
 .item .m{display:flex;align-items:center;gap:12px;flex-wrap:wrap;color:var(--t3);
   font-size:11.5px}
 /* 「时间日期」这类信息推到右边，其余一律靠左 —— 靠类名精确控制，不靠位置猜 */
@@ -932,8 +973,8 @@ select:focus{border-color:var(--accent)}
 .web-group.open .wg-car{transform:rotate(90deg)}
 .web-group .wg-q{flex:1 1 auto;min-width:0;font-weight:500;font-size:13px;color:var(--t1);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-/* 标题后面的「时间 · 检索模型」 */
-.wg-meta{flex:0 0 auto;font-size:11px;color:var(--t3);
+/* 标题后面的「时间 · 检索模型」—— ★ R38：改**白**（用户报「时间字体显示白色」） */
+.wg-meta{flex:0 0 auto;font-size:11px;color:var(--t1);font-weight:500;
   font-family:var(--f-mono);font-variant-numeric:tabular-nums}
 .web-group .wg-body{display:none;border-top:1px solid var(--hair)}
 /* 展开后**自适应铺满**：不再写死 `min(46vh,420px)`（内容多时白白留一条滚动缝），
@@ -943,11 +984,13 @@ select:focus{border-color:var(--accent)}
 
 /* 条目右上角的「导出」 */
 .item{position:relative}
+/* ★ R38：导出按钮字色改**白**（用户报「导出字体显示白色」）—— 原来 --t3 在深底上偏灰、
+   看不清。`color` 提到 --t1（近白），悬停再亮到纯白。 */
 .item .exp,.wg-exp{position:absolute;right:8px;top:8px;height:22px;padding:0 8px;
   font-size:11px;line-height:1;border-radius:var(--r-sm);border:1px solid transparent;
-  background:transparent;color:var(--t3);cursor:pointer;
+  background:transparent;color:var(--t1);cursor:pointer;
   transition:color var(--dur) var(--ease),border-color var(--dur) var(--ease)}
-.item:hover .exp,.web-group:hover .wg-exp{color:var(--t2);border-color:var(--hair)}
+.item:hover .exp,.web-group:hover .wg-exp{color:#FFFFFF;border-color:var(--hair)}
 .item .exp:hover,.wg-exp:hover{color:var(--ok);border-color:rgba(63,185,80,.45)}
 .wg-exp{top:9px;right:10px}
 
@@ -1045,11 +1088,13 @@ select:focus{border-color:var(--accent)}
 .hist .q{display:flex;align-items:baseline;gap:8px;font-size:13px;color:var(--t1);margin-bottom:2px}
 .hist .q .q-t{flex:1 1 auto;min-width:0;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.hist .q .q-r{flex:0 0 auto;color:var(--t3);font-family:var(--f-mono);font-size:11.5px}
-/* 与 `.item .m` 同一套：信息行**整体右对齐** */
-.hist .m{display:flex;align-items:center;gap:10px;color:var(--t3);   /* 最近跑过：信息在**左** */
+.hist .q .q-r{flex:0 0 auto;color:var(--t1);font-family:var(--f-mono);font-size:11.5px}
+/* 与 `.item .m` 同一套：信息行**整体右对齐**
+   ★ R38：时间行改**白**（用户报「时间字体显示白色」，图 5 就是这一栏）——
+   时间 / 模型 / 大小这一串原是 --t3 灰，深底上偏暗；提到 --t1。 */
+.hist .m{display:flex;align-items:center;gap:10px;color:var(--t1);   /* 最近跑过：信息在**左** */
   
-  font-size:11px;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+  font-size:11px;font-weight:500;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
 .hist .st{font-weight:500}
 .hist .st.done{color:var(--ok)}
 .hist .st.error{color:var(--err)}

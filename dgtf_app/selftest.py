@@ -106,9 +106,10 @@ def main() -> int:
           and 'class="lane' not in html and 'id="tasks"' not in html,
           "")
     # 骨架：极简首屏 + 左侧抽屉（面板平时不占位）
-    check("极简首屏：面板收进左侧抽屉（默认移出屏外，.open 才拉进来）",
+    check("极简首屏：面板收进左侧抽屉（默认移出屏外 + **淡出**，.open 才拉进来）",
           "translateX(-102%)" in _rule(css, ".drawer")
-          and ".drawer.open{transform:none}" in css
+          and "opacity:0" in _rule(css, ".drawer")
+          and ".drawer.open{transform:none" in css
           and 'id="drawer-btn"' in html,
           _rule(css, ".drawer").strip()[:56])
     check("极简首屏：空态居中、运行态日志占主位（body 上的 stage-* 切换）",
@@ -133,8 +134,9 @@ def main() -> int:
           f"nav-btn={html.count('nav-btn')}")
     # ★ 参数页出口：R36 起口径是「出厂 `dgtf_config.yaml` **只读**，用户改动写
     #   **用户配置** `dgtf_config.user.yaml`；『恢复出厂设置』删用户配置 ⇒ 回落出厂」。
-    #   ★ R37：用户要求**只保留两个**出口（保存 + 恢复出厂设置），「仅本次任务生效」
-    #   已从界面移除（它那条路 `saveAdvForRun` 保留在代码里，供程序化调用）。
+    #   ★ R37：只保留两个出口（保存 + 恢复出厂设置），「仅本次任务生效」从界面移除。
+    #   ★ R38：底栏从 `#adv-group-page` **提出来**、改挂 `.sheet`（参数两页共用、恒在底部）：
+    #     用户报「恢复出厂设置后按钮不见了」——根因是首页 `#adv-panel` 里根本没有这条栏。
     check("⑦ 参数页只剩**两个**出口：保存 + 恢复出厂设置（`adv-once` 已从界面删掉）",
           'id="adv-save"' in html and 'id="adv-reset"' in html
           and 'id="adv-once"' not in html
@@ -142,20 +144,92 @@ def main() -> int:
           and "justify-content:center" in _rule(css, ".sheet-actions")
           and 'class="sa-spacer"' in html,
           "adv-once=" + str('id="adv-once"' in html))
+    _ai = html.find('id="adv-actions"')
+    _bi = html.find('class="sheet-body"')
+    _si = html.find('id="search-overlay"')
+    # ★★ R38 判据加强（变异体 M9 实测漏检）：只比「第一个 sheet-body 在底栏之前」
+    #    是不够的 —— 在底栏前再插一个 `class="sheet-body"` 也能满足，但它其实是**别的
+    #    元素**。真正的语义是「底栏排在**那唯一的** sheet-body 之后」，所以数**之前出现
+    #    的 sheet-body 个数必须恰好 1**（多一个就说明有元素被排到了底栏前）。
+    _sb_before = html.count('class="sheet-body"', 0, _ai) if _ai > 0 else -1
+    check("⑦ 底栏是 `.sheet` 的**直接子项**（参数两页共用 ⇒ 首页也有恢复出厂设置）",
+          _ai > 0 and _bi > 0 and _ai > _bi and (_si < 0 or _ai < _si)
+          and _sb_before == 1
+          and "sheet-actions hidden" in html,
+          f"adv-actions={_ai} sheet-body={_bi} search-overlay={_si} "
+          f"底栏前的 sheet-body 个数={_sb_before}")
+    # ★ 陷阱：「syncAdvBar」在**定义行** `function syncAdvBar(key) {` 就已出现 ⇒
+    #   只查这个名字，把调用点删掉也照样绿（本轮变异体 M11 实测漏检）。**必须查调用点**。
+    check("⑦ 底栏显隐由 JS 按当前页控制（`syncAdvBar` 在参数两页显示）",
+          "function syncAdvBar(key) {" in js
+          and "  syncAdvBar(key);" in js          # ← 调用点（带缩进 + 分号）
+          and "'adv-panel'" in js and "'adv-group-page'" in js
+          and "classList.toggle('hidden', !on)" in js,
+          "调用点=" + str("  syncAdvBar(key);" in js))
     check("⑦ 「恢复出厂设置」文案到位（不再是「恢复默认配置」）",
           "恢复出厂设置" in html and "恢复默认配置" not in html,
           "")
-    check("⑦ 保存按钮**居中**：左有 `.sa-spacer` 隐形占位（与右侧两按钮等宽）",
+    check("⑦ 保存按钮**居中**：左有 `.sa-spacer` 隐形占位（与右侧「恢复」等宽）",
           'class="sa-spacer"' in html
           and "visibility:hidden" in _rule(css, ".sa-spacer"),
           _rule(css, ".sa-spacer").strip()[:60])
+    # ★ R38：「保存」= 保存**所有**参数改动（跨分组 + CLM）并**退出**（用户明确要求）。
     check("「保存」写**用户配置**（不是出厂 yaml、也不只写内存）",
-          "saveAdvToFile" in js and "saveAdvForRun" in js
+          "saveAdvToFile" in js
           and "await api('/api/params'" in js
           and "method: 'POST'" in js
           and "advSaved[k] = advOverrides[k]" in js
           and "dgtf_config.user.yaml" in js
           and "写回 dgtf_config.yaml" not in js,
+          "")
+    check("「保存」提交的是**全部**待保存键（跨分组 + CLM），不是只有当前一组",
+          "function advDirtyAll" in js and "advDirtyAll()" in js
+          and "const dirty = advDirtyAll()" in js
+          and "const dirty = advDirtyOfGroup(g)" not in js,
+          "")
+    # ★ 陷阱：`"closeSheet();" in js` 太宽 —— 文件里别处也调它（点关闭 / Esc），
+    #   把保存函数里那句删掉照样绿（变异体 M25 实测漏检）。必须查**保存函数体内**那段。
+    #   ★ 换行：`js` 是 **CRLF** 文本 ⇒ 截断按 `\r?\n}`（函数闭合在**行首**）。
+    _i0 = js.find("async function saveAdvToFile")
+    _m = re.search(r"\r?\n}\r?\n", js[_i0:]) if _i0 >= 0 else None
+    _svf = js[_i0:_i0 + _m.start()] if _m else js[_i0:]
+    check("「保存」= 保存**并退出**（用户要求「保存参数改动设置并退出」）",
+          _i0 >= 0
+          and "advToast(msg, miss || skip ? 'warn' : 'ok');" in _svf
+          and "closeSheet();" in _svf,
+          f"函数体 {len(_svf)} 字符")
+    # ── ★ R38 前端 CLM 三段接线（变异体 M21/M22 实测：改坏这一段，翻红的却是**后端**
+    #    判据 ⇒ 说明前端本身没有判据兜住。这里补齐，且各查**那段代码本体**。）
+    check("★R38 CLI 输入框**带 value 回显**（原 bug 就是只给 placeholder ⇒ 切走再回来值没了）",
+          'field = `<input data-adv="${esc(it.key)}" value="${esc(v)}" placeholder='
+          in js,
+          "")
+    check("★R38 CLI 输入框用 `data-adv`（**不是** `data-cfg` —— 它不属于 yaml 配置）",
+          'field = `<input data-adv=' in js
+          and "data-cfg" not in js[js.find("field = `<input data-adv="):
+                                    js.find("field = `<input data-adv=") + 120],
+          "")
+    check("★R38 事件委托**同时认** `[data-cfg]` 和 `[data-adv]`（CLM 改动才记得住）",
+          "closest('[data-cfg],[data-adv]')" in js,
+          "")
+    check("★R38 `rememberAdv` 认 `dataset.adv`（否则 CLM 键进不了 advOverrides）",
+          "el.dataset.cfg || el.dataset.adv" in js,
+          "")
+    check("★R38 `collectOpts` 把 CLM 键**分流到 opts 顶层**（不能混进 overrides 写进临时 config）",
+          "const cliKeys = new Set(ADV.map(([k]) => k))" in js
+          and "if (cliKeys.has(k)) {" in js
+          and "opts[k] = s" in js,
+          "")
+    # ★ R38：CLM 键**清空**时必须「删掉这个键」而不是「下发空串」—— 变异体 M27 实测：
+    #   少了 `else delete …` 就把「清空」变成「传个空值」，引擎会当它是个 flag 传下去。
+    check("★R38 CLM 键**清空 ⇒ 从 opts 删掉**（不是下发空串）",
+          "if (s) opts[el.dataset.adv] = s; else delete opts[el.dataset.adv];" in js
+          and "if (s) opts[k] = s; else delete opts[k];" in js,
+          "")
+    check("★R38 前端从 `/api/params` 的 `cli` 字段取已保存值（advCliSaved）",
+          "advCliSaved = (r.cli && typeof r.cli === 'object') ? r.cli : {};" in js
+          and "const savedCli = advCliSaved || {};" in js
+          and "savedCli[k] || ''" in js,
           "")
     check("「恢复出厂设置」按钮存在且打 `/api/params/reset`（删用户配置 ⇒ 回落出厂）",
           "resetAdv" in js and "api('/api/params/reset'" in js
@@ -676,29 +750,45 @@ def main() -> int:
           "width:34px" in _rule(css, ".icon-btn")
           and "background:transparent" in _rule(css, ".icon-btn"),
           _rule(css, ".icon-btn").strip()[:52])
+    #   ★ R38 改口径：平移量从**整幅抽屉宽**改成**半量**（`--shift-half`）—— 用户要求
+    #     「右边页面内容始终居中自适应」。几何：内容中心先随 padding 落在
+    #     `(shift-w + 100vw)/2`，要让**平移后**仍落在该点 ⇒ 平移量 = `shift-w / 2`。
     check("抽屉打开时首屏让位：主区**纯 translate 平移**（width 恒 100%，不再改宽度）",
-          "transform:translateX(var(--shift-w))" in _rule(css, "body.drawer-open main.stage")
+          "transform:translateX(var(--shift-half))" in _rule(css, "body.drawer-open main.stage")
           and "width:" not in _rule(css, "body.drawer-open main.stage")
           and "margin-left:" not in _rule(css, "body.drawer-open main.stage")
-          and "--shift-w:" in css,
+          and "--shift-w:" in css and "--shift-half:calc(var(--shift-w)/2)"
+          in css.replace(" ", ""),
           _rule(css, "body.drawer-open main.stage").strip()[:56])
     check("④ 让位量**封顶为视口一半**（窄视口下右侧恒留一半可见 ⇒「展开右边看不见」修掉）",
           "--shift-w:min(var(--drawer-w),50vw)" in css.replace(" ", ""),
           "")
-    check("④ 让位时给主区右缘**补偿内边距**（自适应边距，内容不贴边）",
-          "padding-right:calc(18px+min(var(--shift-w),6vw))"
+    #   ★ R38：原来是「右缘补偿」（只加右 padding）⇒ 内容整体偏右。改成**左右对称**，
+    #     这样被让出的半幅里内容才是真居中（用户报「始终居中自适应调整大小边距」）。
+    check("④ ★R38 让位时给主区**左右对称**补偿内边距（内容在被让出的半幅里居中）",
+          "padding-left:calc(18px+var(--shift-half))"
+          in css.replace(" ", "").replace("\n", "")
+          and "padding-right:calc(18px+var(--shift-half))"
           in css.replace(" ", "").replace("\n", ""),
           "")
     check("④ 运行态内容宽度在让位时**同步收窄**（否则右缘仍被顶出视口）",
           "body.drawer-open.stage-run .runlog" in css
-          and "max-width:min(1080px,calc(100vw-var(--shift-w)-48px))"
+          and "body.drawer-open.stage-run .composer" in css
+          and "max-width:min(1080px,calc(100vw-var(--shift-w)-36px))"
           in css.replace(" ", "").replace("\n", ""),
           "")
-    check("④ 平移**放慢**（主区 + 抽屉都 .42s，用户要求「慢一点」）",
-          "transition:transform .42s var(--ease)" in _rule(css, "main.stage")
-          and "transition:transform .42s var(--ease)" in _rule(css, ".drawer")
+    check("④ ★R38 平移**放慢到 .6s**（主区 + 抽屉都慢，用户要求「平移速度慢一点」）",
+          "transition:transform .6s var(--ease)"
+          in _rule(css, "main.stage").replace(" ", " ")
+          and "transition:transform .6s var(--ease)" in _rule(css, ".drawer")
           and "margin-left" not in _rule(css, "main.stage"),
           _rule(css, "main.stage").strip()[:64])
+    check("④ ★R38 抽屉让位时**淡出**（opacity 也进过渡，不是硬切）",
+          "opacity .6s var(--ease)" in _rule(css, ".drawer"),
+          _rule(css, ".drawer").strip()[:64])
+    check("④ ★R38 抽屉打开时透明度**复原到 1**（否则展开后是半透明的一层灰膜）",
+          ".drawer.open{transform:none;opacity:1}" in css.replace("\n", ""),
+          css[css.find(".drawer.open{"):css.find(".drawer.open{") + 48])
     # ══ ★ R37 一揽子（用户 10 图 / 7 条）══════════════════════════════════════
     # ① 后端把日志共有头（`__head__`）随 /layers 一起下发 -------------------------
     #   引擎（`元DGTF-V1.23.22.py`）本来就在进层循环前打这一段（`调度：` / `螺旋上限`
@@ -808,6 +898,79 @@ def main() -> int:
           and "box-shadow:0 0 5px currentColor" in _rule(css, ".rl-files a::before"),
           "")
     # ⑥ 日志滚动条改成**可拖圆点**（R33 因 drag 抖动设过 pointer-events:none）-----
+    # ══ ★ R38 ④：时间 / 导出字体改白（用户 5/6 图：「时间和导出字体显示白色类似的一并改」）
+    #   ★ 缺口说明：本轮变异体 M29/M30 实测「能红」是**误打误撞**（改 CSS 时碰红了别的
+    #     判据）—— 这一段此前**根本没有判据**。补上，且查的是「颜色档位」而不是「有没有这行」。
+    check("④ 产物导出键 `.item .exp` / `.wg-exp` 字色 = **亮档 --t1**（原来灰 --t3）",
+          "color:var(--t1)" in _rule(css, ".item .exp,.wg-exp")
+          and "color:var(--t3)" not in _rule(css, ".item .exp,.wg-exp"),
+          _rule(css, ".item .exp,.wg-exp").strip()[:64])
+    check("④ 导出键悬停翻**纯白**（在深色条目上要看得见）",
+          "color:#FFFFFF" in _rule(css, ".item:hover .exp,.web-group:hover .wg-exp"),
+          _rule(css, ".item:hover .exp,.web-group:hover .wg-exp").strip()[:64])
+    check("④ 联网库时间行 `.wg-meta` = **亮档 --t1 + 500**（图 5 那一栏）",
+          "color:var(--t1)" in _rule(css, ".wg-meta")
+          and "font-weight:500" in _rule(css, ".wg-meta"),
+          _rule(css, ".wg-meta").strip()[:64])
+    check("④ 产物条目时间 `.item .t .t-r` = **亮档 --t1 + 500**",
+          "color:var(--t1)" in _rule(css, ".item .t .t-r")
+          and "font-weight:500" in _rule(css, ".item .t .t-r"),
+          _rule(css, ".item .t .t-r").strip()[:64])
+    check("④ 历史对话时间 `.hist .m` / `.q-r` = **亮档 --t1 + 500**（与上面同一套）",
+          "color:var(--t1)" in _rule(css, ".hist .m")
+          and "font-weight:500" in _rule(css, ".hist .m")
+          and "color:var(--t1)" in _rule(css, ".hist .q .q-r"),
+          _rule(css, ".hist .m").strip()[:56])
+    check("④ 「为什么这么判」保持**次级灰 --t3**（不能整片刷白 ⇒ 就没了层次）",
+          "color:var(--t3)" in _rule(css, ".hist .m .why"),
+          _rule(css, ".hist .m .why").strip()[:56])
+    # ── ★ R38 ⑤：右侧三胶囊随任务状态变色（用户 7 图：「右边三个按钮和左边按钮运行状态
+    #   一致，灯和字体颜色变化一致」）—— 原来 `.rl-files a` 颜色**硬编码绿**、与左徽章不同步。
+    check("⑤ 三胶囊按任务状态挂 `st-*` 容器类（前端从 t.status 拼）",
+          "files.className = 'rl-files st-' + st" in js,
+          "")
+    # ★ 陷阱：`.badge.running` 的**第一条**同名规则是 `.badge.running{color:var(--accent)}`
+    #   （浅底档），日志页那套在 `.runlog-head .badge.running`（#2F3AA8）。
+    #   三胶囊对齐的**是日志页那套**（同一个 `.runlog-head` 里并排显示）⇒ 判据要读它。
+    check("⑤ `.rl-files.st-running` 与左徽章 `.runlog-head .badge.running` **同色**（#2F3AA8 紫）",
+          "#2F3AA8" in _rule(css, ".rl-files.st-running a")
+          and "#2F3AA8" in _rule(css, ".runlog-head .badge.running"),
+          _rule(css, ".rl-files.st-running a").strip()[:64])
+    check("⑤ `.rl-files.st-queued` 与 `.runlog-head .badge.queued` **同色**（#8A6414 琥珀）",
+          "#8A6414" in _rule(css, ".rl-files.st-queued a")
+          and "#8A6414" in _rule(css, ".runlog-head .badge.queued"),
+          "")
+    check("⑤ `.rl-files.st-error` 与 `.runlog-head .badge.error` **同色**（#B42318 红）",
+          "#B42318" in _rule(css, ".rl-files.st-error a")
+          and "#B42318" in _rule(css, ".runlog-head .badge.error"),
+          "")
+    check("⑤ 取消 / 中断 / 已停 归到**同一档琥珀**（`.badge` 里也是这么归的）",
+          ".rl-files.st-cancelled a" in css and ".rl-files.st-canceled a" in css
+          and ".rl-files.st-interrupted a" in css
+          and "#8A6414" in css[css.find(".rl-files.st-cancelled a"):
+                               css.find(".rl-files.st-cancelled a") + 220],
+          "")
+    check("⑤ running 态的胶囊**灯在脉动**（与左徽章同一套 pulse，不是静态绿点）",
+          "animation:pulse" in _rule(css, ".rl-files.st-running a::before"),
+          _rule(css, ".rl-files.st-running a::before").strip()[:56])
+    # ★ 注意口径：`.rl-files a` 基线的绿**是故意留的**（= `.badge.done` 同一套，
+    #   done 态就该是绿的）。要证的是「**非 done 档都被 `st-*` 压过**」——
+    #   所以查的是四档 `st-*` 齐备，而不是「基线不含绿」。
+    check("⑤ 三胶囊**四档齐备**：running / queued / error / done 各有一条 `st-*`",
+          all((".rl-files.st-" + s) in css
+              for s in ("running", "queued", "error", "done")),
+          "缺=" + str([s for s in ("running", "queued", "error", "done")
+                       if (".rl-files.st-" + s) not in css]))
+    # ★ R38 补：既然「基线的绿是故意的」，就把它**锚起来** —— 基线的绿必须与左徽章
+    #   done 档同色（R34 语义）。此前没有判据 ⇒ M39（把基线改成别的色）全绿漏检。
+    check("⑤ 三胶囊**完成态基线** = 左徽章同款绿（`.rl-files a` 与 `.runlog-head .badge.done` 同色）",
+          "#1E7A34" in _rule(css, ".rl-files a")
+          and "#1E7A34" in _rule(css, ".runlog-head .badge.done"),
+          _rule(css, ".rl-files a").strip()[:64].replace("\n", " "))
+    check("⑤ `.rl-files.st-done` 与 `.runlog-head .badge.done` **同色**（#1E7A34 绿）",
+          "#1E7A34" in _rule(css, ".rl-files.st-done a")
+          and "#1E7A34" in _rule(css, ".runlog-head .badge.done"),
+          _rule(css, ".rl-files.st-done a").strip()[:56] if ".rl-files.st-done a{" in css else "无该规则")
     check("⑥ 原生细长滚动条**隐藏**（scrollbar-width:none + ::-webkit-scrollbar 宽 0）",
           "scrollbar-width:none" in _rule(css, "#runlog-body")
           and "width:0;height:0;display:none" in _rule(css, "#runlog-body::-webkit-scrollbar").replace(" ", ""),
@@ -1023,6 +1186,159 @@ def main() -> int:
                       for g in (params_data.get("groups") or [])
                       for it in (g.get("items") or [])),
           f"只读键 {len([it for g in (params_data.get('groups') or []) for it in (g.get('items') or []) if it.get('readonly_key')])} 个")
+
+    # ══ ★ R38：CLM（CLI 级）参数持久化 —— 用户报「CLM 参数设置了保存不了」的根因链 ══
+    #   12 个键**不在出厂 yaml 里**（它们是引擎 CLI flag），所以要单独一条路：
+    #     存 → 用户配置的 `cli:` 段；读回 → `load_cli_saved()`；每任务跑完 → `clear_cli_saved()`
+    #   ★ 隔离同上：把 `USER_CFG` 指到 _audit_tmp 下的临时文件，绝不动用户真配置。
+    _cf = _save_dir / "_selftest_cli_cfg.yaml"
+    if _cf.exists():
+        _cf.unlink()
+    # ★★ 先钉住**名单本身**（变异体 M13 实测漏检：把名单里 `thinking` 改成 `thinking_`，
+    #    后面所有「存取」判据都只喂 route/rounds，照样全绿 ⇒ 名单被改坏了没人管）。
+    #    「N 个来源投票」必须报可用来源数 —— 这里两个来源：后端元组 + 前端 ADV 表。
+    check("★R38 CLM 键**名单本身**正确（12 个，与引擎 CLI flag 逐字对齐）",
+          tuple(prm.CLI_KEYS) == ("route", "rounds", "channels", "parallel", "web",
+                                  "thinking", "effort", "orientation", "landing",
+                                  "decidability", "appendix", "keep"),
+          f"CLI_KEYS={tuple(prm.CLI_KEYS)}")
+    check("★R38 前端 ADV 表的键与后端 CLI_KEYS **同集合**（两条来源对账，防空表式假绿）",
+          all(("'" + k + "'") in js for k in prm.CLI_KEYS),
+          "前端缺=" + str([k for k in prm.CLI_KEYS if ("'" + k + "'") not in js]))
+    try:
+        prm.USER_CFG = _cf
+        _c_res = prm.save_params({"cli.route": "1", "cli.rounds": "3",
+                                  "api.default_model": "deepseek-reasoner"})
+        _c_flat = prm._load_yaml_flat(_cf)
+        _c_txt = _cf.read_text(encoding="utf-8") if _cf.exists() else ""
+        _c_back = prm.load_cli_saved()
+    finally:
+        prm.USER_CFG = _real_user
+    check("★R38 CLM 参数能保存进用户配置的 `cli:` 段",
+          set(_c_res["saved"]) == {"cli.route", "cli.rounds", "api.default_model"}
+          and not _c_res["missing"] and not _c_res["skipped"]
+          and _c_flat.get("cli.route") == "1" and _c_flat.get("cli.rounds") == "3",
+          f"saved={_c_res['saved']} missing={_c_res['missing']}")
+    check("★R38 `cli:` 段在文件里**真是分段**（不是把 `cli.route` 写成扁平键名）",
+          "\ncli:\n" in _c_txt and "cli.route" not in _c_txt,
+          f"含 cli: 段={chr(10) + 'cli:' + chr(10) in _c_txt}")
+    check("★R38 CLM 参数能**读回**（前端回显用户上次保存的值靠它）",
+          _c_back == {"route": "1", "rounds": "3"},
+          f"load_cli_saved()={_c_back}")
+    check("★R38 CLM 参数保存**不影响**同一次提交里的普通 yaml 键（两条路互不干扰）",
+          _c_res["saved"].count("api.default_model") == 1
+          and _c_flat.get("api.default_model") == "deepseek-reasoner",
+          f"model={_c_flat.get('api.default_model')!r}")
+    check("★R38 出厂 dgtf_config.yaml 在 CLM 保存后仍**逐字节未动**",
+          _real_cfg.read_bytes() == _cfg_bytes0, f"{len(_cfg_bytes0)} 字节")
+    # 非法叶子键：`cli.` 前缀但叶子不在 12 个里 ⇒ missing（不是 saved）
+    try:
+        prm.USER_CFG = _cf
+        _c_bad = prm.save_params({"cli.not_a_real_flag": "x"})
+    finally:
+        prm.USER_CFG = _real_user
+    check("★R38 `cli.<不在 12 个里>` 被判 missing（不能靠前缀蒙混写进去）",
+          _c_bad["missing"] == ["cli.not_a_real_flag"] and not _c_bad["saved"],
+          f"missing={_c_bad['missing']} saved={_c_bad['saved']}")
+    # 每任务跑完清零：只清 cli 段，其余用户键一字不动
+    try:
+        prm.USER_CFG = _cf
+        _c_clr = prm.clear_cli_saved()
+        _c_flat2 = prm._load_yaml_flat(_cf)
+        _c_back2 = prm.load_cli_saved()
+    finally:
+        prm.USER_CFG = _real_user
+    check("★R38 `clear_cli_saved()` 清掉 cli 段（CLM 参数「每执行一次任务清零」）",
+          _c_clr["ok"] and _c_clr["removed"] == 2 and _c_back2 == {},
+          f"removed={_c_clr['removed']} 剩余={_c_back2}")
+    check("★R38 清零**只动 cli 段**，同文件里用户保存的普通键一字不动",
+          _c_flat2.get("api.default_model") == "deepseek-reasoner"
+          and "cli.route" not in _c_flat2 and "cli.rounds" not in _c_flat2,
+          f"model={_c_flat2.get('api.default_model')!r} "
+          f"cli残留={[k for k in _c_flat2 if k.startswith('cli.')]}")
+    # 幂等：已无 cli 段时再清一次 ⇒ ok 且 removed=0（不重写文件、不报错）
+    _c_mtime = _cf.stat().st_mtime_ns if _cf.exists() else 0
+    try:
+        prm.USER_CFG = _cf
+        _c_clr2 = prm.clear_cli_saved()
+    finally:
+        prm.USER_CFG = _real_user
+    check("★R38 清零**幂等**（已无 cli 段 ⇒ ok / removed=0 / 文件不重写）",
+          _c_clr2["ok"] and _c_clr2["removed"] == 0 and not _c_clr2["error"]
+          and (_cf.stat().st_mtime_ns if _cf.exists() else 0) == _c_mtime,
+          str(_c_clr2))
+    check("★R38 清零后出厂 yaml 仍**逐字节未动**",
+          _real_cfg.read_bytes() == _cfg_bytes0, f"{len(_cfg_bytes0)} 字节")
+    # 只读渲染：`cli` 键**不在** groups 里（它们不是 yaml 配置），但 `/api/params` 要下发
+    check("★R38 `/api/params` 下发 `cli` 字段（前端 buildAdv 回显用），且不在 groups 里",
+          isinstance(params_data.get("cli"), dict)
+          and not any(it.get("key", "").startswith("cli.")
+                      for g in (params_data.get("groups") or [])
+                      for it in (g.get("items") or [])),
+          f"cli={params_data.get('cli')}")
+    # ★★ 构造性：判据要**先造出 CLI 键**再看 `/api/params` —— 变异体 M20 实测漏检，
+    #    根因是 `params_data` 是**测前快照**（那时用户配置里没有 CLI 键，
+    #    排不排除都一样 ⇒ 判据恒真）。必须自己把 CLI 键写进去，再取一次接口。
+    #    ★ 且必须**走 HTTP**：`prm.USER_CFG` 是**测试进程**里的模块变量，改它影响不到
+    #    服务进程（服务读的是真的 `dgtf_config.user.yaml`）—— 这是 R38 新踩的坑。
+    #    ★ 保护真用户配置：先备份字节，测完原样还原。
+    _uc = prm.PROJECT_ROOT / "dgtf_config.user.yaml" if hasattr(prm, "PROJECT_ROOT") \
+        else prm.USER_CFG
+    _uc_bak = _uc.read_bytes() if _uc.exists() else None
+    _pd_cli = None
+    try:
+        _post(base, "/api/params", {"overrides": {"cli.route": "7"}})
+        _, _pd_cli = _get(base, "/api/params")
+    finally:
+        if _uc_bak is None:
+            if _uc.exists():
+                _uc.unlink()
+        else:
+            _uc.write_bytes(_uc_bak)
+        # 服务写盘时留的 `.bak` 也要清（否则下一轮自检/变异体的基线多一份脏数据）
+        _ucb = Path(str(_uc) + ".bak")
+        if _ucb.exists() and _uc_bak is None:
+            _ucb.unlink()
+    check("★R38 反向对账：走 HTTP 存 `cli.route=7` 后，`/api/params` 的 `cli` 真有它（不是空表）",
+          isinstance(_pd_cli, dict) and (_pd_cli.get("cli") or {}) == {"route": "7"},
+          f"cli={(_pd_cli or {}).get('cli')}")
+    check("★R38 `cli` 键**不算**「用户改过的 yaml 键」（user_keys 里不能混进 CLI 键）",
+          isinstance(_pd_cli, dict)
+          and not any(str(k).startswith("cli.") or k in prm.CLI_KEYS
+                      for k in (_pd_cli.get("user_keys") or [])),
+          f"user_keys={(_pd_cli or {}).get('user_keys')}")
+    # ★ 反向对账：先写一个**普通 yaml 键**进去，user_keys 必须**有它**；同时 CLM 键
+    #   必须**没有**它 —— 两向都验，才不是「空表式的假绿」。
+    try:
+        _post(base, "/api/params", {"overrides": {"cli.route": "7",
+                                                  "api.timeout": "321"}})
+        _, _pd_both = _get(base, "/api/params")
+    finally:
+        if _uc_bak is None:
+            if _uc.exists():
+                _uc.unlink()
+        else:
+            _uc.write_bytes(_uc_bak)
+        if _uc_bak is None and _ucb.exists():
+            _ucb.unlink()
+    check("★R38 两向对账：`user_keys` **有**普通键 `api.timeout`、**没有** CLM 键 `cli.route`",
+          "api.timeout" in (_pd_both.get("user_keys") or [])
+          and not any(str(k).startswith("cli.")
+                      for k in (_pd_both.get("user_keys") or [])),
+          f"user_keys={(_pd_both or {}).get('user_keys')}")
+    if _cf.exists():
+        _cf.unlink()
+
+    # ★ R38（端到端补漏）：`_finalize` 收尾时**真调**清零 —— 此前该路径**没有源码级判据**，
+    #   全套 selftest 全绿也照不出「清零没发生」（第一次端到端跑出来的真事）。
+    _i_fz = runner_src.find("def _finalize(")
+    _i_cc = runner_src.find("def _clear_cli_after_run(")
+    _fz_body = runner_src[_i_fz:_i_cc] if 0 <= _i_fz < _i_cc else ""
+    check("★R38 `_finalize()` 收尾时真调 `_clear_cli_after_run(task)`（跑完任务清零这条路）",
+          "_clear_cli_after_run(task)" in _fz_body, f"函数体 {len(_fz_body)} 字符")
+    check("★R38 清零失败**留痕不静默**：结果写进 task（cli_cleared / cli_clear_error）",
+          'task["cli_cleared"] = bool(out.get("ok"))' in runner_src
+          and 'task["cli_clear_error"] = str(out.get("error"))' in runner_src, "")
 
     # ── R36 ②：异常终止留痕的**行为级**验证（喂合成样本，不靠「源码里有这句话」）──
     #   ★ 隔离：把 `oi.OUTPUTS_DIR` 指到临时目录 —— 绝不能在真 outputs/ 里造垃圾。

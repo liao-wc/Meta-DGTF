@@ -145,17 +145,6 @@
       <div class="adv-group-body scroll">
         <div class="grid" id="adv-grid"></div>
       </div>
-      <!-- ★ R37：用户要求「只保留保存按钮和恢复出厂设置按钮，保存按钮居中」——
-             去掉了原「仅本次任务生效」（该行为仍可由「保存」覆盖持久化场景，故不留多余出口）。
-             ★ 两个按钮的排布：`.sheet-actions` 用 `justify-content:center` + 「保存」左侧留一个
-               与「恢复」等宽的隐形占位 ⇒ 「保存」**始终落在正中**（不是两个按钮整体居中）。
-             「保存」= 写回用户配置 dgtf_config.user.yaml（持久）；
-             「恢复出厂设置」= 删用户配置、回落后端出厂 dgtf_config.yaml。说明走悬停气泡。 -->
-      <div class="sheet-actions">
-        <span class="sa-spacer" aria-hidden="true"></span>
-        <button id="adv-save" class="ghost primary" data-tip="保存本组改动（写回用户配置 dgtf_config.user.yaml）">保存</button>
-        <button id="adv-reset" class="ghost danger" data-tip="删掉用户配置，全部参数回落到后端出厂的 dgtf_config.yaml">恢复出厂设置</button>
-      </div>
     </section>
 
     <!-- ★ R28：面板里**不再重复一条标题行**（标题与计数在上面的 sheet-head），点开即内容 -->
@@ -237,6 +226,21 @@
       </div>
       <div id="web-list" class="lib-list scroll"></div>
     </section>
+  </div>
+  <!-- ★★ R38：参数页的**共用底栏** —— 从 `#adv-group-page` 里提出来，放在 `.sheet-body`
+       之外、`#sheet` 之内（`flex:0 0 auto` 的兄弟节点）⇒ 无论当前是「高级参数首页（分组
+       列表）」还是「某一组的分组页」，这一条都在**同一位置**（面板底部）出现，且**居中**。
+       ★ 为什么必须提出来：原来它挂在 `#adv-group-page` 内部，首页根本没有 ⇒
+         用户进「高级参数」找不到「恢复出厂设置」（报「恢复出厂设置后按钮不见了」）；
+         且它在 `.panel{overflow:hidden}` 里、被 `.adv-group-body{flex:1 1 auto}` 挤到
+         可视区外（图 4 圈出的空位）。
+       ★ 显隐由 JS 按当前页控制（`syncAdvBar()`）：只在参数相关的两页显示，别的页 `hidden`。
+       「保存」= 把**所有**参数改动写回用户配置 dgtf_config.user.yaml（持久）并退出；
+       「恢复出厂设置」= 删用户配置、全部参数回落到后端出厂 dgtf_config.yaml。说明走悬停气泡。 -->
+  <div class="sheet-actions hidden" id="adv-actions">
+    <span class="sa-spacer" aria-hidden="true"></span>
+    <button id="adv-save" class="ghost primary" data-tip="保存所有参数改动（写回用户配置 dgtf_config.user.yaml）并退出">保存</button>
+    <button id="adv-reset" class="ghost danger" data-tip="删除用户配置，全部参数回落到后端出厂的 dgtf_config.yaml">恢复出厂设置</button>
   </div>
 </div>
 

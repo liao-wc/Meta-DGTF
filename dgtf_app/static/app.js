@@ -75,6 +75,10 @@ let advBackup = null;    // { key: {had, val} }
    才算「待保存」，不然用户看不出到底存住了没有（这正是他报「保存不了」的由来）。 */
 let advSaved = {};
 
+/* ★ R38：CLM（任务级）参数**已保存**的值（来自用户配置的 `cli:` 段，随 /api/params 下发）。
+   在 `advOverrides` 里没有对应键时，面板回显它 ⇒「用户保存的参数，数字显示在参数设置框里」。 */
+let advCliSaved = {};
+
 /* 这一组里「改了但还没持久化」的键有几个 */
 function advDirtyCount(g) {
   let n = 0;
@@ -85,9 +89,11 @@ function advDirtyCount(g) {
   return n;
 }
 
+/* ★ R38：两个数据属性都认 —— `data-cfg`（yaml 键）+ `data-adv`（CLM/CLI 任务级参数）。
+   都进同一个 `advOverrides`，于是「保存所有参数」自然把它们一起覆盖到。 */
 function rememberAdv(el) {
   if (!el || !el.dataset) return;
-  const key = el.dataset.cfg;
+  const key = el.dataset.cfg || el.dataset.adv;
   if (key) advOverrides[key] = el.value;
 }
 
@@ -97,8 +103,15 @@ function renderAdvItem(it) {
   const v = (it.key in advOverrides) ? advOverrides[it.key]
             : (it.value == null ? '' : String(it.value));
   let field, dropdown = false, plain = false;
-  if (it.placeholder != null) {            // CLI 参数：普通输入框（真值走 data-adv）
-    field = `<input data-adv="${esc(it.key)}" placeholder="${esc(it.placeholder)}">`;
+  if (it.placeholder != null) {
+    /* ★★ R38：CLM（CLI）参数 —— 是 12 个**任务级**参数（route/rounds/channels/…），
+       它们不写 yaml、只随任务当命令行 flag 传给引擎。
+       修法（原实现三个断点一起补）：
+         ① 值**回显**（原来只给 `placeholder` ⇒ 切走再切回，用户填的就没了）；
+         ② 真值同时挂 `data-adv`（收集用）—— 事件委托那边要认它（见 init）；
+         ③ **不**挂 `data-cfg` —— 它不属于 yaml 覆盖表，挂了会被塞进 `opts.overrides`
+            去改临时 config，那是错的路子。 */
+    field = `<input data-adv="${esc(it.key)}" value="${esc(v)}" placeholder="${esc(it.placeholder)}">`;
   } else if (it.type === 'select') {
     field = ddField(it.key, v, it.options);
     dropdown = true;
@@ -140,10 +153,15 @@ async function buildAdv() {
   try {
     const r = await api('/api/params');
     groups = r.groups || [];
+    /* ★ R38：后端把 CLM 组**已保存**的值（用户配置里的 `cli:` 段）随 `/api/params`
+       一并发回来（`r.cli`）—— 面板回显它，用户上次保存的值就还在框里。 */
+    advCliSaved = (r.cli && typeof r.cli === 'object') ? r.cli : {};
   } catch (_) { /* 忽略 */ }
+  const savedCli = advCliSaved || {};
   const cli = ADV.map(([k, label, ph]) =>
-    ({ key: k, label, placeholder: ph }));
-  advGroups = [{ key: '_cli', label: 'CLI 参数（随任务传）', items: cli }, ...groups];
+    ({ key: k, label, placeholder: ph,
+       value: (k in advOverrides) ? advOverrides[k] : (savedCli[k] || '') }));
+  advGroups = [{ key: '_cli', label: 'CLM 参数（随机任务传）', items: cli }, ...groups];
   renderAdvGroups();
 }
 
@@ -305,31 +323,48 @@ function onDdScroll(e) {
 
 function collectOpts() {
   const opts = {};
-  document.querySelectorAll('[data-adv]').forEach(el => {
-    const v = el.value.trim();
-    if (v) opts[el.dataset.adv] = v;
-  });
   const coerce = (v) => {
     if (v === 'true') return true;
     if (v === 'false') return false;
     if (/^-?\d+(\.\d+)?$/.test(String(v))) return Number(v);
     return v;
   };
+  /* ★ R38：CLM（任务级）键**不能**混进 `opts.overrides` —— 那是 yaml 覆盖表，
+     会被 `build_temp_config` 写进临时 config（而这些键压根不在 yaml 里）。
+     它们要落到 `opts` **顶层**（`build_cmd` 按 `_ARG_SPEC` 转成命令行 flag）。
+     判据：键名在 `ADV` 表里（那张表就是这 12 个 CLI 参数）。 */
+  const cliKeys = new Set(ADV.map(([k]) => k));
+  Object.keys(advOverrides).forEach(k => {
+    const v = advOverrides[k];
+    if (cliKeys.has(k)) {
+      const s = String(v == null ? '' : v).trim();
+      if (s) opts[k] = s; else delete opts[k];      // 清空 = 不传 = 引擎 auto
+    }
+  });
   /* ★ 先铺**累计改过的**（跨分组的都在 `advOverrides` 里），再用当前页 DOM 的值盖一层。
      只扫 DOM 是不行的：分组页按需渲染，同一时刻只有一个分组在 DOM 里，
      别的分组的改动会**整个丢掉**（用户报的「参数改了没保存」）。 */
   const ov = {};
-  Object.keys(advOverrides).forEach(k => { ov[k] = coerce(advOverrides[k]); });
+  Object.keys(advOverrides).forEach(k => {
+    if (!cliKeys.has(k)) ov[k] = coerce(advOverrides[k]);
+  });
   document.querySelectorAll('[data-cfg]').forEach(el => {
     ov[el.dataset.cfg] = coerce(el.value);
+  });
+  /* ★ CLM 组当前页的输入框也扫一遍（`advOverrides` 已收，但 DOM 里可能有更晚的输入） */
+  document.querySelectorAll('[data-adv]').forEach(el => {
+    const s = String(el.value || '').trim();
+    if (s) opts[el.dataset.adv] = s; else delete opts[el.dataset.adv];
   });
   if (Object.keys(ov).length) opts.overrides = ov;   // → 后端生成临时 config
   if ($('#mock').checked) opts.mock = true;
   /* 输入框里的两个功能胶囊（不点 = 不传 = 交给引擎 auto 自决）：
-       深度思考 → runtime.thinking    智能搜索 → runtime.web */
+       深度思考 → runtime.thinking    智能搜索 → runtime.web
+     ★ R38：CLM 组里显式填的 thinking/web **优先于**胶囊（胶囊是「快捷开关」，
+       参数面板是「精确指定」）—— 已有值时不覆盖。 */
   const th = $('#pill-thinking'), wb = $('#pill-web');
-  if (th && th.classList.contains('on')) opts.thinking = 'on';
-  if (wb && wb.classList.contains('on')) opts.web = 'on';
+  if (th && th.classList.contains('on') && !opts.thinking) opts.thinking = 'on';
+  if (wb && wb.classList.contains('on') && !opts.web) opts.web = 'on';
   return opts;
 }
 
@@ -799,7 +834,12 @@ function renderTasks() {
   const files = $('#rl-files');
   if (files) {
     /* ★ R34：**三个按钮始终在**（用户报「运行中看不见这三个按钮」）——
-       还没有产物时给「待生成」态（.pend：降透明度、不可点、提示跑完才有）。 */
+       还没有产物时给「待生成」态（.pend：降透明度、不可点、提示跑完才有）。
+       ★ R38：三个胶囊的**颜色跟随任务状态**（用户要求「右边三个按钮和左边按钮运行状态
+       一致，灯和字体颜色变化一致」）—— 原来写死绿色，运行中/失败/终止时与左徽章不同步。
+       做法：把状态类 `st-<status>` 打在容器上，CSS 里按 `.rl-files.st-running a` 一档一档给色。 */
+    const st = t.status || 'queued';
+    files.className = 'rl-files st-' + st;
     const pend = stamp ? '' : ' pend';
     const tip = stamp ? '' : ' title="跑完才有"';
     files.innerHTML =
@@ -2022,6 +2062,9 @@ function openSheet(key) {
     _desc.querySelectorAll('.sd').forEach(s => s.classList.toggle('on', s.dataset.for === key));
   }
   setSheetClose(key === 'adv-group-page');
+  /* ★ R38：参数页的**共用底栏**（保存 / 恢复出厂设置）只在这两页出现 ——
+     它是 `.sheet` 的直接子项，不属于任何 `.sheet-page`，所以要显式开关。 */
+  syncAdvBar(key);
   // 高级参数默认展开 —— 不然点进来只看到一行标题
   if (key === 'adv-panel') {
     const a = document.querySelector('.advanced');
@@ -2041,12 +2084,28 @@ function rollbackAdvGroup() {
 }
 
 /* ── 参数页的三个出口 ────────────────────────────────────────────
-   ★ 这三个动作必须分开，因为语义完全不同（用户报的「保存不了」就是前两个被合成一个）：
-     · saveAdvToFile()  「保存」       → 写回**用户配置** dgtf_config.user.yaml，**持久**；
-     · saveAdvForRun()  「仅本次」     → 留在 `advOverrides`，只影响**下一次任务**；
-     · resetAdv()       「恢复默认配置」→ 删用户配置，全部键回落到**后端出厂** yaml。 */
+/* ── 参数页的出口 ────────────────────────────────────────────────
+   ★ R38 语义定型（用户原话驱动，逐条对上）：
+     · 「保存按钮就是保存**所有**参数设置的按钮，保存参数改动设置并退出」
+         ⇒ saveAdvToFile() 提交**全部**待保存键（跨分组 + CLM 组），成功后关闭面板；
+     · 「恢复出厂设置是把**所有**参数值改成默认…默认就是原始 yaml 参数里的值」
+         ⇒ resetAdv() 删用户配置 ⇒ 全部回落到后端出厂 dgtf_config.yaml；
+     · 「用户不改不保存就是默认值，改动保存再变化」「永久写进用户参数配置文件里」
+         ⇒ 保存即持久（用户配置 dgtf_config.user.yaml），面板回显的就是那份； */
 
-/* 本组里「改了但还没保存」的键（`{键: 值}`） */
+/* 全部「改了但还没保存」的键（`{键: 值}`）—— **跨分组**，含 CLM/CLI 组。
+   ★ 这是 R38 修「CLM 参数设置了保存不了」的核心：
+     原来 `advDirtyOfGroup(g)` 只扫当前分组、且只认 `data-cfg`（CLI 项是 `data-adv`），
+     ⇒ CLM 组永远「0 项待保存」、点保存永远报「没有要保存的改动」。 */
+function advDirtyAll() {
+  const out = {};
+  Object.keys(advOverrides).forEach(k => {
+    if (advSaved[k] !== advOverrides[k]) out[k] = advOverrides[k];
+  });
+  return out;
+}
+
+/* 某个分组里「改了但还没保存」的键（分组按钮上的「N 项待保存」小标用） */
 function advDirtyOfGroup(g) {
   const out = {};
   (g.items || []).forEach(it => {
@@ -2056,22 +2115,27 @@ function advDirtyOfGroup(g) {
   return out;
 }
 
-/* 底部三个按钮上的计数（「保存 N 项」/「仅本次 N 项」）+ 无改动时置灰 */
+/* 底部出口上的计数（**全局**：所有分组 + CLM 一起算）+ 无改动时置灰 */
 function updateAdvActions() {
-  const g = advCurGroup;
-  if (!g) return;
-  const n = Object.keys(advDirtyOfGroup(g)).length;
-  const sv = $('#adv-save'), run = $('#adv-once');
+  const n = Object.keys(advDirtyAll()).length;
+  const sv = $('#adv-save');
   if (sv) {
     sv.disabled = !n;
-    sv.dataset.tip = n ? `把这一组改动写回用户配置 dgtf_config.user.yaml（${n} 项）`
-                       : '这一组还没有改动';
+    sv.dataset.tip = n
+      ? `保存所有参数改动（${n} 项）到用户配置 dgtf_config.user.yaml，然后退出`
+      : '当前没有要保存的改动';
     sv.classList.toggle('has-dirty', !!n);
   }
-  if (run) {
-    run.dataset.tip = n ? `不写回文件，只让下一次任务带上这 ${n} 项`
-                        : '不写回文件，只让下一次任务带上这些改动';
-  }
+}
+
+/* ★ R38：这一条底栏只在**参数相关的页**出现（首页 + 分组页），其它页隐藏。
+   它是 `.sheet` 的直接子项，不属于任何一个 `.sheet-page` ⇒ 必须由 JS 显式开关。 */
+function syncAdvBar(key) {
+  const bar = $('#adv-actions');
+  if (!bar) return;
+  const on = (key === 'adv-panel' || key === 'adv-group-page');
+  bar.classList.toggle('hidden', !on);
+  if (on) updateAdvActions();
 }
 
 /* 面板里的一条短提示（保存成功 / 失败 / 无改动），3 秒后自己消失。
@@ -2094,14 +2158,14 @@ function advToast(msg, kind) {
   advToastTimer = setTimeout(() => { el.className = 'adv-toast'; }, 3000);
 }
 
-/* 「保存」：把改动**持久化写回用户配置** dgtf_config.user.yaml */
+/* 「保存」：把**所有**参数改动**持久化写回用户配置** dgtf_config.user.yaml，然后退出面板。
+   ★ R38：「所有」= 跨分组的 `advOverrides` 全部 + CLM（CLI）组 —— 不只是当前这一组。
+   ★ 用户原话：「保存按钮就是保存所有参数设置的按钮，保存参数改动设置并退出」。 */
 async function saveAdvToFile() {
-  const g = advCurGroup;
-  if (!g) return;
-  const dirty = advDirtyOfGroup(g);
+  const dirty = advDirtyAll();
   const n = Object.keys(dirty).length;
   if (!n) {
-    advToast('这一组没有要保存的改动', 'warn');
+    advToast('没有要保存的改动', 'warn');
     return;
   }
   const btn = $('#adv-save');
@@ -2116,8 +2180,7 @@ async function saveAdvToFile() {
     Object.keys(dirty).forEach(k => { advSaved[k] = advOverrides[k]; });
     advBackup = null;                       // 已落盘，不必再回滚
     /* ★ 保存后**把面板从服务端重读一遍** —— 面板显示的就是配置文件里的真值，
-       而不是「我以为存进去了」。这一步本身就是「保存生效了」的自证。
-       `buildAdv()` 会重建 `advGroups`（`advCurGroup` 随之作废）⇒ 最后再清空它。 */
+       而不是「我以为存进去了」。这一步本身就是「保存生效了」的自证。 */
     await buildAdv();
     advCurGroup = null;
     const miss = (r.missing || []).length;
@@ -2125,7 +2188,10 @@ async function saveAdvToFile() {
     let msg = `已保存 ${(r.saved || []).length} 项到用户配置 ${r.user_file || 'dgtf_config.user.yaml'}`;
     if (miss) msg += ` · ${miss} 项不在配置文件里，已跳过`;
     if (skip) msg += ` · ${skip} 项密钥参数不写回`;
+    /* ★ R38：保存 = **保存并退出**（用户明确要求）。先给一条提示，再关面板 ——
+       提示挂在 `#sheet` 上，关面板后仍在（见 advToast 的注释）。 */
     advToast(msg, miss || skip ? 'warn' : 'ok');
+    closeSheet();
   } catch (e) {
     advToast('保存失败：' + e.message, 'err');
   } finally {
@@ -2133,11 +2199,12 @@ async function saveAdvToFile() {
   }
 }
 
-/* 「恢复默认配置」：删掉用户配置 ⇒ 全部参数回落到后端出厂的 dgtf_config.yaml。
+/* 「恢复出厂设置」：删掉用户配置 ⇒ **所有**参数回落到后端出厂的 dgtf_config.yaml。
+   ★ R38 文案对齐用户原话：「恢复出厂设置是把所有参数值改成默认，默认就是原始 yaml 参数里的值」。
    ★ 会丢掉用户此前保存的全部改动 ⇒ 二次确认（写错一次要一个个改回来）。 */
 async function resetAdv() {
   const btn = $('#adv-reset');
-  if (!window.confirm('恢复默认配置会删除你保存的全部参数改动，\n所有参数回到后端出厂默认值。确定继续？')) {
+  if (!window.confirm('恢复出厂设置会把所有参数改回出厂默认值，\n你在工作台保存过的全部改动都会被丢弃。确定继续？')) {
     return;
   }
   if (btn) btn.disabled = true;
@@ -2146,8 +2213,8 @@ async function resetAdv() {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}',
     });
     if (r.error) throw new Error(r.error);
-    /* ★ 内存里的累积表/快照/待保存集合也一并清空 —— 不然后面「仅本次任务」
-       会把已被删掉的旧值又带回去，用户会以为「恢复了默认但没生效」。 */
+    /* ★ 内存里的累积表 / 快照 / 待保存集合也一并清空 —— 不清的话旧值还留在 `advOverrides`
+       里，下一轮 `collectOpts()` 会把它们当「当前面板值」提交，用户会以为「恢复了默认但没生效」。 */
     Object.keys(advOverrides).forEach(k => delete advOverrides[k]);
     Object.keys(advSaved).forEach(k => delete advSaved[k]);
     advBackup = null;
@@ -2155,23 +2222,13 @@ async function resetAdv() {
     await buildAdv();                     // 从服务端重读 ⇒ 面板显示出厂值
     openSheet('adv-panel');
     renderAdvGroups();
-    advToast(r.removed ? '已恢复默认配置（用户配置已删除，回落到出厂 yaml）'
-                       : '本来就是默认配置，无需恢复', 'ok');
+    advToast(r.removed ? '已恢复出厂设置（用户配置已删除，全部参数回落到出厂 yaml）'
+                       : '本来就是出厂默认值，无需恢复', 'ok');
   } catch (e) {
-    advToast('恢复默认失败：' + e.message, 'err');
+    advToast('恢复出厂设置失败：' + e.message, 'err');
   } finally {
     if (btn) btn.disabled = false;
   }
-}
-
-/* 「仅本次任务生效」：不写回 yaml，只让下一次任务带上这份覆盖 */
-function saveAdvForRun() {
-  advBackup = null;                         // 保留改动（放在 advOverrides 里）
-  openSheet('adv-panel');
-  renderAdvGroups();
-  const n = Object.keys(advOverrides).length;
-  advToast(n ? `已记下 ${n} 项，只作用于下一次任务（不写回配置文件）`
-             : '没有要带上的改动', n ? 'ok' : 'warn');
 }
 
 function closeSheet() {
@@ -2233,14 +2290,12 @@ function init() {
   });
   const _shc = $('#sheet-close');
   if (_shc) _shc.addEventListener('click', closeSheet);
-  /* 参数分组页的**两个出口**（顶部「← 返回」＝ 不保存退出，与关闭同义）：
-       「保存」       → 写回用户配置 dgtf_config.user.yaml（持久）
-       「仅本次」     → 只作用于下一次任务（不写回文件）
-       「恢复默认配置」→ 删用户配置，回落到后端出厂 yaml */
+  /* 参数页底栏的**两个出口**（★ R38：底栏是 `.sheet` 的直接子项、参数两页共用）：
+       「保存」        → 把所有参数改动写回用户配置 dgtf_config.user.yaml（持久）**并退出**；
+       「恢复出厂设置」→ 删用户配置，全部参数回落到后端出厂 yaml。
+       （`#adv-once`「仅本次」已按用户要求移除。） */
   const _advSave = $('#adv-save');
   if (_advSave) _advSave.addEventListener('click', saveAdvToFile);
-  const _advOnce = $('#adv-once');
-  if (_advOnce) _advOnce.addEventListener('click', saveAdvForRun);
   const _advReset = $('#adv-reset');
   if (_advReset) _advReset.addEventListener('click', resetAdv);
 
@@ -2311,11 +2366,13 @@ function init() {
   });
 
   // 参数值一改就记进 `advOverrides`（分组页会按需重建，靠它留住用户输入、
-  // 也靠它把**所有分组**的改动一起提交），并同步底部按钮上的计数
+  // 也靠它把**所有分组**的改动一起提交），并同步底部按钮上的计数。
+  // ★ R38：**`data-adv`（CLM/CLI 参数）也要收** —— 原来只认 `data-cfg`，
+  //   于是 CLM 组的输入永远进不了累积表 ⇒ 点保存报「没有要保存的改动」（用户报的正是这个）。
   const _advGrid = $('#adv-grid');
   if (_advGrid) {
     ['input', 'change'].forEach(ev => _advGrid.addEventListener(ev, e => {
-      const el = e.target.closest && e.target.closest('[data-cfg]');
+      const el = e.target.closest && e.target.closest('[data-cfg],[data-adv]');
       if (el) { rememberAdv(el); updateAdvActions(); }
     }));
   }

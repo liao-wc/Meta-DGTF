@@ -548,6 +548,18 @@ def start_task(question: str, opts: dict | None = None) -> str:
         if _cfg:
             opts["_config"] = _cfg
 
+    # ★★ R38：CLM（任务级）参数的默认值 = 用户配置 `cli:` 段里**保存**的那份。
+    #    用户要求「不然就按照用户参数面板的参数运行」—— 面板没在这次任务里传的键，
+    #    用他上次保存的值；本次显式传的（`opts` 里已有）优先。
+    #    （跑完 `_finalize` 会把 `cli:` 段清空 ⇒ 下下轮又回到「未指定」。）
+    try:
+        import params as _P2
+        for _ck, _cv in (_P2.load_cli_saved() or {}).items():
+            if _ck in _ARG_SPEC and not opts.get(_ck):
+                opts[_ck] = _cv
+    except Exception:  # noqa: BLE001
+        pass
+
     task = {
         "id": tid,
         "question": question,
@@ -674,11 +686,41 @@ def _finalize(task: dict, final: str) -> None:
     ★ 顺序要紧：**先落盘归档，再改 status**。
       反过来的话，前端有可能在 status 还是 done 的那一次轮询就停掉轮询，
       归档链接（archive_log / archive_json / layer_artifacts）就永远不出现了。
+    ★★ R38：收尾时**清掉 CLM 参数**（用户要求「除了 CLM 参数每执行一次任务清零外，
+      其他保留原保存的值」）—— 见 `_clear_cli_after_run`。放在最后，
+      归档里已经用掉了这一次的值，清不清都不影响本次结果。
     """
     sync_live_log(task)
     _archive(task, final)
     task["status"] = final
     _clear_live_run(task)
+    _clear_cli_after_run(task)
+
+
+def _clear_cli_after_run(task: dict) -> None:
+    """★ R38：任务跑完 ⇒ 把用户配置里 `cli:` 段（CLM/任务级参数）**清空**。
+
+    ★ 用户原话：「除了 CLM 参数每执行一次任务清零外，其他保留原保存的值」
+      —— CLM 参数是「随机任务传」的一次性指令（路由组合 / 圈数 / 通道…），
+      跑完就该回到「未指定、交给引擎 auto 自决」，而不是粘在下次任务上。
+    ★ 只清 `cli:` 段 —— 其余用户保存的键（模型 / 联网配置…）**原样保留**
+      （同一个文件里的其他行不动，走 params.clear_cli_saved 的「重写且保留其余」实现）。
+    ★ 清完后**同步 task 上的 opts**：本次任务的命令行已经发出去了，不影响它；
+      这里清的是「下一次任务的默认值」。
+    """
+    try:
+        import params as _P           # 延迟导入（engine_runner 与 params 无循环依赖）
+        out = _P.clear_cli_saved()
+        task["cli_cleared"] = bool(out.get("ok"))
+        if not out.get("ok"):
+            task["cli_clear_error"] = str(out.get("error"))
+    except Exception as e:  # noqa: BLE001
+        # ★ 失败必须留痕（红线）：字段进 task ⇒ API 可查；堆栈进服务日志。
+        #   清不掉不该影响任务状态（本次已经跑完了）。
+        task["cli_cleared"] = False
+        task["cli_clear_error"] = f"{type(e).__name__}: {e}"
+        import traceback
+        traceback.print_exc()
 
 
 def cancel_task(tid: str) -> bool:

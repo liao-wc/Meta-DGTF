@@ -71,6 +71,17 @@ READONLY_KEYS = frozenset({
     "external_anchor.api_key_env",
 })
 
+# ★★ R38：CLM（任务级）参数 —— 12 个，**不在 dgtf_config.yaml 里**，是随任务当命令行
+#   flag 传给引擎的（见 engine_runner._ARG_SPEC）。用户要求把它们也做进参数面板、
+#   能保存、能回显（「永久写进用户参数配置文件里」），所以用户配置里单独开一个 `cli:`
+#   段存它们；运行时先读这段当默认值，任务级覆盖再压一层。
+#   ★ 名字沿用用户在界面上看到的叫法（CLM = 任务命令行）。
+CLI_KEYS = (
+    "route", "rounds", "channels", "parallel", "web", "thinking",
+    "effort", "orientation", "landing", "decidability", "appendix", "keep",
+)
+CLI_SECTION = "cli"        # 用户配置里的段名（`cli:` → 上面这 12 个键）
+
 # ── 参数键 → 中文说明（标签统一成「键（说明）」，与 CLI 参数那一组同格式）──────
 # ★ 为什么写显式表、不去抓 yaml 注释：注释是给**一整段**写的，逐键抓会继承到
 #   容器 / 甚至文件头的文字（实测 164 个键里 47 个只能继承，抓出来是
@@ -379,10 +390,28 @@ def user_overrides() -> dict:
     return _load_yaml_flat(USER_CFG)
 
 
+def load_cli_saved() -> dict:
+    """★ R38：用户配置里 `cli:` 段保存的 CLM（任务级）参数值（`{键: 值}`，只留非空）。
+
+    面板靠它回显「用户上次保存的值」—— 用户要求「用户保存的参数，数字显示在参数
+    设置框里」。出厂没有这一段（这 12 个键不属于 yaml 配置）⇒ 未保存时返回空表。
+    """
+    try:
+        raw = yaml.safe_load(USER_CFG.read_text(encoding="utf-8", errors="replace")) or {}
+    except Exception:  # noqa: BLE001
+        return {}
+    seg = raw.get(CLI_SECTION) if isinstance(raw, dict) else None
+    if not isinstance(seg, dict):
+        return {}
+    return {k: v for k, v in seg.items() if k in CLI_KEYS and str(v).strip() != ""}
+
+
 def load_params() -> dict:
-    """返回 {groups:[{key,label,items:[…]}], total, user_keys:[…]}。
+    """返回 {groups:[{key,label,items:[…]}], total, user_keys:[…], cli:{…}}。
 
     每项带 `user_set`：该键是否被用户配置覆盖过（前端据此标「已改」）。
+    ★ R38 增 `cli`：CLM 组**已保存**的值（见 `load_cli_saved`）—— 前端 `buildAdv()`
+      用它回显输入框，用户上次存的 CLM 参数就还在。
     """
     flat = effective_flat()
     uset = set(user_overrides().keys())
@@ -400,7 +429,12 @@ def load_params() -> dict:
                     "items": items})
     out.sort(key=lambda g: (_ORDER.get(g["key"], 99), g["key"]))
     return {"groups": out, "total": len(flat),
-            "user_keys": sorted(uset)}
+            # ★★ R38 真 bug（判据抓出来的）：`uset` 里是**扁平键名** `cli.route`，
+            #   而 `CLI_KEYS` 里是**叶子名** `route` —— 直接做差集**一个都排不掉**，
+            #   于是「已改 N 项」会把 CLM 也算进去。要按前缀排。
+            "user_keys": sorted(k for k in uset
+                                if not k.startswith(CLI_SECTION + ".")),
+            "cli": load_cli_saved()}
 
 
 def _fmt_scalar(v, quote_str: bool = False) -> str:
@@ -506,7 +540,13 @@ def _set_flat_in_text(text: str, flat_key: str, new_val) -> tuple[str, str]:
 
 
 def _dump_user_cfg(flat_user: dict) -> str:
-    """把扁平键表还原成嵌套 dict 并 dump 成 yaml 文本（带文件头说明）。"""
+    """把扁平键表还原成嵌套 dict 并 dump 成 yaml 文本（带文件头说明）。
+
+    ★ R38：`cli.*` 这几个键单独成段（`cli:` 下挂 route/rounds/…）——
+      它们**不是** `dgtf_config.yaml` 里的配置键，混进普通键表会让人误以为出厂有它们。
+      `mk <flat_key>` 时把 `cli.route` 还原成 `{cli: {route: …}}` 是天然成立的
+      （点分键按段嵌套），所以这里不需要特判 —— 只要保证写回时键名带 `cli.` 前缀。
+    """
     root: dict = {}
     for k, v in flat_user.items():
         node = root
@@ -518,7 +558,12 @@ def _dump_user_cfg(flat_user: dict) -> str:
                 node[p] = nxt
             node = nxt
         node[parts[-1]] = v
-    body = yaml.safe_dump(root, allow_unicode=True, sort_keys=True,
+    # 让 `cli:` 段排在最前（其余按字母），读文件时一眼看到任务级参数
+    ordered: dict = {}
+    if CLI_SECTION in root:
+        ordered[CLI_SECTION] = root.pop(CLI_SECTION)
+    ordered.update(root)
+    body = yaml.safe_dump(ordered, allow_unicode=True, sort_keys=True,
                           default_flow_style=False)
     head = (
         "# 元DGTF · 前端用户运行配置（由工作台「高级参数 → 保存」自动维护）\n"
@@ -526,8 +571,12 @@ def _dump_user_cfg(flat_user: dict) -> str:
         "# 这是一份**增量配置**：只记录你在工作台里改过的键。\n"
         "# 生效规则：用户配置优先，未在此文件出现的键一律回落到\n"
         "# `dgtf_config.yaml`（后端出厂原始默认）。\n"
-        "# 想整体回到出厂状态 —— 在工作台点「恢复默认配置」，或直接删掉本文件。\n"
+        "# 想整体回到出厂状态 —— 在工作台点「恢复出厂设置」，或直接删掉本文件。\n"
         "# ★ 手改本文件也生效；改动会在下次跑任务时被读到。\n"
+        "#\n"
+        "# `cli:` 段 = 工作台「CLM 参数（随机任务传）」那一组 —— 12 个**任务级**参数，\n"
+        "# 它们不在 dgtf_config.yaml 里，是随任务当命令行参数传给引擎的。\n"
+        "# ★ 这一段的键在**每次任务跑完后会被清空**（CLM 参数只作用于当次任务）。\n"
     )
     return head + body
 
@@ -536,10 +585,12 @@ def save_params(overrides: dict) -> dict:
     """把 `{扁平键: 值}` **持久化写回用户配置** `dgtf_config.user.yaml`。
 
     返回 `{"saved": [...], "skipped": [...], "missing": [...], "unchanged": [...],
-    "error": str|None, "user_file": str}`。三条硬约束：
+    "error": str|None, "user_file": str}`。四条硬约束：
       · 密钥键（READONLY_KEYS）**拒绝写回** —— 见那张表的注释；
+      · ★ R38：CLM（`cli.*`）键**允许写回** —— 它们不在出厂 yaml 里，但要持久化到
+        用户配置的 `cli:` 段（判「存在」时不能只对照出厂表，要单独放行）；
       · 类型按**出厂 yaml 里的原类型**还原（`_coerce_like`），列表不会被写成字符串；
-      · **出厂 `dgtf_config.yaml` 一个字节都不动**（它是对照基线，「恢复默认」靠它）；
+      · **出厂 `dgtf_config.yaml` 一个字节都不动**（它是对照基线，「恢复出厂」靠它）；
         写前备份用户配置，写完**回读校验**读回来的值确实变了。
     """
     out = {"saved": [], "skipped": [], "missing": [], "unchanged": [],
@@ -558,6 +609,16 @@ def save_params(overrides: dict) -> dict:
         k = str(k)
         if k in READONLY_KEYS:
             out["skipped"].append(k)
+            continue
+        # ★ R38：CLM 键 —— 不在出厂表里，但仍要持久化（落到 `cli:` 段）
+        if k.startswith(CLI_SECTION + "."):
+            leaf = k.split(".", 1)[1]
+            if leaf not in CLI_KEYS:
+                out["missing"].append(k)
+                continue
+            val = str(v).strip()
+            merged[k] = val
+            out["saved"].append(k)
             continue
         if k not in factory:
             out["missing"].append(k)
@@ -611,6 +672,37 @@ def reset_params() -> dict:
     except OSError as e:
         out["ok"] = False
         out["error"] = f"删除用户配置失败：{e}"
+    return out
+
+
+def clear_cli_saved() -> dict:
+    """★ R38：**清空用户配置里的 `cli:` 段**（CLM 参数「每执行一次任务清零」）。
+
+    返回 `{"ok": bool, "removed": int, "error": str|None}`。
+    ★ 只动 `cli:` 这一段：把它的键从扁平表里剔掉，其余用户保存的键**一字不动**地写回
+      —— 不能整个删文件（那样会把模型 / 联网那些用户配置一起抹了）。
+    ★ 没有 `cli:` 段时是**幂等空操作**（连文件都不重写），避免无谓的 mtime 抖动。
+    """
+    out = {"ok": True, "removed": 0, "error": None}
+    if not USER_CFG.exists():
+        return out
+    cur = _load_yaml_flat(USER_CFG)
+    cli_keys = [k for k in cur if k.startswith(CLI_SECTION + ".")]
+    if not cli_keys:
+        return out
+    kept = {k: v for k, v in cur.items() if not k.startswith(CLI_SECTION + ".")}
+    try:
+        if USER_CFG.exists():
+            USER_CFG.with_suffix(".yaml.bak").write_bytes(USER_CFG.read_bytes())
+        if kept:
+            USER_CFG.write_text(_dump_user_cfg(kept), encoding="utf-8", newline="\n")
+        else:
+            # 只剩 cli 段 ⇒ 整份用户配置没内容了，删掉它（等于回到全出厂）
+            USER_CFG.unlink()
+        out["removed"] = len(cli_keys)
+    except OSError as e:
+        out["ok"] = False
+        out["error"] = f"清空 CLM 参数失败：{e}"
     return out
 
 
