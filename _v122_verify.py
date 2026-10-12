@@ -367,8 +367,8 @@ def phase1(src, mod):
         _s = (HERE / src).read_text(encoding="utf-8")
     except Exception:
         _s = ""
-    check("1.5.6", "未生质量" in _s and "修行层不追求收敛" in _s,
-          "源码含 未生质量 / 修行层不追求收敛")
+    check("1.5.6", "未生质量" in _s and "修行层本来就能停" in _s,
+          "源码含 未生质量 / 修行层本来就能停")
 
     # 1.6 头部渲染分层目标（完整版口径：4 行计数，objective 折进括号）
     lof = getattr(mod, "_layer_objective_lines", None)

@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.23.py"
+SRC = HERE / "元DGTF-V1.23.24.py"
 
 os.environ.setdefault("DGTF_API_KEY", "sk-smoke-test-key")
 
@@ -1245,7 +1245,9 @@ def check_v12317_und_coverage_trace():
         print(f"  ✗ [覆盖率] 代码实算的 2/3 没显示：{_seg!r}")
         return False
 
-    # ---- [v1.21.57] 不可判定通道也要双口径（清晰度 + 结构覆盖率）----
+    # ---- [v1.21.57 / v1.23.24] 不可判定通道的读数（清晰度 + 结构读数）----
+    #   ★ 这里喂的是**只有旧键**的 dict ⇒ 走 v1.23.24 的 legacy 分支，
+    #     渲染成「结构覆盖率 …（旧口径…）」，证明历史 packed 重渲染不丢信息。
     _m.pools["1"].undecidable_channel = {
         "clarity_history": [0.6, 0.75],
         "struct_coverage_history": [0.4, 0.6],
@@ -1258,21 +1260,21 @@ def check_v12317_und_coverage_trace():
         print(f"  ✗ [覆盖率] 不可判定通道的清晰度没显示：{_seg2!r}")
         return False
     if "结构覆盖率 0.60" not in _seg2 or "已对上 6/10" not in _seg2:
-        print(f"  ✗ [覆盖率] 不可判定通道的结构覆盖率（代码实算）没显示："
+        print(f"  ✗ [覆盖率] 不可判定通道的旧口径结构读数（legacy dict）没显示："
               f"{_seg2!r}")
         return False
     # 可判定通道有数据时，两条通道的行必须同时出现
     if "可判定通道" not in _seg2 or "不可判定通道" not in _seg2:
         print(f"  ✗ [覆盖率] 两条通道没并排显示：{_seg2!r}")
         return False
-    # 只有不可判定时（fallback）也要给结构覆盖率，不能只剩清晰度
+    # 只有不可判定时（fallback）也要给结构读数，不能只剩清晰度
     _m3 = mod.MetaDGTF(build_cfg(False))
     _m3.dec_tracker = mod.ChannelTracker("decidable")
     _m3.pools["1"].undecidable_channel = dict(
         _m.pools["1"].undecidable_channel)
     _seg3 = _m3._coverage_segment()
     if "可判定通道不适用" not in _seg3 or "结构覆盖率" not in _seg3:
-        print(f"  ✗ [覆盖率] 只有不可判定通道时（fallback）没给结构覆盖率："
+        print(f"  ✗ [覆盖率] 只有不可判定通道时（fallback）没给结构读数："
               f"{_seg3!r}")
         return False
     print("  ✓ [覆盖率] 可判定/不可判定两条通道都是双口径"
@@ -4421,8 +4423,9 @@ def check_v69_abcde():
     这一版的判据一律做成"能自动查"的数：
       A 数**次数** —— 3 条 amps × 5 个候选必须得 5（不能 15）；
         空 amps × 7 必须得 7（不能 0）。两个方向都锁，才叫锁住。
-      B 走**生产入口** `Pool.add_undecidable` —— 两个覆盖率必须同时落下来，
-        且旧键 `last_struct_coverage` 的值一个数不许变（它喂模型）。
+      B 走**生产入口** `Pool.add_undecidable` —— 独立度与对齐覆盖率必须
+        同时落下来；旧键 `last_struct_coverage`（旧口径命中比例）
+        一个数不许变（它喂模型，也是历史语料的口径）。
       C 截模型的 **system 原文** —— 不看代码分支，看模型真收到什么；
         逐 entry 核「对撞的对象是：…」，并确认兜底分支不再串层。
       D 真·凭空一条仍须被抓出（负对照：证明判据没被放宽成摆设）；
@@ -4475,11 +4478,16 @@ def check_v69_abcde():
     if _ch.get("last_aligned_hit") != 1:
         bad.append(f"[B] last_aligned_hit 应为 1，实得 "
                    f"{_ch.get('last_aligned_hit')}")
+    if _ch.get("last_indep_ratio") != 1.0 \
+            or _ch.get("last_indep_pool") != 1:
+        bad.append(f"[B] 独立度没落下来：ratio="
+                   f"{_ch.get('last_indep_ratio')} "
+                   f"pool={_ch.get('last_indep_pool')}（应 1.0 / 1）")
     _m2 = mod.MetaDGTF(cfg)
     _m2.pools["1"].undecidable_channel = _ch
     _line = _m2._und_channel_line()
-    if "结构覆盖率 0.00" not in _line:
-        bad.append(f"[B] 结构覆盖率（旧口径）没渲染：{_line!r}")
+    if "独立度 1.00" not in _line or "不是覆盖率" not in _line:
+        bad.append(f"[B] 独立度（新口径）没渲染或没标口径：{_line!r}")
     if "对齐覆盖率 1.00" not in _line:
         bad.append(f"[B] 对齐覆盖率没渲染（有算法没出口）：{_line!r}")
     if "已对上 1/1" not in _line:
@@ -6966,7 +6974,7 @@ def check_v122_phase1(SRC=None):
         # ⑥ 修行层停止理由含「未生质量」（源码级）
         src = _v122_src_text(SRC)
         assert "未生质量" in src, "stop_reason 改写没落进源码"
-        assert "修行层不追求收敛" in src, "缺红线注释"
+        assert "修行层本来就能停" in src, "缺红线注释"
         assert "分层目标" in src, "头部渲染没落进源码"
 
         # ⑦ route 分层：boundary 保留全四层；decision 允许砍层
@@ -10675,6 +10683,187 @@ def check_v12311_writeback_and_web():
 
 # <<<end v123 checks>>>
 
+def check_v12324_indep_therapy():
+    """[v1.23.24] ① 不可判定「独立度」口径（取代误名的结构覆盖率）
+       ② 修行层停止判据与文案（去 ing / 补空括号 / 一律附体检）。
+
+    ★ 每条判据都带负对照；判别力另由 `_mut_v12324.py` 的 7 个变异体证明
+      （没有变异体的「全绿」只说明判据没跑）。
+    ★ 独立度夹具的判别力：旧口径 = 1/3 = 0.333，新口径 = 2/4 = 0.500
+      —— 两者不同值，否则这条样例在两种实现下同结论、等于没测。
+    """
+    import contextlib as _cl
+    import inspect as _ins
+    import io as _io
+    bad = []
+    src = SRC.read_text(encoding="utf-8").replace("\r\n", "\n")
+    cfg = build_cfg(False)
+
+    # ================= A. 独立度口径 =================
+    _asp = ["本体论地位需要先确定登记位置", "自指结构导致时刻错开",
+            "判决实验缺少可操作标准"]
+    _amps = ["本体论地位需要先确定登记位置",
+             "任何判定都要求对象在登记前已有边界，本体论地位因此没有登记位置",
+             "与上述各项均无关的一条独立结构观察结论",
+             "关于尺度效应的一条独立观察，与判定标准无关"]
+    _p = mod.Pool()
+    _p.add_undecidable({"structural_amps": list(_amps), "aligned_amps": [],
+                        "clarity": 0.6}, list(_asp), layer=1)
+    _ch = _p.undecidable_channel
+
+    if _ch.get("last_indep_pool") != 4 or _ch.get("last_indep_free") != 2:
+        bad.append(f"[A] 独立度计数错：pool={_ch.get('last_indep_pool')} "
+                   f"free={_ch.get('last_indep_free')}（应 4 / 2）")
+    if abs(float(_ch.get("last_indep_ratio") or -1) - 0.5) > 1e-9:
+        bad.append(f"[A] 独立度不是 2/4=0.5：{_ch.get('last_indep_ratio')}")
+    if list(_ch.get("indep_history") or []) != [0.5]:
+        bad.append(f"[A] indep_history 不对：{_ch.get('indep_history')}")
+    # ★ 不变式：旧键一个数不许动（历史语料的口径 + 命中轨迹的输入）
+    if _ch.get("last_struct_coverage") != 0.3333333333333333:
+        bad.append(f"[A] 旧键 last_struct_coverage 被动了："
+                   f"{_ch.get('last_struct_coverage')}（应 1/3）")
+    # 空池：必须 None（不可计算），不许 0.0（假读数）
+    _pe = mod.Pool()
+    _pe.add_undecidable({"structural_amps": [], "aligned_amps": [],
+                         "clarity": 0.5}, list(_asp), layer=1)
+    if _pe.undecidable_channel.get("last_indep_ratio") is not None:
+        bad.append(f"[A] 空池的独立度不是 None："
+                   f"{_pe.undecidable_channel.get('last_indep_ratio')}")
+
+    # 产物渲染：新口径 + 口径标注；新口径 dict 里不许再出现「结构覆盖率」
+    _mg = mod.MetaDGTF(cfg)
+    _mg.pools["1"].undecidable_channel = _ch
+    _line = _mg._und_channel_line()
+    if "独立度 0.50" not in _line:
+        bad.append(f"[A] 产物没渲染独立度：{_line!r}")
+    if "2/4" not in _line:
+        bad.append(f"[A] 独立度的分子分母没渲染：{_line!r}")
+    if "不是覆盖率" not in _line:
+        bad.append(f"[A] 口径标注（不是覆盖率）缺了：{_line!r}")
+    if "结构覆盖率" in _line:
+        bad.append(f"[A] 新口径 dict 还在印「结构覆盖率」：{_line!r}")
+    # 负对照：历史 packed（只有旧键）必须仍渲染得出来，且显式标「旧口径」
+    _m3 = mod.MetaDGTF(cfg)
+    # ★ 这是**真实历史 packed** 的形态：v1.23.23 的 add_undecidable 会写
+    #   last_struct_coverage。smoke 里 v69 那份手工 dict 裁掉了这个键，
+    #   照抄它去测 `_pool_shape`（那里的门正是这个键）会得到「空」——
+    #   那是夹具不像历史，不是实现丢了东西。
+    _m3.pools["1"].undecidable_channel = {
+        "clarity_history": [0.5], "struct_coverage_history": [0.6],
+        "und_aspects": [f"面{i}" for i in range(10)],
+        "last_struct_hit": 6, "last_struct_coverage": 0.6,
+        "structural_amps": ["a"], "aligned_amps": [],
+    }
+    _l3 = _m3._und_channel_line()
+    if "结构覆盖率 0.60" not in _l3 or "旧口径" not in _l3:
+        bad.append(f"[A-负对照] 历史 packed 的旧口径读数丢了：{_l3!r}")
+
+    # 喂模型的 shape（★ 运行期可见变化：新口径进、旧口径作回退）
+    def _shape(_pl):
+        _dg = mod.DGTF("1", mod.LLM(cfg), cfg)
+        _dg.verbose = False
+        with _cl.redirect_stdout(_io.StringIO()):
+            return _dg._pool_shape(_pl, "P")
+
+    _s_new = _shape(_p)
+    if "不可判定独立度 0.50" not in _s_new:
+        bad.append(f"[A] shape 没喂独立度：{_s_new!r}")
+    _s_leg = _shape(_m3.pools["1"])
+    if "不可判定结构覆盖 0.60" not in _s_leg:
+        bad.append(f"[A-负对照] legacy 池的 shape 旧口径丢了：{_s_leg!r}")
+
+    # 源码接线：两处调用点 + 两处 sat 块
+    if src.count("stall_is_sat=_stall_is_sat") != 2:
+        bad.append("stall_is_sat 没接到两条通道上（%d 处）"
+                   % src.count("stall_is_sat=_stall_is_sat"))
+    if src.count(
+            "_stall_is_sat = bool(sat_verdict is False and not stalled)") != 2:
+        bad.append("两处 sat 块没都算 _stall_is_sat")
+    if "stall_is_sat" not in _ins.signature(
+            mod.MetaDGTF._stop_reasons).parameters:
+        bad.append("_stop_reasons 没有 stall_is_sat 形参")
+
+    # ================= B. 修行层停止判据/文案 =================
+    _mr = mod.MetaDGTF(cfg)
+    _sp = dict(mod.DEFAULT_CONFIG["spiral"])
+
+    def _rs(**kw):
+        base = dict(entry="0", layer_no=3, rounds_n=3, total_rounds=3,
+                    sp=_sp, soft_max=3, sim_thr=0.8, stable_need=2,
+                    idle_limit=2, r_idle_limit=2, r_stall_limit=2,
+                    rephrase_streak=0, carry_streak=0, idle_new_amp=0,
+                    idle_new_thread=0, idle_stall=0, stall_why="",
+                    sat_override=False, prev_product="",
+                    view=mod.View(entry="0"), idles=0)
+        base.update(kw)
+        with _cl.redirect_stdout(_io.StringIO()):
+            _r, _ = _mr._stop_reasons(**base)
+        return " | ".join(str(x) for x in _r)
+
+    # B1 空括号：sat 顶计数那一支
+    _sat = _rs(idle_stall=2, stall_is_sat=True)
+    if "（）" in _sat:
+        bad.append(f"[B] sat 支路仍印空括号：{_sat!r}")
+    if "结构饱和度判定" not in _sat:
+        bad.append(f"[B] sat 支路没有自己的说法：{_sat!r}")
+    # 负对照：真 stall 那一支必须照旧带 stall_why
+    _real = _rs(idle_stall=2, stall_why="修行层无新增或无推进")
+    if "修行层无新增或无推进" not in _real or "（）" in _real:
+        bad.append(f"[B-负对照] 真 stall 支路的措辞被改坏了：{_real!r}")
+    # 反向：元层 sat_override 那条（条件 2）仍要能印「结构饱和度判定」
+    _ov = _rs(entry="all", idle_new_amp=2, sat_override=True,
+              view=mod.View(entry="all"))
+    if "结构饱和度判定" not in _ov:
+        bad.append(f"[B] 元层 sat_override 的说法没了：{_ov!r}")
+
+    # B2 条件 1 文案按层取词：不借「ing」
+    for _e, _lab in (("0", "修行层"), ("1", "研究层"),
+                     ("both", "对撞层"), ("all", "元层")):
+        _t = _rs(entry=_e, rephrase_streak=2, view=mod.View(entry=_e))
+        if f"{_lab}连续 2 圈复述" not in _t:
+            bad.append(f"[B] {_e} 层条件 1 文案不是「{_lab}…」：{_t!r}")
+        if "ing" in _t:
+            bad.append(f"[B] {_e} 层停因里还有「ing」：{_t!r}")
+    if "圈复述" in _rs(rephrase_streak=0):
+        bad.append("[B-负对照] 没复述却给了复述理由")
+
+    # B3 修行层任何停止都附体检；非修行层不附（负对照）
+    def _fin(entry, why):
+        _v = mod.View(entry=entry)
+        _v.stop_reason = why
+        _st = {"roles_hist": ["摊开"], "total_rounds": 4, "round_log": [],
+               "all_rehashed": [], "all_candidates": [], "all_amps": [],
+               "all_threads": [], "all_expanded_descs": [],
+               "all_dec_products": [], "all_und_products": [],
+               "r": 4, "rounds_n": 4, "sp": mod._spiral_for(cfg, entry)}
+        with _cl.redirect_stdout(_io.StringIO()):
+            mod.MetaDGTF(cfg)._finalize_layer_common(entry, _v, _st)
+        return _v.stop_reason or ""
+
+    for _why in ("连续 2 轮有新增但无推进（修行层无新增或无推进），螺旋停止",
+                 "体力耗尽（4 圈走满，未触发任何停止判据，是被截断不是自然停止）"):
+        _o = _fin("0", _why)
+        if "未生质量" not in _o or "本轮显形" not in _o:
+            bad.append(f"[B] 修行层停因没附体检（{_why[:12]}…）：{_o!r}")
+    if "未生质量" in _fin("1", "研究层双通道均收敛，螺旋停止"):
+        bad.append("[B-负对照] 非修行层也被附了体检")
+
+    # B4 源码层面：旧红线句已不在、新句在、显式清单在
+    if "修行层不追求收敛" in src:
+        bad.append("[B] 源码里还有「修行层不追求收敛」这句旧红线")
+    if "修行层本来就能停" not in src:
+        bad.append("[B] 源码里缺新红线注释")
+    if "适用停止条件清单" not in src:
+        bad.append("[B] _stop_reasons 的显式适用条件清单缺了")
+
+    if bad:
+        for _x in bad:
+            print("  \u2717 [v12324] %s" % _x)
+        return False
+    print("  \u2713 [v12324] 独立度口径（旧键不动 / 空池 None / legacy 回退 / "
+          "shape 已换）；修行层停因去 ing、无空括号、一律附体检；两通道接线齐")
+    return True
+
 def main():
     verbose = os.environ.get("SMOKE_VERBOSE", "0") == "1"
     if not check_v122_phase1():
@@ -10898,6 +11087,8 @@ def main():
     if not check_v12322_web_hits_dump():
         return 1
     if not check_v12323_view_echo_full():
+        return 1
+    if not check_v12324_indep_therapy():
         return 1
     q = "测试问题：AI 在数字 IC 设计里到底能做什么，哪些已经量产？"
     rows = []
