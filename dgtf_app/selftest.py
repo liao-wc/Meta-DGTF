@@ -259,6 +259,38 @@ def check_r40_frontend(css: str, js: str, html: str, runner_src: str) -> None:
           js.count("paintWelcome();") == 1 and "  paintWelcome();" in js, "")
 
 
+def check_r41_frontend(css: str) -> None:
+    """★R41 的界面判据：分组行标题要**真的居中**（于是和底栏居中的「保存」同轴）。"""
+
+    def _val(body: str, prop: str):
+        _m = re.search(r"(?:^|;|\s)" + prop + r"\s*:\s*([^;}]+)", body)
+        return _m.group(1).strip() if _m else None
+
+    _row = _rule(css, ".adv-groups .nav-btn")
+    _pl, _pr = _val(_row, "padding-left"), _val(_row, "padding-right")
+    check("★R41 分组行**左右预留相等**（原来左 37 / 右 52 ⇒ 标题被推左）",
+          _pl == "52px" and _pr == "52px", "left=%s right=%s" % (_pl, _pr))
+    _nm = _rule(css, ".adv-groups .nav-btn .nb-name")
+    check("★R41 标题**自己不带内边距**（那 24px 右内边距是抽屉那套用的）",
+          _val(_nm, "padding-right") in ("0", "0px")
+          and _val(_nm, "padding-left") in ("0", "0px"),
+          "left=%s right=%s" % (_val(_nm, "padding-left"), _val(_nm, "padding-right")))
+    check("★R41 图标 / 项数 / 「N 项待保存」小标都**离开文档流**（谁也推不动标题）",
+          all(_val(_rule(css, s), "position") == "absolute" for s in (
+              ".adv-groups .nav-btn svg", ".adv-groups .nav-btn em", ".nav-btn .adv-dirty")),
+          "svg=%s em=%s pill=%s" % (
+              _val(_rule(css, ".adv-groups .nav-btn svg"), "position"),
+              _val(_rule(css, ".adv-groups .nav-btn em"), "position"),
+              _val(_rule(css, ".nav-btn .adv-dirty"), "position")))
+    # ★ **算出**两条中轴：行宽 W 时，标题盒 = [左预留, W − 右预留] ⇒ 中心 = (左 + W − 右)/2；
+    #   底栏（左右各 22px、同宽）的中心 = (22 + W − 22)/2。左右预留相等 ⇒ 两者都是 W/2。
+    _W = 1000.0
+    _tc = ((float(_pl[:-2]) if _pl else 0) + (_W - (float(_pr[:-2]) if _pr else 0))) / 2
+    _bc = 0.5 * _W
+    check("★R41 **算出来**：标题盒中心 == 底栏中心（同一根轴）", abs(_tc - _bc) < 0.01,
+          "标题 %.1f vs 底栏 %.1f" % (_tc, _bc))
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--base", default="http://127.0.0.1:8765")
@@ -1264,6 +1296,7 @@ def main() -> int:
 
     check_r39_frontend(css, js, html)
     check_r40_frontend(css, js, html, runner_src)
+    check_r41_frontend(css)
     # ── 参数往返：列表型键不能被写成字符串 ─────────────────────────
     # ★ 这是「通过工作台发起的真跑全部 2–7 秒即崩」的根因：
     #   memory.channels 出厂是列表，经参数面板往返后变字符串 ⇒ 引擎
