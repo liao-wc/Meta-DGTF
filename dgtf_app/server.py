@@ -64,11 +64,32 @@ _FACETS = ("decidability", "orientation", "parallel", "stop", "kind", "layer")
 _TOKEN = ""
 
 
-def lan_ipv4() -> list:
-    """本机所有非回环 IPv4 —— 用来打印「另一台设备该开哪个网址」。
+def _routable(ip: str) -> bool:
+    """这个地址能不能出网（= 有没有 IPv4 默认路由）。
 
-    不依赖外网：UDP `connect` 只让内核按路由表选一个出口地址，**不发包**。
-    拿不到就退回 `getaddrinfo(hostname)`，再拿不到就返回空（调用方给占位提示）。
+    做法：把 UDP 套接字 **bind 到该地址**再 `connect` 一个公网 IP —— 内核必须按
+    路由表选路，选不出来就抛 `WSAENETUNREACH`。**不发任何包**。
+    用途：区分「真网卡」与 VMware/VBox 那种只能本地互访的 host-only 网卡。
+    """
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            s.bind((ip, 0))
+            s.connect(("1.1.1.1", 53))
+            return True
+        finally:
+            s.close()
+    except OSError:
+        return False
+
+
+def lan_ips() -> list:
+    """本机所有非回环 IPv4，按「能出网」优先排序 —— 返回 `[(ip, 能否出网), …]`。
+
+    ★ 为什么**不能**只按「默认路由出口」排：那只是「去公网走哪块网卡」，
+      跟「手机连在哪个网段」是两回事。实测这台机器上，默认路由出口是**有线**的
+      192.168.1.5，而手机在 WiFi 上是 192.168.10.7 —— 标「首选」会把用户带沟里。
+      ⇒ 所以只做「能出网的在前、只能本地互访的在后」，剩下的**让用户按网段自己挑**。
     """
     ips: list = []
     try:
@@ -87,7 +108,13 @@ def lan_ipv4() -> list:
                 ips.append(ip)
     except OSError:
         pass
-    return ips
+    pairs = [(ip, _routable(ip)) for ip in ips]
+    return sorted(pairs, key=lambda t: (not t[1],))       # True（能出网）在前
+
+
+def lan_ipv4() -> list:
+    """只要地址（保持老签名 —— `_audit_tmp/_r42_lan.py` 在用）。"""
+    return [ip for ip, _ok in lan_ips()]
 
 
 def make_server(host: str, port: int, token: str = "", verbose: bool = False):
@@ -547,14 +574,22 @@ def main() -> int:
     print(f"元DGTF 应用已启动： http://127.0.0.1:{args.port}")
     if host == "0.0.0.0":
         print("  局域网已打开（同一 WiFi / 同网段的设备可以访问）：")
-        _ips = lan_ipv4()
-        for _i, _ip in enumerate(_ips or ["<本机内网 IP，用 ipconfig 查>"]):
-            # ★ 第一行来自「默认路由出口」（UDP connect 探的），是真正能用的那个；
-            #   后面几行常是 VMware / VirtualBox / WSL 的虚拟网卡 —— 标出来省得试错。
-            _tag = " ← 首选用这个" if (_i == 0 and _ips) else (
-                "（虚拟网卡，一般不用管）" if _ips else "")
+        _ips = lan_ips()
+        for _ip, _ok in (_ips or [("<本机内网 IP，用 ipconfig 查>", False)]):
+            if not _ips:
+                _tag = ""
+            elif _ok:
+                _tag = "   （真网卡）"
+            else:
+                _tag = "   （隔离/虚拟网卡，手机一般连不上）"
             print("    http://%s:%d%s%s" % (_ip, args.port,
                                             ("/?t=" + token) if token else "", _tag))
+        print("  · 手机连的 WiFi 是哪个网段，就开**同一网段**那条（前三位数字对上）——")
+        print("    手机「设置 → WLAN → 当前网络」里能看到自己的 IP；")
+        print("    拿不准就把上面两条「真网卡」各试一遍（各 10 秒），虚拟网卡那条不用试。")
+        print("  · 网址**必须带 http://**：不少手机浏览器会自动改成 https，")
+        print("    表现就是「无法建立加密连接」。真跳了就关掉浏览器里的")
+        print("    「始终使用安全连接 / HTTPS-First」再打开。")
         if not token:
             print("  ⚠ 没设口令：同一网络里任何人都能操作这个应用"
                   "（跑任务花 API 额度、删本地资料库导入的文件）。")
