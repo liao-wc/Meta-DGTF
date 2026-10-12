@@ -291,6 +291,34 @@ def check_r41_frontend(css: str) -> None:
           "标题 %.1f vs 底栏 %.1f" % (_tc, _bc))
 
 
+def check_r42_server(srv_src: str) -> None:
+    """★R42：局域网访问（`--lan`）与访问口令（`--token`）—— 默认必须**不暴露**。"""
+
+    check("★R42 默认仍**只监听 127.0.0.1**（`--host` 的默认值没被改掉）",
+          'ap.add_argument("--host", default="127.0.0.1"' in srv_src, "")
+    check("★R42 `--lan` ⇒ 绑 `0.0.0.0`（语义化写法，不是让用户自己记 IP）",
+          'ap.add_argument("--lan", action="store_true"' in srv_src
+          and 'host = "0.0.0.0" if args.lan else args.host' in srv_src, "")
+    check("★R42 启动时**打印局域网网址**（自己探本机内网 IP，省得去 ipconfig）",
+          "def lan_ipv4()" in srv_src and "局域网已打开" in srv_src
+          and "socket.AF_INET" in srv_src, "")
+    check("★R42 口令闸在 `do_GET` / `do_POST` **各一处**（两处都不漏）",
+          srv_src.count("if not self._guard():") == 2
+          and "def _guard(self)" in srv_src, "")
+    check("★R42 口令**默认为空即全放行** ⇒ 不改默认行为（只在 `--token` 时生效）",
+          '_TOKEN = ""' in srv_src
+          and 'if not _TOKEN:\n            return True' in srv_src, "")
+    check("★R42 首次带 `?t=` 进来就**种 cookie**（手机上存书签即可，不用做登录页）",
+          "dgtf_token=" in srv_src and "SameSite=Lax" in srv_src
+          and srv_src.count("self._auth_note()") >= 4 - 1   # 1 定义 + 3 个响应助手
+          , "auth_note 出现 " + str(srv_src.count("self._auth_note()")) + " 次")
+    check("★R42 口令太短**拒绝启动**（不留一个没保护的监听）",
+          "口令太短" in srv_src and "return 2" in srv_src, "")
+    check("★R42 抽 `make_server()`：验收能在**同一个进程**里起服务（sandbox 会清子进程）",
+          "def make_server(" in srv_src
+          and "srv = make_server(host, args.port, token=token" in srv_src, "")
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--base", default="http://127.0.0.1:8765")
@@ -1297,6 +1325,7 @@ def main() -> int:
     check_r39_frontend(css, js, html)
     check_r40_frontend(css, js, html, runner_src)
     check_r41_frontend(css)
+    check_r42_server(srv_src)
     # ── 参数往返：列表型键不能被写成字符串 ─────────────────────────
     # ★ 这是「通过工作台发起的真跑全部 2–7 秒即崩」的根因：
     #   memory.channels 出厂是列表，经参数面板往返后变字符串 ⇒ 引擎
