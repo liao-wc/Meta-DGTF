@@ -3,7 +3,18 @@
 
 为什么：改配置以前要开 yaml 文件手动编辑。这里把 yaml **扁平化**成
 `a.b.c → 值` 的列表交给前端渲染，用户改了以后由 `build_temp_config()`
-生成一份**临时副本**用 `--config` 传给引擎 —— 原件不动。
+生成一份**临时副本**用 `--config` 传给引擎。
+
+★★ R36 起分两份文件（用户要求「参数改动永久写回另一份配置文件，另加一个
+恢复默认配置按钮，恢复后端原始默认配置 yaml」）：
+
+- `dgtf_config.yaml`      —— **后端出厂原始默认配置**，只读，前端永不改它；
+- `dgtf_config.user.yaml` —— **前端用户的运行配置**（增量：只存用户改过的键），
+  「保存」写这份，「恢复默认配置」删这份。
+
+生效规则：**用户配置优先、出厂 yaml 兜底**（同一套合并逻辑在 `load_params`
+与 `build_temp_config` 里共用，避免两处口径漂移）。用户配置删掉
+⇒ 全部回落到出厂值，不需要任何「反向还原」逻辑。
 """
 
 from __future__ import annotations
@@ -15,7 +26,8 @@ import yaml
 
 import outputs_index as oi
 
-CFG = oi.PROJECT_ROOT / "dgtf_config.yaml"
+CFG = oi.PROJECT_ROOT / "dgtf_config.yaml"           # 后端出厂默认（只读）
+USER_CFG = oi.PROJECT_ROOT / "dgtf_config.user.yaml"  # 前端用户运行配置（增量）
 
 # 分组中文名（顺序即展示顺序；没列到的按字母排后面）
 GROUP_LABEL = [
@@ -45,6 +57,19 @@ OPTIONS = {
 # 置顶项（面板最先看到的几个）
 PINNED = ("api.default_model", "web_search.backend", "runtime.thinking",
           "runtime.effort", "web_search.enabled")
+
+# ★ 只读键：密钥 / 凭据一类的值**不允许从面板写回 yaml**。
+#   两个理由：① 它多半是「环境变量名」或空串，面板上看着像个可编辑项，改坏了
+#   会让凭据链路静默失效；② 保存走的是「整键回写」，一旦面板把空串写回去，
+#   原本有值的键会被**抹成空**（比不改更糟）。
+#   前端据 `readonly` 渲染成不可编辑，后端 save_params 再兜一层拒绝。
+READONLY_KEYS = frozenset({
+    "api.key",
+    "web_search.api_key",
+    "web_search.api_key_env",
+    "external_anchor.api_key",
+    "external_anchor.api_key_env",
+})
 
 # ── 参数键 → 中文说明（标签统一成「键（说明）」，与 CLI 参数那一组同格式）──────
 # ★ 为什么写显式表、不去抓 yaml 注释：注释是给**一整段**写的，逐键抓会继承到
@@ -266,6 +291,14 @@ def _is_flat_list(v) -> bool:
 
 def _item(key: str, val) -> dict:
     it = {"key": key, "value": val, "label": label_for(key)}
+    if key in READONLY_KEYS:
+        # 密钥键：**只读显示**（前端不渲染 data-cfg ⇒ collectOpts 收不到
+        # ⇒ 既不会被改、也不会被写回）。值本身也不回传，只报「有没有」。
+        it["type"] = "readonly"
+        it["readonly_key"] = True
+        it["has_value"] = bool(str(val or "").strip())
+        it["value"] = "已配置" if it["has_value"] else "（空）"
+        return it
     if isinstance(val, bool):
         it["type"] = "bool"
     elif isinstance(val, (int, float)):
@@ -319,16 +352,46 @@ def _coerce_like(orig, val):
     return val
 
 
-def load_params() -> dict:
-    """返回 {groups:[{key,label,items:[…]}], total}。"""
+def _load_yaml_flat(path: Path) -> dict:
+    """读一份 yaml 并摊平；读不到 / 坏掉一律当空（调用方按「兜底」语义处理）。"""
     try:
-        raw = yaml.safe_load(CFG.read_text(encoding="utf-8", errors="replace")) or {}
+        raw = yaml.safe_load(path.read_text(encoding="utf-8", errors="replace")) or {}
     except Exception:  # noqa: BLE001
-        raw = {}
-    flat = _flatten(raw)
+        return {}
+    return _flatten(raw) if isinstance(raw, dict) else {}
+
+
+def effective_flat() -> dict:
+    """**出厂默认 + 用户配置覆盖** 合并后的扁平值表（生效值）。
+
+    ★ 单一实现：`load_params()`（给前端看）与 `build_temp_config()`（给引擎用）
+      都从这里取值 —— 两处各写一遍「谁优先」迟早漂移。
+    """
+    base = _load_yaml_flat(CFG)
+    user = _load_yaml_flat(USER_CFG)
+    if user:
+        base.update(user)
+    return base
+
+
+def user_overrides() -> dict:
+    """用户配置里**实际改过的**键（显示「已改 N 项」/ 判断要不要给恢复按钮）。"""
+    return _load_yaml_flat(USER_CFG)
+
+
+def load_params() -> dict:
+    """返回 {groups:[{key,label,items:[…]}], total, user_keys:[…]}。
+
+    每项带 `user_set`：该键是否被用户配置覆盖过（前端据此标「已改」）。
+    """
+    flat = effective_flat()
+    uset = set(user_overrides().keys())
     groups: dict[str, list] = {}
     for k, v in flat.items():
-        groups.setdefault(k.split(".")[0], []).append(_item(k, v))
+        it = _item(k, v)
+        if k in uset:
+            it["user_set"] = True
+        groups.setdefault(k.split(".")[0], []).append(it)
     out = []
     for top, items in groups.items():
         items.sort(key=lambda x: (0 if x.get("pinned") else 1, x["key"]))
@@ -336,31 +399,255 @@ def load_params() -> dict:
                     "label": dict(GROUP_LABEL).get(top, top),
                     "items": items})
     out.sort(key=lambda g: (_ORDER.get(g["key"], 99), g["key"]))
-    return {"groups": out, "total": len(flat)}
+    return {"groups": out, "total": len(flat),
+            "user_keys": sorted(uset)}
 
 
-def build_temp_config(overrides: dict, out_path: Path) -> str | None:
-    """把 `{扁平键: 值}` 覆盖到 yaml 副本上，返回可传给 `--config` 的路径。"""
-    overrides = overrides or {}
-    try:
-        raw = yaml.safe_load(CFG.read_text(encoding="utf-8", errors="replace")) or {}
-    except Exception:  # noqa: BLE001
-        return None
-    for k, v in overrides.items():
-        node = raw
-        parts = str(k).split(".")
-        ok = True
+def _fmt_scalar(v, quote_str: bool = False) -> str:
+    """把一个 Python 标量按 yaml 写法渲染成一行文本（**不带换行**）。
+
+    ★ 为什么不用 `yaml.safe_dump`：它会把整个文件重写，**1627 行注释全没**
+      —— 这份 yaml 的注释就是配置说明书（也是历次实验记录），抹掉等于毁档。
+      写回只做**逐行文本替换**，注释原样留着。
+
+    `quote_str=True`（列表项用）时，凡是字符串**一律加引号** —— 出厂文件就是
+    `channels: ["content", "context", "self"]` 这个写法，保持一致少一次无谓 diff。
+    """
+    if isinstance(v, bool):
+        return "true" if v else "false"
+    if isinstance(v, (int, float)):
+        return repr(v)
+    if v is None:
+        return "null"
+    s = str(v)
+    # 需要引号的情形：空串 / 首尾空白 / 含会歧义的字符 / 看着像别的类型 / 列表项且是字符串
+    need_quote = (
+        quote_str
+        or s == "" or s != s.strip()
+        or any(c in s for c in ":#{}[],&*?|-<>=!%@`\"'\\")
+        or s.lower() in ("true", "false", "null", "yes", "no", "on", "off", "~")
+        or re.fullmatch(r"[-+]?(\d+\.?\d*|\.\d+)([eE][-+]?\d+)?", s) is not None
+    )
+    if need_quote:
+        return '"' + s.replace("\\", "\\\\").replace('"', '\\"') + '"'
+    return s
+
+
+def _fmt_value(v, indent: int) -> str:
+    """渲染成「`key:` 后面那一截」的文本（标量带前导空格）。
+
+    ★ 列表一律写成**同行流式** `["a", "b"]` —— 出厂 `dgtf_config.yaml` 就是这么写的
+      （`channels: ["content", "context", "self"]`）。改成块序列虽然 yaml 语义等价，
+      但会在 diff 里造成无谓的格式漂移，而且**续行的缩进一旦算错就会把后续注释吃掉**。
+      同行流式没有续行，最稳。
+    """
+    if isinstance(v, list):
+        if not v:
+            return " []"
+        return " [" + ", ".join(_fmt_scalar(x, quote_str=isinstance(x, str)) for x in v) + "]"
+    return " " + _fmt_scalar(v)
+
+
+def _set_flat_in_text(text: str, flat_key: str, new_val) -> tuple[str, str]:
+    """在 yaml **文本**里把 `flat_key`（点分）对应的那一行改掉，返回 (新文本, 结果)。
+
+    结果取值：`changed` / `unchanged` / `missing`。
+    ★ 只认**键的整行**（`^\\s*key:`），不会误伤注释里出现的同名字符串、也不会被
+      前缀同名的键子串命中（如 `web` 与 `web_search`）。
+    """
+    parts = flat_key.split(".")
+    lines = text.split("\n")
+
+    def _ind(raw: str) -> int:
+        return len(raw) - len(raw.lstrip(" "))
+
+    def _block_end(start: int, ind: int) -> int:
+        """从 `start` 的下一行起，直到缩进回到 <= ind（含注释/空行也算块内）。"""
+        j = start + 1
+        while j < len(lines):
+            raw = lines[j]
+            if raw.strip() and not raw.lstrip().startswith("#") and _ind(raw) <= ind:
+                break
+            j += 1
+        return j
+
+    # 逐段下钻：每段在自己的父块范围内找**缩进更深**的整行键
+    lo, hi = 0, len(lines)
+    parent_ind = -1
+    for depth, part in enumerate(parts):
+        want = re.compile(r"^(\s*)" + re.escape(part) + r"\s*:(.*)$")
+        found = None
+        for i in range(lo, hi):
+            raw = lines[i]
+            if not raw.strip() or raw.lstrip().startswith("#"):
+                continue
+            m = want.match(raw)
+            if m and _ind(raw) > parent_ind:
+                found = (i, _ind(raw), m.group(2))
+                break
+        if found is None:
+            return text, "missing"
+        i, ind, rest = found
+        if depth == len(parts) - 1:
+            # 叶子：把这一行（及其缩进续块）换成新的一行；流式列表没有续行
+            end = i + 1
+            if rest.strip() == "":                      # 值在下面的缩进块里
+                end = _block_end(i, ind)
+                while end - 1 > i and not lines[end - 1].strip():
+                    end -= 1                            # 不吞掉尾部空行
+            old = "\n".join(lines[i:end])
+            newline = " " * ind + part + ":" + _fmt_value(new_val, ind)
+            if newline == old:
+                return text, "unchanged"
+            return "\n".join(lines[:i] + [newline] + lines[end:]), "changed"
+        # 下钻：把范围收窄到该键的块内
+        lo, hi, parent_ind = i + 1, _block_end(i, ind), ind
+    return text, "missing"
+
+
+def _dump_user_cfg(flat_user: dict) -> str:
+    """把扁平键表还原成嵌套 dict 并 dump 成 yaml 文本（带文件头说明）。"""
+    root: dict = {}
+    for k, v in flat_user.items():
+        node = root
+        parts = k.split(".")
         for p in parts[:-1]:
             nxt = node.get(p)
             if not isinstance(nxt, dict):
                 nxt = {}
                 node[p] = nxt
             node = nxt
-        if ok:
-            leaf = parts[-1]
-            # ★ 按原类型还原（列表 / 布尔 / 数字）—— 直接写字符串会把
-            #   channels 这类列表型键写坏（见 _coerce_like 注释）。
-            node[leaf] = _coerce_like(node.get(leaf), v)
+        node[parts[-1]] = v
+    body = yaml.safe_dump(root, allow_unicode=True, sort_keys=True,
+                          default_flow_style=False)
+    head = (
+        "# 元DGTF · 前端用户运行配置（由工作台「高级参数 → 保存」自动维护）\n"
+        "#\n"
+        "# 这是一份**增量配置**：只记录你在工作台里改过的键。\n"
+        "# 生效规则：用户配置优先，未在此文件出现的键一律回落到\n"
+        "# `dgtf_config.yaml`（后端出厂原始默认）。\n"
+        "# 想整体回到出厂状态 —— 在工作台点「恢复默认配置」，或直接删掉本文件。\n"
+        "# ★ 手改本文件也生效；改动会在下次跑任务时被读到。\n"
+    )
+    return head + body
+
+
+def save_params(overrides: dict) -> dict:
+    """把 `{扁平键: 值}` **持久化写回用户配置** `dgtf_config.user.yaml`。
+
+    返回 `{"saved": [...], "skipped": [...], "missing": [...], "unchanged": [...],
+    "error": str|None, "user_file": str}`。三条硬约束：
+      · 密钥键（READONLY_KEYS）**拒绝写回** —— 见那张表的注释；
+      · 类型按**出厂 yaml 里的原类型**还原（`_coerce_like`），列表不会被写成字符串；
+      · **出厂 `dgtf_config.yaml` 一个字节都不动**（它是对照基线，「恢复默认」靠它）；
+        写前备份用户配置，写完**回读校验**读回来的值确实变了。
+    """
+    out = {"saved": [], "skipped": [], "missing": [], "unchanged": [],
+           "error": None, "user_file": USER_CFG.name}
+    overrides = overrides or {}
+    if not isinstance(overrides, dict) or not overrides:
+        return out
+    factory = _load_yaml_flat(CFG)          # 校验「这个键存在吗」+ 取原类型
+    if not factory:
+        out["error"] = "读不到出厂配置，拒绝写回"
+        return out
+    cur = _load_yaml_flat(USER_CFG)         # 用户配置现状（可能不存在）
+
+    merged = dict(cur)
+    for k, v in overrides.items():
+        k = str(k)
+        if k in READONLY_KEYS:
+            out["skipped"].append(k)
+            continue
+        if k not in factory:
+            out["missing"].append(k)
+            continue
+        val = _coerce_like(factory[k], v)
+        if k in merged and merged[k] == val:
+            out["unchanged"].append(k)
+            continue
+        merged[k] = val
+        out["saved"].append(k)
+
+    if not out["saved"]:
+        return out
+    try:
+        if USER_CFG.exists():
+            USER_CFG.with_suffix(".yaml.bak").write_bytes(USER_CFG.read_bytes())
+        USER_CFG.write_text(_dump_user_cfg(merged), encoding="utf-8", newline="\n")
+    except OSError as e:
+        out["error"] = f"写盘失败：{e}"
+        out["saved"] = []
+        return out
+    # 回读校验：写进去的键，读回来的值必须真的变了（防「写了但没生效」）
+    try:
+        after = _load_yaml_flat(USER_CFG)
+        bad = [k for k in out["saved"] if after.get(k) != merged[k]]
+    except Exception as e:  # noqa: BLE001
+        out["error"] = f"回读校验失败：{e}"
+        return out
+    if bad:
+        out["error"] = "回读校验不一致：" + ", ".join(bad)
+    return out
+
+
+def reset_params() -> dict:
+    """**恢复默认配置**：删掉用户配置 ⇒ 全部键回落到 `dgtf_config.yaml` 出厂值。
+
+    返回 `{"ok": bool, "removed": bool, "user_file": str, "error": str|None}`。
+    ★ 只删**用户配置**这一份；出厂 yaml 永不触碰（删了就没有「默认」可言了）。
+    """
+    out = {"ok": True, "removed": False, "user_file": USER_CFG.name, "error": None}
+    if not USER_CFG.exists():
+        return out
+    # 先备份一份（用户可能想找回自己那套），再删
+    try:
+        USER_CFG.with_suffix(".yaml.bak").write_bytes(USER_CFG.read_bytes())
+    except OSError:
+        pass
+    try:
+        USER_CFG.unlink()
+        out["removed"] = True
+    except OSError as e:
+        out["ok"] = False
+        out["error"] = f"删除用户配置失败：{e}"
+    return out
+
+
+def build_temp_config(overrides: dict, out_path: Path) -> str | None:
+    """把 `{扁平键: 值}` 覆盖到 yaml 副本上，返回可传给 `--config` 的路径。
+
+    起点 = **出厂 yaml + 用户配置**（`effective_flat`），再套本次任务的
+    `overrides`（「仅本次任务生效」那条路 —— 不落盘）。
+    """
+    overrides = overrides or {}
+    flat = effective_flat()
+    if not flat:
+        return None
+    raw: dict = {}
+    for k, v in flat.items():          # 先铺生效值（嵌套需要字典结构）
+        node = raw
+        parts = str(k).split(".")
+        for p in parts[:-1]:
+            nxt = node.get(p)
+            if not isinstance(nxt, dict):
+                nxt = {}
+                node[p] = nxt
+            node = nxt
+        node[parts[-1]] = v
+    for k, v in overrides.items():     # 再叠本次一次性覆盖
+        node = raw
+        parts = str(k).split(".")
+        for p in parts[:-1]:
+            nxt = node.get(p)
+            if not isinstance(nxt, dict):
+                nxt = {}
+                node[p] = nxt
+            node = nxt
+        leaf = parts[-1]
+        # ★ 按原类型还原（列表 / 布尔 / 数字）—— 直接写字符串会把
+        #   channels 这类列表型键写坏（见 _coerce_like 注释）。
+        node[leaf] = _coerce_like(node.get(leaf), v)
     try:
         out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(

@@ -25,6 +25,19 @@ def log(msg: str) -> None:
 
 def main() -> int:
     question = sys.argv[1] if len(sys.argv) > 1 and not sys.argv[1].startswith("--") else "（空问题）"
+    # ── 启动信息（★ R37：日志开头须先亮「载入调度配置」等，再进层循环）──────────
+    #   格式**照抄真引擎**（`元DGTF-V1.23.22.py` 开头那段）—— 应用层按「名称：内容」
+    #   规范渲染（蓝标签 + 绿内容、整行居中），冒号一律全角「：」、行首不加缩进。
+    #   这段落在 `layers.split_log()` 的 `__head__` 桶里（第一行层界之前），
+    #   app.js 的 `renderTasks` 会把它渲染成日志开头块（`.rl-boot`）。
+    log("载入调度配置：dgtf_config.yaml（出厂） + 无用户覆盖")
+    log("调度：0 → 1 → both → all")
+    log("螺旋上限（每层圈数）：{'0': 3, '1': 3, 'both': 2, 'all': 1}")
+    log("并行模式：严格串行（来自配置）")
+    log("回来通道：content、context、self")
+    log("运行期总控：联网 关 | 思考 关（0 个环节开档 / 25 关）| 强度 low")
+    log("落盘目录：outputs/")
+    log("")
     log("[mock] 问题：" + question)
     log("[mock] 引擎：mock_engine（不调用任何 API、零花费）")
 

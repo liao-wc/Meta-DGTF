@@ -30,6 +30,7 @@ const SKIPS = new Set(SKIP.split(',').map(x => x.trim()).filter(Boolean));
 /* 有些断言只能落在**样式表文本**上（元素此刻不存在，比如任务还在跑时还没有产物链接）。
    取一次 CSS 文本，配一个和 selftest 里 `_rule()` 同款的取规则小助手。 */
 let CSS_TXT = '';
+let JS_TXT = '';
 const cssRule = (sel) => {
   const esc = sel.replace(/\./g, '\\.');
   const m = CSS_TXT.match(new RegExp(esc + '\\s*\\{([^}]*)\\}'));
@@ -74,6 +75,9 @@ async function run() {
   }
   const w = f.contentWindow;
   CSS_TXT = await w.fetch('/static/style.css').then(x => x.text()).catch(() => '');
+  /* ★ R37：app.js 的**源码文本**也要取一份 —— 有些判据只能落在接线处
+     （元素此刻不在 DOM 里，比如「日志开头块」要等真跑才有）。 */
+  JS_TXT = await w.fetch('/static/app.js').then(x => x.text()).catch(() => '');
   await sleep(1500);
 
   if (MODE === 'dd') {
@@ -727,15 +731,33 @@ async function run() {
       drawer.classList.contains('open'),
       'drawerOpen=' + drawer.classList.contains('open'));
 
-  // 抽屉打开时首屏**让位**（主区右移一个抽屉宽，不被覆盖、照常可点）
+  // 抽屉打开时首屏**让位**（主区右移，不被覆盖、照常可点）
+  // ★ R36 起让位改成**纯 transform**（不再动 margin-left/width ⇒ 布局零重排、不再跳）；
+  //   R37 又把让位量改成 `--shift-w`（= min(抽屉宽, 50vw)，保证右侧至少留一半视口）。
   const mainEl = d.querySelector('main.stage');
-  // 让位带 transition（margin-left .24s），无头虚拟时间不推 ⇒ 先落到终态再量
+  // 让位带 transition（R37 放慢到 .42s），无头虚拟时间不推 ⇒ 先落到终态再量
   mainEl.getAnimations().forEach(a => { try { a.finish(); } catch (_) {} });
   await sleep(60);
-  const ml = parseFloat(w.getComputedStyle(mainEl).marginLeft) || 0;
-  chk('抽屉打开时首屏**让位**：主区右移一个抽屉宽（不是被盖住）',
-      ml > 50 && Math.abs(ml - dRect.width) <= 2,
-      'marginLeft=' + Math.round(ml) + ' drawerW=' + Math.round(dRect.width));
+  const mtf = w.getComputedStyle(mainEl).transform;
+  const shiftPx = (() => {
+    const m = /matrix\(([^)]+)\)/.exec(mtf);
+    if (!m) return 0;
+    return Math.abs(parseFloat(m[1].split(',')[4])) || 0;
+  })();
+  chk('④ 抽屉打开时首屏**让位**：主区右移（transform 平移，不是 margin）',
+      shiftPx > 50,
+      'shiftX=' + Math.round(shiftPx) + ' transform=' + mtf);
+  chk('④ 让位量**封顶为视口一半**（右侧恒留一半可见）',
+      shiftPx <= w.innerWidth / 2 + 1,
+      'shiftX=' + Math.round(shiftPx) + ' vw/2=' + Math.round(w.innerWidth / 2));
+  {/* ④ 平移放慢：主区与抽屉的 transition-duration 都要 ≥ .4s */}
+  const mainDur = w.getComputedStyle(mainEl).transitionDuration || '0s';
+  const drawerDur = w.getComputedStyle(drawer).transitionDuration || '0s';
+  const toS = (v) => parseFloat(v) || 0;
+  chk('④ 平移已**放慢**（主区 / 抽屉 transition-duration ≥ .4s）',
+      toS(mainDur) >= 0.4 && toS(drawerDur) >= 0.4,
+      'main=' + mainDur + ' drawer=' + drawerDur);
+  }
 
   // Esc **一次只关一层**：面板开着 + 抽屉开着时，按一次只该关掉面板
   navBtns.find(b => b.getAttribute('data-sheet') === 'dash-stats').click();
@@ -1908,6 +1930,88 @@ async function run() {
           + d.querySelectorAll('#runlog-body .rl-lane').length
           + ' hidden=' + rlx.classList.contains('hidden'));
     }
+  }
+
+  /* ── ★ R37 一揽子：日志开头调度信息 / 层标题规范 / 面板漆黑 / chip 统一 / 滚动点 ──
+     全部落在**样式表文本 + 静态 DOM**上（此刻界面已回到首屏，元素大多不在），
+     与 selftest.py 的 `_rule()` 同款取规则法（cssRule 已在上文定义）。 */
+  {
+    // ① 日志**开头块**（载入调度配置…）：容器类与渲染接线都要在
+    chk('① 日志开头块容器 `.rl-boot` 有样式（与层块区分的有下边分隔）',
+        /\.rl-boot\s*\{[^}]*border-bottom[^}]*\}/.test(CSS_TXT),
+        'rl-boot=' + JSON.stringify(cssRule('.rl-boot').slice(0, 90)));
+    chk('① app.js 把 head 桶渲染成开头块（renderTasks 里出现 rl-boot）',
+        /rl-lane\s+rl-boot/.test(JS_TXT) && /src\.head/.test(JS_TXT));
+
+    // ② 层标题与「第 N/M 圈」用**同一套**字号变量
+    const h1 = cssRule(':root').match(/--rl-h1:\s*([^;]+)/);
+    const h2 = cssRule(':root').match(/--rl-h2:\s*([^;]+)/);
+    chk('② 有 --rl-h1 / --rl-h2 字号规范变量', !!(h1 && h2),
+        'h1=' + (h1 && h1[1].trim()) + ' h2=' + (h2 && h2[1].trim()));
+    const laneHead = cssRule('.rl-lane-head') || '';
+    const roundR = cssRule('.rl-round') || '';
+    chk('② `.rl-lane-head` 与 `.rl-round` **共用同一字号变量**（规范统一）',
+        /font-size:var\(--rl-h1\)/.test(laneHead) && /font-size:var\(--rl-h1\)/.test(roundR),
+        'lane=' + laneHead.slice(0, 60) + ' | round=' + roundR.slice(0, 50));
+
+    // ③ 面板背景漆黑 + 白字加粗（且透明度仍是 85%）
+    const sheetRule = cssRule('.sheet') || '';
+    chk('③ 面板背景**漆黑透明**（rgba(8,9,10,.85)，透明度不变）',
+        /background:rgba\(8,9,10,\.85\)/.test(sheetRule),
+        sheetRule.slice(0, 80));
+    chk('③ 面板全局字色**近白且加粗**',
+        /--t1:#F5F7FA/.test(sheetRule) && /font-weight:500/.test(sheetRule));
+    chk('③ 面板标题**纯白加粗 700**',
+        /\.sheet-title\s*\{[^}]*color:#FFFFFF/.test(CSS_TXT)
+        && /\.sheet-title\s*\{[^}]*font-weight:700/.test(CSS_TXT));
+    chk('③ 保存反馈浮层已翻成**暗面**（不再是白底黑字）',
+        /\.adv-toast\s*\{[^}]*background:rgba\(12,14,17,\.96\)/.test(CSS_TXT)
+        && !/\.adv-toast\s*\{[^}]*background:rgba\(255,255,255,\.96\)/.test(CSS_TXT));
+
+    // ⑤ chip 字体统一 + 灯高亮
+    const chipR = cssRule('.chip') || '';
+    const fileR = cssRule('.rl-files a') || '';
+    // 取各自的 font-size 声明，比对是否同档
+    const chipFs = (chipR.match(/font-size:([^;]+)/) || [, ''])[1].trim();
+    const fileFs = (fileR.match(/font-size:([^;]+)/) || [, ''])[1].trim();
+    chk('⑤ `.chip` 与 `.rl-files a` **字号同档**',
+        chipFs === 'clamp(11.5px,1.6vh,13.5px)' && fileFs === 'clamp(12px,1.7vh,14.5px)'
+        && chipFs.replace(/[^\d.]/g, '').slice(0, 4) === '115'
+        && fileFs.indexOf('12px') > 0,
+        'chip=' + chipFs + ' file=' + fileFs);
+    chk('⑤ 灯统一为**实心高亮**（.badge::before / .rl-files a::before 都带光晕）',
+        /\.badge::before\s*\{[^}]*box-shadow:0 0 5px currentColor/.test(CSS_TXT)
+        && /\.rl-files a::before\s*\{[^}]*box-shadow:0 0 5px currentColor/.test(CSS_TXT));
+    chk('⑤ 灯尺寸统一 **6px**（原来是 5px）',
+        /\.badge::before\s*\{[^}]*width:6px;height:6px/.test(CSS_TXT)
+        && /\.rl-files a::before\s*\{[^}]*width:6px;height:6px/.test(CSS_TXT));
+
+    // ⑥ 滚动条 = **可拖圆点**
+    const barR = cssRule('#rl-bar') || '';
+    chk('⑥ 滚动条改成**圆点**（border-radius:50% + 12px）',
+        /border-radius:50%/.test(barR) && /width:12px;height:12px/.test(barR));
+    chk('⑥ 圆点**可点可拖**（pointer-events:auto + cursor:grab，R33 的 none 已撤销）',
+        /pointer-events:auto/.test(barR) && /cursor:grab/.test(barR)
+        && !/pointer-events:none/.test(barR));
+    chk('⑥ 细长原生滚动条已隐藏（scrollbar-width:none）',
+        /#runlog-body\s*\{[^}]*scrollbar-width:none/.test(CSS_TXT));
+    chk('⑥ app.js 有拖拽实现（bindRlBarDrag + setPointerCapture + 在 init 里调用）',
+        /function bindRlBarDrag/.test(JS_TXT) && /setPointerCapture/.test(JS_TXT)
+        && /bindRlBarDrag\(\);/.test(JS_TXT));
+
+    // ⑦ 底部只留「保存」+「恢复出厂设置」，且保存居中
+    const sa = Array.from(document.querySelectorAll('#sheet .sheet-actions button'));
+    const saIds = sa.map(b => b.id);
+    chk('⑦ 底部操作条**只剩两个**按钮（保存 + 恢复出厂设置）',
+        sa.length === 2 && saIds.indexOf('adv-save') >= 0 && saIds.indexOf('adv-reset') >= 0,
+        'ids=' + saIds.join(','));
+    chk('⑦ 「仅本次任务生效」按钮已删掉', saIds.indexOf('adv-once') < 0);
+    chk('⑦ 「恢复默认配置」文案已改成**恢复出厂设置**',
+        sa.some(b => b.id === 'adv-reset' && b.textContent.trim() === '恢复出厂设置'),
+        'reset=' + (sa.find(b => b.id === 'adv-reset') || {}).textContent);
+    chk('⑦ 操作条**居中**（justify-content:center）且有 `.sa-spacer` 让保存视觉居中',
+        /justify-content:center/.test(cssRule('.sheet-actions'))
+        && !!document.querySelector('#sheet .sheet-actions .sa-spacer'));
   }
 
   /* ── ⑥ 开启新对话：清掉当前显示、回到首屏 ──────────────────────

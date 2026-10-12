@@ -151,8 +151,11 @@ def _parse_one(path: Path) -> dict:
     packed = path.with_suffix(".packed.json")
 
     # 该产物的运行状态：跑完/终止/部分 / mock，取自同名的 `.run.json`（归档元信息）。
-    # 用户要求「产物要标注状态」—— 中途终止的产物 status="cancelled"、partial=true。
+    # 用户要求「产物要标注状态」—— 中途终止的产物 status="cancelled"、partial=true；
+    # 服务中断留下的痕迹则是 status="interrupted"、error 写明原因。
     status, partial, mock = "", False, False
+    err = ""
+    q_from_run = ""
     # ★ 老产物没有 .run.json，只能**看内容**：mock 引擎的产物里有这几句，真引擎从不写。
     #   （★ 之前这段「看内容判 mock」写在下面 run.json 块**之前**、又被紧接着的
     #    `status, partial, mock = "", False, False` 整行重置抹掉 —— 等于白写。
@@ -171,15 +174,26 @@ def _parse_one(path: Path) -> dict:
             if isinstance(_bj, dict):
                 status = status or str(_bj.get("status") or "")
                 partial = partial or bool(_bj.get("partial"))
+                err = err or str(_bj.get("error") or "")
+                q_from_run = q_from_run or str(_bj.get("question") or "")
         except (OSError, ValueError):
             pass
     runjson = path.with_suffix(".run.json")
+    # ★★ 孤儿痕迹（中断任务只剩 `<tid>.run.json`，没有产物 md）：`path` **本身就是**
+    #   `.run.json`，`with_suffix(".run.json")` 会算成 `X.run.run.json`（不存在）
+    #   ⇒ 自己那份的 status/error/question 永远读不到，列表里只显示一个光秃秃的戳。
+    #   这里把「自己就是 run.json」的情况补上，直接读自身。
+    if path.name.endswith(".run.json"):
+        runjson = path
     if runjson.exists():
         try:
             j = json.loads(runjson.read_text(encoding="utf-8"))
             status = str(j.get("status") or "")
             partial = bool(j.get("partial"))
             mock = bool(j.get("mock")) or mock
+            # ★ 中断/失败任务：把原因与题目一起带出来，列表上才看得到「为什么没了」。
+            err = str(j.get("error") or "") or err
+            q_from_run = str(j.get("question") or "") or q_from_run
         except (OSError, ValueError):
             pass
     else:
@@ -206,6 +220,11 @@ def _parse_one(path: Path) -> dict:
                     except (OSError, ValueError):
                         pass
 
+    # ★ 孤儿痕迹（中断任务只剩 `<tid>.run.json`，没有产物 md）：文件名 / 头部都给不出
+    #   可读题目（`fname_q` 只是把戳的尾巴 `ab12cd` 当题名）⇒ 退回元信息里的 question，
+    #   别让列表显示「20261012_073000_ab12cd」。
+    if not title and q_from_run:
+        question = q_from_run
     return {
         "name": path.name,
         "kind": kind,
@@ -221,6 +240,11 @@ def _parse_one(path: Path) -> dict:
         "status": status,
         "partial": partial,
         "mock": mock,
+        # ★ 中断/失败原因（`status == "interrupted"` 时前端要显示在状态标旁边）。
+        "error": err,
+        # ★ 没有产物名可用时（中断任务只剩 `<tid>.run.json`），题目从元信息里取，
+        #   否则列表里会出现一串「20261012_073000_ab12cd」这种没有意义的戳。
+        "run_question": q_from_run,
         "meta": meta,
     }
 

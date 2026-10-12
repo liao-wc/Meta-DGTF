@@ -187,6 +187,152 @@ def _find_new_output(before: dict, since: float) -> str | None:
     return best
 
 
+# ── 运行中的「活痕迹」：任务一起跑就落盘，服务崩了也留得下 ────────────
+# ★★ 为什么需要它（用户报障）：「后台服务崩的时候或者其他异常终止任务时，数据没有记录，
+#   本来已经运行一段时间，突然没了，没用痕迹」。根因是任务表 `_tasks` 是**进程内存**，
+#   服务被强杀/崩溃时它与「还没归档的进度」一起消失 ⇒ `outputs/` 里既没有 `.run.json`
+#   也没有 `.run.log` ⇒ 历史对话 / 产物库 / 最近跑过**三处都查不到**。
+#   解法：起跑就写一份 **以任务 id 命名**的活痕迹（`<tid>.run.json` + `<tid>.run.log`），
+#   正常跑完由 `_archive()` 落最终归档并**删掉它**；异常/崩溃则留着，
+#   下次服务启动由 `recover_orphans()` 回填成 `interrupted` + 原因。
+_LIVE_MARK = "_live"          # task dict 上的内部标记（对外会被过滤掉）
+
+
+def live_stamp(tid: str) -> str:
+    """活痕迹的戳 = 任务 id（不含问题名 —— 起跑时还没有产物名可用）。"""
+    return str(tid or "")
+
+
+def _live_paths(tid: str) -> tuple[Path, Path]:
+    st = live_stamp(tid)
+    return (oi.OUTPUTS_DIR / f"{st}.run.json", oi.OUTPUTS_DIR / f"{st}.run.log")
+
+
+def _write_live_run(task: dict) -> None:
+    """把「正在运行」的元信息与日志落一份到 `outputs/`（可被强杀后幸存）。
+
+    ★ 只在**起跑那一刻**写一次元信息（`status="running"`）：之后每次轮询都重写
+      只会徒增 IO，而它要表达的本来就只是「这条任务起跑过、还没收尾」。
+      日志那份则**由引擎的日志文件实时喂**，靠 `sync_live_log()` 增量同步。
+    """
+    if not oi.OUTPUTS_DIR.is_dir():
+        return
+    jp, lp = _live_paths(task["id"])
+    meta = {
+        "id": task["id"], "question": task["question"],
+        "status": "running", "exit_code": None,
+        "partial": False, "mock": task["mock"],
+        "engine": "mock_engine" if task["mock"] else find_engine().name,
+        "opts": task["opts"],
+        "created_at": task["created_at"], "started_at": task["started_at"],
+        "ended_at": None, "duration_sec": None,
+        "output_name": None, "error": "", "cmd": task["cmd"],
+        "live": True,            # ★ 标记：这条是「活痕迹」，正常收尾时会被删掉
+    }
+    try:
+        jp.write_text(json.dumps(meta, ensure_ascii=False, indent=2),
+                      encoding="utf-8")
+        lp.touch(exist_ok=True)
+        task[_LIVE_MARK] = True
+    except OSError:
+        pass
+
+
+def sync_live_log(task: dict) -> None:
+    """把引擎日志的当前内容同步到 `<tid>.run.log`（崩溃时它就是唯一的日志痕迹）。
+
+    ★ 用**字节复制**而不是逐行 append：引擎日志文件是唯一的真相源，
+      直接 `write_bytes` 整份覆盖最简单、也不会因为重启/截断而产生错位。
+      代价是任务全程会反复重写这个文件，但它的体量是「一次任务的日志」（百 KB 级），
+      而同步频率 = 前端轮询频率，完全可接受。
+    """
+    if not task.get(_LIVE_MARK):
+        return
+    try:
+        src = Path(task["log"])
+        if not src.exists():
+            return
+        _, lp = _live_paths(task["id"])
+        lp.write_bytes(src.read_bytes())
+    except OSError:
+        pass
+
+
+def _clear_live_run(task: dict) -> None:
+    """正常收尾后收掉「活痕迹」—— **仅当最终归档另起了文件名**时才删。
+
+    ★★ 这里有个必须绕开的自噬陷阱：无产物时 `_archive()` 的 stamp 就取任务 id，
+      写的正是 `<tid>.run.json` 这个**同一个文件**。此时若还去 `unlink` 它，
+      等于把刚归档好的终态记录**当场删掉** —— 现象是「任务明明失败了却查不到」。
+      ⇒ 判据用「归档的文件名是不是活痕迹那个」：是同一个就**留着**（它已被改成终态）。
+    """
+    if not task.get(_LIVE_MARK):
+        return
+    jp, lp = _live_paths(task["id"])
+    if task.get("archive_json") and Path(task["archive_json"]).name == jp.name:
+        task[_LIVE_MARK] = False      # 归档就地覆盖了活痕迹，别删
+        return
+    for p in (jp, lp):
+        try:
+            if p.exists():
+                p.unlink()
+        except OSError:
+            pass
+    task[_LIVE_MARK] = False
+
+
+def recover_orphans() -> list[dict]:
+    """★ 服务启动时回填「孤儿任务」：有活痕迹、但本次进程里没有对应任务的那些。
+
+    典型来源：服务被强杀 / 崩溃 / 机器重启 —— `_tasks` 连同未归档的进度一起没了，
+    而上一轮 `_write_live_run()` 落的 `<tid>.run.json` 还在盘上。
+    ⇒ 把它们的状态改成 `interrupted` 并写明原因，让历史对话 / 产物库 / 最近跑过
+      **三处都能看到这条「被中断的任务」**，而不是凭空消失。
+
+    返回被回填的记录（供日志/自检读数）。幂等：已是 `interrupted` 的不会再改。
+    """
+    out: list[dict] = []
+    if not oi.OUTPUTS_DIR.is_dir():
+        return out
+    with _tasks_lock:
+        alive = set(_tasks.keys())
+    for jp in oi.OUTPUTS_DIR.glob("*.run.json"):
+        try:
+            meta = json.loads(jp.read_text(encoding="utf-8", errors="replace"))
+        except (OSError, ValueError):
+            continue
+        if not isinstance(meta, dict):
+            continue
+        if not meta.get("live"):
+            continue                       # 只认「活痕迹」，正常归档的不动
+        tid = str(meta.get("id") or jp.name[: -len(".run.json")])
+        if tid in alive:
+            continue                       # 本进程里还在跑（理论上不该有，防御而已）
+        if str(meta.get("status") or "") not in ("running", "queued"):
+            continue
+        meta["status"] = "interrupted"
+        meta["live"] = False
+        meta["error"] = "服务中断（进程异常退出 / 重启），本任务未正常收尾"
+        if not meta.get("ended_at"):
+            meta["ended_at"] = jp.stat().st_mtime
+        try:
+            if not meta.get("started_at"):
+                meta["started_at"] = meta.get("created_at")
+            if meta.get("started_at") and meta.get("ended_at"):
+                meta["duration_sec"] = round(
+                    float(meta["ended_at"]) - float(meta["started_at"]), 1)
+        except (TypeError, ValueError):
+            pass
+        try:
+            jp.write_text(json.dumps(meta, ensure_ascii=False, indent=2),
+                          encoding="utf-8")
+        except OSError:
+            continue
+        out.append({"id": tid, "question": meta.get("question"),
+                    "status": "interrupted"})
+    return out
+
+
 # ── 手动终止：把「已经跑到的部分」落成一份部分产物 ──────────────────
 def _safe_name(q: str, n: int = 20) -> str:
     """问题 → 可安全落盘的文件名片段（与引擎 / mock 同一套规则）。"""
@@ -295,14 +441,17 @@ def _archive(task: dict, status: str | None = None) -> None:
     """跑完把「完整运行日志」与「运行元信息」单独落到 outputs/。
 
     `status`：本轮跑完的**最终状态**。归档发生在 `task["status"]` 落定**之前**
-    （见 _run 里的调用），所以元信息不能现读 task["status"]（那时还是 running），
-    必须由调用方显式传进来。
+    （见 `_finalize` 里的调用），所以元信息不能现读 task["status"]
+    （那时还是 running），必须由调用方显式传进来。
+
+    ★ 无产物（异常 / 被终止且一层都没跑到）时，stamp 取**任务 id** ——
+      正好与「活痕迹」`<tid>.run.json` **同名**，于是这次归档就地把痕迹覆盖成终态，
+      不会在多出一份重复记录（也不会留下一个永远 running 的孤儿）。
     """
     if not oi.OUTPUTS_DIR.is_dir():
         return
     name = task.get("output_name") or ""
-    stamp = name[:-3] if name.endswith(".md") else (
-        name or (time.strftime("%Y%m%d_%H%M%S") + "_" + task["id"]))
+    stamp = name[:-3] if name.endswith(".md") else (name or str(task["id"]))
     try:
         src = Path(task["log"])
         if src.exists():
@@ -322,6 +471,7 @@ def _archive(task: dict, status: str | None = None) -> None:
                              if task["started_at"] and task["ended_at"] else None),
             "output_name": task.get("output_name"),
             "error": task.get("error", ""), "cmd": task["cmd"],
+            "live": False,          # ★ 终态归档：`recover_orphans()` 不再认它
         }
         dstj = oi.OUTPUTS_DIR / f"{stamp}.run.json"
         dstj.write_text(json.dumps(meta, ensure_ascii=False, indent=2),
@@ -423,6 +573,11 @@ def start_task(question: str, opts: dict | None = None) -> str:
     with _tasks_lock:
         _tasks[tid] = task
 
+    # ★★ 起跑就落「活痕迹」（`outputs/<tid>.run.json`）—— 服务此刻被强杀也留得下。
+    #    放在起线程**之前**：`_run` 一开跑就可能因为并发等待/崩溃而中断，
+    #    痕迹必须在那之前就已经在盘上。
+    _write_live_run(task)
+
     threading.Thread(target=_run, args=(tid,), daemon=True).start()
     return tid
 
@@ -458,12 +613,28 @@ def _run(tid: str) -> None:
                 stdout=lf, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
             )
             task["pid"] = proc.pid
-            code = proc.wait()
+            # ★ 用轮询代替 `proc.wait()`：每轮把引擎日志同步进「活痕迹」文件，
+            #   这样服务**中途**被强杀时，`outputs/<tid>.run.log` 里已经有跑过的日志
+            #   （`proc.wait()` 期间不同步的话，崩溃那一刻日志就全丢了）。
+            while True:
+                try:
+                    code = proc.wait(timeout=2.0)
+                    break
+                except subprocess.TimeoutExpired:
+                    sync_live_log(task)
         task["exit_code"] = code
     except Exception as e:  # noqa: BLE001
+        # ★★ 异常路径也必须留痕：原来这里置 error 后**直接 return，不归档**
+        #    ⇒ 历史对话 / 产物库 / 最近跑过三处都查不到这条任务。
+        #    现在按中断处理：同步一次日志 + 落归档（status=error + 原因）。
         task["status"] = "error"
         task["error"] = f"{type(e).__name__}: {e}"
         task["ended_at"] = time.time()
+        sync_live_log(task)
+        try:
+            _finalize(task, "error")
+        except Exception:  # noqa: BLE001
+            pass
         return
 
     task["ended_at"] = time.time()
@@ -494,11 +665,20 @@ def _run(tid: str) -> None:
         final = "error"
         if not task["error"]:
             task["error"] = f"引擎退出码 {code}"
-    # ★ 顺序要紧：**先落盘归档，再对外宣布跑完**。
-    #   反过来的话，前端有可能在 status 还是 done 的那一次轮询就停掉轮询，
-    #   归档链接（archive_log / archive_json / layer_artifacts）就永远不出现了。
-    _archive(task, final)  # 完整 log + 运行元信息 → outputs/
+    _finalize(task, final)
+
+
+def _finalize(task: dict, final: str) -> None:
+    """收尾：先落最终归档，**再**对外宣布跑完，最后收掉「活痕迹」。
+
+    ★ 顺序要紧：**先落盘归档，再改 status**。
+      反过来的话，前端有可能在 status 还是 done 的那一次轮询就停掉轮询，
+      归档链接（archive_log / archive_json / layer_artifacts）就永远不出现了。
+    """
+    sync_live_log(task)
+    _archive(task, final)
     task["status"] = final
+    _clear_live_run(task)
 
 
 def cancel_task(tid: str) -> bool:

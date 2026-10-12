@@ -13,7 +13,9 @@
   POST /api/tasks/<id>/cancel         → 取消任务
   GET  /api/tasks/<id>/result         → 产物正文
   GET  /api/chats                     → 历次「会话」（历史对话：内存任务 + 归档 run.json）
-  GET  /api/params                    → 高级参数（yaml 摊平 + 中文说明）
+  GET  /api/params                    → 高级参数（yaml 摊平 + 中文说明 + 已改键）
+  POST /api/params                    → 持久化写回用户配置 dgtf_config.user.yaml {overrides:{…}}
+  POST /api/params/reset              → 恢复默认配置（删用户配置 ⇒ 回落到出厂 dgtf_config.yaml）
   GET  /api/dashboard                 → 工作台读数
   GET  /api/outputs?q=&body=&days=…   → 历史产物列表 / 检索
   GET  /api/outputs/facets            → 筛选项集合
@@ -368,6 +370,24 @@ class Handler(BaseHTTPRequestHandler):
             ok = lib.delete_imported(str(data.get("name") or ""))
             return self._json({"ok": ok}, 200 if ok else 404)
 
+        # ★ 高级参数「保存」：把改动**持久化写回用户配置** dgtf_config.user.yaml
+        #   （出厂 dgtf_config.yaml 是只读基线，前端永不改它）。
+        #   与「仅本次任务生效」（走 opts.overrides → 临时 config）是两条路。
+        if p == "/api/params":
+            data = self._read_json()
+            ov = data.get("overrides")
+            if not isinstance(ov, dict):
+                return self._json({"error": "overrides 必须是对象"}, 400)
+            res = prm.save_params(ov)
+            code = 500 if res.get("error") else 200
+            return self._json(res, code)
+
+        # ★「恢复默认配置」：删用户配置 ⇒ 全部键回落到出厂 dgtf_config.yaml。
+        if p == "/api/params/reset":
+            res = prm.reset_params()
+            code = 500 if res.get("error") else 200
+            return self._json(res, code)
+
         m = re.match(r"^/api/tasks/([^/]+)/cancel$", p)
         if m:
             ok = runner.cancel_task(m.group(1))
@@ -396,6 +416,19 @@ def main() -> int:
     ap.add_argument("--port", type=int, default=8765)
     ap.add_argument("--verbose", action="store_true")
     args = ap.parse_args()
+
+    # ★★ 启动时先回填「孤儿任务」：上次服务被强杀/崩溃时，任务表（进程内存）连同
+    #    未归档的进度一起没了，但 `<tid>.run.json` 活痕迹还留在盘上。
+    #    把它们标成 `interrupted` + 原因 ⇒ 历史对话 / 产物库 / 最近跑过**三处都能看到**。
+    try:
+        orphans = runner.recover_orphans()
+        if orphans:
+            dash.invalidate()
+            oi.invalidate()
+            print(f"  回填中断任务：{len(orphans)} 条 → " +
+                  "、".join(str(o.get("question") or o.get("id"))[:18] for o in orphans))
+    except Exception as e:  # noqa: BLE001    回填失败不该拖垮启动
+        print(f"  回填中断任务失败（忽略）：{type(e).__name__}: {e}")
 
     srv = ThreadingHTTPServer((args.host, args.port), Handler)
     srv.verbose = args.verbose

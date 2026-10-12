@@ -145,10 +145,16 @@
       <div class="adv-group-body scroll">
         <div class="grid" id="adv-grid"></div>
       </div>
-      <!-- ★ 右上角「← 返回」与「关闭」同义（都不保存）⇒ 这里只留「保存」：
-           底部居中、白字 + 透明底；说明走悬停气泡。-->
+      <!-- ★ R37：用户要求「只保留保存按钮和恢复出厂设置按钮，保存按钮居中」——
+             去掉了原「仅本次任务生效」（该行为仍可由「保存」覆盖持久化场景，故不留多余出口）。
+             ★ 两个按钮的排布：`.sheet-actions` 用 `justify-content:center` + 「保存」左侧留一个
+               与「恢复」等宽的隐形占位 ⇒ 「保存」**始终落在正中**（不是两个按钮整体居中）。
+             「保存」= 写回用户配置 dgtf_config.user.yaml（持久）；
+             「恢复出厂设置」= 删用户配置、回落后端出厂 dgtf_config.yaml。说明走悬停气泡。 -->
       <div class="sheet-actions">
-        <button id="adv-save" class="ghost" data-tip="保存本组改动并返回上一级">保存</button>
+        <span class="sa-spacer" aria-hidden="true"></span>
+        <button id="adv-save" class="ghost primary" data-tip="保存本组改动（写回用户配置 dgtf_config.user.yaml）">保存</button>
+        <button id="adv-reset" class="ghost danger" data-tip="删掉用户配置，全部参数回落到后端出厂的 dgtf_config.yaml">恢复出厂设置</button>
       </div>
     </section>
 

@@ -25,6 +25,7 @@ import yaml  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import dashboard  # noqa: E402
+import engine_runner as runner  # noqa: E402
 import library  # noqa: E402
 import outputs_index as oi  # noqa: E402
 import params as prm  # noqa: E402
@@ -130,15 +131,101 @@ def main() -> int:
           html.count('class="nav-btn"') == 7
           and 'data-sheet="adv-panel"' in html and 'data-sheet="view-lib"' in html,
           f"nav-btn={html.count('nav-btn')}")
-    check("参数分组页只剩「保存」一个出口（顶部「← 返回」＝不保存退出），底部居中",
-          'id="adv-save"' in html and 'id="adv-cancel"' not in html
+    # ★ 参数页出口：R36 起口径是「出厂 `dgtf_config.yaml` **只读**，用户改动写
+    #   **用户配置** `dgtf_config.user.yaml`；『恢复出厂设置』删用户配置 ⇒ 回落出厂」。
+    #   ★ R37：用户要求**只保留两个**出口（保存 + 恢复出厂设置），「仅本次任务生效」
+    #   已从界面移除（它那条路 `saveAdvForRun` 保留在代码里，供程序化调用）。
+    check("⑦ 参数页只剩**两个**出口：保存 + 恢复出厂设置（`adv-once` 已从界面删掉）",
+          'id="adv-save"' in html and 'id="adv-reset"' in html
+          and 'id="adv-once"' not in html
           and ".sheet-actions{" in css
           and "justify-content:center" in _rule(css, ".sheet-actions")
-          and "rollbackAdvGroup" in js,
+          and 'class="sa-spacer"' in html,
+          "adv-once=" + str('id="adv-once"' in html))
+    check("⑦ 「恢复出厂设置」文案到位（不再是「恢复默认配置」）",
+          "恢复出厂设置" in html and "恢复默认配置" not in html,
+          "")
+    check("⑦ 保存按钮**居中**：左有 `.sa-spacer` 隐形占位（与右侧两按钮等宽）",
+          'class="sa-spacer"' in html
+          and "visibility:hidden" in _rule(css, ".sa-spacer"),
+          _rule(css, ".sa-spacer").strip()[:60])
+    check("「保存」写**用户配置**（不是出厂 yaml、也不只写内存）",
+          "saveAdvToFile" in js and "saveAdvForRun" in js
+          and "await api('/api/params'" in js
+          and "method: 'POST'" in js
+          and "advSaved[k] = advOverrides[k]" in js
+          and "dgtf_config.user.yaml" in js
+          and "写回 dgtf_config.yaml" not in js,
+          "")
+    check("「恢复出厂设置」按钮存在且打 `/api/params/reset`（删用户配置 ⇒ 回落出厂）",
+          "resetAdv" in js and "api('/api/params/reset'" in js
+          and "reset_params" in params_src
+          and 'p == "/api/params/reset"' in srv_src
+          and "恢复出厂设置" in html,
+          "")
+    check("改了但没保存的项**看得见**（分组按钮「N 项待保存」+ 保存键置灰/点亮）",
+          "advDirtyCount" in js and "advDirtyOfGroup" in js
+          and "项待保存" in js and "updateAdvActions" in js
+          and ".nav-btn .adv-dirty{" in css and "has-dirty" in css,
+          "")
+    check("保存结果有**可见反馈**（toast 挂 #sheet 上 ⇒ 切页不丢）",
+          "advToast" in js and "'.adv-toast.show'" not in js
+          and "#adv-toast" not in html          # 动态造，不写死在 HTML 里
+          and ".adv-toast{" in css and "position:fixed" in _rule(css, ".adv-toast"),
+          "")
+    # ★★ R36 的结构性判据：**出厂 yaml 一个字节都不动**。
+    #   这是「恢复默认配置」之所以成立的唯一理由 —— 基线没了就无从恢复。
+    #   判据落在实现本体（`save_params` 里不出现对 CFG 的写入），不是「文档这么说的」。
+    #   ★ 正则必须排除 `USER_CFG.` —— 否则 `USER_CFG.write_text(...)` 会被
+    #     `CFG\.write_text` **子串命中**，判据当场自欺（本轮第一版正是这么翻红的）。
+    check("参数写回**只写用户配置**（出厂 dgtf_config.yaml 全程只读）",
+          "USER_CFG" in params_src and "dgtf_config.user.yaml" in params_src
+          and "def save_params" in params_src and "def reset_params" in params_src
+          # save_params 的函数体里不许出现对 CFG 的写（只允许读它取原类型）
+          and not re.search(r"(?<!USER_)CFG\s*\.\s*(write_bytes|write_text|unlink|touch)\s*\(",
+                            params_src.split("def save_params")[1]
+                            .split("def reset_params")[0]),
+          "")
+    # ★ 早期版本用「逐行文本替换」保 yaml 注释；现在写的是**我们自己生成的**用户配置
+    #   （无注释要保），所以允许 safe_dump —— 但**只允许 dump 用户配置**，不许 dump 出厂 yaml。
+    check("用户配置由本模块自己 dump（出厂 yaml 那 1600+ 行注释不再有被抹的风险）",
+          "def _dump_user_cfg" in params_src
+          and "def _set_flat_in_text" in params_src        # 仍留着：逐行替换的通用工具
+          and "_dump_user_cfg(merged)" in params_src,
           "")
     check("高级参数页只列分组按钮，点一个进新页看该组参数",
           'id="adv-groups"' in html and 'id="adv-group-page"' in html
           and 'id="adv-grid"' in html and "openAdvGroup" in js,
+          "")
+    # ★★ R36 ②：异常终止的任务必须**留痕**（用户报「服务崩了任务数据没了、没痕迹」）——
+    #   根因是任务表在进程内存里，崩溃时与未归档的进度一起消失，outputs/ 里什么都没有。
+    #   这三处必须同时成立：起跑就落「活痕迹」/ 收尾必归档（含异常路径）/ 启动回填孤儿。
+    check("★ 任务**起跑就落活痕迹**（`outputs/<tid>.run.json`，服务被强杀也留得下）",
+          "def _write_live_run" in runner_src and "def _clear_live_run" in runner_src
+          and "def sync_live_log" in runner_src and "def recover_orphans" in runner_src
+          and "_write_live_run(task)" in runner_src
+          and "sync_live_log(task)" in runner_src,
+          "")
+    check("★ 收尾**必归档**：异常分支也走 `_finalize`（原来直接 return ⇒ 三处都查不到）",
+          "def _finalize" in runner_src
+          and "_finalize(task, \"error\")" in runner_src
+          and runner_src.count("_finalize(task,") >= 2   # 正常收尾 + 异常收尾
+          and "先落盘归档，再改 status" in runner_src,
+          "")
+    check("★ 服务启动时**回填孤儿任务**（有活痕迹但没跑完 ⇒ 标 interrupted + 原因）",
+          "recover_orphans()" in srv_src and "回填中断任务" in srv_src
+          and '"interrupted"' in runner_src
+          and "服务中断（进程异常退出 / 重启）" in runner_src,
+          "")
+    check("★ 前端认识 `interrupted` 并把**原因**显示出来（历史对话 / 最近跑过）",
+          "interrupted: '已中断'" in js
+          and "chipState" in js and "已中断 · 服务异常" in js
+          and "class=\"why\"" in js and ".hist .m .why{" in css
+          and ".hist .st.interrupted{" in css,
+          "")
+    check("★ 中断痕迹能被**产物库**收录（带 status/error，题目从元信息取）",
+          '"error": err' in oi_src and '"run_question": q_from_run' in oi_src
+          and 'q_from_run' in oi_src,
           "")
     check("按钮描述改成**悬停气泡**：背景透明 + **文字灰色**（.tip，挂 body 的 fixed 气泡）",
           ".tip{" in css and "background:transparent" in _rule(css, ".tip")
@@ -316,11 +403,14 @@ def main() -> int:
           and "--log-blue:#232F9E" in css and "--log-green:#0E5A22" in css
           and "--log-num:#000000" in css and "--log-hair:rgba(0,0,0,.12)" in css,
           "")
-    check("日志字号**自适应调大**（clamp：正文字号随窗口高度伸缩）",
+    # ★ R37：字号仍**自适应**（clamp 随窗口高度伸缩）——但层标题 / 小标题改从
+    #   `--rl-h1` / `--rl-h2` **变量**取（那两个变量本身就是 clamp）⇒ 判据要认变量。
+    check("日志字号**自适应**（clamp：正文字号随窗口高度伸缩；层标题走 --rl-h1 变量）",
           "clamp(" in _rule(css, ".rl-txt")
-          and "clamp(" in _rule(css, ".rl-lab")
-          and "clamp(" in _rule(css, ".rl-lane-head")
-          and "clamp(" in _rule(css, "#rl-question"),
+          and "font-size:var(--rl-h2)" in _rule(css, ".rl-lab")
+          and "font-size:var(--rl-h1)" in _rule(css, ".rl-lane-head")
+          and "clamp(" in _rule(css, "#rl-question")
+          and "--rl-h1:clamp(" in css and "--rl-h2:clamp(" in css,
           _rule(css, ".rl-txt").strip()[:60])
     # ★ R27：画布转**纯白** / 面板页改「本页内容」+ 浅色档
     check("**画布底色**改成纯白（`--canvas`），暗面（抽屉/代码块）仍用 `--ground`",
@@ -441,10 +531,12 @@ def main() -> int:
           all(k in html for k in ('id="dash-stats"', 'id="dash-history"', 'id="view-lib"',
                                   'id="view-local"', 'id="view-web"', 'id="adv-panel"'))
           and 'id="sheet"' in html)
-    check("面板层 = **固定覆盖 + 80% 不透明浅色层**（主视图不隐藏 ⇒ 背景仍隐约可见）",
+    # ★ R37：面板层仍是「固定覆盖 + 85% 透明」，但底色从**白**翻成**漆黑**
+    #   （用户：「背景改成漆黑透明，透明度不变」）。
+    check("③ 面板层 = **固定覆盖 + 85% 透明**（主视图不隐藏 ⇒ 背景仍隐约可见）",
           "position:fixed" in _rule(css, ".sheet")
           and "inset:0" in _rule(css, ".sheet")
-          and "background:rgba(255,255,255,.85)" in _rule(css, ".sheet")
+          and "background:rgba(8,9,10,.85)" in _rule(css, ".sheet").replace(" ", "")
           and "body.panel-open main.stage{display:none}" not in css
           and ".sheet-page.active{display:flex" in css.replace(" ", ""),
           _rule(css, ".sheet").strip()[:70])
@@ -454,9 +546,10 @@ def main() -> int:
           and "document.body.classList.add('panel-open')" in js
           and "body.panel-open .corner-actions{display:none}" in css,
           "")
-    check("面板页换**浅色档**（--t1/--hair/--s1 就地覆盖 ⇒ 纯白底上不会白字白线）",
-          "--t1:#10141A" in _rule(css, ".sheet")
-          and "--hair:rgba(0,0,0,.10)" in _rule(css, ".sheet")
+    check("③ 面板页就地覆盖成**暗面浅字档**（--t1 近白 / --hair 白 10% / --s1 深底）",
+          "--t1:#F5F7FA" in _rule(css, ".sheet")
+          and "--hair:rgba(255,255,255,.10)" in _rule(css, ".sheet")
+          and "--s1:#111214" in _rule(css, ".sheet")
           and "color:var(--t1)" in _rule(css, ".sheet"),
           "")
     _cmp = html.split('class="composer-row"', 1)
@@ -464,19 +557,26 @@ def main() -> int:
           len(_cmp) == 2 and 'id="mock-row"' in _cmp[1].split("</div>", 1)[0]
           and 'class="pill mock-pill"' in html,
           "")
-    check("**整体页面背景 85% 不透明**（`.sheet` 一层到底；卡片不再自己铺色）",
-          "background:rgba(255,255,255,.85)" in _rule(css, ".sheet")
+    check("③ 面板**一层到底 85% 透明**（卡片不再自己铺色）+ 语义色换暗面亮档",
+          "background:rgba(8,9,10,.85)" in _rule(css, ".sheet").replace(" ", "")
           and "background:transparent" in _rule(css, ".sheet .panel")
           and "background:transparent" in _rule(css, ".sheet .advanced")
-          and "background:transparent" in _rule(css, ".web-group"),
+          and "background:transparent" in _rule(css, ".web-group")
+          and "--ok:#4ADE80" in _rule(css, ".sheet")
+          and "--err:#FF6B6B" in _rule(css, ".sheet")
+          and "--warn:#F5C453" in _rule(css, ".sheet"),
           _rule(css, ".sheet").strip()[:56])
-    check("列表行悬停**不再发白**（与高级参数的分组行同一深色洗底）",
-          "rgba(0,0,0,.06)" in _rule(css, ".sheet .hist:hover,.sheet .item:hover,.sheet .web-group .wg-head:hover"),
+    check("③ 列表行悬停改成**暗面淡白洗**（85% 暗底上不再用近黑 .06 洗底）",
+          "rgba(255,255,255,.07)" in _rule(
+              css, ".sheet .hist:hover,.sheet .item:hover,.sheet .web-group .wg-head:hover")
+          or "rgba(255,255,255,.07)" in css,
           "")
-    check("面板/页面**内容字体加深**（--t1/--t2/--t3 各深一档 + 语义色换深档）",
-          "--t2:#333A44" in _rule(css, ".sheet") and "--t3:#666E79" in _rule(css, ".sheet")
-          and "--ok:#14682B" in _rule(css, ".sheet")
-          and "--accent-hi:#5E6AD2" in _rule(css, ".sheet"),
+    check("③ 面板内容字体**整档翻白 + 加粗**（--t2/--t3 都是浅灰，标题纯白 700）",
+          "--t2:#CFD5DE" in _rule(css, ".sheet")
+          and "--t3:#8C95A2" in _rule(css, ".sheet")
+          and "--accent-hi:#A5B0F5" in _rule(css, ".sheet")
+          and "color:#FFFFFF" in _rule(css, ".sheet-title")
+          and "font-weight:700" in _rule(css, ".sheet-title"),
           "")
     check("层标题里的 token 单位**写全**（`tokens`，不再是 `tok`）",
           ".toLocaleString()} tokens`" in js and "} tok`" not in js,
@@ -533,11 +633,15 @@ def main() -> int:
           and "color:var(--log-blue)" in _rule(css, ".rl-mark")
           and "RL_MARK.test(rest) ? 'rl-txt rl-mark'" in js,
           "")
-    check("日志滚动条＝**短的椭圆点**（隐藏原生、自绘 #rl-bar 跟滚动走）",
+    # ★ R37：滚动条从「26px 长胶囊」缩成**12px 圆点**，并且**可拖**（R33 是纯指示器）。
+    check("⑥ 日志滚动条＝**可拖的圆点**（隐藏原生、自绘 #rl-bar 跟滚动走 / 可拖）",
           'id="rl-bar"' in html and "function updateRlBar" in js
           and "scrollbar-width:none" in _rule(css, "#runlog-body")
           and "display:none" in _rule(css, "#runlog-body::-webkit-scrollbar")
-          and "border-radius:999px" in _rule(css, "#rl-bar"),
+          and "border-radius:50%" in _rule(css, "#rl-bar")
+          and "width:12px;height:12px" in _rule(css, "#rl-bar").replace(" ", "")
+          and "pointer-events:auto" in _rule(css, "#rl-bar")
+          and "function bindRlBarDrag" in js,
           "")
     check("抽屉按钮组居中后**整体上移一段**（transform:translateY(clamp(…))）",
           "transform:translateY(clamp(" in _rule(css, ".drawer-nav")
@@ -572,10 +676,164 @@ def main() -> int:
           "width:34px" in _rule(css, ".icon-btn")
           and "background:transparent" in _rule(css, ".icon-btn"),
           _rule(css, ".icon-btn").strip()[:52])
-    check("抽屉打开时首屏让位（主区右移一个抽屉宽，不覆盖）",
-          "body.drawer-open main.stage{margin-left:var(--drawer-w)" in css
-          and "--drawer-w:" in css,
+    check("抽屉打开时首屏让位：主区**纯 translate 平移**（width 恒 100%，不再改宽度）",
+          "transform:translateX(var(--shift-w))" in _rule(css, "body.drawer-open main.stage")
+          and "width:" not in _rule(css, "body.drawer-open main.stage")
+          and "margin-left:" not in _rule(css, "body.drawer-open main.stage")
+          and "--shift-w:" in css,
+          _rule(css, "body.drawer-open main.stage").strip()[:56])
+    check("④ 让位量**封顶为视口一半**（窄视口下右侧恒留一半可见 ⇒「展开右边看不见」修掉）",
+          "--shift-w:min(var(--drawer-w),50vw)" in css.replace(" ", ""),
           "")
+    check("④ 让位时给主区右缘**补偿内边距**（自适应边距，内容不贴边）",
+          "padding-right:calc(18px+min(var(--shift-w),6vw))"
+          in css.replace(" ", "").replace("\n", ""),
+          "")
+    check("④ 运行态内容宽度在让位时**同步收窄**（否则右缘仍被顶出视口）",
+          "body.drawer-open.stage-run .runlog" in css
+          and "max-width:min(1080px,calc(100vw-var(--shift-w)-48px))"
+          in css.replace(" ", "").replace("\n", ""),
+          "")
+    check("④ 平移**放慢**（主区 + 抽屉都 .42s，用户要求「慢一点」）",
+          "transition:transform .42s var(--ease)" in _rule(css, "main.stage")
+          and "transition:transform .42s var(--ease)" in _rule(css, ".drawer")
+          and "margin-left" not in _rule(css, "main.stage"),
+          _rule(css, "main.stage").strip()[:64])
+    # ══ ★ R37 一揽子（用户 10 图 / 7 条）══════════════════════════════════════
+    # ① 后端把日志共有头（`__head__`）随 /layers 一起下发 -------------------------
+    #   引擎（`元DGTF-V1.23.22.py`）本来就在进层循环前打这一段（`调度：` / `螺旋上限`
+    #   / `并行模式` / `回来通道` / `运行期总控`），它落在 `layers.split_log()` 的
+    #   `__head__` 桶里；前端以前**只渲染 LANE_NAMES**，整段被丢掉 ⇒ 用户看不到。
+    #   ★★ 变异体教训：早先把这条写成 `... and "_LAYER" in runner_src or "split_log"
+    #      in runner_src` —— `or` 让整个表达式**恒真**，把「head 不下发」的变异体
+    #      放过去了（方向错的断言比没断言更危险）。现在只认**下发 head 那一行**。
+    check("① 后端把日志共有头（`__head__`）随 /layers 一起下发",
+          '"head": parts.get("__head__", "")' in runner_src,
+          "")
+    check("① 前端把 head 渲成**日志开头块**（`.rl-lane.rl-boot`），不再整段丢掉",
+          "rl-lane rl-boot" in js and "src.head" in js,
+          "")
+    check("① 开头块有样式（与层块区分：一道轻下边分隔）",
+          "border-bottom:1px solid var(--log-hair)" in _rule(css, ".rl-boot"),
+          _rule(css, ".rl-boot").strip()[:64])
+    # ★★ 变异体教训：早先写 `"载入调度配置" in 源文本` —— 而**注释里也有这个词**
+    #   （就是本行上面那句说明），于是「把真正的 log(...) 删掉」照样全绿。
+    #   判据必须落在**可执行的那句**上，不能落在注释上。
+    _mock_src = (_app / "mock_engine.py").read_text(encoding="utf-8")
+    check("① mock 引擎也在开头打同样的启动信息（演示 / 自检能看到）",
+          'log("载入调度配置：' in _mock_src and 'log("螺旋上限（每层圈数）：' in _mock_src
+          and 'log("运行期总控：' in _mock_src,
+          "")
+    # ② 层标题（`↻ 第 N/M 圈 · 摊开`）与内容**同一套排版规范**，自适应 ---------
+    check("② 日志区字号**收敛成两个变量**（--rl-h1 / --rl-h2，一处改全齐）",
+          "--rl-h1:clamp(14px,2vh,18px)" in css.replace(" ", "")
+          and "--rl-h2:clamp(13.5px,1.9vh,17px)" in css.replace(" ", ""),
+          "")
+    check("② 层标题与「第 N/M 圈」**共用 --rl-h1**（字号 / 行高一致 ⇒ 观感齐）",
+          "font-size:var(--rl-h1)" in _rule(css, ".rl-lane-head")
+          and "font-size:var(--rl-h1)" in _rule(css, ".rl-round")
+          and "font-size:var(--rl-h1)" in _rule(css, ".rl-title")
+          and "line-height:1.35" in _rule(css, ".rl-round"),
+          _rule(css, ".rl-round").strip()[:64])
+    check("② 小标题 / 步骤 / 名称标签 / 属性**共用 --rl-h2**（规范统一 + 自适应）",
+          "font-size:var(--rl-h2)" in _rule(css, ".rl-lab")
+          and "font-size:var(--rl-h2)" in _rule(css, ".rl-step")
+          and "font-size:var(--rl-h2)" in _rule(css, ".rl-attr")
+          and "font-size:var(--rl-h2)" in _rule(css, ".rl-fold>summary"),
+          "")
+    # ③ 面板背景**漆黑透明**（透明度不变 = 85%）+ 白字加粗高亮 -------------------
+    check("③ 面板背景**漆黑透明**（rgba(8,9,10,.85)，仍 85% 透明度）",
+          "background:rgba(8,9,10,.85)" in _rule(css, ".sheet").replace(" ", ""),
+          _rule(css, ".sheet").strip()[:60])
+    check("③ 面板内字色翻成**浅档**（--t1 近白 / 全局加粗）",
+          "--t1:#F5F7FA" in _rule(css, ".sheet")
+          and "font-weight:500" in _rule(css, ".sheet"),
+          "")
+    check("③ 面板标题**纯白 + 700**（加粗高亮）",
+          "color:#FFFFFF" in _rule(css, ".sheet-title")
+          and "font-weight:700" in _rule(css, ".sheet-title"),
+          _rule(css, ".sheet-title").strip()[:60])
+    check("③ 参数标签在暗面上**白字加粗**",
+          "color:var(--t1)" in _rule(css, ".adv-group-body .lb,.adv-group-body .grid label")
+          and "font-weight:600" in _rule(
+              css, ".adv-group-body .lb,.adv-group-body .grid label"),
+          "")
+    # ★ 残留的「浅底深字」必须一起翻（用户说「类似的一起改」）——
+    #   这几条是本轮真正踩到的漏网：保存反馈浮层 / 待保存小标 / 只读密钥胶囊 / 危险键 hover。
+    check("③ 保存反馈浮层翻成**暗面**（不再是 rgba(255,255,255,.96) 白底黑字）",
+          "background:rgba(12,14,17,.96)" in _rule(css, ".adv-toast").replace(" ", "")
+          and "rgba(255,255,255,.96)" not in css.replace(" ", ""),
+          _rule(css, ".adv-toast").strip()[:60])
+    check("③ 浮层三态（ok/warn/err）同步翻成**暗底亮字**",
+          "background:rgba(10,20,13,.96)" in _rule(css, ".adv-toast.ok").replace(" ", "")
+          and "background:rgba(22,19,10,.96)" in _rule(css, ".adv-toast.warn").replace(" ", "")
+          and "background:rgba(24,12,12,.96)" in _rule(css, ".adv-toast.err").replace(" ", ""),
+          "")
+    check("③ 「N 项待保存」小标 / 只读密钥胶囊翻成**暗面亮字**",
+          "color:#F5C453" in _rule(css, ".nav-btn em.dirty")
+          and "color:#7EE6A0" in _rule(css, ".grid .ro.ro-key")
+          and "rgba(30,122,52,.12)" not in css.replace(" ", ""),
+          "")
+    check("③ 危险键（恢复出厂设置）hover 翻成**亮红字 + 淡红底**",
+          "color:#FFB4AA" in _rule(css, ".sheet-actions button.ghost.danger:hover")
+          and "color:#8A1A12" not in css,
+          _rule(css, ".sheet-actions button.ghost.danger:hover").strip()[:60])
+    check("③ 禁用态 hover 用**主题字色**（不再写死 #1F2229 深字）",
+          "color:var(--t3)" in _rule(css, ".sheet-actions button.ghost:disabled:hover")
+          and "#1F2229}" not in css.replace(" ", "").replace("\n", ""),
+          "")
+    # ⑤ 三个状态胶囊与「运行中」**字体大小粗细一致** + 前面的点改**实心高亮灯** ----
+    _chip = _rule(css, ".chip")
+    _kinds = _rule(css, ".chip.k-md")
+    check("⑤ 状态胶囊 `.chip`：字号**上调到 clamp 档**（原 11px 比旁边 12~14.5 小）",
+          "font-size:clamp(11.5px,1.6vh,13.5px)" in _chip.replace(" ", ""),
+          _chip.strip()[:64])
+    check("⑤ `.chip` **加粗 600**（与右侧链接 700 同观感）",
+          "font-weight:600" in _chip,
+          "")
+    check("⑤ `.chip` 圆角改成**胶囊 20px**（原来 4px 方角，与被对齐的链接不一致）",
+          "border-radius:20px" in _chip,
+          "")
+    check("⑤ 运行状态徽章 `.badge` 与三个链接 `.rl-files a` **字号 / 粗细完全一致**",
+          "font-size:clamp(12px,1.7vh,14.5px)" in _rule(css, ".badge").replace(" ", "")
+          and "font-size:clamp(12px,1.7vh,14.5px)"
+          in _rule(css, ".rl-files a").replace(" ", "")
+          and "font-weight:700" in _rule(css, ".badge")
+          and "font-weight:700" in _rule(css, ".rl-files a"),
+          "")
+    check("⑤ 前面的点改成**实心高亮灯**：6px + currentColor + 同色光晕（三处一致）",
+          "width:6px;height:6px" in _rule(css, ".badge::before").replace(" ", "")
+          and "box-shadow:0 0 5px currentColor" in _rule(css, ".badge::before")
+          and "width:6px;height:6px" in _rule(css, ".rl-files a::before").replace(" ", "")
+          and "box-shadow:0 0 5px currentColor" in _rule(css, ".rl-files a::before"),
+          "")
+    # ⑥ 日志滚动条改成**可拖圆点**（R33 因 drag 抖动设过 pointer-events:none）-----
+    check("⑥ 原生细长滚动条**隐藏**（scrollbar-width:none + ::-webkit-scrollbar 宽 0）",
+          "scrollbar-width:none" in _rule(css, "#runlog-body")
+          and "width:0;height:0;display:none" in _rule(css, "#runlog-body::-webkit-scrollbar").replace(" ", ""),
+          "")
+    check("⑥ 自绘滚动条 = **圆形点**（border-radius:50% + 12px 见方）",
+          "border-radius:50%" in _rule(css, "#rl-bar")
+          and "width:12px;height:12px" in _rule(css, "#rl-bar").replace(" ", ""),
+          _rule(css, "#rl-bar").strip()[:64])
+    # ★ 注意：`#rl-bar.drag` 有**两条**规则（一条与 `:hover` 合并写背景、一条单给
+    #   cursor）—— `_rule()` 取**第一条**，取不到 cursor:grabbing。这里直接对扁平
+    #   后的全文断言（够用且更稳，不依赖规则顺序）。
+    _flat_bar = css.replace(" ", "").replace("\n", "")
+    check("⑥ 圆点**可点可拖**（pointer-events:auto + cursor:grab / grabbing）",
+          "pointer-events:auto" in _rule(css, "#rl-bar")
+          and "cursor:grab" in _rule(css, "#rl-bar")
+          and "cursor:grabbing" in _flat_bar
+          and "pointer-events:none" not in _rule(css, "#rl-bar"),
+          "")
+    check("⑥ 拖拽**真的接线**（bindRlBarDrag：pointerdown/move/up + setPointerCapture）",
+          "function bindRlBarDrag" in js and "setPointerCapture" in js
+          and "pointerdown" in js and "bindRlBarDrag();" in js,
+          "")
+    check("⑥ 拖动时**禁止滚动事件回写位置**（rlDragging 闸，避免与 scroll 抢 ⇒ 抖）",
+          "rlDragging" in js and "if (rlDragging) return" in js,
+          "")
+    # ── 本地资料库的「现成锚点快照」默认展开
     check("本地资料库的「现成锚点快照」默认展开",
           '<details class="cand" open>' in html)
     check("联网检索结果库有聚合/过滤控件",
@@ -653,6 +911,235 @@ def main() -> int:
     _ch2 = yaml.safe_load(Path(_p2).read_text(encoding="utf-8"))["memory"]["channels"]
     check("参数往返有判别力（单值 → ['self']，不是字符串 'self'）",
           _ch2 == ["self"] and not isinstance(_ch2, str), repr(_ch2))
+
+    # ── ★ 参数**持久化写回**（用户报「参数填了保存不了」的根因）──────────
+    #   判据分三层，且**不碰真配置**（把 prm.CFG 指到副本上再跑）：
+    #     ① 值确实变了（语义）
+    #     ② 注释一行不少（保真 —— 这份 yaml 的注释就是配置说明书）
+    #     ③ 没点名的键一个不变（无污染）
+    # ── 参数「保存」写回**用户配置**（R36 口径：出厂 yaml 只读，永不改）───────────
+    #   ★ 测试隔离：把 `USER_CFG` 指到 _audit_tmp 下的一份临时文件 —— 别动用户真配置。
+    _save_dir = oi.PROJECT_ROOT / "_audit_tmp"
+    _save_dir.mkdir(parents=True, exist_ok=True)
+    _real_user = prm.USER_CFG
+    _real_cfg = prm.CFG
+    _uf = _save_dir / "_selftest_user_cfg.yaml"
+    if _uf.exists():
+        _uf.unlink()
+    _cfg_bytes0 = _real_cfg.read_bytes()          # 出厂 yaml 的原始字节（全程要比对）
+    _flat0 = prm._load_yaml_flat(_real_cfg)
+    try:
+        prm.USER_CFG = _uf
+        _res = prm.save_params({"api.default_model": "deepseek-chat",
+                                "api.timeout": "333"})
+        _flat1 = prm._load_yaml_flat(_uf)
+    finally:
+        prm.USER_CFG = _real_user
+    check("参数「保存」真的写回用户配置文件（值变了）",
+          sorted(_res["saved"]) == ["api.default_model", "api.timeout"]
+          and _flat1["api.default_model"] == "deepseek-chat"
+          and _flat1["api.timeout"] == 333,
+          f"saved={_res['saved']}")
+    check("写回按原类型还原（数字仍 int，不是字符串）",
+          isinstance(_flat1["api.timeout"], int),
+          f"timeout={_flat1['api.timeout']!r}")
+    check("★ 出厂 dgtf_config.yaml **一个字节都没动**（这是「恢复默认」能成立的前提）",
+          _real_cfg.read_bytes() == _cfg_bytes0,
+          f"{len(_cfg_bytes0)} 字节")
+    check("★ 写回文件是**用户配置**（用户配置里有 → 出厂配置里没有）",
+          _uf.exists()
+          and prm._load_yaml_flat(_uf).get("api.timeout") == 333
+          and _flat0.get("api.timeout") != 333,
+          f"{_uf.name}: timeout={prm._load_yaml_flat(_uf).get('api.timeout')!r}")
+    # 生效值 = 用户配置覆盖出厂
+    _eff = prm.effective_flat() if _real_user == prm.USER_CFG else None
+    try:
+        prm.USER_CFG = _uf
+        _eff = prm.effective_flat()
+    finally:
+        prm.USER_CFG = _real_user
+    check("生效值 = **用户配置优先 + 出厂兜底**（改了的是用户值，没改的仍是出厂值）",
+          _eff["api.default_model"] == "deepseek-chat"
+          and _eff["api.timeout"] == 333
+          and _eff["auto.enabled"] == _flat0["auto.enabled"],
+          f"model={_eff['api.default_model']}")
+    # 幂等：同样覆盖再跑一次 ⇒ 第二次必须全 unchanged
+    _res2 = None
+    try:
+        prm.USER_CFG = _uf
+        _res2 = prm.save_params({"api.default_model": "deepseek-chat",
+                                 "api.timeout": "333"})
+    finally:
+        prm.USER_CFG = _real_user
+    check("写回**幂等**（同样覆盖连跑两次，第二次全 unchanged）",
+          not _res2["saved"]
+          and sorted(_res2["unchanged"]) == ["api.default_model", "api.timeout"],
+          f"saved={_res2['saved']} unchanged={_res2['unchanged']}")
+    # ★★ 「恢复默认」= 删用户配置 ⇒ 值回落出厂。这是用户明确要的按钮。
+    try:
+        prm.USER_CFG = _uf
+        _rr = prm.reset_params()
+        _eff2 = prm.effective_flat()
+    finally:
+        prm.USER_CFG = _real_user
+        if _uf.exists():
+            _uf.unlink()
+    check("★「恢复默认配置」删掉用户配置后，值**回落到出厂**",
+          _rr["ok"] and _rr["removed"] and not _uf.exists()
+          and _eff2["api.default_model"] == _flat0["api.default_model"]
+          and _eff2["api.timeout"] == _flat0["api.timeout"],
+          f"model 回到 {_eff2['api.default_model']}")
+    check("★ 恢复默认**只删用户配置、绝不动出厂 yaml**（否则就没有「默认」可言了）",
+          _real_cfg.read_bytes() == _cfg_bytes0,
+          f"{len(_cfg_bytes0)} 字节")
+    # 幂等 2：本来就没有用户配置时，再恢复一次也必须 ok 且不报错
+    try:
+        prm.USER_CFG = _uf
+        _rr2 = prm.reset_params()
+    finally:
+        prm.USER_CFG = _real_user
+    check("「恢复默认」对**已无用户配置**的情况幂等（ok 且 removed=False）",
+          _rr2["ok"] and not _rr2["removed"] and not _rr2["error"],
+          str(_rr2))
+    # 密钥键：后端也必须拒（前端不给 data-cfg 是第一道，这里是第二道）
+    try:
+        prm.USER_CFG = _uf
+        _res3 = prm.save_params({"api.key": "sk-恶意值", "web_search.api_key_env": "X"})
+        _uf_txt = _uf.read_text(encoding="utf-8") if _uf.exists() else ""
+    finally:
+        prm.USER_CFG = _real_user
+        if _uf.exists():
+            _uf.unlink()
+    check("密钥键**拒绝写回**（前端不给 data-cfg + 后端再挡一层）",
+          set(_res3["skipped"]) == {"api.key", "web_search.api_key_env"}
+          and not _res3["saved"] and not _uf_txt,
+          f"skipped={_res3['skipped']}")
+    # 面板只读渲染：密钥项必须带 ro-key 标记（用户看得出是密钥类）
+    check("密钥键在 /api/params 里标成只读且**不回传值**",
+          all(it.get("type") == "readonly" and it.get("readonly_key")
+              for g in (params_data.get("groups") or [])
+              for it in (g.get("items") or []) if it.get("key") in prm.READONLY_KEYS)
+          and not any(str(it.get("value") or "").startswith("sk-")
+                      for g in (params_data.get("groups") or [])
+                      for it in (g.get("items") or [])),
+          f"只读键 {len([it for g in (params_data.get('groups') or []) for it in (g.get('items') or []) if it.get('readonly_key')])} 个")
+
+    # ── R36 ②：异常终止留痕的**行为级**验证（喂合成样本，不靠「源码里有这句话」）──
+    #   ★ 隔离：把 `oi.OUTPUTS_DIR` 指到临时目录 —— 绝不能在真 outputs/ 里造垃圾。
+    _orph = _save_dir / "_selftest_orphans"
+    if _orph.exists():
+        shutil.rmtree(_orph, ignore_errors=True)
+    _orph.mkdir(parents=True, exist_ok=True)
+    _real_out = oi.OUTPUTS_DIR
+    _t0 = 1700000000.0
+    # ① 活痕迹（服务崩了留下）：live=True + status=running ⇒ 应被回填成 interrupted
+    (_orph / "20261012_010101_aaaaaa.run.json").write_text(json.dumps({
+        "id": "20261012_010101_aaaaaa", "question": "崩溃前正在跑的题",
+        "status": "running", "live": True, "mock": False,
+        "created_at": _t0, "started_at": _t0 + 3, "ended_at": None,
+        "error": "", "output_name": None, "cmd": ["python", "x.py"],
+    }, ensure_ascii=False), encoding="utf-8")
+    # ② 正常归档（live=False）：**不许**被动到（对照臂 —— 证明判据有区分力）
+    (_orph / "20261012_020202_bbbbbb.run.json").write_text(json.dumps({
+        "id": "20261012_020202_bbbbbb", "question": "正常跑完的题",
+        "status": "done", "live": False, "mock": False,
+        "created_at": _t0, "started_at": _t0, "ended_at": _t0 + 60,
+        "error": "", "output_name": "20261012_020202_正常跑完的题.md",
+    }, ensure_ascii=False), encoding="utf-8")
+    # ③ 已被回填过的（idempotent 对照）：不许再改、也不许报第二次
+    (_orph / "20261012_030303_cccccc.run.json").write_text(json.dumps({
+        "id": "20261012_030303_cccccc", "question": "早就中断过的",
+        "status": "interrupted", "live": False, "mock": False,
+        "created_at": _t0, "started_at": _t0, "ended_at": _t0 + 10,
+        "error": "服务中断（进程异常退出 / 重启），本任务未正常收尾",
+    }, ensure_ascii=False), encoding="utf-8")
+    # ④ ★ 让 `live` 这道闸**单独可判**的对照样本：`status=running` 但 `live=False`。
+    #   —— 它不是「活痕迹」（活痕迹必须 live=True），只是一份**历史遗留**的 running 记录，
+    #      按语义**不该**被本次回填碰。为什么非要有它：上面 ② 那份（done）在「去掉了
+    #      live 闸」之后**依然不动**（被 status 闸拦住），所以单靠 ② 证明不了 live 闸起作用；
+    #      只有这个样本能证明「live 闸确实在拦人」（去掉它 ⇒ 这条会被误改 ⇒ 判据翻红）。
+    (_orph / "20261012_040404_dddddd.run.json").write_text(json.dumps({
+        "id": "20261012_040404_dddddd", "question": "历史遗留的 running（非活痕迹）",
+        "status": "running", "live": False, "mock": False,
+        "created_at": _t0, "started_at": _t0, "ended_at": None,
+        "error": "", "output_name": None,
+    }, ensure_ascii=False), encoding="utf-8")
+    try:
+        oi.OUTPUTS_DIR = _orph
+        _rec = runner.recover_orphans()
+        _after = {p.name: json.loads(p.read_text(encoding="utf-8"))
+                  for p in _orph.glob("*.run.json")}
+    finally:
+        oi.OUTPUTS_DIR = _real_out
+        shutil.rmtree(_orph, ignore_errors=True)
+    _m1 = _after["20261012_010101_aaaaaa.run.json"]
+    _m2 = _after["20261012_020202_bbbbbb.run.json"]
+    _m3 = _after["20261012_030303_cccccc.run.json"]
+    _m4 = _after["20261012_040404_dddddd.run.json"]
+    check("★ 孤儿任务被回填成 `interrupted` 并**写明原因**（崩溃的任务不再凭空消失）",
+          len(_rec) == 1 and _rec[0]["id"] == "20261012_010101_aaaaaa"
+          and _m1["status"] == "interrupted" and _m1["live"] is False
+          and "服务中断" in _m1["error"]
+          and _m1["ended_at"] and _m1["duration_sec"] is not None,
+          f"回填 {len(_rec)} 条 → {_m1['status']}")
+    check("★ 回填**只认活痕迹**：正常归档（done）一条不动（对照臂）",
+          _m2["status"] == "done" and _m2["live"] is False
+          and _m2["output_name"] == "20261012_020202_正常跑完的题.md",
+          _m2["status"])
+    # ★ 关键对照臂：live 闸**单独可判** —— 这份 status=running 但 live=False，
+    #   去掉 live 闸就会被误改成 interrupted（② 那份 done 拦不住这个变异）。
+    check("★ `live` 闸单独可判：status=running 但 live=False 的**历史遗留**不许被回填",
+          _m4["status"] == "running" and _m4["live"] is False
+          and not _m4.get("error"),
+          _m4["status"])
+    check("★ 回填**幂等**：已 interrupted 的不会二次改写",
+          _m3["status"] == "interrupted"
+          and "服务中断" in _m3["error"],
+          _m3["status"])
+    # 留痕落盘的**文件名口径**：无产物时 stamp 取任务 id（与活痕迹同名 ⇒ 就地覆盖、
+    # 不会多出一份永远 running 的孤儿）
+    check("★ 无产物时归档 stamp = 任务 id（就地覆盖活痕迹，不留 running 孤儿）",
+          'stamp = name[:-3] if name.endswith(".md") else (name or str(task["id"]))'
+          in runner_src
+          and "def live_stamp" in runner_src,
+          "")
+    check("★ 收尾清活痕迹时**不会误删刚归档的那份**（同名即留，防自噬）",
+          'Path(task["archive_json"]).name == jp.name' in runner_src
+          and "归档就地覆盖了活痕迹，别删" in runner_src,
+          "")
+    check("★ dashboard 的「历史对话」带出 `error`（中断/失败能显示原因）",
+          '"error": str(meta.get("error") or "")' in dash_src
+          and '"error": str(t.get("error") or "")' in dash_src,
+          "")
+    # ★★ 产物库要能**收录孤儿痕迹并显示原因**（用户要求：中断任务在「产物库」也看得到）。
+    #   喂一份合成 `<tid>.run.json`（非 mock）到隔离目录，验证 `_parse_one` 真读得到
+    #   自身那份的 status/error/question —— 而不是只显示一个光秃秃的戳。
+    #   （踩过的坑：`path.with_suffix(".run.json")` 对已是 .run.json 的路径会算成
+    #     `X.run.run.json` ⇒ 自身元信息永远读不到。）
+    _orph2 = _save_dir / "_selftest_orphan_trace"
+    if _orph2.exists():
+        shutil.rmtree(_orph2, ignore_errors=True)
+    _orph2.mkdir(parents=True, exist_ok=True)
+    (_orph2 / "20261012_050505_eeff00.run.json").write_text(json.dumps({
+        "id": "20261012_050505_eeff00", "question": "产物库中断痕迹样本",
+        "status": "interrupted", "live": False, "mock": False,
+        "created_at": _t0, "started_at": _t0, "ended_at": _t0 + 42,
+        "duration_sec": 42.0, "output_name": None,
+        "error": "服务中断（进程异常退出 / 重启），本任务未正常收尾",
+    }, ensure_ascii=False), encoding="utf-8")
+    _real_out2 = oi.OUTPUTS_DIR
+    try:
+        oi.OUTPUTS_DIR = _orph2
+        _one = oi._parse_one(_orph2 / "20261012_050505_eeff00.run.json")
+    finally:
+        oi.OUTPUTS_DIR = _real_out2
+        shutil.rmtree(_orph2, ignore_errors=True)
+    check("★ 孤儿痕迹被产物库收录时**带出原因与题目**（不是光秃秃一个戳）",
+          _one.get("status") == "interrupted"
+          and "服务中断" in (_one.get("error") or "")
+          and _one.get("run_question") == "产物库中断痕迹样本"
+          and _one.get("question") == "产物库中断痕迹样本",
+          f"status={_one.get('status')} q={_one.get('question')!r}")
 
     s, lo = _get(base, "/api/library/local")
     check("本地资料库接口可用（导入列表 + 锚点候选）",

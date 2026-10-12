@@ -157,6 +157,9 @@ def list_chats(limit: int = 80) -> list[dict]:
             "started_at": meta.get("started_at"),
             "ended_at": meta.get("ended_at"),
             "output_name": out,
+            # ★ 中断/失败的任务要能**看到原因**（用户明确要求「标注状态原因」）。
+            "error": str(meta.get("error") or ""),
+            "duration_sec": meta.get("duration_sec"),
             "archive_log": f"{stamp}.run.log",
             "archive_json": jp.name,
             "live": False,
@@ -181,6 +184,9 @@ def list_chats(limit: int = 80) -> list[dict]:
                 "started_at": t.get("started_at"),
                 "ended_at": t.get("ended_at"),
                 "output_name": out,
+                "error": str(t.get("error") or ""),
+                "duration_sec": (round(t["ended_at"] - t["started_at"], 1)
+                                 if t.get("started_at") and t.get("ended_at") else None),
                 "live": True,
             })
             chats[key] = row

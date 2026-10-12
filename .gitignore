@@ -29,6 +29,22 @@ _archive/
 # 运行记录数据库
 runs.sqlite3
 
+# 应用层每次跑任务落下的实时日志 / 临时 config（`engine_runner.RUNS_DIR`）。
+# ★ 每次自检、每次真跑都新增一对 `<tid>.log` + `<tid>.yaml`，全是内部运行记录，
+#   不是源码也不是文档 —— 与上一节「内部数据/运行记录 排除」同一口径。
+# ★ 只忽略**目录内的产物**，不忽略 `dgtf_app/runs/` 这个目录本身的存在
+#   （目录由 `RUNS_DIR.mkdir(exist_ok=True)` 自建，不需要进库）。
+# ★ 文件全部原地保留，本地照常用；只是不再被 git 跟踪。
+dgtf_app/runs/
+
+# 联网检索 / 锚点快照的本地缓存（`cache/websearch/`、`cache/anchors/`）。
+# ★ 同类口径：运行期缓存，可由源数据重建，不属源码/文档。本地保留，不进库。
+cache/
+
+# 参数面板「保存」时对配置文件做的自动备份（`params.save_params` 写前留一份，
+# 供写坏时人工回退）。是**运行期产物**，不该进仓库 —— 与「原件不动」的口径一致。
+*.yaml.bak
+
 # GitHub Desktop 建的空脚手架仓库（指向同一个远程，含自己的 .git）
 # ★ 嵌套 git 仓库不跟踪：否则会被记成一行 gitlink，状态永远显示「脏」
 meta-dgtf/

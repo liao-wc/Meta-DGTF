@@ -28,8 +28,18 @@ const ADV = [
   ['keep',        'keep（保留名单）',            '逗号分隔'],
 ];
 
-/* yaml 配置面板：`/api/params` 把 dgtf_config.yaml 摊平后按组渲染。
-   改动不写回原文件 —— 启动时生成一份临时 config 用 --config 传给引擎。 */
+/* yaml 配置面板：`/api/params` 把**生效配置**（出厂 `dgtf_config.yaml` + 用户配置覆盖）
+   摊平后按组渲染。**三个动作**：
+     · 「保存」       → POST /api/params，持久化写回**用户配置** dgtf_config.user.yaml
+                        （出厂 yaml 是只读基线，前端永不改它；刷新/重启后仍在）；
+     · 「仅本次」     → 只记进 `advOverrides`，启动时生成一份临时 config 用 `--config`
+                        传给引擎（原文件不动）；
+     · 「恢复默认配置」→ POST /api/params/reset，删掉用户配置 ⇒ 全部键回落到出厂 yaml。
+   ★ 为什么必须分成这几条路：早先只有一个「保存」，但它**只写内存**（临时 config 那条路），
+     用户点完「保存」以为存进配置了，一刷新（R28 起刷新回首屏是常用动作）改动全丢 ——
+     反馈就是「参数填了保存不了」。「保存」这个词在用户心里就是持久化，别偷换语义。
+   ★ 为什么改成写「另一份配置」而不是直接改出厂 yaml：出厂那份是**恢复默认的基线**，
+     改了它就没有「默认」可回了（用户明确要求「恢复后端原始默认配置 yaml」）。 */
 /* 自绘下拉：原生 select 在页面底部 / 滚动容器里的弹层会跑到窗口左上角，
    这里改成页内菜单 —— 贴触发控件左上角、向右展开，位置由 openDD() 现算。
    真实值仍存在 <input type="hidden" data-cfg> 里，collectOpts() 不用改。 */
@@ -60,6 +70,21 @@ const advOverrides = {};
 /* 打开某个分组时的**快照**，供「不保存直接关闭」把这一组的改动整组回滚 */
 let advBackup = null;    // { key: {had, val} }
 
+/* ★ 已经**保存进 yaml** 的键（`key -> 值`）。
+   用来算分组按钮上的「已改 M 项」小标 —— 只有"因为没保存而只是暂时记着"的键
+   才算「待保存」，不然用户看不出到底存住了没有（这正是他报「保存不了」的由来）。 */
+let advSaved = {};
+
+/* 这一组里「改了但还没持久化」的键有几个 */
+function advDirtyCount(g) {
+  let n = 0;
+  (g.items || []).forEach(it => {
+    if (!it.key || !(it.key in advOverrides)) return;
+    if (advSaved[it.key] !== advOverrides[it.key]) n++;
+  });
+  return n;
+}
+
 function rememberAdv(el) {
   if (!el || !el.dataset) return;
   const key = el.dataset.cfg;
@@ -81,10 +106,17 @@ function renderAdvItem(it) {
     field = ddField(it.key, v, ['true', 'false']);
     dropdown = true;
   } else if (it.type === 'readonly') {
-    /* 嵌套结构值（如 web_search.domain_tier_rules = [[".gov.cn",1],…]）**不给编辑**：
-       它没有 data-cfg ⇒ collectOpts 收不到 ⇒ 引擎用出厂值。
-       否则前端只能给字符串，往返会把二维结构写成一串文本。 */
-    field = `<span class="ro" title="${esc(v)}">只读 · 结构值</span>`;
+    /* 两类只读项，都不渲染 `data-cfg` ⇒ collectOpts 收不到 ⇒ 既不会被改也不会被写回：
+         · 密钥键（readonly_key=true）：显示「已配置 / （空）」，值本身不回传前端；
+         · 嵌套结构值（如 web_search.domain_tier_rules = [[".gov.cn",1],…]）：
+           前端只有字符串，往返会把二维结构写坏，所以不给编辑。 */
+    const tip = it.readonly_key
+      ? '密钥类参数不在面板里编辑（避免明文落进配置文件 / 被空值覆盖）'
+      : esc(v);
+    const txt = it.readonly_key
+      ? (it.has_value ? '已配置 · 不在面板改' : '未配置 · 不在面板改')
+      : '只读 · 结构值';
+    field = `<span class="ro${it.readonly_key ? ' ro-key' : ''}" title="${tip}">${txt}</span>`;
     plain = true;
   } else {
     field = `<input data-cfg="${esc(it.key)}" value="${esc(v)}">`;
@@ -112,24 +144,38 @@ async function buildAdv() {
   const cli = ADV.map(([k, label, ph]) =>
     ({ key: k, label, placeholder: ph }));
   advGroups = [{ key: '_cli', label: 'CLI 参数（随任务传）', items: cli }, ...groups];
+  renderAdvGroups();
+}
 
+/* ★ 分组列表单独抽出来渲染 —— 「保存」之后要回来刷新那个「已改 M 项」小标。
+   （原来这段是 buildAdv 内联的，保存后不重渲染 ⇒ 用户看不出存住没有。） */
+function renderAdvGroups() {
   const box = $('#adv-groups');
   if (!box) return;
-  box.innerHTML = advGroups.map(g => `
+  box.innerHTML = advGroups.map(g => {
+    const dirty = advDirtyCount(g);
+    return `
     <button class="nav-btn" data-advgroup="${esc(g.key)}">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path d="M4 7h10M18 7h2M4 17h4M12 17h8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
         <circle cx="16" cy="7" r="2.3" stroke="currentColor" stroke-width="1.7"/>
         <circle cx="10" cy="17" r="2.3" stroke="currentColor" stroke-width="1.7"/>
       </svg>
-      <span class="nb-name">${esc(g.label)}</span><em>${g.items.length} 项</em>
-    </button>`).join('');
+      <span class="nb-name">${esc(g.label)}</span>
+      <em class="${dirty ? 'dirty' : ''}">${g.items.length} 项</em>
+      ${dirty ? `<i class="adv-dirty" title="有 ${dirty} 项改了但还没保存">${dirty} 项待保存</i>` : ''}
+    </button>`;
+  }).join('');
 }
+
+/* 当前正在看的分组（「保存」要知道该把哪一组交出去） */
+let advCurGroup = null;
 
 /* 点分组 → 渲染该组参数并铺满成新的一页 */
 function openAdvGroup(key) {
   const g = advGroups.find(x => x.key === key);
   if (!g) return;
+  advCurGroup = g;
   // 进页面先拍快照：关的时候「不保存」就照它回滚
   advBackup = {};
   g.items.forEach(it => {
@@ -140,6 +186,9 @@ function openAdvGroup(key) {
   if (t) t.textContent = g.label;
   const grid = $('#adv-grid');
   if (grid) grid.innerHTML = g.items.map(renderAdvItem).join('');
+  /* 底部两个出口上的计数：让「有几项要保存 / 已经存了几项」一眼看得见 ——
+     用户报「保存不了」的直接原因就是**完全看不到反馈**。 */
+  updateAdvActions();
   openSheet('adv-group-page');   // 顶部标题 = 「高级参数」，分组名由页内小标题显示
 }
 
@@ -368,6 +417,7 @@ function buildArchiveLanes(raw, task) {
   LANE_NAMES.forEach(n => { text[n] = ''; stats[n] = { round: 1, rounds_cap: 0, tokens: 0 }; });
   const src = filterArchiveLines(raw);
   let cur = null;
+  let head = '';                       // ★ R37：层界之前的那几行（载入调度配置…）
   src.split('\n').forEach(line => {
     /* ★ 层界有两代，**两代都要认**（与后端 layers.py 同一口径）：
        ① 老式进度条 `━━━ 修行 · 第 r/N 圈 · …`；② 现行（实测 V1.23.22）层横幅
@@ -378,6 +428,7 @@ function buildArchiveLanes(raw, task) {
     const a = (m && m[1]) || (bn && bn[1]) || (alt && alt[1]);
     if (a) cur = a;
     if (cur) text[cur] += line + '\n';
+    else head += line + '\n';          // ★ R37：还没进任何层 ⇒ 归「开头块」
   });
   let prev = 0;
   LANE_NAMES.forEach(n => {
@@ -396,14 +447,17 @@ function buildArchiveLanes(raw, task) {
   while ((m2 = gt.exec(src))) gTok = +m2[1];
   const gc = /calls=(\d+)/g;
   while ((m2 = gc.exec(src))) gCalls = +m2[1];
-  return { text, stats,
+  return { text, stats, head,
            meta: { started_at: (task && task.created_at) || null,
                    tok: { tokens: gTok, calls: gCalls }, balance: {} } };
 }
 
-/* 任务状态 → 中文（运行日志的头行与「最近跑过」共用这一份） */
+/* 任务状态 → 中文（运行日志的头行与「最近跑过」共用这一份）
+   ★ `interrupted` = 服务崩溃 / 被强杀 / 重启导致任务没能正常收尾 —— 由后端
+     `recover_orphans()` 从落盘的「活痕迹」回填。用户要求「标注状态原因」，
+     所以它在列表里除了状态标，还要把 `error` 里的原因显示出来。 */
 const ST_TXT = { done: '完成', error: '失败', running: '运行中', queued: '排队中',
-                 cancelled: '已终止', canceled: '已终止' };
+                 cancelled: '已终止', canceled: '已终止', interrupted: '已中断' };
 
 /* ── 日志语义排版（2026-10-11 用户 21 图要求）───────────────────────
    引擎日志是「半结构化」的：既有 `[INFO]` 噪声、又有层横幅/轮次/步骤/正文混在一起。
@@ -626,18 +680,64 @@ function renderLogBody(lines, susp) {
 }
 
 /* ★ R33：运行日志的滚动指示 —— 原生滚动条被隐藏（见 CSS），这里画一个**短的椭圆点**：
-   长度固定（短），位置跟着滚动比例走；内容不够高时不显示。 */
+   长度固定（短），位置跟着滚动比例走；内容不够高时不显示。
+   ★★ R37：用户报「**用鼠标拖不动**」—— 原来是纯指示器（`pointer-events:none`）。
+   现在改成**可拖动的圆点**（直径固定 12px，见 CSS）：
+     · 位置 = 轨道上按滚动比例插值（`top` 落在 `[0, track]`，`track = clientHeight - 直径`）；
+     · `bindRlBarDrag()` 挂 `pointerdown → document.move/up`，按住拖动按比例写回 `scrollTop`；
+     · 拖动期间加 `.drag`（放大高亮），并用一个标志挡住「滚动事件回写位置」造成的抖动。 */
+const RL_DOT = 12;                 // 圆点直径（与 CSS #rl-bar 一致）
+let rlDragging = false;            // 拖动中：禁止滚动事件回写位置，避免抖动
+
 function updateRlBar() {
   const box = $('#runlog'), bd = $('#runlog-body'), bar = $('#rl-bar');
   if (!box || !bd || !bar) return;
+  if (rlDragging) return;          // 拖动中由 mousemove 主控，别被滚动事件抢
   const over = bd.scrollHeight - bd.clientHeight;
   if (over <= 8 || bd.clientHeight < 60) { bar.classList.remove('on'); return; }
   const rb = bd.getBoundingClientRect(), rbox = box.getBoundingClientRect();
-  const h = Math.max(26, Math.round(bd.clientHeight * bd.clientHeight / bd.scrollHeight));
-  const top = (rb.top - rbox.top) + Math.round((bd.scrollTop / over) * (bd.clientHeight - h));
-  bar.style.height = h + 'px';
+  /* 圆点沿轨道滑动：轨道高 = 可视区高 − 圆点直径 */
+  const track = Math.max(0, bd.clientHeight - RL_DOT);
+  const top = (rb.top - rbox.top) + Math.round((bd.scrollTop / over) * track);
   bar.style.top = Math.round(top) + 'px';
   bar.classList.add('on');
+}
+
+/* 圆点拖拽：按住 → 移动 → 松开（一次绑定，用 document 上的 move/up 保证拖出圆点也能跟手） */
+function bindRlBarDrag() {
+  const box = $('#runlog'), bd = $('#runlog-body'), bar = $('#rl-bar');
+  if (!box || !bd || !bar || bar.dataset.dragBound) return;
+  bar.dataset.dragBound = '1';
+  let startY = 0, startTop = 0;
+  const onMove = (ev) => {
+    const track = Math.max(1, bd.clientHeight - RL_DOT);
+    const over = bd.scrollHeight - bd.clientHeight;
+    const dy = ev.clientY - startY;
+    const top = Math.max(0, Math.min(track, startTop + dy));
+    bar.style.top = Math.round(top) + 'px';
+    bd.scrollTop = (top / track) * over;
+  };
+  const onUp = () => {
+    rlDragging = false;
+    bar.classList.remove('drag');
+    document.removeEventListener('pointermove', onMove);
+    document.removeEventListener('pointerup', onUp);
+    try { bar.releasePointerCapture(bar._pid); } catch (e) {}
+    delete bar._pid;
+  };
+  bar.addEventListener('pointerdown', (ev) => {
+    ev.preventDefault();
+    rlDragging = true;
+    bar.classList.add('drag');
+    const rbox = box.getBoundingClientRect();
+    startTop = parseFloat(bar.style.top || '0') || (bar.getBoundingClientRect().top - rbox.top);
+    startY = ev.clientY;
+    try { bar._pid = ev.pointerId; bar.setPointerCapture(ev.pointerId); } catch (e) {}
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
+  });
+  /* 滚轮/触控板直接滚日志时，圆点也跟着走（回到常规更新） */
+  bd.addEventListener('scroll', () => { if (!rlDragging) updateRlBar(); });
 }
 
 function renderTasks() {
@@ -713,6 +813,21 @@ function renderTasks() {
        又长又乱，而且圈数 / token 我们在层标题里已经给出来了。 */
   const src = curLanes();
   const parts = [];
+  /* ★ R37：日志**开头**的启动信息（「载入调度配置：…」「调度模式：…」等）——
+     引擎/ mock 在进层循环之前打的那几行，落在 `__head__` 桶里。
+     以前这一段被整个丢掉（只渲染 LANE_NAMES 里的层）⇒ 用户看不到「载入了什么配置」。
+     现在渲染成**无标题的开头块**，走同一套语义排版（`名称：内容` 同行、蓝标签 + 绿内容）。 */
+  {
+    const headRaw = (src.head || '')
+      .split('\n')
+      .filter(l => !/^\s*[━─—=]{3,}/.test(l))
+      .map(l => l.replace(/\s+$/, ''))
+      .filter(l => l.trim());
+    if (headRaw.length) {
+      parts.push('<div class="rl-lane rl-boot">'
+        + renderLogBody(headRaw, []) + '</div>');
+    }
+  }
   LANE_NAMES.forEach(n => {
     const raw = (src.text && src.text[n]) || '';
     const lines = raw.split('\n')
@@ -1084,6 +1199,9 @@ function renderHistory(tasks, hist) {
     const when = h.at ? new Date(h.at * 1000).toLocaleString('zh-CN',
       { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }) : '';
     const dur = (h.dur != null && h.dur !== '') ? fmtDur(Math.round(h.dur)) : '';
+    /* ★ 中断/失败的任务把**原因**显示出来（用户要求「标注状态原因」）。 */
+    const why = (h.err && (st === 'interrupted' || st === 'error'))
+      ? `<span class="why" title="${esc(h.err)}">${esc(h.err)}</span>` : '';
     /* ★ R34：日期并到**标题行右侧**（原来是第二行），整条更矮 */
     return `<div class="hist" data-hist="${esc(h.output || '')}">
       <div class="q"><span class="q-t">${esc(h.question || '（无问题）')}</span>
@@ -1093,6 +1211,7 @@ function renderHistory(tasks, hist) {
         ${h.mock ? '<span class="tag">mock</span>' : ''}
         ${dur ? `<span>${esc(dur)}</span>` : ''}
         ${h.output ? '<span>产物</span>' : ''}
+        ${why}
       </div></div>`;
   }).join('') || '<div class="muted empty" style="padding:14px">还没有通过工作台跑过。</div>';
 }
@@ -1120,10 +1239,11 @@ function chipDecid(v) {
   return `<span class="chip"><i class="d ${d}"></i>${esc(v)}</span>`;
 }
 
-/* 产物状态标：只标「非正常跑完」的（中途终止 / 部分 / 失败）——正常完成的不用多说 */
+/* 产物状态标：只标「非正常跑完」的（中途终止 / 部分 / 中断 / 失败）——正常完成的不用多说 */
 function chipState(r) {
   const st = r && r.status;
   if (st === 'cancelled') return `<span class="chip state">已终止 · 部分</span>`;
+  if (st === 'interrupted') return `<span class="chip state">已中断 · 服务异常</span>`;
   if (st === 'error') return `<span class="chip state">失败</span>`;
   return '';
 }
@@ -1610,8 +1730,13 @@ function renderChats(items) {
       ? new Date(it.created_at * 1000).toLocaleString('zh-CN', { hour12: false })
       : '';
     const st = it.status || 'queued';
+    /* ★ `interrupted`（服务崩溃/被强杀后回填的中断任务）单列一档 —— 它既不是
+       「失败」（引擎没报错、进程可能压根没退出），也不是「已终止」（用户没点终止）。 */
     const cls = st === 'running' || st === 'queued' ? 'running'
-              : (st === 'error' ? 'error' : (st === 'cancelled' ? 'cancelled' : 'done'));
+              : (st === 'interrupted' ? 'interrupted'
+              : (st === 'error' ? 'error' : (st === 'cancelled' ? 'cancelled' : 'done')));
+    const why = (it.error && (st === 'interrupted' || st === 'error'))
+      ? `<span class="why" title="${esc(it.error)}">${esc(it.error)}</span>` : '';
     /* ★ R34：日期并到**标题行右侧**，整条更矮 */
     return `<div class="hist" data-chat="${i}">
       <div class="q"><span class="q-t">${esc(it.question || '(无题)')}</span>
@@ -1621,6 +1746,7 @@ function renderChats(items) {
         ${it.live ? '' : '<span class="tag">归档</span>'}
         ${it.partial ? '<span class="tag">部分</span>' : ''}
         ${it.mock ? '<span class="tag">演练</span>' : ''}
+        ${why}
       </div>
     </div>`;
   }).join('');
@@ -1644,7 +1770,8 @@ async function openChat(c) {
     archivedTask = { id: c.id, question: c.question, status: c.status,
                      created_at: c.created_at, started_at: c.started_at,
                      ended_at: c.ended_at,
-                     output_name: c.output_name, mock: c.mock };
+                     output_name: c.output_name, mock: c.mock,
+                     error: c.error, duration_sec: c.duration_sec };
     archiveLanes = buildArchiveLanes(raw, archivedTask);
   }
   const q = $('#question');
@@ -1913,6 +2040,140 @@ function rollbackAdvGroup() {
   advBackup = null;
 }
 
+/* ── 参数页的三个出口 ────────────────────────────────────────────
+   ★ 这三个动作必须分开，因为语义完全不同（用户报的「保存不了」就是前两个被合成一个）：
+     · saveAdvToFile()  「保存」       → 写回**用户配置** dgtf_config.user.yaml，**持久**；
+     · saveAdvForRun()  「仅本次」     → 留在 `advOverrides`，只影响**下一次任务**；
+     · resetAdv()       「恢复默认配置」→ 删用户配置，全部键回落到**后端出厂** yaml。 */
+
+/* 本组里「改了但还没保存」的键（`{键: 值}`） */
+function advDirtyOfGroup(g) {
+  const out = {};
+  (g.items || []).forEach(it => {
+    if (!it.key || !(it.key in advOverrides)) return;
+    if (advSaved[it.key] !== advOverrides[it.key]) out[it.key] = advOverrides[it.key];
+  });
+  return out;
+}
+
+/* 底部三个按钮上的计数（「保存 N 项」/「仅本次 N 项」）+ 无改动时置灰 */
+function updateAdvActions() {
+  const g = advCurGroup;
+  if (!g) return;
+  const n = Object.keys(advDirtyOfGroup(g)).length;
+  const sv = $('#adv-save'), run = $('#adv-once');
+  if (sv) {
+    sv.disabled = !n;
+    sv.dataset.tip = n ? `把这一组改动写回用户配置 dgtf_config.user.yaml（${n} 项）`
+                       : '这一组还没有改动';
+    sv.classList.toggle('has-dirty', !!n);
+  }
+  if (run) {
+    run.dataset.tip = n ? `不写回文件，只让下一次任务带上这 ${n} 项`
+                        : '不写回文件，只让下一次任务带上这些改动';
+  }
+}
+
+/* 面板里的一条短提示（保存成功 / 失败 / 无改动），3 秒后自己消失。
+   ★ 挂 `#sheet` 上（**不是** `#adv-group-page`）：保存完会切回分组列表页，
+     挂分组页上的话提示会跟着那一页一起被 `display:none` 掉 —— 等于没提示。 */
+let advToastTimer = null;
+function advToast(msg, kind) {
+  const host = $('#sheet') || document.body;
+  let el = document.getElementById('adv-toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'adv-toast';
+    host.appendChild(el);
+  } else if (el.parentElement !== host) {
+    host.appendChild(el);
+  }
+  el.className = 'adv-toast show' + (kind ? ' ' + kind : '');
+  el.textContent = msg;
+  clearTimeout(advToastTimer);
+  advToastTimer = setTimeout(() => { el.className = 'adv-toast'; }, 3000);
+}
+
+/* 「保存」：把改动**持久化写回用户配置** dgtf_config.user.yaml */
+async function saveAdvToFile() {
+  const g = advCurGroup;
+  if (!g) return;
+  const dirty = advDirtyOfGroup(g);
+  const n = Object.keys(dirty).length;
+  if (!n) {
+    advToast('这一组没有要保存的改动', 'warn');
+    return;
+  }
+  const btn = $('#adv-save');
+  if (btn) btn.disabled = true;
+  try {
+    const r = await api('/api/params', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ overrides: dirty }),
+    });
+    if (r.error) throw new Error(r.error);
+    /* ★ 真的存进去了才记 `advSaved` —— 顺序不能反：先记就等于「不管成没成都说存了」。 */
+    Object.keys(dirty).forEach(k => { advSaved[k] = advOverrides[k]; });
+    advBackup = null;                       // 已落盘，不必再回滚
+    /* ★ 保存后**把面板从服务端重读一遍** —— 面板显示的就是配置文件里的真值，
+       而不是「我以为存进去了」。这一步本身就是「保存生效了」的自证。
+       `buildAdv()` 会重建 `advGroups`（`advCurGroup` 随之作废）⇒ 最后再清空它。 */
+    await buildAdv();
+    advCurGroup = null;
+    const miss = (r.missing || []).length;
+    const skip = (r.skipped || []).length;
+    let msg = `已保存 ${(r.saved || []).length} 项到用户配置 ${r.user_file || 'dgtf_config.user.yaml'}`;
+    if (miss) msg += ` · ${miss} 项不在配置文件里，已跳过`;
+    if (skip) msg += ` · ${skip} 项密钥参数不写回`;
+    advToast(msg, miss || skip ? 'warn' : 'ok');
+  } catch (e) {
+    advToast('保存失败：' + e.message, 'err');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+/* 「恢复默认配置」：删掉用户配置 ⇒ 全部参数回落到后端出厂的 dgtf_config.yaml。
+   ★ 会丢掉用户此前保存的全部改动 ⇒ 二次确认（写错一次要一个个改回来）。 */
+async function resetAdv() {
+  const btn = $('#adv-reset');
+  if (!window.confirm('恢复默认配置会删除你保存的全部参数改动，\n所有参数回到后端出厂默认值。确定继续？')) {
+    return;
+  }
+  if (btn) btn.disabled = true;
+  try {
+    const r = await api('/api/params/reset', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}',
+    });
+    if (r.error) throw new Error(r.error);
+    /* ★ 内存里的累积表/快照/待保存集合也一并清空 —— 不然后面「仅本次任务」
+       会把已被删掉的旧值又带回去，用户会以为「恢复了默认但没生效」。 */
+    Object.keys(advOverrides).forEach(k => delete advOverrides[k]);
+    Object.keys(advSaved).forEach(k => delete advSaved[k]);
+    advBackup = null;
+    advCurGroup = null;
+    await buildAdv();                     // 从服务端重读 ⇒ 面板显示出厂值
+    openSheet('adv-panel');
+    renderAdvGroups();
+    advToast(r.removed ? '已恢复默认配置（用户配置已删除，回落到出厂 yaml）'
+                       : '本来就是默认配置，无需恢复', 'ok');
+  } catch (e) {
+    advToast('恢复默认失败：' + e.message, 'err');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+/* 「仅本次任务生效」：不写回 yaml，只让下一次任务带上这份覆盖 */
+function saveAdvForRun() {
+  advBackup = null;                         // 保留改动（放在 advOverrides 里）
+  openSheet('adv-panel');
+  renderAdvGroups();
+  const n = Object.keys(advOverrides).length;
+  advToast(n ? `已记下 ${n} 项，只作用于下一次任务（不写回配置文件）`
+             : '没有要带上的改动', n ? 'ok' : 'warn');
+}
+
 function closeSheet() {
   const sheet = $('#sheet');
   if (!sheet || sheet.classList.contains('hidden')) return;
@@ -1949,10 +2210,12 @@ function init() {
 
   $('#run-btn').addEventListener('click', onRunBtn);
 
-  /* ★ R33：日志滚动指示跟着走（滚动 / 尺寸变化 / 内容变化） */
+  /* ★ R33：日志滚动指示跟着走（滚动 / 尺寸变化 / 内容变化）
+     ★ R37：改成**可拖动的圆点** —— 绑一次拖拽（内部自己挂 scroll 监听） */
   const _rlb = $('#runlog-body');
   if (_rlb) _rlb.addEventListener('scroll', updateRlBar);
   window.addEventListener('resize', updateRlBar);
+  bindRlBarDrag();
 
   // 抽屉：左上角图标拉开 / 关闭键 / 点遮罩 / Esc 收起
   const _db = $('#drawer-btn'), _dc = $('#drawer-close'), _dm = $('#drawer-mask');
@@ -1970,12 +2233,16 @@ function init() {
   });
   const _shc = $('#sheet-close');
   if (_shc) _shc.addEventListener('click', closeSheet);
-  // 参数分组页只剩一个出口：**保存**（顶部「← 返回」＝ 不保存退出，与关闭同义）
+  /* 参数分组页的**两个出口**（顶部「← 返回」＝ 不保存退出，与关闭同义）：
+       「保存」       → 写回用户配置 dgtf_config.user.yaml（持久）
+       「仅本次」     → 只作用于下一次任务（不写回文件）
+       「恢复默认配置」→ 删用户配置，回落到后端出厂 yaml */
   const _advSave = $('#adv-save');
-  if (_advSave) _advSave.addEventListener('click', () => {
-    advBackup = null;                       // 保留改动
-    openSheet('adv-panel');
-  });
+  if (_advSave) _advSave.addEventListener('click', saveAdvToFile);
+  const _advOnce = $('#adv-once');
+  if (_advOnce) _advOnce.addEventListener('click', saveAdvForRun);
+  const _advReset = $('#adv-reset');
+  if (_advReset) _advReset.addEventListener('click', resetAdv);
 
   /* 导出：单份产物（条目右上角）/ 单组检索结果 —— 直接用浏览器下载 */
   document.addEventListener('click', e => {
@@ -2044,12 +2311,12 @@ function init() {
   });
 
   // 参数值一改就记进 `advOverrides`（分组页会按需重建，靠它留住用户输入、
-  // 也靠它把**所有分组**的改动一起提交）
+  // 也靠它把**所有分组**的改动一起提交），并同步底部按钮上的计数
   const _advGrid = $('#adv-grid');
   if (_advGrid) {
     ['input', 'change'].forEach(ev => _advGrid.addEventListener(ev, e => {
       const el = e.target.closest && e.target.closest('[data-cfg]');
-      if (el) rememberAdv(el);
+      if (el) { rememberAdv(el); updateAdvActions(); }
     }));
   }
 
