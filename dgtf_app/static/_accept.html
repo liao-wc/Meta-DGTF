@@ -2050,9 +2050,28 @@ async function run() {
     const ap = d.querySelector('#attach-panel');
     chk('★R45-1 回形针内有计数徽章 `#attach-n`',
         !!bn && !!bn.closest('#attach-btn'), 'badge=' + (bn ? bn.id : 'null'));
-    chk('★R45-1 徽章 0 个文件时**不显示**（不带个「0」）',
-        !!bn && (bn.hidden === true || getComputedStyle(bn).display === 'none'),
-        'hidden=' + (bn ? bn.hidden : '?'));
+    // ★★ 「0 个时不显示」要在**真的 0 个**时验 —— 老判据假定开局库是空的，
+    //    一旦用户自己导过文件（计数非 0），它必然假红（本轮实测 `hidden=false`）。
+    //    ⇒ **先备份用户的 localItems，临时清空验完再还原**（不污染用户数据）。
+    //    ★ 备份必须**跨 eval 传递**：`localItems` 在 iframe 的全局词法环境里，
+    //      外部赋值静默无效 ⇒ 用 JSON 字符串经 `w.eval` 出来、再 `w.eval` 塞回去。
+    let _savedJson = '[]';
+    try {
+      _savedJson = await w.eval(
+        '(() => { const j = JSON.stringify(localItems); localItems = [];'
+        + ' paintAttach(); return j; })()');
+      await sleep(140);
+      chk('★R45-1 徽章 0 个文件时**不显示**（不带个「0」）',
+          !!bn && (bn.hidden === true || getComputedStyle(bn).display === 'none'),
+          'hidden=' + (bn ? bn.hidden : '?')
+          + ' 已临时清空(原 ' + (JSON.parse(_savedJson || '[]').length) + ' 个)');
+    } catch (e) { chk('★R45-1 空态判据（异常）: ' + e.message, false); }
+    // ★ 立刻**还原**用户的真实列表（★ 这是「用例别改用户数据」这条纪律的落点）
+    try {
+      await w.eval('(() => { localItems = JSON.parse(' + JSON.stringify(_savedJson)
+                 + ' || "[]"); paintAttach(); })()');
+      await sleep(120);
+    } catch (e) { chk('★R45-1 还原用户数据（异常）: ' + e.message, false); }
     chk('★R45-1 清单浮层 `#attach-panel` 默认收起（`.hidden`）',
         !!ap && ap.classList.contains('hidden'),
         'cls=' + (ap ? ap.className : 'null'));
@@ -2077,34 +2096,200 @@ async function run() {
       }
     } catch (e) { chk('★R45-1 开合（异常）: ' + e.message, false); }
 
-    // 真行为：喂两个假文件看徽章/计数/行数/删除。
+    // 真行为：喂两个假文件看徽章/计数/图标数/角标。
     // ★ 必须在 iframe **自己的作用域**里注入：`let localItems` 挂全局词法环境、
     //   不是 window 属性，外部 `w.localItems = [...]` 会**静默无效**（第一版探针就栽在这）。
+    // ★★ 这段会**覆盖用户已导入的列表** ⇒ 先取出真实数据、跑完还原（别改用户数据）。
+    let _realItems = '[]';
     try {
+      _realItems = await w.eval('JSON.stringify(localItems)');
       await w.eval('(() => {' +
         "localItems = [{name:'演示A.txt', size: 2048}, {name:'演示B.md', size: 1024}];" +
         'paintAttach(); return localItems.length; })()');
       await sleep(150);
       const txt = (bn ? bn.textContent : '').trim();
       const cnt = (d.querySelector('#ap-count') ? d.querySelector('#ap-count').textContent : '').trim();
-      const nrows = ap.querySelectorAll('.ap-row').length;
+      // ★ R47：清单从「整行」改成「小窗里的**图标格**」⇒ 判据的锚点随之改名。
+      const ntiles = ap.querySelectorAll('.ap-tile').length;
       chk('★R45-1 注入 2 个文件 → 徽章显示 2', txt === '2', 'badge=' + JSON.stringify(txt));
       chk('★R45-1 2 个文件时徽章**显示**（hidden=false）',
           !!bn && bn.hidden === false, 'hidden=' + (bn ? bn.hidden : '?'));
-      chk('★R45-1 清单计数与列表行数一致（2）',
-          nrows === 2, 'rows=' + nrows + ' count=' + JSON.stringify(cnt));
-      chk('★R45-1 每行都有删除键（可手动删）',
-          ap.querySelectorAll('.ap-row button').length === 2,
-          'dels=' + ap.querySelectorAll('.ap-row button').length);
+      chk('★R45-1 小窗计数与图标数一致（2）',
+          ntiles === 2, 'tiles=' + ntiles + ' count=' + JSON.stringify(cnt));
+      chk('★R45-1 每个图标都有删除键（可手动删）',
+          ap.querySelectorAll('.ap-tile .rm').length === 2,
+          'dels=' + ap.querySelectorAll('.ap-tile .rm').length);
+      chk('★R47 删除键在**右上角**（角标）',
+          (() => { const r = ap.querySelector('.ap-tile .rm'); if (!r) return false;
+                   const cs = w.getComputedStyle(r);
+                   return parseFloat(cs.top) < 0 && parseFloat(cs.right) < 0; })(),
+          'rm top/right 应为负');
+      // ★★ 判据要落在**用户真正要的东西**上：「右上角标一个 x 按钮」= 这个 ×
+      //    **看得见**。第一版做成悬停才显（`opacity:0`）⇒ 位置类判据全绿，
+      //    但截图里整个 × 是空的 ⇒ 需求等于没实现。所以必须量**计算出的 opacity**。
+      //    （`transition` 不推进，先 finish 再量。）
+      //    ★★ 顺序：**先让容器可见再量子元素** —— 小窗还带 `.hidden`（`display:none`）时，
+      //       子元素的 `getComputedStyle` 会读到 `display:none`/宽 0，判据必然假红。
+      //       这是技能里「量子页元素前先切到那一页」的同一族坑。
+      // ★★ 小窗必须在**输入框右侧**（用户原话「在其右边开一个小窗口」），
+      //    且**不压住欢迎语**。用两个盒子的水平关系判，不用「左边界」（居中元素的
+      //    盒子本来就撑满，左边界会误导 —— 技能里点名的坑）。
+      //    ★ 自己取一次 `.composer`：下面那段 `const _cp` 在更后面，
+      //      `const` 有 TDZ ⇒ 这里不能提前引用（否则运行时 ReferenceError）。
+      const _cp2 = d.querySelector('.composer');
+      // ★ 走 toggleAttachPanel（它会调 placeAttachPanel 定位）；直接改 class
+      //   不会触发定位 ⇒ 小窗会停在旧位置，位置类判据全部失真。
+      w.toggleAttachPanel(true); await sleep(160);
+      ap.getAnimations?.().forEach(a => { try { a.finish(); } catch (e) {} });
+      const _rmv = ap.querySelector('.ap-tile .rm');
+      chk('★R47 角标 × **默认可见**（不悬停也看得到）',
+          (() => { if (!_rmv) return false;
+                   _rmv.getAnimations?.().forEach(a => { try { a.finish(); } catch (e) {} });
+                   const cs = w.getComputedStyle(_rmv);
+                   return parseFloat(cs.opacity) > 0.9
+                       && cs.display !== 'none' && parseFloat(cs.width) > 8; })(),
+          _rmv ? 'opacity=' + w.getComputedStyle(_rmv).opacity
+                 + ' w=' + w.getComputedStyle(_rmv).width
+                 + ' disp=' + w.getComputedStyle(_rmv).display
+                 + ' panelHidden=' + ap.classList.contains('hidden') : 'no .rm');
+      const _apR = ap.getBoundingClientRect();
+      const _cpR = _cp2 ? _cp2.getBoundingClientRect() : null;
+      // ★★ 用户原话的落点：「回形针那里显示的文件**在其右边**开一个小窗口」。
+      //    但**「右边」不能字面执行**（实测两次）：
+      //      · 贴回形针右边 ⇒ 回形针本身在输入框内部 ⇒ 小窗落进输入框、压住胶囊；
+      //      · 贴输入框右外侧 ⇒ 常见窗口宽（1574）下放不下（需 1637）。
+      //    ⇒ 实现的落点优先级：① 输入框右外侧（超宽屏）② 输入框**正上方右对齐**
+      //      （零遮挡，紧挨回形针所在的输入框）③ 极矮视口才回到贴回形针右边。
+      //    判据就按**这三个合法档位**判，而不是写死某一档。
+      const _btn = d.querySelector('#attach-btn');
+      const _btnR = _btn ? _btn.getBoundingClientRect() : null;
+      const _rightOfComp = !!_cpR && _apR.left >= _cpR.right - 2;      // ① 右外侧
+      const _aboveComp = !!_cpR && _apR.bottom <= _cpR.top + 2;        // ② 上方
+      const _rightOfBtn = !!_btnR && _apR.left >= _btnR.right - 2;     // ③ 贴回形针右
+      chk('★R47 小窗落在回形针旁的**合法档位**（输入框右外侧 / 正上方 / 贴回形针右）',
+          _rightOfComp || _aboveComp || _rightOfBtn,
+          '右外=' + _rightOfComp + ' 上方=' + _aboveComp + ' 贴针右=' + _rightOfBtn
+          + ' ap.left=' + Math.round(_apR.left)
+          + ' composer.right=' + (_cpR ? Math.round(_cpR.right) : '?')
+          + ' composer.top=' + (_cpR ? Math.round(_cpR.top) : '?'));
+      const _wc = d.querySelector('#welcome');
+      // ★★ 这条要**在首屏（有欢迎语）时**量才有意义 —— 实测当时页面是 `stage-run`，
+      //    `#welcome` 尺寸全 0 ⇒ 判据「不重叠」是**空判**（永远通过）。
+      //    ⇒ 主动切回首屏（`newChat()`）再量；切不回去就**明确跳过**而不是假装通过。
+      let _overlapNote = '';
+      let _overlapOk = true;
+      try {
+        if (typeof w.newChat === 'function') { w.newChat(); await sleep(450); }
+        const _wc2 = d.querySelector('#welcome');
+        const _wc2R = _wc2 ? _wc2.getBoundingClientRect() : null;
+        const _ap2 = ap.getBoundingClientRect();
+        if (!_wc2R || _wc2R.width === 0) {
+          _overlapNote = '（无欢迎语 ⇒ 本项不适用，跳过）';
+        } else {
+          _overlapOk = (_ap2.top >= _wc2R.bottom - 2 || _ap2.bottom <= _wc2R.top + 2
+                        || _ap2.left >= _wc2R.right - 2 || _ap2.right <= _wc2R.left + 2);
+          _overlapNote = 'ap=' + [Math.round(_ap2.left), Math.round(_ap2.top),
+              Math.round(_ap2.right), Math.round(_ap2.bottom)].join(',')
+            + ' welcome=' + [Math.round(_wc2R.left), Math.round(_wc2R.top),
+              Math.round(_wc2R.right), Math.round(_wc2R.bottom)].join(',');
+        }
+      } catch (e) { _overlapNote = '（量失败：' + e.message + '）'; }
+      chk('★R47 小窗与欢迎语**不重叠**（保持原界面一致性）', _overlapOk, _overlapNote);
+      /* ★★ 新增（截图暴露的真问题）：小窗**不许压住输入框里的可交互元素**。
+         窄视口（1078px）下定位曾落回**输入框内部**，正好盖住右端的发送按钮「↑」
+         —— 用户点不到发送。这条直接量「小窗矩形 ∩ 每个可交互控件矩形」。
+         ★ 直接对准**控件**（发送键 + 功能胶囊 + 回形针），不是对准 `.composer`
+           整体：小窗压在输入框的**空白区**其实无害，压住**按钮**才是 bug。 */
+      (() => {
+        const _apR2 = ap.getBoundingClientRect();
+        const _hits = [];
+        const _ctrls = d.querySelectorAll(
+          '.composer button, .composer .pill, .composer .send, #send-btn');
+        _ctrls.forEach(c => {
+          /* ★★ 必须**排除小窗自己的子元素**：小窗（`#attach-panel`）也是
+             `.composer` 的后代，它内部的关闭键 `.ap-x` 与每个图标的删除角标 `.rm`
+             都会命中 `.composer button` ⇒ 判据报「被压：ap-close, rm, rm」
+             —— 那是**小窗压住了小窗自己**，纯属选择器写错（实测踩到）。
+             正解：只比对**不在小窗内**的控件。 */
+          if (ap.contains(c)) return;
+          const r2 = c.getBoundingClientRect();
+          if (r2.width === 0 || r2.height === 0) return;
+          const ov = !(_apR2.right <= r2.left + 1 || _apR2.left >= r2.right - 1
+                    || _apR2.bottom <= r2.top + 1 || _apR2.top >= r2.bottom - 1);
+          if (ov) _hits.push((c.id || c.className || c.tagName).slice(0, 24));
+        });
+        chk('★R47 小窗**不压住输入框里的按钮/胶囊**（否则点不到发送）',
+            _hits.length === 0,
+            _hits.length ? '被压：' + _hits.join(', ')
+                         : 'ap=' + [Math.round(_apR2.left), Math.round(_apR2.top),
+                                    Math.round(_apR2.right), Math.round(_apR2.bottom)].join(',')
+                           + ' 外部控件数=' + [..._ctrls].filter(c => !ap.contains(c)).length);
+      })();
+      // ★ 溢出保护：小窗**不许超出视口**（`left:100%` 在窄视口会溢出 ——
+      //   实测 1600 视口下曾到 1636 > 1600，溢出 36px）。这条抓的就是阈值算错。
+      const _vw = w.innerWidth;
+      const _ap3 = ap.getBoundingClientRect();
+      chk('★R47 小窗**不溢出视口**（右侧放不下时要回退到内侧）',
+          _ap3.left >= -2 && _ap3.right <= _vw + 2,
+          'ap.left=' + Math.round(_ap3.left) + ' ap.right=' + Math.round(_ap3.right)
+          + ' vw=' + _vw);
+      ap.classList.add('hidden'); await sleep(60);
+
+      // ★★ R47 需求 B 的核心契约：小窗**脱离文档流**（`absolute` 或 `fixed` 都算）
+      //   ⇒ 不把下方内容顶开。★ 判据**别写死 `absolute`**：a 实现从 `absolute`
+      //   改成 `fixed` 是**正确的改进**（`fixed` 同样不进文档流，且不会被带
+      //   `transform` 的祖先当包含块），写死 `absolute` 会把改进判成回归
+      //   （实测 `pos=fixed` 被误判为 FAIL）。
+      //   ★ 真正要守的是「**不占位**」这个**行为**，下面那条量 `.composer` 高度的
+      //     判据才是主证据；这条只做形态兜底。
+      const _cs = w.getComputedStyle(ap);
+      chk('★R47 小窗**脱离文档流**（`absolute` / `fixed` 皆可，不许是 `static`/`relative`）',
+          _cs.position === 'absolute' || _cs.position === 'fixed',
+          'pos=' + _cs.position);
+      const _composer = d.querySelector('.composer');
+      const _ccs = _composer ? w.getComputedStyle(_composer) : null;
+      chk('★R47 定位基准 `.composer` 是 relative（小窗才挂得住）',
+          !!_ccs && _ccs.position === 'relative', 'composer pos=' + (_ccs ? _ccs.position : '?'));
+      // 反证：小窗**打开**时也必须**不顶动**页面 —— 拿它的**容器 `.composer`**
+      // 量高度：`position:absolute` 的小窗不进文档流 ⇒ 容器高度**不该变**。
+      // ★ 上一版我用 `ap.nextElementSibling` 量兄弟位置，可 `#attach-panel` 是
+      //   `.composer` 的**最后一个子元素** ⇒ `nextElementSibling` 恒为 `null`，
+      //   判据必然假红（`before=null after=null`）。**先量再判，别想当然。**
+      const _cp = d.querySelector('.composer');
+      w.toggleAttachPanel(true); await sleep(100);
+      const _hOpen = _cp ? _cp.getBoundingClientRect().height : null;
+      ap.classList.add('hidden'); await sleep(80);
+      const _hShut = _cp ? _cp.getBoundingClientRect().height : null;
+      chk('★R47 小窗开/关**不改变 `.composer` 高度**（脱离文档流 ⇒ 真·不占位）',
+          _hOpen !== null && _hShut !== null && Math.abs(_hOpen - _hShut) <= 2,
+          'open=' + _hOpen + ' shut=' + _hShut);
+      w.toggleAttachPanel(true); await sleep(80);
+
+      // ★ R47：点**角标 ×** 走的是删除链路（这里只验「有 handler + 丢到 items」，
+      //   不打真网络请求 —— 真实删除链路另有 R45 的 removeImported 判据覆盖）。
+      const _rm = ap.querySelector('.ap-tile .rm');
+      chk('★R47 角标 × 带 data-apdel 且可点',
+          !!_rm && _rm.getAttribute('data-apdel') === '演示A.txt' && !_rm.disabled,
+          'data-apdel=' + (_rm ? _rm.getAttribute('data-apdel') : '?'));
+
       await w.eval('(() => { localItems = localItems.filter(x => x.name !== "演示A.txt"); paintAttach(); })()');
       await sleep(150);
       chk('★R45-1 删掉一行后剩 1 行',
-          ap.querySelectorAll('.ap-row').length === 1,
-          'rows=' + ap.querySelectorAll('.ap-row').length);
+          ap.querySelectorAll('.ap-tile').length === 1,
+          'tiles=' + ap.querySelectorAll('.ap-tile').length);
       await w.eval('(() => { localItems = []; paintAttach(); })()');
       await sleep(100);
       chk('★R45-1 清空后徽章又**藏起来**',
           !!bn && bn.hidden === true, 'hidden=' + (bn ? bn.hidden : '?'));
+
+      // ★★ 收尾：**把用户的真实列表还原回去**（本段是用例改了用户数据的最后一处）。
+      await w.eval('(() => { localItems = JSON.parse(' + JSON.stringify(_realItems)
+                 + ' || "[]"); paintAttach(); })()');
+      await sleep(140);
+      const _backN = await w.eval('localItems.length');
+      chk('★R45-1 用例结束**还原用户已导入列表**（不改用户数据）',
+          _backN === JSON.parse(_realItems || '[]').length,
+          'restored=' + _backN + ' expect=' + JSON.parse(_realItems || '[]').length);
     } catch (e) { chk('★R45-1 paintAttach（异常）: ' + e.message, false); }
   }
 
@@ -2176,8 +2361,20 @@ async function run() {
       bar.classList.add('on');
       await sleep(60);
       const cs = getComputedStyle(bar);
+      // ★★ 真因（本轮 CDP 诊断锁定）：`#rl-bar` 带 `transition:opacity .15s`，而
+      //    **无头虚拟时间不推进 CSS transition** ⇒ `classList.add('on')` 后立刻量，
+      //    `opacity` 停在**起始帧**（1），尽管兜底规则 `opacity:0 !important` 已命中
+      //    （诊断输出里 `hit=…body.stage-empty #rl-bar=0!`，`pointer-events` 也是 none，
+      //     证明规则确实生效 —— 只有 opacity 卡在过渡中间）。
+      //    ⇒ 量之前**先 finish 动画/过渡**（技能里「坑 2」的正解），否则读数不可信。
+      bar.getAnimations?.().forEach(a => { try { a.finish(); } catch (e) {} });
+      await sleep(30);
+      const cs2 = getComputedStyle(bar);
       chk('★R45-3 首屏（stage-empty）里**即使** `.on` 在，计算出的 opacity 也是 0',
-          parseFloat(cs.opacity) === 0, 'stage=' + d.body.className + ' opacity=' + cs.opacity);
+          parseFloat(cs2.opacity) === 0,
+          'stage=' + d.body.className + ' opacity=' + cs2.opacity
+          + ' matches=' + bar.matches('body.stage-empty #rl-bar')
+          + ' pe=' + cs.pointerEvents);
       chk('★R45-3 首屏里那个点**点不到**（pointer-events:none）',
           cs.pointerEvents === 'none', 'pe=' + cs.pointerEvents);
 

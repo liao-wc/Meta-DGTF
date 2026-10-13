@@ -76,16 +76,61 @@ def local_anchors(limit: int = 200) -> list[dict]:
     return out
 
 
+# ★ R47：`read_local()` **只读这些扩展名**（文本 / 文档类）。
+#   用**白名单**而非黑名单 —— 黑名单永远列不全（`.env.local` / `id_rsa` /
+#   `xxx.key` / `.netrc` …）；白名单下 `.env`（无扩展名）**天然读不到**。
+_READABLE_EXT = {
+    ".json", ".md", ".markdown", ".txt", ".text", ".csv", ".tsv",
+    ".log", ".yaml", ".yml", ".xml", ".html", ".htm",
+}
+
+
+def _safe_read(p) -> str | None:
+    try:
+        return p.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return None
+
+
 def read_local(name: str, limit: int = 200_000) -> str | None:
-    """读候选锚点文件（只允许项目根 / docs 下的一层文件名，挡目录穿越）。"""
+    """读一份本地资料正文（只允许**一层文件名**，且**只读文本类扩展名**）。
+
+    ★ R47 修（两件事一起）：
+    ① 【此前点开必 404】查找链里**必须**有 `ANCHORS_DIR` —— 用户导入的资料就落在
+       `dgtf_app/anchors/`（`import_files()` 的落点）。老实现只查
+       `PROJECT_ROOT` / `docs`，于是**任何导入的资料点开都是 `not found`**
+       （R44 加导入功能时漏改了这里）。
+    ② 【此前会泄密】老实现允许读项目根**一层任意文件** ⇒
+       `GET /api/library/local/.env` **直接把 `DGTF_API_KEY` 吐出来**；
+       `..%2F..%2F.env` 经 `unquote` + `Path(...).name` 归一后也一样读到。
+       ⇒ 现在**只读 `_READABLE_EXT` 白名单**，`.env` 天然被挡。
+
+    ★ 富格式（docx/pdf/图片）的解析稿存成 `<原名>.txt`、原件留 `_raw/<原名>`，
+      所以查到 `<原名>` 找不到时，再试一次 `<原名>.txt`。
+    """
     base = Path(name).name
-    for root in (PROJECT_ROOT, PROJECT_ROOT / "docs"):
-        p = root / base
-        if p.is_file():
-            try:
-                return p.read_text(encoding="utf-8", errors="replace")[:limit]
-            except OSError:
-                return None
+    if not base or base.startswith("."):
+        return None                      # 点开头（.env / .gitignore / .netrc …）一律不读
+    if base not in _READABLE_EXT and "." not in base:
+        return None                      # 无扩展名（.env 就是这一类）不读
+    ext = Path(base).suffix.lower()
+    cands = [base] if ext in _READABLE_EXT else []
+    if ext not in _READABLE_EXT:
+        # 用户点的是「原名」（docx / pdf / 图片）⇒ 找解析稿 `<原名>.txt`
+        cands = [base + ".txt"]
+    roots = (ANCHORS_DIR, ANCHORS_DIR / "_raw",
+             PROJECT_ROOT, PROJECT_ROOT / "docs")
+    for root in roots:
+        for nm in cands:
+            p = root / nm
+            if not p.is_file():
+                continue
+            # ★ 落盘前再挡一次：扩展名必须在白名单里（防 `cands` 之外的路子绕过）
+            if p.suffix.lower() not in _READABLE_EXT:
+                continue
+            body = _safe_read(p)
+            if body is not None:
+                return body[:limit]
     return None
 
 

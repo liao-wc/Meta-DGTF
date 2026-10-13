@@ -424,7 +424,7 @@ def check_r45_frontend(css: str, js: str, html: str, srv_src: str,
           (lambda: (lambda i: i >= 0 and 0 < html[i:i + 1400].find('id="attach-n"')
                      < html[i:i + 1400].find("</button>"))(
               html.find('id="attach-btn"')))(), "")
-    check("★R45 输入框下方有**可展开的清单** `#attach-panel`（留痕）",
+    check("★R45 有**可展开的已导入清单** `#attach-panel`",
           'id="attach-panel"' in html and "attach-panel hidden" in html, "")
     check("★R45 清单里每行有**文件名 + 大小 + 删除**",
           "data-apname" in js and "data-apdel" in js, "")
@@ -476,6 +476,221 @@ def check_r45_frontend(css: str, js: str, html: str, srv_src: str,
               re.sub(r"/\*[\s\S]*?\*/", "", css)))(), "")
     check("★R45 另一条早退路径（空白新会话）也收点",
           js.count("updateRlBar();") >= 3, "")
+
+
+def _r47_func_body(src: str, fn: str) -> str:
+    """抠出 `def <fn>(` 到下一个顶层 `def` 之间的函数体（用于「函数内不许出现 X」类判据）。
+
+    ★ 为什么要有这个辅助函数：把这段逻辑塞进 `check(..., <lambda 嵌套三层的表达式>)`
+      里，括号一多就写错（本轮实测直接 `SyntaxError: unmatched ')'`，而且报错行
+      离真正的错处很远）。抽成**有名函数**后既能被自证脚本单独喂样本，也不会写错。
+    """
+    key = "def " + fn + "("
+    if key not in src:
+        return ""
+    t = src[src.index(key):]
+    # ★★ 必须取**第一个**顶层分隔 —— 写成 `rfind`（最后一个）会把后面**所有**
+    #   函数一起吃进来：实测 `read_local` 的函数体被撑到文件末尾，里面混进别的
+    #   函数的 `read_text` ⇒ 判据对本函数完全失效（「读别人的代码下自己的结论」）。
+    j = t.find("\n\n\ndef ")
+    return t if j < 0 else t[:j]
+
+
+def _r47_no_bare_read(src: str) -> bool:
+    """`read_local()` 的函数体里不许出现**裸 `read_text`**（读盘必须走 `_safe_read`），
+    且必须真的调了 `_safe_read`。
+
+    ★ 这条判据的价值在于**防未来的退化**：我上一版补丁就在函数尾部留了一段
+      「不可达的旧读法」——它 `return None` 之后还 `read_text`，今天无害，
+      但只要有人删掉上面那个看似多余的 `return None`，**安全白名单就被静默绕过**。
+    """
+    seg = _r47_func_body(src, "read_local")
+    return bool(seg) and "read_text" not in seg and "_safe_read(p)" in seg
+
+
+def _r47_dead_after_return(src: str) -> bool:
+    """**任何函数体内**是否在 `return None`（或任何 `return`）之后还有语句。
+
+    这是「死代码」的**结构性定义** —— 比找某个标记串更本质。用 `ast` 判：
+    若某个 `Return` 语句之后、在**同一个 block** 里还有非 `Return`/非 docstring
+    语句，那就是不可达代码（Python 的 `return` 之后同层语句永远不执行）。
+
+    ★ 为什么要**全文**扫而不是只看 `read_local`：本轮实测同一颗雷先后出现在
+      **三个位置**（`read_local` 尾部两次、`_safe_read` 里一次）。只扫一个函数
+      会让其余位置漏网 —— 而那处恰是最危险的（引用了不存在的 `base`）。
+    """
+    import ast
+    try:
+        tree = ast.parse(src)
+    except SyntaxError:
+        return True                       # 解析不了 ⇒ 当有问题处理（别静默放行）
+
+    def _always_returns(st) -> bool:
+        """该语句是否**必然**返回（用于判「它之后是死代码」）。
+
+        ★ 第一版只认裸 `return`，于是漏掉了本轮的真形态：
+              try:      return p.read_text()
+              except:   return None
+              # ↓ 这一行是死的（但它在 FunctionDef.body 里、前一条是 `Try` 不是 `Return`）
+              return (ANCHORS_DIR / base).read_text(...)
+          实测 `FunctionDef.body = [Try, Return]`、`Try.body=[Return]`、
+          `handlers[0].body=[Return]` ⇒ **每个分支都 return** ⇒ 后面的 `Return` 不可达。
+        """
+        if isinstance(st, ast.Return):
+            return True
+        if isinstance(st, ast.Raise):
+            return True
+        if isinstance(st, ast.If):
+            return (bool(st.body) and bool(st.orelse)
+                    and all(_always_returns(x) for x in st.body)
+                    and all(_always_returns(x) for x in st.orelse))
+        if isinstance(st, ast.Try):
+            bodies = [st.body] + [h.body for h in st.handlers]
+            if st.finalbody and all(_always_returns(x) for x in st.finalbody):
+                return True
+            return all(b and all(_always_returns(x) for x in b) for b in bodies)
+        if isinstance(st, (ast.With, ast.AsyncWith)):
+            return bool(st.body) and all(_always_returns(x) for x in st.body)
+        return False
+
+    def _blocks(node):
+        out = []
+        for fld in ("body", "orelse", "finalbody"):
+            b = getattr(node, fld, None)
+            if isinstance(b, list):
+                out.append(b)
+        for h in getattr(node, "handlers", []) or []:
+            if isinstance(h, ast.ExceptHandler) and isinstance(h.body, list):
+                out.append(h.body)
+        return out
+
+    for node in ast.walk(tree):
+        for blk in _blocks(node):
+            for i, st in enumerate(blk):
+                if _always_returns(st) and i + 1 < len(blk):
+                    rest = blk[i + 1:]
+                    # 只允许「裸字符串常量」（老式 docstring）；其余都是真语句。
+                    if any(not (isinstance(x, ast.Expr)
+                                and isinstance(x.value, ast.Constant))
+                           for x in rest):
+                        return True
+    return False
+
+
+def check_r47_frontend(css: str, js: str, html: str, srv_src: str,
+                       lib_src: str) -> None:
+    """R47 的界面判据（用户 3 图）。
+
+    A) 「点开导入的文件没显示内容」—— `read_local()` 查找链漏了 `ANCHORS_DIR`。
+    B) 「不要在下面对话框展开，保持原界面一致」—— 清单改成**回形针右侧小窗**，
+       窗内是**小图标**、每个图标**右上角 ×** 点一下删掉该文件。
+    C) 顺带堵住 `read_local()` 读任意文件（`.env` 泄露 API Key）。
+    """
+    _lib = lib_src or ""
+    _css = re.sub(r"/\*[\s\S]*?\*/", "", css)      # 去注释再判（否则注释里的字会干扰）
+    # ★★ JS 也必须**去注释再判**（本轮踩到）：`_css` 去了注释、`_jsnc` 没去，
+    #   于是「我为了解释『别再用老类名』而在注释里写下老类名」反而把判据顶红
+    #   —— 判据读到的不是实现，而是我的说明文字。
+    #   去注释用与 `_css` 同源的手法（块注释 + 行注释），并保留字符串字面量
+    #   之外的内容不动（JS 里正则/字符串含 `//` 会误删，故只删**行首**的 `//`
+    #   与整块 `/* */`，这覆盖本仓库全部真实注释）。
+    _jsnc = re.sub(r"/\*[\s\S]*?\*/", "", js)
+    _jsnc = re.sub(r"(?m)^\s*//[^\n]*$", "", _jsnc)
+
+    # ── A/C：读文件（服务端）─────────────────────────────────────────────
+    check("★R47 `read_local()` 查找链含导入目录 `ANCHORS_DIR`（否则点开必 not found）",
+          "roots = (ANCHORS_DIR, ANCHORS_DIR / \"_raw\"," in _lib, "")
+    # ★★ 「无死代码」判据必须**全文扫**，别只扫一个函数。
+    #   本轮实测：同一颗雷先后出现在**三个位置**（`read_local` 尾部两次、
+    #   `_safe_read` 里一次）。上一版判据写的是「在 `read_local` 函数体里找」，
+    #   于是 `_safe_read` 里那处**漏网**，判据照样绿 —— 而它恰好最危险
+    #   （那段不可达代码引用了 `_safe_read` 里不存在的 `base`）。
+    #   标记串 `# ★ 富格式文件：原名存的是` 足够特殊，全文扫不会误报。
+    #   再加一条**结构性**判据：**任何函数体内**都不许出现「`return None` 之后
+    #   还有语句」—— 那才是「死代码」的定义，比找标记串更本质。
+    check("★R47 全文件**没有死代码尾巴**（`return None` 之后不留语句）"
+          "—— 判据此前只扫 `read_local`，漏掉了 `_safe_read` 里的同一颗雷",
+          "    return None\n    # ★ 富格式文件：原名存的是" not in _lib
+          and not _r47_dead_after_return(_lib), "")
+    check("★R47 `read_local()` 的读盘**全部经 `_safe_read`**（无裸 read_text 绕过白名单）",
+          _r47_no_bare_read(_lib), "")
+    check("★R47 `_safe_read()` **自身**也不含裸 read_text 之外的读盘"
+          "（它只该有那一条 `p.read_text` 实现本体）",
+          _r47_func_body(_lib, "_safe_read").count("read_text") == 1, "")
+    check("★R47 富格式解析稿 `<原名>.txt` 也能读到（docx/pdf 点开不该 404）",
+          'base + ".txt"' in _lib, "")
+    check("★R47 只读**文本类白名单**扩展名（`.env` 天然被挡，不靠黑名单列不全）",
+          "_READABLE_EXT" in _lib and ".json" in _lib, "")
+    check("★R47 点开头文件名一律不读（`.env` / `.netrc` / `.gitignore`）",
+          'base.startswith(".")' in _lib, "")
+    check("★R47 落盘前**再挡一次**扩展名（防别处绕过白名单）",
+          "p.suffix.lower() not in _READABLE_EXT" in _lib, "")
+    check("★R47 详情接口的 `name` 是**解码后**的文件名（不是 %E8 编码串）",
+          "_nm = unquote(m.group(1))" in (srv_src or ""), "")
+
+    # ── B：小窗 / 图标 / 角标 ────────────────────────────────────────────
+    # ★★ 判据**不许写死 `absolute`**：实现从 `absolute` 改成 `fixed` 是**正确的
+    #   改进**（`fixed` 同样脱离文档流，且不会被带 `transform` 的祖先当包含块）。
+    #   写死 `absolute` 会把改进判成回归 —— 本轮实测 `pos=fixed` 被误判 FAIL。
+    #   要守的是「**脱离文档流**」这个行为，不是某一个具体取值。
+    check("★R47 小窗**脱离文档流**（`absolute` / `fixed` 皆可，不许 `static`/`relative`）",
+          (lambda: (lambda m: bool(m) and ("absolute" in m.group(1)
+                                           or "fixed" in m.group(1)))(
+              re.search(r"(?m)^\.attach-panel\{([^}]*)\}", _css)))(), "")
+
+    check("★R47 定位基准 `.composer` 有 `position:relative`",
+          (lambda: (lambda m: bool(m) and "relative" in m.group(1))(
+              re.search(r"(?m)^\.composer\{([^}]*)\}", _css)))(), "")
+    check("★R47 小窗**不再**在输入框下方撑开（老写法 margin:8px 4px 2px 已去）",
+          "margin:8px 4px 2px" not in _css, "")
+    check("★R47 列表渲染成**图标格** `.ap-tile`（不再是 `.ap-row` 整行）",
+          "ap-tile" in _jsnc and "ap-row" not in _jsnc, "")
+    check("★R47 每个图标里有删除键（`data-apdel` 复用原删除链路）",
+          re.search(r'class="ap-tile"[\s\S]{0,400}?data-apdel=', _jsnc) is not None, "")
+    check("★R47 删除键的字面是 **×** 且带无障碍标签",
+          "\u00d7</button>" in _jsnc and "aria-label=" in _jsnc, "")
+    check("★R47 角标 × 定位在图标**右上角**",
+          (lambda: (lambda m: bool(m) and "top:-5px" in m.group(1)
+                    and "right:-5px" in m.group(1))(
+              re.search(r"\.ap-tile \.rm\{([^}]*)\}", _css)))(), "")
+    check("★R47 角标 × **常显**（`opacity:1`）—— 用户原话「右上角标一个 x 按钮」，"
+          "做成悬停才显等于没实现（第一版就是这么错的，截图里整个 × 看不见）",
+          (lambda: (lambda m: bool(m) and "opacity:1" in m.group(1))(
+              re.search(r"\.ap-tile \.rm\{([^}]*)\}", _css)))(), "")
+    check("★R47 小窗定位**交给 JS 现算**（`position:fixed` + `placeAttachPanel()`）"
+          "—— 放在回形针右边；纯 CSS 做不到（`.composer` 满宽居中，贴它左/右缘都在"
+          "输入框内部；放到外侧又溢出视口）",
+          (lambda: (lambda m: bool(m) and "position:fixed" in m.group(1))(
+              re.search(r"(?m)^\.attach-panel\{([^}]*)\}", _css)))()
+          and "function placeAttachPanel(" in js
+          and "r.right + M" in js and "placeAttachPanel()" in js,
+          "")
+    # ★ 老写法只在**主规则**里算违规：`.attach-panel{top:88px}` + 窄屏 `@media`
+    #   兜底里的 `bottom:calc(100% + 8px)` 是**有意的降级方案**（JS 没跑到时才用），
+    #   拿全文 `in _css` 判会把它一起判红（实测误红）。只有**主规则**里出现
+    #   才说明「又回退成贴输入框上沿」。
+    check("★R47 小窗**不许**再贴输入框上沿（老写法 `bottom:calc(100% +` 已去）"
+          "—— 窄屏 `@media` 的兜底不算（那是有意的降级）",
+          (lambda: (lambda m: bool(m) and "bottom:calc(100%" not in m.group(1))(
+              re.search(r"(?m)^\.attach-panel\{([^}]*)\}", _css)))(), "")
+    # ★★ 定位降级链**必须**存在，否则窄视口下会落回**输入框内部**、压住发送按钮
+    #   （截图实证：1078px 视口下 `ap.left` 落进输入框，盖住右端「↑」）。
+    #   ★★ 实测两轮才定下来：「贴回形针右边」和「贴输入框右外侧」**都不行** ——
+    #      · 回形针在输入框内部 ⇒ 贴它右边必然落进输入框、压住胶囊；
+    #      · 输入框右外侧在常见窗口宽（1574）下放不下（需 1637）。
+    #      ⇒ 最终落点 = 输入框**正上方、右缘对齐**（那一块是空白）。
+    #   判据守两件事：① 有「右外侧」这一档（超宽屏首选）；
+    #                 ② 有「正上方」这一档（常见宽度主路径）。
+    check("★R47 定位有**降级链**：输入框右外侧 ⇒ 正上方右对齐（两档都在）",
+          "cr.right + M" in js and "cRight - w" in js and "cTop - M - h" in js, "")
+    check("★R47 定位**避开欢迎语**（正上方那一档会压到首屏文案 ⇒ 要再上移）",
+          "querySelector('#welcome')" in js and "wr.top - M - h" in js, "")
+    check("★R47 定位取的是**回形针按钮**的真实坐标（`#attach-btn`）",
+          "$('#attach-btn')" in js, "")
+    check("★R47 图标按扩展名给字形（零依赖，不引图标库）",
+          "function fileGlyph(" in _jsnc and "'pdf'" in _jsnc, "")
+    check("★R47 图标下标签过长时保留头尾（这些文件名前缀高度相同，必须能分辨）",
+          "function shortName(" in _jsnc and "\u2026" in _jsnc, "")
 
 
 def check_r46_frontend(js: str) -> None:
@@ -1547,6 +1762,7 @@ def main() -> int:
     check_r44_frontend(css, js, html, srv_src, lib_src, dp_src)
     check_r45_frontend(css, js, html, srv_src, lib_src)
     check_r46_frontend(js)
+    check_r47_frontend(css, js, html, srv_src, lib_src)
     # ── 参数往返：列表型键不能被写成字符串 ─────────────────────────
     # ★ 这是「通过工作台发起的真跑全部 2–7 秒即崩」的根因：
     #   memory.channels 出厂是列表，经参数面板往返后变字符串 ⇒ 引擎

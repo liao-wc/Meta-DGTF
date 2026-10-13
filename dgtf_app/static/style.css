@@ -175,45 +175,78 @@ h1,h2,h3,.task-q,.item .t,.md p{text-wrap:pretty}
 .attach-msg{font-size:11.5px;color:var(--t3);padding:6px 4px 0}
 .attach-msg:empty{display:none}
 
-/* ── ★ R45：已导入文件（回形针上的计数徽章 + 展开清单）──────────────
-   用户报「导入的文件没显示出来」，要求：①显示导入后的文件；②在输入框留痕；
-   ③标注位置显示已导入文件数；④点开可看、可删、可关。
-   ①③ ⇒ 回形针按钮右上角的小徽章（`#attach-n`）；
-   ②④ ⇒ 输入框下方的清单浮层（`#attach-panel`）。 */
+/* ── 已导入文件（回形针计数徽章 + **回形针右侧小窗**）──────────────────
+   ★ R45：用户报「导入的文件没显示出来」⇒ 加计数徽章 `#attach-n` + 展开清单。
+   ★★ R47：用户报「不要在下面对话框展开，保持原界面一致性」，改成：
+        · 清单**不再是输入框下方的大面板**，而是**贴在回形针右侧弹出的一个小窗**；
+        · 窗内每个文件是一个**小图标**（按类型给 emoji/字形），
+          **图标右上角一个 ×**，点 × 直接删掉这个文件；
+        · 小窗**绝对定位**（相对 `.composer`）⇒ **不占文档流、不顶动下面的内容**。 */
 .pill{position:relative}                 /* 徽章的定位基准（pill 原样式见下） */
 .pill-n{position:absolute;top:-5px;right:-5px;min-width:16px;height:16px;
   padding:0 4px;border-radius:9px;background:var(--accent);color:#fff;
   font-size:10.5px;font-weight:600;line-height:16px;text-align:center;
-  font-family:var(--f-mono);cursor:pointer;   /* ★ R45：可点（点开清单） */
+  font-family:var(--f-mono);cursor:pointer;   /* 可点（点开小窗） */
   box-shadow:0 0 0 2px var(--canvas, #fff)}
 .pill-n:hover{background:var(--accent-hi)}
 .pill-n[hidden]{display:none}
-/* 清单浮层：贴着输入框下沿展开（不是全屏面板，避免抢焦点） */
-.attach-panel{display:flex;flex-direction:column;gap:0;
-  margin:8px 4px 2px;padding:10px 12px 8px;max-height:min(46vh,340px);
+/* ★★ R47 修（用户原话「回形针那里显示的文件**在其右边**开一个小窗口」）：
+   第一版贴在输入框**上沿**（`bottom:100%+8px`）⇒ 截图里**把欢迎语压住了**；
+   第二版改成相对 `.composer` 贴左/右缘 ⇒ 仍落在**输入框内部**、压住功能胶囊
+   （实测 `ap.left=1099 < composer.right=1327`），而放到外侧又**溢出视口**
+   （1600 视口右缘到 1636）。
+   ⇒ 最终：**定位完全交给 JS**（`placeAttachPanel()` 按回形针的真实坐标现算，
+     挂 `body` + `position:fixed`）。CSS 这里**只负责外观**，不写 left/right/top/bottom
+     —— 万一 JS 没跑到，下面的 `@media` 兜底还能把它摆在一个合理位置。 */
+.attach-panel{position:fixed;z-index:30;
+  display:flex;flex-direction:column;gap:0;
+  width:min(300px,64vw);max-height:min(52vh,320px);padding:9px 10px 8px;
   border:1px solid var(--hair);border-radius:12px;
-  background:var(--s1, rgba(127,127,127,.06))}
+  background:var(--s1, rgba(127,127,127,.06));
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  box-shadow:0 10px 28px rgba(0,0,0,.22)}
+/* ★ JS 会把 left/top 以内联样式写上去（见 app.js `placeAttachPanel()`）。
+   这里给一组「JS 万一没跑到」的兜底坐标，且**窄屏**改成浮在输入框上方
+   （右侧真的没地方时，压到上方的欢迎语是窄屏下可接受的取舍）。 */
+.attach-panel{right:12px;top:88px}
+@media (max-width:900px){
+  .attach-panel{right:12px;top:auto;bottom:calc(100% + 8px)}
+}
 .attach-panel.hidden{display:none}
 .ap-head{display:flex;align-items:center;justify-content:space-between;
-  gap:10px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
-.ap-title{font-size:12.5px;font-weight:600;color:var(--t2)}
-.ap-x{width:22px;height:22px;border-radius:6px;border:0;background:transparent;
-  color:var(--t3);font-size:16px;line-height:1;cursor:pointer;flex:0 0 auto}
+  gap:10px;padding-bottom:6px;border-bottom:1px solid var(--hair)}
+.ap-title{font-size:12px;font-weight:600;color:var(--t2)}
+.ap-x{width:20px;height:20px;border-radius:6px;border:0;background:transparent;
+  color:var(--t3);font-size:15px;line-height:1;cursor:pointer;flex:0 0 auto}
 .ap-x:hover{background:var(--s2);color:var(--t1)}
-.ap-body{overflow:auto;max-height:min(32vh,236px);padding-top:6px;
-  display:flex;flex-direction:column;gap:2px}
-.attach-panel .ap-row{display:flex;align-items:center;gap:8px;
-  padding:5px 6px;border-radius:7px;font-size:12px}
-.attach-panel .ap-row:hover{background:var(--s2)}
-.attach-panel .ap-row .n{flex:1 1 auto;min-width:0;overflow:hidden;
-  text-overflow:ellipsis;white-space:nowrap;color:var(--t2)}
-.attach-panel .ap-row .meta{flex:0 0 auto;font-size:11px;color:var(--t3);
-  font-family:var(--f-mono)}
-.attach-panel .ap-row .rm{flex:0 0 auto;border:0;background:transparent;
-  color:var(--err, #e5534b);font-size:11.5px;cursor:pointer;padding:2px 5px;
-  border-radius:5px}
-.attach-panel .ap-row .rm:hover{background:rgba(229,83,75,.12)}
-.ap-foot{padding-top:6px;font-size:11px}
+/* 图标网格：一排几个小方块。
+   ★ 小窗自己有 `max-height` ⇒ 内容区必须 `flex:1 1 auto;min-height:0;overflow:auto`
+     （技能里「面板 + 长列表」的标准模式），否则文件一多会把小窗撑破、
+     被 `overflow` 裁掉 —— 既看不全、也滚不动。 */
+.ap-body{overflow:auto;flex:1 1 auto;min-height:0;padding-top:8px;
+  display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start}
+/* 单个文件 = 一个小图标（右上角挂 × 删除键） */
+.ap-tile{position:relative;flex:0 0 auto;width:52px;height:56px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;border:1px solid var(--hair);border-radius:9px;
+  background:var(--s2, rgba(127,127,127,.08));cursor:default}
+.ap-tile .ic{font-size:19px;line-height:1;font-family:var(--f-mono)}
+.ap-tile .tn{max-width:46px;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;font-size:9.5px;color:var(--t3);text-align:center}
+/* ★ 图标右上角的 × —— 点它 = 删掉这个文件。
+   ★★ R47 修（用户原话「小文件右上角标一个 x 按钮」）：**必须常显**。
+      第一版做成「悬停才显（opacity:0）」，截图里**整个 × 都看不见**
+      —— 用户根本不知道能删，等于没实现这条需求。现在改常显，
+      悬停时只做**高亮**（亮度）而不是「从无到有」。 */
+.ap-tile .rm{position:absolute;top:-5px;right:-5px;width:16px;height:16px;
+  padding:0;border:0;border-radius:50%;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--err, #e5534b);color:#fff;font-size:11px;line-height:1;
+  opacity:1;transition:filter .12s;box-shadow:0 0 0 1.5px var(--canvas, #fff)}
+.ap-tile .rm:hover{filter:brightness(1.18)}
+.ap-tile .rm:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.ap-empty{font-size:11.5px;color:var(--t3);padding:4px 2px}
+.ap-foot{padding-top:6px;font-size:10.5px;line-height:1.45}
 
 /* ── 搜索对话产物：居中搜索框 + 结果列表 ───────────────────────── */
 .search-overlay{position:fixed;inset:0;z-index:45;display:flex;justify-content:center;
@@ -550,6 +583,9 @@ details.cand .lib-list{margin-top:6px}
 /* 输入框：上下来收紧、左右尽量宽 */
 /* 输入框：对话工具式 —— 大圆角、下方一行功能胶囊、右下角圆形发送键 */
 .composer{
+  /* ★ R47：小窗（`#attach-panel`）绝对定位的**定位基准** —— 必须 relative，
+     否则它会相对更外层（stage/body）跑掉。 */
+  position:relative;
   background:var(--s1);border:1px solid var(--hair-2);border-radius:22px;
   padding:14px 14px 10px;box-shadow:var(--shadow);
   transition:border-color var(--dur) var(--ease),box-shadow var(--dur) var(--ease);

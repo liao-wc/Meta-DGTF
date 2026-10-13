@@ -367,10 +367,13 @@ class Handler(BaseHTTPRequestHandler):
                                "clusters": lib.cluster_groups(_flat)})
         m = re.match(r"^/api/library/local/(.+)$", p)
         if m:
-            body = lib.read_local(unquote(m.group(1)))
+            # ★ R47：先 unquote 再取文件名 —— 老写法把**编码串**当名字返回
+            #   （`name` 字段是 `%E8%80%81…` 而不是真文件名）。
+            _nm = unquote(m.group(1))
+            body = lib.read_local(_nm)
             if body is None:
                 return self._json({"error": "not found"}, 404)
-            return self._json({"name": Path(m.group(1)).name, "body": body})
+            return self._json({"name": Path(_nm).name, "body": body})
 
         # ── 导出：单份产物 ──────────────────────────────────────
         if p == "/api/export/output":

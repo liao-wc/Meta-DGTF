@@ -1473,6 +1473,27 @@ function attachPanelOpen() {
   return !!p && !p.classList.contains('hidden');
 }
 
+/* R47: 小窗图标 —— 按扩展名给一个能一眼分辨的符号（零依赖）。 */
+function fileGlyph(name) {
+  const e = String(name || '').toLowerCase().split('.').pop();
+  if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'svg'].includes(e)) return '🖼';
+  if (e === 'pdf') return '📕';
+  if (['doc', 'docx', 'wps', 'rtf'].includes(e)) return '📘';
+  if (['xls', 'xlsx', 'csv', 'tsv'].includes(e)) return '📊';
+  if (['ppt', 'pptx'].includes(e)) return '📙';
+  if (e === 'json') return '{}';
+  if (['md', 'markdown'].includes(e)) return '📝';
+  return '📄';
+}
+
+/* R47: 图标下的标签 —— 过长时保留头尾（老城区...局部.md），
+   比 CSS 的 ellipsis 更能看出是哪一个（这些文件名前缀高度相同）。 */
+function shortName(name) {
+  const s = String(name || '');
+  if (s.length <= 14) return s;
+  return s.slice(0, 7) + '…' + s.slice(-5);
+}
+
 function paintAttach() {
   const n = localItems.length;
   const badge = $('#attach-n');
@@ -1485,13 +1506,23 @@ function paintAttach() {
   if (cnt) cnt.textContent = String(n);
   const list = $('#ap-list');
   if (list) {
+    /* R47: 小窗里每个文件渲染成一个小图标（不再是一行文字 + 删除按钮）。
+       图标右上角挂 x（data-apdel 复用原来的删除链路 => 后端接口不变）。
+       字形按扩展名给一个能一眼分辨的符号（零依赖，不引图标库）。
+       ★★ 类名必须是 `ap-tile` —— CSS 只给 `.ap-tile` 写了图标格样式
+         （`.ap-tile{width:52px;height:56px;...}` + `.ap-tile .rm{...}`）。
+         写成老的行式类名则**根本匹配不到任何规则**，看起来「能显示」但
+         其实是裸的块级 div（图标/角标全无样式）—— 判据会如实判红。
+         本处曾因「补丁锚点没命中却被静默跳过」而退回老类名，现修正。 */
     list.innerHTML = localItems.map(it =>
-      `<div class="ap-row" data-apname="${esc(it.name)}">
-        <span class="n" title="${esc(it.name)}">${esc(it.name)}</span>
-        <span class="meta">${it.size != null ? (it.size / 1024).toFixed(1) + ' KB' : ''}</span>
-        <button type="button" class="rm" data-apdel="${esc(it.name)}">删除</button>
+      `<div class="ap-tile" data-apname="${esc(it.name)}"
+            title="${esc(it.name)}${it.size != null ? ' · ' + (it.size / 1024).toFixed(1) + ' KB' : ''}">
+        <span class="ic">${fileGlyph(it.name)}</span>
+        <span class="tn">${esc(shortName(it.name))}</span>
+        <button type="button" class="rm" data-apdel="${esc(it.name)}"
+                aria-label="删除 ${esc(it.name)}" title="删除这个文件">×</button>
       </div>`).join('')
-      || '<div class="muted empty">还没导入任何文件。点左边的回形针导入。</div>';
+      || '<div class="ap-empty">还没导入任何文件。点左边的回形针导入。</div>';
   }
   const foot = $('#ap-foot');
   if (foot) {
@@ -1501,13 +1532,107 @@ function paintAttach() {
   }
 }
 
+/* ★★ R47：把小窗按**回形针按钮**的位置摆到它的**正右边**（用户原话
+   「回形针那里显示的文件**在其右边**开一个小窗口」）。
+
+   为什么不靠 CSS 静态定位：小窗原先相对 `.composer` 定位，可 `.composer` 是
+   **满宽居中**的（`max-width:1080`）⇒ 无论贴它的左缘还是右缘，小窗都落在
+   **输入框内部**，会压住里面的功能胶囊（实测 `ap.left=1099 < composer.right=1327`）。
+   而要放到「右外侧」又会**溢出视口**（1600 视口实测右缘到 1636）。
+
+   ⇒ 正解 = **按回形针的真实坐标现算**（技能里「浮层挂 body + getBoundingClientRect 现算」
+     的标准做法）：
+     · 挂到 `body` 下 + `position:fixed`（脱离 `.composer` 的定位上下文，
+       也不会被任何 `overflow` 祖先裁掉）；
+     · 默认落**回形针右边**（用户原话「在其右边开一个小窗口」）；
+     · 右边放不下 ⇒ 退一步落到**输入框右外侧**（`.composer` 右缘 + 间距）
+       —— ★ 注意**不能直接翻到回形针左边**：那会落回**输入框内部**、压住
+         输入框右端的发送按钮「↑」（实测窄视口 1078px 下正是这样被截到）。
+         只有连「输入框右外侧」都放不下（视口极窄）才退回**贴输入框上沿外侧**。
+     · 与回形针垂直居中对齐，并夹在视口内。 */
+function placeAttachPanel() {
+  const p = $('#attach-panel');
+  const btn = $('#attach-btn');
+  if (!p || !btn || p.classList.contains('hidden')) return;
+  const r = btn.getBoundingClientRect();
+  const w = p.offsetWidth || 300;
+  const h = p.offsetHeight || 200;
+  const M = 10;                                   // 与回形针 / 输入框的间距
+  const VW = window.innerWidth, VH = window.innerHeight;
+  const PAD = 8;
+  /* 输入框（`.composer`）的右缘 —— 它是**满宽居中**的，所以「小窗在它的外侧」
+     才是最不容易压到东西的位置（外侧没有功能胶囊、也没有发送按钮）。 */
+  const comp = document.querySelector('.composer');
+  const cr = comp ? comp.getBoundingClientRect() : null;
+
+  /* ★★ 关键取舍（截图实证，两次修正）：
+     · 「贴回形针右边」不够：回形针本身就在输入框内部 ⇒ 小窗必然落进输入框，
+       **压住功能胶囊与输入提示文字**（实测 `ap=609,634,909,765` 与输入框大面积重叠）。
+     · 「输入框右外侧」在常见窗口宽度下**放不下**（`composer.right=1327`，
+       1327+10+300=1637 > 1574）⇒ 也走不通。
+     ⇒ 最终落点：**输入框正上方、右缘对齐输入框右缘** —— 那一块永远是空白
+       （欢迎语在更上方且更窄，输入框上方到欢迎语之间是空的），既保证
+       **零遮挡**，又紧挨着「回形针所在的输入框」，语义上仍是
+       「回形针那里显示的文件，在它旁边开一个小窗」。
+     优先级：
+       ① 输入框**右外侧**够宽（超宽屏）⇒ 放右侧，最贴合「在其右边」；
+       ② 否则 ⇒ 放输入框**正上方、右对齐**（零遮挡，且离回形针最近）；
+       ③ 上方也放不下（视口极矮）⇒ 回到「贴回形针右边」兜底。 */
+  let left, top;
+  const outer = cr ? cr.right + M : -1e9;
+  const fitsOuter = outer + w <= VW - PAD;
+  const cTop = cr ? cr.top : r.top;
+  const cRight = cr ? cr.right : r.right;
+  if (fitsOuter) {
+    left = outer;                                  // ① 输入框右外侧
+    top = r.top + r.height / 2 - h / 2;
+  } else {
+    // ② 输入框**正上方**、右缘对齐（这一块通常是空白，零遮挡）
+    left = Math.min(cRight - w, VW - w - PAD);
+    top = cTop - M - h;
+    if (left < PAD) left = PAD;
+    /* ★★ 上方若会**压住欢迎语**（首屏那句「上午好，随时开始吧」在输入框正上方
+       居中），就**把 top 再上移**到欢迎语上方 —— 实测首屏小窗右缘对齐 input 右缘时
+       横向仍与欢迎语重叠，直接放会盖住文案。 */
+    const wel = document.querySelector('#welcome');
+    if (wel) {
+      const wr = wel.getBoundingClientRect();
+      if (wr.width > 0 && top < wr.bottom + 6 && top + h > wr.top - 6
+          && left < wr.right && left + w > wr.left) {
+        const up = wr.top - M - h;                 // 挪到欢迎语**上方**
+        if (up >= PAD) top = up;
+      }
+    }
+    if (top < PAD) {
+      // ③ 上方也放不下：退到「贴回形针右边」，并夹进视口
+      left = Math.max(PAD, Math.min(r.right + M, VW - w - PAD));
+      top = r.top + r.height / 2 - h / 2;
+    }
+  }
+  top = Math.max(PAD, Math.min(top, VH - h - PAD));
+  left = Math.max(PAD, Math.min(left, VW - w - PAD));
+  p.style.position = 'fixed';
+  p.style.left = left + 'px';
+  p.style.top = top + 'px';
+  p.style.right = 'auto';
+  p.style.bottom = 'auto';
+  /* ★ 刚 `hidden`→显示那一帧，`offsetHeight` 可能还是 0（内容刚注入）⇒ 垂直居中的
+     `top` 会算歪。补一帧重算（幂等，不会来回抖：第二次读到的高度已稳定）。 */
+  if (!h) requestAnimationFrame(() => placeAttachPanel());
+}
+
 function toggleAttachPanel(force) {
   const p = $('#attach-panel');
   if (!p) return;
   const want = (force === undefined) ? p.classList.contains('hidden') : !!force;
   p.classList.toggle('hidden', !want);
-  if (want) paintAttach();
+  if (want) { paintAttach(); placeAttachPanel(); }
 }
+/* ★ R47：小窗是按**回形针的实时坐标**定位的 ⇒ 视口一变（resize / 侧栏展开让位）
+   就得重算，否则它会停在旧位置、甚至跑到视口外。 */
+window.addEventListener('resize', () => {
+  if (typeof placeAttachPanel === 'function') placeAttachPanel();
+});
 
 async function removeImported(name) {
   try {

@@ -321,14 +321,15 @@
     </div>
     <div class="warn" id="cost-warn"></div>
     <div class="attach-msg" id="attach-msg"></div>
-    <!-- ★ R45：已导入文件清单（用户要求「点开可显示已导入文件并可手动删除并关闭」）。
-         默认收起（`.hidden`）；点回形针上的计数徽章展开。列表里每行一个文件，
-         右侧「删除」走 /api/library/delete；右上角 × 关闭。
-         这里是**输入框的留痕区** —— 导入完不用切到资料库面板也能看见、能删。 -->
+    <!-- ★ R47：已导入文件**小窗口**（贴在回形针右侧弹出 —— 用户要求
+         「不要在下面对话框展开，保持原界面一致」）。
+         内容 = 一排**文件小图标**；每个图标**右上角一个 ×**，点 × 即删除该文件。
+         默认收起（`.hidden`），点回形针上的计数徽章展开。
+         ★ 它相对 `.composer`（输入框整块）**绝对定位**，所以不会把下面的内容顶下去。 -->
     <div class="attach-panel hidden" id="attach-panel">
       <div class="ap-head">
-        <span class="ap-title">已导入文件 <span class="num" id="ap-count">0</span> 个</span>
-        <button type="button" class="ap-x" id="ap-close" aria-label="关闭已导入文件面板">×</button>
+        <span class="ap-title">已导入 <span class="num" id="ap-count">0</span> 个</span>
+        <button type="button" class="ap-x" id="ap-close" aria-label="关闭已导入文件小窗">×</button>
       </div>
       <div class="ap-body scroll" id="ap-list"></div>
       <div class="ap-foot muted" id="ap-foot"></div>

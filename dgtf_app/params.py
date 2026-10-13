@@ -236,7 +236,30 @@ _KEY_CN: dict[str, str] = {
     "web_search.auto_disable_after_failures": "连续失败 N 次自动关闭联网",
     "web_search.tier_proposal": "tier 提案表（人工确认前不生效）",
     "web_search.domain_tier_rules": "域名 → tier 人工确认表",
+    # ★ v1.23.26（另一条并行线）新增的 sim 段两个键 —— 语义取自
+    #   `dgtf_config.yaml` 的版本段注释（权威来源，别按键名猜）：
+    #   · dedup      池内 amp / thread / probe **入池去重阈值**（旧：硬编码 0.9）
+    #   · dedup_susp **悬置目标去重阈值**（旧：硬编码 0.85）
+    #   不登记会让参数面板露出英文键名（selftest「参数标签统一」判据会红）。
+    #   ★ 说明里**别自带括号**：`label_for()` 会把「较长（≥3 字）的内层括号」换成中点
+    #     （避免双括号），换掉后就不再含 `（` ⇒ 那条判据反而判红。
+    "sim.dedup": "入池去重阈值 · amp/thread/probe",
+    "sim.dedup_susp": "悬置目标去重阈值",
+    #   同一版（v1.23.27 批）又加的三个键，语义取自 `_patch_v12327_step12a.py` 的
+    #   版本说明（权威来源）：
+    #   · sim.cluster      D3 语义熵聚类阈值（默认 0.70）
+    #   · probe.submodular E2 子模批选开关（默认开）
+    #   · probe.stop_floor E6 自适应停止阈值（默认 0.02，`max_gain == stop_floor` 不算停）
+    "sim.cluster": "语义熵聚类阈值",
+    "probe.submodular": "子模批选开关",
+    "probe.stop_floor": "自适应停止阈值",
 }
+
+# ★★ 备忘（下次别再来回补）：本条「参数标签统一」判据的失败**几乎总是**
+#   另一条并行线 v1.23.2x 新增了配置键、而 `_KEY_CN` 没跟上。
+#   判定口径 = `/api/params` 里**每一项**的 label 都要含 `（`。
+#   ★ 补的时候**说明里不要自带括号**：`label_for()` 会把「≥3 字的内层括号」
+#     换成中点（防双括号），换掉后 label 就不含 `（` ⇒ 判据**照样红**（本轮踩过）。
 
 # api.thinking.stages.* 是**逐环节**的思考档位接管，24 个键共用「思考档位 · <环节>」
 _STAGE_CN = {
