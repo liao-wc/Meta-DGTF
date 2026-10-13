@@ -97,6 +97,19 @@ a{color:var(--accent)}
 #rl-bar:hover,#rl-bar.drag{background:rgba(35,47,158,.88)}
 #rl-bar.drag{cursor:grabbing}
 #rl-bar:hover{background:rgba(47,58,168,.75)}
+/* ★★ R45：**状态驱动兜底** —— 用户第二次报「首屏还是看见滚动点」。
+   R44 只给 `renderTasks()` 的**第一条**早退路径补了 `updateRlBar()`，
+   但那条函数还有别的早退口（`fxPending` 发送动画、空白新会话、`#runlog` 元素缺失…）
+   ⇒ 只要漏一次「收」，`.on` 就跟着上次的亮态**留在首屏**。
+   与其继续往每条路径上加调用（打地鼠），不如把「不该有日志区」的**页面状态**
+   直接钉成硬约束：这两种 bodystate 下**无论 `#rl-bar` 带不带 `.on`，一律不可见**。
+   · `stage-empty`：首屏（欢迎语 + 输入框），压根没有日志区；
+   · `panel-open` ：全屏面板铺开（读数台 / 资料库 / 检索库…），日志区被盖住，
+                  点浮在上面既没意义、也跟着看不出上下文 —— 一并收掉。
+   放在 `#rl-bar.on` **之后**，同特异性下按源顺序覆盖（`opacity:0 !important`
+   用来压过 `.on`；`pointer-events:none` 保证收掉时也点不到）。 */
+body.stage-empty #rl-bar,
+body.panel-open #rl-bar{opacity:0 !important;pointer-events:none !important}
 
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
 
@@ -161,6 +174,46 @@ h1,h2,h3,.task-q,.item .t,.md p{text-wrap:pretty}
 /* 导入结果提示（在输入框下方，空则不占位） */
 .attach-msg{font-size:11.5px;color:var(--t3);padding:6px 4px 0}
 .attach-msg:empty{display:none}
+
+/* ── ★ R45：已导入文件（回形针上的计数徽章 + 展开清单）──────────────
+   用户报「导入的文件没显示出来」，要求：①显示导入后的文件；②在输入框留痕；
+   ③标注位置显示已导入文件数；④点开可看、可删、可关。
+   ①③ ⇒ 回形针按钮右上角的小徽章（`#attach-n`）；
+   ②④ ⇒ 输入框下方的清单浮层（`#attach-panel`）。 */
+.pill{position:relative}                 /* 徽章的定位基准（pill 原样式见下） */
+.pill-n{position:absolute;top:-5px;right:-5px;min-width:16px;height:16px;
+  padding:0 4px;border-radius:9px;background:var(--accent);color:#fff;
+  font-size:10.5px;font-weight:600;line-height:16px;text-align:center;
+  font-family:var(--f-mono);cursor:pointer;   /* ★ R45：可点（点开清单） */
+  box-shadow:0 0 0 2px var(--canvas, #fff)}
+.pill-n:hover{background:var(--accent-hi)}
+.pill-n[hidden]{display:none}
+/* 清单浮层：贴着输入框下沿展开（不是全屏面板，避免抢焦点） */
+.attach-panel{display:flex;flex-direction:column;gap:0;
+  margin:8px 4px 2px;padding:10px 12px 8px;max-height:min(46vh,340px);
+  border:1px solid var(--hair);border-radius:12px;
+  background:var(--s1, rgba(127,127,127,.06))}
+.attach-panel.hidden{display:none}
+.ap-head{display:flex;align-items:center;justify-content:space-between;
+  gap:10px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
+.ap-title{font-size:12.5px;font-weight:600;color:var(--t2)}
+.ap-x{width:22px;height:22px;border-radius:6px;border:0;background:transparent;
+  color:var(--t3);font-size:16px;line-height:1;cursor:pointer;flex:0 0 auto}
+.ap-x:hover{background:var(--s2);color:var(--t1)}
+.ap-body{overflow:auto;max-height:min(32vh,236px);padding-top:6px;
+  display:flex;flex-direction:column;gap:2px}
+.attach-panel .ap-row{display:flex;align-items:center;gap:8px;
+  padding:5px 6px;border-radius:7px;font-size:12px}
+.attach-panel .ap-row:hover{background:var(--s2)}
+.attach-panel .ap-row .n{flex:1 1 auto;min-width:0;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;color:var(--t2)}
+.attach-panel .ap-row .meta{flex:0 0 auto;font-size:11px;color:var(--t3);
+  font-family:var(--f-mono)}
+.attach-panel .ap-row .rm{flex:0 0 auto;border:0;background:transparent;
+  color:var(--err, #e5534b);font-size:11.5px;cursor:pointer;padding:2px 5px;
+  border-radius:5px}
+.attach-panel .ap-row .rm:hover{background:rgba(229,83,75,.12)}
+.ap-foot{padding-top:6px;font-size:11px}
 
 /* ── 搜索对话产物：居中搜索框 + 结果列表 ───────────────────────── */
 .search-overlay{position:fixed;inset:0;z-index:45;display:flex;justify-content:center;
@@ -1063,6 +1116,23 @@ select:focus{border-color:var(--accent)}
    整段展开、由外层列表统一滚。 */
 .web-group.open .wg-body{display:block}
 .web-group .wg-body .item{padding:12px 16px 12px 28px}
+
+/* ── ★ R45：**按任务归类**（同任务的子问题挂在最初的问题下）────────────
+   用户要求「按同一任务的问题归类，其他子问题归类在最初的问题里」。
+   结构：`.web-cluster` > 根组 `.web-group` + `.wg-kids` > 子问题 `.web-group.wg-sub`。
+   视觉上靠**左侧竖线 + 缩进 + `└` 前缀**表达从属，不动「折叠 / 选中」等既有行为。 */
+.web-cluster{margin-bottom:8px}
+.web-cluster>.web-group{margin-bottom:0}
+.web-cluster .wg-kids{margin:0 0 0 18px;padding-left:12px;
+  border-left:1px solid var(--hair-2)}
+.web-cluster .wg-kids .web-group{margin:6px 0 0;border-color:var(--hair)}
+/* 子问题的标题行窄一点（缩进已用掉一段），字号略小，压在根问题之下 */
+.web-group.wg-sub .wg-head{padding:9px 74px 9px 12px}
+.web-group.wg-sub .wg-q{font-size:12.5px;font-weight:400;color:var(--t2)}
+.wg-submark{flex:0 0 auto;color:var(--t3);font-family:var(--f-mono);font-size:12px;
+  margin-right:-4px}
+/* 根问题带子问题时，在左侧给一道**主题色细条**，一眼能看出「这是个任务」 */
+.web-cluster.has-sub>.web-group{border-left:2px solid var(--accent)}
 
 /* 条目右上角的「导出」 */
 .item{position:relative}

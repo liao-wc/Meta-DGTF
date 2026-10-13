@@ -308,6 +308,9 @@
           <path d="M20 11.5l-7.6 7.6a4.6 4.6 0 0 1-6.5-6.5l8-8a3.1 3.1 0 0 1 4.4 4.4l-8 8a1.6 1.6 0 0 1-2.2-2.2l7.3-7.3"
                 stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
+        <!-- ★ R45：在回形针上挂「已导入文件数」的小徽章（用户要求「标注位置显示已导入文件数」）。
+             0 个时不显示。点它 = 不触发导入，而是**展开已导入清单**（见 app.js 的 toggleAttachPanel）。 -->
+        <span class="pill-n" id="attach-n" hidden aria-label="已导入文件数">0</span>
       </button>
       <button id="run-btn" class="send" data-tip="开始深究（⌘/Ctrl+↵）" aria-label="开始深究">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -318,6 +321,18 @@
     </div>
     <div class="warn" id="cost-warn"></div>
     <div class="attach-msg" id="attach-msg"></div>
+    <!-- ★ R45：已导入文件清单（用户要求「点开可显示已导入文件并可手动删除并关闭」）。
+         默认收起（`.hidden`）；点回形针上的计数徽章展开。列表里每行一个文件，
+         右侧「删除」走 /api/library/delete；右上角 × 关闭。
+         这里是**输入框的留痕区** —— 导入完不用切到资料库面板也能看见、能删。 -->
+    <div class="attach-panel hidden" id="attach-panel">
+      <div class="ap-head">
+        <span class="ap-title">已导入文件 <span class="num" id="ap-count">0</span> 个</span>
+        <button type="button" class="ap-x" id="ap-close" aria-label="关闭已导入文件面板">×</button>
+      </div>
+      <div class="ap-body scroll" id="ap-list"></div>
+      <div class="ap-foot muted" id="ap-foot"></div>
+    </div>
   </div>
 </main>
 

@@ -407,6 +407,77 @@ def check_r44_frontend(css: str, js: str, html: str, srv_src: str,
           '"ok": False' in _dp and 'return {"ok": False' in _dp, "")
 
 
+def check_r45_frontend(css: str, js: str, html: str, srv_src: str,
+                       lib_src: str) -> None:
+    """★R45 的界面 / 归类判据（用户 3 图 / 3 条）。
+
+    ★ 与 R44 第 4 条重复的那条（首屏滚动点）**在这里收紧** ——
+      用户**第二次**报同一件事 ⇒ 光靠「调用点」不够，必须改成**状态驱动**。
+    """
+
+    _lib = lib_src or ""
+
+    # ── ① 导入的文件要**显示出来** ──────────────────────────────────────────
+    check("★R45 回形针上有「已导入文件数」徽章 `#attach-n`",
+          'id="attach-n"' in html and "String(n)" in js, "")
+    check("★R45 徽章在回形针按钮**内部**（贴角定位才对）",
+          (lambda: (lambda i: i >= 0 and 0 < html[i:i + 1400].find('id="attach-n"')
+                     < html[i:i + 1400].find("</button>"))(
+              html.find('id="attach-btn"')))(), "")
+    check("★R45 输入框下方有**可展开的清单** `#attach-panel`（留痕）",
+          'id="attach-panel"' in html and "attach-panel hidden" in html, "")
+    check("★R45 清单里每行有**文件名 + 大小 + 删除**",
+          "data-apname" in js and "data-apdel" in js, "")
+    check("★R45 清单有**关闭**键，且绑了收起",
+          'id="ap-close"' in html and "_apx.addEventListener('click'" in js, "")
+    check("★R45 点**徽章**展开清单（不是又弹文件选择框）",
+          "e.target.id === 'attach-n'" in js and "toggleAttachPanel();" in js, "")
+    check("★R45 导入成功后**自动展开清单**（结果送到眼前，不用去抽屉翻）",
+          "if (okN) toggleAttachPanel(true);" in js, "")
+    check("★R45 删除走真实接口 `/api/library/delete`",
+          "async function removeImported" in js
+          and "/api/library/delete" in js, "")
+    check("★R45 `loadLocal()` 同步刷徽章与清单（切页 / 删除后不残留旧数）",
+          "paintAttach();" in js, "")
+
+    # ── ② 同一任务的子问题**归类在最初的问题里** ─────────────────────────────
+    check("★R45 服务端按「任务」聚类（`cluster_groups`），不只是按 query 平铺",
+          "def cluster_groups(" in _lib and '"clusters": lib.cluster_groups(_flat)' in srv_src, "")
+    check("★R45 派生判据用**引擎自己的形态**（不硬编码业务词）",
+          '_DERIVED_RE = re.compile' in _lib
+          and "是否存在.*的官方指引" in _lib, "")
+    check("★R45 子问题**就近挂到根问题**（时间不晚于它、最近的那个）",
+          "cands = [r for r in roots if (r.get(\"latest\") or 0) <= t]" in _lib, "")
+    check("★R45 全是子问题（无根）时不丢组（原样返回）",
+          "return sorted(derived, key=lambda x: x.get(\"latest\") or 0, reverse=True)" in _lib, "")
+    check("★R45 前端渲染成**树**（`.web-cluster` > 根 + `.wg-kids` > 子）",
+          "web-cluster" in js and "wg-kids" in js and "wg-sub" in js, "")
+    check("★R45 前端有**同形兜底** `clusterLocal`（旧后端也不降级）",
+          "function clusterLocal(" in js and "WEB_DERIVED_RE" in js, "")
+    check("★R45 CSS 用**缩进 + 竖线**表达从属（.wg-kids 的声明体非空）",
+          (lambda: (lambda m: bool(m) and "border-left" in m.group(1))(
+              re.search(r"\.web-cluster\s+\.wg-kids\{([^}]*)\}",
+                        re.sub(r"/\*[\s\S]*?\*/", "", css))))(), "")
+
+    # ── ③ 首屏**不许**看见滚动点（R44 第 4 条的彻底修法）──────────────────────
+    check("★R45 `updateRlBar()` 把「页面状态」也当判据（stage-empty / panel-open）",
+          "document.body.classList.contains('stage-empty')" in js
+          and "document.body.classList.contains('panel-open')" in js, "")
+    check("★R45 CSS **状态兜底**：首屏 / 面板态下强制 `#rl-bar` 不可见（不依赖 JS）",
+          re.search(r"body\.stage-empty\s+#rl-bar", css) is not None
+          and re.search(r"body\.panel-open\s+#rl-bar", css) is not None, "")
+    check("★R45 兜底规则**压得过** `.on`（带 !important 的 opacity:0）",
+          (lambda: (lambda m: bool(m) and "!important" in m.group(1))(
+              re.search(r"body\.stage-empty\s+#rl-bar[^{]*\{([^}]*)\}",
+                        re.sub(r"/\*[\s\S]*?\*/", "", css))))(), "")
+    check("★R45 兜底规则排在 `#rl-bar.on` **之后**（同特异性下靠源顺序覆盖）",
+          (lambda: (lambda c: c.find("#rl-bar.on") >= 0
+                    and c.find("body.stage-empty #rl-bar") > c.find("#rl-bar.on"))(
+              re.sub(r"/\*[\s\S]*?\*/", "", css)))(), "")
+    check("★R45 另一条早退路径（空白新会话）也收点",
+          js.count("updateRlBar();") >= 3, "")
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--base", default="http://127.0.0.1:8765")
@@ -1426,6 +1497,7 @@ def main() -> int:
     check_r41_frontend(css)
     check_r42_server(srv_src)
     check_r44_frontend(css, js, html, srv_src, lib_src, dp_src)
+    check_r45_frontend(css, js, html, srv_src, lib_src)
     # ── 参数往返：列表型键不能被写成字符串 ─────────────────────────
     # ★ 这是「通过工作台发起的真跑全部 2–7 秒即崩」的根因：
     #   memory.channels 出厂是列表，经参数面板往返后变字符串 ⇒ 引擎

@@ -754,7 +754,7 @@ async function run() {
   chk('④ 让位量**封顶为视口一半**（右侧恒留一半可见）',
       shiftPx <= w.innerWidth / 2 + 1,
       'shiftX=' + Math.round(shiftPx) + ' vw/2=' + Math.round(w.innerWidth / 2));
-  {/* ④ 平移放慢：主区与抽屉的 transition-duration 都要 ≥ .4s */}
+  {/* ④ 平移放慢：主区与抽屉的 transition-duration 都要 ≥ .4s */
   const mainDur = w.getComputedStyle(mainEl).transitionDuration || '0s';
   const drawerDur = w.getComputedStyle(drawer).transitionDuration || '0s';
   const toS = (v) => parseFloat(v) || 0;
@@ -2036,6 +2036,212 @@ async function run() {
         && /syncAdvBar\(key\)/.test(JS_TXT)
         && /adv-actions/.test(JS_TXT));
   }
+
+  /* ── ★R45 三条（用户 3 图 / 3 条）───────────────────────────────
+     真浏览器里跑真 DOM / 真计算样式 / 真几何 —— 最高一级的证据。
+     ★ 这一段的判据与 `_audit_tmp/_r45_probe_r45.js`（CDP 探针）**同源同款**：
+       那边的 31 条全绿 + 16 个变异体逐个抓住，是这套判据判别力的证据；
+       搬到这里是为了让它跟其它断言一样进 `--dump-dom` 的常规流程。
+     ★ 三条各自的「双层防御要分别证明」见下面 R45-3 的注释（M15 教训）。 */
+
+  /* ① 导入的文件要**显示出来**（计数徽章 + 可展开清单 + 删 + 关） */
+  {
+    const bn = d.querySelector('#attach-n');
+    const ap = d.querySelector('#attach-panel');
+    chk('★R45-1 回形针内有计数徽章 `#attach-n`',
+        !!bn && !!bn.closest('#attach-btn'), 'badge=' + (bn ? bn.id : 'null'));
+    chk('★R45-1 徽章 0 个文件时**不显示**（不带个「0」）',
+        !!bn && (bn.hidden === true || getComputedStyle(bn).display === 'none'),
+        'hidden=' + (bn ? bn.hidden : '?'));
+    chk('★R45-1 清单浮层 `#attach-panel` 默认收起（`.hidden`）',
+        !!ap && ap.classList.contains('hidden'),
+        'cls=' + (ap ? ap.className : 'null'));
+    chk('★R45-1 清单里有 `#ap-close`（可关）', !!(ap && ap.querySelector('#ap-close')));
+    chk('★R45-1 清单里有 `#ap-list.scroll`（可滚列表）', !!(ap && ap.querySelector('#ap-list.scroll')));
+    chk('★R45-1 清单里有 `#ap-count`（标注已导入数）', !!(ap && ap.querySelector('#ap-count')));
+    chk('★R45-1 徽章**可点**（pointer-events != none）',
+        !!bn && getComputedStyle(bn).pointerEvents !== 'none',
+        'pe=' + (bn ? getComputedStyle(bn).pointerEvents : '?'));
+
+    // 真行为：开合
+    try {
+      if (typeof w.toggleAttachPanel === 'function') {
+        w.toggleAttachPanel(true); await sleep(200);
+        chk('★R45-1 toggleAttachPanel(true) 能把清单**打开**',
+            !ap.classList.contains('hidden'), 'cls=' + ap.className);
+        w.toggleAttachPanel(false); await sleep(120);
+        chk('★R45-1 toggleAttachPanel(false) 能把清单**关上**',
+            ap.classList.contains('hidden'), 'cls=' + ap.className);
+      } else {
+        chk('★R45-1 暴露 w.toggleAttachPanel（可编程开合）', false, 'typeof=' + typeof w.toggleAttachPanel);
+      }
+    } catch (e) { chk('★R45-1 开合（异常）: ' + e.message, false); }
+
+    // 真行为：喂两个假文件看徽章/计数/行数/删除。
+    // ★ 必须在 iframe **自己的作用域**里注入：`let localItems` 挂全局词法环境、
+    //   不是 window 属性，外部 `w.localItems = [...]` 会**静默无效**（第一版探针就栽在这）。
+    try {
+      await w.eval('(() => {' +
+        "localItems = [{name:'演示A.txt', size: 2048}, {name:'演示B.md', size: 1024}];" +
+        'paintAttach(); return localItems.length; })()');
+      await sleep(150);
+      const txt = (bn ? bn.textContent : '').trim();
+      const cnt = (d.querySelector('#ap-count') ? d.querySelector('#ap-count').textContent : '').trim();
+      const nrows = ap.querySelectorAll('.ap-row').length;
+      chk('★R45-1 注入 2 个文件 → 徽章显示 2', txt === '2', 'badge=' + JSON.stringify(txt));
+      chk('★R45-1 2 个文件时徽章**显示**（hidden=false）',
+          !!bn && bn.hidden === false, 'hidden=' + (bn ? bn.hidden : '?'));
+      chk('★R45-1 清单计数与列表行数一致（2）',
+          nrows === 2, 'rows=' + nrows + ' count=' + JSON.stringify(cnt));
+      chk('★R45-1 每行都有删除键（可手动删）',
+          ap.querySelectorAll('.ap-row button').length === 2,
+          'dels=' + ap.querySelectorAll('.ap-row button').length);
+      await w.eval('(() => { localItems = localItems.filter(x => x.name !== "演示A.txt"); paintAttach(); })()');
+      await sleep(150);
+      chk('★R45-1 删掉一行后剩 1 行',
+          ap.querySelectorAll('.ap-row').length === 1,
+          'rows=' + ap.querySelectorAll('.ap-row').length);
+      await w.eval('(() => { localItems = []; paintAttach(); })()');
+      await sleep(100);
+      chk('★R45-1 清空后徽章又**藏起来**',
+          !!bn && bn.hidden === true, 'hidden=' + (bn ? bn.hidden : '?'));
+    } catch (e) { chk('★R45-1 paintAttach（异常）: ' + e.message, false); }
+  }
+
+  /* ② 检索库**按任务归类**（真树结构 + 真缩进） */
+  try {
+    // ★ 页面 key 是 `view-web`（不是 `web-lib` —— 写错只会「静默不切页」，
+    //   几何判据全变 0，看着像产品 bug）。
+    if (typeof w.openSheet === 'function') w.openSheet('view-web');
+    await sleep(500);
+    const list = d.querySelector('#web-list');
+    if (!list) {
+      chk('★R45-2 `#web-list` 存在', false);
+    } else {
+      for (let i = 0; i < 60; i++) {
+        if (list.querySelector('.web-cluster')) break;
+        await sleep(120);
+      }
+      const clusters = list.querySelectorAll('.web-cluster');
+      const kids = list.querySelectorAll('.web-cluster .wg-kids');
+      const subs = list.querySelectorAll('.web-group.wg-sub');
+      const allG = list.querySelectorAll('.web-group');
+      const sheet = d.querySelector('#sheet');
+      chk('★R45-2 检索库页**真的打开着**（否则几何判据全是 0）',
+          !!sheet && !sheet.classList.contains('hidden') && list.getBoundingClientRect().width > 0,
+          'sheetHidden=' + (sheet ? sheet.classList.contains('hidden') : '?')
+          + ' listW=' + list.getBoundingClientRect().width);
+      chk('★R45-2 渲染出任务分组 `.web-cluster`', clusters.length >= 1, 'clusters=' + clusters.length);
+      chk('★R45-2 有子问题容器 `.wg-kids`', kids.length >= 1, 'kids=' + kids.length);
+      chk('★R45-2 子问题行带 `.wg-sub`', subs.length >= 1, 'subs=' + subs.length);
+      if (kids.length) {
+        const cs = getComputedStyle(kids[0]);
+        chk('★R45-2 `.wg-kids` 真有**左缩进 + 竖线**（不是空规则）',
+            parseFloat(cs.marginLeft) > 0 && cs.borderLeftWidth !== '0px',
+            'ml=' + cs.marginLeft + ' blw=' + cs.borderLeftWidth);
+      }
+      if (kids.length && subs.length) {
+        // ★ 几何判据必须在**页面还开着**时测（closeSheet 后 rect 全 0）；
+        //   阈值要**实质**（只写 `>` 0 时 M10 仍 PASS，差 1px）⇒ 要求 ≥ 8px。
+        const kr = kids[0].getBoundingClientRect();
+        const sr = subs[0].getBoundingClientRect();
+        const dlt = sr.left - kr.left;
+        chk('★R45-2 子问题几何上确实缩进在根问题右侧（≥8px 实质间距）',
+            dlt >= 8 && sr.width > 0,
+            'Δleft=' + dlt + ' sub=' + sr.left + ' kids=' + kr.left);
+      }
+      chk('★R45-2 两向对账：根 + 子 == 全部组数（不丢不重）',
+          clusters.length + subs.length === allG.length,
+          'root ' + clusters.length + ' + sub ' + subs.length + ' vs all ' + allG.length);
+      if (clusters.length) {
+        chk('★R45-2 子问题**嵌在**根节点容器内（不是平铺的两个兄弟）',
+            clusters[0].querySelectorAll('.web-group').length >= 1,
+            'inCluster0 groups=' + clusters[0].querySelectorAll('.web-group').length);
+      }
+    }
+    if (typeof w.closeSheet === 'function') w.closeSheet();
+    await sleep(200);
+  } catch (e) { chk('★R45-2 归类（异常）: ' + e.message, false); }
+
+  /* ③ 首屏**不许**看见滚动点（R44 第 4 条的彻底修法） */
+  try {
+    if (typeof w.newChat === 'function') w.newChat();
+    await sleep(500);
+    const bar = d.querySelector('#rl-bar');
+    chk('★R45-3 首屏存在 `#rl-bar`（它还在，只是看不见）', !!bar);
+    if (bar) {
+      chk('★R45-3 首屏正常态下 `#rl-bar` **没有** `.on`', !bar.classList.contains('on'),
+          'cls=' + bar.className);
+      // 人为点亮：模拟「上一次留在 .on 没灭」—— 这正是用户看到的现象
+      bar.classList.add('on');
+      await sleep(60);
+      const cs = getComputedStyle(bar);
+      chk('★R45-3 首屏（stage-empty）里**即使** `.on` 在，计算出的 opacity 也是 0',
+          parseFloat(cs.opacity) === 0, 'stage=' + d.body.className + ' opacity=' + cs.opacity);
+      chk('★R45-3 首屏里那个点**点不到**（pointer-events:none）',
+          cs.pointerEvents === 'none', 'pe=' + cs.pointerEvents);
+
+      /* ★ 双层防御要**分别**证明（M15 教训）：
+         CSS 兜底与 JS 判据各自独立。只测「结果 opacity=0」时，JS 那层坏了 CSS 还挡着
+         ⇒ 判据不会红。而 updateRlBar 里**有好几条早退**（日志区 hidden / 滚距 ≤8 / 高度 <60），
+         它们也会摘掉 `.on` —— 所以「随便点一下 .on 再调 updateRlBar」测的是**共性**。
+         要隔离 stage-empty：把其它早退条件**都摆成不成立**（日志区可见、有高度、**确实可滚**），
+         唯一能救的就是 stage-empty 那一条。 */
+      const _box = d.querySelector('#runlog');
+      const _bd = d.querySelector('#runlog-body');
+      const _sv = {
+        boxCls: _box.className, bodyCls: d.body.className,
+        boxStyle: _box.getAttribute('style'), bdStyle: _bd ? _bd.getAttribute('style') : null,
+        bdHtml: _bd ? _bd.innerHTML : null,
+      };
+      _box.classList.remove('hidden');
+      _box.style.display = 'block'; _box.style.height = '300px';
+      if (_bd) {
+        _bd.style.display = 'block'; _bd.style.height = '120px';
+        _bd.style.minHeight = '120px'; _bd.style.overflow = 'auto';
+        _bd.innerHTML = new Array(120).fill('<div class="lg-line">x</div>').join('');
+      }
+      d.body.classList.remove('stage-run', 'panel-open');
+      d.body.classList.add('stage-empty');
+      bar.classList.add('on');
+      await sleep(60);
+      const _okBox = !_box.classList.contains('hidden');
+      const _bdH = _bd ? _bd.clientHeight : -1;
+      const _over = _bd ? (_bd.scrollHeight - _bd.clientHeight) : -1;
+      if (typeof w.updateRlBar === 'function' && _okBox && _bdH >= 60 && _over > 8) {
+        w.updateRlBar();
+        await sleep(80);
+        chk('★R45-3 JS 层判据：**隔离** stage-empty（日志区可见有高度**且确实可滚**）后，'
+            + 'updateRlBar() 仍主动摘掉 `.on`（不靠 CSS 遮）',
+            !bar.classList.contains('on'),
+            'stage=' + d.body.className + ' bdH=' + _bdH + ' over=' + _over + ' cls=' + bar.className);
+      } else {
+        chk('★R45-3 JS 层判据：隔离失败（前置条件没摆好 ⇒ 判据无效）', false,
+            'boxVis=' + _okBox + ' bdH=' + _bdH + ' over=' + _over);
+      }
+      // 复原
+      _box.className = _sv.boxCls;
+      if (_sv.boxStyle === null) _box.removeAttribute('style'); else _box.setAttribute('style', _sv.boxStyle);
+      if (_bd) {
+        if (_sv.bdStyle === null) _bd.removeAttribute('style'); else _bd.setAttribute('style', _sv.bdStyle);
+        if (_sv.bdHtml !== null) _bd.innerHTML = _sv.bdHtml;
+      }
+      d.body.className = _sv.bodyCls;
+      await sleep(60);
+
+      // 负对照：摘掉 stage-empty ⇒ 兜底不该把点永久压死
+      bar.classList.add('on');
+      await sleep(60);
+      const _had = d.body.classList.contains('stage-empty');
+      d.body.classList.remove('stage-empty');
+      await sleep(80);
+      const pe2 = getComputedStyle(bar).pointerEvents;
+      if (_had) d.body.classList.add('stage-empty');
+      chk('★R45-3 负对照：**不是**首屏/面板态时兜底不生效（点恢复可交互）',
+          pe2 !== 'none', 'pe(非空态)=' + pe2);
+      bar.classList.remove('on');
+    }
+  } catch (e) { chk('★R45-3 首屏点（异常）: ' + e.message, false); }
 
   /* ── ⑥ 开启新对话：清掉当前显示、回到首屏 ──────────────────────
      ★ 放在**最后**测：它会把运行日志清掉，前面那些依赖日志的断言不能再受影响。 */

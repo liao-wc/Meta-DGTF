@@ -350,6 +350,70 @@ def web_hits_grouped(limit: int = 800) -> list[dict]:
     return group_hits(web_hits(limit))
 
 
+# ── ★ R45：把「同一任务」的检索问题归成一棵树 ─────────────────────────
+# 用户报：「按同一任务的问题归类，其他子问题归类在最初的问题里」。
+# 观察真实 `_web_hits.jsonl`：一次跑圈会先拿**最初的问题**去检索，随后引擎
+# 自己**派生**一批子问题，派生的写法有很固定的形态 ——
+#     `是否存在 <某条不确定项> 的官方指引？`
+# （见 outputs/_web_hits.jsonl：18 个 query 里 8 个是这个模板，零误判）。
+# 判据**只用引擎自己的派生形态**，不硬编码任何业务词（「AI时代」「R37」这些
+# 绝不能进代码 —— 换个任务就失效）。
+_DERIVED_RE = re.compile(r"^是否存在.*的官方指引[？?]\s*$")
+
+
+def is_derived_query(q: str) -> bool:
+    """这条检索问题是不是**引擎派生出来的子问题**（而非用户最初问的那条）。"""
+    return bool(_DERIVED_RE.match(str(q or "").strip()))
+
+
+def cluster_groups(groups: list[dict]) -> list[dict]:
+    """把按问题聚合好的组，再按「同一任务」收成树。
+
+    返回每个组上多两个字段：
+      · `derived`  —— 是否判定为派生子问题；
+      · `parent`   —— 该组挂到的**最初问题**（派生组才有；根组为 None）。
+
+    归属规则（两条信号**合取**，避免只靠时间/只靠字面）：
+      1. **派生信号**：query 命中 `_DERIVED_RE` ⇒ 它是子问题；
+      2. **就近根**：挂到「时间上**不晚于**它、且最近的那个根组」。
+         实测子问题总在根问题之后几秒内产出（同一圈跑出来的）。
+
+    兜底：时间倒退（ts 缺失 / 乱序）时，挂到**当前时间最早的那个根组**，
+    绝不丢组 —— 「归不了类」比「归错类」更糟（用户要的是「能看见」）。
+
+    纯函数，便于用合成样本验证。
+    """
+    if not groups:
+        return []
+
+    roots: list[dict] = []
+    derived: list[dict] = []
+    for g in groups:
+        g = dict(g)
+        g["derived"] = is_derived_query(g.get("query"))
+        g["parent"] = None
+        (derived if g["derived"] else roots).append(g)
+
+    if not roots:
+        # 全是派生问题（第一次跑还没留下根问题的记录）⇒ 不硬凑，原样返回
+        return sorted(derived, key=lambda x: x.get("latest") or 0, reverse=True)
+
+    roots.sort(key=lambda x: (x.get("latest") or 0), reverse=True)
+    for d in derived:
+        t = d.get("latest") or 0
+        cands = [r for r in roots if (r.get("latest") or 0) <= t]
+        owner = cands[0] if cands else roots[-1]      # 兜底：最早的那个根
+        owner.setdefault("children", []).append(d)
+
+    out = []
+    for r in roots:
+        r.setdefault("children", [])
+        # 子问题也按时间倒序，读起来跟列表其它地方一致
+        r["children"].sort(key=lambda x: x.get("latest") or 0, reverse=True)
+        out.append(r)
+    return out
+
+
 def web_results(limit: int = 300) -> list[dict]:
     """汇总历次产物的联网命中读数。"""
     out: list[dict] = []

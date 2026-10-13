@@ -357,9 +357,14 @@ class Handler(BaseHTTPRequestHandler):
                 "anchor_items": _n,
             })
         if p == "/api/library/web":
+            _flat = lib.web_hits_grouped()
+            # ★ R45：`clusters` = 把同一任务的子问题挂到最初的问题下
+            # （用户要求「按同一任务的问题归类」）。前端优先用它渲染，
+            # 老前端拿 `groups` 也能照旧工作。
             return self._json({"items": lib.web_results(),
                                "hits": lib.web_hits(),
-                               "groups": lib.web_hits_grouped()})
+                               "groups": _flat,
+                               "clusters": lib.cluster_groups(_flat)})
         m = re.match(r"^/api/library/local/(.+)$", p)
         if m:
             body = lib.read_local(unquote(m.group(1)))

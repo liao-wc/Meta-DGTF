@@ -789,9 +789,15 @@ function updateRlBar() {
   /* ★ R44：**日志窗口自己没显示时不画点** —— 首屏（`body.stage-empty`）里 `#runlog`
      是 `.hidden`（display:none），尺寸上也算得出来「不用显示」，但空态那条**早返回**路径
      压根不会走到这个函数 ⇒ 点会**留在上一次的位置**（用户报「首屏不该有滚动点」）。
-     把「窗口是否可见」显式判掉，比依赖尺寸稳。 */
+     把「窗口是否可见」显式判掉，比依赖尺寸稳。
+     ★★ R45：再加两条**状态**判据 —— 页面状态本身就说明「此刻不该有点」时，
+     不管 `#runlog` 的类/尺寸如何，一律收掉（用户**第二次**报这条，光靠尺寸算不够）：
+       · `body.stage-empty`：首屏没有日志区；
+       · `body.panel-open` ：全屏面板铺开，日志区被盖住。 */
   const _box = $('#runlog');
   if (!_box || _box.classList.contains('hidden')
+      || document.body.classList.contains('stage-empty')
+      || document.body.classList.contains('panel-open')
       || t.over <= 8 || bd.clientHeight < 60) { bar.classList.remove('on'); return; }
   const r = t.hi > t.lo ? Math.min(1, Math.max(0, bd.scrollTop / t.over)) : 0;
   bar.style.top = Math.round(t.lo + r * (t.hi - t.lo)) + 'px';
@@ -876,6 +882,7 @@ function renderTasks() {
     document.body.classList.add('stage-empty');
     setRunBtn('send');
     stopWhisper();                       // ★ R23：空白新会话 ⇒ 恢复默认占位
+    updateRlBar();   // ★ R45：这条早退**也要收点**（R44 只补了上面那条，这里漏了）
     return;
   }
   const running = !arch && (t.status === 'running' || t.status === 'queued');
@@ -1454,14 +1461,86 @@ async function loadLib() {
 }
 
 /* ── 本地资料库（导入本地文件 → 外部证据锚点）────────────────── */
+/* ★ R45：**已导入文件的唯一渲染口** —— 三处都从这里刷：
+     · 资料库面板页的 `#local-list`（原来就有）；
+     · 回形针上的计数徽章 `#attach-n`（「标注位置显示已导入文件数」）；
+     · 输入框下方的清单浮层 `#attach-panel`（「点开可显示已导入文件、可删可关」）。
+   把清单缓存进 `localItems`，浮层开关 / 删除后不用重新请求。 */
+let localItems = [];
+
+function attachPanelOpen() {
+  const p = $('#attach-panel');
+  return !!p && !p.classList.contains('hidden');
+}
+
+function paintAttach() {
+  const n = localItems.length;
+  const badge = $('#attach-n');
+  if (badge) {
+    badge.textContent = String(n);
+    badge.hidden = n === 0;              // 0 个就不显示（免得挂着个「0」碍眼）
+    badge.title = `已导入 ${n} 个文件（点开查看 / 删除）`;
+  }
+  const cnt = $('#ap-count');
+  if (cnt) cnt.textContent = String(n);
+  const list = $('#ap-list');
+  if (list) {
+    list.innerHTML = localItems.map(it =>
+      `<div class="ap-row" data-apname="${esc(it.name)}">
+        <span class="n" title="${esc(it.name)}">${esc(it.name)}</span>
+        <span class="meta">${it.size != null ? (it.size / 1024).toFixed(1) + ' KB' : ''}</span>
+        <button type="button" class="rm" data-apdel="${esc(it.name)}">删除</button>
+      </div>`).join('')
+      || '<div class="muted empty">还没导入任何文件。点左边的回形针导入。</div>';
+  }
+  const foot = $('#ap-foot');
+  if (foot) {
+    foot.textContent = n
+      ? '这些文件已解析进外部证据锚点，运行时会读入。'
+      : '';
+  }
+}
+
+function toggleAttachPanel(force) {
+  const p = $('#attach-panel');
+  if (!p) return;
+  const want = (force === undefined) ? p.classList.contains('hidden') : !!force;
+  p.classList.toggle('hidden', !want);
+  if (want) paintAttach();
+}
+
+async function removeImported(name) {
+  try {
+    await api('/api/library/delete', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: name }),
+    });
+    localItems = localItems.filter(it => it.name !== name);
+    paintAttach();
+    /* 资料库面板页若正开着，一并刷新（那边也是同一份数据） */
+    const ll = $('#local-list');
+    if (ll && document.body.classList.contains('panel-open')) await loadLocal();
+    if (attachPanelOpen()) toggleAttachPanel(true);
+  } catch (e) {
+    const foot = $('#ap-foot');
+    if (foot) foot.textContent = '删除失败：' + e.message;
+  }
+}
+
 async function loadLocal() {
-  $('#local-list').innerHTML = '<div class="muted">读取中…</div>';
+  const ll = $('#local-list');
+  if (ll) ll.innerHTML = '<div class="muted">读取中…</div>';
   try {
     const r = await api('/api/library/local');
     const items = r.items || [];
-    $('#local-count').textContent =
-      `已导入 ${items.length} 个资料 · 合并快照 ${r.anchor_file}（${r.anchor_items} 条锚点）`;
-    $('#local-list').innerHTML = items.map(it =>
+    localItems = items;
+    const lc = $('#local-count');
+    if (lc) {
+      lc.textContent =
+        `已导入 ${items.length} 个资料 · 合并快照 ${r.anchor_file}（${r.anchor_items} 条锚点）`;
+    }
+    if (ll) {
+      ll.innerHTML = items.map(it =>
       `<div class="item" data-local="${esc(it.name)}">
         <div class="t"><span class="t-t">${esc(it.name)}</span>
           <span class="t-r"><span class="num">${new Date(it.mtime * 1000).toLocaleString('zh-CN')}</span>
@@ -1470,16 +1549,24 @@ async function loadLocal() {
           <a href="#" class="del" data-del="${esc(it.name)}">删除</a>
         </div>
       </div>`).join('') || '<div class="muted empty">还没导入任何资料。上面「选择文件导入」即可。</div>';
-    const cands = r.candidates || [];
-    $('#local-cand-hint').textContent = `另有 ${cands.length} 个现成的锚点快照 JSON（只读，供参考）：`;
-    $('#local-cand').innerHTML = cands.map(c =>
+    }
+    /* ★ R45：徽章 + 输入框浮层**跟着一起刷**（用户报「导入的文件没显示出来」） */
+    paintAttach();
+    if (attachPanelOpen()) toggleAttachPanel(true);
+    const lo = $('#local-cand');
+    if (lo) {
+      const cands = r.candidates || [];
+      const hint = $('#local-cand-hint');
+      if (hint) hint.textContent = `另有 ${cands.length} 个现成的锚点快照 JSON（只读，供参考）：`;
+      lo.innerHTML = cands.map(c =>
       `<div class="item" data-local="${esc(c.name)}">
         <div class="t">${esc(c.name)}</div>
         <div class="m"><span class="num">${esc(c.path)}</span>
           <span>${c.items ? c.items + ' 条锚点' : '（名字带 anchor）'}</span></div>
       </div>`).join('') || '<div class="muted empty">无</div>';
+    }
   } catch (e) {
-    $('#local-list').innerHTML = `<div class="muted">出错：${esc(e.message)}</div>`;
+    if (ll) ll.innerHTML = `<div class="muted">出错：${esc(e.message)}</div>`;
   }
 }
 
@@ -1576,8 +1663,11 @@ async function importFiles(fileList) {
     const badN = importRows.length - okN;
     const tail = `完成：成功 ${okN} 个` + (badN ? `，失败/跳过 ${badN} 个（原因见下）` : '');
     importPaint(tail);
-    if (am) am.textContent = tail + '（抽屉「本地资料库」里可查看 / 删除）';
+    if (am) am.textContent = tail;
     await loadLocal();
+    /* ★ R45：导入完成后**自动展开清单** —— 用户报「导入的文件没显示出来」，
+       所以结果要自己送到眼前（而不是让他去抽屉里翻）。 */
+    if (okN) toggleAttachPanel(true);
   } catch (e) {
     importRows.push({ ok: false, name: '(整批)', error: e.message });
     importPaint('导入失败：' + e.message);
@@ -1608,7 +1698,37 @@ async function openLocal(name) {
    webGroups= 服务端按检索问题分好组、组内按 url 去过重的结果 */
 let webHits = [];
 let webGroups = [];
+/* ★ R45：`webClusters` = 把「同一任务」的子问题挂到最初的问题下（树）。
+   见 `clusterLocal()`；服务端 `/api/library/web` 也返回同名结构（clusters）。 */
+let webClusters = [];
 let webReadouts = 0;
+
+/* ★ R45：**引擎派生式子问题**的形态 —— 与 library.py 的 `_DERIVED_RE` 一致。
+   只认引擎自己的派生模板（`是否存在 … 的官方指引？`），**不硬编码业务词**。 */
+const WEB_DERIVED_RE = /^是否存在.*的官方指引[？?]\s*$/;
+function webIsDerived(q) { return WEB_DERIVED_RE.test(String(q || '').trim()); }
+
+/* ★ R45 本地兜底：服务端没给 `clusters` 时，用**同一套规则**现算一棵树。
+   归属 = 「时间上不晚于它、最近的根组」；时间缺失/乱序时挂到最早的根。 */
+function clusterLocal(groups) {
+  const gs = (groups || []).map(g => Object.assign({}, g, {
+    derived: webIsDerived(g.query), parent: null, children: []
+  }));
+  const roots = gs.filter(g => !g.derived);
+  const kids = gs.filter(g => g.derived);
+  if (!roots.length) {
+    return gs.sort((a, b) => (b.latest || 0) - (a.latest || 0));
+  }
+  roots.sort((a, b) => (b.latest || 0) - (a.latest || 0));
+  kids.forEach(d => {
+    const t = d.latest || 0;
+    const cands = roots.filter(r => (r.latest || 0) <= t);
+    const owner = cands.length ? cands[0] : roots[roots.length - 1];
+    owner.children.push(d);
+  });
+  roots.forEach(r => r.children.sort((a, b) => (b.latest || 0) - (a.latest || 0)));
+  return roots;
+}
 
 function webMatch(h, q) {
   if (!q) return true;
@@ -1651,6 +1771,38 @@ function groupHitsLocal(hits) {
   return [...m.values()].sort((a, b) => b.latest - a.latest);
 }
 
+/* ★ R45：单组渲染（根组 / 子问题共用）。`sub=true` 时加缩进类。
+   子问题组**不折叠内容**（它本来就是「挂在根问题下的一条」，
+   内容跟在标题下面走 —— 用户要的是「看得见归类」，不是再套一层折叠）。 */
+function wgHtml(g, sub) {
+  const gsel = webSel.has('g:' + String(g.query));
+  const items = g.items || [];
+  const latest = Number(g.latest) || items.reduce((m, h) => Math.max(m, Number(h.ts) || 0), 0);
+  const kinds = [...new Set(items.map(h => String(h.kind || '')).filter(Boolean))];
+  const when = latest
+    ? new Date(latest * 1000).toLocaleString('zh-CN', { hour12: false }) : '';
+  const meta = [when, kinds.join(' / ')].filter(Boolean).join(' · ');
+  const n = g.uniq != null ? g.uniq : items.length;
+  const tot = g.total != null ? g.total : items.length;
+  return `
+    <div class="web-group${sub ? ' wg-sub' : ''}${webExpOn ? ' selmode' : ''}${gsel ? ' on' : ''}">
+      ${webExpOn ? '' : `<button type="button" class="exp wg-exp" data-expexp="${esc(g.query)}"
+              title="导出这一组检索结果">导出</button>`}
+      <button type="button" class="wg-head" ${webExpOn ? `data-wgsel="${esc(g.query)}"` : 'data-wgtoggle'}>
+        ${webExpOn ? '<span class="ck" aria-hidden="true"></span>' : ''}
+        <svg class="wg-car" width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        ${sub ? '<span class="wg-submark" aria-hidden="true">└</span>' : ''}
+        <span class="wg-q">${esc(g.query)}</span>
+        <span class="wg-meta">${esc(meta)}</span>
+        <span class="chip">${sub ? '' : '去重后 '}${n} / 共 ${tot} 条</span>
+      </button>
+      <div class="wg-body scroll">${items.map(h => hitHtml(h, false)).join('')}</div>
+    </div>`;
+}
+
 function renderWeb() {
   const box = $('#web-list');
   if (!box) return;
@@ -1668,40 +1820,36 @@ function renderWeb() {
     return;
   }
 
-  const groups = webGroups.map(g => ({
-    query: g.query,
-    total: g.total,
-    items: (g.items || []).filter(h => webMatch(h, q)
-      || String(g.query || '').toLowerCase().includes(q)),
-  })).filter(g => g.items.length);
-  const uniq = groups.reduce((n, g) => n + g.items.length, 0);
+  /* ★ R45：**按任务归类** —— 遍历 `webClusters` 这棵树（根 = 最初的问题，
+     子 = 引擎派生的子问题），过滤条件对根与子**分别**生效：
+     子问题只要自己命中就留下（哪怕根问题没命中关键词 —— 用户搜的往往是子问题的词）。 */
+  const hit = (g) => (g.items || []).some(h => webMatch(h, q)
+    || String(g.query || '').toLowerCase().includes(q));
+  const tree = (webClusters && webClusters.length ? webClusters : clusterLocal(webGroups))
+    .map(g => {
+      const kids = (g.children || []).filter(hit);
+      const self = hit(g);
+      if (!self && !kids.length) return null;
+      return Object.assign({}, g, { _kids: kids });
+    }).filter(Boolean);
+
+  const nRoot = tree.length;
+  const nSub = tree.reduce((s, g) => s + g._kids.length, 0);
+  const uniq = tree.reduce((s, g) =>
+    s + (g.uniq != null ? g.uniq : (g.items || []).length)
+    + g._kids.reduce((t, k) => t + (k.uniq != null ? k.uniq : (k.items || []).length), 0), 0);
   $('#web-count').textContent =
-    `按问题聚合 ${groups.length} 组 · 去重后 ${uniq} 条 · 原始命中 ${webHits.length} 条`
-    + ` · 带联网读数的产物 ${webReadouts} 份`;
-  /* 每组默认**折叠**（内容不直接铺开），标题行带上「最新时间 · 检索模型」；
-     点标题展开，展开区限高、内部可滚动。 */
-  box.innerHTML = groups.map(g => {
-    const gsel = webSel.has('g:' + String(g.query));
-    const latest = g.items.reduce((m, h) => Math.max(m, Number(h.ts) || 0), 0);
-    const kinds = [...new Set(g.items.map(h => String(h.kind || '')).filter(Boolean))];
-    const when = latest
-      ? new Date(latest * 1000).toLocaleString('zh-CN', { hour12: false }) : '';
-    const meta = [when, kinds.join(' / ')].filter(Boolean).join(' · ');
+    `按任务归类 ${nRoot} 个任务 · 含 ${nSub} 个子问题 · 去重后 ${uniq} 条`
+    + ` · 原始命中 ${webHits.length} 条 · 带联网读数的产物 ${webReadouts} 份`;
+
+  box.innerHTML = tree.map(g => {
+    const kids = g._kids;
+    /* 根组本体的条目：把子问题的 query 从根组里摘掉不可能（它们本就分在不同组），
+       这里只渲染根组自己的条目。 */
     return `
-    <div class="web-group${webExpOn ? ' selmode' : ''}${gsel ? ' on' : ''}">
-      ${webExpOn ? '' : `<button type="button" class="exp wg-exp" data-expexp="${esc(g.query)}"
-              title="导出这一组检索结果">导出</button>`}
-      <button type="button" class="wg-head" ${webExpOn ? `data-wgsel="${esc(g.query)}"` : 'data-wgtoggle'}>
-        ${webExpOn ? '<span class="ck" aria-hidden="true"></span>' : ''}
-        <svg class="wg-car" width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2"
-                stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <span class="wg-q">${esc(g.query)}</span>
-        <span class="wg-meta">${esc(meta)}</span>
-        <span class="chip">去重后 ${g.items.length} / 共 ${g.total} 条</span>
-      </button>
-      <div class="wg-body scroll">${g.items.map(h => hitHtml(h, false)).join('')}</div>
+    <div class="web-cluster${kids.length ? ' has-sub' : ''}">
+      ${wgHtml(g, false)}
+      ${kids.length ? `<div class="wg-kids">${kids.map(k => wgHtml(k, true)).join('')}</div>` : ''}
     </div>`;
   }).join('')
     || (q ? '<div class="muted empty">没有匹配的问题 / 关键词。</div>'
@@ -1715,6 +1863,13 @@ async function loadWeb() {
     const r = await api('/api/library/web');
     webHits = r.hits || [];
     webGroups = (r.groups && r.groups.length) ? r.groups : groupHitsLocal(webHits);
+    /* ★ R45：服务端给的**任务树**（同任务的子问题挂在最初的问题下）。
+       老后端没有这个字段 ⇒ 前端自己用同一套判据现算（`clusterLocal`），
+       「按任务归类」不因后端版本而降级。 */
+    webClusters = (r.clusters && r.clusters.length)
+      ? r.clusters
+      : (r.groups && r.groups.length) ? clusterLocal(webGroups)
+      : clusterLocal(groupHitsLocal(webHits));
     webReadouts = (r.items || []).length;
     renderWeb();
   } catch (e) {
@@ -2604,11 +2759,32 @@ function init() {
   if (_sov) _sov.addEventListener('click', e => {          // 点浮层空白处收起
     if (e.target === _sov) closeSearch();
   });
-  // 输入框里的回形针 → 触发隐藏的文件选择（复用抽屉里那一个 #anchor-file）
+  /* 输入框里的回形针 → 触发隐藏的文件选择（复用抽屉里那一个 #anchor-file）。
+     ★ R45：按钮上还有个**计数徽章** `#attach-n` —— 点徽章 = **展开/收起已导入清单**
+     （用户要求「标注位置显示已导入文件数，点开可显示已导入文件」），
+     点徽章**不要**再弹文件选择框（否则想看一眼清单却又开了个选文件窗口）。 */
   const _at = $('#attach-btn');
-  if (_at) _at.addEventListener('click', () => {
+  if (_at) _at.addEventListener('click', (e) => {
+    if (e.target && e.target.id === 'attach-n') { toggleAttachPanel(); return; }
     const f = $('#anchor-file');
     if (f) f.click();
+  });
+  const _apx = $('#ap-close');
+  if (_apx) _apx.addEventListener('click', () => toggleAttachPanel(false));
+  /* 清单里的「删除」（内容是重建的 ⇒ 事件委托） */
+  const _apl = $('#ap-list');
+  if (_apl) _apl.addEventListener('click', async (e) => {
+    const d = e.target.closest('[data-apdel]');
+    if (!d) return;
+    e.preventDefault();
+    await removeImported(d.dataset.apdel);
+  });
+  /* 清单开着时，点输入框/别处就收起（免得一直占着地方）——
+     只收起，不拦别的行为。 */
+  document.addEventListener('click', (e) => {
+    if (!attachPanelOpen()) return;
+    if (e.target.closest('#attach-panel') || e.target.closest('#attach-btn')) return;
+    toggleAttachPanel(false);
   });
 
   // 输入框里的功能胶囊：点一下开、再点关
