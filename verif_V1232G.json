@@ -1,0 +1,88 @@
+{
+ "tag": "V1232G",
+ "src": "元DGTF-V1.23.32.py",
+ "route": "0,1,both",
+ "rounds": "0:2,1:3,both:3",
+ "mode": "serial",
+ "orientation": "auto",
+ "llm_calls": 79,
+ "tri_state": [
+  4,
+  6
+ ],
+ "meta_closure_all": null,
+ "duel_suspensions_both": [
+  {
+   "id": "t_001",
+   "target": "承认的有人称性能否等价于签发者ID绑在事件上",
+   "status": "resolved",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_002",
+   "target": "承担后果是否进入0/1入账栏位",
+   "status": "revoked",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_003",
+   "target": "可达与可决是否有同一量纲的比值",
+   "status": "active",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_004",
+   "target": "公共时间交集为空是否意味着0从未有过可被两方同时读到的显形",
+   "status": "active",
+   "quadrant": "③"
+  }
+ ],
+ "engagements_by_view": {
+  "0": [
+   {
+    "target": "承担后果与追责缺口",
+    "tension_id": null
+   }
+  ],
+  "1": [
+   {
+    "target": "当AI输出成为人行动的理由时，'认可'动作是否可被诱导生成？若可，承担后果是否成为唯一还能区分认可与不认可的可观测动作？",
+    "tension_id": null
+   },
+   {
+    "target": "'给定目标'这个动作每次发生时，最小可观测事件是什么？该事件能否被编码为AI可执行的替代？",
+    "tension_id": null
+   }
+  ],
+  "both": []
+ },
+ "suspensions_with_tid": {
+  "0": [
+   {
+    "target": "不可复制性的定价机制",
+    "tension_id": null,
+    "status": "active"
+   }
+  ],
+  "1": [],
+  "both": []
+ },
+ "pools_all_engagements": [],
+ "views_errors": {
+  "0": [],
+  "1": [],
+  "both": []
+ },
+ "pools_meta_p16": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": []
+ },
+ "pools_meta_len": {
+  "0": 4,
+  "1": 10,
+  "both": 5,
+  "all": 0
+ }
+}
