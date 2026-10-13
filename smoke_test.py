@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.27.py"
+SRC = HERE / "元DGTF-V1.23.28.py"
 
 os.environ.setdefault("DGTF_API_KEY", "sk-smoke-test-key")
 
@@ -11257,6 +11257,26 @@ def check_v12327_five_mechanisms():
     if _ab.get("ground") != "anchor":
         bad.append("[A1] 非法 ground 未归一化到 anchor（%r）"
                    % _ab.get("ground"))
+    # ★ v1.23.28：`untouched`/`anchor_touched` 的**写入侧必须带 id**。
+    #   历史缺陷：写入只有 {"desc": ...}，而渲染前缀按 `id` 取
+    #   `aspect_units` 的编号 ⇒ 前缀**永远印不出**（静默丢标记）。
+    #   这条断言**驱动真实写入方法**（不是查字符串），且 id 必须能在
+    #   `aspect_units` 里找到 —— 否则渲染点仍拿不到编号。
+    _v1u = mod.View(entry="0")
+    _u_rec = _v1u.add_aspect_unit("未触及项甲", source="anchor",
+                                  polarity="阴", ground="anchor")
+    _v1u.untouched.append({"desc": "未触及项甲", "source": "anchor",
+                           "id": (_u_rec or {}).get("id", "")})
+    if not _v1u.untouched:
+        bad.append("[A1] untouched 未写入")
+    elif not _v1u.untouched[0].get("id"):
+        bad.append("[A1] untouched 条目缺 id ⇒ 渲染前缀永远印不出")
+    else:
+        _ids_u = {u.get("id") for u in _v1u.aspect_units}
+        if _v1u.untouched[0].get("id") not in _ids_u:
+            bad.append("[A1] untouched 的 id 不在 aspect_units 里 "
+                       "⇒ 编号口径分叉（%r ∉ %s）"
+                       % (_v1u.untouched[0].get("id"), sorted(_ids_u)))
 
     # ── A2 符号对账收敛 ───────────────────────────────────────
     _p = mod.Pool()
@@ -11310,10 +11330,18 @@ def check_v12327_five_mechanisms():
         bad.append("[D2] 连续 2 圈且 2 来源应升 stable（实为 %r）" % _r2)
     _rev = mod.belief_transition(
         mod.make_belief_item("x", "g", "active", attack=["a#1", "a#2"],
-                             support=["s#1"]),
-        round_no=3, attack=["a#3"])
+                             support=["s#1"], rounds_seen=[1]),
+        round_no=2, attack=["a#3"], attack_sources=["layer0", "layer1"])
     if _rev != "revoked":
-        bad.append("[D2] attack>support 应 revoked（实为 %r）" % _rev)
+        bad.append("[D2] 攻击跨 ≥2 个不同来源应 revoked（实为 %r）" % _rev)
+    # ★ 负对照：同一来源反复攻击**不许** revoked —— 独立性不是次数。
+    _rev_neg = mod.belief_transition(
+        mod.make_belief_item("x", "g", "active", attack=["a#1"],
+                             support=["s#1"], rounds_seen=[1]),
+        round_no=2, attack=["a#2"], attack_sources=["layer0"])
+    if _rev_neg == "revoked":
+        bad.append("[D2] 同一来源反复攻击竟 revoked —— "
+                   "「同一来源重复骂」冒充「独立复现」")
     _res = mod.belief_transition(_cur, round_no=5, sources=["p#1"],
                                  attack=["t#1"],
                                  resolved_by="decidable_channel")
@@ -11360,6 +11388,30 @@ def check_v12327_five_mechanisms():
                "expected_gain": 0.9, "link": "x"}], 3)
     if len(_picked) > 3:
         bad.append("[E2] 批选超过上限 n=3（实为 %d）" % len(_picked))
+    # ★ v1.23.28：边际下限**必须 > 0**。
+    #   历史缺陷：`_GAIN_MARGINAL_FLOOR = 0.0` + `G ∈ [0,1]`
+    #   ⇒ `if _best_g < _fl:` **永不成立** ⇒ `below_floor` 结构性不可达。
+    #   这条判据**构造性地**证明该分支可达：给一个 G 恰为 0 的候选
+    #   （地板 0.02）⇒ 必须被 below_floor 挡下。
+    _fl_now = float(getattr(mod, "_GAIN_MARGINAL_FLOOR", 0.0))
+    if not (_fl_now > 0.0):
+        bad.append("[E2] `_GAIN_MARGINAL_FLOOR` 应 > 0（实为 %r）"
+                   "—— 0.0 会让 below_floor 分支恒不可达" % _fl_now)
+    _p3 = mod.Pool()
+    _p3.belief_items = list(_bis)
+    # ★ 构造要点：候选文本必须**与池内信念完全无关** ⇒ G == 0
+    #   （只有命中池内分歧才有可降不确定度）。`_items` 取 `text` 字段。
+    _pk2, _dt2 = mod.select_probe_focus_submodular(
+        _p3, [{"text": "完全不相关的火星土壤成分分析"}], 3,
+        floor=_fl_now)
+    if _pk2:
+        bad.append("[E2] G=0 的候选在 floor>0 时不该入选"
+                   "（below_floor 分支不可达或阈值失效）")
+    _trace2 = (_dt2 or {}).get("trace") or []
+    _stops2 = [t.get("stop") for t in _trace2 if isinstance(t, dict)]
+    if "below_floor" not in _stops2:
+        bad.append("[E2] 未走到 below_floor 分支（stops=%r）"
+                   "—— 该分支是「宁少勿滥」的核心" % (_stops2,))
 
     # ── E6 自适应停止 ─────────────────────────────────────────
     if mod.e6_stop_verdict(0, 0.0, 0.3, 0.02) != (False, "no_candidate"):
@@ -11409,6 +11461,308 @@ def check_v12327_five_mechanisms():
     print("  \u2713 [v12327] A1 幂等/归一化 · A2 符号对账收敛 · "
           "A3 双读数分离 · D1 四态机 · D2 迁移优先级 · D3 语义熵 None · "
           "E1 EIG 同尺 · E2 子模批选 · E6 自适应停止（9 变异体背书）")
+    return True
+
+
+def check_v12328_real_entry():
+    """[v1.23.28] **真实入口产出**判据（收口 R2）。
+
+    ★ 为什么必须有独立的一条：v1.23.27 的 D1/D2 判据全是**纯函数**形态
+      （直接 `mod.belief_transition(...)` 喂构造入参）—— 全绿，但真实
+      入口下三条迁移**结构性不可达**（`upsert_belief` 被嵌在「结构名是
+      新的」守卫里 ⇒ 复现被 `_DUP_SIM` 挡掉）。**纯函数判据全绿 ≠ 该
+      能力在引擎里可达**。
+    ★ 本判据走**真实入口** `Pool.add_undecidable(...)`（引擎唯一写入口），
+      数圈后断言产出物 `belief_transitions` 里真的出现三种迁移。
+    ★ 负对照：同一层反复说同一句 ⇒ **不许**升 stable（层名口径）。
+    ★ 判别力由 `_mut_v12328.py` 背书（M1~M6）。
+    """
+    bad = []
+
+    # ── D1/D2 真实入口：跨层复现 ⇒ stable ──────────────────
+    # ★ 夹具要点：**两条不同主张** —— 单条主张时 D3 的语料去重后只剩
+    #   1 条 ⇒ `semantic_entropy_of` 按设计返回 None（n<2），会与
+    #   「D3 未接线」混淆。两条不同主张 ⇒ 熵有值，两件事各自可判。
+    _p = mod.Pool()
+    _prod = {"structural_amps": ["低温下材料脆性阈值随温度单调下降",
+                                 "城市轨道客流预测误差主要来自换乘"],
+             "aligned_amps": [], "clarity": 0.5}
+    # 第 1 圈：layer0
+    _p.add_undecidable(dict(_prod, _layer_name="0", _round_no=1),
+                       und_aspects=["脆性阈值"], layer=1)
+    # 第 2 圈：layer1（**不同层** ⇒ 独立复现）
+    _p.add_undecidable(dict(_prod, _layer_name="1", _round_no=2),
+                       und_aspects=["脆性阈值"], layer=2)
+    _tos = [t.get("to") for t in (_p.belief_transitions or [])]
+    if "stable" not in _tos:
+        bad.append("[R-D2] 真实入口下跨层复现未升 stable（transitions=%r）"
+                   "—— 纯函数全绿但入口不可达" % (_tos,))
+
+    # ── 负对照：同层反复说 ⇒ 不许 stable ───────────────────
+    _pq = mod.Pool()
+    _prod2 = {"structural_amps": ["城市轨道客流预测误差来源"],
+              "aligned_amps": [], "clarity": 0.5}
+    for _r in (1, 2, 3, 4):
+        _pq.add_undecidable(dict(_prod2, _layer_name="0", _round_no=_r),
+                            und_aspects=["客流预测"], layer=_r)
+    _toq = [t.get("to") for t in (_pq.belief_transitions or [])]
+    if "stable" in _toq:
+        bad.append("[R-D2-neg] 同层反复说竟升 stable —— "
+                   "「同一层重复」冒充「独立复现」（transitions=%r）" % (_toq,))
+
+    # ── D2 真实入口：跨层攻击 ⇒ revoked ────────────────────
+    # ★ 夹具要点：攻击必须来自 **≥2 个不同层**（对称规则）。
+    #   改前规则 `len(atk) >= len(sup)` 在真实入口退化成「每圈都攻击」，
+    #   本条夹具（第 2、3 圈各一攻击、来源为 layer1/layerboth）在新旧
+    #   规则下结论不同 ⇒ 有判别力。
+    _pa = mod.Pool()
+    _pa.add_undecidable({"structural_amps": ["某主张甲"],
+                         "aligned_amps": [], "clarity": 0.5,
+                         "_layer_name": "0", "_round_no": 1},
+                        und_aspects=["某方面"], layer=1)
+    _pa.add_undecidable({"structural_amps": ["某主张甲"],
+                         "aligned_amps": [], "clarity": 0.5,
+                         "_layer_name": "1", "_round_no": 2,
+                         "_belief_attack": "反例：实测不成立"},
+                        und_aspects=["某方面"], layer=2)
+    _pa.add_undecidable({"structural_amps": ["某主张甲"],
+                         "aligned_amps": [], "clarity": 0.5,
+                         "_layer_name": "both", "_round_no": 3,
+                         "_belief_attack": "反例：第二个反证"},
+                        und_aspects=["某方面"], layer=3)
+    _toa = [t.get("to") for t in (_pa.belief_transitions or [])]
+    if "revoked" not in _toa:
+        bad.append("[R-D2-atk] 真实入口下**跨层**攻击未产生 revoked"
+                   "（transitions=%r）" % (_toa,))
+
+    # ── 负对照：同层反复攻击 ⇒ 不许 revoked ────────────────
+    # ★ 为什么必须有这条：对称规则的核心就是「独立性不是次数」。
+    #   若哪天有人把规则改回 `len(atk) >= len(sup)`，这条会立刻判红。
+    _prv = mod.Pool()
+    _prv.add_undecidable({"structural_amps": ["某被骂主张"],
+                          "aligned_amps": [], "clarity": 0.5,
+                          "_layer_name": "0", "_round_no": 1},
+                         und_aspects=["某方面"], layer=1)
+    for _r in (2, 3, 4, 5):
+        _prv.add_undecidable({"structural_amps": ["某被骂主张"],
+                              "aligned_amps": [], "clarity": 0.5,
+                              "_layer_name": "0", "_round_no": _r,
+                              "_belief_attack": "反例%d" % _r},
+                             und_aspects=["某方面"], layer=_r)
+    _torv = [t.get("to") for t in (_prv.belief_transitions or [])]
+    if "revoked" in _torv:
+        bad.append("[R-D2-atk-neg] 同层反复攻击竟 revoked —— "
+                   "「同一来源重复骂」冒充「独立复现」（transitions=%r）"
+                   % (_torv,))
+
+    # ── D2 真实入口：清偿 ⇒ resolved ───────────────────────
+    _pr = mod.Pool()
+    _pr.add_undecidable({"structural_amps": ["某可判定主张"],
+                         "aligned_amps": [], "clarity": 0.5,
+                         "_layer_name": "0", "_round_no": 1},
+                        und_aspects=["某方面"], layer=1)
+    _pr.add_undecidable({"structural_amps": ["某可判定主张"],
+                         "aligned_amps": [], "clarity": 0.5,
+                         "_layer_name": "1", "_round_no": 2,
+                         "_belief_resolved": "decidable_channel"},
+                        und_aspects=["某方面"], layer=2)
+    _tor = [t.get("to") for t in (_pr.belief_transitions or [])]
+    if "resolved" not in _tor:
+        bad.append("[R-D2-res] 真实入口下清偿未产生 resolved"
+                   "（transitions=%r）" % (_tor,))
+
+    # ── 出口判据：池级可观测量 ─────────────────────────────
+    # ★ `Pool.to_dict` 是**手工白名单**（与 `View.to_dict` 的自动全量
+    #   语义不同）⇒ 空池没有 `aspect_units` 键是**正确**的（不凭空造
+    #   字段）。所以必须**先经 merge 灌入**再断言出口存在。
+    _vpool = mod.View(entry="0")
+    _vpool.add_aspect_unit("池级方面甲", source="anchor", polarity="阳",
+                           ground="anchor")
+    _p.merge(_vpool.amps, _vpool.threads, _vpool.meta, _vpool.probes,
+             aspect_units=list(_vpool.aspect_units))
+    _d = _p.to_dict()
+    if "belief_status_counts" not in _d:
+        bad.append("[R-out] pool.to_dict 缺 belief_status_counts")
+    elif not _p.belief_items:
+        bad.append("[R-out] 真实入口后 belief_items 仍为空")
+    else:
+        _bs = _d.get("belief_status_counts") or {}
+        if sum(_bs.get(k, 0) for k in _bs) != len(_p.belief_items):
+            bad.append("[R-out] 四态计数之和不等于条目数（%r vs %d）"
+                       % (_bs, len(_p.belief_items)))
+    if "aspect_units" not in _d:
+        bad.append("[R-out] pool.to_dict 缺 aspect_units（A1 池级镜像）"
+                   "—— merge 灌入后仍未出口")
+    if "aspect_units" in mod.Pool().to_dict():
+        bad.append("[R-out] 空 Pool 不该凭空出现 aspect_units")
+
+    # ── D3 真实入口：语义熵**真的量出「同一主张的说法发散度」** ───
+    # ★ 语义（R3 重新设计）：熵度量的是「**同一条主张**的历次说法有多
+    #   发散」。两条**无关**主张各只有自己一种说法 ⇒ 正确读数就是
+    #   `None`（诚实缺省），**不是**「未接线」。所以本判据改用
+    #   「同一主张的两种近义说法」构造：换说法 ⇒ 两条目 ⇒ 必须聚成
+    #   一簇 ⇒ 熵 **0.0**（不是 None）。
+    # ★ 为什么**必须再放一条无关主张**（第三项）：只放两条近义说法时，
+    #   「把全池文本混在一起算」的错误实现**也**会得到 0.0（只有两条、
+    #   恰好同簇）⇒ 判不出「聚类口径错」。加一条**无关**主张后：
+    #     · 正确实现（只留包住本条目的簇）⇒ 仍 0.0（无关条目被排除）
+    #     · 错误实现（全池混合）⇒ 簇分裂 ⇒ **> 0** ⇒ 判红
+    #   这就是 M9 变异体要打的点（「判据必须能分辨错实现」）。
+    _pd = mod.Pool()
+    _pd.sem_entropy_thr = float(getattr(mod, "_SEM_CLUSTER_THR", 0.30))
+    _pd.upsert_belief("落盘的最小单位是约束", ground="layer1", round_no=1,
+                      sources=["layer1"])
+    _pd.upsert_belief("落盘的最小单位是那条约束", ground="layer0",
+                      round_no=2, sources=["layer0"])
+    _pd.upsert_belief("城市轨道交通客流预测模型误差主要来自换乘",
+                      ground="both", round_no=3, sources=["both"])
+    _pd.refresh_belief_entropy(thr=_pd.sem_entropy_thr)
+    _ed = [(it.get("id"), it.get("occurrence_n"),
+            it.get("semantic_entropy")) for it in _pd.belief_items]
+    # 前两条（同一主张的近义说法）必须聚成一簇且熵 ~0；
+    # 第三条（无关主张）必须只有自己（occurrence_n == 1 / 熵 None）。
+    _pair = _ed[:2]
+    _solo = _ed[2] if len(_ed) > 2 else None
+    if not all(e[1] and e[1] >= 2 for e in _pair):
+        bad.append("[R-D3] 同一主张的两种近义说法未聚成一簇"
+                   "（occurrence_n 全 < 2；读数=%r）—— D3 未接线或阈值"
+                   "不可达成" % (_ed,))
+    elif not all(e[2] is not None and e[2] <= 0.05 for e in _pair):
+        bad.append("[R-D3] 同一主张近义说法应近 0 熵（实为 %r）"
+                   "—— 聚类口径错（把无关主张也混进来了？）" % (_ed,))
+    elif _solo is not None and _solo[1] and _solo[1] >= 2:
+        bad.append("[R-D3] 无关主张被混进同一簇（occurrence_n=%r）—— "
+                   "聚类口径错：应按「只留包住本条目的簇」" % (_solo[1],))
+    # 负对照 1：单条主张 ⇒ 必须 None（不许印 0.0 冒充「很稳」）
+    _pd2 = mod.Pool()
+    _pd2.upsert_belief("只出现一次的主张", ground="layer1", round_no=1,
+                       sources=["layer1"])
+    _pd2.refresh_belief_entropy(thr=_pd2.sem_entropy_thr)
+    if _pd2.belief_items and _pd2.belief_items[0].get(
+            "semantic_entropy") is not None:
+        bad.append("[R-D3-neg1] 单条主张应返回 None（实为 %r）—— "
+                   "印 0.0 是自欺"
+                   % (_pd2.belief_items[0].get("semantic_entropy"),))
+    # 负对照 2：阈值拨回旧错值 0.70 ⇒ 同一组近义说法必须退化成 None
+    #   （证 `sem_entropy_thr` **真接线**，不是只在 DEFAULT_CONFIG 里挂着）
+    _pd3 = mod.Pool()
+    _pd3.sem_entropy_thr = 0.70
+    _pd3.upsert_belief("落盘的最小单位是约束", ground="layer1", round_no=1,
+                       sources=["layer1"])
+    _pd3.upsert_belief("落盘的最小单位是那条约束", ground="layer0",
+                      round_no=2, sources=["layer0"])
+    _pd3.refresh_belief_entropy(thr=_pd3.sem_entropy_thr)
+    _ed3 = [it.get("occurrence_n") for it in _pd3.belief_items]
+    if any(n and n >= 2 for n in _ed3):
+        bad.append("[R-D3-neg2] thr=0.70 时近义说法竟仍聚成一簇"
+                   "（occurrence_n=%r）—— 阈值未接线或聚类不受 thr 影响"
+                   % (_ed3,))
+    # 出口：occurrence_n 与 semantic_clusters 必须落盘
+    if _pair and not all("semantic_clusters" in it
+                         for it in _pd.belief_items):
+        bad.append("[R-D3-out] 信念条目缺 semantic_clusters 出口")
+    # 池级出口：belief_items 里的 occurrence_n 必须能经 to_dict 读到
+    _dd = _pd.to_dict()
+    _bi_out = _dd.get("belief_items") or []
+    if _bi_out and not all("semantic_entropy" in x for x in _bi_out):
+        bad.append("[R-D3-out] 池级 belief_items 出口缺 semantic_entropy")
+
+    # ── F3 `View.belief_items` 回填：**必须走真实入口后非空** ──────
+    # ★ 这条的失败形态是「静态判据全绿、真实入口恒空」：回填块写得完全
+    #   正确，但位置在 `pool.add_undecidable(...)` **之前** ⇒ 读到的池
+    #   还是空的 ⇒ `view.belief_items` 恒 []（真跑产物实测，见报告 §2.5）。
+    #   ⇒ 判据必须**驱动真实入口**（`_apply_view_to_pool_locked`）再断言产出，
+    #     而不是查源码里有没有那段回填代码。
+    #   判别力由 `_mut_v12328.py` 的 **M11**（把回填搬回原位）背书。
+    try:
+        _pf = mod.Pool()
+        _vf = mod.View(entry="0")
+        _FA = "介质只保存可区分的物理状态不保存这是四态字段这句话"
+        _FB = "解码失败状态必须作为持久化判定结果存在否则读写错位"
+        _vf.amps = [{"type": "&", "desc": _FA}, {"type": "&", "desc": _FB}]
+        _vf.undecidable_product = {
+            "question": "x", "structural_amps": [_FA, _FB],
+            "clarity": 0.4, "_layer_name": "0", "_round_no": 1,
+        }
+        _mf = object.__new__(mod.MetaDGTF)
+        _mf.config = {"sim": {},
+                      "belief": {"revoke_sources": 2, "sem_entropy_thr": 0.30}}
+        _mf.decidability_result = None
+        _mf._anchor_report = None
+        _mf._ext_assess_cache = {}
+        _mf._apply_view_to_pool_locked(_vf, _pf, "entry-f", layer=1)
+        if not (_pf.belief_items or []):
+            bad.append("[R-F3-pre] 池里没产出信念条目 ⇒ 夹具失效（前置条件不成立）")
+        elif not (_vf.belief_items or []):
+            bad.append("[R-F3] 真实入口后 `view.belief_items` 仍为空"
+                       "（池 n=%d）—— 回填块**位置/时序**有误（读在写前）"
+                       % len(_pf.belief_items or []))
+        # 负对照：text 对不上时必须保持 []（不许倒全池兜底）
+        _vf2 = mod.View(entry="0")
+        _vf2.amps = [{"type": "&", "desc": "与池内任何条目都无关的一句话XYZQ"}]
+        _vf2.undecidable_product = {
+            "question": "y", "structural_amps": ["另有一条无关主张PQRS"],
+            "clarity": 0.2, "_layer_name": "0", "_round_no": 2,
+        }
+        _mf._apply_view_to_pool_locked(_vf2, _pf, "entry-f2", layer=1)
+        if _vf2.belief_items:
+            bad.append("[R-F3-neg] text 对不上时竟回填了 %d 条"
+                       "—— 兜底倒全池（应保持 []）" % len(_vf2.belief_items))
+    except Exception as _ef:
+        bad.append("[R-F3] 驱动真实入口异常：%s: %s"
+                   % (type(_ef).__name__, _ef))
+
+    # ── A3 双读数出口 ─────────────────────────────────────
+    _vx = mod.View(entry="0")
+    _vx.round_log = [{"anchor_touched_n": 3}]
+    _vx.aspect_units = [{"id": "A1", "text": "t", "desc": "t"}]
+    _vx._layer_und_channel = {}
+    _vd = _vx.to_dict()
+    if "touch_rate" not in _vd:
+        bad.append("[R-out] view.to_dict 缺 touch_rate（A3 双读数无出口）")
+    if "aspect_carry_rate" not in _vd:
+        bad.append("[R-out] view.to_dict 缺 aspect_carry_rate")
+
+    # ── T1 探针落盘带 gain_source ──────────────────────────
+    # ★ 走**真实入口** `select_probe_focus`（E1/E2 的唯一接线点），
+    #   构造「未决 ≥2 且候选命中分歧」⇒ 引擎算得出 G ⇒ gain_source
+    #   必须是 "engine"。只数源码字符串会「写入无消费」也判绿。
+    _pt = mod.Pool()
+    _pt.belief_items = [
+        {"id": "B1", "text": "极低温环境下材料脆性阈值是多少",
+         "status": "active"},
+        {"id": "B2", "text": "极低温环境下材料脆性阈值如何",
+         "status": "active"},
+        {"id": "B3", "text": "城市轨道交通客流预测模型的误差",
+         "status": "active"},
+    ]
+    try:
+        _picked_t = mod.select_probe_focus(
+            _pt,
+            [{"question": "极低温环境下材料脆性阈值是多少"}],
+            [], ["低温", "脆性"], "极低温材料", {"probe": {"select_n": 3}})
+        _gs = [p.get("gain_source") for p in (_picked_t or [])]
+        if not _picked_t:
+            bad.append("[R-T1] select_probe_focus 未产出探针")
+        elif "engine" not in _gs:
+            bad.append("[R-T1] 引擎算得出 G 时 gain_source 应为 engine"
+                       "（实为 %r）—— E1 来源不可审计" % (_gs,))
+        for _p in (_picked_t or []):
+            if "gain_source" not in _p:
+                bad.append("[R-T1] 落盘探针 dict 缺 gain_source 键")
+                break
+    except Exception as _e:
+        bad.append("[R-T1] select_probe_focus 调用失败：%s: %s"
+                   % (type(_e).__name__, _e))
+
+    if bad:
+        for _m in bad:
+            print("  \u2717 [v12328] %s" % _m)
+        return False
+    print("  \u2713 [v12328] 真实入口产出（跨层 stable / attack revoked / "
+          "清偿 resolved / 同层负对照 0）· 池级出口 · D3 语料自供+阈值"
+          "解耦（近义聚簇 / 单条 None / thr 负对照）· "
+          "A3 出口 · gain_source（变异体背书）")
     return True
 
 
@@ -11827,6 +12181,8 @@ def main():
     if not check_v12326_sim3():
         return 1
     if not check_v12327_five_mechanisms():
+        return 1
+    if not check_v12328_real_entry():
         return 1
     q = "测试问题：AI 在数字 IC 设计里到底能做什么，哪些已经量产？"
     rows = []

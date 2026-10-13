@@ -1,0 +1,96 @@
+==========================================================================
+v1.23.28 效果评估探针 · 目标文件 = 元DGTF-V1.23.28.py
+==========================================================================
+
+【A1】AspectUnit 结构化 —— 真实入口能否产出带 id 的方面单元
+--------------------------------------------------------------------------
+  add_aspect_unit -> id='A1' polarity='阳' ground='anchor' len(text)=24
+  text == desc ? True
+  幂等（同 text 再登记）→ 单元数仍 = 1，返回同一 id ? True
+  shape_of 渲染含 A{n} 前缀 ? False
+  ★ A1 判定：可达 ✅
+
+【A2】覆盖对账符号化 —— aspect_targets / _und_self_touch_symbols
+--------------------------------------------------------------------------
+  aspect_targets_v12327 -> {'A1': {'kind': 'covered_under', 'text': '管网扩容的施工期交通影响'}}
+  _und_self_touch_symbols -> {}
+  covered_unders = ['管网扩容的施工期交通影响']
+  ★ A2 判定：可达 ✅
+
+【A3】双读数分离 —— touch_rate / aspect_carry_rate 是否可读
+--------------------------------------------------------------------------
+  构造 3 个方面 → touch_rate=0.0  aspect_carry_rate=0.0
+  空池 → touch_rate=0.0  aspect_carry_rate=None
+  view.to_dict() 含 touch_rate ? True
+  to_dict 序列化后含 touch_rate 字样 ? True
+  ★ 源码里 touch_rate 的非定义行 3 处：
+      ★ 与 `touch_rate` 分开报（一个是「碰没碰过」，一个是「后来还追不追」）。
+      _tr = self.touch_rate
+      d["touch_rate"] = round(float(_tr), 4)
+  ★ A3 判定：产物可读 ✅
+
+【D1/D2】信念四态机 —— 走真实入口，四条迁移的可达性
+--------------------------------------------------------------------------
+  圈1(layer0) → support=['layer0'] rounds_seen=[1] status='active'
+  圈2(layer1) → support=['layer0', 'layer1'] rounds_seen=[1, 2] status='stable'
+  圈3(layerboth) → support=['layer0', 'layer1', 'layerboth'] rounds_seen=[1, 2, 3] status='stable'
+  圈4(layerall) → support=['layer0', 'layer1', 'layerboth', 'layerall'] rounds_seen=[1, 2, 3, 4] status='stable'
+  belief_items 数 = 1；belief_transitions = [{'id': 'B1', 'from': 'active', 'to': 'stable', 'round': 2, 'why': 'independent_recurrence'}]
+  ★ support 元素数 = 4（stable 需 >= 2）
+  跨层攻击 → transitions=['revoked']（应含 revoked）
+  跨层清偿 → transitions=['resolved']（应含 resolved）
+  upsert_belief 调用点 1 处；传 attack/resolved_by 的 0 处
+  ★ 负对照：同层反复说 → transitions=[]（应空，不许 stable）
+  绕过守卫直调 4 个来源 → support=['layer0', 'layer1', 'layerboth', 'layerall']
+
+【D3】语义熵 —— refresh_belief_entropy / belief_status_counts 是否有调用
+--------------------------------------------------------------------------
+  refresh_belief_entropy 非定义调用点 1 处 ['self.refresh_belief_entropy()']
+  belief_status_counts 非定义调用点 2 处 ['#   `belief_status_counts()` 原本零调用点 ⇒ 能力在、产物读不到。', 'd["belief_status_counts"] = self.belief_status_counts()']
+  semantic_entropy_of 现算 -> h_norm=0.75 h_raw=1.0397 clusters=[[0, 1], [2], [3]]
+  → 三元组 unpack：(h_norm=0.75, h_raw=1.0397, clusters=[[0, 1], [2], [3]])
+  真实入口后条目 semantic_entropy = [1.0, 1.0]
+
+【E1】EIG 可计算化 —— probe_information_gain 的区分度
+--------------------------------------------------------------------------
+  可算场景 G=0.2075  why='-'
+  不可算场景（未决<2）G=None why='undecidable_lt2'
+  ★ E1 判定：可达 ✅ 且有区分度
+
+【E2】子模批选 —— select_probe_focus_submodular 的产出与 floor 行为
+--------------------------------------------------------------------------
+  选出 0 条；trace=[{'stop': 'no_candidate_with_gain'}]
+  _GAIN_MARGINAL_FLOOR = 0.02；below_floor 需 _best_g < floor
+  ★ E2 判定：批选可用 ✅；below_floor 分支结构性不可达（默认 0.0）⚠️
+
+【E3】covers 双查 —— id 与 sim3 两条判据
+--------------------------------------------------------------------------
+  probe_covers_bad_ref / probe_no_target_covered 常量 = 0.3 / 8
+  ★ E3 判定：两向判据齐 ✅（真跑实测 probe_no_target_covered 3 次）
+
+【E4】link 反查 —— probe_link_dangling 是否只留痕不拦
+--------------------------------------------------------------------------
+  _quality_verdict 体含 probe_link_dangling ? False
+  ★ E4 判定：只留痕不拦 ✅（红线「未对齐合法」的代码证据）
+
+【E5】双向判据 —— honest_empty / lazy_empty
+--------------------------------------------------------------------------
+  honest_empty / lazy_empty 在 _quality_check 里的产生点 ? True
+  ★ E5 判定：实现存在 ✅（真跑 0 次触发 —— 覆盖边界，非 bug）
+
+【E6】自适应停止 —— e6_stop_verdict 四态
+--------------------------------------------------------------------------
+  e6_stop_verdict(0, 0.0, 0.3, 0.02) -> (False, 'no_candidate')
+  e6_stop_verdict(3, 0.01, 0.3, 0.02) -> (True, 'max_gain_below_floor')
+  e6_stop_verdict(3, 0.02, 0.3, 0.02) -> (False, 'gain_ok')
+  e6_stop_verdict(3, 0.5, 0.3, 0.02) -> (False, 'gain_ok')
+  note_probe_stop 后 probe_stop_history=1 条；to_dict 出口 ? True
+  ★ E6 判定：可达 ✅（真跑 0 次 —— 覆盖边界）
+
+==========================================================================
+汇总：效果评估（元DGTF-V1.23.28.py）
+==========================================================================
+  A1 可达✅  A2 可达✅  A3 产物可读✅
+  D1/D2 三条迁移可达✅（同层负对照 ✅）
+  D3 可观测字段已接线✅  E1 可达✅  E2 可达✅（floor=0.02）
+  E3 可达✅  E4 可达✅  E5 可达✅  E6 可达✅

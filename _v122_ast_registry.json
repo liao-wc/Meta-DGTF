@@ -1,214 +1,10 @@
 {
- "added": 144,
+ "added": 172,
  "baseline": "_baseline_v12177.py",
- "current": "元DGTF-V1.23.19.py",
+ "current": "元DGTF-V1.23.28.py",
  "n_symbols_baseline": 290,
  "n_symbols_current": 433,
  "registry": {
-  "_sat_override": {
-   "phase": "16",
-   "reason": "sat 判定 → 两条计数的唯一实现（四层同等；0 层走 stall）"
-  },
-  "_hist_wquant": {
-   "phase": "15",
-   "reason": "加权分位数（时间衰减）：pairs=[(值,权重)]，as_int=False 用于比率"
-  },
-  "_hist_weight": {
-   "phase": "15",
-   "reason": "时间衰减权重 0.5**(age/半衰期)；半衰期≤0 或 mtime 缺失 → 1.0"
-  },
-  "_hist_decay": {
-   "phase": "15",
-   "reason": "取配置里的半衰期（auto.history_halflife_days，缺省 14）"
-  },
-  "_files": {
-   "phase": "14",
-   "reason": "局部便利函数（在 _auto_history 内）：按 mtime 倒序取最近 N 个文件"
-  },
-  "_put": {
-   "phase": "14",
-   "reason": "局部便利函数（在 _auto_history 内）：把一条记录按题型分桶累加"
-  },
-  "_hist_quant": {
-   "phase": "14",
-   "reason": "分位数（线性插值）：历史读数的 p50/p75"
-  },
-  "_hist_blank": {
-   "phase": "14",
-   "reason": "历史累加器的空模板"
-  },
-  "_hist_add": {
-   "phase": "14",
-   "reason": "把一条历史记录并进累加器（字段缺省一律容忍）"
-  },
-  "_hist_finish": {
-   "phase": "14",
-   "reason": "把累加器收成读数（含每层样本数，供策略判断可信度）"
-  },
-  "_hist_from_packed": {
-   "phase": "14",
-   "reason": "从 packed 抽一条（★ 实际停圈字段是 rounds_run）"
-  },
-  "_hist_from_md": {
-   "phase": "14",
-   "reason": "从产物 md 头部抽一条（只读 8KB；圈数归种子上限）"
-  },
-  "_hist_from_batch": {
-   "phase": "14",
-   "reason": "从跑批 JSON 抽记录（富字段、样本少）"
-  },
-  "_hist_for": {
-   "phase": "14",
-   "reason": "取与本题同题型的那份历史（无同型则退全语料）"
-  },
-  "_rounds_run_line": {
-   "phase": "14",
-   "reason": "产物「实际停圈」一行：rounds_run + rounds_cap"
-  },
-  "_is_mine": {
-   "phase": "13",
-   "reason": "局部便利函数（在 _apply_auto_dispatch 内）：判断该项是否由调度器写入（auto 或显式）"
-  },
-  "_auto_features": {
-   "phase": "13",
-   "reason": "题型特征提取（纯规则）：事实/元/多分句/选择/过程/规模"
-  },
-  "_auto_history": {
-   "phase": "13",
-   "reason": "历史读数：扫最近 N 份 packed，抽成本/截断率/停圈/联网/取向错配"
-  },
-  "_normalize_orientation": {
-   "phase": "13",
-   "reason": "取向归一化唯一实现（合并前有三份，fallback 做成显式参数）"
-  },
-  "_assemble_plan": {
-   "phase": "13",
-   "reason": "唯一装配器：所有调度出口同 schema（清 auto_plan 双形状技术债）"
-  },
-  "_auto_enabled": {
-   "phase": "13",
-   "reason": "调度总开关缺省判定（auto.enabled）"
-  },
-  "_auto_save_dir": {
-   "phase": "13",
-   "reason": "取值：output.save_dir（历史扫描根）"
-  },
-  "_cfg_get_path": {
-   "phase": "13",
-   "reason": "嵌套配置取值"
-  },
-  "_cfg_has_path": {
-   "phase": "13",
-   "reason": "嵌套配置「改过没」（与 DEFAULT_CONFIG 比）"
-  },
-  "_cfg_overridden": {
-   "phase": "13",
-   "reason": "该项的任一配置路径被改过"
-  },
-  "_set_cfg_path": {
-   "phase": "13",
-   "reason": "嵌套配置写值"
-  },
-  "_auto_normalize_explicit": {
-   "phase": "13",
-   "reason": "命令行原值归一（auto/空 = 没给 ⇒ None）"
-  },
-  "_auto_pick_web": {
-   "phase": "13",
-   "reason": "策略·联网"
-  },
-  "_auto_pick_thinking": {
-   "phase": "13",
-   "reason": "策略·思考"
-  },
-  "_auto_pick_effort": {
-   "phase": "13",
-   "reason": "策略·强度"
-  },
-  "_auto_pick_route": {
-   "phase": "13",
-   "reason": "策略·层集合"
-  },
-  "_auto_pick_orientation": {
-   "phase": "13",
-   "reason": "策略·取向路由"
-  },
-  "_auto_pick_mode": {
-   "phase": "13",
-   "reason": "策略·并行模式（规则优先，拿不准交 LLM）"
-  },
-  "_auto_pick_rounds": {
-   "phase": "13",
-   "reason": "策略·圈数（历史停圈 +1）"
-  },
-  "_auto_pick_stop": {
-   "phase": "13",
-   "reason": "策略·停止阈值"
-  },
-  "_auto_pick_web_downgrade": {
-   "phase": "13",
-   "reason": "策略·联网降级阈值与配额"
-  },
-  "_auto_pick_decidability": {
-   "phase": "13",
-   "reason": "策略·是否跑外部可判定性评估"
-  },
-  "_auto_pick_landing": {
-   "phase": "13",
-   "reason": "策略·落地层模板"
-  },
-  "auto_dispatch": {
-   "phase": "13",
-   "reason": "统一调度入口：十二项逐项来源（显式>配置>auto>默认）"
-  },
-  "_apply_auto_dispatch": {
-   "phase": "13",
-   "reason": "把 auto 项写进配置键（只写 auto 来源的项）"
-  },
-  "_auto_dispatch_lines": {
-   "phase": "13",
-   "reason": "产物头部「自动调度·逐项来源」表"
-  },
-  "_web_lane_stats": {
-   "phase": "12",
-   "reason": "联网检索侧读数（纯函数）：条数/编号/环节/tier/失败，供两条通道渲染"
-  },
-  "_anchor_lane_lines": {
-   "phase": "12",
-   "reason": "外部锚点两条通道渲染（文本锚点 / 联网检索），四处共用单一实现"
-  },
-  "_append_self_check_writeback": {
-   "phase": "11",
-   "reason": "自省回写：把高置信自省诊断提升为落地层里的可执行动作"
-  },
-  "_web_auto_for_facts": {
-   "phase": "11",
-   "reason": "事实题自动联网：--web auto 时事实型询问视同 on"
-  },
-  "_appendix_to_file": {
-   "phase": "10",
-   "reason": "附录外置：内联全量 JSON 搬到旁挂 .packed.json，失败回退内联并留痕"
-  },
-  "_with_form_declaration": {
-   "phase": "10",
-   "reason": "落地层形态声明：写明本次用哪套模板与依据"
-  },
-  "_has_decision_context": {
-   "phase": "9",
-   "reason": "取向分流守卫：题面有无决策语境（决定 decision 模板适不适用）"
-  },
-  "_dedup_suspensions_for_render": {
-   "phase": "8",
-   "reason": "渲染层归一：同 target 的悬置只渲染一条 + 合并条数留痕"
-  },
-  "_stop_kind_summary": {
-   "phase": "8",
-   "reason": "各层 stop_reason 归纳成一行「自然 n / 被截断 m」，接在产物头部"
-  },
-  "_susp_key": {
-   "phase": "8",
-   "reason": "悬置归并键：target 首个分句（「；」前），短串退回全长"
-  },
   "AnchorRetriever": {
    "phase": "4",
    "reason": "五档里的真检索后端（snapshot 零调用 / tavily + 缓存）"
@@ -241,9 +37,25 @@
    "phase": "4",
    "reason": "tier 门的唯一判据：tier ≤ tier_floor 才进引用表"
   },
+  "_anchor_lane_lines": {
+   "phase": "12",
+   "reason": "外部锚点两条通道渲染（文本锚点 / 联网检索），四处共用单一实现"
+  },
   "_anchor_tier": {
    "phase": "4",
    "reason": "as_evidence 五档归一（含 v1.21.75 布尔兼容）"
+  },
+  "_append_self_check_writeback": {
+   "phase": "11",
+   "reason": "自省回写：把高置信自省诊断提升为落地层里的可执行动作"
+  },
+  "_appendix_to_file": {
+   "phase": "10",
+   "reason": "附录外置：内联全量 JSON 搬到旁挂 .packed.json，失败回退内联并留痕"
+  },
+  "_apply_auto_dispatch": {
+   "phase": "13",
+   "reason": "把 auto 项写进配置键（只写 auto 来源的项）"
   },
   "_apply_runtime": {
    "phase": "v1234",
@@ -253,6 +65,90 @@
    "phase": "v1234",
    "reason": "★ 交互询问三项总控（回车=auto）；返回 dict，**不改 cfg**"
   },
+  "_assemble_plan": {
+   "phase": "13",
+   "reason": "唯一装配器：所有调度出口同 schema（清 auto_plan 双形状技术债）"
+  },
+  "_auto_dispatch_lines": {
+   "phase": "13",
+   "reason": "产物头部「自动调度·逐项来源」表"
+  },
+  "_auto_enabled": {
+   "phase": "13",
+   "reason": "调度总开关缺省判定（auto.enabled）"
+  },
+  "_auto_features": {
+   "phase": "13",
+   "reason": "题型特征提取（纯规则）：事实/元/多分句/选择/过程/规模"
+  },
+  "_auto_history": {
+   "phase": "13",
+   "reason": "历史读数：扫最近 N 份 packed，抽成本/截断率/停圈/联网/取向错配"
+  },
+  "_auto_normalize_explicit": {
+   "phase": "13",
+   "reason": "命令行原值归一（auto/空 = 没给 ⇒ None）"
+  },
+  "_auto_pick_decidability": {
+   "phase": "13",
+   "reason": "策略·是否跑外部可判定性评估"
+  },
+  "_auto_pick_effort": {
+   "phase": "13",
+   "reason": "策略·强度"
+  },
+  "_auto_pick_landing": {
+   "phase": "13",
+   "reason": "策略·落地层模板"
+  },
+  "_auto_pick_mode": {
+   "phase": "13",
+   "reason": "策略·并行模式（规则优先，拿不准交 LLM）"
+  },
+  "_auto_pick_orientation": {
+   "phase": "13",
+   "reason": "策略·取向路由"
+  },
+  "_auto_pick_rounds": {
+   "phase": "13",
+   "reason": "策略·圈数（历史停圈 +1）"
+  },
+  "_auto_pick_route": {
+   "phase": "13",
+   "reason": "策略·层集合"
+  },
+  "_auto_pick_stop": {
+   "phase": "13",
+   "reason": "策略·停止阈值"
+  },
+  "_auto_pick_thinking": {
+   "phase": "13",
+   "reason": "策略·思考"
+  },
+  "_auto_pick_web": {
+   "phase": "13",
+   "reason": "策略·联网"
+  },
+  "_auto_pick_web_downgrade": {
+   "phase": "13",
+   "reason": "策略·联网降级阈值与配额"
+  },
+  "_auto_save_dir": {
+   "phase": "13",
+   "reason": "取值：output.save_dir（历史扫描根）"
+  },
+  "_bm25_best": {
+   "phase": "v12326-28",
+   "reason": "v1.23.26 稀疏层：单条对语料的最佳 BM25（用于复述检测的旧口径）"
+  },
+  "_bm25_corpus": {
+   "phase": "v12326-28",
+   "reason": "v1.23.26 稀疏层：把一批文本编成 BM25 语料（doc_tfs/dfs/avgdl/N）"
+  },
+  "_bm25_pair": {
+   "phase": "v12326-28",
+   "reason": "v1.23.26 稀疏层：a 与 b 之间的 BM25（只累加双方共有词 ⇒ 无关必 0）"
+  },
   "_cache_path": {
    "phase": "4",
    "reason": "AnchorRetriever 的检索缓存路径（queries 的 sha256）"
@@ -260,6 +156,18 @@
   "_canonical_sub_ids": {
    "phase": "v1233",
    "reason": "★ 子问题 id 按位置重编号成 1..n —— 原实现直接用模型给的 id（0 起/带洞/重复），而下游一律按 1..n 用"
+  },
+  "_cfg_get_path": {
+   "phase": "13",
+   "reason": "嵌套配置取值"
+  },
+  "_cfg_has_path": {
+   "phase": "13",
+   "reason": "嵌套配置「改过没」（与 DEFAULT_CONFIG 比）"
+  },
+  "_cfg_overridden": {
+   "phase": "13",
+   "reason": "该项的任一配置路径被改过"
   },
   "_classify_unsaid": {
    "phase": "1",
@@ -269,6 +177,10 @@
    "phase": "6",
    "reason": "复述圈数的唯一实现（收口两处各一份的旧写法）"
   },
+  "_dedup_suspensions_for_render": {
+   "phase": "8",
+   "reason": "渲染层归一：同 target 的悬置只渲染一条 + 合并条数留痕"
+  },
   "_digest": {
    "phase": "2",
    "reason": "DecidabilityFreeze 的 sha256 摘要"
@@ -276,6 +188,10 @@
   "_duel_arbitration_queries": {
    "phase": "W3",
    "reason": "[W3] 张力 → 「哪个更合理」仲裁问句（只作仲裁材料）"
+  },
+  "_e6_note_stop": {
+   "phase": "v12326-28",
+   "reason": "v1.23.27 E6 记录一条停止信号的内部实现"
   },
   "_endpoint": {
    "phase": "W1",
@@ -297,6 +213,10 @@
    "phase": "v1222",
    "reason": "原 _extract_not_do 的词法版（改名保留，仅作 schema 缺失时的兜底）"
   },
+  "_files": {
+   "phase": "14",
+   "reason": "局部便利函数（在 _auto_history 内）：按 mtime 倒序取最近 N 个文件"
+  },
   "_g": {
    "phase": "1",
    "reason": "`_layer_objective_lines` 内的取视图小闭包（无副作用）"
@@ -317,6 +237,54 @@
    "phase": "3",
    "reason": "行动字段猜测：负责人角色"
   },
+  "_has_decision_context": {
+   "phase": "9",
+   "reason": "取向分流守卫：题面有无决策语境（决定 decision 模板适不适用）"
+  },
+  "_hist_add": {
+   "phase": "14",
+   "reason": "把一条历史记录并进累加器（字段缺省一律容忍）"
+  },
+  "_hist_blank": {
+   "phase": "14",
+   "reason": "历史累加器的空模板"
+  },
+  "_hist_decay": {
+   "phase": "15",
+   "reason": "取配置里的半衰期（auto.history_halflife_days，缺省 14）"
+  },
+  "_hist_finish": {
+   "phase": "14",
+   "reason": "把累加器收成读数（含每层样本数，供策略判断可信度）"
+  },
+  "_hist_for": {
+   "phase": "14",
+   "reason": "取与本题同题型的那份历史（无同型则退全语料）"
+  },
+  "_hist_from_batch": {
+   "phase": "14",
+   "reason": "从跑批 JSON 抽记录（富字段、样本少）"
+  },
+  "_hist_from_md": {
+   "phase": "14",
+   "reason": "从产物 md 头部抽一条（只读 8KB；圈数归种子上限）"
+  },
+  "_hist_from_packed": {
+   "phase": "14",
+   "reason": "从 packed 抽一条（★ 实际停圈字段是 rounds_run）"
+  },
+  "_hist_quant": {
+   "phase": "14",
+   "reason": "分位数（线性插值）：历史读数的 p50/p75"
+  },
+  "_hist_weight": {
+   "phase": "15",
+   "reason": "时间衰减权重 0.5**(age/半衰期)；半衰期≤0 或 mtime 缺失 → 1.0"
+  },
+  "_hist_wquant": {
+   "phase": "15",
+   "reason": "加权分位数（时间衰减）：pairs=[(值,权重)]，as_int=False 用于比率"
+  },
   "_hit_by_answers": {
    "phase": "P2b",
    "reason": "triage 第二条匹配路径：锚点自报 answers（_overlap_coef + _UNTRACED_OVERLAP）"
@@ -333,6 +301,10 @@
    "phase": "W1",
    "reason": "WebSearchGate 读顶层整数键（auto_disable_after_failures）"
   },
+  "_is_mine": {
+   "phase": "13",
+   "reason": "局部便利函数（在 _apply_auto_dispatch 内）：判断该项是否由调度器写入（auto 或显式）"
+  },
   "_is_never_downgrade": {
    "phase": "P2a",
    "reason": "真·自指型不可判定不许降级（锚点无关）"
@@ -340,6 +312,10 @@
   "_is_triage_candidate": {
    "phase": "P2a",
    "reason": "triage 触发条件改挂结构标签（[外] 前缀 ∪ 语义关键词）"
+  },
+  "_jaccard": {
+   "phase": "v12326-28",
+   "reason": "v1.23.26 字面层：Jaccard（对称，不做 min 分母）"
   },
   "_layer_objective_lines": {
    "phase": "1",
@@ -369,6 +345,10 @@
    "phase": "v1233",
    "reason": "★ 把一票的 {id: label} 归一到 1..n（1 起原样 / 0 起整体 +1 / 越界判 None） —— 修「模型给 0 起 id ⇒ 整票错位一格且无声」（受控实验抓到）"
   },
+  "_normalize_orientation": {
+   "phase": "13",
+   "reason": "取向归一化唯一实现（合并前有三份，fallback 做成显式参数）"
+  },
   "_normalize_plan_mode": {
    "phase": "v1235",
    "reason": "pending_fix #1 收口：调度 mode 白名单归一化的唯一实现（A~H 或 serial）。原在三处各写一份。"
@@ -393,9 +373,21 @@
    "phase": "3",
    "reason": "池级留痕汇总：两个落地层模板共用的一份实现"
   },
+  "_put": {
+   "phase": "14",
+   "reason": "局部便利函数（在 _auto_history 内）：把一条记录按题型分桶累加"
+  },
   "_q": {
    "phase": "W1",
    "reason": "WebSearchGate 读配额三层（quota.*）"
+  },
+  "_raw_entropy": {
+   "phase": "v12326-28",
+   "reason": "v1.23.27 E1 未决集合的**原始**语义熵 -Σp·ln p（不归一化）"
+  },
+  "_record_web_hits": {
+   "phase": "v12326-28",
+   "reason": "web_search 命中记录（W# 编号与配额）"
   },
   "_render_landing_boundary": {
    "phase": "3",
@@ -429,6 +421,10 @@
    "phase": "W2",
    "reason": "拆解前的联网准备（decompose + precedent），返回可注入摘要"
   },
+  "_rounds_run_line": {
+   "phase": "14",
+   "reason": "产物「实际停圈」一行：rounds_run + rounds_cap"
+  },
   "_runtime_snapshot": {
    "phase": "v1234",
    "reason": "本跑实际生效的三项读数（写进产物 `_runtime`，供复盘）"
@@ -441,9 +437,37 @@
    "phase": "v1234",
    "reason": "本跑思考是否开（看 default；stages 由总控同步过）"
   },
+  "_sat_override": {
+   "phase": "16",
+   "reason": "sat 判定 → 两条计数的唯一实现（四层同等；0 层走 stall）"
+  },
+  "_scan": {
+   "phase": "v12326-28",
+   "reason": "锚点目录扫描的内部实现（白名单扩展名）"
+  },
+  "_set_cfg_path": {
+   "phase": "13",
+   "reason": "嵌套配置写值"
+  },
+  "_sim3": {
+   "phase": "v12326-28",
+   "reason": "v1.23.26 三级相似度（结构 ⊃ 字面 ⊃ 稀疏），语料不足自动降级"
+  },
+  "_sim3_pair": {
+   "phase": "v12326-28",
+   "reason": "v1.23.26 `_sim3` 的 (分, detail) 包装，供留痕"
+  },
   "_single_vote_stability": {
    "phase": "v1222",
    "reason": "单票路径的 stability 口径（弃权=abstained，与多票同层级但不同尺子）"
+  },
+  "_stop_kind_summary": {
+   "phase": "8",
+   "reason": "各层 stop_reason 归纳成一行「自然 n / 被截断 m」，接在产物头部"
+  },
+  "_susp_key": {
+   "phase": "8",
+   "reason": "悬置归并键：target 首个分句（「；」前），短串退回全长"
   },
   "_tavily": {
    "phase": "4",
@@ -461,9 +485,25 @@
    "phase": "v1232",
    "reason": "★ 分诊降级建议清单（**纯函数**，从 _anchor_crosscheck 抽出）——让「能力存在性」可构造性验证，不必靠 n=3 采样"
   },
+  "_und_self_touch_symbols": {
+   "phase": "v12326-28",
+   "reason": "v1.23.27 A2 给「后来被谁按 id 引用」建凭据（符号对账）"
+  },
+  "_und_self_touch_texts": {
+   "phase": "v12326-28",
+   "reason": "v1.23.27 A2 上一条的文本口径镜像（历史 packed 兼容）"
+  },
   "_und_text": {
    "phase": "3",
    "reason": "取不可判定结论文本（不做什么可能落在这一侧）"
+  },
+  "_vp_preview": {
+   "phase": "v12326-28",
+   "reason": "View 预览渲染（调试用）"
+  },
+  "_web_auto_for_facts": {
+   "phase": "11",
+   "reason": "事实题自动联网：--web auto 时事实型询问视同 on"
   },
   "_web_cfg_of": {
    "phase": "v1232",
@@ -493,6 +533,10 @@
    "phase": "W2",
    "reason": "research_evidence 接入点：提案应用前先做一次外部检索"
   },
+  "_web_lane_stats": {
+   "phase": "12",
+   "reason": "联网检索侧读数（纯函数）：条数/编号/环节/tier/失败，供两条通道渲染"
+  },
   "_web_meta_clean_check": {
    "phase": "W3",
    "reason": "[W3] 元层缺失区间核对：入 pool.web_clean_check + [W-CHK] 留痕"
@@ -517,13 +561,41 @@
    "phase": "v1231",
    "reason": "★纯函数：tier **提案**（待审）。不改入参、不写盘、不进判定路径；同时接受完整 config 与 web_search 子段"
   },
+  "_with_form_declaration": {
+   "phase": "10",
+   "reason": "落地层形态声明：写明本次用哪套模板与依据"
+  },
   "_write_tri_stability": {
    "phase": "v1222",
    "reason": "给每条 sub 写 stability + _vote_mode；必须在**每个出口前**调（单票有 5 处早退）"
   },
+  "add_aspect_unit": {
+   "phase": "v12326-28",
+   "reason": "v1.23.27 A1 `View.add_aspect_unit()`（幂等登记 + 编号 A{n}）"
+  },
   "allow": {
    "phase": "W1",
    "reason": "WebSearchGate 的唯一准入判据：授权 + 三层配额 + 降级，三个否定方向均可读"
+  },
+  "aspect_carry_rate": {
+   "phase": "v12326-28",
+   "reason": "v1.23.27 A3 双读数之二：延续读数（后来还追不追）；property"
+  },
+  "aspect_targets_v12327": {
+   "phase": "v12326-28",
+   "reason": "v1.23.27 A2 覆盖对账符号化：收敛 amp#N/th#N/probe#N/A{N} 四种编号"
+  },
+  "auto_dispatch": {
+   "phase": "13",
+   "reason": "统一调度入口：十二项逐项来源（显式>配置>auto>默认）"
+  },
+  "belief_status_counts": {
+   "phase": "v12326-28",
+   "reason": "v1.23.27 D1 四态计数（可观测量出口）"
+  },
+  "belief_transition": {
+   "phase": "v12326-28",
+   "reason": "v1.23.27 D2 迁移规则**纯函数**：resolved > revoked > stable > 保持"
   },
   "build_web_search": {
    "phase": "W1",
@@ -537,6 +609,10 @@
    "phase": "v1231",
    "reason": "WebSearchCache：把新域名并进 cache/websearch/_domains.json"
   },
+  "e6_stop_verdict": {
+   "phase": "v12326-28",
+   "reason": "v1.23.27 E6 纯函数：由 seen/max_gain/min_gain/stop_floor 判停"
+  },
   "freeze": {
    "phase": "2",
    "reason": "DecidabilityFreeze.freeze：写冻结键 → 再算签名"
@@ -549,6 +625,14 @@
    "phase": "W1",
    "reason": "WebSearchCache 的 sha256(backend:query) 前 24 位"
   },
+  "make_aspect_unit": {
+   "phase": "v12326-28",
+   "reason": "v1.23.27 A1 AspectUnit 的**单一构造点**（双写 desc/text）"
+  },
+  "make_belief_item": {
+   "phase": "v12326-28",
+   "reason": "v1.23.27 D1 BeliefItem 的**单一构造点**（四态 + 熵默认 None）"
+  },
   "note_call": {
    "phase": "W1",
    "reason": "WebSearchGate 记一次调用（三层计数同时 +1）"
@@ -556,6 +640,10 @@
   "note_failure": {
    "phase": "W1",
    "reason": "WebSearchGate 记一次失败；★ 达阈值时**显式置 disabled**（修正 B3）"
+  },
+  "note_probe_stop": {
+   "phase": "v12326-28",
+   "reason": "v1.23.27 E6 停止信号留痕（只留痕，不拦不改行为）"
   },
   "note_success": {
    "phase": "W1",
@@ -565,17 +653,41 @@
    "phase": "W1",
    "reason": "WebSearchCache 的落盘路径 cache/websearch/<key>.json"
   },
+  "probe_information_gain": {
+   "phase": "v12326-28",
+   "reason": "v1.23.27 E1 EIG 可计算化：G = (h_before-h_after)/h_before"
+  },
   "put": {
    "phase": "W1",
    "reason": "WebSearchCache 写缓存（写失败只告警，不影响本次结果）"
+  },
+  "refresh_belief_entropy": {
+   "phase": "v12326-28",
+   "reason": "v1.23.28 D3 刷新所有条目的 semantic_entropy（唯一调用点）"
   },
   "search": {
    "phase": "4",
    "reason": "AnchorRetriever.search：缓存 TTL + 后端分发"
   },
+  "select_probe_focus_submodular": {
+   "phase": "v12326-28",
+   "reason": "v1.23.27 E2 子模贪心批选（宁少勿滥，G < floor 停手）"
+  },
+  "semantic_entropy_of": {
+   "phase": "v12326-28",
+   "reason": "v1.23.27 D3 语义熵：单链聚类到簇代表，n<2 返回 None"
+  },
   "summary": {
    "phase": "W1",
    "reason": "WebSearchGate 的状态快照（含 disable_reason，供产物留痕）"
+  },
+  "touch_rate": {
+   "phase": "v12326-28",
+   "reason": "v1.23.27 A3 双读数之一：能力读数（碰没碰过）；property"
+  },
+  "upsert_belief": {
+   "phase": "v12326-28",
+   "reason": "v1.23.28 D1/D2 信念条目登记 + 四态迁移（登记与去重解耦）"
   },
   "verify": {
    "phase": "2",

@@ -12,6 +12,191 @@
 
 ---
 
+v1.23.28 相对 v1.23.27
+
+【要解决的问题】v1.23.27 交付后做了一次**收尾核查**：把九项新机制**逐个走
+真实入口**（不是调纯函数），量「能力是否真的落地」。结论是**三项不合格** ——
+纯函数判据全绿，真实入口却拿不到产出。本版围绕「接线」而非「算法」修，
+外加全仓库复审抓到的三类问题。
+
+【★ 核心教训】**纯函数判据全绿 ≠ 该能力在引擎里可达**。
+  v1.23.27 的 D1/D2 判据全是 `mod.belief_transition(...)` 直接喂构造入参 ——
+  完美通过；而真实入口下 `upsert_belief` 被嵌在「结构名是**新的**」守卫里
+  ⇒ 复现被 `_DUP_SIM` 挡掉 ⇒ `support` 恒 1 元素 ⇒ `stable` 永不成立。
+  新能力从此必须配一条「**真实入口产出**」判据（`check_v12328_real_entry`）。
+
+【三项「效果不如原版」的重新设计】
+  ① A3 双读数**死字段** → 补出口。
+     `touch_rate` / `aspect_carry_rate` 是 `View` 级 property，而
+     `View.to_dict = asdict(self)` **不收集 property** ⇒ 值算出来了、
+     产物里读不到。改：`View.to_dict` 显式补两个键（`asdict` 之外）。
+  ② D1/D2 **三条迁移不可达** → 登记与去重解耦。
+     · `upsert_belief` 移出「新条目」守卫 ⇒ 每圈都登记（复现是 D2 前提）；
+     · `sources` 用**层名**（0/1/both/all）而非圈号 —— 同一主张被不同层
+       独立提炼才算「独立复现」，用圈号会让「同一层反复说」冒充独立；
+     · `attack` / `resolved_by` 元数据在注入点统一补（`_belief_attack` /
+       `_belief_resolved`）⇒ 两条驱动从 0 处传参变为真的传。
+  ③ D3 可观测字段**未接线** → `add_undecidable` 出口前刷新一次
+     （唯一调用点）⇒ 产物 `semantic_entropy` 从恒 `null` 变为有值。
+
+【D2 `revoked` 规则**重新设计**（对称化）】
+  改前：`if _atk and len(_atk) >= len(_sup): return "revoked"`。
+  ★ 真实入口下 `_sup` 每圈恒 +1（每层一个来源）、`_atk` 每圈至多 +1
+    ⇒ 该条件**只在「每圈都攻击」时成立** —— 「攻击面 ≥ 支持面」实际
+    退化成「攻击从未缺席」。v1.23.27 因登记被守卫吞掉（条目恒 0 个）
+    从未暴露；修好登记后立刻变成「只要一直被骂就推翻」。
+  改后：**与 `stable` 用同一把尺子** —— 攻击也要跨 ≥2 个**不同来源**、
+    跨 ≥2 圈独立复现才判 `revoked`（`_BELIEF_REVOKE_SOURCES = 2`）。
+    新增 `attack_sources` 字段（与 `support` 对称），缺省回落 `sources`。
+  ★ 为什么更符合整体机制：DGTF 的核心是「对撞」——对撞的判据从来不是
+    「谁说得次数多」，而是「谁经得起独立复现」。支持方如此，反对方亦然。
+
+【全仓库复审抓到的三类问题】
+  ① **E1 增益透传真 bug**（`_gains` 键取错字段）。
+     `{str(x.get("text","")): x.get("g") for x in trace if x.get("picked")}`
+     —— trace 条目的键是 **`"picked"`**（值是文本），**没有 `"text"` 键**
+     ⇒ 键恒为 `""` ⇒ 后续查找**恒 miss** ⇒ `expected_gain_engine` 恒
+     `None`、`gain_source` 恒 `"model"`。E1 算出来的 G **从未到达输出**。
+     改：`x.get("picked")`。这也**收口了 v1.23.27 的已知待办**
+     （「探针 gain_source 标记未落盘」）。
+  ② **`_GAIN_MARGINAL_FLOOR = 0.0` 让守卫恒假**。
+     `G ∈ [0,1]` + `if _best_g < _fl:` ⇒ **永不成立** ⇒ `below_floor`
+     结构性不可达（「宁少勿滥」的核心分支从没跑过）。改：`0.02`。
+  ③ **A1 `A{n}` 两套编号不同物 + `untouched` 从不带 id**。
+     `aspect_units['A1']` = 锚点触及第 1 条 vs `aspect_targets['A1']` =
+     `covered_unders` 第 1 条 —— 两套表同号不同物；且 `untouched` 写入
+     只有 `{"desc":...}` ⇒ 渲染前缀**永远印不出**。改：`untouched` /
+     `anchor_touched` 写入带 `id`，`aspect_targets_v12327` 按
+     `aspect_units` 的实际 id 对齐。
+
+【新增/更新判据（`smoke_test.py`）】
+  · `check_v12328_real_entry()`：走 `Pool.add_undecidable`（引擎唯一写
+    入口）数圈，断言 `belief_transitions` 真的含 `stable` / `revoked` /
+    `resolved` 三种迁移 + **同层负对照必须为 0**（stable 与 revoked 各一条）。
+  · A1 补「`untouched` 带 id 且 ∈ `aspect_units`」；A3 补「`to_dict` 出口」；
+    E2 补「`floor > 0` 且 G=0 候选被 `below_floor` 挡下」。
+  · D2 纯函数判据**随实现更新**：`attack>support` → 「跨 ≥2 来源 + 同
+    来源负对照」。
+  · `Pool.to_dict` 出口 `belief_status_counts` / `aspect_units`
+    （两个 A1/D1 池级镜像）。
+
+【配置】`dgtf_config.yaml` 头部版本 → v1.23.28，升版段追加；`DEFAULT_CONFIG`
+  新增 `belief.revoke_sources=2`（值 = 引擎默认 ⇒ 出厂即默认）。
+
+【★ 真跑核对产物后的第二轮修复：D3 语义熵三次迭代 + 一个死字段】
+  交付前把真跑产物（`outputs/20261013_144044_*.packed.json`）**逐字段
+  核对**新落盘项，抓到的**都不是**「字段缺失」，而是「**字段有值但读数
+  无信息量**」—— 比缺字段更隐蔽。
+
+  ① **D3 `semantic_entropy` 出厂版实测 6/6 恒 `h_norm = 1.0`**。
+     读数**零信息量**。三轮定位与重设计：
+     · 第 1 轮（出厂）：`_txt = [本条目text] + 全池 structural_amps`
+       —— 任何条目都摊上一批**其他主张**的文本 ⇒ 簇必然全异
+       ⇒ 恒为上界。**推倒**。
+     · 第 2 轮：改为按条目自身 `occurrences`（逐字重复才累加）——
+       直测发现 `upsert_belief` 按**精确文本**认领 ⇒ 换说法 = 新条目
+       ⇒ **无论怎么走都得到 `None`**。仍无信息量（换了个方向）。
+     · 第 3 轮（定稿）：熵度量的是「**同一条主张**的历次说法有多发散」
+       ⇒ 分组必须用 `_sim3` 聚类，**只取包住本条目的那个簇**；
+       候选集 = 本条 `occurrences` + 池内其他条目 `text`（它们可能是
+       同一主张的另一种说法）。簇内出现数 < 2 ⇒ `None`（诚实缺省）、
+       ≥2 且全同簇 ⇒ `0.0`（说法收敛）、分裂 ⇒ `> 0`（说法发散）。
+      新增 `occurrence_n` / `occurrences` 两个可观测出口。
+  ② **根因：`_sim3` 是字符二元组 Jaccard，0.70 只有近乎逐字才够得着。**
+     实测「同主张 0.41~0.79 / 不同主张 0.00」两组**完全可分**，而阈值
+     沿用了 `sim.cluster = 0.70`（那是 **E2 探针批选**的口径，不是
+     同一件事）⇒ 簇恒单元素 ⇒ 熵恒 `None`。
+     新增配置键 **`belief.sem_entropy_thr`（默认 0.30）**，与
+     `sim.cluster` **解耦**；`Pool.sem_entropy_thr` 字段 + 出口
+     （键名 == 字段名，前向守卫要求）；`MetaDGTF.__init__` 下发。
+  ③ **`View.belief_items`：声明了、也出口了、但从不被赋值** 的死字段
+     （`View.to_dict = asdict(self)` ⇒ 该键恒 `[]`）。与 v1.23.27 的
+     `touch_rate` / `belief_transitions` 同型。改：在
+     `_apply_view_to_pool_locked` 里回填本轮相关条目（按 text 精确命中，
+     命中不到保持 `[]` —— 不猜、不兜底）。
+     ★ **第二遍真跑又抓到：回填位置错了（时序颠倒）。** 首次修法把回填
+       放在 `pool.merge(...)` 之后，而信念条目是在**更靠后的
+       `pool.add_undecidable(...)`** 里才 upsert 进池的 ⇒ 回填读到的池
+       还是空的 ⇒ `view.belief_items` **恒 `[]`**（产物实证：`pools.1` 有
+       6 条、`views.1.amps[0].desc` 与 `belief_items[0].text` 逐字相同，
+       而 `views.1.belief_items` 仍是 0 条 —— 不是键对不上，是**读在写前**）。
+       修：回填块**整块搬移**到 `add_undecidable` 之后（只改执行时点）。
+       ★ 验证三件套：构造性证明（真实入口 `view n=0 → n=2`）+ 负对照
+       （text 对不上仍 `[]`）+ **变异体 M11**（搬回原位必须判红）。
+       ★ M11 走 `_run_case_via_import(变异文本)`，**不碰主文件**。
+  ④ **已核实「不是缺陷」的一项（避免误修）**：`Pool.to_dict` 的
+     `belief_transitions` 出口**存在**；真跑产物里键缺席是因为该次 6 条
+     全 `active`、无迁移，被 `if self.belief_transitions:` **正确**抑制 ——
+     这是设计行为。
+
+【判据随实现更新（不是放宽阈值）】
+  · `check_v12328_real_entry` 的 D3 判据**换形态**：原判据「真实入口后
+    `semantic_entropy` 非 None」隐含 R1 版语义（两条**不同**主张 ⇒ 有值），
+    R3 重设计后两条无关主张各只有一种说法 ⇒ 正确读数就是 `None` ⇒
+    旧判据**过时**（不是真回归）。改为构造性证明 + 两条负对照：
+      · 正例：同一主张的**两种近义说法** ⇒ 必须聚成一簇 ⇒ 熵 `0.0`；
+      · 负对照 1：单条主张 ⇒ 必须 `None`（不许印 0.0 冒充「很稳」）；
+      · 负对照 2：把池的 `sem_entropy_thr` 拨回 **0.70** ⇒ 同一组近义
+        说法必须退化成 `None`（证阈值**真接线**，不是摆设）。
+  · `_mut_v12328.py` 增至 **11 个变异体**：新增 M9（分组退化成全池混合）、
+    M10（阈值常量拨回 0.70）、M11（F3 回填时序退回），一律打在判据读的
+    那个东西上。
+  · **`_v122_verify.py` 两条过时判据**（`--phase all` FAIL 2 → 0）：
+    · **V3** 的基线是 `_bak_dgtf_config.pre_v1232`，白名单只登了
+      v1.23.16/17 两批；而 **v1.23.18**（`external_anchor.enabled`
+      false→true）与 **v1.23.20**（`output.show_ing` / `show_manifest`
+      true→false）的有意改动**从未登记** ⇒ 一直误报。新增具名常量
+      `_V12318_20_AUTH_KEYS` 并入 `_allow`（**登记**，不是删判据），
+      并补 **V3.a**（白名单内必须放行，防空过）/ **V3.b**（4 个清单外
+      合成样本必须判红，证有牙）。
+    · **`L1.src`** 的锚**曾经是会变的东西**：断言 `_v1230_w6_runs.json`
+      的 `src == 本版`，而那个 10 跑回归批已决定**不重跑**（跨版本差异 ≈
+      同文件重跑差异，重跑只买采样噪声）⇒ 每升一版必红一次。
+      改：新增 `_V1230_W6_AUTH_STALE_SRC = {"元DGTF-V1.23.4.py"}`
+      —— 出自本版 ⇒ 通过；出自**已登记的授权陈旧基线** ⇒ 通过但
+      **显式打印 `⚠️ 陈旧（已授权）`**（★ 不许静默变绿）；未登记版本 ⇒
+      照旧判红。补 **L1.src.a/b** 两条判别力自检。
+
+【配置（第二轮）】`dgtf_config.yaml` 新增 `belief.sem_entropy_thr: 0.30`；
+  升版段追加「五、」小节记录三轮迭代；头部「新增键」计数 1 → 2。
+
+★ v1.23.28 收束摘要
+
+- **交付物**：`元DGTF-V1.23.28.py`（**20146 行** / 975598 bytes / 纯 CRLF，
+  `bareLF=0` / `CRCRLF=0`）
+- **本版共两轮**：第一轮静态审查 + 接线修复；第二轮**真跑产物核对**
+  （推翻并重做 D3、抓到 `View.belief_items` 时序颠倒、修正两条过时判据）
+- **★ 最重要的收获 —— 「走得到」有三种失败形态**（前两种 v1.23.27 已记）：
+  ① 调用点存在但**结构性不可达**；
+  ② 字段有值但**读数零信息量**（本轮新增：D3 恒 1.0 骗过所有纯函数判据）；
+  ③ **时序颠倒** —— 代码全对、接线全在，只是**读在了写之前**（本轮 F3）。
+  ⇒ 通则：新能力必须配「**真实入口产出**」判据；且判据要能区分
+  「**没触发**」与「**坏了**」（否则会把正确行为当缺陷反复"修"）。
+- **改了哪几处**：第一轮 17 + 9 + 1 + 4 项；第二轮 5 项 D3 重设计 +
+  1 项 F3 时序修正（共 6 个补丁脚本）
+- **D3 `semantic_entropy` 三轮迭代**（真跑实测）：
+  R1 恒 **1.0**（上界）→ R2 恒 **None** → R3 **近义 0.0 / 无关 None** ✅
+  · 根因：`_sim3` 是**字符二元组 Jaccard**，`0.70` 只有近乎逐字才够得着
+    ⇒ 新增 `belief.sem_entropy_thr`（默认 **0.30**），与 `sim.cluster` 解耦。
+- **F3 `View.belief_items` 时序修正**：回填块从 `pool.merge(...)` 之后搬到
+  **`pool.add_undecidable(...)` 之后**（条目在那才进池）。
+- **配置同步**：`dgtf_config.yaml` 头部版本 + 升版段「五、六、」两小节 +
+  `belief.sem_entropy_thr: 0.30`（`DEFAULT_CONFIG` 对齐）
+- **验收数字**：
+  · 冒烟 **exit 0 / 0 ✗**
+  · 变异体 **11 通过 / 0 失败**（新增 M9 全池混合 / M10 阈值回退 / M11 时序退回）
+  · `--phase all` **PASS 319 / FAIL 0**（修好 V3、`L1.src` 两条过时判据：
+    313 → 319，含 4 条新判别力自检）
+  · 审计探针 **AUDIT PASS 67 / FAIL 0**；运行期探针 **PASS 26 / FAIL 0**
+  · 配置两向对账 **172 vs 172，`missing=[]` / `extra=[]`**
+  · 真跑（route 0,1）：`revoke_sources=2` / `sem_entropy_thr=0.3` 四池一致；
+    `belief_items` 6 条，`occurrence_n` **4 种取值**（4/1/3/4/4/2）、
+    `semantic_entropy` **有区分**（`0.0` / `None`）—— 对照第一轮的 `6/6 恒 1.0`；
+    `views.1.belief_items` = **4**（真跑探针 `pool_after=5 / view_after=5`）
+- **未做**：三态一致率天花板（标签可定义性边界，不动）；挂账三项维持现状；
+  三条下版候选见报告 §7.1（`_sim3` 阈值相对分位 / `upsert_belief` 语义归并 /
+  `to_dict` 两种语义统一）
+
 v1.23.27 相对 v1.23.26
 
 【要解决的问题】`_设计_五机制算法重构_v12326.md` §3.5/§3.4/§4.2 把

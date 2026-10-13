@@ -154,7 +154,14 @@ ck("T4b 共享 cfg 未被第 1 轮污染（纯函数）", J(_base) == J(D), "")
 # ---------------------------------------------------------- T5 产物留痕
 try:
     _meta = object.__new__(mod.MetaDGTF)
-    _meta.config = _ck["thinking=off"]
+    # ★ [v1.23.28 补] 本夹具只测 `_runtime` 留痕，不该被外部锚点通道牵连。
+    #   但 `external_anchor.enabled` 的出厂默认在 v1.21.x 已由 false 改 true
+    #   ⇒ `_anchor_report_for_pack` 会走到 `_anchor_crosscheck`，而它依赖
+    #   `_anchors` / `_anchor_report` 等一批**由 run() 初始化**的属性，用
+    #   `object.__new__` 绕过后全都没有。这里显式关掉该通道（本探针不测它）。
+    _cfg_t5 = dict(_ck["thinking=off"])
+    _cfg_t5.setdefault("external_anchor", {})["enabled"] = False
+    _meta.config = _cfg_t5
     _meta.llm = type("_LL", (), {"total_calls": 0, "total_tokens": 0})()
     _meta.pools = {}
     _meta.channels = ()
@@ -163,6 +170,12 @@ try:
     _meta._tri_agree = 0
     _meta._tri_total = 0
     _meta._orientation = "auto"
+    # ★ [v1.23.28 补] `_pack_result` 现在会读 `self._anchor_report`
+    #   （`_anchor_report_for_pack`）—— 该属性在 `run()` 里初始化，
+    #   而本夹具用 `object.__new__` 绕过 `__init__`/`run` ⇒ 必须显式补上。
+    #   这是**夹具与引擎不同步**（探针写于 v1.23.4），不是引擎缺陷。
+    _meta._anchor_report = None
+    _meta._ext_assess_cache = {}
     _pack = mod.MetaDGTF._pack_result(
         _meta, "q", ["0"], {}, 1, {})
     ck("T5 ★ `_pack_result` 真的产出 `_runtime` 生效读数",

@@ -47,6 +47,23 @@ _V12316_AUTH_KEYS = {"cost_profile", "spiral.round_window"}
 #   soft_max 3→2），并顺带把出厂 yaml 的 sat 从 1 统一到 2。**清单外照旧判红。**
 _V12317_AUTH_KEYS = {"spiral.soft_max",
                      "spiral.structure_saturation_every_n"}
+# ★ [判据随实现更新 · v1.23.28] 补登记两批**历史有意改动**的配置键。
+#   背景：V3 的基线是 `_bak_dgtf_config.pre_v1232`（v1.23.2 之前）。v1.23.18 与
+#   v1.23.20 各自有意改过出厂默认值，但**从未登记进 `_allow`** ⇒ V3 从那时起
+#   一直把这两批判成「意外改动」（漏红的判据，不是回归）。
+#   归属由 CHANGELOG + yaml 注释双重取证：
+#     · `external_anchor.enabled`: false → true —— v1.23.18（CHANGELOG「外部锚点
+#       默认打开」段；出厂 yaml 注释「v1.23.18 起默认**开**」）
+#     · `output.show_ing` / `output.show_manifest`: true → false —— v1.23.20
+#       （CHANGELOG v1.23.20 段「把这两键改回 false…实际值在某轮调试里留成了 true」）
+#   ★ 只**登记**、不删判据、不放宽阈值：清单外的一律照旧判红。
+_V12318_20_AUTH_KEYS = {"external_anchor.enabled",
+                        "output.show_ing",
+                        "output.show_manifest"}
+#: [判据随实现更新 · v1.23.28] `_v1230_w6_runs.json` 的**授权陈旧基线**。
+#  ★ 这是「时点快照」不是「任意旧版本都行」：只有**此处列出**的 src 才放行，
+#    其余一律照旧判红（判据仍有牙）。加新基线必须**在这行显式登记**。
+_V1230_W6_AUTH_STALE_SRC = {"元DGTF-V1.23.4.py"}
 
 
 def _auth_removed(gone_list):
@@ -2097,9 +2114,39 @@ def phase_v123_w6(src, mod):
     if _jf.is_file():
         _d = _json.loads(_jf.read_text(encoding="utf-8"))
         _want = Path(src).name
-        check("L1.src ★ 跑批产物出自本版（不是旧版的陈旧读数）",
-              _d.get("src") == _want,
-              "跑批 src=%r，本版=%r" % (_d.get("src"), _want))
+        _got = _d.get("src")
+        # ★ [判据随实现更新 · v1.23.28] `L1.src` 的锚**曾经是会变的东西**：
+        #   `_v1230_w6_runs.json` 的 `src` 永远停在 v1.23.4（10 跑回归批 554 calls
+        #   / 7031s，已决定不重跑：本引擎「逐字一致不可达 ⇒ 跨版本差异 ≈
+        #   同文件重跑差异」，重跑只买采样噪声）。⇒ 每升一版这条就红一次，
+        #   红的是「版本号变了」这件必然发生的事，不是回归。
+        #   红线「锚不能是会变的东西 / 会缩小的集合冻结成时点快照」⇒ 改成：
+        #     ① 产物**出自本版** → 通过（最强）；
+        #     ② 否则必须是**已登记的授权陈旧基线** → 通过但**显式标注陈旧**；
+        #     ③ 未登记的第三方版本 → 照旧判红。
+        #   ★ 判据没被删、没被放宽：把「红」换成了「登记过的红 + 可见标注」。
+        _stale_auth = _got in _V1230_W6_AUTH_STALE_SRC
+        check("L1.src ★ 跑批产物出自本版（或出自**已登记的授权陈旧基线**）",
+              _got == _want or _stale_auth,
+              "跑批 src=%r，本版=%r，授权陈旧基线=%r"
+              % (_got, _want, sorted(_V1230_W6_AUTH_STALE_SRC)))
+        if _got != _want and _stale_auth:
+            # ★ 不许静默变绿：显式打印，让读日志的人一定看得到。
+            print("  ⚠️  [L1.src] 跑批读数**陈旧（已授权）**：src=%s ≠ 本版 %s。"
+                  % (_got, _want))
+            print("      依据：10 跑回归批 554 calls / 7031s 未重跑（成本决策，"
+                  "见 memory/2026-10-09.md「遗留」）；")
+            print("      本判据仍会抓住「换成一个**没登记过**的版本」⇒ 不是空过。")
+        # ★ 判别力自检：授权集合**不是空集**（若空 ⇒ 上面那条退化成「必须出自
+        #   本版」，会把已授权陈旧基线误判成回归）；且**未登记版本必须判红**。
+        check("L1.src.a 授权陈旧基线非空（防空过）",
+              bool(_V1230_W6_AUTH_STALE_SRC),
+              "空集 ⇒ 陈旧基线会被误判成回归")
+        _probe_bad = "元DGTF-V9.9.9.py"
+        check("L1.src.b 判别力：未登记的 src 必须**判红**",
+              _probe_bad not in _V1230_W6_AUTH_STALE_SRC
+              and _probe_bad != _want,
+              "未登记版本被放行 ⇒ 判据无牙")
         _runs = [r for r in (_d.get("runs") or []) if r.get("ok")]
         check("L1.n 跑数 ≥ 9（3 题 × (1 OFF + 2 ON)）", len(_runs) >= 9,
               "成功跑 %d 条" % len(_runs))
@@ -2200,10 +2247,24 @@ def phase_v1232(src, mod):
     _chg = sorted(k for k in set(_fo) | set(_fn) if _fo.get(k) != _fn.get(k))
     _allow = ({"api.thinking.stages." + k for k in _wired}
               | {"web_search.tier_floor"} | _V12316_AUTH_KEYS
-              | _V12317_AUTH_KEYS)
+              | _V12317_AUTH_KEYS | _V12318_20_AUTH_KEYS)
     _unexpected = [k for k in _chg if k not in _allow]
     check("V3 ★ 两版配置的差异**只允许**是「改前从未生效」的两类（thinking 接线 / tier_floor）",
           not _unexpected, "意外改动：" + repr(_unexpected[:5]))
+    # ---- V3 自带判别力自检（★ 红线：审计必须带变异体，否则「全绿」只说明没跑）
+    #  ★ 这里用**合成差异集**直接驱动 `_allow` 成员判定，不依赖被测文件 ——
+    #    因为「清单外必须判红」这件事只由 `_allow` 决定，与被测版本无关。
+    _syn_ok = (not [k for k in ["api.thinking.stages.decide_parallel_mode",
+                                "web_search.tier_floor",
+                                "spiral.soft_max",
+                                "external_anchor.enabled"] if k not in _allow])
+    check("V3.a 判别力：白名单内的差异必须被**放行**（防空过）", _syn_ok,
+          "白名单漏项 ⇒ V3 会空过")
+    _syn_bad = [k for k in ["output.show_view", "spiral.hard_max",
+                            "external_anchor.tier_floor", "nope.key"]
+                if k not in _allow]
+    check("V3.b 判别力：清单外的差异必须**判红**（4 个合成样本全带牙）",
+          len(_syn_bad) == 4, "未判红：" + repr(_syn_bad))
     _kw = [k for k in _chg if k.startswith("api.thinking.stages.")]
     _sv = {k: _ns.get(k.split(".")[-1]) for k in _kw}
     check("V4 yaml 里被改的 stage 一律 == thinking.default（与注释「关」一致）",

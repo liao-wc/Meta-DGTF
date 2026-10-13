@@ -1,36 +1,37 @@
 # 机制审计 v122
 
-- 生成时间：2026-10-09T23:06:40
+- 生成时间：2026-10-13T16:00:03
 - 被测源码：`元DGTF-V1.22.0-rc1.py`
-- 语料：日志 434 份 / 产物 344 份
+- 语料：日志 487 份 / 产物 368 份
 - 合计：可达 13 · 仅源码 0 · 需核对 0（共 13 项）
 
 ★ 「零触发」不等于「没用」。verdict 只要不是 `需核对`，都说明机制在源码里存在、只是本批产物没走到那条分支 —— 要区分「条件不可达」「条件窄但成立」「机制压根没工作」需要**负对照**，那张表在 `docs/机制审计-v122.md` 的 `## pending_fix` 里。
 
 | 机制 | 触发条件 | 日志标记 | 产物标记 | 源码 | 日志 | 产物 | 判定 |
 |---|---|---|---|---|---|---|---|
-| `escalate_starve_rounds` | 连续 N 圈无进展 + 名下有账 | `escalate_starve_rounds` | `escalate_starve_rounds` | 7 | 19 | 0 | 可达 |
-| `no_push_when_idle` | 空转类判据 + 未深入方向 | `no_push_when_idle` | `no_push_when_idle` | 4 | 19 | 0 | 可达 |
-| `_reopen_closed_debt` | 分类被推翻 + 曾有 escalated | `_reopen_closed_debt` | `_reopen_closed_debt` | 10 | 19 | 0 | 可达 |
+| `escalate_starve_rounds` | 连续 N 圈无进展 + 名下有账 | `escalate_starve_rounds` | `escalate_starve_rounds` | 7 | 20 | 0 | 可达 |
+| `no_push_when_idle` | 空转类判据 + 未深入方向 | `no_push_when_idle` | `no_push_when_idle` | 4 | 20 | 0 | 可达 |
+| `_reopen_closed_debt` | 分类被推翻 + 曾有 escalated | `_reopen_closed_debt` | `_reopen_closed_debt` | 10 | 20 | 0 | 可达 |
 | `stable_layers` | 悬置连续 N 圈同批 | `stable_layers` | `stable_layers` | 17 | 9 | 0 | 可达 |
-| `both_quota.max_ratio` | both 占比超阈值 | `both_quota` | `both_quota` | 3 | 416 | 345 | 可达 |
-| `both_tighten_ratio` | 同上，改判 | `both_tighten_ratio` | `both_tighten_ratio` | 5 | 19 | 0 | 可达 |
-| `_all_settle_streak` | 元层清算未下降 | `_all_settle_streak` | `_all_settle_streak` | 10 | 19 | 0 | 可达 |
-| `min_rounds` | layer_no < min_r | `min_rounds` | `min_rounds` | 54 | 41 | 0 | 可达 |
+| `both_quota.max_ratio` | both 占比超阈值 | `both_quota` | `both_quota` | 3 | 459 | 345 | 可达 |
+| `both_tighten_ratio` | 同上，改判 | `both_tighten_ratio` | `both_tighten_ratio` | 5 | 20 | 0 | 可达 |
+| `_all_settle_streak` | 元层清算未下降 | `_all_settle_streak` | `_all_settle_streak` | 10 | 20 | 0 | 可达 |
+| `min_rounds` | layer_no < min_r | `min_rounds` | `min_rounds` | 54 | 91 | 0 | 可达 |
 | `structure_saturation` | 每 N 圈无新维度 | `structure_saturation` | `structure_saturation` | 14 | 57 | 2 | 可达 |
-| `_budget_exhausted` | 调用数超预算 | `_budget_exhausted` | `_budget_exhausted` | 10 | 15 | 0 | 可达 |
-| `DecidabilityFreeze.verify` | 签名不匹配 | `DecidabilityFreeze` | `freeze` | 0 | 0 | 62 | 可达 |
-| `triage_downgrades` | 信息不足型 und + 锚点命中 | `triage_downgrades` | `triage 降级` | 2 | 23 | 1 | 可达 |
-| `_anchor_crosscheck.conflict` | 结论与锚点相反 | `锚点冲突` | `锚点冲突` | 0 | 23 | 2 | 可达 |
+| `_budget_exhausted` | 调用数超预算 | `_budget_exhausted` | `_budget_exhausted` | 10 | 40 | 0 | 可达 |
+| `DecidabilityFreeze.verify` | 签名不匹配 | `DecidabilityFreeze` | `freeze` | 0 | 1 | 62 | 可达 |
+| `triage_downgrades` | 信息不足型 und + 锚点命中 | `triage_downgrades` | `triage 降级` | 2 | 24 | 1 | 可达 |
+| `_anchor_crosscheck.conflict` | 结论与锚点相反 | `锚点冲突` | `锚点冲突` | 0 | 24 | 2 | 可达 |
 
 ## 语料清单
 
-日志（434）：
+日志（487）：
 - `_all_final.log`
 - `_all_final2.log`
 - `_all_final3.log`
 - `_all_final5.log`
 - `_anchor_matrix_v75.log`
+- `_audit_v12328.log`
 - `_auto_pipeline.log`
 - `_auto_run.log`
 - `_batch_full_tail.log`
@@ -42,32 +43,31 @@
 - `_bench_p1v2.log`
 - `_bench_v1221_full.log`
 - `_bench_v122_full.log`
+- `_cmp_v12325_structcov.log`
 - `_ctrl1.log`
 - `_ctrl2.log`
+- `_diag_f3_trace.log`
 - `_evidence_batch.log`
 - `_final_verify.log`
 - `_final_verify_cfgsync.log`
 - `_g64_control.log`
 - `_ingest_v77.log`
 - `_ingest_v77b.log`
+- `_mut_b.log`
+- `_mut_c.log`
+- `_mut_d.log`
+- `_mut_m9.log`
+- `_mut_v12325.log`
+- `_mut_v12326.log`
+- `_mut_v12328_d3.log`
+- `_mut_v12328_final.log`
+- `_mut_v12328_final2.log`
 - `_p1_run1.log`
 - `_p1_run2.log`
 - `_p1_run3.log`
 - `_p1_runs.log`
-- `_p2_runs.log`
-- `_p2b_run1.log`
-- `_p2b_run2.log`
-- `_p2b_run3.log`
-- `_p2b_runs.log`
-- `_p4_OFF.log`
-- `_p4_ON.log`
-- `_p4_only.log`
-- `_p56_p5.log`
-- `_p56_p6.log`
-- `_p6_after_stdout.log`
-- `_p6_before_stdout.log`
 
-产物（344）：
+产物（368）：
 - `bench\reports\v1221_full.md`
 - `bench\reports\v122_full.md`
 - `bench\runs\mock_p1\biz_001\20261004_223416_一家现金流紧张的中小制造企业该先裁员还.md`
