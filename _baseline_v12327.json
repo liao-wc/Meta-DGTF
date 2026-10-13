@@ -1,0 +1,48 @@
+{
+  "P1_expected_gain": {
+    "prompt_requires_self_report": true,
+    "engine_computes_G": false,
+    "gain_from_llm_field": true
+  },
+  "P2_select_focus": {
+    "exists": true,
+    "has_submodular": false,
+    "has_floor": false,
+    "picked_n_irrelevant": 1,
+    "picked_n_expected_old": 3
+  },
+  "P3_covers": {
+    "class_found": true,
+    "bad_ref_flagged": true,
+    "bad_ref_flags": [
+      "probe_no_target_covered"
+    ],
+    "has_bad_ref_marker": false,
+    "good_ref_flagged": false
+  },
+  "P4_link": {
+    "has_dangling_marker": false,
+    "only_nonempty_check": true,
+    "reverse_lookup": false
+  },
+  "P5_empty_probe": {
+    "prompt_offers_empty_exit": true,
+    "judge_punishes_empty": true,
+    "judge_is_bidirectional": false,
+    "has_no_probe_reason": false
+  },
+  "P6_engine_G": {
+    "exists": false
+  },
+  "P7_submodular": {
+    "has_marginal_gain": false
+  },
+  "P8_base": {
+    "aspect_unit_concept": false,
+    "belief_item_concept": false,
+    "semantic_entropy": false,
+    "suspension_status": true,
+    "untouched_is_dict_list": true,
+    "untouched_is_str_list": false
+  }
+}

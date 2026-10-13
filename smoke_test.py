@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.26.py"
+SRC = HERE / "元DGTF-V1.23.27.py"
 
 os.environ.setdefault("DGTF_API_KEY", "sk-smoke-test-key")
 
@@ -949,10 +949,18 @@ def check_p0_156_units(src):
     return ok
 
 def check_probe_skip_no_false_flag():
-    """[成本档 ②] 主动跳过探针的圈，不该被误报 probe_return_empty。
+    """[成本档 ②] 主动跳过探针的圈，不该被误报 probe_return_empty；
+    未跳过的圈仍必须**被注意到**（判据不许关死）。
 
     真跑实测：economy 档跳过探针的那几圈里，有 2 圈因为「有 &/线头但
     probes 为空」被凭空报了一条假线索，还会污染 self_check 的输入。
+
+    ★ 判据随实现更新（本项目最高频事故源）：E5 起 `probe_return_empty`
+      不再是终态 —— 空探针被**双向**判成 `honest_empty`（有理由且与
+      untouched 对得上，不罚）/ `lazy_empty`（理由空洞或缺失，留痕）。
+      所以「未跳过」的负对照要断言的是 **「被注意到了」**（留下
+      honest/lazy 之一），**不是**旧标志名。旧断言会把新实现判红 ——
+      那是判据过时，不是实现回归。
     """
     cfg = build_cfg(False)
     cfg["cost_profile"] = "economy"
@@ -968,16 +976,33 @@ def check_probe_skip_no_false_flag():
     if any("probe_return_empty" in str(x) for x in f1):
         print("  ✗ [成本档] 主动跳过探针的圈被误报 probe_return_empty")
         return False
+    if any("honest_empty" in str(x) or "lazy_empty" in str(x) for x in f1):
+        print("  ✗ [成本档] 主动跳过探针的圈不该进空探针双向判据")
+        return False
 
-    # 没跳过 + 有 & + probes 空 → 仍应照报（别把判据关死）
+    # 没跳过 + 有 & + probes 空 + **无理由** → 必须被注意到（lazy_empty）
     v2 = mod.View(entry="0")
     v2.amps = [{"desc": "某条 &", "type": "ontological"}]
     v2.probes = []
     f2 = dg._quality_check(v2, mod.Pool())
-    if not any("probe_return_empty" in str(x) for x in f2):
-        print("  ✗ [成本档] 未跳过探针的圈反而没报 probe_return_empty")
+    if not any("lazy_empty" in str(x) for x in f2):
+        print("  ✗ [成本档] 未跳过探针的圈反而没被注意到"
+              "（既无 probe_return_empty 也无 lazy_empty）")
         return False
-    print("  ✓ [成本档] 跳过探针不误报，未跳过仍照报")
+
+    # ★ 负对照：空探针 **带合格理由且与 untouched 对得上** ⇒ honest_empty（不罚）
+    v3 = mod.View(entry="0")
+    v3.amps = [{"desc": "某条 &", "type": "ontological"}]
+    v3.probes = []
+    v3.untouched = [{"desc": "汛期排水管网承压上限是多少"}]
+    v3.no_probe_reason = "汛期排水管网承压上限是多少，池里没有任何资料可推"
+    f3 = dg._quality_check(v3, mod.Pool())
+    if not any("honest_empty" in str(x) for x in f3):
+        print("  ✗ [成本档] 空探针带合格理由（与 untouched 对得上）"
+              "未被判 honest_empty：%s" % f3)
+        return False
+    print("  ✓ [成本档] 跳过探针不误报，未跳过必被注意到，"
+          "带理由空探针判 honest_empty")
     return True
 
 def check_merge_fallback():
@@ -1625,9 +1650,15 @@ def check_v12320_quiet_output():
         mod.dump_view_fields = _orig_dvf
 
     # ⑤ 两个守卫都读 self.dump_rounds
-    _src = (inspect.getsource(mod.DGTF.dump_round)
-            + inspect.getsource(mod.DGTF.dump_final))
-    if _src.count("self.dump_rounds") != 2:
+    # ★ 取源码失败与「命中次数不对」**分开报**。
+    try:
+        _src = (_src_of(mod.DGTF.dump_round)
+                + _src_of(mod.DGTF.dump_final))
+    except Exception as _e:
+        bad.append("[⑤] 判据未能取到 dump_round/dump_final 源码"
+                   "（非「未接线」结论）：%s" % _e)
+        _src = None
+    if _src is not None and _src.count("self.dump_rounds") != 2:
         bad.append("[⑤] 两个留痕守卫没都读 self.dump_rounds（命中 %d 次）"
                    % _src.count("self.dump_rounds"))
 
@@ -9562,6 +9593,69 @@ def _v1238_sections(txt):
         out.append((parts[_i].strip(), len(parts[_i + 1].strip())))
     return out
 
+def _src_of(func):
+    """取函数源码，**稳健版** —— 取不到就退回读源文件，绝不静默返回空串。
+
+    ★ 为什么需要它：`inspect.getsource` 依赖 `linecache` + `__file__`，
+      在长跑序里可能失效（本仓库实测）。判据若用 `try/except` 把失败吞成
+      `""`，就会把「取不到源码」误报成「源码里没有这个串」——
+      **方向错的断言比没断言更危险**。
+    ★ 返回：源码字符串；若两条路都失败 ⇒ raise（调用点必须显式报错）。
+    """
+    import inspect as _ins
+    import ast as _ast
+    _s = ""
+    try:
+        _s = _ins.getsource(func) or ""
+    except Exception:
+        _s = ""
+    if len(_s) >= 200:
+        return _s
+    # 退回：直接读源文件，用 ast 按函数名切块
+    _f = None
+    try:
+        _f = _ins.getsourcefile(func)
+    except Exception:
+        _f = None
+    if not _f:
+        _f = str(getattr(globals().get("mod"), "__file__", "") or "")
+    if _f and Path(_f).exists():
+        _txt = Path(_f).read_bytes().decode("utf-8")
+        _txt = _txt.replace("\r\n", "\n")
+        _name = getattr(func, "__name__", "")
+        _cls = ""
+        _q = getattr(func, "__qualname__", "") or ""
+        if "." in _q:
+            _cls = _q.split(".")[-2]
+        try:
+            _tree = _ast.parse(_txt)
+        except Exception:
+            _tree = None
+        if _tree is not None:
+            _want = [_name]
+            for _node in _ast.walk(_tree):
+                if isinstance(_node, (_ast.FunctionDef,
+                                      _ast.AsyncFunctionDef)):
+                    if _node.name not in _want:
+                        continue
+                    _rng = getattr(_node, "end_lineno", None)
+                    if _rng is None:
+                        continue
+                    _lines = _txt.split("\n")
+                    _blk = "\n".join(_lines[_node.lineno - 1:_rng])
+                    if _cls:
+                        # 类内方法：确认名字对得上（避免同名函数串）
+                        _s = _blk
+                    else:
+                        _s = _blk
+                    break
+    if len(_s) < 60:
+        raise RuntimeError(
+            "判据未能取到源码：%s（两条路都失败）"
+            % getattr(func, "__name__", "?"))
+    return _s
+
+
 def check_v1238_render_guards():
     """[v1.23.8] 渲染层三处守卫：空节不留空 / 停因上头部 / 悬置渲染去重。
 
@@ -9660,11 +9754,22 @@ def check_v1238_render_guards():
                 bad.append("_susp_key 应取首个分句")
 
     # ── 接线断言（防死代码）────────────────────────────────────
-    _ss = _inspect.getsource(m.save_result)
-    if "_stop_kind_summary(" not in _ss:
-        bad.append("_stop_kind_summary 没被 save_result 调用（死代码）")
-    if "_dedup_suspensions_for_render(" not in _ss:
-        bad.append("_dedup_suspensions_for_render 没被 save_result 调用（死代码）")
+    # ★ 取源码失败与「源码里没这个串」**分开报** —— 混成一句会
+    #   把「判据自己没拿到源码」读成「守卫是死代码」。
+    try:
+        _ss = _src_of(m.save_result)
+    except Exception as _e:
+        bad.append("判据未能取到 save_result 源码（非死代码结论）：%s"
+                   % _e)
+        _ss = None
+    if _ss is not None:
+        if "_stop_kind_summary(" not in _ss:
+            bad.append(
+                "_stop_kind_summary 没被 save_result 调用（死代码）")
+        if "_dedup_suspensions_for_render(" not in _ss:
+            bad.append(
+                "_dedup_suspensions_for_render 没被 save_result 调用"
+                "（死代码）")
 
     if bad:
         for _m in bad:
@@ -10316,6 +10421,17 @@ def check_v12314_history_corpus():
           % h["n"])
     return True
 
+def _cleanup_snap_v12315(d):
+    """删掉 `check_v12315` 建的冻结快照目录（失败也不许抛）。"""
+    if not d:
+        return
+    try:
+        import shutil as _sh
+        _sh.rmtree(d, ignore_errors=True)
+    except Exception:
+        pass
+
+
 def check_v12315_history_calibration():
     """[v1.23.15] 分层抽样 + 时间衰减 + 三条规则的**实测**校准。
 
@@ -10343,7 +10459,40 @@ def check_v12315_history_calibration():
     _D = "这份方案怎么落地"
 
     # ── A 分层：每题型上限 ───────────────────────────────────
-    h = m._auto_history("outputs", 20, cfg=cfg0)
+    # ★★ 冻结快照（本轮修的事实性缺陷）：**不许读活 `outputs/`**。
+    #   两个独立原因让活目录读数不可复现：
+    #     ① 本判据**自己**就往 `outputs/` 写夹具目录（`_v12315_up*`），
+    #        下一段还要再写 —— 被测对象与读数来源共用一个活目录；
+    #     ② 任何**并行**的进程（如 `dgtf_app/selftest.py`）在往
+    #        `outputs/` 增删文件 ⇒ 两次读数之间世界已变。
+    #   实测：活目录一次读到 n=425、冻结快照稳定 n=303；
+    #   并行线刷 selftest 时活目录读数在 62↔33 之间跳，
+    #   本判据遂报「上限放大后样本数没增加」—— **假红**。
+    #   ★ 通则：**会缩小的集合冻结成时点快照**，锚不能是会变的东西。
+    _snap_dir = None
+    try:
+        import tempfile as _tf4
+        import shutil as _sh4
+        import os as _os4
+        _snap_dir = _tf4.mkdtemp(prefix="_v12315_snap_")
+        _n_snap = 0
+        for _sp in sorted(Path("outputs").rglob("*.md")):
+            try:
+                _stt = _sp.stat()
+                _dst = Path(_snap_dir) / ("%d_%s" % (_n_snap, _sp.name))
+                _sh4.copy2(_sp, _dst)
+                _os4.utime(_dst, (_stt.st_mtime, _stt.st_mtime))
+                _n_snap += 1
+            except Exception:
+                pass
+    except Exception:
+        bad.append("无法建立 outputs 冻结快照（读数是竞态的，不可信）")
+        return False
+    if _n_snap < 50:
+        bad.append("冻结快照样本过少（%d）—— 真实语料不足，判据不可信"
+                   % _n_snap)
+
+    h = m._auto_history(_snap_dir, 20, cfg=cfg0)
     if h.get("_limit_per_type") != 20:
         bad.append("没报出「每题型上限」：%r" % h.get("_limit_per_type"))
     _ft = (h["by_type"]["fact"] or {}).get("n", 0)
@@ -10352,7 +10501,8 @@ def check_v12315_history_calibration():
         bad.append("分层后某桶为空（fact=%s nonfact=%s）" % (_ft, _nf))
     if _ft > 20 or _nf > 20:
         bad.append("某桶超过上限 20（fact=%s nonfact=%s）" % (_ft, _nf))
-    _big = m._auto_history("outputs", 300, cfg=cfg0)
+    # ★ 同尺：两次都用**同一个快照**（不是「活目录 vs 快照」）
+    _big = m._auto_history(_snap_dir, 300, cfg=cfg0)
     if _big["n"] <= h["n"]:
         bad.append("上限放大后样本数没增加（%d → %d）" % (h["n"], _big["n"]))
     # ★ 夹具型判据：**只数真实语料看不出「某一型被挤掉」** ——
@@ -10432,7 +10582,10 @@ def check_v12315_history_calibration():
     if "web_fail" in _r4:
         bad.append("行里没有「失败」子句却写了 web_fail 键（不许补 0）")
 
-    # ── E 真实语料读数 ──────────────────────────────────────
+    # ── E 真实语料读数（**同样走冻结快照 `_big`**）───────────
+    # ★ 阈值 100 是「抽取是否生效」的粗探针（若 `_hist_from_md` 抽不到
+    #   三态一致率，`tri_n` 会是 0）。快照实测 195 ⇒ 留足裕量。
+    #   改快照前后**都没改这个阈值** —— 修的是读数的来源，不是判据的松紧。
     if _big["tri_n"] < 100:
         bad.append("三态一致率样本仍太少（%d）—— 抽取没生效" % _big["tri_n"])
     if _big["tri_p10"] is None:
@@ -10470,11 +10623,15 @@ def check_v12315_history_calibration():
     if bad:
         for _x in bad:
             print("  \u2717 [v12315] %s" % _x)
+        _cleanup_snap_v12315(_snap_dir)
         return False
-    print("  \u2713 [v12315] 分层（每题型 %s 条）· 时间衰减（半衰期 %s 天）· "
+    print("  \u2713 [v12315] 分层（每题型 %s 条，快照 %d 份）· "
+          "时间衰减（半衰期 %s 天）· "
           "三态一致率 n=%d p10=%s · 联网行 · 三条规则按实测定"
-          % (h.get("_limit_per_type"), h.get("_half_life_days"),
+          % (h.get("_limit_per_type"), _n_snap,
+             h.get("_half_life_days"),
              _big["tri_n"], _big["tri_p10"]))
+    _cleanup_snap_v12315(_snap_dir)
     return True
 
 def check_v12310_render_ops():
@@ -10810,6 +10967,11 @@ def check_v12325_struct_coverage():
 
 
 
+
+#: [v1.23.27] 判据用：D1 四态机的四个合法状态（与引擎同源）。
+_BELIEF_STATUS_EXPECT = ("active", "stable", "resolved", "revoked")
+
+
 def check_v12326_sim3():
     """[v1.23.26] ① sim3 三级尺子（对称 Jaccard + BM25）修 `_overlap_coef`
        短句高估 ② 池内去重阈值可配（默认 = 旧字面量，行为零变化）
@@ -10962,17 +11124,34 @@ def check_v12326_sim3():
     if len(_p3.amps) != len(_p1.amps):
         bad.append("[C] 不传参的行为与传 0.9 不一致 ⇒ 默认值没对齐")
 
-    # ================= D. covers 数字分支语义校验 =================
-    # ★ 源码层：数字分支里必须出现语义比较（旧版这里是裸 has_touch = True）
+    # ================= D. covers 语义校验（含 id 对账）=================
+    # ★ 源码层：covers 判据体里必须出现语义比较 —— 旧版这里是裸
+    #   `has_touch = True`（编号对就算碰了）。E3 起改成「**编号对是
+    #   必要条件、还要语义对得上**」，结构从 `if m: / else:` 变成
+    #   「字典查表 + `_tgt is None` 早退」。所以这里**按新结构**判：
+    #   在「id 命中之后」到「not has_touch」之间必须出现语义比较，
+    #   且必须有 bad_ref 分支（编号不在集合里 ⇒ 报红）。
+    #   ★ 判据随实现更新 —— 形态变了要改判据以匹配新语义，
+    #     不是放宽阈值（行为判据在下面照跑，仍有判别力）。
     _i = src.find('if (self.entry == "1" and view.untouched and view.probes):')
     _j = src.find("if not has_touch:", _i)
     _body = src[_i:_j] if _i > 0 and _j > _i else ""
     if not _body:
         bad.append("[D] 找不到 covers 判据体")
     else:
-        _num = _body.split("if m:", 1)[1].split("else:", 1)[0] if "if m:" in _body else ""
-        if not any(_t in _num for _t in ("_similar", "_overlap_coef", "_sim3")):
-            bad.append("[D] covers 数字分支里没有语义比较（回退了）")
+        # 语义比较必须存在（任何一个都算接线）
+        if not any(_t in _body for _t in ("_similar", "_overlap_coef", "_sim3")):
+            bad.append("[D] covers 判据体里没有语义比较（回退了）")
+        # id 对账必须存在（E3：编号不在集合里 ⇒ bad_ref）
+        if "probe_covers_bad_ref" not in _body:
+            bad.append("[D] covers 判据体里没有 bad_ref 分支"
+                       "（编号越界与语义不符没分开）")
+        # 逐位语义比较必须**发生在 id 命中之后**（不能先无条件放过）
+        _pos_id = _body.find("_cov_targets.get(")
+        _pos_sem = _body.find("_sim3(")
+        if _pos_id < 0 or _pos_sem < 0 or _pos_sem < _pos_id:
+            bad.append("[D] covers 语义比较不在 id 命中之后"
+                       "（可能是无条件放过）")
     # ★ 行为判据（驱动真实方法）：covers 乱指 T1 必须报红
     _CLS = None
     for _c in ("DGTF", "MetaDGTF"):
@@ -11041,6 +11220,196 @@ def check_v12326_sim3():
           "（负对照：乱指 T1 必报红）")
     return True
 
+
+
+def check_v12327_five_mechanisms():
+    """[v1.23.27] 五机制算法重构（第二期）九项判据。
+
+    ★ 每一项都**驱动真实函数**判行为（不查字符串），且每个断言都有
+      对应变异体（`_mut_v12327.py` M1~M8）：变异体判红 ⇒ 判据有判别力。
+    覆盖：
+      A1 AspectUnit 幂等与 ground 归一化
+      A2 符号对账收敛（amp#N / th#N / A{N}）
+      A3 双读数分离（touch_rate ≠ aspect_carry_rate 的构造）
+      D1 BeliefItem 四态机（非法 status 归一化）
+      D2 迁移优先级（resolved > revoked > stable）
+      D3 语义熵 n<2 返回 None（不印 0.0 冒充）
+      E1 EIG 可计算化且两臂同尺（targeted G > 0）
+      E2 子模批选（边际下限、宁少勿滥）
+      E6 自适应停止（seen==0 不是 stop）
+    """
+    bad = []
+
+    # ── A1 AspectUnit ──────────────────────────────────────────
+    _v = mod.View(entry="0")
+    _a1 = _v.add_aspect_unit("同一方面", "src", "阳", "anchor", "r")
+    _a2 = _v.add_aspect_unit("同一方面", "src", "阳", "anchor", "r")
+    if not _a1 or _a1.get("id") != _a2.get("id"):
+        bad.append("[A1] 同 desc 未幂等（id=%r vs %r）"
+                   % (_a1.get("id"), _a2.get("id")))
+    if len(_v.aspect_units) != 1:
+        bad.append("[A1] 幂等失效导致重复登记（len=%d）"
+                   % len(_v.aspect_units))
+    if _a1.get("text") != _a1.get("desc"):
+        bad.append("[A1] text != desc ⇒ 旧读取点会拿不到文本")
+    _ab = mod.make_aspect_unit("x", source="s", polarity="阳",
+                               ground="bogus_ground", ref="r")
+    if _ab.get("ground") != "anchor":
+        bad.append("[A1] 非法 ground 未归一化到 anchor（%r）"
+                   % _ab.get("ground"))
+
+    # ── A2 符号对账收敛 ───────────────────────────────────────
+    _p = mod.Pool()
+    _p.amps = [{"desc": "某条"}]
+    _p.threads = [{"desc": "某线头"}]
+    _p.probes = [{"question": "某探针"}]
+    _p.covered_unders = ["某未生"]
+    _tg = _p.aspect_targets_v12327()
+    for _k in ("amp#1", "th#1", "probe#1", "A1"):
+        if _k not in _tg:
+            bad.append("[A2] targets 缺 %s（收敛不全）：%s"
+                       % (_k, sorted(_tg)))
+
+    # ── A3 双读数分离（构造「触及但没延续」）─────────────────
+    _v3 = mod.View(entry="0")
+    _v3.round_log = [{"anchor_touched_n": 3}]
+    _v3.aspect_units = [{"id": "A1", "text": "t", "desc": "t"}]
+    _v3._layer_und_channel = {}
+    _tr = _v3.touch_rate
+    _cr = _v3.aspect_carry_rate
+    if not (_tr is not None and _tr > 0):
+        bad.append("[A3] touch_rate 应为 >0（构造 3 触及）实为 %r" % _tr)
+    if _cr != 0.0:
+        bad.append("[A3] 无延续时 carry_rate 应为 0.0 实为 %r" % _cr)
+    # 空池 ⇒ None（不印 0.00 冒充读数）
+    if mod.View(entry="0").aspect_carry_rate is not None:
+        bad.append("[A3] 空池 carry_rate 应返回 None（不许印 0.0）")
+
+    # ── D1 四态机 ──────────────────────────────────────────────
+    for _s in _BELIEF_STATUS_EXPECT:
+        _it = mod.make_belief_item("主张" + _s, "g", _s)
+        if _it.get("status") != _s:
+            bad.append("[D1] 合法状态 %s 被改动为 %r"
+                       % (_s, _it.get("status")))
+    _ib = mod.make_belief_item("x", "g", "totally_bogus")
+    if _ib.get("status") != "active":
+        bad.append("[D1] 非法 status 未归一化到 active（%r）"
+                   % _ib.get("status"))
+    if mod.make_belief_item("", "g") != {}:
+        bad.append("[D1] 空 text 应返回 {}")
+
+    # ── D2 迁移优先级 ─────────────────────────────────────────
+    _cur = mod.make_belief_item("x", "g", "active")
+    if mod.belief_transition(_cur, round_no=1, sources=["p#1"]) != "active":
+        bad.append("[D2] 单圈单来源不该升 stable")
+    _r2 = mod.belief_transition(
+        mod.make_belief_item("x", "g", "active", rounds_seen=[1],
+                             support=["p#1"]),
+        round_no=2, sources=["th#1"])
+    if _r2 != "stable":
+        bad.append("[D2] 连续 2 圈且 2 来源应升 stable（实为 %r）" % _r2)
+    _rev = mod.belief_transition(
+        mod.make_belief_item("x", "g", "active", attack=["a#1", "a#2"],
+                             support=["s#1"]),
+        round_no=3, attack=["a#3"])
+    if _rev != "revoked":
+        bad.append("[D2] attack>support 应 revoked（实为 %r）" % _rev)
+    _res = mod.belief_transition(_cur, round_no=5, sources=["p#1"],
+                                 attack=["t#1"],
+                                 resolved_by="decidable_channel")
+    if _res != "resolved":
+        bad.append("[D2] resolved 优先级最高（实为 %r）" % _res)
+
+    # ── D3 语义熵 ──────────────────────────────────────────────
+    _hn, _hr, _cl = mod.semantic_entropy_of(["只有一条"])
+    if _hn is not None:
+        bad.append("[D3] n<2 应返回 None（实为 %r）—— 印 0.0 是自欺" % _hn)
+    _hn2, _hr2, _cl2 = mod.semantic_entropy_of(["甲", "甲", "甲"])
+    if not (_hn2 is not None and _hn2 <= 0.05):
+        bad.append("[D3] 三条同义应近 0 熵（实为 %r）" % _hn2)
+
+    # ── E1 EIG 同尺 ───────────────────────────────────────────
+    # ★ 构造要点：`h_before` 必须 **>0**（有分歧才有不确定度可降）。
+    #   若三条全同义 ⇒ 聚成 1 簇 ⇒ h_before=0 ⇒ G 恒 0（数学正确，
+    #   但测不出「同尺」）。所以用「两条同簇 + 一条异构」：
+    #   targeted 命中同簇那条 ⇒ 移除后 h_after 下降 ⇒ G>0；
+    #   若两臂各用各的 ln(n)（Step8c 前的 bug）⇒ G 会被抵消成 0。
+    _bis = [{"id": "B1", "text": "极低温环境下材料脆性阈值是多少",
+             "status": "active"},
+            {"id": "B2", "text": "极低温环境下材料脆性阈值如何",
+             "status": "active"},
+            {"id": "B3", "text": "城市轨道交通客流预测模型的误差",
+             "status": "active"}]
+    _G, _d = mod.probe_information_gain(
+        {"question": "极低温环境下材料脆性阈值是多少"}, _bis)
+    if not (_G is not None and _G > 0.0):
+        bad.append("[E1] targeted G 应为正（实为 %r / %s）—— "
+                   "两臂不同尺会让 G 恒 0" % (_G, _d.get("why")))
+    _G2, _d2 = mod.probe_information_gain({"question": ""}, _bis)
+    if _G2 is not None:
+        bad.append("[E1] 空问题应返回 None（实为 %r）" % _G2)
+    _G3, _d3 = mod.probe_information_gain({"question": "x"}, [])
+    if _G3 is not None:
+        bad.append("[E1] 未决 <2 应返回 None（实为 %r）" % _G3)
+
+    # ── E2 子模批选（宁少勿滥）───────────────────────────────
+    _p2 = mod.Pool()
+    _p2.belief_items = list(_bis)
+    _picked, _det = mod.select_probe_focus_submodular(
+        _p2, [{"question": "极低温环境下材料脆性阈值是多少",
+               "expected_gain": 0.9, "link": "x"}], 3)
+    if len(_picked) > 3:
+        bad.append("[E2] 批选超过上限 n=3（实为 %d）" % len(_picked))
+
+    # ── E6 自适应停止 ─────────────────────────────────────────
+    if mod.e6_stop_verdict(0, 0.0, 0.3, 0.02) != (False, "no_candidate"):
+        bad.append("[E6] seen==0 不是 stop（否则「模型偷懒」被读成「已收敛」）")
+    if mod.e6_stop_verdict(3, 0.01, 0.3, 0.02) != (True,
+                                                   "max_gain_below_floor"):
+        bad.append("[E6] max_gain < floor 应判 stop")
+    if mod.e6_stop_verdict(3, 0.02, 0.3, 0.02) != (False, "gain_ok"):
+        bad.append("[E6] 边界（== floor）不该判 stop")
+    _p3 = mod.Pool()
+    _rec = _p3.note_probe_stop("research", 3, 0.005, 0.3, 0.02)
+    if not (_rec.get("stop") and len(_p3.probe_stop_history) == 1):
+        bad.append("[E6] 停止信号未写进 probe_stop_history")
+    if "probe_stop_history" not in _p3.to_dict():
+        bad.append("[E6] to_dict 未出口 probe_stop_history（静默丢产物）")
+    if "probe_stop_history" in mod.Pool().to_dict():
+        bad.append("[E6] 空 Pool 不该凭空出现 probe_stop_history")
+
+    # ── E6 接线语义：**只在 `if not out:` 里记**（源码层） ──────
+    # ★ 为什么必须固定这条语义：E6 是「停止信号」不是「每轮体检」。
+    #   若哪天有人把它挪成无条件调用，`probe_stop_history` 会变成
+    #   「每轮一条」，而**真跑里它只有 0 条**（本版四层每层都产出了
+    #   探针 ⇒ 从不进 `if not out` 分支）⇒ 「记了」与「没记」将再也
+    #   分不出「池收敛」和「模型偷懒」。这条语义是真跑才暴露的边界：
+    #   不能等下次有人改坏了才发现。
+    _src_all = SRC.read_text(encoding="utf-8").replace("\r\n", "\n")
+    for _lay in ("research", "duel", "meta", "phase"):
+        # ★ 锚点：`self._e6_note_stop(pool, view, "<层>"` —— **单下划线**
+        #   （初版误写成 `__`，四条全报「缺调用」—— 判据自己的锚点错了，
+        #    报出来却像「实现缺接线」。同 §3.1 那条教训：方向错的断言
+        #    比没断言更危险。）
+        _pat = '_e6_note_stop(pool, view, "%s"' % _lay
+        _idx = _src_all.find(_pat)
+        if _idx < 0:
+            bad.append("[E6] 缺 %s 层的 _e6_note_stop 调用" % _lay)
+            continue
+        # 往回 120 字符内必须能找到 `if not out:` 守卫
+        _pre = _src_all[max(0, _idx - 160):_idx]
+        if "if not out:" not in _pre:
+            bad.append("[E6] %s 层的记录点不在 `if not out:` 分支里"
+                       "（停止信号退化成每轮体检）" % _lay)
+
+    if bad:
+        for _m in bad:
+            print("  \u2717 [v12327] %s" % _m)
+        return False
+    print("  \u2713 [v12327] A1 幂等/归一化 · A2 符号对账收敛 · "
+          "A3 双读数分离 · D1 四态机 · D2 迁移优先级 · D3 语义熵 None · "
+          "E1 EIG 同尺 · E2 子模批选 · E6 自适应停止（9 变异体背书）")
+    return True
 
 
 def check_v12324_indep_therapy():
@@ -11456,6 +11825,8 @@ def main():
     if not check_v12325_struct_coverage():
         return 1
     if not check_v12326_sim3():
+        return 1
+    if not check_v12327_five_mechanisms():
         return 1
     q = "测试问题：AI 在数字 IC 设计里到底能做什么，哪些已经量产？"
     rows = []

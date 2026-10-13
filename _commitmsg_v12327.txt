@@ -1,0 +1,70 @@
+v1.23.27 · 五机制算法重构第二期（接口层 + 信念层合并版）
+
+【本版在做什么】
+把设计报告 `_设计_五机制算法重构_v12326.md` 里原本拆成两版的
+「接口层（E1/E2/E5/A1）」与「信念层（D1/D2/D3）」**合成一版** ——
+因为核对依赖时发现顺序倒置：E1（引擎算 G）需要 H_sem（原 v1.23.28 的
+D3）与 BeliefItem.status（原 v1.23.28 的 D1）。先把底座（A1 + D1/D2/D3）
+做出来，E 系列才拿得到真实输入。
+
+【九个机制】
+  A1 AspectUnit 结构化（id/text/polarity/ground/ref）+ 双写
+     · make_aspect_unit 单一构造点；text == desc（旧读取点零改动）
+     · add_aspect_unit 幂等（同 desc 返回已存在条目，编号按追加顺序）
+  A2 覆盖对账符号化
+     · aspect_targets_v12327 收敛 amp#N/th#N/probe#N/A{N}
+     · _und_self_touch_symbols 按 id 建凭据（不再靠子串/overlap 猜）
+  A3 双读数分离
+     · touch_rate（能力：碰没碰过）与 aspect_carry_rate（延续：后来追不追）
+     · 永不合成一个分
+  D1 BeliefItem 四态机（_BELIEF_STATUS = SUSPENSION_STATUS 别名）
+     · semantic_entropy 默认 None 不是 0.0
+  D2 迁移规则（纯函数，优先级 resolved > revoked > stable > 保持原状）
+  D3 语义熵 H_sem = -Σ p·ln p（sim3 单链聚类到簇代表）
+     · n < 2 返回 None（不印 0.0 冒充读数）
+  E1 EIG 可计算化（G = (h_before - h_after)/h_before）
+     · ★ 两臂同一把尺子（分母恒为 ln(n_before)）
+     · ★ 命中一条要移除整簇（不是只移那一条）
+  E2 子模批选（贪心 + 边际下限；宁少勿滥）
+  E3 covers 双查（id + sim3；新增 probe_covers_bad_ref）
+  E4 link 反查（probe_link_dangling，只留痕不拦）
+  E5 双向判据（honest_empty / lazy_empty 替代一律罚空）
+     · 补接线：响应根级 no_probe_reason → view
+  E6 自适应停止（e6_stop_verdict 纯函数 + probe_stop_history）
+     · seen==0 是 no_candidate 不是 stop
+
+【为什么这些改动是对的（工程判据）】
+- 三项判据随实现更新（不是放宽阈值）：v12326 的 covers 形态检查、
+  check_probe_skip_no_false_flag 的负对照、v12320/v1238 的接线断言。
+- 查出那条 order-dependent 假红**不是** check_v1221_p2b 造成的
+  （逐 check 实测，getsource 稳定），根因是判据把「取不到源码」与
+  「源码里没这个串」混成一个 bad 项 —— 修法是加 _src_of 分开报。
+- E1 的 G 恒为 0 有两个独立原因（归一化不同尺 + 命中只移单条），都已修。
+
+【验收】
+- 冒烟 smoke_test.py：EXIT=0 / 0 ✗ / 220 ✓（新增
+  check_v12327_five_mechanisms，九项全驱动真实函数）
+- 变异体 _mut_v12327.py：9 / 9 判红（M1~M9）
+  · M9 是真跑暴露边界后补的：E6 记录点必须留在 `if not out:` 里
+- 配置同步：dgtf_config.yaml 补 sim.cluster / probe.submodular /
+  probe.stop_floor，与引擎默认逐字一致
+- 主文件纯 CRLF；版本号两处均为 1.23.27
+
+【真跑读数（12:10 启动，四层 all）】
+- E4 link 反查 13 次触发（四层稳定），且只留痕不拦 ⇒ 验证「未对齐合法」
+- E1 引擎算的 G 在探针行显示（增益0.6）⇒ EIG 真跑存在性证明
+- E6 停止路径 0 次触发（设计边界：四处记录点都在 `if not out:`，
+  真跑每层都产出了探针）；E3/E5 同为 0（本轮未进分支）
+- 已知产物侧缺口：aspect_units 无 to_dict 出口（不影响运行，列下版候选）
+
+【只圈本版文件】
+引擎与判据：元DGTF-V1.23.27.py / smoke_test.py / dgtf_config.yaml /
+  CHANGELOG.md / v12327_报告.md / _CHECKPOINT_v12327.md / _baseline_v12327.json
+构建脚本：_patch_v12327_step*.py / _patch_v12327_src.py /
+  _patch_v12327_yaml_head.py / _selfcheck_v12327_step9.py
+变异体：_mut_v12327.py（M1~M9）/ _mut_v12315_snapshot.py
+诊断与核对：_diag_v12315_race.py / _diag_getsource2-4.py / _diag_p2b.py /
+  _verify_v12327_artifacts.py / _wait_run_v12327.py /
+  _run_v12315_single.py / _run_v12327_single.py / _probe_v12327_baseline.py /
+  _probe_smoke_import.py
+★ 不含 dgtf_app/*（另一条并行线在改）、不含 outputs/、不含 *.log。
