@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.29.py"
+SRC = HERE / "元DGTF-V1.23.30.py"
 
 os.environ.setdefault("DGTF_API_KEY", "sk-smoke-test-key")
 
@@ -11492,6 +11492,154 @@ def check_v12327_five_mechanisms():
     return True
 
 
+def check_v12330_duty_guard():
+    """[v1.23.30] 层职责守卫（LDG）：在**停止/收敛处**判「这层替问题干了什么」。
+
+    判据分三层（源码级 / 纯函数级 / 真实入口级）：
+      · 源码级：问项抽取、三读数、命中口径、停止判据、署名纪律、缺省修真
+      · 纯函数级：相关 ⇒ C/S 高；无关 ⇒ C/S 低（负对照）；调和平均惩罚偏科
+      · 真实入口级：走 `_finalize_layer_common`，职责未尽必须改署名 + 留痕；
+        达标**不许**乱改（负对照）；缺失 core 注入 carry
+    判别力由 `_mut_v12330.py` 背书（M1~M9）。
+    """
+    src = SRC.read_bytes().decode("utf-8")
+    bad = []
+
+    # ── 源码级 ──
+    for _need, _what in (
+            ("def question_aspects(question: str):", "问项抽取"),
+            ("def duty_components(aspects, deliver_text", "三读数"),
+            ("def duty_of_layer(entry, question, deliver_text", "层读数薄壳"),
+            ("def duty_short_line(d:", "读数行"),
+            ("_DUTY_KIND_W = {", "类别权重"),
+            ("职责增益收敛", "新停止判据"),
+            ("职责未尽：", "署名纪律"),
+            ("_duty_carry", "补救注入")):
+        if _need not in src:
+            bad.append("[源码] %s 缺失（%r）" % (_what, _need))
+    if '"distance_to_question": (None if d2q is None' not in src:
+        bad.append("[源码] distance_to_question 入口缺省未修真")
+    if src.count("distance_to_question is not None") != 2:
+        bad.append("[源码] distance 渲染条件未改成「有值才印」")
+
+    # ── 纯函数级 ──
+    q = "如何利用AI来帮助人类实现财富自由甚至文明升级？"
+    asp = mod.question_aspects(q)
+    if not asp:
+        bad.append("[纯函数] 问项抽取为空")
+    else:
+        if "followup" not in {a.get("kind") for a in asp}:
+            bad.append("[纯函数] 「甚至…」未被归为 followup（%r）" % (asp,))
+        if any(a.get("kind") == "followup" and a.get("weight") != 0.10
+               for a in asp):
+            bad.append("[纯函数] followup 权重不是最低档")
+    _rel = ("利用AI帮助人类实现财富自由，并推动文明升级。"
+            "AI 的作用体现在生产率提升与分配制度设计上。")
+    _irr = ("候选属性0◈阴展开×位置both；线头编号 th#3 与 &4 未对齐；"
+            "悬置决定 stable 后不可撤销；探针覆盖不足。")
+    d_hi = mod.duty_components(asp, _rel, objective_words=("利用", "财富"))
+    d_lo = mod.duty_components(asp, _irr, objective_words=("利用", "财富"))
+    if d_hi["C"] < 0.5:
+        bad.append("[纯函数] 相关交付面覆盖应高（实为 %r）" % d_hi["C"])
+    if not (d_lo["C"] < d_hi["C"] and d_lo["S"] < d_hi["S"]):
+        bad.append("[纯函数] 无关交付面未被拉低（C %r→%r / S %r→%r）"
+                   % (d_hi["C"], d_lo["C"], d_hi["S"], d_lo["S"]))
+    _mix = mod.duty_components(asp, _rel + "。" + _irr * 3,
+                               objective_words=("利用", "财富"))
+    # ★ 判据必须**钉公式**而不是钉不等式：只写「S ≤ 算术平均」时，
+    #   「S 就是算术平均」这种错实现照样过关（变异体 M3 假绿抓到的）。
+    _exp = (2.0 * _mix["C"] * _mix["R"] / (_mix["C"] + _mix["R"])
+            if (_mix["C"] + _mix["R"]) else 0.0)
+    if abs(_mix["S"] - _exp) > 1e-3:
+        bad.append("[纯函数] S 不是调和平均（S=%r 期望 %r）"
+                   % (_mix["S"], round(_exp, 4)))
+    if abs(_mix["C"] - _mix["R"]) > 1e-6 and             abs(_mix["S"] - (_mix["C"] + _mix["R"]) / 2) < 1e-6:
+        bad.append("[纯函数] S 退化成算术平均（偏科未被惩罚）")
+    # ★ R 必须**真的用 Useless 当分母**：混入无用句后 R 必须严格 < 1
+    #   （变异体 M5「R = 1 if direct else 0」就是靠这条判红的）。
+    _rmix = mod.duty_components(
+        asp, "利用AI帮助人类实现财富自由。" + _irr * 2,
+        objective_words=("利用", "财富"))
+    if not (_rmix["seg_useless"] >= 1 and _rmix["seg_direct"] >= 1):
+        bad.append("[纯函数] 夹具没造出「既有直接句又有无用句」（%r）"
+                   % {k: _rmix[k] for k in
+                      ("seg_direct", "seg_useful", "seg_useless")})
+    else:
+        _rexp = _rmix["seg_direct"] / float(
+            _rmix["seg_direct"] + _rmix["seg_useless"])
+        if abs(_rmix["R"] - _rexp) > 1e-3:
+            bad.append("[纯函数] R 不是 |Direct|/(|Direct|+|Useless|)"
+                       "（R=%r 期望 %r）" % (_rmix["R"], round(_rexp, 4)))
+    if not d_lo["missing_core"]:
+        bad.append("[纯函数] 无关交付面未点名缺失 core")
+
+    # ── 真实入口级 ──
+    try:
+        cfg = dict(mod.DEFAULT_CONFIG)
+        eng = mod.MetaDGTF(cfg)
+        eng._question = q
+        v = mod.View(entry="1")
+        v.collision = _irr * 4
+        d = eng._layer_duty_now("1", v)
+        if not v.duty or v.duty.get("S") != d["S"]:
+            bad.append("[入口] duty 未写回 view")
+        if len(v.duty_trace) != 1:
+            bad.append("[入口] duty_trace 未记账（%r）" % v.duty_trace)
+        if not d.get("short"):
+            bad.append("[入口] 无关交付面未判 short")
+        v.stop_reason = "悬置决定稳定，自然安住，螺旋停止"
+        st = {"all_candidates": [], "all_amps": [], "all_threads": [],
+              "all_rehashed": [], "all_expanded_descs": [],
+              "all_dec_products": [], "all_und_products": [],
+              "all_view_errors": [], "round_log": [], "roles_hist": [],
+              "deferred_notes": [], "total_rounds": 4, "r": 1,
+              "rounds_n": 4, "sp": dict(cfg.get("spiral") or {})}
+        eng._finalize_layer_common("1", v, st)
+        if "职责未尽" not in (v.duty_verdict or ""):
+            bad.append("[入口] 职责未尽未写独立判定行")
+        if (v.stop_reason or "") != "悬置决定稳定，自然安住，螺旋停止":
+            bad.append("[入口] 停止理由被职责判定污染（红线：停止与清算分开）"
+                       "：%r" % (v.stop_reason,))
+        if "duty_short" not in (v.quality_flags or []):
+            bad.append("[入口] duty_short 未留痕（被收尾清洗吞了？）")
+        if not (getattr(eng, "_duty_carry", None) or []):
+            bad.append("[入口] 缺失 core 未注入 carry")
+        # 负对照：达标不许乱改
+        eng2 = mod.MetaDGTF(cfg)
+        eng2._question = q
+        v2 = mod.View(entry="1")
+        v2.collision = _rel * 8
+        v2.stop_reason = "悬置决定稳定，自然安住，螺旋停止"
+        eng2._finalize_layer_common("1", v2, dict(st))
+        if v2.duty_verdict:
+            bad.append("[入口·负] 达标却仍写判定行")
+        if (getattr(eng2, "_duty_carry", None) or []):
+            bad.append("[入口·负] 达标却仍注入 carry")
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        bad.append("[入口] 异常：%r" % (e,))
+
+    # ── 缺省修真（两向）──
+    if mod.View(entry="0").distance_to_question is not None:
+        bad.append("[缺省] 字段缺省应为 None")
+    # ★ 只查字段缺省不够：**入口那条路**（模型没报 d2q 时）也必须落 None
+    #   —— 变异体 M9 改的是入口那行，查字段永远查不到（M9 假绿抓到的）。
+    if ("None if _d2q_raw is None else float(_d2q_raw)" not in src):
+        bad.append("[缺省] 入口缺省未落 None（模型没报时不许顶格 1.0）")
+    if '"distance_to_question": (None if d2q is None' not in src:
+        bad.append("[缺省] 装配处缺省未落 None")
+    if "if v.get(\"distance_to_question\", 1.0) < 1.0" in src:
+        bad.append("[缺省] save_result 仍在用顶格缺省比较（None 会直接崩）")
+
+    if bad:
+        for x in bad:
+            print("  ✗", x)
+        return False
+    print("  ✓ v1.23.30 层职责守卫（源码/纯函数/真实入口 三层判据）全过")
+    return True
+
+
 def check_v12329_convergence():
     """[v1.23.29] 收束版判据：A1 索引化 / B1 规则优先 / C1 读数口径 /
     D1 相对阈值 / D2 语义归并（正负两臂 + 出口）。
@@ -12359,6 +12507,8 @@ def main():
     if not check_v12328_real_entry():
         return 1
     if not check_v12329_convergence():
+        return 1
+    if not check_v12330_duty_guard():
         return 1
     q = "测试问题：AI 在数字 IC 设计里到底能做什么，哪些已经量产？"
     rows = []
