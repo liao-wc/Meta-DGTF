@@ -273,6 +273,16 @@ def build_cfg(verbose=False):
     cfg["output"]["verbose"] = verbose
     _sd = os.environ.get("SMOKE_SAVE_DIR", "smoke_outputs")
     cfg["output"]["save_dir"] = str(HERE / _sd)
+    # ★ [EML 测试隔离] 冒烟**绝不许写生产记忆库**（`dgtf_memory/`）：
+    #   一次冒烟有上百次 run()，无 id 的跑次会把真实条目的**证据计数**抬高
+    #   （本轮实测 L0002 的 n_ev 被冒烟灌到 4）⇒ 记忆库被噪声污染，
+    #   而 promote 正是按证据数判的 ⇒ 等于让测试替生产「刷票」。
+    #   指到一个进程级临时目录，跑完即弃。
+    import tempfile as _tf
+    cfg.setdefault("playbook", {})
+    cfg["playbook"]["mode"] = "shadow"
+    cfg["playbook"]["dir"] = str(Path(_tf.gettempdir())
+                                 / "dgtf_smoke_memory")
     return cfg
 
 def p2_stats(res):

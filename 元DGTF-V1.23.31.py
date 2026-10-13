@@ -15834,6 +15834,16 @@ class MetaDGTF:
             _now = time.time()
             _ep = episode_from_result(result, t=_now)
             _ep["used_ids"] = _blk["used"]
+            # ★ [EML 闸 · 生产库清洁] **无 run_id 的跑次一律不写库**（连
+            #   episode 也不写）：它当不了证据（evidence 会是空串），
+            #   却会污染库、并可能混进后续统计。这类跑次 = 测试/半途/
+            #   工具调用；真实跑次必有 id（app 层会写 `.run.json`）。
+            #   显式要收匿名跑次时把 `playbook.learn_from_anon` 打开。
+            _anon = not str(_ep.get("run_id") or "").strip()
+            _learn_anon = bool(_c.get("learn_from_anon", False))
+            if _anon and not _learn_anon:
+                _blk["anon_skipped"] = True
+                return _blk
             eml_append_jsonl(_dir / _EML_EPISODES, _ep)
             _pb = eml_read_jsonl(_dir / _EML_PLAYBOOK)
             _n0 = len(_pb)
@@ -20784,6 +20794,11 @@ DEFAULT_CONFIG = {
         "top_k": 3,
         "promote_n": 3,
         "halflife_days": 14.0,
+        # ★ 无 run_id 的跑次是否也入库/参与学习（默认 False = 不收）：
+        #   测试、半途、工具调用没有 id，读数不代表真实任务；让它们参与
+        #   会**把真实条目的证据计数抬高**（一次冒烟上百次 run() 曾把
+        #   n_ev 从 2 灌到 4 ⇒ 直接触发 promote = 测试替生产刷票）。
+        "learn_from_anon": False,
     },
 
     "memory": {
