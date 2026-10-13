@@ -12,6 +12,85 @@
 
 ---
 
+v1.23.31 相对 v1.23.30
+
+【主题】EML · 经验记忆回路 —— 让元DGTF **跨跑储存记忆**，并在**每次运行中
+自我学习与迭代**（读 → 用 → 写 + 一道质量闸 + 五条学坏防线）。
+
+【缺口诊断】原来只有「版本记忆」（CHANGELOG）与「统计记忆」（auto 读历史读数），
+没有**经验层**（哪类做法有效）与**闭环**（跑完写回 → 下次生效 → 再验证）：
+`auto` 只读**数**不读**内容**；`.workbuddy/memory/` 是人写的、机器不回写；
+v1.23.30 的 `duty` 读数只留痕、不参与下次怎么跑。
+
+【前沿依据（2025，皆已读原文要点）】
+  · **ACE**（arXiv 2510.04618）：三角色 Generator/Reflector/Curator；★ **不重写
+    知识** —— 实测把 1.8 万 token 策略压缩成 122 token，准确率 66.7→57.1。
+  · **Memory-R1 / Mem0**：写入决策 ADD/MERGE/UPDATE/**矛盾单独建档**。
+  · **WebCoach**：经验作**建议**注入（成功率 47%→61%，**步数不增**）⇒ 强制双边记账。
+  · **MRRL**：**质量闸四问** + micro/meso/macro 三级反思 + 遗忘清扫。
+  · **NAACL'25 子问题覆盖** / **SAGE** 遗忘曲线。
+  · 开源对照（本轮检索所得）：`kvyb/llmace`（ACE 的 Python 实现）、
+    `ulandz/evermind`（**RRIF 四维**）、`hanishkeloth/agentmemory`
+    （procedural execution-tracking）、`aravindvaddi/MemoryMCP`（访问加强）。
+
+【改动】
+  ① 存储 `dgtf_memory/`：`episodes.jsonl`（每次跑的标准化 episode）·
+     `playbook.jsonl`（增量经验条目，**append-only**）· MEMORY.md（自动生成索引）。
+  ② **读** `_eml_prepare` / `eml_recall`：RRIF 四维打分
+     `recency^0.5 × evidence × weight × freq`（第四维 Frequency 吸收自 evermind）；
+     只取 `active`，`shadow` 一律不生效。
+  ③ **用** `_eml_apply`：生效面**只有两处** —— 截断过的层 `rounds+1`、
+     `duty.floor`。★ **绝不注入答案内容**（红线「输入是形状不是数据」）。
+  ④ **写** `_eml_finish`：micro 抽候选（截断/职责未尽/三态不稳/只贵不好）→
+     质量闸四问（evidence / contradiction / verifiable / redline）→
+     只增合并（同键**累证据**不新增行）→ meso 升级 → macro 父条目（**只索引**）→
+     遗忘清扫（只改状态位）→ 访问加强（`used_outcomes`，**达标才加强**）。
+  ⑤ 新增 `playbook` 配置段，**出厂默认 `mode="shadow"`** ⇒ 零行为差。
+  ⑥ 产物头部新增「本次记忆（EML 经验回路）」块：用了几条 / 生效几条 /
+     过闸新增几条 / 被闸拒原因分类 / 库内总数。
+
+【★ 本轮抓出并修掉的 5 个真 bug（全部写进通则）】
+  1. **同键候选被判「重复」拒掉** ⇒ 证据永远累不到 3 ⇒ **学不会**（探针 T9 抓出）。
+     改为「同键 = 累证据 +1」（这本就是 meso 的输入）。
+  2. `n_evidence` 从 0 起：写下它的那次跑本身就是证据 ⇒ 从 1 起（口径错）。
+  3. MEMORY.md 落到默认目录而非配置目录（`dirpath` 未透传）。
+  4. **YAML 注释里混进裸 `\r`** 把行劈断 ⇒ 解析失败。★ 写进配置/代码的字符串
+     要扫裸 CR（`count(\r) != count(\r\n)`）。
+  5. **阈值判据缺负向用例**：meso 门槛只测「够则升」⇒ 门槛写恒真的错实现照样
+     过关（变异体 M4 假绿）⇒ 补「证据 1/3 ⇒ 不许升」。★ **阈值类判据必须两向测**。
+
+【验收】
+  · 冒烟 **223 ✓ / 0 ✗**（新增 `check_v12331_memory_loop`）。
+  · 真实入口探针 `_probe_v12331.py` **35 ✓ / 0 ✗**（含 T9 构造性证明、T10 三态）。
+  · 变异体 `_mut_v12331.py` **10 / 10 判红**（干净基线先绿）。
+  · AUDIT **PASS 67 / FAIL 0**；复审探针 **PASS 16 / FAIL 0**。
+  · 配置两向对账：`DEFAULT_CONFIG.playbook` ↔ 出厂 yaml **逐字 0 差**。
+  · **记忆库首建**：把最近 **5 次真跑**补录成 episode
+    （`_demo_v12331_seed_memory.py`）⇒ 过闸 9 条、其中 **2 条升 active**
+    （修行层/研究层反复被截断 ⇒ rounds+1）。
+
+【★ 构造性证明「会学」（实测序列）】
+```
+第 1 跑：过闸新增 2 · 库 2 条（shadow）
+第 2 跑：过闸新增 2 · 升级 2      ← 同向证据累到 promote_n ⇒ shadow→active
+第 5 跑：读到 2 条 → 真生效 1 条 → applied=[{L0001, rounds_delta, layer=1, 3→4}]
+         访问加强 {strengthened: 1, negative: 0, duty_med: 0.5}
+```
+裁决的是「读到 + 生效 + 留痕」，**不是「分数更高」**（红线：只升不降的指标是自欺）。
+
+★ v1.23.31 收束摘要
+  交付物：`元DGTF-V1.23.31.py`（21551 行 / 纯 CRLF）+ 出厂 `dgtf_config.yaml`
+  （playbook 段）+ `_设计_经验记忆回路_v12331.md` + `v12331_报告.md` +
+  `_probe_v12331.py` / `_mut_v12331.py` / `_demo_v12331_seed_memory.py` +
+  **真实记忆库 `dgtf_memory/`（9 条，2 条 active）**。
+  改了哪几处：存储三段 / 质量闸四问 / 三级反思 / 遗忘 / 访问加强 / 配置段 / 产物块。
+  验收数字：冒烟 223✓0✗；探针 35✓0✗；变异体 10/10 判红；AUDIT 67/0；复审 16/0；
+  配置差异 0 项。
+  未做（有意）：不自动切 `on`（出厂 shadow，先观察）；不注入答案/结论；
+  不把学习效果做成分数；检索用规则（无向量库/embedding 依赖）。
+
+---
+
 v1.23.30 相对 v1.23.29
 
 【主题】层职责守卫（LDG）—— 在**停止/收敛处**回答一句：这一层到底替原始问题
