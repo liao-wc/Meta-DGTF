@@ -1,0 +1,66 @@
+fix(dgtf_app): R46 修「导入资料没反应」—— `FileList` 活引用被判据自己清空
+
+用户第二次报「还是导入不了资料啊，也没有显示」。
+
+【真根因】
+dgtf_app/static/app.js 的 `#anchor-file` change 处理器原写成：
+
+    const fs = e.target.files;      // ★ 拿到的是 FileList **活引用**
+    e.target.value = '';            // ★ 清 value 会**就地清空 fs**
+    if (fs && fs.length) importFiles(fs);   // ← 恒为假 ⇒ importFiles 一次都没跑过
+
+页内最小对照实测：
+    清空前 af.files.length=2  fs.length=2
+    清空后 af.files.length=0  fs.length=0
+    fs === af.files ? true
+
+`value=''` 是 R44 为「同一文件能再选一次」加的，副作用当时没被测到 ——
+R44/R45 两轮的验收探针都是**直接调 importFiles()**，整条
+「点按钮 → 选文件 → change」的真实链路从没被走过。
+
+【修法】
+    const fs = e.target.files ? [...e.target.files] : [];   // 先拷成真数组（快照）
+    e.target.value = '';
+    if (fs.length) importFiles(fs);
+
+【验收】★ 这次走真实路径：CDP `DOM.setFileInputFiles` 往 #anchor-file 塞真文件，
+浏览器自己派发 change（程序 dispatchEvent 会被 value='' 清空，测不出真相）。
+
+    判据              | 修复臂                      | 负对照（回退旧写法）
+    ------------------|-----------------------------|------------------------
+    fetch 请求        | POST /api/library/import    | ★ 一条都没有
+    #import-msg       | 完成：成功 3 个             | ""（用户看到的）
+    #import-detail    | 3 行 ✓ 明细                 | 空
+    #local-list 行数  | 0 → 3                       | 3 → 3（没动）
+    #attach-panel     | hidden=false（自动展开）    | hidden=true
+
+  负对照逐条复现用户症状 ⇒ 判别力确认。
+
+【新增守卫】dgtf_app/selftest.py 加 `check_r46_frontend(js)` 四条静态判据：
+  1. 找得到 #anchor-file 的 change 处理器（取段锚 `_af.addEventListener('change'`，唯一）
+  2. 取 files 必须**先拷成数组**（`[...e.target.files]`）
+  3. **不许**在真代码行上出现 `const fs = e.target.files;`（注释行不算 —— 否则判据被自己的文档骗红）
+  4. 清 value 仍在，且判据用**快照后的长度**（`if (fs.length)`）
+
+【回归】
+  - selftest.py 全套：PASS 332 / FAIL 1（R46 四条全绿）
+    唯一红 `参数标签统一成「键（中文说明）」` = 并行线 v1.23.27 的挂账
+    （该版新增 sim.dedup / sim.dedup_susp 两个配置键，但工作台
+     dgtf_app/params.py 的 _KEY_CN 里一个 sim.* 都没有 ⇒ 166 项里 2 项 label
+     回落成键名）。**属引擎并行线职责，本轮未动。**
+  - R45 顶层探针 _final_probe_top.js：PASS 31 / FAIL 0 —— 无回归
+  - R45 变异体：16 个全数处理（M9/M10 修好后均抓住；还原核对以 git diff 为准）
+
+【顺带修掉的两个工具链 bug】（详见报告 §57）
+  1. _r45_cdp_mut.py 的「还原校验」只锚**本次跑前**，抓不到**上一轮遗留**的变异残留
+     —— 实测 M9 的 `web-cluster-off` 就在 app.js 里躺了一整轮而每次收尾都报 ✓。
+     已加**前置守卫**：跑前扫全部变异体 `new` 串，发现残留即拒绝开跑（return 3）。
+  2. M9 锚点原含模板串后半段（易漂）⇒ 失配成「跳过」；收敛成类名前缀 `class="web-cluster`。
+
+【诊断副产物已复原】误写进真实库的 _diag8_* / _v46_* 已清理，
+dgtf_app/anchors/external_anchor.json 已 `git checkout HEAD --` 复原（HEAD 版 0 条锚点）。
+
+【文件】
+  dgtf_app/static/app.js        +8 / -2
+  dgtf_app/selftest.py          +49
+  dgtf_app_改动报告_20261011.md +§56 / §57

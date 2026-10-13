@@ -478,6 +478,54 @@ def check_r45_frontend(css: str, js: str, html: str, srv_src: str,
           js.count("updateRlBar();") >= 3, "")
 
 
+def check_r46_frontend(js: str) -> None:
+    """★R46：文件选择的 `change` 处理器**不许**把 `FileList` 活引用先存下来再清 value。
+
+    ★★ 真事故（用户第二次报同一句「导入不了 / 没显示」）：
+       `#anchor-file` 的处理器原写成
+           const fs = e.target.files;
+           e.target.value = '';
+           if (fs && fs.length) importFiles(fs);
+       而 `HTMLInputElement.files` 返回的是一个 **FileList 活引用**
+       （实测 `fs === af.files` 为 `true`）—— 清 `value` 会**连带把 fs 清空**，
+       于是 `fs.length` 恒为 0，`importFiles()` **永远不会被调用**。
+       症状：点「选择文件导入…」选完文件**毫无反应**、面板页不显示任何东西；
+       而服务端接口**完全正常** ⇒ 极易被误判成后端问题。
+
+    ★ 为什么 R44/R45 两轮验收都没抓到：验收探针是**直接调 `importFiles()`**，
+      **绕开了这条真实路径**。判据必须落在「文件选择 → change」这条链上。
+    """
+    # ★ 取段：精确落在**文件选择的 change 处理器**那一段。
+    #   注意 `#anchor-file` 在文件里出现 3 次（注释 / 回形针复用 / 这里），
+    #   所以锚点取 `if (_af) _af.addEventListener('change'` 那一行 —— 唯一。
+    seg = ""
+    _lines = js.split("\n")
+    for _i, _ln in enumerate(_lines):
+        if "_af.addEventListener('change'" in _ln:
+            _buf = [_ln]
+            for _nxt in _lines[_i + 1:_i + 16]:
+                _buf.append(_nxt)
+                if _nxt.strip() == "});":
+                    break
+            seg = "\n".join(_buf)
+            break
+
+    check("★R46 找得到 `#anchor-file` 的 change 处理器", bool(seg), "")
+    # ★ 核心判据：取 files 时必须**当场拷成数组**（快照），不能留活引用
+    check("★R46 取 files **先拷成数组**（`[...e.target.files]`）—— 否则清 value 会连带清空",
+          "[...e.target.files]" in seg, "")
+    check("★R46 **不许**出现「先存活引用再清 value」的致命组合",
+          # ★ 只在**真代码行**上判：注释行（以 * 开头或整行是 /* … */）不算 ——
+          #   本函数 docstring 里就写了这个反例，否则判据会被自己的文档骗红。
+          not any(re.match(r"\s*const\s+fs\s*=\s*e\.target\.files\s*;", ln)
+                  for ln in seg.split("\n")
+                  if not ln.strip().startswith("*")
+                  and not ln.strip().startswith("/*")
+                  and not ln.strip().startswith("//")), "")
+    check("★R46 清 value（保证同一文件能再选一次）仍在，且判据用**快照后的长度**",
+          "e.target.value = ''" in seg and "if (fs.length)" in seg, "")
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--base", default="http://127.0.0.1:8765")
@@ -1498,6 +1546,7 @@ def main() -> int:
     check_r42_server(srv_src)
     check_r44_frontend(css, js, html, srv_src, lib_src, dp_src)
     check_r45_frontend(css, js, html, srv_src, lib_src)
+    check_r46_frontend(js)
     # ── 参数往返：列表型键不能被写成字符串 ─────────────────────────
     # ★ 这是「通过工作台发起的真跑全部 2–7 秒即崩」的根因：
     #   memory.channels 出厂是列表，经参数面板往返后变字符串 ⇒ 引擎

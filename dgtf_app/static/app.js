@@ -2805,9 +2805,15 @@ function init() {
   const _ap = $('#anchor-pick'), _af = $('#anchor-file');
   if (_ap && _af) _ap.addEventListener('click', () => _af.click());
   if (_af) _af.addEventListener('change', e => {
-    const fs = e.target.files;
+    /* ★★ R46 修：`e.target.files` 是 **FileList 活引用**（拿到的就是同一个对象）。
+       原来写成 `const fs = e.target.files; e.target.value = '';` ——
+       清 value 会**连带把 fs 清空**（实测 `fs === af.files` 为 true），
+       于是 `fs.length` 变 0，`importFiles(fs)` **永远不会被调用** ⇒
+       用户报「点了「选择文件导入…」选完文件没任何反应、也不显示」的**唯一根因**。
+       修法：**先拷成真数组（快照）**，再清 value。清不清都不影响已拷出的这份。 */
+    const fs = e.target.files ? [...e.target.files] : [];
     e.target.value = '';
-    if (fs && fs.length) importFiles(fs);
+    if (fs.length) importFiles(fs);
   });
   $('#lib-search').addEventListener('click', loadLib);
   $('#lib-q').addEventListener('keydown', e => { if (e.key === 'Enter') loadLib(); });
