@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.28.py"
+SRC = HERE / "元DGTF-V1.23.29.py"
 
 os.environ.setdefault("DGTF_API_KEY", "sk-smoke-test-key")
 
@@ -33,6 +33,12 @@ mod = importlib.util.module_from_spec(_spec)
 # dataclass 需要通过 sys.modules[cls.__module__] 解析注解，必须先注册
 sys.modules["dgtf_mod"] = mod
 _spec.loader.exec_module(mod)
+
+# ★ [v1.23.29] 规则优先分派下的**逃生阀**：规则层命中时不调 LLM，
+#   而这些桩本来是用「调 LLM 返回任意 mode」来测钳制/兜底的。凡是要
+#   测「LLM 给了什么之后怎么处理」的判据，题面必须取**规则拿不准**那类；
+#   这里提供一个常量，避免各处自己拼。
+_SMOKE_RULE_MISS_Q = "地铁运营效率的评价体系与统计口径问题"
 
 CALLS = {"n": 0}
 _LOCK = threading.Lock()
@@ -71,6 +77,8 @@ def fake_call(self, system, user, temperature=0.6, max_tokens=3000,
     # [自动调度] 一次定模式+圈数。两个环境变量分别驱动正常值与脏值，
     # 好验证圈数钳制：SMOKE_AUTO_ROUNDS 给越界值时必须被钳回 [1,hard]。
     if "DGTF 调度者" in s:
+        # ★ [v1.23.29] 走到这里说明**规则层没命中**（命中就不会调 LLM）。
+        #   所以用这个桩的判据，题面必须取 `_SMOKE_RULE_MISS_Q` 那类。
         _am = os.environ.get("SMOKE_AUTO_MODE", "serial")
         _ar = os.environ.get("SMOKE_AUTO_ROUNDS", '{"0":2,"1":2,"both":3,"all":2}')
         try:
@@ -91,6 +99,7 @@ def fake_call(self, system, user, temperature=0.6, max_tokens=3000,
 
     # SMOKE_AUTO_PLAN 可塞脏值，验证钳制。
     if "资源配置者" in s:
+        # ★ [v1.23.29] 同上：走到这里说明规则层没命中。
         _p = os.environ.get("SMOKE_AUTO_PLAN")
         if _p:
             return _p
@@ -5633,14 +5642,14 @@ def check_v71_auto_plan_agreement():
         _m = _cls(build_cfg(False))
         _m.llm = _Stub({"mode": mode_in, "rounds": dict(rounds_in),
                         "reason": "smoke", "confidence": conf})
-        _p1 = _m._auto_plan("探针题：该怎么跑")
+        _p1 = _m._auto_plan("探针题：评估这个多阶段问题的资源配置路径")
         _s2 = _Stub({"route": "full", "mode": mode_in,
                      "rounds": dict(rounds_in), "max_calls": 0,
                      "reason": "smoke", "confidence": conf})
         _oL = mod.LLM
         mod.LLM = lambda cfg: _s2
         try:
-            _p2 = mod.plan_resources("探针题：该怎么跑", "decision",
+            _p2 = mod.plan_resources("探针题：评估这个多阶段问题的资源配置路径", "decision",
                                      build_cfg(False))
         finally:
             mod.LLM = _oL
@@ -7599,7 +7608,7 @@ def check_v1221_p5(SRC=None):
                 return _j.loads(raw)
 
         _st = _StubLLM()
-        _plan = m.auto_plan("地铁运营效率该怎么衡量？",
+        _plan = m.auto_plan("地铁运营效率的评价体系与统计口径问题",
                             dict(m.DEFAULT_CONFIG), llm=_st)
         assert _plan.get("orientation") == "boundary", (
             "orientation 未带出：" + repr(_plan.get("orientation")))
@@ -7608,7 +7617,13 @@ def check_v1221_p5(SRC=None):
 
         # 4b ★ 早退分支（低置信 ⇒ 退回 serial）**也要带出取向** ——
         #    这是原静态字面断言真正想测的行为。
-        _early = m.auto_plan("x", dict(m.DEFAULT_CONFIG),
+        # ★ [v1.23.29 判据随实现更新] 题面必须让**规则层拿不准** ——
+        #   规则命中时会走规则分支（取向来自 `plan_orientation`，不读
+        #   本桩）。这里要测的是「LLM 桩返回低置信时仍带出取向」，
+        #   故题面取规则拿不准的那类。**不是放宽**：低置信仍必须退
+        #   serial、仍必须带出 boundary。
+        _early = m.auto_plan("地铁运营效率的评价体系与统计口径问题",
+                             dict(m.DEFAULT_CONFIG),
                              llm=_StubLLM(mode="A", conf=0.1))
         assert _early.get("mode") == "serial", (
             "低置信没退回 serial：" + repr(_early.get("mode")))
@@ -7622,7 +7637,8 @@ def check_v1221_p5(SRC=None):
                 import json as _j
                 return _j.dumps({"mode": "serial", "orientation": "随便"})
 
-        _p2 = m.auto_plan("x", dict(m.DEFAULT_CONFIG), llm=_Stub2())
+        _p2 = m.auto_plan("地铁运营效率的评价体系与统计口径问题",
+                          dict(m.DEFAULT_CONFIG), llm=_Stub2())
         assert not _p2.get("orientation"), "非法取向竟被采纳：" + repr(_p2)
 
         print("  ✓ v1.22.1 P5：判定留痕 + 错配告警 + 单调用带出取向（打桩实测）"
@@ -9362,17 +9378,17 @@ def check_v1235_pending_fix():
                    "orientation": "decision"}
             _m1 = mod.MetaDGTF(_cfg)
             _m1.llm = _Stub(dict(_pl))
-            _r1 = _m1._decide_parallel_mode("探针题：该怎么跑")
+            _r1 = _m1._decide_parallel_mode("探针题：评估这个多阶段问题的资源配置路径")
             _s2 = _Stub(dict(_pl))
             _oL = mod.LLM
             mod.LLM = lambda c: _s2
             try:
-                _r2 = mod.plan_resources("探针题：该怎么跑", "decision", _cfg)
+                _r2 = mod.plan_resources("探针题：评估这个多阶段问题的资源配置路径", "decision", _cfg)
             finally:
                 mod.LLM = _oL
             _m3 = mod.MetaDGTF(_cfg)
             _m3.llm = _Stub(dict(_pl))
-            _r3 = _m3._auto_plan("探针题：该怎么跑")
+            _r3 = _m3._auto_plan("探针题：评估这个多阶段问题的资源配置路径")
             _r2r = {k: v for k, v in (_r2.get("rounds") or {}).items()
                     if k in (_r2.get("route") or [])}
             if _r1.get("mode") != _r3.get("mode"):
@@ -9391,7 +9407,7 @@ def check_v1235_pending_fix():
            "orientation": "decision"}
     _m1 = mod.MetaDGTF(_cfg)
     _m1.llm = _Stub(dict(_lo))
-    _r1 = _m1._decide_parallel_mode("探针题")
+    _r1 = _m1._decide_parallel_mode("探针题：评估这个多阶段问题的资源配置路径")
     if _r1.get("mode") != "serial":
         bad.append("[1e] 低置信：单目标决策没退 serial（%s）" % _r1.get("mode"))
     if not str(_r1.get("reason", "")).startswith("低置信"):
@@ -9401,7 +9417,7 @@ def check_v1235_pending_fix():
     _oL = mod.LLM
     mod.LLM = lambda c: _s2
     try:
-        _r2 = mod.plan_resources("探针题", "decision", _cfg)
+        _r2 = mod.plan_resources("探针题：评估这个多阶段问题的资源配置路径", "decision", _cfg)
     finally:
         mod.LLM = _oL
     if _r2.get("mode") != "serial":
@@ -9411,7 +9427,7 @@ def check_v1235_pending_fix():
                    "这是刻意保留的差异，不该变" % _r2.get("reason"))
     _m3 = mod.MetaDGTF(_cfg)
     _m3.llm = _Stub(dict(_lo))
-    _r3 = _m3._auto_plan("探针题")
+    _r3 = _m3._auto_plan("探针题：评估这个多阶段问题的资源配置路径")
     if _r3.get("mode") != "serial":
         bad.append("[1e] 低置信：单调用没退 serial（%s）" % _r3.get("mode"))
     if not str(_r3.get("reason", "")).startswith("低置信"):
@@ -11299,8 +11315,20 @@ def check_v12327_five_mechanisms():
     _cr = _v3.aspect_carry_rate
     if not (_tr is not None and _tr > 0):
         bad.append("[A3] touch_rate 应为 >0（构造 3 触及）实为 %r" % _tr)
-    if _cr != 0.0:
-        bad.append("[A3] 无延续时 carry_rate 应为 0.0 实为 %r" % _cr)
+    # ★ [v1.23.29 判据随实现更新 · 不是放宽] 旧口径 `无延续 ⇒ 0.0` 是
+    #   本版定性的**假读数**：它把「上游没产延续 id / 本层还没接上」
+    #   印成「延续了 0 条」。新口径 `无延续 ⇒ None`，由渲染层印「—」。
+    #   ★ 两向都钉住：有延续 id 时必须**算得出真值**（这里构造 1/2 命中
+    #     ⇒ 0.5），否则「一律 None」也能骗过判据（零信息量）。
+    if _cr is not None:
+        bad.append("[A3] 无延续读数时应返回 None（不印 0.00 冒充）实为 %r"
+                   % _cr)
+    _v3b = mod.View(entry="0")
+    _v3b.aspect_units = [{"id": "A1", "text": "t"}, {"id": "A2", "text": "u"}]
+    _v3b._carried_aspect_ids = ["A1"]
+    if _v3b.aspect_carry_rate != 0.5:
+        bad.append("[A3] 有延续 id 时应算真值 0.5 实为 %r"
+                   % _v3b.aspect_carry_rate)
     # 空池 ⇒ None（不印 0.00 冒充读数）
     if mod.View(entry="0").aspect_carry_rate is not None:
         bad.append("[A3] 空池 carry_rate 应返回 None（不许印 0.0）")
@@ -11461,6 +11489,139 @@ def check_v12327_five_mechanisms():
     print("  \u2713 [v12327] A1 幂等/归一化 · A2 符号对账收敛 · "
           "A3 双读数分离 · D1 四态机 · D2 迁移优先级 · D3 语义熵 None · "
           "E1 EIG 同尺 · E2 子模批选 · E6 自适应停止（9 变异体背书）")
+    return True
+
+
+def check_v12329_convergence():
+    """[v1.23.29] 收束版判据：A1 索引化 / B1 规则优先 / C1 读数口径 /
+    D1 相对阈值 / D2 语义归并（正负两臂 + 出口）。
+
+    ★ 源码级 + 函数级双层：源码锚保证机制在；函数级两臂保证行为对。
+    ★ 判别力由 `_mut_v12329.py` 背书（M1~M8）。
+    """
+    src = SRC.read_bytes().decode("utf-8")
+    bad = []
+
+    # A1：`## 这一次我是谁` 索引化（去掉与逐层明细的整段重复）
+    if "## 这一次我是谁（索引）" not in src:
+        bad.append("[A1] 索引标题缺失")
+    if 'self_text = ["[<层>] " + view.manifest' in src:
+        bad.append("[A1] 旧截断复制仍在（manifest[:900] 未删）")
+
+    # B1：规则优先的模式分派（收敛到 serial/B/C）
+    if '_AUTO_REACHABLE_MODES = ("serial", "B", "C")' not in src:
+        bad.append("[B1] _AUTO_REACHABLE_MODES 缺失或不收敛")
+    if "def _mode_rule(self, question: str):" not in src:
+        bad.append("[B1] _mode_rule 缺失")
+    if "def mode_rule(question: str):" not in src:
+        bad.append("[B1] 模块级 mode_rule 唯一实现缺失")
+    if '"source": "rule"' not in src:
+        bad.append("[B1] 规则优先路径（source=rule）缺失")
+
+    # C1：touch_rate 逐圈口径前提（键存在才走逐圈）
+    if '_has_per_round = any(' not in src:
+        bad.append("[C1] touch_rate 逐圈前提守卫缺失")
+
+    # D1：相对分位阈值
+    if "def sem_thr_relative(" not in src:
+        bad.append("[D1] sem_thr_relative 缺失")
+    if 'thr.strip().lower() == "rel"' not in src:
+        bad.append("[D1] rel 触发分支缺失")
+
+    # D2：语义归并四件套（常量/属性/认领/出口）
+    if "_BELIEF_MERGE_SIM = 0.85" not in src:
+        bad.append("[D2] 归并阈值常量缺失")
+    if "merge_semantic: bool = False" not in src:
+        bad.append("[D2] Pool.merge_semantic 字段缺失")
+    if 'getattr(self, "merge_semantic", False)' not in src:
+        bad.append("[D2] upsert 语义认领段缺失")
+    if 'd["merge_log"] = list(getattr(self, "merge_log", []) or [])' not in src:
+        bad.append("[D2] merge_log 产物出口缺失")
+    if "_p.merge_semantic = _mg" not in src:
+        bad.append("[D2] 配置下发接线缺失")
+
+    # ── 函数级两臂（真实类，不打桩）──────────────────────
+    try:
+        _pool = mod.Pool()
+        _pool.merge_semantic = True
+        _pool.merge_sim = mod._BELIEF_MERGE_SIM
+        _pool.upsert_belief("灵魂是否存在取决于定义的清晰度", sources=["t"])
+        _pool.upsert_belief("灵魂是否存在，取决于定义的清晰度", sources=["t"])
+        if len(_pool.belief_items) != 1:
+            bad.append("[D2-正臂] 换说法未被归并（条目数=%d）"
+                       % len(_pool.belief_items))
+        if not getattr(_pool, "merge_log", None):
+            bad.append("[D2-正臂] merge_log 空")
+        _pool.upsert_belief("地铁票价应当按里程计费", sources=["t"])
+        if len(_pool.belief_items) != 2:
+            bad.append("[D2-负臂] 不同主张被错并（条目数=%d）"
+                       % len(_pool.belief_items))
+        _d = _pool.to_dict()
+        if _d.get("merge_semantic") is not True or not _d.get("merge_log"):
+            bad.append("[D2-出口] merge_semantic/merge_log 未出口")
+        _off = mod.Pool()
+        _off.upsert_belief("甲乙丙", sources=["t"])
+        _off.upsert_belief("甲乙丙，", sources=["t"])
+        if len(_off.belief_items) != 2 or getattr(_off, "merge_log", None):
+            bad.append("[D2-关臂] 默认关时不归并/不留痕")
+    except Exception as e:
+        bad.append("[D2-函数级] 异常：%r" % (e,))
+
+    # ── [1f] 规则命中 ⇒ 三处分派同案且不花 LLM 调用 ──────
+    try:
+        import json as _json
+        class _RStub:
+            def __init__(self, payload):
+                self.payload = payload
+                self.calls = 0
+            def call(self, *a, **k):
+                self.calls += 1
+                return _json.dumps(self.payload, ensure_ascii=False)
+            def parse_json(self, raw):
+                return _json.loads(raw)
+        _qhit = "探针题"  # 规则命中（单一短问句 ⇒ serial）
+        _hitpl = {"route": "full", "mode": "H",
+                  "rounds": {"0": 3, "1": 7, "both": 4, "all": 6},
+                  "max_calls": 0, "reason": "probe", "confidence": 0.9,
+                  "orientation": "decision"}
+        _cfg = build_cfg(False)
+        _m1 = mod.MetaDGTF(_cfg)
+        _st1 = _RStub(dict(_hitpl))
+        _m1.llm = _st1
+        _r1 = _m1._decide_parallel_mode(_qhit)
+        if _r1.get("mode") != "serial" or _r1.get("source") != "rule":
+            bad.append("[1f] _decide 规则命中未定案（%r）" % (_r1,))
+        if _st1.calls:
+            bad.append("[1f] _decide 规则命中仍花了 LLM 调用（%d 次）"
+                       % _st1.calls)
+        _st2 = _RStub(dict(_hitpl))
+        _oL = mod.LLM
+        mod.LLM = lambda c: _st2
+        try:
+            _r2 = mod.plan_resources(_qhit, "decision", _cfg)
+        finally:
+            mod.LLM = _oL
+        if _r2.get("mode") != "serial" or _st2.calls:
+            bad.append("[1f] plan_resources 规则未优先（mode=%r calls=%d）"
+                       % (_r2.get("mode"), _st2.calls))
+        _m3 = mod.MetaDGTF(_cfg)
+        _st3 = _RStub(dict(_hitpl))
+        _m3.llm = _st3
+        _r3 = _m3._auto_plan(_qhit)
+        if _r3.get("mode") != "serial" or _st3.calls:
+            bad.append("[1f] auto_plan 规则未优先（mode=%r calls=%d）"
+                       % (_r3.get("mode"), _st3.calls))
+        if not str(_r3.get("reason", "")).startswith("规则"):
+            bad.append("[1f] auto_plan 规则命中 reason 未标注（%r）"
+                       % _r3.get("reason"))
+    except Exception as e:
+        bad.append("[1f] 异常：%r" % (e,))
+
+    if bad:
+        for x in bad:
+            print("  ✗", x)
+        return False
+    print("  ✓ v1.23.29 收束判据（A1/B1/C1/D1/D2/1f）全过")
     return True
 
 
@@ -11720,8 +11881,21 @@ def check_v12328_real_entry():
     _vd = _vx.to_dict()
     if "touch_rate" not in _vd:
         bad.append("[R-out] view.to_dict 缺 touch_rate（A3 双读数无出口）")
-    if "aspect_carry_rate" not in _vd:
-        bad.append("[R-out] view.to_dict 缺 aspect_carry_rate")
+    # ★ [v1.23.29 判据随实现更新 · 不是放宽] 新口径：`aspect_carry_rate`
+    #   无延续读数时返回 None ⇒ **不写这个键**（v1.23.28 的出口纪律：
+    #   算不出就不印，不印 0.00 冒充）。所以这里改成**两向**：
+    #     · 无延续读数 ⇒ 键不该出现；
+    #     · **有**延续 id ⇒ 键必须出现且是真值（否则「一律不出」也骗过）。
+    if "aspect_carry_rate" in _vd:
+        bad.append("[R-out] 无延续读数时 aspect_carry_rate 不该出口"
+                   "（不印 0.00 冒充）实为 %r" % _vd.get("aspect_carry_rate"))
+    _vx2 = mod.View(entry="0")
+    _vx2.aspect_units = [{"id": "A1", "text": "t"}, {"id": "A2", "text": "u"}]
+    _vx2._carried_aspect_ids = ["A1"]
+    _vd2 = _vx2.to_dict()
+    if _vd2.get("aspect_carry_rate") != 0.5:
+        bad.append("[R-out] 有延续 id 时 aspect_carry_rate 必须出口真值"
+                   "（实为 %r）" % _vd2.get("aspect_carry_rate"))
 
     # ── T1 探针落盘带 gain_source ──────────────────────────
     # ★ 走**真实入口** `select_probe_focus`（E1/E2 的唯一接线点），
@@ -12184,6 +12358,8 @@ def main():
         return 1
     if not check_v12328_real_entry():
         return 1
+    if not check_v12329_convergence():
+        return 1
     q = "测试问题：AI 在数字 IC 设计里到底能做什么，哪些已经量产？"
     rows = []
     for mode in ("serial", "A", "B", "C", "D", "E",
@@ -12247,7 +12423,7 @@ def main():
             "rounds": {"0": 4, "1": 4, "both": 4, "all": 4},
             "cost_profile": "balanced", "max_calls": 300,
             "reason": "预算充足", "confidence": 0.9})
-        p_ok = mod.auto_plan("预算充足的题", build_cfg(False))
+        p_ok = mod.auto_plan(_SMOKE_RULE_MISS_Q, build_cfg(False))
         assert p_ok["max_calls"] == 300, \
             f"预算够时不该被抬：{p_ok['max_calls']}"
         # [v1.21.61] 按层封顶：研究层封 5，其余 6。
@@ -12259,7 +12435,7 @@ def main():
             "rounds": {"0": 6, "1": 6, "both": 6, "all": 6},
             "cost_profile": "balanced", "max_calls": 0,
             "reason": "全给满 6", "confidence": 0.9})
-        p5 = mod.auto_plan("全给满 6 的题", build_cfg(False))
+        p5 = mod.auto_plan(_SMOKE_RULE_MISS_Q, build_cfg(False))
         assert p5["rounds"]["1"] == mod._layer_ceil("1", 12, 4), \
             f"研究层应封到 5：{p5['rounds']}"
         assert p5["rounds"]["0"] == mod._MAX_LAYER_ROUNDS, \

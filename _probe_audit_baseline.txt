@@ -1,0 +1,82 @@
+── A 出口完整性 / 死类 ──
+── B 白名单四处一致 ──
+── C 版本一致性 ──
+── D 宪法红线（W# 不进候选 / 不进对撞第三者）──
+── E 圈号口径一致性 ──
+── F used_as 枚举与消费方 ──
+── G 登记表两向对账 ──
+── H 文档引用的文件 ──
+── J 配置键可达性 ──
+── K thinking stage 接线 ──
+── L 模型返回的 id 归一化 ──
+── I 自检（变异体：审计必须判红）──
+
+  ✓ A1.Candidate ★ 全字段出口（填满后必须都在 to_dict）
+  ✓ A1.Probe ★ 全字段出口（填满后必须都在 to_dict）
+  ✓ A1.View ★ 全字段出口（填满后必须都在 to_dict）
+  ✓ A1.Pool ★ 全字段出口（填满后必须都在 to_dict）
+  ✓ A2.Phase 非死类
+  ✓ A2.DecidabilityFreeze 非死类
+  ✓ A2.AnchorRetriever 非死类
+  ✓ A2.WebSearchCache 非死类
+  ✓ A2.WebSearchClient 非死类
+  ✓ A2.WebSearchGate 非死类
+  ✓ A2.ChannelTracker 非死类
+  ✓ A2.Candidate 非死类
+  ✓ A2.Amp ★ 死类已登记（定义后零引用）
+  ✓ A2.Thread ★ 死类已登记（定义后零引用）
+  ✓ A2.Probe ★ 死类已登记（定义后零引用）
+  ✓ A2.View 非死类
+  ✓ A2.MemoryChannel 非死类
+  ✓ A2.Pool 非死类
+  ✓ A2.Input 非死类
+  ✓ A2.LLM 非死类
+  ✓ A2.DGTF 非死类
+  ✓ A2.MetaDGTF 非死类
+  ✓ A3.Amp 死类登记有效（无过期）
+  ✓ A3.Probe 死类登记有效（无过期）
+  ✓ A3.Thread 死类登记有效（无过期）
+  ✓ B1.decidable_product schema 抠到键（非空）
+  ✓ B2.decidable_product 白名单抠到键（非空）
+  ✓ B3.decidable_product ★ schema 的键必须都过白名单（否则静默吞字段）
+  ✓ B1.undecidable_product schema 抠到键（非空）
+  ✓ B2.undecidable_product 白名单抠到键（非空）
+  ✓ B3.undecidable_product ★ schema 的键必须都过白名单（否则静默吞字段）
+  ✓ C1 docstring 标题版本 == __version__
+  ✓ C2 smoke_test.py 的 SRC 指向本版
+  ✓ C3 yaml 头部版本 == __version__
+  ✓ C4 本版报告存在
+  ✓ D1 ★ `view.candidates` 的写入点没有 web 来源
+  ✓ D2 ★ 对撞层的输入构造里没有 web 来源（未对齐合法）
+  ✓ D3 ★ `_ing` 里没有 web 符号（C3 复核）
+  ✓ E1 每个 `_web_search` 调用点都传真圈号（或前置 0）
+  ✓ E2 调用点数 ≥ 6（非空，防空过）
+  ✓ E3 ★ `_research_round_no()` 只返回常量 0（不再返回拆解序号）
+  ✓ E3b 前置调用点带 `pre_seq=`（序号仍有出口，不丢信息）
+  ✓ F1 `_WEB_USED_AS` 非空（登记表存在）
+  ✓ F2 ★ 所有 used_as 取值都在枚举里
+  ✓ F3 枚举里没有过期取值
+  ✓ F4 ★ 每个 used_as 取值至少有消费者（分析脚本读它）
+  ✓ G.死类 `_AUDIT_DEAD_CLASSES` 存在（登记表本身要有出口）
+  ✓ G.出口豁免 `_AUDIT_EXPORT_EXEMPT` 存在（登记表本身要有出口）
+  ✓ H1 ★ 报告里引用的文件都存在
+  ✓ J1 ★ DEFAULT_CONFIG 抠到键（非空）
+  ✓ J2 ★ 每个配置键都有人读（否则是装饰品）
+  ✓ J3 配置豁免表无过期项
+  ✓ J4 `_AUDIT_CONFIG_EXEMPT` 存在（登记表本身要有出口）
+  ✓ K1 ★ 声明过的 thinking stage 都能被选中（不被静默忽略）
+  ✓ K2 ★ 接线不改行为（新接线的 key 出厂值 == thinking.default）
+  ✓ K3 `_thinking_stage` 的第 2 实参都已在配置里声明（拼写守卫）
+  ✓ K4 ★ 代码里传的字面 stage 都必须在配置里声明（否则静默掉回 default）
+  ✓ K5 抽样非空（防空过）
+  ✓ L1 ★ 存在纯函数 `_normalize_judgment_ids`
+  ✓ L2 ★ 所有「读模型返回的 id」的调用点都过了归一化
+  ✓ L2.b 抽样非空（防空过）
+  ✓ L3 自检：合成源码（一处未归一化）必须被报出
+  ✓ L3.b 自检（负）：归一化过的合成源码**不**报出
+  ✓ I1 ★ 抠掉 `to_dict` 的 web_results 出口 → A1.Pool 必须报未出口
+  ✓ I2 ★ 抠掉 dec_norm 的 not_do 白名单行 → B3 必须报被吞
+  ✓ I4 ★ 把活类 `View` 也登记成死类 → A3 必须报过期登记
+  ✓ I3 ★ 把证据钩子的圈号换回拆解序号 → E1 必须报不合规
+
+AUDIT PASS 67 / FAIL 0  （元DGTF-V1.23.28.py）
