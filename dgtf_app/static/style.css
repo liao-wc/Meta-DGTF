@@ -176,20 +176,18 @@ h1,h2,h3,.task-q,.item .t,.md p{text-wrap:pretty}
 .attach-msg:empty{display:none}
 
 /* ── 已导入文件（回形针计数徽章 + **回形针右侧小窗**）──────────────────
-   ★ R45：用户报「导入的文件没显示出来」⇒ 加计数徽章 `#attach-n` + 展开清单。
+   ★ R45：用户报「导入的文件没显示出来」⇒ 加**计数数字气泡** + 展开清单
+     （那个气泡在 R48 已按用户要求移除，见下方 R48-3 说明）。
    ★★ R47：用户报「不要在下面对话框展开，保持原界面一致性」，改成：
         · 清单**不再是输入框下方的大面板**，而是**贴在回形针右侧弹出的一个小窗**；
         · 窗内每个文件是一个**小图标**（按类型给 emoji/字形），
           **图标右上角一个 ×**，点 × 直接删掉这个文件；
         · 小窗**绝对定位**（相对 `.composer`）⇒ **不占文档流、不顶动下面的内容**。 */
-.pill{position:relative}                 /* 徽章的定位基准（pill 原样式见下） */
-.pill-n{position:absolute;top:-5px;right:-5px;min-width:16px;height:16px;
-  padding:0 4px;border-radius:9px;background:var(--accent);color:#fff;
-  font-size:10.5px;font-weight:600;line-height:16px;text-align:center;
-  font-family:var(--f-mono);cursor:pointer;   /* 可点（点开小窗） */
-  box-shadow:0 0 0 2px var(--canvas, #fff)}
-.pill-n:hover{background:var(--accent-hi)}
-.pill-n[hidden]{display:none}
+.pill{position:relative}                 /* 定位基准（原为数字气泡服务，R48 后仅为通用浮层保留） */
+/* ★★ R48-3：原来这里有 3 条**计数数字气泡**的样式规则（绝对定位在 pill 右上角、
+   圆角底色、`[hidden]` 收起）。用户要求「回形针不要有上标」后该元素整条移除，
+   这三条已**无任何元素可匹配** —— 留着就是僵尸规则（看起来还在、实际没作用）。
+   ★ 删除前已确认 JS / HTML 里再无该标识符的任何用法。 */
 /* ★★ R47 修（用户原话「回形针那里显示的文件**在其右边**开一个小窗口」）：
    第一版贴在输入框**上沿**（`bottom:100%+8px`）⇒ 截图里**把欢迎语压住了**；
    第二版改成相对 `.composer` 贴左/右缘 ⇒ 仍落在**输入框内部**、压住功能胶囊
@@ -200,7 +198,9 @@ h1,h2,h3,.task-q,.item .t,.md p{text-wrap:pretty}
      —— 万一 JS 没跑到，下面的 `@media` 兜底还能把它摆在一个合理位置。 */
 .attach-panel{position:fixed;z-index:30;
   display:flex;flex-direction:column;gap:0;
-  width:min(300px,64vw);max-height:min(52vh,320px);padding:9px 10px 8px;
+  /* ★ R48-2：小窗要落在**输入框内部** ⇒ 收窄一档（300 → 260），
+     才不会一放就撞到发送键。 */
+  width:min(260px,60vw);max-height:min(52vh,300px);padding:8px 9px 7px;
   border:1px solid var(--hair);border-radius:12px;
   background:var(--s1, rgba(127,127,127,.06));
   backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
@@ -208,7 +208,9 @@ h1,h2,h3,.task-q,.item .t,.md p{text-wrap:pretty}
 /* ★ JS 会把 left/top 以内联样式写上去（见 app.js `placeAttachPanel()`）。
    这里给一组「JS 万一没跑到」的兜底坐标，且**窄屏**改成浮在输入框上方
    （右侧真的没地方时，压到上方的欢迎语是窄屏下可接受的取舍）。 */
-.attach-panel{right:12px;top:88px}
+/* ★★ R48：JS 现算的落点是「回形针右侧」（见 app.js `placeAttachPanel()`）。
+   这条兜底只在 JS 没跑到时生效 —— 挑一个**不压任何控件**的位置（左下角）+ 窄屏降级。 */
+.attach-panel{left:16px;top:auto;bottom:16px}
 @media (max-width:900px){
   .attach-panel{right:12px;top:auto;bottom:calc(100% + 8px)}
 }
@@ -226,22 +228,25 @@ h1,h2,h3,.task-q,.item .t,.md p{text-wrap:pretty}
 .ap-body{overflow:auto;flex:1 1 auto;min-height:0;padding-top:8px;
   display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start}
 /* 单个文件 = 一个小图标（右上角挂 × 删除键） */
-.ap-tile{position:relative;flex:0 0 auto;width:52px;height:56px;
+/* ★★ R48-2（用户图2「文件图形可以适当小一点」）：52x56 → **40x44**。
+   小窗现在落在输入框内部、宽度本来就紧，图标再占 52px 会显得很挤。 */
+.ap-tile{position:relative;flex:0 0 auto;width:40px;height:44px;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:3px;border:1px solid var(--hair);border-radius:9px;
+  gap:2px;border:1px solid var(--hair);border-radius:8px;
   background:var(--s2, rgba(127,127,127,.08));cursor:default}
-.ap-tile .ic{font-size:19px;line-height:1;font-family:var(--f-mono)}
-.ap-tile .tn{max-width:46px;overflow:hidden;text-overflow:ellipsis;
-  white-space:nowrap;font-size:9.5px;color:var(--t3);text-align:center}
+.ap-tile .ic{font-size:15px;line-height:1;font-family:var(--f-mono)}
+.ap-tile .tn{max-width:34px;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;font-size:8.5px;color:var(--t3);text-align:center}
 /* ★ 图标右上角的 × —— 点它 = 删掉这个文件。
    ★★ R47 修（用户原话「小文件右上角标一个 x 按钮」）：**必须常显**。
       第一版做成「悬停才显（opacity:0）」，截图里**整个 × 都看不见**
       —— 用户根本不知道能删，等于没实现这条需求。现在改常显，
       悬停时只做**高亮**（亮度）而不是「从无到有」。 */
-.ap-tile .rm{position:absolute;top:-5px;right:-5px;width:16px;height:16px;
+/* ★ R48-2：角标跟着图标一起缩（16 → 14），否则 40px 的图标上顶个 16px 红球会失衡。 */
+.ap-tile .rm{position:absolute;top:-4px;right:-4px;width:14px;height:14px;
   padding:0;border:0;border-radius:50%;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
-  background:var(--err, #e5534b);color:#fff;font-size:11px;line-height:1;
+  background:var(--err, #e5534b);color:#fff;font-size:10px;line-height:1;
   opacity:1;transition:filter .12s;box-shadow:0 0 0 1.5px var(--canvas, #fff)}
 .ap-tile .rm:hover{filter:brightness(1.18)}
 .ap-tile .rm:focus-visible{outline:2px solid var(--accent);outline-offset:1px}

@@ -308,9 +308,14 @@
           <path d="M20 11.5l-7.6 7.6a4.6 4.6 0 0 1-6.5-6.5l8-8a3.1 3.1 0 0 1 4.4 4.4l-8 8a1.6 1.6 0 0 1-2.2-2.2l7.3-7.3"
                 stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        <!-- ★ R45：在回形针上挂「已导入文件数」的小徽章（用户要求「标注位置显示已导入文件数」）。
-             0 个时不显示。点它 = 不触发导入，而是**展开已导入清单**（见 app.js 的 toggleAttachPanel）。 -->
-        <span class="pill-n" id="attach-n" hidden aria-label="已导入文件数">0</span>
+        <!-- ★★ R48：**去掉回形针上的数字气泡**（用户原话「回形针不要有上标」）。
+             原来这里挂着一个显示文件数的角标，用户第三张截图圈掉了它。
+             ⇒ 已**整条移除**（页面结构 + 脚本里的读写 + 样式表里的规则）。
+             ★ 原本「点角标展开清单」这条交互也一并没了 ⇒ 改成
+               **点回形针本身** = 有已导入文件时**展开/收起小窗**、
+               没有时**打开文件选择框**（这样「看一眼清单」仍然只点一下）。
+             ★ ★ 这段说明刻意**不写出那个元素的标识符**：判据会读页面/脚本文本，
+               注释里出现同样的 token 会把「已移除」判成「还在」（R47 踩过一次）。 -->
       </button>
       <button id="run-btn" class="send" data-tip="开始深究（⌘/Ctrl+↵）" aria-label="开始深究">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">

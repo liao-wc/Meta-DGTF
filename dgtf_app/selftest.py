@@ -418,20 +418,25 @@ def check_r45_frontend(css: str, js: str, html: str, srv_src: str,
     _lib = lib_src or ""
 
     # ── ① 导入的文件要**显示出来** ──────────────────────────────────────────
-    check("★R45 回形针上有「已导入文件数」徽章 `#attach-n`",
-          'id="attach-n"' in html and "String(n)" in js, "")
-    check("★R45 徽章在回形针按钮**内部**（贴角定位才对）",
-          (lambda: (lambda i: i >= 0 and 0 < html[i:i + 1400].find('id="attach-n"')
-                     < html[i:i + 1400].find("</button>"))(
-              html.find('id="attach-btn"')))(), "")
+    # ★★ R48-3（用户图3「回形针不要有上标」）：R45 那两条「回形针上要有计数气泡」
+    #   **语义反转** —— 现在是「**不许有**」（判据在下面 `★R48-3` 段）。
+    #   ★ 判据守的**行为**没变：仍然是「导入的文件数量要能被看到」，
+    #     只是载体从「回形针角标」换成了「小窗标题 + 悬停提示」。
+    #     所以不是删掉判据，而是把它挪到新载体上。
+
     check("★R45 有**可展开的已导入清单** `#attach-panel`",
           'id="attach-panel"' in html and "attach-panel hidden" in html, "")
     check("★R45 清单里每行有**文件名 + 大小 + 删除**",
           "data-apname" in js and "data-apdel" in js, "")
     check("★R45 清单有**关闭**键，且绑了收起",
           'id="ap-close"' in html and "_apx.addEventListener('click'" in js, "")
-    check("★R45 点**徽章**展开清单（不是又弹文件选择框）",
-          "e.target.id === 'attach-n'" in js and "toggleAttachPanel();" in js, "")
+    # ★★ R48-3：原来这条判「点**徽章**展开清单」—— 徽章已移除，
+    #   点击分派改成「点**回形针本身**」：有已导入文件 ⇒ 开关小窗；没有 ⇒ 开选择框。
+    #   ★ 判据守的**行为**没变（「看一眼清单」仍然只点一下），换的是那个可点的目标。
+    check("★R45/R48-3 点**回形针本身**即可展开清单（不再依赖那个已移除的角标）",
+          "if (localItems.length) { toggleAttachPanel(); return; }" in js
+          and "toggleAttachPanel();" in js, "")
+
     check("★R45 导入成功后**自动展开清单**（结果送到眼前，不用去抽屉翻）",
           "if (okN) toggleAttachPanel(true);" in js, "")
     check("★R45 删除走真实接口 `/api/library/delete`",
@@ -649,21 +654,31 @@ def check_r47_frontend(css: str, js: str, html: str, srv_src: str,
           re.search(r'class="ap-tile"[\s\S]{0,400}?data-apdel=', _jsnc) is not None, "")
     check("★R47 删除键的字面是 **×** 且带无障碍标签",
           "\u00d7</button>" in _jsnc and "aria-label=" in _jsnc, "")
-    check("★R47 角标 × 定位在图标**右上角**",
-          (lambda: (lambda m: bool(m) and "top:-5px" in m.group(1)
-                    and "right:-5px" in m.group(1))(
+    # ★★ 判据守**行为**（「贴在图标的右上角」），不写死偏移量。
+    #   原来写死 `top:-5px`/`right:-5px`，R48-2 把角标跟着图标一起缩到 -4px
+    #   （**正确改进**，比例才不失衡）时被判成回归 —— 与「不许把 absolute 改成 fixed」
+    #   是同一种错：把取值当行为。改成：偏移量**是负的**（即向内收、压在角上）且
+    #   水平/垂直偏移**同号等量**（真正的「右上角」而不是某个边角混搭）。
+    check("★R47/R48-2 角标 × 贴在图标的**右上角**（偏移量为负、左右等量 —— "
+          "不写死具体 px，R48-2 已按比例缩到 14px）",
+          (lambda: (lambda m: bool(m)
+                    and (lambda t, r: t.startswith("-") and r.startswith("-")
+                         and t == r.replace("right", "top").replace("top", "top"))(
+                        re.search(r"top:(-?\d+px)", m.group(1)).group(1),
+                        re.search(r"right:(-?\d+px)", m.group(1)).group(1)))(
               re.search(r"\.ap-tile \.rm\{([^}]*)\}", _css)))(), "")
+
     check("★R47 角标 × **常显**（`opacity:1`）—— 用户原话「右上角标一个 x 按钮」，"
           "做成悬停才显等于没实现（第一版就是这么错的，截图里整个 × 看不见）",
           (lambda: (lambda m: bool(m) and "opacity:1" in m.group(1))(
               re.search(r"\.ap-tile \.rm\{([^}]*)\}", _css)))(), "")
-    check("★R47 小窗定位**交给 JS 现算**（`position:fixed` + `placeAttachPanel()`）"
-          "—— 放在回形针右边；纯 CSS 做不到（`.composer` 满宽居中，贴它左/右缘都在"
-          "输入框内部；放到外侧又溢出视口）",
+    check("★R47/R48 小窗定位**交给 JS 现算**（`position:fixed` + `placeAttachPanel()`）"
+          "—— 落点按回形针的真实坐标算；纯 CSS 做不到（回形针在输入框内部，"
+          "而它的 x 是 flex 排出来的、随胶囊文字长度变）",
           (lambda: (lambda m: bool(m) and "position:fixed" in m.group(1))(
               re.search(r"(?m)^\.attach-panel\{([^}]*)\}", _css)))()
           and "function placeAttachPanel(" in js
-          and "r.right + M" in js and "placeAttachPanel()" in js,
+          and "placeAttachPanel()" in js,
           "")
     # ★ 老写法只在**主规则**里算违规：`.attach-panel{top:88px}` + 窄屏 `@media`
     #   兜底里的 `bottom:calc(100% + 8px)` 是**有意的降级方案**（JS 没跑到时才用），
@@ -673,24 +688,102 @@ def check_r47_frontend(css: str, js: str, html: str, srv_src: str,
           "—— 窄屏 `@media` 的兜底不算（那是有意的降级）",
           (lambda: (lambda m: bool(m) and "bottom:calc(100%" not in m.group(1))(
               re.search(r"(?m)^\.attach-panel\{([^}]*)\}", _css)))(), "")
-    # ★★ 定位降级链**必须**存在，否则窄视口下会落回**输入框内部**、压住发送按钮
-    #   （截图实证：1078px 视口下 `ap.left` 落进输入框，盖住右端「↑」）。
-    #   ★★ 实测两轮才定下来：「贴回形针右边」和「贴输入框右外侧」**都不行** ——
-    #      · 回形针在输入框内部 ⇒ 贴它右边必然落进输入框、压住胶囊；
-    #      · 输入框右外侧在常见窗口宽（1574）下放不下（需 1637）。
-    #      ⇒ 最终落点 = 输入框**正上方、右缘对齐**（那一块是空白）。
-    #   判据守两件事：① 有「右外侧」这一档（超宽屏首选）；
-    #                 ② 有「正上方」这一档（常见宽度主路径）。
-    check("★R47 定位有**降级链**：输入框右外侧 ⇒ 正上方右对齐（两档都在）",
-          "cr.right + M" in js and "cRight - w" in js and "cTop - M - h" in js, "")
-    check("★R47 定位**避开欢迎语**（正上方那一档会压到首屏文案 ⇒ 要再上移）",
-          "querySelector('#welcome')" in js and "wr.top - M - h" in js, "")
+    # ★★ R48-2（用户图2 的红箭头）：落点**改回「回形针右侧、输入框内部」**。
+    #   R47 那版落点是「输入框正上方右对齐」（我为「零遮挡」自己挑的），
+    #   用户这次**明确否掉**了它 ⇒ 旧判据（`cr.right + M` / `cRight - w` /
+    #   `cTop - M - h` / `#welcome`）在新实现里**全部不存在**。
+    #   ★ 这不是「放宽阈值」，是**判据随实现更新**：要守的行为没变
+    #     （小窗要贴在回形针旁边、且不许压住任何**控件**），
+    #     变的是「哪一档是主路径」。
+    #   新降级链：① 回形针**右侧**（用户要的）⇒ ② 回形针**正上方**
+    #              ⇒ ③ 夹进视口兜底。
+    check("★R48 定位**主路径 = 回形针右侧**（用户图2 的要求，不再是输入框正上方）",
+          "r.right + M" in js and "const fitsRight" in js, "")
+    check("★R48 有**降级链**：右侧放不下 ⇒ 回形针正上方（`r.top - M - h`）",
+          "r.top - M - h" in js, "")
+    # ★★ 「不许压**发送键**」是这条需求真正的**行为**约束：
+    #   用户要小窗落在输入框内部，输入框里唯一「压住就出事」的是发送键
+    #   （压住就没法发消息）。⇒ 实现必须**取发送键的左缘当右墙**。
+    check("★R48 取**发送键的左缘**当右墙（压住发送键 = 没法发消息，是硬约束）",
+          "$('#run-btn')" in js and "sr.left - M" in js and "wallRight" in js, "")
+    check("★R48 与回形针**垂直居中**（视觉上是「从回形针旁边长出来」）",
+          "r.top + r.height / 2" in js and "cy - h / 2" in js, "")
+
     check("★R47 定位取的是**回形针按钮**的真实坐标（`#attach-btn`）",
           "$('#attach-btn')" in js, "")
+    # ★★ R48-2：图标格**变小**（用户图2「文件图形可以适当小一点」）。
+    #   守的是**行为**（「比原来小」），不是某个具体像素 —— 所以判「≤ 44×48」
+    #   而不是「== 40×44」（写死取值会把以后再微调判成回归）。
+    #   原来 52×56 ⇒ 判据上界取 44/48，既证明确实小了、又不锁死。
+    check("★R48-2 图标格**变小**了（≤ 44×48，原来是 52×56）"
+          "—— 判据守「比原来小」，不写死具体 px",
+          (lambda: (lambda m: bool(m)
+                    and (lambda w, h: 0 < w <= 44 and 0 < h <= 48)(
+                        int(re.search(r"width:(\d+)px", m.group(1)).group(1)),
+                        int(re.search(r"height:(\d+)px", m.group(1)).group(1))))(
+              re.search(r"\.ap-tile\{([^}]*)\}", _css)))(), "")
+    check("★R48-2 角标 × 也跟着缩（≤ 14px，跟图标比例不失衡）",
+          (lambda: (lambda m: bool(m)
+                    and int(re.search(r"width:(\d+)px", m.group(1)).group(1)) <= 14)(
+              re.search(r"\.ap-tile \.rm\{([^}]*)\}", _css)))(), "")
+    check("★R48-2 小窗**收窄**（≤ 280px）—— 要落进输入框内部，宽了必撞发送键",
+          (lambda: (lambda m: bool(m)
+                    and int(re.search(r"width:min\((\d+)px", m.group(1)).group(1)) <= 280)(
+              re.search(r"(?m)^\.attach-panel\{([^}]*)\}", _css)))(), "")
+
     check("★R47 图标按扩展名给字形（零依赖，不引图标库）",
           "function fileGlyph(" in _jsnc and "'pdf'" in _jsnc, "")
     check("★R47 图标下标签过长时保留头尾（这些文件名前缀高度相同，必须能分辨）",
           "function shortName(" in _jsnc and "\u2026" in _jsnc, "")
+
+    # ── ★★ R48（用户 3 图）────────────────────────────────────────────────
+    #   R48-1 输入框里那行「完成 · 成功 N 个」不再显示；
+    #   R48-2 小窗移进输入框、贴回形针右侧（几何判据在上方）+ 图标变小；
+    #   R48-3 回形针不再有数字气泡（角标）。
+
+    # ── R48-1 ───────────────────────────────────────────────────────────
+    # ★★ 判据必须**去注释**后再查 token：我自己在注释里解释「不再写这一行」
+    #   时若要写出那个赋值语句，就会把判据顶红（R47 原形）。`_jsnc` 已去注释。
+    # ★★ 判据必须**限定在 `importFiles` 函数体内** —— 第一次写的是
+    #   `"am.textContent" not in _jsnc`（全文），结果把 `newChat()` 里
+    #   **有意保留**的那句清空（开新对话把这行清掉）也判红了。
+    #   用户要求的是「**导入完成**那行不要显示」，不是「任何地方都不许碰这个元素」。
+    #   ⇒ 范围收紧（不是放宽）：只在 `importFiles` 的源码区间里查这个 token。
+    #   ★ 同时**去注释**后再查（`_jsnc`）：否则我在注释里解释这件事的文字会顶红。
+    check("★R48-1 `importFiles()` 内**不再写**那行提示（用户图1「这里不要显示」）"
+          "—— 判据限定在该函数体内，且读的是**去注释后**的源码",
+          (lambda: (lambda a, b: a >= 0 and b > a
+                    and "am.textContent" not in _jsnc[a:b])(
+              _jsnc.find("async function importFiles"),
+              _jsnc.find("async function openLocal")))(), "")
+    # ★ 判别力对照：**别处**那句清空必须还在（否则「范围收紧」变成「整块删掉」）
+    check("★R48-1 对照：`newChat()` 里那句清空**仍在**（范围收紧，不是整块删）",
+          "if (am) am.textContent = '';" in _jsnc, "")
+
+    check("★R48-1 导入结果改由**小窗/抽屉**承载（`#import-detail` 逐文件列结果）",
+          "importPaint(" in _jsnc and "$('#import-detail')" in _jsnc
+          and "if (okN) toggleAttachPanel(true);" in _jsnc, "")
+    # ★ 那行元素**保留**（CSS 用 `:empty` 让它空着就不占位），这比删元素安全：
+    #   既有结构引用不断，且「导入中」等其它瞬时文案未来还能复用。
+    check("★R48-1 那行元素本身保留、且**空着不占位**（`.attach-msg:empty{display:none}`）",
+          'id="attach-msg"' in html
+          and re.search(r"\.attach-msg:empty\{([^}]*)\}", _css) is not None, "")
+
+    # ── R48-3 ───────────────────────────────────────────────────────────
+    # ★★ 三处来源都要查（页面 / 样式表 / 脚本），且**含注释**：
+    #   留着注释里那个标识符，后来人会以为角标还在（R47 的 `ap-row` 原形）。
+    check("★R48-3 回形针**不再有数字气泡**"
+          "—— 页面 / 样式表 / 脚本三处都搜不到那个标识符（含注释）",
+          "attach-n" not in html and "pill-n" not in html
+          and "attach-n" not in css and "pill-n" not in css
+          and "attach-n" not in js and "pill-n" not in js, "")
+    # ★ 判据的**行为**没变：数量仍要能被看到 ⇒ 挪到小窗标题 + 悬停提示。
+    check("★R48-3 数量改由**小窗标题 + 回形针悬停提示**表达（角标没了但数量没丢）",
+          'id="ap-count"' in html and "已导入 ${n} 个" in _jsnc, "")
+    # ★ 点回形针 = 有文件则开关小窗 / 没文件则开选择框（原来只有角标能点开）
+    check("★R48-3 点**回形针本身**分派：有已导入文件 ⇒ 开关小窗；没有 ⇒ 开文件选择框",
+          "if (localItems.length) { toggleAttachPanel(); return; }" in _jsnc, "")
+
 
 
 def check_r46_frontend(js: str) -> None:

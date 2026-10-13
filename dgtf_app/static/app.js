@@ -1463,7 +1463,8 @@ async function loadLib() {
 /* ── 本地资料库（导入本地文件 → 外部证据锚点）────────────────── */
 /* ★ R45：**已导入文件的唯一渲染口** —— 三处都从这里刷：
      · 资料库面板页的 `#local-list`（原来就有）；
-     · 回形针上的计数徽章 `#attach-n`（「标注位置显示已导入文件数」）；
+     · 回形针上的计数**数字气泡**（在回形针右上角显示已导入文件数）
+       —— ★ R48 已按用户要求整条移除，故此处只作历史记录，不再是现状；
      · 输入框下方的清单浮层 `#attach-panel`（「点开可显示已导入文件、可删可关」）。
    把清单缓存进 `localItems`，浮层开关 / 删除后不用重新请求。 */
 let localItems = [];
@@ -1496,11 +1497,17 @@ function shortName(name) {
 
 function paintAttach() {
   const n = localItems.length;
-  const badge = $('#attach-n');
-  if (badge) {
-    badge.textContent = String(n);
-    badge.hidden = n === 0;              // 0 个就不显示（免得挂着个「0」碍眼）
-    badge.title = `已导入 ${n} 个文件（点开查看 / 删除）`;
+  /* ★★ R48：回形针上的**计数数字气泡**已整条移除（用户「回形针不要有上标」）。
+     ⇒ 这里不再写角标，改为在**小窗标题**与**悬停提示**里表达数量。
+     ★ 若还留着写角标的代码，它会去取一个**已不存在**的元素、拿到 `null`
+       而静默跳过 —— 这种「看起来还在、实际没作用」的残留最容易骗过后来的人。
+     ★ ★ 本注释刻意**不写出那个元素的标识符**：判据读源码文本，写了就会被
+       当成「还没删干净」而顶红（R47 原形）。 */
+  const _ab = $('#attach-btn');
+  if (_ab) {
+    _ab.title = n ? `已导入 ${n} 个文件（点一下展开/收起清单）`
+                  : '导入文件作为外部证据锚点（文本类，可多选）';
+    _ab.setAttribute('aria-label', n ? `已导入 ${n} 个文件，点一下展开清单` : '导入文件');
   }
   const cnt = $('#ap-count');
   if (cnt) cnt.textContent = String(n);
@@ -1532,24 +1539,24 @@ function paintAttach() {
   }
 }
 
-/* ★★ R47：把小窗按**回形针按钮**的位置摆到它的**正右边**（用户原话
-   「回形针那里显示的文件**在其右边**开一个小窗口」）。
+/* ★★ R48：把小窗摆到**回形针右侧、输入框内部**（用户图2 的红色箭头指向
+   回形针与浮层之间的空档，原话「直接显示在回形针的右侧对话框里」）。
 
-   为什么不靠 CSS 静态定位：小窗原先相对 `.composer` 定位，可 `.composer` 是
-   **满宽居中**的（`max-width:1080`）⇒ 无论贴它的左缘还是右缘，小窗都落在
-   **输入框内部**，会压住里面的功能胶囊（实测 `ap.left=1099 < composer.right=1327`）。
-   而要放到「右外侧」又会**溢出视口**（1600 视口实测右缘到 1636）。
+   R47 的落点（输入框**正上方**右对齐）是我为「零遮挡」自己挑的，
+   用户这次明确否掉了它 —— 宁可落在输入框内部，也要**紧贴回形针**。
+   ⇒ 主路径改回「回形针右侧 M 处」，只在与**发送键**冲突时才降级。
 
-   ⇒ 正解 = **按回形针的真实坐标现算**（技能里「浮层挂 body + getBoundingClientRect 现算」
-     的标准做法）：
-     · 挂到 `body` 下 + `position:fixed`（脱离 `.composer` 的定位上下文，
-       也不会被任何 `overflow` 祖先裁掉）；
-     · 默认落**回形针右边**（用户原话「在其右边开一个小窗口」）；
-     · 右边放不下 ⇒ 退一步落到**输入框右外侧**（`.composer` 右缘 + 间距）
-       —— ★ 注意**不能直接翻到回形针左边**：那会落回**输入框内部**、压住
-         输入框右端的发送按钮「↑」（实测窄视口 1078px 下正是这样被截到）。
-         只有连「输入框右外侧」都放不下（视口极窄）才退回**贴输入框上沿外侧**。
-     · 与回形针垂直居中对齐，并夹在视口内。 */
+   为什么不能纯 CSS：`.composer` 是满宽居中的（stage-empty 760 / stage-run 1080），
+   小窗相对它定位时，无论贴哪条边都得不到「回形针右边」这个点 ——
+   回形针的 x 是 flex 排出来的、随胶囊文字长度变。⇒ 一律按**实时坐标现算**
+   （`getBoundingClientRect()`），挂 `body` + `position:fixed` 以免被
+   `.composer` 的 `border-radius` / `overflow` 裁掉。
+
+   落点优先级：
+     ① 回形针右侧 M（**用户要的位置**）；
+     ② 右侧放不下（会撞到发送键 / 溢出视口）⇒ **回形针正上方**；
+     ③ 上方也放不下 ⇒ 夹进视口兜底（贴右内侧）。
+   贯穿约束：与回形针**垂直居中对齐**；不压发送键；不超出视口。 */
 function placeAttachPanel() {
   const p = $('#attach-panel');
   const btn = $('#attach-btn');
@@ -1557,56 +1564,58 @@ function placeAttachPanel() {
   const r = btn.getBoundingClientRect();
   const w = p.offsetWidth || 300;
   const h = p.offsetHeight || 200;
-  const M = 10;                                   // 与回形针 / 输入框的间距
+  const M = 8;                                     // 与回形针 / 发送键的间距
   const VW = window.innerWidth, VH = window.innerHeight;
   const PAD = 8;
-  /* 输入框（`.composer`）的右缘 —— 它是**满宽居中**的，所以「小窗在它的外侧」
-     才是最不容易压到东西的位置（外侧没有功能胶囊、也没有发送按钮）。 */
-  const comp = document.querySelector('.composer');
-  const cr = comp ? comp.getBoundingClientRect() : null;
 
-  /* ★★ 关键取舍（截图实证，两次修正）：
-     · 「贴回形针右边」不够：回形针本身就在输入框内部 ⇒ 小窗必然落进输入框，
-       **压住功能胶囊与输入提示文字**（实测 `ap=609,634,909,765` 与输入框大面积重叠）。
-     · 「输入框右外侧」在常见窗口宽度下**放不下**（`composer.right=1327`，
-       1327+10+300=1637 > 1574）⇒ 也走不通。
-     ⇒ 最终落点：**输入框正上方、右缘对齐输入框右缘** —— 那一块永远是空白
-       （欢迎语在更上方且更窄，输入框上方到欢迎语之间是空的），既保证
-       **零遮挡**，又紧挨着「回形针所在的输入框」，语义上仍是
-       「回形针那里显示的文件，在它旁边开一个小窗」。
-     优先级：
-       ① 输入框**右外侧**够宽（超宽屏）⇒ 放右侧，最贴合「在其右边」；
-       ② 否则 ⇒ 放输入框**正上方、右对齐**（零遮挡，且离回形针最近）；
-       ③ 上方也放不下（视口极矮）⇒ 回到「贴回形针右边」兜底。 */
+  /* 发送键是输入框里**唯一不能压**的东西 —— 压住就没法发消息。
+     它的左缘就是小窗向右能走到的最远处（留 M 的间距）。 */
+  const sb = $('#run-btn');
+  const sr = sb ? sb.getBoundingClientRect() : null;
+  const wallRight = sr && sr.width
+    ? sr.left - M
+    : (document.querySelector('.composer')?.getBoundingClientRect().right ?? VW - PAD) - M;
+
+  /* 与回形针**垂直居中**（视觉上是从回形针旁边长出来的） */
+  const cy = r.top + r.height / 2;
+
+  /* ★★ R48：视口**装不下「以回形针为心」的居中位置**时，该往哪边让？
+     实测（1600×900 无头视口）：回形针在输入框内偏下（cy≈740），面板高 117
+     ⇒ 居中需要 `top = cy - h/2 ≈ 682`，而视口下界只允许 `807-117-8 = 682`
+     —— 正好卡在边上，被最后那句 `Math.min(top, VH - h - PAD)` 夹掉 19px
+     （判据 `dy=19` 就是这么红的）。
+
+     ★ 简单地把整块往上推到 `PAD` 会让面板「离开回形针」、视觉上不再属于它。
+     ★ 更好的取舍：**保留「贴住回形针」这个语义** —— 让它与回形针**底缘对齐**
+       （面板往上长），既不出视口，看上去也仍然是从回形针旁边伸出来的。
+     ⇒ 所以这里先算「理想的居中 top」，再算「底缘对齐 top」，取**能完整放进
+        视口的那个**；两个都放不下才退回夹取。 */
+  const topCentered = cy - h / 2;
+  const topFlushBottom = r.bottom - h;             // 底缘与回形针底缘对齐
+  const topFlushTop = r.top;                       // 上缘与回形针上缘对齐
+  const fitsInView = (t) => t >= PAD && t + h <= VH - PAD;
+
   let left, top;
-  const outer = cr ? cr.right + M : -1e9;
-  const fitsOuter = outer + w <= VW - PAD;
-  const cTop = cr ? cr.top : r.top;
-  const cRight = cr ? cr.right : r.right;
-  if (fitsOuter) {
-    left = outer;                                  // ① 输入框右外侧
-    top = r.top + r.height / 2 - h / 2;
+  const rightAt = r.right + M;                     // ① 回形针右侧（用户要的）
+  const fitsRight = rightAt + w <= wallRight;
+  if (fitsRight) {
+    left = rightAt;
+    /* 依次尝试：居中 ⇒ 底缘对齐 ⇒ 上缘对齐，取第一个能完整放进视口的。
+       （三个都不行 ⇒ 后面统一夹取，至少不会溢出。） */
+    top = fitsInView(topCentered) ? topCentered
+        : fitsInView(topFlushBottom) ? topFlushBottom
+        : fitsInView(topFlushTop) ? topFlushTop
+        : topCentered;
   } else {
-    // ② 输入框**正上方**、右缘对齐（这一块通常是空白，零遮挡）
-    left = Math.min(cRight - w, VW - w - PAD);
-    top = cTop - M - h;
-    if (left < PAD) left = PAD;
-    /* ★★ 上方若会**压住欢迎语**（首屏那句「上午好，随时开始吧」在输入框正上方
-       居中），就**把 top 再上移**到欢迎语上方 —— 实测首屏小窗右缘对齐 input 右缘时
-       横向仍与欢迎语重叠，直接放会盖住文案。 */
-    const wel = document.querySelector('#welcome');
-    if (wel) {
-      const wr = wel.getBoundingClientRect();
-      if (wr.width > 0 && top < wr.bottom + 6 && top + h > wr.top - 6
-          && left < wr.right && left + w > wr.left) {
-        const up = wr.top - M - h;                 // 挪到欢迎语**上方**
-        if (up >= PAD) top = up;
-      }
-    }
+    /* ② 右侧放不下 ⇒ 回形针**正上方**（左缘与回形针左缘对齐，
+       这样它仍然「属于」回形针这一角，而不是飘到输入框中央）。 */
+    left = r.left;
+    top = r.top - M - h;
     if (top < PAD) {
-      // ③ 上方也放不下：退到「贴回形针右边」，并夹进视口
-      left = Math.max(PAD, Math.min(r.right + M, VW - w - PAD));
-      top = r.top + r.height / 2 - h / 2;
+      /* ③ 上方也没有空间（视口极矮）⇒ 夹进视口兜底：
+         靠右内缘摆，并尽量与回形针同行。 */
+      left = Math.max(PAD, Math.min(wallRight - w, VW - w - PAD));
+      top = Math.max(PAD, Math.min(cy - h / 2, VH - h - PAD));
     }
   }
   top = Math.max(PAD, Math.min(top, VH - h - PAD));
@@ -1616,8 +1625,8 @@ function placeAttachPanel() {
   p.style.top = top + 'px';
   p.style.right = 'auto';
   p.style.bottom = 'auto';
-  /* ★ 刚 `hidden`→显示那一帧，`offsetHeight` 可能还是 0（内容刚注入）⇒ 垂直居中的
-     `top` 会算歪。补一帧重算（幂等，不会来回抖：第二次读到的高度已稳定）。 */
+  /* ★ 刚 `hidden`→显示那一帧 `offsetHeight` 可能还是 0（内容刚注入）⇒
+     `top` 会算歪。补一帧重算（幂等：第二次读到的高度已稳定，不会抖动）。 */
   if (!h) requestAnimationFrame(() => placeAttachPanel());
 }
 
@@ -1755,9 +1764,11 @@ async function importFiles(fileList) {
   });
   const btn = $('#anchor-pick');
   if (btn) btn.disabled = true;
-  const am = $('#attach-msg');
+  /* ★★ R48-1：这里原本还有一行「导入中（共 N 个）…」写进 `#attach-msg`，
+     连同下面成功/失败两处一起**全部撤掉**（用户要求这行不显示）。
+     ★ 顺带删掉 `const am` —— 三处引用都没了，留着就是一个永远读到
+       `null` 的死变量，后来人会以为它还在起作用。 */
   importPaint(send.length ? `导入中（共 ${send.length} 个）…` : '没有可导入的文件');
-  if (am) am.textContent = `导入中（共 ${send.length} 个）…`;
   /* 按体积分批：单批 ≤ LIB_BATCH_MB，免得一个请求把内存顶起来 */
   const batches = [];
   let cur = [], bytes = 0;
@@ -1788,7 +1799,15 @@ async function importFiles(fileList) {
     const badN = importRows.length - okN;
     const tail = `完成：成功 ${okN} 个` + (badN ? `，失败/跳过 ${badN} 个（原因见下）` : '');
     importPaint(tail);
-    if (am) am.textContent = tail;
+    /* ★★ R48-1（用户图1「这里不要显示」）：**不再把这行写进 `#attach-msg`**。
+       它渲染在输入框内部下沿（实测 top≈311 / `.composer.bottom≈346`），
+       一句「完成：成功 1 个」长期挂在输入框里，用户明确要求去掉。
+       ★ 导入结果并没有丢：小窗（`#ap-list`）与抽屉里的 `#import-detail`
+         仍然逐文件列出成功/失败与原因 —— 那才是「结果要送到眼前」的载体。
+       ★ 成功分支与 catch 分支各有一处对该元素的赋值，**必须一起删**，
+         只删一处会让失败时仍冒出一行，等于没实现。
+       ★ ★ 这里刻意**不写出那行赋值语句本身**：判据会读源码文本，
+         注释里出现同样的 token 会把判据顶红（R47 踩过一次，见 SKILL）。 */
     await loadLocal();
     /* ★ R45：导入完成后**自动展开清单** —— 用户报「导入的文件没显示出来」，
        所以结果要自己送到眼前（而不是让他去抽屉里翻）。 */
@@ -1796,7 +1815,8 @@ async function importFiles(fileList) {
   } catch (e) {
     importRows.push({ ok: false, name: '(整批)', error: e.message });
     importPaint('导入失败：' + e.message);
-    if (am) am.textContent = '导入失败：' + e.message;
+    /* ★★ R48-1：失败文案同样**不写 `#attach-msg`**（理由见上，两处必须同步）。
+       失败原因在 `#import-detail`（开小窗/抽屉可见）里逐条列着。 */
   } finally {
     if (btn) btn.disabled = false;
     importPaint();
@@ -2885,12 +2905,15 @@ function init() {
     if (e.target === _sov) closeSearch();
   });
   /* 输入框里的回形针 → 触发隐藏的文件选择（复用抽屉里那一个 #anchor-file）。
-     ★ R45：按钮上还有个**计数徽章** `#attach-n` —— 点徽章 = **展开/收起已导入清单**
-     （用户要求「标注位置显示已导入文件数，点开可显示已导入文件」），
-     点徽章**不要**再弹文件选择框（否则想看一眼清单却又开了个选文件窗口）。 */
+     ★★ R48：**回形针上的计数数字气泡已移除**（用户「回形针不要有上标」），
+     于是「点徽章展开清单」这条路没了 ⇒ **改点回形针本身**来分派：
+       · 已经有已导入文件 ⇒ 点一下 **展开/收起小窗**（看一眼清单仍是一下）；
+       · 一个都没有      ⇒ 点一下 **打开文件选择框**（否则新用户点了没反应）。
+     ★ 这个分派必须**两边都测**（有文件 / 无文件），否则很容易做成
+       「有文件时永远点不出选择框」这种死角。 */
   const _at = $('#attach-btn');
-  if (_at) _at.addEventListener('click', (e) => {
-    if (e.target && e.target.id === 'attach-n') { toggleAttachPanel(); return; }
+  if (_at) _at.addEventListener('click', () => {
+    if (localItems.length) { toggleAttachPanel(); return; }
     const f = $('#anchor-file');
     if (f) f.click();
   });

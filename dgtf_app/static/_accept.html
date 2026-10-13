@@ -2048,8 +2048,13 @@ async function run() {
   {
     const bn = d.querySelector('#attach-n');
     const ap = d.querySelector('#attach-panel');
-    chk('★R45-1 回形针内有计数徽章 `#attach-n`',
-        !!bn && !!bn.closest('#attach-btn'), 'badge=' + (bn ? bn.id : 'null'));
+     /* ★★ R48-3（用户图3「回形针不要有上标」）：这条原来判「回形针内**有**计数徽章」，
+        现在**语义反转** —— 那个数字气泡已整条移除，`bn`（`#attach-n`）恒为 `null`。
+        ★ 判据守的**行为**没变（数量要能被看到），换的是载体 ⇒ 见下面
+          「数量改由 `#ap-count` 表达」那条。 */
+     chk('★R45-1/R48-3 回形针上**没有**计数气泡（用户图3 的要求）',
+         !bn, 'attach-n=' + (bn ? bn.outerHTML.slice(0, 60) : 'null（正确）'));
+
     // ★★ 「0 个时不显示」要在**真的 0 个**时验 —— 老判据假定开局库是空的，
     //    一旦用户自己导过文件（计数非 0），它必然假红（本轮实测 `hidden=false`）。
     //    ⇒ **先备份用户的 localItems，临时清空验完再还原**（不污染用户数据）。
@@ -2061,10 +2066,17 @@ async function run() {
         '(() => { const j = JSON.stringify(localItems); localItems = [];'
         + ' paintAttach(); return j; })()');
       await sleep(140);
-      chk('★R45-1 徽章 0 个文件时**不显示**（不带个「0」）',
-          !!bn && (bn.hidden === true || getComputedStyle(bn).display === 'none'),
-          'hidden=' + (bn ? bn.hidden : '?')
+      /* ★★ R48-3：「0 个文件时徽章不显示」这条随徽章一起失效。
+         数量载体换成 `#ap-count`（小窗标题）⇒ 判**它**在 0 个时为 '0'
+         （`paintAttach()` 会把标题写成「已导入 0 个」）。
+         ★ 守的行为没变：数量载体在**真的 0 个**时要如实归零。 */
+      chk('★R45-1/R48-3 数量载体 `#ap-count` 在 0 个文件时为 0',
+          (() => { const c = d.querySelector('#ap-count');
+                   return !!c && c.textContent.trim() === '0'; })(),
+          'ap-count=' + (d.querySelector('#ap-count')
+                         ? d.querySelector('#ap-count').textContent : '?')
           + ' 已临时清空(原 ' + (JSON.parse(_savedJson || '[]').length) + ' 个)');
+
     } catch (e) { chk('★R45-1 空态判据（异常）: ' + e.message, false); }
     // ★ 立刻**还原**用户的真实列表（★ 这是「用例别改用户数据」这条纪律的落点）
     try {
@@ -2078,9 +2090,15 @@ async function run() {
     chk('★R45-1 清单里有 `#ap-close`（可关）', !!(ap && ap.querySelector('#ap-close')));
     chk('★R45-1 清单里有 `#ap-list.scroll`（可滚列表）', !!(ap && ap.querySelector('#ap-list.scroll')));
     chk('★R45-1 清单里有 `#ap-count`（标注已导入数）', !!(ap && ap.querySelector('#ap-count')));
-    chk('★R45-1 徽章**可点**（pointer-events != none）',
-        !!bn && getComputedStyle(bn).pointerEvents !== 'none',
-        'pe=' + (bn ? getComputedStyle(bn).pointerEvents : '?'));
+     /* ★★ R48-3：原来判「**徽章**可点（点它展开清单）」。
+        徽章没了 ⇒ 点击目标换成**回形针本身**。
+        ★ 判据守的仍是**行为**（「展开清单只点一下、且点得到」），只换了目标元素。 */
+     chk('★R45-1/R48-3 点**回形针本身**可展开清单（pointer-events != none）',
+         (() => { const b2 = d.querySelector('#attach-btn');
+                  return !!b2 && w.getComputedStyle(b2).pointerEvents !== 'none'; })(),
+         'pe=' + (() => { const b2 = d.querySelector('#attach-btn');
+                          return b2 ? w.getComputedStyle(b2).pointerEvents : '?'; })());
+
 
     // 真行为：开合
     try {
@@ -2111,11 +2129,18 @@ async function run() {
       const cnt = (d.querySelector('#ap-count') ? d.querySelector('#ap-count').textContent : '').trim();
       // ★ R47：清单从「整行」改成「小窗里的**图标格**」⇒ 判据的锚点随之改名。
       const ntiles = ap.querySelectorAll('.ap-tile').length;
-      chk('★R45-1 注入 2 个文件 → 徽章显示 2', txt === '2', 'badge=' + JSON.stringify(txt));
-      chk('★R45-1 2 个文件时徽章**显示**（hidden=false）',
-          !!bn && bn.hidden === false, 'hidden=' + (bn ? bn.hidden : '?'));
-      chk('★R45-1 小窗计数与图标数一致（2）',
-          ntiles === 2, 'tiles=' + ntiles + ' count=' + JSON.stringify(cnt));
+       // ★★ R48-3（用户图3「回形针不要有上标」）：徽章元素已**整条移除**
+       //   ⇒ 原来那三条「徽章显示 N / hidden=false / 清空后 hidden=true」全部失效。
+       //   ★ 判据守的**行为**没变（「导入的文件数量要能被看到」），
+       //     只是载体换成了「小窗标题 `#ap-count`」+「回形针 title」。
+       //   `bn` 仍在上方取过（`#attach-n`），R48 后**应为 null** ⇒ 顺便当一条判据。
+       chk('★R48-3 回形针上**没有**数字气泡元素（用户图3 的要求）',
+           !bn, 'attach-n=' + (bn ? bn.outerHTML.slice(0, 60) : 'null（正确）'));
+       chk('★R48-3 数量改由**小窗标题**表达（角标没了但数量没丢）',
+           cnt === '2', 'ap-count=' + JSON.stringify(cnt));
+       chk('★R45-1/R48-3 小窗计数与图标数一致（2）',
+           ntiles === 2, 'tiles=' + ntiles + ' count=' + JSON.stringify(cnt));
+
       chk('★R45-1 每个图标都有删除键（可手动删）',
           ap.querySelectorAll('.ap-tile .rm').length === 2,
           'dels=' + ap.querySelectorAll('.ap-tile .rm').length);
@@ -2163,38 +2188,88 @@ async function run() {
       //    判据就按**这三个合法档位**判，而不是写死某一档。
       const _btn = d.querySelector('#attach-btn');
       const _btnR = _btn ? _btn.getBoundingClientRect() : null;
-      const _rightOfComp = !!_cpR && _apR.left >= _cpR.right - 2;      // ① 右外侧
-      const _aboveComp = !!_cpR && _apR.bottom <= _cpR.top + 2;        // ② 上方
-      const _rightOfBtn = !!_btnR && _apR.left >= _btnR.right - 2;     // ③ 贴回形针右
-      chk('★R47 小窗落在回形针旁的**合法档位**（输入框右外侧 / 正上方 / 贴回形针右）',
-          _rightOfComp || _aboveComp || _rightOfBtn,
-          '右外=' + _rightOfComp + ' 上方=' + _aboveComp + ' 贴针右=' + _rightOfBtn
-          + ' ap.left=' + Math.round(_apR.left)
-          + ' composer.right=' + (_cpR ? Math.round(_cpR.right) : '?')
-          + ' composer.top=' + (_cpR ? Math.round(_cpR.top) : '?'));
-      const _wc = d.querySelector('#welcome');
-      // ★★ 这条要**在首屏（有欢迎语）时**量才有意义 —— 实测当时页面是 `stage-run`，
-      //    `#welcome` 尺寸全 0 ⇒ 判据「不重叠」是**空判**（永远通过）。
-      //    ⇒ 主动切回首屏（`newChat()`）再量；切不回去就**明确跳过**而不是假装通过。
-      let _overlapNote = '';
-      let _overlapOk = true;
-      try {
-        if (typeof w.newChat === 'function') { w.newChat(); await sleep(450); }
-        const _wc2 = d.querySelector('#welcome');
-        const _wc2R = _wc2 ? _wc2.getBoundingClientRect() : null;
-        const _ap2 = ap.getBoundingClientRect();
-        if (!_wc2R || _wc2R.width === 0) {
-          _overlapNote = '（无欢迎语 ⇒ 本项不适用，跳过）';
-        } else {
-          _overlapOk = (_ap2.top >= _wc2R.bottom - 2 || _ap2.bottom <= _wc2R.top + 2
-                        || _ap2.left >= _wc2R.right - 2 || _ap2.right <= _wc2R.left + 2);
-          _overlapNote = 'ap=' + [Math.round(_ap2.left), Math.round(_ap2.top),
-              Math.round(_ap2.right), Math.round(_ap2.bottom)].join(',')
-            + ' welcome=' + [Math.round(_wc2R.left), Math.round(_wc2R.top),
-              Math.round(_wc2R.right), Math.round(_wc2R.bottom)].join(',');
-        }
-      } catch (e) { _overlapNote = '（量失败：' + e.message + '）'; }
-      chk('★R47 小窗与欢迎语**不重叠**（保持原界面一致性）', _overlapOk, _overlapNote);
+       // ★★ R48-2（用户图2 的红箭头）：落点**改回「回形针右侧、输入框内部」**。
+       //   R47 那版是「输入框正上方右对齐」（我为「零遮挡」自己挑的），
+       //   用户这次**明确否掉**了它 —— 红箭头就指向回形针与浮层之间的空档。
+       //   新降级链：① 回形针**右侧**（主路径，用户要的）⇒ ② **正上方**（降级）
+       //              ⇒ ③ 夹进视口。
+       //   ★ 判据按**这两个合法档位**判，不写死坐标（写死会把以后再微调判成回归）。
+       //   ★★ `_btn` / `_btnR` 上面已声明过 ⇒ 这里**直接用**，不能再 `const` 一次
+       //      （同一块作用域重复 `const` 是 SyntaxError —— `node --check` 抓到的）。
+       // ① 在回形针**右侧**（左缘在回形针右缘之右），且**紧贴**（水平间距 ≤ 24）
+       const _rightOfBtn = !!_btnR && _apR.left >= _btnR.right - 2
+                           && (_apR.left - _btnR.right) <= 24;
+       // ② 降级：在回形针**正上方**（下缘在回形针上缘之上）
+       const _aboveBtn = !!_btnR && _apR.bottom <= _btnR.top + 2;
+       chk('★R48 小窗落在**回形针右侧、紧贴**（≤24px）—— 用户图2 的落点',
+           _rightOfBtn || _aboveBtn,
+           '贴针右=' + _rightOfBtn + ' 针上方=' + _aboveBtn
+           + ' gap=' + (_btnR ? Math.round(_apR.left - _btnR.right) : '?')
+           + ' ap.left=' + Math.round(_apR.left)
+           + ' btn.right=' + (_btnR ? Math.round(_btnR.right) : '?'));
+       chk('★R48 小窗落在**输入框内部**（用户原话「显示在回形针的右侧对话框里」）',
+           !!_cpR && _apR.left >= _cpR.left - 2 && _apR.right <= _cpR.right + 2,
+           'ap.left=' + Math.round(_apR.left) + ' ap.right=' + Math.round(_apR.right)
+           + ' composer=' + (_cpR ? Math.round(_cpR.left) + '..' + Math.round(_cpR.right) : '?'));
+       /* ★★ 「紧贴回形针」的**行为**判据（不是死守居中）。
+          R48 第一版把这里写成「垂直居中偏差 ≤ 8px」，实测 `dy=19` 判红 ——
+          查下来**不是实现错**：视口 1600×900 下回形针在输入框内偏下（cy≈740），
+          面板高 117 ⇒ 居中要 `top≈682`，而视口下界恰好只允许 `682`
+          （`VH - h - PAD = 807-117-8`）⇒ 被夹掉 19px。
+          ⇒ 实现已改成「居中放不下就**底缘对齐**回形针（面板往上长）」，
+             仍然是从回形针旁边伸出来。
+          ⇒ 判据要守的是**「没有脱离回形针」**这个行为，取法：
+             · 居中（居中方案生效时 dy 应很小），**或**
+             · 面板与回形针在**垂直方向仍有重叠**、且**边缘对齐**
+               （底缘齐 / 上缘齐 —— 都是「贴着它长出来」的合法形态）。
+          ★ 这样把「视口不够时改锚」这个**正确取舍**判绿，
+            而把「面板飘到离回形针很远」判红 —— 那才是真的错。 */
+       chk('★R48 小窗**紧贴回形针**（居中，或视口不够时底/上缘对齐 —— 不许脱开）',
+           (() => {
+             if (!_btnR) return false;
+             const dy = Math.abs((_apR.top + _apR.bottom) / 2
+                                 - (_btnR.top + _btnR.bottom) / 2);
+             if (dy <= 8) return true;                       // 居中方案生效
+             const overlapV = _apR.top < _btnR.bottom - 2
+                           && _apR.bottom > _btnR.top + 2;   // 垂直仍有重叠
+             const flushB = Math.abs(_apR.bottom - _btnR.bottom) <= 6;
+             const flushT = Math.abs(_apR.top - _btnR.top) <= 6;
+             return overlapV && (flushB || flushT);
+           })(),
+           'dy=' + (_btnR ? Math.round(Math.abs((_apR.top + _apR.bottom) / 2
+                                                - (_btnR.top + _btnR.bottom) / 2)) : '?')
+           + ' ap.top/bottom=' + Math.round(_apR.top) + '/' + Math.round(_apR.bottom)
+           + ' btn.top/bottom=' + (_btnR ? Math.round(_btnR.top) + '/' + Math.round(_btnR.bottom) : '?'));
+
+       /* ★★ R48-2 后这条**语义变了**：小窗现在**有意落在输入框内部**（用户要的），
+          它的几何位置根本到不了上方的欢迎语区域 ⇒ 「与欢迎语不重叠」在常见视口下
+          **自动成立**，但在窄视口/降级到「正上方」那一档时仍需成立。
+          ⇒ 判据保留（守「不该压文案」这个行为），但**说明改准**：它守的是
+            「万一降级到上方，也别压到欢迎语」，而不是「小窗永远在欢迎语下方」。
+          ★ 要在**首屏（有欢迎语）**时量才有意义 —— 实测当时可能是 `stage-run`，
+            `#welcome` 尺寸全 0 ⇒ 「不重叠」是**空判**（永远通过）。
+            ⇒ 主动切回首屏（`newChat()`）再量；切不回去就**明确跳过**而不是假装通过。 */
+       let _overlapNote = '';
+       let _overlapOk = true;
+       try {
+         if (typeof w.newChat === 'function') { w.newChat(); await sleep(450); }
+         const _wc2 = d.querySelector('#welcome');
+         const _wc2R = _wc2 ? _wc2.getBoundingClientRect() : null;
+         const _ap2 = ap.getBoundingClientRect();
+         if (!_wc2R || _wc2R.width === 0) {
+           _overlapNote = '（无欢迎语 ⇒ 本项不适用，跳过）';
+         } else {
+           _overlapOk = (_ap2.top >= _wc2R.bottom - 2 || _ap2.bottom <= _wc2R.top + 2
+                         || _ap2.left >= _wc2R.right - 2 || _ap2.right <= _wc2R.left + 2);
+           _overlapNote = 'ap=' + [Math.round(_ap2.left), Math.round(_ap2.top),
+               Math.round(_ap2.right), Math.round(_ap2.bottom)].join(',')
+             + ' welcome=' + [Math.round(_wc2R.left), Math.round(_wc2R.top),
+               Math.round(_wc2R.right), Math.round(_wc2R.bottom)].join(',');
+         }
+       } catch (e) { _overlapNote = '（量失败：' + e.message + '）'; }
+       chk('★R48 小窗与欢迎语**不重叠**（降级到「正上方」那一档时也不许压文案）',
+           _overlapOk, _overlapNote);
+
       /* ★★ 新增（截图暴露的真问题）：小窗**不许压住输入框里的可交互元素**。
          窄视口（1078px）下定位曾落回**输入框内部**，正好盖住右端的发送按钮「↑」
          —— 用户点不到发送。这条直接量「小窗矩形 ∩ 每个可交互控件矩形」。
@@ -2268,9 +2343,34 @@ async function run() {
       // ★ R47：点**角标 ×** 走的是删除链路（这里只验「有 handler + 丢到 items」，
       //   不打真网络请求 —— 真实删除链路另有 R45 的 removeImported 判据覆盖）。
       const _rm = ap.querySelector('.ap-tile .rm');
-      chk('★R47 角标 × 带 data-apdel 且可点',
-          !!_rm && _rm.getAttribute('data-apdel') === '演示A.txt' && !_rm.disabled,
-          'data-apdel=' + (_rm ? _rm.getAttribute('data-apdel') : '?'));
+       chk('★R47 角标 × 带 data-apdel 且可点',
+           !!_rm && _rm.getAttribute('data-apdel') === '演示A.txt' && !_rm.disabled,
+           'data-apdel=' + (_rm ? _rm.getAttribute('data-apdel') : '?'));
+
+       // ── ★★ R48-2：图标格**变小**（用户图2「文件图形可以适当小一点」）──────
+       //   守的是**行为**（「比原来小」），不是某个具体像素 ⇒ 判「≤ 44×48」，
+       //   原来 52×56。写死 `== 40×44` 会把以后再微调判成回归。
+       (() => {
+         const _t = ap.querySelector('.ap-tile');
+         if (!_t) { chk('★R48-2 图标格变小了（≤44×48）', false, '没有 .ap-tile'); return; }
+         const _tr = _t.getBoundingClientRect();
+         chk('★R48-2 图标格**变小**了（≤ 44×48，原来 52×56）',
+             _tr.width > 0 && _tr.width <= 44 && _tr.height > 0 && _tr.height <= 48,
+             'tile=' + Math.round(_tr.width) + 'x' + Math.round(_tr.height));
+       })();
+
+       // ── ★★ R48-1：导入完成那行提示**不显示**（用户图1「这里不要显示」）─────
+       //   `#attach-msg` 用 `:empty{display:none}` 收起 ⇒ 判「没有文案 + 不占位」。
+       //   ★ 判据落在**行为**（不显示）而不是「元素不存在」—— 元素是**有意保留**的。
+       (() => {
+         const _am = d.querySelector('#attach-msg');
+         const _cs2 = _am ? w.getComputedStyle(_am) : null;
+         chk('★R48-1 那行「完成 · 成功 N 个」**不显示**（元素在但空着 ⇒ display:none）',
+             !!_am && (_am.textContent || '').trim() === ''
+             && !!_cs2 && _cs2.display === 'none',
+             _am ? 'text=' + JSON.stringify(_am.textContent)
+                   + ' display=' + (_cs2 ? _cs2.display : '?') : '#attach-msg 不存在');
+       })();
 
       await w.eval('(() => { localItems = localItems.filter(x => x.name !== "演示A.txt"); paintAttach(); })()');
       await sleep(150);
@@ -2279,8 +2379,21 @@ async function run() {
           'tiles=' + ap.querySelectorAll('.ap-tile').length);
       await w.eval('(() => { localItems = []; paintAttach(); })()');
       await sleep(100);
-      chk('★R45-1 清空后徽章又**藏起来**',
-          !!bn && bn.hidden === true, 'hidden=' + (bn ? bn.hidden : '?'));
+       /* ★★ R48-3：徽章没了 ⇒ 换成判**数量载体归零** + **回形针提示复位**。
+          守的行为没变：清空之后**界面上不该还写着旧数量**。 */
+       chk('★R45-1/R48-3 清空后**数量归零**（小窗标题 0、回形针提示回到「导入文件」）',
+           (() => {
+             const c = d.querySelector('#ap-count');
+             const b2 = d.querySelector('#attach-btn');
+             const okCnt = !!c && c.textContent.trim() === '0';
+             const okTip = !!b2 && /导入文件/.test(b2.getAttribute('title') || '');
+             return okCnt && okTip;
+           })(),
+           'ap-count=' + (d.querySelector('#ap-count')
+                          ? d.querySelector('#ap-count').textContent : '?')
+           + ' title=' + JSON.stringify(d.querySelector('#attach-btn')
+                                        ? d.querySelector('#attach-btn').getAttribute('title') : '?'));
+
 
       // ★★ 收尾：**把用户的真实列表还原回去**（本段是用例改了用户数据的最后一处）。
       await w.eval('(() => { localItems = JSON.parse(' + JSON.stringify(_realItems)
