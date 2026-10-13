@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.32.py"
+SRC = HERE / "元DGTF-V1.23.33.py"
 
 os.environ.setdefault("DGTF_API_KEY", "sk-smoke-test-key")
 
@@ -11663,6 +11663,112 @@ def check_v12332_discipline():
             _sh2.rmtree(_ngdir, ignore_errors=True)
         except Exception as _en:
             bad.append("[nogoods] 行为判据异常：%r" % (_en,))
+
+
+    # ── 第三批（机制级：anytime / 发散+指针 / bandit / compact / 锚点 / 裁决 / 陈旧）──
+    for _n, _w in (("def stitched_hoeffding_lower(", "anytime 置信序列"),
+                   ("def anytime_majority_decided(", "anytime 判据"),
+                   ("def divergence_state(", "发散三态"),
+                   ("def best_round_index(", "回滚指针"),
+                   ("class BudgetBandit:", "预算 bandit"),
+                   ("def compact_plan(", "compact 预算"),
+                   ("def anchor_offline_check(", "锚点离线验证"),
+                   ("def anchor_interest_hint(", "锚点内部批判"),
+                   ("def anchor_evidence_standard(", "分级证明标准"),
+                   ("def adjudication_aspect(", "裁决维度"),
+                   ("def belief_staleness(", "信念陈旧度"),
+                   ("anytime_ok=_any_ok", "anytime 接线")):
+        if _n not in src:
+            bad.append("[源码] %s 缺失（%r）" % (_w, _n))
+    # anytime：12 个 1 ⇒ 下界 > 0.5 判「已确立」；3 个 1 ⇒ 样本不足不判（负对照）
+    _lb = mod.stitched_hoeffding_lower([1] * 12)
+    if not (_lb and _lb["lower"] > 0.5):
+        bad.append("[anytime] 全 1 序列下界未 > 0.5（%r）" % (_lb,))
+    if mod.anytime_majority_decided([1, 1, 1])[0]:
+        bad.append("[anytime·负] 3 个样本就判「已确立」（过早）")
+    if mod.stitched_hoeffding_lower([1]) is not None:
+        bad.append("[anytime] n<2 未返回 None")
+    # 发散/停滞/指针
+    _dv = mod.divergence_state([1, 1, 2, 4, 8, 16])
+    if not (_dv and _dv["state"] == "发散"):
+        bad.append("[发散] 方差上升序列未判发散（%r）" % (_dv,))
+    if mod.divergence_state([3] * 6)["state"] != "停滞":
+        bad.append("[发散·负] 平稳序列未判停滞")
+    if mod.best_round_index([1, 3, 2, 0]) != 2:
+        bad.append("[指针] 历史最佳圈指针算错")
+    # bandit：未试过的臂优先（确定性探索）；更新后仍可选
+    _bb = mod.BudgetBandit([{"rounds": 3}, {"rounds": 4}, {"rounds": 6}])
+    _p0 = _bb.pick()
+    if not (_p0["explore"] is True and _p0["index"] == 0):
+        bad.append("[bandit] 首挑未走确定性探索（%r）" % (_p0,))
+    _bb.update(0, 0.9, 1.0)
+    if _bb.n[0] != 1 or abs(_bb.mean[0] - 0.9) > 1e-9:
+        bad.append("[bandit] 更新未生效（%r/%r）" % (_bb.n, _bb.mean))
+    # compact（率失真口径）
+    if not mod.compact_plan(900, 1000)["over"]:
+        bad.append("[compact] 超预算未判 over")
+    if mod.compact_plan(300, 1000)["over"]:
+        bad.append("[compact·负] 预算内被误判超")
+    # 锚点三项
+    if not mod.anchor_offline_check("https://www.gov.cn/a")["ok"]:
+        bad.append("[锚点] 合法 URL 未过离线检查")
+    if mod.anchor_offline_check("htp:/x")["ok"]:
+        bad.append("[锚点·负] 畸形 URL 竟通过")
+    if "媒体" not in mod.anchor_interest_hint("https://blog.medium.com/x"):
+        bad.append("[锚点·内部批判] 自媒体域名未识别")
+    if mod.anchor_evidence_standard("causal")["standard"] != "beyond_reasonable_doubt":
+        bad.append("[法学] 因果 claim 未用最高证明标准")
+    # 裁决维度 + 陈旧度
+    if not mod.adjudication_aspect("口径矛盾", "按实测数据").strip():
+        bad.append("[裁决维度] 未判出维度")
+    _st = mod.belief_staleness({"id": "B", "status": "active",
+                                "last_confirmed_round": 1}, 5)
+    if not (_st["age"] == 4 and _st["stale_hint"] is True):
+        bad.append("[陈旧度] 读数不对（%r）" % (_st,))
+
+        # ★ [层读数进产物] **行为判据**：走真实 `save_result`，断言产物 md
+        #   里出现 6 个新读数块（真跑曾暴露「只进 verbose 转储」的缺口）。
+        try:
+            import tempfile as _tf3
+            _d3 = Path(_tf3.mkdtemp(prefix="smk_lay_"))
+            _pool3 = {"amps": [], "threads": [], "probes": [], "meta": [],
+                      "suspensions": [], "aspect_units": [], "belief_items": [],
+                      "anchors": [], "duel_suspensions": [], "aspect_targets": {}}
+            _r3 = {"question": "层读数验收题", "route": ["0", "1"],
+                   "rounds": {"0": 1, "1": 1},
+                   "dispatch": {"order": ["0", "1"], "ran": ["0", "1"],
+                                "requested": ["0", "1"], "missing": [],
+                                "failed": {}, "skipped": [],
+                                "_parallel_mode": "serial"},
+                   "keep": {"0": "all", "1": "all"},
+                   "_anchor_tier_warning": "", "_anchor_answers_filtered": 0,
+                   "views": {},
+                   "pools": {k: dict(_pool3) for k in ("0", "1", "both", "all")},
+                   "llm_calls": 2, "llm_tokens": 20, "llm_ops_calls": 1,
+                   "llm_ops_tokens": 10, "llm_eval_calls": 1,
+                   "llm_eval_tokens": 10,
+                   "compact": {"inner_share": 0.9, "budget": 0.6, "over": True,
+                               "verdict": "内部面超预算 ⇒ 索引化"},
+                   "belief_staleness": {"n": 5, "stale_n": 2, "max_age": 4},
+                   "diversity": {"layers": 2, "channels": 3, "combos": 6,
+                                 "mode": "serial", "note": "x"}}
+            _v3 = mod.View(entry="0")
+            _v3.stop_primary = "悬置决定稳定，自然安住"
+            _v3.divergence = {"state": "发散", "var_first": 1.0,
+                              "var_last": 4.0, "ac1": 0.4}
+            _v3.best_round = 2
+            _v3.anytime = {"n": 6, "lower": 0.44, "delta": 0.05}
+            _v3.csd = {"new_amps": {"hint": True}}
+            _r3["views"]["0"] = _v3.to_dict()
+            _md3 = Path(mod.save_result(_r3, str(_d3))).read_text(encoding="utf-8")
+            for _k3 in ("层读数（每层）", "三态=发散", "历史最佳=第2圈",
+                        "anytime下界=0.440", "内部面预算", "信念陈旧度"):
+                if _k3 not in _md3:
+                    bad.append("[层读数] 产物里缺 %r（只进了 verbose 转储？）" % _k3)
+            import shutil as _sh3
+            _sh3.rmtree(_d3, ignore_errors=True)
+        except Exception as _e3:
+            bad.append("[层读数] 行为判据异常：%r" % (_e3,))
 
     # ── 真实入口 + 不变量 ──
     _tmp = Path(_tf.mkdtemp(prefix="smk_v1232_"))

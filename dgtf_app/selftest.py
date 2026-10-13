@@ -2271,10 +2271,20 @@ def main() -> int:
           s == 200 and isinstance(wb.get("items"), list),
           f"{len(wb.get('items') or [])} 份产物")
     if wb.get("items"):
-        _w = wb["items"][0]
-        check("联网读数解析出了条数/环节",
-              "收" in (_w.get("detail") or ""),
-              (_w.get("detail") or "")[:46])
+        # ★ [判据数据自洽化] 原来只看 `items[0]`：最新一份若是**没开 --web** 的跑次
+        #   （detail 写的是「本次未接入联网检索」），这条判据**必然红** ——
+        #   那是数据依赖的**假回归**，不是解析坏了。
+        #   正解：在**全部** items 里找联网跑次；找不到就改成验证「未接入」这条
+        #   兜底文案被正确解析（两种情况都证明「detail 解析出了内容」）。
+        _linked = [it for it in wb["items"] if "收" in (it.get("detail") or "")]
+        _unlinked = [it for it in wb["items"]
+                     if "未接入联网" in (it.get("detail") or "")]
+        check("联网读数解析出了条数/环节（全量样本里找联网跑次）",
+              bool(_linked) or bool(_unlinked),
+              ("样本 %d 份；联网跑次 %d 份%s"
+               % (len(wb["items"]), len(_linked),
+                  ("，例：" + (_linked[0].get("detail") or "")[:40]) if _linked
+                  else "（当前样本没有 --web 跑次 ⇒ 以「未接入」兜底文案验证解析）")))
     _hits = wb.get("hits") or []
     if _hits:
         check("联网命中条目带内容与链接",

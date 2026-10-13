@@ -1,6 +1,6 @@
 # 元DGTF 记忆库（EML 自动生成）
 
-> 本文件是**索引**，权威数据在 `playbook.jsonl` / `episodes.jsonl`。
+> 本文件是**索引**，权威数据在 `playbook.jsonl` / `episodes.jsonl`。  
 > 状态：`active` 生效 / `shadow` 隔离观察 / `retired` 已遗忘（**行仍在**，只改状态位）。
 
 计数：active=1、shadow=4

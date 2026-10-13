@@ -16,7 +16,7 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.32.py"
+SRC = HERE / "元DGTF-V1.23.33.py"
 
 spec = importlib.util.spec_from_file_location("dgtf_v12332", SRC)
 m = importlib.util.module_from_spec(spec)
@@ -141,6 +141,35 @@ try:
 except Exception as _e:
     ok("T7 成本两分", False, repr(_e))
 
+
+
+# ── T15~ 第三批（机制级）─────────────────────────────────
+ok("T15 anytime：12 个 1 ⇒ 下界 > 0.5", m.stitched_hoeffding_lower([1]*12)["lower"] > 0.5)
+ok("T15 anytime：3 个样本不判「已确立」（负对照）",
+   not m.anytime_majority_decided([1, 1, 1])[0])
+ok("T15 anytime：n<2 ⇒ None（不表态）", m.stitched_hoeffding_lower([1]) is None)
+ok("T16 发散：方差上升 + 正 AC1 ⇒ 发散",
+   m.divergence_state([1, 1, 2, 4, 8, 16])["state"] == "发散")
+ok("T16 停滞（负对照）", m.divergence_state([3]*6)["state"] == "停滞")
+ok("T16 回滚指针：历史最佳圈（1-based）", m.best_round_index([1, 3, 2, 0]) == 2)
+_bb = m.BudgetBandit([{"rounds": 3}, {"rounds": 4}, {"rounds": 6}])
+ok("T17 bandit：未试过的臂优先（确定性探索）",
+   _bb.pick()["explore"] is True and _bb.pick()["index"] == 0)
+_bb.update(0, 0.9, 1.0)
+ok("T17 bandit：更新写入 mean/n", _bb.n[0] == 1 and abs(_bb.mean[0]-0.9) < 1e-9)
+ok("T18 compact：率失真口径（超预算判 over）",
+   m.compact_plan(900, 1000)["over"] and not m.compact_plan(300, 1000)["over"])
+ok("T19 锚点离线：合法过 / 畸形拦",
+   m.anchor_offline_check("https://www.gov.cn/a")["ok"]
+   and not m.anchor_offline_check("htp:/x")["ok"])
+ok("T20 锚点内部批判：自媒体 vs 公权力可区分",
+   "媒体" in m.anchor_interest_hint("https://blog.medium.com/x")
+   and "公权力" in m.anchor_interest_hint("https://www.stats.gov.cn/a"))
+ok("T21 分级证明标准：因果用最高档",
+   m.anchor_evidence_standard("causal")["standard"] == "beyond_reasonable_doubt")
+ok("T22 裁决维度拆分", "/" in m.adjudication_aspect("口径矛盾", "按实测数据"))
+ok("T23 信念陈旧度（不改四态）",
+   m.belief_staleness({"id":"B","status":"active","last_confirmed_round":1}, 5)["stale_hint"])
 
 # ── T9~T15 第二批 ────────────────────────────────────────
 _t9 = m.cut_two_way(True, 4, 4, {"missing_core": ["a"], "core_total": 3})

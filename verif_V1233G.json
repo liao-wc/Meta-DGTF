@@ -1,0 +1,60 @@
+{
+ "tag": "V1233G",
+ "src": "元DGTF-V1.23.33.py",
+ "route": "0,1",
+ "rounds": "0:2,1:2",
+ "mode": "serial",
+ "orientation": "auto",
+ "llm_calls": 50,
+ "tri_state": [
+  1,
+  6
+ ],
+ "meta_closure_all": null,
+ "duel_suspensions_both": [],
+ "engagements_by_view": {
+  "0": [
+   {
+    "target": "'利用'动词对提问者是否成立",
+    "tension_id": null
+   }
+  ],
+  "1": [
+   {
+    "target": "提问者自身站在被解放一侧还是解放别人一侧，这个位置空缺是否使'利用AI'对无调度权者只剩'被纳入'（成为校正样本或需求凭证）？",
+    "tension_id": null
+   },
+   {
+    "target": "替代速度由资本支出、能源价格、模型迭代周期、监管许可共同决定，提问者改不了这些参数，'利用AI实现财富自由'话语在此是否失效？",
+    "tension_id": null
+   }
+  ]
+ },
+ "suspensions_with_tid": {
+  "0": [
+   {
+    "target": "稀缺是否必然转向注意力/意义/信任",
+    "tension_id": null,
+    "status": "stable"
+   }
+  ],
+  "1": []
+ },
+ "pools_all_engagements": [],
+ "views_errors": {
+  "0": [],
+  "1": []
+ },
+ "pools_meta_p16": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": []
+ },
+ "pools_meta_len": {
+  "0": 4,
+  "1": 5,
+  "both": 0,
+  "all": 0
+ }
+}

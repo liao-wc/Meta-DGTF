@@ -1,0 +1,100 @@
+{
+ "tag": "V1233",
+ "src": "元DGTF-V1.23.33.py",
+ "route": "0,1,both",
+ "rounds": "0:2,1:2,both:2",
+ "mode": "serial",
+ "orientation": "auto",
+ "llm_calls": 63,
+ "tri_state": [
+  3,
+  6
+ ],
+ "meta_closure_all": null,
+ "duel_suspensions_both": [
+  {
+   "id": "t_001",
+   "target": "双索引ID是否共用",
+   "status": "resolved",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_002",
+   "target": "非货币占用换算率来源",
+   "status": "revoked",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_003",
+   "target": "AI是否进入账本条目位",
+   "status": "active",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_004",
+   "target": "疼痛作为独立计数器是否与消耗率互锁",
+   "status": "active",
+   "quadrant": "③"
+  }
+ ],
+ "engagements_by_view": {
+  "0": [
+   {
+    "target": "撤回权载体（算力租约 vs 模型许可）",
+    "tension_id": null
+   },
+   {
+    "target": "双时间戳账本条目的签发权",
+    "tension_id": null
+   },
+   {
+    "target": "分叉账本下的基准时钟",
+    "tension_id": null
+   }
+  ],
+  "1": [
+   {
+    "target": "撤回一次翻转时被占用的身体/时间/关系，能否作为账本条目存在？若不能，负片账本（只记未发生次数）是否只能活在账外？",
+    "tension_id": null
+   },
+   {
+    "target": "翻转许可写成可操作判定规则时，第一条要填的是谁有权按下撤回键，这个权利在现实里挂在算力租约还是模型许可上？",
+    "tension_id": null
+   },
+   {
+    "target": "若账本条目允许两个时间戳（撤回前/撤回后），承担编号在撤回后那一栏由谁签发——原签发者还是被占用者？",
+    "tension_id": null
+   }
+  ],
+  "both": []
+ },
+ "suspensions_with_tid": {
+  "0": [
+   {
+    "target": "AI自身的位置",
+    "tension_id": null,
+    "status": "stable"
+   }
+  ],
+  "1": [],
+  "both": []
+ },
+ "pools_all_engagements": [],
+ "views_errors": {
+  "0": [],
+  "1": [],
+  "both": []
+ },
+ "pools_meta_p16": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": []
+ },
+ "pools_meta_len": {
+  "0": 4,
+  "1": 3,
+  "both": 4,
+  "all": 0
+ }
+}

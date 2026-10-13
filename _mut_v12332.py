@@ -7,7 +7,7 @@ import tempfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.32.py"
+SRC = HERE / "元DGTF-V1.23.33.py"
 
 MUTS = [
     ("M1 α 不做机会校正（退化成原始一致率）",
@@ -54,7 +54,31 @@ MUTS = [
      '    _combos = 12'),
     ("M15 nogoods 记录内容失效（kind/why 抹空）",
      '            "kind": str(kind or ""), "why": str(why or ""),',
-     '            "kind": "", "why": "",')
+     '            "kind": "", "why": "",'),
+    ("M16 anytime 恒判「已确立」",
+     '    return bool(lb["lower"] > float(thr)), lb',
+     '    return True, lb'),
+    ("M17 发散检测恒判收敛",
+     '    if v2 > 1.5 * v1 and ac1 > 0.2:\n        state = "发散"',
+     '    if False:\n        state = "发散"'),
+    ("M18 回滚指针恒取最后一圈",
+     '    best = max(xs) if higher_is_better else min(xs)\n    return xs.index(best) + 1',
+     '    return len(xs)'),
+    ("M19 bandit 不做探索（恒选 0 号臂）",
+     '        if self.n[i] == 0:\n            return float("inf")',
+     '        if False:\n            return float("inf")'),
+    ("M20 compact 恒判不超预算",
+     '    over = share > float(budget)',
+     '    over = False'),
+    ("M21 锚点离线检查恒判通过（ok 恒 True）",
+     '    out["ok"] = not out["why"]',
+     '    out["ok"] = True'),
+    ("M22 分级证明标准恒 preponderance",
+     '    std, who = table.get(k, ("preponderance", "主张者举证"))',
+     '    std, who = ("preponderance", "主张者举证")'),
+    ("M23 陈旧度恒不提示",
+     '            "stale_hint": bool(age is not None and age >= 3',
+     '            "stale_hint": bool(False and age is not None and age >= 3'),
 ]
 
 

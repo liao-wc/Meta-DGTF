@@ -87,6 +87,25 @@ CLI_SECTION = "cli"        # 用户配置里的段名（`cli:` → 上面这 12 
 #   容器 / 甚至文件头的文字（实测 164 个键里 47 个只能继承，抓出来是
 #   「元 DGTF · v1.23…」这种噪声），格式反而更乱。这张表一一对应，改配置时同步改。
 _KEY_CN: dict[str, str] = {
+    "auto.bandit.c": "预算 bandit 的探索系数 c（UCB 宽度；越大越爱探索）",
+    "auto.bandit.cost_w": "预算 bandit 的成本权重（奖励里扣多少成本；默认 0.3）",
+    "auto.bandit.enabled": "预算 bandit 总开关（默认关；开机会故意选较差档）",
+    "probe.marginal_floor": "探针边际增益下限（≥此值才算有增益；0=分支恒不触发）",
+    "belief.merge_semantic": "语义归并开关（默认关；开=换说法记为一次复现）",
+    "belief.merge_sim": "语义归并阈值（默认 0.85，近乎逐字才算，宁可漏并）",
+    "belief.revoke_sources": "信念撤销所需的不同攻击来源数（与 stable 对称）",
+    "belief.sem_entropy_thr": "语义熵聚类阈值（0.30；填 rel 改用本批相对分位）",
+    "duty.floor": "层职责度下限（低于它不许署自然安住，并点名缺的 core）",
+    "duty.patience": "职责增益收敛所需连续圈数（ΔS<τ 连续几圈算推不动）",
+    "duty.remedy_rounds": "职责未尽时的定向补救圈数（并入下游 carry；0=关）",
+    "duty.tau": "职责边际增益阈值 τ（连续低于它记一次推不动）",
+    "playbook.dir": "经验记忆库目录（默认空=仓库根 dgtf_memory/）",
+    "playbook.halflife_days": "记忆半衰期（天）：检索排序与遗忘共用（默认 14）",
+    "playbook.learn_from_anon": "是否收无 run_id 的跑次（默认否，防测试替生产刷票）",
+    "playbook.mode": "经验记忆模式：off 不读不写 / shadow 只记不生效 / on 生效",
+    "playbook.promote_n": "同向证据达几条才 shadow→active（默认 3）",
+    "playbook.top_k": "每次读几条经验（默认 3）",
+    "stop.anytime_alpha": "anytime-valid 停止的 δ（默认 0=关；>0 才启用该停因）",
     # ── actions 动作开关 ──
     "actions.assess_decidability": "全局可判定性评估",
     "actions.decidability_source": "可判定性来源",
