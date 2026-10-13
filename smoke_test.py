@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.25.py"
+SRC = HERE / "元DGTF-V1.23.26.py"
 
 os.environ.setdefault("DGTF_API_KEY", "sk-smoke-test-key")
 
@@ -10808,6 +10808,241 @@ def check_v12325_struct_coverage():
     return True
 
 
+
+
+def check_v12326_sim3():
+    """[v1.23.26] ① sim3 三级尺子（对称 Jaccard + BM25）修 `_overlap_coef`
+       短句高估 ② 池内去重阈值可配（默认 = 旧字面量，行为零变化）
+       ③ covers 数字编号分支加语义校验（编号对但语义错必须报红）。
+
+    ★ 每条判据都带**负对照**；判别力另由 `_mut_v12326.py` 的变异体证明
+      （没有变异体的「全绿」只说明判据没跑）。
+    ★ 判别力夹具（改前 v1.23.25 实测值 / 改后 v1.23.26 实测值）：
+      · `_overlap_coef("模型 部署","模型 训练")` = 0.500（虚高）
+        `_sim3(同对)` = 0.333（并集分母，不虚高）
+      · covers 乱指 T1：改前**不报红**，改后**报红**
+      —— 两版结论相反，否则这条夹具等于没测。
+    """
+    import inspect as _ins
+    bad = []
+    src = SRC.read_text(encoding="utf-8").replace("\r\n", "\n")
+    cfg = build_cfg(False)
+
+    # ================= A. sim3 修正短句高估 =================
+    _a, _b = "模型 部署", "模型 训练"
+    _oc = mod._overlap_coef(_a, _b)
+    _s3 = mod._sim3(_a, _b)
+    if abs(_oc - 0.5) > 1e-9:
+        bad.append(f"[A] _overlap_coef 基线漂了：{_oc}（期望 0.5）")
+    # ★ 旧尺子虚高：3 词短语共享 1 词 = 1/2
+    if _oc < 0.5 - 1e-9:
+        bad.append(f"[A] 旧尺子不再虚高（{_oc}）⇒ 这条判据失去意义，"
+                   f"请重新设计夹具")
+    # ★ 新尺子必须显著低于旧尺子（Jaccard 分母是并集）
+    if not (_s3 < _oc - 0.1):
+        bad.append(f"[A] _sim3({_s3}) 未显著低于 _overlap_coef({_oc})，"
+                   f"短句高估没修好")
+    # 对称性：sim3 必须是对称的
+    _pairs = [(_a, _b), ("人工智能 模型 部署 管线", "人工智能 模型 部署"),
+              ("量子纠缠实验需要极低温", "量子纠缠实验需要低温环境")]
+    for _x, _y in _pairs:
+        if abs(mod._sim3(_x, _y) - mod._sim3(_y, _x)) > 1e-9:
+            bad.append(f"[A] _sim3 不对称：{_x} / {_y}")
+    # ★ 结构层（L4）短路：同编号必须 1.0、异编号必须 0.0
+    #   —— 变异体 M3（去掉 L4）就打在**这条判据读的东西**上。
+    #   ★ 样本必须用**字符串不等但编号相同**的对（`T3` vs `3`）：
+    #     若用 `T3` vs `T3`，`_sim3` 开头 `if a == b: return 1.0` 会
+    #     先短路 ⇒ M3 变异后仍是 1.0 ⇒ 判据等于没测（实测踩过）。
+    if mod._sim3("T3", "3") != 1.0:
+        bad.append(f"[A] 同编号未短路为 1.0（{mod._sim3('T3', '3')}）"
+                   f"⇒ 结构层失效")
+    if mod._sim3("T3", "T4") != 0.0:
+        bad.append(f"[A] 异编号未短路为 0.0（{mod._sim3('T3', 'T4')}）"
+                   f"⇒ 结构层失效")
+    # 负数对照：结构层必须**先于**字面层（T3/T4 无字面交集仍须 0.0）
+    if mod._sim3("T3", "T4") >= mod._sim3("T3", "3"):
+        bad.append("[A] 异编号分不低于同编号分 ⇒ 结构层没前置")
+
+    # ================= B. BM25 通道真的在起作用 =================
+    _corpus = mod._bm25_corpus(
+        ["量子纠缠实验需要极低温环境", "超导材料在低温下表现特殊",
+         "人工智能模型部署管线优化", "模型蒸馏可以压缩参数量"])
+    if _corpus[3] < 4:
+        bad.append(f"[B] 语料只有 {_corpus[3]} 篇，BM25 通道不会启用")
+    # ★ 负对照要选**真的不相干**的输入。第一版拿
+    #   「量子纠缠实验」vs「超导材料在低温下表现特殊」当负对照是错的
+    #   —— 两者共享「低温」，而语料里恰有「量子纠缠实验需要极低温环境」，
+    #   词面重叠真实存在 ⇒ 分高是对的，不是「被抬高」。
+    _irrelevant = "披萨烤制时长与面团发酵温度"
+    if mod._bm25_best(_irrelevant, _corpus) > 0.0:
+        bad.append(f"[B] 完全不相干的输入拿到了 BM25 分 "
+                   f"（{mod._bm25_best(_irrelevant, _corpus)}），应为 0")
+    # ★ 正对照：与语料真有词面重叠的输入必须拿到 > 0 的分
+    _overlap_q = "量子纠缠实验"
+    if mod._bm25_best(_overlap_q, _corpus) <= 0.0:
+        bad.append("[B] 与语料有真实词面重叠的输入拿不到 BM25 分 ⇒ "
+                   "通道没接上")
+    # ★ BM25 通道确实改变最终分（不是「算了不用」）
+    _q2, _c2 = "量子纠缠实验", "量子纠缠实验需要极低温环境"
+    _s_no = mod._sim3(_q2, _c2)
+    _s_yes = mod._sim3(_q2, _c2, _corpus)
+    if not (_s_yes > _s_no):
+        bad.append(f"[B] 有语料时未升分（{_s_no} -> {_s_yes}）⇒ "
+                   f"BM25 通道没进合并式")
+    # ★ 归一化必须把分压回 [0,1)（无上界的 raw 会破坏三层加权）
+    _bm_raw_hi = mod._bm25_best(
+        "量子纠缠实验需要极低温环境 人工智能模型部署管线优化 "
+        "模型蒸馏可以压缩参数量 超导材料在低温下表现特殊", _corpus)
+    if not (0.0 <= _bm_raw_hi < 1.0):
+        bad.append(f"[B] BM25 归一化失效，分越界：{_bm_raw_hi}")
+    # ★ BM25 必须是**两篇之间**的分（pair），不能是「各自对语料」的 best。
+    #   反例（改前的真 bug）：两条各自与语料相关、但彼此**毫不相干**的句子，
+    #   用 best 均值会被抬到 0.78；用 pair 必为 0.0。
+    #   变异体 M1'（把 _bm25_pair 换回 _bm25_best）就打在**这条判据读的东西**上。
+    _far_a, _far_b = "量子纠缠实验需要极低温", "人工智能模型部署管线优化"
+    if mod._jaccard(_far_a, _far_b) != 0.0:
+        bad.append(f"[B] 负对照对本身有字面重叠"
+                   f"（{mod._jaccard(_far_a, _far_b)}）⇒ 请换样本")
+    _far_s3 = mod._sim3(_far_a, _far_b, _corpus)
+    if _far_s3 > 1e-9:
+        bad.append(f"[B] 两条**无关**句子因 BM25 被抬高（{_far_s3}）⇒ "
+                   f"BM25 通道用的是「各自对语料」而非「两篇之间」")
+    # 正对照：真相关的对必须保住高分（避免「一律归零」蒙混过关）
+    _near_s3 = mod._sim3("量子纠缠实验", "量子纠缠实验需要极低温环境",
+                         _corpus)
+    if _near_s3 <= 0.5:
+        bad.append(f"[B] 相关对在 BM25 pair 下分数过低（{_near_s3}）⇒ "
+                   f"通道被改坏（过度收缩）")
+    # pair 必须对称
+    if abs(mod._bm25_pair(_far_a, _far_b, _corpus)
+           - mod._bm25_pair(_far_b, _far_a, _corpus)) > 1e-9:
+        bad.append("[B] _bm25_pair 不对称")
+    # 语料不足时自动降级（N < _BM25_MIN_CORPUS）
+    # ★ 查询词必须是**语料里真实存在的词**：原来用「测试」（不在语料里
+    #   ⇒ 本来就 0）⇒ 抓不到 M4（下限降到 0 也不报）。
+    _tiny = mod._bm25_corpus(["只有一个句子"])
+    _tiny_q = "只有一个句子"
+    if mod._bm25_best(_tiny_q, _tiny) != 0.0:
+        bad.append(f"[B] 语料不足时 BM25 未降级"
+                   f"（应返回 0.0，实得 {mod._bm25_best(_tiny_q, _tiny)}）")
+    if mod._bm25_pair(_tiny_q, "只有一个句子", _tiny) != 0.0:
+        bad.append("[B] 语料不足时 _bm25_pair 未降级（应返回 0.0）")
+
+    # ================= C. 池内去重阈值可配 =================
+    if not hasattr(mod, "_DEDUP_SIM") or not hasattr(mod, "_DEDUP_SUSP_SIM"):
+        bad.append("[C] 缺池内去重常量")
+    else:
+        if mod._DEDUP_SIM != 0.9:
+            bad.append(f"[C] _DEDUP_SIM 默认不是 0.9（{mod._DEDUP_SIM}）"
+                       f"⇒ 与旧版行为不再一致")
+        if mod._DEDUP_SUSP_SIM != 0.85:
+            bad.append(f"[C] _DEDUP_SUSP_SIM 默认不是 0.85"
+                       f"（{mod._DEDUP_SUSP_SIM}）")
+    _sim_cfg = (mod.DEFAULT_CONFIG.get("sim") or {})
+    if _sim_cfg.get("dedup") != 0.9 or _sim_cfg.get("dedup_susp") != 0.85:
+        bad.append(f"[C] DEFAULT_CONFIG[sim] 不对：{_sim_cfg}")
+    # merge 签名必须收 thr / susp_thr
+    _sig = _ins.signature(mod.Pool.merge)
+    for _k in ("thr", "susp_thr"):
+        if _k not in _sig.parameters:
+            bad.append(f"[C] Pool.merge 缺参数 {_k}")
+    # ★ 行为判据：阈值真的能改行为（同一对文本，thr 不同结论不同）
+    _A = "量子纠缠实验需要极低温环境与高精度探测器的配合才能完成验证"
+    _B = "量子纠缠实验需要低温环境与高精度探测器的配合才能完成验证工作"
+    _p1 = mod.Pool()
+    _p1.merge([{"desc": _A}, {"desc": _B}], [], [], thr=0.9)
+    _p2 = mod.Pool()
+    _p2.merge([{"desc": _A}, {"desc": _B}], [], [], thr=0.99)
+    if not (len(_p1.amps) < len(_p2.amps)):
+        bad.append(f"[C] thr 改了但结论没变（0.9->{len(_p1.amps)} 条，"
+                   f"0.99->{len(_p2.amps)} 条）⇒ 阈值没接上")
+    # 默认值 = 旧行为（不传参时与传 0.9 等价）
+    _p3 = mod.Pool()
+    _p3.merge([{"desc": _A}, {"desc": _B}], [], [])
+    if len(_p3.amps) != len(_p1.amps):
+        bad.append("[C] 不传参的行为与传 0.9 不一致 ⇒ 默认值没对齐")
+
+    # ================= D. covers 数字分支语义校验 =================
+    # ★ 源码层：数字分支里必须出现语义比较（旧版这里是裸 has_touch = True）
+    _i = src.find('if (self.entry == "1" and view.untouched and view.probes):')
+    _j = src.find("if not has_touch:", _i)
+    _body = src[_i:_j] if _i > 0 and _j > _i else ""
+    if not _body:
+        bad.append("[D] 找不到 covers 判据体")
+    else:
+        _num = _body.split("if m:", 1)[1].split("else:", 1)[0] if "if m:" in _body else ""
+        if not any(_t in _num for _t in ("_similar", "_overlap_coef", "_sim3")):
+            bad.append("[D] covers 数字分支里没有语义比较（回退了）")
+    # ★ 行为判据（驱动真实方法）：covers 乱指 T1 必须报红
+    _CLS = None
+    for _c in ("DGTF", "MetaDGTF"):
+        if hasattr(mod, _c) and hasattr(getattr(mod, _c), "_quality_check"):
+            _CLS = getattr(mod, _c)
+            break
+    if _CLS is None:
+        bad.append("[D] 找不到 DGTF._quality_check")
+    else:
+        _obj = _CLS.__new__(_CLS)
+        _obj.entry = "1"
+        _obj.config = dict(mod.DEFAULT_CONFIG)
+        _obj.vp = lambda *a, **k: None
+        _UT = ["材料在极低温下的超导相变临界温度测量方法",
+               "实验装置的电磁屏蔽对测量信噪比的影响",
+               "样品制备过程中杂质浓度对结果的可重复性"]
+
+        def _mk(probes):
+            _v = mod.View.__new__(mod.View)
+            for _n, _d in [("candidates", []), ("amps", []), ("threads", []),
+                           ("probes", []), ("errors", []), ("self_check", {}),
+                           ("collision", ""), ("engagements", []),
+                           ("deferrals", []), ("reconfirmations", []),
+                           ("resolutions", []), ("escalations", []),
+                           ("reclassifications", []), ("meta", []),
+                           ("refinements", []), ("probe_skipped", False)]:
+                try:
+                    setattr(_v, _n, _d)
+                except Exception:
+                    pass
+            _v.untouched = [{"desc": _t} for _t in _UT]
+            _v.probes = probes
+            return _v
+
+        def _flags(probes):
+            try:
+                return _obj._quality_check(_mk(probes), mod.Pool(), 1,
+                                           write_diag=False)
+            except Exception as _e:
+                return ["__驱动失败__:" + type(_e).__name__]
+
+        # 负对照：编号对、语义错 ⇒ 必须报红
+        _f1 = _flags([{"question": "披萨需要烤制多长时间才能外脆内软",
+                       "covers": ["T1"], "expected_gain": 0.6, "link": "x"}])
+        if "probe_no_target_covered" not in _f1:
+            bad.append(f"[D] covers 乱指 T1 仍未报红（flags={_f1}）"
+                       f"⇒ 语义校验没接上")
+        # 正对照：编号对、语义对 ⇒ 不许报红
+        _f2 = _flags([{"question": "超导相变临界温度在极低温下如何测量",
+                       "covers": ["T1"], "expected_gain": 0.6, "link": "x"}])
+        if "probe_no_target_covered" in _f2:
+            bad.append(f"[D] covers 正确指向却报红（flags={_f2}）"
+                       f"⇒ 校验过严")
+        # 负对照：越界编号 ⇒ 报红（旧行为，不能丢）
+        _f3 = _flags([{"question": "披萨需要烤制多长时间才能外脆内软",
+                       "covers": ["T5"], "expected_gain": 0.6, "link": "x"}])
+        if "probe_no_target_covered" not in _f3:
+            bad.append(f"[D] 越界编号不再报红（flags={_f3}）")
+
+    if bad:
+        for _b2 in bad:
+            print(f"  ✗ [v12326] {_b2}")
+        return False
+    print("  \u2713 [v12326] sim3 三级尺子（对称 + BM25 可降级）/ "
+          "池内阈值可配（默认零变化）/ covers 数字分支语义校验"
+          "（负对照：乱指 T1 必报红）")
+    return True
+
+
+
 def check_v12324_indep_therapy():
     """[v1.23.24] ① 不可判定「独立度」口径（取代误名的结构覆盖率）
        ② 修行层停止判据与文案（去 ing / 补空括号 / 一律附体检）。
@@ -11219,6 +11454,8 @@ def main():
     if not check_v12324_indep_therapy():
         return 1
     if not check_v12325_struct_coverage():
+        return 1
+    if not check_v12326_sim3():
         return 1
     q = "测试问题：AI 在数字 IC 设计里到底能做什么，哪些已经量产？"
     rows = []
