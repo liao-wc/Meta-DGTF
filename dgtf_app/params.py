@@ -106,6 +106,10 @@ _KEY_CN: dict[str, str] = {
     "playbook.promote_n": "同向证据达几条才 shadow→active（默认 3）",
     "playbook.top_k": "每次读几条经验（默认 3）",
     "stop.anytime_alpha": "anytime-valid 停止的 δ（默认 0=关；>0 才启用该停因）",
+    "all_on": "【一键全开】本机真跑默认全开（出厂 true；引擎默认 false）",
+    "autotune.min_n": "自调优：同(模式,层集)至少几次跑才进榜（防偶发）",
+    "autotune.out": "自调优：建议落盘路径（空=仓库根 dgtf_autotune.json）",
+    "autotune.quality_tau": "自调优：层集取舍容差 τ（同质量内取成本最低 = 帕累托膝盖）",
     # ── actions 动作开关 ──
     "actions.assess_decidability": "全局可判定性评估",
     "actions.decidability_source": "可判定性来源",

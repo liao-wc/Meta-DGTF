@@ -1,0 +1,61 @@
+{
+ "ok": true,
+ "mode": "serial",
+ "route": [
+  "0",
+  "1",
+  "both"
+ ],
+ "rounds_cap": {
+  "0": 5,
+  "1": 4,
+  "both": 5,
+  "all": 5
+ },
+ "quality_med": 0.05555,
+ "cost_med": 630893.5,
+ "n_episodes": 12,
+ "n_groups": 3,
+ "evidence_n": 2,
+ "evidence_strength": "薄弱",
+ "why": "层集=['0', '1', 'both']（最优质量 0.056，τ=0.050；同质量内取成本最低 630894 tok）；模式=serial；圈数={'0': 5, '1': 4, 'both': 5, 'all': 5}（截断层 +1：['0', '1', 'all', 'both']）；暖启动生效条目 3 条；⚠ 证据薄弱（同分母样本 n=2 < 3，建议多跑几次再采信）",
+ "frontier": [
+  {
+   "mode": "serial",
+   "route": [
+    "0",
+    "1",
+    "both"
+   ],
+   "n": 2,
+   "n_paired": 2,
+   "quality_med": 0.05555,
+   "cost_med": 630893.5
+  },
+  {
+   "mode": "serial",
+   "route": [
+    "0",
+    "1",
+    "both",
+    "all"
+   ],
+   "n": 3,
+   "n_paired": 2,
+   "quality_med": 0.009625,
+   "cost_med": 1136932.0
+  },
+  {
+   "mode": "serial",
+   "route": [
+    "0",
+    "1"
+   ],
+   "n": 6,
+   "n_paired": 3,
+   "quality_med": 0.0,
+   "cost_med": 378837.0
+  }
+ ],
+ "n_read": 12
+}

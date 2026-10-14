@@ -19,6 +19,7 @@ import os
 import re
 import sys
 import time
+import contextlib
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field, asdict
@@ -1613,18 +1614,26 @@ def _load_bandit(cfg) -> "BudgetBandit":
 
 
 def _save_bandit(bb, cfg) -> bool:
-    """把 bandit 状态落盘（带 `t`/`n`，供审计）。"""
+    """把 bandit 状态落盘（带 `t`/`n`，供审计）。
+
+    ★ [并发正确性] bandit.json 是**读-改-写**（跑首载入、跑末落盘），3 并发时
+      两进程会互相覆盖统计。故落盘走**同一把记忆库锁**。★ bandit 是**状态不是账本**
+      ⇒ 拿不到锁就**跳过这次落盘**（短超时，绝不为了省一行状态把跑卡住）。
+    """
     try:
         import json as _j
         import time as _t
         _d = Path(str((cfg or {}).get("dir") or eml_dir()))
         _d.mkdir(parents=True, exist_ok=True)
-        (_d / _BANDIT_FILE).write_text(_j.dumps({
-            "t": _t.time(), "n": list(bb.n),
-            "mean": [round(x, 6) for x in bb.mean],
-            "cost": [round(x, 6) for x in bb.cost],
-            "arms": list(bb.arms)}, ensure_ascii=False, indent=1),
-            encoding="utf-8", newline="\n")
+        with eml_lock(dirpath=_d, timeout=5.0) as _got:
+            if not _got:
+                return False
+            (_d / _BANDIT_FILE).write_text(_j.dumps({
+                "t": _t.time(), "n": list(bb.n),
+                "mean": [round(x, 6) for x in bb.mean],
+                "cost": [round(x, 6) for x in bb.cost],
+                "arms": list(bb.arms)}, ensure_ascii=False, indent=1),
+                encoding="utf-8", newline="\n")
         return True
     except Exception:
         return False
@@ -2207,18 +2216,32 @@ def scale_word_violations(text: str, scale: str) -> list:
 #: ① 判定/收敛达成 ② 熵收敛（复述）③ 无信息增益（停滞/空转）④ 硬上限。
 #: ★ 纪律：**报告的主因必须就是真正停下来的那个**（一个级联、无漂移）。
 _STOP_CASCADE = (
-    (0, ("职责增益收敛", "结构饱和度", "悬置决定稳定", "自然安住")),
+    (0, ("职责增益收敛", "结构饱和度", "悬置决定稳定", "自然安住",
+         # ★ [四层目标] 目标达成 = 判定/收敛达成，**与上述同级**。
+         #   缺了这行，目标停因会落到最低档 3（与「体力耗尽」同级）——
+         #   语义刚好相反（达成 ≠ 耗尽力竭）。
+         "目标已达成", "目标受阻")),
     (1, ("复述", "自省连续")),
-    (2, ("无新", "无推进", "连续空转", "停滞", "材料耗尽", "耗尽")),
+    (2, ("无新", "无推进", "连续空转", "停滞", "材料耗尽")),
     (3, ("体力耗尽", "预算用尽", "min_rounds")),
 )
 
 
 def stop_priority(reason: str) -> int:
-    """把一条停因文案映射到优先级（未匹配 ⇒ 落到最低档 3，不静默丢弃）。"""
+    """把一条停因文案映射到优先级（未匹配 ⇒ 落到最低档 3，不静默丢弃）。
+
+    ★ 匹配**主句**，不匹配括号里的**转述**：走满型停因的文案形如
+      `体力耗尽（N 圈走满；K 次判据被「未深入方向」推迟（悬置决定稳定，
+      自然安住），是被截断不是自然停止）` —— 括号里嵌的是**被推迟的
+      判据名**，若全文子串匹配，会把「截断」误判成档 0「自然停」，
+      语义刚好相反。⇒ 先剥括号再匹配；剥空则回退原文（不静默变档）。
+    """
     _r = str(reason or "")
+    _head = re.sub(r"[（(][^（()）]*[)）]", "", _r).strip()
+    if not _head:
+        _head = _r
     for _p, _keys in _STOP_CASCADE:
-        if any(k in _r for k in _keys):
+        if any(k in _head for k in _keys):
             return int(_p)
     return 3
 
@@ -2333,6 +2356,61 @@ def eml_dir(base=None) -> Path:
     return _b / _EML_DIRNAME
 
 
+@contextlib.contextmanager
+def eml_lock(base=None, dirpath=None, timeout: float = 180.0,
+             stale: float = 900.0):
+    """跨进程**记忆库互斥锁**：并发真跑时保护记忆库的读-改-写。
+
+    ★ 为什么必须要：`playbook.jsonl` 的「升级 / 遗忘 / macro」是**读-改-写**
+      （整表重写），**不是原子 append**。两个进程同时改会互相覆盖
+      （丢条目、甚至写坏半行）。**这是并发真跑的正确性前提，不是性能优化。**
+    ★ 实现：`O_CREAT|O_EXCL` 自旋锁（跨平台，无需 fcntl/msvcrt）。
+      带**陈旧锁回收**：持锁进程被 kill 后 `.lock` 会残留 ⇒ 超 `stale` 秒
+      视为陈旧、清掉重取（否则一次崩溃会永久死锁整个记忆库）。
+    ★ 单跑时**零副作用**（拿到即放手）；只有真并发才会排队，且只保护写库那一小段。
+    """
+    try:
+        d = Path(dirpath) if dirpath else eml_dir(base)
+    except Exception:
+        yield False
+        return
+    try:
+        d.mkdir(parents=True, exist_ok=True)
+    except Exception:
+        yield False
+        return
+    lp = d / ".eml.lock"
+    t0 = time.time()
+    got = False
+    while time.time() - t0 < float(timeout):
+        try:
+            fd = os.open(str(lp), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            os.write(fd, ("%d\n" % os.getpid()).encode("ascii"))
+            os.close(fd)
+            got = True
+            break
+        except FileExistsError:
+            # 陈旧锁回收：文件太旧 ⇒ 清掉重试（崩了也不永久死锁）。
+            try:
+                if time.time() - lp.stat().st_mtime > float(stale):
+                    lp.unlink(missing_ok=True)
+                    continue
+            except Exception:
+                pass
+            time.sleep(0.2)
+        except Exception:
+            time.sleep(0.2)
+    try:
+        yield got
+    finally:
+        if got:
+            try:
+                lp.unlink(missing_ok=True)
+            except Exception:
+                pass
+
+
+
 def eml_read_jsonl(path) -> list:
     """读 jsonl（坏行**跳过但计数**，不静默当作空库）。"""
     p = Path(path)
@@ -2440,6 +2518,9 @@ def episode_from_result(result: dict, t: float = 0.0) -> dict:
         "n_web": len(((ps.get("1") or {}).get("web_results") or [])),
         "cost": {"tokens": int(r.get("llm_tokens") or 0),
                  "calls": int(r.get("llm_calls") or 0)},
+        # ★ [层目标] 四层目标读数必须**出口**，否则 AutoTune 读不到
+        #   （「字段有值 ≠ 有出口」—— 本项目已栽过）。
+        "goal_readings": layer_goal_summary(vs),
     }
 
 
@@ -2773,6 +2854,869 @@ def eml_write_memory_md(playbook: list, base=None, dirpath=None) -> bool:
         return True
     except Exception:
         return False
+
+
+# ============================================================
+# 自调优（AutoTune）—— 从**跨跑 episode** 自动推出最优「模式 / 层集 / 圈数」。
+#
+# 依据（前沿，2024-2025）：
+#   · Successive Halving / Hyperband（Jamieson & Talwalkar 2016；Li et al. 2017）：
+#     预算受限下**先粗筛再精算**，把算力从劣配里抽回给优配。本处用它排「档位表」。
+#   · 多目标**不做标量化**：质量↑ / 成本↓ 各成一轴，只取**帕累托前沿**。
+#     理由与「悬置不打分」同一哲学：给成本拍一个假币汇率，等于凭空打分。 ──
+#     不做「质量 = α·q − β·c」那种加权和（β 无物理来源 ⇒ 结论不可复现）。
+#   · 冷启动 → 暖启动：用 EML `playbook` 的 active 条目给候选**排序**（迁移）。
+#
+# ★ 红线自检：本机制**只产出建议**（`autotune_recommend`），**不自动改行为** ——
+#   写回默认配置由显式 `autotune_apply` 执行。理由同「停止与清算分开」：
+#   读数是读数、决策是决策，**建议与执行分开**。
+# ============================================================
+
+#: [AutoTune] 设计空间的层序（与引擎 route 取值一致）。
+_AT_LAYERS = ("0", "1", "both", "all")
+#: [AutoTune] successive-halving 的最小圈预算锚（保底至少这么多圈再判优劣）。
+_AT_MIN_RES = 2
+
+
+def _at_num(x, d=None):
+    """安全取数：非有限数 / 不可转 ⇒ 返回默认（**区分「没有」与「是 0」**）。"""
+    try:
+        v = float(x)
+        if v != v or v in (float("inf"), float("-inf")):
+            return d
+        return v
+    except Exception:
+        return d
+
+
+def _at_med(xs):
+    """中位数（偶数取中间两数均值）；空 ⇒ None（**不是 0**）。"""
+    xs = sorted(x for x in (xs or []) if x is not None)
+    if not xs:
+        return None
+    n = len(xs)
+    return xs[n // 2] if n % 2 else 0.5 * (xs[n // 2 - 1] + xs[n // 2])
+
+
+#: [层目标] 四层目标语义的**读数键名**（与用户战略指令逐字对应）。
+#:   ★ 每条读数都是「**越大越接近该层目标**」，但**各自独立成轴** ——
+#:     绝不合成一个总分（红线「未对齐合法」：不同层的目标本就不在同一尺度）。
+_LG_KEYS = {
+    "0": "excavate",      # 修行：层面挖掘的**边际新增趋零度**（挖不动了 ⇒ 趋近无穷收敛）
+    "1": "settle",        # 研究：层面**答案确定率**（有限收敛）
+    "both": "fuse",       # 对撞：由发散∩有限**融合生成**的新层面率
+    "all": "crystallize",  # 元：记忆结晶 / 决策 / 行动 / 回看的**留痕完整度**
+}
+#: [层目标] 元层「回看」的最小留痕项数（结晶 + 决策 + 行动 + 回看 四件事）。
+_LG_META_MIN = 4
+
+
+def _lg_ratio(num, den):
+    """安全比率：分母 <=0 或非数 ⇒ **None**（不是 0）。"""
+    try:
+        _n = float(num)
+        _d = float(den)
+    except (TypeError, ValueError):
+        return None
+    if _d <= 0:
+        return None
+    return max(0.0, min(1.0, _n / _d))
+
+
+def _lg_diverge_state(v: dict):
+    return str(((v or {}).get("divergence") or {}).get("state") or "").strip()
+
+
+def _lg_aspect_margin(hist, total=None):
+    """[Heaps 饱和] 层面序列的**边际新增率** = 末段新增 / 上段新增。
+
+    依据 Heaps' law：词表增长 V(n)=K·n^β（β∈[0.4,0.6]），**边际新增趋零**
+    ⇔ 「挖到不能再挖」（SSR 饱和尺度 m̃=αN^μ 之后 ⟨h(m)⟩≈N）。
+
+    · `hist` = 逐圈的**累计层面数** `[V1, V2, …]` ⇒ 新增 = 相邻差。
+    · 返回 = 末段新增 / 上段新增（**越小越饱和**；0 = 已完全挖尽）。
+    · 无 hist（老产物）⇒ 退回「单点估计」：`1/(1+total)` 的**下限形态**，
+      并**显式标注** `basis="fallback"`，不冒充逐圈读数。
+    · 两条都没有 ⇒ None（**不是 0** —— 「没测」与「测出是 0」两回事）。
+    """
+    xs = [float(x) for x in (hist or []) if x is not None]
+    if len(xs) >= 3:
+        gains = [max(0.0, xs[i] - xs[i - 1]) for i in range(1, len(xs))]
+        if not gains:
+            return None
+        half = max(1, len(gains) // 2)
+        late = sum(gains[-half:]) / float(half)
+        early = sum(gains[:half]) / float(half)
+        if early <= 1e-12:
+            return 0.0 if late <= 1e-12 else None
+        return max(0.0, min(1.0, late / early))
+    return None
+
+
+def _lg_stag_ratio(items, ups):
+    """[CORE 停滞罚] 产出层面与**上游文本**的重合率（0-1；1 = 全复读）。
+
+    ★ 返回 None 表示**算不出**（无上游文本 / 无产出）—— 不罚也不假装。
+    """
+    _its = [str((x or {}).get("target") or (x or {}).get("desc")
+                or (x or {}).get("text") or "").strip()
+            for x in (items or [])]
+    _its = [x for x in _its if x]
+    _ups = [str(x).strip() for x in (ups or []) if str(x).strip()]
+    if not _its or not _ups:
+        return None
+    # 归一到字符集合的 Jaccard（与 `_similar` 同族，但这里只做**重合度**）。
+    def _toks(s):
+        return {c for c in s if not c.isspace()}
+    hit = 0
+    for s in _its:
+        ts = _toks(s)
+        if not ts:
+            continue
+        best = 0.0
+        for u in _ups:
+            tu = _toks(u)
+            if not tu:
+                continue
+            j = len(ts & tu) / float(len(ts | tu))
+            best = max(best, j)
+        if best >= 0.8:          # 与某条上游近乎逐字相同 ⇒ 记为复读
+            hit += 1
+    return hit / float(len(_its))
+
+
+def layer_goal_readings(views: dict) -> dict:
+    """[层目标] 把 `views` 压成**每层一条目标读数**（纯函数，可判据）。
+
+    读数**按用户给的四层目标定义**，每条都回答「这一层离它的目标还差多少」：
+
+      · `0` 修行 —— `excavate` = 层面挖掘的**边际新增趋零度**。
+        分子 = `aspect_units` 数，分母 = 实际跑的圈数（`rounds_run`）。
+        ★ 语义：修行层要在**最少圈数**里把层面挖尽。若圈数多而层面不再增长
+          （比值趋 0）⇒ 已「挖到不能再挖」⇒ **趋近无穷收敛**。
+          故本读数 = **1 − 归一化边际新增**：边际新增越低 ⇒ 读数越高。
+        辅读：`divergence.state == "收敛"/"停滞"` ⇒ 属于「趋近收敛」。
+      · `1` 研究 —— `settle` = 层面**答案确定率** = `decidable_product`
+        已答数 / 层面总数（`covered_answer` 的 `answered/total` 同源）。
+        辅读：`belief_status_counts` 里 resolved/settled 占比。
+      · `both` 对撞 —— `fuse` = **融合生成率** = 对撞产出的**新层面数**
+        （`duel_suspensions` + `belief_items` 中对撞来源的条目）/ 上游可用层面数。
+        ★ 语义：融合「无穷发散 ∩ 有限确定」⇒ **创新出新的发散/有限层面**。
+      · `all` 元 —— `crystallize` = **留痕完整度** = 四件事（结晶/决策/行动/回看）
+        中真正留下产物的项数 / 4。产出面 = `meta_closure`（结晶+回看）、
+        `engagements`（决策）、`suspensions`（行动/交代）。
+      ★ 任一层缺产物 ⇒ 该层读数 = **None**（不印 0 冒充「读了是 0」）。
+    """
+    vs = views or {}
+    out = {}
+    for L in _AT_LAYERS:
+        v = vs.get(L) or {}
+        if not v:
+            continue
+        d = {}
+        if L == "0":
+            # ★ 依据 Heaps' law / type-token 饱和：修行层「挖到不能再挖」的
+            #   判据是**词汇/层面的边际新增趋零**（ΔV/Δn → 0），不是总量多少。
+            #   ★ 别用「总量/圈数」当读数：那让「挖得多」反而读数低（方向错）。
+            _units = len(v.get("aspect_units") or [])
+            _rr = int(_at_num(v.get("rounds_run"), 0) or 0)
+            _hist = [_at_num(x) for x in (v.get("aspect_hist") or [])]
+            _hist = [x for x in _hist if x is not None]
+            _margin = _lg_aspect_margin(_hist, _units)
+            d["excavate"] = _margin          # 边际新增率（越低越接近挖尽）
+            d["excavate_closed"] = (None if _margin is None
+                                    else round(1.0 - _margin, 4))
+            d["n_aspects"] = _units
+            d["rounds_run"] = _rr
+            _st = _lg_diverge_state(v)
+            d["conv_state"] = _st
+            d["converging"] = (_st in ("收敛", "停滞"))
+        elif L == "1":
+            # ★ 依据「content entropy 收敛」+ **伪收敛警告**（2025）：熵降是
+            #   收敛轨迹，但熵降 ≠ 质量 —— 可能是「过早忽略关键信息」。
+            #   ⇒ 研究层读数**必须**同时含「确定率」与「非退化」两项，
+            #     两者都好才算「有限收敛」；只有熵降 ⇒ 报 pseudo_convergence。
+            # ★ 真实原料 = `settlement`（`answered`/`total`，与 `coverage_of`
+            #   同源）。原读 `covered_answer` 是**臆造键** —— 真跑层 1 的 view
+            #   里根本没有它 ⇒ `settle` 恒 null（判据全绿是因为夹具自带该键）。
+            _co = v.get("settlement") or v.get("covered_answer") or {}
+            _ans, _tot = _co.get("answered"), _co.get("total")
+            if _ans is None:
+                # 再兜一层：由 covered/uncovered 层面数推（同源口径）。
+                _ca = v.get("covered_aspects") or []
+                _ua = v.get("uncovered_aspects") or []
+                if _ca or _ua:
+                    _ans, _tot = len(_ca), len(_ca) + len(_ua)
+            d["settle"] = _lg_ratio(_ans, _tot)
+            # 非退化：答案面**确实有实质产出**（不是「全部未答」也算齐整）。
+            _nz = _at_num(_ans, 0.0) or 0.0
+            d["non_degenerate"] = (_nz > 0) if _tot else None
+            _bs = v.get("belief_status_counts") or {}
+            _tot_b = sum(int(x or 0) for x in _bs.values()) if _bs else 0
+            _res_b = (int(_bs.get("resolved", 0) or 0)
+                      + int(_bs.get("settled", 0) or 0))
+            d["belief_resolved_rate"] = _lg_ratio(_res_b, _tot_b)
+            _st = _lg_diverge_state(v)
+            d["conv_state"] = _st
+            d["converging"] = (_st == "收敛")
+            # ★ 伪收敛 = 声称收敛但答案面退化（一个都没答上）。
+            d["pseudo_convergence"] = bool(
+                _st in ("收敛", "停滞") and _tot and not _nz)
+        elif L == "both":
+            # ★ 依据 CORE（Pandey et al., NeurIPS 2025）：只用「产出量」会
+            #   把「复读上游、一分不发」读成满分融合 ⇒ 必须配**语义停滞罚**
+            #   （semantic stagnation penalty），与 repetition penalty 同源。
+            _duel = v.get("duel_suspensions") or []
+            _bel = v.get("belief_items") or []
+            _new = len(_duel) + len(_bel)
+            _up = int(_at_num(v.get("upstream_layers"), 0) or 0)
+            if _up <= 0:
+                _bm = v.get("both_quota") or {}
+                _up = int(_at_num(_bm.get("upstream"), 0) or 0)
+            # 停滞 = 新层面与上游层面**文本重合**的比例（越高越像复读）。
+            _stag = v.get("sem_stagnation")
+            _stag = _at_num(_stag)
+            if _stag is None:
+                _stag = _lg_stag_ratio(_duel + _bel,
+                                       v.get("upstream_texts") or [])
+            d["fuse_raw"] = _lg_ratio(_new, _up) if _up > 0 else None
+            # CORE 式：融合分 = 产出率 × (1 − 停滞罚)，各因子都有物理来源。
+            if d["fuse_raw"] is None:
+                d["fuse"] = None
+            elif _stag is None:
+                d["fuse"] = d["fuse_raw"]        # 算不出停滞 ⇒ 不罚也不假装
+            else:
+                d["fuse"] = round(d["fuse_raw"] * (1.0 - min(1.0, _stag)), 4)
+            d["sem_stagnation"] = (None if _stag is None else round(_stag, 4))
+            d["n_new"] = _new
+            d["n_upstream"] = _up
+        elif L == "all":
+            _clo = v.get("meta_closure") or {}
+            _hits = 0
+            if _clo:
+                _hits += 1                                   # 结晶（闭环清算）
+                if _clo.get("total") is not None:
+                    _hits += 1                               # 回看（张力总数盘点）
+            if (v.get("engagements") or []):
+                _hits += 1                                   # 决策
+            if (v.get("suspensions") or []):
+                _hits += 1                                   # 行动/交代
+            d["crystallize"] = round(_hits / float(_LG_META_MIN), 4)
+            d["n_hits"] = _hits
+            d["meta_clean"] = bool(_clo.get("clean")) if _clo else None
+        out[L] = d
+    return out
+
+
+_LG_STOP_MARGIN = 0.1      # 修行层：边际新增率 < 此值 ⇒ 判「挖尽」
+_LG_STOP_FLAT_N = 2        # 研究/对撞：连续 N 圈读数不涨 ⇒ 判「不再涨」
+_LG_STOP_STAG = 0.8        # 对撞：语义停滞率 >= 此值 ⇒ 判「复读」
+
+
+def layer_goal_stop_signal(entry: str, goal: dict, prev: list = None):
+    """[四层目标 → 停因] 把「本层目标读数」转成一条**停止信号**。
+
+    这是把四层目标**接进运行**的那一步：读数不再只是事后统计，而是每层每圈
+    判断「这层还有没有必要再跑」的一条依据。
+
+    返回 `(hit, why)`：
+      · `hit=True` ⇒ 调用方给 `_stop_reasons` 加一条理由（**只加理由**）；
+      · **没读数 ⇒ `(False, "")`** —— 不表态（「没测」与「测出来差」两回事）。
+
+    逐层判据（依据见 `layer_goal_readings`）：
+      · `0`  修行：`excavate` < `_LG_STOP_MARGIN`（Heaps 饱和 = 层面挖尽）
+      · `1`  研究：`settle` 连续 `_LG_STOP_FLAT_N` 圈不涨（确定率不再涨）
+      · `both` 对撞：`fuse` 连续不涨 **或** `sem_stagnation` >= 阈值（CORE 罚触顶）
+      · `all` 元：`crystallize` >= 1.0（四件事齐 = 结晶完成）
+    """
+    g = goal or {}
+    _e = str(entry or "")
+    if _e == "0":
+        _v = _lg_num(g.get("excavate"))
+        if _v is None:
+            return False, ""
+        # ★ 只在「确有逐圈序列」时才对边际率下结论；n_aspects 缺 ⇒ 不表态。
+        if _v < _LG_STOP_MARGIN and (_lg_num(g.get("n_aspects")) or 0) > 0:
+            return True, ("修行目标已达成（层面边际新增率 %.3f < %.2f，"
+                          "Heaps 饱和 ⇒ 挖到不能再挖）" % (_v, _LG_STOP_MARGIN))
+        return False, ""
+    if _e == "1":
+        _v = _lg_num(g.get("settle"))
+        if _v is None:
+            return False, ""
+        if _lg_flat(prev, "settle", _LG_STOP_FLAT_N):
+            return True, ("研究目标已达成（确定率连续 %d 圈不涨 = %.3f，"
+                          "各层面已有答案）" % (_LG_STOP_FLAT_N, _v))
+        return False, ""
+    if _e == "both":
+        _stag = _lg_num(g.get("sem_stagnation"))
+        if _stag is not None and _stag >= _LG_STOP_STAG:
+            return True, ("对撞目标受阻（语义停滞率 %.2f >= %.2f，"
+                          "只剩复读上游，没融合出新的层面）"
+                          % (_stag, _LG_STOP_STAG))
+        _v = _lg_num(g.get("fuse"))
+        if _v is None:
+            return False, ""
+        if _lg_flat(prev, "fuse", _LG_STOP_FLAT_N):
+            return True, ("对撞目标已达成（融合分连续 %d 圈不涨 = %.3f）"
+                          % (_LG_STOP_FLAT_N, _v))
+        return False, ""
+    if _e == "all":
+        _v = _lg_num(g.get("crystallize"))
+        if _v is None:
+            return False, ""
+        if _v >= 1.0 - 1e-9:
+            return True, ("元层目标已达成（记忆结晶/回看/决策/行动 四件齐备 "
+                          "= %.2f）" % _v)
+        return False, ""
+    return False, ""
+
+
+def _lg_flat(prev, key, n):
+    """读数序列 `prev`（含当圈）里 `key` **连续 n 圈不涨** ⇒ True。
+
+    · 序列不足 n+1 条 ⇒ False（**样本不足不表态**）；
+    · 有任一读数为 None ⇒ False（缺读数不参与「不涨」判断）。
+    """
+    if not prev or len(prev) < int(n) + 1:
+        return False
+    _xs = []
+    for row in prev[-(int(n) + 1):]:
+        _x = _lg_num((row or {}).get(key))
+        if _x is None:
+            return False
+        _xs.append(_x)
+    return all(_xs[i + 1] <= _xs[i] + 1e-12 for i in range(len(_xs) - 1))
+
+
+def _lg_num(x):
+    """把读数转 float；**非数 ⇒ None**（不是 0 —— 没测 ≠ 测出来 0）。"""
+    if x is None or isinstance(x, bool):
+        return None
+    try:
+        return float(x)
+    except (TypeError, ValueError):
+        return None
+
+
+def layer_goal_summary(views: dict) -> dict:
+    """[层目标] 只回**每层的主读数**（`_LG_KEYS` 那条）—— 给 AutoTune 用。
+
+    返回 `{层: {"key":..., "value": float|None, "converging": bool|None}}`。
+    ★ 缺读数的层**不进**结果（`None` 与「跑了但读数算不出」都表现为缺键）——
+      两者对「选层集」的建议是**一样的**：没有证据就不要拿来淘汰（红线）。
+    """
+    rd = layer_goal_readings(views)
+    out = {}
+    for L, d in rd.items():
+        k = _LG_KEYS.get(L)
+        if not k or k not in d:
+            continue
+        v = d.get(k)
+        out[L] = {"key": k, "value": (None if v is None else float(v)),
+                  "converging": d.get("converging")}
+    return out
+
+
+def autotune_score(ep: dict) -> dict:
+    """把一个 episode 压成**可比较的读数向量**（只报量，不打分）。
+
+    质量口径**三级回落，且必须留痕是哪一级**：
+      ① `duty` 有值 ⇒ 用**各层职责度中位**（层在停止/收敛处真替原始问题干了活）；
+      ② 无 duty 但有 `tri_rate` ⇒ 用三态一致率；
+      ③ 都没有 ⇒ `quality=None`（**未知，绝不当 0** —— 否则「没测」会被
+         当成「测出来很差」，把好配置误淘汰）。
+    """
+    duty = ep.get("duty") or {}
+    dv = [_at_num(x) for x in duty.values()]
+    dv = [x for x in dv if x is not None]
+    q_duty = _at_med(dv)
+    tri = _at_num(ep.get("tri_rate"))
+    cut = [str(x) for x in (ep.get("cut_layers") or [])]
+    # ★ [层目标] 优先用「按层目标定义的读数」—— 它比 duty 更贴用户给的目标语义
+    #   （duty 只答「层替问题干了多少活」，goal 答「离该层目标还有多远」）。
+    _gr = ep.get("goal_readings") or {}
+    gv = []
+    for _L, _d in (_gr or {}).items():
+        if isinstance(_d, dict):
+            _x = _at_num(_d.get("value"))
+            if _x is not None:
+                gv.append(_x)
+    q_goal = _at_med(gv)
+    if q_goal is not None:
+        quality, basis = q_goal, "goal_med"
+    elif q_duty is not None:
+        quality, basis = q_duty, "duty_med"
+    elif tri is not None:
+        quality, basis = tri, "tri_rate"
+    else:
+        quality, basis = None, "unknown"
+    return {
+        "quality": quality, "q_basis": basis,
+        # ★ 时间戳出口：`autotune_progress` 要按 t 排序判「趋势」。
+        "t": _at_num(ep.get("t"), 0.0),
+        "cost": _at_num((ep.get("cost") or {}).get("tokens")),
+        "cut": cut, "n_cut": len(cut), "natural": len(cut) == 0,
+        "route": [str(x) for x in (ep.get("route") or [])],
+        "mode": str(ep.get("mode") or ""),
+        "rounds_cap": dict(ep.get("rounds_cap") or {}),
+        "run_id": str(ep.get("run_id") or ""),
+        # ★ 层目标明细随行（供 `autotune_progress` 做「中期动态调整」判据）。
+        "goal_readings": {str(k): dict(v) for k, v in (_gr or {}).items()
+                          if isinstance(v, dict)},
+    }
+
+
+def autotune_dominates(a: dict, b: dict) -> bool:
+    """帕累托支配：质量不劣、成本不高，且至少一项严格更优。
+
+    ★ 任一读数缺失（None）⇒ **不判支配**（未知不能用来淘汰已知）。
+    """
+    qa, qb = a.get("quality"), b.get("quality")
+    ca, cb = a.get("cost"), b.get("cost")
+    if qa is None or qb is None or ca is None or cb is None:
+        return False
+    if qa < qb or ca > cb:
+        return False
+    return (qa > qb) or (ca < cb)
+
+
+def autotune_pareto(points: list) -> list:
+    """多目标（质量↑ / 成本↓）的**帕累托前沿**：非被支配点的集合。"""
+    pts = [p for p in (points or [])
+           if p.get("quality") is not None and p.get("cost") is not None]
+    front = []
+    for i, p in enumerate(pts):
+        if not any(j != i and autotune_dominates(o, p)
+                   for j, o in enumerate(pts)):
+            front.append(p)
+    # 前沿内按质量降序、成本升序给个稳定序（可复现）。
+    front.sort(key=lambda r: (-r["quality"], r["cost"]))
+    return front
+
+
+def autotune_sh_rounds(n: int, min_res: int = _AT_MIN_RES,
+                       factor: int = 3) -> list:
+    """Successive-Halving 档位表：`[(保留候选数, 每候选圈预算), …]`。
+
+    ★ 语义：**档 n 的预算 = 档 (n-1) 的 factor 倍**，同时候选数缩到 1/factor。
+      总预算 ≈ n×1 + (n/f)×f + … 收敛，符合 Hyperband「预算约束下的粗筛」。
+    """
+    n = max(1, int(n))
+    f = max(2, int(factor))
+    mr = max(1, int(min_res))
+    out, keep, res = [], n, mr
+    while True:
+        out.append((keep, res))
+        if keep <= 1:
+            break
+        keep = max(1, keep // f)
+        res = res * f
+    return out
+
+
+def autotune_rank(episodes: list, min_n: int = 1) -> list:
+    """按（模式, 层集）分组 → 组内帕累托前沿 + 中位读数，按质量降序排。
+
+    这是**暖启动**的入口：新一跑先查这里「同类题上谁历史最优」。
+
+    ★ [分母一致] 质量中位与成本中位**必须在同一批 episode 上算**：
+      只取「质量与成本**都齐**」的那些。反例（真跑逮到）：把**无 duty 读数的
+      历史跑次**（`duty={}` ⇒ quality=None）也算进成本中位 ⇒ 2 层组的成本中位
+      被旧跑次拉到 305076（真值 378837）⇒ 帕累托膝盖**判错**。同一组两个读数
+      用两个分母，是典型的「对不上账」。
+    """
+    groups = {}
+    for ep in (episodes or []):
+        s = autotune_score(ep)
+        groups.setdefault((s["mode"], tuple(s["route"])), []).append(s)
+    rows = []
+    for (mode, route), arr in groups.items():
+        if len(arr) < max(1, int(min_n)):
+            continue
+        # ★ 只在「质量、成本都齐」的子集上算两个中位（同分母）。
+        paired = [a for a in arr if a["quality"] is not None
+                  and a["cost"] is not None]
+        qs = [a["quality"] for a in paired]
+        cs = [a["cost"] for a in paired]
+        rows.append({
+            "mode": mode, "route": list(route), "n": len(arr),
+            "n_paired": len(paired),
+            "quality_med": _at_med(qs), "cost_med": _at_med(cs),
+            "natural_rate": (sum(1 for a in arr if a["natural"])
+                             / float(len(arr))),
+            "pareto": autotune_pareto(arr),
+        })
+    rows.sort(key=lambda r: (
+        -(r["quality_med"] if r["quality_med"] is not None else -1.0),
+        r["cost_med"] if r["cost_med"] is not None else float("inf")))
+    return rows
+
+
+def autotune_recommend(episodes: list, space_layers=None,
+                       quality_tau: float = 0.05,
+                       playbook: list = None,
+                       min_n: int = 1) -> dict:
+    """从跨跑 episode 推出**建议默认**：模式 / 层集 / 各层圈数上限。
+
+    规则（可判据、可复现）：
+      ① **层集**：在「质量不低于最优 − τ」的候选里，取**成本最低**那条
+         （帕累托膝盖）—— 这正是「该去的层去掉、该留的留」的量化判据。
+      ② **圈数**：以「该层**未**被截断」的 episode 的 `rounds_cap` 中位为基线；
+         对被截断过的层 **+1**（对齐 EML `schedule` 条目的动作）。
+      ③ **模式**：取最优质量行的 mode（并列时取成本低者）。
+      ★ 样本不足（无任何带质量的组）⇒ 返回 `ok=False` + 原因，**绝不瞎猜**。
+    """
+    eps = list(episodes or [])
+    #   ★ `min_n` 必须**真的接进来**：否则 `autotune.min_n` 是只写不读的死键
+    #     （「参数没有出口」）。同(模式,层集)样本不足 ⇒ 该组不参与推荐。
+    rows = [r for r in autotune_rank(eps, min_n=int(min_n))
+            if r.get("quality_med") is not None]
+    if not rows:
+        return {"ok": False, "why": "无带质量读数的 episode（duty/tri_rate 都缺）",
+                "n_episodes": len(eps)}
+    best_q = rows[0]["quality_med"]
+    # ① 层集：质量在 [best_q - τ, ∞) 内选成本最低
+    _within = [r for r in rows
+               if r["quality_med"] >= best_q - float(quality_tau)]
+    costed = [r for r in _within if r.get("cost_med") is not None]
+    pick = (min(costed, key=lambda r: r["cost_med"]) if costed else rows[0])
+    # ② 圈数：分层统计「未截断中位」+ 截断 +1
+    base, cut_n, all_n = {}, {}, {}
+    for ep in eps:
+        s = autotune_score(ep)
+        for L, cap in (s["rounds_cap"] or {}).items():
+            L = str(L)
+            all_n.setdefault(L, []).append(_at_num(cap))
+            if L in s["cut"]:
+                cut_n[L] = cut_n.get(L, 0) + 1
+            else:
+                base.setdefault(L, []).append(_at_num(cap))
+    rounds_cap = {}
+    for L in _AT_LAYERS:
+        b = _at_med([x for x in base.get(L, []) if x is not None])
+        if b is None:
+            b = _at_med([x for x in all_n.get(L, []) if x is not None])
+        if b is None:
+            continue
+        cap = int(round(b)) + (1 if cut_n.get(L, 0) > 0 else 0)
+        rounds_cap[L] = max(1, cap)
+    why = ("层集=%s（最优质量 %.3f，τ=%.3f；同质量内取成本最低 %.0f tok）；"
+           "模式=%s；圈数=%s（截断层 +1：%s）"
+           % (pick["route"], best_q, float(quality_tau),
+              pick["cost_med"] or 0.0, pick["mode"], rounds_cap,
+              sorted(cut_n) or "无"))
+    if playbook:
+        _warm = [e for e in playbook if e.get("status") == "active"]
+        if _warm:
+            why += "；暖启动生效条目 %d 条" % len(_warm)
+    # ★ [证据强度] 别拿 n=1 的组当结论：同分母样本 < 3 ⇒ 显式标注证据薄弱，
+    #   让下游（人 / 上层）自行决定要不要采信，而不是把薄证据包装成「最优」。
+    _np = int(pick.get("n_paired") or pick.get("n") or 0)
+    strength = "充分" if _np >= 3 else ("薄弱" if _np >= 1 else "无")
+    if _np < 3:
+        why += "；⚠ 证据%s（同分母样本 n=%d < 3，建议多跑几次再采信）" % (strength, _np)
+    return {"ok": True, "mode": pick["mode"], "route": pick["route"],
+            "rounds_cap": rounds_cap, "quality_med": best_q,
+            "cost_med": pick["cost_med"], "n_episodes": len(eps),
+            "n_groups": len(rows), "evidence_n": _np,
+            "evidence_strength": strength, "why": why,
+            "frontier": [{"mode": r["mode"], "route": r["route"],
+                          "n": r["n"], "n_paired": r["n_paired"],
+                          "quality_med": r["quality_med"],
+                          "cost_med": r["cost_med"]} for r in rows[:6]]}
+
+
+def autotune_progress(episodes: list, min_n: int = 2) -> dict:
+    """[中期动态调整] 判「同一 (模式,层集) 的目标读数**随轮次是否在改善**」。
+
+    依据 **CSD / 早期预警（Scheffer et al. 2009）** 与 **Successive Halving**：
+      同一配置连跑多次，若目标读数**单调不降且末端仍升** ⇒ 继续（预算给得起）；
+      若**已平/在退** ⇒ 收敛（停手，把预算抽回）；若**在退** ⇒ 建议回滚到最佳轮。
+
+    返回 `{key: {trend, first, last, best_ep_idx, advice}}`，`advice ∈
+    {"继续","收敛","回滚"}`。★ 每个 key 至少要 `min_n` 个**带目标读数**的
+    episode 才判；不足 ⇒ 不出现该 key（**绝不瞎猜**）。
+    ★ 与 `autotune_rank` **各自独立**：那个答「选哪套配置」，这个答「这套还要不要跑」。
+    """
+    need = max(2, int(min_n))
+    groups = {}
+    for ep in (episodes or []):
+        s = autotune_score(ep)
+        key = (s["mode"], tuple(s["route"]))
+        _g = s.get("goal_readings") or {}
+        # 主读数：取该跑里**数值最多**的那条目标读数之和的中位（同分母）。
+        _vals = []
+        for _L, _d in _g.items():
+            k = _LG_KEYS.get(_L)
+            if not k:
+                continue
+            _x = _at_num((_d or {}).get(k)) if k in (_d or {}) else None
+            if _x is None and "value" in (_d or {}):
+                _x = _at_num(_d.get("value"))
+            if _x is not None:
+                _vals.append(_x)
+        if not _vals:
+            continue
+        groups.setdefault(key, []).append((float(s["t"]), _at_med(_vals), s))
+    out = {}
+    for key, arr in groups.items():
+        if len(arr) < need:
+            continue
+        arr = sorted(arr, key=lambda x: x[0])           # 按时间排
+        ys = [a[1] for a in arr]
+        _f, _l = ys[0], ys[-1]
+        _best = max(range(len(ys)), key=lambda i: ys[i])
+        if _l > _f + 1e-9:
+            advice, trend = "继续", "上升"
+        elif _l < _f - 1e-9:
+            advice, trend = "回滚", "下降"
+        else:
+            advice, trend = "收敛", "平稳"
+        out["%s|%s" % (key[0], ",".join(key[1]))] = {
+            "trend": trend, "first": round(_f, 4), "last": round(_l, 4),
+            "best_ep_idx": int(_best), "n": len(arr), "advice": advice}
+    return out
+
+
+#: [DGM archive] 开放探索的**最低选择概率**：连劣配也保留一点概率。
+#:   ★ 依据 DGM 消融（Zhang et al. 2025）：贪心只从最优分支 = 39.7%，
+#:     带 archive = 50.0% —— **不许把劣配的路径彻底掐死**。
+_AT_ARCHIVE_FLOOR = 0.05
+#: [DGM archive] 归档条目的**多样性下限**：archive 里至少要有这么多种
+#:   不同的 (mode, route) 组合，否则「开放探索」名存实亡（退化成单点贪心）。
+_AT_ARCHIVE_MIN_DIV = 2
+
+
+def autotune_archive(episodes: list) -> dict:
+    """[DGM archive] 从历史 episode 建**开放探索档案**（不是只留最优）。
+
+    依据 Darwin Gödel Machine：archive 的价值在**越过适应度低谷** ——
+    最优解常常经由「比父代更差」的中间体才走到。故本函数**保留全部**
+    (mode, route) 组合，只给它们算**选择概率**：
+
+      p(c) ∝ 质量秩 × 1/(1+已探索次数)     （质量高、探索少 ⇒ 概率高）
+      再夹到 `[_AT_ARCHIVE_FLOOR, 1]` 并归一化 ⇒ **每个候选非零概率**。
+
+    ★ 「只留最优」是贪心，DGM 已证劣于带 archive 的开放探索 ⇒ 本函数
+      的存在本身就是判据（M35 变异体：改成只留最优必须判红）。
+    """
+    rows = autotune_rank(episodes or [], min_n=1)
+    if not rows:
+        return {"ok": False, "why": "无任何带质量的组", "arms": [], "n": 0}
+    arms = []
+    for r in rows:
+        key = "%s|%s" % (r["mode"], ",".join(r["route"]))
+        _q = r.get("quality_med")
+        _c = r.get("cost_med")
+        arms.append({"key": key, "mode": r["mode"], "route": list(r["route"]),
+                     "n": int(r.get("n") or 0),
+                     "quality_med": _q, "cost_med": _c,
+                     "explored": int(r.get("n") or 0)})
+    # 质量秩（降序；质量 None 排最后但**不剔除**）。
+    arms.sort(key=lambda a: -(a["quality_med"]
+                              if a["quality_med"] is not None else -1.0))
+    _m = len(arms)
+    raw = []
+    for i, a in enumerate(arms):
+        _rank = float(_m - i) / float(_m)             # 1.0 最优 → 1/m 最劣
+        _nov = 1.0 / (1.0 + a["explored"])            # 探索少 ⇒ 高
+        raw.append(max(_AT_ARCHIVE_FLOOR, _rank * _nov))
+    _s = sum(raw) or 1.0
+    for a, w in zip(arms, raw):
+        a["prob"] = round(w / _s, 4)
+    _div = len({a["key"] for a in arms})
+    return {"ok": True, "arms": arms, "n": len(arms), "diversity": _div,
+            "open_ended": bool(_div >= _AT_ARCHIVE_MIN_DIV),
+            "why": "archive %d 臂 / 多样性 %d（floor=%.2f）"
+                   % (len(arms), _div, _AT_ARCHIVE_FLOOR)}
+
+
+def autotune_phase_select(episodes: list, q_features: dict = None,
+                          quality_tau: float = 0.05,
+                          min_n: int = 1) -> dict:
+    """**前期配置选择**：给定题面特征 ⇒ 建议 (mode, 层集)。
+
+    做法（两层，都可判据）：
+      ① 若有**同题型**的历史组（`q_features` 命中）⇒ 用它出建议
+         （冷启动 → 暖启动迁移）。
+      ② 无同题型历史 ⇒ 退回全体历史（并**显式标注** `basis="global"`，
+         不把「别的题型的结论」冒充成「这题的结论」）。
+      ★ 依据 Successive Halving：前期用**最少预算**粗筛 —— 故本段只出
+        「要跑哪些臂」，不出「跑多少圈」（圈数归中期动态调整）。
+    """
+    eps = list(episodes or [])
+    basis = "global"
+    pool = eps
+    if q_features:
+        _key = tuple(sorted((str(k), str(v)) for k, v in q_features.items()))
+        same = [e for e in eps
+                if tuple(sorted((str(k), str(v))
+                                for k, v in (e.get("q_features") or {}).items()))
+                == _key]
+        if len(same) >= max(1, int(min_n)):
+            pool, basis = same, "same_type"
+    rec = autotune_recommend(pool, quality_tau=float(quality_tau),
+                             min_n=int(min_n))
+    rec["basis"] = basis
+    rec["phase"] = "select"
+    if rec.get("ok"):
+        rec["decision"] = {"mode": rec.get("mode"),
+                           "route": rec.get("route")}
+    return rec
+
+
+def autotune_phase_adjust(episodes: list, min_n: int = 2) -> dict:
+    """**中期动态调整**：跑动中按目标读数趋势 ⇒ 继续 / 收敛 / 回滚。
+
+    依据：**anytime-valid**（Howard et al. 2021）—— 随时看随时停都成立；
+      **CSD / 早期预警**（Scheffer et al. 2009）—— 趋势变平/退就是信号。
+    ★ 只对「同一 (mode,route) 至少 min_n 次带目标读数」的组表态；
+      不足 ⇒ **不表态**（返回空 arms，绝不瞎猜）。
+    """
+    prog = autotune_progress(episodes or [], min_n=int(min_n))
+    arms = []
+    for key, d in prog.items():
+        arms.append(dict(d, key=key))
+    # 建议优先级：先处理「回滚」（最紧急），再「收敛」，最后「继续」。
+    _order = {"回滚": 0, "收敛": 1, "继续": 2}
+    arms.sort(key=lambda a: _order.get(a.get("advice"), 9))
+    return {"phase": "adjust", "n_arms": len(arms), "arms": arms,
+            "ok": bool(arms),
+            "why": ("%d 组有趋势读数" % len(arms)) if arms
+                   else "无组达到 min_n=%d（不表态）" % int(min_n)}
+
+
+def autotune_phase_learn(episodes: list, min_n: int = 2) -> dict:
+    """**后期学习纠正 + 输出结论**：archive 汇总 ⇒ 纠正 + 可读结论。
+
+    依据 DGM 的**开放探索**：结论**不许只报冠军** —— 必须同时报
+      (a) archive 多样性、(b) 被淘汰臂的**差在哪**（可解释的纠正）、
+      (c) 每个建议的**证据强度**（`n<3` ⇒ 标注薄弱）。
+
+    输出 `corrections`（每条 = 一个臂 + 一条「纠正理由」）与 `conclusion`
+    （人可读的一句话结论）。★ 无证据 ⇒ `ok=False` + why，**不编结论**。
+    """
+    arc = autotune_archive(episodes or [])
+    if not arc.get("ok"):
+        return {"phase": "learn", "ok": False, "why": arc.get("why"),
+                "corrections": [], "conclusion": ""}
+    arms = arc["arms"]
+    corrections = []
+    if arms:
+        _top = arms[0]
+        for a in arms[1:]:
+            _why = []
+            if (a.get("quality_med") is not None
+                    and _top.get("quality_med") is not None
+                    and a["quality_med"] < _top["quality_med"] - 1e-9):
+                _why.append("质量 %.3f < 最优 %.3f"
+                            % (a["quality_med"], _top["quality_med"]))
+            if (a.get("cost_med") is not None
+                    and _top.get("cost_med") is not None
+                    and a["cost_med"] > _top["cost_med"]):
+                _why.append("成本 %.0f > 最优 %.0f"
+                            % (a["cost_med"], _top["cost_med"]))
+            corrections.append({
+                "key": a["key"], "advice": "降权但不剔除（DGM 开放探索）",
+                "reasons": _why or ["质量不劣但成本/探索次数待定"],
+                "prob": a.get("prob")})
+    _n_top = int(arms[0].get("n") or 0) if arms else 0
+    _strength = "充分" if _n_top >= 3 else ("薄弱" if _n_top >= 1 else "无")
+    conclusion = ("最优臂=%s（质量 %.3f / 成本 %.0f，n=%d，证据%s）；"
+                  "archive 多样性=%d（开放探索=%s）"
+                  % (arms[0]["key"], arms[0].get("quality_med") or 0.0,
+                     arms[0].get("cost_med") or 0.0, _n_top, _strength,
+                     arc["diversity"], "开" if arc["open_ended"] else "关")
+                  ) if arms else "无臂可结论"
+    return {"phase": "learn", "ok": True, "corrections": corrections,
+            "conclusion": conclusion, "evidence_strength": _strength,
+            "archive_diversity": arc["diversity"],
+            "open_ended": arc["open_ended"], "n_arms": len(arms)}
+
+
+def autotune_decide(episodes: list, q_features: dict = None,
+                    quality_tau: float = 0.05, min_n: int = 2) -> dict:
+    """**AutoTune 三阶段自主决策总入口** —— 前期选择 / 中期调整 / 后期学习。
+
+    三段各自独立产出决策，最后合成一份**带留痕**的决策书：
+      `{select:…, adjust:…, learn:…, summary:…}`。
+    ★ 三段**都不改配置**：`select` 只建议、`adjust` 只表态、`learn` 只纠正。
+      要采纳必须显式 `autotune_apply_to_cfg`（红线「建议与执行分开」）。
+    """
+    eps = list(episodes or [])
+    sel = autotune_phase_select(eps, q_features=q_features,
+                                quality_tau=quality_tau, min_n=1)
+    adj = autotune_phase_adjust(eps, min_n=int(min_n))
+    lrn = autotune_phase_learn(eps, min_n=int(min_n))
+    _bits = []
+    if sel.get("ok"):
+        _bits.append("前期选 %s/%s（%s）"
+                     % (sel.get("mode"), sel.get("route"), sel.get("basis")))
+    else:
+        _bits.append("前期选择：%s" % (sel.get("why") or "无建议"))
+    _bits.append("中期调整：%d 组表态（%s）"
+                 % (adj["n_arms"],
+                    "；".join(a["key"] + "→" + a["advice"]
+                              for a in adj["arms"][:3]) or "无"))
+    if lrn.get("ok"):
+        _bits.append("后期结论：%s" % lrn["conclusion"])
+    else:
+        _bits.append("后期学习：%s" % (lrn.get("why") or "无结论"))
+    return {"select": sel, "adjust": adj, "learn": lrn,
+            "summary": " | ".join(_bits), "n_episodes": len(eps)}
+
+
+def autotune_load_episodes(base=None, dirpath=None) -> list:
+    """读记忆库历史 episode（`episodes.jsonl`）。坏行由 `eml_read_jsonl` 跳过。"""
+    try:
+        d = Path(dirpath) if dirpath else eml_dir(base)
+        return list(eml_read_jsonl(d / _EML_EPISODES) or [])
+    except Exception:
+        return []
+
+
+def autotune_run(cfg: dict, base=None, write: bool = True) -> dict:
+    """跑一次自调优：读 episode → 出建议 →（可选）落盘 `dgtf_autotune.json`。
+
+    ★ 只写**建议文件**，不改 `cfg`、不改 yaml —— 「建议与执行分开」：
+      要采用建议必须**显式**调 `autotune_apply_to_cfg` 或手改 yaml。
+    """
+    at = (cfg or {}).get("autotune") or {}
+    eps = autotune_load_episodes(base)
+    try:
+        _pb = list(eml_read_jsonl(eml_dir(base) / _EML_PLAYBOOK) or [])
+    except Exception:
+        _pb = []
+    try:
+        rec = autotune_recommend(eps,
+                                 quality_tau=float(at.get("quality_tau", 0.05)),
+                                 playbook=_pb,
+                                 min_n=int(at.get("min_n", 1) or 1))
+    except Exception as e:
+        rec = {"ok": False, "why": "autotune_recommend 异常：%r" % (e,)}
+    rec["n_read"] = len(eps)
+    # ★ [三阶段决策书] 前期选择 / 中期调整 / 后期学习 —— 一次跑全出，
+    #   随建议一起落盘（「结论」必须留痕，否则只算内部状态）。
+    #   ★ 段间**互不覆盖**：`rec` 仍是 `autotune_recommend` 的原样输出
+    #     （下游 `autotune_apply_to_cfg` 读的就是它），三段挂在新键上。
+    try:
+        rec["decide"] = autotune_decide(
+            eps, quality_tau=float(at.get("quality_tau", 0.05)),
+            min_n=int(at.get("min_n", 2) or 2))
+    except Exception as e:
+        rec["decide"] = {"error": "%r" % (e,)}
+    if write and rec.get("ok"):
+        try:
+            out = str(at.get("out") or "").strip()
+            p = (Path(out) if out
+                 else (eml_dir(base).parent / "dgtf_autotune.json"))
+            p.write_text(json.dumps(rec, ensure_ascii=False, indent=1),
+                         encoding="utf-8", newline="\n")
+            rec["written"] = str(p)
+        except Exception as e:
+            rec["written"] = "失败：%r" % (e,)
+    return rec
 
 
 # ============================================================
@@ -5462,10 +6406,16 @@ class View:
     duty: dict = field(default_factory=dict)
     #: 逐圈 trace：`[{round, S, C, R}]` —— 边际增益判据读它。
     duty_trace: List[dict] = field(default_factory=list)
+    # ★ [四层目标] 逐圈目标读数序列（与 `duty_trace` 同构）。停因判据读它
+    #   （连续不涨 = 该层目标不再推进）。
+    goal_trace: List[dict] = field(default_factory=list)
     #: [LDG] 职责判定行 —— **与停止理由分开**（红线「停止与清算分开」）：
     #:   停止理由答「为什么停」，职责判定答「这层替问题干了什么」。
     #:   渲染时两者同屏，读者不会只看到「自然安住」。
     duty_verdict: str = ""
+    # ★ [四层目标] 本层目标达成读数的**独立**判定行（与 duty_verdict 并列，
+    #   不合并 —— 两路信号问的不是同一件事）。
+    goal_verdict: str = ""
     #: [停因级联] 主因（最高优先级的那条）—— ★ 不变量：它必须出现在
     #:   `stop_reason` 里（报告的原因不能是「没触发的那个」）。
     stop_primary: str = ""
@@ -5496,6 +6446,14 @@ class View:
     #   旧键是历史 packed 的口径，删了会让下游读数从「作证据」
     #   静默降级成「读不到」。
     aspect_units: List[dict] = field(default_factory=list)
+    #: [层目标 / Heaps 饱和] 逐圈**累计层面数**（逐圈序列，不是终值）。
+    aspect_hist: List[int] = field(default_factory=list)
+    #: [层目标 / 对撞] 本层的**上游层数**（融合率的分母）。0 = 未记。
+    upstream_layers: int = 0
+    #: [层目标 / CORE 停滞罚] 上游 view 的 manifest/collision 文本（比对语料）。
+    upstream_texts: List[str] = field(default_factory=list)
+    #: [层目标 / CORE] 语义停滞率 0-1（1 = 全复读上游）。None = 未算。
+    sem_stagnation: Optional[float] = None
     # [D1 信念条目] 信念条目（带状态/证据/熵），与 structural_amps 双写。
     # ★ `structural_amps`（字符串列表）**继续写**：它是历史 packed 的
     #   口径，删了会让下游读数从「作证据」静默降级成「读不到」。
@@ -6108,6 +7066,10 @@ class Pool:
     #  [A1 方面单元] 池级镜像 —— `aspect_targets_v12327` 要按**真 id**
     #    对账，而 id 是 View 分配的 ⇒ 必须同步过来（否则两套编号又分叉）。
     aspect_units: List[dict] = field(default_factory=list)
+    #: [层目标 / Heaps 饱和] 逐圈**累计层面数**：`[V1, V2, …]`。
+    #:   ★ 修行层「挖到不能再挖」= 边际新增趋零 ⇒ 必须留**逐圈序列**，
+    #:     只留终值就只能退回单点估计（真跑读不到判别力）。
+    aspect_hist: List[int] = field(default_factory=list)
     anchors: List[dict] = field(default_factory=list)
     # 本次是否授权锚点作为**可引用对象**（进 _citation_table）。
     # ★ 默认 False：进了引用表就自动获得支撑 →decidable 的资格
@@ -6161,6 +7123,10 @@ class Pool:
             if not any(str(x.get("id") or "") == _uid
                        for x in self.aspect_units):
                 self.aspect_units.append(_u)
+        # ★ [层目标] 本圈结束时记一次**累计层面数**（merge 每圈调一次
+        #   ⇒ 本列表天然是「逐圈序列」）。同值也记：**平稳本身就是读数**
+        #   （Heaps 饱和 = 后续增量恒 0，序列会连续重复）。
+        self.aspect_hist.append(len(self.aspect_units))
         for s in (suspensions or []):
             t = str(s.get("target", "")).strip()
             if not t:
@@ -6835,6 +7801,23 @@ class Pool:
         # [A1 方面单元] 池级镜像出口（A1~An 编号可在产物里审计）。
         if self.aspect_units:
             d["aspect_units"] = self.aspect_units
+        # ★ [层目标] 四层目标读数所需的原料必须**出口**（否则 AutoTune
+        #   的 `layer_goal_summary` 在真跑里永远读不到 ⇒ 只能走 fallback）。
+        if getattr(self, "aspect_hist", None):
+            d["aspect_hist"] = list(self.aspect_hist)
+        if getattr(self, "upstream_layers", 0):
+            d["upstream_layers"] = int(self.upstream_layers)
+        if getattr(self, "upstream_texts", None):
+            d["upstream_texts"] = list(self.upstream_texts)
+        if getattr(self, "sem_stagnation", None) is not None:
+            d["sem_stagnation"] = float(self.sem_stagnation)
+        # ★ [四层目标 · 运行痕迹] 逐圈目标读数序列（停因判据就是读它）。
+        #   出口的理由：真跑验收要能看见「每圈有没有读到目标」——
+        #   只 append 不出出口 = 产物里看不到（本项目已栽过多次）。
+        if getattr(self, "goal_trace", None):
+            d["goal_trace"] = list(self.goal_trace)
+        if getattr(self, "goal_verdict", ""):
+            d["goal_verdict"] = str(self.goal_verdict)
         if self.covered_unders:
             d["covered_unders"] = self.covered_unders
         if self.anchors:
@@ -6903,7 +7886,21 @@ class LLM:
         # [fix-111] V4 起 thinking 是**请求参数**，不再是另一个模型 ID。
         #   靠 model 名字猜（旧 _is_reasoner）会在换掉 legacy 别名后静默失效，
         #   所以这里一律由配置显式给出，两个模型 ID 允许同名。
-        _th = api_cfg.get("thinking") or {}
+        _th = api_cfg.get("thinking")
+        # ★ [形状守卫] `api_cfg["thinking"]` 必须是 mapping。若被写成
+        #   bool/str（手改 yaml，或上层把整段 `api.thinking` 覆盖成标量），
+        #   下面的 `_th.get` 会抛 `AttributeError: 'bool' object has no attribute
+        #   'get'` **直接炸掉整次真跑**（本版矩阵跑批 4 题全灭即此因）。
+        #   按「失败留痕」纪律：非法形状 → 降级为 {}（全走服务端默认）**并在
+        #   解析处大声告警**，绝不静默当空 —— 静默会让「配置写坏了」看起来
+        #   像「本来就没配」。★ 守卫必须**紧贴取值之后、首个 `.get` 之前**：
+        #   放晚了「第一处 .get」照样先炸（本处第一版就踩了这坑）。
+        if _th is not None and not isinstance(_th, dict):
+            print("   ⚠️ [api.thinking] 形状非法（%s，应为 mapping）⇒ 已降级为 {}；"
+                  "请检查 dgtf_config.yaml 的 api.thinking 段是否被整段覆盖成了标量。"
+                  % type(_th).__name__)
+            _th = None
+        _th = _th or {}
         self.thinking_default = _th.get("default") or None
         self.thinking_reasoner = _th.get("reasoner") or None
         self.thinking_effort = _th.get("effort") or None
@@ -7584,6 +8581,17 @@ class DGTF:
                         _upstream_texts.append(_m)
                     if _c:
                         _upstream_texts.append(_c)
+                # ★ [层目标 / 对撞] 融合率的分母 + CORE 停滞罚的比对语料
+                #   必须**从真跑填**（否则读数恒 None ⇒ 对撞层无判别力）。
+                #   ★ 放在 `if _upstream_texts:` **之外**：没有上游文本时
+                #     也要留 `upstream_layers`（分母），否则「没有上游」
+                #     与「没测」又混成一种。
+                try:
+                    view.upstream_layers = len(inp.upstream_views or [])
+                    if _upstream_texts:
+                        view.upstream_texts = list(_upstream_texts)
+                except Exception:
+                    pass
                 if _upstream_texts:
                     _rr = _detect_ing_rephrase(
                         view.collision, _upstream_texts)
@@ -7592,6 +8600,14 @@ class DGTF:
                         # 模型在自省里说「没复述」、代码说 50% 复述时，
                         # 读产物的人要有这个数字才能自己判断谁对。
                         view.rephrase_ratio = float(_rr)
+                        # ★ [层目标 / CORE] 复述率是「与上游的重合度」，
+                        #   正是 CORE 的 semantic stagnation —— 直接出口它，
+                        #   对撞层读数就用**引擎已算的这把尺子**，
+                        #   而不是让 `_lg_stag_ratio` 另算一把（两把尺子会漂）。
+                        try:
+                            view.sem_stagnation = float(_rr)
+                        except Exception:
+                            pass
                         try:
                             # ★ 两个都要留：_apply_view_to_pool 的 culture/idle
                             #   判据读的是这个私有属性，别只留公有字段。
@@ -11256,6 +12272,8 @@ class DGTF:
             #   「自然安住」而看不到「职责未尽」（诚实性由同屏保证）。
             if view.duty_verdict:
                 lines += [f"【职责判定】{view.duty_verdict}"]
+            if getattr(view, "goal_verdict", ""):
+                lines += [f"【目标判定】{view.goal_verdict}"]
             # ★ [停因级联] 主因单列 —— 与「全部触发」并列，读者一眼看到
             #   「真正停下来的是哪一个」，不必自己从 " + " 串里猜。
             if view.stop_primary:
@@ -13817,6 +14835,15 @@ class MetaDGTF:
                             f"撤回{st['revoked']} 解决{st['resolved']}{_sr_s} "
                             f"转稳{st['stable']}")
 
+            # ★ [层目标] 逐圈把池的累计层面序列回填到 view（出口见 to_dict）。
+            #   在 `re_evaluate_pool` **之前**：那一步可能改池，回填要贴本圈终态。
+            try:
+                _p0 = self.pools.get(entry)
+                if _p0 is not None and getattr(_p0, "aspect_hist", None):
+                    view.aspect_hist = list(_p0.aspect_hist)
+            except Exception:
+                pass
+
             if _action_on(self.config, "re_evaluate_pool"):
                 re_eval_n = self._lazy_every_n(int(sp.get("re_eval_every_n", 1)))
                 if re_eval_n > 0 and layer_no % re_eval_n == 0:
@@ -13981,6 +15008,9 @@ class MetaDGTF:
             #   再把「连续推不动几圈」喂给停止判据。
             self._layer_duty_now(entry, view)
             _duty_streak = self._duty_marginal_streak(view)
+            # ★ [四层目标 → 每圈运行] 算本层目标读数并逐圈留痕，再转停止信号。
+            self._layer_goal_now(entry, view)
+            _goal_hit, _goal_why = self._goal_stop_signal(entry, view)
             # ★ [anytime-valid] 是否启用由配置决定（默认关 ⇒ 恒 False）。
             _any_ok = False
             try:
@@ -14018,7 +15048,9 @@ class MetaDGTF:
                 stall_is_sat=_stall_is_sat,
                 prev_product=prev_product,
                 view=view, idles=idles, diag=False,
-                duty_streak=_duty_streak, anytime_ok=_any_ok)
+                duty_streak=_duty_streak,
+                goal_hit=_goal_hit, goal_why=_goal_why,
+                anytime_ok=_any_ok)
             if stop_reasons and rounds_n > 1:
                 (stop_reasons, uncovered_streak, _prev_missed_n,
                  _def_note) = self._uncovered_gate(
@@ -15226,6 +16258,41 @@ class MetaDGTF:
             view.anytime = {}
         return d
 
+    def _layer_goal_now(self, entry: str, view) -> dict:
+        """[四层目标] 在**停止/收敛处**算该层目标读数并记账（逐圈进
+        `view.goal_trace`）。
+
+        ★ 与 `_layer_duty_now` 同构：读数是**信号**不是分数；
+          缺读数回 None（不假装 0）。**不改停止行为** —— 那由
+          `layer_goal_stop_signal` 在 `_stop_reasons` 里决定。
+        """
+        if view is None:
+            return {}
+        try:
+            from types import SimpleNamespace
+            _vd = view.to_dict() if hasattr(view, "to_dict") else {}
+            _d = layer_goal_readings({str(entry): _vd}).get(str(entry)) or {}
+        except Exception:
+            _d = {}
+        _rec = {"round": int(getattr(view, "rounds_run", 0) or 0)}
+        for _k in ("excavate", "settle", "fuse", "crystallize", "fuse_raw",
+                   "sem_stagnation", "n_aspects", "n_new", "n_hits",
+                   "pseudo_convergence", "converging", "conv_state"):
+            if _k in _d:
+                _rec[_k] = _d.get(_k)
+        view.goal_trace.append(_rec)
+        try:
+            view.goal_now = dict(_d)
+        except Exception:
+            pass
+        return _d
+
+    def _goal_stop_signal(self, entry: str, view):
+        """[四层目标 → 停因] 读 `view.goal_trace`，返回 `(hit, why)`。"""
+        _tr = list(getattr(view, "goal_trace", None) or [])
+        _now = _tr[-1] if _tr else {}
+        return layer_goal_stop_signal(str(entry), _now, _tr)
+
     def _layer_duty_now(self, entry: str, view) -> dict:
         """[LDG] 在**停止/收敛处**算该层职责读数并记账（读数不是分数）。
 
@@ -15287,6 +16354,8 @@ class MetaDGTF:
                       defer_vp: bool = False,
                       stall_is_sat: bool = False,
                       duty_streak: int = 0,
+                      goal_hit: bool = False,
+                      goal_why: str = "",
                       anytime_ok: bool = False):
         """★ 停止理由的**唯一实现**（串行 `_run_layer` 与并行 `_b_check_stop` 共用）。
 
@@ -15426,6 +16495,13 @@ class MetaDGTF:
                 reasons.append(
                     f"职责增益收敛（连续 {int(duty_streak)} 圈 "
                     f"ΔS<{_DUTY_TAU}，对问题的贡献不再增长）")
+            # ★ [四层目标 → 停因] 本层**目标读数**已达标/受阻 ⇒ 允许停。
+            #   与上面两条的区别：duty 问「对问题的贡献」、anytime 问
+            #   「结构是否还在长」；这条问的是**这层自己的目标**（修行=挖尽 /
+            #   研究=收敛 / 对撞=融合 / 元=结晶）—— 三件事分开报。
+            #   ★ 没读数 ⇒ goal_hit 恒 False ⇒ 零行为差（旧产物不受影响）。
+            if goal_hit and goal_why:
+                reasons.append(str(goal_why))
             if not reasons and view.idle:
                 idles += 1
                 if idles >= idle_limit:
@@ -15562,6 +16638,9 @@ class MetaDGTF:
         # ★ [LDG] 同上：先算职责读数，再把边际增益停滞圈数喂进判据。
         self._layer_duty_now(entry, view)
         _duty_streak = self._duty_marginal_streak(view)
+        # ★ [四层目标 → 每圈运行] 并行通道同样算（两通道一处实现）。
+        self._layer_goal_now(entry, view)
+        _goal_hit, _goal_why = self._goal_stop_signal(entry, view)
         _any_ok = False
         try:
             _aa = float(getattr(self, "_anytime_delta", 0.0) or 0.0)
@@ -15584,7 +16663,9 @@ class MetaDGTF:
             stall_is_sat=_stall_is_sat,
             prev_product=state["prev_product"], view=view,
             idles=state["idles"], defer_vp=True,
-            duty_streak=_duty_streak, anytime_ok=_any_ok)
+            duty_streak=_duty_streak,
+            goal_hit=_goal_hit, goal_why=_goal_why,
+            anytime_ok=_any_ok)
         state["prev_product"] = view.manifest or ""
 
         if stop_reasons and state["rounds_n"] > 1:
@@ -15733,6 +16814,24 @@ class MetaDGTF:
                 int(getattr(view, "rounds_run", 0) or 0), _duty_fin or {})
         except Exception:
             view.cut_two_way = {}
+
+        # ★ [四层目标 · 并列报] 本层**目标读数**单独一行（不改 duty 判定）。
+        #   依据：四层定位不同（修行=挖尽 / 研究=收敛 / 对撞=融合 / 元=结晶），
+        #   duty 只问「对原始问题的贡献」，问不出「这层自己的目标达没达成」。
+        #   ★ 没有读数 ⇒ 不写（`goal_now` 为空时零行为差）。
+        try:
+            _gn = dict(getattr(view, "goal_now", None) or {})
+            if _gn:
+                _gk = _LG_KEYS.get(str(entry)) or ""
+                _gv = _gn.get(_gk)
+                if _gv is not None:
+                    view.goal_verdict = "本层目标（%s）：%s=%.3f" % (
+                        {"0": "修行·挖尽", "1": "研究·收敛",
+                         "both": "对撞·融合", "all": "元·结晶"}.get(str(entry),
+                                                                   str(entry)),
+                        _gk, float(_gv))
+        except Exception:
+            pass
 
         if _duty_fin and _duty_fin.get("short"):
             _miss = _duty_fin.get("missing_core") or []
@@ -16996,6 +18095,7 @@ class MetaDGTF:
                 "promoted": [], "retired": [], "parents": []}
         if _mode == "off":
             return _blk
+        _lk = None
         try:
             _dir = Path(str(_c.get("dir") or eml_dir()))
             _dir.mkdir(parents=True, exist_ok=True)
@@ -17012,6 +18112,11 @@ class MetaDGTF:
             if _anon and not _learn_anon:
                 _blk["anon_skipped"] = True
                 return _blk
+            # ★ [并发正确性] 记忆库的读-改-写（episode 追加 + playbook 升级/遗忘/
+            #   macro 整表重写）**必须互斥**：3 并发真跑时两个进程同时改会互相
+            #   覆盖（丢条目/写坏行）。只保护**写库这一小段**，跑本身不受影响。
+            _lk = eml_lock(dirpath=_dir)
+            _lk.__enter__()
             eml_append_jsonl(_dir / _EML_EPISODES, _ep)
             _pb = eml_read_jsonl(_dir / _EML_PLAYBOOK)
             _n0 = len(_pb)
@@ -17076,6 +18181,14 @@ class MetaDGTF:
         except Exception as _e:
             _blk["error"] = "%s: %s" % (type(_e).__name__, _e)
             self.vp(f"\n🧠 EML：异常（已留痕，不阻断）{_blk['error']}")
+        finally:
+            # ★ 锁必须在 finally 释放：中途异常若漏放，记忆库会被**卡住**
+            #   （虽有 stale 回收兜底，但不该指望它）。
+            if _lk is not None:
+                try:
+                    _lk.__exit__(None, None, None)
+                except Exception:
+                    pass
         return _blk
 
     def run(self, question: str,
@@ -17085,7 +18198,15 @@ class MetaDGTF:
             channels: Optional[List[str]] = None,
             parallel_mode: str = "auto",
             orientation: str = "auto",
-            auto_plan: Optional[dict] = None) -> dict:
+            auto_plan: Optional[dict] = None,
+            run_id: str = "") -> dict:
+        # ★ [EML 记账] `run_id` 只有**调用方显式给**才盖（app / 真跑脚本会传）。
+        #   不给 ⇒ 产物无 id ⇒ EML 写库闸跳过（**测试/半途调用不许污染生产库**）。
+        #   为什么必须显式：`run()` 自身不生成 id（id 原本在 `save_result` 才发），
+        #   导致 CLI 真跑**永远拿不到 id ⇒ EML 从不学习真跑**（真跑逮到：
+        #   `anon_skipped: true`）。这是「自学习闭环」的关键一环，缺了它跨跑学习
+        #   只对 app 路径生效、对命令行真跑完全失效。
+        self._run_id = str(run_id or "")
         route = route or ["0", "1", "both", "all"]
         self._ext_assess_cache = {}
         self._anchor_report = None
@@ -17207,6 +18328,11 @@ class MetaDGTF:
             self._layer_guard(packed)
         # ★ [EML] 跑后：写 episode + 抽候选 + 过闸 + 只增合并 + 升级 + 遗忘。
         if isinstance(packed, dict):
+            # ★ [EML 记账] 把显式 run_id 盖进产物（**必须在 `_eml_finish` 之前**：
+            #   episode 的 run_id 就是从这里读的；晚盖 = 这一跑又被当匿名丢掉）。
+            _rid = str(getattr(self, "_run_id", "") or "").strip()
+            if _rid and not str(packed.get("id") or "").strip():
+                packed["id"] = _rid
             try:
                 packed["playbook"] = self._eml_finish(packed)
             except Exception as _ef:
@@ -22129,6 +23255,12 @@ DEFAULT_CONFIG = {
         "anytime_alpha": 0.0,
     },
 
+    # ★ [一键全开] 出厂**引擎侧默认 false**（保守）：所有判据/冒烟走它 ⇒
+    #   基线零影响。出厂 `dgtf_config.yaml` 写 `true` ⇒ **本机真跑默认全开**。
+    #   生效清单见 `_ALL_ON_ITEMS`（EML on / anytime 停止 / bandit / 语义归并 /
+    #   相对阈值 / 联网 / 锚点 gate / 思考 high + effort high）。
+    "all_on": False,
+
     "playbook": {
         # [EML] 经验记忆回路：跨跑**储存记忆**并让下次跑用它。
         #   mode：off（不读不写）/ shadow（**出厂默认**：只记不生效 ⇒
@@ -22148,6 +23280,20 @@ DEFAULT_CONFIG = {
         #   会**把真实条目的证据计数抬高**（一次冒烟上百次 run() 曾把
         #   n_ev 从 2 灌到 4 ⇒ 直接触发 promote = 测试替生产刷票）。
         "learn_from_anon": False,
+    },
+
+    "autotune": {
+        # [AutoTune] 跨跑设计空间调优：从 `episodes.jsonl` 推**建议默认**
+        #   （模式 / 层集 / 各层圈数上限），**只建议、不自动改行为**。
+        #   min_n：同一（模式,层集）至少几次跑才进榜（样本太小不进 ⇒ 防偶发）。
+        #     ★ 真跑数据定：1 → **2**。首轮 sweep 里 n=1 的组会让**单点读数**
+        #       主导膝盖取舍；≥2 才谈得上「一批」。（`_autotune_v12333_结论.md`）
+        #   quality_tau：层集取舍的容差 —— 质量不低于最优 −τ 的候选里取成本最低
+        #     （帕累托膝盖 = 「该去的层去掉」的量化判据）。
+        #   out：建议落盘路径（默认仓库根 `dgtf_autotune.json`）。
+        "min_n": 2,
+        "quality_tau": 0.05,
+        "out": "",
     },
 
     "memory": {
@@ -22341,6 +23487,48 @@ def _load_config_raw(path: str) -> dict:
     return cfg
 
 
+#: [一键全开] 生效清单：`(配置路径, 全开值, 为什么)`。
+#: ★ 只列**可切换的能力开关**；不含 route/rounds 这类运行参数（那是跑次的事）。
+_ALL_ON_ITEMS = (
+    ("auto.enabled", True, "自适应调度总开关"),
+    ("playbook.mode", "on", "EML 经验记忆生效（跨跑学习闭环）"),
+    ("stop.anytime_alpha", 0.05, "anytime-valid 停止判据生效（δ=0.05）"),
+    ("auto.bandit.enabled", True, "预算 bandit 生效（探索必留痕）"),
+    ("belief.merge_semantic", True, "语义归并生效（换说法记为复现）"),
+    ("belief.sem_entropy_thr", "rel", "语义熵改用本批相对分位"),
+    ("web_search.enabled", True, "联网检索"),
+    ("external_anchor.as_evidence", "gate", "锚点作 gate 证据"),
+    ("api.thinking.default", "enabled", "思考档默认开"),
+    ("api.thinking.effort", "high", "思考强度 high"),
+)
+
+
+def _apply_all_on(cfg: dict):
+    """[一键全开] `all_on: true` ⇒ 把 `_ALL_ON_ITEMS` 全部置开，并返回留痕。
+
+    ★ 与 `_apply_runtime` 同层（`load_config` 最外层）—— 那是四个 return 出口的
+      唯一汇合处；插在函数体中间会「某些路径不生效」，且没有判据看得见。
+    ★ `all_on` 为假 ⇒ **恒等变换**（返回原 cfg、零 notes）⇒ 判据基线零影响。
+    ★ 显式优先级：`all_on` 语义就是「全开」，因此它**覆盖**这些键的出厂值；
+      要针对某一项做对照实验就**关掉 all_on**（而不是指望单项覆盖赢）。
+    """
+    if not (cfg or {}).get("all_on"):
+        return cfg, []
+    notes = []
+    for path, val, why in _ALL_ON_ITEMS:
+        d = cfg
+        ks = str(path).split(".")
+        for k in ks[:-1]:
+            if not isinstance(d.get(k), dict):
+                d[k] = {}
+            d = d[k]
+        old = d.get(ks[-1], "<缺>")
+        if old != val:
+            d[ks[-1]] = val
+            notes.append("[all_on] %s：%r → %r（%s）" % (path, old, val, why))
+    return cfg, notes
+
+
 def load_config(path: str) -> dict:
     """ 在 `_load_config_raw` 之上套一层**运行期总控**。
 
@@ -22352,6 +23540,8 @@ def load_config(path: str) -> dict:
       变换**（`check_v1234_runtime` 用「逐字相同」钉住）。
     """
     cfg, notes = _apply_runtime(_load_config_raw(path))
+    cfg, _ao_notes = _apply_all_on(cfg)
+    notes = list(notes) + list(_ao_notes)
     for n in notes:
         print("   · " + n)
     return cfg
@@ -22660,9 +23850,11 @@ def _interactive_run(cfg):
 
         meta = MetaDGTF(run_cfg)
         try:
+            # ★ [EML 记账] 交互模式每题也是**真实一跑** ⇒ 同样显式盖 run_id。
             result = meta.run(question, route=route, keep={},
                               rounds=rounds_str, channels=channels,
-                              parallel_mode=parallel_str)
+                              parallel_mode=parallel_str,
+                              run_id=datetime.now().strftime("%Y%m%d_%H%M%S"))
         except Exception as e:
             print(f"\n⚠️ 运行失败：{type(e).__name__}: {e}")
             if not _ask_continue():
@@ -22887,10 +24079,16 @@ def main():
     print(f"运行期总控：{_runtime_summary_line(cfg)}")
     print(f"{'═'*60}")
 
+    # ★ [EML 记账] CLI 真跑**显式盖 run_id** ⇒ EML 才会把这一跑当真实证据写库。
+    #   不加这行，`run()` 拿不到 id ⇒ 撞「无 id 一律不写库」闸 ⇒ **跨跑学习
+    #   对真实路径整体失效**（真跑逮到过：`anon_skipped: true`）。测试直接调
+    #   `run()` 不给 id ⇒ 仍走匿名跳过 ⇒ 测试隔离不破。
+    _run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
     result = meta.run(question, route=route, keep=keep,
                       rounds=args.rounds or _dispatch.get("rounds") or 0,
                       channels=channels, parallel_mode=_pm,
-                      orientation=args.orientation, auto_plan=_dispatch)
+                      orientation=args.orientation, auto_plan=_dispatch,
+                      run_id=_run_id)
 
     print(f"\n{'═'*60}")
     print(f"完成 | {result['llm_calls']} 次 LLM | "

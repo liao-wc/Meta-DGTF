@@ -266,6 +266,24 @@ def check_v12332_discipline():
         except Exception as _e3:
             bad.append("[层读数] 行为判据异常：%r" % (_e3,))
 
+    # ★ [一键全开] 两向判据：false ⇒ **恒等**（零 notes）；true ⇒ 清单逐项生效。
+    if "_apply_all_on" not in src or "_ALL_ON_ITEMS" not in src:
+        bad.append("[all_on] 一键全开实现缺失")
+    _c_off, _n_off = mod._apply_all_on({"all_on": False})
+    if _n_off:
+        bad.append("[all_on·负] all_on=False 竟然改了配置（%r）" % (_n_off[:2],))
+    _c_on, _n_on = mod._apply_all_on({"all_on": True})
+    if len(_n_on) < 8:
+        bad.append("[all_on] 全开清单生效项过少（%d 条）" % len(_n_on))
+    for _p, _v, _w in mod._ALL_ON_ITEMS:
+        _d = _c_on
+        for _k in str(_p).split("."):
+            _d = _d.get(_k) if isinstance(_d, dict) else None
+        if _d != _v:
+            bad.append("[all_on] %s 未置为 %r（实为 %r）" % (_p, _v, _d))
+    if mod.DEFAULT_CONFIG.get("all_on") is not False:
+        bad.append("[all_on] 引擎默认必须保守（False），保证判据基线零影响")
+
     # ── 真实入口 + 不变量 ──
     _tmp = Path(_tf.mkdtemp(prefix="smk_v1232_"))
     try:

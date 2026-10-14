@@ -1,0 +1,10 @@
+{
+ "1": {
+  "settle": null,
+  "non_degenerate": null,
+  "belief_resolved_rate": null,
+  "conv_state": "",
+  "converging": false,
+  "pseudo_convergence": false
+ }
+}

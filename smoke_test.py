@@ -6589,6 +6589,8 @@ def check_v77_input_sanity_render():
 #     字面量会被 Python **静默拼接**成一个键，dict 里就只剩一条巨型条目（实测踩过）。
 CONFIG_TUNED = {
     "actions.parallel_warmup_rounds": "并行预热圈数手调",
+    "all_on": "【一键全开】出厂 yaml 默认 true（用户口径：真跑全开）；"
+              "引擎 DEFAULT_CONFIG 仍保守 false，保证判据基线零影响",
     "api.thinking.effort": "thinking 强度 high（刻意不随档位降）",
     "memory.shape_chars": "形状记忆条数与字数手调",
     "memory.shape_items": "形状记忆条数与字数手调",
@@ -11770,6 +11772,55 @@ def check_v12332_discipline():
         except Exception as _e3:
             bad.append("[层读数] 行为判据异常：%r" % (_e3,))
 
+    # ★ [一键全开] 两向判据：false ⇒ **恒等**（零 notes）；true ⇒ 清单逐项生效。
+    if "_apply_all_on" not in src or "_ALL_ON_ITEMS" not in src:
+        bad.append("[all_on] 一键全开实现缺失")
+    _c_off, _n_off = mod._apply_all_on({"all_on": False})
+    if _n_off:
+        bad.append("[all_on·负] all_on=False 竟然改了配置（%r）" % (_n_off[:2],))
+    _c_on, _n_on = mod._apply_all_on({"all_on": True})
+    if len(_n_on) < 8:
+        bad.append("[all_on] 全开清单生效项过少（%d 条）" % len(_n_on))
+    for _p, _v, _w in mod._ALL_ON_ITEMS:
+        _d = _c_on
+        for _k in str(_p).split("."):
+            _d = _d.get(_k) if isinstance(_d, dict) else None
+        if _d != _v:
+            bad.append("[all_on] %s 未置为 %r（实为 %r）" % (_p, _v, _d))
+    if mod.DEFAULT_CONFIG.get("all_on") is not False:
+        bad.append("[all_on] 引擎默认必须保守（False），保证判据基线零影响")
+
+    # ★ [api.thinking 形状守卫] 配置被写成标量（bool/str）时**不得炸整次真跑**。
+    #   真跑教训：矩阵跑批 4 题全灭 = `_th.get` 对 bool 抛 AttributeError。
+    #   判据两向：① 非法形状 → 构造 LLM 不抛异常（降级为默认）；② 合法 dict
+    #   → 逐字段读取**不受影响**（不许把合法值也一起吞掉）。
+    if "_th = api_cfg.get(\"thinking\")" not in src or "形状非法" not in src:
+        bad.append("[形状守卫] api.thinking 非法形状守卫缺失")
+    for _bad_shape in (True, "on", 123):
+        _cb = dict(mod.DEFAULT_CONFIG)
+        _cb["api"] = dict(_cb.get("api") or {})
+        _cb["api"]["key"] = "sk-smoke-dummy"
+        _cb["api"]["thinking"] = _bad_shape
+        try:
+            mod.LLM(_cb)
+        except Exception as _eb:
+            bad.append("[形状守卫·负] api.thinking=%r 仍崩：%r"
+                       % (_bad_shape, _eb))
+    _cg = dict(mod.DEFAULT_CONFIG)
+    _cg["api"] = dict(_cg.get("api") or {})
+    _cg["api"]["key"] = "sk-smoke-dummy"
+    _cg["api"]["thinking"] = {"default": "enabled", "effort": "high",
+                              "stages": {"k": "enabled"}}
+    try:
+        _lg = mod.LLM(_cg)
+        if _lg.thinking_default != "enabled" or _lg.thinking_effort != "high" \
+                or _lg.thinking_stages.get("k") != "enabled":
+            bad.append("[形状守卫·正] 合法 dict 被吞：default=%r effort=%r stages=%r"
+                       % (_lg.thinking_default, _lg.thinking_effort,
+                          _lg.thinking_stages))
+    except Exception as _eg:
+        bad.append("[形状守卫·正] 合法 dict 竟报错：%r" % (_eg,))
+
     # ── 真实入口 + 不变量 ──
     _tmp = Path(_tf.mkdtemp(prefix="smk_v1232_"))
     try:
@@ -11827,6 +11878,418 @@ def check_v12332_discipline():
             print("  X", x)
         return False
     print("  OK v1.23.32 学科吸收（α/κ · 尺度 · 级联 · 成本两分 · CSD）全过")
+    return True
+
+
+def check_v12333_autotune():
+    """[v1.23.33] AutoTune：从跨跑 episode 推**建议默认**（模式/层集/圈数）。
+
+    判据（全部走**纯函数直测**，不碰 API）：
+      ① 支配/前沿：真支配判真、缺读数（None）**不判支配**（未知不能淘汰已知）；
+      ② 层集取舍：质量在 τ 内取**成本最低**（帕累托膝盖 = 「该去的层去掉」）；
+      ③ 圈数：被截断过的层 **+1**（对齐 EML schedule 动作）；
+      ④ 负向：空输入 / 全无质量 ⇒ `ok=False` **不瞎猜**（没测 ≠ 测出来差）；
+      ⑤ 建议**只写文件**：`autotune_run(write=False)` 不改 cfg、不落盘。
+    """
+    src = SRC.read_bytes().decode("utf-8")
+    bad = []
+    for _fn in ("autotune_score", "autotune_dominates", "autotune_pareto",
+                "autotune_sh_rounds", "autotune_rank", "autotune_recommend",
+                "autotune_load_episodes", "autotune_run"):
+        if ("def %s(" % _fn) not in src:
+            bad.append("[源码] 缺 %s" % _fn)
+    # ① 支配 / 前沿
+    _lo = {"quality": 0.5, "cost": 100}
+    _hi = {"quality": 0.8, "cost": 50}
+    if not mod.autotune_dominates(_hi, _lo):
+        bad.append("[支配] 高质量低成本未判支配")
+    if mod.autotune_dominates(_lo, _hi):
+        bad.append("[支配] 低质量高成本竟判支配")
+    if mod.autotune_dominates({"quality": None, "cost": 1},
+                              {"quality": 0.5, "cost": 2}):
+        bad.append("[支配] 缺读数竟参与支配（未知淘汰了已知）")
+    _fr = mod.autotune_pareto([_lo, _hi, {"quality": 0.4, "cost": 30}])
+    if any(p is _lo for p in _fr):
+        bad.append("[前沿] 被支配点混进了前沿")
+    # ② 层集取舍 + ③ 圈数 +1
+    #   ★ 夹具设计：**最高质量 = 最贵的四层**，膝盖（同质量内成本最低）= 两层。
+    #     若把「最高质量」与「膝盖」设成同一条，M27（恒取质量第一行）会**假绿**
+    #     —— 变异体不产生差异，就不是判别力（本项目经典假绿）。
+    _syn = [
+        {"run_id": "A", "route": ["0", "1", "both", "all"], "mode": "serial",
+         "rounds_cap": {"0": 4, "1": 4, "both": 4, "all": 5}, "cut_layers": [],
+         "duty": {"0": 0.91, "1": 0.92, "both": 0.90, "all": 0.89},
+         "cost": {"tokens": 3000000}},
+        {"run_id": "B", "route": ["0", "1"], "mode": "serial",
+         "rounds_cap": {"0": 3, "1": 3}, "cut_layers": [],
+         "duty": {"0": 0.86, "1": 0.87}, "cost": {"tokens": 1100000}},
+        {"run_id": "C", "route": ["0", "1"], "mode": "serial",
+         "rounds_cap": {"0": 3, "1": 3}, "cut_layers": [],
+         "duty": {"0": 0.85, "1": 0.86}, "cost": {"tokens": 1050000}},
+        {"run_id": "D", "route": ["0", "1", "both", "all"], "mode": "D",
+         "rounds_cap": {"0": 6, "1": 6, "both": 6, "all": 6},
+         "cut_layers": ["both", "all"],
+         "duty": {"0": 0.55, "1": 0.58, "both": 0.50, "all": 0.48},
+         "cost": {"tokens": 5000000}},
+    ]
+    _rec = mod.autotune_recommend(_syn)
+    if not _rec.get("ok"):
+        bad.append("[建议] 合成数据竟判不可建议：%r" % (_rec.get("why"),))
+    else:
+        if _rec.get("route") != ["0", "1"]:
+            bad.append("[层集] 未按「同质量取最低成本」砍层：%r" % (_rec.get("route"),))
+        _rc = _rec.get("rounds_cap") or {}
+        if _rc.get("both") != 5 or _rc.get("all") != 6:
+            bad.append("[圈数] 截断层未 +1：%r" % (_rc,))
+        if _rc.get("0") != 4 or _rc.get("1") != 4:
+            bad.append("[圈数] 未截断层基线不对：%r" % (_rc,))
+    # ④ 负向：不瞎猜
+    if mod.autotune_recommend([]).get("ok") is not False:
+        bad.append("[负向] 空输入竟给了建议")
+    _noq = mod.autotune_recommend([{"run_id": "X", "route": ["0"], "mode": "s",
+                                    "rounds_cap": {"0": 3}, "cut_layers": [],
+                                    "duty": {}, "cost": {"tokens": 10}}])
+    if _noq.get("ok") is not False:
+        bad.append("[负向] 全无质量读数竟给了建议（没测当测出来差）")
+    # ⑤ 只写文件、不改 cfg
+    _cfg = {"autotune": {"quality_tau": 0.05}, "spiral": {"soft_max": 2}}
+    _snap = json.dumps(_cfg, sort_keys=True, ensure_ascii=False)
+    _r2 = mod.autotune_run(_cfg, write=False)
+    if json.dumps(_cfg, sort_keys=True, ensure_ascii=False) != _snap:
+        bad.append("[纯读] autotune_run(write=False) 改了 cfg")
+    if "written" in _r2:
+        bad.append("[纯读] write=False 竟然写了文件")
+    # ⑥ SH 档位单调：保留数↓、预算↑
+    _sh = mod.autotune_sh_rounds(9, 2, 3)
+    if len(_sh) < 2 or not all(_sh[i + 1][0] < _sh[i][0] and
+                               _sh[i + 1][1] > _sh[i][1]
+                               for i in range(len(_sh) - 1)):
+        bad.append("[SH] 档位未「保留数降 / 预算升」：%r" % (_sh,))
+    # ⑦ run_id 记账：`run()` 必须收 `run_id` 参，且 episode 用它当 run_id。
+    #   ★ 真跑逮到：`run()` 原不生成 id ⇒ CLI 真跑 `anon_skipped: true` ⇒
+    #     EML **从不学习命令行真跑**（自学习闭环对 CLI 路径整体失效）。
+    if 'run_id: str = ""' not in src:
+        bad.append("[记账] run() 未收 run_id 参数")
+    _epx = mod.episode_from_result(
+        {"id": "", "question": "Q", "route": ["0"], "rounds": {"0": 1},
+         "views": {"0": {"duty": {"S": 0.5}, "stop_reason": "自然安住"}},
+         "pools": {}, "llm_tokens": 1, "llm_calls": 1})
+    if _epx.get("run_id") != "":
+        bad.append("[记账] 空 id 竟生成 run_id=%r" % (_epx.get("run_id"),))
+    _epy = mod.episode_from_result(
+        {"id": "RID1", "question": "Q", "route": ["0"], "rounds": {"0": 1},
+         "views": {"0": {"duty": {"S": 0.5}, "stop_reason": "自然安住"}},
+         "pools": {}, "llm_tokens": 1, "llm_calls": 1})
+    if _epy.get("run_id") != "RID1":
+        bad.append("[记账] episode 未采用显式 run_id：%r" % (_epy.get("run_id"),))
+    if "_rid = str(getattr(self, \"_run_id\"" not in src:
+        bad.append("[记账] run() 未把 run_id 盖进产物（_eml_finish 读不到）")
+    #   两条真入口（CLI main / 交互模式）也必须显式传 run_id —— 否则真实路径
+    #   又被当匿名丢（这正是「EML 对真跑整体失效」的根因）。
+    if "run_id=_run_id" not in src:
+        bad.append("[记账] CLI main() 未向 run() 传 run_id")
+    if src.count('run_id=datetime.now().strftime("%Y%m%d_%H%M%S")') < 1:
+        bad.append("[记账] 交互模式未向 run() 传 run_id")
+    # ⑧ 记忆库并发锁：**互斥**（临界区不交叠）+ 退出释放 + 陈旧锁回收。
+    #   ★ 为什么是「正确性」不是「性能」：playbook 的升级/遗忘是**整表重写**，
+    #     并发不加锁会互相覆盖（丢条目/半行）。3 并发真跑的前提。
+    if "def eml_lock(" not in src:
+        bad.append("[锁] eml_lock 缺失")
+    else:
+        import tempfile as _tf2
+        import threading as _th2
+        import time as _tm2
+        _ld = Path(_tf2.mkdtemp(prefix="lk_"))
+        _st = {"inside": 0, "max": 0}
+
+        def _w():
+            with mod.eml_lock(dirpath=_ld, timeout=8) as _got:
+                if not _got:
+                    return
+                _st["inside"] += 1
+                _st["max"] = max(_st["max"], _st["inside"])
+                _tm2.sleep(0.2)
+                _st["inside"] -= 1
+
+        _ts = [_th2.Thread(target=_w) for _ in range(4)]
+        for _t in _ts:
+            _t.start()
+        for _t in _ts:
+            _t.join()
+        if _st["max"] != 1:
+            bad.append("[锁] 未互斥：并发进入数达 %d（应恒 1）" % _st["max"])
+        if (_ld / ".eml.lock").exists():
+            bad.append("[锁] 全部退出后锁文件仍在（未释放）")
+        # 陈旧锁回收：把锁文件时间戳拨到远过去 ⇒ 必须能取得锁（崩了不永久死锁）。
+        _lp = _ld / ".eml.lock"
+        _lp.write_text("999999")
+        import os as _os2
+        _old = _tm2.time() - 5000
+        _os2.utime(str(_lp), (_old, _old))
+        with mod.eml_lock(dirpath=_ld, timeout=5) as _got2:
+            if not _got2:
+                bad.append("[锁] 陈旧锁未被回收 ⇒ 崩溃会永久死锁记忆库")
+        import shutil as _sh2
+        _sh2.rmtree(_ld, ignore_errors=True)
+    # ⑨ 分母一致：质量中位与成本中位**必须同分母**（无质量的历史跑次不得进成本中位）。
+    #   ★ 真跑逮到：2 层组的成本中位被旧的无 duty 跑次拉到 305076（真值 378837）
+    #     ⇒ 帕累托膝盖判错。同一组两个读数两个分母 = 对不上账。
+    _mix = [
+        {"run_id": "n1", "route": ["0", "1"], "mode": "serial",
+         "rounds_cap": {"0": 3, "1": 3}, "cut_layers": [],
+         "duty": {"0": 0.5, "1": 0.5}, "cost": {"tokens": 900000}},
+        {"run_id": "n2", "route": ["0", "1"], "mode": "serial",
+         "rounds_cap": {"0": 3, "1": 3}, "cut_layers": [],
+         "duty": {"0": 0.4, "1": 0.6}, "cost": {"tokens": 1000000}},
+        # ★ 旧的无 duty 跑次：成本极低，绝不能被算进成本中位
+        {"run_id": "old", "route": ["0", "1"], "mode": "serial",
+         "rounds_cap": {"0": 1, "1": 1}, "cut_layers": [], "duty": {},
+         "cost": {"tokens": 1000}},
+    ]
+    _r3 = [r for r in mod.autotune_rank(_mix) if r["route"] == ["0", "1"]]
+    if not _r3:
+        bad.append("[分母] 分组失败")
+    else:
+        _rr = _r3[0]
+        if int(_rr.get("n_paired") or 0) != 2:
+            bad.append("[分母] 同分母样本数错：%r" % (_rr.get("n_paired"),))
+        if _rr.get("cost_med") != 950000.0:
+            bad.append("[分母] 成本中位把无质量跑次算进去了：%r"
+                       % (_rr.get("cost_med"),))
+    # ⑩ 证据强度：同分母样本 < 3 ⇒ 必须显式标注薄弱，不许把薄证据包装成「最优」。
+    _rec2 = mod.autotune_recommend(_mix)
+    if _rec2.get("ok") and _rec2.get("evidence_strength") is None:
+        bad.append("[证据] 未标注证据强度（薄证据当结论）")
+    if _rec2.get("ok") and int(_rec2.get("evidence_n") or 0) < 3 \
+            and "薄弱" not in (_rec2.get("why") or ""):
+        bad.append("[证据] 同分母样本<3 却未在理由里标注薄弱")
+    # ⑪ `autotune.min_n` 必须**真有出口**（否则是只写不读的死键）。
+    _one = [{"run_id": "o1", "route": ["0", "1", "both"], "mode": "serial",
+             "rounds_cap": {"0": 3, "1": 3, "both": 3}, "cut_layers": [],
+             "duty": {"0": 0.9, "1": 0.9, "both": 0.9},
+             "cost": {"tokens": 100}}]
+    if mod.autotune_recommend(_one, min_n=2).get("ok") is not False:
+        bad.append("[min_n] min_n=2 未排除 n=1 的组（死键）")
+    if mod.autotune_recommend(_one, min_n=1).get("ok") is not True:
+        bad.append("[min_n] min_n=1 竟排除了 n=1 的组")
+    if "min_n=int(at.get(\"min_n\"" not in src:
+        bad.append("[min_n] autotune_run 未把配置 min_n 接进 recommend")
+    # ⑫~⑳ [四层目标语义 + 三阶段自主决策]（用户战略指令）
+    #   ★ 依据：Heaps 饱和（修行）· content entropy + 伪收敛（研究）·
+    #     CORE 语义停滞罚（对撞）· DGM archive 开放探索（后期，禁贪心）。
+    for _fh in ("layer_goal_readings", "layer_goal_summary",
+                "_lg_aspect_margin", "_lg_stag_ratio",
+                "autotune_archive", "autotune_phase_select",
+                "autotune_phase_adjust", "autotune_phase_learn",
+                "autotune_decide", "autotune_progress"):
+        if ("def %s(" % _fh) not in src:
+            bad.append("[目标] 缺 %s" % _fh)
+    # ⑫ 修行层「边际新增趋零」方向：还在挖 > 已挖尽（★ 方向错比没判据更危险）。
+    _busy = mod.layer_goal_readings(
+        {"0": {"aspect_units": [{"id": "A%d" % i} for i in range(9)],
+               "rounds_run": 4, "aspect_hist": [2, 4, 6, 9],
+               "divergence": {"state": "发散"}}})
+    _done = mod.layer_goal_readings(
+        {"0": {"aspect_units": [{"id": "A%d" % i} for i in range(6)],
+               "rounds_run": 4, "aspect_hist": [2, 4, 5, 6],
+               "divergence": {"state": "收敛"}}})
+    _vb = (_busy.get("0") or {}).get("excavate")
+    _vd = (_done.get("0") or {}).get("excavate")
+    if _vb is None or _vd is None or not (_vb > _vd):
+        bad.append("[修行] 边际新增率方向错（还在挖应 > 已挖尽）：%r vs %r"
+                   % (_vb, _vd))
+    if (_busy.get("0") or {}).get("converging") is not False:
+        bad.append("[修行] 发散态竟判 converging=True")
+    if (_done.get("0") or {}).get("converging") is not True:
+        bad.append("[修行] 收敛态未判 converging=True")
+    # ⑬ 研究层：伪收敛必须被点出（熵降 ≠ 质量 —— 一个都没答上却声称收敛）。
+    #   ★ 夹具用**真实字段** `settlement`（真跑 GOALCHK 逮到：原夹具塞的是
+    #     臆造键 `covered_answer`，实现里根本没这个字段 ⇒ 判据假绿）。
+    _pok = mod.layer_goal_readings(
+        {"1": {"settlement": {"answered": 4, "total": 5},
+               "divergence": {"state": "收敛"}}})["1"]
+    _pps = mod.layer_goal_readings(
+        {"1": {"settlement": {"answered": 0, "total": 5},
+               "divergence": {"state": "收敛"}}})["1"]
+    if _pok.get("pseudo_convergence") is not False:
+        bad.append("[研究] 真收敛被误判为伪收敛")
+    if _pps.get("pseudo_convergence") is not True:
+        bad.append("[研究] 零答案却声称收敛未判伪收敛（熵降当质量）")
+    if abs(float(_pok.get("settle")) - 0.8) > 1e-6:
+        bad.append("[研究] 确定率算错：%r" % (_pok.get("settle"),))
+    # ★ 退回形态：`covered/uncovered_aspects` 也能算出 settle（同源口径）。
+    _pfb = mod.layer_goal_readings(
+        {"1": {"covered_aspects": ["a", "b", "c"],
+               "uncovered_aspects": ["d"]}})["1"]
+    if abs(float(_pfb.get("settle") or -1) - 0.75) > 1e-6:
+        bad.append("[研究] 层面数兜底算错：%r" % (_pfb.get("settle"),))
+    # ⑭ 对撞层：CORE 语义停滞罚 —— 同产出量下「复读」必须低于「真融合」。
+    _fz = mod.layer_goal_readings(
+        {"both": {"duel_suspensions": [{"target": "新张力甲"}, {"target": "新张力乙"}],
+                  "upstream_layers": 3,
+                  "upstream_texts": ["旧层面一", "旧层面二"]}})["both"]
+    _sg = mod.layer_goal_readings(
+        {"both": {"duel_suspensions": [{"target": "旧层面一"}, {"target": "旧层面二"}],
+                  "upstream_layers": 3,
+                  "upstream_texts": ["旧层面一", "旧层面二"]}})["both"]
+    if not (float(_fz.get("fuse") or 0) > float(_sg.get("fuse") or 0)):
+        bad.append("[对撞] 复读未被罚（CORE 停滞罚失效）：%r vs %r"
+                   % (_fz.get("fuse"), _sg.get("fuse")))
+    if abs(float(_sg.get("sem_stagnation") or 0) - 1.0) > 1e-6:
+        bad.append("[对撞] 全复读未算出停滞率 1.0：%r" % (_sg.get("sem_stagnation"),))
+    # ⑮ 元层：四件事凑齐才算 1.0；缺一件就必须 < 1（留痕完整度）。
+    _m4 = mod.layer_goal_readings(
+        {"all": {"meta_closure": {"clean": True, "total": 3},
+                 "engagements": [{"tension_id": "t1"}],
+                 "suspensions": [{"tension_id": "t2"}]}})["all"]
+    _m2 = mod.layer_goal_readings(
+        {"all": {"meta_closure": {"clean": False, "total": 0}}})["all"]
+    if abs(float(_m4.get("crystallize")) - 1.0) > 1e-6:
+        bad.append("[元] 四件事齐了却没给 1.0：%r" % (_m4.get("crystallize"),))
+    if not (float(_m2.get("crystallize") or 1) < 1.0):
+        bad.append("[元] 只留痕两件竟给满分：%r" % (_m2.get("crystallize"),))
+    # ⑯ 缺读数回 None（不是 0）——「没测」与「测出是 0」必须分开。
+    _empty = mod.layer_goal_readings({})
+    if _empty != {}:
+        bad.append("[缺读数] 空 views 竟产出读数：%r" % (_empty,))
+    _noans = mod.layer_goal_readings({"1": {"belief_items": []}})["1"]
+    if _noans.get("settle") is not None:
+        bad.append("[缺读数] 无 settlement 竟回 0 而非 None：%r"
+                   % (_noans.get("settle"),))
+    # ⑰ `goal_readings` 必须**有出口**（字段有值 ≠ 有出口，本项目已栽过）。
+    _epg = mod.episode_from_result(
+        {"id": "G1", "question": "Q", "route": ["0", "1"], "rounds": {"0": 2, "1": 2},
+         "views": {"0": {"aspect_units": [{"id": "A1"}], "rounds_run": 2,
+                         "aspect_hist": [1, 1]},
+                   "1": {"settlement": {"answered": 1, "total": 2}}},
+         "pools": {}, "llm_tokens": 1, "llm_calls": 1})
+    if not (_epg.get("goal_readings") or {}):
+        bad.append("[出口] episode 未带 goal_readings（读数进不了库）")
+    if "goal_readings" not in src:
+        bad.append("[出口] 源码无 goal_readings 出口")
+    # ⑱ 质量口径升级：有目标读数时必须走 goal_med（而非退回 duty）。
+    _sp = mod.autotune_score({"mode": "s", "route": ["0"], "duty": {},
+                              "goal_readings": {"0": {"value": 0.7}},
+                              "cost": {"tokens": 1}, "rounds_cap": {}, "t": 0})
+    if _sp.get("q_basis") != "goal_med":
+        bad.append("[口径] 有目标读数却未走 goal_med：%r" % (_sp.get("q_basis"),))
+    # ⑲ 中期动态调整三态：上升→继续 / 下降→回滚 / 不足→不表态。
+    #   ★ 夹具要保证**末值真的低于首值**才叫下降 —— 否则测的是「首尾比较」
+    #     却给了个「中间高」的序列（首尾仍升），会得到与意图相反的结论。
+    _e0 = {"mode": "s", "route": ["0"], "duty": {}, "cost": {"tokens": 1},
+           "rounds_cap": {}, "t": 0, "goal_readings": {"0": {"value": 0.2}}}
+    _e1 = dict(_e0, t=10, goal_readings={"0": {"value": 0.6}})
+    _e2 = dict(_e0, t=20, goal_readings={"0": {"value": 0.1}})
+    _pu = mod.autotune_progress([_e0, _e1], min_n=2)
+    _pd = mod.autotune_progress([_e0, _e1, _e2], min_n=2)
+    if not _pu or list(_pu.values())[0].get("advice") != "继续":
+        bad.append("[中期] 上升趋势未判「继续」：%r" % (_pu,))
+    if not _pd or list(_pd.values())[0].get("advice") != "回滚":
+        bad.append("[中期] 下降趋势未判「回滚」：%r" % (_pd,))
+    if mod.autotune_progress([_e0], min_n=2) != {}:
+        bad.append("[中期] 样本不足竟表态（瞎猜）")
+    # ⑳ archive 开放探索：**不许贪心只留最优**（DGM 消融：贪心劣于 archive）。
+    _arc = mod.autotune_archive([
+        {"run_id": "a1", "route": ["0", "1"], "mode": "s", "rounds_cap": {},
+         "cut_layers": [], "duty": {"0": 0.9, "1": 0.9}, "cost": {"tokens": 100}},
+        {"run_id": "a2", "route": ["0", "1", "both"], "mode": "s", "rounds_cap": {},
+         "cut_layers": [], "duty": {"0": 0.1, "1": 0.1, "both": 0.1},
+         "cost": {"tokens": 999}},
+    ])
+    _arms = _arc.get("arms") or []
+    if len(_arms) < 2:
+        bad.append("[archive] 只留了最优臂（贪心）⇒ 未做开放探索：%r" % (len(_arms),))
+    _minp = min((a.get("prob") or 0) for a in _arms) if _arms else 0
+    if _minp < 0.05 - 1e-9:
+        bad.append("[archive] 劣配概率被压到 floor 之下（路径被掐死）：%r" % _minp)
+    if _arc.get("open_ended") is not True:
+        bad.append("[archive] 多样性足够却未判 open_ended")
+    #    真实入口：`autotune_run` 必须把三阶段决策**落进建议**（否则结论无留痕）。
+    if 'rec["decide"] = autotune_decide(' not in src:
+        bad.append("[三阶段] autotune_run 未产出 decide 决策书")
+    # ㉑~㉔ [四层目标**进入每层每圈运行**]（用户战略指令：不只做读数）
+    #   判据四层：纯函数方向 / 缺读数不表态 / 真实入口接线 / 出口存在。
+    if "def layer_goal_stop_signal(" not in src:
+        bad.append("[目标运行] 缺 layer_goal_stop_signal")
+    if "def _layer_goal_now(" not in src:
+        bad.append("[目标运行] 缺 _layer_goal_now（每圈记账）")
+    if "def _goal_stop_signal(" not in src:
+        bad.append("[目标运行] 缺 _goal_stop_signal（读 trace）")
+    # ㉑ 纯函数方向：达标判 hit、未达标判不 hit、**缺读数不表态**。
+    _S = mod.layer_goal_stop_signal
+    if _S("0", {"excavate": 0.05, "n_aspects": 9})[0] is not True:
+        bad.append("[目标运行] 修行层挖尽未判 hit")
+    if _S("0", {"excavate": 0.9, "n_aspects": 9})[0] is not False:
+        bad.append("[目标运行] 修行层还在挖竟判 hit（方向错）")
+    if _S("1", {"settle": 0.8}, [{"settle": 0.8}, {"settle": 0.8},
+                                 {"settle": 0.8}])[0] is not True:
+        bad.append("[目标运行] 研究层连续不涨未判 hit")
+    if _S("1", {"settle": 0.9}, [{"settle": 0.5}, {"settle": 0.7},
+                                 {"settle": 0.9}])[0] is not False:
+        bad.append("[目标运行] 研究层在涨竟判 hit")
+    if _S("both", {"sem_stagnation": 0.9})[0] is not True:
+        bad.append("[目标运行] 对撞层全复读未判 hit")
+    if _S("all", {"crystallize": 1.0})[0] is not True:
+        bad.append("[目标运行] 元层四件齐未判 hit")
+    if _S("all", {"crystallize": 0.75})[0] is not False:
+        bad.append("[目标运行] 元层缺件竟判 hit")
+    # ㉒ 缺读数 ⇒ **必须不表态**（hit=False + why 空）——「没测」≠「测出来差」。
+    for _e in ("0", "1", "both", "all"):
+        _h, _w = _S(_e, {})
+        if _h is not False or _w != "":
+            bad.append("[目标运行] %s 缺读数竟表态：%r" % (_e, (_h, _w)))
+    # ㉓ 样本不足不许判「不涨」（序列 < n+1 条 ⇒ 不表态）。
+    if _S("1", {"settle": 0.8}, [{"settle": 0.8}])[0] is not False:
+        bad.append("[目标运行] 样本不足竟判「不涨」")
+    # ㉔ 真实入口接线：两条通道都算 + `_stop_reasons` 真加入参 + 出口存在。
+    if src.count("self._layer_goal_now(entry, view)") < 2:
+        bad.append("[目标运行] 未接两条通道（串行/并行）")
+    if src.count("goal_hit=_goal_hit") < 2:
+        bad.append("[目标运行] 未把 goal_hit 传进 _stop_reasons（两通道）")
+    if "goal_hit: bool = False," not in src:
+        bad.append("[目标运行] _stop_reasons 未收 goal_hit")
+    if 'if goal_hit and goal_why:' not in src:
+        bad.append("[目标运行] _stop_reasons 未按 goal_hit 加理由")
+    if "d[\"goal_trace\"]" not in src:
+        bad.append("[目标运行] goal_trace 无出口（产物看不到逐圈目标）")
+    # ㉕ 目标停因**必须落在高优先档**（自洽核查逮到：未登记 ⇒ 落最低档 3，
+    #    与「体力耗尽」同级 ⇒ 主因报反）。★ 判据落在**行为**（stop_priority
+    #    的实际返回值）上，不钉 `_STOP_CASCADE` 的字面写法。
+    _sp_ = mod.stop_priority
+    _crit = {
+        "修行目标已达成（层面边际新增率 0.000 < 0.10，Heaps 饱和 ⇒ 挖到不能再挖）": 0,
+        "研究目标已达成（settle 连续 2 圈不涨）": 0,
+        "对撞目标受阻（语义停滞率 0.85 >= 0.80 ⇒ 复读）": 0,
+        "元层目标已达成（结晶度 1.00 >= 1.00）": 0,
+    }
+    for _r, _want in _crit.items():
+        _got = _sp_(_r)
+        if _got != _want:
+            bad.append("[目标运行] 目标停因优先级错位 %r ⇒ 档 %s（应 %s）"
+                       % (_r[:16] + "…", _got, _want))
+    # ★ 负对照：真正该落低档的**不许**被这条登记误伤。
+    #   ★★ 用**真产物的实际文案**（`_fullrun_GOALRUN.log` 实测）——
+    #   走满型停因把「被推迟的判据名」原样嵌进括号，全文子串匹配会把
+    #   截断误判成档 0「自然停」（语义相反）⇒ 必须命中档 3。
+    if _sp_("体力耗尽（4 圈走满；1 次停止判据被「未深入方向」推迟"
+            "（悬置决定稳定，自然安住），是被截断不是自然停止）") != 3:
+        bad.append("[目标运行] 负对照失效：走满型截断停因竟非档 3"
+                   "（括号内转述被当停因本体）")
+    if _sp_("体力耗尽（4 圈走满，未触发任何停止判据，是被截断不是自然停止）") != 3:
+        bad.append("[目标运行] 负对照失效：体力耗尽竟非档 3")
+    if _sp_("预算用尽") != 3:
+        bad.append("[目标运行] 负对照失效：预算用尽竟非档 3")
+    # ★ 档 2 不许吞档 3（键区间重叠：裸键「耗尽」吞掉「体力耗尽」）。
+    if _sp_("连续空转") != 2:
+        bad.append("[目标运行] 档 2 真文案「连续空转」落档错")
+    if _sp_("材料耗尽，螺旋停止") != 2:
+        bad.append("[目标运行] 档 2 真文案「材料耗尽」落档错")
+    if bad:
+        for x in bad:
+            print("  X", x)
+        return False
+    print("  OK v1.23.33 AutoTune（帕累托 · 层集膝盖 · 圈数+1 · 不瞎猜 · 纯读 · "
+          "四层目标读数 · 目标入运行 · 三阶段决策 · archive 开放探索）全过")
     return True
 
 
@@ -13034,6 +13497,8 @@ def main():
     if not check_v12331_memory_loop():
         return 1
     if not check_v12332_discipline():
+        return 1
+    if not check_v12333_autotune():
         return 1
     q = "测试问题：AI 在数字 IC 设计里到底能做什么，哪些已经量产？"
     rows = []

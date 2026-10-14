@@ -79,6 +79,102 @@ MUTS = [
     ("M23 陈旧度恒不提示",
      '            "stale_hint": bool(age is not None and age >= 3',
      '            "stale_hint": bool(False and age is not None and age >= 3'),
+    ("M24 all_on 恒等性失效（false 也全开）",
+     '    if not (cfg or {}).get("all_on"):',
+     '    if False:'),
+    ("M25 api.thinking 形状守卫失效（标量照样炸）",
+     '        if _th is not None and not isinstance(_th, dict):\n'
+     '            print("   ⚠️ [api.thinking] 形状非法（%s，应为 mapping）⇒ 已降级为 {}；"',
+     '        if False:\n'
+     '            print("   ⚠️ [api.thinking] 形状非法（%s，应为 mapping）⇒ 已降级为 {}；"'),
+    # ── v1.23.33 AutoTune（M26~M30）──
+    ("M26 支配判据缺读数竟判真（未知淘汰已知）",
+     "    if qa is None or qb is None or ca is None or cb is None:\n"
+     "        return False",
+     "    if qa is None or qb is None or ca is None or cb is None:\n"
+     "        return True"),
+    ("M27 层集不做帕累托膝盖（恒取质量第一行）",
+     '    pick = (min(costed, key=lambda r: r["cost_med"]) if costed else rows[0])',
+     '    pick = rows[0]'),
+    ("M28 截断层不加圈（圈数建议偏小）",
+     "        cap = int(round(b)) + (1 if cut_n.get(L, 0) > 0 else 0)",
+     "        cap = int(round(b))"),
+    ("M29 缺质量读数当 0（没测→测出来差）",
+     '        quality, basis = None, "unknown"',
+     '        quality, basis = 0.0, "unknown"'),
+    ("M30 SH 预算不增（档位退化）",
+     "        res = res * f",
+     "        res = res"),
+    ("M31 run_id 不盖进产物（CLI 真跑又被当匿名丢）",
+     '            _rid = str(getattr(self, "_run_id", "") or "").strip()\n'
+     '            if _rid and not str(packed.get("id") or "").strip():\n'
+     '                packed["id"] = _rid',
+     '            pass'),
+    ("M32 记忆库锁不互斥（O_EXCL 去掉 ⇒ 并发互相覆盖）",
+     "            fd = os.open(str(lp), os.O_CREAT | os.O_EXCL | os.O_WRONLY)",
+     "            fd = os.open(str(lp), os.O_CREAT | os.O_WRONLY)"),
+    ("M33 成本中位换分母（无质量跑次混进来 ⇒ 膝盖判错）",
+     "        paired = [a for a in arr if a[\"quality\"] is not None\n"
+     "                  and a[\"cost\"] is not None]\n"
+     "        qs = [a[\"quality\"] for a in paired]\n"
+     "        cs = [a[\"cost\"] for a in paired]",
+     "        paired = [a for a in arr if a[\"quality\"] is not None\n"
+     "                  and a[\"cost\"] is not None]\n"
+     "        qs = [a[\"quality\"] for a in paired]\n"
+     "        cs = [a[\"cost\"] for a in arr if a[\"cost\"] is not None]"),
+    # ── v1.23.33 第三轮：四层目标读数 + 三阶段决策（M34~M36）──
+    #   ★ 三条都打在**判据读的那个东西**上（⑫ 修行边际率 / ⑳ archive 非贪心 /
+    #     ⑭ 对撞 CORE 罚），不是改前缀名。
+    ("M34 修行层边际率取反（还在挖 < 已挖尽 ⇒ 方向颠倒）",
+     "        return max(0.0, min(1.0, late / early))",
+     "        return max(0.0, min(1.0, 1.0 - late / early))"),
+    ("M35 archive 只留最优臂（贪心，DGM 已证劣于开放探索）",
+     "    _m = len(arms)\n"
+     "    raw = []\n"
+     "    for i, a in enumerate(arms):",
+     "    arms = arms[:1]\n"
+     "    _m = len(arms)\n"
+     "    raw = []\n"
+     "    for i, a in enumerate(arms):"),
+    ("M36 对撞层不罚复读（CORE 停滞罚退化成纯产出量）",
+     "                d[\"fuse\"] = round(d[\"fuse_raw\"] * (1.0 - min(1.0, _stag)), 4)",
+     "                d[\"fuse\"] = round(d[\"fuse_raw\"], 4)"),
+    #   ★ M37 打在「读的字段」上：真跑 GOALCHK 逮到实现原读臆造键
+    #     `covered_answer`（view 里根本没这个字段）⇒ settle 恒 null，
+    #     而**夹具自带该键** ⇒ 判据假绿。改成读真实 `settlement` 后，
+    #     退回臆造键必须判红（否则判据仍在自证）。
+    ("M37 研究层读臆造键 covered_answer（view 里没有 ⇒ settle 恒 null）",
+     "            _co = v.get(\"settlement\") or v.get(\"covered_answer\") or {}",
+     "            _co = v.get(\"covered_answer\") or {}"),
+    # ── 四层目标**进入每层每圈运行**（M38~M39）──
+    #   ★ 打在「运行接线」与「缺读数处理」上：前者是能力可达性，
+    #     后者是「没测 ≠ 测出来差」这条红线。
+    ("M38 目标停因断了运行接线（每圈不判 ⇒ 目标不入运行）",
+     "            self._layer_goal_now(entry, view)\n"
+     "            _goal_hit, _goal_why = self._goal_stop_signal(entry, view)\n"
+     "            # ★ [anytime-valid] 是否启用由配置决定（默认关 ⇒ 恒 False）。",
+     "            _goal_hit, _goal_why = False, \"\"\n"
+     "            # ★ [anytime-valid] 是否启用由配置决定（默认关 ⇒ 恒 False）。"),
+    ("M39 缺读数当达标（没测 ⇒ 判 hit，假停）",
+     "    g = goal or {}\n    _e = str(entry or \"\")\n    if _e == \"0\":\n"
+     "        _v = _lg_num(g.get(\"excavate\"))\n        if _v is None:\n"
+     "            return False, \"\"",
+     "    g = goal or {}\n    _e = str(entry or \"\")\n    if _e == \"0\":\n"
+     "        _v = _lg_num(g.get(\"excavate\"))\n        if _v is None:\n"
+     "            return True, \"没读数当挖尽\""),
+    #   ★ M40 打在「优先级表」上：目标停因未登记 ⇒ 落最低档 3（与「体力耗尽」
+    #     同级，语义刚好相反）。判据读的是 `stop_priority` 的**返回值**。
+    ("M40 目标停因未登记优先级（落档 3 = 与体力耗尽同级）",
+     "         \"目标已达成\", \"目标受阻\")),",
+     "         )),"),
+    #   ★ M41 撤掉「剥括号」⇒ 走满型截断的转述被当停因本体（判成档 0）。
+    ("M41 停因不剥括号（走满型截断被括号内转述顶成档 0 自然停）",
+     "    _head = re.sub(r\"[（(][^（()）]*[)）]\", \"\", _r).strip()",
+     "    _head = _r"),
+    #   ★ M42 档 2 塞回裸键「耗尽」⇒ 吞掉档 3 的「体力耗尽」（键区间重叠）。
+    ("M42 档 2 塞回裸键「耗尽」（吞掉档 3 体力耗尽）",
+     "    (2, (\"无新\", \"无推进\", \"连续空转\", \"停滞\", \"材料耗尽\")),",
+     "    (2, (\"无新\", \"无推进\", \"连续空转\", \"停滞\", \"材料耗尽\", \"耗尽\")),"),
 ]
 
 
@@ -96,7 +192,8 @@ def run_check(mut_path=None):
             "_sp.loader.exec_module(_m)\n"
             "st.mod = _m\n"
         ) % str(mut_path)
-    code += "sys.exit(0 if st.check_v12332_discipline() else 1)\n"
+    code += ("sys.exit(0 if (st.check_v12332_discipline() and "
+             "st.check_v12333_autotune()) else 1)\n")
     r = subprocess.run([sys.executable, "-c", code],
                        capture_output=True, text=True, cwd=str(HERE))
     return r.returncode == 0, r.stdout + r.stderr

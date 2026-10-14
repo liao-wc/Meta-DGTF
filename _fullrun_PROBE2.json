@@ -1,0 +1,162 @@
+{
+ "llm_calls": 38,
+ "llm_tokens": 231316,
+ "llm_ops_calls": 24,
+ "llm_eval_calls": 14,
+ "tri_state": [
+  2,
+  6
+ ],
+ "tri_alpha": {
+  "alpha": 0.06493506493506496,
+  "kappa": -1.332267629550189e-15,
+  "rare": {
+   "rare": "undecidable",
+   "units": 2,
+   "unanimous": 0,
+   "rate": 0.0
+  },
+  "n_units": 6,
+  "verdict": "不可靠（α<0.667，Krippendorff 下限）"
+ },
+ "diversity": {
+  "layers": 2,
+  "channels": 3,
+  "mode": "serial",
+  "combos": 6,
+  "note": "组合数 = 层数 × 通道数（模式另计）；低于「层×通道满配」时，结论的可迁移性受限"
+ },
+ "compact": {
+  "inner_share": 0.9602,
+  "budget": 0.6,
+  "over": true,
+  "verdict": "内部面超预算 ⇒ 本轮**索引化**（不删内容，正文回退到索引 + 指向 packed 全量）"
+ },
+ "belief_staleness": {
+  "n": 8,
+  "stale_n": 0,
+  "max_age": 1,
+  "items": [
+   {
+    "id": "B1",
+    "age": 1,
+    "stale_hint": false
+   },
+   {
+    "id": "B2",
+    "age": 1,
+    "stale_hint": false
+   },
+   {
+    "id": "B3",
+    "age": 1,
+    "stale_hint": false
+   },
+   {
+    "id": "B4",
+    "age": 1,
+    "stale_hint": false
+   },
+   {
+    "id": "B5",
+    "age": 0,
+    "stale_hint": false
+   },
+   {
+    "id": "B6",
+    "age": 0,
+    "stale_hint": false
+   },
+   {
+    "id": "B7",
+    "age": 0,
+    "stale_hint": false
+   },
+   {
+    "id": "B8",
+    "age": 0,
+    "stale_hint": false
+   }
+  ]
+ },
+ "bandit": {
+  "enabled": true,
+  "arm": 1,
+  "reward": 0.0,
+  "cost": 231.316,
+  "explore": true,
+  "mean": [
+   0.0667,
+   0.0,
+   0.0
+  ],
+  "n": [
+   1,
+   1,
+   0
+  ]
+ },
+ "playbook": {
+  "mode": "on",
+  "used": [
+   {
+    "id": "L0001",
+    "kind": "schedule",
+    "score": 0.870929,
+    "action": {
+     "key": "rounds_delta",
+     "layer": "1",
+     "delta": 1
+    },
+    "applied": true
+   }
+  ],
+  "applied": [
+   {
+    "id": "L0001",
+    "key": "rounds_delta",
+    "layer": "1",
+    "rounds": "1→2"
+   }
+  ],
+  "candidates": [
+   {
+    "key": "rounds_delta",
+    "layer": "0",
+    "delta": 1
+   },
+   {
+    "key": "rounds_delta",
+    "layer": "1",
+    "delta": 1
+   },
+   {
+    "key": "carve_first",
+    "layers": [
+     "0",
+     "1"
+    ]
+   }
+  ],
+  "gated_out": [],
+  "merged": [
+   "L0003",
+   "L0001",
+   "L0006"
+  ],
+  "promoted": [
+   {
+    "id": "L0003",
+    "to": "active"
+   }
+  ],
+  "retired": [],
+  "parents": [],
+  "strengthen": {
+   "strengthened": 0,
+   "negative": 1,
+   "duty_med": 0.0
+  },
+  "n_playbook": 6
+ }
+}
