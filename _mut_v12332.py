@@ -234,6 +234,35 @@ MUTS = [
      "    \"\"\"[第六期] 把一条量化读数写进 `view.quant_readings`（**唯一写入口**）。",
      "def _quant_note_orphan(view, key: str, val) -> None:\n"
      "    \"\"\"[第六期] 把一条量化读数写进 `view.quant_readings`（**唯一写入口**）。"),
+    #   ★ M50 打在**候选产出率的方向**上（判据读 verdict ⇒ 方向反了必须判红）。
+    ("M50 候选产出率方向反（整批复述判 ok、全新生判 collapsed）",
+     "    _v = \"collapsed\" if _ratio < 0.34 else \"ok\"",
+     "    _v = \"ok\" if _ratio < 0.34 else \"collapsed\""),
+    #   ★ M51 打在**缺输入处理**上（首次跑被当成「真没长」⇒ 假告警）。
+    ("M51 候选产出率缺输入硬给（首次跑也被判 collapsed）",
+     "    if not _c or not _p:\n"
+     "        return {\"n\": len(_c), \"n_new\": None, \"new_ratio\": None,\n"
+     "                \"max_sim\": None, \"collapsed\": None, \"verdict\": \"\"}",
+     "    if not _c or not _p:\n"
+     "        return {\"n\": len(_c), \"n_new\": 0, \"new_ratio\": 0.0,\n"
+     "                \"max_sim\": 0.0, \"collapsed\": True, \"verdict\": \"collapsed\"}"),
+    #   ★ M52 打在**取向规则的方向**上（判据两向测 ⇒ 方向反了必须判红）。
+    ("M52 取向规则方向反（有决策语汇判 boundary、无则判 decision）",
+     "    if _has_decision_context(_q):\n"
+     "        return {\"orientation\": \"decision\",",
+     "    if not _has_decision_context(_q):\n"
+     "        return {\"orientation\": \"decision\","),
+    #   ★ M53 打在**「规则命中不花调用」的接线**上（判据用 spy 计 0 次 ⇒
+    #     退回 LLM 版即必须判红）。这是「有接线 ≠ 这跑走得到」的成本侧形态。
+    ("M53 规则命中又偷调 LLM（退回 plan_orientation 补取向）",
+     "                _or = orientation_rule(q)\n"
+     "                _ori = str((_or or {}).get(\"orientation\", \"\") or \"\")\n"
+     "                if not _ori:\n"
+     "                    raise ValueError(\"取向规则未定\")",
+     "                _or = {\"orientation\": \"\"}\n"
+     "                _ori = str((_or or {}).get(\"orientation\", \"\") or \"\")\n"
+     "                if not _ori:\n"
+     "                    raise ValueError(\"取向规则未定\")"),
 ]
 
 

@@ -3237,6 +3237,46 @@ _SD_FILLER = (
 )
 
 
+def candidate_yield(cands, prev_texts, thr: float = 0.72) -> dict:
+    """[第六期 · 依据 ③] 候选生成的**产出率**（零成本纯函数，不调 LLM）。
+
+    ★ 目的：给「下一笔钱」（对偶判断 = 逐条一次调用）一个**便宜的早期信号**。
+      RASC / DeepConf / Think@n 的共性都是在花钱之前先算一个便宜的指标；
+      DeepConf 还提醒「**全局平均会掩盖局部塌陷**」⇒ 这里同时报
+      `max_sim`（最像的那一条）与 `collapsed`（是否整批塌陷）。
+
+    口径：
+      · 对每条候选，取它与**上一圈候选文本**的最大相似度（`_overlap_coef`
+        与 `_similar` 两把尺子取大 —— 与 `yin_yang_divergence` 同一套）；
+      · `new_ratio` = 相似度 **< thr** 的条数占比 ⇒ **真的长了多少**；
+      · `max_sim` = 全批最大相似度（最高的一条有多像旧的）；
+      · `collapsed` = `new_ratio < 0.34`（**整批基本是复述** ⇒ 提示，不拦）。
+
+    ★ 缺输入（候选空 / 无历史）⇒ 全 `None` + `verdict=""`（**不表态**）。
+      ——「这一圈是第一次跑」与「这一圈真没长」是两件事，不能混。
+    """
+    _c = [str(x) for x in (cands or []) if str(x or "").strip()]
+    _p = [str(x) for x in (prev_texts or []) if str(x or "").strip()]
+    if not _c or not _p:
+        return {"n": len(_c), "n_new": None, "new_ratio": None,
+                "max_sim": None, "collapsed": None, "verdict": ""}
+    _sims = []
+    for _x in _c:
+        _mx = 0.0
+        for _y in _p:
+            _s = max(_overlap_coef(_x, _y), _similar(_x, _y, thr))
+            if _s > _mx:
+                _mx = _s
+        _sims.append(_mx)
+    _n_new = sum(1 for s in _sims if s < thr)
+    _ratio = _n_new / float(len(_sims))
+    _mx = max(_sims)
+    _v = "collapsed" if _ratio < 0.34 else "ok"
+    return {"n": len(_c), "n_new": _n_new, "new_ratio": round(_ratio, 4),
+            "max_sim": round(_mx, 4), "collapsed": _ratio < 0.34,
+            "verdict": _v}
+
+
 def _sd_is_punct(ch: str) -> bool:
     """标点 / 符号判定（Unicode 类别 P* 或 S*）。**内联实现**，不引新依赖。"""
     try:
@@ -8856,6 +8896,22 @@ class DGTF:
         except Exception:
             pass
         candidates = self._drop_banned(candidates, inp, view)
+        # ★ [第六期 · 依据 ③] 候选**产出率**（零成本纯函数）：
+        #   给「下一笔钱」（逐条对偶判断）一个早期信号；只读数 + 告警，**不改流程**。
+        try:
+            _cy = candidate_yield([getattr(c, "desc", "") for c in candidates],
+                                  getattr(view, "_prev_cand_descs", None))
+            if _cy.get("verdict"):
+                _quant_note(view, "candidate_yield", _cy)
+                if _cy.get("verdict") == "collapsed":
+                    self.vp("   ⚑ 候选产出率偏低 %.2f（最高相似 %.2f）"
+                            "——这一圈基本是复述，"
+                            "对偶判断可能在为无信息量付费"
+                            % (_cy.get("new_ratio") or 0.0,
+                               _cy.get("max_sim") or 0.0))
+            view._prev_cand_descs = [getattr(c, "desc", "") for c in candidates]
+        except Exception:
+            pass
         self.vp(f"   📋 展开候选 {len(candidates)} 条"
                 + (f"（{len(view.carry_dropped)} 条触犯上一圈禁令已拦下）"
                    if view.carry_dropped else ""))
@@ -22079,6 +22135,35 @@ _MODE_RULE_AND = ("和", "与", "以及", "同时", "并")
 _MODE_RULE_PIPE = ("流水", "接力", "时序", "尽快", "尽量快")
 
 
+def orientation_rule(question: str) -> dict:
+    """[第六期 · 降本] 规则优先的**取向**判断（零成本纯函数，不调 LLM）。
+
+    ★ 为什么需要它：`auto_plan` 的 B1 规则命中时注释写「不花这次模式调用」，
+      但为补 orientation 又调了 `plan_orientation`（内部 new `LLM(cfg)`，
+      签名里没有 `llm=` ⇒ 打桩也进不去）⇒ 实测**还是花 1 次调用**，
+      把模式规则省下的钱又花掉了。
+
+    ★ 判据来源与 `_has_decision_context` **同源**（同一个 `_DECISION_CUES`）：
+      命中决策语境 ⇒ decision（要可落地方案）；
+      否则 ⇒ boundary（要边界清单）。
+      —— 同源是为了避免「打桩判 decision、渲染判 boundary」的双真相。
+
+    ★ 与 `plan_orientation`（LLM 版）的关系：**这是快路径，那是兜底**。
+      本函数只答「有没有决策语汇」这一个可规则化的问题；
+      真正的语义细判仍可回落 `plan_orientation`。
+
+    返回 {"orientation": "boundary|decision", "reason": ..., "confidence": 1.0}
+    """
+    _q = str(question or "")
+    if _has_decision_context(_q):
+        return {"orientation": "decision",
+                "reason": "规则：题面含决策语汇（要与不要/怎么选/下一步）",
+                "confidence": 1.0}
+    return {"orientation": "boundary",
+            "reason": "规则：题面无决策语汇（问边界/风险/说不清的部分）",
+            "confidence": 1.0}
+
+
 def mode_rule(question: str):
     """规则优先的模式判断。返回 (mode, reason) 或 (None, why_not)。
 
@@ -22284,12 +22369,25 @@ def auto_plan(question: str, config: Optional[dict] = None,
         #     补一次，保证 `_assemble_plan(orientation=...)` 有值。
         _rm, _rr = mode_rule(q)
         if _rm:
+            # ★★ [第六期 · 降本] 原来这里调 `plan_orientation(q, cfg)` 补取向 ——
+            #    但它内部自己 `new LLM(cfg)`（签名里没有 `llm=`），
+            #    ⇒ **真花掉一次调用**，把上面规则省下的钱又花了。
+            #    改为**零成本取向规则**（与 `_has_decision_context` 同源）；
+            #    只有规则拿不准（空题面）才回落 LLM 版。
             _ori = ""
             try:
-                _ori = str((plan_orientation(q, cfg) or {})
-                           .get("orientation", "") or "")
+                _or = orientation_rule(q)
+                _ori = str((_or or {}).get("orientation", "") or "")
+                if not _ori:
+                    raise ValueError("取向规则未定")
             except Exception:
                 _ori = ""
+            if not _ori:
+                try:
+                    _ori = str((plan_orientation(q, cfg) or {})
+                               .get("orientation", "") or "")
+                except Exception:
+                    _ori = ""
             return _assemble_plan(
                 _rm, {}, cfg, orientation=_ori, confidence=0.9,
                 reason=_rr + "（规则命中，未花调度调用）")

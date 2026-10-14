@@ -12405,8 +12405,12 @@ def check_v12333_autotune():
     _calls = [ln for ln in _src_ln.splitlines()
               if "_quant_note(view," in ln
               and not ln.lstrip().startswith("def ")]
-    if len(_calls) != 3:
-        bad.append("[量化] `_quant_note` 真实调用点应为 3 处（实得 %d）"
+    #   ★ 取值随实现更新：第六期第二批次补「候选生成产出率」后，调用点 3 → **4**
+    #     （restate_fidelity / yin_yang_divergence / ing_density / candidate_yield）。
+    #     这条不是「放宽阈值」，是**登记新增的真实调用点**；数量本身仍是硬约束 ——
+    #     多一处少一处都说明接线被动过，必须有人显式确认。
+    if len(_calls) != 4:
+        bad.append("[量化] `_quant_note` 真实调用点应为 4 处（实得 %d）"
                    % len(_calls))
     if _src_ln.count("def _quant_note(") != 1:
         bad.append("[量化] `_quant_note` 定义份数 != 1（两个真相源）")
@@ -12418,11 +12422,101 @@ def check_v12333_autotune():
         bad.append("[量化] 阴阳分歧度未接真实入口")
     if 'd["quant_readings"] = {' not in src:
         bad.append("[量化] quant_readings 无产物出口")
+    # ㉜ 候选生成**产出率**（依据 ③：早期信号；用户点名五处之「候选生成」）。
+    #   · 纯函数方向：全是复述 ⇒ collapsed；全新 ⇒ ok；缺一输入 ⇒ 不表态；
+    #   · 真实入口：必须接在 `_drop_banned` 之后（**禁令拦下的不算增长**）、
+    #     `_dual_judge` 之前（读的是「这一圈长的」，不是被改写过的集合）；
+    #   · **不调 LLM**（同一把零成本尺子）。
+    if not hasattr(mod, "candidate_yield"):
+        bad.append("[量化] 缺 candidate_yield（候选生成无量化读数）")
+    else:
+        _CY = mod.candidate_yield
+        _prev = ["边界条件必须先声明", "调度顺序决定产出"]
+        _e = _CY([], _prev)
+        if _e["verdict"] != "" or _e["new_ratio"] is not None:
+            bad.append("[量化] 候选产出率：无候选竟表态")
+        _e = _CY(["新说法甲"], [])
+        if _e["verdict"] != "" or _e["new_ratio"] is not None:
+            bad.append("[量化] 候选产出率：无历史竟表态（首次跑 ≠ 没长）")
+        if _CY(list(_prev), _prev)["verdict"] != "collapsed":
+            bad.append("[量化] 候选产出率：整批复述竟未判 collapsed（方向错）")
+        if _CY(["外位通道必须先于被测变化存在", "资格来源不能与被资格对象同槽"],
+               _prev)["verdict"] == "collapsed":
+            bad.append("[量化] 候选产出率：全新生竟判 collapsed（方向错）")
+        # 缺读数不许写成 0（「没测」≠「测出来是 0」）
+        _n0 = _CY([], _prev)
+        if _n0["n_new"] is not None or _n0["max_sim"] is not None:
+            bad.append("[量化] 候选产出率：缺输入竟回 0 而非 None")
+    if 'candidate_yield([getattr(c, "desc", "")' not in src:
+        bad.append("[量化] 候选产出率未接真实入口")
+    # ★ 接线顺序：产出率必须读在**对偶判断之前**（否则读的是被改写过的集合）。
+    _i_cy = src.find('_quant_note(view, "candidate_yield"')
+    _i_dj = src.find("candidates = self._dual_judge(candidates")
+    if _i_cy < 0 or _i_dj < 0 or not (_i_cy < _i_dj):
+        bad.append("[量化] 候选产出率接线位置错（必须在对偶判断之前）")
     # ㉗ 阴阳合并开关：**默认关** ⇒ 零行为差（防「偷偷改了默认行为」）。
     if 'self._expand_pair_merged_once(jobs)' not in src:
         bad.append("[量化] 阴阳合并未接线（仍是孤儿函数 ⇒ 能力不可达）")
     if '_action_on(self.config, "merge_expand", False)' not in src:
         bad.append("[量化] 阴阳合并开关默认不是关（会改变历史行为）")
+    # ㉝ [第六期 · 降本] 规则命中 ⇒ **零 LLM 调用**（构造性证明，不是「看代码」）。
+    #   ★★ 逮到的真问题：B1 规则命中的注释写「不花这次模式调用」，但为补
+    #      `orientation` 又调 `plan_orientation(q, cfg)` —— 它内部自己
+    #      `new LLM(cfg)`（签名里没有 `llm=`）⇒ 实测**还是花 1 次**。
+    #      修法：新增零成本 `orientation_rule()`（与 `_has_decision_context`
+    #      同源），规则命中时用它；只有规则拿不准（空题面）才回落 LLM 版。
+    _orn = getattr(mod, "orientation_rule", None)
+    if not callable(_orn):
+        bad.append("[降本] 模块级 `orientation_rule` 不存在（规则命中仍会偷调 LLM）")
+    else:
+        # ★ 样本要贴合各自语义 —— 不能拿含「风险」的题面当 boundary 样本：
+        #   `_DECISION_CUES` 里本就有「风险」（走 decision 是**既有语义**，
+        #   不是本规则的方向错）。boundary 样本须**不含任何决策语汇**。
+        _od = _orn("这一步该怎么选，给个方案")
+        _ob = _orn("这件事的边界画在哪里")
+        if (_od or {}).get("orientation") != "decision":
+            bad.append("[降本] 取向规则方向错：决策语汇应判 decision，实得 %r"
+                       % ((_od or {}).get("orientation"),))
+        if (_ob or {}).get("orientation") != "boundary":
+            bad.append("[降本] 取向规则方向错：无决策语汇应判 boundary，实得 %r"
+                       % ((_ob or {}).get("orientation"),))
+        # ★ 空题面 ⇒ 保守回 boundary（**与 `_has_decision_context` 的既有约定
+        #   同源**：「题面取不到时宁可走边界模板，也不在不知道题面时套决策模板」）。
+        #   ⇒ 判据查的是「不许回 decision」，不是「必须为空」。
+        if (_orn("") or {}).get("orientation") != "boundary":
+            bad.append("[降本] 取向规则空题面未保守回 boundary（实得 %r）"
+                       % ((_orn("") or {}).get("orientation"),))
+        # ★ 构造性证明：规则命中时 `LLM.call` 必须 **0 次**。
+        _spy_n = {"n": 0}
+        _orig_llm_cls = mod.LLM
+
+        class _SpyLLM:
+            def __init__(self, *a, **kw):
+                pass
+
+            def call(self, *a, **kw):
+                _spy_n["n"] += 1
+                import json as _j
+                return _j.dumps({"mode": "serial", "orientation": "boundary",
+                                 "rounds": {"0": 4, "1": 4, "both": 4, "all": 5},
+                                 "reason": "spy", "confidence": 0.9})
+
+            def parse_json(self, raw):
+                import json as _j
+                return _j.loads(raw)
+
+        try:
+            mod.LLM = _SpyLLM
+            _pl = mod.auto_plan("地铁运营效率该怎么衡量？",
+                                dict(mod.DEFAULT_CONFIG), llm=_SpyLLM())
+            if _spy_n["n"] != 0:
+                bad.append("[降本] 规则命中竟调了 LLM %d 次（应为 0 —— "
+                           "注释说「不花这次调用」就必须真不花）" % _spy_n["n"])
+            if (_pl or {}).get("mode") != "serial":
+                bad.append("[降本] 规则命中路径 mode 变了：%r"
+                           % ((_pl or {}).get("mode"),))
+        finally:
+            mod.LLM = _orig_llm_cls
     if bad:
         for x in bad:
             print("  X", x)

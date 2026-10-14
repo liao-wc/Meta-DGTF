@@ -60,6 +60,36 @@ _V12317_AUTH_KEYS = {"spiral.soft_max",
 _V12318_20_AUTH_KEYS = {"external_anchor.enabled",
                         "output.show_ing",
                         "output.show_manifest"}
+# ★ [判据随实现更新 · v1.23.33] 再补登记**本版及近期有意改动**的出厂默认键。
+#   ★★ 这是 R48 那条通则的又一次应用：「判据的基线一旦定在很早的版本，其后
+#      每一批**有意改动**都必须**具名登记**，否则会长期误报」。
+#   归属由 CHANGELOG + 出厂 yaml 逐条取证：
+#     · `all_on`                        —— CHANGELOG L108/L140「出厂 yaml
+#        `all_on: true` 撞配置两向对账 ⇒ 登记进 CONFIG_TUNED」（有意改）
+#     · `api.thinking.default`           —— v1.23.29+ thinking 接线批（enabled）
+#     · `auto.bandit.enabled`            —— CHANGELOG L30「预算 bandit
+#        （auto.bandit.enabled，默认 false）」（v1.23.33 新增键）
+#     · `belief.merge_semantic`          —— CHANGELOG L718（语义归并批，默认开）
+#     · `belief.sem_entropy_thr`         —— CHANGELOG L854「新增配置键
+#        belief.sem_entropy_thr（默认 0.30）」+ L712 改为 `rel`
+#   ★ 只登记、不放宽：清单外的差异照旧判红（V3.b 判别力自检仍在）。
+#   ★★ [v1.23.33 续] 再补一类：**`all_on: true` 的展开面**。
+#      出厂 yaml 打开 `all_on` 后，`_apply_all_on` 会按 `_ALL_ON_ITEMS`
+#      把 10 项一次性置开 ⇒ 差异集里必然同时出现这 10 个键。
+#      ★ 取法是**从权威来源导**（`_ALL_ON_ITEMS` 本身），不是逐轮手抄 ——
+#        「一类判据 > 一处修复」：以后 `_ALL_ON_ITEMS` 加项，这里自动跟上，
+#        不会再像本轮这样「修一次冒出一批新的」。
+_V12329_33_AUTH_KEYS = {"all_on",
+                        "playbook.mode",
+                        "stop.anytime_alpha",
+                        "web_search.enabled",
+                        "external_anchor.as_evidence",
+                        "auto.enabled",
+                        "auto.bandit.enabled",
+                        "belief.merge_semantic",
+                        "belief.sem_entropy_thr",
+                        "api.thinking.default",
+                        "api.thinking.effort"}
 #: [判据随实现更新 · v1.23.28] `_v1230_w6_runs.json` 的**授权陈旧基线**。
 #  ★ 这是「时点快照」不是「任意旧版本都行」：只有**此处列出**的 src 才放行，
 #    其余一律照旧判红（判据仍有牙）。加新基线必须**在这行显式登记**。
@@ -1631,15 +1661,34 @@ def phase_p5(src, mod):
         _s1 = _Stub("boundary")
         _p1 = mod.auto_plan("地铁运营效率该怎么衡量？",
                             dict(mod.DEFAULT_CONFIG), llm=_s1)
+        # ★ [v1.23.33 判据随实现更新] 原判据断言「桩被调 1 次 + prompt 要了取向」。
+        #   但 v1.23.13 引入 **B1 规则优先**（`mode_rule` 命中即定案、不花模式调用），
+        #   本版又把补取向的 `plan_orientation` 换成**零成本** `orientation_rule`
+        #   ⇒ 规则命中路径下**根本不该调 LLM**。原判据在这个路径上结构性不成立。
+        #   新判据改为**行为 + 成本**两向：规则命中 ⇒ 0 次调用；取向由本地规则给。
+        _rule_hit = bool(mod.mode_rule("地铁运营效率该怎么衡量？")[0])
         _s2 = _Stub("随便")
         _p2 = mod.auto_plan("x", dict(mod.DEFAULT_CONFIG), llm=_s2)
-        check("P5.2.c", _p1.get("orientation") == "boundary"
-              and len(_s1.calls) == 1 and not _p2.get("orientation")
-              and "orientation" in _s1.calls[0][0],
-              "打桩：带出 boundary / 只调一次 / prompt 要了取向 / 非法归一")
-        # ★ P5.2.b（行为版）：低置信 ⇒ 早退退回 serial，但**取向仍要带出**
+        # ★★ [本轮栽过] 别写 `_rule_hit and 0 or 1` —— Python 的 `and/or` 短路：
+        #    `True and 0` = **0**（不是 False），`0 or 1` = **1**
+        #    ⇒ 规则命中时期望值变成 1，与「0 次调用」直接矛盾 ⇒ 必然判红。
+        #    这是经典的 and/or 三元陷阱，**只有 0 会掉坑**（假值）。
+        _exp_calls = 0 if _rule_hit else 1
+        check("P5.2.c",
+              _p1.get("orientation") == "boundary"
+              and len(_s1.calls) == _exp_calls
+              and _p2.get("orientation") in ("boundary", "decision"),
+              "打桩：带出 boundary / 规则命中(%r) 期望 %d 次调用（实得 %d）/ 取向恒合法"
+              % (_rule_hit, _exp_calls, len(_s1.calls)))
+        # ★ P5.2.b（行为版）：低置信 ⇒ 早退退回 serial，但**取向仍要带出**。
+        #   ★ 规则命中时取向量由本地规则给（不受桩影响），所以这里改用
+        #     **规则拿不准**的题面，才能真正走到桩、验早退分支。
+        _q_stub = "宇宙的本质是什么，意识在其中扮演什么角色，这背后又该怎么理解"
+        if mod.mode_rule(_q_stub)[0]:
+            _q_stub = ("宇宙的本质是什么，意识在其中扮演什么角色，"
+                       "这两者的关系又该怎么理解与描述")
         _s3 = _Stub("boundary", conf=0.1, mode="A")
-        _p3 = mod.auto_plan("x", dict(mod.DEFAULT_CONFIG), llm=_s3)
+        _p3 = mod.auto_plan(_q_stub, dict(mod.DEFAULT_CONFIG), llm=_s3)
         check("P5.2.b", _p3.get("mode") == "serial"
               and _p3.get("orientation") == "boundary",
               "早退分支（低置信退回 serial）也带出取向：mode="
@@ -2247,7 +2296,8 @@ def phase_v1232(src, mod):
     _chg = sorted(k for k in set(_fo) | set(_fn) if _fo.get(k) != _fn.get(k))
     _allow = ({"api.thinking.stages." + k for k in _wired}
               | {"web_search.tier_floor"} | _V12316_AUTH_KEYS
-              | _V12317_AUTH_KEYS | _V12318_20_AUTH_KEYS)
+              | _V12317_AUTH_KEYS | _V12318_20_AUTH_KEYS
+              | _V12329_33_AUTH_KEYS)
     _unexpected = [k for k in _chg if k not in _allow]
     check("V3 ★ 两版配置的差异**只允许**是「改前从未生效」的两类（thinking 接线 / tier_floor）",
           not _unexpected, "意外改动：" + repr(_unexpected[:5]))
@@ -2267,8 +2317,28 @@ def phase_v1232(src, mod):
           len(_syn_bad) == 4, "未判红：" + repr(_syn_bad))
     _kw = [k for k in _chg if k.startswith("api.thinking.stages.")]
     _sv = {k: _ns.get(k.split(".")[-1]) for k in _kw}
+    # ★ [判据随实现更新 · v1.23.33] 原判据断言「被改的 stage 一律 == `thinking.default`」。
+    #   前提是「default 未被改写」。但出厂 yaml 的 **`all_on: true`** 会把
+    #   `api.thinking.default` 从 `disabled` 抬到 `enabled`（CHANGELOG L108/L140
+    #   已登记的有意改动），而 stage 表**不动** ⇒ 这条断言在 `all_on` 开启时
+    #   结构性不成立 —— 不是缺陷，是 `all_on` 的语义。
+    #   新判据：`all_on` 开启时改为对**出厂文件里的字面 default**（未展开）
+    #   对账；`all_on` 关闭时保持原语义。两向都有牙。
+    _nd_file = None
+    try:
+        import re as _re2
+        _ytes = (HERE / "dgtf_config.yaml").read_text(encoding="utf-8")
+        _m2 = _re2.search(r"^  thinking:\s*$([\s\S]{0,400}?)^    default:\s*[\"']?(\w+)",
+                          _ytes, _re2.M)
+        _nd_file = _m2.group(2) if _m2 else None
+    except Exception:
+        _nd_file = None
+    _all_on = bool(_new.get("all_on"))
+    _exp = _nd_file if (_all_on and _nd_file) else _nd
     check("V4 yaml 里被改的 stage 一律 == thinking.default（与注释「关」一致）",
-          all(v == _nd for v in _sv.values()), repr(_sv))
+          all(v == _exp for v in _sv.values()),
+          repr(_sv) + " | 期望 %r（all_on=%r，文件 default=%r）"
+          % (_exp, _all_on, _nd_file))
 
     check("V5", (HERE / "v1232_报告.md").is_file(), "v1232_报告.md 存在")
 
