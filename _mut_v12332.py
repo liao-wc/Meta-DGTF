@@ -335,6 +335,28 @@ MUTS = [
      "        _st = str(stage or _infer_stage_from_stack() or \"\")\n"
      "        if not _st:\n"
      "            return None"),
+    #   ★ M65 打在**心跳的触发条件**上（判据 ③ 查「读数正常不该放宽」⇒
+    #     去掉 verdict 判断 ⇒ 正常也放宽 ⇒ 必判红）。
+    ("M65 心跳不看读数就放宽（默认零行为差被破坏）",
+     "        if str(_q.get(\"候选\") or \"\") == \"collapsed\":",
+     "        if True:"),
+    #   ★ M66 打在**控制面的必留痕**上（心跳不带 why ⇒ 控制面应拒 ⇒
+    #     放宽不生效 ⇒ 判据 ① 判红）。
+    ("M66 心跳写入不带 why（控制面应当拒 ⇒ 放宽不生效）",
+     "                    why=\"心跳：本层候选产出率 collapsed（复述多）⇒ \"\n"
+     "                        \"放宽该环节联网，让它能问外面\",",
+     "                    why=\"\","),
+    #   ★ M67 打在**豁免表的完整性**上（判据两向对账 ⇒ 删一项必判红）。
+    ("M67 EML 豁免表丢一项（carve_first 又变成学而不做）",
+     "    \"carve_first\":\n"
+     "        \"跨跑类：它要的是「**下一跑**这些层优先雕」，而本引擎没有跨跑调度\"",
+     "    \"carve_first_DISABLED\":\n"
+     "        \"跨跑类：它要的是「**下一跑**这些层优先雕」，而本引擎没有跨跑调度\""),
+    #   ★ M68 打在**放宽能否落地**上（不同步进 Gate ⇒ 放宽只是内存里的一个数，
+    #     检索照旧被拒 ⇒ 判据源码级判红）。
+    ("M68 放宽不同步进 Gate（放宽永远不生效）",
+     "                gate._relaxed = _relaxed",
+     "                gate._relaxed = set()"),
 ]
 
 
@@ -356,7 +378,9 @@ def run_check(mut_path=None):
              "st.check_v12333_autotune() and "
              "st.check_v12334_prompt() and "
              "st.check_v12336_allweb() and "
-             "st.check_v12336_readings()) else 1)\n")
+             "st.check_v12336_readings() and "
+             "st.check_v12336_tick() and "
+             "st.check_v12336_eml()) else 1)\n")
     r = subprocess.run([sys.executable, "-c", code],
                        capture_output=True, text=True, cwd=str(HERE))
     return r.returncode == 0, r.stdout + r.stderr
@@ -385,8 +409,11 @@ def main():
         tmp = Path(tempfile.gettempdir()) / ("_mut_v12332_%d.py" % i)
         tmp.write_bytes(src.replace(old, new, 1).encode("utf-8"))
         green, out = run_check(tmp)
+        # ★ 输出**带索引**：`--only N` 用的是索引，名字自带 `Mn` ——
+        #   两者不一致时（插入导致偏移）当场可见（本轮栽过两次）。
         print(("OK" if not green else "X"),
-              "%s %s" % (name, "红(判别力OK)" if not green else "绿(假绿!)"))
+              "[%d] %s %s" % (i, name,
+                              "红(判别力OK)" if not green else "绿(假绿!)"))
         res.append((i, name, "RED" if not green else "GREEN"))
         tmp.unlink(missing_ok=True)
     bad = [r for r in res if r[2] != "RED"]

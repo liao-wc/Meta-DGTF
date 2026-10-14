@@ -5531,6 +5531,25 @@ _AUDIT_CONFIG_EXEMPT = ()
 #   不再是「配了不读」⇒ 豁免取消（两向对账自动回到「有键必有读点」）。
 #   ★ 保留本常量（空元组）以免审计侧代码要改；将来若真有「声明不做」的键，
 #     仍登记在这里并写清原因。
+#: [EML] **只记录、不应用**的动作 key（显式豁免 + 原因）。
+#: ★ 为什么要有它：EML 候选里有些 key 是**证据类**（记账），本来就不该落到
+#:   `_eml_apply` 的执行面；但「不在 `_eml_apply` 里」这件事**必须显式登记**，
+#:   否则它看起来像「忘了接」—— 而且**没有任何判据会发现**（本版实测：
+#:   这 3 个 key 各只出现 1 次，生成→存库→召回却永不生效）。
+#: ★ 判据（两向对账）：候选生成得出的每个 key，必须**要么**在 `_eml_apply`
+#:   有分支、**要么**在这张表里。
+_EML_RECORD_ONLY = {
+    "tri_advisory_only":
+        "证据类：记「三态只做建议」这个事实，本身不是动作（无可执行面）",
+    "note_cost_no_gain":
+        "证据类：成本账（花了钱没增益），供人/AutoTune 读，不自动调参",
+    "carve_first":
+        "跨跑类：它要的是「**下一跑**这些层优先雕」，而本引擎没有跨跑调度"
+        "接口（跨跑建议走 AutoTune 的建议文件，红线：建议与执行分开）"
+        "⇒ 硬接会变成「在一次跑中途改另一件事的优先级」，语义不对",
+}
+
+
 #: [联网全接] 30 个环节的开关名（与 `_infer_stage_from_stack` 同口径：
 #: 函数名去掉前导下划线）。★ 这张表**只用于生成默认配置**，运行时**不查它** ——
 #: Gate 直接按键名查 `web_search.stages[...]`，所以**新增环节只需加一行**，
@@ -5858,6 +5877,8 @@ class WebSearchClient:
 
 
 class WebSearchGate:
+    #: [运行中放宽] 由心跳调度填（经控制面）——**只影响本次跑的内存态**。
+    _relaxed: set = set()
     """ 授权 + 配额三层 + 连续失败降级。
 
     ★ 三个否定方向（未启用 / 未授权 / 配额或降级）都必须给出**可读理由**，
@@ -5891,7 +5912,12 @@ class WebSearchGate:
     def allow(self, stage: str, round_no: int) -> Tuple[bool, str]:
         if not bool(self.cfg.get("enabled", False)):
             return False, "web_search 未启用（默认关）"
-        if not bool((self.cfg.get("stages") or {}).get(stage, False)):
+        # ★ [运行中放宽] `_relaxed` 由心跳调度（经控制面）在**本次跑内**填充，
+        #   **不改配置**（`cfg` 只读）⇒ 放开的只是「授权」这一道；
+        #   配额 / 连续失败降级 / 各 stage 上限**照旧生效**（可控性不降）。
+        _relaxed = getattr(self, "_relaxed", None) or ()
+        if not bool((self.cfg.get("stages") or {}).get(stage, False)) \
+                and stage not in _relaxed:
             return False, "stage " + repr(stage) + " 未授权"
         if self.disabled:
             return False, ("本跑已降级（连续失败 "
@@ -18113,6 +18139,13 @@ class MetaDGTF:
         except Exception:
             pass
 
+        # ★ [心跳] 层收尾时**主动**检查 ⇒ 调下一层的策略（不等失败）。
+        #   依据 Heartbeat-Driven Scheduling；全部经控制面（可追溯 + 可控）。
+        try:
+            self._schedule_tick(entry, view)
+        except Exception as _e_tk:
+            logger.warning("心跳调度失败：%s", _e_tk)
+
 
     def _b_finalize_layer(self, entry: str):
         """B/C/D-H 通道的层收尾。
@@ -18193,6 +18226,18 @@ class MetaDGTF:
         client = getattr(self, "_web_client", None)
         if gate is None or client is None:
             return []
+        # ★ [心跳放宽] 把控制面里**本次跑内**放开的环节同步进 Gate 的放宽集
+        #   （`_relaxed` 是内存态；配额与降级判定照旧 ⇒ 可控性不降）。
+        try:
+            _surf = getattr(self, "_control", None)
+            if _surf is not None:
+                _relaxed = set()
+                for _st in (self._TICK_WEB_RELAX or ()):
+                    if _surf.read("web.allow.%s" % _st) is True:
+                        _relaxed.add(_st)
+                gate._relaxed = _relaxed
+        except Exception:
+            pass
         pool = self.pools.get("1")
         if pool is not None:
             # 引用授权门每次同步（配置在跑内不变，但显式摆在这里可读）。
@@ -19084,6 +19129,62 @@ class MetaDGTF:
             self._control_surf = _c
         return _c
 
+    #: [心跳] 允许被「放宽联网」的环节 —— 只列**最需要外部刺激**的那一类。
+    #: ★ 不列全 30 个：放宽是**有代价**的（每次调用都检索），只挑对撞/探针这类
+    #:   「卡住时最该问外面」的环节。
+    _TICK_WEB_RELAX = ("ing", "probe_research", "probe_duel", "probe_meta")
+
+    def _schedule_tick(self, entry: str, view) -> None:
+        """[心跳 · 层级] 层收尾时**主动**检查 ⇒ 调下一层的策略。
+
+        ★ 依据 Heartbeat-Driven Scheduling：**周期性主动**编排，不是等失败才反思。
+        ★ 读**已有读数**（`_readings_bundle`，不新增计算）；调整**全过**
+          `ControlSurface`（可追溯 + 可控）；**默认零行为差**
+          （取不到读数 ⇒ 不动；同值 ⇒ `write` 判 noop 不落）。
+        ★ 只改**本次跑的内存态**，绝不写配置（红线：建议与执行分开）。
+        """
+        try:
+            _b = _readings_bundle(view)
+        except Exception:
+            return
+        _q = _b.get("quant") or {}
+        # ① 候选产出率 collapsed（复述多）⇒ 放宽下一层的联网
+        if str(_q.get("候选") or "") == "collapsed":
+            for _st in self._TICK_WEB_RELAX:
+                self._control.write(
+                    "web.allow.%s" % _st, True,
+                    why="心跳：本层候选产出率 collapsed（复述多）⇒ "
+                        "放宽该环节联网，让它能问外面",
+                    trace_ref="tick:web_relax:%s" % entry)
+        # ③ 语义停滞 ⇒ 同样允许探针类环节联网（与 ① 的机制同路，理由不同）
+        if str(getattr(view, "sem_stagnation", "") or "").strip():
+            for _st in ("probe_research", "probe_meta"):
+                self._control.write(
+                    "web.allow.%s" % _st, True,
+                    why="心跳：本层语义停滞 ⇒ 允许探针环节联网找外部刺激",
+                    trace_ref="tick:stag_web:%s" % entry)
+        # ② 职责不足 ⇒ 记一条 carve_first（跨跑类，落在 `_EML_RECORD_ONLY`）
+        try:
+            _d = _b.get("duty")
+            _fl = float(getattr(self, "_duty_floor", 0.0) or 0.0)
+            if _d is not None and _fl and float(_d) < _fl:
+                _trace_note(view, "decide",
+                            what="是否把「职责不足」升级为动作",
+                            options=[{"opt": "记 carve_first（跨跑优先雕）",
+                                      "verdict": "taken",
+                                      "why": "S=%s < floor=%s" % (_d, _fl)},
+                                     {"opt": "本跑内硬插一次雕",
+                                      "verdict": "rejected",
+                                      "why": "会打断已定的圈序；且跨跑类动作"
+                                             "不属于本跑的执行面"}],
+                            chosen="carve_first", conf=0.7)
+        except Exception:
+            pass
+        self._control.write(
+            "duty_floor", float(getattr(self, "_duty_floor", 0.0) or 0.0),
+            why="心跳：占位（同值 ⇒ noop，不落 applied）",
+            trace_ref="tick:noop:%s" % entry)
+
     def _eml_apply(self, rounds_plan: dict) -> list:
         """把 recall 到的 active 条目落到**生效面**（仅 `mode=="on"`）。"""
         _applied = []
@@ -19309,7 +19410,8 @@ class MetaDGTF:
         #   ★ 修行层的「不注入」红线在 `LLM._web_augment` 里按 entry 判。
         try:
             _llm_ctx_set(web_searcher=self._web_search,
-                         question=str(question or ""))
+                         question=str(question or ""),
+                         control=self._control)
         except Exception:
             pass
         route = route or ["0", "1", "both", "all"]

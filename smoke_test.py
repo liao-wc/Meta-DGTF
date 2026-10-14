@@ -11881,6 +11881,149 @@ def check_v12332_discipline():
     return True
 
 
+def check_v12336_eml():
+    """[v1.23.36] EML 两向对账：**每个 action.key 要么有应用分支、要么登记豁免**。
+
+    ★ 为什么：不这么查，「学而不做」可以长期静默存在（召回日志只说「用了几条」，
+      不说「其中几条真生效」）。
+    """
+    bad = []
+    src = SRC.read_text(encoding="utf-8").replace("\r\n", "\n")
+    if "_EML_RECORD_ONLY" not in src:
+        bad.append("[EML] 缺 `_EML_RECORD_ONLY`（「只记录」没有显式登记）")
+        print("  X", bad[-1])
+        return False
+
+    # ① 静态：生成侧 vs 应用侧 vs 豁免表
+    _i_gen = src.find("def eml_candidates_from_result")
+    _i_gen_end = src.find("\ndef ", _i_gen + 10)
+    _gen = src[_i_gen:_i_gen_end if _i_gen_end > 0 else _i_gen + 6000]
+    import re as _re3
+    _gen_keys = sorted(set(_re3.findall(r'"key":\s*"([a-z_0-9]+)"', _gen)))
+    _i_ap = src.find("def _eml_apply")
+    _i_ap_end = src.find("\n    def ", _i_ap + 10)
+    _ap = src[_i_ap:_i_ap_end if _i_ap_end > 0 else _i_ap + 4000]
+    _ap_keys = sorted(set(_re3.findall(r'_key == "([a-z_0-9]+)"', _ap)))
+    _ex = getattr(mod, "_EML_RECORD_ONLY", None) or {}
+    if not _gen_keys:
+        bad.append("[EML] 从 `eml_candidates_from_result` 里**抽不到** action.key"
+                   "（改写形态了？判据需要更新）")
+    _missing = [k for k in _gen_keys if k not in _ap_keys and k not in _ex]
+    if _missing:
+        bad.append("[EML] 这些 key **生成了但既不应用也没登记豁免**：%r"
+                   "（学而不做、且不可见）" % (_missing,))
+    _stale = [k for k in _ex if k not in _gen_keys]
+    if _stale:
+        bad.append("[EML] 豁免表里有**过期登记**（不再生成）：%r" % (_stale,))
+
+    # ③ 构造性：真造一个 episode，看能不能真生成（不是只写在源码里）
+    try:
+        # ★ 签名是 `(result, ep)` —— 第一参数是**产物**、第二才是 episode。
+        #   第一版把 ep 塞进第一个位置 ⇒ `episode_from_result(ep)` 得到空对象
+        #   ⇒ **一条候选都不生成**（判据自己报的"闸门过严"其实是**喂错了参数**）。
+        # ★ 字段口径（实测）：`cut_layers` 是**层名列表**；`duty` 的值是
+        #   **float**（不是 dict）；`tri_rate` 是 float；`cost.tokens` 是数。
+        _ep = {"cut_layers": ["0"],
+               "duty": {"0": 0.0},
+               "tri_rate": 0.1,
+               "cost": {"tokens": 999999}}
+        _cands = mod.eml_candidates_from_result({}, _ep) or []
+        _got = sorted({(c.get("action") or {}).get("key")
+                       for c in _cands if isinstance(c, dict)})
+        _got = [k for k in _got if k]
+        if not _got:
+            bad.append("[EML] 构造性：喂一个截断层 episode **一条候选都没生成**"
+                       "（参数口径或闸门变了）")
+        else:
+            _m2 = [k for k in _got if k not in _ap_keys and k not in _ex]
+            if _m2:
+                bad.append("[EML] 构造性生成的 key 有对不上的：%r" % (_m2,))
+    except Exception as _e:
+        bad.append("[EML] 构造性验证抛错：%r" % (_e,))
+
+    if bad:
+        for x in bad:
+            print("  X", x)
+        return False
+    print("  ✓ v1.23.36 EML 两向对账（生成侧 %r ↔ 应用侧 %r ↔ 豁免 %r · "
+          "无学而不做 · 无过期登记）全过" % (_gen_keys, _ap_keys, sorted(_ex)))
+    return True
+
+
+def check_v12336_tick():
+    """[v1.23.36] 心跳级调度：**主动**调整（不等失败）+ 全过控制面 + 默认零行为差。
+
+    ★ 依据 Heartbeat-Driven Activity Scheduling（arXiv 2604.14178）。
+    """
+    bad = []
+    src = SRC.read_text(encoding="utf-8").replace("\r\n", "\n")
+    if "def _schedule_tick" not in src:
+        bad.append("[心跳] 缺 `_schedule_tick`")
+    if "self._schedule_tick(entry, view)" not in src:
+        bad.append("[心跳] 没挂在 `_finalize_layer_common`（层收尾）上")
+    if "_relaxed" not in src:
+        bad.append("[心跳] `WebSearchGate` 没有运行时放宽集（放宽无法生效）")
+    if "gate._relaxed = _relaxed" not in src:
+        bad.append("[心跳] `_web_search` 没把控制面的放宽同步进 Gate")
+
+    # ── 构造性（直接驱动真实方法）──
+    try:
+        _cfg = build_cfg(False)
+        _mt = mod.MetaDGTF(_cfg)
+
+        def _mkview(verdict: str):
+            _v = mod.View(entry="0")
+            _v.rounds_run = 2
+            _v.quant_readings = {"candidate_yield": {
+                "n": 3, "n_new": 0, "verdict": verdict}}
+            return _v
+
+        # ① 触发放宽
+        _mt._schedule_tick("0", _mkview("collapsed"))
+        _ap = [x.get("key") for x in (_mt._control.applied or [])]
+        if not any(str(k).startswith("web.allow.") for k in _ap):
+            bad.append("[心跳] collapsed 读数**没触发放宽**（applied=%r）" % (_ap,))
+        else:
+            # ② 幂等：再调一次，同样的放宽**不该**再落一笔
+            _n1 = len(_mt._control.applied)
+            _mt._schedule_tick("0", _mkview("collapsed"))
+            if len(_mt._control.applied) > _n1 + 1:
+                bad.append("[心跳] 重复触发**重复落账**（应判 noop）")
+            # ③ 默认零行为差：正常读数 ⇒ 不新增放宽
+            _mt2 = mod.MetaDGTF(build_cfg(False))
+            _mt2._schedule_tick("0", _mkview("ok"))
+            _ap2 = [x.get("key") for x in (_mt2._control.applied or [])]
+            if any(str(k).startswith("web.allow.") for k in _ap2):
+                bad.append("[心跳] 读数正常却**放宽了**（默认零行为差被破坏）")
+            # ④ 不碰配置（★ 查**前后差异**，不是查"有没有 True"：
+            #    `build_cfg` 的 stages 里**本来就有** True（如 research_decompose）
+            #    ⇒ 按"有没有真值"判是**误报**，第一版就这么误报的）。
+            _c2 = lambda _m: dict((_m.config.get("web_search") or {})
+                                  .get("stages") or {})
+            _mt3 = mod.MetaDGTF(build_cfg(False))
+            _snap_a = _c2(_mt3)
+            _mt3._schedule_tick("0", _mkview("collapsed"))   # 触发放宽
+            _snap_b = _c2(_mt3)
+            if _snap_a != _snap_b:
+                bad.append("[心跳] **改了配置**（红线：建议与执行分开）")
+            else:
+                # 放宽只应落在**控制面**（内存态）
+                _ap3 = [x.get("key") for x in (_mt3._control.applied or [])]
+                if not any(str(k).startswith("web.allow.") for k in _ap3):
+                    bad.append("[心跳] 放宽**没落进控制面**（那它落在哪了？）：%r"
+                               % (_ap3,))
+    except Exception as _e:
+        bad.append("[心跳] 构造性验证抛错：%r" % (_e,))
+
+    if bad:
+        for x in bad:
+            print("  X", x)
+        return False
+    print("  ✓ v1.23.36 心跳级调度（主动触发 · 全过控制面 · 幂等 · "
+          "默认零行为差 · 不写配置）全过")
+    return True
+
+
 def check_v12336_readings():
     """[v1.23.36] 读数全量显示：运行中一行 + 结束总表 + 产物结构化（同源）。
 
@@ -14154,6 +14297,10 @@ def main():
     if not check_v12336_allweb():
         return 1
     if not check_v12336_readings():
+        return 1
+    if not check_v12336_tick():
+        return 1
+    if not check_v12336_eml():
         return 1
     q = "测试问题：AI 在数字 IC 设计里到底能做什么，哪些已经量产？"
     rows = []
