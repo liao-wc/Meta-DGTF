@@ -3125,6 +3125,16 @@ _LG_STOP_STAG = 0.8        # 对撞：语义停滞率 >= 此值 ⇒ 判「复读
 #     **只出读数与线索**，不改产物、不删候选（悬置不打分）。
 # ══════════════════════════════════════════════════════════════
 
+#: [第六期] 量化读数的中文标签（**只做展示**；未知键降级为键名 ⇒
+#: 新增读数会自动出现在产物正文里，不必回来改这张表）。
+_QUANT_LABELS = {
+    "restate_fidelity": "锚点保真度",
+    "yin_yang_divergence": "阴阳分歧度",
+    "ing_density": "ing 语义密度",
+    "candidate_yield": "候选产出率",
+}
+
+
 def _quant_note(view, key: str, val) -> None:
     """[第六期] 把一条量化读数写进 `view.quant_readings`（**唯一写入口**）。
 
@@ -8898,9 +8908,21 @@ class DGTF:
         candidates = self._drop_banned(candidates, inp, view)
         # ★ [第六期 · 依据 ③] 候选**产出率**（零成本纯函数）：
         #   给「下一笔钱」（逐条对偶判断）一个早期信号；只读数 + 告警，**不改流程**。
+        #   ★★ [时序修正] 历史必须挂在**跨圈存活**的对象上：
+        #      `MetaDGTF` 圈循环里每圈 `dg = DGTF(...)` + `view = dg.run(inp)`
+        #      ⇒ **DGTF 实例与 view 都每圈新建**；凡状态存 `view` 上，
+        #      **下一圈必然读不到** ⇒ 恒 None ⇒ 永久「缺输入不表态」（不落盘）。
+        #      真跑探针实测：调用 2 次、两次 `verdict` 都是 `''`、
+        #      `quant_readings` 里没有这个键 —— 接线上纯函数全绿**也照样不可达**。
+        #      `inp.pool`（= `self.pools[entry]`）**每层一个、跨圈复用** ⇒ 挂它。
+        #   ★ 不新造第三份机制：只换**历史载体**（每圈重建的 view → 跨圈复用的 pool），
+        #     语义不变。也不是复用 `view._expanded_descs` —— 它每圈被本圈候选
+        #     覆盖、且语义是「累积」（累积由 `MetaDGTF.all_expanded_descs` 做）。
+        _cypool = getattr(inp, "pool", None)
         try:
-            _cy = candidate_yield([getattr(c, "desc", "") for c in candidates],
-                                  getattr(view, "_prev_cand_descs", None))
+            _cy = candidate_yield(
+                [getattr(c, "desc", "") for c in candidates],
+                getattr(_cypool, "_prev_cand_descs", None))
             if _cy.get("verdict"):
                 _quant_note(view, "candidate_yield", _cy)
                 if _cy.get("verdict") == "collapsed":
@@ -8909,7 +8931,10 @@ class DGTF:
                             "对偶判断可能在为无信息量付费"
                             % (_cy.get("new_ratio") or 0.0,
                                _cy.get("max_sim") or 0.0))
-            view._prev_cand_descs = [getattr(c, "desc", "") for c in candidates]
+            if _cypool is not None:
+                _cypool._prev_cand_descs = [
+                    str(getattr(c, "desc", "") or "").strip()
+                    for c in candidates]
         except Exception:
             pass
         self.vp(f"   📋 展开候选 {len(candidates)} 条"
@@ -12752,6 +12777,31 @@ class DGTF:
                 lines += [f"  分布：{_sc['unsaid_where']}"]
         if view.carry_check:
             lines += ["", f"【自省回流核对】{view.carry_check.get('notes', '')}"]
+        # ★ [第六期] 各环节量化读数 —— **正文可读段**。
+        #   为什么必须有：`quant_readings` 原来只出到 packed JSON（附录里得翻），
+        #   正文与日志都没有 ⇒ 「算了但看不见」= 有值但零信息量。
+        #   ★ 遍历**全部键**（不维护「该渲染什么」的清单）：以后加第五个读数
+        #     会自动出现，标签未知时降级为键名 —— 避免 `_render_full_appendix`
+        #     注释里记的那个老事故（「新增字段静默漏掉」）。
+        _qr = getattr(view, "quant_readings", None) or {}
+        if _qr:
+            lines += ["", "【各环节量化】（零成本读数；缺输入一律不给）"]
+            for _qk, _qv in _qr.items():
+                if isinstance(_qv, dict) and len(_qv) == 1 and "value" in _qv:
+                    _qv = {"value": _qv["value"]}
+                if not isinstance(_qv, dict) or not _qv:
+                    continue
+                _vd = str(_qv.get("verdict") or "")
+                _pairs = "、".join(
+                    "%s=%s" % (_kk, _vv) for _kk, _vv in _qv.items()
+                    if _kk != "verdict")
+                # ★ 同时给**英文键名**：① 便于按键 grep 对账；
+                #   ② 附录的「字段名是否在正文出现」统计（`_miss`）也能对上 ——
+                #   只给中文标签时那个统计**永远匹配不到**（粗算失真）。
+                _ln = _QUANT_LABELS.get(_qk, _qk)
+                _head = _ln if _ln == _qk else "%s（%s）" % (_ln, _qk)
+                lines += ["  · %s：%s%s" % (_head, _vd,
+                                            ("（%s）" % _pairs) if _pairs else "")]
 
         return "\n".join(lines)
 

@@ -123,6 +123,7 @@ _KEY_CN: dict[str, str] = {
     "actions.input_sanity": "输入健全性自检",
     "actions.landing_decision": "落地决策模板",
     "actions.manifest": "view 显形",
+    "actions.merge_expand": "阴阳合并成一次调用（省 token）",
     "actions.parallel_expand": "展开内并行",
     "actions.parallel_mode": "四层执行策略",
     "actions.parallel_warmup_rounds": "并行预热圈数",

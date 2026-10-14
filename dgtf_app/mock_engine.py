@@ -66,6 +66,12 @@ def main() -> int:
             _calls += random.randint(2, 5)
             _toks += random.randint(2000, 6000)
             log(f"[tok] calls={_calls} tokens={_toks}")
+            # ★ [照抄真引擎 · 第六期] 候选产出率偏低时的告警行（真引擎的 `vp`
+            #   只在 `collapsed` 时打这一行，缩进 3 空格 + `⚑`）。第 1 圈没有
+            #   上一圈可比 ⇒ 真引擎**不表态**，mock 同样只在 r>=2 时打。
+            if r >= 2:
+                log("   ⚑ 候选产出率偏低 0.00（最高相似 1.00）——这一圈基本是复述，"
+                    "对偶判断可能在为无信息量付费（mock）")
             time.sleep(0.6)
             # 模拟真引擎在 verbose / show_ing / show_manifest 下的两类"大块"，
             # 供应用层过滤验证：后台不应看到它们（原始仍进归档 log）。
@@ -131,17 +137,38 @@ def main() -> int:
 
 （mock）修行层明细：& 4 / 线头 5 / 悬置 1。
 
+【各环节量化】（零成本读数；缺输入一律不给）
+  · 锚点保真度（restate_fidelity）：ok（coverage=0.93、ratio=0.9、fidelity=0.9）
+  · 阴阳分歧度（yin_yang_divergence）：ok（divergence=0.56）
+  · ing 语义密度（ing_density）：ok（value=0.82、chars=1084）
+  · 候选产出率（candidate_yield）：collapsed（n_new=0、new_ratio=0.0、max_sim=1.0）
+
 ### 研究层 `1`
 
 （mock）研究层明细：覆盖率 41%。
+
+【各环节量化】（零成本读数；缺输入一律不给）
+  · 锚点保真度（restate_fidelity）：ok（coverage=0.88、ratio=0.9、fidelity=0.9）
+  · 阴阳分歧度（yin_yang_divergence）：ok（divergence=0.42）
+  · ing 语义密度（ing_density）：ok（value=0.79、chars=962）
 
 ### 对撞层 `both`
 
 （mock）对撞层明细：第三者 ✓ / 张力 3。
 
+【各环节量化】（零成本读数；缺输入一律不给）
+  · 锚点保真度（restate_fidelity）：ok（coverage=0.90、ratio=0.9、fidelity=0.9）
+  · 阴阳分歧度（yin_yang_divergence）：ok（divergence=0.61）
+  · ing 语义密度（ing_density）：ok（value=0.84、chars=1203）
+  · 候选产出率（candidate_yield）：ok（n_new=2、new_ratio=0.67、max_sim=0.55）
+
 ### 元层 `all`
 
 （mock）元层明细：clean True / 未交代 0 类。
+
+【各环节量化】（零成本读数；缺输入一律不给）
+  · 锚点保真度（restate_fidelity）：ok（coverage=0.95、ratio=1.0、fidelity=1.0）
+  · ing 语义密度（ing_density）：ok（value=0.86、chars=744）
 """
     OUTPUTS.mkdir(exist_ok=True)
     out.write_text(body, encoding="utf-8")

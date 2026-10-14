@@ -1362,12 +1362,16 @@ def main() -> int:
           and "if (fxPending) return;" in js
           and ".runlog.fading{opacity:0" in css.replace(" ", ""),
           "")
+    # ★ [可诊断性] 失败时**报出缺标签的键**（原来只报总数 ⇒ 要自己遍历找）。
+    _nolit = [it.get("key") for g in (params_data.get("groups") or [])
+              for it in g.get("items", [])
+              if "（" not in (it.get("label") or "")]
     check("参数标签统一成「键（中文说明）」（和 CLI 参数同格式）",
           "KEY_CN" in params_src and "def label_for" in params_src
-          and all(("（" in (it.get("label") or "")) for g in (params_data.get("groups") or [])
-                  for it in g.get("items", [])),
+          and not _nolit,
           "参数项 " + str(sum(len(g.get("items", [])) for g in (params_data.get("groups") or [])))
-          + " 项，全带中文说明")
+          + " 项，全带中文说明"
+          + (("；❌ 缺标签：%r" % (_nolit,)) if _nolit else ""))
     check("发送键可切成**终止键**（同一按钮两形态 + 调 /cancel 终止）",
           "setRunBtn" in js and "_SVG_STOP" in js and "/cancel" in js
           and "function stopRun" in js,
@@ -2430,6 +2434,28 @@ def main() -> int:
               bool(_head) and _lp.exists()
               and _lp.read_text(encoding="utf-8", errors="replace").startswith(_head),
               f"头部 {len(_head)} 字符")
+        # ★ [第六期 · 防漂移] mock 的量化格式必须与**真引擎**对齐（两向对账）。
+        #   背景：`mock_engine.py` 的注释承诺「格式**照抄真引擎**」，但真引擎
+        #   新增【各环节量化】段时 mock 没跟 ⇒ 承诺失效。本条把「承诺」变成
+        #   **可执行判据**：任一方新增读数而另一方没跟 ⇒ 立刻判红。
+        #   为什么值得单独一条：mock 是**应用链路的验收集**，它跟丢格式 =
+        #   新增渲染路径在验收台里**永远覆盖不到**（假绿）。
+        try:
+            _eng = runner.find_engine()
+            _eng_src = _eng.read_text(encoding="utf-8", errors="replace")
+        except Exception:
+            _eng_src = ""
+        _mock_src = (Path(__file__).resolve().parent / "mock_engine.py").read_text(
+            encoding="utf-8", errors="replace")
+        _both_seg = ("【各环节量化】" in _eng_src) and ("【各环节量化】" in _mock_src)
+        _mock_keys = sorted(set(re.findall(r"（(\w+)）：", _mock_src)))
+        _miss_keys = [k for k in _mock_keys if k and k not in _eng_src]
+        _has_label_tbl = "_QUANT_LABELS" in _eng_src
+        check("mock 的量化格式与真引擎对齐（两向对账 · 防漂移）",
+              _both_seg and _has_label_tbl and not _miss_keys,
+              "两边均有【各环节量化】段=%r；真引擎有 _QUANT_LABELS=%r；"
+              "mock 用到的键在真引擎里找不到=%r（mock 键 %d 个）"
+              % (_both_seg, _has_label_tbl, _miss_keys, len(_mock_keys)))
         _victims = [st["output_name"], st.get("archive_log"), st.get("archive_json")]
         for _n in ("修行", "研究", "对撞", "元"):
             _victims += [f"{stamp}.{_n}.md", f"{stamp}.{_n}.json", f"{stamp}.{_n}.run.log"]

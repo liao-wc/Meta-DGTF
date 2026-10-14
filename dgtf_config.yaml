@@ -1,5 +1,5 @@
 # ============================================================
-# 元 DGTF · v1.23.33 配置文件
+# 元 DGTF · v1.23.36 配置文件
 # ============================================================
 #
 #
@@ -52,6 +52,35 @@ auto:
     enabled: false
     cost_w: 0.3
     c: 1.0
+
+# 【v1.23.34 → v1.23.36】联网全接 + 读数全量显示 + 可追溯 + 显式控制面
+#   ★ 本版**新增 30 个联网环节开关**（`web_search.stages.*`，全部默认 false
+#     ⇒ 默认行为逐字不变）；其余均是**加性**（新字段默认空、新分支在开关开后才动）。
+#   ① **联网全接**：30 个环节（含 LLM 调用的函数）都能联网 —— 实现在 `LLM.call`
+#      一处（所有环节必经）⇒ 一处改全覆盖；**每环节一个开关**（配置可控）。
+#   ② **所有层都注入**（用户口径）：修行层的**硬豁免已取消**，保护改为
+#      「30 个开关默认关」这种**配置式**保护。
+#   ③ **读数全量显示**：运行中每层一行 + 结束时总表 + 产物 Markdown 表
+#      （三处**同源**，走 logger 不受 verbose 控制）。
+#   ④ **三层 trace**（决策含「被否选项」/ 动作 / 归因）+ **显式控制面**
+#      `ControlSurface`（白名单 + 边界 + 必留痕；绝不写配置）。
+
+# 【v1.23.33 → v1.23.34】提示词优化：有据 + 智者语气 + 输出结构
+#   ★ 本次**不新增任何配置键**（纯提示词与输出结构）⇒ 出厂默认行为不变。
+#   ① **共通表达规范**（新增两个模块级常量）：
+#      · `VOICE` —— 说话的方式（讲人话 / 有分寸 / 短而准；和蔼不是讨好）。
+#      · `EVIDENCE` —— 有据：只允许**内容级**引用（是哪一条、哪个判断），
+#        禁止**管道级**暴露（"资料里说" "检索显示" "上下文提到"）。
+#        依据「第四面墙」问题：模型受 RLHF 影响会主动交代来源，把系统管道
+#        讲给读者听，须**显式禁止**（光有正面要求不够）。
+#   ② **六处视角提示词的格式契约抽成 `EXPLORE_FORMAT`**：原先六份**逐字重复**
+#      ⇒ 抽成一处，以后一处改、六处全生效。**数值契约不变**（8 条上限 / 20-80 字）。
+#   ③ **`ing`（对撞）**：六步改成「各起一行、先结论后依据」；接上 `VOICE` +
+#      `EVIDENCE`；明确「篇幅按需」。★ `===ING-STRUCT===` 结构化尾块**未动**
+#      （那是机器解析契约，`view.ing_structured` 依赖它）。
+#   ④ **保留**原有的「不煽情、不客服」与 `ANTI_PRETTY`（反廉价感）——
+#      本次是**追加**规范，不是替换。输出格式契约 `- [kind] 描述` 也未动。
+#   ★ 本轮**未改动**任何判定条件 / 通道 / 四态 / 停止判据（红线：改措辞不改机制）。
 
 # 【v1.23.32 → v1.23.33】机制级吸收：把「随时看随时停」变成有保证的事
 #   ① **anytime-valid 停止**（`stop.anytime_alpha`，默认 **0 = 关**）：
@@ -1731,6 +1760,42 @@ web_search:
     duel_arbitration: true
     meta_clean_check: true
     stop_criteria: false
+
+    # ★ [联网全接] 30 个环节各自的开关（默认 false ⇒ 零行为差）。
+    #   名字 = 环节函数名去掉前导下划线（与引擎的 stage 推断同口径）。
+    #   打开某个 ⇒ 该环节的 LLM 调用会自动带上「外部参考」段；
+    #   全部经 Gate（授权/三层配额/失败降级）⇒ 可控。
+    #   ★ 修行层的环节**不注入**（红线：输入是形状不是数据）。
+    plan_orientation: false
+    plan_resources: false
+    auto_plan: false
+    assess_decidability: false
+    re_anchor: false
+    expand_pair: false
+    expand_pair_merged_once: false
+    dual_judge: false
+    ing: false
+    he: false
+    decompose_normal: false
+    decompose_hybrid: false
+    decompose_koan: false
+    decompose_from_pool: false
+    probe_research: false
+    probe_duel: false
+    probe_meta: false
+    phase_probe: false
+    ask_missing_polarity: false
+    self_check: false
+    manifest: false
+    assess_decidability_from_pool_view: false
+    check_structure_saturation: false
+    re_evaluate_pool: false
+    settle_research: false
+    decide_parallel_mode: false
+    adjudicate_sub_tristate_multi: false
+    adjudicate_sub_tristate: false
+    anchor_crosscheck: false
+    check_input_sanity: false
 
   # 【引用授权】off / record / crosscheck / evidence / gate。
   as_evidence: "crosscheck"

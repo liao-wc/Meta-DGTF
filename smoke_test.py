@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.33.py"
+SRC = HERE / "元DGTF-V1.23.36.py"
 
 os.environ.setdefault("DGTF_API_KEY", "sk-smoke-test-key")
 
@@ -11881,6 +11881,322 @@ def check_v12332_discipline():
     return True
 
 
+def check_v12336_readings():
+    """[v1.23.36] 读数全量显示：运行中一行 + 结束总表 + 产物结构化（同源）。
+
+    ★ 用户口径：「运行中和结束时所有读数都**完整显示在日志中**，同时
+      **结构化显示在产物文档中**」。
+    """
+    bad = []
+    src = SRC.read_text(encoding="utf-8").replace("\r\n", "\n")
+    for _t in ("def _readings_bundle", "def _readings_line",
+               "def _readings_table"):
+        if _t not in src:
+            bad.append("[读数] 缺 %s" % _t)
+    if "logger.info(_readings_line(entry, view))" not in src:
+        bad.append("[读数] 每层读数行**没走 logger**（走 vp 会被 verbose 吞掉）")
+    if "logger.info(_readings_table(_rt_views))" not in src:
+        bad.append("[读数] 结束总表**没走 logger**")
+    if 'packed["readings_table"]' not in src:
+        bad.append("[读数] 总表**没存进产物**（产物侧拿不到）")
+
+    # ── 真实入口（零 API 花费）：跑一次 mock run，捕获 logging ──
+    import logging as _lg
+    _logger = _lg.getLogger("dgtf")
+    _old_h = list(_logger.handlers)
+    _old_lv = _logger.level
+    _buf = io.StringIO()
+    try:
+        _logger.handlers = [_lg.StreamHandler(_buf)]
+        _logger.setLevel(_lg.INFO)
+        _cfg = build_cfg(False)
+        _res = mod.MetaDGTF(_cfg).run("读数显示判据题",
+                                      route=["0", "1"],
+                                      rounds={"0": 2, "1": 2},
+                                      parallel_mode="serial", run_id="")
+    finally:
+        _logger.handlers = _old_h
+        _logger.setLevel(_old_lv)
+    _log = _buf.getvalue()
+
+    _lines = [l for l in _log.splitlines() if "📊 [" in l]
+    if not _lines:
+        bad.append("[读数] 日志里**没有**每层读数行（📊 [层]）")
+    elif len(_lines) < 2:
+        bad.append("[读数] 每层读数行只有 %d 行（两层应至少 2 行）" % len(_lines))
+    if "读数总表（四层）" not in _log:
+        bad.append("[读数] 日志里**没有**结束总表")
+
+    _rt = (_res or {}).get("readings_table") or ""
+    if not _rt:
+        bad.append("[读数] 产物里没有 `readings_table`")
+    elif "| 层 |" not in _rt or "---" not in _rt:
+        bad.append("[读数] 产物总表不是 Markdown 表格：%r" % (_rt[:60],))
+    else:
+        # ★ 同源核对：日志表与产物表里的**圈数**必须一致（防两处各渲染一份）
+        #   ★ 正则必须**锚定行首**（`^\| 层 \| 圈 \|`）：宽松写法
+        #     `\| (\d) \| (\d+) \|` 会匹配**行内任意**相邻两个数字格
+        #     ⇒ 取出错误组合 ⇒ 假红（第一版就是这么误报的）。
+        import re as _re2
+        _nums_md = _re2.findall(r"^\| (\d) \| (\d+) \|", _rt, _re2.M)
+        _ok_same = True
+        for _e, _r in _nums_md:
+            if ("[%s] 圈 %s" % (_e, _r)) not in _log:
+                _ok_same = False
+        if not _nums_md:
+            bad.append("[读数] 产物表里**没有**可核对的层行（正则或格式问题）")
+        elif not _ok_same:
+            bad.append("[读数] 日志表与产物表**对不上**（两处各渲染 ⇒ 会漂移）")
+
+    if bad:
+        for x in bad:
+            print("  X", x)
+        return False
+    print("  ✓ v1.23.36 读数全量显示（每层一行 · 结束总表 · 产物 Markdown 表 · "
+          "三处同源 · 走 logger 不受 verbose 控制）全过")
+    return True
+
+
+def check_v12336_allweb():
+    """[v1.23.36] 联网全接：一处改覆盖 30 个环节 + 所有层注入 + 配置可控。
+
+    ★ 用户口径：「**联网全接配置可控开关**」「**所有层都注入**」。
+    ★ 为什么判据要分两层：源码级只能证明「接线写了」；**构造性**那一层
+      直接驱动真实方法，才能证明「打开就真注入、关了就真不注入」。
+    """
+    bad = []
+    src = SRC.read_text(encoding="utf-8").replace("\r\n", "\n")
+
+    # ── ① 源码级：五个部件都要在 ──
+    for _t, _what in (("_LLM_CTX", "线程局部上下文"),
+                      ("_llm_ctx_set", "上下文写入"),
+                      ("_llm_ctx_get", "上下文读取"),
+                      ("_infer_stage_from_stack", "环节名推断"),
+                      ("_web_augment", "增强层")):
+        if _t not in src:
+            bad.append("[全接] 缺 %s（%s）" % (_t, _what))
+    if "self._web_augment(stage, user)" not in src:
+        bad.append("[全接] `LLM.call` 里**没有**调 `_web_augment`（层没接上）")
+    if "web_searcher=self._web_search" not in src:
+        bad.append("[全接] `MetaDGTF.run` **没注入** `web_searcher`（依赖没接上）")
+    if "_llm_ctx_set(entry=str(entry), round=int(layer_no or 0))" not in src:
+        bad.append("[全接] `_before_round` 没逐圈刷新 entry/round")
+    # 控制面必须有**真实调用点**（审计 A2 抓过「定义后零引用」）
+    if src.count("self._control.write(") < 2:
+        bad.append("[全接] `ControlSurface` 接线不足（应 ≥2 处写入）")
+
+    # ── ② 环节表与配置键 ──
+    _stages = getattr(mod, "_WEB_ALL_STAGES", None) or ()
+    if len(_stages) != 30:
+        bad.append("[全接] `_WEB_ALL_STAGES` 应为 30 项（实得 %d）" % len(_stages))
+    _cfg_st = ((mod.DEFAULT_CONFIG.get("web_search") or {}).get("stages") or {})
+    _missing = [k for k in _stages if k not in _cfg_st]
+    if _missing:
+        bad.append("[全接] 配置里缺环节开关：%r" % (_missing[:5],))
+    if any(_cfg_st.get(k) is not False for k in _stages):
+        bad.append("[全接] 新增环节开关**不是默认 false**（会改默认行为）")
+    # ★ 防「插错位置」：`api.thinking.stages` 的键集合必须与**出厂 yaml** 一致
+    _th = ((mod.DEFAULT_CONFIG.get("api") or {}).get("thinking") or {}).get(
+        "stages") or {}
+    #   （引擎侧那一段是按 yaml 抄的；有人把别的键插进来，两边就对不上）。
+    #   ★ 不用「数量阈值」—— 思考档登记表里有**本来就重叠**的名字
+    #     （`auto_plan` / `plan_orientation` / `plan_resources` …既是环节也是思考档），
+    #     按数量或按名字判会把它们误报成污染（第一版就是这么误报的）。
+    try:
+        import yaml as _y
+        _ydoc = _y.safe_load(
+            (HERE / "dgtf_config.yaml").read_text(encoding="utf-8")) or {}
+        _y_th = (((_ydoc.get("api") or {}).get("thinking") or {})
+                 .get("stages") or {})
+        if set(_y_th) != set(_th):
+            bad.append("[全接] `api.thinking.stages` 与出厂 yaml **对不上**"
+                       "（引擎多 %r / yaml 多 %r）"
+                       % (sorted(set(_th) - set(_y_th))[:5],
+                          sorted(set(_y_th) - set(_th))[:5]))
+    except Exception as _ey:
+        bad.append("[全接] `api.thinking.stages` 与 yaml 对账失败：%r" % (_ey,))
+
+    # ── ③ 构造性：直接驱动真实方法（零 API 花费）──
+    _ST = "ing"
+
+    def _mk(enabled, stage_on, wire, entry):
+        cfg = {k: (dict(v) if isinstance(v, dict) else v)
+               for k, v in mod.DEFAULT_CONFIG.items()}
+        ws = dict(cfg.get("web_search") or {})
+        ws["enabled"] = enabled
+        _s = dict(ws.get("stages") or {})
+        _s[_ST] = stage_on
+        ws["stages"] = _s
+        cfg["web_search"] = ws
+        gate, _cl = mod.build_web_search(cfg)
+        calls = []
+
+        def _searcher(stage, queries, round_no, used_as="evidence", pre_seq=0):
+            ok, why = gate.allow(stage, round_no)      # ★ 真 Gate
+            calls.append((str(stage), bool(ok), str(why)[:24]))
+            return [{"claim": "样例外部参考", "url": "https://x.invalid",
+                     "tier": 3}] if ok else []
+        mod._llm_ctx_set(web_searcher=(_searcher if wire else None),
+                         question="术语与判据该怎么做？", entry=entry, round=1)
+        return mod.LLM(cfg)._web_augment(_ST, "原 user"), calls
+
+    try:
+        _o, _ = _mk(True, True, False, "1")
+        if _o:
+            bad.append("[全接] 未接线却增强了")
+        _o, _c = _mk(False, True, True, "1")
+        if _o:
+            bad.append("[全接] 总闸关却增强了")
+        elif not any("未启用" in x[2] for x in _c):
+            bad.append("[全接] 总闸关时 Gate 没给出拒因（不可追溯）")
+        _o, _ = _mk(True, True, True, "1")
+        if not (_o and "【外部参考】" in str(_o)):
+            bad.append("[全接] 开+授权却**没增强**（接线不可达）")
+        for _e in ("0", "1", "both", "all"):
+            _o, _ = _mk(True, True, True, _e)
+            if not (_o and "【外部参考】" in str(_o)):
+                bad.append("[全接] entry=%s **没有增强**"
+                           "（用户口径：所有层都注入）" % _e)
+        _o, _c = _mk(True, False, True, "1")
+        if _o:
+            bad.append("[全接] 未授权却增强了（开关不精确）")
+        elif not any("未授权" in x[2] for x in _c):
+            bad.append("[全接] 未授权时 Gate 没给拒因")
+    except Exception as _e:
+        bad.append("[全接] 构造性验证抛错：%r" % (_e,))
+
+    if bad:
+        for x in bad:
+            print("  X", x)
+        return False
+    print("  ✓ v1.23.36 联网全接（30 环节一键覆盖 · 上下文注入 · "
+          "四层全可注 · 开关精确 · 拒因可追溯 · 控制面已接线）全过")
+    return True
+
+
+def check_v12334_prompt():
+    """[v1.23.34] 提示词优化：有据 / 智者语气 / 输出结构（**改措辞不改机制**）。
+
+    两向判据（见本函数上头补丁脚本的说明）：
+      ① 新规范接上了；② 老红线一条没少。
+    ★ 「本层速览」的真实入口断言不在这里 —— 它与 ㉟ 共用同一个 mock run
+      （在 `check_v12333_autotune` 里断言），避免重复起引擎。
+    """
+    bad = []
+    src = SRC.read_text(encoding="utf-8").replace("\r\n", "\n")
+
+    # ── ① 三个共通常量：各 1 定义 ──
+    for _c in ("VOICE", "EVIDENCE", "EXPLORE_FORMAT"):
+        if ("%s = " % _c) not in src and ('%s = (' % _c) not in src:
+            bad.append("[提示词] 共通常量 `%s` 未定义" % _c)
+
+    # ── ①b 接线到六处视角 + ing ──
+    _n_v = src.count("+ VOICE")
+    _n_e = src.count("+ EVIDENCE")
+    if _n_v < 7:
+        bad.append("[提示词] `VOICE` 只接上 %d 处（六处视角 + ing = 7）" % _n_v)
+    if _n_e < 7:
+        bad.append("[提示词] `EVIDENCE` 只接上 %d 处（六处视角 + ing = 7）" % _n_e)
+    if src.count("+ EXPLORE_FORMAT") < 6:
+        bad.append("[提示词] `EXPLORE_FORMAT` 未在六处视角接上（实得 %d）"
+                   % src.count("+ EXPLORE_FORMAT"))
+
+    # ── ② 输出格式契约**不变**（红线：不改行为）──
+    _i = src.find("EXPLORE_FORMAT = (")
+    if _i < 0:
+        bad.append("[提示词] 找不到 `EXPLORE_FORMAT` 定义体")
+    else:
+        _ef = src[_i:_i + 800]
+        for _need in ("- [kind] 描述", "concept/event/person/object",
+                      "startpoint/question/thread/other", "（无）"):
+            if _need not in _ef:
+                bad.append("[提示词] `EXPLORE_FORMAT` 丢了格式契约片段：%r" % _need)
+
+    # ── ③ 反廉价感**未被削弱** ──
+    if src.count("+ ANTI_PRETTY") < 6:
+        bad.append("[提示词] `ANTI_PRETTY` 接线变少（不许削弱反漂亮约束）")
+    if "不煽情，不客服" not in src:
+        bad.append("[提示词] 「不煽情、不客服」被删（不许削弱）")
+
+    # ── ④ 证据引用：**内容级**允许、**管道级**禁止 ──
+    _j = src.find("EVIDENCE = ")
+    if _j < 0:
+        bad.append("[提示词] 找不到 `EVIDENCE` 定义体")
+    else:
+        _ev = src[_j:_j + 1600]
+        if "落到内容" not in _ev:
+            bad.append("[提示词] `EVIDENCE` 没写「引用要落到内容」")
+        _missing = [t for t in ("资料里说", "检索显示", "上下文提到")
+                    if t not in _ev]
+        if _missing:
+            bad.append("[提示词] `EVIDENCE` 的管道级**禁止清单**不全（缺 %r）"
+                       % (_missing,))
+        if "本来就知道" not in _ev:
+            bad.append("[提示词] `EVIDENCE` 没写「把资料当成本来就知道的事」")
+
+    # ── ⑤ mock 分流依赖的字样必须保留 ──
+    for _t in ("阴视角", "阳视角", "结构化尾块"):
+        if src.count(_t) < 2:
+            bad.append("[提示词] 「%s」字样变少（冒烟 mock 靠它分流）" % _t)
+
+    # ── ⑥ ing 输出结构 + 机器契约 ──
+    if "六步各起一行" not in src:
+        bad.append("[提示词] ing 未要求「六步各起一行」（输出结构没优化）")
+    if "===ING-STRUCT===" not in src or "ing_structured" not in src:
+        bad.append("[提示词] ing 结构化尾块契约被动了（机器解析依赖它）")
+
+    # ── ⑦ [修行层/停止判据联网] 两个「默认不做、显式打开就做」的 stage ──
+    #   ★ 从前它们是「配了不做」（登记在 `_AUDIT_CONFIG_EXEMPT`）——
+    #     用户口径改为「开关要能作用」⇒ 必须有**真实调用点**。
+    _flat2 = " ".join(src.replace("\r\n", "\n").split())
+    for _st in ("practice_term_calibration", "stop_criteria"):
+        if ('_web_search("%s"' % _st) not in src:
+            bad.append("[联网] `%s` **没有真实调用点**（配了不做）" % _st)
+    if "_AUDIT_CONFIG_EXEMPT = ()" not in src:
+        bad.append("[联网] `_AUDIT_CONFIG_EXEMPT` 未清空（两 stage 仍在「声明不做」里）")
+    for _u in ("term_calibration", "stop_criteria"):
+        if ('"%s"' % _u) not in src[src.find("_WEB_USED_AS"):
+                                    src.find("_WEB_USED_AS") + 400]:
+            bad.append("[联网] `_WEB_USED_AS` 未登记枚举值 %r（有判据钉封闭集合）" % _u)
+    # 接线必须挂在**两条通道共用的统一实现**上（不许在通道里各写一份）
+    _i_br = src.find("self._practice_term_calibration_prep()")
+    _i_br_fn = src.find("def _before_round")
+    if _i_br < 0 or _i_br_fn < 0 or _i_br < _i_br_fn:
+        bad.append("[联网] 术语校准没挂在 `_before_round`（圈前统一实现）上")
+    _i_sc = src.find("self._stop_criteria_check(entry, view)")
+    _i_sc_fn = src.find("def _finalize_layer_common")
+    if _i_sc < 0 or _i_sc_fn < 0 or _i_sc < _i_sc_fn:
+        bad.append("[联网] 判据复核没挂在 `_finalize_layer_common`（共用的层收尾）上")
+
+    # ── ⑦ 运行期拼接（**真实入口**：调真实方法，看模型实际收到的那一段）──
+    #   ★ 为什么不能只看源码：常量是**拼接**上去的，源码里读到的是片段；
+    #     「拼错顺序 / 常量是空串 / 漏拼 / 拼接处少换行」源码判据都看不出来。
+    #   ★ 零 LLM 调用（只实例化 + 拼字符串），不会拖慢冒烟。
+    try:
+        _cfg_rt = build_cfg(False)
+        _dg_rt = mod.DGTF("0", mod.LLM(_cfg_rt), _cfg_rt)
+        _t_rt = _dg_rt._yin_prompt()
+        for _need in ("【怎么说话】", "【有据", "每行格式", "【反漂亮约束"):
+            if _need not in _t_rt:
+                bad.append("[提示词] 运行期 `_yin_prompt()` 缺 %r（拼接坏了）"
+                           % _need)
+        if not (_t_rt.find("【怎么说话】") < _t_rt.find("【有据")
+                < _t_rt.find("【反漂亮约束")):
+            bad.append("[提示词] 运行期三常量**顺序错**（应先语气、再有据、"
+                       "最后反漂亮）")
+    except Exception as _e_rt:
+        bad.append("[提示词] 运行期导出提示词抛错：%r" % (_e_rt,))
+
+    if bad:
+        for x in bad:
+            print("  X", x)
+        return False
+    print("  ✓ v1.23.34 提示词优化（VOICE/EVIDENCE/EXPLORE_FORMAT 三常量接线 · "
+          "格式契约未动 · 反漂亮未削弱 · 内容级引用/管道级禁止 · "
+          "ing 输出结构 · mock 分流字样保留 · 运行期拼接正确）全过")
+    return True
+
+
 def check_v12333_autotune():
     """[v1.23.33] AutoTune：从跨跑 episode 推**建议默认**（模式/层集/圈数）。
 
@@ -12447,7 +12763,11 @@ def check_v12333_autotune():
         _n0 = _CY([], _prev)
         if _n0["n_new"] is not None or _n0["max_sim"] is not None:
             bad.append("[量化] 候选产出率：缺输入竟回 0 而非 None")
-    if 'candidate_yield([getattr(c, "desc", "")' not in src:
+    # ★ 锚在**语义**上，不锚换行格式（原写法钉了 `candidate_yield([getattr(...`
+    #   这一整行字面 —— 本轮把参数折行后立刻失配，属「锚在会变的东西上」）。
+    #   压掉全部空白后再查：函数名 + 第一个实参的形态。
+    _flat_src = " ".join(src.replace("\r\n", "\n").split())
+    if 'candidate_yield( [getattr(c, "desc", "") for c in candidates]' not in _flat_src:
         bad.append("[量化] 候选产出率未接真实入口")
     # ★ 接线顺序：产出率必须读在**对偶判断之前**（否则读的是被改写过的集合）。
     _i_cy = src.find('_quant_note(view, "candidate_yield"')
@@ -12517,6 +12837,102 @@ def check_v12333_autotune():
                            % ((_pl or {}).get("mode"),))
         finally:
             mod.LLM = _orig_llm_cls
+    # ㉞ [本轮铁律] **真实入口产出**：`candidate_yield` 必须真能落进 `quant_readings`。
+    #   ★★ 为什么必须有：㉜ 全是**纯函数 + 字面存在 + 位置**形态 —— 全绿，
+    #      但真实跑下来读数**恒不落盘**（历史挂在每圈重建的 `view` 上 ⇒ 恒 None
+    #      ⇒ 永久「缺输入不表态」）。本项目栽过三次同族问题：
+    #      ① v1.23.27 信念迁移真实入口不可达；② 本轮 `_quant_note` 定义在
+    #      `MetaDGTF`、调用点在 `DGTF`（无继承）⇒ 静默 AttributeError；
+    #      ③ 本轮历史挂每圈重建的 view ⇒ 时序颠倒。
+    #   ★ 判据形态：跑一次**真实入口**（`MetaDGTF.run`，等价的 mock 路径 ⇒
+    #     零 API 花费），断言 `views[e].quant_readings` 里**真的有**这个键。
+    #     ⚠ 这里用**已有的** mock run 机制（`build_cfg` + `mod.LLM.call` 已被
+    #     模块级替换），不另造一套真跑。
+    try:
+        if "candidate_yield" not in src:
+            bad.append("[量化] `candidate_yield` 不在源码里")
+        elif "view._prev_cand_descs" in src:
+            bad.append("[量化] 候选历史又挂回**每圈重建的 view** —— "
+                       "下一圈必然读不到（时序颠倒，读数永不落盘）")
+        else:
+            _cfg_cy = build_cfg(False)
+            _mt_cy = mod.MetaDGTF(_cfg_cy)
+            # ★ ㉞ 与 ㉟ **共用一次 mock run**（只跑一次，不拖慢冒烟）：
+            #   猴补丁同时捕获 `_render` 正文，供 ㉟ 断言「读数进正文」。
+            _orig_render = mod.DGTF._render
+            _cap_render = []
+
+            def _spy_render(self, view, inp):
+                _t = _orig_render(self, view, inp)
+                _cap_render.append(_t)
+                return _t
+
+            mod.DGTF._render = _spy_render
+            # ★ [修行层/停止判据联网] 顺便观测两条新接线：默认关时
+            #   「走到 Gate + 被拦」= 接线可达 且 红线未破（零真检索）。
+            _w2s_allow = []
+            _orig_wallow = mod.WebSearchGate.allow
+
+            def _spy_wallow(self, stage, round_no):
+                _r = _orig_wallow(self, stage, round_no)
+                _w2s_allow.append(
+                    (str(stage), bool(_r[0]) if isinstance(_r, tuple)
+                     else bool(_r)))
+                return _r
+            mod.WebSearchGate.allow = _spy_wallow
+            try:
+                _res_cy = _mt_cy.run("意识能否被还原为信息处理过程？",
+                                     route=["0"], rounds={"0": 3},
+                                     parallel_mode="serial")
+            finally:
+                mod.DGTF._render = _orig_render
+                mod.WebSearchGate.allow = _orig_wallow
+            _v0cy = (_res_cy.get("views") or {}).get("0")
+            _vd0 = (_v0cy.to_dict() if hasattr(_v0cy, "to_dict") else _v0cy) or {}
+            _qr0 = _vd0.get("quant_readings") or {}
+            if "candidate_yield" not in _qr0:
+                bad.append("[量化] 真实入口下 `candidate_yield` **未落进** "
+                           "quant_readings（纯函数绿 ≠ 引擎里可达）：%r"
+                           % (sorted(_qr0.keys()),))
+            else:
+                _cv = _qr0.get("candidate_yield") or {}
+                if isinstance(_cv, dict) and len(_cv) == 1 and "value" in _cv:
+                    _cv = _cv["value"]
+                if not isinstance(_cv, dict) or "verdict" not in _cv:
+                    bad.append("[量化] 真实入口落盘值形态不对（应含 verdict）：%r"
+                               % (_cv,))
+                elif _cv.get("verdict") != "collapsed":
+                    bad.append("[量化] mock 下两圈候选**完全相同**却未判 "
+                               "collapsed（方向/口径错）：%r" % (_cv,))
+            # ㉟ [可读性] 读数必须进**产物 md 正文**（不能只埋在附录 JSON）。
+            _body_md = "\n".join(_cap_render)
+            if "【各环节量化】" not in _body_md:
+                bad.append("[量化] 读数**没进产物正文**（只在附录 JSON ⇒ "
+                           "人类与工作台都看不见）")
+            elif "锚点保真度" not in _body_md:
+                bad.append("[量化] 正文有段落但缺中文标签（键→标签映射没生效）")
+            # ★ 英文键名也要在正文里：① 便于按键 grep 对账；
+            #   ② 附录的「字段名是否在正文出现」统计才不是**永远匹配不到**。
+            elif "restate_fidelity" not in _body_md:
+                bad.append("[量化] 正文只有中文标签、没有英文键名 "
+                           "（附录字段名覆盖统计会失真；也难 grep 对账）")
+            # ★ [v1.23.34 · view 输出结构] 正文最前面要有「本层速览」。
+            #   与上面的量化断言**共用同一次 mock run**（不重复起引擎）。
+            if "本层速览" not in _body_md:
+                bad.append("[提示词] `_render` 正文缺「本层速览」"
+                           "（view 输出结构没生效）")
+            # ★ [判据修正] 这两个方法**开头就判 `enabled`**（与既有
+            #   `_research_web_prep` 同惯例）⇒ 默认关时**根本不调** `_web_search`
+            #   ⇒ Gate 自然一次都不出现。所以这里断言的是**结果**（零检索 +
+            #   没走到 Gate），而不是「有没有走到 Gate 并被拦」——
+            #   后者由探针 `_probe_v12334_web2stage.py`（显式打开开关）覆盖。
+            if _w2s_allow:
+                bad.append("[联网] 默认关时竟走到了 Gate（说明没判开关）：%r"
+                           % (_w2s_allow[:3],))
+            if "def _render(self, view" in src and "_QUANT_LABELS" not in src:
+                bad.append("[量化] `_QUANT_LABELS` 缺失（正文段无法出中文标签）")
+    except Exception as _ecy:
+        bad.append("[量化] 真实入口跑候选产出率时抛错：%r" % (_ecy,))
     if bad:
         for x in bad:
             print("  X", x)
@@ -13732,6 +14148,12 @@ def main():
     if not check_v12332_discipline():
         return 1
     if not check_v12333_autotune():
+        return 1
+    if not check_v12334_prompt():
+        return 1
+    if not check_v12336_allweb():
+        return 1
+    if not check_v12336_readings():
         return 1
     q = "测试问题：AI 在数字 IC 设计里到底能做什么，哪些已经量产？"
     rows = []

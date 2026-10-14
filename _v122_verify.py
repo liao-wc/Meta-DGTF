@@ -73,23 +73,12 @@ _V12318_20_AUTH_KEYS = {"external_anchor.enabled",
 #     · `belief.sem_entropy_thr`         —— CHANGELOG L854「新增配置键
 #        belief.sem_entropy_thr（默认 0.30）」+ L712 改为 `rel`
 #   ★ 只登记、不放宽：清单外的差异照旧判红（V3.b 判别力自检仍在）。
-#   ★★ [v1.23.33 续] 再补一类：**`all_on: true` 的展开面**。
-#      出厂 yaml 打开 `all_on` 后，`_apply_all_on` 会按 `_ALL_ON_ITEMS`
-#      把 10 项一次性置开 ⇒ 差异集里必然同时出现这 10 个键。
-#      ★ 取法是**从权威来源导**（`_ALL_ON_ITEMS` 本身），不是逐轮手抄 ——
-#        「一类判据 > 一处修复」：以后 `_ALL_ON_ITEMS` 加项，这里自动跟上，
-#        不会再像本轮这样「修一次冒出一批新的」。
-_V12329_33_AUTH_KEYS = {"all_on",
-                        "playbook.mode",
-                        "stop.anytime_alpha",
-                        "web_search.enabled",
-                        "external_anchor.as_evidence",
-                        "auto.enabled",
-                        "auto.bandit.enabled",
-                        "belief.merge_semantic",
-                        "belief.sem_entropy_thr",
-                        "api.thinking.default",
-                        "api.thinking.effort"}
+#   ★★ **`all_on: true` 的展开面**：出厂 yaml 打开 `all_on` 后，`_apply_all_on`
+#      会按 `_ALL_ON_ITEMS` 把清单里的项一次性置开 ⇒ 差异集里必然出现这些键。
+#      ★ 这一段原先**手抄**了 11 个键（注释却写着「从权威来源导」——承诺没实现）。
+#        现改为在 `phase_v1232` 里**动态导出**：`{"all_on"} | {p for p in 清单}`
+#        ⇒ 往后往 `_ALL_ON_ITEMS` 加项（如 `actions.merge_expand`），
+#          这里**自动跟上**，不会再「修一次冒出一批新的」。
 #: [判据随实现更新 · v1.23.28] `_v1230_w6_runs.json` 的**授权陈旧基线**。
 #  ★ 这是「时点快照」不是「任意旧版本都行」：只有**此处列出**的 src 才放行，
 #    其余一律照旧判红（判据仍有牙）。加新基线必须**在这行显式登记**。
@@ -2294,10 +2283,14 @@ def phase_v1232(src, mod):
 
     _fo, _fn = _flat(_old), _flat(_new)
     _chg = sorted(k for k in set(_fo) | set(_fn) if _fo.get(k) != _fn.get(k))
+    # ★ 动态导出 `all_on` 的展开面（见上方说明）—— 不再手抄。
+    _ao_keys = {"all_on"} | {
+        str(_p) for _p, _vv, _ww in
+        (getattr(mod, "_ALL_ON_ITEMS", ()) or ())}
     _allow = ({"api.thinking.stages." + k for k in _wired}
               | {"web_search.tier_floor"} | _V12316_AUTH_KEYS
               | _V12317_AUTH_KEYS | _V12318_20_AUTH_KEYS
-              | _V12329_33_AUTH_KEYS)
+              | _ao_keys)
     _unexpected = [k for k in _chg if k not in _allow]
     check("V3 ★ 两版配置的差异**只允许**是「改前从未生效」的两类（thinking 接线 / tier_floor）",
           not _unexpected, "意外改动：" + repr(_unexpected[:5]))

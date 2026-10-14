@@ -157,13 +157,18 @@ ck("C4.a ★ C4 停止与清算分开：settle_deferrals 体里没有任何联�
    not any(_k in _sd for _k in _ING_FORBID + ("web_",)),
    repr([_k for _k in _ING_FORBID if _k in _sd]))
 
-# `self._web_search(` 调用点白名单：必须落在 6 个接入方法里
+# `self._web_search(` 调用点白名单：必须落在**已登记**的接入方法里。
+# ★ 新增调用点要**登记**（数量是硬等式，不是 >=）：
+#   原先 6 处（W2 三处：decompose/precedent/evidence；W3 两处；W4 一处）；
+#   本轮新增 2 处 —— `practice_term_calibration`（修行层术语校准，只留痕不注入）
+#   与 `stop_criteria`（停止理由复核，不改决策）。两者都**默认关**（零行为差）。
 _WHITE = ("_research_web_prep", "_web_evidence_hook", "_web_duel_arbitration",
-          "_web_meta_clean_check", "_adjudicate_sub_tristate_multi")
+          "_web_meta_clean_check", "_adjudicate_sub_tristate_multi",
+          "_practice_term_calibration_prep", "_stop_criteria_check")
 _calls = txt.count("self._web_search(")
-ck("C4.b `self._web_search(` 调用点 = 6"
-   "（W2 三处：decompose/precedent/evidence；W3 两处；W4 一处）",
-   _calls == 6, repr(_calls))
+ck("C4.b `self._web_search(` 调用点 = 8"
+   "（W2 三处 + W3 两处 + W4 一处 + 修行层术语校准 + 停止判据复核）",
+   _calls == 8, repr(_calls))
 _tree = ast.parse(txt)
 _bad = []
 for _cls in [x for x in ast.walk(_tree) if isinstance(x, ast.ClassDef)]:

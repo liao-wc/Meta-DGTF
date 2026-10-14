@@ -1,0 +1,30 @@
+{
+ "0": {
+  "excavate": null,
+  "excavate_closed": null,
+  "n_aspects": 13,
+  "rounds_run": 2,
+  "conv_state": "",
+  "converging": false
+ },
+ "1": {
+  "settle": 1.0,
+  "non_degenerate": true,
+  "belief_resolved_rate": null,
+  "conv_state": "平稳",
+  "converging": false,
+  "pseudo_convergence": false
+ },
+ "both": {
+  "fuse_raw": 1.0,
+  "fuse": 0.7879,
+  "sem_stagnation": 0.2121,
+  "n_new": 5,
+  "n_upstream": 2
+ },
+ "all": {
+  "crystallize": 1.0,
+  "n_hits": 4,
+  "meta_clean": true
+ }
+}

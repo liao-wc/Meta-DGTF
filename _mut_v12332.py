@@ -7,7 +7,7 @@ import tempfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.33.py"
+SRC = HERE / "元DGTF-V1.23.36.py"
 
 MUTS = [
     ("M1 α 不做机会校正（退化成原始一致率）",
@@ -263,6 +263,78 @@ MUTS = [
      "                _ori = str((_or or {}).get(\"orientation\", \"\") or \"\")\n"
      "                if not _ori:\n"
      "                    raise ValueError(\"取向规则未定\")"),
+    #   ★ M54 打在**候选历史的载体**上（判据 ㉞ 跑真实入口断言落盘 ⇒
+    #     挂回每圈重建的 view 必然「永不落盘」，必须判红）。
+    ("M54 候选历史挂回每圈重建的 view（时序颠倒 ⇒ 永不落盘）",
+     "        _cypool = getattr(inp, \"pool\", None)\n"
+     "        try:\n"
+     "            _cy = candidate_yield(\n"
+     "                [getattr(c, \"desc\", \"\") for c in candidates],\n"
+     "                getattr(_cypool, \"_prev_cand_descs\", None))",
+     "        _cypool = None\n"
+     "        try:\n"
+     "            _cy = candidate_yield(\n"
+     "                [getattr(c, \"desc\", \"\") for c in candidates],\n"
+     "                getattr(view, \"_prev_cand_descs\", None))"),
+    #   ★ M55 打在**可读性出口**上（判据 ㉟ 捕获 `_render` 正文 ⇒ 段没了必判红）。
+    ("M55 量化读数不进产物正文（只在附录 JSON ⇒ 人类与工作台都看不见）",
+     "        _qr = getattr(view, \"quant_readings\", None) or {}\n"
+     "        if _qr:",
+     "        _qr = getattr(view, \"quant_readings\", None) or {}\n"
+     "        if False:"),
+    #   ★ M56 打在**新规范接线**上（判据 ①b 数使用处 ⇒ 少一处必判红）。
+    #     ★ 锚点必须**唯一**：六处视角共用的 `+ VOICE` 不能当靶，
+    #       故用 `_yin_prompt` 的独特上下文（「从锚点里看出去」那一句）。
+    ("M56 阴视角漏接 VOICE（新规范只接一半）",
+     "            \"从锚点里看出去，找出还没显形的部分。\\n\"\n"
+     "            + EXPLORE_FORMAT\n"
+     "            + VOICE\n",
+     "            \"从锚点里看出去，找出还没显形的部分。\\n\"\n"
+     "            + EXPLORE_FORMAT\n"),
+    #   ★ M57 打在**第四面墙的禁止清单**上（判据 ④ 查三个禁止词 ⇒ 删必判红）。
+    ("M57 EVIDENCE 丢掉管道级禁止清单（第四面墙失效）",
+     "- ★ 不要说\"资料里说\"\"检索显示\"\"上下文提到\"\"根据提供的信息\"这类话 ——\n",
+     "- 想怎么说就怎么说。\n"),
+    #   ★ M58 打在**输出格式契约**上（判据 ② 是「不许变」⇒ 改了必判红）。
+    ("M58 EXPLORE_FORMAT 改掉格式契约（下游解析会坏）",
+     "    \"每行格式：- [kind] 描述（20-80字；说清一条算一条，\"\n",
+     "    \"每行随便写点，无所谓。\"\n"),
+    #   ★ M59 打在**view 输出结构**上（判据在 ㉟ 段跑真实入口 ⇒ 去了必判红）。
+    ("M59 _render 去掉「本层速览」（view 输出结构没生效）",
+     "            _render_layer_glance(view),\n",
+     ""),
+    #   ★ M60 打在**读数的输出通道**上（判据捕获 logging ⇒ 走 vp 就看不到，
+    #     而 vp 受 verbose 控制 ⇒ 会「静默吞掉读数」——这正是第一版的真错）。
+    ("M60 读数行改走 vp（verbose=False 时被静默吞掉）",
+     "            logger.info(_readings_line(entry, view))",
+     "            self.vp(_readings_line(entry, view))"),
+    #   ★ M61 打在**产物出口**上（判据查 `packed["readings_table"]` ⇒ 不写必判红）。
+    ("M61 读数总表不进产物（产物侧拿不到结构化读数）",
+     "                packed[\"readings_table\"] = _readings_table(_rt_views, as_md=True)",
+     "                packed[\"readings_table\"] = \"\""),
+    #   ★ M62 打在**总闸**上（判据查「总闸关不增强」⇒ 去掉判断必判红）。
+    ("M62 `_web_augment` 不判总闸（关了也注入 ⇒ 零行为差被破坏）",
+     "        _searcher = _llm_ctx_get(\"web_searcher\")\n"
+     "        if not callable(_searcher):\n"
+     "            return None                       # 没接线（如独立调用 LLM）⇒ 不增强",
+     "        _searcher = _llm_ctx_get(\"web_searcher\")\n"
+     "        if _searcher is None:\n"
+     "            _searcher = lambda *a, **kw: [{\"claim\": \"M62\"}]"),
+    #   ★ M63 打在**控制面的必留痕**上（「缺 why 就拒」是可追溯性的本体 ⇒
+    #     去掉它，任何写入都不需要理由 ⇒ 必判红）。
+    ("M63 控制面不再要求 why（可追溯性被削弱）",
+     "        if not str(why or \"\").strip():",
+     "        if False:"),
+    #   ★ M64 打在**四层都可注入**上（用户口径 ⇒ 若有人把修行层豁免加回来必判红）。
+    ("M64 把修行层硬豁免加回来（破「所有层都注入」）",
+     "        _st = str(stage or _infer_stage_from_stack() or \"\")\n"
+     "        if not _st:\n"
+     "            return None",
+     "        if str(_llm_ctx_get(\"entry\", \"\")) == \"0\":\n"
+     "            return None\n"
+     "        _st = str(stage or _infer_stage_from_stack() or \"\")\n"
+     "        if not _st:\n"
+     "            return None"),
 ]
 
 
@@ -281,7 +353,10 @@ def run_check(mut_path=None):
             "st.mod = _m\n"
         ) % str(mut_path)
     code += ("sys.exit(0 if (st.check_v12332_discipline() and "
-             "st.check_v12333_autotune()) else 1)\n")
+             "st.check_v12333_autotune() and "
+             "st.check_v12334_prompt() and "
+             "st.check_v12336_allweb() and "
+             "st.check_v12336_readings()) else 1)\n")
     r = subprocess.run([sys.executable, "-c", code],
                        capture_output=True, text=True, cwd=str(HERE))
     return r.returncode == 0, r.stdout + r.stderr

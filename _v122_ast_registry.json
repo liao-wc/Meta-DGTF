@@ -1,7 +1,7 @@
 {
   "added": 172,
   "baseline": "_baseline_v12177.py",
-  "current": "元DGTF-V1.23.33.py",
+  "current": "元DGTF-V1.23.36.py",
   "n_symbols_baseline": 290,
   "n_symbols_current": 573,
   "registry": {
@@ -1144,6 +1144,86 @@
     "orientation_rule": {
       "phase": "第六期-降本",
       "reason": "规则优先的取向判断（零成本纯函数，与 _has_decision_context 同源；规则命中不再补调 LLM）"
+    },
+    "_render_layer_glance": {
+      "phase": "提示词/可读性",
+      "reason": "本层速览渲染辅助：在 DGTF._render 的正文最前面给一行全局（跑了 N 圈 / 候选 / & / 线头 / 悬置），只增一行、不改既有结构"
+    },
+    "ControlSurface": {
+      "phase": "v1.23.36",
+      "reason": "显式控制面（白名单+边界+必留痕）：所有运行时调度调整的唯一收口"
+    },
+    "_lookup": {
+      "phase": "v1.23.36",
+      "reason": "控制面：白名单查找"
+    },
+    "read": {
+      "phase": "v1.23.36",
+      "reason": "控制面：读当前值（改过读数改后的）"
+    },
+    "write": {
+      "phase": "v1.23.36",
+      "reason": "控制面：写入（白名单外/缺why/缺trace_ref/越界 ⇒ 拒且留痕）"
+    },
+    "snapshot": {
+      "phase": "v1.23.36",
+      "reason": "控制面：快照（供产物对账）"
+    },
+    "_check_bounds": {
+      "phase": "v1.23.36",
+      "reason": "控制面：边界校验（只拒不夹取）"
+    },
+    "_control": {
+      "phase": "v1.23.36",
+      "reason": "控制面惰性访问器（覆盖所有路径，不动 __init__）"
+    },
+    "_llm_ctx_set": {
+      "phase": "v1.23.36",
+      "reason": "联网全接：线程局部上下文写入（题面/层/圈/联网回调）"
+    },
+    "_llm_ctx_get": {
+      "phase": "v1.23.36",
+      "reason": "联网全接：线程局部上下文读取"
+    },
+    "_infer_stage_from_stack": {
+      "phase": "v1.23.36",
+      "reason": "联网全接：从调用栈推断环节名（30 环节各自一个开关）"
+    },
+    "_web_augment": {
+      "phase": "v1.23.36",
+      "reason": "联网全接：统一增强层（所有层都注入；全部经 Gate；默认关零行为差）"
+    },
+    "_trace_note": {
+      "phase": "v1.23.36",
+      "reason": "可追溯：通用行为 trace 写入（模块级：调用点在两个无继承类上）"
+    },
+    "trace_decide": {
+      "phase": "v1.23.36",
+      "reason": "可追溯：L1 决策（必须带「考虑过的全部选项」）"
+    },
+    "trace_outcome": {
+      "phase": "v1.23.36",
+      "reason": "可追溯：L3 归因（动作前后读数对比）"
+    },
+    "_readings_bundle": {
+      "phase": "v1.23.36",
+      "reason": "读数显示：一层全部读数的单一真相源（日志/产物共用）"
+    },
+    "_readings_line": {
+      "phase": "v1.23.36",
+      "reason": "读数显示：运行中每层一行（走 logger，不受 verbose 控制）"
+    },
+    "_readings_table": {
+      "phase": "v1.23.36",
+      "reason": "读数显示：跨层总表（日志等宽版 / 产物 Markdown 版，同源）"
+    },
+    "_practice_term_calibration_prep": {
+      "phase": "v1.23.36",
+      "reason": "修行层术语校准（默认关；打开只进 pool+留痕、不注入）"
+    },
+    "_stop_criteria_check": {
+      "phase": "v1.23.36",
+      "reason": "停止理由复核（默认关；打开只留痕、不改决策）"
     }
   },
   "removed": 0
