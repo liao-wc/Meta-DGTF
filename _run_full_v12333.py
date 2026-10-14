@@ -209,6 +209,29 @@ def main():
         except Exception:
             import traceback
             emit("[层目标 异常]\n" + traceback.format_exc())
+        # ★ [各环节量化] （**第六期验收要点**：读数必须在**真实产物**里有值，
+        #   纯函数绿不等于引擎里可达 —— `quant_readings` 是唯一出口）。
+        try:
+            _qr = {}
+            for _L, _v in (res.get("views") or {}).items():
+                try:
+                    _vd = _v.to_dict() if hasattr(_v, "to_dict") else _v
+                except Exception:
+                    _vd = {}
+                _qr[_L] = (_vd.get("quant_readings") or {})
+            (HERE / ("_fullrun_%s.quant.json" % a.tag)).write_text(
+                json.dumps(_qr, ensure_ascii=False, indent=1, default=str),
+                encoding="utf-8")
+            emit("[各环节量化] _fullrun_%s.quant.json" % a.tag)
+            _n_any = 0
+            for _L in ("0", "1", "both", "all"):
+                _d = _qr.get(_L) or {}
+                _n_any += len(_d)
+                emit("   %-5s %s" % (_L, json.dumps(_d, ensure_ascii=False)))
+            emit("   [读数总条数] %d（0 ⇒ 能力存在但不可达，需回查）" % _n_any)
+        except Exception:
+            import traceback
+            emit("[各环节量化 异常]\n" + traceback.format_exc())
     emit("[DONE] 退出码 0")
     return 0
 

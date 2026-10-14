@@ -12284,6 +12284,145 @@ def check_v12333_autotune():
         bad.append("[目标运行] 档 2 真文案「连续空转」落档错")
     if _sp_("材料耗尽，螺旋停止") != 2:
         bad.append("[目标运行] 档 2 真文案「材料耗尽」落档错")
+    # ㉖ [四层目标 → **圈内动作**]（第二期）：读数进入 prompt 的形状指引。
+    #   判据四层：纯函数方向 / 缺读数不表态（4 层）/ 达标不唠叨 /
+    #   **两通道都接线** / 注入点存在。
+    if "def layer_goal_action_hint(" not in src:
+        bad.append("[目标动作] 缺 layer_goal_action_hint")
+    if "def _refresh_goal_hint(" not in src:
+        bad.append("[目标动作] 缺 _refresh_goal_hint")
+    _H = mod.layer_goal_action_hint
+    # ① 方向：未达标的层要出指引，**达标的层闭嘴**（空串）。
+    if not _H("0", {"excavate": 0.02, "n_aspects": 9}):
+        bad.append("[目标动作] 修行层挖尽后竟不给指引（应在同一面挖完后换面）")
+    if _H("0", {"excavate": 0.9, "n_aspects": 9}) != "":
+        bad.append("[目标动作] 修行层还在挖竟给指引（不该干预）")
+    if not _H("1", {"settle": 0.3}):
+        bad.append("[目标动作] 研究层确定率低竟不给指引")
+    if _H("1", {"settle": 0.9}) != "":
+        bad.append("[目标动作] 研究层已收敛竟给指引（达标应闭嘴）")
+    if not _H("both", {"sem_stagnation": 0.9}):
+        bad.append("[目标动作] 对撞层全复读竟不给指引（CORE 停滞罚未落地）")
+    if not _H("all", {"crystallize": 0.5, "n_hits": 2}):
+        bad.append("[目标动作] 元层结晶不全竟不给指引")
+    if _H("all", {"crystallize": 1.0, "n_hits": 4}) != "":
+        bad.append("[目标动作] 元层四件齐竟给指引（达标应闭嘴）")
+    # ② 缺读数 ⇒ **必须不表态**（空串）——「没测」≠「测出来差」。
+    for _e in ("0", "1", "both", "all"):
+        if _H(_e, {}) != "":
+            bad.append("[目标动作] %s 缺读数竟给指引（不该拿没数据当约束）" % _e)
+    # ③ 不许**返 role 名**（那会让 role 语义出现第二个真相源）。
+    for _e, _g in (("0", {"excavate": 0.0, "n_aspects": 9}),
+                   ("1", {"settle": 0.2}),
+                   ("both", {"sem_stagnation": 0.9}),
+                   ("all", {"crystallize": 0.5, "n_hits": 2})):
+        _h = _H(_e, _g)
+        if "转向" in _h or "复裁" in _h or "【本轮形状" in _h:
+            bad.append("[目标动作] %s 的指引混入了 role 语义（应只出形状指引）" % _e)
+    # ④ **两通道都接线** + 注入点存在（★ 拦「一处有一处没有」）。
+    if src.count("self._refresh_goal_hint(entry, view)") < 2:
+        bad.append("[目标动作] 未接两条通道（串行/并行）")
+    if src.count("{goal_hint}") < 2:
+        bad.append("[目标动作] 未注入两条 prompt 组装路径")
+    if 'self._goal_hint_next = ""' not in src:
+        bad.append("[目标动作] 未初始化 _goal_hint_next（会 AttributeError）")
+    # ㉗~㉛ [第六期 · 各环节量化 + 降本]（依据见 _各环节量化与降本依据_v12333.md）
+    #   判据五层：纯函数方向 / 缺输入不表态 / **不调 LLM**（构造性证明）/
+    #   真实入口接线 / 开关默认关（零行为差）。
+    for _f in ("def yin_yang_divergence(", "def restate_fidelity(",
+               "def semantic_density("):
+        if _f not in src:
+            bad.append("[量化] 缺 %s" % _f)
+    _YY, _RF, _SD = (mod.yin_yang_divergence, mod.restate_fidelity,
+                     mod.semantic_density)
+    # ㉘ 分歧度方向：全同 ⇒ 假对撞（divergence 接近 0）；全不同 ⇒ ok。
+    if _YY(["同一个说法原样复述"], ["同一个说法原样复述"])["verdict"] != "fake_duel":
+        bad.append("[量化] 阴阳完全复述竟未判假对撞（方向错）")
+    if _YY(["边界条件必须先声明"], ["引擎的调度顺序决定产出"])["verdict"] != "ok":
+        bad.append("[量化] 阴阳真分歧竟判假对撞（方向错）")
+    # ㉘b 缺一侧 ⇒ 不表态（divergence=None / verdict 空）。
+    _e1 = _YY([], ["x"])
+    if _e1["divergence"] is not None or _e1["verdict"] != "":
+        bad.append("[量化] 阴阳缺一侧竟表态")
+    # ㉙ 保真度方向：漂移判 drifted、正常判 ok；缺输入不表态。
+    if _RF("收敛判断为什么不可靠？给出可检验判据",
+            "完全无关的另一件事的讨论")["verdict"] == "ok":
+        bad.append("[量化] 重述跑偏竟判 ok（方向错）")
+    if _RF("收敛判断为什么不可靠？给出可检验判据",
+            "收敛判断为什么不可靠？给出可检验判据：需要边界条件与检验口径")[
+                "verdict"] != "ok":
+        bad.append("[量化] 重述保真竟未判 ok")
+    _e2 = _RF("", "x")
+    if _e2["verdict"] != "" or _e2["fidelity"] is not None:
+        bad.append("[量化] 保真度缺输入竟表态")
+    # ㉚ 语义密度：**不调 LLM**（构造性证明：把 llm.call 计数为 0）+ 方向。
+    _n_call = {"n": 0}
+    _orig_call = mod.LLM.call
+
+    def _spy(self, *a, **kw):
+        _n_call["n"] += 1
+        return _orig_call(self, *a, **kw)
+    try:
+        mod.LLM.call = _spy
+        _d1 = _SD("综上所述，我们需要注意的是，其实这个非常可能的说法")
+        _d2 = _SD("边界条件未声明时收敛判据不可检验")
+        _r1 = _RF("收敛判断为什么不可靠", "收敛判断为什么不可靠")
+        _r2 = _YY(["边界条件"], ["调度顺序"])
+    finally:
+        mod.LLM.call = _orig_call
+    if _n_call["n"] != 0:
+        bad.append("[量化] 读数函数偷调了 LLM（%d 次）—— 必须零成本" % _n_call["n"])
+    if _d1 is None or _d2 is None or not (_d2 > _d1):
+        bad.append("[量化] 语义密度方向错（填充语应低于实词句）：%r vs %r"
+                   % (_d1, _d2))
+    if _SD("") is not None:
+        bad.append("[量化] 语义密度空输入竟表态")
+    # ㉛ 真实入口接线：三处读数都要在引擎里可达（不只纯函数绿）。
+    #   ★★ [真跑逮到的真缺陷] 第一版只查「`self._quant_note(view,` 出现 ≥2 次」
+    #      （**存在性**）⇒ 接线看似在，实则 `_quant_note` 只定义在 `MetaDGTF`，
+    #      而调用点在 `DGTF.run`，两类**无继承关系** ⇒ `AttributeError` 被
+    #      `except Exception: pass` **静默吞掉** ⇒ 真跑 `quant_readings` 四层全空。
+    #      ⇒ 「有接线」≠「这跑走得到」。判据必须**查可达性**，不查出现次数。
+    _qn = getattr(mod, "_quant_note", None)
+    if not callable(_qn):
+        bad.append("[量化] 模块级 `_quant_note` 不存在（应做成模块级函数："
+                   "调用点在 DGTF，定义却在 MetaDGTF ⇒ 解析不到）")
+    else:
+        # ★ 构造性可达证明：拿**真的 View** 写一条，必须落进去。
+        try:
+            _vq = mod.View(entry="0")
+            _qn(_vq, "judge_probe", {"value": 1})
+            if (_vq.quant_readings or {}).get("judge_probe", {}).get("value") != 1:
+                bad.append("[量化] `_quant_note` 写不进真 View（写入口坏了）")
+        except Exception as _e:
+            bad.append("[量化] `_quant_note` 调用抛错：%r" % (_e,))
+    # ★ 宿主可达性：三处调用点的**宿主类**上，同名属性必须能解析到。
+    #   逐类检查 `DGTF` / `MetaDGTF`：调用点所在类若无该属性 ⇒ 判红。
+    _src_ln = src.replace("\r\n", "\n")
+    if "self._quant_note(" in _src_ln:
+        bad.append("[量化] 仍有 `self._quant_note(` 调用（应改模块级裸名 —— "
+                   "宿主类解析不到会静默 AttributeError）")
+    _calls = [ln for ln in _src_ln.splitlines()
+              if "_quant_note(view," in ln
+              and not ln.lstrip().startswith("def ")]
+    if len(_calls) != 3:
+        bad.append("[量化] `_quant_note` 真实调用点应为 3 处（实得 %d）"
+                   % len(_calls))
+    if _src_ln.count("def _quant_note(") != 1:
+        bad.append("[量化] `_quant_note` 定义份数 != 1（两个真相源）")
+    if "semantic_density(view.collision)" not in src:
+        bad.append("[量化] ing 语义密度未接真实入口")
+    if "restate_fidelity(_q0" not in src:
+        bad.append("[量化] 锚点保真度未接真实入口")
+    if "yin_yang_divergence(_by[_ks[0]]" not in src:
+        bad.append("[量化] 阴阳分歧度未接真实入口")
+    if 'd["quant_readings"] = {' not in src:
+        bad.append("[量化] quant_readings 无产物出口")
+    # ㉗ 阴阳合并开关：**默认关** ⇒ 零行为差（防「偷偷改了默认行为」）。
+    if 'self._expand_pair_merged_once(jobs)' not in src:
+        bad.append("[量化] 阴阳合并未接线（仍是孤儿函数 ⇒ 能力不可达）")
+    if '_action_on(self.config, "merge_expand", False)' not in src:
+        bad.append("[量化] 阴阳合并开关默认不是关（会改变历史行为）")
     if bad:
         for x in bad:
             print("  X", x)

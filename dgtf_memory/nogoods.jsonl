@@ -7,3 +7,6 @@
 {"t": 1791947189.0852911, "run": "P3_3L_serial_Q2_20261014_103120", "kind": "used_but_below_floor", "why": "below_floor", "cand": {"n": 2, "duty_med": 0.1111}}
 {"t": 1791952143.1202974, "run": "GOALCHK_20261014_121650", "kind": "used_but_below_floor", "why": "below_floor", "cand": {"n": 3, "duty_med": 0.0}}
 {"t": 1791957214.597317, "run": "GOALRUN_20261014_125622", "kind": "used_but_below_floor", "why": "below_floor", "cand": {"n": 3, "duty_med": 0.0656}}
+{"t": 1791964154.9386613, "run": "QUANT_20261014_145000", "kind": "used_but_below_floor", "why": "below_floor", "cand": {"n": 3, "duty_med": 0.2091}}
+{"t": 1791964687.2103179, "run": "QPROBE", "kind": "used_but_below_floor", "why": "below_floor", "cand": {"n": 3, "duty_med": 0.0909}}
+{"t": 1791965558.9652429, "run": "QFIX_20261014_160352", "kind": "used_but_below_floor", "why": "below_floor", "cand": {"n": 3, "duty_med": 0.249}}

@@ -19,6 +19,7 @@ import os
 import re
 import sys
 import time
+import unicodedata
 import contextlib
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -3111,6 +3112,283 @@ def layer_goal_readings(views: dict) -> dict:
 _LG_STOP_MARGIN = 0.1      # 修行层：边际新增率 < 此值 ⇒ 判「挖尽」
 _LG_STOP_FLAT_N = 2        # 研究/对撞：连续 N 圈读数不涨 ⇒ 判「不再涨」
 _LG_STOP_STAG = 0.8        # 对撞：语义停滞率 >= 此值 ⇒ 判「复读」
+
+
+# ══════════════════════════════════════════════════════════════
+# [第六期 · 各环节量化] 四个**零成本**读数（纯函数、不调 LLM）
+#   依据见 `_各环节量化与降本依据_v12333.md`：
+#     ① BenchDrift(arXiv:2608.11694) / reliable@k(arXiv:2512.14754)
+#     ② SIEV(arXiv:2510.18134) 对抗性依从率
+#     ③ RASC(NAACL2025) / DeepConf(ICLR2026) / Think@n 的早停
+#     ④ 信息瓶颈：语义密度（>5 个无信息 token ⇒ 性能降 15%+）
+#   ★ 四条通则：**缺输入 ⇒ 不表态**（回 None，不是 0）；
+#     **只出读数与线索**，不改产物、不删候选（悬置不打分）。
+# ══════════════════════════════════════════════════════════════
+
+def _quant_note(view, key: str, val) -> None:
+    """[第六期] 把一条量化读数写进 `view.quant_readings`（**唯一写入口**）。
+
+    ★ 纪律：**值不可用（None / 空 dict / 空串）就不写键** ——
+      与 `goal_trace` 出口同款（产物里不出现空壳读数）。
+    ★ 只记读数，**不改任何判定**（红线：读数不是分数）。
+    ★ **模块级函数、不是方法** —— 它只用 `view`，不碰 `self`；
+      接线点在 `DGTF.run`（`DGTF` 与 `MetaDGTF` **无继承关系**），
+      做成方法会让 `DGTF` 实例上解析不到 ⇒ `AttributeError` 被
+      `except Exception: pass` 静默吞掉（真跑 `quant_readings` 恒空）。
+    """
+    if view is None or not key:
+        return
+    if val is None or val == "" or val == {}:
+        return
+    try:
+        _d = getattr(view, "quant_readings", None)
+        if _d is None:
+            view.quant_readings = {}
+            _d = view.quant_readings
+        _d[str(key)] = dict(val) if isinstance(val, dict) else {"value": val}
+    except Exception:
+        pass
+
+
+_YY_DIV_LOW = 0.30      # 阴阳分歧度低于此 ⇒ 判「假对撞」（依据 ②）
+
+
+def yin_yang_divergence(yin, yang) -> dict:
+    """[依据 ②] 阴阳两臂的**分歧度** —— 它们到底有没有在「对撞」。
+
+    SIEV 的「对抗性依从率」：反题与正题**实际不一致**的比例。过低 ⇒
+    模型只是换个说法复述（pS 高但推理深度低 = **假对撞**）。
+
+    口径（两向都算，取最大相似度作「重合」）：
+      · `divergence = 1 - max_i max_j sim(yin_i, yang_j)`
+        —— 只有两臂**没有任何一对**说得像，才算真分歧。
+      · ★ 用 `_overlap_coef`（本仓库既有的词面重合口径）+ `_similar`
+        两条并列尺子，与去重判据同源（**同一把尺子**）。
+
+    返回 `{n_yin, n_yang, max_sim, divergence, verdict}`；
+    **任一侧为空 ⇒ divergence=None 且 verdict=""**（不表态）。
+    """
+    _ys = [str(x) for x in (yin or []) if str(x).strip()]
+    _zs = [str(x) for x in (yang or []) if str(x).strip()]
+    d = {"n_yin": len(_ys), "n_yang": len(_zs)}
+    if not _ys or not _zs:
+        d.update({"max_sim": None, "divergence": None, "verdict": ""})
+        return d
+    _best = 0.0
+    for a in _ys:
+        for b in _zs:
+            _ov = _overlap_coef(a, b, _KW_TOP_N)
+            _si = 1.0 if _similar(a, b, _DUP_SIM) else 0.0
+            _best = max(_best, _ov, _si)
+    d["max_sim"] = round(_best, 4)
+    d["divergence"] = round(1.0 - _best, 4)
+    d["verdict"] = ("fake_duel" if d["divergence"] < _YY_DIV_LOW else "ok")
+    return d
+
+
+_RF_THIN_RATIO = 0.35   # 重述长度不到原问题的这个比例 ⇒ 判 thin（信息太薄）
+_RF_DRIFT_RATIO = 0.20  # 关键词覆盖率低于此 ⇒ 判 drifted（跑偏）
+
+
+def restate_fidelity(question: str, anchor: str) -> dict:
+    """[依据 ①] 锚点重述对原问题的**保真度** —— 重述跑偏则下游全白跑。
+
+    BenchDrift / reliable@k 实测：含义保持的重述会让答案漂移，
+    **强模型损失更大**。所以最上游该有这道闸门（**零 LLM 成本**）。
+
+    口径（词面代理，不调模型）：
+      · `coverage` = 原问题关键词被锚点覆盖的比例（漏掉 = 换题）；
+      · `ratio`    = 锚点长度 / 原问题长度（过短 = 信息被压没了）。
+
+    返回 `{coverage, ratio, fidelity, verdict}`；
+    `verdict` ∈ `ok / thin / drifted`；**任一输入为空 ⇒ 全 None + ""**。
+    """
+    _q = str(question or "").strip()
+    _a = str(anchor or "").strip()
+    if not _q or not _a:
+        return {"coverage": None, "ratio": None,
+                "fidelity": None, "verdict": ""}
+    _kq = _kw(_q, _KW_TOP_N) or set()
+    _ka = _kw(_a, _KW_TOP_N) or set()
+    _cov = (len(_kq & _ka) / float(len(_kq))) if _kq else None
+    _rat = len(_a) / float(len(_q)) if _q else None
+    if _cov is None or _rat is None:
+        return {"coverage": None, "ratio": None,
+                "fidelity": None, "verdict": ""}
+    _cov = round(_cov, 4)
+    _rat = round(_rat, 4)
+    # 保真度 = 覆盖为主、长度惩罚为辅（长度只作**上限约束**，不奖长）。
+    _pen = min(1.0, _rat / _RF_THIN_RATIO) if _rat < _RF_THIN_RATIO else 1.0
+    _fid = round(_cov * _pen, 4)
+    if _cov < _RF_DRIFT_RATIO:
+        _vd = "drifted"
+    elif _rat < _RF_THIN_RATIO:
+        _vd = "thin"
+    else:
+        _vd = "ok"
+    return {"coverage": _cov, "ratio": _rat, "fidelity": _fid, "verdict": _vd}
+
+
+_SD_FILLER = (
+    "的", "了", "是", "在", "和", "与", "或", "及", "这", "那", "一个", "一种",
+    "非常", "十分", "比较", "可能", "也许", "大概", "其实", "实际上", "总的来说",
+    "综上所述", "值得注意的是", "需要指出的是", "我们可以看到", "众所周知",
+    "首先", "其次", "然后", "最后", "另外", "此外", "而且", "因此", "所以",
+)
+
+
+def _sd_is_punct(ch: str) -> bool:
+    """标点 / 符号判定（Unicode 类别 P* 或 S*）。**内联实现**，不引新依赖。"""
+    try:
+        return unicodedata.category(ch)[0] in ("P", "S")
+    except Exception:
+        return False
+
+
+def semantic_density(text: str) -> "float | None":
+    """[依据 ④] 内容的**语义密度** —— 每字里有多少是任务相关信息。
+
+    信息瓶颈口径：`R = I(X;Y)/H(X)`，优秀提示 R > 0.6；**超过 5 个
+    无信息 token ⇒ 性能降 15%+**。这里用**零成本**词面代理：
+      · 分母 = 去掉空白后的字符数；
+      · 分子 = 内容词字符数（扣掉**填充语**与**纯标点**）。
+    返回 `[0,1]`；**空输入 ⇒ None**（不表态）。
+    """
+    _t = str(text or "")
+    if not _t.strip():
+        return None
+    _chars = [c for c in _t if not c.isspace()]
+    if not _chars:
+        return None
+    _body = _t
+    for _f in _SD_FILLER:
+        _body = _body.replace(_f, "")
+    _info = sum(1 for c in _body
+                if not c.isspace() and not _sd_is_punct(c))
+    return round(min(1.0, _info / float(len(_chars))), 4)
+
+
+_LG_ACT_SETTLE_LOW = 0.6      # 研究层：确定率 < 此值 ⇒ 优先答未答层面
+_LG_ACT_ASPECT_MIN = 4         # 修行层：层面数 < 此值 ⇒ 还没铺够，别急着深挖
+
+
+def layer_goal_action_hint(entry: str, goal: dict, prev: list = None) -> str:
+    """[四层目标 → **圈内动作**] 把「本层目标读数」转成一条**形状指引**。
+
+    ★ 与 `layer_goal_stop_signal` 的分工：
+      · `stop_signal` 管**停不停**（层末，写进 `_stop_reasons`）；
+      · `action_hint` 管**怎么写**（圈内，插进 prompt 的 `【本轮形状】` 之后）。
+      两者**共用同一批读数**，但作用在不同时刻 —— 这就是「读数进入运行」的完整形态。
+
+    ★ 红线遵守：
+      · **缺读数 ⇒ 返回空串**（不表态）。「没测」不等于「测出来差」，
+        更不能因此给模型下指令（那会把"没数据"变成"假约束"）。
+      · **不返 role 名、不改 role 枚举**：只出**文本指引**，
+        由 prompt 组装处拼接 ⇒ role 语义单一真相源不动。
+      · **达标 ⇒ 返回空串**：目标是「做到就闭嘴」，不是「每圈都唠叨」。
+
+    返回：一段以 `\n\n【本层目标的形状指引...】` 开头的文本，或空串。
+    """
+    g = goal or {}
+    _e = str(entry or "")
+
+    if _e == "0":
+        # 修行层（趋近无穷收敛 = 把各面挖到不能再挖）
+        _v = _lg_num(g.get("excavate"))
+        _na = _lg_num(g.get("n_aspects"))
+        if _v is not None and _v < _LG_STOP_MARGIN:
+            # 边际新增趋零 ⇒ Heaps 饱和：别再往同一面里挖，换未挖的面。
+            return (
+                "\n\n【本层目标的形状指引 · 修行层趋近无穷收敛】\n"
+                "上一圈之后，**层面的边际新增已经趋零**（本圈不再是"
+                "「还没挖够」，而是「这一面挖到了底」）。\n"
+                "  · 所以这一圈**不要**在已经写出来的面上继续加深——那是重复挖掘。\n"
+                "  · 要换一个**尚未显形的切面**进去（问「这个问题还有哪个面是我"
+                "一次都没碰过的」）。\n"
+                "  · 若确实找不出新面，如实说「这一面已见底」，"
+                "**不要**把旧面换个说法再交一次。\n"
+            )
+        if _na is not None and _na < _LG_ACT_ASPECT_MIN:
+            # 面还没铺够 ⇒ 别急着深挖（对应「修行 = 广度优先摊开各面」）。
+            return (
+                "\n\n【本层目标的形状指引 · 修行层趋近无穷收敛】\n"
+                "本层目前显形的层面数还很少（广度不够）。\n"
+                "  · 这一圈**优先摊开新面**，不要把少数几个面往深里挖。\n"
+                "  · 能摆出来的都摆出来，不必每条都追到底。\n"
+            )
+        return ""
+
+    if _e == "1":
+        # 研究层（趋近有限收敛 = 给各面确定答案）
+        _v = _lg_num(g.get("settle"))
+        if _v is not None and _v < _LG_ACT_SETTLE_LOW:
+            # ★ 伪收敛警告（依据：熵降 ≠ 高质量）：确定率低不等于"写得多"，
+            #   而是"该定的没定"。要**优先答未答的层面**。
+            return (
+                "\n\n【本层目标的形状指引 · 研究层趋近有限收敛】\n"
+                "本层的**确定率还偏低**——已经显形的面里，还有一批没有确定答案。\n"
+                "  · 这一圈**优先给未答的面一个答案**（哪怕答案是「此处未生，"
+                "缺的是 X」也算答）。\n"
+                "  · 不要把力气花在**重复论证已经定下来的面**上。\n"
+                "  · ★ 注意：写得长不等于收敛——**没定的还是不收敛**。\n"
+            )
+        return ""
+
+    if _e == "both":
+        # 对撞层（融合生成）
+        _st = _lg_num(g.get("sem_stagnation"))
+        if _st is not None and _st >= _LG_STOP_STAG:
+            # CORE 停滞罚：高停滞 ⇒ 复读，强制换**融合轴**。
+            return (
+                "\n\n【本层目标的形状指引 · 对撞层融合生成】\n"
+                "本层的**语义停滞率偏高**：这一圈产出的东西，与上游 view 的"
+                "文本重合太多（像复述，不像融合）。\n"
+                "  · 这一圈**必须换一个融合轴**——不是换措辞，是换"
+                "「把哪两个面撞在一起」。\n"
+                "  · 自问：上游给的这些面里，有哪两个**从没被放在一起看过**？"
+                "把它们撞一次。\n"
+                "  · 撞出来的东西必须**上游任何一边单独都给不出**，否则不算融合。\n"
+            )
+        _fu = _lg_num(g.get("fuse"))
+        if _fu is not None and _fu < 0.3:
+            return (
+                "\n\n【本层目标的形状指引 · 对撞层融合生成】\n"
+                "本层的融合产出偏少（新东西不多）。\n"
+                "  · 别停在「两边的共同点」上——那只叫对齐，不叫融合。\n"
+                "  · 去看**两边互相矛盾的地方**，矛盾处才有真融合。\n"
+            )
+        return ""
+
+    if _e == "all":
+        # 元层（记忆结晶 / 决策 / 行动 / 回看）
+        _cr = _lg_num(g.get("crystallize"))
+        _hits = _lg_num(g.get("n_hits"))
+        if _cr is not None and _cr < 1.0:
+            _miss = []
+            if _hits is not None:
+                # n_hits < 4 ⇒ 四件事里有缺的（顺序对应 layer_goal_readings 的累加序）
+                if _hits < 1:
+                    _miss.append("闭环清算（把张力盘一遍、看有没有漏交代的）")
+                if _hits < 2:
+                    _miss.append("回看（说清本层一共处理了多少张力）")
+                if _hits < 3:
+                    _miss.append("决策（把能裁的裁掉，不能裁的写清缺什么）")
+                if _hits < 4:
+                    _miss.append("行动/交代（每一条悬置都要有去处）")
+            _miss_txt = ("；".join(_miss) if _miss
+                         else "四件事里还缺的那件")
+            return (
+                "\n\n【本层目标的形状指引 · 元层记忆结晶】\n"
+                "本层是**元层**：要对下面三层的产物做记忆结晶 / 决策 / 行动，"
+                "并回看整个过程。现在还没结晶完整。\n"
+                f"  · 这一圈优先补上：**{_miss_txt}**。\n"
+                "  · 结晶不是「再想一遍」，是**把已经发生的事记下来**"
+                "（依据 DGM：archive 的价值在不丢东西，而不是再搜一遍）。\n"
+                "  · 缺的如果补不上，如实标成悬置——**不许拿 both 搪塞**。\n"
+            )
+        return ""
+
+    return ""
 
 
 def layer_goal_stop_signal(entry: str, goal: dict, prev: list = None):
@@ -6409,6 +6687,8 @@ class View:
     # ★ [四层目标] 逐圈目标读数序列（与 `duty_trace` 同构）。停因判据读它
     #   （连续不涨 = 该层目标不再推进）。
     goal_trace: List[dict] = field(default_factory=list)
+    # ★ [第六期] 各环节量化读数（零成本、纯函数产出；缺输入 ⇒ 不出键）。
+    quant_readings: Dict[str, dict] = field(default_factory=dict)
     #: [LDG] 职责判定行 —— **与停止理由分开**（红线「停止与清算分开」）：
     #:   停止理由答「为什么停」，职责判定答「这层替问题干了什么」。
     #:   渲染时两者同屏，读者不会只看到「自然安住」。
@@ -7814,6 +8094,13 @@ class Pool:
         # ★ [四层目标 · 运行痕迹] 逐圈目标读数序列（停因判据就是读它）。
         #   出口的理由：真跑验收要能看见「每圈有没有读到目标」——
         #   只 append 不出出口 = 产物里看不到（本项目已栽过多次）。
+        # ★ [第六期] 量化读数出口：**有才出**（空 dict 不出键，
+        #   与 goal_trace 同款纪律，避免产物里出现空壳读数）。
+        if getattr(self, "quant_readings", None):
+            d["quant_readings"] = {
+                str(k): dict(v) for k, v in (self.quant_readings or {}).items()
+                if isinstance(v, dict) and v
+            }
         if getattr(self, "goal_trace", None):
             d["goal_trace"] = list(self.goal_trace)
         if getattr(self, "goal_verdict", ""):
@@ -8201,6 +8488,12 @@ class DGTF:
         self.use_context = "context" in self.channels
         self.use_self = "self" in self.channels
         self.self_memory = ""
+        # ★ [第六期] 阴阳分歧度的**圈内暂存**（`_expand_pair` 算完 → 由
+        #   `run()` 在同一圈内落到 view）。初始化防 AttributeError。
+        self._quant_pending_yy = None
+        # ★ [四层目标·第二期] 上一圈算出的**下一圈形状指引**（空串 = 不表态）。
+        #   初始为空 ⇒ 第 1 圈不带指引（那时也确实还没有读数）。
+        self._goal_hint_next = ""
         self.sp = sp if sp is not None else _spiral_for(config, entry)
 
     def vp(self, *args):
@@ -8498,6 +8791,20 @@ class DGTF:
             anchor_untouched = []
             _anchor_touched = []
             self.vp("   🪞 锚点重述：已关闭（用透传/原文）")
+        # ★ [第六期 · 依据 ①] 锚点对**原问题**的保真度（零成本纯函数）。
+        #   BenchDrift(arXiv:2608.11694)：含义保持的重述会让答案漂移，
+        #   且**强模型损失更大** ⇒ 这里是最上游的闸门（重述跑偏则下游全白跑）。
+        try:
+            _q0 = str(inp.root_question or inp.question or "")
+            _rf = restate_fidelity(_q0, str(view.anchor or ""))
+            if _rf.get("verdict"):
+                _quant_note(view, "restate_fidelity", _rf)
+                if _rf["verdict"] == "drifted":
+                    self.vp("   ⚑ 锚点保真度偏低 %.2f（关键词覆盖 %.2f）"
+                            "——重述可能已跑偏，下游会跟着偏"
+                            % (_rf["fidelity"] or 0.0, _rf["coverage"] or 0.0))
+        except Exception:
+            pass
         tag = "透传" if (self.entry in ("both", "all")
                         and inp.root_question) else "重述"
         self.vp(f"\n🪞 [锚点·{tag}] {view.anchor}")
@@ -8523,6 +8830,19 @@ class DGTF:
 
         # 第 2 步：阴阳展开
         candidates = self._expand(inp, pool, view.anchor)
+        # ★ [第六期 · 依据 ②] 把阴阳分歧度落到本层 view（**真实入口**）。
+        try:
+            _yy = getattr(self, "_quant_pending_yy", None)
+            if _yy:
+                _quant_note(view, "yin_yang_divergence", _yy)
+                if _yy.get("verdict") == "fake_duel":
+                    self.vp("   ⚑ 阴阳分歧度偏低 %.2f（重合 %.2f）"
+                            "——两臂像复述，对撞未发生"
+                            % (_yy.get("divergence") or 0.0,
+                               _yy.get("max_sim") or 0.0))
+            self._quant_pending_yy = None
+        except Exception:
+            pass
         # [P2-9] 自省回流的硬执行：上一圈点名禁掉的条目如果这一圈又写出来了，
         # 当场丢掉，不许它进 ingest / 判断 / 沉淀。
         # 丢之前先留痕 → view.carry_dropped，_check_carry_response 认这份账，
@@ -8571,6 +8891,19 @@ class DGTF:
             try:
                 view.collision = self._ing(candidates, inp, view.anchor, view)
                 self.vp(f"   🔥 ing 输出 {len(view.collision)} 字")
+                # ★ [第六期 · 依据 ④] ing 输出的**语义密度**（零成本纯函数）。
+                #   信息瓶颈：>5 个无信息 token ⇒ 性能降 15%+ —— 低密度即提示。
+                try:
+                    _sd = semantic_density(view.collision)
+                    if _sd is not None:
+                        _quant_note(view, "ing_density", {
+                            "value": _sd, "chars": len(view.collision or ""),
+                            "verdict": ("thin" if _sd < 0.6 else "ok")})
+                        if _sd < 0.6:
+                            self.vp(f"   ⚑ ing 语义密度偏低 {_sd:.2f}"
+                                    f"（<0.60 ⇒ 填充语多，信息量薄）")
+                except Exception:
+                    pass
                 for _ln in (view.collision or "").splitlines():
                     self.vp("   🔥 │ " + _ln)
                 _upstream_texts: List[str] = []
@@ -8910,6 +9243,17 @@ class DGTF:
 
 
         raws: Dict[str, Optional[str]] = {}
+        # ★ [第六期 L1 · 降本] 阴阳合并成**一次**调用（opt-in，默认关）。
+        #   依据：Tokonomics 2025（批处理是第一降本杠杆）+ 信息瓶颈
+        #   （阴阳 user 完全相同 ⇒ 第二份是**无信息输入**）。
+        #   ★ 开关默认 false ⇒ 与历史行为**逐字一致**（零行为差）。
+        #   ★ 只合并恰好两臂的情形；单臂（另一开关关掉）走原路径。
+        if len(jobs) == 2 and _action_on(self.config, "merge_expand", False):
+            _mg = self._expand_pair_merged_once(jobs)
+            if _mg is not None:
+                return _mg
+            # 合并失败 ⇒ 落回原路径（下方并行/串行），**不丢内容**。
+            self.vp("   ↩ 合并展开不可用，回落两臂独立调用")
         parallel = (len(jobs) > 1
                     and _action_on(self.config, "parallel_expand"))
         if parallel:
@@ -8949,6 +9293,20 @@ class DGTF:
                 seen.append(c.desc)
                 c.source = label
                 out.append(c)
+        # ★ [第六期 · 依据 ②] 阴阳两臂的**分歧度**（SIEV 对抗性依从率）。
+        #   低分歧 ⇒ 假对撞（只是换个说法复述），出读数作下游线索。
+        try:
+            _by = {}
+            for _c in out:
+                _by.setdefault(str(getattr(_c, "source", "") or ""), []).append(
+                    str(getattr(_c, "desc", "") or ""))
+            if len(_by) >= 2:
+                _ks = list(_by.keys())
+                _yy = yin_yang_divergence(_by[_ks[0]], _by[_ks[1]])
+                if _yy:
+                    self._quant_pending_yy = _yy
+        except Exception:
+            pass
         return out
 
     def _expand_pair_merged_once(self, jobs):
@@ -9106,12 +9464,15 @@ class DGTF:
         carry_block = self._carry_block_text(
             getattr(inp, "carry_constraints", None) or [])
 
+        goal_hint = str(getattr(self, "_goal_hint_next", "") or "")
+
         def build_user(label):
             return (
                 f"{carry_block}\n"
                 f"【原始问题】\n{question}\n\n"
                 f"【锚点重述】\n{anchor}\n"
                 f"{self._role_text(role, round_no)}\n"
+                f"{goal_hint}\n"
                 f"{dec_block}\n\n"
                 f"【上一圈没带走的自问】\n{seed_text}\n\n"
                 f"【池】\n{pool_text}"
@@ -9173,11 +9534,14 @@ class DGTF:
         carry_block = self._carry_block_text(
             getattr(inp, "carry_constraints", None) or [])
 
+        goal_hint = str(getattr(self, "_goal_hint_next", "") or "")
+
         def build_user(label):
             return (
                 f"{carry_block}\n"
                 f"{anchor_block}\n"
                 f"{self._role_text(role, round_no)}\n"
+                f"{goal_hint}\n"
                 f"{dec_block}\n\n"
                 f"【上游的 view · 同一问题下的各自显形】\n{views_text}\n\n"
                 f"【上一圈没带走的自问】\n{seed_text}\n"
@@ -15010,6 +15374,7 @@ class MetaDGTF:
             _duty_streak = self._duty_marginal_streak(view)
             # ★ [四层目标 → 每圈运行] 算本层目标读数并逐圈留痕，再转停止信号。
             self._layer_goal_now(entry, view)
+            self._refresh_goal_hint(entry, view)
             _goal_hit, _goal_why = self._goal_stop_signal(entry, view)
             # ★ [anytime-valid] 是否启用由配置决定（默认关 ⇒ 恒 False）。
             _any_ok = False
@@ -16293,6 +16658,38 @@ class MetaDGTF:
         _now = _tr[-1] if _tr else {}
         return layer_goal_stop_signal(str(entry), _now, _tr)
 
+    def _goal_action_hint(self, entry: str, view) -> str:
+        """[四层目标 → 圈内动作] 读 `view.goal_trace`，返回本圈的**形状指引**。
+
+        ★ 与 `_goal_stop_signal` 读**同一个** `goal_trace`（同一把尺子），
+          但作用在**圈内**（写进 prompt）而不是层末（写进停因）。
+        """
+        _tr = list(getattr(view, "goal_trace", None) or [])
+        _now = _tr[-1] if _tr else {}
+        try:
+            return layer_goal_action_hint(str(entry), _now, _tr)
+        except Exception:
+            return ""
+
+    def _refresh_goal_hint(self, entry: str, view) -> str:
+        """把本圈目标读数转成**下一圈要用的形状指引**，写到 `self._goal_hint_next`。
+
+        ★ 为什么叫「下一圈」：`_layer_goal_now` 是在**每圈结束时**调的，
+          所以此刻算出来的指引自然作用于**下一圈的 prompt**。
+          ⇒ 第二期**零新增接线点**（复用第一期的两处 `_layer_goal_now`）。
+        ★ 本层最后一圈算出来的指引会被丢弃（没有下一圈了）——这不丢信息，
+          因为它对应的`停/不停`由第一期的 `_goal_stop_signal` 负责。
+        """
+        try:
+            _h = self._goal_action_hint(entry, view)
+        except Exception:
+            _h = ""
+        try:
+            self._goal_hint_next = str(_h or "")
+        except Exception:
+            pass
+        return str(_h or "")
+
     def _layer_duty_now(self, entry: str, view) -> dict:
         """[LDG] 在**停止/收敛处**算该层职责读数并记账（读数不是分数）。
 
@@ -16640,6 +17037,7 @@ class MetaDGTF:
         _duty_streak = self._duty_marginal_streak(view)
         # ★ [四层目标 → 每圈运行] 并行通道同样算（两通道一处实现）。
         self._layer_goal_now(entry, view)
+        self._refresh_goal_hint(entry, view)
         _goal_hit, _goal_why = self._goal_stop_signal(entry, view)
         _any_ok = False
         try:
@@ -23165,6 +23563,9 @@ DEFAULT_CONFIG = {
         "parallel_warmup_rounds": 1,
         "pipeline_gate_timeout": 900,
         "parallel_expand": True,
+        # ★ [第六期 · 降本 L1] 阴阳合并成一次调用（省 1 次往返 + 1 份重复 user token）。
+        #   **默认 false** ⇒ 与历史行为逐字一致（零行为差）；打开需显式 opt-in。
+        "merge_expand": False,
         "input_sanity": True,
         "tri_multi_vote": True,
         "tri_vote_retry_empty": 1,

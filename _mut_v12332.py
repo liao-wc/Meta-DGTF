@@ -149,8 +149,11 @@ MUTS = [
     # ── 四层目标**进入每层每圈运行**（M38~M39）──
     #   ★ 打在「运行接线」与「缺读数处理」上：前者是能力可达性，
     #     后者是「没测 ≠ 测出来差」这条红线。
+    #   ★ M38 锚点随第二期更新（P2-1 在这两行之间插了 `_refresh_goal_hint`）
+    #     —— 「重构搬代码 ⇒ 按函数体取区域的判据成批失效」的又一次实例。
     ("M38 目标停因断了运行接线（每圈不判 ⇒ 目标不入运行）",
      "            self._layer_goal_now(entry, view)\n"
+     "            self._refresh_goal_hint(entry, view)\n"
      "            _goal_hit, _goal_why = self._goal_stop_signal(entry, view)\n"
      "            # ★ [anytime-valid] 是否启用由配置决定（默认关 ⇒ 恒 False）。",
      "            _goal_hit, _goal_why = False, \"\"\n"
@@ -175,6 +178,62 @@ MUTS = [
     ("M42 档 2 塞回裸键「耗尽」（吞掉档 3 体力耗尽）",
      "    (2, (\"无新\", \"无推进\", \"连续空转\", \"停滞\", \"材料耗尽\")),",
      "    (2, (\"无新\", \"无推进\", \"连续空转\", \"停滞\", \"材料耗尽\", \"耗尽\")),"),
+    # ── 第二期：四层目标 → **圈内动作**（M43~M44）──
+    #   ★ 打在「圈内接线」与「缺读数处理」上，与第一期的 M38/M39 同构，
+    #     但作用面不同（一个是层末停因，一个是圈内 prompt）。
+    ("M43 圈内指引断了并行通道接线（一处有一处没有）",
+     "        # ★ [四层目标 → 每圈运行] 并行通道同样算（两通道一处实现）。\n"
+     "        self._layer_goal_now(entry, view)\n"
+     "        self._refresh_goal_hint(entry, view)\n",
+     "        # ★ [四层目标 → 每圈运行] 并行通道同样算（两通道一处实现）。\n"
+     "        self._layer_goal_now(entry, view)\n"),
+    #   ★ M44 缺读数也硬给（没测 ⇒ 当约束下给模型）。
+    ("M44 圈内指引缺读数也硬给（没测 ⇒ 当约束下给模型）",
+     "    g = goal or {}\n    _e = str(entry or \"\")\n\n    if _e == \"0\":\n"
+     "        # 修行层（趋近无穷收敛 = 把各面挖到不能再挖）\n"
+     "        _v = _lg_num(g.get(\"excavate\"))",
+     "    g = goal or {}\n    _e = str(entry or \"\")\n    if not g:\n"
+     "        return \"\\n\\n【本层目标的形状指引】\\n（缺读数，仍下指令）\\n\"\n\n"
+     "    if _e == \"0\":\n"
+     "        # 修行层（趋近无穷收敛 = 把各面挖到不能再挖）\n"
+     "        _v = _lg_num(g.get(\"excavate\"))"),
+    # ── 第六期：各环节量化 + 降本（M45~M48）──
+    #   ★ M45 打在**开关默认值**上（偷偷打开 ⇒ 改变历史行为）。
+    ("M45 阴阳合并开关默认打开（未 opt-in 就改行为）",
+     "        if len(jobs) == 2 and _action_on(self.config, \"merge_expand\", False):",
+     "        if len(jobs) == 2 and _action_on(self.config, \"merge_expand\", True):"),
+    #   ★ M46 打在**分歧度方向**上（判据读 verdict ⇒ 方向反了必须判红）。
+    ("M46 阴阳分歧度方向反（复述判 ok、真分歧判假对撞）",
+     "    d[\"verdict\"] = (\"fake_duel\" if d[\"divergence\"] < _YY_DIV_LOW else \"ok\")",
+     "    d[\"verdict\"] = (\"ok\" if d[\"divergence\"] < _YY_DIV_LOW else \"fake_duel\")"),
+    #   ★ M47 打在**缺输入处理**上（没数据也硬表态）。
+    ("M47 保真度缺输入硬表态（没数据也判 ok）",
+     "    if not _q or not _a:\n        return {\"coverage\": None, \"ratio\": None,\n"
+     "                \"fidelity\": None, \"verdict\": \"\"}",
+     "    if not _q or not _a:\n        return {\"coverage\": 0.0, \"ratio\": 0.0,\n"
+     "                \"fidelity\": 0.0, \"verdict\": \"ok\"}"),
+    #   ★ M48 打在**「零成本」这个承诺**上（读数偷偷调 LLM）。
+    #     注入必须**真实可执行**：判据 ㉚ 的 spy 打的是 `mod.LLM.call`
+    #     （`smoke_test.py` 的 `_orig_call = mod.LLM.call`）⇒ 这里必须真的
+    #     走 `LLM.call`（走不存在的东西会 NameError ⇒ 计数仍 0 ⇒ 假绿）。
+    #     用 `globals()` 拼名规避「把 LLM 字面写进函数体」的额外判据。
+    ("M48 语义密度偷偷调 LLM（读数不再零成本）",
+     "    _t = str(text or \"\")\n    if not _t.strip():\n        return None",
+     "    _t = str(text or \"\")\n"
+     "    if _t.strip():\n"
+     "        globals()[\"L\" + \"L\" + \"M\"].call(prompt=\"x\")\n"
+     "    if not _t.strip():\n        return None"),
+    #   ★★ M49 打在**「可达性」**上（真跑逮到的真缺陷）：把 `_quant_note`
+    #      从**模块级函数**退化回 `MetaDGTF` 的**方法**，而调用点在 `DGTF.run`
+    #      （两类无继承）⇒ `DGTF` 实例解析不到 ⇒ `AttributeError` 被
+    #      `except Exception: pass` 静默吞掉 ⇒ 真跑 `quant_readings` 恒空。
+    #      ★ 判据 ㉛ 必须查**可达性**（模块级 + 真写一次）—— 只查
+    #      「`self._quant_note(view,` 出现次数」会**假绿**（这是第一版的错）。
+    ("M49 _quant_note 退回方法（DGTF 解析不到 ⇒ 静默 AttributeError）",
+     "def _quant_note(view, key: str, val) -> None:\n"
+     "    \"\"\"[第六期] 把一条量化读数写进 `view.quant_readings`（**唯一写入口**）。",
+     "def _quant_note_orphan(view, key: str, val) -> None:\n"
+     "    \"\"\"[第六期] 把一条量化读数写进 `view.quant_readings`（**唯一写入口**）。"),
 ]
 
 

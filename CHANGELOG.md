@@ -258,6 +258,133 @@ v1.23.33 相对 v1.23.32
     冒烟 **EXIT=0 / 0 ✗**；AUDIT **68 PASS / 0 FAIL**；
     配置 **192 vs 192 键 / 0 差**（手调 29 项**全部已登记**，非漂移）。
 
+【第六期 · 各环节量化 + 降本（用户授权检索前沿依据后落地）】
+
+  用户指令：「各层的锚点重述是否也要考虑量化，以及阴阳展开，候选生成，ing 的输出
+  内容，还有 view 的输出重点等也要有相关依据……最好可以减少 LLM 的调用或者寻找
+  最优解来减少时间和金钱成本。」⇒ 先检索，再落地，**每条落地都挂一条前沿依据**。
+  依据全文见 `_各环节量化与降本依据_v12333.md`（五条硬依据 + 现状核查表 + 降本账）。
+
+【五条前沿依据（逐条对应一处落地）】
+  ① **重述失真毁下游链** → 锚点重述
+     BenchDrift: The Wording Effect（Thakur et al., arXiv:2608.11694）：含义保持的
+     重述使答案**双向漂移**，**强模型损失远大于收益** —— 脆弱性源于**重述本身**；
+     Revisiting the Reliability of LM in Instruction-Following（arXiv:2512.14754）：
+     同意图换措辞 ⇒ 指令跟随**最多掉 61.8%**。
+  ② **对撞是否真发生** → 阴阳展开
+     SIEV: A Dialectical View of LLM Reasoning（arXiv:2510.18134）：核心指标
+     **对抗性依从率**（反题与正题实际不一致的比例）；「过于胆怯」的模型 pS 高但
+     推理深度低 = **假对撞**。Hegelian Self-Reflection（arXiv:2501.14917）：辩证需
+     明确缺陷类别（未定义构成要素 / 内容不完整 / 不兼容性 / 自我决定不完整）。
+  ③ **早期信号提前停掉低价值样本** → 减少 LLM 调用
+     RASC（Wan et al., NAACL 2025）：criteria-based early stopping ⇒ **省 ~70% 采样**；
+     DeepConf（ICLR 2026）：局部置信窗口（最差片段）作早停触发 ⇒ 省 **84.7% token**
+     且准确率还升 —— ★ **全局平均会掩盖局部塌陷**；Think@n（UVA + Google）：只解
+     短前缀算 DTR ⇒ 只继续 Top-K ⇒ 成本 **−49%**。
+  ④ **语义密度 / 信息瓶颈** → ing 输出与 view 重点
+     Information-Theoretic Principles for Prompt Engineering：**提示压缩率**
+     `R = I(X;Y)/H(X)`，优秀提示 `R > 0.6`；**语义密度**：**超过 5 个无信息 token
+     ⇒ 性能降 15%+**。
+  ⑤ **降本策略叠加顺序** → 全局最优
+     Tokonomics 2025 生产案例：单策略 30~50%，**叠加达 85%**；顺序 =
+     批处理 → Prompt 缓存（**静态在前动态在后**）→ 模型路由 → 提示压缩 →
+     输出长度控制 → 语义缓存。
+
+【★ 现状核查逮到的第一类失败（能力存在但不可达）】
+  · **`_expand_pair_merged_once`（阴阳合并成一次调用）是孤儿函数** —— v1.23.16
+    删档造成；历史文档（`.workbuddy/memory/2026-10-09.md`、`CHANGELOG.md`、
+    `v12316_报告.md`）明确写「**未删**，冒烟判据直接调用它」 ⇒ 删档没删它、
+    但**唯一的调用点没了**。⇒ 本项目第 1 类失败（结构性不可达）。
+  · 并行展开（`parallel_expand`）早已实现，但它只省**往返**、不省 **token**
+    （同 prompt 仍发 N 份）⇒ 合并才有 token 收益。
+
+【落地四项（全部：纯函数 + 零成本 + 可开关 + 有留痕）】
+  L1 **激活阴阳合并**（opt-in `merge_expand`，默认 **false** ⇒ 零行为差）：
+     `_expand_pair` 内 `len(jobs)==2 and _action_on(..., "merge_expand", False)` ⇒
+     走 `_expand_pair_merged_once`；不可用则**回落两臂独立调用**并打印留痕。
+     ⇒ 省 1 次往返 + 1 份重复 user 输入 token。
+  L2 **阴阳分歧度** `yin_yang_divergence(yin, yang) -> dict`（依据 ②）：
+     `divergence = 1 - max_i max_j sim(yin_i, yang_j)`（`_overlap_coef` + `_similar`
+     两把尺子取大）；`verdict = "fake_duel" if divergence < 0.30 else "ok"`；
+     ★ 任一侧空 ⇒ `divergence=None` + `verdict=""`（不表态）。
+  L3 **锚点保真度** `restate_fidelity(question, anchor) -> dict`（依据 ①）：
+     `coverage`（问句关键词被锚点覆盖比例）/ `ratio`（长度比）/
+     `verdict ∈ {ok, thin(ratio<0.35), drifted(coverage<0.20)}`；
+     ★ 任一空 ⇒ 全 `None` + `""`。
+  L4 **语义密度** `semantic_density(text) -> float|None`（依据 ④）：
+     分子 = 扣掉**填充语**（`的/了/是/在/和/与/或/及…综上所述…`）与**标点**
+     （`unicodedata.category` 的首字母 ∈ P/S）后的字符数；分母 = 全字符数。
+     ★ 空输入 ⇒ `None`；**纯字符统计，零 LLM 调用**。
+
+【接线（三处**真实入口**，不只纯函数）】
+  · ing 输出后：`semantic_density(view.collision)` ⇒ `_quant_note(view, "ing_density", …)`，
+    <0.6 打告警（依据 ④ 的 0.6 压缩率边界）。
+  · 锚点确定后：`restate_fidelity(_q0, str(view.anchor))`，`drifted` 打告警。
+  · `_expand` 调用点后：`_quant_note(view, "yin_yang_divergence", _yy)`，
+    `fake_duel` 打告警。
+  · `View.quant_readings: Dict[str, dict]` 新字段 + `to_dict` 出口
+    （`d["quant_readings"]`，**有才出**）；唯一写入口 `_quant_note(view, key, val)`
+    （值不可用就**不写键** —— 「没测」与「测出来是 0」必须区分开）。
+
+【★ 本轮三条判据通则（都被实测踩到）】
+  · **判据的负对照夹具必须抄真产物原文**（同第五期通则，本轮再次生效）。
+  · **关键词优先级表的键会互相吞**（短键 ∈ 长键 ⇒ 先扫到的赢）。
+  · **剥括号的函数要能自证**（喂「关键词在括号里」的合成串判落档当负对照）。
+  · **变异体注入必须真实可执行** —— M48 第一版写 `_LLM_HOOK[0](_t)`，而引擎里
+    **没有** `_LLM_HOOK` ⇒ 变体会 NameError、spy 计数仍是 0 ⇒ **假绿**。
+    改成 `globals()["L"+"L"+"M"].call(prompt="x")`（真的走 `LLM.call`，
+    判据 ㉚ 的 spy 打的就是它）⇒ 立刻判红。
+
+【★★ 真跑逮到的真缺陷：`_quant_note` 结构性不可达（已修）】
+  · **现象**：真跑 `_fullrun_QUANT`（四层齐 / 2 圈 / 136 calls / 133 万 tok / 59.3 min）
+    落盘 `_fullrun_QUANT.quant.json` —— **四层 `quant_readings` 全空**，
+    而四层目标读数 `_fullrun_QUANT.goals.json` **全部有值**
+    （`0 excavate 0.0 / n_aspects 12`；`1 settle 1.0`；`both fuse 0.8519`；
+    `all crystallize 1.0 / n_hits 4`）。
+  · **打点探针**（`_probe_v12333_quant.py`，猴补丁包一层、**不改主文件**）四问定位：
+    Q1 `_quant_note` 调用 **0 次**；Q2 三个纯函数**都跑了**
+    （`restate_fidelity` → `verdict=drifted`／`coverage 0.1875`；
+    `semantic_density` → **0.8004**；`yin_yang_divergence` → `divergence 0.3636`／`ok`）；
+    Q4 `views` 的值是 `View` 对象（不是 dict）。
+  · **根因**：`_quant_note(self, view, key, val)` **只定义在 `MetaDGTF`**，
+    而三处调用点在 **`DGTF.run`**（L8776 / L8812 / L8874）——
+    `MetaDGTF` **不继承** `DGTF`（每跑一层**新建 `DGTF` 实例**）
+    ⇒ `DGTF` 实例解析不到该属性 ⇒ **AttributeError**；
+    而三处调用都包在 `try: … except Exception: pass` 里 ⇒ **静默吞掉**。
+  · ★ 这是本项目错型「**有接线 ≠ 这跑走得到**」+「**静默失败**」的合体。
+    判据 ㉛ 第一版只查「`self._quant_note(view,` 出现 ≥2 次」（**存在性**）
+    ⇒ 接线看似在、实则不可达 ⇒ **判据假绿**。
+  · **修法**（`_patch_v12333_quantnote_fix.py`）：把 `_quant_note` **降为模块级函数**
+    （它本就是纯写入口、**不依赖 self**），三处调用改裸名，
+    并删掉 `MetaDGTF` 的方法版（**避免两个真相源**）。
+  · **判据升级**（㉛）：从「数出现次数」改为**可达性证明** ——
+    ① 模块级 `_quant_note` 必须 `callable`；② **拿真 `View` 写一条，必须落进去**；
+    ③ 不许再有 `self._quant_note(`；④ 真实调用点 == 3 处；⑤ 定义份数 == 1。
+  · **变异体 M49**（`_quant_note` 退回「孤儿函数」名 ⇒ 调用点解析不到）**判红**。
+  · ★★ **本轮最重要的一条通则**：
+    **「有接线」≠「这跑走得到」，而「查字面存在」的判据查不出可达性。**
+    凡新能力，必须配「**真实入口产出**」判据（跑一次真实入口、**断言产出**），
+    不能只查调用点是否存在 —— 与 v1.23.27 的 D1/D2 同族，这是它的第二次显形。
+
+【★ 收尾补漏：`merge_expand` 有读点、没登记】
+  · `_action_on(config, "merge_expand", False)` 是**读取端**：`actions` 段有该键就用它，
+    没有就落**调用点给的默认 false** ⇒ 行为上「默认关」是对的。
+  · 但它**没登记进 `DEFAULT_CONFIG["actions"]`** ⇒
+    ① 用户在 yaml 里**打不开**（有开关但没登记 = 配置写了也没用）；
+    ② 与审计 J 类（「每个键都要有读点」）**互为反面** —— 这次是「有读点、没键」。
+  · 修（`_patch_v12333_merge_key_reg.py`）：`DEFAULT_CONFIG["actions"]` 与出厂 yaml
+    各登记一行（**默认 false ⇒ 零行为差**）。配置键 **192 → 193**，两向对账仍 **0 差**。
+  · ★ 通则：**新增任何开关，必须同时登记「读取端默认值」与「配置声明」** ——
+    只做前者，开关是隐形的；只做后者，是「写了没生效」。
+
+【验收（第六期）】判据 **㉗~㉛**：㉗ 合并开关默认关 + 已接线 / ㉘ 分歧度方向 +
+  缺一侧不表态 / ㉙ 保真度方向 + 缺输入不表态 / ㉚ 语义密度方向 + 空输入不表态 +
+  **「不调 LLM」的构造性证明**（spy `LLM.call` 计数须为 **0**）/
+  **㉛ 可达性**（模块级 + 真写一次 + 无 `self._quant_note(` + 3 处调用 + 1 份定义）；
+  变异体 **M45**（合并开关默认打开）/ **M46**（分歧度方向反）/
+  **M47**（保真度缺输入硬表态）/ **M48**（语义密度偷偷调 LLM）/
+  **M49**（`_quant_note` 结构性不可达）**均判红**（累计 **49**）。
+
 ★ v1.23.33 收束摘要
   交付物：`元DGTF-V1.23.33.py` + `dgtf_config.yaml`（两键 + 升级段）+
   `v12333_报告.md` + 探针/变异体（沿用 `_probe_v12332.py` / `_mut_v12332.py`，已扩容）。
@@ -265,13 +392,22 @@ v1.23.33 相对 v1.23.32
   compact 读数 / 锚点离线+内部批判 / 分级证明标准 / 裁决维度 / 陈旧度 / 三行读数 / 两键 /
   **四层目标读数（layer_goals）+ AutoTune 三阶段决策 + archive 开放探索 +
   目标读数进入每层每圈运行（停止判据 + 层末并列判定）+ 停因级联两处修正
-  （剥括号匹配 / 档 2 去重叠键）**。
+  （剥括号匹配 / 档 2 去重叠键）** +
+  **目标读数进圈内动作（第二期：`layer_goal_action_hint` → `_goal_hint_next` →
+  两条 prompt 的 `{goal_hint}` 注入；★ **零新增接线点**，复用第一期两处
+  `_layer_goal_now`）** +
+  **各环节量化 + 降本（第六期：激活阴阳合并 / 阴阳分歧度 / 锚点保真度 /
+  语义密度，四项纯函数 + 零成本 + 可开关 + 有留痕 + 三处真实入口接线）**。
   未做（有意）：anytime 只用于「结构增长」这一维（一致率每跑只采一次，无逐圈序列）；
   bandit 只做圈数上限（动作空间越大、探索代价越高）；
   锚点联网可达性验证留给联网通道（不把可选成本塞进主路径）；
   三阶段决策**只出建议不落地配置**（红线：建议与执行分开）；
   archive 只在后期学习段使用，不介入前期选择；
-  **目标读数进圈内动作（改 role/prompt 路由）= 第二期，已排期**。
+  阴阳合并是 **opt-in**（`merge_expand` 默认 false ⇒ 零行为差）；
+  语义密度只做**读数与告警**、不自动裁剪 prompt（压缩是不可逆的信息损失，
+  要改行为必须显式开关）；分歧度/保真度只**标注不改流程**（红线：建议与执行分开）；
+  RASC/DeepConf/Think@n 三类早停**只做了依据储备**，未接进主循环
+  （它们要求「判据可提前评估」，本轮先补齐**判据的尺子**，早停留给下一期）。
 
 ---
 
