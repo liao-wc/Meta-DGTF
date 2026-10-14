@@ -5538,16 +5538,13 @@ _AUDIT_CONFIG_EXEMPT = ()
 #:   这 3 个 key 各只出现 1 次，生成→存库→召回却永不生效）。
 #: ★ 判据（两向对账）：候选生成得出的每个 key，必须**要么**在 `_eml_apply`
 #:   有分支、**要么**在这张表里。
-_EML_RECORD_ONLY = {
-    "tri_advisory_only":
-        "证据类：记「三态只做建议」这个事实，本身不是动作（无可执行面）",
-    "note_cost_no_gain":
-        "证据类：成本账（花了钱没增益），供人/AutoTune 读，不自动调参",
-    "carve_first":
-        "跨跑类：它要的是「**下一跑**这些层优先雕」，而本引擎没有跨跑调度"
-        "接口（跨跑建议走 AutoTune 的建议文件，红线：建议与执行分开）"
-        "⇒ 硬接会变成「在一次跑中途改另一件事的优先级」，语义不对",
-}
+_EML_RECORD_ONLY = {}
+#   ★ **现在是空的** —— 原先登记在这里的 3 个 key（`carve_first` /
+#     `tri_advisory_only` / `note_cost_no_gain`）**已全部接线**（按用户口径
+#     「学了要做，与调度层融合」）：见 `_eml_apply` 里对应的三个分支，
+#     它们分别改 `rounds_plan` 与 `_duty_floor` —— 都是**本跑真正会读**的量。
+#   ★ 保留这个空表：将来若真有「只记录、不做」的 key，仍登记在这里并写清原因
+#     （判据两向对账会查「过期登记」）。
 
 
 #: [联网全接] 30 个环节的开关名（与 `_infer_stage_from_stack` 同口径：
@@ -19224,6 +19221,63 @@ class MetaDGTF:
                     _it["applied"] = True
                     _applied.append({"id": _it["id"], "key": _key,
                                      "floor": self._duty_floor})
+            elif _key == "carve_first":
+                # ★ [学了要做 · 与调度融合] 职责不足 ⇒ 给该层**多一圈**
+                #   （多一次 `_he` 沉淀「撞不动的东西」的机会）。
+                #   与 `rounds_delta` 的**理由不同**（职责不足 vs 被截断），
+                #   动作同形 —— 保留两个 key 是为了产物里能分辨「为什么加」。
+                _done = []
+                for _lyr in (_a.get("layers") or []):
+                    _lyr = str(_lyr)
+                    if _lyr not in rounds_plan:
+                        continue
+                    _old = int(rounds_plan.get(_lyr) or 1)
+                    _new = max(1, _old + 1)
+                    if self._control.write(
+                            "rounds.%s" % _lyr, _new,
+                            why="EML carve_first：该层职责不足 ⇒ "
+                                "加一圈给雕（条目 %s）" % _it.get("id"),
+                            trace_ref=_it.get("id")):
+                        rounds_plan[_lyr] = _new
+                        _done.append("%s:%d→%d" % (_lyr, _old, _new))
+                if _done:
+                    _it["applied"] = True
+                    _applied.append({"id": _it["id"], "key": _key,
+                                     "layers": _done})
+            elif _key == "tri_advisory_only":
+                # ★ [学了要做 · 与调度融合] 三态一致率低 ⇒ **该题型的三态读数
+                #   不可当判据** ⇒ 把**职责下限上调一档**（要得更严，别信松判据）。
+                _cur = float(getattr(self, "_duty_floor", 0.0) or 0.0)
+                _new_fl = round(min(1.0, (_cur if _cur > 0 else 0.35) * 1.15), 4)
+                if self._control.write(
+                        "duty_floor", _new_fl,
+                        why="EML tri_advisory_only：三态一致率低 ⇒ "
+                            "判据不可信 ⇒ 上调职责下限（条目 %s）" % _it.get("id"),
+                        trace_ref=_it.get("id")):
+                    self._duty_floor = _new_fl
+                    _it["applied"] = True
+                    _applied.append({"id": _it["id"], "key": _key,
+                                     "floor": _new_fl})
+            elif _key == "note_cost_no_gain":
+                # ★ [学了要做 · 与调度融合] 成本高于历史 p75 而职责未升
+                #   ⇒ **降本**：把**层圈数各减一圈**（最直接的一刀，且可逆）。
+                _done2 = []
+                for _lyr in sorted(rounds_plan):
+                    _old = int(rounds_plan.get(_lyr) or 1)
+                    _new = max(1, _old - 1)
+                    if _new == _old:
+                        continue
+                    if self._control.write(
+                            "rounds.%s" % _lyr, _new,
+                            why="EML note_cost_no_gain：成本高于 p75 而职责未升 "
+                                "⇒ 减一圈（条目 %s）" % _it.get("id"),
+                            trace_ref=_it.get("id")):
+                        rounds_plan[_lyr] = _new
+                        _done2.append("%s:%d→%d" % (_lyr, _old, _new))
+                if _done2:
+                    _it["applied"] = True
+                    _applied.append({"id": _it["id"], "key": _key,
+                                     "layers": _done2})
         self._eml_applied = _applied
         return _applied
 
@@ -24778,7 +24832,15 @@ _ALL_ON_ITEMS = (
     ("external_anchor.as_evidence", "gate", "锚点作 gate 证据"),
     ("api.thinking.default", "enabled", "思考档默认开"),
     ("api.thinking.effort", "high", "思考强度 high"),
+    ("actions.merge_expand", True,
+     "阴阳展开合并成一次调用（降本开关，出厂关）"),
 )
+
+#: [一键全开] **显式豁免表**：`{配置路径: 为什么不开}`。
+#: ★ 规则：`DEFAULT_CONFIG["actions"]` 里**默认关**的能力开关，必须要么在
+#:   `_ALL_ON_ITEMS` 里、要么在这里**显式登记 + 写原因**；两向对账判据
+#:   见 `smoke_test` 的 `check_v12336_allon_cov`（空表 = 当前无豁免项）。
+_ALL_ON_EXEMPT = {}
 
 
 def _apply_all_on(cfg: dict):

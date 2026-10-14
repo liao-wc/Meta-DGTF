@@ -357,6 +357,23 @@ MUTS = [
     ("M68 放宽不同步进 Gate（放宽永远不生效）",
      "                gate._relaxed = _relaxed",
      "                gate._relaxed = set()"),
+    #   ★ M69 打在**「学了要做」**上（删 `carve_first` 分支 ⇒ 它落回
+    #     "无分支且无豁免" ⇒ 判据的两向对账必判红）。
+    ("M69 删 carve_first 分支（又变成学而不做）",
+     "            elif _key == \"carve_first\":",
+     "            elif _key == \"carve_first_DISABLED\":"),
+    #   ★ M70 打在**「分支真的改调度量」**上（分支还在，但什么都不做 ⇒
+    #     源码级判据仍绿，必须靠**功能性**断言抓 ⇒ 这就是那条断言存在的理由）。
+    ("M70 tri_advisory_only 分支空转（分支在、不做事）",
+     "                _new_fl = round(min(1.0, (_cur if _cur > 0 else 0.35) * 1.15), 4)",
+     "                _new_fl = _cur"),
+    #   ★ M71 打在**方向**上（`note_cost_no_gain` 该降圈却写成加圈 ⇒
+    #     "花多赚少反而多跑" ⇒ 判据必判红）。
+    ("M71 note_cost_no_gain 方向反了（该降圈却加圈）",
+     "                    _new = max(1, _old - 1)\n"
+     "                    if _new == _old:\n"
+     "                        continue",
+     "                    _new = max(1, _old + 1)"),
 ]
 
 

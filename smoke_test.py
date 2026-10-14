@@ -11912,6 +11912,38 @@ def check_v12336_eml():
     if _missing:
         bad.append("[EML] 这些 key **生成了但既不应用也没登记豁免**：%r"
                    "（学而不做、且不可见）" % (_missing,))
+    # ★ [学了要做] 五个应用分支都要在（防"删分支"退化）。
+    for _k in ("rounds_delta", "duty_floor", "carve_first",
+               "tri_advisory_only", "note_cost_no_gain"):
+        if '_key == "%s"' % _k not in _ap:
+            bad.append("[EML] `_eml_apply` 缺分支 %r（学了要做，不许只剩记录）"
+                       % _k)
+    # ★ [学了要做 · 功能性] 「分支在」≠「分支真的改了调度量」——
+    #   直接喂一条 `tri_advisory_only` 给 `_eml_apply`，看 `_duty_floor`
+    #   是否**真的变了**（这是"与调度层融合"的可执行证据）。
+    try:
+        _cfg_t = build_cfg(False)
+        _mt_t = mod.MetaDGTF(_cfg_t)
+        _mt_t._eml_mode = "on"
+        _fl0 = float(getattr(_mt_t, "_duty_floor", 0.0) or 0.0)
+        _mt_t._eml_used = [{"id": "T-TRI", "action": {"key": "tri_advisory_only",
+                                                      "rate": 0.1}}]
+        _mt_t._eml_apply({})
+        _fl1 = float(getattr(_mt_t, "_duty_floor", 0.0) or 0.0)
+        if _fl1 == _fl0:
+            bad.append("[EML] `tri_advisory_only` **没有真的改调度量**"
+                       "（_duty_floor %s → %s）⇒ 只是记账不是融合" % (_fl0, _fl1))
+        # 同一把尺子量第四个：`note_cost_no_gain` 应让圈数**变小**
+        _mt_t2 = mod.MetaDGTF(build_cfg(False))
+        _mt_t2._eml_mode = "on"
+        _mt_t2._eml_used = [{"id": "T-COST",
+                             "action": {"key": "note_cost_no_gain"}}]
+        _rp = {"0": 4, "1": 3}
+        _mt_t2._eml_apply(_rp)
+        if not all(int(v) < 4 for v in _rp.values()):
+            bad.append("[EML] `note_cost_no_gain` 没把圈数**降下来**：%r" % (_rp,))
+    except Exception as _e3:
+        bad.append("[EML] 功能性验证抛错：%r" % (_e3,))
     _stale = [k for k in _ex if k not in _gen_keys]
     if _stale:
         bad.append("[EML] 豁免表里有**过期登记**（不再生成）：%r" % (_stale,))
