@@ -253,6 +253,7 @@ _KEY_CN: dict[str, str] = {
     "runtime.web": "联网检索（auto/on/off）",
     # ── spiral 螺旋与停止 ──
     "spiral.soft_max": "软最大圈数（超过才查自然安住）",
+    "spiral.shape_limit": "view 形状窗口（>0 只列最近 N 条，压 prompt token；0=不限）",
     "spiral.hard_max": "硬最大圈数（体力上限，走满截断）",
     "spiral.min_rounds.0": "最低圈数 · 修行(0)",
     "spiral.min_rounds.1": "最低圈数 · 研究(1)",

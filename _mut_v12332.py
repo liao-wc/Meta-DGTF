@@ -7,7 +7,7 @@ import tempfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.41.py"
+SRC = HERE / "元DGTF-V1.23.42.py"
 
 MUTS = [
     ("M1 α 不做机会校正（退化成原始一致率）",
@@ -481,6 +481,9 @@ MUTS = [
     ("M92 自省未消化不附点名（不知是哪批）",
      'if "自省连续" in _sr4 and "未消化点名" not in _sr4:',
      'if False:'),
+    ("M93 shape_of 窗口不生效（退回升全量渲染）",
+     '            return (_xs[-_lim:] if (_lim > 0 and len(_xs) > _lim)\n                    else _xs)',
+     '            return _xs'),
 ]
 
 
@@ -512,6 +515,7 @@ def run_check(mut_path=None):
              "st.check_v12341_goal_fresh() and "
              "st.check_v12341_excavate_dir() and "
              "st.check_v12341_attribution() and "
+             "st.check_v12342_ctx_shape() and "
              "st.check_v12339_ondemand() and "
              "st.check_v12338_relax_targets() and "
              "st.check_v12338_backfeed()) else 1)\n")

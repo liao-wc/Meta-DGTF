@@ -12,6 +12,34 @@
 
 ---
 
+v1.23.42 相对 v1.23.41
+
+【主题】P-1 **上下文裁剪**（backlog 第 1 项，成本最大杠杆）。
+
+【问题】真跑 `_fullrun_V1236FULL` 143 calls / 1.15M tok / 57min，单次均值 8059、最大 32297，
+  **最贵 20% 调用占 46.5% token 且集中后段圈**。根因：`View.shape_of` **无窗口**渲染整个
+  view（候选/&/线头/探针/悬置/裁决…全量），而 `_expand_from_views` 每圈把它当 `views_text`
+  重灌 ⇒ 后段圈单次 prompt 随圈数上涨。（对照：`_pool_text` 已 `[-8:]` 窗口化，`shape_of` 漏了。）
+
+【修法（SOTA observation masking：保留最近 N、更老换结构化占位，成本↓52%）】
+  · `View.shape_of(v, limit=0)`：`limit>0` ⇒ 每类只列最近 N 条 + 表头标总数；`limit=0` **逐字不变**；
+  · `_expand_from_views` 读 `spiral.shape_limit`（默认 0）传入；
+  · 新增配置键 `spiral.shape_limit: 0`（引擎 + yaml + app 三处同步）。
+  ★ 默认 0 = 不限 ⇒ **零行为差**；开启才裁剪。
+
+【验收】
+  · **零行为差**：`shape_of(v)` 与 v1.23.41 **逐字相同**（2308 字符）。
+  · **纯函数压缩**：`limit=8` 2308 → 1016（**↓56%**，48 候选/15 & 的真实规模）。
+  · **接线可达**：造大 upstream view 调 `_expand_from_views` ⇒ user prompt 5106 → 2534（**↓50%**）。
+  · 冒烟 **239 ✓ / 0 ✗**（+`check_v12342_ctx_shape`）；verify **PASS 319 / FAIL 0**；
+    AUDIT **PASS 69 / FAIL 0**；变异体 **91 判红 / 91**（+M93 窗口不生效）。
+  · 全程 **mock，零 API**。
+
+★ v1.23.42 收束摘要：交付「shape_of 窗口化（P-1）」；主文件 25908 行 / 纯 CRLF / AST OK /
+  零新 AST 符号（`shape_of` 加形参）/ 新配置键 1 个（`spiral.shape_limit` 默认 0）；
+  默认零行为差，开启后 views_text ↓56%、expand user prompt ↓50%。未做：未跑真跑对表
+  （成本下降由构造性判据 + 接线单元探针钉住）。
+
 v1.23.41 相对 v1.23.40
 
 【主题】运行质量问题修复 + 缺漏机制优化（P1~P4）。来源：对 8 个真实产物 × 21 个层实例
