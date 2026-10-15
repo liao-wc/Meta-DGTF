@@ -7,7 +7,7 @@ import tempfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.39.py"
+SRC = HERE / "元DGTF-V1.23.40.py"
 
 MUTS = [
     ("M1 α 不做机会校正（退化成原始一致率）",
@@ -410,8 +410,8 @@ MUTS = [
     #   ★ M79 打在**"有增量不该放宽"**上：去掉增量判断 ⇒ 每圈都放宽
     #     （判据的负对照必判红）。
     ("M79 圈级心跳不看增量（有产出也放宽）",
-     '                if _grew <= 0:',
-     '                if True:'),
+     '                if _force or _grew <= 0:\n                    _why = (',
+     '                if True:\n                    _why = ('),
     #   ★ M80 打在**回喂的消费侧**上：把「按 used_as=record 筛选」去掉 ⇒
     #     池里任何条目都算按需结果（判据的「stage 不匹配不复用」负对照必判红）。
     ("M80 回喂不按 used_as=record 筛选（来源不明也复用）",
@@ -424,11 +424,9 @@ MUTS = [
      '        _bf = None'),
     #   ★ M82 打在**放宽表的成员有效性**上：塞一个 `web_search.stages` 里
     #     不存在的环节名 ⇒ 放宽了也不生效（死配置）⇒ 两向对账判据必判红。
-    #   ★ M82 打在**放宽表的成员有效性**上：塞一个 `web_search.stages` 里
-    #     不存在的环节名 ⇒ 放宽了也不生效（死配置）⇒ 两向对账判据必判红。
     ("M82 放宽表塞入不存在的环节名（死配置）",
-     '                       "expand_pair", "expand_pair_merged_once")',
-     '                       "expand_pair", "expand_pair_merged_once",\n'
+     '                       "decompose_koan", "decompose_from_pool")',
+     '                       "decompose_koan", "decompose_from_pool",\n'
      '                       "__no_such_stage__")'),
     #   ★ M83 打在**按需四层一致**上：去掉 on_demand 豁免 ⇒ 修行层环节
     #     即使声明了 ===WEB-NEED=== 也会被 stages 未授权挡掉
@@ -447,6 +445,30 @@ MUTS = [
     ("M84 按需短路总闸（关了也能查）",
      '        if not bool(self.cfg.get("enabled", False)):\n            return False, "web_search 未启用（默认关）"',
      '        if False:\n            return False, "web_search 未启用（默认关）"'),
+    #   ★ M85 打在**stage 兜底**上：不再用 `_infer_stage_from_stack()`
+    #     取真实环节名 ⇒ record 的 stage 为空 ⇒ 回喂永远匹配不上
+    #     （= v1.23.39 真跑前的状态；判据「stage 兜底失败」必判红）。
+    ("M85 回喂 stage 不兜底（记录无名 ⇒ 回喂匹配不上）",
+     '        _st = str(stage or "").strip()',
+     '        _st = str(stage or "").strip()  # M85 故意不兜底',),
+    #   ★ M86 打在**跳过元组**上：`_web_need_report` 不被跳过 ⇒
+    #     从它内部调 `_infer_stage_from_stack()` 会把**它自己**当成
+    #     环节名 ⇒ 入库 stage = "web_need_report"（判据必判红）。
+    ("M86 跳过元组漏本函数（把自己当环节名）",
+     '            if _n not in ("call", "_call_long", "_web_augment",\n'
+     '                          "_web_need_report", "<module>") \\\n',
+     '            if _n not in ("call", "_call_long", "_web_augment",\n'
+     '                          "<module>") \\\n'),
+    #   ★ M87 打在**强制放宽判据**上：`_force` 被忽略 ⇒ `relax_force=true`
+    #     在有增量时不再放宽（开关成了摆设）；判据「force=true 也放宽」必判红。
+    ("M87 强制放宽开关被忽略（force 成摆设）",
+     '                if _force or _grew <= 0:',
+     '                if _grew <= 0:'),
+    #   ★ M88 打在**放宽表扩项**上：去掉 `decompose_from_pool` ⇒
+    #     用户口径「要扩」被回退；判据「放宽表缺 decompose_*」必判红。
+    ("M88 放宽表扩项被回退（少一个 decompose_*）",
+     '                       "decompose_koan", "decompose_from_pool")',
+     '                       "decompose_koan")'),
 ]
 
 
@@ -473,6 +495,8 @@ def run_check(mut_path=None):
              "st.check_v12336_eml() and "
              "st.check_v12336_webneed() and "
              "st.check_v12337_roundtick() and "
+             "st.check_v12340_backfeed_stage() and "
+             "st.check_v12340_relax_force() and "
              "st.check_v12339_ondemand() and "
              "st.check_v12338_relax_targets() and "
              "st.check_v12338_backfeed()) else 1)\n")

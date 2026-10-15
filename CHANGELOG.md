@@ -12,6 +12,48 @@
 
 ---
 
+v1.23.40 相对 v1.23.39
+
+【主题】两件事：① 回喂 **stage 兜底**（声明入库带真实环节名）；② 放宽表 **8→12** + 加「强制放宽」开关。
+
+【问题①（真跑缺口）】v1.23.38 的池复用式回喂要求 `record["stage"] == _st` 才命中；
+  但按需声明**全部**发生在 `LLM.call(stage=None)`（展开主路径不传 stage）⇒ 入库
+  record 的 `stage` 为空 ⇒ **回喂在真实调用图上从未生效**（v1.23.39 R1：4 次声明
+  全 `stage=None`、`[WEB-BACKFEED]` 0 次）。探针之所以绿，是**显式传了 stage**。
+
+【修法①】两处，不新增 AST 符号：
+  · `_infer_stage_from_stack` 跳过元组加 `_web_need_report` —— 否则会把自己当环节名；
+  · `LLM._web_need_report` 在 stage 为空时**兜底**取真实环节名再入库；
+    兜底只在真有声明时算（不声明零开销），取不到仍用空串（宁可匹配不上，不许猜错）。
+
+【问题②（遗留改判）】v1.23.39 遗留「放宽表可扩 `decompose_*`」。实测（R1/R2）原本
+  指向不扩（拆解触发仅 1~2 次）；但用户口径反转：**「扩也无妨，先强制它使用」** ⇒ 本轮扩。
+
+【修法②】不新增 AST 符号：
+  · `_TICK_WEB_RELAX` **8→12**：加 `decompose_normal/hybrid/koan/from_pool` 四兄弟；
+  · 圈级心跳取 `web_search.relax_force`：`true` 时**每圈**无条件走全表放宽（不再
+    要求「上一圈零增量」），`why` 标 `[强制放宽]`；
+  · 新增配置键 `web_search.relax_force: false`（引擎 `DEFAULT_CONFIG` + `dgtf_config.yaml`
+    + `dgtf_app/params.py` 三处同步）。
+  ★ 默认 `false` ⇒ 与改前逐字等价（零行为差）；拆解项只在放宽时开，成本受控；
+    没动任何成本闸门（仍只走 `ControlSurface`）。
+
+【验收】
+  · 冒烟 **235 ✓ / 0 ✗**（新增 `check_v12340_backfeed_stage` 四臂 + `check_v12340_relax_force`
+    四臂；负对照指向 v1.23.39 判红 2 条）。
+  · verify `--phase all` **PASS 319 / FAIL 0**；AUDIT **PASS 69 / FAIL 0**。
+  · 变异体 **86 判红 / 86**（新增 M85 去兜底 / M86 漏本函数 / M87 强制开关被忽略 /
+    M88 扩项被回退；均锚点命中 1 + 变异后 AST OK + 单跑判红）。
+  · **真跑靶点验证（关键）**：修行层 2 圈，同 v1.23.39 R1 题面 ——
+    `[WEB-NEED] stage=expand_pair_merged_once 声明 3 条 ⇒ 采纳 6 条`（stage 是真实名，
+    不再是 `None`）+ `[WEB-BACKFEED] stage=expand_pair_merged_once 复用 6 条 ⇒ 注入`
+    **2 次** ⇒ 回喂在真实调用图上闭环（v1.23.39 为 0）。
+
+★ v1.23.40 收束摘要：交付「回喂闭环修复 + 放宽表扩展 12 + 强制放宽开关」；主文件
+  25832 行 / 纯 CRLF / AST OK / 零新 AST 符号；验收全绿（冒烟 235·verify 319·AUDIT 69·变异体
+  86 全判红）；真跑靶点 `[WEB-BACKFEED]` 由 0→2 次证明回喂真生效。未做：R3 仅 2 圈靶点，
+  未做多题型 `relax_force=true` 对照（留待按需真跑）。
+
 v1.23.39 相对 v1.23.38
 
 【主题】按需联网**四层一致**（环节自己声明了就真查）。

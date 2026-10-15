@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.39.py"
+SRC = HERE / "元DGTF-V1.23.40.py"
 
 os.environ.setdefault("DGTF_API_KEY", "sk-smoke-test-key")
 
@@ -12284,6 +12284,212 @@ def check_v12336_allweb():
     return True
 
 
+def check_v12340_relax_force():
+    """[v1.23.40] 强制放宽 `web_search.relax_force` + 放宽表扩到 12。
+
+    ★ 用户口径：「放宽表中步扩展要扩，先强制它使用，可能有些题目需要，
+      扩也无妨」⇒ ① 放宽表补 4 个 `decompose_*`（8 → 12）；
+      ② 新增 `relax_force`（默认 false）⇒ true 时**每圈都**放宽，
+         不再要求「上一圈池零增量」。
+    ★ 零行为差：force=false 时判据与改前**逐字等价**（有增量 ⇒ 不放宽）。
+    """
+    bad = []
+    src = SRC.read_text(encoding="utf-8").replace("\r\n", "\n")
+
+    # ── ④ 静态：放宽表含 4 个 decompose_* ──
+    _m = re.search(r"_TICK_WEB_RELAX = \(([^)]*)\)", src, re.S)
+    _members = re.findall(r'"([a-z_]+)"', _m.group(1)) if _m else []
+    for _st in ("decompose_normal", "decompose_hybrid", "decompose_koan",
+                "decompose_from_pool"):
+        if _st not in _members:
+            bad.append("[强制放宽] 放宽表缺 `%s`（用户口径「要扩」）" % _st)
+    if len(_members) != 12:
+        bad.append("[强制放宽] 放宽表成员 %d 个（要求 12）" % len(_members))
+    if '"relax_force": False' not in src:
+        bad.append("[强制放宽] DEFAULT_CONFIG 缺 `web_search.relax_force`")
+
+    # ── 构造性：真驱动 `_before_round` ──
+    class _P:
+        def __init__(self):
+            self.amps = []
+            self.threads = []
+
+    def _run(force, grow):
+        cfg = build_cfg(False)
+        cfg.setdefault("web_search", {})
+        cfg["web_search"]["relax_force"] = bool(force)
+        mt = mod.MetaDGTF(cfg)
+        p = _P()
+        mt._before_round("0", p, 1)          # 第一圈：只记基线
+        if grow:
+            p.amps = [{"desc": "新 & 1"}]     # 有增量
+        mt._before_round("0", p, 2)          # 第二圈：看是否放宽
+        # ★ 返回 (键列表, why 列表)：whys 必须在此处取 ——  是**局部变量**
+        #   （首版把它拿到外层用 ⇒ NameError「mt is not defined」，单跑逮到）。
+        _ap = list(mt._control.applied or [])
+        return ([x.get("key") for x in _ap],
+                [str(x.get("why") or "") for x in _ap])
+
+    try:
+        # ① 默认 + 有增量 ⇒ 不放宽（零行为差基线）
+        _k1, _w1 = _run(False, True)
+        if any(str(k).startswith("web.allow.") for k in _k1):
+            bad.append("[强制放宽] 默认配置下**有增量**却放宽了"
+                       "（零行为差被破）：%r" % (_k1,))
+        # ② force=true + 有增量 ⇒ 也放宽（核心）
+        _k2, _whys = _run(True, True)
+        if not any(str(k).startswith("web.allow.") for k in _k2):
+            bad.append("[强制放宽] force=true 时**没放宽**（开关不生效）：%r"
+                       % (_k2,))
+        #   放宽的应含 decompose_*（12 个全表）
+        _fk = [str(k)[len("web.allow."):] for k in _k2
+               if str(k).startswith("web.allow.")]
+        for _st in ("decompose_normal", "decompose_from_pool"):
+            if _st not in _fk:
+                bad.append("[强制放宽] force=true 时未放行 `%s`：%r"
+                           % (_st, _fk))
+        #   留下「是不是强制」的痕迹（why 里应写明）
+        if not any("强制" in w or "relax_force" in w for w in _whys):
+            bad.append("[强制放宽] 留痕里看不出是强制放宽：%r" % (_whys[:3],))
+        # ③ 默认 + 零增量 ⇒ 仍放宽（旧机制未破）
+        _k3, _w3 = _run(False, False)
+        if not any(str(k).startswith("web.allow.") for k in _k3):
+            bad.append("[强制放宽] 默认配置下**零增量**却没放宽"
+                       "（旧机制破了）：%r" % (_k3,))
+    except Exception as _e:
+        bad.append("[强制放宽] 构造性驱动抛错：%r" % (_e,))
+
+    if bad:
+        for x in bad:
+            print("  X", x)
+        return False
+    print("  ✓ v1.23.40 强制放宽（表 12 个含 decompose_* · force=true 每圈放行 · "
+          "默认有增量不放宽/零增量仍放宽 · 留痕可辨）全过")
+    return True
+
+
+def check_v12340_backfeed_stage():
+    """[v1.23.40] 回喂 stage 兜底：声明入库要带**真实环节名**。
+
+    ★ 为什么要有这条（v1.23.39 真跑 R1 实证）：按需声明**全部**发生在
+      `LLM.call(stage=None)`（展开主路径不传 stage）⇒ record 的 stage 为空
+      ⇒ 回喂按 stage 匹配**永远匹配不上** ⇒ `[WEB-BACKFEED]` 0 次
+      ⇒ v1.23.38 的「回喂」在真实调用图上**从未生效过**。
+      ★ 探针能触发是因为探针**显式传了 stage**，掩盖了真实调用点 stage 为空。
+
+    四层验证：① 真跑法（在一个真名 `_expand_from_question` 的函数里走
+    `stage=None` ⇒ 兜底必须取到 `expand_from_question`）② 显式 stage
+    不受影响 ③ 静态：跳过元组含 `_web_need_report`（不跳会把自己当环节名）
+    ④ 端到端：入池 item 的 `stage` 字段真带环节名。
+    """
+    bad = []
+    src = SRC.read_text(encoding="utf-8").replace("\r\n", "\n")
+
+    # ── ③ 静态：跳过元组 ──
+    if '"_web_need_report", "<module>"' not in src:
+        bad.append("[回喂stage] 跳过元组缺 `_web_need_report`"
+                   "（会把自己当环节名）")
+
+    # ── 造一个「真名叫 _expand_from_question」的调用者 ──
+    _seen = {}
+
+    def _fake_searcher(stage, queries, rn, used_as="evidence", pre_seq=0):
+        _seen["stage"] = str(stage)
+        return [{"claim": "命中", "url": "http://x", "tier": 3}]
+
+    mod._llm_ctx_set(web_searcher=_fake_searcher, question="题", round=1,
+                     entry="1")
+
+    _Q = chr(34)
+    _M = getattr(mod, "_WEB_NEED_MARK", "===WEB-NEED===")
+    _BODY = ("产出正文\n" + _M + "\n{%squeries%s: [%sX%s]}"
+             % (_Q, _Q, _Q, _Q))
+
+    class _LLM:
+        def call(self, system, user, **kw):
+            return mod.LLM._web_need_report(self, kw.get("stage"), _BODY)
+
+    def _expand_from_question(self, inp):
+        """★ 函数名必须**真的是** `_expand_from_question`**（栈推断靠它）。"""
+        return self.call("sys", "user", stage=None)
+
+    _llm = _LLM()
+    try:
+        _n = _expand_from_question(_llm, None)
+        _got = _seen.get("stage")
+        if _n <= 0:
+            bad.append("[回喂stage] 声明未被采纳（返回 %r）" % (_n,))
+        if _got in (None, "", "web_need_report"):
+            bad.append("[回喂stage] stage 兜底失败：searcher 收到 %r"
+                       "（空 ⇒ 回喂匹配不上）" % (_got,))
+        elif _got != "expand_from_question":
+            bad.append("[回喂stage] stage 兜底取错环节名：%r"
+                       "（应 expand_from_question）" % (_got,))
+        # ② 显式 stage 不受影响
+        _seen.clear()
+        _llm.call("sys", "user", stage="ing")
+        if _seen.get("stage") != "ing":
+            bad.append("[回喂stage] 显式 stage 被兜底覆盖：%r（应 ing）"
+                       % (_seen.get("stage"),))
+    except Exception as _e:
+        bad.append("[回喂stage] 驱动抛错：%r" % (_e,))
+
+    # ── ④ 端到端：入池 item 的 stage 字段 ──
+    try:
+        class _Gate:
+            def __init__(self):
+                self._relaxed = set()
+
+            def allow(self, stage, round_no, on_demand=False):
+                return True, ""
+
+            def note_call(self, stage, round_no):
+                pass
+
+            def note_failure(self, kind=""):
+                return False
+
+            def note_success(self):
+                pass
+
+        class _Client:
+            def search(self, q):
+                return ([{"claim": "命中", "url": "http://x", "tier": 3}], "")
+
+        class _Pool:
+            web_results = []
+            web_errors = []
+            meta = []
+            _web_cfg = None
+            web_as_evidence = False
+
+        class _Owner:
+            config = {"web_search": {"enabled": True, "stages": {}}}
+            pools = {"1": _Pool()}
+            _control = None
+            _TICK_WEB_RELAX = ()
+
+        _o = _Owner()
+        _o._web_gate, _o._web_client = _Gate(), _Client()
+        _r = mod.MetaDGTF._web_search(_o, "expand_from_question",
+                                      ["测试查询"], 1, "record", 0)
+        if not _r:
+            bad.append("[回喂stage] `_web_search` 返回空")
+        elif str(_r[0].get("stage")) != "expand_from_question":
+            bad.append("[回喂stage] 入池 item 的 stage 不对：%r"
+                       % (_r[0].get("stage"),))
+    except Exception as _e:
+        bad.append("[回喂stage] 端到端抛错：%r" % (_e,))
+
+    if bad:
+        for x in bad:
+            print("  X", x)
+        return False
+    print("  ✓ v1.23.40 回喂 stage 兜底（None ⇒ 真实环节名 · 显式不受影响 · "
+          "入池带环节名）全过")
+    return True
+
+
 def check_v12339_ondemand():
     """[v1.23.39] 按需联网**四层一致**：声明即查，不再被逐环节静态开关挡。
 
@@ -14792,6 +14998,10 @@ def main():
     if not check_v12336_eml():
         return 1
     if not check_v12336_webneed():
+        return 1
+    if not check_v12340_relax_force():
+        return 1
+    if not check_v12340_backfeed_stage():
         return 1
     if not check_v12339_ondemand():
         return 1

@@ -319,6 +319,7 @@ _KEY_CN: dict[str, str] = {
     "web_search.as_evidence": "引用授权（off/record/crosscheck/evidence/gate）",
     "web_search.tier_floor": "引用表 tier 上限",
     "web_search.auto_disable_after_failures": "连续失败 N 次自动关闭联网",
+    "web_search.relax_force": "【强制放宽】每圈都放宽放宽表（12 环节）联网（默认关）",
     "web_search.tier_proposal": "tier 提案表（人工确认前不生效）",
     "web_search.domain_tier_rules": "域名 → tier 人工确认表",
     # ★ v1.23.26（另一条并行线）新增的 sim 段两个键 —— 语义取自
