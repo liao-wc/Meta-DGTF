@@ -1,0 +1,10 @@
+元 DGTF v1.23.44 定稿存档
+
+主题：P-3 学习闭环 —— EML 阈值冷启自适应（修「升级/遗忘恒 0」）。
+实测：3 条 shadow 卡在 n_evidence=1 < _EML_PROMOTE_N(3) 永不升级；遗忘需 age>60 天。
+两者都是 SOTA 点名的失败模式（cold start / static thresholds）。
+修法：eml_promote/eml_sweep_forget 加 adaptive 形参（库<20 晋升门槛降到 1）；
+新键 memory.eml_adaptive（默认 false ⇒ 逐字零行为差）。
+
+验收：冒烟 241/0 · verify 319/0 · AUDIT 69/0 · 变异体 93/93（三片 1-31/32-62/63-93）。
+主文件 元DGTF-V1.23.44.py（26004 行 / 纯 CRLF / AST OK / 零新符号 / 新键 memory.eml_adaptive）。
