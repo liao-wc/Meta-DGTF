@@ -7,7 +7,7 @@ import tempfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.38.py"
+SRC = HERE / "元DGTF-V1.23.39.py"
 
 MUTS = [
     ("M1 α 不做机会校正（退化成原始一致率）",
@@ -424,10 +424,29 @@ MUTS = [
      '        _bf = None'),
     #   ★ M82 打在**放宽表的成员有效性**上：塞一个 `web_search.stages` 里
     #     不存在的环节名 ⇒ 放宽了也不生效（死配置）⇒ 两向对账判据必判红。
+    #   ★ M82 打在**放宽表的成员有效性**上：塞一个 `web_search.stages` 里
+    #     不存在的环节名 ⇒ 放宽了也不生效（死配置）⇒ 两向对账判据必判红。
     ("M82 放宽表塞入不存在的环节名（死配置）",
      '                       "expand_pair", "expand_pair_merged_once")',
      '                       "expand_pair", "expand_pair_merged_once",\n'
      '                       "__no_such_stage__")'),
+    #   ★ M83 打在**按需四层一致**上：去掉 on_demand 豁免 ⇒ 修行层环节
+    #     即使声明了 ===WEB-NEED=== 也会被 stages 未授权挡掉
+    #     （= v1.23.38 的老问题；判据「修行层按需仍被拒」必判红）。
+    ("M83 按需不豁免逐环节授权（修行层声明也查不到）",
+     '        if not on_demand \
+',
+     '        if True or not on_demand \
+'),
+    #   ★ M84 打在**成本闸门**上：总闸检查被短路 ⇒ 按需路径在
+    #     web_search.enabled=False 时也放行（按需=无上限 ⇒ 成本失控）。
+    #   ★ M84 打在**成本闸门**上：总闸检查被短路 ⇒ 按需路径在
+    #     web_search.enabled=False 时也放行（按需=无上限 ⇒ 成本失控）。
+    #   ★ M84 打在**成本闸门**上：总闸检查被短路 ⇒ 按需路径在
+    #     web_search.enabled=False 时也放行（按需=无上限 ⇒ 成本失控）。
+    ("M84 按需短路总闸（关了也能查）",
+     '        if not bool(self.cfg.get("enabled", False)):\n            return False, "web_search 未启用（默认关）"',
+     '        if False:\n            return False, "web_search 未启用（默认关）"'),
 ]
 
 
@@ -454,6 +473,7 @@ def run_check(mut_path=None):
              "st.check_v12336_eml() and "
              "st.check_v12336_webneed() and "
              "st.check_v12337_roundtick() and "
+             "st.check_v12339_ondemand() and "
              "st.check_v12338_relax_targets() and "
              "st.check_v12338_backfeed()) else 1)\n")
     r = subprocess.run([sys.executable, "-c", code],

@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.38.py"
+SRC = HERE / "元DGTF-V1.23.39.py"
 
 os.environ.setdefault("DGTF_API_KEY", "sk-smoke-test-key")
 
@@ -12284,6 +12284,81 @@ def check_v12336_allweb():
     return True
 
 
+def check_v12339_ondemand():
+    """[v1.23.39] 按需联网**四层一致**：声明即查，不再被逐环节静态开关挡。
+
+    ★ 问题（用户口径「四个层都应该一致，按需联网检索」）：
+      v1.23.36 起「所有层都能联网」说的是**代码路径**（修行层硬豁免已取消）；
+      但 `WebSearchGate.allow` 仍要求 `stages.<环节>` 静态授权，而 37 个开关
+      默认只开 5 个、**修行层一个都没开** ⇒ 修行层环节即使写了
+      `===WEB-NEED===` 声明也会被 `stage 'ing' 未授权` 挡掉
+      ⇒ **声明了却查不到 = 四层行为不一致**。
+    ★ 修法：`on_demand=True`（仅来自 `used_as == "record"`）跳过静态授权，
+      **总闸 / 连续失败降级 / 三层配额一条不减**。
+    ★ 四层验证：正（修行层声明即放行）+ 负一（总闸关仍拒）
+      + 负二（配额打满仍拒）+ 负三（非按需路径仍受开关管）。
+    """
+    bad = []
+    src = SRC.read_text(encoding="utf-8").replace("\r\n", "\n")
+
+    # ── 静态：on_demand 的产生点必须唯一 ──
+    _n = len(re.findall(r'on_demand\s*=\s*\(str\(used_as\)\s*==\s*"record"\)',
+                        src))
+    if _n != 1:
+        bad.append("[按需四层] `on_demand` 产生点 %d 处（要求 1：只从 "
+                   "used_as=record 来）" % _n)
+    if "on_demand: bool = False" not in src:
+        bad.append("[按需四层] `allow` 缺 `on_demand` 形参")
+
+    # ── 构造性：直接驱动 WebSearchGate（真对象）──
+    def _cfg(en=True):
+        return {"web_search": {"enabled": en,
+                               "stages": {"research_evidence": True}}}
+
+    try:
+        g = mod.WebSearchGate(_cfg(True), run_id="smoke")
+        # 正：修行层环节（未授权）按需放行
+        ok, why = g.allow("ing", 1, on_demand=True)
+        if not ok:
+            bad.append("[按需四层] 修行层按需仍被拒：%s（四层不一致没修好）"
+                       % why)
+        # 负三：非按需路径仍受逐环节开关管
+        if g.allow("ing", 1)[0]:
+            bad.append("[按需四层] 非按需路径被放行（静态开关失效！）")
+        # 已授权 stage 两路径都放行
+        if not g.allow("research_evidence", 1, on_demand=True)[0]:
+            bad.append("[按需四层] 已授权 stage 的按需路径反被拒")
+        if not g.allow("research_evidence", 1)[0]:
+            bad.append("[按需四层] 已授权 stage 的常规路径被拒（回归）")
+        # 负一：总闸关 ⇒ 按需也拒
+        g2 = mod.WebSearchGate(_cfg(False), run_id="smoke")
+        if g2.allow("ing", 1, on_demand=True)[0]:
+            bad.append("[按需四层] 总闸关时按需仍放行（成本闸门失效！）")
+        # 负二：配额打满 ⇒ 按需也拒
+        _c3 = _cfg(True)
+        _c3["web_search"]["quota"] = {"per_run_total": 2,
+                                      "per_stage_total": 8,
+                                      "per_stage_round": 2}
+        g3 = mod.WebSearchGate(_c3, run_id="smoke")
+        for _i in range(2):
+            g3.note_call("ing", 1)
+        ok3, why3 = g3.allow("ing", 1, on_demand=True)
+        if ok3:
+            bad.append("[按需四层] 配额打满后按需仍放行（按需=无限检索！）")
+        elif "配额" not in why3:
+            bad.append("[按需四层] 配额拒绝原因不含「配额」：%s" % why3)
+    except Exception as _e:
+        bad.append("[按需四层] Gate 驱动抛错：%r" % (_e,))
+
+    if bad:
+        for x in bad:
+            print("  X", x)
+        return False
+    print("  ✓ v1.23.39 按需联网四层一致（修行层声明即查 · 非按需仍受开关 · "
+          "总闸/配额照旧 · on_demand 单一来源）全过")
+    return True
+
+
 def check_v12338_relax_targets():
     """[v1.23.38] 圈级心跳的**放宽目标表**与 `web_search.stages` 两向对账。
 
@@ -14717,6 +14792,8 @@ def main():
     if not check_v12336_eml():
         return 1
     if not check_v12336_webneed():
+        return 1
+    if not check_v12339_ondemand():
         return 1
     if not check_v12338_relax_targets():
         return 1
