@@ -1,0 +1,12 @@
+v1.23.37 定稿：CHANGELOG 补 ★ 收束摘要 + 回填验收实测数字
+
+· CHANGELOG 的 v1.23.37 段：【验收】按实测回填 + 新增 `★ v1.23.37 收束摘要`
+  （交付物 / 改了哪几处 / 验收数字 / 未做 / 存档点）。
+· 补记 app 侧验收：`dgtf_app/selftest.py` ⇒ **PASS 368 / FAIL 0**（mock，零花费）。
+· 判据自检：`check_v72_changelog_hygiene` ⇒ 56 段严格递减、40 个收束摘要标题无重复
+  （首段 v1.23.37）。
+
+【全套验收汇总（v1.23.37）】
+  冒烟 230 ✓ / 0 ✗ · verify --phase all PASS 319 / FAIL 0（26 阶段）·
+  AUDIT PASS 69 / FAIL 0 · 变异体 77 判红 / 77 总数 · app 自检 PASS 368 / FAIL 0 ·
+  真跑 V1236FULL 143 calls / 12 条读数 / EML 真应用 3 条 rounds_delta。
