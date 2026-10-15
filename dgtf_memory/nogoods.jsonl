@@ -11,3 +11,4 @@
 {"t": 1791964687.2103179, "run": "QPROBE", "kind": "used_but_below_floor", "why": "below_floor", "cand": {"n": 3, "duty_med": 0.0909}}
 {"t": 1791965558.9652429, "run": "QFIX_20261014_160352", "kind": "used_but_below_floor", "why": "below_floor", "cand": {"n": 3, "duty_med": 0.249}}
 {"t": 1791980063.194734, "run": "V1234FULL_20261014_190755", "kind": "used_but_below_floor", "why": "below_floor", "cand": {"n": 3, "duty_med": 0.0}}
+{"t": 1792009665.036944, "run": "V1236FULL_20261015_033027", "kind": "used_but_below_floor", "why": "below_floor", "cand": {"n": 3, "duty_med": 0.2319}}

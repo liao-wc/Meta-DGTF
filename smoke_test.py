@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.36.py"
+SRC = HERE / "元DGTF-V1.23.37.py"
 
 os.environ.setdefault("DGTF_API_KEY", "sk-smoke-test-key")
 
@@ -11914,7 +11914,8 @@ def check_v12336_eml():
                    "（学而不做、且不可见）" % (_missing,))
     # ★ [学了要做] 五个应用分支都要在（防"删分支"退化）。
     for _k in ("rounds_delta", "duty_floor", "carve_first",
-               "tri_advisory_only", "note_cost_no_gain"):
+               "tri_advisory_only", "note_cost_no_gain",
+               "thinking_hint", "action_hint"):
         if '_key == "%s"' % _k not in _ap:
             bad.append("[EML] `_eml_apply` 缺分支 %r（学了要做，不许只剩记录）"
                        % _k)
@@ -11933,6 +11934,31 @@ def check_v12336_eml():
         if _fl1 == _fl0:
             bad.append("[EML] `tri_advisory_only` **没有真的改调度量**"
                        "（_duty_floor %s → %s）⇒ 只是记账不是融合" % (_fl0, _fl1))
+        # ★ [与调度融合 · 扩面] 同一把尺子量另外两个 ——
+        #   `thinking_hint` 必须**真的**改到消费方（`llm.thinking_stages`）；
+        #   `action_hint` 必须**真的**落进控制面（白名单内）。
+        _mt_t3 = mod.MetaDGTF(build_cfg(False))
+        _mt_t3._eml_mode = "on"
+        _mt_t3._eml_used = [{"id": "T-THINK", "why": "判据探针",
+                             "action": {"key": "thinking_hint",
+                                        "stages": ["assess_decidability"],
+                                        "value": "enabled"}}]
+        _mt_t3._eml_apply({})
+        _ts3 = getattr(getattr(_mt_t3, "llm", None), "thinking_stages", None)
+        if not (isinstance(_ts3, dict)
+                and _ts3.get("assess_decidability") == "enabled"):
+            bad.append("[EML] `thinking_hint` **没能改到消费方**"
+                       "（llm.thinking_stages 没变）⇒ 只是记账不是融合")
+        _mt_t4 = mod.MetaDGTF(build_cfg(False))
+        _mt_t4._eml_mode = "on"
+        _mt_t4._eml_used = [{"id": "T-ACT", "why": "判据探针",
+                             "action": {"key": "action_hint",
+                                        "name": "parallel_expand",
+                                        "value": False}}]
+        _mt_t4._eml_apply({})
+        _ap4 = [x.get("key") for x in (_mt_t4._control.applied or [])]
+        if "actions.parallel_expand" not in _ap4:
+            bad.append("[EML] `action_hint` **没落进控制面**：%r" % (_ap4,))
         # 同一把尺子量第四个：`note_cost_no_gain` 应让圈数**变小**
         _mt_t2 = mod.MetaDGTF(build_cfg(False))
         _mt_t2._eml_mode = "on"
@@ -12102,6 +12128,15 @@ def check_v12336_readings():
     if "读数总表（四层）" not in _log:
         bad.append("[读数] 日志里**没有**结束总表")
 
+    # ★ [读数完整性 · 真跑逮到] `merge_expand` 开时，合并路径**提前 return**
+    #   ⇒ 阴阳分歧读数会**静默消失**（四层都缺）。合并路径修好后，
+    #   它必须**有档**（值可为「不表态」= `verdict=""`）。
+    if "self._quant_pending_yy = {" in src and '"merged": True' in src:
+        pass          # 修复在位
+    else:
+        bad.append("[读数] 合并路径**没记「不表态」档** ⇒ "
+                   "`merge_expand` 开时阴阳分歧读数会静默消失")
+
     _rt = (_res or {}).get("readings_table") or ""
     if not _rt:
         bad.append("[读数] 产物里没有 `readings_table`")
@@ -12246,6 +12281,175 @@ def check_v12336_allweb():
         return False
     print("  ✓ v1.23.36 联网全接（30 环节一键覆盖 · 上下文注入 · "
           "四层全可注 · 开关精确 · 拒因可追溯 · 控制面已接线）全过")
+    return True
+
+
+def check_v12337_roundtick():
+    """[v1.23.37] **圈级心跳**：用「池增量」当上一圈产出的代理，只改一处。
+
+    ★ 为什么用池增量而不是 view：`view` 每圈新建 ⇒ 要跨圈就得在两个圈循环里
+      各存一次（本项目反复踩的「同一条逻辑两处各写一份」）。
+      `_before_round` **每圈都调** ⇒ 在它里记基线，下一圈的增量就是上一圈产出。
+    """
+    bad = []
+    src = SRC.read_text(encoding="utf-8").replace("\r\n", "\n")
+    if "_tick_prev_n" not in src:
+        bad.append("[圈心跳] 缺 `_tick_prev_n`（跨圈基线没记）")
+    if "def _before_round" not in src:
+        bad.append("[圈心跳] 找不到 `_before_round`")
+    else:
+        _i = src.find("def _before_round")
+        _j = src.find("\n    def ", _i + 10)
+        _body = src[_i:_j if _j > 0 else _i + 4000]
+        if "_tick_prev_n" not in _body:
+            bad.append("[圈心跳] 基线逻辑**不在 `_before_round` 里**"
+                       "（那就不是「只改一处」）")
+    if "self._last_view = view" not in src:
+        bad.append("[圈心跳] 没存 `_last_view`（trace 无处落笔）")
+
+    # ── 构造性：造「上一圈零增量」⇒ 本圈应放宽；「有增量」⇒ 不该放宽 ──
+    try:
+        _cfg = build_cfg(False)
+        _mt = mod.MetaDGTF(_cfg)
+        class _P:
+            amps = []
+            threads = []
+        _p = _P()
+        # 第一圈：只记基线，不该有任何调整
+        _mt._before_round("0", _p, 1)
+        _n1 = len(_mt._control.applied or [])
+        if _n1 != 0:
+            bad.append("[圈心跳] 第一圈（无基线）就动了：%r"
+                       % ([x.get("key") for x in _mt._control.applied],))
+        # 第二圈：池**零增量** ⇒ 应放宽
+        _mt._before_round("0", _p, 2)
+        _keys = [x.get("key") for x in (_mt._control.applied or [])]
+        if not any(str(k).startswith("web.allow.") for k in _keys):
+            bad.append("[圈心跳] 上一圈零增量却**没放宽**（触发条件失效）：%r"
+                       % (_keys,))
+        # 第三圈：池**有增量** ⇒ 不该再放宽（负对照）
+        _mt2 = mod.MetaDGTF(build_cfg(False))
+        _p2 = _P()
+        _mt2._before_round("0", _p2, 1)
+        _p2.amps = [{"desc": "新 & 1"}]           # 有产出
+        _mt2._before_round("0", _p2, 2)
+        _k2 = [x.get("key") for x in (_mt2._control.applied or [])]
+        if any(str(k).startswith("web.allow.") for k in _k2):
+            bad.append("[圈心跳] 上一圈**有增量**却也放宽了（负对照失败）：%r"
+                       % (_k2,))
+    except Exception as _e:
+        bad.append("[圈心跳] 构造性验证抛错：%r" % (_e,))
+
+    if bad:
+        for x in bad:
+            print("  X", x)
+        return False
+    print("  ✓ v1.23.37 圈级心跳（池增量代理 · 只改一处 · 首圈不动 · "
+          "零增量放宽 · 有增量不放宽）全过")
+    return True
+
+
+def check_v12336_webneed():
+    """[v1.23.36→37] 联网**按需协议**：环节自己声明「我需要外部事实」。
+
+    ★ 与「统一增强层」(`_web_augment`) 的分工：
+      增强层 = 引擎在调用**前**猜需不需要；按需 = 环节在产出**后**自己说。
+    ★ 两层判据（本项目铁律：源码级只能证明「接线写了」）：
+      ① 三件齐 + `LLM.call` 里有调用点；
+      ② 构造性驱动 —— 真跑 `_web_need_report`，看消费方**真被调用**。
+    """
+    bad = []
+    src = SRC.read_text(encoding="utf-8").replace("\r\n", "\n")
+
+    # ── ① 源码级 ──
+    if "_WEB_NEED_MARK" not in src:
+        bad.append("[按需] 缺声明标记 `_WEB_NEED_MARK`")
+    if "def parse_web_need(" not in src:
+        bad.append("[按需] 缺解析器 `parse_web_need`")
+    if "def _web_need_report(" not in src:
+        bad.append("[按需] 缺消费方 `_web_need_report`")
+    if "self._web_need_report(stage, content)" not in src:
+        bad.append("[按需] `LLM.call` 里**没有**调用点（定义了没人用）")
+    #   ★ 防「同一语义两处定义」：解析器应当只有一处实现
+    if len(re.findall(r"^def parse_web_need\(", src, re.M)) != 1:
+        bad.append("[按需] `parse_web_need` 定义了不止一次（两处定义必分叉）")
+
+    # ── ② 构造性：纯函数 ──
+    _fn = getattr(mod, "parse_web_need", None)
+    if not callable(_fn):
+        bad.append("[按需] 模块里取不到 `parse_web_need`（不可达）")
+    else:
+        _M = getattr(mod, "_WEB_NEED_MARK", "===WEB-NEED===")
+        _q = chr(34)                      # ★ 用 chr(34) 规避转义地狱（本项目纪律）
+        # ① JSON 形态
+        _a = _fn("前言\n%s\n{%squeries%s: [%s甲%s, %s乙%s]}\n后语"
+                 % (_M, _q, _q, _q, _q, _q, _q))
+        if _a != ["甲", "乙"]:
+            bad.append("[按需] JSON 形态解析错：%r" % (_a,))
+        # ② 逐行形态（不标准格式）
+        _b = _fn("前言\n%s\n甲\n乙\n丙\n" % _M)
+        #   ★ 单字「丙」**必须保留**（曾用长度阈值把它滤掉 ⇒ 真缺口）
+        if "甲" not in _b or "丙" not in _b:
+            bad.append("[按需] 逐行形态丢了查询（含单字）：%r" % (_b,))
+        # ③ 无声明 ⇒ []
+        if _fn("没有任何声明的产出") != []:
+            bad.append("[按需] 无声明竟解析出东西（会凭空检索）")
+        # ④ 畸形 ⇒ 不抛错、当没声明
+        try:
+            _fn("%s\n{坏 JSON" % _M)
+            _fn(None)
+            _fn(12345)
+        except Exception as _e:
+            bad.append("[按需] 畸形输入抛错（不该影响主流程）：%r" % (_e,))
+        # ⑤ 截量：limit 生效
+        _many = "%s\n" % _M + "\n".join("q%d" % i for i in range(20))
+        if len(_fn(_many, limit=3)) > 3:
+            bad.append("[按需] `limit` 没生效（一个环节能吃光配额）")
+
+    # ── ③ 构造性：真消费方（`_web_need_report`）──
+    try:
+        cfg = build_cfg(False)
+        llm = mod.LLM(cfg)
+        _calls = []
+        _q = chr(34)
+
+        def _searcher(stage, queries, round_no, used_as="evidence", pre_seq=0):
+            _calls.append((str(stage), list(queries), str(used_as)))
+            return [{"claim": "样例外部参考", "url": "https://x.invalid",
+                     "tier": 3}]
+
+        _M = getattr(mod, "_WEB_NEED_MARK", "===WEB-NEED===")
+        # 有声明 ⇒ 消费方真被调用 + 返回条数
+        mod._llm_ctx_set(web_searcher=_searcher, round=2)
+        _body = ("产出正文\n" + _M + "\n") + ("{%squeries%s: [%sX%s]}"
+                                            % (_q, _q, _q, _q))
+        _n = llm._web_need_report("ing", _body)
+        if not _calls:
+            bad.append("[按需] 有声明却**没调**消费者（接线不可达）")
+        elif _n < 1:
+            bad.append("[按需] 有声明、消费者也调了，却没算进条数：%r" % (_n,))
+        # 负对照：无声明 ⇒ 零调用
+        _calls.clear()
+        _n0 = llm._web_need_report("ing", "一段没有声明的普通产出")
+        if _calls or _n0 != 0:
+            bad.append("[按需] 无声明却动了（应零成本零调用）：%r/%r"
+                       % (_calls, _n0))
+        # 负对照：没注入 web_searcher ⇒ 不该炸、返回 0
+        mod._llm_ctx_set(web_searcher=None, round=2)
+        _n1 = llm._web_need_report(
+            "ing", ("产出\n" + _M + "\n") + ("{%squeries%s: [%sY%s]}"
+                                            % (_q, _q, _q, _q)))
+        if _n1 != 0:
+            bad.append("[按需] 无注入器却返回非 0：%r" % (_n1,))
+    except Exception as _e:
+        bad.append("[按需] 构造性验证抛错：%r" % (_e,))
+
+    if bad:
+        for x in bad:
+            print("  X", x)
+        return False
+    print("  ✓ v1.23.36 联网按需协议（三件齐 · 调用点真接 · JSON/逐行/畸形容错 · "
+          "单字不丢 · 截量生效 · 声明真驱动消费者 · 无声明零调用）全过")
     return True
 
 
@@ -14333,6 +14537,10 @@ def main():
     if not check_v12336_tick():
         return 1
     if not check_v12336_eml():
+        return 1
+    if not check_v12336_webneed():
+        return 1
+    if not check_v12337_roundtick():
         return 1
     q = "测试问题：AI 在数字 IC 设计里到底能做什么，哪些已经量产？"
     rows = []

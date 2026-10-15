@@ -1,7 +1,7 @@
 {
   "added": 172,
   "baseline": "_baseline_v12177.py",
-  "current": "元DGTF-V1.23.36.py",
+  "current": "元DGTF-V1.23.37.py",
   "n_symbols_baseline": 290,
   "n_symbols_current": 573,
   "registry": {
@@ -1228,6 +1228,14 @@
     "_schedule_tick": {
       "phase": "v1.23.36",
       "reason": "心跳级调度：层收尾时**主动**检查（不等失败）⇒ 调下一层策略；全过控制面（可追溯+可控）；默认零行为差"
+    },
+    "_web_need_report": {
+      "phase": "v1.23.37",
+      "reason": "联网按需协议：把声明逐条过 Gate ⇒ 检索 ⇒ 进池 + logger 留痕（本版不回喂）"
+    },
+    "parse_web_need": {
+      "phase": "v1.23.37",
+      "reason": "联网按需协议：从产出里解析「我需要外部事实」声明（容错；解不出当没声明）"
     }
   },
   "removed": 0

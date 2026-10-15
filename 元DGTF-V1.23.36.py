@@ -686,11 +686,21 @@ class ControlSurface:
     #: 白名单：key 前缀 → (边界描述, 校验函数, 来源标注)
     #: ★ 「来源标注」写清这条路径**当前由谁在调**（迁移进度可见）。
     _SPEC = {
-        "rounds.": ("层圈数，1..hard_max", None, "EML `rounds_delta`（既经控制面等价物）"),
-        "duty_floor": ("职责下限，0..1", None, "EML `duty_floor`（同上）"),
+        "rounds.": ("层圈数，1..hard_max", None, "EML `rounds_delta`/`carve_first`/`note_cost_no_gain`"),
+        "duty_floor": ("职责下限，0..1", None, "EML `duty_floor`/`tri_advisory_only`"),
         "web.allow.": ("某 stage 是否允许联网，bool", None, "心跳调度（P1c）"),
         "web.quota.per_stage_round": ("每 stage 每圈上限，1..5", None, "心跳调度（P1c）"),
         "stop.anytime_alpha": ("anytime 停止 α，0..0.5", None, "心跳调度（P1c）"),
+        # ★ [与调度融合 · 扩面] 下面这四类让「**所有可配置行为**」可运行时调：
+        #   · `actions.*`  —— 所有动作开关（消费方 = `_action_on`，已加运行时覆盖）；
+        #   · `thinking.*` —— 逐环节思考档（消费方 = `LLM.call` 的思考档查表）；
+        #   · `stop.*`     —— 停止家族（消费方 = 停止判据侧，逐圈读）；
+        #   · `duty.*`     —— 职责家族（消费方 = 职责读数侧）。
+        "actions.": ("动作开关，bool", None, "EML `action_hint`（本轮新增）"),
+        "thinking.": ("逐环节思考档，enabled/disabled",
+                      None, "EML `thinking_hint`（本轮新增）"),
+        "stop.": ("停止家族参数", None, "停止判据（逐圈读）"),
+        "duty.": ("职责家族参数", None, "职责读数"),
     }
 
     def __init__(self, owner):
@@ -780,6 +790,18 @@ class ControlSurface:
                 _v = float(val)
                 if not (0.0 <= _v <= 0.5):
                     return "anytime_alpha 越界（应 0..0.5）"
+            elif key.startswith("actions."):
+                if not isinstance(val, bool):
+                    return "actions.* 应为 bool"
+            elif key.startswith("thinking."):
+                if str(val) not in ("enabled", "disabled"):
+                    return "thinking.* 只能是 enabled / disabled"
+            elif key.startswith("duty."):
+                if not isinstance(val, (int, float)) or not (0.0 <= float(val) <= 1.0):
+                    return "duty.* 应为 0..1 的数"
+            elif key.startswith("stop."):
+                if not isinstance(val, (int, float)) or not (0.0 <= float(val) <= 1.0):
+                    return "stop.* 应为 0..1 的数"
         except (TypeError, ValueError):
             return "值类型不对：%r" % (val,)
         return None
@@ -2876,6 +2898,29 @@ def eml_candidates_from_result(result: dict, ep: dict = None) -> list:
                     "readings": {"before": {"tokens": _c, "duty_med": _dmed},
                                  "after": {"duty_med": "期望上升"}},
                     "why": "成本超过历史 p75 而职责未升（只贵不好）"})
+    # ⑤ [与调度融合 · 扩面] 三态一致率低 ⇒ 该题型的三态环节**开思考**
+    #   （更深推理），而不是只在记忆库里记一笔 —— 这才叫"纳入学习范围"。
+    if _tr is not None and float(_tr) < 0.33:
+        out.append({"kind": "guard",
+                    "cond": {"issue": "tri_unstable_think"},
+                    "action": {"key": "thinking_hint",
+                               "stages": ["adjudicate_sub_tristate",
+                                          "assess_decidability"],
+                               "value": "enabled"},
+                    "readings": {"before": {"tri_rate": round(_tr, 3),
+                                            "thinking": "按配置"},
+                                 "after": {"tri_rate": "期望上升"}},
+                    "why": "三态一致率低 ⇒ 该环节加深推理（思考档 opened）"})
+    # ⑥ [与调度融合 · 扩面] 成本高于 p75 且职责未升 ⇒ **关并行展开**
+    #   （并行有线程/重复调用开销；串行更省，且这一跑本来"只贵不好"）。
+    if _p75 and _c > float(_p75) and (_dmed is None or float(_dmed) < 0.35):
+        out.append({"kind": "schedule",
+                    "cond": {"issue": "cost_no_gain_serial"},
+                    "action": {"key": "action_hint",
+                               "name": "parallel_expand", "value": False},
+                    "readings": {"before": {"tokens": _c, "parallel": True},
+                                 "after": {"tokens": "期望下降"}},
+                    "why": "成本超 p75 且职责未升 ⇒ 关并行展开（省线程开销）"})
     for c in out:
         c["evidence"] = [ep.get("run_id") or ""]
         c["source"] = "engine"
@@ -4800,7 +4845,22 @@ _ACTION_ALIASES = {
 
 
 def _action_on(config: dict, name: str, default: bool = True) -> bool:
-    """统一读动作开关。actions 段 > output 段（经别名映射）> 默认值。"""
+    """统一读动作开关。★ 运行时覆盖 > actions 段 > output 段（别名）> 默认值。
+
+    ★ [与调度融合] `config["_control"]` 是**本跑的内存态控制面**（由 `MetaDGTF`
+      挂上）—— 心跳调度与 EML 在**运行中**改的开关都经它生效。
+      ⇒ 于是**所有走 `_action_on` 的可配置行为**都成了「**可运行时调**」的，
+      也就**可以被 EML 学**（学到的直接改下一次决策，而不是躺在记忆库里）。
+    ★ 零行为差：没有 `_control`（或它没覆盖这个键）⇒ 走原路径，逐字不变。
+    """
+    _s = (config or {}).get("_control")
+    if _s is not None:
+        try:
+            _ov = _s.read("actions.%s" % name)
+            if _ov is not None:
+                return bool(_ov)
+        except Exception:
+            pass
     a = (config.get("actions") or {})
     if name in a:
         return bool(a[name])
@@ -9840,6 +9900,23 @@ class DGTF:
         if len(jobs) == 2 and _action_on(self.config, "merge_expand", False):
             _mg = self._expand_pair_merged_once(jobs)
             if _mg is not None:
+                # ★ [读数完整性 · **真跑逮到**] 合并路径**不走**下面的阴阳分歧
+                #   计算 ⇒ `_quant_pending_yy` 会保持 None（或上一次的值）⇒
+                #   产物里「**本层没有分歧读数**」与「**分歧读数为空**」分不开。
+                #   按本题**既有语义**（`yin_yang_divergence()` 的 docstring：
+                #   「任一侧为空 ⇒ divergence=None 且 verdict=""（不表态）」）
+                #   显式记一档 —— **不另造新语义**。
+                try:
+                    self._quant_pending_yy = {
+                        "n_yin": None, "n_yang": None,
+                        "max_sim": None, "divergence": None,
+                        "verdict": "",
+                        "merged": True,
+                        "why": "阴阳已合并成一次调用（merge_expand）"
+                               "⇒ 分歧度不适用（不表态）",
+                    }
+                except Exception:
+                    pass
                 return _mg
             # 合并失败 ⇒ 落回原路径（下方并行/串行），**不丢内容**。
             self.vp("   ↩ 合并展开不可用，回落两臂独立调用")
@@ -19278,6 +19355,44 @@ class MetaDGTF:
                     _it["applied"] = True
                     _applied.append({"id": _it["id"], "key": _key,
                                      "layers": _done2})
+            elif _key == "thinking_hint":
+                # ★ [与调度融合 · 扩面] 逐环节思考档：经控制面 + **同步写
+                #   `llm.thinking_stages`**（消费方 = `LLM.call` 里那句
+                #   `th = self.thinking_stages.get(stage)`）⇒ 学到的**立刻生效**。
+                _val = str(_a.get("value") or "")
+                _ts = getattr(getattr(self, "llm", None), "thinking_stages", None)
+                _done3 = []
+                for _st in (_a.get("stages") or []):
+                    _st = str(_st)
+                    if self._control.write(
+                            "thinking.%s" % _st, _val,
+                            why="EML thinking_hint：%s ⇒ 该环节思考档设为 %s"
+                                "（条目 %s）" % (_it.get("why") or "经验",
+                                                _val, _it.get("id")),
+                            trace_ref=_it.get("id")):
+                        if isinstance(_ts, dict):
+                            _ts[_st] = _val
+                        _done3.append(_st)
+                if _done3:
+                    _it["applied"] = True
+                    _applied.append({"id": _it["id"], "key": _key,
+                                     "thinking": _done3, "value": _val})
+            elif _key == "action_hint":
+                # ★ [与调度融合 · 扩面] 动作开关：经控制面 ⇒ 由 `_action_on`
+                #   的**运行时覆盖**读到（消费方就在那儿）⇒ 本跑后续圈立即生效。
+                _nm = str(_a.get("name") or "")
+                if _nm:
+                    _ok = self._control.write(
+                        "actions.%s" % _nm, bool(_a.get("value")),
+                        why="EML action_hint：%s ⇒ %s = %r（条目 %s）"
+                            % (_it.get("why") or "经验", _nm,
+                               bool(_a.get("value")), _it.get("id")),
+                        trace_ref=_it.get("id"))
+                    if _ok:
+                        _it["applied"] = True
+                        _applied.append({"id": _it["id"], "key": _key,
+                                         "name": _nm,
+                                         "value": bool(_a.get("value"))})
         self._eml_applied = _applied
         return _applied
 
@@ -19466,6 +19581,11 @@ class MetaDGTF:
             _llm_ctx_set(web_searcher=self._web_search,
                          question=str(question or ""),
                          control=self._control)
+            # ★ [与调度融合] 把控制面挂进 config（**同一个 dict**，`DGTF` 也读它）
+            #   ⇒ `_action_on` 的运行时覆盖生效 ⇒ **所有 actions.* 可运行时调**。
+            #   ★ 只加一个**下划线键**：不参与产物导出、不落盘、不算"配置项"。
+            if isinstance(self.config, dict):
+                self.config["_control"] = self._control
         except Exception:
             pass
         route = route or ["0", "1", "both", "all"]
