@@ -44,7 +44,30 @@ v1.23.37 相对 v1.23.36
   所有可配置行为纳入学习（`_action_on` 运行时覆盖 + `thinking_hint`/`action_hint`）·
   ★ 真跑逮到的 `yin_yang_divergence` 静默缺失（`merge_expand` 合并路径提前 return）。
 
-【验收】（见 `v12337_报告.md`；本段在链后按实测回填）
+【验收】（见 `v12337_报告.md`）
+  · 主文件 **25730 行 / 纯 CRLF / AST OK**；版本号两处一致（docstring + `__version__`）。
+  · 冒烟 **230 ✓ / 0 ✗**（EXIT=0）；新增 `check_v12336_webneed`（按需协议）与
+    `check_v12337_roundtick`（圈级心跳），**都是构造性判据**（真驱动消费方）。
+  · `_v122_verify.py --phase all` ⇒ **PASS 319 / FAIL 0**（26 阶段）。
+  · `_probe_v1232_audit.py` ⇒ **AUDIT PASS 69 / FAIL 0**。
+  · 变异体 **77 判红 / 77 总数**（无假绿）；含 M72 复现真跑逮到的 yin_yang 缺陷。
+  · ★ **真跑实测**（`V1236FULL`）：3437s = 57.3min / **143 calls** / 1,152,428 tokens；
+    四层读数总表 **12 条**全显示。★ EML **实际应用 3 条** `rounds_delta`
+    （both 4→5、all 5→6、0 4→5）⇒ **不是「学了不做」**。
+
+★ v1.23.37 收束摘要
+
+  · **交付物**：`元DGTF-V1.23.37.py`（25730 行，纯 CRLF）+
+    `smoke_test.py`（+2 判据）· `_mut_v12332.py`（77 条）· `v12337_报告.md` ·
+    `dgtf_config.yaml`（头部 + 升级段，**无新增键**）· `_v122_ast_registry.json`（308 条）。
+  · **改了哪几处**：① `LLM.call` 加按需协议挂钩（1 处）；② 新增模块级
+    `parse_web_need` + `LLM._web_need_report`；③ `MetaDGTF._before_round` 加圈级
+    心跳（**只改 1 处**）；④ `_finalize_layer_common` 存 `_last_view`。
+  · **验收数字**：冒烟 230/0 · verify 319/0 · AUDIT 69/0 · 变异体 77/77 判红 ·
+    真跑 143 calls / 12 条读数 / EML 应用 3 条。
+  · **未做**：按需协议的**回喂**（声明 ⇒ 检索 ⇒ 让环节看到结果）；本版只做
+    「听见 + 去查 + 留痕」。挂账 #2（等待型）/ #3（留痕不删）无需行动。
+  · **存档**：`c7d0bd0`（main）；并行分支 `feat/v12337` 已推送 GitHub。
 
 ---
 
