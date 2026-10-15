@@ -1,0 +1,135 @@
+================================================================
+元DGTF 全链路检测 · v1.23.40 · 元DGTF-V1.23.40.py
+================================================================
+
+【A1】web_search.stages 键 vs stage 全集
+  stage 字面常量：10 个 | 全文件函数名（去 _）：574 个
+  web_search.stages 键数：37
+  死配置（键名与前缀都无函数对应 ⇒ 放开也不生效）：无 ✅
+
+【A2】_TICK_WEB_RELAX ⊆ web_search.stages
+  放宽表 12 个：['ing', 'probe_research', 'probe_duel', 'probe_meta', 'he', 'phase_probe', 'expand_pair', 'expand_pair_merged_once', 'decompose_normal', 'decompose_hybrid', 'decompose_koan', 'decompose_from_pool']
+  不在 stages 里的（死放宽）：无 ✅
+
+【A3】ControlSurface 写↔读 两向（v2）
+  写点分类：read 消费 / 成对同步 命中：{'actions.': '1 条(read)', 'duty_floor': '3 条(sync)', 'rounds.': '3 条(sync)', 'thinking.': '1 条(sync)', 'web.allow.': '3 条(read)'}
+  真死写（无 read、无同步 ⇒ 门禁记了但什么都不生效）：无 ✅
+  预留白名单（有 SPEC 无写点，声明预留不判死）：['duty.', 'stop.', 'stop.anytime_alpha', 'web.quota.per_stage_round']
+  有读无写（读恒默认；模板键已另归类）：无 ✅
+
+【A4】EML action key 接线
+  候选 key：['carve_first', 'duty_floor', 'note_cost_no_gain', 'rounds_delta', 'tri_advisory_only']
+  `_eml_apply` 缺分支的：无 ✅
+  `_EML_RECORD_ONLY`（应空）：空 ✅
+
+【A5】AST 登记表（308 条）符号存在性
+  登记但源码里已不存在的符号：无 ✅（308 条全在）
+
+================================================================
+【B 动态】mock 真驱动 MetaDGTF.run（四层全走）
+================================================================
+题面：什么样的制度设计能让一个群体的长期协作既保持活力又不失去方向？请从激励、信息、边…
+
+--- B0: 调度结果 ---
+  调度 rounds：{'0': 2, '1': 2, 'both': 2, 'all': 2}
+  route：['0', '1', 'both', 'all']
+
+--- B1: LLM.call stage 触发分布 + 真·web 检索 ---
+  LLM.call 总次数：71 | 去重 stage：12 个
+    None                                   40
+    dual_judge                             8
+    self_check                             8
+    re_anchor                              4
+    phase_probe                            2
+    re_evaluate_pool                       2
+    probe_meta                             2
+    assess_decidability                    1
+    decide_parallel_mode                   1
+    check_input_sanity                     1
+    assess_decidability_from_pool_view     1
+    decompose_from_pool                    1
+  真·web 检索（_web_search 经 Gate）：0 次（默认全关 ⇒ 正常）
+  本跑真触发过的 web 环节：0 / 37
+  本跑未触发的 web 环节（默认关 ⇒ 正常；列出备查）：['adjudicate_sub_tristate', 'adjudicate_sub_tristate_multi', 'anchor_crosscheck', 'ask_missing_polarity', 'assess_decidability', 'assess_decidability_from_pool_view', 'auto_plan', 'check_input_sanity', 'check_structure_saturation', 'decide_parallel_mode', 'decompose_from_pool', 'decompose_hybrid', 'decompose_koan', 'decompose_normal', 'dual_judge', 'duel_arbitration', 'expand_pair', 'expand_pair_merged_once', 'he', 'ing', 'manifest', 'meta_clean_check', 'phase_probe', 'plan_orientation', 'plan_resources', 'practice_term_calibration', 'probe_duel', 'probe_meta', 'probe_research', 're_anchor', 're_evaluate_pool', 'research_decompose', 'research_evidence', 'research_precedent', 'self_check', 'settle_research', 'stop_criteria']
+
+--- B2: 方法触达 ---
+  DGTF 方法触达：44 / 65
+  MetaDGTF 方法触达：83 / 132
+
+--- B3: 四层 view + readings（非空 + 区分度）---
+  层 0 : view ✓ | 读数键 10 | 读数项 13 | 去重值 10 ✅
+      amp=0
+      cand=4
+      duty=0.0
+      goal=None
+      保真=drifted
+      候选=collapsed
+      分歧=None
+      密度=ok
+      rounds=2
+      stop=产物相似度高，自然安住 + 修行层连续 2 圈复述（层内空转） + 自省连续 2 圈点名同一批问题未消化（层内空转），螺…
+      susp=1
+      thread=1
+      trace_n=2
+  层 1 : view ✓ | 读数键 10 | 读数项 13 | 去重值 9 ✅
+      amp=0
+      cand=4
+      duty=0.0
+      goal=None
+      保真=drifted
+      候选=collapsed
+      分歧=None
+      密度=ok
+      rounds=2
+      stop=产物相似度高，自然安住 + 研究层连续 2 圈复述（层内空转） + 自省连续 2 圈点名同一批问题未消化（层内空转） +…
+      susp=0
+      thread=0
+      trace_n=2
+  层 both : view ✓ | 读数键 10 | 读数项 13 | 去重值 9 ✅
+      amp=0
+      cand=4
+      duty=0.0
+      goal=本层目标（对撞·融合）：fuse=0.000
+      保真=ok
+      候选=collapsed
+      分歧=None
+      密度=ok
+      rounds=2
+      stop=产物相似度高，自然安住 + 对撞层连续 2 圈复述（层内空转） + 自省连续 2 圈点名同一批问题未消化（层内空转） +…
+      susp=0
+      thread=0
+      trace_n=2
+  层 all : view ✓ | 读数键 10 | 读数项 13 | 去重值 10 ✅
+      amp=0
+      cand=4
+      duty=0.0
+      goal=本层目标（元·结晶）：crystallize=0.500
+      保真=ok
+      候选=collapsed
+      分歧=None
+      密度=ok
+      rounds=2
+      stop=产物相似度高，自然安住 + 元层连续 2 圈复述（层内空转） + 自省连续 2 圈点名同一批问题未消化（层内空转） + …
+      susp=1
+      thread=0
+      trace_n=1
+
+--- B4: ControlSurface 本跑实际写入 ---
+  applied 条数：13
+    key=duty_floor why=心跳：占位（同值 ⇒ noop，不落 applied）
+    key=web.allow.ing why=心跳：本层候选产出率 collapsed（复述多）⇒ 放宽该环节联网，让它能问外面
+    key=web.allow.probe_research why=心跳：本层候选产出率 collapsed（复述多）⇒ 放宽该环节联网，让它能问外面
+    key=web.allow.probe_duel why=心跳：本层候选产出率 collapsed（复述多）⇒ 放宽该环节联网，让它能问外面
+    key=web.allow.probe_meta why=心跳：本层候选产出率 collapsed（复述多）⇒ 放宽该环节联网，让它能问外面
+    key=web.allow.he why=心跳：本层候选产出率 collapsed（复述多）⇒ 放宽该环节联网，让它能问外面
+    key=web.allow.phase_probe why=心跳：本层候选产出率 collapsed（复述多）⇒ 放宽该环节联网，让它能问外面
+    key=web.allow.expand_pair why=心跳：本层候选产出率 collapsed（复述多）⇒ 放宽该环节联网，让它能问外面
+    key=web.allow.expand_pair_merged_once why=心跳：本层候选产出率 collapsed（复述多）⇒ 放宽该环节联网，让它能问外面
+    key=web.allow.decompose_normal why=心跳：本层候选产出率 collapsed（复述多）⇒ 放宽该环节联网，让它能问外面
+    key=web.allow.decompose_hybrid why=心跳：本层候选产出率 collapsed（复述多）⇒ 放宽该环节联网，让它能问外面
+    key=web.allow.decompose_koan why=心跳：本层候选产出率 collapsed（复述多）⇒ 放宽该环节联网，让它能问外面
+    …（共 13 条）
+
+================================================================
+【汇总】
+  全链路检测：静态对账 0 断链；动态四层全产出；ControlSurface 有真实写入。✅

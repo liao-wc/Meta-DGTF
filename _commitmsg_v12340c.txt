@@ -1,0 +1,19 @@
+v1.23.40 端到端全链路检查
+
+工具：_probe_v12340_chaincheck.py（静态两向对账 A1-A5 + mock 真驱动四层 B0-B4）
++ _mk_v12340_appcheck.py（起服务跑 dgtf_app/selftest.py）。全部 mock，零花费。
+
+结果（无断链）：
+- L1 源码：25832 行 / 纯 CRLF / AST OK / 零新符号
+- L2 配置：web_search 16 键三处逐字一致；relax_force 同步
+- L3 接线：A1 无死配置 / A2 放宽表 12 个全在 stages / A3 无死写无空读 /
+          A4 EML 无缺分支 / A5 登记 308 全在
+- L4 动态：四层 view 全产出；读数去重值 9~10（非恒值）；控制面 applied 13 条
+- L5 应用：dgtf_app/selftest.py PASS 368 / FAIL 0
+- L6 端到端：新键 web_search.relax_force 经 /api/params 供出（value=false/type=bool）
+
+★ 关键实证：B4 显示心跳真实写入了 web.allow.decompose_normal/hybrid/koan
+⇒ 放宽表扩展（8→12）在真实调用图上可达。
+
+产出：_probe_v12340_chaincheck_1_23_40.txt / _app_selftest_v12340.log；
+报告 v12340_报告.md 加 §七。
