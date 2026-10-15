@@ -1,5 +1,5 @@
 # ============================================================
-# 元 DGTF · v1.23.43 配置文件
+# 元 DGTF · v1.23.44 配置文件
 # ============================================================
 #
 #
@@ -52,6 +52,14 @@ auto:
     enabled: false
     cost_w: 0.3
     c: 1.0
+
+# 【v1.23.43 → v1.23.44】P-3 学习闭环 —— 新增配置键 memory.eml_adaptive
+#   ① 实测：playbook 3 条 shadow 卡在 n_evidence=1 < _EML_PROMOTE_N(3) 永不升级；
+#      遗忘需 age>60 天（年轻库永不触发）。两者都是 SOTA 点名的失败模式
+#      （cold start / static thresholds，见 ReasoningBank、MemRL 综述）。
+#   ② 修法：eml_promote / eml_sweep_forget 加 adaptive 形参 —— 库 < _EML_COLD_LIB(20)
+#      时晋升门槛降到 1（冷启期先让学到的条目生效）；遗忘门槛随库规模放大。
+#   ③ 新键 memory.eml_adaptive：**默认 false = 关 ⇒ 逐字零行为差**。
 
 # 【v1.23.42 → v1.23.43】P-2 早停 —— 新增配置键 stop.gain_floor
 #   ① 依据：自反式迭代的最优停止 = **单一、阶段无关阈值**（arXiv:2608.10729），
@@ -1641,6 +1649,11 @@ autotune:
 # 三通道记忆参数
 # ------------------------------------------------------------
 memory:
+  # 【用途】EML 阈值冷启自适应：库小时降晋升门槛，让学习闭环能启动。
+  # 【建议】false（出厂=关=逐字不变）；想让早期学习生效可设 true。
+  # 【依据】ReasoningBank / MemRL：cold start + static thresholds 是失败模式。
+  eml_adaptive: false
+
   # 【用途】三通道：
   #   content —— 内容通道：读上游 View 的形状（candidates/amps/threads）
   #   context —— 背景通道：读上游已跑层的摘要
