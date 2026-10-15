@@ -1,0 +1,21 @@
+元 DGTF v1.23.40 定稿存档
+
+两件事：
+① 回喂 stage 兜底（声明入库带真实环节名）—— 修 v1.23.38 回喂在真实调用图
+   上从未生效的缺口（按需声明全 stage=None ⇒ 匹配恒失败）。两处改动，不新增
+   AST 符号：_infer_stage_from_stack 跳过元组加 _web_need_report；
+   _web_need_report 空 stage 时兜底取真实环节名。
+② 放宽表 8→12（加 decompose_normal/hybrid/koan/from_pool 四兄弟）+ 新增配置键
+   web_search.relax_force（默认 false ⇒ 零行为差；true 时每圈无条件全表放宽）。
+
+验收：
+- 冒烟 235 ✓ / 0 ✗
+- verify --phase all PASS 319 / FAIL 0
+- AUDIT PASS 69 / FAIL 0
+- 变异体 86 判红 / 86（M85~M88）
+- 真跑靶点：修行层 2 圈，[WEB-BACKFEED] 由 v1.23.39 的 0 次 ⇒ 2 次，回喂闭环成立
+
+主文件 元DGTF-V1.23.40.py（25832 行 / 纯 CRLF / AST OK / 零新 AST 符号）。
+配套：v12340_报告.md、CHANGELOG.md（v1.23.40 段 + 收束摘要）、dgtf_config.yaml
+（relax_force 键 + 升级段）、dgtf_app/params.py（键名同步）、smoke_test.py
+（两新判据）、_mut_v12332.py（M85~M88）。
