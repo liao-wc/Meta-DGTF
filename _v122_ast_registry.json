@@ -1,9 +1,9 @@
 {
  "added": 172,
  "baseline": "_baseline_v12177.py",
- "current": "元DGTF-V1.23.42.py",
+ "current": "元DGTF-V1.23.43.py",
  "n_symbols_baseline": 290,
- "n_symbols_current": 574,
+ "n_symbols_current": 576,
  "registry": {
   "AnchorRetriever": {
    "phase": "4",
@@ -1240,6 +1240,14 @@
   "_hdr": {
    "phase": "42",
    "reason": "shape_of 窗口化的表头渲染（「共 N，只列最近 M」）—— P-1 上下文裁剪"
+  },
+  "refinement_gain": {
+   "phase": "43",
+   "reason": "P-2 早停的单标量增益（各层目标读数的逐圈增量，方向统一）"
+  },
+  "layer_gain_stop_signal": {
+   "phase": "43",
+   "reason": "P-2 早停判据：gain_floor>0 时连续 N 圈增益趋零 ⇒ 停"
   }
  },
  "removed": 0

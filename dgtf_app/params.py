@@ -251,6 +251,7 @@ _KEY_CN: dict[str, str] = {
     "runtime.thinking": "思考档位（auto/on/off）",
     "runtime.effort": "推理强度（auto/low/medium/high/max）",
     "runtime.web": "联网检索（auto/on/off）",
+    "stop.gain_floor": "单标量早停阈值（增益<它连续N圈⇒停；0=关）",
     # ── spiral 螺旋与停止 ──
     "spiral.soft_max": "软最大圈数（超过才查自然安住）",
     "spiral.shape_limit": "view 形状窗口（>0 只列最近 N 条，压 prompt token；0=不限）",
