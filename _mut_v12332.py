@@ -7,7 +7,7 @@ import tempfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.40.py"
+SRC = HERE / "元DGTF-V1.23.41.py"
 
 MUTS = [
     ("M1 α 不做机会校正（退化成原始一致率）",
@@ -469,6 +469,18 @@ MUTS = [
     ("M88 放宽表扩项被回退（少一个 decompose_*）",
      '                       "decompose_koan", "decompose_from_pool")',
      '                       "decompose_koan")'),
+    ("M89 目标读数收尾不刷新（crystallize 恒层停止那刻的旧值）",
+     '_fresh = layer_goal_readings({str(entry): _vd_f}).get(str(entry)) or {}',
+     '_fresh = {}'),
+    ("M90 excavate 显示丢方向提示（易被误读成没挖）",
+     '_LG_HINT.get(_gk_f, "")',
+     '""'),
+    ("M91 截断不附近阈读数（不可判离触发多远）",
+     'f"  近阈读数：{_near}")',
+     'f"（略）")'),
+    ("M92 自省未消化不附点名（不知是哪批）",
+     'if "自省连续" in _sr4 and "未消化点名" not in _sr4:',
+     'if False:'),
 ]
 
 
@@ -497,6 +509,9 @@ def run_check(mut_path=None):
              "st.check_v12337_roundtick() and "
              "st.check_v12340_backfeed_stage() and "
              "st.check_v12340_relax_force() and "
+             "st.check_v12341_goal_fresh() and "
+             "st.check_v12341_excavate_dir() and "
+             "st.check_v12341_attribution() and "
              "st.check_v12339_ondemand() and "
              "st.check_v12338_relax_targets() and "
              "st.check_v12338_backfeed()) else 1)\n")

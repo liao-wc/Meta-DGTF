@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.40.py"
+SRC = HERE / "元DGTF-V1.23.41.py"
 
 os.environ.setdefault("DGTF_API_KEY", "sk-smoke-test-key")
 
@@ -12284,6 +12284,233 @@ def check_v12336_allweb():
     return True
 
 
+def check_v12341_excavate_dir():
+    """[v1.23.41 · P2] `excavate` 方向**口径统一**（文档/声明 + 显示）。
+
+    ★ 矛盾：模块声明说「每条读数越大越接近目标」、docstring 说「读数 = 1 − 边际新增」，
+      而实现 + 判据⑫ 都是「小=好（边际新增率）」。
+    ★ 判据：三处口径必须一致为「小=好」，且产物显示要**消歧**（防误读成「一分没挖」）。
+    """
+    import io as _io
+    import contextlib as _ctx
+    bad = []
+    src = SRC.read_text(encoding="utf-8").replace("\r\n", "\n")
+    # ① 声明不再一刀切「每条读数越大越接近目标」
+    if "每条读数都是「**越大越接近该层目标**」" in src:
+        bad.append("[P2] 模块声明仍一刀切「每条越大越接近」（excavate 方向相反）")
+    if "距离型" not in src:
+        bad.append("[P2] 声明未把 excavate 标成距离型（越小越接近挖尽）")
+    # ② docstring 不再写与实现相反的「读数 = 1 − 边际新增」
+    if "故本读数 = **1 − 归一化边际新增**" in src:
+        bad.append("[P2] docstring 仍写「读数 = 1 − 边际新增」（与实现相反）")
+
+    # ③ 行为：excavate 取值仍 = 边际新增率（busy > done，与判据⑫同向，防「改文档顺手
+    #   把值也翻向」）
+    _b = (mod.layer_goal_readings(
+        {"0": {"aspect_units": [{"id": str(i)} for i in range(9)],
+               "rounds_run": 4, "aspect_hist": [2, 4, 6, 9]}}).get("0") or {}
+    ).get("excavate")
+    _d = (mod.layer_goal_readings(
+        {"0": {"aspect_units": [{"id": str(i)} for i in range(6)],
+               "rounds_run": 4, "aspect_hist": [2, 4, 5, 6]}}).get("0") or {}
+    ).get("excavate")
+    if not (_b is not None and _d is not None and _b > _d):
+        bad.append("[P2] excavate 值方向被改了（还在挖应 > 已挖尽）：%r vs %r"
+                   % (_b, _d))
+
+    # ④ 显示消歧：真驱动 `_finalize_layer_common` ⇒ 修行层 goal_verdict 带方向提示
+    try:
+        cfg = build_cfg(False)
+        m = mod.MetaDGTF(cfg)
+        v = mod.View(entry="0")
+        v.aspect_units = [{"id": "A%d" % i} for i in range(9)]
+        v.rounds_run = 3
+        v.aspect_hist = [2, 4, 6, 9]
+        v.stop_reason = "体力耗尽（3 圈走满）"
+        stt = {"roles_hist": ["x"], "total_rounds": 3, "round_log": [],
+               "all_rehashed": [], "all_candidates": [], "all_amps": [],
+               "all_threads": [], "all_expanded_descs": [],
+               "all_dec_products": [], "all_und_products": [],
+               "r": 3, "rounds_n": 3, "sp": mod._spiral_for(cfg, "0")}
+        with _ctx.redirect_stdout(_io.StringIO()):
+            m._finalize_layer_common("0", v, stt)
+        gv = str(getattr(v, "goal_verdict", "") or "")
+        if "excavate=" not in gv:
+            bad.append("[P2] 修行层 goal_verdict 缺 excavate：%r" % gv)
+        elif not ("趋零" in gv or "边际新增率" in gv):
+            bad.append("[P2] excavate 显示未给方向提示（易误读成「没挖」）：%r" % gv)
+    except Exception as e:  # noqa: BLE001
+        bad.append("[P2] 驱动抛错：%r" % (e,))
+
+    if bad:
+        for x in bad:
+            print("  X", x)
+        return False
+    print("  ✓ v1.23.41 P2 excavate 口径统一（声明/docstring 标距离型 · 取值仍=边际新增率 · "
+          "产物显示带「趋零即挖尽」提示）全过")
+    return True
+
+
+def check_v12341_attribution():
+    """[v1.23.41 · P3+P4] 停因**归因补全**（只加不删，不改停止决策）。
+
+    · P3：无判据截断 ⇒ 附**末圈近阈读数**（否则「未触发任何停止判据」不可判远近）。
+    · P4：自省未消化 ⇒ 附**未消化点名**（否则「同一批问题」不知是哪批）。
+    """
+    import io as _io
+    import contextlib as _ctx
+    bad = []
+    src = SRC.read_text(encoding="utf-8").replace("\r\n", "\n")
+    if "近阈读数" not in src:
+        bad.append("[P3] 缺「近阈读数」归因")
+    if "未消化点名" not in src:
+        bad.append("[P4] 缺「未消化点名」归因")
+
+    def _fin(entry, view_attrs, state_extra):
+        cfg = build_cfg(False)
+        m = mod.MetaDGTF(cfg)
+        v = mod.View(entry=entry)
+        for k, val in (view_attrs or {}).items():
+            setattr(v, k, val)
+        stt = {"roles_hist": ["x"], "total_rounds": 3, "round_log": [],
+               "all_rehashed": [], "all_candidates": [], "all_amps": [],
+               "all_threads": [], "all_expanded_descs": [],
+               "all_dec_products": [], "all_und_products": [],
+               "r": 3, "rounds_n": 3, "sp": mod._spiral_for(cfg, entry)}
+        stt.update(state_extra or {})
+        with _ctx.redirect_stdout(_io.StringIO()):
+            m._finalize_layer_common(entry, v, stt)
+        return v
+
+    # ① P3：无停因（被截断）⇒ 消息含「未触发任何停止判据」+「近阈读数」
+    try:
+        v3 = _fin("1", {}, {"round_log": [
+            {"round": 3, "new_amps": 0, "new_threads": 0,
+             "idle_amp": 1, "idle_thread": 0, "idle_stall": 1}]})
+        s3 = str(v3.stop_reason or "")
+        if "未触发任何停止判据" not in s3:
+            bad.append("[P3] 截断消息丢了「未触发任何停止判据」：%r" % s3)
+        if "近阈读数" not in s3:
+            bad.append("[P3] 截断消息没附近阈读数：%r" % s3)
+    except Exception as e:  # noqa: BLE001
+        bad.append("[P3] 驱动抛错：%r" % (e,))
+
+    # ② P4：自省未消化停因 ⇒ 消息附「未消化点名」
+    try:
+        v4 = _fin("1", {
+            "stop_reason": "自省连续 2 圈点名同一批问题未消化（层内空转）",
+            "carry": [{"target": "未消化的甲"}, {"target": "未消化的乙"}],
+            "carry_check": {}}, {})
+        s4 = str(v4.stop_reason or "")
+        if "未消化点名" not in s4:
+            bad.append("[P4] 自省未消化停因没附未消化点名：%r" % s4)
+        if "未消化的甲" not in s4:
+            bad.append("[P4] 未消化点名没带出具体条目：%r" % s4)
+    except Exception as e:  # noqa: BLE001
+        bad.append("[P4] 驱动抛错：%r" % (e,))
+
+    # ③ 负对照：普通停因不该被附「未消化点名」
+    try:
+        v5 = _fin("1", {"stop_reason": "研究层双通道均收敛，螺旋停止",
+                        "carry": [{"target": "甲"}]}, {})
+        if "未消化点名" in str(v5.stop_reason or ""):
+            bad.append("[P4-负对照] 普通停因也被附了未消化点名：%r"
+                       % v5.stop_reason)
+    except Exception as e:  # noqa: BLE001
+        bad.append("[P4] 负对照驱动抛错：%r" % (e,))
+
+    if bad:
+        for x in bad:
+            print("  X", x)
+        return False
+    print("  ✓ v1.23.41 P3+P4 停因归因（截断附近阈读数 · 自省未消化附点名 · "
+          "普通停因不误加）全过")
+    return True
+
+
+def check_v12341_goal_fresh():
+    """[v1.23.41 · P1] 目标读数**收尾刷新** —— 修 crystallize 时序颠倒（恒 0.500）。
+
+    ★ 根因：`goal_verdict` 曾在 `_finalize_layer_common` **前段**从 `goal_now`
+      渲染，而 `goal_now` 由**圈循环内**算（那时元层 `meta_closure` 还没落）
+      ⇒ 元层恒少数「结晶 + 回看」两件 ⇒ `crystallize` 恒 2/4 = 0.500。
+    ★ 判据（时序不变式）：真驱动 `_finalize_layer_common` ⇒ 产物里的
+      `goal_verdict` 必须**等于最终 view 的读数**，而不是层停止那刻的旧值。
+    """
+    import io as _io
+    import contextlib as _ctx
+    bad = []
+    src = SRC.read_text(encoding="utf-8").replace("\r\n", "\n")
+    # ① 静态：标签唯一真相源 + 唯一写入点在收尾
+    if "_LG_LABELS = {" not in src:
+        bad.append("[P1] 缺 `_LG_LABELS`（goal_verdict 标签唯一真相源）")
+    if src.count('{"0": "修行·挖尽", "1": "研究·收敛",') != 1:
+        bad.append("[P1] 标签映射不是唯一一份（内联渲染没消掉）")
+    if "目标读数收尾刷新] 本层的" not in src:
+        bad.append("[P1] 缺收尾刷新（goal_verdict 唯一写入点应在收尾）")
+
+    def _fin(entry, preset):
+        cfg = build_cfg(False)
+        m = mod.MetaDGTF(cfg)
+        v = mod.View(entry=entry)
+        for k, val in (preset or {}).items():
+            setattr(v, k, val)
+        stt = {"roles_hist": ["x"], "total_rounds": 2, "round_log": [],
+               "all_rehashed": [], "all_candidates": [], "all_amps": [],
+               "all_threads": [], "all_expanded_descs": [],
+               "all_dec_products": [], "all_und_products": [],
+               "r": 2, "rounds_n": 2, "sp": mod._spiral_for(cfg, entry)}
+        with _ctx.redirect_stdout(_io.StringIO()):
+            m._finalize_layer_common(entry, v, stt)
+        return v
+
+    # ② 元层：四件事齐 ⇒ 最终读数应 > 旧的 0.5；产物必须等于最终读数
+    try:
+        v = _fin("all", {"meta_closure": {"clean": True, "total": 3,
+                                          "unsettled": 0},
+                         "engagements": [{"tension_id": "t1"}],
+                         "suspensions": [{"id": "s1", "status": "active"}],
+                         "rounds_run": 2, "stop_reason": "自省空转，螺旋停止",
+                         "goal_now": {"crystallize": 0.5, "n_hits": 2}})
+        _fresh = (mod.layer_goal_readings(
+            {"all": v.to_dict()}).get("all") or {}).get("crystallize")
+        _gv = str(getattr(v, "goal_verdict", "") or "")
+        if _fresh is None:
+            bad.append("[P1] 元层最终 crystallize 竟为 None")
+        else:
+            if ("crystallize=%.3f" % float(_fresh)) not in _gv:
+                bad.append("[P1] 元层 goal_verdict 未随最终读数刷新："
+                           "fresh=%r verdict=%r" % (_fresh, _gv))
+            # 负对照：最终读数与旧值不同 ⇒ 产物里不许再是旧值 0.500
+            if abs(float(_fresh) - 0.5) > 1e-9 and "crystallize=0.500" in _gv:
+                bad.append("[P1] goal_verdict 仍是层停止那刻的旧值 0.500")
+    except Exception as e:  # noqa: BLE001
+        bad.append("[P1] 元层驱动抛错：%r" % (e,))
+
+    # ③ 修行层：excavate 的 goal_verdict 也必须等于最终读数
+    try:
+        v0 = _fin("0", {"aspect_units": [{"id": "A%d" % i} for i in range(9)],
+                        "rounds_run": 3, "aspect_hist": [2, 4, 6, 9],
+                        "stop_reason": "体力耗尽（3 圈走满）",
+                        "goal_now": {"excavate": None}})
+        _e0 = (mod.layer_goal_readings(
+            {"0": v0.to_dict()}).get("0") or {}).get("excavate")
+        _gv0 = str(getattr(v0, "goal_verdict", "") or "")
+        if _e0 is not None and ("excavate=%.3f" % float(_e0)) not in _gv0:
+            bad.append("[P1] 修行层 goal_verdict 未刷新：e=%r v=%r"
+                       % (_e0, _gv0))
+    except Exception as e:  # noqa: BLE001
+        bad.append("[P1] 修行层驱动抛错：%r" % (e,))
+
+    if bad:
+        for x in bad:
+            print("  X", x)
+        return False
+    print("  ✓ v1.23.41 P1 目标读数收尾刷新（产物 goal_verdict == 最终 view 读数，"
+          "元层不再恒 0.500、修行层同步）全过")
+    return True
+
+
 def check_v12340_relax_force():
     """[v1.23.40] 强制放宽 `web_search.relax_force` + 放宽表扩到 12。
 
@@ -15002,6 +15229,12 @@ def main():
     if not check_v12340_relax_force():
         return 1
     if not check_v12340_backfeed_stage():
+        return 1
+    if not check_v12341_goal_fresh():
+        return 1
+    if not check_v12341_excavate_dir():
+        return 1
+    if not check_v12341_attribution():
         return 1
     if not check_v12339_ondemand():
         return 1
