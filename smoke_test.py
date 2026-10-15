@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.37.py"
+SRC = HERE / "元DGTF-V1.23.38.py"
 
 os.environ.setdefault("DGTF_API_KEY", "sk-smoke-test-key")
 
@@ -12284,6 +12284,184 @@ def check_v12336_allweb():
     return True
 
 
+def check_v12338_relax_targets():
+    """[v1.23.38] 圈级心跳的**放宽目标表**与 `web_search.stages` 两向对账。
+
+    ★ 为什么需要：`_TICK_WEB_RELAX` 里的环节名若不在 `web_search.stages` 里，
+      放宽就是**死配置**（写了个引擎不认的 stage ⇒ 永远不生效、且**不报错**）。
+      「配置键两处定义」在本项目的经典坑 ⇒ 用判据钉住。
+    ★ 定位/解析一律用纯字符串操作（`find` / `endswith` / `split`），不用正则 —— 
+      避免反斜杠转义在「脚本 → 落盘 → 解析」三层里数错。
+    """
+    bad = []
+    _members = []
+    src = SRC.read_text(encoding="utf-8").replace("\r\n", "\n")
+
+    _i = src.find("_TICK_WEB_RELAX = (")
+    _j = src.find(")", _i + 1) if _i >= 0 else -1
+    if _i < 0 or _j < 0:
+        bad.append("[放宽表] 找不到 `_TICK_WEB_RELAX` 定义")
+    else:
+        _block = src[_i:_j + 1]
+        _members = [x for x in _block.split('"')[1::2] if x.strip()]
+        if len(_members) < 4:
+            bad.append("[放宽表] 成员过少（%d）—— 至少保留原 4 个" % len(_members))
+
+        # ── 与 yaml 的 web_search.stages 对账 ──
+        _y = (HERE / "dgtf_config.yaml").read_text(
+            encoding="utf-8").replace("\r\n", "\n")
+        _chunks = _y.split("\n")
+        _si = next((k for k, l in enumerate(_chunks)
+                    if "30 个环节各自的开关" in l), -1)
+        _sj = next((k for k, l in enumerate(_chunks)
+                    if k > _si and l.strip().startswith("as_evidence")), -1)
+        if _si < 0 or _sj < 0:
+            bad.append("[放宽表] 定位不到 `web_search.stages` 段")
+        else:
+            _avail = set()
+            for _l in _chunks[_si:_sj]:
+                # 恰好 4 空格缩进（stages 段的键缩进）
+                if _l.startswith("    ") and not _l.startswith("     "):
+                    _s = _l.strip()
+                    if _s.endswith(": true") or _s.endswith(": false"):
+                        _avail.add(_s.split(":")[0].strip())
+            _miss = [x for x in _members if x not in _avail]
+            if _miss:
+                bad.append("[放宽表] 成员不在 `web_search.stages` 里"
+                           "（放宽了也不生效）：%r" % (_miss,))
+
+    if bad:
+        for x in bad:
+            print("  X", x)
+        return False
+    print("  ✓ v1.23.38 放宽目标表（%d 个成员全部在 web_search.stages 里，"
+          "两向对账过）全过" % len(_members))
+    return True
+
+
+def check_v12338_backfeed():
+    """[v1.23.38] 联网**按需回喂**：声明查回来的结果，后续环节**直接复用**。
+
+    ★ 与 v1.23.37「按需协议」的关系：
+      v1.23.37 只做到「声明 ⇒ 检索 ⇒ 进池 + 留痕」，结果**没回到后续环节**；
+      本版补上回喂 —— 下一环节经 `_web_augment` 时**优先复用池内 `used_as=record`
+      的条目**（且 stage 匹配）⇒ **不再重复检索**（省钱 + 让声明真正抵达）。
+    ★ 复用安全：这些条目当年进池时**已过 Gate**（授权 + 配额），
+      这里只是取出来用，不产生任何新的外部调用。
+    """
+    bad = []
+    src = SRC.read_text(encoding="utf-8").replace("\r\n", "\n")
+
+    # ── ① 源码级 ──
+    if "backfeed_pool=self.pools.get" not in src:
+        bad.append("[回喂] 注入侧没有 `backfeed_pool`（LLM 拿不到池 ⇒ 不可达）")
+    _ai = src.find("def _web_augment")
+    if _ai < 0:
+        bad.append("[回喂] 找不到 `def _web_augment`")
+    else:
+        _aj = src.find("\n    def ", _ai + 10)
+        _abody = src[_ai:_aj if _aj > 0 else _ai + 4000]
+        if "backfeed_pool" not in _abody:
+            bad.append("[回喂] `_web_augment` 体里没有回喂分支（只在外层写了）")
+        if "used_as" not in _abody or "record" not in _abody:
+            bad.append("[回喂] 回喂分支没按 `used_as=record` 筛选（来源不明）")
+    if "[WEB-BACKFEED]" not in src:
+        bad.append("[回喂] 缺留痕记号 `[WEB-BACKFEED]`（回喂来源不可分辨）")
+    #   ★ 两向对账：注入侧写的键名与消费侧读的键名必须一致
+    if '_llm_ctx_get("backfeed_pool")' not in src:
+        bad.append("[回喂] 消费侧没读 `backfeed_pool`（键名对不上）")
+
+    # ── ②③ 构造性：真驱动 `_web_augment` ──
+    try:
+        cfg = build_cfg(False)
+        llm = mod.LLM(cfg)
+
+        def _mk_record(stage):
+            return {"id": "W9", "stage": stage, "query": "q",
+                    "claim": "回喂事实：X 是 Y", "url": "http://e/x",
+                    "source": "s", "tier": 2, "used_as": "record",
+                    "round": 1, "round_kind": "in", "pre_seq": 0}
+
+        class _Pool:
+            def __init__(self, recs):
+                self.web_results = list(recs)
+
+        _calls = []
+
+        def _searcher(stage, queries, round_no, used_as="evidence", pre_seq=0):
+            _calls.append(str(used_as))
+            return [{"claim": "新检索结果", "url": "http://new", "tier": 2}]
+
+        _ST = "research_evidence"
+        _u = "原始 user"
+
+        # ② 正：池里有**本 stage** 的 record ⇒ 复用，且 searcher **零调用**
+        _calls.clear()
+        mod._llm_ctx_set(web_searcher=_searcher, question="题", round=2,
+                         entry="1",
+                         backfeed_pool=_Pool([_mk_record(_ST)]))
+        _r = llm._web_augment(_ST, _u)
+        if not _r:
+            bad.append("[回喂] 池里有按需结果却没注入（回喂没生效）")
+        else:
+            if "回喂事实" not in str(_r):
+                bad.append("[回喂] 注入的内容**不是**池里那条（拿错了）")
+            if "新检索结果" in str(_r):
+                bad.append("[回喂] 竟然又检索了（复用失败 ⇒ 成本翻倍）")
+        if _calls:
+            bad.append("[回喂] 复用路径下游**仍调了 searcher** %d 次"
+                       "（省钱没真发生）" % len(_calls))
+
+        # ③a 负对照：池里**没有** record ⇒ 必须原路检索
+        _calls.clear()
+        mod._llm_ctx_set(web_searcher=_searcher, question="题", round=2,
+                         entry="1", backfeed_pool=_Pool([]))
+        _r2 = llm._web_augment(_ST, _u)
+        if not _calls:
+            bad.append("[回喂] 池里没有记录却也**不检索**了（该走的路被堵）")
+        if not _r2 or "新检索结果" not in str(_r2):
+            bad.append("[回喂] 负对照下没拿到新检索结果：%r" % (str(_r2)[:60],))
+
+        # ③b 负对照：池里有 record 但 **stage 不匹配** ⇒ 不该复用（防串台）
+        _calls.clear()
+        mod._llm_ctx_set(web_searcher=_searcher, question="题", round=2,
+                         entry="1",
+                         backfeed_pool=_Pool([_mk_record("另一个环节")]))
+        _r3 = llm._web_augment(_ST, _u)
+        if "回喂事实" in str(_r3 or ""):
+            bad.append("[回喂] 复用了**别的环节**的结果（串台）")
+        if not _calls:
+            bad.append("[回喂] stage 不匹配时该检索却没检索")
+
+        # ③c 无注入器 ⇒ None（零变化）
+        mod._llm_ctx_set(web_searcher=None, question="题", round=2, entry="1",
+                         backfeed_pool=_Pool([_mk_record(_ST)]))
+        if llm._web_augment(_ST, _u) is not None:
+            bad.append("[回喂] 没注入器却仍返回了增强文本（该 None）")
+
+        # ③d 不带 backfeed_pool（老调用方）⇒ 退回原行为（零变化）
+        _calls.clear()
+        mod._llm_ctx_set(web_searcher=_searcher, question="题", round=2,
+                         entry="1")
+        try:
+            delattr(mod._LLM_CTX, "backfeed_pool")
+        except Exception:
+            pass
+        llm._web_augment(_ST, _u)
+        if not _calls:
+            bad.append("[回喂] 不带池时该原路检索，却没检索（老行为被改）")
+    except Exception as _e:
+        bad.append("[回喂] 构造性验证抛错：%r" % (_e,))
+
+    if bad:
+        for x in bad:
+            print("  X", x)
+        return False
+    print("  ✓ v1.23.38 联网按需回喂（池复用 · searcher 零调用 · "
+          "stage 不匹配不复用 · 无池退回原行为）全过")
+    return True
+
+
 def check_v12337_roundtick():
     """[v1.23.37] **圈级心跳**：用「池增量」当上一圈产出的代理，只改一处。
 
@@ -14539,6 +14717,10 @@ def main():
     if not check_v12336_eml():
         return 1
     if not check_v12336_webneed():
+        return 1
+    if not check_v12338_relax_targets():
+        return 1
+    if not check_v12338_backfeed():
         return 1
     if not check_v12337_roundtick():
         return 1

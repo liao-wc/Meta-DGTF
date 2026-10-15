@@ -7,7 +7,7 @@ import tempfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.37.py"
+SRC = HERE / "元DGTF-V1.23.38.py"
 
 MUTS = [
     ("M1 α 不做机会校正（退化成原始一致率）",
@@ -412,6 +412,22 @@ MUTS = [
     ("M79 圈级心跳不看增量（有产出也放宽）",
      '                if _grew <= 0:',
      '                if True:'),
+    #   ★ M80 打在**回喂的消费侧**上：把「按 used_as=record 筛选」去掉 ⇒
+    #     池里任何条目都算按需结果（判据的「stage 不匹配不复用」负对照必判红）。
+    ("M80 回喂不按 used_as=record 筛选（来源不明也复用）",
+     '                    if str((_it or {}).get("used_as") or "") == "record"',
+     '                    if True'),
+    #   ★ M81 打在**回喂的复用分支**上：把「先查池」整段短路 ⇒ 永远去检索
+    #     （判据的「searcher 零调用」必判红 ⇒ 回喂失效）。
+    ("M81 回喂短路（永远重新检索，池里有也不用）",
+     '        _bf = _llm_ctx_get("backfeed_pool")',
+     '        _bf = None'),
+    #   ★ M82 打在**放宽表的成员有效性**上：塞一个 `web_search.stages` 里
+    #     不存在的环节名 ⇒ 放宽了也不生效（死配置）⇒ 两向对账判据必判红。
+    ("M82 放宽表塞入不存在的环节名（死配置）",
+     '                       "expand_pair", "expand_pair_merged_once")',
+     '                       "expand_pair", "expand_pair_merged_once",\n'
+     '                       "__no_such_stage__")'),
 ]
 
 
@@ -435,7 +451,11 @@ def run_check(mut_path=None):
              "st.check_v12336_allweb() and "
              "st.check_v12336_readings() and "
              "st.check_v12336_tick() and "
-             "st.check_v12336_eml()) else 1)\n")
+             "st.check_v12336_eml() and "
+             "st.check_v12336_webneed() and "
+             "st.check_v12337_roundtick() and "
+             "st.check_v12338_relax_targets() and "
+             "st.check_v12338_backfeed()) else 1)\n")
     r = subprocess.run([sys.executable, "-c", code],
                        capture_output=True, text=True, cwd=str(HERE))
     return r.returncode == 0, r.stdout + r.stderr

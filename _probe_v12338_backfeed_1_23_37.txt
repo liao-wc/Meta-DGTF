@@ -1,0 +1,21 @@
+=== 探针 v12338 · 目标 元DGTF-V1.23.37.py ===
+
+--- 静态：_web_augment 是否引用了池的 web_results ---
+_web_augment 引用 web_results : False
+_web_augment 引用 used_as     : False
+_web_augment 引用 record      : False
+
+--- 场景 A：池里有 used_as=record 的条目 ---
+_web_augment 签名 : (self, stage: 'str', user: 'str') -> 'Optional[str]'
+场景A 返回类型 : str
+场景A 返回非空 : True
+场景A searcher 调用次数 : 1
+场景A 含回喂声明原文 : False
+场景A 含新检索结果   : True
+
+--- 场景 B：池里没有 record 条目（负对照）---
+场景B 返回非空 : True
+场景B searcher 调用次数 : 1
+
+--- 场景 C：无 web_searcher 注入器 ---
+场景C 返回 is None : True
