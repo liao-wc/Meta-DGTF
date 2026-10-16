@@ -7,7 +7,7 @@ import tempfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.44.py"
+SRC = HERE / "元DGTF-V1.23.45.py"
 
 MUTS = [
     ("M1 α 不做机会校正（退化成原始一致率）",
@@ -490,6 +490,9 @@ MUTS = [
     ("M95 EML 冷启自适应失效（门槛不降）",
      '            if len(playbook or []) < int(_EML_COLD_LIB):\n                _eff_n = 1',
      '            if False:\n                _eff_n = 1'),
+    ("M96 输出内复读率恒 0（盲区又回去了）",
+     '    return round(1.0 - len(set(_g)) / float(len(_g)), 4)',
+     '    return 0.0'),
 ]
 
 
@@ -524,6 +527,7 @@ def run_check(mut_path=None):
              "st.check_v12342_ctx_shape() and "
              "st.check_v12343_gain_stop() and "
              "st.check_v12344_eml_adaptive() and "
+             "st.check_v12345_output_rep() and "
              "st.check_v12339_ondemand() and "
              "st.check_v12338_relax_targets() and "
              "st.check_v12338_backfeed()) else 1)\n")

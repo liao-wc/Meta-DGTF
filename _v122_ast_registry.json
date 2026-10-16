@@ -1,9 +1,9 @@
 {
  "added": 172,
  "baseline": "_baseline_v12177.py",
- "current": "元DGTF-V1.23.43.py",
+ "current": "元DGTF-V1.23.45.py",
  "n_symbols_baseline": 290,
- "n_symbols_current": 576,
+ "n_symbols_current": 577,
  "registry": {
   "AnchorRetriever": {
    "phase": "4",
@@ -1248,6 +1248,10 @@
   "layer_gain_stop_signal": {
    "phase": "43",
    "reason": "P-2 早停判据：gain_floor>0 时连续 N 圈增益趋零 ⇒ 停"
+  },
+  "output_repetition": {
+   "phase": "45",
+   "reason": "P-4 输出内逐字复读率（补集合式 n-gram 信号对输出内复读的结构盲）"
   }
  },
  "removed": 0
