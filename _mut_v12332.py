@@ -7,7 +7,7 @@ import tempfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.47.py"
+SRC = HERE / "元DGTF-V1.23.48.py"
 
 MUTS = [
     ("M1 α 不做机会校正（退化成原始一致率）",
@@ -499,6 +499,9 @@ MUTS = [
     ("M98 阈值建议不看质量（质量差也抬高）",
      '    if _med >= _qf:',
      '    if True:'),
+    ("M99 语义近重合并失效（粗键永不命中）",
+     '        if _ek != _key and _coarse is not None:',
+     '        if False:'),
 ]
 
 
@@ -536,6 +539,7 @@ def run_check(mut_path=None):
              "st.check_v12345_output_rep() and "
              "st.check_v12346_duty_span() and "
              "st.check_v12347_gain_suggest() and "
+             "st.check_v12348_eml_semantic() and "
              "st.check_v12339_ondemand() and "
              "st.check_v12338_relax_targets() and "
              "st.check_v12338_backfeed()) else 1)\n")

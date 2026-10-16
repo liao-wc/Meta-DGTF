@@ -1,5 +1,5 @@
 # ============================================================
-# 元 DGTF · v1.23.47 配置文件
+# 元 DGTF · v1.23.48 配置文件
 # ============================================================
 #
 #
@@ -52,6 +52,14 @@ auto:
     enabled: false
     cost_w: 0.3
     c: 1.0
+
+# 【v1.23.47 → v1.23.48】P-3b EML commit 前语义近重合并 —— 新增配置键 memory.eml_semantic_merge
+#   ① 实测：eml_merge_candidate 只按**精确** (kind,cond,action) 去重 ⇒ 值差一点
+#      （delta=1 vs 2、rate=0.30 vs 0.31）就另开一条 ⇒ 冗余堆积。
+#      这是 SOTA 点名的 failure mode：noisy accumulation / redundancy。
+#   ② 修法：加 semantic_merge 形参 —— 精确键不中再按**粗键**（kind + cond.issue +
+#      action.key）找已有条目 ⇒ 命中则并入（证据累加），不再新开。
+#   ③ 新键 memory.eml_semantic_merge：**默认 false = 关 ⇒ 逐字零行为差**。
 
 # 【v1.23.46 → v1.23.47】P-2b 早停阈值跨跑建议 —— 无新增配置键
 #   依据：SOTA 点名 static thresholds 是学习回路失败模式 ⇒ α 该跟着历史跑调。
@@ -1674,6 +1682,11 @@ autotune:
 # 三通道记忆参数
 # ------------------------------------------------------------
 memory:
+  # 【用途】EML 语义近重合并：同 kind+cond.issue+action.key 就并入（防值差另开一条）。
+  # 【建议】false（出厂=关=逐字不变）；库开始冗余堆积时可设 true。
+  # 【依据】noisy accumulation / redundancy 是记忆学习点名的失败模式。
+  eml_semantic_merge: false
+
   # 【用途】EML 阈值冷启自适应：库小时降晋升门槛，让学习闭环能启动。
   # 【建议】false（出厂=关=逐字不变）；想让早期学习生效可设 true。
   # 【依据】ReasoningBank / MemRL：cold start + static thresholds 是失败模式。
