@@ -1,9 +1,9 @@
 {
  "added": 172,
  "baseline": "_baseline_v12177.py",
- "current": "元DGTF-V1.23.49.py",
+ "current": "元DGTF-V1.23.50.py",
  "n_symbols_baseline": 290,
- "n_symbols_current": 585,
+ "n_symbols_current": 587,
  "registry": {
   "AnchorRetriever": {
    "phase": "4",
@@ -1288,6 +1288,14 @@
   "_beat": {
    "phase": "49",
    "reason": "跑中快照心跳体（start_run_ckpt 内层 daemon 循环）"
+  },
+  "from_dict": {
+   "phase": "50",
+   "reason": "断点续跑：`to_dict()` 的逆（从快照还原 View）"
+  },
+  "load_resume_snapshot": {
+   "phase": "50",
+   "reason": "断点续跑入口（三道硬校验 + 还原 View/Pool）"
   }
  },
  "removed": 0

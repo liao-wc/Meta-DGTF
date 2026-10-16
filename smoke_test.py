@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.49.py"
+SRC = HERE / "元DGTF-V1.23.50.py"
 
 os.environ.setdefault("DGTF_API_KEY", "sk-smoke-test-key")
 
@@ -12592,6 +12592,151 @@ def check_v12349_run_ckpt():
     return True
 
 
+def check_v12350_resume():
+    """[v1.23.50] 断点续跑（复用已完成层）+ 快照记账 + route 死捕获 + 墙钟预算。
+
+    ★ 为什么必须有它：真实事故（今天两次 A/B 真跑被宿主回收）证明 —— 快照只
+      「留痕」不能「接着跑」 ⇒ **烧掉的钱不可回收**。本判据做**构造性证明**：
+      造一份「层 0 已完成」的快照 ⇒ 续跑必须 (a) 不重跑层 0、(b) 逐字复用其产物、
+      (c) 还原其池（下游读上游池）、(d) 只跑缺的层。
+    ★ 负对照两条（判据要有牙）：题面不同 ⇒ **拒绝续跑**；模式非 serial ⇒ **拒绝**。
+    ★ 记账/route/预算同理：被杀跑次也要能**结算成本**；`route` 原本是死捕获（恒 `[]`）。
+    """
+    import tempfile as _tf
+    bad = []
+    src = SRC.read_text(encoding="utf-8").replace("\r\n", "\n")
+    for tok in ('resume_ckpt: str = ""', "max_minutes: float = 0.0",
+                "def from_dict(cls, d: dict)", "def load_resume_snapshot(",
+                "self._route = list(route)", "if entry in self._results:",
+                '"llm_calls": int(getattr(_llm, "total_calls", 0) or 0),',
+                '"pools": pools,',
+                '"mode": str(getattr(engine, "_parallel_mode"'):
+        if tok not in src:
+            bad.append("[RS] 源码缺：%s" % tok)
+
+    _ck = Path(_tf.mkdtemp(prefix="v50ck_"))
+    _mem = Path(_tf.mkdtemp(prefix="v50mem_"))
+    _orig_dir = mod.run_ckpt_dir
+    _orig_layer = mod.MetaDGTF._run_layer
+    mod.run_ckpt_dir = lambda base=None: _ck
+    _ran = []
+
+    def _spy(self, entry, n):
+        _ran.append(entry)
+        return _orig_layer(self, entry, n)
+
+    def _cfg():
+        c = build_cfg(False)
+        c["output"]["save_dir"] = str(Path(_tf.mkdtemp(prefix="v50out_")))
+        c["playbook"]["dir"] = str(_mem)
+        c.setdefault("auto", {}).setdefault("bandit", {})["dir"] = str(_mem)
+        c["runtime"] = dict(c.get("runtime") or {})
+        c["runtime"]["live_checkpoint"] = True
+        c["runtime"]["ckpt_interval"] = 0.05
+        c["all_on"] = False
+        return c
+
+    _q = "冒烟题面：这件事的边界在哪里（v12350 续跑判据）"
+    try:
+        # ★ 实测（6 分片并发跑变异体）：Windows 上 `os.replace` 偶发被占 ⇒ 最后一份
+        #   快照没落盘、盘上留的是中途那份（还没有层 0）—— 这不是续跑的错，
+        #   是**写盘抖动**。这里只**重试一次**并把首次失败说出来；
+        #   **连续两次都缺 ⇒ 判红**（那是真缺陷，不是抖动）。
+        _s, _p = None, None
+        for _att in (1, 2):
+            _rid = "RS1" if _att == 1 else "RS1b"
+            mod.MetaDGTF(_cfg()).run(_q, route=["0"], rounds={"0": 1},
+                                     parallel_mode="serial", run_id=_rid)
+            _cand = _ck / ("%s.json" % _rid)
+            if not _cand.is_file():
+                continue
+            try:
+                _try = json.loads(_cand.read_text(encoding="utf-8"))
+            except Exception:  # noqa: BLE001
+                continue
+            if isinstance((_try.get("views") or {}).get("0"), dict):
+                _s, _p = _try, _cand
+                break
+            if _att == 1:
+                print("  · [RS] 首次快照缺层 0（写盘抖动？）⇒ 重试一次")
+        if _s is None:
+            bad.append("[RS] 连续两次都没拿到含层 0 的快照"
+                       "（写盘失败或快照内容坏了）")
+            raise RuntimeError("no usable snapshot")
+        if int(_s.get("llm_calls") or 0) <= 0 or int(_s.get("llm_tokens") or 0) <= 0:
+            bad.append("[RS] 快照没带记账：calls=%r tokens=%r"
+                       % (_s.get("llm_calls"), _s.get("llm_tokens")))
+        if not _s.get("route"):
+            bad.append("[RS] 快照 route 仍是空（死捕获没修）")
+        if _s.get("mode") != "serial":
+            bad.append("[RS] 快照没记 mode：%r" % (_s.get("mode"),))
+        if not ((_s.get("pools") or {}).get("0")):
+            bad.append("[RS] 快照没带池（续跑还原不了上游）")
+        _s["status"] = "interrupted"
+        _p.write_text(json.dumps(_s, ensure_ascii=False, indent=1), encoding="utf-8")
+
+        mod.MetaDGTF._run_layer = _spy
+        _m2 = mod.MetaDGTF(_cfg())
+        _r2 = _m2.run(_q, route=["0", "1"], rounds={"0": 1, "1": 1},
+                      parallel_mode="serial", run_id="RS2", resume_ckpt=str(_p))
+        if "0" in _ran:
+            bad.append("[RS] 续跑**重跑了**已完成的层 0（白烧钱）：%r" % (_ran,))
+        if "1" not in _ran:
+            bad.append("[RS] 续跑没跑缺的层 1：%r" % (_ran,))
+        if json.dumps((_r2.get("views") or {}).get("0"), sort_keys=True,
+                      ensure_ascii=False, default=str) != json.dumps(
+                _s["views"]["0"], sort_keys=True, ensure_ascii=False,
+                default=str):
+            bad.append("[RS] 层 0 的产物与快照那份不一致（不是逐字复用）")
+        _p0 = _m2.pools.get("0")
+        if len(getattr(_p0, "amps", []) or []) != len(
+                ((_s.get("pools") or {}).get("0") or {}).get("amps") or []):
+            bad.append("[RS] 层 0 的池没还原（下游会看到空上游）")
+
+        _ran.clear()
+        mod.MetaDGTF(_cfg()).run("完全不同的题面", route=["0"],
+                                 rounds={"0": 1}, parallel_mode="serial",
+                                 run_id="RS3", resume_ckpt=str(_p))
+        if "0" not in _ran:
+            bad.append("[RS-负对照] 题面不同竟也续跑了（会把两跑混一起）")
+
+        _rs_b = mod.load_resume_snapshot(str(_p), question=_q, mode="B")
+        if _rs_b.get("ok") or not _rs_b.get("why"):
+            bad.append("[RS-负对照] mode=B 竟允许续跑 / 没给理由：%r" % (_rs_b,))
+        if not mod.load_resume_snapshot(str(_p), question=_q,
+                                        mode="serial").get("ok"):
+            bad.append("[RS-正对照] serial + 同题竟不允许续跑")
+
+        _ran.clear()
+        _r4 = mod.MetaDGTF(_cfg()).run(_q, route=["0", "1"],
+                                       rounds={"0": 1, "1": 1},
+                                       parallel_mode="serial", run_id="RS4",
+                                       max_minutes=1e-6)
+        if not _r4.get("paused") or _ran:
+            bad.append("[RS] 预算到点没优雅停/仍起了层：paused=%r ran=%r"
+                       % (_r4.get("paused"), _ran))
+        if list(_r4.get("pending_layers") or []) != ["0", "1"]:
+            bad.append("[RS] 待续层没交代：%r" % (_r4.get("pending_layers"),))
+        _s4 = json.loads((_ck / "RS4.json").read_text(encoding="utf-8"))
+        if _s4.get("status") != "paused":
+            bad.append("[RS] 优雅停的快照状态不是 paused（下次续不了）：%r"
+                       % (_s4.get("status"),))
+    except Exception as _e:  # noqa: BLE001
+        bad.append("[RS] 驱动抛错：%r" % (_e,))
+    finally:
+        mod.MetaDGTF._run_layer = _orig_layer
+        mod.run_ckpt_dir = _orig_dir
+
+    if bad:
+        for x in bad:
+            print("  X", x)
+        return False
+    print("  ✓ v1.23.50 断点续跑（构造性：快照含层 0 ⇒ 续跑**不重跑**已完成层、"
+          "逐字复用 + 池还原 + 只跑缺层；负对照：题面不同/mode 非 serial 拒绝；"
+          "记账 + route 死捕获 + 墙钟预算优雅停 paused）全过")
+    return True
+
+
 def check_v12348_eml_semantic():
     """[v1.23.48 · P-3b] EML **commit 前语义近重合并**（防冗余堆积）。
 
@@ -15825,6 +15970,8 @@ def main():
     if not check_v12348_eml_semantic():
         return 1
     if not check_v12349_run_ckpt():
+        return 1
+    if not check_v12350_resume():
         return 1
     if not check_v12339_ondemand():
         return 1
