@@ -1,0 +1,16 @@
+元 DGTF v1.23.49 定稿存档
+
+主题：跑中快照（心跳落盘 + 孤儿回收）—— 修「run() 只在返回后写盘 ⇒ 宿主回收就全丢」。
+实测：12:37 的 A/B 真跑被宿主回收，~24 分钟 / ~¥2 全丢。
+修法：run() 起 daemon 心跳线程，每 30s 原子落盘各层 View.to_dict()（tmp + os.replace，强杀不留半份）；
+      recover_orphan_runs() 把过期 running 回填 interrupted + why（幂等；新鲜的负对照不动）；
+      新键 runtime.live_checkpoint（默认 true —— 「新键默认关」惯例的唯一例外，用户拍板）
+      / runtime.ckpt_interval 30.0。
+自曝双 bug：_ckpt_snapshot 的 dict(None) + 未定义 ENGINE_VERSION，皆被 except: pass 吞
+      ⇒ 安全网从未落盘（已修；本版判据⑦端到端真落盘专门堵这个）。
+附带治理：冒烟写生产记忆库三条泄漏全修（LLM 桩未还原 / CLI+E2E 的 playbook+save_dir / bandit 不吃 playbook.dir）
+      + 工作树回退 + 证据归档；CHANGELOG 补登 44~48；app 标签「默认关」→「默认开」。
+
+验收：冒烟 246/0 · verify 319/0 · AUDIT 69/0 · 变异体 98 判红 / 98（三片 1-33/34-65/66-98）。
+主文件 元DGTF-V1.23.49.py（26296 行 / 纯 CRLF / AST OK / +8 符号（含 _beat）已登记 /
+新键 2：runtime.live_checkpoint（默认 true）/ runtime.ckpt_interval）。
