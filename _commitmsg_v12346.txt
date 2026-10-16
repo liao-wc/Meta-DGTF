@@ -1,0 +1,10 @@
+元 DGTF v1.23.46 定稿存档
+
+主题：P-5 职责 S 口径对称化（修 C 判全文 / R 判逐句 的长度不对称）。
+诊断：真产物 duty_trace={S:0.0, C:0.25, R:0.0} ⇒ S=0 是 R=0 拖的；
+问项跨句时 C 记、R 不记（_hit 的 gram 覆盖率按问项长度归一）。
+修法：duty_of_layer/duty_components 加 span_tolerant（True ⇒ R 用跨句窗口）；
+新键 duty.span_tolerant（默认 false ⇒ 零行为差）。
+
+验收：冒烟 243/0 · verify 319/0 · AUDIT 69/0 · 变异体 95/95（三片 1-32/33-63/64-95）。
+主文件 元DGTF-V1.23.46.py（26061 行 / 纯 CRLF / AST OK / 零新符号 / 新键 duty.span_tolerant）。
