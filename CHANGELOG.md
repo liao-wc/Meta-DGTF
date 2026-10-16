@@ -12,6 +12,127 @@
 
 ---
 
+v1.23.49 相对 v1.23.48
+
+【主题】跑中快照（心跳落盘 + 孤儿回收）—— 修「`run()` 只在返回后写盘 ⇒ 宿主回收就全丢」。
+
+【问题】实测：12:37 的 A/B 真跑（`_fullrun_V1248AB.py`）被宿主回收，**~24 分钟 / ~¥2 全丢**。
+  `run()` 是 60 分钟级长跑，packed 只在 `return` 前组装、调用方只在返回后才写盘。
+
+【修法】`run()` 起 **daemon** 心跳线程，每 `ckpt_interval`（默认 30s）把各层
+  `View.to_dict()` **原子**落盘（`tmp` + `os.replace` ⇒ 强杀不留半份）；
+  `recover_orphan_runs()` 把过期 `running` 回填 `interrupted` + `interrupted_why`（幂等）；
+  新键 `runtime.live_checkpoint` / `runtime.ckpt_interval`（引擎 + yaml + app 三处同步）。
+  ★★ **默认 true 是本项目「新键默认关 ⇒ 零行为差」惯例的唯一例外** —— 用户拍板：
+    它是纯安全网（daemon 心跳 + 原子落盘），不碰任何引擎输出/结论，只决定「崩了能否找回」；
+    12:37 已用 24 分钟 / ~¥2 证明「默认关」的代价是**全丢**。要回零行为差设 `false` 即可。
+  ★ 自曝双 bug（本轮单独复现抓出）：`_ckpt_snapshot` 的 `dict(None)`（层中途无 View，
+    **长跑中途是常态**）+ 未定义 `ENGINE_VERSION` —— 皆被 `except: pass` 吞
+    ⇒ 安全网**从未落盘**。已修（None 守卫 + `__version__`）。
+
+【验收】冒烟 **246/0**（+`check_v12349_run_ckpt`：回环 / 原子 / 过期回填 / **负对照** /
+  **幂等** / 不起线程×2 / 起停闭环 / **出厂配置端到端真落盘**）· verify **319/0** ·
+  AUDIT **69/0** · 变异体 **98 判红 / 98**（+M100 孤儿回收不判过期）。
+  ★ 附带治理：冒烟「写生产记忆库」**三条泄漏全修**（LLM 桩未还原 / CLI+E2E 的
+    playbook+save_dir / bandit 不吃 `playbook.dir`），工作树回退 + 证据归档
+    （`_archive/v1.23.49/dgtf_memory_smoke_pollution_20261016/说明.md`）；
+    CHANGELOG 补登 v1.23.44~48；app 标签「默认关」→「默认开」；陈旧判据**登记式**修复
+    （`check_v1234_runtime` ×2 / `_probe_v1234_runtime.py` T12/T12b / AST 登记 `_beat`）。
+
+★ v1.23.49 收束摘要：交付「跑中快照 + 孤儿回收（**默认开 = 惯例唯一例外**）」；主文件 26296 行 /
+  纯 CRLF / AST OK / 新增 AST 符号 8（含内层 `_beat`）已登记 / 新键 2。
+  未做（挂账）：记忆库目录两处解析未收敛 / 历史 ~72 条冒烟 episode 未清 /
+  `_smoke_*.log` 入库口径矛盾；③ A/B 真跑另行重跑（`_fullrun_V1249AB.py`）。
+
+> ★ **补登说明**（v1.23.49 轮发现）：v1.23.44 ~ v1.23.48 这五轮**只落了 `vNN_报告.md`，
+>   漏了本文件的「每版一段」**。本版按各版**报告**补登（内容以报告为准，未新增判断）。
+
+v1.23.48 相对 v1.23.47（补登）
+
+【主题】P-3b EML commit 前**语义近重合并**（防冗余堆积）。
+
+【问题】`eml_merge_candidate` 只按**精确** `(kind, cond, action)` 去重 ⇒ 同一条经验
+  值差一点（`delta=1` vs `2`、`rate=0.30` vs `0.31`）就**另开一条** ⇒ 库只增不减。
+
+【修法】`eml_merge_candidate(..., semantic_merge=False)`：精确键仍**优先**；为真时
+  精确键不中再按**粗键**（`kind + cond.issue + action.key`）并入（证据累加）。
+  新键 `memory.eml_semantic_merge: false`（引擎 + yaml + app 三处同步）。
+  ★ 只影响「要不要新开一条」，不改学到的内容；`action.key` 不同**绝不并**（负对照）。
+
+【验收】冒烟 245/0（+`check_v12348_eml_semantic`）· verify 319/0 · AUDIT 69/0 · 变异体 97/97（+M99）。
+
+★ v1.23.48 收束摘要：交付「EML 语义近重合并（P-3b）」；主文件 26137 行 / 纯 CRLF / AST OK /
+  零新符号 / 新键 1（`memory.eml_semantic_merge` 默认 false ⇒ 逐字零行为差）。
+
+v1.23.47 相对 v1.23.46（补登）
+
+【主题】P-2b 早停阈值 α 由 **AutoTune 跨跑建议**（backlog 遗留项）。
+
+【依据】SOTA 点名 `static thresholds` 是学习回路失败模式（ReasoningBank, arXiv:2509.25140）。
+
+【修法】**只建议不执行**：新纯函数 `autotune_suggest_gain_floor(episodes, base, step, min_n,
+  quality_floor)` —— 有截断且中位质量不差 ⇒ 建议 α 抬 `step`；质量差 ⇒ 保持；证据不足 ⇒ 不建议。
+  挂进 `autotune_phase_learn`（`suggested_gain_floor` / `gain_floor_why`）。红线守：
+  **不写配置**（判据显式断言），采纳仍走既有 `autotune_apply_to_cfg`。**零新配置键**。
+
+【验收】冒烟 244/0（+`check_v12347_gain_suggest`）· verify 319/0 · AUDIT 69/0 · 变异体 96/96（+M98）。
+  本轮踩坑：**不能用「文件后面才定义」的模块常量当默认参数**（def 时求值 ⇒ NameError）。
+
+★ v1.23.47 收束摘要：交付「早停阈值跨跑建议（P-2b）」；主文件 26115 行 / 纯 CRLF / AST OK /
+  新增 AST 符号 1（已登记）/ 零新键。
+
+v1.23.46 相对 v1.23.45（补登）
+
+【主题】P-5 职责 S 口径**对称化**（先诊断后修）。
+
+【诊断】真产物 `{S:0.0, C:0.25, R:0.0}` ⇒ S=0 是 **R=0** 拖的。根因：C 判**全文**、R 判
+  **单句**，而 `_hit` 的覆盖率**按问项长度归一** ⇒ 问项跨句时 C 记、R 不记。
+  ★ 「同一个 `_hit` 函数」≠「同一口径」—— 项目自留的注释成了假安心。
+
+【修法】`duty_of_layer` / `duty_components` 加 `span_tolerant`；为真时 R 用**跨句窗口**。
+  新键 `duty.span_tolerant: false`（三处同步）⇒ 默认逐字零行为差。
+
+【验收】冒烟 243/0（+`check_v12346_duty_span`，**构造性复现** off `C=1/R=0/S=0` → on `R=0.5/S=0.67`）·
+  verify 319/0 · AUDIT 69/0 · 变异体 95/95（+M97）。
+
+★ v1.23.46 收束摘要：交付「职责 S 跨句口径（P-5）」；主文件 26061 行 / 纯 CRLF / AST OK /
+  零新符号 / 新键 1（`duty.span_tolerant` 默认 false）。
+
+v1.23.45 相对 v1.23.44（补登）
+
+【主题】P-4 **输出内**逐字复读率读数（补结构盲区）。
+
+【依据】Reflective Budget Governor（Zenodo 22844856）：集合式 n-gram/trigram 信号对
+  「同一输出内部」的逐字复读**结构盲**（两次灾难性退化都没被发现）；原有
+  `drop_rehashes` / `sem_stagnation` 都是**与上游比**。
+
+【修法】新纯函数 `output_repetition(text, n=3)`：输出内重复 n-gram 占比（太短/空 ⇒ None）。
+  接进 `ing` 环节零成本读数，**两个出口**（`_READING_LABELS` + `_QUANT_LABELS`），
+  `verdict = repeat`（>= 常量 `_OUTREP_ALERT 0.3`）/`ok`。**零新配置键** ⇒ 出厂逐字不变。
+
+【验收】冒烟 242/0（+`check_v12345_output_rep`）· verify 319/0 · AUDIT 69/0 · 变异体 94/94（+M96）。
+
+★ v1.23.45 收束摘要：交付「输出内复读率读数（P-4）」；主文件 26041 行 / 纯 CRLF / AST OK /
+  新增 AST 符号 1（已登记）/ 零新键。
+
+v1.23.44 相对 v1.23.43（补登）
+
+【主题】P-3 学习闭环：EML 阈值**冷启自适应**。
+
+【问题】查真库（11 条）：3 条 `shadow` 卡在 `n_evidence=1 < _EML_PROMOTE_N(3)` ⇒ **升级 0**；
+  遗忘侧 `recency < 0.05` 需 age > 60 天 ⇒ **遗忘 0**。两者都是 SOTA 点名的
+  cold start + static thresholds（ReasoningBank, arXiv:2509.25140）。
+
+【修法】`eml_promote(..., adaptive=False)` / `eml_sweep_forget(..., adaptive=False)`：
+  adaptive 且库 < `_EML_COLD_LIB(20)` ⇒ 晋升门槛降到 1；退休门槛随库规模放大。
+  接线读 `memory.eml_adaptive`；新键 `memory.eml_adaptive: false`（三处同步）⇒ 默认逐字零行为差。
+  ★ 红线守：只改「**何时**升/忘」，不改「学什么」。
+
+【验收】冒烟 241/0（+`check_v12344_eml_adaptive`）· verify 319/0 · AUDIT 69/0 · 变异体 93/93（+M95）。
+
+★ v1.23.44 收束摘要：交付「EML 冷启自适应（P-3）」；主文件 26004 行 / 纯 CRLF / AST OK /
+  零新符号 / 新键 1（`memory.eml_adaptive` 默认 false）。
+
 v1.23.43 相对 v1.23.42
 
 【主题】P-2 **早停**（backlog 第 2 项）：单标量增益 + 配置式阈值。

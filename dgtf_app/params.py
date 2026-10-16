@@ -254,6 +254,8 @@ _KEY_CN: dict[str, str] = {
     "stop.gain_floor": "单标量早停阈值（增益<它连续N圈⇒停；0=关）",
     "memory.eml_adaptive": "EML 阈值冷启自适应（库小时降晋升门槛；默认关）",
     "memory.eml_semantic_merge": "EML 语义近重合并（值差也并入；默认关）",
+    "runtime.live_checkpoint": "跑中快照（心跳落盘，防中断全丢；默认开）",
+    "runtime.ckpt_interval": "跑中快照心跳间隔（秒）",
     "duty.span_tolerant": "职责 S 口径对称化（R 用跨句窗口；默认关）",
     # ── spiral 螺旋与停止 ──
     "spiral.soft_max": "软最大圈数（超过才查自然安住）",

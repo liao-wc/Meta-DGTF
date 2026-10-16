@@ -121,20 +121,21 @@ for _cn in _EXPORT_CLASSES:
 # 死类：定义后**零引用**（按 AST 数真实引用，不数文本）
 #   ★ 文本计数会被骗：changelog 里提一句类名、登记表里写个字符串，
 #     都会被算成「有引用」，于是过期登记判据恒红（第一版就这样）。
-#   ★ 只数 `ast.Name` / `ast.Attribute`（真实代码引用），
-#     **字符串常量不算引用**（登记表里的名字就是字符串）。
+#   ★ 只数**裸 `ast.Name`**（真实代码引用），**不数 `ast.Attribute`**：
+#     —— 字符串常量不算引用（登记表里的名字就是字符串）；
+#     —— `threading.Thread` 这种「模块.属性」访问**不是**对全局类 `Thread`
+#        的引用（它是标准库类），若数 Attribute 会把 `threading.Thread` 误判成
+#        本地死类 `Thread` 的「真实引用」，导致 A3 过期登记恒红。
+#        全局类被使用时的代码形态必然是裸名（`Thread(...)` / `x: Thread`），
+#        所以裸名计数既是正确语义、又能避开模块属性碰撞。
 _DEAD_REG = set(getattr(mod, "_AUDIT_DEAD_CLASSES", ()) or ())
 _TREEA = ast.parse(txt)
 
 
 def _code_refs(name):
-    n = 0
-    for x in ast.walk(_TREEA):
-        if isinstance(x, ast.Name) and x.id == name:
-            n += 1
-        elif isinstance(x, ast.Attribute) and x.attr == name:
-            n += 1
-    return n
+    # 只数裸名引用（见上方说明）。
+    return sum(1 for x in ast.walk(_TREEA)
+               if isinstance(x, ast.Name) and x.id == name)
 
 
 _DEAD_FOUND = set()

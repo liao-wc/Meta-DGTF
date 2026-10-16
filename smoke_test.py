@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.48.py"
+SRC = HERE / "元DGTF-V1.23.49.py"
 
 os.environ.setdefault("DGTF_API_KEY", "sk-smoke-test-key")
 
@@ -392,12 +392,21 @@ def check_cli():
     import io
 
     cfg_path = HERE / "smoke_config.yaml"
+    # ★ 记忆库目录必须隔离：CLI 走 `-c` 真配置加载，不给 `playbook.dir`
+    #   就回落出厂 `dgtf_memory/` ⇒ **冒烟写生产记忆库**（实测：每次冒烟往
+    #   `episodes.jsonl` 塞一条「CLI 冒烟问题」、并给真实条目抬证据/权重/
+    #   bandit 计数 —— 正是本文件顶部「绝不许写生产记忆库」点名
+    #   禁止的「让测试替生产刷票」）。指到临时目录，跑完即弃。
+    import tempfile as _tf_cli
+    _cli_mem = Path(_tf_cli.mkdtemp(prefix="dgtf_smoke_cli_mem"))
     cfg_path.write_text(
         "output:\n"
         "  save_dir: smoke_outputs\n"
         "  verbose: false\n"
         "actions:\n"
-        "  parallel_mode: B\n",
+        "  parallel_mode: B\n"
+        "playbook:\n"
+        "  dir: \"%s\"\n" % _cli_mem.as_posix(),
         encoding="utf-8")
     buf = io.StringIO()
     old_argv = sys.argv
@@ -9163,7 +9172,9 @@ def check_v1234_runtime(SRC=None):
         assert ("联网" in _line) and ("思考" in _line) and ("强度" in _line), (
             "摘要行缺字段：" + _line)
         assert _snap["requested"] == {"web": "on", "thinking": "auto",
-                                      "effort": "high"}, (
+                                      "effort": "high",
+                                      "live_checkpoint": True,
+                                      "ckpt_interval": 30.0}, (
             "snapshot.requested 必须回显本次请求（而不是 yaml 的值）："
             + repr(_snap["requested"]))
         print("  ✓ v1.23.4 总控：生效读数 + 一行摘要都可读")
@@ -9173,7 +9184,9 @@ def check_v1234_runtime(SRC=None):
         #     副本的 `runtime` 段。不这么做的话产物里的 `requested` 永远是
         #     yaml 的值 —— 命令行/交互给的三项在产物里**看不到**。
         assert _snap["requested"] == {"web": "on", "thinking": "auto",
-                                      "effort": "high"}, (
+                                      "effort": "high",
+                                      "live_checkpoint": True,
+                                      "ckpt_interval": 30.0}, (
             "snapshot.requested 必须回显本次请求（而不是 yaml 的值）："
             + repr(_snap["requested"]))
         _sn0 = m._runtime_snapshot(c0)
@@ -12428,6 +12441,157 @@ def check_v12341_attribution():
     return True
 
 
+def check_v12349_run_ckpt():
+    """[v1.23.49] 修「run() 只在返回后写盘 ⇒ 中断全丢」：跑中快照 + 孤儿回收。
+
+    ★ 判据：① 写-读回环（含 View 的 `to_dict` 形状）；② **原子**（不留 `.tmp` 残骸）；
+      ③ 孤儿回收：过期的 `running` ⇒ `interrupted` + why；④ **负对照**：还没过期
+        的 ⇒ 不动；⑤ 幂等（第二次不再改）；⑥ `interval<=0` / 无 run_id ⇒ 不起线程；
+      ⑦ 起-停闭环（真线程）⇒ 落最后一份 `done`；⑧ **构造性证明**：出厂默认
+        配置（`live_checkpoint=true`，本项目「新键默认关」惯例的**唯一例外**）下真跑
+        ⇒ 快照真落盘、状态 `done`；配置键 + 接线也在源码里对账。
+    """
+    import tempfile
+    import time as _t
+    bad = []
+    src = SRC.read_text(encoding="utf-8").replace("\r\n", "\n")
+    for tok in ("def write_run_ckpt(run_id: str", "def start_run_ckpt(engine",
+                "def stop_run_ckpt(stop_evt, engine=None",
+                "def recover_orphan_runs(base=None",
+                '"live_checkpoint": True,', "start_run_ckpt(self, _ck_rid, _ck_iv)"):
+        if tok not in src:
+            bad.append("[CK] 源码缺：%s" % tok)
+
+    _base = Path(tempfile.mkdtemp(prefix="ckpt_"))
+    W = mod.write_run_ckpt
+    # ① 写-读回环
+    _p = W("T1", {"id": "T1", "status": "running", "n_views": 2,
+                  "views": {"0": {"anchor": "甲"}}}, base=_base)
+    if not _p.exists():
+        bad.append("[CK] 写完文件不在")
+    else:
+        _d = json.loads(_p.read_text(encoding="utf-8"))
+        if _d.get("n_views") != 2 or (_d.get("views") or {}).get("0", {}).get("anchor") != "甲":
+            bad.append("[CK] 回环内容不对：%r" % (_d,))
+    # ② 原子：不留 .tmp 残骸
+    if list(_base.glob("*.tmp")):
+        bad.append("[CK] 留下 .tmp 残骸（非原子写）")
+    # ③ 孤儿回收（伪造一个很旧的 running）
+    _old = {"id": "T2", "status": "running", "t": _t.time() - 100000.0,
+            "views": {"0": {"x": 1}}}
+    W("T2", _old, base=_base)
+    _r1 = mod.recover_orphan_runs(base=_base, stale_sec=900.0)
+    _ids = [x.get("id") for x in _r1]
+    if "T2" not in _ids:
+        bad.append("[CK] 过期 running 没被回填：%r" % (_r1,))
+    _d2 = json.loads(mod.run_ckpt_path("T2", _base).read_text(encoding="utf-8"))
+    if _d2.get("status") != "interrupted" or not _d2.get("interrupted_why"):
+        bad.append("[CK] 回填形状不对：%r" % (_d2.get("status"),))
+    if not _d2.get("views", {}).get("0"):
+        bad.append("[CK] 回填把 views 弄丢了（内容没留下）")
+    # ⑤ 幂等
+    _r2 = mod.recover_orphan_runs(base=_base, stale_sec=900.0)
+    if any(x.get("id") == "T2" for x in _r2):
+        bad.append("[CK] 不幂等：第二次又改了一次")
+    # ④ 负对照：新鲜的 running 不动
+    W("T3", {"id": "T3", "status": "running", "t": _t.time()}, base=_base)
+    _r3 = mod.recover_orphan_runs(base=_base, stale_sec=900.0)
+    if any(x.get("id") == "T3" for x in _r3):
+        bad.append("[CK-负对照] 还没过期就被判孤儿")
+    _d3 = json.loads(mod.run_ckpt_path("T3", _base).read_text(encoding="utf-8"))
+    if _d3.get("status") != "running":
+        bad.append("[CK-负对照] 新鲜的 running 被改了状态")
+    # ⑥ interval<=0 / 无 id ⇒ 不起
+    if mod.start_run_ckpt(object(), "", 30.0) is not None:
+        bad.append("[CK] 无 run_id 竟起了线程")
+    if mod.start_run_ckpt(object(), "T9", 0) is not None:
+        bad.append("[CK] interval<=0 竟起了线程")
+    # 起-停闭环（真线程）
+    class _E:
+        _results = {"0": None}
+        _question = "q"
+        _route = ["0"]
+    _orig_dir = mod.run_ckpt_dir
+    mod.run_ckpt_dir = lambda base=None: _base   # 重定向到临时目录，不污染仓库
+    try:
+        _ev = mod.start_run_ckpt(_E(), "T4", 0.05)
+        if _ev is None:
+            bad.append("[CK] 正常参数竟没起线程")
+        else:
+            _t.sleep(0.2)
+            mod.stop_run_ckpt(_ev, _E(), "T4", "done")
+            _d4 = json.loads((_base / "T4.json").read_text(encoding="utf-8"))
+            if _d4.get("status") != "done":
+                bad.append("[CK] 停的时候没落最后一份 done：%r" % (_d4.get("status"),))
+    finally:
+        mod.run_ckpt_dir = _orig_dir
+
+    if bad:
+        for x in bad:
+            print("  X", x)
+        return False
+    # ⑦ 端到端构造性证明：**出厂默认配置**下真跑 ⇒ 快照真落盘、状态 done
+    #    （「能力存在性用构造性证明」：光有函数不够，要见真实入口产出）
+    import tempfile
+    import time as _t2
+    _base2 = Path(tempfile.mkdtemp(prefix="ckpt_e2e_"))
+    _orig_dir = mod.run_ckpt_dir
+    # ★ 桩必须**还原**：下面把全局 LLM.call 换成了占位桩，若漏还原，
+    #   同进程后续检查（auto_plan 等）全拿到非 JSON 文本
+    #   ⇒ 静默退 serial（本轮实测踩过）。
+    _orig_call = mod.LLM.call
+    mod.run_ckpt_dir = lambda base=None: _base2
+    try:
+        _cfg = mod.load_config(str(HERE / "dgtf_config.yaml"))
+        if not bool((_cfg.get("runtime") or {}).get("live_checkpoint", False)):
+            bad.append("[CK-端到端] 出厂 yaml 的 live_checkpoint 竟不是 true")
+        # ★ 侧效应隔离：出厂配置 `playbook.dir=""`（⇒ 默认 dgtf_memory/）、
+        #   `output.save_dir="outputs"` —— 照原样跑会把这次冒烟写进**生产
+        #   记忆库**（episodes/nogoods/bandit/权重）并往仓库 outputs/ 丢诊断
+        #   文件（实测两次：13:47、13:59）。**被测对象是 `live_checkpoint`
+        #   出厂 true 时快照是否落盘，不是"往哪儿写"** ⇒ 只重定向这两个
+        #   目录，live_checkpoint 保持出厂值不动。
+        _cfg.setdefault("output", {})["save_dir"] = str(
+            Path(tempfile.mkdtemp(prefix="ckpt_e2e_out")))
+        _e2e_mem = str(Path(tempfile.mkdtemp(prefix="ckpt_e2e_mem")))
+        _cfg.setdefault("playbook", {})["dir"] = _e2e_mem
+        # ★ bandit 的目录解析走 `eml_dir()`（恒指仓库 dgtf_memory），**不吃**
+        #   `playbook.dir`；而出厂 yaml 的 `all_on: true` 会把 `auto.bandit`
+        #   打开 ⇒ 这次跑会写生产 `dgtf_memory/bandit.json`（实测：n[0] 5→6）。
+        #   就地给它一个 `dir`（`_save_bandit` 优先级 `cfg["dir"] or eml_dir()`）。
+        _cfg.setdefault("auto", {}).setdefault("bandit", {})["dir"] = _e2e_mem
+        mod.LLM.call = lambda system, user, *a, **k: (
+            "- [concept] 占位候选：一段足够长的占位输出，用来过解析门槛。" * 2)
+        _m = mod.MetaDGTF(_cfg)
+        _rid2 = "E2E_%d" % int(_t2.time())
+        _r = _m.run("一个领域里那些被当作常识的东西是怎么来的，它靠不靠得住。",
+                    route=["0"], rounds={"0": 1}, parallel_mode="serial",
+                    run_id=_rid2)
+        _f = _base2 / ("%s.json" % _rid2)
+        if not _f.exists():
+            bad.append("[CK-端到端] 默认配置下真跑**没落快照**（能力不可达）")
+        else:
+            _d = json.loads(_f.read_text(encoding="utf-8"))
+            if _d.get("status") != "done":
+                bad.append("[CK-端到端] 快照状态不是 done：%r" % (_d.get("status"),))
+            if not (_d.get("views") or {}).get("0"):
+                bad.append("[CK-端到端] 快照里没有层 0 的 views（内容没留下）")
+    except Exception as _e:  # noqa: BLE001
+        bad.append("[CK-端到端] 驱动 run() 抛错：%r" % (_e,))
+    finally:
+        mod.run_ckpt_dir = _orig_dir
+        mod.LLM.call = _orig_call
+
+    if bad:
+        for x in bad:
+            print("  X", x)
+        return False
+    print("  ✓ v1.23.49 跑中快照（回环 · 原子无残骸 · 过期⇒interrupted+why · "
+          "新鲜不动 · 幂等 · 不起线程的两种情形 · 起停闭环落 done · "
+          "**出厂默认配置下端到端真落盘**）全过")
+    return True
+
+
 def check_v12348_eml_semantic():
     """[v1.23.48 · P-3b] EML **commit 前语义近重合并**（防冗余堆积）。
 
@@ -15659,6 +15823,8 @@ def main():
     if not check_v12347_gain_suggest():
         return 1
     if not check_v12348_eml_semantic():
+        return 1
+    if not check_v12349_run_ckpt():
         return 1
     if not check_v12339_ondemand():
         return 1

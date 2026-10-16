@@ -1,9 +1,9 @@
 {
  "added": 172,
  "baseline": "_baseline_v12177.py",
- "current": "元DGTF-V1.23.47.py",
+ "current": "元DGTF-V1.23.49.py",
  "n_symbols_baseline": 290,
- "n_symbols_current": 578,
+ "n_symbols_current": 585,
  "registry": {
   "AnchorRetriever": {
    "phase": "4",
@@ -1256,6 +1256,38 @@
   "autotune_suggest_gain_floor": {
    "phase": "47",
    "reason": "P-2b 从历史跑建议早停阈值 α（截断多且质量不差 ⇒ 建议抬高）"
+  },
+  "run_ckpt_dir": {
+   "phase": "49",
+   "reason": "跑中快照目录（outputs/_run_ckpt/）"
+  },
+  "run_ckpt_path": {
+   "phase": "49",
+   "reason": "跑中快照路径"
+  },
+  "write_run_ckpt": {
+   "phase": "49",
+   "reason": "原子写跑中快照（tmp + os.replace）"
+  },
+  "_ckpt_snapshot": {
+   "phase": "49",
+   "reason": "从引擎抽可恢复状态（各层 View.to_dict）"
+  },
+  "start_run_ckpt": {
+   "phase": "49",
+   "reason": "起 daemon 心跳线程（返回 stop 回调）"
+  },
+  "stop_run_ckpt": {
+   "phase": "49",
+   "reason": "停心跳并落最后一份"
+  },
+  "recover_orphan_runs": {
+   "phase": "49",
+   "reason": "孤儿快照回填 interrupted（幂等）"
+  },
+  "_beat": {
+   "phase": "49",
+   "reason": "跑中快照心跳体（start_run_ckpt 内层 daemon 循环）"
   }
  },
  "removed": 0

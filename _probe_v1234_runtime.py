@@ -269,13 +269,16 @@ ck("T10 一项非法不连坐：web=off 仍生效，effort 被拒且告警",
 # ---------------------------------------------------------- T12 请求值回显
 _c12, _ = mod._apply_runtime(D, {"web": "on", "thinking": "off",
                                  "effort": "max"})
-ck("T12 ★ 产物 `requested` 回显**本次请求**的三项（不是 yaml 的值）",
+ck("T12 ★ 产物 `requested` 回显**本次请求**（三项用请求值；"
+   "live_checkpoint/ckpt_interval 随配置 —— v1.23.49 加两键后仍**整表**回显）",
    mod._runtime_snapshot(_c12)["requested"]
-   == {"web": "on", "thinking": "off", "effort": "max"},
+   == {"web": "on", "thinking": "off", "effort": "max",
+       "live_checkpoint": True, "ckpt_interval": 30.0},
    repr(mod._runtime_snapshot(_c12)["requested"]))
 ck("T12b 只给一项时，另两项记为 auto（请求语义完整）",
    mod._runtime_snapshot(mod._apply_runtime(D, {"web": "off"})[0])["requested"]
-   == {"web": "off", "thinking": "auto", "effort": "auto"}, "")
+   == {"web": "off", "thinking": "auto", "effort": "auto",
+       "live_checkpoint": True, "ckpt_interval": 30.0}, "")
 
 try:
     import yaml as _yaml
