@@ -7,13 +7,13 @@
 
 ## active（8）
 
-- `L0001` [schedule] {"issue": "cut", "layer": "1"} ⇒ `{"key": "rounds_delta", "layer": "1", "delta": 1}`（证据 81，反向 0）
-- `L0003` [schedule] {"issue": "cut", "layer": "0"} ⇒ `{"key": "rounds_delta", "layer": "0", "delta": 1}`（证据 81，反向 0）
+- `L0001` [schedule] {"issue": "cut", "layer": "1"} ⇒ `{"key": "rounds_delta", "layer": "1", "delta": 1}`（证据 84，反向 0）
+- `L0003` [schedule] {"issue": "cut", "layer": "0"} ⇒ `{"key": "rounds_delta", "layer": "0", "delta": 1}`（证据 84，反向 0）
 - `L0004` [schedule] {"issue": "cut", "layer": "all"} ⇒ `{"key": "rounds_delta", "layer": "all", "delta": 1}`（证据 3，反向 0）
 - `L0006` [probe] {"issue": "duty_short", "layers": ["0", "1"]} ⇒ `{"key": "carve_first", "layers": ["0", "1"]}`（证据 4，反向 0）
 - `L0007` [probe] {"issue": "duty_short", "layers": ["0", "1", "all", "both"]} ⇒ `{"key": "carve_first", "layers": ["0", "1", "all", "both"]}`（证据 6，反向 0）
-- `L0008` [schedule] {"issue": "cut", "layer": "both"} ⇒ `{"key": "rounds_delta", "layer": "both", "delta": 1}`（证据 73，反向 0）
-- `L0009` [probe] {"issue": "duty_short", "layers": ["0", "1", "both"]} ⇒ `{"key": "carve_first", "layers": ["0", "1", "both"]}`（证据 71，反向 0）
+- `L0008` [schedule] {"issue": "cut", "layer": "both"} ⇒ `{"key": "rounds_delta", "layer": "both", "delta": 1}`（证据 76，反向 0）
+- `L0009` [probe] {"issue": "duty_short", "layers": ["0", "1", "both"]} ⇒ `{"key": "carve_first", "layers": ["0", "1", "both"]}`（证据 74，反向 0）
 - `L0011` [probe] {"issue": "duty_short", "layers": ["0"]} ⇒ `{"key": "carve_first", "layers": ["0"]}`（证据 4，反向 0）
 
 ## shadow（3）

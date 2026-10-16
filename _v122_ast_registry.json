@@ -1,9 +1,9 @@
 {
  "added": 172,
  "baseline": "_baseline_v12177.py",
- "current": "元DGTF-V1.23.45.py",
+ "current": "元DGTF-V1.23.47.py",
  "n_symbols_baseline": 290,
- "n_symbols_current": 577,
+ "n_symbols_current": 578,
  "registry": {
   "AnchorRetriever": {
    "phase": "4",
@@ -1252,6 +1252,10 @@
   "output_repetition": {
    "phase": "45",
    "reason": "P-4 输出内逐字复读率（补集合式 n-gram 信号对输出内复读的结构盲）"
+  },
+  "autotune_suggest_gain_floor": {
+   "phase": "47",
+   "reason": "P-2b 从历史跑建议早停阈值 α（截断多且质量不差 ⇒ 建议抬高）"
   }
  },
  "removed": 0
