@@ -1,0 +1,50 @@
+v1.23.53：记忆库目录一处解析（bandit 不再偷偷写回仓库）
+
+## 问题（挂账「目录两处解析未收敛」）
+记忆库落点在**两个地方**解析：
+  · episode / playbook → `playbook.dir`（空则 `eml_dir()`）
+  · bandit → `auto.bandit.dir`（空则 `eml_dir()`，**恒指仓库**）
+
+`eml_dir()` = `Path(__file__).parent / "dgtf_memory"`，永远指向仓库。于是任何设了
+`playbook.dir` 的调用方（冒烟、A/B 脚本、想把库放到别处的人）都会让 **bandit
+偷偷写进生产库**。冒烟隔离因此要三个旋钮，**漏一个就污染** —— 本项目真栽过一次：
+一次冒烟的跑次把真实条目的证据计数抬高，而 promote 正是按证据数判的（测试替生产刷票）。
+
+## 改了什么（10 块 / 删 9 行 / 增 30 行）
+1. 新增唯一解析 `eml_store_dir(cfg)`：`auto.bandit.dir`（显式，仍优先） ＞
+   `playbook.dir` ＞ `eml_dir()`；三处都走它（`_load_bandit` / `_save_bandit` /
+   `_eml_finish`）。
+2. `_load_bandit` / `_save_bandit` 各加 `fallback` 形参（默认 None ⇒ 旧行为）。
+3. 版本号两处。无新配置键。
+
+★ **为什么是模块级函数而不是 `self._eml_store_dir()`**（本版最容易写错的一处）：
+  初始化顺序是 `_bandit_cfg`(14099) → **`_load_bandit`(14105)** → `_eml_cfg`(14119)。
+  用实例状态的话，bandit 载入时 `_eml_cfg` 还不存在 ⇒ 静默回落到 `eml_dir()`
+  ⇒ **原地复现要修的 bug**，而且写侧判据还是绿的。读 `self.config` 没这个问题。
+
+## 判据（`check_v12353_eml_dir_single`）
+B1 静态指纹：唯一解析存在 + **3 处**都走它 + **无残留 `eml_dir()` 回落**
+（残留一处就等于没修）；B2 真入口：`playbook.dir` 里种的 bandit 能被**载入**读到、
+写也只写那儿、`eml_dir()` 那个点零写入（只测写不测读 = 漏一半）；
+B3 负对照：显式 `auto.bandit.dir` 仍优先。判据自身把 `mod.eml_dir` 指到临时目录
+⇒ 判据不碰生产库。
+
+## 验收
+- 冒烟 **252 ✓ / 0 ✗**（上版 251，+1 = 新判据）
+- `--phase all` **PASS 319 / FAIL 0**
+- AUDIT **69 / 0**
+- 变异体 **102 / 102 判红**（M104：去掉 `fallback or`）
+- app 自检 **368 / 0**
+- 开发期 `_chk_v12353_dev.py` **13 项全过**：含**旧版对照**（同 cfg 跑 v1.23.52
+  ⇒ 载入读不到 `playbook.dir` 那份、写盘仍落 `eml_dir()`）+ 显式优先臂 +
+  **生产库护栏**（`dgtf_memory/bandit.json` 前后逐字节相同）
+
+## 真跑：不做
+默认（`playbook.dir` 空）解析结果与旧版逐字相同；两版 `load_config` 一致。
+
+## 并行续跑：查清了，暂不做
+`max_minutes` 只挂在 `_run_serial` 上（全文件仅 2 处）⇒ **并行模式根本不会暂停**，
+"并行续跑"只服务"被强杀"。要做需重做并行调度器的半程状态 —— 风险最高、收益最低。
+
+## 未做
+并行模式的墙钟预算；下一轮 A/B（须冻结 bandit + 同口径比 S）；冒烟三旋钮的注释清理。
