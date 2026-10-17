@@ -7,7 +7,7 @@ import tempfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.55.py"
+SRC = HERE / "元DGTF-V1.23.56.py"
 
 MUTS = [
     ("M1 α 不做机会校正（退化成原始一致率）",
@@ -526,6 +526,9 @@ MUTS = [
     ("M106 暂停时的缺层仍报成缺陷（假警报 / layer_gap 误写）",
      '                          if packed.get("paused") else [])',
      '                          if False else [])  # MUT'),
+    ("M107 快照记账不累计（续跑把前面的钱抹掉）",
+     '{"llm_calls": int(_base.get("calls") or 0) + _w_calls,',
+     '{"llm_calls": _w_calls,  # MUT'),
 ]
 
 
@@ -571,6 +574,7 @@ def run_check(mut_path=None):
              "st.check_v12353_eml_dir_single() and "
              "st.check_v12354_parallel_wall_clock() and "
              "st.check_v12355_paused_gap() and "
+             "st.check_v12356_ckpt_cumulative() and "
              "st.check_v12339_ondemand() and "
              "st.check_v12338_relax_targets() and "
              "st.check_v12338_backfeed()) else 1)\n")
