@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.54.py"
+SRC = HERE / "元DGTF-V1.23.55.py"
 
 os.environ.setdefault("DGTF_API_KEY", "sk-smoke-test-key")
 
@@ -12592,6 +12592,70 @@ def check_v12349_run_ckpt():
     return True
 
 
+def check_v12355_paused_gap():
+    """[v1.23.55] `paused` 时的缺层是**待续**，不是缺陷（真缺陷不许被豁免）。
+
+    ★ 为什么必须有它：A/B 真跑暂停时产物打了
+        ❌ 缺层：请求了但这些层没有产出 —— 这份产物是不完整的
+        · 元：未记录原因（这是缺陷）
+      可暂停时缺层是**设计**。这条提示会让人去查一个不存在的 bug，而且
+      `layer_gap` 一写进产物，任何"缺层=缺陷"的下游判据都跟着误判。
+    ★ 三臂（缺一不可）：
+      P1 暂停 + 缺的层都在 `pending_layers` 里 ⇒ `paused_gap`，**没有** `layer_gap`
+      P2 暂停 + 有一层既没产出也不在 pending 里 ⇒ 那层仍进 `layer_gap`（真缺陷）
+      P3 不暂停 + 缺层 ⇒ 照旧进 `layer_gap`（旧行为逐字不变）
+    """
+    bad = []
+    src = SRC.read_text(encoding="utf-8").replace("\r\n", "\n")
+    for _tk in ('packed["paused_gap"] = list(_pause_gap)',
+                "_real_gap = [e for e in missing if e not in _pause_gap]",
+                '"missing": _real_gap'):
+        if _tk not in src:
+            bad.append("[G1] 源码缺：%s" % _tk)
+
+    def _pack(missing, paused, pend):
+        return {"dispatch": {"missing": list(missing), "skipped": [],
+                             "failed": {}, "requested": ["0", "1", "both", "all"]},
+                "paused": bool(paused),
+                "pending_layers": list(pend)}
+
+    try:
+        _eng = mod.MetaDGTF(build_cfg(False))
+        # P1：暂停，缺的两层都在 pending 里 ⇒ 待续，不报缺陷
+        _p = _pack(["both", "all"], True, ["both", "all"])
+        _eng._layer_guard(_p)
+        if _p.get("layer_gap"):
+            bad.append("[P1] 暂停 + 缺层都在 pending ⇒ 仍写了 layer_gap（假警报）")
+        if sorted(_p.get("paused_gap") or []) != ["all", "both"]:
+            bad.append("[P1] 没记 paused_gap：%r" % (_p.get("paused_gap"),))
+        # P2：暂停，但有一层既没产出也不在 pending 里 ⇒ 真缺陷仍要报
+        _p2 = _pack(["both", "all"], True, ["all"])
+        _eng._layer_guard(_p2)
+        if sorted((_p2.get("layer_gap") or {}).get("missing") or []) != ["both"]:
+            bad.append("[P2] 真缺陷被暂停豁免掉了：%r"
+                       % ((_p2.get("layer_gap") or {}).get("missing"),))
+        if sorted(_p2.get("paused_gap") or []) != ["all"]:
+            bad.append("[P2] paused_gap 记错：%r" % (_p2.get("paused_gap"),))
+        # P3：不暂停 ⇒ 旧行为（全部进 layer_gap）
+        _p3 = _pack(["all"], False, [])
+        _eng._layer_guard(_p3)
+        if (_p3.get("layer_gap") or {}).get("missing") != ["all"]:
+            bad.append("[P3] 非暂停路径的缺层没被记进 layer_gap（旧行为破了）")
+        if _p3.get("paused_gap"):
+            bad.append("[P3] 非暂停却记了 paused_gap")
+    except Exception as _ex:
+        import traceback
+        traceback.print_exc()
+        bad.append("[P?] 异常：%r" % (_ex,))
+    for _b in bad:
+        print("  ✗ " + _b)
+    if bad:
+        print("✗ v1.23.55 暂停待续（%d 项）" % len(bad))
+        return False
+    print("✓ v1.23.55 暂停待续：pending 里的缺层不报缺陷 · 真缺陷仍报红 · 旧路径不变")
+    return True
+
+
 def check_v12354_parallel_wall_clock():
     """[v1.23.54] 并行跑次也能被**墙钟预算**截住，并且能**续跑**。
 
@@ -16367,6 +16431,8 @@ def main():
     if not check_v12353_eml_dir_single():
         return 1
     if not check_v12354_parallel_wall_clock():
+        return 1
+    if not check_v12355_paused_gap():
         return 1
     if not check_v12339_ondemand():
         return 1

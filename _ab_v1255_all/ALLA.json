@@ -1,0 +1,425 @@
+{
+ "question": "一个领域里那些被当作常识的东西是怎么来的，它靠不靠得住。",
+ "route": [
+  "all"
+ ],
+ "keep": {
+  "all": "all"
+ },
+ "rounds": {
+  "0": 9,
+  "1": 8,
+  "both": 8,
+  "all": 7
+ },
+ "dispatch": {
+  "requested": [
+   "all"
+  ],
+  "order": [],
+  "ran": [],
+  "missing": [],
+  "failed": {},
+  "skipped": [
+   {
+    "entry": "all",
+    "reason": "需要至少 2 个上游 view，当前只有 0 个"
+   }
+  ],
+  "_parallel_mode": "serial"
+ },
+ "channels": [
+  "content",
+  "context",
+  "self"
+ ],
+ "self_text": [],
+ "decidability": {
+  "decidability": "partial",
+  "reason": "可一般分析常识的形成机制与可靠性评估标准；但未指定领域与具体常识项，无法对其整体可靠与否作统一判决，需依赖具体证据。",
+  "features": [
+   "信息不足：未指定领域与具体常识项",
+   "可靠性判断需具体经验证据，无法设计统一判决实验",
+   "部分属规范/认识论判断"
+  ],
+  "decidable_aspects": [
+   "可描述常识形成的常见机制：经验重复、教育传承、专家共识、制度权威、路径依赖",
+   "可给出评估可靠性的操作化标准：可检验性、复现性、误差记录、来源独立性",
+   "可区分描述性问题（如何形成）与规范性问题（是否可信）",
+   "可指出可靠性随领域和具体命题而变"
+  ],
+  "undecidable_aspects": [
+   "未指定领域，无法判断该领域哪些内容被视为常识",
+   "未列出具体常识命题，无法逐项核验其证据与可靠度",
+   "无法给出“整体靠不靠得住”的统一经验结论",
+   "缺乏该领域历史与共识形成过程的具体资料"
+  ],
+  "_original_status": "partial",
+  "anchor_refs": [],
+  "_anchors_given": 0,
+  "_source": "external",
+  "_divergent": false,
+  "_pool_status": "partial",
+  "_und_untraced": []
+ },
+ "views": {},
+ "pools": {
+  "0": {
+   "amps": [],
+   "threads": [],
+   "probes": [],
+   "meta": [],
+   "suspensions": [],
+   "sub_questions": [],
+   "deferrals": [],
+   "escalations": [],
+   "decidability_log": [],
+   "duel_suspensions": [],
+   "duel_alignment": {},
+   "engagements": [],
+   "refinements": [],
+   "decidable_channel": {},
+   "undecidable_channel": {},
+   "revoke_sources": 2,
+   "sem_entropy_thr": 0.3,
+   "merge_semantic": true,
+   "merge_log": [],
+   "merge_sim": 0.85
+  },
+  "1": {
+   "amps": [],
+   "threads": [],
+   "probes": [],
+   "meta": [
+    "[W-SKIP] check_input_sanity：stage 'check_input_sanity' 未授权",
+    "[W-SKIP] assess_decidability：stage 'assess_decidability' 未授权"
+   ],
+   "suspensions": [],
+   "sub_questions": [],
+   "deferrals": [],
+   "escalations": [],
+   "decidability_log": [],
+   "duel_suspensions": [],
+   "duel_alignment": {},
+   "engagements": [],
+   "refinements": [],
+   "decidable_channel": {},
+   "undecidable_channel": {},
+   "revoke_sources": 2,
+   "sem_entropy_thr": 0.3,
+   "merge_semantic": true,
+   "merge_log": [],
+   "merge_sim": 0.85
+  },
+  "both": {
+   "amps": [],
+   "threads": [],
+   "probes": [],
+   "meta": [],
+   "suspensions": [],
+   "sub_questions": [],
+   "deferrals": [],
+   "escalations": [],
+   "decidability_log": [],
+   "duel_suspensions": [],
+   "duel_alignment": {},
+   "engagements": [],
+   "refinements": [],
+   "decidable_channel": {},
+   "undecidable_channel": {},
+   "revoke_sources": 2,
+   "sem_entropy_thr": 0.3,
+   "merge_semantic": true,
+   "merge_log": [],
+   "merge_sim": 0.85
+  },
+  "all": {
+   "amps": [],
+   "threads": [],
+   "probes": [],
+   "meta": [],
+   "suspensions": [],
+   "sub_questions": [],
+   "deferrals": [],
+   "escalations": [],
+   "decidability_log": [],
+   "duel_suspensions": [],
+   "duel_alignment": {},
+   "engagements": [],
+   "refinements": [],
+   "decidable_channel": {},
+   "undecidable_channel": {},
+   "revoke_sources": 2,
+   "sem_entropy_thr": 0.3,
+   "merge_semantic": true,
+   "merge_log": [],
+   "merge_sim": 0.85
+  }
+ },
+ "llm_calls": 1,
+ "llm_tokens": 430,
+ "tri_state": [
+  0,
+  0
+ ],
+ "layer_contribution": {},
+ "orientation": "auto",
+ "_auto_plan_used": {},
+ "_auto_dispatch": {},
+ "_anchor_tier_warning": "",
+ "_config": {
+  "actions": {
+   "assess_decidability": true,
+   "decompose_question": true,
+   "decidability_source": "pool",
+   "decompose_source": "pool",
+   "parallel_mode": "auto",
+   "parallel_warmup_rounds": 3,
+   "pipeline_gate_timeout": 900,
+   "parallel_expand": true,
+   "merge_expand": true,
+   "input_sanity": true,
+   "tri_multi_vote": true,
+   "tri_vote_retry_empty": 1,
+   "landing_decision": true,
+   "re_anchor": true,
+   "expand_yin": true,
+   "expand_yang": true,
+   "dual_judge": true,
+   "ing": true,
+   "he": true,
+   "phase_probe": true,
+   "manifest": true,
+   "self_check": true,
+   "re_evaluate_pool": true,
+   "settle_research": true
+  }
+ },
+ "_runtime": {
+  "requested": {
+   "live_checkpoint": true,
+   "ckpt_interval": 30.0,
+   "web": "auto",
+   "thinking": "auto",
+   "effort": "auto"
+  },
+  "web_enabled": true,
+  "thinking_default": "enabled",
+  "thinking_stages_enabled": [
+   "adjudicate_sub_tristate",
+   "assess_decidability",
+   "assess_decidability_from_pool_view",
+   "auto_plan",
+   "dual_judge",
+   "plan_orientation",
+   "plan_resources",
+   "re_evaluate_pool"
+  ],
+  "thinking_stages_off_n": 17,
+  "effort": "high"
+ },
+ "tri_alpha": {},
+ "llm_ops_calls": 1,
+ "llm_ops_tokens": 430,
+ "llm_eval_calls": 0,
+ "llm_eval_tokens": 0,
+ "tri_consensus": [],
+ "freeze": {
+  "signature": "65de76ecb71b40e067214b749b3096d92486d29b11c0a05907f1ad5fe09e31d5",
+  "layer": 1,
+  "n": 0,
+  "frozen_at": "2026-10-17T21:51:40.579764",
+  "items": []
+ },
+ "calibration_queue": [],
+ "external_anchor": {
+  "enabled": true,
+  "anchors": 0,
+  "source_file": "",
+  "retrieved_at": "",
+  "retriever": "",
+  "answers_all_missing": false,
+  "answers_filtered": "",
+  "pooled": 0,
+  "unconfigured": true,
+  "retriever_mode": "snapshot",
+  "as_evidence": "gate",
+  "anchor_calls": 0,
+  "claims": 0,
+  "items": [],
+  "summary": {
+   "claims": 0,
+   "supported": 0,
+   "conflicted": 0,
+   "unmatched": 0,
+   "anchor_used": 0
+  },
+  "error": ""
+ },
+ "compact": {
+  "inner_share": 0.6667,
+  "budget": 0.6,
+  "over": true,
+  "verdict": "内部面超预算 ⇒ 本轮**索引化**（不删内容，正文回退到索引 + 指向 packed 全量）"
+ },
+ "belief_staleness": {
+  "n": 0,
+  "stale_n": 0,
+  "max_age": 0,
+  "items": []
+ },
+ "diversity": {
+  "layers": 0,
+  "channels": 3,
+  "mode": "serial",
+  "combos": 0,
+  "note": "组合数 = 层数 × 通道数（模式另计）；低于「层×通道满配」时，结论的可迁移性受限"
+ },
+ "cost_profile": "balanced",
+ "input_sanity": {
+  "issues": [],
+  "note": "无悬空符号，问题为一般性提问",
+  "checked": true,
+  "rule_flags": []
+ },
+ "id": "V1255ALLA",
+ "playbook": {
+  "mode": "on",
+  "used": [
+   {
+    "id": "L0007",
+    "kind": "probe",
+    "score": 1.091862,
+    "action": {
+     "key": "carve_first",
+     "layers": [
+      "0",
+      "1",
+      "all",
+      "both"
+     ]
+    },
+    "applied": true
+   },
+   {
+    "id": "L0009",
+    "kind": "probe",
+    "score": 1.085598,
+    "action": {
+     "key": "carve_first",
+     "layers": [
+      "0",
+      "1",
+      "both"
+     ]
+    },
+    "applied": true
+   },
+   {
+    "id": "L0006",
+    "kind": "probe",
+    "score": 0.995708,
+    "action": {
+     "key": "carve_first",
+     "layers": [
+      "0",
+      "1"
+     ]
+    },
+    "applied": true
+   },
+   {
+    "id": "L0004",
+    "kind": "schedule",
+    "score": 0.604292,
+    "action": {
+     "key": "rounds_delta",
+     "layer": "all",
+     "delta": 1
+    },
+    "applied": true
+   },
+   {
+    "id": "L0008",
+    "kind": "schedule",
+    "score": 0.578986,
+    "action": {
+     "key": "rounds_delta",
+     "layer": "both",
+     "delta": 1
+    },
+    "applied": true
+   },
+   {
+    "id": "L0003",
+    "kind": "schedule",
+    "score": 0.506613,
+    "action": {
+     "key": "rounds_delta",
+     "layer": "0",
+     "delta": 1
+    },
+    "applied": true
+   }
+  ],
+  "applied": [
+   {
+    "id": "L0007",
+    "key": "carve_first",
+    "layers": [
+     "0:5→6",
+     "1:5→6",
+     "all:5→6",
+     "both:5→6"
+    ]
+   },
+   {
+    "id": "L0009",
+    "key": "carve_first",
+    "layers": [
+     "0:6→7",
+     "1:6→7",
+     "both:6→7"
+    ]
+   },
+   {
+    "id": "L0006",
+    "key": "carve_first",
+    "layers": [
+     "0:7→8",
+     "1:7→8"
+    ]
+   },
+   {
+    "id": "L0004",
+    "key": "rounds_delta",
+    "layer": "all",
+    "rounds": "6→7"
+   },
+   {
+    "id": "L0008",
+    "key": "rounds_delta",
+    "layer": "both",
+    "rounds": "7→8"
+   },
+   {
+    "id": "L0003",
+    "key": "rounds_delta",
+    "layer": "0",
+    "rounds": "8→9"
+   }
+  ],
+  "candidates": [],
+  "gated_out": [],
+  "merged": [],
+  "promoted": [],
+  "retired": [],
+  "parents": [],
+  "strengthen": {
+   "strengthened": 0,
+   "negative": 6,
+   "duty_med": null
+  },
+  "n_playbook": 11
+ }
+}
