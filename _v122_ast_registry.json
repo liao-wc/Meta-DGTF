@@ -1,9 +1,9 @@
 {
- "added": 172,
+ "added": 173,
  "baseline": "_baseline_v12177.py",
- "current": "元DGTF-V1.23.52.py",
+ "current": "元DGTF-V1.23.53.py",
  "n_symbols_baseline": 290,
- "n_symbols_current": 587,
+ "n_symbols_current": 588,
  "registry": {
   "AnchorRetriever": {
    "phase": "4",
@@ -1296,6 +1296,10 @@
   "load_resume_snapshot": {
    "phase": "50",
    "reason": "断点续跑入口（三道硬校验 + 还原 View/Pool）"
+  },
+  "eml_store_dir": {
+   "phase": "EML",
+   "reason": "记忆库目录唯一解析（playbook.dir ＞ eml_dir；bandit 也跟着走）"
   }
  },
  "removed": 0

@@ -7,7 +7,7 @@ import tempfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.52.py"
+SRC = HERE / "元DGTF-V1.23.53.py"
 
 MUTS = [
     ("M1 α 不做机会校正（退化成原始一致率）",
@@ -515,6 +515,11 @@ MUTS = [
      '        if isinstance(result, dict) and (result.get("paused")\n'
      '                                         or result.get("pending_layers")):',
      '        if False:  # MUT'),
+    ("M104 bandit 目录不回退到 playbook.dir（隔离漏一格）",
+     '        _d = Path(str((cfg or {}).get("dir") or fallback or eml_dir()))\n'
+     '        _d.mkdir(parents=True, exist_ok=True)',
+     '        _d = Path(str((cfg or {}).get("dir") or eml_dir()))  # MUT\n'
+     '        _d.mkdir(parents=True, exist_ok=True)'),
 ]
 
 
@@ -557,6 +562,7 @@ def run_check(mut_path=None):
              "st.check_v12350_resume() and "
              "st.check_v12351_eml_once_per_run() and "
              "st.check_v12352_paused_no_eml() and "
+             "st.check_v12353_eml_dir_single() and "
              "st.check_v12339_ondemand() and "
              "st.check_v12338_relax_targets() and "
              "st.check_v12338_backfeed()) else 1)\n")
