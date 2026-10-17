@@ -15,3 +15,5 @@
 {"t": 1792042524.9865243, "run": "20261015_131958", "kind": "used_but_below_floor", "why": "below_floor", "cand": {"n": 6, "duty_med": 0.0}}
 {"t": 1792044254.2747645, "run": "20261015_133530", "kind": "used_but_below_floor", "why": "below_floor", "cand": {"n": 6, "duty_med": 0.0}}
 {"t": 1792048261.5357788, "run": "20261015_145824", "kind": "used_but_below_floor", "why": "below_floor", "cand": {"n": 6, "duty_med": 0.0}}
+{"t": 1792147952.5402231, "run": "V1250A", "kind": "used_but_below_floor", "why": "below_floor", "cand": {"n": 6, "duty_med": 0.037}}
+{"t": 1792154405.3691447, "run": "V1250B", "kind": "used_but_below_floor", "why": "below_floor", "cand": {"n": 6, "duty_med": 0.1818}}
