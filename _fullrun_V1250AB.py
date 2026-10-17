@@ -16,7 +16,8 @@
   · **Run B（ALLNEW）** = A + 五个新键全开（P-1 裁剪 / P-2 早停 / P-3 冷启 / P-3b 语义合并 /
     P-5 口径）。差值 = 本轮全部优化的净效果。
   · **顺序跑**（A→B）：避免两次跑同时写 EML 库互相污染，让 A/B 可比。
-  · 全程记账：显式 `run(..., run_id=...)` + `_eml_finish`（EML 才会学这次跑）。
+  · 全程记账：显式 `run(..., run_id=...)`（EML 只学**有 id** 的跑次；
+    `_eml_finish` 由 `run()` 内部调用，此处**不得**重复调用）。
 预算：按历史 ~¥4.17/次估算，两次约 ¥8.4。
 """
 import json
@@ -113,10 +114,16 @@ def _one(tag: str, new_on: bool) -> dict:
     res = m.run(QUESTION, route=list(ROUTE), rounds=dict(ROUNDS),
                 parallel_mode="serial", run_id=run_id,
                 resume_ckpt=_resume)
-    try:
-        res["playbook"] = m._eml_finish(res)
-    except Exception as e:  # noqa: BLE001
-        print("[%s] _eml_finish 抛错（不影响本次对表）：%r" % (tag, e))
+    # ★ [学一次] `run()` 内部**已经**调过 `_eml_finish`（`run_id` 盖进产物之后）。
+    #   这里只在「真的没有 playbook 块」或「那块是异常兜底」时补一次 —— 无条件
+    #   再调一次会让同一跑次写两条 episode、把 weight 罚两遍（实测脏了 5 个文件，
+    #   见 `_commitmsg_dedup_20261016.txt`）。
+    _pb = res.get("playbook")
+    if not isinstance(_pb, dict) or _pb.get("error"):
+        try:
+            res["playbook"] = m._eml_finish(res)
+        except Exception as e:  # noqa: BLE001
+            print("[%s] _eml_finish 抛错（不影响本次对表）：%r" % (tag, e))
     dt = time.time() - t0
     out = HERE / ("_fullrun_V1250%s.json" % tag)
     out.write_text(json.dumps(res, ensure_ascii=False, indent=1,

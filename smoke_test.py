@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.50.py"
+SRC = HERE / "元DGTF-V1.23.51.py"
 
 os.environ.setdefault("DGTF_API_KEY", "sk-smoke-test-key")
 
@@ -12592,6 +12592,116 @@ def check_v12349_run_ckpt():
     return True
 
 
+def check_v12351_eml_once_per_run():
+    """[v1.23.51] 一个跑次只学一条 episode（`_eml_finish` 幂等守卫）。
+
+    ★ 为什么必须有它：A/B 真跑把 `_eml_finish` 调了两次 ⇒ 每个跑次写出两条
+      episode、`used_outcomes` 与 weight 被罚两遍，事后只能手工清账（见
+      `_fix_eml_dup_20261016.py`）。只修调用方防不住**同类**（任何调用方都可能
+      重调），所以守卫落在引擎里；本判据守的是「一个跑次一条证据」这个不变量。
+    ★ 判据是**行为级、逐字节**的：同一份 result 连调两次 ⇒ 第二次**盘上一个
+      字节都不许变**。三条对照把「一律跳过」这种假实现排除掉：
+      换 run_id 照写 / 同 run_id 但读数不同照写（`paused` 后的完整样本必须能进库）。
+    ★ 取材是四份文件**逐字节**比，不是数条数 —— 条数不变但内容被改也是错。
+    """
+    import tempfile as _tf
+    bad = []
+    src = SRC.read_text(encoding="utf-8").replace("\r\n", "\n")
+    for _tk in ('_blk["dup_skipped"] = True',
+                "_old_eps = eml_read_jsonl(_dir / _EML_EPISODES)",
+                '{k: v for k, v in _ep.items() if k != "t"}'):
+        if _tk not in src:
+            bad.append("[E1] 源码缺：%s" % _tk)
+    try:
+        _i_lk = src.index("_lk.__enter__()")
+        _i_g = src.index('_blk["dup_skipped"] = True')
+        _i_ap = src.index("eml_append_jsonl(_dir / _EML_EPISODES, _ep)")
+        if not (_i_lk < _i_g < _i_ap):
+            bad.append("[E1] 守卫位置不对（要求 锁 < 守卫 < 写 episode）")
+    except Exception as _ex:
+        bad.append("[E1] 定位失败：%r" % (_ex,))
+
+    def _mkres(rid, cut=("1",)):
+        return {"id": rid,
+                "question": "如何利用AI来帮助人类实现财富自由",
+                "route": ["0", "1", "both", "all"],
+                "rounds": {"0": 3, "1": 3, "both": 3, "all": 4},
+                "dispatch": {"_parallel_mode": "serial"},
+                "views": {e: {"stop_reason": ("体力耗尽（3 圈走满）"
+                                              if e in cut else "自然安住"),
+                              "duty": {"S": 0.1 if e in ("0", "1") else 0.5}}
+                          for e in ("0", "1", "both", "all")},
+                "pools": {"1": {"anchors": [], "web_results": []}},
+                "tri_consensus": [], "llm_tokens": 10, "llm_calls": 1,
+                "_auto_dispatch": {"_history": {}}}
+    _d = Path(_tf.mkdtemp(prefix="v51eml_"))
+    try:
+        _cfg = dict(mod.DEFAULT_CONFIG)
+        _cfg["playbook"] = {"mode": "on", "dir": str(_d), "top_k": 3,
+                            "promote_n": 3, "halflife_days": 14.0}
+        _eng = mod.MetaDGTF(_cfg)
+        for _i in range(1, 5):
+            _eng._eml_finish(_mkres("RUN%d" % _i))
+        _n4 = len(mod.eml_read_jsonl(_d / "episodes.jsonl"))
+        if _n4 != 4:
+            bad.append("[E2] 4 跑应写 4 条 episode（实测 %d）" % _n4)
+        _eng._eml_prepare("如何利用AI来帮助人类实现财富自由")
+        _eng._eml_apply({"0": 3, "1": 3, "both": 3, "all": 4})
+        _r5 = _mkres("RUN5")
+        _b1 = _eng._eml_finish(_r5)
+        _f = ("episodes.jsonl", "nogoods.jsonl", "playbook.jsonl", "MEMORY.md")
+        _s1 = {k: (_d / k).read_bytes() for k in _f if (_d / k).is_file()}
+        _b2 = _eng._eml_finish(_r5)
+        _s2 = {k: (_d / k).read_bytes() for k in _f if (_d / k).is_file()}
+        if not (_b1.get("used") or []):
+            bad.append("[E2] 第 5 跑没用上条目（该判据测不到 used_outcomes）")
+        if _b2.get("dup_skipped") is not True:
+            bad.append("[E2] 第二次调用没标 dup_skipped")
+        if _s1 != _s2:
+            bad.append("[E2] 第二次调用改了盘：%r"
+                       % (sorted(k for k in _s1 if _s1[k] != _s2.get(k)),))
+        _n5 = len(mod.eml_read_jsonl(_d / "episodes.jsonl"))
+        if _n5 != 5:
+            bad.append("[E2] 同一跑次写了两条 episode（5 跑实测 %d 条）" % _n5)
+        # ★ used_outcomes 必须在**对照组之前**判：E4 故意用同一 run_id 再写一次
+        #   （模拟 paused 后的完整样本），那本来就该给该 run 再记一条。
+        #   放在对照组之后测到的就不是幂等，而是对照本身。
+        _dup = []
+        for _e in (mod.eml_read_jsonl(_d / "playbook.jsonl") or []):
+            _c = {}
+            for _x in (_e.get("used_outcomes") or []):
+                _r = str(_x.get("run") or "")
+                _c[_r] = _c.get(_r, 0) + 1
+            if any(v > 1 for v in _c.values()):
+                _dup.append((_e.get("id"), _c))
+        if _dup:
+            bad.append("[E5] 同一次调用路径把 used_outcomes 记了两次：%r"
+                       % (_dup[:3],))
+        # 对照一：换 run_id ⇒ 照写（否则「一律跳过」也能过）
+        _b3 = _eng._eml_finish(_mkres("RUN6"))
+        if _b3.get("dup_skipped"):
+            bad.append("[E3] 换 run_id 被判成重复（守卫写成了「一律跳过」）")
+        if len(mod.eml_read_jsonl(_d / "episodes.jsonl")) != 6:
+            bad.append("[E3] RUN6 没写库")
+        # 对照二：同 run_id 但读数不同 ⇒ 照写（paused 半程样本可被完整样本补上）
+        _b4 = _eng._eml_finish(_mkres("RUN5", cut=("0", "1", "both", "all")))
+        if _b4.get("dup_skipped"):
+            bad.append("[E4] 读数不同的同 run_id 被挡掉（完整样本进不了库）")
+        if len(mod.eml_read_jsonl(_d / "episodes.jsonl")) != 7:
+            bad.append("[E4] 读数不同的 RUN5 没写库")
+    except Exception as _ex:
+        import traceback
+        traceback.print_exc()
+        bad.append("[E2] 异常：%r" % (_ex,))
+    for _b in bad:
+        print("  ✗ " + _b)
+    if bad:
+        print("✗ v1.23.51 EML 幂等（%d 项）" % len(bad))
+        return False
+    print("✓ v1.23.51 EML 幂等：同一跑次第二次调用零改动 · 换 run_id/换读数照写")
+    return True
+
+
 def check_v12350_resume():
     """[v1.23.50] 断点续跑（复用已完成层）+ 快照记账 + route 死捕获 + 墙钟预算。
 
@@ -15972,6 +16082,8 @@ def main():
     if not check_v12349_run_ckpt():
         return 1
     if not check_v12350_resume():
+        return 1
+    if not check_v12351_eml_once_per_run():
         return 1
     if not check_v12339_ondemand():
         return 1
