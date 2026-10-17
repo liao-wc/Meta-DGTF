@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.56.py"
+SRC = HERE / "元DGTF-V1.23.57.py"
 
 os.environ.setdefault("DGTF_API_KEY", "sk-smoke-test-key")
 
@@ -12592,6 +12592,80 @@ def check_v12349_run_ckpt():
     return True
 
 
+def check_v12357_goal_trace_carry():
+    """[v1.23.57] `goal_trace` 跨圈携带 ⇒ 早停单标量判据**走得到**。
+
+    ★ 为什么必须有它（真缺陷）：引擎**每圈新建 view**（`view = dg.run(inp)`），
+      而目标读数只 append 到当圈那个 view ⇒ 下一圈就丢。产物实测：跑 4~7 圈，
+      `goal_trace` 每层只有 **1** 条。而 `layer_gain_stop_signal` 的第一道门是
+      `len(prev) >= _LG_STOP_FLAT_N + 1`（=3）⇒ 门恒关 ⇒
+      **`stop.gain_floor` 在任何取值下都不会触发**（通道断了，不是阈值严）。
+
+    ★ 判据拆两段（只跑真入口会误判）：
+      · 真入口：`goal_trace` 条数 == `rounds_run` 且 ≥2 ⇒ 历史真接上了；
+      · 纯函数：喂 3 条低增益历史 ⇒ **必须触发** ⇒ 判据本体是活的。
+      mock 的产物是固定文本，修行层第 2 圈就被"复述/空转"自然停了，走不到第 3 圈 ——
+      所以"触发"这一支只能靠纯函数证，不能靠真入口。
+    ★ 两条负对照：只给 1 条历史 ⇒ 不触发（门还在）；`gain_floor=0` ⇒ 不触发（零行为差）。
+    """
+    import tempfile as _tf
+    bad = []
+    src = SRC.read_text(encoding="utf-8").replace("\r\n", "\n")
+    for _tk in ("self._goal_hist = _hist", "view.goal_trace = list(_h)",
+                "self._goal_hist = {}"):
+        if _tk not in src:
+            bad.append("[G1] 源码缺：%s" % _tk)
+
+    _mem = Path(_tf.mkdtemp(prefix="v57mem_"))
+    _q = "冒烟题面：这件事的边界在哪里（v12357 跨圈携带判据）"
+
+    def _cfg():
+        c = build_cfg(False)
+        c["output"]["save_dir"] = str(Path(_tf.mkdtemp(prefix="v57out_")))
+        c["playbook"] = {"mode": "off", "dir": str(_mem)}
+        c.setdefault("stop", {})["gain_floor"] = 0.0
+        c.setdefault("runtime", {})["live_checkpoint"] = False
+        c["all_on"] = False
+        return c
+
+    try:
+        _r = mod.MetaDGTF(_cfg()).run(
+            _q, route=["0"], rounds={"0": 5}, parallel_mode="serial")
+        _v = (_r.get("views") or {}).get("0") or {}
+        _rr = int(_v.get("rounds_run") or 0)
+        _tn = len(_v.get("goal_trace") or [])
+        if _tn != _rr:
+            bad.append("[G2] goal_trace=%d 与 rounds_run=%d 不一致"
+                       "（历史没跨圈接上）" % (_tn, _rr))
+        if _tn < 2:
+            bad.append("[G2] goal_trace 只有 %d 条（应随圈数增长）" % _tn)
+        # 纯函数：3 条「增益低于阈值」的历史必须触发
+        _prev = [{"round": 1, "excavate": 0.90},
+                 {"round": 2, "excavate": 0.90},
+                 {"round": 3, "excavate": 0.90}]
+        _hit, _why = mod.layer_gain_stop_signal("0", _prev[-1], _prev, 0.5)
+        if _hit is not True:
+            bad.append("[G3] 3 条低增益历史没触发早停（判据本体不灵）")
+        elif "增益趋零" not in str(_why):
+            bad.append("[G3] 触发了但理由没点名：%r" % (_why[:40],))
+        # 负对照
+        if mod.layer_gain_stop_signal("0", _prev[-1], _prev[-1:], 0.5)[0] is not False:
+            bad.append("[G4] 只给 1 条历史竟触发了（len<3 那道门破了）")
+        if mod.layer_gain_stop_signal("0", _prev[-1], _prev, 0.0)[0] is not False:
+            bad.append("[G4] gain_floor=0（默认关）仍触发（零行为差破了）")
+    except Exception as _ex:
+        import traceback
+        traceback.print_exc()
+        bad.append("[G2] 异常：%r" % (_ex,))
+    for _b in bad:
+        print("  ✗ " + _b)
+    if bad:
+        print("✗ v1.23.57 目标读数跨圈（%d 项）" % len(bad))
+        return False
+    print("✓ v1.23.57 目标读数跨圈：goal_trace 随圈数增长 · 早停判据真能触发")
+    return True
+
+
 def check_v12356_ckpt_cumulative():
     """[v1.23.56] 快照记账**跨窗口累计**（否则"被杀跑次也能结算成本"是假的）。
 
@@ -16518,6 +16592,8 @@ def main():
     if not check_v12355_paused_gap():
         return 1
     if not check_v12356_ckpt_cumulative():
+        return 1
+    if not check_v12357_goal_trace_carry():
         return 1
     if not check_v12339_ondemand():
         return 1

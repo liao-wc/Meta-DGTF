@@ -6,7 +6,7 @@
       "log_mark": "escalate_starve_rounds",
       "prod_mark": "escalate_starve_rounds",
       "src_hits": 7,
-      "log_hits": 46,
+      "log_hits": 47,
       "prod_hits": 0,
       "verdict": "可达"
     },
@@ -16,7 +16,7 @@
       "log_mark": "no_push_when_idle",
       "prod_mark": "no_push_when_idle",
       "src_hits": 4,
-      "log_hits": 46,
+      "log_hits": 47,
       "prod_hits": 0,
       "verdict": "可达"
     },
@@ -26,7 +26,7 @@
       "log_mark": "_reopen_closed_debt",
       "prod_mark": "_reopen_closed_debt",
       "src_hits": 10,
-      "log_hits": 46,
+      "log_hits": 47,
       "prod_hits": 0,
       "verdict": "可达"
     },
@@ -46,7 +46,7 @@
       "log_mark": "both_quota",
       "prod_mark": "both_quota",
       "src_hits": 3,
-      "log_hits": 483,
+      "log_hits": 485,
       "prod_hits": 345,
       "verdict": "可达"
     },
@@ -56,7 +56,7 @@
       "log_mark": "both_tighten_ratio",
       "prod_mark": "both_tighten_ratio",
       "src_hits": 5,
-      "log_hits": 46,
+      "log_hits": 47,
       "prod_hits": 0,
       "verdict": "可达"
     },
@@ -66,7 +66,7 @@
       "log_mark": "_all_settle_streak",
       "prod_mark": "_all_settle_streak",
       "src_hits": 10,
-      "log_hits": 46,
+      "log_hits": 47,
       "prod_hits": 0,
       "verdict": "可达"
     },
@@ -76,7 +76,7 @@
       "log_mark": "min_rounds",
       "prod_mark": "min_rounds",
       "src_hits": 54,
-      "log_hits": 205,
+      "log_hits": 207,
       "prod_hits": 0,
       "verdict": "可达"
     },
@@ -86,7 +86,7 @@
       "log_mark": "structure_saturation",
       "prod_mark": "structure_saturation",
       "src_hits": 14,
-      "log_hits": 112,
+      "log_hits": 115,
       "prod_hits": 2,
       "verdict": "可达"
     },
@@ -96,7 +96,7 @@
       "log_mark": "_budget_exhausted",
       "prod_mark": "_budget_exhausted",
       "src_hits": 10,
-      "log_hits": 97,
+      "log_hits": 98,
       "prod_hits": 0,
       "verdict": "可达"
     },
@@ -116,7 +116,7 @@
       "log_mark": "triage_downgrades",
       "prod_mark": "triage 降级",
       "src_hits": 2,
-      "log_hits": 50,
+      "log_hits": 51,
       "prod_hits": 6,
       "verdict": "可达"
     },
@@ -126,12 +126,12 @@
       "log_mark": "锚点冲突",
       "prod_mark": "锚点冲突",
       "src_hits": 0,
-      "log_hits": 50,
+      "log_hits": 51,
       "prod_hits": 2,
       "verdict": "可达"
     }
   ],
-  "n_logs": 725,
+  "n_logs": 728,
   "n_prods": 395,
   "n_reach": 13,
   "n_src_only": 0,
