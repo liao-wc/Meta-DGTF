@@ -7,7 +7,7 @@ import tempfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.51.py"
+SRC = HERE / "元DGTF-V1.23.52.py"
 
 MUTS = [
     ("M1 α 不做机会校正（退化成原始一致率）",
@@ -511,6 +511,10 @@ MUTS = [
     ("M102 幂等守卫失效（同跑次写两条 episode / weight 罚两遍）",
      '                if _sig_old == _sig_new:',
      '                if False:  # MUT'),
+    ("M103 暂停跑次照样写库（半程样本入库 / weight 罚两遍）",
+     '        if isinstance(result, dict) and (result.get("paused")\n'
+     '                                         or result.get("pending_layers")):',
+     '        if False:  # MUT'),
 ]
 
 
@@ -552,6 +556,7 @@ def run_check(mut_path=None):
              "st.check_v12349_run_ckpt() and "
              "st.check_v12350_resume() and "
              "st.check_v12351_eml_once_per_run() and "
+             "st.check_v12352_paused_no_eml() and "
              "st.check_v12339_ondemand() and "
              "st.check_v12338_relax_targets() and "
              "st.check_v12338_backfeed()) else 1)\n")

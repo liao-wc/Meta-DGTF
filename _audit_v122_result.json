@@ -46,7 +46,7 @@
       "log_mark": "both_quota",
       "prod_mark": "both_quota",
       "src_hits": 3,
-      "log_hits": 473,
+      "log_hits": 475,
       "prod_hits": 345,
       "verdict": "可达"
     },
@@ -76,7 +76,7 @@
       "log_mark": "min_rounds",
       "prod_mark": "min_rounds",
       "src_hits": 54,
-      "log_hits": 195,
+      "log_hits": 197,
       "prod_hits": 0,
       "verdict": "可达"
     },
@@ -86,7 +86,7 @@
       "log_mark": "structure_saturation",
       "prod_mark": "structure_saturation",
       "src_hits": 14,
-      "log_hits": 98,
+      "log_hits": 100,
       "prod_hits": 2,
       "verdict": "可达"
     },
@@ -96,7 +96,7 @@
       "log_mark": "_budget_exhausted",
       "prod_mark": "_budget_exhausted",
       "src_hits": 10,
-      "log_hits": 92,
+      "log_hits": 93,
       "prod_hits": 0,
       "verdict": "可达"
     },
@@ -131,7 +131,7 @@
       "verdict": "可达"
     }
   ],
-  "n_logs": 711,
+  "n_logs": 713,
   "n_prods": 395,
   "n_reach": 13,
   "n_src_only": 0,
