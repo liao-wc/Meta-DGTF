@@ -7,7 +7,7 @@ import tempfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.53.py"
+SRC = HERE / "元DGTF-V1.23.54.py"
 
 MUTS = [
     ("M1 α 不做机会校正（退化成原始一致率）",
@@ -520,6 +520,9 @@ MUTS = [
      '        _d.mkdir(parents=True, exist_ok=True)',
      '        _d = Path(str((cfg or {}).get("dir") or eml_dir()))  # MUT\n'
      '        _d.mkdir(parents=True, exist_ok=True)'),
+    ("M105 截断层不摘（续跑把它当完成 ⇒ 分片跑永远跑不完整）",
+     '        if "墙钟预算" in str(getattr(_v, "stop_reason", "") or ""):',
+     '        if False:  # MUT'),
 ]
 
 
@@ -563,6 +566,7 @@ def run_check(mut_path=None):
              "st.check_v12351_eml_once_per_run() and "
              "st.check_v12352_paused_no_eml() and "
              "st.check_v12353_eml_dir_single() and "
+             "st.check_v12354_parallel_wall_clock() and "
              "st.check_v12339_ondemand() and "
              "st.check_v12338_relax_targets() and "
              "st.check_v12338_backfeed()) else 1)\n")

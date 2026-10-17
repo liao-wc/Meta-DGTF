@@ -1,9 +1,9 @@
 {
- "added": 173,
+ "added": 174,
  "baseline": "_baseline_v12177.py",
- "current": "元DGTF-V1.23.53.py",
+ "current": "元DGTF-V1.23.54.py",
  "n_symbols_baseline": 290,
- "n_symbols_current": 588,
+ "n_symbols_current": 589,
  "registry": {
   "AnchorRetriever": {
    "phase": "4",
@@ -1300,6 +1300,10 @@
   "eml_store_dir": {
    "phase": "EML",
    "reason": "记忆库目录唯一解析（playbook.dir ＞ eml_dir；bandit 也跟着走）"
+  },
+  "_wall_clock_over": {
+   "phase": "54",
+   "reason": "墙钟预算唯一判据（serial 层间 + 三个并行单层执行器共用）"
   }
  },
  "removed": 0
