@@ -18,3 +18,4 @@
 {"t": 1792147952.5402231, "run": "V1250A", "kind": "used_but_below_floor", "why": "below_floor", "cand": {"n": 6, "duty_med": 0.037}}
 {"t": 1792154405.3691447, "run": "V1250B", "kind": "used_but_below_floor", "why": "below_floor", "cand": {"n": 6, "duty_med": 0.1818}}
 {"t": 1792282494.121825, "run": "V1257G0", "kind": "used_but_below_floor", "why": "below_floor", "cand": {"n": 6, "duty_med": 0.0}}
+{"t": 1792287631.0730762, "run": "V1259G1", "kind": "used_but_below_floor", "why": "below_floor", "cand": {"n": 6, "duty_med": 0.0}}
