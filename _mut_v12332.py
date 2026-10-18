@@ -7,7 +7,7 @@ import tempfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.62.py"
+SRC = HERE / "元DGTF-V1.23.63.py"
 
 MUTS = [
     ("M1 α 不做机会校正（退化成原始一致率）",
@@ -547,6 +547,12 @@ MUTS = [
     ("M113 负面证据不再累积（晋升闸的 contra 恒 0、永远不拦）",
      '                    eml_note_contra([_e], [_e], why="used_but_duty_low")',
      '                    pass  # MUT'),
+    ("M114 非结构化输出不留痕（答了但答不成结构被静默吞掉）",
+     '                                self.bad_json += 1',
+     '                                pass  # MUT'),
+    ("M115 max_retries=0 变成一次都不尝试",
+     '        _tries = max(1, int(self.max_retries or 0))',
+     '        _tries = int(self.max_retries or 0)  # MUT'),
 ]
 
 
@@ -599,6 +605,7 @@ def run_check(mut_path=None):
              "st.check_v12360_layer_progress() and "
              "st.check_v12361_empty_guard() and "
              "st.check_v12362_contra_live() and "
+             "st.check_v12363_bad_json_visible() and "
              "st.check_v12339_ondemand() and "
              "st.check_v12338_relax_targets() and "
              "st.check_v12338_backfeed()) else 1)\n")
