@@ -16902,6 +16902,11 @@ def main():
         return 1
     if not check_v12361_empty_guard():
         return 1
+    # ★ [补线] 这条判据早就写好了（v1.21.56 的 P0/P1 单元），但签名吃 `src`、
+    #   与其余无参判据不同，所以**从来没被 main 调到** —— 存在≠在跑。
+    #   审计脚本 `_audit_unwired_checks.py` 逮到，这里接上。
+    if not check_p0_156_units(SRC.read_text(encoding="utf-8")):
+        return 1
     if not check_v12339_ondemand():
         return 1
     if not check_v12338_relax_targets():
