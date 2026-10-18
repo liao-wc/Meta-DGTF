@@ -7,7 +7,7 @@ import tempfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.57.py"
+SRC = HERE / "元DGTF-V1.23.58.py"
 
 MUTS = [
     ("M1 α 不做机会校正（退化成原始一致率）",
@@ -532,6 +532,9 @@ MUTS = [
     ("M108 目标读数不跨圈（早停单标量永远看不到 3 条历史）",
      '            view.goal_trace = list(_h)',
      '            view.goal_trace = [_rec]  # MUT'),
+    ("M109 晋升门槛记成名义值（自适应降门槛查不出来）",
+     '            trace["eff_n"] = int(_eff_n)',
+     '            trace["eff_n"] = int(promote_n)  # MUT'),
 ]
 
 
@@ -579,6 +582,7 @@ def run_check(mut_path=None):
              "st.check_v12355_paused_gap() and "
              "st.check_v12356_ckpt_cumulative() and "
              "st.check_v12357_goal_trace_carry() and "
+             "st.check_v12358_promote_trace() and "
              "st.check_v12339_ondemand() and "
              "st.check_v12338_relax_targets() and "
              "st.check_v12338_backfeed()) else 1)\n")

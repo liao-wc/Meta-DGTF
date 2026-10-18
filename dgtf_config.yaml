@@ -1,5 +1,5 @@
 # ============================================================
-# 元 DGTF · v1.23.57 配置文件
+# 元 DGTF · v1.23.58 配置文件
 # ============================================================
 #
 #
@@ -52,6 +52,18 @@ auto:
     enabled: false
     cost_w: 0.3
     c: 1.0
+
+# 【v1.23.57 → v1.23.58】晋升门槛 `_eff_n` 与 shadow 拦截原因**进产物**
+#   ① 问题：`eml_promote` 里自适应后的实际门槛 `_eff_n` 只活在函数内部，产物里查不到
+#      ⇒「库 11 < 冷启 20 ⇒ 门槛降到 1，但被质量闸挡下」只能**推断**。
+#      「我推断它降到了 1」与「产物里写着 1」是两件事。
+#   ② 修法：`eml_promote(..., trace=None)` 多收一个 dict，填 `eff_n` / `promote_n` /
+#      `adaptive` / `n_lib` / `cold_lib` / `shadow`（逐条 verdict）/ `shadow_verdicts`；
+#      调用方挂成 `_blk["promote_trace"]`，产物 md 正文加一行「晋升门槛 ≥N（自适应…）
+#      ｜shadow 拦截：n_short×2、quality_down×1…」。
+#   ③ 五类 verdict：`n_short` / `contra` / `quality_down` / `cost_only` / `promoted`
+#      —— 否则「0 升级」分不清是"没东西可升"还是"有但被挡住"。
+#   ★ 无新配置键；不传 `trace` ⇒ 行为**逐字不变**（默认 None）。
 
 # 【v1.23.56 → v1.23.57】把 `goal_trace` **跨圈接上**（`stop.gain_floor` 才走得到）
 #   ① 缺陷：引擎**每圈新建 view**（`view = dg.run(inp)`），而目标读数只 append 到
