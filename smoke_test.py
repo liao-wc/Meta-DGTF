@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.61.py"
+SRC = HERE / "元DGTF-V1.23.62.py"
 
 os.environ.setdefault("DGTF_API_KEY", "sk-smoke-test-key")
 
@@ -12592,6 +12592,123 @@ def check_v12349_run_ckpt():
     return True
 
 
+def check_v12362_judges_wired(src_text: str = None):
+    """[元判据] 判据体系自身的两条纪律。
+
+    1. **每个 `check_*` 都必须在 `main()` 里被调用** —— 否则"存在 ≠ 在跑"。
+       本仓实测逮到 `check_p0_156_units` 写好了却从没被 main 调到（签名吃 `src`，
+       与其余无参判据不同），已补线。
+    2. **任何打印 `✗` 的判据都必须带失败标记**（`return False` / `ok = False` /
+       `bad.append`）—— 门禁按**退出码**判，不是按 ✗ 文本（实测验收日志里就有
+       ✗ 藏在数据值里，按文本扫会误杀）。所以"只喊不判"会被静默放过。
+
+    ★ `src_text` 可选：开发期传一份"故意坏掉"的源码进来做**构造性证明**
+      （本判据的输入是 `smoke_test.py` 自己，变异体机制够不到它）。
+    """
+    import ast as _a
+    bad = []
+    _src = src_text if src_text is not None else \
+        Path(__file__).read_text(encoding="utf-8")
+    try:
+        _tree = _a.parse(_src)
+    except SyntaxError as _e:
+        print("  ✗ [META] 源码解析失败：%r" % (_e,))
+        return False
+    _defined = [_n.name for _n in _tree.body
+                if isinstance(_n, _a.FunctionDef) and _n.name.startswith("check_")]
+    _main = ""
+    for _n in _tree.body:
+        if isinstance(_n, _a.FunctionDef) and _n.name == "main":
+            _main = _a.get_source_segment(_src, _n) or ""
+            break
+    if not _main:
+        bad.append("[META] 找不到 main()")
+    _unwired = [d for d in _defined if ("%s(" % d) not in _main]
+    # 本判据自身不调 main（它是被 main 调的），排除它自己与 main 的存在性噪声
+    _unwired = [x for x in _unwired if x != "check_v12362_judges_wired"]
+    if _unwired:
+        bad.append("[META] 未接线的判据 %d 条：%s"
+                   % (len(_unwired), "、".join(_unwired[:4])))
+    _shout = []
+    for _n in _tree.body:
+        if not isinstance(_n, _a.FunctionDef) or not _n.name.startswith("check_"):
+            continue
+        _b = _a.get_source_segment(_src, _n) or ""
+        if "✗" not in _b:
+            continue
+        if not any(_k in _b for _k in
+                   ("return False", "ok = False", "bad.append", "bad = True")):
+            _shout.append(_n.name)
+    if _shout:
+        bad.append("[META] 只喊不判 %d 条：%s"
+                   % (len(_shout), "、".join(_shout[:4])))
+    for _b in bad:
+        print("  ✗ " + _b)
+    if bad:
+        print("✗ v1.23.62 判据体系自检（%d 项）" % len(bad))
+        return False
+    print("✓ v1.23.62 判据体系自检：%d 条判据全部接线 · 无「只喊不判」"
+          % len(_defined))
+    return True
+
+
+def check_v12362_contra_live():
+    """[v1.23.62] `contra`（反向证据）**接活**：会累积、会拦晋升。
+
+    ★ 为什么必须有它（死代码审计发现）：`contra` **唯一的写入点**是
+      `eml_note_contra()`，而它**全项目没人调用** ⇒ `contra` 恒 0 ⇒
+      `eml_promote` 里「反向证据够了不许升级」那条**永远不触发**。
+      判据在、输入没人产出 —— 与"读数无出口"是同一类死法。
+    ★ 关键是对照：`contra=3` 必须**拦住**升级，`contra=0` 必须**允许**升级
+      —— 只有两向都测，才能证明闸是"按条件拦"而不是"见谁都拦/谁都不拦"。
+    """
+    import ast as _ast
+    bad = []
+    src = SRC.read_text(encoding="utf-8").replace("\r\n", "\n")
+    if src.count("eml_note_contra") < 2:
+        bad.append("[K1] 全文仍只 1 次（没有调用点）")
+    _body = ""
+    for _n in _ast.walk(_ast.parse(src)):
+        if isinstance(_n, _ast.FunctionDef) and _n.name == "_eml_note_use":
+            _body = _ast.get_source_segment(src, _n) or ""
+            break
+    if "eml_note_contra(" not in _body:
+        bad.append("[K1] `_eml_note_use` 里没调用它（负面证据仍不累积）")
+
+    try:
+        _pb = [{"id": "L1", "status": "active", "contra": 0}]
+        for _ in range(3):
+            mod.eml_note_contra(_pb, [{"id": "L1"}], why="used_but_duty_low")
+        if _pb[0].get("contra") != 3:
+            bad.append("[K2] 记 3 次后 contra=%r（应 3）" % (_pb[0].get("contra"),))
+        if _pb[0].get("contra_last") != "used_but_duty_low":
+            bad.append("[K2] 没留 contra_last 原因")
+
+        def _mk(c):
+            return [{"id": "S1", "status": "shadow", "n_evidence": 5,
+                     "quality_delta": 0.2, "contra": c}]
+
+        _b3 = _mk(3)
+        if mod.eml_promote(_b3, promote_n=3) != []:
+            bad.append("[K3] contra=3 仍升级了（闸不拦）")
+        if _b3[0].get("status") != "shadow":
+            bad.append("[K3] contra=3 状态被改：%r" % (_b3[0].get("status"),))
+        _b0 = _mk(0)
+        if [x.get("to") for x in mod.eml_promote(_b0, promote_n=3)] != ["active"]:
+            bad.append("[K4] contra=0 也不升级（闸变成见谁都拦）")
+    except Exception as _ex:
+        import traceback
+        traceback.print_exc()
+        bad.append("[K2] 异常：%r" % (_ex,))
+    for _b in bad:
+        print("  ✗ " + _b)
+    if bad:
+        print("✗ v1.23.62 反向证据接活（%d 项）" % len(bad))
+        return False
+    print("✓ v1.23.62 反向证据接活：contra 会累积 · contra=3 拦住 · contra=0 放行")
+    return True
+
+
 def check_v12361_empty_guard():
     """[v1.23.61] 空题**拒绝运行**（不凭空产出、不花钱）。
 
@@ -16901,6 +17018,10 @@ def main():
     if not check_v12360_layer_progress():
         return 1
     if not check_v12361_empty_guard():
+        return 1
+    if not check_v12362_contra_live():
+        return 1
+    if not check_v12362_judges_wired():
         return 1
     # ★ [补线] 这条判据早就写好了（v1.21.56 的 P0/P1 单元），但签名吃 `src`、
     #   与其余无参判据不同，所以**从来没被 main 调到** —— 存在≠在跑。
