@@ -1495,6 +1495,94 @@ def _schedule_profiles():
     return rows
 
 
+def _schedule_pareto(limit=120, prefer="balanced"):
+    """从真实 packed 产物聚合 token/层覆盖，返回调度帕累托点。
+
+    指标：cost = llm_tokens（越低越好）；quality = 四层覆盖面（0..1，越高越好）。
+    这是**可复核的经验前沿**，不是拍脑袋的权重表。
+    """
+    import json as _json
+    rows = []
+    try:
+        files = sorted(oi.OUTPUTS_DIR.glob("*.packed.json"),
+                       key=lambda p: p.stat().st_mtime, reverse=True)[:max(1, int(limit))]
+    except Exception:
+        files = []
+    for p in files:
+        try:
+            d = _json.loads(p.read_text(encoding="utf-8", errors="replace"))
+        except Exception:
+            continue
+        if not isinstance(d, dict):
+            continue
+        try:
+            tok = int(d.get("llm_tokens") or 0)
+        except Exception:
+            tok = 0
+        if tok <= 0:
+            continue
+        views = d.get("views") if isinstance(d.get("views"), dict) else {}
+        hits = 0
+        flags = 0
+        for _k, v in views.items():
+            if not isinstance(v, dict):
+                continue
+            if any(v.get(x) for x in ("candidates", "threads", "sub_questions",
+                                      "adjudications", "meta_closure")):
+                hits += 1
+            try:
+                flags += len(v.get("quality_flags") or [])
+            except Exception:
+                pass
+        coverage = round(hits / 4.0, 3)
+        rounds = d.get("rounds")
+        try:
+            rounds_key = _json.dumps(rounds, ensure_ascii=False, sort_keys=True)[:80]
+        except Exception:
+            rounds_key = str(rounds)[:80]
+        rows.append({"route": str(d.get("route") or "auto"),
+                     "rounds": rounds_key, "tokens": tok,
+                     "coverage": coverage, "flags": flags,
+                     "output": p.name.replace(".packed.json", ".md")})
+    if not rows:
+        return {"ok": True, "points": [], "recommended": None,
+                "note": "暂无可统计的真实 packed 产物"}
+    # 按 (route, rounds) 聚合；样本越多越可信。
+    from collections import defaultdict
+    groups = defaultdict(list)
+    for r in rows:
+        groups[(r["route"], r["rounds"])].append(r)
+    pts = []
+    for (route, rounds), rs in groups.items():
+        n = len(rs)
+        avg_tok = round(sum(x["tokens"] for x in rs) / n, 1)
+        avg_cov = round(sum(x["coverage"] for x in rs) / n, 3)
+        bad = sum(1 for x in rs if x["flags"])
+        pts.append({"route": route, "rounds": rounds, "runs": n,
+                    "tokens": avg_tok, "coverage": avg_cov, "flag_runs": bad})
+    # 非支配：token 更低且 coverage 不低于别人；同 token 取 coverage 高。
+    front = []
+    for p in sorted(pts, key=lambda x: (x["tokens"], -x["coverage"])):
+        if not any((q["tokens"] <= p["tokens"] and q["coverage"] >= p["coverage"]
+                    and (q["tokens"] < p["tokens"] or q["coverage"] > p["coverage"]))
+                   for q in pts):
+            front.append(p)
+    # 推荐：balanced 用 coverage - 归一化 token 惩罚；cost/quality 优先。
+    _max_tok = max([p["tokens"] for p in pts] or [1])
+    def _score(p):
+        cost = p["tokens"] / _max_tok
+        if prefer == "cost":
+            return -cost + 0.15 * p["coverage"]
+        if prefer == "quality":
+            return p["coverage"] - 0.15 * cost
+        return p["coverage"] - 0.35 * cost
+    recommended = max(pts, key=_score)
+    return {"ok": True, "points": pts, "frontier": front,
+            "recommended": recommended, "prefer": prefer,
+            "metric_note": "cost=llm_tokens；quality=四层覆盖数/4（真实 packed 聚合）",
+            "recommended_profile": "方案F-帕累托最优.yaml"}
+
+
 def _schedule_preview(data):
     question = str((data or {}).get("question") or "").strip()
     _raw_opts = (data or {}).get("opts") or {}
@@ -1686,6 +1774,13 @@ class Handler(BaseHTTPRequestHandler):
         if p.startswith("/static/"):
             return self._serve_static(p[len("/static/"):])
 
+        if p == "/api/schedule/pareto":
+            try:
+                return self._json(_schedule_pareto(
+                    limit=int((q.get("limit") or ["120"])[0] or 120),
+                    prefer=str((q.get("prefer") or ["balanced"])[0])))
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/schedule/profiles":
             try:
                 return self._json({"profiles": _schedule_profiles()})

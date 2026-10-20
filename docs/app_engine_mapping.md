@@ -71,6 +71,7 @@ engine 元DGTF-V1.30.0.py
 | `GET /api/health` | 引擎版本、四层、EML 模块、Fact/Evidence、调度、凭据、DSH、常驻 daemon、输出目录依赖检查 |
 | `GET /api/schedule/profiles` | 列出 `configs/*.yaml` profile；`方案F-帕累托最优.yaml` 标记 recommended |
 | `POST /api/schedule/preview` | 输入 question/opts/profile，返回 effective、precedence、CLI、auto/v2/budget、层集合 |
+| `GET /api/schedule/pareto` | 从真实 `outputs/*.packed.json` 聚合 route/rounds 的 token 与四层覆盖面，返回非支配前沿与推荐点 |
 
 ### 实测（goal round 1 集成探针）
 

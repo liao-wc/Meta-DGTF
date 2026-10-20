@@ -40,6 +40,8 @@ ck("preview opts", st == 200 and p1.get("effective", {}).get("route") == "0,1"
    and p1.get("effective", {}).get("parallel") == "serial"
    and p1.get("precedence", {}).get("route") == "opts", p1.get("effective"))
 ck("preview cli flags", "--route" in p1.get("cli", []) and "0,1" in p1.get("cli", []), p1.get("cli"))
+st, pareto = req("GET", "/api/schedule/pareto?prefer=balanced", timeout=60)
+ck("pareto frontier", st == 200 and pareto.get("ok") and bool(pareto.get("frontier")), (st, pareto))
 st, prof = req("GET", "/api/schedule/profiles", timeout=30)
 profiles = (prof or {}).get("profiles") or []
 ck("profiles list", st == 200 and bool(profiles), prof)
