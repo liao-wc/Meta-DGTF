@@ -3724,6 +3724,24 @@ async function runAgentConsumer() {
   }
 }
 
+async function dedupeAgentKnowledge() {
+  const btn = $('#agent-kn-dedupe');
+  const msg = $('#agent-msg');
+  if (btn) btn.disabled = true;
+  if (msg) msg.textContent = '知识库去重中…';
+  try {
+    const r = await api('/api/agent/knowledge/dedupe', {
+      method: 'POST', headers: {'Content-Type': 'application/json'}, body: '{}'});
+    if (msg) msg.textContent = '库去重完成：' + (r.before || 0) + ' → '
+      + (r.after || 0) + '，移除重复 ' + (r.removed || 0) + ' 条';
+    await loadAgent();
+  } catch (e) {
+    if (msg) msg.textContent = '库去重失败：' + e.message;
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
 async function refreshAgentKnowledge(mode) {
   const online = mode === 'online';
   const raw = ($('#agent-kn-q') ? $('#agent-kn-q').value : '').trim();
@@ -3745,10 +3763,14 @@ async function refreshAgentKnowledge(mode) {
       body: JSON.stringify({ queries: qs, limit: limit }),
     });
     const items = (r && r.items) || [];
+    const skipped = Number((r && r.skipped_duplicates) || 0);
     if (msg) msg.textContent = items.length
       ? ((online ? '联网' : '知识') + '新增 ' + items.length + ' 条'
+         + (skipped ? '，跳过重复 ' + skipped + ' 条' : '')
          + (r && r.patch ? '，补丁已写入 ' + String(r.patch).split('\\').pop() : ''))
-      : '知识刷新完成：0 条（无联网结果或未配置 Key，已安全降级）';
+      : (skipped
+        ? ('知识刷新完成：0 条新增，已跳过重复 ' + skipped + ' 条')
+        : '知识刷新完成：0 条（无联网结果或未配置 Key，已安全降级）');
     await loadAgent();
     if (items.length) {
       const tab = document.querySelector('[data-agent-tab="2"]');
@@ -4392,6 +4414,8 @@ function init() {
   if (_agentOnline) _agentOnline.addEventListener('click', () => refreshAgentKnowledge('online'));
   const _agentKnSearch = $('#agent-kn-search');
   if (_agentKnSearch) _agentKnSearch.addEventListener('click', () => refreshAgentKnowledge('query'));
+  const _agentKnDedupe = $('#agent-kn-dedupe');
+  if (_agentKnDedupe) _agentKnDedupe.addEventListener('click', dedupeAgentKnowledge);
   const _agentKnQ = $('#agent-kn-q');
   if (_agentKnQ) _agentKnQ.addEventListener('keydown', function (e) {
     if (e.key === 'Enter') { e.preventDefault(); refreshAgentKnowledge('query'); }

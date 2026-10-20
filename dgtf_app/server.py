@@ -1650,6 +1650,14 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"task": append_task(task)})
             except Exception as exc:
                 return self._json({"error": str(exc)}, 500)
+        if p == "/api/agent/knowledge/dedupe":
+            try:
+                import sys as _sys
+                _sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+                from dgtf_v2.agent_bridge import dedupe_knowledge
+                return self._json({"ok": True, **dedupe_knowledge()})
+            except Exception as exc:
+                return self._json({"error": str(exc)}, 500)
         if p == "/api/agent/knowledge":
             data = self._read_json()
             default_qs = [
@@ -1677,8 +1685,11 @@ class Handler(BaseHTTPRequestHandler):
                 except Exception:
                     pass
                 _sys.path.insert(0, str(_proj))
-                from dgtf_v2.agent_bridge import refresh_knowledge_http
-                got = refresh_knowledge_http(qs[:4])
+                from dgtf_v2.agent_bridge import refresh_knowledge_http, dedupe_knowledge
+                _dd = dedupe_knowledge()
+                _kr = refresh_knowledge_http(qs[:4], return_stats=True)
+                got = _kr.get("items") or []
+                _skipped = int(_kr.get("skipped_duplicates") or 0) + int(_dd.get("removed") or 0)
                 picked, seen = [], set()
                 for q in qs[:4]:
                     for it in got:
@@ -1716,7 +1727,9 @@ class Handler(BaseHTTPRequestHandler):
                 except Exception:
                     pass
                 return self._json({"items": picked, "queries": qs,
-                                   "count": len(picked), "patch": patch_path})
+                                   "count": len(picked), "patch": patch_path,
+                                   "skipped_duplicates": _skipped,
+                                   "deduped": _dd})
             except Exception as exc:
                 return self._json({"error": str(exc)}, 500)
         if p == "/api/git/status":

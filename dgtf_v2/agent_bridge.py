@@ -254,14 +254,93 @@ def _zh_annotation(title: str, text: str, url: str, key: str) -> str:
         return ""
 
 
-def refresh_knowledge_http(queries, path: str = DEFAULT_KNOWLEDGE) -> list:
-    """不依赖引擎配置：直接调 DeepSeek Search/Fetch，写技术知识库。"""
+def _canon_url(url: str) -> str:
+    import urllib.parse as _up
+    try:
+        u = _up.urlsplit(str(url or "").strip())
+        if not u.netloc:
+            return ""
+        drop = {"ref", "source", "utm_source", "utm_medium", "utm_campaign",
+                "utm_term", "utm_content", "spm"}
+        q = [(k, v) for k, v in _up.parse_qsl(u.query, keep_blank_values=True)
+             if k.lower() not in drop]
+        path = (u.path or "/").rstrip("/") or "/"
+        return _up.urlunsplit((u.scheme.lower(), u.netloc.lower(), path,
+                               _up.urlencode(q), ""))
+    except Exception:
+        return ""
+
+
+def _knowledge_keys(it: dict) -> set:
+    import hashlib as _h
+    import re as _re
+    keys = set()
+    u = _canon_url(it.get("url"))
+    if u:
+        keys.add("u:" + u)
+    title = _re.sub(r"\s+", " ", str(it.get("title") or "")).strip().lower()
+    if title:
+        keys.add("t:" + title[:160])
+    body = (str(it.get("content") or "") + " " + str(it.get("claim") or "")).strip()
+    if body:
+        keys.add("f:" + _h.sha1(body[:1200].encode("utf-8")).hexdigest())
+    return keys
+
+
+def _dedupe_records(records):
+    """保留每个重复键的最新一条（反向扫描后还原顺序）。"""
+    out, seen = [], set()
+    for it in reversed(list(records or [])):
+        ks = _knowledge_keys(it)
+        if ks and (ks & seen):
+            continue
+        seen.update(ks)
+        out.append(it)
+    out.reverse()
+    return out
+
+
+def dedupe_knowledge(path: str = DEFAULT_KNOWLEDGE) -> dict:
+    p = Path(path)
+    if not p.exists():
+        return {"before": 0, "after": 0, "removed": 0}
+    rows = []
+    for ln in p.read_text(encoding="utf-8", errors="replace").splitlines():
+        try:
+            d = json.loads(ln)
+            if isinstance(d, dict):
+                rows.append(d)
+        except Exception:
+            pass
+    keep = _dedupe_records(rows)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text("".join(json.dumps(x, ensure_ascii=False) + "\n" for x in keep),
+                 encoding="utf-8")
+    return {"before": len(rows), "after": len(keep),
+            "removed": max(0, len(rows) - len(keep))}
+
+
+def refresh_knowledge_http(queries, path: str = DEFAULT_KNOWLEDGE,
+                           return_stats: bool = False):
+    """不依赖引擎配置：直接调 DeepSeek Search/Fetch，写技术知识库（入库去重）。"""
     import os as _os
     import urllib.request as _ur
     key = _os.getenv("DGTF_API_KEY", "") or _os.getenv("DEEPSEEK_API_KEY", "")
     if not key:
-        return []
-    out = []
+        return {"items": [], "skipped_duplicates": 0} if return_stats else []
+    out, skipped = [], 0
+    seen = set()
+    try:
+        _p = Path(path)
+        if _p.exists():
+            for _ln in _p.read_text(encoding="utf-8", errors="replace").splitlines():
+                try:
+                    _d = json.loads(_ln)
+                    seen.update(_knowledge_keys(_d))
+                except Exception:
+                    pass
+    except Exception:
+        pass
     for q in (queries or [])[:4]:
         body = json.dumps({"query": str(q)[:128], "count": 3,
                            "need_content": False}).encode("utf-8")
@@ -291,9 +370,15 @@ def refresh_knowledge_http(queries, path: str = DEFAULT_KNOWLEDGE) -> list:
                     title = title or str(pg.get("title") or "")
                 except Exception:
                     pass
+            claim = str(it.get("summary") or it.get("content") or "")[:400]
+            base = {"title": title, "url": url, "claim": claim, "content": content}
+            keys = _knowledge_keys(base)
+            if keys and (keys & seen):
+                skipped += 1
+                continue
+            seen.update(keys)
             pdf_url = str(it.get("pdf_url") or it.get("pdfUrl") or "") or _paper_pdf_url(url)
             pdf = _download_paper_pdf(pdf_url) if pdf_url else {}
-            claim = str(it.get("summary") or it.get("content") or "")[:400]
             zh_note = _zh_annotation(title, content or claim, url, key)
             item = {"query": str(q)[:200], "title": title, "url": url,
                     "claim": claim, "content": content, "fetched": bool(content),
@@ -305,4 +390,6 @@ def refresh_knowledge_http(queries, path: str = DEFAULT_KNOWLEDGE) -> list:
         with p.open("a", encoding="utf-8") as f:
             for it in out:
                 f.write(json.dumps(it, ensure_ascii=False) + "\n")
+    if return_stats:
+        return {"items": out, "skipped_duplicates": skipped}
     return out
