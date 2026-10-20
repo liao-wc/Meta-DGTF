@@ -3193,17 +3193,25 @@ function agentRenderProps() {
   const n = document.querySelector('#agent-prop-n');
   if (n) n.textContent = String(agentProps.length);
   if (!box) return;
-  if (!agentProps.length) { box.innerHTML = agentEmpty('还没有修复提案。点「DSH 自动修复」自审生成提案。'); return; }
+  if (!agentProps.length) { box.innerHTML = agentEmpty('还没有修复提案。点「DSH 自动闭环」生成提案。'); return; }
+  const ST = {pending: '待确认', applied: '已应用', failed: '失败', rolled_back: '已回退'};
   box.innerHTML = agentProps.slice(0, 30).map(function (x) {
     const when = x.ts ? new Date(x.ts * 1000).toLocaleString('zh-CN', {hour12:false}) : '';
+    const st = String(x.status || 'pending');
+    let acts = '';
+    if (st === 'pending') {
+      acts = '<button class="ghost" data-prop-approve="' + esc(x.id) + '">我确认</button>'
+        + '<button class="ghost" data-prop-auto="' + esc(x.id) + '">DSH 自动代理</button>';
+    } else if (st === 'applied') {
+      acts = '<button class="ghost danger" data-prop-rollback="' + esc(x.id) + '">回退并撤销修复</button>';
+    }
     return '<div class="agent-item">'
       + '<div class="agent-row"><span class="chip">提案</span>'
-      + '<span class="chip">' + esc(x.status || 'pending') + '</span>'
+      + '<span class="chip st-' + esc(st) + '">' + esc(ST[st] || st) + '</span>'
       + '<span class="agent-t">' + esc((x.task || {}).title || x.id) + '</span></div>'
       + '<div class="agent-meta"><span>' + esc(x.id || '') + '</span><span>' + esc(when) + '</span></div>'
       + '<div class="agent-q">' + esc(String(x.plan || '').slice(0, 300)) + '</div>'
-      + '<div class="prop-actions"><button class="ghost" data-prop-approve="' + esc(x.id) + '">我确认</button>'
-      + '<button class="ghost" data-prop-auto="' + esc(x.id) + '">DSH 自动代理</button></div></div>';
+      + '<div class="prop-actions">' + acts + '</div></div>';
   }).join('');
 }
 
@@ -3859,6 +3867,20 @@ function init() {
   })();
   const _propBox = $('#agent-proposals');
   if (_propBox) _propBox.addEventListener('click', async (e) => {
+    const rb = e.target.closest('[data-prop-rollback]');
+    if (rb) {
+      const id = rb.dataset.propRollback;
+      if (!window.confirm('回退提案 ' + id + ' 的修复？会执行 git revert。')) return;
+      const m = document.querySelector('#agent-msg');
+      if (m) m.textContent = '正在回退提案 ' + id + '…';
+      try {
+        const r = await api('/api/dsh/proposals/' + encodeURIComponent(id) + '/rollback',
+          {method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+        if (m) m.textContent = '提案 ' + id + '：' + ((r.proposal || {}).status || '已回退');
+        loadAgent(); loadGitStatus();
+      } catch (err) { if (m) m.textContent = '回退失败：' + err.message; }
+      return;
+    }
     const ok = e.target.closest('[data-prop-approve]');
     const auto = e.target.closest('[data-prop-auto]');
     if (!ok && !auto) return;
@@ -3872,6 +3894,12 @@ function init() {
       if (m) m.textContent = '提案 ' + id + '：' + ((r.proposal || {}).status || '');
       loadAgent(); loadGitStatus();
     } catch (err) { if (m) m.textContent = '执行失败：' + err.message; }
+  });
+  const _cfgBtn = $('#dsh-config-btn');
+  const _cfgBox = $('#dsh-config-box');
+  if (_cfgBtn && _cfgBox) _cfgBtn.addEventListener('click', () => {
+    const open = _cfgBox.classList.toggle('hidden');
+    _cfgBtn.classList.toggle('on', !open);
   });
   const _ghOpen = $('#gh-open');
   if (_ghOpen) _ghOpen.addEventListener('click', openGithubDesktop);

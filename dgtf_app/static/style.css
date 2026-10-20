@@ -1449,6 +1449,7 @@ select:focus{border-color:var(--accent)}
 .gh-bar{margin-top:8px}
 .dsh-ctl{display:none}
 body.dsh-mode .dsh-ctl{display:inline-flex;align-items:center}
+#dsh-config-box.hidden{display:none}
 .dsh-sel{background:rgba(0,0,0,.22);border:1px solid var(--hair);color:var(--t2);
   border-radius:999px;padding:6px 9px;font-size:12px;font-family:var(--f-mono);outline:none}
 .gh-ok{color:var(--ok)} .gh-bad{color:var(--err)}
@@ -1456,6 +1457,9 @@ body.dsh-mode .dsh-ctl{display:inline-flex;align-items:center}
 .agent-tabs .pill{font-size:12px}
 .agent-sec.agent-tab-hidden{display:none}
 .prop-actions{display:flex;gap:6px;margin-top:6px}
+.prop-actions .danger{color:#FF7A6B}
+.chip.st-applied{color:var(--ok)}
+.chip.st-rolled_back{color:var(--warn)}
 /* 可选可编辑下拉：默认值带（默认）标注，仍可手工填任意值 */
 .dd-free{display:flex;gap:5px;align-items:center}
 .dd-free .dd-input{flex:1 1 auto;min-width:0;text-align:center}

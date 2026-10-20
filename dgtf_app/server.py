@@ -258,6 +258,7 @@ def _auto_commit(before: set, task: str, before_head: str = "", before_fp=None):
         if before_head and ah and ah != before_head:
             return {"committed": True, "changed": [],
                     "commit": (_git(["log", "-1", "--oneline"]).get("out") or "").strip(),
+                    "commit_hash": ah,
                     "why": "DSH Agent 已自行提交本次变更"}
         return {"committed": False, "changed": [], "why": "本次没有新增文件变更"}
     a = _git(["add", "--"] + new)
@@ -268,8 +269,10 @@ def _auto_commit(before: set, task: str, before_head: str = "", before_fp=None):
                 "why": "本次没有可提交的内容变更"}
     msg = "DSH Agent auto-repair: " + str(task)[:80]
     c = _git(["commit", "-m", msg])
+    ch = (_git(["rev-parse", "HEAD"]).get("out") or "").strip()
     return {"committed": bool(c.get("ok")), "changed": new,
             "commit": (c.get("out") or "").strip()[-200:],
+            "commit_hash": ch if c.get("ok") else "",
             "error": "" if c.get("ok") else c.get("err")}
 
 
@@ -630,6 +633,17 @@ def _auto_proposal(task_text="", title=""):
                            "status": "pending", "approver": "",
                            "events": list(res.get("events") or [])[-50:]})
     return {"ok": bool(res.get("ok")), "proposal": prop}
+
+
+def _proposal_commit_hash(prop):
+    import re as _re
+    r = ((prop or {}).get("result") or {}).get("repair") or {}
+    h = str(r.get("commit_hash") or "").strip()
+    if h:
+        return h
+    m = _re.search(r"\[[^\]]*?\s([0-9a-fA-F]{7,40})\]",
+                   str(r.get("commit") or ""))
+    return m.group(1) if m else ""
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -1132,6 +1146,26 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"ok": bool(res.get("ok")), "proposal": prop})
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
+        if p.startswith("/api/dsh/proposals/") and p.endswith("/rollback"):
+            pid = p.split("/")[4]
+            prop = _get_proposal(pid)
+            if not prop:
+                return self._json({"error": "proposal not found"}, 404)
+            if prop.get("status") != "applied":
+                return self._json({"error": "只有 applied 提案可回退"}, 400)
+            h = _proposal_commit_hash(prop)
+            if not h:
+                return self._json({"error": "提案缺少提交 hash，无法自动回退"}, 400)
+            r = _git(["revert", "--no-edit", h])
+            if not r.get("ok"):
+                return self._json({"error": "git revert 失败", "detail": r.get("err")}, 500)
+            prop["status"] = "rolled_back"
+            import time as _rwt
+            prop["rolled_back_ts"] = _rwt.time()
+            prop["rollback"] = {"ok": True, "revert": (r.get("out") or "")[-200:],
+                                "commit_hash": h}
+            _save_proposal(prop)
+            return self._json({"ok": True, "proposal": prop})
         if p.startswith("/api/dsh/proposals/") and p.endswith("/approve"):
             data = self._read_json()
             pid = p.split("/")[4]

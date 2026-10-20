@@ -250,9 +250,8 @@
       </div>
       <div class="searchbar tight">
         <button id="agent-refresh" class="ghost primary" data-tip="重新拉取任务 / 消费者结果 / 技术知识">刷新</button>
-        <button id="agent-new" class="ghost" data-tip="DSH Agent 审阅队列并自动提交一条用户任务">DSH 自动提交任务</button>
-        <button id="agent-run" class="ghost" data-tip="DSH Agent 调度消费者：处理未消费任务并生成结果">DSH 自动运行消费者</button>
         <button id="agent-auto" class="ghost primary" data-tip="DSH Agent 一次完成：提交用户任务 → 运行消费者 → 自审提案">DSH 自动闭环</button>
+        <button id="dsh-config-btn" class="ghost" data-tip="展开 DSH Agent 档位 / 工作权限配置">DSH Agent 配置</button>
         <button id="agent-know" class="ghost" data-tip="按查询刷新技术知识库（服务端 Search/Fetch，失败不阻断面板）">刷新技术知识</button>
         <span class="search-wrap">
           <input id="agent-kn-q" placeholder="知识查询（逗号分隔；留空 = 默认两条）" autocomplete="off">
@@ -262,10 +261,9 @@
       <div class="searchbar tight gh-bar">
         <button id="gh-open" class="ghost primary" data-tip="用 GitHub Desktop 打开当前仓库">GitHub Desktop</button>
         <button id="gh-commit" class="ghost" data-tip="提交当前工作区全部变更（显式确认）">提交当前变更…</button>
-        <button id="gh-auto" class="ghost" data-tip="DSH Agent 自审一条自反馈任务，先生成带时间/方案的修复提案；确认或自动代理后才改源码">DSH 自审提案</button>
         <span class="muted" id="gh-status">git 状态读取中…</span>
       </div>
-      <div class="searchbar tight dsh-agent-cfg">
+      <div class="searchbar tight dsh-agent-cfg hidden" id="dsh-config-box">
         <span class="muted">DSH Agent 配置</span>
         <select class="pill dsh-sel" id="dsh-effort" data-tip="DSH Agent 档位（推理强度）">
           <option value="">档位：标准（默认）</option>
