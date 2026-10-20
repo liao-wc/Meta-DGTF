@@ -3310,6 +3310,7 @@ function showAutoDsh(question, events, status) {
   dshCurrent = { question: question, session: 'auto-cycle', events: events || [],
     status: status || 'running' };
   closeSheet();
+  closeDrawer();
   renderDshView();
 }
 
