@@ -3651,20 +3651,40 @@ async function autoAgent(stage) {
   ], 'running');
   let result = null, errMsg = '';
   try {
-    await streamPost('/api/agent/auto/stream', {stage: stage,
-      model: (document.querySelector('#dsh-model') || {}).value || 'deepseek-flash'}, function (m) {
-      if (!dshCurrent) return;
-      if (m.type === 'stage') {
-        dshCurrent.events.push({type:'text', text:'── 阶段：' + m.stage + ' ──'});
-      } else if (m.type === 'event' && m.event) {
-        dshCurrent.events.push(m.event);
-      } else if (m.type === 'result') {
-        result = m.result;
-      } else if (m.type === 'error') {
-        errMsg = m.error || '流式执行失败';
+    const job = await api('/api/agent/auto/start', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({stage: stage,
+        model: (document.querySelector('#dsh-model') || {}).value || 'deepseek-flash'})});
+    let idx = 0, netErrs = 0;
+    while (!result) {
+      let jr = null;
+      try {
+        jr = await api('/api/agent/auto/job/' + encodeURIComponent(job.job_id) + '?since=' + idx);
+        netErrs = 0;
+      } catch (ne) {
+        netErrs++;
+        if (dshCurrent) {
+          dshCurrent.events.push({type:'text', text:'轮询网络中断，后台任务继续执行（重试 ' + netErrs + '/8）…'});
+          renderDshView();
+        }
+        if (netErrs > 8) throw ne;
+        await new Promise(res => setTimeout(res, 800));
+        continue;
       }
-      renderDshView();
-    });
+      (jr.events || []).forEach(function (m) {
+        if (!dshCurrent) return;
+        if (m.type === 'stage') {
+          dshCurrent.events.push({type:'text', text:'── 阶段：' + m.stage + ' ──'});
+        } else if (m.type === 'event' && m.event) {
+          dshCurrent.events.push(m.event);
+        }
+        renderDshView();
+      });
+      idx = jr.next || idx;
+      if (jr.status === 'done') { result = jr.result; break; }
+      if (jr.status === 'error') { errMsg = jr.error || '后台自动任务失败'; break; }
+      await new Promise(res => setTimeout(res, 700));
+    }
     if (!result) throw new Error(errMsg || '没有返回结果');
     const r = result;
     const ev = dshCurrent.events;

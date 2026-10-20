@@ -150,6 +150,8 @@ _DSH_ACTIVE = set()
 _DSH_CONV = {}
 _DSH_CONV_ACTIVE = set()
 _DSH_CONV_LOCK = None   # 延迟创建，避免顶层 import threading
+_AUTO_JOBS = {}
+_AUTO_JOBS_LOCK = None
 
 # ── 常驻 Agent 守护：app 启动时拉起 agent_daemon.py ─────────────────
 # 定位：只做「本地队列消费 + 修复提案」，不联网、不调 LLM、不碰源码；
@@ -1219,6 +1221,91 @@ def _conv_snapshot(cid):
     return conv
 
 
+def _auto_jobs_lock():
+    global _AUTO_JOBS_LOCK
+    import threading as _th
+    if _AUTO_JOBS_LOCK is None:
+        _AUTO_JOBS_LOCK = _th.Lock()
+    return _AUTO_JOBS_LOCK
+
+
+def _auto_run_stage(stage, data, write):
+    out = {"ok": True, "stage": stage}
+
+    def _stage(name):
+        write({"type": "stage", "stage": name})
+        return lambda ev: write({"type": "event", "stage": name, "event": ev})
+
+    model = str((data or {}).get("model") or "")
+    if stage == "all":
+        out.update(_auto_cycle_all(emit=_stage("all"), model=model))
+    else:
+        import sys as _sys
+        _sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+        if stage == "task":
+            out["task"] = _auto_submit_task(emit=_stage("task"), model=model)
+            out["ok"] = bool(out["task"].get("ok"))
+        if stage == "consumer":
+            _stage("consumer")
+            from dgtf_v2.agent_worker import run_once, write_proposals
+            out["consumer"] = {"run": run_once(), "proposals": write_proposals()}
+        if stage == "proposal":
+            out["proposal"] = _auto_proposal(
+                str((data or {}).get("task_text") or ""), "",
+                emit=_stage("proposal"), model=model)
+            out["ok"] = bool((out["proposal"] or {}).get("ok"))
+    return out
+
+
+def _auto_job_worker(jid, stage, data):
+    job = _AUTO_JOBS.get(jid) or {}
+
+    def write(msg):
+        with _auto_jobs_lock():
+            j = _AUTO_JOBS.get(jid)
+            if j is not None:
+                j.setdefault("events", []).append(msg)
+
+    try:
+        out = _auto_run_stage(stage, data, write)
+        with _auto_jobs_lock():
+            j = _AUTO_JOBS.get(jid) or job
+            j["status"] = "done"
+            j["result"] = out
+            _AUTO_JOBS[jid] = j
+    except Exception as exc:
+        with _auto_jobs_lock():
+            j = _AUTO_JOBS.get(jid) or job
+            j["status"] = "error"
+            j["error"] = str(exc)
+            _AUTO_JOBS[jid] = j
+
+
+def _auto_job_start(stage, data):
+    import threading as _th
+    import time as _t
+    jid = "auto-" + str(int(_t.time() * 1000))
+    with _auto_jobs_lock():
+        _AUTO_JOBS[jid] = {"id": jid, "stage": stage, "status": "running",
+                           "events": [], "result": None, "ts": _t.time()}
+        # 只保留最近 20 个任务，避免内存长期增长
+        for k in sorted(list(_AUTO_JOBS), key=lambda x: _AUTO_JOBS[x].get("ts") or 0)[:-20]:
+            _AUTO_JOBS.pop(k, None)
+    _th.Thread(target=_auto_job_worker, args=(jid, stage, data), daemon=True).start()
+    return jid
+
+
+def _auto_job_get(jid, since=0):
+    with _auto_jobs_lock():
+        j = _AUTO_JOBS.get(jid)
+        if not j:
+            return None
+        evs = list(j.get("events") or [])
+        return {"id": jid, "stage": j.get("stage"), "status": j.get("status"),
+                "events": evs[max(0, int(since)):], "next": len(evs),
+                "result": j.get("result"), "error": j.get("error")}
+
+
 class Handler(BaseHTTPRequestHandler):
     # ★ HTTP/1.1 = 默认**长连接**（HTTP/1.0 每请求一连接 ⇒ 关一次就进 TIME_WAIT）。
     #   前端 1.5s 轮询 + 验收台密集轮询会把 TIME_WAIT 堆到上千条、把端口耗光，
@@ -1387,6 +1474,10 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"items": [__import__("json").loads(x) for x in lines if x.strip()]})
             except Exception as exc:
                 return self._json({"items": [], "error": str(exc)})
+        m = re.match(r"^/api/agent/auto/job/([^/]+)$", p)
+        if m:
+            since = int((q.get("since") or ["0"])[0] or 0)
+            return self._json(_auto_job_get(m.group(1), since) or {"error": "job not found"})
         m = re.match(r"^/api/dsh/chat/([^/]+)$", p)
         if m:
             return self._json(_conv_snapshot(unquote(m.group(1))) or {})
@@ -2031,6 +2122,11 @@ class Handler(BaseHTTPRequestHandler):
                 except Exception:
                     pass
             return
+        if p == "/api/agent/auto/start":
+            data = self._read_json()
+            stage = str(data.get("stage") or "all")
+            jid = _auto_job_start(stage, data)
+            return self._json({"ok": True, "job_id": jid, "stage": stage})
         if p == "/api/agent/auto/stream":
             data = self._read_json()
             stage = str(data.get("stage") or "all")
