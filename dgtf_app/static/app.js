@@ -3335,12 +3335,21 @@ function agentRenderKnowledge() {
       : esc(title);
     const claim = String(k.claim || '');
     const flag = k.fetched ? '已抓正文' : '仅检索';
+    const pdfName = String(k.pdf_name || '');
+    const pdfOk = /^[A-Za-z0-9_.-]+\.pdf$/.test(pdfName);
+    const pdfLink = pdfOk
+      ? '<a class="chip" href="/api/agent/knowledge/pdf?name=' + encodeURIComponent(pdfName)
+        + '" target="_blank" rel="noopener noreferrer">PDF 原文</a>'
+      : (k.pdf_url ? '<a class="chip" href="' + esc(String(k.pdf_url)) + '" target="_blank" rel="noopener noreferrer">PDF 链接</a>' : '');
+    const zh = String(k.zh_note || '');
     return '<div class="agent-item">'
       + '<div class="agent-row"><span class="chip">' + esc(flag) + '</span>'
+      + (pdfLink ? pdfLink : '')
       + '<span class="agent-t">' + t + '</span></div>'
       + '<div class="agent-meta"><span>查询 ' + esc(String(k.query || '—'))
       + '</span><span>' + esc(agentIsoShort(k.run)) + '</span></div>'
       + (claim ? '<div class="agent-q">' + esc(claim) + '</div>' : '')
+      + (zh ? '<div class="agent-q"><b>中文注释</b><br>' + esc(zh) + '</div>' : '')
       + agentDetailHtml(k.content)
       + '</div>';
   });

@@ -159,6 +159,101 @@ def refresh_knowledge(queries, client, run_id: str = "",
 __all__ = ["build_tasks", "enqueue", "append_task", "read_tasks", "read_knowledge", "knowledge_stats", "refresh_knowledge", "refresh_knowledge_http",
            "DEFAULT_QUEUE", "DEFAULT_KNOWLEDGE"]
 
+def _paper_pdf_url(url: str) -> str:
+    """把论文页/摘要页解析成可下载 PDF；非论文返回空。"""
+    u = str(url or "").strip()
+    if not u:
+        return ""
+    low = u.lower()
+    if "arxiv.org/abs/" in low:
+        return "https://arxiv.org/pdf/" + u.split("/abs/", 1)[1].split("?")[0].strip("/") + ".pdf"
+    if "arxiv.org/pdf/" in low:
+        return u.split("?")[0]
+    if "openreview.net/forum" in low and "id=" in low:
+        rid = u.split("id=", 1)[1].split("&")[0]
+        return "https://openreview.net/pdf?id=" + rid
+    if low.endswith(".pdf") or ".pdf?" in low:
+        return u
+    if "semanticscholar.org/paper/" in low:
+        try:
+            import urllib.request as _ur
+            import re as _re2
+            tail = u.split("/paper/", 1)[1].split("#")[0].rstrip("/")
+            parts = [x for x in tail.split("/") if x]
+            pid = next((x for x in parts if _re2.fullmatch(r"[0-9a-f]{32,}", x)),
+                       (parts[0] if parts else ""))
+            api = ("https://api.semanticscholar.org/graph/v1/paper/"
+                   + pid + "?fields=openAccessPdf,externalIds,title")
+            req = _ur.Request(api, headers={"User-Agent": "Mozilla/5.0"})
+            with _ur.urlopen(req, timeout=25) as r:
+                d = json.loads(r.read().decode("utf-8"))
+            p = (d.get("openAccessPdf") or {}).get("url") or ""
+            if p:
+                return p
+            ax = ((d.get("externalIds") or {}).get("ArXiv") or "")
+            if ax:
+                return "https://arxiv.org/pdf/" + str(ax) + ".pdf"
+        except Exception:
+            return ""
+    return ""
+
+
+def _download_paper_pdf(pdf_url: str) -> dict:
+    """下载论文 PDF 到 dgtf_memory/agent_knowledge_pdfs；返回路径/文件名。"""
+    import hashlib as _h
+    import os as _os
+    import urllib.request as _ur
+    if not pdf_url:
+        return {}
+    root = Path(__file__).resolve().parent.parent
+    d = root / "dgtf_memory" / "agent_knowledge_pdfs"
+    d.mkdir(parents=True, exist_ok=True)
+    name = _h.sha1(pdf_url.encode("utf-8")).hexdigest()[:16] + ".pdf"
+    p = d / name
+    try:
+        if not p.exists() or p.stat().st_size < 1024:
+            req = _ur.Request(pdf_url, headers={"User-Agent": "Mozilla/5.0"})
+            with _ur.urlopen(req, timeout=60) as r:
+                data = r.read(25 * 1024 * 1024)
+            if not data.startswith(b"%PDF"):
+                return {}
+            p.write_bytes(data)
+        return {"pdf_path": str(p), "pdf_name": name, "pdf_url": pdf_url}
+    except Exception:
+        return {}
+
+
+def _zh_annotation(title: str, text: str, url: str, key: str) -> str:
+    """用 DeepSeek 给论文/技术正文生成中文注释（保留原文，另附注释）。"""
+    import urllib.request as _ur
+    if not key:
+        return ""
+    body = json.dumps({
+        "model": "deepseek-chat",
+        "messages": [
+            {"role": "system", "content": "你是元DGTF技术知识助手。只输出中文注释，保留论文/技术专有名词原文。"},
+            {"role": "user", "content": (
+                "阅读以下技术资料，输出中文注释（≤350字）：\n"
+                "1. 核心贡献/结论；\n2. 对多智能体、自进化、知识管理、检索增强的可迁移点；\n"
+                "3. 风险或局限。\n\n"
+                "标题：" + str(title or "")[:200] + "\nURL：" + str(url or "")[:300] +
+                "\n正文：" + str(text or "")[:5000])},
+        ],
+        "temperature": 0.2,
+        "max_tokens": 700,
+    }).encode("utf-8")
+    req = _ur.Request("https://api.deepseek.com/chat/completions",
+                      data=body, headers={
+                          "Content-Type": "application/json",
+                          "Authorization": "Bearer " + key})
+    try:
+        with _ur.urlopen(req, timeout=90) as r:
+            d = json.loads(r.read().decode("utf-8"))
+        return str((((d.get("choices") or [{}])[0].get("message") or {}).get("content") or "")).strip()
+    except Exception:
+        return ""
+
+
 def refresh_knowledge_http(queries, path: str = DEFAULT_KNOWLEDGE) -> list:
     """不依赖引擎配置：直接调 DeepSeek Search/Fetch，写技术知识库。"""
     import os as _os
@@ -196,10 +291,15 @@ def refresh_knowledge_http(queries, path: str = DEFAULT_KNOWLEDGE) -> list:
                     title = title or str(pg.get("title") or "")
                 except Exception:
                     pass
-            out.append({"query": str(q)[:200], "title": title, "url": url,
-                        "claim": str(it.get("summary") or it.get("content")
-                                     or "")[:400],
-                        "content": content, "fetched": bool(content)})
+            pdf_url = str(it.get("pdf_url") or it.get("pdfUrl") or "") or _paper_pdf_url(url)
+            pdf = _download_paper_pdf(pdf_url) if pdf_url else {}
+            claim = str(it.get("summary") or it.get("content") or "")[:400]
+            zh_note = _zh_annotation(title, content or claim, url, key)
+            item = {"query": str(q)[:200], "title": title, "url": url,
+                    "claim": claim, "content": content, "fetched": bool(content),
+                    "pdf_url": pdf_url, "zh_note": zh_note}
+            item.update(pdf)
+            out.append(item)
     if out:
         p = Path(path); p.parent.mkdir(parents=True, exist_ok=True)
         with p.open("a", encoding="utf-8") as f:

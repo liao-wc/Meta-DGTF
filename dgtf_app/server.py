@@ -1315,6 +1315,24 @@ class Handler(BaseHTTPRequestHandler):
                 "max_concurrent": runner.MAX_CONCURRENT,
             })
 
+        if p == "/api/agent/knowledge/pdf":
+            name = Path(str((q.get("name") or [""])[0])).name
+            pdf = Path(__file__).resolve().parent.parent / "dgtf_memory" / "agent_knowledge_pdfs" / name
+            if not name.lower().endswith(".pdf") or not pdf.is_file():
+                return self._json({"error": "pdf not found"}, 404)
+            try:
+                data = pdf.read_bytes()
+                self.send_response(200)
+                self.send_header("Content-Type", "application/pdf")
+                self.send_header("Content-Length", str(len(data)))
+                self.send_header("Content-Disposition", "inline; filename=\"" + name + "\"")
+                self.send_header("Connection", "close")
+                self.end_headers()
+                self.wfile.write(data)
+                self.close_connection = True
+                return
+            except Exception as exc:
+                return self._json({"error": str(exc)}, 500)
         if p == "/api/agent/knowledge":
             try:
                 path = "dgtf_memory/agent_knowledge.jsonl"
@@ -1690,6 +1708,10 @@ class Handler(BaseHTTPRequestHandler):
                             pf.write("- [" + str(it.get("title") or it.get("query") or "") + "]("
                                      + str(it.get("url") or "") + ") — "
                                      + str(it.get("claim") or "")[:200] + "\n")
+                            if it.get("pdf_url"):
+                                pf.write("  - PDF 原文：" + str(it.get("pdf_url")) + "\n")
+                            if it.get("zh_note"):
+                                pf.write("  - 中文注释：" + str(it.get("zh_note")) + "\n")
                     patch_path = str(pp)
                 except Exception:
                     pass
