@@ -10,6 +10,7 @@ let dshCurrent = null;
 let dshAttachTaskId = null;
 let taskDsh = {};
 let agentTaskMode = false;
+let logFollow = true;   // 日志/对话是否跟随最新内容
 let dgtfSessionId = 'dgtf-' + Date.now().toString(36);
 
 async function streamPost(path, payload, onMsg) {
@@ -1022,14 +1023,12 @@ function renderTasks() {
        ⇒ 规则：**运行中**跟到底（看最新进度），**已完成**的停在开头（看结论）；
           已经贴底时才继续跟随，用户往上翻就不再打断他。 */
     const had = !!el.dataset.html && el.dataset.html !== PLACEHOLDER;
-    const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 24;
-    const stick = had ? atBottom : running;
+    const fromBottom = el.scrollHeight - el.scrollTop;
+    const stick = logFollow || !had;
     el.innerHTML = want;
     el.dataset.html = want;
     if (stick) el.scrollTop = el.scrollHeight;
-    if (Object.keys(taskDsh).some(function (k) { return taskDsh[k] && taskDsh[k].status === 'running'; })) {
-      el.scrollTop = el.scrollHeight;
-    }
+    else el.scrollTop = Math.max(0, el.scrollHeight - fromBottom);
     updateRlBar();
   }
 }
@@ -1350,6 +1349,7 @@ function dshEventHtml(ev) {
   return '';
 }
 function scrollDshBottom() {
+  if (!logFollow) return;
   const el = document.querySelector('#runlog-body');
   if (!el) return;
   requestAnimationFrame(function () { el.scrollTop = el.scrollHeight; });
@@ -1379,8 +1379,10 @@ function renderDshView() {
   evs.forEach(e => { inner += dshEventHtml(e); });
   if (c.status === 'running') inner += '<div class="rl-summary">Agent 运行中…</div>';
   inner += '</div>';
+  const fromBottom = body.scrollHeight - body.scrollTop;
   body.innerHTML = inner;
-  scrollDshBottom();
+  if (logFollow) scrollDshBottom();
+  else body.scrollTop = Math.max(0, body.scrollHeight - fromBottom);
 } 
 async function openDshArtifact(id) {
   const r = await api('/api/dsh/artifacts/' + encodeURIComponent(id));
@@ -1429,6 +1431,7 @@ function applyDshResult(obj, r) {
 }
 
 async function startDshRun(question) {
+  logFollow = true;
   const attach = dshMode ? (dshAttachTaskId || currentTaskId()) : null;
   let target = null;
   if (attach) {
@@ -1508,6 +1511,7 @@ async function submitAgentTaskFromComposer(question) {
 }
 
 async function startRun() {
+  logFollow = true;
   const question = $('#question').value.trim();
   if (!question) { alert('请先输入问题'); return; }
   if (dshMode) { const q = $('#question'); if (q) { q.value=''; q.style.height=''; } return startDshRun(question); }
@@ -2635,6 +2639,7 @@ async function openChat(c) {
       try { taskData[c.id] = await api('/api/tasks/' + encodeURIComponent(c.id)); } catch (_) {}
     }
     chatMode = 'live'; archivedTask = null; activeChat = c.id; followLatest = false;
+    logFollow = true;
     lanes.tid = null; lanes.text = {}; lanes.stats = {}; lanes.meta = {};
   } else {
     let raw = '';
@@ -2664,6 +2669,7 @@ function newChat() {
   /* ★ 新会话统一回到首屏：清空**当前视图**，但不动历史任务/DSH 会话数据。
      元DGTF 与 DSH 的原对话分别保留在任务历史 / DSH 会话库里，可随时回溯。 */
   chatMode = 'live'; activeChat = null; followLatest = false;
+  logFollow = true;
   archivedTask = null;
   archiveLanes = { text: {}, stats: {}, meta: {} };
   lanes.tid = null; lanes.text = {}; lanes.stats = {}; lanes.meta = {};
@@ -3408,6 +3414,7 @@ async function submitAgentTask() {
 }
 
 function showAcceptanceInDgtf(prop) {
+  logFollow = true;
   const acc = prop.acceptance || {};
   const checks = acc.checks || [];
   const lines = [];
@@ -3433,6 +3440,7 @@ function showAcceptanceInDgtf(prop) {
 }
 
 function showAutoDsh(question, events, status) {
+  logFollow = true;
   toggleDshMode(true);
   dshAttachTaskId = null;
   dshCurrent = { question: question, session: 'auto-cycle', events: events || [],
@@ -3746,6 +3754,16 @@ async function commitGithub() {
 }
 function init() {
   try { taskDsh = JSON.parse(localStorage.getItem('dgtf_task_dsh') || '{}') || {}; } catch (_) { taskDsh = {}; }
+  const _logBody = document.querySelector('#runlog-body');
+  if (_logBody) {
+    let _logScrollTimer = null;
+    _logBody.addEventListener('scroll', function () {
+      const near = _logBody.scrollTop + _logBody.clientHeight >= _logBody.scrollHeight - 24;
+      logFollow = near;
+      if (_logScrollTimer) clearTimeout(_logScrollTimer);
+      _logScrollTimer = setTimeout(function () { if (near) logFollow = true; }, 500);
+    }, { passive: true });
+  }
   buildAdv();
   pollLanes();
   setInterval(pollLanes, 1500);
