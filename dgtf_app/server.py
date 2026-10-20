@@ -1661,9 +1661,9 @@ class Handler(BaseHTTPRequestHandler):
         if p == "/api/agent/knowledge":
             data = self._read_json()
             default_qs = [
-                "DeepSeek API 最新更新 模型能力 2026",
-                "AI Agent 自进化 架构 前沿 2026",
-                "多智能体 知识管理 检索增强 前沿 2026",
+                "DeepSeek 官方 最新发布 技术博客 模型 2026",
+                "arxiv LLM multi-agent self-evolution PDF 2026",
+                "AI Agent 技术论坛 社区 最新 讨论 2026",
             ]
             raw_qs = data.get("queries")
             qs = [str(x).strip() for x in raw_qs if str(x).strip()] if isinstance(raw_qs, list) else []
@@ -1687,27 +1687,9 @@ class Handler(BaseHTTPRequestHandler):
                 _sys.path.insert(0, str(_proj))
                 from dgtf_v2.agent_bridge import refresh_knowledge_http, dedupe_knowledge
                 _dd = dedupe_knowledge()
-                _kr = refresh_knowledge_http(qs[:4], return_stats=True)
-                got = _kr.get("items") or []
+                _kr = refresh_knowledge_http(qs[:4], return_stats=True, limit=limit)
+                picked = (_kr.get("items") or [])[:limit]
                 _skipped = int(_kr.get("skipped_duplicates") or 0) + int(_dd.get("removed") or 0)
-                picked, seen = [], set()
-                for q in qs[:4]:
-                    for it in got:
-                        if str(it.get("query") or "") != q:
-                            continue
-                        u = str(it.get("url") or "")
-                        if u and u not in seen:
-                            seen.add(u)
-                            picked.append(it)
-                            break
-                for it in got:
-                    u = str(it.get("url") or "")
-                    if len(picked) >= limit:
-                        break
-                    if u and u not in seen:
-                        seen.add(u)
-                        picked.append(it)
-                picked = picked[:limit]
                 patch_path = ""
                 try:
                     pdir = Path(__file__).resolve().parent.parent / "dgtf_memory"
@@ -1719,6 +1701,15 @@ class Handler(BaseHTTPRequestHandler):
                             pf.write("- [" + str(it.get("title") or it.get("query") or "") + "]("
                                      + str(it.get("url") or "") + ") — "
                                      + str(it.get("claim") or "")[:200] + "\n")
+                            _meta = []
+                            if it.get("source_type"):
+                                _meta.append("来源=" + str(it.get("source_type")))
+                            if it.get("published"):
+                                _meta.append("发布=" + str(it.get("published"))[:20])
+                            if it.get("confidence"):
+                                _meta.append("置信=" + str(it.get("confidence")))
+                            if _meta:
+                                pf.write("  - " + "；".join(_meta) + "\n")
                             if it.get("pdf_url"):
                                 pf.write("  - PDF 原文：" + str(it.get("pdf_url")) + "\n")
                             if it.get("zh_note"):

@@ -1,0 +1,18 @@
+{
+ "id": "prop-1792498929209-4f48c1",
+ "ts": 1792498929.2095518,
+ "task": {
+  "kind": "eml_candidate",
+  "severity": "med",
+  "title": "验证/应用 EML 候选：thinking_hint",
+  "detail": "{\"kind\": \"probe\", \"cond\": {\"issue\": \"both_tension_high\"}, \"action\": {\"key\": \"thinking_hint\", \"stages\": [\"ing\", \"adjudicate_sub_tristate\"], \"value\": \"enabled\"}, \"readings\": {\"before\": {\"both_threads\": 4}, \"after\": {\"tension\": \"期望下降\"}}, \"why\": \"both 张力多 ⇒ 加深对撞/裁决思考\", \"confidence\": 0.399, \"evidence\": [\"20261020_134230\"], \"source\": \"engine/both-all\"}",
+  "source_run": "20261020_135317",
+  "id": "4f48c1b90872"
+ },
+ "task_id": "4f48c1b90872",
+ "plan": "四条 thinking_hint 候选（both_tension、self_noisy、layer0_self_noise、layer1_adjudication_noise）。改为按 stage 白名单定向加深，先影子模式只记录不生效，回放对比 tension/self_flags；逐条灰度启用并设 token 上限，避免与 web_hint 叠加膨胀；置信 0.40/0.27/0.22，未改善即拒绝。",
+ "status": "pending",
+ "approver": "",
+ "session_id": "",
+ "batch": true
+}

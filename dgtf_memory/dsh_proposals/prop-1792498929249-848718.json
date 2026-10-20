@@ -1,0 +1,18 @@
+{
+ "id": "prop-1792498929249-848718",
+ "ts": 1792498929.2494068,
+ "task": {
+  "kind": "quality_flag",
+  "severity": "low",
+  "title": "质量线索：probe_link_dangling(3)",
+  "detail": "probe_link_dangling(3)",
+  "source_run": "20261020_145244",
+  "id": "84871886623d"
+ },
+ "task_id": "84871886623d",
+ "plan": "与 50346c43b03e 同一 id 归一化修复，针对 n=3 回归；修复后确认计数归零且真实断链仍被报告。",
+ "status": "pending",
+ "approver": "",
+ "session_id": "",
+ "batch": true
+}

@@ -1,0 +1,45 @@
+{"task_id": "94b3aa6d4624", "kind": "eml_candidate", "status": "triaged", "action": "进入候选验证：检查同向证据数、边界与回滚", "title": "验证/应用 EML 候选：rounds_delta", "source_run": "20261020_135317"}
+{"task_id": "4f48c1b90872", "kind": "eml_candidate", "status": "triaged", "action": "进入候选验证：检查同向证据数、边界与回滚", "title": "验证/应用 EML 候选：thinking_hint", "source_run": "20261020_135317"}
+{"task_id": "92f2fc613a41", "kind": "eml_candidate", "status": "triaged", "action": "进入候选验证：检查同向证据数、边界与回滚", "title": "验证/应用 EML 候选：carve_first", "source_run": "20261020_135317"}
+{"task_id": "4f48c1b90872", "kind": "eml_candidate", "status": "triaged", "action": "进入候选验证：检查同向证据数、边界与回滚", "title": "验证/应用 EML 候选：thinking_hint", "source_run": "20261020_135317"}
+{"task_id": "94b3aa6d4624", "kind": "eml_candidate", "status": "triaged", "action": "进入候选验证：检查同向证据数、边界与回滚", "title": "验证/应用 EML 候选：rounds_delta", "source_run": "20261020_135317"}
+{"task_id": "92f2fc613a41", "kind": "eml_candidate", "status": "triaged", "action": "进入候选验证：检查同向证据数、边界与回滚", "title": "验证/应用 EML 候选：carve_first", "source_run": "20261020_135317"}
+{"task_id": "92f2fc613a41", "kind": "eml_candidate", "status": "triaged", "action": "进入候选验证：检查同向证据数、边界与回滚", "title": "验证/应用 EML 候选：carve_first", "source_run": "20261020_135317"}
+{"task_id": "4f48c1b90872", "kind": "eml_candidate", "status": "triaged", "action": "进入候选验证：检查同向证据数、边界与回滚", "title": "验证/应用 EML 候选：thinking_hint", "source_run": "20261020_135317"}
+{"task_id": "4f48c1b90872", "kind": "eml_candidate", "status": "triaged", "action": "进入候选验证：检查同向证据数、边界与回滚", "title": "验证/应用 EML 候选：thinking_hint", "source_run": "20261020_135317"}
+{"task_id": "1135dd11cd09", "kind": "eml_candidate", "status": "triaged", "action": "进入候选验证：检查同向证据数、边界与回滚", "title": "验证/应用 EML 候选：action_hint", "source_run": "20261020_135317"}
+{"task_id": "a17c3c28a05d", "kind": "quality_flag", "status": "triaged", "action": "生成诊断报告，交人工/下一跑观察", "title": "质量线索：duty_short", "source_run": "20261020_135317"}
+{"task_id": "50346c43b03e", "kind": "quality_flag", "status": "triaged", "action": "生成诊断报告，交人工/下一跑观察", "title": "质量线索：probe_link_dangling(2)", "source_run": "20261020_135317"}
+{"task_id": "d30bf5383297", "kind": "eml_candidate", "status": "triaged", "action": "进入候选验证：检查同向证据数、边界与回滚", "title": "验证/应用 EML 候选：web_hint", "source_run": ""}
+{"task_id": "c440fb190a44", "kind": "eml_candidate", "status": "triaged", "action": "进入候选验证：检查同向证据数、边界与回滚", "title": "验证/应用 EML 候选：config_hint", "source_run": ""}
+{"task_id": "566e00a3136b", "kind": "process_gap", "status": "triaged", "action": "进入复现：检查该层轮数、事实命中、依赖是否断", "title": "层 1 过程标准未达标", "source_run": ""}
+{"task_id": "b049d4a5b566", "kind": "process_gap", "status": "triaged", "action": "进入复现：检查该层轮数、事实命中、依赖是否断", "title": "层 all 过程标准未达标", "source_run": ""}
+{"task_id": "d2f46d091b80", "kind": "quality_flag", "status": "triaged", "action": "生成诊断报告，交人工/下一跑观察", "title": "质量线索：candidates_backfilled(sc:5)", "source_run": ""}
+{"task_id": "ed0929475df3", "kind": "quality_flag", "status": "triaged", "action": "生成诊断报告，交人工/下一跑观察", "title": "质量线索：expand_imbalanced", "source_run": ""}
+{"task_id": "050a33e7211f", "kind": "quality_flag", "status": "triaged", "action": "生成诊断报告，交人工/下一跑观察", "title": "质量线索：no_amp_candidates", "source_run": ""}
+{"task_id": "60d4053c9b0d", "kind": "quality_flag", "status": "triaged", "action": "生成诊断报告，交人工/下一跑观察", "title": "质量线索：position_all_same_structural", "source_run": ""}
+{"task_id": "26162523b4d0", "kind": "quality_flag", "status": "triaged", "action": "生成诊断报告，交人工/下一跑观察", "title": "质量线索：probe_link_dangling(1)", "source_run": ""}
+{"task_id": "45d0343d0672", "kind": "quality_flag", "status": "triaged", "action": "生成诊断报告，交人工/下一跑观察", "title": "质量线索：too_many_amp_candidates(100%)", "source_run": ""}
+{"task_id": "2ccc488faa9d", "kind": "quality_flag", "status": "triaged", "action": "生成诊断报告，交人工/下一跑观察", "title": "质量线索：unsaid_overused(4)", "source_run": ""}
+{"task_id": "e97115b223a3", "kind": "quality_flag", "status": "triaged", "action": "生成诊断报告，交人工/下一跑观察", "title": "质量线索：all_closure_unavailable", "source_run": ""}
+{"task_id": "25c91baef5ec", "kind": "api_gap", "status": "triaged", "action": "检查 API 配置/触发条件，不直接改源码", "title": "Tool Calls 未触发，排查预检/配置", "source_run": ""}
+{"task_id": "3526fa1744e9", "kind": "quality_flag", "status": "triaged", "action": "生成诊断报告，交人工/下一跑观察", "title": "质量线索：ing_rephrased_direct(100%)", "source_run": ""}
+{"task_id": "50ce99bf072b", "kind": "quality_flag", "status": "triaged", "action": "生成诊断报告，交人工/下一跑观察", "title": "质量线索：no_amp_at_all", "source_run": ""}
+{"task_id": "1a809523846f", "kind": "quality_flag", "status": "triaged", "action": "生成诊断报告，交人工/下一跑观察", "title": "质量线索：all_closure_gaps", "source_run": ""}
+{"task_id": "a8e87267b942", "kind": "process_gap", "status": "triaged", "action": "进入复现：检查该层轮数、事实命中、依赖是否断", "title": "层 both 过程标准未达标", "source_run": ""}
+{"task_id": "1e992709e31e", "kind": "quality_flag", "status": "triaged", "action": "生成诊断报告，交人工/下一跑观察", "title": "质量线索：ing_rephrased_direct(50%)", "source_run": ""}
+{"task_id": "445c639646f8", "kind": "quality_flag", "status": "triaged", "action": "生成诊断报告，交人工/下一跑观察", "title": "质量线索：core_audit_gaps", "source_run": "E2E_1792476024"}
+{"task_id": "9597cde03f2c", "kind": "process_gap", "status": "triaged", "action": "进入复现：检查该层轮数、事实命中、依赖是否断", "title": "层 0 过程标准未达标", "source_run": "RS4"}
+{"task_id": "3b97b8164147", "kind": "user_task", "status": "retriaged", "action": "用户任务：待 DSH Agent 开发/映射落地", "title": "app ????", "source_run": "app_user"}
+{"task_id": "2b53a4418035", "kind": "user_task", "status": "retriaged", "action": "用户任务：待 DSH Agent 开发/映射落地", "title": "daemon live probe", "source_run": null}
+{"task_id": "d81190c3ce7f", "kind": "quality_flag", "status": "triaged", "action": "生成诊断报告，交人工/下一跑观察", "title": "质量线索：polarity_all_same_structural(1)", "source_run": "20261020_143748"}
+{"task_id": "03e3cf721777", "kind": "quality_flag", "status": "triaged", "action": "生成诊断报告，交人工/下一跑观察", "title": "质量线索：unsaid_overused(5)", "source_run": "20261020_143748"}
+{"task_id": "ec379fc0b563", "kind": "quality_flag", "status": "triaged", "action": "生成诊断报告，交人工/下一跑观察", "title": "质量线索：polarity_all_same_structural(0)", "source_run": "20261020_145244"}
+{"task_id": "84871886623d", "kind": "quality_flag", "status": "triaged", "action": "生成诊断报告，交人工/下一跑观察", "title": "质量线索：probe_link_dangling(3)", "source_run": "20261020_145244"}
+{"task_id": "af4cf48a33f0", "kind": "quality_flag", "status": "triaged", "action": "生成诊断报告，交人工/下一跑观察", "title": "质量线索：probe_no_target_covered", "source_run": "20261020_145244"}
+{"task_id": "414c84091a91", "kind": "quality_flag", "status": "triaged", "action": "生成诊断报告，交人工/下一跑观察", "title": "质量线索：unsaid_overused(7)", "source_run": "20261020_153113"}
+{"task_id": "8e84dfd76bc8", "kind": "user_task", "status": "triaged", "action": "用户任务：待 DSH Agent 开发/映射落地", "title": "根据生成的提案执行任务", "source_run": "app_user"}
+{"task_id": "e6073923cb88", "kind": "user_task", "status": "triaged", "action": "用户任务：待 DSH Agent 开发/映射落地", "title": "修正事实摘要把“更新日”写成“发布日期”的越权断言", "source_run": "dsh_auto"}
+{"task_id": "940c8d165eed", "kind": "user_task", "status": "triaged", "action": "用户任务：待 DSH Agent 开发/映射落地", "title": "给 Agent 队列加来源可信度闸：夹具跑与空标题任务不得入队", "source_run": "dsh_auto"}
+{"task_id": "024a9eadf0dc", "kind": "user_task", "status": "triaged", "action": "用户任务：待 DSH Agent 开发/映射落地", "title": "修正 probe_link_dangling 误报，并让 standard_ok 反映线索闭合", "source_run": "dsh_auto"}
+{"task_id": "2cbe2168e82e", "kind": "user_task", "status": "triaged", "action": "用户任务：待 DSH Agent 开发/映射落地", "title": "禁止输入自检在无证据时断言型号“不存在”，并与事实卡对账", "source_run": "dsh_auto"}

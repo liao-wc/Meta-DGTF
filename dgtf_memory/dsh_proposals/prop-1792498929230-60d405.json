@@ -1,0 +1,18 @@
+{
+ "id": "prop-1792498929230-60d405",
+ "ts": 1792498929.2306502,
+ "task": {
+  "kind": "quality_flag",
+  "severity": "low",
+  "title": "质量线索：position_all_same_structural",
+  "detail": "position_all_same_structural",
+  "source_run": "",
+  "id": "60d4053c9b0d"
+ },
+ "task_id": "60d4053c9b0d",
+ "plan": "立场同构多为模板单一。加结构多样性检查（立场/论据类型），命中时触发一次重采样或提示，仅记录与重试，不改判定逻辑；回归确认同构计数下降。",
+ "status": "pending",
+ "approver": "",
+ "session_id": "",
+ "batch": true
+}

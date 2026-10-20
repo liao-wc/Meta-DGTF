@@ -1,0 +1,33 @@
+{
+  "runs": 20,
+  "routes": {
+    "0,1,both": 4,
+    "0,1": 6,
+    "0,1,both,all": 6,
+    "1,both,all": 1,
+    "0": 3
+  },
+  "quality_mean": 0.5055,
+  "priors_n": 16,
+  "decisions": [
+    "0:r1",
+    "1:r1",
+    "1:r1",
+    "0:r2",
+    "both:r1",
+    "both:r1",
+    "all:r1"
+  ],
+  "stop": "四层均已完成",
+  "closure": true,
+  "memory": {
+    "events": 113,
+    "by_plane": {
+      "procedural": 61,
+      "semantic": 52
+    },
+    "beliefs": 4,
+    "active_beliefs": 4,
+    "clock": 113.0
+  }
+}

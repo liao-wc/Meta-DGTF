@@ -18,6 +18,14 @@
 ★ 停滞看门狗：每题独立进程，**600 秒日志无增长** ⇒ 判停滞、退出码 9，
   跑批脚本**跳过该题继续下一题**（本轮 API 侧不稳，不能一题卡死整批）。
 """
+
+# ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
+import sys as _sys_utf8
+for _s_utf8 in (_sys_utf8.stdout, _sys_utf8.stderr):
+    try:
+        _s_utf8.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 import json
 import subprocess
 import sys

@@ -5,6 +5,15 @@
   写出来的日志会「只有前半段」⇒ 把「没跑完」读成「跑到这儿失败了」。
 用法：python _run_gate.py <日志名> -- <命令...>
 """
+
+# ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
+import sys as _sys_utf8
+for _s_utf8 in (_sys_utf8.stdout, _sys_utf8.stderr):
+    try:
+        _s_utf8.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+import os
 import pathlib
 import subprocess
 import sys
@@ -16,7 +25,10 @@ _i = argv.index("--")
 logname = argv[:_i][0]
 cmd = argv[_i + 1:]
 
-r = subprocess.run(cmd, cwd=str(HERE), capture_output=True)
+_env = dict(os.environ)
+_env.setdefault("PYTHONUTF8", "1")
+_env.setdefault("PYTHONIOENCODING", "utf-8")
+r = subprocess.run(cmd, cwd=str(HERE), capture_output=True, env=_env)
 txt = (r.stdout or b"") + (r.stderr or b"")
 p = HERE / logname
 p.write_bytes(txt)

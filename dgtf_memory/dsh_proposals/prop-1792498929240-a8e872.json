@@ -1,0 +1,18 @@
+{
+ "id": "prop-1792498929240-a8e872",
+ "ts": 1792498929.240309,
+ "task": {
+  "kind": "process_gap",
+  "severity": "high",
+  "title": "层 both 过程标准未达标",
+  "detail": "{\"rounds\": 0, \"product_chars\": 0, \"product\": \"\", \"standard_ok\": false, \"fact_ok\": true, \"citations\": 0, \"decidability\": null, \"decidability_bad\": 0, \"external_refs\": 0, \"external_reference\": 0, \"evidence_ids\": [], \"deps\": [\"0\", \"1\"], \"inputs\": [\"0\", \"1\"]}",
+  "source_run": "",
+  "id": "a8e87267b942"
+ },
+ "task_id": "a8e87267b942",
+ "plan": "同 b049d4a5b566：先判夹具/真跑；both 层 rounds=0 多为聚合短路，检查 deps 0/1 产物为空时 both 是否被跳过，并补空产物显式告警。",
+ "status": "pending",
+ "approver": "",
+ "session_id": "",
+ "batch": true
+}

@@ -1,0 +1,18 @@
+{
+ "id": "prop-1792498929208-94b3aa",
+ "ts": 1792498929.2086062,
+ "task": {
+  "kind": "eml_candidate",
+  "severity": "med",
+  "title": "验证/应用 EML 候选：rounds_delta",
+  "detail": "{\"kind\": \"schedule\", \"cond\": {\"issue\": \"both_unresolved\"}, \"action\": {\"key\": \"rounds_delta\", \"layer\": \"both\", \"delta\": 1}, \"readings\": {\"before\": {\"both_threads\": 4, \"unstable\": 3}, \"after\": {\"both_threads\": \"期望收敛\"}}, \"why\": \"both 仍有未裁定张力/未稳定悬置\", \"confidence\": 0.4586, \"evidence\": [\"20261020_134230\"], \"source\": \"engine/both-all\"}",
+  "source_run": "20261020_135317",
+  "id": "94b3aa6d4624"
+ },
+ "task_id": "94b3aa6d4624",
+ "plan": "同一 task_id 含两条 rounds_delta（both+1、layer1+1）。先回放 evidence 20261020_134230 建立基线，仅对命中条件加 1 轮并受总轮次上限约束，不叠加其他调度；通过条件为 both_threads 收敛、duty_S 上升，否则回退并标记低置信（0.4586/0.2405）。",
+ "status": "pending",
+ "approver": "",
+ "session_id": "",
+ "batch": true
+}

@@ -1,0 +1,5 @@
+2026-10-20T20:59:43 [INFO] start queue=C:\Users\18432\Desktop\元DGTF-多模并行架构\.dsh_tmp\fastgate_temp\agent_daemon_5b28fbbef62941308258e5888bc21aca\q.jsonl interval=0.0 max_runs=3 once=False stop_file=C:\Users\18432\Desktop\元DGTF-多模并行架构\.dsh_tmp\fastgate_temp\agent_daemon_5b28fbbef62941308258e5888bc21aca\stop
+2026-10-20T20:59:43 [INFO] cycle cycle=1 triaged=1 proposals=1 elapsed_s=0.004
+2026-10-20T20:59:43 [INFO] cycle cycle=2 triaged=0 proposals=1 elapsed_s=0.013
+2026-10-20T20:59:43 [INFO] cycle cycle=3 triaged=0 proposals=1 elapsed_s=0.003
+2026-10-20T20:59:43 [INFO] stop reason=max_runs runs=3

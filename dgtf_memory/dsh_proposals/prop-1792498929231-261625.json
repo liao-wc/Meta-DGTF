@@ -1,0 +1,18 @@
+{
+ "id": "prop-1792498929231-261625",
+ "ts": 1792498929.231725,
+ "task": {
+  "kind": "quality_flag",
+  "severity": "low",
+  "title": "质量线索：probe_link_dangling(1)",
+  "detail": "probe_link_dangling(1)",
+  "source_run": "",
+  "id": "26162523b4d0"
+ },
+ "task_id": "26162523b4d0",
+ "plan": "与 50346c43b03e 同一归一化修复，覆盖 n=1 边界；补单测确保最小计数不误报，真实断链仍保留。",
+ "status": "pending",
+ "approver": "",
+ "session_id": "",
+ "batch": true
+}

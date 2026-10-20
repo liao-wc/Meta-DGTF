@@ -1,0 +1,18 @@
+{
+ "id": "prop-1792498929250-af4cf4",
+ "ts": 1792498929.250487,
+ "task": {
+  "kind": "quality_flag",
+  "severity": "low",
+  "title": "质量线索：probe_no_target_covered",
+  "detail": "probe_no_target_covered",
+  "source_run": "20261020_145244",
+  "id": "af4cf48a33f0"
+ },
+ "task_id": "af4cf48a33f0",
+ "plan": "检查 probe 目标覆盖集合与选择器是否错配/为空；加覆盖前置校验，未覆盖时回退默认目标并记录，禁止静默通过。",
+ "status": "pending",
+ "approver": "",
+ "session_id": "",
+ "batch": true
+}

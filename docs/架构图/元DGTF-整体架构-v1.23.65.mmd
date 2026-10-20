@@ -1,0 +1,46 @@
+flowchart TB
+  subgraph UI[交互 / 应用]
+    CLI[CLI 元DGTF-V1.23.65.py]
+    WEB[Web 工作台 server.py + app.js]
+    RUN[engine_runner 任务/日志/归档]
+    CFG[配置 factory + user yaml]
+  end
+  subgraph ORCH[调度 / 预算 / 停止]
+    PLAN[auto_plan 五维规划]
+    MODE[serial / A-H 阶段 DAG]
+    BUDGET[max_calls / max_minutes / max_tokens]
+    STOP[停止与质量读数]
+  end
+  subgraph CORE[四层螺旋]
+    L0[0 修行 manifest]
+    L1[1 研究 truth]
+    BOTH[both 对撞 collision]
+    ALL[all 元 closure]
+    CH[三通道 content / context / self]
+  end
+  subgraph INFRA[认知与证据基础设施]
+    LLM[LLM 网关]
+    WEB2[联网检索]
+    ANC[外部锚点]
+    EML[EML 记忆]
+    F[前沿内核 F1-F4]
+  end
+  subgraph OUT[产物 / 验证]
+    MD[md + packed.json + run 归档]
+    Q[质量读数]
+    GATE[冒烟/验收/审计/变异体/前端自检]
+  end
+  CLI --> RUN
+  WEB --> RUN
+  CFG --> PLAN
+  RUN --> PLAN
+  PLAN --> MODE --> BUDGET --> STOP
+  STOP --> CORE
+  CORE --> MD --> Q --> GATE
+  L0 --> L1
+  L0 --> BOTH
+  L1 --> BOTH
+  BOTH --> ALL
+  ALL -. carry / 自省 .-> L0
+  CORE <--> INFRA
+  EML -. 调度/守卫建议 .-> STOP

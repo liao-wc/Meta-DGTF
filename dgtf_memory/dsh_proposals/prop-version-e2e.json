@@ -1,0 +1,37 @@
+{
+ "id": "prop-version-e2e",
+ "ts": 1792500870.6241689,
+ "task": {
+  "id": "version-e2e",
+  "kind": "user_task",
+  "severity": "med",
+  "title": "版本验收探针：新增 dgtf_app/_dsh_version_probe.py",
+  "detail": "新建 dgtf_app/_dsh_version_probe.py，只写一行注释 # VERSION_PROBE 2026-10-20。"
+ },
+ "plan": "新建 dgtf_app/_dsh_version_probe.py，只写一行注释 # VERSION_PROBE 2026-10-20。不要修改其他文件，不要执行 git 操作。",
+ "status": "applied",
+ "approver": "dsh_auto",
+ "confirmed_ts": 1792500870.6241698,
+ "session_id": "",
+ "approved_ts": 1792501643.7870924,
+ "result": {
+  "ok": true,
+  "gate": {
+   "ok": true,
+   "tail": "PASS self_feedback\nPASS facet\nPASS api_policy\nPASS input_sanity\nPASS vision\nPASS agent_bridge\nPASS agent_worker\nPASS agent_repair\nPASS agent_daemon\nPASS compile\nPASS audit70\n\nFAST GATE PASS 11 / FAIL 0\n"
+  },
+  "repair": {
+   "committed": true,
+   "changed": [],
+   "commit": "12daacb docs: V-1.30.1 自动修复验收闭环实测",
+   "commit_hash": "12daacb1e850fbd4d3bc571b5a30930c4509bada",
+   "why": "DSH Agent 已自行提交本次变更"
+  }
+ },
+ "acceptance": {
+  "ok": true,
+  "checks": []
+ },
+ "version": "V-1.30.2",
+ "artifact": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\outputs\\repairs\\V-1.30.2"
+}

@@ -1,0 +1,2 @@
+{"task_id": "t0", "kind": "audit_gap", "status": "triaged", "action": "进入研究复核：补官方/高置信来源，仍不可判定则挂起", "title": "任务 0", "source_run": null, "ts": 1792501183.875804}
+{"task_id": "t1", "kind": "eml_candidate", "status": "triaged", "action": "进入候选验证：检查同向证据数、边界与回滚", "title": "任务 1", "source_run": null, "ts": 1792501183.875806}

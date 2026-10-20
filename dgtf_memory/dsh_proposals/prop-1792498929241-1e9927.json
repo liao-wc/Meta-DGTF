@@ -1,0 +1,18 @@
+{
+ "id": "prop-1792498929241-1e9927",
+ "ts": 1792498929.24128,
+ "task": {
+  "kind": "quality_flag",
+  "severity": "low",
+  "title": "质量线索：ing_rephrased_direct(50%)",
+  "detail": "ing_rephrased_direct(50%)",
+  "source_run": "",
+  "id": "1e992709e31e"
+ },
+ "task_id": "1e992709e31e",
+ "plan": "半量复述，按阶段定位（self_check/manifest）后只对该阶段加改写约束，避免全局提示膨胀；回放验证 50% 下降且不引入事实漂移。",
+ "status": "pending",
+ "approver": "",
+ "session_id": "",
+ "batch": true
+}

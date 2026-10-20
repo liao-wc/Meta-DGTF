@@ -1,0 +1,18 @@
+{
+ "id": "prop-1792498929223-d30bf5",
+ "ts": 1792498929.2239668,
+ "task": {
+  "kind": "eml_candidate",
+  "severity": "med",
+  "title": "验证/应用 EML 候选：web_hint",
+  "detail": "{\"kind\": \"guard\", \"cond\": {\"issue\": \"context_web_on_demand\"}, \"action\": {\"key\": \"web_hint\", \"stages\": [\"research_evidence\", \"research_precedent\", \"duel_arbitration\"], \"value\": true}, \"readings\": {\"before\": {\"context_score\": 0}, \"after\": {\"context\": \"期望上升\"}}, \"why\": \"context 通道无证据 ⇒ 按需放开取证/先例/仲裁联网\", \"confidence\": 0.1823, \"evidence\": [], \"source\": \"engine/both-all\"}",
+  "source_run": "",
+  "id": "d30bf5383297"
+ },
+ "task_id": "d30bf5383297",
+ "plan": "置信 0.1823 且 evidence 为空。先在 research/duel 阶段做联网预检（web_enabled、配额、密钥存在性），仅当 context_score=0 且预检通过才放行；限每阶段 fetch 次数与域名白名单，回放验证 context 上升且无超时。",
+ "status": "pending",
+ "approver": "",
+ "session_id": "",
+ "batch": true
+}

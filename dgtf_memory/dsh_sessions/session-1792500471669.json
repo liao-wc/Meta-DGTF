@@ -1,0 +1,12 @@
+{
+ "id": "session-1792500471669",
+ "task": "只回答 OK，不要调用工具",
+ "ts": 1792500471.6697462,
+ "auto_repair": false,
+ "ok": false,
+ "text": "",
+ "events": [],
+ "gate": null,
+ "repair": null,
+ "attach_task_id": ""
+}

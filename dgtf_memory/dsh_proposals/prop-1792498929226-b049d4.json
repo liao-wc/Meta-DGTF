@@ -1,0 +1,18 @@
+{
+ "id": "prop-1792498929226-b049d4",
+ "ts": 1792498929.2262795,
+ "task": {
+  "kind": "process_gap",
+  "severity": "high",
+  "title": "层 all 过程标准未达标",
+  "detail": "{\"rounds\": 0, \"product_chars\": 0, \"product\": \"\", \"standard_ok\": false, \"fact_ok\": true, \"citations\": 0, \"decidability\": null, \"decidability_bad\": 0, \"external_refs\": 0, \"external_reference\": 0, \"evidence_ids\": [], \"deps\": [\"0\", \"1\", \"both\"], \"inputs\": [\"0\", \"1\", \"both\"]}",
+  "source_run": "",
+  "id": "b049d4a5b566"
+ },
+ "task_id": "b049d4a5b566",
+ "plan": "rounds=0、product 空，首先判定是否为夹具/空跑（source_run 前缀、TEST_RUN_PREFIXES）。夹具跑直接过滤不入队（并入 940c8d165eed 闸门）；若为真跑，则查 all 层是否因 deps 0/1/both 空产物被短路。",
+ "status": "pending",
+ "approver": "",
+ "session_id": "",
+ "batch": true
+}

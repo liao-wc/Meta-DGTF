@@ -1,0 +1,18 @@
+{
+ "id": "prop-1792498929252-8e84df",
+ "ts": 1792498929.2523873,
+ "task": {
+  "kind": "user_task",
+  "severity": "med",
+  "title": "根据生成的提案执行任务",
+  "detail": "根据生成的提案执行任务",
+  "source_run": "app_user",
+  "id": "8e84dfd76bc8"
+ },
+ "task_id": "8e84dfd76bc8",
+ "plan": "元任务：按 task_id 去重后分批执行——P0 阻塞类（25c91baef5ec、9597cde03f2c、b049d4a5b566）→P1 误报与闸门（024a9eadf0dc、940c8d165eed、e6073923cb88、2cbe2168e82e）→P2 EML 低置信候选影子验证→P3 质量线索度量；每批回放通过再进下一批，失败即停。",
+ "status": "pending",
+ "approver": "",
+ "session_id": "",
+ "batch": true
+}

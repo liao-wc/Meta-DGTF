@@ -1,0 +1,18 @@
+{
+ "id": "prop-1792498929221-a17c3c",
+ "ts": 1792498929.2214797,
+ "task": {
+  "kind": "quality_flag",
+  "severity": "low",
+  "title": "质量线索：duty_short",
+  "detail": "duty_short",
+  "source_run": "20261020_135317",
+  "id": "a17c3c28a05d"
+ },
+ "task_id": "a17c3c28a05d",
+ "plan": "先度量后修：输出 duty_S 计算口径、采集窗口与分阶段明细，判断 duty_short 是真实职责不足还是 rounds=0/夹具导致的度量假象；确认后再决定调度或度量修正，不用 rounds_delta 直接掩盖。",
+ "status": "pending",
+ "approver": "",
+ "session_id": "",
+ "batch": true
+}

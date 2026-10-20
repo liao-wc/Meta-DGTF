@@ -12,6 +12,14 @@
 """
 from __future__ import annotations
 
+# ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
+import sys as _sys_utf8
+for _s_utf8 in (_sys_utf8.stdout, _sys_utf8.stderr):
+    try:
+        _s_utf8.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 import argparse
 import json
 import re
@@ -40,8 +48,12 @@ def score_practice(md: str) -> dict:
     """修行层：求显形不求答案。"""
     if not md:
         return {"score": None, "why": "无产物"}
-    layers = re.findall(r"- \*\*(修行层|研究层|对撞层|元层)\*\*：objective=`(\w+)`",
-                        md)
+    # ★ [v1.23.65] 两代格式：
+    #   旧：- **修行层**：objective=`manifest`
+    #   新：  - 修行层（显形过程 · objective=manifest）：…
+    layers = re.findall(
+        r"(?:\*\*)?(修行层|研究层|对撞层|元层)(?:\*\*)?[^\n]{0,40}?objective=`?(\w+)`?",
+        md)
     prac = dict(layers).get("修行层")
     susp = len(re.findall(r"^- ⏸", md, re.M))
     unsaid = md.count("此处未生")
@@ -56,15 +68,38 @@ def score_research(md: str) -> dict:
     if not md:
         return {"score": None, "why": "无产物"}
     layers = dict(re.findall(
-        r"- \*\*(修行层|研究层|对撞层|元层)\*\*：objective=`(\w+)`", md))
+        r"(?:\*\*)?(修行层|研究层|对撞层|元层)(?:\*\*)?[^\n]{0,40}?objective=`?(\w+)`?",
+        md))
     obj = layers.get("研究层")
-    cov = re.search(r"可判定覆盖率\s*([\d.]+%|N/A)", md)
+    # ★ [v1.23.65] 兼容两种产物格式：
+    #   旧：可判定覆盖率 73.2% / N/A
+    #   新：可判定覆盖率 5/6（66%）—— 只认百分比会把新产物的覆盖率读成 None。
+    cov_raw, cov_pct = None, None
+    _m = re.search(r"可判定覆盖率\s*(\d+)\s*/\s*(\d+)", md)
+    if _m and int(_m.group(2)):
+        cov_raw = "%s/%s" % (_m.group(1), _m.group(2))
+        cov_pct = round(100.0 * int(_m.group(1)) / int(_m.group(2)), 1)
+    else:
+        _m2 = re.search(r"可判定覆盖率\s*([\d.]+)%", md)
+        if _m2:
+            cov_raw = _m2.group(1) + "%"
+            cov_pct = float(_m2.group(1))
     tri = re.search(r"三态判决一致率\*\*：(\d+)/(\d+)", md)
     ratio = (int(tri.group(1)) / int(tri.group(2))) if tri and int(tri.group(2)) else None
+    # ★ 机会校正：raw tri_ratio 不是质量分；有 α 才读 α。
+    _ta = re.search(r"跨视角一致（ordinal，非 test-retest）\*\*：α=([-\d.]+) / κ=([-\d.]+)", md)
+    tri_alpha = float(_ta.group(1)) if _ta else None
+    tri_kappa = float(_ta.group(2)) if _ta else None
     return {"score": 1.0 if obj == "truth" else 0.0,
             "objective": obj,
-            "coverage": cov.group(1) if cov else None,
+            "coverage": cov_raw,
+            "coverage_pct": cov_pct,
             "tri_ratio": round(ratio, 3) if ratio is not None else None,
+            "tri_alpha": tri_alpha,
+            "tri_kappa": tri_kappa,
+            "tri_alpha_kind": "inter_perspective",
+            "tri_test_retest_alpha": None,
+            "tri_reliable": False,
             "why": "研究层 objective=truth" if obj == "truth" else f"objective={obj}"}
 
 
@@ -79,15 +114,47 @@ def score_decision_rubric(md: str) -> dict:
     """
     if not md:
         return {"score": None, "why": "无产物"}
-    acts = re.findall(r"^- \*\*(A\d+)\*\*\s*(.+)$", md, re.M)
-    n = len(acts)
-    keys = ("verb", "object", "owner_role", "deadline_hint", "acceptance",
-            "fallback")
+    # ★ [v1.23.65] 两代模板都要认：
+    #   旧（v1.22）：单行六字段  verb=… object=… owner_role=… deadline_hint=…
+    #                acceptance=… fallback=…
+    #   新（v1.23+）：行动行 + 缩进四字段  负责人：/ 时限：/ 验收：/ 回退：
+    #   ★ 只认旧格式会把新产物的 3/3 误判成 1/3（本轮实测：真实产物就是 3/3）。
+    _lines = md.splitlines()
+    blocks, _cur = [], None
+    for _ln in _lines:
+        _m = re.match(r"^- \*\*(A\d+)\*\*\s*[:：]?\s*(.*)$", _ln)
+        if _m:
+            if _cur is not None:
+                blocks.append(_cur)
+            _cur = {"id": _m.group(1), "body": [_m.group(2)]}
+            continue
+        if _cur is None:
+            continue
+        # 下一个二级/三级标题或另一条顶层要点 ⇒ 本行动块结束
+        if re.match(r"^#{2,3}\s", _ln) or (
+                re.match(r"^- \*\*", _ln) and not _ln.startswith("  ")):
+            blocks.append(_cur)
+            _cur = None
+            continue
+        _cur["body"].append(_ln)
+    if _cur is not None:
+        blocks.append(_cur)
+    n = len(blocks)
+    _new_keys = ("负责人", "时限", "验收", "回退")
+    _old_keys = ("verb", "object", "owner_role", "deadline_hint", "acceptance",
+                 "fallback")
     complete = 0
-    for _aid, body in acts:
-        if all(re.search(rf"{k}\s*=", body) for k in keys):
+    _fmt = "none"
+    for _b in blocks:
+        _body = "\n".join(_b["body"])
+        if all(_k in _body for _k in _new_keys):
             complete += 1
-    has_notdo = ("不做清单" in md) or ("## 不做" in md) or ("fallback=" in md)
+            _fmt = "current"
+        elif all(re.search(rf"{_k}\s*=", _body) for _k in _old_keys):
+            complete += 1
+            _fmt = "legacy" if _fmt == "none" else _fmt
+    has_notdo = ("不做清单" in md) or ("## 不做" in md) or ("fallback=" in md) \
+        or ("不做什么" in md)
     s = 0
     if n >= 3:
         s += 1
@@ -96,8 +163,8 @@ def score_decision_rubric(md: str) -> dict:
     if has_notdo and n > 0:
         s += 1
     return {"score": s, "actions": n, "complete_actions": complete,
-            "not_do": has_notdo,
-            "why": f"action={n} 齐全={complete} 不做/回退={has_notdo}"}
+            "not_do": has_notdo, "format": _fmt,
+            "why": f"action={n} 齐全={complete} 不做/回退={has_notdo} fmt={_fmt}"}
 
 
 def score_boundary(md: str) -> dict:

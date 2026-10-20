@@ -1,0 +1,18 @@
+{
+ "id": "prop-1792498929227-d2f46d",
+ "ts": 1792498929.2277153,
+ "task": {
+  "kind": "quality_flag",
+  "severity": "low",
+  "title": "质量线索：candidates_backfilled(sc:5)",
+  "detail": "candidates_backfilled(sc:5)",
+  "source_run": "",
+  "id": "d2f46d091b80"
+ },
+ "task_id": "d2f46d091b80",
+ "plan": "回溯 candidates_backfilled(sc:5) 的触发点与来源层，补“回填原因+来源+去重键”日志；验证回填后候选去重、置信不被稀释，并评估是候选不足还是阈值过严。",
+ "status": "pending",
+ "approver": "",
+ "session_id": "",
+ "batch": true
+}

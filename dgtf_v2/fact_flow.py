@@ -1,0 +1,419 @@
+# -*- coding: utf-8 -*-
+"""事实题闭环（V2 参考实现，**纯确定性**）。
+
+把「事实题怎么跑」拆成四步，全部可离线复现：
+
+1. **分类**：题面是否事实型（与引擎 _has_decision_context 同源）→
+   QuestionProfile（kind / orientation / landing / 信号）；
+2. **排程**：**四层固定不砍层**（route 恒为 0/1/both/all）+
+   每层圈数建议（事实短题只砍圈、不砍层；下限/上限按层钳制）；
+3. **取证**：注入 search 检索 → evidence 层归一化/去重/预算/白名单/冲突/缺口 →
+   FactCard（answered / no_record / conflict / unknown）；
+4. **对账**：FactCard 结论 vs 推理结论 → consistency 层
+   （match / partial / mismatch / not_comp）。
+
+边界（红线）：
+
+- 不调 LLM、不联网：search 由调用方注入（fake search 也走同一接口）；
+- 不砍层：任何分类/预算/短题都不许把 route 变短——事实题只砍圈；
+- 不编答案：FactCard.answer 只取已有证据原文；无证据就是 no_record/unknown。
+"""
+from __future__ import annotations
+
+import re
+from dataclasses import dataclass, field
+
+from .consistency import ConsistencyReport, compare_retrieval_vs_reasoning
+from .evidence import (EvidenceBudget, EvidenceReport, answer_from_evidence,
+                       collect_evidence, detect_conflicts, detect_gaps)
+
+# ── 四层（唯一来源；与引擎 _ENTRIES / dgtf_v2.contracts 的四层同名）──────────
+LAYER_ENTRIES: tuple[str, ...] = ("0", "1", "both", "all")
+
+#: 事实题允许的 FactCard 状态（封闭集合）。
+CARD_STATUSES: tuple[str, ...] = ("answered", "no_record", "conflict",
+                                  "unknown")
+
+#: 题面决策语汇 —— 与 元DGTF-V1.25.0.py 的 _DECISION_CUES **同源**。
+#: 词表只增不减：加词只会让更多题走决策型，不会静默把决策题踢成事实题。
+_DECISION_CUES: tuple[str, ...] = (
+    "该不该", "要不要", "是否", "怎么办", "怎么选", "怎么建", "怎么改",
+    "如何", "方案", "建议", "选哪个", "取舍", "优先", "值不值", "利弊",
+    "可行", "落地", "规划", "部署", "决策", "权衡", "风险", "预算",
+    "排期", "步骤", "流程", "设计",
+)
+
+#: 事实语汇：只用于**理由与信号**，不覆盖决策语汇（引擎口径：决策优先）。
+_FACT_CUES: tuple[str, ...] = (
+    "是什么", "是多少", "哪一年", "哪年", "什么时候", "哪里", "在哪",
+    "是谁", "多少人", "多少", "多大", "多久", "哪些", "列举", "排名",
+    "数据", "统计", "定义", "含义", "区别", "原因", "为什么", "几个",
+    "几类", "占比", "总量", "金额", "日期", "名称",
+)
+
+_META_CUES: tuple[str, ...] = ("本身", "自身", "递归", "元", "整体", "到底")
+
+# ── 圈数建议（镜像引擎 _auto_pick_rounds 的钳制口径）────────────────────────
+MIN_LAYER_ROUNDS = 4
+MAX_LAYER_ROUNDS = 6
+MAX_ROUNDS_BY_LAYER = {"1": 5}
+MIN_ROUNDS_BY_LAYER = {"all": 5}
+BASE_ROUNDS = {"0": 4, "1": 4, "both": 5, "all": 6}
+
+#: 一次事实题默认最多发几条检索 query（多了浪费预算，少了覆盖不足）。
+MAX_QUERIES = 3
+
+
+# ============================================================ 分类
+@dataclass
+class QuestionProfile:
+    """题面的确定性分类结果（不调模型）。"""
+
+    question: str = ""
+    kind: str = "unknown"          # fact / decision / unknown
+    is_fact: bool = False
+    orientation: str = "boundary"  # boundary / decision（镜像引擎取向路由）
+    landing: str = "boundary"      # boundary / decision（落地模板）
+    signals: dict = field(default_factory=dict)
+    reasons: list = field(default_factory=list)
+
+    def to_dict(self) -> dict:
+        return {"question": self.question, "kind": self.kind,
+                "is_fact": bool(self.is_fact),
+                "orientation": self.orientation,
+                "landing": self.landing,
+                "signals": dict(self.signals),
+                "reasons": list(self.reasons)}
+
+
+def classify_question(question: str) -> QuestionProfile:
+    """事实题分类（纯规则）。
+
+    判据与引擎 _has_decision_context 同源：**命中任一决策语汇 ⇒ 决策型**；
+    否则 ⇒ 事实型（宁走边界模板，也不替提问者编执行方案）。
+    空题面 ⇒ unknown（不分类、不发检索，但四层排程仍固定全给）。
+    """
+    q = str(question or "").strip()
+    if not q:
+        return QuestionProfile(
+            question="", kind="unknown", is_fact=False,
+            orientation="boundary", landing="boundary",
+            signals={"len": 0, "blank": True, "short": False,
+                     "decision_hits": [], "fact_hits": [],
+                     "meta_hits": [], "has_question_mark": False},
+            reasons=["题面为空：归 unknown（不分类、不发检索）；排程仍固定四层"])
+    decision_hits = sorted({c for c in _DECISION_CUES if c in q})
+    fact_hits = sorted({c for c in _FACT_CUES if c in q})
+    meta_hits = sorted({c for c in _META_CUES if c in q})
+    is_fact = not decision_hits
+    kind = "fact" if is_fact else "decision"
+    orientation = "boundary" if is_fact else "decision"
+    reasons: list[str] = []
+    if decision_hits:
+        reasons.append("命中决策语汇：%s ⇒ 决策型（与引擎 "
+                       "_has_decision_context 同源）" % "、".join(decision_hits[:5]))
+    else:
+        reasons.append("未命中决策语汇 ⇒ 事实型；事实语汇：%s"
+                       % ("、".join(fact_hits[:5]) if fact_hits else "无（按边界模板）"))
+    if meta_hits:
+        reasons.append("含元层/过程提示：%s" % "、".join(meta_hits[:5]))
+    return QuestionProfile(
+        question=q, kind=kind, is_fact=is_fact,
+        orientation=orientation, landing=orientation,
+        signals={"len": len(q), "blank": False, "short": 0 < len(q) <= 40,
+                 "decision_hits": decision_hits, "fact_hits": fact_hits,
+                 "meta_hits": meta_hits,
+                 "has_question_mark": ("？" in q or "?" in q)},
+        reasons=reasons)
+
+
+# ============================================================ 排程（四层固定 + 圈数建议）
+def fixed_route() -> list:
+    """四层固定不砍层：任何题都返回全部四层（顺序固定）。"""
+    return list(LAYER_ENTRIES)
+
+
+def _coerce_profile(profile) -> QuestionProfile:
+    if isinstance(profile, QuestionProfile):
+        return profile
+    return classify_question(profile if isinstance(profile, str) else "")
+
+
+def _layer_ceil(layer: str, hard: int, floor: int) -> int:
+    return max(floor, min(MAX_ROUNDS_BY_LAYER.get(layer, MAX_LAYER_ROUNDS),
+                          hard))
+
+
+def _layer_floor(layer: str, hard: int, floor: int) -> int:
+    return max(floor, min(MIN_ROUNDS_BY_LAYER.get(layer, floor), hard))
+
+
+def suggest_rounds(profile, hard_max: int = 12,
+                   rounds_max: int = 2) -> dict:
+    """每层圈数建议（只是**种子上限**，不保证跑满）。
+
+    口径镜像引擎 _auto_pick_rounds（含 v1.25.0 的 fact_flow 收紧）：
+
+    - 事实短题（≤40 字）只收紧圈数 ⇒ 每层从下限起（不砍层）；
+    - 再按层钳制：下限 max(MIN_LAYER_ROUNDS, MIN_ROUNDS_BY_LAYER)，
+      上限 min(MAX_ROUNDS_BY_LAYER, hard_max)——研究层 5、元层下限 5；
+    - **事实短题最后再钳一层** min(v, rounds_max)（引擎配置键
+      auto.fact_flow.rounds_max，默认 2）：四层仍全跑，每层最多 N 圈。
+    """
+    prof = _coerce_profile(profile)
+    hard = max(1, int(hard_max))
+    floor = min(MIN_LAYER_ROUNDS, hard)
+    tightened = bool(prof.is_fact and prof.signals.get("short"))
+    cap = int(rounds_max) if str(rounds_max).lstrip("-").isdigit() else 2
+    out: dict = {}
+    for layer in LAYER_ENTRIES:
+        base = floor if tightened else int(BASE_ROUNDS.get(layer, floor))
+        lo = _layer_floor(layer, hard, floor)
+        hi = _layer_ceil(layer, hard, floor)
+        value = int(min(max(base, lo), hi))
+        if tightened and cap > 0:
+            value = min(value, max(1, cap))
+        out[layer] = value
+    return {layer: out[layer] for layer in LAYER_ENTRIES}
+
+
+@dataclass
+class FactRunPlan:
+    """事实题排程建议（route 固定四层；rounds 为每层种子上限）。"""
+
+    question: str = ""
+    route: list = field(default_factory=lambda: list(LAYER_ENTRIES))
+    rounds: dict = field(default_factory=dict)
+    note: str = ""
+
+    def to_dict(self) -> dict:
+        return {"question": self.question, "route": list(self.route),
+                "rounds": dict(self.rounds), "note": self.note}
+
+
+def plan_fact_run(question: str, hard_max: int = 12,
+                  profile: QuestionProfile | None = None,
+                  rounds_max: int = 2) -> FactRunPlan:
+    """产出排程：四层固定 + 每层圈数建议（不砍层，只调圈）。"""
+    prof = _coerce_profile(profile if profile is not None else question)
+    rounds = suggest_rounds(prof, hard_max=hard_max, rounds_max=rounds_max)
+    return FactRunPlan(
+        question=str(question or "").strip(),
+        route=fixed_route(),
+        rounds=rounds,
+        note=("四层固定不砍层（route 恒为 0/1/both/all）；"
+              "rounds 是每层种子上限建议（事实短题另受 auto.fact_flow."
+              "rounds_max=%d 收紧），层内到点自然停。" % int(rounds_max)))
+
+
+# ============================================================ 检索 query
+_QUERY_PREFIX = ("请问", "请帮我", "帮我", "想知道", "想了解")
+_QUERY_SUFFIX = ("？", "?", "吗", "呢")
+
+
+def extract_queries(question: str, extra=None,
+                    limit: int = MAX_QUERIES) -> list:
+    """从题面派生检索 query（确定性、去重保序）。
+
+    只做**字符级**清理（去「请问」前缀 / 去问号语气词），不改写语义；
+    extra 里的 query 按给定顺序追加。空题面 ⇒ 空列表（不发检索）。
+    """
+    q = str(question or "").strip()
+    out: list[str] = []
+
+    def _add(value) -> None:
+        s = str(value or "").strip()
+        if s and s not in out:
+            out.append(s)
+
+    _add(q)
+    cleaned = q
+    for w in _QUERY_SUFFIX:
+        if cleaned.endswith(w):
+            cleaned = cleaned[:-len(w)].strip()
+    for w in _QUERY_PREFIX:
+        if cleaned.startswith(w):
+            cleaned = cleaned[len(w):].strip()
+    if cleaned and cleaned != q:
+        _add(cleaned)
+    # ★ 4 位事实 token（如 1017）：加一条官方站内精确检索，避免通用 query
+    #   只召回到其它版本的日期。
+    import re as _re2
+    _toks = _re2.findall(r"\d{4}", cleaned or q)
+    if _toks and "deepseek" in (cleaned or q).lower():
+        _add("%s site:api-docs.deepseek.com" % _toks[0])
+    for x in (extra or []):
+        _add(x)
+    return out[:max(1, int(limit))] if out else []
+
+
+# ============================================================ FactCard
+@dataclass
+class FactCard:
+    """一张事实卡：四态 + 证据 id + 缺口 + 冲突（全确定性）。"""
+
+    question: str = ""
+    status: str = "unknown"
+    answer: str = ""
+    queries: list = field(default_factory=list)
+    evidence_ids: list = field(default_factory=list)
+    official_evidence_ids: list = field(default_factory=list)
+    conflicts: list = field(default_factory=list)
+    gaps: list = field(default_factory=list)
+    reason: str = ""
+
+    @property
+    def ok(self) -> bool:
+        """只有 answered（且无冲突）才算「事实题闭环已答」。"""
+        return self.status == "answered" and not self.conflicts
+
+    def to_dict(self) -> dict:
+        return {"question": self.question, "status": self.status,
+                "answer": self.answer, "queries": list(self.queries),
+                "evidence_ids": list(self.evidence_ids),
+                "official_evidence_ids": list(self.official_evidence_ids),
+                "conflicts": [dict(c) if isinstance(c, dict) else c
+                              for c in self.conflicts],
+                "gaps": list(self.gaps), "reason": self.reason,
+                "ok": bool(self.ok)}
+
+
+def _dedup(seq) -> list:
+    out: list = []
+    for x in seq:
+        if x not in out:
+            out.append(x)
+    return out
+
+
+def build_fact_card(question: str, report: EvidenceReport,
+                    min_official: int = 1,
+                    min_independent: int = 2) -> FactCard:
+    """把证据报告判成 FactCard 四态（按序判定，互斥）：
+
+    1. unknown   —— 没 query / 检索失败 / 或证据不足（无官方源且独立域名 <2）；
+    2. no_record —— 真查了（searches≥1）但一条可用证据都没有；
+    3. conflict  —— 查到了，但证据间有未消解的数值冲突；
+    4. answered  —— 官方源 ≥ min_official，或独立域名 ≥ min_independent，
+                    且无冲突。
+    """
+    evs = list(getattr(report, "items", None) or [])
+    queries = list(getattr(report, "queries", None) or [])
+    errors = list(getattr(report, "errors", None) or [])
+    # 引擎侧会**直接构造** EvidenceReport（不等价于 collect_evidence）：
+    # 没给 gaps/conflicts 时在这里就地补算，保证卡片的判据不依赖调用方
+    # 是否跑过 detect_gaps / detect_conflicts。
+    conflicts = list(getattr(report, "conflicts", None) or [])
+    if evs and not conflicts:
+        conflicts = detect_conflicts(evs)
+    gaps = list(getattr(report, "gaps", None) or [])
+    if evs and not gaps:
+        gaps = detect_gaps(question, evs, conflicts=conflicts)
+    evidence_ids = [str(getattr(e, "evidence_id", "")) for e in evs]
+    official_ids = [str(getattr(e, "evidence_id", "")) for e in evs
+                    if bool(getattr(e, "official", False))]
+    base = dict(question=str(question or "").strip(), queries=queries,
+                evidence_ids=evidence_ids,
+                official_evidence_ids=official_ids)
+
+    if not queries:
+        return FactCard(status="unknown", gaps=_dedup(gaps + ["no_query"]),
+                        reason="没有可执行的检索 query（题面为空）", **base)
+    searches = int(getattr(report, "searches", 0) or 0)
+    if errors and not evs:
+        return FactCard(status="unknown", gaps=_dedup(gaps + ["search_error"]),
+                        reason="检索失败：%s" % "；".join(errors[:2]), **base)
+    if not evs:
+        return FactCard(status="no_record",
+                        gaps=_dedup(gaps + ["no_record"]),
+                        reason="检索已执行 %d 次，但没有取到任何可用证据"
+                        % searches, **base)
+    if conflicts:
+        return FactCard(status="conflict", conflicts=conflicts,
+                        gaps=_dedup(gaps + ["conflict_unresolved"]),
+                        reason="证据之间有 %d 处未消解的数值冲突"
+                        % len(conflicts), **base)
+    official_n = len(official_ids)
+    domains = sorted({str(getattr(e, "domain", "") or "") for e in evs} - {""})
+    independent = len(domains)
+    answer = answer_from_evidence(evs, question)
+    if answer and (official_n >= int(min_official)
+                   or independent >= int(min_independent)):
+        return FactCard(status="answered", answer=answer,
+                        gaps=_dedup(gaps),
+                        reason=("证据充分：官方源 %d 条 / 独立域名 %d 个"
+                                % (official_n, independent)), **base)
+    return FactCard(status="unknown",
+                    gaps=_dedup(gaps + ["insufficient_evidence"]),
+                    reason=("有 %d 条证据，但官方源 %d 条、独立域名 %d 个，"
+                            "不足以作为事实依据"
+                            % (len(evs), official_n, independent)), **base)
+
+
+# ============================================================ 总流程
+@dataclass
+class FactFlowResult:
+    """一次事实题闭环的全部产物（可直接 to_dict 落 packed）。"""
+
+    question: str = ""
+    profile: QuestionProfile = field(default_factory=QuestionProfile)
+    plan: FactRunPlan = field(default_factory=FactRunPlan)
+    card: FactCard = field(default_factory=FactCard)
+    evidence: EvidenceReport = field(default_factory=EvidenceReport)
+    consistency: ConsistencyReport = field(default_factory=ConsistencyReport)
+    gaps: list = field(default_factory=list)
+    ok: bool = False
+
+    def to_dict(self) -> dict:
+        return {"question": self.question,
+                "profile": self.profile.to_dict(),
+                "plan": self.plan.to_dict(),
+                "fact_card": self.card.to_dict(),
+                "evidence": self.evidence.to_dict(),
+                "consistency": self.consistency.to_dict(),
+                "gaps": list(self.gaps), "ok": bool(self.ok)}
+
+
+def run_fact_flow(question: str, search=None, *, reasoning=None,
+                  extra_queries=None, budget: EvidenceBudget | None = None,
+                  hard_max: int = 12, rounds_max: int = 2,
+                  min_official: int = 1,
+                  min_independent: int = 2) -> FactFlowResult:
+    """事实题闭环（分类 → 固定四层排程 → 注入检索 → FactCard → 一致性）。
+
+    search   : Callable[[str], list] | None。唯一外部入口（可注入 fake）；
+               None ⇒ 不检索，FactCard=unknown（search_unavailable）。
+    reasoning: 推理侧结论（str / dict / 带 answer 的对象）。None ⇒
+               一致性判 not_comp（「未提供推理结论，无法比较」）。
+    """
+    q = str(question or "").strip()
+    profile = classify_question(q)
+    plan = plan_fact_run(q, hard_max=hard_max, profile=profile,
+                         rounds_max=rounds_max)
+    queries = extract_queries(q, extra=extra_queries)
+    report = collect_evidence(queries, search, question=q, budget=budget)
+    card = build_fact_card(q, report, min_official=min_official,
+                           min_independent=min_independent)
+    if reasoning is None:
+        consistency = ConsistencyReport(
+            verdict="not_comp", retrieval_answer=card.answer,
+            reasons=["未提供推理结论，无法比较"])
+    else:
+        consistency = compare_retrieval_vs_reasoning(
+            card, reasoning, evidence=getattr(report, "items", None))
+    gaps = list(card.gaps)
+    if consistency.verdict != "match":
+        gaps.append("consistency:" + consistency.verdict)
+    return FactFlowResult(question=q, profile=profile, plan=plan, card=card,
+                          evidence=report, consistency=consistency,
+                          gaps=_dedup(gaps),
+                          ok=bool(card.ok and consistency.ok))
+
+
+__all__ = [
+    "LAYER_ENTRIES", "CARD_STATUSES", "MIN_LAYER_ROUNDS", "MAX_LAYER_ROUNDS",
+    "MAX_ROUNDS_BY_LAYER", "MIN_ROUNDS_BY_LAYER", "BASE_ROUNDS",
+    "MAX_QUERIES", "QuestionProfile", "FactRunPlan", "FactCard",
+    "FactFlowResult", "classify_question", "fixed_route", "suggest_rounds",
+    "plan_fact_run", "extract_queries", "build_fact_card", "run_fact_flow",
+]

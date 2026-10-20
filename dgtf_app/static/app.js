@@ -3335,6 +3335,10 @@ function agentRenderKnowledge() {
       : esc(title);
     const claim = String(k.claim || '');
     const flag = k.fetched ? '已抓正文' : '仅检索';
+    const srcMap = {official:'官方', paper:'论文', community:'社区', other:'其他'};
+    const src = srcMap[String(k.source_type || '')] || '';
+    const conf = k.confidence ? ('置信 ' + Math.round(Number(k.confidence) * 100) + '%') : '';
+    const pub = String(k.published || '').slice(0, 10);
     const pdfName = String(k.pdf_name || '');
     const pdfOk = /^[A-Za-z0-9_.-]+\.pdf$/.test(pdfName);
     const pdfLink = pdfOk
@@ -3344,10 +3348,13 @@ function agentRenderKnowledge() {
     const zh = String(k.zh_note || '');
     return '<div class="agent-item">'
       + '<div class="agent-row"><span class="chip">' + esc(flag) + '</span>'
+      + (src ? '<span class="chip">' + esc(src) + '</span>' : '')
+      + (conf ? '<span class="chip">' + esc(conf) + '</span>' : '')
       + (pdfLink ? pdfLink : '')
       + '<span class="agent-t">' + t + '</span></div>'
       + '<div class="agent-meta"><span>查询 ' + esc(String(k.query || '—'))
-      + '</span><span>' + esc(agentIsoShort(k.run)) + '</span></div>'
+      + '</span>' + (pub ? '<span>发布 ' + esc(pub) + '</span>' : '')
+      + '<span>' + esc(agentIsoShort(k.run)) + '</span></div>'
       + (claim ? '<div class="agent-q">' + esc(claim) + '</div>' : '')
       + (zh ? '<div class="agent-q"><b>中文注释</b><br>' + esc(zh) + '</div>' : '')
       + agentDetailHtml(k.content)
@@ -3746,9 +3753,9 @@ async function refreshAgentKnowledge(mode) {
   const online = mode === 'online';
   const raw = ($('#agent-kn-q') ? $('#agent-kn-q').value : '').trim();
   const custom = raw ? raw.split(/[,，]/).map(s => s.trim()).filter(Boolean).slice(0, 4) : [];
-  const defaultQs = ['DeepSeek API 最新更新 模型能力 2026',
-    'AI Agent 自进化 架构 前沿 2026',
-    '多智能体 知识管理 检索增强 前沿 2026'];
+  const defaultQs = ['DeepSeek 官方 最新发布 技术博客 模型 2026',
+    'arxiv LLM multi-agent self-evolution PDF 2026',
+    'AI Agent 技术论坛 社区 最新 讨论 2026'];
   const qs = custom.length ? custom : defaultQs;
   const limit = custom.length ? Math.min(6, custom.length * 2) : 3;
   const btns = ['#agent-online', '#agent-know', '#agent-kn-search']

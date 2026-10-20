@@ -1,0 +1,18 @@
+{
+ "id": "prop-1792498929232-45d034",
+ "ts": 1792498929.2328203,
+ "task": {
+  "kind": "quality_flag",
+  "severity": "low",
+  "title": "质量线索：too_many_amp_candidates(100%)",
+  "detail": "too_many_amp_candidates(100%)",
+  "source_run": "",
+  "id": "45d0343d0672"
+ },
+ "task_id": "45d0343d0672",
+ "plan": "与 050a33e7211f 成对治理：加候选上限、配额与去重，超阈值截断并记录被丢弃项；回放验证不再 100% 过载，同时不出现空候选。",
+ "status": "pending",
+ "approver": "",
+ "session_id": "",
+ "batch": true
+}

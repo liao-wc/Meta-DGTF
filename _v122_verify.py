@@ -10,6 +10,14 @@
 """
 from __future__ import annotations
 
+# ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
+import sys as _sys_utf8
+for _s_utf8 in (_sys_utf8.stdout, _sys_utf8.stderr):
+    try:
+        _s_utf8.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 import argparse
 import ast
 import difflib
@@ -79,6 +87,34 @@ _V12318_20_AUTH_KEYS = {"external_anchor.enabled",
 #        现改为在 `phase_v1232` 里**动态导出**：`{"all_on"} | {p for p in 清单}`
 #        ⇒ 往后往 `_ALL_ON_ITEMS` 加项（如 `actions.merge_expand`），
 #          这里**自动跟上**，不会再「修一次冒出一批新的」。
+#: [v1.23.65] 授权改动的配置键：质量/成本帕累托调参（每条有实测，见 v12365_报告.md）。
+#   ★ 与上面几批同一规则：只**具名登记**、不放宽 —— 清单外照旧判红。
+_V12365_AUTH_KEYS = {
+    "max_tokens", "duty.span_tolerant", "spiral.all_extra_rounds",
+    "api.thinking.stages.assess_decidability",
+    "api.thinking.stages.assess_decidability_from_pool_view",
+    "api.thinking.stages.re_evaluate_pool",
+    "api.thinking.stages.decompose_normal",
+}
+#: [v1.23.66] 质量/效率闭环的具名配置改动（anytime 纠偏不靠配置；
+#   JSON 自修复与论证裁决是显式开关）。清单外照旧判红。
+_V12366_AUTH_KEYS = {
+    "api.json_repair",
+    "playbook.argumentation.enabled",
+}
+#: [v1.24.0] V2 影子开关：只观察，不改执行。
+_V1240_AUTH_KEYS = {"scheduler.v2.enabled",
+                    "api.thinking.stages.tri_test_retest",
+                    "web_search.stages.tri_test_retest",
+                    "actions.l0_v2_curate", "actions.l0_v2_mode",
+                    "actions.all_v2", "actions.one_v2",
+                    "actions.both_v2", "actions.zero_v2",
+                    "claim_gap.enabled", "scheduler.v2.mode",
+                    "external_input.enabled", "external_input.fallback_web",
+                    "external_input.file_paths",
+                    "playbook.llm_feedback.enabled",
+                    "playbook.llm_feedback.max_candidates"}
+
 #: [判据随实现更新 · v1.23.28] `_v1230_w6_runs.json` 的**授权陈旧基线**。
 #  ★ 这是「时点快照」不是「任意旧版本都行」：只有**此处列出**的 src 才放行，
 #    其余一律照旧判红（判据仍有牙）。加新基线必须**在这行显式登记**。
@@ -2263,6 +2299,9 @@ def phase_v1232(src, mod):
 
     _bad = []
     for _k in sorted(_wired | _lit):
+        # [v1.23.65] 本版有意改的 stage：不参与「逐字相同」断言（已具名登记）。
+        if ("api.thinking.stages." + _k) in _V12365_AUTH_KEYS:
+            continue
         # 改前：_wired 的调用点传 None ⇒ 掉回 _od；_lit 的取 _os[_k]
         _before = _od if _k in _wired else _os.get(_k, _od)
         _after = _ns.get(_k, _nd)
@@ -2290,7 +2329,7 @@ def phase_v1232(src, mod):
     _allow = ({"api.thinking.stages." + k for k in _wired}
               | {"web_search.tier_floor"} | _V12316_AUTH_KEYS
               | _V12317_AUTH_KEYS | _V12318_20_AUTH_KEYS
-              | _ao_keys)
+              | _V12365_AUTH_KEYS | _V12366_AUTH_KEYS | _V1240_AUTH_KEYS | _ao_keys)
     _unexpected = [k for k in _chg if k not in _allow]
     check("V3 ★ 两版配置的差异**只允许**是「改前从未生效」的两类（thinking 接线 / tier_floor）",
           not _unexpected, "意外改动：" + repr(_unexpected[:5]))
@@ -2309,7 +2348,10 @@ def phase_v1232(src, mod):
     check("V3.b 判别力：清单外的差异必须**判红**（4 个合成样本全带牙）",
           len(_syn_bad) == 4, "未判红：" + repr(_syn_bad))
     _kw = [k for k in _chg if k.startswith("api.thinking.stages.")]
-    _sv = {k: _ns.get(k.split(".")[-1]) for k in _kw}
+    # [v1.23.65] 本版**有意**改的 stage（质量/成本帕累托）不参与「等于默认」断言；
+    #   它们由 _V12365_AUTH_KEYS 具名登记，V1/V3 同样按此放行。清单外仍判红。
+    _sv = {k: _ns.get(k.split(".")[-1]) for k in _kw
+           if k not in _V12365_AUTH_KEYS}
     # ★ [判据随实现更新 · v1.23.33] 原判据断言「被改的 stage 一律 == `thinking.default`」。
     #   前提是「default 未被改写」。但出厂 yaml 的 **`all_on: true`** 会把
     #   `api.thinking.default` 从 `disabled` 抬到 `enabled`（CHANGELOG L108/L140
@@ -2327,8 +2369,11 @@ def phase_v1232(src, mod):
     except Exception:
         _nd_file = None
     _all_on = bool(_new.get("all_on"))
-    _exp = _nd_file if (_all_on and _nd_file) else _nd
-    check("V4 yaml 里被改的 stage 一律 == thinking.default（与注释「关」一致）",
+    # [v1.23.65] 显式化后 default 可被显式打开（enabled），而 stage 表仍逐项关闭。
+    #   本判据的原意是「被改的 stage 与**改前**的 default 一致（disabled）」，
+    #   因此基准取基线配置的 default（_od），而不是当前文件 default。
+    _exp = _od if _od else (_nd_file if _nd_file else _nd)
+    check("V4 yaml 里被改的 stage 一律 == 改前 thinking.default（disabled）",
           all(v == _exp for v in _sv.values()),
           repr(_sv) + " | 期望 %r（all_on=%r，文件 default=%r）"
           % (_exp, _all_on, _nd_file))

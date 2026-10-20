@@ -1,0 +1,18 @@
+{
+ "id": "prop-1792498929217-4f48c1",
+ "ts": 1792498929.2173567,
+ "task": {
+  "kind": "eml_candidate",
+  "severity": "med",
+  "title": "验证/应用 EML 候选：thinking_hint",
+  "detail": "{\"kind\": \"guard\", \"cond\": {\"issue\": \"layer0_self_noise\"}, \"action\": {\"key\": \"thinking_hint\", \"stages\": [\"self_check\", \"phase_probe\"], \"value\": \"enabled\"}, \"readings\": {\"before\": {\"flags\": [\"probe_link_dangling(2)\", \"duty_short\"]}, \"after\": {\"flags\": \"期望下降\"}}, \"why\": \"0 层自检/复述线索 ⇒ 加深自检与阶段探针\", \"confidence\": 0.2194, \"evidence\": [\"20261020_134230\"], \"source\": \"engine/both-all\"}",
+  "source_run": "20261020_135317",
+  "id": "4f48c1b90872"
+ },
+ "task_id": "4f48c1b90872",
+ "plan": "四条 thinking_hint 候选（both_tension、self_noisy、layer0_self_noise、layer1_adjudication_noise）。改为按 stage 白名单定向加深，先影子模式只记录不生效，回放对比 tension/self_flags；逐条灰度启用并设 token 上限，避免与 web_hint 叠加膨胀；置信 0.40/0.27/0.22，未改善即拒绝。",
+ "status": "pending",
+ "approver": "",
+ "session_id": "",
+ "batch": true
+}

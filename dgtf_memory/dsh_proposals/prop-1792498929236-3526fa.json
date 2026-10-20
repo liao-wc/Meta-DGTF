@@ -1,0 +1,18 @@
+{
+ "id": "prop-1792498929236-3526fa",
+ "ts": 1792498929.2366405,
+ "task": {
+  "kind": "quality_flag",
+  "severity": "low",
+  "title": "质量线索：ing_rephrased_direct(100%)",
+  "detail": "ing_rephrased_direct(100%)",
+  "source_run": "",
+  "id": "3526fa1744e9"
+ },
+ "task_id": "3526fa1744e9",
+ "plan": "复述率 100%，ing 阶段直接搬运。加“改写/引用比”检查与最小改写要求，命中时重生成一次；验证比例下降且信息与引用不丢。",
+ "status": "pending",
+ "approver": "",
+ "session_id": "",
+ "batch": true
+}

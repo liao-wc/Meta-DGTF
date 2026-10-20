@@ -1,0 +1,18 @@
+{
+ "id": "prop-1792498929225-c440fb",
+ "ts": 1792498929.2250369,
+ "task": {
+  "kind": "eml_candidate",
+  "severity": "med",
+  "title": "验证/应用 EML 候选：config_hint",
+  "detail": "{\"kind\": \"probe\", \"cond\": {\"issue\": \"facet_empty\"}, \"action\": {\"key\": \"config_hint\", \"key_name\": \"external_input.facet_queries\", \"value\": 4}, \"readings\": {\"before\": {\"facets\": 0}, \"after\": {\"facets\": \"期望 >0\"}}, \"why\": \"0 层侧面为空 ⇒ 下一跑提高侧面检索数\", \"confidence\": 0.1823, \"evidence\": [], \"source\": \"engine/both-all\"}",
+  "source_run": "",
+  "id": "c440fb190a44"
+ },
+ "task_id": "c440fb190a44",
+ "plan": "先确认 external_input.facet_queries 合法范围及是否被 app 配置覆盖；只在 facet_empty 时对本跑临时覆盖为 4 并记录来源，不改全局默认；回放验证 facets>0 且不显著增加时延。",
+ "status": "pending",
+ "approver": "",
+ "session_id": "",
+ "batch": true
+}

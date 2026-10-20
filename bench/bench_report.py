@@ -12,6 +12,14 @@
 """
 from __future__ import annotations
 
+# ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
+import sys as _sys_utf8
+for _s_utf8 in (_sys_utf8.stdout, _sys_utf8.stderr):
+    try:
+        _s_utf8.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 import json
 import re
 import sys
@@ -134,8 +142,14 @@ def main():
                  and all(tg.get(k) == v for k, v in OBJECTIVES.items()))
         if pass4:
             n_pass += 1
-        acts = ((pk.get("views") or {}).get("1") or {}).get("_actions") or []
-        not_do = ((pk.get("views") or {}).get("1") or {}).get("_not_do") or []
+        _vs = pk.get("views") or {}
+        _all = _vs.get("all") or {}
+        _l1 = _vs.get("1") or {}
+        # 新 packed：actions 在 all / 顶层；旧 packed：兼容 views.1._actions。
+        acts = (_all.get("actions") or pk.get("actions")
+                or _l1.get("_actions") or [])
+        not_do = (_all.get("not_do") or pk.get("not_do")
+                  or _l1.get("_not_do") or [])
         rb = score_actions(acts, not_do) if pk else None
         if isinstance(rb, dict):
             rub_sum += rb["score"]

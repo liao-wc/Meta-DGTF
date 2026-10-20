@@ -65,11 +65,64 @@ dgtf_app/
 
 ---
 
+## 统一决策与证据闭环 · 展示标签（v1.26）
+
+工作台把「决策怎么下的、事实与证据从哪来、经验记了什么」拆成四个**只读块**。
+中文字段叫法统一放在 `dgtf_app/params.py` 的 `DISPLAY_BLOCK_CN` / `DISPLAY_FIELD_CN`，
+`GET /api/params` 会附带一份 `display_blocks`（只有标签、没有值，也**不是配置项**）。
+
+| 块 | 中文标签 | 数据来源 | 在哪看 |
+|---|---|---|---|
+| `decision_trace` | 统一决策回执 | 引擎 `packed["decision_trace"]`（只读 packed，不重跑） | 总产物 md 的「结论摘要」；packed JSON |
+| `fact_flow` | 事实流 | `dgtf_v2/fact_flow.py` 确定性读数；开关 `auto.fact_flow.rounds_max` | 接入后随产物 / packed 落盘；缺读数写「未测」 |
+| `evidence` | 证据链 | `dgtf_v2/evidence.py` 证据指纹 / 引用 | 同上 |
+| `unified_eml` | 统一 EML 记忆 | V1 `playbook` + V2 `v2_events` 合并读数 | 产物 md「本次记忆（EML 经验回路）」；packed |
+
+### 统一决策回执（decision_trace）怎么读
+
+这一块已经随引擎产物落盘，总产物 md 的「## 结论摘要」就是同一组标签：
+
+| 字段 | 标签 | 读法 |
+|---|---|---|
+| `question_type` | 问题类型 | `fact`（事实）/ `decision`（决策）/ `boundary`（边界） |
+| `retrieval` | 检索结论 | 官方源直接答案 + 官方源条数 / URL；没有则「无官方直接答案」 |
+| `reasoning` | 四层推理结论 | 研究层 `decidable_product.answer`（截前 400 字） |
+| `consistency` | 检索/推理一致性 | ✅ 一致 / ❌ 冲突 / ⚠ 部分 / ➖ 不可比 |
+| `layers` | 四层产物 | 每层：进入 / 圈数 / 停止 / 主要产出 |
+| `answer_ready` | 答案就绪 | 四层齐 + coverage ≥ 0.9 + 无阻断旗标 |
+| `stop_reason` | 停止判据 | 如 `question_answered_four_layers` 或 all 层停止原因 |
+
+另附 `route`（实际路线）、`rounds`（每层圈数）、`artifacts.run_id`（产物定位）。
+
+### 另外三块（接入口径）
+
+- **fact_flow（事实流）**：触发分类（fact / decision / boundary）、官方源优先、事实状态
+  （answered / no_record / conflict / unknown）、四层固定不砍层、圈数建议、预算去重。
+  配置只有一个开关 `auto.fact_flow.rounds_max`（事实短题每层圈数上限，**四层仍全跑、
+  只砍圈不砍层**，0 = 不钳制）；参数面板里的标签是「事实流 · 事实短题每层圈数上限」。
+- **evidence（证据链）**：证据指纹（同一条证据只算一次）、可回查引用、官方源标记，
+  以及「检索结论 vs 推理结论」的 match / partial / mismatch / not_comp。
+- **unified_eml（统一 EML 记忆）**：V1 playbook 与 V2 events 按 source 去重后合并读；
+  只读**数值先验**，`contains_content` 恒 `False`（答案正文不进记忆）。
+
+> 这三块的**展示读数当前尚未进 packed**（fact_flow 已先接入圈数开关
+> `auto.fact_flow.rounds_max`；evidence / unified_eml 尚未接入默认跑次）。
+> 展示层对缺失读数统一写「未测」，不写 0（0 会被当成「测了且为零」）；
+> 接入前后本目录的自检都应为 `371 / 0`。
+
+> `decision_trace` / `evidence` / `unified_eml` 是只读读数，**不是**
+> `dgtf_config.yaml` 的配置键：不会出现在「高级参数」面板，也不参与保存 / 恢复出厂。
+> `fact_flow` 的展示块同样是只读读数；但它目前有一个真实配置开关
+> `auto.fact_flow.rounds_max`（在「自适应调度」组里）。相关的既有开关（EML 路径、
+> 证据引用授权）在面板里的说明已带「统一 EML」「证据链」前缀，便于按块找参数。
+
+---
+
 ## 自检
 
 ```bash
 python dgtf_app/server.py &        # 先起服务
-python dgtf_app/selftest.py        # 13 项端到端断言
+python dgtf_app/selftest.py        # 371 项端到端断言（mock 全链路）
 ```
 
 ---
@@ -90,3 +143,18 @@ python dgtf_app/selftest.py        # 13 项端到端断言
   任务卡上可直接点开查看。
 - **自检残留**：`selftest.py` 会自动清理自己产生的 mock 产物；但在沙箱隔离环境
   运行时，清理可能不落真实盘，必要时手工删 `outputs/*自检*` 与 `outputs/*.run.log|json`。
+
+## 联网检索后端
+
+- web_search.backend 支持 tavily / deepseek / snapshot；
+- deepseek 走官方 POST https://api.deepseek.com/v1/tools/search，请求 query/count/need_content，Bearer Key；
+- Key 优先 web_search.api_key_env，DeepSeek 后端缺省回退 api.key。
+
+### v1.28 展示块
+
+- `process_ledger`：每层 rounds / 标准 / 事实 / 引用 / 依赖，soul 形状与数据；
+- `fact_contract`：四层事实命中与修复；
+- `decidability_audit`：研究层可判定/不可判定是否真有证据；
+- `recall`：既往产物历史回声，带 run_id。
+
+这些块只读 packed，不是配置项。

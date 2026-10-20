@@ -1,0 +1,61 @@
+{
+ "id": "session-2f7817b5-b6c6-4ac9-b5bb-02717e9ec49a",
+ "task": "只回答 OK，不要调用工具",
+ "ts": 1792487237.253826,
+ "auto_repair": false,
+ "ok": true,
+ "text": "OK",
+ "events": [
+  {
+   "type": "session",
+   "sessionId": "session-2f7817b5-b6c6-4ac9-b5bb-02717e9ec49a",
+   "cwd": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构"
+  },
+  {
+   "type": "status",
+   "phase": "turn_start",
+   "turn": 1
+  },
+  {
+   "type": "status",
+   "phase": "step_start",
+   "turn": 1,
+   "step": 1
+  },
+  {
+   "type": "thinking",
+   "text": ""
+  },
+  {
+   "type": "text",
+   "text": "OK"
+  },
+  {
+   "type": "status",
+   "phase": "step_end",
+   "turn": 1,
+   "step": 1,
+   "usage": {
+    "inputTokens": 192,
+    "outputTokens": 2,
+    "cacheReadTokens": 6144,
+    "cacheWriteTokens": 0,
+    "totalTokens": 6338
+   }
+  },
+  {
+   "type": "status",
+   "phase": "turn_end",
+   "turn": 1,
+   "reason": {
+    "kind": "completed"
+   }
+  },
+  {
+   "type": "final",
+   "text": "OK"
+  }
+ ],
+ "gate": null,
+ "repair": null
+}

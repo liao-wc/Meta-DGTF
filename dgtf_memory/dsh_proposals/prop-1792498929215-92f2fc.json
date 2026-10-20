@@ -1,0 +1,18 @@
+{
+ "id": "prop-1792498929215-92f2fc",
+ "ts": 1792498929.215048,
+ "task": {
+  "kind": "eml_candidate",
+  "severity": "med",
+  "title": "验证/应用 EML 候选：carve_first",
+  "detail": "{\"kind\": \"probe\", \"cond\": {\"issue\": \"layer1_citation_low\"}, \"action\": {\"key\": \"carve_first\", \"layers\": [\"1\"]}, \"readings\": {\"before\": {\"citations\": 0}, \"after\": {\"citations\": \"期望上升\"}}, \"why\": \"1 层子问题无引用 ⇒ 研究层优先补证\", \"confidence\": 0.2362, \"evidence\": [\"20261020_134230\"], \"source\": \"engine/both-all\"}",
+  "source_run": "20261020_135317",
+  "id": "92f2fc613a41"
+ },
+ "task_id": "92f2fc613a41",
+ "plan": "三条 carve_first（all_residual、layer0_duty_short、layer1_citation_low）。先补优先级与幂等：同时命中按 0→1→all 排序，单跑只雕一层；先 dry-run 产出雕修计划不执行，回放验证 residual/duty_S/citations 改善后再放开；置信均低（0.35/0.24），默认不自动应用。",
+ "status": "pending",
+ "approver": "",
+ "session_id": "",
+ "batch": true
+}

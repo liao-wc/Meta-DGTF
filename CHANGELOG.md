@@ -12,6 +12,273 @@
 
 ---
 
+v1.25.0 相对 v1.24.0
+
+【主题】V2 收口正式发版：四层契约默认开 + L0 archive 恢复 + 版本号升到 1.25.0。
+
+【改动】
+· 新增 元DGTF-V1.25.0.py；V1.24.0.py 保留作回滚版，代码内容除版本头/__version__ 外不改。
+· 生产默认：l0_v2_curate=true/archive；all_v2/one_v2/both_v2/zero_v2=true。
+· F2 all 闭合：四层真跑 5/5，成本 5/5 在 600k；boundary profile 支持无 actions/not_do。
+· F3/F4：分层 5/5、6/6；四层 full-4 204700/204724 通过；契约只写 packed，不改 views。
+· F5：0 层只读审计/novelty 真跑通过；生成机制仍延期，不接 L0-v2。
+· L0-v2：archive 只读默认恢复，移出生成路径；guide/filter 仍实验。
+· 配置/测试/文档版本引用同步为 V1.25.0；smoke/变异体/审计入口指向新文件。
+
+【验证】
+· 冒烟 266 / 0；跨档验收 PASS 319 / FAIL 0；前端自检 371 / 0；
+  L0-v2 16/16；F3/F4/F5 各 10/10；F2 9/9；核心职责 9/9；V2 判据 41/41。
+
+【未做】
+· F5 生成机制延期；guide/filter 不默认。
+· eng001 664k 超软预算 10.6%，未计入 F2 成本合格 5 题。
+· hypothetical 是 mock 参考，不是真实输出质量。
+
+---
+
+v1.24.0 相对 v1.23.66
+
+【主题】Phase 1–4：V2 影子调度 + EML 双写 + 契约体检 + 初始串行接管（opt-in）。
+
+【改动】
+· 新增 scheduler.v2 配置（enabled 默认 false，本机 yaml true；shadow=true）。
+· MetaDGTF.run 在 mode/route/rounds 决定后挂 V2Shadow：起点建议、终点建议、
+  同预算 mock 参考轨迹；写 packed.v2_shadow 与 md 一行。
+· 失败只留痕（v2_shadow.error / logger），不阻断 V1；层序/圈数/停止/prompt 不变。
+· dgtf_v2/ 参考内核：41 项判据；20 份真实 packed 回放。
+· 产物 md 增加“V2 影子调度”一行；参数面板增加 scheduler.v2 标签。
+· Phase 2：V2MemoryBridge 双写 dgtf_memory/v2_events.jsonl（结构计数 + outcome，
+  不含答案正文；allow_anon=false 防测试污染）。
+· Phase 3：packed 映射 LayerResult → validate_result，contract_gate=off/warn/raise；
+  本机 warn；首次体检抓到 1 层 decidable 无 citations、all 层 actions 为空。
+· Phase 4（opt-in）：takeover=true 且 serial 时用 V2 提案覆盖初始 order/rounds；
+  层内仍调 V1 _run_layer；提案不覆盖全部 route 则回退。
+· A/B pilot（5 对/10 跑，600k）：V2 5/5 闭合，V1 0/5；calls −24.0%、tokens −16.0%，
+  覆盖均值 90% vs 86%，三态 .633 vs .447；preset 见 configs/方案G-V2接管.yaml。
+· 2M 追加（Q1）：V2 89 calls/528k 闭合；V1 128 calls/882k 仍 both（手动停止）。
+· Phase 5 收口：L0-v2 恢复为 archive 只读（默认 l0_v2_curate=true）；
+  guide/filter 仍实验，不默认。
+· F2 all 元层：layers_all.py ClosurePackage（六件套/动作四字段/origin/完整度/风险透明度），
+  actions.all_v2 **默认 true**；四层真跑 5/5（成本 5/5 在 600k），boundary profile 支持无 actions。
+· F3/F4/F5 契约层：layers_one/both/zero + tests 各 10/10；
+  actions.one_v2/both_v2/zero_v2 **默认 true**；
+  F3/F4 四层 full-4 通过（204700/204724），F5 只开只读审计/novelty，生成机制延期。
+· 质量口径修正：raw tri 是原始一致率，不是三态质量；tri 只作标签定义/诊断。
+· V2 reference 收口：F2 5/5（成本全在 600k 内，boundary profile 支持）、
+  F3 5/5、F4 6/6、F5 审计/novelty 1/1；L0-v2 archive 只读默认恢复；
+  coverage_parts 失败不再静默（确定性回退）；门禁 266/319/371。
+· tri_ratio 口径修正：raw agreement（agree/total）不是三态质量；quality 新增
+  tri_agreement/tri_alpha/tri_kappa/tri_alpha_units/tri_alpha_verdict/tri_reliable/
+  tri_distribution；md 增“机会校正一致（ordinal）”行；bench 解析 alpha；
+  tri 只作标签定义/诊断，不作质量门。
+· 四层职责修复：_pack_result 不再把 actions/not_do 写进 views.1，改落 all/顶层；
+  core_duty 审计 20 份历史 packed（18 份 1 层越权、4 份 all 缺项）；
+  bridge 按 decidable_product(evidence) 映射 1 层证据，动作字段对齐 owner/deadline/rollback。
+· 新跑 114408 端到端通过：views.1 无 actions、all decision/residual/provenance 原生齐、
+  core_ok=true、core_duty repairs=[]；core_gate 默认 warn 已接。
+
+【验证】
+· 冒烟 266 / 0；跨档验收 PASS 319 / FAIL 0；工程审计 70 / 0
+· 前端自检 371 / 0；变异体 3 / 3；内核 24 / 0；V2 判据 41 / 41；L0-v2 16 / 16；核心职责 9 / 9
+
+【未做】
+· F5 L0-v2 生成机制延期（只开只读审计/novelty）；guide/filter 不默认。
+· eng001 额外样本 664k 超软预算 10.6%，未计入 F2 成本合格 5 题。
+· hypothetical 是 mock 参考，不是真实输出质量。
+
+---
+
+v1.23.66 相对 v1.23.65
+
+【主题】先修判据反向，再补失败自修复、分环节成本与质量闭环；不靠再加模块。
+
+【问题】
+· anytime 停止判据写反：用「多数圈仍在长」当停止条件，注释却写「跌破 0.5」；
+  越在产出的层越容易被提前停掉（质量风险），且两处调用点（串行 / B）同错。
+· json_mode 解析失败只记 bad_json，调用点走兜底 ⇒ 内容直接丢。
+· 只有总 calls/tokens；钱花在哪一环、哪项质量指标达标，读者答不出。
+· spiral.shape_limit 只裁 view，_pool_text 硬编码 8 ⇒ 配置调低时池没降。
+· F4 论证裁决默认关，冲突条目仍会被当有效经验召回。
+
+【修法】
+· 新增 anytime_stagnant_decided：生长序列取反后判「多数不再长」；串行/B 两处替换；
+  判停理由改为「不再长」下界 > 0.5。12 圈全停滞=停；全在长/样本不足=不停。
+· 新增 LLM._repair_json：解析失败时一次低温修复（只修格式、不改语义），
+  计入 ops；配置 api.json_repair（默认 false，本机 true）。
+· 新增 LLM.stage_stats()：按 stage 汇总 calls/tokens/ms；packed 落
+  llm_by_stage + llm_json_repaired/failed；md 落分环节 Top4。
+· 新增 _quality_report：覆盖率（分子/分母）、三态、决策动作数、not_do、
+  各层质量线索/停止/发散态；packed 落 quality，md 落质量闭环。
+· _pool_text 遵守 spiral.shape_limit（默认 0 时仍 8 条，零行为差）。
+· dgtf_config.yaml：playbook.argumentation.enabled=true；api.json_repair=true。
+
+【验证】
+· 冒烟 266 / 0；跨档验收 PASS 319 / FAIL 0；工程审计 70 / 0
+· 变异体子集 3 / 3 判红；前端自检 371 / 0（补 api.json_repair 标签后重跑）；机制判据 14 / 14
+
+【未做】
+· 没做真跑 A/B；anytime 修正后的真实圈数/成本变化需真跑；
+· JSON 自修复只修格式，不修语义；
+· ms 含重试等待，只看相对量级。
+
+---
+
+v1.23.65 相对 v1.23.64
+
+【主题】把“质量/成本”调到帕累托前沿：先修质量尺子，再按 10 个完成跑次改配置，
+并用总 token 软预算封住成本尾部。
+
+【问题（都有实测，见 v12365_报告.md）】
+
+| 问题 | 证据 | 影响 |
+|---|---|---|
+| 质量尺子失效 | bench_score 只认 v1.22 单行 verb=… 六字段；v1.23 是缩进四字段 | 真实 3/3 被算成 1/3，“优化”会优化错对象 |
+| 成本尾部被支配 | 199 calls / 2.94M tokens 只有 83.3% 覆盖 / 50% 一致；129 calls / 1.16M 有 100% / 60% | 多花的钱没有换来质量 |
+| 元层多跑 2 圈 | spiral.all_extra_rounds=2 + all 上限 6 ⇒ 8 圈 | 2.94M 跑次的直接来源 |
+| 上下文未裁剪 | spiral.shape_limit=0 | 已证 A/B −8.8% tokens 的键没开 |
+| high 思考无证据 | probe 四档打平；high 只是更贵 | 成本高、延迟高 |
+| 三环节思考无收益 | assess_decidability Δ0.0；from_pool Δ−0.167；re_evaluate_pool Δ0.0 | 白付思考 token/延迟 |
+| 无 token 预算 | 只有 max_calls / max_minutes | 调用次数挡不住单次上下文暴涨 |
+
+【修法 · 质量尺子】bench/bench_score.py 双格式：
+· 行动块解析（A\d+ 起，收缩进行）；新四字段（负责人/时限/验收/回退）与旧六字段都认；
+· 覆盖率 5/6（66%）与 73.2% 都解析；修行/研究 objective 双格式。
+⇒ 10 个完成跑次真实为：修行/研究 10/10、decision 8/8 个 3/3、boundary 2/2、覆盖率中位 100%。
+
+【修法 · 配置（每条都有实测或 probe 依据）】
+· spiral.shape_limit 0 → 8（A/B −8.8% tokens，无过裁）
+· spiral.all_extra_rounds 2 → 1（砍 8 圈尾部）
+· duty.span_tolerant false → true（度量对称化）
+· api.thinking.effort high → low（high 无质量证据）
+· assess_decidability / from_pool / re_evaluate_pool：enabled → disabled（实测无收益）
+· decompose_normal：disabled → enabled（probe Δ+1.0，n=3）
+· max_tokens：新增 2,000,000（0=不设限）
+· all_on: true → false；原由 all_on 展开的 8 项**逐项显式写入 yaml**
+  （playbook.mode / anytime_alpha / belief.merge_semantic / sem_entropy_thr /
+   web_search.enabled / external_anchor.as_evidence / thinking.default /
+   actions.merge_expand）⇒ 12 项生效值逐项核对与改前相同。
+· **清空 dgtf_config.user.yaml**：原文件把 api.default_model 写成 '777'
+  （服务端 400），并把全部 thinking.stages 置 enabled、effort=high ——
+  它是真正覆盖主配置的文件，也是 400 与成本失控的直接来源。
+  清空同时移除了若干实验性覆盖（actions.* / external_anchor.retriever,triage /
+  web_search 额外 stage,tier_proposal / output.dump_rounds / memory.shape* /
+  spiral.both_quota.min_items），原文件备份在
+  _archive/v12365_user_cfg_before.yaml，可单键恢复。
+
+【修法 · all_on】
+· effort high → low；bandit 退出 all_on（A/B 已把它当混淆因素；改显式 opt-in）；
+· 新增 shape_limit=8。all_on 仍保留 web/EML/anytime/merge_expand 的**一键全开**语义，
+  但本机改 all_on:false，用显式 yaml 作为单一事实源。
+
+【修法 · 前端 dgtf_app】
+· 自检 368 → **371**（+2 下拉护栏 +1 外链 scheme 护栏），全绿；补 4 个缺中文标签的键
+  （max_tokens / playbook.argumentation.enabled / .semantics / stop.anytime_mode）；
+· 模型下拉移除已停服 deepseek-chat / deepseek-reasoner（选中即 400），
+  改 deepseek-flash / deepseek-v4-pro；runtime.effort 移除引擎不认的 medium，
+  补 api.thinking.effort = low/high/max；
+· 路径/安全核查：静态目录 resolve 校验、产物/归档/资料库文件名归一、
+  资料库 .env 拒绝 + 扩展名白名单、默认只绑 127.0.0.1 —— 未发现穿越。
+
+【修法 · 机制】总 token 软预算
+· _token_budget_over()：llm.total_tokens + _ck_base.tokens >= max_tokens；
+· 串行层/ C / D~H 圈首、B 波循环、串行层间守卫都查；
+· 到点走层/圈边界优雅停（paused + pending_layers + 快照），可 resume_ckpt；
+· 默认 0 ⇒ 出厂/冒烟零行为差。
+
+【验证】
+· 冒烟 266 ✓ / 0 ✗（+1 = 成本控制判据）
+· 跨档验收 PASS 319 / FAIL 0
+· 工程审计 PASS 70 / FAIL 0
+· 优化判据 OPT PASS 27 / FAIL 0（_chk_v12365_opt.py）
+· 内核判据 KERNEL PASS 24 / FAIL 0
+· 变异体子集 3/3 判红（全套未重跑）
+· 前端自检 371 ✓ / 0 ✗（dgtf_app/selftest.py）
+
+★ v1.23.65 收束摘要
+
+交付物：元DGTF-V1.23.65.py（27486 行 / 纯 CRLF / +~50 行）；
+质量尺子双格式；配置调到 129 calls / 1.16M 的帕累托膝点；总 token 软预算；
+all_on 去掉 high 思考与 bandit 漂移。
+
+改了哪几处：主文件 10 个替换块；bench/bench_score.py 两处解析；
+dgtf_config.yaml 9 个键 + all_on 显式化 8 项；dgtf_config.user.yaml 清空；
+smoke CONFIG_TUNED / 新判据；_mut SRC；_v122_ast_registry.json（+1 符号）；
+CHANGELOG / 本报告 / README。
+
+未做：新配置的真跑 A/B（≈¥4 / 70min）；effort low / 三环节关思考的净省未实测；
+decompose_normal 只有 n=3 的 probe；全套 113 变异体未重跑。
+
+---
+
+v1.23.64 相对 v1.23.63
+
+【主题】任意停时统计 / 保形预测 / 贝叶斯变点 / 抽象论证四条前沿内核进主文件；
+EML 原子落盘与锁的正确性；重试的错误分类与抖动；Windows GBK 编码面收口。
+
+【问题（本轮全项目审计，证据见 v12364_报告.md）】
+
+| 问题 | 证据 | 影响 |
+|---|---|---|
+| 门禁在 GBK 下必崩 | _run_gate.py 打印 EXIT 时 UnicodeEncodeError；bench_calibrate.py 打 ✓ 崩 | 本机默认环境下五道门不可跑，且**退出码 1 会冒充失败** |
+| EML 整表重写非原子 | _eml_finish 新增行时裸 open("w") | 崩溃/断电会截断记忆库；坏行又被静默跳过 ⇒ 静默丢证据 |
+| 锁失败仍裸奔写库 | _eml_finish 不看 eml_lock 的 yield 值 | 并发真跑时可能无锁读-改-写 |
+| 陈旧锁只看 mtime | 长跑持锁 > stale 会被第二个进程抢走 | 互斥失效（理论可复现，测试用活 pid 负对照钉住） |
+| 4xx 也重试 | LLM.call 对所有异常一视同仁 | 参数错/鉴权错重试 3 次，白烧钱与时间 |
+| 无抖动 | backoff ** attempt | 并行分层同拍重试（thundering herd） |
+| anytime 只有一条统计口径 | stitched Hoeffding | 小样本下停得更晚（实测中位 54 圈 vs 37 圈） |
+
+【修法 · 前沿内核 F（纯函数，无新依赖）】
+
+· F1 e-process（Ramdas et al. 2023）：对任意停时 I 类错误 ≤ α；
+  与 stitched Hoeffding 同签名分派，默认仍是 hoeffding（零行为差）。
+  判据：800 次 140 步仿真的**边跑边看**假阳率 0.031 ≤ 0.05；
+  功效中位 37 圈 vs Hoeffding 54 圈。
+· F2 保形预测（Vovk et al. 2005）：有限样本修正分位数、p 值、预测集；
+  覆盖率判据 0.940 ≥ 0.9；空校准集返回 +inf（保守全弃权）。
+· F3 BOCPD（Adams & MacKay 2007）：NIG 共轭 + run-length 后验；
+  5σ 漂移在 0..7 步内检出，平稳序列误报 0（合成负对照）。
+· F4 Dung 论证（Dung 1995）+ 负担排序：playbook 同 (kind,cond) 动作冲突
+  只标 arg_status / defeated_by，不删行、不改 status；精确并列保持 undecided
+  （红线「未对齐是合法状态」）。默认关。
+
+【修法 · 工程】
+
+· eml_rewrite_jsonl 改 tmp + os.replace，且新增 allow_grow（只增不删）；
+  _eml_finish 的新增/不变两条路都走它，删除裸 open("w") 分支。
+· eml_lock：monotonic 计时、pid:token、回收前问活进程、释放只删自己的锁。
+· eml_read_jsonl：坏行计数 + logger.warning（不再静默当空库）。
+· LLM.call：4xx（除 408/409/429）不重试；抖动 [0.5,1.0]×backoff；
+  尊重 Retry-After（上限 60s）。
+· _force_utf8_streams 同时给子进程设 PYTHONUTF8/PYTHONIOENCODING（setdefault）。
+
+【新配置键（默认保守）】
+· stop.anytime_mode = hoeffding
+· playbook.argumentation.enabled = false / semantics = grounded
+
+【验证】
+· 冒烟 265 ✓ / 0 ✗（+1 为本轮新判据）
+· 跨档验收 PASS 319 / FAIL 0
+· 工程审计 PASS 70 / FAIL 0
+· 开发期判据 DEV PASS 33 / FAIL 0（_chk_v12364_dev.py）
+· 内核判据 KERNEL PASS 24 / FAIL 0（_chk_v12364_kernel.py）
+
+★ v1.23.64 收束摘要
+
+交付物：元DGTF-V1.23.64.py（27433 行 / 纯 CRLF / +626 −50）；
+四条前沿内核进单文件；两项工程加固（原子落盘 / 锁正确性）；
+两项重试优化（错误分类 / 抖动）；GBK 编码面修复。
+
+改了哪几处：主文件 12 个替换块 + 1 个插入块；smoke_test.py SRC；
+_mut_v12332.py SRC；_v122_ast_registry.json（+22 符号）；dgtf_config.yaml 头；
+CHANGELOG.md 本段；v12364_报告.md 新建。
+
+验收数字：见上。
+
+未做：保形/BOCPD 尚未接进停止判据（只有只读诊断脚本）；AGM 信念修正
+未做；e-process 只做了 Bernoulli 型（多分类要新做 Dirichlet 型）。
+
+---
+
 v1.23.63 相对 v1.23.62
 
 【主题】非结构化输出要留痕；`max_retries=0` 不该等于"一次都不试"。

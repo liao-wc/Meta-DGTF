@@ -1,0 +1,18 @@
+{
+ "id": "prop-1792498929256-2cbe21",
+ "ts": 1792498929.256586,
+ "task": {
+  "kind": "user_task",
+  "severity": "high",
+  "title": "禁止输入自检在无证据时断言型号“不存在”，并与事实卡对账",
+  "detail": "证据：outputs/20261020_154010_DeepSeek-V41-Flash-.packed.json 的 input_sanity.issues[0] 写「DeepSeek-V4.1-Flash-1017 — 形似标准模型版本号，但该型号不存在，属虚构记号」；同一包的 fact_contract.ok_all=true，四层 answer=2026-10-17、ledger.source=official_preflight，报告第 9/22 行给出「事实答案 2026-10-17（官方源 18 条）」，第 270 行却又判该型号为虚构记号；而官方 10-17 条目正文本身即写 upgraded to DeepSeek-V4.1-Flash-1017。根因：元DGTF-V1.30.0.py 第 23148 行在检索前调用第 24201 行的 _check_input_sanity，该步只把问题串交给 LLM 先验判断（24213-24239 的提示还专门要求抓「形似标准记号的非标准记号」），结果原样写入 packed 并由 27994-28003 无条件渲染，全程不与检索后的 fact_contract/官方证据对账，于是「预检没认出」被升级成「不存在」的存在性断言。建议：1) 预检措辞降级为「本地先验未识别，待证据核验」，禁止输出「不存在/虚构」这类存在性断言；2) 检索后加对账：fact_contract.ledger.known 且官方证据命中该 term（或 answer_hit）时，把该 issue 标记为 resolved 并从告警区移除；证据冲突时改写为「官方源对该型号的命名/存在性有冲突」；3) 报告出口加互斥闸：同一产物不得同时出现「不存在/虚构」与「官方事实答案」。回归验收：重放 154010，input_sanity 不再称其不存在、报告无互斥断言、事实答案不回退；构造一个真正查无实据的型号，仍以「检索到的官方源中未见」而非「不存在」提示；补 smoke。与队列中「发布日期/更新日」任务不重复：那条管日期谓词，本条管存在性断言与跨段一致性。",
+  "source_run": "dsh_auto",
+  "id": "2cbe2168e82e"
+ },
+ "task_id": "2cbe2168e82e",
+ "plan": "将 _check_input_sanity（约 24201 行，23148 行调用）由“型号不存在”改为“未知/待核”，检索前不做存在性否定；检索后用 fact_contract 与官方 18 条对账，若官方条目含该型号（upgraded to DeepSeek-V4.1-Flash-1017）则清除该 issue，并加“否定断言需证据”规则与回放用例。",
+ "status": "pending",
+ "approver": "",
+ "session_id": "",
+ "batch": true
+}

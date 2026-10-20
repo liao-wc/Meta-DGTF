@@ -361,6 +361,19 @@ def read_body(name: str, limit: int | None = None) -> str:
         return ""
 
 
+def read_packed(name: str) -> dict:
+    """读取某份产物对应的 packed.json（只读；找不到返回空 dict）。"""
+    import json as _j
+    p = OUTPUTS_DIR / Path(name).name
+    if not p.name.endswith(".packed.json"):
+        p = p.with_suffix(".packed.json")
+    try:
+        d = _j.loads(p.read_text(encoding="utf-8"))
+        return d if isinstance(d, dict) else {}
+    except Exception:
+        return {}
+
+
 def _snippet(text: str, q: str, width: int = 180) -> str:
     low, ql = text.lower(), q.lower()
     i = low.find(ql)

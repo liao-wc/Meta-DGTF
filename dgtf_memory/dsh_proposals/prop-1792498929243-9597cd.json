@@ -1,0 +1,18 @@
+{
+ "id": "prop-1792498929243-9597cd",
+ "ts": 1792498929.2430494,
+ "task": {
+  "kind": "process_gap",
+  "severity": "high",
+  "title": "层 0 过程标准未达标",
+  "detail": "{\"rounds\": 0, \"product_chars\": 0, \"product\": \"\", \"standard_ok\": false, \"fact_ok\": true, \"citations\": 0, \"decidability\": null, \"decidability_bad\": 0, \"external_refs\": 0, \"external_reference\": 0, \"evidence_ids\": [], \"deps\": [\"external_facets\"], \"inputs\": [\"external_facets\"]}",
+  "source_run": "RS4",
+  "id": "9597cde03f2c"
+ },
+ "task_id": "9597cde03f2c",
+ "plan": "deps=external_facets 且 rounds=0，先查外部 facet 输入为空导致 0 层未启动；与 c440fb190a44 的 facet 修复联动，验证 0 层 rounds>0、product 非空。",
+ "status": "pending",
+ "approver": "",
+ "session_id": "",
+ "batch": true
+}

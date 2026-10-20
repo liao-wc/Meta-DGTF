@@ -1,0 +1,18 @@
+{
+ "id": "prop-1792498929237-50ce99",
+ "ts": 1792498929.2377958,
+ "task": {
+  "kind": "quality_flag",
+  "severity": "low",
+  "title": "质量线索：no_amp_at_all",
+  "detail": "no_amp_at_all",
+  "source_run": "",
+  "id": "50ce99bf072b"
+ },
+ "task_id": "50ce99bf072b",
+ "plan": "比 050a33e7211f 更严重（完全无 AMP）。先确认 AMP 开关与依赖层是否为空，再套用同一阈值校准；若配置关闭则显式报错，不静默产出空集。",
+ "status": "pending",
+ "approver": "",
+ "session_id": "",
+ "batch": true
+}

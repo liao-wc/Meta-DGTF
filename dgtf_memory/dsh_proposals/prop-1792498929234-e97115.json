@@ -1,0 +1,18 @@
+{
+ "id": "prop-1792498929234-e97115",
+ "ts": 1792498929.2345436,
+ "task": {
+  "kind": "quality_flag",
+  "severity": "low",
+  "title": "质量线索：all_closure_unavailable",
+  "detail": "all_closure_unavailable",
+  "source_run": "",
+  "id": "e97115b223a3"
+ },
+ "task_id": "e97115b223a3",
+ "plan": "检查闭合依赖（deps/inputs）缺失或超时路径，加部分闭合降级并显式标注不可用原因，禁止静默 unavailable；把 closure 状态写入报告供后续 standard_ok 使用。",
+ "status": "pending",
+ "approver": "",
+ "session_id": "",
+ "batch": true
+}

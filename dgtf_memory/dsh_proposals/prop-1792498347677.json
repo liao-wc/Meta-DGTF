@@ -1,0 +1,65 @@
+{
+ "id": "prop-1792498347677",
+ "ts": 1792498347.678001,
+ "task": {
+  "title": "禁止输入自检在无证据时断言型号“不存在”，并与事实卡对账",
+  "detail": "证据：outputs/20261020_154010_DeepSeek-V41-Flash-.packed.json 的 input_sanity.issues[0] 写「DeepSeek-V4.1-Flash-1017 — 形似标准模型版本号，但该型号不存在，属虚构记号」；同一包的 fact_contract.ok_all=true，四层 answer=2026-10-17、ledger.source=official_preflight，报告第 9/22 行给出「事实答案 2026-10-17（官方源 18 条）」，第 270 行却又判该型号为虚构记号；而官方 10-17 条目正文本身即写 upgraded to DeepSeek-V4.1-Flash-1017。根因：元DGTF-V1.30.0.py 第 23148 行在检索前调用第 24201 行的 _check_input_sanity，该步只把问题串交给 LLM 先验判断（24213-24239 的提示还专门要求抓「形似标准记号的非标准记号」），结果原样写入 packed 并由 27994-28003 无条件渲染，全程不与检索后的 fact_contract/官方证据对账，于是「预检没认出」被升级成「不存在」的存在性断言。建议：1) 预检措辞降级为「本地先验未识别，待证据核验」，禁止输出「不存在/虚构」这类存在性断言；2) 检索后加对账：fact_contract.ledger.known 且官方证据命中该 term（或 answer_hit）时，把该 issue 标记为 resolved 并从告警区移除；证据冲突时改写为「官方源对该型号的命名/存在性有冲突」；3) 报告出口加互斥闸：同一产物不得同时出现「不存在/虚构」与「官方事实答案」。回归验收：重放 154010，input_sanity 不再称其不存在、报告无互斥断言、事实答案不回退；构造一个真正查无实据的型号，仍以「检索到的官方源中未见」而非「不存在」提示；补 smoke。与队列中「发布日期/更新日」任务不重复：那条管日期谓词，本条管存在性断言与跨段一致性。",
+  "kind": "user_task",
+  "severity": "med"
+ },
+ "plan": "**提案（未读取项目文件，未作修改）**\n\n涉及文件：`元DGTF-V1.30.0.py`（第 23148 行的预检调用、第 24201–24239 行的提示词、第 27994–28003 行的渲染）。\n\n步骤：① 预检措辞改为「本地先验未识别，待证据核验」，禁止输出「不存在/虚构」；② 检索后依据 `fact_contract.ledger.known` 与官方证据命中（或 `answer_hit`）把该 issue 置为 `resolved` 并移出告警区，冲突则改写为「官方源对该型号命名或存在性有冲突」；③ 在报告出口加互斥检查。\n\n风险：真实虚构型号漏报、把问题误标为已解决、重放结果漂移。\n\n验证：重放 `154010` 包，断言不称「不存在」、没有互斥断言、答案仍为 2026-10-17；另构造查无实据的型号，仍提示「检索到的官方源中未见」；补跑 input_sanity smoke。",
+ "session_id": "session-757655fc-2558-45c0-b329-db340f9d58d0",
+ "status": "pending",
+ "approver": "",
+ "events": [
+  {
+   "type": "session",
+   "sessionId": "session-757655fc-2558-45c0-b329-db340f9d58d0",
+   "cwd": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构"
+  },
+  {
+   "type": "status",
+   "phase": "turn_start",
+   "turn": 1
+  },
+  {
+   "type": "status",
+   "phase": "step_start",
+   "turn": 1,
+   "step": 1
+  },
+  {
+   "type": "thinking",
+   "text": "The user asks for proposal mode: don't read project files, just output a short fix proposal (≤200 characters... actually ≤200字, Chinese characters). Include: files involved, steps, risks, verification commands. Task given in detail.\n\nI should just produce the proposal, no file reads. Keep ≤200字. Chinese. Must include files, steps, risks, verification commands. Very compact.\n\nLet me draft:\n\n涉及文件：元DGTF-V1.30.0.py（23148/24201-24239预检、27994-28003渲染）。步骤：①预检措辞改「本地先验未识别，待证据核验」，禁「不存在/虚构」；②检索后按fact_contract.ledger.known+证据命中把issue置resolved并移出告警，冲突则改「官方源命名/存在性有冲突」；③报告出口互斥闸。风险：漏报真虚构型号、误消警、重放漂移。验证：重放outputs/20261020_154010_DeepSeek-V41-Flash-.packed.json，断言无「不存在」、无互斥、答案仍2026-10-17；构造无据型号仍提示「检索到的官方源中未见」；python -m pytest tests -k input_sanity。\n\nCount characters roughly: need ≤200字. Let me count. That draft is probably ~230. Need trim.\n\nLet me write compact:\n\n文件：元DGTF-V1.30.0.py（23148预检调用、24201-24239提示、27994-28003渲染）。\n步骤：①预检改「本地先验未识别，待证据核验」，禁「不存在/虚构」；②检索后以fact_contract.ledger.known+官方证据命中将issue置resolved并移出告警，冲突则写「官方源命名/存在性有冲突」；③出口加互斥闸。\n风险：真虚构型号漏报、误消警、重放漂移。\n验证：重放154010包，断言无「不存在」、无互斥、答案仍2026-10-17；构造无据型号仍提示「官方源中未见」；跑input_sanity smoke。\n\nCount: roughly 200. Good enough. Add note no files read, read-only.\n\nI'll output only the proposal briefly with a note."
+  },
+  {
+   "type": "text",
+   "text": "**提案（未读取项目文件，未作修改）**\n\n涉及文件：`元DGTF-V1.30.0.py`（第 23148 行的预检调用、第 24201–24239 行的提示词、第 27994–28003 行的渲染）。\n\n步骤：① 预检措辞改为「本地先验未识别，待证据核验」，禁止输出「不存在/虚构」；② 检索后依据 `fact_contract.ledger.known` 与官方证据命中（或 `answer_hit`）把该 issue 置为 `resolved` 并移出告警区，冲突则改写为「官方源对该型号命名或存在性有冲突」；③ 在报告出口加互斥检查。\n\n风险：真实虚构型号漏报、把问题误标为已解决、重放结果漂移。\n\n验证：重放 `154010` 包，断言不称「不存在」、没有互斥断言、答案仍为 2026-10-17；另构造查无实据的型号，仍提示「检索到的官方源中未见」；补跑 input_sanity smoke。"
+  },
+  {
+   "type": "status",
+   "phase": "step_end",
+   "turn": 1,
+   "step": 1,
+   "usage": {
+    "inputTokens": 997,
+    "outputTokens": 756,
+    "cacheReadTokens": 5888,
+    "cacheWriteTokens": 0,
+    "totalTokens": 7641
+   }
+  },
+  {
+   "type": "status",
+   "phase": "turn_end",
+   "turn": 1,
+   "reason": {
+    "kind": "completed"
+   }
+  },
+  {
+   "type": "final",
+   "text": "**提案（未读取项目文件，未作修改）**\n\n涉及文件：`元DGTF-V1.30.0.py`（第 23148 行的预检调用、第 24201–24239 行的提示词、第 27994–28003 行的渲染）。\n\n步骤：① 预检措辞改为「本地先验未识别，待证据核验」，禁止输出「不存在/虚构」；② 检索后依据 `fact_contract.ledger.known` 与官方证据命中（或 `answer_hit`）把该 issue 置为 `resolved` 并移出告警区，冲突则改写为「官方源对该型号命名或存在性有冲突」；③ 在报告出口加互斥检查。\n\n风险：真实虚构型号漏报、把问题误标为已解决、重放结果漂移。\n\n验证：重放 `154010` 包，断言不称「不存在」、没有互斥断言、答案仍为 2026-10-17；另构造查无实据的型号，仍提示「检索到的官方源中未见」；补跑 input_sanity smoke。"
+  }
+ ]
+}

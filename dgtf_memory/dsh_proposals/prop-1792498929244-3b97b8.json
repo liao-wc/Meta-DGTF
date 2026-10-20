@@ -1,0 +1,18 @@
+{
+ "id": "prop-1792498929244-3b97b8",
+ "ts": 1792498929.244086,
+ "task": {
+  "kind": "user_task",
+  "severity": "med",
+  "title": "app ????",
+  "detail": "?? Tool Calls ??",
+  "source_run": "app_user",
+  "id": "3b97b8164147"
+ },
+ "task_id": "3b97b8164147",
+ "plan": "“app ????/?? Tool Calls ??”为占位与编码问题。修 title 编码与占位过滤（并入 940c8d165eed 的校验闸），不进入执行队列，并回溯真实任务源。",
+ "status": "pending",
+ "approver": "",
+ "session_id": "",
+ "batch": true
+}

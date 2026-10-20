@@ -1,0 +1,18 @@
+{
+ "id": "prop-1792498929255-024a9e",
+ "ts": 1792498929.255443,
+ "task": {
+  "kind": "user_task",
+  "severity": "med",
+  "title": "修正 probe_link_dangling 误报，并让 standard_ok 反映线索闭合",
+  "detail": "证据：最新真跑 outputs/20261020_154010_DeepSeek-V41-Flash-.packed.json 的 process_ledger.standard_all=True、四层 standard_ok 全为 True，报告第 49 行据此印出「四层标准 ✅」，第 9 行印出「事实答案 2026-10-17（官方源 18 条）」；但同一个结果包的 quality.flags 仍有 duty_short、polarity_all_same_structural(1)、probe_link_dangling(2)、probe_link_dangling(3)、unsaid_overused(7)，报告第 268/276 行还自己承认「4 条不可判定（其中 1 条无池内追溯）」「理由不成立，但留在了产物里」。其中 probe_link_dangling 是系统性误报：元DGTF-V1.30.0.py 13611-13625 用 probe.link 文本里是否出现池内 id 来判定悬空，而 0 层 3 条、1 层 2 条 probe 的 link 全是散文（“对照两处文体…”“直接定 T4/T11…”），计数恰好等于探针数 3/2，并非真悬空。根因：dgtf_v2/process_ledger.py 38-67 的 standard_ok 只看 product 非空、fact_ok（1 层再加 citations/audit），完全不看 quality.flags 与无追溯项；dgtf_v2/agent_bridge.py 35-41 又只按它产出 process_gap，于是「绿标」与未闭合线索并存。建议：1) E4 只校验显式 id 引用（新增 link_ids 或复用 covers），散文 link 不记 dangling；2) 新增 closure_ok（probe_covers_bad_ref、probe_no_target_covered 清零，无池内追溯的不可判定为 0），令 standard_ok = structural_ok AND closure_ok，报告按「结构完整 / 线索未闭合」分别呈现；3) 回归：散文 link 不误报、真悬空 id 仍报、154010 重放后不再同时出现「四层标准 ✅」与硬线索。验收：重放 154010，probe_link_dangling 消失，绿标仅在 closure_ok 为真时出现，dgtf_v2 现有测试全过。",
+  "source_run": "dsh_auto",
+  "id": "024a9eadf0dc"
+ },
+ "task_id": "024a9eadf0dc",
+ "plan": "修 元DGTF 的 probe 链接解析：统一 id 归一化并区分池内/池外引用后再判 dangling；把 quality.flags 闭合状态纳入 standard_ok（或至少标注“标准通过≠线索闭合”），消除报告第 268/276 行自相矛盾；回归 20261020_154010 使 dangling 消失而真实断链保留。",
+ "status": "pending",
+ "approver": "",
+ "session_id": "",
+ "batch": true
+}

@@ -1,0 +1,18 @@
+{
+ "id": "prop-1792498929220-1135dd",
+ "ts": 1792498929.2202246,
+ "task": {
+  "kind": "eml_candidate",
+  "severity": "med",
+  "title": "验证/应用 EML 候选：action_hint",
+  "detail": "{\"kind\": \"guard\", \"cond\": {\"issue\": \"all_actions_missing\"}, \"action\": {\"key\": \"action_hint\", \"name\": \"landing_decision\", \"value\": true}, \"readings\": {\"before\": {\"actions\": 0, \"decision\": true}, \"after\": {\"actions\": \"期望 >0\"}}, \"why\": \"all 有决策但无动作 ⇒ 打开落地决策\", \"confidence\": 0.2008, \"evidence\": [\"20261020_134230\"], \"source\": \"engine/both-all\"}",
+  "source_run": "20261020_135317",
+  "id": "1135dd11cd09"
+ },
+ "task_id": "1135dd11cd09",
+ "plan": "action_hint(landing_decision) 置信仅 0.2008。仅在 decision=true 且 actions=0 时注入 landing_decision，加一次性 guard 防重试死循环；回放验证 actions>0 且不产生无证据动作，否则回退。",
+ "status": "pending",
+ "approver": "",
+ "session_id": "",
+ "batch": true
+}

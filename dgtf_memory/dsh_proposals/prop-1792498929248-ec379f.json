@@ -1,0 +1,18 @@
+{
+ "id": "prop-1792498929248-ec379f",
+ "ts": 1792498929.2484887,
+ "task": {
+  "kind": "quality_flag",
+  "severity": "low",
+  "title": "质量线索：polarity_all_same_structural(0)",
+  "detail": "polarity_all_same_structural(0)",
+  "source_run": "20261020_145244",
+  "id": "ec379fc0b563"
+ },
+ "task_id": "ec379fc0b563",
+ "plan": "0 层变体。按层定位极性生成器，复用 60d4053c9b0d 的多样性检查；先判定是层特有问题还是全局问题，再决定统一修复或分层开关。",
+ "status": "pending",
+ "approver": "",
+ "session_id": "",
+ "batch": true
+}

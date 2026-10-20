@@ -1,0 +1,18 @@
+{
+ "id": "prop-1792498929247-03e3cf",
+ "ts": 1792498929.2475176,
+ "task": {
+  "kind": "quality_flag",
+  "severity": "low",
+  "title": "质量线索：unsaid_overused(5)",
+  "detail": "unsaid_overused(5)",
+  "source_run": "20261020_143748",
+  "id": "03e3cf721777"
+ },
+ "task_id": "03e3cf721777",
+ "plan": "与 2ccc488faa9d 同一参数治理：复用上限按 4/5/7 观测调参，记录每次复用来源，先限流再评估输入单一性。",
+ "status": "pending",
+ "approver": "",
+ "session_id": "",
+ "batch": true
+}

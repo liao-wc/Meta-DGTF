@@ -1,0 +1,18 @@
+{
+ "id": "prop-1792498929246-d81190",
+ "ts": 1792498929.2462413,
+ "task": {
+  "kind": "quality_flag",
+  "severity": "low",
+  "title": "质量线索：polarity_all_same_structural(1)",
+  "detail": "polarity_all_same_structural(1)",
+  "source_run": "20261020_143748",
+  "id": "d81190c3ce7f"
+ },
+ "task_id": "d81190c3ce7f",
+ "plan": "与 60d4053c9b0d 同族，先确认 1 层极性生成是否只有单一模板；加极性与立场多样性约束，命中时重采样一次并记录。",
+ "status": "pending",
+ "approver": "",
+ "session_id": "",
+ "batch": true
+}

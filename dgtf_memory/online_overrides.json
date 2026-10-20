@@ -1,0 +1,32 @@
+{
+ "version": "online_adapt/v1",
+ "overrides": {
+  "spiral.soft_max": 1,
+  "stop.anytime_alpha": 0.01,
+  "spiral.all_extra_rounds": 3,
+  "external_input.facet_queries": 6,
+  "web_search.fetch": true,
+  "web_search.fetch_per_run": 4
+ },
+ "history": [
+  {
+   "run": "20261020_153113",
+   "before": {
+    "spiral.soft_max": 1,
+    "stop.anytime_alpha": 0.01,
+    "spiral.all_extra_rounds": 3,
+    "external_input.facet_queries": 6,
+    "web_search.fetch": true,
+    "web_search.fetch_per_run": 4
+   },
+   "after": {
+    "spiral.soft_max": 1,
+    "stop.anytime_alpha": 0.01,
+    "spiral.all_extra_rounds": 3,
+    "external_input.facet_queries": 6,
+    "web_search.fetch": true,
+    "web_search.fetch_per_run": 4
+   }
+  }
+ ]
+}

@@ -1,0 +1,18 @@
+{
+ "id": "prop-1792498929233-2ccc48",
+ "ts": 1792498929.2337215,
+ "task": {
+  "kind": "quality_flag",
+  "severity": "low",
+  "title": "质量线索：unsaid_overused(4)",
+  "detail": "unsaid_overused(4)",
+  "source_run": "",
+  "id": "2ccc488faa9d"
+ },
+ "task_id": "2ccc488faa9d",
+ "plan": "加“同一 unsaid 条目复用上限+去重键”，超过阈值时改走替代表达或标注复用；验证 4 次降至阈值内且必要悬置不丢失。",
+ "status": "pending",
+ "approver": "",
+ "session_id": "",
+ "batch": true
+}

@@ -1,0 +1,18 @@
+{
+ "id": "prop-1792498929251-414c84",
+ "ts": 1792498929.2514331,
+ "task": {
+  "kind": "quality_flag",
+  "severity": "low",
+  "title": "质量线索：unsaid_overused(7)",
+  "detail": "unsaid_overused(7)",
+  "source_run": "20261020_153113",
+  "id": "414c84091a91"
+ },
+ "task_id": "414c84091a91",
+ "plan": "复用次数最高。先限流与去重，再评估是否因输入单一导致；与 2ccc488faa9d、03e3cf721777 合并为同一组参数统一治理，避免各自调参冲突。",
+ "status": "pending",
+ "approver": "",
+ "session_id": "",
+ "batch": true
+}

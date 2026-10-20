@@ -1,0 +1,18 @@
+{
+ "id": "prop-1792498929229-050a33",
+ "ts": 1792498929.2296503,
+ "task": {
+  "kind": "quality_flag",
+  "severity": "low",
+  "title": "质量线索：no_amp_candidates",
+  "detail": "no_amp_candidates",
+  "source_run": "",
+  "id": "050a33e7211f"
+ },
+ "task_id": "050a33e7211f",
+ "plan": "先补日志定位 AMP 候选集合为空的具体前置条件（开关/阈值/依赖层为空）；小步放宽阈值并与 45d0343d0672 的 100% 过载做双向校准，避免一放就爆。",
+ "status": "pending",
+ "approver": "",
+ "session_id": "",
+ "batch": true
+}

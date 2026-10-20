@@ -1,73 +1,73 @@
 # 机制审计 v122
 
-- 生成时间：2026-10-18T12:16:13
+- 生成时间：2026-10-20T22:00:40
 - 被测源码：`元DGTF-V1.22.0-rc1.py`
-- 语料：日志 748 份 / 产物 399 份
+- 语料：日志 1211 份 / 产物 486 份
 - 合计：可达 13 · 仅源码 0 · 需核对 0（共 13 项）
 
 ★ 「零触发」不等于「没用」。verdict 只要不是 `需核对`，都说明机制在源码里存在、只是本批产物没走到那条分支 —— 要区分「条件不可达」「条件窄但成立」「机制压根没工作」需要**负对照**，那张表在 `docs/机制审计-v122.md` 的 `## pending_fix` 里。
 
 | 机制 | 触发条件 | 日志标记 | 产物标记 | 源码 | 日志 | 产物 | 判定 |
 |---|---|---|---|---|---|---|---|
-| `escalate_starve_rounds` | 连续 N 圈无进展 + 名下有账 | `escalate_starve_rounds` | `escalate_starve_rounds` | 7 | 53 | 0 | 可达 |
-| `no_push_when_idle` | 空转类判据 + 未深入方向 | `no_push_when_idle` | `no_push_when_idle` | 4 | 53 | 0 | 可达 |
-| `_reopen_closed_debt` | 分类被推翻 + 曾有 escalated | `_reopen_closed_debt` | `_reopen_closed_debt` | 10 | 53 | 0 | 可达 |
+| `escalate_starve_rounds` | 连续 N 圈无进展 + 名下有账 | `escalate_starve_rounds` | `escalate_starve_rounds` | 7 | 164 | 0 | 可达 |
+| `no_push_when_idle` | 空转类判据 + 未深入方向 | `no_push_when_idle` | `no_push_when_idle` | 4 | 164 | 0 | 可达 |
+| `_reopen_closed_debt` | 分类被推翻 + 曾有 escalated | `_reopen_closed_debt` | `_reopen_closed_debt` | 10 | 164 | 0 | 可达 |
 | `stable_layers` | 悬置连续 N 圈同批 | `stable_layers` | `stable_layers` | 17 | 9 | 0 | 可达 |
-| `both_quota.max_ratio` | both 占比超阈值 | `both_quota` | `both_quota` | 3 | 495 | 349 | 可达 |
-| `both_tighten_ratio` | 同上，改判 | `both_tighten_ratio` | `both_tighten_ratio` | 5 | 53 | 0 | 可达 |
-| `_all_settle_streak` | 元层清算未下降 | `_all_settle_streak` | `_all_settle_streak` | 10 | 53 | 0 | 可达 |
-| `min_rounds` | layer_no < min_r | `min_rounds` | `min_rounds` | 54 | 219 | 0 | 可达 |
-| `structure_saturation` | 每 N 圈无新维度 | `structure_saturation` | `structure_saturation` | 14 | 131 | 2 | 可达 |
-| `_budget_exhausted` | 调用数超预算 | `_budget_exhausted` | `_budget_exhausted` | 10 | 104 | 0 | 可达 |
-| `DecidabilityFreeze.verify` | 签名不匹配 | `DecidabilityFreeze` | `freeze` | 0 | 13 | 63 | 可达 |
-| `triage_downgrades` | 信息不足型 und + 锚点命中 | `triage_downgrades` | `triage 降级` | 2 | 57 | 6 | 可达 |
-| `_anchor_crosscheck.conflict` | 结论与锚点相反 | `锚点冲突` | `锚点冲突` | 0 | 57 | 2 | 可达 |
+| `both_quota.max_ratio` | both 占比超阈值 | `both_quota` | `both_quota` | 3 | 497 | 349 | 可达 |
+| `both_tighten_ratio` | 同上，改判 | `both_tighten_ratio` | `both_tighten_ratio` | 5 | 164 | 0 | 可达 |
+| `_all_settle_streak` | 元层清算未下降 | `_all_settle_streak` | `_all_settle_streak` | 10 | 164 | 0 | 可达 |
+| `min_rounds` | layer_no < min_r | `min_rounds` | `min_rounds` | 54 | 299 | 0 | 可达 |
+| `structure_saturation` | 每 N 圈无新维度 | `structure_saturation` | `structure_saturation` | 14 | 244 | 2 | 可达 |
+| `_budget_exhausted` | 调用数超预算 | `_budget_exhausted` | `_budget_exhausted` | 10 | 144 | 0 | 可达 |
+| `DecidabilityFreeze.verify` | 签名不匹配 | `DecidabilityFreeze` | `freeze` | 0 | 16 | 70 | 可达 |
+| `triage_downgrades` | 信息不足型 und + 锚点命中 | `triage_downgrades` | `triage 降级` | 2 | 168 | 6 | 可达 |
+| `_anchor_crosscheck.conflict` | 结论与锚点相反 | `锚点冲突` | `锚点冲突` | 0 | 168 | 2 | 可达 |
 
 ## 语料清单
 
-日志（748）：
-- `_all_final.log`
-- `_all_final2.log`
-- `_all_final3.log`
-- `_all_final5.log`
-- `_anchor_matrix_v75.log`
-- `_app_selftest.log`
-- `_app_selftest_v12333.log`
-- `_app_selftest_v12338.log`
-- `_app_selftest_v12340.log`
-- `_app_selftest_v12349.log`
-- `_app_selftest_v12350.log`
-- `_app_server.log`
-- `_app_server_v12333.log`
-- `_app_server_v12338.log`
-- `_app_server_v12349.log`
-- `_app_server_v12350.log`
-- `_audit_v12328.log`
-- `_audit_v12337.log`
-- `_audit_v12338.log`
-- `_audit_v12339.log`
-- `_audit_v12340.log`
-- `_audit_v12341.log`
-- `_audit_v12342.log`
-- `_audit_v12343.log`
-- `_audit_v12344.log`
-- `_audit_v12345.log`
-- `_audit_v12346.log`
-- `_audit_v12347.log`
-- `_audit_v12348.log`
-- `_auto_pipeline.log`
-- `_auto_run.log`
-- `_batch_full_tail.log`
-- `_batch_light_tail.log`
-- `_batch_open_full.log`
-- `_batch_open_light.log`
-- `_batch_policy.log`
-- `_bench_p1_real.log`
-- `_bench_p1v2.log`
-- `_bench_v1221_full.log`
-- `_bench_v122_full.log`
+日志（1211）：
+- `_ab2m_q1_v2.log`
+- `_ab_F2sample_biz001.log`
+- `_ab_F2sample_eng001.log`
+- `_ab_allv2_q2.log`
+- `_ab_allv2_q2b_live.log`
+- `_ab_both_off.log`
+- `_ab_both_q2.log`
+- `_ab_both_q2b.log`
+- `_ab_core_final.log`
+- `_ab_core_q2b.log`
+- `_ab_f2sample_biz002.log`
+- `_ab_f2sample_law002.log`
+- `_ab_f2sample_law002b.log`
+- `_ab_f2sample_tech002.log`
+- `_ab_f2sample_tech002b.log`
+- `_ab_f3_full4.log`
+- `_ab_f3more_eng002.log`
+- `_ab_f3more_tech002.log`
+- `_ab_f3sample_biz001.log`
+- `_ab_f3sample_law002.log`
+- `_ab_f4_full4.log`
+- `_ab_f4more_law002.log`
+- `_ab_f4more_med001.log`
+- `_ab_f4more_org001.log`
+- `_ab_f4sample_biz002.log`
+- `_ab_f4sample_tech001.log`
+- `_ab_l0_archive.log`
+- `_ab_l0_archive_rep.log`
+- `_ab_l0_off.log`
+- `_ab_l0_off_rep.log`
+- `_ab_l0_on.log`
+- `_ab_l0_q1.log`
+- `_ab_l0_q2.log`
+- `_ab_l0v2_q2.log`
+- `_ab_l0v2b_q2.log`
+- `_ab_one_off.log`
+- `_ab_one_only1.log`
+- `_ab_one_only1b.log`
+- `_ab_one_only1c.log`
+- `_ab_one_q2_live.log`
 
-产物（399）：
+产物（486）：
 - `bench\reports\v1221_full.md`
 - `bench\reports\v122_full.md`
 - `bench\runs\mock_p1\biz_001\20261004_223416_一家现金流紧张的中小制造企业该先裁员还.md`

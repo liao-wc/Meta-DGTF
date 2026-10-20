@@ -18,6 +18,14 @@
   · `git add -A` + `git commit`（无改动则跳过，不算失败）。
   · 打印最近 3 条历史。
 """
+
+# ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
+import sys as _sys_utf8
+for _s_utf8 in (_sys_utf8.stdout, _sys_utf8.stderr):
+    try:
+        _s_utf8.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 import re
 import shutil
 import subprocess

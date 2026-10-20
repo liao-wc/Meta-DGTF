@@ -12,6 +12,14 @@
 
 ★ 上限：`max_calls=80` / `max_minutes=15`（硬封顶，到点引擎自己收尾）。
 """
+
+# ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
+import sys as _sys_utf8
+for _s_utf8 in (_sys_utf8.stdout, _sys_utf8.stderr):
+    try:
+        _s_utf8.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 import json
 import sys
 import time

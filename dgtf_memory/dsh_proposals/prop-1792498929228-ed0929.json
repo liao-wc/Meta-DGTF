@@ -1,0 +1,18 @@
+{
+ "id": "prop-1792498929228-ed0929",
+ "ts": 1792498929.228711,
+ "task": {
+  "kind": "quality_flag",
+  "severity": "low",
+  "title": "质量线索：expand_imbalanced",
+  "detail": "expand_imbalanced",
+  "source_run": "",
+  "id": "ed0929475df3"
+ },
+ "task_id": "ed0929475df3",
+ "plan": "统计 expand 各层扩展数量分布，加每层最小/最大配额约束；输入 deps 缺失时降级而非硬扩，回放对比分布均衡度，确认 expand_imbalanced 消失。",
+ "status": "pending",
+ "approver": "",
+ "session_id": "",
+ "batch": true
+}

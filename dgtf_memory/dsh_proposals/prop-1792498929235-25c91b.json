@@ -1,0 +1,18 @@
+{
+ "id": "prop-1792498929235-25c91b",
+ "ts": 1792498929.235738,
+ "task": {
+  "kind": "api_gap",
+  "severity": "med",
+  "title": "Tool Calls 未触发，排查预检/配置",
+  "detail": "{\"search_calls\": 0, \"fetch_calls\": 0, \"fetch_fails\": 0, \"fetch_used\": 0, \"vision\": false, \"tools_calls\": 0, \"tools_text\": false, \"web_enabled\": false}",
+  "source_run": "",
+  "id": "25c91baef5ec"
+ },
+ "task_id": "25c91baef5ec",
+ "plan": "预检显示 web_enabled=false、tools_calls=0。先查配置与预检短路（禁网开关、密钥缺失是否整体关闭工具），补预检结果日志；用最小用例验证 search/fetch 各至少 1 次，无密钥时明确报错而非伪造调用。",
+ "status": "pending",
+ "approver": "",
+ "session_id": "",
+ "batch": true
+}

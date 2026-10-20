@@ -1,0 +1,18 @@
+{
+ "id": "prop-1792498929239-1a8095",
+ "ts": 1792498929.2390704,
+ "task": {
+  "kind": "quality_flag",
+  "severity": "low",
+  "title": "质量线索：all_closure_gaps",
+  "detail": "all_closure_gaps",
+  "source_run": "",
+  "id": "1a809523846f"
+ },
+ "task_id": "1a809523846f",
+ "plan": "与 e97115b223a3 同族。先输出 gap 明细（层/条目/原因），把 closure gaps 纳入标准与报告的显式项（与 024a9eadf0dc 联动），先度量后修，不用阈值掩盖。",
+ "status": "pending",
+ "approver": "",
+ "session_id": "",
+ "batch": true
+}

@@ -320,29 +320,102 @@ def dedupe_knowledge(path: str = DEFAULT_KNOWLEDGE) -> dict:
             "removed": max(0, len(rows) - len(keep))}
 
 
+_OFFICIAL_HOSTS = ("deepseek.com", "api-docs.deepseek.com", "platform.deepseek.com",
+                   "github.com/deepseek-ai", "huggingface.co/deepseek-ai")
+_PAPER_HOSTS = ("arxiv.org", "openreview.net", "aclanthology.org",
+                "semanticscholar.org", "paperswithcode.com", "ieeexplore.ieee.org")
+_COMMUNITY_HOSTS = ("github.com", "huggingface.co", "stackoverflow.com",
+                    "news.ycombinator.com", "reddit.com", "zhihu.com",
+                    "juejin.cn", "medium.com", "dev.to", "infoq.cn")
+
+
+def _host_of(url: str) -> str:
+    try:
+        import urllib.parse as _up
+        return (_up.urlsplit(str(url or "")).netloc or "").lower()
+    except Exception:
+        return ""
+
+
+def _source_type(url: str, pdf_url: str = "") -> str:
+    h = _host_of(url)
+    ul = str(url or "").lower()
+    if "github.com/deepseek-ai" in ul or any(x in h for x in _OFFICIAL_HOSTS):
+        return "official"
+    if pdf_url or any(x in h for x in _PAPER_HOSTS):
+        return "paper"
+    if any(x in h for x in _COMMUNITY_HOSTS):
+        return "community"
+    return "other"
+
+
+def _recency_score(date_s: str) -> int:
+    try:
+        import datetime as _dt
+        s = str(date_s or "").strip().replace("Z", "+00:00")
+        d = _dt.datetime.fromisoformat(s)
+        if d.tzinfo is None:
+            d = d.replace(tzinfo=_dt.timezone.utc)
+        days = max(0, (_dt.datetime.now(_dt.timezone.utc) - d).days)
+        if days <= 90:
+            return 30
+        if days <= 365:
+            return 20
+        if days <= 730:
+            return 8
+        return 0
+    except Exception:
+        return 0
+
+
+def _candidate_score(it: dict, pdf_url: str = "") -> int:
+    url = str(it.get("url") or "")
+    h = _host_of(url)
+    ul = str(url or "").lower()
+    score = 0
+    if "github.com/deepseek-ai" in ul or any(x in h for x in _OFFICIAL_HOSTS):
+        score += 60
+    if pdf_url:
+        score += 25
+    if any(x in h for x in _PAPER_HOSTS):
+        score += 35
+    if any(x in h for x in _COMMUNITY_HOSTS):
+        score += 15
+    score += _recency_score(str(it.get("date") or it.get("published") or ""))
+    try:
+        score += int(round(float(it.get("rerank_score") or 0) * 3))
+    except Exception:
+        pass
+    try:
+        score += int(it.get("authority") or 0)
+    except Exception:
+        pass
+    return score
+
+
 def refresh_knowledge_http(queries, path: str = DEFAULT_KNOWLEDGE,
-                           return_stats: bool = False):
-    """不依赖引擎配置：直接调 DeepSeek Search/Fetch，写技术知识库（入库去重）。"""
+                           return_stats: bool = False, limit: int = 3):
+    """按官方/PDF论文/高置信社区排序，取可获取的最新前沿内容并写库（入库去重）。"""
     import os as _os
     import urllib.request as _ur
     key = _os.getenv("DGTF_API_KEY", "") or _os.getenv("DEEPSEEK_API_KEY", "")
     if not key:
         return {"items": [], "skipped_duplicates": 0} if return_stats else []
-    out, skipped = [], 0
     seen = set()
     try:
         _p = Path(path)
         if _p.exists():
             for _ln in _p.read_text(encoding="utf-8", errors="replace").splitlines():
                 try:
-                    _d = json.loads(_ln)
-                    seen.update(_knowledge_keys(_d))
+                    seen.update(_knowledge_keys(json.loads(_ln)))
                 except Exception:
                     pass
     except Exception:
         pass
+    limit = max(1, min(6, int(limit or 3)))
+    candidates, cand_seen, skipped = [], set(), 0
     for q in (queries or [])[:4]:
-        body = json.dumps({"query": str(q)[:128], "count": 3,
+        body = json.dumps({"query": str(q)[:128], "count": 6,
                            "need_content": False}).encode("utf-8")
         req = _ur.Request("https://api.deepseek.com/v1/tools/search",
                           data=body, headers={
@@ -354,37 +427,77 @@ def refresh_knowledge_http(queries, path: str = DEFAULT_KNOWLEDGE,
                        .get("results") or [])
         except Exception:
             res = []
-        for it in res[:2]:
-            url = str(it.get("url") or "")
-            content, title = "", str(it.get("title") or "")
-            if url:
-                fb = json.dumps({"url": url}).encode("utf-8")
-                fr = _ur.Request("https://api.deepseek.com/v1/tools/fetch",
-                                 data=fb, headers={
-                                     "Content-Type": "application/json",
-                                     "Authorization": "Bearer " + key})
-                try:
-                    with _ur.urlopen(fr, timeout=45) as r:
-                        pg = json.loads(r.read().decode("utf-8"))
-                    content = str(pg.get("content") or "")[:4000]
-                    title = title or str(pg.get("title") or "")
-                except Exception:
-                    pass
-            claim = str(it.get("summary") or it.get("content") or "")[:400]
-            base = {"title": title, "url": url, "claim": claim, "content": content}
-            keys = _knowledge_keys(base)
-            if keys and (keys & seen):
+        for it in res:
+            url = str(it.get("url") or "").strip()
+            if not url:
+                continue
+            title = str(it.get("title") or "")
+            claim = str(it.get("summary") or it.get("content") or "")[:1200]
+            base = {"title": title, "url": url, "claim": claim, "content": ""}
+            ks = _knowledge_keys(base)
+            if ks and (ks & seen or ks & cand_seen):
                 skipped += 1
                 continue
-            seen.update(keys)
-            pdf_url = str(it.get("pdf_url") or it.get("pdfUrl") or "") or _paper_pdf_url(url)
-            pdf = _download_paper_pdf(pdf_url) if pdf_url else {}
-            zh_note = _zh_annotation(title, content or claim, url, key)
+            cand_seen.update(ks)
+            pv = str(it.get("pdf_url") or it.get("pdfUrl") or "")
+            if not pv and "semanticscholar.org" not in url.lower():
+                pv = _paper_pdf_url(url)
             item = {"query": str(q)[:200], "title": title, "url": url,
-                    "claim": claim, "content": content, "fetched": bool(content),
-                    "pdf_url": pdf_url, "zh_note": zh_note}
-            item.update(pdf)
-            out.append(item)
+                    "claim": claim, "summary": claim,
+                    "published": str(it.get("date") or it.get("published") or ""),
+                    "authority": it.get("authority") or 0,
+                    "pdf_url": pv}
+            item["score"] = _candidate_score(it, pv)
+            item["source_type"] = _source_type(url, pv)
+            candidates.append(item)
+    candidates.sort(key=lambda x: int(x.get("score") or 0), reverse=True)
+    out = []
+    for cand in candidates:
+        if len(out) >= limit:
+            break
+        url = cand["url"]
+        title = cand["title"]
+        pdf_url = cand.get("pdf_url") or _paper_pdf_url(url)
+        if not pdf_url and "semanticscholar.org" in url.lower():
+            pdf_url = _paper_pdf_url(url)
+        cand["pdf_url"] = pdf_url
+        content = ""
+        fb = json.dumps({"url": url}).encode("utf-8")
+        fr = _ur.Request("https://api.deepseek.com/v1/tools/fetch",
+                         data=fb, headers={
+                             "Content-Type": "application/json",
+                             "Authorization": "Bearer " + key})
+        try:
+            with _ur.urlopen(fr, timeout=45) as r:
+                pg = json.loads(r.read().decode("utf-8"))
+            content = str(pg.get("content") or "")[:8000]
+            title = str(pg.get("title") or title)
+        except Exception:
+            pass
+        pdf = _download_paper_pdf(pdf_url) if pdf_url else {}
+        if not content and not pdf:
+            skipped += 1
+            continue
+        claim = str(cand.get("claim") or "")[:500]
+        base = {"title": title, "url": url, "claim": claim, "content": content}
+        ks = _knowledge_keys(base)
+        if ks and (ks & seen):
+            skipped += 1
+            continue
+        seen.update(ks)
+        zh_note = _zh_annotation(title, content or claim, url, key)
+        stype = _source_type(url, pdf_url)
+        confidence = 0.95 if stype == "official" else (
+            0.92 if pdf else (0.85 if stype == "paper" else 0.72))
+        item = {"query": cand.get("query") or "", "title": title, "url": url,
+                "claim": claim, "content": content, "fetched": bool(content),
+                "pdf_url": pdf_url, "zh_note": zh_note,
+                "published": cand.get("published") or "",
+                "authority": cand.get("authority") or 0,
+                "score": cand.get("score") or 0,
+                "source_type": stype, "confidence": confidence}
+        item.update(pdf)
+        out.append(item)
     if out:
         p = Path(path); p.parent.mkdir(parents=True, exist_ok=True)
         with p.open("a", encoding="utf-8") as f:

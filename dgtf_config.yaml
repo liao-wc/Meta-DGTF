@@ -1,20 +1,41 @@
 # ============================================================
-# 元 DGTF · v1.23.63 配置文件
+# 元 DGTF · v1.30.0 配置文件
 # ============================================================
 #
 #
-# ★★ 【一键全开】all_on: true ⇒ 本机真跑**默认全开**（用户口径：
-#     「默认每次真跑全开，除非针对性验收」）。它会在 `load_config` 最外层
-#     把下列开关一起置开并**逐项留痕**（打印 `[all_on] 键：旧 → 新（为什么）`）：
-#       auto.enabled / playbook.mode=on / stop.anytime_alpha=0.05 /
-#       auto.bandit.enabled / belief.merge_semantic / belief.sem_entropy_thr=rel /
-#       web_search.enabled / external_anchor.as_evidence=gate /
-#       api.thinking.default=enabled / api.thinking.effort=high
-#     ★ 要做**针对性验收**（单项对照）就把 all_on 关掉（false），
-#       否则单项设置会被它覆盖 —— 这是「全开」的语义，不是 bug。
+# ★★ 【本机最优配置】v1.23.65 起不再依赖 all_on：
+#     下列能力已**逐项显式**写在文件里（生效值即所见）：
+#       playbook.mode=on / stop.anytime_alpha=0.05 / web_search.enabled=true /
+#       external_anchor.as_evidence=gate / api.thinking.default=enabled,
+#       effort=low / actions.merge_expand=true / spiral.shape_limit=8 /
+#       max_tokens=2000000 / 三个实测无收益的思考环节关闭。
+#     all_on=false：避免运行时覆盖单项，便于做对照实验；要一键全开可改 true。
 #     ★ 引擎侧 `DEFAULT_CONFIG["all_on"]` 仍是 false（保守默认）：
 #       判据/冒烟走引擎默认 ⇒ 基线不受影响。
-all_on: true
+all_on: false
+
+# 【用途】总 token 软预算（0 = 不设限）。到点走层/圈边界优雅停，可 resume_ckpt 续跑。
+# 【建议】2000000（≈ 本仓库 129 calls / 1.16M 覆盖 100% 的 1.7 倍；挡住 2.94M 级跑次）。
+max_tokens: 2000000
+
+# 【V2 影子调度】只观察、不改执行：记录 V2 在起点/终点会怎么选，
+#   并把同预算的 mock 参考轨迹写进产物。默认 false（零行为差），
+#   本机开 true 收集 Phase 1 数据；失败只留痕，不阻断 V1。
+scheduler:
+  v2:
+    enabled: true
+    shadow: true
+    # V2 默认 joint：V1/V2 统一仲裁，不再分两套执行
+    mode: joint
+    eml_path: dgtf_memory/v2_events.jsonl
+    contract_gate: warn
+    allow_anon: false
+    # Phase 4：true 才接管「串行初始排程」；层内算法仍是 V1。
+    takeover: false
+    # [v1.24.0] 四层核心职责审计门禁（core_duty 读数）：
+    #   warn（默认）= 只告警 + packed.quality.flags 加 "core_audit_gaps"，不阻断运行；
+    #   off = 完全不出读数（不写 packed.core_ok、不加旗标）。
+    core_gate: warn
 
 # ============================================================
 # 统一自适应调度器（v1.23.13）—— 十二项逐项可单独接管
@@ -32,7 +53,10 @@ all_on: true
 # ============================================================
 auto:
   enabled: true
-  allow_route_trim: true
+  allow_route_trim: false
+  # 事实短题只砍圈：四层仍全跑，每层最多 2 圈。
+  fact_flow:
+    rounds_max: 2
   # 语料实测：outputs/ 里有 368 份产物 md + 16 条跑批记录；默认只扫 20 份
   # 等于把历史样本丢了 95%。200 够覆盖现有语料（实测扫描耗时 ~0.16s）。
   history_limit: 200
@@ -1222,6 +1246,14 @@ runtime:
 # ------------------------------------------------------------
 # API 连接
 # ------------------------------------------------------------
+external_input:
+  enabled: true
+  file_paths: []
+  fallback_web: true
+
+claim_gap:
+  enabled: true
+
 api:
   # 【建议】留空，用环境变量。
   #   避免 API Key 进版本库。
@@ -1298,11 +1330,11 @@ api:
   # 优先级：调用点显式传 thinking  >  本表按环节  >  default
   # 不在表里的环节 → 跟随 default（关闭）。
   thinking:
-    default: "disabled"
+    default: "enabled"
     reasoner: "enabled"
     # low / high / max 在题库上正确率完全相同（§7.19），选最便宜的 low。
     # ⚠️ 该结论测于 v4-pro，flash 恢复后需重测确认（成本很低，64 次调用）。
-    effort: "high"
+    effort: "low"
     stages:
       # ── 开：多步推理，且判定质量直接进 X/Y ──
       auto_plan: "enabled"                # 五维规划决策，1 次/跑（v61 及以前的单次版）
@@ -1316,9 +1348,9 @@ api:
       #   ★ 余额已充到 ¥156，够跑；但仍须在专项对照批里用真实 X/Y 判据
       #     验证「开 vs 关」的质量差，不能只信先验。
       dual_judge: "enabled"               # 对偶判断，约 20~30 次/跑
-      assess_decidability: "enabled"      # 可判定性，决定 Y（分母），高频
-      assess_decidability_from_pool_view: "enabled"  # 池视图可判定性（同源）
-      re_evaluate_pool: "enabled"         # 池再评估（重分类），跑级低频
+      assess_decidability: "disabled"     # [v1.23.65] 实测思考 Δ0.0、tokens 467→625、延迟 2.5→8.8s ⇒ 关
+      assess_decidability_from_pool_view: "disabled"  # [v1.23.65] 实测 Δ−0.167，无收益
+      re_evaluate_pool: "disabled"        # [v1.23.65] 实测 Δ0.0，无收益
 
       # ── 关：简单映射 / 结构化罗列 / 输出本来就短，思考无收益 ──
       #   ★ [v1.23.2] 此前这 15 行的值误写成 "enabled"（注释写的是「关」）；
@@ -1329,7 +1361,7 @@ api:
       check_structure_saturation: "disabled"
       re_anchor: "disabled"
       ask_missing_polarity: "disabled"
-      decompose_normal: "disabled"
+      decompose_normal: "enabled"           # [v1.23.65] 实测思考 Δ+1.0（n=3）
       decompose_hybrid: "disabled"
       decompose_koan: "disabled"
       decompose_from_pool: "disabled"
@@ -1339,8 +1371,10 @@ api:
       phase_probe: "disabled"
       self_check: "disabled"
       settle_research: "disabled"
+      tool_preflight: "disabled"  # 工具预检（Search/Fetch tool calls）
       # [v1.23.2] 下面两个是「代码在传、配置此前没声明」的（按默认值列出）。
       adjudicate_sub_tristate_multi: "disabled"   # 三态多票判决（3 票）
+      tri_test_retest: "disabled"                 # 三态 test-retest 重测
       anchor_crosscheck: "disabled"               # 锚点交叉核对
 
   # 【建议】≥ 180。
@@ -1359,6 +1393,11 @@ api:
   #   1.8 → 1.8 / 3.24 / 5.83 秒。
   # 【注意】别小于 1.5，否则可能被 API 限流。
   retry_backoff: 1.8
+
+  # 【v1.23.66】严格 JSON 自修复：解析失败时多做一次低温修复调用，
+  #   只修格式、不改语义。默认 false（零行为差）；本机开 true，
+  #   把「答了但答不成结构」救回来（成本计入 ops，不混进跑本身）。
+  json_repair: true
 
 
 # ------------------------------------------------------------
@@ -1567,7 +1606,22 @@ actions:
   parallel_expand: true
   # ★ [第六期 · 降本 L1] 阴阳合并成一次调用（默认 false ⇒ 零行为差）。
   #   打开后：阴阳两臂共用一次 LLM 调用（省 1 次往返 + 1 份重复 user 输入）。
-  merge_expand: false
+  merge_expand: true
+  # 【Phase5 · L0-v2】默认 archive：只读档案/novelty，不改生成、不裁剪。
+  #   guide=下一圈可选提示；filter=旧硬裁剪（已否决）。
+  l0_v2_curate: true
+  # archive=只读档案/novelty（恢复默认）；guide=可选提示；filter=旧硬裁剪（已否决）
+  l0_v2_mode: archive
+  # 【F2 · all 元层闭合】四层真跑 5/5（成本 5/5 在 600k）；默认开。
+  all_v2: true
+  # 【F3 · 1 层 AnswerSet】四层 full-4 真跑通过；默认开。
+  one_v2: true
+  # 【F4 · both 论证】四层 full-4 真跑通过；默认开。
+  both_v2: true
+  # 【F5 · 0 层审计】只读审计/novelty；生成机制延期，默认开审计。
+  zero_v2: true
+  # 三态可靠性：同 prompt 重测 2 次（默认关；开启才可判 test-retest）
+  tri_test_retest: false
 
   # ---------- ★ v1.21.54 B~H 的 0 层预热 ----------
   # 【用途】B/C/D/E/F/G/H 模式下，0 层先单独跑几圈做预热，
@@ -1780,11 +1834,11 @@ belief:
   #   默认 0.30（实测「同主张 0.41~0.79 / 不同主张 0.00」两组的空隙内，
   #   长句重述上偏保守：宁可少聚，不把不同主张混进同一簇）。
   #   ⚠️ 调高到 0.70 ⇒ 语义熵退化成恒 `None`（= 观测失效，不是「更严」）。
-  sem_entropy_thr: 0.30
+  sem_entropy_thr: "rel"
   # 【v1.23.29】语义归并开关/阈值（默认关 / 0.85 ⇒ 出厂零行为差）。
   #   开 ⇒ 换说法重提被记为已存在条目的一次复现；merge_log 落产物。
   #   0.85 是刻意的高门槛：不同主张 0.00~0.79 够不到（宁可漏并，不错并）。
-  merge_semantic: false
+  merge_semantic: true
   merge_sim: 0.85
 
 # 【v1.23.30】层职责守卫（LDG）—— 三读数 C/R/S 在**停止/收敛处**实算。
@@ -1797,7 +1851,7 @@ duty:
   # 【用途】职责 S 口径对称化：R 的「直接命中」用跨句窗口（修 C 全文/R 逐句 的不对称）。
   # 【建议】false（出厂=关=逐字不变）；想让跨句问项在 R 里也算命中可设 true。
   # 【依据】真产物实测：C=0.25 而 R=0.0 ⇒ S 被和均值拖到 0。
-  span_tolerant: false
+  span_tolerant: true
 
   floor: 0.35
   tau: 0.02
@@ -1823,16 +1877,30 @@ stop:
   # 【依据】arXiv:2608.10729（自反式迭代的最优停止 = 单一阶段无关阈值）。
   gain_floor: 0.0
 
-  anytime_alpha: 0.0
+  anytime_alpha: 0.05
+  # 【v1.23.64】anytime 判据的统计口径：
+  #   hoeffding（出厂默认，逐字不变）/ evalue（e-process，样本更省，同样对任意停时有效）。
+  anytime_mode: hoeffding
 
 playbook:
-  mode: shadow
+  llm_feedback:
+    enabled: true
+    max_candidates: 3
+  mode: "on"
   dir: ""
   top_k: 3
   promote_n: 3
   halflife_days: 14.0
   # 无 run_id 的跑次是否也入库/参与学习（默认 false = 不收，见上文）。
   learn_from_anon: false
+  # 【v1.23.64】论证冲突裁决：默认关 ⇒ 出厂零行为差。
+  #   true 时对同 (kind, cond) 但动作不同的条目做 grounded/负担裁决，
+  #   只写 arg_status / defeated_by 标签（不删行、不改 status）。
+  argumentation:
+    # 【v1.23.66】打开：只给冲突条目标 arg_status/defeated_by，
+    #   召回时排除 defeated（行仍在盘上，不删、不改 status）。
+    enabled: true
+    semantics: grounded
 
 
 # ------------------------------------------------------------
@@ -2024,7 +2092,7 @@ external_anchor:
   #   "gate"       最高档
   # 【建议】"off" —— 打开要多花调用；想验锚点链路时逐档上调。
   # 【兼容】旧写法 as_evidence: true / false 仍认（true → "evidence"）。
-  as_evidence: "off"
+  as_evidence: "gate"
 
   # 【用途】分诊降级（v1.22 引入）。
   #   开启后，研究层某条 undecidable 的理由若属于
@@ -2045,10 +2113,11 @@ external_anchor:
 #   不进对撞第三者；失败走独立 logger（dgtf.websearch, propagate=False）。
 # ============================================================
 web_search:
-  # 【用途】全局总闸。【默认】false —— 不显式打开就是**零调用**。
-  enabled: false
+  # 【用途】全局总闸。本机最优：true（a/b 已把联网作为质量项；零调用请显式改 false）。
+  enabled: true
 
   # 【用途】检索后端（key 走环境变量，不落盘本文件）。
+  # tavily | deepseek（官方 /v1/tools/search）| snapshot
   backend: "tavily"
   api_key_env: "TAVILY_API_KEY"
 
@@ -2110,6 +2179,7 @@ web_search:
     settle_research: false
     decide_parallel_mode: false
     adjudicate_sub_tristate_multi: false
+    tri_test_retest: false
     adjudicate_sub_tristate: false
     anchor_crosscheck: false
     check_input_sanity: false
@@ -2156,7 +2226,7 @@ spiral:
   # 【用途】view 形状窗口化：> 0 ⇒ 每类只列最近 N 条（压 prompt token）。
   # 【建议】0（出厂=不限=逐字不变）；跑长螺旋想省钱可试 8。
   # 【依据】SOTA observation masking（保留最近 N、更老换结构化占位）。
-  shape_limit: 0
+  shape_limit: 8
 
   # ---------- 圈数控制 ----------
 
@@ -2177,7 +2247,7 @@ spiral:
   # 【用途】元层额外多跑 N 圈（用于闭环清算）。
   # 【建议】1。
   # 【关闭】0。
-  all_extra_rounds: 2
+  all_extra_rounds: 1
 
   # ---------- 停止判据阈值 ----------
   # 【调松（更早停）↔ 调严（跑更久）】

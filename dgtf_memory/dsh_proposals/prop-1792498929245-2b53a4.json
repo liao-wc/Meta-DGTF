@@ -1,0 +1,17 @@
+{
+ "id": "prop-1792498929245-2b53a4",
+ "ts": 1792498929.2453055,
+ "task": {
+  "kind": "user_task",
+  "severity": "low",
+  "title": "daemon live probe",
+  "detail": "验证常驻消费",
+  "id": "2b53a4418035"
+ },
+ "task_id": "2b53a4418035",
+ "plan": "验证常驻消费：检查 daemon 心跳、队列拉取间隔与锁；投一条测试任务观察 pickup→complete 时序与日志，失败则加超时、重试与重启告警。",
+ "status": "pending",
+ "approver": "",
+ "session_id": "",
+ "batch": true
+}

@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.23.63.py"
+SRC = HERE / "元DGTF-V1.30.0.py"
 
 os.environ.setdefault("DGTF_API_KEY", "sk-smoke-test-key")
 
@@ -3493,19 +3493,14 @@ def check_p162_units():
             r_auto = m7._route_by_decidability(_q, list(_full), "auto")
         finally:
             mod.DGTF._assess_decidability = _orig_assess
-        if r_bnd != _full:
-            print(f"  ✗ [P2-7] boundary 该保留全四层，实得 {r_bnd}")
-            ok = False
-        elif r_dec != ["0", "1"]:
-            print(f"  ✗ [P2-7] decision+外判 undecidable 该砍到 [0,1]，"
-                  f"实得 {r_dec}")
-            ok = False
-        elif r_auto != ["0", "1"]:
-            print(f"  ✗ [P2-7] auto 该按 decision 处理，实得 {r_auto}")
+        # ★ [v1.25.0] 不砍层：boundary/decision/auto 都保留全四层。
+        if r_bnd != _full or r_dec != _full or r_auto != _full:
+            print(f"  ✗ [P2-7] 不砍层：三取向都应全四层，"
+                  f"实得 b={r_bnd} d={r_dec} a={r_auto}")
             ok = False
         else:
-            print("  ✓ [P2-7] 判据=想要什么：boundary 保四层 / "
-                  "decision·auto 按可判定性砍层")
+            print("  ✓ [P2-7] 不砍层：boundary/decision/auto 均保留全四层"
+                  "（可判定性只留痕）")
     except Exception as e:
         print(f"  ✗ [P2-7] 失败: {type(e).__name__}: {e}")
         ok = False
@@ -6585,6 +6580,36 @@ def check_v77_input_sanity_render():
     print("  \u2713 三态齐备：未启用 / 已检查未发现问题 / 发现问题（列条目）")
     return True
 
+def check_v130_input_sanity_evidence():
+    """[v1.30.0] 输入自检：否定断言需证据 + 检索后官方证据对账。
+
+    ★ 154010 真跑里，检索前把 `DeepSeek-V4.1-Flash-1017` 判成
+      「不存在/虚构」，检索后官方 18 条已确认它存在，报告却同时保留
+      两种说法。本检查锁住：预检只能写「本地先验未识别，待证据核验」；
+      官方证据命中后 issue 必须清除；查无实据只能写「官方源中未见」。
+    """
+    print("\n[v1.30.0] 输入自检：否定断言需证据 / 官方证据对账")
+    bad = []
+    body = _v76_body("_check_input_sanity")
+    for frag in ("否定断言需证据", "本地先验未识别，待证据核验",
+                 "不够断言不存在"):
+        if frag not in body:
+            bad.append(f"[v130] 输入自检提示里缺少 {frag!r}")
+    if "但该型号不存在" in body:
+        bad.append("[v130] 输入自检仍保留「该型号不存在」的旧措辞")
+    try:
+        import dgtf_v2.tests_input_sanity as _tis
+        if _tis.main() != 0:
+            bad.append("[v130] 输入自检回放用例未通过")
+    except Exception as _e:
+        bad.append(f"[v130] 回放用例运行失败：{type(_e).__name__}: {_e}")
+    if bad:
+        for b in bad:
+            print(f"  \u2717 {b}")
+        return False
+    print("  \u2713 规则、对账与 154010 回放用例齐备")
+    return True
+
 # [v122 环境] `dgtf_config.yaml` 相对 `DEFAULT_CONFIG` 的**已销账**手调项。
 #   表里每一项都是「有意为之」，理由写在值里。`check_config_parses`
 #   对**不在表里**的差异照旧判红，对**在表里但已不再差异**的条目也判红 —— 两向都要对上账，登记表才不会腐烂成一张什么都能过的名单。
@@ -6598,9 +6623,6 @@ def check_v77_input_sanity_render():
 #     字面量会被 Python **静默拼接**成一个键，dict 里就只剩一条巨型条目（实测踩过）。
 CONFIG_TUNED = {
     "actions.parallel_warmup_rounds": "并行预热圈数手调",
-    "all_on": "【一键全开】出厂 yaml 默认 true（用户口径：真跑全开）；"
-              "引擎 DEFAULT_CONFIG 仍保守 false，保证判据基线零影响",
-    "api.thinking.effort": "thinking 强度 high（刻意不随档位降）",
     "memory.shape_chars": "形状记忆条数与字数手调",
     "memory.shape_items": "形状记忆条数与字数手调",
     "output.show_probe_diag": "调试期要看 ing / manifest / 探针诊断",
@@ -6608,7 +6630,6 @@ CONFIG_TUNED = {
     "probe.select_n": "探针门限与选条手调",
     "spiral.alignment_containment": "螺旋停止 / 去重 / 对齐 / 漂移阈值手调（0.7 家族）",
     "spiral.all_drift_threshold": "螺旋停止 / 去重 / 对齐 / 漂移阈值手调（0.7 家族）",
-    "spiral.all_extra_rounds": "螺旋停止 / 去重 / 对齐 / 漂移阈值手调（0.7 家族）",
     "spiral.all_selfref_threshold": "螺旋停止 / 去重 / 对齐 / 漂移阈值手调（0.7 家族）",
     "spiral.batch_similarity": "螺旋停止 / 去重 / 对齐 / 漂移阈值手调（0.7 家族）",
     "spiral.both_tighten_ratio": "螺旋停止 / 去重 / 对齐 / 漂移阈值手调（0.7 家族）",
@@ -6627,6 +6648,29 @@ CONFIG_TUNED = {
     "spiral.stable_need": "螺旋停止 / 去重 / 对齐 / 漂移阈值手调（0.7 家族）",
     "spiral.stop_similarity": "螺旋停止 / 去重 / 对齐 / 漂移阈值手调（0.7 家族）",
     "spiral.unsaid_escape_limit": "螺旋停止 / 去重 / 对齐 / 漂移阈值手调（0.7 家族）",
+    # [v1.23.65] 把原 all_on 的生效值**显式写进 yaml**（all_on 改为 false；
+    #   12 项生效值逐项核对与改前相同，唯一差异是 all_on 标志本身）。
+    "playbook.mode": "EML 学习生效（原 all_on 展开项；显式化）",
+    "stop.anytime_alpha": "anytime 停止 δ=0.05（原 all_on 展开项；显式化）",
+    "belief.merge_semantic": "语义归并（原 all_on 展开项；显式化）",
+    "belief.sem_entropy_thr": "语义熵相对分位 rel（原 all_on 展开项；显式化）",
+    "web_search.enabled": "联网检索（原 all_on 展开项；显式化）",
+    "external_anchor.as_evidence": "锚点作 gate（原 all_on 展开项；显式化）",
+    "api.thinking.default": "思考默认开（原 all_on 展开项；显式化）",
+    "actions.merge_expand": "阴阳合并一次调用（原 all_on 展开项；显式化）",
+    # [v1.23.65] 成本/质量优化（每条都有实测依据，见 v12365_报告.md）
+    "max_tokens": "总 token 软预算 2.0M：挡住 2.94M 级跑次；129 calls/1.16M 覆盖更高",
+    "spiral.shape_limit": "上下文窗口化 8：A/B tokens −8.8%、复述率降到 1/3，无过裁证据",
+    "duty.span_tolerant": "职责 S 口径对称化（v1.23.46 修度量；A/B 两臂同口径）",
+    "api.thinking.stages.assess_decidability": "实测思考 Δ0.0、tokens 467→625、延迟 2.5→8.8s ⇒ 关",
+    "api.thinking.stages.assess_decidability_from_pool_view": "实测 Δ−0.167，无收益 ⇒ 关",
+    "api.thinking.stages.re_evaluate_pool": "实测 Δ0.0，无收益 ⇒ 关",
+    "api.thinking.stages.decompose_normal": "实测思考 Δ+1.0（n=3）⇒ 质量优先开启",
+    # [v1.23.66]
+    "api.json_repair": "JSON 解析失败时一次低温自修复（只修格式）；默认关，本机开",
+    "playbook.argumentation.enabled": "论证冲突裁决：只标 defeated、召回排除，不删行",
+    # [v1.24.0] V2 影子调度：只观察，不改 V1 执行。
+    "scheduler.v2.enabled": "V2 影子开关（默认关；本机开以收集 Phase 1 数据）",
 }
 # [v122 配置同步] 允许**不出现在** dgtf_config.yaml 里的键（默认空）。
 #   默认策略是「yaml 必须列全 DEFAULT_CONFIG 的键」—— 这样新字段不会
@@ -9529,7 +9573,9 @@ def check_v1235_pending_fix():
 # [v1.23.6] 版次标记：方括号短标签 `[v122 P6 G6.2]` ｜ 裸 v+数字 `v1.21.59`/`v59`
 #   两侧的 lookbehind/lookahead 挡掉 `deepseek-v4-pro` 这类假阳性（实测）。
 #   ★ 口径与 `_mk_v1236_strip.py` 里的 TAG 必须逐字一致 —— 判据与清理工具同一把尺子。
-V1236_TAG = (r"\[v\d[^\]]*\]|(?<![A-Za-z0-9_\-])v\d+(?:\.\d+)*(?![A-Za-z0-9_\-])")
+# ★ [v1.24.0] 裸 v2 是「产品名 / 配置键」，不是版次批注；要求至少一个点
+#   （v1.23.66 这类）才算版次标记，避免把 scheduler.v2 / "v2" 误判。
+V1236_TAG = (r"\[v\d[^\]]*\]|(?<![A-Za-z0-9_\-])v\d+(?:\.\d+)+(?![A-Za-z0-9_\-])")
 
 def check_v1236_no_version_tags():
     """[v1.23.6] 代码正文（模块 docstring 之外）不留版次批注。
@@ -10182,8 +10228,9 @@ def check_v12313_auto_dispatch():
     if "实际停圈" not in str(_pick(_ph, "rounds").get("reason")):
         bad.append("有足够历史却没走「实际停圈」分支：%r"
                    % _pick(_ph, "rounds").get("reason"))
-    if _val(_ph, "route") != ["0", "1", "both"]:
-        bad.append("低截断率 + 事实短题应砍到 0/1/both，实得 %r"
+    # ★ [v1.25.0] 规则改为 auto 永不砍层：事实题只砍圈，四层都要跑。
+    if _val(_ph, "route") != list(m._ENTRIES):
+        bad.append("事实短题也应保留全四层（只砍圈），实得 %r"
                    % (_val(_ph, "route"),))
     if _val(m.auto_dispatch(_FACT, cfg0,
                             history=dict(H, cut_rate=0.9, stop_n=40)), "route") != \
@@ -10384,21 +10431,21 @@ def check_v12314_history_corpus():
     # ── E 圈数：三级回退 + 样本门槛（两向）──────────────────
     _cap = {"n": 50, "cap_rounds": {"0": 2, "1": 2, "both": 5, "all": 6},
             "cap_rounds_n": {"0": 40, "1": 40, "both": 10, "all": 10}}
-    _v, _why = m._auto_pick_rounds(f, _cap, cfg0)
+    _v, _why = m._auto_pick_rounds(d, _cap, cfg0)
     if "种子上限" not in _why:
         bad.append("只有种子上限时没报出来源")
     # ★ 门槛要拿**钳制遮不住的那一层**（元层 floor=5）来测：
     #   用 0/1 层测会被 floor(4) 兜住 —— 采纳与不采纳结果都是 4，判据分辨不出。
     _few = {"n": 50, "layer_rounds": {"all": 1}, "layer_rounds_n": {"all": 1},
             "cap_rounds": {"all": 6}, "cap_rounds_n": {"all": 30}}
-    if m._auto_pick_rounds(f, _few, cfg0)[0]["all"] != 6:
+    if m._auto_pick_rounds(d, _few, cfg0)[0]["all"] != 6:
         bad.append("实际停圈只有 1 份样本时不该采纳（应退回种子上限 6）")
     _many = {"n": 50, "layer_rounds": {"0": 5}, "layer_rounds_n": {"0": 9},
              "cap_rounds": {"0": 2}, "cap_rounds_n": {"0": 30}}
-    if m._auto_pick_rounds(f, _many, cfg0)[0]["0"] != 6:
+    if m._auto_pick_rounds(d, _many, cfg0)[0]["0"] != 6:
         bad.append("实际停圈样本足够时应采纳（5+1=6）")
     for _e in m._ENTRIES:
-        if _e not in m._auto_pick_rounds(f, {}, cfg0)[0]:
+        if _e not in m._auto_pick_rounds(d, {}, cfg0)[0]:
             bad.append("零历史时没给全四层的圈数")
 
     # ── F 成本档：相对判据（两向 + 质量优先）────────────────
@@ -10654,12 +10701,12 @@ def check_v12315_history_calibration():
         bad.append("截断率没有样本量门槛")
 
     _f = m._auto_features(_F)
+    # ★ [v1.25.0] auto 固定全四层；历史截断率不再参与砍层。
     _fewstop = {"n": 50, "cut_rate": 0.9, "stop_n": 6}
-    if m._auto_pick_route(_f, _fewstop, cfg0)[0] != ["0", "1", "both"]:
-        bad.append("截断率层样本不足时不该拿它挡住题型分支")
-    _manystop = {"n": 50, "cut_rate": 0.9, "stop_n": 40}
-    if "被截断率" not in m._auto_pick_route(_f, _manystop, cfg0)[1]:
-        bad.append("截断率层样本足够时应保留全四层")
+    if m._auto_pick_route(_f, _fewstop, cfg0)[0] != list(m._ENTRIES):
+        bad.append("auto 应固定全四层（即使截断率样本不足）")
+    if "不砍层" not in m._auto_pick_route(_f, {}, cfg0)[1]:
+        bad.append("auto 理由应写明不砍层")
 
     if bad:
         for _x in bad:
@@ -11692,7 +11739,11 @@ def check_v12332_discipline():
                    ("def anchor_evidence_standard(", "分级证明标准"),
                    ("def adjudication_aspect(", "裁决维度"),
                    ("def belief_staleness(", "信念陈旧度"),
-                   ("anytime_ok=_any_ok", "anytime 接线")):
+                   ("anytime_ok=_any_ok", "anytime 接线"),
+                   ("def anytime_stagnant_decided(", "anytime 停滞判据"),
+                   ("def _repair_json(", "JSON 自修复"),
+                   ("def stage_stats(", "分环节成本"),
+                   ("def _quality_report(", "质量闭环")):
         if _n not in src:
             bad.append("[源码] %s 缺失（%r）" % (_w, _n))
     # anytime：12 个 1 ⇒ 下界 > 0.5 判「已确立」；3 个 1 ⇒ 样本不足不判（负对照）
@@ -11701,6 +11752,13 @@ def check_v12332_discipline():
         bad.append("[anytime] 全 1 序列下界未 > 0.5（%r）" % (_lb,))
     if mod.anytime_majority_decided([1, 1, 1])[0]:
         bad.append("[anytime·负] 3 个样本就判「已确立」（过早）")
+    # [v1.23.66] 停止判据必须判「不再长」：全停滞可停，全长/样本不足不可停。
+    if not mod.anytime_stagnant_decided([0] * 12)[0]:
+        bad.append("[anytime·停] 12 圈全无新增却未判停")
+    if mod.anytime_stagnant_decided([1] * 12)[0]:
+        bad.append("[anytime·负] 12 圈全在长却判「不再长」（判据反向）")
+    if mod.anytime_stagnant_decided([0] * 3)[0]:
+        bad.append("[anytime·负] 3 个样本就判「不再长」（过早）")
     if mod.stitched_hoeffding_lower([1]) is not None:
         bad.append("[anytime] n<2 未返回 None")
     # 发散/停滞/指针
@@ -13330,12 +13388,15 @@ def check_v12354_parallel_wall_clock():
     src = SRC.read_text(encoding="utf-8").replace("\r\n", "\n")
     for _tk, _n in (("def _wall_clock_over(self) -> bool:", 1),
                     ("self._wall_clock_over()", 4),
-                    ('"墙钟预算到点（第 %d 圈截断', 3),
+                    ('（第 %d 圈截断，续跑会重跑这一层）', 3),
                     ('_out["truncated"] = _tr', 1),
                     ("_resume_serial", 3)):
         _c = src.count(_tk)
         if _c != _n:
             bad.append("[P1] 源码 %r 应出现 %d 次（实测 %d）" % (_tk, _n, _c))
+    if src.count("墙钟预算到点") < 3 or src.count("Token 预算到点") < 3:
+        bad.append("[P1] 墙钟/Token 截断标记未覆盖三条通道"
+                   "（serial / C / D~H）")
     if 'if _mx > 0 and (time.time()' in src:
         bad.append("[P1] serial 还留着内联的墙钟判据（会有两份实现）")
     if '"墙钟预算" in str(getattr(_v, "stop_reason"' not in src:
@@ -16796,6 +16857,88 @@ def check_v12324_indep_therapy():
           "shape 已换）；修行层停因去 ing、无空括号、一律附体检；两通道接线齐")
     return True
 
+def check_v12364_frontier():
+    """[v1.23.64] 前沿内核与 EML 加固：只测可复核的性质（五组）。
+
+    ★ 为什么进冒烟而不是只留独立脚本：这五条都是「静默会退化」的性质
+      （统计判据、只增写、锁），单靠人记得跑不算门禁。
+    """
+    try:
+        # 1) e-process：全 1 检出；半半序列在任意停时口径下不误判
+        assert mod.anytime_decided([1] * 40, 0.05, 0.5, mode="evalue")[0] is True
+        assert mod.anytime_decided([0, 1] * 40, 0.05, 0.5, mode="evalue")[0] is False
+        # 2) 保形覆盖率：用**确定性网格**，避免单个随机种子把判据变成抛硬币
+        _cal = [i / 200.0 for i in range(200)]
+        _q = mod.conformal_quantile(_cal, 0.1)
+        _cov = sum(1 for j in range(1000) if (j / 1000.0) <= _q) / 1000.0
+        assert 0.88 <= _cov <= 0.95, _cov
+        # 3) grounded：二元环是并列，不硬选（红线「未对齐合法」）
+        _af = mod.ArgumentationFramework(["A", "B"],
+                                         [("A", "B"), ("B", "A")])
+        assert _af.grounded_extension() == []
+        # 4) EML 原子只增：追加允许、缩行拒绝
+        import tempfile as _tf
+        import json as _j
+        import os as _os
+        import time as _t
+        _td = Path(_tf.mkdtemp())
+        _p = _td / "pb.jsonl"
+        _rows = [{"id": "L1"}, {"id": "L2"}]
+        _p.write_text("\n".join(_j.dumps(x) for x in _rows) + "\n",
+                      encoding="utf-8")
+        assert mod.eml_rewrite_jsonl(_p, _rows + [{"id": "L3"}],
+                                     allow_grow=True) is True
+        assert mod.eml_rewrite_jsonl(_p, _rows, allow_grow=True) is False
+        # 5) 锁：活进程持有的陈旧锁不被抢（负对照）
+        _lp = _td / ".eml.lock"
+        _lp.write_text("%d:0" % _os.getpid(), encoding="utf-8")
+        _os.utime(_lp, (_t.time() - 9999, _t.time() - 9999))
+        with mod.eml_lock(dirpath=_td, timeout=0.3, stale=1.0) as _got:
+            assert _got is False
+        print("  ✓ v1.23.64 前沿内核/EML：e-process / 保形覆盖 %.3f / "
+              "grounded 不硬选 / 原子只增 / 活锁不抢（五组）" % _cov)
+        return True
+    except Exception as e:
+        print("  ✗ v1.23.64 前沿内核/EML 失败：" + type(e).__name__ + ": " + str(e))
+        return False
+
+
+def check_v12365_cost_control():
+    """[v1.23.65] token 软预算 + all_on 成本修正（每条都带边界/负对照）。"""
+    try:
+        import types as _types
+        _e = object.__new__(mod.MetaDGTF)
+        _e.verbose = False
+        _e.llm = _types.SimpleNamespace(total_tokens=100, total_calls=1)
+        _e._token_budget = 0
+        _e._ck_base = {"tokens": 0}
+        _e._call_budget = 0
+        assert _e._token_budget_over() is False, "0 应不设限"
+        _e._token_budget = 151
+        assert _e._token_budget_over() is False, "100<151 不该判超"
+        _e.llm.total_tokens = 151
+        assert _e._token_budget_over() is True, "151>=151 应判超"
+        _e._ck_base = {"tokens": 100}
+        _e._token_budget = 252
+        assert _e._token_budget_over() is False, "251<252 不该判超"
+        _e._token_budget = 251
+        assert _e._token_budget_over() is True, "续跑累计未计入"
+        _e._note_budget_stop("测试")
+        assert "预算用尽" in _e._budget_stop_note, _e._budget_stop_note
+        _c, _n = mod._apply_all_on({"all_on": True})
+        assert _c["api"]["thinking"]["effort"] == "low", _c["api"]["thinking"]
+        assert _c["spiral"]["shape_limit"] == 8, _c["spiral"]
+        assert not (_c.get("auto", {}).get("bandit", {}) or {}).get(
+            "enabled", False), "bandit 应退出 all_on"
+        assert mod.DEFAULT_CONFIG["max_tokens"] == 0, "默认必须保守"
+        print("  ✓ v1.23.65 成本控制：token 软预算（0=不设限/续跑累计）"
+              " / all_on effort=low + shape=8 + bandit 退出 / 默认 max_tokens=0")
+        return True
+    except Exception as e:
+        print("  ✗ v1.23.65 成本控制失败：" + type(e).__name__ + ": " + str(e))
+        return False
+
+
 def main():
     verbose = os.environ.get("SMOKE_VERBOSE", "0") == "1"
     if not check_v122_phase1():
@@ -16937,6 +17080,8 @@ def main():
     if not check_v77_claim_order():
         return 1
     if not check_v77_input_sanity_render():
+        return 1
+    if not check_v130_input_sanity_evidence():
         return 1
     if not check_config_parses():
         return 1
@@ -17107,6 +17252,10 @@ def main():
     if not check_v12362_judges_wired():
         return 1
     if not check_v12363_bad_json_visible():
+        return 1
+    if not check_v12364_frontier():
+        return 1
+    if not check_v12365_cost_control():
         return 1
     # ★ [补线] 这条判据早就写好了（v1.21.56 的 P0/P1 单元），但签名吃 `src`、
     #   与其余无参判据不同，所以**从来没被 main 调到** —— 存在≠在跑。

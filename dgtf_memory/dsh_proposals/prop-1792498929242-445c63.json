@@ -1,0 +1,18 @@
+{
+ "id": "prop-1792498929242-445c63",
+ "ts": 1792498929.242193,
+ "task": {
+  "kind": "quality_flag",
+  "severity": "low",
+  "title": "质量线索：core_audit_gaps",
+  "detail": "core_audit_gaps",
+  "source_run": "E2E_1792476024",
+  "id": "445c639646f8"
+ },
+ "task_id": "445c639646f8",
+ "plan": "输出 core_audit_gaps 的规则映射与证据 id 关联，先补审计项和可追溯性，再决定是否阻断；不以提高阈值掩盖缺口。",
+ "status": "pending",
+ "approver": "",
+ "session_id": "",
+ "batch": true
+}

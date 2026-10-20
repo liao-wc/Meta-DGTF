@@ -1,0 +1,33 @@
+{
+ "id": "prop-autofix-probe",
+ "ts": 1792499464.557226,
+ "task": {
+  "id": "autofix-probe",
+  "kind": "user_task",
+  "severity": "med",
+  "title": "创建 docs/dsh_autofix_probe.md 验证自动修复",
+  "detail": "创建 docs/dsh_autofix_probe.md，内容一行 AUTO_FIX_OK 2026-10-20。只修改该文件。"
+ },
+ "plan": "创建 docs/dsh_autofix_probe.md，内容一行 AUTO_FIX_OK 2026-10-20。不要修改其他文件。",
+ "status": "applied",
+ "approver": "dsh_auto",
+ "session_id": "",
+ "confirmed_ts": 1792499471.2944467,
+ "approved_ts": 1792499835.2954006,
+ "result": {
+  "ok": true,
+  "gate": {
+   "ok": true,
+   "tail": "PASS api_policy\nPASS self_feedback\nPASS facet\nPASS agent_bridge\nPASS vision\nPASS agent_worker\nPASS agent_repair\nPASS agent_daemon\nPASS compile\nPASS audit70\n\nFAST GATE PASS 10 / FAIL 0\n"
+  },
+  "repair": {
+   "committed": true,
+   "changed": [
+    "docs/dsh_autofix_probe.md"
+   ],
+   "commit": "[main f6af015] DSH Agent auto-repair: 按以下已确认提案执行修复：创建 docs/dsh_autofix_probe.md，内容一行 AUTO_FIX_OK 2026-10-20。不要修改其他文件。。\n 1 file changed, 1 insertion(+)\n create mode 100644 docs/dsh_autofix_probe.md",
+   "commit_hash": "f6af0154c06399a766e4f4782651393cf74791b1",
+   "error": ""
+  }
+ }
+}
