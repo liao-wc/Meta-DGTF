@@ -370,8 +370,10 @@ def check_r44_frontend(css: str, js: str, html: str, srv_src: str,
           "updateRlBar();   // ★ R44" in js, "")
 
     # ── ⑥ 首屏以对话框为基准居中 + 上移 ────────────────────────────────────
-    check("★R44 首屏以**对话框**为基准居中并整体上移（下内边距顶高一半）",
-          "padding-bottom:calc(20px + 88px)" in css, "")
+    check("★R44 首屏以**欢迎语/输入框空隙中心**为基准上下左右居中",
+          "centerHomeHero" in js and "--home-shift" in js
+          and "top:var(--home-shift,0px)" in css
+          and "padding-bottom:20px" in css, "")
 
     # ── ⑤ 导入：前端管线 ────────────────────────────────────────────────────
     check("★R44 导入控件是**真按钮**点隐藏 input（不再靠 label 转发）",

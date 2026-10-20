@@ -2809,6 +2809,7 @@ function newChat() {
   closeDrawer();
   renderTasks();
   renderMeta();
+  setTimeout(centerHomeHero, 30);
 }
 
 /* ── 侧边抽屉：读数台 / 最近跑过 / 产物库 / 资料库 / 检索库 / 高级参数 ──
@@ -3916,6 +3917,26 @@ async function commitGithub() {
     loadGitStatus();
   } catch (e) { if (s) s.textContent = '提交失败：' + e.message; }
 }
+function centerHomeHero() {
+  const root = document.documentElement;
+  if (!document.body.classList.contains('stage-empty')) {
+    root.style.setProperty('--home-shift', '0px');
+    return;
+  }
+  const stage = document.querySelector('main.stage');
+  const welcome = document.querySelector('#welcome');
+  const composer = document.querySelector('.composer');
+  if (!stage || !welcome || !composer) return;
+  const sr = stage.getBoundingClientRect();
+  const wr = welcome.getBoundingClientRect();
+  const cr = composer.getBoundingClientRect();
+  const gapCenter = (wr.bottom + cr.top) / 2;
+  const stageCenter = sr.top + sr.height / 2;
+  const cur = parseFloat(getComputedStyle(root).getPropertyValue('--home-shift')) || 0;
+  const next = Math.max(-160, Math.min(180, cur + (stageCenter - gapCenter)));
+  root.style.setProperty('--home-shift', next.toFixed(1) + 'px');
+}
+
 function init() {
   try { taskDsh = JSON.parse(localStorage.getItem('dgtf_task_dsh') || '{}') || {}; } catch (_) { taskDsh = {}; }
   const _logBody = document.querySelector('#runlog-body');
@@ -4488,6 +4509,9 @@ function init() {
       return;
     }
   });
+  window.addEventListener('resize', centerHomeHero);
+  requestAnimationFrame(centerHomeHero);
+  window.addEventListener('load', centerHomeHero);
 }
 
 document.addEventListener('DOMContentLoaded', init);

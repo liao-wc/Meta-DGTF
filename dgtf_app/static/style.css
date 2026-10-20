@@ -534,16 +534,16 @@ body.drawer-open main.stage{
   transform:translateX(var(--shift-half));
   padding-left:calc(18px + var(--shift-half));
   padding-right:calc(18px + var(--shift-half))}
-/* ★ R44：首屏**以对话框为基准**居中，并整体上移。
-   推导（这样写就有据可依，不是随手试数字）：空态这一组 = 欢迎语 + 间距(gap 14) + 对话框，
-   整组居中时**对话框的中心**会低于视口中线 ≈（欢迎语高 44 + 14）/ 2 ≈ **29px**；
-   用户还要「整体往上移」，再给 15px 余量 ⇒ 共上移 **44px**。
-   `justify-content:center` 是在**内容盒**里居中 ⇒ 下内边距每多 1px，内容被顶高 0.5px，
-   所以 44px 的上移 ⇔ `padding-bottom` 比原来多 **88px**（原来的 20px 保留）。 */
+/* ★ 首屏以「欢迎语与输入框之间的空隙中心」为上下基准：
+   先让整组在内容区居中，再由 JS 量出空隙中心与内容区中心的偏差，
+   通过 `--home-shift` 同时平移欢迎语和输入框；横向仍由 flex 居中。
+   这样不是拍脑袋的 padding，而是真正以空隙为基准。 */
 body.stage-empty main.stage{justify-content:center;align-items:center;
-  padding-bottom:calc(20px + 88px)}
-body.stage-empty #welcome{display:flex}
-body.stage-empty .composer{width:100%;max-width:760px}
+  padding-bottom:20px}
+body.stage-empty #welcome{display:flex;position:relative;
+  top:var(--home-shift,0px)}
+body.stage-empty .composer{width:100%;max-width:760px;position:relative;
+  top:var(--home-shift,0px)}
 body.stage-run #welcome{display:none}
 /* ★ 运行态的主区宽度和空态**统一到 900px** —— 之前 1080 太宽（1600 视口下左右只剩 260px），
    抽屉一展开就越过输入框左边界把它压住（用户报的现象）。900 留出的空白带够抽屉站。
