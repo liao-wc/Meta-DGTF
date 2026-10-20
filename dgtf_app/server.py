@@ -714,6 +714,12 @@ def _run_dsh_agent(task: str, sid: str = "", timeout: int = 300,
                 "  name: '@deepseek-ai/dsh-permission-presets'",
                 "  config:",
                 "    defaultPreset: " + _perm]
+    # DSH Agent 默认 PTC 模式：headless 用 insert 挂载 tool-presentation。
+    _pl += ["- insert:",
+            "    - id: tool-presentation",
+            "      name: \"@deepseek-ai/dsh-agent-tool-presentation\"",
+            "      config:",
+            "        mode: ptc"]
     if _pl:
         import tempfile as _tf
         _fd, _patch = _tf.mkstemp(prefix="dgtf-dsh-", suffix=".yml")
