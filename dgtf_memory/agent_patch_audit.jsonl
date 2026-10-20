@@ -1,0 +1,45 @@
+{"task_id": "t1", "patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmpeq2gbukf\\p\\t1.patch", "files": ["元DGTF-V1.30.0.py"], "path_ok": true, "bad_paths": [], "status": "staged"}
+{"task_id": "t2", "patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmpeq2gbukf\\p\\t2.patch", "files": ["/etc/passwd"], "path_ok": false, "bad_paths": ["/etc/passwd"], "status": "staged"}
+{"patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmpeq2gbukf\\p\\t1.patch", "status": "refused", "why": "缺显式 APPROVE"}
+{"task_id": "t1", "patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmp7qf3_8dl\\p\\t1.patch", "files": ["元DGTF-V1.30.0.py"], "path_ok": true, "bad_paths": [], "status": "staged"}
+{"task_id": "t2", "patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmp7qf3_8dl\\p\\t2.patch", "files": ["/etc/passwd"], "path_ok": false, "bad_paths": ["/etc/passwd"], "status": "staged"}
+{"patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmp7qf3_8dl\\p\\t1.patch", "status": "refused", "why": "缺显式 APPROVE"}
+{"task_id": "t1", "patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmp2iodc6pi\\p\\t1.patch", "files": ["元DGTF-V1.30.0.py"], "path_ok": true, "bad_paths": [], "status": "staged"}
+{"task_id": "t2", "patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmp2iodc6pi\\p\\t2.patch", "files": ["/etc/passwd"], "path_ok": false, "bad_paths": ["/etc/passwd"], "status": "staged"}
+{"patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmp2iodc6pi\\p\\t1.patch", "status": "refused", "why": "缺显式 APPROVE"}
+{"task_id": "t1", "patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmporimh17k\\p\\t1.patch", "files": ["元DGTF-V1.30.0.py"], "path_ok": true, "bad_paths": [], "status": "staged"}
+{"task_id": "t2", "patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmporimh17k\\p\\t2.patch", "files": ["/etc/passwd"], "path_ok": false, "bad_paths": ["/etc/passwd"], "status": "staged"}
+{"patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmporimh17k\\p\\t1.patch", "status": "refused", "why": "缺显式 APPROVE"}
+{"task_id": "t1", "patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmp0zrpp8ix\\p\\t1.patch", "files": ["元DGTF-V1.30.0.py"], "path_ok": true, "bad_paths": [], "status": "staged"}
+{"task_id": "t2", "patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmp0zrpp8ix\\p\\t2.patch", "files": ["/etc/passwd"], "path_ok": false, "bad_paths": ["/etc/passwd"], "status": "staged"}
+{"patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmp0zrpp8ix\\p\\t1.patch", "status": "refused", "why": "缺显式 APPROVE"}
+{"task_id": "t1", "patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmput_5o4qv\\p\\t1.patch", "files": ["元DGTF-V1.30.0.py"], "path_ok": true, "bad_paths": [], "status": "staged"}
+{"task_id": "t2", "patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmput_5o4qv\\p\\t2.patch", "files": ["/etc/passwd"], "path_ok": false, "bad_paths": ["/etc/passwd"], "status": "staged"}
+{"patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmput_5o4qv\\p\\t1.patch", "status": "refused", "why": "缺显式 APPROVE"}
+{"task_id": "t1", "patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmpk0rlv4p0\\p\\t1.patch", "files": ["元DGTF-V1.30.0.py"], "path_ok": true, "bad_paths": [], "status": "staged"}
+{"task_id": "t2", "patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmpk0rlv4p0\\p\\t2.patch", "files": ["/etc/passwd"], "path_ok": false, "bad_paths": ["/etc/passwd"], "status": "staged"}
+{"patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmpk0rlv4p0\\p\\t1.patch", "status": "refused", "why": "缺显式 APPROVE"}
+{"task_id": "t1", "patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmp1qu19wn6\\p\\t1.patch", "files": ["元DGTF-V1.30.0.py"], "path_ok": true, "bad_paths": [], "status": "staged"}
+{"task_id": "t2", "patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmp1qu19wn6\\p\\t2.patch", "files": ["/etc/passwd"], "path_ok": false, "bad_paths": ["/etc/passwd"], "status": "staged"}
+{"patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmp1qu19wn6\\p\\t1.patch", "status": "refused", "why": "缺显式 APPROVE"}
+{"task_id": "t1", "patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmpiia1hrp8\\p\\t1.patch", "files": ["元DGTF-V1.30.0.py"], "path_ok": true, "bad_paths": [], "status": "staged"}
+{"task_id": "t2", "patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmpiia1hrp8\\p\\t2.patch", "files": ["/etc/passwd"], "path_ok": false, "bad_paths": ["/etc/passwd"], "status": "staged"}
+{"patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmpiia1hrp8\\p\\t1.patch", "status": "refused", "why": "缺显式 APPROVE"}
+{"task_id": "t1", "patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmplpxg6ody\\p\\t1.patch", "files": ["元DGTF-V1.30.0.py"], "path_ok": true, "bad_paths": [], "status": "staged"}
+{"task_id": "t2", "patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmplpxg6ody\\p\\t2.patch", "files": ["/etc/passwd"], "path_ok": false, "bad_paths": ["/etc/passwd"], "status": "staged"}
+{"patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmplpxg6ody\\p\\t1.patch", "status": "refused", "why": "缺显式 APPROVE"}
+{"task_id": "t1", "patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmpodk_hdlh\\p\\t1.patch", "files": ["元DGTF-V1.30.0.py"], "path_ok": true, "bad_paths": [], "status": "staged"}
+{"task_id": "t2", "patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmpodk_hdlh\\p\\t2.patch", "files": ["/etc/passwd"], "path_ok": false, "bad_paths": ["/etc/passwd"], "status": "staged"}
+{"patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmpodk_hdlh\\p\\t1.patch", "status": "refused", "why": "缺显式 APPROVE"}
+{"task_id": "t1", "patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\dsh-mxxsoc\\tmp412p1kp0\\p\\t1.patch", "files": ["元DGTF-V1.30.0.py"], "path_ok": true, "bad_paths": [], "status": "staged"}
+{"task_id": "t2", "patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\dsh-mxxsoc\\tmp412p1kp0\\p\\t2.patch", "files": ["/etc/passwd"], "path_ok": false, "bad_paths": ["/etc/passwd"], "status": "staged"}
+{"patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\dsh-mxxsoc\\tmp412p1kp0\\p\\t1.patch", "status": "refused", "why": "缺显式 APPROVE"}
+{"task_id": "t1", "patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmpvf4a8x2g\\p\\t1.patch", "files": ["元DGTF-V1.30.0.py"], "path_ok": true, "bad_paths": [], "status": "staged"}
+{"task_id": "t2", "patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmpvf4a8x2g\\p\\t2.patch", "files": ["/etc/passwd"], "path_ok": false, "bad_paths": ["/etc/passwd"], "status": "staged"}
+{"patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmpvf4a8x2g\\p\\t1.patch", "status": "refused", "why": "缺显式 APPROVE"}
+{"task_id": "t1", "patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmp1kjpownb\\p\\t1.patch", "files": ["元DGTF-V1.30.0.py"], "path_ok": true, "bad_paths": [], "status": "staged"}
+{"task_id": "t2", "patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmp1kjpownb\\p\\t2.patch", "files": ["/etc/passwd"], "path_ok": false, "bad_paths": ["/etc/passwd"], "status": "staged"}
+{"patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmp1kjpownb\\p\\t1.patch", "status": "refused", "why": "缺显式 APPROVE"}
+{"task_id": "t1", "patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmpg0_78yoe\\p\\t1.patch", "files": ["元DGTF-V1.30.0.py"], "path_ok": true, "bad_paths": [], "status": "staged"}
+{"task_id": "t2", "patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmpg0_78yoe\\p\\t2.patch", "files": ["/etc/passwd"], "path_ok": false, "bad_paths": ["/etc/passwd"], "status": "staged"}
+{"patch": "C:\\Users\\18432\\AppData\\Local\\Temp\\tmpg0_78yoe\\p\\t1.patch", "status": "refused", "why": "缺显式 APPROVE"}
