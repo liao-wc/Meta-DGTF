@@ -8,6 +8,9 @@ let dshMode = false;
 let dshSession = "";
 let dshCurrent = null;
 let dshAttachTaskId = null;
+let dshConversationId = null;
+let dshConversation = null;
+let dshConvTimer = null;
 let taskDsh = {};
 let agentTaskMode = false;
 let logFollow = true;   // 日志/对话是否跟随最新内容
@@ -1184,6 +1187,9 @@ function currentTaskId() {
 }
 
 function dshIsRunning() {
+  if (dshConversation && (dshConversation.turns || []).some(function (t) {
+    return t.status === 'queued' || t.status === 'running';
+  })) return true;
   if (dshCurrent && dshCurrent.status === 'running') return true;
   return Object.keys(taskDsh).some(function (k) {
     return taskDsh[k] && taskDsh[k].status === 'running';
@@ -1191,6 +1197,23 @@ function dshIsRunning() {
 }
 async function stopDsh() {
   setRunBtn('send');
+  if (dshConversationId && dshConversation) {
+    try {
+      const r = await api('/api/dsh/chat/' + encodeURIComponent(dshConversationId) + '/cancel',
+        {method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+      if (r && r.conversation) dshConversation = r.conversation;
+      (dshConversation.turns || []).forEach(function (t) {
+        if (t.status === 'queued') t.status = 'canceled';
+        if (t.status === 'running') t.status = 'error';
+      });
+      stopDshConvPoll();
+      renderDshView();
+    } catch (e) {
+      if (dshCurrent) dshCurrent.events.push({type:'text', text:'终止失败：' + e.message});
+      renderDshView();
+    }
+    return;
+  }
   try {
     const r = await api('/api/dsh/cancel', {method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
     if (dshCurrent) {
@@ -1217,7 +1240,12 @@ async function stopDsh() {
 }
 
 function onRunBtn() {
-  if (runMode === 'stop') { if (dshIsRunning()) { stopDsh(); return; } stopRun(); return; }
+  if (runMode === 'stop') {
+    const text = ($('#question') && $('#question').value.trim()) || '';
+    if (dshMode && text) { startRun(); return; }   // 运行中再次发送 = 插入对话
+    if (dshIsRunning()) { stopDsh(); return; }
+    stopRun(); return;
+  }
   startRun();
 }
 
@@ -1355,7 +1383,46 @@ function scrollDshBottom() {
   requestAnimationFrame(function () { el.scrollTop = el.scrollHeight; });
 }
 
+function renderDshConversationView() {
+  const c = dshConversation || {};
+  const box = document.querySelector('#runlog');
+  const body = document.querySelector('#runlog-body');
+  if (!box || !body) return;
+  box.classList.remove('hidden'); box.classList.remove('fading');
+  document.body.classList.remove('stage-empty');
+  document.body.classList.add('stage-run');
+  const turns = c.turns || [];
+  const busy = turns.some(t => t.status === 'queued' || t.status === 'running');
+  const bd = document.querySelector('#rl-badge');
+  if (bd) {
+    bd.className = 'badge ' + (busy ? 'running' : 'done');
+    bd.textContent = busy ? '运行中' : '完成';
+  }
+  const q = document.querySelector('#rl-question');
+  if (q) q.textContent = 'DSH Agent 会话 · ' + (c.id || '');
+  const f = document.querySelector('#rl-files');
+  if (f) f.innerHTML = '';
+  let inner = '<div class="rl-lane rl-boot"><div class="rl-lane-head">DeepSeek Harness Agent · ' + esc(c.id || '') + '</div>';
+  turns.forEach(function (t, i) {
+    inner += '<div class="rl-round">第 ' + (i + 1) + ' 轮 · ' + esc(t.status || '') + '</div>';
+    inner += '<div class="rl-line"><span class="rl-lab">用户</span><span class="rl-txt">' + esc(t.task || '') + '</span></div>';
+    if (t.status === 'queued') inner += '<div class="rl-summary">已插入，排队等待前一轮完成…</div>';
+    if (t.status === 'running') inner += '<div class="rl-summary">DSH Agent 运行中…</div>';
+    (t.events || []).forEach(function (e) { inner += dshEventHtml(e); });
+    if ((!t.events || !t.events.length) && t.text) {
+      inner += '<div class="rl-line"><span class="rl-txt">' + esc(t.text) + '</span></div>';
+    }
+    if (t.status === 'canceled') inner += '<div class="rl-summary">已终止</div>';
+  });
+  inner += '</div>';
+  const fromBottom = body.scrollHeight - body.scrollTop;
+  body.innerHTML = inner;
+  if (logFollow) scrollDshBottom();
+  else body.scrollTop = Math.max(0, body.scrollHeight - fromBottom);
+}
+
 function renderDshView() {
+  if (dshConversation) { renderDshConversationView(); return; }
   const c = dshCurrent || {};
   const box = document.querySelector('#runlog');
   const body = document.querySelector('#runlog-body');
@@ -1430,9 +1497,52 @@ function applyDshResult(obj, r) {
   if (!r.ok && r.stderr) obj.events.push({type:'text', text:'Agent 退出异常：' + r.stderr});
 }
 
+async function loadDshConversation() {
+  if (!dshConversationId) return;
+  try {
+    const r = await api('/api/dsh/chat/' + encodeURIComponent(dshConversationId));
+    if (r && r.id) dshConversation = r;
+    renderDshView();
+  } catch (_) {}
+}
+function stopDshConvPoll() {
+  if (dshConvTimer) { clearInterval(dshConvTimer); dshConvTimer = null; }
+}
+function startDshConvPoll() {
+  stopDshConvPoll();
+  dshConvTimer = setInterval(async function () {
+    await loadDshConversation();
+    const turns = (dshConversation && dshConversation.turns) || [];
+    const busy = turns.some(t => t.status === 'queued' || t.status === 'running');
+    if (!busy) { stopDshConvPoll(); setRunBtn('send'); }
+  }, 600);
+}
+async function startDshChat(question) {
+  logFollow = true;
+  if (!dshConversationId) dshConversationId = 'dshconv-' + Date.now().toString(36);
+  dshCurrent = null;
+  setRunBtn('stop');
+  try {
+    await api('/api/dsh/chat', { method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ conversation_id: dshConversationId, task: question,
+        effort: (document.querySelector('#dsh-effort') || {}).value || '',
+        permission: (document.querySelector('#dsh-perm') || {}).value || 'workspace-write',
+        model: (document.querySelector('#dsh-model') || {}).value || 'deepseek-flash' }) });
+    await loadDshConversation();
+    startDshConvPoll();
+  } catch (e) {
+    dshCurrent = { question: question, session: 'queue', status: 'error',
+      events: [{type:'text', text:'提交会话失败：' + e.message}] };
+    renderDshView();
+    setRunBtn('send');
+  }
+}
+
 async function startDshRun(question) {
   logFollow = true;
   const attach = dshMode ? (dshAttachTaskId || currentTaskId()) : null;
+  if (!attach) return startDshChat(question);
   let target = null;
   if (attach) {
     dshAttachTaskId = attach;
@@ -2677,6 +2787,9 @@ function newChat() {
   agentTaskMode = false;
   dshAttachTaskId = null;
   dshCurrent = null;
+  dshConversationId = null;
+  dshConversation = null;
+  stopDshConvPoll();
   dshSession = '';
   toggleDshMode(false);
   const rb = $('#runlog-body');
@@ -3441,6 +3554,9 @@ function showAcceptanceInDgtf(prop) {
 
 function showAutoDsh(question, events, status) {
   logFollow = true;
+  dshConversationId = null;
+  dshConversation = null;
+  stopDshConvPoll();
   toggleDshMode(true);
   dshAttachTaskId = null;
   dshCurrent = { question: question, session: 'auto-cycle', events: events || [],

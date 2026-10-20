@@ -147,6 +147,223 @@ def make_server(host: str, port: int, token: str = "", verbose: bool = False):
 
 
 _DSH_ACTIVE = set()
+_DSH_CONV = {}
+_DSH_CONV_ACTIVE = set()
+_DSH_CONV_LOCK = None   # 延迟创建，避免顶层 import threading
+
+# ── 常驻 Agent 守护：app 启动时拉起 agent_daemon.py ─────────────────
+# 定位：只做「本地队列消费 + 修复提案」，不联网、不调 LLM、不碰源码；
+# DSH 对话仍是按需拉起的一次性 headless 进程，不在本守护内。
+_AGENT_DAEMON = {
+    "proc": None, "pid": 0, "interval": 60.0, "knowledge_every": 0,
+    "log": None, "pid_file": None, "stop_file": None,
+}
+
+
+def _agent_daemon_paths():
+    root = Path(__file__).resolve().parent.parent
+    mem = root / "dgtf_memory"
+    return {
+        "root": root,
+        "script": root / "agent_daemon.py",
+        "log": mem / "agent_daemon.log",
+        "stdout": mem / "agent_daemon.stdout.log",
+        "pid": mem / "agent_daemon.app.pid",
+        "stop": mem / "agent_daemon.app.stop",
+    }
+
+
+def _pid_alive(pid) -> bool:
+    """跨平台判断 PID 是否还活着（Windows 用 GetExitCodeProcess）。"""
+    try:
+        pid = int(pid)
+    except Exception:
+        return False
+    if pid <= 0:
+        return False
+    if os.name == "nt":
+        try:
+            import ctypes
+            k = ctypes.windll.kernel32
+            k.OpenProcess.restype = ctypes.c_void_p
+            k.OpenProcess.argtypes = [ctypes.c_ulong, ctypes.c_bool,
+                                      ctypes.c_ulong]
+            k.GetExitCodeProcess.argtypes = [
+                ctypes.c_void_p, ctypes.POINTER(ctypes.c_ulong)]
+            k.CloseHandle.argtypes = [ctypes.c_void_p]
+            h = k.OpenProcess(0x1000, False, pid)   # QUERY_LIMITED_INFORMATION
+            if not h:
+                return False
+            try:
+                code = ctypes.c_ulong()
+                if not k.GetExitCodeProcess(h, ctypes.byref(code)):
+                    return False
+                return code.value == 259            # STILL_ACTIVE
+            finally:
+                k.CloseHandle(h)
+        except Exception:
+            return False
+    try:
+        os.kill(pid, 0)
+        return True
+    except OSError:
+        return False
+
+
+def _mtime_age(path):
+    try:
+        return max(0.0, time.time() - path.stat().st_mtime)
+    except Exception:
+        return None
+
+
+def _read_last_log(path, limit=2000):
+    try:
+        with path.open("rb") as f:
+            f.seek(0, os.SEEK_END)
+            f.seek(max(0, f.tell() - limit))
+            rows = f.read().decode("utf-8", "replace").strip().splitlines()
+        return rows[-1] if rows else ""
+    except Exception:
+        return ""
+
+
+def agent_daemon_status():
+    """返回常驻 Agent 的只读状态；不启动、不修改任何东西。"""
+    paths = _agent_daemon_paths()
+    proc = _AGENT_DAEMON.get("proc")
+    managed = bool(proc is not None and proc.poll() is None)
+    pid = int(proc.pid) if managed else 0
+    if not managed:
+        try:
+            pid = int(paths["pid"].read_text(encoding="utf-8").strip())
+        except Exception:
+            pid = 0
+        if not _pid_alive(pid):
+            pid = 0
+    age = _mtime_age(paths["log"])
+    # 兼容改造前已手动/开机启动的实例：没有 pid 文件，但日志仍在写。
+    # 轮询间隔 60s，150s 内有过 cycle 就视为活着，避免再起一份。
+    recent = bool(age is not None and age < 150)
+    running = bool(managed or pid or recent)
+    return {
+        "running": running,
+        "managed": managed,
+        "pid": pid,
+        "interval": _AGENT_DAEMON.get("interval", 60.0),
+        "knowledge_every": _AGENT_DAEMON.get("knowledge_every", 0),
+        "log_age_s": None if age is None else round(age, 1),
+        "last_log": _read_last_log(paths["log"]),
+        "log": str(paths["log"]),
+    }
+
+
+def start_agent_daemon(interval: float = 60.0,
+                       knowledge_every: int = 0) -> dict:
+    """确保常驻 Agent 在跑；已在跑就复用，不重复拉起。"""
+    paths = _agent_daemon_paths()
+    if not paths["script"].is_file():
+        return {"ok": False, "running": False,
+                "error": "找不到 %s" % paths["script"]}
+    force = str(os.environ.get("DGTF_APP_AGENT_DAEMON_FORCE") or "") == "1"
+    cur = agent_daemon_status()
+    if cur.get("running") and not force:
+        cur.update({"ok": True, "started": False,
+                    "why": "已有实例在运行，复用"})
+        return cur
+
+    import subprocess as _sp
+    try:
+        paths["stop"].unlink(missing_ok=True)
+    except Exception:
+        pass
+    flags = getattr(_sp, "CREATE_NO_WINDOW", 0) if os.name == "nt" else 0
+    out = None
+    try:
+        paths["stdout"].parent.mkdir(parents=True, exist_ok=True)
+        out = open(paths["stdout"], "ab")
+        cmd = [sys.executable, str(paths["script"]),
+               "--interval", str(float(interval)),
+               "--knowledge-every", str(int(knowledge_every)),
+               "--stop-file", str(paths["stop"])]
+        proc = _sp.Popen(
+            cmd, cwd=str(paths["root"]), stdin=_sp.DEVNULL,
+            stdout=out, stderr=_sp.STDOUT, creationflags=flags,
+            close_fds=True)
+    except Exception as exc:
+        return {"ok": False, "running": False,
+                "error": "%s: %s" % (type(exc).__name__, exc)}
+    finally:
+        if out is not None:
+            try:
+                out.close()
+            except Exception:
+                pass
+
+    _AGENT_DAEMON.update({
+        "proc": proc, "pid": int(proc.pid),
+        "interval": float(interval), "knowledge_every": int(knowledge_every),
+        "log": paths["log"], "pid_file": paths["pid"],
+        "stop_file": paths["stop"],
+    })
+    try:
+        paths["pid"].write_text(str(proc.pid), encoding="utf-8")
+    except Exception:
+        pass
+    time.sleep(0.4)         # 给异常退出（缺依赖/参数错）一个暴露窗口
+    if proc.poll() is not None:
+        return {"ok": False, "running": False, "pid": int(proc.pid),
+                "error": "agent_daemon 启动后立即退出，见 %s"
+                         % paths["stdout"]}
+    st = agent_daemon_status()
+    st.update({"ok": True, "started": True, "why": "已启动"})
+    return st
+
+
+def stop_agent_daemon(timeout: float = 4.0) -> dict:
+    """只停本进程拉起的实例；外部/复用实例不动。"""
+    proc = _AGENT_DAEMON.get("proc")
+    paths = _agent_daemon_paths()
+    if proc is None or proc.poll() is not None:
+        _AGENT_DAEMON["proc"] = None
+        try:
+            paths["stop"].unlink(missing_ok=True)
+        except Exception:
+            pass
+        try:
+            paths["pid"].unlink(missing_ok=True)
+        except Exception:
+            pass
+        return {"ok": True, "stopped": False}
+
+    try:
+        paths["stop"].write_text("stop", encoding="utf-8")
+    except Exception:
+        pass
+    try:
+        proc.wait(timeout=1.5)
+    except Exception:
+        try:
+            proc.terminate()
+        except Exception:
+            pass
+        try:
+            proc.wait(timeout=timeout)
+        except Exception:
+            try:
+                proc.kill()
+            except Exception:
+                pass
+    _AGENT_DAEMON["proc"] = None
+    try:
+        paths["stop"].unlink(missing_ok=True)
+    except Exception:
+        pass
+    try:
+        paths["pid"].unlink(missing_ok=True)
+    except Exception:
+        pass
+    return {"ok": True, "stopped": True}
 
 
 def _git(args, timeout=60, stdin_text=None, limit=4000):
@@ -817,6 +1034,138 @@ def _proposal_commit_hash(prop):
     return m.group(1) if m else ""
 
 
+def _conv_lock():
+    global _DSH_CONV_LOCK
+    import threading as _th
+    if _DSH_CONV_LOCK is None:
+        _DSH_CONV_LOCK = _th.Lock()
+    return _DSH_CONV_LOCK
+
+
+def _conv_dir():
+    d = Path(__file__).resolve().parent.parent / "dgtf_memory" / "dsh_conversations"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def _conv_path(cid):
+    import re as _re
+    safe = _re.sub(r"[^A-Za-z0-9_.-]", "_", str(cid or ""))[:120] or "conversation"
+    return _conv_dir() / (safe + ".json")
+
+
+def _conv_save(conv):
+    import json as _json
+    try:
+        _conv_path(conv.get("id")).write_text(
+            _json.dumps(conv, ensure_ascii=False, indent=1), encoding="utf-8")
+    except Exception:
+        pass
+
+
+def _conv_load(cid):
+    import json as _json
+    p = _conv_path(cid)
+    if not p.exists():
+        return None
+    try:
+        return _json.loads(p.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+
+
+def _conv_event(cid, turn_id, ev):
+    with _conv_lock():
+        conv = _DSH_CONV.get(cid)
+        if not conv:
+            return
+        for turn in conv.get("turns") or []:
+            if turn.get("id") == turn_id:
+                turn.setdefault("events", []).append(ev)
+                return
+
+
+def _conv_worker(cid):
+    import time as _t
+    while True:
+        with _conv_lock():
+            conv = _DSH_CONV.get(cid) or _conv_load(cid)
+            if not conv:
+                _DSH_CONV_ACTIVE.discard(cid)
+                return
+            turn = None
+            for x in conv.get("turns") or []:
+                if x.get("status") == "queued":
+                    turn = x
+                    break
+            if turn is None:
+                _DSH_CONV_ACTIVE.discard(cid)
+                return
+            turn["status"] = "running"
+            turn["ts_start"] = _t.time()
+            _DSH_CONV[cid] = conv
+            _conv_save(conv)
+            sid = str(conv.get("session_id") or "")
+            task = str(turn.get("task") or "")
+            settings = conv.get("settings") or {}
+        try:
+            res = _run_dsh_agent(
+                task, sid, timeout=1800,
+                effort=str(settings.get("effort") or ""),
+                permission=str(settings.get("permission") or ""),
+                model=str(settings.get("model") or ""),
+                emit=lambda ev: _conv_event(cid, turn.get("id"), ev))
+        except Exception as exc:
+            res = {"ok": False, "session_id": sid, "events": [],
+                   "text": "", "stderr": str(exc)}
+        with _conv_lock():
+            conv = _DSH_CONV.get(cid) or _conv_load(cid)
+            if not conv:
+                _DSH_CONV_ACTIVE.discard(cid)
+                return
+            for x in conv.get("turns") or []:
+                if x.get("id") == turn.get("id"):
+                    x["status"] = "done" if res.get("ok") else "error"
+                    x["events"] = list(res.get("events") or x.get("events") or [])
+                    x["text"] = str(res.get("text") or "")
+                    x["ts_end"] = _t.time()
+                    break
+            if res.get("session_id"):
+                conv["session_id"] = str(res["session_id"])
+            _DSH_CONV[cid] = conv
+            _conv_save(conv)
+
+
+def _conv_enqueue(cid, task, settings=None):
+    import time as _t
+    with _conv_lock():
+        conv = _DSH_CONV.get(cid) or _conv_load(cid)
+        if not conv:
+            conv = {"id": cid, "session_id": "", "created_at": _t.time(),
+                    "turns": []}
+        conv["settings"] = settings or conv.get("settings") or {}
+        turn = {"id": "turn-" + str(int(_t.time() * 1000)),
+                "task": str(task), "status": "queued",
+                "events": [], "text": "", "ts_start": _t.time()}
+        conv.setdefault("turns", []).append(turn)
+        conv["updated_at"] = _t.time()
+        _DSH_CONV[cid] = conv
+        _conv_save(conv)
+        need_worker = cid not in _DSH_CONV_ACTIVE
+        if need_worker:
+            _DSH_CONV_ACTIVE.add(cid)
+    if need_worker:
+        import threading as _th
+        _th.Thread(target=_conv_worker, args=(cid,), daemon=True).start()
+    return conv, turn
+
+
+def _conv_snapshot(cid):
+    with _conv_lock():
+        conv = _DSH_CONV.get(cid) or _conv_load(cid)
+    return conv
+
+
 class Handler(BaseHTTPRequestHandler):
     # ★ HTTP/1.1 = 默认**长连接**（HTTP/1.0 每请求一连接 ⇒ 关一次就进 TIME_WAIT）。
     #   前端 1.5s 轮询 + 验收台密集轮询会把 TIME_WAIT 堆到上千条、把端口耗光，
@@ -967,6 +1316,9 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"items": [__import__("json").loads(x) for x in lines if x.strip()]})
             except Exception as exc:
                 return self._json({"items": [], "error": str(exc)})
+        m = re.match(r"^/api/dsh/chat/([^/]+)$", p)
+        if m:
+            return self._json(_conv_snapshot(unquote(m.group(1))) or {})
         m = re.match(r"^/api/dsh/sessions/([^/]+)$", p)
         if m:
             return self._json(_get_dsh_session(unquote(m.group(1))))
@@ -984,6 +1336,8 @@ class Handler(BaseHTTPRequestHandler):
             return self._json({"sessions": _list_dsh_sessions()})
         if p == "/api/git/status":
             return self._json(_git_status())
+        if p == "/api/agent/daemon":
+            return self._json(agent_daemon_status())
         if p == "/api/agent/results":
             try:
                 import sys as _sys
@@ -1477,6 +1831,43 @@ class Handler(BaseHTTPRequestHandler):
             _save_proposal(prop)
             return self._json({"ok": bool(res.get("ok")), "proposal": prop,
                                "result": res})
+        if p == "/api/dsh/chat":
+            data = self._read_json()
+            task = str(data.get("task") or "").strip()
+            if not task:
+                return self._json({"error": "task 不能为空"}, 400)
+            cid = str(data.get("conversation_id") or "").strip()
+            if not cid:
+                import time as _ct
+                cid = "dshconv-" + str(int(_ct.time() * 1000))
+            settings = {"effort": str(data.get("effort") or ""),
+                        "permission": str(data.get("permission") or ""),
+                        "model": str(data.get("model") or "")}
+            conv, turn = _conv_enqueue(cid, task[:8000], settings)
+            return self._json({"ok": True, "conversation_id": cid,
+                               "turn_id": turn.get("id"),
+                               "conversation": _conv_snapshot(cid)})
+        if p.startswith("/api/dsh/chat/") and p.endswith("/cancel"):
+            cid = p.split("/")[4]
+            with _conv_lock():
+                conv = _DSH_CONV.get(cid) or _conv_load(cid)
+                if conv:
+                    for t in conv.get("turns") or []:
+                        if t.get("status") == "queued":
+                            t["status"] = "canceled"
+                    _DSH_CONV[cid] = conv
+                    _conv_save(conv)
+            try:
+                import subprocess as _csp
+                for proc in list(_DSH_ACTIVE):
+                    try:
+                        _csp.run(["taskkill", "/F", "/T", "/PID", str(proc.pid)],
+                                 capture_output=True, timeout=10)
+                    except Exception:
+                        pass
+            except Exception:
+                pass
+            return self._json({"ok": True, "conversation": _conv_snapshot(cid)})
         if p == "/api/dsh/agent/stream":
             data = self._read_json()
             task = str(data.get("task") or "").strip()
@@ -1672,6 +2063,14 @@ def main() -> int:
                          "启动时会打印带 ?t= 的网址")
     ap.add_argument("--port", type=int, default=8765)
     ap.add_argument("--verbose", action="store_true")
+    ap.add_argument("--no-agent-daemon", action="store_true",
+                    help="不随 app 启动常驻 Agent 守护（默认启动）")
+    ap.add_argument("--keep-agent-daemon", action="store_true",
+                    help="app 退出时保留 Agent 守护（默认随 app 退出）")
+    ap.add_argument("--agent-interval", type=float, default=60.0,
+                    help="Agent 守护轮询间隔秒（默认 %(default)s）")
+    ap.add_argument("--agent-knowledge-every", type=int, default=0,
+                    help="每 N 轮刷新技术知识；0=关（默认 0，避免自动联网）")
     args = ap.parse_args()
 
     # ★ R42：`--lan` 是 `--host 0.0.0.0` 的语义化写法；两者都给时以 `--lan` 为准。
@@ -1699,6 +2098,14 @@ def main() -> int:
     except Exception as e:  # noqa: BLE001    回填失败不该拖垮启动
         print(f"  回填中断任务失败（忽略）：{type(e).__name__}: {e}")
 
+    try:
+        _ads = start_agent_daemon(interval=60.0)
+        if _ads.get("running"):
+            print("  Agent 常驻：运行中（pid=%s）" % (_ads.get("pid") or "复用"))
+        else:
+            print("  Agent 常驻启动失败：%s" % (_ads.get("error") or "未知"))
+    except Exception as _e:
+        print("  Agent 常驻启动异常（忽略）：%s" % _e)
     srv = make_server(host, args.port, token=token, verbose=args.verbose)
     mock = "开" if os.environ.get("DGTF_APP_MOCK") == "1" else "关"
     print(f"元DGTF 应用已启动： http://127.0.0.1:{args.port}")
@@ -1730,12 +2137,39 @@ def main() -> int:
         print("  访问口令已启用：网址要带 ?t=<口令>（首次打开会自动记进 cookie）")
     print(f"  引擎：{runner.find_engine().name}")
     print(f"  mock：{mock}    并发上限：{runner.MAX_CONCURRENT}")
+
+    # ★ 常驻 Agent：app 启动即确保 agent_daemon 在跑（已有实例则复用）。
+    #   只消费本地队列、写提案；不联网、不调 LLM。可用 --no-agent-daemon 关闭。
+    daemon_started = None
+    if not args.no_agent_daemon:
+        try:
+            st = start_agent_daemon(args.agent_interval,
+                                    args.agent_knowledge_every)
+            if st.get("ok"):
+                tag = "已启动" if st.get("started") else "复用已运行实例"
+                ke = ("每 %d 轮" % args.agent_knowledge_every
+                      if args.agent_knowledge_every else "关")
+                pid_txt = str(st.get("pid") or "外部实例")
+                print(f"  Agent 守护：{tag}（pid {pid_txt}，"
+                      f"轮询 {int(args.agent_interval)}s，知识刷新 {ke}）")
+                daemon_started = st
+            else:
+                print(f"  Agent 守护未启动：{st.get('error')}")
+        except Exception as e:  # noqa: BLE001    守护起不来不该拖垮 app
+            print(f"  Agent 守护启动失败（忽略）：{type(e).__name__}: {e}")
+
     print("  Ctrl+C 停止")
     try:
         srv.serve_forever()
     except KeyboardInterrupt:
         print("\n已停止")
     finally:
+        if (daemon_started and daemon_started.get("started")
+                and not args.keep_agent_daemon):
+            try:
+                stop_agent_daemon()
+            except Exception as e:  # noqa: BLE001
+                print(f"  Agent 守护停止失败（忽略）：{type(e).__name__}: {e}")
         srv.server_close()
     return 0
 
