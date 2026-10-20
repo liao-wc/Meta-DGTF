@@ -46,13 +46,17 @@ _ORDER = {k: i for i, (k, _) in enumerate(GROUP_LABEL)}
 
 # 几个「枚举」键给下拉选项（其余按值类型渲染输入框）
 OPTIONS = {
-    "api.default_model": ["deepseek-flash", "deepseek-reasoner", "deepseek-chat"],
-    "api.reasoner_model": ["deepseek-flash", "deepseek-reasoner", "deepseek-chat"],
-    "web_search.backend": ["tavily", "snapshot"],
+    # ★ [v1.23.65] 只用服务端当前接受的模型 ID。旧 ID（deepseek-chat /
+    #   deepseek-reasoner）已停服：选中即 400（本仓库真实产物踩过）。
+    "api.default_model": ["deepseek-flash", "deepseek-v4-pro"],
+    "api.reasoner_model": ["deepseek-flash", "deepseek-v4-pro"],
+    "api.thinking.effort": ["low", "high", "max"],
+    "web_search.backend": ["tavily", "deepseek", "snapshot"],
     "external_anchor.retriever": ["snapshot", "tavily"],
     "runtime.web": ["auto", "on", "off"],
     "runtime.thinking": ["auto", "on", "off"],
-    "runtime.effort": ["auto", "low", "medium", "high", "max"],
+    # ★ 引擎只认 auto/low/high/max（_RUNTIME_EFFORTS）；medium 会被判非法。
+    "runtime.effort": ["auto", "low", "high", "max"],
 }
 # 置顶项（面板最先看到的几个）
 PINNED = ("api.default_model", "web_search.backend", "runtime.thinking",
@@ -115,10 +119,13 @@ _KEY_CN: dict[str, str] = {
     "api.thinking.stages.probe_research": "思考档 · probe_research（enabled/disabled；显式 > 本表 > default）",
     "api.thinking.stages.re_anchor": "思考档 · re_anchor（enabled/disabled；显式 > 本表 > default）",
     "api.thinking.stages.re_evaluate_pool": "思考档 · re_evaluate_pool（enabled/disabled；显式 > 本表 > default）",
+    "api.thinking.stages.tool_preflight": "工具预检（Search/Fetch 工具调用）",
     "api.thinking.stages.self_check": "思考档 · self_check（enabled/disabled；显式 > 本表 > default）",
     "api.thinking.stages.settle_research": "思考档 · settle_research（enabled/disabled；显式 > 本表 > default）",
     "web_search.stages.adjudicate_sub_tristate": "环节授权 · 子问题三态裁决（默认关；开=该环节可按需联网）",
     "web_search.stages.adjudicate_sub_tristate_multi": "环节授权 · 子问题三态裁决（多）（默认关；开=该环节可按需联网）",
+    "web_search.stages.tri_test_retest": "环节授权 · 三态 test-retest 重测（默认关；开=该环节可按需联网）",
+    "api.thinking.stages.tri_test_retest": "思考档位 · 三态 test-retest 重测（默认 disabled）",
     "web_search.stages.anchor_crosscheck": "环节授权 · 锚点交叉核对（默认关；开=该环节可按需联网）",
     "web_search.stages.ask_missing_polarity": "环节授权 · 极性追问（默认关；开=该环节可按需联网）",
     "web_search.stages.assess_decidability": "环节授权 · 可判定性评估（默认关；开=该环节可按需联网）",
@@ -148,6 +155,8 @@ _KEY_CN: dict[str, str] = {
     "web_search.stages.self_check": "环节授权 · 自检（默认关；开=该环节可按需联网）",
     "web_search.stages.settle_research": "环节授权 · 研究清算（默认关；开=该环节可按需联网）",
 
+    # ★ 事实流（fact_flow）：事实短题只砍圈、不砍层；四层仍全跑。
+    "auto.fact_flow.rounds_max": "事实流 · 事实短题每层圈数上限（四层仍全跑，只砍圈不砍层；0=不钳制）",
     "auto.bandit.c": "预算 bandit 的探索系数 c（UCB 宽度；越大越爱探索）",
     "auto.bandit.cost_w": "预算 bandit 的成本权重（奖励里扣多少成本；默认 0.3）",
     "auto.bandit.enabled": "预算 bandit 总开关（默认关；开机会故意选较差档）",
@@ -166,8 +175,12 @@ _KEY_CN: dict[str, str] = {
     "playbook.mode": "经验记忆模式：off 不读不写 / shadow 只记不生效 / on 生效",
     "playbook.promote_n": "同向证据达几条才 shadow→active（默认 3）",
     "playbook.top_k": "每次读几条经验（默认 3）",
+    "playbook.argumentation.enabled": "论证冲突裁决开关（只标败方/不删行；默认关）",
+    "playbook.argumentation.semantics": "论证语义（目前只支持 grounded；并列保持 undecided）",
     "stop.anytime_alpha": "anytime-valid 停止的 δ（默认 0=关；>0 才启用该停因）",
-    "all_on": "【一键全开】本机真跑默认全开（出厂 true；引擎默认 false）",
+    "stop.anytime_mode": "anytime 判据口径：hoeffding（默认）/ evalue（e-process）",
+    "all_on": "【一键全开】把能力开关一起打开（本机 false；引擎默认 false）",
+    "max_tokens": "总 token 软预算（0=不设限；到点走层/圈边界优雅停，可续跑）",
     "autotune.min_n": "自调优：同(模式,层集)至少几次跑才进榜（防偶发）",
     "autotune.out": "自调优：建议落盘路径（空=仓库根 dgtf_autotune.json）",
     "autotune.quality_tau": "自调优：层集取舍容差 τ（同质量内取成本最低 = 帕累托膝盖）",
@@ -199,6 +212,22 @@ _KEY_CN: dict[str, str] = {
     # ── api 模型与 API ──
     "api.base_url": "接口地址",
     "api.default_model": "默认模型（大部分调用）",
+    "api.json_repair": "严格 JSON 解析失败时自修复一次（只修格式，不改语义）",
+    "scheduler.v2.enabled": "V2 调度开关（joint=与 V1 统一仲裁）",
+    "scheduler.v2.mode": "V2 决策模式（shadow/advisory/takeover/joint）",
+    "scheduler.v2.shadow": "V2 影子模式（true=只记录建议，不接管）",
+    "scheduler.v2.eml_path": "统一 EML · V2 事件路径（V1 playbook + V2 events 合并读；不迁移不删除）",
+    "scheduler.v2.contract_gate": "V1→V2 契约体检：off / warn / raise",
+    "scheduler.v2.core_gate": "四层核心职责审计门禁：off=不出读数 / warn=只告警加旗标，默认 warn 不阻断",
+    "scheduler.v2.allow_anon": "无 run_id 跑次是否写 V2 记忆（默认否，防测试污染）",
+    "scheduler.v2.takeover": "Phase 4：接管串行初始排程（默认否；层内仍是 V1）",
+    "actions.l0_v2_curate": "Phase 5：0 层 archive 只读观测（默认开，不改生成）",
+    "actions.l0_v2_mode": "Phase 5：archive=只读（默认）/ guide=可选提示 / filter=旧硬裁剪",
+    "actions.all_v2": "F2：all 层 ClosurePackage（默认开；四层 5/5）",
+    "actions.one_v2": "F3：1 层 AnswerSetPackage 契约包（默认开；full-4 通过）",
+    "actions.both_v2": "F4：both 原生论证契约（默认开；full-4 通过）",
+    "actions.zero_v2": "F5：0 层只读审计/novelty（默认开；生成机制延期）",
+    "actions.tri_test_retest": "三态 test-retest：同 prompt 重测 2 次（默认否）",
     "api.key": "API 密钥",
     "api.max_retries": "网络最大重试次数",
     "api.reasoner_model": "推理模型（长链推理两处）",
@@ -221,7 +250,7 @@ _KEY_CN: dict[str, str] = {
     "external_anchor.api_key_env": "密钥环境变量名",
     "external_anchor.max_items": "锚点上限条数",
     "external_anchor.per_round": "每圈并入几条（0=不检索）",
-    "external_anchor.as_evidence": "证据资格（off/record/crosscheck/evidence/gate）",
+    "external_anchor.as_evidence": "证据链 · 外部锚点引用资格（off/record/crosscheck/evidence/gate）",
     "external_anchor.crosscheck": "收尾锚点只读对照",
     "external_anchor.tier_floor": "引用分级门槛（tier ≤ 此值）",
     "external_anchor.triage": "分诊降级",
@@ -252,8 +281,8 @@ _KEY_CN: dict[str, str] = {
     "runtime.effort": "推理强度（auto/low/medium/high/max）",
     "runtime.web": "联网检索（auto/on/off）",
     "stop.gain_floor": "单标量早停阈值（增益<它连续N圈⇒停；0=关）",
-    "memory.eml_adaptive": "EML 阈值冷启自适应（库小时降晋升门槛；默认关）",
-    "memory.eml_semantic_merge": "EML 语义近重合并（值差也并入；默认关）",
+    "memory.eml_adaptive": "统一 EML · 阈值冷启自适应（库小时降晋升门槛；默认关）",
+    "memory.eml_semantic_merge": "统一 EML · 语义近重合并（值差也并入；默认关）",
     "runtime.live_checkpoint": "跑中快照（心跳落盘，防中断全丢；默认开）",
     "runtime.ckpt_interval": "跑中快照心跳间隔（秒）",
     "duty.span_tolerant": "职责 S 口径对称化（R 用跨句窗口；默认关）",
@@ -306,6 +335,15 @@ _KEY_CN: dict[str, str] = {
     "spiral.budget_per_round_cap": "不限预算时每圈兜底上限",
     "spiral.budget_per_round_floor": "自动预算每圈下限",
     # ── web_search 联网检索 ──
+    "playbook.llm_feedback.enabled": "LLM 辅助 EML（只产调度候选，不写答案）",
+    "playbook.llm_feedback.max_candidates": "LLM 每跑最多候选条数",
+    "input.file_ids": "Files API file_id 列表（图片复用）",
+    "input.images": "视觉输入图片路径/URL 列表（跑前描述一次）",
+    "external_input.enabled": "统一外部输入总开关（anchor/file/web 通道隔离）",
+    "external_input.facet_queries": "0层侧面检索条数（默认3）",
+    "external_input.file_paths": "外部文件导入路径列表（每行一个）",
+    "external_input.fallback_web": "锚点缺失时联网兜底",
+    "claim_gap.enabled": "逐 claim 证据缺口循环（默认开；只对有需要 claim 检索）",
     "web_search.enabled": "联网总闸（false=零调用）",
     "web_search.backend": "检索后端",
     "web_search.api_key_env": "密钥环境变量名",
@@ -323,7 +361,7 @@ _KEY_CN: dict[str, str] = {
     "web_search.stages.duel_arbitration": "环节授权 · 对撞仲裁",
     "web_search.stages.meta_clean_check": "环节授权 · 元层清算",
     "web_search.stages.stop_criteria": "环节授权 · 停止判据（默认关）",
-    "web_search.as_evidence": "引用授权（off/record/crosscheck/evidence/gate）",
+    "web_search.as_evidence": "证据链 · 联网引用授权（off/record/crosscheck/evidence/gate）",
     "web_search.tier_floor": "引用表 tier 上限",
     "web_search.auto_disable_after_failures": "连续失败 N 次自动关闭联网",
     "web_search.relax_force": "【强制放宽】每圈都放宽放宽表（12 环节）联网（默认关）",
@@ -384,6 +422,111 @@ _STAGE_CN = {
 }
 for _s, _cn in _STAGE_CN.items():
     _KEY_CN.setdefault(f"api.thinking.stages.{_s}", f"思考档位 · {_cn}")
+
+
+# ── 新决策块的中文标签（v1.26 统一决策与证据闭环 · 展示层词汇表）──────────
+# ★ 为什么放这里：参数面板、产物详情、实时日志、README/文档要用**同一套叫法**，
+#   散在四处迟早漂移。这里只给「标签 + 一句读法」，**不产生配置项**：
+#   这些块不是 dgtf_config.yaml 的键，参数面板不渲染它们，total 也不含它们，
+#   保存/恢复出厂都不会碰它们（避免把只读读数误配成参数）。
+# ★ decision_trace 是引擎已产出的块（packed + 产物 md「结论摘要」）；
+#   fact_flow / evidence / unified_eml 是 dgtf_v2 确定性模块的读数，
+#   接入前展示层统一写「未测」（不写 0 —— 0 会被当成「测了且为零」）。
+DISPLAY_BLOCK_CN: dict[str, str] = {
+    "decision_trace": "统一决策回执（问题类型 / 检索 / 四层 / 一致性 / 停止）",
+    "fact_flow": "事实流（触发分类 / 官方源 / 四层不砍 / 圈数建议）",
+    "evidence": "证据链（证据指纹 / 引用 / 检索与推理一致性）",
+    "unified_eml": "统一 EML 记忆（V1 playbook + V2 events 合并读）",
+    "process_ledger": "过程账本（每层输入/产物/标准/依赖）",
+    "fact_contract": "四层事实契约（事实是否进入 0/1/both/all）",
+    "decidability_audit": "研究层判定审计（可判定/不可判定是否真有证据）",
+    "recall": "历史回声（既往产物能否回到，带 run_id）",
+    "api_capabilities": "DeepSeek API 能力矩阵（已用/适配/不适用）",
+}
+
+# 块内字段的读法：一个字段一行。值缺失时展示层统一写「未测」。
+DISPLAY_FIELD_CN: dict[str, dict[str, str]] = {
+    "decision_trace": {
+        "question_type": "问题类型（fact / decision / boundary）",
+        "route": "实际路线（四层顺序）",
+        "rounds": "每层圈数",
+        "layers": "四层产物（进入 / 圈 / 停止 / 主要产出）",
+        "retrieval": "检索结论（官方源 answer / 官方源条数 / URL）",
+        "reasoning": "四层推理结论（研究层 answer）",
+        "consistency": "检索/推理一致性（match / mismatch / partial / not_comp）",
+        "answer_ready": "答案就绪（四层齐 + 覆盖达标 + 无阻断旗标）",
+        "stop_reason": "停止判据",
+        "artifacts": "产物定位（run_id）",
+    },
+    "fact_flow": {
+        "trigger": "触发分类（fact / decision / boundary）",
+        "search": "检索路径（官方源优先）",
+        "status": "事实状态（answered / no_record / conflict / unknown）",
+        "layers": "四层固定（不砍层）",
+        "rounds_hint": "圈数建议",
+        "budget": "预算去重（同 query 不重复花钱）",
+    },
+    "evidence": {
+        "fingerprint": "证据指纹（同一条证据只算一次）",
+        "citation": "引用（可回查到原文出处）",
+        "retrieval_vs_reasoning": "检索结论 vs 推理结论（match / partial / mismatch / not_comp）",
+        "official": "官方源标记",
+    },
+    "unified_eml": {
+        "source": "来源（v1:playbook / v2:events，去重后合并）",
+        "read_priors": "读取的数值先验（不含答案正文）",
+        "record_outcome": "跑后回写（outcome 带 contract_ok / core_ok）",
+        "contains_content": "答案正文隔离（恒 False）",
+    },
+    "process_ledger": {
+        "layers": "四层 rounds / standard_ok / fact_ok / citations / deps",
+        "soul": "input_shape / output_shape / spiral / facets / recall",
+        "standard_all": "四层过程标准是否全达标",
+    },
+    "fact_contract": {
+        "ok_all": "四层事实是否全达标",
+        "layers": "逐层事实命中与是否修复",
+    },
+    "decidability_audit": {
+        "status": "verified / mixed / unverified / empty",
+        "bad": "未证判定数",
+        "rows": "逐项 before/after/issue",
+    },
+    "recall": {
+        "n": "历史回声条数",
+        "hits": "既往 run_id / answer / score（带来源）",
+    },
+    "api_capabilities": {
+        "counts": "used / adapted / optional / n/a 计数",
+        "matrix": "逐功能：层/阶段、状态、说明",
+    },
+}
+
+# 固定展示顺序（与「先决策、后事实/证据、最后记忆」的阅读顺序一致）
+DISPLAY_BLOCKS = tuple(DISPLAY_BLOCK_CN)
+
+
+def display_block_label(key: str) -> str:
+    """块的中文标签；未知键原样返回（与 label_for 的退路一致，不编造）。"""
+    return DISPLAY_BLOCK_CN.get(str(key), str(key))
+
+
+def display_field_label(block: str, field: str) -> str:
+    """块内字段的中文读法；未知块/字段原样返回。"""
+    return (DISPLAY_FIELD_CN.get(str(block)) or {}).get(str(field), str(field))
+
+
+def display_blocks() -> list[dict]:
+    """按固定顺序返回展示块表：[{key, label, fields:[{key, label}]}]。
+
+    给「读数台 / 产物详情 / 实时日志 / 文档」共用；**不改变** /api/params
+    的 groups/total —— 这些块不是 yaml 配置项，面板不渲染、保存不写回。
+    """
+    return [{"key": key,
+             "label": DISPLAY_BLOCK_CN[key],
+             "fields": [{"key": f, "label": DISPLAY_FIELD_CN.get(key, {})[f]}
+                        for f in DISPLAY_FIELD_CN.get(key, {})]}
+            for key in DISPLAY_BLOCKS]
 
 
 def label_for(key: str) -> str:
@@ -501,6 +644,23 @@ def effective_flat() -> dict:
     return base
 
 
+def factory_flat() -> dict:
+    """出厂 yaml 的扁平值表（只读基线，用于给前端标「默认」）。"""
+    return _load_yaml_flat(CFG)
+
+
+def _display_default(v) -> str:
+    """把出厂值转成前端下拉可显示/可比较的字符串。"""
+    if isinstance(v, bool):
+        return "true" if v else "false"
+    if isinstance(v, (list, tuple)):
+        return ",".join(str(x) for x in v)
+    if isinstance(v, dict):
+        return yaml.safe_dump(v, allow_unicode=True,
+                              default_flow_style=True).strip()
+    return "" if v is None else str(v)
+
+
 def user_overrides() -> dict:
     """用户配置里**实际改过的**键（显示「已改 N 项」/ 判断要不要给恢复按钮）。"""
     return _load_yaml_flat(USER_CFG)
@@ -528,12 +688,16 @@ def load_params() -> dict:
     每项带 `user_set`：该键是否被用户配置覆盖过（前端据此标「已改」）。
     ★ R38 增 `cli`：CLM 组**已保存**的值（见 `load_cli_saved`）—— 前端 `buildAdv()`
       用它回显输入框，用户上次存的 CLM 参数就还在。
+    ★ v1.26 增 display_blocks：新决策块（decision_trace / fact_flow / evidence /
+      unified_eml）的只读标签表，供展示层与文档共用；不是配置项。
     """
     flat = effective_flat()
+    fdef = factory_flat()
     uset = set(user_overrides().keys())
     groups: dict[str, list] = {}
     for k, v in flat.items():
         it = _item(k, v)
+        it["default"] = _display_default(fdef.get(k))
         if k in uset:
             it["user_set"] = True
         groups.setdefault(k.split(".")[0], []).append(it)
@@ -545,6 +709,8 @@ def load_params() -> dict:
                     "items": items})
     out.sort(key=lambda g: (_ORDER.get(g["key"], 99), g["key"]))
     return {"groups": out, "total": len(flat),
+            # ★ v1.26：展示块词汇表（只读标签，不是配置项 —— 不含具体值，不可保存）。
+            "display_blocks": display_blocks(),
             # ★★ R38 真 bug（判据抓出来的）：`uset` 里是**扁平键名** `cli.route`，
             #   而 `CLI_KEYS` 里是**叶子名** `route` —— 直接做差集**一个都排不掉**，
             #   于是「已改 N 项」会把 CLM 也算进去。要按前缀排。

@@ -34,6 +34,7 @@
       <path d="M18 2.6v5.6M15.2 5.4h5.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
     </svg>
   </button>
+
 </div>
 
 <!-- 抽屉：只放**按钮**（点一个 → 对应的面板全屏铺开，见 #sheet） -->
@@ -105,7 +106,14 @@
         </svg>
         <span class="nb-name">联网检索库</span>
       </button>
-    </nav>
+      <button class="nav-btn" data-sheet="view-agent" data-tip="Agent：任务队列 / 用户任务 / 消费者 / 技术知识 / 结果">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="4" y="7.2" width="16" height="12" rx="3" stroke="currentColor" stroke-width="1.7"/>
+      <path d="M12 3.4V7.2M8.6 12.2h.01M15.4 12.2h.01M9 16.2h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+    </svg>
+    <span class="nb-name">Agent</span>
+  </button>
+</nav>
   </div>
   <div class="drawer-foot">个人工作台</div>
 </aside>
@@ -232,6 +240,70 @@
       </div>
       <div id="web-list" class="lib-list scroll"></div>
     </section>
+
+    <!-- ★ Agent 面板：读任务队列 / 提交用户任务 / 运行消费者 / 刷新技术知识 / 看处理结果。
+         入口在侧边栏，与其它页面一致。 -->
+    <section id="view-agent" class="panel sheet-page">
+      <div class="hint tight">
+        Agent 面板：把引擎自反馈任务交给消费者；可读任务队列、提交用户任务、运行消费者、刷新知识、查看处理结果。
+        <span class="muted" id="agent-asof"></span>
+      </div>
+      <div class="searchbar tight">
+        <button id="agent-refresh" class="ghost primary" data-tip="重新拉取任务 / 消费者结果 / 技术知识">刷新</button>
+        <button id="agent-new" class="ghost" data-tip="把一条用户任务写进 Agent 任务队列">提交用户任务…</button>
+        <button id="agent-run" class="ghost" data-tip="运行 Agent 消费者：处理尚未消费的任务并生成修复提案">运行消费者</button>
+        <button id="agent-know" class="ghost" data-tip="按查询刷新技术知识库（服务端 Search/Fetch，失败不阻断面板）">刷新技术知识</button>
+        <span class="search-wrap">
+          <input id="agent-kn-q" placeholder="知识查询（逗号分隔；留空 = 默认两条）" autocomplete="off">
+        </span>
+        <span class="muted" id="agent-msg"></span>
+      </div>
+      <div class="searchbar tight gh-bar">
+        <button id="gh-open" class="ghost primary" data-tip="用 GitHub Desktop 打开当前仓库">GitHub Desktop</button>
+        <button id="gh-commit" class="ghost" data-tip="提交当前工作区全部变更（显式确认）">提交当前变更…</button>
+        <button id="gh-auto" class="ghost" data-tip="DSH Agent 自审一条自反馈任务，先生成带时间/方案的修复提案；确认或自动代理后才改源码">DSH 自审提案</button>
+        <span class="muted" id="gh-status">git 状态读取中…</span>
+      </div>
+      <div class="agent-tabs">
+        <button class="pill on" data-agent-tab="0">任务队列</button>
+        <button class="pill" data-agent-tab="1">消费者结果</button>
+        <button class="pill" data-agent-tab="2">技术知识</button>
+        <button class="pill" data-agent-tab="3">DSH 会话</button>
+        <button class="pill" data-agent-tab="4">DSH 产物</button>
+        <button class="pill" data-agent-tab="5">修复提案</button>
+        <button class="pill" data-agent-tab="6">最近运行</button>
+      </div>
+      <div class="agent-grid scroll">
+        <div class="agent-sec">
+          <div class="agent-sec-h">任务队列 <span class="chip" id="agent-task-n">0</span></div>
+          <div id="agent-tasks" class="agent-list"></div>
+        </div>
+        <div class="agent-sec">
+          <div class="agent-sec-h">消费者结果 <span class="chip" id="agent-result-n">0</span></div>
+          <div id="agent-results" class="agent-list"></div>
+        </div>
+        <div class="agent-sec">
+          <div class="agent-sec-h">技术知识库 <span class="chip" id="agent-kn-n">0</span></div>
+          <div id="agent-knowledge" class="agent-list"></div>
+        </div>
+        <div class="agent-sec">
+          <div class="agent-sec-h">DSH Agent 会话 <span class="chip" id="agent-dsh-n">0</span></div>
+          <div id="agent-dsh" class="agent-list"></div>
+        </div>
+        <div class="agent-sec">
+          <div class="agent-sec-h">DSH 产物库 <span class="chip" id="agent-dsh-art-n">0</span></div>
+          <div id="agent-dsh-art" class="agent-list"></div>
+        </div>
+        <div class="agent-sec">
+          <div class="agent-sec-h">修复提案库 <span class="chip" id="agent-prop-n">0</span></div>
+          <div id="agent-proposals" class="agent-list"></div>
+        </div>
+        <div class="agent-sec">
+          <div class="agent-sec-h">最近一次消费者运行</div>
+          <div id="agent-runbox" class="agent-list"></div>
+        </div>
+      </div>
+    </section>
   </div>
   <!-- ★★ R38：参数页的**共用底栏** —— 从 `#adv-group-page` 里提出来，放在 `.sheet-body`
        之外、`#sheet` 之内（`flex:0 0 auto` 的兄弟节点）⇒ 无论当前是「高级参数首页（分组
@@ -303,6 +375,13 @@
         </svg>
         <span class="p-name">演练模式</span>
       </label>
+
+      <button type="button" class="pill dsh-pill" id="pill-dsh" data-tip="切换 DeepSeek Harness Agent：用当前会话框执行，可读项目文件与 outputs/ 产物">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+        </svg>
+        <span class="p-name">DSH Agent</span>
+      </button>
       <button type="button" id="attach-btn" class="pill" data-tip="导入文件作为外部证据锚点（文本类，可多选）" aria-label="导入文件">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M20 11.5l-7.6 7.6a4.6 4.6 0 0 1-6.5-6.5l8-8a3.1 3.1 0 0 1 4.4 4.4l-8 8a1.6 1.6 0 0 1-2.2-2.2l7.3-7.3"
@@ -317,6 +396,16 @@
              ★ ★ 这段说明刻意**不写出那个元素的标识符**：判据会读页面/脚本文本，
                注释里出现同样的 token 会把「已移除」判成「还在」（R47 踩过一次）。 -->
       </button>
+      <select class="pill dsh-sel dsh-ctl" id="dsh-effort" data-tip="DSH Agent 档位（推理强度）">
+        <option value="">档位：标准（默认）</option>
+        <option value="high">档位：高</option>
+        <option value="max">档位：最大</option>
+      </select>
+      <select class="pill dsh-sel dsh-ctl" id="dsh-perm" data-tip="DSH Agent 会话工作权限（沙箱）">
+        <option value="read-only">权限：只读</option>
+        <option value="workspace-write" selected>权限：工作区</option>
+        <option value="danger-full-access">权限：完全</option>
+      </select>
       <button id="run-btn" class="send" data-tip="开始深究（⌘/Ctrl+↵）" aria-label="开始深究">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M12 19V5M6 11l6-6 6 6" stroke="currentColor" stroke-width="2"
@@ -361,6 +450,50 @@
   </div>
 </div>
 
+<!-- Agent 提交对话框：复用搜索浮层的遮罩/居中观感，z-index 抬到面板（#sheet 65）之上 -->
+<div id="agent-overlay" class="search-overlay agent-overlay hidden">
+  <div class="search-panel">
+    <div class="agent-dlg" role="dialog" aria-modal="true" aria-labelledby="agent-dlg-title">
+      <div class="agent-dlg-h">
+        <span id="agent-dlg-title">提交用户任务</span>
+        <button id="agent-dlg-x" class="icon-btn" data-tip="关闭（Esc）" aria-label="关闭提交对话框">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+      <label class="agent-field"><span>类型</span>
+        <select id="agent-kind">
+          <option value="user_task">user_task（通用用户任务）</option>
+          <option value="eml_candidate">eml_candidate（EML 候选验证）</option>
+          <option value="audit_gap">audit_gap（研究判定缺口）</option>
+          <option value="process_gap">process_gap（层过程标准缺口）</option>
+          <option value="quality_flag">quality_flag（质量线索）</option>
+          <option value="api_gap">api_gap（API/工具触发缺口）</option>
+        </select>
+      </label>
+      <label class="agent-field"><span>优先级</span>
+        <select id="agent-severity">
+          <option value="low">low</option>
+          <option value="med" selected>med</option>
+          <option value="high">high</option>
+        </select>
+      </label>
+      <label class="agent-field"><span>标题</span>
+        <input id="agent-title" placeholder="一句话：要 Agent 做什么" autocomplete="off">
+      </label>
+      <label class="agent-field"><span>详情</span>
+        <textarea id="agent-detail" rows="4" placeholder="背景 / 复现步骤 / 期望结果（可留空）"></textarea>
+      </label>
+      <div class="agent-dlg-f">
+        <span class="muted" id="agent-dlg-msg"></span>
+        <button id="agent-submit" class="primary">提交任务</button>
+        <button id="agent-cancel" class="ghost">取消</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="detail" class="detail hidden">
   <div class="detail-inner">
     <div class="detail-head">
@@ -373,6 +506,8 @@
 
 <!-- 悬停描述的承载元素（挂 body 的 fixed 气泡，不受抽屉 overflow 裁剪）+ 发送星光动画层 -->
 <div id="fx" class="fx" aria-hidden="true"></div>
+
+
 
 <script src="/static/app.js"></script>
 </body>

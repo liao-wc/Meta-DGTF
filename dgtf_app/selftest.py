@@ -11,6 +11,14 @@
 
 from __future__ import annotations
 
+# ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
+import sys as _sys_utf8
+for _s_utf8 in (_sys_utf8.stdout, _sys_utf8.stderr):
+    try:
+        _s_utf8.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 import argparse
 import json
 import re
@@ -756,9 +764,10 @@ def check_r47_frontend(css: str, js: str, html: str, srv_src: str,
                     and "am.textContent" not in _jsnc[a:b])(
               _jsnc.find("async function importFiles"),
               _jsnc.find("async function openLocal")))(), "")
-    # ★ 判别力对照：**别处**那句清空必须还在（否则「范围收紧」变成「整块删掉」）
-    check("★R48-1 对照：`newChat()` 里那句清空**仍在**（范围收紧，不是整块删）",
-          "if (am) am.textContent = '';" in _jsnc, "")
+    # ★ 新需求：新会话保留对话内容与 DSH 会话，只新建元DGTF会话 id。
+    check("新会话保留对话内容：newChat 不整块清空对话，只新建元DGTF会话 id",
+          "已新建元DGTF会话" in _jsnc
+          and "dgtfSessionId = 'dgtf-'" in _jsnc, "")
 
     check("★R48-1 导入结果改由**小窗/抽屉**承载（`#import-detail` 逐文件列结果）",
           "importPaint(" in _jsnc and "$('#import-detail')" in _jsnc
@@ -905,8 +914,8 @@ def main() -> int:
           'id="search-overlay" class="search-overlay hidden"' in html
           and 'id="search-input"' in html and 'id="attach-btn"' in html,
           "")
-    check("抽屉里是**七个**按钮（含历史对话）、各自指向一个面板",
-          html.count('class="nav-btn"') == 7
+    check("抽屉里是**八个**按钮（含历史对话与 Agent 面板）、各自指向一个面板",
+          html.count('class="nav-btn"') == 8
           and 'data-sheet="adv-panel"' in html and 'data-sheet="view-lib"' in html,
           f"nav-btn={html.count('nav-btn')}")
     # ★ 参数页出口：R36 起口径是「出厂 `dgtf_config.yaml` **只读**，用户改动写
@@ -1372,6 +1381,16 @@ def main() -> int:
           "参数项 " + str(sum(len(g.get("items", [])) for g in (params_data.get("groups") or [])))
           + " 项，全带中文说明"
           + (("；❌ 缺标签：%r" % (_nolit,)) if _nolit else ""))
+    check("模型下拉只给服务端支持的 ID（deepseek-flash / deepseek-v4-pro）",
+          set(prm.OPTIONS.get("api.default_model") or [])
+          == {"deepseek-flash", "deepseek-v4-pro"},
+          repr(prm.OPTIONS.get("api.default_model")))
+    check("effort 下拉不含引擎不认的 medium",
+          "medium" not in (prm.OPTIONS.get("runtime.effort") or []),
+          repr(prm.OPTIONS.get("runtime.effort")))
+    check("外链只允许 http(s)（挡 javascript: 注入）",
+          "const safeUrl" in js and "safeUrl(h.url)" in js,
+          "")
     check("发送键可切成**终止键**（同一按钮两形态 + 调 /cancel 终止）",
           "setRunBtn" in js and "_SVG_STOP" in js and "/cancel" in js
           and "function stopRun" in js,

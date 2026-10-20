@@ -28,6 +28,14 @@
 
 from __future__ import annotations
 
+# ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
+import sys as _sys_utf8
+for _s_utf8 in (_sys_utf8.stdout, _sys_utf8.stderr):
+    try:
+        _s_utf8.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 import argparse
 import io
 import json
@@ -132,6 +140,343 @@ def make_server(host: str, port: int, token: str = "", verbose: bool = False):
     srv.verbose = verbose
     srv.daemon_threads = True
     return srv
+
+
+
+
+
+
+def _git(args, timeout=60):
+    import subprocess as _sp
+    root = Path(__file__).resolve().parent.parent
+    p = _sp.run(["git"] + list(args), cwd=str(root),
+                text=True, encoding="utf-8", errors="replace",
+                capture_output=True, timeout=timeout)
+    return {"ok": p.returncode == 0, "out": (p.stdout or "")[-4000:],
+            "err": (p.stderr or "")[-2000:]}
+
+
+def _git_snapshot():
+    r = _git(["status", "--porcelain"])
+    return set(x[3:].strip() for x in (r.get("out") or "").splitlines()
+               if len(x) > 3)
+
+def _git_status():
+    br = _git(["rev-parse", "--abbrev-ref", "HEAD"])
+    st = _git(["status", "--porcelain"])
+    rem = _git(["remote", "-v"])
+    last = _git(["log", "-1", "--oneline"])
+    return {"branch": (br.get("out") or "").strip(),
+            "changes": len([x for x in (st.get("out") or "").splitlines()
+                            if x.strip()]),
+            "remote": (rem.get("out") or "").splitlines()[:2],
+            "last": (last.get("out") or "").strip()}
+
+
+def _open_github_desktop():
+    import os as _os
+    import subprocess as _sp
+    exe = _os.path.expandvars(r"%LOCALAPPDATA%\GitHubDesktop\GitHubDesktop.exe")
+    if not Path(exe).exists():
+        return {"ok": False, "error": "GitHub Desktop 未安装"}
+    root = Path(__file__).resolve().parent.parent
+    try:
+        _sp.Popen([exe, "--repository", str(root)], close_fds=True)
+        return {"ok": True, "opened": str(root)}
+    except Exception as exc:
+        return {"ok": False, "error": str(exc)}
+
+
+def _auto_commit(before: set, task: str, before_head: str = ""):
+    after = _git_snapshot()
+    new = sorted(after - before)
+    if not new:
+        ah = (_git(["rev-parse", "HEAD"]).get("out") or "").strip()
+        if before_head and ah and ah != before_head:
+            return {"committed": True, "changed": [],
+                    "commit": (_git(["log", "-1", "--oneline"]).get("out") or "").strip(),
+                    "why": "DSH Agent 已自行提交本次变更"}
+        return {"committed": False, "changed": [], "why": "本次没有新增文件变更"}
+    a = _git(["add", "--"] + new)
+    if not a.get("ok"):
+        return {"committed": False, "changed": new, "error": a.get("err")}
+    msg = "DSH Agent auto-repair: " + str(task)[:80]
+    c = _git(["commit", "-m", msg])
+    return {"committed": bool(c.get("ok")), "changed": new,
+            "commit": (c.get("out") or "").strip()[-200:],
+            "error": "" if c.get("ok") else c.get("err")}
+
+
+def _dsh_session_dir():
+    d = Path(__file__).resolve().parent.parent / "dgtf_memory" / "dsh_sessions"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def _save_dsh_run(task, sid, out, auto_repair=False):
+    import json as _json
+    import time as _time
+    d = _dsh_session_dir()
+    sid = str(sid or ("session-" + str(int(_time.time() * 1000))))
+    rec = {"id": sid, "task": str(task)[:8000], "ts": _time.time(),
+           "auto_repair": bool(auto_repair), "ok": bool(out.get("ok")),
+           "text": str(out.get("text") or "")[:20000],
+           "events": list(out.get("events") or [])[-200:],
+           "gate": out.get("gate"), "repair": out.get("repair")}
+    (d / (sid + ".json")).write_text(
+        _json.dumps(rec, ensure_ascii=False, indent=1), encoding="utf-8")
+    try:
+        ad = d.parent / "dsh_artifacts"
+        ad.mkdir(parents=True, exist_ok=True)
+        md = ["# DSH Agent 产物", "", "- session: %s" % sid,
+              "- task: %s" % str(task),
+              "- auto_repair: %s" % bool(auto_repair),
+              "- gate: %s" % (out.get("gate") or "—"),
+              "- repair: %s" % (out.get("repair") or "—"),
+              "", "## 回答", "", str(out.get("text") or ""), "",
+              "## 事件", "", "```json",
+              _json.dumps(out.get("events") or [], ensure_ascii=False, indent=1),
+              "```", ""]
+        (ad / (sid + ".md")).write_text("\n".join(md), encoding="utf-8")
+    except Exception:
+        pass
+    return sid
+
+
+def _list_dsh_sessions(limit=50):
+    import json as _json
+    rows = []
+    for p in sorted(_dsh_session_dir().glob("*.json"),
+                    key=lambda x: x.stat().st_mtime, reverse=True)[:limit]:
+        try:
+            d = _json.loads(p.read_text(encoding="utf-8"))
+            rows.append({"id": d.get("id"), "task": d.get("task"),
+                         "ts": d.get("ts"), "ok": d.get("ok"),
+                         "auto_repair": d.get("auto_repair"),
+                         "repair": d.get("repair"),
+                         "text": (d.get("text") or "")[:300]})
+        except Exception:
+            pass
+    return rows
+
+
+def _get_dsh_session(sid):
+    import json as _json
+    p = _dsh_session_dir() / (str(sid) + ".json")
+    if not p.exists():
+        return {}
+    try:
+        return _json.loads(p.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+
+def _proposal_dir():
+    d = Path(__file__).resolve().parent.parent / "dgtf_memory" / "dsh_proposals"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def _save_proposal(rec):
+    import json as _json
+    import time as _time
+    pid = str(rec.get("id") or ("prop-" + str(int(_time.time() * 1000))))
+    rec["id"] = pid
+    (_proposal_dir() / (pid + ".json")).write_text(
+        _json.dumps(rec, ensure_ascii=False, indent=1), encoding="utf-8")
+    return rec
+
+
+def _list_proposals(limit=100):
+    import json as _json
+    rows = []
+    for p in sorted(_proposal_dir().glob("*.json"),
+                    key=lambda x: x.stat().st_mtime, reverse=True)[:limit]:
+        try:
+            rows.append(_json.loads(p.read_text(encoding="utf-8")))
+        except Exception:
+            pass
+    return rows
+
+
+def _get_proposal(pid):
+    import json as _json
+    p = _proposal_dir() / (str(pid) + ".json")
+    if not p.exists():
+        return {}
+    try:
+        return _json.loads(p.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def _dsh_artifact_dir():
+    d = Path(__file__).resolve().parent.parent / "dgtf_memory" / "dsh_artifacts"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def _list_dsh_artifacts(limit=50):
+    rows = []
+    for p in sorted(_dsh_artifact_dir().glob("*.md"),
+                    key=lambda x: x.stat().st_mtime, reverse=True)[:limit]:
+        try:
+            txt = p.read_text(encoding="utf-8", errors="replace")[:2000]
+            task = p.stem
+            for ln in txt.splitlines():
+                if ln.startswith("- task:"):
+                    task = ln.split(":", 1)[1].strip()
+                    break
+            rows.append({"id": p.stem, "size": p.stat().st_size,
+                         "task": task})
+        except Exception:
+            pass
+    return rows
+
+
+def _read_dsh_artifact(sid):
+    p = _dsh_artifact_dir() / (str(sid) + ".md")
+    if not p.exists():
+        return {}
+    try:
+        return {"id": str(sid),
+                "body": p.read_text(encoding="utf-8", errors="replace")}
+    except Exception:
+        return {}
+
+
+def _run_dsh_agent(task: str, sid: str = "", timeout: int = 300,
+                   auto_repair: bool = False, effort: str = "",
+                   permission: str = "") -> dict:
+    """调用本机 DeepSeek Harness headless Agent；返回 NDJSON 事件映射。"""
+    import os as _os
+    import subprocess as _sp
+    root = Path(__file__).resolve().parent.parent
+    _before = _git_snapshot()
+    _before_head = (_git(["rev-parse", "HEAD"]).get("out") or "").strip()
+    dsh = _os.getenv("DSH_BIN") or str(Path(
+        _os.getenv("LOCALAPPDATA", "")) /
+        "Programs/DeepSeek Harness/resources/runtime/cli/bin/dsh.cmd")
+    if not Path(dsh).exists():
+        return {"ok": False, "error": "找不到 dsh headless：%s" % dsh,
+                "events": [], "text": "", "session_id": sid}
+    key = _os.getenv("DEEPSEEK_API_KEY", "")
+    if not key:
+        try:
+            for line in (root / ".env").read_text(
+                    encoding="utf-8", errors="replace").splitlines():
+                if line.startswith("DGTF_API_KEY="):
+                    key = line.split("=", 1)[1].strip().strip('"').strip("'")
+                    break
+        except Exception:
+            key = ""
+    env = dict(_os.environ)
+    if key:
+        env["DEEPSEEK_API_KEY"] = key
+    env.setdefault("DSH_HOME", str(Path.home() / ".dsh"))
+    _perm = str(permission or "").strip()
+    if _perm not in ("read-only", "workspace-write", "danger-full-access"):
+        _perm = "workspace-write"
+    env["DSH_PERMISSION_MODE"] = _perm
+    env.setdefault("PYTHONUTF8", "1")
+    env.setdefault("PYTHONIOENCODING", "utf-8")
+    _anchors = Path(__file__).resolve().parent / "anchors"
+    _imports = []
+    try:
+        if _anchors.is_dir():
+            _imports = [str(p) for p in sorted(
+                _anchors.iterdir(), key=lambda x: x.stat().st_mtime,
+                reverse=True)[:20] if p.is_file()
+                and p.name != "external_anchor.json"]
+    except Exception:
+        _imports = []
+    _extra = ""
+    if _imports:
+        _extra = ("\napp 导入文件（可直接读取）：\n- "
+                  + "\n- ".join(_imports))
+    _mode = ("你可以直接修改项目源码/文件；若修改源码，必须运行 "
+             "python fast_gate.py 并保证通过；不要执行 git add / git commit / push，"
+             "由工作台统一提交本次变更。"
+             if auto_repair else "只读模式：不要修改项目文件。")
+    auth = ("你在元DGTF项目根目录：%s。你有权读取该工作区内的项目文件、"
+            "outputs/ 产物、docs/、dgtf_memory/、app 导入文件与配置；"
+            "%s 不要泄露密钥。%s\n用户请求：%s"
+            % (root, _mode, _extra, task))
+    _patch = None
+    _pl = []
+    _eff = str(effort or "").strip()
+    if _eff in ("low", "medium", "high", "max"):
+        _pl += ["- id: agent-default-model",
+                "  name: \"@deepseek-ai/dsh-agent-default-model\"",
+                "  config:",
+                "    provider: deepseek-official",
+                "    model: deepseek-flash",
+                "    reasoningEffort: " + _eff]
+    if _perm:
+        _pl += ["- id: permission",
+                "  name: '@deepseek-ai/dsh-permission-presets'",
+                "  config:",
+                "    defaultPreset: " + _perm]
+    if _pl:
+        import tempfile as _tf
+        _fd, _patch = _tf.mkstemp(prefix="dgtf-dsh-", suffix=".yml")
+        _os.close(_fd)
+        Path(_patch).write_text("\n".join(_pl) + "\n", encoding="utf-8")
+        cmd = [_os.environ.get("COMSPEC", "cmd.exe"), "/d", "/c", dsh,
+               "--profile", "headless", "--patch", _patch, "--json"]
+    else:
+        cmd = [_os.environ.get("COMSPEC", "cmd.exe"), "/d", "/c", dsh,
+               "headless", "--json"]
+    if sid:
+        cmd += ["--session-id", sid]
+    cmd += ["-"]
+    try:
+        p = _sp.run(cmd, cwd=str(root), env=env, input=auth,
+                    text=True, encoding="utf-8", errors="replace",
+                    capture_output=True, timeout=timeout)
+    finally:
+        if _patch:
+            try: Path(_patch).unlink()
+            except Exception: pass
+    events, texts, final = [], [], ""
+    for line in (p.stdout or "").splitlines():
+        line = line.strip()
+        if not line.startswith("{"):
+            continue
+        try:
+            ev = json.loads(line)
+        except Exception:
+            continue
+        events.append(ev)
+        if ev.get("type") == "text" and ev.get("text"):
+            texts.append(str(ev["text"]))
+        if ev.get("type") == "session" and ev.get("sessionId"):
+            sid = str(ev["sessionId"])
+        if ev.get("type") == "final":
+            final = str(ev.get("text") or "")
+    out = {"ok": p.returncode == 0, "session_id": sid,
+           "text": final or "".join(texts),
+           "events": events[-200:],
+           "settings": {"effort": _eff, "permission": _perm},
+           "stderr": (p.stderr or "")[-2000:]}
+    _save_dsh_run(task, sid, out, auto_repair)
+    if auto_repair and out["ok"]:
+        import subprocess as _sp
+        import sys as _sys
+        try:
+            g = _sp.run([_sys.executable, "fast_gate.py"], cwd=str(root),
+                        text=True, encoding="utf-8", errors="replace",
+                        capture_output=True, timeout=300)
+            out["gate"] = {"ok": g.returncode == 0,
+                           "tail": ((g.stdout or "") + (g.stderr or ""))[-1200:]}
+            if g.returncode == 0:
+                out["repair"] = _auto_commit(_before, task, _before_head)
+            else:
+                out["repair"] = {"committed": False, "why": "fast_gate 未通过"}
+        except Exception as exc:
+            out["repair"] = {"committed": False, "why": str(exc)}
+    return out
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -265,6 +610,47 @@ class Handler(BaseHTTPRequestHandler):
                 "max_concurrent": runner.MAX_CONCURRENT,
             })
 
+        if p == "/api/agent/knowledge":
+            try:
+                path = "dgtf_memory/agent_knowledge.jsonl"
+                lines = Path(path).read_text(encoding="utf-8").splitlines()[-100:] if Path(path).exists() else []
+                return self._json({"items": [__import__("json").loads(x) for x in lines if x.strip()]})
+            except Exception as exc:
+                return self._json({"items": [], "error": str(exc)})
+        m = re.match(r"^/api/dsh/sessions/([^/]+)$", p)
+        if m:
+            return self._json(_get_dsh_session(unquote(m.group(1))))
+        m = re.match(r"^/api/dsh/proposals/([^/]+)$", p)
+        if m:
+            return self._json(_get_proposal(unquote(m.group(1))))
+        if p == "/api/dsh/proposals":
+            return self._json({"proposals": _list_proposals()})
+        m = re.match(r"^/api/dsh/artifacts/([^/]+)$", p)
+        if m:
+            return self._json(_read_dsh_artifact(unquote(m.group(1))))
+        if p == "/api/dsh/artifacts":
+            return self._json({"artifacts": _list_dsh_artifacts()})
+        if p == "/api/dsh/sessions":
+            return self._json({"sessions": _list_dsh_sessions()})
+        if p == "/api/git/status":
+            return self._json(_git_status())
+        if p == "/api/agent/results":
+            try:
+                import sys as _sys
+                _sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+                from dgtf_v2.agent_worker import _read_results
+                return self._json({"results": _read_results(
+                    "dgtf_memory/agent_results.jsonl")[-200:]})
+            except Exception as exc:
+                return self._json({"results": [], "error": str(exc)})
+        if p == "/api/agent/tasks":
+            try:
+                import sys as _sys
+                _sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+                from dgtf_v2.agent_bridge import read_tasks
+                return self._json({"tasks": read_tasks(limit=200)})
+            except Exception as exc:
+                return self._json({"tasks": [], "error": str(exc)})
         if p == "/api/params":
             return self._json(prm.load_params())
 
@@ -277,6 +663,10 @@ class Handler(BaseHTTPRequestHandler):
             d["creds"] = runner.credential_status()
             d["balance"] = runner.current_balance()
             d["tasks"] = runner.list_tasks()
+            try:
+                d["dsh_sessions"] = _list_dsh_sessions(20)
+            except Exception:
+                d["dsh_sessions"] = []
             return self._json(d)
 
         if p == "/api/tasks":
@@ -301,6 +691,9 @@ class Handler(BaseHTTPRequestHandler):
             t = runner.get_task(m.group(1))
             if not t or not t.get("output_name"):
                 return self._json({"error": "尚无产物"}, 404)
+            if (q.get("packed") or [""])[0] == "1":
+                return self._json({"name": t["output_name"],
+                                   "packed": oi.read_packed(t["output_name"])})
             return self._json({"name": t["output_name"],
                                "body": oi.read_body(t["output_name"])})
 
@@ -472,6 +865,11 @@ class Handler(BaseHTTPRequestHandler):
                                   "text/markdown; charset=utf-8",
                                   "元DGTF_联网检索库_%s.md" % ts)
 
+        m = re.match(r"^/api/outputs/(.+)/packed$", p)
+        if m:
+            name = unquote(m.group(1))
+            d = oi.read_packed(name)
+            return self._json({"name": Path(name).name, "packed": d})                 if d else self._json({"error": "not found"}, 404)
         m = re.match(r"^/api/outputs/(.+)$", p)
         if m:
             name = unquote(m.group(1))
@@ -510,6 +908,133 @@ class Handler(BaseHTTPRequestHandler):
         # ★ 高级参数「保存」：把改动**持久化写回用户配置** dgtf_config.user.yaml
         #   （出厂 dgtf_config.yaml 是只读基线，前端永不改它）。
         #   与「仅本次任务生效」（走 opts.overrides → 临时 config）是两条路。
+        if p == "/api/agent/tasks":
+            data = self._read_json()
+            try:
+                import sys as _sys
+                _sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+                from dgtf_v2.agent_bridge import append_task
+                task = {"kind": str(data.get("kind") or "user_task"),
+                        "severity": str(data.get("severity") or "med"),
+                        "title": str(data.get("title") or data.get("text") or ""),
+                        "detail": str(data.get("detail") or data.get("text") or "")[:4000],
+                        "source_run": "app_user"}
+                return self._json({"task": append_task(task)})
+            except Exception as exc:
+                return self._json({"error": str(exc)}, 500)
+        if p == "/api/agent/knowledge":
+            data = self._read_json()
+            qs = data.get("queries") or ["DeepSeek API 更新日志", "DeepSeek V4.1 Flash 新功能"]
+            try:
+                import sys as _sys
+                _sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+                from dgtf_v2.agent_bridge import refresh_knowledge_http
+                return self._json({"items": refresh_knowledge_http(qs)})
+            except Exception as exc:
+                return self._json({"error": str(exc)}, 500)
+        if p == "/api/git/status":
+            return self._json(_git_status())
+        if p == "/api/git/open":
+            return self._json(_open_github_desktop())
+        if p == "/api/git/commit":
+            data = self._read_json()
+            msg = str(data.get("message") or "").strip()
+            if not msg:
+                return self._json({"error": "message 不能为空"}, 400)
+            _git(["add", "-A"])
+            r = _git(["commit", "-m", msg])
+            return self._json(r)
+        if p == "/api/dsh/autorepair":
+            try:
+                import sys as _sys
+                import time as _tm
+                data = self._read_json()
+                _custom = str(data.get("task") or "").strip()
+                if _custom:
+                    t = {"title": _custom[:200], "detail": _custom,
+                         "kind": "user_task", "severity": "med"}
+                else:
+                    _sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+                    from dgtf_v2.agent_bridge import read_tasks
+                    tasks = [x for x in read_tasks(limit=100)
+                             if x.get("kind") in ("process_gap", "audit_gap",
+                                                  "api_gap", "quality_flag")]
+                    tasks.sort(key=lambda x: {"high": 0, "med": 1, "low": 2}.get(
+                        str(x.get("severity")), 3))
+                    if not tasks:
+                        return self._json({"ok": False,
+                                           "text": "没有可自审的任务"})
+                    t = tasks[0]
+                prompt = ("提案模式：不要读取项目文件、不要修改源码。只根据下面任务详情"
+                          "输出简短修复提案（≤200字）：涉及文件、步骤、风险、验证命令。"
+                          "任务：" + str(t.get("title") or "") + "。详情："
+                          + str(t.get("detail") or "")[:1200])
+                res = _run_dsh_agent(prompt, "", timeout=180, auto_repair=False)
+                pid = "prop-" + str(int(_tm.time() * 1000))
+                prop = _save_proposal({"id": pid, "ts": _tm.time(), "task": t,
+                    "plan": str(res.get("text") or ""),
+                    "session_id": res.get("session_id") or "",
+                    "status": "pending", "approver": "",
+                    "events": list(res.get("events") or [])[-50:]})
+                return self._json({"ok": bool(res.get("ok")), "proposal": prop})
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 500)
+        if p.startswith("/api/dsh/proposals/") and p.endswith("/approve"):
+            data = self._read_json()
+            pid = p.split("/")[4]
+            prop = _get_proposal(pid)
+            if not prop:
+                return self._json({"error": "proposal not found"}, 404)
+            prompt = ("按以下已批准提案执行修复：" + str(prop.get("plan") or "")
+                      + "。修改后运行 fast_gate.py，通过后只提交本次变更，不 push。")
+            res = _run_dsh_agent(prompt, str(prop.get("session_id") or ""),
+                                 timeout=600, auto_repair=True)
+            prop["status"] = ("applied" if (res.get("repair") or {}).get("committed")
+                              else "failed")
+            prop["approver"] = str(data.get("mode") or "user")
+            import time as _tm2
+            prop["approved_ts"] = _tm2.time()
+            prop["result"] = {"ok": res.get("ok"), "gate": res.get("gate"),
+                              "repair": res.get("repair")}
+            _save_proposal(prop)
+            return self._json({"ok": bool(res.get("ok")), "proposal": prop,
+                               "result": res})
+        if p == "/api/dsh/agent":
+            data = self._read_json()
+            task = str(data.get("task") or "").strip()
+            if not task:
+                return self._json({"error": "task 不能为空"}, 400)
+            if len(task) > 8000:
+                task = task[:8000]
+            sid = str(data.get("session_id") or "").strip()
+            try:
+                res = _run_dsh_agent(task, sid,
+                                     auto_repair=bool(data.get("auto_repair")),
+                                     effort=str(data.get("effort") or ""),
+                                     permission=str(data.get("permission") or ""))
+                return self._json(res)
+            except Exception as exc:
+                return self._json({"error": str(exc)}, 500)
+        if p == "/api/agent/apply":
+            data = self._read_json()
+            try:
+                import sys as _sys
+                _sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+                from dgtf_v2.agent_repair import apply_patch
+                return self._json(apply_patch(str(data.get("patch") or ""),
+                                              str(data.get("approve") or "")))
+            except Exception as exc:
+                return self._json({"error": str(exc)}, 500)
+        if p == "/api/agent/run":
+            try:
+                import sys as _sys
+                _sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+                from dgtf_v2.agent_worker import run_once, write_proposals
+                res = run_once()
+                prop = write_proposals()
+                return self._json({"run": res, "proposals": prop})
+            except Exception as exc:
+                return self._json({"error": str(exc)}, 500)
         if p == "/api/params":
             data = self._read_json()
             ov = data.get("overrides")

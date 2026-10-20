@@ -4,6 +4,12 @@ const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
+let dshMode = false;
+let dshSession = "";
+let dshCurrent = null;
+let agentTaskMode = false;
+let dgtfSessionId = 'dgtf-' + Date.now().toString(36);
+
 async function api(path, opts) {
   const r = await fetch(path, opts);
   let j = null;
@@ -43,16 +49,26 @@ const ADV = [
 /* 自绘下拉：原生 select 在页面底部 / 滚动容器里的弹层会跑到窗口左上角，
    这里改成页内菜单 —— 贴触发控件左上角、向右展开，位置由 openDD() 现算。
    真实值仍存在 <input type="hidden" data-cfg> 里，collectOpts() 不用改。 */
-function ddField(key, value, options) {
+function ddField(key, value, options, free, defaultValue) {
   const v = value == null ? '' : String(value);
+  const dv = defaultValue == null ? '' : String(defaultValue);
   const opts = (options || []).map(o => {
     const s = String(o);
+    const lab = (dv !== '' && s === dv) ? s + '（默认）' : s;
     return `<button type="button" class="dd-opt${s === v ? ' on' : ''}" data-v="${esc(s)}">`
-      + `${esc(s)}</button>`;
+      + `${esc(lab)}</button>`;
   }).join('');
+  if (free) {
+    return `<div class="dd dd-free">`
+      + `<input type="text" class="dd-input" data-cfg="${esc(key)}" value="${esc(v)}">`
+      + `<button type="button" class="dd-btn" aria-label="选择预设值"><i class="dd-car" aria-hidden="true"></i></button>`
+      + (dv !== '' ? `<span class="dd-def" title="默认值：${esc(dv)}">默认</span>` : '')
+      + `<div class="dd-menu">${opts}</div></div>`;
+  }
+  const cur = (dv !== '' && v === dv) ? v + '（默认）' : v;
   return `<div class="dd">`
     + `<input type="hidden" data-cfg="${esc(key)}" value="${esc(v)}">`
-    + `<button type="button" class="dd-btn"><span class="dd-cur">${esc(v)}</span>`
+    + `<button type="button" class="dd-btn"><span class="dd-cur">${esc(cur)}</span>`
     + `<i class="dd-car" aria-hidden="true"></i></button>`
     + `<div class="dd-menu">${opts}</div></div>`;
 }
@@ -100,8 +116,10 @@ function rememberAdv(el) {
 /* 渲染**一项**参数（下拉 / 开关 / 输入框 / 只读结构值） */
 function renderAdvItem(it) {
   // 有改过的值就用改过的（分组页重建时不会把用户的输入抹掉）
-  const v = (it.key in advOverrides) ? advOverrides[it.key]
+  const dv = (it.default == null) ? '' : String(it.default);
+  let v = (it.key in advOverrides) ? advOverrides[it.key]
             : (it.value == null ? '' : String(it.value));
+  if (it.placeholder == null && v === '' && dv !== '') v = dv;
   let field, dropdown = false, plain = false;
   if (it.placeholder != null) {
     /* ★★ R38：CLM（CLI）参数 —— 是 12 个**任务级**参数（route/rounds/channels/…），
@@ -112,12 +130,6 @@ function renderAdvItem(it) {
          ③ **不**挂 `data-cfg` —— 它不属于 yaml 覆盖表，挂了会被塞进 `opts.overrides`
             去改临时 config，那是错的路子。 */
     field = `<input data-adv="${esc(it.key)}" value="${esc(v)}" placeholder="${esc(it.placeholder)}">`;
-  } else if (it.type === 'select') {
-    field = ddField(it.key, v, it.options);
-    dropdown = true;
-  } else if (it.type === 'bool') {
-    field = ddField(it.key, v, ['true', 'false']);
-    dropdown = true;
   } else if (it.type === 'readonly') {
     /* 两类只读项，都不渲染 `data-cfg` ⇒ collectOpts 收不到 ⇒ 既不会被改也不会被写回：
          · 密钥键（readonly_key=true）：显示「已配置 / （空）」，值本身不回传前端；
@@ -132,7 +144,19 @@ function renderAdvItem(it) {
     field = `<span class="ro${it.readonly_key ? ' ro-key' : ''}" title="${tip}">${txt}</span>`;
     plain = true;
   } else {
-    field = `<input data-cfg="${esc(it.key)}" value="${esc(v)}">`;
+    let opts = (it.options && it.options.length) ? it.options.slice() : [];
+    if (!opts.length) {
+      if (it.type === 'bool') opts = ['true', 'false'];
+      else if (dv === 'enabled' || dv === 'disabled') opts = ['enabled', 'disabled'];
+      else if (dv === 'true' || dv === 'false') opts = ['true', 'false'];
+      else if (dv === 'auto' || dv === 'on' || dv === 'off') opts = ['auto', 'on', 'off'];
+      else opts = [];
+    }
+    opts = Array.from(new Set(opts.concat(dv ? [dv] : []).concat(v ? [v] : [])
+      .filter(x => String(x) !== '')));
+    const free = !(it.type === 'select' || it.type === 'bool');
+    field = ddField(it.key, v, opts, free, dv);
+    dropdown = true;
   }
   /* ★ 两件事一起修（用户报「标签文字大小格式不统一」）：
      ① 标签统一取 `it.label` —— 后端已给成「键（中文说明）」，CLI 项本来就是这个格式；
@@ -848,6 +872,7 @@ function bindRlBarDrag() {
 function renderTasks() {
   const box = $('#runlog');
   if (!box) return;
+  if (dshCurrent) { renderDshView(); return; }
   const ids = Object.keys(taskData);
   /* 看归档会话时，taskData 可能是空的 —— 这时仍有内容要渲染（那次会话的日志） */
   const arch = (chatMode === 'archive' && archivedTask) ? archivedTask : null;
@@ -1224,9 +1249,134 @@ function stopWhisper() {
   if (ta) ta.placeholder = Q_PLACEHOLDER;
 }
 
+
+function toggleDshMode(on) {
+  dshMode = !!on;
+  const p = document.querySelector('#pill-dsh');
+  const q = document.querySelector('#question');
+  if (p) p.classList.toggle('on', dshMode);
+  document.body.classList.toggle('dsh-mode', dshMode);
+  if (q) q.placeholder = dshMode
+    ? 'DSH Agent：输入任务，读取项目文件 / outputs 产物 / app 导入文件…'
+    : '此刻 你又想到了什么？ 可以发给元DGTF 我们一起去探索吧';
+  if (dshMode) agentTaskMode = false;
+}
+function dshEventHtml(ev) {
+  if (!ev || !ev.type) return '';
+  if (ev.type === 'status') {
+    if (ev.phase === 'turn_start') return '<div class="rl-summary">turn ' + esc(ev.turn || '') + ' 开始</div>';
+    if (ev.phase === 'step_start') return '<div class="rl-summary">step ' + esc(ev.step || '') + '</div>';
+    return '';
+  }
+  if (ev.type === 'thinking' && ev.text) {
+    return '<details class="rl-fold"><summary>思考</summary><div class="rl-fold-body"><div class="rl-line"><span class="rl-txt">' + esc(ev.text) + '</span></div></div></details>';
+  }
+  if (ev.type === 'tool_call') {
+    return '<div class="rl-line"><span class="rl-lab">🔧 ' + esc(ev.tool || 'tool') + '</span><span class="rl-txt">' + esc(JSON.stringify(ev.input || {})) + '</span></div>';
+  }
+  if (ev.type === 'tool_result') {
+    return '<details class="rl-fold"><summary>工具结果 · ' + esc(ev.status || '') + '</summary><div class="rl-fold-body"><div class="rl-line"><span class="rl-txt">' + esc(String(ev.result || '').slice(0, 12000)) + '</span></div></div></details>';
+  }
+  if (ev.type === 'text' && ev.text) {
+    return '<div class="rl-line"><span class="rl-txt">' + esc(ev.text) + '</span></div>';
+  }
+  return '';
+}
+function renderDshView() {
+  const c = dshCurrent || {};
+  const box = document.querySelector('#runlog');
+  const body = document.querySelector('#runlog-body');
+  if (!box || !body) return;
+  box.classList.remove('hidden'); box.classList.remove('fading');
+  document.body.classList.remove('stage-empty');
+  document.body.classList.add('stage-run');
+  const bd = document.querySelector('#rl-badge');
+  if (bd) {
+    bd.className = 'badge ' + (c.status || 'running');
+    bd.textContent = c.status === 'done' ? '完成' : (c.status === 'error' ? '失败' : 'Agent');
+  }
+  const q = document.querySelector('#rl-question');
+  if (q) q.textContent = c.question || 'DeepSeek Harness Agent';
+  const f = document.querySelector('#rl-files');
+  if (f) f.innerHTML = '';
+  const evs = c.events || [];
+  let inner = '<div class="rl-lane rl-boot"><div class="rl-lane-head">DeepSeek Harness Agent · ' + esc(c.session || dshSession || '新会话') + '</div>';
+  inner += '<div class="rl-round">Agent 会话</div>';
+  inner += '<div class="rl-line"><span class="rl-lab">用户</span><span class="rl-txt">' + esc(c.question || '') + '</span></div>';
+  evs.forEach(e => { inner += dshEventHtml(e); });
+  if (c.status === 'running') inner += '<div class="rl-summary">Agent 运行中…</div>';
+  inner += '</div>';
+  body.innerHTML = inner;
+} 
+async function openDshArtifact(id) {
+  const r = await api('/api/dsh/artifacts/' + encodeURIComponent(id));
+  const det = document.querySelector('#detail');
+  const title = document.querySelector('#detail-title');
+  const body = document.querySelector('#detail-body');
+  if (!det || !body) return;
+  if (title) title.textContent = 'DSH 产物 · ' + id;
+  body.innerHTML = '<pre>' + esc(r.body || '') + '</pre>';
+  det.classList.remove('hidden');
+}
+
+async function openDshSession(id) {
+  const r = await api('/api/dsh/sessions/' + encodeURIComponent(id));
+  dshSession = r.id || '';
+  dshCurrent = { question: r.task || '', session: dshSession,
+    events: (r.events || []).concat(r.text ? [{type:'text', text:r.text}] : []),
+    status: r.ok ? 'done' : 'error' };
+  closeSheet(); closeDrawer(); toggleDshMode(true); renderDshView();
+}
+async function startDshRun(question) {
+  dshCurrent = { question: question, session: dshSession, events: [], status: 'running' };
+  renderDshView();
+  const btn = document.querySelector('#run-btn');
+  if (btn) btn.disabled = true;
+  try {
+    const r = await api('/api/dsh/agent', { method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ task: question, session_id: dshSession,
+        effort: (document.querySelector('#dsh-effort') || {}).value || '',
+        permission: (document.querySelector('#dsh-perm') || {}).value || 'workspace-write' }) });
+    dshSession = r.session_id || dshSession;
+    dshCurrent.session = dshSession;
+    dshCurrent.events = r.events || [];
+    if (r.repair) dshCurrent.events.push({type:'text', text:
+      '自动修复：' + (r.repair.committed ? ('已提交 ' + (r.repair.commit || ''))
+        : ('未提交：' + (r.repair.why || r.repair.error || ''))) });
+    if (r.gate) dshCurrent.events.push({type:'text', text:
+      'fast_gate：' + (r.gate.ok ? 'PASS' : 'FAIL') + '\n' + (r.gate.tail || '')});
+    dshCurrent.status = r.ok ? 'done' : 'error';
+    if (!r.ok && r.stderr) dshCurrent.events.push({type:'text', text:'Agent 退出异常：' + r.stderr});
+  } catch (e) {
+    dshCurrent.status = 'error';
+    dshCurrent.events.push({type:'text', text:'请求失败：' + e.message});
+  }
+  renderDshView();
+  if (btn) btn.disabled = false;
+}
+async function submitAgentTaskFromComposer(question) {
+  try {
+    const r = await api('/api/agent/tasks', { method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ kind: 'user_task', title: question, detail: question }) });
+    dshCurrent = { question: question, session: 'app 任务队列', status: 'done',
+      events: [{type:'text', text:'Agent 用户任务已入队：' + ((r.task || {}).id || '') + '（daemon 会消费）'}] };
+    renderDshView();
+  } catch (e) {
+    dshCurrent = { question: question, session: 'app 任务队列', status: 'error', events: [{type:'text', text:'提交失败：' + e.message}] };
+    renderDshView();
+  }
+  agentTaskMode = false;
+  const q = document.querySelector('#question'); if (q) { q.value = ''; q.style.height = ''; }
+  const p = document.querySelector('#pill-dsh'); if (p) p.classList.remove('on');
+}
+
 async function startRun() {
   const question = $('#question').value.trim();
   if (!question) { alert('请先输入问题'); return; }
+  if (dshMode) { const q = $('#question'); if (q) { q.value=''; q.style.height=''; } return startDshRun(question); }
+  if (agentTaskMode) { const q = $('#question'); if (q) { q.value=''; q.style.height=''; } return submitAgentTaskFromComposer(question); }
   const opts = collectOpts();
   const real = !opts.mock;
   if (real && !confirm('真实运行会调用 DeepSeek：单次约 30–45 分钟、几十万 token、真花钱（约 ¥4–9）。确认启动？')) return;
@@ -1335,8 +1485,9 @@ function renderHistory(tasks, hist) {
   const box = $('#history-list');
   if (!box) return;
   const list = mergeHistory(tasks, hist);
+  const dsh = ((dashData && dashData.dsh_sessions) || []).slice(0, 20);
   const cnt = $('#history-count');
-  if (cnt) cnt.textContent = list.length ? `${list.length} 次` : '';
+  if (cnt) cnt.textContent = (list.length + dsh.length) ? `${list.length + dsh.length} 次` : '';
   box.innerHTML = list.map(h => {
     const st = h.status || '';
     const when = h.at ? new Date(h.at * 1000).toLocaleString('zh-CN',
@@ -1356,6 +1507,15 @@ function renderHistory(tasks, hist) {
         ${h.output ? '<span>产物</span>' : ''}
         ${why}
       </div></div>`;
+  }).join('') + dsh.map(x => {
+    const when = x.ts ? new Date(x.ts * 1000).toLocaleString('zh-CN',
+      { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }) : '';
+    return '<div class="hist" data-dsh-session="' + esc(x.id || '') + '">'
+      + '<div class="q"><span class="q-t">' + esc(x.task || 'DSH Agent 会话') + '</span>'
+      + (when ? '<span class="q-r">' + esc(when) + '</span>' : '') + '</div>'
+      + '<div class="m"><span class="st done">DSH</span>'
+      + '<span class="tag">' + (x.auto_repair ? '自动修复' : 'Agent') + '</span>'
+      + '<span>会话</span></div></div>';
   }).join('') || '<div class="muted empty" style="padding:14px">还没有通过工作台跑过。</div>';
 }
 
@@ -1855,6 +2015,14 @@ function webIsDerived(q) { return WEB_DERIVED_RE.test(String(q || '').trim()); }
 
 /* ★ R45 本地兜底：服务端没给 `clusters` 时，用**同一套规则**现算一棵树。
    归属 = 「时间上不晚于它、最近的根组」；时间缺失/乱序时挂到最早的根。 */
+/* ★ 外链只允许 http(s)：挡 javascript:/data: 注入（自检判据读这段） */
+const safeUrl = function safeUrl(u) {
+  try {
+    const x = new URL(String(u || ''), location.href);
+    return (x.protocol === 'http:' || x.protocol === 'https:') ? x.href : '';
+  } catch (e) { return ''; }
+}
+
 function clusterLocal(groups) {
   const gs = (groups || []).map(g => Object.assign({}, g, {
     derived: webIsDerived(g.query), parent: null, children: []
@@ -1893,7 +2061,7 @@ function hitHtml(h, flat) {
       <div class="m">
         <span class="chip">${esc(h.kind || 'web')}</span>
         ${h.tier != null ? `<span class="num">tier ${esc(String(h.tier))}</span>` : ''}
-        ${h.url ? `<a href="${esc(h.url)}" target="_blank" rel="noreferrer">打开链接</a>` : ''}
+        ${safeUrl(h.url) ? `<a href="${esc(safeUrl(h.url))}" target="_blank" rel="noreferrer">打开链接</a>` : ''}
       </div>
     </div>`;
 }
@@ -2035,6 +2203,36 @@ async function loadFacets() {
   } catch (_) { /* 忽略 */ }
 }
 
+async function renderPackedCard(name) {
+  try {
+    const r = await api('/api/outputs/' + encodeURIComponent(name) + '/packed');
+    const d = (r && r.packed) || {};
+    const pl = d.process_ledger || {};
+    if (!pl.layers) return '';
+    const soul = pl.soul || {};
+    const rows = Object.entries(pl.layers).map(([k, v]) =>
+      '<tr><td>' + esc(k) + '</td><td>' + esc(v.rounds || 0) + '</td>'
+      + '<td>' + (v.standard_ok ? '✅' : '⚠') + '</td>'
+      + '<td>' + (v.fact_ok ? '✅' : '⚠') + '</td>'
+      + '<td>' + esc((v.deps || []).join('、')) + '</td></tr>').join('');
+    const aud = d.decidability_audit || {};
+    const rec = d.recall || {};
+    return '<div class="muted" style="margin:10px 0 16px">'
+      + '<b>元DGTF 过程账本</b>　'
+      + '四层标准：' + (pl.standard_all ? '✅' : '⚠') + '　'
+      + '外部来源：官方 ' + esc(soul.external_official || 0)
+      + ' / 参考 ' + esc(soul.external_reference || 0) + '　'
+      + '侧面 ' + esc(JSON.stringify(soul.facets || {})) + '　'
+      + '历史回声 ' + esc((soul.recall || {}).n || 0) + '　'
+      + '研究审计：' + esc(aud.status || '未测') + '/bad=' + esc(aud.bad || 0)
+      + '<table style="width:100%;margin-top:8px;border-collapse:collapse">'
+      + '<thead><tr><th>层</th><th>圈</th><th>标准</th><th>事实</th><th>依赖</th></tr></thead>'
+      + '<tbody>' + rows + '</tbody></table>'
+      + '<div style="margin-top:6px">历史回声：' + esc((rec.hits || []).map(h => h.run_id + '：' + h.answer).join('；') || '—') + '</div>'
+      + '</div>';
+  } catch (_) { return ''; }
+}
+
 async function openDetail(name) {
   $('#detail').classList.remove('hidden');
   $('#detail-title').textContent = name;
@@ -2066,7 +2264,8 @@ async function openDetail(name) {
       $('#detail-body').innerHTML = '<pre>' + esc(body.slice(0, 300000)) + '</pre>';
       return;
     }
-    $('#detail-body').innerHTML = linkifyFileBlocks(renderMd(body));
+    const _card = /\.md$/.test(name) ? await renderPackedCard(name) : '';
+    $('#detail-body').innerHTML = _card + linkifyFileBlocks(renderMd(body));
   } catch (e) { $('#detail-body').innerHTML = `<div class="muted">出错：${esc(e.message)}</div>`; }
 }
 
@@ -2327,24 +2526,28 @@ async function openChat(c) {
 }
 
 function newChat() {
+  /* ★ 共用 app 新会话按钮：DSH 模式下只重置 DSH 会话，普通模式下新建元DGTF 会话。 */
+  if (dshMode) {
+    dshSession = ''; dshCurrent = null;
+    const log = document.querySelector('#runlog-body');
+    if (log) log.innerHTML = '<div class="rl-lane rl-boot"><div class="rl-lane-head">DeepSeek Harness Agent · 新会话</div><div class="rl-line"><span class="rl-txt">DSH 会话已重置；元DGTF 会话与当前内容保留。</span></div></div>';
+    document.body.classList.add('stage-run'); document.body.classList.remove('stage-empty');
+    const rl = document.querySelector('#runlog'); if (rl) rl.classList.remove('hidden');
+    return;
+  }
   /* ★ 会话是**独立**的：开新对话只是「换到一个空白会话」，
      **不动**其它会话的任务与轮询 —— 正在跑的那条继续跑，随时能回历史对话里看。
      （早期版本会 `taskData = {}` 并清掉所有 `polls`，等于把别的会话丢了。） */
   chatMode = 'live'; activeChat = null; followLatest = false;
+  /* ★ 新会话保留当前对话内容与 DSH 会话：只新建一个元DGTF 会话 id，
+     DGTF 与 DSH 各自独立，不互相清空。再次发送会进入新会话。 */
+  dgtfSessionId = 'dgtf-' + Date.now().toString(36);
+  agentTaskMode = false;
   archivedTask = null;
-  archiveLanes = { text: {}, stats: {}, meta: {} };
-  lanes.tid = null; lanes.text = {}; lanes.stats = {}; lanes.meta = {};
-  /* ★ 日志区的 innerHTML 也要清掉 —— `renderTasks` 只在「内容变了」时才重写，
-     不清的话上一个会话的层块会留在 DOM 里（看不见但能被查到）。 */
-  const _rb = $('#runlog-body');
-  if (_rb) { _rb.innerHTML = ''; delete _rb.dataset.html; }
-  const q = $('#question');
-  if (q) { q.value = ''; q.style.height = ''; }
   const am = $('#attach-msg');
-  if (am) am.textContent = '';
+  if (am) am.textContent = '已新建元DGTF会话；当前对话内容与 DSH 会话保留，可继续输入。';
   closeSearch();
   closeDrawer();
-  renderTasks();                       // → stage-empty，运行日志收起
   renderMeta();
 }
 
@@ -2520,6 +2723,7 @@ const SHEET_TITLES = {
   'view-lib': '产物库',
   'view-local': '本地资料库',
   'view-web': '联网检索库',
+  'view-agent': 'Agent 面板',
   'adv-group-page': '高级参数',      // 分组名由页内小标题承担，顶部不重复
 };
 
@@ -2569,6 +2773,8 @@ function openSheet(key) {
   syncAdvBar(key);
   /* ★ R44：切到「读数台」立刻拉一次（不用等下一个 5s 周期） */
   if (key === 'dash-stats') loadDash();
+  /* Agent 面板：每次切进来都拉一次最新任务/结果/知识（只读接口，失败不阻断） */
+  if (key === 'view-agent') { loadAgent(); loadGitStatus(); }
   // 高级参数默认展开 —— 不然点进来只看到一行标题
   if (key === 'adv-panel') {
     const a = document.querySelector('.advanced');
@@ -2719,12 +2925,17 @@ async function resetAdv() {
     if (r.error) throw new Error(r.error);
     /* ★ 内存里的累积表 / 快照 / 待保存集合也一并清空 —— 不清的话旧值还留在 `advOverrides`
        里，下一轮 `collectOpts()` 会把它们当「当前面板值」提交，用户会以为「恢复了默认但没生效」。 */
+    const reopen = advCurGroup ? advCurGroup.key : null;
     Object.keys(advOverrides).forEach(k => delete advOverrides[k]);
     Object.keys(advSaved).forEach(k => delete advSaved[k]);
     advBackup = null;
     advCurGroup = null;
     await buildAdv();                     // 从服务端重读 ⇒ 面板显示出厂值
-    openSheet('adv-panel');
+    if (reopen && advGroups.some(g => g.key === reopen)) {
+      openAdvGroup(reopen);               // 留在当前组：直接填默认值并显示
+    } else {
+      openSheet('adv-panel');
+    }
     renderAdvGroups();
     advToast(r.removed ? '已恢复出厂设置（用户配置已删除，全部参数回落到出厂 yaml）'
                        : '本来就是出厂默认值，无需恢复', 'ok');
@@ -2756,6 +2967,457 @@ function closeSheet() {
    （从别处打开面板（如历史对话里点会话）不该顺手把抽屉拉出来。） */
 let sheetFromDrawer = false;
 
+/* ── Agent 面板：任务队列 / 用户任务 / 消费者 / 技术知识 / 结果 ────────
+   数据面全部走服务端已有的只读/提交接口（不改 server.py）：
+     GET  /api/agent/tasks      GET  /api/agent/results
+     GET  /api/agent/knowledge  POST /api/agent/knowledge
+     POST /api/agent/tasks      POST /api/agent/run
+   所有渲染都 esc()；接口失败只落到面板提示行，不抛到全局（UI 不崩）。 */
+let agentTasks = [];
+let agentResults = [];
+let agentKnowledge = [];
+let agentDsh = [];
+let agentDshArt = [];
+let agentProps = [];
+let agentLastRun = null;
+
+function agentIsoShort(x) {
+  if (!x) return '—';
+  const d = (typeof x === 'number') ? new Date(x) : new Date(String(x));
+  if (isNaN(d.getTime())) return String(x).slice(0, 24);
+  return d.toLocaleString();
+}
+
+function agentDetailHtml(detail) {
+  const s = String(detail == null ? '' : detail).trim();
+  if (!s) return '';
+  return '<details class="agent-detail"><summary>详情</summary><pre>'
+    + esc(s) + '</pre></details>';
+}
+
+function agentEmpty(msg) {
+  return '<div class="agent-empty muted">' + esc(msg) + '</div>';
+}
+
+function agentRenderTasks() {
+  const box = $('#agent-tasks');
+  if (!box) return;
+  const n = $('#agent-task-n');
+  if (n) n.textContent = String(agentTasks.length);
+  if (!agentTasks.length) {
+    box.innerHTML = agentEmpty('队列为空。引擎跑完会自反馈入队；也可点「提交用户任务…」。');
+    return;
+  }
+  const rows = agentTasks.slice().reverse().map(t => {
+    const kind = String(t.kind || 'task');
+    const sev = String(t.severity || 'med');
+    const title = String(t.title || t.id || '(无标题)');
+    const src = t.source_run ? ('源跑次 ' + String(t.source_run)) : '无源跑次';
+    return '<div class="agent-item">'
+      + '<div class="agent-row"><span class="chip">' + esc(kind) + '</span>'
+      + '<span class="chip sev-' + esc(sev) + '">' + esc(sev) + '</span>'
+      + '<span class="agent-t">' + esc(title) + '</span></div>'
+      + '<div class="agent-meta"><span>' + esc(String(t.id || '—'))
+      + '</span><span>' + esc(src) + '</span></div>'
+      + agentDetailHtml(t.detail)
+      + '</div>';
+  });
+  box.innerHTML = rows.join('');
+}
+
+function agentRenderResults() {
+  const box = $('#agent-results');
+  if (!box) return;
+  const n = $('#agent-result-n');
+  if (n) n.textContent = String(agentResults.length);
+  if (!agentResults.length) {
+    box.innerHTML = agentEmpty('还没有消费者结果。点「运行消费者」处理未消费任务。');
+    return;
+  }
+  const rows = agentResults.slice().reverse().map(r => {
+    const title = String(r.title || r.task_id || '(无标题)');
+    const status = String(r.status || '—');
+    const act = String(r.action || '');
+    return '<div class="agent-item">'
+      + '<div class="agent-row"><span class="chip">' + esc(String(r.kind || 'task'))
+      + '</span><span class="chip">' + esc(status) + '</span>'
+      + '<span class="agent-t">' + esc(title) + '</span></div>'
+      + '<div class="agent-meta"><span>task ' + esc(String(r.task_id || '—'))
+      + '</span>' + (r.source_run ? ('<span>源跑次 ' + esc(String(r.source_run)) + '</span>') : '')
+      + '</div>'
+      + (act ? '<div class="agent-q">' + esc(act) + '</div>' : '')
+      + '</div>';
+  });
+  box.innerHTML = rows.join('');
+}
+
+function agentRenderKnowledge() {
+  const box = $('#agent-knowledge');
+  if (!box) return;
+  const n = $('#agent-kn-n');
+  if (n) n.textContent = String(agentKnowledge.length);
+  if (!agentKnowledge.length) {
+    box.innerHTML = agentEmpty('知识库为空。点「刷新技术知识」拉取官方/技术页。');
+    return;
+  }
+  const rows = agentKnowledge.slice().reverse().map(k => {
+    const title = String(k.title || k.query || '(无标题)');
+    const url = String(k.url || '');
+    const safeUrl = /^https?:\/\//i.test(url) ? url : '';
+    const t = safeUrl
+      ? '<a href="' + esc(safeUrl) + '" target="_blank" rel="noopener noreferrer">' + esc(title) + '</a>'
+      : esc(title);
+    const claim = String(k.claim || '');
+    const flag = k.fetched ? '已抓正文' : '仅检索';
+    return '<div class="agent-item">'
+      + '<div class="agent-row"><span class="chip">' + esc(flag) + '</span>'
+      + '<span class="agent-t">' + t + '</span></div>'
+      + '<div class="agent-meta"><span>查询 ' + esc(String(k.query || '—'))
+      + '</span><span>' + esc(agentIsoShort(k.run)) + '</span></div>'
+      + (claim ? '<div class="agent-q">' + esc(claim) + '</div>' : '')
+      + agentDetailHtml(k.content)
+      + '</div>';
+  });
+  box.innerHTML = rows.join('');
+}
+
+function agentRenderRun() {
+  const box = $('#agent-runbox');
+  if (!box) return;
+  if (!agentLastRun) {
+    box.innerHTML = agentEmpty('本次会话还没运行过消费者（运行结果只在本页显示；处理结果会进「消费者结果」）。');
+    return;
+  }
+  const run = agentLastRun.run || {};
+  const prop = agentLastRun.proposals || {};
+  box.innerHTML = '<div class="agent-item">'
+    + '<div class="agent-row"><span class="chip">triaged '
+    + esc(String(run.triaged == null ? '—' : run.triaged)) + '</span>'
+    + '<span class="chip">提案 ' + esc(String(prop.n == null ? '—' : prop.n)) + '</span>'
+    + '<span class="agent-t">' + esc(agentIsoShort(agentLastRun.at)) + '</span></div>'
+    + '<div class="agent-meta"><span>提案文件 ' + esc(String(prop.path || '—'))
+    + '</span></div>'
+    + '<pre>' + esc(JSON.stringify(agentLastRun, null, 2).slice(0, 8000)) + '</pre>'
+    + '</div>';
+}
+
+function agentRenderDsh() {
+  const box = document.querySelector('#agent-dsh');
+  const n = document.querySelector('#agent-dsh-n');
+  if (n) n.textContent = String(agentDsh.length);
+  if (!box) return;
+  if (!agentDsh.length) { box.innerHTML = agentEmpty('还没有 DSH Agent 会话。'); return; }
+  box.innerHTML = agentDsh.slice(0, 30).map(function (x) {
+    const when = x.ts ? new Date(x.ts * 1000).toLocaleString('zh-CN', {hour12:false}) : '';
+    return '<div class="agent-item agent-dsh-item" data-dsh-session="' + esc(x.id || '') + '">'
+      + '<div class="agent-row"><span class="chip">' + (x.auto_repair ? '自动修复' : 'DSH') + '</span>'
+      + '<span class="chip">' + (x.ok ? '完成' : '失败') + '</span>'
+      + '<span class="agent-t">' + esc(x.task || x.id) + '</span></div>'
+      + '<div class="agent-meta"><span>' + esc(x.id || '') + '</span><span>' + esc(when) + '</span></div>'
+      + '<div class="agent-q">点此回溯并续聊</div></div>';
+  }).join('');
+}
+
+function agentRenderDshArt() {
+  const box = document.querySelector('#agent-dsh-art');
+  const n = document.querySelector('#agent-dsh-art-n');
+  if (n) n.textContent = String(agentDshArt.length);
+  if (!box) return;
+  if (!agentDshArt.length) { box.innerHTML = agentEmpty('还没有 DSH 产物。'); return; }
+  box.innerHTML = agentDshArt.slice(0, 30).map(function (x) {
+    return '<div class="agent-item agent-dsh-art-item" data-dsh-art="' + esc(x.id || '') + '">'
+      + '<div class="agent-row"><span class="chip">产物</span>'
+      + '<span class="agent-t">' + esc(x.task || x.id) + '</span></div>'
+      + '<div class="agent-meta"><span>' + esc(x.id || '') + '</span><span>'
+      + esc(String(x.size || 0)) + ' B</span></div></div>';
+  }).join('');
+}
+
+function agentRenderProps() {
+  const box = document.querySelector('#agent-proposals');
+  const n = document.querySelector('#agent-prop-n');
+  if (n) n.textContent = String(agentProps.length);
+  if (!box) return;
+  if (!agentProps.length) { box.innerHTML = agentEmpty('还没有修复提案。点「DSH 自动修复」自审生成提案。'); return; }
+  box.innerHTML = agentProps.slice(0, 30).map(function (x) {
+    const when = x.ts ? new Date(x.ts * 1000).toLocaleString('zh-CN', {hour12:false}) : '';
+    return '<div class="agent-item">'
+      + '<div class="agent-row"><span class="chip">提案</span>'
+      + '<span class="chip">' + esc(x.status || 'pending') + '</span>'
+      + '<span class="agent-t">' + esc((x.task || {}).title || x.id) + '</span></div>'
+      + '<div class="agent-meta"><span>' + esc(x.id || '') + '</span><span>' + esc(when) + '</span></div>'
+      + '<div class="agent-q">' + esc(String(x.plan || '').slice(0, 300)) + '</div>'
+      + '<div class="prop-actions"><button class="ghost" data-prop-approve="' + esc(x.id) + '">我确认</button>'
+      + '<button class="ghost" data-prop-auto="' + esc(x.id) + '">DSH 自动代理</button></div></div>';
+  }).join('');
+}
+
+function agentRenderAll() {
+  agentRenderTasks();
+  agentRenderResults();
+  agentRenderKnowledge();
+  agentRenderDsh();
+  agentRenderDshArt();
+  agentRenderProps();
+  agentRenderRun();
+}
+
+async function loadAgent() {
+  const box = $('#agent-tasks');
+  if (!box) return;
+  box.innerHTML = agentEmpty('读取中…');
+  const resBox = $('#agent-results');
+  if (resBox) resBox.innerHTML = agentEmpty('读取中…');
+  const knBox = $('#agent-knowledge');
+  if (knBox) knBox.innerHTML = agentEmpty('读取中…');
+  const [t, r, k, ds, da, pr] = await Promise.all([
+    api('/api/agent/tasks').catch(e => ({ tasks: [], error: e.message })),
+    api('/api/agent/results').catch(e => ({ results: [], error: e.message })),
+    api('/api/agent/knowledge').catch(e => ({ items: [], error: e.message })),
+    api('/api/dsh/sessions').catch(e => ({ sessions: [], error: e.message })),
+    api('/api/dsh/artifacts').catch(e => ({ artifacts: [], error: e.message })),
+    api('/api/dsh/proposals').catch(e => ({ proposals: [], error: e.message })),
+  ]);
+  agentTasks = (t && t.tasks) || [];
+  agentResults = (r && r.results) || [];
+  agentKnowledge = (k && k.items) || [];
+  agentDsh = (ds && ds.sessions) || [];
+  agentDshArt = (da && da.artifacts) || [];
+  agentProps = (pr && pr.proposals) || [];
+  agentRenderAll();
+  const errs = [t && t.error, r && r.error, k && k.error].filter(Boolean);
+  const msg = $('#agent-msg');
+  if (msg) msg.textContent = errs.length ? ('部分读数不可用：' + errs.join('；')) : '';
+  const asof = $('#agent-asof');
+  if (asof) asof.textContent = '更新于 ' + new Date().toLocaleTimeString();
+}
+
+function openAgentDialog() {
+  const ov = $('#agent-overlay');
+  if (!ov) return;
+  const msg = $('#agent-dlg-msg');
+  if (msg) msg.textContent = '';
+  ov.classList.remove('hidden');
+  const t = $('#agent-title');
+  if (t) t.focus();
+}
+
+function closeAgentDialog() {
+  const ov = $('#agent-overlay');
+  if (ov) ov.classList.add('hidden');
+}
+
+async function submitAgentTask() {
+  const msg = $('#agent-dlg-msg');
+  const title = ($('#agent-title') ? $('#agent-title').value : '').trim();
+  const detail = ($('#agent-detail') ? $('#agent-detail').value : '').trim();
+  const kind = $('#agent-kind') ? $('#agent-kind').value : 'user_task';
+  const severity = $('#agent-severity') ? $('#agent-severity').value : 'med';
+  if (!title) {
+    if (msg) msg.textContent = '标题不能为空';
+    return;
+  }
+  const btn = $('#agent-submit');
+  if (btn) btn.disabled = true;
+  try {
+    const r = await api('/api/agent/tasks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ kind: kind, severity: severity, title: title, detail: detail }),
+    });
+    const task = (r && r.task) || {};
+    closeAgentDialog();
+    if ($('#agent-title')) $('#agent-title').value = '';
+    if ($('#agent-detail')) $('#agent-detail').value = '';
+    const m2 = $('#agent-msg');
+    if (m2) m2.textContent = '已提交任务 ' + String(task.id || '');
+    await loadAgent();
+  } catch (e) {
+    if (msg) msg.textContent = '提交失败：' + e.message;
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+async function runAgentConsumer() {
+  const btn = $('#agent-run');
+  const msg = $('#agent-msg');
+  if (btn) btn.disabled = true;
+  if (msg) msg.textContent = '消费者运行中…';
+  try {
+    const r = await api('/api/agent/run', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    });
+    agentLastRun = {
+      at: new Date().toISOString(),
+      run: (r && r.run) || {},
+      proposals: (r && r.proposals) || {},
+    };
+    if (msg) msg.textContent = '消费者已运行：triaged '
+      + String((r && r.run && r.run.triaged) || 0);
+    await loadAgent();
+  } catch (e) {
+    if (msg) msg.textContent = '运行失败：' + e.message;
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+async function refreshAgentKnowledge() {
+  const btn = $('#agent-know');
+  const msg = $('#agent-msg');
+  const raw = ($('#agent-kn-q') ? $('#agent-kn-q').value : '').trim();
+  const qs = raw
+    ? raw.split(/[,，]/).map(s => s.trim()).filter(Boolean).slice(0, 4)
+    : ['DeepSeek API 更新日志', 'DeepSeek V4.1 Flash 新功能'];
+  if (btn) btn.disabled = true;
+  if (msg) msg.textContent = '知识刷新中…';
+  try {
+    const r = await api('/api/agent/knowledge', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ queries: qs }),
+    });
+    const items = (r && r.items) || [];
+    if (msg) msg.textContent = items.length
+      ? ('知识库新增 ' + items.length + ' 条')
+      : '知识刷新完成：0 条（无联网结果或未配置 Key，已安全降级）';
+    await loadAgent();
+  } catch (e) {
+    if (msg) msg.textContent = '知识刷新失败：' + e.message;
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+
+/* ── DeepSeek Harness Agent：按钮 + 对话框；事件映射与 DSH headless --json 一致 ── */
+function dshAppend(html) {
+  const log = document.querySelector('#dsh-log');
+  if (!log) return;
+  const empty = log.querySelector('.dsh-empty');
+  if (empty) empty.remove();
+  const el = document.createElement('div');
+  el.innerHTML = html;
+  log.appendChild(el.firstElementChild || el);
+  log.scrollTop = log.scrollHeight;
+}
+function openDshAgent() {
+  const ov = document.querySelector('#dsh-overlay');
+  if (!ov) return;
+  ov.classList.remove('hidden');
+  setTimeout(() => { const t = document.querySelector('#dsh-task'); if (t) t.focus(); }, 30);
+}
+function closeDshAgent() {
+  const ov = document.querySelector('#dsh-overlay');
+  if (ov) ov.classList.add('hidden');
+}
+function renderDshEvent(ev) {
+  if (!ev || !ev.type) return;
+  if (ev.type === 'session') {
+    dshSession = ev.sessionId || dshSession;
+    const s = document.querySelector('#dsh-session');
+    if (s) s.textContent = '会话 ' + (dshSession || '—');
+    return;
+  }
+  if (ev.type === 'status') {
+    if (ev.phase === 'turn_start') dshAppend('<div class="dsh-status">▸ 开始 turn ' + esc(ev.turn || '') + '</div>');
+    else if (ev.phase === 'step_start') dshAppend('<div class="dsh-status">· step ' + esc(ev.step || '') + '</div>');
+    return;
+  }
+  if (ev.type === 'thinking' && ev.text) {
+    dshAppend('<details class="dsh-think"><summary>思考</summary><pre>' + esc(ev.text) + '</pre></details>');
+    return;
+  }
+  if (ev.type === 'tool_call') {
+    dshAppend('<div class="dsh-tool"><b>🔧 ' + esc(ev.tool || 'tool') + '</b><pre>' + esc(JSON.stringify(ev.input || {}, null, 2)) + '</pre></div>');
+    return;
+  }
+  if (ev.type === 'tool_result') {
+    dshAppend('<details class="dsh-tool-res"><summary>工具结果 ' + esc(ev.status || '') + '</summary><pre>' + esc(String(ev.result || '').slice(0, 12000)) + '</pre></details>');
+    return;
+  }
+  if (ev.type === 'text' && ev.text) {
+    dshAppend('<div class="dsh-msg assistant">' + esc(ev.text) + '</div>');
+  }
+}
+async function sendDshAgent() {
+  const taskEl = document.querySelector('#dsh-task');
+  const msgEl = document.querySelector('#dsh-msg');
+  const btn = document.querySelector('#dsh-send');
+  const task = (taskEl && taskEl.value || '').trim();
+  if (!task) { if (msgEl) msgEl.textContent = '请输入任务'; return; }
+  if (taskEl) taskEl.value = '';
+  dshAppend('<div class="dsh-msg user">' + esc(task) + '</div>');
+  if (btn) btn.disabled = true;
+  if (msgEl) msgEl.textContent = 'DSH Agent 运行中…（可读项目文件/产物）';
+  try {
+    const r = await api('/api/dsh/agent', { method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ task: task, session_id: dshSession }) });
+    dshSession = r.session_id || dshSession;
+    (r.events || []).forEach(renderDshEvent);
+    if (r.text && !(r.events || []).some(e => e.type === 'text' && e.text)) {
+      dshAppend('<div class="dsh-msg assistant">' + esc(r.text) + '</div>');
+    }
+    if (!r.ok) dshAppend('<div class="dsh-status err">Agent 退出异常：' + esc(r.stderr || r.error || '') + '</div>');
+    if (msgEl) msgEl.textContent = r.ok ? '完成' : '失败（见日志）';
+  } catch (e) {
+    dshAppend('<div class="dsh-status err">请求失败：' + esc(e.message) + '</div>');
+    if (msgEl) msgEl.textContent = '失败';
+  }
+  if (btn) btn.disabled = false;
+}
+function initDshAgent() {
+  const b = document.querySelector('#dsh-agent-btn');
+  if (b) b.addEventListener('click', openDshAgent);
+  const c = document.querySelector('#dsh-close');
+  if (c) c.addEventListener('click', closeDshAgent);
+  const n = document.querySelector('#dsh-new');
+  if (n) n.addEventListener('click', () => {
+    dshSession = '';
+    const log = document.querySelector('#dsh-log');
+    if (log) log.innerHTML = '<div class="dsh-empty">新会话。Agent 已授权读取项目文件与 outputs/ 产物。</div>';
+    const s = document.querySelector('#dsh-session'); if (s) s.textContent = '新会话';
+  });
+  const send = document.querySelector('#dsh-send');
+  if (send) send.addEventListener('click', sendDshAgent);
+  const ta = document.querySelector('#dsh-task');
+  if (ta) ta.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); sendDshAgent(); }
+  });
+  const ov = document.querySelector('#dsh-overlay');
+  if (ov) ov.addEventListener('click', e => { if (e.target === ov) closeDshAgent(); });
+}
+
+async function loadGitStatus() {
+  const s = document.querySelector('#gh-status');
+  if (!s) return;
+  try {
+    const d = await api('/api/git/status');
+    s.innerHTML = '<span class="gh-ok">' + esc(d.branch || '') + '</span>'
+      + ' · 变更 ' + esc(d.changes || 0)
+      + ' · ' + esc(d.last || '无提交');
+  } catch (e) { s.textContent = 'git 状态读取失败：' + e.message; }
+}
+async function openGithubDesktop() {
+  const s = document.querySelector('#gh-status');
+  try { const r = await api('/api/git/open', {method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+    if (s) s.textContent = r.ok ? '已打开 GitHub Desktop' : ('打开失败：' + (r.error || ''));
+  } catch (e) { if (s) s.textContent = '打开失败：' + e.message; }
+}
+async function commitGithub() {
+  const msg = prompt('提交信息（会 git add -A 后 commit，不 push）：', 'Agent 修复');
+  if (!msg) return;
+  const s = document.querySelector('#gh-status');
+  if (s) s.textContent = '提交中…';
+  try { const r = await api('/api/git/commit', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg})});
+    if (s) s.textContent = r.ok ? ('已提交：' + (r.out || '').split('\n')[0]) : ('提交失败：' + (r.err || ''));
+    loadGitStatus();
+  } catch (e) { if (s) s.textContent = '提交失败：' + e.message; }
+}
 function init() {
   buildAdv();
   pollLanes();
@@ -3019,6 +3681,8 @@ function init() {
     if (open) { e.preventDefault(); openDetail(open.dataset.open); return; }
     const arc = e.target.closest('[data-archive]');
     if (arc) { e.preventDefault(); openArchive(arc.dataset.archive); return; }
+    const ds = e.target.closest('[data-dsh-session]');
+    if (ds) { e.preventDefault(); openDshSession(ds.dataset.dshSession).catch(function(){}); return; }
     const hs = e.target.closest('.hist');
     if (hs) {
       const n = hs.dataset.hist;
@@ -3079,6 +3743,146 @@ function init() {
     }
   });
 
+  /* ── Agent 面板：入口（左上角图标）/ 刷新 / 提交 / 消费者 / 知识 ─── */
+  const _agentBtn = $('#agent-btn');
+  if (_agentBtn) _agentBtn.addEventListener('click', () => {
+    openSheet('view-agent');
+    loadAgent();
+  });
+  const _agentRefresh = $('#agent-refresh');
+  if (_agentRefresh) _agentRefresh.addEventListener('click', loadAgent);
+  const _agentNew = $('#agent-new');
+  if (_agentNew) _agentNew.addEventListener('click', () => {
+    closeSheet();
+    agentTaskMode = true; toggleDshMode(false);
+    const q = $('#question');
+    if (q) { q.placeholder = 'Agent 用户任务：输入要交给 daemon 的任务，发送即入队…'; q.focus(); }
+  });
+  const _dshPill = $('#pill-dsh');
+  if (_dshPill) _dshPill.addEventListener('click', () => toggleDshMode(!dshMode));
+  [['dsh-effort', 'dgtf_dsh_effort'], ['dsh-perm', 'dgtf_dsh_perm']].forEach(function (pair) {
+    const el = document.getElementById(pair[0]);
+    if (!el) return;
+    try { const saved = localStorage.getItem(pair[1]); if (saved !== null) el.value = saved; } catch (_) {}
+    el.addEventListener('change', function () {
+      try { localStorage.setItem(pair[1], el.value); } catch (_) {}
+    });
+  });
+  const _dshNew = $('#dsh-new-session');
+  if (_dshNew) _dshNew.addEventListener('click', () => {
+    dshSession = ''; dshCurrent = null;
+    const log = document.querySelector('#runlog-body');
+    if (log) log.innerHTML = '<div class="rl-lane rl-boot"><div class="rl-lane-head">DeepSeek Harness Agent · 新会话</div><div class="rl-line"><span class="rl-txt">DSH 会话已重置；元DGTF 会话与当前内容保留。</span></div></div>';
+    document.body.classList.add('stage-run'); document.body.classList.remove('stage-empty');
+    const rl = document.querySelector('#runlog'); if (rl) rl.classList.remove('hidden');
+  });
+  document.querySelectorAll('[data-agent-tab]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      const idx = Number(b.dataset.agentTab || 0);
+      document.querySelectorAll('[data-agent-tab]').forEach(function (x) { x.classList.toggle('on', x === b); });
+      const secs = document.querySelectorAll('#view-agent .agent-sec');
+      secs.forEach(function (s, i) { s.classList.toggle('agent-tab-hidden', i !== idx); });
+    });
+  });
+  (function () {
+    const secs = document.querySelectorAll('#view-agent .agent-sec');
+    secs.forEach(function (s, i) { s.classList.toggle('agent-tab-hidden', i !== 0); });
+  })();
+  const _propBox = $('#agent-proposals');
+  if (_propBox) _propBox.addEventListener('click', async (e) => {
+    const ok = e.target.closest('[data-prop-approve]');
+    const auto = e.target.closest('[data-prop-auto]');
+    if (!ok && !auto) return;
+    const id = (ok || auto).dataset.propApprove || (ok || auto).dataset.propAuto;
+    const mode = ok ? 'user' : 'dsh_auto';
+    const m = document.querySelector('#agent-msg');
+    if (m) m.textContent = '提案 ' + id + ' 执行中（' + mode + '）…';
+    try {
+      const r = await api('/api/dsh/proposals/' + encodeURIComponent(id) + '/approve',
+        {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode:mode})});
+      if (m) m.textContent = '提案 ' + id + '：' + ((r.proposal || {}).status || '');
+      loadAgent(); loadGitStatus();
+    } catch (err) { if (m) m.textContent = '执行失败：' + err.message; }
+  });
+  const _ghOpen = $('#gh-open');
+  if (_ghOpen) _ghOpen.addEventListener('click', openGithubDesktop);
+  const _ghCommit = $('#gh-commit');
+  if (_ghCommit) _ghCommit.addEventListener('click', commitGithub);
+  const _ghAuto = $('#gh-auto');
+  if (_ghAuto) _ghAuto.addEventListener('click', async () => {
+    const s = document.querySelector('#gh-status');
+    if (s) s.textContent = 'DSH 自动修复中…';
+    try {
+      const r = await api('/api/dsh/autorepair', {method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+      if (s) s.textContent = r.ok ? ('已生成修复提案：' + ((r.proposal || {}).id || '') + '（待确认/自动代理）')
+        : ('自审失败：' + (r.error || r.text || ''));
+      loadAgent(); loadGitStatus();
+    } catch (e) { if (s) s.textContent = '自动修复失败：' + e.message; }
+  });
+  const _dshTopNew = $('#dsh-newchat-btn');
+  if (_dshTopNew) _dshTopNew.addEventListener('click', () => {
+    dshSession = ''; dshCurrent = null;
+    const log = document.querySelector('#runlog-body');
+    if (log) log.innerHTML = '<div class="rl-lane rl-boot"><div class="rl-lane-head">DeepSeek Harness Agent · 新会话</div><div class="rl-line"><span class="rl-txt">DSH 会话已重置；元DGTF 会话与当前内容保留。</span></div></div>';
+    document.body.classList.add('stage-run'); document.body.classList.remove('stage-empty');
+    const rl = document.querySelector('#runlog'); if (rl) rl.classList.remove('hidden');
+  });
+  const _dshArtList = $('#agent-dsh-art');
+  if (_dshArtList) _dshArtList.addEventListener('click', async (e) => {
+    const it = e.target.closest('[data-dsh-art]');
+    if (!it) return;
+    try { await openDshArtifact(it.dataset.dshArt); }
+    catch (err) { const m = document.querySelector('#agent-msg'); if (m) m.textContent = '打开产物失败：' + err.message; }
+  });
+  const _dshList = $('#agent-dsh');
+  if (_dshList) _dshList.addEventListener('click', async (e) => {
+    const it = e.target.closest('[data-dsh-session]');
+    if (!it) return;
+    try {
+      const r = await api('/api/dsh/sessions/' + encodeURIComponent(it.dataset.dshSession));
+      dshSession = r.id || '';
+      dshCurrent = { question: r.task || '', session: dshSession,
+        events: (r.events || []).concat(r.text ? [{type:'text', text:r.text}] : []),
+        status: r.ok ? 'done' : 'error' };
+      closeSheet(); toggleDshMode(true); renderDshView();
+    } catch (err) { const m = document.querySelector('#agent-msg'); if (m) m.textContent = '回溯失败：' + err.message; }
+  });
+  const _agentRun = $('#agent-run');
+  if (_agentRun) _agentRun.addEventListener('click', runAgentConsumer);
+  const _agentKnow = $('#agent-know');
+  if (_agentKnow) _agentKnow.addEventListener('click', refreshAgentKnowledge);
+  const _agentSubmit = $('#agent-submit');
+  if (_agentSubmit) _agentSubmit.addEventListener('click', submitAgentTask);
+  const _agentCancel = $('#agent-cancel');
+  if (_agentCancel) _agentCancel.addEventListener('click', closeAgentDialog);
+  const _agentDlgX = $('#agent-dlg-x');
+  if (_agentDlgX) _agentDlgX.addEventListener('click', closeAgentDialog);
+  const _agentOverlay = $('#agent-overlay');
+  if (_agentOverlay) _agentOverlay.addEventListener('click', e => {
+    if (e.target === _agentOverlay) closeAgentDialog();
+  });
+  const _agentTitle = $('#agent-title');
+  if (_agentTitle) _agentTitle.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); submitAgentTask(); }
+  });
+
+  initDshAgent();
+
+  // ★ 深链：?panel=view-agent 可直接打开面板（便于截图/联调）。
+  try {
+    const _panel = new URLSearchParams(location.search).get('panel');
+    if (_panel) { openSheet(_panel); if (_panel === 'view-agent') loadAgent(); }
+    const _advg = new URLSearchParams(location.search).get('advgroup');
+    if (_advg) setTimeout(function () { try { openAdvGroup(_advg); } catch (_) {} }, 900);
+    const _tab = new URLSearchParams(location.search).get('tab');
+    if (_tab !== null) { const _tb = document.querySelector('[data-agent-tab="' + _tab + '"]'); if (_tb) _tb.click(); }
+    if (new URLSearchParams(location.search).get('dsh') === '1') toggleDshMode(true);
+    if (new URLSearchParams(location.search).get('drawer') === '1') openDrawer();
+    const _dt = new URLSearchParams(location.search).get('dsh_task');
+    if (_dt) { toggleDshMode(true); const _ta = document.querySelector('#question');
+      if (_ta) _ta.value = _dt; setTimeout(() => startDshRun(_dt), 500); }
+  } catch (_) { /* 忽略 */ }
+
   // 键盘优先：⌘/Ctrl+Enter 提交 · / 聚焦搜索 · Esc 关闭浮层
   document.addEventListener('keydown', e => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); startRun(); return; }
@@ -3098,6 +3902,10 @@ function init() {
       }
       const _sov = $('#search-overlay');
       if (_sov && !_sov.classList.contains('hidden')) { closeSearch(); return; }
+      const _aov = $('#agent-overlay');
+      if (_aov && !_aov.classList.contains('hidden')) { closeAgentDialog(); return; }
+      const _dov = $('#dsh-overlay');
+      if (_dov && !_dov.classList.contains('hidden')) { closeDshAgent(); return; }
       const _sh = $('#sheet');
       if (_sh && !_sh.classList.contains('hidden')) { closeSheet(); return; }
       closeDrawer();

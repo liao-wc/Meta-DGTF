@@ -1370,3 +1370,96 @@ select:focus{border-color:var(--accent)}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.001ms !important;transition-duration:.001ms !important}
 }
+
+/* ── Agent 面板（任务队列 / 用户任务 / 消费者 / 技术知识 / 结果）──────
+   数据面走 /api/agent/*；这里只做布局与观感，不影响既有面板。
+   入口在左上角第 4 个图标（抽屉固定 7 个按钮，不动抽屉）。 */
+.agent-overlay{z-index:80}
+.agent-grid{display:flex;flex-direction:column;gap:12px;padding:2px 2px 6px}
+.agent-sec{background:var(--s1);border:1px solid var(--hair);border-radius:var(--r-md);
+  box-shadow:var(--shadow);overflow:hidden;flex:0 0 auto}
+.agent-sec-h{display:flex;align-items:center;gap:8px;padding:8px 12px;
+  border-bottom:1px solid var(--hair);font-size:12.5px;font-weight:600;color:var(--t2)}
+.agent-sec-h .chip{margin-left:auto}
+.agent-list{max-height:42vh;overflow:auto;padding:2px 12px 8px}
+.agent-list:empty{display:none}
+.agent-item{padding:8px 0;border-bottom:1px solid var(--hair)}
+.agent-item:last-child{border-bottom:0}
+.agent-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0}
+.agent-t{flex:1 1 auto;min-width:0;font-size:13px;color:var(--t1);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.agent-t a{color:var(--accent-hi);text-decoration:none}
+.agent-t a:hover{text-decoration:underline}
+.agent-meta{display:flex;gap:10px;flex-wrap:wrap;color:var(--t3);
+  font-size:11.5px;margin-top:4px;min-width:0;word-break:break-all}
+.agent-q{font-size:12px;color:var(--t2);margin-top:4px;line-height:1.5;word-break:break-word}
+.agent-empty{padding:16px 2px;font-size:12px;line-height:1.6}
+.agent-item pre{white-space:pre-wrap;word-break:break-word;
+  font-family:var(--f-mono);font-size:11.5px;line-height:1.55;color:var(--t2);
+  background:var(--s2);border-radius:var(--r-sm);padding:8px 10px;margin:6px 0 0;
+  max-height:200px;overflow:auto}
+.agent-detail summary{cursor:pointer;color:var(--t3);font-size:11.5px;margin-top:4px}
+.agent-detail pre{margin-top:4px}
+.chip.sev-high{color:var(--err);border-color:rgba(255,107,107,.32);background:rgba(255,107,107,.08)}
+.chip.sev-med{color:var(--warn);border-color:rgba(245,196,83,.30);background:rgba(245,196,83,.08)}
+.chip.sev-low{color:var(--t3)}
+.agent-dlg{background:var(--s1);border:1px solid var(--hair-2);border-radius:var(--r-md);
+  padding:14px 16px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow-lg)}
+.agent-dlg-h{display:flex;align-items:center;justify-content:space-between;
+  font-size:14px;font-weight:600;color:var(--t1)}
+.agent-dlg-h .icon-btn{width:26px;height:26px}
+.agent-field{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--t2)}
+.agent-field>span{color:var(--t3);font-size:11.5px}
+.agent-field input,.agent-field select,.agent-field textarea{
+  width:100%;background:var(--s2);border:1px solid var(--hair-2);border-radius:var(--r-sm);
+  padding:8px 10px;font-size:13px;color:var(--t1);outline:none;box-sizing:border-box}
+.agent-field input:focus,.agent-field select:focus,.agent-field textarea:focus{
+  border-color:var(--accent)}
+.agent-field textarea{resize:vertical;min-height:84px;font-family:inherit}
+.agent-dlg-f{display:flex;align-items:center;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.agent-dlg-f .muted{flex:1 1 auto;min-width:0;font-size:11.5px}
+@media (max-width:720px){
+  .agent-grid{gap:10px}
+  .agent-list{max-height:36vh}
+}
+
+
+/* DeepSeek Harness Agent 对话框 */
+.dsh-overlay { z-index: 90; }
+.dsh-overlay .search-panel { width: min(980px, 94vw); }
+.dsh-chat { display:flex; flex-direction:column; min-height:62vh; max-height:82vh; }
+.dsh-head { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:10px 4px 12px; }
+.dsh-head b { font-family:'Inter Tight',sans-serif; font-size:16px; }
+.dsh-head-actions { display:flex; gap:8px; }
+.dsh-log { flex:1; overflow:auto; border:1px solid #2b2b2b; border-radius:12px; padding:12px; background:#0f0f10; }
+.dsh-empty { color:#8b8b8b; font-size:13px; }
+.dsh-msg { max-width:86%; margin:8px 0; padding:9px 12px; border-radius:10px; white-space:pre-wrap; line-height:1.55; font-size:13.5px; }
+.dsh-msg.user { margin-left:auto; background:#2e2a4d; color:#f1efff; }
+.dsh-msg.assistant { background:#1b1b1e; border:1px solid #2c2c30; }
+.dsh-status { color:#8d8d94; font-size:12px; margin:4px 0; }
+.dsh-status.err { color:#ff9b9b; }
+.dsh-think, .dsh-tool-res { margin:6px 0; color:#b9b9c2; font-size:12.5px; }
+.dsh-think pre, .dsh-tool-res pre, .dsh-tool pre { white-space:pre-wrap; max-height:220px; overflow:auto; background:#151518; border-radius:8px; padding:8px; }
+.dsh-tool { margin:6px 0; border-left:2px solid #6d5dfc; padding-left:9px; color:#cfcaff; font-size:12.5px; }
+.dsh-compose { display:flex; gap:8px; padding-top:10px; }
+.dsh-compose textarea { flex:1; resize:vertical; background:#151518; color:#eee; border:1px solid #2f2f34; border-radius:10px; padding:9px 11px; font:inherit; }
+.dsh-foot { min-height:18px; padding-top:6px; font-size:12px; }
+
+/* GitHub Desktop + DSH Agent 专属控制 */
+.gh-bar{margin-top:8px}
+.dsh-ctl{display:none}
+body.dsh-mode .dsh-ctl{display:inline-flex;align-items:center}
+.dsh-sel{background:rgba(0,0,0,.22);border:1px solid var(--hair);color:var(--t2);
+  border-radius:999px;padding:6px 9px;font-size:12px;font-family:var(--f-mono);outline:none}
+.gh-ok{color:var(--ok)} .gh-bad{color:var(--err)}
+.agent-tabs{display:flex;gap:6px;flex-wrap:wrap;padding:8px 0 2px}
+.agent-tabs .pill{font-size:12px}
+.agent-sec.agent-tab-hidden{display:none}
+.prop-actions{display:flex;gap:6px;margin-top:6px}
+/* 可选可编辑下拉：默认值带（默认）标注，仍可手工填任意值 */
+.dd-free{display:flex;gap:5px;align-items:center}
+.dd-free .dd-input{flex:1 1 auto;min-width:0;text-align:center}
+.dd-free .dd-btn{flex:0 0 auto;width:28px;min-height:33px;justify-content:center;padding:0}
+.dd-free .dd-menu{min-width:170px}
+.dd-def{flex:0 0 auto;font-size:10px;color:var(--t3);border:1px solid var(--hair);border-radius:4px;padding:1px 4px;white-space:nowrap}
+.sheet .grid .dd-input{background:#15171B;color:#F0F2F6;border-color:rgba(255,255,255,.18)}
