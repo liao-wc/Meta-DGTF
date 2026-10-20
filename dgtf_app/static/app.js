@@ -3272,6 +3272,7 @@ function agentRenderProps() {
       acts = '<span class="muted">已确认，等待 DSH 自动修复</span>';
     } else if (st === 'applied') {
       acts = '<button class="ghost danger" data-prop-rollback="' + esc(x.id) + '">回退并撤销修复</button>';
+      if (x.acceptance) acts += '<button class="ghost" data-acceptance="' + esc(x.id) + '">验收对话</button>';
     }
     return '<div class="agent-item">'
       + '<div class="agent-row"><span class="chip">提案</span>'
@@ -3373,6 +3374,31 @@ async function submitAgentTask() {
   }
 }
 
+function showAcceptanceInDgtf(prop) {
+  const acc = prop.acceptance || {};
+  const checks = acc.checks || [];
+  const lines = [];
+  lines.push('修复提案：' + (prop.id || ''));
+  lines.push('版本：' + (prop.version || '—'));
+  lines.push('验收结果：' + (acc.ok ? 'PASS' : 'FAIL'));
+  checks.forEach(function (c) {
+    lines.push((c.name || 'check') + '：' + (c.ok ? 'PASS' : 'FAIL'));
+    String(c.tail || '').split('\n').slice(-30).forEach(function (x) { if (x.trim()) lines.push(x); });
+  });
+  if (prop.artifact) lines.push('产物目录：' + prop.artifact);
+  const id = 'accept-' + String(prop.id || 'proposal');
+  const text = lines.join('\n');
+  taskData[id] = { id: id, question: '修复验收对话 · ' + (prop.version || prop.id),
+    status: 'done', created_at: Date.now() / 1000, mock: true, opts: {} };
+  activeChat = id; followLatest = false; chatMode = 'live';
+  lanes.tid = id; lanes.text = { '__head__': text }; lanes.stats = {}; lanes.meta = {};
+  closeSheet(); closeDrawer();
+  const lg = document.querySelector('#runlog');
+  if (lg) { lg.classList.remove('hidden'); lg.classList.remove('fading'); }
+  document.body.classList.remove('stage-empty'); document.body.classList.add('stage-run');
+  renderTasks();
+}
+
 function showAutoDsh(question, events, status) {
   toggleDshMode(true);
   dshAttachTaskId = null;
@@ -3418,6 +3444,9 @@ async function autoFixProposals() {
     dshCurrent.question = '自动修复提案 · 完成';
     renderDshView();
     await loadAgent(); loadGitStatus();
+    const applied = (final.proposals || []).filter(p => p.status === 'applied');
+    const withChecks = applied.find(p => ((p.acceptance || {}).checks || []).length);
+    if (withChecks) setTimeout(function () { showAcceptanceInDgtf(withChecks); }, 400);
   } catch (e) {
     if (dshCurrent) {
       dshCurrent.events.push({type:'text', text:'自动修复失败：' + e.message});
@@ -4084,6 +4113,12 @@ function init() {
         if (m) m.textContent = '提案 ' + id + '：' + ((r.proposal || {}).status || '已回退');
         loadAgent(); loadGitStatus();
       } catch (err) { if (m) m.textContent = '回退失败：' + err.message; }
+      return;
+    }
+    const ac = e.target.closest('[data-acceptance]');
+    if (ac) {
+      const prop = (agentProps || []).find(x => x.id === ac.dataset.acceptance);
+      if (prop) showAcceptanceInDgtf(prop);
       return;
     }
     const cf = e.target.closest('[data-prop-confirm]');
