@@ -1391,6 +1391,171 @@ def _auto_job_get(jid, since=0):
                 "result": j.get("result"), "error": j.get("error")}
 
 
+def _app_health():
+    import importlib.util as _iu
+    _proj = Path(__file__).resolve().parent.parent
+    if str(_proj) not in sys.path:
+        sys.path.insert(0, str(_proj))
+    eng = runner.find_engine()
+    m = re.search(r"V(\d+)\.(\d+)\.(\d+)", eng.name)
+    ver = ".".join(m.groups()) if m else ""
+    flat = {}
+    try:
+        flat = prm.effective_flat()
+    except Exception:
+        pass
+    modules = ("self_feedback", "llm_feedback", "online_adapt", "frontier_feedback",
+               "unified_memory", "scheduler", "orchestrator", "facet_flow",
+               "fact_flow", "evidence", "process_ledger", "shadow")
+    mods = {}
+    for name in modules:
+        try:
+            mods[name] = _iu.find_spec("dgtf_v2." + name) is not None
+        except Exception:
+            mods[name] = False
+    creds = runner.credential_status()
+    daemon = agent_daemon_status()
+    dsh = Path(os.getenv("DSH_BIN") or str(Path(
+        os.getenv("LOCALAPPDATA", "")) /
+        "Programs/DeepSeek Harness/resources/runtime/cli/bin/dsh.cmd"))
+    checks = {
+        "engine_file": eng.is_file(),
+        "engine_version": ver,
+        "dgtf_v2_modules": all(mods.values()),
+        "self_feedback_loop": bool(mods.get("self_feedback") and mods.get("llm_feedback")),
+        "eml_memory": bool(mods.get("unified_memory")),
+        "fact_flow": bool(mods.get("fact_flow") and mods.get("evidence")),
+        "scheduler": bool(mods.get("scheduler") and mods.get("orchestrator")),
+        "api_key": bool(creds.get("api_key")),
+        "dsh_headless": dsh.is_file(),
+        "agent_daemon": bool(daemon.get("running")),
+        "outputs_dir": oi.OUTPUTS_DIR.is_dir(),
+    }
+    critical = ["engine_file", "dgtf_v2_modules", "self_feedback_loop",
+                "eml_memory", "fact_flow", "scheduler", "outputs_dir"]
+    warnings = [k for k in ("api_key", "dsh_headless", "agent_daemon") if not checks[k]]
+    return {
+        "ok": all(bool(checks[k]) for k in critical),
+        "app": {"name": "元DGTF app", "commit": _git(["rev-parse", "HEAD"]).get("out", "")[:12]},
+        "engine": {"file": eng.name, "version": ver,
+                   "layers": ["0", "1", "both", "all"],
+                   "eml": bool(checks["self_feedback_loop"]),
+                   "scheduler": bool(checks["scheduler"])},
+        "checks": checks,
+        "warnings": warnings,
+        "modules": mods,
+        "config": {"auto_enabled": flat.get("auto.enabled"),
+                   "history_limit": flat.get("auto.history_limit"),
+                   "v2_shadow": flat.get("scheduler.v2.shadow"),
+                   "parallel_mode": flat.get("actions.parallel_mode"),
+                   "max_tokens": flat.get("max_tokens")},
+        "daemon": {"running": bool(daemon.get("running")), "pid": daemon.get("pid"),
+                   "last_log": daemon.get("last_log")},
+        "mapping": {
+            "engine_layers": "→ /api/chats /api/tasks /api/outputs/layers",
+            "EML_self_feedback": "→ /api/tasks 产物 + /api/agent/* + eML/反馈",
+            "scheduler": "→ /api/tasks opts + /api/params + /api/schedule/preview",
+            "outputs": "→ /api/outputs /api/outputs/facets /api/export/*",
+            "knowledge": "→ /api/agent/knowledge*",
+            "DSH": "→ /api/dsh/* /api/agent/auto*",
+        },
+    }
+
+
+def _schedule_profiles():
+    import yaml
+    rows = []
+    try:
+        files = sorted(runner.CONFIG_DIR.glob("*.yaml"))
+    except Exception:
+        files = []
+    for p in files:
+        try:
+            d = yaml.safe_load(p.read_text(encoding="utf-8", errors="replace")) or {}
+        except Exception:
+            d = {}
+        auto = d.get("auto") if isinstance(d.get("auto"), dict) else {}
+        sched = ((d.get("scheduler") or {}).get("v2") or {}) if isinstance(d.get("scheduler"), dict) else {}
+        actions = d.get("actions") if isinstance(d.get("actions"), dict) else {}
+        runtime = d.get("runtime") if isinstance(d.get("runtime"), dict) else {}
+        rows.append({
+            "id": p.name,
+            "name": p.stem,
+            "recommended": ("帕累托" in p.stem),
+            "auto_enabled": auto.get("enabled"),
+            "history_limit": auto.get("history_limit"),
+            "v2_shadow": sched.get("shadow"),
+            "v2_takeover": sched.get("takeover"),
+            "parallel_mode": actions.get("parallel_mode"),
+            "parallel_warmup_rounds": actions.get("parallel_warmup_rounds"),
+            "max_tokens": d.get("max_tokens"),
+            "runtime": {"web": runtime.get("web"), "thinking": runtime.get("thinking"),
+                        "effort": runtime.get("effort")},
+        })
+    return rows
+
+
+def _schedule_preview(data):
+    question = str((data or {}).get("question") or "").strip()
+    _raw_opts = (data or {}).get("opts") or {}
+    if not isinstance(_raw_opts, dict):
+        return {"ok": False, "error": "opts 必须是对象"}
+    opts = dict(_raw_opts)
+    _profile = str((data or {}).get("profile") or opts.get("profile") or "")
+    if _profile:
+        _pp = runner.profile_path(_profile)
+        if _pp is None:
+            return {"ok": False, "error": "未知调度 profile：" + _profile}
+        opts["_config"] = str(_pp)
+    flat = {}
+    try:
+        flat = prm.effective_flat()
+    except Exception:
+        pass
+    effective = {}
+    precedence = {}
+    for k in ("route", "rounds", "parallel", "web", "thinking", "effort",
+              "orientation", "landing", "decidability"):
+        if k in opts and opts.get(k) not in (None, ""):
+            effective[k] = opts[k]
+            precedence[k] = "opts"
+        elif k in flat and flat.get(k) not in (None, ""):
+            effective[k] = flat.get(k)
+            precedence[k] = "config"
+        else:
+            effective[k] = "auto"
+            precedence[k] = "auto"
+    try:
+        argv = runner.build_cmd(question or "（预览占位问题）", dict(opts))
+        argv = argv[2:] if len(argv) > 2 else argv
+    except Exception as exc:
+        argv = []
+        return {"ok": False, "error": str(exc), "effective": effective}
+    return {
+        "ok": True,
+        "question_present": bool(question),
+        "engine": runner.find_engine().name,
+        "profile": (_profile or ""),
+        "effective": effective,
+        "precedence": precedence,
+        "cli": argv,
+        "config": {
+            "auto_enabled": flat.get("auto.enabled"),
+            "auto_history_limit": flat.get("auto.history_limit"),
+            "v2_enabled": flat.get("scheduler.v2.enabled"),
+            "v2_shadow": flat.get("scheduler.v2.shadow"),
+            "v2_takeover": flat.get("scheduler.v2.takeover"),
+            "parallel_mode": flat.get("actions.parallel_mode"),
+            "parallel_warmup_rounds": flat.get("actions.parallel_warmup_rounds"),
+            "max_tokens": flat.get("max_tokens"),
+        },
+        "layers": ["0", "1", "both", "all"],
+        "dynamic": {"max_concurrent": runner.MAX_CONCURRENT,
+                    "history_limit": flat.get("auto.history_limit"),
+                    "budget_soft": flat.get("max_tokens")},
+    }
+
+
 class Handler(BaseHTTPRequestHandler):
     # ★ HTTP/1.1 = 默认**长连接**（HTTP/1.0 每请求一连接 ⇒ 关一次就进 TIME_WAIT）。
     #   前端 1.5s 轮询 + 验收台密集轮询会把 TIME_WAIT 堆到上千条、把端口耗光，
@@ -1521,6 +1686,16 @@ class Handler(BaseHTTPRequestHandler):
         if p.startswith("/static/"):
             return self._serve_static(p[len("/static/"):])
 
+        if p == "/api/schedule/profiles":
+            try:
+                return self._json({"profiles": _schedule_profiles()})
+            except Exception as exc:
+                return self._json({"profiles": [], "error": str(exc)}, 500)
+        if p == "/api/health":
+            try:
+                return self._json(_app_health())
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/config":
             try:
                 oi.reap_mock()          # 顺手回收过期的演练/验收产物
@@ -2334,6 +2509,11 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"run": res, "proposals": prop})
             except Exception as exc:
                 return self._json({"error": str(exc)}, 500)
+        if p == "/api/schedule/preview":
+            try:
+                return self._json(_schedule_preview(self._read_json()))
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/params":
             data = self._read_json()
             ov = data.get("overrides")

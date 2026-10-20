@@ -35,6 +35,7 @@ import layers  # noqa: E402
 import outputs_index as oi  # noqa: E402
 
 MAX_CONCURRENT = int(os.environ.get("DGTF_APP_MAX_CONCURRENT", "3"))
+CONFIG_DIR = PROJECT_ROOT / "configs"
 
 # opts 键 → 引擎命令行 flag（值为空 / "auto" 时不透传，交给引擎 auto 自决）
 _ARG_SPEC = {
@@ -142,6 +143,17 @@ def parse_tok(text: str) -> tuple[int, int]:
 # ── 命令行构造 ───────────────────────────────────────────────────
 def _is_mock(opts: dict) -> bool:
     return bool(opts.get("mock")) or os.environ.get("DGTF_APP_MOCK") == "1"
+
+
+def profile_path(name: str):
+    """安全解析 configs/<basename>；只允许 .yaml/.yml，拒绝路径穿越。"""
+    raw = str(name or "").strip()
+    if not raw or "/" in raw or chr(92) in raw or ".." in raw:
+        return None
+    if not raw.lower().endswith((".yaml", ".yml")):
+        raw += ".yaml"
+    p = CONFIG_DIR / raw
+    return p if p.is_file() else None
 
 
 def build_cmd(question: str, opts: dict) -> list[str]:
@@ -541,6 +553,12 @@ def start_task(question: str, opts: dict | None = None) -> str:
     status = "queued" if running >= MAX_CONCURRENT else "running"
 
     # 参数面板传上来的 yaml 覆盖 → 生成一份临时配置（原 dgtf_config.yaml 不动）
+    _profile = opts.pop("profile", None)
+    if _profile:
+        _pp = profile_path(str(_profile))
+        if _pp is None:
+            raise ValueError("未知调度 profile：%s" % _profile)
+        opts["_config"] = str(_pp)
     overrides = opts.pop("overrides", None)
     if isinstance(overrides, dict) and overrides:
         import params as _P
@@ -879,10 +897,15 @@ def read_layers(tid: str) -> dict | None:
         _stats[_n]["tokens"] = seg_tok.get(_n, 0)
         _stats[_n]["since"] = _since.get(_n)
 
+    _id_map = {"0": "修行", "1": "研究", "both": "对撞", "all": "元"}
     return {
         "head": parts.get("__head__", ""),
         "layers": {n: parts.get(n, "") for n in layers.LAYER_NAMES},
+        # ★ 规范层 id ↔ 中文层名：app/健康检查/外部 API 用规范 id，UI 仍可读中文。
+        "layer_ids": dict(_id_map),
+        "layers_by_id": {k: parts.get(v, "") for k, v in _id_map.items()},
         "stats": _stats,
+        "stats_by_id": {k: _stats.get(v) for k, v in _id_map.items()},
         "hidden": hidden,
         "done": done,
         "status": task["status"],
