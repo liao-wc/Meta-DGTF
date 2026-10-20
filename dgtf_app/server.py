@@ -671,6 +671,70 @@ def _auto_proposal(task_text="", title="", emit=None):
     return {"ok": bool(res.get("ok")), "proposal": prop}
 
 
+def _auto_cycle_all(emit=None):
+    """全队列闭环：处理所有任务、跑完消费者、为所有任务批量自审并落提案。"""
+    import json as _json
+    import sys as _sys
+    import time as _tm
+    _sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+    from dgtf_v2.agent_bridge import read_tasks
+    from dgtf_v2.agent_worker import run_once, write_proposals
+    tasks = read_tasks(limit=200)
+    all_results = []
+    for _ in range(30):
+        rr = run_once(limit=200)
+        if not rr.get("triaged"):
+            break
+        all_results += list(rr.get("results") or [])
+    prop_file = write_proposals()
+    existing = set()
+    for p in _list_proposals(300):
+        tid = str(((p.get("task") or {}).get("id")) or "")
+        if tid and p.get("status") in ("pending", "applied"):
+            existing.add(tid)
+    todo = [t for t in tasks if str(t.get("id") or "") not in existing]
+    plans = {}
+    audit_text = ""
+    audit_ok = True
+    if todo:
+        compact = [{"task_id": str(t.get("id") or ""),
+                    "title": str(t.get("title") or "")[:160],
+                    "detail": str(t.get("detail") or "")[:400]}
+                   for t in todo[:80]]
+        prompt = ("提案模式：不要读取项目文件、不要修改源码。请为下列全部任务分别给出"
+                  "简短修复提案，只输出一个 JSON 对象："
+                  '{"proposals":[{"task_id":"...","plan":"..."}]}。'
+                  "任务列表：" + _json.dumps(compact, ensure_ascii=False)[:24000])
+        res = _run_dsh_agent(prompt, "", timeout=300, auto_repair=False,
+                             emit=emit)
+        audit_text = str(res.get("text") or "")
+        audit_ok = bool(res.get("ok"))
+        obj = _extract_json(audit_text)
+        arr = obj.get("proposals") if isinstance(obj, dict) else obj
+        if isinstance(arr, list):
+            for x in arr:
+                if isinstance(x, dict) and x.get("task_id"):
+                    plans[str(x["task_id"])] = str(x.get("plan") or "")
+    made = []
+    for t in todo:
+        tid = str(t.get("id") or "")
+        plan = plans.get(tid) or ("DSH 批量自审：待针对该任务补充具体方案。"
+                                  + (("\n" + audit_text[:800]) if audit_text else ""))
+        prop = _save_proposal({"id": "prop-" + str(int(_tm.time() * 1000)) + "-" + tid[:6],
+                               "ts": _tm.time(), "task": t, "task_id": tid,
+                               "plan": plan, "status": "pending", "approver": "",
+                               "session_id": "", "batch": True})
+        made.append(prop)
+    return {"ok": audit_ok or bool(made),
+            "tasks_total": len(tasks), "tasks_submitted": len(tasks),
+            "tasks_processed": len(all_results),
+            "consumer": {"run": {"triaged": len(all_results),
+                                 "results": all_results},
+                         "proposals": prop_file},
+            "proposals": made, "audit_text": audit_text[:2000],
+            "audit_ok": audit_ok}
+
+
 def _proposal_commit_hash(prop):
     import re as _re
     r = ((prop or {}).get("result") or {}).get("repair") or {}
@@ -1307,25 +1371,23 @@ class Handler(BaseHTTPRequestHandler):
                     {"type": "event", "stage": name, "event": ev})
 
             try:
-                import sys as _sys
-                _sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-                if stage in ("task", "all"):
-                    out["task"] = _auto_submit_task(emit=_emit_stage("task"))
-                    out["ok"] = out["ok"] and bool(out["task"].get("ok"))
-                if stage in ("consumer", "all"):
-                    _emit_stage("consumer")
-                    from dgtf_v2.agent_worker import run_once, write_proposals
-                    out["consumer"] = {"run": run_once(), "proposals": write_proposals()}
-                if stage in ("proposal", "all"):
-                    task_text = str(data.get("task_text") or "")
-                    title = ""
-                    if not task_text and out.get("task"):
-                        t = out["task"].get("task") or {}
-                        task_text = str(t.get("detail") or t.get("title") or "")
-                        title = str(t.get("title") or "")
-                    out["proposal"] = _auto_proposal(task_text, title,
-                                                     emit=_emit_stage("proposal"))
-                    out["ok"] = out["ok"] and bool((out["proposal"] or {}).get("ok"))
+                if stage == "all":
+                    out.update(_auto_cycle_all(emit=_emit_stage("all")))
+                else:
+                    import sys as _sys
+                    _sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+                    if stage == "task":
+                        out["task"] = _auto_submit_task(emit=_emit_stage("task"))
+                        out["ok"] = bool(out["task"].get("ok"))
+                    if stage == "consumer":
+                        _emit_stage("consumer")
+                        from dgtf_v2.agent_worker import run_once, write_proposals
+                        out["consumer"] = {"run": run_once(), "proposals": write_proposals()}
+                    if stage == "proposal":
+                        out["proposal"] = _auto_proposal(
+                            str(data.get("task_text") or ""), "",
+                            emit=_emit_stage("proposal"))
+                        out["ok"] = bool((out["proposal"] or {}).get("ok"))
                 self._stream_write({"type": "result", "result": out})
             except Exception as exc:
                 try:
@@ -1367,23 +1429,20 @@ class Handler(BaseHTTPRequestHandler):
             try:
                 import sys as _sys
                 _sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-                if stage in ("task", "all"):
-                    out["task"] = _auto_submit_task()
-                    out["ok"] = out["ok"] and bool(out["task"].get("ok"))
-                if stage in ("consumer", "all"):
-                    from dgtf_v2.agent_worker import run_once, write_proposals
-                    out["consumer"] = {"run": run_once(),
-                                       "proposals": write_proposals()}
-                if stage in ("proposal", "all"):
-                    task_text = str(data.get("task_text") or "")
-                    title = ""
-                    if not task_text and out.get("task"):
-                        t = out["task"].get("task") or {}
-                        task_text = str(t.get("detail") or t.get("title") or "")
-                        title = str(t.get("title") or "")
-                    out["proposal"] = _auto_proposal(task_text, title)
-                    out["ok"] = out["ok"] and bool(
-                        (out["proposal"] or {}).get("ok"))
+                if stage == "all":
+                    out.update(_auto_cycle_all())
+                else:
+                    if stage == "task":
+                        out["task"] = _auto_submit_task()
+                        out["ok"] = bool(out["task"].get("ok"))
+                    if stage == "consumer":
+                        from dgtf_v2.agent_worker import run_once, write_proposals
+                        out["consumer"] = {"run": run_once(),
+                                           "proposals": write_proposals()}
+                    if stage == "proposal":
+                        out["proposal"] = _auto_proposal(
+                            str(data.get("task_text") or ""), "")
+                        out["ok"] = bool((out["proposal"] or {}).get("ok"))
                 return self._json(out)
             except Exception as exc:
                 return self._json({"ok": False, "stage": stage,

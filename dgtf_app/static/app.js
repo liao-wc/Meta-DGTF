@@ -3102,17 +3102,23 @@ function agentRenderTasks() {
     box.innerHTML = agentEmpty('队列为空。引擎跑完会自反馈入队；也可点「提交用户任务…」。');
     return;
   }
+  const doneIds = new Set(agentResults.map(r => String(r.task_id || '')));
   const rows = agentTasks.slice().reverse().map(t => {
     const kind = String(t.kind || 'task');
     const sev = String(t.severity || 'med');
     const title = String(t.title || t.id || '(无标题)');
     const src = t.source_run ? ('源跑次 ' + String(t.source_run)) : '无源跑次';
+    const st = doneIds.has(String(t.id || '')) ? '已消费' : '待消费';
+    const when = t.ts ? new Date(t.ts * 1000).toLocaleString('zh-CN', {hour12:false}) : '';
     return '<div class="agent-item">'
       + '<div class="agent-row"><span class="chip">' + esc(kind) + '</span>'
       + '<span class="chip sev-' + esc(sev) + '">' + esc(sev) + '</span>'
+      + '<span class="chip">' + esc(st) + '</span>'
       + '<span class="agent-t">' + esc(title) + '</span></div>'
       + '<div class="agent-meta"><span>' + esc(String(t.id || '—'))
-      + '</span><span>' + esc(src) + '</span></div>'
+      + '</span><span>' + esc(src) + '</span>'
+      + '<span>' + (when ? ('创建 ' + esc(when)) : '创建时间 未知') + '</span>'
+      + '</div>'
       + agentDetailHtml(t.detail)
       + '</div>';
   });
@@ -3138,6 +3144,7 @@ function agentRenderResults() {
       + '<span class="agent-t">' + esc(title) + '</span></div>'
       + '<div class="agent-meta"><span>task ' + esc(String(r.task_id || '—'))
       + '</span>' + (r.source_run ? ('<span>源跑次 ' + esc(String(r.source_run)) + '</span>') : '')
+      + (r.ts ? ('<span>' + esc(new Date(r.ts * 1000).toLocaleString('zh-CN', {hour12:false})) + '</span>') : '<span>时间 未知</span>')
       + '</div>'
       + (act ? '<div class="agent-q">' + esc(act) + '</div>' : '')
       + '</div>';
@@ -3389,12 +3396,21 @@ async function autoAgent(stage) {
     if (!result) throw new Error(errMsg || '没有返回结果');
     const r = result;
     const ev = dshCurrent.events;
-    if (r.task && r.task.task) {
-      ev.push({type:'text', text:'自动任务：' + (r.task.task.title || '')});
-      if (r.task.task.detail) ev.push({type:'text', text:'任务详情：' + r.task.task.detail});
+    if (r.tasks_total != null) ev.push({type:'text', text:'任务队列：共 ' + r.tasks_total + ' 条，已全部纳入闭环，处理 ' + (r.tasks_processed || 0) + ' 条。'});
+    if (r.consumer && r.consumer.run) ev.push({type:'text', text:'消费者：' + JSON.stringify(r.consumer.run).slice(0, 1200)});
+    if (Array.isArray(r.proposals)) {
+      ev.push({type:'text', text:'新增修复提案：' + r.proposals.length + ' 条，已落修复提案库。'});
+      r.proposals.slice(0, 10).forEach(function (p) {
+        ev.push({type:'text', text:'· ' + (p.id || '') + ' · ' + ((p.task || {}).title || '')});
+      });
     }
-    if (r.consumer && r.consumer.run) ev.push({type:'text', text:'消费者：' + JSON.stringify(r.consumer.run).slice(0, 800)});
     if (r.proposal && r.proposal.proposal) ev.push({type:'text', text:'提案：' + (r.proposal.proposal.id || '') + ' · ' + (r.proposal.proposal.status || '')});
+    agentLastRun = { at: Date.now() / 1000,
+      run: (r.consumer && r.consumer.run) || {},
+      proposals: { n: Array.isArray(r.proposals) ? r.proposals.length : 0,
+                   path: (r.consumer && r.consumer.proposals && r.consumer.proposals.path) || '' },
+      auto: { stage: stage, tasks_total: r.tasks_total || 0 } };
+    agentRenderAll();
     const secs = Math.max(1, Math.round((Date.now() - t0) / 1000));
     if (st) {
       st.className = 'agent-auto-status ' + (r.ok ? 'ok' : 'err');
