@@ -226,6 +226,24 @@ def _open_github_desktop():
         return {"ok": False, "error": str(exc)}
 
 
+_RUNTIME_PREFIXES = ("dgtf_memory/", "outputs/", "dgtf_app/runs/",
+                     "dgtf_app/anchors/", "smoke_outputs/", "_archive/",
+                     ".workbuddy/")
+
+
+def _commit_scope(paths):
+    """自动修复只提交源码/文档；运行记录与缓存不进提交。"""
+    out = []
+    for p in paths:
+        p = str(p or "").strip()
+        if not p or p.startswith(_RUNTIME_PREFIXES):
+            continue
+        if p.endswith((".log", ".pyc", ".sqlite3")):
+            continue
+        out.append(p)
+    return out
+
+
 def _auto_commit(before: set, task: str, before_head: str = "", before_fp=None):
     after = _git_snapshot()
     new = after - before
@@ -234,7 +252,7 @@ def _auto_commit(before: set, task: str, before_head: str = "", before_fp=None):
         cur = _git_fingerprints()
         new = new | {p for p in (after & set(before_fp))
                      if cur.get(p) != before_fp.get(p)}
-    new = sorted(new)
+    new = _commit_scope(sorted(new))
     if not new:
         ah = (_git(["rev-parse", "HEAD"]).get("out") or "").strip()
         if before_head and ah and ah != before_head:
