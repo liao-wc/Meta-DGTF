@@ -1027,8 +1027,10 @@ function renderTasks() {
     el.innerHTML = want;
     el.dataset.html = want;
     if (stick) el.scrollTop = el.scrollHeight;
+    if (Object.keys(taskDsh).some(function (k) { return taskDsh[k] && taskDsh[k].status === 'running'; })) {
+      el.scrollTop = el.scrollHeight;
+    }
     updateRlBar();
-    updateDshStop();
   }
 }
 
@@ -1182,8 +1184,41 @@ function currentTaskId() {
   return ids.sort((a, b) => taskData[b].created_at - taskData[a].created_at)[0];
 }
 
+function dshIsRunning() {
+  if (dshCurrent && dshCurrent.status === 'running') return true;
+  return Object.keys(taskDsh).some(function (k) {
+    return taskDsh[k] && taskDsh[k].status === 'running';
+  });
+}
+async function stopDsh() {
+  setRunBtn('send');
+  try {
+    const r = await api('/api/dsh/cancel', {method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+    if (dshCurrent) {
+      dshCurrent.status = 'error';
+      dshCurrent.events = dshCurrent.events || [];
+      dshCurrent.events.push({type:'text', text:'已终止 DSH 对话（' + (r.cancelled || 0) + ' 个进程）'});
+      renderDshView();
+    }
+    Object.keys(taskDsh).forEach(function (k) {
+      if (taskDsh[k] && taskDsh[k].status === 'running') {
+        taskDsh[k].status = 'error';
+        taskDsh[k].events = taskDsh[k].events || [];
+        taskDsh[k].events.push({type:'text', text:'已终止 DSH 对话'});
+      }
+    });
+    persistTaskDsh(); renderTasks();
+  } catch (e) {
+    if (dshCurrent) {
+      dshCurrent.events = dshCurrent.events || [];
+      dshCurrent.events.push({type:'text', text:'终止失败：' + e.message});
+      renderDshView();
+    }
+  }
+}
+
 function onRunBtn() {
-  if (runMode === 'stop') { stopRun(); return; }
+  if (runMode === 'stop') { if (dshIsRunning()) { stopDsh(); return; } stopRun(); return; }
   startRun();
 }
 
@@ -1286,7 +1321,6 @@ function toggleDshMode(on) {
   const q = document.querySelector('#question');
   if (p) p.classList.toggle('on', dshMode);
   document.body.classList.toggle('dsh-mode', dshMode);
-  updateDshStop();
   dshAttachTaskId = dshMode ? currentTaskId() : null;
   if (dshAttachTaskId) dshCurrent = null;
   if (q) q.placeholder = dshMode
@@ -1315,14 +1349,10 @@ function dshEventHtml(ev) {
   }
   return '';
 }
-function updateDshStop() {
-  const b = document.querySelector('#dsh-stop');
-  if (!b) return;
-  let running = !!(dshCurrent && dshCurrent.status === 'running');
-  Object.keys(taskDsh).forEach(function (k) {
-    if (taskDsh[k] && taskDsh[k].status === 'running') running = true;
-  });
-  b.classList.toggle('hidden', !(dshMode && running));
+function scrollDshBottom() {
+  const el = document.querySelector('#runlog-body');
+  if (!el) return;
+  requestAnimationFrame(function () { el.scrollTop = el.scrollHeight; });
 }
 
 function renderDshView() {
@@ -1350,7 +1380,7 @@ function renderDshView() {
   if (c.status === 'running') inner += '<div class="rl-summary">Agent 运行中…</div>';
   inner += '</div>';
   body.innerHTML = inner;
-  updateDshStop();
+  scrollDshBottom();
 } 
 async function openDshArtifact(id) {
   const r = await api('/api/dsh/artifacts/' + encodeURIComponent(id));
@@ -1414,6 +1444,7 @@ async function startDshRun(question) {
   }
   const btn = document.querySelector('#run-btn');
   if (btn) btn.disabled = true;
+  setRunBtn('stop');
   const obj = target || dshCurrent;
   const redraw = () => { if (target) renderTasks(); else renderDshView(); };
   let result = null, errMsg = '', n = 0;
@@ -1423,7 +1454,8 @@ async function startDshRun(question) {
       session_id: target ? target.session : dshSession,
       attach_task_id: attach || '',
       effort: (document.querySelector('#dsh-effort') || {}).value || '',
-      permission: (document.querySelector('#dsh-perm') || {}).value || 'workspace-write'
+      permission: (document.querySelector('#dsh-perm') || {}).value || 'workspace-write',
+      model: (document.querySelector('#dsh-model') || {}).value || 'deepseek-flash'
     }, function (m) {
       if (m.type === 'event' && m.event) {
         obj.events.push(m.event);
@@ -1455,6 +1487,7 @@ async function startDshRun(question) {
     if (target) { persistTaskDsh(); renderTasks(); } else renderDshView();
   } finally {
     if (btn) btn.disabled = false;
+    setRunBtn('send');
   }
 }
 async function submitAgentTaskFromComposer(question) {
@@ -3406,6 +3439,7 @@ function showAutoDsh(question, events, status) {
     status: status || 'running' };
   closeSheet();
   closeDrawer();
+  setRunBtn(status === 'running' ? 'stop' : 'send');
   renderDshView();
 }
 
@@ -3421,7 +3455,7 @@ async function autoFixProposals() {
   ], 'running');
   let final = null, errMsg = '';
   try {
-    await streamPost('/api/dsh/proposals/autofix/stream', {}, function (m) {
+    await streamPost('/api/dsh/proposals/autofix/stream', {model: (document.querySelector('#dsh-model') || {}).value || 'deepseek-flash'}, function (m) {
       if (!dshCurrent) return;
       if (m.type === 'event' && m.event) {
         dshCurrent.events.push(m.event);
@@ -3443,6 +3477,7 @@ async function autoFixProposals() {
     dshCurrent.status = final.ok ? 'done' : 'error';
     dshCurrent.question = '自动修复提案 · 完成';
     renderDshView();
+    setRunBtn('send');
     await loadAgent(); loadGitStatus();
     const applied = (final.proposals || []).filter(p => p.status === 'applied');
     const withChecks = applied.find(p => ((p.acceptance || {}).checks || []).length);
@@ -3453,6 +3488,7 @@ async function autoFixProposals() {
       dshCurrent.status = 'error';
       renderDshView();
     }
+    setRunBtn('send');
   }
 }
 
@@ -3474,7 +3510,8 @@ async function autoAgent(stage) {
   ], 'running');
   let result = null, errMsg = '';
   try {
-    await streamPost('/api/agent/auto/stream', {stage: stage}, function (m) {
+    await streamPost('/api/agent/auto/stream', {stage: stage,
+      model: (document.querySelector('#dsh-model') || {}).value || 'deepseek-flash'}, function (m) {
       if (!dshCurrent) return;
       if (m.type === 'stage') {
         dshCurrent.events.push({type:'text', text:'── 阶段：' + m.stage + ' ──'});
@@ -3524,6 +3561,7 @@ async function autoAgent(stage) {
     }
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = oldText; }
+    setRunBtn('send');
   }
 }
 
@@ -4046,32 +4084,7 @@ function init() {
   if (_agentAuto) _agentAuto.addEventListener('click', () => autoAgent('all'));
   const _dshPill = $('#pill-dsh');
   if (_dshPill) _dshPill.addEventListener('click', () => toggleDshMode(!dshMode));
-  const _dshStop = $('#dsh-stop');
-  if (_dshStop) _dshStop.addEventListener('click', async () => {
-    try {
-      const r = await api('/api/dsh/cancel', {method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
-      if (dshCurrent) {
-        dshCurrent.status = 'error';
-        dshCurrent.events = dshCurrent.events || [];
-        dshCurrent.events.push({type:'text', text:'已请求终止 DSH 对话（' + (r.cancelled || 0) + ' 个进程）'});
-        renderDshView();
-      }
-      Object.keys(taskDsh).forEach(function (k) {
-        if (taskDsh[k] && taskDsh[k].status === 'running') {
-          taskDsh[k].status = 'error';
-          taskDsh[k].events = taskDsh[k].events || [];
-          taskDsh[k].events.push({type:'text', text:'已请求终止 DSH 对话'});
-        }
-      });
-      persistTaskDsh(); renderTasks();
-    } catch (e) {
-      if (dshCurrent) {
-        dshCurrent.events.push({type:'text', text:'终止失败：' + e.message});
-        renderDshView();
-      }
-    }
-  });
-  [['dsh-effort', 'dgtf_dsh_effort'], ['dsh-perm', 'dgtf_dsh_perm']].forEach(function (pair) {
+  [['dsh-effort', 'dgtf_dsh_effort'], ['dsh-perm', 'dgtf_dsh_perm'], ['dsh-model', 'dgtf_dsh_model']].forEach(function (pair) {
     const el = document.getElementById(pair[0]);
     if (!el) return;
     try { const saved = localStorage.getItem(pair[1]); if (saved !== null) el.value = saved; } catch (_) {}
@@ -4166,6 +4179,7 @@ function init() {
       dshCurrent.status = ((final.proposal || {}).status === 'applied') ? 'done' : 'error';
       dshCurrent.question = '修复提案 · ' + id + ' · ' + ((final.proposal || {}).status || '');
       renderDshView();
+      setRunBtn('send');
       loadAgent(); loadGitStatus();
     } catch (err) {
       if (dshCurrent) {

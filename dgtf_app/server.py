@@ -424,7 +424,7 @@ def _read_dsh_artifact(sid):
 def _run_dsh_agent(task: str, sid: str = "", timeout: int = 300,
                    auto_repair: bool = False, effort: str = "",
                    permission: str = "", attach_task_id: str = "",
-                   emit=None) -> dict:
+                   model: str = "", emit=None) -> dict:
     """调用本机 DeepSeek Harness headless Agent；返回 NDJSON 事件映射。"""
     import os as _os
     import subprocess as _sp
@@ -476,7 +476,9 @@ def _run_dsh_agent(task: str, sid: str = "", timeout: int = 300,
              "python fast_gate.py 并保证通过；不要执行 git add / git commit / push，"
              "由工作台统一提交本次变更。"
              if auto_repair else "只读模式：不要修改项目文件。")
-    auth = ("你在元DGTF项目根目录：%s。你有权读取该工作区内的项目文件、"
+    auth = ("你在元DGTF项目根目录：%s。请始终使用简体中文回答，"
+            "包括思考摘要、解释和最终答复；代码/命令保持原文。"
+            "你有权读取该工作区内的项目文件、"
             "outputs/ 产物、docs/、dgtf_memory/、app 导入文件与配置；"
             "%s 不要泄露密钥。%s\n用户请求：%s"
             % (root, _mode, _extra, task))
@@ -488,7 +490,7 @@ def _run_dsh_agent(task: str, sid: str = "", timeout: int = 300,
                 "  name: \"@deepseek-ai/dsh-agent-default-model\"",
                 "  config:",
                 "    provider: deepseek-official",
-                "    model: deepseek-flash",
+                "    model: " + (str(model or "").strip() or "deepseek-flash"),
                 "    reasoningEffort: " + _eff]
     if _perm:
         _pl += ["- id: permission",
@@ -618,7 +620,7 @@ def _agent_queue_snapshot():
              "severity": str(x.get("severity") or "")} for x in rows[-15:]]
 
 
-def _auto_submit_task(emit=None):
+def _auto_submit_task(emit=None, model=""):
     """DSH Agent 审阅队列并自动提交一条用户任务；解析失败时退回一条安全任务。"""
     queue = _agent_queue_snapshot()
     prompt = ("你是元DGTF Agent 面板操作员。审阅下面的任务队列，"
@@ -626,7 +628,7 @@ def _auto_submit_task(emit=None):
               '{"title":"...","detail":"...","severity":"med"}。'
               "队列：" + json.dumps(queue, ensure_ascii=False)[:3000])
     res = _run_dsh_agent(prompt, "", timeout=180, auto_repair=False,
-                         emit=emit)
+                         emit=emit, model=model)
     obj = _extract_json(res.get("text") or "")
     title = str(obj.get("title") or "").strip()
     detail = str(obj.get("detail") or "").strip()
@@ -645,7 +647,7 @@ def _auto_submit_task(emit=None):
             "session_id": res.get("session_id") or ""}
 
 
-def _auto_proposal(task_text="", title="", emit=None):
+def _auto_proposal(task_text="", title="", emit=None, model=""):
     import time as _tm
     import sys as _sys
     _sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -667,7 +669,7 @@ def _auto_proposal(task_text="", title="", emit=None):
               "任务：" + str(t.get("title") or "") + "。详情："
               + str(t.get("detail") or "")[:1200])
     res = _run_dsh_agent(prompt, "", timeout=300, auto_repair=False,
-                         emit=emit)
+                         emit=emit, model=model)
     pid = "prop-" + str(int(_tm.time() * 1000))
     prop = _save_proposal({"id": pid, "ts": _tm.time(), "task": t,
                            "plan": str(res.get("text") or ""),
@@ -740,7 +742,7 @@ def _save_repair_artifact(prop, acceptance, version):
     return str(d)
 
 
-def _auto_cycle_all(emit=None):
+def _auto_cycle_all(emit=None, model=""):
     """全队列闭环：处理所有任务、跑完消费者、为所有任务批量自审并落提案。"""
     import json as _json
     import sys as _sys
@@ -775,7 +777,7 @@ def _auto_cycle_all(emit=None):
                   '{"proposals":[{"task_id":"...","plan":"..."}]}。'
                   "任务列表：" + _json.dumps(compact, ensure_ascii=False)[:24000])
         res = _run_dsh_agent(prompt, "", timeout=300, auto_repair=False,
-                             emit=emit)
+                             emit=emit, model=model)
         audit_text = str(res.get("text") or "")
         audit_ok = bool(res.get("ok"))
         obj = _extract_json(audit_text)
@@ -1347,6 +1349,7 @@ class Handler(BaseHTTPRequestHandler):
                               + "。修改后运行 fast_gate.py，通过后只提交本次变更，不 push。")
                     res = _run_dsh_agent(prompt, str(prop.get("session_id") or ""),
                                          timeout=600, auto_repair=True,
+                                         model=str(data.get("model") or ""),
                                          emit=_emit_fix)
                     repair = res.get("repair") or {}
                     prop["approver"] = "dsh_auto"
@@ -1494,6 +1497,7 @@ class Handler(BaseHTTPRequestHandler):
                     effort=str(data.get("effort") or ""),
                     permission=str(data.get("permission") or ""),
                     attach_task_id=str(data.get("attach_task_id") or ""),
+                    model=str(data.get("model") or ""),
                     emit=_emit_direct)
                 self._stream_write({"type": "result", "result": res})
             except Exception as exc:
@@ -1515,12 +1519,14 @@ class Handler(BaseHTTPRequestHandler):
 
             try:
                 if stage == "all":
-                    out.update(_auto_cycle_all(emit=_emit_stage("all")))
+                    out.update(_auto_cycle_all(emit=_emit_stage("all"),
+                                               model=str(data.get("model") or "")))
                 else:
                     import sys as _sys
                     _sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
                     if stage == "task":
-                        out["task"] = _auto_submit_task(emit=_emit_stage("task"))
+                        out["task"] = _auto_submit_task(emit=_emit_stage("task"),
+                                                    model=str(data.get("model") or ""))
                         out["ok"] = bool(out["task"].get("ok"))
                     if stage == "consumer":
                         _emit_stage("consumer")
@@ -1529,7 +1535,8 @@ class Handler(BaseHTTPRequestHandler):
                     if stage == "proposal":
                         out["proposal"] = _auto_proposal(
                             str(data.get("task_text") or ""), "",
-                            emit=_emit_stage("proposal"))
+                            emit=_emit_stage("proposal"),
+                            model=str(data.get("model") or ""))
                         out["ok"] = bool((out["proposal"] or {}).get("ok"))
                 self._stream_write({"type": "result", "result": out})
             except Exception as exc:
@@ -1566,7 +1573,8 @@ class Handler(BaseHTTPRequestHandler):
                                      auto_repair=bool(data.get("auto_repair")),
                                      effort=str(data.get("effort") or ""),
                                      permission=str(data.get("permission") or ""),
-                                     attach_task_id=str(data.get("attach_task_id") or ""))
+                                     attach_task_id=str(data.get("attach_task_id") or ""),
+                                     model=str(data.get("model") or ""))
                 return self._json(res)
             except Exception as exc:
                 return self._json({"error": str(exc)}, 500)
@@ -1588,10 +1596,10 @@ class Handler(BaseHTTPRequestHandler):
                 import sys as _sys
                 _sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
                 if stage == "all":
-                    out.update(_auto_cycle_all())
+                    out.update(_auto_cycle_all(model=str(data.get("model") or "")))
                 else:
                     if stage == "task":
-                        out["task"] = _auto_submit_task()
+                        out["task"] = _auto_submit_task(model=str(data.get("model") or ""))
                         out["ok"] = bool(out["task"].get("ok"))
                     if stage == "consumer":
                         from dgtf_v2.agent_worker import run_once, write_proposals
@@ -1599,7 +1607,8 @@ class Handler(BaseHTTPRequestHandler):
                                            "proposals": write_proposals()}
                     if stage == "proposal":
                         out["proposal"] = _auto_proposal(
-                            str(data.get("task_text") or ""), "")
+                            str(data.get("task_text") or ""), "",
+                            model=str(data.get("model") or ""))
                         out["ok"] = bool((out["proposal"] or {}).get("ok"))
                 return self._json(out)
             except Exception as exc:

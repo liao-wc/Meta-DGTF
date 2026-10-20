@@ -1448,8 +1448,6 @@ select:focus{border-color:var(--accent)}
 /* GitHub Desktop + DSH Agent 专属控制 */
 .gh-bar{margin-top:8px}
 .dsh-ctl{display:none}
-.dsh-stop.hidden{display:none}
-.dsh-stop{color:#FF7A6B;border-color:rgba(255,107,107,.4)}
 body.dsh-mode .dsh-ctl{display:inline-flex;align-items:center}
 #dsh-config-box.hidden{display:none}
 .dsh-sel{background:rgba(0,0,0,.22);border:1px solid var(--hair);color:var(--t2);
