@@ -258,3 +258,58 @@ ge
 3. 风险/局限：综述性工作缺乏统一实验基准；故障归因依赖事后标注，因果性难验证；自进化可能放大错误传播；去中心化负载与专长平衡在异构池中稳定性存疑。
 
 ## 联网技术知识补丁 2026-10-20 22:30:25
+
+## 联网技术知识补丁 2026-10-20 22:37:17
+- [Release v0.2.1-rc.1 · deepseek-ai/deepseek-harness](https://github.com/deepseek-ai/deepseek-harness/releases/tag/dsh-v0.2.1-rc.1) — @tianyicui, @turtle2099
+...
+- 优化含超长源码行的文件预览性能，超长行使用无高亮文本展示，普通行继续进行语法高亮。
+...
+- Office 文档任务按需加载编辑、渲染和导出指引，减少简单修改及 PDF 导出后的无关检查与预览，并避免在回复中引用已删除的预览图。 @yudshj
+- DeepSeek 账号的模型列表随账号可用模型更新，并隐藏当前客户端版本不支持的模型。
+
+  - 来源=official；发布=2026-10-16T16:00:00+；置信=0.95
+  - 中文注释：**1. 核心贡献/结论**
+DeepSeek Harness v0.2.1-rc.1 为 0.2.1 系列首个候选版本，汇总自 v0.2.0-rc.2 以来的主要变更：插件生态（自定义索引源、Agent 创建插件、热重载、极简模式、Session 状态接口）、实验性 Claude Code Mods 兼容层、开发者工具包、思考过程机器翻译、Git Worktrees 插件、子智能体独立 Agent Preset 与委派层级提示、SSH helper 运行时、密钥脱敏、PTC Mode in-memory 执行环境等，并修复大量稳定性与跨平台问题。
+
+**2. 可迁移点**
+- 多智能体：子智能体独立 Preset 统一角色/工具；委派层数上限提前提示、等待期不消耗执行轮次。
+- 自进化：Agent 创建插件入口（草稿→创造模式）；插件热重载与依赖同步。
+- 知识管理：Session 状态记录接口、共享 AGENTS.md 全局指令、会话标题同主题保留。
+- 检索增强：自定义插件索引源发现安装；组合包显示代码来源与版本。
+
+**3. 风险或局限**
+Mods 兼容层仅验证 API 子集，非完整兼容；多项功能标注实验性；热重载失败需重启；新版本冷却策略可能装旧版；密钥脱敏依赖识别准确性。
+- [deepseek-harness（deepseek-ai/deepseek-harness）](https://aihub.caict.ac.cn/codes/deepseek-ai/deepseek-harness#1) — # deepseek-harness（deepseek-ai/deepseek-harness）
+
+deepseek-harness是托管在鲸智社区的代码仓库。
+
+deepseek-harness是 DeepSeek AI 开源的智能体开发与运行框架，面向复杂 Agent 应用的构建、扩展和交互执行。其核心采用“一切皆插件（Everything-is-a-Plugin）”的架构思想，并由 Cord
+  - 来源=other；发布=2026-08-31T16:00:00+；置信=0.72
+  - 中文注释：**1. 核心贡献/结论**
+deepseek-harness（dsh）是 DeepSeek AI 开源的 Agent 开发与运行框架，采用“一切皆插件（Everything-is-a-Plugin）”架构，底层由 Cordis 框架支撑，实现模型、工具、运行环境等能力的模块化组合与扩展。提供 Web UI，支持 npm 快速启动（npx @deepseek-ai/dsh web）及源码构建，Apache-2.0 许可。当前为 developer preview，迭代快，存在破坏性兼容变更。
+
+**2. 可迁移点**
+- 多智能体：插件化能力注册便于工具/环境按需装配，适合多 Agent 工作流编排。
+- 自进化：模块可替换、可扩展，利于能力迭代与实验性升级。
+- 知识管理：能力以插件形式沉淀，形成可复用组件库。
+- 检索增强：工具插件化便于接入检索/外部服务，组合成 RAG 链路。
+
+**3. 风险或局限**
+开发者预览阶段，API/接口不稳定；资料未披露性能、安全与评测数据；依赖 Cordis 范式，学习与迁移成本存在；安全须知需先行评估。
+- [黑鲸出水 DeepSeek Harness开发者预览版上线](https://m.cnstock.com/commonDetail/759632) — 黑鲸出水 DeepSeek Harness开发者预览版上线
+
+来源：上海证券报·中国证券网作者：罗茂林快讯|2026-08-13 21:27
+
+上证报中国证券网讯（记者 罗茂林）8月13日晚间，DeepSeek Harness团队通过官方公众号宣布，DeepSeek Harness的开发者预览版（v0.1版本）正式面向全球开发者开放测试，并同步以MIT协议开放源代码。这是DeepSeek在智能体（
+  - 来源=other；发布=2026-08-12T16:00:00+；置信=0.72
+  - 中文注释：**1. 核心贡献/结论**
+DeepSeek发布开源智能体框架Harness开发者预览版（v0.1，MIT协议），公式“Model + Harness = Agent”：基座模型为“大脑”，Harness为“执行神经系统”，负责工具调度、任务状态管理与执行闭环。核心设计“一切皆插件”，基于具时空可组合性的Cordis插件系统，模型/工具/技能/会话/沙箱/存储/循环/调度/UI均可替换重组，无需改源码。提供标准、PTC（程序化工具调用）、极简、创造四种模式；采用append-only会话日志，完整记录提示词、思维链、工具调用与子Agent调度，支持Trajectory视图追溯及恢复、分叉、检索、回放。对标OpenAI Codex与Claude Code，主打编程与办公生产力。
+
+**2. 可迁移点**
+- 多智能体：子Agent调度与append-only轨迹记录，便于编排与审计。
+- 自进化：插件热替换、会话分叉回放，支撑能力迭代与经验复用。
+- 知识管理：全量轨迹可检索回放，形成可追溯记忆。
+- 检索增强：工具调用结果结构化留存，利于RAG溯源。
+
+**3. 风险/局限**
+预览版成熟度未知；插件组合带来兼容与安全风险；日志全量留存涉隐私与成本；对标产品竞争激烈，生态待验证。
