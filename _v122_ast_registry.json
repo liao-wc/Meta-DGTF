@@ -1,9 +1,9 @@
 {
- "added": 174,
+ "added": 355,
  "baseline": "_baseline_v12177.py",
- "current": "元DGTF-V1.23.63.py",
+ "current": "元DGTF-V1.25.0.py",
  "n_symbols_baseline": 290,
- "n_symbols_current": 589,
+ "n_symbols_current": 644,
  "registry": {
   "AnchorRetriever": {
    "phase": "4",
@@ -1304,6 +1304,166 @@
   "_wall_clock_over": {
    "phase": "54",
    "reason": "墙钟预算唯一判据（serial 层间 + 三个并行单层执行器共用）"
+  },
+  "_token_budget_over": {
+   "phase": "F",
+   "reason": "总 token 软预算判定（层/圈边界优雅停；与 max_calls 互补）"
+  },
+  "ArgumentationFramework": {
+   "phase": "F",
+   "reason": "F4 论证框架：grounded 扩展 + 负担排序 + 弱连通分量"
+  },
+  "attackers": {
+   "phase": "F",
+   "reason": "F4 取某论证的攻击者集合"
+  },
+  "burdens": {
+   "phase": "F",
+   "reason": "F4 负担式排序（阻尼迭代求不动点）"
+  },
+  "components": {
+   "phase": "F",
+   "reason": "F4 攻击图的弱连通分量"
+  },
+  "defeated": {
+   "phase": "F",
+   "reason": "F4 不在 grounded 扩展里的论证"
+  },
+  "grounded_extension": {
+   "phase": "F",
+   "reason": "F4 grounded 语义不动点"
+  },
+  "find": {
+   "phase": "F",
+   "reason": "F4 连通分量内部辅助（并查集）"
+  },
+  "_strength": {
+   "phase": "F",
+   "reason": "F4 负担并列时的证据强度破平"
+  },
+  "_bocpd_pred": {
+   "phase": "F",
+   "reason": "F3 NIG 共轭的 Student-t 预测密度"
+  },
+  "bocpd_run": {
+   "phase": "F",
+   "reason": "F3 贝叶斯在线变点检测（run-length 后验）"
+  },
+  "_ev_log_wealth": {
+   "phase": "F",
+   "reason": "F1 e-process 对数财富的网格混合"
+  },
+  "evalue_bernoulli": {
+   "phase": "F",
+   "reason": "F1 任意停时 e-value（0/1 序列）"
+  },
+  "anytime_decided_e": {
+   "phase": "F",
+   "reason": "F1 e-process 版「多数已确立」停止判据"
+  },
+  "anytime_decided": {
+   "phase": "F",
+   "reason": "F1 停止判据分派：hoeffding（默认）/ evalue"
+  },
+  "conformal_quantile": {
+   "phase": "F",
+   "reason": "F2 保形分位数（有限样本修正）"
+  },
+  "conformal_pvalue": {
+   "phase": "F",
+   "reason": "F2 保形 p 值"
+  },
+  "conformal_prediction_set": {
+   "phase": "F",
+   "reason": "F2 保形预测集（多标签/空集=弃权）"
+  },
+  "arguments_from_playbook": {
+   "phase": "F",
+   "reason": "F4 playbook 条目 → 论证图"
+  },
+  "resolve_playbook_conflicts": {
+   "phase": "F",
+   "reason": "F4 只标不删的冲突裁决（并列保持 undecided）"
+  },
+  "_eml_pid_alive": {
+   "phase": "F",
+   "reason": "EML 锁：陈旧锁回收前的活进程判定"
+  },
+  "_retry_delay": {
+   "phase": "F",
+   "reason": "LLM 重试：指数退避 + 抖动 + Retry-After"
+  },
+  "_retryable": {
+   "phase": "F",
+   "reason": "LLM 重试：错误分类（4xx 除 408/409/429 不重试）"
+  },
+  "_quality_report": {
+   "phase": "F",
+   "reason": "质量闭环读数：覆盖率/三态/决策完整度/各层质量线索（只读，不改输出）"
+  },
+  "_repair_json": {
+   "phase": "F",
+   "reason": "严格 JSON 解析失败时一次低温自修复：只修格式、不改语义；成本计 ops"
+  },
+  "anytime_stagnant_decided": {
+   "phase": "F",
+   "reason": "anytime-valid 停滞判据：生长序列取反后判「多数不再长」，纠 v1.23.63 判据反向"
+  },
+  "stage_stats": {
+   "phase": "F",
+   "reason": "分环节成本读数：按 stage 汇总 calls/tokens/ms，线程安全"
+  },
+  "_l0_v2_guidance_block": {
+   "phase": "5",
+   "reason": "L0-v2 下一圈方向提示注入；actions.l0_v2_curate 默认关"
+  },
+  "_build_decision_trace": {
+   "phase": "V2",
+   "reason": "统一决策回执：问题类型/检索/四层/一致性/停止，md与packed共用"
+  },
+  "_dates": {
+   "phase": "V2",
+   "reason": "决策回执里的日期归一化提取（只读比较，不改结论）"
+  },
+  "_sync_config": {
+   "phase": "V2",
+   "reason": "ControlSurface 配置同步（EML config_hint 细粒度微调）"
+  },
+  "_eml_store": {
+   "phase": "V2",
+   "reason": "EML 目录唯一解析实例包装（避免新增字面量破坏单点判据）"
+  },
+  "_local_date": {
+   "phase": "V1.26",
+   "reason": "官方检索日期转 Asia/Shanghai 显示（UTC 16:00=次日）"
+  },
+  "_ld": {
+   "phase": "V1.26",
+   "reason": "事实预检日期转北京时间（局部辅助）"
+  },
+  "dedupe_markdown": {
+   "phase": "V1.26",
+   "reason": "MD 重复长段落/表格行去重"
+  },
+  "_bg": {
+   "phase": "V1.28",
+   "reason": "MD 语义近似去重 bigram 辅助"
+  },
+  "fetch": {
+   "phase": "V1.29",
+   "reason": "DeepSeek Fetch 客户端"
+  },
+  "_tool_preflight": {
+   "phase": "V1.30",
+   "reason": "Tool Calls 事实预检"
+  },
+  "_exec": {
+   "phase": "V1.30",
+   "reason": "Tool Calls executor"
+  },
+  "_reconcile_input_sanity": {
+   "phase": "input_sanity",
+   "reason": "input sanity reconcile: do not assert nonexistent without evidence"
   }
  },
  "removed": 0
