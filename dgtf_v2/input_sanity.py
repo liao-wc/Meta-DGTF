@@ -16,7 +16,10 @@
    - 官方证据命中该记号 ⇒ 标记 resolved，从告警区移除；
    - 官方证据明确否认 ⇒ 改写为「官方源对该型号的命名/存在性有冲突」；
    - 有官方检索但未命中 ⇒ 只写「检索到的官方源中未见该记号，存在性待核」，
-     **仍然不是「不存在」**。
+     **仍然不是「不存在」**；
+   - 官方证据缺失但 fact_contract 已确认且 ``answer_hit`` 为真 ⇒ 按提案兜底清除。
+3. ``negative_gate`` 出口互斥闸：对账后仍含否定断言时强制中性化；``term``
+   本身是存在性否定时整条剔除并留痕，避免它绕过 ``why`` 的降级。
 
 这样「预检没认出」最多是一条待核提示，不会在报告里和「官方事实答案」
 同时出现、互相打架。
@@ -29,9 +32,13 @@ from typing import Any
 # 存在性否定词：出现这些词就说明检查者在没有证据地下结论。
 NEGATIVE_CLAIM_RE = re.compile(
     r"不存在|并不存在|不存在该|虚构|捏造|伪造|子虚乌有|"
-    r"查无此(?:物|型号|人)|非真实|假的|没有这个(?:型号|东西)|"
-    r"未发布|尚未发布|没有发布|未推出|尚未推出|未上线"
+    r"查无此(?:物|型号|人)|非真实|不是真实|假的|没有这个(?:型号|东西)|"
+    r"未发布|尚未发布|没有发布|未推出|尚未推出|未上线|"
+    r"虚假|不实|杜撰|臆造|无此型号|根本没有|压根没有|并无此"
 )
+
+# 规则名：既写进产物，也用于出口互斥闸。
+NEGATIVE_CLAIM_RULE = "否定断言需证据"
 
 # 中性措辞：只表达「本地先验没认出」，不表达「不存在」。
 NEUTRAL_WHY = "本地先验未识别，待证据核验"
@@ -83,36 +90,66 @@ def is_official_item(item: dict) -> bool:
 
 
 def official_evidence(packed: Any) -> list:
-    """从打包产物里收集官方证据（web_results / web_arbitration）。"""
+    """从打包产物里收集官方证据。
+
+    兼容旧产物的 ``pools[*].web_results`` / ``web_arbitration``，也兼容
+    只把证据挂在 ``views``、``fact_contract`` 或顶层的路径。检索后对账
+    不能因为产物形状不同就漏掉官方条目。
+    """
     if not isinstance(packed, dict):
         return []
     out = []
     seen = set()
+
+    def _collect(items: Any) -> None:
+        for item in (items or []):
+            if not is_official_item(item):
+                continue
+            text = _item_text(item)
+            fp = (str(item.get("id") or ""), _norm(text)[:160])
+            if fp in seen:
+                continue
+            seen.add(fp)
+            out.append(item)
+
     for pool in (packed.get("pools") or {}).values():
         if not isinstance(pool, dict):
             continue
         for key in ("web_results", "web_arbitration"):
-            for item in (pool.get(key) or []):
-                if not is_official_item(item):
-                    continue
-                text = _item_text(item)
-                fp = (str(item.get("id") or ""), _norm(text)[:160])
-                if fp in seen:
-                    continue
-                seen.add(fp)
-                out.append(item)
+            _collect(pool.get(key))
+    for view in (packed.get("views") or {}).values():
+        if not isinstance(view, dict):
+            continue
+        for key in ("web_results", "web_arbitration", "evidence",
+                    "external_evidence"):
+            _collect(view.get(key))
+    fc = packed.get("fact_contract")
+    if isinstance(fc, dict):
+        for key in ("web_results", "web_arbitration", "evidence",
+                    "official_evidence"):
+            _collect(fc.get(key))
+    for key in ("web_results", "web_arbitration", "evidence",
+                "official_evidence"):
+        _collect(packed.get(key))
     return out
 
 
 def _term_in_text(term: str, text: str) -> bool:
-    """记号是否出现在证据文本里（大小写不敏感，允许空白差异）。"""
+    """记号是否出现在证据文本里（大小写不敏感，允许空白差异）。
+
+    长记号/含符号记号走归一化子串；短 ASCII 记号（如 PN、V4）走词边界，
+    避免 ``PN`` 误命中 ``PNP``，同时允许 ``V4`` 命中 ``V4.1``。
+    """
     t = str(term or "").strip()
     if not t:
         return False
-    if _norm(t) and _norm(t) in _norm(text):
-        return True
-    # 短记号（如 PN）按词边界匹配，避免命中 token 中间。
-    pat = r"(?<![\w.\-])" + re.escape(t) + r"(?![\w.\-])"
+    nt = _norm(t)
+    if nt and (len(nt) >= 3 or not re.fullmatch(r"[a-z0-9]+", nt)):
+        if nt in _norm(text):
+            return True
+    # 短记号（如 PN）按词边界匹配，避免命中 token 中间；
+    # 点号不算边界，所以 V4 仍能命中 V4.1。
+    pat = r"(?<![A-Za-z0-9_\-])" + re.escape(t) + r"(?![A-Za-z0-9_\-])"
     return re.search(pat, str(text or ""), re.I) is not None
 
 
@@ -145,10 +182,17 @@ def neutralize_negative_claims(sanity: Any) -> dict:
         return {}
     out = dict(sanity)
     issues = []
+    dropped = []
     for raw in (sanity.get("issues") or []):
         if not isinstance(raw, dict):
             continue
         it = dict(raw)
+        term = str(it.get("term") or "")
+        # term 本身若就是「不存在的 X」，渲染出来仍是一条存在性否定。
+        # 这种 issue 形状不合法，整条剔除并留痕，避免它绕过 why 的降级。
+        if term and NEGATIVE_CLAIM_RE.search(term):
+            dropped.append(term[:40])
+            continue
         why = str(it.get("why") or "")
         if NEGATIVE_CLAIM_RE.search(why):
             it["why"] = NEUTRAL_WHY
@@ -161,9 +205,12 @@ def neutralize_negative_claims(sanity: Any) -> dict:
         issues.append(it)
     out["issues"] = issues
     guard = dict(out.get("negative_guard") or {})
-    guard["rule"] = "否定断言需证据"
+    guard["rule"] = NEGATIVE_CLAIM_RULE
     guard["rewritten"] = sum(
         1 for it in issues if it.get("negative_claim_rewritten"))
+    if dropped:
+        guard["term_dropped"] = len(dropped)
+        guard["dropped_terms"] = dropped[:5]
     # note 也会被报告直接渲染（issues 为空时尤其显眼），不能漏。
     note = str(out.get("note") or "")
     if NEGATIVE_CLAIM_RE.search(note):
@@ -176,23 +223,46 @@ def neutralize_negative_claims(sanity: Any) -> dict:
 def reconcile(sanity: Any, packed: Any = None, ledger: Any = None) -> dict:
     """检索后对账：官方证据命中则清除 issue，未命中只写「未见」。
 
-    ``packed`` 用于读 pools 里的官方证据；``ledger`` 是 fact_contract 的
-    事实账本（``known`` / ``answer`` / ``source``）。两者都可缺省，
+    ``packed`` 用于读 pools/views 里的官方证据；``ledger`` 是 fact_contract
+    的事实账本（``known`` / ``answer`` / ``source``）。两者都可缺省，
     缺省时仍会执行「否定断言需证据」降级。
+
+    清除条件按提案分两级：
+    1. 官方证据命中该 term（官方条目正文含该型号）；
+    2. 官方证据缺失但 fact_contract 已确认且对应层 ``answer_hit`` 为真。
     """
     out = neutralize_negative_claims(sanity)
     issues = list(out.get("issues") or [])
-    if not issues:
-        return out
-
     official = official_evidence(packed)
     led = ledger if isinstance(ledger, dict) else {}
     known = bool(led.get("known")) and bool(str(led.get("answer") or "").strip())
     if not known and isinstance(packed, dict):
         fc_led = (packed.get("fact_contract") or {}).get("ledger") or {}
         if isinstance(fc_led, dict):
+            led = fc_led
             known = bool(fc_led.get("known")) and bool(
                 str(fc_led.get("answer") or "").strip())
+    ledger_q = str(led.get("question") or "")
+    if not ledger_q and isinstance(packed, dict):
+        ledger_q = str(packed.get("question") or "")
+    # fact_contract 的 answer_hit：四层产物里确实落下了事实答案。
+    fact_hit = bool(led.get("answer_hit"))
+    if not fact_hit and isinstance(packed, dict):
+        layers = ((packed.get("fact_contract") or {}).get("layers") or {})
+        fact_hit = any(isinstance(r, dict) and r.get("answer_hit")
+                       for r in layers.values())
+
+    def _gate() -> dict:
+        neg = negative_claims(out)
+        return {"rule": NEGATIVE_CLAIM_RULE, "ok": not neg,
+                "negative_n": len(neg), "fact_known": bool(known),
+                "official_n": len(official),
+                "fact_answer_hit": bool(fact_hit),
+                "checked_after_retrieval": bool(official or known)}
+
+    if not issues:
+        out["negative_gate"] = _gate()
+        return out
 
     kept = []
     resolved = list(out.get("resolved_issues") or [])
@@ -219,9 +289,21 @@ def reconcile(sanity: Any, packed: Any = None, ledger: Any = None) -> dict:
             it = dict(it)
             it["status"] = "resolved"
             it["resolved"] = True
+            it["resolved_by"] = "official_evidence"
             it["why"] = RESOLVED_WHY
             it["evidence_required"] = False
             it["evidence"] = [_evidence_ref(term, e) for e in hits[:3]]
+            resolved.append(it)
+            continue
+        # 官方证据没直接命中，但 fact_contract 已确认且答案确实落层：
+        # 按提案「或 answer_hit」清除，并把依据单独留痕。
+        if known and fact_hit and _term_in_text(term, ledger_q):
+            it = dict(it)
+            it["status"] = "resolved"
+            it["resolved"] = True
+            it["resolved_by"] = "fact_contract"
+            it["why"] = RESOLVED_WHY
+            it["evidence_required"] = False
             resolved.append(it)
             continue
         if official:
@@ -240,6 +322,7 @@ def reconcile(sanity: Any, packed: Any = None, ledger: Any = None) -> dict:
     out["reconciled"] = {
         "official_n": len(official),
         "fact_known": bool(known),
+        "fact_answer_hit": bool(fact_hit),
         "resolved_n": len(resolved),
         "conflict_n": int(conflict_n),
         "unverified_n": int(unresolved_n),
@@ -247,6 +330,20 @@ def reconcile(sanity: Any, packed: Any = None, ledger: Any = None) -> dict:
     }
     if resolved and not kept:
         out["note"] = "已与官方证据对账：先验未识别的记号已确认存在"
+    # ★ 出口互斥闸：同一产物不得同时留下「不存在/虚构」与事实答案。
+    #   正常路径在 neutralize 已降级；这里再兜一次，防止旧 packed/外部字段绕过。
+    gate = _gate()
+    if not gate["ok"]:
+        out["issues"] = [
+            it for it in (out.get("issues") or [])
+            if not (isinstance(it, dict) and (
+                NEGATIVE_CLAIM_RE.search(str(it.get("term") or ""))
+                or NEGATIVE_CLAIM_RE.search(str(it.get("why") or ""))))
+        ]
+        out["note"] = NEUTRAL_NOTE
+        gate = _gate()
+        gate["forced_neutral"] = True
+    out["negative_gate"] = gate
     return out
 
 
@@ -254,9 +351,16 @@ def negative_claims(sanity: Any) -> list:
     """返回仍含存在性否定的 issue / note 文本（供出口互斥闸与测试用）。"""
     if not isinstance(sanity, dict):
         return []
-    out = [str(it.get("why") or "") for it in (sanity.get("issues") or [])
-           if isinstance(it, dict)
-           and NEGATIVE_CLAIM_RE.search(str(it.get("why") or ""))]
+    out = []
+    for it in (sanity.get("issues") or []):
+        if not isinstance(it, dict):
+            continue
+        term = str(it.get("term") or "")
+        why = str(it.get("why") or "")
+        if NEGATIVE_CLAIM_RE.search(term):
+            out.append(term)
+        elif NEGATIVE_CLAIM_RE.search(why):
+            out.append(why)
     note = str(sanity.get("note") or "")
     if NEGATIVE_CLAIM_RE.search(note):
         out.append(note)
@@ -265,6 +369,7 @@ def negative_claims(sanity: Any) -> list:
 
 __all__ = [
     "NEGATIVE_CLAIM_RE",
+    "NEGATIVE_CLAIM_RULE",
     "NEUTRAL_WHY",
     "NEUTRAL_NOTE",
     "RETRIEVED_MISS_WHY",

@@ -2496,6 +2496,19 @@ spiral:
   # 【建议】0.6。【调严】0.5。
   qc_both_ratio: 0.7
 
+  # ---------- ★ [v1.31 结构复检] 立场同构 → 一次带提示重采样 ----------
+
+  # 【用途】候选 position 全同、且 why_position 的论据类型单一（或句式
+  #   模板重复率 ≥ 0.8）时，带「按证据逐条重判」提示再判一次。
+  # ★ 只重试、不改判定：quality flag 规则不变；重采样后结构没变多样
+  #   就保留原判，只留痕（view.structural_resample / structural_diversity）。
+  # 【建议】true（只在命中时多一次调用）；false 则只记录提示、不重采样。
+  structural_resample: true
+
+  # 【用途】每层最多重采样几次。按层计（pool 跨圈复用）。
+  # 【建议】1。【关闭】0（只提示不重采样）。
+  structural_resample_max: 1
+
   # ---------- ★ v1.21.56 配置化 · all 层漂移/自指标记 ----------
 
   # 【用途】all 层候选里跨层描述占比超过它 → all_candidate_drift。

@@ -11,6 +11,8 @@ CHECKS = [
     ("input_sanity", [sys.executable, "-c",
      "import dgtf_v2.tests_input_sanity as t;raise SystemExit(t.main())"]),
     ("facet", [sys.executable, "-c", "import dgtf_v2.tests_facet_ledger as t;raise SystemExit(t.main())"]),
+    ("structural_diversity", [sys.executable, "-c",
+     "import dgtf_v2.tests_structural_diversity as t;raise SystemExit(t.main())"]),
     ("self_feedback", [sys.executable, "-c", "import dgtf_v2.tests_self_feedback as t;raise SystemExit(t.test())"]),
     ("api_policy", [sys.executable, "-c", "import dgtf_v2.tests_api_policy as t;raise SystemExit(t.main())"]),
     ("vision", [sys.executable, "-c", "import dgtf_v2.tests_vision_input as t;raise SystemExit(t.main())"]),

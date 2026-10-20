@@ -8039,6 +8039,11 @@ class View:
     delivery_share: Optional[float] = None
 
     quality_flags: List[str] = field(default_factory=list)
+    #: 立场/论据类型分布与模板重复率（只读诊断，
+    #: 进 packed 与全量留痕；不参与判定）。
+    structural_diversity: dict = field(default_factory=dict)
+    #: 一次性结构复检重采样的留痕（before/after/是否采用/原因）。
+    structural_resample: dict = field(default_factory=dict)
     #: [AMP 窗口] 空集/过载的前置条件留痕（开关/阈值/依赖层/分布/原因码）。
     #: 与 quality_flags 同生命周期；进 packed 与全量留痕，便于事后定位。
     amp_diag: dict = field(default_factory=dict)
@@ -10767,6 +10772,10 @@ class DGTF:
         # 第 3 步：对偶判断
         if _action_on(self.config, "dual_judge"):
             candidates = self._dual_judge(candidates, inp, view.anchor, view)
+            # ★ 结构复检：只在「立场全同且论据模板单一」时重判一次；
+            #   只记录与重试，不改 `_quality_check` 的判定规则。
+            candidates = self._maybe_structural_resample(
+                candidates, inp, view)
         else:
             self.vp("   🔮 对偶判断：已关闭（全部候选 position=0）")
         view.candidates = [c.to_dict() for c in candidates]
@@ -11760,7 +11769,17 @@ class DGTF:
         return jmap
 
     def _dual_judge(self, candidates, inp, anchor,
-                    view: Optional[View] = None) -> List[Candidate]:
+                    view: Optional[View] = None,
+                    diversity_hint: str = "",
+                    allow_retry: bool = True) -> List[Candidate]:
+        """对候选逐条判位置。
+
+        ★ 结构复检：两个**可选**参数只服务「同构重采样」：
+          · `diversity_hint`：追加到 user 末尾的复检提示（默认空 ⇒
+            user 文本逐字不变）；
+          · `allow_retry`：命中率低时是否走「减半再判」的降级重试。
+            重采样只允许**一次** LLM 调用，传 False（默认 True ⇒ 旧行为）。
+        """
         if not candidates:
             return []
         cand_text = "\n".join(
@@ -11800,6 +11819,8 @@ class DGTF:
         user = (f"【处境】\n{self._judge_context(inp, anchor)}"
                 f"\n{dec_block}\n"
                 f"\n【候选列表】\n{cand_text}")
+        if diversity_hint:
+            user += "\n\n【结构复检】\n" + str(diversity_hint)
 
         n = len(candidates)
         jmap: Dict[int, dict] = {}
@@ -11812,7 +11833,7 @@ class DGTF:
         except Exception as e:
             logger.warning("对偶判断失败: %s", e)
 
-        if hit < n * 0.5:
+        if allow_retry and hit < n * 0.5:
             logger.warning("对偶判断命中 %d/%d，降级重试（候选减半）", hit, n)
             n2 = max(1, n // 2)
             sub_text = "\n".join(
@@ -11823,6 +11844,8 @@ class DGTF:
                 f"\n{dec_block}\n"
                 f"\n【候选列表（前 {n2} 条）】\n{sub_text}"
             )
+            if diversity_hint:
+                sub_user += "\n\n【结构复检】\n" + str(diversity_hint)
             try:
                 raw2 = self.llm.call(system, sub_user, 0.3, 3000,
                                       json_mode=True, stage="dual_judge")
@@ -11840,6 +11863,9 @@ class DGTF:
                         f"\n{dec_block}\n"
                         f"\n【候选列表（后半 {len(rest)} 条）】\n{rest_text}"
                     )
+                    if diversity_hint:
+                        rest_user += ("\n\n【结构复检】\n"
+                                      + str(diversity_hint))
                     try:
                         raw3 = self.llm.call(system, rest_user, 0.3, 3000,
                                               json_mode=True,
@@ -13771,6 +13797,150 @@ class DGTF:
             return 1.0
         return len(all_kw) / total
 
+    @staticmethod
+    def _structural_resample_hint(diag: dict) -> str:
+        """同构复检提示：只说“按证据重判”，不要求凑多样性。"""
+        _pos = ((diag.get("positions") or [{}])[0].get("value")
+                if diag.get("positions") else "?")
+        _arg = ((diag.get("argument_types") or [{}])[0].get("value")
+                if diag.get("argument_types") else "?")
+        return (
+            f"结构复检提示：上一轮 {int(diag.get('n') or 0)} 条候选的立场全部为"
+            f"「{_pos}」，主论据类型也集中在「{_arg}」"
+            f"（模板重复率 "
+            f"{float(diag.get('template_repeat_ratio') or 0):.0%}）。\n"
+            "请逐条重新判断位置，不要沿用上一轮结论：\n"
+            "- 只有证据确实指向同一端时，才继续填同一个位置；\n"
+            "- 若证据强弱不同、或两端都有支撑，按证据分别填 0 / 1 / both；\n"
+            "- why_position 写该条自己的证据，不要套用同一句式。\n"
+            "这是复检提示，不是要求你凑多样性；证据仍单一时照实填。"
+        )
+
+    def _maybe_structural_resample(self, candidates, inp,
+                                   view: View) -> List[Candidate]:
+        """立场/论据类型同构 → 最多一次带提示的复检重采样。
+
+        只做两件事：
+          1. 把结构诊断记进 `view.structural_diversity`；
+          2. 命中「立场全同 且（论据类型单一 或 模板重复高）」时，带提示
+             重判**一次**（`allow_retry=False`，不再嵌套降级重试）。
+        **不改判定逻辑**：`_quality_check` 的 flag 规则一行不动；重采样
+        只在结构确实变多样（且命中率够）时采用，否则原判逐字保留，只留痕。
+        """
+        from dgtf_v2.structural_diversity import (
+            analyze_structural_diversity)
+        rec = {
+            "triggered": False, "reason": "", "budget": 0, "used": 0,
+            "before": {}, "after": {}, "improved": False,
+            "adopted": False, "hint": "",
+        }
+        try:
+            cands = list(candidates or [])
+            if len(cands) < 2:
+                rec["reason"] = "candidates_lt_2"
+                return candidates
+            sp = getattr(self, "sp", None) or \
+                (self.config.get("spiral") or {})
+            rec["budget"] = int(_spiral_num(
+                self.config, "structural_resample_max", 1))
+            if not bool(sp.get("structural_resample", True)):
+                rec["reason"] = "switch_off"
+                view.structural_diversity = analyze_structural_diversity(
+                    [c.to_dict() for c in cands])
+                return candidates
+            if not _action_on(self.config, "dual_judge"):
+                rec["reason"] = "dual_judge_off"
+                return candidates
+            before = analyze_structural_diversity(
+                [c.to_dict() for c in cands])
+            rec["before"] = before
+            view.structural_diversity = before
+            if not before.get("homogeneous"):
+                rec["reason"] = "diversity_ok"
+                return candidates
+            _pool = getattr(inp, "pool", None)
+            used = int(getattr(
+                _pool, "_structural_resample_used", 0) or 0)
+            rec["used"] = used
+            hint = self._structural_resample_hint(before)
+            if rec["budget"] <= 0:
+                rec["reason"] = "budget_zero"
+                rec["hint"] = hint
+                self.vp("   🧬 结构复检：预算为 0，只提示不重采样")
+                return candidates
+            if used >= rec["budget"]:
+                rec["reason"] = "budget_exhausted"
+                rec["hint"] = hint
+                self.vp(f"   🧬 结构复检：本层已用 {used}/"
+                        f"{rec['budget']} 次，只提示不重采样")
+                return candidates
+            # 先记账再调用：即使调用失败，本层也最多触发一次。
+            if _pool is not None:
+                try:
+                    setattr(_pool, "_structural_resample_used", used + 1)
+                except Exception:
+                    pass
+            rec["used"] = used + 1
+            rec["triggered"] = True
+            rec["hint"] = hint
+            _release_before = 0
+            if _pool is not None:
+                try:
+                    _release_before = int(
+                        getattr(_pool, "_amp_both_release", 0) or 0)
+                except (TypeError, ValueError):
+                    _release_before = 0
+            # 在副本上重判：未改善时原候选一个字段都不动。
+            _copies = [Candidate(**asdict(c)) for c in cands]
+            retried = self._dual_judge(
+                _copies, inp, view.anchor, None,
+                diversity_hint=hint, allow_retry=False)
+            after = analyze_structural_diversity(
+                [c.to_dict() for c in (retried or [])])
+            rec["after"] = after
+            _min_hit = max(2, (len(cands) + 1) // 2)
+            _enough = int(after.get("why_present") or 0) >= _min_hit
+            improved = bool(_enough and after.get("n")) and (
+                after.get("position_kinds", 0) > before.get("position_kinds", 0)
+                or after.get("argument_kinds", 0) > before.get("argument_kinds", 0)
+                or float(after.get("template_repeat_ratio") or 0.0)
+                < float(before.get("template_repeat_ratio") or 0.0))
+            rec["improved"] = improved
+            if improved:
+                rec["adopted"] = True
+                view.structural_diversity = after
+                logger.info("structural_resample adopted %s",
+                            json.dumps(rec, ensure_ascii=False))
+                self.vp(
+                    f"   🧬 结构复检：立场 {before['position_kinds']}→"
+                    f"{after['position_kinds']} 种、论据 "
+                    f"{before['argument_kinds']}→"
+                    f"{after['argument_kinds']} 类，采用复检结果")
+                return retried
+            # 未改善：撤销 AMP 校准的副作用，保留原判，只留痕。
+            if _pool is not None and hasattr(_pool, "_amp_both_release"):
+                try:
+                    _pool._amp_both_release = _release_before
+                except Exception:
+                    pass
+            rec["reason"] = ("low_hit" if not _enough
+                             else "no_improvement")
+            logger.info("structural_resample not_adopted %s",
+                        json.dumps(rec, ensure_ascii=False))
+            self.vp(f"   🧬 结构复检：重采样未改善"
+                    f"（{'命中不足' if not _enough else '结构未变多样'}），"
+                    f"保留原判，仅留痕")
+            return cands
+        except Exception as e:
+            rec["reason"] = "error:%s" % type(e).__name__
+            logger.warning("结构复检失败（不阻断，保留原判）：%s", e)
+            return candidates
+        finally:
+            try:
+                view.structural_resample = rec
+            except Exception:
+                pass
+
     # ---------- position 诊断 ----------
     def _dump_position_diagnostic(self, view: View, anchor: str,
                                   round_no: int) -> Optional[Path]:
@@ -14058,11 +14228,33 @@ class DGTF:
         _qc_rr = _spiral_num(self.config, "qc_rephrase_ratio", 0.5)
         if _ing_rr >= _qc_rr:
             flags.append(f"ing_rephrased_direct({_ing_rr:.0%})")
+        # ★ 结构诊断始终落 view：即使不命中同构，也留下 n/立场种类/论据类型。
+        try:
+            from dgtf_v2.structural_diversity import analyze_structural_diversity
+            view.structural_diversity = analyze_structural_diversity(view.candidates)
+        except Exception as _e:
+            logger.warning("结构多样性检查失败（不阻断）：%s", _e)
         dims = ("position",)
         for dim in dims:
             vals = [c.get(dim, "0") for c in view.candidates]
             if vals and len(set(vals)) == 1:
                 if dim == "position":
+                    # ★ 结构多样性：只加读数：立场种类 + 论据类型
+                    #   种类 + 模板重复率。命中时留痕，**不新增 flag、不改
+                    #   下面的判定分支**（重采样已在 run 主流程做过一次）。
+                    try:
+                        from dgtf_v2.structural_diversity import (
+                            analyze_structural_diversity)
+                        view.structural_diversity = \
+                            analyze_structural_diversity(view.candidates)
+                        if view.structural_diversity.get("homogeneous"):
+                            logger.info(
+                                "structural_homogeneous %s",
+                                json.dumps(view.structural_diversity,
+                                           ensure_ascii=False))
+                    except Exception as _e:
+                        logger.warning(
+                            "结构多样性检查失败（不阻断）：%s", _e)
                     div = self._why_position_diversity(view.candidates)
                     if div >= _QC_DIVERSITY_RATIO:
                         flags.append(f"{dim}_all_same_structural")
@@ -29709,6 +29901,11 @@ DEFAULT_CONFIG = {
         "dedup_amp_similarity": 0.62,
         "qc_rephrase_ratio": 0.5,
         "qc_both_ratio": 0.6,
+        # ★ 结构复检：立场全同且论据类型单一/模板重复高时，
+        #   带提示重判**一次**；只在结构变多样时采用，否则保留原判。
+        #   `max` 按层计（pool 跨圈复用），默认 1，避免重复付费。
+        "structural_resample": True,
+        "structural_resample_max": 1,
         "all_drift_threshold": 0.5,
         "all_selfref_threshold": 0.4,
         "re_eval_every_n": 1,

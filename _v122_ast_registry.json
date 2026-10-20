@@ -1484,6 +1484,42 @@
   "_record_backfill_diag": {
    "phase": "v1.30.0",
    "reason": "method wiring backfill diagnosis into view/log once per round"
+  },
+  "_amp_diagnose": {
+   "phase": "v1.30.0",
+   "reason": "AMP ratio diagnosis for both candidates"
+  },
+  "_amp_dist": {
+   "phase": "v1.30.0",
+   "reason": "AMP candidate ratio/distribution helper"
+  },
+  "_amp_is_candidate": {
+   "phase": "v1.30.0",
+   "reason": "classify whether a candidate is an AMP candidate"
+  },
+  "_amp_ratio_max": {
+   "phase": "v1.30.0",
+   "reason": "read per-entry amp ratio max with clamped fallback"
+  },
+  "_apply": {
+   "phase": "v1.30.0",
+   "reason": "nested helper for applying a diagnosis/config"
+  },
+  "_calibrate_amp_both": {
+   "phase": "v1.30.0",
+   "reason": "calibrate both-layer AMP candidate ratio within bounds"
+  },
+  "_dump_amp_diagnostic": {
+   "phase": "v1.30.0",
+   "reason": "emit AMP diagnostic into view/log"
+  },
+  "_maybe_structural_resample": {
+   "phase": "v1.31",
+   "reason": "one-shot structural resample guard: max once, evidence-preserving, logs before/after/used/reason"
+  },
+  "_structural_resample_hint": {
+   "phase": "v1.31",
+   "reason": "build evidence-based resample hint without forcing diversity"
   }
  },
  "removed": 0

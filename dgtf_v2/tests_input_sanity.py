@@ -144,6 +144,108 @@ def main():
     cwhy = (conflict.get("issues") or [{}])[0].get("why", "")
     ck("官方源冲突单独措辞", "有冲突" in cwhy, cwhy)
 
+    # 5) 自包含回放：官方 18 条中 1 条含「已升级至该型号」，issue 必须被清除。
+    q18 = "DeepSeek-V4.1-Flash-1017 是什么时候发布的"
+    official18 = [{
+        "id": "W1",
+        "title": "更新日志 | DeepSeek API Docs",
+        "url": "https://api-docs.deepseek.com/zh-cn/updates/",
+        "claim": ("2026-10-17\n### DeepSeek-V4.1-Flash-1017 更新\n"
+                  "DeepSeek V4.1 Flash 已升级至 DeepSeek-V4.1-Flash-1017，"
+                  "官方网页端与 APP 模型也已同步更新至新版本。"),
+        "tier": "official",
+    }]
+    for _i in range(2, 19):
+        official18.append({
+            "id": "W%d" % _i,
+            "title": "官方文档 %d" % _i,
+            "url": "https://api-docs.deepseek.com/zh-cn/doc%d" % _i,
+            "claim": "官方文档条目 %d。" % _i,
+            "tier": "official",
+        })
+    led18 = {"known": True, "question": q18, "answer": "2026-10-17",
+             "source": "official_preflight"}
+    pack18 = {
+        "question": q18,
+        "input_sanity": {
+            "issues": [{
+                "term": "DeepSeek-V4.1-Flash-1017",
+                "why": "形似标准模型版本号，但该型号不存在，属虚构记号",
+            }],
+            "note": "未发现其他悬空符号",
+            "checked": True,
+        },
+        "pools": {"1": {"web_results": official18}},
+        "fact_contract": {
+            "ok_all": True,
+            "layers": {e: {"answer_hit": True}
+                       for e in ("0", "1", "both", "all")},
+            "ledger": led18,
+        },
+    }
+    r18 = reconcile(pack18["input_sanity"], pack18, led18)
+    t18 = [str(x.get("term") or "") for x in (r18.get("issues") or [])]
+    ck("18条官方证据计数",
+       int((r18.get("reconciled") or {}).get("official_n") or 0) == 18,
+       r18.get("reconciled"))
+    ck("18条中命中升级条目后清除",
+       "DeepSeek-V4.1-Flash-1017" not in t18, r18)
+    ck("清除依据=official_evidence",
+       any(x.get("resolved_by") == "official_evidence"
+           for x in (r18.get("resolved_issues") or [])),
+       r18.get("resolved_issues"))
+    ck("出口闸通过", (r18.get("negative_gate") or {}).get("ok") is True,
+       r18.get("negative_gate"))
+
+    # 6) 短记号不能被更长的 token 误命中（PN 不应被 PNP 当成已确认）。
+    short = reconcile(
+        {"issues": [{"term": "PN", "why": "本地先验未识别，待证据核验"}]},
+        {"pools": {"1": {"web_results": [{
+            "title": "PNP 文档",
+            "url": "https://api-docs.deepseek.com/zh-cn/pnp",
+            "claim": "PNP is a complexity class.",
+            "tier": "official",
+        }]}}},
+        {"known": False},
+    )
+    ck("短记号不误命中 PNP",
+       "PN" in [str(x.get("term") or "") for x in (short.get("issues") or [])],
+       short)
+
+    # 7) term 本身是存在性否定时整条剔除，不能靠 why 降级绕过。
+    nt = neutralize_negative_claims(
+        {"issues": [{"term": "不存在的X", "why": "无证据"}], "note": ""})
+    ck("否定 term 被剔除",
+       not nt.get("issues")
+       and (nt.get("negative_guard") or {}).get("term_dropped") == 1, nt)
+    ck("否定 term 不留否定断言", not negative_claims(nt), nt)
+
+    # 8) 官方条目缺失但 fact_contract 已确认且 answer_hit：按提案兜底清除。
+    qfc = "DeepSeek-V4.1-Flash-1017 是什么时候发布的"
+    ledfc = {"known": True, "question": qfc, "answer": "2026-10-17",
+             "source": "official_preflight"}
+    packfc = {
+        "question": qfc,
+        "pools": {},
+        "fact_contract": {
+            "ok_all": True,
+            "layers": {e: {"answer_hit": True}
+                       for e in ("0", "1", "both", "all")},
+            "ledger": ledfc,
+        },
+    }
+    rfc = reconcile(
+        {"issues": [{"term": "DeepSeek-V4.1-Flash-1017",
+                     "why": "该型号不存在，属虚构记号"}]},
+        packfc, ledfc)
+    ck("无官方条目时 answer_hit 兜底清除",
+       "DeepSeek-V4.1-Flash-1017" not in
+       [str(x.get("term") or "") for x in (rfc.get("issues") or [])], rfc)
+    ck("兜底依据=fact_contract",
+       any(x.get("resolved_by") == "fact_contract"
+           for x in (rfc.get("resolved_issues") or [])),
+       rfc.get("resolved_issues"))
+
     print()
     print("PASS %d / FAIL %d" % (len(P), len(F)))
     return 1 if F else 0
