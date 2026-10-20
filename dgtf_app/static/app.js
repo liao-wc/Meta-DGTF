@@ -7,6 +7,8 @@ const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c =>
 let dshMode = false;
 let dshSession = "";
 let dshCurrent = null;
+let dshAttachTaskId = null;
+let taskDsh = {};
 let agentTaskMode = false;
 let dgtfSessionId = 'dgtf-' + Date.now().toString(36);
 
@@ -981,6 +983,9 @@ function renderTasks() {
       + `<div class="rl-lane-head">${hlNums(`${n}层 · ${round} · ${(st.tokens || 0).toLocaleString()} tokens`)}</div>`
       + body + '</div>');
   });
+  if (!arch && tid && taskDsh[tid]) {
+    parts.push(renderDshAttachBlock(taskDsh[tid]));
+  }
   const PLACEHOLDER = '<div class="muted empty">等待该层开始输出…</div>';
   const want = parts.length ? parts.join('') : PLACEHOLDER;
   const el = $('#runlog-body');
@@ -1256,6 +1261,8 @@ function toggleDshMode(on) {
   const q = document.querySelector('#question');
   if (p) p.classList.toggle('on', dshMode);
   document.body.classList.toggle('dsh-mode', dshMode);
+  dshAttachTaskId = dshMode ? currentTaskId() : null;
+  if (dshAttachTaskId) dshCurrent = null;
   if (q) q.placeholder = dshMode
     ? 'DSH Agent：输入任务，读取项目文件 / outputs 产物 / app 导入文件…'
     : '此刻 你又想到了什么？ 可以发给元DGTF 我们一起去探索吧';
@@ -1327,32 +1334,74 @@ async function openDshSession(id) {
     status: r.ok ? 'done' : 'error' };
   closeSheet(); closeDrawer(); toggleDshMode(true); renderDshView();
 }
+function persistTaskDsh() {
+  try {
+    const keys = Object.keys(taskDsh);
+    if (keys.length > 50) keys.slice(0, keys.length - 50).forEach(k => delete taskDsh[k]);
+    localStorage.setItem('dgtf_task_dsh', JSON.stringify(taskDsh));
+  } catch (_) {}
+}
+function renderDshAttachBlock(c) {
+  let inner = '<div class="rl-lane rl-dsh-attach"><div class="rl-lane-head">DSH Agent · 属于当前元DGTF 会话 · ' + esc(c.session || '') + '</div>';
+  inner += '<div class="rl-line"><span class="rl-lab">用户</span><span class="rl-txt">' + esc(c.question || '') + '</span></div>';
+  (c.events || []).forEach(function (e) { inner += dshEventHtml(e); });
+  if (c.status === 'running') inner += '<div class="rl-summary">DSH 运行中…</div>';
+  inner += '</div>';
+  return inner;
+}
+function applyDshResult(obj, r) {
+  obj.session = r.session_id || obj.session;
+  obj.events = r.events || [];
+  if (r.repair) obj.events.push({type:'text', text:
+    '自动修复：' + (r.repair.committed ? ('已提交 ' + (r.repair.commit || ''))
+      : ('未提交：' + (r.repair.why || r.repair.error || ''))) });
+  if (r.gate) obj.events.push({type:'text', text:
+    'fast_gate：' + (r.gate.ok ? 'PASS' : 'FAIL') + '\n' + (r.gate.tail || '')});
+  obj.status = r.ok ? 'done' : 'error';
+  if (!r.ok && r.stderr) obj.events.push({type:'text', text:'Agent 退出异常：' + r.stderr});
+}
+
 async function startDshRun(question) {
-  dshCurrent = { question: question, session: dshSession, events: [], status: 'running' };
-  renderDshView();
+  const attach = dshMode ? (dshAttachTaskId || currentTaskId()) : null;
+  let target = null;
+  if (attach) {
+    dshAttachTaskId = attach;
+    dshCurrent = null;
+    target = taskDsh[attach] = { question: question, session: (taskDsh[attach] || {}).session || '',
+      events: [], status: 'running' };
+    persistTaskDsh();
+    renderTasks();
+  } else {
+    dshCurrent = { question: question, session: dshSession, events: [], status: 'running' };
+    renderDshView();
+  }
   const btn = document.querySelector('#run-btn');
   if (btn) btn.disabled = true;
   try {
     const r = await api('/api/dsh/agent', { method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ task: question, session_id: dshSession,
+      body: JSON.stringify({ task: question,
+        session_id: target ? target.session : dshSession,
+        attach_task_id: attach || '',
         effort: (document.querySelector('#dsh-effort') || {}).value || '',
         permission: (document.querySelector('#dsh-perm') || {}).value || 'workspace-write' }) });
-    dshSession = r.session_id || dshSession;
-    dshCurrent.session = dshSession;
-    dshCurrent.events = r.events || [];
-    if (r.repair) dshCurrent.events.push({type:'text', text:
-      '自动修复：' + (r.repair.committed ? ('已提交 ' + (r.repair.commit || ''))
-        : ('未提交：' + (r.repair.why || r.repair.error || ''))) });
-    if (r.gate) dshCurrent.events.push({type:'text', text:
-      'fast_gate：' + (r.gate.ok ? 'PASS' : 'FAIL') + '\n' + (r.gate.tail || '')});
-    dshCurrent.status = r.ok ? 'done' : 'error';
-    if (!r.ok && r.stderr) dshCurrent.events.push({type:'text', text:'Agent 退出异常：' + r.stderr});
+    if (target) {
+      applyDshResult(target, r);
+      dshSession = r.session_id || dshSession;
+      persistTaskDsh();
+      renderTasks();
+    } else {
+      dshSession = r.session_id || dshSession;
+      applyDshResult(dshCurrent, r);
+      renderDshView();
+    }
   } catch (e) {
-    dshCurrent.status = 'error';
-    dshCurrent.events.push({type:'text', text:'请求失败：' + e.message});
+    const t = target || dshCurrent;
+    t.status = 'error';
+    t.events = t.events || [];
+    t.events.push({type:'text', text:'请求失败：' + e.message});
+    if (target) { persistTaskDsh(); renderTasks(); } else renderDshView();
   }
-  renderDshView();
   if (btn) btn.disabled = false;
 }
 async function submitAgentTaskFromComposer(question) {
@@ -2526,28 +2575,34 @@ async function openChat(c) {
 }
 
 function newChat() {
-  /* ★ 共用 app 新会话按钮：DSH 模式下只重置 DSH 会话，普通模式下新建元DGTF 会话。 */
-  if (dshMode) {
-    dshSession = ''; dshCurrent = null;
-    const log = document.querySelector('#runlog-body');
-    if (log) log.innerHTML = '<div class="rl-lane rl-boot"><div class="rl-lane-head">DeepSeek Harness Agent · 新会话</div><div class="rl-line"><span class="rl-txt">DSH 会话已重置；元DGTF 会话与当前内容保留。</span></div></div>';
-    document.body.classList.add('stage-run'); document.body.classList.remove('stage-empty');
-    const rl = document.querySelector('#runlog'); if (rl) rl.classList.remove('hidden');
-    return;
-  }
-  /* ★ 会话是**独立**的：开新对话只是「换到一个空白会话」，
-     **不动**其它会话的任务与轮询 —— 正在跑的那条继续跑，随时能回历史对话里看。
-     （早期版本会 `taskData = {}` 并清掉所有 `polls`，等于把别的会话丢了。） */
+  /* ★ 新会话统一回到首屏：清空**当前视图**，但不动历史任务/DSH 会话数据。
+     元DGTF 与 DSH 的原对话分别保留在任务历史 / DSH 会话库里，可随时回溯。 */
   chatMode = 'live'; activeChat = null; followLatest = false;
-  /* ★ 新会话保留当前对话内容与 DSH 会话：只新建一个元DGTF 会话 id，
-     DGTF 与 DSH 各自独立，不互相清空。再次发送会进入新会话。 */
+  archivedTask = null;
+  archiveLanes = { text: {}, stats: {}, meta: {} };
+  lanes.tid = null; lanes.text = {}; lanes.stats = {}; lanes.meta = {};
   dgtfSessionId = 'dgtf-' + Date.now().toString(36);
   agentTaskMode = false;
-  archivedTask = null;
+  dshAttachTaskId = null;
+  dshCurrent = null;
+  dshSession = '';
+  toggleDshMode(false);
+  const rb = $('#runlog-body');
+  if (rb) { rb.innerHTML = ''; delete rb.dataset.html; }
+  const rl = $('#runlog');
+  if (rl) rl.classList.add('hidden');
+  const q = $('#question');
+  if (q) { q.value = ''; q.style.height = ''; }
   const am = $('#attach-msg');
-  if (am) am.textContent = '已新建元DGTF会话；当前对话内容与 DSH 会话保留，可继续输入。';
+  if (am) am.textContent = '已新建会话，回到首屏；原元DGTF 对话与 DSH 会话都保留在历史里。';
+  document.body.classList.remove('stage-run');
+  document.body.classList.add('stage-empty');
+  setRunBtn('send');
+  stopWhisper();
+  updateRlBar();
   closeSearch();
   closeDrawer();
+  renderTasks();
   renderMeta();
 }
 
@@ -3239,6 +3294,22 @@ async function submitAgentTask() {
   }
 }
 
+async function autoAgent(stage) {
+  const m = document.querySelector('#agent-msg');
+  if (m) m.textContent = 'DSH Agent 自动执行：' + stage + '…';
+  try {
+    const r = await api('/api/agent/auto', {method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({stage: stage})});
+    const parts = [];
+    if (r.task && r.task.task) parts.push('任务：' + (r.task.task.title || ''));
+    if (r.consumer && r.consumer.run) parts.push('消费者：' + JSON.stringify(r.consumer.run).slice(0, 120));
+    if (r.proposal && r.proposal.proposal) parts.push('提案：' + (r.proposal.proposal.id || ''));
+    if (m) m.textContent = (r.ok ? 'DSH 自动完成 · ' : 'DSH 自动部分失败 · ') + parts.join(' | ');
+    await loadAgent(); loadGitStatus();
+  } catch (e) { if (m) m.textContent = 'DSH 自动执行失败：' + e.message; }
+}
+
 async function runAgentConsumer() {
   const btn = $('#agent-run');
   const msg = $('#agent-msg');
@@ -3419,6 +3490,7 @@ async function commitGithub() {
   } catch (e) { if (s) s.textContent = '提交失败：' + e.message; }
 }
 function init() {
+  try { taskDsh = JSON.parse(localStorage.getItem('dgtf_task_dsh') || '{}') || {}; } catch (_) { taskDsh = {}; }
   buildAdv();
   pollLanes();
   setInterval(pollLanes, 1500);
@@ -3752,12 +3824,9 @@ function init() {
   const _agentRefresh = $('#agent-refresh');
   if (_agentRefresh) _agentRefresh.addEventListener('click', loadAgent);
   const _agentNew = $('#agent-new');
-  if (_agentNew) _agentNew.addEventListener('click', () => {
-    closeSheet();
-    agentTaskMode = true; toggleDshMode(false);
-    const q = $('#question');
-    if (q) { q.placeholder = 'Agent 用户任务：输入要交给 daemon 的任务，发送即入队…'; q.focus(); }
-  });
+  if (_agentNew) _agentNew.addEventListener('click', () => autoAgent('task'));
+  const _agentAuto = $('#agent-auto');
+  if (_agentAuto) _agentAuto.addEventListener('click', () => autoAgent('all'));
   const _dshPill = $('#pill-dsh');
   if (_dshPill) _dshPill.addEventListener('click', () => toggleDshMode(!dshMode));
   [['dsh-effort', 'dgtf_dsh_effort'], ['dsh-perm', 'dgtf_dsh_perm']].forEach(function (pair) {
@@ -3809,16 +3878,7 @@ function init() {
   const _ghCommit = $('#gh-commit');
   if (_ghCommit) _ghCommit.addEventListener('click', commitGithub);
   const _ghAuto = $('#gh-auto');
-  if (_ghAuto) _ghAuto.addEventListener('click', async () => {
-    const s = document.querySelector('#gh-status');
-    if (s) s.textContent = 'DSH 自动修复中…';
-    try {
-      const r = await api('/api/dsh/autorepair', {method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
-      if (s) s.textContent = r.ok ? ('已生成修复提案：' + ((r.proposal || {}).id || '') + '（待确认/自动代理）')
-        : ('自审失败：' + (r.error || r.text || ''));
-      loadAgent(); loadGitStatus();
-    } catch (e) { if (s) s.textContent = '自动修复失败：' + e.message; }
-  });
+  if (_ghAuto) _ghAuto.addEventListener('click', () => autoAgent('proposal'));
   const _dshTopNew = $('#dsh-newchat-btn');
   if (_dshTopNew) _dshTopNew.addEventListener('click', () => {
     dshSession = ''; dshCurrent = null;
@@ -3848,7 +3908,7 @@ function init() {
     } catch (err) { const m = document.querySelector('#agent-msg'); if (m) m.textContent = '回溯失败：' + err.message; }
   });
   const _agentRun = $('#agent-run');
-  if (_agentRun) _agentRun.addEventListener('click', runAgentConsumer);
+  if (_agentRun) _agentRun.addEventListener('click', () => autoAgent('consumer'));
   const _agentKnow = $('#agent-know');
   if (_agentKnow) _agentKnow.addEventListener('click', refreshAgentKnowledge);
   const _agentSubmit = $('#agent-submit');

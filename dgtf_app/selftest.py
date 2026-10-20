@@ -765,9 +765,10 @@ def check_r47_frontend(css: str, js: str, html: str, srv_src: str,
               _jsnc.find("async function importFiles"),
               _jsnc.find("async function openLocal")))(), "")
     # ★ 新需求：新会话保留对话内容与 DSH 会话，只新建元DGTF会话 id。
-    check("新会话保留对话内容：newChat 不整块清空对话，只新建元DGTF会话 id",
-          "已新建元DGTF会话" in _jsnc
-          and "dgtfSessionId = 'dgtf-'" in _jsnc, "")
+    check("新会话回首屏：清当前视图但保留历史/DSH 附加数据",
+          "已新建会话，回到首屏" in _jsnc
+          and "document.body.classList.add('stage-empty')" in _jsnc
+          and "localStorage.getItem('dgtf_task_dsh')" in _jsnc, "")
 
     check("★R48-1 导入结果改由**小窗/抽屉**承载（`#import-detail` 逐文件列结果）",
           "importPaint(" in _jsnc and "$('#import-detail')" in _jsnc

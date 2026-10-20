@@ -288,7 +288,8 @@ def _save_dsh_run(task, sid, out, auto_repair=False):
            "auto_repair": bool(auto_repair), "ok": bool(out.get("ok")),
            "text": str(out.get("text") or "")[:20000],
            "events": list(out.get("events") or [])[-200:],
-           "gate": out.get("gate"), "repair": out.get("repair")}
+           "gate": out.get("gate"), "repair": out.get("repair"),
+           "attach_task_id": str(out.get("attach_task_id") or "")}
     (d / (sid + ".json")).write_text(
         _json.dumps(rec, ensure_ascii=False, indent=1), encoding="utf-8")
     try:
@@ -414,7 +415,7 @@ def _read_dsh_artifact(sid):
 
 def _run_dsh_agent(task: str, sid: str = "", timeout: int = 300,
                    auto_repair: bool = False, effort: str = "",
-                   permission: str = "") -> dict:
+                   permission: str = "", attach_task_id: str = "") -> dict:
     """调用本机 DeepSeek Harness headless Agent；返回 NDJSON 事件映射。"""
     import os as _os
     import subprocess as _sp
@@ -526,6 +527,7 @@ def _run_dsh_agent(task: str, sid: str = "", timeout: int = 300,
            "text": final or "".join(texts),
            "events": events[-200:],
            "settings": {"effort": _eff, "permission": _perm},
+           "attach_task_id": str(attach_task_id or ""),
            "stderr": (p.stderr or "")[-2000:]}
     _save_dsh_run(task, sid, out, auto_repair)
     if auto_repair and out["ok"]:
@@ -545,6 +547,89 @@ def _run_dsh_agent(task: str, sid: str = "", timeout: int = 300,
         except Exception as exc:
             out["repair"] = {"committed": False, "why": str(exc)}
     return out
+
+
+def _extract_json(text):
+    import json as _json
+    import re as _re
+    s = str(text or "")
+    m = _re.search(r"(\{.*\})", s, _re.S)
+    if not m:
+        return {}
+    try:
+        return _json.loads(m.group(1))
+    except Exception:
+        return {}
+
+
+def _agent_queue_snapshot():
+    import sys as _sys
+    _sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+    try:
+        from dgtf_v2.agent_bridge import read_tasks
+        rows = read_tasks(limit=30)
+    except Exception:
+        rows = []
+    return [{"title": str(x.get("title") or ""),
+             "kind": str(x.get("kind") or ""),
+             "severity": str(x.get("severity") or "")} for x in rows[-15:]]
+
+
+def _auto_submit_task():
+    """DSH Agent 审阅队列并自动提交一条用户任务；解析失败时退回一条安全任务。"""
+    queue = _agent_queue_snapshot()
+    prompt = ("你是元DGTF Agent 面板操作员。审阅下面的任务队列，"
+              "提出一条最有价值的新用户任务。只输出 JSON，不要改源码："
+              '{"title":"...","detail":"...","severity":"med"}。'
+              "队列：" + json.dumps(queue, ensure_ascii=False)[:3000])
+    res = _run_dsh_agent(prompt, "", timeout=180, auto_repair=False)
+    obj = _extract_json(res.get("text") or "")
+    title = str(obj.get("title") or "").strip()
+    detail = str(obj.get("detail") or "").strip()
+    if not title:
+        title = "DSH Agent 自动提交的任务"
+        detail = ("根据 Agent 队列自动生成：" + json.dumps(queue, ensure_ascii=False)[:2000])
+    import sys as _sys
+    _sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+    from dgtf_v2.agent_bridge import append_task
+    task = append_task({"kind": "user_task",
+                        "severity": str(obj.get("severity") or "med"),
+                        "title": title[:200], "detail": detail[:4000],
+                        "source_run": "dsh_auto"})
+    return {"ok": bool(res.get("ok")), "task": task,
+            "dsh_text": str(res.get("text") or "")[:2000],
+            "session_id": res.get("session_id") or ""}
+
+
+def _auto_proposal(task_text="", title=""):
+    import time as _tm
+    import sys as _sys
+    _sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+    from dgtf_v2.agent_bridge import read_tasks
+    if task_text:
+        t = {"title": (title or task_text)[:200], "detail": task_text,
+             "kind": "user_task", "severity": "med"}
+    else:
+        rows = [x for x in read_tasks(limit=100)
+                if x.get("kind") in ("process_gap", "audit_gap",
+                                     "api_gap", "quality_flag")]
+        rows.sort(key=lambda x: {"high": 0, "med": 1, "low": 2}.get(
+            str(x.get("severity")), 3))
+        if not rows:
+            return {"ok": False, "text": "没有可自审的任务"}
+        t = rows[0]
+    prompt = ("提案模式：不要读取项目文件、不要修改源码。只根据下面任务详情"
+              "输出简短修复提案（≤200字）：涉及文件、步骤、风险、验证命令。"
+              "任务：" + str(t.get("title") or "") + "。详情："
+              + str(t.get("detail") or "")[:1200])
+    res = _run_dsh_agent(prompt, "", timeout=300, auto_repair=False)
+    pid = "prop-" + str(int(_tm.time() * 1000))
+    prop = _save_proposal({"id": pid, "ts": _tm.time(), "task": t,
+                           "plan": str(res.get("text") or ""),
+                           "session_id": res.get("session_id") or "",
+                           "status": "pending", "approver": "",
+                           "events": list(res.get("events") or [])[-50:]})
+    return {"ok": bool(res.get("ok")), "proposal": prop}
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -1079,7 +1164,8 @@ class Handler(BaseHTTPRequestHandler):
                 res = _run_dsh_agent(task, sid,
                                      auto_repair=bool(data.get("auto_repair")),
                                      effort=str(data.get("effort") or ""),
-                                     permission=str(data.get("permission") or ""))
+                                     permission=str(data.get("permission") or ""),
+                                     attach_task_id=str(data.get("attach_task_id") or ""))
                 return self._json(res)
             except Exception as exc:
                 return self._json({"error": str(exc)}, 500)
@@ -1093,6 +1179,34 @@ class Handler(BaseHTTPRequestHandler):
                                               str(data.get("approve") or "")))
             except Exception as exc:
                 return self._json({"error": str(exc)}, 500)
+        if p == "/api/agent/auto":
+            data = self._read_json()
+            stage = str(data.get("stage") or "all")
+            out = {"ok": True, "stage": stage}
+            try:
+                import sys as _sys
+                _sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+                if stage in ("task", "all"):
+                    out["task"] = _auto_submit_task()
+                    out["ok"] = out["ok"] and bool(out["task"].get("ok"))
+                if stage in ("consumer", "all"):
+                    from dgtf_v2.agent_worker import run_once, write_proposals
+                    out["consumer"] = {"run": run_once(),
+                                       "proposals": write_proposals()}
+                if stage in ("proposal", "all"):
+                    task_text = str(data.get("task_text") or "")
+                    title = ""
+                    if not task_text and out.get("task"):
+                        t = out["task"].get("task") or {}
+                        task_text = str(t.get("detail") or t.get("title") or "")
+                        title = str(t.get("title") or "")
+                    out["proposal"] = _auto_proposal(task_text, title)
+                    out["ok"] = out["ok"] and bool(
+                        (out["proposal"] or {}).get("ok"))
+                return self._json(out)
+            except Exception as exc:
+                return self._json({"ok": False, "stage": stage,
+                                   "error": str(exc)}, 500)
         if p == "/api/agent/run":
             try:
                 import sys as _sys
