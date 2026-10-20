@@ -12,6 +12,31 @@ let taskDsh = {};
 let agentTaskMode = false;
 let dgtfSessionId = 'dgtf-' + Date.now().toString(36);
 
+async function streamPost(path, payload, onMsg) {
+  const r = await fetch(path, { method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload) });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  if (!r.body) throw new Error('浏览器不支持流式读取');
+  const reader = r.body.getReader();
+  const dec = new TextDecoder('utf-8');
+  let buf = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+    const lines = buf.split('\n');
+    buf = lines.pop();
+    for (const line of lines) {
+      const s = line.trim();
+      if (s) { try { onMsg(JSON.parse(s)); } catch (_) {} }
+    }
+  }
+  buf += dec.decode();
+  const tail = buf.trim();
+  if (tail) { try { onMsg(JSON.parse(tail)); } catch (_) {} }
+}
+
 async function api(path, opts) {
   const r = await fetch(path, opts);
   let j = null;
@@ -1376,32 +1401,48 @@ async function startDshRun(question) {
   }
   const btn = document.querySelector('#run-btn');
   if (btn) btn.disabled = true;
+  const obj = target || dshCurrent;
+  const redraw = () => { if (target) renderTasks(); else renderDshView(); };
+  let result = null, errMsg = '', n = 0;
   try {
-    const r = await api('/api/dsh/agent', { method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ task: question,
-        session_id: target ? target.session : dshSession,
-        attach_task_id: attach || '',
-        effort: (document.querySelector('#dsh-effort') || {}).value || '',
-        permission: (document.querySelector('#dsh-perm') || {}).value || 'workspace-write' }) });
+    await streamPost('/api/dsh/agent/stream', {
+      task: question,
+      session_id: target ? target.session : dshSession,
+      attach_task_id: attach || '',
+      effort: (document.querySelector('#dsh-effort') || {}).value || '',
+      permission: (document.querySelector('#dsh-perm') || {}).value || 'workspace-write'
+    }, function (m) {
+      if (m.type === 'event' && m.event) {
+        obj.events.push(m.event);
+        if (m.event.type === 'session' && m.event.sessionId) obj.session = m.event.sessionId;
+        n++;
+        if (target && n % 5 === 0) persistTaskDsh();
+        redraw();
+      } else if (m.type === 'result') {
+        result = m.result;
+      } else if (m.type === 'error') {
+        errMsg = m.error || '流式执行失败';
+      }
+    });
+    if (!result) throw new Error(errMsg || '没有返回结果');
     if (target) {
-      applyDshResult(target, r);
-      dshSession = r.session_id || dshSession;
+      applyDshResult(target, result);
+      dshSession = result.session_id || dshSession;
       persistTaskDsh();
       renderTasks();
     } else {
-      dshSession = r.session_id || dshSession;
-      applyDshResult(dshCurrent, r);
+      dshSession = result.session_id || dshSession;
+      applyDshResult(dshCurrent, result);
       renderDshView();
     }
   } catch (e) {
-    const t = target || dshCurrent;
-    t.status = 'error';
-    t.events = t.events || [];
-    t.events.push({type:'text', text:'请求失败：' + e.message});
+    obj.status = 'error';
+    obj.events = obj.events || [];
+    obj.events.push({type:'text', text:'请求失败：' + e.message});
     if (target) { persistTaskDsh(); renderTasks(); } else renderDshView();
+  } finally {
+    if (btn) btn.disabled = false;
   }
-  if (btn) btn.disabled = false;
 }
 async function submitAgentTaskFromComposer(question) {
   try {
@@ -3330,15 +3371,27 @@ async function autoAgent(stage) {
       ? '开始执行：生成/提交用户任务 → 运行消费者 → 自审提案。可能需要几分钟。'
       : '开始执行：' + stage}
   ], 'running');
+  let result = null, errMsg = '';
   try {
-    const r = await api('/api/agent/auto', {method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({stage: stage})});
-    const ev = [];
+    await streamPost('/api/agent/auto/stream', {stage: stage}, function (m) {
+      if (!dshCurrent) return;
+      if (m.type === 'stage') {
+        dshCurrent.events.push({type:'text', text:'── 阶段：' + m.stage + ' ──'});
+      } else if (m.type === 'event' && m.event) {
+        dshCurrent.events.push(m.event);
+      } else if (m.type === 'result') {
+        result = m.result;
+      } else if (m.type === 'error') {
+        errMsg = m.error || '流式执行失败';
+      }
+      renderDshView();
+    });
+    if (!result) throw new Error(errMsg || '没有返回结果');
+    const r = result;
+    const ev = dshCurrent.events;
     if (r.task && r.task.task) {
       ev.push({type:'text', text:'自动任务：' + (r.task.task.title || '')});
       if (r.task.task.detail) ev.push({type:'text', text:'任务详情：' + r.task.task.detail});
-      if (r.task.dsh_text) ev.push({type:'text', text:'DSH 任务生成：' + r.task.dsh_text.slice(0, 1200)});
     }
     if (r.consumer && r.consumer.run) ev.push({type:'text', text:'消费者：' + JSON.stringify(r.consumer.run).slice(0, 800)});
     if (r.proposal && r.proposal.proposal) ev.push({type:'text', text:'提案：' + (r.proposal.proposal.id || '') + ' · ' + (r.proposal.proposal.status || '')});
@@ -3347,13 +3400,18 @@ async function autoAgent(stage) {
       st.className = 'agent-auto-status ' + (r.ok ? 'ok' : 'err');
       st.textContent = (r.ok ? 'DSH 自动完成' : 'DSH 自动部分失败') + '（' + secs + 's）';
     }
-    showAutoDsh('DSH 自动闭环 · ' + stage + ' · ' + secs + 's',
-      ev.concat([{type:'text', text: r.ok ? '自动闭环完成。' : '自动闭环部分失败。'}]),
-      r.ok ? 'done' : 'error');
+    dshCurrent.question = 'DSH 自动闭环 · ' + stage + ' · ' + secs + 's';
+    dshCurrent.events.push({type:'text', text: r.ok ? '自动闭环完成。' : '自动闭环部分失败。'});
+    dshCurrent.status = r.ok ? 'done' : 'error';
+    renderDshView();
     await loadAgent(); loadGitStatus();
   } catch (e) {
     if (st) { st.className = 'agent-auto-status err'; st.textContent = 'DSH 自动执行失败：' + e.message; }
-    showAutoDsh('DSH 自动闭环 · ' + stage, [{type:'text', text:'执行失败：' + e.message}], 'error');
+    if (dshCurrent) {
+      dshCurrent.events.push({type:'text', text:'执行失败：' + e.message});
+      dshCurrent.status = 'error';
+      renderDshView();
+    }
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = oldText; }
   }
@@ -3934,20 +3992,31 @@ function init() {
       {type:'text', text:'方案：' + String(prop.plan || '').slice(0, 800)},
       {type:'text', text:'执行方式：' + (mode === 'dsh_auto' ? 'DSH 自动代理' : '我确认')}
     ], 'running');
+    let final = null, errMsg = '';
     try {
-      const r = await api('/api/dsh/proposals/' + encodeURIComponent(id) + '/approve',
-        {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode:mode})});
-      const ev = [];
-      const res = r.result || {};
-      (res.events || []).slice(-80).forEach(x => ev.push(x));
-      if (res.gate) ev.push({type:'text', text:'fast_gate：' + (res.gate.ok ? 'PASS' : 'FAIL')});
-      if (res.repair) ev.push({type:'text', text:'提交：' + (res.repair.committed ? (res.repair.commit || '已提交') : ('未提交：' + (res.repair.why || res.repair.error || '')))});
-      ev.push({type:'text', text:'提案状态：' + ((r.proposal || {}).status || '')});
-      showAutoDsh('修复提案 · ' + id + ' · ' + ((r.proposal || {}).status || ''),
-        ev, (r.proposal || {}).status === 'applied' ? 'done' : 'error');
+      await streamPost('/api/dsh/proposals/' + encodeURIComponent(id) + '/approve/stream',
+        {mode: mode}, function (m) {
+          if (!dshCurrent) return;
+          if (m.type === 'event' && m.event) dshCurrent.events.push(m.event);
+          else if (m.type === 'result') final = m.result;
+          else if (m.type === 'error') errMsg = m.error || '审批流失败';
+          renderDshView();
+        });
+      if (!final) throw new Error(errMsg || '没有返回结果');
+      const res = final.result || {};
+      if (res.gate) dshCurrent.events.push({type:'text', text:'fast_gate：' + (res.gate.ok ? 'PASS' : 'FAIL')});
+      if (res.repair) dshCurrent.events.push({type:'text', text:'提交：' + (res.repair.committed ? (res.repair.commit || '已提交') : ('未提交：' + (res.repair.why || res.repair.error || '')))});
+      dshCurrent.events.push({type:'text', text:'提案状态：' + ((final.proposal || {}).status || '')});
+      dshCurrent.status = ((final.proposal || {}).status === 'applied') ? 'done' : 'error';
+      dshCurrent.question = '修复提案 · ' + id + ' · ' + ((final.proposal || {}).status || '');
+      renderDshView();
       loadAgent(); loadGitStatus();
     } catch (err) {
-      showAutoDsh('修复提案 · ' + id, [{type:'text', text:'执行失败：' + err.message}], 'error');
+      if (dshCurrent) {
+        dshCurrent.events.push({type:'text', text:'执行失败：' + err.message});
+        dshCurrent.status = 'error';
+        renderDshView();
+      }
     }
   });
   const _cfgBtn = $('#dsh-config-btn');

@@ -420,7 +420,8 @@ def _read_dsh_artifact(sid):
 
 def _run_dsh_agent(task: str, sid: str = "", timeout: int = 300,
                    auto_repair: bool = False, effort: str = "",
-                   permission: str = "", attach_task_id: str = "") -> dict:
+                   permission: str = "", attach_task_id: str = "",
+                   emit=None) -> dict:
     """调用本机 DeepSeek Harness headless Agent；返回 NDJSON 事件映射。"""
     import os as _os
     import subprocess as _sp
@@ -504,23 +505,17 @@ def _run_dsh_agent(task: str, sid: str = "", timeout: int = 300,
     if sid:
         cmd += ["--session-id", sid]
     cmd += ["-"]
-    try:
-        p = _sp.run(cmd, cwd=str(root), env=env, input=auth,
-                    text=True, encoding="utf-8", errors="replace",
-                    capture_output=True, timeout=timeout)
-    finally:
-        if _patch:
-            try: Path(_patch).unlink()
-            except Exception: pass
     events, texts, final = [], [], ""
-    for line in (p.stdout or "").splitlines():
-        line = line.strip()
+
+    def _feed(line):
+        nonlocal sid, final
+        line = (line or "").strip()
         if not line.startswith("{"):
-            continue
+            return
         try:
             ev = json.loads(line)
         except Exception:
-            continue
+            return
         events.append(ev)
         if ev.get("type") == "text" and ev.get("text"):
             texts.append(str(ev["text"]))
@@ -528,12 +523,49 @@ def _run_dsh_agent(task: str, sid: str = "", timeout: int = 300,
             sid = str(ev["sessionId"])
         if ev.get("type") == "final":
             final = str(ev.get("text") or "")
-    out = {"ok": p.returncode == 0, "session_id": sid,
+        if emit is not None:
+            try:
+                emit(ev)
+            except Exception:
+                pass
+
+    proc = None
+    try:
+        if emit is not None:
+            proc = _sp.Popen(cmd, cwd=str(root), env=env,
+                             stdin=_sp.PIPE, stdout=_sp.PIPE,
+                             stderr=_sp.PIPE, text=True,
+                             encoding="utf-8", errors="replace")
+            proc.stdin.write(auth)
+            proc.stdin.close()
+            for line in proc.stdout:
+                _feed(line)
+            try:
+                proc.wait(timeout=timeout)
+            except _sp.TimeoutExpired:
+                proc.kill()
+                proc.wait()
+                raise
+            rc = proc.returncode
+            stderr = (proc.stderr.read() or "")[-2000:]
+        else:
+            p = _sp.run(cmd, cwd=str(root), env=env, input=auth,
+                        text=True, encoding="utf-8", errors="replace",
+                        capture_output=True, timeout=timeout)
+            for line in (p.stdout or "").splitlines():
+                _feed(line)
+            rc = p.returncode
+            stderr = (p.stderr or "")[-2000:]
+    finally:
+        if _patch:
+            try: Path(_patch).unlink()
+            except Exception: pass
+    out = {"ok": (rc == 0), "session_id": sid,
            "text": final or "".join(texts),
            "events": events[-200:],
            "settings": {"effort": _eff, "permission": _perm},
            "attach_task_id": str(attach_task_id or ""),
-           "stderr": (p.stderr or "")[-2000:]}
+           "stderr": stderr}
     _save_dsh_run(task, sid, out, auto_repair)
     if auto_repair and out["ok"]:
         import subprocess as _sp
@@ -580,14 +612,15 @@ def _agent_queue_snapshot():
              "severity": str(x.get("severity") or "")} for x in rows[-15:]]
 
 
-def _auto_submit_task():
+def _auto_submit_task(emit=None):
     """DSH Agent 审阅队列并自动提交一条用户任务；解析失败时退回一条安全任务。"""
     queue = _agent_queue_snapshot()
     prompt = ("你是元DGTF Agent 面板操作员。审阅下面的任务队列，"
               "提出一条最有价值的新用户任务。只输出 JSON，不要改源码："
               '{"title":"...","detail":"...","severity":"med"}。'
               "队列：" + json.dumps(queue, ensure_ascii=False)[:3000])
-    res = _run_dsh_agent(prompt, "", timeout=180, auto_repair=False)
+    res = _run_dsh_agent(prompt, "", timeout=180, auto_repair=False,
+                         emit=emit)
     obj = _extract_json(res.get("text") or "")
     title = str(obj.get("title") or "").strip()
     detail = str(obj.get("detail") or "").strip()
@@ -606,7 +639,7 @@ def _auto_submit_task():
             "session_id": res.get("session_id") or ""}
 
 
-def _auto_proposal(task_text="", title=""):
+def _auto_proposal(task_text="", title="", emit=None):
     import time as _tm
     import sys as _sys
     _sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -627,7 +660,8 @@ def _auto_proposal(task_text="", title=""):
               "输出简短修复提案（≤200字）：涉及文件、步骤、风险、验证命令。"
               "任务：" + str(t.get("title") or "") + "。详情："
               + str(t.get("detail") or "")[:1200])
-    res = _run_dsh_agent(prompt, "", timeout=300, auto_repair=False)
+    res = _run_dsh_agent(prompt, "", timeout=300, auto_repair=False,
+                         emit=emit)
     pid = "prop-" + str(int(_tm.time() * 1000))
     prop = _save_proposal({"id": pid, "ts": _tm.time(), "task": t,
                            "plan": str(res.get("text") or ""),
@@ -676,6 +710,18 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Cache-Control", "no-store")
         self.end_headers()
         self.wfile.write(data)
+
+    def _stream_open(self):
+        self.send_response(200)
+        self.send_header("Content-Type", "application/x-ndjson; charset=utf-8")
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("Connection", "close")
+        self.end_headers()
+        self.close_connection = True
+
+    def _stream_write(self, obj):
+        self.wfile.write((json.dumps(obj, ensure_ascii=False) + "\n").encode("utf-8"))
+        self.wfile.flush()
 
     def _json(self, obj, code: int = 200):
         data = json.dumps(obj, ensure_ascii=False).encode("utf-8")
@@ -1168,6 +1214,39 @@ class Handler(BaseHTTPRequestHandler):
                                 "commit_hash": h}
             _save_proposal(prop)
             return self._json({"ok": True, "proposal": prop})
+        if p.startswith("/api/dsh/proposals/") and p.endswith("/approve/stream"):
+            data = self._read_json()
+            pid = p.split("/")[4]
+            prop = _get_proposal(pid)
+            if not prop:
+                return self._json({"error": "proposal not found"}, 404)
+            self._stream_open()
+
+            def _emit_appr(ev):
+                self._stream_write({"type": "event", "event": ev})
+
+            try:
+                prompt = ("按以下已批准提案执行修复：" + str(prop.get("plan") or "")
+                          + "。修改后运行 fast_gate.py，通过后只提交本次变更，不 push。")
+                res = _run_dsh_agent(prompt, str(prop.get("session_id") or ""),
+                                     timeout=600, auto_repair=True, emit=_emit_appr)
+                prop["status"] = ("applied" if (res.get("repair") or {}).get("committed")
+                                  else "failed")
+                prop["approver"] = str(data.get("mode") or "user")
+                import time as _tm3
+                prop["approved_ts"] = _tm3.time()
+                prop["result"] = {"ok": res.get("ok"), "gate": res.get("gate"),
+                                  "repair": res.get("repair")}
+                _save_proposal(prop)
+                self._stream_write({"type": "result",
+                                    "result": {"ok": bool(res.get("ok")),
+                                               "proposal": prop, "result": res}})
+            except Exception as exc:
+                try:
+                    self._stream_write({"type": "error", "error": str(exc)})
+                except Exception:
+                    pass
+            return
         if p.startswith("/api/dsh/proposals/") and p.endswith("/approve"):
             data = self._read_json()
             pid = p.split("/")[4]
@@ -1188,6 +1267,72 @@ class Handler(BaseHTTPRequestHandler):
             _save_proposal(prop)
             return self._json({"ok": bool(res.get("ok")), "proposal": prop,
                                "result": res})
+        if p == "/api/dsh/agent/stream":
+            data = self._read_json()
+            task = str(data.get("task") or "").strip()
+            if not task:
+                return self._json({"error": "task 不能为空"}, 400)
+            if len(task) > 8000:
+                task = task[:8000]
+            sid = str(data.get("session_id") or "").strip()
+            self._stream_open()
+
+            def _emit_direct(ev):
+                self._stream_write({"type": "event", "event": ev})
+
+            try:
+                res = _run_dsh_agent(
+                    task, sid,
+                    auto_repair=bool(data.get("auto_repair")),
+                    effort=str(data.get("effort") or ""),
+                    permission=str(data.get("permission") or ""),
+                    attach_task_id=str(data.get("attach_task_id") or ""),
+                    emit=_emit_direct)
+                self._stream_write({"type": "result", "result": res})
+            except Exception as exc:
+                try:
+                    self._stream_write({"type": "error", "error": str(exc)})
+                except Exception:
+                    pass
+            return
+        if p == "/api/agent/auto/stream":
+            data = self._read_json()
+            stage = str(data.get("stage") or "all")
+            self._stream_open()
+            out = {"ok": True, "stage": stage}
+
+            def _emit_stage(name):
+                self._stream_write({"type": "stage", "stage": name})
+                return lambda ev: self._stream_write(
+                    {"type": "event", "stage": name, "event": ev})
+
+            try:
+                import sys as _sys
+                _sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+                if stage in ("task", "all"):
+                    out["task"] = _auto_submit_task(emit=_emit_stage("task"))
+                    out["ok"] = out["ok"] and bool(out["task"].get("ok"))
+                if stage in ("consumer", "all"):
+                    _emit_stage("consumer")
+                    from dgtf_v2.agent_worker import run_once, write_proposals
+                    out["consumer"] = {"run": run_once(), "proposals": write_proposals()}
+                if stage in ("proposal", "all"):
+                    task_text = str(data.get("task_text") or "")
+                    title = ""
+                    if not task_text and out.get("task"):
+                        t = out["task"].get("task") or {}
+                        task_text = str(t.get("detail") or t.get("title") or "")
+                        title = str(t.get("title") or "")
+                    out["proposal"] = _auto_proposal(task_text, title,
+                                                     emit=_emit_stage("proposal"))
+                    out["ok"] = out["ok"] and bool((out["proposal"] or {}).get("ok"))
+                self._stream_write({"type": "result", "result": out})
+            except Exception as exc:
+                try:
+                    self._stream_write({"type": "error", "error": str(exc)})
+                except Exception:
+                    pass
+            return
         if p == "/api/dsh/agent":
             data = self._read_json()
             task = str(data.get("task") or "").strip()
