@@ -146,6 +146,9 @@ def make_server(host: str, port: int, token: str = "", verbose: bool = False):
 
 
 
+_DSH_ACTIVE = set()
+
+
 def _git(args, timeout=60, stdin_text=None, limit=4000):
     import subprocess as _sp
     root = Path(__file__).resolve().parent.parent
@@ -536,6 +539,7 @@ def _run_dsh_agent(task: str, sid: str = "", timeout: int = 300,
                              stdin=_sp.PIPE, stdout=_sp.PIPE,
                              stderr=_sp.PIPE, text=True,
                              encoding="utf-8", errors="replace")
+            _DSH_ACTIVE.add(proc)
             proc.stdin.write(auth)
             proc.stdin.close()
             for line in proc.stdout:
@@ -557,6 +561,8 @@ def _run_dsh_agent(task: str, sid: str = "", timeout: int = 300,
             rc = p.returncode
             stderr = (p.stderr or "")[-2000:]
     finally:
+        if proc is not None:
+            _DSH_ACTIVE.discard(proc)
         if _patch:
             try: Path(_patch).unlink()
             except Exception: pass
@@ -669,6 +675,69 @@ def _auto_proposal(task_text="", title="", emit=None):
                            "status": "pending", "approver": "",
                            "events": list(res.get("events") or [])[-50:]})
     return {"ok": bool(res.get("ok")), "proposal": prop}
+
+
+_REPAIR_VERSION_FILE = Path(__file__).resolve().parent.parent / "dgtf_memory" / "repair_version.json"
+
+
+def _next_repair_version():
+    import json as _json
+    d = _REPAIR_VERSION_FILE
+    d.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        cur = _json.loads(d.read_text(encoding="utf-8"))
+    except Exception:
+        cur = {"major": 1, "minor": 30, "patch": 0}
+    cur["patch"] = int(cur.get("patch") or 0) + 1
+    d.write_text(_json.dumps(cur, ensure_ascii=False), encoding="utf-8")
+    return "V-%d.%d.%d" % (cur["major"], cur["minor"], cur["patch"])
+
+
+def _targeted_acceptance(changed):
+    import subprocess as _sp
+    import sys as _sys
+    root = Path(__file__).resolve().parent.parent
+    cmds = []
+    if any(str(p).startswith("dgtf_app/") for p in changed):
+        cmds.append([_sys.executable, "dgtf_app/selftest.py", "app-selftest"])
+    if any(str(p).endswith("元DGTF-V1.30.0.py") or str(p).startswith("dgtf_v2/")
+           for p in changed):
+        cmds.append([_sys.executable, "smoke_test.py", "smoke"])
+    out = []
+    ok = True
+    for cmd in cmds:
+        try:
+            p = _sp.run(cmd[:2], cwd=str(root), text=True, encoding="utf-8",
+                        errors="replace", capture_output=True, timeout=600)
+            good = p.returncode == 0
+            ok = ok and good
+            out.append({"name": cmd[2], "ok": good,
+                        "tail": ((p.stdout or "") + (p.stderr or ""))[-1200:]})
+        except Exception as exc:
+            ok = False
+            out.append({"name": cmd[2], "ok": False, "tail": str(exc)})
+    return {"ok": ok, "checks": out}
+
+
+def _save_repair_artifact(prop, acceptance, version):
+    import json as _json
+    root = Path(__file__).resolve().parent.parent
+    d = root / "outputs" / "repairs" / version
+    d.mkdir(parents=True, exist_ok=True)
+    (d / "proposal.json").write_text(
+        _json.dumps(prop, ensure_ascii=False, indent=1), encoding="utf-8")
+    (d / "acceptance.log").write_text(
+        _json.dumps(acceptance, ensure_ascii=False, indent=1), encoding="utf-8")
+    lines = ["# 修复产物 " + version, "",
+             "- 提案: " + str(prop.get("id") or ""),
+             "- 任务: " + str(((prop.get("task") or {}).get("title")) or ""),
+             "- 状态: applied",
+             "- 验收: " + ("通过" if acceptance.get("ok") else "失败"), ""]
+    for c in acceptance.get("checks") or []:
+        lines.append("## " + str(c.get("name")) + " " + ("PASS" if c.get("ok") else "FAIL"))
+        lines += ["", "```", str(c.get("tail") or ""), "```", ""]
+    (d / "summary.md").write_text("\n".join(lines), encoding="utf-8")
+    return str(d)
 
 
 def _auto_cycle_all(emit=None):
@@ -1279,13 +1348,33 @@ class Handler(BaseHTTPRequestHandler):
                     res = _run_dsh_agent(prompt, str(prop.get("session_id") or ""),
                                          timeout=600, auto_repair=True,
                                          emit=_emit_fix)
-                    prop["status"] = ("applied" if (res.get("repair") or {}).get("committed")
-                                      else "failed")
+                    repair = res.get("repair") or {}
                     prop["approver"] = "dsh_auto"
                     import time as _aft
                     prop["approved_ts"] = _aft.time()
                     prop["result"] = {"ok": res.get("ok"), "gate": res.get("gate"),
-                                      "repair": res.get("repair")}
+                                      "repair": repair}
+                    if repair.get("committed"):
+                        self._stream_write({"type": "stage",
+                                            "stage": "acceptance:" + pid})
+                        acc = _targeted_acceptance(repair.get("changed") or [])
+                        prop["acceptance"] = acc
+                        self._stream_write({"type": "event", "stage": "acceptance:" + pid,
+                                            "event": {"type": "text",
+                                                      "text": "针对性验收：" + ("PASS" if acc.get("ok") else "FAIL")}})
+                        if acc.get("ok"):
+                            version = _next_repair_version()
+                            prop["version"] = version
+                            prop["status"] = "applied"
+                            prop["artifact"] = _save_repair_artifact(prop, acc, version)
+                        else:
+                            if repair.get("commit_hash"):
+                                rv = _git(["revert", "--no-edit", repair["commit_hash"]])
+                                prop["rollback_on_fail"] = {"ok": rv.get("ok"),
+                                                            "err": rv.get("err")}
+                            prop["status"] = "failed"
+                    else:
+                        prop["status"] = "failed"
                     _save_proposal(prop)
                     done.append(prop)
                     self._stream_write({"type": "proposal_result", "proposal": prop})
@@ -1449,6 +1538,21 @@ class Handler(BaseHTTPRequestHandler):
                 except Exception:
                     pass
             return
+        if p == "/api/dsh/cancel":
+            import subprocess as _csp
+            n = 0
+            for proc in list(_DSH_ACTIVE):
+                try:
+                    _csp.run(["taskkill", "/F", "/T", "/PID", str(proc.pid)],
+                             capture_output=True, timeout=10)
+                    n += 1
+                except Exception:
+                    try:
+                        proc.kill()
+                        n += 1
+                    except Exception:
+                        pass
+            return self._json({"ok": True, "cancelled": n})
         if p == "/api/dsh/agent":
             data = self._read_json()
             task = str(data.get("task") or "").strip()

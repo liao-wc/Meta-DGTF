@@ -1028,6 +1028,7 @@ function renderTasks() {
     el.dataset.html = want;
     if (stick) el.scrollTop = el.scrollHeight;
     updateRlBar();
+    updateDshStop();
   }
 }
 
@@ -1285,6 +1286,7 @@ function toggleDshMode(on) {
   const q = document.querySelector('#question');
   if (p) p.classList.toggle('on', dshMode);
   document.body.classList.toggle('dsh-mode', dshMode);
+  updateDshStop();
   dshAttachTaskId = dshMode ? currentTaskId() : null;
   if (dshAttachTaskId) dshCurrent = null;
   if (q) q.placeholder = dshMode
@@ -1313,6 +1315,16 @@ function dshEventHtml(ev) {
   }
   return '';
 }
+function updateDshStop() {
+  const b = document.querySelector('#dsh-stop');
+  if (!b) return;
+  let running = !!(dshCurrent && dshCurrent.status === 'running');
+  Object.keys(taskDsh).forEach(function (k) {
+    if (taskDsh[k] && taskDsh[k].status === 'running') running = true;
+  });
+  b.classList.toggle('hidden', !(dshMode && running));
+}
+
 function renderDshView() {
   const c = dshCurrent || {};
   const box = document.querySelector('#runlog');
@@ -1338,6 +1350,7 @@ function renderDshView() {
   if (c.status === 'running') inner += '<div class="rl-summary">Agent 运行中…</div>';
   inner += '</div>';
   body.innerHTML = inner;
+  updateDshStop();
 } 
 async function openDshArtifact(id) {
   const r = await api('/api/dsh/artifacts/' + encodeURIComponent(id));
@@ -3264,7 +3277,10 @@ function agentRenderProps() {
       + '<div class="agent-row"><span class="chip">提案</span>'
       + '<span class="chip st-' + esc(st) + '">' + esc(ST[st] || st) + '</span>'
       + '<span class="agent-t">' + esc((x.task || {}).title || x.id) + '</span></div>'
-      + '<div class="agent-meta"><span>' + esc(x.id || '') + '</span><span>' + esc(when) + '</span></div>'
+      + '<div class="agent-meta"><span>' + esc(x.id || '') + '</span><span>' + esc(when) + '</span>'
+      + (x.version ? '<span>版本 ' + esc(x.version) + '</span>' : '')
+      + (x.artifact ? '<span>产物 ' + esc(String(x.artifact).split('\\').pop()) + '</span>' : '')
+      + '</div>'
       + '<div class="agent-q">' + esc(String(x.plan || '').slice(0, 300)) + '</div>'
       + '<div class="prop-actions">' + acts + '</div></div>';
   }).join('');
@@ -4001,6 +4017,31 @@ function init() {
   if (_agentAuto) _agentAuto.addEventListener('click', () => autoAgent('all'));
   const _dshPill = $('#pill-dsh');
   if (_dshPill) _dshPill.addEventListener('click', () => toggleDshMode(!dshMode));
+  const _dshStop = $('#dsh-stop');
+  if (_dshStop) _dshStop.addEventListener('click', async () => {
+    try {
+      const r = await api('/api/dsh/cancel', {method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+      if (dshCurrent) {
+        dshCurrent.status = 'error';
+        dshCurrent.events = dshCurrent.events || [];
+        dshCurrent.events.push({type:'text', text:'已请求终止 DSH 对话（' + (r.cancelled || 0) + ' 个进程）'});
+        renderDshView();
+      }
+      Object.keys(taskDsh).forEach(function (k) {
+        if (taskDsh[k] && taskDsh[k].status === 'running') {
+          taskDsh[k].status = 'error';
+          taskDsh[k].events = taskDsh[k].events || [];
+          taskDsh[k].events.push({type:'text', text:'已请求终止 DSH 对话'});
+        }
+      });
+      persistTaskDsh(); renderTasks();
+    } catch (e) {
+      if (dshCurrent) {
+        dshCurrent.events.push({type:'text', text:'终止失败：' + e.message});
+        renderDshView();
+      }
+    }
+  });
   [['dsh-effort', 'dgtf_dsh_effort'], ['dsh-perm', 'dgtf_dsh_perm']].forEach(function (pair) {
     const el = document.getElementById(pair[0]);
     if (!el) return;
