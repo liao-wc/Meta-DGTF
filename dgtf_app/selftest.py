@@ -765,8 +765,8 @@ def check_r47_frontend(css: str, js: str, html: str, srv_src: str,
               _jsnc.find("async function importFiles"),
               _jsnc.find("async function openLocal")))(), "")
     # ★ 新需求：新会话保留对话内容与 DSH 会话，只新建元DGTF会话 id。
-    check("新会话回首屏：清当前视图但保留历史/DSH 附加数据",
-          "已新建会话，回到首屏" in _jsnc
+    check("新会话回首屏：清当前视图、保留历史/DSH 附加数据、不显示输入框提示",
+          "已新建会话，回到首屏" not in _jsnc
           and "document.body.classList.add('stage-empty')" in _jsnc
           and "localStorage.getItem('dgtf_task_dsh')" in _jsnc, "")
 

@@ -2594,7 +2594,7 @@ function newChat() {
   const q = $('#question');
   if (q) { q.value = ''; q.style.height = ''; }
   const am = $('#attach-msg');
-  if (am) am.textContent = '已新建会话，回到首屏；原元DGTF 对话与 DSH 会话都保留在历史里。';
+  if (am) am.textContent = '';
   document.body.classList.remove('stage-run');
   document.body.classList.add('stage-empty');
   setRunBtn('send');
