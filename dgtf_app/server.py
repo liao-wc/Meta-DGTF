@@ -1295,6 +1295,91 @@ def _auto_job_start(stage, data):
     return jid
 
 
+def _autofix_workflow(data, write):
+    import time as _t
+    confs = [x for x in _list_proposals(300) if x.get("status") == "confirmed"]
+    done = []
+    for prop in confs:
+        pid = str(prop.get("id") or "")
+        write({"type": "stage", "stage": "proposal:" + pid})
+
+        def _emit_fix(ev, _pid=pid):
+            write({"type": "event", "stage": "proposal:" + _pid, "event": ev})
+
+        prompt = ("按以下已确认提案执行修复：" + str(prop.get("plan") or "")
+                  + "。修改后运行 fast_gate.py，通过后只提交本次变更，不 push。")
+        try:
+            res = _run_dsh_agent(prompt, str(prop.get("session_id") or ""),
+                                 timeout=600, auto_repair=True,
+                                 model=str((data or {}).get("model") or ""),
+                                 emit=_emit_fix)
+        except Exception as exc:
+            res = {"ok": False, "events": [], "text": "", "stderr": str(exc)}
+        repair = res.get("repair") or {}
+        prop["approver"] = "dsh_auto"
+        prop["approved_ts"] = _t.time()
+        prop["result"] = {"ok": res.get("ok"), "gate": res.get("gate"),
+                          "repair": repair}
+        if repair.get("committed"):
+            write({"type": "stage", "stage": "acceptance:" + pid})
+            acc = _targeted_acceptance(repair.get("changed") or [])
+            prop["acceptance"] = acc
+            write({"type": "event", "stage": "acceptance:" + pid,
+                   "event": {"type": "text",
+                             "text": "针对性验收：" + ("PASS" if acc.get("ok") else "FAIL")}})
+            if acc.get("ok"):
+                version = _next_repair_version()
+                prop["version"] = version
+                prop["status"] = "applied"
+                prop["artifact"] = _save_repair_artifact(prop, acc, version)
+            else:
+                if repair.get("commit_hash"):
+                    rv = _git(["revert", "--no-edit", repair["commit_hash"]])
+                    prop["rollback_on_fail"] = {"ok": rv.get("ok"), "err": rv.get("err")}
+                prop["status"] = "failed"
+        else:
+            prop["status"] = "failed"
+        _save_proposal(prop)
+        done.append(prop)
+        write({"type": "proposal_result", "proposal": prop})
+    ok = all((x.get("status") == "applied") for x in done) if done else False
+    write({"type": "result", "result": {"ok": ok, "proposals": done,
+                                        "count": len(done)}})
+
+
+def _autofix_job_start(data):
+    import threading as _th
+    import time as _t
+    jid = "autofix-" + str(int(_t.time() * 1000))
+    with _auto_jobs_lock():
+        _AUTO_JOBS[jid] = {"id": jid, "stage": "autofix", "status": "running",
+                           "events": [], "result": None, "ts": _t.time()}
+        for k in sorted(list(_AUTO_JOBS), key=lambda x: _AUTO_JOBS[x].get("ts") or 0)[:-20]:
+            _AUTO_JOBS.pop(k, None)
+
+    def worker():
+        def write(msg):
+            with _auto_jobs_lock():
+                j = _AUTO_JOBS.get(jid)
+                if j is not None:
+                    j.setdefault("events", []).append(msg)
+        try:
+            _autofix_workflow(data, write)
+            with _auto_jobs_lock():
+                j = _AUTO_JOBS.get(jid) or {}
+                j["status"] = "done"
+                _AUTO_JOBS[jid] = j
+        except Exception as exc:
+            with _auto_jobs_lock():
+                j = _AUTO_JOBS.get(jid) or {}
+                j["status"] = "error"
+                j["error"] = str(exc)
+                _AUTO_JOBS[jid] = j
+
+    _th.Thread(target=worker, daemon=True).start()
+    return jid
+
+
 def _auto_job_get(jid, since=0):
     with _auto_jobs_lock():
         j = _AUTO_JOBS.get(jid)
@@ -1908,6 +1993,10 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"ok": bool(res.get("ok")), "proposal": prop})
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/dsh/proposals/autofix/start":
+            data = self._read_json()
+            jid = _autofix_job_start(data)
+            return self._json({"ok": True, "job_id": jid})
         if p == "/api/dsh/proposals/autofix/stream":
             data = self._read_json()
             self._stream_open()

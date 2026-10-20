@@ -3596,22 +3596,45 @@ async function autoFixProposals() {
   ], 'running');
   let final = null, errMsg = '';
   try {
-    await streamPost('/api/dsh/proposals/autofix/stream', {model: (document.querySelector('#dsh-model') || {}).value || 'deepseek-flash'}, function (m) {
-      if (!dshCurrent) return;
-      if (m.type === 'event' && m.event) {
-        dshCurrent.events.push(m.event);
-      } else if (m.type === 'stage') {
-        dshCurrent.events.push({type:'text', text:'── ' + m.stage + ' ──'});
-      } else if (m.type === 'proposal_result') {
-        const p = m.proposal || {};
-        dshCurrent.events.push({type:'text', text:'提案 ' + (p.id || '') + ' → ' + (p.status || '')});
-      } else if (m.type === 'result') {
-        final = m.result;
-      } else if (m.type === 'error') {
-        errMsg = m.error || '自动修复流失败';
+    const job = await api('/api/dsh/proposals/autofix/start', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({model: (document.querySelector('#dsh-model') || {}).value || 'deepseek-flash'})});
+    let idx = 0, netErrs = 0;
+    while (!final) {
+      let jr = null;
+      try {
+        jr = await api('/api/agent/auto/job/' + encodeURIComponent(job.job_id) + '?since=' + idx);
+        netErrs = 0;
+      } catch (ne) {
+        netErrs++;
+        if (dshCurrent) {
+          dshCurrent.events.push({type:'text', text:'轮询网络中断，后台修复继续执行（重试 ' + netErrs + '/8）…'});
+          renderDshView();
+        }
+        if (netErrs > 8) throw ne;
+        await new Promise(res => setTimeout(res, 800));
+        continue;
       }
-      renderDshView();
-    });
+      (jr.events || []).forEach(function (m) {
+        if (!dshCurrent) return;
+        if (m.type === 'event' && m.event) {
+          dshCurrent.events.push(m.event);
+        } else if (m.type === 'stage') {
+          dshCurrent.events.push({type:'text', text:'── ' + m.stage + ' ──'});
+        } else if (m.type === 'proposal_result') {
+          const p = m.proposal || {};
+          dshCurrent.events.push({type:'text', text:'提案 ' + (p.id || '') + ' → ' + (p.status || '')});
+        } else if (m.type === 'result') {
+          final = m.result;
+        }
+        renderDshView();
+      });
+      idx = jr.next || idx;
+      if (final) break;
+      if (jr.status === 'error') { errMsg = jr.error || '后台自动修复失败'; break; }
+      if (jr.status === 'done') { errMsg = '后台自动修复结束但没有返回结果'; break; }
+      await new Promise(res => setTimeout(res, 700));
+    }
     if (!final) throw new Error(errMsg || '没有返回结果');
     const ps = final.proposals || [];
     dshCurrent.events.push({type:'text', text:'自动修复完成：' + ps.filter(p => p.status === 'applied').length + ' 条已应用 / ' + ps.filter(p => p.status !== 'applied').length + ' 条失败'});
