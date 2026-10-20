@@ -398,8 +398,10 @@ def _list_dsh_artifacts(limit=50):
                 if ln.startswith("- task:"):
                     task = ln.split(":", 1)[1].strip()
                     break
+            rec = _get_dsh_session(p.stem) or {}
             rows.append({"id": p.stem, "size": p.stat().st_size,
-                         "task": task})
+                         "task": task, "ts": rec.get("ts") or p.stat().st_mtime,
+                         "ok": rec.get("ok")})
         except Exception:
             pass
     return rows

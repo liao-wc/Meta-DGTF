@@ -175,14 +175,13 @@ function renderAdvItem(it) {
 
 /* 高级参数页：**只列分组按钮**（点一个 → 进下一层新页看该组参数） */
 async function buildAdv() {
-  let groups = [];
+  /* 刷新失败时保留已有分组，避免“恢复出厂后只剩 CLM”这种整块消失 */
+  let groups = advGroups.filter(g => g.key !== '_cli');
   try {
     const r = await api('/api/params');
-    groups = r.groups || [];
-    /* ★ R38：后端把 CLM 组**已保存**的值（用户配置里的 `cli:` 段）随 `/api/params`
-       一并发回来（`r.cli`）—— 面板回显它，用户上次保存的值就还在框里。 */
+    if (r && Array.isArray(r.groups) && r.groups.length) groups = r.groups;
     advCliSaved = (r.cli && typeof r.cli === 'object') ? r.cli : {};
-  } catch (_) { /* 忽略 */ }
+  } catch (_) { /* 保留已有的非 CLM 分组 */ }
   const savedCli = advCliSaved || {};
   const cli = ADV.map(([k, label, ph]) =>
     ({ key: k, label, placeholder: ph,
@@ -2980,17 +2979,16 @@ async function resetAdv() {
     if (r.error) throw new Error(r.error);
     /* ★ 内存里的累积表 / 快照 / 待保存集合也一并清空 —— 不清的话旧值还留在 `advOverrides`
        里，下一轮 `collectOpts()` 会把它们当「当前面板值」提交，用户会以为「恢复了默认但没生效」。 */
-    const reopen = advCurGroup ? advCurGroup.key : null;
     Object.keys(advOverrides).forEach(k => delete advOverrides[k]);
     Object.keys(advSaved).forEach(k => delete advSaved[k]);
     advBackup = null;
     advCurGroup = null;
     await buildAdv();                     // 从服务端重读 ⇒ 面板显示出厂值
-    if (reopen && advGroups.some(g => g.key === reopen)) {
-      openAdvGroup(reopen);               // 留在当前组：直接填默认值并显示
-    } else {
-      openSheet('adv-panel');
+    if (advGroups.length <= 1) {           // 一次性刷新失败再补一次，别让分组按钮整块消失
+      await new Promise(r => setTimeout(r, 300));
+      await buildAdv();
     }
+    openSheet('adv-panel');               // 始终回分组列表：CLM + 其他所有分组都要在
     renderAdvGroups();
     advToast(r.removed ? '已恢复出厂设置（用户配置已删除，全部参数回落到出厂 yaml）'
                        : '本来就是出厂默认值，无需恢复', 'ok');
@@ -3180,11 +3178,15 @@ function agentRenderDshArt() {
   if (!box) return;
   if (!agentDshArt.length) { box.innerHTML = agentEmpty('还没有 DSH 产物。'); return; }
   box.innerHTML = agentDshArt.slice(0, 30).map(function (x) {
+    const when = x.ts ? new Date(x.ts * 1000).toLocaleString('zh-CN', {hour12:false}) : '';
+    const st = x.ok === true ? '完成' : (x.ok === false ? '失败' : '产物');
     return '<div class="agent-item agent-dsh-art-item" data-dsh-art="' + esc(x.id || '') + '">'
       + '<div class="agent-row"><span class="chip">产物</span>'
+      + '<span class="chip">' + esc(st) + '</span>'
       + '<span class="agent-t">' + esc(x.task || x.id) + '</span></div>'
-      + '<div class="agent-meta"><span>' + esc(x.id || '') + '</span><span>'
-      + esc(String(x.size || 0)) + ' B</span></div></div>';
+      + '<div class="agent-meta"><span>' + esc(x.id || '') + '</span>'
+      + (when ? '<span>' + esc(when) + '</span>' : '')
+      + '<span>' + esc(String(x.size || 0)) + ' B</span></div></div>';
   }).join('');
 }
 
@@ -3302,6 +3304,15 @@ async function submitAgentTask() {
   }
 }
 
+function showAutoDsh(question, events, status) {
+  toggleDshMode(true);
+  dshAttachTaskId = null;
+  dshCurrent = { question: question, session: 'auto-cycle', events: events || [],
+    status: status || 'running' };
+  closeSheet();
+  renderDshView();
+}
+
 async function autoAgent(stage) {
   const st = document.querySelector('#agent-auto-status');
   const btn = document.querySelector('#agent-auto');
@@ -3310,27 +3321,38 @@ async function autoAgent(stage) {
   if (btn) { btn.disabled = true; if (stage === 'all') btn.textContent = 'DSH 自动闭环运行中…'; }
   if (st) {
     st.className = 'agent-auto-status running';
-    st.textContent = stage === 'all'
-      ? 'DSH Agent 自动闭环已开始：生成/提交任务 → 运行消费者 → 自审提案。可能需要几分钟，请稍候…'
-      : 'DSH Agent 正在执行：' + stage + '…';
+    st.textContent = 'DSH Agent 自动闭环已开始，已跳转到 DSH Agent 对话框显示执行内容…';
   }
+  showAutoDsh('DSH 自动闭环 · ' + stage, [
+    {type:'status', phase:'turn_start', turn:1},
+    {type:'text', text: stage === 'all'
+      ? '开始执行：生成/提交用户任务 → 运行消费者 → 自审提案。可能需要几分钟。'
+      : '开始执行：' + stage}
+  ], 'running');
   try {
     const r = await api('/api/agent/auto', {method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({stage: stage})});
-    const parts = [];
-    if (r.task && r.task.task) parts.push('任务：' + (r.task.task.title || ''));
-    if (r.consumer && r.consumer.run) parts.push('消费者：' + JSON.stringify(r.consumer.run).slice(0, 120));
-    if (r.proposal && r.proposal.proposal) parts.push('提案：' + (r.proposal.proposal.id || ''));
+    const ev = [];
+    if (r.task && r.task.task) {
+      ev.push({type:'text', text:'自动任务：' + (r.task.task.title || '')});
+      if (r.task.task.detail) ev.push({type:'text', text:'任务详情：' + r.task.task.detail});
+      if (r.task.dsh_text) ev.push({type:'text', text:'DSH 任务生成：' + r.task.dsh_text.slice(0, 1200)});
+    }
+    if (r.consumer && r.consumer.run) ev.push({type:'text', text:'消费者：' + JSON.stringify(r.consumer.run).slice(0, 800)});
+    if (r.proposal && r.proposal.proposal) ev.push({type:'text', text:'提案：' + (r.proposal.proposal.id || '') + ' · ' + (r.proposal.proposal.status || '')});
     const secs = Math.max(1, Math.round((Date.now() - t0) / 1000));
     if (st) {
       st.className = 'agent-auto-status ' + (r.ok ? 'ok' : 'err');
-      st.textContent = (r.ok ? 'DSH 自动完成' : 'DSH 自动部分失败')
-        + '（' + secs + 's）· ' + (parts.join(' | ') || '无返回详情');
+      st.textContent = (r.ok ? 'DSH 自动完成' : 'DSH 自动部分失败') + '（' + secs + 's）';
     }
+    showAutoDsh('DSH 自动闭环 · ' + stage + ' · ' + secs + 's',
+      ev.concat([{type:'text', text: r.ok ? '自动闭环完成。' : '自动闭环部分失败。'}]),
+      r.ok ? 'done' : 'error');
     await loadAgent(); loadGitStatus();
   } catch (e) {
     if (st) { st.className = 'agent-auto-status err'; st.textContent = 'DSH 自动执行失败：' + e.message; }
+    showAutoDsh('DSH 自动闭环 · ' + stage, [{type:'text', text:'执行失败：' + e.message}], 'error');
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = oldText; }
   }
@@ -3904,14 +3926,28 @@ function init() {
     if (!ok && !auto) return;
     const id = (ok || auto).dataset.propApprove || (ok || auto).dataset.propAuto;
     const mode = ok ? 'user' : 'dsh_auto';
-    const m = document.querySelector('#agent-msg');
-    if (m) m.textContent = '提案 ' + id + ' 执行中（' + mode + '）…';
+    const prop = (agentProps || []).find(x => x.id === id) || {};
+    const title = (prop.task || {}).title || id;
+    showAutoDsh('修复提案 · ' + id, [
+      {type:'text', text:'提案：' + title},
+      {type:'text', text:'方案：' + String(prop.plan || '').slice(0, 800)},
+      {type:'text', text:'执行方式：' + (mode === 'dsh_auto' ? 'DSH 自动代理' : '我确认')}
+    ], 'running');
     try {
       const r = await api('/api/dsh/proposals/' + encodeURIComponent(id) + '/approve',
         {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode:mode})});
-      if (m) m.textContent = '提案 ' + id + '：' + ((r.proposal || {}).status || '');
+      const ev = [];
+      const res = r.result || {};
+      (res.events || []).slice(-80).forEach(x => ev.push(x));
+      if (res.gate) ev.push({type:'text', text:'fast_gate：' + (res.gate.ok ? 'PASS' : 'FAIL')});
+      if (res.repair) ev.push({type:'text', text:'提交：' + (res.repair.committed ? (res.repair.commit || '已提交') : ('未提交：' + (res.repair.why || res.repair.error || '')))});
+      ev.push({type:'text', text:'提案状态：' + ((r.proposal || {}).status || '')});
+      showAutoDsh('修复提案 · ' + id + ' · ' + ((r.proposal || {}).status || ''),
+        ev, (r.proposal || {}).status === 'applied' ? 'done' : 'error');
       loadAgent(); loadGitStatus();
-    } catch (err) { if (m) m.textContent = '执行失败：' + err.message; }
+    } catch (err) {
+      showAutoDsh('修复提案 · ' + id, [{type:'text', text:'执行失败：' + err.message}], 'error');
+    }
   });
   const _cfgBtn = $('#dsh-config-btn');
   const _cfgBox = $('#dsh-config-box');
