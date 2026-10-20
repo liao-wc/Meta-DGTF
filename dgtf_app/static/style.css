@@ -1481,3 +1481,10 @@ body.dsh-mode .dsh-ctl{display:inline-flex;align-items:center}
 #view-agent .agent-tabs{margin:10px 0 8px;padding:0}
 #view-agent .agent-tabs .pill{height:30px;padding:0 10px;font-size:12px}
 #view-agent .searchbar .ghost{height:30px;padding:0 11px;font-size:12px;border-radius:8px}
+.agent-auto-status{margin:8px 0 0;padding:8px 11px;border:1px solid var(--hair-2);
+  border-radius:var(--r-sm);font-size:12px;line-height:1.5;color:var(--t2);
+  background:rgba(255,255,255,.035)}
+.agent-auto-status.hidden{display:none}
+.agent-auto-status.running{border-color:rgba(94,106,210,.45);color:var(--accent-hi)}
+.agent-auto-status.ok{border-color:rgba(74,222,128,.42);color:var(--ok)}
+.agent-auto-status.err{border-color:rgba(255,107,107,.45);color:var(--err)}

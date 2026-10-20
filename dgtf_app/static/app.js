@@ -3303,8 +3303,17 @@ async function submitAgentTask() {
 }
 
 async function autoAgent(stage) {
-  const m = document.querySelector('#agent-msg');
-  if (m) m.textContent = 'DSH Agent 自动执行：' + stage + '…';
+  const st = document.querySelector('#agent-auto-status');
+  const btn = document.querySelector('#agent-auto');
+  const oldText = btn ? btn.textContent : '';
+  const t0 = Date.now();
+  if (btn) { btn.disabled = true; if (stage === 'all') btn.textContent = 'DSH 自动闭环运行中…'; }
+  if (st) {
+    st.className = 'agent-auto-status running';
+    st.textContent = stage === 'all'
+      ? 'DSH Agent 自动闭环已开始：生成/提交任务 → 运行消费者 → 自审提案。可能需要几分钟，请稍候…'
+      : 'DSH Agent 正在执行：' + stage + '…';
+  }
   try {
     const r = await api('/api/agent/auto', {method:'POST',
       headers:{'Content-Type':'application/json'},
@@ -3313,9 +3322,18 @@ async function autoAgent(stage) {
     if (r.task && r.task.task) parts.push('任务：' + (r.task.task.title || ''));
     if (r.consumer && r.consumer.run) parts.push('消费者：' + JSON.stringify(r.consumer.run).slice(0, 120));
     if (r.proposal && r.proposal.proposal) parts.push('提案：' + (r.proposal.proposal.id || ''));
-    if (m) m.textContent = (r.ok ? 'DSH 自动完成 · ' : 'DSH 自动部分失败 · ') + parts.join(' | ');
+    const secs = Math.max(1, Math.round((Date.now() - t0) / 1000));
+    if (st) {
+      st.className = 'agent-auto-status ' + (r.ok ? 'ok' : 'err');
+      st.textContent = (r.ok ? 'DSH 自动完成' : 'DSH 自动部分失败')
+        + '（' + secs + 's）· ' + (parts.join(' | ') || '无返回详情');
+    }
     await loadAgent(); loadGitStatus();
-  } catch (e) { if (m) m.textContent = 'DSH 自动执行失败：' + e.message; }
+  } catch (e) {
+    if (st) { st.className = 'agent-auto-status err'; st.textContent = 'DSH 自动执行失败：' + e.message; }
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = oldText; }
+  }
 }
 
 async function runAgentConsumer() {
