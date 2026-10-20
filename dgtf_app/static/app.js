@@ -3715,30 +3715,40 @@ async function runAgentConsumer() {
   }
 }
 
-async function refreshAgentKnowledge() {
-  const btn = $('#agent-know');
-  const msg = $('#agent-msg');
+async function refreshAgentKnowledge(mode) {
+  const online = mode === 'online';
   const raw = ($('#agent-kn-q') ? $('#agent-kn-q').value : '').trim();
-  const qs = raw
-    ? raw.split(/[,，]/).map(s => s.trim()).filter(Boolean).slice(0, 4)
-    : ['DeepSeek API 更新日志', 'DeepSeek V4.1 Flash 新功能'];
-  if (btn) btn.disabled = true;
-  if (msg) msg.textContent = '知识刷新中…';
+  const custom = raw ? raw.split(/[,，]/).map(s => s.trim()).filter(Boolean).slice(0, 4) : [];
+  const defaultQs = ['DeepSeek API 最新更新 模型能力 2026',
+    'AI Agent 自进化 架构 前沿 2026',
+    '多智能体 知识管理 检索增强 前沿 2026'];
+  const qs = custom.length ? custom : defaultQs;
+  const limit = custom.length ? Math.min(6, custom.length * 2) : 3;
+  const btns = ['#agent-online', '#agent-know', '#agent-kn-search']
+    .map(s => document.querySelector(s)).filter(Boolean);
+  const msg = $('#agent-msg');
+  btns.forEach(b => { b.disabled = true; });
+  if (msg) msg.textContent = online ? '联网搜索最新前沿技术知识…' : '知识刷新中…';
   try {
     const r = await api('/api/agent/knowledge', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ queries: qs }),
+      body: JSON.stringify({ queries: qs, limit: limit }),
     });
     const items = (r && r.items) || [];
     if (msg) msg.textContent = items.length
-      ? ('知识库新增 ' + items.length + ' 条')
+      ? ((online ? '联网' : '知识') + '新增 ' + items.length + ' 条'
+         + (r && r.patch ? '，补丁已写入 ' + String(r.patch).split('\\').pop() : ''))
       : '知识刷新完成：0 条（无联网结果或未配置 Key，已安全降级）';
     await loadAgent();
+    if (items.length) {
+      const tab = document.querySelector('[data-agent-tab="2"]');
+      if (tab) tab.click();
+    }
   } catch (e) {
     if (msg) msg.textContent = '知识刷新失败：' + e.message;
   } finally {
-    if (btn) btn.disabled = false;
+    btns.forEach(b => { b.disabled = false; });
   }
 }
 
@@ -4368,7 +4378,15 @@ function init() {
   const _agentRun = $('#agent-run');
   if (_agentRun) _agentRun.addEventListener('click', () => autoAgent('consumer'));
   const _agentKnow = $('#agent-know');
-  if (_agentKnow) _agentKnow.addEventListener('click', refreshAgentKnowledge);
+  if (_agentKnow) _agentKnow.addEventListener('click', () => refreshAgentKnowledge('refresh'));
+  const _agentOnline = $('#agent-online');
+  if (_agentOnline) _agentOnline.addEventListener('click', () => refreshAgentKnowledge('online'));
+  const _agentKnSearch = $('#agent-kn-search');
+  if (_agentKnSearch) _agentKnSearch.addEventListener('click', () => refreshAgentKnowledge('query'));
+  const _agentKnQ = $('#agent-kn-q');
+  if (_agentKnQ) _agentKnQ.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); refreshAgentKnowledge('query'); }
+  });
   const _agentSubmit = $('#agent-submit');
   if (_agentSubmit) _agentSubmit.addEventListener('click', submitAgentTask);
   const _agentCancel = $('#agent-cancel');

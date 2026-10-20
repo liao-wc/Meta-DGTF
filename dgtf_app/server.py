@@ -1634,12 +1634,67 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"error": str(exc)}, 500)
         if p == "/api/agent/knowledge":
             data = self._read_json()
-            qs = data.get("queries") or ["DeepSeek API 更新日志", "DeepSeek V4.1 Flash 新功能"]
+            default_qs = [
+                "DeepSeek API 最新更新 模型能力 2026",
+                "AI Agent 自进化 架构 前沿 2026",
+                "多智能体 知识管理 检索增强 前沿 2026",
+            ]
+            raw_qs = data.get("queries")
+            qs = [str(x).strip() for x in raw_qs if str(x).strip()] if isinstance(raw_qs, list) else []
+            if not qs:
+                qs = default_qs
+            limit = max(1, min(6, int(data.get("limit") or 3)))
             try:
                 import sys as _sys
-                _sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+                import time as _kt
+                _proj = Path(__file__).resolve().parent.parent
+                try:
+                    for _ln in (_proj / ".env").read_text(
+                            encoding="utf-8", errors="replace").splitlines():
+                        if _ln.startswith("DGTF_API_KEY="):
+                            os.environ.setdefault(
+                                "DGTF_API_KEY",
+                                _ln.split("=", 1)[1].strip().strip('"').strip("'"))
+                            break
+                except Exception:
+                    pass
+                _sys.path.insert(0, str(_proj))
                 from dgtf_v2.agent_bridge import refresh_knowledge_http
-                return self._json({"items": refresh_knowledge_http(qs)})
+                got = refresh_knowledge_http(qs[:4])
+                picked, seen = [], set()
+                for q in qs[:4]:
+                    for it in got:
+                        if str(it.get("query") or "") != q:
+                            continue
+                        u = str(it.get("url") or "")
+                        if u and u not in seen:
+                            seen.add(u)
+                            picked.append(it)
+                            break
+                for it in got:
+                    u = str(it.get("url") or "")
+                    if len(picked) >= limit:
+                        break
+                    if u and u not in seen:
+                        seen.add(u)
+                        picked.append(it)
+                picked = picked[:limit]
+                patch_path = ""
+                try:
+                    pdir = Path(__file__).resolve().parent.parent / "dgtf_memory"
+                    pdir.mkdir(parents=True, exist_ok=True)
+                    pp = pdir / "agent_knowledge_patch.md"
+                    with pp.open("a", encoding="utf-8") as pf:
+                        pf.write("\n## 联网技术知识补丁 " + _kt.strftime("%Y-%m-%d %H:%M:%S") + "\n")
+                        for it in picked:
+                            pf.write("- [" + str(it.get("title") or it.get("query") or "") + "]("
+                                     + str(it.get("url") or "") + ") — "
+                                     + str(it.get("claim") or "")[:200] + "\n")
+                    patch_path = str(pp)
+                except Exception:
+                    pass
+                return self._json({"items": picked, "queries": qs,
+                                   "count": len(picked), "patch": patch_path})
             except Exception as exc:
                 return self._json({"error": str(exc)}, 500)
         if p == "/api/git/status":

@@ -253,10 +253,12 @@
         <button id="agent-auto" class="ghost" data-tip="DSH Agent 一次完成：提交用户任务 → 运行消费者 → 自审提案">DSH 自动闭环</button>
         <button id="prop-autofix" class="ghost" data-tip="DSH 自动代理修复所有已确认待修复提案">自动修复提案</button>
         <button id="dsh-config-btn" class="ghost" data-tip="展开 DSH Agent 档位 / 工作权限配置">DSH Agent 配置</button>
+        <button id="agent-online" class="ghost" data-tip="联网搜索并 patch 最新前沿技术知识（默认 3 条）">联网</button>
         <button id="agent-know" class="ghost" data-tip="按查询刷新技术知识库（服务端 Search/Fetch，失败不阻断面板）">刷新技术知识</button>
         <span class="search-wrap">
-          <input id="agent-kn-q" placeholder="知识查询（逗号分隔；留空 = 默认两条）" autocomplete="off">
+          <input id="agent-kn-q" placeholder="知识查询（逗号分隔；留空 = 默认 3 条）" autocomplete="off">
         </span>
+        <button id="agent-kn-search" class="ghost" data-tip="按输入框查询联网知识">查询知识</button>
         <span class="muted" id="agent-msg"></span>
       </div>
       <div class="agent-auto-status hidden" id="agent-auto-status" role="status" aria-live="polite"></div>
