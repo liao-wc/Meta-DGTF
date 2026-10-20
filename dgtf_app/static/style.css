@@ -1467,3 +1467,17 @@ body.dsh-mode .dsh-ctl{display:inline-flex;align-items:center}
 .dd-free .dd-menu{min-width:170px}
 .dd-def{flex:0 0 auto;font-size:10px;color:var(--t3);border:1px solid var(--hair);border-radius:4px;padding:1px 4px;white-space:nowrap}
 .sheet .grid .dd-input{background:#15171B;color:#F0F2F6;border-color:rgba(255,255,255,.18)}
+/* Agent 页与其它 sheet 统一：透明页底、一个外框、内部平铺；工具条按钮同款 */
+#view-agent{background:transparent}
+#view-agent .agent-grid{display:block;background:transparent;
+  border:1px solid var(--hair-2);border-radius:var(--r-md);
+  padding:10px 14px 14px;overflow:auto;min-height:0}
+#view-agent .agent-sec{background:transparent;border:0;border-radius:0;
+  padding:0;margin:0}
+#view-agent .agent-sec-h{padding:8px 2px;border-bottom:1px solid var(--hair)}
+#view-agent .agent-list{max-height:none;overflow:visible;padding:2px 2px 8px}
+#view-agent .searchbar.tight{margin:8px 0 0;padding:0}
+#view-agent .gh-bar{margin-top:8px}
+#view-agent .agent-tabs{margin:10px 0 8px;padding:0}
+#view-agent .agent-tabs .pill{height:30px;padding:0 10px;font-size:12px}
+#view-agent .searchbar .ghost{height:30px;padding:0 11px;font-size:12px;border-radius:8px}
