@@ -638,6 +638,50 @@ def _read_dsh_artifact(sid):
         return {}
 
 
+_DSH_THINK_ZH_CACHE = {}
+
+
+def _thinking_zh(text, key):
+    """DSH thinking 兜底中文化：无中文的英文思考自动翻译；失败保留原文。"""
+    import re as _re
+    import hashlib as _h
+    s = str(text or "").strip()
+    if not s or not key:
+        return s
+    if _re.search(r"[一-龥]", s):
+        return s
+    if len(_re.findall(r"[A-Za-z]", s)) < 8:
+        return s
+    ck = _h.sha1(s.encode("utf-8")).hexdigest()
+    if ck in _DSH_THINK_ZH_CACHE:
+        return _DSH_THINK_ZH_CACHE[ck]
+    import urllib.request as _ur
+    body = json.dumps({
+        "model": "deepseek-chat",
+        "messages": [
+            {"role": "system", "content": "把英文思考翻译成简体中文，只输出译文；保留技术名词、代码、命令原文。"},
+            {"role": "user", "content": s[:6000]},
+        ],
+        "temperature": 0.1,
+        "max_tokens": 1200,
+    }).encode("utf-8")
+    req = _ur.Request("https://api.deepseek.com/chat/completions",
+                      data=body, headers={
+                          "Content-Type": "application/json",
+                          "Authorization": "Bearer " + key})
+    out = s
+    try:
+        with _ur.urlopen(req, timeout=30) as r:
+            d = json.loads(r.read().decode("utf-8"))
+        zh = str((((d.get("choices") or [{}])[0].get("message") or {}).get("content") or "")).strip()
+        if zh:
+            out = zh
+    except Exception:
+        pass
+    _DSH_THINK_ZH_CACHE[ck] = out
+    return out
+
+
 def _run_dsh_agent(task: str, sid: str = "", timeout: int = 300,
                    auto_repair: bool = False, effort: str = "",
                    permission: str = "", attach_task_id: str = "",
@@ -694,6 +738,7 @@ def _run_dsh_agent(task: str, sid: str = "", timeout: int = 300,
              "由工作台统一提交本次变更。"
              if auto_repair else "只读模式：不要修改项目文件。")
     auth = ("你在元DGTF项目根目录：%s。请始终使用简体中文回答，"
+            "思考过程（thinking）也必须使用简体中文，禁止输出英文思考；"
             "包括思考摘要、解释和最终答复；代码/命令保持原文。"
             "你有权读取该工作区内的项目文件、"
             "outputs/ 产物、docs/、dgtf_memory/、app 导入文件与配置；"
@@ -744,6 +789,8 @@ def _run_dsh_agent(task: str, sid: str = "", timeout: int = 300,
             ev = json.loads(line)
         except Exception:
             return
+        if ev.get("type") == "thinking" and ev.get("text"):
+            ev["text"] = _thinking_zh(str(ev.get("text") or ""), key)
         events.append(ev)
         if ev.get("type") == "text" and ev.get("text"):
             texts.append(str(ev["text"]))
