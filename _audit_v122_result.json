@@ -76,7 +76,7 @@
       "log_mark": "min_rounds",
       "prod_mark": "min_rounds",
       "src_hits": 54,
-      "log_hits": 299,
+      "log_hits": 301,
       "prod_hits": 0,
       "verdict": "可达"
     },
@@ -96,7 +96,7 @@
       "log_mark": "_budget_exhausted",
       "prod_mark": "_budget_exhausted",
       "src_hits": 10,
-      "log_hits": 144,
+      "log_hits": 145,
       "prod_hits": 0,
       "verdict": "可达"
     },
@@ -131,8 +131,8 @@
       "verdict": "可达"
     }
   ],
-  "n_logs": 1211,
-  "n_prods": 486,
+  "n_logs": 1229,
+  "n_prods": 511,
   "n_reach": 13,
   "n_src_only": 0,
   "n_check": 0

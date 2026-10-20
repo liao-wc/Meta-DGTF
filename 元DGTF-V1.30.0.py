@@ -968,6 +968,10 @@ _KW_TOP_N = 8
 
 # 质量线索里没提成配置的其余触发线（提了配置的见 spiral.qc_*）。
 _QC_BACKFILL_RATIO = 0.5     # 可疑候选占比 → candidates_backfilled
+# self-check 点名「后补候选」的绝对门槛：>= 它 → candidates_backfilled(sc:N)。
+# ★ 只把原先散在调用点的字面量 5 收成具名常量，行为不变；是否偏严由
+#   `_backfill_diagnose()` 的 assessment 按「回填占比 + 候选总数」评估。
+_BACKFILL_SC_MIN = 5
 _QC_DIVERSITY_RATIO = 0.4    # 结构多样性 → *_all_same_structural
 _QC_OVERLAP_POOL_RATIO = 0.7  # 候选与池的重合占比 → candidates_overlap_pool
 
@@ -1268,6 +1272,177 @@ def _cross_round_dedup(items, overlap_thr=0.70,
     if max_n is not None and len(kept) > max_n:
         kept = kept[:max_n]
     return kept
+
+
+# ------------------------------------------------------------
+# 候选回填留痕（candidates_backfilled 的「原因 + 来源 + 去重键」）
+# ------------------------------------------------------------
+# `candidates_backfilled` 有两类触发点：
+#   ① `_quality_check`：拿 `_expanded_descs` 快照比对，判「展开为 0 /
+#      不匹配占比 >= _QC_BACKFILL_RATIO」；
+#   ② `_self_check`：模型回看后报 `suspicious_candidates`，>= _BACKFILL_SC_MIN
+#      条即挂 `candidates_backfilled(sc:N)`。
+# 两类触发原先都只留一句 flag，缺三样东西：为什么判后补、候选来自哪一臂 /
+# 哪一层、以及跨圈对齐用的去重键。没有这三样，后续只能看到「候选后补」四个字。
+#
+# 下面只做**留痕与自检**：不改候选、不改 flag 文案、不抬/降阈值。
+
+def _candidate_dedup_key(desc: str) -> str:
+    """候选去重键：规范化文本的 sha1 前 12 位（跨圈稳定、可对齐）。
+
+    ★ 它**不是**去重判据本身：去重仍走 `_overlap_coef` / `_similar`
+      （近似判定，阈值见 `_final_dedup`）。键只用于日志里认出「同一条」。
+    """
+    _s = unicodedata.normalize("NFKC", str(desc or ""))
+    _s = re.sub(r"\s+", "", _s)
+    _s = re.sub(r"[^\u4e00-\u9fa5a-zA-Z0-9]", "", _s)
+    if not _s:
+        return ""
+    return hashlib.sha1(_s.encode("utf-8")).hexdigest()[:12]
+
+
+def _backfill_diagnose(candidates, expanded_descs, suspicious, *,
+                       trigger: str, reason: str, entry: str = "",
+                       round_no: int = 0,
+                       threshold: float = _BACKFILL_SC_MIN,
+                       threshold_kind: str = "count", phase: str = "",
+                       overlap_thr: float = 0.65,
+                       sim_thr: float = 0.70) -> dict:
+    """把一次「候选后补」判定落成可核对的结构化账。
+
+    `suspicious` 是 **1-based** 候选下标（与 self-check 的编号一致）。
+    返回 dict 直接挂 `view.backfill_diag`，并原样进 logger。
+    ★ 纯函数：不读全局配置、不改入参，方便单独验证。
+    """
+    def _cdesc(c) -> str:
+        if isinstance(c, dict):
+            return str(c.get("desc", "") or "").strip()
+        return str(getattr(c, "desc", "") or "").strip()
+
+    def _cget(c, key, default=""):
+        if isinstance(c, dict):
+            return c.get(key, default)
+        return getattr(c, key, default)
+
+    cands = list(candidates or [])
+    n = len(cands)
+    expanded = [str(x) for x in (expanded_descs or []) if x]
+
+    # ── 逐条回填候选：来源 / 是否命中展开快照 / 去重键 ──
+    rows = []
+    invalid = []          # 越界/非数字下标：flag 的 sc:N 与有效留痕的差账
+    seen_idx = set()
+    for raw_i in (suspicious or []):
+        try:
+            idx = int(raw_i)
+        except (TypeError, ValueError):
+            invalid.append(raw_i)
+            continue
+        if not (1 <= idx <= n):
+            invalid.append(idx)
+            continue
+        if idx in seen_idx:
+            continue
+        seen_idx.add(idx)
+        c = cands[idx - 1]
+        desc = _cdesc(c)
+        native = bool(expanded) and any(
+            _similar(desc, x, _QC_POOL_SIM) for x in expanded)
+        rows.append({
+            "index": idx,
+            "dedup_key": _candidate_dedup_key(desc),
+            "source": str(_cget(c, "source", "") or "") or "?",
+            "attribute": str(_cget(c, "attribute", "") or ""),
+            "position": str(_cget(c, "position", "") or ""),
+            "native": native,
+            # 回填原因逐条写清「为什么算后补」，而不是只留一个总数；
+            # 触发原因（self-check / 展开快照比对）由顶层 `reason` 表达。
+            "why": ("不在展开快照内（回填证据）"
+                    if not native and expanded else
+                    "命中展开快照（可能换说法/误报）"
+                    if native else
+                    "本圈无展开快照可对账"),
+            "desc": desc[:80],
+        })
+
+    # ── 去重核对：按收尾 `_final_dedup` 的同口径阈值，数近似重复对 ──
+    dup_pairs = []
+    for i in range(n):
+        a = _cdesc(cands[i])
+        if not a:
+            continue
+        for j in range(i + 1, n):
+            b = _cdesc(cands[j])
+            if not b:
+                continue
+            if (_overlap_coef(a, b) >= overlap_thr
+                    or _similar(a, b, sim_thr)):
+                dup_pairs.append([i + 1, j + 1])
+
+    # ── 置信核对：flag 的精度 = 被点名且确实不在展开快照里的比例 ──
+    # ★ 用比例而不是条数：候补总数变大时，flag 的置信不该被「分母」稀释。
+    _native_hits = sum(1 for r in rows if r["native"])
+    _backfilled = len(rows) - _native_hits
+    _confidence = (round(_backfilled / len(rows), 3) if rows else 0.0)
+
+    # ── 候选不足 vs 阈值过严：用「回填占比 + 总数」分离两种解释 ──
+    _ratio = (len(rows) / n) if n else 0.0
+    if n <= 0:
+        _verdict = "无候选（不适用）"
+        _why = "本圈没有候选，回填判据无从谈起"
+    elif len(rows) >= n:
+        _verdict = "候选不足"
+        _why = "全部候选都被点名，先补原生展开而不是放宽阈值"
+    elif _ratio >= 0.5:
+        _verdict = "候选不足为主"
+        _why = f"回填占比 {_ratio:.0%} >= 50%，候选总数 {n} 条"
+    elif _ratio <= 0.34:
+        _verdict = "阈值偏严"
+        if threshold_kind == "ratio":
+            _why = (f"回填占比 {_ratio:.0%} <= 34%，但比例门槛 "
+                    f"{float(threshold):.0%} 仍触发；候选总数 {n} 条")
+        else:
+            _why = (f"回填占比 {_ratio:.0%} <= 34%，但绝对门槛 {threshold} 条"
+                    f"仍触发；候选总数 {n} 条")
+    else:
+        _verdict = "混合"
+        _why = (f"回填占比 {_ratio:.0%}（{len(rows)}/{n}），"
+                f"候选不足与阈值偏严都可能有贡献")
+
+    return {
+        "trigger": trigger,
+        "reason": reason,
+        "source": {"layer": str(entry or ""),
+                   "round": int(round_no or 0),
+                   "expansion": "yin/yang",
+                   "phase": str(phase or "")},
+        "threshold": threshold,
+        "threshold_kind": threshold_kind,
+        "candidate_total": n,
+        "expanded_total": len(expanded),
+        "suspicious_total": len(rows),
+        "invalid_suspicious": invalid,
+        "suspicious_ratio": round(_ratio, 3),
+        "rows": rows,
+        "dedup": {
+            "overlap_thr": overlap_thr,
+            "sim_thr": sim_thr,
+            "dup_pairs": dup_pairs,
+            "dup_count": len(dup_pairs),
+            # 本判据发生在收尾 `_final_dedup` 之前 ⇒ 这里非 0 只代表
+            # 「还有近似对，等收尾去重」，不代表去重失效。
+            "stage": "pre_final_dedup",
+            "ok_before_final": not dup_pairs,
+        },
+        "signal": {
+            "native_hits": _native_hits,
+            "backfilled": _backfilled,
+            "confidence": _confidence,
+            # 置信不被总数稀释：只看被点名条目里有多少条真有「非展开」证据。
+            "confidence_ok": (not rows) or _confidence >= 0.6,
+        },
+        "assessment": {"verdict": _verdict, "why": _why},
+    }
 
 
 _ALL_DRIFT_MARKERS = (
@@ -10634,7 +10809,17 @@ class DGTF:
             if view.self_check.get("notes"):
                 self.vp(f"   🔍 self-check: {view.self_check['notes']}")
             _sc_c_list = view.self_check.get("suspicious_candidates") or []
-            if len(_sc_c_list) >= 5:
+            if len(_sc_c_list) >= _BACKFILL_SC_MIN:
+                # ★ 先留痕再挂 flag：即使本圈已因展开快照挂过
+                #   `candidates_backfilled`，self-check 的这次点名也要有账，
+                #   否则「sc:N 从哪来」仍然查不到。
+                self._record_backfill_diag(
+                    view, _sc_c_list,
+                    trigger="self_check.suspicious_candidates",
+                    reason="self-check 判定为后补（非展开生长）",
+                    round_no=inp.round_no or 0,
+                    threshold=_BACKFILL_SC_MIN, threshold_kind="count",
+                    phase="in_run")
                 if not any("candidates_backfilled" in f
                            for f in view.quality_flags):
                     view.quality_flags.append(
@@ -10642,7 +10827,7 @@ class DGTF:
                     view.quality_verdict = self._quality_verdict(
                         view.quality_flags)
                     self.vp(f"   ⚑ [self-check 联动] 可疑候选 "
-                            f"{len(_sc_c_list)} >= 5，"
+                            f"{len(_sc_c_list)} >= {_BACKFILL_SC_MIN}，"
                             f"追加 candidates_backfilled")
 
         view.rendered = self._render(view, inp)
@@ -13414,6 +13599,53 @@ class DGTF:
             return None
 
     # ---------- 质量检查 ----------
+    def _record_backfill_diag(self, view, suspicious, *, trigger: str,
+                              reason: str, round_no: int = 0,
+                              threshold: float = _BACKFILL_SC_MIN,
+                              threshold_kind: str = "count",
+                              phase: str = "") -> dict:
+        """把一次回填判定写进 logger + `view.backfill_diag`。
+
+        ★ 只留痕：不改候选、不改 flag 文案、不抬/降阈值。
+        ★ 同一圈同一触发只记一次 —— `_quality_check` 会被圈内和收尾各调一次，
+          不去重会刷两遍。全量留痕（`dump_view_fields`）会自动带出
+          `view.backfill_diag`，产物/日志里都能回查「原因 + 来源 + 去重键」。
+        """
+        try:
+            _cfg = (self.config.get("spiral") or {})
+            diag = _backfill_diagnose(
+                view.candidates, getattr(view, "_expanded_descs", None),
+                suspicious, trigger=trigger, reason=reason,
+                entry=self.entry, round_no=round_no, threshold=threshold,
+                threshold_kind=threshold_kind, phase=phase,
+                overlap_thr=float(_cfg.get("dedup_candidate_overlap", 0.65)),
+                sim_thr=float(_cfg.get("dedup_candidate_similarity", 0.70)))
+        except Exception as _e:
+            logger.warning("回填留痕失败（不阻断）：%s", _e)
+            return {}
+        _log = getattr(view, "backfill_diag", None)
+        if not isinstance(_log, list):
+            _log = []
+        _idx = [r.get("index") for r in (diag.get("rows") or [])]
+        if not any(d.get("trigger") == trigger
+                   and [r.get("index") for r in (d.get("rows") or [])] == _idx
+                   for d in _log if isinstance(d, dict)):
+            _log.append(diag)
+        view.backfill_diag = _log
+        logger.info("候选回填留痕 %s", json.dumps(diag, ensure_ascii=False))
+        _sig = diag.get("signal") or {}
+        _asm = diag.get("assessment") or {}
+        self.vp(
+            f"   🧾 [回填留痕] {trigger} · 原因={reason} · "
+            f"层={self.entry}/第{int(round_no or 0)}圈 · "
+            f"候选{diag.get('candidate_total', 0)}条/点名"
+            f"{diag.get('suspicious_total', 0)}条"
+            f"（{float(diag.get('suspicious_ratio') or 0):.0%}）· "
+            f"去重键={[r.get('dedup_key') for r in (diag.get('rows') or [])]} · "
+            f"置信={float(_sig.get('confidence') or 0):.2f} · "
+            f"判定={_asm.get('verdict', '?')}")
+        return diag
+
     def _quality_check(self, view: View, pool: Pool,
                        round_no: int = 0, *,
                        write_diag: bool = True) -> List[str]:
@@ -13430,14 +13662,22 @@ class DGTF:
         复核没写"。
         """
         flags = []
+        _bf_stage = "finalize_recheck" if not write_diag else "in_run"
         _expanded_descs = getattr(view, "_expanded_descs", None)
         if _expanded_descs is not None and view.candidates:
             if not _expanded_descs:
                 flags.append("candidates_backfilled(展开为0)")
+                self._record_backfill_diag(
+                    view, list(range(1, len(view.candidates) + 1)),
+                    trigger="quality_check.expand_empty",
+                    reason="展开快照为空，候选全部为后补",
+                    round_no=round_no, threshold_kind="count",
+                    phase=_bf_stage)
             else:
                 _unmatched = 0
                 _total = 0
-                for c in view.candidates:
+                _unmatched_idx = []
+                for _i, c in enumerate(view.candidates, 1):
                     d = str(c.get("desc", "")).strip()
                     if not d:
                         continue
@@ -13445,11 +13685,20 @@ class DGTF:
                     if not any(_similar(d, x, _QC_POOL_SIM)
                                for x in _expanded_descs if x):
                         _unmatched += 1
+                        _unmatched_idx.append(_i)
                 if _total > 0:
                     _r = _unmatched / _total
                     if _r >= _QC_BACKFILL_RATIO:
                         flags.append(
                             f"candidates_backfilled({_r:.0%})")
+                        self._record_backfill_diag(
+                            view, _unmatched_idx,
+                            trigger="quality_check.expand_unmatched",
+                            reason=(f"与展开快照不匹配占比 {_r:.0%} "
+                                    f">= {_QC_BACKFILL_RATIO:.0%}"),
+                            round_no=round_no,
+                            threshold=_QC_BACKFILL_RATIO,
+                            threshold_kind="ratio", phase=_bf_stage)
         _ing_rr = getattr(view, "_ing_rephrase_ratio", 0.0)
         _qc_rr = _spiral_num(self.config, "qc_rephrase_ratio", 0.5)
         if _ing_rr >= _qc_rr:
@@ -27417,12 +27666,28 @@ def save_result(result: dict, save_dir: str = "outputs") -> Path:
     # ★ [否定断言需证据 / 报告出口互斥闸] 即使保存的是旧 packed，也在落盘前
     #   用官方证据再对账一次：不能一边写「官方事实答案」，一边留「不存在/虚构」。
     try:
-        from dgtf_v2.input_sanity import reconcile as _is_reconcile
+        from dgtf_v2.input_sanity import (
+            negative_claims as _is_neg,
+            neutralize_negative_claims as _is_nn,
+            reconcile as _is_reconcile,
+        )
         if isinstance(result.get("input_sanity"), dict):
             _is_led = ((result.get("fact_contract") or {}).get("ledger")
                        or {})
             result["input_sanity"] = _is_reconcile(
                 result["input_sanity"], result, _is_led)
+            # 对账后若仍有否定断言（旧 packed / 非标准字段），落盘前强制中性化。
+            if _is_neg(result["input_sanity"]):
+                _san2 = _is_nn(result["input_sanity"])
+                _gate = dict(_san2.get("negative_gate") or {})
+                _gate.update({
+                    "rule": "否定断言需证据",
+                    "ok": not _is_neg(_san2),
+                    "forced_neutral_at_export": True,
+                })
+                _san2["negative_gate"] = _gate
+                result["input_sanity"] = _san2
+                logger.warning("输入自检出口闸：仍有否定断言，已强制中性化")
     except Exception as _is_e:
         logger.warning("保存前输入自检对账失败（不阻断）：%s", _is_e)
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")

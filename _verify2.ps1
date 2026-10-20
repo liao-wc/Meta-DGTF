@@ -1,0 +1,1 @@
+$env:PYTHONUTF8="1"; $env:PYTHONIOENCODING="utf-8"; python _v122_verify.py --src "元DGTF-V1.30.0.py" --phase all *> _gate_goal1_verify2.log; "VERIFY=$LASTEXITCODE"; "DONE"

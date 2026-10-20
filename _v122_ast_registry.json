@@ -1464,6 +1464,26 @@
   "_reconcile_input_sanity": {
    "phase": "input_sanity",
    "reason": "input sanity reconcile: do not assert nonexistent without evidence"
+  },
+  "_backfill_diagnose": {
+   "phase": "v1.30.0",
+   "reason": "candidate backfill diagnosis: reason/source/dedup-key/confidence/verdict; pure function"
+  },
+  "_candidate_dedup_key": {
+   "phase": "v1.30.0",
+   "reason": "stable candidate dedup key for cross-round log alignment"
+  },
+  "_cdesc": {
+   "phase": "v1.30.0",
+   "reason": "nested helper: candidate description accessor"
+  },
+  "_cget": {
+   "phase": "v1.30.0",
+   "reason": "nested helper: candidate field accessor"
+  },
+  "_record_backfill_diag": {
+   "phase": "v1.30.0",
+   "reason": "method wiring backfill diagnosis into view/log once per round"
   }
  },
  "removed": 0

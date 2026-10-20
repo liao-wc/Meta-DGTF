@@ -1,8 +1,8 @@
 # 机制审计 v122
 
-- 生成时间：2026-10-20T22:00:40
+- 生成时间：2026-10-20T23:52:28
 - 被测源码：`元DGTF-V1.22.0-rc1.py`
-- 语料：日志 1211 份 / 产物 486 份
+- 语料：日志 1229 份 / 产物 511 份
 - 合计：可达 13 · 仅源码 0 · 需核对 0（共 13 项）
 
 ★ 「零触发」不等于「没用」。verdict 只要不是 `需核对`，都说明机制在源码里存在、只是本批产物没走到那条分支 —— 要区分「条件不可达」「条件窄但成立」「机制压根没工作」需要**负对照**，那张表在 `docs/机制审计-v122.md` 的 `## pending_fix` 里。
@@ -16,16 +16,16 @@
 | `both_quota.max_ratio` | both 占比超阈值 | `both_quota` | `both_quota` | 3 | 497 | 349 | 可达 |
 | `both_tighten_ratio` | 同上，改判 | `both_tighten_ratio` | `both_tighten_ratio` | 5 | 164 | 0 | 可达 |
 | `_all_settle_streak` | 元层清算未下降 | `_all_settle_streak` | `_all_settle_streak` | 10 | 164 | 0 | 可达 |
-| `min_rounds` | layer_no < min_r | `min_rounds` | `min_rounds` | 54 | 299 | 0 | 可达 |
+| `min_rounds` | layer_no < min_r | `min_rounds` | `min_rounds` | 54 | 301 | 0 | 可达 |
 | `structure_saturation` | 每 N 圈无新维度 | `structure_saturation` | `structure_saturation` | 14 | 244 | 2 | 可达 |
-| `_budget_exhausted` | 调用数超预算 | `_budget_exhausted` | `_budget_exhausted` | 10 | 144 | 0 | 可达 |
+| `_budget_exhausted` | 调用数超预算 | `_budget_exhausted` | `_budget_exhausted` | 10 | 145 | 0 | 可达 |
 | `DecidabilityFreeze.verify` | 签名不匹配 | `DecidabilityFreeze` | `freeze` | 0 | 16 | 70 | 可达 |
 | `triage_downgrades` | 信息不足型 und + 锚点命中 | `triage_downgrades` | `triage 降级` | 2 | 168 | 6 | 可达 |
 | `_anchor_crosscheck.conflict` | 结论与锚点相反 | `锚点冲突` | `锚点冲突` | 0 | 168 | 2 | 可达 |
 
 ## 语料清单
 
-日志（1211）：
+日志（1229）：
 - `_ab2m_q1_v2.log`
 - `_ab_F2sample_biz001.log`
 - `_ab_F2sample_eng001.log`
@@ -67,7 +67,7 @@
 - `_ab_one_only1c.log`
 - `_ab_one_q2_live.log`
 
-产物（486）：
+产物（511）：
 - `bench\reports\v1221_full.md`
 - `bench\reports\v122_full.md`
 - `bench\runs\mock_p1\biz_001\20261004_223416_一家现金流紧张的中小制造企业该先裁员还.md`
