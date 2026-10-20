@@ -1458,6 +1458,7 @@ body.dsh-mode .dsh-ctl{display:inline-flex;align-items:center}
 .agent-sec.agent-tab-hidden{display:none}
 .prop-actions{display:flex;gap:6px;margin-top:6px}
 .prop-actions .danger{color:#FF7A6B}
+.chip.st-confirmed{color:var(--accent-hi)}
 .chip.st-applied{color:var(--ok)}
 .chip.st-rolled_back{color:var(--warn)}
 /* 可选可编辑下拉：默认值带（默认）标注，仍可手工填任意值 */

@@ -1258,6 +1258,60 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"ok": bool(res.get("ok")), "proposal": prop})
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/dsh/proposals/autofix/stream":
+            data = self._read_json()
+            self._stream_open()
+            confs = [x for x in _list_proposals(300)
+                     if x.get("status") == "confirmed"]
+            done = []
+            try:
+                for prop in confs:
+                    pid = str(prop.get("id") or "")
+                    self._stream_write({"type": "stage",
+                                        "stage": "proposal:" + pid})
+
+                    def _emit_fix(ev, _pid=pid):
+                        self._stream_write({"type": "event", "stage": "proposal:" + _pid,
+                                            "event": ev})
+
+                    prompt = ("按以下已确认提案执行修复：" + str(prop.get("plan") or "")
+                              + "。修改后运行 fast_gate.py，通过后只提交本次变更，不 push。")
+                    res = _run_dsh_agent(prompt, str(prop.get("session_id") or ""),
+                                         timeout=600, auto_repair=True,
+                                         emit=_emit_fix)
+                    prop["status"] = ("applied" if (res.get("repair") or {}).get("committed")
+                                      else "failed")
+                    prop["approver"] = "dsh_auto"
+                    import time as _aft
+                    prop["approved_ts"] = _aft.time()
+                    prop["result"] = {"ok": res.get("ok"), "gate": res.get("gate"),
+                                      "repair": res.get("repair")}
+                    _save_proposal(prop)
+                    done.append(prop)
+                    self._stream_write({"type": "proposal_result", "proposal": prop})
+                ok = all((x.get("status") == "applied") for x in done) if done else False
+                self._stream_write({"type": "result",
+                                    "result": {"ok": ok, "proposals": done,
+                                               "count": len(done)}})
+            except Exception as exc:
+                try:
+                    self._stream_write({"type": "error", "error": str(exc)})
+                except Exception:
+                    pass
+            return
+        if p.startswith("/api/dsh/proposals/") and p.endswith("/confirm"):
+            pid = p.split("/")[4]
+            prop = _get_proposal(pid)
+            if not prop:
+                return self._json({"error": "proposal not found"}, 404)
+            if prop.get("status") != "pending":
+                return self._json({"error": "只有 pending 提案可确认"}, 400)
+            prop["status"] = "confirmed"
+            import time as _cft
+            prop["confirmed_ts"] = _cft.time()
+            prop["approver"] = "user"
+            _save_proposal(prop)
+            return self._json({"ok": True, "proposal": prop})
         if p.startswith("/api/dsh/proposals/") and p.endswith("/rollback"):
             pid = p.split("/")[4]
             prop = _get_proposal(pid)

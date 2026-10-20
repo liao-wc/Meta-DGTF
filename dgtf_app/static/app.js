@@ -3244,14 +3244,19 @@ function agentRenderProps() {
   if (n) n.textContent = String(agentProps.length);
   if (!box) return;
   if (!agentProps.length) { box.innerHTML = agentEmpty('还没有修复提案。点「DSH 自动闭环」生成提案。'); return; }
-  const ST = {pending: '待确认', applied: '已应用', failed: '失败', rolled_back: '已回退'};
+  const ST = {pending: '待确认', confirmed: '已确认待修复', applied: '已应用', failed: '失败', rolled_back: '已回退'};
+  const nConf = agentProps.filter(x => x.status === 'confirmed').length;
+  const fixBtn = document.querySelector('#prop-autofix');
+  if (fixBtn) fixBtn.textContent = '自动修复提案' + (nConf ? '（' + nConf + '）' : '');
   box.innerHTML = agentProps.slice(0, 30).map(function (x) {
     const when = x.ts ? new Date(x.ts * 1000).toLocaleString('zh-CN', {hour12:false}) : '';
     const st = String(x.status || 'pending');
     let acts = '';
     if (st === 'pending') {
-      acts = '<button class="ghost" data-prop-approve="' + esc(x.id) + '">我确认</button>'
+      acts = '<button class="ghost" data-prop-confirm="' + esc(x.id) + '">我确认</button>'
         + '<button class="ghost" data-prop-auto="' + esc(x.id) + '">DSH 自动代理</button>';
+    } else if (st === 'confirmed') {
+      acts = '<span class="muted">已确认，等待 DSH 自动修复</span>';
     } else if (st === 'applied') {
       acts = '<button class="ghost danger" data-prop-rollback="' + esc(x.id) + '">回退并撤销修复</button>';
     }
@@ -3360,6 +3365,50 @@ function showAutoDsh(question, events, status) {
   closeSheet();
   closeDrawer();
   renderDshView();
+}
+
+async function autoFixProposals() {
+  const nConf = (agentProps || []).filter(x => x.status === 'confirmed').length;
+  if (!nConf) {
+    const m = document.querySelector('#agent-msg');
+    if (m) m.textContent = '没有已确认待修复的提案';
+    return;
+  }
+  showAutoDsh('自动修复提案 · ' + nConf + ' 条已确认', [
+    {type:'text', text:'DSH Agent 开始自动代理修复 ' + nConf + ' 条已确认提案…'}
+  ], 'running');
+  let final = null, errMsg = '';
+  try {
+    await streamPost('/api/dsh/proposals/autofix/stream', {}, function (m) {
+      if (!dshCurrent) return;
+      if (m.type === 'event' && m.event) {
+        dshCurrent.events.push(m.event);
+      } else if (m.type === 'stage') {
+        dshCurrent.events.push({type:'text', text:'── ' + m.stage + ' ──'});
+      } else if (m.type === 'proposal_result') {
+        const p = m.proposal || {};
+        dshCurrent.events.push({type:'text', text:'提案 ' + (p.id || '') + ' → ' + (p.status || '')});
+      } else if (m.type === 'result') {
+        final = m.result;
+      } else if (m.type === 'error') {
+        errMsg = m.error || '自动修复流失败';
+      }
+      renderDshView();
+    });
+    if (!final) throw new Error(errMsg || '没有返回结果');
+    const ps = final.proposals || [];
+    dshCurrent.events.push({type:'text', text:'自动修复完成：' + ps.filter(p => p.status === 'applied').length + ' 条已应用 / ' + ps.filter(p => p.status !== 'applied').length + ' 条失败'});
+    dshCurrent.status = final.ok ? 'done' : 'error';
+    dshCurrent.question = '自动修复提案 · 完成';
+    renderDshView();
+    await loadAgent(); loadGitStatus();
+  } catch (e) {
+    if (dshCurrent) {
+      dshCurrent.events.push({type:'text', text:'自动修复失败：' + e.message});
+      dshCurrent.status = 'error';
+      renderDshView();
+    }
+  }
 }
 
 async function autoAgent(stage) {
@@ -3996,6 +4045,21 @@ function init() {
       } catch (err) { if (m) m.textContent = '回退失败：' + err.message; }
       return;
     }
+    const cf = e.target.closest('[data-prop-confirm]');
+    if (cf) {
+      const cid = cf.dataset.propConfirm;
+      try {
+        const r = await api('/api/dsh/proposals/' + encodeURIComponent(cid) + '/confirm',
+          {method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+        const m0 = document.querySelector('#agent-msg');
+        if (m0) m0.textContent = '提案 ' + cid + ' 已确认，等待 DSH 自动修复';
+        loadAgent();
+      } catch (err) {
+        const m0 = document.querySelector('#agent-msg');
+        if (m0) m0.textContent = '确认失败：' + err.message;
+      }
+      return;
+    }
     const ok = e.target.closest('[data-prop-approve]');
     const auto = e.target.closest('[data-prop-auto]');
     if (!ok && !auto) return;
@@ -4035,6 +4099,8 @@ function init() {
       }
     }
   });
+  const _propFix = $('#prop-autofix');
+  if (_propFix) _propFix.addEventListener('click', autoFixProposals);
   const _cfgBtn = $('#dsh-config-btn');
   const _cfgBox = $('#dsh-config-box');
   if (_cfgBtn && _cfgBox) _cfgBtn.addEventListener('click', () => {
