@@ -146,20 +146,59 @@ def make_server(host: str, port: int, token: str = "", verbose: bool = False):
 
 
 
-def _git(args, timeout=60):
+def _git(args, timeout=60, stdin_text=None, limit=4000):
     import subprocess as _sp
     root = Path(__file__).resolve().parent.parent
     p = _sp.run(["git"] + list(args), cwd=str(root),
+                input=stdin_text,
                 text=True, encoding="utf-8", errors="replace",
                 capture_output=True, timeout=timeout)
-    return {"ok": p.returncode == 0, "out": (p.stdout or "")[-4000:],
+    return {"ok": p.returncode == 0, "out": (p.stdout or "")[-limit:],
             "err": (p.stderr or "")[-2000:]}
 
 
 def _git_snapshot():
-    r = _git(["status", "--porcelain"])
-    return set(x[3:].strip() for x in (r.get("out") or "").splitlines()
-               if len(x) > 3)
+    """脏文件名集合。
+
+    ★ 必须用 `-z`（原样路径）：非 ASCII/含空格名在普通 porcelain 里会被转义成
+      `"\\346..."`，与 `_git_fingerprints()` 的键对不上，指纹比对会全部落空。
+    """
+    r = _git(["status", "--porcelain", "-z", "--no-renames"],
+             limit=4_000_000)
+    return set(ent[3:] for ent in (r.get("out") or "").split("\0")
+               if len(ent) > 3)
+
+
+def _git_fingerprints():
+    """当前所有脏文件的内容指纹 {path: git hash}（已删除的记空串）。
+
+    ★ `_git_snapshot()` 只有文件名：任务开始前就已改过、本轮又被 DSH 改动的
+      文件前后同名，集合差是空的 ⇒ 会漏提交。指纹才能看出「内容变了」。
+    """
+    st = _git(["status", "--porcelain", "-z", "--no-renames"],
+              limit=4_000_000)
+    if not st.get("ok"):
+        return {}
+    paths = [ent[3:] for ent in (st.get("out") or "").split("\0")
+             if len(ent) > 3]
+    root = Path(__file__).resolve().parent.parent
+    live = [p for p in paths if (root / p).is_file()]
+    liveset = set(live)
+    fp = {p: "" for p in paths if p not in liveset}     # 删除/不可读
+    if not live:
+        return fp
+    h = _git(["hash-object", "--stdin-paths"],
+             stdin_text="\n".join(live) + "\n", timeout=120,
+             limit=4_000_000)
+    outs = (h.get("out") or "").splitlines()
+    if h.get("ok") and len(outs) == len(live):
+        fp.update(zip(live, outs))
+    else:                                     # 兜底：逐文件取指纹
+        for p in live:
+            r = _git(["hash-object", "--", p])
+            fp[p] = (r.get("out") or "").strip() if r.get("ok") else ""
+    return fp
+
 
 def _git_status():
     br = _git(["rev-parse", "--abbrev-ref", "HEAD"])
@@ -187,9 +226,15 @@ def _open_github_desktop():
         return {"ok": False, "error": str(exc)}
 
 
-def _auto_commit(before: set, task: str, before_head: str = ""):
+def _auto_commit(before: set, task: str, before_head: str = "", before_fp=None):
     after = _git_snapshot()
-    new = sorted(after - before)
+    new = after - before
+    if before_fp is not None:
+        # 本轮新出现的 ∪ run 前就脏、本轮内容又变了的（后者集合差看不见）
+        cur = _git_fingerprints()
+        new = new | {p for p in (after & set(before_fp))
+                     if cur.get(p) != before_fp.get(p)}
+    new = sorted(new)
     if not new:
         ah = (_git(["rev-parse", "HEAD"]).get("out") or "").strip()
         if before_head and ah and ah != before_head:
@@ -200,6 +245,9 @@ def _auto_commit(before: set, task: str, before_head: str = ""):
     a = _git(["add", "--"] + new)
     if not a.get("ok"):
         return {"committed": False, "changed": new, "error": a.get("err")}
+    if _git(["diff", "--cached", "--quiet"]).get("ok"):
+        return {"committed": False, "changed": [],
+                "why": "本次没有可提交的内容变更"}
     msg = "DSH Agent auto-repair: " + str(task)[:80]
     c = _git(["commit", "-m", msg])
     return {"committed": bool(c.get("ok")), "changed": new,
@@ -354,6 +402,7 @@ def _run_dsh_agent(task: str, sid: str = "", timeout: int = 300,
     import subprocess as _sp
     root = Path(__file__).resolve().parent.parent
     _before = _git_snapshot()
+    _before_fp = _git_fingerprints() if auto_repair else None
     _before_head = (_git(["rev-parse", "HEAD"]).get("out") or "").strip()
     dsh = _os.getenv("DSH_BIN") or str(Path(
         _os.getenv("LOCALAPPDATA", "")) /
@@ -471,7 +520,8 @@ def _run_dsh_agent(task: str, sid: str = "", timeout: int = 300,
             out["gate"] = {"ok": g.returncode == 0,
                            "tail": ((g.stdout or "") + (g.stderr or ""))[-1200:]}
             if g.returncode == 0:
-                out["repair"] = _auto_commit(_before, task, _before_head)
+                out["repair"] = _auto_commit(_before, task, _before_head,
+                                             _before_fp)
             else:
                 out["repair"] = {"committed": False, "why": "fast_gate 未通过"}
         except Exception as exc:
