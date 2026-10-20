@@ -1363,7 +1363,7 @@ function dshEventHtml(ev) {
     return '';
   }
   if (ev.type === 'thinking' && ev.text) {
-    return '<details class="rl-fold"><summary>思考</summary><div class="rl-fold-body"><div class="rl-line"><span class="rl-txt">' + esc(ev.text) + '</span></div></div></details>';
+    return '<details class="rl-fold" open><summary>思考</summary><div class="rl-fold-body"><div class="rl-line"><span class="rl-txt">' + esc(ev.text) + '</span></div></div></details>';
   }
   if (ev.type === 'tool_call') {
     return '<div class="rl-line"><span class="rl-lab">🔧 ' + esc(ev.tool || 'tool') + '</span><span class="rl-txt">' + esc(JSON.stringify(ev.input || {})) + '</span></div>';
