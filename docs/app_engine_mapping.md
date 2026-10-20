@@ -95,6 +95,21 @@ PROBE PASS 39 / FAIL 0
 - `layers`：中文层名（修行/研究/对撞/元），保持前端兼容；
 - `layers_by_id` / `layer_ids` / `stats_by_id`：规范 id `0/1/both/all`，供外部 API 与健康检查使用。
 
+
+## 8. 引擎可靠性增强（goal round 1）
+
+| 增强 | 验证 |
+|---|---|
+| 候选回填留痕：原因 + 来源层/轮次/相 + 去重键 + 置信/评估 | `_probe_v130_backfill.py` 30 PASS / 0 FAIL |
+| AMP 占比上限配置化：`spiral.amp_ratio_max` + `amp_ratio_max_by_entry` | 同步 `dgtf_config.yaml` / 方案F；smoke 配置同步检查通过 |
+| input_sanity 官方证据回放：18 条官方证据、升级条目清除、短记号防误命中 | `dgtf_v2/tests_input_sanity.py` 22 PASS / 0 FAIL |
+| AST 登记：5 个新符号逐条解释 | verify 6.6 已过 |
+
+## 9. 本轮 goal 结论
+
+- 已完成：引擎→app 映射基座、健康检查、调度 profile/preview、标准层 id、EML/接口集成探针、回填留痕可靠性增强。
+- 未完成（goal 保持 active）：真正的离线训练/微调管线、V2 shadow 对比 UI、基于实测延迟/质量/成本的帕累托前沿自动选择、后台 job 持久化。
+
 ## 7. 残留缺口（不掩盖）
 
 1. **增强训练**：当前没有可离线执行的模型训练/微调管线；本审计把 EML 反馈、自检、提案闭环作为“训练替代”验证，而不是权重训练。

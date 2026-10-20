@@ -5448,6 +5448,12 @@ def _spiral_for(config: dict, entry: str) -> dict:
     over = (sp.get("per_entry") or {}).get(entry) or {}
     sp.update(over)
     sp.pop("per_entry", None)
+    # ★ [AMP 窗口] per_entry 直接写 amp_ratio_max 时，必须盖过
+    #   `amp_ratio_max_by_entry` 的全局默认；否则按层覆盖会被默认表吞掉。
+    if "amp_ratio_max" in over:
+        _by = dict(sp.get("amp_ratio_max_by_entry") or {})
+        _by[entry] = over["amp_ratio_max"]
+        sp["amp_ratio_max_by_entry"] = _by
     return sp
 
 
@@ -7586,15 +7592,24 @@ def update_duel_suspensions(pool, view, layer: int, cfg: dict) -> dict:
 # both 比例后处理
 # ============================================================
 def _tighten_both(cands: List[dict],
-                  max_ratio: float = 0.3) -> List[dict]:
-    """both 超过阈值时按 why_0 / why_1 长度对称性重新分配。"""
+                  max_ratio: float = 0.3,
+                  max_both_override: Optional[int] = None) -> List[dict]:
+    """both 超过阈值时按 why_0 / why_1 长度对称性重新分配。
+
+    ★ [AMP 窗口校准] `max_both_override` 允许调用方按「条」而不是按
+      比例指定保留配额（0 也合法）。空集时把配额降 1 条、过载时升 1 条，
+      是本次「小步放宽 + 双向校准」的唯一入口；不传时行为逐位不变。
+    """
     if not cands:
         return cands
     both_idx = [i for i, e in enumerate(cands)
                 if e.get("position") == "both"]
     if not both_idx:
         return cands
-    max_both = max(1, int(len(cands) * max_ratio))
+    if max_both_override is None:
+        max_both = max(1, int(len(cands) * max_ratio))
+    else:
+        max_both = max(0, min(int(max_both_override), len(both_idx)))
     if len(both_idx) <= max_both:
         return cands
 
@@ -7630,6 +7645,152 @@ def _tighten_both(cands: List[dict],
     logger.info("both 收紧：%d → %d（上限 %d）",
                 len(both_idx), max_both, max_both)
     return cands
+
+
+# ============================================================
+# AMP 候选窗口：同一把尺子 + 小步双向校准
+# ============================================================
+#: 0/1 层锚点已收敛，属性≠位置更常见；both/all 层过载更可疑。
+_AMP_RATIO_MAX_BY_ENTRY = {
+    "0": 0.75, "1": 0.75, "both": 0.65, "all": 0.75,
+}
+
+
+def _amp_is_candidate(c: dict) -> bool:
+    """与 `Candidate.is_amp_candidate` 同一口径的 dict 版。
+
+    ★ 校准/诊断都在 position 被改写后重算，**不能**读 `to_dict()` 时
+      留下的旧 `is_amp_candidate` 字段（那是改写前的快照）。
+    """
+    if str(c.get("position", "")) == "both":
+        return False
+    return str(c.get("attribute", "0")) != str(c.get("position", "0"))
+
+
+def _amp_ratio_max(entry: str, spiral_cfg: dict) -> float:
+    """AMP 候选占比上限：校准与质量检查共用，避免两把尺子。"""
+    cfg = spiral_cfg or {}
+    _by = cfg.get("amp_ratio_max_by_entry") or {}
+    if isinstance(_by, dict) and entry in _by:
+        raw = _by.get(entry)
+    else:
+        raw = cfg.get("amp_ratio_max",
+                      _AMP_RATIO_MAX_BY_ENTRY.get(entry, 0.75))
+    try:
+        val = float(raw)
+    except (TypeError, ValueError):
+        val = _AMP_RATIO_MAX_BY_ENTRY.get(entry, 0.75)
+    return max(0.0, min(1.0, val))
+
+
+def _calibrate_amp_both(cands: List[dict], base_ratio: float,
+                        ratio_max: float, *, release: int = 0
+                        ) -> Tuple[List[dict], dict, int]:
+    """按「条」小步校准 both 保留配额（本次修复的核心）。
+
+    - `release > 0`：比基准配额**多释放** release 条 both（放宽）；
+    - `release < 0`：比基准配额**多保留** |release| 条 both（收紧）。
+
+    每圈最多试 ±1 条，且只有试算结果落在 `(0, ratio_max]` 才采用：
+      · 空集（amp=0）→ release+1，避免「一直空」；
+      · 过载（amp>ratio_max）→ release-1，避免「一放就爆」。
+    返回 `(候选副本, 校准留痕, 采用后的 release)`；未采用时 release 原样。
+    """
+    _src = [dict(c) for c in (cands or []) if isinstance(c, dict)]
+    n = len(_src)
+    cal = {
+        "action": "none", "applied": False, "n_candidates": n,
+        "both_before": 0, "base_quota": 0,
+        "release_before": int(release or 0),
+        "release_after": int(release or 0),
+        "quota_before": 0, "quota_after": 0,
+        "amp_ratio_before": 0.0, "amp_ratio_after": 0.0,
+        "amp_ratio_max": round(float(ratio_max), 4),
+        "trial_quota": None, "trial_amp_ratio": None,
+        "reason": "",
+    }
+    if not n:
+        cal["reason"] = "candidates_empty"
+        return _src, cal, int(release or 0)
+
+    both_n = sum(1 for c in _src
+                 if str(c.get("position", "")) == "both")
+    base_k = max(1, int(n * float(base_ratio)))
+    base_k = min(base_k, both_n)
+    rel = int(release or 0)
+    eff_k = max(0, min(both_n, base_k - rel))
+    cal.update({"both_before": both_n, "base_quota": base_k,
+                "quota_before": eff_k, "quota_after": eff_k})
+
+    def _apply(k: int) -> Tuple[List[dict], float]:
+        cc = [dict(c) for c in _src]
+        cc = _tighten_both(cc, max_ratio=base_ratio,
+                           max_both_override=k)
+        ar = (sum(1 for c in cc if _amp_is_candidate(c)) / n
+              if n else 0.0)
+        return cc, ar
+
+    cur, ar0 = _apply(eff_k)
+    cal["amp_ratio_before"] = round(ar0, 4)
+    cal["amp_ratio_after"] = round(ar0, 4)
+
+    if both_n <= 0:
+        cal["reason"] = "no_both_to_rebalance"
+        return cur, cal, rel
+
+    # 空集：只多释放 1 条（放宽）。不能一次把 both 全放掉。
+    if ar0 <= 0.0 and eff_k > 0 and rel < base_k:
+        trial_rel = rel + 1
+        trial_k = max(0, base_k - trial_rel)
+        cal["action"] = "loosen"
+        cal["trial_quota"] = trial_k
+        if trial_k < eff_k:
+            trial, ar2 = _apply(trial_k)
+            cal["trial_amp_ratio"] = round(ar2, 4)
+            if ar2 <= ratio_max:
+                cal.update({
+                    "applied": True, "release_after": trial_rel,
+                    "quota_after": trial_k,
+                    "amp_ratio_after": round(ar2, 4),
+                    "reason": ("empty_amp_loosen_one" if ar2 > 0.0
+                               else "loosen_no_effect_advance")})
+                return trial, cal, trial_rel
+            # 放宽会真的把比例顶过上限 ⇒ 本圈不采用、不推进（防一放就爆）。
+            cal["reason"] = "loosen_would_overload"
+        else:
+            cal["reason"] = "loosen_floor_reached"
+        return cur, cal, rel
+
+    # 过载：只多保留 1 条（收紧）。已经全保留时不再空转。
+    if ar0 > ratio_max and eff_k < both_n:
+        trial_rel = rel - 1
+        trial_k = max(0, min(both_n, base_k - trial_rel))
+        cal["action"] = "tighten"
+        cal["trial_quota"] = trial_k
+        if trial_k > eff_k:
+            trial, ar2 = _apply(trial_k)
+            cal["trial_amp_ratio"] = round(ar2, 4)
+            if ar2 <= ar0:
+                cal.update({
+                    "applied": True, "release_after": trial_rel,
+                    "quota_after": trial_k,
+                    "amp_ratio_after": round(ar2, 4),
+                    "reason": ("overload_tighten_one"
+                               if ar2 <= ratio_max
+                               else "overload_tighten_partial")})
+                return trial, cal, trial_rel
+            cal["reason"] = "tighten_no_effect"
+        else:
+            cal["reason"] = "tighten_ceiling_reached"
+        return cur, cal, rel
+
+    if ar0 <= 0.0:
+        cal["reason"] = "loosen_exhausted"
+    elif ar0 > ratio_max:
+        cal["reason"] = "tighten_exhausted"
+    else:
+        cal["reason"] = "within_window"
+    return cur, cal, rel
 
 
 # ============================================================
@@ -7878,6 +8039,12 @@ class View:
     delivery_share: Optional[float] = None
 
     quality_flags: List[str] = field(default_factory=list)
+    #: [AMP 窗口] 空集/过载的前置条件留痕（开关/阈值/依赖层/分布/原因码）。
+    #: 与 quality_flags 同生命周期；进 packed 与全量留痕，便于事后定位。
+    amp_diag: dict = field(default_factory=dict)
+    #: [AMP 窗口] 本圈 both 配额的小步校准留痕
+    #: （release / quota / amp_ratio before→after / 是否采用 / 原因）。
+    amp_calibration: dict = field(default_factory=dict)
     quality_verdict: str = ""
     self_check: dict = field(default_factory=dict)
 
@@ -10781,7 +10948,8 @@ class DGTF:
         # 质量检查
         view.quality_flags = self._quality_check(
             view, pool, round_no=inp.round_no or 0)
-        view.quality_verdict = self._quality_verdict(view.quality_flags)
+        view.quality_verdict = self._quality_verdict(
+            view.quality_flags, view)
         if view.quality_flags:
             self.vp(f"   ⚑ 质量线索：{', '.join(view.quality_flags)}")
             self.vp(f"   ⚖ 质量评价：{view.quality_verdict}")
@@ -10825,7 +10993,7 @@ class DGTF:
                     view.quality_flags.append(
                         f"candidates_backfilled(sc:{len(_sc_c_list)})")
                     view.quality_verdict = self._quality_verdict(
-                        view.quality_flags)
+                        view.quality_flags, view)
                     self.vp(f"   ⚑ [self-check 联动] 可疑候选 "
                             f"{len(_sc_c_list)} >= {_BACKFILL_SC_MIN}，"
                             f"追加 candidates_backfilled")
@@ -11692,6 +11860,12 @@ class DGTF:
         # 原来这里无条件记一条 error，等于又把「宁可空」打回成缺陷。
         # 只有在**一条都没判到**（解析或调用层面失败）时才算错误。
         if hit == 0 and view is not None:
+            try:
+                # ★ [AMP 诊断] 一条都没判到 ⇒ 位置全按默认 0，AMP 必空。
+                #   必须与「判断塌缩」分开留痕，否则会被误读成真实同向。
+                view._dual_unjudged = n
+            except Exception:
+                pass
             view.add_error(
                 "对偶判断",
                 f"一条都没判到（{n} 条候选全部无判断结果），"
@@ -11740,16 +11914,47 @@ class DGTF:
 
         if candidates:
             before = sum(1 for c in candidates if c.position == "both")
+            _pool = getattr(inp, "pool", None)
+            _sp = getattr(self, "sp", None) or \
+                (self.config.get("spiral") or {})
+            _base_ratio = float(_sp.get("both_tighten_ratio", 0.3))
+            try:
+                _release = int(getattr(
+                    _pool, "_amp_both_release", 0) or 0)
+            except (TypeError, ValueError):
+                _release = 0
+            _ratio_max = _amp_ratio_max(self.entry, _sp)
             cdicts = [c.to_dict() for c in candidates]
-            _tighten_ratio = float(
-                (self.config.get("spiral") or {}).get(
-                    "both_tighten_ratio", 0.3))
-            cdicts = _tighten_both(cdicts, max_ratio=_tighten_ratio)
+            cdicts, _cal, _new_release = _calibrate_amp_both(
+                cdicts, _base_ratio, _ratio_max, release=_release)
             for c, d in zip(candidates, cdicts):
                 c.position = d.get("position", c.position)
+            if _cal.get("applied") and _pool is not None:
+                try:
+                    _pool._amp_both_release = int(_new_release)
+                except Exception:
+                    pass
             after = sum(1 for c in candidates if c.position == "both")
-            if self.show_dual and before != after:
-                self.vp(f"   🔧 both 收紧：{before} → {after}")
+            _cal["both_after"] = after
+            _cal["amp_count_after"] = sum(
+                1 for c in candidates if c.is_amp_candidate)
+            if view is not None:
+                try:
+                    view.amp_calibration = dict(_cal)
+                except Exception:
+                    pass
+            if _cal.get("action") != "none":
+                logger.info("amp_calibration %s",
+                            json.dumps(_cal, ensure_ascii=False))
+            if self.show_dual and (before != after
+                                   or _cal.get("applied")):
+                self.vp(
+                    f"   🔧 both 收紧：{before} → {after}"
+                    f"（配额 {_cal.get('quota_before')}→"
+                    f"{_cal.get('quota_after')}，amp "
+                    f"{float(_cal.get('amp_ratio_before') or 0):.0%}→"
+                    f"{float(_cal.get('amp_ratio_after') or 0):.0%}；"
+                    f"{_cal.get('reason') or '—'}）")
 
         return candidates
 
@@ -13598,6 +13803,156 @@ class DGTF:
             logger.warning("position 诊断 dump 失败: %s", e)
             return None
 
+    # ---------- AMP 候选诊断 ----------
+    @staticmethod
+    def _amp_dist(cands: List[dict], key: str) -> dict:
+        """候选某个字段的分布（字符串化，空值记 `?`）。"""
+        out: Dict[str, int] = {}
+        for c in cands:
+            k = str(c.get(key, "") or "?")
+            out[k] = out.get(k, 0) + 1
+        return out
+
+    def _amp_diagnose(self, view: View, amp_cands: List[dict],
+                      pool: Optional[Pool] = None,
+                      round_no: int = 0) -> dict:
+        """把「AMP 为什么空/为什么过载」拆成可 grep 的前置条件。
+
+        覆盖提案点名的三类前置条件：
+          1. 开关：dual_judge / he / expand_yin / expand_yang；
+          2. 阈值：both_tighten_ratio、amp_ratio_max、本圈配额与校准动作；
+          3. 依赖层：upstream_layers 是否为空（both/all 才有意义）。
+        另外记 position/attribute/source 分布与判定命中数 —— 把
+        「判断塌缩」与「一条都没判到」「source 未锚定」分开。
+        """
+        cands = [c for c in (view.candidates or []) if isinstance(c, dict)]
+        n = len(cands)
+        amp_n = len(amp_cands or [])
+        ratio = amp_n / n if n else 0.0
+        _ent = str(getattr(view, "entry", "") or self.entry)
+        sp = getattr(self, "sp", None) or \
+            (self.config.get("spiral") or {})
+        thr = _amp_ratio_max(_ent, sp)
+        pos = self._amp_dist(cands, "position")
+        attr = self._amp_dist(cands, "attribute")
+        src = self._amp_dist(cands, "source")
+        both_n = int(pos.get("both", 0) or 0)
+        unjudged = int(getattr(view, "_dual_unjudged", 0) or 0)
+        cal = dict(getattr(view, "amp_calibration", {}) or {})
+        deps = int(getattr(view, "upstream_layers", 0) or 0)
+        reasons: List[str] = []
+
+        if not _action_on(self.config, "dual_judge"):
+            reasons.append("switch_off:dual_judge")
+        if not _action_on(self.config, "he"):
+            reasons.append("switch_off:he")
+        if not _action_on(self.config, "expand_yin"):
+            reasons.append("switch_off:expand_yin")
+        if not _action_on(self.config, "expand_yang"):
+            reasons.append("switch_off:expand_yang")
+        if n == 0:
+            reasons.append("candidates_empty")
+        if _ent in ("both", "all") and deps <= 0:
+            reasons.append("dependency_upstream_empty")
+        if n and unjudged >= n:
+            reasons.append("judge_zero_hit")
+        if n and both_n == n:
+            reasons.append("position_all_both")
+        _nonboth = [c for c in cands
+                    if str(c.get("position", "")) != "both"]
+        if _nonboth and all(
+                str(c.get("position", "0")) ==
+                str(c.get("attribute", "0")) for c in _nonboth):
+            reasons.append("position_eq_attribute")
+        _unanchored = [c for c in cands
+                       if str(c.get("source", "")) not in ("阴", "阳")]
+        if _unanchored:
+            reasons.append("source_unanchored:%d" % len(_unanchored))
+        if ratio > thr:
+            reasons.append("amp_overload")
+        elif n and amp_n == 0:
+            reasons.append("amp_empty")
+        if amp_n == 0 and both_n > 0 and cal.get("reason"):
+            reasons.append("calibration:%s" % cal.get("reason"))
+
+        diag = {
+            "entry": _ent,
+            "round": int(round_no or 0),
+            "n_candidates": n,
+            "amp_count": amp_n,
+            "amp_ratio": round(ratio, 4),
+            "amp_ratio_max": round(thr, 4),
+            "switch": {
+                "dual_judge": _action_on(self.config, "dual_judge"),
+                "he": _action_on(self.config, "he"),
+                "expand_yin": _action_on(self.config, "expand_yin"),
+                "expand_yang": _action_on(self.config, "expand_yang"),
+            },
+            "dependency": {
+                "upstream_layers": deps,
+                "pool_amps": len(getattr(pool, "amps", None) or []),
+                "pool_threads": len(getattr(pool, "threads", None) or []),
+                "pool_probes": len(getattr(pool, "probes", None) or []),
+            },
+            "judge": {
+                "judged": max(0, n - unjudged),
+                "unjudged": unjudged,
+            },
+            "thresholds": {
+                "both_tighten_ratio": round(
+                    float(sp.get("both_tighten_ratio", 0.3)), 4),
+                "amp_ratio_max": round(thr, 4),
+            },
+            "both": {
+                "before_tighten": int(
+                    cal.get("both_before", both_n) or 0),
+                "after_tighten": both_n,
+                "base_quota": int(cal.get("base_quota", 0) or 0),
+                "quota_used": int(cal.get("quota_after", 0) or 0),
+                "release": int(cal.get("release_after", 0) or 0),
+            },
+            "position_dist": pos,
+            "attribute_dist": attr,
+            "source_dist": src,
+            "calibration": cal,
+            "reason_codes": reasons,
+        }
+        view.amp_diag = diag
+        return diag
+
+    def _dump_amp_diagnostic(self, view: View, diag: dict,
+                             flags: List[str],
+                             round_no: int = 0) -> Optional[Path]:
+        """把一次 AMP 空/过载诊断写成可读文件（与 position 诊断同规）。"""
+        try:
+            d = Path(self.config["output"].get("save_dir", "outputs"))
+            d.mkdir(parents=True, exist_ok=True)
+            ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+            _entry = str(diag.get("entry") or self.entry)
+            f = d / f"diagnostic_amp_{_entry}_{ts}.log"
+            with open(f, "w", encoding="utf-8") as fh:
+                fh.write("# AMP 候选诊断（空集 / 过载前置条件）\n")
+                fh.write(f"entry={self.entry}\n")
+                fh.write(f"round={round_no}\n")
+                fh.write("flags=" + ", ".join(flags or []) + "\n\n")
+                fh.write(json.dumps(diag, ensure_ascii=False, indent=2))
+                fh.write("\n\n# 逐条候选\n")
+                for i, c in enumerate(view.candidates or [], 1):
+                    fh.write(
+                        f"[{i}] attr={c.get('attribute', '?')} "
+                        f"pos={c.get('position', '?')} "
+                        f"src={c.get('source', '?')} "
+                        f"amp={_amp_is_candidate(c)}\n")
+                    fh.write(f"    desc: {c.get('desc', '')}\n")
+                    fh.write(
+                        f"    why_position: {c.get('why_position', '')}\n")
+                    fh.write(
+                        f"    why_attribute: {c.get('why_attribute', '')}\n\n")
+            return f
+        except Exception as e:
+            logger.warning("AMP 诊断 dump 失败: %s", e)
+            return None
+
     # ---------- 质量检查 ----------
     def _record_backfill_diag(self, view, suspicious, *, trigger: str,
                               reason: str, round_no: int = 0,
@@ -13731,7 +14086,9 @@ class DGTF:
             else:
                 flags.append("expand_imbalanced")
 
-        amp_cands = [c for c in view.candidates if c.get("is_amp_candidate")]
+        amp_cands = [c for c in view.candidates
+                     if isinstance(c, dict) and _amp_is_candidate(c)]
+        _amp_diag = self._amp_diagnose(view, amp_cands, pool, round_no)
         if view.candidates and not amp_cands:
             if view.entry in ("both", "all"):
                 if not view.amps:
@@ -13747,14 +14104,35 @@ class DGTF:
 
         if view.candidates:
             ratio = len(amp_cands) / len(view.candidates)
-            if self.entry in ("0", "1"):
-                thr = 0.75
-            elif self.entry == "both":
-                thr = 0.65
-            else:
-                thr = 0.75
+            # ★ 与 `_calibrate_amp_both` 同一把尺子：校准用什么上限，
+            #   质量检查就用什么上限，避免「校准时 0.75、判定时 0.65」。
+            thr = _amp_ratio_max(
+                str(getattr(view, "entry", "") or self.entry),
+                getattr(self, "sp", None) or {})
             if ratio > thr:
                 flags.append(f"too_many_amp_candidates({ratio:.0%})")
+
+        # ★ [AMP 诊断] 只在空集/过载时落日志与文件，避免每圈刷屏。
+        _amp_flags = [f for f in flags if "amp" in f]
+        if _amp_flags:
+            logger.info("amp_diag %s", json.dumps(
+                _amp_diag, ensure_ascii=False))
+            self.vp(
+                f"   🧾 [AMP 诊断] 层={self.entry}/"
+                f"第{int(round_no or 0)}圈 · "
+                f"候选{_amp_diag['n_candidates']}条/"
+                f"&{_amp_diag['amp_count']}条"
+                f"（{_amp_diag['amp_ratio']:.0%}，"
+                f"上限{_amp_diag['amp_ratio_max']:.0%}）· "
+                f"dual_judge={_amp_diag['switch']['dual_judge']}/"
+                f"he={_amp_diag['switch']['he']} · "
+                f"依赖 upstream={_amp_diag['dependency']['upstream_layers']} · "
+                f"原因={'、'.join(_amp_diag['reason_codes']) or '—'}")
+            if write_diag:
+                _af = self._dump_amp_diagnostic(
+                    view, _amp_diag, flags, round_no)
+                if _af:
+                    logger.info("AMP 诊断已写：%s", _af)
 
         if any(p in (view.collision or "") for p in _BOILERPLATE):
             flags.append("ing_has_boilerplate")
@@ -13918,10 +14296,14 @@ class DGTF:
 
         return flags
 
-    def _quality_verdict(self, flags: List[str]) -> str:
+    def _quality_verdict(self, flags: List[str],
+                         view: Optional["View"] = None) -> str:
         if not flags:
             return "判断正常，无质量线索"
         has = lambda *ks: any(k in f for f in flags for k in ks)
+        _diag = getattr(view, "amp_diag", None) or {}
+        _reasons = list(_diag.get("reason_codes") or []
+                        if isinstance(_diag, dict) else [])
         _bf = [f for f in flags
                if f.startswith("candidates_backfilled")]
         _ir = [f for f in flags
@@ -13956,8 +14338,25 @@ class DGTF:
             return (f"{dims} 全同但 why_position 多样——"
                     f"结构性一致，非判断塌缩")
         if has("no_amp_candidates"):
+            if any(r.startswith("switch_off:dual_judge") for r in _reasons):
+                return ("对偶判断开关关闭：位置全按默认 0，& 不可能出生"
+                        "（不是判断塌缩）")
+            if "judge_zero_hit" in _reasons:
+                return ("对偶判断一条都没命中：位置全按默认 0，"
+                        "& 为空是调用/解析失败，不是判断塌缩")
+            if "position_all_both" in _reasons:
+                return ("位置全为 both（AMP 显式排除）：& 为空源于"
+                        "both 判定/收紧窗口，不是属性=位置")
+            if any(r.startswith("source_unanchored") for r in _reasons):
+                return ("属性锚定失效（source 未标阴阳）："
+                        "& 为空先查回填候选来源，不是判断塌缩")
             return "对偶判断塌缩（机械全同）：属性与位置全同，& 未出生"
         if has("no_amp_at_all"):
+            if "dependency_upstream_empty" in _reasons:
+                return ("上游依赖层为空：both/all 没有可对撞的输入，"
+                        "& 未生（先查依赖层，不是判断塌缩）")
+            if any(r.startswith("switch_off:") for r in _reasons):
+                return "AMP 相关开关关闭：& 未生是配置态，不是没有不可通约处"
             return "候选层与 ing 都没有沉淀出 &，本次确实没有不可通约处"
         if has("ing_empty_with_candidates"):
             return "有候选但 ing 未产出，是失败不是未生"
@@ -14197,7 +14596,8 @@ class DGTF:
         if _lim > 0 and unsaid_n > _lim and not any(
                 "unsaid_overused" in f for f in view.quality_flags):
             view.quality_flags.append(f"unsaid_overused({unsaid_n})")
-            view.quality_verdict = self._quality_verdict(view.quality_flags)
+            view.quality_verdict = self._quality_verdict(
+            view.quality_flags, view)
             self.vp(f"   ⚑ [self-check 联动] 本圈「{_UNSAID_MARK}」"
                     f"{unsaid_n} 处 > {_lim}，"
                     f"这一圈的探针没真的往里推")
@@ -20287,7 +20687,8 @@ class MetaDGTF:
         if (view.duty or {}).get("short") \
                 and "duty_short" not in view.quality_flags:
             view.quality_flags.append("duty_short")
-        view.quality_verdict = _dg._quality_verdict(view.quality_flags)
+        view.quality_verdict = _dg._quality_verdict(
+            view.quality_flags, view)
         if entry == "all":
             self._flag_all_drift(view)
         if view.quality_flags:
@@ -29292,6 +29693,14 @@ DEFAULT_CONFIG = {
             "min_items": 2,
         },
         "both_tighten_ratio": 0.3,
+        # ★ [AMP 窗口] 空集/过载双向校准用的同一把尺子。
+        #   默认值与旧硬编码逐位相同：0/1 层 0.75、both 层 0.65、all 层 0.75。
+        #   校准每圈最多动 1 条 both（见 `_calibrate_amp_both`），
+        #   只有试算落在 (0, amp_ratio_max] 才采用，避免「一放就爆」。
+        "amp_ratio_max": 0.75,
+        "amp_ratio_max_by_entry": {
+            "0": 0.75, "1": 0.75, "both": 0.65, "all": 0.75,
+        },
         "alignment_similarity": 0.7,
         "alignment_containment": 0.6,
         "dedup_candidate_overlap": 0.65,

@@ -1,0 +1,1 @@
+$env:PYTHONUTF8="1"; $env:PYTHONIOENCODING="utf-8"; $env:CODEBUDDY_SAFE_DELETE_ENABLED="0"; python smoke_test.py *> _gate_goal1_smoke5.log; "SMOKE=$LASTEXITCODE"; Get-Content _gate_goal1_smoke5.log -Tail 2 -Encoding UTF8; "DONE"
