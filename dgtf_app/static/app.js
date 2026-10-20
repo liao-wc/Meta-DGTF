@@ -3931,7 +3931,8 @@ function centerHomeHero() {
   const wr = welcome.getBoundingClientRect();
   const cr = composer.getBoundingClientRect();
   const gapCenter = (wr.bottom + cr.top) / 2;
-  const stageCenter = sr.top + sr.height / 2;
+  // 空隙中心对齐内容区中心后，再整体上提 10px（用户要求“再往上一点点”）。
+  const stageCenter = sr.top + sr.height / 2 - 10;
   const cur = parseFloat(getComputedStyle(root).getPropertyValue('--home-shift')) || 0;
   const next = Math.max(-160, Math.min(180, cur + (stageCenter - gapCenter)));
   root.style.setProperty('--home-shift', next.toFixed(1) + 'px');
