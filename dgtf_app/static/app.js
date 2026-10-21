@@ -3834,6 +3834,7 @@ function agentRenderProps() {
     sumHtml = '<div class="agent-meta" style="padding:6px 2px 8px;gap:10px">'
       + '<span>待处理 ' + esc(String((c.pending || 0) + (c.confirmed || 0))) + '</span>'
       + '<span>已应用 ' + esc(String(c.applied || 0)) + '</span>'
+      + '<span>失败/可重试 ' + esc(String((c.failed || 0) + (c.rolled_back || 0))) + '</span>'
       + '<span>已关闭 ' + esc(String((c.rejected || 0) + (c.superseded || 0))) + '</span>'
       + '<span>已过期/去重 ' + esc(String(c.expired || 0)) + '</span>'
       + '<span>项目 ' + esc(String(proj.head || '—')) + '</span>'
