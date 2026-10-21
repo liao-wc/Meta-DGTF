@@ -68,7 +68,8 @@ ck("pareto policy persisted", st == 200 and polget.get("ok")
 st, best = req("POST", "/api/schedule/v2/apply-best", {"min_n": 5}, timeout=30)
 ck("v2 best template apply", st == 200 and best.get("ok")
    and (best.get("best") or {}).get("template")
-   and (best.get("policy") or {}).get("template"), (st, best))
+   and (best.get("policy") or {}).get("template")
+   and "identifiable" in best, (st, best))
 st, v2 = req("GET", "/api/schedule/v2", timeout=30)
 ck("v2 shadow mapped", st == 200 and v2.get("ok") and v2.get("n", 0) > 0, (st, v2))
 ck("v2 A/B templates", bool(v2.get("by_template"))
@@ -79,6 +80,10 @@ ck("v2 A/B significance", st == 200 and ab.get("ok")
 st, aball = req("GET", "/api/schedule/v2/ab?all=1", timeout=30)
 ck("v2 A/B FDR", st == 200 and aball.get("ok")
    and "pairs" in aball and "significant" in aball and "q" in ((aball.get("pairs") or [{}])[0]), (st, aball))
+st, abp = req("GET", "/api/schedule/v2/ab?paired=1", timeout=30)
+ck("v2 A/B paired", st == 200 and abp.get("ok")
+   and abp.get("paired") and abp.get("n_pairs", 0) >= 2
+   and "identifiable" in abp, (st, abp))
 
 # 3) read API contract
 reads = ["/api/config", "/api/chats", "/api/outputs", "/api/outputs/facets",

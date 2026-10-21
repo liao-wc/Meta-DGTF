@@ -4514,7 +4514,8 @@ function init() {
       const r = await api('/api/schedule/v2/apply-best', {method:'POST',
         headers:{'Content-Type':'application/json'}, body: JSON.stringify({min_n:5})});
       if (m) m.textContent = r.ok ? ('已采用最佳模板：' + (((r.best || {}).template) || '') +
-        '（q≈' + String(((r.best || {}).quality) || 0) + '）') : ('失败：' + (r.error || ''));
+        '（q≈' + String(((r.best || {}).quality) || 0) + '）' +
+        (r.warning ? '；' + r.warning : '')) : ('失败：' + (r.error || ''));
       await loadAgent();
     } catch (e) {
       if (m) m.textContent = '最佳模板保存失败：' + e.message;

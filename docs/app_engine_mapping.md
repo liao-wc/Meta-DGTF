@@ -78,7 +78,8 @@ engine 元DGTF-V1.30.0.py
 | `GET /api/schedule/v2` | V2 shadow 事件读数：按 kind/layer 聚合 + 最近 5 条 + 路径 |
 | Agent 面板“V2 调度”标签 | 展示事件总数、kind/layer 分布、模板级 A/B（quality±CI/tokens/calls）、帕累托前沿、最近 5 条事件；含偏好选择与“采用帕累托”按钮 |
 | `GET /api/schedule/v2/ab` | Welch 近似 A/B：均值差、se、t、p、胜者；`all=1` 返回 Benjamini-Hochberg FDR 成对校正 |
-| `POST /api/schedule/v2/apply-best` | 按 95% 置信下界选最佳 V2 模板，写入 policy 的 template/route/rounds |
+| `POST /api/schedule/v2/apply-best` | 按 95% 置信下界选最佳 V2 模板，写入 policy；paired 不可识别时返回 warning |
+| `GET /api/schedule/v2/ab?paired=1` | 同一 run_id 的配对检验；检测 V2 影子模板 quality 是否可区分 |
 | `opts.auto_template` | 任务自动套用 policy 中的 V2 模板 route/rounds |
 | `GET/POST /api/schedule/policy` | 读取/应用真实历史帕累托推荐；profiles/auto_pareto 使用持久化策略 |
 | `dgtf_memory/schedule_policy.json` | 保存推荐 profile、coverage、tokens、prefer、applied_at |

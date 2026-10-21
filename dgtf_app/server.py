@@ -1738,6 +1738,10 @@ def _v2_apply_best(min_n=5):
     best = _v2_best_template(min_n=min_n)
     if not best:
         return {"ok": False, "error": "没有足够样本的 V2 模板"}
+    _pair = _v2_paired_ab()
+    _ident = bool(_pair.get("identifiable"))
+    _warn = ("" if _ident else
+             "V2 shadow 同一 run 内各模板 quality 相同，模板胜者不可识别；当前策略仅作影子参考")
     tmpl = str(best.get("template") or "")
     route = tmpl.split(":", 1)[0] if ":" in tmpl else "auto"
     rounds = ""
@@ -1748,15 +1752,85 @@ def _v2_apply_best(min_n=5):
                 "template_quality": best.get("quality"),
                 "template_ci95": best.get("ci95"),
                 "template_n": best.get("n"),
-                "template_applied_at": _t.time()})
+                "template_applied_at": _t.time(),
+                "template_identifiable": _ident,
+                "template_warning": _warn})
     try:
         _SCHEDULE_POLICY_FILE.parent.mkdir(parents=True, exist_ok=True)
         _SCHEDULE_POLICY_FILE.write_text(
             _json.dumps(pol, ensure_ascii=False, indent=1), encoding="utf-8")
-        return {"ok": True, "best": best, "policy": pol,
+        return {"ok": True, "best": best, "policy": pol, "warning": _warn,
+                "identifiable": _ident, "paired": _pair,
                 "path": str(_SCHEDULE_POLICY_FILE)}
     except Exception as exc:
         return {"ok": False, "error": str(exc)}
+
+
+def _v2_paired_ab(left="", right=""):
+    """同 run 配对 Welch/配对 t：消除题目难度差异。"""
+    import json as _json
+    import math as _math
+    from collections import defaultdict
+    p = Path(__file__).resolve().parent.parent / "dgtf_memory" / "v2_events.jsonl"
+    per = defaultdict(dict)
+    if p.exists():
+        try:
+            for ln in p.read_text(encoding="utf-8", errors="replace").splitlines()[-2000:]:
+                try:
+                    d = _json.loads(ln)
+                except Exception:
+                    continue
+                if not isinstance(d, dict) or str(d.get("kind") or "") != "schedule_outcome":
+                    continue
+                pl = d.get("payload") if isinstance(d.get("payload"), dict) else {}
+                t = str(pl.get("template") or "")
+                rid = str(d.get("run_id") or "")
+                if not t or not rid:
+                    continue
+                try:
+                    per[rid][t] = float(pl.get("quality") or 0)
+                except Exception:
+                    pass
+        except Exception:
+            pass
+    all_t = sorted({t for m in per.values() for t in m})
+    # 自动选「共同出现次数最多」的一对，避免选到没有交集的模板。
+    if (not left or left not in all_t or not right or right not in all_t or left == right):
+        best_pair, best_n = ("", ""), -1
+        for i in range(len(all_t)):
+            for j in range(i + 1, len(all_t)):
+                a, b = all_t[i], all_t[j]
+                nn = sum(1 for m in per.values() if a in m and b in m)
+                if nn > best_n:
+                    best_pair, best_n = (a, b), nn
+        left, right = best_pair
+    if not left or not right:
+        return {"ok": False, "error": "配对样本不足", "templates": all_t}
+    diffs = [m[left] - m[right] for m in per.values()
+             if left in m and right in m]
+    n = len(diffs)
+    if n < 2:
+        return {"ok": False, "error": "配对样本不足", "left": left,
+                "right": right, "n": n}
+    _nz = sum(1 for x in diffs if abs(x) > 1e-9)
+    _ident = _nz >= max(2, int(n * 0.2))
+    mu = sum(diffs) / n
+    sd = (sum((x - mu) ** 2 for x in diffs) / (n - 1)) ** 0.5
+    se = sd / (n ** 0.5)
+    t = (mu / se) if se > 0 else 0.0
+    # 双侧 p：正态近似（小样本仅参考）
+    pv = _math.erfc(abs(t) / (2 ** 0.5)) if se > 0 else 1.0
+    return {"ok": True, "paired": True, "left": left, "right": right,
+            "n_pairs": n, "nonzero_pairs": _nz,
+            "nonzero_ratio": round(_nz / n, 3),
+            "identifiable": bool(_ident),
+            "diff_mean": round(mu, 4),
+            "sd_diff": round(sd, 4), "se": round(se, 5),
+            "t": round(t, 3), "p_approx": round(pv, 4),
+            "winner": left if mu > 0 else right if mu < 0 else "tie",
+            "note": ("同一 run_id 的多模板配对；"
+                     + ("模板差异可识别" if _ident else
+                        "同一 run 内各模板 quality 相同，模板胜者不可识别（影子读数未独立区分模板）"))}
 
 
 def _eml_replay(limit=60, dry_run=True):
@@ -2187,6 +2261,10 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/schedule/v2/ab":
             try:
+                if str((q.get("paired") or [""])[0]) in ("1", "true", "yes"):
+                    return self._json(_v2_paired_ab(
+                        left=str((q.get("left") or [""])[0]),
+                        right=str((q.get("right") or [""])[0])))
                 if str((q.get("all") or [""])[0]) in ("1", "true", "yes"):
                     return self._json(_v2_all_pairs(
                         alpha=float((q.get("alpha") or ["0.05"])[0] or 0.05)))
