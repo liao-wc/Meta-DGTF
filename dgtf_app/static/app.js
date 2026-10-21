@@ -2785,12 +2785,12 @@ async function loadConfig() {
       '<span class="env-v">' + value + '</span></span><br>';
     const engineOk = !!(c.engine && (h.ok !== false) && checks.engine_file !== false);
     $('#env-info').innerHTML =
-      line('引擎', '<b class="mono">' + esc(c.engine) + '</b>', engineOk) +
+      line('引擎', esc(c.engine), engineOk) +
       line('模型', 'DeepSeek', !!k.api_key) +
       line('联网', 'Tavily', !!k.tavily) +
-      line('本地 LLM', '<b>' + nBack + '</b> 个底座 · 默认 Qwen0.5B', nBack > 0) +
-      line('Agent', '<b>' + (agentOk ? 'DSH 就绪 · 守护运行' : '未就绪') + '</b>', agentOk) +
-      line('产物', '<b>' + c.outputs.count + '</b> 份 · ' + c.outputs.total_mb + ' MB', c.outputs.count > 0);
+      line('本地 LLM', nBack + ' 个底座 · 默认 Qwen0.5B', nBack > 0) +
+      line('Agent', agentOk ? 'DSH 就绪 · 守护运行' : '未就绪', agentOk) +
+      line('产物', c.outputs.count + ' 份 · ' + c.outputs.total_mb + ' MB', c.outputs.count > 0);
     $('#mock').checked = !!c.mock_default;
     syncMockPill();                    // checked 变了，胶囊高亮要跟着
     $('#cost-warn').textContent = k.api_key
