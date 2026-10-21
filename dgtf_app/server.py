@@ -1720,6 +1720,45 @@ def _v2_all_pairs(alpha=0.05):
             "method": "Welch t + Benjamini-Hochberg FDR（正态近似）"}
 
 
+def _v2_best_template(min_n=5):
+    """按 quality 的 95% 下界选最佳模板（比单看均值保守）。"""
+    s = _v2_shadow_status(500)
+    bt = s.get("by_template") or {}
+    cands = [{"template": k, **v} for k, v in bt.items()
+             if int(v.get("n") or 0) >= int(min_n)]
+    if not cands:
+        return {}
+    cands.sort(key=lambda x: (x.get("low", 0), x.get("quality", 0)), reverse=True)
+    return cands[0]
+
+
+def _v2_apply_best(min_n=5):
+    import json as _json
+    import time as _t
+    best = _v2_best_template(min_n=min_n)
+    if not best:
+        return {"ok": False, "error": "没有足够样本的 V2 模板"}
+    tmpl = str(best.get("template") or "")
+    route = tmpl.split(":", 1)[0] if ":" in tmpl else "auto"
+    rounds = ""
+    if ":r" in tmpl:
+        rounds = tmpl.rsplit(":r", 1)[1]
+    pol = _schedule_policy_load()
+    pol.update({"template": tmpl, "route": route, "rounds": rounds,
+                "template_quality": best.get("quality"),
+                "template_ci95": best.get("ci95"),
+                "template_n": best.get("n"),
+                "template_applied_at": _t.time()})
+    try:
+        _SCHEDULE_POLICY_FILE.parent.mkdir(parents=True, exist_ok=True)
+        _SCHEDULE_POLICY_FILE.write_text(
+            _json.dumps(pol, ensure_ascii=False, indent=1), encoding="utf-8")
+        return {"ok": True, "best": best, "policy": pol,
+                "path": str(_SCHEDULE_POLICY_FILE)}
+    except Exception as exc:
+        return {"ok": False, "error": str(exc)}
+
+
 def _eml_replay(limit=60, dry_run=True):
     """EML 反馈回放：历史 packed → unified_memory schedule outcome → 先验。
 
@@ -2534,6 +2573,13 @@ class Handler(BaseHTTPRequestHandler):
                     dry_run=bool(data.get("dry_run", True))))
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/schedule/v2/apply-best":
+            try:
+                data = self._read_json()
+                return self._json(_v2_apply_best(
+                    min_n=int(data.get("min_n") or 5)))
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/schedule/pareto/apply":
             try:
                 data = self._read_json()
@@ -3036,6 +3082,12 @@ class Handler(BaseHTTPRequestHandler):
             if not isinstance(opts, dict):
                 opts = {}
             _auto_pareto = bool(opts.pop("auto_pareto", False))
+            _auto_template = bool(opts.pop("auto_template", False))
+            if _auto_template:
+                _pol = _schedule_policy_load()
+                if _pol.get("template"):
+                    opts.setdefault("route", str(_pol.get("route") or "auto"))
+                    opts.setdefault("rounds", str(_pol.get("rounds") or "auto"))
             if _auto_pareto and not opts.get("profile"):
                 _pol = _schedule_policy_load()
                 opts["profile"] = str(_pol.get("profile") or "方案F-帕累托最优.yaml")
@@ -3044,6 +3096,7 @@ class Handler(BaseHTTPRequestHandler):
             except ValueError as e:
                 return self._json({"error": str(e)}, 400)
             return self._json({"id": tid, "auto_pareto": _auto_pareto,
+                               "auto_template": _auto_template,
                                "profile": opts.get("profile") or ""}, 201)
 
         return self._json({"error": "not found"}, 404)

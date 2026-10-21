@@ -4506,6 +4506,20 @@ function init() {
   });
   const _agentRefresh = $('#agent-refresh');
   if (_agentRefresh) _agentRefresh.addEventListener('click', loadAgent);
+  const _v2BestApply = $('#agent-v2-best-apply');
+  if (_v2BestApply) _v2BestApply.addEventListener('click', async () => {
+    const m = document.querySelector('#agent-msg');
+    if (m) m.textContent = '正在按 V2 模板置信下界选择最佳模板…';
+    try {
+      const r = await api('/api/schedule/v2/apply-best', {method:'POST',
+        headers:{'Content-Type':'application/json'}, body: JSON.stringify({min_n:5})});
+      if (m) m.textContent = r.ok ? ('已采用最佳模板：' + (((r.best || {}).template) || '') +
+        '（q≈' + String(((r.best || {}).quality) || 0) + '）') : ('失败：' + (r.error || ''));
+      await loadAgent();
+    } catch (e) {
+      if (m) m.textContent = '最佳模板保存失败：' + e.message;
+    }
+  });
   const _paretoApply = $('#agent-pareto-apply');
   if (_paretoApply) _paretoApply.addEventListener('click', async () => {
     const m = document.querySelector('#agent-msg');

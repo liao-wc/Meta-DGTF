@@ -65,6 +65,10 @@ ck("pareto policy apply", st == 200 and pol.get("ok")
 st, polget = req("GET", "/api/schedule/policy", timeout=30)
 ck("pareto policy persisted", st == 200 and polget.get("ok")
    and (polget.get("policy") or {}).get("profile"), (st, polget))
+st, best = req("POST", "/api/schedule/v2/apply-best", {"min_n": 5}, timeout=30)
+ck("v2 best template apply", st == 200 and best.get("ok")
+   and (best.get("best") or {}).get("template")
+   and (best.get("policy") or {}).get("template"), (st, best))
 st, v2 = req("GET", "/api/schedule/v2", timeout=30)
 ck("v2 shadow mapped", st == 200 and v2.get("ok") and v2.get("n", 0) > 0, (st, v2))
 ck("v2 A/B templates", bool(v2.get("by_template"))
@@ -116,6 +120,8 @@ ck("auto job persisted/list", st == 200 and any(
 st, t = req("POST", "/api/tasks", {"question": "元DGTF app 集成探针：四层为什么要互相校验？",
                                    "opts": {"mock": True, "auto_pareto": True}})
 ck("mock task create", st == 201 and t.get("id") and t.get("auto_pareto") and "帕累托" in str(t.get("profile")), (st, t))
+st, tt = req("POST", "/api/tasks", {"question": "模板探针", "opts": {"mock": True, "auto_template": True}})
+ck("auto_template task", st == 201 and tt.get("id") and tt.get("auto_template"), (st, tt))
 tid = t.get("id", "")
 task = None
 if tid:
