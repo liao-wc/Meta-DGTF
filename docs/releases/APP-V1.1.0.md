@@ -27,6 +27,24 @@
 - audit 70/0
 - 集成探针 64/0
 
+## 全流程闭环
+
+- 知识刷新（DeepSeek Search 优先，arXiv 兜底）→ 引擎跑次（默认 mock）→ 消费者/任务 → 提案。
+- UI/API：Agent 面板“全流程闭环”，POST /api/agent/auto/start {stage:"full"}。
+
+## 本地调度模型
+
+- train_scheduler_model.py 使用 EML/V2 + packed 上下文训练岭回归。
+- 权重：models/scheduler_model_v1.json。
+- 留出：quality MAE 0.112 / 基线 0.180，R² 0.293；token 模型 R² 为负，不采用。
+- 应用：GET /api/schedule/model/predict、POST /apply、UI“采用学习模型”。
+
+## 针对性真跑
+
+- 2026-10-21：60 calls / 341K tokens / 758.9s / 四层 route 但预算在 1 层截断。
+- 产物：outputs/20261021_125449_EML事件记忆如何提升元DGTF多模调.md。
+- 本次成本约 ¥0.76；前一次被打断约 ¥1.02。
+
 ## 边界
 
 - 未做 LLM 权重 fine-tune；训练为 EML 数值/调度统计管线。
