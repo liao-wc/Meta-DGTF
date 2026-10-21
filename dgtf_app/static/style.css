@@ -1665,3 +1665,8 @@ body.stage-empty main.stage{padding-bottom:0}
 .env .env-k{font-weight:400 !important}
 .env{line-height:18px !important;transform:translateY(-20px)}
 .drawer-nav{margin-top:-15px;margin-bottom:auto;transform:none}
+
+/* 再紧凑：字号/行距再小一点，整体与按钮同步再上移 */
+.env .env-k,.env .env-v,.env .env-v b{font-size:9.5px !important;line-height:16px !important;font-weight:400 !important}
+.env{line-height:16px !important;transform:translateY(-25px)}
+.drawer-nav{margin-top:-20px;margin-bottom:auto;transform:none}
