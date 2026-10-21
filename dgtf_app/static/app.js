@@ -3441,6 +3441,7 @@ let agentKnowledge = [];
 let agentDsh = [];
 let agentDshArt = [];
 let agentProps = [];
+let agentPropSummary = null;
 let agentLastRun = null;
 let agentV2 = null;
 let agentPareto = null;
@@ -3673,8 +3674,24 @@ function agentRenderProps() {
   if (n) n.textContent = String(agentProps.length);
   if (!box) return;
   if (!agentProps.length) { box.innerHTML = agentEmpty('还没有修复提案。点「DSH 全流程闭环」生成提案。'); return; }
+  let sumHtml = '';
+  if (agentPropSummary && agentPropSummary.counts) {
+    const c = agentPropSummary.counts || {};
+    const proj = agentPropSummary.project || {};
+    sumHtml = '<div class="agent-meta" style="padding:6px 2px 8px;gap:10px">'
+      + '<span>待处理 ' + esc(String((c.pending || 0) + (c.confirmed || 0))) + '</span>'
+      + '<span>已应用 ' + esc(String(c.applied || 0)) + '</span>'
+      + '<span>已过期/去重 ' + esc(String(c.expired || 0)) + '</span>'
+      + '<span>项目 ' + esc(String(proj.head || '—')) + '</span>'
+      + '</div>';
+  }
   const ST = {pending: '待确认', confirmed: '已确认待修复', applied: '已应用', failed: '失败', rolled_back: '已回退', expired: '已过期'};
-  const live = agentProps.filter(x => x.status !== 'expired');
+  const PR = {P0: 0, P1: 1, P2: 2, P3: 3};
+  const live = agentProps.filter(x => x.status !== 'expired').sort(function (a, b) {
+    const pa = PR[((a.triage || {}).priority) || 'P2'];
+    const pb = PR[((b.triage || {}).priority) || 'P2'];
+    return (pa - pb) || (Number(b.ts || 0) - Number(a.ts || 0));
+  });
   const nExp = agentProps.length - live.length;
   if (!live.length) {
     box.innerHTML = agentEmpty('当前没有待处理提案；已过期/去重 ' + nExp + ' 条（无需修复）。');
@@ -3685,7 +3702,7 @@ function agentRenderProps() {
   const nConf = live.filter(x => x.status === 'confirmed').length;
   const fixBtn = document.querySelector('#prop-autofix');
   if (fixBtn) fixBtn.textContent = '自动修复提案' + (nConf ? '（' + nConf + '）' : '');
-  box.innerHTML = live.slice(0, 30).map(function (x) {
+  box.innerHTML = sumHtml + live.slice(0, 30).map(function (x) {
     const when = fmtTs(x.ts);
     const st = String(x.status || 'pending');
     let acts = '';
@@ -3698,8 +3715,10 @@ function agentRenderProps() {
       acts = '<button class="ghost danger" data-prop-rollback="' + esc(x.id) + '">回退并撤销修复</button>';
       if (x.acceptance) acts += '<button class="ghost" data-acceptance="' + esc(x.id) + '">验收对话</button>';
     }
+    const tri = x.triage || {};
     return '<div class="agent-item">'
-      + '<div class="agent-row"><span class="chip">提案</span>'
+      + '<div class="agent-row"><span class="chip">' + esc(tri.priority || 'P2') + '</span>'
+      + '<span class="chip">' + esc(tri.category || 'other') + '</span>'
       + '<span class="chip st-' + esc(st) + '">' + esc(ST[st] || st) + '</span>'
       + '<span class="agent-t">' + esc((x.task || {}).title || x.id) + '</span></div>'
       + '<div class="agent-meta"><span>' + esc(x.id || '') + '</span>'
@@ -3707,10 +3726,21 @@ function agentRenderProps() {
       + (x.version ? '<span>版本 ' + esc(x.version) + '</span>' : '')
       + (x.artifact ? '<span>产物 ' + esc(String(x.artifact).split('\\').pop()) + '</span>' : '')
       + (x.expired_reason ? '<span>过期：' + esc(x.expired_reason) + '</span>' : '')
+      + (tri.reason ? '<span>分诊：' + esc(tri.reason) + '</span>' : '')
       + '</div>'
       + '<div class="agent-q">' + esc(String(x.plan || '').slice(0, 300)) + '</div>'
       + '<div class="prop-actions">' + acts + '</div></div>';
-  }).join('') + (nExp ? '<div class="agent-meta" style="padding:8px 2px;"><span>另有 ' + nExp + ' 条已过期/去重，无需修复</span></div>' : '');
+  }).join('') + (nExp ? (function () {
+    const rc = {};
+    agentProps.forEach(function (x) {
+      if (x.status !== 'expired') return;
+      const r = (x.triage || {}).reason || x.expired_reason || 'expired';
+      rc[r] = (rc[r] || 0) + 1;
+    });
+    return '<div class="agent-meta" style="padding:8px 2px;gap:10px"><span>另有 ' + nExp + ' 条已过期/去重，无需修复</span>'
+      + Object.keys(rc).map(function (r) { return '<span>' + esc(r) + ' ×' + rc[r] + '</span>'; }).join('')
+      + '</div>';
+  })() : '');
 }
 
 function agentV2ParetoSvg(d) {
@@ -3912,6 +3942,7 @@ async function loadAgent() {
   agentDsh = (ds && ds.sessions) || [];
   agentDshArt = (da && da.artifacts) || [];
   agentProps = (pr && pr.proposals) || [];
+  agentPropSummary = (pr && pr.summary) || null;
   agentV2 = v2 || null;
   agentPareto = pa || null;
   agentV2AB = vab || null;

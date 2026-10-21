@@ -584,21 +584,121 @@ def _save_proposal(rec):
     return rec
 
 
-def _proposal_triage():
-    """修复提案过期/去重：只改状态，不删历史。
+_PROP_TEXT_CACHE = {}
 
-    - pending 超过 24h：过期；
-    - confirmed 超过 72h：过期；
-    - 空标题/乱码/自指任务：过期；
-    - 夹具空跑（rounds=0 且 product_chars=0）：过期；
-    - 同标题保留「applied > confirmed > pending > failed」最优状态及最新一条。
+
+def _prop_cached_text(path):
+    import os as _os
+    try:
+        st = _os.stat(str(path))
+        key = (int(st.st_mtime_ns), int(st.st_size))
+    except Exception:
+        return ""
+    hit = _PROP_TEXT_CACHE.get(str(path))
+    if hit and hit[0] == key:
+        return hit[1]
+    try:
+        txt = Path(path).read_text(encoding="utf-8", errors="replace")
+    except Exception:
+        txt = ""
+    _PROP_TEXT_CACHE[str(path)] = (key, txt)
+    return txt
+
+
+def _proposal_project_context():
+    """项目实时指纹：HEAD、关键文件 mtime、队列规模。用于判断提案是否已被新版本修掉。"""
+    import hashlib as _hash
+    import os as _os
+    import subprocess as _sub
+    import time as _t
+    root = Path(__file__).resolve().parent.parent
+    head = ""
+    head_ts = 0
+    try:
+        r = _sub.run(["git", "rev-parse", "HEAD"], cwd=str(root), text=True,
+                     capture_output=True, timeout=5)
+        head = (r.stdout or "").strip()
+        r2 = _sub.run(["git", "log", "-1", "--format=%ct", "HEAD"], cwd=str(root),
+                      text=True, capture_output=True, timeout=5)
+        head_ts = int((r2.stdout or "0").strip() or 0)
+    except Exception:
+        pass
+    files = ["元DGTF-V1.30.0.py", "dgtf_v2/agent_bridge.py",
+             "dgtf_app/server.py", "dgtf_app/static/app.js"]
+    parts = [head]
+    mtimes = {}
+    for rel in files:
+        try:
+            st = _os.stat(str(root / rel))
+            mtimes[rel] = float(st.st_mtime)
+            parts.append("%s:%d:%d" % (rel, int(st.st_mtime), int(st.st_size)))
+        except Exception:
+            mtimes[rel] = 0.0
+    q = root / "dgtf_memory" / "agent_tasks.jsonl"
+    try:
+        qn = sum(1 for _ in q.open(encoding="utf-8", errors="replace"))
+    except Exception:
+        qn = 0
+    eng = _prop_cached_text(root / "元DGTF-V1.30.0.py")
+    br = _prop_cached_text(root / "dgtf_v2/agent_bridge.py")
+    return {
+        "head": head[:12],
+        "head_ts": head_ts,
+        "fingerprint": _hash.sha1("|".join(parts).encode("utf-8")).hexdigest()[:16],
+        "queue_n": qn,
+        "checked_at": _t.time(),
+        "mtimes": mtimes,
+        "fixed": {
+            "fact_wording": "官方记录日期" in eng,
+            "probe_link_guard": "只有确实带 id 形态" in eng,
+            "input_sanity": "neutralize_negative_claims" in eng,
+            "queue_gate": "_is_fixture_run" in br,
+        },
+    }
+
+
+def _prop_classify(title, detail, severity):
+    """提案归类 + 优先级（P0 最高，P3 最低）。"""
+    t = str(title or "")
+    low = t.lower()
+    if (not t) or t.count("?") >= 2 or t in (
+            "根据生成的提案执行任务", "app ????", "?? Tool Calls ??"):
+        return "noise", "P3"
+    if "EML" in t or "eml_candidate" in str(detail):
+        return "eml_experiment", "P3"
+    if ("验收" in t or "验证" in t) and ("探针" in t or "自动修复" in t or "autofix" in low):
+        return "verification", "P2"
+    if ("docs/" in t) or ("文档" in t):
+        return "docs", "P2"
+    if ("事实" in t) or ("发布" in t) or ("日期" in t and "事实" in str(detail)):
+        return "fact_correctness", "P0" if severity == "high" else "P1"
+    if "输入自检" in t:
+        return "input_sanity", "P0"
+    if ("probe_link" in low) or ("悬空" in t) or ("误报" in t) or ("闭合" in t):
+        return "probe_quality", "P1" if severity in ("high", "med") else "P2"
+    if ("队列" in t) or ("Tool Calls" in t) or ("Agent" in t and "来源" in t):
+        return "agent_runtime", "P1" if severity in ("high", "med") else "P2"
+    if "质量线索" in t:
+        return "quality_signal", "P2"
+    if ("层 " in t and "过程标准" in t):
+        return "process_gap", "P2"
+    return "other", "P2"
+
+
+def _proposal_triage():
+    """自动分诊：归类、优先级、过期原因、项目实时对账、历史留存。
+
+    只改状态和 triage 元数据，不删除提案文件；每次分诊写 _index.json 留存。
     """
     import json as _json
     import time as _t
     now = _t.time()
+    ctx = _proposal_project_context()
     per = _proposal_dir()
     rows = []
     for p in per.glob("*.json"):
+        if p.name.startswith("_"):
+            continue
         try:
             rec = _json.loads(p.read_text(encoding="utf-8"))
         except Exception:
@@ -610,49 +710,69 @@ def _proposal_triage():
             rec["ts"] = p.stat().st_mtime
         rows.append(rec)
 
-    def _save(rec):
-        p = rec.pop("_path", None)
-        if p is None:
-            return
-        p.write_text(_json.dumps(rec, ensure_ascii=False, indent=1), encoding="utf-8")
-
-    changed = set()
-    for rec in rows:
-        st = str(rec.get("status") or "pending")
-        if st not in ("pending", "confirmed"):
-            continue
-        title = str((rec.get("task") or {}).get("title") or "").strip()
-        detail = str((rec.get("task") or {}).get("detail") or "")
-        age = now - float(rec.get("ts") or now)
-        reason = ""
-        if st == "pending" and age > 86400:
-            reason = "pending_ttl_24h"
-        elif st == "confirmed" and age > 3 * 86400:
-            reason = "confirmed_ttl_72h"
-        elif (not title) or (title.count("?") >= 2) or title in (
-                "根据生成的提案执行任务", "app ????", "?? Tool Calls ??"):
-            reason = "noise_or_self_referential"
-        elif ('"rounds":0' in detail.replace(" ", "")
-              and '"product_chars":0' in detail.replace(" ", "")):
-            reason = "fixture_empty_run"
-        elif str((rec.get("task") or {}).get("severity") or "") == "low" and age > 86400:
-            reason = "low_stale_quality"
-        if reason:
-            rec["status"] = "expired"
-            rec["expired_reason"] = reason
-            rec["expired_ts"] = now
-            changed.add(id(rec))
-
     rank = {"applied": 5, "confirmed": 4, "pending": 3, "failed": 2,
             "rolled_back": 1, "expired": 0}
+    changed = set()
+
+    # 1) 分诊 + 过期规则
+    for rec in rows:
+        st = str(rec.get("status") or "pending")
+        task = rec.get("task") or {}
+        title = str(task.get("title") or "").strip()
+        detail = str(task.get("detail") or "")
+        sev = str(task.get("severity") or "")
+        cat, prio = _prop_classify(title, detail, sev)
+        age = now - float(rec.get("ts") or now)
+        fixed_reason = ""
+        if st in ("pending", "confirmed"):
+            if cat == "noise":
+                fixed_reason = "noise_or_self_referential"
+            elif ('"rounds":0' in detail.replace(" ", "")
+                  and '"product_chars":0' in detail.replace(" ", "")):
+                fixed_reason = "fixture_empty_run"
+            elif cat == "fact_correctness" and ctx["fixed"]["fact_wording"] and ctx["mtimes"].get("元DGTF-V1.30.0.py", 0) > float(rec.get("ts") or 0):
+                fixed_reason = "fixed_fact_wording_in_current_project"
+            elif cat == "probe_quality" and ctx["fixed"]["probe_link_guard"] and ctx["mtimes"].get("元DGTF-V1.30.0.py", 0) > float(rec.get("ts") or 0):
+                fixed_reason = "fixed_probe_link_guard_in_current_project"
+            elif cat == "input_sanity" and ctx["fixed"]["input_sanity"] and ctx["mtimes"].get("元DGTF-V1.30.0.py", 0) > float(rec.get("ts") or 0):
+                fixed_reason = "fixed_input_sanity_in_current_project"
+            elif cat == "agent_runtime" and ctx["fixed"]["queue_gate"] and ctx["mtimes"].get("dgtf_v2/agent_bridge.py", 0) > float(rec.get("ts") or 0):
+                fixed_reason = "fixed_queue_gate_in_current_project"
+            elif st == "pending" and age > 86400:
+                fixed_reason = "pending_ttl_24h"
+            elif st == "confirmed" and age > 3 * 86400:
+                fixed_reason = "confirmed_ttl_72h"
+            elif sev == "low" and age > 86400:
+                fixed_reason = "low_stale_quality"
+        if fixed_reason:
+            rec["status"] = "expired"
+            rec["expired_reason"] = fixed_reason
+            rec["expired_ts"] = now
+            changed.add(id(rec))
+            st = "expired"
+        rec["triage"] = {
+            "category": cat,
+            "priority": prio,
+            "action": ("skip" if st == "expired" else
+                       ("resolved" if st == "applied" else
+                        ("observe" if st in ("failed", "rolled_back") else "repair"))),
+            "reason": rec.get("expired_reason") or
+                      ("already_applied" if st == "applied" else
+                       ("repair_failed" if st == "failed" else
+                        ("rolled_back" if st == "rolled_back" else "needs_attention"))),
+            "decided_ts": now,
+            "project": {"head": ctx["head"], "fingerprint": ctx["fingerprint"],
+                        "checked_at": ctx["checked_at"]},
+        }
+
+    # 2) 同标题去重：保留最优状态 + 最新一条
     groups = {}
     for rec in rows:
         if str(rec.get("status")) == "expired":
             continue
         title = str((rec.get("task") or {}).get("title") or "").strip()
-        if not title:
-            continue
-        groups.setdefault(title, []).append(rec)
+        if title:
+            groups.setdefault(title, []).append(rec)
     for title, items in groups.items():
         if len(items) < 2:
             continue
@@ -666,10 +786,63 @@ def _proposal_triage():
                                          if keeper in ("applied", "confirmed")
                                          else "duplicate_older")
                 rec["expired_ts"] = now
+                tri = rec.get("triage") or {}
+                tri["action"] = "skip"
+                tri["reason"] = rec["expired_reason"]
+                rec["triage"] = tri
                 changed.add(id(rec))
+
+    # 3) 保存变更 + 分诊历史
     for rec in rows:
-        if id(rec) in changed:
-            _save(rec)
+        p = rec.pop("_path", None)
+        tri = rec.get("triage") or {}
+        hist = rec.setdefault("triage_history", [])
+        sig = (tri.get("category"), tri.get("priority"), tri.get("action"),
+               tri.get("reason"), rec.get("status"))
+        if not hist or hist[-1].get("sig") != list(sig):
+            hist.append({"ts": now, "sig": list(sig), "project": ctx["head"]})
+            rec["triage_history"] = hist[-20:]
+            changed.add(id(rec))
+        if p is not None and id(rec) in changed:
+            p.write_text(_json.dumps(rec, ensure_ascii=False, indent=1), encoding="utf-8")
+
+    # 4) 留档索引（按分类/优先级聚合）
+    from collections import Counter as _Counter
+    items = []
+    for rec in rows:
+        tri = rec.get("triage") or {}
+        items.append({
+            "id": rec.get("id"), "title": (rec.get("task") or {}).get("title"),
+            "status": rec.get("status"), "category": tri.get("category"),
+            "priority": tri.get("priority"), "reason": tri.get("reason"),
+            "ts": rec.get("ts"), "expired_ts": rec.get("expired_ts"),
+            "applied_ts": rec.get("applied_ts"),
+        })
+    index = {
+        "generated_at": now,
+        "project": {"head": ctx["head"], "fingerprint": ctx["fingerprint"],
+                    "queue_n": ctx["queue_n"]},
+        "counts": dict(_Counter(str(x.get("status")) for x in rows)),
+        "by_category": dict(_Counter(str(x.get("category")) for x in items)),
+        "by_priority": dict(_Counter(str(x.get("priority")) for x in items)),
+        "items": sorted(items, key=lambda x: float(x.get("ts") or 0), reverse=True),
+    }
+    try:
+        (per / "_index.json").write_text(
+            _json.dumps(index, ensure_ascii=False, indent=1), encoding="utf-8")
+    except Exception:
+        pass
+
+
+def _proposal_summary():
+    import json as _json
+    p = _proposal_dir() / "_index.json"
+    try:
+        d = _json.loads(p.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    return {k: d.get(k) for k in ("generated_at", "project", "counts",
+                                   "by_category", "by_priority")}
 
 
 def _list_proposals(limit=100):
@@ -677,6 +850,8 @@ def _list_proposals(limit=100):
     import json as _json
     rows = []
     for p in _proposal_dir().glob("*.json"):
+        if p.name.startswith("_"):
+            continue
         try:
             rec = _json.loads(p.read_text(encoding="utf-8"))
             # 老提案可能没有 ts；用文件 mtime 兜底，保证「修复提案」列表不出现空时间。
@@ -4551,7 +4726,8 @@ class Handler(BaseHTTPRequestHandler):
         if m:
             return self._json(_get_proposal(unquote(m.group(1))))
         if p == "/api/dsh/proposals":
-            return self._json({"proposals": _list_proposals()})
+            return self._json({"proposals": _list_proposals(),
+                               "summary": _proposal_summary()})
         m = re.match(r"^/api/dsh/artifacts/([^/]+)$", p)
         if m:
             return self._json(_read_dsh_artifact(unquote(m.group(1))))

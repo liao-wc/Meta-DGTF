@@ -53,7 +53,10 @@
 - 侧栏状态与按钮整体下移一点点，标签保持不加粗；
 - 侧栏状态与按钮再整体下移一点点；
 - 侧栏按钮整体再下移一点点；
-- 静态资源 v=1.4.58；
+- 静态资源 v=1.4.60；
+- 修复提案自动分诊：分类(quality_signal/probe_quality/fact_correctness/agent_runtime/process_gap/eml_experiment/verification/docs/noise) + 优先级 P0-P3；
+- 每次分诊写 `dgtf_memory/dsh_proposals/_index.json`（计数/分类/优先级/项目 HEAD/队列规模）并保留 `triage_history`；
+- 新增实时项目对账：关键文件修复后自动把旧提案标为 fixed_*；提案页显示分类、优先级、分诊原因与过期原因统计。
 - 修复提案页默认隐藏已过期/去重项，仅显示待处理；
 - 分诊结果：89 条 → 75 过期/去重、10 已应用、3 失败、1 已回退，待处理 0。
 - 修复提案分诊：pending>24h / confirmed>72h / 夹具空跑 / 无意义标题 / 同标题重复 → 标记 expired；列表按 ts 排序；
