@@ -9,6 +9,7 @@
 - DSH Agent 敏感路径运行时拦截：tool_call 事件命中 .env/.credentials/dsh_conversations 等立即终止本轮；输出中的已知 API key 值脱敏。
 - 自动修复安全门槛：提案阶段检查敏感词/敏感路径/危险命令（密钥、token、.env、server.py、curl/wget、powershell -enc、reg/schtasks、外链等）；提交前检查新增代码的密钥、eval/exec、subprocess、网络请求、注册表/提权、敏感文件；命中不提交。
 - 提案驱动学习：修复前最多等 12 秒检索相关知识，超时/空结果回退本地知识库，保证不阻塞修复；DSH 会话 final 8 秒不退时由工作台结束进程，避免自动修复卡死。
+- 自学习提案：无待处理提案时，DSH 可读项目+知识库自提优化提案；提案持久化 self_learned/source 标记；安全评估为 auto 才自动修复，否则 pending 人工确认。
 - 自动修复必须先 fast_gate + 针对性验收都通过才提交；失败回灌同会话继续修。
 
 ## DSH 受控工作台工具

@@ -3806,6 +3806,7 @@ function agentRenderProps() {
       + '<div class="agent-row"><span class="chip">' + esc(tri.priority || 'P2') + '</span>'
       + '<span class="chip">' + esc(tri.category || 'other') + '</span>'
       + '<span class="chip st-' + esc(st) + '">' + esc(ST[st] || st) + '</span>'
+      + (x.self_learned ? '<span class="chip">自学习</span>' : '')
       + '<span class="agent-t">' + esc((x.task || {}).title || x.id) + '</span></div>'
       + '<div class="agent-meta"><span>' + esc(x.id || '') + '</span>'
       + (when ? '<span>创建 ' + esc(when) + '</span>' : '<span>创建时间未知</span>')
@@ -4018,7 +4019,7 @@ function agentRenderAll() {
 }
 
 async function autopilotAction(action) {
-  const label = {learn: '学习刷新', spawn: '从队列发起提案', scan: '项目自主审视'}[action] || action;
+  const label = {learn: '学习刷新', spawn: '从队列发起提案', scan: '项目自主审视', selflearn: '自学习提案'}[action] || action;
   const msg = document.querySelector('#agent-msg');
   if (msg) msg.textContent = label + '：执行中…（可能需要一两分钟）';
   try {
@@ -5023,7 +5024,7 @@ function init() {
   });
   const _agentRefresh = $('#agent-refresh');
   if (_agentRefresh) _agentRefresh.addEventListener('click', refreshAgentAll);
-  [['#ap-learn', 'learn'], ['#ap-spawn', 'spawn'], ['#ap-scan', 'scan']].forEach(function (pair) {
+  [['#ap-learn', 'learn'], ['#ap-spawn', 'spawn'], ['#ap-scan', 'scan'], ['#ap-selflearn', 'selflearn']].forEach(function (pair) {
     const el = $(pair[0]);
     if (el) el.addEventListener('click', function () { autopilotAction(pair[1]); });
   });

@@ -453,7 +453,7 @@ def stop_agent_daemon(timeout: float = 4.0) -> dict:
 _AUTOPILOT = {
     "thread": None, "stop": None, "lock": None,
     "last_cycle": 0.0, "last_error": "", "last_spawn": 0.0,
-    "last_learn": 0.0, "last_scan": 0.0,
+    "last_learn": 0.0, "last_scan": 0.0, "last_self": 0.0,
 }
 _AUTOPILOT_CFG_PATH = Path(__file__).resolve().parent.parent / "dgtf_memory" / "agent_autopilot.json"
 _AUTOPILOT_SAFE_CATS = {"agent_runtime", "docs", "verification", "process_gap", "quality_signal"}
@@ -473,7 +473,7 @@ def _autopilot_cfg_load():
     import json as _json
     base = {"enabled": False, "interval": 120.0, "knowledge_every": 0,
             "spawn_every": 21600.0, "learn_every": 21600.0,
-            "scan_every": 21600.0,
+            "scan_every": 21600.0, "self_every": 21600.0,
             "started_ts": 0, "last_cycle": 0, "last_learn": 0, "last_scan": 0}
     try:
         d = _json.loads(_AUTOPILOT_CFG_PATH.read_text(encoding="utf-8"))
@@ -637,6 +637,49 @@ def _autopilot_scan():
         _AUTOPILOT["last_error"] = "scan: %s" % exc
 
 
+def _autopilot_self_propose():
+    """没有待处理提案时：读项目现状 + 知识库/检索，自学习并提出优化/修复提案。"""
+    import time as _t
+    try:
+        learn = _autopilot_knowledge({
+            "id": "self-learn-" + str(int(_t.time() * 1000)),
+            "task": {"title": "元DGTF 项目自学习优化 最佳实践",
+                     "detail": "现有项目优化与修复提案"}})
+    except Exception:
+        learn = ""
+    try:
+        props = _list_proposals(300)
+        counts = {}
+        for p in props:
+            st = str(p.get("status") or "")
+            counts[st] = counts.get(st, 0) + 1
+        head = (_git(["rev-parse", "HEAD"]).get("out") or "").strip()[:12]
+        detail = ("项目自学习模式：当前没有待处理提案。请只读取项目现状（源码、docs、最近质量线索、"
+                  "队列与产物）并结合下面学习材料，提出 1-3 条可验证的优化或修复提案；"
+                  "每条写清涉及文件、步骤、风险、验证命令。不要修改源码。\n"
+                  "项目 HEAD：%s；队列数：%s；提案统计：%s。\n"
+                  "学习材料：\n%s"
+                  % (head or "—", len(_agent_queue_snapshot()),
+                     str(counts)[:300], (learn or "（本次未检索到新材料，可按项目现状提出）")[:2500]))
+        title = "自学习优化提案：docs/项目自检 " + _t.strftime("%Y-%m-%d %H:%M")
+        res = _auto_proposal(task_text=detail, title=title, model="deepseek-flash")
+        prop = res.get("proposal") if isinstance(res, dict) else None
+        if prop:
+            prop["source"] = "self_learning"
+            prop["self_learned"] = True
+            prop["origin"] = "autopilot_self_learn"
+            prop["self_learning"] = {"knowledge_chars": len(learn or ""),
+                                     "head": head,
+                                     "proposed_ts": _t.time()}
+            _save_proposal(prop)
+        _AUTOPILOT["last_self"] = _t.time()
+        return prop
+    except Exception as exc:
+        _AUTOPILOT["last_error"] = "self: %s" % exc
+        _AUTOPILOT["last_self"] = _t.time()
+        return None
+
+
 def _autopilot_cycle():
     """一轮常驻：安全提案自动确认并修复；不确定项留人工。"""
     if not _autopilot_cfg_load().get("enabled", True):
@@ -677,11 +720,17 @@ def _autopilot_cycle():
     spawn_every = float(cfg.get("spawn_every") or 21600)
     learn_every = float(cfg.get("learn_every") or cfg.get("knowledge_every") or 21600)
     scan_every = float(cfg.get("scan_every") or 21600)
-    if now - float(_AUTOPILOT.get("last_spawn") or 0) > spawn_every:
+    self_every = float(cfg.get("self_every") or 21600)
+    live = [p for p in _list_proposals(300)
+            if str(p.get("status")) in ("pending", "confirmed")]
+    self_made = False
+    if (not live and now - float(_AUTOPILOT.get("last_self") or 0) > self_every):
+        self_made = _autopilot_self_propose() is not None
+    if not self_made and now - float(_AUTOPILOT.get("last_spawn") or 0) > spawn_every:
         _autopilot_spawn_proposal()
     if now - float(_AUTOPILOT.get("last_learn") or 0) > learn_every:
         _autopilot_learn()
-    if now - float(_AUTOPILOT.get("last_scan") or 0) > scan_every:
+    if not self_made and now - float(_AUTOPILOT.get("last_scan") or 0) > scan_every:
         _autopilot_scan()
 
 
@@ -712,6 +761,8 @@ def _autopilot_status():
         "spawn_every": cfg.get("spawn_every", 21600),
         "learn_every": cfg.get("learn_every", cfg.get("knowledge_every") or 21600),
         "scan_every": cfg.get("scan_every", 21600),
+        "self_every": cfg.get("self_every", 21600),
+        "last_self": _AUTOPILOT.get("last_self") or 0,
         "last_cycle": _AUTOPILOT.get("last_cycle") or cfg.get("last_cycle") or 0,
         "last_error": _AUTOPILOT.get("last_error", ""),
         "started_ts": cfg.get("started_ts") or 0,
@@ -744,6 +795,10 @@ def _autopilot_action(action):
         _AUTOPILOT["last_scan"] = _t.time()
         return {"ok": not bool(_AUTOPILOT.get("last_error")),
                 "action": action, "last_error": _AUTOPILOT.get("last_error", "")}
+    if action == "selflearn":
+        prop = _autopilot_self_propose()
+        return {"ok": prop is not None, "action": action,
+                "proposal": prop, "last_error": _AUTOPILOT.get("last_error", "")}
     if action == "cycle":
         _autopilot_cycle()
         return {"ok": True, "action": action,
@@ -776,6 +831,8 @@ def _autopilot_start(interval=None, knowledge_every=None, start_daemon=True):
         _AUTOPILOT["last_learn"] = now
     if not _AUTOPILOT.get("last_scan"):
         _AUTOPILOT["last_scan"] = now
+    if not _AUTOPILOT.get("last_self"):
+        _AUTOPILOT["last_self"] = now
     st = start_agent_daemon(float(cfg.get("interval") or 120),
                             int(cfg.get("knowledge_every") or 0)) if start_daemon else {}
     th = _AUTOPILOT.get("thread")
