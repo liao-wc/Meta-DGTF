@@ -3246,6 +3246,7 @@ let agentV2 = null;
 let agentPareto = null;
 let agentV2AB = null;
 let agentV2Pareto = null;
+let agentModel = null;
 let agentConsistency = null;
 
 function agentIsoShort(x) {
@@ -3535,6 +3536,14 @@ function agentRenderV2() {
       + ' 对</span><span class="agent-t">alpha ' + esc(String(agentV2AB.alpha || 0.05))
       + '</span></div></div>';
   }
+  if (agentModel && agentModel.ok && agentModel.model) {
+    const _qm = (agentModel.model.quality_test || {});
+    const _qb = (agentModel.model.quality_baseline || {});
+    html += '<div class="agent-item"><div class="agent-row"><span class="chip">学习模型</span>'
+      + '<span class="agent-t">MAE ' + esc(String(_qm.mae || 0))
+      + ' / 基线 ' + esc(String(_qb.mae || 0))
+      + ' · R² ' + esc(String(_qm.r2 || 0)) + '</span></div></div>';
+  }
   const _ts = d.by_template || {};
   const _tkeys = Object.keys(_ts);
   if (_tkeys.length) {
@@ -3623,7 +3632,7 @@ async function loadAgent() {
   if (resBox) resBox.innerHTML = agentEmpty('读取中…');
   const knBox = $('#agent-knowledge');
   if (knBox) knBox.innerHTML = agentEmpty('读取中…');
-  const [t, r, k, ds, da, pr, v2, pa, vab, vpar, con] = await Promise.all([
+  const [t, r, k, ds, da, pr, v2, pa, vab, vpar, con, mdl] = await Promise.all([
     api('/api/agent/tasks').catch(e => ({ tasks: [], error: e.message })),
     api('/api/agent/results').catch(e => ({ results: [], error: e.message })),
     api('/api/agent/knowledge').catch(e => ({ items: [], error: e.message })),
@@ -3635,6 +3644,7 @@ async function loadAgent() {
     api('/api/schedule/v2/ab?all=1').catch(e => ({ ok: false, error: e.message })),
     api('/api/schedule/v2/pareto').catch(e => ({ ok: false, error: e.message })),
     api('/api/consistency').catch(e => ({ ok: false, error: e.message })),
+    api('/api/schedule/model').catch(e => ({ ok: false, error: e.message })),
   ]);
   agentTasks = (t && t.tasks) || [];
   agentResults = (r && r.results) || [];
@@ -3647,6 +3657,7 @@ async function loadAgent() {
   agentV2AB = vab || null;
   agentV2Pareto = vpar || null;
   agentConsistency = con || null;
+  agentModel = mdl || null;
   agentRenderAll();
   const errs = [t && t.error, r && r.error, k && k.error].filter(Boolean);
   const msg = $('#agent-msg');
@@ -3908,7 +3919,7 @@ async function autoAgent(stage) {
   const btn = document.querySelector('#agent-auto');
   const oldText = btn ? btn.textContent : '';
   const t0 = Date.now();
-  if (btn) { btn.disabled = true; if (stage === 'all') btn.textContent = 'DSH 自动闭环运行中…'; }
+  if (btn) { btn.disabled = true; if (stage === 'all' || stage === 'full') btn.textContent = 'DSH 自动闭环运行中…'; }
   if (st) {
     st.className = 'agent-auto-status running';
     st.textContent = 'DSH Agent 自动闭环已开始，已跳转到 DSH Agent 对话框显示执行内容…';
@@ -3917,6 +3928,8 @@ async function autoAgent(stage) {
     {type:'status', phase:'turn_start', turn:1},
     {type:'text', text: stage === 'all'
       ? '开始执行：生成/提交用户任务 → 运行消费者 → 自审提案。可能需要几分钟。'
+      : stage === 'full'
+      ? '开始执行：知识刷新 → mock 引擎跑次 → 任务/消费者 → 自审提案。可能需要几分钟。'
       : '开始执行：' + stage}
   ], 'running');
   let result = null, errMsg = '';
@@ -4584,6 +4597,21 @@ function init() {
   });
   const _agentRefresh = $('#agent-refresh');
   if (_agentRefresh) _agentRefresh.addEventListener('click', loadAgent);
+  const _v2ModelApply = $('#agent-v2-model-apply');
+  if (_v2ModelApply) _v2ModelApply.addEventListener('click', async () => {
+    const m = document.querySelector('#agent-msg');
+    if (m) m.textContent = '正在用学习模型预测调度模板…';
+    try {
+      const _q = ($('#question') || {}).value || 'EML 如何改进调度？';
+      const r = await api('/api/schedule/model/apply', {method:'POST',
+        headers:{'Content-Type':'application/json'}, body: JSON.stringify({question:_q, prefer:'balanced'})});
+      if (m) m.textContent = r.ok ? ('已采用学习模型模板：' + (((r.chosen || {}).template) || '') +
+        '（pred ' + String(((r.chosen || {}).pred_quality) || 0) + '）') : ('失败：' + (r.error || ''));
+      await loadAgent();
+    } catch (e) {
+      if (m) m.textContent = '学习模型应用失败：' + e.message;
+    }
+  });
   const _v2BanditApply = $('#agent-v2-bandit-apply');
   if (_v2BanditApply) _v2BanditApply.addEventListener('click', async () => {
     const m = document.querySelector('#agent-msg');
@@ -4650,6 +4678,8 @@ function init() {
   if (_agentNew) _agentNew.addEventListener('click', () => autoAgent('task'));
   const _agentAuto = $('#agent-auto');
   if (_agentAuto) _agentAuto.addEventListener('click', () => autoAgent('all'));
+  const _agentFull = $('#agent-full');
+  if (_agentFull) _agentFull.addEventListener('click', () => autoAgent('full'));
   const _dshPill = $('#pill-dsh');
   if (_dshPill) _dshPill.addEventListener('click', () => toggleDshMode(!dshMode));
   [['dsh-effort', 'dgtf_dsh_effort'], ['dsh-perm', 'dgtf_dsh_perm'], ['dsh-model', 'dgtf_dsh_model']].forEach(function (pair) {

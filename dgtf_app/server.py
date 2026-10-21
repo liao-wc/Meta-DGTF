@@ -28,6 +28,8 @@
 
 from __future__ import annotations
 
+APP_VERSION = "1.1.0"
+
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
 for _s_utf8 in (_sys_utf8.stdout, _sys_utf8.stderr):
@@ -1014,6 +1016,142 @@ def _save_repair_artifact(prop, acceptance, version):
     return str(d)
 
 
+def _arxiv_refresh(queries, limit=3):
+    """arXiv API 兜底刷新：无需商 key，抓最新论文摘要入库。"""
+    import json as _json
+    import urllib.parse as _up
+    import urllib.request as _ur
+    import xml.etree.ElementTree as _ET
+    import sys as _sys
+    _sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+    from dgtf_v2.agent_bridge import DEFAULT_KNOWLEDGE
+    ns = {"a": "http://www.w3.org/2005/Atom"}
+    out = []
+    p = Path(DEFAULT_KNOWLEDGE)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    for q in [str(x) for x in (queries or [])][:3]:
+        term = _up.quote('all:"' + q[:80].replace('"', " ") + '"')
+        url = ("https://export.arxiv.org/api/query?search_query=" + term
+               + "&start=0&max_results=3&sortBy=submittedDate&sortOrder=descending")
+        try:
+            req = _ur.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+            with _ur.urlopen(req, timeout=30) as r:
+                root = _ET.fromstring(r.read().decode("utf-8", errors="replace"))
+        except Exception:
+            continue
+        for e in root.findall("a:entry", ns)[:2]:
+            title = (e.findtext("a:title", default="", namespaces=ns) or "").strip()
+            link = (e.findtext("a:id", default="", namespaces=ns) or "").strip()
+            summary = (e.findtext("a:summary", default="", namespaces=ns) or "").strip()
+            pub = (e.findtext("a:published", default="", namespaces=ns) or "").strip()
+            if not title or not link:
+                continue
+            item = {"run": "arxiv_refresh", "query": q[:200],
+                    "title": title[:300], "url": link,
+                    "claim": summary[:400], "summary": summary[:1200],
+                    "content": summary[:4000], "fetched": True,
+                    "published": pub, "source_type": "paper",
+                    "pdf_url": link.replace("/abs/", "/pdf/"), "authority": 2}
+            out.append(item)
+            with p.open("a", encoding="utf-8") as fh:
+                fh.write(_json.dumps(item, ensure_ascii=False) + "\n")
+    return out
+
+
+def _auto_refresh_knowledge(emit=None, queries=None):
+    """技术知识刷新：DeepSeek Search + 入库去重；无 key 时优雅降级。"""
+    import sys as _sys
+    _sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+    from dgtf_v2.agent_bridge import (refresh_knowledge_http,
+                                      knowledge_stats, dedupe_knowledge)
+    qs = [str(q) for q in (queries or []) if str(q).strip()][:4]
+    if not qs:
+        qs = ["event memory large language model",
+              "multi-agent scheduling LLM",
+              "self-evolving agents feedback"]
+    if emit:
+        emit({"type": "text", "text": "技术知识刷新：" + " / ".join(qs)})
+    try:
+        res = refresh_knowledge_http(qs, return_stats=True, limit=2)
+    except Exception as exc:
+        return {"ok": False, "error": str(exc), "queries": qs,
+                "stats": {"items": [], "skipped_duplicates": 0}}
+    items = list(res.get("items") or [])
+    if not items:
+        try:
+            items = _arxiv_refresh(qs, limit=3)
+        except Exception:
+            items = []
+    if not items:
+        try:
+            items = _arxiv_refresh(["event memory", "multi-agent scheduling"], limit=2)
+        except Exception:
+            items = []
+    try:
+        res["items"] = items
+    except Exception:
+        pass
+    for it in items[:6]:
+        if emit:
+            emit({"type": "text",
+                  "text": "知识入库：" + str(it.get("title") or "")[:120]
+                          + "  " + str(it.get("url") or "")[:200]})
+    try:
+        ded = dedupe_knowledge()
+        ks = knowledge_stats()
+    except Exception as exc:
+        ded, ks = {"error": str(exc)}, {}
+    return {"ok": bool(items), "queries": qs,
+            "stats": res, "dedupe": ded, "knowledge": ks,
+            "items": [{"title": it.get("title"), "url": it.get("url"),
+                       "source_type": it.get("source_type")} for it in items]}
+
+
+def _auto_engine_run(emit=None, question="", mock=True, opts=None, timeout=300):
+    """全流程中的引擎跑次：默认 mock；显式 mock=False 才真跑。"""
+    import time as _t
+    from dgtf_app import engine_runner as runner
+    q = str(question or "").strip() or "元DGTF 全流程自检：如何让 EML 反馈驱动调度细度？"
+    o = dict(opts or {})
+    o["mock"] = bool(mock)
+    if emit:
+        emit({"type": "text", "text": ("开始" + (" mock " if mock else " 真实 ")
+                                      + "引擎跑次：" + q[:120])})
+    tid = runner.start_task(q, o)
+    last = {}
+    for _ in range(max(1, int(timeout) // 2)):
+        _t.sleep(2)
+        last = runner.get_task(tid) or {}
+        st = str(last.get("status") or "")
+        if st in ("done", "error", "cancelled", "interrupted"):
+            break
+        if emit and int(_t.time()) % 30 < 2:
+            emit({"type": "text", "text": "引擎跑次进行中：" + st})
+    st = str(last.get("status") or "")
+    ok = st == "done"
+    if emit:
+        emit({"type": "text", "text": "引擎跑次结束：" + st})
+    return {"ok": ok, "task_id": tid, "status": st,
+            "mock": bool(mock), "question": q,
+            "output_name": last.get("output_name"),
+            "error": last.get("error")}
+
+
+def _auto_cycle_full(emit=None, model="", data=None):
+    """全流程闭环：知识刷新 → 引擎跑次 → 消费者/任务 → 自审提案。"""
+    data = data or {}
+    out = {"ok": True}
+    out["knowledge"] = _auto_refresh_knowledge(emit=emit,
+                                               queries=data.get("queries"))
+    out["engine"] = _auto_engine_run(
+        emit=emit, question=str(data.get("question") or ""),
+        mock=bool(data.get("mock", True)), opts=data.get("opts"),
+        timeout=int(data.get("timeout") or 300))
+    out.update(_auto_cycle_all(emit=emit, model=model))
+    out["ok"] = bool(out.get("engine", {}).get("ok")) and bool(out.get("ok"))
+    return out
+
+
 def _auto_cycle_all(emit=None, model=""):
     """全队列闭环：处理所有任务、跑完消费者、为所有任务批量自审并落提案。"""
     import json as _json
@@ -1254,6 +1392,14 @@ def _auto_run_stage(stage, data, write):
                 str((data or {}).get("task_text") or ""), "",
                 emit=_stage("proposal"), model=model)
             out["ok"] = bool((out["proposal"] or {}).get("ok"))
+        if stage == "knowledge":
+            out["knowledge"] = _auto_refresh_knowledge(
+                emit=_stage("knowledge"),
+                queries=(data or {}).get("queries"))
+            out["ok"] = bool((out["knowledge"] or {}).get("ok"))
+        if stage == "full":
+            out.update(_auto_cycle_full(emit=_stage("full"), model=model,
+                                        data=data))
     return out
 
 
@@ -1601,7 +1747,8 @@ def _app_health():
     warnings = [k for k in ("api_key", "dsh_headless", "agent_daemon") if not checks[k]]
     return {
         "ok": all(bool(checks[k]) for k in critical),
-        "app": {"name": "元DGTF app", "commit": _git(["rev-parse", "HEAD"]).get("out", "")[:12]},
+        "app": {"name": "元DGTF app", "version": APP_VERSION,
+                "commit": _git(["rev-parse", "HEAD"]).get("out", "")[:12]},
         "engine": {"file": eng.name, "version": ver,
                    "layers": ["0", "1", "both", "all"],
                    "eml": bool(checks["self_feedback_loop"]),
@@ -2010,6 +2157,14 @@ def _self_consistency():
     checks["layer_mapping"] = {"ok": True, "engine_layers": ["0", "1", "both", "all"],
                                "app_layers": ["0", "1", "both", "all"],
                                "canonical_ids": ["0", "1", "both", "all"]}
+    try:
+        _m = _sched_model_load()
+        checks["scheduler_model"] = {"ok": bool(_m),
+                                     "rows": _m.get("rows"),
+                                     "quality_test": _m.get("quality_test"),
+                                     "path": str(_SCHED_MODEL_FILE)}
+    except Exception as exc:
+        checks["scheduler_model"] = {"ok": False, "error": str(exc)}
     crit = ["engine", "eml_modules", "eml_memory", "layer_mapping"]
     ok = all(bool(checks[k].get("ok")) for k in crit)
     warns = [k for k, v in checks.items() if not v.get("ok")]
@@ -2168,6 +2323,92 @@ def _question_bucket(q):
     if any(k in s for k in ("什么时候", "何时", "时间", "发布", "多少", "定义", "是什么")):
         return "fact"
     return "general"
+
+
+_SCHED_MODEL_FILE = Path(__file__).resolve().parent.parent / "models" / "scheduler_model_v1.json"
+_SCHED_MODEL_RUNTIME = Path(__file__).resolve().parent.parent / "dgtf_memory" / "scheduler_model.json"
+
+
+def _sched_model_load():
+    import json as _json
+    for p in (_SCHED_MODEL_FILE, _SCHED_MODEL_RUNTIME):
+        try:
+            if p.exists():
+                return _json.loads(p.read_text(encoding="utf-8", errors="replace"))
+        except Exception:
+            pass
+    return {}
+
+
+def _sched_model_predict(question="", prefer="balanced", lam=None):
+    import math as _math
+    m = _sched_model_load()
+    wq = m.get("quality_weights") or []
+    tpl = list(m.get("templates") or [])
+    bkt = list(m.get("buckets") or [])
+    if not wq or not tpl:
+        return {"ok": False, "error": "模型未训练", "path": str(_SCHED_MODEL_FILE)}
+    q = str(question or "")
+    b = _question_bucket(q)
+    qlen_z = (len(q) - float(m.get("qlen_mean") or 0)) / max(1e-9, float(m.get("qlen_std") or 1))
+    stats = _v2_shadow_status(limit=5000).get("by_template") or {}
+    max_t = max([float(v.get("tokens") or 0) for v in stats.values()] or [1.0]) or 1.0
+    lm = {"cost": 0.50, "quality": 0.05}.get(str(prefer), 0.20) if lam is None else float(lam)
+    preds = []
+    for t in tpl:
+        rounds = 1
+        try:
+            rounds = int(str(t).rsplit(":r", 1)[1])
+        except Exception:
+            pass
+        x = [1.0] + [1.0 if t == tt else 0.0 for tt in tpl] \
+            + [1.0 if b == bb else 0.0 for bb in bkt] \
+            + [float(rounds), qlen_z]
+        if len(x) != len(wq):
+            continue
+        qhat = float(sum(a * c for a, c in zip(x, wq)))
+        tok = float((stats.get(t) or {}).get("tokens") or 0)
+        score = qhat - lm * (tok / max_t)
+        preds.append({"template": t, "pred_quality": round(qhat, 4),
+                      "tokens": round(tok, 1),
+                      "calls": (stats.get(t) or {}).get("calls") or 0,
+                      "n": (stats.get(t) or {}).get("n") or 0,
+                      "score": round(score, 4)})
+    preds.sort(key=lambda x: x["score"], reverse=True)
+    return {"ok": True, "question_bucket": b, "question_len": len(q),
+            "prefer": prefer, "lambda_cost": lm,
+            "model": {"version": m.get("version"), "kind": m.get("kind"),
+                      "rows": m.get("rows"), "quality_test": m.get("quality_test"),
+                      "quality_baseline": m.get("quality_baseline")},
+            "predictions": preds, "chosen": preds[0] if preds else None,
+            "note": "quality 使用本地岭回归权重；tokens 用经验均值，token 模型未采用"}
+
+
+def _sched_model_apply(question="", prefer="balanced", lam=None):
+    import json as _json
+    import time as _t
+    r = _sched_model_predict(question=question, prefer=prefer, lam=lam)
+    arm = r.get("chosen") or {}
+    tmpl = str(arm.get("template") or "")
+    if not tmpl:
+        return {"ok": False, "error": r.get("error") or "没有可选模板"}
+    route = tmpl.split(":", 1)[0]
+    rounds = tmpl.rsplit(":r", 1)[1] if ":r" in tmpl else ""
+    pol = _schedule_policy_load()
+    pol.update({"model_template": tmpl, "template": tmpl,
+                "route": route, "rounds": rounds,
+                "model_pred_quality": arm.get("pred_quality"),
+                "model_score": arm.get("score"),
+                "model_bucket": r.get("question_bucket"),
+                "model_applied_at": _t.time()})
+    try:
+        _SCHED_MODEL_FILE.parent.mkdir(parents=True, exist_ok=True)
+        _SCHEDULE_POLICY_FILE.write_text(
+            _json.dumps(pol, ensure_ascii=False, indent=1), encoding="utf-8")
+        return {"ok": True, "chosen": arm, "policy": pol,
+                "path": str(_SCHEDULE_POLICY_FILE)}
+    except Exception as exc:
+        return {"ok": False, "error": str(exc)}
 
 
 def _v2_context_stats(limit=5000):
@@ -2689,7 +2930,7 @@ class Handler(BaseHTTPRequestHandler):
     #   表现是「某个 fetch 再也不返回」（无头里虚拟时间还会因此停住、dump 不出来）。
     #   前提已满足：所有响应都显式带 Content-Length（见 _json / _serve_static）。
     protocol_version = "HTTP/1.1"
-    server_version = "DGTFApp/1.0"
+    server_version = "DGTFApp/" + APP_VERSION
 
     def log_message(self, fmt, *args):  # 默认静默，--verbose 才打访问日志
         if getattr(self.server, "verbose", False):
@@ -2858,6 +3099,20 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(_v2_bandit(
                     prefer=str((q.get("prefer") or ["balanced"])[0]),
                     c=float((q.get("c") or ["0.5"])[0] or 0.5)))
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/schedule/model":
+            try:
+                m = _sched_model_load()
+                return self._json({"ok": bool(m), "model": m,
+                                   "path": str(_SCHED_MODEL_FILE)})
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/schedule/model/predict":
+            try:
+                return self._json(_sched_model_predict(
+                    question=str((q.get("q") or [""])[0]),
+                    prefer=str((q.get("prefer") or ["balanced"])[0])))
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/schedule/v2/pareto":
@@ -3278,6 +3533,14 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(_v2_rebuild())
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/schedule/model/apply":
+            try:
+                data = self._read_json()
+                return self._json(_sched_model_apply(
+                    question=str(data.get("question") or ""),
+                    prefer=str(data.get("prefer") or "balanced")))
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/schedule/v2/apply-context-bandit":
             try:
                 data = self._read_json()
@@ -3315,6 +3578,13 @@ class Handler(BaseHTTPRequestHandler):
                 data = self._read_json()
                 return self._json(_schedule_policy_apply(
                     prefer=str(data.get("prefer") or "balanced")))
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/agent/knowledge/refresh":
+            try:
+                data = self._read_json()
+                return self._json(_auto_refresh_knowledge(
+                    queries=data.get("queries")))
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/agent/knowledge/dedupe":

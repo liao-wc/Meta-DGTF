@@ -251,6 +251,7 @@
       <div class="searchbar tight">
         <button id="agent-refresh" class="ghost" data-tip="重新拉取任务 / 消费者结果 / 技术知识">刷新</button>
         <button id="agent-auto" class="ghost" data-tip="DSH Agent 一次完成：提交用户任务 → 运行消费者 → 自审提案">DSH 自动闭环</button>
+        <button id="agent-full" class="ghost" data-tip="全流程：刷新知识 → 引擎跑次（默认 mock）→ 消费者 → 自审提案">全流程闭环</button>
         <button id="prop-autofix" class="ghost" data-tip="DSH 自动代理修复所有已确认待修复提案">自动修复提案</button>
         <button id="dsh-config-btn" class="ghost" data-tip="展开 DSH Agent 档位 / 工作权限配置">DSH Agent 配置</button>
         <button id="agent-online" class="ghost" data-tip="联网搜索并 patch 最新前沿技术知识（默认 3 条）">联网</button>
@@ -341,7 +342,8 @@
             <button class="ghost" id="agent-pareto-apply" data-tip="按当前偏好计算真实历史帕累托推荐并写入默认调度策略">采用帕累托</button>
             <button class="ghost" id="agent-v2-best-apply" data-tip="按 V2 显著模板的 95% 下界选最佳模板并写入策略">采用最佳模板</button>
             <button class="ghost" id="agent-v2-pareto-apply" data-tip="按质量-成本联合帕累托选模板并写入策略">采用模板帕累托</button>
-            <button class="ghost" id="agent-v2-bandit-apply" data-tip="按 UCB 探索/利用选模板并写入策略">采用 UCB</button></div>
+            <button class="ghost" id="agent-v2-bandit-apply" data-tip="按 UCB 探索/利用选模板并写入策略">采用 UCB</button>
+            <button class="ghost" id="agent-v2-model-apply" data-tip="用本地训练的学习模型预测质量并写入策略">采用学习模型</button></div>
           <div id="agent-v2" class="agent-list"></div>
         </div>
       </div>
