@@ -2779,18 +2779,18 @@ async function loadConfig() {
     const backs = (l && l.backends) || [];
     const nBack = backs.filter(b => b.ok).length;
     const agentOk = !!(checks.dsh_headless && (checks.agent_daemon || (h.daemon || {}).running));
-    const row = (label, value, dot) =>
-      '<div class="env-row">' +
-        '<span class="dot ' + (dot ? (dot === 'ok' ? 'ok' : 'no') : '') + '"></span>' +
-        '<span class="env-k">' + esc(label) + '</span>' +
+    const line = (label, value, ok) =>
+      '<div class="env-line">' +
+        '<span class="dot ' + (ok ? 'ok' : 'no') + '"></span>' +
+        '<span class="env-k">' + esc(label) + '</span> ' +
         '<span class="env-v">' + value + '</span></div>';
     $('#env-info').innerHTML =
-      row('引擎', '<b class="mono">' + esc(c.engine) + '</b>') +
-      row('DeepSeek', k.api_key ? '已配置' : '缺 key', k.api_key ? 'ok' : 'no') +
-      row('Tavily', k.tavily ? '已配置' : '未配置', k.tavily ? 'ok' : 'no') +
-      row('本地 LLM', nBack + ' 个底座 · 默认 Qwen0.5B') +
-      row('Agent', agentOk ? 'DSH 就绪 · 守护运行' : '未就绪') +
-      row('产物', '<b>' + c.outputs.count + '</b> 份 · ' + c.outputs.total_mb + ' MB');
+      line('引擎', '<b class="mono">' + esc(c.engine) + '</b>', true) +
+      line('DeepSeek', '<b>' + (k.api_key ? '已配置' : '缺 key') + '</b>', !!k.api_key) +
+      line('Tavily', '<b>' + (k.tavily ? '已配置' : '未配置') + '</b>', !!k.tavily) +
+      line('本地 LLM', '<b>' + nBack + '</b> 个底座 · 默认 Qwen0.5B', nBack > 0) +
+      line('Agent', '<b>' + (agentOk ? 'DSH 就绪 · 守护运行' : '未就绪') + '</b>', agentOk) +
+      line('产物', '<b>' + c.outputs.count + '</b> 份 · ' + c.outputs.total_mb + ' MB', true);
     $('#mock').checked = !!c.mock_default;
     syncMockPill();                    // checked 变了，胶囊高亮要跟着
     $('#cost-warn').textContent = k.api_key

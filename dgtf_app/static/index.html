@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/static/style.css?v=1.4.17">
+<link rel="stylesheet" href="/static/style.css?v=1.4.18">
 </head>
 <body class="stage-empty">
 
@@ -54,6 +54,13 @@
     <div class="env" id="env-info"></div>
 
     <nav class="drawer-nav">
+      <button class="nav-btn" data-sheet="view-agent" data-tip="Agent：任务队列 / 用户任务 / 消费者 / 技术知识 / 结果">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="4" y="7.2" width="16" height="12" rx="3" stroke="currentColor" stroke-width="1.7"/>
+      <path d="M12 3.4V7.2M8.6 12.2h.01M15.4 12.2h.01M9 16.2h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+    </svg>
+    <span class="nb-name">Agent</span>
+  </button>
       <button class="nav-btn" data-sheet="adv-panel" data-tip="模型 / 档位 / 开关，留空 = auto">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M4 7h10M18 7h2M4 17h4M12 17h8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
@@ -83,13 +90,6 @@
         </svg>
         <span class="nb-name">历史对话</span>
       </button>
-      <button class="nav-btn" data-sheet="view-agent" data-tip="Agent：任务队列 / 用户任务 / 消费者 / 技术知识 / 结果">
-    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="4" y="7.2" width="16" height="12" rx="3" stroke="currentColor" stroke-width="1.7"/>
-      <path d="M12 3.4V7.2M8.6 12.2h.01M15.4 12.2h.01M9 16.2h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-    </svg>
-    <span class="nb-name">Agent</span>
-  </button>
       <button class="nav-btn" data-sheet="view-lib" data-tip="历史产物检索">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H10l1.6 2H18.5A1.5 1.5 0 0 1 20 7.5V18a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18z"
@@ -548,6 +548,6 @@
 
 
 
-<script src="/static/app.js?v=1.4.17"></script>
+<script src="/static/app.js?v=1.4.18"></script>
 </body>
 </html>

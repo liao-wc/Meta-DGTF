@@ -1567,3 +1567,11 @@ body.stage-empty main.stage{padding-bottom:0}
 /* 侧栏：按钮间距拉大后，去掉导航负位移，避免盖住环境信息/产物行 */
 .drawer-body{overflow-y:auto}
 .drawer-nav{transform:none}
+
+/* 侧栏状态：原格式紧凑行，每行同一盏灯 */
+.env{line-height:1.65;padding:8px 2px 2px;text-align:center}
+.env-line{display:block;margin:1px 0;font-size:11.5px}
+.env-line .dot{margin-right:5px}
+.env-line .env-k{color:var(--t3);font-size:11.5px}
+.env-line .env-v{color:var(--t1);font-size:11.5px}
+.env-line .env-v b{font-size:11.5px}
