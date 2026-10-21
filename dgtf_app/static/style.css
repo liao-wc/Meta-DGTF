@@ -1526,5 +1526,3 @@ body.dsh-mode .dsh-ctl{display:inline-flex;align-items:center}
 .dsh-chat-meta{margin-top:3px;font-size:10.5px;color:var(--t3)}
 body.stage-empty main.stage{padding-bottom:36px}
 
-/* 面板打开时隐藏首屏欢迎/输入，避免穿透到面板下面 */
-body.panel-open #welcome,body.panel-open .composer{visibility:hidden}
