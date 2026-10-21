@@ -3505,6 +3505,7 @@ function agentRenderV2() {
         html += '<div class="agent-meta"><span>' + esc(k)
           + '</span><span>n=' + esc(String(v.n || 0))
           + '</span><span>quality ' + esc(String(v.quality || 0))
+          + ' ± ' + esc(String(v.ci95 || 0))
           + '</span><span>tokens ' + esc(String(v.tokens || 0))
           + '</span><span>calls ' + esc(String(v.calls || 0)) + '</span></div>';
       });

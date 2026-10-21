@@ -1522,19 +1522,30 @@ def _v2_shadow_status(limit=200):
         t = str(pl.get("template") or "")
         if not t:
             continue
-        d = tmpl.setdefault(t, {"n": 0, "quality": 0.0, "tokens": 0.0, "calls": 0.0})
+        d = tmpl.setdefault(t, {"n": 0, "quality": 0.0, "tokens": 0.0, "calls": 0.0,
+                                "vals": []})
         try:
-            d["quality"] += float(pl.get("quality") or 0)
+            q = float(pl.get("quality") or 0)
+            d["quality"] += q
             d["tokens"] += float(pl.get("tokens") or 0)
             d["calls"] += float(pl.get("calls") or 0)
+            d["vals"].append(q)
             d["n"] += 1
         except Exception:
             pass
     by_template = {}
     for t, d in tmpl.items():
         n = int(d["n"] or 0)
-        by_template[t] = {"n": n,
-                          "quality": round(d["quality"] / n, 3) if n else 0.0,
+        mean = (d["quality"] / n) if n else 0.0
+        vals = d.get("vals") or []
+        sd = 0.0
+        if len(vals) >= 2:
+            mu = sum(vals) / len(vals)
+            sd = (sum((v - mu) ** 2 for v in vals) / (len(vals) - 1)) ** 0.5
+        ci = (1.96 * sd / (n ** 0.5)) if n > 1 else 0.0
+        by_template[t] = {"n": n, "quality": round(mean, 3),
+                          "sd": round(sd, 4), "ci95": round(ci, 4),
+                          "low": round(mean - ci, 4),
                           "tokens": round(d["tokens"] / n, 1) if n else 0.0,
                           "calls": round(d["calls"] / n, 1) if n else 0.0}
     return {"ok": True, "n": len(rows),
@@ -1648,6 +1659,34 @@ def _schedule_profiles():
                         "effort": runtime.get("effort")},
         })
     return rows
+
+
+def _v2_ab(left="", right=""):
+    import math as _math
+    s = _v2_shadow_status(500)
+    bt = s.get("by_template") or {}
+    keys = sorted(bt, key=lambda k: (bt[k].get("n", 0), bt[k].get("quality", 0)),
+                  reverse=True)
+    left = str(left or "").strip()
+    right = str(right or "").strip()
+    if not left or left not in bt:
+        left = keys[0] if keys else ""
+    if not right or right not in bt:
+        right = next((k for k in keys if k != left), "")
+    if not left or not right:
+        return {"ok": False, "error": "模板样本不足", "templates": list(bt)}
+    a, b = bt[left], bt[right]
+    se = ((a.get("sd", 0) ** 2 / max(1, a.get("n", 1)))
+          + (b.get("sd", 0) ** 2 / max(1, b.get("n", 1)))) ** 0.5
+    diff = float(a.get("quality", 0)) - float(b.get("quality", 0))
+    t = (diff / se) if se > 0 else 0.0
+    p = _math.erfc(abs(t) / (2 ** 0.5)) if se > 0 else 1.0
+    return {"ok": True, "left": left, "right": right,
+            "left_stats": a, "right_stats": b,
+            "diff_quality": round(diff, 4),
+            "se": round(se, 5), "t": round(t, 3), "p_approx": round(p, 4),
+            "winner": (left if diff > 0 else right if diff < 0 else "tie"),
+            "note": "Welch近似；p 用正态近似，样本小时仅作参考"}
 
 
 def _eml_replay(limit=60, dry_run=True):
@@ -2074,6 +2113,13 @@ class Handler(BaseHTTPRequestHandler):
         if p == "/api/agent/eml":
             try:
                 return self._json(_eml_status())
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/schedule/v2/ab":
+            try:
+                return self._json(_v2_ab(
+                    left=str((q.get("left") or [""])[0]),
+                    right=str((q.get("right") or [""])[0])))
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/schedule/policy":
