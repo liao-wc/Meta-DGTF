@@ -3586,6 +3586,67 @@ function showAutoDsh(question, events, status) {
   renderDshView();
 }
 
+async function resumeAutoJobView(jid, kind) {
+  const label = kind === '自动修复' ? '自动修复' : '自动闭环';
+  showAutoDsh('恢复后台任务 · ' + label, [
+    {type:'text', text:'页面刷新后恢复轮询：' + jid + '，任务由服务端继续执行。'}
+  ], 'running');
+  setRunBtn('stop');
+  let idx = 0, netErrs = 0, final = null, errMsg = '';
+  while (!final) {
+    let jr = null;
+    try {
+      jr = await api('/api/agent/auto/job/' + encodeURIComponent(jid) + '?since=' + idx);
+      netErrs = 0;
+    } catch (ne) {
+      netErrs++;
+      if (dshCurrent) {
+        dshCurrent.events.push({type:'text', text:'恢复轮询网络中断（重试 ' + netErrs + '/8）…'});
+        renderDshView();
+      }
+      if (netErrs > 8) { errMsg = ne.message; break; }
+      await new Promise(res => setTimeout(res, 800));
+      continue;
+    }
+    (jr.events || []).forEach(function (m) {
+      if (!dshCurrent) return;
+      if (m.type === 'stage') {
+        dshCurrent.events.push({type:'text', text:'── 阶段：' + m.stage + ' ──'});
+      } else if (m.type === 'event' && m.event) {
+        dshCurrent.events.push(m.event);
+      } else if (m.type === 'proposal_result') {
+        const p = m.proposal || {};
+        dshCurrent.events.push({type:'text', text:'提案 ' + (p.id || '') + ' → ' + (p.status || '')});
+      } else if (m.type === 'result') {
+        final = m.result;
+      }
+      renderDshView();
+    });
+    idx = jr.next || idx;
+    if (jr.status === 'done') { final = final || jr.result; break; }
+    if (jr.status === 'error' || jr.status === 'interrupted') {
+      errMsg = jr.error || ('后台任务状态：' + (jr.status || ''));
+      break;
+    }
+    await new Promise(res => setTimeout(res, 700));
+  }
+  if (dshCurrent) {
+    if (final) {
+      dshCurrent.events.push({type:'text', text:label + '恢复完成。'});
+      dshCurrent.status = 'done';
+    } else {
+      dshCurrent.events.push({type:'text', text:label + '恢复停止：' + (errMsg || '无结果')});
+      dshCurrent.status = 'error';
+    }
+    renderDshView();
+  }
+  setRunBtn('send');
+  try {
+    localStorage.removeItem(kind === '自动修复' ? 'dgtf_last_autofix_job' : 'dgtf_last_auto_job');
+  } catch (_) {}
+  try { await loadAgent(); loadGitStatus(); } catch (_) {}
+}
+
 async function resumeLastAutoJobNotice() {
   const pairs = [['dgtf_last_auto_job', '自动闭环'],
                  ['dgtf_last_autofix_job', '自动修复']];
@@ -3597,7 +3658,8 @@ async function resumeLastAutoJobNotice() {
     try {
       const j = await api('/api/agent/auto/job/' + encodeURIComponent(jid) + '?since=0');
       if (j.status === 'running' || j.status === 'queued') {
-        text += label + '后台任务仍在执行（' + jid + '）。';
+        await resumeAutoJobView(jid, label);
+        return;
       } else if (j.status === 'done') {
         text += label + '上次后台任务已完成。';
         try { localStorage.removeItem(key); } catch (_) {}

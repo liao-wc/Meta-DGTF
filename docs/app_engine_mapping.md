@@ -78,7 +78,7 @@ engine 元DGTF-V1.30.0.py
 | `GET /api/schedule/v2` | V2 shadow 事件读数：按 kind/layer 聚合 + 最近 5 条 + 路径 |
 | `POST /api/tasks {opts.auto_pareto:true}` | 自动选用方案F-帕累托最优 profile，并在响应返回 profile |
 | 首屏“自动帕累托”开关 | 勾选后 collectOpts 自动加 auto_pareto；localStorage 持久化 |
-| 前端 job 恢复提示 | 刷新后读取 dgtf_last_auto_job / dgtf_last_autofix_job，显示运行中/完成状态 |
+| 前端 job 恢复 | 刷新后读取 dgtf_last_auto_job / dgtf_last_autofix_job；运行中自动恢复轮询并显示进度，完成/中断显示状态 |
 
 ### 实测（goal round 1 集成探针）
 
