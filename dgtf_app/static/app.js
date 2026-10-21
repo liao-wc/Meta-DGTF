@@ -3550,6 +3550,52 @@ let agentV2AB = null;
 let agentV2Pareto = null;
 let agentModel = null;
 let agentLLM = null;
+const AGENT_ACTION_KEY = 'dgtf_agent_action_log';
+let agentActionLog = [];
+try { agentActionLog = JSON.parse(localStorage.getItem(AGENT_ACTION_KEY) || '[]') || []; } catch (_) { agentActionLog = []; }
+
+function renderAgentActionLog() {
+  const el = document.querySelector('#agent-action-log-list') || document.querySelector('#agent-action-log');
+  if (!el) return;
+  if (!agentActionLog.length) {
+    el.innerHTML = '<span class="muted">最近动作：暂无</span>'; return;
+  }
+  el.innerHTML = agentActionLog.slice(0, 5).map(function (x) {
+    const t = fmtTs(x.ts) || '';
+    return '<div class="' + (x.ok ? 'ok' : 'bad') + '">' + esc(t) + ' · '
+      + esc(x.label || '') + (x.detail ? (' · ' + esc(x.detail)) : '') + '</div>';
+  }).join('');
+}
+
+function agentLogAction(label, detail, ok) {
+  agentActionLog.unshift({ts: Date.now(), label: String(label || ''), detail: String(detail || ''), ok: ok !== false});
+  agentActionLog = agentActionLog.slice(0, 20);
+  try { localStorage.setItem(AGENT_ACTION_KEY, JSON.stringify(agentActionLog)); } catch (_) {}
+  renderAgentActionLog();
+}
+
+function setLibStamp(name, count, extra) {
+  const el = document.querySelector('#agent-' + name + '-stamp');
+  if (!el) return;
+  const t = new Date().toLocaleTimeString('zh-CN', {hour12: false});
+  el.textContent = '更新 ' + t + ' · ' + String(count == null ? '—' : count) + ' 项'
+    + (extra ? (' · ' + extra) : '');
+}
+
+function updateAgentLibStamps(errs) {
+  const suffix = errs ? '读数异常' : '';
+  setLibStamp('task', agentTasks.length, suffix);
+  setLibStamp('result', agentResults.length, suffix);
+  setLibStamp('kn', agentKnowledge.length, suffix);
+  setLibStamp('dsh', agentDsh.length, suffix);
+  setLibStamp('dsh-art', agentDshArt.length, suffix);
+  setLibStamp('prop', agentProps.length, suffix);
+  setLibStamp('runbox', agentLastRun ? 1 : 0, suffix);
+  setLibStamp('v2', agentV2 ? 1 : 0, suffix);
+  setLibStamp('consistency', agentConsistency && agentConsistency.ok ? 1 : 0, suffix);
+}
+
+
 let agentConsistency = null;
 
 /* 统一时间格式化：兼容 epoch 秒 / epoch 毫秒 / ISO 字符串。
@@ -4064,6 +4110,7 @@ async function refreshAgentDshLive() {
     const r = await api('/api/dsh/chats');
     agentDsh = (r && r.chats) || [];
     agentRenderDsh();
+    setLibStamp('dsh', agentDsh.length, '');
   } catch (_) {}
 }
 
@@ -4093,10 +4140,12 @@ async function autopilotAction(action) {
       if (r && r.proposal) extra = ' · 提案 ' + String(r.proposal.id || '');
       if (r && r.last_error) extra = ' · ' + String(r.last_error).slice(0, 160);
       msg.textContent = label + (r && r.ok ? '：完成' : '：失败') + extra;
+      agentLogAction(label, (r && r.ok ? '完成' : '失败') + extra, !!(r && r.ok));
     }
     loadAgent();
   } catch (e) {
     if (msg) msg.textContent = label + '失败：' + e.message;
+    agentLogAction(label, '失败：' + e.message, false);
   }
 }
 
@@ -4110,8 +4159,11 @@ async function refreshAgentAll() {
     ];
     await Promise.allSettled(jobs);
     if (msg) msg.textContent = '已刷新 Agent 面板全部库：队列/结果/知识/DSH会话/DSH产物/提案/运行/V2/审计/资料库/联网库/最近跑过';
+    updateAgentLibStamps(false);
+    agentLogAction('刷新全部库', '队列/结果/知识/DSH会话/产物/提案/资料库/联网库', true);
   } catch (e) {
     if (msg) msg.textContent = '刷新失败：' + e.message;
+    agentLogAction('刷新全部库', '失败：' + e.message, false);
   }
 }
 
@@ -4155,11 +4207,13 @@ async function loadAgent() {
   agentModel = mdl || null;
   agentLLM = llm || null;
   agentRenderAll();
-  const errs = [t && t.error, r && r.error, k && k.error].filter(Boolean);
+  const errs = [t && t.error, r && r.error, k && k.error, ds && ds.error, da && da.error, pr && pr.error].filter(Boolean);
+  updateAgentLibStamps(errs.length);
   const msg = $('#agent-msg');
   if (msg) msg.textContent = errs.length ? ('部分读数不可用：' + errs.join('；')) : '';
   const asof = $('#agent-asof');
   if (asof) asof.textContent = '更新于 ' + new Date().toLocaleTimeString();
+  renderAgentActionLog();
 }
 
 function openAgentDialog() {
@@ -4201,9 +4255,11 @@ async function submitAgentTask() {
     if ($('#agent-detail')) $('#agent-detail').value = '';
     const m2 = $('#agent-msg');
     if (m2) m2.textContent = '已提交任务 ' + String(task.id || '');
+    agentLogAction('提交任务', '已入队 ' + String(task.id || ''), true);
     await loadAgent();
   } catch (e) {
     if (msg) msg.textContent = '提交失败：' + e.message;
+    agentLogAction('提交任务', '失败：' + e.message, false);
   } finally {
     if (btn) btn.disabled = false;
   }
@@ -4284,6 +4340,7 @@ async function analyzeProposalInDsh(prop, mode) {
         const r = await api('/api/dsh/proposals/' + encodeURIComponent(prop.id) + '/split',
           {method:'POST', headers:{'Content-Type':'application/json'}, body:'{}'});
         if (dshCurrent) dshCurrent.events.push({type:'text', text:'已拆分为 ' + ((r.children || []).length) + ' 条独立提案。'});
+        agentLogAction('拆分提案', prop.id + ' → ' + String((r.children || []).length) + ' 条', true);
         loadAgent();
       }
     }
@@ -5280,8 +5337,9 @@ function init() {
       try {
         await api('/api/dsh/proposals/' + encodeURIComponent(ro.dataset.propReopen) + '/reopen',
           {method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+        agentLogAction('重新打开提案', ro.dataset.propReopen, true);
         loadAgent();
-      } catch (err) { alert('重新打开失败：' + err.message); }
+      } catch (err) { alert('重新打开失败：' + err.message); agentLogAction('重新打开提案', '失败：' + err.message, false); }
       return;
     }
     const rj = e.target.closest('[data-prop-reject]');
@@ -5292,8 +5350,9 @@ function init() {
         await api('/api/dsh/proposals/' + encodeURIComponent(rj.dataset.propReject) + '/resolve',
           {method:'POST',headers:{'Content-Type':'application/json'},
            body: JSON.stringify({action:'reject', reason: reason})});
+        agentLogAction('不修复提案', rj.dataset.propReject + ' · ' + String(reason || '').slice(0,80), true);
         loadAgent();
-      } catch (err) { alert('关闭提案失败：' + err.message); }
+      } catch (err) { alert('关闭提案失败：' + err.message); agentLogAction('不修复提案', '失败：' + err.message, false); }
       return;
     }
     const sup = e.target.closest('[data-prop-superseded]');
@@ -5304,8 +5363,9 @@ function init() {
           {method:'POST',headers:{'Content-Type':'application/json'},
            body: JSON.stringify({action:'superseded', reason:'用户已另行处理/让AI自定义修复',
                                  conversation_id: dshConversationId || ''})});
+        agentLogAction('提案已另行处理', sup.dataset.propSuperseded, true);
         loadAgent();
-      } catch (err) { alert('关闭提案失败：' + err.message); }
+      } catch (err) { alert('关闭提案失败：' + err.message); agentLogAction('提案已另行处理', '失败：' + err.message, false); }
       return;
     }
     const sp = e.target.closest('[data-prop-split]');
@@ -5322,10 +5382,12 @@ function init() {
           {method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
         const m0 = document.querySelector('#agent-msg');
         if (m0) m0.textContent = '提案 ' + cid + ' 已确认，等待 DSH 自动修复';
+        agentLogAction('确认提案', cid, true);
         loadAgent();
       } catch (err) {
         const m0 = document.querySelector('#agent-msg');
         if (m0) m0.textContent = '确认失败：' + err.message;
+        agentLogAction('确认提案', '失败：' + err.message, false);
       }
       return;
     }

@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/static/style.css?v=1.4.76">
+<link rel="stylesheet" href="/static/style.css?v=1.4.79">
 </head>
 <body class="stage-empty">
 
@@ -261,6 +261,7 @@
         <span class="muted" id="agent-msg"></span>
       </div>
       <div class="agent-auto-status hidden" id="agent-auto-status" role="status" aria-live="polite"></div>
+      <div class="agent-action-log" id="agent-action-log"><span class="muted" id="agent-asof">更新于 —</span><div id="agent-action-log-list" role="status" aria-live="polite"><span class="muted">最近动作：暂无</span></div></div>
       <div class="searchbar tight dsh-agent-cfg hidden" id="dsh-config-box">
         <span class="muted">DSH Agent 配置</span>
         <span class="chip">模式：PTC（默认）</span>
@@ -303,35 +304,35 @@
       </div>
       <div class="agent-grid scroll">
         <div class="agent-sec">
-          <div class="agent-sec-h">任务队列 <span class="chip" id="agent-task-n">0</span></div>
+          <div class="agent-sec-h">任务队列 <span class="chip" id="agent-task-n">0</span><span class="muted lib-stamp" id="agent-task-stamp">未刷新</span></div>
           <div id="agent-tasks" class="agent-list"></div>
         </div>
         <div class="agent-sec">
-          <div class="agent-sec-h">消费者结果 <span class="chip" id="agent-result-n">0</span></div>
+          <div class="agent-sec-h">消费者结果 <span class="chip" id="agent-result-n">0</span><span class="muted lib-stamp" id="agent-result-stamp">未刷新</span></div>
           <div id="agent-results" class="agent-list"></div>
         </div>
         <div class="agent-sec">
-          <div class="agent-sec-h">技术知识库 <span class="chip" id="agent-kn-n">0</span><span class="muted agent-kn-desc">经 DSH 检索会话按官方/时效/置信/相关筛选</span></div>
+          <div class="agent-sec-h">技术知识库 <span class="chip" id="agent-kn-n">0</span><span class="muted lib-stamp" id="agent-kn-stamp">未刷新</span><span class="muted agent-kn-desc">经 DSH 检索会话按官方/时效/置信/相关筛选</span></div>
           <div id="agent-knowledge" class="agent-list"></div>
         </div>
         <div class="agent-sec">
-          <div class="agent-sec-h">DSH Agent 会话 <span class="chip" id="agent-dsh-n">0</span></div>
+          <div class="agent-sec-h">DSH Agent 会话 <span class="chip" id="agent-dsh-n">0</span><span class="muted lib-stamp" id="agent-dsh-stamp">未刷新</span></div>
           <div id="agent-dsh" class="agent-list"></div>
         </div>
         <div class="agent-sec">
-          <div class="agent-sec-h">DSH 产物库 <span class="chip" id="agent-dsh-art-n">0</span></div>
+          <div class="agent-sec-h">DSH 产物库 <span class="chip" id="agent-dsh-art-n">0</span><span class="muted lib-stamp" id="agent-dsh-art-stamp">未刷新</span></div>
           <div id="agent-dsh-art" class="agent-list"></div>
         </div>
         <div class="agent-sec">
-          <div class="agent-sec-h">修复提案库 <span class="chip" id="agent-prop-n">0</span></div>
+          <div class="agent-sec-h">修复提案库 <span class="chip" id="agent-prop-n">0</span><span class="muted lib-stamp" id="agent-prop-stamp">未刷新</span></div>
           <div id="agent-proposals" class="agent-list"></div>
         </div>
         <div class="agent-sec">
-          <div class="agent-sec-h">最近一次消费者运行</div>
+          <div class="agent-sec-h">最近一次消费者运行<span class="muted lib-stamp" id="agent-runbox-stamp">未刷新</span></div>
           <div id="agent-runbox" class="agent-list"></div>
         </div>
         <div class="agent-sec">
-          <div class="agent-sec-h">V2 影子调度 <span class="chip" id="agent-v2-n">0</span>
+          <div class="agent-sec-h">V2 影子调度 <span class="chip" id="agent-v2-n">0</span><span class="muted lib-stamp" id="agent-v2-stamp">未刷新</span>
             <select class="pill" id="pareto-prefer" data-tip="帕累托推荐偏好">
               <option value="balanced">均衡</option>
               <option value="cost">省成本</option>
@@ -341,7 +342,7 @@
           <div id="agent-v2" class="agent-list"></div>
         </div>
         <div class="agent-sec">
-          <div class="agent-sec-h">自洽审计 <span class="chip" id="agent-consistency-n">0</span></div>
+          <div class="agent-sec-h">自洽审计 <span class="chip" id="agent-consistency-n">0</span><span class="muted lib-stamp" id="agent-consistency-stamp">未刷新</span></div>
           <div id="agent-consistency" class="agent-list"></div>
         </div>
       </div>
@@ -555,6 +556,6 @@
 
 
 
-<script src="/static/app.js?v=1.4.76"></script>
+<script src="/static/app.js?v=1.4.79"></script>
 </body>
 </html>

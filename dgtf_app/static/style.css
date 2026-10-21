@@ -1698,3 +1698,9 @@ body.stage-empty main.stage{padding-bottom:0}
 .env-inline .dot{margin-right:0;flex:0 0 auto}
 
 #view-agent .searchbar .ghost.on{border-color:rgba(63,185,80,.55);background:rgba(63,185,80,.14);color:#DFF7E4}
+
+/* 库动作透明化：最近动作行 + 各库更新时间 */
+.agent-action-log{margin:2px 0 8px;padding:6px 9px;border:1px solid var(--line);border-radius:6px;background:var(--s1);font-size:12px;line-height:1.6;overflow-wrap:anywhere}
+.agent-action-log .ok{color:#7ee787}
+.agent-action-log .bad{color:#ff7b72}
+.lib-stamp{font-size:11px;margin-left:8px;font-weight:400}

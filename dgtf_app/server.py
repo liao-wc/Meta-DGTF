@@ -6007,19 +6007,31 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(_auto_job_get(m.group(1), since) or {"error": "job not found"})
         m = re.match(r"^/api/dsh/chat/([^/]+)$", p)
         if m:
-            return self._json(_conv_snapshot(unquote(m.group(1))) or {})
+            rec = _conv_snapshot(unquote(m.group(1)))
+            if not rec:
+                return self._json({"error": "conversation not found"}, 404)
+            return self._json(rec)
         m = re.match(r"^/api/dsh/sessions/([^/]+)$", p)
         if m:
-            return self._json(_get_dsh_session(unquote(m.group(1))))
+            rec = _get_dsh_session(unquote(m.group(1)))
+            if not rec:
+                return self._json({"error": "session not found"}, 404)
+            return self._json(rec)
         m = re.match(r"^/api/dsh/proposals/([^/]+)$", p)
         if m:
-            return self._json(_get_proposal(unquote(m.group(1))))
+            rec = _get_proposal(unquote(m.group(1)))
+            if not rec:
+                return self._json({"error": "proposal not found"}, 404)
+            return self._json(rec)
         if p == "/api/dsh/proposals":
             return self._json({"proposals": _list_proposals(),
                                "summary": _proposal_summary()})
         m = re.match(r"^/api/dsh/artifacts/([^/]+)$", p)
         if m:
-            return self._json(_read_dsh_artifact(unquote(m.group(1))))
+            rec = _read_dsh_artifact(unquote(m.group(1)))
+            if not rec:
+                return self._json({"error": "artifact not found"}, 404)
+            return self._json(rec)
         if p == "/api/dsh/artifacts":
             return self._json({"artifacts": _list_dsh_artifacts()})
         if p == "/api/dsh/sessions":
@@ -6294,6 +6306,18 @@ class Handler(BaseHTTPRequestHandler):
         return self._json({"error": "not found"}, 404)
 
     # ── POST ──────────────────────────────────────────────────────
+    def _method_not_allowed(self):
+        return self._json({"error": "method not allowed"}, 405)
+
+    def do_PUT(self):
+        return self._method_not_allowed()
+
+    def do_DELETE(self):
+        return self._method_not_allowed()
+
+    def do_PATCH(self):
+        return self._method_not_allowed()
+
     def do_POST(self):
         if not self._guard(mutate=True):   # Host + 口令 + Origin/Referer + CSRF
             return
@@ -6335,7 +6359,12 @@ class Handler(BaseHTTPRequestHandler):
                         "title": str(data.get("title") or data.get("text") or ""),
                         "detail": str(data.get("detail") or data.get("text") or "")[:4000],
                         "source_run": "app_user"}
-                return self._json({"task": append_task(task)})
+                saved = append_task(task)
+                if isinstance(saved, dict) and saved.get("rejected"):
+                    return self._json({"error": "任务未入队：" + str(saved.get("rejected")),
+                                       "reason": saved.get("rejected"),
+                                       "task": saved.get("task")}, 400)
+                return self._json({"task": saved})
             except Exception as exc:
                 return self._json({"error": str(exc)}, 500)
         if p == "/api/agent/eml/export":
@@ -6587,7 +6616,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/agent/autopilot/action":
             data = self._read_json()
-            return self._json(_autopilot_action(data.get("action")))
+            res = _autopilot_action(data.get("action"))
+            return self._json(res, 200 if res.get("ok") else 400)
         if p == "/api/agent/autopilot":
             data = self._read_json()
             if bool(data.get("enabled")):
@@ -6666,7 +6696,8 @@ class Handler(BaseHTTPRequestHandler):
             pid = p.split("/")[4]
             prop, err = _reopen_proposal(pid)
             if not prop:
-                return self._json({"error": err or "重新打开失败"}, 400)
+                return self._json({"error": err or "重新打开失败"},
+                                  404 if err == "proposal not found" else 400)
             return self._json({"ok": True, "proposal": prop})
         if p.startswith("/api/dsh/proposals/") and p.endswith("/resolve"):
             data = self._read_json()
@@ -6675,13 +6706,15 @@ class Handler(BaseHTTPRequestHandler):
                 pid, data.get("action"), data.get("reason"),
                 data.get("conversation_id"))
             if not prop:
-                return self._json({"error": err or "关闭失败"}, 400)
+                return self._json({"error": err or "关闭失败"},
+                                  404 if err == "proposal not found" else 400)
             return self._json({"ok": True, "proposal": prop})
         if p.startswith("/api/dsh/proposals/") and p.endswith("/split"):
             pid = p.split("/")[4]
             children, err = _split_proposal(pid)
             if not children:
-                return self._json({"error": err or "拆分失败"}, 400)
+                return self._json({"error": err or "拆分失败"},
+                                  404 if err == "proposal not found" else 400)
             return self._json({"ok": True, "children": children,
                                "parent": _get_proposal(pid)})
         if p.startswith("/api/dsh/proposals/") and p.endswith("/confirm"):
