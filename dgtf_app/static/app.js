@@ -3245,6 +3245,7 @@ let agentLastRun = null;
 let agentV2 = null;
 let agentPareto = null;
 let agentV2AB = null;
+let agentV2Pareto = null;
 
 function agentIsoShort(x) {
   if (!x) return '—';
@@ -3461,6 +3462,38 @@ function agentRenderProps() {
   }).join('');
 }
 
+function agentV2ParetoSvg(d) {
+  const pts = (d && d.points) || [];
+  if (!pts.length) return '';
+  const W = 560, H = 210, P = 38;
+  const maxT = Math.max.apply(null, pts.map(function (p) { return p.tokens || 0; })) || 1;
+  const maxL = Math.max.apply(null, pts.map(function (p) { return p.low || 0; })) || 1;
+  function X(p) { return P + ((p.tokens || 0) / maxT) * (W - P * 2); }
+  function Y(p) { return H - P - ((p.low || 0) / maxL) * (H - P * 2); }
+  const rec = d.recommended || {};
+  const fr = (d.frontier || []).slice().sort(function (a, b) { return (a.tokens || 0) - (b.tokens || 0); });
+  let s = '<svg class="agent-pareto-svg" viewBox="0 0 ' + W + ' ' + H + '">';
+  s += '<line x1="' + P + '" y1="' + (H - P) + '" x2="' + (W - P) + '" y2="' + (H - P) + '" stroke="currentColor" opacity=".35"/>';
+  s += '<line x1="' + P + '" y1="' + P + '" x2="' + P + '" y2="' + (H - P) + '" stroke="currentColor" opacity=".35"/>';
+  s += '<text x="' + (W / 2) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="11" fill="currentColor" opacity=".7">tokens</text>';
+  s += '<text x="10" y="' + (P - 10) + '" font-size="11" fill="currentColor" opacity=".7">quality low</text>';
+  if (fr.length > 1) {
+    s += '<polyline fill="none" stroke="var(--accent)" stroke-width="1.5" opacity=".75" points="'
+      + fr.map(function (p) { return X(p).toFixed(1) + ',' + Y(p).toFixed(1); }).join(' ') + '"/>';
+  }
+  pts.forEach(function (p) {
+    const isRec = rec.template && p.template === rec.template;
+    const isFront = fr.some(function (q) { return q.template === p.template; });
+    s += '<circle cx="' + X(p).toFixed(1) + '" cy="' + Y(p).toFixed(1) + '" r="'
+      + (isRec ? 5 : isFront ? 4 : 3) + '" fill="'
+      + (isRec ? 'var(--accent)' : isFront ? 'var(--accent-hi)' : 'currentColor')
+      + '" opacity="' + (isFront ? '.95' : '.35') + '">'
+      + '<title>' + esc(String(p.template || '')) + ' tokens ' + esc(String(p.tokens || 0))
+      + ' quality ' + esc(String(p.quality || 0)) + '</title></circle>';
+  });
+  return s + '</svg>';
+}
+
 function agentRenderV2() {
   const box = $('#agent-v2');
   if (!box) return;
@@ -3518,6 +3551,7 @@ function agentRenderV2() {
       });
     html += '</div>';
   }
+  if (agentV2Pareto) html += agentV2ParetoSvg(agentV2Pareto);
   (d.recent || []).slice().reverse().forEach(function (e) {
     html += '<div class="agent-item"><div class="agent-row">'
       + '<span class="chip">' + esc(String(e.kind || '')) + '</span>'
@@ -3549,7 +3583,7 @@ async function loadAgent() {
   if (resBox) resBox.innerHTML = agentEmpty('读取中…');
   const knBox = $('#agent-knowledge');
   if (knBox) knBox.innerHTML = agentEmpty('读取中…');
-  const [t, r, k, ds, da, pr, v2, pa, vab] = await Promise.all([
+  const [t, r, k, ds, da, pr, v2, pa, vab, vpar] = await Promise.all([
     api('/api/agent/tasks').catch(e => ({ tasks: [], error: e.message })),
     api('/api/agent/results').catch(e => ({ results: [], error: e.message })),
     api('/api/agent/knowledge').catch(e => ({ items: [], error: e.message })),
@@ -3559,6 +3593,7 @@ async function loadAgent() {
     api('/api/schedule/v2').catch(e => ({ n: 0, error: e.message })),
     api('/api/schedule/pareto?prefer=' + encodeURIComponent((document.querySelector('#pareto-prefer') || {}).value || 'balanced')).catch(e => ({ ok: false, error: e.message })),
     api('/api/schedule/v2/ab?all=1').catch(e => ({ ok: false, error: e.message })),
+    api('/api/schedule/v2/pareto').catch(e => ({ ok: false, error: e.message })),
   ]);
   agentTasks = (t && t.tasks) || [];
   agentResults = (r && r.results) || [];
@@ -3569,6 +3604,7 @@ async function loadAgent() {
   agentV2 = v2 || null;
   agentPareto = pa || null;
   agentV2AB = vab || null;
+  agentV2Pareto = vpar || null;
   agentRenderAll();
   const errs = [t && t.error, r && r.error, k && k.error].filter(Boolean);
   const msg = $('#agent-msg');

@@ -76,7 +76,7 @@ engine 元DGTF-V1.30.0.py
 | `GET /api/agent/eml` | EML 映射读数：playbook 25 条、V2 shadow 事件 544 条、agent tasks/results/knowledge/proposals 与提案状态分布 |
 | `POST /api/agent/eml/replay` | EML 反馈回放：历史 packed → schedule outcome 先验；默认 dry-run，不写生产 playbook |
 | `GET /api/schedule/v2` | V2 shadow 事件读数：按 kind/layer 聚合 + 最近 5 条 + 路径 |
-| Agent 面板“V2 调度”标签 | 展示事件总数、kind/layer 分布、模板级 A/B（quality±CI/tokens/calls）、帕累托前沿、最近 5 条事件；含偏好选择与“采用帕累托”按钮 |
+| Agent 面板“V2 调度”标签 | 展示事件总数、kind/layer 分布、模板级 A/B（quality±CI/tokens/calls）、质量-成本 SVG 散点图、帕累托前沿、最近 5 条事件；含偏好选择与采用按钮 |
 | `GET /api/schedule/v2/ab` | Welch 近似 A/B：均值差、se、t、p、胜者；`all=1` 返回 Benjamini-Hochberg FDR 成对校正 |
 | `POST /api/schedule/v2/apply-best` | 按 95% 置信下界选最佳 V2 模板，写入 policy；paired 不可识别时返回 warning |
 | `GET /api/schedule/v2/pareto` | V2 模板级质量-成本联合帕累托前沿（quality low vs tokens） |
