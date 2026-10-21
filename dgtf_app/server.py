@@ -5350,10 +5350,15 @@ class Handler(BaseHTTPRequestHandler):
             for p in props:
                 st = str(p.get("status") or "")
                 counts[st] = counts.get(st, 0) + 1
+            try:
+                from dgtf_v2.agent_bridge import read_tasks as _read_q
+                _qn = len(_read_q(limit=1000))
+            except Exception:
+                _qn = len(_agent_queue_snapshot())
             res = {"ok": True, "app": APP_VERSION,
                    "head": (_git(["rev-parse", "HEAD"]).get("out") or "").strip(),
                    "branch": (_git(["rev-parse", "--abbrev-ref", "HEAD"]).get("out") or "").strip(),
-                   "queue_n": len(_agent_queue_snapshot()),
+                   "queue_n": _qn,
                    "proposal_counts": counts, "changed": changed}
         elif action == "proposals":
             props = [p for p in _list_proposals(300)
