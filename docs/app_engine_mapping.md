@@ -73,7 +73,8 @@ engine 元DGTF-V1.30.0.py
 | `POST /api/schedule/preview` | 输入 question/opts/profile，返回 effective、precedence、CLI、auto/v2/budget、层集合 |
 | `GET /api/schedule/pareto` | 从真实 `outputs/*.packed.json` 聚合 route/rounds 的 token 与四层覆盖面，返回非支配前沿与推荐点 |
 | `GET /api/agent/auto/jobs` | 列出持久化的 auto/autofix job；服务重启后 running 自动标记 interrupted |
-| `GET /api/agent/eml` | EML 映射读数：playbook 25 条、V2 shadow 事件 544 条、agent tasks/results/knowledge/proposals 与提案状态分布 |
+| `GET /api/agent/eml` | EML 映射读数：playbook 25 条、V2 shadow 事件、agent tasks/results/knowledge/proposals 与提案状态分布 |
+| `GET /api/consistency` | 自洽审计：引擎版本/EML 模块/记忆/V2 配对可识别性/策略 profile/job 持久化/层映射 |
 | `POST /api/agent/eml/replay` | EML 反馈回放：历史 packed → schedule outcome 先验；默认 dry-run，不写生产 playbook |
 | `GET /api/schedule/v2` | V2 shadow 事件读数：按 kind/layer 聚合 + 最近 5 条 + 路径 |
 | Agent 面板“V2 调度”标签 | 展示事件总数、kind/layer 分布、模板级 A/B（quality±CI/tokens/calls）、质量-成本 SVG 散点图、帕累托前沿、最近 5 条事件；含偏好选择与采用按钮 |

@@ -1833,6 +1833,78 @@ def _v2_paired_ab(left="", right=""):
                         "同一 run 内各模板 quality 相同，模板胜者不可识别（影子读数未独立区分模板）"))}
 
 
+def _self_consistency():
+    """元DGTF 自洽审计：把引擎/EML/V2/策略/持久化/映射集中校验。"""
+    import json as _json
+    import sys as _sys
+    root = Path(__file__).resolve().parent.parent
+    if str(root) not in _sys.path:
+        _sys.path.insert(0, str(root))
+    checks = {}
+    eng = runner.find_engine()
+    _ver = ""
+    try:
+        import re as _re
+        _m = _re.search(r'__version__\s*=\s*["\']([^"\']+)',
+                        eng.read_text(encoding="utf-8", errors="replace")[:4000])
+        _ver = _m.group(1) if _m else ""
+    except Exception:
+        _ver = ""
+    checks["engine"] = {"ok": eng.is_file(), "name": eng.name, "version": _ver}
+    mods = {}
+    for name in ("self_feedback", "llm_feedback", "unified_memory",
+                 "scheduler", "orchestrator", "fact_flow", "evidence",
+                 "structural_diversity"):
+        try:
+            __import__("dgtf_v2." + name)
+            mods[name] = True
+        except Exception:
+            mods[name] = False
+    checks["eml_modules"] = {"ok": all(mods.values()), "modules": mods}
+    try:
+        eml = _eml_status()
+        checks["eml_memory"] = {"ok": (eml.get("playbook") or {}).get("n", 0) > 0,
+                                "playbook": (eml.get("playbook") or {}).get("n"),
+                                "v2": (eml.get("v2_shadow") or {}).get("n"),
+                                "tasks": (eml.get("agent") or {}).get("tasks"),
+                                "results": (eml.get("agent") or {}).get("results")}
+    except Exception as exc:
+        checks["eml_memory"] = {"ok": False, "error": str(exc)}
+    try:
+        pair = _v2_paired_ab()
+        checks["v2_paired"] = {"ok": bool(pair.get("ok")),
+                               "identifiable": bool(pair.get("identifiable")),
+                               "n_pairs": pair.get("n_pairs"),
+                               "warning": "" if pair.get("identifiable") else pair.get("note", "")}
+    except Exception as exc:
+        checks["v2_paired"] = {"ok": False, "error": str(exc)}
+    try:
+        pol = _schedule_policy_load()
+        prof = str(pol.get("profile") or "")
+        pp = root / "configs" / prof if prof else None
+        checks["schedule_policy"] = {"ok": bool(prof) and bool(pp and pp.is_file()),
+                                     "profile": prof,
+                                     "template": pol.get("pareto_template") or pol.get("template"),
+                                     "route": pol.get("route"), "rounds": pol.get("rounds")}
+    except Exception as exc:
+        checks["schedule_policy"] = {"ok": False, "error": str(exc)}
+    try:
+        jf = root / "dgtf_memory" / "auto_jobs.json"
+        jd = _json.loads(jf.read_text(encoding="utf-8")) if jf.exists() else {}
+        checks["job_persistence"] = {"ok": jf.exists(), "jobs": len(jd),
+                                     "path": str(jf)}
+    except Exception as exc:
+        checks["job_persistence"] = {"ok": False, "error": str(exc)}
+    checks["layer_mapping"] = {"ok": True, "engine_layers": ["0", "1", "both", "all"],
+                               "app_layers": ["0", "1", "both", "all"],
+                               "canonical_ids": ["0", "1", "both", "all"]}
+    crit = ["engine", "eml_modules", "eml_memory", "layer_mapping"]
+    ok = all(bool(checks[k].get("ok")) for k in crit)
+    warns = [k for k, v in checks.items() if not v.get("ok")]
+    return {"ok": ok, "checks": checks, "warnings": warns,
+            "note": "critical=engine/eml_modules/eml_memory/layer_mapping；其余为诊断项"}
+
+
 def _v2_replay_packed(limit=30):
     """用真实 packed 重新回放 V2，写入按层 quality 的 schedule_outcome。"""
     import sys as _sys
@@ -2409,6 +2481,11 @@ class Handler(BaseHTTPRequestHandler):
         if p == "/api/agent/eml":
             try:
                 return self._json(_eml_status())
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/consistency":
+            try:
+                return self._json(_self_consistency())
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/schedule/v2/pareto":

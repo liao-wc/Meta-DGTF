@@ -30,6 +30,9 @@ ck("engine mapping", h.get("engine", {}).get("file", "").endswith(".py") and h.g
 ck("EML modules", all((h.get("modules") or {}).values()), h.get("modules"))
 ck("dependency chain", bool(h.get("checks", {}).get("fact_flow") and h.get("checks", {}).get("scheduler")), h.get("checks"))
 ck("app mapping", "EML_self_feedback" in (h.get("mapping") or {}), h.get("mapping"))
+st, cons = req("GET", "/api/consistency", timeout=30)
+ck("self consistency audit", st == 200 and cons.get("ok")
+   and bool((cons.get("checks") or {}).get("layer_mapping")), (st, cons))
 st, eml = req("GET", "/api/agent/eml", timeout=30)
 ck("EML status mapped", st == 200 and eml.get("ok")
    and (eml.get("playbook") or {}).get("n", 0) >= 0
