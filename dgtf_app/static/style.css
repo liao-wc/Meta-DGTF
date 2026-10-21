@@ -1627,3 +1627,7 @@ body.stage-empty main.stage{padding-bottom:0}
 .drawer-nav{margin-top:-17px;margin-bottom:auto;transform:none}
 
 .drawer-nav{margin-top:0;margin-bottom:auto;transform:none}
+
+/* 状态信息水平居中并整体上移 10px，按钮同步上移 10px */
+.env{text-align:center;transform:translateY(-15px)}
+.drawer-nav{margin-top:-10px;margin-bottom:auto;transform:none}
