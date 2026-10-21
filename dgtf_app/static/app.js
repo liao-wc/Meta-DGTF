@@ -4017,6 +4017,26 @@ function agentRenderAll() {
   agentRenderConsistency();
 }
 
+async function autopilotAction(action) {
+  const label = {learn: '学习刷新', spawn: '从队列发起提案', scan: '项目自主审视'}[action] || action;
+  const msg = document.querySelector('#agent-msg');
+  if (msg) msg.textContent = label + '：执行中…（可能需要一两分钟）';
+  try {
+    const r = await api('/api/agent/autopilot/action', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({action: action})});
+    if (msg) {
+      let extra = '';
+      if (r && r.proposal) extra = ' · 提案 ' + String(r.proposal.id || '');
+      if (r && r.last_error) extra = ' · ' + String(r.last_error).slice(0, 160);
+      msg.textContent = label + (r && r.ok ? '：完成' : '：失败') + extra;
+    }
+    loadAgent();
+  } catch (e) {
+    if (msg) msg.textContent = label + '失败：' + e.message;
+  }
+}
+
 async function refreshAgentAll() {
   const msg = $('#agent-msg');
   if (msg) msg.textContent = '正在刷新 Agent 面板全部库…';
@@ -5003,6 +5023,10 @@ function init() {
   });
   const _agentRefresh = $('#agent-refresh');
   if (_agentRefresh) _agentRefresh.addEventListener('click', refreshAgentAll);
+  [['#ap-learn', 'learn'], ['#ap-spawn', 'spawn'], ['#ap-scan', 'scan']].forEach(function (pair) {
+    const el = $(pair[0]);
+    if (el) el.addEventListener('click', function () { autopilotAction(pair[1]); });
+  });
   const _apBtn = $('#agent-autopilot-btn');
   if (_apBtn) _apBtn.addEventListener('click', async () => {
     const enable = !(agentAutopilot && agentAutopilot.enabled);

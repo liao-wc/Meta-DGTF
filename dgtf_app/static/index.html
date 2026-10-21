@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/static/style.css?v=1.4.67">
+<link rel="stylesheet" href="/static/style.css?v=1.4.68">
 </head>
 <body class="stage-empty">
 
@@ -279,6 +279,9 @@
           <option value="danger-full-access">权限：完全访问（危险）</option>
           <option value="auto">权限：自动审查</option>
         </select>
+        <button id="ap-learn" class="ghost" data-tip="立即触发一次技术知识检索/学习（常驻能力）">学习刷新</button>
+        <button id="ap-spawn" class="ghost" data-tip="从队列挑一条任务，让 DSH 立即生成修复提案">从队列发起提案</button>
+        <button id="ap-scan" class="ghost" data-tip="让 DSH 自主审视项目并生成优化提案">项目自主审视</button>
         <span class="muted">设置在 DSH Agent 下次运行生效</span>
       </div>
       <div class="agent-tabs">
@@ -551,6 +554,6 @@
 
 
 
-<script src="/static/app.js?v=1.4.67"></script>
+<script src="/static/app.js?v=1.4.68"></script>
 </body>
 </html>

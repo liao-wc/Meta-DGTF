@@ -472,6 +472,8 @@ def _autopilot_lock():
 def _autopilot_cfg_load():
     import json as _json
     base = {"enabled": False, "interval": 120.0, "knowledge_every": 0,
+            "spawn_every": 21600.0, "learn_every": 21600.0,
+            "scan_every": 21600.0,
             "started_ts": 0, "last_cycle": 0, "last_learn": 0, "last_scan": 0}
     try:
         d = _json.loads(_AUTOPILOT_CFG_PATH.read_text(encoding="utf-8"))
@@ -526,10 +528,44 @@ def _autopilot_knowledge(prop):
     if hit and _t.time() - hit[0] < 1800:
         return hit[1]
     try:
-        r = _knowledge_agent_search(
-            [str((prop.get("task") or {}).get("title") or "元DGTF 技术优化") + " 最佳实践"],
-            mode="query", limit=2)
+        import threading as _th
+        box = {}
+
+        def _do_learn():
+            try:
+                box["r"] = _knowledge_agent_search(
+                    [str((prop.get("task") or {}).get("title") or "元DGTF 技术优化") + " 最佳实践"],
+                    mode="query", limit=2)
+            except Exception as exc:
+                box["err"] = exc
+
+        th = _th.Thread(target=_do_learn, daemon=True)
+        th.start()
+        th.join(12.0)
+        if th.is_alive():
+            r = {}
+            _AUTOPILOT["last_error"] = "learn timeout（修复先继续）"
+        else:
+            r = box.get("r") or {}
+            if box.get("err"):
+                _AUTOPILOT["last_error"] = "learn: %s" % box.get("err")
         items = list(r.get("items") or [])
+        if not items:
+            # 联网/慢检索超时后，用本地知识库做保底学习，不阻塞修复。
+            try:
+                from dgtf_v2.agent_bridge import read_knowledge
+                rows = read_knowledge(limit=300)
+                q = (str((prop.get("task") or {}).get("title") or "") + " " +
+                     str((prop.get("task") or {}).get("detail") or "")).lower()
+                terms = [x for x in q.replace("/", " ").split() if len(x) >= 2][:8]
+                hit = []
+                for it in rows:
+                    blob = (str(it.get("title") or "") + " " + str(it.get("claim") or "")).lower()
+                    if any(t in blob for t in terms):
+                        hit.append(it)
+                items = hit[:2]
+            except Exception:
+                items = []
         lines = []
         for x in items[:2]:
             t = str(x.get("title") or "").strip()
@@ -635,13 +671,17 @@ def _autopilot_cycle():
                 _AUTOPILOT["last_cycle"] = _t.time()
             finally:
                 lk.release()
-    # 3) 每 30 分钟尝试一次从队列自发提案；每 6 小时学习/审视一次
+    # 3) 按配置周期：从队列自发提案 / 学习 / 项目审视；手动触发的记录同样计入节流
     now = _t.time()
-    if now - float(_AUTOPILOT.get("last_spawn") or 0) > 21600:
+    cfg = _autopilot_cfg_load()
+    spawn_every = float(cfg.get("spawn_every") or 21600)
+    learn_every = float(cfg.get("learn_every") or cfg.get("knowledge_every") or 21600)
+    scan_every = float(cfg.get("scan_every") or 21600)
+    if now - float(_AUTOPILOT.get("last_spawn") or 0) > spawn_every:
         _autopilot_spawn_proposal()
-    if now - float(_AUTOPILOT.get("last_learn") or 0) > 21600:
+    if now - float(_AUTOPILOT.get("last_learn") or 0) > learn_every:
         _autopilot_learn()
-    if now - float(_AUTOPILOT.get("last_scan") or 0) > 21600:
+    if now - float(_AUTOPILOT.get("last_scan") or 0) > scan_every:
         _autopilot_scan()
 
 
@@ -669,6 +709,9 @@ def _autopilot_status():
         "daemon": d,
         "interval": cfg.get("interval", 120),
         "knowledge_every": cfg.get("knowledge_every", 0),
+        "spawn_every": cfg.get("spawn_every", 21600),
+        "learn_every": cfg.get("learn_every", cfg.get("knowledge_every") or 21600),
+        "scan_every": cfg.get("scan_every", 21600),
         "last_cycle": _AUTOPILOT.get("last_cycle") or cfg.get("last_cycle") or 0,
         "last_error": _AUTOPILOT.get("last_error", ""),
         "started_ts": cfg.get("started_ts") or 0,
@@ -680,6 +723,32 @@ def _autopilot_status():
             "requires_acceptance": True,
         },
     }
+
+
+def _autopilot_action(action):
+    """手动触发常驻能力；与自动周期共用同一套节流记录。"""
+    import time as _t
+    action = str(action or "").strip()
+    if action == "learn":
+        _autopilot_learn()
+        _AUTOPILOT["last_learn"] = _t.time()
+        return {"ok": not bool(_AUTOPILOT.get("last_error")),
+                "action": action, "last_error": _AUTOPILOT.get("last_error", "")}
+    if action == "spawn":
+        prop = _autopilot_spawn_proposal()
+        _AUTOPILOT["last_spawn"] = _t.time()
+        return {"ok": prop is not None, "action": action,
+                "proposal": prop, "last_error": _AUTOPILOT.get("last_error", "")}
+    if action == "scan":
+        _autopilot_scan()
+        _AUTOPILOT["last_scan"] = _t.time()
+        return {"ok": not bool(_AUTOPILOT.get("last_error")),
+                "action": action, "last_error": _AUTOPILOT.get("last_error", "")}
+    if action == "cycle":
+        _autopilot_cycle()
+        return {"ok": True, "action": action,
+                "last_error": _AUTOPILOT.get("last_error", "")}
+    return {"ok": False, "error": "未知常驻动作"}
 
 
 def _autopilot_start(interval=None, knowledge_every=None, start_daemon=True):
@@ -1493,6 +1562,7 @@ def _run_dsh_agent_raw(task: str, sid: str = "", timeout: int = 300,
         cmd += ["--session-id", sid]
     cmd += ["-"]
     events, texts, final = [], [], ""
+    _final_seen = [0.0]
     proc = None
     _guard_blocked = []
     _secret_vals = [x for x in (key, env.get("TAVILY_API_KEY", ""),
@@ -1546,6 +1616,7 @@ def _run_dsh_agent_raw(task: str, sid: str = "", timeout: int = 300,
             sid = str(ev["sessionId"])
         if ev.get("type") == "final":
             final = str(ev.get("text") or "")
+            _final_seen[0] = time.time()
         if emit is not None:
             try:
                 emit(ev)
@@ -1599,8 +1670,16 @@ def _run_dsh_agent_raw(task: str, sid: str = "", timeout: int = 300,
         except Exception:
             pass
         _timed_out = False
+        _final_idle = False
         _deadline = _t.monotonic() + max(1, int(timeout))
         while True:
+            if final and _final_seen[0] and _t.time() - _final_seen[0] > 8:
+                _final_idle = True
+                try:
+                    proc.kill()
+                except Exception:
+                    pass
+                break
             _remain = _deadline - _t.monotonic()
             if _remain <= 0:
                 _timed_out = True
@@ -1612,6 +1691,14 @@ def _run_dsh_agent_raw(task: str, sid: str = "", timeout: int = 300,
             try:
                 _line = _qout.get(timeout=min(0.2, _remain))
             except _q.Empty:
+                # DSH 偶发 final 已出但进程不退出；给 8 秒收尾后主动结束，避免自动修复卡死。
+                if final and _final_seen[0] and _t.time() - _final_seen[0] > 8:
+                    _final_idle = True
+                    try:
+                        proc.kill()
+                    except Exception:
+                        pass
+                    break
                 if proc.poll() is not None:
                     break
                 continue
@@ -1647,7 +1734,7 @@ def _run_dsh_agent_raw(task: str, sid: str = "", timeout: int = 300,
                 out["security_blocked"] = list(_guard_blocked[:3])
             _save_dsh_run(task, sid, out, auto_repair)
             return out
-        rc = proc.returncode
+        rc = 0 if _final_idle else proc.returncode
         stderr = (err_text or "")[-2000:]
     finally:
         if proc is not None:
@@ -2064,13 +2151,14 @@ def _repair_with_acceptance(prop, model="", emit=None, max_attempts=3,
             _git(["reset", "--mixed", before_head])
         if res.get("conversation_id"):
             convs.append(str(res["conversation_id"]))
-        # 只把源码/文档纳入验收与安全审查；DSH 会话文件、日志等运行产物不算变更。
-        changed = _commit_scope(_changed_since(before, before_fp))
+        # 只把源码/文档纳入验收与安全审查；DSH 会话/轮询脚本等计划外新文件不算本次变更。
+        changed = _commit_scope(_changed_since(before, before_fp),
+                                allowed=_plan_paths(plan))
         last_gate = _run_fast_gate()
         last_acc = _targeted_acceptance(changed) if changed else {
             "ok": False, "checks": [{"name": "changed", "ok": False,
                                      "tail": "本轮没有文件变更"}]}
-        last_sec = _security_scan_changed(_commit_scope(changed))
+        last_sec = _security_scan_changed(changed)
         attempts.append({"attempt": n, "changed": changed,
                          "gate": last_gate, "acceptance": last_acc,
                          "security": last_sec,
@@ -2904,11 +2992,11 @@ def _autofix_workflow(data, write):
             write({"type": "event", "stage": "proposal:" + _pid, "event": ev})
 
         learn = ""
-        if _autopilot_cfg_load().get("enabled", True):
-            try:
-                learn = _autopilot_knowledge(prop)
-            except Exception:
-                learn = ""
+        try:
+            # 提案驱动学习：每次修复前都尝试检索相关知识；失败不阻塞修复。
+            learn = _autopilot_knowledge(prop)
+        except Exception:
+            learn = ""
         try:
             res = _repair_with_acceptance(
                 prop, model=str((data or {}).get("model") or ""),
@@ -2927,9 +3015,10 @@ def _autofix_workflow(data, write):
         prop["attempts"] = list(res.get("attempts") or [])
         prop["acceptance"] = acc
         prop["security"] = res.get("security") or {}
+        prop["learning"] = {"enabled": bool(learn), "chars": len(learn)}
         prop["result"] = {"ok": res.get("ok"), "gate": res.get("gate"),
                           "acceptance": acc, "security": prop["security"],
-                          "repair": repair,
+                          "learning": prop["learning"], "repair": repair,
                           "conversation_id": prop["conversation_id"],
                           "conversations": prop["conversation_ids"],
                           "autopilot": bool((data or {}).get("autopilot"))}
@@ -6241,6 +6330,9 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"ok": bool(res.get("ok")), "proposal": prop})
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/agent/autopilot/action":
+            data = self._read_json()
+            return self._json(_autopilot_action(data.get("action")))
         if p == "/api/agent/autopilot":
             data = self._read_json()
             if bool(data.get("enabled")):
@@ -6360,7 +6452,10 @@ class Handler(BaseHTTPRequestHandler):
                 self._stream_write({"type": "event", "event": ev})
 
             try:
-                learn = _autopilot_knowledge(prop) if _autopilot_cfg_load().get("enabled", False) else ""
+                try:
+                    learn = _autopilot_knowledge(prop)
+                except Exception:
+                    learn = ""
                 res = _repair_with_acceptance(prop, model="deepseek-flash",
                                               emit=_emit_appr, max_attempts=3,
                                               extra_context=learn,

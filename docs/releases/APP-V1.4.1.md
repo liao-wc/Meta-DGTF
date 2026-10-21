@@ -68,6 +68,8 @@
 - CSRF 令牌跨 app 重启持久化，旧标签页不再因服务重启报“CSRF token 缺失或无效”；前端 403 自动刷新令牌重试；静态资源 v=1.4.67。
 - 侧栏状态：Agent 就绪不再要求守护进程运行（守护关闭时显示 DSH 就绪 · 守护关闭）；新增“应用 v1.4.1”状态行。
 - 常驻守卫真实验收：开启后 thread_running=true、daemon=running；安全探针自动 pending→confirmed→applied，DSH 会话 dshrun-1792617190441，fast_gate 12/0、验收通过、安全审查通过、只提交 docs/autopilot_probe.md；关闭后 enabled/thread/daemon 全部 false。
+- 自动学习/提案/修复真实验收：手动“学习刷新”知识条目 37→43；自动从队列生成 proposal 并自动 confirmed；提案学习超时改为本地知识兜底，不阻塞修复；自动修复探针 applied，DSH 会话 dshrun-1792618962733，fast_gate 12/0、验收通过、安全审查通过、只提交计划内文件。
+- Agent 配置新增“学习刷新 / 从队列发起提案 / 项目自主审视”手动触发按钮，和自动周期共用节流记录。
 - Agent 面板刷新改为刷新全部库（队列/结果/知识/DSH会话/DSH产物/提案/运行/V2/审计/资料库/联网库）；
 - DSH Agent 配置下拉选项修正深色背景/浅色文字对比；
 - DSH 修复提案安全评估扩大：敏感路径、危险命令、网络/提权/编码命令、敏感文件变更均转人工或拒绝提交。
