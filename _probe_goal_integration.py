@@ -143,7 +143,25 @@ if task and task.get("status") == "done":
     st, result = req("GET", "/api/tasks/%s/result" % tid, timeout=30)
     ck("result body", st == 200 and bool(result.get("body")), str(result)[:160])
 
-# 7) EML unit suites
+# 7) V2 per-entry quality root fix
+try:
+    from dgtf_v2.replay import _entry_quality
+    import glob as _glob
+    _pk = None
+    for _p in _glob.glob(str(ROOT / "outputs" / "*.packed.json"))[::-1]:
+        try:
+            _d = json.loads(Path(_p).read_text(encoding="utf-8", errors="replace"))
+            if len((_d.get("views") or {})) >= 3:
+                _pk = _d
+                break
+        except Exception:
+            pass
+    _qs = {e: _entry_quality(_pk, e) for e in ("0", "1", "both", "all")} if _pk else {}
+    ck("V2 per-entry quality", len(set(_qs.values())) > 1, _qs)
+except Exception as _e:
+    ck("V2 per-entry quality", False, repr(_e))
+
+# 8) EML unit suites
 env = dict(os.environ); env["PYTHONPATH"] = str(ROOT); env["PYTHONUTF8"] = "1"
 suites = ["tests_self_feedback.py", "tests_agent_bridge.py", "tests_llm_feedback.py",
           "tests_online_adapt.py", "tests_unified_memory.py"]

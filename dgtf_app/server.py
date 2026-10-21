@@ -1833,6 +1833,58 @@ def _v2_paired_ab(left="", right=""):
                         "同一 run 内各模板 quality 相同，模板胜者不可识别（影子读数未独立区分模板）"))}
 
 
+def _v2_rebuild():
+    """用真实 packed 重算 V2 schedule_outcome 的按层 quality。"""
+    import json as _json
+    import sys as _sys
+    import time as _t
+    root = Path(__file__).resolve().parent.parent
+    if str(root) not in _sys.path:
+        _sys.path.insert(0, str(root))
+    try:
+        from dgtf_v2.replay import _entry_quality
+    except Exception:
+        _entry_quality = None
+    p = root / "dgtf_memory" / "v2_events.jsonl"
+    if not p.exists():
+        return {"ok": False, "error": "v2_events.jsonl 不存在"}
+    rows, total, changed = [], 0, 0
+    for ln in p.read_text(encoding="utf-8", errors="replace").splitlines():
+        try:
+            d = _json.loads(ln)
+        except Exception:
+            continue
+        if not isinstance(d, dict):
+            continue
+        total += 1
+        if str(d.get("kind") or "") == "schedule_outcome" and _entry_quality:
+            pl = d.get("payload") if isinstance(d.get("payload"), dict) else {}
+            tmpl = str(pl.get("template") or "")
+            entry = tmpl.split(":", 1)[0] if ":" in tmpl else ""
+            rid = str(d.get("run_id") or "")
+            packed = root / "outputs" / (rid + ".packed.json")
+            if entry and packed.exists():
+                try:
+                    pk = _json.loads(packed.read_text(encoding="utf-8", errors="replace"))
+                    q = _entry_quality(pk, entry)
+                    if pl.get("quality") != q:
+                        pl["quality"] = q
+                        d["payload"] = pl
+                        changed += 1
+                except Exception:
+                    pass
+        rows.append(d)
+    bak = p.with_suffix(".jsonl.bak-" + str(int(_t.time())))
+    try:
+        p.replace(bak)
+        p.write_text("".join(_json.dumps(x, ensure_ascii=False) + "\n" for x in rows),
+                     encoding="utf-8")
+    except Exception as exc:
+        return {"ok": False, "error": str(exc)}
+    return {"ok": True, "total": total, "changed": changed,
+            "backup": str(bak), "note": "只改 schedule_outcome 的 quality，structure 原样保留"}
+
+
 def _eml_replay(limit=60, dry_run=True):
     """EML 反馈回放：历史 packed → unified_memory schedule outcome → 先验。
 
@@ -2649,6 +2701,11 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(_eml_replay(
                     limit=int(data.get("limit") or 60),
                     dry_run=bool(data.get("dry_run", True))))
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/schedule/v2/rebuild":
+            try:
+                return self._json(_v2_rebuild())
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/schedule/v2/apply-best":

@@ -41,6 +41,45 @@ def _quality(d: dict) -> float:
     return round(0.55 * cov + 0.45 * tri, 4)
 
 
+def _entry_quality(d: dict, entry: str) -> float:
+    """按层计算质量代理：不同层不再共享整跑 quality。
+
+    只用 packed 里已有的结构读数，不读答案正文：
+      · 0/1：候选/子问题覆盖 + 质量 flag 惩罚；
+      · both：裁决数相对线头数的收敛；
+      · all：meta_closure 的 clean/decision/actions 完整度。
+    """
+    v = (d.get("views") or {}).get(str(entry))
+    if not isinstance(v, dict):
+        return 0.0
+    flags = len(v.get("quality_flags") or [])
+    flag_pen = max(0.0, 1.0 - min(flags, 10) * 0.1)
+    content = 1.0 if any(v.get(k) for k in (
+        "candidates", "amps", "sub_questions", "adjudications",
+        "threads", "meta_closure")) else 0.0
+    if entry == "1":
+        subs = v.get("sub_questions") or []
+        cov = (sum(1 for s in subs if isinstance(s, dict)
+                   and s.get("status") == "answered") / len(subs)) if subs else 0.5
+    elif entry == "both":
+        n_thread = len(v.get("threads") or [])
+        n_adj = len(v.get("adjudications") or [])
+        cov = (n_adj / n_thread) if n_thread else (0.6 if n_adj else 0.0)
+        cov = max(0.0, min(1.0, cov))
+    elif entry == "all":
+        mc = v.get("meta_closure") or {}
+        cov = 0.0
+        if isinstance(mc, dict):
+            cov += 0.5 if mc.get("clean") else 0.0
+            cov += 0.25 if mc.get("decision") else 0.0
+            cov += 0.25 if mc.get("actions") else 0.0
+        cov = max(0.0, min(1.0, cov))
+    else:
+        cands = len(v.get("candidates") or [])
+        cov = min(1.0, cands / 6.0)
+    return round(max(0.0, min(1.0, 0.5 * cov + 0.3 * content + 0.2 * flag_pen)), 4)
+
+
 def replay(paths: list[str], limit: int = 20) -> dict:
     mem = MemoryLake()
     used = 0
@@ -66,7 +105,7 @@ def replay(paths: list[str], limit: int = 20) -> dict:
             r = int(rounds.get(entry, 1) or 1)
             mem.record_outcome(
                 run_id=Path(path).stem, template="%s:r%d" % (entry, r),
-                quality=q, calls=max(1, calls // max(1, len(route))),
+                quality=_entry_quality(d, entry), calls=max(1, calls // max(1, len(route))),
                 tokens=max(1, tokens // max(1, len(route))),
                 success=("失败" not in str((d.get("layer_contribution") or {})
                                            .get(entry, {}).get("stop", ""))),
