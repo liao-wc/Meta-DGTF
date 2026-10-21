@@ -34,6 +34,9 @@ st, eml = req("GET", "/api/agent/eml", timeout=30)
 ck("EML status mapped", st == 200 and eml.get("ok")
    and (eml.get("playbook") or {}).get("n", 0) >= 0
    and (eml.get("v2_shadow") or {}).get("n", 0) >= 0, (st, eml))
+st, rep = req("POST", "/api/agent/eml/replay", {"limit": 20, "dry_run": True}, timeout=90)
+ck("EML replay dry-run", st == 200 and rep.get("ok") and rep.get("replayed", 0) > 0
+   and bool((rep.get("priors") or {}).get("templates")), (st, rep))
 
 # 2) schedule preview flexibility + precedence
 st, p0 = req("POST", "/api/schedule/preview", {"question": "调度预览"})

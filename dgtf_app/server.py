@@ -1602,6 +1602,95 @@ def _schedule_profiles():
     return rows
 
 
+def _eml_replay(limit=60, dry_run=True):
+    """EML 反馈回放：历史 packed → unified_memory schedule outcome → 先验。
+
+    dry_run=True 用临时记忆库（绝不碰生产）；dry_run=False 才显式允许写生产。
+    """
+    import json as _json
+    import sys as _sys
+    import tempfile as _tf
+    from pathlib import Path as _P
+    root = _P(__file__).resolve().parent.parent
+    if str(root) not in _sys.path:
+        _sys.path.insert(0, str(root))
+    from dgtf_v2.unified_memory import UnifiedMemory
+    files = sorted(oi.OUTPUTS_DIR.glob("*.packed.json"),
+                   key=lambda p: p.stat().st_mtime, reverse=True)[:max(1, int(limit))]
+    replayed = deduped = skipped = 0
+    priors = {}
+    stats = {}
+    ctx = _tf.TemporaryDirectory() if dry_run else None
+    try:
+        mem = (UnifiedMemory.for_tests(ctx.name) if dry_run
+               else UnifiedMemory(allow_production=True))
+        for p in files:
+            try:
+                d = _json.loads(p.read_text(encoding="utf-8", errors="replace"))
+            except Exception:
+                skipped += 1
+                continue
+            if not isinstance(d, dict):
+                skipped += 1
+                continue
+            try:
+                tok = int(d.get("llm_tokens") or 0)
+                calls = int(d.get("llm_calls") or 0)
+            except Exception:
+                continue
+            if tok <= 0:
+                skipped += 1
+                continue
+            views = d.get("views") if isinstance(d.get("views"), dict) else {}
+            hits = 0
+            for v in views.values():
+                if isinstance(v, dict) and any(v.get(x) for x in (
+                        "candidates", "threads", "sub_questions",
+                        "adjudications", "meta_closure")):
+                    hits += 1
+            quality = round(hits / 4.0, 3)
+            route = d.get("route") or ["auto"]
+            try:
+                route_txt = ",".join(str(x) for x in route) if isinstance(route, list) else str(route)
+            except Exception:
+                route_txt = "auto"
+            try:
+                rounds = d.get("rounds") or {}
+                rn = max([int(v) for v in rounds.values()]) if isinstance(rounds, dict) and rounds else 1
+            except Exception:
+                rn = 1
+            tmpl = ("auto:r%d" % rn) if route_txt in ("auto", "[]", "") else ("route:r%d" % rn)
+            rid = p.name.replace(".packed.json", "")
+            try:
+                rr = mem.record_outcome(run_id=rid, template=tmpl,
+                                        quality=quality, calls=calls,
+                                        tokens=tok, success=True,
+                                        mirror_playbook=True)
+                if rr.get("recorded"):
+                    replayed += 1
+                elif rr.get("deduped"):
+                    deduped += 1
+                else:
+                    skipped += 1
+            except Exception:
+                skipped += 1
+        stats = mem.stats()
+        try:
+            priors = mem.read_priors()
+        except Exception:
+            priors = {}
+    finally:
+        if ctx is not None:
+            try:
+                ctx.cleanup()
+            except Exception:
+                pass
+    return {"ok": True, "dry_run": bool(dry_run), "scanned": len(files),
+            "replayed": replayed, "deduped": deduped, "skipped": skipped,
+            "priors": priors, "stats": stats,
+            "note": "品质=四层覆盖数/4；不写答案正文"}
+
+
 def _schedule_pareto(limit=120, prefer="balanced"):
     """从真实 packed 产物聚合 token/层覆盖，返回调度帕累托点。
 
@@ -2257,6 +2346,14 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"task": append_task(task)})
             except Exception as exc:
                 return self._json({"error": str(exc)}, 500)
+        if p == "/api/agent/eml/replay":
+            try:
+                data = self._read_json()
+                return self._json(_eml_replay(
+                    limit=int(data.get("limit") or 60),
+                    dry_run=bool(data.get("dry_run", True))))
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/agent/knowledge/dedupe":
             try:
                 import sys as _sys

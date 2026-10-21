@@ -74,6 +74,7 @@ engine 元DGTF-V1.30.0.py
 | `GET /api/schedule/pareto` | 从真实 `outputs/*.packed.json` 聚合 route/rounds 的 token 与四层覆盖面，返回非支配前沿与推荐点 |
 | `GET /api/agent/auto/jobs` | 列出持久化的 auto/autofix job；服务重启后 running 自动标记 interrupted |
 | `GET /api/agent/eml` | EML 映射读数：playbook 25 条、V2 shadow 事件 544 条、agent tasks/results/knowledge/proposals 与提案状态分布 |
+| `POST /api/agent/eml/replay` | EML 反馈回放：历史 packed → schedule outcome 先验；默认 dry-run，不写生产 playbook |
 
 ### 实测（goal round 1 集成探针）
 
