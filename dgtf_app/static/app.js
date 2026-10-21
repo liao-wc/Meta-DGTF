@@ -3803,7 +3803,7 @@ function agentRenderProps() {
       if (x.acceptance) acts += '<button class="ghost" data-acceptance="' + esc(x.id) + '">验收对话</button>';
     }
     const tri = x.triage || {};
-    return '<div class="agent-item">'
+    return '<div class="agent-item" data-prop-open="' + esc(x.id) + '">'
       + '<div class="agent-row"><span class="chip">' + esc(tri.priority || 'P2') + '</span>'
       + '<span class="chip">' + esc(tri.category || 'other') + '</span>'
       + '<span class="chip st-' + esc(st) + '">' + esc(ST[st] || st) + '</span>'
@@ -4172,6 +4172,69 @@ function showAcceptanceInDgtf(prop) {
   if (lg) { lg.classList.remove('hidden'); lg.classList.remove('fading'); }
   document.body.classList.remove('stage-empty'); document.body.classList.add('stage-run');
   renderTasks();
+}
+
+async function analyzeProposalInDsh(prop, mode) {
+  if (!prop) return;
+  const _perm = dshPermission();
+  if (!_perm) return;
+  const isSplit = mode === 'split';
+  const task = String((prop.task || {}).title || prop.id || '');
+  const plan = String(prop.plan || '').slice(0, 5000);
+  const prompt = (isSplit
+    ? '请分析下面这条复合提案，判断是否适合拆分、如何拆分、每部分风险与验收点。只分析，不要修改文件，也不要执行拆分；最后由用户/工作台确认。\n\n'
+    : '请分析下面这条修复提案：涉及文件、风险、可否自动修复、建议的执行步骤。只分析，不要修改文件；最后由用户/工作台确认。\n\n')
+    + '提案 ID：' + String(prop.id || '') + '\n标题：' + task + '\n方案：\n' + plan;
+  showAutoDsh((isSplit ? '提案拆分分析 · ' : '提案分析 · ') + String(prop.id || ''), [
+    {type:'text', text:'进入 DSH Agent 会话进行只读分析；确认前不会修改文件。'},
+    {type:'text', text:'提案：' + task}
+  ], 'running');
+  setRunBtn('stop');
+  let result = null, errMsg = '';
+  try {
+    await streamPost('/api/dsh/agent/stream', {
+      task: prompt, session_id: '', permission: _perm,
+      model: (document.querySelector('#dsh-model') || {}).value || 'deepseek-flash'
+    }, function (m) {
+      if (m.type === 'event' && m.event) {
+        if (dshCurrent) dshCurrent.events.push(m.event);
+        renderDshView();
+      } else if (m.type === 'result') {
+        result = m.result;
+      } else if (m.type === 'error') {
+        errMsg = m.error || 'DSH 分析失败';
+      }
+    });
+    if (dshCurrent) {
+      dshCurrent.status = result ? 'done' : 'error';
+      if (result) dshCurrent.session = result.session_id || dshCurrent.session || '';
+    }
+    setRunBtn('send');
+    if (result && result.conversation_id) {
+      dshConversationId = result.conversation_id;
+      try { localStorage.setItem(DSH_CONV_KEY, dshConversationId); } catch (_) {}
+    }
+    loadDshChats();
+    if (!result) {
+      if (dshCurrent) dshCurrent.events.push({type:'text', text:'分析失败：' + (errMsg || '没有返回结果')});
+    } else if (isSplit) {
+      const ok = confirm('DSH 已完成拆分分析。是否确认按该提案拆分？');
+      if (ok) {
+        const r = await api('/api/dsh/proposals/' + encodeURIComponent(prop.id) + '/split',
+          {method:'POST', headers:{'Content-Type':'application/json'}, body:'{}'});
+        if (dshCurrent) dshCurrent.events.push({type:'text', text:'已拆分为 ' + ((r.children || []).length) + ' 条独立提案。'});
+        loadAgent();
+      }
+    }
+    renderDshView();
+  } catch (e) {
+    if (dshCurrent) {
+      dshCurrent.status = 'error';
+      dshCurrent.events.push({type:'text', text:'分析失败：' + e.message});
+    }
+    setRunBtn('send');
+    renderDshView();
+  }
 }
 
 function showAutoDsh(question, events, status) {
@@ -5124,6 +5187,12 @@ function init() {
   })();
   const _propBox = $('#agent-proposals');
   if (_propBox) _propBox.addEventListener('click', async (e) => {
+    const openItem = e.target.closest('[data-prop-open]');
+    if (openItem && !e.target.closest('button')) {
+      const p = (agentProps || []).find(x => x.id === openItem.dataset.propOpen);
+      if (p) analyzeProposalInDsh(p, 'open');
+      return;
+    }
     const rb = e.target.closest('[data-prop-rollback]');
     if (rb) {
       const id = rb.dataset.propRollback;
@@ -5146,16 +5215,8 @@ function init() {
     }
     const sp = e.target.closest('[data-prop-split]');
     if (sp) {
-      const sid = sp.dataset.propSplit;
-      const m0 = document.querySelector('#agent-msg');
-      try {
-        const r = await api('/api/dsh/proposals/' + encodeURIComponent(sid) + '/split',
-          {method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
-        if (m0) m0.textContent = '已拆分为 ' + ((r.children || []).length) + ' 条独立提案';
-        loadAgent();
-      } catch (err) {
-        if (m0) m0.textContent = '拆分失败：' + err.message;
-      }
+      const p = (agentProps || []).find(x => x.id === sp.dataset.propSplit);
+      if (p) analyzeProposalInDsh(p, 'split');
       return;
     }
     const cf = e.target.closest('[data-prop-confirm]');
