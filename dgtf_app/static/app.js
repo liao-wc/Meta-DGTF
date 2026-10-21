@@ -1558,12 +1558,16 @@ function setDshHistoryOpen(on) {
 }
 async function resumeDshChat(id) {
   if (!id) return;
+  stopDshConvPoll();
   dshConversationId = id;
   try { localStorage.setItem(DSH_CONV_KEY, id); } catch (_) {}
   dshHistoryOpen = false;
   dshCurrent = null;
+  dshConversation = null;
+  setRunBtn('send');
+  closeSheet(); closeDrawer();
   toggleDshMode(true);
-  await loadDshConversation();
+  await loadDshConversation(id);
   startDshConvPoll();
   await loadDshChats();
   setDshHistoryOpen(false);
@@ -1727,25 +1731,32 @@ function applyDshResult(obj, r) {
   if (!r.ok && r.stderr) obj.events.push({type:'text', text:'Agent 退出异常：' + r.stderr});
 }
 
-async function loadDshConversation() {
-  if (!dshConversationId) return;
+async function loadDshConversation(cid) {
+  const want = cid || dshConversationId;
+  if (!want) return;
   try {
-    const r = await api('/api/dsh/chat/' + encodeURIComponent(dshConversationId));
-    if (r && r.id) dshConversation = r;
+    const r = await api('/api/dsh/chat/' + encodeURIComponent(want));
+    if (want !== dshConversationId) return;   // 切换会话后旧请求不能覆盖新会话
+    dshConversation = (r && r.id) ? r : null;
     updateDshConvBar();
     renderDshView();
-  } catch (_) {}
+  } catch (_) {
+    if (want === dshConversationId) { dshConversation = null; renderDshView(); }
+  }
 }
 function stopDshConvPoll() {
   if (dshConvTimer) { clearInterval(dshConvTimer); dshConvTimer = null; }
 }
 function startDshConvPoll() {
   stopDshConvPoll();
+  const cid = dshConversationId;
   dshConvTimer = setInterval(async function () {
-    await loadDshConversation();
+    if (cid !== dshConversationId) { stopDshConvPoll(); return; }
+    await loadDshConversation(cid);
+    if (cid !== dshConversationId) return;
     const turns = (dshConversation && dshConversation.turns) || [];
     const busy = turns.some(t => t.status === 'queued' || t.status === 'running');
-    if (!busy) { stopDshConvPoll(); setRunBtn('send'); }
+    if (!busy) { setRunBtn('send'); stopDshConvPoll(); }
   }, 600);
 }
 function dshPermission() {
@@ -3808,8 +3819,16 @@ function agentRenderProps() {
       if (x.acceptance) acts += '<button class="ghost" data-acceptance="' + esc(x.id) + '">验收对话</button>';
     } else if (st === 'rejected' || st === 'superseded') {
       acts = '<button class="ghost" data-prop-reopen="' + esc(x.id) + '">重新打开</button>';
+    } else if (st === 'failed' || st === 'rolled_back') {
+      acts = '<button class="ghost" data-prop-reopen="' + esc(x.id) + '">重新打开/重试修复</button>'
+        + '<button class="ghost" data-prop-reject="' + esc(x.id) + '">不修复</button>'
+        + '<button class="ghost" data-prop-superseded="' + esc(x.id) + '">已另行处理</button>';
     }
     const tri = x.triage || {};
+    const _res = x.result || (x.last_failure || {}).result || {};
+    const _sec = (x.security || (x.last_failure || {}).security || {});
+    const _failWhy = String((_res.repair || {}).why || (_res.security || {}).why ||
+      (((_sec.findings || []).length) ? ('安全审查命中 ' + _sec.findings.length + ' 项') : ''));
     return '<div class="agent-item" data-prop-open="' + esc(x.id) + '">'
       + '<div class="agent-row"><span class="chip">' + esc(tri.priority || 'P2') + '</span>'
       + '<span class="chip">' + esc(tri.category || 'other') + '</span>'
@@ -3824,6 +3843,7 @@ function agentRenderProps() {
       + (tri.reason ? '<span>分诊：' + esc(tri.reason) + '</span>' : '')
       + (tri.auto_decision ? '<span>路由：' + esc(tri.auto_decision === 'auto' ? '自动修复' : '人工确认') + '</span>' : '')
       + (x.resolution_reason ? '<span>关闭原因：' + esc(String(x.resolution_reason).slice(0, 120)) + '</span>' : '')
+      + (_failWhy ? '<span>失败原因：' + esc(_failWhy.slice(0, 160)) + '</span>' : '')
       + (x.conversation_id ? '<span>对话 ' + esc(x.conversation_id) + '</span>' : '')
       + '</div>'
       + '<div class="agent-q">' + esc(String(x.plan || '').slice(0, 300)) + '</div>'

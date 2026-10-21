@@ -1402,13 +1402,14 @@ def _reopen_proposal(pid):
     if not prop:
         return None, "proposal not found"
     old = str(prop.get("status") or "")
-    if old not in ("rejected", "superseded"):
-        return None, "只有 rejected/superseded 提案可重新打开"
+    if old not in ("rejected", "superseded", "failed", "rolled_back"):
+        return None, "只有 rejected/superseded/failed/rolled_back 提案可重新打开"
     now = _t.time()
     hist = list(prop.get("reopen_history") or [])
     hist.append({"ts": now, "from_status": old,
                  "resolution_reason": str(prop.get("resolution_reason") or "")[:500],
-                 "resolved_ts": prop.get("resolved_ts") or 0})
+                 "resolved_ts": prop.get("resolved_ts") or 0,
+                 "failure": str((((prop.get("result") or {}).get("repair") or {}).get("why")) or "")[:500]})
     prop["reopen_history"] = hist[-20:]
     prop["original_ts"] = prop.get("original_ts") or prop.get("ts") or 0
     prop["ts"] = now
@@ -1416,6 +1417,16 @@ def _reopen_proposal(pid):
     prop["status"] = "pending"
     prop["approver"] = ""
     prop["previous_status"] = old
+    if old in ("failed", "rolled_back"):
+        prop["last_failure"] = {
+            "result": prop.get("result") or {},
+            "acceptance": prop.get("acceptance") or {},
+            "security": prop.get("security") or {},
+            "attempts": prop.get("attempts") or [],
+        }
+        for k in ("result", "acceptance", "security", "attempts",
+                  "conversation_id", "conversation_ids"):
+            prop.pop(k, None)
     for k in ("resolution", "resolution_reason", "resolved_by", "resolved_ts",
               "resolution_conversation_id"):
         prop.pop(k, None)
