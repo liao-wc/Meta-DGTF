@@ -86,6 +86,8 @@ engine 元DGTF-V1.30.0.py
 | `POST /api/schedule/v2/apply-best` | 按 95% 置信下界选最佳 V2 模板，写入 policy；paired 不可识别时返回 warning |
 | `GET /api/schedule/v2/pareto` | V2 模板级质量-成本联合帕累托前沿（quality low vs tokens） |
 | `POST /api/schedule/v2/apply-pareto` | 按 prefer 选择联合帕累托模板并写入 policy/route/rounds |
+| `GET /api/schedule/v2/bandit` | V2 模板 UCB：均值+探索奖励-成本惩罚，返回 arms/chosen |
+| `POST /api/schedule/v2/apply-bandit` | 应用 UCB 模板到 policy；V2 面板有“采用 UCB”按钮 |
 | `GET /api/schedule/v2/ab?paired=1` | 同一 run_id 的配对检验；检测 V2 影子模板 quality 是否可区分 |
 | `POST /api/schedule/v2/rebuild` | 用 packed 重算历史 schedule_outcome 的按层 quality；写前备份 |
 | `POST /api/schedule/v2/replay` | 用修复后的按层质量公式回放现存 packed，追加到 V2 记忆（先备份）；limit=120 可全量 |

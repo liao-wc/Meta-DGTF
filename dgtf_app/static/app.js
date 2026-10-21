@@ -4584,6 +4584,21 @@ function init() {
   });
   const _agentRefresh = $('#agent-refresh');
   if (_agentRefresh) _agentRefresh.addEventListener('click', loadAgent);
+  const _v2BanditApply = $('#agent-v2-bandit-apply');
+  if (_v2BanditApply) _v2BanditApply.addEventListener('click', async () => {
+    const m = document.querySelector('#agent-msg');
+    if (m) m.textContent = '正在按 UCB 计算模板…';
+    try {
+      const _prefer = ($('#pareto-prefer') || {}).value || 'balanced';
+      const r = await api('/api/schedule/v2/apply-bandit', {method:'POST',
+        headers:{'Content-Type':'application/json'}, body: JSON.stringify({prefer:_prefer, c:0.5})});
+      if (m) m.textContent = r.ok ? ('已采用 UCB 模板：' + (((r.chosen || {}).template) || '') +
+        '（score ' + String(((r.chosen || {}).score) || 0) + '）') : ('失败：' + (r.error || ''));
+      await loadAgent();
+    } catch (e) {
+      if (m) m.textContent = 'UCB 保存失败：' + e.message;
+    }
+  });
   const _v2ParetoApply = $('#agent-v2-pareto-apply');
   if (_v2ParetoApply) _v2ParetoApply.addEventListener('click', async () => {
     const m = document.querySelector('#agent-msg');

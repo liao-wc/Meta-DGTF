@@ -2120,6 +2120,69 @@ def _v2_apply_pareto(prefer="balanced", limit=2000):
         return {"ok": False, "error": str(exc)}
 
 
+def _v2_bandit(prefer="balanced", c=0.5, limit=5000):
+    """V2 模板 UCB 选择：均值 + 探索奖励 - 成本惩罚。"""
+    import math as _math
+    s = _v2_shadow_status(limit=limit)
+    bt = s.get("by_template") or {}
+    arms = []
+    max_t = max([float(v.get("tokens") or 0) for v in bt.values()] or [1.0]) or 1.0
+    lam = {"cost": 0.50, "quality": 0.05}.get(str(prefer), 0.20)
+    for k, v in bt.items():
+        n = int(v.get("n") or 0)
+        if n <= 0:
+            continue
+        q = float(v.get("quality") or 0)
+        sd = float(v.get("sd") or 0)
+        var = (sd * sd) if sd > 0 else max(0.0, q * (1.0 - q))
+        bonus = float(c) * _math.sqrt(var / max(1, n)) if n > 0 else float(c)
+        ucb = q + bonus
+        cost = float(v.get("tokens") or 0) / max_t
+        score = ucb - lam * cost
+        arms.append({"template": k, "n": n, "quality": round(q, 4),
+                     "sd": round(sd, 4), "bonus": round(bonus, 4),
+                     "ucb": round(ucb, 4), "cost_norm": round(cost, 3),
+                     "score": round(score, 4),
+                     "tokens": float(v.get("tokens") or 0),
+                     "calls": float(v.get("calls") or 0)})
+    if not arms:
+        return {"ok": True, "arms": [], "chosen": None,
+                "note": "暂无 V2 模板样本"}
+    arms.sort(key=lambda x: x["score"], reverse=True)
+    return {"ok": True, "arms": arms, "chosen": arms[0],
+            "prefer": prefer, "c": c, "lambda_cost": lam,
+            "method": "UCB1（均值+探索奖励）- 成本惩罚",
+            "note": "从 EML/V2 记忆读数估计，不是模型权重训练"}
+
+
+def _v2_apply_bandit(prefer="balanced", c=0.5):
+    import json as _json
+    import time as _t
+    r = _v2_bandit(prefer=prefer, c=c)
+    arm = r.get("chosen") or {}
+    tmpl = str(arm.get("template") or "")
+    if not tmpl:
+        return {"ok": False, "error": "没有可选模板"}
+    route = tmpl.split(":", 1)[0] if ":" in tmpl else "auto"
+    rounds = tmpl.rsplit(":r", 1)[1] if ":r" in tmpl else ""
+    pol = _schedule_policy_load()
+    pol.update({"bandit_template": tmpl, "template": tmpl,
+                "route": route, "rounds": rounds,
+                "bandit_score": arm.get("score"),
+                "bandit_ucb": arm.get("ucb"),
+                "bandit_n": arm.get("n"),
+                "bandit_prefer": prefer,
+                "bandit_applied_at": _t.time()})
+    try:
+        _SCHEDULE_POLICY_FILE.parent.mkdir(parents=True, exist_ok=True)
+        _SCHEDULE_POLICY_FILE.write_text(
+            _json.dumps(pol, ensure_ascii=False, indent=1), encoding="utf-8")
+        return {"ok": True, "chosen": arm, "policy": pol,
+                "path": str(_SCHEDULE_POLICY_FILE)}
+    except Exception as exc:
+        return {"ok": False, "error": str(exc)}
+
+
 def _v2_rebuild():
     """用真实 packed 重算 V2 schedule_outcome 的按层 quality。"""
     import json as _json
@@ -2613,6 +2676,13 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(_self_consistency())
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/schedule/v2/bandit":
+            try:
+                return self._json(_v2_bandit(
+                    prefer=str((q.get("prefer") or ["balanced"])[0]),
+                    c=float((q.get("c") or ["0.5"])[0] or 0.5)))
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/schedule/v2/pareto":
             try:
                 return self._json(_v2_template_pareto(
@@ -3029,6 +3099,14 @@ class Handler(BaseHTTPRequestHandler):
         if p == "/api/schedule/v2/rebuild":
             try:
                 return self._json(_v2_rebuild())
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/schedule/v2/apply-bandit":
+            try:
+                data = self._read_json()
+                return self._json(_v2_apply_bandit(
+                    prefer=str(data.get("prefer") or "balanced"),
+                    c=float(data.get("c") or 0.5)))
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/schedule/v2/apply-pareto":
