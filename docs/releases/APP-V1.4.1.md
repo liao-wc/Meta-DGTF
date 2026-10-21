@@ -63,6 +63,7 @@
 - 所有 DSH Agent 调用统一走 _run_dsh_agent 会话留痕：事件实时写入 dsh_conversations（dshrun-*），DSH 会话页可回看过程与结果；
 - 真跑验收（2026-10-22）：DSH 实际新建探针文件 → 工作台 fast_gate 12/12 → 针对性验收 371/0 → 安全审查 0 发现 → 只提交计划内文件；暴露并修复 fast_gate 的 GBK/UTF-8 子进程误判，以及自动提交误收运行期临时文件的问题。
 - DSH 受控工作台工具：每次 run 短期令牌，只开放 fast_gate / acceptance / status 三个固定动作；DSH 可自行查看门禁与本次改动，最终提交仍由工作台复核。
+- 元DGTF 验收：smoke_test.py 退出码 0（PASS 22 / FAIL 0，审计 AUDIT 70/0）；app selftest 371/0；fast_gate 12/0；依赖链审计 41/0。
 - 提案/自审模式允许读取项目文件核对现状（仍不改源码）；DSH 默认 workspace-write/PTC 与面板配置一致。
 - 修复提案自动分诊：分类(quality_signal/probe_quality/fact_correctness/agent_runtime/process_gap/eml_experiment/verification/docs/noise) + 优先级 P0-P3；
 - 每次分诊写 `dgtf_memory/dsh_proposals/_index.json`（计数/分类/优先级/项目 HEAD/队列规模）并保留 `triage_history`；
