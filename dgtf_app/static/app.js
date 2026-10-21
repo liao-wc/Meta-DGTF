@@ -2787,7 +2787,7 @@ async function loadConfig() {
     const agentOk = !!(checks.dsh_headless && (checks.agent_daemon || (h.daemon || {}).running));
     const line = (label, value, ok) =>
       '<span class="env-inline"><span class="dot ' + (ok ? 'ok' : 'no') + '"></span>' +
-      '<span class="env-k">' + esc(label) + '</span> ' +
+      '<span class="env-k">' + esc(label) + '</span>' +
       '<span class="env-v">' + value + '</span></span><br>';
     const engineOk = !!(c.engine && (h.ok !== false) && checks.engine_file !== false);
     $('#env-info').innerHTML =

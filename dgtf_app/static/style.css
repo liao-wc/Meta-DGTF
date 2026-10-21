@@ -1689,3 +1689,7 @@ body.stage-empty main.stage{padding-bottom:0}
 
 /* 按钮整体再下移一点点 */
 .drawer-nav{margin-top:10px;margin-bottom:auto;transform:none}
+
+/* 状态行内部：灯 / 标签 / 值 左右间隔拉大 */
+.env-inline{display:inline-flex;align-items:center;gap:9px;white-space:nowrap}
+.env-inline .dot{margin-right:0;flex:0 0 auto}
