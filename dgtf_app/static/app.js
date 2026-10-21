@@ -2861,18 +2861,25 @@ async function loadConfig() {
     const checks = (h && h.checks) || {};
     const backs = (l && l.backends) || [];
     const nBack = backs.filter(b => b.ok).length;
-    const agentOk = !!(checks.dsh_headless && (checks.agent_daemon || (h.daemon || {}).running));
+    const dshOk = !!checks.dsh_headless;
+    const daemonOk = !!(checks.agent_daemon || (h.daemon || {}).running);
+    const agentOk = dshOk;
+    const agentText = dshOk
+      ? ('DSH 就绪' + (daemonOk ? ' · 守护运行' : ' · 守护关闭'))
+      : '未就绪';
+    const appVer = (h.app && h.app.version) ? String(h.app.version) : '';
     const line = (label, value, ok) =>
       '<span class="env-inline"><span class="dot ' + (ok ? 'ok' : 'no') + '"></span>' +
       '<span class="env-k">' + esc(label) + '</span>' +
       '<span class="env-v">' + value + '</span></span><br>';
     const engineOk = !!(c.engine && (h.ok !== false) && checks.engine_file !== false);
     $('#env-info').innerHTML =
+      line('应用', 'v' + esc(appVer || '—'), !!appVer) +
       line('引擎', esc(c.engine), engineOk) +
       line('模型', 'DeepSeek-Flash', !!k.api_key) +
       line('联网', 'Tavily', !!k.tavily) +
       line('本地 LLM', nBack + ' 个底座 · 默认 Qwen0.5B', nBack > 0) +
-      line('Agent', agentOk ? 'DSH 就绪 · 守护运行' : '未就绪', agentOk) +
+      line('Agent', agentText, agentOk) +
       line('产物', c.outputs.count + ' 份 · ' + c.outputs.total_mb + ' MB', c.outputs.count > 0);
     $('#mock').checked = !!c.mock_default;
     syncMockPill();                    // checked 变了，胶囊高亮要跟着
