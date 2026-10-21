@@ -3242,6 +3242,7 @@ let agentDsh = [];
 let agentDshArt = [];
 let agentProps = [];
 let agentLastRun = null;
+let agentV2 = null;
 
 function agentIsoShort(x) {
   if (!x) return '—';
@@ -3458,6 +3459,37 @@ function agentRenderProps() {
   }).join('');
 }
 
+function agentRenderV2() {
+  const box = $('#agent-v2');
+  if (!box) return;
+  const n = $('#agent-v2-n');
+  const d = agentV2 || {};
+  if (n) n.textContent = String(d.n || 0);
+  if (!d || !d.n) { box.innerHTML = agentEmpty('还没有 V2 影子调度事件。'); return; }
+  const kinds = d.by_kind || {};
+  const layers = d.by_layer || {};
+  let html = '<div class="agent-item"><div class="agent-row">'
+    + '<span class="chip">事件 ' + esc(String(d.n || 0)) + '</span>'
+    + Object.keys(kinds).sort().map(function (k) {
+        return '<span class="chip">' + esc(k) + ' ' + esc(String(kinds[k])) + '</span>';
+      }).join('')
+    + '</div><div class="agent-meta">'
+    + Object.keys(layers).sort().map(function (k) {
+        return '<span>' + esc(k) + ' · ' + esc(String(layers[k])) + '</span>';
+      }).join('')
+    + '</div></div>';
+  (d.recent || []).slice().reverse().forEach(function (e) {
+    html += '<div class="agent-item"><div class="agent-row">'
+      + '<span class="chip">' + esc(String(e.kind || '')) + '</span>'
+      + '<span class="chip">' + esc(String(e.layer || '')) + '</span>'
+      + '<span class="agent-t">' + esc(String(e.key || e.id || '')) + '</span></div>'
+      + '<div class="agent-meta"><span>run ' + esc(String(e.run_id || '—'))
+      + '</span><span>conf ' + esc(String(e.confidence == null ? '—' : e.confidence)) + '</span></div>'
+      + '<div class="agent-q">' + esc(JSON.stringify(e.payload || {}).slice(0, 800)) + '</div></div>';
+  });
+  box.innerHTML = html;
+}
+
 function agentRenderAll() {
   agentRenderTasks();
   agentRenderResults();
@@ -3466,6 +3498,7 @@ function agentRenderAll() {
   agentRenderDshArt();
   agentRenderProps();
   agentRenderRun();
+  agentRenderV2();
 }
 
 async function loadAgent() {
@@ -3476,13 +3509,14 @@ async function loadAgent() {
   if (resBox) resBox.innerHTML = agentEmpty('读取中…');
   const knBox = $('#agent-knowledge');
   if (knBox) knBox.innerHTML = agentEmpty('读取中…');
-  const [t, r, k, ds, da, pr] = await Promise.all([
+  const [t, r, k, ds, da, pr, v2] = await Promise.all([
     api('/api/agent/tasks').catch(e => ({ tasks: [], error: e.message })),
     api('/api/agent/results').catch(e => ({ results: [], error: e.message })),
     api('/api/agent/knowledge').catch(e => ({ items: [], error: e.message })),
     api('/api/dsh/sessions').catch(e => ({ sessions: [], error: e.message })),
     api('/api/dsh/artifacts').catch(e => ({ artifacts: [], error: e.message })),
     api('/api/dsh/proposals').catch(e => ({ proposals: [], error: e.message })),
+    api('/api/schedule/v2').catch(e => ({ n: 0, error: e.message })),
   ]);
   agentTasks = (t && t.tasks) || [];
   agentResults = (r && r.results) || [];
@@ -3490,6 +3524,7 @@ async function loadAgent() {
   agentDsh = (ds && ds.sessions) || [];
   agentDshArt = (da && da.artifacts) || [];
   agentProps = (pr && pr.proposals) || [];
+  agentV2 = v2 || null;
   agentRenderAll();
   const errs = [t && t.error, r && r.error, k && k.error].filter(Boolean);
   const msg = $('#agent-msg');
