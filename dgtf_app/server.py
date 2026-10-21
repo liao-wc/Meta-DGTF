@@ -1689,6 +1689,13 @@ def _run_dsh_agent(task: str, *args, **kwargs):
                 pass
 
     kwargs["emit"] = _emit
+    try:
+        task = (str(task) + "\n\n[工作台接入] 你是本 app 内置 DSH Agent；"
+                "可用受控工具：python dgtf_app/dsh_tool.py "
+                "status|fast_gate|acceptance|project|proposals|queue。"
+                "工具结果仅作参考；最终验收和提交由工作台复核。")
+    except Exception:
+        pass
     res = _run_dsh_agent_raw(task, *args, **kwargs)
     try:
         conv = _DSH_CONV.get(cid) or conv
@@ -5337,6 +5344,28 @@ class Handler(BaseHTTPRequestHandler):
         elif action == "acceptance":
             res = {"changed": changed, "acceptance": _targeted_acceptance(changed)}
             res["ok"] = bool(res["acceptance"].get("ok"))
+        elif action == "project":
+            props = _list_proposals(300)
+            counts = {}
+            for p in props:
+                st = str(p.get("status") or "")
+                counts[st] = counts.get(st, 0) + 1
+            res = {"ok": True, "app": APP_VERSION,
+                   "head": (_git(["rev-parse", "HEAD"]).get("out") or "").strip(),
+                   "branch": (_git(["rev-parse", "--abbrev-ref", "HEAD"]).get("out") or "").strip(),
+                   "queue_n": len(_agent_queue_snapshot()),
+                   "proposal_counts": counts, "changed": changed}
+        elif action == "proposals":
+            props = [p for p in _list_proposals(300)
+                     if str(p.get("status")) in ("pending", "confirmed")]
+            res = {"ok": True, "count": len(props),
+                   "proposals": [{"id": p.get("id"),
+                                  "status": p.get("status"),
+                                  "title": str((p.get("task") or {}).get("title") or "")[:160],
+                                  "plan": str(p.get("plan") or "")[:600]}
+                                 for p in props[:30]]}
+        elif action == "queue":
+            res = {"ok": True, "tasks": _agent_queue_snapshot()}
         elif action == "status":
             res = {"ok": True, "head": (_git(["rev-parse", "HEAD"]).get("out") or "").strip(),
                    "branch": (_git(["rev-parse", "--abbrev-ref", "HEAD"]).get("out") or "").strip(),

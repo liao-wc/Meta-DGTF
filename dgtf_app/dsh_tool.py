@@ -9,7 +9,7 @@ import os
 import sys
 import urllib.request
 
-ACTIONS = ("fast_gate", "acceptance", "status")
+ACTIONS = ("fast_gate", "acceptance", "status", "project", "proposals", "queue")
 BASE = "http://127.0.0.1:8765/api/dsh/workbench/"
 
 
