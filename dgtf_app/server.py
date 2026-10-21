@@ -584,11 +584,99 @@ def _save_proposal(rec):
     return rec
 
 
+def _proposal_triage():
+    """修复提案过期/去重：只改状态，不删历史。
+
+    - pending 超过 24h：过期；
+    - confirmed 超过 72h：过期；
+    - 空标题/乱码/自指任务：过期；
+    - 夹具空跑（rounds=0 且 product_chars=0）：过期；
+    - 同标题保留「applied > confirmed > pending > failed」最优状态及最新一条。
+    """
+    import json as _json
+    import time as _t
+    now = _t.time()
+    per = _proposal_dir()
+    rows = []
+    for p in per.glob("*.json"):
+        try:
+            rec = _json.loads(p.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        if not isinstance(rec, dict):
+            continue
+        rec["_path"] = p
+        if not rec.get("ts"):
+            rec["ts"] = p.stat().st_mtime
+        rows.append(rec)
+
+    def _save(rec):
+        p = rec.pop("_path", None)
+        if p is None:
+            return
+        p.write_text(_json.dumps(rec, ensure_ascii=False, indent=1), encoding="utf-8")
+
+    changed = set()
+    for rec in rows:
+        st = str(rec.get("status") or "pending")
+        if st not in ("pending", "confirmed"):
+            continue
+        title = str((rec.get("task") or {}).get("title") or "").strip()
+        detail = str((rec.get("task") or {}).get("detail") or "")
+        age = now - float(rec.get("ts") or now)
+        reason = ""
+        if st == "pending" and age > 86400:
+            reason = "pending_ttl_24h"
+        elif st == "confirmed" and age > 3 * 86400:
+            reason = "confirmed_ttl_72h"
+        elif (not title) or (title.count("?") >= 2) or title in (
+                "根据生成的提案执行任务", "app ????", "?? Tool Calls ??"):
+            reason = "noise_or_self_referential"
+        elif ('"rounds":0' in detail.replace(" ", "")
+              and '"product_chars":0' in detail.replace(" ", "")):
+            reason = "fixture_empty_run"
+        elif str((rec.get("task") or {}).get("severity") or "") == "low" and age > 86400:
+            reason = "low_stale_quality"
+        if reason:
+            rec["status"] = "expired"
+            rec["expired_reason"] = reason
+            rec["expired_ts"] = now
+            changed.add(id(rec))
+
+    rank = {"applied": 5, "confirmed": 4, "pending": 3, "failed": 2,
+            "rolled_back": 1, "expired": 0}
+    groups = {}
+    for rec in rows:
+        if str(rec.get("status")) == "expired":
+            continue
+        title = str((rec.get("task") or {}).get("title") or "").strip()
+        if not title:
+            continue
+        groups.setdefault(title, []).append(rec)
+    for title, items in groups.items():
+        if len(items) < 2:
+            continue
+        items.sort(key=lambda r: (rank.get(str(r.get("status")), 0),
+                                  float(r.get("ts") or 0)), reverse=True)
+        keeper = str(items[0].get("status"))
+        for rec in items[1:]:
+            if str(rec.get("status")) in ("pending", "confirmed"):
+                rec["status"] = "expired"
+                rec["expired_reason"] = ("duplicate_of_" + keeper
+                                         if keeper in ("applied", "confirmed")
+                                         else "duplicate_older")
+                rec["expired_ts"] = now
+                changed.add(id(rec))
+    for rec in rows:
+        if id(rec) in changed:
+            _save(rec)
+
+
 def _list_proposals(limit=100):
+    _proposal_triage()
     import json as _json
     rows = []
-    for p in sorted(_proposal_dir().glob("*.json"),
-                    key=lambda x: x.stat().st_mtime, reverse=True)[:limit]:
+    for p in _proposal_dir().glob("*.json"):
         try:
             rec = _json.loads(p.read_text(encoding="utf-8"))
             # 老提案可能没有 ts；用文件 mtime 兜底，保证「修复提案」列表不出现空时间。
@@ -597,7 +685,9 @@ def _list_proposals(limit=100):
             rows.append(rec)
         except Exception:
             pass
-    return rows
+    # 按提案自身 ts 排序（过期标记会更新文件 mtime，不能再用 mtime 排序）
+    rows.sort(key=lambda r: float(r.get("ts") or 0), reverse=True)
+    return rows[:max(1, int(limit))]
 
 
 def _get_proposal(pid):

@@ -14431,6 +14431,11 @@ class DGTF:
                 _lk = str(_p3.get("link", "")).strip()
                 if not _lk:
                     continue
+                # ★ link 是散文（如「对照两处文体…」）时不按编号反查，
+                #   否则每条散文都会被误记成 dangling；只有确实带 id 形态的
+                #   link（A1/T2/probe#3/amp#4…）才做悬空判定。
+                if not re.search(r"(?:[A-Za-z]{1,5}#?\d+|\b[A-Z]\d{1,4}\b)", _lk):
+                    continue
                 _hit = False
                 for _lid in _link_ids:
                     if _lid and re.search(
@@ -22404,7 +22409,7 @@ class MetaDGTF:
                     if _card.status == "answered":
                         _r_old = dict(_out.get("reasoning") or {})
                         _r_old["answer"] = (
-                            "已核实事实：发布日期 %s（官方源）。%s"
+                            "已核实事实：官方记录日期 %s（发布/更新口径见正文）。%s"
                             % (_card.answer, str(_r_old.get("answer") or "")[:400]))
                         _out["reasoning"] = _r_old
                     _out["fact_plan"] = {
@@ -28303,8 +28308,8 @@ def save_result(result: dict, save_dir: str = "outputs") -> Path:
             f.write(f"**问题类型**: {_dt.get('question_type', '—')}\n\n")
             _fc = _dt.get("fact_card") or {}
             if _fc.get("status") == "answered" and _fc.get("answer"):
-                f.write(f"**事实答案**: {_fc.get('answer')}（官方源 "
-                        f"{(_dt.get('retrieval') or {}).get('official', 0)} 条）\n\n")
+                f.write(f"**事实日期（官方记录）**: {_fc.get('answer')}（官方源 "
+                        f"{(_dt.get('retrieval') or {}).get('official', 0)} 条；发布/更新口径见正文）\n\n")
             _fct = result.get("fact_contract") or {}
             if _fct:
                 f.write("**四层事实达标**: %s\n\n" % ("✅ 全部" if _fct.get(

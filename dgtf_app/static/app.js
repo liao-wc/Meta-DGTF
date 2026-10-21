@@ -3673,7 +3673,7 @@ function agentRenderProps() {
   if (n) n.textContent = String(agentProps.length);
   if (!box) return;
   if (!agentProps.length) { box.innerHTML = agentEmpty('还没有修复提案。点「DSH 全流程闭环」生成提案。'); return; }
-  const ST = {pending: '待确认', confirmed: '已确认待修复', applied: '已应用', failed: '失败', rolled_back: '已回退'};
+  const ST = {pending: '待确认', confirmed: '已确认待修复', applied: '已应用', failed: '失败', rolled_back: '已回退', expired: '已过期'};
   const nConf = agentProps.filter(x => x.status === 'confirmed').length;
   const fixBtn = document.querySelector('#prop-autofix');
   if (fixBtn) fixBtn.textContent = '自动修复提案' + (nConf ? '（' + nConf + '）' : '');
@@ -3698,6 +3698,7 @@ function agentRenderProps() {
       + (when ? '<span>创建 ' + esc(when) + '</span>' : '<span>创建时间未知</span>')
       + (x.version ? '<span>版本 ' + esc(x.version) + '</span>' : '')
       + (x.artifact ? '<span>产物 ' + esc(String(x.artifact).split('\\').pop()) + '</span>' : '')
+      + (x.expired_reason ? '<span>过期：' + esc(x.expired_reason) + '</span>' : '')
       + '</div>'
       + '<div class="agent-q">' + esc(String(x.plan || '').slice(0, 300)) + '</div>'
       + '<div class="prop-actions">' + acts + '</div></div>';

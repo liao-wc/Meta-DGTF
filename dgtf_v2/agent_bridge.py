@@ -7,13 +7,25 @@ from pathlib import Path
 DEFAULT_QUEUE = "dgtf_memory/agent_tasks.jsonl"
 DEFAULT_KNOWLEDGE = "dgtf_memory/agent_knowledge.jsonl"
 
+# 夹具/测试跑不能进生产 Agent 队列（与 decision_policy/unified_memory 同源）。
+FIXTURE_RUN_PREFIXES = ("E2E_", "test", "smoke", "pytest", "v2-", "probe",
+                        "anon", "rs4", "fixture")
+
 
 def _fp(s: str) -> str:
     return hashlib.sha1(str(s).encode("utf-8")).hexdigest()[:12]
 
 
+def _is_fixture_run(run_id: str) -> bool:
+    rid = str(run_id or "").strip().lower()
+    return (not rid) or any(rid.startswith(p.lower()) for p in FIXTURE_RUN_PREFIXES)
+
+
 def build_tasks(packed: dict, run_id: str = "") -> list:
     p = packed or {}
+    # 夹具空跑/测试跑不产出生产任务，避免 RS4、rounds=0 污染队列。
+    if _is_fixture_run(run_id) or p.get("mock") or p.get("fixture"):
+        return []
     out = []
     sf = p.get("self_feedback") or {}
     for c in (sf.get("eml_candidates") or []):
@@ -77,7 +89,20 @@ def enqueue(packed: dict, run_id: str = "", path: str = DEFAULT_QUEUE) -> dict:
 def append_task(task: dict, path: str = DEFAULT_QUEUE) -> dict:
     q = Path(path); q.parent.mkdir(parents=True, exist_ok=True)
     t = dict(task or {})
-    t.setdefault("id", _fp(t.get("kind", "task") + "|" + t.get("title", "")))
+    title = str(t.get("title") or "").strip()
+    # 空标题、乱码占位、自指任务不进队列。
+    if (not title) or title.count("?") >= 2 or title in (
+            "根据生成的提案执行任务", "app ????", "?? Tool Calls ??"):
+        return {"rejected": "invalid_title", "task": t}
+    if _is_fixture_run(str(t.get("source_run") or "")) and t.get("kind") in (
+            "process_gap", "quality_flag", "api_gap", "eml_candidate"):
+        return {"rejected": "fixture_run", "task": t}
+    t["title"] = title
+    t.setdefault("id", _fp(t.get("kind", "task") + "|" + title))
+    old = read_tasks(path, 100000)
+    if any(str(x.get("id")) == str(t["id"]) or
+           str(x.get("title") or "").strip() == title for x in old):
+        return {"rejected": "duplicate", "task": t}
     t.setdefault("ts", time.time())
     with q.open("a", encoding="utf-8") as f:
         f.write(json.dumps(t, ensure_ascii=False) + "\n")
