@@ -810,32 +810,34 @@ def _run_dsh_agent(task: str, sid: str = "", timeout: int = 300,
 
     proc = None
     try:
-        if emit is not None:
-            proc = _sp.Popen(cmd, cwd=str(root), env=env,
-                             stdin=_sp.PIPE, stdout=_sp.PIPE,
-                             stderr=_sp.PIPE, text=True,
-                             encoding="utf-8", errors="replace")
-            _DSH_ACTIVE.add(proc)
-            proc.stdin.write(auth)
-            proc.stdin.close()
-            for line in proc.stdout:
+        # 统一用 communicate：同时读 stdout/stderr，防管道死锁；
+        # 超时在读取阶段生效，避免逐行读 stdout 被永不关闭的管道卡死。
+        proc = _sp.Popen(cmd, cwd=str(root), env=env,
+                         stdin=_sp.PIPE, stdout=_sp.PIPE,
+                         stderr=_sp.PIPE, text=True,
+                         encoding="utf-8", errors="replace")
+        _DSH_ACTIVE.add(proc)
+        try:
+            out_text, err_text = proc.communicate(
+                input=auth, timeout=max(1, int(timeout)))
+        except _sp.TimeoutExpired:
+            proc.kill()
+            out_text, err_text = proc.communicate()
+            for line in (out_text or "").splitlines():
                 _feed(line)
-            try:
-                proc.wait(timeout=timeout)
-            except _sp.TimeoutExpired:
-                proc.kill()
-                proc.wait()
-                raise
-            rc = proc.returncode
-            stderr = (proc.stderr.read() or "")[-2000:]
-        else:
-            p = _sp.run(cmd, cwd=str(root), env=env, input=auth,
-                        text=True, encoding="utf-8", errors="replace",
-                        capture_output=True, timeout=timeout)
-            for line in (p.stdout or "").splitlines():
-                _feed(line)
-            rc = p.returncode
-            stderr = (p.stderr or "")[-2000:]
+            out = {"ok": False, "error": "DSH timeout",
+                   "timeout": int(timeout), "session_id": sid,
+                   "text": final or "".join(texts),
+                   "events": events[-200:],
+                   "settings": {"effort": _eff, "permission": _perm},
+                   "attach_task_id": str(attach_task_id or ""),
+                   "stderr": (err_text or "")[-2000:]}
+            _save_dsh_run(task, sid, out, auto_repair)
+            return out
+        for line in (out_text or "").splitlines():
+            _feed(line)
+        rc = proc.returncode
+        stderr = (err_text or "")[-2000:]
     finally:
         if proc is not None:
             _DSH_ACTIVE.discard(proc)
