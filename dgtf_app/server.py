@@ -1689,6 +1689,37 @@ def _v2_ab(left="", right=""):
             "note": "Welch近似；p 用正态近似，样本小时仅作参考"}
 
 
+def _v2_all_pairs(alpha=0.05):
+    """多模板两两 Welch 对比 + Benjamini-Hochberg FDR 校正。"""
+    import math as _math
+    s = _v2_shadow_status(500)
+    bt = s.get("by_template") or {}
+    keys = [k for k in bt if int((bt[k] or {}).get("n") or 0) >= 2]
+    rows = []
+    for i in range(len(keys)):
+        for j in range(i + 1, len(keys)):
+            a, b = bt[keys[i]], bt[keys[j]]
+            se = ((a.get("sd", 0) ** 2 / max(1, a.get("n", 1)))
+                  + (b.get("sd", 0) ** 2 / max(1, b.get("n", 1)))) ** 0.5
+            diff = float(a.get("quality", 0)) - float(b.get("quality", 0))
+            t = (diff / se) if se > 0 else 0.0
+            p = _math.erfc(abs(t) / (2 ** 0.5)) if se > 0 else 1.0
+            rows.append({"left": keys[i], "right": keys[j], "diff": round(diff, 4),
+                         "se": round(se, 5), "t": round(t, 3), "p": round(p, 5)})
+    rows.sort(key=lambda x: x["p"])
+    m = len(rows)
+    for idx, r in enumerate(rows, 1):
+        r["rank"] = idx
+        r["q"] = round(min(1.0, r["p"] * m / idx), 5)
+    for idx in range(m - 2, -1, -1):
+        rows[idx]["q"] = round(min(rows[idx]["q"], rows[idx + 1]["q"]), 5)
+    sig = [r for r in rows if r["q"] < float(alpha)]
+    return {"ok": True, "alpha": float(alpha), "templates": keys,
+            "pairs": rows, "significant": sig,
+            "n_significant": len(sig),
+            "method": "Welch t + Benjamini-Hochberg FDR（正态近似）"}
+
+
 def _eml_replay(limit=60, dry_run=True):
     """EML 反馈回放：历史 packed → unified_memory schedule outcome → 先验。
 
@@ -2117,6 +2148,9 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/schedule/v2/ab":
             try:
+                if str((q.get("all") or [""])[0]) in ("1", "true", "yes"):
+                    return self._json(_v2_all_pairs(
+                        alpha=float((q.get("alpha") or ["0.05"])[0] or 0.05)))
                 return self._json(_v2_ab(
                     left=str((q.get("left") or [""])[0]),
                     right=str((q.get("right") or [""])[0])))

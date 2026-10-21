@@ -3244,6 +3244,7 @@ let agentProps = [];
 let agentLastRun = null;
 let agentV2 = null;
 let agentPareto = null;
+let agentV2AB = null;
 
 function agentIsoShort(x) {
   if (!x) return '—';
@@ -3494,6 +3495,12 @@ function agentRenderV2() {
     });
     html += '</div>';
   }
+  if (agentV2AB && agentV2AB.ok) {
+    html += '<div class="agent-item"><div class="agent-row"><span class="chip">FDR 显著 '
+      + esc(String(agentV2AB.n_significant || 0)) + ' / ' + esc(String((agentV2AB.pairs || []).length))
+      + ' 对</span><span class="agent-t">alpha ' + esc(String(agentV2AB.alpha || 0.05))
+      + '</span></div></div>';
+  }
   const _ts = d.by_template || {};
   const _tkeys = Object.keys(_ts);
   if (_tkeys.length) {
@@ -3542,7 +3549,7 @@ async function loadAgent() {
   if (resBox) resBox.innerHTML = agentEmpty('读取中…');
   const knBox = $('#agent-knowledge');
   if (knBox) knBox.innerHTML = agentEmpty('读取中…');
-  const [t, r, k, ds, da, pr, v2, pa] = await Promise.all([
+  const [t, r, k, ds, da, pr, v2, pa, vab] = await Promise.all([
     api('/api/agent/tasks').catch(e => ({ tasks: [], error: e.message })),
     api('/api/agent/results').catch(e => ({ results: [], error: e.message })),
     api('/api/agent/knowledge').catch(e => ({ items: [], error: e.message })),
@@ -3551,6 +3558,7 @@ async function loadAgent() {
     api('/api/dsh/proposals').catch(e => ({ proposals: [], error: e.message })),
     api('/api/schedule/v2').catch(e => ({ n: 0, error: e.message })),
     api('/api/schedule/pareto?prefer=' + encodeURIComponent((document.querySelector('#pareto-prefer') || {}).value || 'balanced')).catch(e => ({ ok: false, error: e.message })),
+    api('/api/schedule/v2/ab?all=1').catch(e => ({ ok: false, error: e.message })),
   ]);
   agentTasks = (t && t.tasks) || [];
   agentResults = (r && r.results) || [];
@@ -3560,6 +3568,7 @@ async function loadAgent() {
   agentProps = (pr && pr.proposals) || [];
   agentV2 = v2 || null;
   agentPareto = pa || null;
+  agentV2AB = vab || null;
   agentRenderAll();
   const errs = [t && t.error, r && r.error, k && k.error].filter(Boolean);
   const msg = $('#agent-msg');

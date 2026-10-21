@@ -72,6 +72,9 @@ ck("v2 A/B templates", bool(v2.get("by_template"))
 st, ab = req("GET", "/api/schedule/v2/ab", timeout=30)
 ck("v2 A/B significance", st == 200 and ab.get("ok")
    and ab.get("left") and ab.get("right") and "p_approx" in ab, (st, ab))
+st, aball = req("GET", "/api/schedule/v2/ab?all=1", timeout=30)
+ck("v2 A/B FDR", st == 200 and aball.get("ok")
+   and "pairs" in aball and "significant" in aball and "q" in ((aball.get("pairs") or [{}])[0]), (st, aball))
 
 # 3) read API contract
 reads = ["/api/config", "/api/chats", "/api/outputs", "/api/outputs/facets",
