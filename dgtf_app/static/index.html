@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/static/style.css?v=1.4.3">
+<link rel="stylesheet" href="/static/style.css?v=1.4.10">
 </head>
 <body class="stage-empty">
 
@@ -215,7 +215,7 @@
              的 input，用户报「点了没反应」（label 转发激活在样式/覆盖下会静默失效）。
              多选、不限类型（文档 / 图片都收）；上限写在按钮说明与后端校验里。 -->
         <button id="anchor-pick" class="ghost"
-          data-tip="支持文档与图片；单文件 ≤100MB，单次最多 50 个">选择文件导入…</button>
+          data-tip="导入到本地资料库：文档/图片均可；参与 RAG，不训练、不外发；单文件 ≤100MB，单次 ≤50">选择文件导入…</button>
         <input type="file" id="anchor-file" multiple hidden>
         <span class="muted" id="import-msg"></span>
       </div>
@@ -307,7 +307,7 @@
           <div id="agent-results" class="agent-list"></div>
         </div>
         <div class="agent-sec">
-          <div class="agent-sec-h">技术知识库 <span class="chip" id="agent-kn-n">0</span><span class="muted" style="font-size:10.5px;margin-left:6px">经 DSH 检索会话按官方/时效/置信/相关筛选</span></div>
+          <div class="agent-sec-h">技术知识库 <span class="chip" id="agent-kn-n">0</span><span class="muted agent-kn-desc">经 DSH 检索会话按官方/时效/置信/相关筛选</span></div>
           <div id="agent-knowledge" class="agent-list"></div>
         </div>
         <div class="agent-sec">
@@ -433,7 +433,7 @@
         </svg>
         <span class="p-name">DSH Agent</span>
       </button>
-      <button type="button" id="attach-btn" class="pill" data-tip="导入文件作为外部证据锚点（文本类，可多选）" aria-label="导入文件">
+      <button type="button" id="attach-btn" class="pill" data-tip="导入本地资料：解析/分块参与 BGE+BM25 RAG；原文留档，不训练、不外发、可删除（单文件≤100MB，单次≤50）" aria-label="导入文件">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M20 11.5l-7.6 7.6a4.6 4.6 0 0 1-6.5-6.5l8-8a3.1 3.1 0 0 1 4.4 4.4l-8 8a1.6 1.6 0 0 1-2.2-2.2l7.3-7.3"
                 stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
@@ -551,6 +551,6 @@
 
 
 
-<script src="/static/app.js?v=1.4.3"></script>
+<script src="/static/app.js?v=1.4.10"></script>
 </body>
 </html>

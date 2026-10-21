@@ -46,10 +46,18 @@ async function streamPost(path, payload, onMsg) {
 }
 
 async function api(path, opts) {
-  const r = await fetch(path, opts);
+  let r = await fetch(path, opts);
+  // 偶发 501/502/503（服务重启/路由未就绪）自动重试一次，避免面板出现原始 501
+  if (r.status === 501 || r.status === 502 || r.status === 503) {
+    await new Promise(function (res) { setTimeout(res, 350); });
+    r = await fetch(path, opts);
+  }
   let j = null;
   try { j = await r.json(); } catch (_) { /* 非 JSON */ }
-  if (!r.ok) throw new Error((j && j.error) || ('HTTP ' + r.status));
+  if (!r.ok) {
+    const friendly = r.status === 501 ? '接口暂不可用（501）' : ('HTTP ' + r.status);
+    throw new Error((j && j.error) || friendly);
+  }
   return j;
 }
 
@@ -4386,24 +4394,10 @@ async function commitGithub() {
   } catch (e) { if (s) s.textContent = '提交失败：' + e.message; }
 }
 function centerHomeHero() {
+  // 输入框+欢迎语以输入框为基准居中；再整体下移约 30px（固定值，避免反复测量漂移）。
   const root = document.documentElement;
-  if (!document.body.classList.contains('stage-empty')) {
-    root.style.setProperty('--home-shift', '0px');
-    return;
-  }
-  const stage = document.querySelector('main.stage');
-  const welcome = document.querySelector('#welcome');
-  const composer = document.querySelector('.composer');
-  if (!stage || !welcome || !composer) return;
-  const sr = stage.getBoundingClientRect();
-  const wr = welcome.getBoundingClientRect();
-  const cr = composer.getBoundingClientRect();
-  const gapCenter = (wr.bottom + cr.top) / 2;
-  // 空隙中心对齐内容区中心后，再整体上提 10px（用户要求“再往上一点点”）。
-  const stageCenter = sr.top + sr.height / 2 - 10;
-  const cur = parseFloat(getComputedStyle(root).getPropertyValue('--home-shift')) || 0;
-  const next = Math.max(-160, Math.min(180, cur + (stageCenter - gapCenter)));
-  root.style.setProperty('--home-shift', next.toFixed(1) + 'px');
+  const empty = document.body.classList.contains('stage-empty');
+  root.style.setProperty('--home-shift', empty ? '-20px' : '0px');
 }
 
 function init() {
