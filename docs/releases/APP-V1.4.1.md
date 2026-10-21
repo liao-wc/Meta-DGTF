@@ -82,6 +82,7 @@
 - 运行中会话可见性/状态：启动时 reconcile 遗留 queued/running 为 interrupted；会话列表和快照发现无 worker 的 running 自动改 interrupted；Agent 面板 DSH 会话每 3 秒实时刷新；状态明确显示 运行中/排队/中断/完成/失败，不再把中断显示成运行中或完成。
 - 库动作透明化：Agent 面板新增“最近动作”记录（刷新/学习/提案/确认/拒绝/重开/拆分/提交任务等，成功失败+时间），每个库标题显示更新时间/条数/读数异常；动作记录持久化 localStorage；静态资源 v=1.4.79。
 - API 自洽修复：任务空标题/重复改为 400；缺失 conversation/session/proposal/artifact 改 404；未知常驻动作 400；PUT/DELETE/PATCH 统一 405 JSON，不再返回 HTML 501。
+- UI 自洽：移除被 CSP 拦截的 Google Fonts 外链，改本地 favicon；提案数量按“非过期”显示并标注总数；DSH 会话/产物不再只显示前30条，数量与列表一致；最终静态资源 v=1.4.81。
 - 失败提案处理：卡片显示失败原因；提供“重新打开/重试修复”“不修复”“已另行处理”；重开会把上次 result/acceptance/security/attempts 存入 last_failure，状态恢复 pending，重新走安全评估。rejected/superseded/failed/rolled_back 都可重新打开。
 - 自学习真实验收：手动触发生成 prop-1792620206762（自学习标记，方案含 server.py 与根目录清理），分诊 docs/P2，安全评估因 sensitive_term:server.py 判定人工确认，未自动提交。静态资源 v=1.4.69。
 - Agent 面板刷新改为刷新全部库（队列/结果/知识/DSH会话/DSH产物/提案/运行/V2/审计/资料库/联网库）；

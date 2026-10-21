@@ -3589,7 +3589,8 @@ function updateAgentLibStamps(errs) {
   setLibStamp('kn', agentKnowledge.length, suffix);
   setLibStamp('dsh', agentDsh.length, suffix);
   setLibStamp('dsh-art', agentDshArt.length, suffix);
-  setLibStamp('prop', agentProps.length, suffix);
+  const _liveProps = agentProps.filter(x => x.status !== 'expired').length;
+  setLibStamp('prop', _liveProps, '总 ' + agentProps.length + (suffix ? ' · ' + suffix : ''));
   setLibStamp('runbox', agentLastRun ? 1 : 0, suffix);
   setLibStamp('v2', agentV2 ? 1 : 0, suffix);
   setLibStamp('consistency', agentConsistency && agentConsistency.ok ? 1 : 0, suffix);
@@ -3783,7 +3784,7 @@ function agentRenderDsh() {
   if (n) n.textContent = String(agentDsh.length);
   if (!box) return;
   if (!agentDsh.length) { box.innerHTML = agentEmpty('还没有 DSH Agent 会话。'); return; }
-  box.innerHTML = _activeFirst(agentDsh, x => !!x.running, x => _agentTs({ts: x.updated_at || x.created_at})).slice(0, 30).map(function (x) {
+  box.innerHTML = _activeFirst(agentDsh, x => !!x.running, x => _agentTs({ts: x.updated_at || x.created_at})).map(function (x) {
     const when = fmtTs(x.updated_at || x.created_at);
     const st = String(x.last_status || '');
     const label = x.running ? '运行中' :
@@ -3807,7 +3808,7 @@ function agentRenderDshArt() {
   if (n) n.textContent = String(agentDshArt.length);
   if (!box) return;
   if (!agentDshArt.length) { box.innerHTML = agentEmpty('还没有 DSH 产物。'); return; }
-  box.innerHTML = _activeFirst(agentDshArt, null, _agentTs).slice(0, 30).map(function (x) {
+  box.innerHTML = _activeFirst(agentDshArt, null, _agentTs).map(function (x) {
     const when = fmtTs(x.ts);
     const st = x.ok === true ? '完成' : (x.ok === false ? '失败' : '产物');
     return '<div class="agent-item agent-dsh-art-item" data-dsh-art="' + esc(x.id || '') + '">'
@@ -3823,7 +3824,7 @@ function agentRenderDshArt() {
 function agentRenderProps() {
   const box = document.querySelector('#agent-proposals');
   const n = document.querySelector('#agent-prop-n');
-  if (n) n.textContent = String(agentProps.length);
+  if (n) n.textContent = String(agentProps.filter(x => x.status !== 'expired').length);
   if (!box) return;
   if (!agentProps.length) { box.innerHTML = agentEmpty('还没有修复提案。点「DSH 全流程闭环」生成提案。'); return; }
   let sumHtml = '';
@@ -4213,6 +4214,9 @@ async function loadAgent() {
   if (msg) msg.textContent = errs.length ? ('部分读数不可用：' + errs.join('；')) : '';
   const asof = $('#agent-asof');
   if (asof) asof.textContent = '更新于 ' + new Date().toLocaleTimeString();
+  agentLogAction('读取全部库', errs.length ? ('部分失败：' + errs.join('；').slice(0,120)) :
+    ('任务 ' + agentTasks.length + ' · 结果 ' + agentResults.length + ' · 知识 ' + agentKnowledge.length
+      + ' · 会话 ' + agentDsh.length + ' · 提案 ' + agentProps.filter(x => x.status !== 'expired').length), !errs.length);
   renderAgentActionLog();
 }
 
