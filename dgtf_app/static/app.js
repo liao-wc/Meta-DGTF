@@ -215,6 +215,13 @@ function renderAdvItem(it) {
 }
 
 /* 高级参数页：**只列分组按钮**（点一个 → 进下一层新页看该组参数） */
+const ADV_GROUP_CN = {
+  all_on: '全开开关', autotune: '自动调参', belief: '信念',
+  claim_gap: '主张缺口', duty: '职责开关', external_input: '外部输入',
+  max_tokens: '最大 Token', playbook: '剧本', scheduler: '调度器',
+  sim: '仿真', stop: '停止条件',
+};
+
 async function buildAdv() {
   /* 刷新失败时保留已有分组，避免“恢复出厂后只剩 CLM”这种整块消失 */
   let groups = advGroups.filter(g => g.key !== '_cli');
@@ -227,6 +234,10 @@ async function buildAdv() {
   const cli = ADV.map(([k, label, ph]) =>
     ({ key: k, label, placeholder: ph,
        value: (k in advOverrides) ? advOverrides[k] : (savedCli[k] || '') }));
+  groups = groups.map(g => ({
+    ...g,
+    label: ADV_GROUP_CN[g.key] || g.label,
+  }));
   advGroups = [{ key: '_cli', label: 'CLM 参数（随机任务传）', items: cli }, ...groups];
   renderAdvGroups();
 }

@@ -1544,3 +1544,15 @@ body.stage-empty main.stage{padding-bottom:0}
   border-radius:16px;border:1px solid var(--hair-2);background:transparent;color:var(--t1)}
 #view-agent .searchbar .ghost:hover{background:var(--s2);color:var(--t1)}
 #view-agent .searchbar .ghost:disabled{opacity:.42}
+
+/* Agent tabs 行末尾：GitHub 状态与按钮，和任务标签同排 */
+#view-agent .agent-tabs{align-items:center}
+#view-agent .gh-inline{display:inline-flex;align-items:center;gap:6px;
+  margin-left:6px;flex-wrap:wrap}
+#view-agent .agent-tabs .ghost{height:30px;padding:0 10px;font-size:12px;
+  border-radius:16px;border:1px solid var(--hair-2);background:transparent;color:var(--t1)}
+#view-agent .agent-tabs .ghost:hover{background:var(--s2)}
+#view-agent .agent-tabs #gh-status{font-size:12px;margin-left:2px}
+/* 高级参数底栏按钮：与分组/任务按钮同字号同胶囊格式 */
+#adv-actions button.ghost{height:32px;padding:0 13px;font-size:12.5px;
+  border-radius:16px;border:1px solid var(--hair-2)}
