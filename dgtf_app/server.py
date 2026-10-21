@@ -840,8 +840,12 @@ def _run_dsh_agent(task: str, sid: str = "", timeout: int = 300,
 
     proc = None
     try:
-        # 统一用 communicate：同时读 stdout/stderr，防管道死锁；
-        # 超时在读取阶段生效，避免逐行读 stdout 被永不关闭的管道卡死。
+        # ★ 实时流式读取：stdout 逐行 _feed（立刻 emit 给会话快照），
+        #   stderr 用独立线程排空；主线程带超时等待，避免 communicate()
+        #   把整轮输出憋到进程退出后才显示。
+        import queue as _q
+        import threading as _th
+        import time as _t
         proc = _sp.Popen(cmd, cwd=str(root), env=env,
                          stdin=_sp.PIPE, stdout=_sp.PIPE,
                          stderr=_sp.PIPE, text=True,
@@ -852,14 +856,66 @@ def _run_dsh_agent(task: str, sid: str = "", timeout: int = 300,
                 proc_ref(proc)
             except Exception:
                 pass
+        _qout = _q.Queue()
+        _err_chunks = []
+
+        def _read_out():
+            try:
+                for _line in proc.stdout:
+                    _qout.put(_line)
+            except Exception:
+                pass
+
+        def _read_err():
+            try:
+                _err_chunks.append(proc.stderr.read() or "")
+            except Exception:
+                pass
+
+        _to = _th.Thread(target=_read_out, daemon=True)
+        _te = _th.Thread(target=_read_err, daemon=True)
+        _to.start()
+        _te.start()
         try:
-            out_text, err_text = proc.communicate(
-                input=auth, timeout=max(1, int(timeout)))
-        except _sp.TimeoutExpired:
-            proc.kill()
-            out_text, err_text = proc.communicate()
-            for line in (out_text or "").splitlines():
-                _feed(line)
+            if proc.stdin is not None:
+                if auth:
+                    proc.stdin.write(auth)
+                    proc.stdin.flush()
+                proc.stdin.close()
+        except Exception:
+            pass
+        _timed_out = False
+        _deadline = _t.monotonic() + max(1, int(timeout))
+        while True:
+            _remain = _deadline - _t.monotonic()
+            if _remain <= 0:
+                _timed_out = True
+                try:
+                    proc.kill()
+                except Exception:
+                    pass
+                break
+            try:
+                _line = _qout.get(timeout=min(0.2, _remain))
+            except _q.Empty:
+                if proc.poll() is not None:
+                    break
+                continue
+            _feed(_line)
+        try:
+            proc.wait(timeout=5)
+        except Exception:
+            pass
+        _to.join(timeout=2)
+        _te.join(timeout=2)
+        while True:
+            try:
+                _line = _qout.get_nowait()
+            except _q.Empty:
+                break
+            _feed(_line)
+        err_text = "".join(_err_chunks)
+        if _timed_out:
             out = {"ok": False, "error": "DSH timeout",
                    "timeout": int(timeout), "session_id": sid,
                    "text": final or "".join(texts),
@@ -871,8 +927,6 @@ def _run_dsh_agent(task: str, sid: str = "", timeout: int = 300,
                    "stderr": (err_text or "")[-2000:]}
             _save_dsh_run(task, sid, out, auto_repair)
             return out
-        for line in (out_text or "").splitlines():
-            _feed(line)
         rc = proc.returncode
         stderr = (err_text or "")[-2000:]
     finally:
