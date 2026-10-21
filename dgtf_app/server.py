@@ -1389,6 +1389,47 @@ def _list_proposals(limit=300):
     return rows[:max(1, int(limit))]
 
 
+def _split_proposal(pid):
+    """把包含多条提案的 plan 拆成独立 pending 提案；父提案标记 expired。"""
+    import re as _re
+    import time as _tm
+    prop = _get_proposal(pid)
+    if not prop:
+        return None, "proposal not found"
+    if str(prop.get("status")) not in ("pending", "confirmed"):
+        return None, "只有 pending/confirmed 提案可拆分"
+    plan = str(prop.get("plan") or "")
+    parts = [x.strip() for x in _re.split(
+        r"(?=提案\s*[0-9一二三四五六七八九十]+\s*[｜|])", plan) if x.strip()]
+    parts = [x for x in parts if len(x) >= 30]
+    if len(parts) < 2:
+        return None, "计划中没有可识别的多条提案（需包含 提案1/提案2 等标记）"
+    base = prop.get("task") or {}
+    parent_title = str(base.get("title") or prop.get("id") or "")
+    children = []
+    now = _tm.time()
+    for i, part in enumerate(parts, 1):
+        child = {
+            "id": "prop-" + str(int(now * 1000)) + "-" + str(i),
+            "ts": now + i / 1000.0,
+            "task": {"title": parent_title + "（拆分%d）" % i,
+                     "detail": part, "kind": base.get("kind") or "split",
+                     "severity": base.get("severity") or "low"},
+            "plan": part, "status": "pending", "approver": "",
+            "session_id": "", "conversation_id": "",
+            "source": "split", "parent_id": pid,
+            "parent_source": prop.get("source") or "",
+            "split_index": i,
+        }
+        children.append(_save_proposal(child))
+    prop["status"] = "expired"
+    prop["expired_reason"] = "split_into_children"
+    prop["expired_ts"] = now
+    prop["children"] = [c.get("id") for c in children]
+    _save_proposal(prop)
+    return children, ""
+
+
 def _get_proposal(pid):
     import json as _json
     p = _proposal_dir() / (str(pid) + ".json")
@@ -2047,6 +2088,7 @@ _SECURITY_RISK_TERMS = (
     "socket", "winreg", "ctypes", "start-process", "remove-item", "reg add",
     "schtasks", "taskkill", "icacls", "takeown", "chmod", "chown",
     "pip install", "npm install", "base64", "http://", "https://",
+    "归档", "清理", "删除", "批量", "根目录", "历史版本", "移动文件",
 )
 _SECURITY_CODE_EXTS = (".py", ".js", ".ts", ".json", ".yaml", ".yml",
                        ".ps1", ".cmd", ".bat", ".sh", ".ini", ".toml")
@@ -6499,6 +6541,13 @@ class Handler(BaseHTTPRequestHandler):
                 except Exception:
                     pass
             return
+        if p.startswith("/api/dsh/proposals/") and p.endswith("/split"):
+            pid = p.split("/")[4]
+            children, err = _split_proposal(pid)
+            if not children:
+                return self._json({"error": err or "拆分失败"}, 400)
+            return self._json({"ok": True, "children": children,
+                               "parent": _get_proposal(pid)})
         if p.startswith("/api/dsh/proposals/") and p.endswith("/confirm"):
             pid = p.split("/")[4]
             prop = _get_proposal(pid)

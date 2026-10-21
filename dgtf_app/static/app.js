@@ -3794,7 +3794,8 @@ function agentRenderProps() {
     let acts = '';
     if (st === 'pending') {
       acts = '<button class="ghost" data-prop-confirm="' + esc(x.id) + '">我确认</button>'
-        + '<button class="ghost" data-prop-auto="' + esc(x.id) + '">DSH 自动代理</button>';
+        + '<button class="ghost" data-prop-auto="' + esc(x.id) + '">DSH 自动代理</button>'
+        + '<button class="ghost" data-prop-split="' + esc(x.id) + '">拆分提案</button>';
     } else if (st === 'confirmed') {
       acts = '<span class="muted">已确认，等待 DSH 自动修复</span>';
     } else if (st === 'applied') {
@@ -5141,6 +5142,20 @@ function init() {
     if (ac) {
       const prop = (agentProps || []).find(x => x.id === ac.dataset.acceptance);
       if (prop) showAcceptanceInDgtf(prop);
+      return;
+    }
+    const sp = e.target.closest('[data-prop-split]');
+    if (sp) {
+      const sid = sp.dataset.propSplit;
+      const m0 = document.querySelector('#agent-msg');
+      try {
+        const r = await api('/api/dsh/proposals/' + encodeURIComponent(sid) + '/split',
+          {method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+        if (m0) m0.textContent = '已拆分为 ' + ((r.children || []).length) + ' 条独立提案';
+        loadAgent();
+      } catch (err) {
+        if (m0) m0.textContent = '拆分失败：' + err.message;
+      }
       return;
     }
     const cf = e.target.closest('[data-prop-confirm]');
