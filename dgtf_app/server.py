@@ -1165,7 +1165,7 @@ def _proposal_summary():
                                    "by_category", "by_priority")}
 
 
-def _list_proposals(limit=100):
+def _list_proposals(limit=300):
     _proposal_triage()
     import json as _json
     rows = []
