@@ -3929,7 +3929,8 @@ async function autoAgent(stage) {
   const btn = document.querySelector('#agent-auto');
   const oldText = btn ? btn.textContent : '';
   const t0 = Date.now();
-  if (btn) { btn.disabled = true; if (stage === 'all' || stage === 'full') btn.textContent = 'DSH 自动闭环运行中…'; }
+  if (btn) { btn.disabled = true; if (stage === 'all') btn.textContent = 'DSH 提案闭环运行中…';
+    else if (stage === 'full') btn.textContent = '全流程闭环运行中…'; }
   if (st) {
     st.className = 'agent-auto-status running';
     st.textContent = 'DSH Agent 自动闭环已开始，已跳转到 DSH Agent 对话框显示执行内容…';
@@ -3937,7 +3938,7 @@ async function autoAgent(stage) {
   showAutoDsh('DSH 自动闭环 · ' + stage, [
     {type:'status', phase:'turn_start', turn:1},
     {type:'text', text: stage === 'all'
-      ? '开始执行：生成/提交用户任务 → 运行消费者 → 自审提案。可能需要几分钟。'
+      ? '开始执行轻量闭环：任务队列 → 消费者 → 自审提案；不刷新知识、不跑引擎。可能需要几分钟。'
       : stage === 'full'
       ? '开始执行：知识刷新 → mock 引擎跑次 → 任务/消费者 → 自审提案。可能需要几分钟。'
       : '开始执行：' + stage}

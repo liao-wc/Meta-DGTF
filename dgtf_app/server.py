@@ -28,7 +28,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "1.2.1"
+APP_VERSION = "1.2.2"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
