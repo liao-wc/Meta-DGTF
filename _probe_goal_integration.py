@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """Goal round 1 integration probe: mapping / EML / new API / engine-app roundtrip."""
-import json, os, subprocess, sys, time, urllib.request, urllib.error
+import json, os, subprocess, sys, time, urllib.request, urllib.error, urllib.parse
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
@@ -86,6 +86,13 @@ ck("v2 template pareto", st == 200 and vpar.get("ok")
 st, band = req("GET", "/api/schedule/v2/bandit?prefer=balanced", timeout=30)
 ck("v2 UCB bandit", st == 200 and band.get("ok")
    and bool(band.get("chosen")) and bool((band.get("chosen") or {}).get("template")), (st, band))
+st, cband = req("GET", "/api/schedule/v2/context-bandit?q=" + urllib.parse.quote("比较 A 和 B 的优劣"), timeout=30)
+ck("v2 context bandit", st == 200 and cband.get("ok")
+   and cband.get("question_bucket") == "compare" and bool(cband.get("chosen")), (st, cband))
+st, cbapply = req("POST", "/api/schedule/v2/apply-context-bandit",
+                  {"question": "为什么会出现这个结果", "prefer": "balanced"}, timeout=30)
+ck("v2 context apply", st == 200 and cbapply.get("ok")
+   and (cbapply.get("policy") or {}).get("context_template"), (st, cbapply))
 st, bapply = req("POST", "/api/schedule/v2/apply-bandit", {"prefer": "balanced"}, timeout=30)
 ck("v2 UCB apply", st == 200 and bapply.get("ok")
    and (bapply.get("policy") or {}).get("bandit_template"), (st, bapply))

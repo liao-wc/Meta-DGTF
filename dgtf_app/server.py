@@ -2155,6 +2155,127 @@ def _v2_bandit(prefer="balanced", c=0.5, limit=5000):
             "note": "从 EML/V2 记忆读数估计，不是模型权重训练"}
 
 
+def _question_bucket(q):
+    s = str(q or "")
+    if any(k in s for k in ("比较", "对比", "区别", "优劣", " vs ", "VS", "哪个好")):
+        return "compare"
+    if any(k in s for k in ("为什么", "原因", "导致", "影响", "后果")):
+        return "causal"
+    if any(k in s for k in ("如何", "怎么", "怎样", "步骤", "方案", "实现")):
+        return "howto"
+    if any(k in s for k in ("应该", "是否", "要不要", "选择", "决策")):
+        return "decision"
+    if any(k in s for k in ("什么时候", "何时", "时间", "发布", "多少", "定义", "是什么")):
+        return "fact"
+    return "general"
+
+
+def _v2_context_stats(limit=5000):
+    """run_id → packed.question 分桶，再聚合该桶的模板质量/成本。"""
+    import json as _json
+    from collections import defaultdict
+    root = Path(__file__).resolve().parent.parent
+    run_bucket = {}
+    for p in sorted((root / "outputs").glob("*.packed.json"),
+                    key=lambda x: x.stat().st_mtime, reverse=True):
+        try:
+            d = _json.loads(p.read_text(encoding="utf-8", errors="replace"))
+            run_bucket[p.stem] = _question_bucket(d.get("question"))
+        except Exception:
+            continue
+    ev = root / "dgtf_memory" / "v2_events.jsonl"
+    groups = defaultdict(lambda: defaultdict(lambda: {"n": 0, "q": 0.0, "sd": 0.0,
+                                                       "vals": [], "tokens": 0.0,
+                                                       "calls": 0.0}))
+    if ev.exists():
+        for ln in ev.read_text(encoding="utf-8", errors="replace").splitlines()[-max(1, int(limit)):]:
+            try:
+                d = _json.loads(ln)
+            except Exception:
+                continue
+            if not isinstance(d, dict) or str(d.get("kind") or "") != "schedule_outcome":
+                continue
+            rid = str(d.get("run_id") or "")
+            b = run_bucket.get(rid)
+            if not b:
+                continue
+            pl = d.get("payload") if isinstance(d.get("payload"), dict) else {}
+            t = str(pl.get("template") or "")
+            if not t:
+                continue
+            g = groups[b][t]
+            try:
+                qq = float(pl.get("quality") or 0)
+                g["q"] += qq
+                g["vals"].append(qq)
+                g["tokens"] += float(pl.get("tokens") or 0)
+                g["calls"] += float(pl.get("calls") or 0)
+                g["n"] += 1
+            except Exception:
+                pass
+    out = {}
+    for b, tm in groups.items():
+        bt = {}
+        for t, g in tm.items():
+            n = int(g["n"] or 0)
+            if not n:
+                continue
+            mu = g["q"] / n
+            vals = g["vals"]
+            sd = ((sum((x - mu) ** 2 for x in vals) / (n - 1)) ** 0.5) if n > 1 else 0.0
+            bt[t] = {"n": n, "quality": round(mu, 4), "sd": round(sd, 4),
+                     "tokens": round(g["tokens"] / n, 1),
+                     "calls": round(g["calls"] / n, 1)}
+        if bt:
+            out[b] = bt
+    return {"run_bucket": run_bucket, "by_bucket": out}
+
+
+def _v2_context_bandit(question="", prefer="balanced", c=0.5):
+    import math as _math
+    stats = _v2_context_stats()
+    b = _question_bucket(question)
+    bt = (stats.get("by_bucket") or {}).get(b) or {}
+    fallback = False
+    if len(bt) < 2:
+        allb = {}
+        for tm in (stats.get("by_bucket") or {}).values():
+            for t, v in tm.items():
+                d = allb.setdefault(t, {"n": 0, "q": 0.0, "tokens": 0.0, "calls": 0.0})
+                d["n"] += int(v.get("n") or 0)
+                d["q"] += float(v.get("quality") or 0) * int(v.get("n") or 0)
+                d["tokens"] += float(v.get("tokens") or 0) * int(v.get("n") or 0)
+                d["calls"] += float(v.get("calls") or 0) * int(v.get("n") or 0)
+        bt = {}
+        for t, d in allb.items():
+            n = int(d["n"] or 0)
+            if n:
+                bt[t] = {"n": n, "quality": d["q"] / n,
+                         "tokens": d["tokens"] / n, "calls": d["calls"] / n}
+        fallback = True
+    max_t = max([float(v.get("tokens") or 0) for v in bt.values()] or [1.0]) or 1.0
+    lam = {"cost": 0.50, "quality": 0.05}.get(str(prefer), 0.20)
+    arms = []
+    for t, v in bt.items():
+        n = int(v.get("n") or 0)
+        if n <= 0:
+            continue
+        q = float(v.get("quality") or 0)
+        sd = float(v.get("sd") or 0)
+        var = sd * sd if sd > 0 else max(0.0, q * (1 - q))
+        bonus = float(c) * _math.sqrt(var / max(1, n))
+        score = q + bonus - lam * (float(v.get("tokens") or 0) / max_t)
+        arms.append({"template": t, "n": n, "quality": round(q, 4),
+                     "bonus": round(bonus, 4), "score": round(score, 4),
+                     "tokens": float(v.get("tokens") or 0),
+                     "calls": float(v.get("calls") or 0)})
+    arms.sort(key=lambda x: x["score"], reverse=True)
+    return {"ok": True, "question_bucket": b, "fallback_global": fallback,
+            "arms": arms, "chosen": arms[0] if arms else None,
+            "prefer": prefer, "c": c, "lambda_cost": lam,
+            "note": "按问题类型分桶的 UCB；样本不足时回退全局"}
+
+
 def _v2_apply_bandit(prefer="balanced", c=0.5):
     import json as _json
     import time as _t
@@ -2179,6 +2300,33 @@ def _v2_apply_bandit(prefer="balanced", c=0.5):
             _json.dumps(pol, ensure_ascii=False, indent=1), encoding="utf-8")
         return {"ok": True, "chosen": arm, "policy": pol,
                 "path": str(_SCHEDULE_POLICY_FILE)}
+    except Exception as exc:
+        return {"ok": False, "error": str(exc)}
+
+
+def _v2_apply_context_bandit(question="", prefer="balanced", c=0.5):
+    import json as _json
+    import time as _t
+    r = _v2_context_bandit(question=question, prefer=prefer, c=c)
+    arm = r.get("chosen") or {}
+    tmpl = str(arm.get("template") or "")
+    if not tmpl:
+        return {"ok": False, "error": "没有可选模板", "bucket": r.get("question_bucket")}
+    route = tmpl.split(":", 1)[0] if ":" in tmpl else "auto"
+    rounds = tmpl.rsplit(":r", 1)[1] if ":r" in tmpl else ""
+    pol = _schedule_policy_load()
+    pol.update({"context_template": tmpl, "template": tmpl,
+                "route": route, "rounds": rounds,
+                "context_bucket": r.get("question_bucket"),
+                "context_score": arm.get("score"),
+                "context_applied_at": _t.time()})
+    try:
+        _SCHEDULE_POLICY_FILE.parent.mkdir(parents=True, exist_ok=True)
+        _SCHEDULE_POLICY_FILE.write_text(
+            _json.dumps(pol, ensure_ascii=False, indent=1), encoding="utf-8")
+        return {"ok": True, "chosen": arm, "bucket": r.get("question_bucket"),
+                "fallback_global": r.get("fallback_global"),
+                "policy": pol, "path": str(_SCHEDULE_POLICY_FILE)}
     except Exception as exc:
         return {"ok": False, "error": str(exc)}
 
@@ -2676,6 +2824,14 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(_self_consistency())
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/schedule/v2/context-bandit":
+            try:
+                return self._json(_v2_context_bandit(
+                    question=str((q.get("q") or [""])[0]),
+                    prefer=str((q.get("prefer") or ["balanced"])[0]),
+                    c=float((q.get("c") or ["0.5"])[0] or 0.5)))
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/schedule/v2/bandit":
             try:
                 return self._json(_v2_bandit(
@@ -3099,6 +3255,15 @@ class Handler(BaseHTTPRequestHandler):
         if p == "/api/schedule/v2/rebuild":
             try:
                 return self._json(_v2_rebuild())
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/schedule/v2/apply-context-bandit":
+            try:
+                data = self._read_json()
+                return self._json(_v2_apply_context_bandit(
+                    question=str(data.get("question") or ""),
+                    prefer=str(data.get("prefer") or "balanced"),
+                    c=float(data.get("c") or 0.5)))
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/schedule/v2/apply-bandit":
