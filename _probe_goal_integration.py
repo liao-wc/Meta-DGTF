@@ -83,6 +83,18 @@ ck("v2 best template apply", st == 200 and best.get("ok")
 st, vpar = req("GET", "/api/schedule/v2/pareto", timeout=30)
 ck("v2 template pareto", st == 200 and vpar.get("ok")
    and bool(vpar.get("frontier")) and bool((vpar.get("recommended") or {}).get("template")), (st, vpar))
+_rag_name = "probe_rag_%d.txt" % int(time.time())
+_rag_token = "PROBE_RAG_%d" % int(time.time())
+st, _ragimp = req("POST", "/api/library/import", {"files": [{
+    "name": _rag_name,
+    "content": "元DGTF RAG 探针 " + _rag_token + "：四层为修行/研究/对撞/元，EML 为事件记忆。"}]}, timeout=60)
+st2, _ragctx = req("GET", "/api/project/context?q=" + urllib.parse.quote(_rag_token + " 四层"), timeout=30)
+ck("imported file RAG", st == 200 and _ragimp.get("saved")
+   and _rag_name in (_ragctx.get("imported_sources") or []), (st, _ragimp, _ragctx))
+try:
+    req("POST", "/api/library/delete", {"name": _rag_name}, timeout=30)
+except Exception:
+    pass
 st, pctx = req("GET", "/api/project/context?q=" + urllib.parse.quote("元DGTF四层是什么"), timeout=30)
 ck("project context RAG", st == 200 and pctx.get("ok")
    and all(k in str(pctx.get("text") or "") for k in ("修行", "研究", "对撞", "元")), (st, pctx))

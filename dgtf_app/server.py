@@ -28,7 +28,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "1.2.2"
+APP_VERSION = "1.2.3"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -2417,6 +2417,44 @@ def _project_doc_paras(rel):
     return paras
 
 
+_IMPORTED_ANCHOR_FILE = Path(__file__).resolve().parent / "anchors" / "external_anchor.json"
+_IMPORTED_CACHE = {}
+
+
+def _imported_anchor_items():
+    """读取 app 本地上传资料的分块锚点（供 RAG 注入）。"""
+    import json as _json
+    p = _IMPORTED_ANCHOR_FILE
+    try:
+        st = p.stat()
+    except Exception:
+        return []
+    key = (int(st.st_mtime_ns), int(st.st_size))
+    hit = _IMPORTED_CACHE.get(key)
+    if hit is not None:
+        return hit
+    try:
+        d = _json.loads(p.read_text(encoding="utf-8", errors="replace"))
+        anchors = d.get("anchors") if isinstance(d, dict) else []
+    except Exception:
+        anchors = []
+    out = []
+    for it in anchors or []:
+        if not isinstance(it, dict) or str(it.get("kind") or "") != "local":
+            continue
+        txt = str(it.get("content") or "")
+        if len(txt.strip()) < 40:
+            continue
+        low = txt.lower()
+        if any(s in low for s in _PROJECT_SENSITIVE):
+            continue
+        out.append({"source": str(it.get("source") or "local"),
+                    "text": txt[:1200]})
+    _IMPORTED_CACHE.clear()
+    _IMPORTED_CACHE[key] = out
+    return out
+
+
 def _project_context(question="", limit=6):
     """RAG-lite：从项目文档取相关段落 + 固定权威摘要。"""
     import re as _re
@@ -2476,6 +2514,23 @@ def _project_context(question="", limit=6):
         parts.append("【本地资料库（导入/检索）】")
         for it in knowledge:
             parts.append("- " + it["title"] + " | " + it["claim"] + " | " + it["url"])
+    imported = []
+    try:
+        cands = []
+        for it in _imported_anchor_items():
+            low = it["text"].lower()
+            score = sum(it["text"].count(k) for k in keys) if keys else 0
+            score += sum(1 for t in qterms if t in low)
+            if score > 0:
+                cands.append((score, it))
+        cands.sort(key=lambda x: x[0], reverse=True)
+        imported = [it for _s, it in cands[:3]]
+    except Exception:
+        imported = []
+    if imported:
+        parts.append("【导入资料（app 本地上传）】")
+        for it in imported:
+            parts.append("[" + it["source"] + "] " + it["text"])
     parts.append("【回答约束】涉及元DGTF时必须依据以上背景；背景没有的，明确说不知道，不得编造。")
     _max = max(1000, min(12000, int(os.getenv(
         "DGTF_PROJECT_CONTEXT_MAX_CHARS", "7000"))))
@@ -2483,6 +2538,7 @@ def _project_context(question="", limit=6):
     return {"ok": True, "text": txt[:_max],
             "sources": [x["source"] for x in picked],
             "knowledge_sources": [x["title"] for x in knowledge],
+            "imported_sources": [x["source"] for x in imported],
             "keys": keys, "chars": len(txt[:_max]), "max_chars": _max,
             "sensitive_filter": True, "cached_docs": True}
 
