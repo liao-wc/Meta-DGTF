@@ -1631,3 +1631,6 @@ body.stage-empty main.stage{padding-bottom:0}
 /* 状态信息水平居中并整体上移 10px，按钮同步上移 10px */
 .env{text-align:center;transform:translateY(-15px)}
 .drawer-nav{margin-top:-10px;margin-bottom:auto;transform:none}
+
+/* 状态标签统一白色 */
+.env .env-k{color:#fff}

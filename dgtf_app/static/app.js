@@ -2783,13 +2783,14 @@ async function loadConfig() {
       '<span class="env-inline"><span class="dot ' + (ok ? 'ok' : 'no') + '"></span>' +
       '<span class="env-k">' + esc(label) + '</span> ' +
       '<span class="env-v">' + value + '</span></span><br>';
+    const engineOk = !!(c.engine && (h.ok !== false) && checks.engine_file !== false);
     $('#env-info').innerHTML =
-      line('引擎', '<b class="mono">' + esc(c.engine) + '</b>', true) +
-      line('模型 DeepSeek', '<b>' + (k.api_key ? '已配置' : '缺 key') + '</b>', !!k.api_key) +
-      line('联网 Tavily', '<b>' + (k.tavily ? '已配置' : '未配置') + '</b>', !!k.tavily) +
+      line('引擎', '<b class="mono">' + esc(c.engine) + '</b>', engineOk) +
+      line('模型 DeepSeek', '', !!k.api_key) +
+      line('联网 Tavily', '', !!k.tavily) +
       line('本地 LLM', '<b>' + nBack + '</b> 个底座 · 默认 Qwen0.5B', nBack > 0) +
       line('Agent', '<b>' + (agentOk ? 'DSH 就绪 · 守护运行' : '未就绪') + '</b>', agentOk) +
-      line('产物', '<b>' + c.outputs.count + '</b> 份 · ' + c.outputs.total_mb + ' MB', true);
+      line('产物', '<b>' + c.outputs.count + '</b> 份 · ' + c.outputs.total_mb + ' MB', c.outputs.count > 0);
     $('#mock').checked = !!c.mock_default;
     syncMockPill();                    // checked 变了，胶囊高亮要跟着
     $('#cost-warn').textContent = k.api_key
@@ -4477,6 +4478,8 @@ function init() {
   pollLanes();
   setInterval(pollLanes, 1500);
   loadConfig();
+  // 侧栏状态实时刷新（30s；页面隐藏时不跑）
+  setInterval(() => { if (document.visibilityState !== 'hidden') loadConfig(); }, 30000);
   loadFacets();
   loadExistingTasks();
   loadLib();
