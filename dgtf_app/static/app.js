@@ -3040,15 +3040,25 @@ function initTips() {
   document.body.appendChild(tip);
   _tip = tip;
 
+  const tipTextFor = (el) => {
+    let t = (el.dataset && el.dataset.tip) || '';
+    if (!t) t = (el.getAttribute && el.getAttribute('aria-label')) || '';
+    if (!t) t = (el.textContent || '').trim();
+    return String(t || '').trim();
+  };
+
   const place = (el) => {
-    tip.textContent = el.dataset.tip || '';
+    const txt = tipTextFor(el);
+    if (!txt) { hideTip(); return; }
+    tip.textContent = txt;
     tip.style.left = '0px'; tip.style.top = '0px';   // 先归零，量真实宽高
     const r = el.getBoundingClientRect();
     const tw = tip.offsetWidth, th = tip.offsetHeight;
     let left, top;
     if (el.closest('#drawer')) {
-      /* 抽屉是竖排窄列 ⇒ 气泡落**右侧**、与按钮垂直居中 */
-      left = r.right + 10;
+      /* 抽屉是竖排窄列 ⇒ 气泡落**右侧、刚好超出侧边栏**，与按钮垂直居中 */
+      const dr = el.closest('#drawer').getBoundingClientRect();
+      left = Math.max(r.right + 10, dr.right + 8);
       top = r.top + r.height / 2 - th / 2;
       if (left + tw > window.innerWidth - 8) left = Math.max(8, r.left - tw - 10);
     } else {
@@ -3065,11 +3075,11 @@ function initTips() {
   };
 
   document.addEventListener('mouseover', e => {
-    const el = e.target && e.target.closest && e.target.closest('[data-tip]');
+    const el = e.target && e.target.closest && e.target.closest('button, [data-tip]');
     if (el) place(el);
   });
   document.addEventListener('mouseout', e => {
-    const el = e.target && e.target.closest && e.target.closest('[data-tip]');
+    const el = e.target && e.target.closest && e.target.closest('button, [data-tip]');
     if (!el) return;
     const to = e.relatedTarget;                 // 还在同一个按钮内部移动 ⇒ 不收
     if (to && el.contains(to)) return;
