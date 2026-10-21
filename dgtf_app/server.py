@@ -2235,24 +2235,44 @@ def _v2_context_bandit(question="", prefer="balanced", c=0.5):
     import math as _math
     stats = _v2_context_stats()
     b = _question_bucket(question)
-    bt = (stats.get("by_bucket") or {}).get(b) or {}
-    fallback = False
-    if len(bt) < 2:
-        allb = {}
-        for tm in (stats.get("by_bucket") or {}).values():
-            for t, v in tm.items():
-                d = allb.setdefault(t, {"n": 0, "q": 0.0, "tokens": 0.0, "calls": 0.0})
-                d["n"] += int(v.get("n") or 0)
-                d["q"] += float(v.get("quality") or 0) * int(v.get("n") or 0)
-                d["tokens"] += float(v.get("tokens") or 0) * int(v.get("n") or 0)
-                d["calls"] += float(v.get("calls") or 0) * int(v.get("n") or 0)
-        bt = {}
-        for t, d in allb.items():
-            n = int(d["n"] or 0)
-            if n:
-                bt[t] = {"n": n, "quality": d["q"] / n,
-                         "tokens": d["tokens"] / n, "calls": d["calls"] / n}
-        fallback = True
+    bucket_bt = (stats.get("by_bucket") or {}).get(b) or {}
+    allb = {}
+    for tm in (stats.get("by_bucket") or {}).values():
+        for t, v in tm.items():
+            d = allb.setdefault(t, {"n": 0, "q": 0.0, "tokens": 0.0, "calls": 0.0})
+            n0 = int(v.get("n") or 0)
+            d["n"] += n0
+            d["q"] += float(v.get("quality") or 0) * n0
+            d["tokens"] += float(v.get("tokens") or 0) * n0
+            d["calls"] += float(v.get("calls") or 0) * n0
+    global_bt = {}
+    for t, d in allb.items():
+        n0 = int(d["n"] or 0)
+        if n0:
+            global_bt[t] = {"n": n0, "quality": d["q"] / n0,
+                            "tokens": d["tokens"] / n0, "calls": d["calls"] / n0}
+    K = 5.0
+    bt = {}
+    for t in set(bucket_bt) | set(global_bt):
+        g = global_bt.get(t) or {"n": 0, "quality": 0.0, "tokens": 0.0, "calls": 0.0}
+        x = bucket_bt.get(t)
+        n_b = int(x.get("n") or 0) if x else 0
+        q_g = float(g.get("quality") or 0)
+        if x and n_b > 0:
+            q_hat = (n_b * float(x.get("quality") or 0) + K * q_g) / (n_b + K)
+            tok_hat = (n_b * float(x.get("tokens") or 0)
+                       + K * float(g.get("tokens") or 0)) / (n_b + K)
+            calls_hat = (n_b * float(x.get("calls") or 0)
+                         + K * float(g.get("calls") or 0)) / (n_b + K)
+            sd_hat = float(x.get("sd") or 0) if n_b >= 2 else (q_hat * (1 - q_hat)) ** 0.5
+        else:
+            q_hat, tok_hat, calls_hat = q_g, float(g.get("tokens") or 0), float(g.get("calls") or 0)
+            sd_hat = (q_hat * (1 - q_hat)) ** 0.5
+        _n_eff = n_b if (x and n_b > 0) else max(1, int(g.get("n") or 1))
+        bt[t] = {"n": _n_eff, "quality": q_hat, "sd": sd_hat,
+                 "tokens": tok_hat, "calls": calls_hat}
+    fallback = not bool(bucket_bt)
+    smoothed = bool(bucket_bt)
     max_t = max([float(v.get("tokens") or 0) for v in bt.values()] or [1.0]) or 1.0
     lam = {"cost": 0.50, "quality": 0.05}.get(str(prefer), 0.20)
     arms = []
@@ -2271,9 +2291,10 @@ def _v2_context_bandit(question="", prefer="balanced", c=0.5):
                      "calls": float(v.get("calls") or 0)})
     arms.sort(key=lambda x: x["score"], reverse=True)
     return {"ok": True, "question_bucket": b, "fallback_global": fallback,
+            "smoothed": bool(smoothed), "shrink_k": K,
             "arms": arms, "chosen": arms[0] if arms else None,
             "prefer": prefer, "c": c, "lambda_cost": lam,
-            "note": "按问题类型分桶的 UCB；样本不足时回退全局"}
+            "note": "按问题类型分桶 + 向全局均值收缩的 UCB"}
 
 
 def _v2_apply_bandit(prefer="balanced", c=0.5):

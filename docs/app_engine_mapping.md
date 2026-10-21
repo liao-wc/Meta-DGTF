@@ -88,7 +88,7 @@ engine 元DGTF-V1.30.0.py
 | `POST /api/schedule/v2/apply-pareto` | 按 prefer 选择联合帕累托模板并写入 policy/route/rounds |
 | `GET /api/schedule/v2/bandit` | V2 模板 UCB：均值+探索奖励-成本惩罚，返回 arms/chosen |
 | `POST /api/schedule/v2/apply-bandit` | 应用 UCB 模板到 policy；V2 面板有“采用 UCB”按钮 |
-| `GET /api/schedule/v2/context-bandit?q=` | 按问题类型（compare/causal/howto/decision/fact/general）分桶 UCB；样本不足回退全局 |
+| `GET /api/schedule/v2/context-bandit?q=` | 按问题类型（compare/causal/howto/decision/fact/general）分桶 UCB；桶样本向全局均值收缩（K=5），无桶数据回退全局 |
 | `POST /api/schedule/v2/apply-context-bandit` | 应用上下文模板到 policy |
 | `GET /api/schedule/v2/ab?paired=1` | 同一 run_id 的配对检验；检测 V2 影子模板 quality 是否可区分 |
 | `POST /api/schedule/v2/rebuild` | 用 packed 重算历史 schedule_outcome 的按层 quality；写前备份 |
