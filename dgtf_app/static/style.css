@@ -1659,3 +1659,9 @@ body.stage-empty main.stage{padding-bottom:0}
 /* 状态值不加粗；标签加粗 */
 .env .env-v,.env .env-v b{font-weight:400 !important;-webkit-text-stroke:0;text-shadow:none}
 .env .env-k{font-weight:700 !important}
+
+/* 标签不加粗；状态区再缩小/上移，按钮同步上移 */
+.env .env-k,.env .env-v,.env .env-v b{font-size:10px !important}
+.env .env-k{font-weight:400 !important}
+.env{line-height:18px !important;transform:translateY(-20px)}
+.drawer-nav{margin-top:-15px;margin-bottom:auto;transform:none}
