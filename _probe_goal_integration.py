@@ -138,6 +138,10 @@ st, t = req("POST", "/api/tasks", {"question": "元DGTF app 集成探针：四�
 ck("mock task create", st == 201 and t.get("id") and t.get("auto_pareto") and "帕累托" in str(t.get("profile")), (st, t))
 st, tt = req("POST", "/api/tasks", {"question": "模板探针", "opts": {"mock": True, "auto_template": True}})
 ck("auto_template task", st == 201 and tt.get("id") and tt.get("auto_template"), (st, tt))
+st, ttd = req("GET", "/api/tasks/" + str(tt.get("id")), timeout=30)
+_ttopt = (ttd.get("opts") or {}) if isinstance(ttd, dict) else {}
+ck("auto_template opts applied", st == 200 and bool(_ttopt.get("route"))
+   and bool(_ttopt.get("rounds")), (st, ttd))
 tid = t.get("id", "")
 task = None
 if tid:

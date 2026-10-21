@@ -88,7 +88,7 @@ engine 元DGTF-V1.30.0.py
 | `POST /api/schedule/v2/rebuild` | 用 packed 重算历史 schedule_outcome 的按层 quality；写前备份 |
 | `POST /api/schedule/v2/replay` | 用修复后的按层质量公式回放现存 packed，追加到 V2 记忆（先备份）；limit=120 可全量 |
 | `dgtf_v2/replay.py::_entry_quality` | V2 回放按层质量代理：不再把整跑 quality 复制给所有模板 |
-| `opts.auto_template` | 任务自动套用 policy 中的 V2 模板 route/rounds |
+| `opts.auto_template` | 任务自动套用 policy 中的 V2 模板 route/rounds；探针验证任务 opts 实际带 route/rounds |
 | `GET/POST /api/schedule/policy` | 读取/应用真实历史帕累托推荐；profiles/auto_pareto 使用持久化策略 |
 | `dgtf_memory/schedule_policy.json` | 保存推荐 profile、coverage、tokens、prefer、applied_at |
 | `POST /api/tasks {opts.auto_pareto:true}` | 自动选用方案F-帕累托最优 profile，并在响应返回 profile |
