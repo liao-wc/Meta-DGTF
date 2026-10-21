@@ -1678,3 +1678,7 @@ body.stage-empty main.stage{padding-bottom:0}
 .env .env-k,.env .env-v,.env .env-v b{font-size:9px !important;line-height:14px !important;font-weight:400 !important}
 .env{font-size:9px !important;line-height:14px !important}
 .env .env-k{font-weight:400 !important;text-shadow:none}
+
+/* 状态与按钮整体下移一点点 */
+.env{transform:translateY(-15px)}
+.drawer-nav{margin-top:-10px;margin-bottom:auto;transform:none}
