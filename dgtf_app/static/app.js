@@ -216,10 +216,14 @@ function renderAdvItem(it) {
 
 /* 高级参数页：**只列分组按钮**（点一个 → 进下一层新页看该组参数） */
 const ADV_GROUP_CN = {
-  all_on: '一键全开', autotune: '自动调参', belief: '把握阈值',
-  claim_gap: '缺口检查', duty: '职责开关', external_input: '外部输入',
-  max_tokens: 'Token 预算', playbook: '经验剧本', scheduler: '调度器',
-  sim: '仿真模式', stop: '停止条件',
+  api: '模型与 API', runtime: '运行档位', web_search: '联网检索',
+  external_anchor: '外部锚点', auto: '自适应调度', output: '输出',
+  memory: '记忆通道', spiral: '螺旋与停止', probe: '探针',
+  actions: '动作开关', all_on: '一键全开', autotune: '自动调参',
+  belief: '把握阈值', claim_gap: '缺口检查', duty: '职责开关',
+  external_input: '外部输入', max_tokens: 'Token 预算',
+  playbook: '经验剧本', scheduler: '调度器', sim: '仿真模式',
+  stop: '停止条件',
 };
 
 const ADV_CATEGORIES = [
@@ -273,8 +277,10 @@ async function buildAdv() {
     rawLabel: g.label,
     label: ADV_GROUP_CN[g.key] || g.label,
   }));
-  advGroups = mergeAdvGroups([{ key: '_cli', rawLabel: 'CLM 参数（随机任务传）',
-                              label: '任务指令参数', items: cli }, ...groups]);
+  // 恢复元DGTF 原有的细分按钮：一个配置组一个按钮，不合并；
+  // 按钮标签做中文重命名，分组里的参数名/结构保持原样。
+  advGroups = [{ key: '_cli', rawLabel: 'CLM 参数（随机任务传）',
+                label: '任务指令参数', items: cli }, ...groups];
   renderAdvGroups();
 }
 
