@@ -19,6 +19,7 @@ let taskDsh = {};
 let agentTaskMode = false;
 let logFollow = true;   // 日志/对话是否跟随最新内容
 let dgtfSessionId = 'dgtf-' + Date.now().toString(36);
+const DSH_PERM_KEY = 'dgtf_dsh_perm';
 
 let _csrfCache = '';
 function _csrfFromCookie() {
@@ -1712,6 +1713,7 @@ function startDshConvPoll() {
 }
 function dshPermission() {
   const v = (document.querySelector('#dsh-perm') || {}).value || 'workspace-write';
+  try { localStorage.setItem(DSH_PERM_KEY, v); } catch (_) {}
   if (v === 'danger-full-access') {
     if (!confirm('完全访问会让 DSH 越过工作区写入限制，可读取/修改本机更多文件。确认本次使用完全访问？'))
       return '';
@@ -4583,6 +4585,14 @@ function centerHomeHero() {
 
 function init() {
   try { taskDsh = JSON.parse(localStorage.getItem('dgtf_task_dsh') || '{}') || {}; } catch (_) { taskDsh = {}; }
+  try {
+    const _pv = localStorage.getItem(DSH_PERM_KEY);
+    const _pe = document.querySelector('#dsh-perm');
+    if (_pv && _pe) _pe.value = _pv;
+    if (_pe) _pe.addEventListener('change', function () {
+      try { localStorage.setItem(DSH_PERM_KEY, _pe.value); } catch (_) {}
+    });
+  } catch (_) {}
   const _logBody = document.querySelector('#runlog-body');
   if (_logBody) {
     let _logScrollTimer = null;
