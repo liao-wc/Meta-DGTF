@@ -313,15 +313,15 @@ def check_r42_server(srv_src: str) -> None:
           "def lan_ipv4()" in srv_src and "局域网已打开" in srv_src
           and "socket.AF_INET" in srv_src, "")
     check("★R42 口令闸在 `do_GET` / `do_POST` **各一处**（两处都不漏）",
-          srv_src.count("if not self._guard():") == 2
-          and "def _guard(self)" in srv_src, "")
+          srv_src.count("self._guard(") >= 2
+          and "def _guard(self, mutate" in srv_src, "")
     check("★R42 口令**默认为空即全放行** ⇒ 不改默认行为（只在 `--token` 时生效）",
           '_TOKEN = ""' in srv_src
           and 'if not _TOKEN:\n            return True' in srv_src, "")
     check("★R42 首次带 `?t=` 进来就**种 cookie**（手机上存书签即可，不用做登录页）",
-          "dgtf_token=" in srv_src and "SameSite=Lax" in srv_src
-          and srv_src.count("self._auth_note()") >= 4 - 1   # 1 定义 + 3 个响应助手
-          , "auth_note 出现 " + str(srv_src.count("self._auth_note()")) + " 次")
+          "dgtf_token=" in srv_src and "SameSite=Strict" in srv_src
+          and "HttpOnly" in srv_src and "_send_cookies" in srv_src
+          , "send_cookies 出现 " + str(srv_src.count("_send_cookies")) + " 次")
     check("★R42 口令太短**拒绝启动**（不留一个没保护的监听）",
           "口令太短" in srv_src and "return 2" in srv_src, "")
     check("★R42 抽 `make_server()`：验收能在**同一个进程**里起服务（sandbox 会清子进程）",

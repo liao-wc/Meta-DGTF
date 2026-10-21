@@ -58,7 +58,8 @@
 - DSH Agent 面板新增「常驻守护」开关：开启启动队列守护 + Autopilot；默认关闭；
 - Autopilot 按分类/优先级/计划质量自动分流安全提案，高风险留人工；自动修复走 DSH→fast_gate→验收→提交，知识检索作为学习材料；
 - 自动修复前自动确认安全 pending；关闭常驻时点「自动修复提案」同样先分流；人工确认的高风险项可再次提交自动修复；
-- 每次修复/提案记录 DSH 会话 conversation_id，可追溯；修复串行、DSH 会话并发。
+- 每次修复/提案记录 DSH 会话 conversation_id，可追溯；修复串行、DSH 会话并发；
+- 安全加固（v=1.4.62）：Host 白名单、Origin/Referer 校验、CSRF、安全响应头；DSH 敏感路径运行时拦截 + 密钥输出脱敏；自动修复安全审查不通过不提交；app 启动自动拉起本地 BGE embedding 服务。
 - 所有 DSH Agent 调用统一走 _run_dsh_agent 会话留痕：事件实时写入 dsh_conversations（dshrun-*），DSH 会话页可回看过程与结果；
 - 提案/自审模式允许读取项目文件核对现状（仍不改源码）；DSH 默认 workspace-write/PTC 与面板配置一致。
 - 修复提案自动分诊：分类(quality_signal/probe_quality/fact_correctness/agent_runtime/process_gap/eml_experiment/verification/docs/noise) + 优先级 P0-P3；

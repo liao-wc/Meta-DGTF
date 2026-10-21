@@ -72,6 +72,10 @@ _FACETS = ("decidability", "orientation", "parallel", "stop", "kind", "layer")
 # 口令默认**关闭** —— 一开 `--lan`，同一网段里任何人都能跑任务（花 API 额度）、
 # 删本地资料库导入的文件、翻全部产物。要收紧就 `--token <口令>`。
 _TOKEN = ""
+# Host 白名单 / CSRF：默认只接受本机回环 Host；--lan 时加入本机地址。
+_ALLOWED_HOSTS = {"127.0.0.1", "localhost", "::1"}
+_CSRF_TOKEN = secrets.token_urlsafe(32)
+_CSRF_COOKIE = "dgtf_csrf"
 
 # ★ R44：导入是二进制上传（base64 后还要膨胀 1/3）⇒ 单独给一个大上限，超了 413。
 MAX_UPLOAD_BYTES = 200 * 1024 * 1024
@@ -136,8 +140,25 @@ def make_server(host: str, port: int, token: str = "", verbose: bool = False):
     ★ 为什么抽出来：本机 sandbox 在命令结束时会把子进程全清掉 —— 验收只能在
       **同一个进程**里起服务（`_audit_tmp/_r42_lan.py` 就是这么用的）。
     """
-    global _TOKEN
+    global _TOKEN, _ALLOWED_HOSTS
     _TOKEN = token
+    _ALLOWED_HOSTS = {"127.0.0.1", "localhost", "::1"}
+    if str(host) not in ("127.0.0.1", "localhost", "::1"):
+        # 显式 --lan：只允许本机网卡地址，不做通配。
+        try:
+            _ALLOWED_HOSTS.add(str(host))
+            for _ip in (lan_ips() or []):
+                try:
+                    _ALLOWED_HOSTS.add(str(_ip[0] if isinstance(_ip, tuple) else _ip))
+                except Exception:
+                    pass
+            for _ai in socket.getaddrinfo(socket.gethostname(), None):
+                try:
+                    _ALLOWED_HOSTS.add(str(_ai[4][0]))
+                except Exception:
+                    pass
+        except Exception:
+            pass
     srv = ThreadingHTTPServer((host, port), Handler)
     srv.verbose = verbose
     srv.daemon_threads = True
@@ -433,6 +454,9 @@ def _autopilot_decision(prop):
     if len(plan) < 80 or not any(k in plan for k in
                                 ("文件", "验证", "测试", "fast_gate", "验收", "test")):
         return False, "manual_plan_too_weak"
+    sec = _security_review_proposal(prop)
+    if not sec.get("ok"):
+        return False, "security_review:" + str(sec.get("reason") or "risk")
     return True, "safe_auto"
 
 
@@ -1374,6 +1398,25 @@ def _run_dsh_agent_raw(task: str, sid: str = "", timeout: int = 300,
         cmd += ["--session-id", sid]
     cmd += ["-"]
     events, texts, final = [], [], ""
+    proc = None
+    _guard_blocked = []
+    _secret_vals = [x for x in (key, env.get("TAVILY_API_KEY", ""),
+                                env.get("DGTF_API_KEY", "")) if x]
+    _sensitive_paths = (".env", ".credentials", "dsh_conversations",
+                        "agent_autopilot.json", "id_rsa", "authorized_keys")
+
+    def _redact_obj(obj):
+        if isinstance(obj, str):
+            out = obj
+            for sv in _secret_vals:
+                if sv and sv in out:
+                    out = out.replace(sv, "[REDACTED]")
+            return out
+        if isinstance(obj, list):
+            return [_redact_obj(x) for x in obj]
+        if isinstance(obj, dict):
+            return {k: _redact_obj(v) for k, v in obj.items()}
+        return obj
 
     def _feed(line):
         nonlocal sid, final
@@ -1384,6 +1427,19 @@ def _run_dsh_agent_raw(task: str, sid: str = "", timeout: int = 300,
             ev = json.loads(line)
         except Exception:
             return
+        if ev.get("type") == "tool_call":
+            blob = json.dumps(ev.get("input") or {}, ensure_ascii=False).lower()
+            hit = next((p for p in _sensitive_paths if p in blob), "")
+            if hit:
+                _guard_blocked.append(hit)
+                try:
+                    if proc is not None:
+                        proc.kill()
+                except Exception:
+                    pass
+                ev = {"type": "text",
+                      "text": "[安全拦截] DSH Agent 尝试访问受保护路径，已终止本轮。"}
+        ev = _redact_obj(ev)
         if ev.get("type") == "thinking" and ev.get("text"):
             ev["text"] = _thinking_zh(str(ev.get("text") or ""), key)
         events.append(ev)
@@ -1486,6 +1542,10 @@ def _run_dsh_agent_raw(task: str, sid: str = "", timeout: int = 300,
                           "permission_warning": _perm_warn},
                    "attach_task_id": str(attach_task_id or ""),
                    "stderr": (err_text or "")[-2000:]}
+            if _guard_blocked:
+                out["ok"] = False
+                out["error"] = "DSH security guard: " + ",".join(_guard_blocked[:3])
+                out["security_blocked"] = list(_guard_blocked[:3])
             _save_dsh_run(task, sid, out, auto_repair)
             return out
         rc = proc.returncode
@@ -1508,6 +1568,10 @@ def _run_dsh_agent_raw(task: str, sid: str = "", timeout: int = 300,
                          "permission_warning": _perm_warn},
            "attach_task_id": str(attach_task_id or ""),
            "stderr": stderr}
+    if _guard_blocked:
+        out["ok"] = False
+        out["error"] = "DSH security guard: " + ",".join(_guard_blocked[:3])
+        out["security_blocked"] = list(_guard_blocked[:3])
     _save_dsh_run(task, sid, out, auto_repair)
     if auto_repair and out["ok"]:
         import subprocess as _sp
@@ -1711,6 +1775,65 @@ def _targeted_acceptance(changed):
     return {"ok": ok, "checks": out}
 
 
+_SECURITY_RISK_TERMS = (
+    ".env", "credential", "password", "secret", "api_key", "danger-full-access",
+    "eval(", "exec(", "pickle.loads", "subprocess", "shell=true", "rm -rf",
+    "git push", "authorized_keys", "private key",
+)
+_SECURITY_CODE_EXTS = (".py", ".js", ".ts", ".json", ".yaml", ".yml",
+                       ".ps1", ".cmd", ".bat", ".sh")
+
+
+def _security_review_proposal(prop):
+    """自动修复前的静态安全门槛：高风险/敏感词一律转人工。"""
+    txt = (str(prop.get("plan") or "") + " " +
+           str((prop.get("task") or {}).get("title") or "") + " " +
+           str((prop.get("task") or {}).get("detail") or "")).lower()
+    for term in _SECURITY_RISK_TERMS:
+        if term in txt:
+            return {"ok": False, "reason": "sensitive_term:" + term}
+    return {"ok": True, "reason": "no_sensitive_term"}
+
+
+def _security_scan_changed(changed):
+    """提交前扫描新增代码/配置中的密钥与危险执行面；命中即不提交。"""
+    import re as _re
+    findings = []
+    patterns = [
+        (r"-----BEGIN [A-Z ]*PRIVATE KEY-----", "private_key"),
+        (r"(?i)(api[_-]?key|secret|password|token)\s*[:=]\s*['\"][^'\"]{8,}", "hardcoded_secret"),
+        (r"\beval\s*\(", "eval"),
+        (r"\bexec\s*\(", "exec"),
+        (r"pickle\.loads", "pickle_loads"),
+        (r"(?i)shell\s*=\s*True", "shell_true"),
+        (r"danger-full-access", "danger_full_access"),
+    ]
+    for p in changed or []:
+        path = str(p)
+        if not path.lower().endswith(_SECURITY_CODE_EXTS):
+            continue
+        try:
+            path_obj = Path(__file__).resolve().parent.parent / path
+            if not path_obj.is_file():
+                continue
+            # 只看新增行，避免已有代码里的敏感词误伤。
+            added = []
+            for args in (["diff", "--unified=0", "--", path],
+                         ["diff", "--cached", "--unified=0", "--", path]):
+                d = _git(args).get("out") or ""
+                added += [ln[1:] for ln in d.splitlines()
+                          if ln.startswith("+") and not ln.startswith("+++")]
+            lines = added or path_obj.read_text(encoding="utf-8", errors="replace").splitlines()
+        except Exception:
+            continue
+        for ln in lines:
+            for pat, name in patterns:
+                if _re.search(pat, ln):
+                    findings.append({"file": path, "rule": name})
+                    break
+    return {"ok": not findings, "findings": findings[:20]}
+
+
 def _changed_since(before, before_fp=None):
     """当前相对修复前快照的变更文件（含修复前已脏但内容再变的）。"""
     after = _git_snapshot()
@@ -1756,7 +1879,7 @@ def _repair_with_acceptance(prop, model="", emit=None, max_attempts=3,
               "。先读取相关项目文件核对；修改后运行 fast_gate.py；"
               "不要执行 git add / git commit / push；验收由工作台统一执行。"
               + str(extra_context or ""))
-    last_gate, last_acc, last_repair = {}, {}, {}
+    last_gate, last_acc, last_repair, last_sec = {}, {}, {}, {}
     for n in range(1, max(1, int(max_attempts)) + 1):
         if emit is not None:
             try:
@@ -1777,13 +1900,25 @@ def _repair_with_acceptance(prop, model="", emit=None, max_attempts=3,
         last_acc = _targeted_acceptance(changed) if changed else {
             "ok": False, "checks": [{"name": "changed", "ok": False,
                                      "tail": "本轮没有文件变更"}]}
+        last_sec = _security_scan_changed(changed)
         attempts.append({"attempt": n, "changed": changed,
                          "gate": last_gate, "acceptance": last_acc,
+                         "security": last_sec,
                          "conversation_id": res.get("conversation_id")})
+        if not last_sec.get("ok"):
+            # 安全审查不通过：绝不提交，交人工。
+            return {"ok": False, "gate": last_gate, "acceptance": last_acc,
+                    "security": last_sec,
+                    "repair": {"committed": False,
+                               "why": "安全审查未通过，未提交"},
+                    "attempts": attempts, "conversation_ids": convs,
+                    "conversation_id": convs[-1] if convs else "",
+                    "session_id": sid, "events": list(res.get("events") or [])}
         if last_gate.get("ok") and last_acc.get("ok"):
             last_repair = _auto_commit(before, task, before_head, before_fp)
             return {"ok": bool(last_repair.get("committed")),
                     "gate": last_gate, "acceptance": last_acc,
+                    "security": last_sec,
                     "repair": last_repair, "attempts": attempts,
                     "conversation_ids": convs,
                     "conversation_id": convs[-1] if convs else "",
@@ -1803,6 +1938,7 @@ def _repair_with_acceptance(prop, model="", emit=None, max_attempts=3,
     if before_head and _now_head and _now_head != before_head:
         _git(["reset", "--mixed", before_head])
     return {"ok": False, "gate": last_gate, "acceptance": last_acc,
+            "security": last_sec,
             "repair": {"committed": False, "why": "验收未通过，已停止且未提交"},
             "attempts": attempts, "conversation_ids": convs,
             "conversation_id": convs[-1] if convs else "",
@@ -2614,8 +2750,10 @@ def _autofix_workflow(data, write):
         prop["conversation_ids"] = list(res.get("conversation_ids") or [])
         prop["attempts"] = list(res.get("attempts") or [])
         prop["acceptance"] = acc
+        prop["security"] = res.get("security") or {}
         prop["result"] = {"ok": res.get("ok"), "gate": res.get("gate"),
-                          "acceptance": acc, "repair": repair,
+                          "acceptance": acc, "security": prop["security"],
+                          "repair": repair,
                           "conversation_id": prop["conversation_id"],
                           "conversations": prop["conversation_ids"],
                           "autopilot": bool((data or {}).get("autopilot"))}
@@ -3830,7 +3968,7 @@ def _ensure_rag_embed():
     """确保本地 BGE 常驻服务在跑；失败不影响 app（RAG 自动回退 BM25）。"""
     global _RAG_EMBED_PROC
     import time as _t_wait
-    for _ in range(12):
+    for _ in range(30):
         if _rag_embed_health():
             return {"ok": True, "started": False}
         _t_wait.sleep(1)
@@ -3850,6 +3988,23 @@ def _ensure_rag_embed():
         return {"ok": True, "started": True, "pid": _RAG_EMBED_PROC.pid}
     except Exception as exc:
         return {"ok": False, "error": str(exc)}
+
+
+def _stop_rag_embed():
+    global _RAG_EMBED_PROC
+    p = _RAG_EMBED_PROC
+    if p is None:
+        return
+    try:
+        if p.poll() is None:
+            p.terminate()
+            try:
+                p.wait(timeout=4)
+            except Exception:
+                p.kill()
+    except Exception:
+        pass
+    _RAG_EMBED_PROC = None
 
 
 def _semantic_items(q, limit=4):
@@ -4906,9 +5061,8 @@ class Handler(BaseHTTPRequestHandler):
     def _download(self, data: bytes, ctype: str, filename: str, code: int = 200):
         """导出用的二进制响应（带 Content-Disposition）。"""
         self.send_response(code)
-        _ck = self._auth_note()
-        if _ck:
-            self.send_header("Set-Cookie", _ck)
+        self._send_cookies()
+        self._security_headers()
         self.send_header("Content-Type", ctype)
         self.send_header("Content-Length", str(len(data)))
         ascii_name = filename.encode("ascii", "ignore").decode() or "export"
@@ -4921,6 +5075,8 @@ class Handler(BaseHTTPRequestHandler):
 
     def _stream_open(self):
         self.send_response(200)
+        self._send_cookies()
+        self._security_headers()
         self.send_header("Content-Type", "application/x-ndjson; charset=utf-8")
         self.send_header("Cache-Control", "no-store")
         self.send_header("Connection", "close")
@@ -4934,9 +5090,8 @@ class Handler(BaseHTTPRequestHandler):
     def _json(self, obj, code: int = 200):
         data = json.dumps(obj, ensure_ascii=False).encode("utf-8")
         self.send_response(code)
-        _ck = self._auth_note()
-        if _ck:
-            self.send_header("Set-Cookie", _ck)
+        self._send_cookies()
+        self._security_headers()
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(data)))
         self.send_header("Cache-Control", "no-store")
@@ -4958,6 +5113,66 @@ class Handler(BaseHTTPRequestHandler):
                     % _TOKEN)
         return None
 
+    def _cookies(self):
+        """需要下发的 Set-Cookie：口令（可选）+ CSRF（始终）。"""
+        import secrets as _sec
+        out = []
+        q = parse_qs(urlparse(self.path).query)
+        if _TOKEN and q.get("t", [""])[0] == _TOKEN:
+            out.append("dgtf_token=%s; Path=/; HttpOnly; SameSite=Strict; Max-Age=2592000"
+                       % _TOKEN)
+        have = (self.headers.get("Cookie") or "")
+        if (_CSRF_COOKIE + "=") not in have:
+            out.append("%s=%s; Path=/; SameSite=Strict; Max-Age=2592000"
+                       % (_CSRF_COOKIE, _CSRF_TOKEN))
+        return out
+
+    def _send_cookies(self):
+        for c in self._cookies():
+            self.send_header("Set-Cookie", c)
+
+    def _security_headers(self):
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("X-Frame-Options", "DENY")
+        self.send_header("Referrer-Policy", "no-referrer")
+        self.send_header("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+        self.send_header("Cross-Origin-Resource-Policy", "same-origin")
+        self.send_header("Content-Security-Policy",
+                         "default-src 'self'; script-src 'self'; "
+                         "style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; "
+                         "connect-src 'self'; font-src 'self' data:; "
+                         "frame-ancestors 'none'; base-uri 'self'; form-action 'self'")
+
+    def _host_ok(self):
+        raw = (self.headers.get("Host") or "").strip().lower()
+        if not raw:
+            return False
+        if raw.startswith("["):
+            h = raw[1:raw.find("]")] if "]" in raw else raw
+        else:
+            h = raw.rsplit(":", 1)[0] if raw.count(":") == 1 else raw
+        return h in _ALLOWED_HOSTS
+
+    def _origin_ok(self):
+        """有 Origin/Referer 时必须来自白名单 Host；没有则交给 CSRF/本地调用。"""
+        import urllib.parse as _up
+        for hdr in ("Origin", "Referer"):
+            val = (self.headers.get(hdr) or "").strip()
+            if not val:
+                continue
+            try:
+                u = _up.urlparse(val)
+                h = (u.hostname or "").lower()
+                if h not in _ALLOWED_HOSTS:
+                    return False
+            except Exception:
+                return False
+        return True
+
+    def _csrf_ok(self):
+        hdr = (self.headers.get("X-CSRF-Token") or "").strip()
+        return bool(hdr) and hdr == _CSRF_TOKEN
+
     def _granted(self) -> bool:
         if not _TOKEN:
             return True
@@ -4966,12 +5181,23 @@ class Handler(BaseHTTPRequestHandler):
             return True
         return ("dgtf_token=" + _TOKEN) in (self.headers.get("Cookie") or "")
 
-    def _guard(self) -> bool:
-        """口令闸：不通过就 401（**不泄露**任何业务信息）。"""
-        if self._granted():
-            return True
-        self._json({"error": "未授权：本服务启用了访问口令，请用启动时打印的带 ?t= 的网址打开"}, 401)
-        return False
+    def _guard(self, mutate: bool = False) -> bool:
+        """Host 白名单 + 口令 + Origin/Referer + CSRF。"""
+        if not self._host_ok():
+            self._json({"error": "Host 不在白名单"}, 421)
+            return False
+        if not self._granted():
+            self._json({"error": "未授权：本服务启用了访问口令，请用启动时打印的带 ?t= 的网址打开"}, 401)
+            return False
+        if mutate:
+            if not self._origin_ok():
+                self._json({"error": "Origin/Referer 不在白名单"}, 403)
+                return False
+            has_browser_origin = bool(self.headers.get("Origin") or self.headers.get("Referer"))
+            if has_browser_origin and not self._csrf_ok():
+                self._json({"error": "CSRF token 缺失或无效"}, 403)
+                return False
+        return True
 
     def _read_json(self) -> dict:
         n = int(self.headers.get("Content-Length") or 0)
@@ -4995,9 +5221,8 @@ class Handler(BaseHTTPRequestHandler):
             ctype += "; charset=utf-8"
         data = target.read_bytes()
         self.send_response(200)
-        _ck = self._auth_note()
-        if _ck:
-            self.send_header("Set-Cookie", _ck)
+        self._send_cookies()
+        self._security_headers()
         self.send_header("Content-Type", ctype)
         self.send_header("Content-Length", str(len(data)))
         # ★ 静态资源**必须**禁缓存：这些文件是「每次请求现读磁盘」的开发产物，
@@ -5017,6 +5242,8 @@ class Handler(BaseHTTPRequestHandler):
 
         if p in ("/", "/index.html"):
             return self._serve_static("index.html")
+        if p == "/api/csrf":
+            return self._json({"csrf": _CSRF_TOKEN})
         if p.startswith("/static/"):
             return self._serve_static(p[len("/static/"):])
 
@@ -5481,7 +5708,7 @@ class Handler(BaseHTTPRequestHandler):
 
     # ── POST ──────────────────────────────────────────────────────
     def do_POST(self):
-        if not self._guard():          # ★ R42：口令开启时先过闸（默认关闭 ⇒ 恒真）
+        if not self._guard(mutate=True):   # Host + 口令 + Origin/Referer + CSRF
             return
         u = urlparse(self.path)
         p = u.path
@@ -6373,6 +6600,10 @@ def main() -> int:
                 stop_agent_daemon()
             except Exception as e:  # noqa: BLE001
                 print(f"  Agent 守护停止失败（忽略）：{type(e).__name__}: {e}")
+        try:
+            _stop_rag_embed()
+        except Exception:
+            pass
         srv.server_close()
     return 0
 

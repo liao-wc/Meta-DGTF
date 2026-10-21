@@ -20,9 +20,27 @@ let agentTaskMode = false;
 let logFollow = true;   // 日志/对话是否跟随最新内容
 let dgtfSessionId = 'dgtf-' + Date.now().toString(36);
 
+let _csrfCache = '';
+function _csrfFromCookie() {
+  try {
+    const m = document.cookie.match(/(?:^|;\s*)dgtf_csrf=([^;]+)/);
+    return m ? decodeURIComponent(m[1]) : '';
+  } catch (_) { return ''; }
+}
+async function ensureCsrf() {
+  let t = _csrfFromCookie() || _csrfCache;
+  if (t) return t;
+  const r = await fetch('/api/csrf');
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  const j = await r.json();
+  _csrfCache = String(j.csrf || '');
+  return _csrfCache;
+}
+
 async function streamPost(path, payload, onMsg) {
+  const csrf = await ensureCsrf();
   const r = await fetch(path, { method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
     body: JSON.stringify(payload) });
   if (!r.ok) throw new Error('HTTP ' + r.status);
   if (!r.body) throw new Error('浏览器不支持流式读取');
@@ -46,6 +64,14 @@ async function streamPost(path, payload, onMsg) {
 }
 
 async function api(path, opts) {
+  opts = opts || {};
+  const method = String(opts.method || 'GET').toUpperCase();
+  if (method !== 'GET' && method !== 'HEAD') {
+    const csrf = await ensureCsrf();
+    const headers = Object.assign({}, opts.headers || {});
+    headers['X-CSRF-Token'] = csrf;
+    opts = Object.assign({}, opts, { headers: headers });
+  }
   let r = await fetch(path, opts);
   // 偶发 501/502/503（服务重启/路由未就绪）自动重试一次，避免面板出现原始 501
   if (r.status === 501 || r.status === 502 || r.status === 503) {
