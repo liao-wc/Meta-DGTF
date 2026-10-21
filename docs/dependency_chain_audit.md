@@ -1,8 +1,8 @@
 # 元DGTF app 依赖链自洽审计
 
-生成：2026-10-22 04:12:35
+生成：2026-10-22 07:44:13
 
-PASS 41 / FAIL 0
+PASS 42 / FAIL 0
 
 ## FAIL
 - 无
@@ -27,7 +27,8 @@ PASS 41 / FAIL 0
 - dsh chats list
 - dsh sessions list
 - dsh conversation cancel scoped
-- dsh danger denied
+- dsh danger requires explicit confirmation
+- dsh high-risk still manual
 - dsh write prompt
 - dsh privacy prompt
 - security policy dsh
