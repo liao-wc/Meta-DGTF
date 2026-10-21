@@ -130,6 +130,7 @@ def refresh_knowledge(queries, client, run_id: str = "",
     p.parent.mkdir(parents=True, exist_ok=True)
     items = []
     for q in (queries or [])[:4]:
+        t_search = time.time()
         try:
             res, _ = client.search(str(q)[:200], max_n=3)
         except Exception:
@@ -137,17 +138,24 @@ def refresh_knowledge(queries, client, run_id: str = "",
         for it in (res or [])[:2]:
             url = str(it.get("url") or "")
             page = {}
+            t_fetch = None
             if url:
                 try:
                     page = client.fetch(url) or {}
+                    t_fetch = time.time()
                 except Exception:
                     page = {}
+            content = str(page.get("content") or "")
             items.append({
                 "run": run_id, "query": str(q)[:200],
                 "title": str(it.get("title") or page.get("title") or ""),
                 "url": url, "claim": str(it.get("claim") or "")[:400],
-                "content": str(page.get("content") or "")[:4000],
-                "fetched": bool(page.get("content")),
+                "content": content[:4000],
+                "fetched": bool(content),
+                # 检索时间 = Search 调用时间；爬取时间 = Fetch 完成时间。
+                # 没抓到正文时 fetched_at 留空，前端标「未爬取正文」。
+                "retrieved_at": t_search,
+                "fetched_at": t_fetch if content else None,
             })
     if items:
         with p.open("a", encoding="utf-8") as f:
@@ -415,6 +423,7 @@ def refresh_knowledge_http(queries, path: str = DEFAULT_KNOWLEDGE,
     limit = max(1, min(6, int(limit or 3)))
     candidates, cand_seen, skipped = [], set(), 0
     for q in (queries or [])[:4]:
+        t_search = time.time()
         body = json.dumps({"query": str(q)[:128], "count": 6,
                            "need_content": False}).encode("utf-8")
         req = _ur.Request("https://api.deepseek.com/v1/tools/search",
@@ -446,7 +455,7 @@ def refresh_knowledge_http(queries, path: str = DEFAULT_KNOWLEDGE,
                     "claim": claim, "summary": claim,
                     "published": str(it.get("date") or it.get("published") or ""),
                     "authority": it.get("authority") or 0,
-                    "pdf_url": pv}
+                    "pdf_url": pv, "retrieved_at": t_search}
             item["score"] = _candidate_score(it, pv)
             item["source_type"] = _source_type(url, pv)
             candidates.append(item)
@@ -495,7 +504,11 @@ def refresh_knowledge_http(queries, path: str = DEFAULT_KNOWLEDGE,
                 "published": cand.get("published") or "",
                 "authority": cand.get("authority") or 0,
                 "score": cand.get("score") or 0,
-                "source_type": stype, "confidence": confidence}
+                "source_type": stype, "confidence": confidence,
+                # 检索时间沿用该候选的 Search 调用时间；
+                # 爬取时间 = Fetch/PDF 都完成后的时间，没抓到内容则留空。
+                "retrieved_at": cand.get("retrieved_at") or time.time(),
+                "fetched_at": time.time() if (content or pdf) else None}
         item.update(pdf)
         out.append(item)
     if out:

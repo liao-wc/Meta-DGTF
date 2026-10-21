@@ -47,6 +47,28 @@
 - 集成探针 70/0（含 LLM status/predict/apply）；
 - 实测 auto_llm mock 任务 opts = route:0,1 / rounds:0:3,1:3，任务 done。
 
+
+## 1.5B 升级评估（实验，不接管默认）
+
+- Qwen2.5-1.5B-Instruct fp16：加载 3.09GB，LoRA+前向峰值 3.17GB，6GB 可训；
+- 4 epochs：val 0.1599 → 0.1064 → 0.1205 → 0.1202（最佳 epoch2）；
+- 留出 base vs LoRA：
+  - route 完全匹配：base 0.0 / LoRA 0.357；
+  - rounds MAE：base 2.232 / LoRA 1.923；
+- 结论：1.5B 在 route 与 rounds 上均不如 0.5B（0.429 / 1.446），默认不切换；
+- adapter 保留：llm_sft/adapter_qwen15b_v1；对比：llm_sft/eval_base_vs_lora_15b.json。
+
+## adapter merge
+
+- merge_lora.py 将 0.5B adapter 合并进基座，导出 D:/dgtf_models/Qwen2.5-0.5B-Instruct-merged-v1（约 988MB）；
+- 实测 merged 模型输出合法 JSON route/rounds；
+- 默认 app 仍加载 adapter（便于切换/回滚），merge 产物用于自包含部署。
+
+## 上下文与命名
+
+- 项目上下文通过 opts._prompt_prefix 只进引擎 argv；任务标题/run.json 保留原问题；
+- 引擎现有产物仍按 argv 问题命名，因此真实跑的 md 文件名可能包含背景前缀；这是待修边界。
+
 ## 边界
 
 - 0.5B + 122 条只能学格式与浅层调度，不是强领域模型；

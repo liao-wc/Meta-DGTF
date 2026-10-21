@@ -97,7 +97,15 @@ except Exception:
     pass
 st, pctx = req("GET", "/api/project/context?q=" + urllib.parse.quote("元DGTF四层是什么"), timeout=30)
 ck("project context RAG", st == 200 and pctx.get("ok")
-   and all(k in str(pctx.get("text") or "") for k in ("修行", "研究", "对撞", "元")), (st, pctx))
+   and all(k in str(pctx.get("text") or "") for k in ("修行", "研究", "对撞", "元"))
+   and bool(pctx.get("citations")) and len(pctx.get("layer_contexts") or {}) == 4,
+   (st, pctx))
+st, phist = req("GET", "/api/project/context/history", timeout=30)
+ck("context trace", st == 200 and phist.get("ok")
+   and isinstance(phist.get("history"), list), (st, phist))
+st, polsec = req("GET", "/api/security/context-policy", timeout=30)
+ck("context privacy policy", st == 200 and polsec.get("ok")
+   and "external_allowed" in polsec, (st, polsec))
 st, llmst = req("GET", "/api/schedule/llm/status", timeout=30)
 ck("LLM LoRA status", st == 200 and llmst.get("ok")
    and (llmst.get("eval_summary") or {}).get("lora"), (st, llmst))
@@ -199,7 +207,9 @@ st, pct = req("POST", "/api/tasks", {"question": "元DGTF四层是什么？",
                                      "opts": {"mock": True, "project_context": True}})
 ck("project context task", st == 201 and pct.get("project_context"), (st, pct))
 st, pctd = req("GET", "/api/tasks/" + str(pct.get("id")), timeout=30)
-ck("project context injected", st == 200 and "项目权威背景" in str((pctd or {}).get("question") or ""), (st, pctd))
+ck("project context injected", st == 200
+   and "项目权威背景" in str(((pctd or {}).get("opts") or {}).get("_prompt_prefix") or ""),
+   (st, pctd))
 tid = t.get("id", "")
 task = None
 if tid:

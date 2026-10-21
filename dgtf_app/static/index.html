@@ -250,8 +250,7 @@
       </div>
       <div class="searchbar tight">
         <button id="agent-refresh" class="ghost" data-tip="重新拉取任务 / 消费者结果 / 技术知识">刷新</button>
-        <button id="agent-auto" class="ghost" data-tip="轻量闭环：只跑任务队列/消费者/自审提案；不刷知识、不跑引擎">DSH 提案闭环</button>
-        <button id="agent-full" class="ghost" data-tip="全流程：知识刷新 → 引擎跑次（默认 mock）→ 消费者 → 自审提案">全流程闭环</button>
+        <button id="agent-auto" class="ghost" data-tip="全流程闭环：知识刷新 → 引擎跑次（默认 mock）→ 消费者/任务 → 自审提案；已包含原轻量提案闭环">DSH 全流程闭环</button>
         <button id="prop-autofix" class="ghost" data-tip="DSH 自动代理修复所有已确认待修复提案">自动修复提案</button>
         <button id="dsh-config-btn" class="ghost" data-tip="展开 DSH Agent 档位 / 工作权限配置">DSH Agent 配置</button>
         <button id="agent-online" class="ghost" data-tip="联网搜索并 patch 最新前沿技术知识（默认 3 条）">联网</button>
@@ -539,6 +538,7 @@
       <div id="detail-title"></div>
       <button id="detail-close" class="ghost">关闭 <kbd>Esc</kbd></button>
     </div>
+    <div id="detail-meta" class="muted"></div>
     <div id="detail-body" class="md"></div>
   </div>
 </div>

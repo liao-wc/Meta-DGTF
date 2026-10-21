@@ -157,10 +157,13 @@ def profile_path(name: str):
 
 
 def build_cmd(question: str, opts: dict) -> list[str]:
+    # 项目上下文只进引擎 argv，不污染任务标题/产物文件名。
+    _prefix = str(opts.get("_prompt_prefix") or "")
+    _qarg = (_prefix + question) if _prefix else question
     if _is_mock(opts):
-        cmd = [sys.executable, "-u", str(APP_DIR / "mock_engine.py"), question]
+        cmd = [sys.executable, "-u", str(APP_DIR / "mock_engine.py"), _qarg]
     else:
-        cmd = [sys.executable, "-u", str(find_engine()), question]
+        cmd = [sys.executable, "-u", str(find_engine()), _qarg]
         _cfg = opts.get("_config")          # 参数面板改过 → 用临时配置
         if _cfg:
             cmd += ["--config", str(_cfg)]

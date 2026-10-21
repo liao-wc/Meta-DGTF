@@ -28,7 +28,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "1.2.3"
+APP_VERSION = "1.3.0"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -588,7 +588,11 @@ def _list_proposals(limit=100):
     for p in sorted(_proposal_dir().glob("*.json"),
                     key=lambda x: x.stat().st_mtime, reverse=True)[:limit]:
         try:
-            rows.append(_json.loads(p.read_text(encoding="utf-8")))
+            rec = _json.loads(p.read_text(encoding="utf-8"))
+            # 老提案可能没有 ts；用文件 mtime 兜底，保证「修复提案」列表不出现空时间。
+            if isinstance(rec, dict) and not rec.get("ts"):
+                rec["ts"] = p.stat().st_mtime
+            rows.append(rec)
         except Exception:
             pass
     return rows
@@ -600,7 +604,10 @@ def _get_proposal(pid):
     if not p.exists():
         return {}
     try:
-        return _json.loads(p.read_text(encoding="utf-8"))
+        rec = _json.loads(p.read_text(encoding="utf-8"))
+        if isinstance(rec, dict) and not rec.get("ts"):
+            rec["ts"] = p.stat().st_mtime
+        return rec
     except Exception:
         return {}
 
@@ -636,7 +643,11 @@ def _read_dsh_artifact(sid):
     if not p.exists():
         return {}
     try:
+        rec = _get_dsh_session(sid) or {}
         return {"id": str(sid),
+                # 优先会话记录时间，缺失时回退产物文件 mtime，详情页才有时间可标。
+                "ts": rec.get("ts") or p.stat().st_mtime,
+                "mtime": p.stat().st_mtime,
                 "body": p.read_text(encoding="utf-8", errors="replace")}
     except Exception:
         return {}
@@ -1027,6 +1038,14 @@ def _save_repair_artifact(prop, acceptance, version):
     return str(d)
 
 
+def _fmt_epoch_cn(v):
+    """epoch 秒 → 本地可读时间；空/非法返回空串。"""
+    try:
+        return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(float(v)))
+    except (TypeError, ValueError, OSError):
+        return ""
+
+
 def _arxiv_refresh(queries, limit=3):
     """arXiv API 兜底刷新：无需商 key，抓最新论文摘要入库。"""
     import json as _json
@@ -1041,6 +1060,7 @@ def _arxiv_refresh(queries, limit=3):
     p = Path(DEFAULT_KNOWLEDGE)
     p.parent.mkdir(parents=True, exist_ok=True)
     for q in [str(x) for x in (queries or [])][:3]:
+        t_search = time.time()
         term = _up.quote('all:"' + q[:80].replace('"', " ") + '"')
         url = ("https://export.arxiv.org/api/query?search_query=" + term
                + "&start=0&max_results=3&sortBy=submittedDate&sortOrder=descending")
@@ -1062,7 +1082,10 @@ def _arxiv_refresh(queries, limit=3):
                     "claim": summary[:400], "summary": summary[:1200],
                     "content": summary[:4000], "fetched": True,
                     "published": pub, "source_type": "paper",
-                    "pdf_url": link.replace("/abs/", "/pdf/"), "authority": 2}
+                    "pdf_url": link.replace("/abs/", "/pdf/"), "authority": 2,
+                    # arXiv API 一次请求同时完成检索与摘要抓取；
+                    # 两个时间都落库，前端可分别展示。
+                    "retrieved_at": t_search, "fetched_at": time.time()}
             out.append(item)
             with p.open("a", encoding="utf-8") as fh:
                 fh.write(_json.dumps(item, ensure_ascii=False) + "\n")
@@ -1655,6 +1678,21 @@ def _eml_status():
     }
 
 
+def _v2_event_ts(x, fallback=None):
+    """V2 事件只有运行内相对秒（event_time/ingest_time），
+    用 run_id 的 `YYYYMMDD_HHMMSS` 还原批次绝对时间；失败回退文件 mtime。"""
+    import datetime as _dt
+    rid = str((x or {}).get("run_id") or "")
+    m = re.match(r"^(\d{8})_(\d{6})", rid)
+    if m:
+        try:
+            return _dt.datetime.strptime(
+                m.group(1) + m.group(2), "%Y%m%d%H%M%S").timestamp()
+        except Exception:
+            pass
+    return fallback
+
+
 def _v2_shadow_status(limit=200):
     import json as _json
     from collections import Counter
@@ -1671,7 +1709,16 @@ def _v2_shadow_status(limit=200):
                     pass
         except Exception:
             pass
-    recent = rows[-5:]
+    try:
+        _fallback_ts = p.stat().st_mtime
+    except OSError:
+        _fallback_ts = None
+    recent = []
+    for x in rows[-5:]:
+        y = dict(x)
+        if not y.get("ts"):
+            y["ts"] = _v2_event_ts(y, _fallback_ts)
+        recent.append(y)
     tmpl = {}
     for x in rows:
         if str(x.get("kind") or "") != "schedule_outcome":
@@ -2178,6 +2225,19 @@ def _self_consistency():
     except Exception as exc:
         checks["llm_lora"] = {"ok": False, "error": str(exc)}
     try:
+        _tr = _context_trace_list(20)
+        checks["context_trace"] = {"ok": _CONTEXT_TRACE_FILE.exists(),
+                                   "traces": len(_tr),
+                                   "path": str(_CONTEXT_TRACE_FILE),
+                                   "latest": _tr[-1] if _tr else None}
+    except Exception as exc:
+        checks["context_trace"] = {"ok": False, "error": str(exc)}
+    checks["rag_policy"] = {"ok": True,
+                            "external_allowed": _context_external_allowed(),
+                            "retrieval": "keyword+bm25_rerank",
+                            "citations": True, "layer_contexts": True,
+                            "redaction": True}
+    try:
         _m = _sched_model_load()
         checks["scheduler_model"] = {"ok": bool(_m),
                                      "rows": _m.get("rows"),
@@ -2189,6 +2249,7 @@ def _self_consistency():
     ok = all(bool(checks[k].get("ok")) for k in crit)
     warns = [k for k, v in checks.items() if not v.get("ok")]
     out = {"ok": ok, "checks": checks, "warnings": warns,
+           "ts": time.time(),
            "note": "critical=engine/eml_modules/eml_memory/layer_mapping；其余为诊断项"}
     _consistency_history_save(out)
     out["history"] = _consistency_history(10)
@@ -2455,6 +2516,110 @@ def _imported_anchor_items():
     return out
 
 
+_CONTEXT_TRACE_FILE = Path(__file__).resolve().parent.parent / "dgtf_memory" / "context_traces.jsonl"
+_CONTEXT_REDACT = [
+    (r"sk-[A-Za-z0-9_\-]{12,}", "[REDACTED_KEY]"),
+    (r"(?i)bearer\s+[A-Za-z0-9._\-]{12,}", "Bearer [REDACTED]"),
+    (r"(?i)(api[_-]?key|secret|password|token)\s*[=:]\s*[^\s,;]{6,}", r"\1=[REDACTED]"),
+    (r"[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}", "[REDACTED_EMAIL]"),
+]
+
+
+def _redact_context(text):
+    import re as _re_r
+    out = str(text or "")
+    n = 0
+    for pat, rep in _CONTEXT_REDACT:
+        out, k = _re_r.subn(pat, rep, out)
+        n += k
+    return out, n
+
+
+def _context_external_allowed():
+    return str(os.getenv("DGTF_CONTEXT_EXTERNAL", "1")).strip().lower() not in (
+        "0", "false", "off", "no", "block")
+
+
+def _context_trace_save(task_id, ctx, question="", extra=None):
+    import json as _json
+    import time as _t
+    try:
+        row = {"ts": _t.time(), "task_id": str(task_id or ""),
+               "question": str(question or "")[:500],
+               "chars": ctx.get("chars"), "max_chars": ctx.get("max_chars"),
+               "sources": ctx.get("sources") or [],
+               "knowledge_sources": ctx.get("knowledge_sources") or [],
+               "imported_sources": ctx.get("imported_sources") or [],
+               "citations": ctx.get("citations") or [],
+               "redactions": ctx.get("redactions", 0),
+               "external_allowed": ctx.get("external_allowed", True),
+               "policy": ctx.get("policy") or ""}
+        if extra:
+            row.update(extra)
+        _CONTEXT_TRACE_FILE.parent.mkdir(parents=True, exist_ok=True)
+        with _CONTEXT_TRACE_FILE.open("a", encoding="utf-8") as fh:
+            fh.write(_json.dumps(row, ensure_ascii=False) + "\n")
+        return row
+    except Exception:
+        return {}
+
+
+def _context_trace_list(limit=50):
+    import json as _json
+    rows = []
+    try:
+        if _CONTEXT_TRACE_FILE.exists():
+            for ln in _CONTEXT_TRACE_FILE.read_text(encoding="utf-8", errors="replace").splitlines()[-max(1, int(limit)):]:
+                try:
+                    d = _json.loads(ln)
+                    if isinstance(d, dict):
+                        rows.append(d)
+                except Exception:
+                    pass
+    except Exception:
+        pass
+    return rows
+
+
+def _rag_tokens(s):
+    import re as _re_t
+    return _re_t.findall(r"[a-z]{2,}|[\u4e00-\u9fff]{2,4}", str(s or "").lower())
+
+
+def _bm25_rank(cands, query, text_key="text", topk=20):
+    """对候选片段做 BM25 重排；cands 为 [{text:...}]。"""
+    import math as _math
+    docs = [_rag_tokens(c.get(text_key) or "") for c in cands]
+    if not docs:
+        return []
+    q = _rag_tokens(query)
+    if not q:
+        return cands[:topk]
+    n = len(docs)
+    avgdl = sum(len(d) for d in docs) / max(1, n)
+    df = {}
+    for d in docs:
+        for t in set(d):
+            df[t] = df.get(t, 0) + 1
+    k1, b = 1.2, 0.75
+    out = []
+    for c, d in zip(cands, docs):
+        dl = len(d)
+        tf = {}
+        for t in d:
+            tf[t] = tf.get(t, 0) + 1
+        sc = 0.0
+        for t in q:
+            if t not in tf:
+                continue
+            idf = _math.log(1 + (n - df.get(t, 0) + 0.5) / (df.get(t, 0) + 0.5))
+            sc += idf * (tf[t] * (k1 + 1)) / (
+                tf[t] + k1 * (1 - b + b * dl / max(1e-9, avgdl)))
+        out.append((sc, c))
+    out.sort(key=lambda x: x[0], reverse=True)
+    return [c for _s, c in out[:topk]]
+
+
 def _project_context(question="", limit=6):
     """RAG-lite：从项目文档取相关段落 + 固定权威摘要。"""
     import re as _re
@@ -2472,16 +2637,18 @@ def _project_context(question="", limit=6):
             score += 1 if "元DGTF" in para else 0
             chunks.append((score, rel, para))
     chunks.sort(key=lambda x: x[0], reverse=True)
+    _pre = [{"source": rel, "text": para} for _s, rel, para in chunks[:40]]
+    _query = " ".join(keys + qterms)
+    _ranked = _bm25_rank(_pre, _query, topk=max(1, int(limit)))
     picked = []
     seen = set()
-    for score, rel, para in chunks:
+    for x in _ranked:
+        para = str(x.get("text") or "")
         sig = para[:80]
         if sig in seen:
             continue
         seen.add(sig)
-        picked.append({"source": rel, "text": para})
-        if len(picked) >= max(1, int(limit)):
-            break
+        picked.append({"source": str(x.get("source") or ""), "text": para})
     knowledge = []
     try:
         import sys as _sys_k
@@ -2508,12 +2675,6 @@ def _project_context(question="", limit=6):
     except Exception:
         knowledge = []
     parts = ["【元DGTF 项目权威背景（内置，本地文档+资料库注入）】", _PROJECT_BRIEF]
-    for x in picked:
-        parts.append("[" + x["source"] + "] " + x["text"])
-    if knowledge:
-        parts.append("【本地资料库（导入/检索）】")
-        for it in knowledge:
-            parts.append("- " + it["title"] + " | " + it["claim"] + " | " + it["url"])
     imported = []
     try:
         cands = []
@@ -2527,19 +2688,69 @@ def _project_context(question="", limit=6):
         imported = [it for _s, it in cands[:3]]
     except Exception:
         imported = []
+    external = _context_external_allowed()
+    if not external:
+        knowledge = []
+        imported = []
+    citations = []
+    for _i, x in enumerate(picked, 1):
+        _cid = "S%d" % _i
+        citations.append({"id": _cid, "kind": "doc", "source": x["source"]})
+        x["cid"] = _cid
+    for _i, it in enumerate(knowledge, 1):
+        _cid = "K%d" % _i
+        citations.append({"id": _cid, "kind": "knowledge",
+                          "source": it["title"], "url": it["url"]})
+        it["cid"] = _cid
+    for _i, it in enumerate(imported, 1):
+        _cid = "I%d" % _i
+        citations.append({"id": _cid, "kind": "imported",
+                          "source": it["source"]})
+        it["cid"] = _cid
+    for x in picked:
+        parts.append("[" + x["cid"] + "] " + x["source"] + ": " + x["text"])
+    if knowledge:
+        parts.append("【本地资料库（导入/检索）】")
+        for it in knowledge:
+            parts.append("- [" + it["cid"] + "] " + it["title"] + " | "
+                         + it["claim"] + " | " + it["url"])
     if imported:
         parts.append("【导入资料（app 本地上传）】")
         for it in imported:
-            parts.append("[" + it["source"] + "] " + it["text"])
-    parts.append("【回答约束】涉及元DGTF时必须依据以上背景；背景没有的，明确说不知道，不得编造。")
+            parts.append("[" + it["cid"] + "] " + it["source"] + ": " + it["text"])
+    if not external:
+        parts.append("【隐私策略】外部上下文已禁用：本地资料/导入资料未随请求外发。")
+    parts.append("【回答约束】涉及元DGTF时必须依据以上背景；引用时标注 [S#]/[K#]/[I#]；背景没有的，明确说不知道，不得编造。")
     _max = max(1000, min(12000, int(os.getenv(
         "DGTF_PROJECT_CONTEXT_MAX_CHARS", "7000"))))
-    txt = "\n".join(parts)
+    _layer_kw = {"0": ["修行", "展开", "候选", "锚点"],
+                 "1": ["研究", "证据", "子问题", "收敛"],
+                 "both": ["对撞", "冲突", "裁决", "线头"],
+                 "all": ["元", "闭环", "决策", "停止", "记忆"]}
+    layer_contexts = {}
+    for _ly, _kws in _layer_kw.items():
+        _rows = []
+        for _src_list in (picked, imported):
+            for _x in _src_list:
+                _t = str(_x.get("text") or "")
+                _sc = sum(_t.count(k) for k in _kws)
+                if _sc > 0:
+                    _rows.append((_sc, _x))
+        _rows.sort(key=lambda x: x[0], reverse=True)
+        layer_contexts[_ly] = [{"source": x.get("source") or x.get("cid"),
+                                "text": str(x.get("text") or "")[:600],
+                                "score": sc} for sc, x in _rows[:2]]
+    txt, _red = _redact_context("\n".join(parts))
     return {"ok": True, "text": txt[:_max],
+            "layer_contexts": layer_contexts,
             "sources": [x["source"] for x in picked],
             "knowledge_sources": [x["title"] for x in knowledge],
             "imported_sources": [x["source"] for x in imported],
+            "citations": citations, "redactions": _red,
+            "external_allowed": external,
+            "policy": "project+knowledge+imported" if external else "brief-only",
             "keys": keys, "chars": len(txt[:_max]), "max_chars": _max,
+            "retrieval_method": "keyword+bm25_rerank",
             "sensitive_filter": True, "cached_docs": True}
 
 
@@ -3400,6 +3611,18 @@ class Handler(BaseHTTPRequestHandler):
                     c=float((q.get("c") or ["0.5"])[0] or 0.5)))
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/project/context/history":
+            try:
+                return self._json({"ok": True, "history": _context_trace_list(50)})
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/security/context-policy":
+            return self._json({"ok": True,
+                               "external_allowed": _context_external_allowed(),
+                               "env": "DGTF_CONTEXT_EXTERNAL",
+                               "redaction": True, "length_cap": int(os.getenv(
+                                   "DGTF_PROJECT_CONTEXT_MAX_CHARS", "7000")),
+                               "trace_file": str(_CONTEXT_TRACE_FILE)})
         if p == "/api/project/context":
             try:
                 return self._json(_project_context(
@@ -3751,13 +3974,18 @@ class Handler(BaseHTTPRequestHandler):
                         kw in str(h.get("title", "")).lower() for h in hits):
                     continue
                 n_g += 1
+                latest = max([float(h.get("ts") or 0) for h in hits] or [0])
+                when = _fmt_epoch_cn(latest) if latest else ""
                 lines.append("## " + title)
                 lines.append("")
-                lines.append("- 去重后 %d 条 · 日期 %s · 检索模型 %s"
-                             % (len(hits), g.get("time", ""), g.get("model", "")))
+                lines.append("- 去重后 %d 条 · 最近检索 %s"
+                             % (len(hits), when or "未知"))
                 lines.append("")
                 for h in hits:
-                    lines.append("- [%s](%s)" % (h.get("title", ""), h.get("url", "")))
+                    ht = _fmt_epoch_cn(h.get("ts"))
+                    lines.append("- [%s](%s)%s" % (
+                        h.get("title", ""), h.get("url", ""),
+                        (" — 检索 " + ht) if ht else ""))
                 lines.append("")
             if not n_g:
                 return self._json({"error": "没有可导出的条目"}, 404)
@@ -3979,6 +4207,12 @@ class Handler(BaseHTTPRequestHandler):
                                 _meta.append("来源=" + str(it.get("source_type")))
                             if it.get("published"):
                                 _meta.append("发布=" + str(it.get("published"))[:20])
+                            if it.get("retrieved_at"):
+                                _meta.append("检索=" + _fmt_epoch_cn(
+                                    it.get("retrieved_at")))
+                            if it.get("fetched_at"):
+                                _meta.append("爬取=" + _fmt_epoch_cn(
+                                    it.get("fetched_at")))
                             if it.get("confidence"):
                                 _meta.append("置信=" + str(it.get("confidence")))
                             if _meta:
@@ -4424,10 +4658,12 @@ class Handler(BaseHTTPRequestHandler):
                 _project_ctx = not _is_mock_task
             else:
                 _project_ctx = bool(_pctx_opt)
+            _pc = {}
             if _project_ctx:
                 _pc = _project_context(question)
                 if _pc.get("text"):
-                    question = _pc["text"] + "\n\n【用户问题】\n" + question
+                    opts["_prompt_prefix"] = (_pc["text"]
+                                             + "\n\n【用户问题】\n")
             _auto_pareto = bool(opts.pop("auto_pareto", False))
             _auto_template = bool(opts.pop("auto_template", False))
             _auto_llm = bool(opts.pop("auto_llm", False))
@@ -4450,6 +4686,8 @@ class Handler(BaseHTTPRequestHandler):
                 tid = runner.start_task(question, opts)
             except ValueError as e:
                 return self._json({"error": str(e)}, 400)
+            if _project_ctx and _pc:
+                _context_trace_save(tid, _pc, question, {"kind": "task"})
             return self._json({"id": tid, "auto_pareto": _auto_pareto,
                                "auto_template": _auto_template,
                                "auto_llm": _auto_llm,

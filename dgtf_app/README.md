@@ -5,15 +5,16 @@
 
 零额外依赖（Python 标准库 + 原生前端），**不改动引擎主文件**。
 
-**当前 app 版本：V1.2.3**（引擎 V1.30.0；发布说明见 docs/releases/）。
+**当前 app 版本：V1.3.0**（引擎 V1.30.0；发布说明见 docs/releases/）。
 
 ### 新增能力
 
-- **EML + DSH 全流程闭环**：知识刷新 → 引擎跑次 → 消费者/任务 → 自审提案。
+- **EML + DSH 全流程闭环**：知识刷新 → 引擎跑次 → 消费者/任务 → 自审提案；Agent 面板只保留“DSH 全流程闭环”一个按钮。
+- **产物时间标注**：技术知识分别标检索/爬取时间；产物库、资料库、检索库、DSH 产物、修复提案、审计与 V2 事件均带对应时间。
 - **本地 LLM LoRA 调度建议**：Qwen2.5-0.5B-Instruct，问题→route/rounds；接口 /api/schedule/llm/*，任务 opts.auto_llm。
 - **V2 调度/帕累托/UCB**：/api/schedule/v2/pareto、/bandit、/context-bandit；Agent 面板 V2 调度。
 - **自洽审计**：/api/consistency + 审计历史 + 面板。
-- **项目背景内置**：真实任务默认注入元DGTF权威背景，融合本地资料库与 app 本地导入文件（RAG）；/api/project/context 可查看，无前端按钮。
+- **项目背景内置**：真实任务默认注入元DGTF权威背景，融合本地资料库与 app 本地导入文件（RAG v2：BM25 重排/引用/隐私策略/追溯）；/api/project/context 可查看，无前端按钮。
 - **针对性真跑**：60 calls / 341K tokens / 758.9s（见 docs/real_run_20261021.md）。
 
 边界：本地 LLM 只做调度建议，不替代 DeepSeek API 的四层推理。

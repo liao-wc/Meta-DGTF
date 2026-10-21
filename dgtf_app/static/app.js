@@ -1453,6 +1453,11 @@ function renderDshView() {
   if (logFollow) scrollDshBottom();
   else body.scrollTop = Math.max(0, body.scrollHeight - fromBottom);
 } 
+function setDetailMeta(text) {
+  const el = document.querySelector('#detail-meta');
+  if (el) el.textContent = text || '';
+}
+
 async function openDshArtifact(id) {
   const r = await api('/api/dsh/artifacts/' + encodeURIComponent(id));
   const det = document.querySelector('#detail');
@@ -1460,6 +1465,7 @@ async function openDshArtifact(id) {
   const body = document.querySelector('#detail-body');
   if (!det || !body) return;
   if (title) title.textContent = 'DSH 产物 · ' + id;
+  setDetailMeta(r.ts ? ('生成时间 ' + (fmtTs(r.ts) || '未知')) : '生成时间未知');
   body.innerHTML = '<pre>' + esc(r.body || '') + '</pre>';
   det.classList.remove('hidden');
 }
@@ -1833,15 +1839,14 @@ function renderLib(items) {
   $('#lib-count').textContent = `共 ${items.length} 份`;
   $('#lib-list').innerHTML = items.map(r => {
     const m = r.meta || {};
-    const t = r.time ? String(r.time).replace('T', ' ').slice(0, 16)
-                     : new Date(r.mtime * 1000).toLocaleString('zh-CN');
+    const when = fmtTs(r.time) || fmtTs(r.mtime);
     const sel = libSel.has(r.name);
     return `<div class="item${libExpOn ? ' selmode' : ''}${sel ? ' on' : ''}" data-name="${esc(r.name)}">
       ${libExpOn ? '<span class="ck" aria-hidden="true"></span>' : ''}
       <button type="button" class="exp" data-exp="${esc(r.name)}"
               title="导出这一份产物">导出</button>
       <div class="t"><span class="t-t">${esc(r.title)} ${chipKind(r)} ${chipLayer(r)} ${chipState(r)}</span>
-        <span class="t-r"><span class="num">${esc(t)}</span>
+        <span class="t-r"><span class="num">产物 ${esc(when || '时间未知')}</span>
           <span class="num">${(r.size / 1024).toFixed(0)} KB</span></span></div>
       ${((chipDecid(m['可判定性']) + chip(m['取向']) + chip(m['并行模式'])).trim() || r.has_packed)
         ? `<div class="m">
@@ -1934,7 +1939,7 @@ function paintAttach() {
          本处曾因「补丁锚点没命中却被静默跳过」而退回老类名，现修正。 */
     list.innerHTML = localItems.map(it =>
       `<div class="ap-tile" data-apname="${esc(it.name)}"
-            title="${esc(it.name)}${it.size != null ? ' · ' + (it.size / 1024).toFixed(1) + ' KB' : ''}">
+            title="${esc(it.name)}${it.size != null ? ' · ' + (it.size / 1024).toFixed(1) + ' KB' : ''}${it.mtime ? ' · 导入/更新 ' + esc(fmtTs(it.mtime)) : ''}">
         <span class="ic">${fileGlyph(it.name)}</span>
         <span class="tn">${esc(shortName(it.name))}</span>
         <button type="button" class="rm" data-apdel="${esc(it.name)}"
@@ -2088,7 +2093,7 @@ async function loadLocal() {
       ll.innerHTML = items.map(it =>
       `<div class="item" data-local="${esc(it.name)}">
         <div class="t"><span class="t-t">${esc(it.name)}</span>
-          <span class="t-r"><span class="num">${new Date(it.mtime * 1000).toLocaleString('zh-CN')}</span>
+          <span class="t-r"><span class="num">导入/更新 ${esc(fmtTs(it.mtime) || '时间未知')}</span>
             <span class="num">${(it.size / 1024).toFixed(1)} KB</span></span></div>
         <div class="m">
           <a href="#" class="del" data-del="${esc(it.name)}">删除</a>
@@ -2237,6 +2242,9 @@ async function importFiles(fileList) {
 async function openLocal(name) {
   $('#detail').classList.remove('hidden');
   $('#detail-title').textContent = name;
+  const _it = localItems.find(x => String(x.name) === String(name));
+  setDetailMeta(_it && _it.mtime
+    ? ('导入/更新时间 ' + (fmtTs(_it.mtime) || '未知')) : '');
   $('#detail-body').innerHTML = '<div class="muted">加载中…</div>';
   try {
     const { body } = await api('/api/library/local/' + encodeURIComponent(name));
@@ -2308,7 +2316,7 @@ function hitHtml(h, flat) {
   return `<div class="${cls}"${attr}>
       ${(webExpOn && flat) ? '<span class="ck" aria-hidden="true"></span>' : ''}
       <div class="t"><span class="t-t">${esc(h.claim || '（无内容）')}</span>
-        ${h.ts ? `<span class="t-r"><span class="num">${new Date(h.ts * 1000).toLocaleString('zh-CN')}</span></span>` : ''}</div>
+        ${h.ts ? `<span class="t-r"><span class="num">检索 ${esc(fmtTs(h.ts))}</span></span>` : ''}</div>
       <div class="m">
         <span class="chip">${esc(h.kind || 'web')}</span>
         ${h.tier != null ? `<span class="num">tier ${esc(String(h.tier))}</span>` : ''}
@@ -2343,9 +2351,8 @@ function wgHtml(g, sub) {
   const items = g.items || [];
   const latest = Number(g.latest) || items.reduce((m, h) => Math.max(m, Number(h.ts) || 0), 0);
   const kinds = [...new Set(items.map(h => String(h.kind || '')).filter(Boolean))];
-  const when = latest
-    ? new Date(latest * 1000).toLocaleString('zh-CN', { hour12: false }) : '';
-  const meta = [when, kinds.join(' / ')].filter(Boolean).join(' · ');
+  const when = fmtTs(latest);
+  const meta = [(when ? '最近检索 ' + when : ''), kinds.join(' / ')].filter(Boolean).join(' · ');
   const n = g.uniq != null ? g.uniq : items.length;
   const tot = g.total != null ? g.total : items.length;
   return `
@@ -2487,6 +2494,10 @@ async function renderPackedCard(name) {
 async function openDetail(name) {
   $('#detail').classList.remove('hidden');
   $('#detail-title').textContent = name;
+  const _it = _libItems.find(x => String(x.name) === String(name));
+  const _when = _it
+    ? (fmtTs(_it.time) || fmtTs(_it.mtime)) : fmtFileStamp(name);
+  setDetailMeta(_when ? ('产物时间 ' + _when) : '');
   $('#detail-body').innerHTML = '<div class="muted">加载中…</div>';
   try {
     const { body } = await api('/api/outputs/' + encodeURIComponent(name));
@@ -2523,6 +2534,9 @@ async function openDetail(name) {
 async function openArchive(name) {
   $('#detail').classList.remove('hidden');
   $('#detail-title').textContent = name;
+  const _it = _libItems.find(x => String(x.name) === String(name));
+  const _when = _it ? fmtTs(_it.mtime) : fmtFileStamp(name);
+  setDetailMeta(_when ? ('文件时间 ' + _when) : '');
   $('#detail-body').innerHTML = '<div class="muted">加载中…</div>';
   try {
     const { body } = await api('/api/archive/' + encodeURIComponent(name));
@@ -2665,13 +2679,12 @@ function renderSearchResults(items) {
   if (!box) return;
   box.innerHTML = items.map(r => {
     const m = r.meta || {};
-    const t = r.time ? String(r.time).replace('T', ' ').slice(0, 16)
-                     : new Date(r.mtime * 1000).toLocaleString('zh-CN');
+    const when = fmtTs(r.time) || fmtTs(r.mtime);
     /* ★ R34：**时间 / 大小挪到标题行右侧**；别的 chips 没有了就整条只占一行 */
     const chips = (chipDecid(m['可判定性']) + ' ' + chip(m['取向'])).trim();
     return `<div class="item" data-name="${esc(r.name)}">
       <div class="t"><span class="t-t">${esc(r.title)} ${chipState(r)}</span>
-        <span class="t-r"><span class="num">${esc(t)}</span>
+        <span class="t-r"><span class="num">产物 ${esc(when || '时间未知')}</span>
           <span class="num">${(r.size / 1024).toFixed(0)} KB</span></span></div>
       ${chips ? `<div class="m">${chips}</div>` : ''}
       ${r.snippet ? `<div class="snip">${esc(r.snippet.slice(0, 160))}</div>` : ''}
@@ -3250,11 +3263,34 @@ let agentModel = null;
 let agentLLM = null;
 let agentConsistency = null;
 
+/* 统一时间格式化：兼容 epoch 秒 / epoch 毫秒 / ISO 字符串。
+   ★ 旧 agentIsoShort 把「秒」当「毫秒」传给 new Date，导致最近运行显示 1970 年；
+   这里用 1e12 阈值区分秒/毫秒，无法解析时返回空串（不再把批次名当时间）。 */
+function fmtTs(v) {
+  if (v == null || v === '') return '';
+  let d;
+  const s = String(v).trim();
+  if (typeof v === 'number' || /^\d+(\.\d+)?$/.test(s)) {
+    let n = Number(v);
+    if (n < 1e12) n *= 1000;
+    d = new Date(n);
+  } else {
+    d = new Date(s);
+  }
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleString('zh-CN', {hour12: false});
+}
+
 function agentIsoShort(x) {
-  if (!x) return '—';
-  const d = (typeof x === 'number') ? new Date(x) : new Date(String(x));
-  if (isNaN(d.getTime())) return String(x).slice(0, 24);
-  return d.toLocaleString();
+  return fmtTs(x) || '—';
+}
+
+/* 产物/归档文件名前缀 `YYYYMMDD_HHMMSS` → 可读时间。
+   从运行日志右栏直接打开产物时，产物库列表可能还没加载，用它兜底。 */
+function fmtFileStamp(name) {
+  const m = String(name || '').match(/^(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})/);
+  return m ? fmtTs(m[1] + '-' + m[2] + '-' + m[3] + 'T'
+    + m[4] + ':' + m[5] + ':' + m[6]) : '';
 }
 
 function agentDetailHtml(detail) {
@@ -3284,7 +3320,7 @@ function agentRenderTasks() {
     const title = String(t.title || t.id || '(无标题)');
     const src = t.source_run ? ('源跑次 ' + String(t.source_run)) : '无源跑次';
     const st = doneIds.has(String(t.id || '')) ? '已消费' : '待消费';
-    const when = t.ts ? new Date(t.ts * 1000).toLocaleString('zh-CN', {hour12:false}) : '';
+    const when = fmtTs(t.ts);
     return '<div class="agent-item">'
       + '<div class="agent-row"><span class="chip">' + esc(kind) + '</span>'
       + '<span class="chip sev-' + esc(sev) + '">' + esc(sev) + '</span>'
@@ -3292,7 +3328,7 @@ function agentRenderTasks() {
       + '<span class="agent-t">' + esc(title) + '</span></div>'
       + '<div class="agent-meta"><span>' + esc(String(t.id || '—'))
       + '</span><span>' + esc(src) + '</span>'
-      + '<span>' + (when ? ('创建 ' + esc(when)) : '创建时间 未知') + '</span>'
+      + '<span>' + (when ? ('创建 ' + esc(when)) : '创建时间未知') + '</span>'
       + '</div>'
       + agentDetailHtml(t.detail)
       + '</div>';
@@ -3313,13 +3349,14 @@ function agentRenderResults() {
     const title = String(r.title || r.task_id || '(无标题)');
     const status = String(r.status || '—');
     const act = String(r.action || '');
+    const when = fmtTs(r.ts);
     return '<div class="agent-item">'
       + '<div class="agent-row"><span class="chip">' + esc(String(r.kind || 'task'))
       + '</span><span class="chip">' + esc(status) + '</span>'
       + '<span class="agent-t">' + esc(title) + '</span></div>'
       + '<div class="agent-meta"><span>task ' + esc(String(r.task_id || '—'))
       + '</span>' + (r.source_run ? ('<span>源跑次 ' + esc(String(r.source_run)) + '</span>') : '')
-      + (r.ts ? ('<span>' + esc(new Date(r.ts * 1000).toLocaleString('zh-CN', {hour12:false})) + '</span>') : '<span>时间 未知</span>')
+      + (r.ts ? ('<span>处理 ' + esc(when) + '</span>') : '<span>处理时间未知</span>')
       + '</div>'
       + (act ? '<div class="agent-q">' + esc(act) + '</div>' : '')
       + '</div>';
@@ -3344,7 +3381,13 @@ function agentRenderKnowledge() {
       ? '<a href="' + esc(safeUrl) + '" target="_blank" rel="noopener noreferrer">' + esc(title) + '</a>'
       : esc(title);
     const claim = String(k.claim || '');
-    const flag = k.fetched ? '已抓正文' : '仅检索';
+    const flag = k.fetched ? '已爬取正文' : '仅检索';
+    /* ★ 技术知识必须分别标「检索时间」和「爬取时间」：
+       retrieved_at = Search 调用时间；fetched_at = Fetch/PDF 完成时间。
+       老记录没有这两个字段，明确标「历史记录」而不是拿批次名冒充时间。 */
+    const rAt = fmtTs(k.retrieved_at);
+    const fAt = fmtTs(k.fetched_at);
+    const batch = String(k.run || '');
     const srcMap = {official:'官方', paper:'论文', community:'社区', other:'其他'};
     const src = srcMap[String(k.source_type || '')] || '';
     const conf = k.confidence ? ('置信 ' + Math.round(Number(k.confidence) * 100) + '%') : '';
@@ -3364,7 +3407,13 @@ function agentRenderKnowledge() {
       + '<span class="agent-t">' + t + '</span></div>'
       + '<div class="agent-meta"><span>查询 ' + esc(String(k.query || '—'))
       + '</span>' + (pub ? '<span>发布 ' + esc(pub) + '</span>' : '')
-      + '<span>' + esc(agentIsoShort(k.run)) + '</span></div>'
+      + (rAt ? '<span>检索 ' + esc(rAt) + '</span>'
+             : '<span>检索时间未知（历史记录）</span>')
+      + (fAt ? '<span>爬取 ' + esc(fAt) + '</span>'
+             : (k.fetched ? '<span>爬取时间未知（历史记录）</span>'
+                          : '<span>未爬取正文</span>'))
+      + (batch ? '<span>批次 ' + esc(batch) + '</span>' : '')
+      + '</div>'
       + (claim ? '<div class="agent-q">' + esc(claim) + '</div>' : '')
       + (zh ? '<div class="agent-q"><b>中文注释</b><br>' + esc(zh) + '</div>' : '')
       + agentDetailHtml(k.content)
@@ -3386,7 +3435,7 @@ function agentRenderRun() {
     + '<div class="agent-row"><span class="chip">triaged '
     + esc(String(run.triaged == null ? '—' : run.triaged)) + '</span>'
     + '<span class="chip">提案 ' + esc(String(prop.n == null ? '—' : prop.n)) + '</span>'
-    + '<span class="agent-t">' + esc(agentIsoShort(agentLastRun.at)) + '</span></div>'
+    + '<span class="agent-t">运行于 ' + esc(agentIsoShort(agentLastRun.at)) + '</span></div>'
     + '<div class="agent-meta"><span>提案文件 ' + esc(String(prop.path || '—'))
     + '</span></div>'
     + '<pre>' + esc(JSON.stringify(agentLastRun, null, 2).slice(0, 8000)) + '</pre>'
@@ -3400,12 +3449,14 @@ function agentRenderDsh() {
   if (!box) return;
   if (!agentDsh.length) { box.innerHTML = agentEmpty('还没有 DSH Agent 会话。'); return; }
   box.innerHTML = agentDsh.slice(0, 30).map(function (x) {
-    const when = x.ts ? new Date(x.ts * 1000).toLocaleString('zh-CN', {hour12:false}) : '';
+    const when = fmtTs(x.ts);
     return '<div class="agent-item agent-dsh-item" data-dsh-session="' + esc(x.id || '') + '">'
       + '<div class="agent-row"><span class="chip">' + (x.auto_repair ? '自动修复' : 'DSH') + '</span>'
       + '<span class="chip">' + (x.ok ? '完成' : '失败') + '</span>'
       + '<span class="agent-t">' + esc(x.task || x.id) + '</span></div>'
-      + '<div class="agent-meta"><span>' + esc(x.id || '') + '</span><span>' + esc(when) + '</span></div>'
+      + '<div class="agent-meta"><span>' + esc(x.id || '') + '</span>'
+      + (when ? '<span>开始 ' + esc(when) + '</span>' : '<span>开始时间未知</span>')
+      + '</div>'
       + '<div class="agent-q">点此回溯并续聊</div></div>';
   }).join('');
 }
@@ -3417,14 +3468,14 @@ function agentRenderDshArt() {
   if (!box) return;
   if (!agentDshArt.length) { box.innerHTML = agentEmpty('还没有 DSH 产物。'); return; }
   box.innerHTML = agentDshArt.slice(0, 30).map(function (x) {
-    const when = x.ts ? new Date(x.ts * 1000).toLocaleString('zh-CN', {hour12:false}) : '';
+    const when = fmtTs(x.ts);
     const st = x.ok === true ? '完成' : (x.ok === false ? '失败' : '产物');
     return '<div class="agent-item agent-dsh-art-item" data-dsh-art="' + esc(x.id || '') + '">'
       + '<div class="agent-row"><span class="chip">产物</span>'
       + '<span class="chip">' + esc(st) + '</span>'
       + '<span class="agent-t">' + esc(x.task || x.id) + '</span></div>'
       + '<div class="agent-meta"><span>' + esc(x.id || '') + '</span>'
-      + (when ? '<span>' + esc(when) + '</span>' : '')
+      + (when ? '<span>生成 ' + esc(when) + '</span>' : '<span>生成时间未知</span>')
       + '<span>' + esc(String(x.size || 0)) + ' B</span></div></div>';
   }).join('');
 }
@@ -3434,13 +3485,13 @@ function agentRenderProps() {
   const n = document.querySelector('#agent-prop-n');
   if (n) n.textContent = String(agentProps.length);
   if (!box) return;
-  if (!agentProps.length) { box.innerHTML = agentEmpty('还没有修复提案。点「DSH 自动闭环」生成提案。'); return; }
+  if (!agentProps.length) { box.innerHTML = agentEmpty('还没有修复提案。点「DSH 全流程闭环」生成提案。'); return; }
   const ST = {pending: '待确认', confirmed: '已确认待修复', applied: '已应用', failed: '失败', rolled_back: '已回退'};
   const nConf = agentProps.filter(x => x.status === 'confirmed').length;
   const fixBtn = document.querySelector('#prop-autofix');
   if (fixBtn) fixBtn.textContent = '自动修复提案' + (nConf ? '（' + nConf + '）' : '');
   box.innerHTML = agentProps.slice(0, 30).map(function (x) {
-    const when = x.ts ? new Date(x.ts * 1000).toLocaleString('zh-CN', {hour12:false}) : '';
+    const when = fmtTs(x.ts);
     const st = String(x.status || 'pending');
     let acts = '';
     if (st === 'pending') {
@@ -3456,7 +3507,8 @@ function agentRenderProps() {
       + '<div class="agent-row"><span class="chip">提案</span>'
       + '<span class="chip st-' + esc(st) + '">' + esc(ST[st] || st) + '</span>'
       + '<span class="agent-t">' + esc((x.task || {}).title || x.id) + '</span></div>'
-      + '<div class="agent-meta"><span>' + esc(x.id || '') + '</span><span>' + esc(when) + '</span>'
+      + '<div class="agent-meta"><span>' + esc(x.id || '') + '</span>'
+      + (when ? '<span>创建 ' + esc(when) + '</span>' : '<span>创建时间未知</span>')
       + (x.version ? '<span>版本 ' + esc(x.version) + '</span>' : '')
       + (x.artifact ? '<span>产物 ' + esc(String(x.artifact).split('\\').pop()) + '</span>' : '')
       + '</div>'
@@ -3575,7 +3627,8 @@ function agentRenderV2() {
       + '<span class="chip">' + esc(String(e.kind || '')) + '</span>'
       + '<span class="chip">' + esc(String(e.layer || '')) + '</span>'
       + '<span class="agent-t">' + esc(String(e.key || e.id || '')) + '</span></div>'
-      + '<div class="agent-meta"><span>run ' + esc(String(e.run_id || '—'))
+      + '<div class="agent-meta"><span>批次 ' + esc(fmtTs(e.ts) || '时间未知')
+      + '</span><span>run ' + esc(String(e.run_id || '—'))
       + '</span><span>conf ' + esc(String(e.confidence == null ? '—' : e.confidence)) + '</span></div>'
       + '<div class="agent-q">' + esc(JSON.stringify(e.payload || {}).slice(0, 800)) + '</div></div>';
   });
@@ -3595,7 +3648,9 @@ function agentRenderConsistency() {
   }
   let html = '<div class="agent-item"><div class="agent-row"><span class="chip">'
     + (d.ok ? '自洽通过' : '存在警告') + '</span><span class="agent-t">'
-    + esc(String((d.warnings || []).length)) + ' 项诊断</span></div>';
+    + esc(String((d.warnings || []).length)) + ' 项诊断</span></div>'
+    + '<div class="agent-meta"><span>审计 '
+    + esc(fmtTs(d.ts) || '时间未知') + '</span></div>';
   Object.keys(checks).sort().forEach(function (k) {
     const v = checks[k] || {};
     const st = v.ok ? '通过' : '诊断';
@@ -3608,7 +3663,7 @@ function agentRenderConsistency() {
     html += '<div class="agent-item"><div class="agent-row"><span class="chip">审计历史 '
       + esc(String(_hist.length)) + ' 条</span><span class="agent-t">最近 5 次</span></div>';
     _hist.slice(-5).reverse().forEach(function (h) {
-      const when = h.ts ? new Date(h.ts * 1000).toLocaleString('zh-CN', {hour12:false}) : '';
+      const when = fmtTs(h.ts);
       html += '<div class="agent-meta"><span>' + (h.ok ? '通过' : '告警')
         + '</span><span>' + esc(when) + '</span><span>V2 ' + esc(String(h.v2 == null ? '—' : h.v2))
         + '</span><span>paired ' + esc(String(h.paired == null ? '—' : h.paired))
@@ -3929,17 +3984,18 @@ async function autoAgent(stage) {
   const btn = document.querySelector('#agent-auto');
   const oldText = btn ? btn.textContent : '';
   const t0 = Date.now();
-  if (btn) { btn.disabled = true; if (stage === 'all') btn.textContent = 'DSH 提案闭环运行中…';
-    else if (stage === 'full') btn.textContent = '全流程闭环运行中…'; }
+  if (btn) {
+    btn.disabled = true;
+    if (stage === 'full' || stage === 'all') btn.textContent = 'DSH 全流程闭环运行中…';
+  }
   if (st) {
     st.className = 'agent-auto-status running';
     st.textContent = 'DSH Agent 自动闭环已开始，已跳转到 DSH Agent 对话框显示执行内容…';
   }
-  showAutoDsh('DSH 自动闭环 · ' + stage, [
+  const _fullLoop = (stage === 'full' || stage === 'all');
+  showAutoDsh(_fullLoop ? 'DSH 全流程闭环' : 'DSH 自动闭环 · ' + stage, [
     {type:'status', phase:'turn_start', turn:1},
-    {type:'text', text: stage === 'all'
-      ? '开始执行轻量闭环：任务队列 → 消费者 → 自审提案；不刷新知识、不跑引擎。可能需要几分钟。'
-      : stage === 'full'
+    {type:'text', text: _fullLoop
       ? '开始执行：知识刷新 → mock 引擎跑次 → 任务/消费者 → 自审提案。可能需要几分钟。'
       : '开始执行：' + stage}
   ], 'running');
@@ -4001,9 +4057,12 @@ async function autoAgent(stage) {
     const secs = Math.max(1, Math.round((Date.now() - t0) / 1000));
     if (st) {
       st.className = 'agent-auto-status ' + (r.ok ? 'ok' : 'err');
-      st.textContent = (r.ok ? 'DSH 自动完成' : 'DSH 自动部分失败') + '（' + secs + 's）';
+      st.textContent = (_fullLoop
+        ? (r.ok ? 'DSH 全流程闭环完成' : 'DSH 全流程闭环部分失败')
+        : (r.ok ? 'DSH 自动完成' : 'DSH 自动部分失败')) + '（' + secs + 's）';
     }
-    dshCurrent.question = 'DSH 自动闭环 · ' + stage + ' · ' + secs + 's';
+    dshCurrent.question = (_fullLoop ? 'DSH 全流程闭环' : 'DSH 自动闭环 · ' + stage)
+      + ' · ' + secs + 's';
     dshCurrent.events.push({type:'text', text: r.ok ? '自动闭环完成。' : '自动闭环部分失败。'});
     dshCurrent.status = r.ok ? 'done' : 'error';
     renderDshView();
@@ -4597,6 +4656,7 @@ function init() {
     }
     if (e.target.id === 'detail-close' || e.target.id === 'detail') {
       $('#detail').classList.add('hidden');
+      setDetailMeta('');
     }
   });
 
@@ -4703,9 +4763,7 @@ function init() {
   const _agentNew = $('#agent-new');
   if (_agentNew) _agentNew.addEventListener('click', () => autoAgent('task'));
   const _agentAuto = $('#agent-auto');
-  if (_agentAuto) _agentAuto.addEventListener('click', () => autoAgent('all'));
-  const _agentFull = $('#agent-full');
-  if (_agentFull) _agentFull.addEventListener('click', () => autoAgent('full'));
+  if (_agentAuto) _agentAuto.addEventListener('click', () => autoAgent('full'));
   const _dshPill = $('#pill-dsh');
   if (_dshPill) _dshPill.addEventListener('click', () => toggleDshMode(!dshMode));
   [['dsh-effort', 'dgtf_dsh_effort'], ['dsh-perm', 'dgtf_dsh_perm'], ['dsh-model', 'dgtf_dsh_model']].forEach(function (pair) {

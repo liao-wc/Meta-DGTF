@@ -21,7 +21,7 @@
    "epoch": 3,
    "train_loss": 0.0131,
    "val_loss": 0.1427,
-   "sec": 181.0
+   "sec": 181
   },
   {
    "epoch": 4,
@@ -42,32 +42,6 @@
   "round_mae": 1.929,
   "n": 14
  },
- "samples": [
-  {
-   "route_ok": false,
-   "pred": "{\"route\":[\"0\"],\"rounds\":{\"0\":3},\"why\":\"按问题结构选择层与圈数\"}",
-   "gold": "{\"route\":[\"0\",\"1\",\"both\"],\"rounds\":{\"0\":4,\"1\":4,\"both\":4},\"why\":\"按问题结构选择层与圈数\"}",
-   "round_mae": 3.0
-  },
-  {
-   "route_ok": true,
-   "pred": "{\"route\":[\"0\",\"1\"],\"rounds\":{\"0\":3,\"1\":3},\"why\":\"按问题结构选择层与圈数\"}",
-   "gold": "{\"route\":[\"0\",\"1\"],\"rounds\":{\"0\":2,\"1\":2},\"why\":\"按问题结构选择层与圈数\"}",
-   "round_mae": 1.0
-  },
-  {
-   "route_ok": true,
-   "pred": "{\"route\":[\"0\",\"1\"],\"rounds\":{\"0\":4,\"1\":4},\"why\":\"按问题结构选择层与圈数\"}",
-   "gold": "{\"route\":[\"0\",\"1\"],\"rounds\":{\"0\":2,\"1\":2},\"why\":\"按问题结构选择层与圈数\"}",
-   "round_mae": 2.0
-  },
-  {
-   "route_ok": true,
-   "pred": "{\"route\":[\"0\",\"1\"],\"rounds\":{\"0\":4,\"1\":4},\"why\":\"按问题结构选择层与圈数\"}",
-   "gold": "{\"route\":[\"0\",\"1\"],\"rounds\":{\"0\":2,\"1\":2},\"why\":\"按问题结构选择层与圈数\"}",
-   "round_mae": 2.0
-  }
- ],
  "adapter": "llm_sft/adapter_qwen05b_v1",
- "note": "LoRA SFT：问题→route/rounds JSON；fp16；留出按问题分组"
+ "note": "0.5B LoRA SFT；history 来自训练日志；eval 为训练脚本留出生成评估"
 }

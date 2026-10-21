@@ -3,7 +3,7 @@
 一个**单文件**的四层螺旋推理引擎：修行 / 研究 / 对撞 / 元，跑出可审计的产物。
 
 - **当前版本**：`元DGTF-V1.30.0.py`（单文件引擎）
-- **人用界面**：`dgtf_app/`（app V1.2.3；本地 Web 工作台，见 `dgtf_app/README.md`）
+- **人用界面**：`dgtf_app/`（app V1.3.0；本地 Web 工作台，见 `dgtf_app/README.md`）
 - **版本历史**：`CHANGELOG.md`；app 发布说明见 `docs/releases/`
 
 > 这份 README 只写**能被验证**的事：命令都真跑过，数字都是当前版本的实测值。
@@ -15,7 +15,7 @@
 - **调度与帕累托**：方案F profile、V2 模板质量-成本前沿、UCB/上下文 UCB、本地调度模型；见 docs/scheduler_model.md。
 - **自洽审计**：GET /api/consistency + 审计历史；见 docs/app_engine_mapping.md。
 - **针对性真跑**：60 calls / 341K tokens / 758.9s；见 docs/real_run_20261021.md。
-- **项目背景内置**：真实任务默认注入元DGTF权威背景，融合本地资料库与 app 本地上传文件（RAG）；GET /api/project/context 可查看，无前端按钮。
+- **项目背景内置**：真实任务默认注入元DGTF权威背景，融合本地资料库与 app 本地上传文件（RAG v2：BM25 重排/来源引用/隐私策略/追溯）；GET /api/project/context 可查看，无前端按钮。
 
 ---
 
