@@ -130,7 +130,7 @@ h1,h2,h3,.task-q,.item .t,.md p{text-wrap:pretty}
 
 /* 引擎 / 凭据状态（收进抽屉顶部）：**文字白色 + 整体居中** */
 .env{color:var(--t1);font-size:12px;line-height:1.9;font-variant-numeric:tabular-nums;
-  padding:13px 6px 5px;text-align:center}
+  padding:13px 6px 5px;text-align:left}
 .env-row{display:grid;grid-template-columns:8px 64px minmax(0,1fr);
   align-items:center;gap:8px;padding:5px 2px}
 .env-row .dot{margin-right:0}
@@ -293,7 +293,7 @@ h1,h2,h3,.task-q,.item .t,.md p{text-wrap:pretty}
   transition:transform .6s var(--ease),opacity .6s var(--ease)}
 .drawer.open{transform:none;opacity:1}
 /* 抽屉头：**内容整体居中**；关闭键绝对定位到右侧（不把标题挤偏） */
-.drawer-head{position:relative;display:flex;align-items:center;justify-content:center;
+.drawer-head{position:relative;display:flex;align-items:center;justify-content:flex-start;
   gap:10px;padding:12px 14px;border-bottom:1px solid var(--hair);flex:0 0 auto}
 .drawer-head .icon-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%)}
 .drawer-body{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;
@@ -1582,3 +1582,27 @@ body.stage-empty main.stage{padding-bottom:0}
 .drawer-nav{margin-top:4px;margin-bottom:auto;transform:none}
 
 .drawer-nav{margin-top:18px;margin-bottom:auto;transform:none}
+
+/* 侧栏头部/状态：整体上移并左对齐 */
+.drawer-head{justify-content:flex-start;padding:8px 14px}
+.drawer-body{padding-top:clamp(6px,1.4vh,12px)}
+.env{text-align:left;padding:4px 2px 2px 6px}
+.env-line{display:flex;align-items:center;justify-content:flex-start;gap:6px;
+  text-align:left;margin:1px 0}
+.env-line .dot{margin-right:0;flex:0 0 auto}
+.env-line .env-k{display:inline-block;min-width:62px;text-align:left;flex:0 0 auto}
+.env-line .env-v{text-align:left;flex:1 1 auto;min-width:0}
+
+.env-line{line-height:1.8;min-height:21px;margin:0;padding:1px 0}
+
+.env-line{height:24px;min-height:24px;line-height:24px;margin:0;padding:0;display:flex;overflow:visible}
+
+.env{flex:0 0 auto}
+.drawer-nav{flex:0 0 auto}
+
+.env{line-height:22px !important;font-size:12px !important}
+.env .env-k,.env .env-v,.env .env-v b{line-height:22px !important}
+
+.drawer-nav{margin-top:-30px;margin-bottom:auto;transform:none}
+
+.drawer-nav{margin-top:-8px;margin-bottom:auto;transform:none}

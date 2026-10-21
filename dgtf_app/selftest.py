@@ -1156,8 +1156,8 @@ def main() -> int:
           and "playSendFx(question, ()" in js and "onDone" in js,
           "")
     check("侧边栏：头部/环境**居中**、按钮**图标贴左 + 文字居中**；环境白字、状态点按是否配置着色",
-          "justify-content:center" in _rule(css, ".drawer-head")
-          and "text-align:center" in _rule(css, ".env")
+          "justify-content:flex-start" in _rule(css, ".drawer-head")
+          and "text-align:left" in _rule(css, ".env")
           and "justify-content:flex-start" in _rule(css, ".nav-btn")
           and "text-align:center" in _rule(css, ".nav-btn .nb-name")
           and "color:var(--t1)" in _rule(css, ".env")
