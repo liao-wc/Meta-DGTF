@@ -3246,6 +3246,7 @@ let agentV2 = null;
 let agentPareto = null;
 let agentV2AB = null;
 let agentV2Pareto = null;
+let agentConsistency = null;
 
 function agentIsoShort(x) {
   if (!x) return '—';
@@ -3564,6 +3565,31 @@ function agentRenderV2() {
   box.innerHTML = html;
 }
 
+function agentRenderConsistency() {
+  const box = $('#agent-consistency');
+  if (!box) return;
+  const d = agentConsistency || {};
+  const n = $('#agent-consistency-n');
+  const checks = d.checks || {};
+  if (n) n.textContent = String(Object.keys(checks).length);
+  if (!checks || !Object.keys(checks).length) {
+    box.innerHTML = agentEmpty('还没有自洽审计读数。');
+    return;
+  }
+  let html = '<div class="agent-item"><div class="agent-row"><span class="chip">'
+    + (d.ok ? '自洽通过' : '存在警告') + '</span><span class="agent-t">'
+    + esc(String((d.warnings || []).length)) + ' 项诊断</span></div>';
+  Object.keys(checks).sort().forEach(function (k) {
+    const v = checks[k] || {};
+    const st = v.ok ? '通过' : '诊断';
+    html += '<div class="agent-item"><div class="agent-row"><span class="chip">'
+      + esc(k) + '</span><span class="chip">' + st + '</span>'
+      + '<span class="agent-t">' + esc(JSON.stringify(v).slice(0, 320)) + '</span></div></div>';
+  });
+  html += '</div>';
+  box.innerHTML = html;
+}
+
 function agentRenderAll() {
   agentRenderTasks();
   agentRenderResults();
@@ -3573,6 +3599,7 @@ function agentRenderAll() {
   agentRenderProps();
   agentRenderRun();
   agentRenderV2();
+  agentRenderConsistency();
 }
 
 async function loadAgent() {
@@ -3583,7 +3610,7 @@ async function loadAgent() {
   if (resBox) resBox.innerHTML = agentEmpty('读取中…');
   const knBox = $('#agent-knowledge');
   if (knBox) knBox.innerHTML = agentEmpty('读取中…');
-  const [t, r, k, ds, da, pr, v2, pa, vab, vpar] = await Promise.all([
+  const [t, r, k, ds, da, pr, v2, pa, vab, vpar, con] = await Promise.all([
     api('/api/agent/tasks').catch(e => ({ tasks: [], error: e.message })),
     api('/api/agent/results').catch(e => ({ results: [], error: e.message })),
     api('/api/agent/knowledge').catch(e => ({ items: [], error: e.message })),
@@ -3594,6 +3621,7 @@ async function loadAgent() {
     api('/api/schedule/pareto?prefer=' + encodeURIComponent((document.querySelector('#pareto-prefer') || {}).value || 'balanced')).catch(e => ({ ok: false, error: e.message })),
     api('/api/schedule/v2/ab?all=1').catch(e => ({ ok: false, error: e.message })),
     api('/api/schedule/v2/pareto').catch(e => ({ ok: false, error: e.message })),
+    api('/api/consistency').catch(e => ({ ok: false, error: e.message })),
   ]);
   agentTasks = (t && t.tasks) || [];
   agentResults = (r && r.results) || [];
@@ -3605,6 +3633,7 @@ async function loadAgent() {
   agentPareto = pa || null;
   agentV2AB = vab || null;
   agentV2Pareto = vpar || null;
+  agentConsistency = con || null;
   agentRenderAll();
   const errs = [t && t.error, r && r.error, k && k.error].filter(Boolean);
   const msg = $('#agent-msg');
