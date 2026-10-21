@@ -1724,13 +1724,17 @@ def _auto_proposal(task_text="", title="", emit=None, model=""):
     res = _run_dsh_agent(prompt, "", timeout=300, auto_repair=False,
                          emit=emit, model=model)
     pid = "prop-" + str(int(_tm.time() * 1000))
+    plan = str(res.get("text") or "")
+    blocked = bool(res.get("security_blocked")) or ("[安全拦截]" in plan)
     prop = _save_proposal({"id": pid, "ts": _tm.time(), "task": t,
-                           "plan": str(res.get("text") or ""),
+                           "plan": plan,
                            "session_id": res.get("session_id") or "",
                            "conversation_id": res.get("conversation_id") or "",
-                           "status": "pending", "approver": "",
+                           "status": ("expired" if blocked else "pending"),
+                           "approver": "",
+                           "expired_reason": ("security_blocked_tool_access" if blocked else ""),
                            "events": list(res.get("events") or [])[-50:]})
-    return {"ok": bool(res.get("ok")), "proposal": prop}
+    return {"ok": bool(res.get("ok")) and not blocked, "proposal": prop}
 
 
 _REPAIR_VERSION_FILE = Path(__file__).resolve().parent.parent / "dgtf_memory" / "repair_version.json"
@@ -2367,6 +2371,7 @@ def _auto_cycle_all(emit=None, model=""):
     plans = {}
     audit_text = ""
     audit_ok = True
+    res = {}
     if todo:
         compact = [{"task_id": str(t.get("id") or ""),
                     "title": str(t.get("title") or "")[:160],
@@ -2387,14 +2392,17 @@ def _auto_cycle_all(emit=None, model=""):
                 if isinstance(x, dict) and x.get("task_id"):
                     plans[str(x["task_id"])] = str(x.get("plan") or "")
     made = []
+    _blocked = ("[安全拦截]" in audit_text) or ("security_blocked" in str(res))
     for t in todo:
         tid = str(t.get("id") or "")
         plan = plans.get(tid) or ("DSH 批量自审：待针对该任务补充具体方案。"
                                   + (("\n" + audit_text[:800]) if audit_text else ""))
         prop = _save_proposal({"id": "prop-" + str(int(_tm.time() * 1000)) + "-" + tid[:6],
                                "ts": _tm.time(), "task": t, "task_id": tid,
-                               "plan": plan, "status": "pending", "approver": "",
-                               "session_id": "", "batch": True})
+                               "plan": plan,
+                               "status": ("expired" if _blocked else "pending"),
+                               "expired_reason": ("security_blocked_tool_access" if _blocked else ""),
+                               "approver": "", "session_id": "", "batch": True})
         made.append(prop)
     return {"ok": audit_ok or bool(made),
             "tasks_total": len(tasks), "tasks_submitted": len(tasks),
