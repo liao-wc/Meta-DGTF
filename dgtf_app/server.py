@@ -1833,6 +1833,36 @@ def _v2_paired_ab(left="", right=""):
                         "同一 run 内各模板 quality 相同，模板胜者不可识别（影子读数未独立区分模板）"))}
 
 
+def _v2_replay_packed(limit=30):
+    """用真实 packed 重新回放 V2，写入按层 quality 的 schedule_outcome。"""
+    import sys as _sys
+    root = Path(__file__).resolve().parent.parent
+    if str(root) not in _sys.path:
+        _sys.path.insert(0, str(root))
+    try:
+        from dgtf_v2 import replay as _rp
+    except Exception as exc:
+        return {"ok": False, "error": str(exc)}
+    paths = [str(p) for p in sorted(oi.OUTPUTS_DIR.glob("*.packed.json"),
+                                    key=lambda p: p.stat().st_mtime, reverse=True)[:max(1, int(limit))]]
+    if not paths:
+        return {"ok": False, "error": "没有 packed 产物"}
+    target = root / "dgtf_memory" / "v2_events.jsonl"
+    import shutil as _sh
+    import time as _t
+    bak = ""
+    try:
+        if target.exists():
+            bak = str(target) + ".bak-replay-" + str(int(_t.time()))
+            _sh.copy2(target, bak)
+        res = _rp.replay(paths, limit=max(1, int(limit)), memory_path=target)
+    except Exception as exc:
+        return {"ok": False, "error": str(exc), "backup": bak}
+    return {"ok": True, "limit": limit, "backup": bak,
+            "runs": res.get("runs"), "quality_mean": res.get("quality_mean"),
+            "memory": res.get("memory"), "paired": _v2_paired_ab()}
+
+
 def _v2_rebuild():
     """用真实 packed 重算 V2 schedule_outcome 的按层 quality。"""
     import json as _json
@@ -2701,6 +2731,13 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(_eml_replay(
                     limit=int(data.get("limit") or 60),
                     dry_run=bool(data.get("dry_run", True))))
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/schedule/v2/replay":
+            try:
+                data = self._read_json()
+                return self._json(_v2_replay_packed(
+                    limit=int(data.get("limit") or 30)))
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/schedule/v2/rebuild":

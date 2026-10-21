@@ -80,8 +80,9 @@ def _entry_quality(d: dict, entry: str) -> float:
     return round(max(0.0, min(1.0, 0.5 * cov + 0.3 * content + 0.2 * flag_pen)), 4)
 
 
-def replay(paths: list[str], limit: int = 20) -> dict:
-    mem = MemoryLake()
+def replay(paths: list[str], limit: int = 20,
+           memory_path: str | Path | None = None) -> dict:
+    mem = MemoryLake(memory_path)
     used = 0
     routes: Counter = Counter()
     qualities: list[float] = []
