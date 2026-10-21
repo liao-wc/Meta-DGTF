@@ -777,20 +777,42 @@ _RUNTIME_PREFIXES = ("dgtf_memory/", "outputs/", "dgtf_app/runs/",
                      ".workbuddy/")
 
 
-def _commit_scope(paths):
-    """自动修复只提交源码/文档；运行记录与缓存不进提交。"""
+def _plan_paths(plan):
+    """从提案计划抽取显式文件路径；自动提交只放行计划点名的新文件。"""
+    import re as _re
+    out = set()
+    for m in _re.findall(r"[\w./-]+\.[A-Za-z0-9]{1,8}", str(plan or "")):
+        p = m.replace("\\", "/").lstrip("./")
+        if p and not p.startswith("/") and ".." not in p.split("/"):
+            out.add(p)
+    return out
+
+
+def _commit_scope(paths, allowed=None):
+    """自动修复只提交源码/文档；运行记录、缓存和计划外新文件不进提交。"""
     out = []
+    allowed = set(allowed or [])
+    tracked = set()
+    try:
+        plist = [str(p) for p in paths if p]
+        if plist:
+            tracked = set((_git(["ls-files", "--"] + plist).get("out") or "").splitlines())
+    except Exception:
+        tracked = set()
     for p in paths:
         p = str(p or "").strip()
         if not p or p.startswith(_RUNTIME_PREFIXES):
             continue
         if p.endswith((".log", ".pyc", ".sqlite3")):
             continue
+        if allowed and p not in tracked and p not in allowed:
+            continue
         out.append(p)
     return out
 
 
-def _auto_commit(before: set, task: str, before_head: str = "", before_fp=None):
+def _auto_commit(before: set, task: str, before_head: str = "", before_fp=None,
+                 allowed=None):
     after = _git_snapshot()
     new = after - before
     if before_fp is not None:
@@ -798,7 +820,7 @@ def _auto_commit(before: set, task: str, before_head: str = "", before_fp=None):
         cur = _git_fingerprints()
         new = new | {p for p in (after & set(before_fp))
                      if cur.get(p) != before_fp.get(p)}
-    new = _commit_scope(sorted(new))
+    new = _commit_scope(sorted(new), allowed=allowed)
     if not new:
         ah = (_git(["rev-parse", "HEAD"]).get("out") or "").strip()
         if before_head and ah and ah != before_head:
@@ -1880,7 +1902,8 @@ def _repair_with_acceptance(prop, model="", emit=None, max_attempts=3,
     sid = str(prop.get("session_id") or "")
     convs, attempts = [], []
     prompt = ("按以下已确认提案执行修复：" + plan +
-              "。先读取相关项目文件核对；修改后运行 fast_gate.py；"
+              "。先读取相关项目文件核对；只修改方案涉及的文件；"
+              "不要在你的沙箱里运行 fast_gate.py（工作台会统一运行）；"
               "不要执行 git add / git commit / push；验收由工作台统一执行。"
               + str(extra_context or ""))
     last_gate, last_acc, last_repair, last_sec = {}, {}, {}, {}
@@ -1899,12 +1922,13 @@ def _repair_with_acceptance(prop, model="", emit=None, max_attempts=3,
             _git(["reset", "--mixed", before_head])
         if res.get("conversation_id"):
             convs.append(str(res["conversation_id"]))
-        changed = _changed_since(before, before_fp)
+        # 只把源码/文档纳入验收与安全审查；DSH 会话文件、日志等运行产物不算变更。
+        changed = _commit_scope(_changed_since(before, before_fp))
         last_gate = _run_fast_gate()
         last_acc = _targeted_acceptance(changed) if changed else {
             "ok": False, "checks": [{"name": "changed", "ok": False,
                                      "tail": "本轮没有文件变更"}]}
-        last_sec = _security_scan_changed(changed)
+        last_sec = _security_scan_changed(_commit_scope(changed))
         attempts.append({"attempt": n, "changed": changed,
                          "gate": last_gate, "acceptance": last_acc,
                          "security": last_sec,
@@ -1919,7 +1943,8 @@ def _repair_with_acceptance(prop, model="", emit=None, max_attempts=3,
                     "conversation_id": convs[-1] if convs else "",
                     "session_id": sid, "events": list(res.get("events") or [])}
         if last_gate.get("ok") and last_acc.get("ok"):
-            last_repair = _auto_commit(before, task, before_head, before_fp)
+            last_repair = _auto_commit(before, task, before_head, before_fp,
+                                         allowed=_plan_paths(plan))
             return {"ok": bool(last_repair.get("committed")),
                     "gate": last_gate, "acceptance": last_acc,
                     "security": last_sec,
