@@ -2087,8 +2087,12 @@ def _security_review_proposal(prop):
     return {"ok": True, "reason": "no_sensitive_term"}
 
 
-def _security_scan_changed(changed):
-    """提交前扫描新增代码/配置中的密钥、危险执行面与敏感文件；命中不提交。"""
+def _security_scan_changed(changed, allow_sensitive=False):
+    """提交前扫描新增代码/配置中的密钥、危险执行面与敏感文件；命中不提交。
+
+    allow_sensitive 只给「用户已人工确认」的 server.py/dsh_tool.py 修复用；
+    .env/.ssh/.git/依赖清单等仍然硬拒绝。
+    """
     import re as _re
     findings = []
     patterns = [
@@ -2114,8 +2118,11 @@ def _security_scan_changed(changed):
         path = str(p)
         low = path.lower()
         if any(x in low for x in _SECURITY_SENSITIVE_PATHS):
-            findings.append({"file": path, "rule": "sensitive_file"})
-            continue
+            if allow_sensitive and low.endswith(("dgtf_app/server.py", "dgtf_app/dsh_tool.py")):
+                pass  # 人工确认后允许改安全核心文件，但继续扫描新增代码
+            else:
+                findings.append({"file": path, "rule": "sensitive_file"})
+                continue
         if not low.endswith(_SECURITY_CODE_EXTS):
             continue
         try:
@@ -2129,7 +2136,9 @@ def _security_scan_changed(changed):
                 d = _git(args).get("out") or ""
                 added += [ln[1:] for ln in d.splitlines()
                           if ln.startswith("+") and not ln.startswith("+++")]
-            lines = added or path_obj.read_text(encoding="utf-8", errors="replace").splitlines()
+            tracked = bool((_git(["ls-files", "--", path]).get("out") or "").strip())
+            lines = added if (added or tracked) else path_obj.read_text(
+                encoding="utf-8", errors="replace").splitlines()
         except Exception:
             continue
         for ln in lines:
@@ -2138,6 +2147,22 @@ def _security_scan_changed(changed):
                     findings.append({"file": path, "rule": name})
                     break
     return {"ok": not findings, "findings": findings[:20]}
+
+
+def _security_invariants():
+    """用户确认修 server.py 时，必须保留的关键安全结构。"""
+    p = Path(__file__).resolve().parent.parent / "dgtf_app" / "server.py"
+    try:
+        src = p.read_text(encoding="utf-8", errors="replace")
+    except Exception as exc:
+        return {"ok": False, "missing": ["read:" + str(exc)]}
+    markers = [
+        "Host 不在白名单", "X-CSRF-Token", "def _guard(self, mutate",
+        "def _security_headers", "Content-Security-Policy", "_CSRF_TOKEN",
+        "_DSH_TOKENS", "def _wb_token_ok", "def _dsh_workbench",
+    ]
+    missing = [m for m in markers if m not in src]
+    return {"ok": not missing, "missing": missing}
 
 
 def _changed_since(before, before_fp=None):
@@ -2169,7 +2194,7 @@ def _run_fast_gate():
 
 
 def _repair_with_acceptance(prop, model="", emit=None, max_attempts=3,
-                            extra_context="", permission=""):
+                            extra_context="", permission="", allow_sensitive=False):
     """修复 → fast_gate → 针对性验收；不通过就带着失败信息继续修，直到通过才提交。
 
     关键：DSH 阶段 auto_repair=False，不提前 git commit；工作台验收通过后
@@ -2215,7 +2240,16 @@ def _repair_with_acceptance(prop, model="", emit=None, max_attempts=3,
         last_acc = _targeted_acceptance(changed) if changed else {
             "ok": False, "checks": [{"name": "changed", "ok": False,
                                      "tail": "本轮没有文件变更"}]}
-        last_sec = _security_scan_changed(changed)
+        last_sec = _security_scan_changed(changed, allow_sensitive=allow_sensitive)
+        if str(_git(["status", "--porcelain", "--", "dgtf_app/server.py"]).get("out") or "").strip():
+            inv = _security_invariants()
+            if not inv.get("ok"):
+                last_sec = {"ok": False,
+                            "findings": [{"file": "dgtf_app/server.py",
+                                          "rule": "missing_security_invariant:" + m}
+                                         for m in (inv.get("missing") or [])]}
+        if allow_sensitive:
+            last_sec["override"] = "human_confirmed_sensitive"
         attempts.append({"attempt": n, "changed": changed,
                          "gate": last_gate, "acceptance": last_acc,
                          "security": last_sec,
@@ -3058,7 +3092,8 @@ def _autofix_workflow(data, write):
             res = _repair_with_acceptance(
                 prop, model=str((data or {}).get("model") or ""),
                 emit=_emit_fix, max_attempts=3, extra_context=learn,
-                permission=str((data or {}).get("permission") or ""))
+                permission=str((data or {}).get("permission") or ""),
+                allow_sensitive=(str(prop.get("approver") or "") == "user"))
         except Exception as exc:
             res = {"ok": False, "gate": {}, "acceptance": {},
                    "repair": {"committed": False, "why": str(exc)},
@@ -6516,7 +6551,8 @@ class Handler(BaseHTTPRequestHandler):
                 res = _repair_with_acceptance(prop, model="deepseek-flash",
                                               emit=_emit_appr, max_attempts=3,
                                               extra_context=learn,
-                                              permission=str(data.get("permission") or ""))
+                                              permission=str(data.get("permission") or ""),
+                                              allow_sensitive=(str(data.get("mode") or "") == "user"))
                 repair = res.get("repair") or {}
                 prop["status"] = ("applied" if (repair.get("committed") and res.get("ok"))
                                   else "failed")
@@ -6555,7 +6591,8 @@ class Handler(BaseHTTPRequestHandler):
             learn = _autopilot_knowledge(prop) if _autopilot_cfg_load().get("enabled", False) else ""
             res = _repair_with_acceptance(prop, model="deepseek-flash",
                                           max_attempts=3, extra_context=learn,
-                                          permission=str(data.get("permission") or ""))
+                                          permission=str(data.get("permission") or ""),
+                                          allow_sensitive=(str(data.get("mode") or "") == "user"))
             repair = res.get("repair") or {}
             prop["status"] = ("applied" if (repair.get("committed") and res.get("ok"))
                               else "failed")
