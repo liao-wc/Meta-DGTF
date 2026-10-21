@@ -79,6 +79,8 @@ engine 元DGTF-V1.30.0.py
 | Agent 面板“V2 调度”标签 | 展示事件总数、kind/layer 分布、模板级 A/B（quality±CI/tokens/calls）、帕累托前沿、最近 5 条事件；含偏好选择与“采用帕累托”按钮 |
 | `GET /api/schedule/v2/ab` | Welch 近似 A/B：均值差、se、t、p、胜者；`all=1` 返回 Benjamini-Hochberg FDR 成对校正 |
 | `POST /api/schedule/v2/apply-best` | 按 95% 置信下界选最佳 V2 模板，写入 policy；paired 不可识别时返回 warning |
+| `GET /api/schedule/v2/pareto` | V2 模板级质量-成本联合帕累托前沿（quality low vs tokens） |
+| `POST /api/schedule/v2/apply-pareto` | 按 prefer 选择联合帕累托模板并写入 policy/route/rounds |
 | `GET /api/schedule/v2/ab?paired=1` | 同一 run_id 的配对检验；检测 V2 影子模板 quality 是否可区分 |
 | `POST /api/schedule/v2/rebuild` | 用 packed 重算历史 schedule_outcome 的按层 quality；写前备份 |
 | `POST /api/schedule/v2/replay` | 用修复后的按层质量公式回放现存 packed，追加到 V2 记忆（先备份）；limit=120 可全量 |

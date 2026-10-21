@@ -1863,6 +1863,76 @@ def _v2_replay_packed(limit=30):
             "memory": res.get("memory"), "paired": _v2_paired_ab()}
 
 
+def _v2_template_pareto(prefer="balanced", limit=2000):
+    """V2 模板级质量-成本联合帕累托：quality 越高越好，tokens 越低越好。"""
+    s = _v2_shadow_status(limit=limit)
+    bt = s.get("by_template") or {}
+    pts = []
+    for k, v in bt.items():
+        n = int(v.get("n") or 0)
+        if n <= 0:
+            continue
+        pts.append({"template": k, "n": n,
+                    "quality": float(v.get("quality") or 0),
+                    "low": float(v.get("low") or 0),
+                    "tokens": float(v.get("tokens") or 0),
+                    "calls": float(v.get("calls") or 0),
+                    "ci95": float(v.get("ci95") or 0)})
+    if not pts:
+        return {"ok": True, "points": [], "frontier": [], "recommended": None,
+                "note": "暂无 V2 模板样本"}
+    # 非支配：quality 更高且 tokens 更低（用 low 做保守质量）。
+    front = []
+    for p in sorted(pts, key=lambda x: (x["tokens"], -x["low"])):
+        if not any((q["tokens"] <= p["tokens"] and q["low"] >= p["low"]
+                    and (q["tokens"] < p["tokens"] or q["low"] > p["low"]))
+                   for q in pts):
+            front.append(p)
+    max_q = max(p["low"] for p in pts) or 1.0
+    max_t = max(p["tokens"] for p in pts) or 1.0
+    def _score(p):
+        qn = p["low"] / max_q
+        cn = p["tokens"] / max_t
+        if prefer == "cost":
+            return -cn + 0.15 * qn
+        if prefer == "quality":
+            return qn - 0.15 * cn
+        return qn - 0.35 * cn
+    rec = max(pts, key=_score)
+    return {"ok": True, "points": pts, "frontier": front,
+            "recommended": rec, "prefer": prefer,
+            "metric_note": "quality 下界 vs tokens；真实 V2 模板聚合",
+            "n": len(pts)}
+
+
+def _v2_apply_pareto(prefer="balanced", limit=2000):
+    import json as _json
+    import time as _t
+    pr = _v2_template_pareto(prefer=prefer, limit=limit)
+    rec = pr.get("recommended") or {}
+    tmpl = str(rec.get("template") or "")
+    if not tmpl:
+        return {"ok": False, "error": "没有可用的 V2 模板"}
+    route = tmpl.split(":", 1)[0] if ":" in tmpl else "auto"
+    rounds = tmpl.rsplit(":r", 1)[1] if ":r" in tmpl else ""
+    pol = _schedule_policy_load()
+    pol.update({"pareto_template": tmpl, "route": route, "rounds": rounds,
+                "template": tmpl,
+                "pareto_quality": rec.get("quality"),
+                "pareto_low": rec.get("low"),
+                "pareto_tokens": rec.get("tokens"),
+                "pareto_applied_at": _t.time(), "pareto_prefer": prefer})
+    try:
+        _SCHEDULE_POLICY_FILE.parent.mkdir(parents=True, exist_ok=True)
+        _SCHEDULE_POLICY_FILE.write_text(
+            _json.dumps(pol, ensure_ascii=False, indent=1), encoding="utf-8")
+        return {"ok": True, "recommended": rec, "policy": pol,
+                "frontier_n": len(pr.get("frontier") or []),
+                "path": str(_SCHEDULE_POLICY_FILE)}
+    except Exception as exc:
+        return {"ok": False, "error": str(exc)}
+
+
 def _v2_rebuild():
     """用真实 packed 重算 V2 schedule_outcome 的按层 quality。"""
     import json as _json
@@ -2341,6 +2411,13 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(_eml_status())
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/schedule/v2/pareto":
+            try:
+                return self._json(_v2_template_pareto(
+                    prefer=str((q.get("prefer") or ["balanced"])[0]),
+                    limit=int((q.get("limit") or ["2000"])[0] or 2000)))
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/schedule/v2/ab":
             try:
                 if str((q.get("paired") or [""])[0]) in ("1", "true", "yes"):
@@ -2743,6 +2820,14 @@ class Handler(BaseHTTPRequestHandler):
         if p == "/api/schedule/v2/rebuild":
             try:
                 return self._json(_v2_rebuild())
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/schedule/v2/apply-pareto":
+            try:
+                data = self._read_json()
+                return self._json(_v2_apply_pareto(
+                    prefer=str(data.get("prefer") or "balanced"),
+                    limit=int(data.get("limit") or 2000)))
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/schedule/v2/apply-best":

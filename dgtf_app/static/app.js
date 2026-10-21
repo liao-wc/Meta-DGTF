@@ -4506,6 +4506,22 @@ function init() {
   });
   const _agentRefresh = $('#agent-refresh');
   if (_agentRefresh) _agentRefresh.addEventListener('click', loadAgent);
+  const _v2ParetoApply = $('#agent-v2-pareto-apply');
+  if (_v2ParetoApply) _v2ParetoApply.addEventListener('click', async () => {
+    const m = document.querySelector('#agent-msg');
+    if (m) m.textContent = '正在计算 V2 模板质量-成本帕累托…';
+    try {
+      const _prefer = ($('#pareto-prefer') || {}).value || 'balanced';
+      const r = await api('/api/schedule/v2/apply-pareto', {method:'POST',
+        headers:{'Content-Type':'application/json'}, body: JSON.stringify({prefer:_prefer})});
+      if (m) m.textContent = r.ok ? ('已采用模板帕累托：' + (((r.recommended || {}).template) || '') +
+        '（quality ' + String(((r.recommended || {}).quality) || 0) +
+        ' / tokens ' + String(((r.recommended || {}).tokens) || 0) + '）') : ('失败：' + (r.error || ''));
+      await loadAgent();
+    } catch (e) {
+      if (m) m.textContent = '模板帕累托保存失败：' + e.message;
+    }
+  });
   const _v2BestApply = $('#agent-v2-best-apply');
   if (_v2BestApply) _v2BestApply.addEventListener('click', async () => {
     const m = document.querySelector('#agent-msg');
