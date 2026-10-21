@@ -1655,3 +1655,7 @@ body.stage-empty main.stage{padding-bottom:0}
 /* 状态值取消高亮；标签统一高亮 */
 .env .env-v,.env .env-v b{-webkit-text-stroke:0;text-shadow:none;font-weight:800}
 .env .env-k{color:#6EA8FE;text-shadow:0 0 7px rgba(110,168,254,.55)}
+
+/* 状态值不加粗；标签加粗 */
+.env .env-v,.env .env-v b{font-weight:400 !important;-webkit-text-stroke:0;text-shadow:none}
+.env .env-k{font-weight:700 !important}
