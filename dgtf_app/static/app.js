@@ -216,14 +216,14 @@ function renderAdvItem(it) {
 
 /* 高级参数页：**只列分组按钮**（点一个 → 进下一层新页看该组参数） */
 const ADV_GROUP_CN = {
-  api: '模型与 API', runtime: '运行档位', web_search: '联网检索',
-  external_anchor: '外部锚点', auto: '自适应调度', output: '输出',
-  memory: '记忆通道', spiral: '螺旋与停止', probe: '探针',
-  actions: '动作开关', all_on: '一键全开', autotune: '自动调参',
-  belief: '把握阈值', claim_gap: '缺口检查', duty: '职责开关',
-  external_input: '外部输入', max_tokens: 'Token 预算',
-  playbook: '经验剧本', scheduler: '调度器', sim: '仿真模式',
-  stop: '停止条件',
+  api: '模型与接口', runtime: '运行与资源档位', web_search: '联网检索配置',
+  external_anchor: '外部锚点配置', auto: '自适应调度策略', output: '输出与格式',
+  memory: '记忆通道配置', spiral: '螺旋轮次与停止', probe: '探针与探测',
+  actions: '动作开关配置', all_on: '全量动作开关', autotune: '自动参数调优',
+  belief: '信念与把握阈值', claim_gap: '主张缺口检测', duty: '职责权限开关',
+  external_input: '外部输入配置', max_tokens: 'Token 预算上限',
+  playbook: '经验剧本库', scheduler: '调度器配置', sim: '仿真模式开关',
+  stop: '停止与收尾条件',
 };
 
 const ADV_CATEGORIES = [
@@ -2792,7 +2792,7 @@ async function loadConfig() {
     const engineOk = !!(c.engine && (h.ok !== false) && checks.engine_file !== false);
     $('#env-info').innerHTML =
       line('引擎', esc(c.engine), engineOk) +
-      line('模型', 'DeepSeek', !!k.api_key) +
+      line('模型', 'DeepSeek-Flash', !!k.api_key) +
       line('联网', 'Tavily', !!k.tavily) +
       line('本地 LLM', nBack + ' 个底座 · 默认 Qwen0.5B', nBack > 0) +
       line('Agent', agentOk ? 'DSH 就绪 · 守护运行' : '未就绪', agentOk) +
