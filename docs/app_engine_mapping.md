@@ -87,8 +87,8 @@ engine 元DGTF-V1.30.0.py
 | `POST /api/schedule/llm/predict` | 本地 LoRA 推理：问题→route/rounds |
 | `POST /api/schedule/llm/apply` | 写入 policy 的 llm_route/llm_rounds |
 | `opts.auto_llm` | 任务自动使用本地 LLM 的 route/rounds |
-| `GET /api/project/context?q=` | RAG-lite：从 README/映射/闭环/模型/报告取相关段落 + 权威摘要 |
-| `opts.project_context` | 任务把项目权威背景前置注入问题，减少引擎不认识元DGTF |
+| `GET /api/project/context?q=` | RAG-lite：从 README/映射/闭环/模型/报告取相关段落 + 权威摘要 + 本地资料库 |
+| `opts.project_context` | 覆盖开关；真实任务默认 true（内置注入），mock 默认 false；显式 true/false 可覆盖 |
 | `GET /api/schedule/v2` | V2 shadow 事件读数：按 kind/layer 聚合 + 最近 5 条 + 路径 |
 | Agent 面板“V2 调度”标签 | 展示事件总数、kind/layer 分布、模板级 A/B（quality±CI/tokens/calls）、质量-成本 SVG 散点图、帕累托前沿、最近 5 条事件；含偏好选择与采用按钮 |
 | `GET /api/schedule/v2/ab` | Welch 近似 A/B：均值差、se、t、p、胜者；`all=1` 返回 Benjamini-Hochberg FDR 成对校正 |

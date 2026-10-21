@@ -28,7 +28,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "1.2.0"
+APP_VERSION = "1.2.1"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -2424,6 +2424,9 @@ def _project_context(question="", limit=6):
     keys = [k for k in ("元DGTF", "四层", "修行", "研究", "对撞", "元层", "EML",
                         "DSH", "调度", "LoRA", "app", "映射", "自洽", "边界",
                         "route", "rounds") if k in q]
+    import re as _re_q
+    qterms = [x.lower() for x in _re_q.findall(
+        r"[A-Za-z]{3,}|[\u4e00-\u9fff]{2,4}", q)][:20]
     chunks = []
     for rel in _PROJECT_DOCS:
         for para in _project_doc_paras(rel):
@@ -2441,15 +2444,45 @@ def _project_context(question="", limit=6):
         picked.append({"source": rel, "text": para})
         if len(picked) >= max(1, int(limit)):
             break
-    parts = ["【元DGTF 项目权威背景（本地文档注入，非模型记忆）】", _PROJECT_BRIEF]
+    knowledge = []
+    try:
+        import sys as _sys_k
+        _sys_k.path.insert(0, str(Path(__file__).resolve().parent.parent))
+        from dgtf_v2.agent_bridge import read_knowledge
+        rows = read_knowledge(limit=200)
+        scored = []
+        for it in rows:
+            blob = (str(it.get("title") or "") + " "
+                    + str(it.get("claim") or it.get("summary") or ""))
+            low = blob.lower()
+            if any(s in low for s in _PROJECT_SENSITIVE):
+                continue
+            score = sum(blob.count(k) for k in keys) if keys else 0
+            score += sum(1 for t in qterms if t in low)
+            if score <= 0:
+                continue
+            scored.append((score, it))
+        scored.sort(key=lambda x: x[0], reverse=True)
+        for _sc, it in scored[:4]:
+            knowledge.append({"title": str(it.get("title") or "")[:200],
+                              "url": str(it.get("url") or "")[:300],
+                              "claim": str(it.get("claim") or it.get("summary") or "")[:600]})
+    except Exception:
+        knowledge = []
+    parts = ["【元DGTF 项目权威背景（内置，本地文档+资料库注入）】", _PROJECT_BRIEF]
     for x in picked:
         parts.append("[" + x["source"] + "] " + x["text"])
+    if knowledge:
+        parts.append("【本地资料库（导入/检索）】")
+        for it in knowledge:
+            parts.append("- " + it["title"] + " | " + it["claim"] + " | " + it["url"])
     parts.append("【回答约束】涉及元DGTF时必须依据以上背景；背景没有的，明确说不知道，不得编造。")
     _max = max(1000, min(12000, int(os.getenv(
         "DGTF_PROJECT_CONTEXT_MAX_CHARS", "7000"))))
     txt = "\n".join(parts)
     return {"ok": True, "text": txt[:_max],
             "sources": [x["source"] for x in picked],
+            "knowledge_sources": [x["title"] for x in knowledge],
             "keys": keys, "chars": len(txt[:_max]), "max_chars": _max,
             "sensitive_filter": True, "cached_docs": True}
 
@@ -4328,7 +4361,13 @@ class Handler(BaseHTTPRequestHandler):
             opts = data.get("opts") or {}
             if not isinstance(opts, dict):
                 opts = {}
-            _project_ctx = bool(opts.pop("project_context", False))
+            _pctx_opt = opts.pop("project_context", None)
+            _is_mock_task = bool(opts.get("mock"))
+            if _pctx_opt is None:
+                # 项目背景内置：真实任务默认注入；mock/自检保持原文以稳定基线。
+                _project_ctx = not _is_mock_task
+            else:
+                _project_ctx = bool(_pctx_opt)
             if _project_ctx:
                 _pc = _project_context(question)
                 if _pc.get("text"):

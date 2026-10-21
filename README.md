@@ -15,7 +15,7 @@
 - **调度与帕累托**：方案F profile、V2 模板质量-成本前沿、UCB/上下文 UCB、本地调度模型；见 docs/scheduler_model.md。
 - **自洽审计**：GET /api/consistency + 审计历史；见 docs/app_engine_mapping.md。
 - **针对性真跑**：60 calls / 341K tokens / 758.9s；见 docs/real_run_20261021.md。
-- **边界**：本地 LLM 只做调度建议；四层深度推理仍走 DeepSeek API；项目事实需显式上下文注入（GET /api/project/context）。
+- **项目背景内置**：真实任务默认注入元DGTF权威背景并融合本地资料库；GET /api/project/context 可查看，不再需要前端按钮。
 
 ---
 
