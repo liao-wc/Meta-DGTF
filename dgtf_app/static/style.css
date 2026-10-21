@@ -1619,3 +1619,11 @@ body.stage-empty main.stage{padding-bottom:0}
 /* 侧栏：头部→状态、状态→按钮 两段间隔拉大且相等 */
 .drawer-body{padding-top:28px}
 .drawer-nav{margin-top:-6px;margin-bottom:auto;transform:none}
+
+/* 侧栏：状态整体上移 5px，并让头部→状态、状态→按钮等距 */
+.env{transform:translateY(-5px)}
+.drawer-nav{margin-top:-46px;margin-bottom:auto;transform:none}
+
+.drawer-nav{margin-top:-17px;margin-bottom:auto;transform:none}
+
+.drawer-nav{margin-top:0;margin-bottom:auto;transform:none}
