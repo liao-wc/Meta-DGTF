@@ -28,7 +28,7 @@ ck('engine file exists', eng.exists())
 ck('engine version 1.30.0', '__version__ = "1.30.0"' in eng.read_text(encoding='utf-8', errors='replace'))
 srv = (ROOT / 'dgtf_app' / 'server.py').read_text(encoding='utf-8', errors='replace')
 appver = re.search(r'APP_VERSION = "([^"]+)"', srv)
-ck('app version present 1.4.0', bool(appver and appver.group(1) == '1.4.0'), appver.group(1) if appver else '')
+ck('app version present 1.4.1', bool(appver and appver.group(1) == '1.4.1'), appver.group(1) if appver else '')
 readme = (ROOT / 'README.md').read_text(encoding='utf-8', errors='replace')
 ck('README app version synced', bool(appver and ('app V' + appver.group(1)) in readme),
    [l for l in readme.splitlines() if 'app V' in l][:2])
@@ -105,7 +105,7 @@ ck('llm eval json', bool((llm.get('eval') or {}).get('lora')), llm.get('eval'))
 js = (ROOT / 'dgtf_app' / 'static' / 'app.js').read_text(encoding='utf-8', errors='replace')
 ck('dsh history ui', 'dsh-history' in html and 'resumeDshChat' in js)
 ck('dsh multi-turn one session', 'loadDshConversation' in js and 'conversation_id' in js)
-ck('input moved up', 'body.stage-empty main.stage{padding-bottom:36px}' in (ROOT / 'dgtf_app' / 'static' / 'style.css').read_text(encoding='utf-8', errors='replace'))
+ck('input moved up', 'body.stage-empty main.stage{padding-bottom:52px}' in (ROOT / 'dgtf_app' / 'static' / 'style.css').read_text(encoding='utf-8', errors='replace'))
 
 print('\n===== DEPENDENCY AUDIT PASS %d / FAIL %d =====' % (len(PASS), len(FAIL)))
 out = ROOT / 'docs' / 'dependency_chain_audit.md'

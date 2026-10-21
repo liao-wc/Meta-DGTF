@@ -3,7 +3,7 @@
 一个**单文件**的四层螺旋推理引擎：修行 / 研究 / 对撞 / 元，跑出可审计的产物。
 
 - **当前版本**：`元DGTF-V1.30.0.py`（单文件引擎）
-- **人用界面**：`dgtf_app/`（app V1.4.0；本地 Web 工作台，见 `dgtf_app/README.md`）
+- **人用界面**：`dgtf_app/`（app V1.4.1；本地 Web 工作台，见 `dgtf_app/README.md`）
 - **版本历史**：`CHANGELOG.md`；app 发布说明见 `docs/releases/`
 
 > 这份 README 只写**能被验证**的事：命令都真跑过，数字都是当前版本的实测值。
@@ -17,6 +17,7 @@
 - **针对性真跑**：60 calls / 341K tokens / 758.9s；见 docs/real_run_20261021.md。
 - **项目背景内置**：真实任务默认注入元DGTF权威背景，融合本地资料库与 app 本地上传文件；RAG v2 = BGE 语义检索 + BM25 + 引用 + 分层索引 + 追溯；GET /api/project/context 可查看。
 - **DSH 会话**：当前/历史、点击续聊、同一会话多轮=一条历史、实时事件、按会话取消；workspace-write 可读写项目，禁止 danger-full-access。
+- **知识检索**：Agent 面板“知识检索”与查询框统一走 DSH 知识检索会话，按官方/权威/最新/高置信/高相关筛选后入库；本地资料库导入文件参与 RAG，不训练、不外发。
 - **V2 自动选优**：只保留挡位选择；切换挡位自动评估帕累托/最佳模板/UCB 并写最优。
 - **三本地底座**：Qwen2.5-0.5B / 1.5B / DeepSeek-R1-Distill-Qwen-1.5B；hybrid = Qwen route + DeepSeek rounds。
 - **质量替代分**：/api/quality/<task>，覆盖×回答率×收尾完整度−flags。

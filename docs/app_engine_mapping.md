@@ -81,6 +81,7 @@ engine 元DGTF-V1.30.0.py
 | `POST /api/agent/eml/export` | 导出纯数值训练集（run_id/template/quality/calls/tokens/success），不含答案正文 |
 | `GET /api/agent/eml/dataset` | 训练集元数据：条数、模板分布、字段、mtime |
 | `POST /api/agent/knowledge/refresh` | 技术知识刷新：DeepSeek Search 优先，arXiv 兜底，入库去重 |
+| `POST /api/agent/knowledge/agent-search` | 统一知识检索：官方/权威/最新/高置信/高相关筛选 → 写 DSH 知识检索会话（检索/爬取/筛选过程可追溯）→ 入库；按钮与查询框共用 |
 | `POST /api/agent/auto/start {stage:"full"}` | 全流程：知识刷新→引擎跑次（默认 mock）→消费者→提案 |
 | `GET/POST /api/schedule/model*` | 本地学习模型元数据、预测、应用 |
 | `GET /api/schedule/llm/status` | 本地 0.5B/1.5B/DeepSeek 三底座 + hybrid、训练/评估读数 |

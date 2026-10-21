@@ -28,7 +28,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "1.4.0"
+APP_VERSION = "1.4.1"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -1162,6 +1162,233 @@ def _auto_refresh_knowledge(emit=None, queries=None):
             "stats": res, "dedupe": ded, "knowledge": ks,
             "items": [{"title": it.get("title"), "url": it.get("url"),
                        "source_type": it.get("source_type")} for it in items]}
+
+
+_KNOW_OFFICIAL = (
+    "deepseek.com", "api-docs.deepseek.com", "huggingface.co", "arxiv.org",
+    "semanticscholar.org", "openreview.net", "aclanthology.org",
+    "neurips.cc", "icml.cc", "openai.com", "microsoft.com", "nvidia.com",
+    "googleblog.com", "github.com",
+)
+_KNOW_LOW = ("pypi.org", "npmjs.com", "medium.com", "reddit.com",
+             "twitter.com", "x.com", "youtube.com", "facebook.com")
+_KNOW_KEYWORDS = (
+    "rag", "retrieval", "embedding", "agent", "multi-agent", "memory",
+    "event", "scheduling", "self-evolution", "lora", "fine-tune", "llm",
+    "deepseek", "harness", "dgtf", "eml", "knowledge", "reasoning",
+)
+
+
+def _knowledge_quality(it, qs):
+    """权威/时效/置信/相关/可抓取 五维质量分；返回 (score, reasons)。"""
+    title = str(it.get("title") or "")
+    claim = str(it.get("claim") or it.get("summary") or "")
+    url = str(it.get("url") or "")
+    blob = (title + " " + claim + " " + str(it.get("content") or "")[:1500]).lower()
+    reasons = []
+    score = 0.0
+    domain = ""
+    try:
+        domain = url.split("/")[2].lower() if "://" in url else ""
+    except Exception:
+        domain = ""
+    if ("ezproxy" in domain and "arxiv" in domain):
+        score += 3.0
+        reasons.append("学术镜像域名")
+    elif any(domain == d or domain.endswith("." + d) for d in _KNOW_OFFICIAL):
+        score += 3.0
+        reasons.append("官方/权威域名")
+    if any(domain == d or domain.endswith("." + d) for d in _KNOW_LOW):
+        score -= 4.0
+        reasons.append("低价值源降权")
+    if it.get("authority"):
+        try:
+            score += min(3.0, float(it.get("authority")) / 20.0)
+            reasons.append("authority=" + str(it.get("authority")))
+        except Exception:
+            pass
+    if it.get("confidence"):
+        try:
+            score += min(3.0, float(it.get("confidence")) * 3.0)
+            reasons.append("置信=" + str(it.get("confidence")))
+        except Exception:
+            pass
+    if it.get("fetched") or it.get("fetched_at") or it.get("content"):
+        score += 1.0
+        reasons.append("正文可抓取")
+    pub = str(it.get("published") or "")
+    if "2026" in pub or "2025" in pub:
+        score += 1.5
+        reasons.append("近期")
+    qterms = [t for t in (str(qs or "").lower().replace(",", " ").split()) if len(t) >= 2]
+    rel = sum(1 for k in _KNOW_KEYWORDS if k in blob)
+    rel += sum(1 for t in qterms if t[:24] in blob)
+    if rel:
+        score += min(3.0, rel * 0.8)
+        reasons.append("相关命中=" + str(rel))
+    if len(claim) >= 80:
+        score += 0.5
+        reasons.append("摘要充分")
+    return round(score, 2), reasons
+
+
+def _knowledge_dsh_session(qs, mode, chosen, candidates, error=""):
+    """写一条 DSH 知识检索会话记录，供前端实时展示检索/爬取/筛选过程。"""
+    import time as _t
+    cid = "dshknow-" + str(int(_t.time() * 1000))
+    ev = [{"type": "text",
+           "text": "DSH 知识检索会话 · " + ("前沿刷新" if mode == "refresh" else "自由查询")}]
+    ev.append({"type": "tool_call", "tool": "knowledge.search",
+               "input": {"queries": qs, "quality": "official/authoritative/recent/relevant"}})
+    ev.append({"type": "tool_result", "status": "ok",
+               "result": "检索候选 %d 条，进入质量评估" % len(candidates)})
+    for i, x in enumerate(candidates[:8], 1):
+        ev.append({"type": "text",
+                   "text": "候选 %d · score=%s · %s" % (
+                       i, x.get("_qscore"), str(x.get("title") or "")[:120])})
+        if x.get("_qreasons"):
+            ev.append({"type": "text",
+                       "text": "  质量依据：" + "；".join(x["_qreasons"])})
+    ev.append({"type": "tool_call", "tool": "knowledge.select",
+               "input": {"limit": len(chosen), "min_quality": "official/high-confidence"}})
+    for i, x in enumerate(chosen, 1):
+        ev.append({"type": "tool_result", "status": "selected",
+                   "result": "[%d] %s | %s | %s" % (
+                       i, x.get("title") or "", x.get("url") or "",
+                       "；".join(x.get("_qreasons") or []))})
+    if error:
+        ev.append({"type": "text", "text": "检索失败：" + error})
+    else:
+        ev.append({"type": "text",
+                   "text": "已入库 %d 条高质量知识；可在技术知识库查看。" % len(chosen)})
+    turn = {"id": "turn-" + str(int(_t.time() * 1000)), "task": " ".join(qs)[:500],
+            "status": "error" if error else "done", "events": ev,
+            "text": ("检索失败：" + error) if error else
+                    ("已筛选入库 %d 条。" % len(chosen)),
+            "ts_start": _t.time(), "ts_end": _t.time()}
+    conv = {"id": cid, "session_id": "", "created_at": _t.time(),
+            "updated_at": _t.time(), "agent": "knowledge-curator",
+            "turns": [turn]}
+    try:
+        _conv_save(conv)
+    except Exception:
+        pass
+    return cid, conv
+
+
+def _knowledge_agent_search(queries=None, mode="refresh", limit=3):
+    """统一知识检索：权威/时效/相关筛选 + 写 DSH 会话 + 入库。"""
+    import sys as _sys
+    import time as _kt
+    qs = [str(q).strip() for q in (queries or []) if str(q).strip()]
+    if mode == "refresh" and not qs:
+        qs = ["DeepSeek 官方 最新发布 技术博客 模型 2026",
+              "LLM agent RAG event memory scheduling 2026 official",
+              "multi-agent self-evolution arxiv 2026"]
+    if not qs:
+        return {"ok": False, "error": "查询为空"}
+    limit = max(1, min(6, int(limit or 3)))
+    _sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+    # 从 .env 读检索 key（服务进程环境不一定带）
+    try:
+        for _ln in (Path(__file__).resolve().parent.parent / ".env").read_text(
+                encoding="utf-8", errors="replace").splitlines():
+            if _ln.startswith("DGTF_API_KEY="):
+                os.environ.setdefault("DGTF_API_KEY",
+                                      _ln.split("=", 1)[1].strip().strip('"').strip("'"))
+            if _ln.startswith("TAVILY_API_KEY="):
+                os.environ.setdefault("TAVILY_API_KEY",
+                                      _ln.split("=", 1)[1].strip().strip('"').strip("'"))
+    except Exception:
+        pass
+    from dgtf_v2.agent_bridge import refresh_knowledge_http, dedupe_knowledge
+    try:
+        res = refresh_knowledge_http(qs[:4], return_stats=True,
+                                     limit=max(4, limit * 2))
+    except Exception as exc:
+        res = {"items": [], "error": str(exc)}
+    candidates = list(res.get("items") or [])
+    if not candidates:
+        try:
+            candidates = _arxiv_refresh(qs[:2], limit=limit * 2)
+        except Exception:
+            candidates = []
+    if not candidates:
+        # 检索为空/全是重复：从本地知识库按查询命中，避免“重复即空结果”
+        try:
+            from dgtf_v2.agent_bridge import read_knowledge
+            rows = read_knowledge(limit=300)
+            qblob = " ".join(qs).lower()
+            terms = [t for t in qblob.replace(",", " ").split() if len(t) >= 2]
+            for it in rows:
+                blob = (str(it.get("title") or "") + " "
+                        + str(it.get("claim") or it.get("summary") or "")).lower()
+                _hit = any(t[:24] in blob for t in terms)
+                if mode == "refresh":
+                    _hit = _hit or any(k in blob for k in _KNOW_KEYWORDS)
+                if _hit:
+                    candidates.append(dict(it))
+            candidates = candidates[:max(4, limit * 2)]
+        except Exception:
+            pass
+    scored = []
+    for it in candidates:
+        try:
+            sc, rs = _knowledge_quality(it, " ".join(qs))
+        except Exception:
+            sc, rs = 0.0, []
+        x = dict(it)
+        x["_qscore"] = sc
+        x["_qreasons"] = rs
+        scored.append(x)
+    scored.sort(key=lambda x: x.get("_qscore", 0), reverse=True)
+    _good = [x for x in scored
+             if x.get("_qscore", 0) >= 5.0
+             and not any("低价值源" in r for r in (x.get("_qreasons") or []))]
+    chosen = _good[:limit]
+    if not chosen and scored:
+        # 没有达标源：取非低价值最高分并明确标注“兜底”
+        _fallback = [x for x in scored
+                     if not any("低价值源" in r for r in (x.get("_qreasons") or []))]
+        if not _fallback:
+            _fallback = scored
+        chosen = _fallback[:min(limit, len(_fallback))]
+        for _x in chosen:
+            _x.setdefault("_qreasons", []).append("兜底（未达高质量阈值）")
+    # 去重并写补丁说明
+    try:
+        dedupe_knowledge()
+    except Exception:
+        pass
+    patch_path = ""
+    try:
+        pdir = Path(__file__).resolve().parent.parent / "dgtf_memory"
+        pdir.mkdir(parents=True, exist_ok=True)
+        pp = pdir / "agent_knowledge_patch.md"
+        with pp.open("a", encoding="utf-8") as pf:
+            pf.write("\n## DSH 知识检索 " + _kt.strftime("%Y-%m-%d %H:%M:%S")
+                     + " · " + str(mode) + "\n")
+            for it in chosen:
+                pf.write("- [" + str(it.get("title") or "") + "]("
+                         + str(it.get("url") or "") + ") — "
+                         + str(it.get("claim") or "")[:200] + "\n")
+                if it.get("_qreasons"):
+                    pf.write("  - 质量：" + "；".join(it["_qreasons"]) + "\n")
+        patch_path = str(pp)
+    except Exception:
+        pass
+    cid, conv = _knowledge_dsh_session(qs, mode, chosen, scored,
+                                       error=str(res.get("error") or ""))
+    return {"ok": bool(chosen), "conversation_id": cid,
+            "queries": qs, "mode": mode,
+            "count": len(chosen), "items": [
+                {k: v for k, v in it.items() if not k.startswith("_")}
+                | {"quality_score": it.get("_qscore"),
+                   "quality_reasons": it.get("_qreasons")}
+                for it in chosen],
+            "candidates": len(scored), "patch": patch_path,
+            "conversation": conv,
+            "note": "DSH 知识检索会话；检索/爬取/筛选过程在会话中可追溯"}
 
 
 def _auto_engine_run(emit=None, question="", mock=True, opts=None, timeout=300):
@@ -4590,6 +4817,18 @@ class Handler(BaseHTTPRequestHandler):
                 data = self._read_json()
                 return self._json(_schedule_policy_apply(
                     prefer=str(data.get("prefer") or "balanced")))
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/agent/knowledge/agent-search":
+            try:
+                data = self._read_json()
+                q = str(data.get("q") or data.get("query") or "").strip()
+                qs = [str(x).strip() for x in (data.get("queries") or []) if str(x).strip()]
+                if q and not qs:
+                    qs = [x.strip() for x in q.split(",") if x.strip()]
+                return self._json(_knowledge_agent_search(
+                    queries=qs, mode=str(data.get("mode") or "query"),
+                    limit=int(data.get("limit") or 3)))
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/agent/knowledge/refresh":

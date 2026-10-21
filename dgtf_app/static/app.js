@@ -3472,7 +3472,7 @@ function agentRenderKnowledge() {
   const n = $('#agent-kn-n');
   if (n) n.textContent = String(agentKnowledge.length);
   if (!agentKnowledge.length) {
-    box.innerHTML = agentEmpty('知识库为空。点「刷新技术知识」拉取官方/技术页。');
+    box.innerHTML = agentEmpty('知识库为空。点「知识检索」经 DSH 会话拉取官方/权威/最新资料。');
     return;
   }
   const rows = agentKnowledge.slice().reverse().map(k => {
@@ -4227,41 +4227,33 @@ async function dedupeAgentKnowledge() {
 }
 
 async function refreshAgentKnowledge(mode) {
-  const online = mode === 'online';
   const raw = ($('#agent-kn-q') ? $('#agent-kn-q').value : '').trim();
-  const custom = raw ? raw.split(/[,，]/).map(s => s.trim()).filter(Boolean).slice(0, 4) : [];
-  const defaultQs = ['DeepSeek 官方 最新发布 技术博客 模型 2026',
-    'arxiv LLM multi-agent self-evolution PDF 2026',
-    'AI Agent 技术论坛 社区 最新 讨论 2026'];
-  const qs = custom.length ? custom : defaultQs;
-  const limit = custom.length ? Math.min(6, custom.length * 2) : 3;
-  const btns = ['#agent-online', '#agent-know', '#agent-kn-search']
+  const btns = ['#agent-knowledge-btn', '#agent-kn-search']
     .map(s => document.querySelector(s)).filter(Boolean);
   const msg = $('#agent-msg');
   btns.forEach(b => { b.disabled = true; });
-  if (msg) msg.textContent = online ? '联网搜索最新前沿技术知识…' : '知识刷新中…';
+  if (msg) msg.textContent = '创建 DSH 知识检索会话…';
   try {
-    const r = await api('/api/agent/knowledge', {
+    const r = await api('/api/agent/knowledge/agent-search', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ queries: qs, limit: limit }),
+      body: JSON.stringify({ q: raw, mode: raw ? 'query' : 'refresh', limit: 3 }),
     });
     const items = (r && r.items) || [];
-    const skipped = Number((r && r.skipped_duplicates) || 0);
-    if (msg) msg.textContent = items.length
-      ? ((online ? '联网' : '知识') + '新增 ' + items.length + ' 条'
-         + (skipped ? '，跳过重复 ' + skipped + ' 条' : '')
-         + (r && r.patch ? '，补丁已写入 ' + String(r.patch).split('\\').pop() : ''))
-      : (skipped
-        ? ('知识刷新完成：0 条新增，已跳过重复 ' + skipped + ' 条')
-        : '知识刷新完成：0 条（无联网结果或未配置 Key，已安全降级）');
+    if (msg) msg.textContent = r.ok
+      ? ('DSH 知识检索：筛选 ' + items.length + ' 条高质量结果，正在打开会话…')
+      : ('知识检索失败：' + (r.error || '无高质量结果'));
     await loadAgent();
+    if (r && r.conversation_id) {
+      closeSheet(); closeDrawer();
+      await resumeDshChat(r.conversation_id);
+    }
     if (items.length) {
       const tab = document.querySelector('[data-agent-tab="2"]');
       if (tab) tab.click();
     }
   } catch (e) {
-    if (msg) msg.textContent = '知识刷新失败：' + e.message;
+    if (msg) msg.textContent = '知识检索失败：' + e.message;
   } finally {
     btns.forEach(b => { b.disabled = false; });
   }
@@ -4959,10 +4951,8 @@ function init() {
   });
   const _agentRun = $('#agent-run');
   if (_agentRun) _agentRun.addEventListener('click', () => autoAgent('consumer'));
-  const _agentKnow = $('#agent-know');
-  if (_agentKnow) _agentKnow.addEventListener('click', () => refreshAgentKnowledge('refresh'));
-  const _agentOnline = $('#agent-online');
-  if (_agentOnline) _agentOnline.addEventListener('click', () => refreshAgentKnowledge('online'));
+  const _agentKnowledge = $('#agent-knowledge-btn');
+  if (_agentKnowledge) _agentKnowledge.addEventListener('click', () => refreshAgentKnowledge('refresh'));
   const _agentKnSearch = $('#agent-kn-search');
   if (_agentKnSearch) _agentKnSearch.addEventListener('click', () => refreshAgentKnowledge('query'));
   const _agentKnDedupe = $('#agent-kn-dedupe');

@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/static/style.css?v=1.4.1">
+<link rel="stylesheet" href="/static/style.css?v=1.4.3">
 </head>
 <body class="stage-empty">
 
@@ -205,9 +205,10 @@
 
     <section id="view-local" class="panel sheet-page">
       <div class="hint tight">
-        导入的文件存进 <code>dgtf_app/anchors/</code>，并重建合并快照
-        <code>anchors/external_anchor.json</code> —— 把 <code>dgtf_config.yaml</code>
-        的 <code>external_anchor.path</code> 指到它即可当锚点用。
+        <b>本地资料库</b>：导入文件会解析成文本、按块存入
+        <code>dgtf_app/anchors/external_anchor.json</code>，并作为本地 RAG 证据
+        （BGE 语义 + BM25）参与项目上下文；原文件留档在 anchors/_raw。
+        只读/可删除，不参与模型训练，也不会自动外发。
       </div>
       <div class="import-bar">
         <!-- ★ R44：改成**真按钮**去点隐藏 input —— 原来靠 `<label>` 包着 `display:none`
@@ -253,12 +254,11 @@
         <button id="agent-auto" class="ghost" data-tip="全流程闭环：知识刷新 → 引擎跑次（默认 mock）→ 消费者/任务 → 自审提案；已包含原轻量提案闭环">DSH 全流程闭环</button>
         <button id="prop-autofix" class="ghost" data-tip="DSH 自动代理修复所有已确认待修复提案">自动修复提案</button>
         <button id="dsh-config-btn" class="ghost" data-tip="展开 DSH Agent 档位 / 工作权限配置">DSH Agent 配置</button>
-        <button id="agent-online" class="ghost" data-tip="联网搜索并 patch 最新前沿技术知识（默认 3 条）">联网</button>
-        <button id="agent-know" class="ghost" data-tip="按查询刷新技术知识库（服务端 Search/Fetch，失败不阻断面板）">刷新技术知识</button>
+        <button id="agent-knowledge-btn" class="ghost" data-tip="统一知识检索：检索/爬取官方权威、最新、高置信、高相关资料，并在 DSH 会话中展示过程">知识检索</button>
         <span class="search-wrap">
-          <input id="agent-kn-q" placeholder="知识查询（逗号分隔；留空 = 默认 3 条）" autocomplete="off">
+          <input id="agent-kn-q" placeholder="自由查询（官方/权威/最新优先；留空=前沿刷新）" autocomplete="off">
         </span>
-        <button id="agent-kn-search" class="ghost" data-tip="按输入框查询联网知识">查询知识</button>
+        <button id="agent-kn-search" class="ghost" data-tip="按输入框自由查询高质量知识（走同一 DSH 知识检索会话）">查询</button>
         <button id="agent-kn-dedupe" class="ghost" data-tip="清理技术知识库中的重复条目（保留最新一条）">库去重</button>
         <span class="muted" id="agent-msg"></span>
       </div>
@@ -307,7 +307,7 @@
           <div id="agent-results" class="agent-list"></div>
         </div>
         <div class="agent-sec">
-          <div class="agent-sec-h">技术知识库 <span class="chip" id="agent-kn-n">0</span></div>
+          <div class="agent-sec-h">技术知识库 <span class="chip" id="agent-kn-n">0</span><span class="muted" style="font-size:10.5px;margin-left:6px">经 DSH 检索会话按官方/时效/置信/相关筛选</span></div>
           <div id="agent-knowledge" class="agent-list"></div>
         </div>
         <div class="agent-sec">
@@ -551,6 +551,6 @@
 
 
 
-<script src="/static/app.js?v=1.4.1"></script>
+<script src="/static/app.js?v=1.4.3"></script>
 </body>
 </html>

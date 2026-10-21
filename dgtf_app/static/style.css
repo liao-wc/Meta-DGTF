@@ -1524,5 +1524,5 @@ body.dsh-mode .dsh-ctl{display:inline-flex;align-items:center}
 .dsh-chat-task{margin-top:4px;font-size:11px;color:var(--t3);
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .dsh-chat-meta{margin-top:3px;font-size:10.5px;color:var(--t3)}
-body.stage-empty main.stage{padding-bottom:36px}
+body.stage-empty main.stage{padding-bottom:52px}
 
