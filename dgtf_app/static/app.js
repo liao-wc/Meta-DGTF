@@ -3803,6 +3803,8 @@ function agentRenderProps() {
     } else if (st === 'applied') {
       acts = '<button class="ghost danger" data-prop-rollback="' + esc(x.id) + '">回退并撤销修复</button>';
       if (x.acceptance) acts += '<button class="ghost" data-acceptance="' + esc(x.id) + '">验收对话</button>';
+    } else if (st === 'rejected' || st === 'superseded') {
+      acts = '<button class="ghost" data-prop-reopen="' + esc(x.id) + '">重新打开</button>';
     }
     const tri = x.triage || {};
     return '<div class="agent-item" data-prop-open="' + esc(x.id) + '">'
@@ -5232,6 +5234,15 @@ function init() {
     if (ac) {
       const prop = (agentProps || []).find(x => x.id === ac.dataset.acceptance);
       if (prop) showAcceptanceInDgtf(prop);
+      return;
+    }
+    const ro = e.target.closest('[data-prop-reopen]');
+    if (ro) {
+      try {
+        await api('/api/dsh/proposals/' + encodeURIComponent(ro.dataset.propReopen) + '/reopen',
+          {method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+        loadAgent();
+      } catch (err) { alert('重新打开失败：' + err.message); }
       return;
     }
     const rj = e.target.closest('[data-prop-reject]');

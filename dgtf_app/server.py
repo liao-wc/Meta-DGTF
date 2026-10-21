@@ -1394,6 +1394,34 @@ def _list_proposals(limit=300):
     return rows[:max(1, int(limit))]
 
 
+def _reopen_proposal(pid):
+    """用户决定重新打开已拒绝/已另行处理的提案。"""
+    import time as _t
+    prop = _get_proposal(pid)
+    if not prop:
+        return None, "proposal not found"
+    old = str(prop.get("status") or "")
+    if old not in ("rejected", "superseded"):
+        return None, "只有 rejected/superseded 提案可重新打开"
+    now = _t.time()
+    hist = list(prop.get("reopen_history") or [])
+    hist.append({"ts": now, "from_status": old,
+                 "resolution_reason": str(prop.get("resolution_reason") or "")[:500],
+                 "resolved_ts": prop.get("resolved_ts") or 0})
+    prop["reopen_history"] = hist[-20:]
+    prop["original_ts"] = prop.get("original_ts") or prop.get("ts") or 0
+    prop["ts"] = now
+    prop["reopened_ts"] = now
+    prop["status"] = "pending"
+    prop["approver"] = ""
+    prop["previous_status"] = old
+    for k in ("resolution", "resolution_reason", "resolved_by", "resolved_ts",
+              "resolution_conversation_id"):
+        prop.pop(k, None)
+    _save_proposal(prop)
+    return prop, ""
+
+
 def _resolve_proposal(pid, action, reason="", conversation_id=""):
     """用户决定不修复或已另行处理时，关闭原提案，保留可追溯记录。"""
     import time as _t
@@ -6569,6 +6597,12 @@ class Handler(BaseHTTPRequestHandler):
                 except Exception:
                     pass
             return
+        if p.startswith("/api/dsh/proposals/") and p.endswith("/reopen"):
+            pid = p.split("/")[4]
+            prop, err = _reopen_proposal(pid)
+            if not prop:
+                return self._json({"error": err or "重新打开失败"}, 400)
+            return self._json({"ok": True, "proposal": prop})
         if p.startswith("/api/dsh/proposals/") and p.endswith("/resolve"):
             data = self._read_json()
             pid = p.split("/")[4]
