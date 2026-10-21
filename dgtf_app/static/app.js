@@ -2786,8 +2786,8 @@ async function loadConfig() {
     const engineOk = !!(c.engine && (h.ok !== false) && checks.engine_file !== false);
     $('#env-info').innerHTML =
       line('引擎', '<b class="mono">' + esc(c.engine) + '</b>', engineOk) +
-      line('模型 DeepSeek', '', !!k.api_key) +
-      line('联网 Tavily', '', !!k.tavily) +
+      line('模型', 'DeepSeek', !!k.api_key) +
+      line('联网', 'Tavily', !!k.tavily) +
       line('本地 LLM', '<b>' + nBack + '</b> 个底座 · 默认 Qwen0.5B', nBack > 0) +
       line('Agent', '<b>' + (agentOk ? 'DSH 就绪 · 守护运行' : '未就绪') + '</b>', agentOk) +
       line('产物', '<b>' + c.outputs.count + '</b> 份 · ' + c.outputs.total_mb + ' MB', c.outputs.count > 0);

@@ -1640,3 +1640,7 @@ body.stage-empty main.stage{padding-bottom:0}
 .env .env-v{color:#fff;font-family:var(--f-mono);font-size:10.5px}
 .env .env-v b{color:#fff;font-family:var(--f-mono);font-size:10.5px}
 #env-info .dot.ok{background:#6EA8FE;box-shadow:0 0 0 3px rgba(110,168,254,.16),0 0 8px rgba(110,168,254,.65)}
+
+/* 状态值统一白/等宽；可用灯恢复绿色；标签蓝色 */
+.env .env-v,.env .env-v b{color:#fff;font-family:var(--f-mono);font-size:10.5px}
+#env-info .dot.ok{background:var(--ok);box-shadow:0 0 0 3px rgba(63,185,80,.16),0 0 8px rgba(63,185,80,.7)}
