@@ -5244,6 +5244,15 @@ def main() -> int:
     print(f"  mock：{mock}    并发上限：{runner.MAX_CONCURRENT}")
 
     try:
+        _pol0 = _schedule_policy_load()
+        if not _pol0.get("auto_strategy") and str(os.getenv(
+                "DGTF_V2_AUTO_ON_START", "1")).strip().lower() not in ("0", "false", "off", "no"):
+            _auto0 = _v2_auto_apply("balanced")
+            print("  V2 自动策略：" + (("已选择 " + str((_auto0.get("chosen") or {}).get("name")))
+                                      if _auto0.get("ok") else "无样本，跳过"))
+    except Exception as _e:  # noqa: BLE001
+        print("  V2 自动策略跳过：" + str(_e))
+    try:
         _er = _ensure_rag_embed()
         print("  BGE embedding：" + ("已就绪" if _er.get("ok") else "不可用（回退 BM25）"))
     except Exception as _e:  # noqa: BLE001

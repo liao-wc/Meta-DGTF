@@ -4829,6 +4829,9 @@ function init() {
   const _dshNew = $('#dsh-new-session');
   if (_dshNew) _dshNew.addEventListener('click', () => {
     dshSession = ''; dshCurrent = null;
+    dshConversationId = null; dshConversation = null;
+    try { localStorage.removeItem(DSH_CONV_KEY); } catch (_) {}
+    stopDshConvPoll(); setDshHistoryOpen(false);
     const log = document.querySelector('#runlog-body');
     if (log) log.innerHTML = '<div class="rl-lane rl-boot"><div class="rl-lane-head">DeepSeek Harness Agent · 新会话</div><div class="rl-line"><span class="rl-txt">DSH 会话已重置；元DGTF 会话与当前内容保留。</span></div></div>';
     document.body.classList.add('stage-run'); document.body.classList.remove('stage-empty');
@@ -4940,6 +4943,9 @@ function init() {
   const _dshTopNew = $('#dsh-newchat-btn');
   if (_dshTopNew) _dshTopNew.addEventListener('click', () => {
     dshSession = ''; dshCurrent = null;
+    dshConversationId = null; dshConversation = null;
+    try { localStorage.removeItem(DSH_CONV_KEY); } catch (_) {}
+    stopDshConvPoll(); setDshHistoryOpen(false);
     const log = document.querySelector('#runlog-body');
     if (log) log.innerHTML = '<div class="rl-lane rl-boot"><div class="rl-lane-head">DeepSeek Harness Agent · 新会话</div><div class="rl-line"><span class="rl-txt">DSH 会话已重置；元DGTF 会话与当前内容保留。</span></div></div>';
     document.body.classList.add('stage-run'); document.body.classList.remove('stage-empty');

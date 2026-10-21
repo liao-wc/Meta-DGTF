@@ -83,14 +83,19 @@ engine 元DGTF-V1.30.0.py
 | `POST /api/agent/knowledge/refresh` | 技术知识刷新：DeepSeek Search 优先，arXiv 兜底，入库去重 |
 | `POST /api/agent/auto/start {stage:"full"}` | 全流程：知识刷新→引擎跑次（默认 mock）→消费者→提案 |
 | `GET/POST /api/schedule/model*` | 本地学习模型元数据、预测、应用 |
-| `GET /api/schedule/llm/status` | 本地 Qwen2.5-0.5B + LoRA adapter、训练/评估读数 |
+| `GET /api/schedule/llm/status` | 本地 0.5B/1.5B/DeepSeek 三底座 + hybrid、训练/评估读数 |
 | `POST /api/schedule/llm/predict` | 本地 LoRA 推理：问题→route/rounds |
 | `POST /api/schedule/llm/apply` | 写入 policy 的 llm_route/llm_rounds |
 | `opts.auto_llm` | 任务自动使用本地 LLM 的 route/rounds |
-| `GET /api/project/context?q=` | RAG-lite：项目文档 + 权威摘要 + agent_knowledge 本地资料库 + app 本地上传资料（external_anchor） |
+| `GET /api/project/context?q=` | RAG v2：项目文档 + 权威摘要 + agent_knowledge + 导入资料 + 本地 BGE 语义检索 + 引用/分层/追溯 |
+| `GET /api/project/context/history` | 最近 50 次上下文注入追溯 |
+| `GET /api/security/context-policy` | 隐私/DSH 写入/embedding 策略 |
+| `GET /api/quality/<task>` | 三态替代质量分（coverage×answer_rate×closure−flags） |
+| `GET /api/dsh/chats` | DSH 会话历史（current/history/stale） |
+| `POST /api/schedule/v2/auto-apply` | 自动评估 pareto/best/bandit 并写最优；挡位只影响权重 |
 | `opts.project_context` | 覆盖开关；真实任务默认 true（内置注入），mock 默认 false；显式 true/false 可覆盖 |
 | `GET /api/schedule/v2` | V2 shadow 事件读数：按 kind/layer 聚合 + 最近 5 条 + 路径 |
-| Agent 面板“V2 调度”标签 | 展示事件总数、kind/layer 分布、模板级 A/B（quality±CI/tokens/calls）、质量-成本 SVG 散点图、帕累托前沿、最近 5 条事件；含偏好选择与采用按钮 |
+| Agent 面板“V2 调度”标签 | 展示事件/模板/AB；只保留挡位选择，切换自动选优写入 |
 | `GET /api/schedule/v2/ab` | Welch 近似 A/B：均值差、se、t、p、胜者；`all=1` 返回 Benjamini-Hochberg FDR 成对校正 |
 | `POST /api/schedule/v2/apply-best` | 按 95% 置信下界选最佳 V2 模板，写入 policy；paired 不可识别时返回 warning |
 | `GET /api/schedule/v2/pareto` | V2 模板级质量-成本联合帕累托前沿（quality low vs tokens） |
