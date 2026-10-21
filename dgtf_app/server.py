@@ -718,7 +718,14 @@ def _run_dsh_agent(task: str, sid: str = "", timeout: int = 300,
         env["DEEPSEEK_API_KEY"] = key
     env.setdefault("DSH_HOME", str(Path.home() / ".dsh"))
     _perm = str(permission or "").strip()
-    if _perm not in ("read-only", "workspace-write", "danger-full-access"):
+    _perm_warn = ""
+    if _perm == "read-only":
+        # DSH 当前只注册 workspace-write/danger-full-access；
+        # read-only 会让 permission 插件激活失败。降级为 workspace-write，
+        # 并通过提示约束不要修改文件。
+        _perm = "workspace-write"
+        _perm_warn = "DSH 不支持 read-only preset，已降级 workspace-write；提示仍要求只读"
+    if _perm not in ("workspace-write", "danger-full-access"):
         _perm = "workspace-write"
     env["DSH_PERMISSION_MODE"] = _perm
     env.setdefault("PYTHONUTF8", "1")
@@ -829,7 +836,8 @@ def _run_dsh_agent(task: str, sid: str = "", timeout: int = 300,
                    "timeout": int(timeout), "session_id": sid,
                    "text": final or "".join(texts),
                    "events": events[-200:],
-                   "settings": {"effort": _eff, "permission": _perm},
+                   "settings": {"effort": _eff, "permission": _perm,
+                          "permission_warning": _perm_warn},
                    "attach_task_id": str(attach_task_id or ""),
                    "stderr": (err_text or "")[-2000:]}
             _save_dsh_run(task, sid, out, auto_repair)
@@ -847,7 +855,8 @@ def _run_dsh_agent(task: str, sid: str = "", timeout: int = 300,
     out = {"ok": (rc == 0), "session_id": sid,
            "text": final or "".join(texts),
            "events": events[-200:],
-           "settings": {"effort": _eff, "permission": _perm},
+           "settings": {"effort": _eff, "permission": _perm,
+                         "permission_warning": _perm_warn},
            "attach_task_id": str(attach_task_id or ""),
            "stderr": stderr}
     _save_dsh_run(task, sid, out, auto_repair)
