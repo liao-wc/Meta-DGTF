@@ -67,6 +67,8 @@ ck("pareto policy persisted", st == 200 and polget.get("ok")
    and (polget.get("policy") or {}).get("profile"), (st, polget))
 st, v2 = req("GET", "/api/schedule/v2", timeout=30)
 ck("v2 shadow mapped", st == 200 and v2.get("ok") and v2.get("n", 0) > 0, (st, v2))
+ck("v2 A/B templates", bool(v2.get("by_template"))
+   and any((x or {}).get("n", 0) > 0 for x in (v2.get("by_template") or {}).values()), v2.get("by_template"))
 
 # 3) read API contract
 reads = ["/api/config", "/api/chats", "/api/outputs", "/api/outputs/facets",

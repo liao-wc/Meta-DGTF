@@ -1514,9 +1514,33 @@ def _v2_shadow_status(limit=200):
         except Exception:
             pass
     recent = rows[-5:]
+    tmpl = {}
+    for x in rows:
+        if str(x.get("kind") or "") != "schedule_outcome":
+            continue
+        pl = x.get("payload") if isinstance(x.get("payload"), dict) else {}
+        t = str(pl.get("template") or "")
+        if not t:
+            continue
+        d = tmpl.setdefault(t, {"n": 0, "quality": 0.0, "tokens": 0.0, "calls": 0.0})
+        try:
+            d["quality"] += float(pl.get("quality") or 0)
+            d["tokens"] += float(pl.get("tokens") or 0)
+            d["calls"] += float(pl.get("calls") or 0)
+            d["n"] += 1
+        except Exception:
+            pass
+    by_template = {}
+    for t, d in tmpl.items():
+        n = int(d["n"] or 0)
+        by_template[t] = {"n": n,
+                          "quality": round(d["quality"] / n, 3) if n else 0.0,
+                          "tokens": round(d["tokens"] / n, 1) if n else 0.0,
+                          "calls": round(d["calls"] / n, 1) if n else 0.0}
     return {"ok": True, "n": len(rows),
             "by_kind": dict(Counter(str(x.get("kind") or "") for x in rows)),
             "by_layer": dict(Counter(str(x.get("layer") or "") for x in rows)),
+            "by_template": by_template,
             "recent": recent,
             "paths": str(p)}
 

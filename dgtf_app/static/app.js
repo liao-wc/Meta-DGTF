@@ -3494,6 +3494,22 @@ function agentRenderV2() {
     });
     html += '</div>';
   }
+  const _ts = d.by_template || {};
+  const _tkeys = Object.keys(_ts);
+  if (_tkeys.length) {
+    html += '<div class="agent-item"><div class="agent-row"><span class="chip">V2 模板 A/B</span>'
+      + '<span class="agent-t">按 quality 降序</span></div>';
+    _tkeys.sort(function (a, b) { return (_ts[b].quality || 0) - (_ts[a].quality || 0); })
+      .forEach(function (k) {
+        const v = _ts[k] || {};
+        html += '<div class="agent-meta"><span>' + esc(k)
+          + '</span><span>n=' + esc(String(v.n || 0))
+          + '</span><span>quality ' + esc(String(v.quality || 0))
+          + '</span><span>tokens ' + esc(String(v.tokens || 0))
+          + '</span><span>calls ' + esc(String(v.calls || 0)) + '</span></div>';
+      });
+    html += '</div>';
+  }
   (d.recent || []).slice().reverse().forEach(function (e) {
     html += '<div class="agent-item"><div class="agent-row">'
       + '<span class="chip">' + esc(String(e.kind || '')) + '</span>'
