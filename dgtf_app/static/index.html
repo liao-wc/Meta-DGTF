@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/static/style.css?v=1.4.54">
+<link rel="stylesheet" href="/static/style.css?v=1.4.55">
 </head>
 <body class="stage-empty">
 
@@ -54,7 +54,7 @@
     <div class="env" id="env-info"></div>
 
     <nav class="drawer-nav">
-      <button class="nav-btn" data-sheet="view-agent" data-tip="Agent：任务队列 / 用户任务 / 消费者 / 技术知识 / 结果">
+      <button class="nav-btn" data-sheet="view-agent" aria-label="DSH Agent">
     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <rect x="4" y="7.2" width="16" height="12" rx="3" stroke="currentColor" stroke-width="1.7"/>
       <path d="M12 3.4V7.2M8.6 12.2h.01M15.4 12.2h.01M9 16.2h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
@@ -245,7 +245,7 @@
 
     <!-- ★ Agent 面板：读任务队列 / 提交用户任务 / 运行消费者 / 刷新技术知识 / 看处理结果。
          入口在侧边栏，与其它页面一致。 -->
-    <section id="view-agent" class="panel sheet-page" title="Agent 面板：把引擎自反馈任务交给消费者；可读任务队列、提交用户任务、运行消费者、知识检索（经 DSH 会话）、查看处理结果。">
+    <section id="view-agent" class="panel sheet-page">
       <div class="searchbar tight">
         <button id="agent-refresh" class="ghost" data-tip="重新拉取任务 / 消费者结果 / 技术知识">刷新</button>
         <button id="agent-auto" class="ghost" data-tip="全流程闭环：知识刷新 → 引擎跑次（默认 mock）→ 消费者/任务 → 自审提案；已包含原轻量提案闭环">DSH 全流程闭环</button>
@@ -430,7 +430,7 @@
         </svg>
         <span class="p-name">DSH Agent</span>
       </button>
-      <button type="button" id="attach-btn" class="pill" data-tip="导入本地资料：解析/分块参与 BGE+BM25 RAG；原文留档，不训练、不外发、可删除（单文件≤100MB，单次≤50）" aria-label="导入文件">
+      <button type="button" id="attach-btn" class="pill" aria-label="导入文件">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M20 11.5l-7.6 7.6a4.6 4.6 0 0 1-6.5-6.5l8-8a3.1 3.1 0 0 1 4.4 4.4l-8 8a1.6 1.6 0 0 1-2.2-2.2l7.3-7.3"
                 stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
@@ -548,6 +548,6 @@
 
 
 
-<script src="/static/app.js?v=1.4.54"></script>
+<script src="/static/app.js?v=1.4.55"></script>
 </body>
 </html>

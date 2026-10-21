@@ -2082,8 +2082,7 @@ function paintAttach() {
        当成「还没删干净」而顶红（R47 原形）。 */
   const _ab = $('#attach-btn');
   if (_ab) {
-    _ab.title = n ? `已导入 ${n} 个文件（点一下展开/收起清单）`
-                  : '导入文件作为外部证据锚点（文本类，可多选）';
+    _ab.removeAttribute('title');   // 不再触发浏览器自带的不透明 title 气泡
     _ab.setAttribute('aria-label', n ? `已导入 ${n} 个文件，点一下展开清单` : '导入文件');
   }
   const cnt = $('#ap-count');
