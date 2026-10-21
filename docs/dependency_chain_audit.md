@@ -1,8 +1,8 @@
 # 元DGTF app 依赖链自洽审计
 
-生成：2026-10-21 18:24:45
+生成：2026-10-21 19:11:55
 
-PASS 40 / FAIL 0
+PASS 41 / FAIL 0
 
 ## FAIL
 - 无
@@ -35,6 +35,7 @@ PASS 40 / FAIL 0
 - clean output helper
 - quality alternative api
 - quality alt grade
+- v2 auto apply
 - v2 auto strategy applied
 - v2 only gear select
 - v2 auto status

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""元DGTF app 依赖链自洽审计（只读）。"""
+"""元DGTF app 依赖链自洽审计（会恢复一次默认 V2 自动策略）。"""
 import json, os, re, sys, urllib.request, urllib.parse
 from pathlib import Path
 
@@ -14,6 +14,13 @@ def ck(name, ok, detail=''):
 def get(path, timeout=30):
     with urllib.request.urlopen(B + path, timeout=timeout) as r:
         return r.status, json.loads(r.read().decode('utf-8'))
+
+def req(method, path, data=None, timeout=30):
+    body = None if data is None else json.dumps(data).encode('utf-8')
+    r = urllib.request.Request(B + path, data=body, method=method,
+                               headers={'Content-Type': 'application/json'})
+    with urllib.request.urlopen(r, timeout=timeout) as resp:
+        return resp.status, json.loads(resp.read().decode('utf-8'))
 
 # 1. 引擎/app 版本
 eng = ROOT / '元DGTF-V1.30.0.py'
@@ -73,7 +80,9 @@ st, q = get('/api/quality/20261021_155104_950be7')
 ck('quality alternative api', st == 200 and q.get('ok') and isinstance(q.get('score'), (int, float)), q)
 ck('quality alt grade', q.get('grade') in ('A', 'B', 'C', 'D'), q.get('grade'))
 
-# 6. V2 自动策略
+# 6. V2 自动策略（审计会恢复默认自动策略；这是默认行为的一部分）
+st, auto = req('POST', '/api/schedule/v2/auto-apply', {'prefer': 'balanced'}, timeout=60)
+ck('v2 auto apply', st == 200 and auto.get('ok') and bool((auto.get('chosen') or {}).get('name')), auto)
 st, pol2 = get('/api/schedule/policy')
 ck('v2 auto strategy applied', st == 200 and bool((pol2.get('policy') or {}).get('auto_strategy')),
    (pol2.get('policy') or {}).get('auto_strategy'))

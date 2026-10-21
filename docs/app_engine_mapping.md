@@ -111,8 +111,8 @@ engine 元DGTF-V1.30.0.py
 | `opts.auto_template` | 任务自动套用 policy 中的 V2 模板 route/rounds；探针验证任务 opts 实际带 route/rounds |
 | `GET/POST /api/schedule/policy` | 读取/应用真实历史帕累托推荐；profiles/auto_pareto 使用持久化策略 |
 | `dgtf_memory/schedule_policy.json` | 保存推荐 profile、coverage、tokens、prefer、applied_at |
-| `POST /api/tasks {opts.auto_pareto:true}` | 自动选用方案F-帕累托最优 profile，并在响应返回 profile |
-| 首屏“自动帕累托”开关 | 勾选后 collectOpts 自动加 auto_pareto；localStorage 持久化 |
+| `POST /api/tasks {opts.auto_pareto:true}` | 自动选用方案F-帕累托最优 profile；真实任务默认 true，mock/自检默认 false |
+| 首屏自动帕累托 | 已移除独立开关；真实运行默认自动采用，V2 策略由 auto-apply 自动选优 |
 | 前端 job 恢复 | 刷新后读取 dgtf_last_auto_job / dgtf_last_autofix_job；运行中自动恢复轮询并显示进度，完成/中断显示状态 |
 
 ### 实测（goal round 1 集成探针）

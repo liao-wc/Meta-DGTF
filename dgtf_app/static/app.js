@@ -381,8 +381,6 @@ function onDdScroll(e) {
 
 function collectOpts() {
   const opts = {};
-  const _pareto = document.querySelector('#auto-pareto');
-  if (_pareto && _pareto.checked) opts.auto_pareto = true;
   const coerce = (v) => {
     if (v === 'true') return true;
     if (v === 'false') return false;
@@ -4672,18 +4670,6 @@ function init() {
   const _mockBox = $('#mock');
   if (_mockBox) _mockBox.addEventListener('change', syncMockPill);
   syncMockPill();
-  const _paretoBox = $('#auto-pareto');
-  const _paretoPill = $('#pareto-pill');
-  if (_paretoBox) {
-    try { _paretoBox.checked = localStorage.getItem('dgtf_auto_pareto') === '1'; } catch (_) {}
-    const _syncPareto = function () {
-      if (_paretoPill) _paretoPill.classList.toggle('on', _paretoBox.checked);
-      try { localStorage.setItem('dgtf_auto_pareto', _paretoBox.checked ? '1' : '0'); } catch (_) {}
-    };
-    _paretoBox.addEventListener('change', _syncPareto);
-    _syncPareto();
-  }
-
   /* 仪表盘：所有面板常驻可见，**没有标签页了** —— 初始化时一次全加载。
      各面板自己的刷新按钮（搜索 / 刷新）仍然单独触发。 */
 

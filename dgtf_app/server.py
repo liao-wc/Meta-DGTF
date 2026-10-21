@@ -5117,7 +5117,10 @@ class Handler(BaseHTTPRequestHandler):
                 if _pc.get("text"):
                     opts["_prompt_prefix"] = (_pc["text"]
                                              + "\n\n【用户问题】\n")
-            _auto_pareto = bool(opts.pop("auto_pareto", False))
+            _ap_opt = opts.pop("auto_pareto", None)
+            # 默认自动帕累托：真实任务默认启用；mock/自检默认关闭以稳定基线。
+            _auto_pareto = (bool(_ap_opt) if _ap_opt is not None
+                            else not _is_mock_task)
             _auto_template = bool(opts.pop("auto_template", False))
             _auto_llm = bool(opts.pop("auto_llm", False))
             if _auto_llm:
