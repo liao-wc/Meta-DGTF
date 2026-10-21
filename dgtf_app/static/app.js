@@ -3588,7 +3588,7 @@ function agentRenderTasks() {
     return;
   }
   const doneIds = new Set(agentResults.map(r => String(r.task_id || '')));
-  const rows = agentTasks.slice().reverse().map(t => {
+  const rows = _activeFirst(agentTasks, t => !doneIds.has(String(t.id || '')), _agentTs).map(t => {
     const kind = String(t.kind || 'task');
     const sev = String(t.severity || 'med');
     const title = String(t.title || t.id || '(无标题)');
@@ -3619,7 +3619,7 @@ function agentRenderResults() {
     box.innerHTML = agentEmpty('还没有消费者结果。点「运行消费者」处理未消费任务。');
     return;
   }
-  const rows = agentResults.slice().reverse().map(r => {
+  const rows = _activeFirst(agentResults, null, _agentTs).map(r => {
     const title = String(r.title || r.task_id || '(无标题)');
     const status = String(r.status || '—');
     const act = String(r.action || '');
@@ -3647,7 +3647,7 @@ function agentRenderKnowledge() {
     box.innerHTML = agentEmpty('知识库为空。点「知识检索」经 DSH 会话拉取官方/权威/最新资料。');
     return;
   }
-  const rows = agentKnowledge.slice().reverse().map(k => {
+  const rows = _activeFirst(agentKnowledge, null, _agentTs).map(k => {
     const title = String(k.title || k.query || '(无标题)');
     const url = String(k.url || '');
     const safeUrl = /^https?:\/\//i.test(url) ? url : '';
@@ -3722,7 +3722,7 @@ function agentRenderDsh() {
   if (n) n.textContent = String(agentDsh.length);
   if (!box) return;
   if (!agentDsh.length) { box.innerHTML = agentEmpty('还没有 DSH Agent 会话。'); return; }
-  box.innerHTML = agentDsh.slice(0, 30).map(function (x) {
+  box.innerHTML = _activeFirst(agentDsh, x => String(x.status || '') === 'running', _agentTs).slice(0, 30).map(function (x) {
     const when = fmtTs(x.ts);
     return '<div class="agent-item agent-dsh-item" data-dsh-session="' + esc(x.id || '') + '">'
       + '<div class="agent-row"><span class="chip">' + (x.auto_repair ? '自动修复' : 'DSH') + '</span>'
@@ -3741,7 +3741,7 @@ function agentRenderDshArt() {
   if (n) n.textContent = String(agentDshArt.length);
   if (!box) return;
   if (!agentDshArt.length) { box.innerHTML = agentEmpty('还没有 DSH 产物。'); return; }
-  box.innerHTML = agentDshArt.slice(0, 30).map(function (x) {
+  box.innerHTML = _activeFirst(agentDshArt, null, _agentTs).slice(0, 30).map(function (x) {
     const when = fmtTs(x.ts);
     const st = x.ok === true ? '完成' : (x.ok === false ? '失败' : '产物');
     return '<div class="agent-item agent-dsh-art-item" data-dsh-art="' + esc(x.id || '') + '">'
@@ -3767,17 +3767,15 @@ function agentRenderProps() {
     sumHtml = '<div class="agent-meta" style="padding:6px 2px 8px;gap:10px">'
       + '<span>待处理 ' + esc(String((c.pending || 0) + (c.confirmed || 0))) + '</span>'
       + '<span>已应用 ' + esc(String(c.applied || 0)) + '</span>'
+      + '<span>已关闭 ' + esc(String((c.rejected || 0) + (c.superseded || 0))) + '</span>'
       + '<span>已过期/去重 ' + esc(String(c.expired || 0)) + '</span>'
       + '<span>项目 ' + esc(String(proj.head || '—')) + '</span>'
       + '</div>';
   }
-  const ST = {pending: '待确认', confirmed: '已确认待修复', applied: '已应用', failed: '失败', rolled_back: '已回退', expired: '已过期'};
+  const ST = {pending: '待确认', confirmed: '已确认待修复', applied: '已应用', failed: '失败', rolled_back: '已回退', rejected: '已拒绝不修', superseded: '已另行处理', expired: '已过期'};
   const PR = {P0: 0, P1: 1, P2: 2, P3: 3};
-  const live = agentProps.filter(x => x.status !== 'expired').sort(function (a, b) {
-    const pa = PR[((a.triage || {}).priority) || 'P2'];
-    const pb = PR[((b.triage || {}).priority) || 'P2'];
-    return (pa - pb) || (Number(b.ts || 0) - Number(a.ts || 0));
-  });
+  const live = _activeFirst(agentProps.filter(x => x.status !== 'expired'),
+    x => (x.status === 'pending' || x.status === 'confirmed'), _agentTs);
   const nExp = agentProps.length - live.length;
   if (!live.length) {
     box.innerHTML = agentEmpty('当前没有待处理提案；已过期/去重 ' + nExp + ' 条（无需修复）。');
@@ -3795,9 +3793,13 @@ function agentRenderProps() {
     if (st === 'pending') {
       acts = '<button class="ghost" data-prop-confirm="' + esc(x.id) + '">我确认</button>'
         + '<button class="ghost" data-prop-auto="' + esc(x.id) + '">DSH 自动代理</button>'
-        + '<button class="ghost" data-prop-split="' + esc(x.id) + '">拆分提案</button>';
+        + '<button class="ghost" data-prop-split="' + esc(x.id) + '">拆分提案</button>'
+        + '<button class="ghost" data-prop-reject="' + esc(x.id) + '">不修复</button>'
+        + '<button class="ghost" data-prop-superseded="' + esc(x.id) + '">已另行处理</button>';
     } else if (st === 'confirmed') {
-      acts = '<span class="muted">已确认，等待 DSH 自动修复</span>';
+      acts = '<span class="muted">已确认，等待 DSH 自动修复</span>'
+        + '<button class="ghost" data-prop-reject="' + esc(x.id) + '">不修复</button>'
+        + '<button class="ghost" data-prop-superseded="' + esc(x.id) + '">已另行处理</button>';
     } else if (st === 'applied') {
       acts = '<button class="ghost danger" data-prop-rollback="' + esc(x.id) + '">回退并撤销修复</button>';
       if (x.acceptance) acts += '<button class="ghost" data-acceptance="' + esc(x.id) + '">验收对话</button>';
@@ -3816,6 +3818,7 @@ function agentRenderProps() {
       + (x.expired_reason ? '<span>过期：' + esc(x.expired_reason) + '</span>' : '')
       + (tri.reason ? '<span>分诊：' + esc(tri.reason) + '</span>' : '')
       + (tri.auto_decision ? '<span>路由：' + esc(tri.auto_decision === 'auto' ? '自动修复' : '人工确认') + '</span>' : '')
+      + (x.resolution_reason ? '<span>关闭原因：' + esc(String(x.resolution_reason).slice(0, 120)) + '</span>' : '')
       + (x.conversation_id ? '<span>对话 ' + esc(x.conversation_id) + '</span>' : '')
       + '</div>'
       + '<div class="agent-q">' + esc(String(x.plan || '').slice(0, 300)) + '</div>'
@@ -4004,6 +4007,24 @@ function agentRenderAutopilot() {
   b.title = '';
   b.setAttribute('aria-pressed', on ? 'true' : 'false');
   if (on && d.running === false) b.textContent = '常驻守护：启动中…';
+}
+
+function _agentTs(x) {
+  const v = x && (x.ts || x.created_at || x.updated_at || x.retrieved_at ||
+                  x.fetched_at || x.mtime || x.at || x.confirmed_ts || x.resolved_ts || x.applied_ts || x.approved_ts || x.failed_ts || 0);
+  if (typeof v === 'number') return v < 1e12 ? v * 1000 : v;
+  const s = String(v || '');
+  if (/^\d+(\.\d+)?$/.test(s)) return Number(s) * (Number(s) < 1e12 ? 1000 : 1);
+  const d = Date.parse(s);
+  return isNaN(d) ? 0 : d;
+}
+
+function _activeFirst(items, isActive, tsFn) {
+  return (items || []).slice().sort(function (a, b) {
+    const aa = isActive && isActive(a) ? 0 : 1;
+    const bb = isActive && isActive(b) ? 0 : 1;
+    return (aa - bb) || ((tsFn || _agentTs)(b) - (tsFn || _agentTs)(a));
+  });
 }
 
 function agentRenderAll() {
@@ -5211,6 +5232,30 @@ function init() {
     if (ac) {
       const prop = (agentProps || []).find(x => x.id === ac.dataset.acceptance);
       if (prop) showAcceptanceInDgtf(prop);
+      return;
+    }
+    const rj = e.target.closest('[data-prop-reject]');
+    if (rj) {
+      const reason = prompt('不修复该提案的原因（可留空，会保留在提案历史里）：', '根据分析决定不修复');
+      if (reason === null) return;
+      try {
+        await api('/api/dsh/proposals/' + encodeURIComponent(rj.dataset.propReject) + '/resolve',
+          {method:'POST',headers:{'Content-Type':'application/json'},
+           body: JSON.stringify({action:'reject', reason: reason})});
+        loadAgent();
+      } catch (err) { alert('关闭提案失败：' + err.message); }
+      return;
+    }
+    const sup = e.target.closest('[data-prop-superseded]');
+    if (sup) {
+      if (!confirm('标记为“已另行处理”？原提案会关闭，但保留记录；不会自动修复。')) return;
+      try {
+        await api('/api/dsh/proposals/' + encodeURIComponent(sup.dataset.propSuperseded) + '/resolve',
+          {method:'POST',headers:{'Content-Type':'application/json'},
+           body: JSON.stringify({action:'superseded', reason:'用户已另行处理/让AI自定义修复',
+                                 conversation_id: dshConversationId || ''})});
+        loadAgent();
+      } catch (err) { alert('关闭提案失败：' + err.message); }
       return;
     }
     const sp = e.target.closest('[data-prop-split]');

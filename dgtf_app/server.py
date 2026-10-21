@@ -1384,9 +1384,37 @@ def _list_proposals(limit=300):
             rows.append(rec)
         except Exception:
             pass
-    # 按提案自身 ts 排序（过期标记会更新文件 mtime，不能再用 mtime 排序）
-    rows.sort(key=lambda r: float(r.get("ts") or 0), reverse=True)
+    # 待处理/新建在前；其余按最近处理时间倒序（过期标记会更新 mtime，不能再用 mtime）
+    def _latest(r):
+        return max(float(r.get(k) or 0) for k in
+                   ("ts", "resolved_ts", "resolved_ts", "applied_ts",
+                    "confirmed_ts", "approved_ts", "failed_ts", "expired_ts"))
+    rows.sort(key=lambda r: (0 if str(r.get("status")) in ("pending", "confirmed") else 1,
+                             -_latest(r)))
     return rows[:max(1, int(limit))]
+
+
+def _resolve_proposal(pid, action, reason="", conversation_id=""):
+    """用户决定不修复或已另行处理时，关闭原提案，保留可追溯记录。"""
+    import time as _t
+    prop = _get_proposal(pid)
+    if not prop:
+        return None, "proposal not found"
+    if str(prop.get("status")) not in ("pending", "confirmed"):
+        return None, "只有 pending/confirmed 提案可关闭"
+    action = str(action or "").strip()
+    if action not in ("reject", "superseded"):
+        return None, "action 必须是 reject 或 superseded"
+    prop["previous_status"] = str(prop.get("status"))
+    prop["status"] = "rejected" if action == "reject" else "superseded"
+    prop["resolution"] = action
+    prop["resolved_by"] = "user"
+    prop["resolved_ts"] = _t.time()
+    prop["resolution_reason"] = str(reason or "")[:1000]
+    if conversation_id:
+        prop["resolution_conversation_id"] = str(conversation_id)
+    _save_proposal(prop)
+    return prop, ""
 
 
 def _split_proposal(pid):
@@ -6541,6 +6569,15 @@ class Handler(BaseHTTPRequestHandler):
                 except Exception:
                     pass
             return
+        if p.startswith("/api/dsh/proposals/") and p.endswith("/resolve"):
+            data = self._read_json()
+            pid = p.split("/")[4]
+            prop, err = _resolve_proposal(
+                pid, data.get("action"), data.get("reason"),
+                data.get("conversation_id"))
+            if not prop:
+                return self._json({"error": err or "关闭失败"}, 400)
+            return self._json({"ok": True, "proposal": prop})
         if p.startswith("/api/dsh/proposals/") and p.endswith("/split"):
             pid = p.split("/")[4]
             children, err = _split_proposal(pid)
