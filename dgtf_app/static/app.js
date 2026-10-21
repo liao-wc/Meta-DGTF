@@ -3247,6 +3247,7 @@ let agentPareto = null;
 let agentV2AB = null;
 let agentV2Pareto = null;
 let agentModel = null;
+let agentLLM = null;
 let agentConsistency = null;
 
 function agentIsoShort(x) {
@@ -3536,6 +3537,13 @@ function agentRenderV2() {
       + ' 对</span><span class="agent-t">alpha ' + esc(String(agentV2AB.alpha || 0.05))
       + '</span></div></div>';
   }
+  if (agentLLM && agentLLM.ok && agentLLM.eval_summary) {
+    const _lr = (agentLLM.eval_summary.lora || {});
+    html += '<div class="agent-item"><div class="agent-row"><span class="chip">LLM LoRA</span>'
+      + '<span class="agent-t">JSON ' + esc(String(_lr.json_rate || 0))
+      + ' · route ' + esc(String(_lr.route_exact || 0))
+      + ' · MAE ' + esc(String(_lr.round_mae || 0)) + '</span></div></div>';
+  }
   if (agentModel && agentModel.ok && agentModel.model) {
     const _qm = (agentModel.model.quality_test || {});
     const _qb = (agentModel.model.quality_baseline || {});
@@ -3632,7 +3640,7 @@ async function loadAgent() {
   if (resBox) resBox.innerHTML = agentEmpty('读取中…');
   const knBox = $('#agent-knowledge');
   if (knBox) knBox.innerHTML = agentEmpty('读取中…');
-  const [t, r, k, ds, da, pr, v2, pa, vab, vpar, con, mdl] = await Promise.all([
+  const [t, r, k, ds, da, pr, v2, pa, vab, vpar, con, mdl, llm] = await Promise.all([
     api('/api/agent/tasks').catch(e => ({ tasks: [], error: e.message })),
     api('/api/agent/results').catch(e => ({ results: [], error: e.message })),
     api('/api/agent/knowledge').catch(e => ({ items: [], error: e.message })),
@@ -3645,6 +3653,7 @@ async function loadAgent() {
     api('/api/schedule/v2/pareto').catch(e => ({ ok: false, error: e.message })),
     api('/api/consistency').catch(e => ({ ok: false, error: e.message })),
     api('/api/schedule/model').catch(e => ({ ok: false, error: e.message })),
+    api('/api/schedule/llm/status').catch(e => ({ ok: false, error: e.message })),
   ]);
   agentTasks = (t && t.tasks) || [];
   agentResults = (r && r.results) || [];
@@ -3658,6 +3667,7 @@ async function loadAgent() {
   agentV2Pareto = vpar || null;
   agentConsistency = con || null;
   agentModel = mdl || null;
+  agentLLM = llm || null;
   agentRenderAll();
   const errs = [t && t.error, r && r.error, k && k.error].filter(Boolean);
   const msg = $('#agent-msg');
@@ -4597,6 +4607,21 @@ function init() {
   });
   const _agentRefresh = $('#agent-refresh');
   if (_agentRefresh) _agentRefresh.addEventListener('click', loadAgent);
+  const _v2LlmApply = $('#agent-v2-llm-apply');
+  if (_v2LlmApply) _v2LlmApply.addEventListener('click', async () => {
+    const m = document.querySelector('#agent-msg');
+    if (m) m.textContent = '正在用本地 LoRA 小模型规划调度…';
+    try {
+      const _q = ($('#question') || {}).value || 'EML 如何改进调度？';
+      const r = await api('/api/schedule/llm/apply', {method:'POST',
+        headers:{'Content-Type':'application/json'}, body: JSON.stringify({question:_q})});
+      if (m) m.textContent = r.ok ? ('已采用 LLM 调度：route ' + (r.route || []).join(',')
+        + ' / rounds ' + JSON.stringify(r.rounds || {})) : ('失败：' + (r.error || ''));
+      await loadAgent();
+    } catch (e) {
+      if (m) m.textContent = 'LLM 调度应用失败：' + e.message;
+    }
+  });
   const _v2ModelApply = $('#agent-v2-model-apply');
   if (_v2ModelApply) _v2ModelApply.addEventListener('click', async () => {
     const m = document.querySelector('#agent-msg');

@@ -83,6 +83,10 @@ engine 元DGTF-V1.30.0.py
 | `POST /api/agent/knowledge/refresh` | 技术知识刷新：DeepSeek Search 优先，arXiv 兜底，入库去重 |
 | `POST /api/agent/auto/start {stage:"full"}` | 全流程：知识刷新→引擎跑次（默认 mock）→消费者→提案 |
 | `GET/POST /api/schedule/model*` | 本地学习模型元数据、预测、应用 |
+| `GET /api/schedule/llm/status` | 本地 Qwen2.5-0.5B + LoRA adapter、训练/评估读数 |
+| `POST /api/schedule/llm/predict` | 本地 LoRA 推理：问题→route/rounds |
+| `POST /api/schedule/llm/apply` | 写入 policy 的 llm_route/llm_rounds |
+| `opts.auto_llm` | 任务自动使用本地 LLM 的 route/rounds |
 | `GET /api/schedule/v2` | V2 shadow 事件读数：按 kind/layer 聚合 + 最近 5 条 + 路径 |
 | Agent 面板“V2 调度”标签 | 展示事件总数、kind/layer 分布、模板级 A/B（quality±CI/tokens/calls）、质量-成本 SVG 散点图、帕累托前沿、最近 5 条事件；含偏好选择与采用按钮 |
 | `GET /api/schedule/v2/ab` | Welch 近似 A/B：均值差、se、t、p、胜者；`all=1` 返回 Benjamini-Hochberg FDR 成对校正 |

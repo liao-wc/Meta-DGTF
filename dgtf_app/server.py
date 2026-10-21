@@ -28,7 +28,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "1.1.1"
+APP_VERSION = "1.2.0"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -2159,6 +2159,14 @@ def _self_consistency():
                                "app_layers": ["0", "1", "both", "all"],
                                "canonical_ids": ["0", "1", "both", "all"]}
     try:
+        _lm = _llm_status()
+        checks["llm_lora"] = {"ok": bool(_lm.get("ok")),
+                              "adapter": _lm.get("adapter"),
+                              "eval": _lm.get("eval_summary"),
+                              "note": _lm.get("note")}
+    except Exception as exc:
+        checks["llm_lora"] = {"ok": False, "error": str(exc)}
+    try:
         _m = _sched_model_load()
         checks["scheduler_model"] = {"ok": bool(_m),
                                      "rows": _m.get("rows"),
@@ -2328,6 +2336,108 @@ def _question_bucket(q):
 
 _SCHED_MODEL_FILE = Path(__file__).resolve().parent.parent / "models" / "scheduler_model_v1.json"
 _SCHED_MODEL_RUNTIME = Path(__file__).resolve().parent.parent / "dgtf_memory" / "scheduler_model.json"
+
+
+_LLM_PY = os.getenv("DGTF_LLM_PYTHON", r"D:\dgtf_llm_env\Scripts\python.exe")
+_LLM_MODEL = os.getenv("DGTF_LLM_MODEL", r"D:/dgtf_models/Qwen2.5-0.5B-Instruct")
+_LLM_ADAPTER = Path(__file__).resolve().parent.parent / "llm_sft" / "adapter_qwen05b_v1"
+_LLM_SCRIPT = Path(__file__).resolve().parent.parent / "llm_predict.py"
+
+
+_LLM_METRICS = Path(__file__).resolve().parent.parent / "llm_sft" / "train_metrics.json"
+_LLM_EVAL = Path(__file__).resolve().parent.parent / "llm_sft" / "eval_base_vs_lora.json"
+
+
+def _llm_status():
+    import json as _json
+    out = {"ok": bool(_LLM_ADAPTER.exists()),
+           "adapter": str(_LLM_ADAPTER),
+           "base_model": _LLM_MODEL,
+           "python": _LLM_PY,
+           "adapter_files": 0,
+           "note": "Qwen2.5-0.5B-Instruct + LoRA；本地调度规划器"}
+    try:
+        if _LLM_ADAPTER.exists():
+            out["adapter_files"] = len(list(_LLM_ADAPTER.glob("*")))
+    except Exception:
+        pass
+    for key, p in (("train", _LLM_METRICS), ("eval", _LLM_EVAL)):
+        try:
+            if p.exists():
+                out[key] = _json.loads(p.read_text(encoding="utf-8", errors="replace"))
+        except Exception as exc:
+            out[key] = {"error": str(exc)}
+    if out.get("eval"):
+        out["eval_summary"] = {k: out["eval"].get(k) for k in ("base", "lora")}
+    return out
+
+
+def _llm_predict_local(question=""):
+    """调用本地 LoRA 小模型预测 route/rounds；不占用 app 主进程显存。"""
+    import subprocess as _sp
+    import json as _json
+    q = str(question or "").strip()
+    if not q:
+        return {"ok": False, "error": "question 为空"}
+    if not Path(_LLM_PY).exists():
+        return {"ok": False, "error": "训练环境不存在：" + _LLM_PY}
+    if not _LLM_ADAPTER.exists():
+        return {"ok": False, "error": "adapter 不存在：" + str(_LLM_ADAPTER)}
+    env = dict(os.environ)
+    env["PYTHONUTF8"] = "1"
+    env["PYTHONIOENCODING"] = "utf-8"
+    env["HF_HUB_OFFLINE"] = "1"
+    try:
+        p = _sp.run([_LLM_PY, str(_LLM_SCRIPT), "--question", q,
+                     "--model", _LLM_MODEL, "--adapter", str(_LLM_ADAPTER)],
+                    cwd=str(Path(__file__).resolve().parent.parent),
+                    capture_output=True, text=True, encoding="utf-8",
+                    errors="replace", timeout=180, env=env)
+        out = (p.stdout or "").strip().splitlines()
+        data = {}
+        for ln in reversed(out):
+            ln = ln.strip()
+            if ln.startswith("{"):
+                try:
+                    data = _json.loads(ln)
+                    break
+                except Exception:
+                    pass
+        if not data:
+            return {"ok": False, "error": "无 JSON 输出",
+                    "stderr": (p.stderr or "")[-800:]}
+        parsed = data.get("parsed") or {}
+        return {"ok": bool(data.get("ok")), "parsed": parsed,
+                "raw": data.get("raw"), "returncode": p.returncode,
+                "model": "Qwen2.5-0.5B-Instruct+LoRA"}
+    except Exception as exc:
+        return {"ok": False, "error": str(exc)}
+
+
+def _llm_apply(question=""):
+    import json as _json
+    import time as _t
+    r = _llm_predict_local(question)
+    p = r.get("parsed") or {}
+    route = [str(x) for x in (p.get("route") or [])]
+    rounds = p.get("rounds") or {}
+    if not route:
+        return {"ok": False, "error": r.get("error") or "LLM 未给出 route",
+                "predict": r}
+    route_txt = ",".join(route)
+    rounds_txt = ",".join("%s:%s" % (k, int(v)) for k, v in rounds.items())
+    pol = _schedule_policy_load()
+    pol.update({"llm_route": route_txt, "llm_rounds": rounds_txt,
+                "llm_why": p.get("why"), "llm_applied_at": _t.time(),
+                "llm_model": "Qwen2.5-0.5B-Instruct+LoRA"})
+    try:
+        _SCHEDULE_POLICY_FILE.parent.mkdir(parents=True, exist_ok=True)
+        _SCHEDULE_POLICY_FILE.write_text(
+            _json.dumps(pol, ensure_ascii=False, indent=1), encoding="utf-8")
+        return {"ok": True, "route": route, "rounds": rounds,
+                "policy": pol, "predict": r}
+    except Exception as exc:
+        return {"ok": False, "error": str(exc), "predict": r}
 
 
 def _sched_model_load():
@@ -3102,6 +3212,11 @@ class Handler(BaseHTTPRequestHandler):
                     c=float((q.get("c") or ["0.5"])[0] or 0.5)))
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/schedule/llm/status":
+            try:
+                return self._json(_llm_status())
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/schedule/model":
             try:
                 m = _sched_model_load()
@@ -3532,6 +3647,25 @@ class Handler(BaseHTTPRequestHandler):
         if p == "/api/schedule/v2/rebuild":
             try:
                 return self._json(_v2_rebuild())
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/schedule/llm/status":
+            try:
+                return self._json(_llm_status())
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/schedule/llm/predict":
+            try:
+                data = self._read_json()
+                return self._json(_llm_predict_local(
+                    question=str(data.get("question") or "")))
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/schedule/llm/apply":
+            try:
+                data = self._read_json()
+                return self._json(_llm_apply(
+                    question=str(data.get("question") or "")))
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/schedule/model/apply":
@@ -4084,6 +4218,14 @@ class Handler(BaseHTTPRequestHandler):
                 opts = {}
             _auto_pareto = bool(opts.pop("auto_pareto", False))
             _auto_template = bool(opts.pop("auto_template", False))
+            _auto_llm = bool(opts.pop("auto_llm", False))
+            if _auto_llm:
+                _lr = _llm_predict_local(question)
+                _lp = _lr.get("parsed") or {}
+                if _lp.get("route"):
+                    opts.setdefault("route", ",".join(str(x) for x in _lp["route"]))
+                    opts.setdefault("rounds", ",".join("%s:%s" % (k, v)
+                                                        for k, v in (_lp.get("rounds") or {}).items()))
             if _auto_template:
                 _pol = _schedule_policy_load()
                 if _pol.get("template"):
@@ -4098,6 +4240,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"error": str(e)}, 400)
             return self._json({"id": tid, "auto_pareto": _auto_pareto,
                                "auto_template": _auto_template,
+                               "auto_llm": _auto_llm,
                                "profile": opts.get("profile") or ""}, 201)
 
         return self._json({"error": "not found"}, 404)
