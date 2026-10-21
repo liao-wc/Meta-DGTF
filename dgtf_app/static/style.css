@@ -1575,3 +1575,10 @@ body.stage-empty main.stage{padding-bottom:0}
 .env-line .env-k{color:var(--t3);font-size:11.5px}
 .env-line .env-v{color:var(--t1);font-size:11.5px}
 .env-line .env-v b{font-size:11.5px}
+
+/* 侧栏：按钮整体上移，使「元DGTF 头部→状态」与「状态→按钮」间距一致 */
+.drawer-nav{margin-top:clamp(10px,2vh,22px);margin-bottom:auto;transform:none}
+
+.drawer-nav{margin-top:4px;margin-bottom:auto;transform:none}
+
+.drawer-nav{margin-top:18px;margin-bottom:auto;transform:none}
