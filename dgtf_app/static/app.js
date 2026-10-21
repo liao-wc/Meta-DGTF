@@ -1710,8 +1710,19 @@ function startDshConvPoll() {
     if (!busy) { stopDshConvPoll(); setRunBtn('send'); }
   }, 600);
 }
-async function startDshChat(question) {
+function dshPermission() {
+  const v = (document.querySelector('#dsh-perm') || {}).value || 'workspace-write';
+  if (v === 'danger-full-access') {
+    if (!confirm('完全访问会让 DSH 越过工作区写入限制，可读取/修改本机更多文件。确认本次使用完全访问？'))
+      return '';
+  }
+  return v;
+}
+
+async function startDshChat(question, presetPerm) {
   logFollow = true;
+  const _perm = presetPerm || dshPermission();
+  if (!_perm) return;
   if (!dshConversationId) dshConversationId = 'dshconv-' + Date.now().toString(36);
   dshCurrent = null;
   setRunBtn('stop');
@@ -1720,7 +1731,7 @@ async function startDshChat(question) {
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({ conversation_id: dshConversationId, task: question,
         effort: (document.querySelector('#dsh-effort') || {}).value || '',
-        permission: (document.querySelector('#dsh-perm') || {}).value || 'workspace-write',
+        permission: _perm,
         model: (document.querySelector('#dsh-model') || {}).value || 'deepseek-flash' }) });
     try { localStorage.setItem(DSH_CONV_KEY, dshConversationId); } catch (_) {}
     await loadDshConversation();
@@ -1736,8 +1747,10 @@ async function startDshChat(question) {
 
 async function startDshRun(question) {
   logFollow = true;
+  const _perm = dshPermission();
+  if (!_perm) return;
   const attach = dshMode ? (dshAttachTaskId || currentTaskId()) : null;
-  if (!attach) return startDshChat(question);
+  if (!attach) return startDshChat(question, _perm);
   let target = null;
   if (attach) {
     dshAttachTaskId = attach;
@@ -1762,7 +1775,7 @@ async function startDshRun(question) {
       session_id: target ? target.session : dshSession,
       attach_task_id: attach || '',
       effort: (document.querySelector('#dsh-effort') || {}).value || '',
-      permission: (document.querySelector('#dsh-perm') || {}).value || 'workspace-write',
+      permission: _perm,
       model: (document.querySelector('#dsh-model') || {}).value || 'deepseek-flash'
     }, function (m) {
       if (m.type === 'event' && m.event) {
@@ -4188,6 +4201,8 @@ async function autoFixProposals() {
     if (m) m.textContent = '没有待修复的提案';
     return;
   }
+  const _perm = dshPermission();
+  if (!_perm) return;
   showAutoDsh('自动修复提案 · ' + (nConf + nPend) + ' 条待处理', [
     {type:'text', text:'DSH Agent 先分流：拿得准的安全提案自动修复；高风险/弱计划保留人工确认。'}
   ], 'running');
@@ -4195,7 +4210,8 @@ async function autoFixProposals() {
   try {
     const job = await api('/api/dsh/proposals/autofix/start', {
       method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({model: (document.querySelector('#dsh-model') || {}).value || 'deepseek-flash'})});
+      body: JSON.stringify({model: (document.querySelector('#dsh-model') || {}).value || 'deepseek-flash',
+                            permission: _perm})});
     try { localStorage.setItem('dgtf_last_autofix_job', job.job_id || ''); } catch (_) {}
     let idx = 0, netErrs = 0;
     while (!final) {
@@ -5053,6 +5069,8 @@ function init() {
     if (!ok && !auto) return;
     const id = (ok || auto).dataset.propApprove || (ok || auto).dataset.propAuto;
     const mode = ok ? 'user' : 'dsh_auto';
+    const _perm = dshPermission();
+    if (!_perm) return;
     const prop = (agentProps || []).find(x => x.id === id) || {};
     const title = (prop.task || {}).title || id;
     showAutoDsh('修复提案 · ' + id, [
@@ -5063,7 +5081,7 @@ function init() {
     let final = null, errMsg = '';
     try {
       await streamPost('/api/dsh/proposals/' + encodeURIComponent(id) + '/approve/stream',
-        {mode: mode}, function (m) {
+        {mode: mode, permission: _perm}, function (m) {
           if (!dshCurrent) return;
           if (m.type === 'event' && m.event) dshCurrent.events.push(m.event);
           else if (m.type === 'result') final = m.result;

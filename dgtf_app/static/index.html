@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/static/style.css?v=1.4.62">
+<link rel="stylesheet" href="/static/style.css?v=1.4.63">
 </head>
 <body class="stage-empty">
 
@@ -273,9 +273,11 @@
           <option value="deepseek-flash" selected>模型：Flash（默认）</option>
           <option value="deepseek-reasoner">模型：Reasoner</option>
         </select>
-        <select class="pill dsh-sel" id="dsh-perm" data-tip="DSH Agent 工作区权限：只读或读写（禁止完全访问）">
+        <select class="pill dsh-sel" id="dsh-perm" data-tip="DSH Agent 权限：只读 / 读写 / 完全 / 自动审查（与工作台权限档位一致）">
           <option value="read-only">权限：只读</option>
           <option value="workspace-write" selected>权限：读写工作区</option>
+          <option value="danger-full-access">权限：完全访问（危险）</option>
+          <option value="auto">权限：自动审查</option>
         </select>
         <span class="muted">设置在 DSH Agent 下次运行生效</span>
       </div>
@@ -549,6 +551,6 @@
 
 
 
-<script src="/static/app.js?v=1.4.62"></script>
+<script src="/static/app.js?v=1.4.63"></script>
 </body>
 </html>

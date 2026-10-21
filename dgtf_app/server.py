@@ -1376,20 +1376,21 @@ def _run_dsh_agent_raw(task: str, sid: str = "", timeout: int = 300,
         env["DEEPSEEK_API_KEY"] = key
     env.setdefault("DSH_HOME", str(Path.home() / ".dsh"))
     _orig_perm = str(permission or "").strip()
-    if _orig_perm == "danger-full-access":
-        return {"ok": False, "error": "安全策略禁止 danger-full-access；只允许 workspace-write/read-only",
-                "events": [], "text": "", "session_id": sid}
-    _perm = _orig_perm
-    _perm_warn = ""
-    if _perm == "read-only":
-        # DSH 当前只注册 workspace-write/danger-full-access；
-        # read-only 会让 permission 插件激活失败。降级为 workspace-write，
-        # 并通过提示约束不要修改文件。
+    _auto_review = (_orig_perm == "auto")
+    if _orig_perm in ("read-only", "workspace-write", "danger-full-access"):
+        _perm = _orig_perm
+    elif _auto_review:
         _perm = "workspace-write"
-        _perm_warn = "DSH 不支持 read-only preset，已降级 workspace-write；提示仍要求只读"
-    if _perm not in ("workspace-write", "danger-full-access"):
+    else:
         _perm = "workspace-write"
     env["DSH_PERMISSION_MODE"] = _perm
+    env["DGTF_DSH_PERMISSION_MODE"] = _orig_perm or _perm
+    env["DGTF_AUTO_REVIEW"] = "1" if _auto_review else "0"
+    _perm_warn = ""
+    if _orig_perm == "auto":
+        _perm_warn = "自动审查：DSH 使用 workspace-write，工作台负责安全审查"
+    elif _orig_perm == "danger-full-access":
+        _perm_warn = "完全访问：用户已选择，DSH 可越过工作区写入限制"
     env.setdefault("PYTHONUTF8", "1")
     env.setdefault("PYTHONIOENCODING", "utf-8")
     _wb_token = _wb_issue_token(int(timeout or 600) + 120, before=_before)
@@ -1408,15 +1409,20 @@ def _run_dsh_agent_raw(task: str, sid: str = "", timeout: int = 300,
     if _imports:
         _extra = ("\napp 导入文件（可直接读取）：\n- "
                   + "\n- ".join(_imports))
-    _allow_write = bool(auto_repair or (_perm == "workspace-write"
-                                        and _orig_perm != "read-only"))
-    if _allow_write:
-        _mode = ("你可以读取并修改项目工作区文件；修改源码后必须运行 "
-                 "python fast_gate.py 并保证通过；不要执行 git add / git commit / push，"
+    _allow_write = bool(auto_repair or _perm != "read-only")
+    if _perm == "danger-full-access":
+        _mode = ("完全访问模式（用户已明确选择）：可读写工作区及本机文件；"
+                 "仍不得把密钥/项目内容发到 API 以外的外部服务，禁止联网上传；"
+                 "不要执行 git add / git commit / push，由工作台统一提交。")
+    elif _allow_write:
+        _mode = ("你可以读取并修改项目工作区文件；修改源码后不要直接跑 fast_gate（"
+                 "Windows 沙箱临时写会被 ACL 拦），工作台会统一跑；不要执行 git add / git commit / push，"
                  "由工作台统一提交。不得读取或修改 .env、密钥、凭据、.git 内部文件；"
                  "不得把项目内容发到 API 以外的外部服务；禁止联网上传。")
     else:
         _mode = "只读模式：只读取项目文件，不修改任何文件。"
+    if _auto_review:
+        _mode += " 当前为自动审查模式：高风险操作仍应停下说明，由工作台/用户确认。"
     auth = ("你在元DGTF项目根目录：%s。请始终使用简体中文回答，"
             "思考过程（thinking）也必须使用简体中文，禁止输出英文思考；"
             "包括思考摘要、解释和最终答复；代码/命令保持原文。"
@@ -1435,7 +1441,16 @@ def _run_dsh_agent_raw(task: str, sid: str = "", timeout: int = 300,
                 "    provider: deepseek-official",
                 "    model: " + (str(model or "").strip() or "deepseek-flash"),
                 "    reasoningEffort: " + _eff]
-    if _perm:
+    if _perm == "read-only":
+        _pl += ["- id: permission",
+                "  name: '@deepseek-ai/dsh-permission-presets'",
+                "  config:",
+                "    defaultPreset: read-only",
+                "    presets:",
+                "      read-only:",
+                "        sandbox: read-only",
+                "        approval: never"]
+    elif _perm:
         _pl += ["- id: permission",
                 "  name: '@deepseek-ai/dsh-permission-presets'",
                 "  config:",
@@ -1467,6 +1482,7 @@ def _run_dsh_agent_raw(task: str, sid: str = "", timeout: int = 300,
                                 env.get("DGTF_WORKBENCH_TOKEN", "")) if x]
     _sensitive_paths = (".env", ".credentials", "dsh_conversations",
                         "agent_autopilot.json", "id_rsa", "authorized_keys")
+    _block_sensitive = (_perm != "danger-full-access")
 
     def _redact_obj(obj):
         if isinstance(obj, str):
@@ -1490,7 +1506,7 @@ def _run_dsh_agent_raw(task: str, sid: str = "", timeout: int = 300,
             ev = json.loads(line)
         except Exception:
             return
-        if ev.get("type") == "tool_call":
+        if ev.get("type") == "tool_call" and _block_sensitive:
             blob = json.dumps(ev.get("input") or {}, ensure_ascii=False).lower()
             hit = next((p for p in _sensitive_paths if p in blob), "")
             if hit:
@@ -1601,6 +1617,8 @@ def _run_dsh_agent_raw(task: str, sid: str = "", timeout: int = 300,
                    "text": final or "".join(texts),
                    "events": events[-200:],
                    "settings": {"effort": _eff, "permission": _perm,
+                          "permission_selected": _orig_perm or _perm,
+                          "auto_review": _auto_review,
                           "write": _allow_write,
                           "permission_warning": _perm_warn},
                    "attach_task_id": str(attach_task_id or ""),
@@ -1628,6 +1646,9 @@ def _run_dsh_agent_raw(task: str, sid: str = "", timeout: int = 300,
            "text": final or "".join(texts),
            "events": events[-200:],
            "settings": {"effort": _eff, "permission": _perm,
+                         "permission_selected": _orig_perm or _perm,
+                         "auto_review": _auto_review,
+                         "write": _allow_write,
                          "permission_warning": _perm_warn},
            "attach_task_id": str(attach_task_id or ""),
            "stderr": stderr}
@@ -1941,7 +1962,7 @@ def _run_fast_gate():
 
 
 def _repair_with_acceptance(prop, model="", emit=None, max_attempts=3,
-                            extra_context=""):
+                            extra_context="", permission=""):
     """修复 → fast_gate → 针对性验收；不通过就带着失败信息继续修，直到通过才提交。
 
     关键：DSH 阶段 auto_repair=False，不提前 git commit；工作台验收通过后
@@ -1971,7 +1992,8 @@ def _repair_with_acceptance(prop, model="", emit=None, max_attempts=3,
             except Exception:
                 pass
         res = _run_dsh_agent(prompt, sid, timeout=600, auto_repair=False,
-                             model=str(model or ""), emit=emit)
+                             model=str(model or ""), emit=emit,
+                             permission=str(permission or ""))
         sid = str(res.get("session_id") or sid)
         # 即使 DSH 自行提交，也先退回工作区（保留改动），验收通过后再统一提交。
         _now_head = (_git(["rev-parse", "HEAD"]).get("out") or "").strip()
@@ -2827,7 +2849,8 @@ def _autofix_workflow(data, write):
         try:
             res = _repair_with_acceptance(
                 prop, model=str((data or {}).get("model") or ""),
-                emit=_emit_fix, max_attempts=3, extra_context=learn)
+                emit=_emit_fix, max_attempts=3, extra_context=learn,
+                permission=str((data or {}).get("permission") or ""))
         except Exception as exc:
             res = {"ok": False, "gate": {}, "acceptance": {},
                    "repair": {"committed": False, "why": str(exc)},
@@ -6276,7 +6299,8 @@ class Handler(BaseHTTPRequestHandler):
                 learn = _autopilot_knowledge(prop) if _autopilot_cfg_load().get("enabled", False) else ""
                 res = _repair_with_acceptance(prop, model="deepseek-flash",
                                               emit=_emit_appr, max_attempts=3,
-                                              extra_context=learn)
+                                              extra_context=learn,
+                                              permission=str(data.get("permission") or ""))
                 repair = res.get("repair") or {}
                 prop["status"] = ("applied" if (repair.get("committed") and res.get("ok"))
                                   else "failed")
@@ -6314,7 +6338,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"error": "proposal not found"}, 404)
             learn = _autopilot_knowledge(prop) if _autopilot_cfg_load().get("enabled", False) else ""
             res = _repair_with_acceptance(prop, model="deepseek-flash",
-                                          max_attempts=3, extra_context=learn)
+                                          max_attempts=3, extra_context=learn,
+                                          permission=str(data.get("permission") or ""))
             repair = res.get("repair") or {}
             prop["status"] = ("applied" if (repair.get("committed") and res.get("ok"))
                               else "failed")

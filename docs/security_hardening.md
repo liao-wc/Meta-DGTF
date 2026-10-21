@@ -18,6 +18,13 @@
 - 每次调用写 dgtf_memory/dsh_workbench_calls.jsonl 审计；
 - 最终提交前工作台仍会重新跑 fast_gate + 针对性验收，不信任 DSH 自报结果。
 
+## DSH 权限档位（用户配置）
+- 只读：DSH 使用自定义 read-only 预设，写文件返回 FS_SANDBOX_DENIED；
+- 读写工作区：workspace-write，默认；
+- 完全访问：danger-full-access，UI 需二次确认；敏感路径拦截在此模式下放宽；
+- 自动审查：DSH 实际使用 workspace-write，由工作台做自动分流/安全审查，高风险仍停人工。
+权限选择会对 DSH 面板对话、提案自动修复、人工确认修复同时生效；最终提交仍由工作台复核。
+
 ## 启动服务
 app 启动会确保：
 - 本地 BGE embedding 服务（127.0.0.1:8771）；
