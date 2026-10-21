@@ -3243,6 +3243,7 @@ let agentDshArt = [];
 let agentProps = [];
 let agentLastRun = null;
 let agentV2 = null;
+let agentPareto = null;
 
 function agentIsoShort(x) {
   if (!x) return '—';
@@ -3478,6 +3479,21 @@ function agentRenderV2() {
         return '<span>' + esc(k) + ' · ' + esc(String(layers[k])) + '</span>';
       }).join('')
     + '</div></div>';
+  const _pa = agentPareto || {};
+  const _fr = (_pa.frontier || []);
+  if (_fr.length) {
+    html += '<div class="agent-item"><div class="agent-row"><span class="chip">帕累托前沿 '
+      + esc(String(_fr.length)) + ' 点</span><span class="chip">推荐 '
+      + esc(String(((_pa.recommended || {}).coverage == null) ? '—' : ((_pa.recommended || {}).coverage)))
+      + '</span></div>';
+    _fr.forEach(function (p) {
+      html += '<div class="agent-meta"><span>' + esc(String(p.route || ''))
+        + '</span><span>tokens ' + esc(String(p.tokens))
+        + '</span><span>coverage ' + esc(String(p.coverage))
+        + '</span><span>n=' + esc(String(p.runs)) + '</span></div>';
+    });
+    html += '</div>';
+  }
   (d.recent || []).slice().reverse().forEach(function (e) {
     html += '<div class="agent-item"><div class="agent-row">'
       + '<span class="chip">' + esc(String(e.kind || '')) + '</span>'
@@ -3509,7 +3525,7 @@ async function loadAgent() {
   if (resBox) resBox.innerHTML = agentEmpty('读取中…');
   const knBox = $('#agent-knowledge');
   if (knBox) knBox.innerHTML = agentEmpty('读取中…');
-  const [t, r, k, ds, da, pr, v2] = await Promise.all([
+  const [t, r, k, ds, da, pr, v2, pa] = await Promise.all([
     api('/api/agent/tasks').catch(e => ({ tasks: [], error: e.message })),
     api('/api/agent/results').catch(e => ({ results: [], error: e.message })),
     api('/api/agent/knowledge').catch(e => ({ items: [], error: e.message })),
@@ -3517,6 +3533,7 @@ async function loadAgent() {
     api('/api/dsh/artifacts').catch(e => ({ artifacts: [], error: e.message })),
     api('/api/dsh/proposals').catch(e => ({ proposals: [], error: e.message })),
     api('/api/schedule/v2').catch(e => ({ n: 0, error: e.message })),
+    api('/api/schedule/pareto?prefer=' + encodeURIComponent((document.querySelector('#pareto-prefer') || {}).value || 'balanced')).catch(e => ({ ok: false, error: e.message })),
   ]);
   agentTasks = (t && t.tasks) || [];
   agentResults = (r && r.results) || [];
@@ -3525,6 +3542,7 @@ async function loadAgent() {
   agentDshArt = (da && da.artifacts) || [];
   agentProps = (pr && pr.proposals) || [];
   agentV2 = v2 || null;
+  agentPareto = pa || null;
   agentRenderAll();
   const errs = [t && t.error, r && r.error, k && k.error].filter(Boolean);
   const msg = $('#agent-msg');
@@ -4467,9 +4485,12 @@ function init() {
     const m = document.querySelector('#agent-msg');
     if (m) m.textContent = '正在计算并保存帕累托策略…';
     try {
+      const _prefer = ($('#pareto-prefer') || {}).value || 'balanced';
       const r = await api('/api/schedule/pareto/apply', {method:'POST',
-        headers:{'Content-Type':'application/json'}, body: JSON.stringify({prefer:'balanced'})});
-      if (m) m.textContent = r.ok ? ('已采用帕累托策略：' + ((r.policy || {}).profile || '')) : ('失败：' + (r.error || ''));
+        headers:{'Content-Type':'application/json'}, body: JSON.stringify({prefer:_prefer})});
+      if (m) m.textContent = r.ok ? ('已采用帕累托策略（' + _prefer + '）：' + ((r.policy || {}).profile || '')) : ('失败：' + (r.error || ''));
+      agentPareto = await api('/api/schedule/pareto?prefer=' + encodeURIComponent(_prefer)).catch(function () { return agentPareto; });
+      agentRenderV2();
       await loadAgent();
     } catch (e) {
       if (m) m.textContent = '帕累托策略保存失败：' + e.message;
