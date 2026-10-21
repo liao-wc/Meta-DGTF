@@ -75,6 +75,8 @@ engine 元DGTF-V1.30.0.py
 | `GET /api/agent/auto/jobs` | 列出持久化的 auto/autofix job；服务重启后 running 自动标记 interrupted |
 | `GET /api/agent/eml` | EML 映射读数：playbook 25 条、V2 shadow 事件 544 条、agent tasks/results/knowledge/proposals 与提案状态分布 |
 | `POST /api/agent/eml/replay` | EML 反馈回放：历史 packed → schedule outcome 先验；默认 dry-run，不写生产 playbook |
+| `GET /api/schedule/v2` | V2 shadow 事件读数：按 kind/layer 聚合 + 最近 5 条 + 路径 |
+| `POST /api/tasks {opts.auto_pareto:true}` | 自动选用方案F-帕累托最优 profile，并在响应返回 profile |
 
 ### 实测（goal round 1 集成探针）
 

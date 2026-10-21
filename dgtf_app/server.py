@@ -1497,6 +1497,30 @@ def _eml_status():
     }
 
 
+def _v2_shadow_status(limit=200):
+    import json as _json
+    from collections import Counter
+    p = Path(__file__).resolve().parent.parent / "dgtf_memory" / "v2_events.jsonl"
+    rows = []
+    if p.exists():
+        try:
+            for ln in p.read_text(encoding="utf-8", errors="replace").splitlines()[-limit:]:
+                try:
+                    d = _json.loads(ln)
+                    if isinstance(d, dict):
+                        rows.append(d)
+                except Exception:
+                    pass
+        except Exception:
+            pass
+    recent = rows[-5:]
+    return {"ok": True, "n": len(rows),
+            "by_kind": dict(Counter(str(x.get("kind") or "") for x in rows)),
+            "by_layer": dict(Counter(str(x.get("layer") or "") for x in rows)),
+            "recent": recent,
+            "paths": str(p)}
+
+
 def _app_health():
     import importlib.util as _iu
     _proj = Path(__file__).resolve().parent.parent
@@ -1815,6 +1839,14 @@ def _schedule_preview(data):
     except Exception as exc:
         argv = []
         return {"ok": False, "error": str(exc), "effective": effective}
+    _pareto = {}
+    try:
+        _pr = _schedule_pareto(limit=120, prefer=str((data or {}).get("prefer") or "balanced"))
+        _rec = _pr.get("recommended") or {}
+        _pareto = {"recommended": _rec, "frontier_n": len(_pr.get("frontier") or []),
+                   "suggested_profile": _pr.get("recommended_profile") or ""}
+    except Exception:
+        _pareto = {}
     return {
         "ok": True,
         "question_present": bool(question),
@@ -1837,6 +1869,7 @@ def _schedule_preview(data):
         "dynamic": {"max_concurrent": runner.MAX_CONCURRENT,
                     "history_limit": flat.get("auto.history_limit"),
                     "budget_soft": flat.get("max_tokens")},
+        "pareto": _pareto,
     }
 
 
@@ -1985,6 +2018,11 @@ class Handler(BaseHTTPRequestHandler):
         if p == "/api/agent/eml":
             try:
                 return self._json(_eml_status())
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/schedule/v2":
+            try:
+                return self._json(_v2_shadow_status())
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/agent/auto/jobs":
@@ -2848,11 +2886,15 @@ class Handler(BaseHTTPRequestHandler):
             opts = data.get("opts") or {}
             if not isinstance(opts, dict):
                 opts = {}
+            _auto_pareto = bool(opts.pop("auto_pareto", False))
+            if _auto_pareto and not opts.get("profile"):
+                opts["profile"] = "方案F-帕累托最优.yaml"
             try:
                 tid = runner.start_task(question, opts)
             except ValueError as e:
                 return self._json({"error": str(e)}, 400)
-            return self._json({"id": tid}, 201)
+            return self._json({"id": tid, "auto_pareto": _auto_pareto,
+                               "profile": opts.get("profile") or ""}, 201)
 
         return self._json({"error": "not found"}, 404)
 

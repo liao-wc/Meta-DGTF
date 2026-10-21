@@ -59,6 +59,8 @@ st, p2 = req("POST", "/api/schedule/preview", {"question": "profile预览",
 ck("preview profile", st == 200 and p2.get("ok") and p2.get("profile") and any("--config" in p2.get("cli", []) for _ in [0]), p2)
 st, pbad = req("POST", "/api/schedule/preview", {"question": "bad", "opts": "bad"})
 ck("preview invalid opts", st == 200 and pbad.get("ok") is False, (st, pbad))
+st, v2 = req("GET", "/api/schedule/v2", timeout=30)
+ck("v2 shadow mapped", st == 200 and v2.get("ok") and v2.get("n", 0) > 0, (st, v2))
 
 # 3) read API contract
 reads = ["/api/config", "/api/chats", "/api/outputs", "/api/outputs/facets",
@@ -98,8 +100,8 @@ ck("auto job persisted/list", st == 200 and any(
 
 # 6) engine -> app mock roundtrip + four layers
 st, t = req("POST", "/api/tasks", {"question": "元DGTF app 集成探针：四层为什么要互相校验？",
-                                   "opts": {"mock": True}})
-ck("mock task create", st == 201 and t.get("id"), (st, t))
+                                   "opts": {"mock": True, "auto_pareto": True}})
+ck("mock task create", st == 201 and t.get("id") and t.get("auto_pareto") and "帕累托" in str(t.get("profile")), (st, t))
 tid = t.get("id", "")
 task = None
 if tid:
