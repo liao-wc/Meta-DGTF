@@ -129,9 +129,16 @@ h1,h2,h3,.task-q,.item .t,.md p{text-wrap:pretty}
 .brand .sub{color:var(--t3);font-weight:500;font-size:12px;letter-spacing:.02em}
 
 /* 引擎 / 凭据状态（收进抽屉顶部）：**文字白色 + 整体居中** */
-.env{color:var(--t1);font-size:12px;line-height:1.7;font-variant-numeric:tabular-nums;
-  padding:12px 2px 2px;text-align:center}
-.env b{color:#fff;font-weight:600;font-family:var(--f-mono);font-size:11.5px}
+.env{color:var(--t1);font-size:12px;line-height:1.9;font-variant-numeric:tabular-nums;
+  padding:13px 6px 5px;text-align:center}
+.env-row{display:grid;grid-template-columns:8px 64px minmax(0,1fr);
+  align-items:center;gap:8px;padding:5px 2px}
+.env-row .dot{margin-right:0}
+.env-row .dot:not(.ok):not(.no){visibility:hidden}
+.env-k{font-size:11.5px;color:var(--t3);text-align:right}
+.env-v{font-size:11.5px;color:var(--t1);min-width:0;overflow-wrap:anywhere}
+.env-v b{color:#fff;font-weight:600;font-family:var(--f-mono);font-size:10.5px}
+.env .mono{font-family:var(--f-mono);font-size:10.5px}
 /* 状态点：**配好了 = 高亮**（绿 + 光晕）、**没配 = 灰**（低对比） */
 .dot{display:inline-block;width:7px;height:7px;border-radius:50%;
   margin-right:5px;vertical-align:0}
@@ -306,7 +313,7 @@ h1,h2,h3,.task-q,.item .t,.md p{text-wrap:pretty}
    （上下 `margin:auto` 平分剩余高度；视口矮时自动压成 0，不会挤掉内容）。 */
 /* ★ R28：按钮组在剩余空间里居中后，再**整体上移一段**（用户要求往上挪） ——
    仍用自动外边距居中（矮窗口内容溢出时会自然退化成顶对齐、不会把人挤出屏幕）。 */
-.drawer-nav{display:flex;flex-direction:column;gap:clamp(8px, 1.6vh, 16px);
+.drawer-nav{display:flex;flex-direction:column;gap:clamp(11px, 2.2vh, 20px);
   margin-top:auto;margin-bottom:auto;
   transform:translateY(clamp(-136px, -10vh, -92px))}
 .nav-btn{display:flex;align-items:center;justify-content:flex-start;gap:9px;
@@ -1556,3 +1563,7 @@ body.stage-empty main.stage{padding-bottom:0}
 /* 高级参数底栏按钮：与分组/任务按钮同字号同胶囊格式 */
 #adv-actions button.ghost{height:32px;padding:0 13px;font-size:12.5px;
   border-radius:16px;border:1px solid var(--hair-2)}
+
+/* 侧栏：按钮间距拉大后，去掉导航负位移，避免盖住环境信息/产物行 */
+.drawer-body{overflow-y:auto}
+.drawer-nav{transform:none}

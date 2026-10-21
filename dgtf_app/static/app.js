@@ -222,6 +222,40 @@ const ADV_GROUP_CN = {
   sim: '仿真模式', stop: '停止条件',
 };
 
+const ADV_CATEGORIES = [
+  { key: 'cat-cli', label: '任务指令参数', rawLabel: 'CLM 参数（随机任务传）', keys: ['_cli'] },
+  { key: 'cat-model', label: '模型与接口', rawLabel: '模型与 API', keys: ['api'] },
+  { key: 'cat-run', label: '运行与调度', rawLabel: '运行与调度', keys: ['runtime', 'auto', 'scheduler', 'max_tokens', 'sim'] },
+  { key: 'cat-data', label: '联网与资料', rawLabel: '联网与资料', keys: ['web_search', 'external_anchor', 'external_input'] },
+  { key: 'cat-layer', label: '四层与收尾', rawLabel: '四层与收尾', keys: ['spiral', 'stop', 'playbook'] },
+  { key: 'cat-memory', label: '记忆与探针', rawLabel: '记忆与探针', keys: ['memory', 'probe', 'claim_gap'] },
+  { key: 'cat-actions', label: '动作与职责', rawLabel: '动作与职责', keys: ['actions', 'all_on', 'autotune', 'belief', 'duty'] },
+  { key: 'cat-output', label: '输出', rawLabel: '输出', keys: ['output'] },
+];
+
+function mergeAdvGroups(groups) {
+  const by = Object.fromEntries((groups || []).map(g => [g.key, g]));
+  const used = new Set();
+  const out = [];
+  ADV_CATEGORIES.forEach(cat => {
+    const items = [];
+    cat.keys.forEach(k => {
+      const g = by[k];
+      if (!g) return;
+      used.add(k);
+      (g.items || []).forEach(it => items.push(it));
+    });
+    if (items.length) {
+      out.push({ key: cat.key, label: cat.label,
+                 rawLabel: cat.rawLabel || cat.label, items });
+    }
+  });
+  (groups || []).forEach(g => {
+    if (!used.has(g.key)) out.push(g);
+  });
+  return out;
+}
+
 async function buildAdv() {
   /* 刷新失败时保留已有分组，避免“恢复出厂后只剩 CLM”这种整块消失 */
   let groups = advGroups.filter(g => g.key !== '_cli');
@@ -239,8 +273,8 @@ async function buildAdv() {
     rawLabel: g.label,
     label: ADV_GROUP_CN[g.key] || g.label,
   }));
-  advGroups = [{ key: '_cli', rawLabel: 'CLM 参数（随机任务传）',
-                label: '任务指令参数', items: cli }, ...groups];
+  advGroups = mergeAdvGroups([{ key: '_cli', rawLabel: 'CLM 参数（随机任务传）',
+                              label: '任务指令参数', items: cli }, ...groups]);
   renderAdvGroups();
 }
 
@@ -2735,13 +2769,28 @@ function renderMd(src) {
 /* ── 配置与初始化 ───────────────────────────────────────────────── */
 async function loadConfig() {
   try {
-    const c = await api('/api/config');
+    const [c, h, l] = await Promise.all([
+      api('/api/config'),
+      api('/api/health').catch(() => ({})),
+      api('/api/schedule/llm/status').catch(() => ({})),
+    ]);
     const k = c.creds;
+    const checks = (h && h.checks) || {};
+    const backs = (l && l.backends) || [];
+    const nBack = backs.filter(b => b.ok).length;
+    const agentOk = !!(checks.dsh_headless && (checks.agent_daemon || (h.daemon || {}).running));
+    const row = (label, value, dot) =>
+      '<div class="env-row">' +
+        '<span class="dot ' + (dot ? (dot === 'ok' ? 'ok' : 'no') : '') + '"></span>' +
+        '<span class="env-k">' + esc(label) + '</span>' +
+        '<span class="env-v">' + value + '</span></div>';
     $('#env-info').innerHTML =
-      `<b>${esc(c.engine)}</b><br>` +
-      `<span class="dot ${k.api_key ? 'ok' : 'no'}"></span>DeepSeek ${k.api_key ? '已配置' : '缺 key'}　` +
-      `<span class="dot ${k.tavily ? 'ok' : 'no'}"></span>Tavily ${k.tavily ? '已配置' : '未配置'}` +
-      `<br>产物 <b>${c.outputs.count}</b> 份 · ${c.outputs.total_mb} MB`;
+      row('引擎', '<b class="mono">' + esc(c.engine) + '</b>') +
+      row('DeepSeek', k.api_key ? '已配置' : '缺 key', k.api_key ? 'ok' : 'no') +
+      row('Tavily', k.tavily ? '已配置' : '未配置', k.tavily ? 'ok' : 'no') +
+      row('本地 LLM', nBack + ' 个底座 · 默认 Qwen0.5B') +
+      row('Agent', agentOk ? 'DSH 就绪 · 守护运行' : '未就绪') +
+      row('产物', '<b>' + c.outputs.count + '</b> 份 · ' + c.outputs.total_mb + ' MB');
     $('#mock').checked = !!c.mock_default;
     syncMockPill();                    // checked 变了，胶囊高亮要跟着
     $('#cost-warn').textContent = k.api_key
