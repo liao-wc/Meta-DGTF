@@ -3674,10 +3674,18 @@ function agentRenderProps() {
   if (!box) return;
   if (!agentProps.length) { box.innerHTML = agentEmpty('还没有修复提案。点「DSH 全流程闭环」生成提案。'); return; }
   const ST = {pending: '待确认', confirmed: '已确认待修复', applied: '已应用', failed: '失败', rolled_back: '已回退', expired: '已过期'};
-  const nConf = agentProps.filter(x => x.status === 'confirmed').length;
+  const live = agentProps.filter(x => x.status !== 'expired');
+  const nExp = agentProps.length - live.length;
+  if (!live.length) {
+    box.innerHTML = agentEmpty('当前没有待处理提案；已过期/去重 ' + nExp + ' 条（无需修复）。');
+    const fb = document.querySelector('#prop-autofix');
+    if (fb) fb.textContent = '自动修复提案';
+    return;
+  }
+  const nConf = live.filter(x => x.status === 'confirmed').length;
   const fixBtn = document.querySelector('#prop-autofix');
   if (fixBtn) fixBtn.textContent = '自动修复提案' + (nConf ? '（' + nConf + '）' : '');
-  box.innerHTML = agentProps.slice(0, 30).map(function (x) {
+  box.innerHTML = live.slice(0, 30).map(function (x) {
     const when = fmtTs(x.ts);
     const st = String(x.status || 'pending');
     let acts = '';
@@ -3702,7 +3710,7 @@ function agentRenderProps() {
       + '</div>'
       + '<div class="agent-q">' + esc(String(x.plan || '').slice(0, 300)) + '</div>'
       + '<div class="prop-actions">' + acts + '</div></div>';
-  }).join('');
+  }).join('') + (nExp ? '<div class="agent-meta" style="padding:8px 2px;"><span>另有 ' + nExp + ' 条已过期/去重，无需修复</span></div>' : '');
 }
 
 function agentV2ParetoSvg(d) {
