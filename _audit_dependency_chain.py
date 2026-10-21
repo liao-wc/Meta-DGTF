@@ -76,6 +76,21 @@ st, pol = get('/api/security/context-policy')
 ck('security policy dsh', st == 200 and pol.get('dsh', {}).get('danger_full_access') == 'denied', pol)
 ck('embedding local only', '127.0.0.1:8771' in str(pol.get('embedding') or ''))
 
+st, tasks = get('/api/agent/tasks')
+rows = tasks.get('tasks') or []
+ck('front task mapping keys', st == 200 and all({'id', 'title', 'kind', 'severity'}.issubset(x) for x in rows[:10]))
+st, results = get('/api/agent/results')
+rows = results.get('results') or []
+ck('front result mapping keys', st == 200 and all({'task_id', 'status', 'action'}.issubset(x) for x in rows[:10]))
+st, kn = get('/api/agent/knowledge')
+rows = kn.get('items') or []
+ck('front knowledge mapping keys', st == 200 and all({'query', 'title', 'url', 'fetched'}.issubset(x) for x in rows[:10]))
+ck('front chat status mapping keys', all({'id', 'running', 'stale', 'last_status', 'last_task'}.issubset(x) for x in (chats.get('chats') or [])[:10]))
+st, props = get('/api/dsh/proposals')
+rows = props.get('proposals') or []
+ck('front proposal mapping keys', st == 200 and all({'id', 'status', 'task', 'plan'}.issubset(x) for x in rows[:10]))
+ck('library action transparency hooks', 'agentLogAction' in appjs and 'id="agent-action-log-list"' in (ROOT / 'dgtf_app' / 'static' / 'index.html').read_text(encoding='utf-8', errors='replace'))
+
 # 5. 产物命名 / 质量替代
 ck('clean output helper', '_clean_prefixed_output' in (ROOT / 'dgtf_app' / 'engine_runner.py').read_text(encoding='utf-8', errors='replace'))
 st, q = get('/api/quality/20261021_155104_950be7')

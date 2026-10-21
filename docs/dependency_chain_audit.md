@@ -1,8 +1,8 @@
 # 元DGTF app 依赖链自洽审计
 
-生成：2026-10-22 07:44:13
+生成：2026-10-22 07:46:54
 
-PASS 42 / FAIL 0
+PASS 48 / FAIL 0
 
 ## FAIL
 - 无
@@ -33,6 +33,12 @@ PASS 42 / FAIL 0
 - dsh privacy prompt
 - security policy dsh
 - embedding local only
+- front task mapping keys
+- front result mapping keys
+- front knowledge mapping keys
+- front chat status mapping keys
+- front proposal mapping keys
+- library action transparency hooks
 - clean output helper
 - quality alternative api
 - quality alt grade
