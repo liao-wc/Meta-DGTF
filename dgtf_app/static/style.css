@@ -1673,3 +1673,8 @@ body.stage-empty main.stage{padding-bottom:0}
 
 /* 侧边栏向右展开范围略增（1440 视口 240→260px） */
 :root{--drawer-w:min(440px, max(240px, calc((100vw - 920px) / 2)))}
+
+/* 状态信息再缩小：字号 9px、行距 14px；标签常规不加粗 */
+.env .env-k,.env .env-v,.env .env-v b{font-size:9px !important;line-height:14px !important;font-weight:400 !important}
+.env{font-size:9px !important;line-height:14px !important}
+.env .env-k{font-weight:400 !important;text-shadow:none}
