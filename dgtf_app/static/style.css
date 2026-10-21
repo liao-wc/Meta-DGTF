@@ -1644,3 +1644,6 @@ body.stage-empty main.stage{padding-bottom:0}
 /* 状态值统一白/等宽；可用灯恢复绿色；标签蓝色 */
 .env .env-v,.env .env-v b{color:#fff;font-family:var(--f-mono);font-size:10.5px}
 #env-info .dot.ok{background:var(--ok);box-shadow:0 0 0 3px rgba(63,185,80,.16),0 0 8px rgba(63,185,80,.7)}
+
+/* 状态值统一加粗高亮 */
+.env .env-v,.env .env-v b{font-weight:700;color:#fff;text-shadow:0 0 8px rgba(255,255,255,.22)}
