@@ -1787,10 +1787,14 @@ def _targeted_acceptance(changed):
         cmds.append([_sys.executable, "smoke_test.py", "smoke"])
     out = []
     ok = True
+    env = dict(os.environ)
+    env["PYTHONUTF8"] = "1"
+    env["PYTHONIOENCODING"] = "utf-8"
     for cmd in cmds:
         try:
             p = _sp.run(cmd[:2], cwd=str(root), text=True, encoding="utf-8",
-                        errors="replace", capture_output=True, timeout=600)
+                        errors="replace", capture_output=True, timeout=600,
+                        env=env)
             good = p.returncode == 0
             ok = ok and good
             out.append({"name": cmd[2], "ok": good,
@@ -1875,10 +1879,13 @@ def _run_fast_gate():
     import subprocess as _sp
     import sys as _sys
     root = Path(__file__).resolve().parent.parent
+    env = dict(os.environ)
+    env["PYTHONUTF8"] = "1"
+    env["PYTHONIOENCODING"] = "utf-8"
     try:
         g = _sp.run([_sys.executable, "fast_gate.py"], cwd=str(root),
                     text=True, encoding="utf-8", errors="replace",
-                    capture_output=True, timeout=300)
+                    capture_output=True, timeout=300, env=env)
         return {"ok": g.returncode == 0,
                 "tail": ((g.stdout or "") + (g.stderr or ""))[-1600:]}
     except Exception as exc:

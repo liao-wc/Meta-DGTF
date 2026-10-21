@@ -1,8 +1,14 @@
 # -*- coding: utf-8 -*-
 """快速门禁：并行跑关键语法/模块/审计检查，缩短反馈；完整门禁仍用 _run_gate。"""
 from __future__ import annotations
-import subprocess, sys
+import os, subprocess, sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
+
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
 
 CHECKS = [
     ("compile", [sys.executable, "-c",
@@ -26,7 +32,11 @@ CHECKS = [
 def main() -> int:
     bad = []
     with ThreadPoolExecutor(max_workers=8) as ex:
+        child_env = dict(os.environ)
+        child_env["PYTHONUTF8"] = "1"
+        child_env["PYTHONIOENCODING"] = "utf-8"
         futs = {ex.submit(subprocess.run, cmd, capture_output=True, text=True,
+                          encoding="utf-8", errors="replace", env=child_env,
                           timeout=900): name for name, cmd in CHECKS}
         for f in as_completed(futs):
             name = futs[f]
