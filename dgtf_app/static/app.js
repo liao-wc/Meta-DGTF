@@ -216,10 +216,10 @@ function renderAdvItem(it) {
 
 /* 高级参数页：**只列分组按钮**（点一个 → 进下一层新页看该组参数） */
 const ADV_GROUP_CN = {
-  all_on: '全开开关', autotune: '自动调参', belief: '信念',
-  claim_gap: '主张缺口', duty: '职责开关', external_input: '外部输入',
-  max_tokens: '最大 Token', playbook: '剧本', scheduler: '调度器',
-  sim: '仿真', stop: '停止条件',
+  all_on: '一键全开', autotune: '自动调参', belief: '把握阈值',
+  claim_gap: '缺口检查', duty: '职责开关', external_input: '外部输入',
+  max_tokens: 'Token 预算', playbook: '经验剧本', scheduler: '调度器',
+  sim: '仿真模式', stop: '停止条件',
 };
 
 async function buildAdv() {
@@ -236,9 +236,11 @@ async function buildAdv() {
        value: (k in advOverrides) ? advOverrides[k] : (savedCli[k] || '') }));
   groups = groups.map(g => ({
     ...g,
+    rawLabel: g.label,
     label: ADV_GROUP_CN[g.key] || g.label,
   }));
-  advGroups = [{ key: '_cli', label: 'CLM 参数（随机任务传）', items: cli }, ...groups];
+  advGroups = [{ key: '_cli', rawLabel: 'CLM 参数（随机任务传）',
+                label: '任务指令参数', items: cli }, ...groups];
   renderAdvGroups();
 }
 
@@ -278,7 +280,7 @@ function openAdvGroup(key) {
     advBackup[it.key] = { had: it.key in advOverrides, val: advOverrides[it.key] };
   });
   const t = $('#adv-group-title');
-  if (t) t.textContent = g.label;
+  if (t) t.textContent = g.rawLabel || g.label;
   const grid = $('#adv-grid');
   if (grid) grid.innerHTML = g.items.map(renderAdvItem).join('');
   /* 底部两个出口上的计数：让「有几项要保存 / 已经存了几项」一眼看得见 ——

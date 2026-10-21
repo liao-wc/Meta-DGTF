@@ -1466,7 +1466,7 @@ def main() -> int:
           html.count('class="panel-head"') == 1          # 只剩「高级参数分组页」那一处
           and html.count('class="panel-title"') == 1
           and 'id="sheet-desc"' in html
-          and html.count('class="sd" data-for=') == 6
+          and html.count('class="sd" data-for=') == 7
           and "s.dataset.for === key" in js
           and "flex:0 0 auto" in _rule(css, ".sheet-title"),
           "panel-head=" + str(html.count('class="panel-head"'))
