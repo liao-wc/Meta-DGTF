@@ -964,7 +964,7 @@ def _thinking_zh(text, key):
     return out
 
 
-def _run_dsh_agent(task: str, sid: str = "", timeout: int = 300,
+def _run_dsh_agent_raw(task: str, sid: str = "", timeout: int = 300,
                    auto_repair: bool = False, effort: str = "",
                    permission: str = "", attach_task_id: str = "",
                    model: str = "", emit=None, proc_ref=None) -> dict:
@@ -1232,6 +1232,55 @@ def _run_dsh_agent(task: str, sid: str = "", timeout: int = 300,
     return out
 
 
+def _run_dsh_agent(task: str, *args, **kwargs):
+    """带 DSH 会话留痕的 Agent 调用：事件实时写入 dsh_conversations，可在 DSH 会话页回看。"""
+    import time as _t
+    cid = "dshrun-" + str(int(_t.time() * 1000))
+    tid = "turn-" + str(int(_t.time() * 1000))
+    conv = {"id": cid, "session_id": "", "created_at": _t.time(),
+            "updated_at": _t.time(),
+            "turns": [{"id": tid, "task": str(task), "status": "running",
+                       "events": [], "text": "", "ts_start": _t.time()}]}
+    try:
+        _DSH_CONV[cid] = conv
+        _conv_save(conv)
+    except Exception:
+        pass
+    _emit0 = kwargs.get("emit")
+
+    def _emit(ev):
+        try:
+            _conv_event(cid, tid, ev)
+        except Exception:
+            pass
+        if _emit0 is not None:
+            try:
+                _emit0(ev)
+            except Exception:
+                pass
+
+    kwargs["emit"] = _emit
+    res = _run_dsh_agent_raw(task, *args, **kwargs)
+    try:
+        conv = _DSH_CONV.get(cid) or conv
+        for x in conv.get("turns") or []:
+            if x.get("id") == tid:
+                x["status"] = "done" if res.get("ok") else "error"
+                x["events"] = list(res.get("events") or x.get("events") or [])
+                x["text"] = str(res.get("text") or "")
+                x["ts_end"] = _t.time()
+                break
+        if res.get("session_id"):
+            conv["session_id"] = str(res["session_id"])
+        conv["updated_at"] = _t.time()
+        _DSH_CONV[cid] = conv
+        _conv_save(conv)
+    except Exception:
+        pass
+    res["conversation_id"] = cid
+    return res
+
+
 def _extract_json(text):
     import json as _json
     import re as _re
@@ -1302,7 +1351,7 @@ def _auto_proposal(task_text="", title="", emit=None, model=""):
         if not rows:
             return {"ok": False, "text": "没有可自审的任务"}
         t = rows[0]
-    prompt = ("提案模式：不要读取项目文件、不要修改源码。只根据下面任务详情"
+    prompt = ("提案模式：允许读取项目文件核对现状，但不要修改源码。只根据下面任务详情"
               "输出简短修复提案（≤200字）：涉及文件、步骤、风险、验证命令。"
               "任务：" + str(t.get("title") or "") + "。详情："
               + str(t.get("detail") or "")[:1200])
@@ -1786,7 +1835,7 @@ def _auto_cycle_all(emit=None, model=""):
                     "title": str(t.get("title") or "")[:160],
                     "detail": str(t.get("detail") or "")[:400]}
                    for t in todo[:80]]
-        prompt = ("提案模式：不要读取项目文件、不要修改源码。请为下列全部任务分别给出"
+        prompt = ("提案模式：允许读取项目文件核对现状，但不要修改源码。请为下列全部任务分别给出"
                   "简短修复提案，只输出一个 JSON 对象："
                   '{"proposals":[{"task_id":"...","plan":"..."}]}。'
                   "任务列表：" + _json.dumps(compact, ensure_ascii=False)[:24000])
@@ -1914,7 +1963,7 @@ def _conv_worker(cid):
             task = str(turn.get("task") or "")
             settings = conv.get("settings") or {}
         try:
-            res = _run_dsh_agent(
+            res = _run_dsh_agent_raw(
                 task, sid, timeout=1800,
                 effort=str(settings.get("effort") or ""),
                 permission=str(settings.get("permission") or ""),
@@ -5270,7 +5319,7 @@ class Handler(BaseHTTPRequestHandler):
                         return self._json({"ok": False,
                                            "text": "没有可自审的任务"})
                     t = tasks[0]
-                prompt = ("提案模式：不要读取项目文件、不要修改源码。只根据下面任务详情"
+                prompt = ("提案模式：允许读取项目文件核对现状，但不要修改源码。只根据下面任务详情"
                           "输出简短修复提案（≤200字）：涉及文件、步骤、风险、验证命令。"
                           "任务：" + str(t.get("title") or "") + "。详情："
                           + str(t.get("detail") or "")[:1200])

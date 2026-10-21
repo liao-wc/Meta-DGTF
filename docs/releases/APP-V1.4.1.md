@@ -54,6 +54,8 @@
 - 侧栏状态与按钮再整体下移一点点；
 - 侧栏按钮整体再下移一点点；
 - 静态资源 v=1.4.60；
+- 所有 DSH Agent 调用统一走 _run_dsh_agent 会话留痕：事件实时写入 dsh_conversations（dshrun-*），DSH 会话页可回看过程与结果；
+- 提案/自审模式允许读取项目文件核对现状（仍不改源码）；DSH 默认 workspace-write/PTC 与面板配置一致。
 - 修复提案自动分诊：分类(quality_signal/probe_quality/fact_correctness/agent_runtime/process_gap/eml_experiment/verification/docs/noise) + 优先级 P0-P3；
 - 每次分诊写 `dgtf_memory/dsh_proposals/_index.json`（计数/分类/优先级/项目 HEAD/队列规模）并保留 `triage_history`；
 - 新增实时项目对账：关键文件修复后自动把旧提案标为 fixed_*；提案页显示分类、优先级、分诊原因与过期原因统计。
