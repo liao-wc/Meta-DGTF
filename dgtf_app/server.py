@@ -28,7 +28,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "1.1.0"
+APP_VERSION = "1.1.1"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -1110,7 +1110,8 @@ def _auto_refresh_knowledge(emit=None, queries=None):
 def _auto_engine_run(emit=None, question="", mock=True, opts=None, timeout=300):
     """全流程中的引擎跑次：默认 mock；显式 mock=False 才真跑。"""
     import time as _t
-    from dgtf_app import engine_runner as runner
+    # 复用模块级 runner：若再 from dgtf_app import engine_runner，
+    # 会把同一文件加载成第二个模块，_tasks 等运行态与 API 侧不共享。
     q = str(question or "").strip() or "元DGTF 全流程自检：如何让 EML 反馈驱动调度细度？"
     o = dict(opts or {})
     o["mock"] = bool(mock)
