@@ -1874,6 +1874,77 @@ def _consistency_history_save(result):
         pass
 
 
+_EML_DATASET = Path(__file__).resolve().parent.parent / "dgtf_memory" / "eml_training_dataset.jsonl"
+
+
+def _eml_dataset_meta():
+    import json as _json
+    rows = []
+    try:
+        if _EML_DATASET.exists():
+            for ln in _EML_DATASET.read_text(encoding="utf-8", errors="replace").splitlines():
+                try:
+                    d = _json.loads(ln)
+                    if isinstance(d, dict):
+                        rows.append(d)
+                except Exception:
+                    pass
+    except Exception:
+        pass
+    tmpl = {}
+    for r in rows:
+        t = str(r.get("template") or "")
+        tmpl[t] = tmpl.get(t, 0) + 1
+    return {"ok": True, "path": str(_EML_DATASET), "n": len(rows),
+            "templates": tmpl,
+            "mtime": _EML_DATASET.stat().st_mtime if _EML_DATASET.exists() else 0,
+            "fields": ["run_id", "template", "quality", "calls", "tokens", "success"]}
+
+
+def _eml_export_dataset(limit=5000):
+    """从 V2 schedule_outcome 导出纯数值训练集；不含答案正文。"""
+    import json as _json
+    import time as _t
+    root = Path(__file__).resolve().parent.parent
+    p = root / "dgtf_memory" / "v2_events.jsonl"
+    latest = {}
+    if p.exists():
+        for ln in p.read_text(encoding="utf-8", errors="replace").splitlines()[-max(1, int(limit)):]:
+            try:
+                d = _json.loads(ln)
+            except Exception:
+                continue
+            if not isinstance(d, dict) or str(d.get("kind") or "") != "schedule_outcome":
+                continue
+            pl = d.get("payload") if isinstance(d.get("payload"), dict) else {}
+            t = str(pl.get("template") or "")
+            rid = str(d.get("run_id") or "")
+            if not t or not rid:
+                continue
+            try:
+                row = {"run_id": rid, "template": t,
+                       "quality": float(pl.get("quality") or 0),
+                       "calls": float(pl.get("calls") or 0),
+                       "tokens": float(pl.get("tokens") or 0),
+                       "success": bool(pl.get("success"))}
+            except Exception:
+                continue
+            latest[(rid, t)] = row
+    rows = [latest[k] for k in sorted(latest)]
+    try:
+        _EML_DATASET.parent.mkdir(parents=True, exist_ok=True)
+        tmp = _EML_DATASET.with_suffix(".tmp")
+        tmp.write_text("".join(_json.dumps(r, ensure_ascii=False) + "\n" for r in rows),
+                       encoding="utf-8")
+        tmp.replace(_EML_DATASET)
+    except Exception as exc:
+        return {"ok": False, "error": str(exc)}
+    return {"ok": True, "n": len(rows), "path": str(_EML_DATASET),
+            "templates": len({r["template"] for r in rows}),
+            "runs": len({r["run_id"] for r in rows}),
+            "note": "纯数值训练集；不含答案正文", "at": _t.time()}
+
+
 def _self_consistency():
     """元DGTF 自洽审计：把引擎/EML/V2/策略/持久化/映射集中校验。"""
     import json as _json
@@ -2522,6 +2593,11 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"profiles": _schedule_profiles()})
             except Exception as exc:
                 return self._json({"profiles": [], "error": str(exc)}, 500)
+        if p == "/api/agent/eml/dataset":
+            try:
+                return self._json(_eml_dataset_meta())
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/agent/eml":
             try:
                 return self._json(_eml_status())
@@ -2928,6 +3004,13 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"task": append_task(task)})
             except Exception as exc:
                 return self._json({"error": str(exc)}, 500)
+        if p == "/api/agent/eml/export":
+            try:
+                data = self._read_json()
+                return self._json(_eml_export_dataset(
+                    limit=int(data.get("limit") or 5000)))
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/agent/eml/replay":
             try:
                 data = self._read_json()

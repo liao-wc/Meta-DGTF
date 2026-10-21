@@ -39,6 +39,11 @@ st, eml = req("GET", "/api/agent/eml", timeout=30)
 ck("EML status mapped", st == 200 and eml.get("ok")
    and (eml.get("playbook") or {}).get("n", 0) >= 0
    and (eml.get("v2_shadow") or {}).get("n", 0) >= 0, (st, eml))
+st, dsexp = req("POST", "/api/agent/eml/export", {"limit": 5000}, timeout=60)
+ck("EML training export", st == 200 and dsexp.get("ok") and dsexp.get("n", 0) > 0, (st, dsexp))
+st, dsmeta = req("GET", "/api/agent/eml/dataset", timeout=30)
+ck("EML training dataset meta", st == 200 and dsmeta.get("ok")
+   and dsmeta.get("n", 0) > 0 and bool(dsmeta.get("fields")), (st, dsmeta))
 st, rep = req("POST", "/api/agent/eml/replay", {"limit": 20, "dry_run": True}, timeout=90)
 ck("EML replay dry-run", st == 200 and rep.get("ok") and rep.get("replayed", 0) > 0
    and bool((rep.get("priors") or {}).get("templates")), (st, rep))
