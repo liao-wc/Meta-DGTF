@@ -3722,16 +3722,19 @@ function agentRenderDsh() {
   if (n) n.textContent = String(agentDsh.length);
   if (!box) return;
   if (!agentDsh.length) { box.innerHTML = agentEmpty('还没有 DSH Agent 会话。'); return; }
-  box.innerHTML = _activeFirst(agentDsh, x => String(x.status || '') === 'running', _agentTs).slice(0, 30).map(function (x) {
-    const when = fmtTs(x.ts);
-    return '<div class="agent-item agent-dsh-item" data-dsh-session="' + esc(x.id || '') + '">'
-      + '<div class="agent-row"><span class="chip">' + (x.auto_repair ? '自动修复' : 'DSH') + '</span>'
-      + '<span class="chip">' + (x.ok ? '完成' : '失败') + '</span>'
-      + '<span class="agent-t">' + esc(x.task || x.id) + '</span></div>'
+  box.innerHTML = _activeFirst(agentDsh, x => !!x.running, x => _agentTs({ts: x.updated_at || x.created_at})).slice(0, 30).map(function (x) {
+    const when = fmtTs(x.updated_at || x.created_at);
+    const st = String(x.last_status || '');
+    const label = x.running ? '运行中' : (x.stale ? '中断' : (st === 'error' ? '失败' : (st === 'queued' ? '排队' : '完成')));
+    return '<div class="agent-item agent-dsh-item" data-dsh-chat="' + esc(x.id || '') + '">'
+      + '<div class="agent-row"><span class="chip">DSH</span>'
+      + '<span class="chip' + (x.running ? ' gh-bad' : '') + '">' + esc(label) + '</span>'
+      + '<span class="agent-t">' + esc(x.last_task || x.id) + '</span></div>'
       + '<div class="agent-meta"><span>' + esc(x.id || '') + '</span>'
-      + (when ? '<span>开始 ' + esc(when) + '</span>' : '<span>开始时间未知</span>')
+      + (when ? '<span>更新 ' + esc(when) + '</span>' : '<span>时间未知</span>')
+      + '<span>' + esc(String(x.turns || 0)) + ' 轮</span>'
       + '</div>'
-      + '<div class="agent-q">点此回溯并续聊</div></div>';
+      + '<div class="agent-q">点此打开/续聊</div></div>';
   }).join('');
 }
 
@@ -4089,7 +4092,7 @@ async function loadAgent() {
     api('/api/agent/tasks').catch(e => ({ tasks: [], error: e.message })),
     api('/api/agent/results').catch(e => ({ results: [], error: e.message })),
     api('/api/agent/knowledge').catch(e => ({ items: [], error: e.message })),
-    api('/api/dsh/sessions').catch(e => ({ sessions: [], error: e.message })),
+    api('/api/dsh/chats').catch(e => ({ chats: [], error: e.message })),
     api('/api/dsh/artifacts').catch(e => ({ artifacts: [], error: e.message })),
     api('/api/dsh/proposals').catch(e => ({ proposals: [], error: e.message })),
     api('/api/agent/autopilot').catch(e => ({ enabled: false, error: e.message })),
@@ -4104,7 +4107,7 @@ async function loadAgent() {
   agentTasks = (t && t.tasks) || [];
   agentResults = (r && r.results) || [];
   agentKnowledge = (k && k.items) || [];
-  agentDsh = (ds && ds.sessions) || [];
+  agentDsh = (ds && ds.chats) || [];
   agentDshArt = (da && da.artifacts) || [];
   agentProps = (pr && pr.proposals) || [];
   agentPropSummary = (pr && pr.summary) || null;

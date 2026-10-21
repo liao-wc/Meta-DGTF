@@ -229,6 +229,7 @@ _DSH_ACTIVE = set()
 _DSH_CONV = {}
 _DSH_CONV_ACTIVE = set()
 _DSH_CONV_PROCS = {}
+_DSH_CONV_SAVE_AT = {}
 _DSH_CONV_CANCELLED = set()
 _DSH_CONV_LOCK = None   # 延迟创建，避免顶层 import threading
 _AUTO_JOBS = {}
@@ -1969,6 +1970,7 @@ def _run_dsh_agent(task: str, *args, **kwargs):
                 pass
 
     kwargs["emit"] = _emit
+    _DSH_CONV_ACTIVE.add(cid)
     try:
         task = (str(task) + "\n\n[工作台接入] 你是本 app 内置 DSH Agent；"
                 "可用受控工具：python dgtf_app/dsh_tool.py "
@@ -1976,7 +1978,10 @@ def _run_dsh_agent(task: str, *args, **kwargs):
                 "工具结果仅作参考；最终验收和提交由工作台复核。")
     except Exception:
         pass
-    res = _run_dsh_agent_raw(task, *args, **kwargs)
+    try:
+        res = _run_dsh_agent_raw(task, *args, **kwargs)
+    finally:
+        _DSH_CONV_ACTIVE.discard(cid)
     try:
         conv = _DSH_CONV.get(cid) or conv
         for x in conv.get("turns") or []:
@@ -2918,6 +2923,8 @@ def _conv_load(cid):
 
 
 def _conv_event(cid, turn_id, ev):
+    import time as _t
+    save = False
     with _conv_lock():
         conv = _DSH_CONV.get(cid)
         if not conv:
@@ -2925,7 +2932,14 @@ def _conv_event(cid, turn_id, ev):
         for turn in conv.get("turns") or []:
             if turn.get("id") == turn_id:
                 turn.setdefault("events", []).append(ev)
-                return
+                conv["updated_at"] = _t.time()
+                now = _t.time()
+                if now - float(_DSH_CONV_SAVE_AT.get(cid) or 0) >= 1.0:
+                    _DSH_CONV_SAVE_AT[cid] = now
+                    save = True
+                break
+    if save:
+        _conv_save(conv)
 
 
 def _conv_worker(cid):
@@ -4667,7 +4681,9 @@ def _quality_alt(task_id):
     except Exception as exc:
         return {"ok": False, "error": str(exc)}
     q = d.get("quality") or {}
-    cov = float(q.get("coverage") or 0.0)
+    cov_raw = q.get("coverage")
+    coverage_missing = cov_raw is None
+    cov = None if coverage_missing else float(cov_raw)
     answered = int(q.get("answered") or 0)
     total = int(q.get("answerable_total") or 0)
     ans_rate = (answered / total) if total else (1.0 if answered else 0.0)
@@ -4679,18 +4695,27 @@ def _quality_alt(task_id):
         if stop and not any(x in stop for x in ("token", "预算", "截断")):
             closed += 1
     closure = (closed / len(layers)) if layers else 0.0
-    score = 100.0 * max(0.0, min(1.0, cov)) * ans_rate * (0.7 + 0.3 * closure)
-    score = score - 6.0 * len(flags)
-    score = max(0.0, min(100.0, round(score, 2)))
-    grade = "A" if score >= 85 else ("B" if score >= 70 else ("C" if score >= 55 else "D"))
+    if coverage_missing:
+        # coverage 缺失不能按 0 计分：0 分会被误读成"质量极差"。
+        score = None
+        grade = "unmeasured"
+    else:
+        score = 100.0 * max(0.0, min(1.0, cov)) * ans_rate * (0.7 + 0.3 * closure)
+        score = score - 6.0 * len(flags)
+        score = max(0.0, min(100.0, round(score, 2)))
+        grade = "A" if score >= 85 else ("B" if score >= 70 else ("C" if score >= 55 else "D"))
+    note = ("coverage 缺失（null），质量替代分不计算，grade=unmeasured；"
+            "该分数不可与历史分数直接比较" if coverage_missing
+            else "三态 α 不可靠时使用；可解释、可复算")
     return {"ok": True, "task_id": str(task_id), "score": score, "grade": grade,
+            "coverage_missing": coverage_missing,
             "basis": {"coverage": cov, "answered": answered,
                       "answerable_total": total, "answer_rate": round(ans_rate, 4),
                       "layers_closed": closed, "layers_total": len(layers),
                       "closure": round(closure, 4), "flags": flags},
             "tri_state": q.get("tri_state"), "tri_quality": q.get("tri_quality"),
             "scheme": "coverage*answer_rate*(0.7+0.3*closure)-6*flags",
-            "note": "三态 α 不可靠时使用；可解释、可复算"}
+            "note": note}
 
 
 def _llm_status():
