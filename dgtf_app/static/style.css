@@ -1532,3 +1532,11 @@ body.stage-empty main.stage{padding-bottom:0}
 #view-agent .agent-sec-h .agent-kn-desc{flex:1 0 100%;order:9;margin-left:0;
   font-size:10.5px;line-height:1.45;color:var(--t3);white-space:normal}
 
+
+/* Agent 面板顶部说明：显式可见，不受 .hint.tight 两行截断/遮挡影响 */
+#view-agent .agent-intro{display:block;margin:10px 2px 6px;padding:8px 10px;
+  border-left:3px solid rgba(124,106,255,.65);border-radius:0 8px 8px 0;
+  background:rgba(124,106,255,.06);color:var(--t2);font-size:12px;
+  line-height:1.55;white-space:normal;overflow:visible;max-height:none;
+  opacity:1;visibility:visible}
+#view-agent .agent-intro .muted{display:block;margin-top:3px;font-size:10.5px;color:var(--t3)}
