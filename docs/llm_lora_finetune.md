@@ -69,6 +69,28 @@
 - 项目上下文通过 opts._prompt_prefix 只进引擎 argv；任务标题/run.json 保留原问题；
 - 引擎现有产物仍按 argv 问题命名，因此真实跑的 md 文件名可能包含背景前缀；这是待修边界。
 
+
+## DeepSeek 血统基座（v1.4.0）
+
+- 基座：DeepSeek-R1-Distill-Qwen-1.5B（3.55GB，6GB fp16 可训）；
+- 零样本：JSON 0.0（R1 蒸馏倾向输出推理文本，不按 JSON 契约）；
+- LoRA 3 epochs：val 0.1621 → 0.1504 → 0.1374；
+- 留出 base vs LoRA：JSON 0.0 → 1.0，route 0.0 → 0.214，rounds MAE 0.0 → 1.286；
+- 结论：rounds 比 0.5B 更好（1.286 vs 1.446），route 更差（0.214 vs 0.429）；不替换默认。
+
+## 多底座 / 融合
+
+- 默认 qwen05b；可选 qwen15b、deepseek15b；
+- hybrid：Qwen0.5B 给 route + DeepSeek 给 rounds；
+- 接口：/api/schedule/llm/predict、/apply 接受 backend；状态 /api/schedule/llm/status 返回 backends；
+- 实测 hybrid 返回 route [0,1] + DeepSeek rounds；
+- adapter 保留在 llm_sft/adapter_deepseek15b_v1；对比 eval_base_vs_lora_deepseek.json。
+
+## 产物命名
+
+- 项目上下文通过 opts._prompt_prefix 只进引擎 argv；
+- runner 在收尾前把产物名改成“时间戳+原问题”，不再出现“元DGTF项目权威背景…”长文件名。
+
 ## 边界
 
 - 0.5B + 122 条只能学格式与浅层调度，不是强领域模型；

@@ -59,6 +59,8 @@ def main():
     ap.add_argument("--model", default="D:/dgtf_models/Qwen2.5-0.5B-Instruct")
     ap.add_argument("--adapter", default="llm_sft/adapter_qwen05b_v1")
     ap.add_argument("--max", type=int, default=14)
+    ap.add_argument("--base-only", action="store_true")
+    ap.add_argument("--out", default="llm_sft/eval_base_vs_lora.json")
     args = ap.parse_args()
     val = [json.loads(x) for x in (SFT / "val.jsonl").read_text(
         encoding="utf-8").splitlines() if x.strip()][:args.max]
@@ -68,6 +70,16 @@ def main():
         args.model, dtype=torch.float16, trust_remote_code=True).to("cuda")
     rb = run(base, tok, val)
     del base; torch.cuda.empty_cache()
+    if args.base_only:
+        out = {"base": {"name": "base", "n": len(rb),
+                        "json_rate": round(sum(r["json"] for r in rb) / max(1, len(rb)), 3),
+                        "route_exact": round(sum(r["route_ok"] for r in rb) / max(1, len(rb)), 3),
+                        "round_mae": round(sum((r["round_mae"] or 0) for r in rb) / max(1, len(rb)), 3)}}
+        out_path = SFT / Path(args.out).name
+        out_path.write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
+        print(json.dumps(out, ensure_ascii=False, indent=1))
+        print("WROTE", out_path)
+        return
     tuned = AutoModelForCausalLM.from_pretrained(
         args.model, dtype=torch.float16, trust_remote_code=True).to("cuda")
     tuned = PeftModel.from_pretrained(tuned, str(ROOT / args.adapter))
@@ -81,11 +93,12 @@ def main():
     out = {"base": agg(rb, "base"), "lora": agg(rt, "lora"),
            "samples": [{"base": rb[i]["out"][:180], "lora": rt[i]["out"][:180],
                         "gold": rt[i]["gold"][:180]} for i in range(min(3, len(rt)))]}
-    (SFT / "eval_base_vs_lora.json").write_text(
+    _out_path = SFT / Path(args.out).name
+    _out_path.write_text(
         json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
     print(json.dumps({k: out[k] for k in ("base", "lora")},
                      ensure_ascii=False, indent=1))
-    print("WROTE", SFT / "eval_base_vs_lora.json")
+    print("WROTE", _out_path)
 
 if __name__ == "__main__":
     main()

@@ -161,7 +161,7 @@ ck("v2 A/B paired", st == 200 and abp.get("ok")
 reads = ["/api/config", "/api/chats", "/api/outputs", "/api/outputs/facets",
          "/api/dashboard", "/api/agent/tasks", "/api/agent/results",
          "/api/agent/knowledge", "/api/dsh/proposals", "/api/dsh/sessions",
-         "/api/dsh/artifacts", "/api/params"]
+         "/api/dsh/artifacts", "/api/dsh/chats", "/api/params"]
 for path in reads:
     st, d = req("GET", path, timeout=30)
     ck("read " + path, st == 200 and isinstance(d, dict), (st, str(d)[:160]))
@@ -171,6 +171,8 @@ st, d = req("POST", "/api/tasks", {"question": ""})
 ck("task empty 400", st == 400, (st, d))
 st, d = req("POST", "/api/dsh/chat", {"task": ""})
 ck("chat empty 400", st == 400, (st, d))
+st, d = req("POST", "/api/dsh/agent", {"task": "noop", "permission": "danger-full-access"})
+ck("dsh danger rejected", st == 200 and d.get("ok") is False, (st, d))
 st, d = req("POST", "/api/agent/knowledge/dedupe", {})
 ck("dedupe idempotent", st == 200 and d.get("removed", 0) >= 0, (st, d))
 

@@ -280,10 +280,9 @@
           <option value="deepseek-flash" selected>模型：Flash（默认）</option>
           <option value="deepseek-reasoner">模型：Reasoner</option>
         </select>
-        <select class="pill dsh-sel" id="dsh-perm" data-tip="DSH Agent 会话工作权限（沙箱）">
+        <select class="pill dsh-sel" id="dsh-perm" data-tip="DSH Agent 工作区权限：只读或读写（禁止完全访问）">
           <option value="read-only">权限：只读</option>
-          <option value="workspace-write" selected>权限：工作区</option>
-          <option value="danger-full-access">权限：完全</option>
+          <option value="workspace-write" selected>权限：读写工作区</option>
         </select>
         <span class="muted">设置在 DSH Agent 下次运行生效</span>
       </div>
@@ -334,12 +333,7 @@
               <option value="cost">省成本</option>
               <option value="quality">质量优先</option>
             </select>
-            <button class="ghost" id="agent-pareto-apply" data-tip="按当前偏好计算真实历史帕累托推荐并写入默认调度策略">采用帕累托</button>
-            <button class="ghost" id="agent-v2-best-apply" data-tip="按 V2 显著模板的 95% 下界选最佳模板并写入策略">采用最佳模板</button>
-            <button class="ghost" id="agent-v2-pareto-apply" data-tip="按质量-成本联合帕累托选模板并写入策略">采用模板帕累托</button>
-            <button class="ghost" id="agent-v2-bandit-apply" data-tip="按 UCB 探索/利用选模板并写入策略">采用 UCB</button>
-            <button class="ghost" id="agent-v2-model-apply" data-tip="用本地训练的学习模型预测质量并写入策略">采用学习模型</button>
-            <button class="ghost" id="agent-v2-llm-apply" data-tip="用本地 LoRA 小模型生成 route/rounds 并写入策略">采用LLM</button></div>
+            <span class="muted" id="v2-auto-status" data-tip="切换挡位后自动评估 V2 模板策略并写入最优">自动选优</span></div>
           <div id="agent-v2" class="agent-list"></div>
         </div>
         <div class="agent-sec">
@@ -390,7 +384,20 @@
       <span class="rl-head-c"><span id="rl-question"></span><span id="rl-meta" class="rl-meta"></span></span>
       <span class="rl-head-r"><span id="rl-files" class="rl-files"></span></span>
     </div>
+    <div id="dsh-conv-bar" class="dsh-conv-bar hidden">
+      <span id="dsh-conv-current" class="dsh-conv-current"></span>
+      <span id="dsh-conv-running" class="dsh-conv-running"></span>
+      <button type="button" id="dsh-history-toggle" class="ghost dsh-history-toggle">历史会话</button>
+    </div>
     <div id="runlog-body" class="runlog-body scroll"></div>
+  </div>
+
+  <div id="dsh-history" class="dsh-history hidden">
+    <div class="dsh-history-head">
+      <strong>DSH 会话历史</strong>
+      <button type="button" id="dsh-history-close" class="ghost">关闭</button>
+    </div>
+    <div id="dsh-history-list" class="dsh-history-list scroll"></div>
   </div>
 
   <div class="composer">

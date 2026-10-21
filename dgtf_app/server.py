@@ -28,7 +28,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "1.3.0"
+APP_VERSION = "1.4.0"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -151,6 +151,8 @@ def make_server(host: str, port: int, token: str = "", verbose: bool = False):
 _DSH_ACTIVE = set()
 _DSH_CONV = {}
 _DSH_CONV_ACTIVE = set()
+_DSH_CONV_PROCS = {}
+_DSH_CONV_CANCELLED = set()
 _DSH_CONV_LOCK = None   # 延迟创建，避免顶层 import threading
 _AUTO_JOBS = {}
 _AUTO_JOBS_LOCK = None
@@ -700,7 +702,7 @@ def _thinking_zh(text, key):
 def _run_dsh_agent(task: str, sid: str = "", timeout: int = 300,
                    auto_repair: bool = False, effort: str = "",
                    permission: str = "", attach_task_id: str = "",
-                   model: str = "", emit=None) -> dict:
+                   model: str = "", emit=None, proc_ref=None) -> dict:
     """调用本机 DeepSeek Harness headless Agent；返回 NDJSON 事件映射。"""
     import os as _os
     import subprocess as _sp
@@ -728,7 +730,11 @@ def _run_dsh_agent(task: str, sid: str = "", timeout: int = 300,
     if key:
         env["DEEPSEEK_API_KEY"] = key
     env.setdefault("DSH_HOME", str(Path.home() / ".dsh"))
-    _perm = str(permission or "").strip()
+    _orig_perm = str(permission or "").strip()
+    if _orig_perm == "danger-full-access":
+        return {"ok": False, "error": "安全策略禁止 danger-full-access；只允许 workspace-write/read-only",
+                "events": [], "text": "", "session_id": sid}
+    _perm = _orig_perm
     _perm_warn = ""
     if _perm == "read-only":
         # DSH 当前只注册 workspace-write/danger-full-access；
@@ -755,16 +761,22 @@ def _run_dsh_agent(task: str, sid: str = "", timeout: int = 300,
     if _imports:
         _extra = ("\napp 导入文件（可直接读取）：\n- "
                   + "\n- ".join(_imports))
-    _mode = ("你可以直接修改项目源码/文件；若修改源码，必须运行 "
-             "python fast_gate.py 并保证通过；不要执行 git add / git commit / push，"
-             "由工作台统一提交本次变更。"
-             if auto_repair else "只读模式：不要修改项目文件。")
+    _allow_write = bool(auto_repair or (_perm == "workspace-write"
+                                        and _orig_perm != "read-only"))
+    if _allow_write:
+        _mode = ("你可以读取并修改项目工作区文件；修改源码后必须运行 "
+                 "python fast_gate.py 并保证通过；不要执行 git add / git commit / push，"
+                 "由工作台统一提交。不得读取或修改 .env、密钥、凭据、.git 内部文件；"
+                 "不得把项目内容发到 API 以外的外部服务；禁止联网上传。")
+    else:
+        _mode = "只读模式：只读取项目文件，不修改任何文件。"
     auth = ("你在元DGTF项目根目录：%s。请始终使用简体中文回答，"
             "思考过程（thinking）也必须使用简体中文，禁止输出英文思考；"
             "包括思考摘要、解释和最终答复；代码/命令保持原文。"
             "你有权读取该工作区内的项目文件、"
             "outputs/ 产物、docs/、dgtf_memory/、app 导入文件与配置；"
-            "%s 不要泄露密钥。%s\n用户请求：%s"
+            "%s 不要泄露密钥；禁止联网搜索、网页抓取、上传文件到第三方服务；"
+            "只允许通过 DeepSeek API 做本地推理。%s\n用户请求：%s"
             % (root, _mode, _extra, task))
     _patch = None
     _pl = []
@@ -835,6 +847,11 @@ def _run_dsh_agent(task: str, sid: str = "", timeout: int = 300,
                          stderr=_sp.PIPE, text=True,
                          encoding="utf-8", errors="replace")
         _DSH_ACTIVE.add(proc)
+        if proc_ref is not None:
+            try:
+                proc_ref(proc)
+            except Exception:
+                pass
         try:
             out_text, err_text = proc.communicate(
                 input=auth, timeout=max(1, int(timeout)))
@@ -848,6 +865,7 @@ def _run_dsh_agent(task: str, sid: str = "", timeout: int = 300,
                    "text": final or "".join(texts),
                    "events": events[-200:],
                    "settings": {"effort": _eff, "permission": _perm,
+                          "write": _allow_write,
                           "permission_warning": _perm_warn},
                    "attach_task_id": str(attach_task_id or ""),
                    "stderr": (err_text or "")[-2000:]}
@@ -860,6 +878,11 @@ def _run_dsh_agent(task: str, sid: str = "", timeout: int = 300,
     finally:
         if proc is not None:
             _DSH_ACTIVE.discard(proc)
+            if proc_ref is not None:
+                try:
+                    proc_ref(None)
+                except Exception:
+                    pass
         if _patch:
             try: Path(_patch).unlink()
             except Exception: pass
@@ -1276,6 +1299,14 @@ def _conv_dir():
     return d
 
 
+def _conv_set_proc(cid, proc):
+    with _conv_lock():
+        if proc is None:
+            _DSH_CONV_PROCS.pop(cid, None)
+        else:
+            _DSH_CONV_PROCS[cid] = proc
+
+
 def _conv_path(cid):
     import re as _re
     safe = _re.sub(r"[^A-Za-z0-9_.-]", "_", str(cid or ""))[:120] or "conversation"
@@ -1342,7 +1373,8 @@ def _conv_worker(cid):
                 effort=str(settings.get("effort") or ""),
                 permission=str(settings.get("permission") or ""),
                 model=str(settings.get("model") or ""),
-                emit=lambda ev: _conv_event(cid, turn.get("id"), ev))
+                emit=lambda ev: _conv_event(cid, turn.get("id"), ev),
+                proc_ref=lambda p: _conv_set_proc(cid, p))
         except Exception as exc:
             res = {"ok": False, "session_id": sid, "events": [],
                    "text": "", "stderr": str(exc)}
@@ -1351,15 +1383,19 @@ def _conv_worker(cid):
             if not conv:
                 _DSH_CONV_ACTIVE.discard(cid)
                 return
+            _was_cancelled = cid in _DSH_CONV_CANCELLED
             for x in conv.get("turns") or []:
                 if x.get("id") == turn.get("id"):
-                    x["status"] = "done" if res.get("ok") else "error"
+                    x["status"] = ("canceled" if _was_cancelled else
+                                    ("done" if res.get("ok") else "error"))
                     x["events"] = list(res.get("events") or x.get("events") or [])
                     x["text"] = str(res.get("text") or "")
                     x["ts_end"] = _t.time()
                     break
             if res.get("session_id"):
                 conv["session_id"] = str(res["session_id"])
+            if _was_cancelled:
+                _DSH_CONV_CANCELLED.discard(cid)
             _DSH_CONV[cid] = conv
             _conv_save(conv)
 
@@ -1392,6 +1428,57 @@ def _conv_snapshot(cid):
     with _conv_lock():
         conv = _DSH_CONV.get(cid) or _conv_load(cid)
     return conv
+
+
+def _conv_reconcile_on_start():
+    """服务重启后，磁盘里遗留的 queued/running 已经没有 worker，统一标记 interrupted。"""
+    import json as _json
+    try:
+        for p in _conv_dir().glob("*.json"):
+            try:
+                c = _json.loads(p.read_text(encoding="utf-8", errors="replace"))
+            except Exception:
+                continue
+            changed = False
+            for t in c.get("turns") or []:
+                if str(t.get("status")) in ("queued", "running"):
+                    t["status"] = "interrupted"
+                    changed = True
+            if changed:
+                c["updated_at"] = __import__("time").time()
+                p.write_text(_json.dumps(c, ensure_ascii=False, indent=1), encoding="utf-8")
+    except Exception:
+        pass
+
+
+def _conv_list(limit=50):
+    import json as _json
+    rows = []
+    try:
+        files = sorted(_conv_dir().glob("*.json"),
+                       key=lambda p: p.stat().st_mtime, reverse=True)[:max(1, int(limit))]
+        for p in files:
+            try:
+                c = _json.loads(p.read_text(encoding="utf-8", errors="replace"))
+            except Exception:
+                continue
+            turns = c.get("turns") or []
+            _busy = any(str(t.get("status")) in ("queued", "running") for t in turns)
+            _active = (c.get("id") or p.stem) in _DSH_CONV_ACTIVE
+            running = bool(_busy and _active)
+            stale = bool(_busy and not _active)
+            last = turns[-1] if turns else {}
+            rows.append({"id": c.get("id") or p.stem,
+                         "session_id": c.get("session_id") or "",
+                         "created_at": c.get("created_at"),
+                         "updated_at": c.get("updated_at"),
+                         "turns": len(turns),
+                         "running": running, "stale": stale,
+                         "last_status": last.get("status") or "",
+                         "last_task": str(last.get("task") or "")[:200]})
+    except Exception:
+        pass
+    return rows
 
 
 def _auto_jobs_lock():
@@ -2414,6 +2501,17 @@ _LLM_PY = os.getenv("DGTF_LLM_PYTHON", r"D:\dgtf_llm_env\Scripts\python.exe")
 _LLM_MODEL = os.getenv("DGTF_LLM_MODEL", r"D:/dgtf_models/Qwen2.5-0.5B-Instruct")
 _LLM_ADAPTER = Path(__file__).resolve().parent.parent / "llm_sft" / "adapter_qwen05b_v1"
 _LLM_SCRIPT = Path(__file__).resolve().parent.parent / "llm_predict.py"
+_LLM_BACKENDS = {
+    "qwen05b": {"model": r"D:/dgtf_models/Qwen2.5-0.5B-Instruct",
+                "adapter": Path(__file__).resolve().parent.parent / "llm_sft" / "adapter_qwen05b_v1",
+                "label": "Qwen2.5-0.5B + LoRA"},
+    "qwen15b": {"model": r"D:/dgtf_models/Qwen2.5-1.5B-Instruct",
+                "adapter": Path(__file__).resolve().parent.parent / "llm_sft" / "adapter_qwen15b_v1",
+                "label": "Qwen2.5-1.5B + LoRA"},
+    "deepseek15b": {"model": r"D:/dgtf_models/DeepSeek-R1-Distill-Qwen-1.5B",
+                    "adapter": Path(__file__).resolve().parent.parent / "llm_sft" / "adapter_deepseek15b_v1",
+                    "label": "DeepSeek-R1-Distill-Qwen-1.5B + LoRA"},
+}
 
 
 _LLM_METRICS = Path(__file__).resolve().parent.parent / "llm_sft" / "train_metrics.json"
@@ -2620,6 +2718,146 @@ def _bm25_rank(cands, query, text_key="text", topk=20):
     return [c for _s, c in out[:topk]]
 
 
+_RAG_INDEX_FILE = Path(__file__).resolve().parent.parent / "dgtf_memory" / "rag_index.json"
+_RAG_QUERY_SCRIPT = Path(__file__).resolve().parent.parent / "rag_query.py"
+_RAG_INDEX_CACHE = {}
+_EMBED_CACHE = {}
+
+
+def _load_rag_index():
+    import json as _json
+    p = _RAG_INDEX_FILE
+    try:
+        st = p.stat()
+    except Exception:
+        return None
+    key = (int(st.st_mtime_ns), int(st.st_size))
+    hit = _RAG_INDEX_CACHE.get(key)
+    if hit is not None:
+        return hit
+    try:
+        data = _json.loads(p.read_text(encoding="utf-8", errors="replace"))
+    except Exception:
+        data = None
+    _RAG_INDEX_CACHE.clear()
+    _RAG_INDEX_CACHE[key] = data
+    return data
+
+
+def _embed_query(q):
+    """调用本地 BGE 脚本生成查询向量；失败返回 None（回退 BM25）。"""
+    q = str(q or "").strip()
+    if not q:
+        return None
+    hit = _EMBED_CACHE.get(q)
+    if hit is not None:
+        return hit
+    try:
+        import urllib.request as _ur_e
+        import json as _json_e
+        _req = _ur_e.Request(
+            "http://127.0.0.1:8771/embed",
+            data=_json_e.dumps({"texts": [q]}).encode("utf-8"),
+            headers={"Content-Type": "application/json"}, method="POST")
+        with _ur_e.urlopen(_req, timeout=6) as _resp:
+            _d = _json_e.loads(_resp.read().decode("utf-8"))
+        _v = ((_d.get("vectors") or [None])[0])
+        if isinstance(_v, list) and _v:
+            _EMBED_CACHE.clear()
+            _EMBED_CACHE[q] = _v
+            return _v
+    except Exception:
+        pass
+    try:
+        import subprocess as _sp
+        if not Path(_LLM_PY).exists() or not _RAG_QUERY_SCRIPT.exists():
+            return None
+        env = dict(os.environ)
+        env["HF_HUB_OFFLINE"] = "1"
+        env["PYTHONUTF8"] = "1"
+        env["PYTHONIOENCODING"] = "utf-8"
+        r = _sp.run([_LLM_PY, str(_RAG_QUERY_SCRIPT)], input=q,
+                    capture_output=True, text=True, encoding="utf-8",
+                    errors="replace", timeout=40, cwd=str(Path(__file__).resolve().parent.parent),
+                    env=env)
+        if r.returncode != 0:
+            return None
+        d = __import__("json").loads((r.stdout or "").strip())
+        vec = d.get("vec") if isinstance(d, dict) else None
+        if not isinstance(vec, list) or not vec:
+            return None
+        _EMBED_CACHE.clear()
+        _EMBED_CACHE[q] = vec
+        return vec
+    except Exception:
+        return None
+
+
+_RAG_EMBED_PROC = None
+
+
+def _rag_embed_health():
+    try:
+        import urllib.request as _ur_h
+        with _ur_h.urlopen("http://127.0.0.1:8771/health", timeout=1.5) as r:
+            return bool(__import__("json").loads(r.read().decode("utf-8")).get("ok"))
+    except Exception:
+        return False
+
+
+def _ensure_rag_embed():
+    """确保本地 BGE 常驻服务在跑；失败不影响 app（RAG 自动回退 BM25）。"""
+    global _RAG_EMBED_PROC
+    import time as _t_wait
+    for _ in range(12):
+        if _rag_embed_health():
+            return {"ok": True, "started": False}
+        _t_wait.sleep(1)
+    script = Path(__file__).resolve().parent / "rag_embed_service.py"
+    if not Path(_LLM_PY).exists() or not script.exists():
+        return {"ok": False, "error": "embedding python/script missing"}
+    try:
+        import subprocess as _sp_e
+        flags = 0x08000000 if os.name == "nt" else 0
+        env = dict(os.environ)
+        env.setdefault("HF_HUB_OFFLINE", "1")
+        env.setdefault("PYTHONUTF8", "1")
+        _RAG_EMBED_PROC = _sp_e.Popen(
+            [_LLM_PY, str(script)], cwd=str(Path(__file__).resolve().parent.parent),
+            env=env, stdout=_sp_e.DEVNULL, stderr=_sp_e.DEVNULL,
+            creationflags=flags)
+        return {"ok": True, "started": True, "pid": _RAG_EMBED_PROC.pid}
+    except Exception as exc:
+        return {"ok": False, "error": str(exc)}
+
+
+def _semantic_items(q, limit=4):
+    data = _load_rag_index()
+    if not data:
+        return []
+    vec = _embed_query(q)
+    if not vec:
+        return []
+    out = []
+    for it in data.get("items") or []:
+        v = it.get("vec") or []
+        if not v or len(v) != len(vec):
+            continue
+        try:
+            score = sum(a * b for a, b in zip(vec, v))
+        except Exception:
+            continue
+        txt = str(it.get("text") or "")
+        if any(s in txt.lower() for s in _PROJECT_SENSITIVE):
+            continue
+        out.append((score, it))
+    out.sort(key=lambda x: x[0], reverse=True)
+    return [{"source": str(x.get("source") or ""),
+             "kind": str(x.get("kind") or "semantic"),
+             "text": str(x.get("text") or "")[:900],
+             "score": round(float(sc), 4)} for sc, x in out[:max(1, int(limit))]]
+
+
 def _project_context(question="", limit=6):
     """RAG-lite：从项目文档取相关段落 + 固定权威摘要。"""
     import re as _re
@@ -2692,6 +2930,12 @@ def _project_context(question="", limit=6):
     if not external:
         knowledge = []
         imported = []
+    semantic = []
+    if external:
+        try:
+            semantic = _semantic_items(q, 4)
+        except Exception:
+            semantic = []
     citations = []
     for _i, x in enumerate(picked, 1):
         _cid = "S%d" % _i
@@ -2707,6 +2951,11 @@ def _project_context(question="", limit=6):
         citations.append({"id": _cid, "kind": "imported",
                           "source": it["source"]})
         it["cid"] = _cid
+    for _i, it in enumerate(semantic, 1):
+        _cid = "E%d" % _i
+        citations.append({"id": _cid, "kind": "semantic",
+                          "source": it["source"]})
+        it["cid"] = _cid
     for x in picked:
         parts.append("[" + x["cid"] + "] " + x["source"] + ": " + x["text"])
     if knowledge:
@@ -2717,6 +2966,10 @@ def _project_context(question="", limit=6):
     if imported:
         parts.append("【导入资料（app 本地上传）】")
         for it in imported:
+            parts.append("[" + it["cid"] + "] " + it["source"] + ": " + it["text"])
+    if semantic:
+        parts.append("【语义检索（BGE 本地）】")
+        for it in semantic:
             parts.append("[" + it["cid"] + "] " + it["source"] + ": " + it["text"])
     if not external:
         parts.append("【隐私策略】外部上下文已禁用：本地资料/导入资料未随请求外发。")
@@ -2730,7 +2983,7 @@ def _project_context(question="", limit=6):
     layer_contexts = {}
     for _ly, _kws in _layer_kw.items():
         _rows = []
-        for _src_list in (picked, imported):
+        for _src_list in (picked, imported, semantic):
             for _x in _src_list:
                 _t = str(_x.get("text") or "")
                 _sc = sum(_t.count(k) for k in _kws)
@@ -2746,12 +2999,67 @@ def _project_context(question="", limit=6):
             "sources": [x["source"] for x in picked],
             "knowledge_sources": [x["title"] for x in knowledge],
             "imported_sources": [x["source"] for x in imported],
+            "semantic_sources": [x["source"] for x in semantic],
             "citations": citations, "redactions": _red,
             "external_allowed": external,
-            "policy": "project+knowledge+imported" if external else "brief-only",
+            "policy": "project+knowledge+imported+semantic" if external else "brief-only",
             "keys": keys, "chars": len(txt[:_max]), "max_chars": _max,
-            "retrieval_method": "keyword+bm25_rerank",
+            "retrieval_method": ("keyword+bm25+bge" if semantic else "keyword+bm25_rerank"),
             "sensitive_filter": True, "cached_docs": True}
+
+
+def _quality_alt(task_id):
+    """三态质量不可靠时的可解释替代分：覆盖 × 回答率 × 收尾完整度 − flags。"""
+    import json as _json
+    t = runner.get_task(str(task_id))
+    if not t:
+        # 服务重启后内存任务丢失：回退到 outputs/*.run.json
+        for _p in oi.OUTPUTS_DIR.glob("*.run.json"):
+            try:
+                _d = _json.loads(_p.read_text(encoding="utf-8", errors="replace"))
+            except Exception:
+                continue
+            if str(_d.get("id") or "") == str(task_id):
+                t = _d
+                break
+    if not t:
+        return {"ok": False, "error": "task not found"}
+    name = str(t.get("output_name") or "")
+    if not name:
+        return {"ok": False, "error": "no output yet", "status": t.get("status")}
+    packed = oi.OUTPUTS_DIR / (name[:-3] + ".packed.json" if name.lower().endswith(".md")
+                               else name + ".packed.json")
+    if not packed.exists():
+        return {"ok": False, "error": "packed not found", "status": t.get("status")}
+    try:
+        d = _json.loads(packed.read_text(encoding="utf-8", errors="replace"))
+    except Exception as exc:
+        return {"ok": False, "error": str(exc)}
+    q = d.get("quality") or {}
+    cov = float(q.get("coverage") or 0.0)
+    answered = int(q.get("answered") or 0)
+    total = int(q.get("answerable_total") or 0)
+    ans_rate = (answered / total) if total else (1.0 if answered else 0.0)
+    flags = list(q.get("flags") or [])
+    layers = list(q.get("layers") or [])
+    closed = 0
+    for ly in layers:
+        stop = str(ly.get("stop") or "")
+        if stop and not any(x in stop for x in ("token", "预算", "截断")):
+            closed += 1
+    closure = (closed / len(layers)) if layers else 0.0
+    score = 100.0 * max(0.0, min(1.0, cov)) * ans_rate * (0.7 + 0.3 * closure)
+    score = score - 6.0 * len(flags)
+    score = max(0.0, min(100.0, round(score, 2)))
+    grade = "A" if score >= 85 else ("B" if score >= 70 else ("C" if score >= 55 else "D"))
+    return {"ok": True, "task_id": str(task_id), "score": score, "grade": grade,
+            "basis": {"coverage": cov, "answered": answered,
+                      "answerable_total": total, "answer_rate": round(ans_rate, 4),
+                      "layers_closed": closed, "layers_total": len(layers),
+                      "closure": round(closure, 4), "flags": flags},
+            "tri_state": q.get("tri_state"), "tri_quality": q.get("tri_quality"),
+            "scheme": "coverage*answer_rate*(0.7+0.3*closure)-6*flags",
+            "note": "三态 α 不可靠时使用；可解释、可复算"}
 
 
 def _llm_status():
@@ -2775,27 +3083,41 @@ def _llm_status():
             out[key] = {"error": str(exc)}
     if out.get("eval"):
         out["eval_summary"] = {k: out["eval"].get(k) for k in ("base", "lora")}
+    out["backends"] = [{"id": "hybrid", "label": "Qwen route + DeepSeek rounds",
+                        "model": "hybrid", "adapter": "qwen05b + deepseek15b",
+                        "ok": Path(_LLM_BACKENDS["qwen05b"]["adapter"]).exists()
+                        and Path(_LLM_BACKENDS["deepseek15b"]["adapter"]).exists()}]
+    out["backends"] += [{"id": _k, "label": _v.get("label"),
+                        "model": _v.get("model"),
+                        "adapter": str(_v.get("adapter")),
+                        "ok": Path(_v.get("adapter")).exists()}
+                       for _k, _v in _LLM_BACKENDS.items()]
     return out
 
 
-def _llm_predict_local(question=""):
+def _llm_predict_local(question="", backend="qwen05b"):
     """调用本地 LoRA 小模型预测 route/rounds；不占用 app 主进程显存。"""
     import subprocess as _sp
     import json as _json
+    if str(backend or "") == "hybrid":
+        return _llm_hybrid(question)
+    _bk = _LLM_BACKENDS.get(str(backend or "qwen05b")) or _LLM_BACKENDS["qwen05b"]
+    _model = str(_bk["model"])
+    _adapter = Path(_bk["adapter"])
     q = str(question or "").strip()
     if not q:
         return {"ok": False, "error": "question 为空"}
     if not Path(_LLM_PY).exists():
         return {"ok": False, "error": "训练环境不存在：" + _LLM_PY}
-    if not _LLM_ADAPTER.exists():
-        return {"ok": False, "error": "adapter 不存在：" + str(_LLM_ADAPTER)}
+    if not _adapter.exists():
+        return {"ok": False, "error": "adapter 不存在：" + str(_adapter)}
     env = dict(os.environ)
     env["PYTHONUTF8"] = "1"
     env["PYTHONIOENCODING"] = "utf-8"
     env["HF_HUB_OFFLINE"] = "1"
     try:
         p = _sp.run([_LLM_PY, str(_LLM_SCRIPT), "--question", q,
-                     "--model", _LLM_MODEL, "--adapter", str(_LLM_ADAPTER)],
+                     "--model", _model, "--adapter", str(_adapter)],
                     cwd=str(Path(__file__).resolve().parent.parent),
                     capture_output=True, text=True, encoding="utf-8",
                     errors="replace", timeout=180, env=env)
@@ -2815,15 +3137,33 @@ def _llm_predict_local(question=""):
         parsed = data.get("parsed") or {}
         return {"ok": bool(data.get("ok")), "parsed": parsed,
                 "raw": data.get("raw"), "returncode": p.returncode,
-                "model": "Qwen2.5-0.5B-Instruct+LoRA"}
+                "model": str(_bk.get("label") or ""), "backend": str(backend or "qwen05b")}
     except Exception as exc:
         return {"ok": False, "error": str(exc)}
 
 
-def _llm_apply(question=""):
+def _llm_hybrid(question=""):
+    """融合：0.5B 给 route（更准），DeepSeek 蒸馏给 rounds（MAE 更低）。"""
+    a = _llm_predict_local(question, backend="qwen05b")
+    b = _llm_predict_local(question, backend="deepseek15b")
+    pa = a.get("parsed") or {}
+    pb = b.get("parsed") or {}
+    route = pa.get("route") or pb.get("route") or []
+    rounds = pb.get("rounds") or pa.get("rounds") or {}
+    if not route:
+        return {"ok": False, "error": "hybrid 无 route", "qwen": a, "deepseek": b}
+    return {"ok": True, "parsed": {"route": route, "rounds": rounds,
+                                   "why": "hybrid: Qwen route + DeepSeek rounds"},
+            "backend": "hybrid",
+            "model": "Qwen2.5-0.5B(route) + DeepSeek-R1-Distill(rounds)",
+            "parts": {"qwen": {"ok": a.get("ok"), "model": a.get("model")},
+                      "deepseek": {"ok": b.get("ok"), "model": b.get("model")}}}
+
+
+def _llm_apply(question="", backend="qwen05b"):
     import json as _json
     import time as _t
-    r = _llm_predict_local(question)
+    r = _llm_predict_local(question, backend=backend)
     p = r.get("parsed") or {}
     route = [str(x) for x in (p.get("route") or [])]
     rounds = p.get("rounds") or {}
@@ -2835,7 +3175,8 @@ def _llm_apply(question=""):
     pol = _schedule_policy_load()
     pol.update({"llm_route": route_txt, "llm_rounds": rounds_txt,
                 "llm_why": p.get("why"), "llm_applied_at": _t.time(),
-                "llm_model": "Qwen2.5-0.5B-Instruct+LoRA"})
+                "llm_model": str(r.get("model") or ""),
+                "llm_backend": str(r.get("backend") or backend or "qwen05b")})
     try:
         _SCHEDULE_POLICY_FILE.parent.mkdir(parents=True, exist_ok=True)
         _SCHEDULE_POLICY_FILE.write_text(
@@ -3053,6 +3394,93 @@ def _v2_context_bandit(question="", prefer="balanced", c=0.5):
             "arms": arms, "chosen": arms[0] if arms else None,
             "prefer": prefer, "c": c, "lambda_cost": lam,
             "note": "按问题类型分桶 + 向全局均值收缩的 UCB"}
+
+
+def _v2_auto_apply(prefer="balanced"):
+    """自动评估 V2 候选策略并按挡位选最优写入；保留完整候选与选择审计。"""
+    import json as _json
+    import time as _t
+    prefer = str(prefer or "balanced")
+    cands = []
+
+    def add(name, tmpl, quality, tokens, low=None, calls=0, n=0, extra=None):
+        if not tmpl:
+            return
+        cands.append({"name": name, "template": str(tmpl),
+                      "quality": float(quality or 0),
+                      "low": float(low if low is not None else (quality or 0)),
+                      "tokens": float(tokens or 0), "calls": float(calls or 0),
+                      "n": int(n or 0), "extra": extra or {}})
+
+    try:
+        pr = _v2_template_pareto(prefer=prefer, limit=2000)
+        rec = pr.get("recommended") or {}
+        add("pareto", rec.get("template"), rec.get("quality"), rec.get("tokens"),
+            rec.get("low"), rec.get("calls"), rec.get("n"),
+            {"frontier_n": len(pr.get("frontier") or [])})
+    except Exception:
+        pass
+    try:
+        bt = _v2_best_template(min_n=5)
+        add("best", bt.get("template"), bt.get("quality"), bt.get("tokens"),
+            bt.get("low"), bt.get("calls"), bt.get("n"), {})
+    except Exception:
+        pass
+    try:
+        bd = _v2_bandit(prefer=prefer, c=0.5)
+        ch = bd.get("chosen") or {}
+        add("bandit", ch.get("template"), ch.get("quality"), ch.get("tokens"),
+            ch.get("quality"), ch.get("calls"), ch.get("n"),
+            {"ucb": ch.get("ucb"), "score": ch.get("score")})
+    except Exception:
+        pass
+    if not cands:
+        return {"ok": False, "error": "暂无 V2 模板样本，无法自动选择"}
+    max_q = max(c["low"] for c in cands) or 1.0
+    max_t = max(c["tokens"] for c in cands) or 1.0
+    lam = {"cost": 0.35, "quality": 0.10}.get(prefer, 0.20)
+    for c in cands:
+        qn = c["low"] / max_q
+        cn = c["tokens"] / max_t
+        c["quality_norm"] = round(qn, 4)
+        c["cost_norm"] = round(cn, 4)
+        c["auto_score"] = round(qn - lam * cn, 4)
+    cands.sort(key=lambda x: x["auto_score"], reverse=True)
+    chosen = cands[0]
+    appliers = {"pareto": _v2_apply_pareto, "best": _v2_apply_best,
+                "bandit": _v2_apply_bandit}
+    applied = appliers[chosen["name"]](prefer=prefer)
+    if not applied.get("ok"):
+        return {"ok": False, "error": applied.get("error") or "写入策略失败",
+                "candidates": cands, "chosen": chosen}
+    pol = applied.get("policy") or _schedule_policy_load()
+    pol.update({"auto_strategy": chosen["name"],
+                "auto_template": chosen["template"],
+                "auto_score": chosen["auto_score"],
+                "auto_prefer": prefer,
+                "auto_candidates": [{k: v for k, v in c.items() if k != "extra"}
+                                    for c in cands],
+                "auto_applied_at": _t.time()})
+    try:
+        _SCHEDULE_POLICY_FILE.parent.mkdir(parents=True, exist_ok=True)
+        _SCHEDULE_POLICY_FILE.write_text(
+            _json.dumps(pol, ensure_ascii=False, indent=1), encoding="utf-8")
+    except Exception as exc:
+        return {"ok": False, "error": "策略写入失败：" + str(exc),
+                "candidates": cands, "chosen": chosen}
+    try:
+        audit = {"ts": _t.time(), "prefer": prefer, "chosen": chosen,
+                 "candidates": cands, "applied": applied.get("ok")}
+        ap = Path(__file__).resolve().parent.parent / "dgtf_memory" / "schedule_auto_apply.jsonl"
+        ap.parent.mkdir(parents=True, exist_ok=True)
+        with ap.open("a", encoding="utf-8") as fh:
+            fh.write(_json.dumps(audit, ensure_ascii=False) + "\n")
+    except Exception:
+        pass
+    return {"ok": True, "prefer": prefer, "chosen": chosen,
+            "candidates": cands, "applied": applied,
+            "policy": pol, "path": str(_SCHEDULE_POLICY_FILE),
+            "note": "自动选择 V2 模板策略；挡位只影响质量/成本权重"}
 
 
 def _v2_apply_bandit(prefer="balanced", c=0.5):
@@ -3622,7 +4050,13 @@ class Handler(BaseHTTPRequestHandler):
                                "env": "DGTF_CONTEXT_EXTERNAL",
                                "redaction": True, "length_cap": int(os.getenv(
                                    "DGTF_PROJECT_CONTEXT_MAX_CHARS", "7000")),
-                               "trace_file": str(_CONTEXT_TRACE_FILE)})
+                               "trace_file": str(_CONTEXT_TRACE_FILE),
+                               "embedding": "local BGE @127.0.0.1:8771",
+                               "dsh": {"write": "workspace-write",
+                                       "danger_full_access": "denied",
+                                       "forbidden": [".env", "keys", ".git internals",
+                                                     "third-party upload"],
+                                       "api_only": True}})
         if p == "/api/project/context":
             try:
                 return self._json(_project_context(
@@ -3754,6 +4188,8 @@ class Handler(BaseHTTPRequestHandler):
             return self._json({"artifacts": _list_dsh_artifacts()})
         if p == "/api/dsh/sessions":
             return self._json({"sessions": _list_dsh_sessions()})
+        if p == "/api/dsh/chats":
+            return self._json({"chats": _conv_list(50)})
         if p == "/api/git/status":
             return self._json(_git_status())
         if p == "/api/agent/daemon":
@@ -3821,6 +4257,9 @@ class Handler(BaseHTTPRequestHandler):
             return self._json({"name": t["output_name"],
                                "body": oi.read_body(t["output_name"])})
 
+        m = re.match(r"^/api/quality/([^/]+)$", p)
+        if m:
+            return self._json(_quality_alt(unquote(m.group(1))))
         m = re.match(r"^/api/tasks/([^/]+)$", p)
         if m:
             t = runner.get_task(m.group(1))
@@ -4087,14 +4526,16 @@ class Handler(BaseHTTPRequestHandler):
             try:
                 data = self._read_json()
                 return self._json(_llm_predict_local(
-                    question=str(data.get("question") or "")))
+                    question=str(data.get("question") or ""),
+                    backend=str(data.get("backend") or "qwen05b")))
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/schedule/llm/apply":
             try:
                 data = self._read_json()
                 return self._json(_llm_apply(
-                    question=str(data.get("question") or "")))
+                    question=str(data.get("question") or ""),
+                    backend=str(data.get("backend") or "qwen05b")))
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/schedule/model/apply":
@@ -4112,6 +4553,13 @@ class Handler(BaseHTTPRequestHandler):
                     question=str(data.get("question") or ""),
                     prefer=str(data.get("prefer") or "balanced"),
                     c=float(data.get("c") or 0.5)))
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/schedule/v2/auto-apply":
+            try:
+                data = self._read_json()
+                return self._json(_v2_auto_apply(
+                    prefer=str(data.get("prefer") or "balanced")))
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/schedule/v2/apply-bandit":
@@ -4447,24 +4895,29 @@ class Handler(BaseHTTPRequestHandler):
                                "conversation": _conv_snapshot(cid)})
         if p.startswith("/api/dsh/chat/") and p.endswith("/cancel"):
             cid = p.split("/")[4]
+            proc = None
             with _conv_lock():
                 conv = _DSH_CONV.get(cid) or _conv_load(cid)
                 if conv:
+                    _DSH_CONV_CANCELLED.add(cid)
                     for t in conv.get("turns") or []:
-                        if t.get("status") == "queued":
+                        if t.get("status") in ("queued", "running"):
                             t["status"] = "canceled"
                     _DSH_CONV[cid] = conv
                     _conv_save(conv)
-            try:
-                import subprocess as _csp
-                for proc in list(_DSH_ACTIVE):
+                proc = _DSH_CONV_PROCS.get(cid)
+            if proc is None:
+                _DSH_CONV_CANCELLED.discard(cid)
+            if proc is not None:
+                try:
+                    import subprocess as _csp
+                    _csp.run(["taskkill", "/F", "/T", "/PID", str(proc.pid)],
+                             capture_output=True, timeout=10)
+                except Exception:
                     try:
-                        _csp.run(["taskkill", "/F", "/T", "/PID", str(proc.pid)],
-                                 capture_output=True, timeout=10)
+                        proc.kill()
                     except Exception:
                         pass
-            except Exception:
-                pass
             return self._json({"ok": True, "conversation": _conv_snapshot(cid)})
         if p == "/api/dsh/agent/stream":
             data = self._read_json()
@@ -4668,7 +5121,8 @@ class Handler(BaseHTTPRequestHandler):
             _auto_template = bool(opts.pop("auto_template", False))
             _auto_llm = bool(opts.pop("auto_llm", False))
             if _auto_llm:
-                _lr = _llm_predict_local(question)
+                _lr = _llm_predict_local(question,
+                                         backend=str(opts.pop("llm_backend", "") or "qwen05b"))
                 _lp = _lr.get("parsed") or {}
                 if _lp.get("route"):
                     opts.setdefault("route", ",".join(str(x) for x in _lp["route"]))
@@ -4788,6 +5242,12 @@ def main() -> int:
         print("  访问口令已启用：网址要带 ?t=<口令>（首次打开会自动记进 cookie）")
     print(f"  引擎：{runner.find_engine().name}")
     print(f"  mock：{mock}    并发上限：{runner.MAX_CONCURRENT}")
+
+    try:
+        _er = _ensure_rag_embed()
+        print("  BGE embedding：" + ("已就绪" if _er.get("ok") else "不可用（回退 BM25）"))
+    except Exception as _e:  # noqa: BLE001
+        print("  BGE embedding 启动失败（回退 BM25）：" + str(_e))
 
     # ★ 常驻 Agent：app 启动即确保 agent_daemon 在跑（已有实例则复用）。
     #   只消费本地队列、写提案；不联网、不调 LLM。可用 --no-agent-daemon 关闭。

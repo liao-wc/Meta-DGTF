@@ -11,6 +11,10 @@ let dshAttachTaskId = null;
 let dshConversationId = null;
 let dshConversation = null;
 let dshConvTimer = null;
+let dshChats = [];
+let dshHistoryOpen = false;
+let dshHistoryTimer = null;
+let v2AutoBooted = false;
 let taskDsh = {};
 let agentTaskMode = false;
 let logFollow = true;   // 日志/对话是否跟随最新内容
@@ -1356,7 +1360,100 @@ function toggleDshMode(on) {
     ? 'DSH Agent：输入任务，读取项目文件 / outputs 产物 / app 导入文件…'
     : '此刻 你又想到了什么？ 可以发给元DGTF 我们一起去探索吧';
   if (dshMode) agentTaskMode = false;
+  updateDshConvBar();
+  if (dshMode) {
+    startDshHistoryPoll();
+    loadDshChats();
+    if (!dshAttachTaskId && !dshConversationId) {
+      try {
+        const saved = localStorage.getItem(DSH_CONV_KEY);
+        if (saved) { dshConversationId = saved; loadDshConversation(); }
+      } catch (_) {}
+    }
+  } else {
+    stopDshHistoryPoll();
+    setDshHistoryOpen(false);
+  }
 }
+const DSH_CONV_KEY = 'dgtf_dsh_current_conv';
+
+async function loadDshChats() {
+  try {
+    const r = await api('/api/dsh/chats');
+    dshChats = (r && r.chats) || [];
+  } catch (_) { /* 历史列表失败不影响当前会话 */ }
+  updateDshConvBar();
+  if (dshHistoryOpen) renderDshHistory();
+}
+function updateDshConvBar() {
+  const bar = document.querySelector('#dsh-conv-bar');
+  if (!bar) return;
+  bar.classList.toggle('hidden', !dshMode);
+  if (!dshMode) return;
+  const cur = document.querySelector('#dsh-conv-current');
+  const run = document.querySelector('#dsh-conv-running');
+  const turns = (dshConversation && dshConversation.turns) || [];
+  const busy = turns.some(t => t.status === 'queued' || t.status === 'running');
+  if (cur) {
+    cur.textContent = dshConversationId
+      ? ('当前会话 ' + dshConversationId + (turns.length ? (' · ' + turns.length + ' 轮') : ''))
+      : (dshCurrent ? ('当前 · ' + (dshCurrent.session || '内联 Agent')) : '新 DSH 会话');
+  }
+  if (run) {
+    const oldRunning = (dshChats || []).filter(c => c.running
+      && c.id !== dshConversationId).length;
+    run.classList.toggle('done', !busy && !oldRunning);
+    run.textContent = busy ? '运行中' : (oldRunning ? (oldRunning + ' 个历史会话运行中') : '已结束');
+  }
+}
+function renderDshHistory() {
+  const box = document.querySelector('#dsh-history');
+  const list = document.querySelector('#dsh-history-list');
+  if (!box || !list) return;
+  box.classList.toggle('hidden', !dshHistoryOpen);
+  if (!dshHistoryOpen) return;
+  if (!dshChats.length) {
+    list.innerHTML = '<div class="dsh-chat-meta">暂无历史会话</div>';
+    return;
+  }
+  list.innerHTML = dshChats.map(function (c) {
+    const on = c.id === dshConversationId ? ' on' : '';
+    const st = c.running ? 'running' : (c.stale ? 'stale' : (c.last_status || 'done'));
+    const stLabel = c.running ? '运行中' : (c.stale ? '中断' : (c.last_status === 'error' ? '失败' : '完成'));
+    return '<div class="dsh-chat-item' + on + '" data-dsh-chat="' + esc(c.id) + '">'
+      + '<div class="dsh-chat-top"><span class="dsh-chat-id">' + esc(c.id) + '</span>'
+      + '<span class="dsh-chat-st ' + esc(st === 'running' ? 'running' : '') + '">' + esc(stLabel) + '</span></div>'
+      + '<div class="dsh-chat-task">' + esc(c.last_task || '（空会话）') + '</div>'
+      + '<div class="dsh-chat-meta">' + esc(String(c.turns || 0)) + ' 轮 · '
+      + esc(fmtTs(c.updated_at || c.created_at) || '') + '</div></div>';
+  }).join('');
+}
+function setDshHistoryOpen(on) {
+  dshHistoryOpen = !!on;
+  renderDshHistory();
+  if (dshHistoryOpen) loadDshChats();
+}
+async function resumeDshChat(id) {
+  if (!id) return;
+  dshConversationId = id;
+  try { localStorage.setItem(DSH_CONV_KEY, id); } catch (_) {}
+  dshHistoryOpen = false;
+  dshCurrent = null;
+  toggleDshMode(true);
+  await loadDshConversation();
+  startDshConvPoll();
+  await loadDshChats();
+  setDshHistoryOpen(false);
+  renderDshView();
+}
+function startDshHistoryPoll() {
+  stopDshHistoryPoll();
+  dshHistoryTimer = setInterval(function () { loadDshChats(); }, 3000);
+}
+function stopDshHistoryPoll() {
+  if (dshHistoryTimer) { clearInterval(dshHistoryTimer); dshHistoryTimer = null; }
+}
+
 function dshEventHtml(ev) {
   if (!ev || !ev.type) return '';
   if (ev.type === 'status') {
@@ -1386,6 +1483,7 @@ function scrollDshBottom() {
 }
 
 function renderDshConversationView() {
+  updateDshConvBar();
   const c = dshConversation || {};
   const box = document.querySelector('#runlog');
   const body = document.querySelector('#runlog-body');
@@ -1424,6 +1522,7 @@ function renderDshConversationView() {
 }
 
 function renderDshView() {
+  updateDshConvBar();
   if (dshConversation) { renderDshConversationView(); return; }
   const c = dshCurrent || {};
   const box = document.querySelector('#runlog');
@@ -1510,6 +1609,7 @@ async function loadDshConversation() {
   try {
     const r = await api('/api/dsh/chat/' + encodeURIComponent(dshConversationId));
     if (r && r.id) dshConversation = r;
+    updateDshConvBar();
     renderDshView();
   } catch (_) {}
 }
@@ -1537,8 +1637,10 @@ async function startDshChat(question) {
         effort: (document.querySelector('#dsh-effort') || {}).value || '',
         permission: (document.querySelector('#dsh-perm') || {}).value || 'workspace-write',
         model: (document.querySelector('#dsh-model') || {}).value || 'deepseek-flash' }) });
+    try { localStorage.setItem(DSH_CONV_KEY, dshConversationId); } catch (_) {}
     await loadDshConversation();
     startDshConvPoll();
+    loadDshChats();
   } catch (e) {
     dshCurrent = { question: question, session: 'queue', status: 'error',
       events: [{type:'text', text:'提交会话失败：' + e.message}] };
@@ -2804,8 +2906,10 @@ function newChat() {
   dshCurrent = null;
   dshConversationId = null;
   dshConversation = null;
+  try { localStorage.removeItem(DSH_CONV_KEY); } catch (_) {}
   stopDshConvPoll();
   dshSession = '';
+  setDshHistoryOpen(false);
   toggleDshMode(false);
   const rb = $('#runlog-body');
   if (rb) { rb.innerHTML = ''; delete rb.dataset.html; }
@@ -4593,6 +4697,12 @@ function init() {
                 && e.target.closest('main.stage')))) {
       closeDrawer();
     }
+    const _dh = e.target.closest('#dsh-history-toggle');
+    if (_dh) { e.preventDefault(); setDshHistoryOpen(!dshHistoryOpen); return; }
+    const _dhc = e.target.closest('#dsh-history-close');
+    if (_dhc) { e.preventDefault(); setDshHistoryOpen(false); return; }
+    const _dchat = e.target.closest('[data-dsh-chat]');
+    if (_dchat) { e.preventDefault(); resumeDshChat(_dchat.dataset.dshChat).catch(function(){}); return; }
     const open = e.target.closest('[data-open]');
     if (open) { e.preventDefault(); openDetail(open.dataset.open); return; }
     const arc = e.target.closest('[data-archive]');
@@ -4665,101 +4775,43 @@ function init() {
   if (_agentBtn) _agentBtn.addEventListener('click', () => {
     openSheet('view-agent');
     loadAgent();
+    bootV2Auto();
   });
   const _agentRefresh = $('#agent-refresh');
   if (_agentRefresh) _agentRefresh.addEventListener('click', loadAgent);
-  const _v2LlmApply = $('#agent-v2-llm-apply');
-  if (_v2LlmApply) _v2LlmApply.addEventListener('click', async () => {
+  const _v2Prefer = $('#pareto-prefer');
+  if (_v2Prefer) _v2Prefer.addEventListener('change', async function () {
+    const st = document.querySelector('#v2-auto-status');
     const m = document.querySelector('#agent-msg');
-    if (m) m.textContent = '正在用本地 LoRA 小模型规划调度…';
+    if (st) st.textContent = '自动选优中…';
+    if (m) m.textContent = '正在自动评估 V2 策略…';
     try {
-      const _q = ($('#question') || {}).value || 'EML 如何改进调度？';
-      const r = await api('/api/schedule/llm/apply', {method:'POST',
-        headers:{'Content-Type':'application/json'}, body: JSON.stringify({question:_q})});
-      if (m) m.textContent = r.ok ? ('已采用 LLM 调度：route ' + (r.route || []).join(',')
-        + ' / rounds ' + JSON.stringify(r.rounds || {})) : ('失败：' + (r.error || ''));
+      const r = await api('/api/schedule/v2/auto-apply', {method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({prefer: _v2Prefer.value || 'balanced'})});
+      if (r.ok) {
+        const c = r.chosen || {};
+        if (st) st.textContent = '自动：' + (c.name || '') + ' / ' + (c.template || '');
+        if (m) m.textContent = '已自动写入最优策略：' + (c.name || '') +
+          '（score ' + String(c.auto_score || 0) + '）';
+      } else {
+        if (st) st.textContent = '自动选优失败';
+        if (m) m.textContent = '自动选优失败：' + (r.error || '');
+      }
       await loadAgent();
     } catch (e) {
-      if (m) m.textContent = 'LLM 调度应用失败：' + e.message;
+      if (st) st.textContent = '自动选优失败';
+      if (m) m.textContent = '自动选优失败：' + e.message;
     }
   });
-  const _v2ModelApply = $('#agent-v2-model-apply');
-  if (_v2ModelApply) _v2ModelApply.addEventListener('click', async () => {
-    const m = document.querySelector('#agent-msg');
-    if (m) m.textContent = '正在用学习模型预测调度模板…';
-    try {
-      const _q = ($('#question') || {}).value || 'EML 如何改进调度？';
-      const r = await api('/api/schedule/model/apply', {method:'POST',
-        headers:{'Content-Type':'application/json'}, body: JSON.stringify({question:_q, prefer:'balanced'})});
-      if (m) m.textContent = r.ok ? ('已采用学习模型模板：' + (((r.chosen || {}).template) || '') +
-        '（pred ' + String(((r.chosen || {}).pred_quality) || 0) + '）') : ('失败：' + (r.error || ''));
-      await loadAgent();
-    } catch (e) {
-      if (m) m.textContent = '学习模型应用失败：' + e.message;
-    }
-  });
-  const _v2BanditApply = $('#agent-v2-bandit-apply');
-  if (_v2BanditApply) _v2BanditApply.addEventListener('click', async () => {
-    const m = document.querySelector('#agent-msg');
-    if (m) m.textContent = '正在按 UCB 计算模板…';
-    try {
-      const _prefer = ($('#pareto-prefer') || {}).value || 'balanced';
-      const r = await api('/api/schedule/v2/apply-bandit', {method:'POST',
-        headers:{'Content-Type':'application/json'}, body: JSON.stringify({prefer:_prefer, c:0.5})});
-      if (m) m.textContent = r.ok ? ('已采用 UCB 模板：' + (((r.chosen || {}).template) || '') +
-        '（score ' + String(((r.chosen || {}).score) || 0) + '）') : ('失败：' + (r.error || ''));
-      await loadAgent();
-    } catch (e) {
-      if (m) m.textContent = 'UCB 保存失败：' + e.message;
-    }
-  });
-  const _v2ParetoApply = $('#agent-v2-pareto-apply');
-  if (_v2ParetoApply) _v2ParetoApply.addEventListener('click', async () => {
-    const m = document.querySelector('#agent-msg');
-    if (m) m.textContent = '正在计算 V2 模板质量-成本帕累托…';
-    try {
-      const _prefer = ($('#pareto-prefer') || {}).value || 'balanced';
-      const r = await api('/api/schedule/v2/apply-pareto', {method:'POST',
-        headers:{'Content-Type':'application/json'}, body: JSON.stringify({prefer:_prefer})});
-      if (m) m.textContent = r.ok ? ('已采用模板帕累托：' + (((r.recommended || {}).template) || '') +
-        '（quality ' + String(((r.recommended || {}).quality) || 0) +
-        ' / tokens ' + String(((r.recommended || {}).tokens) || 0) + '）') : ('失败：' + (r.error || ''));
-      await loadAgent();
-    } catch (e) {
-      if (m) m.textContent = '模板帕累托保存失败：' + e.message;
-    }
-  });
-  const _v2BestApply = $('#agent-v2-best-apply');
-  if (_v2BestApply) _v2BestApply.addEventListener('click', async () => {
-    const m = document.querySelector('#agent-msg');
-    if (m) m.textContent = '正在按 V2 模板置信下界选择最佳模板…';
-    try {
-      const r = await api('/api/schedule/v2/apply-best', {method:'POST',
-        headers:{'Content-Type':'application/json'}, body: JSON.stringify({min_n:5})});
-      if (m) m.textContent = r.ok ? ('已采用最佳模板：' + (((r.best || {}).template) || '') +
-        '（q≈' + String(((r.best || {}).quality) || 0) + '）' +
-        (r.warning ? '；' + r.warning : '')) : ('失败：' + (r.error || ''));
-      await loadAgent();
-    } catch (e) {
-      if (m) m.textContent = '最佳模板保存失败：' + e.message;
-    }
-  });
-  const _paretoApply = $('#agent-pareto-apply');
-  if (_paretoApply) _paretoApply.addEventListener('click', async () => {
-    const m = document.querySelector('#agent-msg');
-    if (m) m.textContent = '正在计算并保存帕累托策略…';
-    try {
-      const _prefer = ($('#pareto-prefer') || {}).value || 'balanced';
-      const r = await api('/api/schedule/pareto/apply', {method:'POST',
-        headers:{'Content-Type':'application/json'}, body: JSON.stringify({prefer:_prefer})});
-      if (m) m.textContent = r.ok ? ('已采用帕累托策略（' + _prefer + '）：' + ((r.policy || {}).profile || '')) : ('失败：' + (r.error || ''));
-      agentPareto = await api('/api/schedule/pareto?prefer=' + encodeURIComponent(_prefer)).catch(function () { return agentPareto; });
-      agentRenderV2();
-      await loadAgent();
-    } catch (e) {
-      if (m) m.textContent = '帕累托策略保存失败：' + e.message;
-    }
-  });
+  function bootV2Auto() {
+    if (v2AutoBooted) return;
+    v2AutoBooted = true;
+    setTimeout(function () {
+      const sel = document.querySelector('#pareto-prefer');
+      if (sel) sel.dispatchEvent(new Event('change'));
+    }, 700);
+  }
   const _agentNew = $('#agent-new');
   if (_agentNew) _agentNew.addEventListener('click', () => autoAgent('task'));
   const _agentAuto = $('#agent-auto');
@@ -4947,12 +4999,23 @@ function init() {
   // ★ 深链：?panel=view-agent 可直接打开面板（便于截图/联调）。
   try {
     const _panel = new URLSearchParams(location.search).get('panel');
-    if (_panel) { openSheet(_panel); if (_panel === 'view-agent') loadAgent(); }
+    if (_panel) { openSheet(_panel); if (_panel === 'view-agent') { loadAgent(); bootV2Auto(); } }
     const _advg = new URLSearchParams(location.search).get('advgroup');
     if (_advg) setTimeout(function () { try { openAdvGroup(_advg); } catch (_) {} }, 900);
     const _tab = new URLSearchParams(location.search).get('tab');
     if (_tab !== null) { const _tb = document.querySelector('[data-agent-tab="' + _tab + '"]'); if (_tb) _tb.click(); }
     if (new URLSearchParams(location.search).get('dsh') === '1') toggleDshMode(true);
+    const _dc = new URLSearchParams(location.search).get('dsh_conv');
+    if (_dc) {
+      toggleDshMode(true);
+      dshConversationId = _dc;
+      try { localStorage.setItem(DSH_CONV_KEY, _dc); } catch (_) {}
+      loadDshConversation();
+      startDshConvPoll();
+      if (new URLSearchParams(location.search).get('dsh_history') === '1') {
+        setTimeout(function () { setDshHistoryOpen(true); }, 800);
+      }
+    }
     if (new URLSearchParams(location.search).get('drawer') === '1') openDrawer();
     const _dt = new URLSearchParams(location.search).get('dsh_task');
     if (_dt) { toggleDshMode(true); const _ta = document.querySelector('#question');

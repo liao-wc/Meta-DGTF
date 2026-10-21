@@ -1490,3 +1490,38 @@ body.dsh-mode .dsh-ctl{display:inline-flex;align-items:center}
 .agent-auto-status.running{border-color:rgba(94,106,210,.45);color:var(--accent-hi)}
 .agent-auto-status.ok{border-color:rgba(74,222,128,.42);color:var(--ok)}
 .agent-auto-status.err{border-color:rgba(255,107,107,.45);color:var(--err)}
+
+/* ── DSH 会话历史 / 当前会话条（V1.4.0） ───────────────────── */
+.dsh-conv-bar{display:flex;align-items:center;gap:10px;padding:7px 16px;
+  border-bottom:1px solid var(--hair);background:rgba(255,255,255,.55);
+  font-size:11.5px;color:var(--t2);flex:0 0 auto}
+.dsh-conv-bar.hidden{display:none}
+.dsh-conv-current{font-family:var(--f-mono);min-width:0;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.dsh-conv-running{color:var(--st-running-c);border:1px solid var(--st-running-bd);
+  border-radius:999px;padding:1px 7px;white-space:nowrap}
+.dsh-conv-running.done{color:var(--st-done-c);border-color:var(--st-done-bd)}
+.dsh-history-toggle{margin-left:auto;font-size:11.5px;padding:4px 9px}
+.dsh-history{position:fixed;right:24px;bottom:118px;width:min(380px,calc(100vw - 36px));
+  max-height:58vh;display:flex;flex-direction:column;z-index:82;
+  background:var(--s1);border:1px solid var(--hair-2);border-radius:14px;
+  box-shadow:var(--shadow);overflow:hidden}
+.dsh-history.hidden{display:none}
+.dsh-history-head{display:flex;align-items:center;gap:10px;padding:9px 12px;
+  border-bottom:1px solid var(--hair);font-size:12px}
+.dsh-history-head button{margin-left:auto;font-size:11px;padding:3px 8px}
+.dsh-history-list{padding:6px;overflow:auto}
+.dsh-chat-item{padding:8px 9px;border-radius:9px;cursor:pointer;
+  border:1px solid transparent}
+.dsh-chat-item:hover{background:rgba(94,106,210,.06);border-color:var(--hair-2)}
+.dsh-chat-item.on{background:rgba(94,106,210,.10);border-color:rgba(94,106,210,.35)}
+.dsh-chat-top{display:flex;align-items:center;gap:7px;font-size:11.5px}
+.dsh-chat-id{font-family:var(--f-mono);color:var(--t2);overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.dsh-chat-st{font-size:10.5px;border-radius:999px;padding:1px 6px;
+  border:1px solid var(--hair-2);color:var(--t3);white-space:nowrap}
+.dsh-chat-st.running{color:var(--st-running-c);border-color:var(--st-running-bd)}
+.dsh-chat-task{margin-top:4px;font-size:11px;color:var(--t3);
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.dsh-chat-meta{margin-top:3px;font-size:10.5px;color:var(--t3)}
+body.stage-empty main.stage{padding-bottom:36px}

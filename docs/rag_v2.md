@@ -10,6 +10,8 @@
 
 - 文档按 mtime/size 缓存；
 - 关键词/短语召回 → BM25 重排（k1=1.2，b=0.75）；
+- 本地 BGE-small-zh-v1.5（512 维）语义召回，与 BM25 融合；
+- 查询走 127.0.0.1:8771 常驻 embedding 服务，失败回退 BM25；
 - 每类取 top-k；导入文件取 top-3；
 - 分源编号：[S#] 文档、[K#] 资料库、[I#] 导入文件。
 
@@ -21,7 +23,9 @@
 
 ## 引用与追溯
 
-- citations：id/kind/source/url；
+- citations：id/kind/source/url（S/K/I/E 四类）；
+- BGE 索引：dgtf_memory/rag_index.json（136 chunks，512 维）；
+- 重建：`D:\dgtf_llm_env\Scripts\python.exe build_rag_index.py`；
 - /api/tasks 创建时写 dgtf_memory/context_traces.jsonl；
 - /api/project/context/history 查询最近 50 次。
 
@@ -34,6 +38,6 @@
 
 ## 当前边界
 
-- 尚未使用神经 embedding 模型；是关键词召回+BM25 重排的 RAG v2；
+- 已使用本地神经 embedding；仍是单路 top-k 融合，未做 cross-encoder rerank；
 - 分层检索结果只是 app 侧索引，未做到引擎每层独立二次检索；
 - 引用编号已注入上下文，最终答案逐条引用尚未强制校验。

@@ -355,6 +355,42 @@ def _safe_name(q: str, n: int = 20) -> str:
     return s[:n] or "run"
 
 
+def _clean_prefixed_output(task: dict) -> None:
+    """项目上下文以 prompt_prefix 进入 argv 后，引擎会按整段问题命名产物。
+    这里在收尾前把旧文件名统一改成「时间戳 + 原问题」，保持任务标题/产物名干净。"""
+    old = str(task.get("output_name") or "")
+    opts = task.get("opts") or {}
+    if not old or not opts.get("_prompt_prefix"):
+        return
+    try:
+        p = oi.OUTPUTS_DIR / old
+        if not p.exists():
+            return
+        import re as _re
+        m = _re.match(r"^(\d{8}_\d{6})_", p.name)
+        ts = m.group(1) if m else time.strftime("%Y%m%d_%H%M%S")
+        clean_stem = ts + "_" + _safe_name(task.get("question", ""))
+        old_stem = p.name[:-3] if p.name.lower().endswith(".md") else p.stem
+        if clean_stem == old_stem:
+            return
+        moved = {}
+        for q in sorted(oi.OUTPUTS_DIR.glob(old_stem + "*")):
+            suffix = q.name[len(old_stem):]
+            new_name = clean_stem + suffix
+            j = 1
+            while (oi.OUTPUTS_DIR / new_name).exists():
+                new_name = clean_stem + "_" + str(j) + suffix
+                j += 1
+            q.rename(oi.OUTPUTS_DIR / new_name)
+            moved[q.name] = new_name
+        if moved:
+            first = moved.get(p.name)
+            if first:
+                task["output_name"] = first
+    except Exception:
+        pass
+
+
 def _build_partial_md(task: dict, raw: str) -> str:
     """被手动终止时，用**运行日志**重建一份部分产物；一层都没跑到的返回空串。
 
@@ -690,6 +726,7 @@ def _run(tid: str) -> None:
                 task["partial"] = True
         except OSError:
             pass
+    _clean_prefixed_output(task)
     if cancelled:
         final = "cancelled"
     elif code == 0:

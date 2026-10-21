@@ -5,14 +5,18 @@
 
 零额外依赖（Python 标准库 + 原生前端），**不改动引擎主文件**。
 
-**当前 app 版本：V1.3.0**（引擎 V1.30.0；发布说明见 docs/releases/）。
+**当前 app 版本：V1.4.0**（引擎 V1.30.0；发布说明见 docs/releases/）。
 
 ### 新增能力
 
 - **EML + DSH 全流程闭环**：知识刷新 → 引擎跑次 → 消费者/任务 → 自审提案；Agent 面板只保留“DSH 全流程闭环”一个按钮。
 - **产物时间标注**：技术知识分别标检索/爬取时间；产物库、资料库、检索库、DSH 产物、修复提案、审计与 V2 事件均带对应时间。
 - **本地 LLM LoRA 调度建议**：Qwen2.5-0.5B-Instruct，问题→route/rounds；接口 /api/schedule/llm/*，任务 opts.auto_llm。
-- **V2 调度/帕累托/UCB**：/api/schedule/v2/pareto、/bandit、/context-bandit；Agent 面板 V2 调度。
+- **V2 自动选优**：Agent 面板只保留挡位选择；切换挡位自动评估帕累托/最佳模板/UCB 并写入最优策略。
+- **神经 RAG v2**：本地 BGE 语义检索 + BM25 + 引用 + 分层索引 + 上下文追溯；导入文件参与检索。
+- **DSH 多会话**：历史/当前会话、续聊、实时事件、按会话取消、读写工作区（安全边界）。
+- **质量替代分**：/api/quality/<task> 覆盖×回答率×收尾完整度−flags。
+- **三本地底座**：Qwen2.5-0.5B / 1.5B / DeepSeek-R1-Distill-Qwen-1.5B（LoRA）。
 - **自洽审计**：/api/consistency + 审计历史 + 面板。
 - **项目背景内置**：真实任务默认注入元DGTF权威背景，融合本地资料库与 app 本地导入文件（RAG v2：BM25 重排/引用/隐私策略/追溯）；/api/project/context 可查看，无前端按钮。
 - **针对性真跑**：60 calls / 341K tokens / 758.9s（见 docs/real_run_20261021.md）。

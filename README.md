@@ -3,19 +3,23 @@
 一个**单文件**的四层螺旋推理引擎：修行 / 研究 / 对撞 / 元，跑出可审计的产物。
 
 - **当前版本**：`元DGTF-V1.30.0.py`（单文件引擎）
-- **人用界面**：`dgtf_app/`（app V1.3.0；本地 Web 工作台，见 `dgtf_app/README.md`）
+- **人用界面**：`dgtf_app/`（app V1.4.0；本地 Web 工作台，见 `dgtf_app/README.md`）
 - **版本历史**：`CHANGELOG.md`；app 发布说明见 `docs/releases/`
 
 > 这份 README 只写**能被验证**的事：命令都真跑过，数字都是当前版本的实测值。
 
-## 最新能力（2026-10-21，app V1.2.0）
+## 最新能力（2026-10-21，app V1.4.0）
 
 - **EML + DSH 全流程闭环**：知识刷新 → 引擎跑次 → 消费者/任务 → 自审提案；见 docs/full_loop.md。
 - **本地 LLM LoRA fine-tune**：Qwen2.5-0.5B-Instruct 学习“问题 → route/rounds JSON”；留出 route 42.9% / rounds MAE 1.446；见 docs/llm_lora_finetune.md。
 - **调度与帕累托**：方案F profile、V2 模板质量-成本前沿、UCB/上下文 UCB、本地调度模型；见 docs/scheduler_model.md。
 - **自洽审计**：GET /api/consistency + 审计历史；见 docs/app_engine_mapping.md。
 - **针对性真跑**：60 calls / 341K tokens / 758.9s；见 docs/real_run_20261021.md。
-- **项目背景内置**：真实任务默认注入元DGTF权威背景，融合本地资料库与 app 本地上传文件（RAG v2：BM25 重排/来源引用/隐私策略/追溯）；GET /api/project/context 可查看，无前端按钮。
+- **项目背景内置**：真实任务默认注入元DGTF权威背景，融合本地资料库与 app 本地上传文件；RAG v2 = BGE 语义检索 + BM25 + 引用 + 分层索引 + 追溯；GET /api/project/context 可查看。
+- **DSH 会话**：当前/历史、点击续聊、同一会话多轮=一条历史、实时事件、按会话取消；workspace-write 可读写项目，禁止 danger-full-access。
+- **V2 自动选优**：只保留挡位选择；切换挡位自动评估帕累托/最佳模板/UCB 并写最优。
+- **三本地底座**：Qwen2.5-0.5B / 1.5B / DeepSeek-R1-Distill-Qwen-1.5B；hybrid = Qwen route + DeepSeek rounds。
+- **质量替代分**：/api/quality/<task>，覆盖×回答率×收尾完整度−flags。
 
 ---
 
