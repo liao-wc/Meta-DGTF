@@ -1803,6 +1803,37 @@ def _schedule_pareto(limit=120, prefer="balanced"):
             "recommended_profile": "方案F-帕累托最优.yaml"}
 
 
+_SCHEDULE_POLICY_FILE = Path(__file__).resolve().parent.parent / "dgtf_memory" / "schedule_policy.json"
+
+
+def _schedule_policy_load():
+    import json as _json
+    try:
+        d = _json.loads(_SCHEDULE_POLICY_FILE.read_text(encoding="utf-8", errors="replace"))
+        return d if isinstance(d, dict) else {}
+    except Exception:
+        return {}
+
+
+def _schedule_policy_apply(prefer="balanced"):
+    import json as _json
+    import time as _t
+    pr = _schedule_pareto(limit=120, prefer=str(prefer or "balanced"))
+    rec = pr.get("recommended") or {}
+    profile = str(pr.get("recommended_profile") or "方案F-帕累托最优.yaml")
+    rec = dict(rec)
+    rec["applied_at"] = _t.time()
+    rec["prefer"] = str(prefer or "balanced")
+    rec["profile"] = profile
+    try:
+        _SCHEDULE_POLICY_FILE.parent.mkdir(parents=True, exist_ok=True)
+        _SCHEDULE_POLICY_FILE.write_text(
+            _json.dumps(rec, ensure_ascii=False, indent=1), encoding="utf-8")
+        return {"ok": True, "policy": rec, "path": str(_SCHEDULE_POLICY_FILE)}
+    except Exception as exc:
+        return {"ok": False, "error": str(exc)}
+
+
 def _schedule_preview(data):
     question = str((data or {}).get("question") or "").strip()
     _raw_opts = (data or {}).get("opts") or {}
@@ -1870,6 +1901,7 @@ def _schedule_preview(data):
                     "history_limit": flat.get("auto.history_limit"),
                     "budget_soft": flat.get("max_tokens")},
         "pareto": _pareto,
+        "policy": _schedule_policy_load(),
     }
 
 
@@ -2018,6 +2050,12 @@ class Handler(BaseHTTPRequestHandler):
         if p == "/api/agent/eml":
             try:
                 return self._json(_eml_status())
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/schedule/policy":
+            try:
+                return self._json({"ok": True, "policy": _schedule_policy_load(),
+                                   "path": str(_SCHEDULE_POLICY_FILE)})
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/schedule/v2":
@@ -2390,6 +2428,13 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(_eml_replay(
                     limit=int(data.get("limit") or 60),
                     dry_run=bool(data.get("dry_run", True))))
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/schedule/pareto/apply":
+            try:
+                data = self._read_json()
+                return self._json(_schedule_policy_apply(
+                    prefer=str(data.get("prefer") or "balanced")))
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/agent/knowledge/dedupe":
@@ -2888,7 +2933,8 @@ class Handler(BaseHTTPRequestHandler):
                 opts = {}
             _auto_pareto = bool(opts.pop("auto_pareto", False))
             if _auto_pareto and not opts.get("profile"):
-                opts["profile"] = "方案F-帕累托最优.yaml"
+                _pol = _schedule_policy_load()
+                opts["profile"] = str(_pol.get("profile") or "方案F-帕累托最优.yaml")
             try:
                 tid = runner.start_task(question, opts)
             except ValueError as e:

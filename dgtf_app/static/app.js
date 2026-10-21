@@ -4462,6 +4462,19 @@ function init() {
   });
   const _agentRefresh = $('#agent-refresh');
   if (_agentRefresh) _agentRefresh.addEventListener('click', loadAgent);
+  const _paretoApply = $('#agent-pareto-apply');
+  if (_paretoApply) _paretoApply.addEventListener('click', async () => {
+    const m = document.querySelector('#agent-msg');
+    if (m) m.textContent = '正在计算并保存帕累托策略…';
+    try {
+      const r = await api('/api/schedule/pareto/apply', {method:'POST',
+        headers:{'Content-Type':'application/json'}, body: JSON.stringify({prefer:'balanced'})});
+      if (m) m.textContent = r.ok ? ('已采用帕累托策略：' + ((r.policy || {}).profile || '')) : ('失败：' + (r.error || ''));
+      await loadAgent();
+    } catch (e) {
+      if (m) m.textContent = '帕累托策略保存失败：' + e.message;
+    }
+  });
   const _agentNew = $('#agent-new');
   if (_agentNew) _agentNew.addEventListener('click', () => autoAgent('task'));
   const _agentAuto = $('#agent-auto');

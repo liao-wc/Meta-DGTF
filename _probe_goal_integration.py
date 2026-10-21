@@ -59,6 +59,12 @@ st, p2 = req("POST", "/api/schedule/preview", {"question": "profile预览",
 ck("preview profile", st == 200 and p2.get("ok") and p2.get("profile") and any("--config" in p2.get("cli", []) for _ in [0]), p2)
 st, pbad = req("POST", "/api/schedule/preview", {"question": "bad", "opts": "bad"})
 ck("preview invalid opts", st == 200 and pbad.get("ok") is False, (st, pbad))
+st, pol = req("POST", "/api/schedule/pareto/apply", {"prefer": "balanced"}, timeout=90)
+ck("pareto policy apply", st == 200 and pol.get("ok")
+   and bool((pol.get("policy") or {}).get("profile")), (st, pol))
+st, polget = req("GET", "/api/schedule/policy", timeout=30)
+ck("pareto policy persisted", st == 200 and polget.get("ok")
+   and (polget.get("policy") or {}).get("profile"), (st, polget))
 st, v2 = req("GET", "/api/schedule/v2", timeout=30)
 ck("v2 shadow mapped", st == 200 and v2.get("ok") and v2.get("n", 0) > 0, (st, v2))
 

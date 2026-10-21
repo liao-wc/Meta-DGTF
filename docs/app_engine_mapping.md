@@ -76,7 +76,9 @@ engine 元DGTF-V1.30.0.py
 | `GET /api/agent/eml` | EML 映射读数：playbook 25 条、V2 shadow 事件 544 条、agent tasks/results/knowledge/proposals 与提案状态分布 |
 | `POST /api/agent/eml/replay` | EML 反馈回放：历史 packed → schedule outcome 先验；默认 dry-run，不写生产 playbook |
 | `GET /api/schedule/v2` | V2 shadow 事件读数：按 kind/layer 聚合 + 最近 5 条 + 路径 |
-| Agent 面板“V2 调度”标签 | 展示事件总数、kind/layer 分布、最近 5 条事件与 payload |
+| Agent 面板“V2 调度”标签 | 展示事件总数、kind/layer 分布、最近 5 条事件与 payload；含“采用帕累托”按钮 |
+| `GET/POST /api/schedule/policy` | 读取/应用真实历史帕累托推荐；profiles/auto_pareto 使用持久化策略 |
+| `dgtf_memory/schedule_policy.json` | 保存推荐 profile、coverage、tokens、prefer、applied_at |
 | `POST /api/tasks {opts.auto_pareto:true}` | 自动选用方案F-帕累托最优 profile，并在响应返回 profile |
 | 首屏“自动帕累托”开关 | 勾选后 collectOpts 自动加 auto_pareto；localStorage 持久化 |
 | 前端 job 恢复 | 刷新后读取 dgtf_last_auto_job / dgtf_last_autofix_job；运行中自动恢复轮询并显示进度，完成/中断显示状态 |
