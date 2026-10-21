@@ -3586,6 +3586,19 @@ function agentRenderConsistency() {
       + esc(k) + '</span><span class="chip">' + st + '</span>'
       + '<span class="agent-t">' + esc(JSON.stringify(v).slice(0, 320)) + '</span></div></div>';
   });
+  const _hist = d.history || [];
+  if (_hist.length) {
+    html += '<div class="agent-item"><div class="agent-row"><span class="chip">审计历史 '
+      + esc(String(_hist.length)) + ' 条</span><span class="agent-t">最近 5 次</span></div>';
+    _hist.slice(-5).reverse().forEach(function (h) {
+      const when = h.ts ? new Date(h.ts * 1000).toLocaleString('zh-CN', {hour12:false}) : '';
+      html += '<div class="agent-meta"><span>' + (h.ok ? '通过' : '告警')
+        + '</span><span>' + esc(when) + '</span><span>V2 ' + esc(String(h.v2 == null ? '—' : h.v2))
+        + '</span><span>paired ' + esc(String(h.paired == null ? '—' : h.paired))
+        + '</span><span>' + esc(String(h.template || '—')) + '</span></div>';
+    });
+    html += '</div>';
+  }
   html += '</div>';
   box.innerHTML = html;
 }

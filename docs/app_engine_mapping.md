@@ -75,6 +75,7 @@ engine 元DGTF-V1.30.0.py
 | `GET /api/agent/auto/jobs` | 列出持久化的 auto/autofix job；服务重启后 running 自动标记 interrupted |
 | `GET /api/agent/eml` | EML 映射读数：playbook 25 条、V2 shadow 事件、agent tasks/results/knowledge/proposals 与提案状态分布 |
 | `GET /api/consistency` | 自洽审计：引擎版本/EML 模块/记忆/V2 配对可识别性/策略 profile/job 持久化/层映射 |
+| `GET /api/consistency/history` | 审计历史：时间、通过/告警、V2 数量、paired 可识别性、策略模板、job 数 |
 | Agent 面板“自洽审计”标签 | 展示自洽通过/告警、每项检查状态与 JSON 摘要 |
 | `POST /api/agent/eml/replay` | EML 反馈回放：历史 packed → schedule outcome 先验；默认 dry-run，不写生产 playbook |
 | `GET /api/schedule/v2` | V2 shadow 事件读数：按 kind/layer 聚合 + 最近 5 条 + 路径 |

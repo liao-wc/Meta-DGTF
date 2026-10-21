@@ -1833,6 +1833,47 @@ def _v2_paired_ab(left="", right=""):
                         "同一 run 内各模板 quality 相同，模板胜者不可识别（影子读数未独立区分模板）"))}
 
 
+_CONSISTENCY_HISTORY = Path(__file__).resolve().parent.parent / "dgtf_memory" / "consistency_history.jsonl"
+
+
+def _consistency_history(n=10):
+    import json as _json
+    rows = []
+    try:
+        if _CONSISTENCY_HISTORY.exists():
+            for ln in _CONSISTENCY_HISTORY.read_text(encoding="utf-8", errors="replace").splitlines()[-max(1, int(n)):]:
+                try:
+                    d = _json.loads(ln)
+                    if isinstance(d, dict):
+                        rows.append(d)
+                except Exception:
+                    pass
+    except Exception:
+        pass
+    return rows
+
+
+def _consistency_history_save(result):
+    import json as _json
+    import time as _t
+    try:
+        chk = result.get("checks") or {}
+        row = {"ts": _t.time(), "ok": bool(result.get("ok")),
+               "warnings": result.get("warnings") or [],
+               "engine": (chk.get("engine") or {}).get("version"),
+               "playbook": (chk.get("eml_memory") or {}).get("playbook"),
+               "v2": (chk.get("eml_memory") or {}).get("v2"),
+               "paired": (chk.get("v2_paired") or {}).get("identifiable"),
+               "profile": (chk.get("schedule_policy") or {}).get("profile"),
+               "template": (chk.get("schedule_policy") or {}).get("template"),
+               "jobs": (chk.get("job_persistence") or {}).get("jobs")}
+        _CONSISTENCY_HISTORY.parent.mkdir(parents=True, exist_ok=True)
+        with _CONSISTENCY_HISTORY.open("a", encoding="utf-8") as fh:
+            fh.write(_json.dumps(row, ensure_ascii=False) + "\n")
+    except Exception:
+        pass
+
+
 def _self_consistency():
     """元DGTF 自洽审计：把引擎/EML/V2/策略/持久化/映射集中校验。"""
     import json as _json
@@ -1901,8 +1942,11 @@ def _self_consistency():
     crit = ["engine", "eml_modules", "eml_memory", "layer_mapping"]
     ok = all(bool(checks[k].get("ok")) for k in crit)
     warns = [k for k, v in checks.items() if not v.get("ok")]
-    return {"ok": ok, "checks": checks, "warnings": warns,
-            "note": "critical=engine/eml_modules/eml_memory/layer_mapping；其余为诊断项"}
+    out = {"ok": ok, "checks": checks, "warnings": warns,
+           "note": "critical=engine/eml_modules/eml_memory/layer_mapping；其余为诊断项"}
+    _consistency_history_save(out)
+    out["history"] = _consistency_history(10)
+    return out
 
 
 def _v2_replay_packed(limit=30):
@@ -2481,6 +2525,11 @@ class Handler(BaseHTTPRequestHandler):
         if p == "/api/agent/eml":
             try:
                 return self._json(_eml_status())
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/consistency/history":
+            try:
+                return self._json({"ok": True, "history": _consistency_history(50)})
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/consistency":

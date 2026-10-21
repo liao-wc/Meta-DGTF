@@ -33,6 +33,8 @@ ck("app mapping", "EML_self_feedback" in (h.get("mapping") or {}), h.get("mappin
 st, cons = req("GET", "/api/consistency", timeout=30)
 ck("self consistency audit", st == 200 and cons.get("ok")
    and bool((cons.get("checks") or {}).get("layer_mapping")), (st, cons))
+st, ch = req("GET", "/api/consistency/history", timeout=30)
+ck("consistency history", st == 200 and ch.get("ok") and isinstance(ch.get("history"), list), (st, ch))
 st, eml = req("GET", "/api/agent/eml", timeout=30)
 ck("EML status mapped", st == 200 and eml.get("ok")
    and (eml.get("playbook") or {}).get("n", 0) >= 0
