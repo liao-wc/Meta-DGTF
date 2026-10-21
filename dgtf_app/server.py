@@ -5721,11 +5721,17 @@ class Handler(BaseHTTPRequestHandler):
         return True
 
     def _read_json(self) -> dict:
-        n = int(self.headers.get("Content-Length") or 0)
-        if not n:
-            return {}
+        if getattr(self, "_post_body_read", False):
+            raw = getattr(self, "_post_body", b"")
+        else:
+            n = int(self.headers.get("Content-Length") or 0)
+            if not n:
+                return {}
+            raw = self.rfile.read(n)
+            self._post_body_read = True
+            self._post_body = raw
         try:
-            return json.loads(self.rfile.read(n).decode("utf-8"))
+            return json.loads(raw.decode("utf-8")) if raw else {}
         except (ValueError, UnicodeDecodeError):
             return {}
 
@@ -6319,6 +6325,14 @@ class Handler(BaseHTTPRequestHandler):
         return self._method_not_allowed()
 
     def do_POST(self):
+        # 先把 POST body 一次性读走：即使某些路由不读 JSON，也不能把 body
+        # 留在 keep-alive 连接里，否则下一条请求会被解析成 "{}GET" 并 501。
+        n = int(self.headers.get("Content-Length") or 0)
+        try:
+            self._post_body = self.rfile.read(n) if n > 0 else b""
+        except Exception:
+            self._post_body = b""
+        self._post_body_read = True
         if not self._guard(mutate=True):   # Host + 口令 + Origin/Referer + CSRF
             return
         u = urlparse(self.path)
