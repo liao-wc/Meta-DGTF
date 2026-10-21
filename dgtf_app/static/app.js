@@ -28,21 +28,47 @@ function _csrfFromCookie() {
     return m ? decodeURIComponent(m[1]) : '';
   } catch (_) { return ''; }
 }
-async function ensureCsrf() {
-  let t = _csrfFromCookie() || _csrfCache;
-  if (t) return t;
-  const r = await fetch('/api/csrf');
-  if (!r.ok) throw new Error('HTTP ' + r.status);
-  const j = await r.json();
-  _csrfCache = String(j.csrf || '');
-  return _csrfCache;
+async function ensureCsrf(force) {
+  if (!force && _csrfCache) return _csrfCache;
+  try {
+    const r = await fetch('/api/csrf', { cache: 'no-store' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const j = await r.json();
+    const t = String(j.csrf || '');
+    if (t) { _csrfCache = t; return t; }
+  } catch (_) { /* 回退 cookie */ }
+  const c = _csrfFromCookie();
+  if (c) { _csrfCache = c; return c; }
+  throw new Error('CSRF token 不可用');
+}
+
+async function _csrfRetryFetch(path, opts) {
+  const r = await fetch(path, opts);
+  if (r.status !== 403) return r;
+  let msg = '';
+  try { msg = await r.clone().text(); } catch (_) {}
+  if (!/csrf|CSRF|令牌/i.test(msg)) return r;
+  const t = await ensureCsrf(true);
+  const headers = Object.assign({}, (opts && opts.headers) || {});
+  headers['X-CSRF-Token'] = t;
+  return fetch(path, Object.assign({}, opts, { headers: headers }));
 }
 
 async function streamPost(path, payload, onMsg) {
   const csrf = await ensureCsrf();
-  const r = await fetch(path, { method: 'POST',
+  let r = await fetch(path, { method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
     body: JSON.stringify(payload) });
+  if (r.status === 403) {
+    let msg = '';
+    try { msg = await r.clone().text(); } catch (_) {}
+    if (/csrf|CSRF|令牌/i.test(msg)) {
+      const t = await ensureCsrf(true);
+      r = await fetch(path, { method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': t },
+        body: JSON.stringify(payload) });
+    }
+  }
   if (!r.ok) throw new Error('HTTP ' + r.status);
   if (!r.body) throw new Error('浏览器不支持流式读取');
   const reader = r.body.getReader();
@@ -67,7 +93,8 @@ async function streamPost(path, payload, onMsg) {
 async function api(path, opts) {
   opts = opts || {};
   const method = String(opts.method || 'GET').toUpperCase();
-  if (method !== 'GET' && method !== 'HEAD') {
+  const _mutate = (method !== 'GET' && method !== 'HEAD');
+  if (_mutate) {
     const csrf = await ensureCsrf();
     const headers = Object.assign({}, opts.headers || {});
     headers['X-CSRF-Token'] = csrf;
@@ -78,6 +105,16 @@ async function api(path, opts) {
   if (r.status === 501 || r.status === 502 || r.status === 503) {
     await new Promise(function (res) { setTimeout(res, 350); });
     r = await fetch(path, opts);
+  }
+  if (_mutate && r.status === 403) {
+    let msg = '';
+    try { msg = await r.clone().text(); } catch (_) {}
+    if (/csrf|CSRF|令牌/i.test(msg)) {
+      const t = await ensureCsrf(true);
+      const headers = Object.assign({}, (opts && opts.headers) || {});
+      headers['X-CSRF-Token'] = t;
+      r = await fetch(path, Object.assign({}, opts, { headers: headers }));
+    }
   }
   let j = null;
   try { j = await r.json(); } catch (_) { /* 非 JSON */ }

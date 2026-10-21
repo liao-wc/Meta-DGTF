@@ -74,7 +74,25 @@ _FACETS = ("decidability", "orientation", "parallel", "stop", "kind", "layer")
 _TOKEN = ""
 # Host 白名单 / CSRF：默认只接受本机回环 Host；--lan 时加入本机地址。
 _ALLOWED_HOSTS = {"127.0.0.1", "localhost", "::1"}
-_CSRF_TOKEN = secrets.token_urlsafe(32)
+def _load_csrf_token():
+    """CSRF 令牌跨 app 重启保持稳定，避免旧标签页提交全部 403。"""
+    p = Path(__file__).resolve().parent.parent / "dgtf_memory" / ".csrf_token"
+    try:
+        tok = p.read_text(encoding="utf-8").strip()
+        if len(tok) >= 24:
+            return tok
+    except Exception:
+        pass
+    tok = secrets.token_urlsafe(32)
+    try:
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(tok, encoding="utf-8")
+    except Exception:
+        pass
+    return tok
+
+
+_CSRF_TOKEN = _load_csrf_token()
 _CSRF_COOKIE = "dgtf_csrf"
 
 # DSH Agent 每次运行一个受控工作台工具令牌；只能调用固定动作，不能拿全站权限。
@@ -5280,7 +5298,8 @@ class Handler(BaseHTTPRequestHandler):
             out.append("dgtf_token=%s; Path=/; HttpOnly; SameSite=Strict; Max-Age=2592000"
                        % _TOKEN)
         have = (self.headers.get("Cookie") or "")
-        if (_CSRF_COOKIE + "=") not in have:
+        # 旧 cookie 值不匹配时也要重种，不能只看“有没有”。
+        if ("%s=%s" % (_CSRF_COOKIE, _CSRF_TOKEN)) not in have:
             out.append("%s=%s; Path=/; SameSite=Strict; Max-Age=2592000"
                        % (_CSRF_COOKIE, _CSRF_TOKEN))
         return out

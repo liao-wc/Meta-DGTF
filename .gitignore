@@ -5,6 +5,7 @@ _audit_tmp/
 *.pyc
 .env
 dgtf_memory/dsh_workbench_token
+dgtf_memory/.csrf_token
 
 # 冒烟 / 校验运行时自动生成的中间产物（每次跑都重建，跑完自己删）
 # ★ 注意不要连 _smoke_*.log 一起忽略 —— 那些是「本版跑绿」的证据，要留在库里

@@ -3,7 +3,7 @@
 ## 已启用
 - Host 白名单：默认 127.0.0.1 / localhost / ::1；--lan 时只加入本机网卡地址。
 - Origin/Referer 校验：浏览器跨站写请求必须来自白名单 Host。
-- CSRF：静态首页下发 dgtf_csrf Cookie，所有写请求带 X-CSRF-Token；无浏览器 Origin 的本地 CLI 兼容。
+- CSRF：静态首页下发 dgtf_csrf Cookie，所有写请求带 X-CSRF-Token；无浏览器 Origin 的本地 CLI 兼容；令牌持久化到 dgtf_memory/.csrf_token，app 重启不失效；前端在 403 时自动取新令牌重试一次。
 - 安全响应头：CSP（script-src self）、X-Frame-Options DENY、nosniff、Referrer-Policy、Permissions-Policy、CORP。
 - 口令 Cookie 改为 HttpOnly + SameSite=Strict。
 - DSH Agent 敏感路径运行时拦截：tool_call 事件命中 .env/.credentials/dsh_conversations 等立即终止本轮；输出中的已知 API key 值脱敏。
