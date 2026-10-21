@@ -3973,14 +3973,29 @@ function agentRenderAll() {
   agentRenderConsistency();
 }
 
+async function refreshAgentAll() {
+  const msg = $('#agent-msg');
+  if (msg) msg.textContent = '正在刷新 Agent 面板全部库…';
+  try {
+    const jobs = [
+      loadAgent(), loadGitStatus(), loadDash(), loadLib(), loadLocal(),
+      loadWeb(), loadChats(), loadExistingTasks()
+    ];
+    await Promise.allSettled(jobs);
+    if (msg) msg.textContent = '已刷新 Agent 面板全部库：队列/结果/知识/DSH会话/DSH产物/提案/运行/V2/审计/资料库/联网库/最近跑过';
+  } catch (e) {
+    if (msg) msg.textContent = '刷新失败：' + e.message;
+  }
+}
+
 async function loadAgent() {
   const box = $('#agent-tasks');
   if (!box) return;
-  box.innerHTML = agentEmpty('读取中…');
-  const resBox = $('#agent-results');
-  if (resBox) resBox.innerHTML = agentEmpty('读取中…');
-  const knBox = $('#agent-knowledge');
-  if (knBox) knBox.innerHTML = agentEmpty('读取中…');
+  ['agent-tasks','agent-results','agent-knowledge','agent-dsh','agent-dsh-art',
+   'agent-proposals','agent-runbox','agent-v2','agent-consistency'].forEach(function (id) {
+    const el = $('#' + id);
+    if (el) el.innerHTML = agentEmpty('读取中…');
+  });
   const [t, r, k, ds, da, pr, ap, v2, pa, vab, vpar, con, mdl, llm] = await Promise.all([
     api('/api/agent/tasks').catch(e => ({ tasks: [], error: e.message })),
     api('/api/agent/results').catch(e => ({ results: [], error: e.message })),
@@ -4943,7 +4958,7 @@ function init() {
     bootV2Auto();
   });
   const _agentRefresh = $('#agent-refresh');
-  if (_agentRefresh) _agentRefresh.addEventListener('click', loadAgent);
+  if (_agentRefresh) _agentRefresh.addEventListener('click', refreshAgentAll);
   const _apBtn = $('#agent-autopilot-btn');
   if (_apBtn) _apBtn.addEventListener('click', async () => {
     const enable = !(agentAutopilot && agentAutopilot.enabled);

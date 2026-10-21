@@ -1875,41 +1875,86 @@ def _targeted_acceptance(changed):
 
 
 _SECURITY_RISK_TERMS = (
-    ".env", "credential", "password", "secret", "api_key", "danger-full-access",
-    "eval(", "exec(", "pickle.loads", "subprocess", "shell=true", "rm -rf",
-    "git push", "authorized_keys", "private key",
+    ".env", "credential", "password", "secret", "api_key", "api key", "apikey",
+    "danger-full-access", "token", "authorization", "cookie", ".ssh", ".git/",
+    "server.py", "requirements.txt", "pyproject.toml", "package.json",
+    "eval(", "exec(", "pickle.loads", "yaml.load", "__import__", "compile(",
+    "subprocess", "popen", "os.system", "shell=true", "rm -rf", "del /",
+    "git push", "git reset", "git clean", "git rm", "authorized_keys",
+    "private key", "curl", "wget", "invoke-webrequest", "requests.", "urllib",
+    "socket", "winreg", "ctypes", "start-process", "remove-item", "reg add",
+    "schtasks", "taskkill", "icacls", "takeown", "chmod", "chown",
+    "pip install", "npm install", "base64", "http://", "https://",
 )
 _SECURITY_CODE_EXTS = (".py", ".js", ".ts", ".json", ".yaml", ".yml",
-                       ".ps1", ".cmd", ".bat", ".sh")
+                       ".ps1", ".cmd", ".bat", ".sh", ".ini", ".toml")
+_SECURITY_SENSITIVE_PATHS = (
+    ".env", ".ssh/", ".git/", "credentials", "dgtf_app/server.py",
+    "dgtf_app/dsh_tool.py", "requirements.txt", "pyproject.toml",
+    "package.json", "startup", ".bat", ".cmd",
+)
 
 
 def _security_review_proposal(prop):
-    """自动修复前的静态安全门槛：高风险/敏感词一律转人工。"""
+    """自动修复前的安全门槛：敏感词、敏感路径、危险命令都转人工。"""
+    import re as _re
     txt = (str(prop.get("plan") or "") + " " +
            str((prop.get("task") or {}).get("title") or "") + " " +
            str((prop.get("task") or {}).get("detail") or "")).lower()
     for term in _SECURITY_RISK_TERMS:
         if term in txt:
             return {"ok": False, "reason": "sensitive_term:" + term}
+    try:
+        for p in _plan_paths(prop.get("plan") or ""):
+            low = p.lower()
+            if any(p in low or low.endswith(p) for p in _SECURITY_SENSITIVE_PATHS):
+                return {"ok": False, "reason": "sensitive_path:" + p}
+    except Exception:
+        pass
+    # 危险命令形态（含编码/提权/外传）
+    patterns = [
+        (r"(?i)powershell\s+(-enc|-encodedcommand)", "encoded_powershell"),
+        (r"(?i)invoke-expression|\biex\b", "invoke_expression"),
+        (r"(?i)certutil.*-decode", "certutil_decode"),
+        (r"(?i)bitsadmin|schtasks|reg\s+add|takeown|icacls", "system_modify"),
+        (r"(?i)(api[_-]?key|secret|password|token)\s*[:=]", "credential_assignment"),
+    ]
+    for pat, name in patterns:
+        if _re.search(pat, txt):
+            return {"ok": False, "reason": "dangerous_pattern:" + name}
     return {"ok": True, "reason": "no_sensitive_term"}
 
 
 def _security_scan_changed(changed):
-    """提交前扫描新增代码/配置中的密钥与危险执行面；命中即不提交。"""
+    """提交前扫描新增代码/配置中的密钥、危险执行面与敏感文件；命中不提交。"""
     import re as _re
     findings = []
     patterns = [
         (r"-----BEGIN [A-Z ]*PRIVATE KEY-----", "private_key"),
         (r"(?i)(api[_-]?key|secret|password|token)\s*[:=]\s*['\"][^'\"]{8,}", "hardcoded_secret"),
+        (r"(?i)(DEEPSEEK|DGTF|TAVILY)_API_KEY\s*=", "hardcoded_secret"),
         (r"\beval\s*\(", "eval"),
         (r"\bexec\s*\(", "exec"),
         (r"pickle\.loads", "pickle_loads"),
+        (r"(?i)yaml\.load\s*\(", "unsafe_yaml_load"),
         (r"(?i)shell\s*=\s*True", "shell_true"),
+        (r"\bos\.system\s*\(", "os_system"),
+        (r"\bsubprocess\.", "subprocess"),
+        (r"\brequests\.", "network_requests"),
+        (r"\burllib\.", "network_urllib"),
+        (r"\bsocket\.", "network_socket"),
+        (r"\bwinreg\.|\bctypes\.", "windows_api"),
+        (r"\bshutil\.rmtree|Path\([^)]*\)\.unlink", "destructive_delete"),
+        (r"(?i)icacls|takeown|schtasks|Start-Process|Invoke-Expression", "system_modify"),
         (r"danger-full-access", "danger_full_access"),
     ]
     for p in changed or []:
         path = str(p)
-        if not path.lower().endswith(_SECURITY_CODE_EXTS):
+        low = path.lower()
+        if any(x in low for x in _SECURITY_SENSITIVE_PATHS):
+            findings.append({"file": path, "rule": "sensitive_file"})
+            continue
+        if not low.endswith(_SECURITY_CODE_EXTS):
             continue
         try:
             path_obj = Path(__file__).resolve().parent.parent / path

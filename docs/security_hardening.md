@@ -7,7 +7,7 @@
 - 安全响应头：CSP（script-src self）、X-Frame-Options DENY、nosniff、Referrer-Policy、Permissions-Policy、CORP。
 - 口令 Cookie 改为 HttpOnly + SameSite=Strict。
 - DSH Agent 敏感路径运行时拦截：tool_call 事件命中 .env/.credentials/dsh_conversations 等立即终止本轮；输出中的已知 API key 值脱敏。
-- 自动修复安全门槛：提案含敏感词转人工；提交前扫描新增行的硬编码密钥、eval/exec、pickle.loads、shell=True、danger-full-access，命中不提交。
+- 自动修复安全门槛：提案阶段检查敏感词/敏感路径/危险命令（密钥、token、.env、server.py、curl/wget、powershell -enc、reg/schtasks、外链等）；提交前检查新增代码的密钥、eval/exec、subprocess、网络请求、注册表/提权、敏感文件；命中不提交。
 - 自动修复必须先 fast_gate + 针对性验收都通过才提交；失败回灌同会话继续修。
 
 ## DSH 受控工作台工具
