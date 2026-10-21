@@ -77,6 +77,44 @@ _ALLOWED_HOSTS = {"127.0.0.1", "localhost", "::1"}
 _CSRF_TOKEN = secrets.token_urlsafe(32)
 _CSRF_COOKIE = "dgtf_csrf"
 
+# DSH Agent 每次运行一个受控工作台工具令牌；只能调用固定动作，不能拿全站权限。
+_DSH_TOKENS = {}
+
+
+def _wb_issue_token(ttl=900, before=None):
+    import time as _t_wb
+    now = _t_wb.time()
+    for k in [k for k, v in list(_DSH_TOKENS.items())
+              if float((v or {}).get("exp") or 0) < now]:
+        _DSH_TOKENS.pop(k, None)
+    tok = secrets.token_urlsafe(24)
+    _DSH_TOKENS[tok] = {"exp": now + max(60, int(ttl)),
+                        "before": set(before or []),
+                        "issued": now}
+    try:
+        # DSH 的沙箱子进程可能清洗环境变量；令牌文件作为回退通道。
+        tf = Path(__file__).resolve().parent.parent / "dgtf_memory" / "dsh_workbench_token"
+        tf.parent.mkdir(parents=True, exist_ok=True)
+        tf.write_text(tok, encoding="utf-8")
+    except Exception:
+        pass
+    return tok
+
+
+def _wb_token_info(tok):
+    import time as _t_wb
+    tok = str(tok or "")
+    info = _DSH_TOKENS.get(tok)
+    if not info or float(info.get("exp") or 0) < _t_wb.time():
+        if tok:
+            _DSH_TOKENS.pop(tok, None)
+        return None
+    return info
+
+
+def _wb_token_ok(tok):
+    return _wb_token_info(tok) is not None
+
 # ★ R44：导入是二进制上传（base64 后还要膨胀 1/3）⇒ 单独给一个大上限，超了 413。
 MAX_UPLOAD_BYTES = 200 * 1024 * 1024
 
@@ -1354,6 +1392,8 @@ def _run_dsh_agent_raw(task: str, sid: str = "", timeout: int = 300,
     env["DSH_PERMISSION_MODE"] = _perm
     env.setdefault("PYTHONUTF8", "1")
     env.setdefault("PYTHONIOENCODING", "utf-8")
+    _wb_token = _wb_issue_token(int(timeout or 600) + 120, before=_before)
+    env["DGTF_WORKBENCH_TOKEN"] = _wb_token
     _anchors = Path(__file__).resolve().parent / "anchors"
     _imports = []
     try:
@@ -1423,7 +1463,8 @@ def _run_dsh_agent_raw(task: str, sid: str = "", timeout: int = 300,
     proc = None
     _guard_blocked = []
     _secret_vals = [x for x in (key, env.get("TAVILY_API_KEY", ""),
-                                env.get("DGTF_API_KEY", "")) if x]
+                                env.get("DGTF_API_KEY", ""),
+                                env.get("DGTF_WORKBENCH_TOKEN", "")) if x]
     _sensitive_paths = (".env", ".credentials", "dsh_conversations",
                         "agent_autopilot.json", "id_rsa", "authorized_keys")
 
@@ -1910,8 +1951,10 @@ def _repair_with_acceptance(prop, model="", emit=None, max_attempts=3,
     convs, attempts = [], []
     prompt = ("按以下已确认提案执行修复：" + plan +
               "。先读取相关项目文件核对；只修改方案涉及的文件；"
-              "不要在你的沙箱里运行 fast_gate.py（工作台会统一运行）；"
-              "不要执行 git add / git commit / push；验收由工作台统一执行。"
+              "不要在你的沙箱里直接运行 fast_gate.py（沙箱临时写在 Windows 上会被 ACL 拦）；"
+              "如需自检，可运行受控工具：python dgtf_app/dsh_tool.py fast_gate "
+              "或 python dgtf_app/dsh_tool.py acceptance 查看工作台结果；"
+              "不要执行 git add / git commit / push；最终验收与提交由工作台统一执行。"
               + str(extra_context or ""))
     last_gate, last_acc, last_repair, last_sec = {}, {}, {}, {}
     for n in range(1, max(1, int(max_attempts)) + 1):
@@ -5273,6 +5316,45 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(data)
 
+    def _dsh_workbench(self, action):
+        """DSH 受控工具：固定动作 + 每次 run 令牌；不开放任意命令/密钥/git。"""
+        import json as _json
+        import time as _tw
+        action = str(action or "")
+        tok = (self.headers.get("X-DSH-Workbench") or "").strip()
+        if not tok:
+            try:
+                tok = str((self._read_json() or {}).get("token") or "").strip()
+            except Exception:
+                tok = ""
+        info = _wb_token_info(tok)
+        if not info:
+            return self._json({"error": "工作台工具令牌无效或已过期"}, 403)
+        base = info.get("before") or set()
+        changed = _commit_scope(_changed_since(base, {}))
+        if action == "fast_gate":
+            res = _run_fast_gate()
+        elif action == "acceptance":
+            res = {"changed": changed, "acceptance": _targeted_acceptance(changed)}
+            res["ok"] = bool(res["acceptance"].get("ok"))
+        elif action == "status":
+            res = {"ok": True, "head": (_git(["rev-parse", "HEAD"]).get("out") or "").strip(),
+                   "branch": (_git(["rev-parse", "--abbrev-ref", "HEAD"]).get("out") or "").strip(),
+                   "changed": changed}
+        else:
+            return self._json({"error": "未知工作台工具"}, 404)
+        try:
+            root = Path(__file__).resolve().parent.parent
+            with (root / "dgtf_memory" / "dsh_workbench_calls.jsonl").open(
+                    "a", encoding="utf-8") as fh:
+                fh.write(_json.dumps({"ts": _tw.time(), "action": action,
+                                      "ok": bool(res.get("ok")),
+                                      "changed": res.get("changed") or []},
+                                     ensure_ascii=False) + "\n")
+        except Exception:
+            pass
+        return self._json({"ok": bool(res.get("ok")), "action": action, "result": res})
+
     # ── GET ───────────────────────────────────────────────────────
     def do_GET(self):
         if not self._guard():          # ★ R42：口令开启时先过闸（默认关闭 ⇒ 恒真）
@@ -5752,6 +5834,9 @@ class Handler(BaseHTTPRequestHandler):
             return
         u = urlparse(self.path)
         p = u.path
+
+        if p.startswith("/api/dsh/workbench/"):
+            return self._dsh_workbench(p.rsplit("/", 1)[-1])
 
         # 本地资料库：导入 / 删除
         if p == "/api/library/import":

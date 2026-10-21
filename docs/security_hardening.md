@@ -10,6 +10,14 @@
 - 自动修复安全门槛：提案含敏感词转人工；提交前扫描新增行的硬编码密钥、eval/exec、pickle.loads、shell=True、danger-full-access，命中不提交。
 - 自动修复必须先 fast_gate + 针对性验收都通过才提交；失败回灌同会话继续修。
 
+## DSH 受控工作台工具
+- 每次 DSH run 发一个短期能力令牌（环境变量 + 工作台令牌文件回退，因为 DSH 沙箱子进程可能清洗 env）；
+- 只允许固定动作：fast_gate / acceptance / status；
+- 不能传任意命令、不能读密钥、不能 git 提交；
+- status/acceptance 以本次 run 启动前的文件快照为基线，只返回本次 DSH 改动；
+- 每次调用写 dgtf_memory/dsh_workbench_calls.jsonl 审计；
+- 最终提交前工作台仍会重新跑 fast_gate + 针对性验收，不信任 DSH 自报结果。
+
 ## 启动服务
 app 启动会确保：
 - 本地 BGE embedding 服务（127.0.0.1:8771）；
