@@ -2359,6 +2359,101 @@ _LLM_METRICS = Path(__file__).resolve().parent.parent / "llm_sft" / "train_metri
 _LLM_EVAL = Path(__file__).resolve().parent.parent / "llm_sft" / "eval_base_vs_lora.json"
 
 
+_PROJECT_DOCS = [
+    "README.md",
+    "docs/app_engine_mapping.md",
+    "docs/full_loop.md",
+    "docs/llm_lora_finetune.md",
+    "docs/scheduler_model.md",
+    "v1200_报告.md",
+    "v1110_报告.md",
+]
+_PROJECT_BRIEF = (
+    "元DGTF 是一个本地四层螺旋推理引擎，版本 元DGTF-V1.30.0.py / 1.30.0。"
+    "四层固定为：0 修行（展开/候选/锚点）、1 研究（证据/子问题/收敛）、"
+    "both 对撞（裁决/冲突/线头）、all 元（闭环/决策/停止）。"
+    "EML 是事件溯源记忆与自学习反馈层，含 V1 playbook 与 V2 schedule_outcome；"
+    "DSH 是本机 DeepSeek Harness headless Agent，用于自动闭环、提案与源码修复。"
+    "app 通过 dgtf_app/server.py 调用引擎子进程，提供任务、分层日志、调度策略、"
+    "V2/EML/自洽审计、LLM LoRA 调度建议等接口。"
+    "当前边界：本地 LLM 仅做 route/rounds 调度建议；四层深度推理仍走 DeepSeek API；"
+    "项目知识需要显式注入，模型参数本身不含元DGTF事实。"
+)
+
+
+_PROJECT_DOC_CACHE = {}
+_PROJECT_SENSITIVE = ("api_key", "apikey", "secret", "password", "token=",
+                      "sk-", "dgtf_api_key", "deepseek_api_key", "tavily_api_key")
+
+
+def _project_doc_paras(rel):
+    """按 mtime/size 缓存文档段落；敏感片段过滤。"""
+    import re as _re
+    root = Path(__file__).resolve().parent.parent
+    p = root / rel
+    try:
+        st = p.stat()
+    except Exception:
+        return []
+    key = (str(p), int(st.st_mtime_ns), int(st.st_size))
+    hit = _PROJECT_DOC_CACHE.get(key)
+    if hit is not None:
+        return hit
+    try:
+        txt = p.read_text(encoding="utf-8", errors="replace")[:60000]
+    except Exception:
+        return []
+    paras = []
+    for para in _re.split(r"\n\s*\n", txt):
+        para = para.strip()
+        if len(para) < 40:
+            continue
+        low = para.lower()
+        if any(s in low for s in _PROJECT_SENSITIVE):
+            continue
+        paras.append(para[:1200])
+    _PROJECT_DOC_CACHE.clear()
+    _PROJECT_DOC_CACHE[key] = paras
+    return paras
+
+
+def _project_context(question="", limit=6):
+    """RAG-lite：从项目文档取相关段落 + 固定权威摘要。"""
+    import re as _re
+    q = str(question or "")
+    keys = [k for k in ("元DGTF", "四层", "修行", "研究", "对撞", "元层", "EML",
+                        "DSH", "调度", "LoRA", "app", "映射", "自洽", "边界",
+                        "route", "rounds") if k in q]
+    chunks = []
+    for rel in _PROJECT_DOCS:
+        for para in _project_doc_paras(rel):
+            score = sum(para.count(k) for k in keys) if keys else 0
+            score += 1 if "元DGTF" in para else 0
+            chunks.append((score, rel, para))
+    chunks.sort(key=lambda x: x[0], reverse=True)
+    picked = []
+    seen = set()
+    for score, rel, para in chunks:
+        sig = para[:80]
+        if sig in seen:
+            continue
+        seen.add(sig)
+        picked.append({"source": rel, "text": para})
+        if len(picked) >= max(1, int(limit)):
+            break
+    parts = ["【元DGTF 项目权威背景（本地文档注入，非模型记忆）】", _PROJECT_BRIEF]
+    for x in picked:
+        parts.append("[" + x["source"] + "] " + x["text"])
+    parts.append("【回答约束】涉及元DGTF时必须依据以上背景；背景没有的，明确说不知道，不得编造。")
+    _max = max(1000, min(12000, int(os.getenv(
+        "DGTF_PROJECT_CONTEXT_MAX_CHARS", "7000"))))
+    txt = "\n".join(parts)
+    return {"ok": True, "text": txt[:_max],
+            "sources": [x["source"] for x in picked],
+            "keys": keys, "chars": len(txt[:_max]), "max_chars": _max,
+            "sensitive_filter": True, "cached_docs": True}
+
+
 def _llm_status():
     import json as _json
     out = {"ok": bool(_LLM_ADAPTER.exists()),
@@ -3214,6 +3309,12 @@ class Handler(BaseHTTPRequestHandler):
                     question=str((q.get("q") or [""])[0]),
                     prefer=str((q.get("prefer") or ["balanced"])[0]),
                     c=float((q.get("c") or ["0.5"])[0] or 0.5)))
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/project/context":
+            try:
+                return self._json(_project_context(
+                    question=str((q.get("q") or [""])[0])))
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/schedule/v2/bandit":
@@ -4227,6 +4328,11 @@ class Handler(BaseHTTPRequestHandler):
             opts = data.get("opts") or {}
             if not isinstance(opts, dict):
                 opts = {}
+            _project_ctx = bool(opts.pop("project_context", False))
+            if _project_ctx:
+                _pc = _project_context(question)
+                if _pc.get("text"):
+                    question = _pc["text"] + "\n\n【用户问题】\n" + question
             _auto_pareto = bool(opts.pop("auto_pareto", False))
             _auto_template = bool(opts.pop("auto_template", False))
             _auto_llm = bool(opts.pop("auto_llm", False))
@@ -4252,6 +4358,7 @@ class Handler(BaseHTTPRequestHandler):
             return self._json({"id": tid, "auto_pareto": _auto_pareto,
                                "auto_template": _auto_template,
                                "auto_llm": _auto_llm,
+                               "project_context": _project_ctx,
                                "profile": opts.get("profile") or ""}, 201)
 
         return self._json({"error": "not found"}, 404)

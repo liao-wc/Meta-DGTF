@@ -379,6 +379,8 @@ function collectOpts() {
   const opts = {};
   const _pareto = document.querySelector('#auto-pareto');
   if (_pareto && _pareto.checked) opts.auto_pareto = true;
+  const _pctx = document.querySelector('#project-context');
+  if (_pctx && _pctx.checked) opts.project_context = true;
   const coerce = (v) => {
     if (v === 'true') return true;
     if (v === 'false') return false;
@@ -4508,6 +4510,17 @@ function init() {
   const _mockBox = $('#mock');
   if (_mockBox) _mockBox.addEventListener('change', syncMockPill);
   syncMockPill();
+  const _pctxBox = $('#project-context');
+  const _pctxPill = $('#pctx-pill');
+  if (_pctxBox) {
+    try { _pctxBox.checked = localStorage.getItem('dgtf_project_context') !== '0'; } catch (_) {}
+    const _syncPctx = function () {
+      if (_pctxPill) _pctxPill.classList.toggle('on', _pctxBox.checked);
+      try { localStorage.setItem('dgtf_project_context', _pctxBox.checked ? '1' : '0'); } catch (_) {}
+    };
+    _pctxBox.addEventListener('change', _syncPctx);
+    _syncPctx();
+  }
   const _paretoBox = $('#auto-pareto');
   const _paretoPill = $('#pareto-pill');
   if (_paretoBox) {

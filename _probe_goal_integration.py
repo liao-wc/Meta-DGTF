@@ -83,6 +83,9 @@ ck("v2 best template apply", st == 200 and best.get("ok")
 st, vpar = req("GET", "/api/schedule/v2/pareto", timeout=30)
 ck("v2 template pareto", st == 200 and vpar.get("ok")
    and bool(vpar.get("frontier")) and bool((vpar.get("recommended") or {}).get("template")), (st, vpar))
+st, pctx = req("GET", "/api/project/context?q=" + urllib.parse.quote("元DGTF四层是什么"), timeout=30)
+ck("project context RAG", st == 200 and pctx.get("ok")
+   and all(k in str(pctx.get("text") or "") for k in ("修行", "研究", "对撞", "元")), (st, pctx))
 st, llmst = req("GET", "/api/schedule/llm/status", timeout=30)
 ck("LLM LoRA status", st == 200 and llmst.get("ok")
    and (llmst.get("eval_summary") or {}).get("lora"), (st, llmst))
@@ -180,6 +183,11 @@ st, ttd = req("GET", "/api/tasks/" + str(tt.get("id")), timeout=30)
 _ttopt = (ttd.get("opts") or {}) if isinstance(ttd, dict) else {}
 ck("auto_template opts applied", st == 200 and bool(_ttopt.get("route"))
    and bool(_ttopt.get("rounds")), (st, ttd))
+st, pct = req("POST", "/api/tasks", {"question": "元DGTF四层是什么？",
+                                     "opts": {"mock": True, "project_context": True}})
+ck("project context task", st == 201 and pct.get("project_context"), (st, pct))
+st, pctd = req("GET", "/api/tasks/" + str(pct.get("id")), timeout=30)
+ck("project context injected", st == 200 and "项目权威背景" in str((pctd or {}).get("question") or ""), (st, pctd))
 tid = t.get("id", "")
 task = None
 if tid:

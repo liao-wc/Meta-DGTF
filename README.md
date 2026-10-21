@@ -2,11 +2,20 @@
 
 一个**单文件**的四层螺旋推理引擎：修行 / 研究 / 对撞 / 元，跑出可审计的产物。
 
-- **当前版本**：`元DGTF-V1.25.0.py`（28327 行 / 纯 CRLF / 无包结构）
-- **版本历史**：见 `CHANGELOG.md`（每版一段、最新在前、定稿带「★ 收束摘要」）
-- **人用界面**：`dgtf_app/`（本地 Web 工作台，见 `dgtf_app/README.md`）
+- **当前版本**：`元DGTF-V1.30.0.py`（单文件引擎）
+- **人用界面**：`dgtf_app/`（app V1.2.0；本地 Web 工作台，见 `dgtf_app/README.md`）
+- **版本历史**：`CHANGELOG.md`；app 发布说明见 `docs/releases/`
 
 > 这份 README 只写**能被验证**的事：命令都真跑过，数字都是当前版本的实测值。
+
+## 最新能力（2026-10-21，app V1.2.0）
+
+- **EML + DSH 全流程闭环**：知识刷新 → 引擎跑次 → 消费者/任务 → 自审提案；见 docs/full_loop.md。
+- **本地 LLM LoRA fine-tune**：Qwen2.5-0.5B-Instruct 学习“问题 → route/rounds JSON”；留出 route 42.9% / rounds MAE 1.446；见 docs/llm_lora_finetune.md。
+- **调度与帕累托**：方案F profile、V2 模板质量-成本前沿、UCB/上下文 UCB、本地调度模型；见 docs/scheduler_model.md。
+- **自洽审计**：GET /api/consistency + 审计历史；见 docs/app_engine_mapping.md。
+- **针对性真跑**：60 calls / 341K tokens / 758.9s；见 docs/real_run_20261021.md。
+- **边界**：本地 LLM 只做调度建议；四层深度推理仍走 DeepSeek API；项目事实需显式上下文注入（GET /api/project/context）。
 
 ---
 
@@ -107,10 +116,10 @@ TAVILY_API_KEY=tvly-...        # 可选：联网检索；不填则联网自动�
 ### 跑一次
 
 ```bash
-python 元DGTF-V1.25.0.py "一个领域里那些被当作常识的东西是怎么来的，它靠不靠得住"
+python 元DGTF-V1.30.0.py "一个领域里那些被当作常识的东西是怎么来的，它靠不靠得住"
 
 # 质量/成本帕累托预设（v1.23.65 基线实测：129 calls / 1.16M → 覆盖 100% / 三态 60%；v1.23.66 预设已同步）
-python 元DGTF-V1.25.0.py -c configs/方案F-帕累托最优.yaml "你的问题"
+python 元DGTF-V1.30.0.py -c configs/方案F-帕累托最优.yaml "你的问题"
 ```
 
 常用参数（`--help` 有全量）：
