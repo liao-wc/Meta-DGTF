@@ -30,6 +30,10 @@ ck("engine mapping", h.get("engine", {}).get("file", "").endswith(".py") and h.g
 ck("EML modules", all((h.get("modules") or {}).values()), h.get("modules"))
 ck("dependency chain", bool(h.get("checks", {}).get("fact_flow") and h.get("checks", {}).get("scheduler")), h.get("checks"))
 ck("app mapping", "EML_self_feedback" in (h.get("mapping") or {}), h.get("mapping"))
+st, eml = req("GET", "/api/agent/eml", timeout=30)
+ck("EML status mapped", st == 200 and eml.get("ok")
+   and (eml.get("playbook") or {}).get("n", 0) >= 0
+   and (eml.get("v2_shadow") or {}).get("n", 0) >= 0, (st, eml))
 
 # 2) schedule preview flexibility + precedence
 st, p0 = req("POST", "/api/schedule/preview", {"question": "调度预览"})
@@ -84,6 +88,10 @@ if jid:
         if job.get("status") in ("done", "error"):
             break
 ck("auto job done", bool(job and job.get("status") == "done"), job)
+st, jobs = req("GET", "/api/agent/auto/jobs", timeout=30)
+ck("auto job persisted/list", st == 200 and any(
+    x.get("id") == jid and x.get("status") == "done"
+    for x in (jobs.get("jobs") or [])), (st, jobs))
 
 # 6) engine -> app mock roundtrip + four layers
 st, t = req("POST", "/api/tasks", {"question": "元DGTF app 集成探针：四层为什么要互相校验？",

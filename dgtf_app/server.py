@@ -1273,12 +1273,14 @@ def _auto_job_worker(jid, stage, data):
             j["status"] = "done"
             j["result"] = out
             _AUTO_JOBS[jid] = j
+        _auto_jobs_save()
     except Exception as exc:
         with _auto_jobs_lock():
             j = _AUTO_JOBS.get(jid) or job
             j["status"] = "error"
             j["error"] = str(exc)
             _AUTO_JOBS[jid] = j
+        _auto_jobs_save()
 
 
 def _auto_job_start(stage, data):
@@ -1291,6 +1293,7 @@ def _auto_job_start(stage, data):
         # 只保留最近 20 个任务，避免内存长期增长
         for k in sorted(list(_AUTO_JOBS), key=lambda x: _AUTO_JOBS[x].get("ts") or 0)[:-20]:
             _AUTO_JOBS.pop(k, None)
+    _auto_jobs_save()
     _th.Thread(target=_auto_job_worker, args=(jid, stage, data), daemon=True).start()
     return jid
 
@@ -1356,6 +1359,7 @@ def _autofix_job_start(data):
                            "events": [], "result": None, "ts": _t.time()}
         for k in sorted(list(_AUTO_JOBS), key=lambda x: _AUTO_JOBS[x].get("ts") or 0)[:-20]:
             _AUTO_JOBS.pop(k, None)
+    _auto_jobs_save()
 
     def worker():
         def write(msg):
@@ -1369,15 +1373,68 @@ def _autofix_job_start(data):
                 j = _AUTO_JOBS.get(jid) or {}
                 j["status"] = "done"
                 _AUTO_JOBS[jid] = j
+            _auto_jobs_save()
         except Exception as exc:
             with _auto_jobs_lock():
                 j = _AUTO_JOBS.get(jid) or {}
                 j["status"] = "error"
                 j["error"] = str(exc)
                 _AUTO_JOBS[jid] = j
+            _auto_jobs_save()
 
     _th.Thread(target=worker, daemon=True).start()
     return jid
+
+
+_AUTO_JOBS_FILE = Path(__file__).resolve().parent.parent / "dgtf_memory" / "auto_jobs.json"
+
+
+def _auto_jobs_save():
+    import json as _json
+    try:
+        with _auto_jobs_lock():
+            data = _json.loads(_json.dumps(_AUTO_JOBS, ensure_ascii=False, default=str))
+    except Exception:
+        data = {}
+    try:
+        _AUTO_JOBS_FILE.parent.mkdir(parents=True, exist_ok=True)
+        tmp = _AUTO_JOBS_FILE.with_suffix(".tmp")
+        tmp.write_text(_json.dumps(data, ensure_ascii=False, default=str), encoding="utf-8")
+        tmp.replace(_AUTO_JOBS_FILE)
+    except Exception:
+        pass
+
+
+def _auto_jobs_load():
+    import json as _json
+    try:
+        data = _json.loads(_AUTO_JOBS_FILE.read_text(encoding="utf-8", errors="replace"))
+    except Exception:
+        return 0
+    if not isinstance(data, dict):
+        return 0
+    n = 0
+    with _auto_jobs_lock():
+        for jid, j in data.items():
+            if not isinstance(j, dict):
+                continue
+            if j.get("status") == "running":
+                j["status"] = "interrupted"
+                j["error"] = "服务重启/中断：后台任务未正常收尾"
+            _AUTO_JOBS[jid] = j
+            n += 1
+    return n
+
+
+def _auto_job_list(limit=20):
+    with _auto_jobs_lock():
+        rows = sorted(_AUTO_JOBS.values(), key=lambda x: x.get("ts") or 0, reverse=True)[:limit]
+    return [{"id": j.get("id"), "stage": j.get("stage"),
+             "status": j.get("status"), "ts": j.get("ts"),
+             "events": len(j.get("events") or []),
+             "result_keys": sorted((j.get("result") or {}).keys())
+             if isinstance(j.get("result"), dict) else [],
+             "error": j.get("error")} for j in rows]
 
 
 def _auto_job_get(jid, since=0):
@@ -1389,6 +1446,55 @@ def _auto_job_get(jid, since=0):
         return {"id": jid, "stage": j.get("stage"), "status": j.get("status"),
                 "events": evs[max(0, int(since)):], "next": len(evs),
                 "result": j.get("result"), "error": j.get("error")}
+
+
+def _eml_status():
+    import json as _json
+    from collections import Counter
+    root = Path(__file__).resolve().parent.parent
+    mem = root / "dgtf_memory"
+    def _jsonl(name, cap=2000):
+        p = mem / name
+        rows = []
+        if p.exists():
+            try:
+                for ln in p.read_text(encoding="utf-8", errors="replace").splitlines()[-cap:]:
+                    try:
+                        d = _json.loads(ln)
+                        if isinstance(d, dict):
+                            rows.append(d)
+                    except Exception:
+                        pass
+            except Exception:
+                pass
+        return p, rows
+    pb_path, pb = _jsonl("playbook.jsonl")
+    v2_path, v2 = _jsonl("v2_events.jsonl")
+    tasks = _jsonl("agent_tasks.jsonl")[1]
+    results = _jsonl("agent_results.jsonl")[1]
+    knowledge = _jsonl("agent_knowledge.jsonl")[1]
+    proposals = []
+    try:
+        proposals = [x for x in _list_proposals(300) if x]
+    except Exception:
+        pass
+    by_kind = Counter(str(x.get("kind") or "") for x in pb)
+    v2_kind = Counter(str(x.get("kind") or "") for x in v2)
+    return {
+        "ok": True,
+        "playbook": {"path": str(pb_path), "n": len(pb),
+                     "by_kind": dict(by_kind),
+                     "last": pb[-1] if pb else None},
+        "v2_shadow": {"path": str(v2_path), "n": len(v2),
+                      "by_kind": dict(v2_kind),
+                      "last": v2[-1] if v2 else None},
+        "agent": {"tasks": len(tasks), "results": len(results),
+                  "knowledge": len(knowledge), "proposals": len(proposals)},
+        "proposal_status": dict(Counter(str(x.get("status") or "") for x in proposals)),
+        "self_feedback": {"engine_module": True,
+                          "app_tasks": len(tasks),
+                          "app_proposals": len(proposals)},
+    }
 
 
 def _app_health():
@@ -1451,6 +1557,7 @@ def _app_health():
                    "max_tokens": flat.get("max_tokens")},
         "daemon": {"running": bool(daemon.get("running")), "pid": daemon.get("pid"),
                    "last_log": daemon.get("last_log")},
+        "eml": _eml_status(),
         "mapping": {
             "engine_layers": "→ /api/chats /api/tasks /api/outputs/layers",
             "EML_self_feedback": "→ /api/tasks 产物 + /api/agent/* + eML/反馈",
@@ -1786,6 +1893,13 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"profiles": _schedule_profiles()})
             except Exception as exc:
                 return self._json({"profiles": [], "error": str(exc)}, 500)
+        if p == "/api/agent/eml":
+            try:
+                return self._json(_eml_status())
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/agent/auto/jobs":
+            return self._json({"jobs": _auto_job_list()})
         if p == "/api/health":
             try:
                 return self._json(_app_health())
@@ -2700,6 +2814,12 @@ def main() -> int:
             print("  Agent 常驻启动失败：%s" % (_ads.get("error") or "未知"))
     except Exception as _e:
         print("  Agent 常驻启动异常（忽略）：%s" % _e)
+    try:
+        _nj = _auto_jobs_load()
+        if _nj:
+            print("  后台任务恢复：%d 条（运行中标记 interrupted）" % _nj)
+    except Exception as _e:
+        print("  后台任务恢复异常（忽略）：%s" % _e)
     srv = make_server(host, args.port, token=token, verbose=args.verbose)
     mock = "开" if os.environ.get("DGTF_APP_MOCK") == "1" else "关"
     print(f"元DGTF 应用已启动： http://127.0.0.1:{args.port}")
