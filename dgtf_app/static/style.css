@@ -1693,3 +1693,5 @@ body.stage-empty main.stage{padding-bottom:0}
 /* 状态行内部：灯 / 标签 / 值 左右间隔拉大 */
 .env-inline{display:inline-flex;align-items:center;gap:9px;white-space:nowrap}
 .env-inline .dot{margin-right:0;flex:0 0 auto}
+
+#view-agent .searchbar .ghost.on{border-color:rgba(63,185,80,.55);background:rgba(63,185,80,.14);color:#DFF7E4}

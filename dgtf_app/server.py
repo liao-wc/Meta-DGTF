@@ -372,6 +372,302 @@ def stop_agent_daemon(timeout: float = 4.0) -> dict:
     return {"ok": True, "stopped": True}
 
 
+# ── Autopilot：常驻开关 + 队列守卫 + 安全提案自动修复 ───────────────
+_AUTOPILOT = {
+    "thread": None, "stop": None, "lock": None,
+    "last_cycle": 0.0, "last_error": "", "last_spawn": 0.0,
+    "last_learn": 0.0, "last_scan": 0.0,
+}
+_AUTOPILOT_CFG_PATH = Path(__file__).resolve().parent.parent / "dgtf_memory" / "agent_autopilot.json"
+_AUTOPILOT_SAFE_CATS = {"agent_runtime", "docs", "verification", "process_gap", "quality_signal"}
+_AUTOPILOT_MANUAL_CATS = {"fact_correctness", "input_sanity", "probe_quality",
+                          "eml_experiment", "noise", "other"}
+
+
+def _autopilot_lock():
+    global _AUTOPILOT
+    if _AUTOPILOT.get("lock") is None:
+        import threading as _th
+        _AUTOPILOT["lock"] = _th.Lock()
+    return _AUTOPILOT["lock"]
+
+
+def _autopilot_cfg_load():
+    import json as _json
+    base = {"enabled": False, "interval": 120.0, "knowledge_every": 0,
+            "started_ts": 0, "last_cycle": 0, "last_learn": 0, "last_scan": 0}
+    try:
+        d = _json.loads(_AUTOPILOT_CFG_PATH.read_text(encoding="utf-8"))
+        if isinstance(d, dict):
+            base.update(d)
+    except Exception:
+        pass
+    return base
+
+
+def _autopilot_cfg_save(cfg):
+    import json as _json
+    try:
+        _AUTOPILOT_CFG_PATH.parent.mkdir(parents=True, exist_ok=True)
+        _AUTOPILOT_CFG_PATH.write_text(
+            _json.dumps(cfg, ensure_ascii=False, indent=1), encoding="utf-8")
+    except Exception:
+        pass
+
+
+def _autopilot_decision(prop):
+    """返回 (auto: bool, reason)。只对 pending 做初判；confirmed 视为人工已确认。"""
+    st = str(prop.get("status") or "")
+    if st == "confirmed":
+        return True, "already_confirmed"
+    tri = prop.get("triage") or {}
+    cat = str(tri.get("category") or "other")
+    prio = str(tri.get("priority") or "P2")
+    plan = str(prop.get("plan") or "")
+    if cat in _AUTOPILOT_MANUAL_CATS:
+        return False, "manual_category:" + cat
+    if prio == "P0":
+        return False, "manual_priority:P0"
+    if cat not in _AUTOPILOT_SAFE_CATS:
+        return False, "manual_unknown_category"
+    if len(plan) < 80 or not any(k in plan for k in
+                                ("文件", "验证", "测试", "fast_gate", "验收", "test")):
+        return False, "manual_plan_too_weak"
+    return True, "safe_auto"
+
+
+def _autopilot_knowledge(prop):
+    """自动修复前检索相关技术知识；结果作为学习材料拼进修复提示。"""
+    import time as _t
+    key = (str(prop.get("id") or "")[:80] + "|" +
+           str((prop.get("task") or {}).get("title") or "")[:80])
+    cache = getattr(_autopilot_knowledge, "_cache", {})
+    hit = cache.get(key)
+    if hit and _t.time() - hit[0] < 1800:
+        return hit[1]
+    try:
+        r = _knowledge_agent_search(
+            [str((prop.get("task") or {}).get("title") or "元DGTF 技术优化") + " 最佳实践"],
+            mode="query", limit=2)
+        items = list(r.get("items") or [])
+        lines = []
+        for x in items[:2]:
+            t = str(x.get("title") or "").strip()
+            c = str(x.get("claim") or x.get("content") or "").strip()
+            u = str(x.get("url") or "").strip()
+            if t or c:
+                lines.append("- %s：%s %s" % (t or "资料", c[:500], u))
+        text = ("\n\n【自动学习材料（来自技术知识库/联网检索）】\n"
+                + "\n".join(lines)) if lines else ""
+    except Exception as exc:
+        text = ""
+        _AUTOPILOT["last_error"] = "learn: %s" % exc
+    cache[key] = (_t.time(), text)
+    _autopilot_knowledge._cache = cache
+    return text
+
+
+def _autopilot_spawn_proposal():
+    """从队列挑一条尚未提案的任务，交给 DSH Agent 读项目后生成修复提案。"""
+    import time as _t
+    try:
+        sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+        from dgtf_v2.agent_bridge import read_tasks
+        tasks = [x for x in read_tasks(limit=80) if x.get("title")]
+        if not tasks:
+            return None
+        have = {str((p.get("task") or {}).get("title") or "").strip()
+                for p in _list_proposals(300)}
+        task = next((x for x in reversed(tasks)
+                     if str(x.get("title") or "").strip() not in have), None)
+        if not task:
+            return None
+        ttl = str(task.get("title") or "").strip()[:160]
+        detail = str(task.get("detail") or "")[:1600]
+        res = _auto_proposal(task_text=detail, title=ttl, model="deepseek-flash")
+        _AUTOPILOT["last_spawn"] = _t.time()
+        return res.get("proposal") if isinstance(res, dict) else None
+    except Exception as exc:
+        _AUTOPILOT["last_error"] = "spawn: %s" % exc
+        return None
+
+
+def _autopilot_learn():
+    """常驻期学习：检索当前技术知识，供修复时复用。"""
+    import time as _t
+    try:
+        _knowledge_agent_search(
+            ["LLM agent 自我修复 代码优化 2026 官方",
+             "元DGTF 调度 记忆 RAG 最佳实践"],
+            mode="refresh", limit=3)
+        _AUTOPILOT["last_learn"] = _t.time()
+        _AUTOPILOT["last_error"] = ""
+    except Exception as exc:
+        _AUTOPILOT["last_error"] = "learn: %s" % exc
+
+
+def _autopilot_scan():
+    """常驻期自主审视项目：让 DSH Agent 读项目后生成优化提案（不直接改）。"""
+    import time as _t
+    try:
+        title = "自主审视与优化提案 " + _t.strftime("%Y-%m-%d %H:%M")
+        _auto_proposal(
+            task_text=("请审视当前元DGTF项目（源码、配置、docs、outputs 与最近质量问题），"
+                       "结合技术知识库/近期技术趋势，给出 1-3 条可验证的优化或更新提案；"
+                       "必须读取项目文件核对，不要直接修改源码。"),
+            title=title, model="deepseek-flash")
+        _AUTOPILOT["last_scan"] = _t.time()
+    except Exception as exc:
+        _AUTOPILOT["last_error"] = "scan: %s" % exc
+
+
+def _autopilot_cycle():
+    """一轮常驻：安全提案自动确认并修复；不确定项留人工。"""
+    if not _autopilot_cfg_load().get("enabled", True):
+        return
+    import time as _t
+    props = [p for p in _list_proposals(300)
+             if str(p.get("status")) in ("pending", "confirmed")]
+    # 1) 安全 pending 自动确认；不确定的保留人工
+    for p in props:
+        if str(p.get("status")) != "pending":
+            continue
+        auto, reason = _autopilot_decision(p)
+        tri = p.get("triage") or {}
+        tri["auto_decision"] = "auto" if auto else "manual"
+        tri["auto_reason"] = reason
+        p["triage"] = tri
+        if auto:
+            p["status"] = "confirmed"
+            p["approver"] = "autopilot"
+            import time as _tt
+            p["approved_ts"] = _tt.time()
+        _save_proposal(p)
+    # 2) 只修 confirmed；自动修复内部仍会 fast_gate + 针对性验收
+    confirmed = [p for p in _list_proposals(300)
+                 if str(p.get("status")) == "confirmed"]
+    if confirmed:
+        lk = _autopilot_lock()
+        if lk.acquire(blocking=False):
+            try:
+                _autofix_workflow({"autopilot": True, "model": "deepseek-flash"},
+                                  lambda _m: None)
+                _AUTOPILOT["last_cycle"] = _t.time()
+            finally:
+                lk.release()
+    # 3) 每 30 分钟尝试一次从队列自发提案；每 6 小时学习/审视一次
+    now = _t.time()
+    if now - float(_AUTOPILOT.get("last_spawn") or 0) > 21600:
+        _autopilot_spawn_proposal()
+    if now - float(_AUTOPILOT.get("last_learn") or 0) > 21600:
+        _autopilot_learn()
+    if now - float(_AUTOPILOT.get("last_scan") or 0) > 21600:
+        _autopilot_scan()
+
+
+def _autopilot_loop():
+    import time as _t
+    stop = _AUTOPILOT.get("stop")
+    while stop is not None and not stop.is_set():
+        try:
+            _autopilot_cycle()
+        except Exception as exc:
+            _AUTOPILOT["last_error"] = "%s: %s" % (type(exc).__name__, exc)
+        try:
+            stop.wait(max(15.0, float(_autopilot_cfg_load().get("interval") or 120)))
+        except Exception:
+            _t.sleep(60)
+
+
+def _autopilot_status():
+    cfg = _autopilot_cfg_load()
+    d = agent_daemon_status()
+    th = _AUTOPILOT.get("thread")
+    return {
+        "enabled": bool(cfg.get("enabled", True)),
+        "thread_running": bool(th is not None and th.is_alive()),
+        "daemon": d,
+        "interval": cfg.get("interval", 120),
+        "knowledge_every": cfg.get("knowledge_every", 0),
+        "last_cycle": _AUTOPILOT.get("last_cycle") or cfg.get("last_cycle") or 0,
+        "last_error": _AUTOPILOT.get("last_error", ""),
+        "started_ts": cfg.get("started_ts") or 0,
+        "policy": {
+            "auto_categories": sorted(_AUTOPILOT_SAFE_CATS),
+            "human_categories": sorted(_AUTOPILOT_MANUAL_CATS),
+            "high_risk_manual": True,
+            "requires_fast_gate": True,
+            "requires_acceptance": True,
+        },
+    }
+
+
+def _autopilot_start(interval=None, knowledge_every=None, start_daemon=True):
+    import threading as _th
+    import time as _t
+    cfg = _autopilot_cfg_load()
+    if interval is not None:
+        cfg["interval"] = float(interval)
+    if knowledge_every is not None:
+        cfg["knowledge_every"] = int(knowledge_every)
+    cfg["enabled"] = True
+    cfg["started_ts"] = cfg.get("started_ts") or _t.time()
+    _autopilot_cfg_save(cfg)
+    try:
+        _paths = _agent_daemon_paths()
+        for _sp in (_paths["stop"], _paths["root"] / "dgtf_memory" / "agent_daemon.stop"):
+            _sp.unlink(missing_ok=True)
+    except Exception:
+        pass
+    # 启动后先跑队列/修复；自发提案、学习、审视不要立刻烧 API，等首个周期。
+    now = _t.time()
+    if not _AUTOPILOT.get("last_spawn"):
+        _AUTOPILOT["last_spawn"] = now
+    if not _AUTOPILOT.get("last_learn"):
+        _AUTOPILOT["last_learn"] = now
+    if not _AUTOPILOT.get("last_scan"):
+        _AUTOPILOT["last_scan"] = now
+    st = start_agent_daemon(float(cfg.get("interval") or 120),
+                            int(cfg.get("knowledge_every") or 0)) if start_daemon else {}
+    th = _AUTOPILOT.get("thread")
+    if th is None or not th.is_alive():
+        stop = _th.Event()
+        _AUTOPILOT["stop"] = stop
+        th = _th.Thread(target=_autopilot_loop, daemon=True)
+        _AUTOPILOT["thread"] = th
+        th.start()
+    return _autopilot_status() | {"ok": True, "daemon_start": st}
+
+
+def _autopilot_stop():
+    import time as _t
+    cfg = _autopilot_cfg_load()
+    cfg["enabled"] = False
+    _autopilot_cfg_save(cfg)
+    stop = _AUTOPILOT.get("stop")
+    if stop is not None:
+        stop.set()
+    _AUTOPILOT["thread"] = None
+    _AUTOPILOT["stop"] = None
+    try:
+        paths = _agent_daemon_paths()
+        # 让 app 拉起的实例和外部复用的实例都收到停止信号
+        for sp in (paths["stop"], paths["root"] / "dgtf_memory" / "agent_daemon.stop"):
+            try:
+                sp.write_text("stop", encoding="utf-8")
+            except Exception:
+                pass
+        # 停止文件保留到下次开启：外部/手工启动的实例也能在下一轮看到并退出。
+        time.sleep(0.8)
+    except Exception:
+        pass
+    try:
+        stop_agent_daemon()
+    except Exception:
+        pass
+    return _autopilot_status() | {"ok": True, "stopped": True}
+
+
 def _git(args, timeout=60, stdin_text=None, limit=4000):
     import subprocess as _sp
     root = Path(__file__).resolve().parent.parent
@@ -1361,6 +1657,7 @@ def _auto_proposal(task_text="", title="", emit=None, model=""):
     prop = _save_proposal({"id": pid, "ts": _tm.time(), "task": t,
                            "plan": str(res.get("text") or ""),
                            "session_id": res.get("session_id") or "",
+                           "conversation_id": res.get("conversation_id") or "",
                            "status": "pending", "approver": "",
                            "events": list(res.get("events") or [])[-50:]})
     return {"ok": bool(res.get("ok")), "proposal": prop}
@@ -2163,6 +2460,25 @@ def _auto_job_start(stage, data):
 
 def _autofix_workflow(data, write):
     import time as _t
+    # ★ 自动修复前先做风险分流：
+    #   拿得准的 pending 自动确认；高风险/弱计划保留 pending 等人工。
+    manual = []
+    for p in _list_proposals(300):
+        if str(p.get("status")) != "pending":
+            continue
+        auto, reason = _autopilot_decision(p)
+        tri = p.get("triage") or {}
+        tri["auto_decision"] = "auto" if auto else "manual"
+        tri["auto_reason"] = reason
+        p["triage"] = tri
+        if auto:
+            p["status"] = "confirmed"
+            p["approver"] = "autopilot"
+            p["approved_ts"] = _t.time()
+        else:
+            manual.append({"id": p.get("id"), "reason": reason,
+                           "title": (p.get("task") or {}).get("title")})
+        _save_proposal(p)
     confs = [x for x in _list_proposals(300) if x.get("status") == "confirmed"]
     done = []
     for prop in confs:
@@ -2172,8 +2488,15 @@ def _autofix_workflow(data, write):
         def _emit_fix(ev, _pid=pid):
             write({"type": "event", "stage": "proposal:" + _pid, "event": ev})
 
+        learn = ""
+        if _autopilot_cfg_load().get("enabled", True):
+            try:
+                learn = _autopilot_knowledge(prop)
+            except Exception:
+                learn = ""
         prompt = ("按以下已确认提案执行修复：" + str(prop.get("plan") or "")
-                  + "。修改后运行 fast_gate.py，通过后只提交本次变更，不 push。")
+                  + "。修改后运行 fast_gate.py，通过后只提交本次变更，不 push。"
+                  + learn)
         try:
             res = _run_dsh_agent(prompt, str(prop.get("session_id") or ""),
                                  timeout=600, auto_repair=True,
@@ -2184,8 +2507,11 @@ def _autofix_workflow(data, write):
         repair = res.get("repair") or {}
         prop["approver"] = "dsh_auto"
         prop["approved_ts"] = _t.time()
+        cid = str(res.get("conversation_id") or "")
+        prop["conversation_id"] = cid
         prop["result"] = {"ok": res.get("ok"), "gate": res.get("gate"),
-                          "repair": repair}
+                          "repair": repair, "conversation_id": cid,
+                          "autopilot": bool((data or {}).get("autopilot"))}
         if repair.get("committed"):
             write({"type": "stage", "stage": "acceptance:" + pid})
             acc = _targeted_acceptance(repair.get("changed") or [])
@@ -2210,7 +2536,8 @@ def _autofix_workflow(data, write):
         write({"type": "proposal_result", "proposal": prop})
     ok = all((x.get("status") == "applied") for x in done) if done else False
     write({"type": "result", "result": {"ok": ok, "proposals": done,
-                                        "count": len(done)}})
+                                        "count": len(done),
+                                        "manual_pending": manual}})
 
 
 def _autofix_job_start(data):
@@ -4790,6 +5117,15 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(_git_status())
         if p == "/api/agent/daemon":
             return self._json(agent_daemon_status())
+        if p == "/api/agent/autopilot":
+            st = _autopilot_status()
+            if st.get("enabled") and not st.get("thread_running"):
+                try:
+                    _autopilot_start(start_daemon=False)
+                    st = _autopilot_status()
+                except Exception:
+                    pass
+            return self._json(st)
         if p == "/api/agent/results":
             try:
                 import sys as _sys
@@ -5333,6 +5669,14 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"ok": bool(res.get("ok")), "proposal": prop})
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/agent/autopilot":
+            data = self._read_json()
+            if bool(data.get("enabled")):
+                out = _autopilot_start(interval=data.get("interval"),
+                                       knowledge_every=data.get("knowledge_every"))
+            else:
+                out = _autopilot_stop()
+            return self._json(out)
         if p == "/api/dsh/proposals/autofix/start":
             data = self._read_json()
             jid = _autofix_job_start(data)
@@ -5809,11 +6153,12 @@ def main() -> int:
         print(f"  回填中断任务失败（忽略）：{type(e).__name__}: {e}")
 
     try:
-        _ads = start_agent_daemon(interval=60.0)
-        if _ads.get("running"):
-            print("  Agent 常驻：运行中（pid=%s）" % (_ads.get("pid") or "复用"))
-        else:
-            print("  Agent 常驻启动失败：%s" % (_ads.get("error") or "未知"))
+        if _autopilot_cfg_load().get("enabled", True):
+            _ads = start_agent_daemon(interval=60.0)
+            if _ads.get("running"):
+                print("  Agent 常驻：运行中（pid=%s）" % (_ads.get("pid") or "复用"))
+            else:
+                print("  Agent 常驻启动失败：%s" % (_ads.get("error") or "未知"))
     except Exception as _e:
         print("  Agent 常驻启动异常（忽略）：%s" % _e)
     try:
@@ -5872,7 +6217,7 @@ def main() -> int:
     # ★ 常驻 Agent：app 启动即确保 agent_daemon 在跑（已有实例则复用）。
     #   只消费本地队列、写提案；不联网、不调 LLM。可用 --no-agent-daemon 关闭。
     daemon_started = None
-    if not args.no_agent_daemon:
+    if not args.no_agent_daemon and _autopilot_cfg_load().get("enabled", True):
         try:
             st = start_agent_daemon(args.agent_interval,
                                     args.agent_knowledge_every)
@@ -5888,6 +6233,11 @@ def main() -> int:
                 print(f"  Agent 守护未启动：{st.get('error')}")
         except Exception as e:  # noqa: BLE001    守护起不来不该拖垮 app
             print(f"  Agent 守护启动失败（忽略）：{type(e).__name__}: {e}")
+        try:
+            _autopilot_start(start_daemon=False)
+            print("  Autopilot：已启用（安全提案自动修复，高风险留人工）")
+        except Exception as e:  # noqa: BLE001
+            print(f"  Autopilot 启动失败（忽略）：{type(e).__name__}: {e}")
 
     print("  Ctrl+C 停止")
     try:

@@ -3442,6 +3442,7 @@ let agentDsh = [];
 let agentDshArt = [];
 let agentProps = [];
 let agentPropSummary = null;
+let agentAutopilot = null;
 let agentLastRun = null;
 let agentV2 = null;
 let agentPareto = null;
@@ -3727,6 +3728,8 @@ function agentRenderProps() {
       + (x.artifact ? '<span>产物 ' + esc(String(x.artifact).split('\\').pop()) + '</span>' : '')
       + (x.expired_reason ? '<span>过期：' + esc(x.expired_reason) + '</span>' : '')
       + (tri.reason ? '<span>分诊：' + esc(tri.reason) + '</span>' : '')
+      + (tri.auto_decision ? '<span>路由：' + esc(tri.auto_decision === 'auto' ? '自动修复' : '人工确认') + '</span>' : '')
+      + (x.conversation_id ? '<span>对话 ' + esc(x.conversation_id) + '</span>' : '')
       + '</div>'
       + '<div class="agent-q">' + esc(String(x.plan || '').slice(0, 300)) + '</div>'
       + '<div class="prop-actions">' + acts + '</div></div>';
@@ -3901,7 +3904,23 @@ function agentRenderConsistency() {
   box.innerHTML = html;
 }
 
+function agentRenderAutopilot() {
+  const b = $('#agent-autopilot-btn');
+  if (!b) return;
+  const on = !!(agentAutopilot && agentAutopilot.enabled);
+  b.textContent = '常驻守护：' + (on ? '开' : '关');
+  b.classList.toggle('on', on);
+  b.dataset.tip = on
+    ? '常驻队列守卫运行中：安全提案自动修复，高风险/不确定项留人工确认'
+    : '开启常驻：自动消费队列、分诊并修复安全提案；高风险留人工';
+  const d = (agentAutopilot && agentAutopilot.daemon) || {};
+  b.title = '';
+  b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  if (on && d.running === false) b.textContent = '常驻守护：启动中…';
+}
+
 function agentRenderAll() {
+  agentRenderAutopilot();
   agentRenderTasks();
   agentRenderResults();
   agentRenderKnowledge();
@@ -3921,13 +3940,14 @@ async function loadAgent() {
   if (resBox) resBox.innerHTML = agentEmpty('读取中…');
   const knBox = $('#agent-knowledge');
   if (knBox) knBox.innerHTML = agentEmpty('读取中…');
-  const [t, r, k, ds, da, pr, v2, pa, vab, vpar, con, mdl, llm] = await Promise.all([
+  const [t, r, k, ds, da, pr, ap, v2, pa, vab, vpar, con, mdl, llm] = await Promise.all([
     api('/api/agent/tasks').catch(e => ({ tasks: [], error: e.message })),
     api('/api/agent/results').catch(e => ({ results: [], error: e.message })),
     api('/api/agent/knowledge').catch(e => ({ items: [], error: e.message })),
     api('/api/dsh/sessions').catch(e => ({ sessions: [], error: e.message })),
     api('/api/dsh/artifacts').catch(e => ({ artifacts: [], error: e.message })),
     api('/api/dsh/proposals').catch(e => ({ proposals: [], error: e.message })),
+    api('/api/agent/autopilot').catch(e => ({ enabled: false, error: e.message })),
     api('/api/schedule/v2').catch(e => ({ n: 0, error: e.message })),
     api('/api/schedule/pareto?prefer=' + encodeURIComponent((document.querySelector('#pareto-prefer') || {}).value || 'balanced')).catch(e => ({ ok: false, error: e.message })),
     api('/api/schedule/v2/ab?all=1').catch(e => ({ ok: false, error: e.message })),
@@ -3943,6 +3963,7 @@ async function loadAgent() {
   agentDshArt = (da && da.artifacts) || [];
   agentProps = (pr && pr.proposals) || [];
   agentPropSummary = (pr && pr.summary) || null;
+  agentAutopilot = ap || null;
   agentV2 = v2 || null;
   agentPareto = pa || null;
   agentV2AB = vab || null;
@@ -4135,13 +4156,14 @@ async function resumeLastAutoJobNotice() {
 
 async function autoFixProposals() {
   const nConf = (agentProps || []).filter(x => x.status === 'confirmed').length;
-  if (!nConf) {
+  const nPend = (agentProps || []).filter(x => x.status === 'pending').length;
+  if (!nConf && !nPend) {
     const m = document.querySelector('#agent-msg');
-    if (m) m.textContent = '没有已确认待修复的提案';
+    if (m) m.textContent = '没有待修复的提案';
     return;
   }
-  showAutoDsh('自动修复提案 · ' + nConf + ' 条已确认', [
-    {type:'text', text:'DSH Agent 开始自动代理修复 ' + nConf + ' 条已确认提案…'}
+  showAutoDsh('自动修复提案 · ' + (nConf + nPend) + ' 条待处理', [
+    {type:'text', text:'DSH Agent 先分流：拿得准的安全提案自动修复；高风险/弱计划保留人工确认。'}
   ], 'running');
   let final = null, errMsg = '';
   try {
@@ -4187,7 +4209,7 @@ async function autoFixProposals() {
     }
     if (!final) throw new Error(errMsg || '没有返回结果');
     const ps = final.proposals || [];
-    dshCurrent.events.push({type:'text', text:'自动修复完成：' + ps.filter(p => p.status === 'applied').length + ' 条已应用 / ' + ps.filter(p => p.status !== 'applied').length + ' 条失败'});
+    dshCurrent.events.push({type:'text', text:'自动修复完成：' + ps.filter(p => p.status === 'applied').length + ' 条已应用 / ' + ps.filter(p => p.status !== 'applied').length + ' 条失败；待人工确认 ' + ((final.manual_pending || []).length) + ' 条'});
     dshCurrent.status = final.ok ? 'done' : 'error';
     dshCurrent.question = '自动修复提案 · 完成';
     renderDshView();
@@ -4870,6 +4892,29 @@ function init() {
   });
   const _agentRefresh = $('#agent-refresh');
   if (_agentRefresh) _agentRefresh.addEventListener('click', loadAgent);
+  const _apBtn = $('#agent-autopilot-btn');
+  if (_apBtn) _apBtn.addEventListener('click', async () => {
+    const enable = !(agentAutopilot && agentAutopilot.enabled);
+    _apBtn.disabled = true;
+    _apBtn.textContent = '常驻守护：切换中…';
+    try {
+      const r = await api('/api/agent/autopilot', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({enabled: enable, interval: 120, knowledge_every: 0}),
+      });
+      agentAutopilot = r || {};
+      agentRenderAutopilot();
+      const msg = $('#agent-msg');
+      if (msg) msg.textContent = enable ? '常驻守护已开启：安全提案会自动修复，高风险留人工' : '常驻守护已关闭';
+      loadAgent();
+    } catch (e) {
+      const msg = $('#agent-msg');
+      if (msg) msg.textContent = '常驻切换失败：' + e.message;
+      agentRenderAutopilot();
+    } finally {
+      _apBtn.disabled = false;
+    }
+  });
   const _v2Prefer = $('#pareto-prefer');
   if (_v2Prefer) _v2Prefer.addEventListener('change', async function () {
     const st = document.querySelector('#v2-auto-status');
