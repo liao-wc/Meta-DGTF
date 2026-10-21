@@ -2780,9 +2780,9 @@ async function loadConfig() {
     const nBack = backs.filter(b => b.ok).length;
     const agentOk = !!(checks.dsh_headless && (checks.agent_daemon || (h.daemon || {}).running));
     const line = (label, value, ok) =>
-      '<span class="dot ' + (ok ? 'ok' : 'no') + '"></span>' +
+      '<span class="env-inline"><span class="dot ' + (ok ? 'ok' : 'no') + '"></span>' +
       '<span class="env-k">' + esc(label) + '</span> ' +
-      '<span class="env-v">' + value + '</span><br>';
+      '<span class="env-v">' + value + '</span></span><br>';
     $('#env-info').innerHTML =
       line('引擎', '<b class="mono">' + esc(c.engine) + '</b>', true) +
       line('DeepSeek', '<b>' + (k.api_key ? '已配置' : '缺 key') + '</b>', !!k.api_key) +
