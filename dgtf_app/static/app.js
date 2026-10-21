@@ -1542,7 +1542,10 @@ function renderDshHistory() {
   list.innerHTML = dshChats.map(function (c) {
     const on = c.id === dshConversationId ? ' on' : '';
     const st = c.running ? 'running' : (c.stale ? 'stale' : (c.last_status || 'done'));
-    const stLabel = c.running ? '运行中' : (c.stale ? '中断' : (c.last_status === 'error' ? '失败' : '完成'));
+    const _ls = String(c.last_status || '');
+    const stLabel = c.running ? '运行中' :
+      ((c.stale || _ls === 'interrupted' || _ls === 'canceled') ? '中断' :
+        (_ls === 'error' ? '失败' : '完成'));
     return '<div class="dsh-chat-item' + on + '" data-dsh-chat="' + esc(c.id) + '">'
       + '<div class="dsh-chat-top"><span class="dsh-chat-id">' + esc(c.id) + '</span>'
       + '<span class="dsh-chat-st ' + esc(st === 'running' ? 'running' : '') + '">' + esc(stLabel) + '</span></div>'
@@ -1620,10 +1623,11 @@ function renderDshConversationView() {
   document.body.classList.add('stage-run');
   const turns = c.turns || [];
   const busy = turns.some(t => t.status === 'queued' || t.status === 'running');
+  const interrupted = turns.some(t => ['interrupted', 'canceled', 'error'].includes(t.status));
   const bd = document.querySelector('#rl-badge');
   if (bd) {
-    bd.className = 'badge ' + (busy ? 'running' : 'done');
-    bd.textContent = busy ? '运行中' : '完成';
+    bd.className = 'badge ' + (busy ? 'running' : (interrupted ? 'done' : 'done'));
+    bd.textContent = busy ? '运行中' : (interrupted ? '中断/异常' : '完成');
   }
   const q = document.querySelector('#rl-question');
   if (q) q.textContent = 'DSH Agent 会话 · ' + (c.id || '');
@@ -3736,7 +3740,9 @@ function agentRenderDsh() {
   box.innerHTML = _activeFirst(agentDsh, x => !!x.running, x => _agentTs({ts: x.updated_at || x.created_at})).slice(0, 30).map(function (x) {
     const when = fmtTs(x.updated_at || x.created_at);
     const st = String(x.last_status || '');
-    const label = x.running ? '运行中' : (x.stale ? '中断' : (st === 'error' ? '失败' : (st === 'queued' ? '排队' : '完成')));
+    const label = x.running ? '运行中' :
+      ((x.stale || st === 'interrupted' || st === 'canceled') ? '中断' :
+        (st === 'error' ? '失败' : (st === 'queued' ? '排队' : '完成')));
     return '<div class="agent-item agent-dsh-item" data-dsh-chat="' + esc(x.id || '') + '">'
       + '<div class="agent-row"><span class="chip">DSH</span>'
       + '<span class="chip' + (x.running ? ' gh-bad' : '') + '">' + esc(label) + '</span>'
@@ -4050,6 +4056,15 @@ function _activeFirst(items, isActive, tsFn) {
     const bb = isActive && isActive(b) ? 0 : 1;
     return (aa - bb) || ((tsFn || _agentTs)(b) - (tsFn || _agentTs)(a));
   });
+}
+
+async function refreshAgentDshLive() {
+  if (!document.querySelector('#view-agent.active')) return;
+  try {
+    const r = await api('/api/dsh/chats');
+    agentDsh = (r && r.chats) || [];
+    agentRenderDsh();
+  } catch (_) {}
 }
 
 function agentRenderAll() {
@@ -4797,6 +4812,7 @@ function init() {
   pollLanes();
   setInterval(pollLanes, 1500);
   loadConfig();
+  setInterval(refreshAgentDshLive, 3000);
   // 侧栏状态实时刷新（30s；页面隐藏时不跑）
   setInterval(() => { if (document.visibilityState !== 'hidden') loadConfig(); }, 30000);
   loadFacets();

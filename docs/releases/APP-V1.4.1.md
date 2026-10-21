@@ -78,7 +78,8 @@
 - 提案新增“不修复”和“已另行处理”：分别标记 rejected / superseded，保留原因、时间和会话；已关闭提案不再自动修复。用户分析后决定不修，或让 DSH 自定义修复后，点“已另行处理”即可关闭原提案。
 - rejected/superseded 提案支持“重新打开”：恢复 pending、刷新 ts 参与最新排序，并在 reopen_history 保留上次关闭原因/时间；静态资源 v=1.4.74。
 - DSH 会话库改用实时 conversations：正在运行的会话即时可见（运行中/排队/中断/完成/失败），修复 DSH 会话在 Agent 面板只显示“已完成 runs”、运行中缺失/状态错误的问题；运行事件每秒热存，点会话可直接续聊。
-- 会话切换加固：切换时先停旧轮询、关闭面板、清空旧视图；旧会话的异步响应/轮询不能覆盖新会话；静态资源 v=1.4.75。
+- 会话切换加固：切换时先停旧轮询、关闭面板、清空旧视图；旧会话的异步响应/轮询不能覆盖新会话；静态资源 v=1.4.76。
+- 运行中会话可见性/状态：启动时 reconcile 遗留 queued/running 为 interrupted；会话列表和快照发现无 worker 的 running 自动改 interrupted；Agent 面板 DSH 会话每 3 秒实时刷新；状态明确显示 运行中/排队/中断/完成/失败，不再把中断显示成运行中或完成。
 - 失败提案处理：卡片显示失败原因；提供“重新打开/重试修复”“不修复”“已另行处理”；重开会把上次 result/acceptance/security/attempts 存入 last_failure，状态恢复 pending，重新走安全评估。rejected/superseded/failed/rolled_back 都可重新打开。
 - 自学习真实验收：手动触发生成 prop-1792620206762（自学习标记，方案含 server.py 与根目录清理），分诊 docs/P2，安全评估因 sensitive_term:server.py 判定人工确认，未自动提交。静态资源 v=1.4.69。
 - Agent 面板刷新改为刷新全部库（队列/结果/知识/DSH会话/DSH产物/提案/运行/V2/审计/资料库/联网库）；

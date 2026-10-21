@@ -3033,9 +3033,29 @@ def _conv_enqueue(cid, task, settings=None):
     return conv, turn
 
 
+def _conv_mark_stale(conv):
+    """服务进程里没有 worker 的 queued/running 会话统一标 interrupted。"""
+    import time as _t
+    changed = False
+    for turn in conv.get("turns") or []:
+        if str(turn.get("status")) in ("queued", "running"):
+            turn["status"] = "interrupted"
+            changed = True
+    if changed:
+        conv["updated_at"] = _t.time()
+    return changed
+
+
 def _conv_snapshot(cid):
     with _conv_lock():
         conv = _DSH_CONV.get(cid) or _conv_load(cid)
+        if conv:
+            busy = any(str(t.get("status")) in ("queued", "running")
+                       for t in (conv.get("turns") or []))
+            if busy and cid not in _DSH_CONV_ACTIVE:
+                if _conv_mark_stale(conv):
+                    _DSH_CONV[cid] = conv
+                    _conv_save(conv)
     return conv
 
 
@@ -3072,8 +3092,17 @@ def _conv_list(limit=50):
             except Exception:
                 continue
             turns = c.get("turns") or []
+            _cid = c.get("id") or p.stem
             _busy = any(str(t.get("status")) in ("queued", "running") for t in turns)
-            _active = (c.get("id") or p.stem) in _DSH_CONV_ACTIVE
+            _active = _cid in _DSH_CONV_ACTIVE
+            if _busy and not _active:
+                _conv_mark_stale(c)
+                try:
+                    p.write_text(_json.dumps(c, ensure_ascii=False, indent=1), encoding="utf-8")
+                except Exception:
+                    pass
+                turns = c.get("turns") or []
+                _busy = False
             running = bool(_busy and _active)
             stale = bool(_busy and not _active)
             last = turns[-1] if turns else {}
@@ -7109,6 +7138,10 @@ def main() -> int:
             print("  后台任务恢复：%d 条（运行中标记 interrupted）" % _nj)
     except Exception as _e:
         print("  后台任务恢复异常（忽略）：%s" % _e)
+    try:
+        _conv_reconcile_on_start()
+    except Exception as _e:
+        print("  会话状态恢复异常（忽略）：%s" % _e)
     srv = make_server(host, args.port, token=token, verbose=args.verbose)
     mock = "开" if os.environ.get("DGTF_APP_MOCK") == "1" else "关"
     print(f"元DGTF 应用已启动： http://127.0.0.1:{args.port}")
