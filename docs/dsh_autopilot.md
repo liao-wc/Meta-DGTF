@@ -17,7 +17,7 @@ DSH Agent 面板的「常驻守护」开关：开启后由 app 管理队列守�
 
 ## 自动修复闭环
 1. 扫描 pending：安全项自动 confirmed；不确定项保留。
-2. 对 confirmed：DSH Agent 修复 → `fast_gate.py` → 本次变更提交 → 针对性验收。
+2. 对 confirmed：DSH Agent 修复 → `fast_gate.py` → 针对性验收 → **只有验收通过才提交**；失败则把失败输出回灌同一会话继续修（最多 3 轮），仍不过不提交。
 3. 自动检索技术知识，作为修复提示的学习材料（仅常驻开启时）。
 4. 每次 DSH 调用有 `dshrun-*` 会话，提案记录 `conversation_id`，可追溯。
 5. 自动修复串行执行，避免 git 冲突；DSH 会话可并发。

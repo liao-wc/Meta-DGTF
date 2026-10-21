@@ -1519,8 +1519,14 @@ def _run_dsh_agent_raw(task: str, sid: str = "", timeout: int = 300,
             out["gate"] = {"ok": g.returncode == 0,
                            "tail": ((g.stdout or "") + (g.stderr or ""))[-1200:]}
             if g.returncode == 0:
-                out["repair"] = _auto_commit(_before, task, _before_head,
-                                             _before_fp)
+                _changed = _changed_since(_before, _before_fp)
+                out["acceptance"] = _targeted_acceptance(_changed)
+                if out["acceptance"].get("ok"):
+                    out["repair"] = _auto_commit(_before, task, _before_head,
+                                                 _before_fp)
+                else:
+                    out["repair"] = {"committed": False, "changed": _changed,
+                                     "why": "针对性验收未通过，未提交"}
             else:
                 out["repair"] = {"committed": False, "why": "fast_gate 未通过"}
         except Exception as exc:
@@ -1703,6 +1709,97 @@ def _targeted_acceptance(changed):
             ok = False
             out.append({"name": cmd[2], "ok": False, "tail": str(exc)})
     return {"ok": ok, "checks": out}
+
+
+def _changed_since(before, before_fp=None):
+    """当前相对修复前快照的变更文件（含修复前已脏但内容再变的）。"""
+    after = _git_snapshot()
+    new = after - set(before or [])
+    if before_fp is not None:
+        cur = _git_fingerprints()
+        new = new | {p for p in (after & set(before_fp))
+                     if cur.get(p) != before_fp.get(p)}
+    return sorted(new)
+
+
+def _run_fast_gate():
+    import subprocess as _sp
+    import sys as _sys
+    root = Path(__file__).resolve().parent.parent
+    try:
+        g = _sp.run([_sys.executable, "fast_gate.py"], cwd=str(root),
+                    text=True, encoding="utf-8", errors="replace",
+                    capture_output=True, timeout=300)
+        return {"ok": g.returncode == 0,
+                "tail": ((g.stdout or "") + (g.stderr or ""))[-1600:]}
+    except Exception as exc:
+        return {"ok": False, "tail": str(exc)}
+
+
+def _repair_with_acceptance(prop, model="", emit=None, max_attempts=3,
+                            extra_context=""):
+    """修复 → fast_gate → 针对性验收；不通过就带着失败信息继续修，直到通过才提交。
+
+    关键：DSH 阶段 auto_repair=False，不提前 git commit；工作台验收通过后
+    才调用 _auto_commit。这样「验收不过」绝不会留下已提交的坏变更。
+    """
+    import time as _t
+    root = Path(__file__).resolve().parent.parent
+    before = _git_snapshot()
+    before_fp = _git_fingerprints()
+    before_head = (_git(["rev-parse", "HEAD"]).get("out") or "").strip()
+    plan = str(prop.get("plan") or "")
+    task = str(((prop.get("task") or {}).get("title")) or prop.get("id") or "")
+    sid = str(prop.get("session_id") or "")
+    convs, attempts = [], []
+    prompt = ("按以下已确认提案执行修复：" + plan +
+              "。先读取相关项目文件核对；修改后运行 fast_gate.py；"
+              "不要执行 git add / git commit / push；验收由工作台统一执行。"
+              + str(extra_context or ""))
+    last_gate, last_acc, last_repair = {}, {}, {}
+    for n in range(1, max(1, int(max_attempts)) + 1):
+        if emit is not None:
+            try:
+                emit({"type": "text", "text": "修复第 %d 轮：DSH 修改中…" % n})
+            except Exception:
+                pass
+        res = _run_dsh_agent(prompt, sid, timeout=600, auto_repair=False,
+                             model=str(model or ""), emit=emit)
+        sid = str(res.get("session_id") or sid)
+        if res.get("conversation_id"):
+            convs.append(str(res["conversation_id"]))
+        changed = _changed_since(before, before_fp)
+        last_gate = _run_fast_gate()
+        last_acc = _targeted_acceptance(changed) if changed else {
+            "ok": False, "checks": [{"name": "changed", "ok": False,
+                                     "tail": "本轮没有文件变更"}]}
+        attempts.append({"attempt": n, "changed": changed,
+                         "gate": last_gate, "acceptance": last_acc,
+                         "conversation_id": res.get("conversation_id")})
+        if last_gate.get("ok") and last_acc.get("ok"):
+            last_repair = _auto_commit(before, task, before_head, before_fp)
+            return {"ok": bool(last_repair.get("committed")),
+                    "gate": last_gate, "acceptance": last_acc,
+                    "repair": last_repair, "attempts": attempts,
+                    "conversation_ids": convs,
+                    "conversation_id": convs[-1] if convs else "",
+                    "session_id": sid, "events": list(res.get("events") or [])}
+        if not changed:
+            break
+        # 把失败原因回灌给同一个 DSH 会话继续修；仍不允许提交。
+        fail = ("上一轮未通过，必须继续修复；不要提交 git。\n"
+                "fast_gate：%s\n%s\n\n针对性验收：%s\n%s"
+                % ("PASS" if last_gate.get("ok") else "FAIL",
+                   str(last_gate.get("tail") or "")[-1200:],
+                   "PASS" if last_acc.get("ok") else "FAIL",
+                   json.dumps(last_acc.get("checks") or [], ensure_ascii=False)[-1600:]))
+        prompt = ("继续修复同一提案，直到工作台验收通过为止。\n" + fail +
+                  "\n\n提案：" + plan + str(extra_context or ""))
+    return {"ok": False, "gate": last_gate, "acceptance": last_acc,
+            "repair": {"committed": False, "why": "验收未通过，已停止且未提交"},
+            "attempts": attempts, "conversation_ids": convs,
+            "conversation_id": convs[-1] if convs else "",
+            "session_id": sid, "events": []}
 
 
 def _save_repair_artifact(prop, acceptance, version):
@@ -2494,41 +2591,36 @@ def _autofix_workflow(data, write):
                 learn = _autopilot_knowledge(prop)
             except Exception:
                 learn = ""
-        prompt = ("按以下已确认提案执行修复：" + str(prop.get("plan") or "")
-                  + "。修改后运行 fast_gate.py，通过后只提交本次变更，不 push。"
-                  + learn)
         try:
-            res = _run_dsh_agent(prompt, str(prop.get("session_id") or ""),
-                                 timeout=600, auto_repair=True,
-                                 model=str((data or {}).get("model") or ""),
-                                 emit=_emit_fix)
+            res = _repair_with_acceptance(
+                prop, model=str((data or {}).get("model") or ""),
+                emit=_emit_fix, max_attempts=3, extra_context=learn)
         except Exception as exc:
-            res = {"ok": False, "events": [], "text": "", "stderr": str(exc)}
+            res = {"ok": False, "gate": {}, "acceptance": {},
+                   "repair": {"committed": False, "why": str(exc)},
+                   "attempts": [], "conversation_ids": [], "conversation_id": ""}
         repair = res.get("repair") or {}
+        acc = res.get("acceptance") or {}
         prop["approver"] = "dsh_auto"
         prop["approved_ts"] = _t.time()
-        cid = str(res.get("conversation_id") or "")
-        prop["conversation_id"] = cid
+        prop["conversation_id"] = str(res.get("conversation_id") or "")
+        prop["conversation_ids"] = list(res.get("conversation_ids") or [])
+        prop["attempts"] = list(res.get("attempts") or [])
+        prop["acceptance"] = acc
         prop["result"] = {"ok": res.get("ok"), "gate": res.get("gate"),
-                          "repair": repair, "conversation_id": cid,
+                          "acceptance": acc, "repair": repair,
+                          "conversation_id": prop["conversation_id"],
+                          "conversations": prop["conversation_ids"],
                           "autopilot": bool((data or {}).get("autopilot"))}
-        if repair.get("committed"):
-            write({"type": "stage", "stage": "acceptance:" + pid})
-            acc = _targeted_acceptance(repair.get("changed") or [])
-            prop["acceptance"] = acc
-            write({"type": "event", "stage": "acceptance:" + pid,
-                   "event": {"type": "text",
-                             "text": "针对性验收：" + ("PASS" if acc.get("ok") else "FAIL")}})
-            if acc.get("ok"):
-                version = _next_repair_version()
-                prop["version"] = version
-                prop["status"] = "applied"
-                prop["artifact"] = _save_repair_artifact(prop, acc, version)
-            else:
-                if repair.get("commit_hash"):
-                    rv = _git(["revert", "--no-edit", repair["commit_hash"]])
-                    prop["rollback_on_fail"] = {"ok": rv.get("ok"), "err": rv.get("err")}
-                prop["status"] = "failed"
+        write({"type": "stage", "stage": "acceptance:" + pid})
+        write({"type": "event", "stage": "acceptance:" + pid,
+               "event": {"type": "text",
+                         "text": "针对性验收：" + ("PASS" if acc.get("ok") else "FAIL")}})
+        if repair.get("committed") and res.get("ok"):
+            version = _next_repair_version()
+            prop["version"] = version
+            prop["status"] = "applied"
+            prop["artifact"] = _save_repair_artifact(prop, acc, version)
         else:
             prop["status"] = "failed"
         _save_proposal(prop)
@@ -5788,17 +5880,29 @@ class Handler(BaseHTTPRequestHandler):
                 self._stream_write({"type": "event", "event": ev})
 
             try:
-                prompt = ("按以下已批准提案执行修复：" + str(prop.get("plan") or "")
-                          + "。修改后运行 fast_gate.py，通过后只提交本次变更，不 push。")
-                res = _run_dsh_agent(prompt, str(prop.get("session_id") or ""),
-                                     timeout=600, auto_repair=True, emit=_emit_appr)
-                prop["status"] = ("applied" if (res.get("repair") or {}).get("committed")
+                learn = _autopilot_knowledge(prop) if _autopilot_cfg_load().get("enabled", False) else ""
+                res = _repair_with_acceptance(prop, model="deepseek-flash",
+                                              emit=_emit_appr, max_attempts=3,
+                                              extra_context=learn)
+                repair = res.get("repair") or {}
+                prop["status"] = ("applied" if (repair.get("committed") and res.get("ok"))
                                   else "failed")
                 prop["approver"] = str(data.get("mode") or "user")
                 import time as _tm3
                 prop["approved_ts"] = _tm3.time()
+                prop["conversation_id"] = str(res.get("conversation_id") or "")
+                prop["conversation_ids"] = list(res.get("conversation_ids") or [])
+                prop["attempts"] = list(res.get("attempts") or [])
+                prop["acceptance"] = res.get("acceptance") or {}
                 prop["result"] = {"ok": res.get("ok"), "gate": res.get("gate"),
-                                  "repair": res.get("repair")}
+                                  "acceptance": res.get("acceptance"),
+                                  "repair": repair,
+                                  "conversation_id": prop["conversation_id"],
+                                  "conversations": prop["conversation_ids"]}
+                if prop["status"] == "applied":
+                    version = _next_repair_version()
+                    prop["version"] = version
+                    prop["artifact"] = _save_repair_artifact(prop, prop["acceptance"], version)
                 _save_proposal(prop)
                 self._stream_write({"type": "result",
                                     "result": {"ok": bool(res.get("ok")),
@@ -5815,17 +5919,28 @@ class Handler(BaseHTTPRequestHandler):
             prop = _get_proposal(pid)
             if not prop:
                 return self._json({"error": "proposal not found"}, 404)
-            prompt = ("按以下已批准提案执行修复：" + str(prop.get("plan") or "")
-                      + "。修改后运行 fast_gate.py，通过后只提交本次变更，不 push。")
-            res = _run_dsh_agent(prompt, str(prop.get("session_id") or ""),
-                                 timeout=600, auto_repair=True)
-            prop["status"] = ("applied" if (res.get("repair") or {}).get("committed")
+            learn = _autopilot_knowledge(prop) if _autopilot_cfg_load().get("enabled", False) else ""
+            res = _repair_with_acceptance(prop, model="deepseek-flash",
+                                          max_attempts=3, extra_context=learn)
+            repair = res.get("repair") or {}
+            prop["status"] = ("applied" if (repair.get("committed") and res.get("ok"))
                               else "failed")
             prop["approver"] = str(data.get("mode") or "user")
             import time as _tm2
             prop["approved_ts"] = _tm2.time()
+            prop["conversation_id"] = str(res.get("conversation_id") or "")
+            prop["conversation_ids"] = list(res.get("conversation_ids") or [])
+            prop["attempts"] = list(res.get("attempts") or [])
+            prop["acceptance"] = res.get("acceptance") or {}
             prop["result"] = {"ok": res.get("ok"), "gate": res.get("gate"),
-                              "repair": res.get("repair")}
+                              "acceptance": res.get("acceptance"),
+                              "repair": repair,
+                              "conversation_id": prop["conversation_id"],
+                              "conversations": prop["conversation_ids"]}
+            if prop["status"] == "applied":
+                version = _next_repair_version()
+                prop["version"] = version
+                prop["artifact"] = _save_repair_artifact(prop, prop["acceptance"], version)
             _save_proposal(prop)
             return self._json({"ok": bool(res.get("ok")), "proposal": prop,
                                "result": res})
