@@ -1766,6 +1766,10 @@ def _repair_with_acceptance(prop, model="", emit=None, max_attempts=3,
         res = _run_dsh_agent(prompt, sid, timeout=600, auto_repair=False,
                              model=str(model or ""), emit=emit)
         sid = str(res.get("session_id") or sid)
+        # 即使 DSH 自行提交，也先退回工作区（保留改动），验收通过后再统一提交。
+        _now_head = (_git(["rev-parse", "HEAD"]).get("out") or "").strip()
+        if before_head and _now_head and _now_head != before_head:
+            _git(["reset", "--mixed", before_head])
         if res.get("conversation_id"):
             convs.append(str(res["conversation_id"]))
         changed = _changed_since(before, before_fp)
@@ -1795,6 +1799,9 @@ def _repair_with_acceptance(prop, model="", emit=None, max_attempts=3,
                    json.dumps(last_acc.get("checks") or [], ensure_ascii=False)[-1600:]))
         prompt = ("继续修复同一提案，直到工作台验收通过为止。\n" + fail +
                   "\n\n提案：" + plan + str(extra_context or ""))
+    _now_head = (_git(["rev-parse", "HEAD"]).get("out") or "").strip()
+    if before_head and _now_head and _now_head != before_head:
+        _git(["reset", "--mixed", before_head])
     return {"ok": False, "gate": last_gate, "acceptance": last_acc,
             "repair": {"committed": False, "why": "验收未通过，已停止且未提交"},
             "attempts": attempts, "conversation_ids": convs,
