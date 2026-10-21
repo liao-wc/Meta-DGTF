@@ -1634,3 +1634,9 @@ body.stage-empty main.stage{padding-bottom:0}
 
 /* 状态标签统一白色 */
 .env .env-k{color:#fff}
+
+/* 侧栏状态：可用灯与标签统一蓝色；值统一为引擎值的白色等宽格式 */
+.env .env-k{color:#6EA8FE}
+.env .env-v{color:#fff;font-family:var(--f-mono);font-size:10.5px}
+.env .env-v b{color:#fff;font-family:var(--f-mono);font-size:10.5px}
+#env-info .dot.ok{background:#6EA8FE;box-shadow:0 0 0 3px rgba(110,168,254,.16),0 0 8px rgba(110,168,254,.65)}
