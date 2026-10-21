@@ -85,6 +85,7 @@
 - UI 自洽：移除被 CSP 拦截的 Google Fonts 外链，改本地 favicon；提案数量按“非过期”显示并标注总数；DSH 会话/产物不再只显示前30条，数量与列表一致；提案汇总增加“失败/可重试”计数；最终静态资源 v=1.4.82。
 - 资料库链路真测：导入/重复导入/列表/删除全通，删除路径穿越（../、绝对路径、Windows 路径）均 404，不会越界删除。
 - 前后端映射审计：新增任务/结果/知识/DSH 会话/提案字段契约与动作透明化钩子检查，依赖链审计 PASS 48 / FAIL 0。
+- 知识检索真跑：POST /api/agent/knowledge/agent-search（query=RAG 检索 引用 技术，limit=1）48.8 秒返回 1 条高质量结果并创建 dshknow 会话；知识检索/去重完成信息写入“最近动作”；静态资源 v=1.4.83。
 - 失败提案处理：卡片显示失败原因；提供“重新打开/重试修复”“不修复”“已另行处理”；重开会把上次 result/acceptance/security/attempts 存入 last_failure，状态恢复 pending，重新走安全评估。rejected/superseded/failed/rolled_back 都可重新打开。
 - 自学习真实验收：手动触发生成 prop-1792620206762（自学习标记，方案含 server.py 与根目录清理），分诊 docs/P2，安全评估因 sensitive_term:server.py 判定人工确认，未自动提交。静态资源 v=1.4.69。
 - Agent 面板刷新改为刷新全部库（队列/结果/知识/DSH会话/DSH产物/提案/运行/V2/审计/资料库/联网库）；

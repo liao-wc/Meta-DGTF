@@ -4676,9 +4676,11 @@ async function dedupeAgentKnowledge() {
       method: 'POST', headers: {'Content-Type': 'application/json'}, body: '{}'});
     if (msg) msg.textContent = '库去重完成：' + (r.before || 0) + ' → '
       + (r.after || 0) + '，移除重复 ' + (r.removed || 0) + ' 条';
+    agentLogAction('知识库去重', (r.before || 0) + ' → ' + (r.after || 0), true);
     await loadAgent();
   } catch (e) {
     if (msg) msg.textContent = '库去重失败：' + e.message;
+    agentLogAction('知识库去重', '失败：' + e.message, false);
   } finally {
     if (btn) btn.disabled = false;
   }
@@ -4701,6 +4703,7 @@ async function refreshAgentKnowledge(mode) {
     if (msg) msg.textContent = r.ok
       ? ('DSH 知识检索：筛选 ' + items.length + ' 条高质量结果，正在打开会话…')
       : ('知识检索失败：' + (r.error || '无高质量结果'));
+    agentLogAction('知识检索', r.ok ? ('筛选 ' + items.length + ' 条 · ' + String(r.conversation_id || '')) : ('失败：' + String(r.error || '无结果')), !!r.ok);
     await loadAgent();
     if (r && r.conversation_id) {
       closeSheet(); closeDrawer();
