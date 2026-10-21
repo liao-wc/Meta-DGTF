@@ -377,6 +377,8 @@ function onDdScroll(e) {
 
 function collectOpts() {
   const opts = {};
+  const _pareto = document.querySelector('#auto-pareto');
+  if (_pareto && _pareto.checked) opts.auto_pareto = true;
   const coerce = (v) => {
     if (v === 'true') return true;
     if (v === 'false') return false;
@@ -3584,6 +3586,31 @@ function showAutoDsh(question, events, status) {
   renderDshView();
 }
 
+async function resumeLastAutoJobNotice() {
+  const pairs = [['dgtf_last_auto_job', '自动闭环'],
+                 ['dgtf_last_autofix_job', '自动修复']];
+  let text = '';
+  for (const [key, label] of pairs) {
+    let jid = '';
+    try { jid = localStorage.getItem(key) || ''; } catch (_) { jid = ''; }
+    if (!jid) continue;
+    try {
+      const j = await api('/api/agent/auto/job/' + encodeURIComponent(jid) + '?since=0');
+      if (j.status === 'running' || j.status === 'queued') {
+        text += label + '后台任务仍在执行（' + jid + '）。';
+      } else if (j.status === 'done') {
+        text += label + '上次后台任务已完成。';
+        try { localStorage.removeItem(key); } catch (_) {}
+      } else {
+        text += label + '上次后台任务状态：' + (j.status || '未知') + '。';
+        try { localStorage.removeItem(key); } catch (_) {}
+      }
+    } catch (_) {}
+  }
+  const m = document.querySelector('#agent-msg');
+  if (m && text) m.textContent = text;
+}
+
 async function autoFixProposals() {
   const nConf = (agentProps || []).filter(x => x.status === 'confirmed').length;
   if (!nConf) {
@@ -3599,6 +3626,7 @@ async function autoFixProposals() {
     const job = await api('/api/dsh/proposals/autofix/start', {
       method: 'POST', headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({model: (document.querySelector('#dsh-model') || {}).value || 'deepseek-flash'})});
+    try { localStorage.setItem('dgtf_last_autofix_job', job.job_id || ''); } catch (_) {}
     let idx = 0, netErrs = 0;
     while (!final) {
       let jr = null;
@@ -3678,6 +3706,7 @@ async function autoAgent(stage) {
       method: 'POST', headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({stage: stage,
         model: (document.querySelector('#dsh-model') || {}).value || 'deepseek-flash'})});
+    try { localStorage.setItem('dgtf_last_auto_job', job.job_id || ''); } catch (_) {}
     let idx = 0, netErrs = 0;
     while (!result) {
       let jr = null;
@@ -4237,6 +4266,17 @@ function init() {
   const _mockBox = $('#mock');
   if (_mockBox) _mockBox.addEventListener('change', syncMockPill);
   syncMockPill();
+  const _paretoBox = $('#auto-pareto');
+  const _paretoPill = $('#pareto-pill');
+  if (_paretoBox) {
+    try { _paretoBox.checked = localStorage.getItem('dgtf_auto_pareto') === '1'; } catch (_) {}
+    const _syncPareto = function () {
+      if (_paretoPill) _paretoPill.classList.toggle('on', _paretoBox.checked);
+      try { localStorage.setItem('dgtf_auto_pareto', _paretoBox.checked ? '1' : '0'); } catch (_) {}
+    };
+    _paretoBox.addEventListener('change', _syncPareto);
+    _syncPareto();
+  }
 
   /* 仪表盘：所有面板常驻可见，**没有标签页了** —— 初始化时一次全加载。
      各面板自己的刷新按钮（搜索 / 刷新）仍然单独触发。 */
@@ -4555,6 +4595,7 @@ function init() {
   });
   window.addEventListener('resize', centerHomeHero);
   requestAnimationFrame(centerHomeHero);
+  setTimeout(resumeLastAutoJobNotice, 1200);
   window.addEventListener('load', centerHomeHero);
 }
 
