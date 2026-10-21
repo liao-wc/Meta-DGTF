@@ -2785,8 +2785,8 @@ async function loadConfig() {
       '<span class="env-v">' + value + '</span></span><br>';
     $('#env-info').innerHTML =
       line('引擎', '<b class="mono">' + esc(c.engine) + '</b>', true) +
-      line('DeepSeek', '<b>' + (k.api_key ? '已配置' : '缺 key') + '</b>', !!k.api_key) +
-      line('Tavily', '<b>' + (k.tavily ? '已配置' : '未配置') + '</b>', !!k.tavily) +
+      line('模型 DeepSeek', '<b>' + (k.api_key ? '已配置' : '缺 key') + '</b>', !!k.api_key) +
+      line('联网 Tavily', '<b>' + (k.tavily ? '已配置' : '未配置') + '</b>', !!k.tavily) +
       line('本地 LLM', '<b>' + nBack + '</b> 个底座 · 默认 Qwen0.5B', nBack > 0) +
       line('Agent', '<b>' + (agentOk ? 'DSH 就绪 · 守护运行' : '未就绪') + '</b>', agentOk) +
       line('产物', '<b>' + c.outputs.count + '</b> 份 · ' + c.outputs.total_mb + ' MB', true);

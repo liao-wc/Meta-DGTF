@@ -1615,3 +1615,7 @@ body.stage-empty main.stage{padding-bottom:0}
 .env .env-v b{font-family:var(--f-mono);font-size:10.5px}
 .env-inline{display:inline;white-space:nowrap}
 .drawer-nav{margin-top:-14px;margin-bottom:auto;transform:none}
+
+/* 侧栏：头部→状态、状态→按钮 两段间隔拉大且相等 */
+.drawer-body{padding-top:28px}
+.drawer-nav{margin-top:-6px;margin-bottom:auto;transform:none}
