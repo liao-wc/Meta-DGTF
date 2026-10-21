@@ -1686,3 +1686,6 @@ body.stage-empty main.stage{padding-bottom:0}
 /* 状态与按钮再整体下移一点点 */
 .env{transform:translateY(-5px)}
 .drawer-nav{margin-top:0;margin-bottom:auto;transform:none}
+
+/* 按钮整体再下移一点点 */
+.drawer-nav{margin-top:10px;margin-bottom:auto;transform:none}
