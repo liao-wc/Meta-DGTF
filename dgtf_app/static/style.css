@@ -1651,3 +1651,7 @@ body.stage-empty main.stage{padding-bottom:0}
 /* 状态值：CJK 也强制加粗高亮（描边补偿等宽字体中文字重） */
 .env .env-v,.env .env-v b{font-weight:800 !important;-webkit-text-stroke:.3px #fff;
   paint-order:stroke fill;text-shadow:0 0 1px #fff,0 0 2px #fff,0 0 10px rgba(255,255,255,.28)}
+
+/* 状态值取消高亮；标签统一高亮 */
+.env .env-v,.env .env-v b{-webkit-text-stroke:0;text-shadow:none;font-weight:800}
+.env .env-k{color:#6EA8FE;text-shadow:0 0 7px rgba(110,168,254,.55)}
