@@ -20,6 +20,7 @@
 - fast_gate 12/0
 - app selftest 371/0
 - 集成探针 67/0
+- 实测 _auto_engine_run mock 任务 done，且同一模块 runner.get_task(id) 可见（运行态共享）
 
 ## 边界
 
