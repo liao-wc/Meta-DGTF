@@ -41,35 +41,63 @@
 
 ## 存量数据
 
-- 现有占位 confirmed 提案不删除、不改写为 `failed`。自动分诊
-  （`_proposal_triage`）只给它们打 `plan_gap=True`、原因记 `plan_placeholder`，
-  **保留** 原 `pending/confirmed` 状态，便于界面显示「方案待补」。
+- 现有占位提案（pending/confirmed）不删除、不改写为 `failed`。自动分诊
+  （`_proposal_triage`）只给它们打 `plan_gap=True`、原因记 `plan_placeholder`
+  或 `plan_too_short`，**保留** 原 `pending/confirmed` 状态，便于界面显示
+  「方案待补」。
 - 真正把占位 confirmed 退回 `pending` 的有两处：自动修复入口
   `_demote_placeholder_confirmations()`（`/autofix`、常驻 autopilot 共用），
   以及补方案接口 `POST /api/dsh/proposals/<id>/plan`。退回后需用户补充方案
   并重新确认，不会自动改写方案内容。
 - 任务队列中的原始任务保持不变，可由后续批量自审重新生成具体方案。
 
+## 第二轮补齐（2026-10-22）
+
+第一轮修复后复查发现仍有入口能绕过「空/占位/过短方案不进入修复」的口径，
+本轮只补这些遗漏，不改变安全审查与提交权限：
+
+1. 旧入口 `POST /api/dsh/autorepair`：原来直接用 DSH 文本落 `pending` 提案，
+   现改为复用 `_auto_proposal()`，空、过短（<40 字）、占位方案均不落提案，
+   返回值明确给出 `error`，不再制造新的占位 pending。
+2. `POST /api/dsh/proposals/autofix/stream`：不再自己构造提示词并
+   `auto_repair=True` 让 DSH 直接提交，改为与批量修复共用
+   `_repair_with_acceptance()`（fast_gate + 针对性验收通过后才由工作台提交）；
+   循环内再次检查方案，竞态下被改写为空/过短的 confirmed 提案退回 `pending`。
+3. `_demote_placeholder_confirmations()`：把「过短（<40 字）」与占位一并视为
+   不可执行，退回 `pending`，原因分别记 `manual_plan_placeholder` /
+   `manual_plan_too_short`。
+4. `_proposal_triage()`：`plan_gap` 判定同步覆盖过短方案，原因记
+   `plan_too_short`；仍保留原 `pending/confirmed` 状态，便于界面显示「方案待补」。
+5. `POST /api/dsh/proposals/<id>/plan`：补写方案的最小长度由 20 提到 40，
+   与批量生成、确认、修复端一致。
+6. `_split_proposal()`：拆分片段同样要求 ≥40 字且非占位，避免拆出可确认的
+   空/占位子提案。
+7. `_autofix_workflow()`：保留用户已确认的 `approver="user"` 标记，避免重跑时
+   被 `dsh_auto` 覆盖后失去人工确认口径。
+
 ## 复核记录（2026-10-22）
 
 - 复核了生成、确认、修复、分诊、补方案、前端六条链路，确认占位方案在
   上述每个入口都被拦截；`_autopilot_decision` 对 `confirmed` 的快速放行
   由 `_demote_placeholder_confirmations()` 在修复前兜底，不会直接送 DSH。
-- 存量 31 条占位 confirmed 提案仍在磁盘上，属运行中的旧进程尚未重载本次
-  代码；重启工作台后自动分诊会补 `plan_gap`，界面显示「方案待补」。
-- 本轮只收紧 `_auto_proposal` 的最短方案校验，未改动引擎与 `dgtf_v2`，
+- 复核时存量占位提案为 30 条 `pending`、1 条 `failed`（均在磁盘上），属运行中的
+  旧进程尚未重载本次代码；重启工作台后自动分诊会补 `plan_gap`，界面显示「方案待补」。
+- 第一轮只收紧 `_auto_proposal` 的最短方案校验，第二轮补齐旧 autorepair 入口、
+  `/autofix/stream`、分诊、拆分、补方案与批量修复入口；未改动引擎与 `dgtf_v2`，
   不触及事实谓词、probe 闭合等其它在办提案。
 
 ## 验证
 
 - `python -m py_compile dgtf_app/server.py`：通过。
-- 纯函数检查：空串、空白、占位句均判 True；含文件/步骤/验证的方案判 False，
+- 受控门禁（2026-10-22 第二轮）：
+  - `python dgtf_app/dsh_tool.py fast_gate`：`FAST GATE PASS 12 / FAIL 0`。
+  - `python dgtf_app/dsh_tool.py acceptance`：`PASS 371 / FAIL 0`。
+- 纯函数检查（第一轮）：空串、空白、占位句均判 True；含文件/步骤/验证的方案判 False，
   且 `_plan_paths` 能抽出 `dgtf_app/server.py`、`dgtf_app/selftest.py`。
-- 受控门禁：以工作台 `python dgtf_app/dsh_tool.py fast_gate` 与
-  `acceptance` 的结果为准。
+- 最终验收与提交以工作台统一执行为准。
 
 ## 边界
 
-- 不改变提案的提交权限与安全审查流程；占位提案只是不再进入修复。
+- 不改变提案的提交权限与安全审查流程；占位或过短方案只是不再进入修复。
 - 已确认提案退回 `pending` 需要用户补充方案并重新确认，不会自动改写方案内容。
 - 前端未做浏览器点击级自动化；静态结构由应用自检与人工核对覆盖。
