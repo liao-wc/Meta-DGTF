@@ -31,9 +31,11 @@ $principal = New-Object Security.Principal.WindowsPrincipal($id)
 if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
   throw "需要管理员权限：请以管理员身份运行 PowerShell 后重试。"
 }
-if (Get-LocalUser -Name $Account -ErrorAction SilentlyContinue) { throw "账户已存在: " + $Account }
+$hasAccount = [bool](Get-LocalUser -Name $Account -ErrorAction SilentlyContinue)
 if (-not (Test-Path -LiteralPath $Python)) { throw "找不到 Python: " + $Python }
 if (-not (Test-Path -LiteralPath $DSH)) { throw "找不到 DSH: " + $DSH }
+$listen = Get-NetTCPConnection -State Listen -LocalPort $Port -ErrorAction SilentlyContinue
+if ($listen) { throw ("端口 " + $Port + " 已被占用，请先停止旧 app 再运行 -Apply。") }
 
 $bytes = New-Object byte[] 32
 [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
@@ -42,8 +44,17 @@ $bytes2 = New-Object byte[] 32
 [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes2)
 $token = [Convert]::ToBase64String($bytes2).Replace("+","").Replace("/","").Replace("=","")
 
-New-LocalUser -Name $Account -Password (ConvertTo-SecureString $password -AsPlainText -Force) -PasswordNeverExpires -UserMayNotChangePassword -Description "DGTF isolated web service" | Out-Null
+$sec = ConvertTo-SecureString $password -AsPlainText -Force
+if ($hasAccount) {
+  Set-LocalUser -Name $Account -Password $sec -PasswordNeverExpires $true -UserMayNotChangePassword $true
+  Write-Host ("复用已存在账户并重置密码: " + $Account)
+} else {
+  New-LocalUser -Name $Account -Password $sec -PasswordNeverExpires -UserMayNotChangePassword -Description "DGTF isolated web service" | Out-Null
+}
 New-Item -ItemType Directory -Force -Path $Data | Out-Null
+# 服务账户必须能读取/执行 Python（它位于当前用户 profile）
+$pythonDir = Split-Path -Parent $Python
+icacls $pythonDir /grant ($Account + ':(OI)(CI)RX') | Out-Null
 
 $grant = $Account + ':(OI)(CI)M'
 icacls $Data /inheritance:r /grant:r $grant 'Administrators:(OI)(CI)F' 'SYSTEM:(OI)(CI)F' | Out-Null
@@ -70,6 +81,9 @@ if (Test-Path -LiteralPath $tls) {
 }
 $dshDir = Split-Path -Parent (Split-Path -Parent $DSH)
 icacls $dshDir /grant ($Account + ':(OI)(CI)RX') | Out-Null
+if (Test-Path -LiteralPath "D:\dgtf_llm_env") {
+  icacls "D:\dgtf_llm_env" /grant ($Account + ':(OI)(CI)RX') | Out-Null
+}
 
 $wrapper = Join-Path $Data "run_server.ps1"
 $lines = @(
@@ -85,8 +99,18 @@ icacls $wrapper /inheritance:r /grant:r ($Account + ':F') 'Administrators:F' 'SY
 $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument ('-NoProfile -ExecutionPolicy Bypass -File "' + $wrapper + '"')
 $trigger = New-ScheduledTaskTrigger -AtStartup
 $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable
+if (Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue) {
+  Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false
+}
 Register-ScheduledTask -TaskName $TaskName -Action $action -Trigger $trigger -Settings $settings -User $Account -Password $password -RunLevel Highest -Description "DGTF isolated HTTPS web app" | Out-Null
 Start-ScheduledTask -TaskName $TaskName
+Start-Sleep -Seconds 4
+$check = Get-NetTCPConnection -State Listen -LocalPort $Port -ErrorAction SilentlyContinue
+if (-not $check) {
+  Write-Host "服务未监听，读取日志..."
+  if (Test-Path (Join-Path $Data 'server.log')) { Get-Content (Join-Path $Data 'server.log') -Tail 30 -Encoding UTF8 }
+  throw ("计划任务已创建但端口 " + $Port + " 未监听；请把上面的 server.log 发回。")
+}
 
 $url = "https://127.0.0.1:" + $Port + "/?t=" + $token
 $urlFile = Join-Path $Data "access_url.txt"
