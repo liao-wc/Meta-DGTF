@@ -4,6 +4,7 @@
   [switch]$NoBrowser,
   [switch]$Stop,
   [switch]$Restart,
+  [switch]$NewToken,
   [switch]$DryRun
 )
 $ErrorActionPreference = "Stop"
@@ -43,6 +44,21 @@ if (Get-AppListener) {
 }
 
 $py = (Get-Command python -ErrorAction Stop).Source
+
+# 稳定访问口令：默认复用 dgtf_memory/.access_token，重启不失效；-NewToken 重新生成。
+$TokenFile = Join-Path $Root "dgtf_memory\.access_token"
+$token = ""
+if (-not $NewToken -and (Test-Path -LiteralPath $TokenFile)) {
+  $token = (Get-Content -LiteralPath $TokenFile -Raw -Encoding UTF8).Trim()
+}
+if ($NewToken -or $token -notmatch '^[A-Za-z0-9_-]{16,}$') {
+  $token = [guid]::NewGuid().ToString("N") + [guid]::NewGuid().ToString("N")
+  Set-Content -LiteralPath $TokenFile -Value $token -Encoding ASCII
+  $u = $env:USERNAME
+  icacls $TokenFile /inheritance:r /grant:r ($u + ':F') 'SYSTEM:F' 'Administrators:F' | Out-Null
+  Write-Host "已生成本机稳定访问口令: dgtf_memory/.access_token"
+}
+$env:DGTF_ACCESS_TOKEN = $token
 $serverArgs = @("dgtf_app\server.py", "--port", "$Port")
 if ($Http) { $serverArgs += "--http" }
 Write-Host ("启动: " + $py + " " + ($serverArgs -join " "))
