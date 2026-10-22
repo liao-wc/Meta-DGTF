@@ -6315,6 +6315,18 @@ class Handler(BaseHTTPRequestHandler):
     def _method_not_allowed(self):
         return self._json({"error": "method not allowed"}, 405)
 
+    def do_HEAD(self):
+        self.send_response(405)
+        self.send_header("Allow", "GET, POST, PUT, DELETE, PATCH, OPTIONS")
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+
+    def do_OPTIONS(self):
+        self.send_response(204)
+        self.send_header("Allow", "GET, POST, PUT, DELETE, PATCH, OPTIONS")
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+
     def do_PUT(self):
         return self._method_not_allowed()
 
