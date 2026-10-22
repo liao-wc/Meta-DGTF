@@ -36,6 +36,7 @@
 - 访问口令默认启用：无令牌访问 /api/health 返回 401；带 ?t= 或 cookie 返回 200；selftest 371/0、审计 58/0 在显式 DGTF_ACCESS_TOKEN 下通过。
 - 同用户恶意进程仍可读取启动日志/浏览器 profile；应用层 token 不是内核隔离。要防同用户恶意进程需独立 Windows 账户/容器/VM，并限制项目与密钥 ACL。
 - 已准备 scripts/setup_isolated_service.ps1：管理员 -Apply 后创建 DGTFApp 普通账户 + 计划任务，服务私钥/.env/token 包装器 ACL 限制到服务账户/管理员。当前会话 Medium 完整性，脚本仅计划模式验证，未实际创建账户/任务。
+  - 服务 URL 会写入 `C:\ProgramData\DGTF\access_url.txt`（当前用户只读），服务日志写 `C:\ProgramData\DGTF\server.log`。
 
 ## 4. 常驻完整自动周期
 

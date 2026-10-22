@@ -77,7 +77,7 @@ $lines = @(
   ('$env:DSH_BIN = "' + $DSH + '"'),
   ('$env:DSH_HOME = "' + $Data + '\dsh_home"'),
   ('Set-Location "' + $ProjectRoot + '"'),
-  ('& "' + $Python + '" "' + $ProjectRoot + '\dgtf_app\server.py" --port ' + $Port)
+  ('& "' + $Python + '" "' + $ProjectRoot + '\dgtf_app\server.py" --port ' + $Port + ' *>> "' + $Data + '\server.log"')
 )
 Set-Content -LiteralPath $wrapper -Value $lines -Encoding UTF8
 icacls $wrapper /inheritance:r /grant:r ($Account + ':F') 'Administrators:F' 'SYSTEM:F' | Out-Null
@@ -88,7 +88,12 @@ $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoi
 Register-ScheduledTask -TaskName $TaskName -Action $action -Trigger $trigger -Settings $settings -User $Account -Password $password -RunLevel Highest -Description "DGTF isolated HTTPS web app" | Out-Null
 Start-ScheduledTask -TaskName $TaskName
 
+$url = "https://127.0.0.1:" + $Port + "/?t=" + $token
+$urlFile = Join-Path $Data "access_url.txt"
+Set-Content -LiteralPath $urlFile -Value $url -Encoding UTF8
+$currentUser = [Security.Principal.WindowsIdentity]::GetCurrent().Name
+icacls $urlFile /inheritance:r /grant:r ($currentUser + ':R') 'Administrators:F' 'SYSTEM:F' | Out-Null
 Write-Host "已创建隔离账户/计划任务。"
-Write-Host ("服务 URL（请只保存到密码管理器/书签）: https://127.0.0.1:" + $Port + "/?t=" + $token)
+Write-Host ("服务 URL（已写入当前用户可读的 " + $urlFile + "）: " + $url)
 Write-Host "当前浏览器仍需信任 DGTF Local CA（scripts\trust_https_cert.ps1）。"
 Write-Host ("卸载: Stop-ScheduledTask " + $TaskName + "; Unregister-ScheduledTask " + $TaskName + " -Confirm:$false; Remove-LocalUser " + $Account)

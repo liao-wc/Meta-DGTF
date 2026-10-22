@@ -44,6 +44,7 @@ app 启动会确保：
 - 本地信任：运行 scripts/trust_https_cert.ps1 把 DGTF Local CA 根加入 CurrentUser\Root；服务器使用 CA 签发的叶子证书（CA:FALSE + serverAuth + SAN），HTTPS 链为 server-chain.pem。CA 私钥 ca.key 与服务器私钥 server.key 仅当前用户/SYSTEM/Administrators 可读。旧的自签名 localhost 根已移除。
 - 访问口令：默认启动随机生成本机口令，只放进程内存；API 和静态资源都要求带 ?t= 或 HttpOnly/Secure cookie。DSH 工作台使用独立一次性令牌绕过浏览器口令。可用 DGTF_ACCESS_TOKEN 固定注入（测试/自动化）。
 - 同用户边界：如果恶意进程与 app 运行在同一 Windows 用户下，它可以读取 `_app_out.log`、浏览器 profile/内存或调用用户态工具；应用层 token 不能提供强隔离。要做到防同用户恶意进程，需要独立 Windows 用户/服务账户、容器或 VM，并把项目/密钥 ACL 只授予该账户。
+- 隔离账户准备：`scripts/setup_isolated_service.ps1` 默认只打印计划；管理员 `-Apply` 会创建普通用户 DGTFApp + 开机计划任务，服务私钥/.env/token 包装器 ACL 限制到服务账户/管理员，当前用户只读 `C:\ProgramData\DGTF\access_url.txt` 中的浏览器 URL。当前会话为 Medium 完整性，未执行 -Apply。
 ## 已知边界
 DSH 的 Windows 文件沙箱（dsh-sandbox-windows-acl）只限制写入，不限制读取；
 因此应用层做敏感路径硬拦截 + 输出脱敏，但内核级读隔离需要独立 Windows 用户/容器/VM。
