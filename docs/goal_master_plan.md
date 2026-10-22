@@ -111,3 +111,11 @@
 - 清理 scratch 约 3.5GB；提案/策略原子写。
 - 下一步：真实 A/B（auto_policy vs profile）、证据抽取修复、统一错误信封/日志保留、最终收尾。
 
+
+## 第十轮进展（2026-10-22 19:27）
+
+- 正向真跑 20261022_191055（HTTP 404）：92 calls/844k tokens；检索到 CTFwriteup 垃圾证据，fact_card status=answered 但 official=0、uncovered，答案门降为 needs_evidence、answer_ready=false；process_ready=false（1/all 层）。
+- 结论：答案门有效，但检索/答案抽取仍是准确率瓶颈；不能用独立域名噪声冒充事实。
+- 新增 docs/log_retention.md；pending=0、auto_strategy=local_model、app v1.5.22。
+- 下一步：检索质量/官方源强制、答案抽取修复、App P2 收尾。
+
