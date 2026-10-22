@@ -1395,7 +1395,6 @@ select:focus{border-color:var(--accent)}
 /* ── Agent 面板（任务队列 / 用户任务 / 消费者 / 技术知识 / 结果）──────
    数据面走 /api/agent/*；这里只做布局与观感，不影响既有面板。
    入口在左上角第 4 个图标（抽屉固定 7 个按钮，不动抽屉）。 */
-.agent-overlay{z-index:80}
 .agent-grid{display:flex;flex-direction:column;gap:12px;padding:2px 2px 6px}
 .agent-sec{background:var(--s1);border:1px solid var(--hair);border-radius:var(--r-md);
   box-shadow:var(--shadow);overflow:hidden;flex:0 0 auto}
@@ -1447,9 +1446,9 @@ select:focus{border-color:var(--accent)}
 
 /* DSH 本对话入口：任务交给当前 Harness 会话，不在 app 内另起 headless */
 .dsh-current-box { margin:6px 0 2px; }
-.dsh-current-input { flex:1 1 360px; min-width:220px; }
 .dsh-current-box #dsh-current-msg { font-size:11.5px; }
 .dsh-current-log { max-height:260px; overflow:auto; margin:6px 0 10px; padding:8px; border:1px solid #2b2b2b; border-radius:10px; background:#0f0f10; font-size:12.5px; }
+.dsh-current-log:empty { display:none; }
 .dsh-current-msg { margin:6px 0; padding:7px 9px; border-radius:8px; white-space:pre-wrap; line-height:1.55; }
 .dsh-current-msg.user { background:#2e2a4d; color:#f1efff; margin-left:18%; }
 .dsh-current-msg.assistant { background:#1b1b1e; color:#ddd; margin-right:18%; }
@@ -1504,9 +1503,10 @@ body.dsh-mode .dsh-ctl{display:inline-flex;align-items:center}
 .dd-def{flex:0 0 auto;font-size:10px;color:var(--t3);border:1px solid var(--hair);border-radius:4px;padding:1px 4px;white-space:nowrap}
 .sheet .grid .dd-input{background:#15171B;color:#F0F2F6;border-color:rgba(255,255,255,.18)}
 /* Agent 页与其它 sheet 统一：透明页底、一个外框、内部平铺；工具条按钮同款 */
-#view-agent{background:transparent}
-#view-agent .agent-grid{display:block;background:transparent;
-  border:1px solid var(--hair-2);border-radius:var(--r-md);
+#view-agent{background:linear-gradient(180deg,rgba(8,9,10,.58),rgba(8,9,10,.82));
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:var(--r-md)}
+#view-agent .agent-grid{display:block;background:rgba(10,11,13,.42);
+  border:1px solid var(--hair);border-radius:12px;
   padding:10px 14px 14px;overflow:auto;min-height:0}
 #view-agent .agent-sec{background:transparent;border:0;border-radius:0;
   padding:0;margin:0}
@@ -1517,13 +1517,26 @@ body.dsh-mode .dsh-ctl{display:inline-flex;align-items:center}
 #view-agent .agent-tabs{margin:10px 0 8px;padding:0}
 #view-agent .agent-tabs .pill{height:30px;padding:0 10px;font-size:12px}
 #view-agent .searchbar .ghost{height:30px;padding:0 11px;font-size:12px;border-radius:8px}
-.agent-auto-status{margin:8px 0 0;padding:8px 11px;border:1px solid var(--hair-2);
-  border-radius:var(--r-sm);font-size:12px;line-height:1.5;color:var(--t2);
-  background:rgba(255,255,255,.035)}
-.agent-auto-status.hidden{display:none}
-.agent-auto-status.running{border-color:rgba(94,106,210,.45);color:var(--accent-hi)}
-.agent-auto-status.ok{border-color:rgba(74,222,128,.42);color:var(--ok)}
-.agent-auto-status.err{border-color:rgba(255,107,107,.45);color:var(--err)}
+/* Agent 工具条 + 单行实时信息屏 */
+.agent-toolbar{align-items:center;gap:8px;padding:8px 2px 0;flex-wrap:wrap}
+.agent-toolbar #agent-msg{flex:1 1 180px;min-width:0;font-size:11.5px;color:var(--t3);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.agent-live{display:flex;align-items:center;gap:10px;min-width:0;margin:8px 0 10px;
+  padding:8px 12px;border:1px solid var(--hair);border-radius:10px;
+  background:linear-gradient(90deg,rgba(94,106,210,.12),rgba(255,255,255,.02));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.035)}
+.agent-live-dot{width:7px;height:7px;border-radius:50%;background:var(--accent-hi);
+  box-shadow:0 0 0 0 rgba(94,106,210,.55);animation:agent-live-pulse 2.4s infinite;flex:0 0 auto}
+.agent-live-label{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);
+  white-space:nowrap;flex:0 0 auto}
+#agent-action-log-list{flex:1 1 auto;min-width:0;font-size:12.5px;line-height:1.6;color:var(--t1);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#agent-action-log-list>div{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#agent-action-log-list .ok{color:#7ee787}
+#agent-action-log-list .bad{color:#ff7b72}
+.agent-live-asof{font-size:11px;color:var(--t3);white-space:nowrap;flex:0 0 auto;font-family:var(--f-mono)}
+@keyframes agent-live-pulse{0%{box-shadow:0 0 0 0 rgba(94,106,210,.55)}70%{box-shadow:0 0 0 6px rgba(94,106,210,0)}100%{box-shadow:0 0 0 0 rgba(94,106,210,0)}}
+#view-agent .agent-toolbar .ghost{height:30px;padding:0 11px;font-size:12px;border-radius:8px}
 
 /* ── DSH 会话历史 / 当前会话条（V1.4.0） ───────────────────── */
 .dsh-conv-bar{display:flex;align-items:center;gap:10px;padding:7px 16px;
@@ -1723,10 +1736,7 @@ body.stage-empty main.stage{padding-bottom:0}
 
 #view-agent .searchbar .ghost.on{border-color:rgba(63,185,80,.55);background:rgba(63,185,80,.14);color:#DFF7E4}
 
-/* 库动作透明化：最近动作行 + 各库更新时间 */
-.agent-action-log{margin:2px 0 8px;padding:6px 9px;border:1px solid var(--line);border-radius:6px;background:var(--s1);font-size:12px;line-height:1.6;overflow-wrap:anywhere}
-.agent-action-log .ok{color:#7ee787}
-.agent-action-log .bad{color:#ff7b72}
+/* 库动作透明化：各库更新时间 */
 .lib-stamp{font-size:11px;margin-left:8px;font-weight:400}
 
 /* ── 运行日志诊断面板（只读尾部：app / err / daemon）──────────────────

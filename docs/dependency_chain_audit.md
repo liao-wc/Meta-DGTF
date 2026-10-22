@@ -1,8 +1,8 @@
 # 元DGTF app 依赖链自洽审计
 
-生成：2026-10-22 15:18:47
+生成：2026-10-22 15:32:41
 
-PASS 59 / FAIL 0
+PASS 61 / FAIL 0
 
 ## FAIL
 - 无
@@ -48,6 +48,8 @@ PASS 59 / FAIL 0
 - front proposal mapping keys
 - library action log hooks
 - dsh current-session bridge hooks
+- agent panel residual controls removed
+- agent live info screen hooks
 - engine layer payload contract
 - output list contract
 - clean output helper

@@ -3667,6 +3667,7 @@ let agentProps = [];
 let agentPropSummary = null;
 let agentAutopilot = null;
 let dshGuardOn = false;
+let agentLoadSig = '';
 let agentLastRun = null;
 let agentV2 = null;
 let agentPareto = null;
@@ -3682,13 +3683,18 @@ function renderAgentActionLog() {
   const el = document.querySelector('#agent-action-log-list') || document.querySelector('#agent-action-log');
   if (!el) return;
   if (!agentActionLog.length) {
-    el.innerHTML = '<span class="muted">最近动作：暂无</span>'; return;
+    el.innerHTML = '<span class="muted">最近动作：暂无</span>';
+    const emptyAsof = document.querySelector('#agent-asof');
+    if (emptyAsof) emptyAsof.textContent = '更新于 —';
+    return;
   }
-  el.innerHTML = agentActionLog.slice(0, 1).map(function (x) {
-    const t = fmtTs(x.ts) || '';
-    return '<div class="' + (x.ok ? 'ok' : 'bad') + '">' + esc(t) + ' · '
-      + esc(x.label || '') + (x.detail ? (' · ' + esc(x.detail)) : '') + '</div>';
-  }).join('');
+  const x = agentActionLog[0];
+  el.innerHTML = '<div class="' + (x.ok ? 'ok' : 'bad') + '">' + esc(x.label || '')
+    + (x.detail ? (' · ' + esc(x.detail)) : '') + '</div>';
+  const asof = document.querySelector('#agent-asof');
+  if (asof) asof.textContent = '更新于 ' + new Date(x.ts || Date.now()).toLocaleTimeString();
+  const live = document.querySelector('#agent-action-log');
+  if (live) live.title = '实时信息屏 · ' + (x.label || '') + (x.detail ? (' · ' + x.detail) : '');
 }
 
 function agentLogAction(label, detail, ok) {
@@ -4327,10 +4333,16 @@ async function loadAgent() {
   if (msg) msg.textContent = errs.length ? ('部分读数不可用：' + errs.join('；')) : '';
   const asof = $('#agent-asof');
   if (asof) asof.textContent = '更新于 ' + new Date().toLocaleTimeString();
-  agentLogAction('读取全部库', errs.length ? ('部分失败：' + errs.join('；').slice(0,120)) :
+  const _detail = errs.length ? ('部分失败：' + errs.join('；').slice(0,120)) :
     ('任务 ' + agentTasks.length + ' · 结果 ' + agentResults.length + ' · 知识 ' + agentKnowledge.length
-      + ' · 会话 ' + agentDsh.length + ' · 提案 ' + agentProps.filter(x => x.status !== 'expired').length), !errs.length);
-  renderAgentActionLog();
+      + ' · 会话 ' + agentDsh.length + ' · 提案 ' + agentProps.filter(x => x.status !== 'expired').length);
+  const _sig = errs.join('|') + '#' + _detail;
+  if (_sig !== agentLoadSig) {
+    agentLoadSig = _sig;
+    agentLogAction('读取全部库', _detail, !errs.length);
+  } else {
+    renderAgentActionLog();
+  }
 }
 
 function openAgentDialog() {
@@ -4800,6 +4812,7 @@ async function sendDshAgent() {
 /* ── DSH 本对话：当前 Harness 会话的实时镜像 + 首屏输入直送 ── */
 let dshCurrentPollTimer = null;
 let dshCurrentConnected = false;
+let dshInfoLastSeq = 0;
 
 function renderDshCurrentMessages(msgs) {
   const box = document.querySelector('#dsh-current-log');
@@ -4839,6 +4852,12 @@ async function refreshDshCurrentMessages() {
       });
       dshCurrent.status = 'running';
       renderDshView();
+    }
+    const _last = _msgs.length ? _msgs[_msgs.length - 1] : null;
+    if (_last && _last.seq && _last.seq !== dshInfoLastSeq) {
+      dshInfoLastSeq = _last.seq;
+      agentLogAction('DSH对话', (_last.role === 'user' ? '你：' : 'DSH：')
+        + String(_last.text || '').replace(/\s+/g, ' ').slice(0, 110), true);
     }
     const msg = document.querySelector('#dsh-current-msg');
     if (msg) msg.textContent = '已连接当前 DSH 对话 · 实时同步中';
@@ -5474,10 +5493,6 @@ function init() {
   });
   const _agentRefresh = $('#agent-refresh');
   if (_agentRefresh) _agentRefresh.addEventListener('click', refreshAgentAll);
-  [['#ap-learn', 'learn'], ['#ap-spawn', 'spawn'], ['#ap-scan', 'scan'], ['#ap-selflearn', 'selflearn']].forEach(function (pair) {
-    const el = $(pair[0]);
-    if (el) el.addEventListener('click', function () { autopilotAction(pair[1]); });
-  });
   const _apBtn = $('#agent-autopilot-btn');
   if (_apBtn) _apBtn.addEventListener('click', async () => {
     const enable = !dshGuardOn;
@@ -5534,14 +5549,6 @@ function init() {
   if (_dshPill) _dshPill.addEventListener('click', () => {
     if (dshMode) toggleDshMode(false);
     else connectDshCurrent();
-  });
-  [['dsh-effort', 'dgtf_dsh_effort'], ['dsh-perm', 'dgtf_dsh_perm'], ['dsh-model', 'dgtf_dsh_model']].forEach(function (pair) {
-    const el = document.getElementById(pair[0]);
-    if (!el) return;
-    try { const saved = localStorage.getItem(pair[1]); if (saved !== null) el.value = saved; } catch (_) {}
-    el.addEventListener('change', function () {
-      try { localStorage.setItem(pair[1], el.value); } catch (_) {}
-    });
   });
   const _dshNew = $('#dsh-new-session');
   if (_dshNew) _dshNew.addEventListener('click', () => {
@@ -5705,12 +5712,6 @@ function init() {
         renderDshView();
       }
     }
-  });
-  const _cfgBtn = $('#dsh-config-btn');
-  const _cfgBox = $('#dsh-config-box');
-  if (_cfgBtn && _cfgBox) _cfgBtn.addEventListener('click', () => {
-    const open = _cfgBox.classList.toggle('hidden');
-    _cfgBtn.classList.toggle('on', !open);
   });
   const _ghOpen = $('#gh-open');
   if (_ghOpen) _ghOpen.addEventListener('click', openGithubDesktop);

@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="dark">
 <title>元DGTF 个人工作台</title>
 <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
-<link rel="stylesheet" href="/static/style.css?v=1.4.95">
+<link rel="stylesheet" href="/static/style.css?v=1.4.97">
 </head>
 <body class="stage-empty">
 
@@ -58,7 +58,7 @@
     <div class="env" id="env-info"></div>
 
     <nav class="drawer-nav">
-      <button class="nav-btn" data-sheet="view-agent" data-tip="DSH Agent：任务队列 / 用户任务 / 消费者 / 技术知识 / 结果" aria-label="DSH Agent">
+      <button class="nav-btn" data-sheet="view-agent" data-tip="DSH 接管：队列/知识/会话/提案只读展示 + 实时信息屏；执行动作统一交给当前 DeepSeek Harness 对话" aria-label="DSH Agent">
     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <rect x="4" y="7.2" width="16" height="12" rx="3" stroke="currentColor" stroke-width="1.7"/>
       <path d="M12 3.4V7.2M8.6 12.2h.01M15.4 12.2h.01M9 16.2h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
@@ -134,7 +134,7 @@
       <span class="sd" data-for="view-lib"><span id="lib-count"></span></span>
       <span class="sd" data-for="view-local"><span id="local-count"></span></span>
       <span class="sd" data-for="view-web"><span id="web-count"></span></span>
-      <span class="sd" data-for="view-agent">把引擎自反馈任务交给消费者；可读任务队列、提交用户任务、运行消费者、知识检索（经 DSH 会话）、查看处理结果。</span>
+      <span class="sd" data-for="view-agent">Agent 面板只读展示队列/知识/会话/提案；执行动作统一交给当前 DeepSeek Harness 对话，状态和动作变化实时汇总到信息屏。</span>
     </span>
     <button id="sheet-close" class="icon-btn" data-tip="关闭面板（Esc）" aria-label="关闭面板">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -250,44 +250,20 @@
     <!-- ★ Agent 面板：读任务队列 / 提交用户任务 / 运行消费者 / 刷新技术知识 / 看处理结果。
          入口在侧边栏，与其它页面一致。 -->
     <section id="view-agent" class="panel sheet-page">
-      <div class="searchbar tight">
+      <div class="searchbar tight agent-toolbar">
         <button id="agent-refresh" class="ghost" data-tip="刷新 Agent 面板全部库：队列/结果/知识/DSH会话/DSH产物/提案/运行/V2/审计/资料库/联网库">刷新全部库</button>
         <button id="agent-auto" class="ghost" data-tip="交由当前 DeepSeek Harness 对话执行：自动流程闭环 + 安全提案自动修复（Agent 面板不再提供输入框）">DSH 接管：闭环 + 修复</button>
-        <button id="dsh-config-btn" class="ghost" data-tip="展开 DSH Agent 档位 / 工作权限配置；实际执行统一走当前 DSH 对话">DSH Agent 配置</button>
         <button id="agent-autopilot-btn" class="ghost" data-tip="DSH守护：开关交由当前 DeepSeek Harness 对话执行，不在 app 内起本地守护进程">DSH守护：关</button>
         <button id="agent-knowledge-btn" class="ghost" data-tip="交由当前 DeepSeek Harness 对话执行技术知识检索/刷新">知识检索（本对话）</button>
         <button id="agent-kn-dedupe" class="ghost" data-tip="交由当前 DeepSeek Harness 对话清理技术知识库重复条目（保留最新一条）">库去重</button>
         <span class="muted" id="agent-msg"></span>
       </div>
-      <div class="agent-auto-status hidden" id="agent-auto-status" role="status" aria-live="polite"></div>
-      <div class="agent-action-log" id="agent-action-log"><span class="muted" id="agent-asof">更新于 —</span><div id="agent-action-log-list" role="status" aria-live="polite"><span class="muted">最近动作：暂无</span></div></div>
-      <div class="searchbar tight dsh-agent-cfg hidden" id="dsh-config-box">
-        <span class="muted">DSH Agent 配置</span>
-        <span class="chip">模式：PTC（默认）</span>
-        <select class="pill dsh-sel" id="dsh-effort" data-tip="DSH Agent 档位（推理强度）">
-          <option value="">档位：标准（默认）</option>
-          <option value="high">档位：高</option>
-          <option value="max">档位：最大</option>
-        </select>
-        <select class="pill dsh-sel" id="dsh-model" data-tip="DSH Agent 模型">
-          <option value="deepseek-flash" selected>模型：Flash（默认）</option>
-          <option value="deepseek-reasoner">模型：Reasoner</option>
-        </select>
-        <select class="pill dsh-sel" id="dsh-network" data-tip="DSH Agent 联网授权：默认关闭；授权后仅允许公开网站检索，内网/回环/云元数据仍禁止">
-          <option value="0" selected>联网：关闭</option>
-          <option value="1">联网：授权公开网站</option>
-        </select>
-        <select class="pill dsh-sel" id="dsh-perm" data-tip="DSH Agent 权限：只读 / 读写 / 完全 / 自动审查（与工作台权限档位一致）">
-          <option value="read-only">权限：只读</option>
-          <option value="workspace-write" selected>权限：读写工作区</option>
-          <option value="danger-full-access">权限：完全访问（危险）</option>
-          <option value="auto">权限：自动审查</option>
-        </select>
-        <button id="ap-learn" class="ghost" data-tip="立即触发一次技术知识检索/学习（常驻能力）">学习刷新</button>
-        <button id="ap-spawn" class="ghost" data-tip="从队列挑一条任务，让 DSH 立即生成修复提案">从队列发起提案</button>
-        <button id="ap-scan" class="ghost" data-tip="让 DSH 自主审视项目并生成优化提案">项目自主审视</button>
-        <button id="ap-selflearn" class="ghost" data-tip="无待处理提案时：项目+知识库自学习，提出带自学习标记的优化/修复提案">自学习提案</button>
-        <span class="muted">设置在 DSH Agent 下次运行生效</span>
+      <div class="agent-live" id="agent-action-log" role="status" aria-live="polite"
+           data-tip="实时信息屏：所有动作与库/DSH 状态变更都汇总到这里，单行自动覆盖">
+        <span class="agent-live-dot" aria-hidden="true"></span>
+        <span class="agent-live-label">实时信息屏</span>
+        <div id="agent-action-log-list"><span class="muted">最近动作：暂无</span></div>
+        <span class="agent-live-asof" id="agent-asof">更新于 —</span>
       </div>
       <div class="searchbar tight dsh-current-box" id="dsh-current-box">
         <span class="chip">DSH 本对话</span>
@@ -554,6 +530,6 @@
 
 
 
-<script src="/static/app.js?v=1.4.95"></script>
+<script src="/static/app.js?v=1.4.97"></script>
 </body>
 </html>

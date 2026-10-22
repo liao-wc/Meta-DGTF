@@ -94,7 +94,7 @@ except Exception as exc:
 st, netpol = get('/api/dsh/network-policy')
 ck('dsh network policy api', st == 200 and 'enabled' in netpol and 'clause' in netpol)
 _html_now = (ROOT / 'dgtf_app' / 'static' / 'index.html').read_text(encoding='utf-8', errors='replace')
-ck('dsh network configurable hooks', 'DGTF_DSH_NETWORK' in srv and '_dsh_net_clause' in srv and 'id="dsh-network"' in _html_now)
+ck('dsh network configurable hooks', 'DGTF_DSH_NETWORK' in srv and '_dsh_net_clause' in srv)
 ck('https support hooks', '--https' in srv and 'Strict-Transport-Security' in srv and 'Secure' in srv)
 ck('agent action log hooks', 'agentLogAction' in appjs and 'agent-action-log-list' in _html_now)
 
@@ -115,6 +115,10 @@ _html_lib = (ROOT / 'dgtf_app' / 'static' / 'index.html').read_text(encoding='ut
 ck('library action log hooks', 'agentLogAction' in appjs and 'agent-asof' in _html_lib)
 ck('dsh current-session bridge hooks', '/api/dsh/current' in srv and 'dsh-current-log' in _html_lib
    and 'dsh-current-input' not in _html_lib and '_dsh_current_prompt' in srv)
+ck('agent panel residual controls removed', all(x not in _html_lib for x in
+   ('dsh-config-btn', 'dsh-config-box', 'ap-learn', 'dsh-effort', 'agent-kn-q', 'agent-overlay')))
+ck('agent live info screen hooks', 'agent-live' in _html_lib and 'agent-action-log-list' in _html_lib
+   and 'agentLogAction' in appjs and 'slice(0, 1)' in appjs)
 st, lt = get('/api/tasks')
 lt_rows = lt.get('tasks') or []
 if lt_rows:

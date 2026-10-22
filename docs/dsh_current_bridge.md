@@ -52,3 +52,19 @@
 - CDP 点击 agent-auto / agent-autopilot-btn / agent-knowledge-btn / agent-kn-dedupe / ap-learn：只产生 /api/dsh/current 调用，没有 /api/agent/auto*、/api/agent/autopilot、/api/agent/knowledge。
 - v1.4.95 最终 CDP：上述 5 个动作全部走 /api/dsh/current；动作日志行数 1；DSH守护：开；无被移除的输入/弹窗节点。
 - 动作日志行数为 1；DSH守护按钮显示“DSH守护：开”；执行后进入 dsh-mode。
+## Agent 面板清理与实时信息屏（2026-10-22 15:30）
+
+- 移除旧 DSH Agent 配置条：`dsh-config-btn`、`dsh-config-box`、档位/模型/联网/权限选择。
+- 移除隐藏的 `ap-learn/ap-spawn/ap-scan/ap-selflearn` 残留按键及其监听。
+- 工具条只保留：刷新全部库、DSH 接管闭环+修复、DSH守护、知识检索（本对话）、库去重。
+- 新增“实时信息屏”单行条：所有动作、库读取、DSH 新消息、错误都经 `agentLogAction` 汇总；新事件自动覆盖旧行。
+- 库读取只在计数/错误签名变化时写入信息屏，避免轮询制造重复刷屏。
+- Agent 面板采用深色玻璃底、信息屏脉冲点、紧凑工具条；空 DSH 镜像不再显示空黑条。
+- 静态版本 v1.4.97。
+
+## 本轮验收
+
+- 页面无 dsh-config / ap-* / agent-kn-q / agent-overlay 等残留节点。
+- CDP 点击 DSH 接管按钮：只调用 /api/dsh/current 与 /api/dsh/current/messages；信息屏单行显示“DSH 接管：闭环 + 修复 · 已交给 DSH 本对话”，日志行数 1。
+- `/api/dsh/current` live：返回 `mode=current-session`、`accepted=true`，任务进入当前会话队列。
+- fast_gate 12/0；selftest 371/0；依赖审计 61/0。
