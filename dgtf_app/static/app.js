@@ -677,6 +677,15 @@ function buildArchiveLanes(raw, task) {
 const ST_TXT = { done: '完成', error: '失败', running: '运行中', queued: '排队中',
                  cancelled: '已终止', canceled: '已终止', interrupted: '已中断' };
 
+/* queued 徽章文案：后端给了排队位置（queue_pos）就显示「排队 #N」，没有就只显示「排队」。
+   运行日志头徽章与「最近跑过」列表共用这一份口径。 */
+function queueBadgeText(st, t) {
+  if (st !== 'queued') return ST_TXT[st] || st || '—';
+  const raw = t ? t.queue_pos : null;
+  const qp = (raw === null || raw === undefined || raw === '') ? NaN : Number(raw);
+  return (isFinite(qp) && qp > 0) ? ('排队 #' + Math.floor(qp)) : '排队';
+}
+
 /* ── 日志语义排版（2026-10-11 用户 21 图要求）───────────────────────
    引擎日志是「半结构化」的：既有 `[INFO]` 噪声、又有层横幅/轮次/步骤/正文混在一起。
    老做法「在 40 字内找第一个 `：`，标签靠左 + 内容换行居中」把这些全搅乱了
@@ -1083,7 +1092,17 @@ function renderTasks() {
   if (bd) {
     const st = t.status || 'queued';
     bd.className = 'badge ' + st;
-    bd.textContent = ST_TXT[st] || st;
+    bd.textContent = queueBadgeText(st, t);
+  }
+  /* ★ 失败 / 已终止（含旧拼写 canceled）的任务：头部给「重试」—— 原问题新开一次跑次。 */
+  const retryBtn = $('#rl-retry');
+  if (retryBtn) {
+    const canRetry = !arch && !!tid &&
+      (t.status === 'error' || t.status === 'cancelled' || t.status === 'canceled');
+    retryBtn.classList.toggle('hidden', !canRetry);
+    retryBtn.dataset.retry = canRetry ? tid : '';
+    retryBtn.textContent = (retryPending === tid) ? '重试中…' : '重试';
+    retryBtn.disabled = !!retryPending;
   }
   const q = $('#rl-question');
   if (q) q.textContent = t.question || '';
@@ -1292,6 +1311,7 @@ const _SVG_STOP = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" a
   + '<rect x="5" y="5" width="14" height="14" rx="2.5" fill="currentColor"/></svg>';
 let runMode = 'send';
 let stopRequested = null;          // 已点过终止的那个任务 id（等它真正停下来）
+let retryPending = null;           // 正在重试的任务 id（按钮置灰防重入）
 let fxPending = false;             // 发送星光动画还没落点 ⇒ 日志区**先不露**
 
 function setRunBtn(mode) {
@@ -1389,6 +1409,55 @@ async function stopRun() {
   loadDash();
   pollTask(tid);
   pollLanes();
+}
+
+/* ── 失败/已终止任务「重试」：原问题新开一次跑次 ─────────────────────
+   契约（后端）：POST /api/tasks/<id>/retry → {ok:true, id:<新任务id>, task:{...}}
+   · 成功 ⇒ 新任务设为当前会话（activeChat/followLatest），刷新最近跑过并开始跟日志；
+   · 失败 ⇒ 只提示，不动旧任务（旧任务与其产物保持原样）。 */
+async function retryTask() {
+  const btn = $('#rl-retry');
+  const id = btn ? String(btn.dataset.retry || '') : '';
+  if (!id || retryPending) return;
+  retryPending = id;
+  if (btn) btn.disabled = true;
+  try {
+    const r = await api('/api/tasks/' + encodeURIComponent(id) + '/retry', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{}',
+    });
+    const nid = String((r && (r.id || (r.task && r.task.id))) || '');
+    if (!nid) throw new Error('重试接口未返回新任务 id');
+    const old = taskData[id] || {};
+    const nt = (r && r.task) || {};
+    taskData[nid] = Object.assign({}, nt, {
+      id: nid,
+      question: nt.question || old.question || '',
+      status: nt.status || 'queued',
+      created_at: nt.created_at || (Date.now() / 1000),
+      opts: nt.opts || old.opts,
+      mock: (nt.mock != null) ? !!nt.mock : !!old.mock,
+    });
+    /* 新任务 = 当前会话（不 followLatest：明确锁定它，和 startRun 一致） */
+    activeChat = nid;
+    followLatest = false;
+    chatMode = 'live';
+    archivedTask = null;
+    logFollow = true;
+    lanes.tid = null; lanes.text = {}; lanes.stats = {}; lanes.meta = {};
+    stopRequested = null;
+    renderTasks();
+    renderMeta();
+    pollTask(nid);
+    pollLanes();
+    loadDash();
+  } catch (e) {
+    alert('重试失败：' + e.message);
+  } finally {
+    retryPending = null;
+    renderTasks();
+  }
 }
 
 /* ── 运行中的「输入框寄语」（R23）───────────────────────────────────
@@ -1629,6 +1698,9 @@ function renderDshConversationView() {
     bd.className = 'badge ' + (busy ? 'running' : (interrupted ? 'done' : 'done'));
     bd.textContent = busy ? '运行中' : (interrupted ? '中断/异常' : '完成');
   }
+  /* DSH 视图没有任务级「重试」：隐藏按钮，避免沿用上一个失败任务的显示状态 */
+  const _rbtn = document.querySelector('#rl-retry');
+  if (_rbtn) _rbtn.classList.add('hidden');
   const q = document.querySelector('#rl-question');
   if (q) q.textContent = 'DSH Agent 会话 · ' + (c.id || '');
   const f = document.querySelector('#rl-files');
@@ -1667,6 +1739,9 @@ function renderDshView() {
     bd.className = 'badge ' + (c.status || 'running');
     bd.textContent = c.status === 'done' ? '完成' : (c.status === 'error' ? '失败' : 'Agent');
   }
+  /* 同上：DSH 视图没有任务级「重试」 */
+  const _rbtn2 = document.querySelector('#rl-retry');
+  if (_rbtn2) _rbtn2.classList.add('hidden');
   const q = document.querySelector('#rl-question');
   if (q) q.textContent = c.question || 'DeepSeek Harness Agent';
   const f = document.querySelector('#rl-files');
@@ -2010,6 +2085,7 @@ function mergeHistory(tasks, hist) {
       id: t.id, question: t.question, status: t.status,
       mock: !!t.mock, dur: t.duration_sec, at: t.created_at,
       output: t.output_name || '', live: true,
+      queue_pos: t.queue_pos,               // queued 时后端可能给排队位置
     });
   });
   (hist || []).forEach(h => {
@@ -2044,7 +2120,7 @@ function renderHistory(tasks, hist) {
       <div class="q"><span class="q-t">${esc(h.question || '（无问题）')}</span>
         ${when ? `<span class="q-r">${esc(when)}</span>` : ''}</div>
       <div class="m">
-        <span class="st ${esc(st)}">${esc(ST_TXT[st] || st || '—')}</span>
+        <span class="st ${esc(st)}">${esc(queueBadgeText(st, h))}</span>
         ${h.mock ? '<span class="tag">mock</span>' : ''}
         ${dur ? `<span>${esc(dur)}</span>` : ''}
         ${h.output ? '<span>产物</span>' : ''}
@@ -4947,6 +5023,9 @@ function init() {
 
   paintWelcome();                    // ★ R40：首屏欢迎语按时段写一次
   $('#run-btn').addEventListener('click', onRunBtn);
+  /* 失败/已终止任务的「重试」按钮（静态节点，事件用 addEventListener：CSP 禁止内联） */
+  const _rlRetryBtn = $('#rl-retry');
+  if (_rlRetryBtn) _rlRetryBtn.addEventListener('click', retryTask);
 
   /* ★ R33：日志滚动指示跟着走（滚动 / 尺寸变化 / 内容变化）
      ★ R37：改成**可拖动的圆点** —— 绑一次拖拽（内部自己挂 scroll 监听） */

@@ -937,6 +937,19 @@ kbd{font-family:var(--f-mono);font-size:10.5px;line-height:1;color:var(--t2);
 .rl-files.st-cancelled a:hover,.rl-files.st-canceled a:hover,
 .rl-files.st-interrupted a:hover{color:#6E4F10;background:rgba(138,100,20,.18);border-color:rgba(138,100,20,.5)}
 .rl-files.st-error a:hover{color:#8F1C13;background:rgba(180,35,24,.18);border-color:rgba(180,35,24,.5)}
+/* ── 失败 / 已终止任务的「重试」按钮（日志头左侧，紧挨状态徽章）────────────
+   只在 status=error/cancelled 时由 JS 去掉 .hidden；颜色引用同一组状态变量，
+   与左边徽章 / 右边三个胶囊的状态色同源。事件用 addEventListener（CSP 禁内联）。 */
+.rl-retry{display:inline-flex;align-items:center;justify-content:center;
+  padding:3px 11px;border-radius:999px;font-size:12px;font-weight:700;line-height:1.5;
+  font-family:var(--f-mono);letter-spacing:.02em;white-space:nowrap;cursor:pointer;
+  color:var(--st-error-c);background:var(--st-error-bg);
+  border:1px solid var(--st-error-bd);
+  transition:background .15s var(--ease),border-color .15s var(--ease),color .15s var(--ease)}
+.rl-retry:hover{background:rgba(180,35,24,.18);border-color:rgba(180,35,24,.55);color:#8F1C13}
+.rl-retry:active{transform:translateY(1px)}
+.rl-retry:disabled{opacity:.55;cursor:default;transform:none}
+.rl-retry.hidden{display:none}
 /* ★ 选择器写两级（`.runlog .runlog-body`）：元素同时带着 `.log`，而 `.log` 的
    `max-height:264px` 定义在本段**之后** —— 同优先级按源顺序会被它盖掉，
    日志区就封顶在 264px、下半截留空。两级选择器特异性更高，稳压它。 */

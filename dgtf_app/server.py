@@ -11,6 +11,7 @@
   GET  /api/tasks/<id>                → 单任务状态
   GET  /api/tasks/<id>/log?offset=N   → 日志增量（按字节偏移）
   POST /api/tasks/<id>/cancel         → 取消任务
+  POST /api/tasks/<id>/retry          → 失败/取消任务重试（新任务）
   GET  /api/tasks/<id>/result         → 产物正文
   GET  /api/chats                     → 历次「会话」（历史对话：内存任务 + 归档 run.json）
   GET  /api/params                    → 高级参数（yaml 摊平 + 中文说明 + 已改键）
@@ -7346,6 +7347,30 @@ class Handler(BaseHTTPRequestHandler):
         if m:
             ok = runner.cancel_task(m.group(1))
             return self._json({"ok": ok}, 200 if ok else 409)
+
+        # ★ 任务重试：只允许 error / cancelled（原 question + opts 原样开新任务）；
+        #   不存在 404、状态不允许 409。返回的新任务是 list_tasks() 里的那份
+        #   （若它此刻排在 queued，会带 queue_pos）。
+        m = re.match(r"^/api/tasks/([^/]+)/retry$", p)
+        if m:
+            _tid = m.group(1)
+            _t = runner.get_task(_tid)
+            if not _t:
+                return self._json({"error": "任务不存在"}, 404)
+            _status = str(_t.get("status") or "")
+            if _status not in ("error", "cancelled"):
+                return self._json({"error": "只有 error/cancelled 任务可以重试",
+                                   "status": _status}, 409)
+            try:
+                _new_id = runner.start_task(str(_t.get("question") or ""),
+                                            _t.get("opts") or {})
+            except ValueError as _e:
+                return self._json({"error": str(_e)}, 400)
+            except Exception as _e:  # noqa: BLE001
+                return self._json({"error": str(_e)}, 500)
+            _new_task = next((x for x in runner.list_tasks()
+                             if str(x.get("id")) == str(_new_id)), None)
+            return self._json({"ok": True, "id": _new_id, "task": _new_task})
 
         if p == "/api/tasks":
             data = self._read_json()

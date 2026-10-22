@@ -833,11 +833,21 @@ def get_task(tid: str) -> dict | None:
 def list_tasks() -> list[dict]:
     with _tasks_lock:
         items = list(_tasks.values())
+    # queue_pos：仅 status=='queued' 的任务有，1-based，按**入队顺序**
+    # （created_at 升序；同一时刻用 id 兜底保证确定性）。只加在返回副本上，
+    # 不改 _tasks 里的原任务，也不影响其它字段。
+    queued = sorted((t for t in items if t.get("status") == "queued"),
+                    key=lambda t: (float(t.get("created_at") or 0),
+                                   str(t.get("id") or "")))
+    queue_pos = {str(t.get("id")): i + 1 for i, t in enumerate(queued)}
     items.sort(key=lambda t: t["created_at"], reverse=True)
     out = []
     for t in items:
-        out.append({k: v for k, v in t.items()
-                    if not k.startswith("_") and k != "before_outputs"})
+        row = {k: v for k, v in t.items()
+               if not k.startswith("_") and k != "before_outputs"}
+        if row.get("status") == "queued":
+            row["queue_pos"] = queue_pos.get(str(t.get("id")), 0)
+        out.append(row)
     return out
 
 
