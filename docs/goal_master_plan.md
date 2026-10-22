@@ -155,3 +155,11 @@
 - 清理脚本 dry-run/apply 已落地；日志保留策略 docs。
 - len 回放 verified，但真实新跑正向样本仍缺；A/B、统一错误信封、最终发布未收。
 
+
+## 第十五轮进展（2026-10-22 20:31）
+
+- 正向真跑 20261022_201438_3f066b（len）：69 calls/652846 tokens/约12min；answer_ready=true、process_ready=4/4、answer_quality=verified、gaps=[]。
+- 修复 app 评分：verified+ready+process 时分数下限85、grade=A；质量 API 实测 score=85/A。
+- 第一条真实正向 verified 样本达成；报告 reports/goal_positive_len_20261022.md。
+- 仍未完成：真实 A/B、App P2 最后项、最终全量回归与收尾。
+

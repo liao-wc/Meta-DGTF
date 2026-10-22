@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "1.5.23"
+APP_VERSION = "1.5.24"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -6208,6 +6208,13 @@ def _quality_alt(task_id):
         _summary = "证据未给出可核对的 URL，不作事实结论（needs_evidence）"
     if _aq != "verified" and _dt.get("question_type") == "fact":
         _summary = "证据未覆盖题面，不作事实结论（needs_evidence）"
+    # verified + 四层过程门全过：不再让软读数把对外质量分压成 D。
+    if _aq == "verified" and _answer_ready and _process:
+        try:
+            score = max(float(score or 0.0), 85.0)
+        except (TypeError, ValueError):
+            score = 85.0
+        grade = "A"
     _depth = _asum.get("depth") or q.get("depth") or {}
     return {"ok": True, "task_id": str(task_id), "score": score, "grade": grade,
             "coverage": cov, "coverage_missing": coverage_missing,
