@@ -24,11 +24,12 @@
 
 ## 3. HTTPS
 
-- server.py 新增 --https。
+- server.py 默认 HTTPS；--http 或 DGTF_HTTP=1 可回退 HTTP。
 - 自动用 OpenSSL 生成/复用 dgtf_memory/tls 自签名证书，TLS1.2+，SAN localhost/127.0.0.1。
 - HTTPS 下启用 HSTS，CSRF/口令 cookie 增加 Secure。
 - DSH 工作台客户端支持 DGTF_APP_BASE=https://127.0.0.1。
-- 实测：https://127.0.0.1:8766/api/health 200；HSTS 存在；HTTPS + CSRF POST 正常；dsh_tool 经 HTTPS 返回 403（假令牌，TLS 连通正常）。
+- 实测：主服务 https://127.0.0.1:8765/api/health 200；HSTS 存在；HTTPS + CSRF POST 正常；dsh_tool 经 HTTPS 返回 403（假令牌，TLS 连通正常）。
+- 切换 HTTPS 后 dgtf_app/selftest.py 371/0、依赖链审计 58/0 均通过。
 
 ## 4. 常驻完整自动周期
 
@@ -98,7 +99,7 @@
 ## 10. 遗留/下一轮
 
 - HTTPS 已默认启用：`python dgtf_app/server.py` 默认 HTTPS；`--http` 或 `DGTF_HTTP=1` 回退 HTTP。证书为自签名，浏览器会提示一次。
-- 长真实引擎跑仍需要任务级 timeout/预算上限。
+- 长真实引擎跑可用任务级 timeout_s 控制；默认不设上限，需按预算显式传。
 - 更多供应商故障注入、全量长时压力、前端交互全按钮回归仍可继续。
 
 ## 11. 交付物

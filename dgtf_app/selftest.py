@@ -3,7 +3,7 @@
 
 用法：
     python dgtf_app/server.py            # 另开一个终端
-    python dgtf_app/selftest.py [--base http://127.0.0.1:8765]
+    python dgtf_app/selftest.py [--base https://127.0.0.1:8765]  # HTTP 请显式传 --base
 
 走完「提交 → 实时日志 → 完成 → 取产物 → 历史检索」全链路（mock，零花费），
 并在结束时删掉它自己产生的 mock 产物 —— 自检无副作用。
@@ -22,11 +22,14 @@ for _s_utf8 in (_sys_utf8.stdout, _sys_utf8.stderr):
 import argparse
 import json
 import re
+import os
 import shutil
 import sys
 import time
 import urllib.parse
 import urllib.request
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context  # 本机自签名测试
 from pathlib import Path
 
 import yaml  # noqa: E402
@@ -848,7 +851,8 @@ def check_r46_frontend(js: str) -> None:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--base", default="http://127.0.0.1:8765")
+    ap.add_argument("--base", default=os.environ.get(
+        "DGTF_APP", "https://127.0.0.1:8765"))
     base = ap.parse_args().base
 
     try:

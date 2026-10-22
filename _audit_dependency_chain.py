@@ -4,7 +4,9 @@ import json, os, re, sys, urllib.request, urllib.parse
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-B = os.environ.get('DGTF_APP', 'http://127.0.0.1:8765')
+B = os.environ.get('DGTF_APP', 'https://127.0.0.1:8765')
+import ssl as _ssl
+_ssl._create_default_https_context = _ssl._create_unverified_context  # 本机自签名测试
 PASS, FAIL = [], []
 
 def ck(name, ok, detail=''):
