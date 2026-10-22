@@ -118,7 +118,8 @@ $lines = @(
   ('$env:DSH_BIN = "' + $DSH + '"'),
   ('$env:DSH_HOME = "' + $Data + '\dsh_home"'),
   ('Set-Location "' + $ProjectRoot + '"'),
-  ('& "' + $Python + '" "' + $ProjectRoot + '\dgtf_app\server.py" --port ' + $Port + ' *>> "' + $Data + '\server.log"')
+  ('$p = Start-Process -FilePath "' + $Python + '" -ArgumentList @("' + $ProjectRoot + '\dgtf_app\server.py","--port","' + $Port + '") -WorkingDirectory "' + $ProjectRoot + '" -NoNewWindow -PassThru -RedirectStandardOutput "' + $Data + '\server.log" -RedirectStandardError "' + $Data + '\server.err.log"'),
+  ('$p.WaitForExit()')
 )
 Set-Content -LiteralPath $wrapper -Value $lines -Encoding UTF8
 icacls $wrapper /inheritance:r /grant:r ($Account + ':F') 'Administrators:F' 'SYSTEM:F' | Out-Null
@@ -152,16 +153,26 @@ if (-not $check) {
   Get-ScheduledTaskInfo -TaskName $TaskName | Format-List LastRunTime,LastTaskResult,NextRunTime
   throw ("计划任务已创建但端口 " + $Port + " 未监听；请把上面的 server.log 发回。")
 }
-$oldCb = [Net.ServicePointManager]::ServerCertificateValidationCallback
-[Net.ServicePointManager]::ServerCertificateValidationCallback = { $true }
+$curl = Join-Path $env:SystemRoot 'System32\curl.exe'
 try {
-  $probe = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 10
-  if ([int]$probe.StatusCode -ne 200) { throw ("访问口令 URL 返回 " + $probe.StatusCode) }
+  if (Test-Path $curl) {
+    $code = (& $curl -k -s -o NUL --max-time 15 -w "%{http_code}" $url | Out-String).Trim()
+    if ($code -ne "200") { throw ("curl HTTP " + $code) }
+  } else {
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    $oldCb = [Net.ServicePointManager]::ServerCertificateValidationCallback
+    [Net.ServicePointManager]::ServerCertificateValidationCallback = { $true }
+    try {
+      $probe = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 10
+      if ([int]$probe.StatusCode -ne 200) { throw ("HTTP " + $probe.StatusCode) }
+    } finally {
+      [Net.ServicePointManager]::ServerCertificateValidationCallback = $oldCb
+    }
+  }
 } catch {
   if (Test-Path (Join-Path $Data 'server.log')) { Get-Content (Join-Path $Data 'server.log') -Tail 40 -Encoding UTF8 }
+  if (Test-Path (Join-Path $Data 'server.err.log')) { Get-Content (Join-Path $Data 'server.err.log') -Tail 40 -Encoding UTF8 }
   throw ("服务已监听但访问口令 URL 校验失败: " + $_.Exception.Message)
-} finally {
-  [Net.ServicePointManager]::ServerCertificateValidationCallback = $oldCb
 }
 $urlFile = Join-Path $Data "access_url.txt"
 [IO.File]::WriteAllText($urlFile, $url, (New-Object Text.UTF8Encoding($false)))
