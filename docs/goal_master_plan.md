@@ -88,3 +88,11 @@
 - app v1.5.19 / commit 239594e；真实跑与上线检查单落 reports/docs。
 - 仍未完成：证据抽取修复（得到真实 URL 正向样本）、任务级 Pareto policy 执行、本地模型任务级评分、App P2。
 
+
+## 第七轮进展（2026-10-22 19:03）
+
+- app v1.5.20：Pareto policy 任务级执行；真实任务默认 auto_policy=true，读取策略圈数扩展四层预算，不砍 route。
+- mock 验收：auto_policy_rounds=0:2,1:2,both:2,all:2，cmd 实际带 --rounds；自动策略 last_strategy=local_model。
+- 门禁：fast_gate 12/0、selftest 371/0、依赖审计 78/0。
+- 下一步：真实任务 A/B（policy rounds vs profile auto）；证据抽取修复；App P2。
+

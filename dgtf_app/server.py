@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "1.5.19"
+APP_VERSION = "1.5.20"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -8909,6 +8909,12 @@ class Handler(BaseHTTPRequestHandler):
                             else not _is_mock_task)
             _auto_template = bool(opts.pop("auto_template", False))
             _auto_llm = bool(opts.pop("auto_llm", False))
+            # [v1.5.20] 自动帕累托执行面：把 policy 的圈数预算扩到四层，
+            # 不砍 route、不覆盖显式 rounds；默认真实任务启用。
+            _apol_opt = opts.pop("auto_policy", None)
+            _auto_policy = (bool(_apol_opt) if _apol_opt is not None
+                            else not _is_mock_task)
+            _auto_policy_rounds = ""
             if _auto_llm:
                 _lr = _llm_predict_local(question,
                                          backend=str(opts.pop("llm_backend", "") or "qwen05b"))
@@ -8925,6 +8931,20 @@ class Handler(BaseHTTPRequestHandler):
             if _auto_pareto and not opts.get("profile"):
                 _pol = _schedule_policy_load()
                 opts["profile"] = str(_pol.get("profile") or "方案F-帕累托最优.yaml")
+            if (_auto_pareto and _auto_policy and not _auto_template
+                    and not _auto_llm and not opts.get("route")
+                    and not opts.get("rounds")):
+                _pol = _schedule_policy_load()
+                _raw_r = str(_pol.get("rounds") or _pol.get("auto_rounds") or "")
+                try:
+                    _r = int(str(_raw_r).rsplit(":", 1)[-1] or 2)
+                except (TypeError, ValueError):
+                    _r = 2
+                _r = max(2, min(6, _r))
+                _auto_policy_rounds = (":".join([]) or
+                                       "0:%d,1:%d,both:%d,all:%d" % (_r, _r, _r, _r))
+                opts["rounds"] = _auto_policy_rounds
+                opts["auto_policy"] = True
             try:
                 tid = runner.start_task(question, opts)
             except ValueError as e:
@@ -8934,6 +8954,8 @@ class Handler(BaseHTTPRequestHandler):
             return self._json({"id": tid, "auto_pareto": _auto_pareto,
                                "auto_template": _auto_template,
                                "auto_llm": _auto_llm,
+                               "auto_policy": _auto_policy,
+                               "auto_policy_rounds": _auto_policy_rounds,
                                "project_context": _project_ctx,
                                "timeout_s": opts.get("timeout_s") or 0,
                                "profile": opts.get("profile") or ""}, 201)
