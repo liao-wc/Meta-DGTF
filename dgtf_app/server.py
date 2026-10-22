@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "1.5.15"
+APP_VERSION = "1.5.16"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -430,6 +430,10 @@ def make_server(host: str, port: int, token: str = "", verbose: bool = False):
     srv = _QuietThreadingHTTPServer((host, port), Handler)
     srv.verbose = verbose
     srv.daemon_threads = True
+    try:
+        _sched_auto_ensure()
+    except Exception:
+        pass
     return srv
 
 
@@ -6914,6 +6918,127 @@ def _schedule_pareto(limit=120, prefer="balanced"):
 
 _SCHEDULE_POLICY_FILE = Path(__file__).resolve().parent.parent / "dgtf_memory" / "schedule_policy.json"
 
+_SCHED_AUTO_FILE = Path(__file__).resolve().parent.parent / "dgtf_memory" / "schedule_auto.json"
+_SCHED_AUTO_THREAD = None
+_SCHED_AUTO_STOP = None
+_SCHED_AUTO_LOCK = None
+_SCHED_AUTO_DEFAULT = {"enabled": True, "interval": 3600, "last_tick": 0,
+                       "last_strategy": "", "last_error": "",
+                       "last_applied_at": 0}
+
+
+def _sched_auto_load():
+    import json as _json
+    rec = dict(_SCHED_AUTO_DEFAULT)
+    try:
+        if _SCHED_AUTO_FILE.exists():
+            raw = _json.loads(_SCHED_AUTO_FILE.read_text(
+                encoding="utf-8", errors="replace"))
+            if isinstance(raw, dict):
+                rec.update(raw)
+    except Exception:
+        pass
+    try:
+        rec["interval"] = max(300, min(86400, int(rec.get("interval") or 3600)))
+    except (TypeError, ValueError):
+        rec["interval"] = 3600
+    return rec
+
+
+def _sched_auto_save(rec):
+    import json as _json
+    try:
+        _SCHED_AUTO_FILE.parent.mkdir(parents=True, exist_ok=True)
+        tmp = _SCHED_AUTO_FILE.with_suffix(".tmp")
+        tmp.write_text(_json.dumps(rec, ensure_ascii=False, indent=1),
+                       encoding="utf-8")
+        tmp.replace(_SCHED_AUTO_FILE)
+    except Exception:
+        pass
+
+
+def _sched_auto_lock():
+    global _SCHED_AUTO_LOCK
+    import threading as _th
+    if _SCHED_AUTO_LOCK is None:
+        _SCHED_AUTO_LOCK = _th.Lock()
+    return _SCHED_AUTO_LOCK
+
+
+def _sched_auto_loop(stop_event):
+    import time as _t
+    first = True
+    while not stop_event.is_set():
+        rec = _sched_auto_load()
+        wait = 8 if first else int(rec.get("interval") or 3600)
+        first = False
+        if stop_event.wait(wait):
+            break
+        rec = _sched_auto_load()
+        if not rec.get("enabled"):
+            continue
+        if not _sched_auto_lock().acquire(blocking=False):
+            continue
+        try:
+            res = _v2_auto_apply(prefer="balanced")
+            rec["last_tick"] = _t.time()
+            if res.get("ok"):
+                rec["last_strategy"] = str((res.get("chosen") or {}).get("name") or "")
+                rec["last_error"] = ""
+                rec["last_applied_at"] = _t.time()
+            else:
+                rec["last_error"] = str(res.get("error") or "自动帕累托失败")[:400]
+            _sched_auto_save(rec)
+        except Exception as exc:
+            rec["last_tick"] = _t.time()
+            rec["last_error"] = str(exc)[:400]
+            _sched_auto_save(rec)
+        finally:
+            _sched_auto_lock().release()
+
+
+def _sched_auto_status():
+    import threading as _th
+    rec = _sched_auto_load()
+    rec["thread_running"] = bool(_SCHED_AUTO_THREAD
+                                 and _SCHED_AUTO_THREAD.is_alive())
+    return rec
+
+
+def _sched_auto_ensure():
+    global _SCHED_AUTO_THREAD, _SCHED_AUTO_STOP
+    import threading as _th
+    rec = _sched_auto_load()
+    if not rec.get("enabled"):
+        if _SCHED_AUTO_STOP is not None:
+            _SCHED_AUTO_STOP.set()
+        return
+    with _sched_auto_lock():
+        if _SCHED_AUTO_THREAD and _SCHED_AUTO_THREAD.is_alive():
+            return
+        _SCHED_AUTO_STOP = _th.Event()
+        _SCHED_AUTO_THREAD = _th.Thread(target=_sched_auto_loop,
+                                        args=(_SCHED_AUTO_STOP,), daemon=True,
+                                        name="schedule-auto")
+        _SCHED_AUTO_THREAD.start()
+
+
+def _sched_auto_set(data):
+    rec = _sched_auto_load()
+    if "enabled" in (data or {}):
+        rec["enabled"] = bool(data.get("enabled"))
+    if "interval" in (data or {}):
+        try:
+            rec["interval"] = max(300, min(86400, int(data.get("interval"))))
+        except (TypeError, ValueError):
+            pass
+    _sched_auto_save(rec)
+    _sched_auto_ensure()
+    return rec
+
+
+
+
 
 def _schedule_policy_load():
     import json as _json
@@ -7417,6 +7542,8 @@ class Handler(BaseHTTPRequestHandler):
                     prefer=str((q.get("prefer") or ["balanced"])[0])))
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/schedule/auto":
+            return self._json({"ok": True, "auto": _sched_auto_status()})
         if p == "/api/schedule/v2/pareto":
             try:
                 return self._json(_v2_template_pareto(
@@ -8015,6 +8142,9 @@ class Handler(BaseHTTPRequestHandler):
                     c=float(data.get("c") or 0.5)))
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/schedule/auto":
+            data = self._read_json()
+            return self._json({"ok": True, "auto": _sched_auto_set(data)})
         if p == "/api/schedule/v2/apply-pareto":
             try:
                 data = self._read_json()
@@ -8965,6 +9095,11 @@ def main() -> int:
                 print(f"  Agent 守护停止失败（忽略）：{type(e).__name__}: {e}")
         try:
             _stop_rag_embed()
+        except Exception:
+            pass
+        try:
+            if _SCHED_AUTO_STOP is not None:
+                _SCHED_AUTO_STOP.set()
         except Exception:
             pass
         srv.server_close()

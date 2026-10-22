@@ -34,7 +34,7 @@ ck('engine file exists', eng.exists())
 ck('engine version 1.30.3', '__version__ = "1.30.3"' in eng.read_text(encoding='utf-8', errors='replace'))
 srv = (ROOT / 'dgtf_app' / 'server.py').read_text(encoding='utf-8', errors='replace')
 appver = re.search(r'APP_VERSION = "([^"]+)"', srv)
-ck('app version present 1.5.15', bool(appver and appver.group(1) == '1.5.15'), appver.group(1) if appver else '')
+ck('app version present 1.5.16', bool(appver and appver.group(1) == '1.5.16'), appver.group(1) if appver else '')
 readme = (ROOT / 'README.md').read_text(encoding='utf-8', errors='replace')
 ck('README app version synced', bool(appver and ('app V' + appver.group(1)) in readme),
    [l for l in readme.splitlines() if 'app V' in l][:2])
