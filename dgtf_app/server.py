@@ -7342,8 +7342,13 @@ def main() -> int:
                     help="访问口令（不带值时自动生成）。开启后所有请求都要带它；"
                          "启动时会打印带 ?t= 的网址")
     ap.add_argument("--port", type=int, default=8765)
-    ap.add_argument("--https", action="store_true",
-                    help="启用 HTTPS（自动生成/复用 dgtf_memory/tls 自签名证书）")
+    _default_https = str(os.getenv("DGTF_HTTP", "")).strip().lower() not in (
+        "1", "true", "yes", "on")
+    ap.add_argument("--https", dest="https", action="store_true",
+                    default=_default_https,
+                    help="启用 HTTPS（默认；自动生成/复用 dgtf_memory/tls 自签名证书）")
+    ap.add_argument("--http", dest="https", action="store_false",
+                    help="显式使用 HTTP（兼容旧客户端/测试）")
     ap.add_argument("--verbose", action="store_true")
     ap.add_argument("--no-agent-daemon", action="store_true",
                     help="不随 app 启动常驻 Agent 守护（默认启动）")
