@@ -106,16 +106,31 @@ if (Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue) {
 Register-ScheduledTask -TaskName $TaskName -Action $action -Trigger $trigger -Settings $settings -User $Account -Password $password -RunLevel Highest -Description "DGTF isolated HTTPS web app" | Out-Null
 Start-ScheduledTask -TaskName $TaskName
 Start-Sleep -Seconds 4
-$check = Get-NetTCPConnection -State Listen -LocalPort $Port -ErrorAction SilentlyContinue
+$url = "https://127.0.0.1:" + $Port + "/?t=" + $token
+$check = $null
+for ($i = 0; $i -lt 15; $i++) {
+  $check = Get-NetTCPConnection -State Listen -LocalPort $Port -ErrorAction SilentlyContinue
+  if ($check) { break }
+  Start-Sleep -Seconds 1
+}
 if (-not $check) {
   Write-Host "服务未监听，读取日志..."
-  if (Test-Path (Join-Path $Data 'server.log')) { Get-Content (Join-Path $Data 'server.log') -Tail 30 -Encoding UTF8 }
+  if (Test-Path (Join-Path $Data 'server.log')) { Get-Content (Join-Path $Data 'server.log') -Tail 40 -Encoding UTF8 }
   throw ("计划任务已创建但端口 " + $Port + " 未监听；请把上面的 server.log 发回。")
 }
-
-$url = "https://127.0.0.1:" + $Port + "/?t=" + $token
+$oldCb = [Net.ServicePointManager]::ServerCertificateValidationCallback
+[Net.ServicePointManager]::ServerCertificateValidationCallback = { $true }
+try {
+  $probe = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 10
+  if ([int]$probe.StatusCode -ne 200) { throw ("访问口令 URL 返回 " + $probe.StatusCode) }
+} catch {
+  if (Test-Path (Join-Path $Data 'server.log')) { Get-Content (Join-Path $Data 'server.log') -Tail 40 -Encoding UTF8 }
+  throw ("服务已监听但访问口令 URL 校验失败: " + $_.Exception.Message)
+} finally {
+  [Net.ServicePointManager]::ServerCertificateValidationCallback = $oldCb
+}
 $urlFile = Join-Path $Data "access_url.txt"
-Set-Content -LiteralPath $urlFile -Value $url -Encoding UTF8
+[IO.File]::WriteAllText($urlFile, $url, (New-Object Text.UTF8Encoding($false)))
 $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent().Name
 icacls $urlFile /inheritance:r /grant:r ($currentUser + ':R') 'Administrators:F' 'SYSTEM:F' | Out-Null
 Write-Host "已创建隔离账户/计划任务。"
