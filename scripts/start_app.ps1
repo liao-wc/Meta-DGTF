@@ -332,6 +332,17 @@ if ($runningDgtf.Count -gt 0) {
     $altHealth = Get-HealthStatus $alt $token
     if ($altHealth.Ok) { $health = $altHealth }
   }
+  # 进程刚启动时可能已经监听端口、但健康接口尚未完全就绪；
+  # 在这里短暂等待，避免“端口有 DGTF 进程但健康 200 尚未 ok”的误报。
+  $healthDeadline = (Get-Date).AddSeconds(15)
+  while (-not $health.Ok -and (Get-Date) -lt $healthDeadline) {
+    Start-Sleep -Milliseconds 700
+    $health = Get-HealthStatus $PreferredScheme $token
+    if (-not $health.Ok) {
+      $altHealth = Get-HealthStatus $alt $token
+      if ($altHealth.Ok) { $health = $altHealth }
+    }
+  }
   if (-not $health.Ok) {
     Fail ("端口 " + $Port + " 上已有 DGTF app，但健康检查失败：" + $health.Message + "；可用 -Restart 重启（会先停止该实例）")
   }
