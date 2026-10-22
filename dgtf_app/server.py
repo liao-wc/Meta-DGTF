@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "1.4.1"
+APP_VERSION = "1.5.11"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -2441,9 +2441,11 @@ def _dsh_guard_loop(stop_event):
             rec["last_error"] = ""
         else:
             task = ("[DSH守护自动巡检] 请检查元DGTF当前状态：最近日志、任务队列、提案、"
-                    "依赖/门禁与工作区变更；只做低风险且可验证的检查或修复；"
-                    "高风险、删除、密钥、外部服务、git push、账户/ACL 修改一律不执行，"
-                    "列入人工确认。不要启动 headless，全程在当前 DSH 对话执行。"
+                    "依赖/门禁与工作区变更。当前为完全接管模式：允许在本项目内修改源码/文档/配置/测试、"
+                    "git add/commit/revert、版本号与 CHANGELOG 迭代、验证并修复/关闭所有与元DGTF相关的"
+                    "pending 提案、自动修复并跑门禁。禁止 git push/force/reset --hard、删除项目数据、"
+                    "读取或外发密钥、账户/ACL/系统级改动及不可逆外部操作；这些列入人工确认。"
+                    "不要启动 headless，全程在当前 DSH 对话执行。"
                     "完成后用简体中文给出：检查项、修复项、验证结果、待人工确认风险。")
             try:
                 res = _dsh_current_prompt(task)
@@ -2582,18 +2584,21 @@ def _run_dsh_agent_raw(task: str, sid: str = "", timeout: int = 300,
                   + "\n- ".join(_imports))
     _allow_write = bool(auto_repair or _perm != "read-only")
     if _perm == "danger-full-access":
-        _mode = ("完全访问模式（用户已明确选择）：可读写工作区及本机文件；"
-                 "仍不得把密钥/项目内容发到 API 以外的外部服务，禁止联网上传；"
-                 "不要执行 git add / git commit / push，由工作台统一提交。")
+        _mode = ("完全接管模式（用户已明确授权）：可读写工作区及本机项目文件；"
+                 "允许 git add / git commit / git revert、版本号与 CHANGELOG 迭代、"
+                 "运行门禁并提交源码/文档修复；禁止 git push / force / reset --hard、"
+                 "密钥读取或外发、账户/ACL/系统级改动和不可逆外部操作。"
+                 "项目内容不得发到 API 以外的外部服务，禁止联网上传。")
     elif _allow_write:
-        _mode = ("你可以读取并修改项目工作区文件；修改源码后不要直接跑 fast_gate（"
-                 "Windows 沙箱临时写会被 ACL 拦），工作台会统一跑；不要执行 git add / git commit / push，"
-                 "由工作台统一提交。不得读取或修改 .env、密钥、凭据、.git 内部文件；"
+        _mode = ("你可以读取并修改项目工作区文件；允许 git add / git commit / git revert、"
+                 "版本号与 CHANGELOG 迭代；禁止 git push / force / reset --hard。"
+                 "修改源码后可运行门禁；不得读取或修改 .env、密钥、凭据、.git 内部文件；"
                  "不得把项目内容发到 API 以外的外部服务；禁止联网上传。")
     else:
         _mode = "只读模式：只读取项目文件，不修改任何文件。"
     if _auto_review:
-        _mode += " 当前为自动审查模式：高风险操作仍应停下说明，由工作台/用户确认。"
+        _mode += (" 当前为自动接管模式：项目内修复可自动验证并提交；"
+                  "仅密钥/账户/ACL/外部不可逆操作需停下说明。")
     auth = ("你在元DGTF项目根目录：%s。请始终使用简体中文回答，"
             "思考过程（thinking）也必须使用简体中文，禁止输出英文思考；"
             "包括思考摘要、解释和最终答复；代码/命令保持原文。"

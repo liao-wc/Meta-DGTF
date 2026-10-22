@@ -3,12 +3,12 @@
 一个**单文件**的四层螺旋推理引擎：修行 / 研究 / 对撞 / 元，跑出可审计的产物。
 
 - **当前版本**：`元DGTF-V1.30.0.py`（单文件引擎）
-- **人用界面**：`dgtf_app/`（app V1.4.1；本地 Web 工作台，见 `dgtf_app/README.md`）
+- **人用界面**：`dgtf_app/`（app V1.5.11；本地 Web 工作台，见 `dgtf_app/README.md`）
 - **版本历史**：`CHANGELOG.md`；app 发布说明见 `docs/releases/`
 
 > 这份 README 只写**能被验证**的事：命令都真跑过，数字都是当前版本的实测值。
 
-## 最新能力（2026-10-21，app V1.4.0）
+## 最新能力（2026-10-22，app V1.5.11）
 
 - **EML + DSH 全流程闭环**：知识刷新 → 引擎跑次 → 消费者/任务 → 自审提案；见 docs/full_loop.md。
 - **本地 LLM LoRA fine-tune**：Qwen2.5-0.5B-Instruct 学习“问题 → route/rounds JSON”；留出 route 42.9% / rounds MAE 1.446；见 docs/llm_lora_finetune.md。
