@@ -30,8 +30,9 @@
 - DSH 工作台客户端支持 DGTF_APP_BASE=https://127.0.0.1。
 - 实测：主服务 https://127.0.0.1:8765/api/health 200；HSTS 存在；HTTPS + CSRF POST 正常；dsh_tool 经 HTTPS 返回 403（假令牌，TLS 连通正常）。
 - 切换 HTTPS 后 dgtf_app/selftest.py 371/0、依赖链审计 58/0 均通过。
-- 自签名证书已导入 CurrentUser\Root（证书 CN=localhost，SAN=DNS:localhost,IP:127.0.0.1，CA:TRUE，到期 2029-01-24）；Edge headless 无证书错误加载应用，Invoke-WebRequest 无跳过校验 200。
-- 新增 scripts/trust_https_cert.ps1，供其他设备/新用户信任本机证书。
+- 证书已升级为本地 CA + 服务器叶子：DGTF Local CA（CA:TRUE，2036 到期）签发 CN=localhost 的 server.pem（CA:FALSE、serverAuth、SAN localhost/127 + 本机 LAN IP，2029 到期）；本地 CA 已导入 CurrentUser\Root，旧自签名 localhost 根已移除。
+- Edge headless 无证书错误加载应用；Invoke-WebRequest 不跳过校验返回 200；服务端握手 issuer=CN=DGTF Local CA。
+- 新增 scripts/trust_https_cert.ps1，安装的信任对象是 ca.pem（CA 根），不是服务器叶子私钥。
 
 ## 4. 常驻完整自动周期
 

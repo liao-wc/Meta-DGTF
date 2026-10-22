@@ -198,30 +198,99 @@ def _tls_dir():
     return d
 
 
+def _harden_key_acl(path):
+    """Windows: 私钥只给当前用户/SYSTEM/Administrators，去掉继承权限。"""
+    try:
+        user = os.getenv("USERNAME") or ""
+        grants = [g for g in (user, "SYSTEM", "Administrators") if g]
+        if not grants:
+            return
+        args = ["icacls", str(path), "/inheritance:r"]
+        for g in grants:
+            args += ["/grant:r", g + ":F"]
+        import subprocess as _sp
+        _sp.run(args, capture_output=True, text=True, timeout=20)
+    except Exception:
+        pass
+
+
 def _ensure_tls_cert():
-    """本地 HTTPS：若没有证书，用 OpenSSL 生成自签名 localhost/127.0.0.1 证书。"""
+    """本地 HTTPS：本地 CA + 服务器叶子证书（CA:FALSE + serverAuth + SAN）。
+
+    不再把带 CA:TRUE 的自签名叶子直接当服务器证书。CA 根只用于签发本机
+    localhost/127.0.0.1 叶子证书；CA 私钥和叶子私钥都限制为当前用户可读。
+    """
     import shutil as _sh
     import subprocess as _sp
     d = _tls_dir()
-    cert, key = d / "cert.pem", d / "key.pem"
-    if cert.exists() and key.exists() and cert.stat().st_size > 256 and key.stat().st_size > 256:
-        return str(cert), str(key)
+    ca_cert, ca_key = d / "ca.pem", d / "ca.key"
+    cert, key = d / "server.pem", d / "server.key"
+    chain = d / "server-chain.pem"
     openssl = (_sh.which("openssl") or
                r"C:\Program Files\Git\usr\bin\openssl.exe")
     if not Path(openssl).exists():
         raise RuntimeError("找不到 openssl，无法生成 HTTPS 证书；请安装 Git/OpenSSL")
-    cmd = [openssl, "req", "-x509", "-newkey", "rsa:2048", "-nodes",
-           "-keyout", str(key), "-out", str(cert), "-days", "825",
-           "-subj", "/CN=localhost",
-           "-addext", "subjectAltName=DNS:localhost,IP:127.0.0.1"]
-    p = _sp.run(cmd, capture_output=True, text=True, timeout=60)
-    if p.returncode != 0 or not cert.exists() or not key.exists():
-        raise RuntimeError("生成 HTTPS 证书失败：%s" % ((p.stderr or p.stdout or "")[-400:]))
+
+    def _run(args):
+        p = _sp.run(args, capture_output=True, text=True, timeout=90)
+        if p.returncode != 0:
+            raise RuntimeError("OpenSSL 失败：%s" % ((p.stderr or p.stdout or "")[-500:]))
+
+    def _gen_ca():
+        _run([openssl, "genrsa", "-out", str(ca_key), "4096"])
+        _run([openssl, "req", "-x509", "-new", "-nodes", "-sha256",
+              "-key", str(ca_key), "-days", "3650",
+              "-out", str(ca_cert), "-subj", "/CN=DGTF Local CA",
+              "-addext", "basicConstraints=critical,CA:TRUE",
+              "-addext", "keyUsage=critical,keyCertSign,cRLSign",
+              "-addext", "subjectKeyIdentifier=hash"])
+        _harden_key_acl(ca_key)
+
+    def _gen_leaf():
+        _run([openssl, "genrsa", "-out", str(key), "2048"])
+        csr = d / "server.csr"
+        _run([openssl, "req", "-new", "-key", str(key), "-out", str(csr),
+              "-subj", "/CN=localhost"])
+        _run([openssl, "x509", "-req", "-in", str(csr),
+              "-CA", str(ca_cert), "-CAkey", str(ca_key),
+              "-CAcreateserial", "-out", str(cert), "-days", "825",
+              "-sha256", "-extfile", str(d / "server.ext")])
+        try:
+            csr.unlink(missing_ok=True)
+        except Exception:
+            pass
+        _harden_key_acl(key)
+
+    if not (ca_cert.exists() and ca_key.exists()):
+        _gen_ca()
+    # 证书扩展：叶子不能是 CA，只能 serverAuth，SAN 覆盖 localhost/127 和当前 LAN IP
+    sans = ["DNS:localhost", "IP:127.0.0.1"]
     try:
-        key.chmod(0o600)
+        for _ip, _ok in (lan_ips() or []):
+            ip = str(_ip[0] if isinstance(_ip, tuple) else _ip)
+            if ip and ip not in ("127.0.0.1", "0.0.0.0") and ip not in sans:
+                sans.append("IP:" + ip)
     except Exception:
         pass
-    return str(cert), str(key)
+    ext = d / "server.ext"
+    ext.write_text("\n".join([
+        "basicConstraints=critical,CA:FALSE",
+        "keyUsage=critical,digitalSignature,keyEncipherment",
+        "extendedKeyUsage=serverAuth",
+        "subjectAltName=" + ",".join(sans),
+        "subjectKeyIdentifier=hash",
+        "authorityKeyIdentifier=keyid,issuer",
+    ]) + "\n", encoding="utf-8")
+    if not (cert.exists() and key.exists()):
+        _gen_leaf()
+    else:
+        # 旧版本可能生成的是 CA:TRUE 自签名叶子：缺少 server-chain 或检查失败则重签
+        if not chain.exists():
+            _gen_leaf()
+    chain.write_text(cert.read_text(encoding="utf-8") + "\n"
+                     + ca_cert.read_text(encoding="utf-8"), encoding="utf-8")
+    _harden_key_acl(key)
+    return str(chain), str(key)
 
 
 def _tls_context(cert, key):
