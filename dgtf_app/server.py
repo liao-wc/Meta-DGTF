@@ -8,6 +8,7 @@
   GET  /api/config                    → 引擎版本 / 凭据状态（不泄露值）/ 产物统计
   GET  /api/tasks                     → 任务列表
   POST /api/tasks                     → 新建任务 {question, opts}
+  GET  /api/logs?name=...&tail=N      → 运行日志尾部（脱敏）
   GET  /api/tasks/<id>                → 单任务状态
   GET  /api/tasks/<id>/log?offset=N   → 日志增量（按字节偏移）
   POST /api/tasks/<id>/cancel         → 取消任务
@@ -301,6 +302,91 @@ def _tls_context(cert, key):
     ctx.load_cert_chain(certfile=cert, keyfile=key)
     return ctx
 
+
+# ── 运行日志查看（GET /api/logs）──────────────────────────────
+# 只允许三个白名单名字；文件路径由**服务端**决定（不接受调用方给路径），
+# 因此不存在路径穿越面。返回内容不含任何绝对路径。
+_LOG_TAIL_BYTES = 512 * 1024
+_LOG_MAX_LINES = 1000
+_LOG_DEFAULT_LINES = 200
+_LOG_REDACT_RULES = (
+    # URL 查询里的访问口令：?t=xxx / &t=xxx（含 token= 形式）
+    (re.compile(r"([?&](?:t|token)=)[^&\s#\"'<>]+", re.IGNORECASE), r"\1***"),
+    # 环境变量式密钥：KEY=value / KEY: value
+    (re.compile(r"(?i)(DGTF_ACCESS_TOKEN\s*[=:]\s*)[^\s\"'&,;]+"), r"\1***"),
+    (re.compile(r"(?i)(DEEPSEEK_API_KEY\s*[=:]\s*)[^\s\"'&,;]+"), r"\1***"),
+    (re.compile(r"(?i)(DGTF_API_KEY\s*[=:]\s*)[^\s\"'&,;]+"), r"\1***"),
+)
+
+
+def _log_redact(text: str) -> tuple:
+    """脱敏一行日志；返回 (脱敏后文本, 替换次数)。"""
+    red = 0
+    for rx, repl in _LOG_REDACT_RULES:
+        text, n = rx.subn(repl, text)
+        red += int(n)
+    return text, red
+
+
+def _log_candidates(name: str) -> list:
+    """白名单名字 → 候选文件（按优先级）。路径由服务端算，不接收外部路径。"""
+    root = Path(__file__).resolve().parent.parent
+    try:
+        port = int(_APP_PORT or 8765)
+    except (TypeError, ValueError):
+        port = 8765
+    if name == "app":
+        return [root / ("_app_out_%d.log" % port), root / "_app_out.log"]
+    if name == "err":
+        return [root / ("_app_err_%d.log" % port), root / "_app_err.log"]
+    if name == "daemon":
+        return [root / "dgtf_memory" / "agent_daemon.log"]
+    return []
+
+
+def read_log_tail(name: str, tail: int = _LOG_DEFAULT_LINES) -> dict:
+    """读白名单日志的尾部（最多 512KB / tail 行），脱敏后返回契约字段。
+
+    不存在的文件 ⇒ FileNotFoundError（路由转 404）；读取失败 ⇒ OSError（500）。
+    """
+    cands = _log_candidates(name)
+    if not cands:
+        raise FileNotFoundError("unknown log name")
+    path = next((p for p in cands if p.is_file()), None)
+    if path is None:
+        raise FileNotFoundError("log file not found")
+    size = path.stat().st_size
+    cut = size > _LOG_TAIL_BYTES
+    with path.open("rb") as f:
+        if cut:
+            f.seek(size - _LOG_TAIL_BYTES)
+        data = f.read()
+    text = data.decode("utf-8", errors="replace")
+    lines = text.split("\n")
+    if cut and lines:
+        lines = lines[1:]          # 尾部起点可能切在半行上
+    # ★ 先去尾部空行，再按 tail 截行 —— 反过来做会因为末尾 "\n" 的
+    #   空元素占掉一行，导致 tail=200 只返回 199 行。
+    while lines and lines[-1] == "":
+        lines.pop()
+    truncated = bool(cut)
+    try:
+        n = int(tail)
+    except (TypeError, ValueError):
+        n = _LOG_DEFAULT_LINES
+    n = max(1, min(_LOG_MAX_LINES, n))
+    if len(lines) > n:
+        lines = lines[-n:]
+        truncated = True
+    lines = [ln.rstrip("\r") for ln in lines]
+    redacted = 0
+    out = []
+    for ln in lines:
+        r, c = _log_redact(ln)
+        redacted += c
+        out.append(r)
+    return {"ok": True, "name": name, "lines": out,
+            "truncated": truncated, "redacted": redacted}
 
 def make_server(host: str, port: int, token: str = "", verbose: bool = False):
     """建好（**不启动**）服务。
@@ -640,6 +726,8 @@ def _autopilot_decision(prop):
     cat = str(tri.get("category") or "other")
     prio = str(tri.get("priority") or "P2")
     plan = str(prop.get("plan") or "")
+    if _is_placeholder_plan(plan):
+        return False, "manual_plan_placeholder"
     if cat in _AUTOPILOT_MANUAL_CATS:
         return False, "manual_category:" + cat
     if prio == "P0":
@@ -1095,6 +1183,18 @@ _RUNTIME_PREFIXES = ("dgtf_memory/", "outputs/", "dgtf_app/runs/",
                      "dgtf_app/anchors/", "smoke_outputs/", "_archive/",
                      ".workbuddy/")
 
+# 批量自审在 DSH 未返回结构化方案时曾用这句话占位落库；占位方案一旦被确认，
+# 修复链路会把它当指令执行（空转、改错文件），所以生成/确认/修复三端都必须识别。
+_PLAN_PLACEHOLDER_MARKERS = ("待针对该任务补充具体方案", "待补充具体方案")
+
+
+def _is_placeholder_plan(plan):
+    """方案为空或仍是批量自审占位符 ⇒ 不可确认、不可进入修复。"""
+    t = str(plan or "").strip()
+    if not t:
+        return True
+    return any(m in t for m in _PLAN_PLACEHOLDER_MARKERS)
+
 
 def _plan_paths(plan):
     """从提案计划抽取显式文件路径；自动提交只放行计划点名的新文件。"""
@@ -1448,16 +1548,26 @@ def _proposal_triage():
             rec["expired_ts"] = now
             changed.add(id(rec))
             st = "expired"
+        # 方案仍是占位符：保留 pending/confirmed 状态（不丢用户已确认的记录），
+        # 但打上 plan_gap，自动修复与确认接口据此拒绝空转。
+        plan_gap = bool(st in ("pending", "confirmed")
+                        and _is_placeholder_plan(rec.get("plan")))
+        if plan_gap:
+            rec["plan_gap"] = True
+        else:
+            rec.pop("plan_gap", None)
         rec["triage"] = {
             "category": cat,
             "priority": prio,
             "action": ("skip" if st == "expired" else
                        ("resolved" if st == "applied" else
                         ("observe" if st in ("failed", "rolled_back") else "repair"))),
-            "reason": rec.get("expired_reason") or
-                      ("already_applied" if st == "applied" else
-                       ("repair_failed" if st == "failed" else
-                        ("rolled_back" if st == "rolled_back" else "needs_attention"))),
+            "reason": ("plan_placeholder" if plan_gap else
+                       rec.get("expired_reason") or
+                       ("already_applied" if st == "applied" else
+                        ("repair_failed" if st == "failed" else
+                         ("rolled_back" if st == "rolled_back" else "needs_attention")))),
+            "plan_gap": plan_gap,
             "decided_ts": now,
             "project": {"head": ctx["head"], "fingerprint": ctx["fingerprint"],
                         "checked_at": ctx["checked_at"]},
@@ -1603,6 +1713,37 @@ def _reopen_proposal(pid):
     for k in ("resolution", "resolution_reason", "resolved_by", "resolved_ts",
               "resolution_conversation_id"):
         prop.pop(k, None)
+    _save_proposal(prop)
+    return prop, ""
+
+
+def _update_proposal_plan(pid, plan):
+    """为占位/待补提案补写可执行方案；已确认的提案退回 pending 重新确认。"""
+    import time as _t
+    prop = _get_proposal(pid)
+    if not prop:
+        return None, "proposal not found"
+    if str(prop.get("status")) not in ("pending", "confirmed"):
+        return None, "只有 pending/confirmed 提案可补充方案"
+    text = str(plan or "").strip()
+    if _is_placeholder_plan(text):
+        return None, "方案仍是空或占位句，需写明涉及文件、步骤与验证方式"
+    if len(text) < 20:
+        return None, "方案过短，需写明涉及文件、步骤与验证方式"
+    hist = list(prop.get("plan_history") or [])
+    hist.append({"ts": _t.time(), "plan": str(prop.get("plan") or "")[:4000]})
+    prop["plan_history"] = hist[-10:]
+    prop["plan"] = text[:8000]
+    prop["plan_gap"] = False
+    prop["plan_updated_ts"] = _t.time()
+    if str(prop.get("status")) == "confirmed":
+        prop["status"] = "pending"
+        prop["approver"] = ""
+        prop.pop("approved_ts", None)
+    tri = prop.get("triage") or {}
+    tri["reason"] = "plan_supplied"
+    tri["plan_gap"] = False
+    prop["triage"] = tri
     _save_proposal(prop)
     return prop, ""
 
@@ -2333,6 +2474,10 @@ def _auto_proposal(task_text="", title="", emit=None, model=""):
     pid = "prop-" + str(int(_tm.time() * 1000))
     plan = str(res.get("text") or "")
     blocked = bool(res.get("security_blocked")) or ("[安全拦截]" in plan)
+    if not blocked and (len(plan.strip()) < 40 or _is_placeholder_plan(plan)):
+        # 没有可执行方案就不落提案；空/过短提案只会制造确认→空转的噪声。
+        return {"ok": False, "error": "DSH 未给出可执行方案（为空、过短或占位），未落提案",
+                "text": plan[:500], "session_id": res.get("session_id") or ""}
     prop = _save_proposal({"id": pid, "ts": _tm.time(), "task": t,
                            "plan": plan,
                            "session_id": res.get("session_id") or "",
@@ -2556,11 +2701,18 @@ def _repair_with_acceptance(prop, model="", emit=None, max_attempts=3,
     才调用 _auto_commit。这样「验收不过」绝不会留下已提交的坏变更。
     """
     import time as _t
+    plan = str(prop.get("plan") or "")
+    if _is_placeholder_plan(plan):
+        # 最后一道防线：占位方案绝不进入 DSH 修复，避免空转或改错文件。
+        return {"ok": False, "gate": {}, "acceptance": {}, "security": {},
+                "repair": {"committed": False,
+                           "why": "提案方案为空或占位，未执行修复"},
+                "attempts": [], "conversation_ids": [], "conversation_id": "",
+                "session_id": str(prop.get("session_id") or ""), "events": []}
     root = Path(__file__).resolve().parent.parent
     before = _git_snapshot()
     before_fp = _git_fingerprints()
     before_head = (_git(["rev-parse", "HEAD"]).get("out") or "").strip()
-    plan = str(prop.get("plan") or "")
     task = str(((prop.get("task") or {}).get("title")) or prop.get("id") or "")
     sid = str(prop.get("session_id") or "")
     convs, attempts = [], []
@@ -3080,43 +3232,79 @@ def _auto_cycle_all(emit=None, model=""):
     existing = set()
     for p in _list_proposals(300):
         tid = str(((p.get("task") or {}).get("id")) or "")
-        if tid and p.get("status") in ("pending", "applied"):
+        # confirmed 也算已提案；否则已确认的占位提案会被重复生成。
+        if tid and p.get("status") in ("pending", "confirmed", "applied"):
             existing.add(tid)
     todo = [t for t in tasks if str(t.get("id") or "") not in existing]
     plans = {}
-    audit_text = ""
+    audit_texts = []
     audit_ok = True
     res = {}
+    requested = set()
     if todo:
-        compact = [{"task_id": str(t.get("id") or ""),
-                    "title": str(t.get("title") or "")[:160],
-                    "detail": str(t.get("detail") or "")[:400]}
-                   for t in todo[:80]]
-        prompt = ("提案模式：允许读取项目文件核对现状，但不要修改源码。请为下列全部任务分别给出"
-                  "简短修复提案，只输出一个 JSON 对象："
-                  '{"proposals":[{"task_id":"...","plan":"..."}]}。'
-                  "任务列表：" + _json.dumps(compact, ensure_ascii=False)[:24000])
-        res = _run_dsh_agent(prompt, "", timeout=300, auto_repair=False,
-                             emit=emit, model=model)
-        audit_text = str(res.get("text") or "")
-        audit_ok = bool(res.get("ok"))
-        obj = _extract_json(audit_text)
-        arr = obj.get("proposals") if isinstance(obj, dict) else obj
-        if isinstance(arr, list):
-            for x in arr:
-                if isinstance(x, dict) and x.get("task_id"):
-                    plans[str(x["task_id"])] = str(x.get("plan") or "")
-    made = []
+        # 分批生成：一次塞 80 条会超出模型输出长度，JSON 被截断后整批退化为占位。
+        batch_size = 12
+        max_tasks = 24
+        chunk_list = [todo[i:i + batch_size]
+                      for i in range(0, min(len(todo), max_tasks), batch_size)]
+        for bi, chunk in enumerate(chunk_list, 1):
+            compact = [{"task_id": str(t.get("id") or ""),
+                        "title": str(t.get("title") or "")[:160],
+                        "detail": str(t.get("detail") or "")[:400]}
+                       for t in chunk]
+            requested.update(str(t.get("id") or "") for t in chunk)
+            prompt = ("提案模式：允许读取项目文件核对现状，但不要修改源码。请为下列全部任务分别给出"
+                      "可执行修复提案，每条写清「涉及文件、步骤、验证」；只输出一个 JSON 对象："
+                      '{"proposals":[{"task_id":"...","plan":"..."}]}。'
+                      "任务列表：" + _json.dumps(compact, ensure_ascii=False)[:12000])
+            if emit is not None:
+                try:
+                    emit({"type": "text",
+                          "text": "批量自审：第 %d/%d 批，%d 条任务"
+                                  % (bi, len(chunk_list), len(chunk))})
+                except Exception:
+                    pass
+            res = _run_dsh_agent(prompt, "", timeout=180, auto_repair=False,
+                                 emit=emit, model=model)
+            text = str(res.get("text") or "")
+            audit_texts.append(text)
+            audit_ok = audit_ok and bool(res.get("ok"))
+            obj = _extract_json(text)
+            arr = obj.get("proposals") if isinstance(obj, dict) else obj
+            if isinstance(arr, list):
+                for x in arr:
+                    if not isinstance(x, dict) or not x.get("task_id"):
+                        continue
+                    tid = str(x["task_id"])
+                    plan = str(x.get("plan") or "").strip()
+                    # 只接受可执行方案；占位/过短一律视为本批没给方案。
+                    if tid in requested and len(plan) >= 40 \
+                            and not _is_placeholder_plan(plan):
+                        plans[tid] = plan
+            if ("[安全拦截]" in text) or ("security_blocked" in str(res)):
+                break
+    audit_text = "\n\n".join(t for t in audit_texts if t)
     _blocked = ("[安全拦截]" in audit_text) or ("security_blocked" in str(res))
+    made, needs_plan = [], []
     for t in todo:
         tid = str(t.get("id") or "")
-        plan = plans.get(tid) or ("DSH 批量自审：待针对该任务补充具体方案。"
-                                  + (("\n" + audit_text[:800]) if audit_text else ""))
-        prop = _save_proposal({"id": "prop-" + str(int(_tm.time() * 1000)) + "-" + tid[:6],
+        plan = plans.get(tid) or ""
+        if _blocked or _is_placeholder_plan(plan) or len(plan.strip()) < 40:
+            # 没有具体方案就不落提案：避免制造「确认→空转」的占位提案。
+            needs_plan.append({
+                "task_id": tid,
+                "title": str(t.get("title") or "")[:160],
+                "reason": ("security_blocked" if _blocked else
+                           ("dsh_no_plan" if tid in requested
+                            else "deferred_next_cycle"))})
+            continue
+        prop = _save_proposal({"id": "prop-" + str(int(_tm.time() * 1000) + len(made))
+                                      + "-" + tid[:6],
                                "ts": _tm.time(), "task": t, "task_id": tid,
                                "plan": plan,
-                               "status": ("expired" if _blocked else "pending"),
-                               "expired_reason": ("security_blocked_tool_access" if _blocked else ""),
+                               "status": "pending",
+                               "expired_reason": "",
+                               "plan_gap": False,
                                "approver": "", "session_id": "", "batch": True})
         made.append(prop)
     return {"ok": audit_ok or bool(made),
@@ -3125,7 +3313,9 @@ def _auto_cycle_all(emit=None, model=""):
             "consumer": {"run": {"triaged": len(all_results),
                                  "results": all_results},
                          "proposals": prop_file},
-            "proposals": made, "audit_text": audit_text[:2000],
+            "proposals": made, "needs_plan": needs_plan,
+            "plans_ok": len(plans),
+            "audit_text": audit_text[:2000],
             "audit_ok": audit_ok}
 
 
@@ -3459,6 +3649,35 @@ def _auto_job_start(stage, data):
     return jid
 
 
+def _demote_placeholder_confirmations():
+    """把已确认但方案为占位符的提案退回 pending，返回 (可修复列表, 退回列表)。
+
+    不调用 DSH、不删除记录；用户仍可在界面上「补充方案」后重新确认。
+    """
+    confs, demoted = [], []
+    for p in _list_proposals(300):
+        if str(p.get("status")) != "confirmed":
+            continue
+        if not _is_placeholder_plan(p.get("plan")):
+            confs.append(p)
+            continue
+        p["status"] = "pending"
+        p["approver"] = ""
+        p.pop("approved_ts", None)
+        p["plan_gap"] = True
+        tri = p.get("triage") or {}
+        tri["auto_decision"] = "manual"
+        tri["auto_reason"] = "manual_plan_placeholder"
+        tri["reason"] = "plan_placeholder"
+        tri["plan_gap"] = True
+        p["triage"] = tri
+        _save_proposal(p)
+        demoted.append({"id": p.get("id"),
+                        "title": (p.get("task") or {}).get("title"),
+                        "reason": "manual_plan_placeholder"})
+    return confs, demoted
+
+
 def _autofix_workflow(data, write):
     import time as _t
     # ★ 自动修复前先做风险分流：
@@ -3480,7 +3699,8 @@ def _autofix_workflow(data, write):
             manual.append({"id": p.get("id"), "reason": reason,
                            "title": (p.get("task") or {}).get("title")})
         _save_proposal(p)
-    confs = [x for x in _list_proposals(300) if x.get("status") == "confirmed"]
+    confs, demoted = _demote_placeholder_confirmations()
+    manual += demoted
     done = []
     for prop in confs:
         pid = str(prop.get("id") or "")
@@ -6068,6 +6288,7 @@ class Handler(BaseHTTPRequestHandler):
             res = {"ok": True, "count": len(props),
                    "proposals": [{"id": p.get("id"),
                                   "status": p.get("status"),
+                                  "plan_gap": bool(p.get("plan_gap")),
                                   "title": str((p.get("task") or {}).get("title") or "")[:160],
                                   "plan": str(p.get("plan") or "")[:600]}
                                  for p in props[:30]]}
@@ -6104,6 +6325,23 @@ class Handler(BaseHTTPRequestHandler):
             return self._json({"csrf": _CSRF_TOKEN})
         if p.startswith("/static/"):
             return self._serve_static(p[len("/static/"):])
+
+        # 运行日志查看（白名单 + 尾部 512KB + 脱敏；不返回绝对路径）
+        if p == "/api/logs":
+            _lname = str((q.get("name") or ["app"])[0] or "app").strip().lower()
+            if _lname not in ("app", "err", "daemon"):
+                return self._json({"ok": False,
+                                   "error": "name 只允许 app/err/daemon"}, 404)
+            try:
+                _ltail = int((q.get("tail") or [str(_LOG_DEFAULT_LINES)])[0])
+            except (TypeError, ValueError):
+                _ltail = _LOG_DEFAULT_LINES
+            try:
+                return self._json(read_log_tail(_lname, _ltail))
+            except FileNotFoundError:
+                return self._json({"ok": False, "error": "日志文件不存在"}, 404)
+            except OSError:
+                return self._json({"ok": False, "error": "日志读取失败"}, 500)
 
         if p == "/api/schedule/pareto":
             try:
@@ -6925,10 +7163,14 @@ class Handler(BaseHTTPRequestHandler):
         if p == "/api/dsh/proposals/autofix/stream":
             data = self._read_json()
             self._stream_open()
-            confs = [x for x in _list_proposals(300)
-                     if x.get("status") == "confirmed"]
+            confs, demoted = _demote_placeholder_confirmations()
             done = []
             try:
+                if demoted:
+                    self._stream_write({"type": "event", "event": {
+                        "type": "text",
+                        "text": "已退回 %d 条占位方案提案到待补，不执行修复"
+                                % len(demoted)}})
                 for prop in confs:
                     pid = str(prop.get("id") or "")
                     self._stream_write({"type": "stage",
@@ -7009,6 +7251,14 @@ class Handler(BaseHTTPRequestHandler):
                                   404 if err == "proposal not found" else 400)
             return self._json({"ok": True, "children": children,
                                "parent": _get_proposal(pid)})
+        if p.startswith("/api/dsh/proposals/") and p.endswith("/plan"):
+            data = self._read_json()
+            pid = p.split("/")[4]
+            prop, err = _update_proposal_plan(pid, data.get("plan"))
+            if not prop:
+                return self._json({"error": err or "补充方案失败"},
+                                  404 if err == "proposal not found" else 400)
+            return self._json({"ok": True, "proposal": prop})
         if p.startswith("/api/dsh/proposals/") and p.endswith("/confirm"):
             pid = p.split("/")[4]
             prop = _get_proposal(pid)
@@ -7016,6 +7266,9 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"error": "proposal not found"}, 404)
             if prop.get("status") != "pending":
                 return self._json({"error": "只有 pending 提案可确认"}, 400)
+            if _is_placeholder_plan(prop.get("plan")):
+                return self._json({"error": "提案方案为空或占位，需先补充具体方案后再确认",
+                                   "code": "plan_placeholder"}, 400)
             prop["status"] = "confirmed"
             import time as _cft
             prop["confirmed_ts"] = _cft.time()
@@ -7049,6 +7302,10 @@ class Handler(BaseHTTPRequestHandler):
             if not prop:
                 return self._json({"error": "proposal not found"}, 404)
             self._stream_open()
+            if _is_placeholder_plan(prop.get("plan")):
+                self._stream_write({"type": "error",
+                                    "error": "提案方案为空或占位，需先补充具体方案"})
+                return
 
             def _emit_appr(ev):
                 self._stream_write({"type": "event", "event": ev})
@@ -7098,6 +7355,9 @@ class Handler(BaseHTTPRequestHandler):
             prop = _get_proposal(pid)
             if not prop:
                 return self._json({"error": "proposal not found"}, 404)
+            if _is_placeholder_plan(prop.get("plan")):
+                return self._json({"error": "提案方案为空或占位，需先补充具体方案",
+                                   "code": "plan_placeholder"}, 400)
             learn = _autopilot_knowledge(prop) if _autopilot_cfg_load().get("enabled", False) else ""
             res = _repair_with_acceptance(prop, model="deepseek-flash",
                                           max_attempts=3, extra_context=learn,

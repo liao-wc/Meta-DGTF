@@ -3980,13 +3980,18 @@ function agentRenderProps() {
     const st = String(x.status || 'pending');
     let acts = '';
     if (st === 'pending') {
-      acts = '<button class="ghost" data-prop-confirm="' + esc(x.id) + '">我确认</button>'
-        + '<button class="ghost" data-prop-auto="' + esc(x.id) + '">DSH 自动代理</button>'
-        + '<button class="ghost" data-prop-split="' + esc(x.id) + '">拆分提案</button>'
+      acts = (x.plan_gap
+        ? '<button class="ghost" data-prop-plan="' + esc(x.id) + '">补充方案</button>'
+        : '<button class="ghost" data-prop-confirm="' + esc(x.id) + '">我确认</button>'
+          + '<button class="ghost" data-prop-auto="' + esc(x.id) + '">DSH 自动代理</button>'
+          + '<button class="ghost" data-prop-split="' + esc(x.id) + '">拆分提案</button>')
         + '<button class="ghost" data-prop-reject="' + esc(x.id) + '">不修复</button>'
         + '<button class="ghost" data-prop-superseded="' + esc(x.id) + '">已另行处理</button>';
     } else if (st === 'confirmed') {
-      acts = '<span class="muted">已确认，等待 DSH 自动修复</span>'
+      acts = (x.plan_gap
+        ? '<span class="muted">方案待补充，未执行修复</span>'
+          + '<button class="ghost" data-prop-plan="' + esc(x.id) + '">补充方案</button>'
+        : '<span class="muted">已确认，等待 DSH 自动修复</span>')
         + '<button class="ghost" data-prop-reject="' + esc(x.id) + '">不修复</button>'
         + '<button class="ghost" data-prop-superseded="' + esc(x.id) + '">已另行处理</button>';
     } else if (st === 'applied') {
@@ -4008,6 +4013,7 @@ function agentRenderProps() {
       + '<div class="agent-row"><span class="chip">' + esc(tri.priority || 'P2') + '</span>'
       + '<span class="chip">' + esc(tri.category || 'other') + '</span>'
       + '<span class="chip st-' + esc(st) + '">' + esc(ST[st] || st) + '</span>'
+      + (x.plan_gap ? '<span class="chip">方案待补</span>' : '')
       + (x.self_learned ? '<span class="chip">自学习</span>' : '')
       + '<span class="agent-t">' + esc((x.task || {}).title || x.id) + '</span></div>'
       + '<div class="agent-meta"><span>' + esc(x.id || '') + '</span>'
@@ -4975,6 +4981,116 @@ function centerHomeHero() {
   root.style.setProperty('--home-shift', empty ? '-20px' : '0px');
 }
 
+/* ── 运行日志诊断面板（只读尾部：app / err / daemon）────────────────────
+   数据面：GET /api/logs?name=app|err|daemon&tail=N
+            → {ok:true,name,lines:[...],truncated:bool,redacted:int}
+   · 服务端只认白名单名字、返回内容已脱敏，且不含绝对路径 / token；
+   · 前端一律 textContent 注入（不拼 HTML）⇒ 日志文本无法变成 DOM / 脚本（防 XSS）；
+   · 本模块不读、不写、不显示任何 token / 口令。 */
+const DIAG_TAIL = 500;
+let diagLines = [];
+let diagName = 'app';
+let diagBusy = false;
+
+function openDiag() {
+  const ov = $('#diag-overlay');
+  if (!ov) return;
+  ov.classList.remove('hidden');
+  const msg = $('#diag-msg');
+  if (msg) msg.textContent = '';
+  loadDiag();
+}
+
+function closeDiag() {
+  const ov = $('#diag-overlay');
+  if (ov) ov.classList.add('hidden');
+}
+
+async function loadDiag() {
+  if (diagBusy) return;
+  const body = $('#diag-body');
+  const meta = $('#diag-meta');
+  const msg = $('#diag-msg');
+  const btn = $('#diag-refresh');
+  const sel = $('#diag-name');
+  const name = (sel && sel.value) ? String(sel.value) : 'app';
+  diagBusy = true;
+  if (btn) btn.disabled = true;
+  if (msg) msg.textContent = '读取中…';
+  if (body) body.textContent = '读取中…';
+  if (meta) meta.textContent = '';
+  try {
+    const r = await api('/api/logs?name=' + encodeURIComponent(name)
+      + '&tail=' + String(DIAG_TAIL));
+    if (!r || r.ok === false) throw new Error((r && r.error) || '日志接口未返回 ok');
+    const lines = Array.isArray(r.lines)
+      ? r.lines.map(function (x) { return String(x); }) : [];
+    diagLines = lines;
+    diagName = String(r.name || name);
+    if (body) body.textContent = lines.length ? lines.join('\n') : '（日志为空）';
+    if (meta) {
+      meta.textContent = '日志 ' + diagName + ' · ' + lines.length + ' 行 · '
+        + (r.truncated ? '已截断（只显示尾部）' : '未截断')
+        + (r.redacted ? ' · 已脱敏 ' + String(r.redacted) + ' 处' : '');
+    }
+    if (msg) msg.textContent = '';
+  } catch (e) {
+    diagLines = [];
+    const why = (e && e.message) ? e.message : String(e);
+    if (body) body.textContent = '读取失败：' + why;
+    if (meta) meta.textContent = '日志 ' + name + ' 读取失败（不显示 token / 绝对路径）';
+    if (msg) msg.textContent = '读取失败';
+  } finally {
+    diagBusy = false;
+    if (btn) btn.disabled = false;
+  }
+}
+
+async function copyDiag() {
+  const msg = $('#diag-msg');
+  const text = diagLines.join('\n');
+  if (!text) { if (msg) msg.textContent = '没有可复制的内容'; return; }
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(text);
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand && document.execCommand('copy');
+      ta.remove();
+      if (!ok) throw new Error('浏览器不支持剪贴板');
+    }
+    if (msg) msg.textContent = '已复制 ' + diagLines.length + ' 行';
+  } catch (e) {
+    if (msg) msg.textContent = '复制失败：' + ((e && e.message) ? e.message : String(e));
+  }
+}
+
+function downloadDiag() {
+  const msg = $('#diag-msg');
+  const text = diagLines.join('\n');
+  if (!text) { if (msg) msg.textContent = '没有可下载的内容'; return; }
+  try {
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'dgtf-log-' + diagName + '-'
+      + new Date().toISOString().replace(/[:.]/g, '-') + '.txt';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    if (msg) msg.textContent = '已开始下载 ' + diagLines.length + ' 行';
+  } catch (e) {
+    if (msg) msg.textContent = '下载失败：' + ((e && e.message) ? e.message : String(e));
+  }
+}
+
 function init() {
   try { taskDsh = JSON.parse(localStorage.getItem('dgtf_task_dsh') || '{}') || {}; } catch (_) { taskDsh = {}; }
   try {
@@ -5512,6 +5628,22 @@ function init() {
       if (p) analyzeProposalInDsh(p, 'split');
       return;
     }
+    const pl = e.target.closest('[data-prop-plan]');
+    if (pl) {
+      const text = prompt('补充具体方案（写明涉及文件、步骤、验证方式）：',
+        '涉及文件：\n步骤：\n验证：python dgtf_app/selftest.py app-selftest');
+      if (text === null) return;
+      try {
+        await api('/api/dsh/proposals/' + encodeURIComponent(pl.dataset.propPlan) + '/plan',
+          {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({plan:text})});
+        agentLogAction('补充提案方案', pl.dataset.propPlan, true);
+        loadAgent();
+      } catch (err) {
+        alert('补充方案失败：' + err.message);
+        agentLogAction('补充提案方案', '失败：' + err.message, false);
+      }
+      return;
+    }
     const cf = e.target.closest('[data-prop-confirm]');
     if (cf) {
       const cid = cf.dataset.propConfirm;
@@ -5643,6 +5775,26 @@ function init() {
     if (e.key === 'Enter') { e.preventDefault(); submitAgentTask(); }
   });
 
+  /* ── 运行日志诊断：入口 / 刷新 / 复制 / 下载 / 关闭（全部 addEventListener，CSP 友好）── */
+  const _diagBtn = $('#diag-btn');
+  if (_diagBtn) _diagBtn.addEventListener('click', openDiag);
+  const _diagRefresh = $('#diag-refresh');
+  if (_diagRefresh) _diagRefresh.addEventListener('click', loadDiag);
+  const _diagCopy = $('#diag-copy');
+  if (_diagCopy) _diagCopy.addEventListener('click', copyDiag);
+  const _diagDownload = $('#diag-download');
+  if (_diagDownload) _diagDownload.addEventListener('click', downloadDiag);
+  const _diagClose = $('#diag-close');
+  if (_diagClose) _diagClose.addEventListener('click', closeDiag);
+  const _diagX = $('#diag-x');
+  if (_diagX) _diagX.addEventListener('click', closeDiag);
+  const _diagSel = $('#diag-name');
+  if (_diagSel) _diagSel.addEventListener('change', loadDiag);
+  const _diagOverlay = $('#diag-overlay');
+  if (_diagOverlay) _diagOverlay.addEventListener('click', function (e) {
+    if (e.target === _diagOverlay) closeDiag();
+  });
+
   initDshAgent();
 
   // ★ 深链：?panel=view-agent 可直接打开面板（便于截图/联调）。
@@ -5688,6 +5840,8 @@ function init() {
       if (_det && !_det.classList.contains('hidden')) {
         _det.classList.add('hidden'); return;
       }
+      const _dgo = $('#diag-overlay');
+      if (_dgo && !_dgo.classList.contains('hidden')) { closeDiag(); return; }
       const _sov = $('#search-overlay');
       if (_sov && !_sov.classList.contains('hidden')) { closeSearch(); return; }
       const _aov = $('#agent-overlay');

@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="dark">
 <title>元DGTF 个人工作台</title>
 <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
-<link rel="stylesheet" href="/static/style.css?v=1.4.87">
+<link rel="stylesheet" href="/static/style.css?v=1.4.89">
 </head>
 <body class="stage-empty">
 
@@ -30,6 +30,12 @@
       <path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.3c-1.3 0-2.6-.3-3.7-.8L3 20.5l1.6-5.2a8.2 8.2 0 0 1-.9-3.8A8.4 8.4 0 0 1 12.5 3.2"
             stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
       <path d="M18 2.6v5.6M15.2 5.4h5.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+    </svg>
+  </button>
+  <button id="diag-btn" class="icon-btn" data-tip="运行日志诊断（app / err / daemon 尾部，只读脱敏）" aria-label="运行日志诊断">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="4" y="5" width="16" height="14" rx="2.5" stroke="currentColor" stroke-width="1.7"/>
+      <path d="M8 10l2.4 2-2.4 2M12.6 14.2h3.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
   </button>
 
@@ -542,6 +548,38 @@
   </div>
 </div>
 
+<!-- 运行日志诊断：只读展示 app/err/daemon 尾部（服务端白名单+脱敏；前端 textContent 注入，无内联事件） -->
+<div id="diag-overlay" class="search-overlay diag-overlay hidden">
+  <div class="search-panel">
+    <div class="agent-dlg diag-dlg" role="dialog" aria-modal="true" aria-labelledby="diag-title">
+      <div class="agent-dlg-h">
+        <span id="diag-title">运行日志诊断</span>
+        <button id="diag-x" class="icon-btn" data-tip="关闭（Esc）" aria-label="关闭日志诊断">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="diag-toolbar">
+        <label class="diag-field" for="diag-name"><span>日志</span>
+          <select id="diag-name">
+            <option value="app" selected>app（应用运行）</option>
+            <option value="err">err（错误）</option>
+            <option value="daemon">daemon（后台守护）</option>
+          </select>
+        </label>
+        <button id="diag-refresh" class="primary">刷新</button>
+        <button id="diag-copy" class="ghost">复制</button>
+        <button id="diag-download" class="ghost">下载</button>
+        <button id="diag-close" class="ghost">关闭</button>
+        <span id="diag-msg" class="muted diag-msg"></span>
+      </div>
+      <div id="diag-meta" class="muted diag-meta"></div>
+      <pre id="diag-body" class="diag-body scroll"></pre>
+    </div>
+  </div>
+</div>
+
 <div id="detail" class="detail hidden">
   <div class="detail-inner">
     <div class="detail-head">
@@ -558,6 +596,6 @@
 
 
 
-<script src="/static/app.js?v=1.4.87"></script>
+<script src="/static/app.js?v=1.4.89"></script>
 </body>
 </html>
