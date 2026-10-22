@@ -296,6 +296,7 @@ def _agent_daemon_paths():
         "stdout": mem / "agent_daemon.stdout.log",
         "pid": mem / "agent_daemon.app.pid",
         "stop": mem / "agent_daemon.app.stop",
+        "state": mem / "agent_daemon.app.state",
     }
 
 
@@ -368,9 +369,18 @@ def agent_daemon_status():
         if not _pid_alive(pid):
             pid = 0
     age = _mtime_age(paths["log"])
+    stop_pending = bool(paths["stop"].exists())
+    state = ""
+    try:
+        state = paths["state"].read_text(encoding="utf-8").strip()
+    except Exception:
+        state = ""
+    explicitly_stopped = (state == "stopped")
     # 兼容改造前已手动/开机启动的实例：没有 pid 文件，但日志仍在写。
-    # 轮询间隔 60s，150s 内有过 cycle 就视为活着，避免再起一份。
-    recent = bool(age is not None and age < 150)
+    # 但“已明确停止”或“停止文件存在”时不能再用日志新鲜度推断活着。
+    _app_ap_on = bool(_autopilot_cfg_load().get("enabled", True))
+    recent = bool((not stop_pending) and (not explicitly_stopped) and _app_ap_on
+                  and age is not None and age < 150)
     running = bool(managed or pid or recent)
     return {
         "running": running,
@@ -379,6 +389,8 @@ def agent_daemon_status():
         "interval": _AGENT_DAEMON.get("interval", 60.0),
         "knowledge_every": _AGENT_DAEMON.get("knowledge_every", 0),
         "log_age_s": None if age is None else round(age, 1),
+        "stop_pending": stop_pending,
+        "state": state,
         "last_log": _read_last_log(paths["log"]),
         "log": str(paths["log"]),
     }
@@ -436,6 +448,10 @@ def start_agent_daemon(interval: float = 60.0,
         paths["pid"].write_text(str(proc.pid), encoding="utf-8")
     except Exception:
         pass
+    try:
+        paths["state"].write_text("running", encoding="utf-8")
+    except Exception:
+        pass
     time.sleep(0.4)         # 给异常退出（缺依赖/参数错）一个暴露窗口
     if proc.poll() is not None:
         return {"ok": False, "running": False, "pid": int(proc.pid),
@@ -458,6 +474,10 @@ def stop_agent_daemon(timeout: float = 4.0) -> dict:
             pass
         try:
             paths["pid"].unlink(missing_ok=True)
+        except Exception:
+            pass
+        try:
+            paths["state"].write_text("stopped", encoding="utf-8")
         except Exception:
             pass
         return {"ok": True, "stopped": False}
@@ -487,6 +507,10 @@ def stop_agent_daemon(timeout: float = 4.0) -> dict:
         pass
     try:
         paths["pid"].unlink(missing_ok=True)
+    except Exception:
+        pass
+    try:
+        paths["state"].write_text("stopped", encoding="utf-8")
     except Exception:
         pass
     return {"ok": True, "stopped": True}
