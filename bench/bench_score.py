@@ -180,18 +180,42 @@ def score_boundary(md: str) -> dict:
                    else f"boundary={has_boundary} action={has_action}"}
 
 
+def _packed_for(target: str):
+    """从 md/目录/packed 路径定位 packed.json；找不到就返回 (None, None)。"""
+    p = Path(target)
+    if p.is_dir():
+        cands = sorted(p.glob("*.packed.json"))
+        if not cands:
+            mds = sorted(p.glob("*.md"))
+            cands = [Path(str(mds[-1])[:-3] + ".packed.json")] if mds else []
+        p = cands[-1] if cands else p
+    elif p.is_file() and p.suffix == ".md":
+        p = Path(str(p)[:-3] + ".packed.json")
+    if not p.is_file():
+        return None, None
+    try:
+        return json.loads(p.read_text(encoding="utf-8")), p
+    except Exception:
+        return None, p
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("target")
     a = ap.parse_args()
     md = _text(a.target)
+    packed, packed_path = _packed_for(a.target)
     out = {
         "target": a.target,
+        "packed": str(packed_path) if packed_path else None,
         "practice": score_practice(md),
         "research": score_research(md),
         "decision": score_decision_rubric(md),
         "boundary": score_boundary(md),
     }
+    if packed:
+        out["decision_structured"] = score_actions(
+            packed.get("actions"), packed.get("not_do"))
     print(json.dumps(out, ensure_ascii=False, indent=2))
     return 0
 

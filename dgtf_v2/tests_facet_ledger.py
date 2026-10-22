@@ -16,8 +16,8 @@ def main():
  ck("deps",L["layers"]["1"]["deps"]==["0","external_facets"])
  ck("soul",L["soul"]["identity"]=="元DGTF")
  p2={"question":"Q","views":{"0":{"manifest":"f"},"1":{"decidable_product":{"answer":"x"},"decidability_audit":{"status":"empty","bad":0}},"both":{"collision":"c"},"all":{"decision":"d","meta_closure":{"clean":True}}},"pools":{},"fact_contract":{"layers":{e:{"ok":True} for e in ("0","1","both","all")}}}
- L2=build_ledger(p2);ck("empty audit fails 1",L2["layers"]["1"]["standard_ok"] is False)
- ck("empty audit all false",L2["standard_all"] is False)
+ L2=build_ledger(p2);ck("empty audit not failure",L2["layers"]["1"]["standard_ok"] is True)
+ ck("empty audit not fatal",L2["standard_all"] is True)
  p3={"question":"Q","views":{"0":{"manifest":"f"},"1":{"decidable_product":{"answer":"f"}},"both":{"collision":"c"},"all":{"decision":"d","meta_closure":{"clean":True}}},"pools":{"1":{"web_results":[{"id":"W1","official":True,"used_as":"evidence"},{"id":"W2","tier":"reference","used_as":"reference","confidence":0.4}]}},"fact_contract":{"layers":{e:{"ok":True} for e in ("0","1","both","all")}}}
  L3=build_ledger(p3);ck("official count",L3["soul"]["external_official"]==1)
  ck("reference count",L3["soul"]["external_reference"]==1)

@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.30.0.py"
+SRC = HERE / "元DGTF-V1.30.1.py"
 
 os.environ.setdefault("DGTF_API_KEY", "sk-smoke-test-key")
 

@@ -11,7 +11,7 @@ import types
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.30.0.py"
+SRC = HERE / "元DGTF-V1.30.1.py"
 
 spec = importlib.util.spec_from_file_location("dgtf_bf_probe", SRC)
 mod = importlib.util.module_from_spec(spec)

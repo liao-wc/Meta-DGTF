@@ -12,6 +12,19 @@
 
 ---
 
+v1.30.1 相对 v1.30.0
+
+【主题】P0 质量门与结构化决策输出修复。
+
+【改动】
+· 事实卡闭环：uncovered/冲突/同题 token 缺失不再算 answered；事实预检只在 FactCard.ok 时注入。
+· process_ledger：layer-1 citations 改读 pools["1"].sub_questions；decidability_audit 空读数不再误判标准失败。
+· 决策产物：md 落地层优先读 packed 顶层 actions/not_do。
+· bench：新增 packed 入口，输出 decision_structured 结构化 rubric。
+
+【验证】
+· py_compile 通过；事实门/ledger/bench 结构化用例通过；后续接 6 份 packed 重放。
+
 v1.25.0 相对 v1.24.0
 
 【主题】V2 收口正式发版：四层契约默认开 + L0 archive 恢复 + 版本号升到 1.25.0。

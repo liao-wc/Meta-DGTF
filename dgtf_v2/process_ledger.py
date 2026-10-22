@@ -39,9 +39,16 @@ def build_ledger(packed: dict) -> dict:
         v = _v(views, e)
         fc = (packed.get("fact_contract") or {}).get("layers", {}).get(e) or {}
         dp = v.get("decidable_product") or {}
+        # [v1.30.1] layer-1 citations 在 pools["1"].sub_questions；views 只是渲染副本。
+        _p = pools.get(e) if isinstance(pools, dict) else {}
+        _p = _p if isinstance(_p, dict) else {}
         cites = 0
-        for sq in (v.get("sub_questions") or []):
-            cites += len(sq.get("citations") or sq.get("evidence") or [])
+        _sqs = list(v.get("sub_questions") or [])
+        if not _sqs:
+            _sqs = list(_p.get("sub_questions") or [])
+        for sq in _sqs:
+            if isinstance(sq, dict):
+                cites += len(sq.get("citations") or sq.get("evidence") or [])
         if e == "0":
             product = str(v.get("manifest") or "")
             ok = bool(product) and bool(fc.get("ok", True))
@@ -51,9 +58,11 @@ def build_ledger(packed: dict) -> dict:
         elif e == "1":
             product = str(dp.get("answer") or v.get("manifest") or "")
             _aud = v.get("decidability_audit") or {}
+            # [v1.30.1] n=0/empty 表示本轮没做审计，不能当成「标准失败」。
             _aud_ok = ((not _aud) or (
-                _aud.get("status") in ("verified", "mixed")
-                and int(_aud.get("bad") or 0) == 0))
+                int(_aud.get("bad") or 0) == 0 and (
+                    int(_aud.get("n") or 0) == 0
+                    or _aud.get("status") in ("verified", "mixed"))))
             ok = bool(product) and bool(fc.get("ok", True)) and (
                 cites > 0 or not evs or bool(ev_ids)) and _aud_ok
         elif e == "both":

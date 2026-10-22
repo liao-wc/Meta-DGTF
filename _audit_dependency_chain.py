@@ -29,9 +29,9 @@ def req(method, path, data=None, timeout=30):
         return resp.status, json.loads(resp.read().decode('utf-8'))
 
 # 1. 引擎/app 版本
-eng = ROOT / '元DGTF-V1.30.0.py'
+eng = ROOT / '元DGTF-V1.30.1.py'
 ck('engine file exists', eng.exists())
-ck('engine version 1.30.0', '__version__ = "1.30.0"' in eng.read_text(encoding='utf-8', errors='replace'))
+ck('engine version 1.30.1', '__version__ = "1.30.1"' in eng.read_text(encoding='utf-8', errors='replace'))
 srv = (ROOT / 'dgtf_app' / 'server.py').read_text(encoding='utf-8', errors='replace')
 appver = re.search(r'APP_VERSION = "([^"]+)"', srv)
 ck('app version present 1.5.11', bool(appver and appver.group(1) == '1.5.11'), appver.group(1) if appver else '')

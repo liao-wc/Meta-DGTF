@@ -264,8 +264,17 @@ class FactCard:
 
     @property
     def ok(self) -> bool:
-        """只有 answered（且无冲突）才算「事实题闭环已答」。"""
-        return self.status == "answered" and not self.conflicts
+        """answered 还不够：未覆盖题面/冲突/同题 token 不在证据里都不算闭环。"""
+        if self.status != "answered" or self.conflicts:
+            return False
+        for g in (self.gaps or []):
+            gs = str(g or "")
+            if (gs.startswith("uncovered:") or gs in
+                    ("conflict_unresolved", "insufficient_evidence",
+                     "question_token_not_in_evidence", "no_query",
+                     "search_error", "no_record")):
+                return False
+        return True
 
     def to_dict(self) -> dict:
         return {"question": self.question, "status": self.status,

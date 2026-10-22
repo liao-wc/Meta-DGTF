@@ -1445,7 +1445,7 @@ def _proposal_project_context():
         head_ts = int((r2.stdout or "0").strip() or 0)
     except Exception:
         pass
-    files = ["元DGTF-V1.30.0.py", "dgtf_v2/agent_bridge.py",
+    files = ["元DGTF-V1.30.1.py", "dgtf_v2/agent_bridge.py",
              "dgtf_app/server.py", "dgtf_app/static/app.js"]
     parts = [head]
     mtimes = {}
@@ -1461,7 +1461,7 @@ def _proposal_project_context():
         qn = sum(1 for _ in q.open(encoding="utf-8", errors="replace"))
     except Exception:
         qn = 0
-    eng = _prop_cached_text(root / "元DGTF-V1.30.0.py")
+    eng = _prop_cached_text(root / "元DGTF-V1.30.1.py")
     br = _prop_cached_text(root / "dgtf_v2/agent_bridge.py")
     return {
         "head": head[:12],
@@ -3117,8 +3117,8 @@ def _targeted_acceptance(changed):
     cmds = []
     if any(str(p).startswith("dgtf_app/") for p in changed):
         cmds.append([_sys.executable, "dgtf_app/selftest.py", "app-selftest"])
-    if any(str(p).endswith("元DGTF-V1.30.0.py") or str(p).startswith("dgtf_v2/")
-           for p in changed):
+    if any(str(p).endswith(("元DGTF-V1.30.1.py", "元DGTF-V1.30.0.py"))
+           or str(p).startswith("dgtf_v2/") for p in changed):
         cmds.append([_sys.executable, "smoke_test.py", "smoke"])
     out = []
     ok = True
@@ -4832,14 +4832,17 @@ def _v2_event_ts(x, fallback=None):
     return fallback
 
 
-def _v2_shadow_status(limit=200):
+def _v2_shadow_status(limit=0):
     import json as _json
     from collections import Counter
     p = Path(__file__).resolve().parent.parent / "dgtf_memory" / "v2_events.jsonl"
     rows = []
     if p.exists():
         try:
-            for ln in p.read_text(encoding="utf-8", errors="replace").splitlines()[-limit:]:
+            _lines = p.read_text(encoding="utf-8", errors="replace").splitlines()
+            if isinstance(limit, int) and limit > 0:
+                _lines = _lines[-limit:]
+            for ln in _lines:
                 try:
                     d = _json.loads(ln)
                     if isinstance(d, dict):
@@ -4859,6 +4862,7 @@ def _v2_shadow_status(limit=200):
             y["ts"] = _v2_event_ts(y, _fallback_ts)
         recent.append(y)
     tmpl = {}
+    _seen = set()
     for x in rows:
         if str(x.get("kind") or "") != "schedule_outcome":
             continue
@@ -4866,6 +4870,14 @@ def _v2_shadow_status(limit=200):
         t = str(pl.get("template") or "")
         if not t:
             continue
+        # 同一 run/template 的重复 outcome 只计一次，避免把 ci95 压窄。
+        _rid = str(pl.get("run_id") or pl.get("task_id") or x.get("run_id")
+                   or x.get("task_id") or "")
+        _key = (_rid, t)
+        if _rid and _key in _seen:
+            continue
+        if _rid:
+            _seen.add(_key)
         d = tmpl.setdefault(t, {"n": 0, "quality": 0.0, "tokens": 0.0, "calls": 0.0,
                                 "vals": []})
         try:
@@ -4892,7 +4904,7 @@ def _v2_shadow_status(limit=200):
                           "low": round(mean - ci, 4),
                           "tokens": round(d["tokens"] / n, 1) if n else 0.0,
                           "calls": round(d["calls"] / n, 1) if n else 0.0}
-    return {"ok": True, "n": len(rows),
+    return {"ok": True, "n": len(rows), "unique_outcomes": len(_seen),
             "by_kind": dict(Counter(str(x.get("kind") or "") for x in rows)),
             "by_layer": dict(Counter(str(x.get("layer") or "") for x in rows)),
             "by_template": by_template,
@@ -5427,7 +5439,7 @@ def _v2_replay_packed(limit=30):
 
 def _v2_template_pareto(prefer="balanced", limit=2000):
     """V2 模板级质量-成本联合帕累托：quality 越高越好，tokens 越低越好。"""
-    s = _v2_shadow_status(limit=limit)
+    s = _v2_shadow_status(limit=0)
     bt = s.get("by_template") or {}
     pts = []
     for k, v in bt.items():
@@ -5498,7 +5510,7 @@ def _v2_apply_pareto(prefer="balanced", limit=2000):
 def _v2_bandit(prefer="balanced", c=0.5, limit=5000):
     """V2 模板 UCB 选择：均值 + 探索奖励 - 成本惩罚。"""
     import math as _math
-    s = _v2_shadow_status(limit=limit)
+    s = _v2_shadow_status(limit=0)
     bt = s.get("by_template") or {}
     arms = []
     max_t = max([float(v.get("tokens") or 0) for v in bt.values()] or [1.0]) or 1.0
@@ -5580,7 +5592,7 @@ _PROJECT_DOCS = [
     "v1110_报告.md",
 ]
 _PROJECT_BRIEF = (
-    "元DGTF 是一个本地四层螺旋推理引擎，版本 元DGTF-V1.30.0.py / 1.30.0。"
+    "元DGTF 是一个本地四层螺旋推理引擎，版本 元DGTF-V1.30.1.py / 1.30.1。"
     "四层固定为：0 修行（展开/候选/锚点）、1 研究（证据/子问题/收敛）、"
     "both 对撞（裁决/冲突/线头）、all 元（闭环/决策/停止）。"
     "EML 是事件溯源记忆与自学习反馈层，含 V1 playbook 与 V2 schedule_outcome；"
@@ -6131,8 +6143,36 @@ def _quality_alt(task_id):
     note = ("coverage 缺失（null），质量替代分不计算，grade=unmeasured；"
             "该分数不可与历史分数直接比较" if coverage_missing
             else "三态 α 不可靠时使用；可解释、可复算")
+    # [v1.30.1] 把“答案门”和“过程门”分开：不能因为 answer_ready=true
+    # 就掩盖 process 不达标；也不能把有答案直接当成答案正确。
+    _dt = d.get("decision_trace") or {}
+    _fc = d.get("fact_contract") or {}
+    _card = (_dt.get("fact_card") or {})
+    _process = None
+    try:
+        from dgtf_v2.process_ledger import build_ledger as _bl
+        _led = _bl(d)
+        _process = bool(_led.get("standard_all"))
+        _process_reason = "标准齐全" if _process else "过程标准未达标"
+    except Exception:
+        _process = bool(q.get("process_ready"))
+        _process_reason = "过程标准未达标" if not _process else ""
+    _answer_ready = bool(_dt.get("answer_ready")) and _process
+    _aq = "verified" if (_card.get("ok") and _card.get("official_evidence_ids")) else (
+        "needs_evidence" if (_card.get("gaps") or _card.get("status") == "answered") else "unverified")
+    _summary = (_card.get("answer") or ((_dt.get("reasoning") or {}).get("answer"))
+                or q.get("answer_summary") or "")
     return {"ok": True, "task_id": str(task_id), "score": score, "grade": grade,
-            "coverage_missing": coverage_missing,
+            "coverage": cov, "coverage_missing": coverage_missing,
+            "answer_ready": _answer_ready,
+            "answer_quality": _aq,
+            "process_ready": _process,
+            "process_ready_reason": _process_reason,
+            "standard_all": _process,
+            "answer_summary": str(_summary)[:1200],
+            "decision_actions": len(d.get("actions") or []),
+            "not_do": len(d.get("not_do") or []),
+            "flags": flags,
             "basis": {"coverage": cov, "answered": answered,
                       "answerable_total": total, "answer_rate": round(ans_rate, 4),
                       "layers_closed": closed, "layers_total": len(layers),
@@ -6289,7 +6329,7 @@ def _sched_model_predict(question="", prefer="balanced", lam=None):
     q = str(question or "")
     b = _question_bucket(q)
     qlen_z = (len(q) - float(m.get("qlen_mean") or 0)) / max(1e-9, float(m.get("qlen_std") or 1))
-    stats = _v2_shadow_status(limit=5000).get("by_template") or {}
+    stats = _v2_shadow_status(limit=0).get("by_template") or {}
     max_t = max([float(v.get("tokens") or 0) for v in stats.values()] or [1.0]) or 1.0
     lm = {"cost": 0.50, "quality": 0.05}.get(str(prefer), 0.20) if lam is None else float(lam)
     preds = []
