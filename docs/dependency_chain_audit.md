@@ -1,8 +1,8 @@
 # 元DGTF app 依赖链自洽审计
 
-生成：2026-10-22 16:47:27
+生成：2026-10-22 16:52:14
 
-PASS 73 / FAIL 0
+PASS 74 / FAIL 0
 
 ## FAIL
 - 无
@@ -60,6 +60,7 @@ PASS 73 / FAIL 0
 - dsh logical conversation hooks
 - dsh interject/cancel hooks
 - agent dsh control buttons
+- dsh send-to-stop controls
 - v2 transparent selector css
 - agent live info screen hooks
 - engine layer payload contract

@@ -1345,6 +1345,10 @@ function dshIsRunning() {
   });
 }
 async function stopDsh() {
+  if ((dshCurrent && (dshCurrent.status === 'queued' || dshCurrent.status === 'running'))
+      || (dshConversation && dshConversation.external === 'dsh-current')) {
+    return cancelDshCurrent();
+  }
   setRunBtn('send');
   if (dshConversationId && dshConversation) {
     try {
@@ -1736,16 +1740,23 @@ function dshHasActiveTurn() {
 }
 
 function updateDshControls() {
+  if (!dshMode) return;
   const busy = dshHasActiveTurn();
-  const stop = document.querySelector('#dsh-stop-btn');
-  if (stop) stop.classList.toggle('hidden', !busy);
+  const q = document.querySelector('#question');
+  const hasText = !!(q && q.value.trim());
+  setRunBtn(busy && !hasText ? 'stop' : 'send');
   const rb = document.querySelector('#run-btn');
-  if (rb) rb.dataset.tip = busy ? '发送插话（Enter）' : '开始深究（⌘/Ctrl+↵）';
+  if (rb) {
+    rb.dataset.tip = busy
+      ? (hasText ? '发送插话（Enter）' : '终止本轮（空输入点击）')
+      : '开始深究（⌘/Ctrl+↵）';
+    rb.title = busy
+      ? (hasText ? '发送插话' : '终止本轮')
+      : '开始深究（⌘/Ctrl+↵）';
+  }
 }
 
 async function cancelDshCurrent() {
-  const stop = document.querySelector('#dsh-stop-btn');
-  if (stop) stop.disabled = true;
   try {
     const r = await api('/api/dsh/current/cancel', {method:'POST',
       headers:{'Content-Type':'application/json'}, body:'{}'});
@@ -1764,8 +1775,6 @@ async function cancelDshCurrent() {
     agentLogAction('终止DSH本轮', r && r.accepted ? '已请求取消' : '请求已发送', true);
   } catch (e) {
     agentLogAction('终止DSH本轮', '失败：' + e.message, false);
-  } finally {
-    if (stop) stop.disabled = false;
   }
 }
 
@@ -3274,6 +3283,23 @@ async function openChat(c) {
 }
 
 function newChat() {
+  if (dshMode) {
+    logFollow = true;
+    dshCurrent = null;
+    dshConversationId = null;
+    dshConversation = null;
+    try { localStorage.removeItem(DSH_CONV_KEY); } catch (_) {}
+    stopDshConvPoll();
+    setDshHistoryOpen(false);
+    const q = document.querySelector('#question');
+    if (q) { q.value = ''; q.style.height = ''; }
+    closeDrawer(); closeSearch();
+    loadDshChats();
+    newDshCurrentConversation('新对话').catch(function (e) {
+      agentLogAction('新对话', '失败：' + e.message, false);
+    });
+    return;
+  }
   /* ★ 新会话统一回到首屏：清空**当前视图**，但不动历史任务/DSH 会话数据。
      元DGTF 与 DSH 的原对话分别保留在任务历史 / DSH 会话库里，可随时回溯。 */
   chatMode = 'live'; activeChat = null; followLatest = false;
@@ -5118,7 +5144,6 @@ async function startDshCurrentRun(question) {
     { type: 'text', text: _steer ? '已发送插话，正在插入当前 DSH 轮次。' : '已交给当前 DSH 对话；等待当前轮次完成后执行。' }
   ]};
   renderDshView();
-  setRunBtn('send');
   try {
     const r = await submitDshCurrentTask(question, _steer ? 'steer' : 'queue');
     dshCurrent.events.push({ type: 'text', text: r.text || '已进入当前 DSH 对话队列' });
@@ -5321,6 +5346,8 @@ function init() {
     loadDshNetworkPolicy();
     _netSel.addEventListener('change', saveDshNetworkPolicy);
   }
+  const _questionInput = document.querySelector('#question');
+  if (_questionInput) _questionInput.addEventListener('input', updateDshControls);
   const _logBody = document.querySelector('#runlog-body');
   if (_logBody) {
     let _logScrollTimer = null;
@@ -5917,21 +5944,6 @@ function init() {
   if (_ghCommit) _ghCommit.addEventListener('click', commitGithub);
   const _ghAuto = $('#gh-auto');
   if (_ghAuto) _ghAuto.addEventListener('click', () => autoAgent('proposal'));
-  const _dshTopNew = $('#dsh-newchat-btn');
-  if (_dshTopNew) _dshTopNew.addEventListener('click', async () => {
-    try {
-      dshSession = ''; dshCurrent = null;
-      dshConversationId = null; dshConversation = null;
-      try { localStorage.removeItem(DSH_CONV_KEY); } catch (_) {}
-      stopDshConvPoll(); setDshHistoryOpen(false);
-      await newDshCurrentConversation('新对话');
-      agentLogAction('新对话', '已开启独立 DSH 历史会话', true);
-    } catch (e) {
-      agentLogAction('新对话', '失败：' + e.message, false);
-    }
-  });
-  const _dshStop = $('#dsh-stop-btn');
-  if (_dshStop) _dshStop.addEventListener('click', cancelDshCurrent);
   const _dshArtList = $('#agent-dsh-art');
   if (_dshArtList) _dshArtList.addEventListener('click', async (e) => {
     const it = e.target.closest('[data-dsh-art]');

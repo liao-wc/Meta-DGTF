@@ -179,3 +179,17 @@
 - DSH 配置按钮在 Agent 工具条中，默认折叠；与旧 DSH配置键一致。
 - 已验证 UI：配置框展开、选项数量 model/effort/network/perm = 2/5/2/4，保存提示“配置已保存：deepseek-flash / default”。
 - fast_gate 12/0；selftest 371/0；依赖审计 73/0。
+## 发送/终止按钮与原新对话按钮适配（2026-10-22 17:00，v1.5.07）
+
+- 移除 DSH 视图内额外的“终止本轮”和“新对话”按钮。
+- 终止复用首屏发送按钮：DSH 排队/运行中且输入框为空时，发送按钮变为终止图标；点击调用 `/api/dsh/current/cancel`。
+- 排队/运行中若输入框有文字，按钮恢复发送形态，点击发送 `mode=steer` 插话；两种行为按输入内容动态切换。
+- 新对话恢复使用首屏左上角原有 `#newchat-btn`；DSH 模式下点击它创建新的独立逻辑历史会话，不再另设按钮。
+- 配置键仍为 `dsh-model`、`dsh-effort`、`dsh-network`、`dsh-perm`；DSH配置按钮折叠可调节。
+- 静态版本 v1.5.07。
+
+## 按钮一致性验收
+
+- 页面无 dsh-stop-btn、无 dsh-newchat-btn。
+- 首屏 run-btn 在 DSH 忙且空输入时使用 stop 形态；输入文字后恢复 send 形态。
+- fast_gate 12/0；selftest 371/0；依赖审计 74/0。
