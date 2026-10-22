@@ -87,18 +87,40 @@ def main():
     ap.add_argument("--accum", type=int, default=8)
     ap.add_argument("--out", default="llm_sft/adapter_qwen05b_v1")
     ap.add_argument("--max_eval", type=int, default=14)
+    ap.add_argument("--offline", action="store_true",
+                    help="只用本地 HF 缓存，不访问 HuggingFace")
     args = ap.parse_args()
     set_seed()
     os.environ.setdefault("HF_ENDPOINT", "https://hf-mirror.com")
     print("CUDA", torch.cuda.is_available(), torch.cuda.get_device_name(0)
           if torch.cuda.is_available() else "", flush=True)
-    tok = AutoTokenizer.from_pretrained(args.model, trust_remote_code=True,
-                                        use_fast=True)
+
+    def _set_offline():
+        os.environ["HF_HUB_OFFLINE"] = "1"
+        os.environ["TRANSFORMERS_OFFLINE"] = "1"
+
+    if args.offline:
+        _set_offline()
+    try:
+        tok = AutoTokenizer.from_pretrained(
+            args.model, trust_remote_code=True, use_fast=True,
+            local_files_only=bool(args.offline))
+        model = AutoModelForCausalLM.from_pretrained(
+            args.model, torch_dtype=torch.float16,
+            device_map=None, trust_remote_code=True,
+            local_files_only=bool(args.offline))
+    except Exception as exc:
+        print("在线模型加载失败，回退本地 HF 缓存：%s" % exc, flush=True)
+        _set_offline()
+        tok = AutoTokenizer.from_pretrained(
+            args.model, trust_remote_code=True, use_fast=True,
+            local_files_only=True)
+        model = AutoModelForCausalLM.from_pretrained(
+            args.model, torch_dtype=torch.float16,
+            device_map=None, trust_remote_code=True,
+            local_files_only=True)
     if tok.pad_token is None:
         tok.pad_token = tok.eos_token
-    model = AutoModelForCausalLM.from_pretrained(
-        args.model, torch_dtype=torch.float16,
-        device_map=None, trust_remote_code=True)
     model.to("cuda" if torch.cuda.is_available() else "cpu")
     model.gradient_checkpointing_enable()
     model.config.use_cache = False
