@@ -1571,6 +1571,10 @@ function toggleDshMode(on) {
     stopDshHistoryPoll();
     stopDshViewPoll();
     setDshHistoryOpen(false);
+    const hist = document.querySelector('#dsh-history-toggle');
+    if (hist) hist.classList.add('hidden');
+    const elapsed = document.querySelector('#dsh-elapsed');
+    if (elapsed) elapsed.classList.add('hidden');
   }
 }
 const DSH_CONV_KEY = 'dgtf_dsh_current_conv';
@@ -1663,28 +1667,37 @@ function stopDshHistoryPoll() {
   if (dshHistoryTimer) { clearInterval(dshHistoryTimer); dshHistoryTimer = null; }
 }
 
+function dshToolLabel(name) {
+  const map = {run_code:'运行代码', pwsh:'终端命令', read:'读取文件', write:'写入文件',
+    edit:'编辑文件', apply_patch:'应用补丁', glob:'查找文件', grep:'搜索内容',
+    list_agents:'子代理', spawn_teammate:'子代理', subagent:'子代理'};
+  return map[String(name || '')] || String(name || '工具');
+}
+
 function dshEventHtml(ev) {
   if (!ev || !ev.type) return '';
   if (ev.type === 'status') {
-    if (ev.phase === 'turn_start') return '<div class="rl-summary">turn ' + esc(ev.turn || '') + ' 开始</div>';
-    if (ev.phase === 'step_start') return '<div class="rl-summary">step ' + esc(ev.step || '') + '</div>';
-    if (ev.phase === 'turn_end') return '<div class="rl-summary">turn ' + esc(ev.turn || '') + ' 结束</div>';
+    if (ev.phase === 'turn_start') return '<div class="rl-summary">第 ' + esc(ev.turn || '') + ' 轮开始</div>';
+    if (ev.phase === 'step_start') return '<div class="rl-summary">第 ' + esc(ev.step || '') + ' 步</div>';
+    if (ev.phase === 'turn_end') return '<div class="rl-summary">第 ' + esc(ev.turn || '') + ' 轮结束</div>';
     return '';
   }
   if (ev.type === 'user' && ev.text) {
-    return '<div class="rl-line"><span class="rl-lab">用户</span><span class="rl-txt">' + esc(ev.text) + '</span></div>';
+    return '<details class="rl-fold" open><summary>用户</summary><div class="rl-fold-body"><div class="rl-line"><span class="rl-txt">' + esc(ev.text) + '</span></div></div></details>';
   }
   if (ev.type === 'thinking' && ev.text) {
-    return '<details class="rl-fold" open><summary>思考</summary><div class="rl-fold-body"><div class="rl-line"><span class="rl-txt">' + esc(ev.text) + '</span></div></div></details>';
+    return '<details class="rl-fold"><summary>思考过程（模型原始推理）</summary><div class="rl-fold-body"><div class="rl-line"><span class="rl-txt">' + esc(ev.text) + '</span></div></div></details>';
   }
   if (ev.type === 'tool_call') {
-    return '<div class="rl-line"><span class="rl-lab">🔧 ' + esc(ev.tool || 'tool') + '</span><span class="rl-txt">' + esc(String(JSON.stringify(ev.input || {})).slice(0, 12000)) + '</span></div>';
+    const zh = dshToolLabel(ev.tool);
+    return '<details class="rl-fold"><summary>🔧 ' + esc(zh) + ' · ' + esc(ev.tool || '工具') + '</summary><div class="rl-fold-body"><div class="rl-line"><span class="rl-txt">' + esc(String(JSON.stringify(ev.input || {})).slice(0, 12000)) + '</span></div></div></details>';
   }
   if (ev.type === 'tool_result') {
-    return '<details class="rl-fold"><summary>工具结果 · ' + esc(ev.status || '') + '</summary><div class="rl-fold-body"><div class="rl-line"><span class="rl-txt">' + esc(String(ev.result || '').slice(0, 12000)) + '</span></div></div></details>';
+    const ok = ev.status === 'ok';
+    return '<details class="rl-fold"><summary>工具结果 · ' + (ok ? '成功' : '失败') + '</summary><div class="rl-fold-body"><div class="rl-line"><span class="rl-txt">' + esc(String(ev.result || '').slice(0, 12000)) + '</span></div></div></details>';
   }
   if (ev.type === 'text' && ev.text) {
-    return '<div class="rl-line"><span class="rl-txt">' + esc(ev.text) + '</span></div>';
+    return '<details class="rl-fold" open><summary>助手回复</summary><div class="rl-fold-body"><div class="rl-line"><span class="rl-txt">' + esc(ev.text) + '</span></div></div></details>';
   }
   return '';
 }
@@ -1744,9 +1757,55 @@ function dshHasActiveTurn() {
     || (dshConversation && (dshConversation.turns || []).some(t => t.status === 'queued' || t.status === 'running')));
 }
 
+let dshElapsedTimer = null;
+let dshRunStartedAt = 0;
+let dshRunStopped = true;
+
+function fmtDshElapsed(ms) {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const ss = s % 60;
+  const p = function (n) { return String(n).padStart(2, '0'); };
+  return (h ? (h + ':') : '') + p(m) + ':' + p(ss);
+}
+
+function updateDshElapsed() {
+  const el = document.querySelector('#dsh-elapsed');
+  if (!el) return;
+  if (!dshRunStartedAt) { el.classList.add('hidden'); el.textContent = ''; return; }
+  el.classList.remove('hidden');
+  el.textContent = (dshRunStopped ? '用时 ' : '已运行 ') + fmtDshElapsed(Date.now() - dshRunStartedAt);
+}
+
+function startDshElapsed(reset) {
+  if (reset || !dshRunStartedAt) dshRunStartedAt = Date.now();
+  dshRunStopped = false;
+  updateDshElapsed();
+  if (!dshElapsedTimer) dshElapsedTimer = setInterval(updateDshElapsed, 1000);
+}
+
+function stopDshElapsed() {
+  if (!dshRunStartedAt) return;
+  if (dshElapsedTimer) { clearInterval(dshElapsedTimer); dshElapsedTimer = null; }
+  dshRunStopped = true;
+  updateDshElapsed();
+}
+
+function resetDshElapsed() {
+  if (dshElapsedTimer) { clearInterval(dshElapsedTimer); dshElapsedTimer = null; }
+  dshRunStartedAt = 0;
+  dshRunStopped = true;
+  const el = document.querySelector('#dsh-elapsed');
+  if (el) { el.classList.add('hidden'); el.textContent = ''; }
+}
+
 function updateDshControls() {
   if (!dshMode) return;
   const busy = dshHasActiveTurn();
+  const hist = document.querySelector('#dsh-history-toggle');
+  if (hist) hist.classList.remove('hidden');
+  if (busy) startDshElapsed(false); else stopDshElapsed();
   const q = document.querySelector('#question');
   const hasText = !!(q && q.value.trim());
   setRunBtn(busy && !hasText ? 'stop' : 'send');
@@ -5054,7 +5113,6 @@ async function syncDshCurrentView() {
   try {
     const r = await api('/api/dsh/current/events?since=' + encodeURIComponent(dshLiveSeq) + '&limit=300');
     if (!r || !r.ok || !dshCurrent) return;
-    logFollow = true;
     (r.events || []).forEach(function (ev) {
       if (!ev) return;
       dshLiveEvents.push(ev);
@@ -5082,6 +5140,8 @@ function startDshViewPoll() {
 async function newDshCurrentConversation(title, opts) {
   opts = opts || {};
   resetDshLiveEvents();
+  resetDshElapsed();
+  logFollow = true;
   const r = await api('/api/dsh/current/conversation', {method:'POST',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({mode:'new', title: String(title || '新对话')})});
@@ -5120,6 +5180,8 @@ async function dshDispatchAction(label, task) {
   try {
     if (!dshMode) toggleDshMode(true);
     closeSheet(); closeDrawer();
+    resetDshElapsed();
+    logFollow = true;
     await newDshCurrentConversation(label, {silent: true});
     const r = await submitDshCurrentTask(String(task || label));
     dshCurrent = { question: label, session: '当前 DSH 对话', status: 'queued', events: [
@@ -5144,6 +5206,8 @@ async function startDshCurrentRun(question) {
   if (q) { q.value = ''; q.style.height = ''; }
   const _steer = !!((dshCurrent && (dshCurrent.status === 'queued' || dshCurrent.status === 'running'))
     || (dshConversation && (dshConversation.turns || []).some(t => t.status === 'queued' || t.status === 'running')));
+  if (!_steer) resetDshElapsed();
+  logFollow = true;
   toggleDshMode(true);
   if (dshConversation) { dshConversation = null; dshConversationId = null; stopDshConvPoll(); }
   dshCurrent = { question: question, session: '当前 DSH 对话', status: 'queued', events: [

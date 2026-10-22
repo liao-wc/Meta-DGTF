@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="dark">
 <title>元DGTF 个人工作台</title>
 <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
-<link rel="stylesheet" href="/static/style.css?v=1.5.09">
+<link rel="stylesheet" href="/static/style.css?v=1.5.10">
 </head>
 <body class="stage-empty">
 
@@ -392,12 +392,11 @@
     <div class="runlog-head">
       <span class="rl-head-l"><span id="rl-badge" class="badge"></span><button type="button" id="rl-retry" class="rl-retry hidden" data-tip="用同一个问题新开一次跑次（新任务，不改旧任务）">重试</button></span>
       <span class="rl-head-c"><span id="rl-question"></span><span id="rl-meta" class="rl-meta"></span></span>
-      <span class="rl-head-r"><span id="rl-files" class="rl-files"></span></span>
+      <span class="rl-head-r"><span id="dsh-elapsed" class="dsh-elapsed hidden"></span><button type="button" id="dsh-history-toggle" class="ghost dsh-history-toggle hidden">历史对话</button><span id="rl-files" class="rl-files"></span></span>
     </div>
     <div id="dsh-conv-bar" class="dsh-conv-bar hidden">
       <span id="dsh-conv-current" class="dsh-conv-current"></span>
       <span id="dsh-conv-running" class="dsh-conv-running"></span>
-      <button type="button" id="dsh-history-toggle" class="ghost dsh-history-toggle">历史会话</button>
     </div>
     <div id="runlog-body" class="runlog-body scroll"></div>
   </div>
@@ -550,6 +549,6 @@
 
 
 
-<script src="/static/app.js?v=1.5.09"></script>
+<script src="/static/app.js?v=1.5.10"></script>
 </body>
 </html>
