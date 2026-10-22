@@ -80,3 +80,11 @@
 - 审计器修正：有证据的否定结论（不存在/未出现/无公开落点/无法合成）不再误判 partial；新增负例测试 10/10。
 - 下一步：新审计后的真实跑 process_ready 4/4；本地模型任务级评分；App P2。
 
+
+## 第六轮进展（2026-10-22 19:00）
+
+- 提案 pending=0；全自动帕累托后台 local_model 策略持续运行。
+- 正向真实跑 20261022_184514（DeepSeek API base URL）：70 calls/651k/约10min；process_ready=4/4，但证据只给出截断代码样例；URL 显示门把 answer_quality 降为 needs_evidence，answer_ready=false。
+- app v1.5.19 / commit 239594e；真实跑与上线检查单落 reports/docs。
+- 仍未完成：证据抽取修复（得到真实 URL 正向样本）、任务级 Pareto policy 执行、本地模型任务级评分、App P2。
+
