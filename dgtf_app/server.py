@@ -7414,6 +7414,7 @@ def main() -> int:
             _cert, _key = _ensure_tls_cert()
             srv.socket = _tls_context(_cert, _key).wrap_socket(srv.socket, server_side=True)
             print("  HTTPS 已启用：自签名证书 " + str(_cert))
+            print("  首次使用请运行 scripts/trust_https_cert.ps1 信任本机证书")
         except Exception as _e:
             print("  HTTPS 启动失败：%s" % _e)
             return 3
