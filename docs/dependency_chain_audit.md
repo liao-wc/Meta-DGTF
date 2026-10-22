@@ -1,8 +1,8 @@
 # 元DGTF app 依赖链自洽审计
 
-生成：2026-10-22 07:46:54
+生成：2026-10-22 08:00:25
 
-PASS 48 / FAIL 0
+PASS 50 / FAIL 0
 
 ## FAIL
 - 无
@@ -39,6 +39,8 @@ PASS 48 / FAIL 0
 - front chat status mapping keys
 - front proposal mapping keys
 - library action transparency hooks
+- engine layer payload contract
+- output list contract
 - clean output helper
 - quality alternative api
 - quality alt grade

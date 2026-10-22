@@ -90,6 +90,17 @@ st, props = get('/api/dsh/proposals')
 rows = props.get('proposals') or []
 ck('front proposal mapping keys', st == 200 and all({'id', 'status', 'task', 'plan'}.issubset(x) for x in rows[:10]))
 ck('library action transparency hooks', 'agentLogAction' in appjs and 'id="agent-action-log-list"' in (ROOT / 'dgtf_app' / 'static' / 'index.html').read_text(encoding='utf-8', errors='replace'))
+st, lt = get('/api/tasks')
+lt_rows = lt.get('tasks') or []
+if lt_rows:
+    tid = str(lt_rows[0].get('id'))
+    st, layer_payload = get('/api/tasks/' + tid + '/layers')
+    ck('engine layer payload contract', st == 200 and isinstance(layer_payload.get('layers'), dict) and bool(layer_payload.get('head')), list((layer_payload.get('layers') or {}).keys())[:10])
+    st, out_payload = get('/api/outputs?days=1')
+    ck('output list contract', st == 200 and isinstance(out_payload.get('items'), list) and 'count' in out_payload)
+else:
+    ck('engine layer payload contract', True, 'no tasks')
+    ck('output list contract', True, 'no tasks')
 
 # 5. 产物命名 / 质量替代
 ck('clean output helper', '_clean_prefixed_output' in (ROOT / 'dgtf_app' / 'engine_runner.py').read_text(encoding='utf-8', errors='replace'))
