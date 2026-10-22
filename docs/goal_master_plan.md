@@ -48,3 +48,10 @@
 - F：尚未扩权；审计结论仍是建议/预填，下一阶段用置信门控。
 - 下一步：D 的 answer_quality/process_ready 与 6 份 packed 重放；E 的 policy 执行面与 A/B；F 的本地模型 Stage A 预填；B 的 3 条证据补齐。
 
+
+## 第二轮补记（2026-10-22 18:12）
+
+- 引擎 1.30.2（tag engine-v1.30.2）：answer_ready/process_ready 分离、事实 gap 降级、质量重放脚本；app 1.5.13。
+- 质量重放验收：127 packed，public ready_but_process_false=0；091812 判 needs_evidence；layer1 citations 正例 46。
+- 下一步：补 answer_summary 契约、深度指标落地引擎；Pareto policy 执行面 A/B；本地模型 Stage A 置信门控；3 条提案证据补齐。
+

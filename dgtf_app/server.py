@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "1.5.12"
+APP_VERSION = "1.5.13"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -1445,7 +1445,7 @@ def _proposal_project_context():
         head_ts = int((r2.stdout or "0").strip() or 0)
     except Exception:
         pass
-    files = ["元DGTF-V1.30.1.py", "dgtf_v2/agent_bridge.py",
+    files = ["元DGTF-V1.30.2.py", "dgtf_v2/agent_bridge.py",
              "dgtf_app/server.py", "dgtf_app/static/app.js"]
     parts = [head]
     mtimes = {}
@@ -1461,7 +1461,7 @@ def _proposal_project_context():
         qn = sum(1 for _ in q.open(encoding="utf-8", errors="replace"))
     except Exception:
         qn = 0
-    eng = _prop_cached_text(root / "元DGTF-V1.30.1.py")
+    eng = _prop_cached_text(root / "元DGTF-V1.30.2.py")
     br = _prop_cached_text(root / "dgtf_v2/agent_bridge.py")
     return {
         "head": head[:12],
@@ -3117,7 +3117,7 @@ def _targeted_acceptance(changed):
     cmds = []
     if any(str(p).startswith("dgtf_app/") for p in changed):
         cmds.append([_sys.executable, "dgtf_app/selftest.py", "app-selftest"])
-    if any(str(p).endswith(("元DGTF-V1.30.1.py", "元DGTF-V1.30.0.py"))
+    if any(str(p).endswith(("元DGTF-V1.30.2.py", "元DGTF-V1.30.0.py"))
            or str(p).startswith("dgtf_v2/") for p in changed):
         cmds.append([_sys.executable, "smoke_test.py", "smoke"])
     out = []
@@ -5592,7 +5592,7 @@ _PROJECT_DOCS = [
     "v1110_报告.md",
 ]
 _PROJECT_BRIEF = (
-    "元DGTF 是一个本地四层螺旋推理引擎，版本 元DGTF-V1.30.1.py / 1.30.1。"
+    "元DGTF 是一个本地四层螺旋推理引擎，版本 元DGTF-V1.30.2.py / 1.30.2。"
     "四层固定为：0 修行（展开/候选/锚点）、1 研究（证据/子问题/收敛）、"
     "both 对撞（裁决/冲突/线头）、all 元（闭环/决策/停止）。"
     "EML 是事件溯源记忆与自学习反馈层，含 V1 playbook 与 V2 schedule_outcome；"
@@ -6143,12 +6143,13 @@ def _quality_alt(task_id):
     note = ("coverage 缺失（null），质量替代分不计算，grade=unmeasured；"
             "该分数不可与历史分数直接比较" if coverage_missing
             else "三态 α 不可靠时使用；可解释、可复算")
-    # [v1.30.1] 把“答案门”和“过程门”分开：不能因为 answer_ready=true
+    # [v1.30.2] 把“答案门”和“过程门”分开：不能因为 answer_ready=true
     # 就掩盖 process 不达标；也不能把有答案直接当成答案正确。
     _dt = d.get("decision_trace") or {}
     _fc = d.get("fact_contract") or {}
     _card = (_dt.get("fact_card") or {})
     _process = None
+    _led = {}
     try:
         from dgtf_v2.process_ledger import build_ledger as _bl
         _led = _bl(d)
@@ -6170,6 +6171,16 @@ def _quality_alt(task_id):
             "process_ready_reason": _process_reason,
             "standard_all": _process,
             "answer_summary": str(_summary)[:1200],
+            "evidence_gaps": list((_dt.get("fact_card") or {}).get("gaps") or []),
+            "tri_alpha": q.get("tri_alpha"),
+            "tri_quality": q.get("tri_quality"),
+            "depth": {
+                "structured_chars": sum(int((x or {}).get("product_chars") or 0)
+                                        for x in ((_led.get("layers") or {}).values())),
+                "citations": sum(int((x or {}).get("citations") or 0)
+                                 for x in ((_led.get("layers") or {}).values())),
+                "layers": len(_led.get("layers") or {}),
+            },
             "decision_actions": len(d.get("actions") or []),
             "not_do": len(d.get("not_do") or []),
             "flags": flags,

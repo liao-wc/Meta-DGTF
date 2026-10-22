@@ -12,6 +12,19 @@
 
 ---
 
+v1.30.2 相对 v1.30.1
+
+【主题】答案门/过程门分离与质量重放。
+
+【改动】
+· decision_trace 增加 raw_answer_ready/process_ready/answer_quality；过程未达标时对外 answer_ready=False。
+· 事实卡 uncovered/冲突/同题 token 缺失 → needs_evidence。
+· 新增 scripts/replay_quality.py 离线重放 packed。
+· app /api/quality 增加 answer/process/evidence_gaps/tri/depth。
+
+【验证】
+· fast_gate 12/0；audit70 通过；质量重放 127 packed。
+
 v1.30.1 相对 v1.30.0
 
 【主题】P0 质量门与结构化决策输出修复。
