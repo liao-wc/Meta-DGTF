@@ -3,7 +3,7 @@
 一个**单文件**的四层螺旋推理引擎：修行 / 研究 / 对撞 / 元，跑出可审计的产物。
 
 - **当前版本**：`元DGTF-V1.30.1.py`（单文件引擎）
-- **人用界面**：`dgtf_app/`（app V1.5.11；本地 Web 工作台，见 `dgtf_app/README.md`）
+- **人用界面**：`dgtf_app/`（app V1.5.12；本地 Web 工作台，见 `dgtf_app/README.md`）
 - **版本历史**：`CHANGELOG.md`；app 发布说明见 `docs/releases/`
 
 > 这份 README 只写**能被验证**的事：命令都真跑过，数字都是当前版本的实测值。
