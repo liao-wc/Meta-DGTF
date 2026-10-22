@@ -27,3 +27,14 @@
 - pending 提案 29；非运行时工作区变更 215。
 - 本地模型：Qwen2.5-0.5B LoRA route 0.429 / rounds MAE 1.446；调度 ridge MAE 0.086。
 - Pareto：方案F profile / V2 挡位自动选优已有链路，是否全自动待审计。
+
+## 本轮进展（2026-10-22 17:46）
+
+- A：DSH 完全接管提示词、takeover 状态与 API 已落地；允许 git commit/revert、版本迭代、项目内修复。
+- B：29 条 pending 已收口为 3 条（15 superseded、11 rejected、3 待验证）；3 条均已补可执行 plan；action_hint 已从误 reject 恢复。
+- C：P1 修复 5/6：口令日志、POST 鉴权/上限、孤儿任务归属、Git 提交范围、默认超时、版本对齐；剩余 P2（审计报告）。
+- D：引擎质量审计完成：answer_ready 与 std/accuracy 门未分离、ledger 数据源错误、结构化 actions 输出断裂；下一步按报告 §5 A/B/C 执行。
+- E：Pareto 审计完成：选优已自动但 policy 未进引擎；质量/成本口径不可复现，须先修口径再扩全自动。
+- F：本地模型审计完成：0.5B LoRA route 0.429/rounds MAE 1.446，仅适合建议/预填；岭回归 MAE 0.112，可做候选评分但需置信门控。
+- 审计报告：reports/goal_app_prod_audit.md、goal_proposals_plan.md、goal_engine_quality_audit.md、goal_pareto_local_audit.md。
+

@@ -48,3 +48,12 @@ app 启动会确保：
 ## 已知边界
 DSH 的 Windows 文件沙箱（dsh-sandbox-windows-acl）只限制写入，不限制读取；
 因此应用层做敏感路径硬拦截 + 输出脱敏，但内核级读隔离需要独立 Windows 用户/容器/VM。
+
+## 2026-10-22 上线前 P1 修复
+
+- 启动日志不打印 `?t=` 口令；访问地址由 `scripts/show_access_url.ps1` 本机生成，旧启动日志已清洗。
+- POST 先做 Host/口令/Origin/CSRF 校验，再读 body；JSON 上限 32MB，资料导入 200MB。
+- 多实例孤儿任务回收用 `app_pid` 判断归属，不再误标其它实例任务。
+- Git 提交范围收紧：未跟踪文件只在 dgtf_app/dgtf_v2/docs/scripts/configs/anchors/bench/llm_sft 下放行；日志/临时文件忽略。
+- 真实任务默认 3600s 超时，可用 `DGTF_TASK_TIMEOUT_S` 调整。
+

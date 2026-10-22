@@ -25,7 +25,7 @@
 
 启动： python dgtf_app/server.py [--port 8765] [--verbose]
        python dgtf_app/server.py --lan                 # 同一局域网可访问（**无口令**，谁都能操作）
-       python dgtf_app/server.py --lan --token 口令     # 带访问口令（启动时会打印带 ?t= 的网址）
+       python dgtf_app/server.py --lan --token 口令     # 带访问口令（启动日志不打印 ?t=）
 """
 
 from __future__ import annotations
@@ -139,6 +139,7 @@ def _wb_token_ok(tok):
 
 # ★ R44：导入是二进制上传（base64 后还要膨胀 1/3）⇒ 单独给一个大上限，超了 413。
 MAX_UPLOAD_BYTES = 200 * 1024 * 1024
+MAX_JSON_BYTES = 32 * 1024 * 1024
 
 
 def _routable(ip: str) -> bool:
@@ -1235,10 +1236,19 @@ def _commit_scope(paths, allowed=None):
         p = str(p or "").strip()
         if not p or p.startswith(_RUNTIME_PREFIXES):
             continue
-        if p.endswith((".log", ".pyc", ".sqlite3")):
+        _low = p.lower()
+        if (_low.endswith((".log", ".pyc", ".sqlite3", ".tmp", ".bak"))
+                or ".log." in _low or _low.startswith(("_app_out_", "_app_err_",
+                                                     ".tmp", "tmp", "_audit_tmp"))):
             continue
-        if allowed and p not in tracked and p not in allowed:
-            continue
+        # 未显式给出 allowed 时，只放行已知源码/文档目录或已跟踪文件；
+        # 防止日志、临时脚本、token 文件被 UI 自动提交。
+        if p not in tracked and p not in allowed:
+            safe_prefixes = ("dgtf_app/", "dgtf_v2/", "docs/",
+                             "scripts/", "configs/", "anchors/",
+                             "bench/", "llm_sft/")
+            if not p.startswith(safe_prefixes):
+                continue
         out.append(p)
     return out
 
@@ -2368,6 +2378,59 @@ def _dsh_current_events(since: int = 0, limit: int = 300) -> dict:
             "last_seq": max([int(x.get("seq") or 0) for x in events] + [since])}
 
 
+_DSH_TAKEOVER_DEFAULT = {
+    "enabled": True,
+    "allow_source_edit": True,
+    "allow_tests": True,
+    "allow_git_commit": True,
+    "allow_version_iteration": True,
+    "allow_proposal_autofix": True,
+    "allow_public_network": True,
+    "deny": ["git push", "git reset --hard", "force push", "secrets",
+             "account/ACL changes", "irreversible external actions"],
+}
+
+
+def _dsh_takeover_path():
+    d = Path(__file__).resolve().parent.parent / "dgtf_memory"
+    d.mkdir(parents=True, exist_ok=True)
+    return d / "dsh_takeover.json"
+
+
+def _dsh_takeover_load():
+    import json as _json
+    rec = dict(_DSH_TAKEOVER_DEFAULT)
+    try:
+        p = _dsh_takeover_path()
+        if p.exists():
+            raw = _json.loads(p.read_text(encoding="utf-8", errors="replace"))
+            if isinstance(raw, dict):
+                for k in rec:
+                    if k in raw and k != "deny":
+                        rec[k] = bool(raw.get(k))
+    except Exception:
+        pass
+    return rec
+
+
+def _dsh_takeover_save(data):
+    import json as _json
+    rec = _dsh_takeover_load()
+    for k in list(rec):
+        if k == "deny":
+            continue
+        if k in (data or {}):
+            rec[k] = bool(data.get(k))
+    try:
+        p = _dsh_takeover_path()
+        tmp = p.with_suffix(".tmp")
+        tmp.write_text(_json.dumps(rec, ensure_ascii=False, indent=1), encoding="utf-8")
+        tmp.replace(p)
+    except Exception:
+        pass
+    return rec
+
+
 def _dsh_guard_lock():
     global _DSH_GUARD_LOCK
     import threading as _th
@@ -2488,6 +2551,7 @@ def _dsh_guard_status():
     except Exception:
         pass
     rec["thread_running"] = bool(_DSH_GUARD_THREAD and _DSH_GUARD_THREAD.is_alive())
+    rec["takeover"] = _dsh_takeover_load()
     return rec
 
 
@@ -7061,8 +7125,11 @@ class Handler(BaseHTTPRequestHandler):
         if getattr(self, "_post_body_read", False):
             raw = getattr(self, "_post_body", b"")
         else:
-            n = int(self.headers.get("Content-Length") or 0)
-            if not n:
+            try:
+                n = int(self.headers.get("Content-Length") or 0)
+            except (TypeError, ValueError):
+                return {}
+            if n <= 0 or n > MAX_JSON_BYTES:
                 return {}
             raw = self.rfile.read(n)
             self._post_body_read = True
@@ -7371,6 +7438,8 @@ class Handler(BaseHTTPRequestHandler):
             _cid = str(_active.get("conversation_id") or "")
             return self._json({"ok": True, "active": _active,
                                "conversation": _conv_load(_cid) if _cid else None})
+        if p == "/api/dsh/takeover":
+            return self._json({"ok": True, "takeover": _dsh_takeover_load()})
         if p == "/api/dsh/config":
             return self._json({"ok": True, "config": _dsh_config_load(),
                                "options": _dsh_config_options()})
@@ -7735,18 +7804,28 @@ class Handler(BaseHTTPRequestHandler):
         return self._method_not_allowed()
 
     def do_POST(self):
-        # 先把 POST body 一次性读走：即使某些路由不读 JSON，也不能把 body
+        u = urlparse(self.path)
+        p = u.path
+        # 先鉴权再读 body，避免未授权大包占满内存/线程。
+        if not self._guard(mutate=True):   # Host + 口令 + Origin/Referer + CSRF
+            self.close_connection = True
+            return
+        try:
+            n = int(self.headers.get("Content-Length") or 0)
+        except (TypeError, ValueError):
+            self.close_connection = True
+            return self._json({"error": "Content-Length 非法"}, 400)
+        _limit = MAX_UPLOAD_BYTES if p == "/api/library/import" else MAX_JSON_BYTES
+        if n < 0 or n > _limit:
+            self.close_connection = True
+            return self._json({"error": "请求体超过上限"}, 413)
+        # 一次性读走 body：即使某些路由不读 JSON，也不能把 body
         # 留在 keep-alive 连接里，否则下一条请求会被解析成 "{}GET" 并 501。
-        n = int(self.headers.get("Content-Length") or 0)
         try:
             self._post_body = self.rfile.read(n) if n > 0 else b""
         except Exception:
             self._post_body = b""
         self._post_body_read = True
-        if not self._guard(mutate=True):   # Host + 口令 + Origin/Referer + CSRF
-            return
-        u = urlparse(self.path)
-        p = u.path
 
         if p.startswith("/api/dsh/workbench/"):
             return self._dsh_workbench(p.rsplit("/", 1)[-1])
@@ -8418,6 +8497,9 @@ class Handler(BaseHTTPRequestHandler):
                     except Exception:
                         pass
             return self._json({"ok": True, "cancelled": n})
+        if p == "/api/dsh/takeover":
+            data = self._read_json()
+            return self._json({"ok": True, "takeover": _dsh_takeover_save(data)})
         if p == "/api/dsh/config":
             data = self._read_json()
             conf = _dsh_config_save(data)
@@ -8582,6 +8664,12 @@ class Handler(BaseHTTPRequestHandler):
                 opts = {}
             _pctx_opt = opts.pop("project_context", None)
             _is_mock_task = bool(opts.get("mock"))
+            # 生产默认任务上限：防止真实跑失控；可通过环境变量调整。
+            if not _is_mock_task and not opts.get("timeout_s") and not opts.get("max_seconds"):
+                try:
+                    opts["timeout_s"] = max(60, int(os.getenv("DGTF_TASK_TIMEOUT_S", "3600")))
+                except (TypeError, ValueError):
+                    opts["timeout_s"] = 3600
             if _pctx_opt is None:
                 # 项目背景内置：真实任务默认注入；mock/自检保持原文以稳定基线。
                 _project_ctx = not _is_mock_task
@@ -8625,6 +8713,7 @@ class Handler(BaseHTTPRequestHandler):
                                "auto_template": _auto_template,
                                "auto_llm": _auto_llm,
                                "project_context": _project_ctx,
+                               "timeout_s": opts.get("timeout_s") or 0,
                                "profile": opts.get("profile") or ""}, 201)
 
         return self._json({"error": "not found"}, 404)
@@ -8638,7 +8727,7 @@ def main() -> int:
                     help="绑 0.0.0.0：同一局域网内的其它设备也能访问（默认只监听 127.0.0.1）")
     ap.add_argument("--token", nargs="?", const="@gen", default="",
                     help="访问口令（不带值时自动生成）。开启后所有请求都要带它；"
-                         "启动时会打印带 ?t= 的网址")
+                         "启动日志不打印带 ?t= 的网址，请用 scripts/show_access_url.ps1")
     ap.add_argument("--port", type=int, default=8765)
     _default_https = str(os.getenv("DGTF_HTTP", "")).strip().lower() not in (
         "1", "true", "yes", "on")
@@ -8723,11 +8812,11 @@ def main() -> int:
             print("  HTTPS 启动失败：%s" % _e)
             return 3
     mock = "开" if os.environ.get("DGTF_APP_MOCK") == "1" else "关"
-    _local_url = (f"{scheme}://127.0.0.1:{args.port}"
-                  + (("/?t=" + token) if token else ""))
+    _local_url = f"{scheme}://127.0.0.1:{args.port}"
     print(f"元DGTF 应用已启动： {_local_url}", flush=True)
     if token:
-        print("  本机访问口令已自动生成/启用：只保存在本进程内存；请用上面带 ?t= 的网址打开", flush=True)
+        print("  本机访问口令已启用：不在启动日志打印；"
+              "请运行 scripts/show_access_url.ps1 获取带口令地址，或读取 dgtf_memory/.access_token", flush=True)
     if host == "0.0.0.0":
         print("  局域网已打开（同一 WiFi / 同网段的设备可以访问）：")
         _ips = lan_ips()
@@ -8738,8 +8827,10 @@ def main() -> int:
                 _tag = "   （真网卡）"
             else:
                 _tag = "   （隔离/虚拟网卡，手机一般连不上）"
-            print("    %s://%s:%d%s%s" % (scheme, _ip, args.port,
-                                              ("/?t=" + token) if token else "", _tag))
+            print("    %s://%s:%d%s" % (scheme, _ip, args.port,
+                                              _tag))
+            if token:
+                print("       （带口令地址请用 scripts/show_access_url.ps1 生成）")
         print("  · 手机连的 WiFi 是哪个网段，就开**同一网段**那条（前三位数字对上）——")
         print("    手机「设置 → WLAN → 当前网络」里能看到自己的 IP；")
         print("    拿不准就把上面两条「真网卡」各试一遍（各 10 秒），虚拟网卡那条不用试。")

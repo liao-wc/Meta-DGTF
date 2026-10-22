@@ -1,4 +1,4 @@
-﻿param(
+param(
   [int]$Port = 8765,
   [switch]$Http,
   [switch]$NoBrowser,
@@ -337,7 +337,7 @@ if ($runningDgtf.Count -gt 0) {
   }
   $url = ($health.Scheme + "://127.0.0.1:" + $Port + "/?t=" + $token)
   Write-Host ("DGTF app 已在运行：pid=" + ((@($runningDgtf | ForEach-Object { $_.Pid })) -join ",") + "，健康检查通过（HTTP 200）")
-  Write-Host ("访问地址: " + $url)
+  Write-Host "访问地址：已用浏览器自动打开（含口令 URL 不写入日志）"
   Open-AppBrowser $url
   exit 0
 }
@@ -392,7 +392,7 @@ if (-not $health.Ok) {
 
 $url = ($health.Scheme + "://127.0.0.1:" + $Port + "/?t=" + $token)
 Write-Host ("启动成功：pid=" + $p.Id + "，健康检查通过（HTTP 200）")
-Write-Host ("访问地址: " + $url)
+Write-Host "访问地址：已用浏览器自动打开（含口令 URL 不写入日志）"
 Write-Host ("日志: " + $Log + " / " + $ErrLog)
 Open-AppBrowser $url
 exit 0

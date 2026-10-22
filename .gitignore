@@ -66,3 +66,11 @@ dgtf_app/anchors/_removed/
 #   正经做法是把它放在**仓库外**（SKILL 里写过）；放仓库里就会被 `git add -A` 顺手提交，
 #   所以这里显式忽略 —— 免得把别人的临时文件混进下一次提交。
 _commitmsg.txt
+
+# 启动器日志（可能含旧版访问口令）不进仓库
+_app_out_*.log
+_app_err_*.log
+_app_out_*.log.*
+_app_err_*.log.*
+.tmp_*/
+tmp*/

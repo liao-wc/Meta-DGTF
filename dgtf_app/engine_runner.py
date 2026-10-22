@@ -242,6 +242,8 @@ def _write_live_run(task: dict) -> None:
         "created_at": task["created_at"], "started_at": task["started_at"],
         "ended_at": None, "duration_sec": None,
         "output_name": None, "error": "", "cmd": task["cmd"],
+        # ★ 写入 app 进程 pid：多实例/重启时只回填自己进程遗留的活痕迹。
+        "app_pid": os.getpid(),
         "live": True,            # ★ 标记：这条是「活痕迹」，正常收尾时会被删掉
     }
     try:
@@ -296,6 +298,34 @@ def _clear_live_run(task: dict) -> None:
     task[_LIVE_MARK] = False
 
 
+def _pid_alive(pid) -> bool:
+    """Windows/POSIX 通用：进程是否仍存在（只查询，不终止）。"""
+    try:
+        pid = int(pid)
+    except (TypeError, ValueError):
+        return False
+    if pid <= 0:
+        return False
+    try:
+        if os.name == "nt":
+            import ctypes
+            k32 = ctypes.windll.kernel32
+            h = k32.OpenProcess(0x1000, False, pid)  # PROCESS_QUERY_LIMITED_INFORMATION
+            if not h:
+                return False
+            try:
+                code = ctypes.c_ulong(0)
+                if not k32.GetExitCodeProcess(h, ctypes.byref(code)):
+                    return False
+                return code.value == 259  # STILL_ACTIVE
+            finally:
+                k32.CloseHandle(h)
+        os.kill(pid, 0)
+        return True
+    except Exception:
+        return False
+
+
 def recover_orphans() -> list[dict]:
     """★ 服务启动时回填「孤儿任务」：有活痕迹、但本次进程里没有对应任务的那些。
 
@@ -323,6 +353,9 @@ def recover_orphans() -> list[dict]:
         tid = str(meta.get("id") or jp.name[: -len(".run.json")])
         if tid in alive:
             continue                       # 本进程里还在跑（理论上不该有，防御而已）
+        _owner = meta.get("app_pid")
+        if _owner and int(_owner) != os.getpid() and _pid_alive(_owner):
+            continue                       # 另一 app 实例仍存活，不能误判为孤儿
         if str(meta.get("status") or "") not in ("running", "queued"):
             continue
         meta["status"] = "interrupted"
