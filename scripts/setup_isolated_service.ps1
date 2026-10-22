@@ -37,6 +37,31 @@ if (-not (Test-Path -LiteralPath $DSH)) { throw "找不到 DSH: " + $DSH }
 $listen = Get-NetTCPConnection -State Listen -LocalPort $Port -ErrorAction SilentlyContinue
 if ($listen) { throw ("端口 " + $Port + " 已被占用，请先停止旧 app 再运行 -Apply。") }
 
+function Grant-BatchLogon([string]$Name) {
+  try {
+    $sid = (New-Object Security.Principal.NTAccount($Name)).Translate([Security.Principal.SecurityIdentifier]).Value
+    $inf = Join-Path $env:TEMP ("dgtf_secpol_" + $sid.Replace('-','') + ".inf")
+    secedit /export /cfg $inf /areas USER_RIGHTS | Out-Null
+    $lines = Get-Content -LiteralPath $inf -Encoding Unicode
+    $found = $false
+    for ($i = 0; $i -lt $lines.Count; $i++) {
+      if ($lines[$i] -match '^SeBatchLogonRight\s*=') {
+        $found = $true
+        if ($lines[$i] -notmatch [regex]::Escape('*' + $sid)) {
+          $lines[$i] = $lines[$i].TrimEnd() + ',*' + $sid
+        }
+      }
+    }
+    if (-not $found) { $lines += ('SeBatchLogonRight = *' + $sid) }
+    [IO.File]::WriteAllLines($inf, $lines, [Text.Encoding]::Unicode)
+    secedit /configure /db ($inf + '.sdb') /cfg $inf /areas USER_RIGHTS /quiet | Out-Null
+    Write-Host "已授予批处理登录权: $Name"
+    Remove-Item -LiteralPath $inf,($inf + '.sdb'),($inf + '.jfm') -Force -ErrorAction SilentlyContinue
+  } catch {
+    Write-Host ("授予批处理登录权失败（可稍后手动检查）: " + $_.Exception.Message)
+  }
+}
+
 $bytes = New-Object byte[] 32
 [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
 $password = [Convert]::ToBase64String($bytes).Replace("+","").Replace("/","").Replace("=","")
@@ -52,6 +77,7 @@ if ($hasAccount) {
 } else {
   New-LocalUser -Name $Account -Password $sec -PasswordNeverExpires -UserMayNotChangePassword -Description "DGTF isolated web service" | Out-Null
 }
+Grant-BatchLogon $Account
 New-Item -ItemType Directory -Force -Path $Data | Out-Null
 # 服务账户必须能读取/执行 Python（它位于当前用户 profile）
 $pythonDir = Split-Path -Parent $Python
