@@ -43,10 +43,12 @@
 - Agent 面板移除：DSH 本对话输入框、知识检索输入框、提交用户任务对话框；任务统一从首屏输入框进入当前 DSH。
 - Agent 面板执行类按钮（闭环/修复/知识检索/学习刷新/发起提案/自主审视/自学习/库去重）统一调用 dshDispatchAction：先 POST /api/dsh/current，再切换对话同步视图。
 - 运行信息屏（最近动作）只保留最新一条，新动作自动覆盖旧行，不再显示五条历史。
-- 静态版本 v1.4.94；DSH 对话镜像仍由 dsh-current-log 轮询显示。
+- 静态版本 v1.4.95；DSH 对话镜像仍由 dsh-current-log 轮询显示。
+- 提案“补充方案”改为交给当前 DSH 对话；“不修复”去掉 prompt，使用固定原因并保留提案历史。
 
 ## 浏览器级验收
 
 - headless Edge DOM：Agent 面板不存在 agent-kn-q、agent-kn-search、prop-autofix、agent-overlay、dsh-current-input、dsh-current-send。
-- CDP 点击 agent-auto / agent-autopilot-btn / agent-knowledge-btn / agent-kn-dedupe：只产生 /api/dsh/current 调用，没有 /api/agent/auto*、/api/agent/autopilot、/api/agent/knowledge。
+- CDP 点击 agent-auto / agent-autopilot-btn / agent-knowledge-btn / agent-kn-dedupe / ap-learn：只产生 /api/dsh/current 调用，没有 /api/agent/auto*、/api/agent/autopilot、/api/agent/knowledge。
+- v1.4.95 最终 CDP：上述 5 个动作全部走 /api/dsh/current；动作日志行数 1；DSH守护：开；无被移除的输入/弹窗节点。
 - 动作日志行数为 1；DSH守护按钮显示“DSH守护：开”；执行后进入 dsh-mode。

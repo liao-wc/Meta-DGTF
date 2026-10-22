@@ -5606,8 +5606,7 @@ function init() {
     }
     const rj = e.target.closest('[data-prop-reject]');
     if (rj) {
-      const reason = prompt('不修复该提案的原因（可留空，会保留在提案历史里）：', '根据分析决定不修复');
-      if (reason === null) return;
+      const reason = '用户选择不修复（DSH接管，Agent面板不弹输入框）';
       try {
         await api('/api/dsh/proposals/' + encodeURIComponent(rj.dataset.propReject) + '/resolve',
           {method:'POST',headers:{'Content-Type':'application/json'},
@@ -5638,16 +5637,12 @@ function init() {
     }
     const pl = e.target.closest('[data-prop-plan]');
     if (pl) {
-      const text = prompt('补充具体方案（写明涉及文件、步骤、验证方式）：',
-        '涉及文件：\n步骤：\n验证：python dgtf_app/selftest.py app-selftest');
-      if (text === null) return;
+      const pid = pl.dataset.propPlan;
       try {
-        await api('/api/dsh/proposals/' + encodeURIComponent(pl.dataset.propPlan) + '/plan',
-          {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({plan:text})});
-        agentLogAction('补充提案方案', pl.dataset.propPlan, true);
-        loadAgent();
+        await dshDispatchAction('补充提案方案',
+          '请为元DGTF修复提案 ' + pid + ' 补充具体可执行方案（涉及文件、步骤、验证方式），'
+          + '并写入提案库；Agent面板不再弹输入框。');
       } catch (err) {
-        alert('补充方案失败：' + err.message);
         agentLogAction('补充提案方案', '失败：' + err.message, false);
       }
       return;
