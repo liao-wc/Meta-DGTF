@@ -75,6 +75,22 @@ ck('dsh privacy prompt', '禁止联网搜索' in srv)
 st, pol = get('/api/security/context-policy')
 ck('security policy dsh', st == 200 and pol.get('dsh', {}).get('danger_full_access') == 'denied', pol)
 ck('embedding local only', '127.0.0.1:8771' in str(pol.get('embedding') or ''))
+# 4b. 出站网络安全 / DSH 联网授权 / HTTPS 钩子
+sys.path.insert(0, str(ROOT))
+from dgtf_v2.net_policy import display_url_allowed
+try:
+    ck('net policy blocks localhost', not display_url_allowed('http://127.0.0.1:8765/'))
+    ck('net policy blocks metadata', not display_url_allowed('http://169.254.169.254/latest/meta-data'))
+    ck('net policy allows public https', display_url_allowed('https://example.com/'))
+    ck('net policy blocks file scheme', not display_url_allowed('file:///C:/Windows/win.ini'))
+except Exception as exc:
+    ck('net policy checks', False, exc)
+st, netpol = get('/api/dsh/network-policy')
+ck('dsh network policy api', st == 200 and 'enabled' in netpol and 'clause' in netpol)
+_html_now = (ROOT / 'dgtf_app' / 'static' / 'index.html').read_text(encoding='utf-8', errors='replace')
+ck('dsh network configurable hooks', 'DGTF_DSH_NETWORK' in srv and '_dsh_net_clause' in srv and 'id="dsh-network"' in _html_now)
+ck('https support hooks', '--https' in srv and 'Strict-Transport-Security' in srv and 'Secure' in srv)
+ck('agent action transparency hooks again', 'agentLogAction' in appjs and 'agent-action-log-list' in _html_now)
 
 st, tasks = get('/api/agent/tasks')
 rows = tasks.get('tasks') or []

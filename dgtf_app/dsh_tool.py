@@ -10,7 +10,12 @@ import sys
 import urllib.request
 
 ACTIONS = ("fast_gate", "acceptance", "status", "project", "proposals", "queue")
-BASE = "http://127.0.0.1:8765/api/dsh/workbench/"
+_APP_BASE = (os.environ.get("DGTF_APP_BASE") or "http://127.0.0.1:8765").rstrip("/")
+BASE = _APP_BASE + "/api/dsh/workbench/"
+_TLS_CTX = None
+if _APP_BASE.startswith("https://127.0.0.1") or _APP_BASE.startswith("https://localhost"):
+    import ssl as _ssl
+    _TLS_CTX = _ssl._create_unverified_context()  # 仅本机自签名工作台
 
 
 def main():
@@ -36,7 +41,7 @@ def main():
                  "X-DSH-Workbench": token},
         method="POST")
     try:
-        with urllib.request.urlopen(req, timeout=900) as r:
+        with urllib.request.urlopen(req, timeout=900, context=_TLS_CTX) as r:
             data = json.loads(r.read().decode("utf-8"))
     except Exception as exc:
         print("工作台工具调用失败：%s" % exc)

@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="dark">
 <title>元DGTF 个人工作台</title>
 <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
-<link rel="stylesheet" href="/static/style.css?v=1.4.83">
+<link rel="stylesheet" href="/static/style.css?v=1.4.85">
 </head>
 <body class="stage-empty">
 
@@ -271,6 +271,10 @@
         <select class="pill dsh-sel" id="dsh-model" data-tip="DSH Agent 模型">
           <option value="deepseek-flash" selected>模型：Flash（默认）</option>
           <option value="deepseek-reasoner">模型：Reasoner</option>
+        </select>
+        <select class="pill dsh-sel" id="dsh-network" data-tip="DSH Agent 联网授权：默认关闭；授权后仅允许公开网站检索，内网/回环/云元数据仍禁止">
+          <option value="0" selected>联网：关闭</option>
+          <option value="1">联网：授权公开网站</option>
         </select>
         <select class="pill dsh-sel" id="dsh-perm" data-tip="DSH Agent 权限：只读 / 读写 / 完全 / 自动审查（与工作台权限档位一致）">
           <option value="read-only">权限：只读</option>
@@ -554,6 +558,6 @@
 
 
 
-<script src="/static/app.js?v=1.4.83"></script>
+<script src="/static/app.js?v=1.4.85"></script>
 </body>
 </html>

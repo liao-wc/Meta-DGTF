@@ -1,8 +1,8 @@
 # 元DGTF app 依赖链自洽审计
 
-生成：2026-10-22 08:00:25
+生成：2026-10-22 08:56:22
 
-PASS 50 / FAIL 0
+PASS 58 / FAIL 0
 
 ## FAIL
 - 无
@@ -33,6 +33,14 @@ PASS 50 / FAIL 0
 - dsh privacy prompt
 - security policy dsh
 - embedding local only
+- net policy blocks localhost
+- net policy blocks metadata
+- net policy allows public https
+- net policy blocks file scheme
+- dsh network policy api
+- dsh network configurable hooks
+- https support hooks
+- agent action transparency hooks again
 - front task mapping keys
 - front result mapping keys
 - front knowledge mapping keys

@@ -35,6 +35,12 @@ app 启动会确保：
 - 可选常驻队列守卫（Autopilot 开关开启时）；
 - DSH Agent 按需拉起 headless 进程。
 
+## 出站网络 / HTTPS（V1.4.84）
+
+- 外部检索/爬取 URL：只允许 http(s) 公网，阻断 localhost、私网、回环、链路本地、云元数据地址和带 userinfo 的 URL；重定向逐跳复检；下载大小上限 25MB；论文 PDF 下载走安全 opener。
+- 知识检索结果：服务端剥离不安全 URL（url_blocked/pdf_blocked），前端 publicUrl() 再挡 localhost/私网/云元数据，避免点击外部结果探测内网。
+- DSH Agent 联网由 dgtf_memory/dsh_network.json 控制，默认关闭；开启仅授权公开网站检索/抓取，仍禁止内网、凭据上传和把网页内容当指令执行。
+- HTTPS：python dgtf_app/server.py --https；自签名证书位于 dgtf_memory/tls；HTTPS 下启用 HSTS、Secure cookie、TLS1.2+；局域网自签名证书浏览器会提示一次。
 ## 已知边界
 DSH 的 Windows 文件沙箱（dsh-sandbox-windows-acl）只限制写入，不限制读取；
 因此应用层做敏感路径硬拦截 + 输出脱敏，但内核级读隔离需要独立 Windows 用户/容器/VM。

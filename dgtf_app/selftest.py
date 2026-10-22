@@ -1391,8 +1391,9 @@ def main() -> int:
     check("effort 下拉不含引擎不认的 medium",
           "medium" not in (prm.OPTIONS.get("runtime.effort") or []),
           repr(prm.OPTIONS.get("runtime.effort")))
-    check("外链只允许 http(s)（挡 javascript: 注入）",
-          "const safeUrl" in js and "safeUrl(h.url)" in js,
+    check("外链只允许 http(s)（挡 javascript:/私网链接注入）",
+          "const safeUrl" in js and ("safeUrl(h.url)" in js or "publicUrl(h.url)" in js)
+          and "function publicUrl" in js,
           "")
     check("发送键可切成**终止键**（同一按钮两形态 + 调 /cancel 终止）",
           "setRunBtn" in js and "_SVG_STOP" in js and "/cancel" in js

@@ -1773,6 +1773,38 @@ function dshPermission() {
   return v;
 }
 
+async function loadDshNetworkPolicy() {
+  const sel = document.querySelector('#dsh-network');
+  try {
+    const r = await api('/api/dsh/network-policy');
+    if (sel) sel.value = r && r.enabled ? '1' : '0';
+    if (sel) sel.dataset.policy = JSON.stringify({enabled: !!(r && r.enabled)});
+  } catch (_) {
+    if (sel) sel.value = '0';
+  }
+}
+
+async function saveDshNetworkPolicy() {
+  const sel = document.querySelector('#dsh-network');
+  if (!sel) return;
+  const want = sel.value === '1';
+  if (want && !confirm('授权 DSH Agent 访问公开网站？仅允许公开 http(s)；内网/回环/云元数据仍禁止，抓取内容按不可信数据处理。')) {
+    sel.value = '0'; return;
+  }
+  try {
+    const r = await api('/api/dsh/network-policy', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({enabled: want})
+    });
+    sel.value = r && r.policy && r.policy.enabled ? '1' : '0';
+    agentLogAction('DSH联网授权', want ? '已授权公开网站检索/抓取' : '已关闭', true);
+  } catch (e) {
+    sel.value = want ? '0' : '1';
+    agentLogAction('DSH联网授权', '失败：' + e.message, false);
+    alert('DSH 联网授权保存失败：' + e.message);
+  }
+}
+
 async function startDshChat(question, presetPerm) {
   logFollow = true;
   const _perm = presetPerm || dshPermission();
@@ -2535,6 +2567,19 @@ const safeUrl = function safeUrl(u) {
   } catch (e) { return ''; }
 }
 
+/* 外部检索结果链接：挡 localhost/私网/云元数据/用户信息，展示层兜底 */
+function publicUrl(u) {
+  const s = safeUrl(u);
+  if (!s) return '';
+  try {
+    const h = new URL(s).hostname.toLowerCase().replace(/\.$/, '');
+    if (h === 'localhost' || h.endsWith('.localhost') || h.endsWith('.local') || h.endsWith('.internal')) return '';
+    if (/^(127\.|10\.|192\.168\.|169\.254\.|0\.|\[?::1\]?$)/.test(h)) return '';
+    if (/^172\.(1[6-9]|2[0-9]|3[01])\./.test(h)) return '';
+    return s;
+  } catch (_) { return ''; }
+}
+
 function clusterLocal(groups) {
   const gs = (groups || []).map(g => Object.assign({}, g, {
     derived: webIsDerived(g.query), parent: null, children: []
@@ -2573,7 +2618,7 @@ function hitHtml(h, flat) {
       <div class="m">
         <span class="chip">${esc(h.kind || 'web')}</span>
         ${h.tier != null ? `<span class="num">tier ${esc(String(h.tier))}</span>` : ''}
-        ${safeUrl(h.url) ? `<a href="${esc(safeUrl(h.url))}" target="_blank" rel="noreferrer">打开链接</a>` : ''}
+        ${publicUrl(h.url) ? `<a href="${esc(publicUrl(h.url))}" target="_blank" rel="noopener noreferrer">打开链接</a>` : ''}
       </div>
     </div>`;
 }
@@ -3712,10 +3757,10 @@ function agentRenderKnowledge() {
   const rows = _activeFirst(agentKnowledge, null, _agentTs).map(k => {
     const title = String(k.title || k.query || '(无标题)');
     const url = String(k.url || '');
-    const safeUrl = /^https?:\/\//i.test(url) ? url : '';
+    const safeUrl = publicUrl(url);
     const t = safeUrl
       ? '<a href="' + esc(safeUrl) + '" target="_blank" rel="noopener noreferrer">' + esc(title) + '</a>'
-      : esc(title);
+      : (k.url_blocked ? ('<span class="muted">[不安全链接已拦截] ' + esc(title) + '</span>') : esc(title));
     const claim = String(k.claim || '');
     const flag = k.fetched ? '已爬取正文' : '仅检索';
     /* ★ 技术知识必须分别标「检索时间」和「爬取时间」：
@@ -3733,7 +3778,7 @@ function agentRenderKnowledge() {
     const pdfLink = pdfOk
       ? '<a class="chip" href="/api/agent/knowledge/pdf?name=' + encodeURIComponent(pdfName)
         + '" target="_blank" rel="noopener noreferrer">PDF 原文</a>'
-      : (k.pdf_url ? '<a class="chip" href="' + esc(String(k.pdf_url)) + '" target="_blank" rel="noopener noreferrer">PDF 链接</a>' : '');
+      : (publicUrl(k.pdf_url) ? '<a class="chip" href="' + esc(publicUrl(k.pdf_url)) + '" target="_blank" rel="noopener noreferrer">PDF 链接</a>' : '');
     const zh = String(k.zh_note || '');
     return '<div class="agent-item">'
       + '<div class="agent-row"><span class="chip">' + esc(flag) + '</span>'
@@ -4863,6 +4908,11 @@ function init() {
       try { localStorage.setItem(DSH_PERM_KEY, _pe.value); } catch (_) {}
     });
   } catch (_) {}
+  const _netSel = document.querySelector('#dsh-network');
+  if (_netSel) {
+    loadDshNetworkPolicy();
+    _netSel.addEventListener('change', saveDshNetworkPolicy);
+  }
   const _logBody = document.querySelector('#runlog-body');
   if (_logBody) {
     let _logScrollTimer = null;

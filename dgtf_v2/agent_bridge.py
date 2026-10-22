@@ -232,10 +232,14 @@ def _paper_pdf_url(url: str) -> str:
 
 
 def _download_paper_pdf(pdf_url: str) -> dict:
-    """下载论文 PDF 到 dgtf_memory/agent_knowledge_pdfs；返回路径/文件名。"""
+    """下载论文 PDF 到 dgtf_memory/agent_knowledge_pdfs；返回路径/文件名。
+
+    走 dgtf_v2.net_policy：只允许公网 http(s)、阻断私网/回环/非标准端口、
+    重定向逐跳校验、25MB 上限；外部检索结果不能把本机当抓取目标。
+    """
     import hashlib as _h
     import os as _os
-    import urllib.request as _ur
+    from dgtf_v2.net_policy import open_public, UnsafeURL
     if not pdf_url:
         return {}
     root = Path(__file__).resolve().parent.parent
@@ -245,9 +249,9 @@ def _download_paper_pdf(pdf_url: str) -> dict:
     p = d / name
     try:
         if not p.exists() or p.stat().st_size < 1024:
-            req = _ur.Request(pdf_url, headers={"User-Agent": "Mozilla/5.0"})
-            with _ur.urlopen(req, timeout=60) as r:
-                data = r.read(25 * 1024 * 1024)
+            data, _final_url, _ctype = open_public(
+                pdf_url, timeout=60, max_bytes=25 * 1024 * 1024,
+                headers={"User-Agent": "Mozilla/5.0"})
             if not data.startswith(b"%PDF"):
                 return {}
             p.write_bytes(data)
@@ -431,6 +435,7 @@ def refresh_knowledge_http(queries, path: str = DEFAULT_KNOWLEDGE,
     """按官方/PDF论文/高置信社区排序，取可获取的最新前沿内容并写库（入库去重）。"""
     import os as _os
     import urllib.request as _ur
+    from dgtf_v2.net_policy import display_url_allowed
     key = _os.getenv("DGTF_API_KEY", "") or _os.getenv("DEEPSEEK_API_KEY", "")
     if not key:
         return {"items": [], "skipped_duplicates": 0} if return_stats else []
@@ -463,7 +468,8 @@ def refresh_knowledge_http(queries, path: str = DEFAULT_KNOWLEDGE,
             res = []
         for it in res:
             url = str(it.get("url") or "").strip()
-            if not url:
+            if not url or not display_url_allowed(url):
+                skipped += 1
                 continue
             title = str(it.get("title") or "")
             claim = str(it.get("summary") or it.get("content") or "")[:1200]
