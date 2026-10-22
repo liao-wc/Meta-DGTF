@@ -121,6 +121,8 @@ ck('agent panel residual controls removed', all(x not in _html_lib for x in
 ck('knowledge retrieval restored', 'agent-kn-q' in _html_lib and 'agent-kn-search' in _html_lib
    and '/api/agent/knowledge/agent-search' in appjs)
 ck('dsh self-feedback loop prompt', all(x in appjs for x in ('自我反馈', '学习：', '迭代：', 'fast_gate')))
+ck('dsh content/status consistency hooks', 'inbox_next_turn' in srv and 'syncDshCurrentView' in appjs
+   and 'dshViewPollTimer' in appjs and "status: 'queued'" in appjs)
 ck('agent live info screen hooks', 'agent-live' in _html_lib and 'agent-action-log-list' in _html_lib
    and 'agentLogAction' in appjs and 'slice(0, 1)' in appjs)
 st, lt = get('/api/tasks')

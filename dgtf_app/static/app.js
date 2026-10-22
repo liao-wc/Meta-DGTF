@@ -1339,7 +1339,7 @@ function dshIsRunning() {
   if (dshConversation && (dshConversation.turns || []).some(function (t) {
     return t.status === 'queued' || t.status === 'running';
   })) return true;
-  if (dshCurrent && dshCurrent.status === 'running') return true;
+  if (dshCurrent && (dshCurrent.status === 'running' || dshCurrent.status === 'queued')) return true;
   return Object.keys(taskDsh).some(function (k) {
     return taskDsh[k] && taskDsh[k].status === 'running';
   });
@@ -1555,7 +1555,8 @@ function toggleDshMode(on) {
   updateDshConvBar();
   if (dshMode) {
     startDshHistoryPoll();
-        loadDshChats();
+    if (dshCurrent) startDshViewPoll();
+    loadDshChats();
     if (!dshAttachTaskId && !dshConversationId) {
       try {
         const saved = localStorage.getItem(DSH_CONV_KEY);
@@ -1564,7 +1565,8 @@ function toggleDshMode(on) {
     }
   } else {
     stopDshHistoryPoll();
-        setDshHistoryOpen(false);
+    stopDshViewPoll();
+    setDshHistoryOpen(false);
   }
 }
 const DSH_CONV_KEY = 'dgtf_dsh_current_conv';
@@ -1737,7 +1739,8 @@ function renderDshView() {
   const bd = document.querySelector('#rl-badge');
   if (bd) {
     bd.className = 'badge ' + (c.status || 'running');
-    bd.textContent = c.status === 'done' ? '完成' : (c.status === 'error' ? '失败' : 'Agent');
+    bd.textContent = c.status === 'done' ? '完成' : (c.status === 'error' ? '失败'
+      : (c.status === 'queued' ? '排队' : '运行中'));
   }
   /* 同上：DSH 视图没有任务级「重试」 */
   const _rbtn2 = document.querySelector('#rl-retry');
@@ -1751,7 +1754,8 @@ function renderDshView() {
   inner += '<div class="rl-round">Agent 会话</div>';
   inner += '<div class="rl-line"><span class="rl-lab">用户</span><span class="rl-txt">' + esc(c.question || '') + '</span></div>';
   evs.forEach(e => { inner += dshEventHtml(e); });
-  if (c.status === 'running') inner += '<div class="rl-summary">Agent 运行中…</div>';
+  if (c.status === 'running') inner += '<div class="rl-summary">DSH 运行中…</div>';
+  else if (c.status === 'queued') inner += '<div class="rl-summary">已排队，等待当前 DSH 轮次完成…</div>';
   inner += '</div>';
   const fromBottom = body.scrollHeight - body.scrollTop;
   body.innerHTML = inner;
@@ -4836,6 +4840,37 @@ async function sendDshAgent() {
   if (btn) btn.disabled = false;
 }
 
+let dshViewPollTimer = null;
+
+function stopDshViewPoll() {
+  if (dshViewPollTimer) { clearInterval(dshViewPollTimer); dshViewPollTimer = null; }
+}
+
+async function syncDshCurrentView() {
+  try {
+    const r = await api('/api/dsh/current/messages?limit=20');
+    if (!r || !r.ok || !dshCurrent) return;
+    const msgs = r.messages || [];
+    dshCurrent.events = msgs.map(function (m) {
+      return { type: 'text', text: (m.role === 'user' ? '你：' : 'DSH：') + (m.text || '') };
+    });
+    if (r.running) {
+      dshCurrent.status = (Number(r.inbox_next_turn || 0) + Number(r.inbox_next_step || 0) > 0)
+        ? 'queued' : 'running';
+    } else {
+      dshCurrent.status = 'done';
+      stopDshViewPoll();
+    }
+    renderDshView();
+  } catch (_) { /* 同步失败不改变已有内容 */ }
+}
+
+function startDshViewPoll() {
+  stopDshViewPoll();
+  syncDshCurrentView();
+  dshViewPollTimer = setInterval(syncDshCurrentView, 2500);
+}
+
 async function submitDshCurrentTask(task) {
   const r = await api('/api/dsh/current', {method:'POST',
     headers:{'Content-Type':'application/json'},
@@ -4851,11 +4886,12 @@ async function dshDispatchAction(label, task) {
     if (!dshMode) toggleDshMode(true);
     closeSheet(); closeDrawer();
     const r = await submitDshCurrentTask(String(task || label));
-    dshCurrent = { question: label, session: '当前 DSH 对话', status: 'running', events: [
-      { type: 'text', text: '已交给当前 DSH 对话执行，完成后在对话同步中显示。' }
+    dshCurrent = { question: label, session: '当前 DSH 对话', status: 'queued', events: [
+      { type: 'text', text: '已交给当前 DSH 对话；等待当前轮次完成后执行。' }
     ]};
     renderDshView();
-        agentLogAction(label, '已交给 DSH 本对话', true);
+    startDshViewPoll();
+    agentLogAction(label, '已交给 DSH 本对话', true);
     const msg = document.querySelector('#agent-msg');
     if (msg) msg.textContent = label + '：已交给当前 DSH 对话';
     return r;
@@ -4871,17 +4907,17 @@ async function startDshCurrentRun(question) {
   const q = document.querySelector('#question');
   if (q) { q.value = ''; q.style.height = ''; }
   toggleDshMode(true);
-  dshCurrent = { question: question, session: '当前 DSH 对话', status: 'running', events: [
-    { type: 'text', text: '已交给当前 DSH 对话，等待本会话执行…' }
+  dshCurrent = { question: question, session: '当前 DSH 对话', status: 'queued', events: [
+    { type: 'text', text: '已交给当前 DSH 对话；等待当前轮次完成后执行。' }
   ]};
   renderDshView();
   setRunBtn('send');
   try {
     const r = await submitDshCurrentTask(question);
-    dshCurrent.status = 'done';
     dshCurrent.events.push({ type: 'text', text: r.text || '已进入当前 DSH 对话队列' });
     renderDshView();
-        if (typeof agentLogAction === 'function') agentLogAction('首屏→DSH本对话', question.slice(0, 80), true);
+    startDshViewPoll();
+    if (typeof agentLogAction === 'function') agentLogAction('首屏→DSH本对话', question.slice(0, 80), true);
   } catch (e) {
     dshCurrent.status = 'error';
     dshCurrent.events.push({ type: 'text', text: '提交失败：' + e.message });

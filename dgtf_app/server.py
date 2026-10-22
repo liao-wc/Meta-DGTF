@@ -2142,7 +2142,13 @@ def _dsh_current_messages(limit: int = 80) -> dict:
             continue
         seen.add(m["seq"])
         dedup.append(m)
+    _vals = (cur.get("projections") or {}).get("values") or {}
+    _inbox = _vals.get("inbox") or {}
     return {"ok": True, "session_id": sid, "as_of": as_of,
+            "running": bool(cur.get("running")),
+            "inbox_next_turn": len(_inbox.get("next-turn") or []),
+            "inbox_next_step": len(_inbox.get("next-step") or []),
+            "updated_at": cur.get("updatedAt") or 0,
             "messages": dedup[-limit:]}
 
 

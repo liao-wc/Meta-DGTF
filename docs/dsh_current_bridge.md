@@ -94,3 +94,16 @@
 - 按用户要求，Agent 面板恢复为透明页底，与其它 sheet 页原有观感一致；移除上一轮的深色玻璃渐变和 backdrop blur。
 - `#view-agent` 与内部 `agent-grid` 均恢复 `background: transparent`。
 - 静态版本 v1.5.00；其余信息屏、工具条、知识检索、DSH 动作交接不变。
+## 对话内容与运行状态一致（2026-10-22 15:55）
+
+- `/api/dsh/current/messages` 增加 `running`、`inbox_next_turn`、`inbox_next_step`、`updated_at`，供主 DSH 视图判断真实状态。
+- 提交到当前 DSH 后，主视图先显示“排队”，随后按真实会话状态显示“运行中/排队/完成”；不再提交后立即标完成。
+- 主 DSH 视图每 2.5s 用最近消息同步对话内容；Agent 面板仍不显示实时 DSH 镜像/连接按钮。
+- 状态与内容来自同一接口和同一会话，避免 UI 状态与对话内容脱节。
+- 静态版本 v1.5.01。
+
+## 一致性验证
+
+- CDP 主视图测试：提交任务后 badge 显示“排队”，视图显示用户任务、DSH 回复和“已排队，等待当前 DSH 轮次完成…”，dsh-mode=true。
+- 真实接口：`running=true`，inbox 字段可读，最近消息可读。
+- fast_gate 12/0；selftest 371/0；依赖审计 65/0。
