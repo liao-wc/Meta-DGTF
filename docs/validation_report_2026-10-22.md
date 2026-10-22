@@ -67,13 +67,18 @@
 ### 真实跑
 
 - 受控真实跑：route=0、rounds=1、mock=false、project_context=false，90.3 秒完成，输出与 layers 正常。
-- 长真实跑压力：一次默认真实任务运行超过 300 秒仍未结束，已取消并记录；说明长跑需要预算/超时控制，属于下一轮优化项。
+- 长真实跑压力：一次默认真实任务运行超过 300 秒仍未结束，已取消并记录；需要预算/超时控制，属于改进项。
 
 ## 7. 模型训练
 
 - scheduler 小模型真实训练：385 行、285 训练/100 测试、122 runs。
 - quality MAE 0.11181，R2 0.29343；baseline MAE 0.18037，R2 -0.00417。
-- LoRA 训练：当前 HuggingFace 网络不可达，且本地 Qwen 缓存不完整；训练脚本已加入在线失败后回退本地缓存与 --offline 参数，但本机无完整基座权重，未能完成 LoRA 训练。这是外部模型依赖限制。
+- LoRA 训练：HF 直连超时，改用 hf-mirror 后成功加载 Qwen2.5-0.5B-Instruct，1 epoch 完成。
+  - train_loss=0.055，val_loss=0.1308，epoch 135.7 秒。
+  - 评估：route_exact=0.429，round_mae=1.5，n=14。
+  - 产物：llm_sft/_audit_lora（adapter + tokenizer + metrics.json）。
+  - 训练脚本已加 HF_ENDPOINT 前置和离线缓存回退。
+- 外部波动：HF 直连超时，hf-mirror 可用；说明镜像/离线回退路径有效。
 
 ## 8. 运行反馈学习
 
@@ -91,7 +96,15 @@
 
 ## 10. 遗留/下一轮
 
-- HTTPS 目前是 --https 启用，尚未改变默认 HTTP 启动策略。
-- LoRA 训练需可用的 HuggingFace 网络或完整本地基座权重。
-- 长真实引擎跑需要 timeout/预算上限。
-- 其余高成本模型训练、更多供应商故障注入待继续。
+- HTTPS 目前是 --https 启用，尚未改变默认 HTTP 启动策略；证书为自签名，浏览器会提示一次。
+- 长真实引擎跑仍需要任务级 timeout/预算上限。
+- 更多供应商故障注入、全量长时压力、前端交互全按钮回归仍可继续。
+
+## 11. 交付物
+
+- 出站网络策略：dgtf_v2/net_policy.py
+- HTTPS/DSH 网络配置：dgtf_app/server.py
+- Git 安全提交范围：dgtf_app/server.py:_git_commit_scoped
+- LoRA 训练兜底：train_llm_lora.py
+- 验证报告：docs/validation_report_2026-10-22.md
+- 依赖链审计：docs/dependency_chain_audit.md

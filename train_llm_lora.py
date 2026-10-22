@@ -9,6 +9,9 @@ from __future__ import annotations
 import argparse, json, math, os, random, re, time
 from pathlib import Path
 
+# 在导入 transformers/huggingface_hub 之前设置镜像，否则 constants.ENDPOINT 已固化。
+os.environ.setdefault("HF_ENDPOINT", "https://hf-mirror.com")
+
 import torch
 from datasets import load_dataset
 from peft import LoraConfig, get_peft_model
