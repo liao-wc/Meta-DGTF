@@ -94,6 +94,7 @@
 - HTTPS 默认化：server.py 默认 HTTPS；`--http` 或 `DGTF_HTTP=1` 可显式回退 HTTP（兼容旧测试/客户端）。默认启动：python dgtf_app/server.py；HTTPS 证书仍为 dgtf_memory/tls 自签名。
 - 本地证书信任：新增 scripts/trust_https_cert.ps1，把 dgtf_memory/tls/ca.pem（DGTF Local CA）加入当前用户 Root 存储；服务器使用 CA 签发的 server.pem（CA:FALSE、serverAuth、SAN localhost/127 + 本机 LAN IP），链文件 server-chain.pem；加入后重启浏览器即可不再出现“连接不是专用连接”。
 - 默认访问口令：未显式 --token 时每次启动生成随机口令，只放进程内存；启动 URL 带 ?t=，浏览器种 HttpOnly/Secure/SameSite=Strict cookie；静态资源和 API 均需令牌。DSH 工作台用独立 X-DSH-Workbench 一次性令牌绕过浏览器口令，不影响自动修复。DGTF_ACCESS_TOKEN 可显式注入（测试/自动化）。
+- 隔离服务账户：新增 scripts/setup_isolated_service.ps1（默认只打印计划，-Apply 需管理员），创建普通用户 DGTFApp/计划任务，服务私钥、.env、token 包装器限制为服务账户与管理员，当前用户仅通过浏览器 token 访问。当前会话为 Medium 完整性，未执行 -Apply。
 - 前后端映射审计：新增任务/结果/知识/DSH 会话/提案字段契约与动作透明化钩子检查，依赖链审计 PASS 48 / FAIL 0。
 - 知识检索真跑：POST /api/agent/knowledge/agent-search（query=RAG 检索 引用 技术，limit=1）48.8 秒返回 1 条高质量结果并创建 dshknow 会话；知识检索/去重完成信息写入“最近动作”；静态资源 v=1.4.83。
 - HTTP keep-alive 自洽：POST body 在路由前一次性读取并缓存，所有 POST 路由（包括不读 JSON 的 reopen/split/confirm）不再把 body 留在连接里；修复浏览器控制台偶发 "{}GET" → 501 Unsupported method。同一连接 POST reopen 后 GET health 已实测 200。
