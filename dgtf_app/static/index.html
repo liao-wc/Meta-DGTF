@@ -294,6 +294,12 @@
         <button id="ap-selflearn" class="ghost" data-tip="无待处理提案时：项目+知识库自学习，提出带自学习标记的优化/修复提案">自学习提案</button>
         <span class="muted">设置在 DSH Agent 下次运行生效</span>
       </div>
+      <div class="searchbar tight dsh-current-box" id="dsh-current-box">
+        <span class="chip">DSH 本对话</span>
+        <input id="dsh-current-input" class="dsh-current-input" placeholder="把项目修改/分析任务交给当前 DSH 对话框（可直接改项目）" autocomplete="off">
+        <button id="dsh-current-send" class="ghost" data-tip="把任务发送到当前 DeepSeek Harness 对话框；由本会话执行并修改项目">交给本对话</button>
+        <span class="muted" id="dsh-current-msg">执行位置：当前 DSH 对话</span>
+      </div>
       <div class="agent-tabs">
         <button class="pill on" data-agent-tab="0">任务队列</button>
         <button class="pill" data-agent-tab="1">消费者结果</button>

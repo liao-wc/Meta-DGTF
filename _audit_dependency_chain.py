@@ -96,7 +96,7 @@ ck('dsh network policy api', st == 200 and 'enabled' in netpol and 'clause' in n
 _html_now = (ROOT / 'dgtf_app' / 'static' / 'index.html').read_text(encoding='utf-8', errors='replace')
 ck('dsh network configurable hooks', 'DGTF_DSH_NETWORK' in srv and '_dsh_net_clause' in srv and 'id="dsh-network"' in _html_now)
 ck('https support hooks', '--https' in srv and 'Strict-Transport-Security' in srv and 'Secure' in srv)
-ck('agent action transparency hooks again', 'agentLogAction' in appjs and 'agent-action-log-list' in _html_now)
+ck('agent action log hooks', 'agentLogAction' in appjs and 'agent-action-log-list' in _html_now)
 
 st, tasks = get('/api/agent/tasks')
 rows = tasks.get('tasks') or []
@@ -111,7 +111,9 @@ ck('front chat status mapping keys', all({'id', 'running', 'stale', 'last_status
 st, props = get('/api/dsh/proposals')
 rows = props.get('proposals') or []
 ck('front proposal mapping keys', st == 200 and all({'id', 'status', 'task', 'plan'}.issubset(x) for x in rows[:10]))
-ck('library action transparency hooks', 'agentLogAction' in appjs and 'id="agent-action-log-list"' in (ROOT / 'dgtf_app' / 'static' / 'index.html').read_text(encoding='utf-8', errors='replace'))
+_html_lib = (ROOT / 'dgtf_app' / 'static' / 'index.html').read_text(encoding='utf-8', errors='replace')
+ck('library action log hooks', 'agentLogAction' in appjs and 'agent-asof' in _html_lib)
+ck('dsh current-session bridge hooks', '/api/dsh/current' in srv and 'dsh-current-input' in _html_lib and '_dsh_current_prompt' in srv)
 st, lt = get('/api/tasks')
 lt_rows = lt.get('tasks') or []
 if lt_rows:

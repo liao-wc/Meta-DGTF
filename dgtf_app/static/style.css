@@ -1445,6 +1445,11 @@ select:focus{border-color:var(--accent)}
 }
 
 
+/* DSH 本对话入口：任务交给当前 Harness 会话，不在 app 内另起 headless */
+.dsh-current-box { margin:6px 0 2px; }
+.dsh-current-input { flex:1 1 360px; min-width:220px; }
+.dsh-current-box #dsh-current-msg { font-size:11.5px; }
+
 /* DeepSeek Harness Agent 对话框 */
 .dsh-overlay { z-index: 90; }
 .dsh-overlay .search-panel { width: min(980px, 94vw); }
@@ -1717,3 +1722,23 @@ body.stage-empty main.stage{padding-bottom:0}
 .agent-action-log .ok{color:#7ee787}
 .agent-action-log .bad{color:#ff7b72}
 .lib-stamp{font-size:11px;margin-left:8px;font-weight:400}
+
+/* ── 运行日志诊断面板（只读尾部：app / err / daemon）──────────────────
+   入口在左上角第 4 个图标；服务端只认白名单且已脱敏，前端一律 textContent 注入。 */
+.diag-overlay{z-index:86}
+.diag-overlay .search-panel{width:min(1080px,96vw);max-width:min(1080px,96vw);max-height:90vh}
+.diag-dlg{max-height:88vh;overflow:hidden;padding-bottom:12px}
+.diag-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.diag-field{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--t3)}
+.diag-field select{height:30px;padding:0 26px 0 10px;border-radius:var(--r-sm);
+  background:var(--s2);border:1px solid var(--hair-2);color:var(--t1);font-size:12px}
+.diag-toolbar button{height:30px;padding:0 12px;border-radius:var(--r-sm);font-size:12px}
+.diag-msg{flex:1 1 auto;min-width:0;font-size:11.5px;text-align:right;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.diag-meta{font-size:11.5px;color:var(--t3);font-family:var(--f-mono);
+  min-height:16px;word-break:break-all}
+.diag-body{flex:1 1 auto;min-height:180px;max-height:min(64vh,640px);overflow:auto;
+  margin:0;padding:10px 12px;background:var(--s2);border:1px solid var(--hair);
+  border-radius:var(--r-sm);font-family:var(--f-mono);font-size:12px;
+  line-height:1.6;color:var(--t2);white-space:pre-wrap;word-break:break-word}
+.diag-body:empty::before{content:"点「刷新」读取日志尾部";color:var(--t3)}

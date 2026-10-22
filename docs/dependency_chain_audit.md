@@ -1,8 +1,8 @@
 # 元DGTF app 依赖链自洽审计
 
-生成：2026-10-22 13:30:29
+生成：2026-10-22 14:35:06
 
-PASS 58 / FAIL 0
+PASS 59 / FAIL 0
 
 ## FAIL
 - 无
@@ -40,13 +40,14 @@ PASS 58 / FAIL 0
 - dsh network policy api
 - dsh network configurable hooks
 - https support hooks
-- agent action transparency hooks again
+- agent action log hooks
 - front task mapping keys
 - front result mapping keys
 - front knowledge mapping keys
 - front chat status mapping keys
 - front proposal mapping keys
-- library action transparency hooks
+- library action log hooks
+- dsh current-session bridge hooks
 - engine layer payload contract
 - output list contract
 - clean output helper

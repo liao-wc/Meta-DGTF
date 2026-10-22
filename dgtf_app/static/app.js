@@ -4925,6 +4925,34 @@ async function sendDshAgent() {
   }
   if (btn) btn.disabled = false;
 }
+
+/* 把任务交给当前 DeepSeek Harness 对话框（由本会话执行，可直接修改项目）。
+   后端 /api/dsh/current 通过 DSH web 的 session/prompt 排队到当前会话，
+   不在 app 进程里另起 headless DSH。 */
+async function sendDshCurrentAgent() {
+  const inp = document.querySelector('#dsh-current-input');
+  const msg = document.querySelector('#dsh-current-msg');
+  const btn = document.querySelector('#dsh-current-send');
+  const task = (inp && inp.value || '').trim();
+  if (!task) { if (msg) msg.textContent = '请输入要交给本对话的任务'; return; }
+  if (msg) msg.textContent = '提交到当前 DSH 对话…';
+  if (btn) btn.disabled = true;
+  try {
+    const r = await api('/api/dsh/current', {method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({task: task})});
+    if (!r || !r.ok) throw new Error((r && r.error) || '提交失败');
+    if (inp) inp.value = '';
+    const text = '已交给本对话：' + (r.session_id || '当前会话') + '（排队执行）';
+    if (msg) msg.textContent = text;
+    if (typeof agentLogAction === 'function') agentLogAction('DSH本对话', text, true);
+  } catch (e) {
+    if (msg) msg.textContent = '提交失败：' + e.message;
+    if (typeof agentLogAction === 'function') agentLogAction('DSH本对话', '失败：' + e.message, false);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
 function initDshAgent() {
   const b = document.querySelector('#dsh-agent-btn');
   if (b) b.addEventListener('click', openDshAgent);
@@ -4939,6 +4967,12 @@ function initDshAgent() {
   });
   const send = document.querySelector('#dsh-send');
   if (send) send.addEventListener('click', sendDshAgent);
+  const curSend = document.querySelector('#dsh-current-send');
+  if (curSend) curSend.addEventListener('click', sendDshCurrentAgent);
+  const curInput = document.querySelector('#dsh-current-input');
+  if (curInput) curInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); sendDshCurrentAgent(); }
+  });
   const ta = document.querySelector('#dsh-task');
   if (ta) ta.addEventListener('keydown', e => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); sendDshAgent(); }
