@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="dark">
 <title>元DGTF 个人工作台</title>
 <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
-<link rel="stylesheet" href="/static/style.css?v=1.5.05">
+<link rel="stylesheet" href="/static/style.css?v=1.5.06">
 </head>
 <body class="stage-empty">
 
@@ -246,6 +246,7 @@
     <section id="view-agent" class="panel sheet-page">
       <div class="searchbar tight agent-toolbar">
         <button id="agent-refresh" class="ghost" data-tip="刷新 Agent 面板全部库：队列/结果/知识/DSH会话/DSH产物/提案/运行/V2/审计/资料库/联网库">刷新全部库</button>
+        <button id="dsh-config-btn" class="ghost" data-tip="DSH 功能配置：模型 / 推理强度 / 联网 / 权限，与 Harness 对话框配置项对应">DSH 配置</button>
         <button id="agent-auto" class="ghost" data-tip="交由当前 DeepSeek Harness 对话执行：自动流程闭环 + 安全提案自动修复（Agent 面板不再提供输入框）">DSH 接管：闭环 + 修复</button>
         <button id="agent-autopilot-btn" class="ghost" data-tip="DSH守护：开关交由当前 DeepSeek Harness 对话执行，不在 app 内起本地守护进程">DSH守护：关</button>
         <button id="agent-knowledge-btn" class="ghost" data-tip="统一知识检索：检索/爬取官方权威、最新、高置信、高相关资料，并在 DSH 会话中展示过程">知识检索</button>
@@ -263,12 +264,32 @@
         <div id="agent-action-log-list"><span class="muted">最近动作：暂无</span></div>
         <span class="agent-live-asof" id="agent-asof">更新于 —</span>
       </div>
-      <div class="searchbar tight dsh-btncfg" id="dsh-btncfg">
-        <span class="muted">DSH 对话按钮</span>
-        <button type="button" class="pill" id="cfg-thinking" data-tip="同步首屏「深度思考」按钮">深度思考</button>
-        <button type="button" class="pill" id="cfg-web" data-tip="同步首屏「智能搜索」按钮">智能搜索</button>
-        <button type="button" class="pill" id="cfg-mock" data-tip="同步首屏「演练模式」按钮">演练模式</button>
-        <button type="button" class="pill" id="cfg-dsh" data-tip="同步首屏「DSH Agent」按钮">DSH Agent</button>
+      <div class="searchbar tight dsh-agent-cfg hidden" id="dsh-config-box">
+        <span class="muted">DSH 配置</span>
+        <span class="chip">模式：PTC</span>
+        <select class="pill dsh-sel" id="dsh-model" data-tip="Harness 模型配置">
+          <option value="deepseek-flash">模型：Flash（默认）</option>
+          <option value="deepseek-reasoner">模型：Reasoner</option>
+        </select>
+        <select class="pill dsh-sel" id="dsh-effort" data-tip="Harness Reasoning effort 配置">
+          <option value="default">推理：Provider default</option>
+          <option value="low">推理：Low</option>
+          <option value="medium">推理：Medium</option>
+          <option value="high">推理：High</option>
+          <option value="max">推理：Max</option>
+        </select>
+        <select class="pill dsh-sel" id="dsh-network" data-tip="Harness 联网授权配置">
+          <option value="0">联网：关闭</option>
+          <option value="1">联网：授权公开网站</option>
+        </select>
+        <select class="pill dsh-sel" id="dsh-perm" data-tip="Harness 文件/工具权限配置">
+          <option value="read-only">权限：只读</option>
+          <option value="workspace-write">权限：读写工作区</option>
+          <option value="danger-full-access">权限：完全访问（危险）</option>
+          <option value="auto">权限：自动审查</option>
+        </select>
+        <button id="dsh-config-save" class="ghost" data-tip="保存 DSH 配置">保存配置</button>
+        <span class="muted" id="dsh-config-msg"></span>
       </div>
       <div class="agent-tabs">
         <button class="pill on" data-agent-tab="0">任务队列</button>
@@ -531,6 +552,6 @@
 
 
 
-<script src="/static/app.js?v=1.5.05"></script>
+<script src="/static/app.js?v=1.5.06"></script>
 </body>
 </html>

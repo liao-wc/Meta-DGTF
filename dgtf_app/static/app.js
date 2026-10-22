@@ -4312,34 +4312,63 @@ async function loadDshGuard() {
     agentRenderAutopilot();
   } catch (_) { /* 保持现有状态 */ }
 }
-function syncDshButtonConfig() {
-  const pairs = [['#cfg-thinking', '#pill-thinking'], ['#cfg-web', '#pill-web'],
-    ['#cfg-mock', '#mock-row'], ['#cfg-dsh', '#pill-dsh']];
-  pairs.forEach(function (p) {
-    const c = document.querySelector(p[0]);
-    const m = document.querySelector(p[1]);
-    if (c && m) c.classList.toggle('on', m.classList.contains('on'));
-  });
+async function loadDshConfig() {
+  try {
+    const r = await api('/api/dsh/config');
+    const c = (r && r.config) || {};
+    const set = function (sel, v) {
+      const el = document.querySelector(sel);
+      if (el && v != null && v !== '') el.value = String(v);
+    };
+    set('#dsh-model', c.model);
+    set('#dsh-effort', c.effort);
+    set('#dsh-perm', c.permission);
+    set('#dsh-network', c.network === 'public' ? '1' : '0');
+    const msg = document.querySelector('#dsh-config-msg');
+    if (msg) msg.textContent = '配置已载入';
+  } catch (_) {}
 }
 
-function initDshButtonConfig() {
-  const map = [['#cfg-thinking', '#pill-thinking'], ['#cfg-web', '#pill-web'],
-    ['#cfg-mock', '#mock'], ['#cfg-dsh', '#pill-dsh']];
-  map.forEach(function (p) {
-    const c = document.querySelector(p[0]);
-    const m = document.querySelector(p[1]);
-    if (!c || !m) return;
-    c.addEventListener('click', function () {
-      if (p[0] === '#cfg-mock') {
-        m.checked = !m.checked;
-        m.dispatchEvent(new Event('change', {bubbles:true}));
-      } else {
-        m.click();
-      }
-      setTimeout(syncDshButtonConfig, 30);
+async function saveDshConfig() {
+  const val = function (sel) { const e = document.querySelector(sel); return e ? e.value : ''; };
+  const msg = document.querySelector('#dsh-config-msg');
+  const btn = document.querySelector('#dsh-config-save');
+  if (btn) btn.disabled = true;
+  try {
+    const r = await api('/api/dsh/config', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        model: val('#dsh-model'),
+        effort: val('#dsh-effort'),
+        permission: val('#dsh-perm'),
+        network: val('#dsh-network') === '1' ? 'public' : 'off'
+      })
     });
+    if (!r || !r.ok) throw new Error((r && r.error) || '保存失败');
+    if (msg) msg.textContent = '配置已保存：' + (r.config && r.config.model || '') + ' / '
+      + (r.config && r.config.effort || '');
+    agentLogAction('DSH配置', '模型 ' + (r.config && r.config.model || '') + ' · 推理 '
+      + (r.config && r.config.effort || '') + ' · 权限 ' + (r.config && r.config.permission || '')
+      + ' · 联网 ' + (r.config && r.config.network || ''), true);
+  } catch (e) {
+    if (msg) msg.textContent = '保存失败：' + e.message;
+    agentLogAction('DSH配置', '失败：' + e.message, false);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+function initDshConfig() {
+  const btn = document.querySelector('#dsh-config-btn');
+  const box = document.querySelector('#dsh-config-box');
+  if (btn && box) btn.addEventListener('click', function () {
+    const hidden = box.classList.toggle('hidden');
+    btn.classList.toggle('on', !hidden);
+    if (!hidden) loadDshConfig();
   });
-  syncDshButtonConfig();
+  const save = document.querySelector('#dsh-config-save');
+  if (save) save.addEventListener('click', saveDshConfig);
+  loadDshConfig();
 }
 
 function _agentTs(x) {
@@ -4488,7 +4517,6 @@ async function refreshDshLibraries() {
     agentDshArt = (da && da.artifacts) || [];
     agentRenderDsh();
     agentRenderDshArt();
-    syncDshButtonConfig();
     updateAgentLibStamps(false);
   } finally {
     dshLibPollBusy = false;
@@ -5271,7 +5299,7 @@ function downloadDiag() {
 
 function init() {
   loadDshGuard();
-  initDshButtonConfig();
+  initDshConfig();
   setInterval(loadDshGuard, 5000);
   setInterval(function () {
     const sh = document.querySelector('#sheet');

@@ -117,7 +117,7 @@ ck('library action log hooks', 'agentLogAction' in appjs and 'agent-asof' in _ht
 ck('dsh current-session bridge hooks', '/api/dsh/current' in srv and '_dsh_current_prompt' in srv
    and 'dsh-current-box' not in _html_lib and 'dsh-current-log' not in _html_lib)
 ck('agent panel residual controls removed', all(x not in _html_lib for x in
-   ('dsh-config-btn', 'dsh-config-box', 'ap-learn', 'dsh-effort', 'agent-overlay')))
+   ('ap-learn', 'ap-spawn', 'ap-selflearn', 'agent-overlay')))
 ck('knowledge retrieval restored', 'agent-kn-q' in _html_lib and 'agent-kn-search' in _html_lib
    and '/api/agent/knowledge/agent-search' in appjs)
 ck('dsh self-feedback loop prompt', all(x in appjs for x in ('自我反馈', '学习：', '迭代：', 'fast_gate')))
@@ -135,7 +135,8 @@ ck('dsh logical conversation hooks', '_new_dsh_current_conversation' in srv and 
    and '/api/dsh/current/conversation' in srv and 'resumeDshCurrentConversation' in appjs)
 ck('dsh interject/cancel hooks', '"steer"' in srv and '/api/dsh/current/cancel' in srv
    and 'cancelDshCurrent' in appjs)
-ck('agent dsh control buttons', all(x in _html_lib for x in ('dsh-stop-btn', 'dsh-newchat-btn', 'cfg-thinking', 'cfg-web', 'cfg-mock', 'cfg-dsh'))
+ck('agent dsh control buttons', all(x in _html_lib for x in ('dsh-stop-btn', 'dsh-newchat-btn',
+     'dsh-config-btn', 'dsh-config-box', 'dsh-model', 'dsh-effort', 'dsh-network', 'dsh-perm'))
    and 'diag-btn' not in _html_lib)
 ck('v2 transparent selector css', '#pareto-prefer:hover' in (ROOT / 'dgtf_app' / 'static' / 'style.css').read_text(encoding='utf-8', errors='replace'))
 ck('agent live info screen hooks', 'agent-live' in _html_lib and 'agent-action-log-list' in _html_lib

@@ -171,3 +171,11 @@
 - 修复 `icacls`、`openssl`、`git rev-parse/log` 子进程读取：显式 `encoding="utf-8", errors="replace"`，避免本地化输出击穿读取线程。
 - 修复后重启，err 日志 0 行；HTTP 200；DSH守护仍 enabled=true/thread_running=true。
 - fast_gate 12/0；selftest 371/0；依赖审计 73/0。
+## DSH 配置键映射（2026-10-22 16:50，v1.5.06）
+
+- Agent 面板的四个“对话按钮”映射改为前一轮 DSH 配置键：`dsh-model`、`dsh-effort`、`dsh-network`、`dsh-perm`。
+- 可选项对应 Harness 标准配置：Model（Flash/Reasoner）、Reasoning effort（Provider default / Low / Medium / High / Max）、联网（关闭/授权公开网站）、权限（只读/读写/完全/自动审查）。
+- 新增 `GET/POST /api/dsh/config`，配置持久化到 `dgtf_memory/dsh_config.json`；Agent 面板打开/展开 DSH 配置时读取并保存。
+- DSH 配置按钮在 Agent 工具条中，默认折叠；与旧 DSH配置键一致。
+- 已验证 UI：配置框展开、选项数量 model/effort/network/perm = 2/5/2/4，保存提示“配置已保存：deepseek-flash / default”。
+- fast_gate 12/0；selftest 371/0；依赖审计 73/0。

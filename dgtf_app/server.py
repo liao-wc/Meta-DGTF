@@ -2191,6 +2191,81 @@ _DSH_GUARD_THREAD = None
 _DSH_GUARD_STOP = None
 
 
+def _dsh_config_path():
+    d = Path(__file__).resolve().parent.parent / "dgtf_memory"
+    d.mkdir(parents=True, exist_ok=True)
+    return d / "dsh_config.json"
+
+
+_DSH_CONFIG_DEFAULTS = {
+    "model": "deepseek-flash",
+    "effort": "default",
+    "network": "off",
+    "permission": "workspace-write",
+}
+
+
+def _dsh_config_options():
+    return {
+        "model": [
+            {"value": "deepseek-flash", "label": "Flash（默认）"},
+            {"value": "deepseek-reasoner", "label": "Reasoner"},
+        ],
+        "effort": [
+            {"value": "default", "label": "Provider default"},
+            {"value": "low", "label": "Low"},
+            {"value": "medium", "label": "Medium"},
+            {"value": "high", "label": "High"},
+            {"value": "max", "label": "Max"},
+        ],
+        "network": [
+            {"value": "off", "label": "关闭"},
+            {"value": "public", "label": "授权公开网站"},
+        ],
+        "permission": [
+            {"value": "read-only", "label": "只读"},
+            {"value": "workspace-write", "label": "读写工作区"},
+            {"value": "danger-full-access", "label": "完全访问（危险）"},
+            {"value": "auto", "label": "自动审查"},
+        ],
+    }
+
+
+def _dsh_config_load():
+    import json as _json
+    rec = dict(_DSH_CONFIG_DEFAULTS)
+    try:
+        p = _dsh_config_path()
+        if p.exists():
+            raw = _json.loads(p.read_text(encoding="utf-8", errors="replace"))
+            if isinstance(raw, dict):
+                for k in rec:
+                    if k in raw:
+                        rec[k] = str(raw.get(k) or rec[k])
+    except Exception:
+        pass
+    return rec
+
+
+def _dsh_config_save(data):
+    import json as _json
+    rec = _dsh_config_load()
+    opts = _dsh_config_options()
+    for k, allowed in opts.items():
+        if k in (data or {}):
+            val = str(data.get(k) or "").strip()
+            if val in [x["value"] for x in allowed]:
+                rec[k] = val
+    try:
+        p = _dsh_config_path()
+        tmp = p.with_suffix(".tmp")
+        tmp.write_text(_json.dumps(rec, ensure_ascii=False, indent=1), encoding="utf-8")
+        tmp.replace(p)
+    except Exception:
+        pass
+    return rec
+
+
 def _dsh_guard_lock():
     global _DSH_GUARD_LOCK
     import threading as _th
@@ -7186,6 +7261,9 @@ class Handler(BaseHTTPRequestHandler):
             _cid = str(_active.get("conversation_id") or "")
             return self._json({"ok": True, "active": _active,
                                "conversation": _conv_load(_cid) if _cid else None})
+        if p == "/api/dsh/config":
+            return self._json({"ok": True, "config": _dsh_config_load(),
+                               "options": _dsh_config_options()})
         if p == "/api/dsh/guard":
             return self._json(_dsh_guard_status())
         if p == "/api/dsh/current/messages":
@@ -8217,6 +8295,11 @@ class Handler(BaseHTTPRequestHandler):
                     except Exception:
                         pass
             return self._json({"ok": True, "cancelled": n})
+        if p == "/api/dsh/config":
+            data = self._read_json()
+            conf = _dsh_config_save(data)
+            return self._json({"ok": True, "config": conf,
+                               "options": _dsh_config_options()})
         if p == "/api/dsh/guard":
             data = self._read_json()
             return self._json(_dsh_guard_set(data))
