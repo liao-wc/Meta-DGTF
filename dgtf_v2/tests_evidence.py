@@ -218,6 +218,7 @@ def case_detect_gaps():
     g5 = detect_gaps("q", one_off, min_official=2)
     assert any(x.startswith("official_source_short:") for x in g5), g5
     assert question_terms("") == []
+    assert question_terms("Python 中 len() 函数的作用是什么？") == ["Python", "len"]
 
 
 def case_answer_from_evidence():

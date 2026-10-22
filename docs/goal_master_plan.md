@@ -141,3 +141,10 @@
 - App 上线检查单更新：scratch 清理与日志保留策略已落地。
 - 仍未完成：正向 verified 样本、真实 A/B、统一错误信封、最终收束。
 
+
+## 第十四轮进展（2026-10-22 20:01）
+
+- len 真跑 20261022_194312：71 calls/689780 tokens/约15min；process_ready=4/4，但旧答案抽取错选 list() 页面、中文泛化词造成 uncovered。
+- 修复 question_terms 泛化词 + 答案相关性加权；同一 packed 证据回放：gaps=[]、答案正确、official=16、would be verified/ready。
+- 新增 reports/goal_len_answer_replay_20261022.md；真实新跑下应直接产出正确短答。
+

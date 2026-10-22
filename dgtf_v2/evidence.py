@@ -500,6 +500,9 @@ _QUESTION_STOP_PHRASES = (
     "是多少", "是什么", "有哪些", "有多少", "哪一年", "是什么时候",
     "为什么", "怎么样", "怎么", "如何", "谁", "哪里", "哪些", "哪个",
     "是否", "多少", "吗", "呢", "？", "?",
+    # 通用提问/泛化词不当作事实项；否则英文官方证据会被中文泛化词误判未覆盖。
+    "的作用", "作用", "函数", "方法", "表示什么", "表示", "含义",
+    "是什么作用", "状态码",
 )
 
 
@@ -614,11 +617,35 @@ def _short_answer(text: str, question: str = "") -> str:
 
 
 def _answer_relevance(text: str, question: str) -> float:
+    """题面相关度：ASCII 技术词加权，命中开头/函数签名再加分。
+
+    典型修复：问「len() 的作用」时，中文 list() 页面虽然也出现 Python/函数，
+    但开头不是 len 的定义；应让开头给出 len(object, /) 的官方段胜出。
+    """
     terms = question_terms(question, limit=6)
     if not terms:
         return 0.0
     low = str(text or "").lower()
-    return sum(1 for t in terms if t.lower() in low) / float(len(terms))
+    head = low[:180]
+    total = 0.0
+    hit = 0.0
+    for t in terms:
+        w = 2.0 if re.fullmatch(r"[A-Za-z0-9_.]+", t or "") else 1.0
+        total += w
+        if t.lower() in low:
+            hit += w
+            if t.lower() in head:
+                hit += w * 0.6
+    qfunc = re.findall(r"([A-Za-z_]\w{1,30})\s*\(", str(question or ""))
+    for fn in qfunc:
+        if fn.lower() in low:
+            hit += 0.5
+            if re.search(r"(?:^|\W)" + re.escape(fn) + r"\s*\(", head,
+                         re.I):
+                hit += 0.4
+    if not total:
+        return 0.0
+    return hit / total
 
 
 def answer_from_evidence(items: Iterable, question: str = "") -> str:
