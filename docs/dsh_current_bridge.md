@@ -243,3 +243,11 @@
 - 低风险修复：`make_server` 使用 `_QuietThreadingHTTPServer`，在 `handle_error` 中忽略 ConnectionResetError/ConnectionAbortedError/BrokenPipeError，其余异常照旧抛出。
 - 重启后 err 0 行；HTTP 200；DSH守护正常。
 - fast_gate 12/0；selftest 371/0；依赖审计 77/0。
+## 全量回归与收束（2026-10-22 17:25，v1.5.11）
+
+- 回归覆盖：首页、DSH 对话、逐条事件、折叠状态、滚动跟随、运行时长、历史按钮、Agent 面板配置、原新对话返回首屏。
+- 修复回归发现的折叠状态回退：每次事件重绘前用 `data-dsh-key` 捕获 details open 状态，重绘后恢复；用户展开的思考/工具不再自动收回，用户收起的助手回复也不再自动打开。
+- 微调：窄屏下头部右侧组（运行时长+历史对话）右对齐，避免居中挤压；不改变既有视觉基调。
+- 滚动回归：向上滚动后新事件到达时 scrollTop 保持 0，不再自动滚到底部。
+- 新对话回归：点击原 #newchat-btn 后 stage-empty、runlog 隐藏、DSH 模式关闭、输入框清空。
+- 静态版本 v1.5.11；fast_gate 12/0；selftest 371/0；依赖审计 78/0；API 全部 200。

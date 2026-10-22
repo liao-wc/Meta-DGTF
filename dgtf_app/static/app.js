@@ -1674,7 +1674,28 @@ function dshToolLabel(name) {
   return map[String(name || '')] || String(name || '工具');
 }
 
-function dshEventHtml(ev) {
+function dshFoldKey(ev, idx) {
+  return 'dsh-' + String(ev.seq || 0) + '-' + String(idx == null ? 'x' : idx)
+    + '-' + String(ev.type || '');
+}
+
+function captureDshFoldState(body) {
+  const state = {};
+  body.querySelectorAll('details[data-dsh-key]').forEach(function (d) {
+    state[d.getAttribute('data-dsh-key')] = d.open;
+  });
+  return state;
+}
+
+function restoreDshFoldState(body, state) {
+  body.querySelectorAll('details[data-dsh-key]').forEach(function (d) {
+    const k = d.getAttribute('data-dsh-key');
+    if (Object.prototype.hasOwnProperty.call(state, k)) d.open = state[k];
+  });
+}
+
+function dshEventHtml(ev, idx) {
+  const dk = dshFoldKey(ev, idx);
   if (!ev || !ev.type) return '';
   if (ev.type === 'status') {
     if (ev.phase === 'turn_start') return '<div class="rl-summary">第 ' + esc(ev.turn || '') + ' 轮开始</div>';
@@ -1683,21 +1704,21 @@ function dshEventHtml(ev) {
     return '';
   }
   if (ev.type === 'user' && ev.text) {
-    return '<details class="rl-fold" open><summary>用户</summary><div class="rl-fold-body"><div class="rl-line"><span class="rl-txt">' + esc(ev.text) + '</span></div></div></details>';
+    return '<details class="rl-fold" data-dsh-key="' + dk + '" open><summary>用户</summary><div class="rl-fold-body"><div class="rl-line"><span class="rl-txt">' + esc(ev.text) + '</span></div></div></details>';
   }
   if (ev.type === 'thinking' && ev.text) {
-    return '<details class="rl-fold"><summary>思考过程（模型原始推理）</summary><div class="rl-fold-body"><div class="rl-line"><span class="rl-txt">' + esc(ev.text) + '</span></div></div></details>';
+    return '<details class="rl-fold" data-dsh-key="' + dk + '"><summary>思考过程（模型原始推理）</summary><div class="rl-fold-body"><div class="rl-line"><span class="rl-txt">' + esc(ev.text) + '</span></div></div></details>';
   }
   if (ev.type === 'tool_call') {
     const zh = dshToolLabel(ev.tool);
-    return '<details class="rl-fold"><summary>🔧 ' + esc(zh) + ' · ' + esc(ev.tool || '工具') + '</summary><div class="rl-fold-body"><div class="rl-line"><span class="rl-txt">' + esc(String(JSON.stringify(ev.input || {})).slice(0, 12000)) + '</span></div></div></details>';
+    return '<details class="rl-fold" data-dsh-key="' + dk + '"><summary>🔧 ' + esc(zh) + ' · ' + esc(ev.tool || '工具') + '</summary><div class="rl-fold-body"><div class="rl-line"><span class="rl-txt">' + esc(String(JSON.stringify(ev.input || {})).slice(0, 12000)) + '</span></div></div></details>';
   }
   if (ev.type === 'tool_result') {
     const ok = ev.status === 'ok';
-    return '<details class="rl-fold"><summary>工具结果 · ' + (ok ? '成功' : '失败') + '</summary><div class="rl-fold-body"><div class="rl-line"><span class="rl-txt">' + esc(String(ev.result || '').slice(0, 12000)) + '</span></div></div></details>';
+    return '<details class="rl-fold" data-dsh-key="' + dk + '"><summary>工具结果 · ' + (ok ? '成功' : '失败') + '</summary><div class="rl-fold-body"><div class="rl-line"><span class="rl-txt">' + esc(String(ev.result || '').slice(0, 12000)) + '</span></div></div></details>';
   }
   if (ev.type === 'text' && ev.text) {
-    return '<details class="rl-fold" open><summary>助手回复</summary><div class="rl-fold-body"><div class="rl-line"><span class="rl-txt">' + esc(ev.text) + '</span></div></div></details>';
+    return '<details class="rl-fold" data-dsh-key="' + dk + '" open><summary>助手回复</summary><div class="rl-fold-body"><div class="rl-line"><span class="rl-txt">' + esc(ev.text) + '</span></div></div></details>';
   }
   return '';
 }
@@ -1738,15 +1759,19 @@ function renderDshConversationView() {
     inner += '<div class="rl-line"><span class="rl-lab">用户</span><span class="rl-txt">' + esc(t.task || '') + '</span></div>';
     if (t.status === 'queued') inner += '<div class="rl-summary">已插入，排队等待前一轮完成…</div>';
     if (t.status === 'running') inner += '<div class="rl-summary">DSH Agent 运行中…</div>';
-    (t.events || []).forEach(function (e) { inner += dshEventHtml(e); });
+    (t.events || []).forEach(function (e, i) {
+      inner += dshEventHtml(e, String(t.id || t.turn || 't') + '-' + i);
+    });
     if ((!t.events || !t.events.length) && t.text) {
       inner += '<div class="rl-line"><span class="rl-txt">' + esc(t.text) + '</span></div>';
     }
     if (t.status === 'canceled') inner += '<div class="rl-summary">已终止</div>';
   });
   inner += '</div>';
+  const foldState = captureDshFoldState(body);
   const fromBottom = body.scrollHeight - body.scrollTop;
   body.innerHTML = inner;
+  restoreDshFoldState(body, foldState);
   if (logFollow) scrollDshBottom();
   else body.scrollTop = Math.max(0, body.scrollHeight - fromBottom);
   updateDshControls();
@@ -1869,12 +1894,14 @@ function renderDshView() {
   let inner = '<div class="rl-lane rl-boot"><div class="rl-lane-head">DeepSeek Harness Agent · ' + esc(c.session || dshSession || '新会话') + '</div>';
   inner += '<div class="rl-round">Agent 会话</div>';
   inner += '<div class="rl-line"><span class="rl-lab">用户</span><span class="rl-txt">' + esc(c.question || '') + '</span></div>';
-  evs.forEach(e => { inner += dshEventHtml(e); });
+  evs.forEach((e, i) => { inner += dshEventHtml(e, i); });
   if (c.status === 'running') inner += '<div class="rl-summary">DSH 运行中…</div>';
   else if (c.status === 'queued') inner += '<div class="rl-summary">已排队，等待当前 DSH 轮次完成…</div>';
   inner += '</div>';
+  const foldState = captureDshFoldState(body);
   const fromBottom = body.scrollHeight - body.scrollTop;
   body.innerHTML = inner;
+  restoreDshFoldState(body, foldState);
   if (logFollow) scrollDshBottom();
   else body.scrollTop = Math.max(0, body.scrollHeight - fromBottom);
   updateDshControls();
@@ -1948,7 +1975,7 @@ function persistTaskDsh() {
 function renderDshAttachBlock(c) {
   let inner = '<div class="rl-lane rl-dsh-attach"><div class="rl-lane-head">DSH Agent · 属于当前元DGTF 会话 · ' + esc(c.session || '') + '</div>';
   inner += '<div class="rl-line"><span class="rl-lab">用户</span><span class="rl-txt">' + esc(c.question || '') + '</span></div>';
-  (c.events || []).forEach(function (e) { inner += dshEventHtml(e); });
+  (c.events || []).forEach(function (e, i) { inner += dshEventHtml(e, i); });
   if (c.status === 'running') inner += '<div class="rl-summary">DSH 运行中…</div>';
   inner += '</div>';
   return inner;

@@ -1,8 +1,8 @@
 # 元DGTF app 依赖链自洽审计
 
-生成：2026-10-22 17:17:12
+生成：2026-10-22 17:22:16
 
-PASS 77 / FAIL 0
+PASS 78 / FAIL 0
 
 ## FAIL
 - 无
@@ -55,6 +55,7 @@ PASS 77 / FAIL 0
 - dsh content/status consistency hooks
 - dsh live events hooks
 - dsh dialog chrome hooks
+- dsh fold state regression hooks
 - dsh history archive hooks
 - dsh artifact file hooks
 - dsh history continuation hooks

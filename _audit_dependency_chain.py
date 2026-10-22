@@ -127,7 +127,11 @@ ck('dsh live events hooks', '/api/dsh/current/events' in srv and '_dsh_current_e
    and 'dshLiveEvents' in appjs and 'dshLiveSeq' in appjs)
 ck('dsh dialog chrome hooks', 'dsh-elapsed' in _html_lib and 'dsh-history-toggle' in _html_lib
    and 'startDshElapsed' in appjs and 'dshToolLabel' in appjs
-   and '<details class="rl-fold"><summary>思考过程' in appjs)
+   and '<details class="rl-fold" data-dsh-key=' in appjs
+   and '<summary>思考过程' in appjs)
+ck('dsh fold state regression hooks', 'captureDshFoldState' in appjs
+   and 'restoreDshFoldState' in appjs and 'data-dsh-key' in appjs
+   and 'logFollow = true;' in appjs)
 ck('dsh history archive hooks', '_sync_current_dsh_archive' in srv and 'external' in srv
    and 'dsh-current-' in srv)
 ck('dsh artifact file hooks', '/api/fs/file' in srv and 'openDshFile' in appjs

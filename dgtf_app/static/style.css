@@ -1294,6 +1294,7 @@ select:focus{border-color:var(--accent)}
 @media (max-width:900px){
   /* 窄屏：三段各占一行（都居中），别挤成一条 */
   .runlog-head{flex-direction:column;align-items:center;gap:8px}
+  .rl-head-r{width:100%;justify-content:flex-end;min-width:0}
   .rl-head-c{flex-direction:column;gap:6px;flex:0 1 auto;max-width:92%}
   #rl-question{max-width:100%}
 }
