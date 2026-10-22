@@ -88,6 +88,7 @@
 - DSH 联网授权：新增 /api/dsh/network-policy 与 Agent 配置“联网：关闭/授权公开网站”；关闭时提示禁止联网，授权后提示只允许公开网站、禁止内网/回环/元数据/凭据上传，并把网页内容视为不可信数据；状态落盘 dgtf_memory/dsh_network.json。
 - HTTPS：server.py 新增 --https，自动用 OpenSSL 生成/复用 dgtf_memory/tls 自签名证书（TLS1.2+，SAN localhost/127.0.0.1）；HTTPS 下发送 HSTS，CSRF/口令 cookie 加 Secure；DSH 工作台客户端支持 DGTF_APP_BASE=https://127.0.0.1。静态资源 v=1.4.85。
 - 常驻守护状态自洽：停止后写 agent_daemon.app.state=stopped；Autopilot 关闭时不再用“日志还新”推断 running；完整自动周期实测（临时安全文档提案，缩短 interval=10s）：自动确认→DSH 修复→fast_gate 12/0→验收→提交→applied，测试提交已回退。
+- UI Git 提交安全范围：/api/git/commit 不再 git add -A；只提交源码/文档（复用 _commit_scope），dgtf_memory/产物/日志/缓存/已暂存运行文件拒绝或排除；隔离 worktree 真测 commit 与 proposal rollback 均通过，运行记录未进入提交。静态资源 v=1.4.86。
 - 前后端映射审计：新增任务/结果/知识/DSH 会话/提案字段契约与动作透明化钩子检查，依赖链审计 PASS 48 / FAIL 0。
 - 知识检索真跑：POST /api/agent/knowledge/agent-search（query=RAG 检索 引用 技术，limit=1）48.8 秒返回 1 条高质量结果并创建 dshknow 会话；知识检索/去重完成信息写入“最近动作”；静态资源 v=1.4.83。
 - HTTP keep-alive 自洽：POST body 在路由前一次性读取并缓存，所有 POST 路由（包括不读 JSON 的 reopen/split/confirm）不再把 body 留在连接里；修复浏览器控制台偶发 "{}GET" → 501 Unsupported method。同一连接 POST reopen 后 GET health 已实测 200。

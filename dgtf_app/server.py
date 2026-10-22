@@ -1060,6 +1060,43 @@ def _commit_scope(paths, allowed=None):
     return out
 
 
+def _git_commit_scoped(msg):
+    """UI Git 提交只提交源码/文档；不把 dgtf_memory/产物/日志/缓存带进 commit。"""
+    msg = str(msg or "").strip()
+    if not msg:
+        return {"ok": False, "err": "message 不能为空", "staged": []}
+    status = _git(["status", "--porcelain"])
+    paths = []
+    for line in (status.get("out") or "").splitlines():
+        if len(line) < 4:
+            continue
+        p = line[3:].strip()
+        if " -> " in p:
+            p = p.rsplit(" -> ", 1)[1]
+        p = p.strip().strip('"')
+        if p:
+            paths.append(p)
+    allowed = _commit_scope(sorted(set(paths)))
+    cached = (_git(["diff", "--cached", "--name-only"]).get("out") or "").splitlines()
+    blocked = [p for p in cached if p and p not in allowed]
+    if blocked:
+        return {"ok": False,
+                "err": "存在已暂存的运行记录/敏感文件，请先取消暂存后再提交",
+                "blocked": blocked[:20], "staged": []}
+    if not allowed:
+        return {"ok": False,
+                "err": "没有可提交的源码/文档变更（运行记录/产物/日志不会进入 Git）",
+                "staged": []}
+    a = _git(["add", "--"] + allowed)
+    if not a.get("ok"):
+        return {"ok": False, "err": a.get("err") or "git add 失败", "staged": allowed}
+    c = _git(["commit", "-m", msg])
+    if not c.get("ok"):
+        return {"ok": False, "err": c.get("err") or "git commit 失败", "staged": allowed}
+    return {"ok": True, "out": c.get("out") or "", "err": "",
+            "staged": allowed, "count": len(allowed)}
+
+
 def _auto_commit(before: set, task: str, before_head: str = "", before_fp=None,
                  allowed=None):
     after = _git_snapshot()
@@ -6758,12 +6795,8 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(_open_github_desktop())
         if p == "/api/git/commit":
             data = self._read_json()
-            msg = str(data.get("message") or "").strip()
-            if not msg:
-                return self._json({"error": "message 不能为空"}, 400)
-            _git(["add", "-A"])
-            r = _git(["commit", "-m", msg])
-            return self._json(r)
+            r = _git_commit_scoped(str(data.get("message") or ""))
+            return self._json(r, 200 if r.get("ok") else 400)
         if p == "/api/dsh/autorepair":
             try:
                 import sys as _sys

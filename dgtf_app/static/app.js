@@ -4882,14 +4882,15 @@ async function openGithubDesktop() {
   } catch (e) { if (s) s.textContent = '打开失败：' + e.message; }
 }
 async function commitGithub() {
-  const msg = prompt('提交信息（会 git add -A 后 commit，不 push）：', 'Agent 修复');
+  const msg = prompt('提交信息（只提交源码/文档；dgtf_memory/产物/日志/缓存不会进入 Git；不 push）：', 'Agent 修复');
   if (!msg) return;
   const s = document.querySelector('#gh-status');
   if (s) s.textContent = '提交中…';
   try { const r = await api('/api/git/commit', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg})});
-    if (s) s.textContent = r.ok ? ('已提交：' + (r.out || '').split('\n')[0]) : ('提交失败：' + (r.err || ''));
+    if (s) s.textContent = r.ok ? ('已提交 ' + (r.count || 0) + ' 个文件：' + (r.out || '').split('\n')[0]) : ('提交失败：' + (r.err || ''));
+    agentLogAction('Git提交', (r.staged || []).length + ' 个源码/文档文件', !!r.ok);
     loadGitStatus();
-  } catch (e) { if (s) s.textContent = '提交失败：' + e.message; }
+  } catch (e) { if (s) s.textContent = '提交失败：' + e.message; agentLogAction('Git提交', '失败：' + e.message, false); }
 }
 function centerHomeHero() {
   // 输入框+欢迎语以输入框为基准居中；再整体下移约 30px（固定值，避免反复测量漂移）。
