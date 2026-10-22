@@ -165,3 +165,9 @@
 - 低风险修复：`_json()` 捕获 `ConnectionResetError`/`BrokenPipeError` 并静默关闭连接，避免此类正常断连继续污染 err 日志；不吞业务异常。
 - 历史旧 err 记录保留，未做删除/裁剪。
 - fast_gate 12/0；selftest 371/0；依赖审计 73/0；HTTP 200。
+## 守护巡检二次低风险修复（2026-10-22 16:45）
+
+- 巡检发现 err 日志出现子进程 reader 线程 `UnicodeDecodeError`：Windows 本地命令输出不是 UTF-8 时，`text=True` 子进程读取崩溃。
+- 修复 `icacls`、`openssl`、`git rev-parse/log` 子进程读取：显式 `encoding="utf-8", errors="replace"`，避免本地化输出击穿读取线程。
+- 修复后重启，err 日志 0 行；HTTP 200；DSH守护仍 enabled=true/thread_running=true。
+- fast_gate 12/0；selftest 371/0；依赖审计 73/0。

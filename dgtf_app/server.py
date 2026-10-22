@@ -211,7 +211,8 @@ def _harden_key_acl(path):
         for g in grants:
             args += ["/grant:r", g + ":F"]
         import subprocess as _sp
-        _sp.run(args, capture_output=True, text=True, timeout=20)
+        _sp.run(args, capture_output=True, text=True, encoding="utf-8",
+                errors="replace", timeout=20)
     except Exception:
         pass
 
@@ -234,7 +235,8 @@ def _ensure_tls_cert():
         raise RuntimeError("找不到 openssl，无法生成 HTTPS 证书；请安装 Git/OpenSSL")
 
     def _run(args):
-        p = _sp.run(args, capture_output=True, text=True, timeout=90)
+        p = _sp.run(args, capture_output=True, text=True, encoding="utf-8",
+                    errors="replace", timeout=90)
         if p.returncode != 0:
             raise RuntimeError("OpenSSL 失败：%s" % ((p.stderr or p.stdout or "")[-500:]))
 
@@ -1414,10 +1416,11 @@ def _proposal_project_context():
     head_ts = 0
     try:
         r = _sub.run(["git", "rev-parse", "HEAD"], cwd=str(root), text=True,
-                     capture_output=True, timeout=5)
+                     encoding="utf-8", errors="replace", capture_output=True, timeout=5)
         head = (r.stdout or "").strip()
         r2 = _sub.run(["git", "log", "-1", "--format=%ct", "HEAD"], cwd=str(root),
-                      text=True, capture_output=True, timeout=5)
+                      text=True, encoding="utf-8", errors="replace",
+                      capture_output=True, timeout=5)
         head_ts = int((r2.stdout or "0").strip() or 0)
     except Exception:
         pass
