@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "1.5.18"
+APP_VERSION = "1.5.19"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -6185,6 +6185,13 @@ def _quality_alt(task_id):
     _summary = (_asum.get("answer") or _card.get("answer")
                 or ((_dt.get("reasoning") or {}).get("answer"))
                 or q.get("answer_summary") or "")
+    _qtext = str(t.get("question") or d.get("question") or "")
+    if (re.search(r"(?:base\s*url|base_url|接口地址|访问地址|url)",
+                  _qtext, re.I)
+            and not re.search(r"https?://[^\s'\"<>]+", str(_summary))):
+        _aq = "needs_evidence"
+        _answer_ready = False
+        _summary = "证据未给出可核对的 URL，不作事实结论（needs_evidence）"
     if _aq != "verified" and _dt.get("question_type") == "fact":
         _summary = "证据未覆盖题面，不作事实结论（needs_evidence）"
     _depth = _asum.get("depth") or q.get("depth") or {}
