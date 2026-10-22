@@ -100,7 +100,19 @@ async function api(path, opts) {
     headers['X-CSRF-Token'] = csrf;
     opts = Object.assign({}, opts, { headers: headers });
   }
-  let r = await fetch(path, opts);
+  // 前端请求超时：避免后端卡住时界面永远转圈。
+  const _ctrl = new AbortController();
+  const _timer = setTimeout(function () { _ctrl.abort(); }, 30000);
+  if (!opts.signal) opts = Object.assign({}, opts, { signal: _ctrl.signal });
+  let r;
+  try {
+    r = await fetch(path, opts);
+  } finally {
+    clearTimeout(_timer);
+  }
+  if (r.status === 401) {
+    throw new Error('未授权：请使用带访问口令的网址重新打开本应用');
+  }
   // 偶发 501/502/503（服务重启/路由未就绪）自动重试一次，避免面板出现原始 501
   if (r.status === 501 || r.status === 502 || r.status === 503) {
     await new Promise(function (res) { setTimeout(res, 350); });

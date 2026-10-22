@@ -1,6 +1,6 @@
 # 元DGTF app 依赖链自洽审计
 
-生成：2026-10-22 18:15:48
+生成：2026-10-22 18:18:27
 
 PASS 78 / FAIL 0
 
@@ -10,7 +10,7 @@ PASS 78 / FAIL 0
 ## PASS
 - engine file exists
 - engine version 1.30.3
-- app version present 1.5.14
+- app version present 1.5.15
 - README app version synced
 - health ok
 - consistency ok
