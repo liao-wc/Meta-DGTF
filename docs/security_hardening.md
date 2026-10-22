@@ -42,6 +42,8 @@ app 启动会确保：
 - DSH Agent 联网由 dgtf_memory/dsh_network.json 控制，默认关闭；开启仅授权公开网站检索/抓取，仍禁止内网、凭据上传和把网页内容当指令执行。
 - HTTPS 默认：python dgtf_app/server.py 默认 HTTPS；`--http` 或 DGTF_HTTP=1 显式回退。自签名证书位于 dgtf_memory/tls；HTTPS 下启用 HSTS、Secure cookie、TLS1.2+。
 - 本地信任：运行 scripts/trust_https_cert.ps1 把 DGTF Local CA 根加入 CurrentUser\Root；服务器使用 CA 签发的叶子证书（CA:FALSE + serverAuth + SAN），HTTPS 链为 server-chain.pem。CA 私钥 ca.key 与服务器私钥 server.key 仅当前用户/SYSTEM/Administrators 可读。旧的自签名 localhost 根已移除。
+- 访问口令：默认启动随机生成本机口令，只放进程内存；API 和静态资源都要求带 ?t= 或 HttpOnly/Secure cookie。DSH 工作台使用独立一次性令牌绕过浏览器口令。可用 DGTF_ACCESS_TOKEN 固定注入（测试/自动化）。
+- 同用户边界：如果恶意进程与 app 运行在同一 Windows 用户下，它可以读取 `_app_out.log`、浏览器 profile/内存或调用用户态工具；应用层 token 不能提供强隔离。要做到防同用户恶意进程，需要独立 Windows 用户/服务账户、容器或 VM，并把项目/密钥 ACL 只授予该账户。
 ## 已知边界
 DSH 的 Windows 文件沙箱（dsh-sandbox-windows-acl）只限制写入，不限制读取；
 因此应用层做敏感路径硬拦截 + 输出脱敏，但内核级读隔离需要独立 Windows 用户/容器/VM。

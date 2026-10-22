@@ -43,6 +43,9 @@ import params as prm  # noqa: E402
 
 PASS: list[str] = []
 FAIL: list[str] = []
+_ACCESS_TOKEN = os.environ.get("DGTF_ACCESS_TOKEN", "").strip()
+_AUTH_HEADERS = ({"Cookie": "dgtf_token=" + _ACCESS_TOKEN}
+                 if _ACCESS_TOKEN else {})
 
 
 def check(name: str, cond: bool, detail: str = "") -> None:
@@ -51,20 +54,22 @@ def check(name: str, cond: bool, detail: str = "") -> None:
 
 
 def _get(base: str, path: str):
-    with urllib.request.urlopen(base + path, timeout=15) as r:
+    req = urllib.request.Request(base + path, headers=dict(_AUTH_HEADERS))
+    with urllib.request.urlopen(req, timeout=15) as r:
         return r.status, json.loads(r.read().decode("utf-8"))
 
 
 def _post(base: str, path: str, obj: dict):
     req = urllib.request.Request(
         base + path, data=json.dumps(obj).encode("utf-8"),
-        headers={"Content-Type": "application/json"}, method="POST")
+        headers={"Content-Type": "application/json", **_AUTH_HEADERS}, method="POST")
     with urllib.request.urlopen(req, timeout=15) as r:
         return r.status, json.loads(r.read().decode("utf-8"))
 
 
 def _raw(base: str, path: str) -> str:
-    with urllib.request.urlopen(base + path, timeout=15) as r:
+    req = urllib.request.Request(base + path, headers=dict(_AUTH_HEADERS))
+    with urllib.request.urlopen(req, timeout=15) as r:
         return r.read().decode("utf-8", "replace")
 
 
@@ -856,7 +861,8 @@ def main() -> int:
     base = ap.parse_args().base
 
     try:
-        with urllib.request.urlopen(base + "/", timeout=10) as r:
+        _rq = urllib.request.Request(base + "/", headers=dict(_AUTH_HEADERS))
+        with urllib.request.urlopen(_rq, timeout=10) as r:
             html = r.read().decode("utf-8")
         check("首页可访问且含标题", r.status == 200 and "元DGTF" in html)
         check("首页引用静态资源", "/static/app.js" in html and "/static/style.css" in html)

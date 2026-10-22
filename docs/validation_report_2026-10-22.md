@@ -33,6 +33,8 @@
 - 证书已升级为本地 CA + 服务器叶子：DGTF Local CA（CA:TRUE，2036 到期）签发 CN=localhost 的 server.pem（CA:FALSE、serverAuth、SAN localhost/127 + 本机 LAN IP，2029 到期）；本地 CA 已导入 CurrentUser\Root，旧自签名 localhost 根已移除。
 - Edge headless 无证书错误加载应用；Invoke-WebRequest 不跳过校验返回 200；服务端握手 issuer=CN=DGTF Local CA。
 - 新增 scripts/trust_https_cert.ps1，安装的信任对象是 ca.pem（CA 根），不是服务器叶子私钥。
+- 访问口令默认启用：无令牌访问 /api/health 返回 401；带 ?t= 或 cookie 返回 200；selftest 371/0、审计 58/0 在显式 DGTF_ACCESS_TOKEN 下通过。
+- 同用户恶意进程仍可读取启动日志/浏览器 profile；应用层 token 不是内核隔离。要防同用户恶意进程需独立 Windows 账户/容器/VM，并限制项目与密钥 ACL。
 
 ## 4. 常驻完整自动周期
 

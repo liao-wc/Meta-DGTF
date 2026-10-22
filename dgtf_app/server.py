@@ -5968,8 +5968,12 @@ class Handler(BaseHTTPRequestHandler):
             self._json({"error": "Host 不在白名单"}, 421)
             return False
         if not self._granted():
-            self._json({"error": "未授权：本服务启用了访问口令，请用启动时打印的带 ?t= 的网址打开"}, 401)
-            return False
+            _wb = (self.headers.get("X-DSH-Workbench") or "").strip()
+            if self.path.startswith("/api/dsh/workbench/") and _wb and _wb_token_ok(_wb):
+                pass
+            else:
+                self._json({"error": "未授权：本服务启用了访问口令，请用启动时打印的带 ?t= 的网址打开"}, 401)
+                return False
         if mutate:
             if not self._origin_ok():
                 self._json({"error": "Origin/Referer 不在白名单"}, 403)
@@ -7438,11 +7442,17 @@ def main() -> int:
     if args.token:
         token = args.token
         if token == "@gen":
-            token = secrets.token_urlsafe(9)
+            token = secrets.token_urlsafe(24)
         token = re.sub(r"[^A-Za-z0-9_-]", "", token)
         if len(token) < 6:
             print("口令太短（至少 6 位，只允许字母 / 数字 / _ / -）—— 换一个再试。")
             return 2
+    else:
+        # 默认强制本机访问口令：每次启动随机生成，只放进程内存；
+        # 不写磁盘，避免同用户权限的本地进程直接捡到明文。
+        token = (os.getenv("DGTF_ACCESS_TOKEN", "").strip()
+                 or secrets.token_urlsafe(24))
+        token = re.sub(r"[^A-Za-z0-9_-]", "", token)
 
     # ★★ 启动时先回填「孤儿任务」：上次服务被强杀/崩溃时，任务表（进程内存）连同
     #    未归档的进度一起没了，但 `<tid>.run.json` 活痕迹还留在盘上。
@@ -7488,7 +7498,11 @@ def main() -> int:
             print("  HTTPS 启动失败：%s" % _e)
             return 3
     mock = "开" if os.environ.get("DGTF_APP_MOCK") == "1" else "关"
-    print(f"元DGTF 应用已启动： {scheme}://127.0.0.1:{args.port}")
+    _local_url = (f"{scheme}://127.0.0.1:{args.port}"
+                  + (("/?t=" + token) if token else ""))
+    print(f"元DGTF 应用已启动： {_local_url}", flush=True)
+    if token:
+        print("  本机访问口令已自动生成/启用：只保存在本进程内存；请用上面带 ?t= 的网址打开", flush=True)
     if host == "0.0.0.0":
         print("  局域网已打开（同一 WiFi / 同网段的设备可以访问）：")
         _ips = lan_ips()

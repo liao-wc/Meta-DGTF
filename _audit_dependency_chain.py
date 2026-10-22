@@ -8,19 +8,23 @@ B = os.environ.get('DGTF_APP', 'https://127.0.0.1:8765')
 import ssl as _ssl
 _ssl._create_default_https_context = _ssl._create_unverified_context  # 本机自签名测试
 PASS, FAIL = [], []
+_ACCESS_TOKEN = os.environ.get("DGTF_ACCESS_TOKEN", "").strip()
+_AUTH_HEADERS = ({"Cookie": "dgtf_token=" + _ACCESS_TOKEN}
+                 if _ACCESS_TOKEN else {})
 
 def ck(name, ok, detail=''):
     (PASS if ok else FAIL).append(name)
     print(('PASS ' if ok else 'FAIL ') + name + ((' :: ' + str(detail)[:300]) if detail and not ok else ''))
 
 def get(path, timeout=30):
-    with urllib.request.urlopen(B + path, timeout=timeout) as r:
+    _rq = urllib.request.Request(B + path, headers=dict(_AUTH_HEADERS))
+    with urllib.request.urlopen(_rq, timeout=timeout) as r:
         return r.status, json.loads(r.read().decode('utf-8'))
 
 def req(method, path, data=None, timeout=30):
     body = None if data is None else json.dumps(data).encode('utf-8')
     r = urllib.request.Request(B + path, data=body, method=method,
-                               headers={'Content-Type': 'application/json'})
+                               headers={'Content-Type': 'application/json', **_AUTH_HEADERS})
     with urllib.request.urlopen(r, timeout=timeout) as resp:
         return resp.status, json.loads(resp.read().decode('utf-8'))
 
