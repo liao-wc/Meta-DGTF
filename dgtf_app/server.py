@@ -5607,7 +5607,7 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write((json.dumps(obj, ensure_ascii=False) + "\n").encode("utf-8"))
         self.wfile.flush()
 
-    def _json(self, obj, code: int = 200):
+    def _json(self, obj, code: int = 200, headers=None):
         data = json.dumps(obj, ensure_ascii=False).encode("utf-8")
         self.send_response(code)
         self._send_cookies()
@@ -5615,6 +5615,8 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(data)))
         self.send_header("Cache-Control", "no-store")
+        for _k, _v in (headers or {}).items():
+            self.send_header(str(_k), str(_v))
         self.end_headers()
         self.wfile.write(data)
 
@@ -6313,7 +6315,8 @@ class Handler(BaseHTTPRequestHandler):
 
     # ── POST ──────────────────────────────────────────────────────
     def _method_not_allowed(self):
-        return self._json({"error": "method not allowed"}, 405)
+        return self._json({"error": "method not allowed"}, 405,
+                          headers={"Allow": "GET, POST, PUT, DELETE, PATCH, OPTIONS"})
 
     def do_HEAD(self):
         self.send_response(405)
