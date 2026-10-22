@@ -609,18 +609,51 @@ def _short_answer(text: str, question: str = "") -> str:
     return s[:240]
 
 
+def _answer_relevance(text: str, question: str) -> float:
+    terms = question_terms(question, limit=6)
+    if not terms:
+        return 0.0
+    low = str(text or "").lower()
+    return sum(1 for t in terms if t.lower() in low) / float(len(terms))
+
+
 def answer_from_evidence(items: Iterable, question: str = "") -> str:
-    """从已有证据里挑一条最可用的短答（官方优先、rank 次之、id 末位）。
+    """从已有证据里挑一条最可用的短答（题面相关优先、官方优先）。
 
     只摘原文，不改写；长网页会压到日期/相关短句，避免把整页当答案。
+    有题面时，没有题面词命中的非官方证据不配当答案；URL 类问题还要求
+    答案里真的出现 URL，防止把截断代码块当地址。
     """
     evs = list(items or [])
     if not evs:
         return ""
-    order = sorted(evs, key=lambda e: (0 if bool(getattr(e, "official", False))
-                                       else 1, int(getattr(e, "rank", 0)),
-                                       str(getattr(e, "evidence_id", ""))))
-    return _short_answer(str(getattr(order[0], "snippet", "") or ""), question)
+    q = str(question or "").strip()
+    if not q:
+        order = sorted(evs, key=lambda e: (0 if bool(getattr(e, "official", False))
+                                           else 1, int(getattr(e, "rank", 0)),
+                                           str(getattr(e, "evidence_id", ""))))
+        return _short_answer(str(getattr(order[0], "snippet", "") or ""), q)
+    wants_url = bool(re.search(r"(?:base\s*url|base_url|接口地址|访问地址|url)",
+                               q, re.I))
+    scored = []
+    for e in evs:
+        text = str(getattr(e, "snippet", "") or "")
+        score = _answer_relevance(text, q)
+        if bool(getattr(e, "official", False)):
+            score += 0.15
+        scored.append((score, -int(getattr(e, "rank", 0)), e))
+    scored.sort(key=lambda x: (x[0], x[1]), reverse=True)
+    for score, _neg_rank, e in scored:
+        text = str(getattr(e, "snippet", "") or "")
+        if wants_url and not re.search(r"https?://[^\s'\"<>]+", text):
+            continue
+        if score <= 0 and not bool(getattr(e, "official", False)):
+            continue
+        ans = _short_answer(text, q)
+        if wants_url and not re.search(r"https?://[^\s'\"<>]+", ans):
+            continue
+        return ans
+    return ""
 
 
 # ============================================================ 引用绑定

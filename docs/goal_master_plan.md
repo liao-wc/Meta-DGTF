@@ -119,3 +119,10 @@
 - 新增 docs/log_retention.md；pending=0、auto_strategy=local_model、app v1.5.22。
 - 下一步：检索质量/官方源强制、答案抽取修复、App P2 收尾。
 
+
+## 第十一轮进展（2026-10-22 19:29）
+
+- dgtf_v2.evidence.answer_from_evidence 增加题面相关性/URL 门：CTF 噪声、截断代码块不再当事实答案；新增测试 21/21。
+- 门禁：fast_gate 12/0、selftest 371/0、依赖审计 78/0；app1.5.22/engine1.30.4。
+- 仍未完成：真实 A/B、官方源检索质量、App P2 收尾、最终收束。
+

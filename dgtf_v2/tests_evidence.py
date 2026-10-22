@@ -229,6 +229,23 @@ def case_answer_from_evidence():
     assert answer_from_evidence([]) == ""
 
 
+def case_answer_relevance_gate():
+    junk = from_search_hits([{
+        "title": "CTF writeup", "url": "https://ctf.example.com/a",
+        "snippet": "flag 在控制台里，把字符串反转即可"}])
+    assert answer_from_evidence(junk, "HTTP 404 状态码表示什么？") == ""
+    no_url = from_search_hits([{
+        "title": "DeepSeek docs", "url": "https://api-docs.deepseek.com/",
+        "snippet": "import OpenAI; baseURL: '  "}])
+    assert answer_from_evidence(no_url,
+                                "DeepSeek API 的 base URL 是什么？") == ""
+    good = from_search_hits([{
+        "title": "DeepSeek docs", "url": "https://api-docs.deepseek.com/",
+        "snippet": "baseURL: 'https://api.deepseek.com'"}])
+    assert "https://api.deepseek.com" in answer_from_evidence(
+        good, "DeepSeek API 的 base URL 是什么？")
+
+
 # ---------------------------------------------------------------- 引用绑定
 def case_bind_citations_explicit():
     items = from_search_hits([OFFICIAL, OFFICIAL2])
@@ -376,6 +393,7 @@ CASES = [
     case_extract_claims,
     case_detect_gaps,
     case_answer_from_evidence,
+    case_answer_relevance_gate,
     case_bind_citations_explicit,
     case_bind_citations_overlap,
     case_consistency_match,
