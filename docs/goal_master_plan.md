@@ -96,3 +96,10 @@
 - 门禁：fast_gate 12/0、selftest 371/0、依赖审计 78/0。
 - 下一步：真实任务 A/B（policy rounds vs profile auto）；证据抽取修复；App P2。
 
+
+## 第八轮进展（2026-10-22 19:07）
+
+- app v1.5.21：提案/调度策略原子写；清理 _audit_tmp/smoke_outputs 约 3.5GB 生成型 scratch。
+- 任务级 Pareto policy 已实测 mock：rounds 0:2,1:2,both:2,all:2 进入 cmd；自动策略 local_model。
+- 仍然：真实任务 policy A/B、证据抽取修复、App P2 剩余（统一错误信封/日志保留/发布检查单）。
+

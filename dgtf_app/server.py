@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "1.5.20"
+APP_VERSION = "1.5.21"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -1399,13 +1399,23 @@ def _proposal_dir():
     return d
 
 
+def _atomic_write_text(path, text: str, encoding: str = "utf-8"):
+    """原子写：先写同目录临时文件，再 replace，避免半截 JSON。"""
+    import os as _os
+    p = Path(path)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    tmp = p.with_name(p.name + ".tmp")
+    tmp.write_text(text, encoding=encoding)
+    _os.replace(str(tmp), str(p))
+
+
 def _save_proposal(rec):
     import json as _json
     import time as _time
     pid = str(rec.get("id") or ("prop-" + str(int(_time.time() * 1000))))
     rec["id"] = pid
-    (_proposal_dir() / (pid + ".json")).write_text(
-        _json.dumps(rec, ensure_ascii=False, indent=1), encoding="utf-8")
+    _atomic_write_text(_proposal_dir() / (pid + ".json"),
+                       _json.dumps(rec, ensure_ascii=False, indent=1))
     return rec
 
 
@@ -7087,9 +7097,8 @@ def _schedule_policy_apply(prefer="balanced"):
     rec["prefer"] = str(prefer or "balanced")
     rec["profile"] = profile
     try:
-        _SCHEDULE_POLICY_FILE.parent.mkdir(parents=True, exist_ok=True)
-        _SCHEDULE_POLICY_FILE.write_text(
-            _json.dumps(rec, ensure_ascii=False, indent=1), encoding="utf-8")
+        _atomic_write_text(_SCHEDULE_POLICY_FILE,
+                           _json.dumps(rec, ensure_ascii=False, indent=1))
         return {"ok": True, "policy": rec, "path": str(_SCHEDULE_POLICY_FILE)}
     except Exception as exc:
         return {"ok": False, "error": str(exc)}
