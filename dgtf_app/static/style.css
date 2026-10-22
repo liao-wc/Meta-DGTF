@@ -1492,10 +1492,9 @@ body.dsh-mode .dsh-ctl{display:inline-flex;align-items:center}
 .dd-def{flex:0 0 auto;font-size:10px;color:var(--t3);border:1px solid var(--hair);border-radius:4px;padding:1px 4px;white-space:nowrap}
 .sheet .grid .dd-input{background:#15171B;color:#F0F2F6;border-color:rgba(255,255,255,.18)}
 /* Agent 页与其它 sheet 统一：透明页底、一个外框、内部平铺；工具条按钮同款 */
-#view-agent{background:linear-gradient(180deg,rgba(8,9,10,.58),rgba(8,9,10,.82));
-  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:var(--r-md)}
-#view-agent .agent-grid{display:block;background:rgba(10,11,13,.42);
-  border:1px solid var(--hair);border-radius:12px;
+#view-agent{background:transparent}
+#view-agent .agent-grid{display:block;background:transparent;
+  border:1px solid var(--hair-2);border-radius:var(--r-md);
   padding:10px 14px 14px;overflow:auto;min-height:0}
 #view-agent .agent-sec{background:transparent;border:0;border-radius:0;
   padding:0;margin:0}

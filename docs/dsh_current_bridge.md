@@ -89,3 +89,8 @@
 - 当前 DSH 会话仍独立留存：/api/dsh/chats 43 条，当前会话可读 `/api/dsh/current/messages`；本次只移除面板镜像，不改会话归档。
 - 知识检索恢复原链路 `/api/agent/knowledge/agent-search` 与去重；知识 API 可读 69 条。
 - 静态版本 v1.4.99；页面无 dsh-current-box/log/connect；实时信息屏保留。
+## Agent 面板透明背景恢复（2026-10-22 15:50）
+
+- 按用户要求，Agent 面板恢复为透明页底，与其它 sheet 页原有观感一致；移除上一轮的深色玻璃渐变和 backdrop blur。
+- `#view-agent` 与内部 `agent-grid` 均恢复 `background: transparent`。
+- 静态版本 v1.5.00；其余信息屏、工具条、知识检索、DSH 动作交接不变。
