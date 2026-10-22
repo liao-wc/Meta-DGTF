@@ -201,3 +201,16 @@
 - 归档/产物同步仍走 `/api/dsh/current/messages`；两者互不影响。
 - 验证：events 接口返回 tool_call/tool_result/thinking/status 等类型；事件增量 since/last_seq 正常；fast_gate 12/0；selftest 371/0；依赖审计 75/0。
 - 静态版本 v1.5.08。
+## 恢复首屏左上角新对话按钮原有逻辑（2026-10-22 17:12，v1.5.09）
+
+- 取消上一版“DSH 模式下点新对话直接跳/留在 DSH 视图”的改法。
+- `newChat()` 重新执行原有逻辑：清空当前视图、回到首屏、关闭 DSH 模式、清空输入框，历史任务/DSH 历史保留。
+- 如果点击新对话前处于 DSH 模式，则静默创建一个新的独立 DSH 历史会话，不跳转视图；用户随后从输入框发起时使用该新会话。
+- 不在 DSH 会话栏另设“新对话”按钮；不改变发送/终止按钮的既有动态逻辑。
+- 静态版本 v1.5.09。
+
+## 新对话逻辑验收
+
+- 页面仍无 dsh-stop-btn / dsh-newchat-btn；左上角 #newchat-btn 是唯一新对话入口。
+- newChat 包含 toggleDshMode(false) 及静默 newDshCurrentConversation；不直接进入 DSH 视图。
+- fast_gate 12/0；selftest 371/0；依赖审计 76/0。

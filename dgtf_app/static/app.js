@@ -3288,23 +3288,7 @@ async function openChat(c) {
 }
 
 function newChat() {
-  if (dshMode) {
-    logFollow = true;
-    dshCurrent = null;
-    dshConversationId = null;
-    dshConversation = null;
-    try { localStorage.removeItem(DSH_CONV_KEY); } catch (_) {}
-    stopDshConvPoll();
-    setDshHistoryOpen(false);
-    const q = document.querySelector('#question');
-    if (q) { q.value = ''; q.style.height = ''; }
-    closeDrawer(); closeSearch();
-    loadDshChats();
-    newDshCurrentConversation('新对话').catch(function (e) {
-      agentLogAction('新对话', '失败：' + e.message, false);
-    });
-    return;
-  }
+  const wasDsh = dshMode;
   /* ★ 新会话统一回到首屏：清空**当前视图**，但不动历史任务/DSH 会话数据。
      元DGTF 与 DSH 的原对话分别保留在任务历史 / DSH 会话库里，可随时回溯。 */
   chatMode = 'live'; activeChat = null; followLatest = false;
@@ -3341,6 +3325,12 @@ function newChat() {
   renderTasks();
   renderMeta();
   setTimeout(centerHomeHero, 30);
+  if (wasDsh) {
+    // 新对话先建立一个独立的 DSH 历史会话；停在首屏，等用户从输入框发起。
+    newDshCurrentConversation('新对话', {silent: true}).catch(function (e) {
+      agentLogAction('新对话', '失败：' + e.message, false);
+    });
+  }
 }
 
 /* ── 侧边抽屉：读数台 / 最近跑过 / 产物库 / 资料库 / 检索库 / 高级参数 ──

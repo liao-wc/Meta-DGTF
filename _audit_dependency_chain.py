@@ -143,6 +143,9 @@ ck('agent dsh control buttons', all(x in _html_lib for x in ('dsh-config-btn', '
    and 'diag-btn' not in _html_lib)
 ck('dsh send-to-stop controls', 'setRunBtn(busy && !hasText' in appjs
    and 'send to stop' not in appjs and 'cancelDshCurrent' in appjs)
+ck('newchat home + new dsh conversation hooks', 'const wasDsh = dshMode' in appjs
+   and 'newDshCurrentConversation(\'新对话\', {silent: true})' in appjs
+   and 'toggleDshMode(false)' in appjs)
 ck('v2 transparent selector css', '#pareto-prefer:hover' in (ROOT / 'dgtf_app' / 'static' / 'style.css').read_text(encoding='utf-8', errors='replace'))
 ck('agent live info screen hooks', 'agent-live' in _html_lib and 'agent-action-log-list' in _html_lib
    and 'agentLogAction' in appjs and 'slice(0, 1)' in appjs)
