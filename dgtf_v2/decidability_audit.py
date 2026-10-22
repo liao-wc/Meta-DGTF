@@ -65,6 +65,11 @@ def audit_view(view: dict, evidence=None, fact_answer: str = "") -> dict:
         txt = _text(dp.get("answer") or (view or {}).get("manifest"))
         cannot = any(k in txt for k in ("无法", "不可判定", "未提供",
                                         "未确认", "无法确认", "没有来源"))
+        # 「不存在/未出现/无公开落点」是**有证据的否定结论**，不是研究层摆烂；
+        # 不能因为它同时含「无法合成」这类结论词就判未证。
+        negative_conclusion = any(k in txt for k in (
+            "不存在", "未出现", "无公开", "无独立落点", "无主题块重叠",
+            "不能互证", "无法合成"))
         has_fact = bool(fact_answer) and _text(fact_answer) in txt
         if cannot and ev:
             if fact_answer:
@@ -83,6 +88,12 @@ def audit_view(view: dict, evidence=None, fact_answer: str = "") -> dict:
                              "after": "repaired_with_fact",
                              "issue": "research_ignores_available_evidence",
                              "citations": 0, "evidence_term_hit": True})
+                n_ok += 1
+            elif negative_conclusion:
+                rows.append({"id": "research_product", "before": "claim",
+                             "after": "verified_negative",
+                             "issue": "", "citations": 0,
+                             "evidence_term_hit": True})
                 n_ok += 1
             else:
                 rows.append({"id": "research_product", "before": "claim",

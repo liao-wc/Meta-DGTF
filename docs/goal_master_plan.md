@@ -72,3 +72,11 @@
 - 门禁：fast_gate 12/0、selftest 371/0、依赖审计 78/0、HTTP 200。
 - 下一步：可回答问题的高质量真跑对照；process_ready 4/4；Pareto policy 执行面 A/B；本地模型质量预测进入任务级；App P2。
 
+
+## 第五轮进展（2026-10-22 18:44）
+
+- 提案 pending=0 已复核；自动帕累托后台启动实测 last_strategy=local_model；本地模型进入自动策略候选。
+- 真实跑 20261022_183329：71 calls / 649k tokens / 652s；answer_ready=false、answer_quality=needs_evidence、consistency=mismatch；app 正确显示拒绝无关网页文本。
+- 审计器修正：有证据的否定结论（不存在/未出现/无公开落点/无法合成）不再误判 partial；新增负例测试 10/10。
+- 下一步：新审计后的真实跑 process_ready 4/4；本地模型任务级评分；App P2。
+

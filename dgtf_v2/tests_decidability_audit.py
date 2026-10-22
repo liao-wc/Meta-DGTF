@@ -15,6 +15,8 @@ def main():
  ck("fact inserted","已核实" in v3["decidable_product"]["answer"])
  ck("evidence ids",bool(v3["decidable_product"].get("external_evidence_ids")))
  ck("no fact no repair",audit_view({"decidable_product":{"answer":"无法确认"}},ev)["bad"]==1)
+ vneg={"decidable_product":{"answer":"检索结果不存在可核对连接，两种撞法无法合成一个形状"}}
+ rneg=annotate(vneg,ev);ck("evidence-backed negative",rneg["status"]=="verified" and rneg["bad"]==0,rneg)
  ck("empty",audit_view({},ev)["status"] in ("empty","unverified"))
  v5={"decidable_product":{}}
  r5=annotate(v5,ev,fact_answer="2026-10-17");ck("empty repaired",r5["status"]=="verified" and "已核实" in v5["decidable_product"]["answer"])
