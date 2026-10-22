@@ -113,10 +113,12 @@ rows = props.get('proposals') or []
 ck('front proposal mapping keys', st == 200 and all({'id', 'status', 'task', 'plan'}.issubset(x) for x in rows[:10]))
 _html_lib = (ROOT / 'dgtf_app' / 'static' / 'index.html').read_text(encoding='utf-8', errors='replace')
 ck('library action log hooks', 'agentLogAction' in appjs and 'agent-asof' in _html_lib)
-ck('dsh current-session bridge hooks', '/api/dsh/current' in srv and 'dsh-current-log' in _html_lib
-   and 'dsh-current-input' not in _html_lib and '_dsh_current_prompt' in srv)
+ck('dsh current-session bridge hooks', '/api/dsh/current' in srv and '_dsh_current_prompt' in srv
+   and 'dsh-current-box' not in _html_lib and 'dsh-current-log' not in _html_lib)
 ck('agent panel residual controls removed', all(x not in _html_lib for x in
-   ('dsh-config-btn', 'dsh-config-box', 'ap-learn', 'dsh-effort', 'agent-kn-q', 'agent-overlay')))
+   ('dsh-config-btn', 'dsh-config-box', 'ap-learn', 'dsh-effort', 'agent-overlay')))
+ck('knowledge retrieval restored', 'agent-kn-q' in _html_lib and 'agent-kn-search' in _html_lib
+   and '/api/agent/knowledge/agent-search' in appjs)
 ck('agent live info screen hooks', 'agent-live' in _html_lib and 'agent-action-log-list' in _html_lib
    and 'agentLogAction' in appjs and 'slice(0, 1)' in appjs)
 st, lt = get('/api/tasks')

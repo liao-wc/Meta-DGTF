@@ -68,3 +68,17 @@
 - CDP 点击 DSH 接管按钮：只调用 /api/dsh/current 与 /api/dsh/current/messages；信息屏单行显示“DSH 接管：闭环 + 修复 · 已交给 DSH 本对话”，日志行数 1。
 - `/api/dsh/current` live：返回 `mode=current-session`、`accepted=true`，任务进入当前会话队列。
 - fast_gate 12/0；selftest 371/0；依赖审计 61/0。
+## 面板镜像移除与知识检索恢复（2026-10-22 15:40）
+
+- 移除 Agent 面板中的 DSH 本对话/实时镜像与连接 DSH：`dsh-current-box`、`dsh-current-log`、`dsh-current-connect` 均不再存在，也不再轮询 `/api/dsh/current/messages`。
+- 知识检索恢复为原有行为：`agent-kn-q` + `查询` + `#agent-kn-dedupe`，走 `/api/agent/knowledge/agent-search` 与 `/api/agent/knowledge/dedupe`；不强制交给 DSH 本对话。
+- DSH 接管类按钮（闭环/修复、DSH守护、学习刷新等）仍通过 `/api/dsh/current` 进入当前 DSH 对话。
+- 静态版本 v1.4.98。
+
+## 本轮验证
+
+- 页面：无 dsh-current-box/log/connect；知识检索输入与查询恢复；实时信息屏保留单行。
+- CDP：点击 DSH 接管按钮只调用 `/api/dsh/current`；点击知识检索调用 `/api/agent/knowledge/agent-search`；没有镜像消息轮询。
+- DSH 本对话 live：`mode=current-session`、`accepted=true`；此前已实际执行 bridge-ok 任务。
+- 自我反馈修复迭代：audit 发现 `dsh network configurable hooks` 依赖旧 UI 选择器，DSH 修复审计断言后重跑；fast_gate 12/0、selftest 371/0、audit 62/0。
+- 知识 API 可读 69 条；本地 autopilot 关闭；app HTTP 200。

@@ -1444,17 +1444,6 @@ select:focus{border-color:var(--accent)}
 }
 
 
-/* DSH 本对话入口：任务交给当前 Harness 会话，不在 app 内另起 headless */
-.dsh-current-box { margin:6px 0 2px; }
-.dsh-current-box #dsh-current-msg { font-size:11.5px; }
-.dsh-current-log { max-height:260px; overflow:auto; margin:6px 0 10px; padding:8px; border:1px solid #2b2b2b; border-radius:10px; background:#0f0f10; font-size:12.5px; }
-.dsh-current-log:empty { display:none; }
-.dsh-current-msg { margin:6px 0; padding:7px 9px; border-radius:8px; white-space:pre-wrap; line-height:1.55; }
-.dsh-current-msg.user { background:#2e2a4d; color:#f1efff; margin-left:18%; }
-.dsh-current-msg.assistant { background:#1b1b1e; color:#ddd; margin-right:18%; }
-.dsh-current-msg .who { font-size:10.5px; color:#8a8a92; margin-bottom:3px; }
-.dsh-current-empty { color:#777; font-size:11.5px; padding:4px; }
-
 /* DeepSeek Harness Agent 对话框 */
 .dsh-overlay { z-index: 90; }
 .dsh-overlay .search-panel { width: min(980px, 94vw); }

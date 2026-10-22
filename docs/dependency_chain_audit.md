@@ -1,8 +1,8 @@
 # 元DGTF app 依赖链自洽审计
 
-生成：2026-10-22 15:32:41
+生成：2026-10-22 15:36:32
 
-PASS 61 / FAIL 0
+PASS 62 / FAIL 0
 
 ## FAIL
 - 无
@@ -49,6 +49,7 @@ PASS 61 / FAIL 0
 - library action log hooks
 - dsh current-session bridge hooks
 - agent panel residual controls removed
+- knowledge retrieval restored
 - agent live info screen hooks
 - engine layer payload contract
 - output list contract

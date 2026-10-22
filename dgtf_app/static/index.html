@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="dark">
 <title>元DGTF 个人工作台</title>
 <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
-<link rel="stylesheet" href="/static/style.css?v=1.4.97">
+<link rel="stylesheet" href="/static/style.css?v=1.4.98">
 </head>
 <body class="stage-empty">
 
@@ -254,8 +254,12 @@
         <button id="agent-refresh" class="ghost" data-tip="刷新 Agent 面板全部库：队列/结果/知识/DSH会话/DSH产物/提案/运行/V2/审计/资料库/联网库">刷新全部库</button>
         <button id="agent-auto" class="ghost" data-tip="交由当前 DeepSeek Harness 对话执行：自动流程闭环 + 安全提案自动修复（Agent 面板不再提供输入框）">DSH 接管：闭环 + 修复</button>
         <button id="agent-autopilot-btn" class="ghost" data-tip="DSH守护：开关交由当前 DeepSeek Harness 对话执行，不在 app 内起本地守护进程">DSH守护：关</button>
-        <button id="agent-knowledge-btn" class="ghost" data-tip="交由当前 DeepSeek Harness 对话执行技术知识检索/刷新">知识检索（本对话）</button>
-        <button id="agent-kn-dedupe" class="ghost" data-tip="交由当前 DeepSeek Harness 对话清理技术知识库重复条目（保留最新一条）">库去重</button>
+        <button id="agent-knowledge-btn" class="ghost" data-tip="统一知识检索：检索/爬取官方权威、最新、高置信、高相关资料，并在 DSH 会话中展示过程">知识检索</button>
+        <span class="search-wrap">
+          <input id="agent-kn-q" placeholder="自由查询（官方/权威/最新优先；留空=前沿刷新）" autocomplete="off">
+        </span>
+        <button id="agent-kn-search" class="ghost" data-tip="按输入框自由查询高质量知识（走同一 DSH 知识检索会话）">查询</button>
+        <button id="agent-kn-dedupe" class="ghost" data-tip="清理技术知识库中的重复条目（保留最新一条）">库去重</button>
         <span class="muted" id="agent-msg"></span>
       </div>
       <div class="agent-live" id="agent-action-log" role="status" aria-live="polite"
@@ -265,12 +269,6 @@
         <div id="agent-action-log-list"><span class="muted">最近动作：暂无</span></div>
         <span class="agent-live-asof" id="agent-asof">更新于 —</span>
       </div>
-      <div class="searchbar tight dsh-current-box" id="dsh-current-box">
-        <span class="chip">DSH 本对话</span>
-        <button id="dsh-current-connect" class="ghost" data-tip="连接当前 DeepSeek Harness 对话并开始同步实时内容">连接 DSH</button>
-        <span class="muted" id="dsh-current-msg">Agent 面板不设输入框；所有任务请从首屏输入框交给当前 DSH 对话</span>
-      </div>
-      <div id="dsh-current-log" class="dsh-current-log" aria-live="polite"></div>
       <div class="agent-tabs">
         <button class="pill on" data-agent-tab="0">任务队列</button>
         <button class="pill" data-agent-tab="1">消费者结果</button>
@@ -530,6 +528,6 @@
 
 
 
-<script src="/static/app.js?v=1.4.97"></script>
+<script src="/static/app.js?v=1.4.98"></script>
 </body>
 </html>
