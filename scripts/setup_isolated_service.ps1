@@ -46,7 +46,8 @@ $token = [Convert]::ToBase64String($bytes2).Replace("+","").Replace("/","").Repl
 
 $sec = ConvertTo-SecureString $password -AsPlainText -Force
 if ($hasAccount) {
-  Set-LocalUser -Name $Account -Password $sec -PasswordNeverExpires $true -UserMayNotChangePassword $true
+  Set-LocalUser -Name $Account -Password $sec -PasswordNeverExpires $true
+  net user $Account /passwordchg:no | Out-Null
   Write-Host ("复用已存在账户并重置密码: " + $Account)
 } else {
   New-LocalUser -Name $Account -Password $sec -PasswordNeverExpires -UserMayNotChangePassword -Description "DGTF isolated web service" | Out-Null
