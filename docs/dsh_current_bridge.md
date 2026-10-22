@@ -82,3 +82,10 @@
 - DSH 本对话 live：`mode=current-session`、`accepted=true`；此前已实际执行 bridge-ok 任务。
 - 自我反馈修复迭代：audit 发现 `dsh network configurable hooks` 依赖旧 UI 选择器，DSH 修复审计断言后重跑；fast_gate 12/0、selftest 371/0、audit 62/0。
 - 知识 API 可读 69 条；本地 autopilot 关闭；app HTTP 200。
+## 自我反馈学习修复闭环验证（2026-10-22 15:45）
+
+- “DSH 接管：闭环 + 修复”任务提示已明确为：读取状态 → 自我反馈定位缺口 → 学习/检索知识 → 安全修复 → fast_gate/selftest/依赖审计验证 → 失败继续迭代 → 高风险留人工。
+- 本轮 DSH 实际完成一次自我反馈修复迭代：移除面板实时镜像/恢复知识检索后，依赖审计因旧网络配置选择器失败；DSH 修复审计断言并重跑，最终 fast_gate 12/0、selftest 371/0、audit 64/0。
+- 当前 DSH 会话仍独立留存：/api/dsh/chats 43 条，当前会话可读 `/api/dsh/current/messages`；本次只移除面板镜像，不改会话归档。
+- 知识检索恢复原链路 `/api/agent/knowledge/agent-search` 与去重；知识 API 可读 69 条。
+- 静态版本 v1.4.99；页面无 dsh-current-box/log/connect；实时信息屏保留。

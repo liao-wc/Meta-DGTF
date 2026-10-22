@@ -4665,9 +4665,14 @@ async function autoAgent(stage) {
   // 合并后的“DSH 接管：闭环 + 修复”动作：不在 app 内起本地自动任务/headless，
   // 直接交给当前 DeepSeek Harness 对话执行。
   const label = 'DSH 接管：闭环 + 修复';
-  const task = '执行元DGTF DSH接管闭环：读取当前任务队列、提案、项目现状与最近日志；'
-    + '自动完成可安全执行的修复，合并“全流程闭环 + 安全提案自动修复”；'
-    + '高风险/不确定项保留人工确认；完成后给出修改摘要、验证结果与剩余风险。'
+  const task = '执行元DGTF DSH接管自动化闭环，由你（当前 DeepSeek Harness 对话）完成：'
+    + '1) 读取任务队列、提案、知识库、项目现状与最近日志；'
+    + '2) 自我反馈：定位质量/流程/测试/依赖缺口；'
+    + '3) 学习：检索并筛选可复用知识，必要时更新知识库；'
+    + '4) 修复：只执行可安全验证的修复，合并“全流程闭环 + 安全提案自动修复”；'
+    + '5) 验证：运行 fast_gate、selftest、依赖审计等门禁；'
+    + '6) 迭代：验证失败时带着失败信息继续修复和重跑，直到通过或明确阻塞；'
+    + '7) 高风险/不确定项保留人工确认；完成后给出修改摘要、验证结果、剩余风险。'
     + '阶段标记：' + String(stage || 'full') + '。';
   try { await dshDispatchAction(label, task); }
   catch (e) { const m = document.querySelector('#agent-msg'); if (m) m.textContent = label + '失败：' + e.message; }

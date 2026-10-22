@@ -108,6 +108,7 @@ st, kn = get('/api/agent/knowledge')
 rows = kn.get('items') or []
 ck('front knowledge mapping keys', st == 200 and all({'query', 'title', 'url', 'fetched'}.issubset(x) for x in rows[:10]))
 ck('front chat status mapping keys', all({'id', 'running', 'stale', 'last_status', 'last_task'}.issubset(x) for x in (chats.get('chats') or [])[:10]))
+ck('dsh conversation archive retained', st == 200 and 'chats' in chats)
 st, props = get('/api/dsh/proposals')
 rows = props.get('proposals') or []
 ck('front proposal mapping keys', st == 200 and all({'id', 'status', 'task', 'plan'}.issubset(x) for x in rows[:10]))
@@ -119,6 +120,7 @@ ck('agent panel residual controls removed', all(x not in _html_lib for x in
    ('dsh-config-btn', 'dsh-config-box', 'ap-learn', 'dsh-effort', 'agent-overlay')))
 ck('knowledge retrieval restored', 'agent-kn-q' in _html_lib and 'agent-kn-search' in _html_lib
    and '/api/agent/knowledge/agent-search' in appjs)
+ck('dsh self-feedback loop prompt', all(x in appjs for x in ('自我反馈', '学习：', '迭代：', 'fast_gate')))
 ck('agent live info screen hooks', 'agent-live' in _html_lib and 'agent-action-log-list' in _html_lib
    and 'agentLogAction' in appjs and 'slice(0, 1)' in appjs)
 st, lt = get('/api/tasks')
