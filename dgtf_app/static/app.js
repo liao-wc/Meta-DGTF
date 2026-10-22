@@ -3666,6 +3666,7 @@ let agentDshArt = [];
 let agentProps = [];
 let agentPropSummary = null;
 let agentAutopilot = null;
+let dshGuardOn = false;
 let agentLastRun = null;
 let agentV2 = null;
 let agentPareto = null;
@@ -3683,7 +3684,7 @@ function renderAgentActionLog() {
   if (!agentActionLog.length) {
     el.innerHTML = '<span class="muted">最近动作：暂无</span>'; return;
   }
-  el.innerHTML = agentActionLog.slice(0, 5).map(function (x) {
+  el.innerHTML = agentActionLog.slice(0, 1).map(function (x) {
     const t = fmtTs(x.ts) || '';
     return '<div class="' + (x.ok ? 'ok' : 'bad') + '">' + esc(t) + ' · '
       + esc(x.label || '') + (x.detail ? (' · ' + esc(x.detail)) : '') + '</div>';
@@ -3692,7 +3693,7 @@ function renderAgentActionLog() {
 
 function agentLogAction(label, detail, ok) {
   agentActionLog.unshift({ts: Date.now(), label: String(label || ''), detail: String(detail || ''), ok: ok !== false});
-  agentActionLog = agentActionLog.slice(0, 20);
+  agentActionLog = agentActionLog.slice(0, 1);
   try { localStorage.setItem(AGENT_ACTION_KEY, JSON.stringify(agentActionLog)); } catch (_) {}
   renderAgentActionLog();
 }
@@ -3970,13 +3971,9 @@ function agentRenderProps() {
   const nExp = agentProps.length - live.length;
   if (!live.length) {
     box.innerHTML = agentEmpty('当前没有待处理提案；已过期/去重 ' + nExp + ' 条（无需修复）。');
-    const fb = document.querySelector('#prop-autofix');
-    if (fb) fb.textContent = '自动修复提案';
     return;
   }
   const nConf = live.filter(x => x.status === 'confirmed').length;
-  const fixBtn = document.querySelector('#prop-autofix');
-  if (fixBtn) fixBtn.textContent = '自动修复提案' + (nConf ? '（' + nConf + '）' : '');
   box.innerHTML = sumHtml + live.slice(0, 30).map(function (x) {
     const when = fmtTs(x.ts);
     const st = String(x.status || 'pending');
@@ -4205,18 +4202,13 @@ function agentRenderConsistency() {
 function agentRenderAutopilot() {
   const b = $('#agent-autopilot-btn');
   if (!b) return;
-  const on = !!(agentAutopilot && agentAutopilot.enabled);
-  b.textContent = '常驻守护：' + (on ? '开' : '关');
-  b.classList.toggle('on', on);
-  b.dataset.tip = on
-    ? '常驻队列守卫运行中：安全提案自动修复，高风险/不确定项留人工确认'
-    : '开启常驻：自动消费队列、分诊并修复安全提案；高风险留人工';
-  const d = (agentAutopilot && agentAutopilot.daemon) || {};
-  b.title = '';
-  b.setAttribute('aria-pressed', on ? 'true' : 'false');
-  if (on && d.running === false) b.textContent = '常驻守护：启动中…';
+  b.textContent = 'DSH守护：' + (dshGuardOn ? '开' : '关');
+  b.classList.toggle('on', !!dshGuardOn);
+  b.dataset.tip = dshGuardOn
+    ? 'DSH守护运行中：所有执行动作交给当前 DeepSeek Harness 对话'
+    : '开启 DSH守护：后续执行动作统一交给当前 DSH 对话，不在 app 内起本地守护进程';
+  b.setAttribute('aria-pressed', dshGuardOn ? 'true' : 'false');
 }
-
 function _agentTs(x) {
   const v = x && (x.ts || x.created_at || x.updated_at || x.retrieved_at ||
                   x.fetched_at || x.mtime || x.at || x.confirmed_ts || x.resolved_ts || x.applied_ts || x.approved_ts || x.failed_ts || 0);
@@ -4259,25 +4251,16 @@ function agentRenderAll() {
 }
 
 async function autopilotAction(action) {
-  const label = {learn: '学习刷新', spawn: '从队列发起提案', scan: '项目自主审视', selflearn: '自学习提案'}[action] || action;
-  const msg = document.querySelector('#agent-msg');
-  if (msg) msg.textContent = label + '：执行中…（可能需要一两分钟）';
-  try {
-    const r = await api('/api/agent/autopilot/action', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({action: action})});
-    if (msg) {
-      let extra = '';
-      if (r && r.proposal) extra = ' · 提案 ' + String(r.proposal.id || '');
-      if (r && r.last_error) extra = ' · ' + String(r.last_error).slice(0, 160);
-      msg.textContent = label + (r && r.ok ? '：完成' : '：失败') + extra;
-      agentLogAction(label, (r && r.ok ? '完成' : '失败') + extra, !!(r && r.ok));
-    }
-    loadAgent();
-  } catch (e) {
-    if (msg) msg.textContent = label + '失败：' + e.message;
-    agentLogAction(label, '失败：' + e.message, false);
-  }
+  const labels = {learn: '学习刷新', spawn: '从队列发起提案', scan: '项目自主审视', selflearn: '自学习提案'};
+  const label = (labels[action] || action) + '（DSH本对话）';
+  const tasks = {
+    learn: '请经当前 DeepSeek Harness 对话执行技术知识检索/学习刷新，整理高置信知识并给出摘要。',
+    spawn: '请从当前 Agent 任务队列挑一条高价值任务，经当前 DSH 对话生成可执行修复提案；高风险保留人工确认。',
+    scan: '请经当前 DSH 对话自主审视元DGTF项目，提出并执行可安全验证的优化/修复；给出验证结果。',
+    selflearn: '请结合项目现状与技术知识库自学习，提出并执行可安全验证的优化/修复；给出验证结果。'
+  };
+  try { await dshDispatchAction(label, tasks[action] || ('执行 DSH 动作：' + action)); }
+  catch (e) { const m = document.querySelector('#agent-msg'); if (m) m.textContent = label + '失败：' + e.message; }
 }
 
 async function refreshAgentAll() {
@@ -4669,104 +4652,15 @@ async function autoFixProposals() {
 }
 
 async function autoAgent(stage) {
-  const st = document.querySelector('#agent-auto-status');
-  const btn = document.querySelector('#agent-auto');
-  const oldText = btn ? btn.textContent : '';
-  const t0 = Date.now();
-  if (btn) {
-    btn.disabled = true;
-    if (stage === 'full' || stage === 'all') btn.textContent = 'DSH 全流程闭环运行中…';
-  }
-  if (st) {
-    st.className = 'agent-auto-status running';
-    st.textContent = 'DSH Agent 自动闭环已开始，已跳转到 DSH Agent 对话框显示执行内容…';
-  }
-  const _fullLoop = (stage === 'full' || stage === 'all');
-  showAutoDsh(_fullLoop ? 'DSH 全流程闭环' : 'DSH 自动闭环 · ' + stage, [
-    {type:'status', phase:'turn_start', turn:1},
-    {type:'text', text: _fullLoop
-      ? '开始执行：知识刷新 → mock 引擎跑次 → 任务/消费者 → 自审提案。可能需要几分钟。'
-      : '开始执行：' + stage}
-  ], 'running');
-  let result = null, errMsg = '';
-  try {
-    const job = await api('/api/agent/auto/start', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({stage: stage,
-        model: (document.querySelector('#dsh-model') || {}).value || 'deepseek-flash'})});
-    try { localStorage.setItem('dgtf_last_auto_job', job.job_id || ''); } catch (_) {}
-    let idx = 0, netErrs = 0;
-    while (!result) {
-      let jr = null;
-      try {
-        jr = await api('/api/agent/auto/job/' + encodeURIComponent(job.job_id) + '?since=' + idx);
-        netErrs = 0;
-      } catch (ne) {
-        netErrs++;
-        if (dshCurrent) {
-          dshCurrent.events.push({type:'text', text:'轮询网络中断，后台任务继续执行（重试 ' + netErrs + '/8）…'});
-          renderDshView();
-        }
-        if (netErrs > 8) throw ne;
-        await new Promise(res => setTimeout(res, 800));
-        continue;
-      }
-      (jr.events || []).forEach(function (m) {
-        if (!dshCurrent) return;
-        if (m.type === 'stage') {
-          dshCurrent.events.push({type:'text', text:'── 阶段：' + m.stage + ' ──'});
-        } else if (m.type === 'event' && m.event) {
-          dshCurrent.events.push(m.event);
-        }
-        renderDshView();
-      });
-      idx = jr.next || idx;
-      if (jr.status === 'done') { result = jr.result; break; }
-      if (jr.status === 'error') { errMsg = jr.error || '后台自动任务失败'; break; }
-      await new Promise(res => setTimeout(res, 700));
-    }
-    if (!result) throw new Error(errMsg || '没有返回结果');
-    const r = result;
-    const ev = dshCurrent.events;
-    if (r.tasks_total != null) ev.push({type:'text', text:'任务队列：共 ' + r.tasks_total + ' 条，已全部纳入闭环，处理 ' + (r.tasks_processed || 0) + ' 条。'});
-    if (r.consumer && r.consumer.run) ev.push({type:'text', text:'消费者：' + JSON.stringify(r.consumer.run).slice(0, 1200)});
-    if (Array.isArray(r.proposals)) {
-      ev.push({type:'text', text:'新增修复提案：' + r.proposals.length + ' 条，已落修复提案库。'});
-      r.proposals.slice(0, 10).forEach(function (p) {
-        ev.push({type:'text', text:'· ' + (p.id || '') + ' · ' + ((p.task || {}).title || '')});
-      });
-    }
-    if (r.proposal && r.proposal.proposal) ev.push({type:'text', text:'提案：' + (r.proposal.proposal.id || '') + ' · ' + (r.proposal.proposal.status || '')});
-    agentLastRun = { at: Date.now() / 1000,
-      run: (r.consumer && r.consumer.run) || {},
-      proposals: { n: Array.isArray(r.proposals) ? r.proposals.length : 0,
-                   path: (r.consumer && r.consumer.proposals && r.consumer.proposals.path) || '' },
-      auto: { stage: stage, tasks_total: r.tasks_total || 0 } };
-    agentRenderAll();
-    const secs = Math.max(1, Math.round((Date.now() - t0) / 1000));
-    if (st) {
-      st.className = 'agent-auto-status ' + (r.ok ? 'ok' : 'err');
-      st.textContent = (_fullLoop
-        ? (r.ok ? 'DSH 全流程闭环完成' : 'DSH 全流程闭环部分失败')
-        : (r.ok ? 'DSH 自动完成' : 'DSH 自动部分失败')) + '（' + secs + 's）';
-    }
-    dshCurrent.question = (_fullLoop ? 'DSH 全流程闭环' : 'DSH 自动闭环 · ' + stage)
-      + ' · ' + secs + 's';
-    dshCurrent.events.push({type:'text', text: r.ok ? '自动闭环完成。' : '自动闭环部分失败。'});
-    dshCurrent.status = r.ok ? 'done' : 'error';
-    renderDshView();
-    await loadAgent(); loadGitStatus();
-  } catch (e) {
-    if (st) { st.className = 'agent-auto-status err'; st.textContent = 'DSH 自动执行失败：' + e.message; }
-    if (dshCurrent) {
-      dshCurrent.events.push({type:'text', text:'执行失败：' + e.message});
-      dshCurrent.status = 'error';
-      renderDshView();
-    }
-  } finally {
-    if (btn) { btn.disabled = false; btn.textContent = oldText; }
-    setRunBtn('send');
-  }
+  // 合并后的“DSH 接管：闭环 + 修复”动作：不在 app 内起本地自动任务/headless，
+  // 直接交给当前 DeepSeek Harness 对话执行。
+  const label = 'DSH 接管：闭环 + 修复';
+  const task = '执行元DGTF DSH接管闭环：读取当前任务队列、提案、项目现状与最近日志；'
+    + '自动完成可安全执行的修复，合并“全流程闭环 + 安全提案自动修复”；'
+    + '高风险/不确定项保留人工确认；完成后给出修改摘要、验证结果与剩余风险。'
+    + '阶段标记：' + String(stage || 'full') + '。';
+  try { await dshDispatchAction(label, task); }
+  catch (e) { const m = document.querySelector('#agent-msg'); if (m) m.textContent = label + '失败：' + e.message; }
 }
 
 async function runAgentConsumer() {
@@ -4816,39 +4710,14 @@ async function dedupeAgentKnowledge() {
 }
 
 async function refreshAgentKnowledge(mode) {
-  const raw = ($('#agent-kn-q') ? $('#agent-kn-q').value : '').trim();
-  const btns = ['#agent-knowledge-btn', '#agent-kn-search']
-    .map(s => document.querySelector(s)).filter(Boolean);
-  const msg = $('#agent-msg');
-  btns.forEach(b => { b.disabled = true; });
-  if (msg) msg.textContent = '创建 DSH 知识检索会话…';
-  try {
-    const r = await api('/api/agent/knowledge/agent-search', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ q: raw, mode: raw ? 'query' : 'refresh', limit: 3 }),
-    });
-    const items = (r && r.items) || [];
-    if (msg) msg.textContent = r.ok
-      ? ('DSH 知识检索：筛选 ' + items.length + ' 条高质量结果，正在打开会话…')
-      : ('知识检索失败：' + (r.error || '无高质量结果'));
-    agentLogAction('知识检索', r.ok ? ('筛选 ' + items.length + ' 条 · ' + String(r.conversation_id || '')) : ('失败：' + String(r.error || '无结果')), !!r.ok);
-    await loadAgent();
-    if (r && r.conversation_id) {
-      closeSheet(); closeDrawer();
-      await resumeDshChat(r.conversation_id);
-    }
-    if (items.length) {
-      const tab = document.querySelector('[data-agent-tab="2"]');
-      if (tab) tab.click();
-    }
-  } catch (e) {
-    if (msg) msg.textContent = '知识检索失败：' + e.message;
-  } finally {
-    btns.forEach(b => { b.disabled = false; });
-  }
+  const isDedupe = String(mode) === 'dedupe';
+  const label = isDedupe ? '知识库去重' : '技术知识检索';
+  const task = isDedupe
+    ? '请经当前 DeepSeek Harness 对话清理技术知识库重复条目，保留最新一条，完成后给出清理数量。'
+    : '请经当前 DeepSeek Harness 对话执行技术知识检索/刷新：优先官方/权威/最新/高置信资料，筛选高质量结果并给出摘要。';
+  try { await dshDispatchAction(label, task); }
+  catch (e) { const m = document.querySelector('#agent-msg'); if (m) m.textContent = label + '失败：' + e.message; }
 }
-
 
 /* ── DeepSeek Harness Agent：按钮 + 对话框；事件映射与 DSH headless --json 一致 ── */
 function dshAppend(html) {
@@ -5021,26 +4890,27 @@ async function submitDshCurrentTask(task) {
   return r;
 }
 
-async function sendDshCurrentAgent() {
-  const inp = document.querySelector('#dsh-current-input');
-  const msg = document.querySelector('#dsh-current-msg');
-  const btn = document.querySelector('#dsh-current-send');
-  const task = (inp && inp.value || '').trim();
-  if (!task) { if (msg) msg.textContent = '请输入要交给本对话的任务'; return; }
-  if (msg) msg.textContent = '提交到当前 DSH 对话…';
-  if (btn) btn.disabled = true;
+async function dshDispatchAction(label, task) {
+  // Agent 面板执行动作统一入口：先交给当前 DSH 对话，再切到对话同步视图。
+  label = String(label || 'DSH动作');
   try {
-    const r = await submitDshCurrentTask(task);
-    if (inp) inp.value = '';
-    const text = '已交给本对话：' + (r.session_id || '当前会话') + '（排队执行）';
-    if (msg) msg.textContent = text;
+    if (!dshMode) toggleDshMode(true);
+    closeSheet(); closeDrawer();
+    const r = await submitDshCurrentTask(String(task || label));
+    dshCurrent = { question: label, session: '当前 DSH 对话', status: 'running', events: [
+      { type: 'text', text: '已交给当前 DSH 对话执行，完成后在对话同步中显示。' }
+    ]};
+    renderDshView();
     startDshCurrentPoll();
-    if (typeof agentLogAction === 'function') agentLogAction('DSH本对话', text, true);
+    agentLogAction(label, '已交给 DSH 本对话', true);
+    const msg = document.querySelector('#agent-msg');
+    if (msg) msg.textContent = label + '：已交给当前 DSH 对话';
+    return r;
   } catch (e) {
-    if (msg) msg.textContent = '提交失败：' + e.message;
-    if (typeof agentLogAction === 'function') agentLogAction('DSH本对话', '失败：' + e.message, false);
-  } finally {
-    if (btn) btn.disabled = false;
+    agentLogAction(label, '失败：' + e.message, false);
+    const msg = document.querySelector('#agent-msg');
+    if (msg) msg.textContent = label + '失败：' + e.message;
+    throw e;
   }
 }
 
@@ -5080,14 +4950,8 @@ function initDshAgent() {
   });
   const send = document.querySelector('#dsh-send');
   if (send) send.addEventListener('click', sendDshAgent);
-  const curSend = document.querySelector('#dsh-current-send');
-  if (curSend) curSend.addEventListener('click', sendDshCurrentAgent);
   const curConnect = document.querySelector('#dsh-current-connect');
   if (curConnect) curConnect.addEventListener('click', connectDshCurrent);
-  const curInput = document.querySelector('#dsh-current-input');
-  if (curInput) curInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter') { e.preventDefault(); sendDshCurrentAgent(); }
-  });
   const ta = document.querySelector('#dsh-task');
   if (ta) ta.addEventListener('keydown', e => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); sendDshAgent(); }
@@ -5616,23 +5480,15 @@ function init() {
   });
   const _apBtn = $('#agent-autopilot-btn');
   if (_apBtn) _apBtn.addEventListener('click', async () => {
-    const enable = !(agentAutopilot && agentAutopilot.enabled);
+    const enable = !dshGuardOn;
     _apBtn.disabled = true;
-    _apBtn.textContent = '常驻守护：切换中…';
+    dshGuardOn = enable;
+    agentRenderAutopilot();
     try {
-      const r = await api('/api/agent/autopilot', {
-        method: 'POST', headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({enabled: enable, interval: 120, knowledge_every: 0}),
-      });
-      agentAutopilot = r || {};
-      agentRenderAutopilot();
-      const msg = $('#agent-msg');
-      if (msg) msg.textContent = enable ? '常驻守护已开启：安全提案会自动修复，高风险留人工' : '常驻守护已关闭';
-      loadAgent();
-    } catch (e) {
-      const msg = $('#agent-msg');
-      if (msg) msg.textContent = '常驻切换失败：' + e.message;
-      agentRenderAutopilot();
+      await dshDispatchAction(enable ? '启动DSH守护' : '停止DSH守护',
+        enable
+          ? '开启 DSH守护：当前 DeepSeek Harness 对话接管后续自动检查/修复动作；高风险保留人工确认。'
+          : '停止 DSH守护：后续不再由当前对话自动接管执行动作。');
     } finally {
       _apBtn.disabled = false;
     }
@@ -5855,8 +5711,6 @@ function init() {
       }
     }
   });
-  const _propFix = $('#prop-autofix');
-  if (_propFix) _propFix.addEventListener('click', autoFixProposals);
   const _cfgBtn = $('#dsh-config-btn');
   const _cfgBox = $('#dsh-config-box');
   if (_cfgBtn && _cfgBox) _cfgBtn.addEventListener('click', () => {
@@ -5904,24 +5758,8 @@ function init() {
   if (_agentRun) _agentRun.addEventListener('click', () => autoAgent('consumer'));
   const _agentKnowledge = $('#agent-knowledge-btn');
   if (_agentKnowledge) _agentKnowledge.addEventListener('click', () => refreshAgentKnowledge('refresh'));
-  const _agentKnSearch = $('#agent-kn-search');
-  if (_agentKnSearch) _agentKnSearch.addEventListener('click', () => refreshAgentKnowledge('query'));
   const _agentKnDedupe = $('#agent-kn-dedupe');
-  if (_agentKnDedupe) _agentKnDedupe.addEventListener('click', dedupeAgentKnowledge);
-  const _agentKnQ = $('#agent-kn-q');
-  if (_agentKnQ) _agentKnQ.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') { e.preventDefault(); refreshAgentKnowledge('query'); }
-  });
-  const _agentSubmit = $('#agent-submit');
-  if (_agentSubmit) _agentSubmit.addEventListener('click', submitAgentTask);
-  const _agentCancel = $('#agent-cancel');
-  if (_agentCancel) _agentCancel.addEventListener('click', closeAgentDialog);
-  const _agentDlgX = $('#agent-dlg-x');
-  if (_agentDlgX) _agentDlgX.addEventListener('click', closeAgentDialog);
-  const _agentOverlay = $('#agent-overlay');
-  if (_agentOverlay) _agentOverlay.addEventListener('click', e => {
-    if (e.target === _agentOverlay) closeAgentDialog();
-  });
+  if (_agentKnDedupe) _agentKnDedupe.addEventListener('click', () => refreshAgentKnowledge('dedupe'));
   const _agentTitle = $('#agent-title');
   if (_agentTitle) _agentTitle.addEventListener('keydown', e => {
     if (e.key === 'Enter') { e.preventDefault(); submitAgentTask(); }

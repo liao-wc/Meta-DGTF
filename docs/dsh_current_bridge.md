@@ -36,3 +36,17 @@
 - 前端静态：dsh-current-input、dsh-current-log、/api/dsh/current、v1.4.92。
 - 浏览器镜像验收：headless Edge 打开 ?dsh=1，DOM 中 dsh-current-log 含当前对话消息；v1.4.92。
 - 回归：selftest 371/0，fast_gate 12/0，依赖审计 59/0。
+## DSH 接管 UI 合并（2026-10-22 15:xx）
+
+- 原“常驻守护”按钮改为“DSH守护”：开关不再调用本地 autopilot，而是把启动/停止任务交给当前 DSH 对话。
+- 原“DSH 全流程闭环”与“自动修复提案”合并为一个按钮：“DSH 接管：闭环 + 修复”。
+- Agent 面板移除：DSH 本对话输入框、知识检索输入框、提交用户任务对话框；任务统一从首屏输入框进入当前 DSH。
+- Agent 面板执行类按钮（闭环/修复/知识检索/学习刷新/发起提案/自主审视/自学习/库去重）统一调用 dshDispatchAction：先 POST /api/dsh/current，再切换对话同步视图。
+- 运行信息屏（最近动作）只保留最新一条，新动作自动覆盖旧行，不再显示五条历史。
+- 静态版本 v1.4.94；DSH 对话镜像仍由 dsh-current-log 轮询显示。
+
+## 浏览器级验收
+
+- headless Edge DOM：Agent 面板不存在 agent-kn-q、agent-kn-search、prop-autofix、agent-overlay、dsh-current-input、dsh-current-send。
+- CDP 点击 agent-auto / agent-autopilot-btn / agent-knowledge-btn / agent-kn-dedupe：只产生 /api/dsh/current 调用，没有 /api/agent/auto*、/api/agent/autopilot、/api/agent/knowledge。
+- 动作日志行数为 1；DSH守护按钮显示“DSH守护：开”；执行后进入 dsh-mode。

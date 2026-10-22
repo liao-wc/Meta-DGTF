@@ -113,7 +113,8 @@ rows = props.get('proposals') or []
 ck('front proposal mapping keys', st == 200 and all({'id', 'status', 'task', 'plan'}.issubset(x) for x in rows[:10]))
 _html_lib = (ROOT / 'dgtf_app' / 'static' / 'index.html').read_text(encoding='utf-8', errors='replace')
 ck('library action log hooks', 'agentLogAction' in appjs and 'agent-asof' in _html_lib)
-ck('dsh current-session bridge hooks', '/api/dsh/current' in srv and 'dsh-current-input' in _html_lib and '_dsh_current_prompt' in srv)
+ck('dsh current-session bridge hooks', '/api/dsh/current' in srv and 'dsh-current-log' in _html_lib
+   and 'dsh-current-input' not in _html_lib and '_dsh_current_prompt' in srv)
 st, lt = get('/api/tasks')
 lt_rows = lt.get('tasks') or []
 if lt_rows:
