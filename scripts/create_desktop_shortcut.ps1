@@ -3,7 +3,7 @@ $Desktop = [Environment]::GetFolderPath("Desktop")
 $Lnk = Join-Path $Desktop "元DGTF.lnk"
 $Shell = New-Object -ComObject WScript.Shell
 $Sc = $Shell.CreateShortcut($Lnk)
-$Sc.TargetPath = Join-Path $Root "scripts\start_app.cmd"
+$Sc.TargetPath = Join-Path $Root "scripts\open_app.cmd"
 # 不传 -Restart：已在运行则健康检查后直接打开，不杀正在跑的任务。
 $Sc.Arguments = ""
 $Sc.WorkingDirectory = $Root
