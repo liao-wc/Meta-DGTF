@@ -214,3 +214,10 @@
 - 页面仍无 dsh-stop-btn / dsh-newchat-btn；左上角 #newchat-btn 是唯一新对话入口。
 - newChat 包含 toggleDshMode(false) 及静默 newDshCurrentConversation；不直接进入 DSH 视图。
 - fast_gate 12/0；selftest 371/0；依赖审计 76/0。
+## DSH接管自动闭环执行（2026-10-22 17:05）
+
+- 闭环读取：任务/结果/知识/DSH会话/提案/日志/工作区/门禁。
+- 发现 err 日志 ConnectionAbortedError（客户端提前断开）；低风险修复：`_json` 与 `_stream_write` 同时捕获 ConnectionResetError/ConnectionAbortedError/BrokenPipeError。
+- 学习：知识库 69 条可读，本轮无需更新。
+- 验证：fast_gate 12/0、selftest 371/0、依赖审计 76/0；err 日志 0。
+- 高风险未自动处理：29 条 pending 提案、214 个非运行时工作区变更、agent_daemon 警告、DSH 配置当前为 danger-full-access/公开联网。

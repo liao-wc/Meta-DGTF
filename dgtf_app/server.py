@@ -6908,8 +6908,11 @@ class Handler(BaseHTTPRequestHandler):
         self.close_connection = True
 
     def _stream_write(self, obj):
-        self.wfile.write((json.dumps(obj, ensure_ascii=False) + "\n").encode("utf-8"))
-        self.wfile.flush()
+        try:
+            self.wfile.write((json.dumps(obj, ensure_ascii=False) + "\n").encode("utf-8"))
+            self.wfile.flush()
+        except (ConnectionResetError, ConnectionAbortedError, BrokenPipeError):
+            self.close_connection = True
 
     def _json(self, obj, code: int = 200, headers=None):
         data = json.dumps(obj, ensure_ascii=False).encode("utf-8")
@@ -6924,7 +6927,7 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_header(str(_k), str(_v))
             self.end_headers()
             self.wfile.write(data)
-        except (ConnectionResetError, BrokenPipeError):
+        except (ConnectionResetError, ConnectionAbortedError, BrokenPipeError):
             # 浏览器/无头客户端提前断开时不要污染 err 日志。
             self.close_connection = True
 
