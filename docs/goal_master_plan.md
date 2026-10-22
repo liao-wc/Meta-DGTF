@@ -134,3 +134,10 @@
 - 404 复跑（600s 上限）超时，只有 partial md、无 packed；说明单题全四层仍可能超时，需调预算/题面。
 - 仍未完成：官方检索质量、正向 verified 样本、App P2、最终收束。
 
+
+## 第十三轮进展（2026-10-22 19:44）
+
+- 新增 scripts/cleanup_runtime.py：默认 dry-run，--apply 才清理 _audit_tmp/smoke_outputs/__pycache__/7天前启动器日志；不碰 outputs/dgtf_memory。
+- App 上线检查单更新：scratch 清理与日志保留策略已落地。
+- 仍未完成：正向 verified 样本、真实 A/B、统一错误信封、最终收束。
+

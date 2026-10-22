@@ -15,8 +15,8 @@
 
 ## 上线前仍需确认（P2/运维）
 
-- [ ] 清理历史 _audit_tmp / 临时目录（约 3GB，需人工确认保留策略）。
-- [ ] 日志轮转与保留天数策略。
+- [x] 清理历史 _audit_tmp / 临时目录（已清约 3.5GB）；新增 scripts/cleanup_runtime.py dry-run/apply。
+- [x] 日志保留策略：docs/log_retention.md；启动器日志 + 7 天清理脚本。
 - [ ] 提案/策略 JSON 原子写全覆盖。
 - [ ] 统一 API 错误信封与顶层异常处理。
 - [ ] 浏览器全按钮 E2E 与 401 场景回归。
