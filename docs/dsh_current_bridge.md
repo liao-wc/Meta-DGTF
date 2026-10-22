@@ -237,3 +237,9 @@
 - 头部：elapsed 显示“已运行 00:01”；历史会话按钮可见。
 - 工具名与状态：运行代码 / 工具结果 · 成功；思考标题中文。
 - fast_gate 12/0；selftest 371/0；依赖审计 77/0。
+## 守护巡检：静默客户端读取断连（2026-10-22 17:18）
+
+- err 日志出现 `rfile.readline` 阶段的 ConnectionResetError；属于客户端/无头端提前断开，不是业务异常。
+- 低风险修复：`make_server` 使用 `_QuietThreadingHTTPServer`，在 `handle_error` 中忽略 ConnectionResetError/ConnectionAbortedError/BrokenPipeError，其余异常照旧抛出。
+- 重启后 err 0 行；HTTP 200；DSH守护正常。
+- fast_gate 12/0；selftest 371/0；依赖审计 77/0。

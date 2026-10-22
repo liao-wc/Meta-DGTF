@@ -390,6 +390,17 @@ def read_log_tail(name: str, tail: int = _LOG_DEFAULT_LINES) -> dict:
     return {"ok": True, "name": name, "lines": out,
             "truncated": truncated, "redacted": redacted}
 
+class _QuietThreadingHTTPServer(ThreadingHTTPServer):
+    """ThreadingHTTPServer that does not log normal client disconnect errors."""
+
+    def handle_error(self, request, client_address):
+        import sys as _sys
+        et = _sys.exc_info()[0]
+        if et and issubclass(et, (ConnectionResetError, ConnectionAbortedError, BrokenPipeError)):
+            return
+        return super().handle_error(request, client_address)
+
+
 def make_server(host: str, port: int, token: str = "", verbose: bool = False):
     """建好（**不启动**）服务。
 
@@ -415,7 +426,7 @@ def make_server(host: str, port: int, token: str = "", verbose: bool = False):
                     pass
         except Exception:
             pass
-    srv = ThreadingHTTPServer((host, port), Handler)
+    srv = _QuietThreadingHTTPServer((host, port), Handler)
     srv.verbose = verbose
     srv.daemon_threads = True
     return srv
