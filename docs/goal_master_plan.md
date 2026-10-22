@@ -38,3 +38,13 @@
 - F：本地模型审计完成：0.5B LoRA route 0.429/rounds MAE 1.446，仅适合建议/预填；岭回归 MAE 0.112，可做候选评分但需置信门控。
 - 审计报告：reports/goal_app_prod_audit.md、goal_proposals_plan.md、goal_engine_quality_audit.md、goal_pareto_local_audit.md。
 
+
+## 第二轮进展（2026-10-22 18:06）
+
+- C：P1 6/6 完成（口令日志、POST 鉴权/主 body 上限、孤儿回收归属、Git 提交范围、默认超时、版本/tag）；app=1.5.12，tag app-v1.5.12。
+- D：引擎 v1.30.1（tag engine-v1.30.1）：事实门收紧、process_ledger citations 修复、md 决策读 packed、bench 结构化、quality API 补 answer/process 门；fast_gate 12/0、selftest 371/0、审计 78/0。
+- E：V2 模板聚合按 run/template 去重并使用全量窗口；三档 limit 推荐稳定为 0:r2；全自动 policy 进引擎仍未启用。
+- B：pending=3（web_hint/action_hint/duty_short），均已补可执行 plan；其余 15 superseded/11 rejected。
+- F：尚未扩权；审计结论仍是建议/预填，下一阶段用置信门控。
+- 下一步：D 的 answer_quality/process_ready 与 6 份 packed 重放；E 的 policy 执行面与 A/B；F 的本地模型 Stage A 预填；B 的 3 条证据补齐。
+
