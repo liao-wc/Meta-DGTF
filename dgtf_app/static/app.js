@@ -1632,6 +1632,9 @@ function setDshHistoryOpen(on) {
 }
 async function resumeDshChat(id) {
   if (!id) return;
+  if (String(id).indexOf('dsh-current-') === 0) {
+    try { await resumeDshCurrentConversation(id); } catch (_) {}
+  }
   stopDshConvPoll();
   dshConversationId = id;
   try { localStorage.setItem(DSH_CONV_KEY, id); } catch (_) {}
@@ -1724,6 +1727,46 @@ function renderDshConversationView() {
   body.innerHTML = inner;
   if (logFollow) scrollDshBottom();
   else body.scrollTop = Math.max(0, body.scrollHeight - fromBottom);
+  updateDshControls();
+}
+
+function dshHasActiveTurn() {
+  return !!((dshCurrent && (dshCurrent.status === 'queued' || dshCurrent.status === 'running'))
+    || (dshConversation && (dshConversation.turns || []).some(t => t.status === 'queued' || t.status === 'running')));
+}
+
+function updateDshControls() {
+  const busy = dshHasActiveTurn();
+  const stop = document.querySelector('#dsh-stop-btn');
+  if (stop) stop.classList.toggle('hidden', !busy);
+  const rb = document.querySelector('#run-btn');
+  if (rb) rb.dataset.tip = busy ? '发送插话（Enter）' : '开始深究（⌘/Ctrl+↵）';
+}
+
+async function cancelDshCurrent() {
+  const stop = document.querySelector('#dsh-stop-btn');
+  if (stop) stop.disabled = true;
+  try {
+    const r = await api('/api/dsh/current/cancel', {method:'POST',
+      headers:{'Content-Type':'application/json'}, body:'{}'});
+    if (dshConversation) {
+      (dshConversation.turns || []).forEach(function (t) {
+        if (t.status === 'queued' || t.status === 'running') t.status = 'canceled';
+      });
+    }
+    if (dshCurrent) {
+      dshCurrent.status = 'done';
+      dshCurrent.events = (dshCurrent.events || []).concat([{type:'text', text:'已请求终止当前 DSH 轮次。'}]);
+    }
+    stopDshViewPoll();
+    stopDshConvPoll();
+    renderDshView();
+    agentLogAction('终止DSH本轮', r && r.accepted ? '已请求取消' : '请求已发送', true);
+  } catch (e) {
+    agentLogAction('终止DSH本轮', '失败：' + e.message, false);
+  } finally {
+    if (stop) stop.disabled = false;
+  }
 }
 
 function renderDshView() {
@@ -1761,6 +1804,7 @@ function renderDshView() {
   body.innerHTML = inner;
   if (logFollow) scrollDshBottom();
   else body.scrollTop = Math.max(0, body.scrollHeight - fromBottom);
+  updateDshControls();
 } 
 function setDetailMeta(text) {
   const el = document.querySelector('#detail-meta');
@@ -4268,6 +4312,36 @@ async function loadDshGuard() {
     agentRenderAutopilot();
   } catch (_) { /* 保持现有状态 */ }
 }
+function syncDshButtonConfig() {
+  const pairs = [['#cfg-thinking', '#pill-thinking'], ['#cfg-web', '#pill-web'],
+    ['#cfg-mock', '#mock-row'], ['#cfg-dsh', '#pill-dsh']];
+  pairs.forEach(function (p) {
+    const c = document.querySelector(p[0]);
+    const m = document.querySelector(p[1]);
+    if (c && m) c.classList.toggle('on', m.classList.contains('on'));
+  });
+}
+
+function initDshButtonConfig() {
+  const map = [['#cfg-thinking', '#pill-thinking'], ['#cfg-web', '#pill-web'],
+    ['#cfg-mock', '#mock'], ['#cfg-dsh', '#pill-dsh']];
+  map.forEach(function (p) {
+    const c = document.querySelector(p[0]);
+    const m = document.querySelector(p[1]);
+    if (!c || !m) return;
+    c.addEventListener('click', function () {
+      if (p[0] === '#cfg-mock') {
+        m.checked = !m.checked;
+        m.dispatchEvent(new Event('change', {bubbles:true}));
+      } else {
+        m.click();
+      }
+      setTimeout(syncDshButtonConfig, 30);
+    });
+  });
+  syncDshButtonConfig();
+}
+
 function _agentTs(x) {
   const v = x && (x.ts || x.created_at || x.updated_at || x.retrieved_at ||
                   x.fetched_at || x.mtime || x.at || x.confirmed_ts || x.resolved_ts || x.applied_ts || x.approved_ts || x.failed_ts || 0);
@@ -4405,7 +4479,7 @@ async function refreshDshLibraries() {
   try {
     await loadDshGuard();
     // 触发当前 DSH 会话归档/产物同步（不显示在 Agent 面板）。
-    await api('/api/dsh/current/messages?limit=5').catch(function () {});
+    await api('/api/dsh/current/messages?limit=1').catch(function () {});
     const [ds, da] = await Promise.all([
       api('/api/dsh/chats').catch(function () { return {}; }),
       api('/api/dsh/artifacts').catch(function () { return {}; })
@@ -4414,6 +4488,7 @@ async function refreshDshLibraries() {
     agentDshArt = (da && da.artifacts) || [];
     agentRenderDsh();
     agentRenderDshArt();
+    syncDshButtonConfig();
     updateAgentLibStamps(false);
   } finally {
     dshLibPollBusy = false;
@@ -4923,6 +4998,7 @@ async function syncDshCurrentView() {
   try {
     const r = await api('/api/dsh/current/messages?limit=20');
     if (!r || !r.ok || !dshCurrent) return;
+    logFollow = true;
     const msgs = r.messages || [];
     dshCurrent.events = msgs.map(function (m) {
       return { type: 'text', text: (m.role === 'user' ? '你：' : 'DSH：') + (m.text || '') };
@@ -4941,17 +5017,41 @@ async function syncDshCurrentView() {
 function startDshViewPoll() {
   stopDshViewPoll();
   syncDshCurrentView();
-  dshViewPollTimer = setInterval(syncDshCurrentView, 2500);
+  dshViewPollTimer = setInterval(syncDshCurrentView, 1000);
 }
 
-async function submitDshCurrentTask(task) {
+async function newDshCurrentConversation(title, opts) {
+  opts = opts || {};
+  const r = await api('/api/dsh/current/conversation', {method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({mode:'new', title: String(title || '新对话')})});
+  if (!r || !r.ok) throw new Error((r && r.error) || '新对话创建失败');
+  if (!opts.silent) {
+    dshConversation = null; dshConversationId = null; stopDshConvPoll();
+    dshCurrent = { question: String(title || '新对话'), session: '当前 DSH 对话',
+      status: 'queued', events: [{type:'text', text:'已开启新的 DSH 对话，输入后开始。'}] };
+    renderDshView();
+    startDshViewPoll();
+  }
+  return r;
+}
+
+async function resumeDshCurrentConversation(cid) {
+  const r = await api('/api/dsh/current/conversation', {method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({mode:'resume', conversation_id: cid})});
+  if (!r || !r.ok) throw new Error((r && r.error) || '续聊会话切换失败');
+  return r;
+}
+
+async function submitDshCurrentTask(task, mode) {
   if (dshConversation) { dshConversation = null; dshConversationId = null; }
   stopDshConvPoll();
   const r = await api('/api/dsh/current', {method:'POST',
     headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({task: task})});
+    body: JSON.stringify({task: task, mode: mode === 'steer' ? 'steer' : 'queue'})});
   if (!r || !r.ok) throw new Error((r && r.error) || '提交失败');
-    return r;
+  return r;
 }
 
 async function dshDispatchAction(label, task) {
@@ -4960,6 +5060,7 @@ async function dshDispatchAction(label, task) {
   try {
     if (!dshMode) toggleDshMode(true);
     closeSheet(); closeDrawer();
+    await newDshCurrentConversation(label, {silent: true});
     const r = await submitDshCurrentTask(String(task || label));
     dshCurrent = { question: label, session: '当前 DSH 对话', status: 'queued', events: [
       { type: 'text', text: '已交给当前 DSH 对话；等待当前轮次完成后执行。' }
@@ -4981,15 +5082,17 @@ async function dshDispatchAction(label, task) {
 async function startDshCurrentRun(question) {
   const q = document.querySelector('#question');
   if (q) { q.value = ''; q.style.height = ''; }
+  const _steer = !!((dshCurrent && (dshCurrent.status === 'queued' || dshCurrent.status === 'running'))
+    || (dshConversation && (dshConversation.turns || []).some(t => t.status === 'queued' || t.status === 'running')));
   toggleDshMode(true);
   if (dshConversation) { dshConversation = null; dshConversationId = null; stopDshConvPoll(); }
   dshCurrent = { question: question, session: '当前 DSH 对话', status: 'queued', events: [
-    { type: 'text', text: '已交给当前 DSH 对话；等待当前轮次完成后执行。' }
+    { type: 'text', text: _steer ? '已发送插话，正在插入当前 DSH 轮次。' : '已交给当前 DSH 对话；等待当前轮次完成后执行。' }
   ]};
   renderDshView();
   setRunBtn('send');
   try {
-    const r = await submitDshCurrentTask(question);
+    const r = await submitDshCurrentTask(question, _steer ? 'steer' : 'queue');
     dshCurrent.events.push({ type: 'text', text: r.text || '已进入当前 DSH 对话队列' });
     renderDshView();
     startDshViewPoll();
@@ -5168,13 +5271,14 @@ function downloadDiag() {
 
 function init() {
   loadDshGuard();
+  initDshButtonConfig();
   setInterval(loadDshGuard, 5000);
   setInterval(function () {
     const sh = document.querySelector('#sheet');
     const va = document.querySelector('#view-agent');
     if (!sh || sh.classList.contains('hidden') || !va || !va.classList.contains('active')) return;
     refreshDshLibraries();
-  }, 3000);
+  }, 1200);
   try { taskDsh = JSON.parse(localStorage.getItem('dgtf_task_dsh') || '{}') || {}; } catch (_) { taskDsh = {}; }
   try {
     const _pv = localStorage.getItem(DSH_PERM_KEY);
@@ -5555,7 +5659,12 @@ function init() {
       });
       dshGuardStatus = r || null;
       dshGuardOn = !!(r && r.enabled);
+      if (enable) {
+        try { await newDshCurrentConversation('DSH守护', {silent: true}); }
+        catch (ne) { agentLogAction('DSH守护会话', '创建失败：' + ne.message, false); }
+      }
       agentRenderAutopilot();
+      refreshDshLibraries();
       const msg = $('#agent-msg');
       if (msg) msg.textContent = enable
         ? 'DSH守护已开启：当前 DSH 对话将按 10 分钟周期巡检；高风险留人工'
@@ -5781,16 +5890,20 @@ function init() {
   const _ghAuto = $('#gh-auto');
   if (_ghAuto) _ghAuto.addEventListener('click', () => autoAgent('proposal'));
   const _dshTopNew = $('#dsh-newchat-btn');
-  if (_dshTopNew) _dshTopNew.addEventListener('click', () => {
-    dshSession = ''; dshCurrent = null;
-    dshConversationId = null; dshConversation = null;
-    try { localStorage.removeItem(DSH_CONV_KEY); } catch (_) {}
-    stopDshConvPoll(); setDshHistoryOpen(false);
-    const log = document.querySelector('#runlog-body');
-    if (log) log.innerHTML = '<div class="rl-lane rl-boot"><div class="rl-lane-head">DeepSeek Harness Agent · 新会话</div><div class="rl-line"><span class="rl-txt">DSH 会话已重置；元DGTF 会话与当前内容保留。</span></div></div>';
-    document.body.classList.add('stage-run'); document.body.classList.remove('stage-empty');
-    const rl = document.querySelector('#runlog'); if (rl) rl.classList.remove('hidden');
+  if (_dshTopNew) _dshTopNew.addEventListener('click', async () => {
+    try {
+      dshSession = ''; dshCurrent = null;
+      dshConversationId = null; dshConversation = null;
+      try { localStorage.removeItem(DSH_CONV_KEY); } catch (_) {}
+      stopDshConvPoll(); setDshHistoryOpen(false);
+      await newDshCurrentConversation('新对话');
+      agentLogAction('新对话', '已开启独立 DSH 历史会话', true);
+    } catch (e) {
+      agentLogAction('新对话', '失败：' + e.message, false);
+    }
   });
+  const _dshStop = $('#dsh-stop-btn');
+  if (_dshStop) _dshStop.addEventListener('click', cancelDshCurrent);
   const _dshArtList = $('#agent-dsh-art');
   if (_dshArtList) _dshArtList.addEventListener('click', async (e) => {
     const it = e.target.closest('[data-dsh-art]');
@@ -5835,8 +5948,6 @@ function init() {
   });
 
   /* ── 运行日志诊断：入口 / 刷新 / 复制 / 下载 / 关闭（全部 addEventListener，CSP 友好）── */
-  const _diagBtn = $('#diag-btn');
-  if (_diagBtn) _diagBtn.addEventListener('click', openDiag);
   const _diagRefresh = $('#diag-refresh');
   if (_diagRefresh) _diagRefresh.addEventListener('click', loadDiag);
   const _diagCopy = $('#diag-copy');

@@ -2087,10 +2087,11 @@ def _dsh_current_session_id() -> str:
     return str(candidates[0].get("sessionId") or "")
 
 
-def _dsh_current_prompt(task: str, dry_run: bool = False) -> dict:
+def _dsh_current_prompt(task: str, dry_run: bool = False, mode: str = "queue") -> dict:
     task = str(task or "").strip()
     if not task:
         raise ValueError("task 不能为空")
+    mode = "steer" if str(mode or "").strip() == "steer" else "queue"
     sid = _dsh_current_session_id()
     if not sid:
         raise RuntimeError("DSH 当前会话 id 为空")
@@ -2103,13 +2104,14 @@ def _dsh_current_prompt(task: str, dry_run: bool = False) -> dict:
     val = _dsh_current_rpc("session/prompt", {"request": {
         "requestId": "dgtf-" + secrets.token_hex(12),
         "sessionId": sid,
-        "mode": "queue",
+        "mode": mode,
         "content": [{"type": "text", "text": wrapped}],
         "clientTimeZone": "Asia/Shanghai",
     }})
     return {"ok": True, "mode": "current-session", "session_id": sid,
-            "accepted": bool(val.get("accepted")),
-            "text": "已交给 DSH 本对话会话 " + sid + "（排队执行）。"}
+            "accepted": bool(val.get("accepted")), "delivery": mode,
+            "text": ("已插入当前 DSH 对话（插话）。" if mode == "steer"
+                     else "已交给 DSH 本对话会话 " + sid + "（排队执行）。")}
 
 
 def _dsh_current_messages(limit: int = 80) -> dict:
@@ -3872,6 +3874,8 @@ def _conv_reconcile_on_start():
                 c = _json.loads(p.read_text(encoding="utf-8", errors="replace"))
             except Exception:
                 continue
+            if str(c.get("external") or "") == "dsh-current":
+                continue
             changed = False
             for t in c.get("turns") or []:
                 if str(t.get("status")) in ("queued", "running"):
@@ -3887,6 +3891,7 @@ def _conv_reconcile_on_start():
 def _conv_list(limit=50):
     import json as _json
     rows = []
+    _active_current = str((_dsh_active_load() or {}).get("conversation_id") or "")
     try:
         files = sorted(_conv_dir().glob("*.json"),
                        key=lambda p: p.stat().st_mtime, reverse=True)[:max(1, int(limit))]
@@ -3909,7 +3914,18 @@ def _conv_list(limit=50):
                         pass
                     turns = c.get("turns") or []
                     _busy = False
-            running = bool(c.get("running")) if _external == "dsh-current" else bool(_busy and _active)
+            elif _cid != _active_current and (c.get("running") or _busy):
+                # 非当前活跃的逻辑会话：历史状态收口，不再显示运行中。
+                c["running"] = False
+                for t in turns:
+                    if str(t.get("status")) in ("queued", "running"):
+                        t["status"] = "done"
+                try:
+                    p.write_text(_json.dumps(c, ensure_ascii=False, indent=1), encoding="utf-8")
+                except Exception:
+                    pass
+                _busy = False
+            running = (bool(c.get("running")) and _cid == _active_current) if _external == "dsh-current" else bool(_busy and _active)
             stale = False if _external == "dsh-current" else bool(_busy and not _active)
             last = turns[-1] if turns else {}
             rows.append({"id": c.get("id") or p.stem,
@@ -3960,28 +3976,156 @@ def _workspace_changed_files(limit=40):
     return files
 
 
+def _dsh_active_path():
+    d = Path(__file__).resolve().parent.parent / "dgtf_memory"
+    d.mkdir(parents=True, exist_ok=True)
+    return d / "dsh_active_conversation.json"
+
+
+def _dsh_active_load():
+    import json as _json
+    try:
+        p = _dsh_active_path()
+        if p.exists():
+            raw = _json.loads(p.read_text(encoding="utf-8", errors="replace"))
+            if isinstance(raw, dict):
+                return raw
+    except Exception:
+        pass
+    return {}
+
+
+def _dsh_active_save(rec):
+    import json as _json
+    try:
+        p = _dsh_active_path()
+        tmp = p.with_suffix(".tmp")
+        tmp.write_text(_json.dumps(rec, ensure_ascii=False, indent=1), encoding="utf-8")
+        tmp.replace(p)
+    except Exception:
+        pass
+
+
+def _dsh_current_asof(extra=None):
+    import time as _t
+    try:
+        items = _dsh_current_rpc("session/list", {"_request": {}}).get("items") or []
+        sid = _dsh_current_session_id()
+        cur = next((x for x in items if str(x.get("sessionId") or "") == sid), {})
+        return {"sid": sid,
+                "as_of": int((cur.get("projections") or {}).get("asOfSeq") or 0),
+                "running": bool(cur.get("running")),
+                "updated_at": cur.get("updatedAt") or _t.time()}
+    except Exception:
+        return {"sid": "", "as_of": int((extra or {}).get("as_of") or 0),
+                "running": bool((extra or {}).get("running")), "updated_at": _t.time()}
+
+
+def _finalize_active_current():
+    import json as _json
+    import time as _t
+    active = _dsh_active_load()
+    cid = str(active.get("conversation_id") or "")
+    if not cid:
+        return
+    conv = _conv_load(cid)
+    if not conv or str(conv.get("external") or "") != "dsh-current":
+        return
+    changed = False
+    if conv.get("running"):
+        conv["running"] = False
+        changed = True
+    for t in conv.get("turns") or []:
+        if str(t.get("status")) in ("queued", "running"):
+            t["status"] = "done"
+            changed = True
+    if changed:
+        conv["updated_at"] = _t.time()
+        _conv_save(conv)
+        try:
+            p = _dsh_artifact_dir() / (cid + ".json")
+            if p.exists():
+                md = _json.loads(p.read_text(encoding="utf-8", errors="replace"))
+                md["running"] = False
+                md["ok"] = True
+                p.write_text(_json.dumps(md, ensure_ascii=False, indent=1), encoding="utf-8")
+        except Exception:
+            pass
+
+
+def _new_dsh_current_conversation(title="新对话"):
+    import time as _t
+    info = _dsh_current_asof()
+    sid = info["sid"]
+    if not sid:
+        raise RuntimeError("DSH 当前会话 id 为空")
+    _finalize_active_current()
+    cid = "dsh-current-" + sid + "-" + str(int(_t.time() * 1000))
+    now = _t.time()
+    conv = {"id": cid, "session_id": sid, "external": "dsh-current",
+            "start_seq": int(info["as_of"]), "created_at": now,
+            "updated_at": now, "running": bool(info["running"]),
+            "turns": [{"id": "turn-init", "task": str(title or "新对话"),
+                       "text": "", "events": [], "status": "queued"}]}
+    _conv_save(conv)
+    _dsh_active_save({"session_id": sid, "conversation_id": cid,
+                      "start_seq": int(info["as_of"]), "title": str(title or "新对话")})
+    return conv
+
+
+def _resume_dsh_current_conversation(cid):
+    conv = _conv_load(cid)
+    if not conv:
+        raise ValueError("conversation not found")
+    if str(conv.get("external") or "") != "dsh-current":
+        raise ValueError("not a current DSH conversation")
+    _finalize_active_current()
+    conv["running"] = False
+    conv["updated_at"] = __import__("time").time()
+    _conv_save(conv)
+    _dsh_active_save({"session_id": conv.get("session_id") or "",
+                      "conversation_id": cid,
+                      "start_seq": int(conv.get("start_seq") or 0),
+                      "title": str(conv.get("turns", [{}])[-1].get("task") or "对话")[:120]})
+    return conv
+
+
 def _sync_current_dsh_archive(out, archive_msgs=None):
-    """把当前 DSH 会话同步到 app 的 DSH 会话库与产物库（仅摘要/最近消息）。"""
+    """把当前 DSH 会话同步到 app 的 DSH 会话库与产物库（按 active 逻辑会话隔离）。"""
     import json as _json
     import time as _t
     msgs = list(archive_msgs if archive_msgs is not None else (out.get("messages") or []))
-    if not msgs:
-        return
     sid = str(out.get("session_id") or "")
     if not sid:
         return
-    cid = "dsh-current-" + sid
-    last_seq = int(msgs[-1].get("seq") or 0)
-    sig = (sid, len(msgs), last_seq, bool(out.get("running")))
+    active = _dsh_active_load()
+    cid = str(active.get("conversation_id") or "")
+    if not cid or str(active.get("session_id") or "") != sid or not _conv_path(cid).exists():
+        legacy = "dsh-current-" + sid
+        if _conv_path(legacy).exists():
+            cid = legacy
+        else:
+            info = _dsh_current_asof(out)
+            cid = "dsh-current-" + sid
+        active = {"session_id": sid, "conversation_id": cid,
+                  "start_seq": int(active.get("start_seq") or 0),
+                  "title": str(active.get("title") or "当前 DSH 对话")}
+        _dsh_active_save(active)
+    start_seq = int(active.get("start_seq") or 0)
+    filtered = [m for m in msgs if int(m.get("seq") or 0) > start_seq]
+    last_seq = int(msgs[-1].get("seq") or 0) if msgs else 0
+    running = bool(out.get("running"))
+    sig = (sid, cid, len(filtered), last_seq, running)
     global _CURRENT_ARCHIVE_SIG
     try:
         if sig == _CURRENT_ARCHIVE_SIG and _conv_path(cid).exists():
             return
     except Exception:
         pass
+    old = _conv_load(cid) or {}
     turns = []
     cur = None
-    for m in msgs[-120:]:
+    for m in filtered[-120:]:
         role = str(m.get("role") or "")
         txt = str(m.get("text") or "").strip()
         if not txt:
@@ -3998,13 +4142,17 @@ def _sync_current_dsh_archive(out, archive_msgs=None):
             cur.setdefault("events", []).append({"type": "text", "text": txt})
             cur["text"] = txt
     if not turns:
-        return
-    running = bool(out.get("running"))
+        turns = list(old.get("turns") or [])
+    if not turns:
+        turns = [{"id": "turn-init", "task": str(active.get("title") or "新对话"),
+                  "text": "", "events": [], "status": "queued"}]
     if running:
         turns[-1]["status"] = "running"
-    old = _conv_load(cid) or {}
+    elif turns and turns[-1].get("status") in ("queued", "running"):
+        turns[-1]["status"] = "done"
     now = _t.time()
     conv = {"id": cid, "session_id": sid, "external": "dsh-current",
+            "start_seq": start_seq,
             "created_at": old.get("created_at") or (turns and msgs[0].get("time", 0) / 1000.0) or now,
             "updated_at": now, "running": running, "turns": turns}
     _conv_save(conv)
@@ -4015,11 +4163,11 @@ def _sync_current_dsh_archive(out, archive_msgs=None):
         for ev in (t.get("events") or []):
             if ev.get("type") == "text" and ev.get("text"):
                 tail.append("## DSH\n\n" + str(ev.get("text")))
-    body = ("# 当前 DSH 对话\n\n- session: " + sid + "\n- 状态: "
-            + ("运行中/排队" if running else "完成") + "\n- 更新时间: "
-            + _t.strftime("%Y-%m-%d %H:%M:%S", _t.localtime(now)) + "\n\n"
-            + "## 最近对话\n\n" + "\n\n".join(tail))
-    md = {"id": cid, "session_id": sid, "task": "当前 DSH 对话 · " + sid,
+    body = ("# 当前 DSH 对话\n\n- session: " + sid + "\n- conversation: " + cid
+            + "\n- 状态: " + ("运行中/排队" if running else "完成")
+            + "\n- 更新时间: " + _t.strftime("%Y-%m-%d %H:%M:%S", _t.localtime(now))
+            + "\n\n## 最近对话\n\n" + "\n\n".join(tail))
+    md = {"id": cid, "session_id": sid, "task": str(active.get("title") or "当前 DSH 对话"),
           "ts": now, "mtime": now, "ok": not running, "running": running,
           "body": body, "files": files}
     try:
@@ -7026,6 +7174,11 @@ class Handler(BaseHTTPRequestHandler):
         if m:
             since = int((q.get("since") or ["0"])[0] or 0)
             return self._json(_auto_job_get(m.group(1), since) or {"error": "job not found"})
+        if p == "/api/dsh/current/conversation":
+            _active = _dsh_active_load()
+            _cid = str(_active.get("conversation_id") or "")
+            return self._json({"ok": True, "active": _active,
+                               "conversation": _conv_load(_cid) if _cid else None})
         if p == "/api/dsh/guard":
             return self._json(_dsh_guard_status())
         if p == "/api/dsh/current/messages":
@@ -8060,6 +8213,23 @@ class Handler(BaseHTTPRequestHandler):
         if p == "/api/dsh/guard":
             data = self._read_json()
             return self._json(_dsh_guard_set(data))
+        if p == "/api/dsh/current/conversation":
+            data = self._read_json()
+            try:
+                mode = str(data.get("mode") or "new")
+                if mode == "resume":
+                    return self._json({"ok": True, "conversation": _resume_dsh_current_conversation(str(data.get("conversation_id") or ""))})
+                return self._json({"ok": True, "conversation": _new_dsh_current_conversation(str(data.get("title") or "新对话"))})
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 400)
+        if p == "/api/dsh/current/cancel":
+            try:
+                sid = _dsh_current_session_id()
+                val = _dsh_current_rpc("session/cancel", {"request": {"sessionId": sid}})
+                return self._json({"ok": True, "session_id": sid,
+                                   "accepted": bool(val.get("accepted"))})
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 502)
         if p == "/api/dsh/current":
             data = self._read_json()
             task = str(data.get("task") or "").strip()
@@ -8067,7 +8237,8 @@ class Handler(BaseHTTPRequestHandler):
                 task = task[:8000]
             try:
                 return self._json(_dsh_current_prompt(
-                    task, dry_run=bool(data.get("dry_run"))))
+                    task, dry_run=bool(data.get("dry_run")),
+                    mode=str(data.get("mode") or "queue")))
             except ValueError as exc:
                 return self._json({"ok": False, "error": str(exc)}, 400)
             except Exception as exc:  # noqa: BLE001

@@ -140,3 +140,22 @@
 - 守护状态：enabled=true、thread_running=true、last_result=busy 跳过巡检。
 - fast_gate 12/0；selftest 371/0；依赖审计 69/0。
 - 静态版本 v1.5.04。
+## 连贯性适配（2026-10-22 16:35，v1.5.05）
+
+- DSH守护开启不再跳转首屏：只创建/切换一个逻辑 DSH 历史会话（silent），守护巡检后续写入该会话；历史库可打开查看状态与内容。
+- 逻辑会话隔离：`dgtf_memory/dsh_active_conversation.json` 记录当前会话 id 与 start_seq；同一条主输入续聊沿用当前逻辑会话，面板动作/“新对话”创建新逻辑会话；历史记录按 start_seq 分段保留并可续聊。
+- 主 DSH 视图 1 秒同步并自动滚动；Agent 面板库刷新 1.2 秒。
+- 主输入在 DSH 排队/运行时再次发送使用 `mode=steer` 插话；首次发送仍为 queue。
+- DSH 视图新增“终止本轮”按钮，调用 `/api/dsh/current/cancel`（session/cancel）；新增“新对话”按钮创建独立逻辑会话。
+- 移除左上角运行日志诊断按钮；其诊断 API/数据面保留但不暴露入口。
+- V2 挡位 `#pareto-prefer` 悬停/聚焦/选项保持透明背景。
+- Agent 面板新增“DSH 对话按钮”：深度思考 / 智能搜索 / 演练模式 / DSH Agent，与首屏按钮双向同步并可调节。
+- 静态版本 v1.5.05。
+
+## 连贯性验收
+
+- CDP 插话测试：第一次 mode=queue，第二次 mode=steer；主视图 badge=排队，内容含用户/DSH 文本，终止按钮可见。
+- 逻辑会话：当前存在 2 个 dsh-current 会话（守护会话 + 原会话）；active 指向守护会话；旧会话状态收口不显示运行中。
+- 页面：无 diag-btn；dsh-stop-btn/dsh-newchat-btn/cfg-thinking/cfg-web/cfg-mock/cfg-dsh 均存在。
+- 配置映射：点击 cfg-thinking 后首屏 pill-thinking 为 on；点击 cfg-mock 后 mock.checked=true。
+- fast_gate 12/0；selftest 371/0；依赖审计 73/0；HTTP 200。

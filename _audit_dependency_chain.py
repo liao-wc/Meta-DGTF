@@ -131,6 +131,13 @@ ck('dsh history continuation hooks', "external === 'dsh-current'" in appjs
    and 'refreshDshLibraries' in appjs and 'dsh-current' in appjs)
 ck('dsh guard hooks', '/api/dsh/guard' in srv and '_dsh_guard_loop' in srv
    and 'dsh-guard' in srv and '/api/dsh/guard' in appjs)
+ck('dsh logical conversation hooks', '_new_dsh_current_conversation' in srv and 'start_seq' in srv
+   and '/api/dsh/current/conversation' in srv and 'resumeDshCurrentConversation' in appjs)
+ck('dsh interject/cancel hooks', '"steer"' in srv and '/api/dsh/current/cancel' in srv
+   and 'cancelDshCurrent' in appjs)
+ck('agent dsh control buttons', all(x in _html_lib for x in ('dsh-stop-btn', 'dsh-newchat-btn', 'cfg-thinking', 'cfg-web', 'cfg-mock', 'cfg-dsh'))
+   and 'diag-btn' not in _html_lib)
+ck('v2 transparent selector css', '#pareto-prefer:hover' in (ROOT / 'dgtf_app' / 'static' / 'style.css').read_text(encoding='utf-8', errors='replace'))
 ck('agent live info screen hooks', 'agent-live' in _html_lib and 'agent-action-log-list' in _html_lib
    and 'agentLogAction' in appjs and 'slice(0, 1)' in appjs)
 st, lt = get('/api/tasks')

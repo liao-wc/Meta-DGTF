@@ -1532,6 +1532,10 @@ body.dsh-mode .dsh-ctl{display:inline-flex;align-items:center}
 #agent-action-log-list .ok{color:#7ee787}
 #agent-action-log-list .bad{color:#ff7b72}
 .agent-live-asof{font-size:11px;color:var(--t3);white-space:nowrap;flex:0 0 auto;font-family:var(--f-mono)}
+/* V2 挡位选择：悬停/聚焦保持原透明背景，不做白底 */
+#pareto-prefer{background:transparent;border-color:var(--hair);box-shadow:none}
+#pareto-prefer:hover,#pareto-prefer:focus,#pareto-prefer:active{background:transparent !important;color:var(--t1)}
+#pareto-prefer option{background:var(--ground);color:var(--t1)}
 @keyframes agent-live-pulse{0%{box-shadow:0 0 0 0 rgba(94,106,210,.55)}70%{box-shadow:0 0 0 6px rgba(94,106,210,0)}100%{box-shadow:0 0 0 0 rgba(94,106,210,0)}}
 #view-agent .agent-toolbar .ghost{height:30px;padding:0 11px;font-size:12px;border-radius:8px}
 

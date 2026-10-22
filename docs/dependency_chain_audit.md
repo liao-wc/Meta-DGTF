@@ -1,8 +1,8 @@
 # 元DGTF app 依赖链自洽审计
 
-生成：2026-10-22 16:11:44
+生成：2026-10-22 16:35:48
 
-PASS 69 / FAIL 0
+PASS 73 / FAIL 0
 
 ## FAIL
 - 无
@@ -57,6 +57,10 @@ PASS 69 / FAIL 0
 - dsh artifact file hooks
 - dsh history continuation hooks
 - dsh guard hooks
+- dsh logical conversation hooks
+- dsh interject/cancel hooks
+- agent dsh control buttons
+- v2 transparent selector css
 - agent live info screen hooks
 - engine layer payload contract
 - output list contract
