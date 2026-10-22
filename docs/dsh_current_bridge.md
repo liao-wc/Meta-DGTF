@@ -159,3 +159,9 @@
 - 页面：无 diag-btn；dsh-stop-btn/dsh-newchat-btn/cfg-thinking/cfg-web/cfg-mock/cfg-dsh 均存在。
 - 配置映射：点击 cfg-thinking 后首屏 pill-thinking 为 on；点击 cfg-mock 后 mock.checked=true。
 - fast_gate 12/0；selftest 371/0；依赖审计 73/0；HTTP 200。
+## 守护巡检低风险修复（2026-10-22 16:40）
+
+- 巡检发现 err 日志中的 `ConnectionResetError` 来自浏览器/无头客户端提前断开连接，发生在 JSON 响应写回阶段。
+- 低风险修复：`_json()` 捕获 `ConnectionResetError`/`BrokenPipeError` 并静默关闭连接，避免此类正常断连继续污染 err 日志；不吞业务异常。
+- 历史旧 err 记录保留，未做删除/裁剪。
+- fast_gate 12/0；selftest 371/0；依赖审计 73/0；HTTP 200。

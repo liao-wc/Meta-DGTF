@@ -6744,16 +6744,20 @@ class Handler(BaseHTTPRequestHandler):
 
     def _json(self, obj, code: int = 200, headers=None):
         data = json.dumps(obj, ensure_ascii=False).encode("utf-8")
-        self.send_response(code)
-        self._send_cookies()
-        self._security_headers()
-        self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.send_header("Content-Length", str(len(data)))
-        self.send_header("Cache-Control", "no-store")
-        for _k, _v in (headers or {}).items():
-            self.send_header(str(_k), str(_v))
-        self.end_headers()
-        self.wfile.write(data)
+        try:
+            self.send_response(code)
+            self._send_cookies()
+            self._security_headers()
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(data)))
+            self.send_header("Cache-Control", "no-store")
+            for _k, _v in (headers or {}).items():
+                self.send_header(str(_k), str(_v))
+            self.end_headers()
+            self.wfile.write(data)
+        except (ConnectionResetError, BrokenPipeError):
+            # 浏览器/无头客户端提前断开时不要污染 err 日志。
+            self.close_connection = True
 
     # ── ★ R42：访问口令（只在 `--token` 时生效；默认 _TOKEN 为空 ⇒ 全部放行）──
     def _auth_note(self):
