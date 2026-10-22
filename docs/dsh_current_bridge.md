@@ -107,3 +107,21 @@
 - CDP 主视图测试：提交任务后 badge 显示“排队”，视图显示用户任务、DSH 回复和“已排队，等待当前 DSH 轮次完成…”，dsh-mode=true。
 - 真实接口：`running=true`，inbox 字段可读，最近消息可读。
 - fast_gate 12/0；selftest 371/0；依赖审计 65/0。
+## DSH 对话历史库/产物库归档与续聊（2026-10-22 16:10）
+
+- `/api/dsh/current/messages` 同步时自动写：
+  - `dgtf_memory/dsh_conversations/dsh-current-<session>.json`：当前 DSH 对话摘要（最近 200 条消息，external=dsh-current，实时 running 状态）。
+  - `dgtf_memory/dsh_artifacts/dsh-current-<session>.json`：对话产物（最近对话正文 + 工作区生成/修改文件清单）。
+- Agent 面板 DSH 会话库会出现“当前对话”记录，可打开查看历史轮次；继续输入会走 `/api/dsh/current` 续聊。
+- DSH 产物库显示当前对话产物，点击后展示对话正文与生成/修改文件；文件链接调用 `/api/fs/file`，文本/图片可点击查看。
+- Agent 面板打开时每 3 秒轻量刷新 DSH 会话/产物库，状态实时更新。
+- Agent 面板仍不显示实时 DSH 对话镜像/连接按钮。
+- 静态版本 v1.5.03。
+
+## 历史库/产物库验收
+
+- 当前会话归档：25 轮、running=true。
+- 当前产物：40 个生成/修改文件链接。
+- CDP：历史会话打开成功；产物文件链接点击后打开 `_audit_v122_result.json` 内容。
+- CDP 续聊：历史会话中再次发送，实际调用 `/api/dsh/current`，主视图 badge 进入“排队/运行中”。
+- fast_gate 12/0；selftest 371/0；依赖审计 68/0。

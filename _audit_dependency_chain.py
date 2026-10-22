@@ -123,6 +123,12 @@ ck('knowledge retrieval restored', 'agent-kn-q' in _html_lib and 'agent-kn-searc
 ck('dsh self-feedback loop prompt', all(x in appjs for x in ('自我反馈', '学习：', '迭代：', 'fast_gate')))
 ck('dsh content/status consistency hooks', 'inbox_next_turn' in srv and 'syncDshCurrentView' in appjs
    and 'dshViewPollTimer' in appjs and "status: 'queued'" in appjs)
+ck('dsh history archive hooks', '_sync_current_dsh_archive' in srv and 'external' in srv
+   and 'dsh-current-' in srv)
+ck('dsh artifact file hooks', '/api/fs/file' in srv and 'openDshFile' in appjs
+   and 'data-dsh-file' in appjs and 'dsh-art-files' in appjs)
+ck('dsh history continuation hooks', "external === 'dsh-current'" in appjs
+   and 'refreshDshLibraries' in appjs and 'dsh-current' in appjs)
 ck('agent live info screen hooks', 'agent-live' in _html_lib and 'agent-action-log-list' in _html_lib
    and 'agentLogAction' in appjs and 'slice(0, 1)' in appjs)
 st, lt = get('/api/tasks')

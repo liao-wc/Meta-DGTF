@@ -1774,9 +1774,43 @@ async function openDshArtifact(id) {
   const body = document.querySelector('#detail-body');
   if (!det || !body) return;
   if (title) title.textContent = 'DSH 产物 · ' + id;
-  setDetailMeta(r.ts ? ('生成时间 ' + (fmtTs(r.ts) || '未知')) : '生成时间未知');
-  body.innerHTML = '<pre>' + esc(r.body || '') + '</pre>';
+  setDetailMeta(r.running ? ('运行中 · 更新 ' + (fmtTs(r.ts) || ''))
+    : (r.ts ? ('生成时间 ' + (fmtTs(r.ts) || '未知')) : '生成时间未知'));
+  const files = Array.isArray(r.files) ? r.files : [];
+  let filesHtml = '';
+  if (files.length) {
+    filesHtml = '<div class="dsh-art-files"><div class="dsh-art-files-h">生成/修改文件（点击查看）</div>'
+      + files.map(function (x) {
+        return '<button type="button" class="dsh-file-link" data-dsh-file="' + esc(x.path || '') + '">'
+          + esc(x.path || '') + (x.size ? (' · ' + esc(String(x.size)) + ' B') : '') + '</button>';
+      }).join('') + '</div>';
+  }
+  body.innerHTML = filesHtml + '<pre>' + esc(r.body || '') + '</pre>';
   det.classList.remove('hidden');
+}
+
+async function openDshFile(path) {
+  if (!path) return;
+  const title = document.querySelector('#detail-title');
+  const body = document.querySelector('#detail-body');
+  if (!body) return;
+  try {
+    const r = await api('/api/fs/file?path=' + encodeURIComponent(path));
+    if (!r || !r.ok) throw new Error((r && r.error) || '文件读取失败');
+    if (title) title.textContent = 'DSH 文件 · ' + (r.path || path);
+    setDetailMeta('文件 · ' + String(r.size || 0) + ' B');
+    if (r.text !== undefined) {
+      body.innerHTML = '<pre>' + esc(r.text) + '</pre>';
+    } else if (r.data && String(r.mime || '').startsWith('image/')) {
+      body.innerHTML = '<div class="dsh-file-img-wrap"><img class="dsh-file-img" src="data:'
+        + esc(r.mime) + ';base64,' + esc(r.data) + '" alt="' + esc(path) + '"></div>';
+    } else {
+      body.innerHTML = '<div class="muted">二进制文件，已记录路径：' + esc(path) + '</div>';
+    }
+    const det = document.querySelector('#detail'); if (det) det.classList.remove('hidden');
+  } catch (e) {
+    body.innerHTML = '<div class="muted">读取失败：' + esc(e.message) + '</div>';
+  }
 }
 
 async function openDshSession(id) {
@@ -1997,7 +2031,12 @@ async function startRun() {
   logFollow = true;
   const question = $('#question').value.trim();
   if (!question) { alert('请先输入问题'); return; }
-  if (dshMode) { return startDshCurrentRun(question); }
+  if (dshMode) {
+    if (dshConversation && dshConversation.external !== 'dsh-current') {
+      return startDshChat(question, dshPermission());
+    }
+    return startDshCurrentRun(question);
+  }
   if (agentTaskMode) { const q = $('#question'); if (q) { q.value=''; q.style.height=''; } return submitAgentTaskFromComposer(question); }
   const opts = collectOpts();
   const real = !opts.mock;
@@ -3923,7 +3962,7 @@ function agentRenderDsh() {
       ((x.stale || st === 'interrupted' || st === 'canceled') ? '中断' :
         (st === 'error' ? '失败' : (st === 'queued' ? '排队' : '完成')));
     return '<div class="agent-item agent-dsh-item" data-dsh-chat="' + esc(x.id || '') + '">'
-      + '<div class="agent-row"><span class="chip">DSH</span>'
+      + '<div class="agent-row"><span class="chip">' + (x.external === 'dsh-current' ? '当前对话' : 'DSH') + '</span>'
       + '<span class="chip' + (x.running ? ' gh-bad' : '') + '">' + esc(label) + '</span>'
       + '<span class="agent-t">' + esc(x.last_task || x.id) + '</span></div>'
       + '<div class="agent-meta"><span>' + esc(x.id || '') + '</span>'
@@ -3942,7 +3981,7 @@ function agentRenderDshArt() {
   if (!agentDshArt.length) { box.innerHTML = agentEmpty('还没有 DSH 产物。'); return; }
   box.innerHTML = _activeFirst(agentDshArt, null, _agentTs).map(function (x) {
     const when = fmtTs(x.ts);
-    const st = x.ok === true ? '完成' : (x.ok === false ? '失败' : '产物');
+    const st = x.running ? '运行中' : (x.ok === true ? '完成' : (x.ok === false ? '失败' : '产物'));
     return '<div class="agent-item agent-dsh-art-item" data-dsh-art="' + esc(x.id || '') + '">'
       + '<div class="agent-row"><span class="chip">产物</span>'
       + '<span class="chip">' + esc(st) + '</span>'
@@ -4344,6 +4383,27 @@ async function loadAgent() {
     agentLogAction('读取全部库', _detail, !errs.length);
   } else {
     renderAgentActionLog();
+  }
+}
+
+let dshLibPollBusy = false;
+async function refreshDshLibraries() {
+  if (dshLibPollBusy) return;
+  dshLibPollBusy = true;
+  try {
+    // 触发当前 DSH 会话归档/产物同步（不显示在 Agent 面板）。
+    await api('/api/dsh/current/messages?limit=5').catch(function () {});
+    const [ds, da] = await Promise.all([
+      api('/api/dsh/chats').catch(function () { return {}; }),
+      api('/api/dsh/artifacts').catch(function () { return {}; })
+    ]);
+    agentDsh = (ds && ds.chats) || [];
+    agentDshArt = (da && da.artifacts) || [];
+    agentRenderDsh();
+    agentRenderDshArt();
+    updateAgentLibStamps(false);
+  } finally {
+    dshLibPollBusy = false;
   }
 }
 
@@ -4872,6 +4932,8 @@ function startDshViewPoll() {
 }
 
 async function submitDshCurrentTask(task) {
+  if (dshConversation) { dshConversation = null; dshConversationId = null; }
+  stopDshConvPoll();
   const r = await api('/api/dsh/current', {method:'POST',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({task: task})});
@@ -4907,6 +4969,7 @@ async function startDshCurrentRun(question) {
   const q = document.querySelector('#question');
   if (q) { q.value = ''; q.style.height = ''; }
   toggleDshMode(true);
+  if (dshConversation) { dshConversation = null; dshConversationId = null; stopDshConvPoll(); }
   dshCurrent = { question: question, session: '当前 DSH 对话', status: 'queued', events: [
     { type: 'text', text: '已交给当前 DSH 对话；等待当前轮次完成后执行。' }
   ]};
@@ -5091,6 +5154,12 @@ function downloadDiag() {
 }
 
 function init() {
+  setInterval(function () {
+    const sh = document.querySelector('#sheet');
+    const va = document.querySelector('#view-agent');
+    if (!sh || sh.classList.contains('hidden') || !va || !va.classList.contains('active')) return;
+    refreshDshLibraries();
+  }, 3000);
   try { taskDsh = JSON.parse(localStorage.getItem('dgtf_task_dsh') || '{}') || {}; } catch (_) { taskDsh = {}; }
   try {
     const _pv = localStorage.getItem(DSH_PERM_KEY);
@@ -5703,6 +5772,12 @@ function init() {
     if (!it) return;
     try { await openDshArtifact(it.dataset.dshArt); }
     catch (err) { const m = document.querySelector('#agent-msg'); if (m) m.textContent = '打开产物失败：' + err.message; }
+  });
+  const _detailBody = $('#detail-body');
+  if (_detailBody) _detailBody.addEventListener('click', async (e) => {
+    const f = e.target.closest('[data-dsh-file]');
+    if (!f) return;
+    await openDshFile(f.dataset.dshFile);
   });
   const _dshList = $('#agent-dsh');
   if (_dshList) _dshList.addEventListener('click', async (e) => {

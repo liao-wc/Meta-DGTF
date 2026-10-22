@@ -1839,10 +1839,22 @@ def _dsh_artifact_dir():
 
 
 def _list_dsh_artifacts(limit=50):
+    import json as _json
+    d = _dsh_artifact_dir()
+    paths = list(d.glob("*.md")) + list(d.glob("*.json"))
     rows = []
-    for p in sorted(_dsh_artifact_dir().glob("*.md"),
-                    key=lambda x: x.stat().st_mtime, reverse=True)[:limit]:
+    for p in sorted(paths, key=lambda x: x.stat().st_mtime, reverse=True)[:limit]:
         try:
+            if p.suffix == ".json":
+                rec = _json.loads(p.read_text(encoding="utf-8", errors="replace"))
+                rows.append({"id": rec.get("id") or p.stem,
+                             "size": p.stat().st_size,
+                             "task": rec.get("task") or p.stem,
+                             "ts": rec.get("ts") or p.stat().st_mtime,
+                             "ok": rec.get("ok"),
+                             "running": bool(rec.get("running")),
+                             "files": len(rec.get("files") or [])})
+                continue
             txt = p.read_text(encoding="utf-8", errors="replace")[:2000]
             task = p.stem
             for ln in txt.splitlines():
@@ -1859,7 +1871,19 @@ def _list_dsh_artifacts(limit=50):
 
 
 def _read_dsh_artifact(sid):
-    p = _dsh_artifact_dir() / (str(sid) + ".md")
+    import json as _json
+    d = _dsh_artifact_dir()
+    pj = d / (str(sid) + ".json")
+    if pj.exists():
+        try:
+            rec = _json.loads(pj.read_text(encoding="utf-8", errors="replace"))
+            rec.setdefault("id", str(sid))
+            rec.setdefault("ts", pj.stat().st_mtime)
+            rec.setdefault("mtime", pj.stat().st_mtime)
+            return rec
+        except Exception:
+            return {}
+    p = d / (str(sid) + ".md")
     if not p.exists():
         return {}
     try:
@@ -2144,12 +2168,17 @@ def _dsh_current_messages(limit: int = 80) -> dict:
         dedup.append(m)
     _vals = (cur.get("projections") or {}).get("values") or {}
     _inbox = _vals.get("inbox") or {}
-    return {"ok": True, "session_id": sid, "as_of": as_of,
-            "running": bool(cur.get("running")),
-            "inbox_next_turn": len(_inbox.get("next-turn") or []),
-            "inbox_next_step": len(_inbox.get("next-step") or []),
-            "updated_at": cur.get("updatedAt") or 0,
-            "messages": dedup[-limit:]}
+    out = {"ok": True, "session_id": sid, "as_of": as_of,
+           "running": bool(cur.get("running")),
+           "inbox_next_turn": len(_inbox.get("next-turn") or []),
+           "inbox_next_step": len(_inbox.get("next-step") or []),
+           "updated_at": cur.get("updatedAt") or 0,
+           "messages": dedup[-limit:]}
+    try:
+        _sync_current_dsh_archive(out, dedup[-200:])
+    except Exception:
+        pass
+    return out
 
 
 def _run_dsh_agent_raw(task: str, sid: str = "", timeout: int = 300,
@@ -3680,7 +3709,7 @@ def _conv_snapshot(cid):
         if conv:
             busy = any(str(t.get("status")) in ("queued", "running")
                        for t in (conv.get("turns") or []))
-            if busy and cid not in _DSH_CONV_ACTIVE:
+            if busy and cid not in _DSH_CONV_ACTIVE and str(conv.get("external") or "") != "dsh-current":
                 if _conv_mark_stale(conv):
                     _DSH_CONV[cid] = conv
                     _conv_save(conv)
@@ -3721,21 +3750,24 @@ def _conv_list(limit=50):
                 continue
             turns = c.get("turns") or []
             _cid = c.get("id") or p.stem
+            _external = str(c.get("external") or "")
             _busy = any(str(t.get("status")) in ("queued", "running") for t in turns)
             _active = _cid in _DSH_CONV_ACTIVE
-            if _busy and not _active:
-                _conv_mark_stale(c)
-                try:
-                    p.write_text(_json.dumps(c, ensure_ascii=False, indent=1), encoding="utf-8")
-                except Exception:
-                    pass
-                turns = c.get("turns") or []
-                _busy = False
-            running = bool(_busy and _active)
-            stale = bool(_busy and not _active)
+            if _external != "dsh-current":
+                if _busy and not _active:
+                    _conv_mark_stale(c)
+                    try:
+                        p.write_text(_json.dumps(c, ensure_ascii=False, indent=1), encoding="utf-8")
+                    except Exception:
+                        pass
+                    turns = c.get("turns") or []
+                    _busy = False
+            running = bool(c.get("running")) if _external == "dsh-current" else bool(_busy and _active)
+            stale = False if _external == "dsh-current" else bool(_busy and not _active)
             last = turns[-1] if turns else {}
             rows.append({"id": c.get("id") or p.stem,
                          "session_id": c.get("session_id") or "",
+                         "external": _external,
                          "created_at": c.get("created_at"),
                          "updated_at": c.get("updated_at"),
                          "turns": len(turns),
@@ -3745,6 +3777,151 @@ def _conv_list(limit=50):
     except Exception:
         pass
     return rows
+
+
+def _workspace_changed_files(limit=40):
+    """近期 git 工作区变更中的源码/文档/脚本文件，供 DSH 产物库点击查看。"""
+    import subprocess as _sp
+    root = Path(__file__).resolve().parent.parent
+    try:
+        out = _sp.run(["git", "status", "--porcelain"], cwd=str(root),
+                      capture_output=True, text=True, timeout=10,
+                      encoding="utf-8", errors="replace").stdout
+    except Exception:
+        return []
+    files = []
+    for line in (out or "").splitlines():
+        raw = line[3:].strip()
+        if not raw:
+            continue
+        if " -> " in raw:
+            raw = raw.split(" -> ", 1)[1].strip()
+        p = raw.strip('"')
+        if not p or p.startswith("dgtf_memory/") or p.startswith(".git/"):
+            continue
+        if any(x in p for x in ("__pycache__", ".pyc", "_app_out_", "_app_err_")):
+            continue
+        try:
+            full = (root / p).resolve()
+            if not full.is_file() or root not in full.parents:
+                continue
+            files.append({"path": p, "size": full.stat().st_size})
+        except Exception:
+            continue
+        if len(files) >= limit:
+            break
+    return files
+
+
+def _sync_current_dsh_archive(out, archive_msgs=None):
+    """把当前 DSH 会话同步到 app 的 DSH 会话库与产物库（仅摘要/最近消息）。"""
+    import json as _json
+    import time as _t
+    msgs = list(archive_msgs if archive_msgs is not None else (out.get("messages") or []))
+    if not msgs:
+        return
+    sid = str(out.get("session_id") or "")
+    if not sid:
+        return
+    cid = "dsh-current-" + sid
+    last_seq = int(msgs[-1].get("seq") or 0)
+    sig = (sid, len(msgs), last_seq, bool(out.get("running")))
+    global _CURRENT_ARCHIVE_SIG
+    try:
+        if sig == _CURRENT_ARCHIVE_SIG and _conv_path(cid).exists():
+            return
+    except Exception:
+        pass
+    turns = []
+    cur = None
+    for m in msgs[-120:]:
+        role = str(m.get("role") or "")
+        txt = str(m.get("text") or "").strip()
+        if not txt:
+            continue
+        if role == "user":
+            cur = {"id": "turn-" + str(m.get("seq") or len(turns)),
+                   "task": txt, "text": "", "events": [], "status": "done"}
+            turns.append(cur)
+        else:
+            if cur is None:
+                cur = {"id": "turn-" + str(m.get("seq") or len(turns)),
+                       "task": "", "text": "", "events": [], "status": "done"}
+                turns.append(cur)
+            cur.setdefault("events", []).append({"type": "text", "text": txt})
+            cur["text"] = txt
+    if not turns:
+        return
+    running = bool(out.get("running"))
+    if running:
+        turns[-1]["status"] = "running"
+    old = _conv_load(cid) or {}
+    now = _t.time()
+    conv = {"id": cid, "session_id": sid, "external": "dsh-current",
+            "created_at": old.get("created_at") or (turns and msgs[0].get("time", 0) / 1000.0) or now,
+            "updated_at": now, "running": running, "turns": turns}
+    _conv_save(conv)
+    files = _workspace_changed_files(40)
+    tail = []
+    for t in turns[-12:]:
+        tail.append("## 用户\n\n" + str(t.get("task") or ""))
+        for ev in (t.get("events") or []):
+            if ev.get("type") == "text" and ev.get("text"):
+                tail.append("## DSH\n\n" + str(ev.get("text")))
+    body = ("# 当前 DSH 对话\n\n- session: " + sid + "\n- 状态: "
+            + ("运行中/排队" if running else "完成") + "\n- 更新时间: "
+            + _t.strftime("%Y-%m-%d %H:%M:%S", _t.localtime(now)) + "\n\n"
+            + "## 最近对话\n\n" + "\n\n".join(tail))
+    md = {"id": cid, "session_id": sid, "task": "当前 DSH 对话 · " + sid,
+          "ts": now, "mtime": now, "ok": not running, "running": running,
+          "body": body, "files": files}
+    try:
+        ad = _dsh_artifact_dir()
+        (ad / (cid + ".json")).write_text(
+            _json.dumps(md, ensure_ascii=False, indent=1), encoding="utf-8")
+    except Exception:
+        pass
+    _CURRENT_ARCHIVE_SIG = sig
+
+
+def _safe_workspace_file(rel):
+    """读取工作区内单个文件，供 DSH 产物文件链接查看；限制大小/目录。"""
+    import base64 as _b64
+    root = Path(__file__).resolve().parent.parent
+    p = str(rel or "").replace("\\", "/").strip().lstrip("/")
+    if not p or p.startswith("../") or "/../" in p or p.startswith("dgtf_memory/"):
+        return {}
+    try:
+        full = (root / p).resolve()
+        if not full.is_file() or root not in full.parents:
+            return {}
+        if full.stat().st_size > 5 * 1024 * 1024:
+            return {}
+        data = full.read_bytes()
+    except Exception:
+        return {}
+    ext = full.suffix.lower()
+    text = None
+    try:
+        if ext in (".py", ".md", ".txt", ".json", ".js", ".css", ".html", ".yaml",
+                   ".yml", ".ps1", ".cmd", ".csv", ".log", ".toml"):
+            text = data.decode("utf-8", errors="replace")
+    except Exception:
+        text = None
+    item = {"ok": True, "path": p, "size": len(data), "mime": "text/plain"}
+    if text is not None:
+        item["text"] = text[:200000]
+    elif ext in (".png", ".jpg", ".jpeg", ".webp", ".gif"):
+        item["data"] = _b64.b64encode(data).decode("ascii")
+        item["mime"] = ("image/png" if ext == ".png" else
+                        "image/jpeg" if ext in (".jpg", ".jpeg") else
+                        "image/webp" if ext == ".webp" else "image/gif")
+    else:
+        item["binary"] = True
+    return item
+
+
+_CURRENT_ARCHIVE_SIG = None
 
 
 def _auto_jobs_lock():
@@ -6736,6 +6913,12 @@ class Handler(BaseHTTPRequestHandler):
         if p == "/api/dsh/proposals":
             return self._json({"proposals": _list_proposals(),
                                "summary": _proposal_summary()})
+        if p == "/api/fs/file":
+            rel = unquote((q.get("path") or [""])[0] or "")
+            rec = _safe_workspace_file(rel)
+            if not rec:
+                return self._json({"ok": False, "error": "file not found"}, 404)
+            return self._json(rec)
         m = re.match(r"^/api/dsh/artifacts/([^/]+)$", p)
         if m:
             rec = _read_dsh_artifact(unquote(m.group(1)))
