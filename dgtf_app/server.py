@@ -2088,6 +2088,64 @@ def _dsh_current_prompt(task: str, dry_run: bool = False) -> dict:
             "text": "已交给 DSH 本对话会话 " + sid + "（排队执行）。"}
 
 
+def _dsh_current_messages(limit: int = 80) -> dict:
+    """读取当前 DSH 会话最近消息（只读，供 app 实时镜像）。"""
+    try:
+        limit = int(limit)
+    except (TypeError, ValueError):
+        limit = 80
+    limit = max(1, min(200, limit))
+    sid = _dsh_current_session_id()
+    items = _dsh_current_rpc("session/list", {"_request": {}}).get("items") or []
+    cur = next((x for x in items if str(x.get("sessionId") or "") == sid), {})
+    as_of = int((cur.get("projections") or {}).get("asOfSeq") or 0)
+    # maxMessages 要大于展示条数，才能跨过「当前轮只有 reasoning/tool-call」的窗口；
+    # 否则最近 40 条可能一条可显示的用户/助手文本都没有。
+    req = {"address": {"kind": "session", "sessionId": sid},
+           "throughSeq": as_of, "maxMessages": max(300, limit * 4)}
+    val = _dsh_current_rpc("session/page", {"request": req})
+    records = val.get("records") or []
+
+    def _blocks_text(blocks) -> str:
+        out = []
+        for b in blocks or []:
+            if not isinstance(b, dict):
+                continue
+            if b.get("type") == "text" and b.get("text"):
+                out.append(str(b.get("text")))
+        return "\n".join(out).strip()
+
+    msgs = []
+    for rec in records:
+        ev = (rec or {}).get("event") or {}
+        et = str(ev.get("type") or "")
+        data = ev.get("data") or {}
+        text = ""
+        role = ""
+        if et == "user/message":
+            role = "user"
+            text = _blocks_text(data.get("content"))
+        elif et == "assistant/message":
+            role = "assistant"
+            msg = data.get("message") or {}
+            text = _blocks_text(msg.get("content"))
+        if role and text:
+            if len(text) > 4000:
+                text = text[:4000] + " …（已截断）"
+            msgs.append({"seq": int(ev.get("seq") or 0), "role": role,
+                         "text": text, "time": ev.get("time") or 0})
+    # 按 seq 去重、升序，保留尾部 limit 条
+    seen = set()
+    dedup = []
+    for m in sorted(msgs, key=lambda x: x["seq"]):
+        if m["seq"] in seen:
+            continue
+        seen.add(m["seq"])
+        dedup.append(m)
+    return {"ok": True, "session_id": sid, "as_of": as_of,
+            "messages": dedup[-limit:]}
+
+
 def _run_dsh_agent_raw(task: str, sid: str = "", timeout: int = 300,
                    auto_repair: bool = False, effort: str = "",
                    permission: str = "", attach_task_id: str = "",
@@ -6638,6 +6696,15 @@ class Handler(BaseHTTPRequestHandler):
         if m:
             since = int((q.get("since") or ["0"])[0] or 0)
             return self._json(_auto_job_get(m.group(1), since) or {"error": "job not found"})
+        if p == "/api/dsh/current/messages":
+            try:
+                _lim = int((q.get("limit") or ["80"])[0] or 80)
+            except (TypeError, ValueError):
+                _lim = 80
+            try:
+                return self._json(_dsh_current_messages(_lim))
+            except Exception as exc:  # noqa: BLE001
+                return self._json({"ok": False, "error": str(exc)}, 502)
         if p == "/api/dsh/network-policy":
             pol = _dsh_net_policy_load()
             pol["clause"] = _dsh_net_clause()
@@ -7566,28 +7633,27 @@ class Handler(BaseHTTPRequestHandler):
                         pass
             return self._json({"ok": True, "conversation": _conv_snapshot(cid)})
         if p == "/api/dsh/agent/stream":
+            # 旧的 headless 入口保留 URL 兼容，但不再拉起 headless DSH；
+            # 一律交给当前 DeepSeek Harness 对话执行。
             data = self._read_json()
             task = str(data.get("task") or "").strip()
             if not task:
                 return self._json({"error": "task 不能为空"}, 400)
             if len(task) > 8000:
                 task = task[:8000]
-            sid = str(data.get("session_id") or "").strip()
             self._stream_open()
-
-            def _emit_direct(ev):
-                self._stream_write({"type": "event", "event": ev})
-
             try:
-                res = _run_dsh_agent(
-                    task, sid,
-                    auto_repair=bool(data.get("auto_repair")),
-                    effort=str(data.get("effort") or ""),
-                    permission=str(data.get("permission") or ""),
-                    attach_task_id=str(data.get("attach_task_id") or ""),
-                    model=str(data.get("model") or ""),
-                    emit=_emit_direct)
-                self._stream_write({"type": "result", "result": res})
+                _cur = _dsh_current_prompt(task)
+                _text = str(_cur.get("text") or "已交给当前 DSH 对话")
+                self._stream_write({"type": "event",
+                                    "event": {"type": "text", "text": _text}})
+                self._stream_write({"type": "result", "result": {
+                    "ok": True, "mode": "current-session",
+                    "session_id": _cur.get("session_id"),
+                    "accepted": _cur.get("accepted"),
+                    "text": _text,
+                    "events": [{"type": "text", "text": _text}],
+                }})
             except Exception as exc:
                 try:
                     self._stream_write({"type": "error", "error": str(exc)})
@@ -7666,23 +7732,26 @@ class Handler(BaseHTTPRequestHandler):
             except Exception as exc:  # noqa: BLE001
                 return self._json({"ok": False, "error": str(exc)}, 502)
         if p == "/api/dsh/agent":
+            # 同上：外部 Agent 请求统一转给当前 DSH 对话，不再 headless。
             data = self._read_json()
             task = str(data.get("task") or "").strip()
             if not task:
                 return self._json({"error": "task 不能为空"}, 400)
             if len(task) > 8000:
                 task = task[:8000]
-            sid = str(data.get("session_id") or "").strip()
             try:
-                res = _run_dsh_agent(task, sid,
-                                     auto_repair=bool(data.get("auto_repair")),
-                                     effort=str(data.get("effort") or ""),
-                                     permission=str(data.get("permission") or ""),
-                                     attach_task_id=str(data.get("attach_task_id") or ""),
-                                     model=str(data.get("model") or ""))
-                return self._json(res)
+                _cur = _dsh_current_prompt(task)
+                return self._json({
+                    "ok": True, "mode": "current-session",
+                    "session_id": _cur.get("session_id"),
+                    "accepted": _cur.get("accepted"),
+                    "text": _cur.get("text"),
+                    "events": [{"type": "text", "text": _cur.get("text")}],
+                })
+            except ValueError as exc:
+                return self._json({"error": str(exc)}, 400)
             except Exception as exc:
-                return self._json({"error": str(exc)}, 500)
+                return self._json({"error": str(exc)}, 502)
         if p == "/api/agent/apply":
             data = self._read_json()
             try:

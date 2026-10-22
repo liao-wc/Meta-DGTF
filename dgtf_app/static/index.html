@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="dark">
 <title>元DGTF 个人工作台</title>
 <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
-<link rel="stylesheet" href="/static/style.css?v=1.4.89">
+<link rel="stylesheet" href="/static/style.css?v=1.4.92">
 </head>
 <body class="stage-empty">
 
@@ -298,8 +298,10 @@
         <span class="chip">DSH 本对话</span>
         <input id="dsh-current-input" class="dsh-current-input" placeholder="把项目修改/分析任务交给当前 DSH 对话框（可直接改项目）" autocomplete="off">
         <button id="dsh-current-send" class="ghost" data-tip="把任务发送到当前 DeepSeek Harness 对话框；由本会话执行并修改项目">交给本对话</button>
+        <button id="dsh-current-connect" class="ghost" data-tip="连接当前 DeepSeek Harness 对话并开始同步实时内容">连接 DSH</button>
         <span class="muted" id="dsh-current-msg">执行位置：当前 DSH 对话</span>
       </div>
+      <div id="dsh-current-log" class="dsh-current-log" aria-live="polite"></div>
       <div class="agent-tabs">
         <button class="pill on" data-agent-tab="0">任务队列</button>
         <button class="pill" data-agent-tab="1">消费者结果</button>
@@ -446,7 +448,7 @@
         <span class="p-name">演练模式</span>
       </label>
 
-      <button type="button" class="pill dsh-pill" id="pill-dsh" data-tip="切换 DeepSeek Harness Agent（默认 PTC 模式）：用当前会话框执行，可读写项目文件与 outputs/ 产物">
+      <button type="button" class="pill dsh-pill" id="pill-dsh" data-tip="连接 DeepSeek Harness 当前对话：首屏输入直接进入本对话，可读写项目文件并实时同步对话内容">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
         </svg>
@@ -602,6 +604,6 @@
 
 
 
-<script src="/static/app.js?v=1.4.89"></script>
+<script src="/static/app.js?v=1.4.92"></script>
 </body>
 </html>

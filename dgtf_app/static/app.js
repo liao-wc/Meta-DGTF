@@ -1555,6 +1555,7 @@ function toggleDshMode(on) {
   updateDshConvBar();
   if (dshMode) {
     startDshHistoryPoll();
+    startDshCurrentPoll();
     loadDshChats();
     if (!dshAttachTaskId && !dshConversationId) {
       try {
@@ -1564,6 +1565,7 @@ function toggleDshMode(on) {
     }
   } else {
     stopDshHistoryPoll();
+    stopDshCurrentPoll();
     setDshHistoryOpen(false);
   }
 }
@@ -1993,7 +1995,7 @@ async function startRun() {
   logFollow = true;
   const question = $('#question').value.trim();
   if (!question) { alert('请先输入问题'); return; }
-  if (dshMode) { const q = $('#question'); if (q) { q.value=''; q.style.height=''; } return startDshRun(question); }
+  if (dshMode) { return startDshCurrentRun(question); }
   if (agentTaskMode) { const q = $('#question'); if (q) { q.value=''; q.style.height=''; } return submitAgentTaskFromComposer(question); }
   const opts = collectOpts();
   const real = !opts.mock;
@@ -4926,9 +4928,99 @@ async function sendDshAgent() {
   if (btn) btn.disabled = false;
 }
 
-/* 把任务交给当前 DeepSeek Harness 对话框（由本会话执行，可直接修改项目）。
-   后端 /api/dsh/current 通过 DSH web 的 session/prompt 排队到当前会话，
-   不在 app 进程里另起 headless DSH。 */
+/* ── DSH 本对话：当前 Harness 会话的实时镜像 + 首屏输入直送 ── */
+let dshCurrentPollTimer = null;
+let dshCurrentConnected = false;
+
+function renderDshCurrentMessages(msgs) {
+  const box = document.querySelector('#dsh-current-log');
+  if (!box) return;
+  box.textContent = '';
+  (msgs || []).forEach(function (m) {
+    const row = document.createElement('div');
+    row.className = 'dsh-current-msg ' + (m.role === 'user' ? 'user' : 'assistant');
+    const who = document.createElement('div');
+    who.className = 'who';
+    who.textContent = (m.role === 'user' ? '你' : 'DSH') + (m.seq ? (' · #' + m.seq) : '');
+    const body = document.createElement('div');
+    body.className = 'body';
+    body.textContent = m.text || '';
+    row.appendChild(who); row.appendChild(body); box.appendChild(row);
+  });
+  if (!box.childNodes.length) {
+    const empty = document.createElement('div');
+    empty.className = 'dsh-current-empty';
+    empty.textContent = '尚未读取到本对话消息。点“连接 DSH”开始同步。';
+    box.appendChild(empty);
+  }
+  box.scrollTop = box.scrollHeight;
+}
+
+async function refreshDshCurrentMessages() {
+  try {
+    const r = await api('/api/dsh/current/messages?limit=40');
+    if (!r || !r.ok) throw new Error((r && r.error) || '读取本对话失败');
+    dshCurrentConnected = true;
+    const _msgs = r.messages || [];
+    renderDshCurrentMessages(_msgs);
+    if (dshMode) {
+      if (!dshCurrent) dshCurrent = { question: '当前 DSH 对话', session: '当前 DSH 对话', events: [], status: 'running' };
+      dshCurrent.events = _msgs.map(function (m) {
+        return { type: 'text', text: (m.role === 'user' ? '你：' : 'DSH：') + (m.text || '') };
+      });
+      dshCurrent.status = 'running';
+      renderDshView();
+    }
+    const msg = document.querySelector('#dsh-current-msg');
+    if (msg) msg.textContent = '已连接当前 DSH 对话 · 实时同步中';
+    return r;
+  } catch (e) {
+    const msg = document.querySelector('#dsh-current-msg');
+    if (msg) msg.textContent = '同步失败：' + e.message;
+    return null;
+  }
+}
+
+function startDshCurrentPoll() {
+  if (dshCurrentPollTimer) clearInterval(dshCurrentPollTimer);
+  refreshDshCurrentMessages();
+  dshCurrentPollTimer = setInterval(refreshDshCurrentMessages, 2500);
+}
+function stopDshCurrentPoll() {
+  if (dshCurrentPollTimer) { clearInterval(dshCurrentPollTimer); dshCurrentPollTimer = null; }
+}
+
+async function connectDshCurrent() {
+  const btn = document.querySelector('#dsh-current-connect');
+  const msg = document.querySelector('#dsh-current-msg');
+  if (btn) btn.disabled = true;
+  if (msg) msg.textContent = '正在连接当前 DSH 对话…';
+  try {
+    const r = await api('/api/dsh/current', {method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({task:'连接检查', dry_run:true})});
+    if (!r || !r.ok) throw new Error((r && r.error) || '连接失败');
+    dshCurrentConnected = true;
+    if (msg) msg.textContent = '已连接 ' + (r.session_id || '当前 DSH 对话');
+    if (!dshMode) toggleDshMode(true);
+    startDshCurrentPoll();
+    if (typeof agentLogAction === 'function') agentLogAction('连接DSH本对话', r.session_id || '当前会话', true);
+  } catch (e) {
+    if (msg) msg.textContent = '连接失败：' + e.message;
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+async function submitDshCurrentTask(task) {
+  const r = await api('/api/dsh/current', {method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({task: task})});
+  if (!r || !r.ok) throw new Error((r && r.error) || '提交失败');
+  refreshDshCurrentMessages();
+  return r;
+}
+
 async function sendDshCurrentAgent() {
   const inp = document.querySelector('#dsh-current-input');
   const msg = document.querySelector('#dsh-current-msg');
@@ -4938,19 +5030,40 @@ async function sendDshCurrentAgent() {
   if (msg) msg.textContent = '提交到当前 DSH 对话…';
   if (btn) btn.disabled = true;
   try {
-    const r = await api('/api/dsh/current', {method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({task: task})});
-    if (!r || !r.ok) throw new Error((r && r.error) || '提交失败');
+    const r = await submitDshCurrentTask(task);
     if (inp) inp.value = '';
     const text = '已交给本对话：' + (r.session_id || '当前会话') + '（排队执行）';
     if (msg) msg.textContent = text;
+    startDshCurrentPoll();
     if (typeof agentLogAction === 'function') agentLogAction('DSH本对话', text, true);
   } catch (e) {
     if (msg) msg.textContent = '提交失败：' + e.message;
     if (typeof agentLogAction === 'function') agentLogAction('DSH本对话', '失败：' + e.message, false);
   } finally {
     if (btn) btn.disabled = false;
+  }
+}
+
+async function startDshCurrentRun(question) {
+  const q = document.querySelector('#question');
+  if (q) { q.value = ''; q.style.height = ''; }
+  toggleDshMode(true);
+  dshCurrent = { question: question, session: '当前 DSH 对话', status: 'running', events: [
+    { type: 'text', text: '已交给当前 DSH 对话，等待本会话执行…' }
+  ]};
+  renderDshView();
+  setRunBtn('send');
+  try {
+    const r = await submitDshCurrentTask(question);
+    dshCurrent.status = 'done';
+    dshCurrent.events.push({ type: 'text', text: r.text || '已进入当前 DSH 对话队列' });
+    renderDshView();
+    startDshCurrentPoll();
+    if (typeof agentLogAction === 'function') agentLogAction('首屏→DSH本对话', question.slice(0, 80), true);
+  } catch (e) {
+    dshCurrent.status = 'error';
+    dshCurrent.events.push({ type: 'text', text: '提交失败：' + e.message });
+    renderDshView();
   }
 }
 function initDshAgent() {
@@ -4969,6 +5082,8 @@ function initDshAgent() {
   if (send) send.addEventListener('click', sendDshAgent);
   const curSend = document.querySelector('#dsh-current-send');
   if (curSend) curSend.addEventListener('click', sendDshCurrentAgent);
+  const curConnect = document.querySelector('#dsh-current-connect');
+  if (curConnect) curConnect.addEventListener('click', connectDshCurrent);
   const curInput = document.querySelector('#dsh-current-input');
   if (curInput) curInput.addEventListener('keydown', e => {
     if (e.key === 'Enter') { e.preventDefault(); sendDshCurrentAgent(); }
@@ -5560,7 +5675,10 @@ function init() {
   const _agentAuto = $('#agent-auto');
   if (_agentAuto) _agentAuto.addEventListener('click', () => autoAgent('full'));
   const _dshPill = $('#pill-dsh');
-  if (_dshPill) _dshPill.addEventListener('click', () => toggleDshMode(!dshMode));
+  if (_dshPill) _dshPill.addEventListener('click', () => {
+    if (dshMode) toggleDshMode(false);
+    else connectDshCurrent();
+  });
   [['dsh-effort', 'dgtf_dsh_effort'], ['dsh-perm', 'dgtf_dsh_perm'], ['dsh-model', 'dgtf_dsh_model']].forEach(function (pair) {
     const el = document.getElementById(pair[0]);
     if (!el) return;
@@ -5854,7 +5972,7 @@ function init() {
     if (new URLSearchParams(location.search).get('drawer') === '1') openDrawer();
     const _dt = new URLSearchParams(location.search).get('dsh_task');
     if (_dt) { toggleDshMode(true); const _ta = document.querySelector('#question');
-      if (_ta) _ta.value = _dt; setTimeout(() => startDshRun(_dt), 500); }
+      if (_ta) _ta.value = ''; setTimeout(() => startDshCurrentRun(_dt), 500); }
   } catch (_) { /* 忽略 */ }
 
   // 键盘优先：⌘/Ctrl+Enter 提交 · / 聚焦搜索 · Esc 关闭浮层
