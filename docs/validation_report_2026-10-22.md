@@ -103,9 +103,18 @@
 - RAG embedding：running
 - 应用版本 1.4.1，静态资源 v=1.4.86
 
+## 9.1 独立服务账户隔离（实测）
+
+- DGTFApp 本地账户 + DGTFWeb 计划任务已运行；服务账户获得 SeBatchLogonRight 后任务可启动。
+- 8765 由服务账户 python 进程监听；访问口令 URL 实测 HTTP 200。
+- 服务账户下真实引擎跑：20261022_122854_b75f69，route=0/rounds=1，96.3 秒 done，产物 20261022_123029_用一句话说明服务账户隔离的作用.md。
+- DSH headless 进程可启动，但服务账户下其子 shell 返回 0xC0000142（DLL 初始化失败）；已给服务包装器补 SystemRoot/ComSpec/System32/Python PATH，需重启 DGTFWeb 后再验。
+- 服务账户隔离下 DSH 自动修复暂不可用；这是下一项待收尾。
+
 ## 10. 遗留/下一轮
 
-- HTTPS 已默认启用：`python dgtf_app/server.py` 默认 HTTPS；`--http` 或 `DGTF_HTTP=1` 回退 HTTP。证书为自签名，浏览器会提示一次。
+- 服务包装器已补环境变量，需管理员重启 DGTFWeb 后复测 DSH；若仍失败，改用独立用户/VM 或把 DSH 桥接回当前用户。
+- HTTPS 已默认启用：`python dgtf_app/server.py` 默认 HTTPS；`--http` 或 `DGTF_HTTP=1` 回退 HTTP。证书为本地 CA 签名。
 - 长真实引擎跑可用任务级 timeout_s 控制；默认不设上限，需按预算显式传。
 - 更多供应商故障注入、全量长时压力、前端交互全按钮回归仍可继续。
 

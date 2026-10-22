@@ -115,6 +115,12 @@ if (Test-Path -LiteralPath "D:\dgtf_llm_env") {
 $wrapper = Join-Path $Data "run_server.ps1"
 $lines = @(
   ('$env:DGTF_ACCESS_TOKEN = "' + $token + '"'),
+  ('$env:SystemRoot = "C:\Windows"'),
+  ('$env:windir = "C:\Windows"'),
+  ('$env:ComSpec = "C:\Windows\System32\cmd.exe"'),
+  ('$env:PATH = "C:\Windows\System32;C:\Windows;C:\Windows\System32\WindowsPowerShell\v1.0;C:\Windows\System32\Wbem;' + (Split-Path -Parent $Python) + ';' + (Split-Path -Parent $Python) + '\Scripts;" + $env:PATH'),
+  ('$env:PYTHONUTF8 = "1"'),
+  ('$env:PYTHONIOENCODING = "utf-8"'),
   ('$env:DSH_BIN = "' + $DSH + '"'),
   ('$env:DSH_HOME = "' + $Data + '\dsh_home"'),
   ('Set-Location "' + $ProjectRoot + '"'),
