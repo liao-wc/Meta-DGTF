@@ -36,6 +36,10 @@ Write-Host "2) 停止服务账户 python 进程"
 Get-CimInstance Win32_Process -Filter "Name='python.exe'" |
   Where-Object { $_.CommandLine -match "dgtf_app[\\/]server.py" } |
   ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+# 跨账户进程的 CommandLine 常不可见：再按 8765 端口持有者清理一次。
+Get-NetTCPConnection -LocalPort 8765 -State Listen -ErrorAction SilentlyContinue |
+  ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }
+Start-Sleep -Seconds 2
 
 Write-Host "3) 移除批处理登录权"
 $sid = (New-Object Security.Principal.NTAccount($Account)).Translate([Security.Principal.SecurityIdentifier]).Value
