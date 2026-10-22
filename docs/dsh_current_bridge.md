@@ -125,3 +125,18 @@
 - CDP：历史会话打开成功；产物文件链接点击后打开 `_audit_v122_result.json` 内容。
 - CDP 续聊：历史会话中再次发送，实际调用 `/api/dsh/current`，主视图 badge 进入“排队/运行中”。
 - fast_gate 12/0；selftest 371/0；依赖审计 68/0。
+## DSH守护接管自动检查/修复（2026-10-22 16:10）
+
+- 新增持久化守护状态 `/api/dsh/guard`（`dgtf_memory/dsh_guard.json`）：enabled / interval / started_at / last_tick / last_result / checks。
+- 开启后 app 内守护线程按 interval（默认 600 秒）巡检；当前 DSH 会话忙碌或队列有任务时跳过本轮，避免叠加 prompt。
+- 巡检任务由当前 DSH 对话执行：检查日志/队列/提案/门禁/工作区；只做低风险可验证修复；高风险、删除、密钥、外部服务、git push、账户/ACL 修改一律留人工确认。
+- Agent 面板 DSH守护按钮改为读写该状态；不再发送单独“启动守护”prompt。
+- 首次触发在 20 秒后；忙碌时每 60 秒重试；idle 后每 interval 执行。
+- 当前状态：enabled=true、thread_running=true、interval=600；本轮首次巡检因当前 DSH 运行中跳过，属预期。
+
+## DSH守护验收
+
+- `/api/dsh/guard` GET/POST 正常；页面按钮显示“DSH守护：开”。
+- 守护状态：enabled=true、thread_running=true、last_result=busy 跳过巡检。
+- fast_gate 12/0；selftest 371/0；依赖审计 69/0。
+- 静态版本 v1.5.04。

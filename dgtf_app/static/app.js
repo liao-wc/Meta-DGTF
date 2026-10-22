@@ -3708,6 +3708,7 @@ let agentProps = [];
 let agentPropSummary = null;
 let agentAutopilot = null;
 let dshGuardOn = false;
+let dshGuardStatus = null;
 let agentLoadSig = '';
 let agentLastRun = null;
 let agentV2 = null;
@@ -4251,10 +4252,21 @@ function agentRenderAutopilot() {
   if (!b) return;
   b.textContent = 'DSH守护：' + (dshGuardOn ? '开' : '关');
   b.classList.toggle('on', !!dshGuardOn);
+  const iv = dshGuardStatus && dshGuardStatus.interval
+    ? Math.round(Number(dshGuardStatus.interval) / 60) + ' 分钟' : '10 分钟';
   b.dataset.tip = dshGuardOn
-    ? 'DSH守护运行中：所有执行动作交给当前 DeepSeek Harness 对话'
-    : '开启 DSH守护：后续执行动作统一交给当前 DSH 对话，不在 app 内起本地守护进程';
+    ? ('DSH守护运行中：当前 DSH 对话按 ' + iv + ' 周期自动巡检；高风险留人工')
+    : '开启 DSH守护：当前 DSH 对话接管后续自动检查/修复；高风险留人工';
   b.setAttribute('aria-pressed', dshGuardOn ? 'true' : 'false');
+}
+
+async function loadDshGuard() {
+  try {
+    const r = await api('/api/dsh/guard');
+    dshGuardStatus = r || null;
+    dshGuardOn = !!(r && r.enabled);
+    agentRenderAutopilot();
+  } catch (_) { /* 保持现有状态 */ }
 }
 function _agentTs(x) {
   const v = x && (x.ts || x.created_at || x.updated_at || x.retrieved_at ||
@@ -4391,6 +4403,7 @@ async function refreshDshLibraries() {
   if (dshLibPollBusy) return;
   dshLibPollBusy = true;
   try {
+    await loadDshGuard();
     // 触发当前 DSH 会话归档/产物同步（不显示在 Agent 面板）。
     await api('/api/dsh/current/messages?limit=5').catch(function () {});
     const [ds, da] = await Promise.all([
@@ -5154,6 +5167,8 @@ function downloadDiag() {
 }
 
 function init() {
+  loadDshGuard();
+  setInterval(loadDshGuard, 5000);
   setInterval(function () {
     const sh = document.querySelector('#sheet');
     const va = document.querySelector('#view-agent');
@@ -5533,13 +5548,23 @@ function init() {
   if (_apBtn) _apBtn.addEventListener('click', async () => {
     const enable = !dshGuardOn;
     _apBtn.disabled = true;
-    dshGuardOn = enable;
-    agentRenderAutopilot();
     try {
-      await dshDispatchAction(enable ? '启动DSH守护' : '停止DSH守护',
-        enable
-          ? '开启 DSH守护：当前 DeepSeek Harness 对话接管后续自动检查/修复动作；高风险保留人工确认。'
-          : '停止 DSH守护：后续不再由当前对话自动接管执行动作。');
+      const r = await api('/api/dsh/guard', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({enabled: enable, interval: 600})
+      });
+      dshGuardStatus = r || null;
+      dshGuardOn = !!(r && r.enabled);
+      agentRenderAutopilot();
+      const msg = $('#agent-msg');
+      if (msg) msg.textContent = enable
+        ? 'DSH守护已开启：当前 DSH 对话将按 10 分钟周期巡检；高风险留人工'
+        : 'DSH守护已关闭';
+      agentLogAction('DSH守护', enable ? '已开启（10 分钟自动巡检）' : '已关闭', true);
+    } catch (e) {
+      const msg = $('#agent-msg');
+      if (msg) msg.textContent = 'DSH守护切换失败：' + e.message;
+      agentLogAction('DSH守护', '失败：' + e.message, false);
     } finally {
       _apBtn.disabled = false;
     }

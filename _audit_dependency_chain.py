@@ -129,6 +129,8 @@ ck('dsh artifact file hooks', '/api/fs/file' in srv and 'openDshFile' in appjs
    and 'data-dsh-file' in appjs and 'dsh-art-files' in appjs)
 ck('dsh history continuation hooks', "external === 'dsh-current'" in appjs
    and 'refreshDshLibraries' in appjs and 'dsh-current' in appjs)
+ck('dsh guard hooks', '/api/dsh/guard' in srv and '_dsh_guard_loop' in srv
+   and 'dsh-guard' in srv and '/api/dsh/guard' in appjs)
 ck('agent live info screen hooks', 'agent-live' in _html_lib and 'agent-action-log-list' in _html_lib
    and 'agentLogAction' in appjs and 'slice(0, 1)' in appjs)
 st, lt = get('/api/tasks')

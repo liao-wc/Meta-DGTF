@@ -2181,6 +2181,153 @@ def _dsh_current_messages(limit: int = 80) -> dict:
     return out
 
 
+_DSH_GUARD_LOCK = None
+_DSH_GUARD_THREAD = None
+_DSH_GUARD_STOP = None
+
+
+def _dsh_guard_lock():
+    global _DSH_GUARD_LOCK
+    import threading as _th
+    if _DSH_GUARD_LOCK is None:
+        _DSH_GUARD_LOCK = _th.Lock()
+    return _DSH_GUARD_LOCK
+
+
+def _dsh_guard_path():
+    d = Path(__file__).resolve().parent.parent / "dgtf_memory"
+    d.mkdir(parents=True, exist_ok=True)
+    return d / "dsh_guard.json"
+
+
+def _dsh_guard_load():
+    import json as _json
+    import time as _t
+    rec = {"enabled": False, "interval": 600, "started_at": 0,
+           "last_tick": 0, "last_result": "", "last_error": "",
+           "last_session_id": "", "checks": 0}
+    try:
+        p = _dsh_guard_path()
+        if p.exists():
+            raw = _json.loads(p.read_text(encoding="utf-8", errors="replace"))
+            if isinstance(raw, dict):
+                rec.update(raw)
+    except Exception:
+        pass
+    try:
+        rec["interval"] = max(60, min(86400, int(rec.get("interval") or 600)))
+    except (TypeError, ValueError):
+        rec["interval"] = 600
+    return rec
+
+
+def _dsh_guard_save(rec):
+    import json as _json
+    try:
+        p = _dsh_guard_path()
+        tmp = p.with_suffix(".tmp")
+        tmp.write_text(_json.dumps(rec, ensure_ascii=False, indent=1), encoding="utf-8")
+        tmp.replace(p)
+    except Exception:
+        pass
+
+
+def _dsh_guard_loop(stop_event):
+    import time as _t
+    delay = 20
+    while not stop_event.wait(delay):
+        rec = _dsh_guard_load()
+        if not rec.get("enabled"):
+            return
+        busy = False
+        try:
+            items = _dsh_current_rpc("session/list", {"_request": {}}).get("items") or []
+            sid = _dsh_current_session_id()
+            cur = next((x for x in items if str(x.get("sessionId") or "") == sid), {})
+            vals = (cur.get("projections") or {}).get("values") or {}
+            inbox = vals.get("inbox") or {}
+            pending = len(inbox.get("next-turn") or []) + len(inbox.get("next-step") or [])
+            if cur.get("running") or pending:
+                busy = True
+        except Exception:
+            busy = True
+        now = _t.time()
+        rec["last_tick"] = now
+        rec["last_session_id"] = _dsh_current_session_id() if not busy else rec.get("last_session_id", "")
+        if busy:
+            rec["last_result"] = "busy: 当前 DSH 会话运行中，跳过本轮巡检"
+            rec["last_error"] = ""
+        else:
+            task = ("[DSH守护自动巡检] 请检查元DGTF当前状态：最近日志、任务队列、提案、"
+                    "依赖/门禁与工作区变更；只做低风险且可验证的检查或修复；"
+                    "高风险、删除、密钥、外部服务、git push、账户/ACL 修改一律不执行，"
+                    "列入人工确认。不要启动 headless，全程在当前 DSH 对话执行。"
+                    "完成后用简体中文给出：检查项、修复项、验证结果、待人工确认风险。")
+            try:
+                res = _dsh_current_prompt(task)
+                rec["last_result"] = str(res.get("text") or "已排队")
+                rec["last_error"] = ""
+                rec["checks"] = int(rec.get("checks") or 0) + 1
+            except Exception as exc:
+                rec["last_result"] = "巡检任务提交失败"
+                rec["last_error"] = str(exc)
+        try:
+            _dsh_guard_save(rec)
+        except Exception:
+            pass
+        delay = 60 if busy else int(rec.get("interval") or 600)
+
+
+def _dsh_guard_ensure():
+    global _DSH_GUARD_THREAD, _DSH_GUARD_STOP
+    import threading as _th
+    rec = _dsh_guard_load()
+    with _dsh_guard_lock():
+        alive = bool(_DSH_GUARD_THREAD and _DSH_GUARD_THREAD.is_alive())
+        if rec.get("enabled"):
+            if alive:
+                return
+            _DSH_GUARD_STOP = _th.Event()
+            _DSH_GUARD_THREAD = _th.Thread(target=_dsh_guard_loop,
+                                           args=(_DSH_GUARD_STOP,), daemon=True,
+                                           name="dsh-guard")
+            _DSH_GUARD_THREAD.start()
+            return
+        if _DSH_GUARD_STOP is not None:
+            _DSH_GUARD_STOP.set()
+
+
+def _dsh_guard_status():
+    rec = _dsh_guard_load()
+    try:
+        _dsh_guard_ensure()
+    except Exception:
+        pass
+    rec["thread_running"] = bool(_DSH_GUARD_THREAD and _DSH_GUARD_THREAD.is_alive())
+    return rec
+
+
+def _dsh_guard_set(data):
+    import time as _t
+    rec = _dsh_guard_load()
+    if "enabled" in data:
+        rec["enabled"] = bool(data.get("enabled"))
+        rec["started_at"] = _t.time() if rec["enabled"] else 0
+    if "interval" in data:
+        try:
+            rec["interval"] = max(60, min(86400, int(data.get("interval") or 600)))
+        except (TypeError, ValueError):
+            rec["interval"] = 600
+    if not rec.get("enabled"):
+        rec["last_result"] = "已关闭 DSH守护"
+    _dsh_guard_save(rec)
+    try:
+        _dsh_guard_ensure()
+    except Exception:
+        pass
+    return _dsh_guard_status()
+
+
 def _run_dsh_agent_raw(task: str, sid: str = "", timeout: int = 300,
                    auto_repair: bool = False, effort: str = "",
                    permission: str = "", attach_task_id: str = "",
@@ -6879,6 +7026,8 @@ class Handler(BaseHTTPRequestHandler):
         if m:
             since = int((q.get("since") or ["0"])[0] or 0)
             return self._json(_auto_job_get(m.group(1), since) or {"error": "job not found"})
+        if p == "/api/dsh/guard":
+            return self._json(_dsh_guard_status())
         if p == "/api/dsh/current/messages":
             try:
                 _lim = int((q.get("limit") or ["80"])[0] or 80)
@@ -7908,6 +8057,9 @@ class Handler(BaseHTTPRequestHandler):
                     except Exception:
                         pass
             return self._json({"ok": True, "cancelled": n})
+        if p == "/api/dsh/guard":
+            data = self._read_json()
+            return self._json(_dsh_guard_set(data))
         if p == "/api/dsh/current":
             data = self._read_json()
             task = str(data.get("task") or "").strip()
