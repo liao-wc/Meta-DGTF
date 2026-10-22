@@ -103,9 +103,16 @@ $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoi
 if (Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue) {
   Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false
 }
-Register-ScheduledTask -TaskName $TaskName -Action $action -Trigger $trigger -Settings $settings -User $Account -Password $password -RunLevel Highest -Description "DGTF isolated HTTPS web app" | Out-Null
+$task = Register-ScheduledTask -TaskName $TaskName -Action $action -Trigger $trigger -Settings $settings -User $Account -Password $password -RunLevel Highest -Description "DGTF isolated HTTPS web app"
+if ($task.State -eq 'Disabled') { Enable-ScheduledTask -TaskName $TaskName | Out-Null }
 Start-ScheduledTask -TaskName $TaskName
-Start-Sleep -Seconds 4
+Start-Sleep -Seconds 3
+$ti = Get-ScheduledTaskInfo -TaskName $TaskName
+if ($ti.LastRunTime.Year -lt 2000) {
+  Write-Host "任务尚未运行，使用 schtasks /run 再触发一次..."
+  schtasks /run /tn $TaskName | Out-Null
+  Start-Sleep -Seconds 3
+}
 $url = "https://127.0.0.1:" + $Port + "/?t=" + $token
 $check = $null
 for ($i = 0; $i -lt 15; $i++) {
@@ -116,6 +123,7 @@ for ($i = 0; $i -lt 15; $i++) {
 if (-not $check) {
   Write-Host "服务未监听，读取日志..."
   if (Test-Path (Join-Path $Data 'server.log')) { Get-Content (Join-Path $Data 'server.log') -Tail 40 -Encoding UTF8 }
+  Get-ScheduledTaskInfo -TaskName $TaskName | Format-List LastRunTime,LastTaskResult,NextRunTime
   throw ("计划任务已创建但端口 " + $Port + " 未监听；请把上面的 server.log 发回。")
 }
 $oldCb = [Net.ServicePointManager]::ServerCertificateValidationCallback
