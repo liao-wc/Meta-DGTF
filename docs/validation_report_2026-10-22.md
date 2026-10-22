@@ -67,7 +67,8 @@
 ### 真实跑
 
 - 受控真实跑：route=0、rounds=1、mock=false、project_context=false，90.3 秒完成，输出与 layers 正常。
-- 长真实跑压力：一次默认真实任务运行超过 300 秒仍未结束，已取消并记录；需要预算/超时控制，属于改进项。
+- 长真实跑压力：一次默认真实任务运行超过 300 秒仍未结束，已取消并记录。
+- 任务级 timeout_s 已加入 engine_runner：传 opts.timeout_s 后到点自动终止并标 timeout/cancelled/partial；用 timeout_s=0.01 实测自动终止。
 
 ## 7. 模型训练
 

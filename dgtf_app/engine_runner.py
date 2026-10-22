@@ -635,6 +635,8 @@ def start_task(question: str, opts: dict | None = None) -> str:
         "cmd": build_cmd(question, opts),
         "before_outputs": _snapshot_outputs(),
         "pid": None,
+        "timeout_s": float(opts.get("timeout_s") or opts.get("max_seconds") or 0),
+        "timeout": False,
         "start_balance": current_balance(),   # 起始余额（花费用差额算）
         "tok_calls": 0,
         "tok_tokens": 0,
@@ -685,12 +687,23 @@ def _run(tid: str) -> None:
             # ★ 用轮询代替 `proc.wait()`：每轮把引擎日志同步进「活痕迹」文件，
             #   这样服务**中途**被强杀时，`outputs/<tid>.run.log` 里已经有跑过的日志
             #   （`proc.wait()` 期间不同步的话，崩溃那一刻日志就全丢了）。
+            _deadline = (time.time() + float(task.get("timeout_s") or 0)
+                         if float(task.get("timeout_s") or 0) > 0 else 0)
             while True:
                 try:
                     code = proc.wait(timeout=2.0)
                     break
                 except subprocess.TimeoutExpired:
                     sync_live_log(task)
+                    if _deadline and time.time() >= _deadline:
+                        task["timeout"] = True
+                        task["cancelled"] = True
+                        task["error"] = "任务超过 timeout_s=%s 秒，已自动终止" % task.get("timeout_s")
+                        try:
+                            proc.kill()
+                        except Exception:
+                            pass
+                        code = proc.wait(timeout=10)
         task["exit_code"] = code
     except Exception as e:  # noqa: BLE001
         # ★★ 异常路径也必须留痕：原来这里置 error 后**直接 return，不归档**
