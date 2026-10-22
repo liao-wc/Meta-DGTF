@@ -12,6 +12,18 @@
 
 ---
 
+v1.30.3 相对 v1.30.2
+
+【主题】answer_summary/depth 契约与硬软 flag 分离。
+
+【改动】
+· decision_trace/packed 增加 answer_summary、quality.depth。
+· md 结论摘要显示答案质量/过程门/深度读数。
+· app /api/quality 消费 answer_summary/depth，flags 分 hard/soft。
+
+【验证】
+· py_compile 通过；质量重放 public ready_but_process_false=0。
+
 v1.30.2 相对 v1.30.1
 
 【主题】答案门/过程门分离与质量重放。

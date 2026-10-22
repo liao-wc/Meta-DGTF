@@ -29,12 +29,12 @@ def req(method, path, data=None, timeout=30):
         return resp.status, json.loads(resp.read().decode('utf-8'))
 
 # 1. 引擎/app 版本
-eng = ROOT / '元DGTF-V1.30.2.py'
+eng = ROOT / '元DGTF-V1.30.3.py'
 ck('engine file exists', eng.exists())
-ck('engine version 1.30.2', '__version__ = "1.30.2"' in eng.read_text(encoding='utf-8', errors='replace'))
+ck('engine version 1.30.3', '__version__ = "1.30.3"' in eng.read_text(encoding='utf-8', errors='replace'))
 srv = (ROOT / 'dgtf_app' / 'server.py').read_text(encoding='utf-8', errors='replace')
 appver = re.search(r'APP_VERSION = "([^"]+)"', srv)
-ck('app version present 1.5.13', bool(appver and appver.group(1) == '1.5.13'), appver.group(1) if appver else '')
+ck('app version present 1.5.14', bool(appver and appver.group(1) == '1.5.14'), appver.group(1) if appver else '')
 readme = (ROOT / 'README.md').read_text(encoding='utf-8', errors='replace')
 ck('README app version synced', bool(appver and ('app V' + appver.group(1)) in readme),
    [l for l in readme.splitlines() if 'app V' in l][:2])

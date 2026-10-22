@@ -55,3 +55,11 @@
 - 质量重放验收：127 packed，public ready_but_process_false=0；091812 判 needs_evidence；layer1 citations 正例 46。
 - 下一步：补 answer_summary 契约、深度指标落地引擎；Pareto policy 执行面 A/B；本地模型 Stage A 置信门控；3 条提案证据补齐。
 
+
+## 第三轮进展（2026-10-22 18:18）
+
+- engine v1.30.3 / app v1.5.14：answer_summary + quality.depth 落 packed/md；app 质量 API 消费；flags 硬/软分离。
+- 质量重放验收：public ready_but_process_false=0；raw 历史 mismatch 3；091812=needs_evidence；layer1 citations 正例 46。
+- 门禁：fast_gate 12/0、selftest 371/0、依赖审计 78/0；HTTP 200。
+- 下一步：answer_summary 的 claim_gaps/深度真跑对照；Pareto policy 执行面 A/B；本地模型 Stage A；3 条提案实验。
+

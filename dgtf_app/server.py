@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "1.5.13"
+APP_VERSION = "1.5.14"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -1445,7 +1445,7 @@ def _proposal_project_context():
         head_ts = int((r2.stdout or "0").strip() or 0)
     except Exception:
         pass
-    files = ["元DGTF-V1.30.2.py", "dgtf_v2/agent_bridge.py",
+    files = ["元DGTF-V1.30.3.py", "dgtf_v2/agent_bridge.py",
              "dgtf_app/server.py", "dgtf_app/static/app.js"]
     parts = [head]
     mtimes = {}
@@ -1461,7 +1461,7 @@ def _proposal_project_context():
         qn = sum(1 for _ in q.open(encoding="utf-8", errors="replace"))
     except Exception:
         qn = 0
-    eng = _prop_cached_text(root / "元DGTF-V1.30.2.py")
+    eng = _prop_cached_text(root / "元DGTF-V1.30.3.py")
     br = _prop_cached_text(root / "dgtf_v2/agent_bridge.py")
     return {
         "head": head[:12],
@@ -3117,7 +3117,7 @@ def _targeted_acceptance(changed):
     cmds = []
     if any(str(p).startswith("dgtf_app/") for p in changed):
         cmds.append([_sys.executable, "dgtf_app/selftest.py", "app-selftest"])
-    if any(str(p).endswith(("元DGTF-V1.30.2.py", "元DGTF-V1.30.0.py"))
+    if any(str(p).endswith(("元DGTF-V1.30.3.py", "元DGTF-V1.30.0.py"))
            or str(p).startswith("dgtf_v2/") for p in changed):
         cmds.append([_sys.executable, "smoke_test.py", "smoke"])
     out = []
@@ -5592,7 +5592,7 @@ _PROJECT_DOCS = [
     "v1110_报告.md",
 ]
 _PROJECT_BRIEF = (
-    "元DGTF 是一个本地四层螺旋推理引擎，版本 元DGTF-V1.30.2.py / 1.30.2。"
+    "元DGTF 是一个本地四层螺旋推理引擎，版本 元DGTF-V1.30.3.py / 1.30.3。"
     "四层固定为：0 修行（展开/候选/锚点）、1 研究（证据/子问题/收敛）、"
     "both 对撞（裁决/冲突/线头）、all 元（闭环/决策/停止）。"
     "EML 是事件溯源记忆与自学习反馈层，含 V1 playbook 与 V2 schedule_outcome；"
@@ -6131,19 +6131,27 @@ def _quality_alt(task_id):
         if stop and not any(x in stop for x in ("token", "预算", "截断")):
             closed += 1
     closure = (closed / len(layers)) if layers else 0.0
+    # [v1.30.3] flag 分硬缺口/软读数；软读数只扣轻分，不把 A/B 拉成 D。
+    _soft_prefixes = ("duty_short", "probe_link_dangling", "probe_no_target_covered",
+                      "polarity_all_same_structural", "position_all_same_structural",
+                      "expand_imbalanced", "too_many_amp_candidates",
+                      "unsaid_overused", "candidates_backfilled",
+                      "all_closure_unavailable", "all_closure_gaps")
+    _hard = [str(x) for x in flags if not str(x).startswith(_soft_prefixes)]
+    _soft = [str(x) for x in flags if str(x).startswith(_soft_prefixes)]
     if coverage_missing:
         # coverage 缺失不能按 0 计分：0 分会被误读成"质量极差"。
         score = None
         grade = "unmeasured"
     else:
         score = 100.0 * max(0.0, min(1.0, cov)) * ans_rate * (0.7 + 0.3 * closure)
-        score = score - 6.0 * len(flags)
+        score = score - 8.0 * len(_hard) - 1.5 * len(_soft)
         score = max(0.0, min(100.0, round(score, 2)))
         grade = "A" if score >= 85 else ("B" if score >= 70 else ("C" if score >= 55 else "D"))
     note = ("coverage 缺失（null），质量替代分不计算，grade=unmeasured；"
             "该分数不可与历史分数直接比较" if coverage_missing
             else "三态 α 不可靠时使用；可解释、可复算")
-    # [v1.30.2] 把“答案门”和“过程门”分开：不能因为 answer_ready=true
+    # [v1.30.3] 把“答案门”和“过程门”分开：不能因为 answer_ready=true
     # 就掩盖 process 不达标；也不能把有答案直接当成答案正确。
     _dt = d.get("decision_trace") or {}
     _fc = d.get("fact_contract") or {}
@@ -6161,8 +6169,11 @@ def _quality_alt(task_id):
     _answer_ready = bool(_dt.get("answer_ready")) and _process
     _aq = "verified" if (_card.get("ok") and _card.get("official_evidence_ids")) else (
         "needs_evidence" if (_card.get("gaps") or _card.get("status") == "answered") else "unverified")
-    _summary = (_card.get("answer") or ((_dt.get("reasoning") or {}).get("answer"))
+    _asum = d.get("answer_summary") or {}
+    _summary = (_asum.get("answer") or _card.get("answer")
+                or ((_dt.get("reasoning") or {}).get("answer"))
                 or q.get("answer_summary") or "")
+    _depth = _asum.get("depth") or q.get("depth") or {}
     return {"ok": True, "task_id": str(task_id), "score": score, "grade": grade,
             "coverage": cov, "coverage_missing": coverage_missing,
             "answer_ready": _answer_ready,
@@ -6171,10 +6182,11 @@ def _quality_alt(task_id):
             "process_ready_reason": _process_reason,
             "standard_all": _process,
             "answer_summary": str(_summary)[:1200],
-            "evidence_gaps": list((_dt.get("fact_card") or {}).get("gaps") or []),
+            "evidence_gaps": list((_dt.get("fact_card") or {}).get("gaps")
+                                  or _asum.get("gaps") or []),
             "tri_alpha": q.get("tri_alpha"),
             "tri_quality": q.get("tri_quality"),
-            "depth": {
+            "depth": _depth or {
                 "structured_chars": sum(int((x or {}).get("product_chars") or 0)
                                         for x in ((_led.get("layers") or {}).values())),
                 "citations": sum(int((x or {}).get("citations") or 0)
@@ -6184,12 +6196,14 @@ def _quality_alt(task_id):
             "decision_actions": len(d.get("actions") or []),
             "not_do": len(d.get("not_do") or []),
             "flags": flags,
+            "flags_hard": _hard,
+            "flags_soft": _soft,
             "basis": {"coverage": cov, "answered": answered,
                       "answerable_total": total, "answer_rate": round(ans_rate, 4),
                       "layers_closed": closed, "layers_total": len(layers),
                       "closure": round(closure, 4), "flags": flags},
             "tri_state": q.get("tri_state"), "tri_quality": q.get("tri_quality"),
-            "scheme": "coverage*answer_rate*(0.7+0.3*closure)-6*flags",
+            "scheme": "coverage*answer_rate*(0.7+0.3*closure)-8*hard_flags-1.5*soft_flags",
             "note": note}
 
 
