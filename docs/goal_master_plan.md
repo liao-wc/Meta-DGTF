@@ -103,3 +103,11 @@
 - 任务级 Pareto policy 已实测 mock：rounds 0:2,1:2,both:2,all:2 进入 cmd；自动策略 local_model。
 - 仍然：真实任务 policy A/B、证据抽取修复、App P2 剩余（统一错误信封/日志保留/发布检查单）。
 
+
+## 第九轮进展（2026-10-22 19:10）
+
+- app v1.5.22：质量 API 可读 process_fail_layers；任务级 auto_policy + local_model 持续生效。
+- 真实跑 20261022_184514：process_ready=4/4；URL 答案门降级 needs_evidence；证明过程门与答案门分离。
+- 清理 scratch 约 3.5GB；提案/策略原子写。
+- 下一步：真实 A/B（auto_policy vs profile）、证据抽取修复、统一错误信封/日志保留、最终收尾。
+

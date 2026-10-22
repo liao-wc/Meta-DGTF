@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "1.5.21"
+APP_VERSION = "1.5.22"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -6172,11 +6172,15 @@ def _quality_alt(task_id):
     _card = (_dt.get("fact_card") or {})
     _process = None
     _led = {}
+    _bad_layers = []
     try:
         from dgtf_v2.process_ledger import build_ledger as _bl
         _led = _bl(d)
         _process = bool(_led.get("standard_all"))
-        _process_reason = "标准齐全" if _process else "过程标准未达标"
+        _bad_layers = [k for k, v in ((_led.get("layers") or {}).items())
+                       if not (v or {}).get("standard_ok")]
+        _process_reason = ("标准齐全" if _process
+                           else "未达标层: " + ",".join(_bad_layers))
     except Exception:
         _process = bool(q.get("process_ready"))
         _process_reason = "过程标准未达标" if not _process else ""
@@ -6211,6 +6215,7 @@ def _quality_alt(task_id):
             "answer_quality": _aq,
             "process_ready": _process,
             "process_ready_reason": _process_reason,
+            "process_fail_layers": _bad_layers,
             "standard_all": _process,
             "answer_summary": str(_summary)[:1200],
             "evidence_gaps": list((_dt.get("fact_card") or {}).get("gaps")
