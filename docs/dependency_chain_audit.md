@@ -1,8 +1,8 @@
 # 元DGTF app 依赖链自洽审计
 
-生成：2026-10-22 16:52:14
+生成：2026-10-22 16:55:31
 
-PASS 74 / FAIL 0
+PASS 75 / FAIL 0
 
 ## FAIL
 - 无
@@ -53,6 +53,7 @@ PASS 74 / FAIL 0
 - knowledge retrieval restored
 - dsh self-feedback loop prompt
 - dsh content/status consistency hooks
+- dsh live events hooks
 - dsh history archive hooks
 - dsh artifact file hooks
 - dsh history continuation hooks

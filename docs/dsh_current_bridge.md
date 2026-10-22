@@ -193,3 +193,11 @@
 - 页面无 dsh-stop-btn、无 dsh-newchat-btn。
 - 首屏 run-btn 在 DSH 忙且空输入时使用 stop 形态；输入文字后恢复 send 形态。
 - fast_gate 12/0；selftest 371/0；依赖审计 74/0。
+## app 对话内容与 DSH 对话事件逐条同步（2026-10-22 17:10，v1.5.08）
+
+- 新增 `GET /api/dsh/current/events?since=<seq>&limit=300`：从 DSH 当前会话事件日志读取并归一化用户、思考、工具调用、工具结果、assistant 文本、turn/step 状态。
+- 主 DSH 视图改为增量事件同步：每 700ms 从上次 last_seq 继续拉取，**逐条追加**而不是整体替换最近消息；最多保留最近 500 条事件。
+- 渲染复用 DSH 事件渲染：用户行、thinking details、🔧 tool_call、工具结果折叠、assistant 文本、turn/step 状态；新事件自动滚动到底部。
+- 归档/产物同步仍走 `/api/dsh/current/messages`；两者互不影响。
+- 验证：events 接口返回 tool_call/tool_result/thinking/status 等类型；事件增量 since/last_seq 正常；fast_gate 12/0；selftest 371/0；依赖审计 75/0。
+- 静态版本 v1.5.08。

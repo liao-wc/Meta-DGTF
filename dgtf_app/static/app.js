@@ -1638,6 +1638,7 @@ async function resumeDshChat(id) {
   if (!id) return;
   if (String(id).indexOf('dsh-current-') === 0) {
     try { await resumeDshCurrentConversation(id); } catch (_) {}
+    resetDshLiveEvents();
   }
   stopDshConvPoll();
   dshConversationId = id;
@@ -1667,13 +1668,17 @@ function dshEventHtml(ev) {
   if (ev.type === 'status') {
     if (ev.phase === 'turn_start') return '<div class="rl-summary">turn ' + esc(ev.turn || '') + ' 开始</div>';
     if (ev.phase === 'step_start') return '<div class="rl-summary">step ' + esc(ev.step || '') + '</div>';
+    if (ev.phase === 'turn_end') return '<div class="rl-summary">turn ' + esc(ev.turn || '') + ' 结束</div>';
     return '';
+  }
+  if (ev.type === 'user' && ev.text) {
+    return '<div class="rl-line"><span class="rl-lab">用户</span><span class="rl-txt">' + esc(ev.text) + '</span></div>';
   }
   if (ev.type === 'thinking' && ev.text) {
     return '<details class="rl-fold" open><summary>思考</summary><div class="rl-fold-body"><div class="rl-line"><span class="rl-txt">' + esc(ev.text) + '</span></div></div></details>';
   }
   if (ev.type === 'tool_call') {
-    return '<div class="rl-line"><span class="rl-lab">🔧 ' + esc(ev.tool || 'tool') + '</span><span class="rl-txt">' + esc(JSON.stringify(ev.input || {})) + '</span></div>';
+    return '<div class="rl-line"><span class="rl-lab">🔧 ' + esc(ev.tool || 'tool') + '</span><span class="rl-txt">' + esc(String(JSON.stringify(ev.input || {})).slice(0, 12000)) + '</span></div>';
   }
   if (ev.type === 'tool_result') {
     return '<details class="rl-fold"><summary>工具结果 · ' + esc(ev.status || '') + '</summary><div class="rl-fold-body"><div class="rl-line"><span class="rl-txt">' + esc(String(ev.result || '').slice(0, 12000)) + '</span></div></div></details>';
@@ -5043,6 +5048,13 @@ async function sendDshAgent() {
 }
 
 let dshViewPollTimer = null;
+let dshLiveSeq = 0;
+let dshLiveEvents = [];
+
+function resetDshLiveEvents() {
+  dshLiveSeq = 0;
+  dshLiveEvents = [];
+}
 
 function stopDshViewPoll() {
   if (dshViewPollTimer) { clearInterval(dshViewPollTimer); dshViewPollTimer = null; }
@@ -5050,13 +5062,16 @@ function stopDshViewPoll() {
 
 async function syncDshCurrentView() {
   try {
-    const r = await api('/api/dsh/current/messages?limit=20');
+    const r = await api('/api/dsh/current/events?since=' + encodeURIComponent(dshLiveSeq) + '&limit=300');
     if (!r || !r.ok || !dshCurrent) return;
     logFollow = true;
-    const msgs = r.messages || [];
-    dshCurrent.events = msgs.map(function (m) {
-      return { type: 'text', text: (m.role === 'user' ? '你：' : 'DSH：') + (m.text || '') };
+    (r.events || []).forEach(function (ev) {
+      if (!ev) return;
+      dshLiveEvents.push(ev);
     });
+    if (dshLiveEvents.length > 500) dshLiveEvents = dshLiveEvents.slice(-500);
+    dshLiveSeq = Number(r.last_seq || dshLiveSeq) || dshLiveSeq;
+    dshCurrent.events = dshLiveEvents;
     if (r.running) {
       dshCurrent.status = (Number(r.inbox_next_turn || 0) + Number(r.inbox_next_step || 0) > 0)
         ? 'queued' : 'running';
@@ -5071,11 +5086,12 @@ async function syncDshCurrentView() {
 function startDshViewPoll() {
   stopDshViewPoll();
   syncDshCurrentView();
-  dshViewPollTimer = setInterval(syncDshCurrentView, 1000);
+  dshViewPollTimer = setInterval(syncDshCurrentView, 700);
 }
 
 async function newDshCurrentConversation(title, opts) {
   opts = opts || {};
+  resetDshLiveEvents();
   const r = await api('/api/dsh/current/conversation', {method:'POST',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({mode:'new', title: String(title || '新对话')})});

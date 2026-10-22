@@ -2266,6 +2266,97 @@ def _dsh_config_save(data):
     return rec
 
 
+def _dsh_current_events(since: int = 0, limit: int = 300) -> dict:
+    """当前 DSH 会话的逐条事件（文本/思考/工具/状态），供 app 对话视图实时追加。"""
+    import json as _json
+    try:
+        since = max(0, int(since or 0))
+    except (TypeError, ValueError):
+        since = 0
+    try:
+        limit = max(1, min(600, int(limit or 300)))
+    except (TypeError, ValueError):
+        limit = 300
+    sid = _dsh_current_session_id()
+    items = _dsh_current_rpc("session/list", {"_request": {}}).get("items") or []
+    cur = next((x for x in items if str(x.get("sessionId") or "") == sid), {})
+    as_of = int((cur.get("projections") or {}).get("asOfSeq") or 0)
+    vals = (cur.get("projections") or {}).get("values") or {}
+    inbox = vals.get("inbox") or {}
+    if since <= 0:
+        active = _dsh_active_load()
+        try:
+            since = int(active.get("start_seq") or 0)
+        except (TypeError, ValueError):
+            since = 0
+    req = {"address": {"kind": "session", "sessionId": sid},
+           "throughSeq": as_of, "maxMessages": 400}
+    records = _dsh_current_rpc("session/page", {"request": req}).get("records") or []
+    events = []
+    for rec in records:
+        ev = (rec or {}).get("event") or {}
+        seq = int(ev.get("seq") or 0)
+        if seq <= since:
+            continue
+        et = str(ev.get("type") or "")
+        data = ev.get("data") or {}
+        out = None
+        if et in ("turn/start", "step/start"):
+            out = {"type": "status", "phase": ("turn_start" if et == "turn/start" else "step_start"),
+                   "turn": data.get("turn"), "step": data.get("step")}
+        elif et == "user/message":
+            parts = []
+            for b in data.get("content") or []:
+                if isinstance(b, dict) and b.get("type") == "text" and b.get("text"):
+                    parts.append(str(b.get("text")))
+            if parts:
+                out = {"type": "user", "text": "\n".join(parts)}
+        elif et == "assistant/message":
+            msg = data.get("message") or {}
+            for b in msg.get("content") or []:
+                if not isinstance(b, dict):
+                    continue
+                bt = b.get("type")
+                if bt == "reasoning" and b.get("text"):
+                    events.append({"seq": seq, "time": ev.get("time") or 0,
+                                   "type": "thinking", "text": str(b.get("text"))})
+                elif bt == "text" and b.get("text"):
+                    events.append({"seq": seq, "time": ev.get("time") or 0,
+                                   "type": "text", "text": str(b.get("text"))})
+        elif et == "tool/call":
+            args = data.get("arguments")
+            try:
+                if isinstance(args, str):
+                    args = _json.loads(args)
+            except Exception:
+                pass
+            events.append({"seq": seq, "time": ev.get("time") or 0, "type": "tool_call",
+                           "tool": str(data.get("name") or "tool"), "input": args})
+        elif et == "tool/result":
+            msg = data.get("message") or {}
+            txt = []
+            for b in msg.get("content") or []:
+                if isinstance(b, dict) and b.get("type") == "text" and b.get("text"):
+                    txt.append(str(b.get("text")))
+            events.append({"seq": seq, "time": ev.get("time") or 0, "type": "tool_result",
+                           "status": "error" if msg.get("isError") else "ok",
+                           "result": "\n".join(txt)[:12000]})
+        elif et == "turn/end":
+            out = {"type": "status", "phase": "turn_end", "turn": data.get("turn")}
+        if out is not None:
+            out["seq"] = seq
+            out["time"] = ev.get("time") or 0
+            events.append(out)
+    events = events[-limit:]
+    return {"ok": True, "session_id": sid, "as_of": as_of,
+            "running": bool(cur.get("running")),
+            "inbox_next_turn": len(inbox.get("next-turn") or []),
+            "inbox_next_step": len(inbox.get("next-step") or []),
+            "since": since,
+            "events": events,
+            "last_seq": max([int(x.get("seq") or 0) for x in events] + [since])}
+
+
 def _dsh_guard_lock():
     global _DSH_GUARD_LOCK
     import threading as _th
@@ -7266,6 +7357,19 @@ class Handler(BaseHTTPRequestHandler):
                                "options": _dsh_config_options()})
         if p == "/api/dsh/guard":
             return self._json(_dsh_guard_status())
+        if p == "/api/dsh/current/events":
+            try:
+                _since = int((q.get("since") or ["0"])[0] or 0)
+            except (TypeError, ValueError):
+                _since = 0
+            try:
+                _evlim = int((q.get("limit") or ["300"])[0] or 300)
+            except (TypeError, ValueError):
+                _evlim = 300
+            try:
+                return self._json(_dsh_current_events(_since, _evlim))
+            except Exception as exc:  # noqa: BLE001
+                return self._json({"ok": False, "error": str(exc)}, 502)
         if p == "/api/dsh/current/messages":
             try:
                 _lim = int((q.get("limit") or ["80"])[0] or 80)
