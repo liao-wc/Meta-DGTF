@@ -18,7 +18,7 @@ from dgtf_v2.structural_diversity import (
     analyze_structural_diversity, argument_type, homogeneous_count)
 
 HERE = Path(__file__).resolve().parent.parent
-SRC = HERE / "元DGTF-V1.30.3.py"
+SRC = HERE / "元DGTF-V1.30.4.py"
 
 P = []
 F = []

@@ -12,6 +12,17 @@
 
 ---
 
+v1.30.4 相对 v1.30.3
+
+【主题】事实答案显示门与真跑验收。
+
+【改动】
+· 事实题 answer_summary.answer 仅在 answer_quality=verified 时输出；needs_evidence 隐藏无关网页文本。
+· md 结论摘要同步降级显示。
+
+【验证】
+· 真实跑 20261022_183329：answer_quality=needs_evidence、answer_ready=false。
+
 v1.30.3 相对 v1.30.2
 
 【主题】answer_summary/depth 契约与硬软 flag 分离。

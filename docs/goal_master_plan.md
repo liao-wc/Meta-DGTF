@@ -63,3 +63,12 @@
 - 门禁：fast_gate 12/0、selftest 371/0、依赖审计 78/0；HTTP 200。
 - 下一步：answer_summary 的 claim_gaps/深度真跑对照；Pareto policy 执行面 A/B；本地模型 Stage A；3 条提案实验。
 
+
+## 第四轮进展（2026-10-22 18:40）
+
+- 提案 pending=0：29 条全部有结论；最后 3 条以配置生效/软读数监控证据关闭。
+- app v1.5.18：全自动帕累托后台 + 本地模型 local_model 候选；启动实测 last_strategy=local_model。
+- engine v1.30.4：事实答案显示门；真实跑 20261022_183329（71 calls/649k tokens/约652s）answer_quality=needs_evidence、answer_ready=false，正确拒绝无关网页文本。
+- 门禁：fast_gate 12/0、selftest 371/0、依赖审计 78/0、HTTP 200。
+- 下一步：可回答问题的高质量真跑对照；process_ready 4/4；Pareto policy 执行面 A/B；本地模型质量预测进入任务级；App P2。
+

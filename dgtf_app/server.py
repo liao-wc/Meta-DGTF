@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "1.5.16"
+APP_VERSION = "1.5.18"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -1449,7 +1449,7 @@ def _proposal_project_context():
         head_ts = int((r2.stdout or "0").strip() or 0)
     except Exception:
         pass
-    files = ["元DGTF-V1.30.3.py", "dgtf_v2/agent_bridge.py",
+    files = ["元DGTF-V1.30.4.py", "dgtf_v2/agent_bridge.py",
              "dgtf_app/server.py", "dgtf_app/static/app.js"]
     parts = [head]
     mtimes = {}
@@ -1465,7 +1465,7 @@ def _proposal_project_context():
         qn = sum(1 for _ in q.open(encoding="utf-8", errors="replace"))
     except Exception:
         qn = 0
-    eng = _prop_cached_text(root / "元DGTF-V1.30.3.py")
+    eng = _prop_cached_text(root / "元DGTF-V1.30.4.py")
     br = _prop_cached_text(root / "dgtf_v2/agent_bridge.py")
     return {
         "head": head[:12],
@@ -3121,7 +3121,7 @@ def _targeted_acceptance(changed):
     cmds = []
     if any(str(p).startswith("dgtf_app/") for p in changed):
         cmds.append([_sys.executable, "dgtf_app/selftest.py", "app-selftest"])
-    if any(str(p).endswith(("元DGTF-V1.30.3.py", "元DGTF-V1.30.0.py"))
+    if any(str(p).endswith(("元DGTF-V1.30.4.py", "元DGTF-V1.30.0.py"))
            or str(p).startswith("dgtf_v2/") for p in changed):
         cmds.append([_sys.executable, "smoke_test.py", "smoke"])
     out = []
@@ -5596,7 +5596,7 @@ _PROJECT_DOCS = [
     "v1110_报告.md",
 ]
 _PROJECT_BRIEF = (
-    "元DGTF 是一个本地四层螺旋推理引擎，版本 元DGTF-V1.30.3.py / 1.30.3。"
+    "元DGTF 是一个本地四层螺旋推理引擎，版本 元DGTF-V1.30.4.py / 1.30.4。"
     "四层固定为：0 修行（展开/候选/锚点）、1 研究（证据/子问题/收敛）、"
     "both 对撞（裁决/冲突/线头）、all 元（闭环/决策/停止）。"
     "EML 是事件溯源记忆与自学习反馈层，含 V1 playbook 与 V2 schedule_outcome；"
@@ -6135,7 +6135,7 @@ def _quality_alt(task_id):
         if stop and not any(x in stop for x in ("token", "预算", "截断")):
             closed += 1
     closure = (closed / len(layers)) if layers else 0.0
-    # [v1.30.3] flag 分硬缺口/软读数；软读数只扣轻分，不把 A/B 拉成 D。
+    # [v1.30.4] flag 分硬缺口/软读数；软读数只扣轻分，不把 A/B 拉成 D。
     _soft_prefixes = ("duty_short", "probe_link_dangling", "probe_no_target_covered",
                       "polarity_all_same_structural", "position_all_same_structural",
                       "expand_imbalanced", "too_many_amp_candidates",
@@ -6155,7 +6155,7 @@ def _quality_alt(task_id):
     note = ("coverage 缺失（null），质量替代分不计算，grade=unmeasured；"
             "该分数不可与历史分数直接比较" if coverage_missing
             else "三态 α 不可靠时使用；可解释、可复算")
-    # [v1.30.3] 把“答案门”和“过程门”分开：不能因为 answer_ready=true
+    # [v1.30.4] 把“答案门”和“过程门”分开：不能因为 answer_ready=true
     # 就掩盖 process 不达标；也不能把有答案直接当成答案正确。
     _dt = d.get("decision_trace") or {}
     _fc = d.get("fact_contract") or {}
@@ -6171,12 +6171,22 @@ def _quality_alt(task_id):
         _process = bool(q.get("process_ready"))
         _process_reason = "过程标准未达标" if not _process else ""
     _answer_ready = bool(_dt.get("answer_ready")) and _process
-    _aq = "verified" if (_card.get("ok") and _card.get("official_evidence_ids")) else (
-        "needs_evidence" if (_card.get("gaps") or _card.get("status") == "answered") else "unverified")
+    _gaps0 = list(_card.get("gaps") or [])
+    _hard_gap0 = [str(g) for g in _gaps0 if (
+        str(g).startswith("uncovered:") or str(g) in
+        ("conflict_unresolved", "insufficient_evidence",
+         "question_token_not_in_evidence", "no_query", "search_error",
+         "no_record"))]
+    _aq = "verified" if (_card.get("ok") and _card.get("official_evidence_ids")
+                        and not _hard_gap0) else (
+        "needs_evidence" if (_gaps0 or _card.get("status") == "answered"
+                            or _hard_gap0) else "unverified")
     _asum = d.get("answer_summary") or {}
     _summary = (_asum.get("answer") or _card.get("answer")
                 or ((_dt.get("reasoning") or {}).get("answer"))
                 or q.get("answer_summary") or "")
+    if _aq != "verified" and _dt.get("question_type") == "fact":
+        _summary = "证据未覆盖题面，不作事实结论（needs_evidence）"
     _depth = _asum.get("depth") or q.get("depth") or {}
     return {"ok": True, "task_id": str(task_id), "score": score, "grade": grade,
             "coverage": cov, "coverage_missing": coverage_missing,
@@ -6583,6 +6593,16 @@ def _v2_auto_apply(prefer="balanced"):
             {"ucb": ch.get("ucb"), "score": ch.get("score")})
     except Exception:
         pass
+    # 本地调度模型（岭回归）直接进入自动帕累托候选；这是本地模型参与
+    # 自动决策的第一条执行面，不替代 V2 经验选优，只作为可比较候选。
+    try:
+        lm = _sched_model_predict(question="", prefer=prefer)
+        lc = lm.get("chosen") or {}
+        add("local_model", lc.get("template"), lc.get("pred_quality"),
+            lc.get("tokens"), lc.get("pred_quality"), lc.get("calls"),
+            lc.get("n"), {"model_bucket": lm.get("question_bucket")})
+    except Exception:
+        pass
     if not cands:
         return {"ok": False, "error": "暂无 V2 模板样本，无法自动选择"}
     max_q = max(c["low"] for c in cands) or 1.0
@@ -6597,7 +6617,7 @@ def _v2_auto_apply(prefer="balanced"):
     cands.sort(key=lambda x: x["auto_score"], reverse=True)
     chosen = cands[0]
     appliers = {"pareto": _v2_apply_pareto, "best": _v2_apply_best,
-                "bandit": _v2_apply_bandit}
+                "bandit": _v2_apply_bandit, "local_model": _sched_model_apply}
     applied = appliers[chosen["name"]](prefer=prefer)
     if not applied.get("ok"):
         return {"ok": False, "error": applied.get("error") or "写入策略失败",
