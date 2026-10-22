@@ -148,3 +148,10 @@
 - 修复 question_terms 泛化词 + 答案相关性加权；同一 packed 证据回放：gaps=[]、答案正确、official=16、would be verified/ready。
 - 新增 reports/goal_len_answer_replay_20261022.md；真实新跑下应直接产出正确短答。
 
+
+## 第十四轮进展（2026-10-22 20:14）
+
+- app v1.5.23：前端未捕获 promise 统一 advToast 提示；门禁 12/371/78 通过。
+- 清理脚本 dry-run/apply 已落地；日志保留策略 docs。
+- len 回放 verified，但真实新跑正向样本仍缺；A/B、统一错误信封、最终发布未收。
+

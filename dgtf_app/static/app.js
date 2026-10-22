@@ -6177,6 +6177,13 @@ function init() {
   requestAnimationFrame(centerHomeHero);
   setTimeout(resumeLastAutoJobNotice, 1200);
   window.addEventListener('load', centerHomeHero);
+  // P2：未捕获请求错误统一落到面板短提示，避免只在控制台报错。
+  window.addEventListener('unhandledrejection', function (ev) {
+    try {
+      var m = (ev && ev.reason && (ev.reason.message || ev.reason)) || '请求失败';
+      advToast(String(m).slice(0, 160), 'error');
+    } catch (e) { /* 面板未就绪时忽略 */ }
+  });
 }
 
 document.addEventListener('DOMContentLoaded', init);
