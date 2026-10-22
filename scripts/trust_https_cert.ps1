@@ -1,4 +1,4 @@
-param(
+﻿param(
   [string]$Cert = (Join-Path (Split-Path -Parent $PSScriptRoot) "dgtf_memory\tls\ca.pem")
 )
 $ErrorActionPreference = "Stop"

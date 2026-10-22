@@ -1,4 +1,4 @@
-param([int]$Port = 8765, [switch]$Http)
+﻿param([int]$Port = 8765, [switch]$Http)
 $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent $PSScriptRoot
 $TokenFile = Join-Path $Root "dgtf_memory\.access_token"

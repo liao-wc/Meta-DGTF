@@ -1,4 +1,4 @@
-param(
+﻿param(
   [int]$Port = 8765,
   [switch]$Http,
   [switch]$NoBrowser,
