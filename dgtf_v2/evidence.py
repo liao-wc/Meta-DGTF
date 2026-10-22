@@ -52,6 +52,10 @@ OFFICIAL_DOMAINS: tuple[str, ...] = (
     "oecd.org", "wto.org", "nih.gov", "cdc.gov", "nasa.gov",
     "sec.gov", "bls.gov", "census.gov",
     "deepseek.com", "deepseek.ai",
+    # 技术标准/官方文档源（用于 HTTP/RFC/W3C/Python 类事实题）
+    "rfc-editor.org", "ietf.org", "w3.org", "iana.org",
+    "developer.mozilla.org", "python.org", "docs.python.org",
+    "nodejs.org", "openai.com", "anthropic.com",
 )
 
 #: URL 里要丢掉的跟踪参数前缀（归一化 / 去重用）。

@@ -242,6 +242,14 @@ def extract_queries(question: str, extra=None,
     _toks = _re2.findall(r"\d{4}", cleaned or q)
     if _toks and "deepseek" in (cleaned or q).lower():
         _add("%s site:api-docs.deepseek.com" % _toks[0])
+    # 技术标准/官方文档类事实题：补一条官方站内查询，避免只召回博客/CTF。
+    _low = (cleaned or q).lower()
+    _sc = _re2.search(r"\b([1-5]\d\d)\b", _low)
+    if _sc and ("http" in _low or "状态码" in _low):
+        _add("site:developer.mozilla.org HTTP %s" % _sc.group(1))
+        _add("site:rfc-editor.org RFC 9110 %s" % _sc.group(1))
+    if "deepseek" in _low and ("base url" in _low or "base_url" in _low):
+        _add("site:api-docs.deepseek.com base URL")
     for x in (extra or []):
         _add(x)
     return out[:max(1, int(limit))] if out else []
