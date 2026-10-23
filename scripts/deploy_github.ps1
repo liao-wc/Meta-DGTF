@@ -2,7 +2,7 @@
   [switch]$PushTags,
   [switch]$CheckOnly
 )
-$ErrorActionPreference = 'Stop'
+$ErrorActionPreference = 'Continue'
 $Root = Split-Path -Parent $PSScriptRoot
 Set-Location $Root
 $branch = (git rev-parse --abbrev-ref HEAD).Trim()
