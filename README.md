@@ -10,7 +10,7 @@
 
 ## 开源与安全
 
-- **许可证**：MIT，见 [LICENSE](LICENSE)；模型权重不随仓库分发，模型许可证见 [local_model/MODEL_SOURCES.md](local_model/MODEL_SOURCES.md)。
+- **许可证**：Apache-2.0，见 [LICENSE](LICENSE) 与 [NOTICE](NOTICE)；模型权重不随仓库分发，模型许可证见 [local_model/MODEL_SOURCES.md](local_model/MODEL_SOURCES.md)。
 - **项目门户**：https://liao-wc.github.io/meta-dgtf/ （GitHub Pages 静态门户，不运行 Python 后端）。
 - **运行数据**：`dgtf_memory/`、`outputs/`、`runs/`、`cache/` 不进入公开仓库。
 - **漏洞报告**：使用 GitHub Private Vulnerability Reporting，不要公开 Issue 披露细节。

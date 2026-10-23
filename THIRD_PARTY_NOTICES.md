@@ -1,6 +1,6 @@
 # Third-Party Notices
 
-本仓库代码采用 MIT License，详见 LICENSE。
+本仓库代码采用 Apache License 2.0，详见 LICENSE 与 NOTICE。
 以下组件不因本项目 MIT 许可证而改变其自身许可证。
 
 ## 本地模型（权重不随本仓库分发）
