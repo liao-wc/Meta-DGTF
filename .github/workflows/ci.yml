@@ -9,14 +9,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with: { python-version: '3.13' }
       - run: python -m py_compile dgtf_app/server.py dgtf_app/rag_embed_service.py
   engine:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with: { python-version: '3.13' }
       - run: python -m py_compile 元DGTF-V1.30.4.py
       - run: python -c "import dgtf_v2.tests_evidence as t; raise SystemExit(t.main())"
@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with: { python-version: '3.13' }
       - run: python scripts/dsh_repo_classify.py classify
       - run: cat reports/repo_classification.md >> "$GITHUB_STEP_SUMMARY"
