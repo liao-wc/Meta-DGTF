@@ -1,7 +1,7 @@
-# MetaDGTF Phase 5 · V2 控制面 × 四层执行面融合设计
+# Meta-DGTF Phase 5 · V2 控制面 × 四层执行面融合设计
 
 > **性质**：设计与接入决策记录。本文只定**规则、顺序、门禁、回滚**，不改代码/配置。
-> **基线**：`MetaDGTF-V1.24.0.py`（生产单文件）+ `dgtf_engine/dgtf_v2/`（参考内核，判据 41/41）。
+> **基线**：`Meta-DGTF-V1.24.0.py`（生产单文件）+ `dgtf_engine/dgtf_v2/`（参考内核，判据 41/41）。
 > **时点**：2026-10-19。以下结论只引真实产物，不引方案自述：
 > `v1240_ab_pilot.md`、`v1240_core_report.md`、`v1240_phase5_l0.md`、
 > `audits/core_duty_20.json`、`audits/v2_replay_20.json`、`audits/l0_v2_replay.json`。
@@ -39,7 +39,7 @@
 
 ★ 口径修正：`v1240_ab_pilot.md` §观察写「Q1 覆盖/三态 V2 不占优」，但同文表内 Q1 是 **V2 5/5 / .333，V1 4/5 / .400**——覆盖 V2 更高、三态 V1 更高。**本文引用表内明细**；后续报告不要再把这两项写混。
 
-★ 边界说明：5/5 是**排程闭合**，不是 5/5 过契约。takeover 只接管「串行初始排程」，层内仍是 V1（`MetaDGTF-V1.24.0.py:21695-21725`；`v1240_报告.md` §四）。
+★ 边界说明：5/5 是**排程闭合**，不是 5/5 过契约。takeover 只接管「串行初始排程」，层内仍是 V1（`Meta-DGTF-V1.24.0.py:21695-21725`；`v1240_报告.md` §四）。
 
 ### 1.2 执行面：四层职责有结构性缺口，不是模型波动
 
@@ -77,7 +77,7 @@
 
 离线回放：10 份真实 0 层产物、467 候选 → 80 精英，novelty .92–.95，档案 4–8 格 / 32。判据 tests_l0 16/16，但**回放不是 A/B，不能替代真实生成质量**。
 
-结论：`actions.l0_v2_curate` 保持 false（引擎默认 `MetaDGTF-V1.24.0.py:26865-26868`），0 层机制冻结；方案H 配置仅作实验留档（`configs/方案H-L0v2-实验.yaml` 首行自述）。
+结论：`actions.l0_v2_curate` 保持 false（引擎默认 `Meta-DGTF-V1.24.0.py:26865-26868`），0 层机制冻结；方案H 配置仅作实验留档（`configs/方案H-L0v2-实验.yaml` 首行自述）。
 
 ### 1.4 仓库级门禁能证明什么、不能证明什么
 
@@ -93,19 +93,19 @@
 
 | # | 接口 | 方向 | 现有实现 | 硬规则 |
 |---|---|---|---|---|
-| I1 | dispatch plan | 控制面 → 执行面 | `V2Shadow.propose()` → `rounds_plan` / `_dispatch_plan`（`MetaDGTF-V1.24.0.py:21695-21725`） | 提案必须覆盖全部 route，否则整体回退 V1，不混跑；只接管 `mode=serial` |
+| I1 | dispatch plan | 控制面 → 执行面 | `V2Shadow.propose()` → `rounds_plan` / `_dispatch_plan`（`Meta-DGTF-V1.24.0.py:21695-21725`） | 提案必须覆盖全部 route，否则整体回退 V1，不混跑；只接管 `mode=serial` |
 | I2 | 层状态读数 | 执行面 → 控制面 | `_initial_state` / `_state_from_packed`（`dgtf_engine/dgtf_v2/shadow.py:46-118`） | 只读结构计数与质量数，不读答案正文；**done 必须以层完成状态为准**（当前实现见 §2.3 S3） |
 | I3 | 契约/职责报告 | 执行面 → 控制面/报告 | `V2MemoryBridge.contract_report`（`bridge.py:202-217`）+ `core_duty.audit_packed`（`core_duty.py:89-177`） | 必须分「修复前 / 修复后」两栏；只有修复前干净才算过 |
 | I4 | credit / 先验 | 执行面 → EML → 控制面 | `record_packed`（`bridge.py:57-106`）→ `scheduler_priors`（`scheduler.py:151-158`） | 先 validate/audit 再 credit；outcome 必须带 contract_ok/core_ok；先验只数值 |
 
 ### 2.2 组合规则
 
-- **R1 控制面不产文本，执行面不选层。** 调度器只拿到数值先验（`docs/MetaDGTF-V2-三平面架构.md` §2、§4.6）；层内机制只拿到 rounds/预算/上游产物。
+- **R1 控制面不产文本，执行面不选层。** 调度器只拿到数值先验（`docs/Meta-DGTF-V2-三平面架构.md` §2、§4.6）；层内机制只拿到 rounds/预算/上游产物。
 - **R2 依赖以契约为单一来源。** `contracts.legal_actions` 已写死：1 至少吃 1 圈 0、both 要 0/1 done、all 要 both done（`contracts.py:226-248`）。`Scheduler._legal` 目前**复制了一份同样逻辑**（`scheduler.py:191-211`）——语义当前一致，但两套实现会漂移；F1 必须收敛到一处（控制面调用契约函数，或反过来）。
 - **R3 credit 必须晚于校验。** 当前 `V2Shadow.finish` 的顺序是：at_end → **写 EML outcome**（`shadow.py:169-174`）→ priors → core 审计 → 契约（`shadow.py:181-186`）；且 `record_packed` 的 outcome **无条件 success=True**（`bridge.py:94-99`）。后果：越权产物会被当作成功样本学进先验。F1 必须先校验再 credit，或给 outcome 加 `contract_ok/core_ok` 并由先验读取。
 - **R4 closure 定义统一。** 调度器判断「可闭合」必须等于 `validate_result(all)` 通过；当前 `_state_from_packed` 的 closure 是 stub：`decision_actions>0 且 not_do>0` 就造一个假闭包（`shadow.py:103-118`）；`Scheduler.quality` 的 closure 只查 5 个键且仅用于 mock/replay（`scheduler.py:291-303`）。**生产质量读数只认 bench，不认 mock quality。**
 - **R5 一次只翻一个变量。** takeover 与层 flag 正交；A/B 期间 route、预算、模型、serial 全部固定。takeover 的对照变量只允许在控制面 A/B 里翻。
-- **R6 记忆与答案隔离。** EML 出口只有 `scheduler_priors()`（数值）；答案文本不进调度器；`contains_content=False` 由测试守（`docs/MetaDGTF-V2-三平面架构.md` §4.6）。
+- **R6 记忆与答案隔离。** EML 出口只有 `scheduler_priors()`（数值）；答案文本不进调度器；`contains_content=False` 由测试守（`docs/Meta-DGTF-V2-三平面架构.md` §4.6）。
 - **R7 repair 只做兼容，不作通过证据。** `repair_packed` 是「搬已有内容 + 换字段名」，明确不造新句子（`core_duty.py:34-86`）。审计必须用**修复前** overreach（`core_duty.py:89-103`）；新跑必须源干净。
 
 ### 2.3 当前实现里必须先补的六个接缝（不改层内机制）
@@ -327,7 +327,7 @@ Exit：5 题新跑 `violations_raw=0`、`overreach=0`、`gaps=0`、all 六件套
 | C9 | 同 packed → 不同决策（G6 红） | 复现 | 冻结所有 flag | replay / tests |
 | C10 | API 长挂、无新 packed | 证据 | **标「证据缺失」，不判通过/失败**；不调参 | 日志 |
 
-★ C7 的已有实现是「自动回退但静默」：提案不覆盖 route 时只写 `v2_takeover.applied=false`，控制台不打印（`MetaDGTF-V1.24.0.py:21722-21725`）。回滚条件要求补一条显式告警，否则「回退了」和「没接管」在终端上无法区分。
+★ C7 的已有实现是「自动回退但静默」：提案不覆盖 route 时只写 `v2_takeover.applied=false`，控制台不打印（`Meta-DGTF-V1.24.0.py:21722-21725`）。回滚条件要求补一条显式告警，否则「回退了」和「没接管」在终端上无法区分。
 
 ### 7.2 回滚方法（统一）
 

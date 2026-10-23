@@ -245,7 +245,7 @@ auto:
 #     不传 `resume_ckpt` / `max_minutes=0` 时与 v1.23.49 逐字相同。
 
 # 【v1.23.48 → v1.23.49】跑中快照 —— 新增配置键 runtime.live_checkpoint / runtime.ckpt_interval
-#   ① 根因：MetaDGTF.run() 是 60 分钟级长跑，packed 只在 return 前组装、调用方只在
+#   ① 根因：Meta-DGTF.run() 是 60 分钟级长跑，packed 只在 return 前组装、调用方只在
 #      返回后才写盘 ⇒ 宿主一回收进程，连层 0 的五圈都消失（12:37 真跑就这么丢了 ~24 分钟）。
 #   ② 解法：run() 起 daemon 心跳线程，每 N 秒把 self._results（各层 View.to_dict）
 #      **原子**落盘（tmp + os.replace ⇒ 强杀也不会留半份）⇒ 最多丢一个间隔。
@@ -1533,7 +1533,7 @@ actions:
   #   "F"      —— 0 跑完 → 1 出圈 both 跟上 → both 出圈 all 跟上
   #   "G"      —— 0 跑完 → 1 出圈 both 跟上 → both 跑完 all 起
   #   "H"      —— 0 跑完 → 1 跑完 → both 起 → both 出圈后 all 跟上
-  #   "auto"   —— 由 MetaDGTF 按问题性质自动决策
+  #   "auto"   —— 由 Meta-DGTF 按问题性质自动决策
   #
   # 【★ D~H 的一句话区别】只差"哪一层必须先收工"：
   #   记 waits 的层 —— 它**跑完所有圈**下游才动（硬闸）
@@ -1955,7 +1955,7 @@ memory:
   #   context —— 背景通道：读上游已跑层的摘要
   #   self    —— 自我通道：**单次运行内**各层 view 的自我累积（四段式）。
   #               ★ 它**不跨问题、不跨会话**：self_text 是进程内 list，
-  #                 每次 run 重置，交互模式每题新建一个 MetaDGTF。
+  #                 每次 run 重置，交互模式每题新建一个 Meta-DGTF。
   #                 （原文写「跨问题累积」，与实现不符；v1.21.60 更正。）
   #
   # 【建议】不要关 content。
@@ -2744,8 +2744,8 @@ spiral:
 #
 # 【坑 7】批量跑时共享 LLM 实例
 #   现象：无法区分哪个问题花了多少 LLM 调用。
-#   原因：多 MetaDGTF 共享一个 LLM，计数累加正确但无归属。
-#   修法：每个问题用独立 MetaDGTF（默认行为）。
+#   原因：多 Meta-DGTF 共享一个 LLM，计数累加正确但无归属。
+#   修法：每个问题用独立 Meta-DGTF（默认行为）。
 #
 # ============================================================
 

@@ -3,7 +3,7 @@
   "alpha_pattern": {},
   "arrow_config": null,
   "auto_mapping": null,
-  "base_model_name_or_path": "D:/元DGTF-多模并行架构/local_model/models/DeepSeek-R1-Distill-Qwen-1.5B",
+  "base_model_name_or_path": "D:/Meta-DGTF-道生三阶模型/local_model/models/DeepSeek-R1-Distill-Qwen-1.5B",
   "bias": "none",
   "corda_config": null,
   "ensure_weight_tying": false,

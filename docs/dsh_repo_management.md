@@ -46,14 +46,14 @@ _repo_manager.log
 已注册 Windows 计划任务：
 
 ```text
-DSH-MetaDGTF-RepoSync
+DSH-Meta-DGTF-RepoSync
 每 5 分钟
 ```
 
 即使某次网络断开，计划任务会继续重试推送已提交的 main。手动运行一次：
 
 ```powershell
-schtasks.exe /Run /TN "DSH-MetaDGTF-RepoSync"
+schtasks.exe /Run /TN "DSH-Meta-DGTF-RepoSync"
 ```
 
 查看日志：

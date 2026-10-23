@@ -11,7 +11,7 @@ https://github.com/liao-wc/meta-dgtf
 本地仓库：
 
 ```text
-D:\元DGTF-多模并行架构
+D:\Meta-DGTF-道生三阶模型
 ```
 
 ## DSH 管理命令

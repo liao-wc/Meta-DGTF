@@ -1,4 +1,4 @@
-# MetaDGTF-道生三阶模型 项目文件分类
+# Meta-DGTF-道生三阶模型 项目文件分类
 
 ## 顶层结构
 
@@ -6,7 +6,7 @@
     dgtf_engine/    V1/V2 引擎总目录
       dgtf_v1/      V1 引擎/报告/脚本/夹具/备份
       dgtf_v2/      V2 三平面核心
-        engine/     V2 生产入口：MetaDGTF-道生三阶模型-V2.0.0.py
+        engine/     V2 生产入口：Meta-DGTF-道生三阶模型-V2.0.0.py
     docs/           设计与发布文档（含 docs/index.html 静态门户）
     requirements.txt / requirements-local-model.txt  运行与本地模型依赖
     reports/        安全、迁移、验收报告
@@ -22,10 +22,10 @@
 
 ## 版本边界
 
-    V2 生产：dgtf_engine/dgtf_v2/engine/MetaDGTF-道生三阶模型-V2.0.0.py + dgtf_engine/dgtf_v2/
+    V2 生产：dgtf_engine/dgtf_v2/engine/Meta-DGTF-道生三阶模型-V2.0.0.py + dgtf_engine/dgtf_v2/
     V2 测试：dgtf_engine/dgtf_v2/tests_*.py（32 个）
-    V1 归档：dgtf_engine/dgtf_v1/engine/MetaDGTF-V1.30.4.py
-    V1 回滚：DGTF_APP_ENGINE=dgtf_engine/dgtf_v1/engine/MetaDGTF-V1.30.4.py
+    V1 归档：dgtf_engine/dgtf_v1/engine/Meta-DGTF-V1.30.4.py
+    V1 回滚：DGTF_APP_ENGINE=dgtf_engine/dgtf_v1/engine/Meta-DGTF-V1.30.4.py
 
 ## 不入库
 
@@ -40,7 +40,7 @@
 
 ## 状态
 
-- V2 生产入口：dgtf_engine/dgtf_v2/engine/MetaDGTF-道生三阶模型-V2.0.0.py
+- V2 生产入口：dgtf_engine/dgtf_v2/engine/Meta-DGTF-道生三阶模型-V2.0.0.py
 - App：2.0.0
 - Engine：2.0.0
 - V2 tests：32 / 32 PASS（F5 判据 11/11）

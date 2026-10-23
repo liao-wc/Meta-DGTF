@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-MetaDGTF-道生三阶模型 · V2.0.0
+Meta-DGTF-道生三阶模型 · V2.0.0
 
 单文件多模并行推理引擎：四层 0/1/both/all × 螺旋跑圈，三通道 content/context/self。
 
@@ -31,7 +31,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 # V2 物理分类：dgtf_engine/dgtf_v2/engine/，核心包 dgtf_engine/dgtf_v2/。
-# 先补 import 路径与项目根，保证直接 `python dgtf_engine/dgtf_v2/engine/MetaDGTF-道生三阶模型-V2.0.0.py` 可跑。
+# 先补 import 路径与项目根，保证直接 `python dgtf_engine/dgtf_v2/engine/Meta-DGTF-道生三阶模型-V2.0.0.py` 可跑。
 _V2_PROJECT_ROOT = Path(__file__).resolve().parents[3]
 _V2_CORE_ROOT = _V2_PROJECT_ROOT / "dgtf_engine"
 for _p in (str(_V2_PROJECT_ROOT), str(_V2_CORE_ROOT)):
@@ -3591,7 +3591,7 @@ def eml_summarize(playbook: list, limit: int = 40) -> str:
     cnt = {}
     for e in rows:
         cnt[e.get("status", "?")] = cnt.get(e.get("status", "?"), 0) + 1
-    L = ["# MetaDGTF 记忆库（EML 自动生成）", "",
+    L = ["# Meta-DGTF 记忆库（EML 自动生成）", "",
          "> 本文件是**索引**，权威数据在 `playbook.jsonl` / `episodes.jsonl`。",
          "> 状态：`active` 生效 / `shadow` 隔离观察 / `retired` 已遗忘"
          "（**行仍在**，只改状态位）。", "",
@@ -3921,7 +3921,7 @@ def _trace_note(view, kind: str, **kw) -> None:
     """[通用行为 trace] 把一条行为记录写进 `view.trace_log`（**唯一写入口**）。
 
     ★ 为什么是**模块级函数**而不是 `View` 的方法：与 `_quant_note` 同因 ——
-      调用点分布在 `DGTF` 与 `MetaDGTF`（两类**无继承关系**），做成方法会让
+      调用点分布在 `DGTF` 与 `Meta-DGTF`（两类**无继承关系**），做成方法会让
       另一侧解析不到 ⇒ `AttributeError` 被静默吞掉（本项目栽过）。
     ★ 只依赖 `view`，不碰 self。
     ★ **空值不写**：`None` / `""` / `[]` / `{}` 一律跳过 —— 缺读数 ≠ 读数是空。
@@ -3998,7 +3998,7 @@ def _quant_note(view, key: str, val) -> None:
       与 `goal_trace` 出口同款（产物里不出现空壳读数）。
     ★ 只记读数，**不改任何判定**（红线：读数不是分数）。
     ★ **模块级函数、不是方法** —— 它只用 `view`，不碰 `self`；
-      接线点在 `DGTF.run`（`DGTF` 与 `MetaDGTF` **无继承关系**），
+      接线点在 `DGTF.run`（`DGTF` 与 `Meta-DGTF` **无继承关系**），
       做成方法会让 `DGTF` 实例上解析不到 ⇒ `AttributeError` 被
       `except Exception: pass` 静默吞掉（真跑 `quant_readings` 恒空）。
     """
@@ -5427,7 +5427,7 @@ _ACTION_ALIASES = {
 def _action_on(config: dict, name: str, default: bool = True) -> bool:
     """统一读动作开关。★ 运行时覆盖 > actions 段 > output 段（别名）> 默认值。
 
-    ★ [与调度融合] `config["_control"]` 是**本跑的内存态控制面**（由 `MetaDGTF`
+    ★ [与调度融合] `config["_control"]` 是**本跑的内存态控制面**（由 `Meta-DGTF`
       挂上）—— 心跳调度与 EML 在**运行中**改的开关都经它生效。
       ⇒ 于是**所有走 `_action_on` 的可配置行为**都成了「**可运行时调**」的，
       也就**可以被 EML 学**（学到的直接改下一次决策，而不是躺在记忆库里）。
@@ -8853,7 +8853,7 @@ class Pool:
 
     #: [D3 可配] 语义熵聚类阈值（默认 = 模块常量 `_SEM_CLUSTER_THR`）。
     #:   ★ 与 `revoke_sources` 同一套下发模式：配置键
-    #:     `belief.sem_entropy_thr` 的落点，由 MetaDGTF 在构造时下发。
+    #:     `belief.sem_entropy_thr` 的落点，由 Meta-DGTF 在构造时下发。
     #:   ★ 独立于 `sim.cluster`（E2 探针批选口径，0.70）—— 尺度不同。
     sem_entropy_thr: float = _SEM_CLUSTER_THR
     # [E6] 每圈一条停止信号（可观测化；不参与评分）
@@ -9593,7 +9593,7 @@ def parse_web_need(text, limit: int = 3) -> list:
 
 
 #: [联网全接] 当前调用的**线程局部上下文**。
-#: ★ 为什么需要：`LLM` 是**模块级类**，拿不到 `DGTF` / `MetaDGTF` 的实例状态
+#: ★ 为什么需要：`LLM` 是**模块级类**，拿不到 `DGTF` / `Meta-DGTF` 的实例状态
 #:   （题面 / 当前层 / 圈号 / 联网实现）；而 30 个环节都经 `LLM.call`
 #:   ⇒ 用它把上下文递进去，`LLM` 只依赖这一个协议、不依赖任何具体类。
 #: ★ 为什么 thread-local：并行模式下多个层**同进程多线程**跑，
@@ -9758,7 +9758,7 @@ class LLM:
     def _web_need_report(self, stage: str, text) -> int:
         """[联网按需] 解析产出的声明 ⇒ 过 Gate ⇒ 检索 ⇒ 进池 + 留痕。
 
-        ★ 消费方：由 `MetaDGTF` 通过线程上下文注入的 `web_searcher`
+        ★ 消费方：由 `Meta-DGTF` 通过线程上下文注入的 `web_searcher`
           （与本文件 `_web_augment` 同一个回调）⇒ **不新增依赖**。
         ★ 返回「真的收进来几条」（0 = 没声明 / 没授权 / 配额尽 / 外部真没有）。
         ★ **stage 兜底**：调用点（`LLM.call`）常常**不传** stage（展开主路径
@@ -10744,7 +10744,7 @@ class DGTF:
         # ★ [第六期 · 依据 ③] 候选**产出率**（零成本纯函数）：
         #   给「下一笔钱」（逐条对偶判断）一个早期信号；只读数 + 告警，**不改流程**。
         #   ★★ [时序修正] 历史必须挂在**跨圈存活**的对象上：
-        #      `MetaDGTF` 圈循环里每圈 `dg = DGTF(...)` + `view = dg.run(inp)`
+        #      `Meta-DGTF` 圈循环里每圈 `dg = DGTF(...)` + `view = dg.run(inp)`
         #      ⇒ **DGTF 实例与 view 都每圈新建**；凡状态存 `view` 上，
         #      **下一圈必然读不到** ⇒ 恒 None ⇒ 永久「缺输入不表态」（不落盘）。
         #      真跑探针实测：调用 2 次、两次 `verdict` 都是 `''`、
@@ -16539,7 +16539,7 @@ class MetaDGTF:
         return out
 
     def _unsaid_limit_for(self, entry: str) -> int:
-        """MetaDGTF 侧的同一阈值（_build_carry 用，按层取）。"""
+        """Meta-DGTF 侧的同一阈值（_build_carry 用，按层取）。"""
         try:
             n = int(_spiral_for(self.config, entry).get(
                 "unsaid_escape_limit", UNSAID_ESCAPE_LIMIT))
@@ -18513,7 +18513,7 @@ class MetaDGTF:
             dg = DGTF(entry, self.llm, self.config)
             view = dg.run(inp)
             # ★ [心跳 · 圈级] 存本圈 view ⇒ 供**下一圈**的 `_before_round` 读。
-            #   （`MetaDGTF` 实例跨圈存活 ⇒ 不塞 `Pool`，避免动 dataclass 字段。）
+            #   （`Meta-DGTF` 实例跨圈存活 ⇒ 不塞 `Pool`，避免动 dataclass 字段。）
             self._round_view = view
             view.rounds_run = layer_no
             # [P1-6 补] 逐圈收集 errors（去重，保留首次出现的）
@@ -21356,7 +21356,7 @@ class MetaDGTF:
                 pg = client.fetch(str((args or {}).get("url") or ""))
                 return (pg.get("content") or "")[:2500]
             return "unknown tool"
-        system = ("你是MetaDGTF的工具代理。优先用 search_web 找官方更新页，"
+        system = ("你是Meta-DGTF的工具代理。优先用 search_web 找官方更新页，"
                   "再用 fetch_url 抓正文；只陈述工具返回的事实，最后给出"
                   "一句结论。不得编造 URL 或日期。")
         user = ("原始问题：%s\n请用工具核实：官方来源、发布日期、模型名。"
@@ -21953,7 +21953,7 @@ class MetaDGTF:
             + ANTI_PRETTY
         )
         # ★ 这里不能调 `self._self_block()` —— 那是 DGTF 类的方法，本方法
-        #   挂在 MetaDGTF 上，调它会 AttributeError（实测把研究层第 1 圈
+        #   挂在 Meta-DGTF 上，调它会 AttributeError（实测把研究层第 1 圈
         #   整层打崩，D 模式记成 missing=['1']）。判决书不需要自身画像。
         user = (f"【原始问题】\n{question}\n\n"
                 f"【待判的子问题】\n" + "\n".join(lines))
@@ -23470,7 +23470,7 @@ class MetaDGTF:
         #   只对 app 路径生效、对命令行真跑完全失效。
         self._run_id = str(run_id or "")
         # ★ [联网全接] 把**联网实现**与**题面**注入线程上下文：
-        #   `_web_search` 定义在 MetaDGTF 上，而 30 个环节里的 `LLM.call`
+        #   `_web_search` 定义在 Meta-DGTF 上，而 30 个环节里的 `LLM.call`
         #   都拿不到它（`DGTF` 是每圈新建的实例）—— 靠这一个协议接起来。
         #   `LLM` 因此只依赖「上下文里有 web_searcher」这一个约定，
         #   不依赖任何具体类（依赖注入）。
@@ -26723,12 +26723,12 @@ def _layer_objective_lines(result=None) -> List[str]:
 # 保存结果
 # ============================================================
 # ============================================================
-# 自动规划（构造 MetaDGTF **之前**跑）
+# 自动规划（构造 Meta-DGTF **之前**跑）
 # ============================================================
 #
 # ★ 为什么要放在构造前：规划里的 route / rounds 决定层与圈数，
 #   而 `MetaDGTF.__init__` 会按它们建池与状态。构造之后再想改，
-#   改不动。所以完整规划必须在**拿到 MetaDGTF 之前**完成。
+#   改不动。所以完整规划必须在**拿到 Meta-DGTF 之前**完成。
 #
 # 四个维度：route（走哪几层）/ mode（怎么并行）/ rounds（每层几圈）
 #           / max_calls（总调用预算）
@@ -28483,7 +28483,7 @@ def save_result(result: dict, save_dir: str = "outputs") -> Path:
                     f"｜answer_ready={_dt.get('answer_ready')}\n\n")
         _pl = result.get("process_ledger") or {}
         if _pl:
-            f.write("## MetaDGTF 过程账本\n\n")
+            f.write("## Meta-DGTF 过程账本\n\n")
             _soul = _pl.get("soul") or {}
             f.write("**形状/数据**: %s → %s；侧面 %s；四层标准 %s\n\n"
                     % (_soul.get("input_shape"), _soul.get("output_shape"),

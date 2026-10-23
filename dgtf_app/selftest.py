@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""MetaDGTF 应用层 · 端到端自检（需先启动 server.py）。
+"""Meta-DGTF 应用层 · 端到端自检（需先启动 server.py）。
 
 用法：
     python dgtf_app/server.py            # 另开一个终端
@@ -202,7 +202,7 @@ def check_r39_frontend(css: str, js: str, html: str) -> None:
     # ── 需求 9b：首屏对话框文案（两处必须同步）──────────────────────────────
     # ★ R44 改口径：文案本身换了（用户给定新文案），判据的**意图不变**
     #   —— 仍然是「两处必须同步」，只是字面跟着新版走。
-    _ph = "此刻 你又想到了什么？ 可以发给MetaDGTF 我们一起去探索吧"
+    _ph = "此刻 你又想到了什么？ 可以发给Meta-DGTF 我们一起去探索吧"
     check("★R39 首屏提示语**两处同步**（index.html 的 placeholder + app.js 的 Q_PLACEHOLDER）",
           _ph in html and _ph in js, "html=" + str(_ph in html) + " js=" + str(_ph in js))
 
@@ -364,7 +364,7 @@ def check_r44_frontend(css: str, js: str, html: str, srv_src: str,
           "stage-empty" in js and "e.target.closest('main.stage')" in js, "")
 
     # ── ③ 首屏文案 + 字号 ───────────────────────────────────────────────────
-    _ph = "此刻 你又想到了什么？ 可以发给MetaDGTF 我们一起去探索吧"
+    _ph = "此刻 你又想到了什么？ 可以发给Meta-DGTF 我们一起去探索吧"
     check("★R44 首屏文案两处同步（index.html 的 placeholder + app.js 的 Q_PLACEHOLDER）",
           _ph in html and _ph in js, "")
     check("★R44 输入框字号**调小一档**（≤14px）",
@@ -775,7 +775,7 @@ def check_r47_frontend(css: str, js: str, html: str, srv_src: str,
                     and "am.textContent" not in _jsnc[a:b])(
               _jsnc.find("async function importFiles"),
               _jsnc.find("async function openLocal")))(), "")
-    # ★ 新需求：新会话保留对话内容与 DSH 会话，只新建MetaDGTF会话 id。
+    # ★ 新需求：新会话保留对话内容与 DSH 会话，只新建Meta-DGTF会话 id。
     check("新会话回首屏：清当前视图、保留历史/DSH 附加数据、不显示输入框提示",
           "已新建会话，回到首屏" not in _jsnc
           and "document.body.classList.add('stage-empty')" in _jsnc
@@ -865,7 +865,7 @@ def main() -> int:
         _rq = urllib.request.Request(base + "/", headers=dict(_AUTH_HEADERS))
         with urllib.request.urlopen(_rq, timeout=10) as r:
             html = r.read().decode("utf-8")
-        check("首页可访问且含标题", r.status == 200 and "MetaDGTF" in html)
+        check("首页可访问且含标题", r.status == 200 and "Meta-DGTF" in html)
         check("首页引用静态资源", "/static/app.js" in html and "/static/style.css" in html)
     except Exception as e:  # noqa: BLE001
         print("服务不可达：", e)
@@ -1341,7 +1341,7 @@ def main() -> int:
     check("发送：问题**逐字裂解成星光** + 输入框换上「引擎已启动」寄语（随进度轮换）",
           ".q-char" in css and "@keyframes qchar" in css
           and "RUN_WHISPER" in js and "function startWhisper" in js
-          and "function paintWhisper" in js and "MetaDGTF 引擎已启动" in js,
+          and "function paintWhisper" in js and "Meta-DGTF 引擎已启动" in js,
           "")
     check("批量导出改**两步勾选**：产物库与检索库都先进入选择模式、再导出选中的",
           "let libExpOn = false" in js and "const libSel = new Set()" in js
@@ -1610,7 +1610,7 @@ def main() -> int:
           css[css.find(".drawer.open{"):css.find(".drawer.open{") + 48])
     # ══ ★ R37 一揽子（用户 10 图 / 7 条）══════════════════════════════════════
     # ① 后端把日志共有头（`__head__`）随 /layers 一起下发 -------------------------
-    #   引擎（`MetaDGTF-V1.23.22.py`）本来就在进层循环前打这一段（`调度：` / `螺旋上限`
+    #   引擎（`Meta-DGTF-V1.23.22.py`）本来就在进层循环前打这一段（`调度：` / `螺旋上限`
     #   / `并行模式` / `回来通道` / `运行期总控`），它落在 `layers.split_log()` 的
     #   `__head__` 桶里；前端以前**只渲染 LANE_NAMES**，整段被丢掉 ⇒ 用户看不到。
     #   ★★ 变异体教训：早先把这条写成 `... and "_LAYER" in runner_src or "split_log"
@@ -1874,7 +1874,7 @@ def main() -> int:
     _s1 = dashboard.parse_stop("**停止**：自然 4 层 / 被截断（体力耗尽）0 层")
     _s2 = dashboard.parse_stop("**停止**：自然 2 层 / 被截断（体力耗尽）2 层")
     _s3 = dashboard.parse_stop("**停止**: 自然 1 层 / 被截断（体力耗尽）1 层")  # 半角冒号
-    _s0 = dashboard.parse_stop("# MetaDGTF · 没有停止那一行")
+    _s0 = dashboard.parse_stop("# Meta-DGTF · 没有停止那一行")
     check("浅跑判据：被截断 N>0 才算浅跑，半角/全角冒号都认（合成样本）",
           _s1["natural"] == 4 and _s1["cut"] == 0 and not _s1["shallow"] and _s1["known"]
           and _s2["cut"] == 2 and _s2["shallow"] and _s3["shallow"] and not _s0["known"],

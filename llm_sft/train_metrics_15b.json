@@ -1,5 +1,5 @@
 {
- "model": "D:/元DGTF-多模并行架构/local_model/models/Qwen2.5-1.5B-Instruct",
+ "model": "D:/Meta-DGTF-道生三阶模型/local_model/models/Qwen2.5-1.5B-Instruct",
  "epochs": 4,
  "lr": 0.0002,
  "train_n": 108,

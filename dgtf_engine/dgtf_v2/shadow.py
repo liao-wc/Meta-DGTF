@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """V2 影子调度器：只观察，不改变 V1 执行。
 
-在一个真实 MetaDGTF 跑次开始/结束时，把当前层状态映射成 V2 WorldState，
+在一个真实 Meta-DGTF 跑次开始/结束时，把当前层状态映射成 V2 WorldState，
 记录：
   · at_start：V2 会先选哪层；与 V1 实际首层是否一致；
   · at_end：V2 在结束时还会不会继续；

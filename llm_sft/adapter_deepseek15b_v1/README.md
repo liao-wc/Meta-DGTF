@@ -1,9 +1,9 @@
 ---
-base_model: D:/元DGTF-多模并行架构/local_model/models/DeepSeek-R1-Distill-Qwen-1.5B
+base_model: D:/Meta-DGTF-道生三阶模型/local_model/models/DeepSeek-R1-Distill-Qwen-1.5B
 library_name: peft
 pipeline_tag: text-generation
 tags:
-- base_model:adapter:D:/元DGTF-多模并行架构/local_model/models/DeepSeek-R1-Distill-Qwen-1.5B
+- base_model:adapter:D:/Meta-DGTF-道生三阶模型/local_model/models/DeepSeek-R1-Distill-Qwen-1.5B
 - lora
 - transformers
 ---

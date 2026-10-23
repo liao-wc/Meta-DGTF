@@ -124,7 +124,7 @@ def run_one(q, mod, src, tag, mock, orientation_override=None,
         if profile_override:
             cfg["cost_profile"] = profile_override
         with contextlib.redirect_stdout(buf):
-            meta = mod.MetaDGTF(cfg)
+            meta = mod.Meta-DGTF(cfg)
             res = meta.run(q["question"], route=route, rounds=rounds,
                            parallel_mode=b.get("mode", "serial"),
                            orientation=ori)

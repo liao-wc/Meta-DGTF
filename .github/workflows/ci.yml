@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with: { python-version: '3.13' }
-      - run: python -m py_compile dgtf_engine/dgtf_v2/engine/MetaDGTF-道生三阶模型-V2.0.0.py
+      - run: python -m py_compile dgtf_engine/dgtf_v2/engine/Meta-DGTF-道生三阶模型-V2.0.0.py
       - run: PYTHONPATH="$PWD/dgtf_engine" python -c "import dgtf_v2.tests_evidence as t; raise SystemExit(t.main())"
   local-model:
     runs-on: ubuntu-latest
