@@ -1,0 +1,92 @@
+outputs/
+__pycache__/
+smoke_outputs/
+_audit_tmp/
+*.pyc
+.env
+dgtf_memory/dsh_workbench_token
+dgtf_memory/.csrf_token
+
+# 冒烟 / 校验运行时自动生成的中间产物（每次跑都重建，跑完自己删）
+# ★ 注意不要连 _smoke_*.log 一起忽略 —— 那些是「本版跑绿」的证据，要留在库里
+smoke_config.yaml
+_smoke_*.json
+_verify_*.json
+
+# ── 以下四类**不进公开仓库**（文件仍在本地，只是不被 git 跟踪）──────────
+# 判断口径 = 「源码/文档 保留，内部数据/运行记录 排除」。
+# ★ 与项目自己的「产物 vs 证据」口径不冲突：这里是**是否公开**的取舍，
+#   不是「是否删除」—— 所有文件原地保留，本地照常用。
+
+# 内部工作记忆与自动化配置（皮皮的笔记，不适合公开）
+.workbuddy/
+
+# 顶层运行日志（306 个 60 MB）—— 本地证据，公开仓库里是噪音
+# ★ 只匹配顶层：_archive/ 里的 .log 由下一条整体排除，不冲突
+/*.log
+
+# 已经归档的旧临时文件（157 个）
+_archive/
+
+# 运行记录数据库
+runs.sqlite3
+
+# 应用层每次跑任务落下的实时日志 / 临时 config（`engine_runner.RUNS_DIR`）。
+# ★ 每次自检、每次真跑都新增一对 `<tid>.log` + `<tid>.yaml`，全是内部运行记录，
+#   不是源码也不是文档 —— 与上一节「内部数据/运行记录 排除」同一口径。
+# ★ 只忽略**目录内的产物**，不忽略 `dgtf_app/runs/` 这个目录本身的存在
+#   （目录由 `RUNS_DIR.mkdir(exist_ok=True)` 自建，不需要进库）。
+# ★ 文件全部原地保留，本地照常用；只是不再被 git 跟踪。
+dgtf_app/runs/
+
+# 联网检索 / 锚点快照的本地缓存（`cache/websearch/`、`cache/anchors/`）。
+# ★ 同类口径：运行期缓存，可由源数据重建，不属源码/文档。本地保留，不进库。
+cache/
+
+# 参数面板「保存」时对配置文件做的自动备份（`params.save_params` 写前留一份，
+# 供写坏时人工回退）。是**运行期产物**，不该进仓库 —— 与「原件不动」的口径一致。
+*.yaml.bak
+
+# GitHub Desktop 建的空脚手架仓库（指向同一个远程，含自己的 .git）
+# ★ 嵌套 git 仓库不跟踪：否则会被记成一行 gitlink，状态永远显示「脏」
+meta-dgtf/
+
+# 工作台「高级参数 → 保存」写出的**用户增量配置**（`params.USER_CFG`，仓库根）。
+# ★ 它是**每台机器 / 每个人自己的运行配置**，不是源码也不是文档 ——
+#   别人 clone 后应该从出厂 `dgtf_config.yaml` 起跑。
+# ★ 与 `dgtf_app/runs/`、`*.yaml.bak` 同一口径：本地保留，不进库。
+dgtf_config.user.yaml
+
+# ★ R44：本地资料库导入时的**原始文件留档**（可能几十 MB 的 PDF/图片）与删除退避区 ——
+#   都是用户自己的资料 / 临时产物，不该进公开仓库（解析稿 anchors/*.txt 仍按原样跟库）。
+dgtf_app/anchors/_raw/
+dgtf_app/anchors/_removed/
+
+# ★ R44：提交说明的临时文件（另一个会话跑 `_git_save.py -F _commitmsg.txt` 留下的）。
+#   正经做法是把它放在**仓库外**（SKILL 里写过）；放仓库里就会被 `git add -A` 顺手提交，
+#   所以这里显式忽略 —— 免得把别人的临时文件混进下一次提交。
+_commitmsg.txt
+
+# 启动器日志（可能含旧版访问口令）不进仓库
+_app_out_*.log
+_app_err_*.log
+_app_out_*.log.*
+_app_err_*.log.*
+.tmp_*/
+tmp*/
+
+# DSH 项目文件归档（本地保留，不入库）
+archive/
+
+# 本地模型权重与训练环境（体积大、机器相关，本地保留不入库）
+local_model/models/
+local_model/envs/
+
+# 运行态记忆/会话/口令（公开仓库不收录）
+dgtf_memory/
+bench/runs/
+outputs/
+cache/
+dgtf_app/runs/
+runs/
+

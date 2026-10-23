@@ -1,0 +1,10 @@
+# [v122 bench] tech_004 · 灰度发布回滚
+id: tech_004
+domain: tech
+question: "灰度发布出错时回滚边界该怎么定义"
+orientation: boundary
+budget:
+  profile: balanced
+  max_calls: 180
+  rounds: "0:5,1:5,both:5,all:6"
+  mode: serial

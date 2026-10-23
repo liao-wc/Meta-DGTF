@@ -1,0 +1,10 @@
+# [v122 bench] biz_003 · 供应链多源
+id: biz_003
+domain: biz
+question: "关键元器件只有一家供应商，要不要强行多源化"
+orientation: decision
+budget:
+  profile: balanced
+  max_calls: 180
+  rounds: "0:5,1:5,both:5,all:6"
+  mode: serial

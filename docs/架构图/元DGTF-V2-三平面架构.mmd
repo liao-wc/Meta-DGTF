@@ -1,0 +1,26 @@
+flowchart TB
+  subgraph K[知识面 EML v2]
+    E[事件溯源 / 双时态]
+    S[语义信念 + 论证状态]
+    P[程序性先验]
+    R[BM25 + 时近 + tier + MMR]
+  end
+  subgraph C[控制面 Scheduler v2]
+    M[Monitor]
+    A[Analyze]
+    PL[Plan: EVOI + MPC + Pareto]
+    X[Execute: 契约闸]
+  end
+  subgraph D[执行面 四层契约]
+    L0[0 修行 发散]
+    L1[1 研究 收敛]
+    LB[both 对撞 辩证]
+    LA[all 元 闭合]
+  end
+  O[可观测性: calls / tokens / quality / contracts]
+  K -->|数值先验，不含内容| C
+  C -->|动作: 层/圈数/停止| D
+  D -->|LayerResult| X
+  X --> O
+  O -->|outcome| K
+  E --> S --> P

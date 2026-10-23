@@ -1,0 +1,10 @@
+# [v122 bench] med_001 · 社区医院远程监测
+id: med_001
+domain: med
+question: "社区医院人力有限，慢性病管理推远程监测还是加派人手上门随访"
+orientation: decision
+budget:
+  profile: balanced
+  max_calls: 180
+  rounds: "0:5,1:5,both:5,all:6"
+  mode: serial

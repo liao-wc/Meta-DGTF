@@ -1,0 +1,191 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2800" height="1370" viewBox="0 0 2800 1370">
+<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#94A3B8"/></marker></defs>
+<rect width="100%" height="100%" fill="#F8FAFC"/>
+<rect x="75" y="176" width="400" height="170" rx="18" fill="#E2E8F0"/>
+<rect x="70" y="170" width="400" height="170" rx="18" fill="#FFFFFF" stroke="#2563EB" stroke-width="2"/>
+<rect x="71" y="171" width="7" height="168" rx="3" fill="#2563EB"/>
+<text x="98" y="212" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="25" fill="#2563EB" font-weight="700">① 交互入口</text>
+<text x="98" y="266" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="19" fill="#0F172A">CLI：python 元DGTF-V1.23.66.py</text>
+<text x="98" y="295" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="19" fill="#0F172A">Web 工作台：server.py + app.js</text>
+<text x="98" y="324" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="19" fill="#0F172A">任务队列 / 实时日志 / 取消 / 归档</text>
+<rect x="75" y="366" width="400" height="190" rx="18" fill="#E2E8F0"/>
+<rect x="70" y="360" width="400" height="190" rx="18" fill="#FFFFFF" stroke="#2563EB" stroke-width="2"/>
+<rect x="71" y="361" width="7" height="188" rx="3" fill="#2563EB"/>
+<text x="98" y="402" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="25" fill="#2563EB" font-weight="700">② 应用层 dgtf_app</text>
+<text x="98" y="456" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="19" fill="#0F172A">engine_runner：子进程 + 并发 3</text>
+<text x="98" y="485" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="19" fill="#0F172A">params：yaml 合并 + 校验</text>
+<text x="98" y="514" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="19" fill="#0F172A">library / outputs / dashboard</text>
+<rect x="75" y="566" width="400" height="155" rx="18" fill="#E2E8F0"/>
+<rect x="70" y="560" width="400" height="155" rx="18" fill="#FFFFFF" stroke="#2563EB" stroke-width="2"/>
+<rect x="71" y="561" width="7" height="153" rx="3" fill="#2563EB"/>
+<text x="98" y="602" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="25" fill="#2563EB" font-weight="700">③ 配置与输入</text>
+<text x="98" y="656" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="19" fill="#0F172A">dgtf_config.yaml（all_on=false）</text>
+<text x="98" y="685" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="19" fill="#0F172A">dgtf_config.user.yaml（已清空）</text>
+<text x="98" y="714" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="19" fill="#0F172A">题面 / 锚点 / 联网开关</text>
+<rect x="75" y="741" width="400" height="135" rx="18" fill="#E2E8F0"/>
+<rect x="70" y="735" width="400" height="135" rx="18" fill="#FFFFFF" stroke="#2563EB" stroke-width="2"/>
+<rect x="71" y="736" width="7" height="133" rx="3" fill="#2563EB"/>
+<text x="98" y="777" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="25" fill="#2563EB" font-weight="700">关键运行参数</text>
+<text x="98" y="831" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="17" fill="#0F172A">shape_limit=8 · max_tokens=2.0M</text>
+<text x="98" y="856" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="17" fill="#0F172A">effort=low · bandit=off · EML=on</text>
+<rect x="535" y="176" width="470" height="150" rx="18" fill="#E2E8F0"/>
+<rect x="530" y="170" width="470" height="150" rx="18" fill="#FFFFFF" stroke="#7C3AED" stroke-width="2"/>
+<rect x="531" y="171" width="7" height="148" rx="3" fill="#7C3AED"/>
+<text x="558" y="212" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="25" fill="#7C3AED" font-weight="700">④ 调度 auto_plan</text>
+<text x="558" y="266" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="19" fill="#0F172A">五维规划：route / mode / rounds / max_calls</text>
+<text x="558" y="295" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="19" fill="#0F172A">规则优先 → LLM 兜底；脏值钳制</text>
+<rect x="535" y="356" width="470" height="170" rx="18" fill="#E2E8F0"/>
+<rect x="530" y="350" width="470" height="170" rx="18" fill="#FFFFFF" stroke="#7C3AED" stroke-width="2"/>
+<rect x="531" y="351" width="7" height="168" rx="3" fill="#7C3AED"/>
+<text x="558" y="392" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="25" fill="#7C3AED" font-weight="700">⑤ 执行模式</text>
+<text x="558" y="446" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="19" fill="#0F172A">serial（层序）/ A–H（阶段 DAG）</text>
+<text x="558" y="475" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="19" fill="#0F172A">waits=上游跑完 / gates=上游出首圈</text>
+<text x="558" y="504" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="19" fill="#0F172A">预热圈 + 阶段闸 + 并行展开</text>
+<rect x="535" y="556" width="470" height="160" rx="18" fill="#E2E8F0"/>
+<rect x="530" y="550" width="470" height="160" rx="18" fill="#FFFFFF" stroke="#7C3AED" stroke-width="2"/>
+<rect x="531" y="551" width="7" height="158" rx="3" fill="#7C3AED"/>
+<text x="558" y="592" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="25" fill="#7C3AED" font-weight="700">⑥ 预算与续跑</text>
+<text x="558" y="646" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="19" fill="#0F172A">max_calls / max_minutes / max_tokens=2M</text>
+<text x="558" y="675" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="19" fill="#0F172A">层/圈边界优雅停 → paused + 快照</text>
+<text x="558" y="704" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="19" fill="#0F172A">resume_ckpt 复用已完成层</text>
+<rect x="535" y="736" width="470" height="180" rx="18" fill="#E2E8F0"/>
+<rect x="530" y="730" width="470" height="180" rx="18" fill="#FFFFFF" stroke="#7C3AED" stroke-width="2"/>
+<rect x="531" y="731" width="7" height="178" rx="3" fill="#7C3AED"/>
+<text x="558" y="772" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="25" fill="#7C3AED" font-weight="700">⑦ 停止与质量</text>
+<text x="558" y="826" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="17" fill="#0F172A">自然安住 / 结构饱和 / 空转 / 职责 / 目标</text>
+<text x="558" y="851" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="17" fill="#0F172A">anytime：Hoeffding 或 e-process（opt-in）</text>
+<text x="558" y="876" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="17" fill="#0F172A">覆盖闸 / 预算闸 / 历史最佳圈指针</text>
+<text x="558" y="901" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="17" fill="#0F172A">读数：覆盖 · 三态 · S · 密度 · 复读</text>
+<rect x="1035" y="206" width="470" height="250" rx="18" fill="#E2E8F0"/>
+<rect x="1030" y="200" width="470" height="250" rx="18" fill="#FFFFFF" stroke="#0D9488" stroke-width="2"/>
+<rect x="1031" y="201" width="7" height="248" rx="3" fill="#0D9488"/>
+<text x="1058" y="242" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="25" fill="#0D9488" font-weight="700">0 修行 · manifest</text>
+<text x="1058" y="272" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="16" fill="#475569">objective=manifest</text>
+<text x="1058" y="298" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="19" fill="#0F172A">用最少圈数把各层面挖尽</text>
+<text x="1058" y="327" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="19" fill="#0F172A">· 阴阳展开 / &amp; 撞不动 / 线头 / 探针</text>
+<text x="1058" y="356" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="19" fill="#0F172A">· Heaps 边际新增率 → 结构饱和</text>
+<text x="1058" y="385" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="19" fill="#0F172A">收敛：趋近无穷（饱和）</text>
+<rect x="1555" y="206" width="470" height="250" rx="18" fill="#E2E8F0"/>
+<rect x="1550" y="200" width="470" height="250" rx="18" fill="#FFFFFF" stroke="#059669" stroke-width="2"/>
+<rect x="1551" y="201" width="7" height="248" rx="3" fill="#059669"/>
+<text x="1578" y="242" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="25" fill="#059669" font-weight="700">1 研究 · truth</text>
+<text x="1578" y="272" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="16" fill="#475569">objective=truth</text>
+<text x="1578" y="298" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="19" fill="#0F172A">用最少圈数给出确定答案</text>
+<text x="1578" y="327" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="19" fill="#0F172A">· 拆解 → 证据/锚点 → 三态判决</text>
+<text x="1578" y="356" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="19" fill="#0F172A">· 覆盖 / 清算 / 可判定性冻结</text>
+<text x="1578" y="385" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="19" fill="#0F172A">收敛：有限（覆盖率）</text>
+<rect x="1035" y="496" width="470" height="250" rx="18" fill="#E2E8F0"/>
+<rect x="1030" y="490" width="470" height="250" rx="18" fill="#FFFFFF" stroke="#D97706" stroke-width="2"/>
+<rect x="1031" y="491" width="7" height="248" rx="3" fill="#D97706"/>
+<text x="1058" y="532" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="25" fill="#D97706" font-weight="700">both 对撞 · collision</text>
+<text x="1058" y="562" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="16" fill="#475569">objective=collision</text>
+<text x="1058" y="588" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="19" fill="#0F172A">无穷发散 ∩ 有限确定 ⇒ 融合新层面</text>
+<text x="1058" y="617" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="19" fill="#0F172A">· 阴/阳两臂 → 第三者 → 张力</text>
+<text x="1058" y="646" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="19" fill="#0F172A">· 产出率 ×(1−语义停滞罚)</text>
+<text x="1058" y="675" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="19" fill="#0F172A">收敛：张力被消化 / 产出率</text>
+<rect x="1555" y="496" width="470" height="250" rx="18" fill="#E2E8F0"/>
+<rect x="1550" y="490" width="470" height="250" rx="18" fill="#FFFFFF" stroke="#E11D48" stroke-width="2"/>
+<rect x="1551" y="491" width="7" height="248" rx="3" fill="#E11D48"/>
+<text x="1578" y="532" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="25" fill="#E11D48" font-weight="700">all 元 · closure</text>
+<text x="1578" y="562" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="16" fill="#475569">objective=closure</text>
+<text x="1578" y="588" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="19" fill="#0F172A">记忆结晶 / 决策 / 行动 + 回看全程</text>
+<text x="1578" y="617" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="19" fill="#0F172A">· 四件事留痕 · 元层清算</text>
+<text x="1578" y="646" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="19" fill="#0F172A">· 未交代 / 悬置 / 冲突都留痕</text>
+<text x="1578" y="675" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="19" fill="#0F172A">收敛：留痕完整度</text>
+<rect x="1035" y="758" width="990" height="96" rx="18" fill="#E2E8F0"/>
+<rect x="1030" y="752" width="990" height="96" rx="18" fill="#FFFFFF" stroke="#4F46E5" stroke-width="2"/>
+<rect x="1031" y="753" width="7" height="94" rx="3" fill="#4F46E5"/>
+<text x="1058" y="794" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="25" fill="#4F46E5" font-weight="700">三通道并行（每圈都写）</text>
+<text x="1058" y="848" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="17" fill="#0F172A">content 写了什么 · context 凭什么写 · self 自己怎么看这次写</text>
+<rect x="2085" y="176" width="650" height="210" rx="18" fill="#E2E8F0"/>
+<rect x="2080" y="170" width="650" height="210" rx="18" fill="#FFFFFF" stroke="#0891B2" stroke-width="2"/>
+<rect x="2081" y="171" width="7" height="208" rx="3" fill="#0891B2"/>
+<text x="2108" y="212" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="25" fill="#0891B2" font-weight="700">10 产物与留痕</text>
+<text x="2108" y="266" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="17" fill="#0F172A">· outputs/*.md（正文 + 分层 md）</text>
+<text x="2108" y="291" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="17" fill="#0F172A">· *.packed.json（结构化全量）</text>
+<text x="2108" y="316" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="17" fill="#0F172A">· *.run.log / *.run.json（运行归档）</text>
+<text x="2108" y="341" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="17" fill="#0F172A">· 失败 / 悬置 / 冲突都留痕，不删行</text>
+<rect x="2085" y="416" width="650" height="170" rx="18" fill="#E2E8F0"/>
+<rect x="2080" y="410" width="650" height="170" rx="18" fill="#FFFFFF" stroke="#0891B2" stroke-width="2"/>
+<rect x="2081" y="411" width="7" height="168" rx="3" fill="#0891B2"/>
+<text x="2108" y="452" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="25" fill="#0891B2" font-weight="700">11 质量读数</text>
+<text x="2108" y="506" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="17" fill="#0F172A">覆盖 · 三态一致 · 职责 S · 语义密度</text>
+<text x="2108" y="531" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="17" fill="#0F172A">复读率 · 候选产出率 · 历史最佳圈</text>
+<text x="2108" y="556" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="17" fill="#0F172A">质量闭环：覆盖/三态/决策/线索</text>
+<rect x="2085" y="596" width="650" height="250" rx="18" fill="#E2E8F0"/>
+<rect x="2080" y="590" width="650" height="250" rx="18" fill="#FFFFFF" stroke="#16A34A" stroke-width="2"/>
+<rect x="2081" y="591" width="7" height="248" rx="3" fill="#16A34A"/>
+<text x="2108" y="632" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="25" fill="#16A34A" font-weight="700">12 验证门（必须全绿）</text>
+<text x="2108" y="686" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="17" fill="#0F172A">冒烟 266　·　跨档验收 319</text>
+<text x="2108" y="711" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="17" fill="#0F172A">工程审计 70　·　变异体 3/3（113 基线）</text>
+<text x="2108" y="736" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="17" fill="#0F172A">前端自检 371　·　内核 24 · 优化 27</text>
+<text x="2108" y="761" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="17" fill="#0F172A">静态审计：15 critical / 118 major / 164 minor</text>
+<text x="2108" y="786" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="17" fill="#0F172A">默认 GBK 环境：门禁 EXIT=0</text>
+<rect x="555" y="981" width="270" height="230" rx="18" fill="#E2E8F0"/>
+<rect x="550" y="975" width="270" height="230" rx="18" fill="#FFFFFF" stroke="#475569" stroke-width="2"/>
+<rect x="551" y="976" width="7" height="228" rx="3" fill="#475569"/>
+<text x="578" y="1017" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="25" fill="#475569" font-weight="700">LLM 网关</text>
+<text x="578" y="1071" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="17" fill="#0F172A">DeepSeek flash / v4-pro</text>
+<text x="578" y="1096" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="17" fill="#0F172A">thinking 分档 · JSON mode</text>
+<text x="578" y="1121" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="17" fill="#0F172A">重试 · 分环节成本</text>
+<text x="578" y="1146" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="17" fill="#0F172A">JSON 自修复（失败时）</text>
+<rect x="845" y="981" width="270" height="230" rx="18" fill="#E2E8F0"/>
+<rect x="840" y="975" width="270" height="230" rx="18" fill="#FFFFFF" stroke="#475569" stroke-width="2"/>
+<rect x="841" y="976" width="7" height="228" rx="3" fill="#475569"/>
+<text x="868" y="1017" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="25" fill="#475569" font-weight="700">联网检索</text>
+<text x="868" y="1071" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="17" fill="#0F172A">Tavily + 缓存 + 域名 tier</text>
+<text x="868" y="1096" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="17" fill="#0F172A">三层配额 + 连续失败降级</text>
+<text x="868" y="1121" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="17" fill="#0F172A">W# 只作参照，不进候选</text>
+<rect x="1135" y="981" width="270" height="230" rx="18" fill="#E2E8F0"/>
+<rect x="1130" y="975" width="270" height="230" rx="18" fill="#FFFFFF" stroke="#475569" stroke-width="2"/>
+<rect x="1131" y="976" width="7" height="228" rx="3" fill="#475569"/>
+<text x="1158" y="1017" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="25" fill="#475569" font-weight="700">外部锚点</text>
+<text x="1158" y="1071" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="17" fill="#0F172A">snapshot / Tavily</text>
+<text x="1158" y="1096" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="17" fill="#0F172A">tier 门 + 交叉核对</text>
+<text x="1158" y="1121" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="17" fill="#0F172A">引用表 / triage 降级</text>
+<rect x="1425" y="981" width="270" height="230" rx="18" fill="#E2E8F0"/>
+<rect x="1420" y="975" width="270" height="230" rx="18" fill="#FFFFFF" stroke="#475569" stroke-width="2"/>
+<rect x="1421" y="976" width="7" height="228" rx="3" fill="#475569"/>
+<text x="1448" y="1017" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="25" fill="#475569" font-weight="700">EML 记忆</text>
+<text x="1448" y="1071" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="17" fill="#0F172A">episodes / playbook / nog</text>
+<text x="1448" y="1096" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="17" fill="#0F172A">oods / bandit</text>
+<text x="1448" y="1121" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="17" fill="#0F172A">micro → meso → macro</text>
+<text x="1448" y="1146" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="17" fill="#0F172A">质量闸 · 升级 · 遗忘 · 召回</text>
+<rect x="1715" y="981" width="270" height="230" rx="18" fill="#E2E8F0"/>
+<rect x="1710" y="975" width="270" height="230" rx="18" fill="#FFFFFF" stroke="#475569" stroke-width="2"/>
+<rect x="1711" y="976" width="7" height="228" rx="3" fill="#475569"/>
+<text x="1738" y="1017" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="25" fill="#475569" font-weight="700">前沿内核 F1–F4</text>
+<text x="1738" y="1071" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="17" fill="#0F172A">F1 e-process 任意停时</text>
+<text x="1738" y="1096" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="17" fill="#0F172A">F2 保形 · F3 BOCPD</text>
+<text x="1738" y="1121" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="17" fill="#0F172A">F4 Dung 论证（只标不删）</text>
+<polyline points="470,245 530,245" fill="none" stroke="#94A3B8" stroke-width="2.5" marker-end="url(#ah)"/>
+<polyline points="470,435 530,435" fill="none" stroke="#94A3B8" stroke-width="2.5" marker-end="url(#ah)"/>
+<polyline points="1000,435 1030,435" fill="none" stroke="#94A3B8" stroke-width="2.5" marker-end="url(#ah)"/>
+<polyline points="1500,325 1550,325" fill="none" stroke="#94A3B8" stroke-width="2.5" marker-end="url(#ah)"/>
+<polyline points="1285,450 1285,490" fill="none" stroke="#94A3B8" stroke-width="2.5" marker-end="url(#ah)"/>
+<polyline points="1550,450 1500,490" fill="none" stroke="#94A3B8" stroke-width="2.5" marker-end="url(#ah)"/>
+<polyline points="1500,615 1550,615" fill="none" stroke="#94A3B8" stroke-width="2.5" marker-end="url(#ah)"/>
+<polyline points="2020,615 2055,615 2055,290 2080,290" fill="none" stroke="#94A3B8" stroke-width="2.5" marker-end="url(#ah)"/>
+<polyline points="2405,380 2405,410" fill="none" stroke="#94A3B8" stroke-width="2.5" marker-end="url(#ah)"/>
+<polyline points="2405,560 2405,590" fill="none" stroke="#94A3B8" stroke-width="2.5" marker-end="url(#ah)"/>
+<polyline points="1200,975 1200,848" fill="none" stroke="#94A3B8" stroke-width="2.5" marker-end="url(#ah)"/>
+<polyline points="1500,975 1500,848" fill="none" stroke="#94A3B8" stroke-width="2.5" marker-end="url(#ah)"/>
+<polyline points="1800,975 1800,848" fill="none" stroke="#94A3B8" stroke-width="2.5" marker-end="url(#ah)"/>
+<polyline points="1265,740 1265,752" fill="none" stroke="#94A3B8" stroke-width="2.5" marker-end="url(#ah)"/>
+<polyline points="1785,740 1785,752" fill="none" stroke="#94A3B8" stroke-width="2.5" marker-end="url(#ah)"/>
+<polyline points="2020,700 2040,700 2040,900 1015,900 1015,325 1030,325" fill="none" stroke="#94A3B8" stroke-width="2.5" marker-end="url(#ah)" stroke-dasharray="12 9"/>
+<text x="70" y="88" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="56" fill="#0F172A" font-weight="700">元 DGTF · 整体架构</text>
+<text x="72" y="134" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="24" fill="#475569">v1.23.66 · 单文件四层螺旋推理引擎 · 四层 × 三通道 × 可审计产物</text>
+<text x="1030" y="170" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="28" fill="#0F172A" font-weight="700">⑧ 四层螺旋核心（每层：目标 → 展开 → 沉淀 → 读数 → 停止）</text>
+<text x="1030" y="194" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="16" fill="#475569">每层每圈：摊开 → 深入 → 收束；层间靠 carry / 自省 / 记忆回流</text>
+<text x="2280" y="126" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="16" fill="#94A3B8">实线 = 主流程　虚线 = 回流 / 经验</text>
+<text x="530" y="955" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="28" fill="#0F172A" font-weight="700">⑨ 认知与证据基础设施</text>
+<text x="1005" y="404" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="16" fill="#94A3B8">模式/圈数</text>
+<text x="1512" y="292" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="16" fill="#94A3B8">展开</text>
+<text x="1512" y="582" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="16" fill="#94A3B8">融合</text>
+<text x="1262" y="462" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="16" fill="#94A3B8">对撞</text>
+<text x="1200" y="884" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="16" fill="#94A3B8">回看 / carry / 自省 → 下一圈</text>
+<rect x="70" y="1240" width="2620" height="88" rx="14" fill="#FFFFFF" stroke="#CBD5E1"/>
+<text x="90" y="1252" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="18" fill="#0F172A">红线：输入是形状不是数据　·　悬置不打分　·　未对齐合法　·　停止≠清算　·　失败留痕　·　入池挡重复　·　参数按层覆盖　·　自省不可合并　·　EML 不碰答案　·　没有读数不假装有</text>
+<text x="90" y="1276" font-family="Microsoft YaHei, Segoe UI, sans-serif" font-size="16" fill="#475569">版本：v1.23.66（27678 行 / 纯 CRLF）　|　最优配置：all_on=false · shape=8 · max_tokens=2M · effort=low　|　成本参考：四层 ≈230 calls / 1.7M tokens / ¥4.3</text>
+</svg>

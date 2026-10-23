@@ -1,0 +1,25 @@
+name: Bug report
+description: 报告 App / Engine / Local Model 问题
+labels: [bug]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: 分类
+      options: [App, Engine, Local Model, Docs, Ops, Deploy]
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: 现象
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: 复现步骤
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 证据 / 日志

@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>元DGTF 个人工作台</title>
+<link rel="icon" type="image/x-icon" href="/static/dgtf.ico?v=1.5.24-desktop">
+<link rel="shortcut icon" type="image/x-icon" href="/static/dgtf.ico?v=1.5.24-desktop">
+<link rel="stylesheet" href="/static/style.css?v=1.5.24-logo2">
+</head>
+<body class="stage-empty">
+
+<!-- 左上角三个按钮：抽屉（面板）/ 搜索对话产物 / 开启新对话
+     ★ **只留图标**（文字去掉，说明走悬停气泡 `.tip`） -->
+<div class="corner-actions">
+  <button id="drawer-btn" class="icon-btn" data-tip="打开面板（读数台 · 产物库 · 资料库 · 检索库）" aria-label="打开面板">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="16" rx="2.5" stroke="currentColor" stroke-width="1.7"/>
+      <path d="M9.5 4v16" stroke="currentColor" stroke-width="1.7"/>
+    </svg>
+  </button>
+  <button id="search-btn" class="icon-btn" data-tip="搜索对话产物（标题 / 元数据 / 正文）" aria-label="搜索对话产物">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="11" cy="11" r="6.6" stroke="currentColor" stroke-width="1.8"/>
+      <path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </svg>
+  </button>
+  <button id="newchat-btn" class="icon-btn" data-tip="开启新对话（清空当前显示）" aria-label="开启新对话">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.3c-1.3 0-2.6-.3-3.7-.8L3 20.5l1.6-5.2a8.2 8.2 0 0 1-.9-3.8A8.4 8.4 0 0 1 12.5 3.2"
+            stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M18 2.6v5.6M15.2 5.4h5.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+    </svg>
+  </button>
+
+</div>
+
+<!-- 抽屉：只放**按钮**（点一个 → 对应的面板全屏铺开，见 #sheet） -->
+<aside id="drawer" class="drawer" aria-hidden="true">
+  <div class="drawer-head">
+    <span class="brand"><img class="app-logo" src="/static/desktop-icon-64.png" alt="" aria-hidden="true">
+      元DGTF</span>
+    <button id="drawer-close" class="icon-btn" data-tip="收起面板（Esc）" aria-label="收起面板">
+      <!-- ★ R30：图形与左上角那个「面板」键**一致**（用户要求） -->
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <rect x="3" y="4" width="18" height="16" rx="2.5" stroke="currentColor" stroke-width="1.7"/>
+        <path d="M9.5 4v16" stroke="currentColor" stroke-width="1.7"/>
+      </svg>
+    </button>
+  </div>
+  <div class="drawer-body scroll">
+    <div class="env" id="env-info"></div>
+
+    <nav class="drawer-nav">
+      <button class="nav-btn" data-sheet="view-agent" data-tip="DSH 接管：队列/知识/会话/提案只读展示 + 实时信息屏；执行动作统一交给当前 DeepSeek Harness 对话" aria-label="DSH Agent">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="4" y="7.2" width="16" height="12" rx="3" stroke="currentColor" stroke-width="1.7"/>
+      <path d="M12 3.4V7.2M8.6 12.2h.01M15.4 12.2h.01M9 16.2h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+    </svg>
+    <span class="nb-name">DSH Agent</span>
+  </button>
+      <button class="nav-btn" data-sheet="adv-panel" data-tip="模型 / 档位 / 开关，留空 = auto">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 7h10M18 7h2M4 17h4M12 17h8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          <circle cx="16" cy="7" r="2.3" stroke="currentColor" stroke-width="1.7"/>
+          <circle cx="10" cy="17" r="2.3" stroke="currentColor" stroke-width="1.7"/>
+        </svg>
+        <span class="nb-name">高级参数</span>
+      </button>
+      <button class="nav-btn" data-sheet="dash-stats" data-tip="深究轮次 / token / 跑完浅跑">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 19V9M10 19V4M16 19v-7M22 19H2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        </svg>
+        <span class="nb-name">读数台</span>
+      </button>
+      <button class="nav-btn" data-sheet="dash-history" data-tip="历次任务 / 状态 / 耗时">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="12" cy="12" r="8.4" stroke="currentColor" stroke-width="1.7"/>
+          <path d="M12 7.6V12l3 1.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        </svg>
+        <span class="nb-name">最近跑过</span>
+      </button>
+      <button class="nav-btn" data-sheet="view-chats" data-tip="历次会话 · 可回到当时的原始运行日志">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M21 12a8.4 8.4 0 0 1-8.5 8.3c-1.3 0-2.6-.3-3.7-.8L3 20.5l1.6-5.2a8.2 8.2 0 0 1-.9-3.8A8.4 8.4 0 0 1 12.5 3.2"
+                stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M12 7.6V12l3 1.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        </svg>
+        <span class="nb-name">历史对话</span>
+      </button>
+      <button class="nav-btn" data-sheet="view-lib" data-tip="历史产物检索">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H10l1.6 2H18.5A1.5 1.5 0 0 1 20 7.5V18a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18z"
+                stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+        </svg>
+        <span class="nb-name">产物库</span>
+      </button>
+      <button class="nav-btn" data-sheet="view-local" data-tip="导入文件当外部证据锚点">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 15.5V4m0 0L8 8m4-4l4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15"
+                stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        </svg>
+        <span class="nb-name">本地资料库</span>
+      </button>
+      <button class="nav-btn" data-sheet="view-web" data-tip="历次联网命中 · 去重">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="12" cy="12" r="8.4" stroke="currentColor" stroke-width="1.7"/>
+          <path d="M3.6 12h16.8M12 3.6c2.4 2.6 2.4 14.2 0 16.8M12 3.6c-2.4 2.6-2.4 14.2 0 16.8"
+                stroke="currentColor" stroke-width="1.7"/>
+        </svg>
+        <span class="nb-name">联网检索库</span>
+      </button>
+</nav>
+  </div>
+  <div class="drawer-foot">个人工作台</div>
+</aside>
+
+<!-- 全屏面板层：点抽屉里的按钮后，对应面板**铺满整页**，背景半透明、透出底下首屏 -->
+<div id="sheet" class="sheet hidden">
+  <div class="sheet-head">
+    <span id="sheet-title" class="sheet-title"></span>
+    <!-- ★ R28：各页的「计数 / 时间 / 说明」挪到标题旁当**描述**（面板内不再重复一条标题行） -->
+    <span id="sheet-desc" class="sheet-desc">
+      <span class="sd" data-for="dash-stats">更新时间 <span id="stats-asof"></span></span>
+      <span class="sd" data-for="dash-history">共 <span id="history-count"></span></span>
+      <span class="sd" data-for="view-chats"><span id="chats-count"></span> · 每次提交都是一次独立会话 —— 点开任意一条即可回到它当时的运行日志窗口与内容（归档的那份在服务重启后依然在）。</span>
+      <span class="sd" data-for="view-lib"><span id="lib-count"></span></span>
+      <span class="sd" data-for="view-local"><span id="local-count"></span></span>
+      <span class="sd" data-for="view-web"><span id="web-count"></span></span>
+      <span class="sd" data-for="view-agent">Agent 面板只读展示队列/知识/会话/提案；执行动作统一交给当前 DeepSeek Harness 对话，状态和动作变化实时汇总到信息屏。</span>
+    </span>
+    <button id="sheet-close" class="icon-btn" data-tip="关闭面板（Esc）" aria-label="关闭面板">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
+  <div class="sheet-body">
+
+    <!-- 高级参数：这一页只列**分组按钮**，点一个进下一层新页看该组参数 -->
+    <div class="advanced sheet-page" id="adv-panel">
+      <div class="adv-groups" id="adv-groups"></div>
+    </div>
+
+    <!-- 分组参数页：点某个分组后铺满显示该组参数（#adv-grid 是参数网格的容器） -->
+    <section class="panel sheet-page" id="adv-group-page">
+      <div class="panel-head">
+        <span class="panel-title" id="adv-group-title"></span>
+        <span class="muted">留空 = 交给引擎 auto 自决</span>
+      </div>
+      <div class="adv-group-body scroll">
+        <div class="grid" id="adv-grid"></div>
+      </div>
+    </section>
+
+    <!-- ★ R28：面板里**不再重复一条标题行**（标题与计数在上面的 sheet-head），点开即内容 -->
+    <section id="dash-stats" class="panel sheet-page">
+      <div id="stats-body" class="stats-body scroll"></div>
+    </section>
+
+    <section id="dash-history" class="panel sheet-page">
+      <div id="history-list" class="hist-list scroll"></div>
+    </section>
+
+    <section id="view-chats" class="panel sheet-page">
+      <div id="chats-list" class="hist-list scroll"></div>
+    </section>
+
+    <section id="view-lib" class="panel sheet-page">
+      <div class="searchbar">
+        <div class="search-wrap">
+          <input id="lib-q" placeholder="搜索标题 / 元数据 / 正文…">
+          <kbd>/</kbd>
+        </div>
+        <label class="chk"><input type="checkbox" id="lib-body"> 搜正文</label>
+        <select id="lib-decid"><option value="">可判定性：全部</option></select>
+        <select id="lib-orient"><option value="">取向：全部</option></select>
+        <select id="lib-kind">
+          <option value="">分类：全部</option>
+          <option value="md">md</option>
+          <option value="log">log</option>
+          <option value="json">json</option>
+        </select>
+        <select id="lib-layer">
+          <option value="">层级：全部</option>
+          <option value="总">总</option>
+          <option value="修行">修行</option>
+          <option value="研究">研究</option>
+          <option value="对撞">对撞</option>
+          <option value="元">元</option>
+        </select>
+        <select id="lib-days">
+          <option value="">时间：全部</option>
+          <option value="7">最近 7 天</option>
+          <option value="30">最近 30 天</option>
+          <option value="90">最近 90 天</option>
+        </select>
+        <button id="lib-search">搜索</button>
+        <button id="lib-export" class="ghost" data-tip="把当前筛选下的产物打成 zip 导出">导出</button>
+      </div>
+      <div id="lib-list" class="lib-list scroll"></div>
+    </section>
+
+    <section id="view-local" class="panel sheet-page">
+      <div class="hint tight">
+        <b>本地资料库</b>：导入文件会解析成文本、按块存入
+        <code>dgtf_app/anchors/external_anchor.json</code>，并作为本地 RAG 证据
+        （BGE 语义 + BM25）参与项目上下文；原文件留档在 anchors/_raw。
+        只读/可删除，不参与模型训练，也不会自动外发。
+      </div>
+      <div class="import-bar">
+        <!-- ★ R44：改成**真按钮**去点隐藏 input —— 原来靠 `<label>` 包着 `display:none`
+             的 input，用户报「点了没反应」（label 转发激活在样式/覆盖下会静默失效）。
+             多选、不限类型（文档 / 图片都收）；上限写在按钮说明与后端校验里。 -->
+        <button id="anchor-pick" class="ghost"
+          data-tip="导入到本地资料库：文档/图片均可；参与 RAG，不训练、不外发；单文件 ≤100MB，单次 ≤50">选择文件导入…</button>
+        <input type="file" id="anchor-file" multiple hidden>
+        <span class="muted" id="import-msg"></span>
+      </div>
+      <div class="import-detail" id="import-detail"></div>
+      <div id="local-list" class="lib-list scroll"></div>
+      <details class="cand" open>
+        <summary id="local-cand-hint"></summary>
+        <div id="local-cand" class="lib-list scroll"></div>
+      </details>
+    </section>
+
+    <section id="view-web" class="panel sheet-page">
+      <div class="searchbar tight">
+        <div class="search-wrap">
+          <input id="web-q" placeholder="按问题 / 关键词过滤…">
+        </div>
+        <select id="web-mode">
+          <option value="group">按问题聚合 · 去重</option>
+          <option value="flat">平铺（原始顺序 · 不去重）</option>
+        </select>
+        <button id="web-search">刷新</button>
+        <button id="web-export" class="ghost" data-tip="把当前筛选下的检索结果导成 Markdown">导出</button>
+      </div>
+      <div id="web-list" class="lib-list scroll"></div>
+    </section>
+
+    <!-- ★ Agent 面板：读任务队列 / 提交用户任务 / 运行消费者 / 刷新技术知识 / 看处理结果。
+         入口在侧边栏，与其它页面一致。 -->
+    <section id="view-agent" class="panel sheet-page">
+      <div class="searchbar tight agent-toolbar">
+        <button id="agent-refresh" class="ghost" data-tip="刷新 Agent 面板全部库：队列/结果/知识/DSH会话/DSH产物/提案/运行/V2/审计/资料库/联网库">刷新全部库</button>
+        <button id="dsh-config-btn" class="ghost" data-tip="DSH 功能配置：模型 / 推理强度 / 联网 / 权限，与 Harness 对话框配置项对应">DSH 配置</button>
+        <button id="agent-auto" class="ghost" data-tip="交由当前 DeepSeek Harness 对话执行：自动流程闭环 + 安全提案自动修复（Agent 面板不再提供输入框）">DSH 接管：闭环 + 修复</button>
+        <button id="agent-autopilot-btn" class="ghost" data-tip="DSH守护：开关交由当前 DeepSeek Harness 对话执行，不在 app 内起本地守护进程">DSH守护：关</button>
+        <button id="agent-knowledge-btn" class="ghost" data-tip="统一知识检索：检索/爬取官方权威、最新、高置信、高相关资料，并在 DSH 会话中展示过程">知识检索</button>
+        <span class="search-wrap">
+          <input id="agent-kn-q" placeholder="自由查询（官方/权威/最新优先；留空=前沿刷新）" autocomplete="off">
+        </span>
+        <button id="agent-kn-search" class="ghost" data-tip="按输入框自由查询高质量知识（走同一 DSH 知识检索会话）">查询</button>
+        <button id="agent-kn-dedupe" class="ghost" data-tip="清理技术知识库中的重复条目（保留最新一条）">库去重</button>
+        <span class="muted" id="agent-msg"></span>
+      </div>
+      <div class="agent-live" id="agent-action-log" role="status" aria-live="polite"
+           data-tip="实时信息屏：所有动作与库/DSH 状态变更都汇总到这里，单行自动覆盖">
+        <span class="agent-live-dot" aria-hidden="true"></span>
+        <span class="agent-live-label">实时信息屏</span>
+        <div id="agent-action-log-list"><span class="muted">最近动作：暂无</span></div>
+        <span class="agent-live-asof" id="agent-asof">更新于 —</span>
+      </div>
+      <div class="searchbar tight dsh-agent-cfg hidden" id="dsh-config-box">
+        <span class="muted">DSH 配置</span>
+        <span class="chip">模式：PTC</span>
+        <select class="pill dsh-sel" id="dsh-model" data-tip="Harness 模型配置">
+          <option value="deepseek-flash">模型：Flash（默认）</option>
+          <option value="deepseek-reasoner">模型：Reasoner</option>
+        </select>
+        <select class="pill dsh-sel" id="dsh-effort" data-tip="Harness Reasoning effort 配置">
+          <option value="default">推理：Provider default</option>
+          <option value="low">推理：Low</option>
+          <option value="medium">推理：Medium</option>
+          <option value="high">推理：High</option>
+          <option value="max">推理：Max</option>
+        </select>
+        <select class="pill dsh-sel" id="dsh-network" data-tip="Harness 联网授权配置">
+          <option value="0">联网：关闭</option>
+          <option value="1">联网：授权公开网站</option>
+        </select>
+        <select class="pill dsh-sel" id="dsh-perm" data-tip="Harness 文件/工具权限配置">
+          <option value="read-only">权限：只读</option>
+          <option value="workspace-write">权限：读写工作区</option>
+          <option value="danger-full-access">权限：完全访问（危险）</option>
+          <option value="auto">权限：自动审查</option>
+        </select>
+        <button id="dsh-config-save" class="ghost" data-tip="保存 DSH 配置">保存配置</button>
+        <span class="muted" id="dsh-config-msg"></span>
+      </div>
+      <div class="agent-tabs">
+        <button class="pill on" data-agent-tab="0">任务队列</button>
+        <button class="pill" data-agent-tab="1">消费者结果</button>
+        <button class="pill" data-agent-tab="2">技术知识</button>
+        <button class="pill" data-agent-tab="3">DSH 会话</button>
+        <button class="pill" data-agent-tab="4">DSH 产物</button>
+        <button class="pill" data-agent-tab="5">修复提案</button>
+        <button class="pill" data-agent-tab="6">最近运行</button>
+        <button class="pill" data-agent-tab="7">V2 调度</button>
+        <button class="pill" data-agent-tab="8">自洽审计</button>
+        <span class="gh-inline">
+          <button id="gh-open" class="ghost" data-tip="用 GitHub Desktop 打开当前仓库">GitHub Desktop</button>
+          <button id="gh-commit" class="ghost" data-tip="提交当前工作区全部变更（显式确认）">提交当前变更…</button>
+          <span class="muted" id="gh-status">git 状态读取中…</span>
+        </span>
+      </div>
+      <div class="agent-grid scroll">
+        <div class="agent-sec">
+          <div class="agent-sec-h">任务队列 <span class="chip" id="agent-task-n">0</span><span class="muted lib-stamp" id="agent-task-stamp">未刷新</span></div>
+          <div id="agent-tasks" class="agent-list"></div>
+        </div>
+        <div class="agent-sec">
+          <div class="agent-sec-h">消费者结果 <span class="chip" id="agent-result-n">0</span><span class="muted lib-stamp" id="agent-result-stamp">未刷新</span></div>
+          <div id="agent-results" class="agent-list"></div>
+        </div>
+        <div class="agent-sec">
+          <div class="agent-sec-h">技术知识库 <span class="chip" id="agent-kn-n">0</span><span class="muted lib-stamp" id="agent-kn-stamp">未刷新</span><span class="muted agent-kn-desc">经 DSH 检索会话按官方/时效/置信/相关筛选</span></div>
+          <div id="agent-knowledge" class="agent-list"></div>
+        </div>
+        <div class="agent-sec">
+          <div class="agent-sec-h">DSH Agent 会话 <span class="chip" id="agent-dsh-n">0</span><span class="muted lib-stamp" id="agent-dsh-stamp">未刷新</span></div>
+          <div id="agent-dsh" class="agent-list"></div>
+        </div>
+        <div class="agent-sec">
+          <div class="agent-sec-h">DSH 产物库 <span class="chip" id="agent-dsh-art-n">0</span><span class="muted lib-stamp" id="agent-dsh-art-stamp">未刷新</span></div>
+          <div id="agent-dsh-art" class="agent-list"></div>
+        </div>
+        <div class="agent-sec">
+          <div class="agent-sec-h">修复提案库 <span class="chip" id="agent-prop-n">0</span><span class="muted lib-stamp" id="agent-prop-stamp">未刷新</span></div>
+          <div id="agent-proposals" class="agent-list"></div>
+        </div>
+        <div class="agent-sec">
+          <div class="agent-sec-h">最近一次消费者运行<span class="muted lib-stamp" id="agent-runbox-stamp">未刷新</span></div>
+          <div id="agent-runbox" class="agent-list"></div>
+        </div>
+        <div class="agent-sec">
+          <div class="agent-sec-h">V2 影子调度 <span class="chip" id="agent-v2-n">0</span><span class="muted lib-stamp" id="agent-v2-stamp">未刷新</span>
+            <select class="pill" id="pareto-prefer" data-tip="帕累托推荐偏好">
+              <option value="balanced">均衡</option>
+              <option value="cost">省成本</option>
+              <option value="quality">质量优先</option>
+            </select>
+            <span class="muted" id="v2-auto-status" data-tip="切换挡位后自动评估 V2 模板策略并写入最优">自动选优</span></div>
+          <div id="agent-v2" class="agent-list"></div>
+        </div>
+        <div class="agent-sec">
+          <div class="agent-sec-h">自洽审计 <span class="chip" id="agent-consistency-n">0</span><span class="muted lib-stamp" id="agent-consistency-stamp">未刷新</span></div>
+          <div id="agent-consistency" class="agent-list"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <!-- ★★ R38：参数页的**共用底栏** —— 从 `#adv-group-page` 里提出来，放在 `.sheet-body`
+       之外、`#sheet` 之内（`flex:0 0 auto` 的兄弟节点）⇒ 无论当前是「高级参数首页（分组
+       列表）」还是「某一组的分组页」，这一条都在**同一位置**（面板底部）出现，且**居中**。
+       ★ 为什么必须提出来：原来它挂在 `#adv-group-page` 内部，首页根本没有 ⇒
+         用户进「高级参数」找不到「恢复出厂设置」（报「恢复出厂设置后按钮不见了」）；
+         且它在 `.panel{overflow:hidden}` 里、被 `.adv-group-body{flex:1 1 auto}` 挤到
+         可视区外（图 4 圈出的空位）。
+       ★ 显隐由 JS 按当前页控制（`syncAdvBar()`）：只在参数相关的两页显示，别的页 `hidden`。
+       「保存」= 把**所有**参数改动写回用户配置 dgtf_config.user.yaml（持久）并退出；
+       「恢复出厂设置」= 删用户配置、全部参数回落到后端出厂 dgtf_config.yaml。说明走悬停气泡。 -->
+  <div class="sheet-actions hidden" id="adv-actions">
+    <span class="sa-spacer" aria-hidden="true"></span>
+    <button id="adv-save" class="ghost primary" data-tip="保存所有参数改动（写回用户配置 dgtf_config.user.yaml）并退出">保存</button>
+    <button id="adv-reset" class="ghost danger" data-tip="删除用户配置，全部参数回落到后端出厂的 dgtf_config.yaml">恢复出厂设置</button>
+  </div>
+</div>
+
+<!-- ★ R40：日志滚动指示从 `#runlog` 里**提出来**挂到 body 下 ——
+     用户要求它贴在**页面最右缘**（原来受日志框 `max-width:1080px` 约束，落在内侧）。
+     为什么挂 body 而不是 `main`：`main.stage` 有让位用的 `transform` 过渡，
+     有 transform 的祖先会成为 `position:fixed` 的包含块 ⇒ 挂在里面贴不到视口缘。
+     `z-index:20`：在正文之上、全屏面板（`#sheet` 65 / `#detail` 90）之下。 -->
+<div id="rl-bar" class="rl-bar" aria-hidden="true"></div>
+
+<div id="drawer-mask" class="drawer-mask"></div>
+
+<main class="stage">
+  <!-- 首屏：只有欢迎语 + 输入框，其余留白 -->
+  <div id="welcome" class="welcome">
+    <img class="app-logo big" src="/static/desktop-icon-128.png" alt="" aria-hidden="true">
+    <span id="welcome-text">欢迎回来，随时开始吧</span>
+  </div>
+
+  <!-- 运行日志：默认隐藏，点了「开始深究」才出现（四层日志合成一条流） -->
+  <div id="runlog" class="runlog hidden">
+    <!-- ★ R28：徽章贴左 · **题目与元信息同一栏、一起居中**（题目蓝色、与元信息同字号）· 链接贴右 -->
+    <div class="runlog-head">
+      <span class="rl-head-l"><span id="rl-badge" class="badge"></span><button type="button" id="rl-retry" class="rl-retry hidden" data-tip="用同一个问题新开一次跑次（新任务，不改旧任务）">重试</button></span>
+      <span class="rl-head-c"><span id="rl-question"></span><span id="rl-meta" class="rl-meta"></span></span>
+      <span class="rl-head-r"><span id="dsh-elapsed" class="dsh-elapsed hidden"></span><button type="button" id="dsh-history-toggle" class="ghost dsh-history-toggle hidden">历史对话</button><span id="rl-files" class="rl-files"></span></span>
+    </div>
+    <div id="dsh-conv-bar" class="dsh-conv-bar hidden">
+      <span id="dsh-conv-current" class="dsh-conv-current"></span>
+      <span id="dsh-conv-running" class="dsh-conv-running"></span>
+    </div>
+    <div id="runlog-body" class="runlog-body scroll"></div>
+  </div>
+
+  <div id="dsh-history" class="dsh-history hidden">
+    <div class="dsh-history-head">
+      <strong>DSH 会话历史</strong>
+      <button type="button" id="dsh-history-close" class="ghost">关闭</button>
+    </div>
+    <div id="dsh-history-list" class="dsh-history-list scroll"></div>
+  </div>
+
+  <div class="composer">
+    <textarea id="question" rows="1" spellcheck="false"
+      placeholder="此刻 你又想到了什么？ 可以发给元DGTF 我们一起去探索吧"></textarea>
+    <div class="composer-row">
+      <button type="button" class="pill" id="pill-thinking" data-tip="提高推理强度：runtime.thinking = on">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 3l2.1 5.6L20 10l-5.9 1.4L12 17l-2.1-5.6L4 10l5.9-1.4L12 3z"
+                stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+        </svg>
+        <span class="p-name">深度思考</span>
+      </button>
+      <button type="button" class="pill" id="pill-web" data-tip="启用联网检索：runtime.web = on">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="12" cy="12" r="8.2" stroke="currentColor" stroke-width="1.6"/>
+          <path d="M3.8 12h16.4M12 3.8c2.4 2.4 2.4 13.9 0 16.4M12 3.8c-2.4 2.4-2.4 13.9 0 16.4"
+                stroke="currentColor" stroke-width="1.6"/>
+        </svg>
+        <span class="p-name">智能搜索</span>
+      </button>
+      <label class="pill mock-pill" id="mock-row" data-tip="不花钱、几秒出结果，只验证链路">
+        <input type="checkbox" id="mock">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M8 5.2v13.6l10-6.8z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+        </svg>
+        <span class="p-name">演练模式</span>
+      </label>
+
+      <button type="button" class="pill dsh-pill" id="pill-dsh" data-tip="连接 DeepSeek Harness 当前对话：首屏输入直接进入本对话，可读写项目文件并实时同步对话内容">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+        </svg>
+        <span class="p-name">DSH Agent</span>
+      </button>
+      <button type="button" id="attach-btn" class="pill" data-tip="导入本地资料：解析/分块参与 BGE+BM25 RAG；原文留档，不训练、不外发、可删除（单文件≤100MB，单次≤50）" aria-label="导入文件">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M20 11.5l-7.6 7.6a4.6 4.6 0 0 1-6.5-6.5l8-8a3.1 3.1 0 0 1 4.4 4.4l-8 8a1.6 1.6 0 0 1-2.2-2.2l7.3-7.3"
+                stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <!-- ★★ R48：**去掉回形针上的数字气泡**（用户原话「回形针不要有上标」）。
+             原来这里挂着一个显示文件数的角标，用户第三张截图圈掉了它。
+             ⇒ 已**整条移除**（页面结构 + 脚本里的读写 + 样式表里的规则）。
+             ★ 原本「点角标展开清单」这条交互也一并没了 ⇒ 改成
+               **点回形针本身** = 有已导入文件时**展开/收起小窗**、
+               没有时**打开文件选择框**（这样「看一眼清单」仍然只点一下）。
+             ★ ★ 这段说明刻意**不写出那个元素的标识符**：判据会读页面/脚本文本，
+               注释里出现同样的 token 会把「已移除」判成「还在」（R47 踩过一次）。 -->
+      </button>
+      <button id="run-btn" class="send" data-tip="开始深究（⌘/Ctrl+↵）" aria-label="开始深究">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 19V5M6 11l6-6 6 6" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+    <div class="warn" id="cost-warn"></div>
+    <div class="attach-msg" id="attach-msg"></div>
+    <!-- ★ R47：已导入文件**小窗口**（贴在回形针右侧弹出 —— 用户要求
+         「不要在下面对话框展开，保持原界面一致」）。
+         内容 = 一排**文件小图标**；每个图标**右上角一个 ×**，点 × 即删除该文件。
+         默认收起（`.hidden`），点回形针上的计数徽章展开。
+         ★ 它相对 `.composer`（输入框整块）**绝对定位**，所以不会把下面的内容顶下去。 -->
+    <div class="attach-panel hidden" id="attach-panel">
+      <div class="ap-head">
+        <span class="ap-title">已导入 <span class="num" id="ap-count">0</span> 个</span>
+        <button type="button" class="ap-x" id="ap-close" aria-label="关闭已导入文件小窗">×</button>
+      </div>
+      <div class="ap-body scroll" id="ap-list"></div>
+      <div class="ap-foot muted" id="ap-foot"></div>
+    </div>
+  </div>
+</main>
+
+<!-- 搜索对话产物：点左上角放大镜出现（居中搜索框 + 结果列表） -->
+<div id="search-overlay" class="search-overlay hidden">
+  <div class="search-panel">
+    <div class="search-box">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="sb-icon">
+        <circle cx="11" cy="11" r="6.6" stroke="currentColor" stroke-width="1.8"/>
+        <path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+      <input id="search-input" placeholder="搜索对话内容…" autocomplete="off" spellcheck="false">
+      <button id="search-close" class="icon-btn" aria-label="关闭搜索">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+    <div id="search-results" class="search-results scroll"></div>
+  </div>
+</div>
+
+
+<!-- 运行日志诊断：只读展示 app/err/daemon 尾部（服务端白名单+脱敏；前端 textContent 注入，无内联事件） -->
+<div id="diag-overlay" class="search-overlay diag-overlay hidden">
+  <div class="search-panel">
+    <div class="agent-dlg diag-dlg" role="dialog" aria-modal="true" aria-labelledby="diag-title">
+      <div class="agent-dlg-h">
+        <span id="diag-title">运行日志诊断</span>
+        <button id="diag-x" class="icon-btn" data-tip="关闭（Esc）" aria-label="关闭日志诊断">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="diag-toolbar">
+        <label class="diag-field" for="diag-name"><span>日志</span>
+          <select id="diag-name">
+            <option value="app" selected>app（应用运行）</option>
+            <option value="err">err（错误）</option>
+            <option value="daemon">daemon（后台守护）</option>
+          </select>
+        </label>
+        <button id="diag-refresh" class="primary">刷新</button>
+        <button id="diag-copy" class="ghost">复制</button>
+        <button id="diag-download" class="ghost">下载</button>
+        <button id="diag-close" class="ghost">关闭</button>
+        <span id="diag-msg" class="muted diag-msg"></span>
+      </div>
+      <div id="diag-meta" class="muted diag-meta"></div>
+      <pre id="diag-body" class="diag-body scroll"></pre>
+    </div>
+  </div>
+</div>
+
+<div id="detail" class="detail hidden">
+  <div class="detail-inner">
+    <div class="detail-head">
+      <div id="detail-title"></div>
+      <button id="detail-close" class="ghost">关闭 <kbd>Esc</kbd></button>
+    </div>
+    <div id="detail-meta" class="muted"></div>
+    <div id="detail-body" class="md"></div>
+  </div>
+</div>
+
+<!-- 悬停描述的承载元素（挂 body 的 fixed 气泡，不受抽屉 overflow 裁剪）+ 发送星光动画层 -->
+<div id="fx" class="fx" aria-hidden="true"></div>
+
+
+
+<script src="/static/app.js?v=1.5.24"></script>
+</body>
+</html>

@@ -1,0 +1,4598 @@
+{
+  "generated_at": "2026-10-19T10:56:57+08:00",
+  "generated_by": "core-audit · task-2",
+  "engine": {
+    "audit": "dgtf_v2/core_duty.py:audit_packed",
+    "contract": "dgtf_v2/bridge.py:V2MemoryBridge.contract_report"
+  },
+  "selection": {
+    "rule": "outputs/*.packed.json 按 mtime 升序取最后 20 份",
+    "cutoff_epoch": 1792377807.0,
+    "count": 20,
+    "oldest": "20261014_201423_一个领域的基础知识究竟指什么它是否正在.packed.json",
+    "oldest_mtime": "2026-10-14T20:14:23+08:00",
+    "newest": "20261019_101117_AI能否独立完成数字IC设计边界.packed.json",
+    "newest_mtime": "2026-10-19T10:11:17+08:00"
+  },
+  "summary": {
+    "runs": 20,
+    "ok": 2,
+    "not_ok": 18,
+    "overreach_files": 18,
+    "overreach_kinds": {
+      "1: 出现 action_plan（越权）": 18
+    },
+    "gap_files": 4,
+    "gap_kinds": {
+      "all: 缺 decision": 4,
+      "all: 缺 residual_risks": 4
+    },
+    "repair_kinds": {
+      "1.actions->all": 18
+    },
+    "layer_ok": {
+      "0": 20,
+      "1": 20,
+      "both": 20,
+      "all": 16
+    },
+    "raw_view1_has__actions_files": 18,
+    "raw_all_actions_nonempty_files": 0,
+    "raw_all_not_do_nonempty_files": 0,
+    "raw_all_decision_nonempty_files": 0,
+    "raw_all_residual_nonempty_files": 0,
+    "v2_shadow_core_present_files": 0,
+    "v2_shadow_core_ok_files": 0,
+    "contract_ok_files": 16
+  },
+  "rows": [
+    {
+      "file": "20261014_201423_一个领域的基础知识究竟指什么它是否正在.packed.json",
+      "mtime": "2026-10-14T20:14:23+08:00",
+      "size": 619248,
+      "raw": {
+        "top_keys": [
+          "_anchor_tier_warning",
+          "_auto_dispatch",
+          "_auto_plan_used",
+          "_config",
+          "_runtime",
+          "bandit",
+          "belief_staleness",
+          "calibration_queue",
+          "channels",
+          "compact",
+          "cost_profile",
+          "decidability",
+          "dispatch",
+          "diversity",
+          "external_anchor",
+          "freeze",
+          "id",
+          "input_sanity",
+          "keep",
+          "layer_contribution",
+          "llm_calls",
+          "llm_eval_calls",
+          "llm_eval_tokens",
+          "llm_ops_calls",
+          "llm_ops_tokens",
+          "llm_tokens",
+          "orientation",
+          "playbook",
+          "pools",
+          "question",
+          "rounds",
+          "route",
+          "self_text",
+          "tri_alpha",
+          "tri_consensus",
+          "tri_state",
+          "views"
+        ],
+        "route": [
+          "0",
+          "1",
+          "both",
+          "all"
+        ],
+        "rounds": {
+          "0": 4,
+          "1": 5,
+          "both": 5,
+          "all": 6
+        },
+        "run_id": "V1234FULL_20261014_190755",
+        "question": "一个领域的基础知识究竟指什么，它是否正在被 AI 快速贬值？",
+        "llm_calls": 159,
+        "llm_tokens": 1570901,
+        "quality": {
+          "coverage": null,
+          "tri_ratio": null,
+          "answered": null,
+          "answerable_total": null
+        },
+        "views_keys": [
+          "0",
+          "1",
+          "all",
+          "both"
+        ],
+        "view0": {
+          "candidates": 31,
+          "amps": 5,
+          "probes": 3,
+          "suspensions": 0
+        },
+        "view1": {
+          "_actions_len": 3,
+          "has__actions": true,
+          "_not_do_len": 3,
+          "dp_actions_len": 3,
+          "dp_keys": [
+            "actions",
+            "answer",
+            "answered_sub_ids",
+            "distance",
+            "evidence",
+            "not_do"
+          ],
+          "dp_evidence_len": 2
+        },
+        "view_both": {
+          "adjudications": 2,
+          "threads": 6,
+          "has_manifest": true
+        },
+        "view_all": {
+          "keys": [
+            "adjudications",
+            "amps",
+            "anchor",
+            "anchor_touched",
+            "anytime",
+            "aspect_hist",
+            "aspect_units",
+            "belief_items",
+            "best_round",
+            "both_quota",
+            "candidates",
+            "carry",
+            "carry_check",
+            "carry_checks",
+            "carry_dropped",
+            "carry_dropped_all",
+            "closure_reason",
+            "collision",
+            "covered_aspects",
+            "csd",
+            "cut_two_way",
+            "decidable_product",
+            "deferrals",
+            "delivery_share",
+            "distance_to_question",
+            "divergence",
+            "duel_suspensions",
+            "duty",
+            "duty_remedy_used",
+            "duty_trace",
+            "duty_verdict",
+            "engagements",
+            "entry",
+            "errors",
+            "escalations",
+            "goal_trace",
+            "goal_verdict",
+            "idle",
+            "ing_structured",
+            "manifest",
+            "meta",
+            "meta_closure",
+            "probe_skipped",
+            "probes",
+            "quality_flags",
+            "quality_verdict",
+            "quant_readings",
+            "reclassifications",
+            "reconfirmations",
+            "refinements",
+            "rehashed",
+            "rendered",
+            "rephrase_ratio",
+            "resolutions",
+            "revocations",
+            "roles_run",
+            "round_log",
+            "rounds_cap",
+            "rounds_run",
+            "self_check",
+            "sem_stagnation",
+            "settlement",
+            "stop_primary",
+            "stop_reason",
+            "suspensions",
+            "threads",
+            "touch_rate",
+            "uncovered_aspects",
+            "undecidable_product",
+            "untouched",
+            "upstream_layers",
+            "upstream_texts"
+          ],
+          "actions_len": 0,
+          "not_do_len": 0,
+          "decision_len": 0,
+          "residual_risks_len": 0,
+          "provenance_len": 0,
+          "confidence": null,
+          "decidable_product_present": false
+        },
+        "root_actions_len": 0,
+        "root_not_do_len": 0,
+        "v2_shadow": {
+          "present": false,
+          "mode": null,
+          "core_present": false,
+          "core_ok": null,
+          "core_gaps": null,
+          "core_overreach": null,
+          "core_error": null,
+          "contracts_ok": null
+        }
+      },
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 36,
+            "probes": 3,
+            "suspensions": 0
+          },
+          "1": {
+            "ok": true,
+            "subs": 6,
+            "decidable": 0,
+            "cited": 0,
+            "layer_evidence": 2
+          },
+          "both": {
+            "ok": true,
+            "adjudications": 2,
+            "threads": 6
+          },
+          "all": {
+            "ok": true,
+            "required": {
+              "decision": true,
+              "actions": true,
+              "not_do": true,
+              "residual_risks": true,
+              "provenance": true
+            },
+            "actions": 3,
+            "not_do": 3
+          }
+        },
+        "gaps": [],
+        "overreach": [
+          "1: 出现 action_plan（越权）"
+        ],
+        "repairs": [
+          "1.actions->all:3"
+        ],
+        "ok": false
+      },
+      "path": "outputs\\20261014_201423_一个领域的基础知识究竟指什么它是否正在.packed.json",
+      "mtime_epoch": 1791980063.781,
+      "contract": {
+        "ok": true,
+        "checked": [
+          "0",
+          "1",
+          "all",
+          "both"
+        ],
+        "violations": {}
+      }
+    },
+    {
+      "file": "20261015_042745_一个领域里的常识是如何形成的它可靠吗.packed.json",
+      "mtime": "2026-10-15T04:27:45+08:00",
+      "size": 569843,
+      "raw": {
+        "top_keys": [
+          "_anchor_tier_warning",
+          "_auto_dispatch",
+          "_auto_plan_used",
+          "_config",
+          "_runtime",
+          "bandit",
+          "belief_staleness",
+          "calibration_queue",
+          "channels",
+          "compact",
+          "cost_profile",
+          "decidability",
+          "dispatch",
+          "diversity",
+          "external_anchor",
+          "freeze",
+          "id",
+          "input_sanity",
+          "keep",
+          "layer_contribution",
+          "llm_calls",
+          "llm_eval_calls",
+          "llm_eval_tokens",
+          "llm_ops_calls",
+          "llm_ops_tokens",
+          "llm_tokens",
+          "orientation",
+          "playbook",
+          "pools",
+          "question",
+          "readings_table",
+          "rounds",
+          "route",
+          "self_text",
+          "tri_alpha",
+          "tri_consensus",
+          "tri_state",
+          "views"
+        ],
+        "route": [
+          "0",
+          "1",
+          "both",
+          "all"
+        ],
+        "rounds": {
+          "0": 5,
+          "1": 4,
+          "both": 5,
+          "all": 6
+        },
+        "run_id": "V1236FULL_20261015_033027",
+        "question": "一个领域里的常识是如何形成的，它可靠吗？",
+        "llm_calls": 143,
+        "llm_tokens": 1152428,
+        "quality": {
+          "coverage": null,
+          "tri_ratio": null,
+          "answered": null,
+          "answerable_total": null
+        },
+        "views_keys": [
+          "0",
+          "1",
+          "all",
+          "both"
+        ],
+        "view0": {
+          "candidates": 48,
+          "amps": 11,
+          "probes": 3,
+          "suspensions": 1
+        },
+        "view1": {
+          "_actions_len": 3,
+          "has__actions": true,
+          "_not_do_len": 3,
+          "dp_actions_len": 3,
+          "dp_keys": [
+            "actions",
+            "answer",
+            "answered_sub_ids",
+            "distance",
+            "evidence",
+            "not_do"
+          ],
+          "dp_evidence_len": 2
+        },
+        "view_both": {
+          "adjudications": 2,
+          "threads": 9,
+          "has_manifest": true
+        },
+        "view_all": {
+          "keys": [
+            "adjudications",
+            "amps",
+            "anchor",
+            "anchor_touched",
+            "anytime",
+            "aspect_hist",
+            "aspect_units",
+            "belief_items",
+            "best_round",
+            "both_quota",
+            "candidates",
+            "carry",
+            "carry_check",
+            "carry_checks",
+            "carry_dropped",
+            "carry_dropped_all",
+            "closure_reason",
+            "collision",
+            "covered_aspects",
+            "csd",
+            "cut_two_way",
+            "decidable_product",
+            "deferrals",
+            "delivery_share",
+            "distance_to_question",
+            "divergence",
+            "duel_suspensions",
+            "duty",
+            "duty_remedy_used",
+            "duty_trace",
+            "duty_verdict",
+            "engagements",
+            "entry",
+            "errors",
+            "escalations",
+            "goal_trace",
+            "goal_verdict",
+            "idle",
+            "ing_structured",
+            "manifest",
+            "meta",
+            "meta_closure",
+            "probe_skipped",
+            "probes",
+            "quality_flags",
+            "quality_verdict",
+            "quant_readings",
+            "reclassifications",
+            "reconfirmations",
+            "refinements",
+            "rehashed",
+            "rendered",
+            "rephrase_ratio",
+            "resolutions",
+            "revocations",
+            "roles_run",
+            "round_log",
+            "rounds_cap",
+            "rounds_run",
+            "self_check",
+            "sem_stagnation",
+            "settlement",
+            "stop_primary",
+            "stop_reason",
+            "suspensions",
+            "threads",
+            "touch_rate",
+            "trace_log",
+            "uncovered_aspects",
+            "undecidable_product",
+            "untouched",
+            "upstream_layers",
+            "upstream_texts"
+          ],
+          "actions_len": 0,
+          "not_do_len": 0,
+          "decision_len": 0,
+          "residual_risks_len": 0,
+          "provenance_len": 0,
+          "confidence": null,
+          "decidable_product_present": false
+        },
+        "root_actions_len": 0,
+        "root_not_do_len": 0,
+        "v2_shadow": {
+          "present": false,
+          "mode": null,
+          "core_present": false,
+          "core_ok": null,
+          "core_gaps": null,
+          "core_overreach": null,
+          "core_error": null,
+          "contracts_ok": null
+        }
+      },
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 59,
+            "probes": 3,
+            "suspensions": 1
+          },
+          "1": {
+            "ok": true,
+            "subs": 6,
+            "decidable": 0,
+            "cited": 0,
+            "layer_evidence": 2
+          },
+          "both": {
+            "ok": true,
+            "adjudications": 2,
+            "threads": 9
+          },
+          "all": {
+            "ok": true,
+            "required": {
+              "decision": true,
+              "actions": true,
+              "not_do": true,
+              "residual_risks": true,
+              "provenance": true
+            },
+            "actions": 3,
+            "not_do": 3
+          }
+        },
+        "gaps": [],
+        "overreach": [
+          "1: 出现 action_plan（越权）"
+        ],
+        "repairs": [
+          "1.actions->all:3"
+        ],
+        "ok": false
+      },
+      "path": "outputs\\20261015_042745_一个领域里的常识是如何形成的它可靠吗.packed.json",
+      "mtime_epoch": 1792009665.512,
+      "contract": {
+        "ok": true,
+        "checked": [
+          "0",
+          "1",
+          "all",
+          "both"
+        ],
+        "violations": {}
+      }
+    },
+    {
+      "file": "20261015_133525_AI在数字IC设计的前端流程RT.packed.json",
+      "mtime": "2026-10-15T13:35:25+08:00",
+      "size": 141453,
+      "raw": {
+        "top_keys": [
+          "_anchor_tier_warning",
+          "_auto_dispatch",
+          "_auto_plan_used",
+          "_config",
+          "_runtime",
+          "bandit",
+          "belief_staleness",
+          "calibration_queue",
+          "channels",
+          "compact",
+          "cost_profile",
+          "decidability",
+          "dispatch",
+          "diversity",
+          "external_anchor",
+          "freeze",
+          "id",
+          "input_sanity",
+          "keep",
+          "layer_contribution",
+          "llm_calls",
+          "llm_eval_calls",
+          "llm_eval_tokens",
+          "llm_ops_calls",
+          "llm_ops_tokens",
+          "llm_tokens",
+          "orientation",
+          "playbook",
+          "pools",
+          "question",
+          "readings_table",
+          "rounds",
+          "route",
+          "self_text",
+          "tri_alpha",
+          "tri_consensus",
+          "tri_state",
+          "views"
+        ],
+        "route": [
+          "0"
+        ],
+        "rounds": {
+          "0": 5,
+          "1": 8,
+          "both": 7,
+          "all": 6
+        },
+        "run_id": "20261015_131958",
+        "question": "AI 在数字 IC 设计的前端流程（RTL→验证→综合→DFT）里，哪些环节已经被 AI 工具真实接管？请给出具体的工具名与公开证据，并说明哪些环节仍需要人工专",
+        "llm_calls": 48,
+        "llm_tokens": 256583,
+        "quality": {
+          "coverage": null,
+          "tri_ratio": null,
+          "answered": null,
+          "answerable_total": null
+        },
+        "views_keys": [
+          "0"
+        ],
+        "view0": {
+          "candidates": 60,
+          "amps": 10,
+          "probes": 3,
+          "suspensions": 3
+        },
+        "view1": {
+          "_actions_len": 0,
+          "has__actions": false,
+          "_not_do_len": 0,
+          "dp_actions_len": 0,
+          "dp_keys": [],
+          "dp_evidence_len": 0
+        },
+        "view_both": {
+          "adjudications": 0,
+          "threads": 0,
+          "has_manifest": false
+        },
+        "view_all": {
+          "keys": [],
+          "actions_len": 0,
+          "not_do_len": 0,
+          "decision_len": 0,
+          "residual_risks_len": 0,
+          "provenance_len": 0,
+          "confidence": null,
+          "decidable_product_present": false
+        },
+        "root_actions_len": 0,
+        "root_not_do_len": 0,
+        "v2_shadow": {
+          "present": false,
+          "mode": null,
+          "core_present": false,
+          "core_ok": null,
+          "core_gaps": null,
+          "core_overreach": null,
+          "core_error": null,
+          "contracts_ok": null
+        }
+      },
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 70,
+            "probes": 3,
+            "suspensions": 3
+          },
+          "1": {
+            "ok": true,
+            "skipped": "not_in_route"
+          },
+          "both": {
+            "ok": true,
+            "skipped": "not_in_route"
+          },
+          "all": {
+            "ok": true,
+            "skipped": "not_in_route"
+          }
+        },
+        "gaps": [],
+        "overreach": [],
+        "repairs": [],
+        "ok": true
+      },
+      "path": "outputs\\20261015_133525_AI在数字IC设计的前端流程RT.packed.json",
+      "mtime_epoch": 1792042525.716,
+      "contract": {
+        "ok": true,
+        "checked": [
+          "0"
+        ],
+        "violations": {}
+      }
+    },
+    {
+      "file": "20261015_140414_AI在数字IC设计的前端流程RT.packed.json",
+      "mtime": "2026-10-15T14:04:15+08:00",
+      "size": 322432,
+      "raw": {
+        "top_keys": [
+          "_anchor_tier_warning",
+          "_auto_dispatch",
+          "_auto_plan_used",
+          "_config",
+          "_runtime",
+          "bandit",
+          "belief_staleness",
+          "calibration_queue",
+          "channels",
+          "compact",
+          "cost_profile",
+          "decidability",
+          "dispatch",
+          "diversity",
+          "external_anchor",
+          "freeze",
+          "id",
+          "input_sanity",
+          "keep",
+          "layer_contribution",
+          "llm_calls",
+          "llm_eval_calls",
+          "llm_eval_tokens",
+          "llm_ops_calls",
+          "llm_ops_tokens",
+          "llm_tokens",
+          "orientation",
+          "playbook",
+          "pools",
+          "question",
+          "readings_table",
+          "rounds",
+          "route",
+          "self_text",
+          "tri_alpha",
+          "tri_consensus",
+          "tri_state",
+          "views"
+        ],
+        "route": [
+          "0",
+          "1"
+        ],
+        "rounds": {
+          "0": 5,
+          "1": 4,
+          "both": 7,
+          "all": 6
+        },
+        "run_id": "20261015_133530",
+        "question": "AI 在数字 IC 设计的前端流程（RTL→验证→综合→DFT）里，哪些环节已经被 AI 工具真实接管？请给出具体的工具名与公开证据，并说明哪些环节仍需要人工专",
+        "llm_calls": 84,
+        "llm_tokens": 484638,
+        "quality": {
+          "coverage": null,
+          "tri_ratio": null,
+          "answered": null,
+          "answerable_total": null
+        },
+        "views_keys": [
+          "0",
+          "1"
+        ],
+        "view0": {
+          "candidates": 49,
+          "amps": 9,
+          "probes": 3,
+          "suspensions": 2
+        },
+        "view1": {
+          "_actions_len": 4,
+          "has__actions": true,
+          "_not_do_len": 3,
+          "dp_actions_len": 4,
+          "dp_keys": [
+            "actions",
+            "answer",
+            "answered_sub_ids",
+            "distance",
+            "evidence",
+            "not_do"
+          ],
+          "dp_evidence_len": 2
+        },
+        "view_both": {
+          "adjudications": 0,
+          "threads": 0,
+          "has_manifest": false
+        },
+        "view_all": {
+          "keys": [],
+          "actions_len": 0,
+          "not_do_len": 0,
+          "decision_len": 0,
+          "residual_risks_len": 0,
+          "provenance_len": 0,
+          "confidence": null,
+          "decidable_product_present": false
+        },
+        "root_actions_len": 0,
+        "root_not_do_len": 0,
+        "v2_shadow": {
+          "present": false,
+          "mode": null,
+          "core_present": false,
+          "core_ok": null,
+          "core_gaps": null,
+          "core_overreach": null,
+          "core_error": null,
+          "contracts_ok": null
+        }
+      },
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 58,
+            "probes": 3,
+            "suspensions": 2
+          },
+          "1": {
+            "ok": true,
+            "subs": 6,
+            "decidable": 4,
+            "cited": 0,
+            "layer_evidence": 2
+          },
+          "both": {
+            "ok": true,
+            "skipped": "not_in_route"
+          },
+          "all": {
+            "ok": true,
+            "skipped": "not_in_route"
+          }
+        },
+        "gaps": [],
+        "overreach": [
+          "1: 出现 action_plan（越权）"
+        ],
+        "repairs": [
+          "1.actions->all:4"
+        ],
+        "ok": false
+      },
+      "path": "outputs\\20261015_140414_AI在数字IC设计的前端流程RT.packed.json",
+      "mtime_epoch": 1792044255.097,
+      "contract": {
+        "ok": true,
+        "checked": [
+          "0",
+          "1"
+        ],
+        "violations": {}
+      }
+    },
+    {
+      "file": "20261015_151102_AI在数字IC设计的前端流程RT.packed.json",
+      "mtime": "2026-10-15T15:11:02+08:00",
+      "size": 117866,
+      "raw": {
+        "top_keys": [
+          "_anchor_tier_warning",
+          "_auto_dispatch",
+          "_auto_plan_used",
+          "_config",
+          "_runtime",
+          "bandit",
+          "belief_staleness",
+          "calibration_queue",
+          "channels",
+          "compact",
+          "cost_profile",
+          "decidability",
+          "dispatch",
+          "diversity",
+          "external_anchor",
+          "freeze",
+          "id",
+          "input_sanity",
+          "keep",
+          "layer_contribution",
+          "llm_calls",
+          "llm_eval_calls",
+          "llm_eval_tokens",
+          "llm_ops_calls",
+          "llm_ops_tokens",
+          "llm_tokens",
+          "orientation",
+          "playbook",
+          "pools",
+          "question",
+          "readings_table",
+          "rounds",
+          "route",
+          "self_text",
+          "tri_alpha",
+          "tri_consensus",
+          "tri_state",
+          "views"
+        ],
+        "route": [
+          "0"
+        ],
+        "rounds": {
+          "0": 5,
+          "1": 8,
+          "both": 7,
+          "all": 6
+        },
+        "run_id": "20261015_145824",
+        "question": "AI 在数字 IC 设计的前端流程（RTL→验证→综合→DFT）里，哪些环节已经被 AI 工具真实接管？请给出具体的工具名与公开证据，并说明哪些环节仍需要人工专",
+        "llm_calls": 39,
+        "llm_tokens": 179775,
+        "quality": {
+          "coverage": null,
+          "tri_ratio": null,
+          "answered": null,
+          "answerable_total": null
+        },
+        "views_keys": [
+          "0"
+        ],
+        "view0": {
+          "candidates": 52,
+          "amps": 10,
+          "probes": 3,
+          "suspensions": 2
+        },
+        "view1": {
+          "_actions_len": 0,
+          "has__actions": false,
+          "_not_do_len": 0,
+          "dp_actions_len": 0,
+          "dp_keys": [],
+          "dp_evidence_len": 0
+        },
+        "view_both": {
+          "adjudications": 0,
+          "threads": 0,
+          "has_manifest": false
+        },
+        "view_all": {
+          "keys": [],
+          "actions_len": 0,
+          "not_do_len": 0,
+          "decision_len": 0,
+          "residual_risks_len": 0,
+          "provenance_len": 0,
+          "confidence": null,
+          "decidable_product_present": false
+        },
+        "root_actions_len": 0,
+        "root_not_do_len": 0,
+        "v2_shadow": {
+          "present": false,
+          "mode": null,
+          "core_present": false,
+          "core_ok": null,
+          "core_gaps": null,
+          "core_overreach": null,
+          "core_error": null,
+          "contracts_ok": null
+        }
+      },
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 62,
+            "probes": 3,
+            "suspensions": 2
+          },
+          "1": {
+            "ok": true,
+            "skipped": "not_in_route"
+          },
+          "both": {
+            "ok": true,
+            "skipped": "not_in_route"
+          },
+          "all": {
+            "ok": true,
+            "skipped": "not_in_route"
+          }
+        },
+        "gaps": [],
+        "overreach": [],
+        "repairs": [],
+        "ok": true
+      },
+      "path": "outputs\\20261015_151102_AI在数字IC设计的前端流程RT.packed.json",
+      "mtime_epoch": 1792048262.468,
+      "contract": {
+        "ok": true,
+        "checked": [
+          "0"
+        ],
+        "violations": {}
+      }
+    },
+    {
+      "file": "20261019_050622_一个远程办公团队如何在三个月内建立可验证.packed.json",
+      "mtime": "2026-10-19T05:06:22+08:00",
+      "size": 500284,
+      "raw": {
+        "top_keys": [
+          "_anchor_tier_warning",
+          "_auto_dispatch",
+          "_auto_plan_used",
+          "_config",
+          "_runtime",
+          "belief_staleness",
+          "calibration_queue",
+          "channels",
+          "compact",
+          "cost_profile",
+          "decidability",
+          "dispatch",
+          "diversity",
+          "external_anchor",
+          "freeze",
+          "id",
+          "input_sanity",
+          "keep",
+          "layer_contribution",
+          "llm_bad_json",
+          "llm_by_stage",
+          "llm_calls",
+          "llm_eval_calls",
+          "llm_eval_tokens",
+          "llm_json_repair_failed",
+          "llm_json_repaired",
+          "llm_ops_calls",
+          "llm_ops_tokens",
+          "llm_tokens",
+          "orientation",
+          "playbook",
+          "pools",
+          "quality",
+          "question",
+          "readings_table",
+          "rounds",
+          "route",
+          "self_text",
+          "tri_alpha",
+          "tri_consensus",
+          "tri_state",
+          "v2_shadow",
+          "v2_takeover",
+          "views"
+        ],
+        "route": [
+          "0",
+          "1",
+          "both",
+          "all"
+        ],
+        "rounds": {
+          "0": 3,
+          "1": 2,
+          "both": 2,
+          "all": 1
+        },
+        "run_id": "20261019_044915",
+        "question": "一个远程办公团队如何在三个月内建立可验证的信任机制？",
+        "llm_calls": 79,
+        "llm_tokens": 477478,
+        "quality": {
+          "coverage": 0.5667,
+          "tri_ratio": 0.3333,
+          "answered": 5,
+          "answerable_total": 5
+        },
+        "views_keys": [
+          "0",
+          "1",
+          "all",
+          "both"
+        ],
+        "view0": {
+          "candidates": 29,
+          "amps": 6,
+          "probes": 3,
+          "suspensions": 2
+        },
+        "view1": {
+          "_actions_len": 6,
+          "has__actions": true,
+          "_not_do_len": 3,
+          "dp_actions_len": 6,
+          "dp_keys": [
+            "actions",
+            "answer",
+            "answered_sub_ids",
+            "distance",
+            "evidence",
+            "not_do"
+          ],
+          "dp_evidence_len": 2
+        },
+        "view_both": {
+          "adjudications": 2,
+          "threads": 5,
+          "has_manifest": true
+        },
+        "view_all": {
+          "keys": [
+            "adjudications",
+            "amps",
+            "anchor",
+            "anchor_touched",
+            "anytime",
+            "aspect_hist",
+            "aspect_units",
+            "belief_items",
+            "best_round",
+            "both_quota",
+            "candidates",
+            "carry",
+            "carry_check",
+            "carry_checks",
+            "carry_dropped",
+            "carry_dropped_all",
+            "closure_reason",
+            "collision",
+            "covered_aspects",
+            "csd",
+            "cut_two_way",
+            "decidable_product",
+            "deferrals",
+            "delivery_share",
+            "distance_to_question",
+            "divergence",
+            "duel_suspensions",
+            "duty",
+            "duty_remedy_used",
+            "duty_trace",
+            "duty_verdict",
+            "engagements",
+            "entry",
+            "errors",
+            "escalations",
+            "goal_trace",
+            "goal_verdict",
+            "idle",
+            "ing_structured",
+            "manifest",
+            "meta",
+            "meta_closure",
+            "probe_skipped",
+            "probes",
+            "quality_flags",
+            "quality_verdict",
+            "quant_readings",
+            "reclassifications",
+            "reconfirmations",
+            "refinements",
+            "rehashed",
+            "rendered",
+            "rephrase_ratio",
+            "resolutions",
+            "revocations",
+            "roles_run",
+            "round_log",
+            "rounds_cap",
+            "rounds_run",
+            "self_check",
+            "sem_stagnation",
+            "settlement",
+            "stop_primary",
+            "stop_reason",
+            "suspensions",
+            "threads",
+            "touch_rate",
+            "trace_log",
+            "uncovered_aspects",
+            "undecidable_product",
+            "untouched",
+            "upstream_layers",
+            "upstream_texts"
+          ],
+          "actions_len": 0,
+          "not_do_len": 0,
+          "decision_len": 0,
+          "residual_risks_len": 0,
+          "provenance_len": 0,
+          "confidence": null,
+          "decidable_product_present": false
+        },
+        "root_actions_len": 0,
+        "root_not_do_len": 0,
+        "v2_shadow": {
+          "present": true,
+          "mode": "serial",
+          "core_present": false,
+          "core_ok": null,
+          "core_gaps": null,
+          "core_overreach": null,
+          "core_error": null,
+          "contracts_ok": false
+        }
+      },
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 35,
+            "probes": 3,
+            "suspensions": 2
+          },
+          "1": {
+            "ok": true,
+            "subs": 6,
+            "decidable": 2,
+            "cited": 0,
+            "layer_evidence": 2
+          },
+          "both": {
+            "ok": true,
+            "adjudications": 2,
+            "threads": 5
+          },
+          "all": {
+            "ok": true,
+            "required": {
+              "decision": true,
+              "actions": true,
+              "not_do": true,
+              "residual_risks": true,
+              "provenance": true
+            },
+            "actions": 6,
+            "not_do": 3
+          }
+        },
+        "gaps": [],
+        "overreach": [
+          "1: 出现 action_plan（越权）"
+        ],
+        "repairs": [
+          "1.actions->all:6"
+        ],
+        "ok": false
+      },
+      "path": "outputs\\20261019_050622_一个远程办公团队如何在三个月内建立可验证.packed.json",
+      "mtime_epoch": 1792357582.681,
+      "contract": {
+        "ok": true,
+        "checked": [
+          "0",
+          "1",
+          "all",
+          "both"
+        ],
+        "violations": {}
+      }
+    },
+    {
+      "file": "20261019_053500_一个远程办公团队如何在三个月内建立可验证.packed.json",
+      "mtime": "2026-10-19T05:35:00+08:00",
+      "size": 456814,
+      "raw": {
+        "top_keys": [
+          "_anchor_tier_warning",
+          "_auto_dispatch",
+          "_auto_plan_used",
+          "_config",
+          "_runtime",
+          "belief_staleness",
+          "calibration_queue",
+          "channels",
+          "compact",
+          "cost_profile",
+          "decidability",
+          "dispatch",
+          "diversity",
+          "external_anchor",
+          "freeze",
+          "id",
+          "input_sanity",
+          "keep",
+          "layer_contribution",
+          "llm_bad_json",
+          "llm_by_stage",
+          "llm_calls",
+          "llm_eval_calls",
+          "llm_eval_tokens",
+          "llm_json_repair_failed",
+          "llm_json_repaired",
+          "llm_ops_calls",
+          "llm_ops_tokens",
+          "llm_tokens",
+          "orientation",
+          "paused",
+          "paused_gap",
+          "pending_layers",
+          "playbook",
+          "pools",
+          "quality",
+          "question",
+          "readings_table",
+          "rounds",
+          "route",
+          "self_text",
+          "tri_alpha",
+          "tri_consensus",
+          "tri_state",
+          "v2_shadow",
+          "views"
+        ],
+        "route": [
+          "0",
+          "1",
+          "both",
+          "all"
+        ],
+        "rounds": {
+          "0": 7,
+          "1": 8,
+          "both": 7,
+          "all": 7
+        },
+        "run_id": "20261019_050934",
+        "question": "一个远程办公团队如何在三个月内建立可验证的信任机制？",
+        "llm_calls": 108,
+        "llm_tokens": 648782,
+        "quality": {
+          "coverage": 0.69,
+          "tri_ratio": 0.4,
+          "answered": 4,
+          "answerable_total": 5
+        },
+        "views_keys": [
+          "0",
+          "1",
+          "both"
+        ],
+        "view0": {
+          "candidates": 40,
+          "amps": 7,
+          "probes": 3,
+          "suspensions": 4
+        },
+        "view1": {
+          "_actions_len": 6,
+          "has__actions": true,
+          "_not_do_len": 3,
+          "dp_actions_len": 6,
+          "dp_keys": [
+            "actions",
+            "answer",
+            "answered_sub_ids",
+            "distance",
+            "evidence",
+            "not_do"
+          ],
+          "dp_evidence_len": 2
+        },
+        "view_both": {
+          "adjudications": 3,
+          "threads": 10,
+          "has_manifest": true
+        },
+        "view_all": {
+          "keys": [],
+          "actions_len": 0,
+          "not_do_len": 0,
+          "decision_len": 0,
+          "residual_risks_len": 0,
+          "provenance_len": 0,
+          "confidence": null,
+          "decidable_product_present": false
+        },
+        "root_actions_len": 0,
+        "root_not_do_len": 0,
+        "v2_shadow": {
+          "present": true,
+          "mode": "serial",
+          "core_present": false,
+          "core_ok": null,
+          "core_gaps": null,
+          "core_overreach": null,
+          "core_error": null,
+          "contracts_ok": false
+        }
+      },
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 47,
+            "probes": 3,
+            "suspensions": 4
+          },
+          "1": {
+            "ok": true,
+            "subs": 5,
+            "decidable": 2,
+            "cited": 0,
+            "layer_evidence": 2
+          },
+          "both": {
+            "ok": true,
+            "adjudications": 3,
+            "threads": 10
+          },
+          "all": {
+            "ok": false,
+            "required": {
+              "decision": false,
+              "actions": true,
+              "not_do": true,
+              "residual_risks": false,
+              "provenance": true
+            },
+            "actions": 6,
+            "not_do": 3
+          }
+        },
+        "gaps": [
+          "all: 缺 decision",
+          "all: 缺 residual_risks"
+        ],
+        "overreach": [
+          "1: 出现 action_plan（越权）"
+        ],
+        "repairs": [
+          "1.actions->all:6"
+        ],
+        "ok": false
+      },
+      "path": "outputs\\20261019_053500_一个远程办公团队如何在三个月内建立可验证.packed.json",
+      "mtime_epoch": 1792359300.892,
+      "contract": {
+        "ok": false,
+        "checked": [
+          "0",
+          "1",
+          "all",
+          "both"
+        ],
+        "violations": {
+          "all": [
+            "all 层必须显式写 residual_risks"
+          ]
+        }
+      }
+    },
+    {
+      "file": "20261019_055939_AI能否独立完成数字IC设计边界.packed.json",
+      "mtime": "2026-10-19T05:59:40+08:00",
+      "size": 525266,
+      "raw": {
+        "top_keys": [
+          "_anchor_tier_warning",
+          "_auto_dispatch",
+          "_auto_plan_used",
+          "_config",
+          "_runtime",
+          "belief_staleness",
+          "calibration_queue",
+          "channels",
+          "compact",
+          "cost_profile",
+          "decidability",
+          "dispatch",
+          "diversity",
+          "external_anchor",
+          "freeze",
+          "id",
+          "input_sanity",
+          "keep",
+          "layer_contribution",
+          "llm_bad_json",
+          "llm_by_stage",
+          "llm_calls",
+          "llm_eval_calls",
+          "llm_eval_tokens",
+          "llm_json_repair_failed",
+          "llm_json_repaired",
+          "llm_ops_calls",
+          "llm_ops_tokens",
+          "llm_tokens",
+          "orientation",
+          "playbook",
+          "pools",
+          "quality",
+          "question",
+          "readings_table",
+          "rounds",
+          "route",
+          "self_text",
+          "tri_alpha",
+          "tri_consensus",
+          "tri_state",
+          "v2_shadow",
+          "v2_takeover",
+          "views"
+        ],
+        "route": [
+          "0",
+          "1",
+          "both",
+          "all"
+        ],
+        "rounds": {
+          "0": 3,
+          "1": 2,
+          "both": 2,
+          "all": 1
+        },
+        "run_id": "20261019_053538",
+        "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+        "llm_calls": 89,
+        "llm_tokens": 584607,
+        "quality": {
+          "coverage": 0.4242,
+          "tri_ratio": 1.0,
+          "answered": 4,
+          "answerable_total": 4
+        },
+        "views_keys": [
+          "0",
+          "1",
+          "all",
+          "both"
+        ],
+        "view0": {
+          "candidates": 40,
+          "amps": 7,
+          "probes": 3,
+          "suspensions": 4
+        },
+        "view1": {
+          "_actions_len": 3,
+          "has__actions": true,
+          "_not_do_len": 2,
+          "dp_actions_len": 3,
+          "dp_keys": [
+            "actions",
+            "answer",
+            "answered_sub_ids",
+            "distance",
+            "evidence",
+            "not_do"
+          ],
+          "dp_evidence_len": 2
+        },
+        "view_both": {
+          "adjudications": 3,
+          "threads": 6,
+          "has_manifest": true
+        },
+        "view_all": {
+          "keys": [
+            "adjudications",
+            "amps",
+            "anchor",
+            "anchor_touched",
+            "anytime",
+            "aspect_hist",
+            "aspect_units",
+            "belief_items",
+            "best_round",
+            "both_quota",
+            "candidates",
+            "carry",
+            "carry_check",
+            "carry_checks",
+            "carry_dropped",
+            "carry_dropped_all",
+            "closure_reason",
+            "collision",
+            "covered_aspects",
+            "csd",
+            "cut_two_way",
+            "decidable_product",
+            "deferrals",
+            "delivery_share",
+            "distance_to_question",
+            "divergence",
+            "duel_suspensions",
+            "duty",
+            "duty_remedy_used",
+            "duty_trace",
+            "duty_verdict",
+            "engagements",
+            "entry",
+            "errors",
+            "escalations",
+            "goal_trace",
+            "goal_verdict",
+            "idle",
+            "ing_structured",
+            "manifest",
+            "meta",
+            "meta_closure",
+            "probe_skipped",
+            "probes",
+            "quality_flags",
+            "quality_verdict",
+            "quant_readings",
+            "reclassifications",
+            "reconfirmations",
+            "refinements",
+            "rehashed",
+            "rendered",
+            "rephrase_ratio",
+            "resolutions",
+            "revocations",
+            "roles_run",
+            "round_log",
+            "rounds_cap",
+            "rounds_run",
+            "self_check",
+            "sem_stagnation",
+            "settlement",
+            "stop_primary",
+            "stop_reason",
+            "suspensions",
+            "threads",
+            "touch_rate",
+            "trace_log",
+            "uncovered_aspects",
+            "undecidable_product",
+            "untouched",
+            "upstream_layers",
+            "upstream_texts"
+          ],
+          "actions_len": 0,
+          "not_do_len": 0,
+          "decision_len": 0,
+          "residual_risks_len": 0,
+          "provenance_len": 0,
+          "confidence": null,
+          "decidable_product_present": false
+        },
+        "root_actions_len": 0,
+        "root_not_do_len": 0,
+        "v2_shadow": {
+          "present": true,
+          "mode": "serial",
+          "core_present": false,
+          "core_ok": null,
+          "core_gaps": null,
+          "core_overreach": null,
+          "core_error": null,
+          "contracts_ok": false
+        }
+      },
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 47,
+            "probes": 3,
+            "suspensions": 4
+          },
+          "1": {
+            "ok": true,
+            "subs": 6,
+            "decidable": 0,
+            "cited": 0,
+            "layer_evidence": 2
+          },
+          "both": {
+            "ok": true,
+            "adjudications": 3,
+            "threads": 6
+          },
+          "all": {
+            "ok": true,
+            "required": {
+              "decision": true,
+              "actions": true,
+              "not_do": true,
+              "residual_risks": true,
+              "provenance": true
+            },
+            "actions": 3,
+            "not_do": 2
+          }
+        },
+        "gaps": [],
+        "overreach": [
+          "1: 出现 action_plan（越权）"
+        ],
+        "repairs": [
+          "1.actions->all:3"
+        ],
+        "ok": false
+      },
+      "path": "outputs\\20261019_055939_AI能否独立完成数字IC设计边界.packed.json",
+      "mtime_epoch": 1792360780.168,
+      "contract": {
+        "ok": true,
+        "checked": [
+          "0",
+          "1",
+          "all",
+          "both"
+        ],
+        "violations": {}
+      }
+    },
+    {
+      "file": "20261019_062521_AI能否独立完成数字IC设计边界.packed.json",
+      "mtime": "2026-10-19T06:25:21+08:00",
+      "size": 575156,
+      "raw": {
+        "top_keys": [
+          "_anchor_tier_warning",
+          "_auto_dispatch",
+          "_auto_plan_used",
+          "_config",
+          "_runtime",
+          "belief_staleness",
+          "calibration_queue",
+          "channels",
+          "compact",
+          "cost_profile",
+          "decidability",
+          "dispatch",
+          "diversity",
+          "external_anchor",
+          "freeze",
+          "id",
+          "input_sanity",
+          "keep",
+          "layer_contribution",
+          "llm_bad_json",
+          "llm_by_stage",
+          "llm_calls",
+          "llm_eval_calls",
+          "llm_eval_tokens",
+          "llm_json_repair_failed",
+          "llm_json_repaired",
+          "llm_ops_calls",
+          "llm_ops_tokens",
+          "llm_tokens",
+          "orientation",
+          "paused",
+          "pending_layers",
+          "playbook",
+          "pools",
+          "quality",
+          "question",
+          "readings_table",
+          "rounds",
+          "route",
+          "self_text",
+          "tri_alpha",
+          "tri_consensus",
+          "tri_state",
+          "v2_shadow",
+          "views"
+        ],
+        "route": [
+          "0",
+          "1",
+          "both",
+          "all"
+        ],
+        "rounds": {
+          "0": 8,
+          "1": 6,
+          "both": 7,
+          "all": 7
+        },
+        "run_id": "20261019_060123",
+        "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+        "llm_calls": 109,
+        "llm_tokens": 624564,
+        "quality": {
+          "coverage": 0.4774,
+          "tri_ratio": 0.3333,
+          "answered": 3,
+          "answerable_total": 6
+        },
+        "views_keys": [
+          "0",
+          "1",
+          "all",
+          "both"
+        ],
+        "view0": {
+          "candidates": 60,
+          "amps": 6,
+          "probes": 2,
+          "suspensions": 6
+        },
+        "view1": {
+          "_actions_len": 3,
+          "has__actions": true,
+          "_not_do_len": 2,
+          "dp_actions_len": 3,
+          "dp_keys": [
+            "actions",
+            "answer",
+            "answered_sub_ids",
+            "distance",
+            "evidence",
+            "not_do"
+          ],
+          "dp_evidence_len": 2
+        },
+        "view_both": {
+          "adjudications": 3,
+          "threads": 6,
+          "has_manifest": true
+        },
+        "view_all": {
+          "keys": [
+            "adjudications",
+            "amps",
+            "anchor",
+            "anchor_touched",
+            "anytime",
+            "aspect_hist",
+            "aspect_units",
+            "belief_items",
+            "best_round",
+            "both_quota",
+            "candidates",
+            "carry",
+            "carry_check",
+            "carry_checks",
+            "carry_dropped",
+            "carry_dropped_all",
+            "closure_reason",
+            "collision",
+            "covered_aspects",
+            "csd",
+            "cut_two_way",
+            "decidable_product",
+            "deferrals",
+            "delivery_share",
+            "distance_to_question",
+            "divergence",
+            "duel_suspensions",
+            "duty",
+            "duty_remedy_used",
+            "duty_trace",
+            "duty_verdict",
+            "engagements",
+            "entry",
+            "errors",
+            "escalations",
+            "goal_trace",
+            "goal_verdict",
+            "idle",
+            "ing_structured",
+            "manifest",
+            "meta",
+            "meta_closure",
+            "probe_skipped",
+            "probes",
+            "quality_flags",
+            "quality_verdict",
+            "quant_readings",
+            "reclassifications",
+            "reconfirmations",
+            "refinements",
+            "rehashed",
+            "rendered",
+            "rephrase_ratio",
+            "resolutions",
+            "revocations",
+            "roles_run",
+            "round_log",
+            "rounds_cap",
+            "rounds_run",
+            "self_check",
+            "sem_stagnation",
+            "settlement",
+            "stop_primary",
+            "stop_reason",
+            "suspensions",
+            "threads",
+            "touch_rate",
+            "trace_log",
+            "uncovered_aspects",
+            "undecidable_product",
+            "untouched",
+            "upstream_layers",
+            "upstream_texts"
+          ],
+          "actions_len": 0,
+          "not_do_len": 0,
+          "decision_len": 0,
+          "residual_risks_len": 0,
+          "provenance_len": 0,
+          "confidence": null,
+          "decidable_product_present": false
+        },
+        "root_actions_len": 0,
+        "root_not_do_len": 0,
+        "v2_shadow": {
+          "present": true,
+          "mode": "serial",
+          "core_present": false,
+          "core_ok": null,
+          "core_gaps": null,
+          "core_overreach": null,
+          "core_error": null,
+          "contracts_ok": false
+        }
+      },
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 66,
+            "probes": 2,
+            "suspensions": 6
+          },
+          "1": {
+            "ok": true,
+            "subs": 6,
+            "decidable": 1,
+            "cited": 0,
+            "layer_evidence": 2
+          },
+          "both": {
+            "ok": true,
+            "adjudications": 3,
+            "threads": 6
+          },
+          "all": {
+            "ok": true,
+            "required": {
+              "decision": true,
+              "actions": true,
+              "not_do": true,
+              "residual_risks": true,
+              "provenance": true
+            },
+            "actions": 3,
+            "not_do": 2
+          }
+        },
+        "gaps": [],
+        "overreach": [
+          "1: 出现 action_plan（越权）"
+        ],
+        "repairs": [
+          "1.actions->all:3"
+        ],
+        "ok": false
+      },
+      "path": "outputs\\20261019_062521_AI能否独立完成数字IC设计边界.packed.json",
+      "mtime_epoch": 1792362321.36,
+      "contract": {
+        "ok": true,
+        "checked": [
+          "0",
+          "1",
+          "all",
+          "both"
+        ],
+        "violations": {}
+      }
+    },
+    {
+      "file": "20261019_064604_一个开源项目如何在不增加维护者负担的情况.packed.json",
+      "mtime": "2026-10-19T06:46:04+08:00",
+      "size": 529179,
+      "raw": {
+        "top_keys": [
+          "_anchor_tier_warning",
+          "_auto_dispatch",
+          "_auto_plan_used",
+          "_config",
+          "_runtime",
+          "belief_staleness",
+          "calibration_queue",
+          "channels",
+          "compact",
+          "cost_profile",
+          "decidability",
+          "dispatch",
+          "diversity",
+          "external_anchor",
+          "freeze",
+          "id",
+          "input_sanity",
+          "keep",
+          "layer_contribution",
+          "llm_bad_json",
+          "llm_by_stage",
+          "llm_calls",
+          "llm_eval_calls",
+          "llm_eval_tokens",
+          "llm_json_repair_failed",
+          "llm_json_repaired",
+          "llm_ops_calls",
+          "llm_ops_tokens",
+          "llm_tokens",
+          "orientation",
+          "playbook",
+          "pools",
+          "quality",
+          "question",
+          "readings_table",
+          "rounds",
+          "route",
+          "self_text",
+          "tri_alpha",
+          "tri_consensus",
+          "tri_state",
+          "v2_shadow",
+          "v2_takeover",
+          "views"
+        ],
+        "route": [
+          "0",
+          "1",
+          "both",
+          "all"
+        ],
+        "rounds": {
+          "0": 3,
+          "1": 2,
+          "both": 2,
+          "all": 1
+        },
+        "run_id": "20261019_062729",
+        "question": "一个开源项目如何在不增加维护者负担的情况下扩大贡献者？",
+        "llm_calls": 80,
+        "llm_tokens": 495375,
+        "quality": {
+          "coverage": 1.0,
+          "tri_ratio": 0.8333,
+          "answered": 2,
+          "answerable_total": 2
+        },
+        "views_keys": [
+          "0",
+          "1",
+          "all",
+          "both"
+        ],
+        "view0": {
+          "candidates": 28,
+          "amps": 6,
+          "probes": 3,
+          "suspensions": 1
+        },
+        "view1": {
+          "_actions_len": 3,
+          "has__actions": true,
+          "_not_do_len": 3,
+          "dp_actions_len": 3,
+          "dp_keys": [
+            "actions",
+            "answer",
+            "answered_sub_ids",
+            "distance",
+            "evidence",
+            "not_do"
+          ],
+          "dp_evidence_len": 2
+        },
+        "view_both": {
+          "adjudications": 3,
+          "threads": 6,
+          "has_manifest": true
+        },
+        "view_all": {
+          "keys": [
+            "adjudications",
+            "amps",
+            "anchor",
+            "anchor_touched",
+            "anytime",
+            "aspect_hist",
+            "aspect_units",
+            "belief_items",
+            "best_round",
+            "both_quota",
+            "candidates",
+            "carry",
+            "carry_check",
+            "carry_checks",
+            "carry_dropped",
+            "carry_dropped_all",
+            "closure_reason",
+            "collision",
+            "covered_aspects",
+            "csd",
+            "cut_two_way",
+            "decidable_product",
+            "deferrals",
+            "delivery_share",
+            "distance_to_question",
+            "divergence",
+            "duel_suspensions",
+            "duty",
+            "duty_remedy_used",
+            "duty_trace",
+            "duty_verdict",
+            "engagements",
+            "entry",
+            "errors",
+            "escalations",
+            "goal_trace",
+            "goal_verdict",
+            "idle",
+            "ing_structured",
+            "manifest",
+            "meta",
+            "meta_closure",
+            "probe_skipped",
+            "probes",
+            "quality_flags",
+            "quality_verdict",
+            "quant_readings",
+            "reclassifications",
+            "reconfirmations",
+            "refinements",
+            "rehashed",
+            "rendered",
+            "rephrase_ratio",
+            "resolutions",
+            "revocations",
+            "roles_run",
+            "round_log",
+            "rounds_cap",
+            "rounds_run",
+            "self_check",
+            "sem_stagnation",
+            "settlement",
+            "stop_primary",
+            "stop_reason",
+            "suspensions",
+            "threads",
+            "touch_rate",
+            "trace_log",
+            "uncovered_aspects",
+            "undecidable_product",
+            "untouched",
+            "upstream_layers",
+            "upstream_texts"
+          ],
+          "actions_len": 0,
+          "not_do_len": 0,
+          "decision_len": 0,
+          "residual_risks_len": 0,
+          "provenance_len": 0,
+          "confidence": null,
+          "decidable_product_present": false
+        },
+        "root_actions_len": 0,
+        "root_not_do_len": 0,
+        "v2_shadow": {
+          "present": true,
+          "mode": "serial",
+          "core_present": false,
+          "core_ok": null,
+          "core_gaps": null,
+          "core_overreach": null,
+          "core_error": null,
+          "contracts_ok": false
+        }
+      },
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 34,
+            "probes": 3,
+            "suspensions": 1
+          },
+          "1": {
+            "ok": true,
+            "subs": 6,
+            "decidable": 0,
+            "cited": 0,
+            "layer_evidence": 2
+          },
+          "both": {
+            "ok": true,
+            "adjudications": 3,
+            "threads": 6
+          },
+          "all": {
+            "ok": true,
+            "required": {
+              "decision": true,
+              "actions": true,
+              "not_do": true,
+              "residual_risks": true,
+              "provenance": true
+            },
+            "actions": 3,
+            "not_do": 3
+          }
+        },
+        "gaps": [],
+        "overreach": [
+          "1: 出现 action_plan（越权）"
+        ],
+        "repairs": [
+          "1.actions->all:3"
+        ],
+        "ok": false
+      },
+      "path": "outputs\\20261019_064604_一个开源项目如何在不增加维护者负担的情况.packed.json",
+      "mtime_epoch": 1792363564.249,
+      "contract": {
+        "ok": true,
+        "checked": [
+          "0",
+          "1",
+          "all",
+          "both"
+        ],
+        "violations": {}
+      }
+    },
+    {
+      "file": "20261019_064752_如何判断一份关于气候变化的政策报告是否可.packed.json",
+      "mtime": "2026-10-19T06:47:52+08:00",
+      "size": 500095,
+      "raw": {
+        "top_keys": [
+          "_anchor_tier_warning",
+          "_auto_dispatch",
+          "_auto_plan_used",
+          "_config",
+          "_runtime",
+          "belief_staleness",
+          "calibration_queue",
+          "channels",
+          "compact",
+          "cost_profile",
+          "decidability",
+          "dispatch",
+          "diversity",
+          "external_anchor",
+          "freeze",
+          "id",
+          "input_sanity",
+          "keep",
+          "layer_contribution",
+          "llm_bad_json",
+          "llm_by_stage",
+          "llm_calls",
+          "llm_eval_calls",
+          "llm_eval_tokens",
+          "llm_json_repair_failed",
+          "llm_json_repaired",
+          "llm_ops_calls",
+          "llm_ops_tokens",
+          "llm_tokens",
+          "orientation",
+          "playbook",
+          "pools",
+          "quality",
+          "question",
+          "readings_table",
+          "rounds",
+          "route",
+          "self_text",
+          "tri_alpha",
+          "tri_consensus",
+          "tri_state",
+          "v2_shadow",
+          "v2_takeover",
+          "views"
+        ],
+        "route": [
+          "0",
+          "1",
+          "both",
+          "all"
+        ],
+        "rounds": {
+          "0": 3,
+          "1": 2,
+          "both": 2,
+          "all": 1
+        },
+        "run_id": "20261019_062731",
+        "question": "如何判断一份关于气候变化的政策报告是否可信？",
+        "llm_calls": 88,
+        "llm_tokens": 522850,
+        "quality": {
+          "coverage": 0.4556,
+          "tri_ratio": 0.5,
+          "answered": 5,
+          "answerable_total": 5
+        },
+        "views_keys": [
+          "0",
+          "1",
+          "all",
+          "both"
+        ],
+        "view0": {
+          "candidates": 44,
+          "amps": 7,
+          "probes": 2,
+          "suspensions": 1
+        },
+        "view1": {
+          "_actions_len": 5,
+          "has__actions": true,
+          "_not_do_len": 3,
+          "dp_actions_len": 5,
+          "dp_keys": [
+            "actions",
+            "answer",
+            "answered_sub_ids",
+            "distance",
+            "evidence",
+            "not_do"
+          ],
+          "dp_evidence_len": 2
+        },
+        "view_both": {
+          "adjudications": 3,
+          "threads": 6,
+          "has_manifest": true
+        },
+        "view_all": {
+          "keys": [
+            "adjudications",
+            "amps",
+            "anchor",
+            "anchor_touched",
+            "anytime",
+            "aspect_hist",
+            "aspect_units",
+            "belief_items",
+            "best_round",
+            "both_quota",
+            "candidates",
+            "carry",
+            "carry_check",
+            "carry_checks",
+            "carry_dropped",
+            "carry_dropped_all",
+            "closure_reason",
+            "collision",
+            "covered_aspects",
+            "csd",
+            "cut_two_way",
+            "decidable_product",
+            "deferrals",
+            "delivery_share",
+            "distance_to_question",
+            "divergence",
+            "duel_suspensions",
+            "duty",
+            "duty_remedy_used",
+            "duty_trace",
+            "duty_verdict",
+            "engagements",
+            "entry",
+            "errors",
+            "escalations",
+            "goal_trace",
+            "goal_verdict",
+            "idle",
+            "ing_structured",
+            "manifest",
+            "meta",
+            "meta_closure",
+            "probe_skipped",
+            "probes",
+            "quality_flags",
+            "quality_verdict",
+            "quant_readings",
+            "reclassifications",
+            "reconfirmations",
+            "refinements",
+            "rehashed",
+            "rendered",
+            "rephrase_ratio",
+            "resolutions",
+            "revocations",
+            "roles_run",
+            "round_log",
+            "rounds_cap",
+            "rounds_run",
+            "self_check",
+            "sem_stagnation",
+            "settlement",
+            "stop_primary",
+            "stop_reason",
+            "suspensions",
+            "threads",
+            "touch_rate",
+            "trace_log",
+            "uncovered_aspects",
+            "undecidable_product",
+            "untouched",
+            "upstream_layers",
+            "upstream_texts"
+          ],
+          "actions_len": 0,
+          "not_do_len": 0,
+          "decision_len": 0,
+          "residual_risks_len": 0,
+          "provenance_len": 0,
+          "confidence": null,
+          "decidable_product_present": false
+        },
+        "root_actions_len": 0,
+        "root_not_do_len": 0,
+        "v2_shadow": {
+          "present": true,
+          "mode": "serial",
+          "core_present": false,
+          "core_ok": null,
+          "core_gaps": null,
+          "core_overreach": null,
+          "core_error": null,
+          "contracts_ok": false
+        }
+      },
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 51,
+            "probes": 2,
+            "suspensions": 1
+          },
+          "1": {
+            "ok": true,
+            "subs": 6,
+            "decidable": 3,
+            "cited": 0,
+            "layer_evidence": 2
+          },
+          "both": {
+            "ok": true,
+            "adjudications": 3,
+            "threads": 6
+          },
+          "all": {
+            "ok": true,
+            "required": {
+              "decision": true,
+              "actions": true,
+              "not_do": true,
+              "residual_risks": true,
+              "provenance": true
+            },
+            "actions": 5,
+            "not_do": 3
+          }
+        },
+        "gaps": [],
+        "overreach": [
+          "1: 出现 action_plan（越权）"
+        ],
+        "repairs": [
+          "1.actions->all:5"
+        ],
+        "ok": false
+      },
+      "path": "outputs\\20261019_064752_如何判断一份关于气候变化的政策报告是否可.packed.json",
+      "mtime_epoch": 1792363672.225,
+      "contract": {
+        "ok": true,
+        "checked": [
+          "0",
+          "1",
+          "all",
+          "both"
+        ],
+        "violations": {}
+      }
+    },
+    {
+      "file": "20261019_071245_如何判断一份关于气候变化的政策报告是否可.packed.json",
+      "mtime": "2026-10-19T07:12:45+08:00",
+      "size": 493314,
+      "raw": {
+        "top_keys": [
+          "_anchor_tier_warning",
+          "_auto_dispatch",
+          "_auto_plan_used",
+          "_config",
+          "_runtime",
+          "belief_staleness",
+          "calibration_queue",
+          "channels",
+          "compact",
+          "cost_profile",
+          "decidability",
+          "dispatch",
+          "diversity",
+          "external_anchor",
+          "freeze",
+          "id",
+          "input_sanity",
+          "keep",
+          "layer_contribution",
+          "llm_bad_json",
+          "llm_by_stage",
+          "llm_calls",
+          "llm_eval_calls",
+          "llm_eval_tokens",
+          "llm_json_repair_failed",
+          "llm_json_repaired",
+          "llm_ops_calls",
+          "llm_ops_tokens",
+          "llm_tokens",
+          "orientation",
+          "paused",
+          "paused_gap",
+          "pending_layers",
+          "playbook",
+          "pools",
+          "quality",
+          "question",
+          "readings_table",
+          "rounds",
+          "route",
+          "self_text",
+          "tri_alpha",
+          "tri_consensus",
+          "tri_state",
+          "v2_shadow",
+          "views"
+        ],
+        "route": [
+          "0",
+          "1",
+          "both",
+          "all"
+        ],
+        "rounds": {
+          "0": 7,
+          "1": 7,
+          "both": 6,
+          "all": 7
+        },
+        "run_id": "20261019_064832",
+        "question": "如何判断一份关于气候变化的政策报告是否可信？",
+        "llm_calls": 120,
+        "llm_tokens": 632334,
+        "quality": {
+          "coverage": 1.0,
+          "tri_ratio": 0.5,
+          "answered": 4,
+          "answerable_total": 4
+        },
+        "views_keys": [
+          "0",
+          "1",
+          "both"
+        ],
+        "view0": {
+          "candidates": 60,
+          "amps": 10,
+          "probes": 2,
+          "suspensions": 3
+        },
+        "view1": {
+          "_actions_len": 4,
+          "has__actions": true,
+          "_not_do_len": 3,
+          "dp_actions_len": 4,
+          "dp_keys": [
+            "actions",
+            "answer",
+            "answered_sub_ids",
+            "distance",
+            "evidence",
+            "not_do"
+          ],
+          "dp_evidence_len": 2
+        },
+        "view_both": {
+          "adjudications": 2,
+          "threads": 5,
+          "has_manifest": true
+        },
+        "view_all": {
+          "keys": [],
+          "actions_len": 0,
+          "not_do_len": 0,
+          "decision_len": 0,
+          "residual_risks_len": 0,
+          "provenance_len": 0,
+          "confidence": null,
+          "decidable_product_present": false
+        },
+        "root_actions_len": 0,
+        "root_not_do_len": 0,
+        "v2_shadow": {
+          "present": true,
+          "mode": "serial",
+          "core_present": false,
+          "core_ok": null,
+          "core_gaps": null,
+          "core_overreach": null,
+          "core_error": null,
+          "contracts_ok": false
+        }
+      },
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 70,
+            "probes": 2,
+            "suspensions": 3
+          },
+          "1": {
+            "ok": true,
+            "subs": 6,
+            "decidable": 1,
+            "cited": 0,
+            "layer_evidence": 2
+          },
+          "both": {
+            "ok": true,
+            "adjudications": 2,
+            "threads": 5
+          },
+          "all": {
+            "ok": false,
+            "required": {
+              "decision": false,
+              "actions": true,
+              "not_do": true,
+              "residual_risks": false,
+              "provenance": true
+            },
+            "actions": 4,
+            "not_do": 3
+          }
+        },
+        "gaps": [
+          "all: 缺 decision",
+          "all: 缺 residual_risks"
+        ],
+        "overreach": [
+          "1: 出现 action_plan（越权）"
+        ],
+        "repairs": [
+          "1.actions->all:4"
+        ],
+        "ok": false
+      },
+      "path": "outputs\\20261019_071245_如何判断一份关于气候变化的政策报告是否可.packed.json",
+      "mtime_epoch": 1792365165.436,
+      "contract": {
+        "ok": false,
+        "checked": [
+          "0",
+          "1",
+          "all",
+          "both"
+        ],
+        "violations": {
+          "all": [
+            "all 层必须显式写 residual_risks"
+          ]
+        }
+      }
+    },
+    {
+      "file": "20261019_071413_一个开源项目如何在不增加维护者负担的情况.packed.json",
+      "mtime": "2026-10-19T07:14:13+08:00",
+      "size": 457367,
+      "raw": {
+        "top_keys": [
+          "_anchor_tier_warning",
+          "_auto_dispatch",
+          "_auto_plan_used",
+          "_config",
+          "_runtime",
+          "belief_staleness",
+          "calibration_queue",
+          "channels",
+          "compact",
+          "cost_profile",
+          "decidability",
+          "dispatch",
+          "diversity",
+          "external_anchor",
+          "freeze",
+          "id",
+          "input_sanity",
+          "keep",
+          "layer_contribution",
+          "llm_bad_json",
+          "llm_by_stage",
+          "llm_calls",
+          "llm_eval_calls",
+          "llm_eval_tokens",
+          "llm_json_repair_failed",
+          "llm_json_repaired",
+          "llm_ops_calls",
+          "llm_ops_tokens",
+          "llm_tokens",
+          "orientation",
+          "paused",
+          "paused_gap",
+          "pending_layers",
+          "playbook",
+          "pools",
+          "quality",
+          "question",
+          "readings_table",
+          "rounds",
+          "route",
+          "self_text",
+          "tri_alpha",
+          "tri_consensus",
+          "tri_state",
+          "v2_shadow",
+          "views"
+        ],
+        "route": [
+          "0",
+          "1",
+          "both",
+          "all"
+        ],
+        "rounds": {
+          "0": 7,
+          "1": 7,
+          "both": 6,
+          "all": 7
+        },
+        "run_id": "20261019_064828",
+        "question": "一个开源项目如何在不增加维护者负担的情况下扩大贡献者？",
+        "llm_calls": 109,
+        "llm_tokens": 636561,
+        "quality": {
+          "coverage": 0.569,
+          "tri_ratio": 0.6667,
+          "answered": 4,
+          "answerable_total": 4
+        },
+        "views_keys": [
+          "0",
+          "1",
+          "both"
+        ],
+        "view0": {
+          "candidates": 55,
+          "amps": 10,
+          "probes": 3,
+          "suspensions": 6
+        },
+        "view1": {
+          "_actions_len": 4,
+          "has__actions": true,
+          "_not_do_len": 3,
+          "dp_actions_len": 4,
+          "dp_keys": [
+            "actions",
+            "answer",
+            "answered_sub_ids",
+            "distance",
+            "evidence",
+            "not_do"
+          ],
+          "dp_evidence_len": 2
+        },
+        "view_both": {
+          "adjudications": 3,
+          "threads": 12,
+          "has_manifest": true
+        },
+        "view_all": {
+          "keys": [],
+          "actions_len": 0,
+          "not_do_len": 0,
+          "decision_len": 0,
+          "residual_risks_len": 0,
+          "provenance_len": 0,
+          "confidence": null,
+          "decidable_product_present": false
+        },
+        "root_actions_len": 0,
+        "root_not_do_len": 0,
+        "v2_shadow": {
+          "present": true,
+          "mode": "serial",
+          "core_present": false,
+          "core_ok": null,
+          "core_gaps": null,
+          "core_overreach": null,
+          "core_error": null,
+          "contracts_ok": false
+        }
+      },
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 65,
+            "probes": 3,
+            "suspensions": 6
+          },
+          "1": {
+            "ok": true,
+            "subs": 6,
+            "decidable": 2,
+            "cited": 0,
+            "layer_evidence": 2
+          },
+          "both": {
+            "ok": true,
+            "adjudications": 3,
+            "threads": 12
+          },
+          "all": {
+            "ok": false,
+            "required": {
+              "decision": false,
+              "actions": true,
+              "not_do": true,
+              "residual_risks": false,
+              "provenance": true
+            },
+            "actions": 4,
+            "not_do": 3
+          }
+        },
+        "gaps": [
+          "all: 缺 decision",
+          "all: 缺 residual_risks"
+        ],
+        "overreach": [
+          "1: 出现 action_plan（越权）"
+        ],
+        "repairs": [
+          "1.actions->all:4"
+        ],
+        "ok": false
+      },
+      "path": "outputs\\20261019_071413_一个开源项目如何在不增加维护者负担的情况.packed.json",
+      "mtime_epoch": 1792365253.269,
+      "contract": {
+        "ok": false,
+        "checked": [
+          "0",
+          "1",
+          "all",
+          "both"
+        ],
+        "violations": {
+          "all": [
+            "all 层必须显式写 residual_risks"
+          ]
+        }
+      }
+    },
+    {
+      "file": "20261019_073827_一个团队如何在信息不完整时做出可回退的技.packed.json",
+      "mtime": "2026-10-19T07:38:27+08:00",
+      "size": 554841,
+      "raw": {
+        "top_keys": [
+          "_anchor_tier_warning",
+          "_auto_dispatch",
+          "_auto_plan_used",
+          "_config",
+          "_runtime",
+          "belief_staleness",
+          "calibration_queue",
+          "channels",
+          "compact",
+          "cost_profile",
+          "decidability",
+          "dispatch",
+          "diversity",
+          "external_anchor",
+          "freeze",
+          "id",
+          "input_sanity",
+          "keep",
+          "layer_contribution",
+          "llm_bad_json",
+          "llm_by_stage",
+          "llm_calls",
+          "llm_eval_calls",
+          "llm_eval_tokens",
+          "llm_json_repair_failed",
+          "llm_json_repaired",
+          "llm_ops_calls",
+          "llm_ops_tokens",
+          "llm_tokens",
+          "orientation",
+          "playbook",
+          "pools",
+          "quality",
+          "question",
+          "readings_table",
+          "rounds",
+          "route",
+          "self_text",
+          "tri_alpha",
+          "tri_consensus",
+          "tri_state",
+          "v2_shadow",
+          "v2_takeover",
+          "views"
+        ],
+        "route": [
+          "0",
+          "1",
+          "both",
+          "all"
+        ],
+        "rounds": {
+          "0": 3,
+          "1": 2,
+          "both": 2,
+          "all": 1
+        },
+        "run_id": "20261019_071618",
+        "question": "一个团队如何在信息不完整时做出可回退的技术选型？",
+        "llm_calls": 89,
+        "llm_tokens": 574979,
+        "quality": {
+          "coverage": 0.5294,
+          "tri_ratio": 0.5,
+          "answered": 1,
+          "answerable_total": 2
+        },
+        "views_keys": [
+          "0",
+          "1",
+          "all",
+          "both"
+        ],
+        "view0": {
+          "candidates": 38,
+          "amps": 6,
+          "probes": 3,
+          "suspensions": 1
+        },
+        "view1": {
+          "_actions_len": 4,
+          "has__actions": true,
+          "_not_do_len": 3,
+          "dp_actions_len": 4,
+          "dp_keys": [
+            "actions",
+            "answer",
+            "answered_sub_ids",
+            "distance",
+            "evidence",
+            "not_do"
+          ],
+          "dp_evidence_len": 2
+        },
+        "view_both": {
+          "adjudications": 2,
+          "threads": 6,
+          "has_manifest": true
+        },
+        "view_all": {
+          "keys": [
+            "adjudications",
+            "amps",
+            "anchor",
+            "anchor_touched",
+            "anytime",
+            "aspect_hist",
+            "aspect_units",
+            "belief_items",
+            "best_round",
+            "both_quota",
+            "candidates",
+            "carry",
+            "carry_check",
+            "carry_checks",
+            "carry_dropped",
+            "carry_dropped_all",
+            "closure_reason",
+            "collision",
+            "covered_aspects",
+            "csd",
+            "cut_two_way",
+            "decidable_product",
+            "deferrals",
+            "delivery_share",
+            "distance_to_question",
+            "divergence",
+            "duel_suspensions",
+            "duty",
+            "duty_remedy_used",
+            "duty_trace",
+            "duty_verdict",
+            "engagements",
+            "entry",
+            "errors",
+            "escalations",
+            "goal_trace",
+            "goal_verdict",
+            "idle",
+            "ing_structured",
+            "manifest",
+            "meta",
+            "meta_closure",
+            "probe_skipped",
+            "probes",
+            "quality_flags",
+            "quality_verdict",
+            "quant_readings",
+            "reclassifications",
+            "reconfirmations",
+            "refinements",
+            "rehashed",
+            "rendered",
+            "rephrase_ratio",
+            "resolutions",
+            "revocations",
+            "roles_run",
+            "round_log",
+            "rounds_cap",
+            "rounds_run",
+            "self_check",
+            "sem_stagnation",
+            "settlement",
+            "stop_primary",
+            "stop_reason",
+            "suspensions",
+            "threads",
+            "touch_rate",
+            "trace_log",
+            "uncovered_aspects",
+            "undecidable_product",
+            "untouched",
+            "upstream_layers",
+            "upstream_texts"
+          ],
+          "actions_len": 0,
+          "not_do_len": 0,
+          "decision_len": 0,
+          "residual_risks_len": 0,
+          "provenance_len": 0,
+          "confidence": null,
+          "decidable_product_present": false
+        },
+        "root_actions_len": 0,
+        "root_not_do_len": 0,
+        "v2_shadow": {
+          "present": true,
+          "mode": "serial",
+          "core_present": false,
+          "core_ok": null,
+          "core_gaps": null,
+          "core_overreach": null,
+          "core_error": null,
+          "contracts_ok": false
+        }
+      },
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 44,
+            "probes": 3,
+            "suspensions": 1
+          },
+          "1": {
+            "ok": true,
+            "subs": 6,
+            "decidable": 1,
+            "cited": 0,
+            "layer_evidence": 2
+          },
+          "both": {
+            "ok": true,
+            "adjudications": 2,
+            "threads": 6
+          },
+          "all": {
+            "ok": true,
+            "required": {
+              "decision": true,
+              "actions": true,
+              "not_do": true,
+              "residual_risks": true,
+              "provenance": true
+            },
+            "actions": 4,
+            "not_do": 3
+          }
+        },
+        "gaps": [],
+        "overreach": [
+          "1: 出现 action_plan（越权）"
+        ],
+        "repairs": [
+          "1.actions->all:4"
+        ],
+        "ok": false
+      },
+      "path": "outputs\\20261019_073827_一个团队如何在信息不完整时做出可回退的技.packed.json",
+      "mtime_epoch": 1792366707.629,
+      "contract": {
+        "ok": true,
+        "checked": [
+          "0",
+          "1",
+          "all",
+          "both"
+        ],
+        "violations": {}
+      }
+    },
+    {
+      "file": "20261019_074251_一个团队如何在信息不完整时做出可回退的技.packed.json",
+      "mtime": "2026-10-19T07:42:51+08:00",
+      "size": 450985,
+      "raw": {
+        "top_keys": [
+          "_anchor_tier_warning",
+          "_auto_dispatch",
+          "_auto_plan_used",
+          "_config",
+          "_runtime",
+          "belief_staleness",
+          "calibration_queue",
+          "channels",
+          "compact",
+          "cost_profile",
+          "decidability",
+          "dispatch",
+          "diversity",
+          "external_anchor",
+          "freeze",
+          "id",
+          "input_sanity",
+          "keep",
+          "layer_contribution",
+          "llm_bad_json",
+          "llm_by_stage",
+          "llm_calls",
+          "llm_eval_calls",
+          "llm_eval_tokens",
+          "llm_json_repair_failed",
+          "llm_json_repaired",
+          "llm_ops_calls",
+          "llm_ops_tokens",
+          "llm_tokens",
+          "orientation",
+          "paused",
+          "paused_gap",
+          "pending_layers",
+          "playbook",
+          "pools",
+          "quality",
+          "question",
+          "readings_table",
+          "rounds",
+          "route",
+          "self_text",
+          "tri_alpha",
+          "tri_consensus",
+          "tri_state",
+          "v2_shadow",
+          "views"
+        ],
+        "route": [
+          "0",
+          "1",
+          "both",
+          "all"
+        ],
+        "rounds": {
+          "0": 7,
+          "1": 7,
+          "both": 6,
+          "all": 7
+        },
+        "run_id": "20261019_071620",
+        "question": "一个团队如何在信息不完整时做出可回退的技术选型？",
+        "llm_calls": 113,
+        "llm_tokens": 619693,
+        "quality": {
+          "coverage": 0.5724,
+          "tri_ratio": 0.3333,
+          "answered": 4,
+          "answerable_total": 4
+        },
+        "views_keys": [
+          "0",
+          "1",
+          "both"
+        ],
+        "view0": {
+          "candidates": 60,
+          "amps": 17,
+          "probes": 3,
+          "suspensions": 8
+        },
+        "view1": {
+          "_actions_len": 5,
+          "has__actions": true,
+          "_not_do_len": 3,
+          "dp_actions_len": 5,
+          "dp_keys": [
+            "actions",
+            "answer",
+            "answered_sub_ids",
+            "distance",
+            "evidence",
+            "not_do"
+          ],
+          "dp_evidence_len": 2
+        },
+        "view_both": {
+          "adjudications": 2,
+          "threads": 7,
+          "has_manifest": true
+        },
+        "view_all": {
+          "keys": [],
+          "actions_len": 0,
+          "not_do_len": 0,
+          "decision_len": 0,
+          "residual_risks_len": 0,
+          "provenance_len": 0,
+          "confidence": null,
+          "decidable_product_present": false
+        },
+        "root_actions_len": 0,
+        "root_not_do_len": 0,
+        "v2_shadow": {
+          "present": true,
+          "mode": "serial",
+          "core_present": false,
+          "core_ok": null,
+          "core_gaps": null,
+          "core_overreach": null,
+          "core_error": null,
+          "contracts_ok": false
+        }
+      },
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 77,
+            "probes": 3,
+            "suspensions": 8
+          },
+          "1": {
+            "ok": true,
+            "subs": 6,
+            "decidable": 2,
+            "cited": 0,
+            "layer_evidence": 2
+          },
+          "both": {
+            "ok": true,
+            "adjudications": 2,
+            "threads": 7
+          },
+          "all": {
+            "ok": false,
+            "required": {
+              "decision": false,
+              "actions": true,
+              "not_do": true,
+              "residual_risks": false,
+              "provenance": true
+            },
+            "actions": 5,
+            "not_do": 3
+          }
+        },
+        "gaps": [
+          "all: 缺 decision",
+          "all: 缺 residual_risks"
+        ],
+        "overreach": [
+          "1: 出现 action_plan（越权）"
+        ],
+        "repairs": [
+          "1.actions->all:5"
+        ],
+        "ok": false
+      },
+      "path": "outputs\\20261019_074251_一个团队如何在信息不完整时做出可回退的技.packed.json",
+      "mtime_epoch": 1792366971.606,
+      "contract": {
+        "ok": false,
+        "checked": [
+          "0",
+          "1",
+          "all",
+          "both"
+        ],
+        "violations": {
+          "all": [
+            "all 层必须显式写 residual_risks"
+          ]
+        }
+      }
+    },
+    {
+      "file": "20261019_080835_一个远程办公团队如何在三个月内建立可验证.packed.json",
+      "mtime": "2026-10-19T08:08:35+08:00",
+      "size": 515079,
+      "raw": {
+        "top_keys": [
+          "_anchor_tier_warning",
+          "_auto_dispatch",
+          "_auto_plan_used",
+          "_config",
+          "_runtime",
+          "belief_staleness",
+          "calibration_queue",
+          "channels",
+          "compact",
+          "cost_profile",
+          "decidability",
+          "dispatch",
+          "diversity",
+          "external_anchor",
+          "freeze",
+          "id",
+          "input_sanity",
+          "keep",
+          "layer_contribution",
+          "llm_bad_json",
+          "llm_by_stage",
+          "llm_calls",
+          "llm_eval_calls",
+          "llm_eval_tokens",
+          "llm_json_repair_failed",
+          "llm_json_repaired",
+          "llm_ops_calls",
+          "llm_ops_tokens",
+          "llm_tokens",
+          "orientation",
+          "playbook",
+          "pools",
+          "quality",
+          "question",
+          "readings_table",
+          "rounds",
+          "route",
+          "self_text",
+          "tri_alpha",
+          "tri_consensus",
+          "tri_state",
+          "v2_shadow",
+          "v2_takeover",
+          "views"
+        ],
+        "route": [
+          "0",
+          "1",
+          "both",
+          "all"
+        ],
+        "rounds": {
+          "0": 3,
+          "1": 2,
+          "both": 2,
+          "all": 1
+        },
+        "run_id": "20261019_075012",
+        "question": "一个远程办公团队如何在三个月内建立可验证的信任机制？",
+        "llm_calls": 89,
+        "llm_tokens": 528018,
+        "quality": {
+          "coverage": 0.5429,
+          "tri_ratio": 0.3333,
+          "answered": 3,
+          "answerable_total": 5
+        },
+        "views_keys": [
+          "0",
+          "1",
+          "all",
+          "both"
+        ],
+        "view0": {
+          "candidates": 42,
+          "amps": 9,
+          "probes": 3,
+          "suspensions": 4
+        },
+        "view1": {
+          "_actions_len": 5,
+          "has__actions": true,
+          "_not_do_len": 3,
+          "dp_actions_len": 5,
+          "dp_keys": [
+            "actions",
+            "answer",
+            "answered_sub_ids",
+            "distance",
+            "evidence",
+            "not_do"
+          ],
+          "dp_evidence_len": 2
+        },
+        "view_both": {
+          "adjudications": 4,
+          "threads": 6,
+          "has_manifest": true
+        },
+        "view_all": {
+          "keys": [
+            "adjudications",
+            "amps",
+            "anchor",
+            "anchor_touched",
+            "anytime",
+            "aspect_hist",
+            "aspect_units",
+            "belief_items",
+            "best_round",
+            "both_quota",
+            "candidates",
+            "carry",
+            "carry_check",
+            "carry_checks",
+            "carry_dropped",
+            "carry_dropped_all",
+            "closure_reason",
+            "collision",
+            "covered_aspects",
+            "csd",
+            "cut_two_way",
+            "decidable_product",
+            "deferrals",
+            "delivery_share",
+            "distance_to_question",
+            "divergence",
+            "duel_suspensions",
+            "duty",
+            "duty_remedy_used",
+            "duty_trace",
+            "duty_verdict",
+            "engagements",
+            "entry",
+            "errors",
+            "escalations",
+            "goal_trace",
+            "goal_verdict",
+            "idle",
+            "ing_structured",
+            "manifest",
+            "meta",
+            "meta_closure",
+            "probe_skipped",
+            "probes",
+            "quality_flags",
+            "quality_verdict",
+            "quant_readings",
+            "reclassifications",
+            "reconfirmations",
+            "refinements",
+            "rehashed",
+            "rendered",
+            "rephrase_ratio",
+            "resolutions",
+            "revocations",
+            "roles_run",
+            "round_log",
+            "rounds_cap",
+            "rounds_run",
+            "self_check",
+            "sem_stagnation",
+            "settlement",
+            "stop_primary",
+            "stop_reason",
+            "suspensions",
+            "threads",
+            "touch_rate",
+            "trace_log",
+            "uncovered_aspects",
+            "undecidable_product",
+            "untouched",
+            "upstream_layers",
+            "upstream_texts"
+          ],
+          "actions_len": 0,
+          "not_do_len": 0,
+          "decision_len": 0,
+          "residual_risks_len": 0,
+          "provenance_len": 0,
+          "confidence": null,
+          "decidable_product_present": false
+        },
+        "root_actions_len": 0,
+        "root_not_do_len": 0,
+        "v2_shadow": {
+          "present": true,
+          "mode": "serial",
+          "core_present": false,
+          "core_ok": null,
+          "core_gaps": null,
+          "core_overreach": null,
+          "core_error": null,
+          "contracts_ok": false
+        }
+      },
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 51,
+            "probes": 3,
+            "suspensions": 4
+          },
+          "1": {
+            "ok": true,
+            "subs": 6,
+            "decidable": 3,
+            "cited": 0,
+            "layer_evidence": 2
+          },
+          "both": {
+            "ok": true,
+            "adjudications": 4,
+            "threads": 6
+          },
+          "all": {
+            "ok": true,
+            "required": {
+              "decision": true,
+              "actions": true,
+              "not_do": true,
+              "residual_risks": true,
+              "provenance": true
+            },
+            "actions": 5,
+            "not_do": 3
+          }
+        },
+        "gaps": [],
+        "overreach": [
+          "1: 出现 action_plan（越权）"
+        ],
+        "repairs": [
+          "1.actions->all:5"
+        ],
+        "ok": false
+      },
+      "path": "outputs\\20261019_080835_一个远程办公团队如何在三个月内建立可验证.packed.json",
+      "mtime_epoch": 1792368515.233,
+      "contract": {
+        "ok": true,
+        "checked": [
+          "0",
+          "1",
+          "all",
+          "both"
+        ],
+        "violations": {}
+      }
+    },
+    {
+      "file": "20261019_085657_AI能否独立完成数字IC设计边界.packed.json",
+      "mtime": "2026-10-19T08:56:57+08:00",
+      "size": 492688,
+      "raw": {
+        "top_keys": [
+          "_anchor_tier_warning",
+          "_auto_dispatch",
+          "_auto_plan_used",
+          "_config",
+          "_runtime",
+          "belief_staleness",
+          "calibration_queue",
+          "channels",
+          "compact",
+          "cost_profile",
+          "decidability",
+          "dispatch",
+          "diversity",
+          "external_anchor",
+          "freeze",
+          "id",
+          "input_sanity",
+          "keep",
+          "layer_contribution",
+          "llm_bad_json",
+          "llm_by_stage",
+          "llm_calls",
+          "llm_eval_calls",
+          "llm_eval_tokens",
+          "llm_json_repair_failed",
+          "llm_json_repaired",
+          "llm_ops_calls",
+          "llm_ops_tokens",
+          "llm_tokens",
+          "orientation",
+          "playbook",
+          "pools",
+          "quality",
+          "question",
+          "readings_table",
+          "rounds",
+          "route",
+          "self_text",
+          "tri_alpha",
+          "tri_consensus",
+          "tri_state",
+          "v2_shadow",
+          "v2_takeover",
+          "views"
+        ],
+        "route": [
+          "0",
+          "1",
+          "both",
+          "all"
+        ],
+        "rounds": {
+          "0": 3,
+          "1": 2,
+          "both": 2,
+          "all": 1
+        },
+        "run_id": "20261019_083520",
+        "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+        "llm_calls": 90,
+        "llm_tokens": 554805,
+        "quality": {
+          "coverage": 0.3578,
+          "tri_ratio": 0.5,
+          "answered": 2,
+          "answerable_total": 6
+        },
+        "views_keys": [
+          "0",
+          "1",
+          "all",
+          "both"
+        ],
+        "view0": {
+          "candidates": 24,
+          "amps": 9,
+          "probes": 2,
+          "suspensions": 3
+        },
+        "view1": {
+          "_actions_len": 5,
+          "has__actions": true,
+          "_not_do_len": 3,
+          "dp_actions_len": 5,
+          "dp_keys": [
+            "actions",
+            "answer",
+            "answered_sub_ids",
+            "distance",
+            "evidence",
+            "not_do"
+          ],
+          "dp_evidence_len": 2
+        },
+        "view_both": {
+          "adjudications": 3,
+          "threads": 5,
+          "has_manifest": true
+        },
+        "view_all": {
+          "keys": [
+            "adjudications",
+            "amps",
+            "anchor",
+            "anchor_touched",
+            "anytime",
+            "aspect_hist",
+            "aspect_units",
+            "belief_items",
+            "best_round",
+            "both_quota",
+            "candidates",
+            "carry",
+            "carry_check",
+            "carry_checks",
+            "carry_dropped",
+            "carry_dropped_all",
+            "closure_reason",
+            "collision",
+            "covered_aspects",
+            "csd",
+            "cut_two_way",
+            "decidable_product",
+            "deferrals",
+            "delivery_share",
+            "distance_to_question",
+            "divergence",
+            "duel_suspensions",
+            "duty",
+            "duty_remedy_used",
+            "duty_trace",
+            "duty_verdict",
+            "engagements",
+            "entry",
+            "errors",
+            "escalations",
+            "goal_trace",
+            "goal_verdict",
+            "idle",
+            "ing_structured",
+            "l0_v2",
+            "manifest",
+            "meta",
+            "meta_closure",
+            "probe_skipped",
+            "probes",
+            "quality_flags",
+            "quality_verdict",
+            "quant_readings",
+            "reclassifications",
+            "reconfirmations",
+            "refinements",
+            "rehashed",
+            "rendered",
+            "rephrase_ratio",
+            "resolutions",
+            "revocations",
+            "roles_run",
+            "round_log",
+            "rounds_cap",
+            "rounds_run",
+            "self_check",
+            "sem_stagnation",
+            "settlement",
+            "stop_primary",
+            "stop_reason",
+            "suspensions",
+            "threads",
+            "touch_rate",
+            "trace_log",
+            "uncovered_aspects",
+            "undecidable_product",
+            "untouched",
+            "upstream_layers",
+            "upstream_texts"
+          ],
+          "actions_len": 0,
+          "not_do_len": 0,
+          "decision_len": 0,
+          "residual_risks_len": 0,
+          "provenance_len": 0,
+          "confidence": null,
+          "decidable_product_present": false
+        },
+        "root_actions_len": 0,
+        "root_not_do_len": 0,
+        "v2_shadow": {
+          "present": true,
+          "mode": "serial",
+          "core_present": false,
+          "core_ok": null,
+          "core_gaps": null,
+          "core_overreach": null,
+          "core_error": null,
+          "contracts_ok": false
+        }
+      },
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 33,
+            "probes": 2,
+            "suspensions": 3
+          },
+          "1": {
+            "ok": true,
+            "subs": 6,
+            "decidable": 0,
+            "cited": 0,
+            "layer_evidence": 2
+          },
+          "both": {
+            "ok": true,
+            "adjudications": 3,
+            "threads": 5
+          },
+          "all": {
+            "ok": true,
+            "required": {
+              "decision": true,
+              "actions": true,
+              "not_do": true,
+              "residual_risks": true,
+              "provenance": true
+            },
+            "actions": 5,
+            "not_do": 3
+          }
+        },
+        "gaps": [],
+        "overreach": [
+          "1: 出现 action_plan（越权）"
+        ],
+        "repairs": [
+          "1.actions->all:5"
+        ],
+        "ok": false
+      },
+      "path": "outputs\\20261019_085657_AI能否独立完成数字IC设计边界.packed.json",
+      "mtime_epoch": 1792371417.678,
+      "contract": {
+        "ok": true,
+        "checked": [
+          "0",
+          "1",
+          "all",
+          "both"
+        ],
+        "violations": {}
+      }
+    },
+    {
+      "file": "20261019_085804_一个远程办公团队如何在三个月内建立可验证.packed.json",
+      "mtime": "2026-10-19T08:58:04+08:00",
+      "size": 497545,
+      "raw": {
+        "top_keys": [
+          "_anchor_tier_warning",
+          "_auto_dispatch",
+          "_auto_plan_used",
+          "_config",
+          "_runtime",
+          "belief_staleness",
+          "calibration_queue",
+          "channels",
+          "compact",
+          "cost_profile",
+          "decidability",
+          "dispatch",
+          "diversity",
+          "external_anchor",
+          "freeze",
+          "id",
+          "input_sanity",
+          "keep",
+          "layer_contribution",
+          "llm_bad_json",
+          "llm_by_stage",
+          "llm_calls",
+          "llm_eval_calls",
+          "llm_eval_tokens",
+          "llm_json_repair_failed",
+          "llm_json_repaired",
+          "llm_ops_calls",
+          "llm_ops_tokens",
+          "llm_tokens",
+          "orientation",
+          "playbook",
+          "pools",
+          "quality",
+          "question",
+          "readings_table",
+          "rounds",
+          "route",
+          "self_text",
+          "tri_alpha",
+          "tri_consensus",
+          "tri_state",
+          "v2_shadow",
+          "v2_takeover",
+          "views"
+        ],
+        "route": [
+          "0",
+          "1",
+          "both",
+          "all"
+        ],
+        "rounds": {
+          "0": 3,
+          "1": 2,
+          "both": 2,
+          "all": 1
+        },
+        "run_id": "20261019_083518",
+        "question": "一个远程办公团队如何在三个月内建立可验证的信任机制？",
+        "llm_calls": 89,
+        "llm_tokens": 545889,
+        "quality": {
+          "coverage": 0.3974,
+          "tri_ratio": 0.3333,
+          "answered": 5,
+          "answerable_total": 5
+        },
+        "views_keys": [
+          "0",
+          "1",
+          "all",
+          "both"
+        ],
+        "view0": {
+          "candidates": 24,
+          "amps": 7,
+          "probes": 3,
+          "suspensions": 1
+        },
+        "view1": {
+          "_actions_len": 6,
+          "has__actions": true,
+          "_not_do_len": 3,
+          "dp_actions_len": 6,
+          "dp_keys": [
+            "actions",
+            "answer",
+            "answered_sub_ids",
+            "distance",
+            "evidence",
+            "not_do"
+          ],
+          "dp_evidence_len": 2
+        },
+        "view_both": {
+          "adjudications": 3,
+          "threads": 6,
+          "has_manifest": true
+        },
+        "view_all": {
+          "keys": [
+            "adjudications",
+            "amps",
+            "anchor",
+            "anchor_touched",
+            "anytime",
+            "aspect_hist",
+            "aspect_units",
+            "belief_items",
+            "best_round",
+            "both_quota",
+            "candidates",
+            "carry",
+            "carry_check",
+            "carry_checks",
+            "carry_dropped",
+            "carry_dropped_all",
+            "closure_reason",
+            "collision",
+            "covered_aspects",
+            "csd",
+            "cut_two_way",
+            "decidable_product",
+            "deferrals",
+            "delivery_share",
+            "distance_to_question",
+            "divergence",
+            "duel_suspensions",
+            "duty",
+            "duty_remedy_used",
+            "duty_trace",
+            "duty_verdict",
+            "engagements",
+            "entry",
+            "errors",
+            "escalations",
+            "goal_trace",
+            "goal_verdict",
+            "idle",
+            "ing_structured",
+            "l0_v2",
+            "manifest",
+            "meta",
+            "meta_closure",
+            "probe_skipped",
+            "probes",
+            "quality_flags",
+            "quality_verdict",
+            "quant_readings",
+            "reclassifications",
+            "reconfirmations",
+            "refinements",
+            "rehashed",
+            "rendered",
+            "rephrase_ratio",
+            "resolutions",
+            "revocations",
+            "roles_run",
+            "round_log",
+            "rounds_cap",
+            "rounds_run",
+            "self_check",
+            "sem_stagnation",
+            "settlement",
+            "stop_primary",
+            "stop_reason",
+            "suspensions",
+            "threads",
+            "touch_rate",
+            "trace_log",
+            "uncovered_aspects",
+            "undecidable_product",
+            "untouched",
+            "upstream_layers",
+            "upstream_texts"
+          ],
+          "actions_len": 0,
+          "not_do_len": 0,
+          "decision_len": 0,
+          "residual_risks_len": 0,
+          "provenance_len": 0,
+          "confidence": null,
+          "decidable_product_present": false
+        },
+        "root_actions_len": 0,
+        "root_not_do_len": 0,
+        "v2_shadow": {
+          "present": true,
+          "mode": "serial",
+          "core_present": false,
+          "core_ok": null,
+          "core_gaps": null,
+          "core_overreach": null,
+          "core_error": null,
+          "contracts_ok": false
+        }
+      },
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 31,
+            "probes": 3,
+            "suspensions": 1
+          },
+          "1": {
+            "ok": true,
+            "subs": 6,
+            "decidable": 0,
+            "cited": 0,
+            "layer_evidence": 2
+          },
+          "both": {
+            "ok": true,
+            "adjudications": 3,
+            "threads": 6
+          },
+          "all": {
+            "ok": true,
+            "required": {
+              "decision": true,
+              "actions": true,
+              "not_do": true,
+              "residual_risks": true,
+              "provenance": true
+            },
+            "actions": 6,
+            "not_do": 3
+          }
+        },
+        "gaps": [],
+        "overreach": [
+          "1: 出现 action_plan（越权）"
+        ],
+        "repairs": [
+          "1.actions->all:6"
+        ],
+        "ok": false
+      },
+      "path": "outputs\\20261019_085804_一个远程办公团队如何在三个月内建立可验证.packed.json",
+      "mtime_epoch": 1792371484.174,
+      "contract": {
+        "ok": true,
+        "checked": [
+          "0",
+          "1",
+          "all",
+          "both"
+        ],
+        "violations": {}
+      }
+    },
+    {
+      "file": "20261019_094658_AI能否独立完成数字IC设计边界.packed.json",
+      "mtime": "2026-10-19T09:46:58+08:00",
+      "size": 553385,
+      "raw": {
+        "top_keys": [
+          "_anchor_tier_warning",
+          "_auto_dispatch",
+          "_auto_plan_used",
+          "_config",
+          "_runtime",
+          "belief_staleness",
+          "calibration_queue",
+          "channels",
+          "compact",
+          "cost_profile",
+          "decidability",
+          "dispatch",
+          "diversity",
+          "external_anchor",
+          "freeze",
+          "id",
+          "input_sanity",
+          "keep",
+          "layer_contribution",
+          "llm_bad_json",
+          "llm_by_stage",
+          "llm_calls",
+          "llm_eval_calls",
+          "llm_eval_tokens",
+          "llm_json_repair_failed",
+          "llm_json_repaired",
+          "llm_ops_calls",
+          "llm_ops_tokens",
+          "llm_tokens",
+          "orientation",
+          "playbook",
+          "pools",
+          "quality",
+          "question",
+          "readings_table",
+          "rounds",
+          "route",
+          "self_text",
+          "tri_alpha",
+          "tri_consensus",
+          "tri_state",
+          "v2_shadow",
+          "v2_takeover",
+          "views"
+        ],
+        "route": [
+          "0",
+          "1",
+          "both",
+          "all"
+        ],
+        "rounds": {
+          "0": 3,
+          "1": 2,
+          "both": 2,
+          "all": 1
+        },
+        "run_id": "20261019_092627",
+        "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+        "llm_calls": 90,
+        "llm_tokens": 551826,
+        "quality": {
+          "coverage": 0.8552,
+          "tri_ratio": 0.3333,
+          "answered": 2,
+          "answerable_total": 2
+        },
+        "views_keys": [
+          "0",
+          "1",
+          "all",
+          "both"
+        ],
+        "view0": {
+          "candidates": 41,
+          "amps": 8,
+          "probes": 3,
+          "suspensions": 2
+        },
+        "view1": {
+          "_actions_len": 3,
+          "has__actions": true,
+          "_not_do_len": 2,
+          "dp_actions_len": 3,
+          "dp_keys": [
+            "actions",
+            "answer",
+            "answered_sub_ids",
+            "distance",
+            "evidence",
+            "not_do"
+          ],
+          "dp_evidence_len": 2
+        },
+        "view_both": {
+          "adjudications": 2,
+          "threads": 6,
+          "has_manifest": true
+        },
+        "view_all": {
+          "keys": [
+            "adjudications",
+            "amps",
+            "anchor",
+            "anchor_touched",
+            "anytime",
+            "aspect_hist",
+            "aspect_units",
+            "belief_items",
+            "best_round",
+            "both_quota",
+            "candidates",
+            "carry",
+            "carry_check",
+            "carry_checks",
+            "carry_dropped",
+            "carry_dropped_all",
+            "closure_reason",
+            "collision",
+            "covered_aspects",
+            "csd",
+            "cut_two_way",
+            "decidable_product",
+            "deferrals",
+            "delivery_share",
+            "distance_to_question",
+            "divergence",
+            "duel_suspensions",
+            "duty",
+            "duty_remedy_used",
+            "duty_trace",
+            "duty_verdict",
+            "engagements",
+            "entry",
+            "errors",
+            "escalations",
+            "goal_trace",
+            "goal_verdict",
+            "idle",
+            "ing_structured",
+            "l0_v2",
+            "manifest",
+            "meta",
+            "meta_closure",
+            "probe_skipped",
+            "probes",
+            "quality_flags",
+            "quality_verdict",
+            "quant_readings",
+            "reclassifications",
+            "reconfirmations",
+            "refinements",
+            "rehashed",
+            "rendered",
+            "rephrase_ratio",
+            "resolutions",
+            "revocations",
+            "roles_run",
+            "round_log",
+            "rounds_cap",
+            "rounds_run",
+            "self_check",
+            "sem_stagnation",
+            "settlement",
+            "stop_primary",
+            "stop_reason",
+            "suspensions",
+            "threads",
+            "touch_rate",
+            "trace_log",
+            "uncovered_aspects",
+            "undecidable_product",
+            "untouched",
+            "upstream_layers",
+            "upstream_texts"
+          ],
+          "actions_len": 0,
+          "not_do_len": 0,
+          "decision_len": 0,
+          "residual_risks_len": 0,
+          "provenance_len": 0,
+          "confidence": null,
+          "decidable_product_present": false
+        },
+        "root_actions_len": 0,
+        "root_not_do_len": 0,
+        "v2_shadow": {
+          "present": true,
+          "mode": "serial",
+          "core_present": false,
+          "core_ok": null,
+          "core_gaps": null,
+          "core_overreach": null,
+          "core_error": null,
+          "contracts_ok": false
+        }
+      },
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 49,
+            "probes": 3,
+            "suspensions": 2
+          },
+          "1": {
+            "ok": true,
+            "subs": 6,
+            "decidable": 0,
+            "cited": 0,
+            "layer_evidence": 2
+          },
+          "both": {
+            "ok": true,
+            "adjudications": 2,
+            "threads": 6
+          },
+          "all": {
+            "ok": true,
+            "required": {
+              "decision": true,
+              "actions": true,
+              "not_do": true,
+              "residual_risks": true,
+              "provenance": true
+            },
+            "actions": 3,
+            "not_do": 2
+          }
+        },
+        "gaps": [],
+        "overreach": [
+          "1: 出现 action_plan（越权）"
+        ],
+        "repairs": [
+          "1.actions->all:3"
+        ],
+        "ok": false
+      },
+      "path": "outputs\\20261019_094658_AI能否独立完成数字IC设计边界.packed.json",
+      "mtime_epoch": 1792374418.566,
+      "contract": {
+        "ok": true,
+        "checked": [
+          "0",
+          "1",
+          "all",
+          "both"
+        ],
+        "violations": {}
+      }
+    },
+    {
+      "file": "20261019_101117_AI能否独立完成数字IC设计边界.packed.json",
+      "mtime": "2026-10-19T10:11:17+08:00",
+      "size": 544553,
+      "raw": {
+        "top_keys": [
+          "_anchor_tier_warning",
+          "_auto_dispatch",
+          "_auto_plan_used",
+          "_config",
+          "_runtime",
+          "belief_staleness",
+          "calibration_queue",
+          "channels",
+          "compact",
+          "cost_profile",
+          "decidability",
+          "dispatch",
+          "diversity",
+          "external_anchor",
+          "freeze",
+          "id",
+          "input_sanity",
+          "keep",
+          "layer_contribution",
+          "llm_bad_json",
+          "llm_by_stage",
+          "llm_calls",
+          "llm_eval_calls",
+          "llm_eval_tokens",
+          "llm_json_repair_failed",
+          "llm_json_repaired",
+          "llm_ops_calls",
+          "llm_ops_tokens",
+          "llm_tokens",
+          "orientation",
+          "playbook",
+          "pools",
+          "quality",
+          "question",
+          "readings_table",
+          "rounds",
+          "route",
+          "self_text",
+          "tri_alpha",
+          "tri_consensus",
+          "tri_state",
+          "v2_shadow",
+          "v2_takeover",
+          "views"
+        ],
+        "route": [
+          "0",
+          "1",
+          "both",
+          "all"
+        ],
+        "rounds": {
+          "0": 3,
+          "1": 2,
+          "both": 2,
+          "all": 1
+        },
+        "run_id": "20261019_094755",
+        "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+        "llm_calls": 89,
+        "llm_tokens": 576285,
+        "quality": {
+          "coverage": 0.4134,
+          "tri_ratio": 0.5,
+          "answered": 5,
+          "answerable_total": 6
+        },
+        "views_keys": [
+          "0",
+          "1",
+          "all",
+          "both"
+        ],
+        "view0": {
+          "candidates": 40,
+          "amps": 8,
+          "probes": 3,
+          "suspensions": 5
+        },
+        "view1": {
+          "_actions_len": 5,
+          "has__actions": true,
+          "_not_do_len": 3,
+          "dp_actions_len": 5,
+          "dp_keys": [
+            "actions",
+            "answer",
+            "answered_sub_ids",
+            "distance",
+            "evidence",
+            "not_do"
+          ],
+          "dp_evidence_len": 2
+        },
+        "view_both": {
+          "adjudications": 3,
+          "threads": 5,
+          "has_manifest": true
+        },
+        "view_all": {
+          "keys": [
+            "adjudications",
+            "amps",
+            "anchor",
+            "anchor_touched",
+            "anytime",
+            "aspect_hist",
+            "aspect_units",
+            "belief_items",
+            "best_round",
+            "both_quota",
+            "candidates",
+            "carry",
+            "carry_check",
+            "carry_checks",
+            "carry_dropped",
+            "carry_dropped_all",
+            "closure_reason",
+            "collision",
+            "covered_aspects",
+            "csd",
+            "cut_two_way",
+            "decidable_product",
+            "deferrals",
+            "delivery_share",
+            "distance_to_question",
+            "divergence",
+            "duel_suspensions",
+            "duty",
+            "duty_remedy_used",
+            "duty_trace",
+            "duty_verdict",
+            "engagements",
+            "entry",
+            "errors",
+            "escalations",
+            "goal_trace",
+            "goal_verdict",
+            "idle",
+            "ing_structured",
+            "l0_v2",
+            "manifest",
+            "meta",
+            "meta_closure",
+            "probe_skipped",
+            "probes",
+            "quality_flags",
+            "quality_verdict",
+            "quant_readings",
+            "reclassifications",
+            "reconfirmations",
+            "refinements",
+            "rehashed",
+            "rendered",
+            "rephrase_ratio",
+            "resolutions",
+            "revocations",
+            "roles_run",
+            "round_log",
+            "rounds_cap",
+            "rounds_run",
+            "self_check",
+            "sem_stagnation",
+            "settlement",
+            "stop_primary",
+            "stop_reason",
+            "suspensions",
+            "threads",
+            "touch_rate",
+            "trace_log",
+            "uncovered_aspects",
+            "undecidable_product",
+            "untouched",
+            "upstream_layers",
+            "upstream_texts"
+          ],
+          "actions_len": 0,
+          "not_do_len": 0,
+          "decision_len": 0,
+          "residual_risks_len": 0,
+          "provenance_len": 0,
+          "confidence": null,
+          "decidable_product_present": false
+        },
+        "root_actions_len": 0,
+        "root_not_do_len": 0,
+        "v2_shadow": {
+          "present": true,
+          "mode": "serial",
+          "core_present": false,
+          "core_ok": null,
+          "core_gaps": null,
+          "core_overreach": null,
+          "core_error": null,
+          "contracts_ok": false
+        }
+      },
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 48,
+            "probes": 3,
+            "suspensions": 5
+          },
+          "1": {
+            "ok": true,
+            "subs": 6,
+            "decidable": 2,
+            "cited": 0,
+            "layer_evidence": 2
+          },
+          "both": {
+            "ok": true,
+            "adjudications": 3,
+            "threads": 5
+          },
+          "all": {
+            "ok": true,
+            "required": {
+              "decision": true,
+              "actions": true,
+              "not_do": true,
+              "residual_risks": true,
+              "provenance": true
+            },
+            "actions": 5,
+            "not_do": 3
+          }
+        },
+        "gaps": [],
+        "overreach": [
+          "1: 出现 action_plan（越权）"
+        ],
+        "repairs": [
+          "1.actions->all:5"
+        ],
+        "ok": false
+      },
+      "path": "outputs\\20261019_101117_AI能否独立完成数字IC设计边界.packed.json",
+      "mtime_epoch": 1792375877.262,
+      "contract": {
+        "ok": true,
+        "checked": [
+          "0",
+          "1",
+          "all",
+          "both"
+        ],
+        "violations": {}
+      }
+    }
+  ]
+}

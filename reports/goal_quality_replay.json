@@ -1,0 +1,1957 @@
+{
+ "generated_at": "2026-10-22 18:12:04",
+ "total_packed": 127,
+ "skipped": [
+  {
+   "file": "20261022_123029_用一句话说明服务账户隔离的作用.packed.json",
+   "error": "PermissionError"
+  }
+ ],
+ "raw_ready": 25,
+ "process_ready": 60,
+ "ready": 22,
+ "verified": 28,
+ "historical_raw_ready_but_process_false": 3,
+ "ready_but_process_false": 0,
+ "layer1_citations_positive": 46,
+ "rows": [
+  {
+   "file": "20261022_113206_元DGTF是什么？.packed.json",
+   "question": "【元DGTF 项目权威背景（内置，本地文档+资料库注入）】\n元DGTF 是一个本地四层螺旋推理引擎，版本 元DGTF-V1.30.0.py / 1.30.0。四",
+   "tokens": 1933197,
+   "raw_answer_ready": true,
+   "process_ready": false,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 6,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": false
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "probe_link_dangling(1)"
+   ]
+  },
+  {
+   "file": "20261022_091935_用一句话说明元DGTF的修行层作用.packed.json",
+   "question": "用一句话说明元DGTF的修行层作用。",
+   "tokens": 57573,
+   "raw_answer_ready": false,
+   "process_ready": false,
+   "answer_ready": false,
+   "answer_quality": "needs_evidence",
+   "citations_layer1": 0,
+   "standard_layers": {
+    "0": true,
+    "1": false,
+    "both": false,
+    "all": false
+   },
+   "hard_gaps": [
+    "uncovered:用一句话说明元DGTF的修行层作用"
+   ],
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "all_closure_unavailable",
+    "core_audit_gaps"
+   ]
+  },
+  {
+   "file": "20261021_183125_RAG、本地DeepSeek血统基座与D.packed.json",
+   "question": "【元DGTF 项目权威背景（内置，本地文档+资料库注入）】\n元DGTF 是一个本地四层螺旋推理引擎，版本 元DGTF-V1.30.0.py / 1.30.0。四",
+   "tokens": 64385,
+   "raw_answer_ready": false,
+   "process_ready": true,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 0,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "action_incomplete",
+    "duty_short",
+    "not_do_missing",
+    "probe_link_dangling(3)",
+    "all_closure_gaps",
+    "core_audit_gaps"
+   ]
+  },
+  {
+   "file": "20261021_162051_元DGTF项目权威背景内置本地文.packed.json",
+   "question": "【元DGTF 项目权威背景（内置，本地文档+资料库注入）】\n元DGTF 是一个本地四层螺旋推理引擎，版本 元DGTF-V1.30.0.py / 1.30.0。四",
+   "tokens": 1492368,
+   "raw_answer_ready": true,
+   "process_ready": false,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 4,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": false
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(3)"
+   ]
+  },
+  {
+   "file": "20261021_151144_本地LLM微调与EML事件记忆如何协同改.packed.json",
+   "question": "本地LLM微调与EML事件记忆如何协同改进元DGTF的四层调度、自我修复与知识更新？请给出可执行机制和验证指标。",
+   "tokens": 1168936,
+   "raw_answer_ready": false,
+   "process_ready": false,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 2,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": false
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "expand_imbalanced_benign",
+    "no_amp_at_all",
+    "position_all_same_structural",
+    "probe_link_dangling(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered",
+    "unsaid_overused(4)",
+    "all_closure_gaps",
+    "core_audit_gaps"
+   ]
+  },
+  {
+   "file": "20261021_125449_EML事件记忆如何提升元DGTF多模调.packed.json",
+   "question": "EML 事件记忆如何提升元DGTF多模调度的细度、准确性和动态调节精度？请给出可执行的机制与验证指标。",
+   "tokens": 341487,
+   "raw_answer_ready": false,
+   "process_ready": false,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 6,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": false,
+    "all": false
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered",
+    "all_closure_unavailable",
+    "core_audit_gaps"
+   ]
+  },
+  {
+   "file": "20261021_123939_EML事件记忆如何提升元DGTF多模调.packed.json",
+   "question": "EML 事件记忆如何提升元DGTF多模调度的细度、准确性和动态调节精度？请给出可执行的机制与验证指标。",
+   "tokens": 344218,
+   "raw_answer_ready": false,
+   "process_ready": false,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 0,
+   "standard_layers": {
+    "0": true,
+    "1": false,
+    "both": false,
+    "all": false
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(2)",
+    "all_closure_unavailable",
+    "core_audit_gaps"
+   ]
+  },
+  {
+   "file": "20261020_154010_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "tokens": 443419,
+   "raw_answer_ready": true,
+   "process_ready": true,
+   "answer_ready": true,
+   "answer_quality": "verified",
+   "citations_layer1": 0,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "unsaid_overused(7)"
+   ]
+  },
+  {
+   "file": "20261020_152217_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "tokens": 45512,
+   "raw_answer_ready": false,
+   "process_ready": false,
+   "answer_ready": false,
+   "answer_quality": "verified",
+   "citations_layer1": 0,
+   "standard_layers": {
+    "0": true,
+    "1": false,
+    "both": false,
+    "all": false
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(3)",
+    "all_closure_unavailable",
+    "core_audit_gaps"
+   ]
+  },
+  {
+   "file": "20261020_152037_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "tokens": 159207,
+   "raw_answer_ready": false,
+   "process_ready": false,
+   "answer_ready": false,
+   "answer_quality": "verified",
+   "citations_layer1": 0,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": false,
+    "all": false
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered",
+    "all_closure_unavailable",
+    "core_audit_gaps"
+   ]
+  },
+  {
+   "file": "20261020_150402_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "tokens": 548895,
+   "raw_answer_ready": true,
+   "process_ready": true,
+   "answer_ready": true,
+   "answer_quality": "verified",
+   "citations_layer1": 0,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "polarity_all_same_structural(1)",
+    "position_all_same_structural",
+    "probe_link_dangling(1)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered"
+   ]
+  },
+  {
+   "file": "20261020_144637_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "tokens": 468767,
+   "raw_answer_ready": true,
+   "process_ready": true,
+   "answer_ready": true,
+   "answer_quality": "verified",
+   "citations_layer1": 4,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "unsaid_overused(5)"
+   ]
+  },
+  {
+   "file": "20261020_135317_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "tokens": 565978,
+   "raw_answer_ready": true,
+   "process_ready": true,
+   "answer_ready": true,
+   "answer_quality": "verified",
+   "citations_layer1": 0,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(2)"
+   ]
+  },
+  {
+   "file": "20261020_132800_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "tokens": 455884,
+   "raw_answer_ready": true,
+   "process_ready": true,
+   "answer_ready": true,
+   "answer_quality": "verified",
+   "citations_layer1": 0,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "position_all_same_structural",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered",
+    "too_many_amp_candidates(69%)"
+   ]
+  },
+  {
+   "file": "20261020_131656_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "tokens": 450158,
+   "raw_answer_ready": true,
+   "process_ready": true,
+   "answer_ready": true,
+   "answer_quality": "verified",
+   "citations_layer1": 6,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "too_many_amp_candidates(85%)"
+   ]
+  },
+  {
+   "file": "20261020_122958_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "tokens": 434458,
+   "raw_answer_ready": true,
+   "process_ready": true,
+   "answer_ready": true,
+   "answer_quality": "verified",
+   "citations_layer1": 2,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered"
+   ]
+  },
+  {
+   "file": "20261020_121030_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "tokens": 562111,
+   "raw_answer_ready": true,
+   "process_ready": true,
+   "answer_ready": true,
+   "answer_quality": "verified",
+   "citations_layer1": 4,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "candidates_backfilled(sc:5)",
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "polarity_all_same_structural(both)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered"
+   ]
+  },
+  {
+   "file": "20261020_113213_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "tokens": 448421,
+   "raw_answer_ready": false,
+   "process_ready": true,
+   "answer_ready": false,
+   "answer_quality": "needs_evidence",
+   "citations_layer1": 0,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [
+    "conflict_unresolved"
+   ],
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "unsaid_overused(3)"
+   ]
+  },
+  {
+   "file": "20261020_113141_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "tokens": 522139,
+   "raw_answer_ready": true,
+   "process_ready": true,
+   "answer_ready": true,
+   "answer_quality": "verified",
+   "citations_layer1": 6,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered",
+    "too_many_amp_candidates(80%)"
+   ]
+  },
+  {
+   "file": "20261020_111220_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "tokens": 476929,
+   "raw_answer_ready": true,
+   "process_ready": true,
+   "answer_ready": true,
+   "answer_quality": "verified",
+   "citations_layer1": 4,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered"
+   ]
+  },
+  {
+   "file": "20261020_105722_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "tokens": 326560,
+   "raw_answer_ready": true,
+   "process_ready": true,
+   "answer_ready": true,
+   "answer_quality": "verified",
+   "citations_layer1": 4,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "position_all_same_structural",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered",
+    "too_many_amp_candidates(87%)"
+   ]
+  },
+  {
+   "file": "20261020_102957_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "tokens": 334160,
+   "raw_answer_ready": true,
+   "process_ready": true,
+   "answer_ready": true,
+   "answer_quality": "verified",
+   "citations_layer1": 4,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "position_all_same_structural",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered",
+    "too_many_amp_candidates(67%)",
+    "unsaid_overused(3)"
+   ]
+  },
+  {
+   "file": "20261020_100816_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "tokens": 389917,
+   "raw_answer_ready": true,
+   "process_ready": true,
+   "answer_ready": true,
+   "answer_quality": "verified",
+   "citations_layer1": 2,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "candidates_backfilled(sc:6)",
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered",
+    "too_many_amp_candidates(85%)",
+    "unsaid_overused(4)"
+   ]
+  },
+  {
+   "file": "20261020_094536_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "tokens": 483642,
+   "raw_answer_ready": true,
+   "process_ready": true,
+   "answer_ready": true,
+   "answer_quality": "verified",
+   "citations_layer1": 4,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "position_all_same_structural",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered"
+   ]
+  },
+  {
+   "file": "20261020_092123_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "tokens": 314688,
+   "raw_answer_ready": true,
+   "process_ready": true,
+   "answer_ready": true,
+   "answer_quality": "verified",
+   "citations_layer1": 4,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "too_many_amp_candidates(100%)"
+   ]
+  },
+  {
+   "file": "20261020_090210_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "tokens": 398663,
+   "raw_answer_ready": true,
+   "process_ready": true,
+   "answer_ready": true,
+   "answer_quality": "verified",
+   "citations_layer1": 2,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(both)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "too_many_amp_candidates(77%)"
+   ]
+  },
+  {
+   "file": "20261020_083208_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "tokens": 331310,
+   "raw_answer_ready": true,
+   "process_ready": true,
+   "answer_ready": true,
+   "answer_quality": "verified",
+   "citations_layer1": 6,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered",
+    "too_many_amp_candidates(69%)",
+    "unsaid_overused(3)"
+   ]
+  },
+  {
+   "file": "20261020_081008_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "tokens": 350567,
+   "raw_answer_ready": true,
+   "process_ready": true,
+   "answer_ready": true,
+   "answer_quality": "verified",
+   "citations_layer1": 0,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(both)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "too_many_amp_candidates(86%)",
+    "unsaid_overused(6)"
+   ]
+  },
+  {
+   "file": "20261020_073959_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "tokens": 293034,
+   "raw_answer_ready": true,
+   "process_ready": true,
+   "answer_ready": true,
+   "answer_quality": "verified",
+   "citations_layer1": 4,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "candidates_backfilled(sc:5)",
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "polarity_all_same_structural(both)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered",
+    "unsaid_overused(4)"
+   ]
+  },
+  {
+   "file": "20261020_073134_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "tokens": 278976,
+   "raw_answer_ready": true,
+   "process_ready": true,
+   "answer_ready": true,
+   "answer_quality": "verified",
+   "citations_layer1": 0,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "candidates_backfilled(sc:5)",
+    "duty_short",
+    "position_all_same_structural",
+    "probe_link_dangling(2)",
+    "probe_no_target_covered"
+   ]
+  },
+  {
+   "file": "20261020_072240_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "tokens": 266726,
+   "raw_answer_ready": true,
+   "process_ready": true,
+   "answer_ready": true,
+   "answer_quality": "verified",
+   "citations_layer1": 2,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "candidates_backfilled(sc:6)",
+    "duty_short",
+    "polarity_all_same_structural(both)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "unsaid_overused(4)"
+   ]
+  },
+  {
+   "file": "20261020_071351_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "tokens": 270516,
+   "raw_answer_ready": true,
+   "process_ready": true,
+   "answer_ready": true,
+   "answer_quality": "verified",
+   "citations_layer1": 4,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "candidates_backfilled(sc:6)",
+    "duty_short",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "too_many_amp_candidates(92%)"
+   ]
+  },
+  {
+   "file": "20261020_065509_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "tokens": 203398,
+   "raw_answer_ready": true,
+   "process_ready": false,
+   "answer_ready": false,
+   "answer_quality": "verified",
+   "citations_layer1": 4,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": false
+   },
+   "hard_gaps": [],
+   "flags": [
+    "candidates_backfilled(sc:5)",
+    "candidates_backfilled(sc:6)",
+    "candidates_backfilled(sc:7)",
+    "duty_short",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)"
+   ]
+  },
+  {
+   "file": "20261020_060016_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "tokens": 190482,
+   "raw_answer_ready": false,
+   "process_ready": true,
+   "answer_ready": false,
+   "answer_quality": "verified",
+   "citations_layer1": 2,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "candidates_backfilled(sc:8)",
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)"
+   ]
+  },
+  {
+   "file": "20261020_055412_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "tokens": 310213,
+   "raw_answer_ready": false,
+   "process_ready": false,
+   "answer_ready": false,
+   "answer_quality": "needs_evidence",
+   "citations_layer1": 4,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": false
+   },
+   "hard_gaps": [
+    "conflict_unresolved"
+   ],
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(both)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered",
+    "all_closure_unavailable",
+    "core_audit_gaps"
+   ]
+  },
+  {
+   "file": "20261020_023407_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "tokens": 266901,
+   "raw_answer_ready": false,
+   "process_ready": true,
+   "answer_ready": false,
+   "answer_quality": "verified",
+   "citations_layer1": 0,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "candidates_backfilled(sc:11)",
+    "candidates_backfilled(sc:8)",
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)"
+   ]
+  },
+  {
+   "file": "20261020_022537_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "tokens": 260631,
+   "raw_answer_ready": false,
+   "process_ready": true,
+   "answer_ready": false,
+   "answer_quality": "verified",
+   "citations_layer1": 2,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "candidates_backfilled(sc:6)",
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)"
+   ]
+  },
+  {
+   "file": "20261020_015933_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "tokens": 255203,
+   "raw_answer_ready": false,
+   "process_ready": true,
+   "answer_ready": false,
+   "answer_quality": "needs_evidence",
+   "citations_layer1": 2,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [
+    "conflict_unresolved"
+   ],
+   "flags": [
+    "candidates_backfilled(sc:6)",
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered"
+   ]
+  },
+  {
+   "file": "20261020_015222_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "tokens": 185991,
+   "raw_answer_ready": false,
+   "process_ready": false,
+   "answer_ready": false,
+   "answer_quality": "needs_evidence",
+   "citations_layer1": 4,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": false
+   },
+   "hard_gaps": [
+    "conflict_unresolved"
+   ],
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(both)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered",
+    "all_closure_unavailable",
+    "core_audit_gaps"
+   ]
+  },
+  {
+   "file": "20261020_014441_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "tokens": 323453,
+   "raw_answer_ready": false,
+   "process_ready": false,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 2,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": false
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(1)",
+    "probe_link_dangling(2)",
+    "all_closure_unavailable",
+    "core_audit_gaps"
+   ]
+  },
+  {
+   "file": "20261019_223904_deepseek-V41-Flash.packed.json",
+   "question": "deepseek-V4.1-Flash 1017什么时候发布的",
+   "tokens": 420505,
+   "raw_answer_ready": false,
+   "process_ready": false,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 2,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": false
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)"
+   ]
+  },
+  {
+   "file": "20261019_204724_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "tokens": 551258,
+   "raw_answer_ready": false,
+   "process_ready": true,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 4,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "candidates_backfilled(sc:5)",
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)"
+   ]
+  },
+  {
+   "file": "20261019_204700_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "tokens": 572524,
+   "raw_answer_ready": false,
+   "process_ready": true,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 6,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "candidates_backfilled(sc:5)",
+    "candidates_backfilled(sc:6)",
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)"
+   ]
+  },
+  {
+   "file": "20261019_194142_产品要出海定价按成本加成还是按当地竞品.packed.json",
+   "question": "产品要出海，定价按成本加成还是按当地竞品锚定",
+   "tokens": 447352,
+   "raw_answer_ready": false,
+   "process_ready": true,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 2,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "candidates_backfilled(sc:5)",
+    "duty_short",
+    "probe_link_dangling(3)",
+    "unsaid_overused(4)"
+   ]
+  },
+  {
+   "file": "20261019_184904_老城区暴雨内涝频发排水系统要不要整体翻.packed.json",
+   "question": "老城区暴雨内涝频发，排水系统要不要整体翻新，怎么定优先级",
+   "tokens": 663768,
+   "raw_answer_ready": false,
+   "process_ready": false,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 2,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": false
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "unsaid_overused(3)",
+    "unsaid_overused(4)",
+    "unsaid_overused(5)"
+   ]
+  },
+  {
+   "file": "20261019_184834_集团内部各子公司数据共享的合法边界在哪里.packed.json",
+   "question": "集团内部各子公司数据共享的合法边界在哪里",
+   "tokens": 443141,
+   "raw_answer_ready": false,
+   "process_ready": true,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 0,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "candidates_backfilled(sc:7)",
+    "candidates_backfilled(sc:8)",
+    "duty_short",
+    "polarity_all_same_structural(both)",
+    "probe_link_dangling(3)",
+    "unsaid_overused(3)"
+   ]
+  },
+  {
+   "file": "20261019_183419_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "tokens": 362199,
+   "raw_answer_ready": false,
+   "process_ready": false,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 0,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": false,
+    "all": false
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)"
+   ]
+  },
+  {
+   "file": "20261019_181851_集团内部各子公司数据共享的合法边界在哪里.packed.json",
+   "question": "集团内部各子公司数据共享的合法边界在哪里",
+   "tokens": 469042,
+   "raw_answer_ready": false,
+   "process_ready": true,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 0,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "candidates_backfilled(sc:5)",
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "all_closure_gaps",
+    "core_audit_gaps"
+   ]
+  },
+  {
+   "file": "20261019_181819_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "tokens": 353841,
+   "raw_answer_ready": false,
+   "process_ready": false,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 0,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": false,
+    "all": false
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(3)"
+   ]
+  },
+  {
+   "file": "20261019_181557_一家现金流紧张的中小制造企业该先裁员还.packed.json",
+   "question": "一家现金流紧张的中小制造企业，该先裁员还是先砍产线",
+   "tokens": 449374,
+   "raw_answer_ready": false,
+   "process_ready": true,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 0,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered",
+    "too_many_amp_candidates(73%)"
+   ]
+  },
+  {
+   "file": "20261019_175236_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "tokens": 520291,
+   "raw_answer_ready": false,
+   "process_ready": false,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 2,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": false,
+    "all": false
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)"
+   ]
+  },
+  {
+   "file": "20261019_172713_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "tokens": 388121,
+   "raw_answer_ready": false,
+   "process_ready": false,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 0,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": false,
+    "all": false
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)"
+   ]
+  },
+  {
+   "file": "20261019_172638_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "tokens": 383476,
+   "raw_answer_ready": false,
+   "process_ready": false,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 0,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": false,
+    "all": false
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered"
+   ]
+  },
+  {
+   "file": "20261019_165958_社区医院远程监测先做哪类慢病.packed.json",
+   "question": "社区医院远程监测，先做哪类慢病",
+   "tokens": 134636,
+   "raw_answer_ready": false,
+   "process_ready": false,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 4,
+   "standard_layers": {
+    "0": false,
+    "1": true,
+    "both": true,
+    "all": false
+   },
+   "hard_gaps": [],
+   "flags": [
+    "candidates_backfilled(sc:6)",
+    "duty_short",
+    "probe_link_dangling(2)"
+   ]
+  },
+  {
+   "file": "20261019_165457_多部门共享数据权限与责任怎么划.packed.json",
+   "question": "多部门共享数据，权限与责任怎么划",
+   "tokens": 155549,
+   "raw_answer_ready": false,
+   "process_ready": false,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 10,
+   "standard_layers": {
+    "0": false,
+    "1": true,
+    "both": true,
+    "all": false
+   },
+   "hard_gaps": [],
+   "flags": [
+    "candidates_backfilled(sc:7)",
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "probe_link_dangling(3)"
+   ]
+  },
+  {
+   "file": "20261019_165201_订单系统该选一致性还是可用性CAP怎.packed.json",
+   "question": "订单系统该选一致性还是可用性，CAP 怎么取舍",
+   "tokens": 136943,
+   "raw_answer_ready": false,
+   "process_ready": false,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 2,
+   "standard_layers": {
+    "0": false,
+    "1": true,
+    "both": false,
+    "all": false
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(3)"
+   ]
+  },
+  {
+   "file": "20261019_164848_集团内部各子公司数据共享的合法边界在哪里.packed.json",
+   "question": "集团内部各子公司数据共享的合法边界在哪里",
+   "tokens": 136703,
+   "raw_answer_ready": false,
+   "process_ready": false,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 2,
+   "standard_layers": {
+    "0": false,
+    "1": true,
+    "both": true,
+    "all": false
+   },
+   "hard_gaps": [],
+   "flags": [
+    "candidates_backfilled(sc:6)",
+    "duty_short",
+    "polarity_all_same_structural(both)",
+    "probe_link_dangling(2)",
+    "unsaid_overused(3)"
+   ]
+  },
+  {
+   "file": "20261019_164640_早高峰地铁站台拥挤越来越严重运营效率该.packed.json",
+   "question": "早高峰地铁站台拥挤越来越严重，运营效率该怎么提升",
+   "tokens": 66332,
+   "raw_answer_ready": false,
+   "process_ready": false,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 4,
+   "standard_layers": {
+    "0": false,
+    "1": true,
+    "both": false,
+    "all": false
+   },
+   "hard_gaps": [],
+   "flags": [
+    "candidates_backfilled(sc:5)",
+    "duty_short",
+    "probe_link_dangling(2)",
+    "probe_no_target_covered"
+   ]
+  },
+  {
+   "file": "20261019_164458_订单系统该选一致性还是可用性CAP怎.packed.json",
+   "question": "订单系统该选一致性还是可用性，CAP 怎么取舍",
+   "tokens": 248840,
+   "raw_answer_ready": false,
+   "process_ready": false,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 2,
+   "standard_layers": {
+    "0": false,
+    "1": true,
+    "both": true,
+    "all": false
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered"
+   ]
+  },
+  {
+   "file": "20261019_163612_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "tokens": 104545,
+   "raw_answer_ready": false,
+   "process_ready": false,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 0,
+   "standard_layers": {
+    "0": true,
+    "1": false,
+    "both": false,
+    "all": false
+   },
+   "hard_gaps": [],
+   "flags": [
+    "candidates_backfilled(sc:13)",
+    "duty_short",
+    "probe_link_dangling(3)"
+   ]
+  },
+  {
+   "file": "20261019_163121_产品要出海定价按成本加成还是按当地竞品.packed.json",
+   "question": "产品要出海，定价按成本加成还是按当地竞品锚定",
+   "tokens": 149682,
+   "raw_answer_ready": false,
+   "process_ready": false,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 2,
+   "standard_layers": {
+    "0": false,
+    "1": true,
+    "both": true,
+    "all": false
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(3)"
+   ]
+  },
+  {
+   "file": "20261019_163040_集团内部各子公司数据共享的合法边界在哪里.packed.json",
+   "question": "集团内部各子公司数据共享的合法边界在哪里",
+   "tokens": 63625,
+   "raw_answer_ready": false,
+   "process_ready": false,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 4,
+   "standard_layers": {
+    "0": false,
+    "1": true,
+    "both": false,
+    "all": false
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(3)"
+   ]
+  },
+  {
+   "file": "20261019_162926_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "tokens": 108604,
+   "raw_answer_ready": false,
+   "process_ready": false,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 0,
+   "standard_layers": {
+    "0": true,
+    "1": false,
+    "both": false,
+    "all": false
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(3)"
+   ]
+  },
+  {
+   "file": "20261019_162801_一家现金流紧张的中小制造企业该先裁员还.packed.json",
+   "question": "一家现金流紧张的中小制造企业，该先裁员还是先砍产线",
+   "tokens": 68689,
+   "raw_answer_ready": false,
+   "process_ready": false,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 4,
+   "standard_layers": {
+    "0": false,
+    "1": true,
+    "both": false,
+    "all": false
+   },
+   "hard_gaps": [],
+   "flags": [
+    "candidates_backfilled(sc:8)",
+    "duty_short",
+    "probe_link_dangling(3)"
+   ]
+  },
+  {
+   "file": "20261019_161136_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "tokens": 173664,
+   "raw_answer_ready": false,
+   "process_ready": false,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 6,
+   "standard_layers": {
+    "0": false,
+    "1": true,
+    "both": true,
+    "all": false
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered"
+   ]
+  },
+  {
+   "file": "20261019_160157_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "tokens": 164651,
+   "raw_answer_ready": false,
+   "process_ready": false,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 4,
+   "standard_layers": {
+    "0": false,
+    "1": true,
+    "both": true,
+    "all": false
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "too_many_amp_candidates(68%)"
+   ]
+  },
+  {
+   "file": "20261019_152307_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "tokens": 94798,
+   "raw_answer_ready": false,
+   "process_ready": false,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 4,
+   "standard_layers": {
+    "0": false,
+    "1": true,
+    "both": false,
+    "all": false
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(2)"
+   ]
+  },
+  {
+   "file": "20261019_151716_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "tokens": 110034,
+   "raw_answer_ready": false,
+   "process_ready": false,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 4,
+   "standard_layers": {
+    "0": false,
+    "1": true,
+    "both": false,
+    "all": false
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(3)"
+   ]
+  },
+  {
+   "file": "20261019_151018_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "tokens": 87386,
+   "raw_answer_ready": false,
+   "process_ready": false,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 0,
+   "standard_layers": {
+    "0": false,
+    "1": true,
+    "both": false,
+    "all": false
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(3)"
+   ]
+  },
+  {
+   "file": "20261019_145949_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "tokens": 560773,
+   "raw_answer_ready": false,
+   "process_ready": true,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 0,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "candidates_backfilled(sc:7)",
+    "candidates_backfilled(sc:8)",
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(3)"
+   ]
+  },
+  {
+   "file": "20261019_140654_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "tokens": 570358,
+   "raw_answer_ready": false,
+   "process_ready": true,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 0,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "candidates_backfilled(sc:7)",
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "polarity_all_same_structural(both)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered"
+   ]
+  },
+  {
+   "file": "20261019_132943_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "tokens": 573167,
+   "raw_answer_ready": false,
+   "process_ready": true,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 0,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "candidates_backfilled(sc:5)",
+    "candidates_backfilled(sc:6)",
+    "candidates_backfilled(sc:8)",
+    "duty_short",
+    "polarity_all_same_structural(both)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered",
+    "all_closure_gaps"
+   ]
+  },
+  {
+   "file": "20261019_124316_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "tokens": 565297,
+   "raw_answer_ready": false,
+   "process_ready": true,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 0,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "candidates_backfilled(sc:5)",
+    "candidates_backfilled(sc:6)",
+    "duty_short",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)"
+   ]
+  },
+  {
+   "file": "20261019_121648_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "tokens": 570127,
+   "raw_answer_ready": false,
+   "process_ready": true,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 0,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "candidates_backfilled(sc:11)",
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "all_closure_gaps"
+   ]
+  },
+  {
+   "file": "20261019_114408_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "tokens": 603153,
+   "raw_answer_ready": false,
+   "process_ready": true,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 0,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "candidates_backfilled(sc:5)",
+    "candidates_backfilled(sc:8)",
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)"
+   ]
+  },
+  {
+   "file": "20261019_110457_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "tokens": 562638,
+   "raw_answer_ready": false,
+   "process_ready": true,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 0,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "candidates_backfilled(sc:5)",
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "polarity_all_same_structural(1)",
+    "polarity_all_same_structural(both)",
+    "probe_link_dangling(3)"
+   ]
+  },
+  {
+   "file": "20261019_101117_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "tokens": 576285,
+   "raw_answer_ready": false,
+   "process_ready": true,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 0,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "candidates_backfilled(sc:6)",
+    "candidates_backfilled(sc:7)",
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered"
+   ]
+  },
+  {
+   "file": "20261019_094658_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "tokens": 551826,
+   "raw_answer_ready": false,
+   "process_ready": true,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 0,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "candidates_backfilled(sc:6)",
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)"
+   ]
+  },
+  {
+   "file": "20261019_085804_一个远程办公团队如何在三个月内建立可验证.packed.json",
+   "question": "一个远程办公团队如何在三个月内建立可验证的信任机制？",
+   "tokens": 545889,
+   "raw_answer_ready": false,
+   "process_ready": true,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 0,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "duty_short",
+    "expand_imbalanced_benign",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered"
+   ]
+  },
+  {
+   "file": "20261019_085657_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "tokens": 554805,
+   "raw_answer_ready": false,
+   "process_ready": true,
+   "answer_ready": false,
+   "answer_quality": "unverified",
+   "citations_layer1": 0,
+   "standard_layers": {
+    "0": true,
+    "1": true,
+    "both": true,
+    "all": true
+   },
+   "hard_gaps": [],
+   "flags": [
+    "candidates_backfilled(sc:6)",
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "too_many_amp_candidates(67%)"
+   ]
+  }
+ ]
+}

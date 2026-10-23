@@ -1,0 +1,10 @@
+# [v122 bench] org_001 · 多部门共享数据
+id: org_001
+domain: org
+question: "多个部门各自建系统、数据不互通，要不要强行统一平台"
+orientation: decision
+budget:
+  profile: balanced
+  max_calls: 180
+  rounds: "0:5,1:5,both:5,all:6"
+  mode: serial

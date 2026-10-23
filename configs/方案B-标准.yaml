@@ -1,0 +1,101 @@
+# ============================================================
+# 方案 B · 标准（默认推荐 · 产量 / 成本平衡点）
+#   配套文档：元DGTF-参数全景与影响面分析-v1.21.61.md §10
+# ============================================================
+# 定位：日常主力配置。预算取中间档，这组预算来自 真跑验证报告 §12.9：
+#     修行 4 / 研究 4 / 对撞 6（soft 5）/ 元 4（+1=5）
+#
+# 预计成本（估算，非实测）：
+#   总圈数 = 4+4+6+(4+1) = 19
+#   调用   ≈ 19 × 9.6 ≈ 182 次
+#   token  ≈ 0.87 M
+#   墙钟   ≈ 26 min（serial）
+#
+# 为什么推荐这套：
+#   · 每一行预算都 > soft_max，「自然安住」判据活着（§8 陷阱 1）
+#   · balanced 档只做 token 精简，不动调用结构 —— 内容不会被砍，只是喂得短
+#   · max_calls 压在估算值之上一点，留余量但不放任
+# ============================================================
+
+cost_profile: balanced         # ③候选截断8 ④shape×0.72 ⑤every_n+1；不动调用次数
+
+api:
+  timeout: 240
+  max_retries: 3
+  retry_backoff: 1.8
+
+output:
+  verbose: true
+  show_dual_judge: true        # 交付场景下建议打开，便于人工核体裁决质量
+  show_ing: false
+  show_manifest: false
+  show_probe_diag: false
+  self_check: true
+
+actions:
+  # auto 会让 LLM 九选一；置信 <0.5 时静默退回 serial（不可配常量 _PARALLEL_CONF_MIN）
+  # 想要可预期的时间，改 serial 或写死某个模式（如 F / G）
+  parallel_mode: auto
+  parallel_warmup_rounds: 1    # B/C 模式下 0 层先预热一圈
+  parallel_expand: true        # 阴阳展开并行发出：只压时延，不省调用
+  pipeline_gate_timeout: 900   # C 模式层间放行最长等待（秒）
+
+  input_sanity: true
+  # 默认全开 —— 17 个开关没有一个免费（§5.1）
+  re_anchor: true
+  expand_yin: true             # ★ 阴阳要么都开要么都关：只关一侧会让 economy 的
+  expand_yang: true            #   合并展开失效，只省内容不省调用（§3.2 陷阱 3）
+  dual_judge: true
+  ing: true
+  he: true
+  phase_probe: true
+  manifest: true
+  self_check: true
+  re_evaluate_pool: true
+  settle_research: true
+  assess_decidability: true
+  decompose_question: true
+  decidability_source: pool    # ★ 保持 pool：改成外部会让「研究层读 0 层产物」永不生效
+  decompose_source: pool
+
+memory:
+  channels: [content, context, self]
+  self_layers: 4               # 保留 4 层自我记忆
+  self_layers_per_entry: 2     # 每层各留 2 条再交错合并，防 all 层挤掉前几层
+  carry_feedback: true         # self_check 结论回流成下一圈的约束探针
+  # ⚠️ balanced 下这两个会被 ×0.72 → shape_chars≈648 / shape_items≈4
+  shape_items: 6
+  shape_chars: 900
+
+probe:
+  min_gain: 0.3
+  select_n: 3
+
+spiral:
+  hard_max: 6                  # 全局兜底（per_entry 四层都写了，它实际用不上）
+  soft_max: 3
+  all_extra_rounds: 1
+
+  per_entry:
+    # ★ 四层全写 —— 漏一层就滑向全局 hard_max
+    "0":    {hard_max: 4, soft_max: 3}
+    "1":    {hard_max: 4, soft_max: 3}
+    "both": {hard_max: 6, soft_max: 5}   # soft 5 < hard 6 ✓（ 历史 5 vs 3 的坑已避开）
+    "all":  {hard_max: 4, soft_max: 3}   # 实际封顶 4+1=5
+
+  # ⚠️ balanced 下这两个会被 _lazy_every_n +1（源码:8583）：写 2 → 实际 3，写 3 → 实际 4
+  structure_saturation_enabled: true
+  structure_saturation_every_n: 2        # → 实际 3（v1.21.60 对齐的目标值）
+  re_eval_every_n: 1                     # → 实际 2
+
+  re_eval_recent_k: 10
+  stable_layers: 3
+  batch_similarity: 0.6
+  unsaid_escape_limit: 3
+
+  # 这两个恒定读 per_entry."1"（源码:11101-11108），全局值只在没设 per_entry."1" 时生效
+  stall_streak_limit: 2
+  min_distance_improvement: 0.03
+
+# ★ 安全绳（§9 P0-1）：预算用尽会留痕，不会伪装成自然停止
+max_calls: 190

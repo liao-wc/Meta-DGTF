@@ -1,0 +1,10 @@
+# [v122 bench] eng_001 · 老城区内涝
+id: eng_001
+domain: eng
+question: "老城区暴雨内涝频发，排水系统要不要整体翻新，怎么定优先级"
+orientation: decision
+budget:
+  profile: balanced
+  max_calls: 180
+  rounds: "0:5,1:5,both:5,all:6"
+  mode: serial

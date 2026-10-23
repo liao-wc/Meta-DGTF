@@ -1,0 +1,4 @@
+# Local BGE embedding service (optional; app server itself uses stdlib)
+# Installed in local_model/envs/dgtf_llm_env; update only after fast_gate.
+torch==2.14.1
+transformers==5.20.2

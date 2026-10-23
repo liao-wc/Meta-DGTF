@@ -1,0 +1,10 @@
+# [v122 bench] tech_001 · 订单不超卖
+id: tech_001
+domain: tech
+question: "订单系统要保证不超卖又要不卡顿，下单链路怎么设计"
+orientation: decision
+budget:
+  profile: balanced
+  max_calls: 180
+  rounds: "0:5,1:5,both:5,all:6"
+  mode: serial

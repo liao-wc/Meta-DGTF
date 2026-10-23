@@ -1,0 +1,513 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""元 DGTF 冒烟测试：mock 掉 LLM 网络调用，验证 serial / A / B / C 能跑完。
+
+跑法：
+    python smoke_test.py
+    PYTHONIOENCODING=cp936 python smoke_test.py      # 验证 [fix-97] 编码兜底
+"""
+from __future__ import annotations
+
+import importlib.util
+import json
+import os
+import sys
+import threading
+import time
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+SRC = HERE / "元DGTF-V1.21.54.py"
+
+os.environ.setdefault("DGTF_API_KEY", "sk-smoke-test-key")
+
+_spec = importlib.util.spec_from_file_location("dgtf_mod", str(SRC))
+mod = importlib.util.module_from_spec(_spec)
+# dataclass 需要通过 sys.modules[cls.__module__] 解析注解，必须先注册
+sys.modules["dgtf_mod"] = mod
+_spec.loader.exec_module(mod)
+
+CALLS = {"n": 0}
+_LOCK = threading.Lock()
+SEEN_SYSTEMS = set()
+
+
+def fake_call(self, system, user, temperature=0.6, max_tokens=3000,
+              json_mode=False, model=None):
+    """替身 LLM：按 system 关键字返回对应格式的假输出。"""
+    with _LOCK:
+        CALLS["n"] += 1
+        SEEN_SYSTEMS.add((system or "")[:24])
+    with self._lock:
+        self.total_calls += 1
+        self.total_tokens += 11
+    time.sleep(0.005)  # 放大并发窗口，逼出竞态
+
+    s = system or ""
+
+    if "并行模式调度者" in s:
+        return json.dumps({"mode": os.environ.get("SMOKE_AUTO_MODE", "serial"),
+                           "reason": "smoke", "confidence": 0.9},
+                          ensure_ascii=False)
+
+    # [P1-6] 输入自检
+    if "输入检查者" in s:
+        return json.dumps(
+            {"issues": [{"term": "PN",
+                         "why": "不是任何标准复杂度类，疑似 NP 的笔误"}],
+             "note": "如为笔误请重跑"},
+            ensure_ascii=False)
+
+    # [P1-4] both 配额补裁
+    if "裁决补完者" in s:
+        items = [{"idx": i + 1, "missing": f"缺第{i+1}项：一个还不存在的判据"}
+                 for i in range(6)]
+        return json.dumps({"items": items}, ensure_ascii=False)
+
+    # [P0-2] 可判定性评估（外部评估 + 0 层之后的池视角评估）
+    if "可判定性" in s and "decidable|partial|undecidable" in s:
+        _verb = "undecidable" if "观察者" in s else "decidable"
+        return json.dumps({
+            "decidability": _verb,
+            "reason": "冒烟测试固定输出",
+            "features": ["测试特征"],
+            "decidable_aspects": ["可判定方面甲"],
+            "undecidable_aspects": ["不可判定方面乙"],
+        }, ensure_ascii=False)
+
+    if json_mode:
+        if "自我回看者" in s:
+            # [P1-5] 故意装成"抓到了问题"，才能验证回流真的发生
+            return json.dumps(
+                {"suspicious_candidates": [1, 2, 3, 4, 5],
+                 "suspicious_amps": [1],
+                 "ing_rephrased": True,
+                 "honest_about_empty": True,
+                 "flow_verdict": "冒烟：判定为凑数",
+                 "view_verdict": "冒烟",
+                 "amp_ratio_verdict": "冒烟",
+                 "notes": "冒烟 self-check"},
+                ensure_ascii=False)
+        if "锚点重述者" in s:
+            return json.dumps(
+                {"anchor": "测试锚点：它到底在问什么",
+                 "untouched": ["尚未触及的方面甲", "尚未触及的方面乙"]},
+                ensure_ascii=False)
+        if "adjudications" in s:
+            # [P1-4] 故意全给 both，触发 both 配额补裁路径
+            return json.dumps({
+                "probes": [],
+                "adjudications": [
+                    {"tension": f"冒烟张力{i+1}", "polarity": "both",
+                     "how": "两边都保留，不合并"}
+                    for i in range(4)],
+                "duel_suspensions": [],
+            }, ensure_ascii=False)
+        if "judgments" in s or "对偶" in s:
+            # 按 user 里的候选条数生成 judgments
+            n = sum(1 for ln in (user or "").splitlines()
+                    if ln.strip()[:2] in ("1.", "2.", "3.", "4.",
+                                          "5.", "6.", "7.", "8."))
+            n = max(1, min(n, 8))
+            return json.dumps(
+                {"judgments": [
+                    {"idx": i + 1,
+                     "position": "1" if i % 2 == 0 else "0",
+                     "why_position": "锚点已触及"}
+                    for i in range(n)]},
+                ensure_ascii=False)
+        return "{}"
+
+    if "阴视角" in s or "阳视角" in s:
+        tag = "阴" if "阴视角" in s else "阳"
+        return ("- [concept] %s视角候选甲：这是一条用于冒烟测试的候选描述\n"
+                "- [question] %s视角候选乙：另一条不同的候选描述供去重\n"
+                "- [event] %s视角候选丙：第三条候选描述长度合格" % (tag, tag, tag))
+
+    return ("这是一段用于冒烟测试的中文输出文本，长度足够通过各类检查。"
+            "它不需要有真实含义，只要不触发解析分支的异常即可。")
+
+
+mod.LLM.call = fake_call
+
+
+_ALL_LAYERS = ("0", "1", "both", "all")
+
+
+def build_cfg(verbose=False):
+    cfg = mod.load_config(str(HERE / "__nonexistent__.yaml"))
+    cfg["api"]["key"] = "sk-smoke-test-key"
+    cfg["output"]["verbose"] = verbose
+    cfg["output"]["save_dir"] = str(HERE / "smoke_outputs")
+    return cfg
+
+
+def run_mode(mode, question, rounds=None, verbose=False):
+    CALLS["n"] = 0
+    cfg = build_cfg(verbose)
+    meta = mod.MetaDGTF(cfg)
+    t0 = time.time()
+    res = meta.run(question,
+                   route=["0", "1", "both", "all"],
+                   rounds=rounds or {"0": 2, "1": 2, "both": 2, "all": 2},
+                   parallel_mode=mode)
+    dt = time.time() - t0
+    assert isinstance(res, dict), f"{mode} 返回值不是 dict"
+    assert "views" in res and res["views"], f"{mode} 没有产出任何 view"
+    # self_text 必须已经从分层桶合并回来
+    assert isinstance(res.get("self_text"), list), f"{mode} self_text 异常"
+    # 计数必须与实际调用次数一致（验证 [fix-98] 没把计数器搞坏）
+    assert res["llm_calls"] == CALLS["n"], (
+        f"{mode} 计数不一致: packed={res['llm_calls']} actual={CALLS['n']}")
+    path = mod.save_result(res, cfg["output"]["save_dir"])
+    assert path.exists() and path.stat().st_size > 0, f"{mode} 落盘失败"
+
+    # ---- [P0-1] self 段必须四层齐全，不能被跑得最久的层挤掉 ----
+    layer_tags = set()
+    for b in res["self_text"]:
+        for tag in ("[修行层]", "[研究层]", "[对撞层]", "[元层]"):
+            if str(b).startswith(tag):
+                layer_tags.add(tag)
+    # ---- [P0-2] 可判定性必须来自 0 层跑完后的池视角，不是开跑前的外部评估
+    dec = res.get("decidability") or {}
+    # ---- [P1-4] both 配额超限时必须留下 missing 与 both_quota
+    missing_n = 0
+    quota_n = 0
+    for v in res["views"].values():
+        for a in (v.get("adjudications") or []):
+            if str(a.get("missing", "")).strip():
+                missing_n += 1
+        if v.get("both_quota"):
+            quota_n += 1
+    # ---- [P1-5] self_check 必须回流成 carry 探针
+    carry_n = sum(len(v.get("carry") or []) for v in res["views"].values())
+    # ---- [P1-6] 输入自检必须进 packed
+    sanity_n = len((res.get("input_sanity") or {}).get("issues") or [])
+
+    return {
+        "mode": mode,
+        "views": list(res["views"].keys()),
+        "calls": res["llm_calls"],
+        "self_text_n": len(res["self_text"]),
+        "self_layers_n": len(layer_tags),
+        "dec_src": dec.get("_source") or dec.get("decidability", "?"),
+        "dec_div": "≠" if dec.get("_divergent") else "=",
+        "missing": missing_n,
+        "quota": quota_n,
+        "carry": carry_n,
+        "sanity": sanity_n,
+        "warmup": (res.get("dispatch") or {}).get("_warmup_rounds", "-"),
+        "md": path.name,
+        "sec": round(dt, 2),
+        "pool_all_amps": len(res["pools"]["all"]["amps"]),
+    }
+
+
+def check_cli():
+    """端到端走 main()：验证 argparse、配置回落 [fix-105]、落盘。"""
+    import contextlib
+    import io
+
+    cfg_path = HERE / "smoke_config.yaml"
+    cfg_path.write_text(
+        "output:\n"
+        "  save_dir: smoke_outputs\n"
+        "  verbose: false\n"
+        "actions:\n"
+        "  parallel_mode: B\n",
+        encoding="utf-8")
+    buf = io.StringIO()
+    old_argv = sys.argv
+    try:
+        sys.argv = ["dgtf", "CLI 冒烟问题：这件事的边界在哪里",
+                    "-c", str(cfg_path), "--rounds", "1"]
+        with contextlib.redirect_stdout(buf):
+            mod.main()          # 故意不给 --parallel，应回落到配置的 B
+    finally:
+        sys.argv = old_argv
+        try:
+            cfg_path.unlink(missing_ok=True)
+        except OSError:
+            pass  # 沙箱环境可能禁止删除；留着也不影响结论
+
+    out = buf.getvalue()
+    if "并行模式：B · 轮次并行（来自配置）" not in out:
+        print("  ✗ --parallel 未回落到配置 actions.parallel_mode")
+        print("    实际输出片段：",
+              [ln for ln in out.splitlines() if "并行模式" in ln])
+        return False
+    if "完成 |" not in out:
+        print("  ✗ CLI 未走到完成统计")
+        return False
+    print("  ✓ CLI 端到端跑通，且 --parallel 回落配置（B）")
+    return True
+
+
+def check_thread_isolation():
+    """并发回归：[fix-98] 截断标志线程隔离 / [fix-99] self_text 不丢条目。"""
+    cfg = build_cfg(False)
+    llm = mod.LLM(cfg)
+    bad = []
+
+    def worker(flag):
+        llm.last_truncated = flag
+        llm.last_finish = "length" if flag else "stop"
+        time.sleep(0.05)          # 故意让出 GIL，制造交错窗口
+        if llm.last_truncated != flag:
+            bad.append(f"last_truncated 串了: 期望 {flag}")
+        if (llm.last_finish == "length") != flag:
+            bad.append(f"last_finish 串了: 期望 {flag}")
+
+    ts = [threading.Thread(target=worker, args=(i % 2 == 0,))
+          for i in range(8)]
+    for t in ts:
+        t.start()
+    for t in ts:
+        t.join()
+    if bad:
+        print("  ✗ 截断标志未隔离：", bad[:3])
+        return False
+    print("  ✓ LLM 截断标志线程隔离（8 线程交错读写无串扰）")
+
+    # self_text：4 个线程各写 20 条，合并后必须一条不少。
+    # 先把 self_layers 放大，避免被正常的"只留最近 N 条"截断掩盖丢条目。
+    cfg2 = build_cfg(False)
+    cfg2["memory"]["self_layers"] = 100
+    meta = mod.MetaDGTF(cfg2)
+    fake_view = mod.View(entry="0")
+    fake_view.manifest = "测试 view 正文"
+
+    def writer(entry):
+        for _ in range(20):
+            meta._append_self_text(entry, fake_view)
+
+    ts = [threading.Thread(target=writer, args=(e,))
+          for e in ("0", "1", "both", "all")]
+    for t in ts:
+        t.start()
+    for t in ts:
+        t.join()
+    total = sum(len(v) for v in meta._self_text_by_entry.values())
+    if total != 80:
+        print(f"  ✗ self_text 丢条目：期望 80，实际 {total}")
+        return False
+    print(f"  ✓ self_text 按层隔离无丢失（4 线程 × 20 条 = {total}）")
+    return True
+
+
+def check_both_quota():
+    """[P1-4] 单元级验证：both 占比超限时强制补裁。
+
+    端到端 mock 太贫瘠（both 层池里没有 & / 线头 / 张力），
+    _probe_duel 在 L3862 就 return [] 了，走不到 adjudications。
+    这里直接构造 view 打进去，验证配额逻辑本身。
+    """
+    cfg = build_cfg(False)
+    d = mod.DGTF("both", mod.LLM(cfg), cfg)
+    d.verbose = False
+    v = mod.View(entry="both")
+    v.adjudications = [
+        {"tension": f"冒烟张力{i+1}", "polarity": "both",
+         "how": "两边都保留"} for i in range(4)]
+    d._enforce_both_quota(v)
+    ok = True
+    if not v.both_quota:
+        print("  ✗ [P1-4] 4/4 全 both，配额却没触发")
+        ok = False
+    n_missing = sum(1 for a in v.adjudications
+                    if str(a.get("missing", "")).strip())
+    if n_missing == 0:
+        print("  ✗ [P1-4] 补裁没写出 missing（缺的东西要能进 seeds）")
+        ok = False
+    ratio = (v.both_quota or {}).get("ratio")
+    if ratio != 1.0:
+        print(f"  ✗ [P1-4] ratio 计算错：{ratio}")
+
+    # 反例：1/3 = 33%，不该打扰
+    d2 = mod.DGTF("both", mod.LLM(cfg), cfg)
+    d2.verbose = False
+    v2 = mod.View(entry="both")
+    v2.adjudications = [
+        {"tension": "甲", "polarity": "0", "how": ""},
+        {"tension": "乙", "polarity": "1", "how": ""},
+        {"tension": "丙", "polarity": "both", "how": ""}]
+    d2._enforce_both_quota(v2)
+    if v2.both_quota:
+        print("  ✗ [P1-4] 未超限却触发了补裁（1/3）")
+        ok = False
+    if ok:
+        print(f"  ✓ [P1-4] both 配额：超限({ratio:.0%})补裁写出 "
+              f"{n_missing} 条 missing，未超限不打扰")
+    return ok
+
+
+def check_carry_feedback():
+    """[P1-5] 单元级验证：self_check 结论翻译成下一圈约束探针。"""
+    cfg = build_cfg(False)
+    meta = mod.MetaDGTF(cfg)
+    v = mod.View(entry="0")
+    v.candidates = [{"desc": f"候选甲的描述文字{i+1}"} for i in range(6)]
+    v.self_check = {"suspicious_candidates": [1, 2, 3, 4, 5],
+                    "suspicious_amps": [1], "ing_rephrased": True,
+                    "honest_about_empty": True, "notes": ""}
+    v.both_quota = {"items": [{"tension": "某张力",
+                               "missing": "缺一个不存在的判据"}]}
+    carry = meta._build_carry(v)
+    if len(carry) < 3:
+        print(f"  ✗ [P1-5] 应产出 3 类约束，实际 {len(carry)}")
+        return False
+    joined = " ".join(str(c.get("question", "")) for c in carry)
+    if "候选甲的描述文字1" not in joined:
+        print("  ✗ [P1-5] 禁止重述清单没带上具体候选")
+        return False
+    if "此处未生" not in joined:
+        print("  ✗ [P1-5] ing 复述约束缺失")
+        return False
+    if "缺一个不存在的判据" not in joined:
+        print("  ✗ [P1-5] both missing 没进约束")
+        return False
+
+    # 开关关闭时必须静默
+    cfg["memory"]["carry_feedback"] = False
+    meta2 = mod.MetaDGTF(cfg)
+    if meta2._build_carry(v):
+        print("  ✗ [P1-5] carry_feedback=False 时仍在回流")
+        return False
+    print(f"  ✓ [P1-5] 自省回流：{len(carry)} 条约束"
+          f"（禁重述 / ing 不复述 / both 缺什么），开关可关")
+    return True
+
+
+def main():
+    verbose = os.environ.get("SMOKE_VERBOSE", "0") == "1"
+    if not check_thread_isolation():
+        return 1
+    if not check_both_quota():
+        return 1
+    if not check_carry_feedback():
+        return 1
+    if not check_cli():
+        return 1
+    q = "测试问题：AI 在数字 IC 设计里到底能做什么，哪些已经量产？"
+    rows = []
+    for mode in ("serial", "A", "B", "C", "D", "E",
+                "F", "G", "H"):
+        try:
+            rows.append(run_mode(mode, q, verbose=verbose))
+            print(f"  ✓ {mode:6s} 跑通")
+        except Exception as e:
+            print(f"  ✗ {mode:6s} 失败: {type(e).__name__}: {e}")
+            import traceback
+            traceback.print_exc()
+            return 1
+
+    # auto 分支：让决策器返回 A
+    os.environ["SMOKE_AUTO_MODE"] = "A"
+    try:
+        r = run_mode("auto", q, verbose=verbose)
+        r["mode"] = "auto→A"
+        rows.append(r)
+        print("  ✓ auto    跑通（决策器返回 A）")
+    except Exception as e:
+        print(f"  ✗ auto    失败: {type(e).__name__}: {e}")
+        import traceback
+        traceback.print_exc()
+        return 1
+    finally:
+        os.environ.pop("SMOKE_AUTO_MODE", None)
+
+    # A 模式 route 不含 all：验证 [fix-101] 汇流不再被跳过
+    try:
+        CALLS["n"] = 0
+        cfg = build_cfg(False)
+        meta = mod.MetaDGTF(cfg)
+        res = meta.run(q, route=["0", "1", "both"],
+                       rounds={"0": 1, "1": 1, "both": 1, "all": 1},
+                       parallel_mode="A")
+        has_conf = "confluence" in res
+        print(f"  ✓ route 不含 all 时汇流圈仍执行：confluence={has_conf}")
+        if not has_conf:
+            print("  ✗ 汇流圈没跑（confluence 缺失）")
+            return 1
+        lay = set()
+        for b in res.get("self_text") or []:
+            for tag in ("[修行层]", "[研究层]", "[对撞层]", "[元层]"):
+                if str(b).startswith(tag):
+                    lay.add(tag)
+        rows.append({"mode": "A(no-all)",
+                     "views": list(res["views"].keys()),
+                     "calls": res["llm_calls"],
+                     "self_text_n": len(res.get("self_text") or []),
+                     "self_layers_n": len(lay),
+                     "dec_src": (res.get("decidability") or {}).get(
+                         "_source", "?"),
+                     "missing": 0, "quota": 0,
+                     "carry": sum(len(v.get("carry") or [])
+                                  for v in res["views"].values()),
+                     "sanity": len((res.get("input_sanity") or {}).get(
+                         "issues") or []),
+                     "md": "-", "sec": 0,
+                     "pool_all_amps": len(res["pools"]["all"]["amps"])})
+    except Exception as e:
+        print(f"  ✗ A(no-all) 失败: {type(e).__name__}: {e}")
+        import traceback
+        traceback.print_exc()
+        return 1
+
+    print("\n" + "=" * 74)
+    print(f"{'模式':<12}{'views':<20}{'调用':>5}{'self':>5}{'层':>3}"
+          f"{'判定源':<16}{'缺':>3}{'配额':>4}{'care':>5}{'输入':>4}"
+          f"{'预热':>4}{'秒':>6}")
+    print("=" * 74)
+    for r in rows:
+        print(f"{r['mode']:<12}{','.join(r['views']):<20}"
+              f"{r['calls']:>5}{r['self_text_n']:>5}{r['self_layers_n']:>3}"
+              f"{str(r.get('dec_src', '-')):<16}{r.get('missing', 0):>3}"
+              f"{r.get('quota', 0):>4}{r.get('carry', 0):>5}"
+              f"{r.get('sanity', 0):>4}{str(r.get('warmup', '-')):>4}"
+              f"{r['sec']:>6}")
+    print("=" * 74)
+    print("  层 = self 段出现的层数（[P0-1] 应为 4）"
+          "　判定源 = 可判定性来源（[P0-2] 应为 pool+external）")
+    print("  缺 = adjudications 里写明缺什么的条数（[P1-4]）"
+          "　care = 自省回流探针数（[P1-5]）"
+          "　输入 = 自检问题数（[P1-6]）")
+
+    failed = []
+    for r in rows:
+        tag = r["mode"]
+        # A(no-all) 只有三层，期望层数 = 实际跑的层数
+        expect_layers = len([v for v in r["views"] if v in
+                             ("0", "1", "both", "all")])
+        if r["self_layers_n"] < expect_layers:
+            failed.append(f"{tag}: [P0-1] self 只有 {r['self_layers_n']} 层，"
+                          f"期望 {expect_layers} 层，被挤出了")
+        if r.get("dec_src") != "pool+external":
+            failed.append(f"{tag}: [P0-2] 可判定性来源是 {r.get('dec_src')}，"
+                          f"没走 0 层先行的池视角")
+        if r.get("carry", 0) == 0:
+            failed.append(f"{tag}: [P1-5] 自省没有回流")
+        if r.get("sanity", 0) == 0:
+            failed.append(f"{tag}: [P1-6] 输入自检没进 packed")
+        # ---- [feat-107] B/C 必须先跑 0 层预热圈再让其余层开动
+        if tag in ("B", "C") and r.get("warmup") != 1:
+            failed.append(f"{tag}: [feat-107] 0 层预热圈数是 "
+                          f"{r.get('warmup')}，期望 1")
+        # ---- [feat-106] C 模式不落 ISS
+        if tag == "C" and set(r["views"]) != set(_ALL_LAYERS):
+            failed.append(f"{tag}: 四层没跑全（{r['views']}），"
+                          f"流水线大概率卡在闸门上")
+    if failed:
+        print("\n  ✗ 未通过：")
+        for f in failed:
+            print("    -", f)
+        print("落盘目录：", HERE / "smoke_outputs")
+        return 1
+
+    print("\n  ✓ P0-1 / P0-2 / P1-4 / P1-5 / P1-6 全部生效")
+    print("落盘目录：", HERE / "smoke_outputs")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

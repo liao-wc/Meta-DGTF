@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>元DGTF 工作台</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">元DGTF <span>工作台</span></div>
+  <nav class="tabs">
+    <button class="tab active" data-view="run">运行台</button>
+    <button class="tab" data-view="lib">产物库</button>
+  </nav>
+  <div class="env" id="env-info"></div>
+</header>
+
+<main>
+  <!-- 运行台 -->
+  <section id="view-run" class="view active">
+    <div class="composer">
+      <textarea id="question" rows="3" placeholder="输入要深究的问题，例如：AI 能否独立完成数字 IC 设计流程？"></textarea>
+      <div class="composer-actions">
+        <label class="mock-toggle">
+          <input type="checkbox" id="mock"> 演练模式（mock：不花钱、几秒出结果，仅验证链路）
+        </label>
+        <button id="run-btn" class="primary">开始深究</button>
+      </div>
+      <details class="advanced">
+        <summary>高级参数（留空 = 交给引擎 auto 自决）</summary>
+        <div class="grid" id="adv-grid"></div>
+      </details>
+      <div class="warn" id="cost-warn"></div>
+    </div>
+    <div id="tasks" class="tasks"></div>
+    <div id="tasks-empty" class="muted empty">还没有任务。填一个问题、点「开始深究」。</div>
+  </section>
+
+  <!-- 产物库 -->
+  <section id="view-lib" class="view">
+    <div class="searchbar">
+      <input id="lib-q" placeholder="搜索标题 / 元数据 / 正文…">
+      <label class="chk"><input type="checkbox" id="lib-body"> 搜正文</label>
+      <select id="lib-decid"><option value="">可判定性：全部</option></select>
+      <select id="lib-orient"><option value="">取向：全部</option></select>
+      <select id="lib-days">
+        <option value="">时间：全部</option>
+        <option value="7">最近 7 天</option>
+        <option value="30">最近 30 天</option>
+        <option value="90">最近 90 天</option>
+      </select>
+      <button id="lib-search">搜索</button>
+    </div>
+    <div id="lib-count" class="muted"></div>
+    <div id="lib-list" class="lib-list"></div>
+  </section>
+</main>
+
+<div id="detail" class="detail hidden">
+  <div class="detail-head">
+    <div id="detail-title"></div>
+    <button id="detail-close" class="ghost">关闭</button>
+  </div>
+  <div id="detail-body" class="md"></div>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

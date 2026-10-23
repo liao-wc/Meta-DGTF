@@ -1,0 +1,2386 @@
+{
+  "files": 26,
+  "counts": {
+    "critical": 15,
+    "major": 118,
+    "minor": 164
+  },
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "encoding",
+      "file": "_git_save.py",
+      "line": 98,
+      "message": "向 stdout 打印非 ASCII 但未做 UTF-8 兜底；Windows GBK 管道下必崩",
+      "evidence": "print(\"✗ 拒绝存档：%s\" % msg)"
+    },
+    {
+      "severity": "critical",
+      "category": "encoding",
+      "file": "_mut_v12332.py",
+      "line": 87,
+      "message": "向 stdout 打印非 ASCII 但未做 UTF-8 兜底；Windows GBK 管道下必崩",
+      "evidence": "'            print(\"   ⚠️ [api.thinking] 形状非法（%s，应为 mapping）⇒ 已降级为 {}；\"',"
+    },
+    {
+      "severity": "critical",
+      "category": "encoding",
+      "file": "_probe_gain_dist.py",
+      "line": 75,
+      "message": "向 stdout 打印非 ASCII 但未做 UTF-8 兜底；Windows GBK 管道下必崩",
+      "evidence": "print(\"上限 calls=%d / %.0f min | gain_floor=0（只读分布）| route=%s rounds=%s\""
+    },
+    {
+      "severity": "critical",
+      "category": "encoding",
+      "file": "_probe_gain_live.py",
+      "line": 75,
+      "message": "向 stdout 打印非 ASCII 但未做 UTF-8 兜底；Windows GBK 管道下必崩",
+      "evidence": "print(\"上限 calls=%d / %.0f min | gain_floor=%.3f | route=%s rounds=%s\""
+    },
+    {
+      "severity": "critical",
+      "category": "encoding",
+      "file": "_probe_v1232_audit.py",
+      "line": 55,
+      "message": "向 stdout 打印非 ASCII 但未做 UTF-8 兜底；Windows GBK 管道下必崩",
+      "evidence": "print(\"── A 出口完整性 / 死类 ──\")"
+    },
+    {
+      "severity": "critical",
+      "category": "encoding",
+      "file": "_run_gate.py",
+      "line": 23,
+      "message": "向 stdout 打印非 ASCII 但未做 UTF-8 兜底；Windows GBK 管道下必崩",
+      "evidence": "print(\"EXIT=%d  日志 %s（%d 字节）\" % (r.returncode, logname, len(txt)))"
+    },
+    {
+      "severity": "critical",
+      "category": "encoding",
+      "file": "_run_matrix_v12333.py",
+      "line": 58,
+      "message": "向 stdout 打印非 ASCII 但未做 UTF-8 兜底；Windows GBK 管道下必崩",
+      "evidence": "print(\"   退出码 %s｜耗时 %.1f min\" % (r.returncode, dt / 60))"
+    },
+    {
+      "severity": "critical",
+      "category": "encoding",
+      "file": "_v122_verify.py",
+      "line": 106,
+      "message": "向 stdout 打印非 ASCII 但未做 UTF-8 兜底；Windows GBK 管道下必崩",
+      "evidence": "print(f\"  ✅ [{cid}] {msg}\")"
+    },
+    {
+      "severity": "critical",
+      "category": "encoding",
+      "file": "bench\\bench_calibrate.py",
+      "line": 80,
+      "message": "向 stdout 打印非 ASCII 但未做 UTF-8 兜底；Windows GBK 管道下必崩",
+      "evidence": "print(f\"✗ 找不到 packed.json：{a.run_dir}\")"
+    },
+    {
+      "severity": "critical",
+      "category": "encoding",
+      "file": "bench\\bench_diff.py",
+      "line": 26,
+      "message": "向 stdout 打印非 ASCII 但未做 UTF-8 兜底；Windows GBK 管道下必崩",
+      "evidence": "print(\"用法：bench_diff.py <runA> <runB>\")"
+    },
+    {
+      "severity": "critical",
+      "category": "encoding",
+      "file": "bench\\bench_report.py",
+      "line": 77,
+      "message": "向 stdout 打印非 ASCII 但未做 UTF-8 兜底；Windows GBK 管道下必崩",
+      "evidence": "print(\"用法：bench_report.py <run_dir>\")"
+    },
+    {
+      "severity": "critical",
+      "category": "encoding",
+      "file": "bench\\bench_run.py",
+      "line": 210,
+      "message": "向 stdout 打印非 ASCII 但未做 UTF-8 兜底；Windows GBK 管道下必崩",
+      "evidence": "print(\"没有题目可跑\")"
+    },
+    {
+      "severity": "critical",
+      "category": "encoding",
+      "file": "dgtf_app\\selftest.py",
+      "line": 848,
+      "message": "向 stdout 打印非 ASCII 但未做 UTF-8 兜底；Windows GBK 管道下必崩",
+      "evidence": "print(\"服务不可达：\", e)"
+    },
+    {
+      "severity": "critical",
+      "category": "encoding",
+      "file": "dgtf_app\\server.py",
+      "line": 572,
+      "message": "向 stdout 打印非 ASCII 但未做 UTF-8 兜底；Windows GBK 管道下必崩",
+      "evidence": "print(\"口令太短（至少 6 位，只允许字母 / 数字 / _ / -）—— 换一个再试。\")"
+    },
+    {
+      "severity": "critical",
+      "category": "security",
+      "file": "bench\\bench_run.py",
+      "line": 68,
+      "message": "使用 exec()，可执行任意代码",
+      "evidence": "exec(compile(st, str(HERE / \"smoke_test.py\"), \"exec\"), hm.__dict__)"
+    },
+    {
+      "severity": "major",
+      "category": "encoding",
+      "file": "_run_gate.py",
+      "line": 19,
+      "message": "subprocess 捕获输出但未固定 encoding，父进程会按 locale 解码，非 ASCII 必乱/必崩",
+      "evidence": "subprocess.run(cmd, cwd=str(HERE), capture_output=True)"
+    },
+    {
+      "severity": "major",
+      "category": "encoding",
+      "file": "dgtf_app\\docparse.py",
+      "line": 276,
+      "message": "subprocess 捕获输出但未固定 encoding，父进程会按 locale 解码，非 ASCII 必乱/必崩",
+      "evidence": "subprocess.run(cmd, capture_output=True, timeout=120)"
+    },
+    {
+      "severity": "major",
+      "category": "encoding",
+      "file": "smoke_test.py",
+      "line": 8632,
+      "message": "subprocess 未注入 PYTHONUTF8/PYTHONIOENCODING，子进程继承 GBK 会崩",
+      "evidence": "subprocess.run([_s.executable, str(_pp), _tgt],"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "_run_full_v12333.py",
+      "line": 48,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "_run_full_v12333.py",
+      "line": 184,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "_v122_verify.py",
+      "line": 656,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "_v122_verify.py",
+      "line": 1290,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "_v122_verify.py",
+      "line": 1364,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "_v122_verify.py",
+      "line": 1431,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "bench\\bench_report.py",
+      "line": 94,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "dgtf_app\\dashboard.py",
+      "line": 193,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:  # noqa: BLE001   读不到内存任务不影响归档那部分"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "dgtf_app\\docparse.py",
+      "line": 261,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:  # noqa: BLE001"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "dgtf_app\\engine_runner.py",
+      "line": 560,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:  # noqa: BLE001"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "dgtf_app\\engine_runner.py",
+      "line": 648,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:  # noqa: BLE001"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "dgtf_app\\engine_runner.py",
+      "line": 748,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:  # noqa: BLE001"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "dgtf_app\\library.py",
+      "line": 319,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:  # noqa: BLE001"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "dgtf_app\\server.py",
+      "line": 258,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:  # noqa: BLE001"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "dgtf_app\\server.py",
+      "line": 315,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:  # noqa: BLE001"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "smoke_test.py",
+      "line": 6237,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "smoke_test.py",
+      "line": 9491,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "smoke_test.py",
+      "line": 10472,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "smoke_test.py",
+      "line": 10527,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "smoke_test.py",
+      "line": 11224,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "smoke_test.py",
+      "line": 13951,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "smoke_test.py",
+      "line": 14781,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 70,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 598,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 1942,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 2750,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 2761,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 3136,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 3619,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 3691,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 5118,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 5754,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 6043,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 6070,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:  # noqa: BLE001"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 7723,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 7729,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 7756,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:  # noqa: BLE001"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 8386,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 9016,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 9078,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 9213,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 9276,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 9309,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 9320,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 9415,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 9549,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 9895,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 9933,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 9945,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 9977,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 9995,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 10025,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 10039,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 10060,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 10076,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 10082,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 10403,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 10459,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 11035,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 11240,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 13144,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 13806,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 13819,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 13829,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 13928,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:    # noqa: BLE001"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 14023,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:  # noqa: BLE001"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 14038,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:  # noqa: BLE001"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 14044,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:  # noqa: BLE001"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 14129,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:  # noqa: BLE001"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 14149,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 14859,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 14873,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 14904,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 14935,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 14967,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 15399,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 15406,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 15455,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 15458,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 16381,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 16689,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 16805,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 16838,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 17975,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 18191,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 18299,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 18303,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 18356,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 18394,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 18598,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 18857,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 18903,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 18945,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 19009,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 19016,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 19062,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 19199,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 19222,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 19228,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 19328,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 19513,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:  # noqa: BLE001"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 20002,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 20105,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 20135,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 20294,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 20490,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 20577,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 20623,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 20659,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 20719,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 21497,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 21502,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 21709,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:  # noqa: BLE001"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 22245,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "major",
+      "category": "exception",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 22323,
+      "message": "except Exception: pass —— 静默吞错，违反『失败留痕』",
+      "evidence": "except Exception:"
+    },
+    {
+      "severity": "minor",
+      "category": "encoding",
+      "file": "_mut_v12332.py",
+      "line": 114,
+      "message": "open() 未指定 encoding（依赖 locale）",
+      "evidence": "str(lp"
+    },
+    {
+      "severity": "minor",
+      "category": "encoding",
+      "file": "_mut_v12332.py",
+      "line": 115,
+      "message": "open() 未指定 encoding（依赖 locale）",
+      "evidence": "str(lp"
+    },
+    {
+      "severity": "minor",
+      "category": "encoding",
+      "file": "dgtf_app\\engine_runner.py",
+      "line": 233,
+      "message": "read_text/write_text 未指定 encoding",
+      "evidence": ".write_text(json.dumps(meta, ensure_ascii=False, indent=2)"
+    },
+    {
+      "severity": "minor",
+      "category": "encoding",
+      "file": "dgtf_app\\engine_runner.py",
+      "line": 327,
+      "message": "read_text/write_text 未指定 encoding",
+      "evidence": ".write_text(json.dumps(meta, ensure_ascii=False, indent=2)"
+    },
+    {
+      "severity": "minor",
+      "category": "encoding",
+      "file": "dgtf_app\\engine_runner.py",
+      "line": 477,
+      "message": "read_text/write_text 未指定 encoding",
+      "evidence": ".write_text(json.dumps(meta, ensure_ascii=False, indent=2)"
+    },
+    {
+      "severity": "minor",
+      "category": "encoding",
+      "file": "dgtf_app\\params.py",
+      "line": 754,
+      "message": "read_text/write_text 未指定 encoding",
+      "evidence": ".write_text(_dump_user_cfg(merged)"
+    },
+    {
+      "severity": "minor",
+      "category": "encoding",
+      "file": "dgtf_app\\params.py",
+      "line": 814,
+      "message": "read_text/write_text 未指定 encoding",
+      "evidence": ".write_text(_dump_user_cfg(kept)"
+    },
+    {
+      "severity": "minor",
+      "category": "encoding",
+      "file": "dgtf_app\\selftest.py",
+      "line": 537,
+      "message": "read_text/write_text 未指定 encoding",
+      "evidence": ".read_text()"
+    },
+    {
+      "severity": "minor",
+      "category": "encoding",
+      "file": "dgtf_app\\selftest.py",
+      "line": 540,
+      "message": "read_text/write_text 未指定 encoding",
+      "evidence": ".read_text(...)"
+    },
+    {
+      "severity": "minor",
+      "category": "encoding",
+      "file": "dgtf_app\\selftest.py",
+      "line": 1030,
+      "message": "read_text/write_text 未指定 encoding",
+      "evidence": ".write_text(...)"
+    },
+    {
+      "severity": "minor",
+      "category": "encoding",
+      "file": "smoke_test.py",
+      "line": 2613,
+      "message": "open() 未指定 encoding（依赖 locale）",
+      "evidence": "..."
+    },
+    {
+      "severity": "minor",
+      "category": "encoding",
+      "file": "smoke_test.py",
+      "line": 7977,
+      "message": "read_text/write_text 未指定 encoding",
+      "evidence": ".write_text(_j.dumps({\"anchors\": anchors}, ensure_ascii=False)"
+    },
+    {
+      "severity": "minor",
+      "category": "encoding",
+      "file": "smoke_test.py",
+      "line": 13776,
+      "message": "read_text/write_text 未指定 encoding",
+      "evidence": ".write_text(json.dumps(_s, ensure_ascii=False, indent=1)"
+    },
+    {
+      "severity": "minor",
+      "category": "encoding",
+      "file": "smoke_test.py",
+      "line": 15231,
+      "message": "read_text/write_text 未指定 encoding",
+      "evidence": ".write_text(\"999999\")"
+    },
+    {
+      "severity": "minor",
+      "category": "encoding",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 2739,
+      "message": "open() 未指定 encoding（依赖 locale）",
+      "evidence": "str(lp"
+    },
+    {
+      "severity": "minor",
+      "category": "encoding",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 3297,
+      "message": "read_text/write_text 未指定 encoding",
+      "evidence": ".write_text(eml_summarize(playbook)"
+    },
+    {
+      "severity": "minor",
+      "category": "encoding",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 4691,
+      "message": "read_text/write_text 未指定 encoding",
+      "evidence": ".write_text(json.dumps(rec, ensure_ascii=False, indent=1)"
+    },
+    {
+      "severity": "minor",
+      "category": "encoding",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 5759,
+      "message": "read_text/write_text 未指定 encoding",
+      "evidence": ".write_text(json.dumps({\"_ts\": time.time()"
+    },
+    {
+      "severity": "minor",
+      "category": "encoding",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 6052,
+      "message": "read_text/write_text 未指定 encoding",
+      "evidence": ".write_text(json.dumps({\"_ts\": time.time()"
+    },
+    {
+      "severity": "minor",
+      "category": "encoding",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 25726,
+      "message": "open() 未指定 encoding（依赖 locale）",
+      "evidence": "..."
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "_probe_gain_dist.py",
+      "line": 115,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "(OUT / \"gain_probe.json\").write_text("
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "_probe_gain_live.py",
+      "line": 116,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "(OUT / \"gain_probe.json\").write_text("
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "_run_full_v12333.py",
+      "line": 64,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "log.write_bytes(b\"\")"
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "_run_full_v12333.py",
+      "line": 175,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "(HERE / (\"_fullrun_%s.json\" % a.tag)).write_text("
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "_run_full_v12333.py",
+      "line": 197,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "(HERE / (\"_fullrun_%s.goals.json\" % a.tag)).write_text("
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "_run_full_v12333.py",
+      "line": 222,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "(HERE / (\"_fullrun_%s.quant.json\" % a.tag)).write_text("
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "_run_gate.py",
+      "line": 22,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "p.write_bytes(txt)"
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "_v122_verify.py",
+      "line": 1734,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "_notier.write_bytes(json.dumps("
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "_v122_verify.py",
+      "line": 1738,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "_onetier.write_bytes(json.dumps("
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "bench\\bench_calibrate.py",
+      "line": 133,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "(run_dir / \"verdicts.json\").write_bytes(json.dumps("
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "bench\\bench_run.py",
+      "line": 127,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "(out / \"packed.json\").write_bytes(json.dumps("
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "bench\\bench_run.py",
+      "line": 149,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "(out / \"stdout.log\").write_bytes(_log.encode(\"utf-8\", \"replace\"))"
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "bench\\bench_run.py",
+      "line": 150,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "(out / \"meta.json\").write_bytes("
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "bench\\bench_run.py",
+      "line": 262,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "(run_dir / \"index.json\").write_bytes(json.dumps("
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "bench\\bench_run.py",
+      "line": 268,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "(BENCH / \"runs\" / \"LATEST\").write_bytes(tag.encode(\"utf-8\"))"
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "dgtf_app\\engine_runner.py",
+      "line": 233,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "jp.write_text(json.dumps(meta, ensure_ascii=False, indent=2),"
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "dgtf_app\\engine_runner.py",
+      "line": 256,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "lp.write_bytes(src.read_bytes())"
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "dgtf_app\\engine_runner.py",
+      "line": 327,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "jp.write_text(json.dumps(meta, ensure_ascii=False, indent=2),"
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "dgtf_app\\engine_runner.py",
+      "line": 459,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "dst.write_bytes(src.read_bytes())"
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "dgtf_app\\engine_runner.py",
+      "line": 477,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "dstj.write_text(json.dumps(meta, ensure_ascii=False, indent=2),"
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "dgtf_app\\engine_runner.py",
+      "line": 508,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "(oi.OUTPUTS_DIR / f\"{base}.md\").write_text("
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "dgtf_app\\engine_runner.py",
+      "line": 512,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "(oi.OUTPUTS_DIR / f\"{base}.run.log\").write_text("
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "dgtf_app\\engine_runner.py",
+      "line": 522,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "(oi.OUTPUTS_DIR / f\"{base}.json\").write_text("
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "dgtf_app\\engine_runner.py",
+      "line": 667,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "(oi.OUTPUTS_DIR / name).write_text(partial, encoding=\"utf-8\", newline=\"\")"
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "dgtf_app\\library.py",
+      "line": 197,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "ANCHOR_FILE.write_text("
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "dgtf_app\\library.py",
+      "line": 260,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "(RAW_DIR / n).write_bytes(data)"
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "dgtf_app\\library.py",
+      "line": 271,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "(ANCHORS_DIR / saved_as).write_text(parsed[\"text\"], encoding=\"utf-8\","
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "dgtf_app\\mock_engine.py",
+      "line": 174,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "out.write_text(body, encoding=\"utf-8\")"
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "dgtf_app\\params.py",
+      "line": 753,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "USER_CFG.with_suffix(\".yaml.bak\").write_bytes(USER_CFG.read_bytes())"
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "dgtf_app\\params.py",
+      "line": 754,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "USER_CFG.write_text(_dump_user_cfg(merged), encoding=\"utf-8\", newline=\"\\n\")"
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "dgtf_app\\params.py",
+      "line": 782,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "USER_CFG.with_suffix(\".yaml.bak\").write_bytes(USER_CFG.read_bytes())"
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "dgtf_app\\params.py",
+      "line": 812,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "USER_CFG.with_suffix(\".yaml.bak\").write_bytes(USER_CFG.read_bytes())"
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "dgtf_app\\params.py",
+      "line": 814,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "USER_CFG.write_text(_dump_user_cfg(kept), encoding=\"utf-8\", newline=\"\\n\")"
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "dgtf_app\\params.py",
+      "line": 861,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "out_path.write_text("
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "dgtf_app\\selftest.py",
+      "line": 2105,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "_uc.write_bytes(_uc_bak)"
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "dgtf_app\\selftest.py",
+      "line": 2129,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "_uc.write_bytes(_uc_bak)"
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "dgtf_app\\selftest.py",
+      "line": 2160,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "(_orph / \"20261012_010101_aaaaaa.run.json\").write_text(json.dumps({"
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "dgtf_app\\selftest.py",
+      "line": 2167,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "(_orph / \"20261012_020202_bbbbbb.run.json\").write_text(json.dumps({"
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "dgtf_app\\selftest.py",
+      "line": 2174,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "(_orph / \"20261012_030303_cccccc.run.json\").write_text(json.dumps({"
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "dgtf_app\\selftest.py",
+      "line": 2185,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "(_orph / \"20261012_040404_dddddd.run.json\").write_text(json.dumps({"
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "dgtf_app\\selftest.py",
+      "line": 2247,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "(_orph2 / \"20261012_050505_eeff00.run.json\").write_text(json.dumps({"
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "smoke_test.py",
+      "line": 6733,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "p.write_text(json.dumps({"
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "smoke_test.py",
+      "line": 7691,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "_notier.write_bytes(_json.dumps("
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "smoke_test.py",
+      "line": 7696,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "_onetier.write_bytes(_json.dumps("
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "smoke_test.py",
+      "line": 9211,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "_y2.write_bytes(b\"a: [1, 2\" + bytes([10]))"
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "smoke_test.py",
+      "line": 10559,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "_pp.write_text(\"# 元 DGTF · %s\\n\\n**资源**: %d 次 LLM | %d tokens\\n\""
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "smoke_test.py",
+      "line": 13467,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "(_pdir / mod._BANDIT_FILE).write_text(json.dumps("
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "smoke_test.py",
+      "line": 13776,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "_p.write_text(json.dumps(_s, ensure_ascii=False, indent=1), encoding=\"utf-8\")"
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "smoke_test.py",
+      "line": 15231,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "_lp.write_text(\"999999\")"
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 1963,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "(_d / _BANDIT_FILE).write_text(_j.dumps({"
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 3297,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "(d / _EML_MEMORY_MD).write_text(eml_summarize(playbook),"
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 4691,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "p.write_text(json.dumps(rec, ensure_ascii=False, indent=1),"
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 5759,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "cache.write_text(json.dumps({\"_ts\": time.time(),"
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 6052,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "p.write_text(json.dumps({\"_ts\": time.time(),"
+    },
+    {
+      "severity": "minor",
+      "category": "io",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 6081,
+      "message": "直接覆写文件，崩溃会留下半截文件（关键状态建议 tmp+os.replace）",
+      "evidence": "p.write_bytes(json.dumps({\"_ts\": time.time(), \"domains\": _all},"
+    },
+    {
+      "severity": "minor",
+      "category": "memory",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 20735,
+      "message": "无界缓存字典（未见淘汰逻辑时会长跑泄漏）",
+      "evidence": "self._ext_assess_cache"
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "file": "_v122_verify.py",
+      "line": 310,
+      "message": "循环内重复读盘",
+      "evidence": "d = yaml.safe_load(f.read_text(encoding=\"utf-8\")) or {}"
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "file": "_v122_verify.py",
+      "line": 476,
+      "message": "循环内重复读盘",
+      "evidence": "src_txt = p.read_text(encoding=\"utf-8\")"
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "file": "_v122_verify.py",
+      "line": 1019,
+      "message": "循环内重复读盘",
+      "evidence": "t = x.read_text(encoding=\"utf-8\")"
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "file": "_v122_verify.py",
+      "line": 1246,
+      "message": "循环内重复读盘",
+      "evidence": "_t = p.read_text(encoding=\"utf-8\")"
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "file": "_v122_verify.py",
+      "line": 1288,
+      "message": "循环内重复读盘",
+      "evidence": "_ref += (json.loads(_mf.read_text(encoding=\"utf-8\"))"
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "file": "_v122_verify.py",
+      "line": 1426,
+      "message": "循环内重复读盘",
+      "evidence": "_dd = json.loads(_mf.read_text(encoding=\"utf-8\"))"
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "file": "_v122_verify.py",
+      "line": 1449,
+      "message": "循环内重复读盘",
+      "evidence": "_dr = (json.loads(_mf.read_text(encoding=\"utf-8\"))"
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "file": "_v122_verify.py",
+      "line": 1545,
+      "message": "循环内重复读盘",
+      "evidence": "d = json.loads(mf.read_text(encoding=\"utf-8\"))"
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "file": "_v122_verify.py",
+      "line": 1545,
+      "message": "循环内重复读盘",
+      "evidence": "d = json.loads(mf.read_text(encoding=\"utf-8\"))"
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "file": "bench\\bench_calibrate.py",
+      "line": 39,
+      "message": "循环内重复读盘",
+      "evidence": "d = json.loads(p.read_text(encoding=\"utf-8\"))"
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "file": "bench\\bench_calibrate.py",
+      "line": 111,
+      "message": "循环内重复读盘",
+      "evidence": "for ln in md.read_text(encoding=\"utf-8\").splitlines():"
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "file": "bench\\bench_report.py",
+      "line": 37,
+      "message": "循环内重复读盘",
+      "evidence": "return json.loads(f.read_text(encoding=\"utf-8\"))"
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "file": "bench\\bench_report.py",
+      "line": 93,
+      "message": "循环内重复读盘",
+      "evidence": "items.append(json.loads(mf.read_text(encoding=\"utf-8\")))"
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "file": "bench\\bench_run.py",
+      "line": 41,
+      "message": "循环内重复读盘",
+      "evidence": "for line in path.read_text(encoding=\"utf-8\").splitlines():"
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "file": "bench\\bench_run.py",
+      "line": 201,
+      "message": "循环内重复读盘",
+      "evidence": "d = yaml.safe_load(f.read_text(encoding=\"utf-8\")) or {}"
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "file": "bench\\bench_run.py",
+      "line": 223,
+      "message": "循环内重复读盘",
+      "evidence": "mf.read_text(encoding=\"utf-8\")).get(\"ok\")"
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "file": "dgtf_app\\engine_runner.py",
+      "line": 85,
+      "message": "循环内重复读盘",
+      "evidence": "for ln in p.read_text(encoding=\"utf-8\", errors=\"replace\").splitlines():"
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "file": "dgtf_app\\engine_runner.py",
+      "line": 301,
+      "message": "循环内重复读盘",
+      "evidence": "meta = json.loads(jp.read_text(encoding=\"utf-8\", errors=\"replace\"))"
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "file": "dgtf_app\\library.py",
+      "line": 63,
+      "message": "循环内重复读盘",
+      "evidence": "obj = json.loads(p.read_text(encoding=\"utf-8\", errors=\"replace\"))"
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "file": "dgtf_app\\library.py",
+      "line": 63,
+      "message": "循环内重复读盘",
+      "evidence": "obj = json.loads(p.read_text(encoding=\"utf-8\", errors=\"replace\"))"
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "file": "dgtf_app\\library.py",
+      "line": 180,
+      "message": "循环内重复读盘",
+      "evidence": "txt = p.read_text(encoding=\"utf-8\", errors=\"replace\")"
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "file": "dgtf_app\\library.py",
+      "line": 343,
+      "message": "循环内重复读盘",
+      "evidence": "for ln in WEB_HITS_FILE.read_text(encoding=\"utf-8\", errors=\"replace\").splitlines():"
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "file": "dgtf_app\\outputs_index.py",
+      "line": 314,
+      "message": "循环内重复读盘",
+      "evidence": "meta = json.loads(jp.read_text(encoding=\"utf-8\"))"
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "file": "dgtf_app\\params.py",
+      "line": 628,
+      "message": "循环内重复 re.compile",
+      "evidence": "want = re.compile(r\"^(\\s*)\" + re.escape(part) + r\"\\s*:(.*)$\")"
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "file": "smoke_test.py",
+      "line": 3573,
+      "message": "循环内重复读盘",
+      "evidence": "_md11 = _p11.read_text(encoding=\"utf-8\").replace(\"\\r\\n\", \"\\n\")"
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "file": "smoke_test.py",
+      "line": 10744,
+      "message": "循环内重复读盘",
+      "evidence": "_c = p.read_text(encoding=\"utf-8\")"
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "file": "smoke_test.py",
+      "line": 10745,
+      "message": "循环内重复读盘",
+      "evidence": "_raws = [q.read_text(encoding=\"utf-8\")"
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "file": "smoke_test.py",
+      "line": 13754,
+      "message": "循环内重复读盘",
+      "evidence": "_try = json.loads(_cand.read_text(encoding=\"utf-8\"))"
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 2772,
+      "message": "循环内重复读盘",
+      "evidence": "for ln in p.read_text(encoding=\"utf-8\").splitlines():"
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 14059,
+      "message": "循环内重复读盘",
+      "evidence": "d = json.loads(p.read_text(encoding=\"utf-8\"))"
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 23875,
+      "message": "循环内重复读盘",
+      "evidence": "_f.read_text(encoding=\"utf-8\"))), _f.stat().st_mtime)"
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 23899,
+      "message": "循环内重复读盘",
+      "evidence": "json.loads(_f.read_text(encoding=\"utf-8\"))):"
+    },
+    {
+      "severity": "minor",
+      "category": "perf",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 23899,
+      "message": "循环内重复读盘",
+      "evidence": "json.loads(_f.read_text(encoding=\"utf-8\"))):"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "_probe_gain_dist.py",
+      "line": 78,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "t0 = time.time()"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "_probe_gain_dist.py",
+      "line": 81,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "dt = time.time() - t0"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "_probe_gain_live.py",
+      "line": 79,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "t0 = time.time()"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "_probe_gain_live.py",
+      "line": 82,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "dt = time.time() - t0"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "_run_full_v12333.py",
+      "line": 131,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "last, t_last = -1, time.time()"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "_run_full_v12333.py",
+      "line": 139,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "last, t_last = sz, time.time()"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "_run_full_v12333.py",
+      "line": 140,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "elif time.time() - t_last > a.stall_sec:"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "_run_full_v12333.py",
+      "line": 148,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "t0 = time.time()"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "_run_full_v12333.py",
+      "line": 162,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "dt = time.time() - t0"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "_run_matrix_v12333.py",
+      "line": 51,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "t0 = time.time()"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "_run_matrix_v12333.py",
+      "line": 56,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "dt = time.time() - t0"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "bench\\bench_run.py",
+      "line": 102,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "t0 = time.time()"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "bench\\bench_run.py",
+      "line": 137,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "info[\"elapsed_s\"] = round(time.time() - t0, 1)"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "dgtf_app\\dashboard.py",
+      "line": 224,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "now = time.time()"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "dgtf_app\\engine_runner.py",
+      "line": 112,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "now = time.time()"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "dgtf_app\\engine_runner.py",
+      "line": 569,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "\"created_at\": time.time(),"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "dgtf_app\\engine_runner.py",
+      "line": 619,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "task[\"started_at\"] = time.time()"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "dgtf_app\\engine_runner.py",
+      "line": 644,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "task[\"ended_at\"] = time.time()"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "dgtf_app\\engine_runner.py",
+      "line": 652,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "task[\"ended_at\"] = time.time()"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "dgtf_app\\engine_runner.py",
+      "line": 738,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "task[\"ended_at\"] = time.time()"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "dgtf_app\\engine_runner.py",
+      "line": 872,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "_now = time.time()"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "dgtf_app\\mock_engine.py",
+      "line": 97,
+      "message": "datetime.now() 无时区，跨时区/夏令时不可比",
+      "evidence": "ts = datetime.datetime.now()"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "dgtf_app\\outputs_index.py",
+      "line": 307,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "now = time.time()"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "dgtf_app\\outputs_index.py",
+      "line": 381,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "if time.time() - rec[\"mtime\"] > float(days) * 86400:"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "dgtf_app\\selftest.py",
+      "line": 2349,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "deadline = time.time() + 60"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "dgtf_app\\selftest.py",
+      "line": 2350,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "while time.time() < deadline:"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "smoke_test.py",
+      "line": 320,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "t0 = time.time()"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "smoke_test.py",
+      "line": 325,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "dt = time.time() - t0"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "smoke_test.py",
+      "line": 13339,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "if 'if _mx > 0 and (time.time()' in src:"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "smoke_test.py",
+      "line": 15197,
+      "message": "datetime.now() 无时区，跨时区/夏令时不可比",
+      "evidence": "if src.count('run_id=datetime.now().strftime(\"%Y%m%d_%H%M%S\")') < 1:"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 2735,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "t0 = time.time()"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 2737,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "while time.time() - t0 < float(timeout):"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 2747,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "if time.time() - lp.stat().st_mtime > float(stale):"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 5505,
+      "message": "datetime.now() 无时区，跨时区/夏令时不可比",
+      "evidence": "self.frozen_at = datetime.now().isoformat()"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 5752,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "if time.time() - float(d0.get(\"_ts\") or 0) < self.ttl:"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 5759,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "cache.write_text(json.dumps({\"_ts\": time.time(),"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 5817,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "\"ts\": time.time(),"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 6040,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "if time.time() - float(d0.get(\"_ts\") or 0) < self.ttl:"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 6052,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "p.write_text(json.dumps({\"_ts\": time.time(),"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 6081,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "p.write_bytes(json.dumps({\"_ts\": time.time(), \"domains\": _all},"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 12910,
+      "message": "datetime.now() 无时区，跨时区/夏令时不可比",
+      "evidence": "ts = datetime.now().strftime(\"%Y%m%d_%H%M%S\")"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 13999,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "\"t\": time.time()}"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 14055,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "_now = float(now if now is not None else time.time())"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 16476,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "return (time.time() - float(getattr(self, \"_t0\", 0.0) or 0.0)"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 20200,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "_now = time.time()"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 20452,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "_ep = episode_from_result(result, t=time.time())"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 20478,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "_e[\"t_last\"] = float(time.time())"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 20533,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "_now = time.time()"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 20681,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "self._t0 = time.time()"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 23810,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "_now = now if now is not None else time.time()"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 23833,
+      "message": "time.time() 非单调钟，用于时长会被时钟回拨影响",
+      "evidence": "_now = time.time()"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 24739,
+      "message": "datetime.now() 无时区，跨时区/夏令时不可比",
+      "evidence": "ts = datetime.now().strftime(\"%Y%m%d_%H%M%S\")"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 24752,
+      "message": "datetime.now() 无时区，跨时区/夏令时不可比",
+      "evidence": "f.write(f\"**时间**: {datetime.now().isoformat()}\\n\\n\")"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 26602,
+      "message": "datetime.now() 无时区，跨时区/夏令时不可比",
+      "evidence": "run_id=datetime.now().strftime(\"%Y%m%d_%H%M%S\"))"
+    },
+    {
+      "severity": "minor",
+      "category": "time",
+      "file": "元DGTF-V1.23.63.py",
+      "line": 26831,
+      "message": "datetime.now() 无时区，跨时区/夏令时不可比",
+      "evidence": "_run_id = datetime.now().strftime(\"%Y%m%d_%H%M%S\")"
+    }
+  ]
+}

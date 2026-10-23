@@ -1,0 +1,940 @@
+{
+  "runs": 20,
+  "ok": 3,
+  "rows": [
+    {
+      "file": "20261015_133525_AI在数字IC设计的前端流程RT.packed.json",
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 70,
+            "probes": 3,
+            "suspensions": 3
+          },
+          "1": {
+            "ok": true,
+            "skipped": "not_in_route"
+          },
+          "both": {
+            "ok": true,
+            "skipped": "not_in_route"
+          },
+          "all": {
+            "ok": true,
+            "skipped": "not_in_route"
+          }
+        },
+        "gaps": [],
+        "overreach": [],
+        "repairs": [],
+        "ok": true
+      }
+    },
+    {
+      "file": "20261015_140414_AI在数字IC设计的前端流程RT.packed.json",
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 58,
+            "probes": 3,
+            "suspensions": 2
+          },
+          "1": {
+            "ok": true,
+            "subs": 6,
+            "decidable": 4,
+            "cited": 0,
+            "layer_evidence": 2
+          },
+          "both": {
+            "ok": true,
+            "skipped": "not_in_route"
+          },
+          "all": {
+            "ok": true,
+            "skipped": "not_in_route"
+          }
+        },
+        "gaps": [],
+        "overreach": [
+          "1: 出现 action_plan（越权）"
+        ],
+        "repairs": [
+          "1.actions->all:4"
+        ],
+        "ok": false
+      }
+    },
+    {
+      "file": "20261015_151102_AI在数字IC设计的前端流程RT.packed.json",
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 62,
+            "probes": 3,
+            "suspensions": 2
+          },
+          "1": {
+            "ok": true,
+            "skipped": "not_in_route"
+          },
+          "both": {
+            "ok": true,
+            "skipped": "not_in_route"
+          },
+          "all": {
+            "ok": true,
+            "skipped": "not_in_route"
+          }
+        },
+        "gaps": [],
+        "overreach": [],
+        "repairs": [],
+        "ok": true
+      }
+    },
+    {
+      "file": "20261019_050622_一个远程办公团队如何在三个月内建立可验证.packed.json",
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 35,
+            "probes": 3,
+            "suspensions": 2
+          },
+          "1": {
+            "ok": true,
+            "subs": 6,
+            "decidable": 2,
+            "cited": 0,
+            "layer_evidence": 2
+          },
+          "both": {
+            "ok": true,
+            "adjudications": 2,
+            "threads": 5
+          },
+          "all": {
+            "ok": true,
+            "required": {
+              "decision": true,
+              "actions": true,
+              "not_do": true,
+              "residual_risks": true,
+              "provenance": true
+            },
+            "actions": 6,
+            "not_do": 3
+          }
+        },
+        "gaps": [],
+        "overreach": [
+          "1: 出现 action_plan（越权）"
+        ],
+        "repairs": [
+          "1.actions->all:6",
+          "all.actions<-1",
+          "all.not_do<-1",
+          "all.decision<-manifest/product",
+          "all.residual<-threads",
+          "all.provenance<-v1:packed"
+        ],
+        "ok": false
+      }
+    },
+    {
+      "file": "20261019_053500_一个远程办公团队如何在三个月内建立可验证.packed.json",
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 47,
+            "probes": 3,
+            "suspensions": 4
+          },
+          "1": {
+            "ok": true,
+            "subs": 5,
+            "decidable": 2,
+            "cited": 0,
+            "layer_evidence": 2
+          },
+          "both": {
+            "ok": true,
+            "adjudications": 3,
+            "threads": 10
+          },
+          "all": {
+            "ok": false,
+            "required": {
+              "decision": false,
+              "actions": false,
+              "not_do": false,
+              "residual_risks": false,
+              "provenance": false
+            },
+            "actions": 0,
+            "not_do": 0
+          }
+        },
+        "gaps": [
+          "all: 缺 decision",
+          "all: 缺 actions",
+          "all: 缺 not_do",
+          "all: 缺 residual_risks",
+          "all: 缺 provenance"
+        ],
+        "overreach": [
+          "1: 出现 action_plan（越权）"
+        ],
+        "repairs": [
+          "1.actions->all:6"
+        ],
+        "ok": false
+      }
+    },
+    {
+      "file": "20261019_055939_AI能否独立完成数字IC设计边界.packed.json",
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 47,
+            "probes": 3,
+            "suspensions": 4
+          },
+          "1": {
+            "ok": true,
+            "subs": 6,
+            "decidable": 0,
+            "cited": 0,
+            "layer_evidence": 2
+          },
+          "both": {
+            "ok": true,
+            "adjudications": 3,
+            "threads": 6
+          },
+          "all": {
+            "ok": true,
+            "required": {
+              "decision": true,
+              "actions": true,
+              "not_do": true,
+              "residual_risks": true,
+              "provenance": true
+            },
+            "actions": 3,
+            "not_do": 2
+          }
+        },
+        "gaps": [],
+        "overreach": [
+          "1: 出现 action_plan（越权）"
+        ],
+        "repairs": [
+          "1.actions->all:3",
+          "all.actions<-1",
+          "all.not_do<-1",
+          "all.decision<-manifest/product",
+          "all.residual<-threads",
+          "all.provenance<-v1:packed"
+        ],
+        "ok": false
+      }
+    },
+    {
+      "file": "20261019_062521_AI能否独立完成数字IC设计边界.packed.json",
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 66,
+            "probes": 2,
+            "suspensions": 6
+          },
+          "1": {
+            "ok": true,
+            "subs": 6,
+            "decidable": 1,
+            "cited": 0,
+            "layer_evidence": 2
+          },
+          "both": {
+            "ok": true,
+            "adjudications": 3,
+            "threads": 6
+          },
+          "all": {
+            "ok": true,
+            "required": {
+              "decision": true,
+              "actions": true,
+              "not_do": true,
+              "residual_risks": true,
+              "provenance": true
+            },
+            "actions": 3,
+            "not_do": 2
+          }
+        },
+        "gaps": [],
+        "overreach": [
+          "1: 出现 action_plan（越权）"
+        ],
+        "repairs": [
+          "1.actions->all:3",
+          "all.actions<-1",
+          "all.not_do<-1",
+          "all.decision<-manifest/product",
+          "all.residual<-threads",
+          "all.provenance<-v1:packed"
+        ],
+        "ok": false
+      }
+    },
+    {
+      "file": "20261019_064604_一个开源项目如何在不增加维护者负担的情况.packed.json",
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 34,
+            "probes": 3,
+            "suspensions": 1
+          },
+          "1": {
+            "ok": true,
+            "subs": 6,
+            "decidable": 0,
+            "cited": 0,
+            "layer_evidence": 2
+          },
+          "both": {
+            "ok": true,
+            "adjudications": 3,
+            "threads": 6
+          },
+          "all": {
+            "ok": true,
+            "required": {
+              "decision": true,
+              "actions": true,
+              "not_do": true,
+              "residual_risks": true,
+              "provenance": true
+            },
+            "actions": 3,
+            "not_do": 3
+          }
+        },
+        "gaps": [],
+        "overreach": [
+          "1: 出现 action_plan（越权）"
+        ],
+        "repairs": [
+          "1.actions->all:3",
+          "all.actions<-1",
+          "all.not_do<-1",
+          "all.decision<-manifest/product",
+          "all.residual<-threads",
+          "all.provenance<-v1:packed"
+        ],
+        "ok": false
+      }
+    },
+    {
+      "file": "20261019_064752_如何判断一份关于气候变化的政策报告是否可.packed.json",
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 51,
+            "probes": 2,
+            "suspensions": 1
+          },
+          "1": {
+            "ok": true,
+            "subs": 6,
+            "decidable": 3,
+            "cited": 0,
+            "layer_evidence": 2
+          },
+          "both": {
+            "ok": true,
+            "adjudications": 3,
+            "threads": 6
+          },
+          "all": {
+            "ok": true,
+            "required": {
+              "decision": true,
+              "actions": true,
+              "not_do": true,
+              "residual_risks": true,
+              "provenance": true
+            },
+            "actions": 5,
+            "not_do": 3
+          }
+        },
+        "gaps": [],
+        "overreach": [
+          "1: 出现 action_plan（越权）"
+        ],
+        "repairs": [
+          "1.actions->all:5",
+          "all.actions<-1",
+          "all.not_do<-1",
+          "all.decision<-manifest/product",
+          "all.residual<-threads",
+          "all.provenance<-v1:packed"
+        ],
+        "ok": false
+      }
+    },
+    {
+      "file": "20261019_071245_如何判断一份关于气候变化的政策报告是否可.packed.json",
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 70,
+            "probes": 2,
+            "suspensions": 3
+          },
+          "1": {
+            "ok": true,
+            "subs": 6,
+            "decidable": 1,
+            "cited": 0,
+            "layer_evidence": 2
+          },
+          "both": {
+            "ok": true,
+            "adjudications": 2,
+            "threads": 5
+          },
+          "all": {
+            "ok": false,
+            "required": {
+              "decision": false,
+              "actions": false,
+              "not_do": false,
+              "residual_risks": false,
+              "provenance": false
+            },
+            "actions": 0,
+            "not_do": 0
+          }
+        },
+        "gaps": [
+          "all: 缺 decision",
+          "all: 缺 actions",
+          "all: 缺 not_do",
+          "all: 缺 residual_risks",
+          "all: 缺 provenance"
+        ],
+        "overreach": [
+          "1: 出现 action_plan（越权）"
+        ],
+        "repairs": [
+          "1.actions->all:4"
+        ],
+        "ok": false
+      }
+    },
+    {
+      "file": "20261019_071413_一个开源项目如何在不增加维护者负担的情况.packed.json",
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 65,
+            "probes": 3,
+            "suspensions": 6
+          },
+          "1": {
+            "ok": true,
+            "subs": 6,
+            "decidable": 2,
+            "cited": 0,
+            "layer_evidence": 2
+          },
+          "both": {
+            "ok": true,
+            "adjudications": 3,
+            "threads": 12
+          },
+          "all": {
+            "ok": false,
+            "required": {
+              "decision": false,
+              "actions": false,
+              "not_do": false,
+              "residual_risks": false,
+              "provenance": false
+            },
+            "actions": 0,
+            "not_do": 0
+          }
+        },
+        "gaps": [
+          "all: 缺 decision",
+          "all: 缺 actions",
+          "all: 缺 not_do",
+          "all: 缺 residual_risks",
+          "all: 缺 provenance"
+        ],
+        "overreach": [
+          "1: 出现 action_plan（越权）"
+        ],
+        "repairs": [
+          "1.actions->all:4"
+        ],
+        "ok": false
+      }
+    },
+    {
+      "file": "20261019_073827_一个团队如何在信息不完整时做出可回退的技.packed.json",
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 44,
+            "probes": 3,
+            "suspensions": 1
+          },
+          "1": {
+            "ok": true,
+            "subs": 6,
+            "decidable": 1,
+            "cited": 0,
+            "layer_evidence": 2
+          },
+          "both": {
+            "ok": true,
+            "adjudications": 2,
+            "threads": 6
+          },
+          "all": {
+            "ok": true,
+            "required": {
+              "decision": true,
+              "actions": true,
+              "not_do": true,
+              "residual_risks": true,
+              "provenance": true
+            },
+            "actions": 4,
+            "not_do": 3
+          }
+        },
+        "gaps": [],
+        "overreach": [
+          "1: 出现 action_plan（越权）"
+        ],
+        "repairs": [
+          "1.actions->all:4",
+          "all.actions<-1",
+          "all.not_do<-1",
+          "all.decision<-manifest/product",
+          "all.residual<-threads",
+          "all.provenance<-v1:packed"
+        ],
+        "ok": false
+      }
+    },
+    {
+      "file": "20261019_074251_一个团队如何在信息不完整时做出可回退的技.packed.json",
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 77,
+            "probes": 3,
+            "suspensions": 8
+          },
+          "1": {
+            "ok": true,
+            "subs": 6,
+            "decidable": 2,
+            "cited": 0,
+            "layer_evidence": 2
+          },
+          "both": {
+            "ok": true,
+            "adjudications": 2,
+            "threads": 7
+          },
+          "all": {
+            "ok": false,
+            "required": {
+              "decision": false,
+              "actions": false,
+              "not_do": false,
+              "residual_risks": false,
+              "provenance": false
+            },
+            "actions": 0,
+            "not_do": 0
+          }
+        },
+        "gaps": [
+          "all: 缺 decision",
+          "all: 缺 actions",
+          "all: 缺 not_do",
+          "all: 缺 residual_risks",
+          "all: 缺 provenance"
+        ],
+        "overreach": [
+          "1: 出现 action_plan（越权）"
+        ],
+        "repairs": [
+          "1.actions->all:5"
+        ],
+        "ok": false
+      }
+    },
+    {
+      "file": "20261019_080835_一个远程办公团队如何在三个月内建立可验证.packed.json",
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 51,
+            "probes": 3,
+            "suspensions": 4
+          },
+          "1": {
+            "ok": true,
+            "subs": 6,
+            "decidable": 3,
+            "cited": 0,
+            "layer_evidence": 2
+          },
+          "both": {
+            "ok": true,
+            "adjudications": 4,
+            "threads": 6
+          },
+          "all": {
+            "ok": true,
+            "required": {
+              "decision": true,
+              "actions": true,
+              "not_do": true,
+              "residual_risks": true,
+              "provenance": true
+            },
+            "actions": 5,
+            "not_do": 3
+          }
+        },
+        "gaps": [],
+        "overreach": [
+          "1: 出现 action_plan（越权）"
+        ],
+        "repairs": [
+          "1.actions->all:5",
+          "all.actions<-1",
+          "all.not_do<-1",
+          "all.decision<-manifest/product",
+          "all.residual<-threads",
+          "all.provenance<-v1:packed"
+        ],
+        "ok": false
+      }
+    },
+    {
+      "file": "20261019_085657_AI能否独立完成数字IC设计边界.packed.json",
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 33,
+            "probes": 2,
+            "suspensions": 3
+          },
+          "1": {
+            "ok": true,
+            "subs": 6,
+            "decidable": 0,
+            "cited": 0,
+            "layer_evidence": 2
+          },
+          "both": {
+            "ok": true,
+            "adjudications": 3,
+            "threads": 5
+          },
+          "all": {
+            "ok": true,
+            "required": {
+              "decision": true,
+              "actions": true,
+              "not_do": true,
+              "residual_risks": true,
+              "provenance": true
+            },
+            "actions": 5,
+            "not_do": 3
+          }
+        },
+        "gaps": [],
+        "overreach": [
+          "1: 出现 action_plan（越权）"
+        ],
+        "repairs": [
+          "1.actions->all:5",
+          "all.actions<-1",
+          "all.not_do<-1",
+          "all.decision<-manifest/product",
+          "all.residual<-threads",
+          "all.provenance<-v1:packed"
+        ],
+        "ok": false
+      }
+    },
+    {
+      "file": "20261019_085804_一个远程办公团队如何在三个月内建立可验证.packed.json",
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 31,
+            "probes": 3,
+            "suspensions": 1
+          },
+          "1": {
+            "ok": true,
+            "subs": 6,
+            "decidable": 0,
+            "cited": 0,
+            "layer_evidence": 2
+          },
+          "both": {
+            "ok": true,
+            "adjudications": 3,
+            "threads": 6
+          },
+          "all": {
+            "ok": true,
+            "required": {
+              "decision": true,
+              "actions": true,
+              "not_do": true,
+              "residual_risks": true,
+              "provenance": true
+            },
+            "actions": 6,
+            "not_do": 3
+          }
+        },
+        "gaps": [],
+        "overreach": [
+          "1: 出现 action_plan（越权）"
+        ],
+        "repairs": [
+          "1.actions->all:6",
+          "all.actions<-1",
+          "all.not_do<-1",
+          "all.decision<-manifest/product",
+          "all.residual<-threads",
+          "all.provenance<-v1:packed"
+        ],
+        "ok": false
+      }
+    },
+    {
+      "file": "20261019_094658_AI能否独立完成数字IC设计边界.packed.json",
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 49,
+            "probes": 3,
+            "suspensions": 2
+          },
+          "1": {
+            "ok": true,
+            "subs": 6,
+            "decidable": 0,
+            "cited": 0,
+            "layer_evidence": 2
+          },
+          "both": {
+            "ok": true,
+            "adjudications": 2,
+            "threads": 6
+          },
+          "all": {
+            "ok": true,
+            "required": {
+              "decision": true,
+              "actions": true,
+              "not_do": true,
+              "residual_risks": true,
+              "provenance": true
+            },
+            "actions": 3,
+            "not_do": 2
+          }
+        },
+        "gaps": [],
+        "overreach": [
+          "1: 出现 action_plan（越权）"
+        ],
+        "repairs": [
+          "1.actions->all:3",
+          "all.actions<-1",
+          "all.not_do<-1",
+          "all.decision<-manifest/product",
+          "all.residual<-threads",
+          "all.provenance<-v1:packed"
+        ],
+        "ok": false
+      }
+    },
+    {
+      "file": "20261019_101117_AI能否独立完成数字IC设计边界.packed.json",
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 48,
+            "probes": 3,
+            "suspensions": 5
+          },
+          "1": {
+            "ok": true,
+            "subs": 6,
+            "decidable": 2,
+            "cited": 0,
+            "layer_evidence": 2
+          },
+          "both": {
+            "ok": true,
+            "adjudications": 3,
+            "threads": 5
+          },
+          "all": {
+            "ok": true,
+            "required": {
+              "decision": true,
+              "actions": true,
+              "not_do": true,
+              "residual_risks": true,
+              "provenance": true
+            },
+            "actions": 5,
+            "not_do": 3
+          }
+        },
+        "gaps": [],
+        "overreach": [
+          "1: 出现 action_plan（越权）"
+        ],
+        "repairs": [
+          "1.actions->all:5",
+          "all.actions<-1",
+          "all.not_do<-1",
+          "all.decision<-manifest/product",
+          "all.residual<-threads",
+          "all.provenance<-v1:packed"
+        ],
+        "ok": false
+      }
+    },
+    {
+      "file": "20261019_110457_AI能否独立完成数字IC设计边界.packed.json",
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 49,
+            "probes": 3,
+            "suspensions": 3
+          },
+          "1": {
+            "ok": true,
+            "subs": 6,
+            "decidable": 1,
+            "cited": 0,
+            "layer_evidence": 2
+          },
+          "both": {
+            "ok": true,
+            "adjudications": 3,
+            "threads": 5
+          },
+          "all": {
+            "ok": true,
+            "required": {
+              "decision": true,
+              "actions": true,
+              "not_do": true,
+              "residual_risks": true,
+              "provenance": true
+            },
+            "actions": 3,
+            "not_do": 3
+          }
+        },
+        "gaps": [],
+        "overreach": [],
+        "repairs": [
+          "all.decision<-manifest/product",
+          "all.residual<-threads",
+          "all.provenance<-v1:packed"
+        ],
+        "ok": false
+      }
+    },
+    {
+      "file": "20261019_114408_AI能否独立完成数字IC设计边界.packed.json",
+      "audit": {
+        "layers": {
+          "0": {
+            "ok": true,
+            "aspects": 48,
+            "probes": 3,
+            "suspensions": 4
+          },
+          "1": {
+            "ok": true,
+            "subs": 6,
+            "decidable": 0,
+            "cited": 0,
+            "layer_evidence": 2
+          },
+          "both": {
+            "ok": true,
+            "adjudications": 3,
+            "threads": 6
+          },
+          "all": {
+            "ok": true,
+            "required": {
+              "decision": true,
+              "actions": true,
+              "not_do": true,
+              "residual_risks": true,
+              "provenance": true
+            },
+            "actions": 5,
+            "not_do": 3
+          }
+        },
+        "gaps": [],
+        "overreach": [],
+        "repairs": [],
+        "ok": true
+      }
+    }
+  ]
+}

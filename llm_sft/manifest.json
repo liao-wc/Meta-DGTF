@@ -1,0 +1,18 @@
+{
+ "total": 122,
+ "train": 108,
+ "val": 14,
+ "questions": 35,
+ "train_questions": 28,
+ "val_questions": 7,
+ "route_dist": {
+  "1": 9,
+  "0,1,both,all": 74,
+  "0,1": 20,
+  "0,1,both": 6,
+  "1,both,all": 1,
+  "0": 5,
+  "1,both": 7
+ },
+ "note": "问题→route/rounds JSON；按 run 分组切分"
+}

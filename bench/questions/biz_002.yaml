@@ -1,0 +1,10 @@
+# [v122 bench] biz_002 · 出海定价
+id: biz_002
+domain: biz
+question: "产品要出海，定价按成本加成还是按当地竞品锚定"
+orientation: decision
+budget:
+  profile: balanced
+  max_calls: 180
+  rounds: "0:5,1:5,both:5,all:6"
+  mode: serial

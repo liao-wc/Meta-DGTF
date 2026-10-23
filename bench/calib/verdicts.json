@@ -1,0 +1,13 @@
+{
+  "n": 1,
+  "verdicts": {
+    "1": {
+      "verdict": "partial",
+      "question": "异常编号的生成权若在原供应商，第二家供应商报出的异常是否具备触发多源化决策的资格？",
+      "votes": "undecidable / partial / decidable",
+      "final": "partial",
+      "note": "三票互异，人工核定 partial"
+    }
+  },
+  "illegal": []
+}

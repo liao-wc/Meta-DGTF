@@ -1,0 +1,100 @@
+# ============================================================
+# 方案 E · 压时延（预算同方案 B，靠并行把墙钟压下来）
+#   配套文档：元DGTF-参数全景与影响面分析-v1.21.61.md §10
+# ============================================================
+# 定位：预算与 方案 B 完全相同，**只改“怎么跑”**。
+#       → 调用数 / token 估算与 B 一致（≈182 次 / ≈0.87M）
+#       → 墙钟预期下降 40-50%（视层间依赖，见下方模式说明）
+#
+# 【九个模式怎么选】
+#   serial —— 层间依赖强、结构清晰。最稳，最慢。
+#   A      —— 四层真正并行，各自独立跑完再汇流。最快，但但层间依赖被切断，
+#             对撞层的四象限对齐会退化（源码里直接写 quality=unaligned）
+#   B      —— 开放题、层次不分明、需要震荡收敛。Jacobi 接力，每层都能看到上游上一圈
+#   C      —— 层间接力但不等上游跑完（层间放行闸门）
+#   D/E    —— 修行与研究互不依赖，交汇点在对撞。…… D=撞元并行 / E=撞元串行
+#   F      —— 修行是地基，后三层能边跑边接力
+#   G      —— 要元层清算**完整**对撞结果
+#   H      —— 研究要吃完整修行、对撞要吃完整研究
+#   auto   —— 让 LLM 九选一，置信 <0.5 静默退回 serial（_PARALLEL_CONF_MIN，不可配）
+#
+# ★ 默认写 F：它是“修行先行 + 全流水”的折中，不会像 A 那样切断依赖，
+#   也不像 G/H 那样要求上游整层跑完。
+# ============================================================
+
+cost_profile: balanced
+
+api:
+  timeout: 240
+  max_retries: 3
+  retry_backoff: 1.8
+
+output:
+  verbose: false               # ★ 并行模式下四层日志会交错，刷屏反而不利于定位
+  show_dual_judge: false
+  show_ing: false
+  show_manifest: false
+  show_probe_diag: false
+  self_check: true
+
+actions:
+  # ---- 并行相关（本方案的全部改动集中在这里）----
+  parallel_mode: F             # 想完全交给调度就写 auto
+  parallel_expand: true        # 阴阳展开并行发出（每圈省一次往返）
+  parallel_warmup_rounds: 1    # 0 层先跑一圈预热，其余层不是从零上游起步
+  pipeline_gate_timeout: 300   # ★ 比默认 900 短：并行下卡死要早失败早暴露，
+                               #   别让一个崩了的线程把下游吊死 5 分钟
+
+  input_sanity: true
+  re_anchor: true
+  expand_yin: true
+  expand_yang: true
+  dual_judge: true
+  ing: true
+  he: true
+  phase_probe: true
+  manifest: true
+  self_check: true
+  re_evaluate_pool: true
+  settle_research: true
+  assess_decidability: true
+  decompose_question: true
+  decidability_source: pool
+  decompose_source: pool
+
+memory:
+  channels: [content, context, self]
+  self_layers: 4
+  self_layers_per_entry: 2     # ★ 并行下尤其重要：[P0-1] 修的就是「all 层把前几层的
+                               #   自我记忆全挤出」。这个字段保证四层各有代表
+  carry_feedback: true
+
+probe:
+  min_gain: 0.3
+  select_n: 3
+
+spiral:
+  hard_max: 6
+  soft_max: 3
+  all_extra_rounds: 1
+
+  # 与 方案 B 完全一致
+  per_entry:
+    "0":    {hard_max: 4, soft_max: 3}
+    "1":    {hard_max: 4, soft_max: 3}
+    "both": {hard_max: 6, soft_max: 5}
+    "all":  {hard_max: 4, soft_max: 3}
+
+  structure_saturation_enabled: true
+  structure_saturation_every_n: 2        # balanced 下 → 实际 3
+  re_eval_every_n: 1                     # → 实际 2
+  re_eval_recent_k: 10
+  stable_layers: 3
+  batch_similarity: 0.6
+  unsaid_escape_limit: 3
+
+  stall_streak_limit: 2
+  min_distance_improvement: 0.03
+
+# ★ 并行也是要钱的：max_calls 同样要设。它防的是“这一题跑飞了”，与并行无关
+max_calls: 190

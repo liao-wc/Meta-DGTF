@@ -1,0 +1,41 @@
+# [v122 bench] gold · tech_001
+id: tech_001
+decidability_gold:
+  adjudicators: 3
+  final: partial
+  dec_aspects:
+    - "库存扣减的一致性方案可选可测"
+    - "超卖率与 P99 延迟都是可观测指标"
+  und_aspects:
+    - "业务能接受的超卖率上限是管理决策，不是技术事实"
+practice_target:
+  min_amps: 3
+  min_threads: 2
+  min_suspensions: 1
+  max_ing_rephrase: 0.3
+  min_anchor_touch_rate: 0.4
+research_target:
+  min_answered: 3
+  max_distance: 0.5
+  min_evidence_traced: 0.8
+  must_mention:
+    - "幂等"
+  must_not_mention:
+    - "用分布式锁一刀切"
+collision_target:
+  min_third_party: 1
+  min_tensions: 2
+meta_target:
+  meta_clean: true
+  min_coverage: 0.6
+action_rubric:
+  min_actions: 3
+  required_fields_per_action:
+    - verb
+    - object
+    - owner_role
+    - deadline_hint
+    - acceptance
+  must_have_fallback: true
+  must_have_not_do_list: true
+anchor_gold: []

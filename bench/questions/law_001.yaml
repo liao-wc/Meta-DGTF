@@ -1,0 +1,10 @@
+# [v122 bench] law_001 · GDPR 跨境
+id: law_001
+domain: law
+question: "业务要接欧洲用户，数据跨境传输怎么合规落地"
+orientation: decision
+budget:
+  profile: balanced
+  max_calls: 180
+  rounds: "0:5,1:5,both:5,all:6"
+  mode: serial

@@ -1,0 +1,22 @@
+name: release-artifact
+on:
+  push:
+    tags: ['app-v*', 'engine-v*']
+permissions:
+  contents: write
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Package source without local model binaries
+        run: |
+          zip -r "meta-dgtf-${GITHUB_REF_NAME}.zip" . \
+            -x 'local_model/models/*' 'local_model/envs/*' 'outputs/*' 'dgtf_memory/*' 'archive/*' '*.log'
+          sha256sum "meta-dgtf-${GITHUB_REF_NAME}.zip" > SHA256SUMS
+      - uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda # v2.2.1
+        with:
+          files: |
+            meta-dgtf-${{ github.ref_name }}.zip
+            SHA256SUMS

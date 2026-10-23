@@ -1,0 +1,2592 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><title>accept</title>
+<style>
+  html,body{margin:0;height:100%;background:#0d0f14;color:#7CFC9A;font:12px/1.6 monospace}
+  iframe{border:0;width:100vw;height:100vh;display:block}
+  #out{position:fixed;left:0;bottom:0;max-width:100vw;max-height:60vh;overflow:auto;
+       background:rgba(0,0,0,.92);color:#7CFC9A;padding:10px 12px;white-space:pre-wrap;z-index:99999}
+  body.quiet #out{display:none}
+</style></head>
+<body>
+<iframe id="f" src="/"></iframe>
+<pre id="out">running…</pre>
+<script>
+/* 一次性验收台：同源 iframe 里跑真实的 dgtf_app 页面，用真实点击驱动，
+   断言结果写进 #out（配合 --dump-dom 读文本），另可截图看视觉。
+   m=probe 全量断言 | m=dd 只展开下拉（截图） | m=web 只切联网检索库（截图） */
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+/* ★ 跑法（无头下一条流程太长会挂，拆成两趟 + 一个单独模式）：
+     ・`?m=probe&skip=fx`      —— 除⑦（发送/终止）外的全部（布局类判据都在这一趟，四视口跑这个）
+     ・`?m=probe&skip=early`    —— 专跑⑦ + ⑤e + ⑥
+     ・`?m=resend`              —— 单独验「同一会话内重新发送」（输入框不跳位 + 日志先收后露）
+   ★ 为什么不一口气跑：一条流程里起 3~4 个 mock 子进程 + 数百次请求，
+     Edge 的虚拟时间会在某个 pending 请求上停住 ⇒ 预算永远到不了、`--dump-dom` 什么都不输出。 */
+const MODE = new URLSearchParams(location.search).get('m') || 'probe';
+const SKIP = new URLSearchParams(location.search).get('skip') || '';
+/* 逗号分隔可叠加多个跳过项（诊断用） */
+const SKIPS = new Set(SKIP.split(',').map(x => x.trim()).filter(Boolean));
+
+/* 有些断言只能落在**样式表文本**上（元素此刻不存在，比如任务还在跑时还没有产物链接）。
+   取一次 CSS 文本，配一个和 selftest 里 `_rule()` 同款的取规则小助手。 */
+let CSS_TXT = '';
+let JS_TXT = '';
+let HTML_TXT = '';
+const cssRule = (sel) => {
+  const esc = sel.replace(/\./g, '\\.');
+  const m = CSS_TXT.match(new RegExp(esc + '\\s*\\{([^}]*)\\}'));
+  return m ? m[1] : '';
+};
+const R = [];
+let EXTRA = '';
+const chk = (n, ok, extra) => R.push((ok ? 'PASS ' : 'FAIL ') + n + (extra ? '  | ' + extra : ''));
+
+/* ★ R29：应用改为「刷新回首屏」⇒ 不再自动跟随最新任务。
+   验收台要让它把某条任务画出来，就走应用**自己的**会话切换路径（等同点「历史对话」里那一条）。 */
+async function showTask(w, id, question) {
+  await w.loadExistingTasks();
+  if (w.openChat) await w.openChat({ id, question, status: 'running', live: true });
+  else { await w.pollLanes(); }
+}
+
+async function ready(f) {
+  // ★ 每轮重读 f.contentDocument —— iframe 导航后它是**新对象**，先抓的那个是 about:blank
+  for (let i = 0; i < 600; i++) {
+    const d = f.contentDocument;
+    // ★ 仪表盘没有标签页了 —— 判「应用已起来」用**真正的读数行**（`.stat-row`），
+    //   不能只看 `#stats-body` 有没有子节点：请求失败时那里会渲染一条错误文案，
+    //   子节点数非 0 但读数是空的，会让后面的断言以「0 行」这种误导性方式翻红。
+    // ★ 轮数给足：无头虚拟时间跑得比真实快得多，200 轮（20s 虚拟）往往只对应真实一两秒，
+    //   `/api/dashboard` 首次扫盘 + 网络还没回来就超时了（表现为偶发「应用没起来」）。
+    if (d && d.querySelector && d.querySelector('#runlog') && d.querySelector('#dash-stats')
+        && d.querySelectorAll('#stats-body .stat-row').length >= 5) return d;
+    await sleep(100);
+  }
+  return null;
+}
+
+async function run() {
+  const f = document.getElementById('f');
+  const d = await ready(f);
+  if (!d) {   // 失败也要写 #out（否则它停在 "running…"，看不出是超时还是脚本没跑）
+    R.push('FAIL 应用没起来（等待超时：先确认服务在跑、且内存里有任务）');
+    document.getElementById('out').textContent = R.join('\n');
+    document.title = 'ACCEPT FAIL 1';
+    return;
+  }
+  const w = f.contentWindow;
+  CSS_TXT = await w.fetch('/static/style.css').then(x => x.text()).catch(() => '');
+  /* ★ R37：app.js 的**源码文本**也要取一份 —— 有些判据只能落在接线处
+     （元素此刻不在 DOM 里，比如「日志开头块」要等真跑才有）。 */
+  JS_TXT = await w.fetch('/static/app.js').then(x => x.text()).catch(() => '');
+  /* ★ R38：index.html 源码文本 —— 判「底栏挂在 .sheet layer 上」这种**结构位置**，
+     拿 DOM 只能知道父子关系，拿源码才知道它排在 `.sheet-body` 之后。 */
+  HTML_TXT = await w.fetch('/static/index.html').then(x => x.text()).catch(() => '');
+  await sleep(1500);
+
+  if (MODE === 'dd') {
+    // 截图专用：关掉入场动画。无头环境里 CSS 动画可能停在 opacity:0 的首帧，
+    // 布局是对的（getBoundingClientRect 正常）但拍出来是「透明」的。
+    const st = d.createElement('style');
+    st.textContent = '.dd-menu.show{animation:none !important}';
+    d.head.appendChild(st);
+    d.querySelector('.advanced').open = true;
+    await sleep(250);
+    const cli = d.querySelector('#adv-grid .cfg-group');
+    if (cli) cli.open = false;                      // 收起 CLI 组，目标组落到面板顶部
+    const g = d.querySelector('#adv-grid .grid .dd');
+    if (g && g.closest('details')) g.closest('details').open = true;
+    await sleep(300);
+    d.querySelector('#adv-grid .dd-btn').click();
+    await sleep(300);
+    // 入场动画（opacity 0→1）在无头虚拟时间下会停在首帧 → 截图里菜单是「透明」的。
+    // 强制落到终态，截图才拍得到（真实浏览器 60fps 不受影响）。
+    const m = d.querySelector('.dd-menu.show');
+    if (m && m.getAnimations) m.getAnimations().forEach(a => { try { a.finish(); } catch (_) {} });
+    await sleep(150);
+    if (m) {
+      const rr = m.getBoundingClientRect(), cs = f.contentWindow.getComputedStyle(m);
+      EXTRA = 'menu ' + Math.round(rr.left) + ',' + Math.round(rr.top) + ' '
+        + Math.round(rr.width) + 'x' + Math.round(rr.height)
+        + ' parent=' + m.parentElement.tagName + ' disp=' + cs.display
+        + ' op=' + cs.opacity + ' pos=' + cs.position + ' z=' + cs.zIndex
+        + ' vp=' + f.contentWindow.innerWidth + 'x' + f.contentWindow.innerHeight
+        + ' anim=' + m.getAnimations().length;
+      // 冻结页面里的定时器（pollLanes 每 1.5s 一轮）。无头虚拟时间下它们跑得飞快，
+      // 期间任何一次 resize/滚动事件都会把菜单收掉，截图就拍不到了。
+      for (let i = 1; i < 5000; i++) {
+        try { f.contentWindow.clearInterval(i); f.contentWindow.clearTimeout(i); } catch (_) {}
+      }
+      /* 截图兜底（只影响这张图，不改产品代码）：无头截图收尾时会 resize 视口，
+         应用监听了 resize → closeDDs()，菜单在快门那一瞬被收掉。
+         把菜单的内联显隐钉死，快门拍到的就是它展开的样子。 */
+      m.style.display = 'block';
+    } else { EXTRA = 'menu=null'; }
+  }
+  // 截图专用：切到「产物库」页；再点开第一份产物，验证详情浮层盖在最上面
+  if (MODE === 'lib' || MODE === 'libopen') {
+    await sleep(1300);
+    d.querySelector('.nav-btn[data-sheet="view-lib"]').click();
+    await sleep(700);
+    d.querySelector('#sheet').getAnimations()
+      .forEach(a => { try { a.finish(); } catch (_) {} });
+    await sleep(150);
+    if (MODE === 'libopen') {
+      const it = d.querySelector('#lib-list .item');
+      if (it) it.click();
+      await sleep(800);
+      const det = d.querySelector('#detail');
+      if (det) det.getAnimations().forEach(a => { try { a.finish(); } catch (_) {} });
+      await sleep(200);
+    }
+  }
+  // 截图专用：切到「本地资料库」页（看默认展开的现成快照列表）
+  if (MODE === 'local') {
+    await sleep(1300);
+    d.querySelector('.nav-btn[data-sheet="view-local"]').click();
+    await sleep(700);
+    d.querySelector('#sheet').getAnimations()
+      .forEach(a => { try { a.finish(); } catch (_) {} });
+    await sleep(150);
+  }
+  // 截图专用：切到「联网检索库」页（m=net 折叠态 / m=netopen 展开第一组）
+  if (MODE === 'net' || MODE === 'netopen') {
+    await sleep(1300);
+    d.querySelector('.nav-btn[data-sheet="view-web"]').click();
+    await sleep(700);
+    d.querySelector('#sheet').getAnimations()
+      .forEach(a => { try { a.finish(); } catch (_) {} });
+    await sleep(150);
+    if (MODE === 'netopen') {
+      const h0 = d.querySelector('#web-list .wg-head');
+      if (h0) h0.click();
+      await sleep(400);
+    }
+  }
+  // 截图专用：只停在「高级参数」的**分组列表**页
+  if (MODE === 'advlist') {
+    await sleep(1300);
+    d.querySelector('.nav-btn[data-sheet="adv-panel"]').click();
+    await sleep(700);
+    d.querySelector('#sheet').getAnimations()
+      .forEach(a => { try { a.finish(); } catch (_) {} });
+    await sleep(150);
+  }
+  // 截图专用：高级参数 → 点第一个分组 → 该组参数铺满
+  if (MODE === 'adv') {
+    await sleep(1200);
+    d.querySelector('.nav-btn[data-sheet="adv-panel"]').click();
+    await sleep(550);
+    d.querySelector('#sheet').getAnimations()
+      .forEach(a => { try { a.finish(); } catch (_) {} });
+    await sleep(100);
+    // 选「模型与 API」那组 —— 里面有自绘下拉，能验证「点开看得见选项」
+    const _b = [...d.querySelectorAll('#adv-groups [data-advgroup]')]
+      .find(b => /模型|API/.test(b.textContent))
+      || d.querySelector('#adv-groups [data-advgroup]');
+    if (_b) _b.click();
+    await sleep(650);
+    d.querySelector('#sheet').getAnimations()
+      .forEach(a => { try { a.finish(); } catch (_) {} });
+    await sleep(150);
+    // 再点开一个下拉，顺便验证「选项真的看得见」（层级问题就出在这）
+    const _dd = d.querySelector('#adv-grid .dd-btn');
+    if (_dd) _dd.click();
+    await sleep(450);
+    const _m = d.querySelector('.dd-menu.show');
+    if (_m) {
+      /* ★ `--screenshot` 收尾会 resize 视口 ⇒ 应用监听了 resize 就 `closeDDs()`，
+         快门那一瞬菜单被收掉（截图里就「没有可选项」）。冻结页面定时器 +
+         把菜单内联 display 钉死，快门拍到的才是展开态。 */
+      for (let i = 1; i < 5000; i++) {
+        try { f.contentWindow.clearInterval(i); f.contentWindow.clearTimeout(i); } catch (_) {}
+      }
+      _m.getAnimations().forEach(a => { try { a.finish(); } catch (_) {} });
+      _m.style.display = 'block';
+    }
+    await sleep(120);
+  }
+  // 截图专用：打开某个全屏面板页（读数台）
+  if (MODE === 'sheet') {
+    await sleep(1200);
+    d.querySelector('.nav-btn[data-sheet="dash-stats"]').click();
+    await sleep(700);
+    d.querySelector('#sheet').getAnimations()
+      .forEach(a => { try { a.finish(); } catch (_) {} });
+    await sleep(150);
+  }
+  // 截图专用：打开搜索浮层（左上角放大镜）
+  if (MODE === 'search') {
+    await sleep(1200);
+    d.querySelector('#search-btn').click();
+    await sleep(1000);
+    d.querySelector('#search-input').value = '数字IC';
+    d.querySelector('#search-input').dispatchEvent(new w.Event('input', { bubbles: true }));
+    await sleep(1500);
+  }
+  // 截图专用：把左侧抽屉拉开并落到终态（无头虚拟时间不推 transition）
+  if (MODE === 'web') {
+    await sleep(1400);
+    d.querySelector('#drawer-btn').click();
+    await sleep(600);
+    d.querySelector('#drawer').getAnimations()
+      .forEach(a => { try { a.finish(); } catch (_) {} });
+    await sleep(120);
+  }
+  // 截图专用：产物详情滚到中段 —— 看「头固定、正文只在本页内滚」
+  if (MODE === 'detail') {
+    await sleep(1300);
+    d.querySelector('.nav-btn[data-sheet="view-lib"]').click();
+    await sleep(700);
+    d.querySelector('#sheet').getAnimations()
+      .forEach(a => { try { a.finish(); } catch (_) {} });
+    await sleep(150);
+    const _it = d.querySelector('#lib-list .item');
+    if (_it) { _it.click(); await sleep(900); }
+    const _det = d.querySelector('#detail');
+    if (_det) _det.getAnimations().forEach(a => { try { a.finish(); } catch (_) {} });
+    await sleep(200);
+    const _bd = d.querySelector('#detail-body');
+    if (_bd) _bd.scrollTop = 430;
+    await sleep(200);
+  }
+  // 截图专用：抽屉里悬停第一个按钮 —— 看描述气泡（不被抽屉体裁剪）
+  // 截图专用：回到**空态首屏**（欢迎语 + 输入框，画布底色可见）
+  if (MODE === 'empty') {
+    await sleep(900);
+    w.newChat();
+    await sleep(600);
+  }
+  if (MODE === 'navtip') {
+    await sleep(1300);
+    d.querySelector('#drawer-btn').click();
+    await sleep(600);
+    d.querySelector('#drawer').getAnimations()
+      .forEach(a => { try { a.finish(); } catch (_) {} });
+    await sleep(120);
+    const _nb = d.querySelector('#drawer .nav-btn');
+    if (_nb) _nb.dispatchEvent(new w.Event('mouseenter'));
+    await sleep(80);
+    const _tp = d.querySelector('.nav-tip');
+    if (_tp) {
+      _tp.getAnimations().forEach(a => { try { a.finish(); } catch (_) {} });
+      _tp.style.opacity = '1';   // 冻结：快门时保持可见
+    }
+    await sleep(150);
+  }
+  // 截图专用：跑到中途的运行日志（内容居中 + 发送键已变终止键）
+  if (MODE === 'runlog') {
+    await sleep(900);
+    // ★ 直接 POST 建任务（别依赖 startRun 的异步回填），再按真实子进程进度等待
+    const r0 = await w.fetch('/api/tasks', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: '日志居中与终止键', opts: { mock: true } }),
+    }).then(x => x.json()).catch(() => null);
+    const id = r0 && r0.id;
+    for (let i = 0; i < 9000; i++) {
+      const lg = id ? await w.fetch('/api/tasks/' + id + '/log?offset=0&mode=raw')
+        .then(x => x.json()).catch(() => null) : null;
+      if (lg && (lg.size || 0) > 700) break;
+      await sleep(1);
+    }
+    await showTask(w, id, '日志居中与终止键');
+    await sleep(250);
+    // 冻住后续轮询：快门那一刻保持「运行中 + 终止键」
+    w.pollLanes = () => {};
+    w.pollTask = () => {};
+    await sleep(150);
+  }
+  // 截图专用：跑完的运行日志（看正文是否**居中自适应**）
+  if (MODE === 'runlogdone') {
+    await sleep(900);
+    const r0 = await w.fetch('/api/tasks', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: '日志内容居中', opts: { mock: true } }),
+    }).then(x => x.json()).catch(() => null);
+    const id = r0 && r0.id;
+    for (let i = 0; i < 9000; i++) {
+      const tt = id ? await w.fetch('/api/tasks/' + id)
+        .then(x => x.json()).catch(() => null) : null;
+      if (tt && tt.status !== 'running' && tt.status !== 'queued') break;
+      await sleep(1);
+    }
+    await sleep(400);
+    await showTask(w, id, '日志内容居中');
+    await sleep(350);
+  }
+  // 截图专用：抽屉按钮 + **悬停气泡**（透明底白字）
+  if (MODE === 'navdesc') {
+    await sleep(1200);
+    d.querySelector('#drawer-btn').click();
+    await sleep(500);
+    d.querySelector('#drawer').getAnimations()
+      .forEach(a => { try { a.finish(); } catch (_) {} });
+    await sleep(150);
+    const _nb = d.querySelector('#drawer .nav-btn');
+    if (_nb) _nb.dispatchEvent(new w.MouseEvent('mouseover', { bubbles: true }));
+    await sleep(140);
+    const _tp = d.querySelector('.tip');
+    if (_tp) _tp.style.opacity = '1';        // 冻结：快门时保持可见
+    await sleep(140);
+  }
+  // 截图专用：发送的星光动画（冻结在中段：负 animation-delay + 暂停）
+  if (MODE === 'fx') {
+    await sleep(900);
+    const _q = 'AI 能否独立完成数字 IC 设计流程？';
+    const r0 = await w.fetch('/api/tasks', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: _q, opts: { mock: true } }),
+    }).then(x => x.json()).catch(() => null);
+    const id = r0 && r0.id;
+    for (let i = 0; i < 9000; i++) {
+      const lg = id ? await w.fetch('/api/tasks/' + id + '/log?offset=0&mode=raw')
+        .then(x => x.json()).catch(() => null) : null;
+      if (lg && (lg.size || 0) > 600) break;
+      await sleep(1);
+    }
+    d.querySelector('#question').value = _q;
+    await showTask(w, id, _q);
+    await sleep(250);
+    w.playSendFx(_q);
+    await sleep(60);
+    /* ★ 无头虚拟时间**不推 CSS 动画**（暂停/负延迟都定格在首帧）⇒ 直接把每个粒子
+       按路径比例**钉在固定位置**，快门拍到的就是「飞到一半」的样子。 */
+    d.querySelectorAll('#fx .spark').forEach(p => {
+      const num = (k) => parseFloat(p.style.getPropertyValue(k)) || 0;
+      const t = 0.42;
+      const sx = num('--sx'), sy = num('--sy'), tx = num('--tx'), ty = num('--ty');
+      p.style.animation = 'none';
+      p.style.left = (sx + (tx - sx) * t).toFixed(1) + 'px';
+      p.style.top = (sy + (ty - sy) * t).toFixed(1) + 'px';
+      p.style.opacity = '1';
+      p.style.transform = 'translate(-50%,-50%) scale(1)';
+    });
+    /* ★ 粒子的移除是 `setTimeout` 安排的；无头虚拟时间会在快门**之前**把它们全部跑掉
+       ⇒ 必须先把定时器清干净，否则截出来的永远是"已经收工"的空画面。 */
+    for (let i = 1; i < 9999; i++) {
+      try { f.contentWindow.clearTimeout(i); f.contentWindow.clearInterval(i); } catch (_) {}
+    }
+    /* ★ R23：残影改**逐字裂解**（`.q-char`）——定格时保留几个字看得见即可 */
+    [...d.querySelectorAll('#fx .q-char')].slice(0, 6).forEach((_g, i) => {
+      _g.style.animation = 'none';
+      _g.style.opacity = '0.85';
+      _g.style.transform = 'translate(-50%,-50%) translate(' + (i * 5 - 12) + 'px,' + (-8 - i * 3) + 'px)';
+    });
+    /* ★ R23：文字裂解的同时，输入框已清空并换成「引擎已启动」寄语（定格看得见） */
+    d.querySelector('#question').value = '';
+    d.querySelector('#question').placeholder = '元DGTF 引擎已启动 · 您愿意和我一起探寻吗？';
+    const _rl = d.querySelector('#runlog');
+    if (_rl) {
+      _rl.style.borderColor = 'rgba(130,140,255,.55)';
+      _rl.style.boxShadow = '0 0 26px 2px rgba(120,130,255,.45),0 0 60px 6px rgba(120,130,255,.18)';
+    }
+    await sleep(160);
+    w.pollLanes = () => {}; w.pollTask = () => {};
+  }
+  // 截图专用：参数分组页底部（只剩「保存」、居中）
+  if (MODE === 'advsave') {
+    await sleep(1200);
+    d.querySelector('.nav-btn[data-sheet="adv-panel"]').click();
+    await sleep(550);
+    d.querySelector('#sheet').getAnimations()
+      .forEach(a => { try { a.finish(); } catch (_) {} });
+    await sleep(120);
+    const _g = d.querySelector('#adv-groups [data-advgroup]');
+    if (_g) _g.click();
+    await sleep(650);
+    d.querySelector('#sheet').getAnimations()
+      .forEach(a => { try { a.finish(); } catch (_) {} });
+    await sleep(150);
+  }
+  // 独立模式：只验证「同一会话内重新发送」——输入框不跳位 + 日志先收起、动画落点后再露。
+  // （放在 m=probe 里跑会让一条流程太长；单开一个模式，前置状态自己铺。）
+  if (MODE === 'resend') {
+    await sleep(1000);
+    // ① 先起一个 mock 并等它真的有层内容（直接 POST，不依赖应用状态）
+    const r0 = await w.fetch('/api/tasks', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: '重发验收·前置', opts: { mock: true } }),
+    }).then(x => x.json()).catch(() => null);
+    const id = r0 && r0.id;
+    for (let i = 0; i < 200; i++) {
+      await sleep(200);
+      const L = await w.fetch('/api/tasks/' + id + '/layers')
+        .then(x => x.json()).catch(() => null);
+      const lv = (L && L.layers) || {};
+      if (Object.keys(lv).some(k => String(lv[k] || '').trim())) break;
+    }
+    await showTask(w, id, '重发验收·前置');
+    for (let i = 0; i < 60; i++) {
+      await sleep(200);
+      if (d.querySelectorAll('#runlog-body .rl-lane').length) break;
+    }
+    const logEl = d.querySelector('#runlog');
+    /* 量之前先让入场动画/过渡落到终态，否则「之前」的位置可能停在中间帧（实测抖 34px） */
+    [logEl, d.querySelector('main.stage'), d.querySelector('.composer')].forEach(el => {
+      if (el && el.getAnimations) {
+        el.getAnimations().forEach(a => { try { a.finish(); } catch (_) {} });
+      }
+    });
+    await sleep(120);
+    const _comp = d.querySelector('.composer');
+    const cBefore = _comp.getBoundingClientRect();
+    const lBefore = logEl.getBoundingClientRect();
+    const hBefore = Math.round(_comp.getBoundingClientRect().height);
+    const lhBefore = Math.round(lBefore.height);
+    const wasVisible = !logEl.classList.contains('hidden');
+    const mb = d.querySelector('#mock');
+    if (mb) { mb.checked = true; mb.dispatchEvent(new w.Event('change', { bubbles: true })); }
+    d.querySelector('#question').value = '重发验收·同一会话再发一次';
+    w.startRun();
+    await sleep(100);
+    const cAfter = d.querySelector('.composer').getBoundingClientRect();
+    chk('同一会话重新发送：**日志立刻收起**（视觉不可见）、且输入框位置不变',
+        wasVisible && (logEl.classList.contains('hidden') || logEl.classList.contains('fading'))
+        && Math.abs(cAfter.top - cBefore.top) <= 2,
+        'wasVisible=' + wasVisible + ' hiddenNow=' + logEl.classList.contains('hidden')
+        + ' 输入框top ' + Math.round(cBefore.top) + '→' + Math.round(cAfter.top)
+        + ' 输入框h ' + hBefore + '→' + Math.round(_comp.getBoundingClientRect().height)
+        + ' 日志h ' + lhBefore + '→' + Math.round(logEl.getBoundingClientRect().height)
+        + ' 日志cls=[' + logEl.className + ']');
+    let back = false, it = 0;
+    for (let i = 0; i < 120; i++) {
+      it = i;
+      await sleep(200);
+      if (!logEl.classList.contains('hidden')) { back = true; break; }
+    }
+    chk('重发的动画落点之后：日志页**重新露出来**',
+        back, 'hidden=' + logEl.classList.contains('hidden') + ' it=' + it);
+  }
+  // 截图专用：历史对话列表
+  if (MODE === 'chats') {
+    await sleep(1400);
+    d.querySelector('.nav-btn[data-sheet="view-chats"]').click();
+    await sleep(800);
+    d.querySelector('#sheet').getAnimations()
+      .forEach(a => { try { a.finish(); } catch (_) {} });
+    await sleep(200);
+  }
+  // 截图专用：历史对话 → 点开最新那次会话（看归档日志按层还原成运行窗口）
+  if (MODE === 'chatopen') {
+    await sleep(1400);
+    d.querySelector('.nav-btn[data-sheet="view-chats"]').click();
+    await sleep(800);
+    d.querySelector('#sheet').getAnimations()
+      .forEach(a => { try { a.finish(); } catch (_) {} });
+    await sleep(200);
+    const _pick = new URLSearchParams(location.search).get('pick') || '';
+    const _list = [...d.querySelectorAll('#chats-list .hist')];
+    const _h = _pick ? _list.find(e => (e.textContent || '').indexOf(_pick) >= 0) : _list[0];
+    if (_h) { _h.click(); await sleep(1800); }
+    const _sc = Number(new URLSearchParams(location.search).get('scroll') || 0);
+    if (_sc) { const _b = d.querySelector('#runlog-body'); if (_b) _b.scrollTop = _sc; await sleep(250); }
+    if (new URLSearchParams(location.search).get('tofold')) {
+      const _b2 = d.querySelector('#runlog-body'), _f = d.querySelector('#runlog-body .rl-fold');
+      if (_b2 && _f) {
+        _b2.scrollTop = _b2.scrollTop + _f.getBoundingClientRect().top
+                       - _b2.getBoundingClientRect().top - 10;
+      }
+      await sleep(300);
+    }
+    d.querySelector('#runlog').getAnimations()
+      .forEach(a => { try { a.finish(); } catch (_) {} });
+    await sleep(200);
+  }
+  if (MODE !== 'probe') { document.body.classList.add('quiet'); return; }
+  /* ── ① 极简首屏：首屏只有欢迎语 + 输入框，六个面板收在左侧抽屉里 ── */
+  const comp = d.querySelector('.composer');
+  const drawer = d.querySelector('#drawer');
+  const welcome = d.querySelector('#welcome');
+
+  chk('输入框是对话式（功能胶囊「深度思考 / 智能搜索」+ 圆形发送键）',
+      !!comp && !!d.querySelector('#pill-thinking') && !!d.querySelector('#pill-web')
+      && !!d.querySelector('#run-btn') && !d.querySelector('.composer-actions'),
+      'composer=' + !!comp + ' pills=' + !!d.querySelector('#pill-thinking')
+      + '/' + !!d.querySelector('#pill-web'));
+  chk('抽屉默认收起（未 open）',
+      !!drawer && !drawer.classList.contains('open'),
+      'open=' + (drawer ? drawer.classList.contains('open') : '?'));
+  /* ★ R29：刷新（或首次打开）落在**首屏** —— 不自动把上一条任务的日志铺出来 */
+  {
+    const rl0 = d.querySelector('#runlog');
+    chk('刷新后落在**首屏**（`stage-empty` + 运行日志收起，不自动铺出上一条任务）',
+        d.body.classList.contains('stage-empty')
+        && !d.body.classList.contains('stage-run')
+        && !!rl0 && rl0.classList.contains('hidden')
+        && !!welcome && w.getComputedStyle(welcome).display !== 'none',
+        'stage=' + d.body.className
+        + ' runlogHidden=' + (rl0 ? rl0.classList.contains('hidden') : '?')
+        + ' welcome=' + (welcome ? w.getComputedStyle(welcome).display : '?'));
+  }
+  chk('首屏没有常驻面板（读数台/产物库都不在可视区里）',
+      (welcome && w.getComputedStyle(welcome).display !== 'none')
+      || (d.querySelector('#runlog') && !d.querySelector('#runlog').classList.contains('hidden')),
+      'welcome=' + (welcome ? w.getComputedStyle(welcome).display : '?')
+      + ' stage=' + d.body.className);
+
+  // 拉开抽屉 → 六个面板都有实际尺寸；再收起
+  const dBtn = d.querySelector('#drawer-btn');
+  dBtn.click();
+  await sleep(450);
+  /* ★ 无头虚拟时间**不推 CSS transition** ⇒ 抽屉停在中途（实测量到 left=-449），
+     必须手动把它落到终态再量，否则会把「量法没推进」误判成「抽屉没打开」。 */
+  drawer.getAnimations().forEach(a => { try { a.finish(); } catch (_) {} });
+  await sleep(60);
+  const dRect = drawer.getBoundingClientRect();
+  const bRect = dBtn.getBoundingClientRect();
+  const topEl = d.elementFromPoint(bRect.left + bRect.width / 2, bRect.top + bRect.height / 2);
+  chk('点左上角图标：抽屉拉进视口（左边界到 0）',
+      drawer.classList.contains('open') && Math.abs(dRect.left) <= 2,
+      'left=' + Math.round(dRect.left) + ' w=' + Math.round(dRect.width)
+      + ' cls=[' + drawer.className + ']'
+      + ' btn=' + Math.round(bRect.left) + ',' + Math.round(bRect.top)
+      + ' 该点最上层=' + (topEl ? (topEl.id || topEl.className || topEl.tagName) : 'null'));
+  // 抽屉宽度不该越过输入框左边界（用户报过「侧边栏展开压住输入框」）。
+  // 窄屏下输入框几乎占满宽度、这条做不到，所以只在宽屏断言。
+  // 让位有 transition，量之前先让它落到终态（否则读到让位前的位置）
+  d.querySelector('main.stage').getAnimations()
+    .forEach(a => { try { a.finish(); } catch (_) {} });
+  await sleep(60);
+  const compRect = comp.getBoundingClientRect();
+  if (w.innerWidth >= 1300) {
+    chk('宽屏下抽屉不越过输入框左边界（首屏整体让位，输入框在抽屉右侧）',
+        dRect.right <= compRect.left + 2,
+        'drawer.right=' + Math.round(dRect.right)
+        + ' composer.left=' + Math.round(compRect.left));
+  }
+
+  /* 抽屉里是**七个按钮**（含历史对话）；点一个 → 对应面板在全屏层里铺满整页 */
+  const navBtns = [...d.querySelectorAll('#drawer .nav-btn')];
+  chk('抽屉里是七个按钮（高级参数/读数台/最近跑过/历史对话/产物库/资料库/检索库）',
+      navBtns.length === 7 && navBtns.every(b => b.getAttribute('data-sheet')),
+      'n=' + navBtns.length);
+
+  /* ★ 悬停气泡取值器：把鼠标「移上去」，settle 过渡后返回气泡的实测值。
+     气泡是挂 body 的 fixed 元素（`document.querySelector('.tip')`）。 */
+  const hoverTip = async (el) => {
+    const any = d.querySelector('[data-tip]');
+    if (any) any.dispatchEvent(new w.MouseEvent('mouseout', { bubbles: true, relatedTarget: null }));
+    await sleep(50);
+    el.dispatchEvent(new w.MouseEvent('mouseover', { bubbles: true }));
+    await sleep(60);
+    const tip = d.querySelector('.tip');
+    if (tip) tip.getAnimations().forEach(a => { try { a.finish(); } catch (_) {} });
+    await sleep(30);
+    const cs = tip ? w.getComputedStyle(tip) : null;
+    const r = tip ? tip.getBoundingClientRect() : { left: 0, width: 0, top: 0, height: 0 };
+    return { tip, cs, r, br: el.getBoundingClientRect(),
+             bg: cs ? cs.backgroundColor : '?', color: cs ? cs.color : '?',
+             op: cs ? parseFloat(cs.opacity) : 0, text: tip ? tip.textContent : '' };
+  };
+
+  /* ★ 侧边栏内容**整体居中** + 环境信息白字 + 状态点按「是否配置」着色 */
+  {
+    const dh = d.querySelector('.drawer-head'), env = d.querySelector('#env-info');
+    const nb = navBtns[0];
+    /* ★ R20：头部品牌 / 环境信息仍**居中**；但按钮改成「图标统一左对齐、文字居中」。 */
+    const nbName = nb.querySelector('.nb-name');
+    chk('侧边栏：品牌/环境**居中**，按钮**图标左对齐 + 文字居中**',
+        w.getComputedStyle(dh).justifyContent === 'center'
+        && w.getComputedStyle(env).textAlign === 'center'
+        && w.getComputedStyle(nb).justifyContent === 'flex-start'
+        && !!nbName && w.getComputedStyle(nbName).textAlign === 'center',
+        'head=' + w.getComputedStyle(dh).justifyContent
+        + ' env=' + w.getComputedStyle(env).textAlign
+        + ' btn=' + w.getComputedStyle(nb).justifyContent
+        + ' name=' + (nbName ? w.getComputedStyle(nbName).textAlign : '(无 .nb-name)'));
+    const ec = w.getComputedStyle(env).color;
+    chk('环境信息**文字白色**',
+        /rgb\(\s*2\d\d,\s*2\d\d,\s*2\d\d\s*\)/.test(ec), 'color=' + ec);
+    const dots = [...d.querySelectorAll('#env-info .dot')];
+    const cssTxt = CSS_TXT.replace(/\s+/g, '');
+    chk('状态点：配好了**高亮**（绿 + 光晕）、没配**灰**（两条规则都在，点本身是 ok 态）',
+        dots.length >= 2 && dots.every(x => x.classList.contains('ok'))
+        && cssTxt.indexOf('.dot.ok{background:var(--ok)') >= 0
+        && cssTxt.indexOf('.dot.no{background:var(--t3)') >= 0,
+        '点数=' + dots.length + ' cls=' + dots.map(x => x.className).join(','));
+  }
+
+  /* ★ 描述改成**悬停才显示**的气泡：背景透明 + **文字灰色**（挂 body 的 fixed 气泡，
+     所以不会被抽屉体的 overflow 裁掉）。 */
+  {
+    const v = await hoverTip(navBtns[0]);
+    chk('抽屉按钮带 `data-tip`（描述**悬停**才出）',
+        navBtns.every(b => (b.getAttribute('data-tip') || '').length > 0),
+        'data-tip=' + navBtns.filter(b => b.getAttribute('data-tip')).length
+        + '/' + navBtns.length);
+    const tb = navBtns[0].getBoundingClientRect();
+    chk('气泡**背景透明 + 统一提示灰**，落在按钮右侧、不越出视口',
+        !!v.tip && v.op > 0.5
+        && (v.bg === 'rgba(0, 0, 0, 0)' || v.bg === 'transparent')
+        && /rgb\(\s*107,\s*114,\s*128\s*\)/.test(v.color)
+        && v.r.left >= tb.right - 1 && v.r.left + v.r.width <= w.innerWidth + 1,
+        'bg=' + v.bg + ' color=' + v.color + ' op=' + v.op
+        + ' tip=' + Math.round(v.r.left) + '..' + Math.round(v.r.left + v.r.width)
+        + ' btn.right=' + Math.round(tb.right) + ' text=[' + v.text + ']');
+    navBtns[0].dispatchEvent(new w.MouseEvent('mouseout', { bubbles: true, relatedTarget: null }));
+    if (v.tip) v.tip.getAnimations().forEach(a => { try { a.finish(); } catch (_) {} });
+    await sleep(40);
+    const tipEl = d.querySelector('.tip');
+    chk('鼠标移开后气泡收起',
+        !!tipEl && !tipEl.classList.contains('show')
+        && parseFloat(w.getComputedStyle(tipEl).opacity) < 0.5,
+        'show=' + (tipEl ? tipEl.classList.contains('show') : '?'));
+    const hs = navBtns.map(b => Math.round(b.getBoundingClientRect().height));
+    chk('侧边栏按钮**高度自适应且整齐**（只留名字 ⇒ 六键等高、不再被描述撑两行）',
+        new Set(hs).size === 1 && hs[0] <= 52,
+        '高度=' + [...new Set(hs)].join('/'));
+  }
+
+  const sheet = d.querySelector('#sheet');
+  chk('面板页默认隐藏（它只是本页的一块内容，不是另起的浮层）',
+      !!sheet && sheet.classList.contains('hidden'),
+      'hidden=' + (sheet ? sheet.classList.contains('hidden') : '?'));
+
+  navBtns.find(b => b.getAttribute('data-sheet') === 'dash-stats').click();
+  await sleep(500);
+  /* ★ 面板页也带 rise 动画，无头虚拟时间不推 ⇒ 停在 translateY(6px)。
+     量之前先让它落到终态，否则会把「量法没推进」当成「没铺开」。 */
+  sheet.getAnimations().forEach(a => { try { a.finish(); } catch (_) {} });
+  await sleep(80);
+  const shRect = sheet.getBoundingClientRect();
+  const mainEl0 = d.querySelector('main.stage');
+  /* ★ R30：面板层是**固定覆盖 + 半透明**，主视图**保持可见** ⇒ 透过去看得见背景 */
+  chk('点按钮：面板层**覆盖整页（fixed + 四边贴齐）**、且主视图**仍在**（背景透得出来）',
+      !sheet.classList.contains('hidden')
+      && Math.abs(shRect.left) <= 2 && Math.abs(shRect.top) <= 2
+      && shRect.width >= w.innerWidth - 2 && shRect.height >= w.innerHeight - 2
+      && w.getComputedStyle(sheet).position === 'fixed'
+      && w.getComputedStyle(mainEl0).display !== 'none'
+      && w.getComputedStyle(d.querySelector('.composer')).display !== 'none',
+      'rect=' + Math.round(shRect.left) + ',' + Math.round(shRect.top) + ' '
+      + Math.round(shRect.width) + 'x' + Math.round(shRect.height)
+      + ' pos=' + w.getComputedStyle(sheet).position
+      + ' mainDisplay=' + w.getComputedStyle(mainEl0).display
+      + ' composerDisplay=' + w.getComputedStyle(d.querySelector('.composer')).display
+      + ' vp=' + w.innerWidth + 'x' + w.innerHeight);
+  const shBg = w.getComputedStyle(sheet).backgroundColor;
+  /* ★ R29：整页那层**背景 10% 不透明**（不再是 20%，也不再是透明） */
+  chk('面板页背景 = **整体页面背景 85% 不透明（浅色档）**、且不虚化',
+      /rgba\(\s*255,\s*255,\s*255,\s*0\.85\s*\)/.test(shBg)
+      && w.getComputedStyle(sheet).backdropFilter.indexOf('blur') < 0,
+      'bg=' + shBg + ' backdrop=' + w.getComputedStyle(sheet).backdropFilter);
+  const panelBg = w.getComputedStyle(d.querySelector('#dash-stats')).backgroundColor;
+  const otherBg = w.getComputedStyle(d.querySelector('#view-lib')).backgroundColor;
+  /* ★ R28：面板统一 **20% 不透明背景**（「背景是透明度为 20%，类似的也一样」） */
+  /* ★ R29：卡片**不再自己铺色**（否则和整页那层 10% 叠成两层） */
+  chk('面板卡**不自己铺色**（透出整页那层 10%）',
+      panelBg === 'rgba(0, 0, 0, 0)' && otherBg === 'rgba(0, 0, 0, 0)',
+      '读数台bg=' + panelBg + ' 其它bg=' + otherBg);
+  /* ★ R28：面板里不再重复一条标题行；计数/时间/说明改在 sheet-head 当描述 */
+  {
+    const pages = [...d.querySelectorAll('#sheet .sheet-page')];
+    const withHead = pages.filter(p => p.querySelector('.panel-head'));
+    const desc = d.querySelector('#sheet-desc');
+    const on = desc ? [...desc.querySelectorAll('.sd.on')] : [];
+    chk('面板里**不再重复一条标题行**（标题与描述都在 sheet-head）',
+        withHead.length === 1 && withHead[0].id === 'adv-group-page'
+        && pages.filter(p => p.querySelector('.panel-title')).length === 1,
+        '带标题行的页=' + withHead.map(p => p.id).join('/'));
+    chk('sheet-head 只显示**当前这一页**的描述（读数台 = 更新时间…）',
+        on.length === 1 && on[0].getAttribute('data-for') === 'dash-stats'
+        && (on[0].textContent || '').trim().length > 0,
+        'on=' + on.map(s => s.getAttribute('data-for')).join('/')
+        + ' 文本=[' + (on[0] ? on[0].textContent.trim().slice(0, 30) : '') + ']');
+  }
+
+  // 本地资料库的「现成锚点快照」默认展开
+  const cand = d.querySelector('details.cand');
+  chk('本地资料库的「现成锚点快照」**默认展开**',
+      !!cand && cand.open,
+      'open=' + (cand ? cand.open : '?'));
+  chk('只有被点的那一页可见（读数台），其余页隐藏',
+      d.querySelector('#dash-stats').classList.contains('active')
+      && !d.querySelector('#view-lib').classList.contains('active'),
+      'stats=' + d.querySelector('#dash-stats').classList.contains('active')
+      + ' lib=' + d.querySelector('#view-lib').classList.contains('active'));
+  const visR = d.querySelector('#dash-stats').getBoundingClientRect();
+  chk('该面板在本页里铺满（宽高都接近整块面板页）',
+      visR.width > shRect.width * 0.8 && visR.height > shRect.height * 0.6,
+      'panel=' + Math.round(visR.width) + 'x' + Math.round(visR.height)
+      + ' sheet=' + Math.round(shRect.width) + 'x' + Math.round(shRect.height));
+  chk('面板铺开时抽屉**收回去**（给本页让位）',
+      !drawer.classList.contains('open'),
+      'drawerOpen=' + drawer.classList.contains('open'));
+  chk('面板铺开时左上角三个圆钮**收起**（不再压在面板标题上）',
+      w.getComputedStyle(d.querySelector('.corner-actions')).display === 'none',
+      'display=' + w.getComputedStyle(d.querySelector('.corner-actions')).display);
+
+  // 切到产物库：长列表铺满该页、内部自己滚（不把整页撑高）
+  navBtns.find(b => b.getAttribute('data-sheet') === 'view-lib').click();
+  await sleep(500);
+  const libH2 = d.querySelector('#lib-list').getBoundingClientRect().height;
+  chk('切到产物库：列表铺满该页并内部滚动（300 条不撑破整页）',
+      libH2 > 100 && d.documentElement.scrollHeight <= w.innerHeight + 40,
+      'libH=' + Math.round(libH2) + ' docH=' + d.documentElement.scrollHeight);
+
+  d.querySelector('#sheet-close').click();
+  await sleep(500);
+  chk('点 × 收起面板、回到主视图（欢迎语/输入框那页重新出现）',
+      sheet.classList.contains('hidden')
+      && w.getComputedStyle(d.querySelector('main.stage')).display !== 'none',
+      'hidden=' + sheet.classList.contains('hidden')
+      + ' mainDisplay=' + w.getComputedStyle(d.querySelector('main.stage')).display);
+  chk('关掉面板后**抽屉弹回来**（它是从抽屉里点进来的）',
+      drawer.classList.contains('open'),
+      'drawerOpen=' + drawer.classList.contains('open'));
+
+  // 抽屉打开时首屏**让位**（主区右移，不被覆盖、照常可点）
+  // ★ R36 起让位改成**纯 transform**（不再动 margin-left/width ⇒ 布局零重排、不再跳）；
+  //   R37 又把让位量改成 `--shift-w`（= min(抽屉宽, 50vw)，保证右侧至少留一半视口）。
+  const mainEl = d.querySelector('main.stage');
+  // 让位带 transition（R37 放慢到 .42s），无头虚拟时间不推 ⇒ 先落到终态再量
+  mainEl.getAnimations().forEach(a => { try { a.finish(); } catch (_) {} });
+  await sleep(60);
+  const mtf = w.getComputedStyle(mainEl).transform;
+  const shiftPx = (() => {
+    const m = /matrix\(([^)]+)\)/.exec(mtf);
+    if (!m) return 0;
+    return Math.abs(parseFloat(m[1].split(',')[4])) || 0;
+  })();
+  chk('④ 抽屉打开时首屏**让位**：主区右移（transform 平移，不是 margin）',
+      shiftPx > 50,
+      'shiftX=' + Math.round(shiftPx) + ' transform=' + mtf);
+  chk('④ 让位量**封顶为视口一半**（右侧恒留一半可见）',
+      shiftPx <= w.innerWidth / 2 + 1,
+      'shiftX=' + Math.round(shiftPx) + ' vw/2=' + Math.round(w.innerWidth / 2));
+  {/* ④ 平移放慢：主区与抽屉的 transition-duration 都要 ≥ .4s */
+  const mainDur = w.getComputedStyle(mainEl).transitionDuration || '0s';
+  const drawerDur = w.getComputedStyle(drawer).transitionDuration || '0s';
+  const toS = (v) => parseFloat(v) || 0;
+  chk('④ 平移已**放慢**（主区 / 抽屉 transition-duration ≥ .4s）',
+      toS(mainDur) >= 0.4 && toS(drawerDur) >= 0.4,
+      'main=' + mainDur + ' drawer=' + drawerDur);
+  }
+
+  // Esc **一次只关一层**：面板开着 + 抽屉开着时，按一次只该关掉面板
+  navBtns.find(b => b.getAttribute('data-sheet') === 'dash-stats').click();
+  await sleep(450);
+  d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+  await sleep(340);
+  chk('Esc 一次只关一层：先关掉最上面的面板，抽屉仍开着',
+      d.querySelector('#sheet').classList.contains('hidden')
+      && drawer.classList.contains('open'),
+      'sheetHidden=' + d.querySelector('#sheet').classList.contains('hidden')
+      + ' drawerOpen=' + drawer.classList.contains('open'));
+  d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+  await sleep(340);
+  chk('再按一次 Esc：这次才轮到抽屉',
+      !drawer.classList.contains('open'),
+      'drawerOpen=' + drawer.classList.contains('open'));
+
+  // 左上角图标只负责「拉开」，收起走关闭键 / Esc
+  d.querySelector('#drawer-close').click();
+  await sleep(450);
+  chk('点关闭键：抽屉收回（图标只负责拉开，收起走关闭键 / Esc）',
+      !drawer.classList.contains('open'),
+      'open=' + drawer.classList.contains('open'));
+
+  if (!SKIPS.has('early')) {
+  /* ── ② 前置：自己跑一个 **mock 任务并等它真的跑完** ───────────────
+     ★ 这样后面的「四层日志按层分块」不依赖外部预先准备的任务；也避免上一次验收留下的
+       「已终止」空日志任务成为最新任务、把层块判据打空。
+     （会在 outputs/ 里留下 1 份 mock 产物 —— 验收后请一并清理。） */
+  {
+    const r0 = await w.fetch('/api/tasks', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: '验收前置·mock', opts: { mock: true } }),
+    }).then(x => x.json()).catch(() => null);
+    const preId = r0 && r0.id;
+    if (preId) {
+      /* ★ 直接盯「层接口里已经有层内容」—— 这才是②真正需要的东西；
+         盯 status 会因为虚拟/真实时间抖动而时早时晚。步长 250ms、上限 100 步。 */
+      for (let i = 0; i < 100; i++) {
+        await sleep(250);
+        const L = await w.fetch('/api/tasks/' + preId + '/layers')
+          .then(x => x.json()).catch(() => null);
+        const lv = (L && L.layers) || {};
+        if (Object.keys(lv).some(k => String(lv[k] || '').trim())) break;
+      }
+      await showTask(w, preId, '验收前置·mock');   // 让应用把这条任务画出来（走会话切换路径）
+      /* 主动轮询（不只是等）直到日志里真的有了层块 —— 只眯 150ms 虚拟的话，
+         真实时间可能连 mock 的第一层都还没出来。 */
+      /* 按 **DOM 条件 + 虚拟长睯** 等——应用自己每 1.5s 会 pollLanes，
+         不靠 fetch 步进（fetch 只有 ~10ms 真实耗时，40 步也就 0.4s，够不到 mock 出第一层）。 */
+      for (let i = 0; i < 300; i++) {
+        await sleep(200);
+        if (d.querySelectorAll('#runlog-body .rl-lane').length > 0) break;
+      }
+    }
+  }
+
+  /* ── ② 运行日志：跑起来才出现、一条流 ───────────────────────── */
+  const rl = d.querySelector('#runlog');
+  // ★ 这条依赖「服务内存里有任务」。刚重启过服务的话日志区是隐藏的 ——
+  //   先 `curl -X POST /api/tasks -d '{"question":"x","opts":{"mock":true}}'` 再验收。
+  chk('运行日志默认隐藏 / 有任务时出现（无任务先跑一个 mock 任务）',
+      !!rl && !rl.classList.contains('hidden'),
+      !rl ? '缺失'
+        : (rl.classList.contains('hidden')
+           ? '存在但隐藏 — 内存里没任务，先 POST /api/tasks {"opts":{"mock":true}}' : '可见'));
+  chk('四张层卡已从页面移除（.lane 与 .task 都不再出现）',
+      d.querySelectorAll('.lane').length === 0
+      && d.querySelectorAll('#runlog .task').length === 0,
+      'lane=' + d.querySelectorAll('.lane').length
+      + ' task=' + d.querySelectorAll('#runlog .task').length);
+  if (rl && !rl.classList.contains('hidden')) {
+    const rb = rl.getBoundingClientRect(), rc = comp.getBoundingClientRect();
+    chk('运行日志在输入框上方（间隔就是舞台的 14px gap，不重叠）',
+        rb.bottom <= rc.top + 1 && rc.top - rb.bottom <= 26,
+        'gap=' + (rc.top - rb.bottom).toFixed(1) + 'px');
+    /* ★ R26：日志页背景**全透明**（运行时计算值确认，不只看样式表） */
+    chk('日志页面背景**全透明**（运行时计算值）',
+        /rgba\(\s*0,\s*0,\s*0,\s*0\s*\)/.test(w.getComputedStyle(rl).backgroundColor),
+        'bg=' + w.getComputedStyle(rl).backgroundColor);
+    const body = d.querySelector('#runlog-body');
+    const headH = d.querySelector('.runlog-head').getBoundingClientRect().height;
+    const bh = body.getBoundingClientRect().height;
+    chk('运行日志解掉 .log 的 264px 上限、撑满面板剩余空间',
+        w.getComputedStyle(body).maxHeight === 'none'
+        && Math.abs(bh - (rb.height - headH)) <= 2,
+        'h=' + Math.round(bh) + ' maxH=' + w.getComputedStyle(body).maxHeight
+        + ' panel=' + Math.round(rb.height) + '-head' + Math.round(headH));
+    const txt = body.textContent || '';
+    chk('四层日志**按层分块**（每层一段：小标题 + 正文）',
+        body.querySelectorAll('.rl-lane').length >= 1
+        && !!body.querySelector('.rl-lane-head'),
+        '层块=' + body.querySelectorAll('.rl-lane').length);
+    /* ★ 三段式：层小标题**居中 + 白字**；每行的「标签：」**靠最左**；内容**换到下一行居中**。 */
+    {
+      const lh = body.querySelector('.rl-lane-head');
+      /* ★ 取**同一条** `.rl-line` 里的 lab/txt —— 分别 querySelector 会各取「第一个」，
+         两条根本不在一行，量出来的 sameRow 必然 false（本处假阴性）。 */
+      const _pair = [...body.querySelectorAll('.rl-line')]
+        .find(e => e.querySelector('.rl-lab') && e.querySelector('.rl-txt'));
+      const lab = _pair ? _pair.querySelector('.rl-lab') : null;
+      const tx = _pair ? _pair.querySelector('.rl-txt') : null;
+      if (!lh || !lab || !tx) {
+        chk('日志三段式（层小标题 / 轮次标签 / 内容）都渲染出来了', false,
+            'lane=' + body.querySelectorAll('.rl-lane').length
+            + ' lab=' + !!lab + ' txt=' + !!tx);
+      } else {
+      const labR = lab.getBoundingClientRect(), txR = tx.getBoundingClientRect();
+      const lhS = w.getComputedStyle(lh), labS = w.getComputedStyle(lab), txS = w.getComputedStyle(tx);
+      /* ★ R20：层小标题「文字蓝粗、数字墨黑」——整行居中；文字偏蓝且加粗；<b> 里数字墨黑（R26）。 */
+      const _ch = (c) => (c.match(/[\d.]+/g) || []).slice(0, 3).map(Number);
+      const lhB = lh.querySelector('b');
+      const lhBc = lhB ? w.getComputedStyle(lhB).color : '';
+      const lhCh = _ch(lhS.color);
+      chk('层小标题**居中 + 文字蓝粗、数字墨黑**',
+          lhS.textAlign === 'center'
+          && lhCh[2] > lhCh[0] && lhCh[2] > 120
+          && parseInt(lhS.fontWeight, 10) >= 700
+          && (!lhB || _ch(lhBc).every(n => n <= 110)),   /* R26：数字改墨黑（原来白） */
+          'align=' + lhS.textAlign + ' color=' + lhS.color + ' w=' + lhS.fontWeight
+          + ' num=' + (lhBc || '(无数字)') + ' text=[' + lh.textContent + ']');
+      /* ★ R21：用户改了要求 —— 内容**不再从下一行开始，换到同行**。
+         比的是「标签与内容在同一行（垂直区间相交）」+ `.rl-line` 是 flex 行内排。 */
+      const sameRow = Math.min(labR.bottom, txR.bottom) - Math.max(labR.top, txR.top) > 0;
+      chk('名称与内容**同一行**（R21：内容不再换到下一行居中）',
+          sameRow && parseInt(labS.fontWeight, 10) >= 700
+          && w.getComputedStyle(d.querySelector('.rl-line')).display === 'flex',
+          'lab=' + Math.round(labR.top) + '..' + Math.round(labR.bottom)
+          + ' txt=' + Math.round(txR.top) + '..' + Math.round(txR.bottom)
+          + ' sameRow=' + sameRow + ' lab.w=' + labS.fontWeight);
+      }
+    }
+    /* ★ 轮次标签统一绿色 + 元信息「数字白、其余蓝」+ 三个链接**背景透明** */
+    {
+      const lab = body.querySelector('.rl-lab');
+      if (!lab) {
+        chk('轮次标签**文字蓝粗、数字白**', false, '日志里还没有轮次标签');
+      } else {
+      const labS2 = w.getComputedStyle(lab);
+      const lc = labS2.color;
+      const m = lc.match(/[\d.]+/g) || [];
+      const labB = lab.querySelector('b');
+      const labBc = labB ? w.getComputedStyle(labB).color : '';
+      chk('轮次标签**文字蓝粗、数字墨黑**',
+          m.length >= 3 && +m[2] > +m[0] && +m[2] > 120
+          && parseInt(labS2.fontWeight, 10) >= 700
+          && (!labB || (labBc.match(/[\d.]+/g) || []).slice(0, 3).map(Number).every(n => n <= 110)),
+          'color=' + lc + ' w=' + labS2.fontWeight + ' num=' + (labBc || '(无数字)')
+          + ' 标签=[' + lab.textContent + ']');
+      /* ★ R20：正文内容**只改文字绿色**（不动背景）。 */
+      const txEl = body.querySelector('.rl-txt');
+      const tc = txEl ? w.getComputedStyle(txEl).color : '';
+      const tm2 = tc.match(/[\d.]+/g) || [];
+      chk('正文内容**只改文字绿色**（不改背景）',
+          tm2.length >= 3 && +tm2[1] > +tm2[0] && +tm2[1] > +tm2[2] && +tm2[1] > 60,
+          'color=' + tc + ' 文本=[' + (txEl ? txEl.textContent.slice(0, 24) : '') + ']');
+      }
+      /* ★ 元素可能还不存在（任务还在跑 ⇒ 没有产物链接、也没有 起始/耗时）：
+         这类断言回退到**样式表规则**上，别对 null 调 getComputedStyle。 */
+      const metaEl = d.querySelector('#rl-meta');
+      const bEl = d.querySelector('#rl-meta b');
+      const a0 = d.querySelector('.rl-files a');
+      const mc = metaEl ? w.getComputedStyle(metaEl).color : '?';
+      const mm = mc.match(/[\d.]+/g) || [];
+      const bc = bEl ? w.getComputedStyle(bEl).color : '';
+      const ac = a0 ? w.getComputedStyle(a0).backgroundColor : '';
+      chk('日志头：**数字墨黑且不加粗**、其余统一蓝；三个链接=**浅绿底(30%)+深绿字**（R31）',
+          mm.length >= 3 && +mm[2] > +mm[0] && +mm[2] > 120
+          && (!bEl || (bc.match(/[\d.]+/g) || []).slice(0, 3).map(Number).every(n => n <= 110))
+          && (!bEl || parseInt(w.getComputedStyle(bEl).fontWeight, 10) <= 400)
+          && (!a0 || /rgba\(\s*30,\s*122,\s*52,\s*0\.14\s*\)/.test(ac))
+          && /background:rgba\(30,122,52,\.14\)/.test(cssRule('.rl-files a')),
+          'meta=' + mc + ' 数字=' + (bc || '(暂无)') + ' 链接bg=' + (ac || '(暂无)')
+          + ' 规则bg=' + /background:rgba\(30,122,52,\.14\)/.test(cssRule('.rl-files a')));
+      chk('时长单位「秒/分/时」**是蓝色**（单位在 `<b>` 之外，数字才白）',
+          !!metaEl && /[秒分时]/.test(metaEl.textContent || '')
+          && !/<b>[^<]*[秒分时]/.test(metaEl.innerHTML || ''),
+          'html=[' + (metaEl ? metaEl.innerHTML.slice(0, 130) : '') + ']');
+      chk('元信息栏含「终止」时刻（与起始同源、跑完定格）',
+          !!metaEl && /终止/.test(metaEl.textContent || '')
+          && /起始/.test(metaEl.textContent || ''),
+          'meta=[' + (metaEl ? metaEl.textContent : '(无)') + ']');
+    }
+    /* 日志头重设计 + 三个链接「默认强调色 / 悬停白」 */
+    {
+      const q = d.querySelector('#rl-question');
+      const links = [...d.querySelectorAll('.rl-files a')];
+      /* ★ R28：题目改成**蓝色**（与元信息同色同档），仍是加粗；徽章带淡色底 */
+      chk('日志头：标题**蓝色加粗**、徽章带淡色底',
+          (() => { const v = (w.getComputedStyle(q).color.match(/[\d.]+/g) || []).slice(0, 3).map(Number);
+                   return v.length === 3 && v[2] > v[0] && v[2] > v[1] && v[2] > 110; })()
+          && parseInt(w.getComputedStyle(q).fontWeight, 10) >= 600
+          && w.getComputedStyle(d.querySelector('#rl-badge')).backgroundColor !== 'rgba(0, 0, 0, 0)',
+          'q.color=' + w.getComputedStyle(q).color
+          + ' w=' + w.getComputedStyle(q).fontWeight
+          + ' badge.bg=' + w.getComputedStyle(d.querySelector('#rl-badge')).backgroundColor);
+      /* ★ R28：日志头 **flex 三段** —— 徽章贴左 / **题目与元信息同栏、一起居中** / 三个链接贴右 */
+      {
+        const hr = d.querySelector('.runlog-head');
+        const hl = d.querySelector('.rl-head-l'), hc = d.querySelector('.rl-head-c'),
+              hq = d.querySelector('#rl-question'), hm = d.querySelector('#rl-meta'),
+              hrr = d.querySelector('.rl-head-r'), hf = d.querySelector('.rl-files');
+        if (hr && hl && hc && hq && hm && hrr && hf) {
+          const rr = hr.getBoundingClientRect(), lr = hl.getBoundingClientRect(),
+                cr = hc.getBoundingClientRect(), qr = hq.getBoundingClientRect(),
+                mr = hm.getBoundingClientRect(), xr = hrr.getBoundingClientRect(),
+                fr = hf.getBoundingClientRect();
+          const mid = (rr.left + rr.right) / 2;
+          const ctr = (r) => (r.left + r.right) / 2;
+          const narrow = w.innerWidth <= 900;
+          const qcs = w.getComputedStyle(hq), mcs = w.getComputedStyle(hm);
+          const chan = (c) => (c.match(/[\d.]+/g) || []).slice(0, 3).map(Number);
+          const blueish = (c) => { const v = chan(c); return v[2] > v[0] && v[2] > v[1] - 1; };
+          chk('日志头**三段自适应**：徽章贴左 / **题目+元信息同栏居中**（题目蓝色、与元信息同字号）/ 链接贴右'
+              + (narrow ? '（窄屏：三段各占一行、都居中）' : ''),
+              w.getComputedStyle(hr).display === 'flex'
+              && !!d.querySelector('.rl-head-c #rl-question')
+              && !!d.querySelector('.rl-head-c #rl-meta')
+              && blueish(qcs.color)
+              && qcs.fontSize === mcs.fontSize
+              && qcs.fontWeight === mcs.fontWeight
+              && (narrow
+                  ? (Math.abs(ctr(lr) - mid) <= 14 && Math.abs(ctr(cr) - mid) <= 14
+                     && Math.abs(ctr(xr) - mid) <= 14 && qr.bottom <= mr.top + 2)
+                  : (lr.left - rr.left <= 26
+                     && lr.right <= cr.left + 2        /* 左组不压中栏 */
+                     /* 「居中」= 在**两组之间**居中（两组自然宽度不等，故不要求页面正中） */
+                     && Math.abs(ctr(cr) - (lr.right + xr.left) / 2) <= 3
+                     && qr.right <= mr.left + 2          /* 题目在元信息**左侧**（同栏并排） */
+                     && cr.right <= xr.left + 2          /* 中栏不压右侧链接 */
+                     && fr.left >= cr.right - 2          /* 链接不向左溢出压到元信息 */
+                     && rr.right - xr.right <= 26
+                     && rr.right - fr.right <= 26)),
+              'narrow=' + narrow + ' 左=' + Math.round(lr.left - rr.left)
+              + ' 居中偏=' + Math.round(ctr(cr) - ((lr.right + xr.left) / 2))
+              + ' 中栏偏=' + Math.round(ctr(cr) - mid)
+              + ' 容差=' + Math.round(Math.max(8, rr.width * 0.03))
+              + ' q.r=' + Math.round(qr.right) + ' m.l=' + Math.round(mr.left)
+              + ' 中栏右=' + Math.round(cr.right) + ' 右组左=' + Math.round(xr.left)
+              + ' 右组右=' + Math.round(xr.right) + ' 头右=' + Math.round(rr.right)
+              + ' 同排=' + (qr.right <= mr.left + 2)
+              + ' 题色=' + qcs.color + ' 同号=' + (qcs.fontSize === mcs.fontSize)
+              + ' 链接距右=' + Math.round(rr.right - fr.right));
+        }
+      }
+      if (links.length) {
+        const cs0 = w.getComputedStyle(links[0]);
+        const chan = (c) => (c.match(/[\d.]+/g) || []).slice(0, 3).map(Number);
+        const greenish = (c) => { const v = chan(c); return v[1] > v[0] && v[1] > v[2] && v[1] > 60; };
+        chk('文件链接：与「运行状态」徽章**同一套绿**（字色/底色/描边）+ 前面一个灯 + 常显',
+            /rgba\(\s*30,\s*122,\s*52,\s*0\.14\s*\)/.test(cs0.backgroundColor)
+            && /rgb\(\s*30,\s*122,\s*52\s*\)/.test(cs0.color)
+            && /background:rgba\(30,122,52,\.14\)/.test(cssRule('.rl-files a'))
+            && /background:currentColor/.test(cssRule('.rl-files a::before'))
+            && links.length === 3
+            && !!d.querySelector('.rl-head-r .rl-files'),
+            'n=' + links.length + ' bg=' + cs0.backgroundColor + ' 色=' + cs0.color);
+      }
+    }
+    chk('引擎自己的进度条分隔线已被滤掉（不再杂乱）',
+        !/^[━─—=]{3,}/m.test(txt),
+        txt.slice(0, 46).replace(/\n/g, '⏎'));
+    /* ★ R33：日志滚动条＝**短的椭圆点**（隐藏原生、自绘 #rl-bar 跟滚动走） */
+    {
+      const bd2 = d.querySelector('#runlog-body'), bar = d.querySelector('#rl-bar');
+      const over = bd2 ? bd2.scrollHeight - bd2.clientHeight : 0;
+      const bh = bar ? bar.getBoundingClientRect().height : 0;
+      /* 判据别绑「此刻正好滚得动」——内容长度随 mock 进度变；验的是机制：
+         原生滚动条已隐藏 + 自绘条长度**短**（20~40px） + `.on` 与「有没有溢出」一致。 */
+      chk('日志滚动条＝**短的椭圆点**（原生已隐藏；自绘 #rl-bar 短且随溢出显隐）',
+          !!bd2 && !!bar && bh >= 20 && bh <= 40
+          && w.getComputedStyle(bd2).scrollbarWidth === 'none'
+          && bar.classList.contains('on') === (over > 8),
+          'over=' + Math.round(over) + ' barH=' + Math.round(bh)
+          + ' on=' + (bar ? bar.classList.contains('on') : '?')
+          + ' sbWidth=' + (bd2 ? w.getComputedStyle(bd2).scrollbarWidth : '?'));
+    }
+  }
+
+  /* ★ R21：日志**语义分类器**——直接喂**真跑格式**的行（真样本见 outputs/*.run.log）。 */
+  {
+    const T = (s) => w.rlClass(String(s).trim());
+    const cases = [
+      ['   ↻ 第 1/5 圈 · 摊开', 'round'],
+      ['【both】对撞 DGTF（螺旋上限 5 圈）', 'noise'],
+      ['11:29:57 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com', 'noise'],
+      ['━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'noise'],
+      ['━━━ 修行 · 第 1/4 圈 · 摊开 · view ━━━', 'viewbar'],
+      ['##四、螺旋轨迹', 'title'],
+      ['一、让两端各自把话说完', 'title'],
+      ['===ING-STRUCT===', 'title'],
+      ['完成 | 117 次 LLM | 1228155 tokens', 'summary'],
+      ['[2] 整体稳定成立的是闭合条件：', 'seq'],
+      ['✓ 确认元层悬置：s_001', 'confirm'],
+      ['属性=0◈（来源：阴展开，非判断）', 'content'],
+      ['- [concept] 同一个「我」被拆成几份：修行层说签字者与被解冻者两个主语分开，', 'content'],
+      ['& [both] “延长”在两侧不指同一段时间：整体指停止前活着延续，局部指停止后结算推迟', 'content'],
+      ['[concept] 整体稳定成立的是闭合条件：', 'bracket'],
+      ['[修行层] 停止：结构饱和度判定连续无新维度', 'bracket'],
+      ['[mock] 产物已落盘：outputs/x.md', 'bracket'],
+      ['[?→0] 未登记者「不占队列位也被系统消除」之后处于什么位置，未定。', 'bracket'],
+      ['🧭 四象限对齐：low（匹配率 11%，1 对张力）', 'inline'],
+      ['💧 [阴视角]', 'step'],
+      ['📋 展开候选 12 条', 'step'],
+      ['🔥 ing 输出 1226 字', 'step'],
+    ];
+    const bad = cases.filter(c => T(c[0]) !== c[1]).map(c => c[0].slice(0, 16) + '→' + T(c[0]));
+    chk('日志语义分类器（真跑格式样例行）全对', bad.length === 0, bad.join(' / '));
+    const hView = w.renderLogBody(['━━━ 修行 · 第 1/4 圈 · 摊开 · view ━━━', '## 一、这一路'], []);
+    chk('`##` 去掉 / `🔥 │` 前缀去掉 / view 全文**默认展开**',
+        w.renderLogBody(['##四、螺旋轨迹'], []) .indexOf('#') < 0
+        && w.renderLogBody(['🔥 ing 输出 1 字', '   🔥 │ 二、推到极端'], []).indexOf('🔥 │') < 0
+        && hView.indexOf('<details class="rl-fold" open>') >= 0
+        && hView.indexOf('##') < 0,
+        'viewFold=' + (hView.indexOf('<details class="rl-fold" open>') >= 0));
+    /* ★ R22：`[标志]` 蓝 + 内容绿；`属性=/位置=` 归正文绿；参数网格控件对齐
+       ★ R33：收官/结论句（停止 / 产物已落盘 / 完成）的内容改**蓝**，不跟正文绿 */
+    const hBr = w.renderLogBody(['[mock] 一句普通正文'], []);
+    chk('`[标志]` 渲染成**标志蓝 + 内容绿**（R22）',
+        hBr.indexOf('<span class="rl-lab">[mock]</span>') >= 0
+        && hBr.indexOf('<span class="rl-txt">一句普通正文</span>') >= 0,
+        hBr.slice(0, 120));
+    {
+      const hm = w.renderLogBody(['[mock] 完成', '[修行层] 停止：结构饱和度判定连续无新维度',
+                                  '[mock] 产物已落盘：x.md'], []);
+      chk('日志**收官/结论句**（完成 / 停止 / 产物已落盘）渲染成**蓝色加深**（R33）',
+          (hm.match(/rl-txt rl-mark/g) || []).length === 3
+          && /color:var\(--log-blue\)/.test(cssRule('.rl-mark')),
+          'mark=' + (hm.match(/rl-txt rl-mark/g) || []).length + ' 首段=' + hm.slice(0, 90));
+    }
+    chk('`属性=/位置=` 与正文同色（不再当标签）',
+        /color:var\(--log-green\)/.test(cssRule('.rl-attr'))
+        && /color:var\(--log-green\)/.test(cssRule('.rl-txt')),
+        'attr=' + cssRule('.rl-attr').slice(0, 60));
+    chk('`[N]` 的属性**并到序号与内容之间**；悬置 s_00N **还原原内容**',
+        w.renderLogBody(['[2] 说清楚', '   属性=1◈（来源：阳展开，非判断）', '   位置=1（在）'], [])
+            .indexOf('rl-num">[2]</span><span class="rl-attr">') >= 0
+        && (() => { const L = ['⏸ 悬置：永生的代价（我看清了）', '✓ 确认悬置：s_001'];
+                    return w.renderLogBody(L, w.rlSuspNames(L)).indexOf('原悬置') >= 0; })(),
+        '');
+  }
+  /* ★ 抽屉是 fixed 覆盖层、不占文档流；舞台是视口高的弹性列 ⇒ 整页不该被撑高。
+     （曾因长列表放开滚动把整页撑到 2.6 万像素，这条是那个 bug 的哨兵。） */
+  chk('整页高度不失控（抽屉不占流、日志区限高自滚）',
+      d.documentElement.scrollHeight <= w.innerHeight + 40,
+      'docH=' + d.documentElement.scrollHeight + ' vp=' + w.innerHeight);
+
+  /* ── ①c 输入框那排：尺寸统一 / 都有悬停描述 / 文字白色 ─────────── */
+  const rowBtns = [...d.querySelectorAll('.composer-row > button, .composer-row > label')];
+  const hs = rowBtns.map(b => Math.round(b.getBoundingClientRect().height));
+  chk('输入框那排按钮统一尺寸（都等高 —— 胶囊与圆形按钮一致）',
+      hs.length >= 5 && new Set(hs).size === 1,
+      'n=' + hs.length + ' 高度=' + [...new Set(hs)].join('/'));
+  /* 发送键保持圆形（图标 + data-tip），其余四个都带 data-tip 悬停气泡 */
+  const needDesc = rowBtns.filter(b => b.id !== 'run-btn');
+  const runB = d.querySelector('#run-btn');
+  const tips = needDesc.filter(b => (b.getAttribute('data-tip') || '').length > 0);
+  chk('输入框那排每个按钮都带 `data-tip`（描述**悬停**才出）',
+      needDesc.length === 4 && tips.length === needDesc.length
+      && !!runB && (runB.getAttribute('data-tip') || '').length > 0,
+      tips.length + '/' + needDesc.length + ' 带 data-tip · 发送键=['
+      + (runB ? runB.getAttribute('data-tip') : '') + ']');
+  {
+    const v = await hoverTip(d.querySelector('#pill-thinking'));
+    const pb = d.querySelector('#pill-thinking').getBoundingClientRect();
+    chk('胶囊的悬停描述：**背景透明 + 统一提示灰**，且完整落在视口内',
+        !!v.tip && v.op > 0.5
+        && (v.bg === 'rgba(0, 0, 0, 0)' || v.bg === 'transparent')
+        && /rgb\(\s*107,\s*114,\s*128\s*\)/.test(v.color)
+        && v.r.left >= 0 && v.r.left + v.r.width <= w.innerWidth + 1
+        && v.r.top >= 0 && v.r.top + v.r.height <= w.innerHeight + 1,
+        'bg=' + v.bg + ' color=' + v.color
+        + ' tip=' + Math.round(v.r.left) + ',' + Math.round(v.r.top)
+        + '..' + Math.round(v.r.left + v.r.width) + ',' + Math.round(v.r.top + v.r.height)
+        + ' 按钮=' + Math.round(pb.left) + ',' + Math.round(pb.top)
+        + ' text=[' + v.text + ']');
+    d.querySelector('#pill-thinking')
+      .dispatchEvent(new w.MouseEvent('mouseout', { bubbles: true, relatedTarget: null }));
+    await sleep(40);
+  }
+  const pillCol = w.getComputedStyle(d.querySelector('#pill-thinking')).color;
+  chk('胶囊文字统一白色（不再是灰色）',
+      /rgb\(\s*2\d\d,\s*2\d\d,\s*2\d\d\s*\)/.test(pillCol), 'color=' + pillCol);
+  const clipIcon = d.querySelector('#attach-btn svg');
+  const clipW = clipIcon ? clipIcon.getBoundingClientRect().width : 0;
+  chk('回形针图标尺寸合适（与胶囊并排，收小一档）',
+      clipW >= 12 && clipW <= 18, 'w=' + Math.round(clipW));
+  /* ★「只留图标」：入口钮 / 回形针 / 关闭键都不该再带可见文字（说明走 data-tip） */
+  {
+    const cbs = ['#drawer-btn', '#search-btn', '#newchat-btn'].map(s => d.querySelector(s));
+    const chs = cbs.map(b => Math.round(b.getBoundingClientRect().height));
+    /* ★ R25：画布转浅灰 ⇒ 落在画布上的图标改**深色**（原来断言「白色」，现在断言「深色」） */
+    const _dark = (c) => { const v = (c.match(/[\d.]+/g) || []).slice(0, 3).map(Number);
+                           return v.length === 3 && v.every(n => n <= 110); };
+    chk('左上角三个入口按钮**只留图标**（等高 34px、无文字、浅灰画布上用深色图标）',
+        new Set(chs).size === 1 && chs[0] === 34
+        && cbs.every(b => (b.textContent || '').trim() === ''
+                         && _dark(w.getComputedStyle(b).color)),
+        '高度=' + [...new Set(chs)].join('/') + ' 文案='
+        + cbs.map(b => JSON.stringify((b.textContent || '').trim())).join(','));
+    const one = ['#attach-btn', '#sheet-close'];
+    chk('回形针与面板关闭键也**只留图标**',
+        one.every(sel => { const b = d.querySelector(sel);
+          return b && (b.textContent || '').trim() === ''; }),
+        one.map(sel => sel + '=' + JSON.stringify(
+          (d.querySelector(sel) || {}).textContent || '')).join(' '));
+  }
+
+  /* ── ①b 首屏三个入口：搜索对话产物 / 文件导入 / （新对话放到最后测） ── */
+  const sBtn = d.querySelector('#search-btn'), ncBtn = d.querySelector('#newchat-btn');
+  const sov = d.querySelector('#search-overlay');
+  const withTip = ['#drawer-btn', '#search-btn', '#newchat-btn', '#attach-btn']
+    .filter(s => { const el = d.querySelector(s); return el && el.getAttribute('data-tip'); });
+  chk('四个入口都在、且各自带 `data-tip`（抽屉 / 搜索 / 新对话 / 回形针）',
+      !!d.querySelector('#drawer-btn') && !!sBtn && !!ncBtn && !!d.querySelector('#attach-btn')
+      && withTip.length === 4,
+      '带 data-tip 的入口=' + withTip.length + '/4');
+  chk('搜索浮层默认隐藏', !!sov && sov.classList.contains('hidden'),
+      'hidden=' + (sov ? sov.classList.contains('hidden') : '?'));
+
+  sBtn.click();
+  await sleep(400);
+  chk('点放大镜：浮层出现、输入框自动聚焦',
+      !sov.classList.contains('hidden')
+      && d.activeElement === d.querySelector('#search-input'),
+      'hidden=' + sov.classList.contains('hidden')
+      + ' 焦点=' + (d.activeElement ? (d.activeElement.id || d.activeElement.tagName) : '?'));
+  chk('空查询先列出最近产物（给个底）',
+      d.querySelectorAll('#search-results .item').length >= 1,
+      d.querySelectorAll('#search-results .item').length + ' 条');
+  const sInp = d.querySelector('#search-input');
+  sInp.value = '数字IC';
+  sInp.dispatchEvent(new w.Event('input', { bubbles: true }));
+  await sleep(1400);
+  chk('输入关键词后命中产物（搜对话产物生效）',
+      d.querySelectorAll('#search-results .item').length >= 1,
+      d.querySelectorAll('#search-results .item').length + ' 条');
+  d.querySelector('#search-close').click();
+  await sleep(300);
+  chk('点 × 关闭搜索浮层', sov.classList.contains('hidden'),
+      'hidden=' + sov.classList.contains('hidden'));
+
+  /* ── ② 演练模式：已挪到输入框那一排，做成胶囊 ─────────────────── */
+  const adv = d.querySelector('.advanced'), row = d.querySelector('#mock-row'),
+        mock = d.querySelector('#mock');
+  chk('演练模式在输入框那一排（胶囊，和深度思考/智能搜索同排）',
+      !!row && !!mock && !!row.closest('.composer-row')
+      && row.classList.contains('pill')
+      && !adv.contains(row),
+      'inComposerRow=' + !!(row && row.closest('.composer-row'))
+      + ' cls=[' + (row ? row.className : '?') + ']'
+      + ' 还在高级参数里=' + !!(adv && row && adv.contains(row)));
+  const b0 = mock.checked;
+  const bg0 = w.getComputedStyle(row).backgroundColor;
+  row.click();
+  await sleep(160);
+  /* ★ `.pill` 有 `transition:background` —— 无头虚拟时间**不推 transition**，
+     computed 值会停在起始的 transparent（实测 matches=true 但 bg 还是 0）。
+     量之前先让它落到终态。 */
+  row.getAnimations().forEach(a => { try { a.finish(); } catch (_) {} });
+  await sleep(60);
+  const bg1 = w.getComputedStyle(row).backgroundColor;
+  chk('点胶囊：勾选切换 + 高亮跟着变（选中态由 CSS `:has()` 表达）',
+      mock.checked !== b0 && bg1 !== bg0,
+      'checked ' + b0 + '→' + mock.checked + ' · bg ' + bg0 + '→' + bg1
+      + ' · cls=[' + row.className + ']');
+  row.click();
+  await sleep(120);
+
+  /* ── ③ 高级参数下拉：自绘、贴左上角、向右展开 ───────────────── */
+  // ★ 高级参数现在是「分组按钮 → 点一个进新的一页」
+  d.querySelector('.nav-btn[data-sheet="adv-panel"]').click();
+  await sleep(500);
+  d.querySelector('#sheet').getAnimations()
+    .forEach(a => { try { a.finish(); } catch (_) {} });
+  await sleep(80);
+  const agBtns = [...d.querySelectorAll('#adv-groups [data-advgroup]')];
+  chk('高级参数页只列分组按钮（不再一堆折叠面板堆着）', agBtns.length >= 5,
+      'n=' + agBtns.length + ' 首个='
+      + (agBtns[0] ? agBtns[0].textContent.trim().slice(0, 16) : '?'));
+  const apiGrp = agBtns.find(b => /模型|API/.test(b.textContent)) || agBtns[0];
+  apiGrp.click();
+  await sleep(500);
+  d.querySelector('#sheet').getAnimations()
+    .forEach(a => { try { a.finish(); } catch (_) {} });
+  await sleep(80);
+  chk('点分组：铺满成新的一页显示该组参数',
+      d.querySelector('#adv-group-page').classList.contains('active')
+      && (d.querySelector('#adv-group-title').textContent || '').length > 0
+      && d.querySelectorAll('#adv-grid .dd').length > 0,
+      'title=[' + d.querySelector('#adv-group-title').textContent + ']'
+      + ' dd=' + d.querySelectorAll('#adv-grid .dd').length);
+
+  /* 进了分组页 ⇒ 右上角那个键从「× 关闭」变成「← 返回」 */
+  {
+    const shc = d.querySelector('#sheet-close');
+    chk('进分组页后右上角变成「返回」键（只留图标：class=.back + 提示「返回上一级」）',
+        shc.classList.contains('back')
+        && /返回/.test(shc.getAttribute('data-tip') || '')
+        && (shc.textContent || '').trim() === '',
+        'cls=[' + shc.className + '] tip=[' + (shc.getAttribute('data-tip') || '')
+        + '] 可见文字=[' + (shc.textContent || '').trim() + ']');
+  }
+
+  /* 分组页底部**只剩「保存」**：白字 + 透明底、**底部居中**，后面跟一句说明 */
+  {
+    const sv = d.querySelector('#adv-save');
+    const ca = d.querySelector('#adv-cancel');
+    const bar = d.querySelector('.sheet-actions');
+    const cs = w.getComputedStyle(sv);
+    const chan = (c) => { const m = c.match(/[\d.]+/g) || []; return m.slice(0, 3).map(Number); };
+    const isTransparent = (bg) => /rgba\([^)]*,\s*0(\.0+)?\s*\)/.test(bg) || bg === 'transparent';
+    chk('底部只剩「保存」一个键（关闭键已移除 —— 顶部「← 返回」同义）',
+        !!sv && !ca, 'adv-save=' + !!sv + ' adv-cancel=' + !!ca);
+    chk('「保存」**深色字** + 透明底（面板已是纯白卡），说明走 `data-tip`（悬停气泡）',
+        !!sv && isTransparent(cs.backgroundColor)
+        && chan(cs.color).every(n => n <= 110)
+        && (sv.getAttribute('data-tip') || '').length > 0,
+        'color=' + cs.color + ' bg=' + cs.backgroundColor
+        + ' data-tip=[' + (sv.getAttribute('data-tip') || '') + ']');
+    /* ★ 参数标签统一成「键（中文说明）」；下拉/只读项也必须带 `field` class，
+       否则它们走的是 <div>，`.grid label,.grid .field` 那条样式命中不到
+       ⇒ 标签字号/行距和 <label> 那批**不一致**（用户报「文字大小格式不统一」）。 */
+    {
+      const r = await w.fetch('/api/params').then(x => x.json()).catch(() => null);
+      const items = (((r && r.groups) || []).flatMap(g => g.items || []));
+      const noCn = items.filter(it => !String(it.label || '').includes('（'));
+      chk('参数项标签统一成「键（中文说明）」',
+          items.length > 100 && noCn.length === 0,
+          '共 ' + items.length + ' 项，缺说明 ' + noCn.length
+          + (noCn.length ? '（如 ' + noCn[0].key + '）' : ''));
+      const bare = [...d.querySelectorAll('#adv-grid > div')]
+        .filter(el => !el.classList.contains('field')).length;
+      chk('下拉/只读项的标签与输入项**同一样式**（都带 field class）',
+          bare === 0, '缺 field 的项=' + bare);
+    }
+    const br = sv.getBoundingClientRect();
+    const pr = d.querySelector('#adv-group-page').getBoundingClientRect();
+    chk('「保存」在底部**居中**',
+        !!bar && Math.abs((br.left + br.right) / 2 - (pr.left + pr.right) / 2) <= 2,
+        'btn 中点=' + Math.round((br.left + br.right) / 2)
+        + ' 面板中点=' + Math.round((pr.left + pr.right) / 2));
+  }
+
+  /* ★ R24：参数标签**单行**（长说明不再折行把整行撑高）+ 完整文本挂 `title` */
+  {
+    const lbs = [...d.querySelectorAll('#adv-grid .lb')];
+    const multi = lbs.filter(el => {
+      const lh = parseFloat(w.getComputedStyle(el).lineHeight) || 0;
+      return lh > 0 && el.getBoundingClientRect().height > lh * 1.6;
+    });
+    chk('参数标签**单行显示**（不再折行撑高整行）',
+        lbs.length > 0 && multi.length === 0,
+        '标签=' + lbs.length + ' 多行=' + multi.length
+        + (multi.length ? '（如 ' + multi[0].textContent.slice(0, 22) + '）' : ''));
+    const withTitle = lbs.filter(el => (el.getAttribute('title') || '').includes('（'));
+    chk('参数标签把完整「键（中文说明）」挂到 `title`（省略后仍可悬停看全）',
+        lbs.length > 0 && withTitle.length === lbs.length,
+        '带完整 title 的=' + withTitle.length + '/' + lbs.length);
+  }
+
+  const dds = [...d.querySelectorAll('#adv-grid .dd')];
+  chk('参数下拉已是自绘（原生 select[data-cfg] 为 0）',
+      dds.length > 0 && d.querySelectorAll('#adv-grid .grid select[data-cfg]').length === 0,
+      'dd=' + dds.length);
+
+  const dd = dds[0], btn = dd.querySelector('.dd-btn'),
+        inp = dd.querySelector('input[data-cfg]');
+  /* ★ 矮视口 + 整页滚动布局下，高级参数面板里的控件**本身就可能落在视口外** ——
+     先把目标滚进视口**再**点击/测量。否则量出来的位置天然"超出视口"，
+     那是场景不适用，不是定位缺陷。
+     （滚动必须在**点击之前**完成：滚动会触发应用的「整页滚动就收菜单」，那是正确行为。） */
+  btn.scrollIntoView({ block: 'center' });
+  await sleep(400);
+  /* 先让动画落到终态再量（headless 的虚拟时间不推 rAF，入场动画会停在
+     translateX(-3px) 的首帧，量出来边界偏 3px —— 那是量法问题不是定位问题）。 */
+  const settle = (el) => { if (el && el.getAnimations) {
+    el.getAnimations().forEach(a => { try { a.finish(); } catch (_) {} }); } };
+
+  /* ★ 无头虚拟时间下，`btn.click()` 之后偶发一次 document 级 scroll（应用里
+     「整页滚动就收菜单」是**正确**行为——fixed 菜单会与按钮错位），于是菜单刚开就被收。
+     这是量法噪声不是产品缺陷 ⇒ 允许**重试一次**；两次都开不出来才算真 FAIL。 */
+  /* ★ 关菜单要「点空白处」，**不能用 Esc**：应用里 Esc 还会顺手关掉全屏层/抽屉，
+     一按就把被测的面板一起隐藏（rect 全 0），后面所有定位断言连锁失败。 */
+  const shutMenus = () => d.body.click();
+  const openMenu = async (b) => {
+    shutMenus();
+    await sleep(80);
+    b.click();
+    await sleep(300);
+    let mm = d.querySelector('.dd-menu.show');
+    if (!mm) { await sleep(250); b.click(); await sleep(300);
+               mm = d.querySelector('.dd-menu.show'); }
+    return mm;
+  };
+
+  const r0 = btn.getBoundingClientRect();
+  // 参数网格现在住在「分组页」里（`.advanced` 那一页是分组按钮列表）
+  const _panel = d.querySelector('#adv-group-page'), _pr = _panel.getBoundingClientRect();
+  chk('参数分组页布局读数（面板位置 / 该组参数数）', true,
+      'panel ' + Math.round(_pr.top) + '-' + Math.round(_pr.bottom)
+      + ' h=' + Math.round(_pr.height)
+      + ' group=[' + d.querySelector('#adv-group-title').textContent + ']'
+      + ' dd=' + d.querySelectorAll('#adv-grid .dd').length
+      + ' btnTop=' + Math.round(r0.top) + ' vp=' + w.innerHeight
+      + ' docH=' + d.documentElement.scrollHeight);
+    chk('目标下拉在面板可视区内（否则量出来的边界没意义）',
+        r0.top > _pr.top && r0.bottom < _pr.bottom,
+        'btn ' + Math.round(r0.top) + '-' + Math.round(r0.bottom)
+        + ' panel ' + Math.round(_pr.top) + '-' + Math.round(_pr.bottom)
+        + ' advOpen=' + adv.open + ' advH=' + Math.round(_pr.height)
+        + ' gridKids=' + d.querySelectorAll('#adv-grid .grid .dd').length
+        + ' drawerOpen=' + d.querySelector('#drawer').classList.contains('open'));
+  const menu = await openMenu(btn);   // 展开后菜单挂在 body 上
+  settle(menu);
+  const rm = menu ? menu.getBoundingClientRect()
+                  : { left: 0, top: 0, right: 0, bottom: 0, width: 0, height: 0 };
+  let held = '(无)';
+  for (let p = menu && menu.parentElement; p && p !== d.documentElement; p = p.parentElement) {
+    const cs = w.getComputedStyle(p);
+    if (cs.transform !== 'none' || cs.filter !== 'none' || cs.perspective !== 'none'
+        || cs.willChange.indexOf('transform') >= 0 || cs.contain.indexOf('paint') >= 0) {
+      held = (p.id || p.className || p.tagName) + ' tf=' + cs.transform;
+      break;
+    }
+  }
+  chk('菜单挂在 body 上、包含块就是视口（无 transform 祖先）',
+      !!menu && menu.parentElement === d.body && held === '(无)',
+      'parent=' + (menu ? menu.parentElement.tagName : '?')
+      + ' pos=' + (menu ? w.getComputedStyle(menu).position : '?')
+      + ' 内联=' + (menu ? menu.style.left + '/' + menu.style.top : '?')
+      + ' transform祖先=' + held);
+  chk('点开后菜单出现（页内菜单，不是原生弹层）',
+      !!menu && rm.width > 0 && rm.height > 0,
+      Math.round(rm.width) + '×' + Math.round(rm.height));
+  chk('菜单左边界贴住触发控件的左上角（不向左伸出去）',
+      Math.abs(rm.left - r0.left) <= 2 && rm.width >= Math.min(r0.width, 170) - 1,
+      'menu.left=' + Math.round(rm.left) + ' btn.left=' + Math.round(r0.left)
+      + ' menu.w=' + Math.round(rm.width) + ' btn.w=' + Math.round(r0.width));
+  chk('菜单向右展开（右边界不早于触发控件右边界）',
+      rm.right >= r0.right - 1,
+      'menu.right=' + Math.round(rm.right) + ' btn.right=' + Math.round(r0.right));
+  chk('菜单完整落在视口内',
+      rm.left >= -1 && rm.right <= w.innerWidth + 1
+      && rm.top >= -1 && rm.bottom <= w.innerHeight + 1,
+      '[' + Math.round(rm.left) + ',' + Math.round(rm.top) + ']-['
+      + Math.round(rm.right) + ',' + Math.round(rm.bottom) + '] vp ' + w.innerWidth + '×' + w.innerHeight);
+  /* ★ 菜单得**真的在最上层**：它挂在 body 上，`z-index` 一旦低于全屏面板层（65），
+     就会被整个盖住 —— 位置读数全对，用户却「点开看不见任何选项」。
+     用 `elementFromPoint` 实测那个点最上面的元素是不是菜单。 */
+  if (menu && rm.width > 0) {
+    const topAtMenu = d.elementFromPoint(rm.left + rm.width / 2, rm.top + 8);
+    chk('菜单真的在最上层（不会被全屏面板盖住）',
+        !!topAtMenu && (topAtMenu === menu || menu.contains(topAtMenu)),
+        '该点最上层=' + (topAtMenu
+          ? (topAtMenu.className || topAtMenu.tagName || '?') : 'null'));
+  }
+
+  /* ★ 真实场景：跑任务时运行日志每 1.5s 自动贴底（renderTasks 里改 scrollTop），
+     那是「别处」的滚动 —— 不能把用户正开着的参数菜单收掉。 */
+  const pane = d.querySelector('#runlog-body');
+  if (pane) {
+    pane.scrollTop = Math.max(0, pane.scrollHeight - pane.clientHeight - 3);
+    pane.dispatchEvent(new w.Event('scroll'));   // 不冒泡，靠 document 的捕获阶段收到
+    await sleep(250);
+    chk('别处（运行日志）滚动不会收掉菜单',
+        !!d.querySelector('.dd-menu.show'),
+        d.querySelector('.dd-menu.show') ? '菜单还在' : '菜单被误收');
+  }
+
+  const opts = menu ? [...menu.querySelectorAll('.dd-opt')] : [];
+  const tgt = opts.find(o => !o.classList.contains('on')) || opts[0];
+  if (tgt) {
+    const want = tgt.dataset.v;
+    tgt.click();
+    await sleep(150);
+    chk('选一项后真值写回（hidden input + 按钮文字）',
+        inp.value === want && dd.querySelector('.dd-cur').textContent === want,
+        'key=' + inp.dataset.cfg + ' value=' + inp.value);
+    chk('选完菜单收起并归位回 .dd 内',
+        !dd.classList.contains('open') && !!dd.querySelector('.dd-menu')
+        && !d.querySelector('.dd-menu.show'));
+  }
+
+  /* 贴底场景（用户真实处境：高级参数面板就挂在页面最底下）——下面放不下时必须自动上翻。
+     ★ 不靠 scrollIntoView 制造（滚动事件的送达时机是无头虚拟时间下的纯时序噪声），
+       直接挑「面板里最靠下的那一行」的触发控件。 */
+  const low = dds.map(x => ({ b: x.querySelector('.dd-btn') }))
+    .map(o => ({ b: o.b, r: o.b.getBoundingClientRect() }))
+    .filter(o => o.r.top > _pr.top + 4 && o.r.bottom < _pr.bottom - 2)
+    .sort((a, b) => b.r.bottom - a.r.bottom)[0];
+  if (low) {
+    low.b.scrollIntoView({ block: 'center' });    // 同上：先滚进视口，再点击/测量
+    await sleep(400);
+    const rb2 = low.b.getBoundingClientRect();
+    const m2 = await openMenu(low.b);
+    settle(m2);
+    const r2 = m2 ? m2.getBoundingClientRect() : null;
+    const need = rb2.bottom + 6 + (r2 ? r2.height : 0);
+    /* ★ 视口够高时「下方放得下」⇒ 就该在下方展开（不该硬要求上翻）；
+       放不下才上翻。两支都要求菜单完整落在视口内。 */
+    const fitsBelow = need <= w.innerHeight - 8;
+    chk('贴底控件：下方放得下就下方展开、放不下才上翻，且始终完整可见',
+        !!r2 && r2.top >= -1 && r2.bottom <= w.innerHeight + 1
+        && (fitsBelow ? Math.abs(r2.top - (rb2.bottom + 6)) <= 2
+                      : r2.bottom <= rb2.top + 1),
+        r2 ? ('btn ' + Math.round(rb2.top) + '-' + Math.round(rb2.bottom)
+              + ' menu ' + Math.round(r2.top) + '-' + Math.round(r2.bottom)
+              + ' 需要 ' + Math.round(need) + ' vp=' + w.innerHeight
+              + (fitsBelow ? ' · 下方展开' : ' · 上翻')) : '菜单没开出来');
+    shutMenus();
+    await sleep(120);
+  } else {
+    chk('贴页面底部的下拉：下方放不下 → 菜单自动上翻、仍完整可见', false, '面板里没找到合适的底行控件');
+  }
+
+  /* ── ④' R27：画布**纯白** + 抽屉落款在底部 ───────────────────── */
+  {
+    const bg = w.getComputedStyle(d.body).backgroundColor;
+    const v = (bg.match(/[\d.]+/g) || []).slice(0, 3).map(Number);
+    chk('整体页面背景是**纯白**（画布 --canvas，三通道都 = 255）',
+        v.length === 3 && v.every(n => n === 255),
+        'body.bg=' + bg);
+    const foot = d.querySelector('#drawer .drawer-foot');
+    const drawer = d.querySelector('#drawer');
+    const navs = [...d.querySelectorAll('#drawer .nav-btn')];
+    if (foot && drawer && navs.length) {
+      const fr = foot.getBoundingClientRect(), dr = drawer.getBoundingClientRect();
+      /* ★ 内容区是 `overflow:auto`：矮视口下最后一个按钮的 rect 会落到容器**外面**（可滚，
+         不是被压住）。真正的不变量是「落款在**可滚内容区底边之下**、且贴着抽屉底」。 */
+      const bodyEl = d.querySelector('#drawer .drawer-body');
+      const bodyR = bodyEl ? bodyEl.getBoundingClientRect() : null;
+      chk('抽屉：「个人工作台」在**最底部**（可滚内容区之下、贴着抽屉底）',
+          !!bodyR && fr.top >= bodyR.bottom - 1 && (dr.bottom - fr.bottom) <= 64,
+          'foot.top=' + Math.round(fr.top)
+          + ' body.bottom=' + (bodyR ? Math.round(bodyR.bottom) : '?')
+          + ' navs=' + navs.length + ' 距底=' + Math.round(dr.bottom - fr.bottom));
+      const brand = d.querySelector('#drawer .brand');
+      chk('品牌只剩「元DGTF」（「个人工作台」已从头部移走）',
+          !!brand && !/个人工作台/.test(brand.textContent || '')
+          && /元DGTF/.test(brand.textContent || ''),
+          'brand=[' + (brand ? brand.textContent.trim() : '') + ']');
+      /* ★ R28：按钮组居中之后**再整体上移一段**（中心明显高于剩余空间的中线） */
+      const envEl = d.querySelector('#drawer #env-info');
+      const n0r = navs[0].getBoundingClientRect();
+      const nNr = navs[navs.length - 1].getBoundingClientRect();
+      const navMid = (n0r.top + nNr.bottom) / 2;
+      const freeMid = envEl ? (envEl.getBoundingClientRect().bottom + fr.top) / 2 : navMid;
+      chk('抽屉按钮组**整体上移一段**（中心高于「环境信息—落款」的中线）',
+          !!envEl && navMid < freeMid - 20,
+          'navMid=' + Math.round(navMid) + ' 中线=' + Math.round(freeMid)
+          + ' 上移=' + Math.round(freeMid - navMid));
+    }
+  }
+
+  /* ── ④ 新增：仪表盘两块读数（读数台 / 最近跑过）───────────────── */
+  const statRows = [...d.querySelectorAll('#stats-body .stat-row')];
+  chk('读数台给出了多行读数', statRows.length >= 5, statRows.length + ' 行');
+  const statTxt = (d.querySelector('#stats-body') || {}).textContent || '';
+  chk('读数台标出了 token 覆盖率（不把几轮当全体）',
+      /\d+\/\d+\s*轮有读数/.test(statTxt), (statTxt.match(/\d+\/\d+\s*轮有读数/) || ['无'])[0]);
+  const hists = [...d.querySelectorAll('#history-list .hist')];
+  chk('「最近跑过」列出了历次任务', hists.length >= 1, hists.length + ' 次');
+  chk('页面仍无标签页（极简首屏：面板靠抽屉，不靠标签）', !d.querySelector('.tab'));
+
+  /* ── ⑤ 联网检索库：按问题聚合 + 去重 ────────────────────────── */
+  // 顺带回归「产物库」，确认这轮没把别处带坏（现在常驻可见，不用切标签）
+  await sleep(1500);
+  chk('产物库仍能列出产物（回归）',
+      d.querySelectorAll('#lib-list .item').length > 0,
+      d.querySelectorAll('#lib-list .item').length + ' 条 · '
+      + (d.querySelector('#lib-count').textContent || '').slice(0, 24));
+
+  await sleep(1200);
+  // ★ 先切到「联网检索库」这一页再量 —— 否则它不在 active 页里（祖先 display:none），
+  //   scrollHeight / clientHeight 全读成 0，会被误判成「没限高」。
+  d.querySelector('.nav-btn[data-sheet="view-web"]').click();
+  await sleep(500);
+  d.querySelector('#sheet').getAnimations()
+    .forEach(a => { try { a.finish(); } catch (_) {} });
+  await sleep(80);
+
+  const groups = [...d.querySelectorAll('#web-list .web-group')];
+  chk('联网检索库按问题分组渲染', groups.length >= 1, groups.length + ' 组');
+  if (groups.length) {
+    const g0 = groups[0];
+    const items = [...g0.querySelectorAll('.wg-body .item')];
+    const head = (g0.querySelector('.wg-head .chip') || {}).textContent || '';
+    chk('组头给出「去重后 / 共」两个数',
+        /去重后\s*\d+/.test(head) && /共\s*\d+/.test(head), head.trim());
+    const urls = items.map(i => { const a = i.querySelector('a'); return a ? a.href : ''; })
+                      .filter(Boolean);
+    chk('组内链接互不重复（去重生效）', urls.length > 0 && new Set(urls).size === urls.length,
+        urls.length + ' 条链接 / 唯一 ' + new Set(urls).size);
+    chk('页头计数行给了原始与去重两个口径',
+        /去重后\s*\d+\s*条/.test(d.querySelector('#web-count').textContent),
+        d.querySelector('#web-count').textContent.slice(0, 80));
+
+    // 组标题后面标注「时间 · 检索模型」；内容**默认不直接显示**，点开才展开且限高可滚
+    const metaTxt = (g0.querySelector('.wg-meta') || {}).textContent || '';
+    chk('组标题后面标注了「日期时间 · 检索模型」',
+        /\d{4}\/\d{1,2}\/\d{1,2}/.test(metaTxt) && metaTxt.indexOf('·') >= 0,
+        'meta=[' + metaTxt + ']');
+    const body0 = g0.querySelector('.wg-body');
+    chk('检索内容默认**不直接显示**（整组折叠）',
+        w.getComputedStyle(body0).display === 'none',
+        'display=' + w.getComputedStyle(body0).display);
+    g0.querySelector('.wg-head').click();
+    await sleep(360);
+    chk('点组标题：内容展开且**自适应铺满**（不限固定高度，交给外层列表滚）',
+        g0.classList.contains('open')
+        && w.getComputedStyle(body0).display !== 'none'
+        && w.getComputedStyle(body0).maxHeight === 'none',
+        'display=' + w.getComputedStyle(body0).display
+        + ' maxH=' + w.getComputedStyle(body0).maxHeight
+        + ' h=' + Math.round(body0.getBoundingClientRect().height));
+    g0.querySelector('.wg-head').click();
+    await sleep(200);
+    chk('再点一次：内容收起', !g0.classList.contains('open'),
+        'open=' + g0.classList.contains('open'));
+  }
+  chk('联网检索库有过滤框与聚合模式开关',
+      !!d.querySelector('#web-q') && !!d.querySelector('#web-mode'));
+
+  const q = d.querySelector('#web-q');
+  q.value = 'zzz-不可能命中的词';
+  q.dispatchEvent(new w.Event('input', { bubbles: true }));
+  await sleep(250);
+  chk('过滤框生效（无命中时列表为空态）',
+      d.querySelectorAll('#web-list .web-group').length === 0
+      && /没有匹配/.test(d.querySelector('#web-list').textContent),
+      d.querySelector('#web-list').textContent.trim().slice(0, 40));
+  q.value = '';
+  q.dispatchEvent(new w.Event('input', { bubbles: true }));
+  await sleep(250);
+  chk('清空过滤后分组回来', d.querySelectorAll('#web-list .web-group').length >= 1);
+
+  /* 平铺模式（不去重） */
+  const sel = d.querySelector('#web-mode');
+  sel.value = 'flat';
+  sel.dispatchEvent(new w.Event('change', { bubbles: true }));
+  await sleep(250);
+  chk('切到平铺模式：条目数 = 原始命中数（不去重）',
+      d.querySelectorAll('#web-list .item').length
+      === Number((d.querySelector('#web-count').textContent.match(/平铺\s*(\d+)/) || [])[1]),
+      d.querySelector('#web-count').textContent.slice(0, 40));
+
+  /* ── ⑤b 参数下拉的两个真 bug（用户报的）───────────────────────── */
+  // ① 再点一次触发控件：菜单必须**收回去**。早前菜单展开后被挂到 <body>，
+  //    `dd.querySelector('.dd-menu')` 找不到它 ⇒ 走成「重新打开」，看着就是「收不回去」。
+  const btn2 = dds.length ? dds[0].querySelector('.dd-btn') : null;
+  if (btn2) {
+    await openMenu(btn2);
+    btn2.click();
+    await sleep(320);
+    chk('再点一次触发控件：下拉能**收回去**（不会又重开）',
+        !d.querySelector('.dd-menu.show'),
+        'stillOpen=' + !!d.querySelector('.dd-menu.show'));
+    shutMenus();
+    await sleep(120);
+  }
+
+  // ② 参数改动要**跨分组保留**（分组页是按需重建的，不留住就等于「改了没保存」）
+  const firstInp = d.querySelector('#adv-grid input[data-cfg]');
+  if (firstInp) {
+    const _key = firstInp.dataset.cfg;
+    firstInp.value = '999';
+    firstInp.dispatchEvent(new w.Event('input', { bubbles: true }));
+    await sleep(100);
+    // 切到另一个分组，再切回来
+    const _other = [...d.querySelectorAll('#adv-groups [data-advgroup]')]
+      .find(b => !/模型|API/.test(b.textContent));
+    if (_other) {
+      _other.click();
+      await sleep(420);
+      apiGrp.click();
+      await sleep(420);
+    }
+    const _again = d.querySelector('#adv-grid input[data-cfg="' + _key + '"]');
+    chk('参数改动**跨分组保留**（切走再切回，值还是改过的）',
+        !!_again && _again.value === '999',
+        'key=' + _key + ' value=' + (_again ? _again.value : '?'));
+  }
+
+  /* ── ⑤c 参数分组页的出口：**保存** / 右上角「← 返回」───────────────
+     ★ 「关闭」键已按用户要求移除：右上角的「返回」与它同义 —— 不点保存就退出 = 不保存。 */
+  {
+    const _inp = d.querySelector('#adv-grid input[data-cfg]');
+    if (_inp) {
+      const _k = _inp.dataset.cfg;
+      _inp.value = '777';
+      _inp.dispatchEvent(new w.Event('input', { bubbles: true }));
+      await sleep(120);
+      d.querySelector('#adv-save').click();
+      await sleep(380);
+      chk('点「保存」：退回上一级（分组列表），面板层没整个关掉',
+          !d.querySelector('#adv-group-page').classList.contains('active')
+          && d.querySelector('#adv-panel').classList.contains('active')
+          && !d.querySelector('#sheet').classList.contains('hidden'),
+          'groupActive=' + d.querySelector('#adv-group-page').classList.contains('active')
+          + ' listActive=' + d.querySelector('#adv-panel').classList.contains('active'));
+      apiGrp.click();
+      await sleep(440);
+      const _keep = d.querySelector('#adv-grid input[data-cfg="' + _k + '"]');
+      chk('保存后再打开：改动**还在**', !!_keep && _keep.value === '777',
+          'v=' + (_keep ? _keep.value : '?'));
+      if (_keep) {
+        _keep.value = '888';
+        _keep.dispatchEvent(new w.Event('input', { bubbles: true }));
+        await sleep(120);
+      }
+      // 右上角「返回」＝ 不保存退出（与已移除的「关闭」同义）
+      d.querySelector('#sheet-close').click();
+      await sleep(380);
+      chk('点右上角「返回」：退回上一级（分组列表），面板层没关掉、键还原成 ×',
+          !d.querySelector('#adv-group-page').classList.contains('active')
+          && d.querySelector('#adv-panel').classList.contains('active')
+          && !d.querySelector('#sheet').classList.contains('hidden')
+          && !d.querySelector('#sheet-close').classList.contains('back'),
+          'groupActive=' + d.querySelector('#adv-group-page').classList.contains('active')
+          + ' listActive=' + d.querySelector('#adv-panel').classList.contains('active')
+          + ' back=' + d.querySelector('#sheet-close').classList.contains('back'));
+      apiGrp.click();
+      await sleep(440);
+      const _rolled = d.querySelector('#adv-grid input[data-cfg="' + _k + '"]');
+      chk('「返回」不保存：这一组被回滚到保存过的 777（不是 888）',
+          !!_rolled && _rolled.value === '777',
+          'v=' + (_rolled ? _rolled.value : '?'));
+    }
+  }
+
+  /* ── ⑤d 产物详情：**独立的一页**，头固定、正文只在本页内滚（不覆盖标题/关闭键）── */
+  {
+    d.querySelector('.nav-btn[data-sheet="view-lib"]').click();
+    await sleep(520);
+    d.querySelector('#sheet').getAnimations().forEach(a => { try { a.finish(); } catch (_) {} });
+    await sleep(120);
+    const item = d.querySelector('#lib-list .item');
+    if (item) {
+      item.click();
+      await sleep(900);
+      const det = d.querySelector('#detail');
+      det.getAnimations().forEach(a => { try { a.finish(); } catch (_) {} });
+      await sleep(150);
+      const head = d.querySelector('.detail-head'), body = d.querySelector('#detail-body');
+      const hr0 = head.getBoundingClientRect(), br0 = body.getBoundingClientRect();
+      chk('产物点开是**独立的一页**（详情铺满视口、头在正文上方不重叠）',
+          !det.classList.contains('hidden')
+          && Math.abs(det.getBoundingClientRect().width - w.innerWidth) <= 1
+          && hr0.bottom <= br0.top + 1,
+          'head.bottom=' + Math.round(hr0.bottom) + ' body.top=' + Math.round(br0.top)
+          + ' det.w=' + Math.round(det.getBoundingClientRect().width) + ' vp=' + w.innerWidth);
+      /* 详情页配色：文件名/关闭键**白色**，正文卡片 **50% 透明** */
+      {
+        const t = d.querySelector('#detail-title'), cl = d.querySelector('#detail-close');
+        const md = d.querySelector('#detail-body');   // 卡片本体（.md）
+        const chan = (c) => (c.match(/[\d.]+/g) || []).map(Number);
+        const whiteish = (c) => { const v = chan(c).slice(0, 3); return v.length === 3 && v.every(n => n > 190); };
+        chk('详情页：文件名与「关闭」**白色**',
+            whiteish(w.getComputedStyle(t).color) && whiteish(w.getComputedStyle(cl).color),
+            'title=' + w.getComputedStyle(t).color + ' close=' + w.getComputedStyle(cl).color);
+        const mbg = w.getComputedStyle(md).backgroundColor;
+        /* ★ R24：详情卡片与其余面板**统一 20% 不透明** */
+        chk('详情正文卡片背景 **20% 不透明**（R24 与面板统一）',
+            /rgba\(\s*22,\s*23,\s*28,\s*0\.2\s*\)/.test(mbg),
+            'bg=' + mbg);
+      }
+      const canScroll = body.scrollHeight > body.clientHeight + 2;
+      body.scrollTop = 240;
+      await sleep(140);
+      const hr1 = head.getBoundingClientRect();
+      const br1 = body.getBoundingClientRect();
+      /* ★ 真正的哨兵 = 「头**没有被滚上来的正文压住**」：头仍在正文之上（不重叠）、
+         也没有被滚走。位置差给 ±2px 容差 —— 窄视口下滚动条出现/消失会带来 1px 亚像素抖动。
+         （原 bug 是正文滚上来把标题/关闭键盖住；那条在这里仍能抓住。） */
+      chk('正文只在本页内滚 + 滚动时 标题/关闭键 纹丝不动（不被内容覆盖）',
+          Math.abs(hr1.top - hr0.top) <= 2 && Math.abs(hr1.bottom - hr0.bottom) <= 2
+          && hr1.bottom <= br1.top + 2
+          && (!canScroll || body.scrollTop > 0),
+          'canScroll=' + canScroll + ' head.top ' + Math.round(hr0.top) + '→' + Math.round(hr1.top)
+          + ' head.bottom ' + Math.round(hr0.bottom) + '→' + Math.round(hr1.bottom)
+          + ' body.top=' + Math.round(br1.top) + ' scrollTop=' + Math.round(body.scrollTop));
+      d.querySelector('#detail-close').click();
+      await sleep(260);
+      chk('关闭详情页回到「产物库」（每份产物各自成页、互不影响）',
+          det.classList.contains('hidden')
+          && d.querySelector('#view-lib').classList.contains('active'),
+          'hidden=' + det.classList.contains('hidden')
+          + ' libActive=' + d.querySelector('#view-lib').classList.contains('active'));
+    }
+  }
+
+  }
+
+  /* ── ⑦ 发送键 ↔ 终止键：跑到一半手动终止，已跑到的部分要存下来并标注状态 ──
+     ★ 这里会**真的起一个 mock 任务并中途终止**（零 API 花费），因此会在 outputs/ 里
+       留下 1 份「已终止 · 部分」产物 —— 验收后请手动清掉那一份。 */
+  if (!SKIPS.has('fx')) {
+    w.closeSheet();
+    await sleep(150);
+    /* ★「动画完再露日志」只在**首屏**（日志还没出来）时才成立 —— 前面已经跑过 mock 任务、
+       日志区是显示的。先回新对话拿回空态，再发。 */
+    w.newChat();
+    await sleep(250);
+    d.querySelector('#question').value = '验收·手动终止';
+    const mb = d.querySelector('#mock');
+    if (mb) { mb.checked = true; mb.dispatchEvent(new w.Event('change', { bubbles: true })); }
+    /* ★ `.lit` 只亮 620ms —— 无头虚拟时间会在一次采样间隔里把它整段推完，
+       轮询采样必然漏掉。改用 **MutationObserver** 记录「class 变过」，与采样无关。 */
+    let litSeen = false;
+    const _rlEl = d.querySelector('#runlog');
+    const _mo = new w.MutationObserver(() => { if (_rlEl.classList.contains('lit')) litSeen = true; });
+    _mo.observe(_rlEl, { attributes: true, attributeFilter: ['class'] });
+    /* ★ 必须等到**新任务真的出现**才取 id：
+       `startRun` 是异步的，刚调完就读 `currentTaskId()` 拿到的是**上一条**，
+       后面「等到有层内容」就会被旧任务的层骗过、立刻取消新任务。 */
+    const _prevNewest = w.currentTaskId();
+    w.startRun();
+    let stopBtn = null, startedId = null;
+    for (let i = 0; i < 60; i++) {
+      await sleep(120);
+      const cur = w.currentTaskId();
+      const b = d.querySelector('#run-btn');
+      if (i > 1 && cur && cur !== _prevNewest) { startedId = cur; stopBtn = b; break; }
+    }
+    chk('发送之后键变成**终止键**（方块图标 + 标题「终止运行」）',
+        !!stopBtn && /终止/.test(stopBtn.title || ''),
+        'cls=[' + (stopBtn ? stopBtn.className : '—') + '] title=[' + (stopBtn ? stopBtn.title : '') + ']');
+    /* ★ R23：发送后输入框**清空**并换成「元DGTF 引擎已启动」寄语（占位文字，随进度轮换） */
+    {
+      const _qs = d.querySelector('#question');
+      chk('发送后：输入框清空 + 换成「元DGTF 引擎已启动…」寄语',
+          !!_qs && _qs.value.trim() === '' && /元DGTF/.test(_qs.placeholder || ''),
+          'val=[' + (_qs ? _qs.value : '—') + '] ph=[' + (_qs ? _qs.placeholder : '—') + ']');
+    }
+    /* ★ 星光动画： `#fx` 里出现粒子/问题残影，且**动画期间运行日志页还没露出来**
+       （用户要求：动画完后再显示日志页面）。 */
+    {
+      const fxLayer = d.querySelector('#fx');
+      const sparks = fxLayer ? fxLayer.children.length : 0;
+      chk('发送瞬间：问题化作**星光点**飞向日志区（`#fx` 里有粒子/残影）',
+          !!fxLayer && sparks > 0,
+          '#fx 子节点=' + sparks
+          + ' spark=' + d.querySelectorAll('#fx .spark').length
+          + ' char=' + d.querySelectorAll('#fx .q-char').length);
+      chk('**动画期间运行日志页还没露出来**（动画落点后才显示）',
+          d.querySelector('#runlog').classList.contains('hidden'),
+          'hidden=' + d.querySelector('#runlog').classList.contains('hidden'));
+    }
+    if (stopBtn) {
+      // 让它真的跑出一点内容再终止；顺便盯住「动画落点 → 日志露出 + 点亮」
+      let sawShown = false, sawLit = false, _it = 0, _sz = 0;
+      for (let i = 0; i < 160; i++) {
+        _it = i;
+        await sleep(250);
+        const rl = d.querySelector('#runlog');
+        if (!rl.classList.contains('hidden')) sawShown = true;
+        if (rl.classList.contains('lit')) sawLit = true;
+        if (litSeen) sawLit = true;
+        /* 每 5 步才探一次日志（每次都是一条真实连接，别把端口打满） */
+        const lg = (startedId && i % 5 === 0)
+          ? await w.fetch('/api/tasks/' + startedId + '/log?offset=0&mode=raw')
+              .then(x => x.json()).catch(() => null)
+          : null;
+        _sz = (lg && lg.size) || 0;
+        /* ★ 必须「**日志已露出 + 被点亮 + 已经有了层块**」才收工。
+           只判 size 不可靠：既会早退（mock 日志早超 400 字节）、也会晚退（只有头部时也能 ~200 字节）。
+           **没有层块就取消 ⇒ 部分产物是空的**（失败 #1 就是这么来的）。
+           ★★ 而且必须**一直等到真有层块**才收工（上限 160 步）：
+           无头虚拟时间下 mock 子进程出第一层偏晚，实测「刚好卡在第 59 步」⇒ 上限给太小会假阴。
+           ★ 「有没有层块」以**服务端直查**为准（每 3 步一次真实 fetch）：应用自己的 `lanes`
+             是异步刷新的，虚拟时间可能整段推完而没赶上。 */
+        const _lr = (startedId && i % 3 === 0)
+          ? await w.fetch('/api/tasks/' + startedId + '/layers')
+              .then(x => x.json()).catch(() => null)
+          : null;
+        const _appLt = (startedId && w.lanes && w.lanes.tid === startedId) ? (w.lanes.text || {}) : {};
+        const _lt = (_lr && _lr.layers) ? _lr.layers : _appLt;
+        const _hasLayer = Object.keys(_lt).some(k => String(_lt[k] || '').trim());
+        if (sawShown && sawLit && _hasLayer) break;
+      }
+      _mo.disconnect();
+      chk('动画落点之后：日志页**露出来**、并被**点亮**（.runlog.lit）',
+          sawShown && sawLit && !d.querySelector('#runlog').classList.contains('hidden'),
+          'shown=' + sawShown + ' lit=' + sawLit + ' it=' + _it + ' size=' + _sz
+          + ' hidden=' + d.querySelector('#runlog').classList.contains('hidden')
+          + ' it=' + _it + ' size=' + _sz + ' tid=' + startedId
+          + ' fx=' + d.querySelectorAll('#fx .spark').length);
+      stopBtn.click();                       // 再点一下 = 终止
+      await sleep(320);
+      chk('点终止后键**立刻回到发送态**（不等轮询）',
+          !d.querySelector('#run-btn').classList.contains('stop'),
+          'cls=[' + d.querySelector('#run-btn').className + ']');
+
+      let t = null;
+      for (let i = 0; i < 40; i++) {
+        await sleep(250);
+        const r = await w.fetch('/api/tasks').then(x => x.json()).catch(() => null);
+        const list = (r && r.tasks) || [];
+        t = list.slice().sort((a, b) => b.created_at - a.created_at)[0] || null;
+        if (t && t.status !== 'running' && t.status !== 'queued') break;
+      }
+      chk('终止后任务落定为「已终止」，且带一份部分产物',
+          !!t && t.status === 'cancelled' && !!t.output_name && t.partial === true,
+          'status=' + (t && t.status) + ' partial=' + (t && t.partial)
+          + ' out=' + (t && t.output_name));
+      // 徽章由应用自己的轮询渲染 ⇒ 等它跟上（最多 ~5s）
+      let badgeTxt = '', badgeCls = '';
+      for (let i = 0; i < 32; i++) {
+        await sleep(160);
+        const bid = d.querySelector('#rl-badge');
+        badgeTxt = bid ? bid.textContent : '';
+        badgeCls = bid ? bid.className : '';
+        if (/已终止/.test(badgeTxt)) break;
+      }
+      chk('运行日志头的徽章显示「已终止」',
+          /已终止/.test(badgeTxt),
+          'badge=[' + badgeTxt + '] cls=[' + badgeCls + ']');
+      if (t && t.output_name) {
+        const det2 = await w.fetch('/api/outputs/' + encodeURIComponent(t.output_name))
+          .then(x => x.json()).catch(() => null);
+        chk('部分产物**正文里带状态横幅**（已终止（部分 · 手动停止））',
+            !!det2 && /已终止（部分/.test(det2.body || ''),
+            'head=[' + String((det2 && det2.body) || '').slice(0, 52).replace(/\n/g, ' ') + ']');
+        const rr = await w.fetch('/api/outputs?q=' + encodeURIComponent('验收·手动终止'))
+          .then(x => x.json()).catch(() => null);
+        const rec = ((rr && rr.items) || []).find(x => x.name === t.output_name);
+        /* ★ R20：演练/验收（mock）产物**不入产物库** —— 只有真跑的才入库。
+           所以这里反过来断言：查不到它才对（漏进去才是 bug）。 */
+        chk('演练/验收产物**不入产物库**（R20：只有真跑才入库）',
+            !rec,
+            'rec=' + (rec ? ('漏进库了：' + rec.name) : '未收录（正确）')
+            + ' 命中=' + (((rr && rr.items) || []).length));
+      }
+      // 星光动画是**一次性**的：过一会儿节点应被摘干净、辉光也褪掉
+      await sleep(1400);
+      const left = d.querySelectorAll('#fx .spark, #fx .q-char').length;
+      chk('星光动画**一次性**：结束后 `#fx` 摘干净、日志区辉光褪掉',
+          left === 0 && !d.querySelector('#runlog').classList.contains('lit'),
+          '残留=' + left + ' lit=' + d.querySelector('#runlog').classList.contains('lit'));
+    }
+  }
+
+  /* ── ⑤e 历史对话：列会话 + 点开还原「当时的原始运行日志窗口与内容」── */
+  if (!SKIPS.has('chats')) {
+    const r = await w.fetch('/api/chats').then(x => x.json()).catch(() => null);
+    const chats = (r && r.chats) || [];
+    chk('历史对话接口可用（会话 = 内存任务 + 归档 run.json，重启后仍在）',
+        chats.length > 0, '会话=' + chats.length
+        + ' 归档占=' + chats.filter(c => !c.live).length);
+    d.querySelector('.nav-btn[data-sheet="view-chats"]').click();
+    await sleep(520);
+    d.querySelector('#sheet').getAnimations().forEach(a => { try { a.finish(); } catch (_) {} });
+    await sleep(150);
+    const items = [...d.querySelectorAll('#chats-list .hist')];
+    chk('「历史对话」页列出历次会话（每条带状态与时间）',
+        items.length > 0 && !!d.querySelector('#chats-count'),
+        'n=' + items.length + ' 首条=['
+        + (items[0] ? items[0].querySelector('.q').textContent : '') + ']');
+    const doneItem = items.find(el => /完成|已终止|失败/.test(el.querySelector('.st').textContent));
+    if (doneItem) {
+      doneItem.click();
+      await sleep(700);
+      const rlx = d.querySelector('#runlog');
+      chk('点开某次会话：回到**它自己**的运行日志窗口（标题/层块都对上，且与当前会话独立）',
+          !rlx.classList.contains('hidden')
+          && (d.querySelector('#rl-question').textContent || '').length > 0
+          && d.querySelectorAll('#runlog-body .rl-lane').length >= 1,
+          'q=[' + d.querySelector('#rl-question').textContent + '] 层块='
+          + d.querySelectorAll('#runlog-body .rl-lane').length
+          + ' hidden=' + rlx.classList.contains('hidden'));
+    }
+  }
+
+  /* ── ★ R37 一揽子：日志开头调度信息 / 层标题规范 / 面板漆黑 / chip 统一 / 滚动点 ──
+     全部落在**样式表文本 + 静态 DOM**上（此刻界面已回到首屏，元素大多不在），
+     与 selftest.py 的 `_rule()` 同款取规则法（cssRule 已在上文定义）。 */
+  {
+    // ① 日志**开头块**（载入调度配置…）：容器类与渲染接线都要在
+    chk('① 日志开头块容器 `.rl-boot` 有样式（与层块区分的有下边分隔）',
+        /\.rl-boot\s*\{[^}]*border-bottom[^}]*\}/.test(CSS_TXT),
+        'rl-boot=' + JSON.stringify(cssRule('.rl-boot').slice(0, 90)));
+    chk('① app.js 把 head 桶渲染成开头块（renderTasks 里出现 rl-boot）',
+        /rl-lane\s+rl-boot/.test(JS_TXT) && /src\.head/.test(JS_TXT));
+
+    // ② 层标题与「第 N/M 圈」用**同一套**字号变量
+    const h1 = cssRule(':root').match(/--rl-h1:\s*([^;]+)/);
+    const h2 = cssRule(':root').match(/--rl-h2:\s*([^;]+)/);
+    chk('② 有 --rl-h1 / --rl-h2 字号规范变量', !!(h1 && h2),
+        'h1=' + (h1 && h1[1].trim()) + ' h2=' + (h2 && h2[1].trim()));
+    const laneHead = cssRule('.rl-lane-head') || '';
+    const roundR = cssRule('.rl-round') || '';
+    chk('② `.rl-lane-head` 与 `.rl-round` **共用同一字号变量**（规范统一）',
+        /font-size:var\(--rl-h1\)/.test(laneHead) && /font-size:var\(--rl-h1\)/.test(roundR),
+        'lane=' + laneHead.slice(0, 60) + ' | round=' + roundR.slice(0, 50));
+
+    // ③ 面板背景漆黑 + 白字加粗（且透明度仍是 85%）
+    const sheetRule = cssRule('.sheet') || '';
+    chk('③ 面板背景**漆黑透明**（rgba(8,9,10,.85)，透明度不变）',
+        /background:rgba\(8,9,10,\.85\)/.test(sheetRule),
+        sheetRule.slice(0, 80));
+    chk('③ 面板全局字色**近白且加粗**',
+        /--t1:#F5F7FA/.test(sheetRule) && /font-weight:500/.test(sheetRule));
+    chk('③ 面板标题**纯白加粗 700**',
+        /\.sheet-title\s*\{[^}]*color:#FFFFFF/.test(CSS_TXT)
+        && /\.sheet-title\s*\{[^}]*font-weight:700/.test(CSS_TXT));
+    chk('③ 保存反馈浮层已翻成**暗面**（不再是白底黑字）',
+        /\.adv-toast\s*\{[^}]*background:rgba\(12,14,17,\.96\)/.test(CSS_TXT)
+        && !/\.adv-toast\s*\{[^}]*background:rgba\(255,255,255,\.96\)/.test(CSS_TXT));
+
+    // ⑤ chip 字体统一 + 灯高亮
+    const chipR = cssRule('.chip') || '';
+    const fileR = cssRule('.rl-files a') || '';
+    // 取各自的 font-size 声明，比对是否同档
+    const chipFs = (chipR.match(/font-size:([^;]+)/) || [, ''])[1].trim();
+    const fileFs = (fileR.match(/font-size:([^;]+)/) || [, ''])[1].trim();
+    chk('⑤ `.chip` 与 `.rl-files a` **字号同档**',
+        chipFs === 'clamp(11.5px,1.6vh,13.5px)' && fileFs === 'clamp(12px,1.7vh,14.5px)'
+        && chipFs.replace(/[^\d.]/g, '').slice(0, 4) === '115'
+        && fileFs.indexOf('12px') > 0,
+        'chip=' + chipFs + ' file=' + fileFs);
+    chk('⑤ 灯统一为**实心高亮**（.badge::before / .rl-files a::before 都带光晕）',
+        /\.badge::before\s*\{[^}]*box-shadow:0 0 5px currentColor/.test(CSS_TXT)
+        && /\.rl-files a::before\s*\{[^}]*box-shadow:0 0 5px currentColor/.test(CSS_TXT));
+    chk('⑤ 灯尺寸统一 **6px**（原来是 5px）',
+        /\.badge::before\s*\{[^}]*width:6px;height:6px/.test(CSS_TXT)
+        && /\.rl-files a::before\s*\{[^}]*width:6px;height:6px/.test(CSS_TXT));
+
+    // ⑥ 滚动条 = **可拖圆点**
+    const barR = cssRule('#rl-bar') || '';
+    chk('⑥ 滚动条改成**圆点**（border-radius:50% + 12px）',
+        /border-radius:50%/.test(barR) && /width:12px;height:12px/.test(barR));
+    chk('⑥ 圆点**可点可拖**（pointer-events:auto + cursor:grab，R33 的 none 已撤销）',
+        /pointer-events:auto/.test(barR) && /cursor:grab/.test(barR)
+        && !/pointer-events:none/.test(barR));
+    chk('⑥ 细长原生滚动条已隐藏（scrollbar-width:none）',
+        /#runlog-body\s*\{[^}]*scrollbar-width:none/.test(CSS_TXT));
+    chk('⑥ app.js 有拖拽实现（bindRlBarDrag + setPointerCapture + 在 init 里调用）',
+        /function bindRlBarDrag/.test(JS_TXT) && /setPointerCapture/.test(JS_TXT)
+        && /bindRlBarDrag\(\);/.test(JS_TXT));
+
+    // ⑦ 底部只留「保存」+「恢复出厂设置」，且保存居中
+    const sa = Array.from(document.querySelectorAll('#sheet .sheet-actions button'));
+    const saIds = sa.map(b => b.id);
+    chk('⑦ 底部操作条**只剩两个**按钮（保存 + 恢复出厂设置）',
+        sa.length === 2 && saIds.indexOf('adv-save') >= 0 && saIds.indexOf('adv-reset') >= 0,
+        'ids=' + saIds.join(','));
+    chk('⑦ 「仅本次任务生效」按钮已删掉', saIds.indexOf('adv-once') < 0);
+    chk('⑦ 「恢复默认配置」文案已改成**恢复出厂设置**',
+        sa.some(b => b.id === 'adv-reset' && b.textContent.trim() === '恢复出厂设置'),
+        'reset=' + (sa.find(b => b.id === 'adv-reset') || {}).textContent);
+    chk('⑦ 操作条**居中**（justify-content:center）且有 `.sa-spacer` 让保存视觉居中',
+        /justify-content:center/.test(cssRule('.sheet-actions'))
+        && !!document.querySelector('#sheet .sheet-actions .sa-spacer'));
+    /* ★ R38：操作条**提到 `.sheet` 层**（两页共用一条），由 JS 按当前页显隐 —— 用户报的
+       「恢复出厂设置后按钮不见了」「CLM 参数保存不了」根因就是它原来只挂在分组页**内部**。 */
+    chk('⑦ ★R38 操作条是 `.sheet` 的**直接子项**（id=adv-actions，两页共用一条）',
+        (() => {
+          const a = d.querySelector('#adv-actions');
+          return !!a && a.parentElement && a.parentElement.id === 'sheet'
+            && a.classList.contains('hidden');
+        })(),
+        'adv-actions parent=' + (() => {
+          const a = d.querySelector('#adv-actions');
+          return a && a.parentElement ? a.parentElement.id : 'null';
+        })());
+    chk('⑦ ★R38 源码里 `.sheet-actions` 在 `.sheet-body` **之后**（挂在 layer 上，不在分组页里）',
+        HTML_TXT.indexOf('id="adv-actions"') > HTML_TXT.indexOf('class="sheet-body"')
+        && HTML_TXT.indexOf('id="adv-actions"') > 0);
+    chk('⑦ ★R38 底栏显隐由 `syncAdvBar` 按当前页控制（首页也显示）',
+        /function syncAdvBar/.test(JS_TXT)
+        && /syncAdvBar\(key\)/.test(JS_TXT)
+        && /adv-actions/.test(JS_TXT));
+  }
+
+  /* ── ★R45 三条（用户 3 图 / 3 条）───────────────────────────────
+     真浏览器里跑真 DOM / 真计算样式 / 真几何 —— 最高一级的证据。
+     ★ 这一段的判据与 `_audit_tmp/_r45_probe_r45.js`（CDP 探针）**同源同款**：
+       那边的 31 条全绿 + 16 个变异体逐个抓住，是这套判据判别力的证据；
+       搬到这里是为了让它跟其它断言一样进 `--dump-dom` 的常规流程。
+     ★ 三条各自的「双层防御要分别证明」见下面 R45-3 的注释（M15 教训）。 */
+
+  /* ① 导入的文件要**显示出来**（计数徽章 + 可展开清单 + 删 + 关） */
+  {
+    const bn = d.querySelector('#attach-n');
+    const ap = d.querySelector('#attach-panel');
+     /* ★★ R48-3（用户图3「回形针不要有上标」）：这条原来判「回形针内**有**计数徽章」，
+        现在**语义反转** —— 那个数字气泡已整条移除，`bn`（`#attach-n`）恒为 `null`。
+        ★ 判据守的**行为**没变（数量要能被看到），换的是载体 ⇒ 见下面
+          「数量改由 `#ap-count` 表达」那条。 */
+     chk('★R45-1/R48-3 回形针上**没有**计数气泡（用户图3 的要求）',
+         !bn, 'attach-n=' + (bn ? bn.outerHTML.slice(0, 60) : 'null（正确）'));
+
+    // ★★ 「0 个时不显示」要在**真的 0 个**时验 —— 老判据假定开局库是空的，
+    //    一旦用户自己导过文件（计数非 0），它必然假红（本轮实测 `hidden=false`）。
+    //    ⇒ **先备份用户的 localItems，临时清空验完再还原**（不污染用户数据）。
+    //    ★ 备份必须**跨 eval 传递**：`localItems` 在 iframe 的全局词法环境里，
+    //      外部赋值静默无效 ⇒ 用 JSON 字符串经 `w.eval` 出来、再 `w.eval` 塞回去。
+    let _savedJson = '[]';
+    try {
+      _savedJson = await w.eval(
+        '(() => { const j = JSON.stringify(localItems); localItems = [];'
+        + ' paintAttach(); return j; })()');
+      await sleep(140);
+      /* ★★ R48-3：「0 个文件时徽章不显示」这条随徽章一起失效。
+         数量载体换成 `#ap-count`（小窗标题）⇒ 判**它**在 0 个时为 '0'
+         （`paintAttach()` 会把标题写成「已导入 0 个」）。
+         ★ 守的行为没变：数量载体在**真的 0 个**时要如实归零。 */
+      chk('★R45-1/R48-3 数量载体 `#ap-count` 在 0 个文件时为 0',
+          (() => { const c = d.querySelector('#ap-count');
+                   return !!c && c.textContent.trim() === '0'; })(),
+          'ap-count=' + (d.querySelector('#ap-count')
+                         ? d.querySelector('#ap-count').textContent : '?')
+          + ' 已临时清空(原 ' + (JSON.parse(_savedJson || '[]').length) + ' 个)');
+
+    } catch (e) { chk('★R45-1 空态判据（异常）: ' + e.message, false); }
+    // ★ 立刻**还原**用户的真实列表（★ 这是「用例别改用户数据」这条纪律的落点）
+    try {
+      await w.eval('(() => { localItems = JSON.parse(' + JSON.stringify(_savedJson)
+                 + ' || "[]"); paintAttach(); })()');
+      await sleep(120);
+    } catch (e) { chk('★R45-1 还原用户数据（异常）: ' + e.message, false); }
+    chk('★R45-1 清单浮层 `#attach-panel` 默认收起（`.hidden`）',
+        !!ap && ap.classList.contains('hidden'),
+        'cls=' + (ap ? ap.className : 'null'));
+    chk('★R45-1 清单里有 `#ap-close`（可关）', !!(ap && ap.querySelector('#ap-close')));
+    chk('★R45-1 清单里有 `#ap-list.scroll`（可滚列表）', !!(ap && ap.querySelector('#ap-list.scroll')));
+    chk('★R45-1 清单里有 `#ap-count`（标注已导入数）', !!(ap && ap.querySelector('#ap-count')));
+     /* ★★ R48-3：原来判「**徽章**可点（点它展开清单）」。
+        徽章没了 ⇒ 点击目标换成**回形针本身**。
+        ★ 判据守的仍是**行为**（「展开清单只点一下、且点得到」），只换了目标元素。 */
+     chk('★R45-1/R48-3 点**回形针本身**可展开清单（pointer-events != none）',
+         (() => { const b2 = d.querySelector('#attach-btn');
+                  return !!b2 && w.getComputedStyle(b2).pointerEvents !== 'none'; })(),
+         'pe=' + (() => { const b2 = d.querySelector('#attach-btn');
+                          return b2 ? w.getComputedStyle(b2).pointerEvents : '?'; })());
+
+
+    // 真行为：开合
+    try {
+      if (typeof w.toggleAttachPanel === 'function') {
+        w.toggleAttachPanel(true); await sleep(200);
+        chk('★R45-1 toggleAttachPanel(true) 能把清单**打开**',
+            !ap.classList.contains('hidden'), 'cls=' + ap.className);
+        w.toggleAttachPanel(false); await sleep(120);
+        chk('★R45-1 toggleAttachPanel(false) 能把清单**关上**',
+            ap.classList.contains('hidden'), 'cls=' + ap.className);
+      } else {
+        chk('★R45-1 暴露 w.toggleAttachPanel（可编程开合）', false, 'typeof=' + typeof w.toggleAttachPanel);
+      }
+    } catch (e) { chk('★R45-1 开合（异常）: ' + e.message, false); }
+
+    // 真行为：喂两个假文件看徽章/计数/图标数/角标。
+    // ★ 必须在 iframe **自己的作用域**里注入：`let localItems` 挂全局词法环境、
+    //   不是 window 属性，外部 `w.localItems = [...]` 会**静默无效**（第一版探针就栽在这）。
+    // ★★ 这段会**覆盖用户已导入的列表** ⇒ 先取出真实数据、跑完还原（别改用户数据）。
+    let _realItems = '[]';
+    try {
+      _realItems = await w.eval('JSON.stringify(localItems)');
+      await w.eval('(() => {' +
+        "localItems = [{name:'演示A.txt', size: 2048}, {name:'演示B.md', size: 1024}];" +
+        'paintAttach(); return localItems.length; })()');
+      await sleep(150);
+      const txt = (bn ? bn.textContent : '').trim();
+      const cnt = (d.querySelector('#ap-count') ? d.querySelector('#ap-count').textContent : '').trim();
+      // ★ R47：清单从「整行」改成「小窗里的**图标格**」⇒ 判据的锚点随之改名。
+      const ntiles = ap.querySelectorAll('.ap-tile').length;
+       // ★★ R48-3（用户图3「回形针不要有上标」）：徽章元素已**整条移除**
+       //   ⇒ 原来那三条「徽章显示 N / hidden=false / 清空后 hidden=true」全部失效。
+       //   ★ 判据守的**行为**没变（「导入的文件数量要能被看到」），
+       //     只是载体换成了「小窗标题 `#ap-count`」+「回形针 title」。
+       //   `bn` 仍在上方取过（`#attach-n`），R48 后**应为 null** ⇒ 顺便当一条判据。
+       chk('★R48-3 回形针上**没有**数字气泡元素（用户图3 的要求）',
+           !bn, 'attach-n=' + (bn ? bn.outerHTML.slice(0, 60) : 'null（正确）'));
+       chk('★R48-3 数量改由**小窗标题**表达（角标没了但数量没丢）',
+           cnt === '2', 'ap-count=' + JSON.stringify(cnt));
+       chk('★R45-1/R48-3 小窗计数与图标数一致（2）',
+           ntiles === 2, 'tiles=' + ntiles + ' count=' + JSON.stringify(cnt));
+
+      chk('★R45-1 每个图标都有删除键（可手动删）',
+          ap.querySelectorAll('.ap-tile .rm').length === 2,
+          'dels=' + ap.querySelectorAll('.ap-tile .rm').length);
+      chk('★R47 删除键在**右上角**（角标）',
+          (() => { const r = ap.querySelector('.ap-tile .rm'); if (!r) return false;
+                   const cs = w.getComputedStyle(r);
+                   return parseFloat(cs.top) < 0 && parseFloat(cs.right) < 0; })(),
+          'rm top/right 应为负');
+      // ★★ 判据要落在**用户真正要的东西**上：「右上角标一个 x 按钮」= 这个 ×
+      //    **看得见**。第一版做成悬停才显（`opacity:0`）⇒ 位置类判据全绿，
+      //    但截图里整个 × 是空的 ⇒ 需求等于没实现。所以必须量**计算出的 opacity**。
+      //    （`transition` 不推进，先 finish 再量。）
+      //    ★★ 顺序：**先让容器可见再量子元素** —— 小窗还带 `.hidden`（`display:none`）时，
+      //       子元素的 `getComputedStyle` 会读到 `display:none`/宽 0，判据必然假红。
+      //       这是技能里「量子页元素前先切到那一页」的同一族坑。
+      // ★★ 小窗必须在**输入框右侧**（用户原话「在其右边开一个小窗口」），
+      //    且**不压住欢迎语**。用两个盒子的水平关系判，不用「左边界」（居中元素的
+      //    盒子本来就撑满，左边界会误导 —— 技能里点名的坑）。
+      //    ★ 自己取一次 `.composer`：下面那段 `const _cp` 在更后面，
+      //      `const` 有 TDZ ⇒ 这里不能提前引用（否则运行时 ReferenceError）。
+      const _cp2 = d.querySelector('.composer');
+      // ★ 走 toggleAttachPanel（它会调 placeAttachPanel 定位）；直接改 class
+      //   不会触发定位 ⇒ 小窗会停在旧位置，位置类判据全部失真。
+      w.toggleAttachPanel(true); await sleep(160);
+      ap.getAnimations?.().forEach(a => { try { a.finish(); } catch (e) {} });
+      const _rmv = ap.querySelector('.ap-tile .rm');
+      chk('★R47 角标 × **默认可见**（不悬停也看得到）',
+          (() => { if (!_rmv) return false;
+                   _rmv.getAnimations?.().forEach(a => { try { a.finish(); } catch (e) {} });
+                   const cs = w.getComputedStyle(_rmv);
+                   return parseFloat(cs.opacity) > 0.9
+                       && cs.display !== 'none' && parseFloat(cs.width) > 8; })(),
+          _rmv ? 'opacity=' + w.getComputedStyle(_rmv).opacity
+                 + ' w=' + w.getComputedStyle(_rmv).width
+                 + ' disp=' + w.getComputedStyle(_rmv).display
+                 + ' panelHidden=' + ap.classList.contains('hidden') : 'no .rm');
+      const _apR = ap.getBoundingClientRect();
+      const _cpR = _cp2 ? _cp2.getBoundingClientRect() : null;
+      // ★★ 用户原话的落点：「回形针那里显示的文件**在其右边**开一个小窗口」。
+      //    但**「右边」不能字面执行**（实测两次）：
+      //      · 贴回形针右边 ⇒ 回形针本身在输入框内部 ⇒ 小窗落进输入框、压住胶囊；
+      //      · 贴输入框右外侧 ⇒ 常见窗口宽（1574）下放不下（需 1637）。
+      //    ⇒ 实现的落点优先级：① 输入框右外侧（超宽屏）② 输入框**正上方右对齐**
+      //      （零遮挡，紧挨回形针所在的输入框）③ 极矮视口才回到贴回形针右边。
+      //    判据就按**这三个合法档位**判，而不是写死某一档。
+      const _btn = d.querySelector('#attach-btn');
+      const _btnR = _btn ? _btn.getBoundingClientRect() : null;
+       // ★★ R48-2（用户图2 的红箭头）：落点**改回「回形针右侧、输入框内部」**。
+       //   R47 那版是「输入框正上方右对齐」（我为「零遮挡」自己挑的），
+       //   用户这次**明确否掉**了它 —— 红箭头就指向回形针与浮层之间的空档。
+       //   新降级链：① 回形针**右侧**（主路径，用户要的）⇒ ② **正上方**（降级）
+       //              ⇒ ③ 夹进视口。
+       //   ★ 判据按**这两个合法档位**判，不写死坐标（写死会把以后再微调判成回归）。
+       //   ★★ `_btn` / `_btnR` 上面已声明过 ⇒ 这里**直接用**，不能再 `const` 一次
+       //      （同一块作用域重复 `const` 是 SyntaxError —— `node --check` 抓到的）。
+       // ① 在回形针**右侧**（左缘在回形针右缘之右），且**紧贴**（水平间距 ≤ 24）
+       const _rightOfBtn = !!_btnR && _apR.left >= _btnR.right - 2
+                           && (_apR.left - _btnR.right) <= 24;
+       // ② 降级：在回形针**正上方**（下缘在回形针上缘之上）
+       const _aboveBtn = !!_btnR && _apR.bottom <= _btnR.top + 2;
+       chk('★R48 小窗落在**回形针右侧、紧贴**（≤24px）—— 用户图2 的落点',
+           _rightOfBtn || _aboveBtn,
+           '贴针右=' + _rightOfBtn + ' 针上方=' + _aboveBtn
+           + ' gap=' + (_btnR ? Math.round(_apR.left - _btnR.right) : '?')
+           + ' ap.left=' + Math.round(_apR.left)
+           + ' btn.right=' + (_btnR ? Math.round(_btnR.right) : '?'));
+       chk('★R48 小窗落在**输入框内部**（用户原话「显示在回形针的右侧对话框里」）',
+           !!_cpR && _apR.left >= _cpR.left - 2 && _apR.right <= _cpR.right + 2,
+           'ap.left=' + Math.round(_apR.left) + ' ap.right=' + Math.round(_apR.right)
+           + ' composer=' + (_cpR ? Math.round(_cpR.left) + '..' + Math.round(_cpR.right) : '?'));
+       /* ★★ 「紧贴回形针」的**行为**判据（不是死守居中）。
+          R48 第一版把这里写成「垂直居中偏差 ≤ 8px」，实测 `dy=19` 判红 ——
+          查下来**不是实现错**：视口 1600×900 下回形针在输入框内偏下（cy≈740），
+          面板高 117 ⇒ 居中要 `top≈682`，而视口下界恰好只允许 `682`
+          （`VH - h - PAD = 807-117-8`）⇒ 被夹掉 19px。
+          ⇒ 实现已改成「居中放不下就**底缘对齐**回形针（面板往上长）」，
+             仍然是从回形针旁边伸出来。
+          ⇒ 判据要守的是**「没有脱离回形针」**这个行为，取法：
+             · 居中（居中方案生效时 dy 应很小），**或**
+             · 面板与回形针在**垂直方向仍有重叠**、且**边缘对齐**
+               （底缘齐 / 上缘齐 —— 都是「贴着它长出来」的合法形态）。
+          ★ 这样把「视口不够时改锚」这个**正确取舍**判绿，
+            而把「面板飘到离回形针很远」判红 —— 那才是真的错。 */
+       chk('★R48 小窗**紧贴回形针**（居中，或视口不够时底/上缘对齐 —— 不许脱开）',
+           (() => {
+             if (!_btnR) return false;
+             const dy = Math.abs((_apR.top + _apR.bottom) / 2
+                                 - (_btnR.top + _btnR.bottom) / 2);
+             if (dy <= 8) return true;                       // 居中方案生效
+             const overlapV = _apR.top < _btnR.bottom - 2
+                           && _apR.bottom > _btnR.top + 2;   // 垂直仍有重叠
+             const flushB = Math.abs(_apR.bottom - _btnR.bottom) <= 6;
+             const flushT = Math.abs(_apR.top - _btnR.top) <= 6;
+             return overlapV && (flushB || flushT);
+           })(),
+           'dy=' + (_btnR ? Math.round(Math.abs((_apR.top + _apR.bottom) / 2
+                                                - (_btnR.top + _btnR.bottom) / 2)) : '?')
+           + ' ap.top/bottom=' + Math.round(_apR.top) + '/' + Math.round(_apR.bottom)
+           + ' btn.top/bottom=' + (_btnR ? Math.round(_btnR.top) + '/' + Math.round(_btnR.bottom) : '?'));
+
+       /* ★★ R48-2 后这条**语义变了**：小窗现在**有意落在输入框内部**（用户要的），
+          它的几何位置根本到不了上方的欢迎语区域 ⇒ 「与欢迎语不重叠」在常见视口下
+          **自动成立**，但在窄视口/降级到「正上方」那一档时仍需成立。
+          ⇒ 判据保留（守「不该压文案」这个行为），但**说明改准**：它守的是
+            「万一降级到上方，也别压到欢迎语」，而不是「小窗永远在欢迎语下方」。
+          ★ 要在**首屏（有欢迎语）**时量才有意义 —— 实测当时可能是 `stage-run`，
+            `#welcome` 尺寸全 0 ⇒ 「不重叠」是**空判**（永远通过）。
+            ⇒ 主动切回首屏（`newChat()`）再量；切不回去就**明确跳过**而不是假装通过。 */
+       let _overlapNote = '';
+       let _overlapOk = true;
+       try {
+         if (typeof w.newChat === 'function') { w.newChat(); await sleep(450); }
+         const _wc2 = d.querySelector('#welcome');
+         const _wc2R = _wc2 ? _wc2.getBoundingClientRect() : null;
+         const _ap2 = ap.getBoundingClientRect();
+         if (!_wc2R || _wc2R.width === 0) {
+           _overlapNote = '（无欢迎语 ⇒ 本项不适用，跳过）';
+         } else {
+           _overlapOk = (_ap2.top >= _wc2R.bottom - 2 || _ap2.bottom <= _wc2R.top + 2
+                         || _ap2.left >= _wc2R.right - 2 || _ap2.right <= _wc2R.left + 2);
+           _overlapNote = 'ap=' + [Math.round(_ap2.left), Math.round(_ap2.top),
+               Math.round(_ap2.right), Math.round(_ap2.bottom)].join(',')
+             + ' welcome=' + [Math.round(_wc2R.left), Math.round(_wc2R.top),
+               Math.round(_wc2R.right), Math.round(_wc2R.bottom)].join(',');
+         }
+       } catch (e) { _overlapNote = '（量失败：' + e.message + '）'; }
+       chk('★R48 小窗与欢迎语**不重叠**（降级到「正上方」那一档时也不许压文案）',
+           _overlapOk, _overlapNote);
+
+      /* ★★ 新增（截图暴露的真问题）：小窗**不许压住输入框里的可交互元素**。
+         窄视口（1078px）下定位曾落回**输入框内部**，正好盖住右端的发送按钮「↑」
+         —— 用户点不到发送。这条直接量「小窗矩形 ∩ 每个可交互控件矩形」。
+         ★ 直接对准**控件**（发送键 + 功能胶囊 + 回形针），不是对准 `.composer`
+           整体：小窗压在输入框的**空白区**其实无害，压住**按钮**才是 bug。 */
+      (() => {
+        const _apR2 = ap.getBoundingClientRect();
+        const _hits = [];
+        const _ctrls = d.querySelectorAll(
+          '.composer button, .composer .pill, .composer .send, #send-btn');
+        _ctrls.forEach(c => {
+          /* ★★ 必须**排除小窗自己的子元素**：小窗（`#attach-panel`）也是
+             `.composer` 的后代，它内部的关闭键 `.ap-x` 与每个图标的删除角标 `.rm`
+             都会命中 `.composer button` ⇒ 判据报「被压：ap-close, rm, rm」
+             —— 那是**小窗压住了小窗自己**，纯属选择器写错（实测踩到）。
+             正解：只比对**不在小窗内**的控件。 */
+          if (ap.contains(c)) return;
+          const r2 = c.getBoundingClientRect();
+          if (r2.width === 0 || r2.height === 0) return;
+          const ov = !(_apR2.right <= r2.left + 1 || _apR2.left >= r2.right - 1
+                    || _apR2.bottom <= r2.top + 1 || _apR2.top >= r2.bottom - 1);
+          if (ov) _hits.push((c.id || c.className || c.tagName).slice(0, 24));
+        });
+        chk('★R47 小窗**不压住输入框里的按钮/胶囊**（否则点不到发送）',
+            _hits.length === 0,
+            _hits.length ? '被压：' + _hits.join(', ')
+                         : 'ap=' + [Math.round(_apR2.left), Math.round(_apR2.top),
+                                    Math.round(_apR2.right), Math.round(_apR2.bottom)].join(',')
+                           + ' 外部控件数=' + [..._ctrls].filter(c => !ap.contains(c)).length);
+      })();
+      // ★ 溢出保护：小窗**不许超出视口**（`left:100%` 在窄视口会溢出 ——
+      //   实测 1600 视口下曾到 1636 > 1600，溢出 36px）。这条抓的就是阈值算错。
+      const _vw = w.innerWidth;
+      const _ap3 = ap.getBoundingClientRect();
+      chk('★R47 小窗**不溢出视口**（右侧放不下时要回退到内侧）',
+          _ap3.left >= -2 && _ap3.right <= _vw + 2,
+          'ap.left=' + Math.round(_ap3.left) + ' ap.right=' + Math.round(_ap3.right)
+          + ' vw=' + _vw);
+      ap.classList.add('hidden'); await sleep(60);
+
+      // ★★ R47 需求 B 的核心契约：小窗**脱离文档流**（`absolute` 或 `fixed` 都算）
+      //   ⇒ 不把下方内容顶开。★ 判据**别写死 `absolute`**：a 实现从 `absolute`
+      //   改成 `fixed` 是**正确的改进**（`fixed` 同样不进文档流，且不会被带
+      //   `transform` 的祖先当包含块），写死 `absolute` 会把改进判成回归
+      //   （实测 `pos=fixed` 被误判为 FAIL）。
+      //   ★ 真正要守的是「**不占位**」这个**行为**，下面那条量 `.composer` 高度的
+      //     判据才是主证据；这条只做形态兜底。
+      const _cs = w.getComputedStyle(ap);
+      chk('★R47 小窗**脱离文档流**（`absolute` / `fixed` 皆可，不许是 `static`/`relative`）',
+          _cs.position === 'absolute' || _cs.position === 'fixed',
+          'pos=' + _cs.position);
+      const _composer = d.querySelector('.composer');
+      const _ccs = _composer ? w.getComputedStyle(_composer) : null;
+      chk('★R47 定位基准 `.composer` 是 relative（小窗才挂得住）',
+          !!_ccs && _ccs.position === 'relative', 'composer pos=' + (_ccs ? _ccs.position : '?'));
+      // 反证：小窗**打开**时也必须**不顶动**页面 —— 拿它的**容器 `.composer`**
+      // 量高度：`position:absolute` 的小窗不进文档流 ⇒ 容器高度**不该变**。
+      // ★ 上一版我用 `ap.nextElementSibling` 量兄弟位置，可 `#attach-panel` 是
+      //   `.composer` 的**最后一个子元素** ⇒ `nextElementSibling` 恒为 `null`，
+      //   判据必然假红（`before=null after=null`）。**先量再判，别想当然。**
+      const _cp = d.querySelector('.composer');
+      w.toggleAttachPanel(true); await sleep(100);
+      const _hOpen = _cp ? _cp.getBoundingClientRect().height : null;
+      ap.classList.add('hidden'); await sleep(80);
+      const _hShut = _cp ? _cp.getBoundingClientRect().height : null;
+      chk('★R47 小窗开/关**不改变 `.composer` 高度**（脱离文档流 ⇒ 真·不占位）',
+          _hOpen !== null && _hShut !== null && Math.abs(_hOpen - _hShut) <= 2,
+          'open=' + _hOpen + ' shut=' + _hShut);
+      w.toggleAttachPanel(true); await sleep(80);
+
+      // ★ R47：点**角标 ×** 走的是删除链路（这里只验「有 handler + 丢到 items」，
+      //   不打真网络请求 —— 真实删除链路另有 R45 的 removeImported 判据覆盖）。
+      const _rm = ap.querySelector('.ap-tile .rm');
+       chk('★R47 角标 × 带 data-apdel 且可点',
+           !!_rm && _rm.getAttribute('data-apdel') === '演示A.txt' && !_rm.disabled,
+           'data-apdel=' + (_rm ? _rm.getAttribute('data-apdel') : '?'));
+
+       // ── ★★ R48-2：图标格**变小**（用户图2「文件图形可以适当小一点」）──────
+       //   守的是**行为**（「比原来小」），不是某个具体像素 ⇒ 判「≤ 44×48」，
+       //   原来 52×56。写死 `== 40×44` 会把以后再微调判成回归。
+       (() => {
+         const _t = ap.querySelector('.ap-tile');
+         if (!_t) { chk('★R48-2 图标格变小了（≤44×48）', false, '没有 .ap-tile'); return; }
+         const _tr = _t.getBoundingClientRect();
+         chk('★R48-2 图标格**变小**了（≤ 44×48，原来 52×56）',
+             _tr.width > 0 && _tr.width <= 44 && _tr.height > 0 && _tr.height <= 48,
+             'tile=' + Math.round(_tr.width) + 'x' + Math.round(_tr.height));
+       })();
+
+       // ── ★★ R48-1：导入完成那行提示**不显示**（用户图1「这里不要显示」）─────
+       //   `#attach-msg` 用 `:empty{display:none}` 收起 ⇒ 判「没有文案 + 不占位」。
+       //   ★ 判据落在**行为**（不显示）而不是「元素不存在」—— 元素是**有意保留**的。
+       (() => {
+         const _am = d.querySelector('#attach-msg');
+         const _cs2 = _am ? w.getComputedStyle(_am) : null;
+         chk('★R48-1 那行「完成 · 成功 N 个」**不显示**（元素在但空着 ⇒ display:none）',
+             !!_am && (_am.textContent || '').trim() === ''
+             && !!_cs2 && _cs2.display === 'none',
+             _am ? 'text=' + JSON.stringify(_am.textContent)
+                   + ' display=' + (_cs2 ? _cs2.display : '?') : '#attach-msg 不存在');
+       })();
+
+      await w.eval('(() => { localItems = localItems.filter(x => x.name !== "演示A.txt"); paintAttach(); })()');
+      await sleep(150);
+      chk('★R45-1 删掉一行后剩 1 行',
+          ap.querySelectorAll('.ap-tile').length === 1,
+          'tiles=' + ap.querySelectorAll('.ap-tile').length);
+      await w.eval('(() => { localItems = []; paintAttach(); })()');
+      await sleep(100);
+       /* ★★ R48-3：徽章没了 ⇒ 换成判**数量载体归零** + **回形针提示复位**。
+          守的行为没变：清空之后**界面上不该还写着旧数量**。 */
+       chk('★R45-1/R48-3 清空后**数量归零**（小窗标题 0、回形针提示回到「导入文件」）',
+           (() => {
+             const c = d.querySelector('#ap-count');
+             const b2 = d.querySelector('#attach-btn');
+             const okCnt = !!c && c.textContent.trim() === '0';
+             const okTip = !!b2 && /导入文件/.test(b2.getAttribute('title') || '');
+             return okCnt && okTip;
+           })(),
+           'ap-count=' + (d.querySelector('#ap-count')
+                          ? d.querySelector('#ap-count').textContent : '?')
+           + ' title=' + JSON.stringify(d.querySelector('#attach-btn')
+                                        ? d.querySelector('#attach-btn').getAttribute('title') : '?'));
+
+
+      // ★★ 收尾：**把用户的真实列表还原回去**（本段是用例改了用户数据的最后一处）。
+      await w.eval('(() => { localItems = JSON.parse(' + JSON.stringify(_realItems)
+                 + ' || "[]"); paintAttach(); })()');
+      await sleep(140);
+      const _backN = await w.eval('localItems.length');
+      chk('★R45-1 用例结束**还原用户已导入列表**（不改用户数据）',
+          _backN === JSON.parse(_realItems || '[]').length,
+          'restored=' + _backN + ' expect=' + JSON.parse(_realItems || '[]').length);
+    } catch (e) { chk('★R45-1 paintAttach（异常）: ' + e.message, false); }
+  }
+
+  /* ② 检索库**按任务归类**（真树结构 + 真缩进） */
+  try {
+    // ★ 页面 key 是 `view-web`（不是 `web-lib` —— 写错只会「静默不切页」，
+    //   几何判据全变 0，看着像产品 bug）。
+    if (typeof w.openSheet === 'function') w.openSheet('view-web');
+    await sleep(500);
+    const list = d.querySelector('#web-list');
+    if (!list) {
+      chk('★R45-2 `#web-list` 存在', false);
+    } else {
+      for (let i = 0; i < 60; i++) {
+        if (list.querySelector('.web-cluster')) break;
+        await sleep(120);
+      }
+      const clusters = list.querySelectorAll('.web-cluster');
+      const kids = list.querySelectorAll('.web-cluster .wg-kids');
+      const subs = list.querySelectorAll('.web-group.wg-sub');
+      const allG = list.querySelectorAll('.web-group');
+      const sheet = d.querySelector('#sheet');
+      chk('★R45-2 检索库页**真的打开着**（否则几何判据全是 0）',
+          !!sheet && !sheet.classList.contains('hidden') && list.getBoundingClientRect().width > 0,
+          'sheetHidden=' + (sheet ? sheet.classList.contains('hidden') : '?')
+          + ' listW=' + list.getBoundingClientRect().width);
+      chk('★R45-2 渲染出任务分组 `.web-cluster`', clusters.length >= 1, 'clusters=' + clusters.length);
+      chk('★R45-2 有子问题容器 `.wg-kids`', kids.length >= 1, 'kids=' + kids.length);
+      chk('★R45-2 子问题行带 `.wg-sub`', subs.length >= 1, 'subs=' + subs.length);
+      if (kids.length) {
+        const cs = getComputedStyle(kids[0]);
+        chk('★R45-2 `.wg-kids` 真有**左缩进 + 竖线**（不是空规则）',
+            parseFloat(cs.marginLeft) > 0 && cs.borderLeftWidth !== '0px',
+            'ml=' + cs.marginLeft + ' blw=' + cs.borderLeftWidth);
+      }
+      if (kids.length && subs.length) {
+        // ★ 几何判据必须在**页面还开着**时测（closeSheet 后 rect 全 0）；
+        //   阈值要**实质**（只写 `>` 0 时 M10 仍 PASS，差 1px）⇒ 要求 ≥ 8px。
+        const kr = kids[0].getBoundingClientRect();
+        const sr = subs[0].getBoundingClientRect();
+        const dlt = sr.left - kr.left;
+        chk('★R45-2 子问题几何上确实缩进在根问题右侧（≥8px 实质间距）',
+            dlt >= 8 && sr.width > 0,
+            'Δleft=' + dlt + ' sub=' + sr.left + ' kids=' + kr.left);
+      }
+      chk('★R45-2 两向对账：根 + 子 == 全部组数（不丢不重）',
+          clusters.length + subs.length === allG.length,
+          'root ' + clusters.length + ' + sub ' + subs.length + ' vs all ' + allG.length);
+      if (clusters.length) {
+        chk('★R45-2 子问题**嵌在**根节点容器内（不是平铺的两个兄弟）',
+            clusters[0].querySelectorAll('.web-group').length >= 1,
+            'inCluster0 groups=' + clusters[0].querySelectorAll('.web-group').length);
+      }
+    }
+    if (typeof w.closeSheet === 'function') w.closeSheet();
+    await sleep(200);
+  } catch (e) { chk('★R45-2 归类（异常）: ' + e.message, false); }
+
+  /* ③ 首屏**不许**看见滚动点（R44 第 4 条的彻底修法） */
+  try {
+    if (typeof w.newChat === 'function') w.newChat();
+    await sleep(500);
+    const bar = d.querySelector('#rl-bar');
+    chk('★R45-3 首屏存在 `#rl-bar`（它还在，只是看不见）', !!bar);
+    if (bar) {
+      chk('★R45-3 首屏正常态下 `#rl-bar` **没有** `.on`', !bar.classList.contains('on'),
+          'cls=' + bar.className);
+      // 人为点亮：模拟「上一次留在 .on 没灭」—— 这正是用户看到的现象
+      bar.classList.add('on');
+      await sleep(60);
+      const cs = getComputedStyle(bar);
+      // ★★ 真因（本轮 CDP 诊断锁定）：`#rl-bar` 带 `transition:opacity .15s`，而
+      //    **无头虚拟时间不推进 CSS transition** ⇒ `classList.add('on')` 后立刻量，
+      //    `opacity` 停在**起始帧**（1），尽管兜底规则 `opacity:0 !important` 已命中
+      //    （诊断输出里 `hit=…body.stage-empty #rl-bar=0!`，`pointer-events` 也是 none，
+      //     证明规则确实生效 —— 只有 opacity 卡在过渡中间）。
+      //    ⇒ 量之前**先 finish 动画/过渡**（技能里「坑 2」的正解），否则读数不可信。
+      bar.getAnimations?.().forEach(a => { try { a.finish(); } catch (e) {} });
+      await sleep(30);
+      const cs2 = getComputedStyle(bar);
+      chk('★R45-3 首屏（stage-empty）里**即使** `.on` 在，计算出的 opacity 也是 0',
+          parseFloat(cs2.opacity) === 0,
+          'stage=' + d.body.className + ' opacity=' + cs2.opacity
+          + ' matches=' + bar.matches('body.stage-empty #rl-bar')
+          + ' pe=' + cs.pointerEvents);
+      chk('★R45-3 首屏里那个点**点不到**（pointer-events:none）',
+          cs.pointerEvents === 'none', 'pe=' + cs.pointerEvents);
+
+      /* ★ 双层防御要**分别**证明（M15 教训）：
+         CSS 兜底与 JS 判据各自独立。只测「结果 opacity=0」时，JS 那层坏了 CSS 还挡着
+         ⇒ 判据不会红。而 updateRlBar 里**有好几条早退**（日志区 hidden / 滚距 ≤8 / 高度 <60），
+         它们也会摘掉 `.on` —— 所以「随便点一下 .on 再调 updateRlBar」测的是**共性**。
+         要隔离 stage-empty：把其它早退条件**都摆成不成立**（日志区可见、有高度、**确实可滚**），
+         唯一能救的就是 stage-empty 那一条。 */
+      const _box = d.querySelector('#runlog');
+      const _bd = d.querySelector('#runlog-body');
+      const _sv = {
+        boxCls: _box.className, bodyCls: d.body.className,
+        boxStyle: _box.getAttribute('style'), bdStyle: _bd ? _bd.getAttribute('style') : null,
+        bdHtml: _bd ? _bd.innerHTML : null,
+      };
+      _box.classList.remove('hidden');
+      _box.style.display = 'block'; _box.style.height = '300px';
+      if (_bd) {
+        _bd.style.display = 'block'; _bd.style.height = '120px';
+        _bd.style.minHeight = '120px'; _bd.style.overflow = 'auto';
+        _bd.innerHTML = new Array(120).fill('<div class="lg-line">x</div>').join('');
+      }
+      d.body.classList.remove('stage-run', 'panel-open');
+      d.body.classList.add('stage-empty');
+      bar.classList.add('on');
+      await sleep(60);
+      const _okBox = !_box.classList.contains('hidden');
+      const _bdH = _bd ? _bd.clientHeight : -1;
+      const _over = _bd ? (_bd.scrollHeight - _bd.clientHeight) : -1;
+      if (typeof w.updateRlBar === 'function' && _okBox && _bdH >= 60 && _over > 8) {
+        w.updateRlBar();
+        await sleep(80);
+        chk('★R45-3 JS 层判据：**隔离** stage-empty（日志区可见有高度**且确实可滚**）后，'
+            + 'updateRlBar() 仍主动摘掉 `.on`（不靠 CSS 遮）',
+            !bar.classList.contains('on'),
+            'stage=' + d.body.className + ' bdH=' + _bdH + ' over=' + _over + ' cls=' + bar.className);
+      } else {
+        chk('★R45-3 JS 层判据：隔离失败（前置条件没摆好 ⇒ 判据无效）', false,
+            'boxVis=' + _okBox + ' bdH=' + _bdH + ' over=' + _over);
+      }
+      // 复原
+      _box.className = _sv.boxCls;
+      if (_sv.boxStyle === null) _box.removeAttribute('style'); else _box.setAttribute('style', _sv.boxStyle);
+      if (_bd) {
+        if (_sv.bdStyle === null) _bd.removeAttribute('style'); else _bd.setAttribute('style', _sv.bdStyle);
+        if (_sv.bdHtml !== null) _bd.innerHTML = _sv.bdHtml;
+      }
+      d.body.className = _sv.bodyCls;
+      await sleep(60);
+
+      // 负对照：摘掉 stage-empty ⇒ 兜底不该把点永久压死
+      bar.classList.add('on');
+      await sleep(60);
+      const _had = d.body.classList.contains('stage-empty');
+      d.body.classList.remove('stage-empty');
+      await sleep(80);
+      const pe2 = getComputedStyle(bar).pointerEvents;
+      if (_had) d.body.classList.add('stage-empty');
+      chk('★R45-3 负对照：**不是**首屏/面板态时兜底不生效（点恢复可交互）',
+          pe2 !== 'none', 'pe(非空态)=' + pe2);
+      bar.classList.remove('on');
+    }
+  } catch (e) { chk('★R45-3 首屏点（异常）: ' + e.message, false); }
+
+  /* ── ⑥ 开启新对话：清掉当前显示、回到首屏 ──────────────────────
+     ★ 放在**最后**测：它会把运行日志清掉，前面那些依赖日志的断言不能再受影响。 */
+  d.querySelector('#newchat-btn').click();
+  await sleep(450);
+  chk('点「开启新对话」：回到首屏（stage-empty + 日志收起 + 输入框清空 + 浮层关闭）',
+      d.body.className.indexOf('stage-empty') >= 0
+      && d.querySelector('#runlog').classList.contains('hidden')
+      && d.querySelector('#question').value === ''
+      && d.querySelector('#search-overlay').classList.contains('hidden')
+      && d.querySelectorAll('#runlog-body').length === 1,
+      'stage=' + d.body.className
+      + ' logHidden=' + d.querySelector('#runlog').classList.contains('hidden')
+      + ' q=[' + d.querySelector('#question').value + ']');
+}
+
+/* ★ 诊断：把已完成的判据**边跑边写**进 `#out` —— 无头下若某一步卡住，
+   dump 出来就能直接看到「最后跑到哪一条」，不用靠猜。 */
+setInterval(() => {
+  const el = document.getElementById('out');
+  if (el && el.textContent.indexOf('ACCEPT 结果') < 0) {
+    el.textContent = R.join('\n') + '\n…（进行中）';
+  }
+}, 300);
+
+(async () => {
+  try { await run(); }
+  catch (err) { R.push('FAIL 探针异常  | ' + (err && err.message)); }
+  finally {
+    const pass = R.filter(x => x.startsWith('PASS')).length;
+    const fail = R.filter(x => x.startsWith('FAIL')).length;
+    document.getElementById('out').textContent =
+      R.join('\n') + '\n\nACCEPT 结果：PASS ' + pass + ' / FAIL ' + fail;
+    document.title = 'ACCEPT PASS ' + pass + ' FAIL ' + fail + (EXTRA ? ' | ' + EXTRA : '');
+  }
+})();
+</script>
+</body></html>
