@@ -336,7 +336,7 @@ scheduler.v2.enabled=true 且 shadow=false；先只接管层顺序/圈数，层�
 
 按 3.1–3.4 逐层替换；每层独立 feature flag；每层独立判据（契约 + 质量 + 成本）。
 
-2026-10-19 收口：L0-v2 以 archive 只读默认恢复（不裁剪、不注入 prompt）；F2/F3/F4/F5 契约层默认开；F3/F4 四层 full-4 通过；F5 只开只读审计/novelty，生成机制延期。
+2026-10-19 收口：L0-v2 以 archive 只读默认恢复（不裁剪、不注入 prompt）；F2/F3/F4/F5 契约层默认开；F3/F4 四层 full-4 通过；F5 已完成生成+只读审计/novelty，生成机制延期。
 
 ---
 

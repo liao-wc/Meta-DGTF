@@ -24,7 +24,42 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V2.0.0.py"
+V1_SRC = HERE / "v1/engine/元DGTF-V1.30.4.py"
+# V1-only 门禁：V2 默认跳过；显式 DGTF_V1_SMOKE=1 才运行。
+if os.environ.get("DGTF_V1_SMOKE") != "1":
+    print("V1-only smoke gate: skipped (set DGTF_V1_SMOKE=1 to run)")
+    raise SystemExit(0)
+# 门禁用临时根目录引擎副本：引擎的 bench/config 相对路径按根目录解析。
+SRC = HERE / "元DGTF-V1.30.4.py"
+_V1_TEMP_ENGINE = False
+_V1_TEMP_CONFIG = None
+_V1_TEMP_REPORT = False
+_V1_TEMP_FIXTURES = []
+if os.environ.get("DGTF_V1_SMOKE") == "1" and not SRC.is_file():
+    import shutil
+    shutil.copy2(V1_SRC, SRC)
+    _V1_TEMP_ENGINE = True
+if os.environ.get("DGTF_V1_SMOKE") == "1":
+    _cfg = HERE / "dgtf_config.yaml"
+    if _cfg.is_file():
+        _ct = _cfg.read_text(encoding="utf-8")
+        if "v2.0.0 配置文件" in _ct:
+            _V1_TEMP_CONFIG = _ct
+            _cfg.write_text(_ct.replace("v2.0.0 配置文件", "v1.30.4 配置文件"),
+                            encoding="utf-8")
+    _rep_src = HERE / "v1" / "reports" / "v1304_报告.md"
+    _rep_dst = HERE / "v1304_报告.md"
+    if _rep_src.is_file() and not _rep_dst.is_file():
+        import shutil as _sh
+        _sh.copy2(_rep_src, _rep_dst)
+        _V1_TEMP_REPORT = True
+    _fx = HERE / "v1" / "fixtures"
+    if _fx.is_dir():
+        import shutil as _sh2
+        for _f in _fx.iterdir():
+            if _f.is_file() and not (HERE / _f.name).exists():
+                _sh2.copy2(_f, HERE / _f.name)
+                _V1_TEMP_FIXTURES.append(HERE / _f.name)
 
 os.environ.setdefault("DGTF_API_KEY", "sk-smoke-test-key")
 
@@ -17741,4 +17776,21 @@ def main():
     return 0
 
 if __name__ == "__main__":
-    sys.exit(main())
+    # V1-only 回归门禁：不再作为 V2 生产门禁。
+    if os.environ.get("DGTF_V1_SMOKE") != "1":
+        print("V1-only smoke gate: skipped (set DGTF_V1_SMOKE=1 to run)")
+        sys.exit(0)
+    try:
+        _rc = main()
+    finally:
+        if _V1_TEMP_ENGINE and SRC.exists():
+            SRC.unlink()
+        if _V1_TEMP_CONFIG is not None:
+            (HERE / "dgtf_config.yaml").write_text(_V1_TEMP_CONFIG,
+                                                  encoding="utf-8")
+        if _V1_TEMP_REPORT and (HERE / "v1304_报告.md").exists():
+            (HERE / "v1304_报告.md").unlink()
+        for _f in _V1_TEMP_FIXTURES:
+            if _f.exists():
+                _f.unlink()
+    sys.exit(_rc)

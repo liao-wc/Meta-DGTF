@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""F5 · 0 层审计/延期契约包判据（10 项）。
+"""F5 · 0 层审计/生成契约包判据（11 项）。
 
-口径依据 docs/v1240_phase5_fusion.md §3.1 / §6.3：0 层只接契约、不接 L0-v2，
-novelty_curve 空是延期读数而非职责缺口；F5 整体 deferred。
+V2.0.0 起 F5 已完成：生成 aspect_map / probes / suspensions / novelty_curve，
+只读审计仍然保留；deferred 默认 False。
 """
 import json
 import sys
@@ -11,7 +11,8 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
 
-from dgtf_v2.layers_zero import ZeroLayerPackage, assemble_zero_package  # noqa: E402
+from dgtf_v2.layers_zero import (ZeroLayerPackage, assemble_zero_package,  # noqa: E402
+                                 generate_zero_layer, merge_zero_generation)
 
 
 def _full():
@@ -32,7 +33,7 @@ def case_complete():
     assert p.novelty_measured and p.novelty_curve == [0.91, 0.84, 0.77]
     assert p.no_actions and not p.gaps, p.gaps
     assert p.contract_completeness == 1.0 and p.ok
-    assert p.deferred is True
+    assert p.deferred is False
 
 
 def case_missing_aspects():
@@ -79,7 +80,7 @@ def case_novelty_empty_deferred():
     assert p.novelty_curve == [] and p.novelty_measured is False
     # 延期项：novelty 空不记 gap，也不挡 0 层契约 ok
     assert not any("novelty" in g.lower() for g in p.gaps), p.gaps
-    assert p.deferred is True
+    assert p.deferred is False
     assert p.ok is True
 
 
@@ -102,7 +103,7 @@ def case_empty_view():
     assert len(p.gaps) == 2, p.gaps
     assert p.contract_completeness == 0.0
     assert not p.ok
-    assert p.deferred is True
+    assert p.deferred is False
     assert assemble_zero_package(None).to_dict() == p.to_dict()
 
 
@@ -130,11 +131,11 @@ def case_to_dict():
             "novelty_measured", "no_actions", "gaps",
             "contract_completeness", "ok", "deferred"}
     assert set(d) == keys, set(d) ^ keys
-    assert d["deferred"] is True and d["novelty_measured"] is True
+    assert d["deferred"] is False and d["novelty_measured"] is True
     assert d["contract_completeness"] == 1.0 and d["ok"] is True
     assert json.loads(json.dumps(d, ensure_ascii=False))["ok"] is True
     z = ZeroLayerPackage().to_dict()
-    assert z["deferred"] is True and z["ok"] is False
+    assert z["deferred"] is False and z["ok"] is False
     assert z["contract_completeness"] == 0.0 and z["gaps"] == []
 
 
@@ -152,7 +153,7 @@ def case_ok_semantics():
     }
     for name, pkg in bad.items():
         assert pkg.ok is False, name
-        assert pkg.deferred is True, name
+        assert pkg.deferred is False, name
         # ok 的唯一语义：原生齐全（完整性 1.0）且无任何 gap
         assert pkg.ok == (pkg.contract_completeness == 1.0
                           and not pkg.gaps), name
@@ -161,10 +162,27 @@ def case_ok_semantics():
     assert assemble_zero_package(base).ok is True
 
 
+
+
+def case_generate_f5():
+    g = generate_zero_layer(
+        "预算内如何完成 V2 并保证质量？",
+        {"subquestions": ["预算边界是什么", "质量门如何定义"],
+         "gaps": ["缺少真实跑证据"]})
+    p = assemble_zero_package(g)
+    assert p.aspects >= 2 and p.probes >= 1 and p.suspensions >= 1
+    assert p.novelty_measured and p.novelty_curve
+    assert p.no_actions and not p.gaps and p.ok
+    assert p.deferred is False
+    assert not any(k in g for k in ("actions", "decision", "answer"))
+    merged = merge_zero_generation({"probes": [{"question": "保留探针"}]}, g)
+    assert merged["probes"] == [{"question": "保留探针"}]
+    assert merged["aspect_map"] and merged["deferred"] is False
+
 CASES = [case_complete, case_missing_aspects, case_no_probes_no_suspensions,
          case_actions_overreach, case_novelty_empty_deferred,
          case_novelty_measured, case_empty_view, case_string_tolerance,
-         case_to_dict, case_ok_semantics]
+         case_to_dict, case_ok_semantics, case_generate_f5]
 
 
 def main():

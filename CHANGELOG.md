@@ -20,6 +20,8 @@ v2.0.0
 - 生产入口切换为 元DGTF-V2.0.0.py；App 版本 2.0.0。
 - 默认调度 scheduler.v2.takeover=true；V2 三平面核心发布。
 - V1 引擎/报告/脚本归档到 v1/；32 个 dgtf_v2 tests_*.py 全部通过。
+- F5 0 层生成机制完成（aspect/probe/suspension/novelty + 审计）。
+- V1 smoke 明确改为 V1-only 门禁；V2 命名规范见 v2/NAMING.md。
 - 更新 README、PROJECT_MAP、PROJECT_LAYOUT、V2 发布说明与 Pages。
 
 ---

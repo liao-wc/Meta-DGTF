@@ -1618,7 +1618,7 @@ actions:
   one_v2: true
   # 【F4 · both 论证】四层 full-4 真跑通过；默认开。
   both_v2: true
-  # 【F5 · 0 层审计】只读审计/novelty；生成机制延期，默认开审计。
+  # 【F5 · 0 层生成】生成 aspect/probe/novelty + 只读审计；默认开。
   zero_v2: true
   # 三态可靠性：同 prompt 重测 2 次（默认关；开启才可判 test-retest）
   tri_test_retest: false

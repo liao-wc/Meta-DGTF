@@ -24313,7 +24313,7 @@ class MetaDGTF:
             elif _dt0.get("raw_answer_ready") and _dt0.get("answer_quality") == "needs_evidence":
                 _dt0["answer_ready"] = False
                 _dt0["answer_ready_reason"] = "事实证据未覆盖题面/无官方依据"
-            # [v1.30.3] 统一 answer_summary / depth 契约：md、app、bench 读同一份。
+            # 统一 answer_summary / depth 契约：md、app、bench 读同一份。
             _led0 = packed.get("process_ledger") or {}
             _lay0 = _led0.get("layers") or {}
             _depth0 = {
@@ -25756,7 +25756,7 @@ def _render_landing_decision(res: dict) -> str:
     ans = dp.get("answer") or "（未产出可执行结论）"
     out.append(f"- **主结论**：{ans}\n")
 
-    # [v1.30.1] 结构化 actions 优先读 packed 顶层；v1.24 起职责已迁到 all/顶层，
+    # 结构化 actions 优先读 packed 顶层；旧版起职责已迁到 all/顶层，
     # 旧路径 views.1 只留兜底，避免 md 只渲染 1 条残缺 action。
     _packed_actions = res.get("actions")
     if not (isinstance(_packed_actions, list) and _packed_actions):

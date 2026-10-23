@@ -22639,8 +22639,19 @@ class MetaDGTF:
                 _pack["both_argument"] = _bpkg.to_dict()
             # F5 · 0 层审计契约（opt-in；只做读数）
             if bool((self.config.get("actions") or {}).get("zero_v2")):
-                from dgtf_v2.layers_zero import assemble_zero_package
+                from dgtf_v2.layers_zero import (assemble_zero_package,
+                                                 generate_zero_layer,
+                                                 merge_zero_generation)
                 _zv = dict(_pack["views"].get("0") or {})
+                # F5 生成机制：从问题/研究分解补齐 0 层 aspect/probe/悬置。
+                # 只补契约字段，不生成答案、决策或行动。
+                _q0 = str(getattr(self, "_question", "") or "")
+                _r1 = _pack["views"].get("1") or {}
+                _gen = generate_zero_layer(_q0, _r1)
+                _zv = merge_zero_generation(_zv, _gen)
+                _pack["views"]["0"] = _zv
+                _pack["zero_generation"] = "f5"
+                _pack["zero_generated"] = True
                 # F5 novelty 读数：只从 0 层 round_log 的 new_amps/
                 # new_threads 派生，不回头改 0 层选择，不重开 L0-v2。
                 if isinstance(_zv, dict) and not _zv.get("novelty_curve"):
@@ -29767,7 +29778,7 @@ DEFAULT_CONFIG = {
         "one_v2": True,
         # F4 · both 原生论证契约（四层 full-4 通过；默认开）
         "both_v2": True,
-        # F5 · 0 层审计契约（只读；默认开审计，生成机制延期）
+        # F5 · 0 层生成+审计契约（默认开；生成 aspect/probe/novelty）
         "zero_v2": True,
         # 三态可靠性：同 prompt 重测 2 次（默认关；开启才可判 test-retest）
         "tri_test_retest": False,
@@ -30181,7 +30192,7 @@ _ALL_ON_EXEMPT = {
     "actions.one_v2": "F3 1 层契约包实验：单独验证，"
                       "不与其他一键全开能力混跑",
     "actions.both_v2": "F4 both 契约审计：只读，不改桥接输出",
-    "actions.zero_v2": "F5 0 层审计：只读，0 层延期",
+    "actions.zero_v2": "F5 0 层生成+审计：生成 aspect/probe/novelty",
 }
 
 

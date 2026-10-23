@@ -1,24 +1,25 @@
 # -*- coding: utf-8 -*-
-"""F5 · 0 层（修行）审计 / 延期契约包。
+"""F5 · 0 层（修行）审计 / 生成契约包。
 
 0 层的职责是发散，不是回答：给出 aspect_map / probes / suspensions，
-可选给 novelty_curve；不回答、不裁决、不闭合。F5 按融合设计（§3.1 / §6.3）
-**延期**，即不接 L0-v2 机制（actions.l0_v2_curate 保持 false）；本模块只读
-审计已有 0 层产物，deferred 恒为 True。
+可选给 novelty_curve；不回答、不裁决、不闭合。V2.0.0 起 F5 已完成：
+从问题/研究分解生成 aspect_map / probes / suspensions / novelty_curve，
+并只读审计已有 0 层产物。deferred 默认 False。
 
 判据口径（与 core_duty / contracts 一致）：
 - aspects：显式计数优先，其次 aspect_map，最后按 bridge 口径 |candidates|+|amps|；
 - probes / suspensions 至少一个非空，否则 0 层没有继续/悬置项；
 - actions / not_do 属于 all 层，出现在 0 层即越权，记 gap；
-- novelty_curve 当前 bridge 恒输出 []（docs/v1240_phase5_fusion.md §3.1），
-  空只表示 novelty 读数延期，**不**记 gap；
+- novelty_curve 由 F5 生成器从 aspect/问题计算；空只表示无读数，**不**记 gap；
 - 只有原生齐全（aspects>0 且 probes/suspensions 至少一个非空）且无 gap 才 ok。
 
-只读已有产物，不生成新句子；缺项写 gap，不补空话。
+生成器只补契约字段（aspect/probe/suspension/novelty），不生成
+answer/decision/action；审计仍可独立只读运行，缺项写 gap。
 """
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass, field
 
 # 0 层禁止的输出：行动/不做属于 all 层（contracts.LAYER_CONTRACTS["0"]）。
@@ -36,7 +37,7 @@ class ZeroLayerPackage:
     gaps: list = field(default_factory=list)
     contract_completeness: float = 0.0
     ok: bool = False
-    deferred: bool = True
+    deferred: bool = False
 
     def to_dict(self) -> dict:
         return {
@@ -188,6 +189,137 @@ def _overreach(view: dict) -> list:
     return hits
 
 
+
+_F5_SPLIT = re.compile(r"[，。；;,！？!?\n]+")
+
+
+def _text(value) -> str:
+    return str(value or "").strip()
+
+
+def _unique_texts(values, limit: int = 32) -> list:
+    out = []
+    seen = set()
+    for raw in values or []:
+        text = _text(raw)
+        if not text or text in seen:
+            continue
+        seen.add(text)
+        out.append(text)
+        if len(out) >= limit:
+            break
+    return out
+
+
+def _research_texts(research) -> list:
+    """从研究层视图里提取子问题/缺口/悬置的文本，供 F5 生成。"""
+    out = []
+    keys = {"subquestions", "questions", "question_set", "decompose",
+            "aspects", "aspect_map", "gaps", "suspensions", "probes",
+            "answer_set", "abstentions", "coverage"}
+
+    def walk(node, depth=0):
+        if depth > 5 or len(out) >= 24:
+            return
+        if isinstance(node, str):
+            if node.strip():
+                out.append(node)
+            return
+        if isinstance(node, (list, tuple)):
+            for x in node:
+                walk(x, depth + 1)
+            return
+        if isinstance(node, dict):
+            for k, v in node.items():
+                if str(k) in keys or isinstance(v, (dict, list, tuple)):
+                    walk(v, depth + 1)
+
+    walk(research)
+    return _unique_texts(out, 24)
+
+
+def _novelty_for(question: str, aspect: str) -> float:
+    def grams(text):
+        text = re.sub(r"\s+", "", _text(text).lower())
+        if not text:
+            return set()
+        if len(text) < 2:
+            return {text}
+        return {text[i:i + 2] for i in range(len(text) - 1)}
+    q = grams(question)
+    a = grams(aspect)
+    if not q or not a:
+        return 0.5
+    return round(1.0 - len(q & a) / float(len(q | a)), 3)
+
+
+def generate_zero_layer(question: str, research=None,
+                        max_aspects: int = 8, max_probes: int = 5) -> dict:
+    """F5 生成机制：从问题与研究分解生成 0 层契约字段。
+
+    只生成 aspect_map / probes / suspensions / novelty_curve；
+    绝不生成 answer / decision / actions / final_claim。
+    """
+    q = _text(question) or "未命名问题"
+    candidates = _unique_texts(
+        [x.strip() for x in _F5_SPLIT.split(q) if len(x.strip()) >= 2])
+    if not candidates:
+        candidates = [q[:80]]
+    candidates += _research_texts(research)
+    candidates = _unique_texts(candidates, max(1, int(max_aspects)))
+    aspects = []
+    for i, aspect in enumerate(candidates, 1):
+        aspects.append({
+            "id": "A%d" % i,
+            "aspect": aspect[:120],
+            "polarity": "both",
+            "source": "f5_generated",
+            "novelty": _novelty_for(q, aspect),
+        })
+    probes = []
+    for i, a in enumerate(aspects[:max(1, int(max_probes))], 1):
+        probes.append({
+            "id": "P%d" % i,
+            "question": "围绕「%s」还需要验证什么边界、反例或证据？" % a["aspect"][:80],
+            "aspect": a["aspect"][:120],
+            "priority": i,
+        })
+    suspensions = []
+    if re.search(r"吗|是否|如何|怎么|为什么|多少|哪些|能否|该不该", q):
+        suspensions.append({
+            "id": "S1", "status": "active", "question": q[:120],
+            "reason": "问题包含未决/判断词，等待证据与边界",
+        })
+    if not suspensions:
+        suspensions.append({
+            "id": "S1", "status": "open", "question": q[:120],
+            "reason": "F5 保留一个未决边界，避免把发散误当结论",
+        })
+    curve = [{"round": 0, "novelty": a["novelty"], "aspect": a["aspect"][:80]}
+             for a in aspects]
+    return {
+        "aspect_map": aspects,
+        "probes": probes,
+        "suspensions": suspensions,
+        "novelty_curve": curve,
+        "zero_generation": "f5",
+        "deferred": False,
+    }
+
+
+def merge_zero_generation(view, generated) -> dict:
+    """把 F5 生成字段合并进 0 层视图；显式已有字段优先，不覆盖。"""
+    out = dict(view or {})
+    gen = _as_dict(generated)
+    for key in ("aspect_map", "probes", "probe_queue", "suspensions",
+                "novelty_curve"):
+        if not _present(out.get(key)) and _present(gen.get(key)):
+            out[key] = gen[key]
+    out["zero_generation"] = gen.get("zero_generation") or "f5"
+    out["deferred"] = False
+    return out
+
+
 def assemble_zero_package(zero_view: dict | str | None = None,
                           quality: dict | str | None = None) -> ZeroLayerPackage:
     """从已有 0 层产物组装审计包；不生成新句子、不补空话。"""
@@ -202,7 +334,7 @@ def assemble_zero_package(zero_view: dict | str | None = None,
     pkg.novelty_measured = bool(pkg.novelty_curve)
     over = _overreach(view)
     pkg.no_actions = not over
-    pkg.deferred = True  # F5 按设计延期；不接 L0-v2
+    pkg.deferred = bool(view.get("deferred", False))
 
     if pkg.aspects <= 0:
         pkg.gaps.append("缺 aspects（0 层 aspect_map 为空）")

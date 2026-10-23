@@ -1,6 +1,6 @@
 # dgtf_v2 · 三平面参考内核
 
-**状态：V2 已发布（reference + production 契约层）。** 生产引擎是 元DGTF-V2.0.0.py；F2/F3/F4/F5 契约层默认开，L0-v2 archive 只读默认开；F5 生成机制延期。2026-10-23 复测：dgtf_v2 下 32 个 tests_*.py 全部通过（运行需 PYTHONPATH=项目根）。
+**状态：V2 已发布（reference + production 契约层）。** 生产引擎是 元DGTF-V2.0.0.py；F2/F3/F4/F5 契约层默认开，L0-v2 archive 只读默认开；F5 生成机制已完成（V2.0.0）。2026-10-23 复测：dgtf_v2 下 32 个 tests_*.py 全部通过（运行需 PYTHONPATH=项目根）。
 
 ## 是什么
 
@@ -30,8 +30,8 @@
     tests_one.py     10 项 F3 判据
     layers_both.py   F4 · both 原生论证契约
     tests_both.py    10 项 F4 判据
-    layers_zero.py   F5 · 0 层审计契约
-    tests_zero.py    10 项 F5 判据
+    layers_zero.py   F5 · 0 层审计/生成契约
+    tests_zero.py    11 项 F5 审计/生成判据
 
 ## 跑
 
@@ -44,7 +44,7 @@
 - tests_l0：16 / 16
 - tests_core：9 / 9
 - tests_all：9 / 9；F2 all_v2 四层真跑 5/5（成本 5/5 在 600k），boundary profile 支持无 actions
-- tests_one / tests_both / tests_zero：各 10 / 10；F3/F4 full-4 通过，F5 只读审计通过
+- tests_one / tests_both / tests_zero：各 10 / 11；F3/F4 full-4 通过，F5 生成+审计通过
 - 核心职责审计：20 份历史 packed 中 18 份 1 层 actions 错位，已改源头落盘；
   4 份 all 缺 decision/residual（未产出 all 的跑次，不伪造）
 - L0 replay：10 份真实 0 层产物，467 候选 → 80 精英，novelty .92–.95，档案 4–8 格
@@ -58,7 +58,7 @@
 3. Phase 2：EML 双写，不迁移不删除。
 4. Phase 3：契约闸先告警后拒绝。
 5. Phase 4：接管层顺序/圈数，层内 prompt 不动。
-6. Phase 5：F2/F3/F4/F5 契约层已接生产默认；L0 archive 只读；F5 生成机制延期。
+6. Phase 5：F2/F3/F4/F5 契约层已接生产默认；L0 archive 只读；F5 生成机制已完成（V2.0.0）。
 
 任何一步不达标，回滚 V1 auto_plan；生产引擎不因 V2 设计而改变。
 

@@ -272,8 +272,15 @@ _sm = (HERE / "smoke_test.py")
 if _sm.is_file():
     _st = _sm.read_bytes().decode("utf-8")
     _ms = re.search(r'SRC = HERE / "([^"]+)"', _st)
-    ck("C2 smoke_test.py 的 SRC 指向本版", bool(_ms) and _ms.group(1) == SRC.name,
-       "smoke SRC=%r，本版=%r" % (_ms.group(1) if _ms else None, SRC.name))
+    if "V1-only smoke gate" in _st:
+        ck("C2 smoke_test.py 是 V1-only 门禁",
+           bool(_ms) and _ms.group(1) == "v1/engine/元DGTF-V1.30.4.py"
+           and "DGTF_V1_SMOKE" in _st,
+           "smoke SRC=%r，门禁=%r" % (_ms.group(1) if _ms else None,
+                                      "V1-only" if "V1-only smoke gate" in _st else "?"))
+    else:
+        ck("C2 smoke_test.py 的 SRC 指向本版", bool(_ms) and _ms.group(1) == SRC.name,
+           "smoke SRC=%r，本版=%r" % (_ms.group(1) if _ms else None, SRC.name))
 else:
     ck("C2 smoke_test.py 存在", False, "")
 _y = HERE / "dgtf_config.yaml"
@@ -287,9 +294,10 @@ if _y.is_file():
     ck("C3 yaml 头部版本 == __version__", _yv == _ver, "yaml=%r ver=%r" % (_yv, _ver))
 else:
     ck("C3 dgtf_config.yaml 存在", False, "")
-ck("C4 本版报告存在", (HERE / ("v%s_报告.md" % _ver.replace(".", ""))).is_file()
-   or (HERE / ("v%s_报告.md" % _ver.replace(".", ""))).is_file(),
-   "缺 v%s_报告.md" % _ver.replace(".", ""))
+_canon_report = HERE / ("V%s-发布报告.md" % _ver)
+_legacy_report = HERE / ("v%s_报告.md" % _ver.replace(".", ""))
+ck("C4 本版报告存在", _canon_report.is_file() or _legacy_report.is_file(),
+   "缺 V%s-发布报告.md" % _ver)
 
 # ============================================================ D 宪法红线
 print("── D 宪法红线（W# 不进候选 / 不进对撞第三者）──")
@@ -365,7 +373,9 @@ for _nm, _const in (("死类", "_AUDIT_DEAD_CLASSES"),
 
 # ============================================================ H 文档引用
 print("── H 文档引用的文件 ──")
-_rep = HERE / ("v%s_报告.md" % _ver.replace(".", ""))
+_rep = HERE / ("V%s-发布报告.md" % _ver)
+if not _rep.is_file():
+    _rep = HERE / ("v%s_报告.md" % _ver.replace(".", ""))
 if _rep.is_file():
     _rt = _rep.read_text(encoding="utf-8")
     _refs = set(re.findall(r"`([\w\u4e00-\u9fff\-.]+\.(?:py|md|json|yaml))`", _rt))

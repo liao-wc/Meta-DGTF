@@ -42,6 +42,8 @@
 - V2 生产入口：元DGTF-V2.0.0.py
 - App：2.0.0
 - Engine：2.0.0
-- V2 tests：32 / 32 PASS
+- V2 tests：32 / 32 PASS（F5 判据 11/11）
+- F5：生成机制完成
+- V2 命名：见 v2/NAMING.md
 - fast_gate：12 / 12 PASS
 - selftest：371 / 371 PASS
