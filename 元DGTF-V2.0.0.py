@@ -25756,7 +25756,7 @@ def _render_landing_decision(res: dict) -> str:
     ans = dp.get("answer") or "（未产出可执行结论）"
     out.append(f"- **主结论**：{ans}\n")
 
-    # 结构化 actions 优先读 packed 顶层；v1.24 起职责已迁到 all/顶层，
+    # 结构化 actions 优先读 packed 顶层；V2 起职责已迁到 all/顶层，
     # 旧路径 views.1 只留兜底，避免 md 只渲染 1 条残缺 action。
     _packed_actions = res.get("actions")
     if not (isinstance(_packed_actions, list) and _packed_actions):
