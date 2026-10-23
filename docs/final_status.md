@@ -33,3 +33,15 @@
 - [ ] git push：远端 github.com:443 连接失败（无法访问），未推送。
 - [ ] 生产部署：无远端部署目标；本机 App 继续运行在生产入口 https://127.0.0.1:8765/。
 
+
+---
+
+## V2.1.0 收束状态（2026-10-23）
+
+- 版本：V2.1.0（历史谱系融合）
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.1.0.py
+- App：2.1.0
+- 历史融合：178 个版本 / 17 条能力轴 / readiness 1.00
+- 门禁：fast_gate 12/0、V2 tests 33/33、App selftest 371/0、pip check 0 broken
+- 文档：docs/history/、docs/releases/V2.1.0.md、V2.1.0-收束报告.md
+- 历史仓库名：GitHub 仓库名仅 ASCII，使用 Meta-DGTF；完整中文名用于描述和文档

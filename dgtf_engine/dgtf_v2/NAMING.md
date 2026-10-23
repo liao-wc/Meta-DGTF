@@ -1,21 +1,48 @@
-# V2 命名规范
+# Meta-DGTF-道生三阶模型 · 版本命名与迭代规范
 
-从 V2.0.0 起，所有对外版本命名以 V2 版本号开头：
+当前版本：**V2.1.0**（融合版）
+上一基线：V2.0.0
+历史归档：V1.x（dgtf_engine/dgtf_v1/ 与 V1 历史归档）
 
-| 对象          | 命名                           |
-| ----------- | ---------------------------- |
-| 生产引擎        | dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.0.0.py              |
-| App         | 2.0.0                        |
-| V2 核心       | dgtf_engine/dgtf_v2/                     |
-| 主版本标签       | V2.0.0                       |
-| App 发布标签    | app-V2.0.0                   |
-| Engine 发布标签 | engine-V2.0.0                |
-| 发布说明        | docs/releases/V2.0.0.md      |
-| 发布报告        | V2.0.0-发布报告.md |
+## 1. 版本号
 
-约束：
+采用语义化版本：VMAJOR.MINOR.PATCH。
 
-1. 新增生产文件/发布标签必须以 V2 版本号开头，不再新增 V1 命名。
-2. V1 名称只保留在 v1/ 归档、回滚引用和 V1-only smoke 门禁中。
-3. 发布报告统一为 V2.0.0-发布报告.md；审计脚本兼容历史 v200_报告.md。
-4. dgtf_engine/dgtf_v2/ 是 V2 核心包名，保留以兼容已有导入；V2 新功能文件使用 v2_ 或 V2 前缀。
+- MAJOR：架构断代或不可回滚的契约变更；
+- MINOR：能力融合、新增机制、发布级功能（V2.1.0 属于此项）；
+- PATCH：修复、判据补强、文档/依赖同步，不改默认行为。
+
+版本号只增不减；旧版本文件与标签保留，不覆盖历史。
+
+## 2. 当前映射（V2.1.0）
+
+| 对象 | 命名 |
+|---|---|
+| 生产引擎 | dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.1.0.py |
+| App | 2.1.0 |
+| V2 核心 | dgtf_engine/dgtf_v2/ |
+| 历史谱系融合 | dgtf_engine/dgtf_v2/history_fusion.py |
+| 历史清单 | dgtf_engine/dgtf_v2/history_manifest.json |
+| 主版本标签 | V2.1.0 |
+| App 发布标签 | app-V2.1.0 |
+| Engine 发布标签 | engine-V2.1.0 |
+| 发布说明 | docs/releases/V2.1.0.md |
+| 收束报告 | V2.1.0-收束报告.md |
+
+## 3. 迭代流程
+
+1. 复制 Meta-DGTF-V<旧版本>.py 为 Meta-DGTF-V<新版本>.py；
+2. 升 __version__，只在新版上改；
+3. 新增/更新 dgtf_engine/dgtf_v2/tests_*.py；
+4. 跑五道门：fast_gate、V2 全量 tests、App selftest、依赖检查、必要真跑；
+5. 写 CHANGELOG.md 新段、docs/releases/V<新版本>.md、收束报告；
+6. 更新本文件、README、PROJECT_MAP、Pages；
+7. 提交、打三标签（V/ app-/ engine-）、发布并核对资产。
+
+## 4. 红线
+
+1. 新增生产文件/发布标签使用 V2 版本号，不再新增 V1 命名。
+2. V1 名称只保留在 dgtf_engine/dgtf_v1/、历史归档、回滚引用和 V1-only smoke 中。
+3. dgtf_engine/dgtf_v2/ 是 V2 核心包名，保留以兼容已有导入。
+4. 版本标签一旦发布不移动、不重写；内容变化用新版本。
+5. 任何“融合”不得改变历史版本的只读归档事实。

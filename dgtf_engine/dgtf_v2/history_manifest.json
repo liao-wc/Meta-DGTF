@@ -1,0 +1,2301 @@
+{
+  "schema": "metadgtf.history_manifest.v1",
+  "project": "Meta-DGTF-道生三阶模型",
+  "generated_at": "2026-10-23",
+  "archive": "元DGTF-V1历史归档-20261023.zip",
+  "archive_versions": 178,
+  "eras": [
+    {
+      "name": "V1.0–V1.9",
+      "key": "foundation",
+      "start": "V1.0",
+      "capabilities": [
+        "四层螺旋推理",
+        "content/context/self 三通道",
+        "单文件引擎",
+        "产物落盘与审计"
+      ]
+    },
+    {
+      "name": "V1.10–V1.20",
+      "key": "evidence",
+      "start": "V1.10",
+      "capabilities": [
+        "外部锚点/证据链",
+        "EML 雏形（episodes/playbook）",
+        "质量读数与停止判据",
+        "串行/并行档位"
+      ]
+    },
+    {
+      "name": "V1.21.x",
+      "key": "self-audit",
+      "start": "V1.21",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "name": "V1.22.x",
+      "key": "architecture",
+      "start": "V1.22",
+      "capabilities": [
+        "模块边界与依赖审计",
+        "快照/续跑/回滚",
+        "质量评分与回归门禁",
+        "安全与权限"
+      ]
+    },
+    {
+      "name": "V1.23.x",
+      "key": "frontier",
+      "start": "V1.23",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ]
+    },
+    {
+      "name": "V1.24–V1.25",
+      "key": "v2-shadow",
+      "start": "V1.24",
+      "capabilities": [
+        "V2 影子调度",
+        "EML v2 双写",
+        "四层契约",
+        "L0-v2 archive"
+      ]
+    },
+    {
+      "name": "V1.26–V1.30",
+      "key": "hardening",
+      "start": "V1.26",
+      "capabilities": [
+        "答案门/过程门分离",
+        "事实卡与一致性",
+        "真跑验收与质量重放",
+        "边界/长文/多轮/视觉"
+      ]
+    },
+    {
+      "name": "V2.0",
+      "key": "three-planes",
+      "start": "V2.0.0",
+      "capabilities": [
+        "EML v2 知识面",
+        "Scheduler v2 控制面",
+        "四层契约 F2-F5",
+        "F5 0 层生成",
+        "App V2 本地工作台"
+      ]
+    },
+    {
+      "name": "V2.1",
+      "key": "fusion",
+      "start": "V2.1.0",
+      "capabilities": [
+        "历史谱系融合",
+        "能力连续性审计",
+        "运行 provenance",
+        "来源/能力/演化文档"
+      ]
+    }
+  ],
+  "versions": [
+    {
+      "version": "1.0",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.0.py",
+      "era": "V1.0–V1.9",
+      "era_key": "foundation",
+      "capabilities": [
+        "四层螺旋推理",
+        "content/context/self 三通道",
+        "单文件引擎",
+        "产物落盘与审计"
+      ]
+    },
+    {
+      "version": "1.1",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.1.py",
+      "era": "V1.0–V1.9",
+      "era_key": "foundation",
+      "capabilities": [
+        "四层螺旋推理",
+        "content/context/self 三通道",
+        "单文件引擎",
+        "产物落盘与审计"
+      ]
+    },
+    {
+      "version": "1.2",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.2.py",
+      "era": "V1.0–V1.9",
+      "era_key": "foundation",
+      "capabilities": [
+        "四层螺旋推理",
+        "content/context/self 三通道",
+        "单文件引擎",
+        "产物落盘与审计"
+      ]
+    },
+    {
+      "version": "1.3",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.3.py",
+      "era": "V1.0–V1.9",
+      "era_key": "foundation",
+      "capabilities": [
+        "四层螺旋推理",
+        "content/context/self 三通道",
+        "单文件引擎",
+        "产物落盘与审计"
+      ]
+    },
+    {
+      "version": "1.4",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.4.py",
+      "era": "V1.0–V1.9",
+      "era_key": "foundation",
+      "capabilities": [
+        "四层螺旋推理",
+        "content/context/self 三通道",
+        "单文件引擎",
+        "产物落盘与审计"
+      ]
+    },
+    {
+      "version": "1.5",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.5.py",
+      "era": "V1.0–V1.9",
+      "era_key": "foundation",
+      "capabilities": [
+        "四层螺旋推理",
+        "content/context/self 三通道",
+        "单文件引擎",
+        "产物落盘与审计"
+      ]
+    },
+    {
+      "version": "1.6",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.6.py",
+      "era": "V1.0–V1.9",
+      "era_key": "foundation",
+      "capabilities": [
+        "四层螺旋推理",
+        "content/context/self 三通道",
+        "单文件引擎",
+        "产物落盘与审计"
+      ]
+    },
+    {
+      "version": "1.7",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.7.py",
+      "era": "V1.0–V1.9",
+      "era_key": "foundation",
+      "capabilities": [
+        "四层螺旋推理",
+        "content/context/self 三通道",
+        "单文件引擎",
+        "产物落盘与审计"
+      ]
+    },
+    {
+      "version": "1.8",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.8.py",
+      "era": "V1.0–V1.9",
+      "era_key": "foundation",
+      "capabilities": [
+        "四层螺旋推理",
+        "content/context/self 三通道",
+        "单文件引擎",
+        "产物落盘与审计"
+      ]
+    },
+    {
+      "version": "1.9",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.9.py",
+      "era": "V1.0–V1.9",
+      "era_key": "foundation",
+      "capabilities": [
+        "四层螺旋推理",
+        "content/context/self 三通道",
+        "单文件引擎",
+        "产物落盘与审计"
+      ]
+    },
+    {
+      "version": "1.10",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.10.py",
+      "era": "V1.10–V1.20",
+      "era_key": "evidence",
+      "capabilities": [
+        "外部锚点/证据链",
+        "EML 雏形（episodes/playbook）",
+        "质量读数与停止判据",
+        "串行/并行档位"
+      ]
+    },
+    {
+      "version": "1.11",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.11.py",
+      "era": "V1.10–V1.20",
+      "era_key": "evidence",
+      "capabilities": [
+        "外部锚点/证据链",
+        "EML 雏形（episodes/playbook）",
+        "质量读数与停止判据",
+        "串行/并行档位"
+      ]
+    },
+    {
+      "version": "1.12",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.12.py",
+      "era": "V1.10–V1.20",
+      "era_key": "evidence",
+      "capabilities": [
+        "外部锚点/证据链",
+        "EML 雏形（episodes/playbook）",
+        "质量读数与停止判据",
+        "串行/并行档位"
+      ]
+    },
+    {
+      "version": "1.13",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.13.py",
+      "era": "V1.10–V1.20",
+      "era_key": "evidence",
+      "capabilities": [
+        "外部锚点/证据链",
+        "EML 雏形（episodes/playbook）",
+        "质量读数与停止判据",
+        "串行/并行档位"
+      ]
+    },
+    {
+      "version": "1.14",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.14.py",
+      "era": "V1.10–V1.20",
+      "era_key": "evidence",
+      "capabilities": [
+        "外部锚点/证据链",
+        "EML 雏形（episodes/playbook）",
+        "质量读数与停止判据",
+        "串行/并行档位"
+      ]
+    },
+    {
+      "version": "1.15",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.15.py",
+      "era": "V1.10–V1.20",
+      "era_key": "evidence",
+      "capabilities": [
+        "外部锚点/证据链",
+        "EML 雏形（episodes/playbook）",
+        "质量读数与停止判据",
+        "串行/并行档位"
+      ]
+    },
+    {
+      "version": "1.16",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.16.py",
+      "era": "V1.10–V1.20",
+      "era_key": "evidence",
+      "capabilities": [
+        "外部锚点/证据链",
+        "EML 雏形（episodes/playbook）",
+        "质量读数与停止判据",
+        "串行/并行档位"
+      ]
+    },
+    {
+      "version": "1.17",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.17.py",
+      "era": "V1.10–V1.20",
+      "era_key": "evidence",
+      "capabilities": [
+        "外部锚点/证据链",
+        "EML 雏形（episodes/playbook）",
+        "质量读数与停止判据",
+        "串行/并行档位"
+      ]
+    },
+    {
+      "version": "1.18",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.18.py",
+      "era": "V1.10–V1.20",
+      "era_key": "evidence",
+      "capabilities": [
+        "外部锚点/证据链",
+        "EML 雏形（episodes/playbook）",
+        "质量读数与停止判据",
+        "串行/并行档位"
+      ]
+    },
+    {
+      "version": "1.19",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.19.py",
+      "era": "V1.10–V1.20",
+      "era_key": "evidence",
+      "capabilities": [
+        "外部锚点/证据链",
+        "EML 雏形（episodes/playbook）",
+        "质量读数与停止判据",
+        "串行/并行档位"
+      ]
+    },
+    {
+      "version": "1.20.2",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.20.2.py",
+      "era": "V1.10–V1.20",
+      "era_key": "evidence",
+      "capabilities": [
+        "外部锚点/证据链",
+        "EML 雏形（episodes/playbook）",
+        "质量读数与停止判据",
+        "串行/并行档位"
+      ]
+    },
+    {
+      "version": "1.21",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.1",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.1.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.2",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.2.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.3",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.3.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.4.1",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.4.1.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.5",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.5.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.6",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.6.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.7",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.7.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.8",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.8.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.9",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.9.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.10",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.10.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.12",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.12.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.13",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.13.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.14",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.14.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.15",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.15.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.16",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.16(归档).py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.17",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.17.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.18",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.18(归档).py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.19",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.19.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.20",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.20.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.21",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.21.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.22",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.22.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.23",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.23.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.24",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.24.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.25",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.25.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.26",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.26.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.27",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.27.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.28",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.28.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.29",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.29.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.30",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.30.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.31",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.31.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.32",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.32.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.33",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.33.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.34",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.34.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.35",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.35.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.36",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.36.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.37",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.37.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.38",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.38.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.39",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.39.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.40",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.40.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.41",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.41.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.42",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.42.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.43",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.43.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.44",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.44.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.45",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.45.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.46",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.46.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.47",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.47.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.48",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.48.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.49",
+      "source": "archive/v1_history_20261023/元DGTF-V1/元DGTF-V1.21.49.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.50",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.21.50.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.53",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.21.53.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.54",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.21.54.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.55",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.21.55.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.56",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.21.56.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.57",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.21.57.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.58",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.21.58.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.59",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.21.59.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.60",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.21.60.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.61",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.21.61.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.62",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.21.62.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.63",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.21.63.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.64",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.21.64.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.65",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.21.65.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.66",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.21.66.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.67",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.21.67.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.68",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.21.68.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.69",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.21.69.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.70",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.21.70.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.71",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.21.71.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.72",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.21.72.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.73",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.21.73.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.74",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.21.74.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.75",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.21.75.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.76",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.21.76.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.21.77",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.21.77.py",
+      "era": "V1.21.x",
+      "era_key": "self-audit",
+      "capabilities": [
+        "自动调度 auto_plan",
+        "探针/悬置/延迟债务",
+        "输入健全性自查",
+        "分环节成本统计"
+      ]
+    },
+    {
+      "version": "1.22.0",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.22.0.py",
+      "era": "V1.22.x",
+      "era_key": "architecture",
+      "capabilities": [
+        "模块边界与依赖审计",
+        "快照/续跑/回滚",
+        "质量评分与回归门禁",
+        "安全与权限"
+      ]
+    },
+    {
+      "version": "1.22.1",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.22.1.py",
+      "era": "V1.22.x",
+      "era_key": "architecture",
+      "capabilities": [
+        "模块边界与依赖审计",
+        "快照/续跑/回滚",
+        "质量评分与回归门禁",
+        "安全与权限"
+      ]
+    },
+    {
+      "version": "1.22.2",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.22.2.py",
+      "era": "V1.22.x",
+      "era_key": "architecture",
+      "capabilities": [
+        "模块边界与依赖审计",
+        "快照/续跑/回滚",
+        "质量评分与回归门禁",
+        "安全与权限"
+      ]
+    },
+    {
+      "version": "1.23.0",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.0.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ]
+    },
+    {
+      "version": "1.23.1",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.1.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ]
+    },
+    {
+      "version": "1.23.2",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.2.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ]
+    },
+    {
+      "version": "1.23.3",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.3.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "把 `v1232_报告.md` §十「仍未做 / 如实记账」五条**逐条清空**："
+    },
+    {
+      "version": "1.23.4",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.4.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "给「联网 / 思考 / 思考强度」加**运行期三项总控**，并让它们在**交互与"
+    },
+    {
+      "version": "1.23.5",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.5.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "清 `docs/机制审计-v122.md` 的挂账：把调度归一化从「三处各写一份」"
+    },
+    {
+      "version": "1.23.6",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.6.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "代码正文不再留「版次批注」—— 变更记录统一由本 docstring 的 changelog"
+    },
+    {
+      "version": "1.23.7",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.7.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "把 changelog 从代码里搬出去 —— 代码文件只剩代码。"
+    },
+    {
+      "version": "1.23.8",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.8.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "渲染层三处守卫 —— 把最近一次真跑暴露的「形态错配」在产物层收口。"
+    },
+    {
+      "version": "1.23.9",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.9.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "取向分流守卫 —— 无决策语境的题面不再套 decision 模板。"
+    },
+    {
+      "version": "1.23.10",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.10.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "剩余四项一次做完（形态声明 / 附录外置 / 成本自动档 / 未校验留痕）——"
+    },
+    {
+      "version": "1.23.11",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.11.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "把「如实记账」里剩下的两条做完 —— R1 后半（自省诊断 → 动作回写）、"
+    },
+    {
+      "version": "1.23.12",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.12.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "把「外部锚点」拆成**两条通道**分别写明：文本锚点（`external_anchor`"
+    },
+    {
+      "version": "1.23.13",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.13.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "把「自动」从散落的 8 处收进**一个统一自适应调度器**：十二项逐项可"
+    },
+    {
+      "version": "1.23.14",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.14.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "把「自动调度」真正接上**真实历史语料**：修一个让它读不到历史的静默 bug，"
+    },
+    {
+      "version": "1.23.15",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.15.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "把 v1.23.14 报告 §八 的「未做 / 边界」四条做完："
+    },
+    {
+      "version": "1.23.16",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.16.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ]
+    },
+    {
+      "version": "1.23.17",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.17.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ]
+    },
+    {
+      "version": "1.23.18",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.18.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ]
+    },
+    {
+      "version": "1.23.19",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.19.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ]
+    },
+    {
+      "version": "1.23.20",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.20.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ]
+    },
+    {
+      "version": "1.23.21",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.21.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ]
+    },
+    {
+      "version": "1.23.22",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.22.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ]
+    },
+    {
+      "version": "1.23.23",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.23.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ]
+    },
+    {
+      "version": "1.23.24",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.24.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ]
+    },
+    {
+      "version": "1.23.25",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.25.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ]
+    },
+    {
+      "version": "1.23.26",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.26.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ]
+    },
+    {
+      "version": "1.23.27",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.27.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ]
+    },
+    {
+      "version": "1.23.28",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.28.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ]
+    },
+    {
+      "version": "1.23.29",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.29.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "收束版：清欠 + 冗余收敛 + 读数修真。上一版挂账**全部处理**，不新增"
+    },
+    {
+      "version": "1.23.30",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.30.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "层职责守卫（LDG）—— 在**停止/收敛处**回答一句：这一层到底替原始问题"
+    },
+    {
+      "version": "1.23.31",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.31.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "EML · 经验记忆回路 —— 让Meta-DGTF **跨跑储存记忆**，并在**每次运行中"
+    },
+    {
+      "version": "1.23.32",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.32.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "学科吸收：把「读数不是分数」做成**可执行的尺子**。来源是本轮检索产出的"
+    },
+    {
+      "version": "1.23.33",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.33.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "**机制级吸收**：把「随时看随时停」变成有保证的事。承接"
+    },
+    {
+      "version": "1.23.34",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.34.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "**提示词优化**：有据 · 智者语气 · 输出结构（**改措辞，不改机制**）。"
+    },
+    {
+      "version": "1.23.36",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.36.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "**联网全接 + 读数全量显示 + 决策可追溯 + 显式控制面**"
+    },
+    {
+      "version": "1.23.37",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.37.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "**联网按需协议**（环节自己说要不要）+ **圈级心跳**（运行中逐圈调整）。"
+    },
+    {
+      "version": "1.23.38",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.38.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "**联网按需「回喂」**（池复用式）+ 圈级心跳**放宽目标表扩展**（4 → 8）。"
+    },
+    {
+      "version": "1.23.39",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.39.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "按需联网**四层一致**（环节自己声明了就真查）。"
+    },
+    {
+      "version": "1.23.40",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.40.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "两件事：① 回喂 **stage 兜底**（声明入库带真实环节名）；② 放宽表 **8→12** + 加「强制放宽」开关。"
+    },
+    {
+      "version": "1.23.41",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.41.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "运行质量问题修复 + 缺漏机制优化（P1~P4）。来源：对 8 个真实产物 × 21 个层实例"
+    },
+    {
+      "version": "1.23.42",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.42.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "P-1 **上下文裁剪**（backlog 第 1 项，成本最大杠杆）。"
+    },
+    {
+      "version": "1.23.43",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.43.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "P-2 **早停**（backlog 第 2 项）：单标量增益 + 配置式阈值。"
+    },
+    {
+      "version": "1.23.44",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.44.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ]
+    },
+    {
+      "version": "1.23.45",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.45.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ]
+    },
+    {
+      "version": "1.23.46",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.46.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ]
+    },
+    {
+      "version": "1.23.47",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.47.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ]
+    },
+    {
+      "version": "1.23.48",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.48.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ]
+    },
+    {
+      "version": "1.23.49",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.49.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "跑中快照（心跳落盘 + 孤儿回收）—— 修「`run()` 只在返回后写盘 ⇒ 宿主回收就全丢」。"
+    },
+    {
+      "version": "1.23.50",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.50.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "断点续跑（复用已完成层）+ 快照记账 + `route` 死捕获 + 墙钟预算。"
+    },
+    {
+      "version": "1.23.51",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.51.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "`_eml_finish` 幂等：**一个跑次只学一条 episode**。"
+    },
+    {
+      "version": "1.23.52",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.52.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "`paused` 跑次**不写 EML 库**：半程样本不是证据。"
+    },
+    {
+      "version": "1.23.53",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.53.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "记忆库目录**一处解析**：`bandit` 不再偷偷写回仓库。"
+    },
+    {
+      "version": "1.23.54",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.54.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "并行跑次也能被**墙钟预算**截住、也能**续跑**。"
+    },
+    {
+      "version": "1.23.55",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.55.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "`paused` 时的缺层从「❌ 缺陷」改成「⏸ 待续」。"
+    },
+    {
+      "version": "1.23.56",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.56.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "快照记账改成**跨窗口累计**（`llm_calls` / `llm_tokens` 不再被续跑抹掉）。"
+    },
+    {
+      "version": "1.23.57",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.57.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "把 `goal_trace` **跨圈接上** —— `stop.gain_floor` 从此才走得到。"
+    },
+    {
+      "version": "1.23.58",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.58.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "晋升门槛 `_eff_n` 与每个 shadow 的**拦截原因**进产物。"
+    },
+    {
+      "version": "1.23.59",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.59.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "修行层增益**换信号**：Heaps 边际（稀疏）→ 相对新增率（总在）。"
+    },
+    {
+      "version": "1.23.60",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.60.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "快照记**层内进度** —— 被杀之后能看见\"死在第几圈\"。"
+    },
+    {
+      "version": "1.23.61",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.61.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "`run()` 空题守卫 —— 拒绝运行，不凭空产出、不花钱。"
+    },
+    {
+      "version": "1.23.62",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.62.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "`contra`（反向证据）接活 —— 一条从没被喂过数据的闸。"
+    },
+    {
+      "version": "1.23.63",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.63.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "非结构化输出要留痕；`max_retries=0` 不该等于\"一次都不试\"。"
+    },
+    {
+      "version": "1.23.64",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.64.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "任意停时统计 / 保形预测 / 贝叶斯变点 / 抽象论证四条前沿内核进主文件；"
+    },
+    {
+      "version": "1.23.65",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.65.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "把“质量/成本”调到帕累托前沿：先修质量尺子，再按 10 个完成跑次改配置，"
+    },
+    {
+      "version": "1.23.66",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.23.66.py",
+      "era": "V1.23.x",
+      "era_key": "frontier",
+      "capabilities": [
+        "e-process/保形预测/BOCPD/Dung",
+        "质量-成本 Pareto",
+        "事实门与答案门",
+        "RAG/联网/外部输入"
+      ],
+      "theme": "先修判据反向，再补失败自修复、分环节成本与质量闭环；不靠再加模块。"
+    },
+    {
+      "version": "1.24.0",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.24.0.py",
+      "era": "V1.24–V1.25",
+      "era_key": "v2-shadow",
+      "capabilities": [
+        "V2 影子调度",
+        "EML v2 双写",
+        "四层契约",
+        "L0-v2 archive"
+      ],
+      "theme": "Phase 1–4：V2 影子调度 + EML 双写 + 契约体检 + 初始串行接管（opt-in）。"
+    },
+    {
+      "version": "1.25.0",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.25.0.py",
+      "era": "V1.24–V1.25",
+      "era_key": "v2-shadow",
+      "capabilities": [
+        "V2 影子调度",
+        "EML v2 双写",
+        "四层契约",
+        "L0-v2 archive"
+      ],
+      "theme": "V2 收口正式发版：四层契约默认开 + L0 archive 恢复 + 版本号升到 1.25.0。"
+    },
+    {
+      "version": "1.26.0",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.26.0.py",
+      "era": "V1.26–V1.30",
+      "era_key": "hardening",
+      "capabilities": [
+        "答案门/过程门分离",
+        "事实卡与一致性",
+        "真跑验收与质量重放",
+        "边界/长文/多轮/视觉"
+      ]
+    },
+    {
+      "version": "1.27.0",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.27.0.py",
+      "era": "V1.26–V1.30",
+      "era_key": "hardening",
+      "capabilities": [
+        "答案门/过程门分离",
+        "事实卡与一致性",
+        "真跑验收与质量重放",
+        "边界/长文/多轮/视觉"
+      ]
+    },
+    {
+      "version": "1.28.0",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.28.0.py",
+      "era": "V1.26–V1.30",
+      "era_key": "hardening",
+      "capabilities": [
+        "答案门/过程门分离",
+        "事实卡与一致性",
+        "真跑验收与质量重放",
+        "边界/长文/多轮/视觉"
+      ]
+    },
+    {
+      "version": "1.29.0",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.29.0.py",
+      "era": "V1.26–V1.30",
+      "era_key": "hardening",
+      "capabilities": [
+        "答案门/过程门分离",
+        "事实卡与一致性",
+        "真跑验收与质量重放",
+        "边界/长文/多轮/视觉"
+      ]
+    },
+    {
+      "version": "1.30.0",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.30.0.py",
+      "era": "V1.26–V1.30",
+      "era_key": "hardening",
+      "capabilities": [
+        "答案门/过程门分离",
+        "事实卡与一致性",
+        "真跑验收与质量重放",
+        "边界/长文/多轮/视觉"
+      ]
+    },
+    {
+      "version": "1.30.1",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.30.1.py",
+      "era": "V1.26–V1.30",
+      "era_key": "hardening",
+      "capabilities": [
+        "答案门/过程门分离",
+        "事实卡与一致性",
+        "真跑验收与质量重放",
+        "边界/长文/多轮/视觉"
+      ],
+      "theme": "P0 质量门与结构化决策输出修复。"
+    },
+    {
+      "version": "1.30.2",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.30.2.py",
+      "era": "V1.26–V1.30",
+      "era_key": "hardening",
+      "capabilities": [
+        "答案门/过程门分离",
+        "事实卡与一致性",
+        "真跑验收与质量重放",
+        "边界/长文/多轮/视觉"
+      ],
+      "theme": "答案门/过程门分离与质量重放。"
+    },
+    {
+      "version": "1.30.3",
+      "source": "archive/v1_history_20261023/元DGTF-V1/V2-V1.archive/public_cleanup_old_versions/元DGTF-V1.30.3.py",
+      "era": "V1.26–V1.30",
+      "era_key": "hardening",
+      "capabilities": [
+        "答案门/过程门分离",
+        "事实卡与一致性",
+        "真跑验收与质量重放",
+        "边界/长文/多轮/视觉"
+      ],
+      "theme": "answer_summary/depth 契约与硬软 flag 分离。"
+    },
+    {
+      "version": "1.30.4",
+      "source": "dgtf_engine/dgtf_v1/engine/元DGTF-V1.30.4.py",
+      "era": "V1.26–V1.30",
+      "era_key": "hardening",
+      "capabilities": [
+        "答案门/过程门分离",
+        "事实卡与一致性",
+        "真跑验收与质量重放",
+        "边界/长文/多轮/视觉"
+      ],
+      "theme": "事实答案显示门与真跑验收。"
+    },
+    {
+      "version": "2.0.0",
+      "source": "dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.0.0.py",
+      "era": "V2.0",
+      "era_key": "three-planes",
+      "capabilities": [
+        "EML v2 知识面",
+        "Scheduler v2 控制面",
+        "四层契约 F2-F5",
+        "F5 0 层生成",
+        "App V2 本地工作台"
+      ],
+      "theme": "V2 生产发布。"
+    },
+    {
+      "version": "2.1.0",
+      "source": "dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.1.0.py",
+      "status": "target",
+      "era": "V2.1",
+      "era_key": "fusion",
+      "capabilities": [
+        "历史谱系融合",
+        "能力连续性审计",
+        "运行 provenance",
+        "来源/能力/演化文档"
+      ]
+    }
+  ]
+}

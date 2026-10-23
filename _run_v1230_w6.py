@@ -209,7 +209,7 @@ def main() -> int:
                "question": q, "ok": False, "error": ""}
         try:
             with contextlib.redirect_stdout(buf):
-                meta = m.Meta-DGTF(cfg)
+                meta = m.MetaDGTF(cfg)
                 res = meta.run(q, route=route, rounds=rnds,
                                parallel_mode="serial", orientation="auto")
                 md = m.save_result(res, str(d))

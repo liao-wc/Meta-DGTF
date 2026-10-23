@@ -1,6 +1,6 @@
 # Meta-DGTF-道生三阶模型 · dgtf_v2 三平面内核
 
-**状态：V2 已发布（reference + production 契约层）。** 生产引擎是 Meta-DGTF-V2.0.0.py；F2/F3/F4/F5 契约层默认开，L0-v2 archive 只读默认开；F5 生成机制已完成（V2.0.0）。2026-10-23 复测：dgtf_v2 下 32 个 tests_*.py 全部通过（运行需 PYTHONPATH=项目根）。
+**状态：V2.1.0 融合版已收束。** 生产引擎是 Meta-DGTF-V2.1.0.py；F2/F3/F4/F5 契约层默认开，L0-v2 archive 只读默认开；F5 生成机制已完成。2026-10-23 复测：dgtf_v2 下 33 个 tests_*.py 全部通过（含 tests_history_fusion 12/12；运行需 PYTHONPATH=项目根）。
 
 ## 是什么
 
@@ -10,7 +10,7 @@
 - **控制面（Scheduler v2）**：MAPE-K + EVOI + 有限视界 MPC + Pareto + 安全盾；只决定层/圈数/停止。
 - **执行面（四层契约）**：0 修行 / 1 研究 / both 对撞 / all 元；每层有必须产出、禁止产出、退出判据。
 
-详细设计见 ../docs/Meta-DGTF-道生三阶模型-V2-三平面架构.md。
+详细设计见 ../../docs/Meta-DGTF-道生三阶模型-V2-三平面架构.md。
 
 ## 文件
 
@@ -72,3 +72,10 @@
 
 判据：tests_fact_flow 15、tests_evidence 20、tests_decision_policy 23、
 tests_unified_memory 19。全部无 LLM/网络，使用注入 fake search 与 tmp 记忆。
+## 历史谱系融合（V2.1.0）
+
+    history_fusion.py          V1 全版本谱系、能力轴、作业剖面、运行 provenance
+    history_manifest.json      178 个历史版本快照清单
+    tests_history_fusion.py    12 项融合判据
+
+融合层只写元数据，不改写答案；历史清单缺失时自动降级。

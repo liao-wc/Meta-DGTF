@@ -43,9 +43,10 @@ if os.environ.get("DGTF_V1_SMOKE") == "1":
     _cfg = HERE / "dgtf_config.yaml"
     if _cfg.is_file():
         _ct = _cfg.read_text(encoding="utf-8")
-        if "V2.0.0 配置文件" in _ct:
+        if re.search(r"V2\.\d+\.\d+ 配置文件", _ct):
             _V1_TEMP_CONFIG = _ct
-            _cfg.write_text(_ct.replace("V2.0.0 配置文件", "v1.30.4 配置文件"),
+            _cfg.write_text(re.sub(r"V2\.\d+\.\d+ 配置文件",
+                                   "v1.30.4 配置文件", _ct, count=1),
                             encoding="utf-8")
     _rep_src = HERE / "dgtf_engine" / "dgtf_v1" / "reports" / "v1304_报告.md"
     _rep_dst = HERE / "v1304_报告.md"
@@ -351,7 +352,7 @@ def p2_stats(res):
 def run_mode(mode, question, rounds=None, verbose=False):
     CALLS["n"] = 0
     cfg = build_cfg(verbose)
-    meta = mod.Meta-DGTF(cfg)
+    meta = mod.MetaDGTF(cfg)
     t0 = time.time()
     res = meta.run(question,
                    route=["0", "1", "both", "all"],
@@ -499,7 +500,7 @@ def check_thread_isolation():
     # 先把 self_layers 放大，避免被正常的"只留最近 N 条"截断掩盖丢条目。
     cfg2 = build_cfg(False)
     cfg2["memory"]["self_layers"] = 100
-    meta = mod.Meta-DGTF(cfg2)
+    meta = mod.MetaDGTF(cfg2)
     fake_view = mod.View(entry="0")
     fake_view.manifest = "测试 view 正文"
 
@@ -568,7 +569,7 @@ def check_both_quota():
 def check_carry_feedback():
     """[P1-5] 单元级验证：self_check 结论翻译成下一圈约束探针。"""
     cfg = build_cfg(False)
-    meta = mod.Meta-DGTF(cfg)
+    meta = mod.MetaDGTF(cfg)
     v = mod.View(entry="0")
     v.candidates = [{"desc": f"候选甲的描述文字{i+1}"} for i in range(6)]
     v.self_check = {"suspicious_candidates": [1, 2, 3, 4, 5],
@@ -593,7 +594,7 @@ def check_carry_feedback():
 
     # 开关关闭时必须静默
     cfg["memory"]["carry_feedback"] = False
-    meta2 = mod.Meta-DGTF(cfg)
+    meta2 = mod.MetaDGTF(cfg)
     if meta2._build_carry(v):
         print("  ✗ [P1-5] carry_feedback=False 时仍在回流")
         return False
@@ -624,7 +625,7 @@ def check_p2_units():
         ok = False
     cfg3 = build_cfg(False)
     cfg3["spiral"]["per_entry"] = {"0": {"unsaid_escape_limit": 9}}
-    m3 = mod.Meta-DGTF(cfg3)
+    m3 = mod.MetaDGTF(cfg3)
     if m3._unsaid_limit_for("0") != 9 or m3._unsaid_limit_for("1") != 3:
         print("  ✗ [P2-4] per_entry 覆盖未按层生效")
         ok = False
@@ -705,7 +706,7 @@ def check_p2_units():
             ok = False
 
     # ---- [P2-9] 角色排班：carry 每圈都有时不能被自己喂回去 ----
-    _NR = mod.Meta-DGTF
+    _NR = mod.MetaDGTF
     _seq = []
     _nx = ""
     for _r in range(4):
@@ -740,7 +741,7 @@ def check_p2_units():
             self.carry_dropped = dropped or []
             self.candidates = cands or []
             self.self_check = sc or {}
-    _m = mod.Meta-DGTF(build_cfg(False))
+    _m = mod.MetaDGTF(build_cfg(False))
     _carry = [{"kind": "candidate", "text": "x", "link": "x",
                "expected_gain": 0.6,
                "banned": ["这条候选是用另一种说法重写一遍的旧条目"]}]
@@ -805,7 +806,7 @@ def check_p0_156_units(src):
     端到端 mock 的产物太贫瘠，这几条只能直接钉在判据上。
     """
     ok = True
-    _M = mod.Meta-DGTF
+    _M = mod.MetaDGTF
     # changelog 在模块 docstring 里，改动说明里还会引用改动前的旧代码。
     # 扫源码断言时必须先把 docstring 和注释行摘掉，否则是在跟历史注释打架。
     # ★ 必须先规范成 LF 再摘：src 是文件原文（CRLF），而 mod.__doc__ 是
@@ -916,7 +917,7 @@ def check_p0_156_units(src):
     _cfg = build_cfg(False)
     _cfg["spiral"]["dedup_candidate_similarity"] = 0.99  # 极严 → 几乎不去重
     _cfg["spiral"]["dedup_candidate_overlap"] = 0.99
-    _m2 = mod.Meta-DGTF(_cfg)
+    _m2 = mod.MetaDGTF(_cfg)
     _vv = mod.View(entry="0", candidates=[
         {"desc": "同一个意思的第一种说法甲"},
         {"desc": "同一个意思的第二种说法甲"}])
@@ -1130,11 +1131,11 @@ def check_v12316_stop_therapy():
         bad.append("CLI 仍有 --profile")
 
     # ② 惰性化：恒等
-    _m = mod.Meta-DGTF(build_cfg(False))
+    _m = mod.MetaDGTF(build_cfg(False))
     if [_m._lazy_every_n(x) for x in (0, 1, 3)] != [0, 1, 3]:
         bad.append("_lazy_every_n 仍会惰性化：%r"
                    % [_m._lazy_every_n(x) for x in (0, 1, 3)])
-    _mm = mod.Meta-DGTF(build_cfg(False))
+    _mm = mod.MetaDGTF(build_cfg(False))
     if int(_mm._mcfg.get("shape_chars", 900)) != 900:
         bad.append("shape_chars 仍被缩放：%r" % _mm._mcfg.get("shape_chars"))
     if int(_mm._mcfg.get("shape_items", 6)) != 6:
@@ -1171,7 +1172,7 @@ def check_v12316_stop_therapy():
 
     # ④ 停止可达：sat 的效果 → 元层给出理由
     try:
-        _mr = mod.Meta-DGTF(build_cfg(False))
+        _mr = mod.MetaDGTF(build_cfg(False))
         _rs, _ = _mr._stop_reasons(
             entry="all", layer_no=3, rounds_n=3, total_rounds=3,
             sp=dict(mod.DEFAULT_CONFIG["spiral"]), soft_max=3, sim_thr=0.8,
@@ -1249,7 +1250,7 @@ def check_v12317_stop_all_layers():
                    % _sp.get("structure_saturation_every_n"))
 
     # ③ 条件 1 对四层通用（行为）+ 两条负对照
-    _mr = mod.Meta-DGTF(build_cfg(False))
+    _mr = mod.MetaDGTF(build_cfg(False))
 
     def _rs(entry, ln, soft, carry, reph):
         _r, _ = _mr._stop_reasons(
@@ -1314,7 +1315,7 @@ def check_v12317_und_coverage_trace():
     """
 
     # ---- [覆盖率双口径] 自报值和代码实算必须同时出现 ----
-    _m = mod.Meta-DGTF(build_cfg(False))
+    _m = mod.MetaDGTF(build_cfg(False))
     _m.dec_tracker = mod.ChannelTracker("decidable")
     _m.dec_tracker.coverage_history = [0.5, 0.4]
     _m.pools["1"].sub_questions = [
@@ -1356,7 +1357,7 @@ def check_v12317_und_coverage_trace():
         print(f"  ✗ [覆盖率] 两条通道没并排显示：{_seg2!r}")
         return False
     # 只有不可判定时（fallback）也要给结构读数，不能只剩清晰度
-    _m3 = mod.Meta-DGTF(build_cfg(False))
+    _m3 = mod.MetaDGTF(build_cfg(False))
     _m3.dec_tracker = mod.ChannelTracker("decidable")
     _m3.pools["1"].undecidable_channel = dict(
         _m.pools["1"].undecidable_channel)
@@ -1435,7 +1436,7 @@ def check_v12318_anchor_default_on():
         _c = build_cfg(False)
         _c["external_anchor"] = dict(_c.get("external_anchor") or {})
         _c["external_anchor"].update({"enabled": True, "path": path})
-        _o = object.__new__(mod.Meta-DGTF)
+        _o = object.__new__(mod.MetaDGTF)
         _o.config = _c
         _o.vp = lambda *a, **k: None
         _o._load_anchors()
@@ -1544,7 +1545,7 @@ def check_v12319_anchor_retrieval_reachable():
                    % _ea.get("retriever"))
 
     def _mk(mode):
-        _o = object.__new__(mod.Meta-DGTF)
+        _o = object.__new__(mod.MetaDGTF)
         _o.config = {"external_anchor": {
             "enabled": True, "path": "", "per_round": 2, "retriever": mode,
             "api_key_env": "TAVILY_API_KEY", "cache_ttl_hours": 24,
@@ -1609,7 +1610,7 @@ def check_v12319_anchor_retrieval_reachable():
         _c["external_anchor"] = dict(_c.get("external_anchor") or {})
         _c["external_anchor"].update({"enabled": True, "path": "",
                                       "retriever": _mode})
-        _oo = object.__new__(mod.Meta-DGTF)
+        _oo = object.__new__(mod.MetaDGTF)
         _oo.config = _c
         _oo.vp = lambda *a, **k: None
         _oo._load_anchors()
@@ -1957,7 +1958,7 @@ def check_p23_units():
               f"是死配置）；语义下限在")
 
     # ---- [③ P2-3] all 候选漂移 → 下一圈条件回流「落到具体」 ----
-    _m = mod.Meta-DGTF(build_cfg(False))
+    _m = mod.MetaDGTF(build_cfg(False))
     _drift = mod.View(entry="all", candidates=[
         {"desc": "view0 和 view1 在这个问题上其实没有真正对上"},
         {"desc": "两个 view 各自留下的东西加起来还缺一栏"},
@@ -2030,7 +2031,7 @@ def check_stop_gate():
     理由丢掉，收尾于是谎报「未触发任何停止判据」。
     """
     ok = True
-    m = mod.Meta-DGTF(build_cfg(False))
+    m = mod.MetaDGTF(build_cfg(False))
     sp = mod._spiral_for(m.config, "1")
     v = mod.View(entry="1", untouched=[
         {"source": "judge", "desc": "方向甲"},
@@ -2222,7 +2223,7 @@ def check_rounds_plan():
                                 "both": {"hard_max": 7},
                                 "all": {"hard_max": 5}}
     c["spiral"]["min_rounds"] = {"0": 0, "1": 2, "both": 3, "all": 0}
-    m = mod.Meta-DGTF(c)
+    m = mod.MetaDGTF(c)
     got = m._rounds_plan(0)
     want = {"0": 6, "1": 4, "both": 7, "all": 5}
     if got != want:
@@ -2261,7 +2262,7 @@ def check_rounds_plan():
     c2["spiral"]["hard_max"] = 12
     c2["spiral"]["per_entry"] = {"1": {"hard_max": 4}}
     c2["spiral"]["min_rounds"] = {"1": 2}
-    got3 = mod.Meta-DGTF(c2)._rounds_plan(0).get("1")
+    got3 = mod.MetaDGTF(c2)._rounds_plan(0).get("1")
     if got3 != 4:
         print(f"  ✗ [预算] 研究层预算应是 hard_max 4（min_rounds 2 只是下限），"
               f"实得 {got3}——旧代码会返回 2")
@@ -2271,7 +2272,7 @@ def check_rounds_plan():
     c3["spiral"]["hard_max"] = 12
     c3["spiral"]["per_entry"] = {"1": {"hard_max": 3}}
     c3["spiral"]["min_rounds"] = {"1": 5}
-    got4 = mod.Meta-DGTF(c3)._rounds_plan(0).get("1")
+    got4 = mod.MetaDGTF(c3)._rounds_plan(0).get("1")
     if got4 != 5:
         print(f"  ✗ [预算] min_rounds=5 > hard_max=3 时应取 5，实得 {got4}")
         ok = False
@@ -2535,7 +2536,7 @@ def check_decidability_normalize():
     if ok:
         print("  ✓ [归一化] 三态×方面清单真值表 7 条全对")
 
-    mt = mod.Meta-DGTF(copy.deepcopy(mod.DEFAULT_CONFIG))
+    mt = mod.MetaDGTF(copy.deepcopy(mod.DEFAULT_CONFIG))
 
     # 2) ★ v59 场景：池判 undecidable + 列了可判定方面，外判 partial
     pool_res = {
@@ -2702,7 +2703,7 @@ def check_thinking_wiring():
               f"说明名字里还留着 reasoner 字样（已废弃判据，行为不应依赖它）")
     THINK_SEEN.clear()
     q = "测试问题：AI 在数字 IC 设计里到底能做什么，哪些已经量产？"
-    meta = mod.Meta-DGTF(build_cfg(False))
+    meta = mod.MetaDGTF(build_cfg(False))
     meta.run(q, route=["0", "1", "both"],
              rounds={"0": 1, "1": 1, "both": 1, "all": 1},
              parallel_mode="A")
@@ -2848,7 +2849,7 @@ def check_meta_closure_by_id():
     ok = True
 
     class _Fake:
-        _settle_meta = mod.Meta-DGTF._settle_meta
+        _settle_meta = mod.MetaDGTF._settle_meta
 
     def _mk(all_eng):
         both = mod.Pool()
@@ -3164,7 +3165,7 @@ def check_layer_guard():
     cfg = build_cfg(False)
 
     # ---- 1) 并行（B）某层失败：不许消失，要记下来并让产物说出来 ----
-    mt = mod.Meta-DGTF(cfg)
+    mt = mod.MetaDGTF(cfg)
     _orig = mt._run_one_round_B
 
     def _boom(entry, r):
@@ -3203,7 +3204,7 @@ def check_layer_guard():
         print("  ✓ [层守卫] 产物头部明写「❌ 缺层」+ 原因")
 
     # ---- 2) 串行某层失败：必须逐层隔离，不能整轮零产物 ----
-    mt2 = mod.Meta-DGTF(cfg)
+    mt2 = mod.MetaDGTF(cfg)
     _orig2 = mt2._run_layer
 
     def _boom2(entry, n):
@@ -3227,7 +3228,7 @@ def check_layer_guard():
               f"both 记为缺层（{len(res2['views'])} 个 view）")
 
     # ---- 3) 依赖不满足必须"如实跳过 + 写原因"（并行模式也要）----
-    mt3 = mod.Meta-DGTF(cfg)
+    mt3 = mod.MetaDGTF(cfg)
     res3 = mt3.run("冒烟：跳过留痕", route=["0", "both"],
                    rounds={"0": 1, "both": 1}, parallel_mode="B")
     disp3 = res3.get("dispatch") or {}
@@ -3256,7 +3257,7 @@ def check_p162_units():
 
     # ================= P0-1 · 锚点重述带出 touched =================
     try:
-        res = mod.Meta-DGTF(cfg).run(
+        res = mod.MetaDGTF(cfg).run(
             "冒烟：锚点重述两半", route=["0"], rounds={"0": 2},
             parallel_mode="serial")
         v0 = (res.get("views") or {}).get("0") or {}
@@ -3292,7 +3293,7 @@ def check_p162_units():
             #   调用数被这个**与重试无关**的变量拉开。判据只关心重试，
             #   所以先把重估关掉再比（不是放宽阈值）。
             _c0.setdefault("spiral", {})["re_eval_every_n"] = 0
-            r = mod.Meta-DGTF(_c0).run(
+            r = mod.MetaDGTF(_c0).run(
                 "冒烟：至少碰一个", route=["0"], rounds={"0": n_rounds},
                 parallel_mode="serial")
             v = (r.get("views") or {}).get("0") or {}
@@ -3328,7 +3329,7 @@ def check_p162_units():
 
     # ================= P0-3 · 三种"没走到"视觉区分 =================
     try:
-        res3 = mod.Meta-DGTF(cfg).run(
+        res3 = mod.MetaDGTF(cfg).run(
             "冒烟：状态标记", route=["0"], rounds={"0": 2},
             parallel_mode="serial")
         p = mod.save_result(res3, cfg["output"]["save_dir"])
@@ -3347,7 +3348,7 @@ def check_p162_units():
 
     # ================= P1-4 · ing 结构化尾块 =================
     try:
-        res4 = mod.Meta-DGTF(cfg).run(
+        res4 = mod.MetaDGTF(cfg).run(
             "冒烟：ing 结构化尾块", route=["0", "1", "both"],
             rounds={"0": 1, "1": 1, "both": 1}, parallel_mode="serial")
         vb = (res4.get("views") or {}).get("both") or {}
@@ -3492,7 +3493,7 @@ def check_p162_units():
         #     计数，`_pool_shape` 也不含 meta），所以"产物里看得见"这件事
         #     实际由 `view.errors`（→【失败记录】段）承担。这条断言守的就是
         #     这一点：注入一条真实格式的留痕，落盘后必须在 md 里找到。
-        _rr = mod.Meta-DGTF(build_cfg(False)).run(
+        _rr = mod.MetaDGTF(build_cfg(False)).run(
             "冒烟：留痕进产物", route=["0"], rounds={"0": 1},
             parallel_mode="serial")
         _rr["views"]["0"]["errors"] = list(
@@ -3520,7 +3521,7 @@ def check_p162_units():
             #   吞掉，症状是"判据凭空失败"（P2-7 实得四层而不是[0,1]）。
             mod.DGTF._assess_decidability = \
                 lambda self, q, anchors=None: {"decidability": "undecidable"}
-            m7 = mod.Meta-DGTF(build_cfg(False))
+            m7 = mod.MetaDGTF(build_cfg(False))
             _full = ["0", "1", "both", "all"]
             _q = "冒烟取向"
             r_bnd = m7._route_by_decidability(_q, list(_full), "boundary")
@@ -3563,7 +3564,7 @@ def check_p162_units():
 
     # ================= P2-9 · 显化层（纯函数 + 进产物） =================
     try:
-        res9 = mod.Meta-DGTF(cfg).run(
+        res9 = mod.MetaDGTF(cfg).run(
             "冒烟：显化层", route=["0"], rounds={"0": 2},
             parallel_mode="serial")
         _snap = copy.deepcopy(res9)
@@ -3731,7 +3732,7 @@ def check_p162_fix2_units():
                 _sp16["round_stall_limit"] = 99
                 _sp16["idle_limit"] = 99
                 _sp16["structure_saturation_enabled"] = False
-                res = mod.Meta-DGTF(_cfg_p16).run(
+                res = mod.MetaDGTF(_cfg_p16).run(
                     "冒烟：跨圈 errors 累积", route=["0", "1"],
                     rounds={"0": 2, "1": 3}, parallel_mode=mode)
             finally:
@@ -3776,9 +3777,9 @@ def check_v63_c_fixes():
     pm = _ins.getsource(mod.DGTF._probe_meta)
     ph = _ins.getsource(mod.DGTF._phase_probe)
     sr = _ins.getsource(mod.save_result)
-    fin = _ins.getsource(mod.Meta-DGTF._finalize_layer_common)
-    rl = _ins.getsource(mod.Meta-DGTF._run_layer)
-    rb = _ins.getsource(mod.Meta-DGTF._run_one_round_B)
+    fin = _ins.getsource(mod.MetaDGTF._finalize_layer_common)
+    rl = _ins.getsource(mod.MetaDGTF._run_layer)
+    rb = _ins.getsource(mod.MetaDGTF._run_one_round_B)
 
     checks = [
         ('"tension_id":"t_001"' not in pm, "C1 · _probe_meta 里还有 t_001 字面量"),
@@ -3794,12 +3795,12 @@ def check_v63_c_fixes():
         ("all_view_errors" in fin, "C2 · _finalize_layer_common 缺合并"),
         ("_all_view_errors" in rl, "C2 · _run_layer 缺收集"),
         ("all_view_errors" in rb, "C2 · _run_one_round_B 缺收集"),
-        ("all_amp_cands" in _ins.getsource(mod.Meta-DGTF._run_layer),
+        ("all_amp_cands" in _ins.getsource(mod.MetaDGTF._run_layer),
          "P3 · _run_layer 缺候选数逐圈累加"),
-        ("all_amp_cands" in _ins.getsource(mod.Meta-DGTF._init_b_state),
+        ("all_amp_cands" in _ins.getsource(mod.MetaDGTF._init_b_state),
          "P3 · _init_b_state 缺候选数累加键"),
         ("all_amp_cands" in fin and "all_amp_cands" in _ins.getsource(
-            mod.Meta-DGTF._b_merge),
+            mod.MetaDGTF._b_merge),
          "P3 · B 通道(_b_merge)/_finalize 缺候选数累加"),
     ]
     _bad = [m for c, m in checks if not c]
@@ -3905,7 +3906,7 @@ def check_v63_c_fixes():
 
     # ── C1 行为断言：清算侧把"没命中"拆成 inactive / unknown ──
     try:
-        m_ = mod.Meta-DGTF(build_cfg(False))
+        m_ = mod.MetaDGTF(build_cfg(False))
         m_.pools["both"].duel_suspensions = [
             {"id": "t_005", "target": "还是 active 的张力", "status": "active",
              "quadrant": "③"},
@@ -3940,7 +3941,7 @@ def check_v63_c_fixes():
     #     给 "all" 补 ("0","1","both")（其他三个 provider 都补了）。
     #     结果元层从头到尾拿不到 upstream_views，对撞张力清单恒为「（无）」。
     try:
-        mt_ = mod.Meta-DGTF(build_cfg(False))
+        mt_ = mod.MetaDGTF(build_cfg(False))
         mt_.run("冒烟：元层上游接线", route=["0", "1", "both", "all"],
                 rounds={"0": 1, "1": 1, "both": 1, "all": 1},
                 parallel_mode="serial")
@@ -4041,7 +4042,7 @@ def check_v63_observability():
 
     # ── P1-4 · 产物池统计段渲染自解比例 ──
     try:
-        res = mod.Meta-DGTF(build_cfg(False)).run(
+        res = mod.MetaDGTF(build_cfg(False)).run(
             "冒烟：自解比例渲染", route=["0"], rounds={"0": 1},
             parallel_mode="serial")
         p = mod.save_result(res, cfg["output"]["save_dir"])
@@ -4077,9 +4078,9 @@ def check_v63_observability():
     # ── P3 · _amp_cand_count 两端都在 ──
     try:
         s1 = _ins.getsource(mod.DGTF.run)
-        s2 = _ins.getsource(mod.Meta-DGTF._finalize_layer_common)
-        s3 = _ins.getsource(mod.Meta-DGTF._run_layer)
-        s4 = _ins.getsource(mod.Meta-DGTF._b_merge)
+        s2 = _ins.getsource(mod.MetaDGTF._finalize_layer_common)
+        s3 = _ins.getsource(mod.MetaDGTF._run_layer)
+        s4 = _ins.getsource(mod.MetaDGTF._b_merge)
         if "_amp_cand_count" not in s1:
             print("  ✗ [P3] DGTF.run 里没写 _amp_cand_count")
             ok = False
@@ -4178,7 +4179,7 @@ def check_v64_by_id_scope():
         type("P", (), {"duel_suspensions": duel})(),
         type("P", (), {"engagements": engagements, "suspensions": []})())
     try:
-        res = mod.Meta-DGTF._settle_meta(fm)
+        res = mod.MetaDGTF._settle_meta(fm)
     except Exception as e:
         print(f"  ✗ [v64 B] _settle_meta 失败: {type(e).__name__}: {e}")
         return False
@@ -4529,7 +4530,7 @@ def check_v69_abcde():
     cfg = build_cfg(False)
 
     # ---------------- A ----------------
-    _m = mod.Meta-DGTF(cfg)
+    _m = mod.MetaDGTF(cfg)
 
     def _merge_cands(amps, cand):
         v = mod.View(entry="0")
@@ -4572,7 +4573,7 @@ def check_v69_abcde():
         bad.append(f"[B] 独立度没落下来：ratio="
                    f"{_ch.get('last_indep_ratio')} "
                    f"pool={_ch.get('last_indep_pool')}（应 1.0 / 1）")
-    _m2 = mod.Meta-DGTF(cfg)
+    _m2 = mod.MetaDGTF(cfg)
     _m2.pools["1"].undecidable_channel = _ch
     _line = _m2._und_channel_line()
     if "独立度 1.00" not in _line or "不是覆盖率" not in _line:
@@ -4582,7 +4583,7 @@ def check_v69_abcde():
     if "已对上 1/1" not in _line:
         bad.append(f"[B] 对齐覆盖率的分子分母没渲染：{_line!r}")
     # 加性：旧产物 / 手工 dict 没有 aligned_coverage_history ⇒ 不出现
-    _m3 = mod.Meta-DGTF(cfg)
+    _m3 = mod.MetaDGTF(cfg)
     _m3.pools["1"].undecidable_channel = {
         "clarity_history": [0.5], "struct_coverage_history": [0.6],
         "und_aspects": [f"面{i}" for i in range(10)],
@@ -4715,7 +4716,7 @@ def check_v69_abcde():
         bad.append("[E] dump_round 没接上唯一实现")
     if "dump_view_fields(view, self.vp," not in _src:
         bad.append("[E] dump_final 没接上唯一实现")
-    _fin = _ins.getsource(mod.Meta-DGTF._finalize_layer_common)
+    _fin = _ins.getsource(mod.MetaDGTF._finalize_layer_common)
     if "_dg.dump_final(view)" not in _fin:
         bad.append("[E] _finalize_layer_common 里没调用收尾留痕（没接线）")
 
@@ -4879,7 +4880,7 @@ def check_v70_k_coverage():
     try:
         got = {}
         for ent in ("0", "1", "all"):
-            m = mod.Meta-DGTF(cfg)
+            m = mod.MetaDGTF(cfg)
             m._coverage_segment = lambda: ("\n\n## 七、原始问题覆盖率\n"
                                            + SENT)
             v = mod.View(entry=ent)
@@ -4903,7 +4904,7 @@ def check_v70_k_coverage():
         bad.append("[K] entry=0 也追加了 —— 改成了「所有层都调」，"
                    "不是定点补出口")
     # 接线：辅助函数必须被两个分支各调一次
-    _fin = _ins.getsource(mod.Meta-DGTF._finalize_layer_common)
+    _fin = _ins.getsource(mod.MetaDGTF._finalize_layer_common)
     if "_append_coverage(view, " not in _fin:
         bad.append("[K] _append_coverage 没接线")
     if 'elif entry == "1":' not in _fin:
@@ -5055,7 +5056,7 @@ def check_v70_j_reuse():
     import inspect as _ins
     bad = []
     cfg = build_cfg(False)
-    mt = mod.Meta-DGTF(cfg)
+    mt = mod.MetaDGTF(cfg)
     ext = {"decidability": "undecidable", "decidable_aspects": [],
            "undecidable_aspects": [], "reason": "", "features": []}
     base = {"decidability": "undecidable",
@@ -5077,7 +5078,7 @@ def check_v70_j_reuse():
         bad.append("[J] 负对照失效：样例本身就算不出无追溯条目，"
                    "这条判据没有判别力")
     if 'pool_res.get("_und_untraced")' not in _ins.getsource(
-            mod.Meta-DGTF._merge_decidability):
+            mod.MetaDGTF._merge_decidability):
         bad.append("[J] _merge_decidability 里没读缓存键（没接线）")
     if bad:
         for m in bad:
@@ -5095,14 +5096,14 @@ def check_v70_j_reuse():
 _V71_Q = "探针题：这套结构的边界在哪，哪些部分原则上判不出"
 
 def _v71_packed_run(rounds=None, mode="serial"):
-    """走生产入口 Meta-DGTF.run（LLM 已被桩换掉）拿 packed 本体。
+    """走生产入口 MetaDGTF.run（LLM 已被桩换掉）拿 packed 本体。
 
     ★ 不用 run_mode：它返回的是**汇总行**（views 被换成 key 列表），
       拿不到 packed 里的 view 字段。
     """
     CALLS["n"] = 0
     cfg = build_cfg(False)
-    meta = mod.Meta-DGTF(cfg)
+    meta = mod.MetaDGTF(cfg)
     return meta.run(_V71_Q, route=["0", "1", "both", "all"],
                     rounds=rounds or {"0": 2, "1": 2, "both": 2, "all": 2},
                     parallel_mode=mode)
@@ -5161,13 +5162,13 @@ def check_v71_single_round_finalize():
             meta._b_finalize_layer("0")
         return list(v.roles_run), int(v.rounds_cap), len(v.round_log)
 
-    _new = mod.Meta-DGTF(cfg)
+    _new = mod.MetaDGTF(cfg)
     _rr, _cap, _rl = _run_unit(_new)
     if not (_rr and _cap and _rl):
         bad.append(f"[F1] 定点：新代码下单圈层仍未收尾 "
                    f"roles_run={_rr} cap={_cap} log={_rl}")
 
-    class _OldGate(mod.Meta-DGTF):
+    class _OldGate(mod.MetaDGTF):
         def _b_finalize_layer(self, entry):
             _st = self._b_state.get(entry)
             if _st and _st["view"] is not None and _st["total_rounds"] <= 1:
@@ -5181,10 +5182,10 @@ def check_v71_single_round_finalize():
                    f"roles_run={_rr2} cap={_cap2} log={_rl2}")
 
     if 'state["total_rounds"] <= 1' in _ins.getsource(
-            mod.Meta-DGTF._b_finalize_layer):
+            mod.MetaDGTF._b_finalize_layer):
         bad.append("[F1] _b_finalize_layer 里旧门又回来了")
     if "if view is not None and rounds_n > 1:" in _ins.getsource(
-            mod.Meta-DGTF._run_layer):
+            mod.MetaDGTF._run_layer):
         bad.append("[F1] _run_layer 里旧门又回来了")
     if bad:
         for m in bad:
@@ -5211,8 +5212,8 @@ def check_v71_main_save_guard():
                  "question": _V71_Q}
 
     def _drive(save_impl):
-        _orun, _osave = mod.Meta-DGTF.run, mod.save_result
-        mod.Meta-DGTF.run = lambda self, *a, **k: dict(_fake_res)
+        _orun, _osave = mod.MetaDGTF.run, mod.save_result
+        mod.MetaDGTF.run = lambda self, *a, **k: dict(_fake_res)
         mod.save_result = save_impl
         _argv = sys.argv
         sys.argv = ["dgtf", _V71_Q, "--route", "0", "--rounds", "0:1",
@@ -5227,7 +5228,7 @@ def check_v71_main_save_guard():
             exc = f"{type(_e).__name__}: {_e}"
         finally:
             sys.argv = _argv
-            mod.Meta-DGTF.run, mod.save_result = _orun, _osave
+            mod.MetaDGTF.run, mod.save_result = _orun, _osave
         return code, exc, buf.getvalue()
 
     def _bad(*a, **k):
@@ -5270,7 +5271,7 @@ def check_v71_build_inp_meta_filter():
     import inspect as _ins
     bad = []
     cfg = build_cfg(False)
-    m = mod.Meta-DGTF(cfg)
+    m = mod.MetaDGTF(cfg)
     m._upstream_provider = lambda e: [mod.View(entry="9", manifest="上游形状正文")]
     try:
         inp = m._build_inp_meta([])
@@ -5281,7 +5282,7 @@ def check_v71_build_inp_meta_filter():
     except Exception as e:
         bad.append(f"[F3] 非法 entry 仍打崩元层：{type(e).__name__}: {e}")
 
-    m2 = mod.Meta-DGTF(cfg)
+    m2 = mod.MetaDGTF(cfg)
     m2._upstream_provider = lambda e: [mod.View(entry="0", manifest="甲"),
                                        mod.View(entry="1", manifest="乙")]
     try:
@@ -5295,10 +5296,10 @@ def check_v71_build_inp_meta_filter():
             bad.append("[F3] 合法 entry 也被报了剔除留痕")
     except Exception as e:
         bad.append(f"[F3] 合法 entry 路径崩了：{type(e).__name__}: {e}")
-    if "_build_inp_dropped" not in _ins.getsource(mod.Meta-DGTF._build_inp_meta):
+    if "_build_inp_dropped" not in _ins.getsource(mod.MetaDGTF._build_inp_meta):
         bad.append("[F3] 过滤逻辑没接线")
     # 连带把「上游是非法的」这条留痕也验一遍：它必须能被读出来
-    if not _ins.getsource(mod.Meta-DGTF._build_inp_meta).count("_pairs"):
+    if not _ins.getsource(mod.MetaDGTF._build_inp_meta).count("_pairs"):
         bad.append("[F3] 配对过滤的 _pairs 不在实现里")
     if bad:
         for m_ in bad:
@@ -5353,7 +5354,7 @@ def check_v71_early_dispatch():
     bad = []
     cfg = build_cfg(False)
     for fn, want in (("_run_parallel_C", "C"), ("_run_parallel_stage", "G")):
-        m = mod.Meta-DGTF(cfg)
+        m = mod.MetaDGTF(cfg)
         m._dispatch_plan = m._plan_dispatch(["x"])
         m._failed_layers = {}
         try:
@@ -5373,7 +5374,7 @@ def check_v71_early_dispatch():
             bad.append(f"[F5] {fn} 的 _parallel_mode={d.get('_parallel_mode')!r}"
                        f"，应为 {want!r}（模式名不许硬编码）")
     # 守卫的判别力（两个方向）
-    m3 = mod.Meta-DGTF(cfg)
+    m3 = mod.MetaDGTF(cfg)
     m3._results = {}
     m3._dispatch_plan = m3._plan_dispatch(["0"])
     _p_live = {"views": {}, "dispatch": m3._dispatch_for_pack("C")}
@@ -5414,7 +5415,7 @@ def check_v71_ext_assess_cached():
     mod.DGTF._assess_decidability = _wrap
     try:
         cfg = build_cfg(False)
-        meta = mod.Meta-DGTF(cfg)
+        meta = mod.MetaDGTF(cfg)
         cnt["n"] = 0
         meta.run(_V71_Q, route=["0", "1", "both", "all"],
                  rounds={"0": 2, "1": 2, "both": 2, "all": 2},
@@ -5446,10 +5447,10 @@ def check_v71_ext_assess_cached():
     finally:
         mod.DGTF._assess_decidability = _orig
     import inspect as _ins
-    if "_ext_assess_cache" not in _ins.getsource(mod.Meta-DGTF.run):
+    if "_ext_assess_cache" not in _ins.getsource(mod.MetaDGTF.run):
         bad.append("[F6] run() 里没有重置缓存（跨 run 会复用）")
     if "_cached_ext_assess" not in _ins.getsource(
-            mod.Meta-DGTF._assess_decidability_dynamic):
+            mod.MetaDGTF._assess_decidability_dynamic):
         bad.append("[F6] 动态评估那条没走缓存（没接线）")
     if bad:
         for m in bad:
@@ -5474,7 +5475,7 @@ def check_v71_evidence_full():
         [{"aspect": _asp}]
     _cached = mod._untraced_undecidable([_asp], _full)
     cfg = build_cfg(False)
-    mt = mod.Meta-DGTF(cfg)
+    mt = mod.MetaDGTF(cfg)
     _ext = {"decidability": "undecidable", "decidable_aspects": [],
             "undecidable_aspects": [], "reason": "", "features": []}
     _pool = {"decidability": "undecidable", "undecidable_aspects": [_asp],
@@ -5501,9 +5502,9 @@ def check_v71_evidence_full():
                    "这条判据验不出口径差")
     import inspect as _ins
     if "_evidence_full" not in _ins.getsource(
-            mod.Meta-DGTF._assess_decidability_from_pool_view):
+            mod.MetaDGTF._assess_decidability_from_pool_view):
         bad.append("[F7] 池评估没带出 _evidence_full（没接线）")
-    if "_evidence_full" not in _ins.getsource(mod.Meta-DGTF._merge_decidability):
+    if "_evidence_full" not in _ins.getsource(mod.MetaDGTF._merge_decidability):
         bad.append("[F7] 兜底分支没读 _evidence_full（没接线）")
     if bad:
         for m in bad:
@@ -5565,7 +5566,7 @@ def check_v71_coverage_cfg_optional():
     _d = mod.coverage_parts(p, build_cfg(False))
     if _a is not None and not (_a == _b == _c == _d):
         bad.append(f"[F10] 四种传法的结果不一致：{_a} / {_b} / {_c} / {_d}")
-    _src = _ins.getsource(mod.Meta-DGTF._refresh_settlement)
+    _src = _ins.getsource(mod.MetaDGTF._refresh_settlement)
     if 'coverage_parts(self.pools["1"], self.config)' not in _src:
         bad.append("[F10] _refresh_settlement 没传真配置（没接线）")
     if 'coverage_parts(self.pools["1"], {})' in _src:
@@ -5598,7 +5599,7 @@ def check_v71_no_dup_position_diag():
     import inspect as _ins
     _att = {"in_finalize": 0, "in_round": 0, "wfalse": 0, "qc": 0,
             "flag": False}
-    _ofin = mod.Meta-DGTF._finalize_layer_common
+    _ofin = mod.MetaDGTF._finalize_layer_common
     _odump = mod.DGTF._dump_position_diagnostic
     _oqc = mod.DGTF._quality_check
 
@@ -5619,13 +5620,13 @@ def check_v71_no_dup_position_diag():
             _att["wfalse"] += 1
         return _oqc(self, *a, **k)
 
-    mod.Meta-DGTF._finalize_layer_common = _fin
+    mod.MetaDGTF._finalize_layer_common = _fin
     mod.DGTF._dump_position_diagnostic = _dmp
     mod.DGTF._quality_check = _qc
     try:
         _v71_packed_run()
     finally:
-        mod.Meta-DGTF._finalize_layer_common = _ofin
+        mod.MetaDGTF._finalize_layer_common = _ofin
         mod.DGTF._dump_position_diagnostic = _odump
         mod.DGTF._quality_check = _oqc
     if _att["in_finalize"] != 0:
@@ -5655,7 +5656,7 @@ def check_v71_no_dup_position_diag():
     if _n_after_false != _n_after_true:
         bad.append("[F11] write_diag=False 仍写了文件")
     if "write_diag=False" not in _ins.getsource(
-            mod.Meta-DGTF._finalize_layer_common):
+            mod.MetaDGTF._finalize_layer_common):
         bad.append("[F11] 收尾调用没传 write_diag=False（没接线）")
     if bad:
         for m in bad:
@@ -5687,7 +5688,7 @@ def check_v71_auto_plan_agreement():
             return json.loads(raw)
 
     def _cmp(rounds_in, mode_in="G", conf=0.8, cls=None):
-        _cls = cls or mod.Meta-DGTF
+        _cls = cls or mod.MetaDGTF
         _m = _cls(build_cfg(False))
         _m.llm = _Stub({"mode": mode_in, "rounds": dict(rounds_in),
                         "reason": "smoke", "confidence": conf})
@@ -5713,7 +5714,7 @@ def check_v71_auto_plan_agreement():
         if m1 != m2 or r1 != r2:
             bad.append(f"[F8] {tag}：方法 {m1}/{r1} vs 模块 {m2}/{r2}")
 
-    class _Drift(mod.Meta-DGTF):
+    class _Drift(mod.MetaDGTF):
         def _auto_plan(self, question):
             _r = dict(super()._auto_plan(question))
             _r["rounds"] = {k: v + 1 for k, v in (_r.get("rounds") or {}).items()}
@@ -5724,7 +5725,7 @@ def check_v71_auto_plan_agreement():
         bad.append("[F8] 负对照失效：把一份改坏了居然还判一致 —— "
                    "检测器没有判别力")
     import inspect as _ins
-    _ds = mod.Meta-DGTF._auto_plan.__doc__ or ""
+    _ds = mod.MetaDGTF._auto_plan.__doc__ or ""
     if "auto_plan" not in _ds or "plan_resources" not in _ds:
         bad.append("[F8] _auto_plan 的 docstring 没标注与模块级 auto_plan 的关系")
     if bad:
@@ -5781,7 +5782,7 @@ def check_v72_bbarrier_semantics():
         _sp["round_stall_limit"] = 99
         _sp["idle_limit"] = 99
         _sp["structure_saturation_enabled"] = False
-        meta = mod.Meta-DGTF(cfg)
+        meta = mod.MetaDGTF(cfg)
         with contextlib.redirect_stdout(io.StringIO()):
             pk = meta.run(_V71_Q, route=["0", "1", "both", "all"],
                           rounds={"0": 2, "1": 2, "both": 2, "all": 2},
@@ -5801,7 +5802,7 @@ def check_v72_bbarrier_semantics():
     n2, st2 = _run(0)
     if st2:
         bad.append(f"[#13] 不限预算也有层被预算停掉：{st2}")
-    _src = _ins.getsource(mod.Meta-DGTF._run_parallel_B)
+    _src = _ins.getsource(mod.MetaDGTF._run_parallel_B)
     # [v1.23.6] 判据随实现更新（不是放宽）：原锚点 `[v1.21.72 #13]` 是**版次
     #   标签**，已被「代码正文不留版次批注」清掉 ⇒ 换成本条注释里的两条内容
     #   短语（下一条仍查「同时停掉所有层」），判别力不减。
@@ -6035,7 +6036,7 @@ def check_v74_anchor_refs():
     if "merged[\"anchor_refs\"] = _ext_refs" not in _src:
         bad.append("[形态] _merge_decidability 里找不到 anchor_refs 携带语句")
 
-    mt = object.__new__(mod.Meta-DGTF)
+    mt = object.__new__(mod.MetaDGTF)
     pool = {"decidability": "decidable", "reason": "", "features": [],
             "decidable_aspects": ["现金流第一约束"], "undecidable_aspects": [],
             "_und_untraced": [], "_evidence_full": []}
@@ -6147,7 +6148,7 @@ def check_v75_anchor_pool():
             bad.append(f"[B] X1 定位不到（{r}）—— 编号进了表却引不了，等于没接")
 
     # [C] 分圈投放 + 元层不检索
-    mt = object.__new__(mod.Meta-DGTF)
+    mt = object.__new__(mod.MetaDGTF)
     mt.config = {"external_anchor": {
         "enabled": True, "path": "x", "per_round": 2,
         "as_evidence": False, "triage": False, "retriever": "snapshot"}}
@@ -6179,9 +6180,9 @@ def check_v75_anchor_pool():
     # [E] 预算必须把锚点调用算进去
     class _L:
         total_calls = 10
-    m1 = object.__new__(mod.Meta-DGTF)
+    m1 = object.__new__(mod.MetaDGTF)
     m1.llm = _L(); m1._call_budget = 10; m1._anchor_calls = 0
-    m2 = object.__new__(mod.Meta-DGTF)
+    m2 = object.__new__(mod.MetaDGTF)
     m2.llm = _L(); m2._call_budget = 12; m2._anchor_calls = 0
     # ★ 判别力关键：calls=9 + anchor_calls=1 + budget=10 ——
     #   只有**真的把锚点调用算进去**才会判用尽。少了这条，
@@ -6189,7 +6190,7 @@ def check_v75_anchor_pool():
     #   判据是永真的（变异体 M6 实测漏网）。
     class _L9:
         total_calls = 9
-    m3e = object.__new__(mod.Meta-DGTF)
+    m3e = object.__new__(mod.MetaDGTF)
     m3e.llm = _L9(); m3e._call_budget = 10; m3e._anchor_calls = 1
     if not m1._budget_exhausted():
         bad.append("[E] calls=10 budget=10 判成没用尽（预算守卫失灵）")
@@ -6205,7 +6206,7 @@ def check_v75_anchor_pool():
         bad.append("[E] `_anchor_crosscheck` 缺独立预算判断（A2 的第三半）")
 
     # [F] 关闭态 prompt 加性：两个片段都必须是空串
-    m3 = object.__new__(mod.Meta-DGTF)
+    m3 = object.__new__(mod.MetaDGTF)
     m3.config = {"external_anchor": {"enabled": False}}
     # ★ 判别力关键：池里**先塞满锚点**再断言关闭态返回空串。
     #   空池时哪怕把 enabled 判断删掉也照样返回空串 —— 判据是永真的
@@ -6865,7 +6866,7 @@ def _v73_run(cfg, q, spy, anchor_ids=None, verdict="印证"):
     orig = mod.LLM.call
     mod.LLM.call = _v73_stub_patch(orig, anchor_ids, spy)
     try:
-        m = mod.Meta-DGTF(cfg)
+        m = mod.MetaDGTF(cfg)
         res = m.run(q, route=["0", "1"], rounds={"0": 1, "1": 1},
                     parallel_mode="serial")
     finally:
@@ -6890,11 +6891,11 @@ def check_v73_anchor():
     af = _v73_anchor_file(td, 3)
 
     # ---------- [E] 接线：新方法必须真被生产路径调用（防死代码）
-    chk("_load_anchors()" in inspect.getsource(mod.Meta-DGTF.run),
+    chk("_load_anchors()" in inspect.getsource(mod.MetaDGTF.run),
         "[E] run() 没调 _load_anchors —— 死代码")
-    chk("_anchor_report_for_pack" in inspect.getsource(mod.Meta-DGTF._pack_result),
+    chk("_anchor_report_for_pack" in inspect.getsource(mod.MetaDGTF._pack_result),
         "[E] _pack_result 没挂锚点报告 —— 死代码")
-    _csrc = inspect.getsource(mod.Meta-DGTF._cached_ext_assess)
+    _csrc = inspect.getsource(mod.MetaDGTF._cached_ext_assess)
     chk("anchors=" in _csrc, "[E] _cached_ext_assess 没把锚点传给外判")
 
     # ---------- [A] 关闭：加性（packed 键集合 / assess prompt / 产物文案）
@@ -7108,7 +7109,7 @@ def check_v122_phase1(SRC=None):
 
         # ⑤ 元层不评价修行层
         import inspect as _ins
-        body = _ins.getsource(m.Meta-DGTF._settle_meta)
+        body = _ins.getsource(m.MetaDGTF._settle_meta)
         assert 'pools["0"]' not in body and "pools['0']" not in body, \
             "_settle_meta 仍在读修行池"
 
@@ -7119,7 +7120,7 @@ def check_v122_phase1(SRC=None):
         assert "分层目标" in src, "头部渲染没落进源码"
 
         # ⑦ route 分层：boundary 保留全四层；decision 允许砍层
-        inst = object.__new__(m.Meta-DGTF)
+        inst = object.__new__(m.MetaDGTF)
         inst.config = {}
         inst.vp = lambda *a, **k: None
         r = inst._route_by_decidability("q", ["0", "1", "both", "all"],
@@ -7153,8 +7154,8 @@ def check_v122_phase2(SRC=None):
         tv = m._TRI_VOTE_PROMPTS
         assert len(tv) == 3, f"三票 prompt 应为 3，得到 {len(tv)}"
         assert len(set(tv)) == 3, "三票 prompt 有重复 —— 重复的三票等于没投票"
-        assert hasattr(m.Meta-DGTF, "_adjudicate_sub_tristate_multi")
-        assert hasattr(m.Meta-DGTF, "_adjudicate_sub_tristate")
+        assert hasattr(m.MetaDGTF, "_adjudicate_sub_tristate_multi")
+        assert hasattr(m.MetaDGTF, "_adjudicate_sub_tristate")
 
         def _pool(labs):
             pp = m.Pool()
@@ -7624,7 +7625,7 @@ def check_v1221_p2b(SRC=None):
                 {"enabled": True, "path": "_smoke_p2b_ans.json"})
             _cfg["output"] = dict(_cfg.get("output") or {})
             _cfg["output"]["verbose"] = False
-            _meta = m.Meta-DGTF(_cfg)
+            _meta = m.MetaDGTF(_cfg)
             _meta._load_anchors()
             _got = (_meta._anchors[0].get("answers")
                     if getattr(_meta, "_anchors", None) else None)
@@ -7784,7 +7785,7 @@ def check_v1221_p6(SRC=None):
             cfg["external_anchor"].update({"enabled": True, "path": str(path)})
             cfg["output"] = dict(cfg.get("output") or {})
             cfg["output"]["verbose"] = False
-            mm = m.Meta-DGTF(cfg)
+            mm = m.MetaDGTF(cfg)
             mm._load_anchors()
             return getattr(mm, "_anchor_tier_warning", "<无属性>")
 
@@ -7869,8 +7870,8 @@ def check_v1222_p1(SRC=None):
         m = _v1221_mod(SRC)
         src = _v1221_src_text(SRC)
         assert hasattr(m, "_single_vote_stability"), "_single_vote_stability 缺失"
-        assert hasattr(m.Meta-DGTF, "_write_tri_stability"), \
-            "Meta-DGTF._write_tri_stability 缺失"
+        assert hasattr(m.MetaDGTF, "_write_tri_stability"), \
+            "MetaDGTF._write_tri_stability 缺失"
 
         class _LLM:
             def __init__(self, fail=False, empty=False):
@@ -7889,7 +7890,7 @@ def check_v1222_p1(SRC=None):
                 return _j.loads(raw)
 
         def _mk(llm, multi):
-            o = object.__new__(m.Meta-DGTF)
+            o = object.__new__(m.MetaDGTF)
             o.llm = llm
             o.config = {"actions": {"tri_multi_vote": multi}}
             o.vp = lambda *a, **k: None
@@ -8060,7 +8061,7 @@ def check_v1222_p3(SRC=None):
             cfg["external_anchor"] = dict(cfg["external_anchor"])
             cfg["external_anchor"].update({"enabled": True, "path": str(p)})
             cfg["external_anchor"].update(over)
-            o = object.__new__(m.Meta-DGTF)
+            o = object.__new__(m.MetaDGTF)
             o.config = cfg
             o.vp = lambda *a, **k: None
             o._load_anchors()
@@ -8291,10 +8292,10 @@ def check_v123_w2(SRC=None):
                     "_research_decompose_queries", "_research_evidence_queries",
                     "_research_precedent_queries", "_web_digest_block")), \
             "W2 助手函数缺"
-        assert all(hasattr(m.Meta-DGTF, _k) for _k in
+        assert all(hasattr(m.MetaDGTF, _k) for _k in
                    ("_web_search", "_research_web_prep",
                     "_research_decompose_with_web", "_web_evidence_hook")), \
-            "W2 Meta-DGTF 方法缺"
+            "W2 MetaDGTF 方法缺"
         assert src.count("d0._decompose_from_pool(") == 1, "拆解仍有第二份"
         assert src.count("d0._decompose_question(") == 1, "拆解仍有第二份"
         assert src.count("web_hook=self._web_evidence_hook") == 2, \
@@ -8358,7 +8359,7 @@ def check_v123_w2(SRC=None):
             cfg["web_search"]["quota"] = dict(cfg["web_search"]["quota"])
             cfg["web_search"]["stages"] = dict(cfg["web_search"]["stages"])
             cfg["web_search"].update({"enabled": enabled, **over})
-            o = object.__new__(m.Meta-DGTF)
+            o = object.__new__(m.MetaDGTF)
             o.config = cfg
             o.pools = {"1": Pool()}
             o.vp = lambda *a, **k: None
@@ -8586,9 +8587,9 @@ def check_v123_left(SRC=None):
         assert _wscfg["tier_proposal"] is False, "★ tier_proposal 必须默认关"
 
         # 2 round_no 口径：前置 = 0（且与拆解序号无关）
-        _mo = object.__new__(m.Meta-DGTF)
+        _mo = object.__new__(m.MetaDGTF)
         _mo._web_prep_seq = 9
-        assert m.Meta-DGTF._research_round_no(_mo) == 0, (
+        assert m.MetaDGTF._research_round_no(_mo) == 0, (
             "★ 前置圈号不是 0（退回拆解序号了）")
 
         class _SC:
@@ -8613,7 +8614,7 @@ def check_v123_left(SRC=None):
                 c["web_search"].get("domain_tier_rules") or [])
             c["web_search"].update(over or {"enabled": True,
                                             "as_evidence": "evidence"})
-            o = object.__new__(mod.Meta-DGTF)
+            o = object.__new__(mod.MetaDGTF)
             o.config = c
             o.pools = {"1": mod.Pool()}
             o.vp = lambda *a, **k: None
@@ -8807,7 +8808,7 @@ def check_v1232_tier(SRC=None):
 
         def _mk(ws):
             c = {"web_search": dict(ws)}
-            o = object.__new__(m.Meta-DGTF)
+            o = object.__new__(m.MetaDGTF)
             o.config = c
             o.pools = {"1": m.Pool()}
             o.vp = lambda *a, **k: None
@@ -8889,7 +8890,7 @@ def check_v1232_retry(SRC=None):
                 return _json.loads(raw)
 
         def _run(retry):
-            o = object.__new__(m.Meta-DGTF)
+            o = object.__new__(m.MetaDGTF)
             o.llm = _LLM()
             o.config = {"actions": {"tri_vote_retry_empty": retry}}
             o.pools = {"1": m.Pool()}
@@ -8919,7 +8920,7 @@ def check_v1232_retry(SRC=None):
         _mp.write_bytes(src.replace(_A, "            for _try in range(1):")
                         .replace(chr(10), chr(13) + chr(10)).encode("utf-8"))
         _mm = _v1221_mod(str(_mp))
-        o = object.__new__(_mm.Meta-DGTF)
+        o = object.__new__(_mm.MetaDGTF)
         o.llm = _LLM()
         o.config = {"actions": {"tri_vote_retry_empty": 1}}
         o.pools = {"1": _mm.Pool()}
@@ -9008,7 +9009,7 @@ def check_v1233_vote_ids(SRC=None):
                 return _json.loads(raw)
 
         def _run(stub):
-            o = object.__new__(m.Meta-DGTF)
+            o = object.__new__(m.MetaDGTF)
             o.llm = stub
             o.config = dict(m.DEFAULT_CONFIG)
             o.config["actions"] = dict(o.config["actions"])
@@ -9067,7 +9068,7 @@ def check_v1233_vote_ids(SRC=None):
                                     + chr(34) + "0起+1" + chr(34))
                         .replace(NL, chr(13) + NL).encode("utf-8"))
         _mm = _v1221_mod(_mp)
-        _mo = object.__new__(_mm.Meta-DGTF)
+        _mo = object.__new__(_mm.MetaDGTF)
         _mo.llm = _Stub(shift=1)
         _mo.config = dict(_mm.DEFAULT_CONFIG)
         _mo.config["actions"] = dict(_mo.config["actions"])
@@ -9323,7 +9324,7 @@ def check_v1234_runtime(SRC=None):
             "_ask_config 的返回值没扩成 5 元组 / 没解包")
         assert "run_cfg, _rt_notes = _apply_runtime(cfg, runtime)" in src, (
             "交互没有在**深拷副本**上应用（会污染跨轮的 cfg）")
-        assert "meta = Meta-DGTF(run_cfg)" in src, "交互还在用未应用的 cfg"
+        assert "meta = MetaDGTF(run_cfg)" in src, "交互还在用未应用的 cfg"
         print("  ✓ v1.23.4 总控：CLI 三开关 + 交互询问 + 深拷副本都已接线")
 
         # ---- 13 ★ 产物留痕 ----
@@ -9481,7 +9482,7 @@ def check_v1235_pending_fix():
             _pl = {"route": "full", "mode": _m, "rounds": dict(_rin),
                    "max_calls": 0, "reason": "probe", "confidence": 0.8,
                    "orientation": "decision"}
-            _m1 = mod.Meta-DGTF(_cfg)
+            _m1 = mod.MetaDGTF(_cfg)
             _m1.llm = _Stub(dict(_pl))
             _r1 = _m1._decide_parallel_mode("探针题：评估这个多阶段问题的资源配置路径")
             _s2 = _Stub(dict(_pl))
@@ -9491,7 +9492,7 @@ def check_v1235_pending_fix():
                 _r2 = mod.plan_resources("探针题：评估这个多阶段问题的资源配置路径", "decision", _cfg)
             finally:
                 mod.LLM = _oL
-            _m3 = mod.Meta-DGTF(_cfg)
+            _m3 = mod.MetaDGTF(_cfg)
             _m3.llm = _Stub(dict(_pl))
             _r3 = _m3._auto_plan("探针题：评估这个多阶段问题的资源配置路径")
             _r2r = {k: v for k, v in (_r2.get("rounds") or {}).items()
@@ -9510,7 +9511,7 @@ def check_v1235_pending_fix():
            "rounds": {"0": 3, "1": 5, "both": 4, "all": 6},
            "max_calls": 0, "reason": "probe", "confidence": 0.1,
            "orientation": "decision"}
-    _m1 = mod.Meta-DGTF(_cfg)
+    _m1 = mod.MetaDGTF(_cfg)
     _m1.llm = _Stub(dict(_lo))
     _r1 = _m1._decide_parallel_mode("探针题：评估这个多阶段问题的资源配置路径")
     if _r1.get("mode") != "serial":
@@ -9530,7 +9531,7 @@ def check_v1235_pending_fix():
     if _r2.get("reason") != "probe":
         bad.append("[1e] 低置信：两段式 reason 被改写了（%r）—— "
                    "这是刻意保留的差异，不该变" % _r2.get("reason"))
-    _m3 = mod.Meta-DGTF(_cfg)
+    _m3 = mod.MetaDGTF(_cfg)
     _m3.llm = _Stub(dict(_lo))
     _r3 = _m3._auto_plan("探针题：评估这个多阶段问题的资源配置路径")
     if _r3.get("mode") != "serial":
@@ -9653,7 +9654,7 @@ def check_v1236_no_version_tags():
         bad.append("仍有以版次标记开头的 docstring %d 处，前 5 个行号 %s"
                    % (len(leads), leads[:5]))
     # ---- 负对照：上一版必须判红 ----
-    prev = HERE / "v1/scripts/_negctl_version_tag.py"
+    prev = HERE / "dgtf_engine" / "dgtf_v1" / "scripts" / "_negctl_version_tag.py"
     pn = 0
     if not prev.is_file():
         bad.append("负对照文件缺失 %s —— 判据判别力无法自证" % prev.name)
@@ -11040,7 +11041,7 @@ def check_v12325_struct_coverage():
                    f"sc={_cn.get('last_sc_ratio')}")
 
     # ================= B. 产物渲染三读数并列 =================
-    _mg = mod.Meta-DGTF(cfg)
+    _mg = mod.MetaDGTF(cfg)
     _mg.pools["1"].undecidable_channel = _ch
     _line = _mg._und_channel_line()
     if "结构覆盖率 0.33" not in _line:
@@ -11057,7 +11058,7 @@ def check_v12325_struct_coverage():
     if "量的是「结构有多活」" not in _line:
         bad.append(f"[B] 口径标注（结构有多活）缺了：{_line!r}")
     # 无结构时印「—」，不许印 0.00
-    _m2 = mod.Meta-DGTF(cfg)
+    _m2 = mod.MetaDGTF(cfg)
     _m2.pools["1"].undecidable_channel = dict(
         _pe.undecidable_channel, clarity_history=[0.5])
     _l2 = _m2._und_channel_line()
@@ -11278,7 +11279,7 @@ def check_v12326_sim3():
                        "（可能是无条件放过）")
     # ★ 行为判据（驱动真实方法）：covers 乱指 T1 必须报红
     _CLS = None
-    for _c in ("DGTF", "Meta-DGTF"):
+    for _c in ("DGTF", "MetaDGTF"):
         if hasattr(mod, _c) and hasattr(getattr(mod, _c), "_quality_check"):
             _CLS = getattr(mod, _c)
             break
@@ -11735,7 +11736,7 @@ def check_v12332_discipline():
             _ngdir = Path(_tf.mkdtemp(prefix="smk_ng_"))
             _cfg2 = dict(mod.DEFAULT_CONFIG)
             _cfg2["playbook"] = {"mode": "on", "dir": str(_ngdir)}
-            _e2 = mod.Meta-DGTF(_cfg2)
+            _e2 = mod.MetaDGTF(_cfg2)
             _orig_c = mod.eml_candidates_from_result
 
             def _fake_cands(_r, ep=None):
@@ -11935,7 +11936,7 @@ def check_v12332_discipline():
         cfg["playbook"] = {"mode": "shadow", "dir": str(_tmp)}
         cfg["output"] = dict(cfg.get("output") or {})
         cfg["output"]["save_dir"] = str(_tmp)
-        eng = mod.Meta-DGTF(cfg)
+        eng = mod.MetaDGTF(cfg)
         v = mod.View(entry="1")
         v.round_log = [{"round": i + 1, "new_amps": x, "idle_stall": 0}
                        for i, x in enumerate([1, 1, 2, 4, 7])]
@@ -12031,7 +12032,7 @@ def check_v12336_eml():
     #   是否**真的变了**（这是"与调度层融合"的可执行证据）。
     try:
         _cfg_t = build_cfg(False)
-        _mt_t = mod.Meta-DGTF(_cfg_t)
+        _mt_t = mod.MetaDGTF(_cfg_t)
         _mt_t._eml_mode = "on"
         _fl0 = float(getattr(_mt_t, "_duty_floor", 0.0) or 0.0)
         _mt_t._eml_used = [{"id": "T-TRI", "action": {"key": "tri_advisory_only",
@@ -12044,7 +12045,7 @@ def check_v12336_eml():
         # ★ [与调度融合 · 扩面] 同一把尺子量另外两个 ——
         #   `thinking_hint` 必须**真的**改到消费方（`llm.thinking_stages`）；
         #   `action_hint` 必须**真的**落进控制面（白名单内）。
-        _mt_t3 = mod.Meta-DGTF(build_cfg(False))
+        _mt_t3 = mod.MetaDGTF(build_cfg(False))
         _mt_t3._eml_mode = "on"
         _mt_t3._eml_used = [{"id": "T-THINK", "why": "判据探针",
                              "action": {"key": "thinking_hint",
@@ -12056,7 +12057,7 @@ def check_v12336_eml():
                 and _ts3.get("assess_decidability") == "enabled"):
             bad.append("[EML] `thinking_hint` **没能改到消费方**"
                        "（llm.thinking_stages 没变）⇒ 只是记账不是融合")
-        _mt_t4 = mod.Meta-DGTF(build_cfg(False))
+        _mt_t4 = mod.MetaDGTF(build_cfg(False))
         _mt_t4._eml_mode = "on"
         _mt_t4._eml_used = [{"id": "T-ACT", "why": "判据探针",
                              "action": {"key": "action_hint",
@@ -12067,7 +12068,7 @@ def check_v12336_eml():
         if "actions.parallel_expand" not in _ap4:
             bad.append("[EML] `action_hint` **没落进控制面**：%r" % (_ap4,))
         # 同一把尺子量第四个：`note_cost_no_gain` 应让圈数**变小**
-        _mt_t2 = mod.Meta-DGTF(build_cfg(False))
+        _mt_t2 = mod.MetaDGTF(build_cfg(False))
         _mt_t2._eml_mode = "on"
         _mt_t2._eml_used = [{"id": "T-COST",
                              "action": {"key": "note_cost_no_gain"}}]
@@ -12134,7 +12135,7 @@ def check_v12336_tick():
     # ── 构造性（直接驱动真实方法）──
     try:
         _cfg = build_cfg(False)
-        _mt = mod.Meta-DGTF(_cfg)
+        _mt = mod.MetaDGTF(_cfg)
 
         def _mkview(verdict: str):
             _v = mod.View(entry="0")
@@ -12155,7 +12156,7 @@ def check_v12336_tick():
             if len(_mt._control.applied) > _n1 + 1:
                 bad.append("[心跳] 重复触发**重复落账**（应判 noop）")
             # ③ 默认零行为差：正常读数 ⇒ 不新增放宽
-            _mt2 = mod.Meta-DGTF(build_cfg(False))
+            _mt2 = mod.MetaDGTF(build_cfg(False))
             _mt2._schedule_tick("0", _mkview("ok"))
             _ap2 = [x.get("key") for x in (_mt2._control.applied or [])]
             if any(str(k).startswith("web.allow.") for k in _ap2):
@@ -12165,7 +12166,7 @@ def check_v12336_tick():
             #    ⇒ 按"有没有真值"判是**误报**，第一版就这么误报的）。
             _c2 = lambda _m: dict((_m.config.get("web_search") or {})
                                   .get("stages") or {})
-            _mt3 = mod.Meta-DGTF(build_cfg(False))
+            _mt3 = mod.MetaDGTF(build_cfg(False))
             _snap_a = _c2(_mt3)
             _mt3._schedule_tick("0", _mkview("collapsed"))   # 触发放宽
             _snap_b = _c2(_mt3)
@@ -12218,7 +12219,7 @@ def check_v12336_readings():
         _logger.handlers = [_lg.StreamHandler(_buf)]
         _logger.setLevel(_lg.INFO)
         _cfg = build_cfg(False)
-        _res = mod.Meta-DGTF(_cfg).run("读数显示判据题",
+        _res = mod.MetaDGTF(_cfg).run("读数显示判据题",
                                       route=["0", "1"],
                                       rounds={"0": 2, "1": 2},
                                       parallel_mode="serial", run_id="")
@@ -12295,7 +12296,7 @@ def check_v12336_allweb():
     if "self._web_augment(stage, user)" not in src:
         bad.append("[全接] `LLM.call` 里**没有**调 `_web_augment`（层没接上）")
     if "web_searcher=self._web_search" not in src:
-        bad.append("[全接] `Meta-DGTF.run` **没注入** `web_searcher`（依赖没接上）")
+        bad.append("[全接] `MetaDGTF.run` **没注入** `web_searcher`（依赖没接上）")
     if "_llm_ctx_set(entry=str(entry), round=int(layer_no or 0))" not in src:
         bad.append("[全接] `_before_round` 没逐圈刷新 entry/round")
     # 控制面必须有**真实调用点**（审计 A2 抓过「定义后零引用」）
@@ -12428,7 +12429,7 @@ def check_v12341_excavate_dir():
     # ④ 显示消歧：真驱动 `_finalize_layer_common` ⇒ 修行层 goal_verdict 带方向提示
     try:
         cfg = build_cfg(False)
-        m = mod.Meta-DGTF(cfg)
+        m = mod.MetaDGTF(cfg)
         v = mod.View(entry="0")
         v.aspect_units = [{"id": "A%d" % i} for i in range(9)]
         v.rounds_run = 3
@@ -12475,7 +12476,7 @@ def check_v12341_attribution():
 
     def _fin(entry, view_attrs, state_extra):
         cfg = build_cfg(False)
-        m = mod.Meta-DGTF(cfg)
+        m = mod.MetaDGTF(cfg)
         v = mod.View(entry=entry)
         for k, val in (view_attrs or {}).items():
             setattr(v, k, val)
@@ -12656,7 +12657,7 @@ def check_v12349_run_ckpt():
         _cfg.setdefault("auto", {}).setdefault("bandit", {})["dir"] = _e2e_mem
         mod.LLM.call = lambda system, user, *a, **k: (
             "- [concept] 占位候选：一段足够长的占位输出，用来过解析门槛。" * 2)
-        _m = mod.Meta-DGTF(_cfg)
+        _m = mod.MetaDGTF(_cfg)
         _rid2 = "E2E_%d" % int(_t2.time())
         _r = _m.run("一个领域里那些被当作常识的东西是怎么来的，它靠不靠得住。",
                     route=["0"], rounds={"0": 1}, parallel_mode="serial",
@@ -12925,7 +12926,7 @@ def check_v12361_empty_guard():
 
     try:
         _n[0] = 0
-        _r = mod.Meta-DGTF(_cfg()).run(
+        _r = mod.MetaDGTF(_cfg()).run(
             "", route=["0"], rounds={"0": 1}, parallel_mode="serial")
         if (_r.get("refused") or {}).get("reason") != "empty_question":
             bad.append("[Q2] 空题没被拒：refused=%r" % (_r.get("refused"),))
@@ -12937,12 +12938,12 @@ def check_v12361_empty_guard():
             bad.append("[Q2] 产物 llm_calls=%r（应 0）" % (_r.get("llm_calls"),))
         # 纯空白同样拒
         _n[0] = 0
-        _r2 = mod.Meta-DGTF(_cfg()).run(
+        _r2 = mod.MetaDGTF(_cfg()).run(
             "   \n\t ", route=["0"], rounds={"0": 1}, parallel_mode="serial")
         if (_r2.get("refused") or {}).get("reason") != "empty_question":
             bad.append("[Q2] 纯空白没被拒：refused=%r" % (_r2.get("refused"),))
         # 负对照：单字题照常跑
-        _r3 = mod.Meta-DGTF(_cfg()).run(
+        _r3 = mod.MetaDGTF(_cfg()).run(
             "熵", route=["0"], rounds={"0": 1}, parallel_mode="serial")
         if _r3.get("refused"):
             bad.append("[Q3] 单字题被误拒：%r" % (_r3.get("refused"),))
@@ -13013,7 +13014,7 @@ def check_v12360_layer_progress():
 
     try:
         _rid = "CKSM60"
-        mod.Meta-DGTF(_cfg()).run(
+        mod.MetaDGTF(_cfg()).run(
             _q, route=["0"], rounds={"0": 3}, parallel_mode="serial",
             run_id=_rid)
         _p = _ck / ("%s.json" % _rid)
@@ -13222,7 +13223,7 @@ def check_v12357_goal_trace_carry():
         return c
 
     try:
-        _r = mod.Meta-DGTF(_cfg()).run(
+        _r = mod.MetaDGTF(_cfg()).run(
             _q, route=["0"], rounds={"0": 5}, parallel_mode="serial")
         _v = (_r.get("views") or {}).get("0") or {}
         _rr = int(_v.get("rounds_run") or 0)
@@ -13301,7 +13302,7 @@ def check_v12356_ckpt_cumulative():
 
     try:
         _rid = "CKSM56"
-        mod.Meta-DGTF(_cfg()).run(
+        mod.MetaDGTF(_cfg()).run(
             _q, route=["0"], rounds={"0": 2}, parallel_mode="serial",
             run_id=_rid, max_minutes=1e-6)
         _p = _ck / ("%s.json" % _rid)
@@ -13315,7 +13316,7 @@ def check_v12356_ckpt_cumulative():
         if int(_d1.get("window_calls") or -1) != _c1:
             bad.append("[C2] 首窗口 window_calls(%r) != llm_calls(%r)"
                        % (_d1.get("window_calls"), _c1))
-        mod.Meta-DGTF(_cfg()).run(
+        mod.MetaDGTF(_cfg()).run(
             _q, route=["0"], rounds={"0": 2}, parallel_mode="serial",
             run_id=_rid, resume_ckpt=str(_p), max_minutes=1e-6)
         _d2 = json.loads(_p.read_text(encoding="utf-8"))
@@ -13370,7 +13371,7 @@ def check_v12355_paused_gap():
                 "pending_layers": list(pend)}
 
     try:
-        _eng = mod.Meta-DGTF(build_cfg(False))
+        _eng = mod.MetaDGTF(build_cfg(False))
         # P1：暂停，缺的两层都在 pending 里 ⇒ 待续，不报缺陷
         _p = _pack(["both", "all"], True, ["both", "all"])
         _eng._layer_guard(_p)
@@ -13460,7 +13461,7 @@ def check_v12354_parallel_wall_clock():
         return len(mod.eml_read_jsonl(_p) or []) if _p.is_file() else 0
 
     try:
-        _r1 = mod.Meta-DGTF(_cfg()).run(
+        _r1 = mod.MetaDGTF(_cfg()).run(
             _q, route=["0", "1"], rounds={"0": 1, "1": 2},
             parallel_mode="A", run_id="PA1", max_minutes=1e-6)
         if _r1.get("paused") is not True:
@@ -13479,19 +13480,19 @@ def check_v12354_parallel_wall_clock():
             bad.append("[P2] 暂停快照没落盘")
             raise RuntimeError("no snapshot")
         _ran = []
-        _ol = mod.Meta-DGTF._run_layer
+        _ol = mod.MetaDGTF._run_layer
 
         def _spy(self, entry, n):
             _ran.append(entry)
             return _ol(self, entry, n)
 
-        mod.Meta-DGTF._run_layer = _spy
+        mod.MetaDGTF._run_layer = _spy
         try:
-            _r2 = mod.Meta-DGTF(_cfg()).run(
+            _r2 = mod.MetaDGTF(_cfg()).run(
                 _q, route=["0", "1"], rounds={"0": 1, "1": 2},
                 parallel_mode="A", run_id="PA2", resume_ckpt=str(_snap))
         finally:
-            mod.Meta-DGTF._run_layer = _ol
+            mod.MetaDGTF._run_layer = _ol
         if _r2.get("resumed_serial") != "A":
             bad.append("[P3] 并行续跑没降级 / 没记 resumed_serial（%r）"
                        % (_r2.get("resumed_serial"),))
@@ -13499,7 +13500,7 @@ def check_v12354_parallel_wall_clock():
             bad.append("[P3] 已完成的层 0 被重跑（白烧钱）：%r" % (_ran,))
         if "1" not in _ran:
             bad.append("[P3] 截断层 1 没重跑（分片跑永远跑不完整）：%r" % (_ran,))
-        _r3 = mod.Meta-DGTF(_cfg()).run(
+        _r3 = mod.MetaDGTF(_cfg()).run(
             _q, route=["0", "1"], rounds={"0": 1, "1": 1},
             parallel_mode="A", run_id="PA3")
         if _r3.get("paused"):
@@ -13530,7 +13531,7 @@ def check_v12353_eml_dir_single():
       冒烟隔离因此要三个旋钮，漏一个就污染 —— 这类「漏一格」的事故本项目栽过。
     ★ 判据分两半：
       · 源码：唯一解析函数存在、三个点都走它、**没有残留的 eml_dir() 回落**；
-      · 行为（真入口）：`Meta-DGTF(cfg)` 的**载入**必须读到 `playbook.dir` 里那份，
+      · 行为（真入口）：`MetaDGTF(cfg)` 的**载入**必须读到 `playbook.dir` 里那份，
         `_save_bandit` 也必须落在那儿，而 `eml_dir()` 那个点**一个字节都不许写**。
       负对照：显式 `auto.bandit.dir` 仍然优先（显式赢了才用显式的）。
     ★ 测试自身把 `mod.eml_dir` 指到临时目录 —— 判据**不看**生产 `dgtf_memory/`。
@@ -13564,7 +13565,7 @@ def check_v12353_eml_dir_single():
         (_pdir / mod._BANDIT_FILE).write_text(json.dumps(
             {"t": 1, "n": [9] + [0] * (_k - 1),
              "mean": [0.5] * _k, "cost": [1.0] * _k}), encoding="utf-8")
-        _e = mod.Meta-DGTF(_cfg(pdir=_pdir))
+        _e = mod.MetaDGTF(_cfg(pdir=_pdir))
         if not _e._bandit or int(_e._bandit.n[0]) != 9:
             bad.append("[B2] 载入没走 playbook.dir（n[0]=%r）"
                        % (int(_e._bandit.n[0]) if _e._bandit else None,))
@@ -13579,7 +13580,7 @@ def check_v12353_eml_dir_single():
         if (_fake / mod._BANDIT_FILE).is_file():
             bad.append("[B2] 还是写了 eml_dir()（隔离仍靠第三个旋钮）")
         _b2 = Path(_tf.mkdtemp(prefix="v53b_"))
-        _e2 = mod.Meta-DGTF(_cfg(pdir=_pdir, bdir=_b2))
+        _e2 = mod.MetaDGTF(_cfg(pdir=_pdir, bdir=_b2))
         if not _e2._bandit or int(_e2._bandit.n[0]) != 0:
             bad.append("[B3] 显式 auto.bandit.dir 没优先（读到了 pdir 那份）")
     except Exception as _ex:
@@ -13646,7 +13647,7 @@ def check_v12352_paused_no_eml():
         return len(mod.eml_read_jsonl(_p) or []) if _p.is_file() else 0
 
     try:
-        _r1 = mod.Meta-DGTF(_cfg()).run(
+        _r1 = mod.MetaDGTF(_cfg()).run(
             _q, route=["0", "1"], rounds={"0": 1, "1": 1},
             parallel_mode="serial", run_id="PZ1", max_minutes=1e-6)
         if _r1.get("paused") is not True:
@@ -13655,7 +13656,7 @@ def check_v12352_paused_no_eml():
             bad.append("[P2] paused 跑次没被跳过（会写半程样本）")
         if _n() != 0:
             bad.append("[P2] paused 跑次写了 %d 条 episode" % _n())
-        _r2 = mod.Meta-DGTF(_cfg()).run(
+        _r2 = mod.MetaDGTF(_cfg()).run(
             _q, route=["0"], rounds={"0": 1},
             parallel_mode="serial", run_id="PZ2")
         if (_r2.get("playbook") or {}).get("skipped_paused"):
@@ -13724,7 +13725,7 @@ def check_v12351_eml_once_per_run():
         _cfg = dict(mod.DEFAULT_CONFIG)
         _cfg["playbook"] = {"mode": "on", "dir": str(_d), "top_k": 3,
                             "promote_n": 3, "halflife_days": 14.0}
-        _eng = mod.Meta-DGTF(_cfg)
+        _eng = mod.MetaDGTF(_cfg)
         for _i in range(1, 5):
             _eng._eml_finish(_mkres("RUN%d" % _i))
         _n4 = len(mod.eml_read_jsonl(_d / "episodes.jsonl"))
@@ -13814,7 +13815,7 @@ def check_v12350_resume():
     _ck = Path(_tf.mkdtemp(prefix="v50ck_"))
     _mem = Path(_tf.mkdtemp(prefix="v50mem_"))
     _orig_dir = mod.run_ckpt_dir
-    _orig_layer = mod.Meta-DGTF._run_layer
+    _orig_layer = mod.MetaDGTF._run_layer
     mod.run_ckpt_dir = lambda base=None: _ck
     _ran = []
 
@@ -13842,7 +13843,7 @@ def check_v12350_resume():
         _s, _p = None, None
         for _att in (1, 2):
             _rid = "RS1" if _att == 1 else "RS1b"
-            mod.Meta-DGTF(_cfg()).run(_q, route=["0"], rounds={"0": 1},
+            mod.MetaDGTF(_cfg()).run(_q, route=["0"], rounds={"0": 1},
                                      parallel_mode="serial", run_id=_rid)
             _cand = _ck / ("%s.json" % _rid)
             if not _cand.is_file():
@@ -13872,8 +13873,8 @@ def check_v12350_resume():
         _s["status"] = "interrupted"
         _p.write_text(json.dumps(_s, ensure_ascii=False, indent=1), encoding="utf-8")
 
-        mod.Meta-DGTF._run_layer = _spy
-        _m2 = mod.Meta-DGTF(_cfg())
+        mod.MetaDGTF._run_layer = _spy
+        _m2 = mod.MetaDGTF(_cfg())
         _r2 = _m2.run(_q, route=["0", "1"], rounds={"0": 1, "1": 1},
                       parallel_mode="serial", run_id="RS2", resume_ckpt=str(_p))
         if "0" in _ran:
@@ -13891,7 +13892,7 @@ def check_v12350_resume():
             bad.append("[RS] 层 0 的池没还原（下游会看到空上游）")
 
         _ran.clear()
-        mod.Meta-DGTF(_cfg()).run("完全不同的题面", route=["0"],
+        mod.MetaDGTF(_cfg()).run("完全不同的题面", route=["0"],
                                  rounds={"0": 1}, parallel_mode="serial",
                                  run_id="RS3", resume_ckpt=str(_p))
         if "0" not in _ran:
@@ -13912,7 +13913,7 @@ def check_v12350_resume():
             bad.append("[RS-正对照] serial + 同题竟不允许续跑")
 
         _ran.clear()
-        _r4 = mod.Meta-DGTF(_cfg()).run(_q, route=["0", "1"],
+        _r4 = mod.MetaDGTF(_cfg()).run(_q, route=["0", "1"],
                                        rounds={"0": 1, "1": 1},
                                        parallel_mode="serial", run_id="RS4",
                                        max_minutes=1e-6)
@@ -13928,7 +13929,7 @@ def check_v12350_resume():
     except Exception as _e:  # noqa: BLE001
         bad.append("[RS] 驱动抛错：%r" % (_e,))
     finally:
-        mod.Meta-DGTF._run_layer = _orig_layer
+        mod.MetaDGTF._run_layer = _orig_layer
         mod.run_ckpt_dir = _orig_dir
 
     if bad:
@@ -14373,7 +14374,7 @@ def check_v12341_goal_fresh():
 
     def _fin(entry, preset):
         cfg = build_cfg(False)
-        m = mod.Meta-DGTF(cfg)
+        m = mod.MetaDGTF(cfg)
         v = mod.View(entry=entry)
         for k, val in (preset or {}).items():
             setattr(v, k, val)
@@ -14467,7 +14468,7 @@ def check_v12340_relax_force():
         cfg = build_cfg(False)
         cfg.setdefault("web_search", {})
         cfg["web_search"]["relax_force"] = bool(force)
-        mt = mod.Meta-DGTF(cfg)
+        mt = mod.MetaDGTF(cfg)
         p = _P()
         mt._before_round("0", p, 1)          # 第一圈：只记基线
         if grow:
@@ -14620,7 +14621,7 @@ def check_v12340_backfeed_stage():
 
         _o = _Owner()
         _o._web_gate, _o._web_client = _Gate(), _Client()
-        _r = mod.Meta-DGTF._web_search(_o, "expand_from_question",
+        _r = mod.MetaDGTF._web_search(_o, "expand_from_question",
                                       ["测试查询"], 1, "record", 0)
         if not _r:
             bad.append("[回喂stage] `_web_search` 返回空")
@@ -14918,7 +14919,7 @@ def check_v12337_roundtick():
     # ── 构造性：造「上一圈零增量」⇒ 本圈应放宽；「有增量」⇒ 不该放宽 ──
     try:
         _cfg = build_cfg(False)
-        _mt = mod.Meta-DGTF(_cfg)
+        _mt = mod.MetaDGTF(_cfg)
         class _P:
             amps = []
             threads = []
@@ -14936,7 +14937,7 @@ def check_v12337_roundtick():
             bad.append("[圈心跳] 上一圈零增量却**没放宽**（触发条件失效）：%r"
                        % (_keys,))
         # 第三圈：池**有增量** ⇒ 不该再放宽（负对照）
-        _mt2 = mod.Meta-DGTF(build_cfg(False))
+        _mt2 = mod.MetaDGTF(build_cfg(False))
         _p2 = _P()
         _mt2._before_round("0", _p2, 1)
         _p2.amps = [{"desc": "新 & 1"}]           # 有产出
@@ -15682,14 +15683,14 @@ def check_v12333_autotune():
         bad.append("[量化] 语义密度空输入竟表态")
     # ㉛ 真实入口接线：三处读数都要在引擎里可达（不只纯函数绿）。
     #   ★★ [真跑逮到的真缺陷] 第一版只查「`self._quant_note(view,` 出现 ≥2 次」
-    #      （**存在性**）⇒ 接线看似在，实则 `_quant_note` 只定义在 `Meta-DGTF`，
+    #      （**存在性**）⇒ 接线看似在，实则 `_quant_note` 只定义在 `MetaDGTF`，
     #      而调用点在 `DGTF.run`，两类**无继承关系** ⇒ `AttributeError` 被
     #      `except Exception: pass` **静默吞掉** ⇒ 真跑 `quant_readings` 四层全空。
     #      ⇒ 「有接线」≠「这跑走得到」。判据必须**查可达性**，不查出现次数。
     _qn = getattr(mod, "_quant_note", None)
     if not callable(_qn):
         bad.append("[量化] 模块级 `_quant_note` 不存在（应做成模块级函数："
-                   "调用点在 DGTF，定义却在 Meta-DGTF ⇒ 解析不到）")
+                   "调用点在 DGTF，定义却在 MetaDGTF ⇒ 解析不到）")
     else:
         # ★ 构造性可达证明：拿**真的 View** 写一条，必须落进去。
         try:
@@ -15700,7 +15701,7 @@ def check_v12333_autotune():
         except Exception as _e:
             bad.append("[量化] `_quant_note` 调用抛错：%r" % (_e,))
     # ★ 宿主可达性：三处调用点的**宿主类**上，同名属性必须能解析到。
-    #   逐类检查 `DGTF` / `Meta-DGTF`：调用点所在类若无该属性 ⇒ 判红。
+    #   逐类检查 `DGTF` / `MetaDGTF`：调用点所在类若无该属性 ⇒ 判红。
     _src_ln = src.replace("\r\n", "\n")
     if "self._quant_note(" in _src_ln:
         bad.append("[量化] 仍有 `self._quant_note(` 调用（应改模块级裸名 —— "
@@ -15830,9 +15831,9 @@ def check_v12333_autotune():
     #      但真实跑下来读数**恒不落盘**（历史挂在每圈重建的 `view` 上 ⇒ 恒 None
     #      ⇒ 永久「缺输入不表态」）。本项目栽过三次同族问题：
     #      ① v1.23.27 信念迁移真实入口不可达；② 本轮 `_quant_note` 定义在
-    #      `Meta-DGTF`、调用点在 `DGTF`（无继承）⇒ 静默 AttributeError；
+    #      `MetaDGTF`、调用点在 `DGTF`（无继承）⇒ 静默 AttributeError；
     #      ③ 本轮历史挂每圈重建的 view ⇒ 时序颠倒。
-    #   ★ 判据形态：跑一次**真实入口**（`Meta-DGTF.run`，等价的 mock 路径 ⇒
+    #   ★ 判据形态：跑一次**真实入口**（`MetaDGTF.run`，等价的 mock 路径 ⇒
     #     零 API 花费），断言 `views[e].quant_readings` 里**真的有**这个键。
     #     ⚠ 这里用**已有的** mock run 机制（`build_cfg` + `mod.LLM.call` 已被
     #     模块级替换），不另造一套真跑。
@@ -15844,7 +15845,7 @@ def check_v12333_autotune():
                        "下一圈必然读不到（时序颠倒，读数永不落盘）")
         else:
             _cfg_cy = build_cfg(False)
-            _mt_cy = mod.Meta-DGTF(_cfg_cy)
+            _mt_cy = mod.MetaDGTF(_cfg_cy)
             # ★ ㉞ 与 ㉟ **共用一次 mock run**（只跑一次，不拖慢冒烟）：
             #   猴补丁同时捕获 `_render` 正文，供 ㉟ 断言「读数进正文」。
             _orig_render = mod.DGTF._render
@@ -16060,7 +16061,7 @@ def check_v12331_memory_loop():
         _cfg = dict(mod.DEFAULT_CONFIG)
         _cfg["playbook"] = {"mode": "on", "dir": str(_tmp), "top_k": 3,
                             "promote_n": 3, "halflife_days": 14.0}
-        _eng = mod.Meta-DGTF(_cfg)
+        _eng = mod.MetaDGTF(_cfg)
         for _i in range(1, 5):
             _eng._eml_finish(_mkres("RUN%d" % _i))
         if not (_tmp / "playbook.jsonl").is_file():
@@ -16088,13 +16089,13 @@ def check_v12331_memory_loop():
             bad.append("[入口] MEMORY.md 未生成")
         _c2 = dict(mod.DEFAULT_CONFIG)
         _c2["playbook"] = {"mode": "off", "dir": str(_tmp)}
-        _e2 = mod.Meta-DGTF(_c2)
+        _e2 = mod.MetaDGTF(_c2)
         _e2._eml_prepare("x")
         if _e2._eml_finish(_mkres("RX")).get("merged"):
             bad.append("[三态] off 竟写库")
         _c3 = dict(mod.DEFAULT_CONFIG)
         _c3["playbook"] = {"mode": "shadow", "dir": str(_tmp)}
-        _e3 = mod.Meta-DGTF(_c3)
+        _e3 = mod.MetaDGTF(_c3)
         _e3._eml_prepare("如何利用AI来帮助人类实现财富自由")
         if _e3._eml_apply({"0": 3, "1": 3, "both": 3, "all": 4}):
             bad.append("[三态] shadow 竟生效（F1 失守）")
@@ -16197,7 +16198,7 @@ def check_v12330_duty_guard():
     # ── 真实入口级 ──
     try:
         cfg = dict(mod.DEFAULT_CONFIG)
-        eng = mod.Meta-DGTF(cfg)
+        eng = mod.MetaDGTF(cfg)
         eng._question = q
         v = mod.View(entry="1")
         v.collision = _irr * 4
@@ -16226,7 +16227,7 @@ def check_v12330_duty_guard():
         if not (getattr(eng, "_duty_carry", None) or []):
             bad.append("[入口] 缺失 core 未注入 carry")
         # 负对照：达标不许乱改
-        eng2 = mod.Meta-DGTF(cfg)
+        eng2 = mod.MetaDGTF(cfg)
         eng2._question = q
         v2 = mod.View(entry="1")
         v2.collision = _rel * 8
@@ -16354,7 +16355,7 @@ def check_v12329_convergence():
                   "max_calls": 0, "reason": "probe", "confidence": 0.9,
                   "orientation": "decision"}
         _cfg = build_cfg(False)
-        _m1 = mod.Meta-DGTF(_cfg)
+        _m1 = mod.MetaDGTF(_cfg)
         _st1 = _RStub(dict(_hitpl))
         _m1.llm = _st1
         _r1 = _m1._decide_parallel_mode(_qhit)
@@ -16373,7 +16374,7 @@ def check_v12329_convergence():
         if _r2.get("mode") != "serial" or _st2.calls:
             bad.append("[1f] plan_resources 规则未优先（mode=%r calls=%d）"
                        % (_r2.get("mode"), _st2.calls))
-        _m3 = mod.Meta-DGTF(_cfg)
+        _m3 = mod.MetaDGTF(_cfg)
         _st3 = _RStub(dict(_hitpl))
         _m3.llm = _st3
         _r3 = _m3._auto_plan(_qhit)
@@ -16614,7 +16615,7 @@ def check_v12328_real_entry():
             "question": "x", "structural_amps": [_FA, _FB],
             "clarity": 0.4, "_layer_name": "0", "_round_no": 1,
         }
-        _mf = object.__new__(mod.Meta-DGTF)
+        _mf = object.__new__(mod.MetaDGTF)
         _mf.config = {"sim": {},
                       "belief": {"revoke_sources": 2, "sem_entropy_thr": 0.30}}
         _mf.decidability_result = None
@@ -16757,7 +16758,7 @@ def check_v12324_indep_therapy():
                    f"{_pe.undecidable_channel.get('last_indep_ratio')}")
 
     # 产物渲染：新口径 + 口径标注；新口径 dict 里不许再出现「结构覆盖率」
-    _mg = mod.Meta-DGTF(cfg)
+    _mg = mod.MetaDGTF(cfg)
     _mg.pools["1"].undecidable_channel = _ch
     _line = _mg._und_channel_line()
     if "独立度 0.50" not in _line:
@@ -16772,7 +16773,7 @@ def check_v12324_indep_therapy():
     if "sc_history" not in _ch and "结构覆盖率" in _line:
         bad.append(f"[A] 无 sc_history 时不该印结构覆盖率：{_line!r}")
     # 负对照：历史 packed（只有旧键）必须仍渲染得出来，且显式标「旧口径」
-    _m3 = mod.Meta-DGTF(cfg)
+    _m3 = mod.MetaDGTF(cfg)
     # ★ 这是**真实历史 packed** 的形态：v1.23.23 的 add_undecidable 会写
     #   last_struct_coverage。smoke 里 v69 那份手工 dict 裁掉了这个键，
     #   照抄它去测 `_pool_shape`（那里的门正是这个键）会得到「空」——
@@ -16809,11 +16810,11 @@ def check_v12324_indep_therapy():
             "_stall_is_sat = bool(sat_verdict is False and not stalled)") != 2:
         bad.append("两处 sat 块没都算 _stall_is_sat")
     if "stall_is_sat" not in _ins.signature(
-            mod.Meta-DGTF._stop_reasons).parameters:
+            mod.MetaDGTF._stop_reasons).parameters:
         bad.append("_stop_reasons 没有 stall_is_sat 形参")
 
     # ================= B. 修行层停止判据/文案 =================
-    _mr = mod.Meta-DGTF(cfg)
+    _mr = mod.MetaDGTF(cfg)
     _sp = dict(mod.DEFAULT_CONFIG["spiral"])
 
     def _rs(**kw):
@@ -16866,7 +16867,7 @@ def check_v12324_indep_therapy():
                "all_dec_products": [], "all_und_products": [],
                "r": 4, "rounds_n": 4, "sp": mod._spiral_for(cfg, entry)}
         with _cl.redirect_stdout(_io.StringIO()):
-            mod.Meta-DGTF(cfg)._finalize_layer_common(entry, _v, _st)
+            mod.MetaDGTF(cfg)._finalize_layer_common(entry, _v, _st)
         return _v.stop_reason or ""
 
     for _why in ("连续 2 轮有新增但无推进（修行层无新增或无推进），螺旋停止",
@@ -16943,7 +16944,7 @@ def check_v12365_cost_control():
     """[v1.23.65] token 软预算 + all_on 成本修正（每条都带边界/负对照）。"""
     try:
         import types as _types
-        _e = object.__new__(mod.Meta-DGTF)
+        _e = object.__new__(mod.MetaDGTF)
         _e.verbose = False
         _e.llm = _types.SimpleNamespace(total_tokens=100, total_calls=1)
         _e._token_budget = 0
@@ -17335,7 +17336,7 @@ def main():
         os.environ.pop("SMOKE_AUTO_MODE", None)
 
     # [自动规划] auto_plan：五维一次定（route/mode/rounds/成本档/预算）。
-    # ★ 必须在构造 Meta-DGTF **之前**跑 —— 成本档在 __init__ 里就裁剪完了。
+    # ★ 必须在构造 MetaDGTF **之前**跑 —— 成本档在 __init__ 里就裁剪完了。
     try:
         cfg = build_cfg(False)
         p = mod.auto_plan(q, cfg)
@@ -17442,7 +17443,7 @@ def main():
     try:
         cfg = build_cfg(False)
         cfg["max_calls"] = 1
-        m = mod.Meta-DGTF(cfg)
+        m = mod.MetaDGTF(cfg)
         assert m._call_budget == 1, f"预算没读进实例：{m._call_budget}"
         assert not m._budget_exhausted(), "还没调用不该判为用尽"
         m.llm.total_calls = 5
@@ -17453,7 +17454,7 @@ def main():
         # 不设限（0）时永远不该触发
         cfg2 = build_cfg(False)
         cfg2["max_calls"] = 0
-        m2 = mod.Meta-DGTF(cfg2)
+        m2 = mod.MetaDGTF(cfg2)
         m2.llm.total_calls = 99999
         assert not m2._budget_exhausted(), "预算 0 = 不设限，不该触发"
         # ★ 覆盖面断言：预算守卫必须挂在**每一条**跑圈通道上。
@@ -17485,7 +17486,7 @@ def main():
     # 判定值 5/5 是 partial，但**不可判定清单 5 次全不一样**（措辞+来源标注）。
     # 修法是让「无追溯的不可判定」不参与归一化。这里锁住三处语义。
     try:
-        m = mod.Meta-DGTF(build_cfg(False))
+        m = mod.MetaDGTF(build_cfg(False))
         # ① 抗噪：模型爱塞「（候选16）」这类来源后缀，比对前要剥掉，
         #    否则**有追溯**的会被误判成无追溯 —— 判据自己变成噪声源。
         _u1 = mod._untraced_undecidable(
@@ -17534,7 +17535,7 @@ def main():
         hard = int(build_cfg(False).get("spiral", {}).get("hard_max", 12))
         os.environ["SMOKE_AUTO_MODE"] = "H"
         os.environ["SMOKE_AUTO_ROUNDS"] = '{"0":3,"1":4,"both":5,"all":3}'
-        m = mod.Meta-DGTF(build_cfg(False))
+        m = mod.MetaDGTF(build_cfg(False))
         plan = m._auto_plan(q)
         assert plan["mode"] == "H", f"模式未生效：{plan['mode']}"
         # ★ 0 给的 3 要被钳到可达性下限 4；all 给的 3 要被钳到**元层
@@ -17578,7 +17579,7 @@ def main():
     # 判定 undecidable 且无可判定方面 → 分派到 _decompose_koan，
     # 产物是"维度"不是"子问题"，每条都带 why_undecidable。
     try:
-        m = mod.Meta-DGTF(build_cfg(False))
+        m = mod.MetaDGTF(build_cfg(False))
         d1 = mod.DGTF("1", m.llm, m.config)   # _decompose_question 在 DGTF 上
         d1.verbose = True                     # vp 只在 verbose 下打印
         _buf = io.StringIO()
@@ -17620,7 +17621,7 @@ def main():
     try:
         CALLS["n"] = 0
         cfg = build_cfg(False)
-        meta = mod.Meta-DGTF(cfg)
+        meta = mod.MetaDGTF(cfg)
         res = meta.run(q, route=["0", "1", "both"],
                        rounds={"0": 1, "1": 1, "both": 1, "all": 1},
                        parallel_mode="A")

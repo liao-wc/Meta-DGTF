@@ -4,17 +4,19 @@
 
 | 类别 | 物理位置 | 说明 |
 |---|---|---|
-| V2 生产入口 | dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.0.0.py | 单文件生产引擎，App 自动选用最高版本 |
+| V2 生产入口 | dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.1.0.py | 单文件生产引擎，App 自动选用最高版本 |
 | 引擎总目录 | dgtf_engine/ | 统一存放 dgtf_v1/ 与 dgtf_v2/ |
 | V2 核心 | dgtf_engine/dgtf_v2/ | EML / Scheduler / 四层契约 / 证据与决策 |
-| V2 发布说明 | V2.0.0-发布报告.md、docs/releases/V2.0.0.md | 发布、验证、边界 |
+| V2 发布说明 | V2.1.0-发布报告.md、V2.1.0-收束报告.md、docs/releases/V2.1.0.md | 发布、验证、边界 |
+| 历史融合 | dgtf_engine/dgtf_v2/history_fusion.py、history_manifest.json | V1 全版本谱系/能力轴/运行 provenance |
+| 历史文档 | docs/history/ | 来源、定义、版本演化、能力矩阵 |
 | V2 门户 | docs/index.html | GitHub Pages 静态入口 |
 
 ## V1 归档层
 
 | 类别 | 物理位置 | 说明 |
 |---|---|---|
-| V1 引擎 | dgtf_engine/dgtf_v1/engine/Meta-DGTF-V1.30.4.py | 回滚基线，不再作为默认生产入口 |
+| V1 引擎 | dgtf_engine/dgtf_v1/engine/元DGTF-V1.30.4.py | 回滚基线，不再作为默认生产入口 |
 | V1 报告 | dgtf_engine/dgtf_v1/reports/ | V1 历史报告 |
 | V1 脚本 | dgtf_engine/dgtf_v1/scripts/ | V1 历史验证/实验脚本 |
 | V1 备份 | dgtf_engine/dgtf_v1/legacy/ | 旧配置和 smoke 备份 |

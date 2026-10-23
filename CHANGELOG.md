@@ -12,6 +12,26 @@
 
 ---
 
+V2.1.0
+
+【主题】历史谱系融合与收束。
+
+【改变】
+- 新增 dgtf_engine/dgtf_v2/history_fusion.py：V1 全版本谱系 → 17 条能力轴 → 运行时 provenance。
+- 新增 history_manifest.json：178 个历史版本快照（V1.0 → V1.30.4 + V2.0.0 + V2.1.0）。
+- 新增 tests_history_fusion.py：12 项判据。
+- 引擎新增 --history-fusion auto/on/off；packed 新增 history_fusion 读数。
+- 生产引擎升级为 Meta-DGTF-V2.1.0.py；App 升级为 2.1.0。
+- 新增 docs/history/：来源与定义、版本演化史、V1-V2 能力融合矩阵。
+- 新增 V2.1.0 发布说明、发布报告、收束报告。
+- 更新 README、PROJECT_MAP、PROJECT_LAYOUT、NAMING、Pages 与依赖说明。
+
+【验证】
+- fast_gate 12/0；V2 tests 33/33；App selftest 371/0；pip check 0 broken。
+- 历史融合 readiness=1.00；continuity_ok=True。
+
+---
+
 V2.0.0
 
 【主题】V2 生产发布。

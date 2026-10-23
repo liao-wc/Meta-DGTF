@@ -2,9 +2,9 @@
 
 **知识面 EML × 控制面调度 × 执行面四层契约**
 
-- 版本：V2.0.0 生产发布
-- 生产入口：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.0.0.py
-- 生产实现：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.0.0.py + dgtf_engine/dgtf_v2/（纯标准库、无 API、确定性）
+- 版本：V2.1.0 生产发布
+- 生产入口：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.1.0.py
+- 生产实现：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.1.0.py + dgtf_engine/dgtf_v2/（纯标准库、无 API、确定性）
 - 目标：把“记忆、调度、四层”从同一条流程里的三段代码，改成三个职责分离、可独立验证、可回放的平面。
 
 ---
@@ -398,3 +398,22 @@ V2 的核心不是“更多机制”，而是**把职责变成契约、把记忆
 - 调度负责在约束下选择，用 EVOI/MPC/Pareto，不用拍脑袋权重。
 
 这四件事合起来，才是整体架构的重设计；单改任何一层，都会被另外三层拉回旧行为。
+
+---
+
+## 10. V2.1.0 历史谱系融合层
+
+V2.1.0 在三平面之上增加一层**只读 provenance**：
+
+- 输入：V1.0 → V1.30.4 的 178 个历史快照 + V2.0.0；
+- 结构：17 条能力轴（起源版本 / V2 实现 / 测试判据 / native|bridged）；
+- 运行时：每次 run 选择 contract-first 或 exploration-first 作业剖面；
+- 输出：packed.history_fusion（版本数、readiness、profile、能力轴覆盖）；
+- 边界：只写元数据，不生成/改写答案，不修改历史归档。
+
+实现：dgtf_engine/dgtf_v2/history_fusion.py + history_manifest.json；
+判据：tests_history_fusion.py（12 项）。
+
+融合层的价值不是“再加一个模块”，而是让 V2 能回答：
+**当前能力从 V1 的哪一版来、有没有在演化中丢失、这次跑实际覆盖了哪些。**
+
