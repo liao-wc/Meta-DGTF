@@ -115,7 +115,7 @@
 ## 7. 验证
 
 - git 工作区：干净
-- 当前 main：c85c0cbbf4062f3d2bb3d34167d5d4dbbd0c6a8e
+- 验证时 main：43f087a3a156d17b44612e6ca0082132a0241732
 - fast_gate：PASS 12 / FAIL 0
 - selftest：PASS 371 / FAIL 0
 - py_compile：通过
@@ -125,10 +125,12 @@
 - repo-classification：success
 - Secret scanning open：0
 - Dependabot alerts open：0
+- CodeQL open：0；CodeQL dismissed：37（均有复核理由）
+- 开放 Pull Request：0
 
 ## 8. 仍需你确认或后续处理
 
-1. 当前仓库有 5 个 Dependabot GitHub Actions 升级 PR，建议逐个 review 后合并或关闭。
+1. 当前开放 PR 为 0；Dependabot 配置仍启用，后续自动升级 PR 需要 review 后再合并。
 2. MIT 是本次选择的代码许可证；如需要专利条款，可改 Apache-2.0。
 3. 上游模型许可证需按实际下载的 model card 最终确认。
 4. 实际模型权重 SHA256 尚未写入清单；MODEL_SOURCES 已给出校验命令。
