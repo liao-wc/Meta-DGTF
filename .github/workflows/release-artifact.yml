@@ -21,20 +21,22 @@ jobs:
         with:
           path: .
           format: spdx-json
-          output-file: meta-dgtf-${{ github.ref_name }}.spdx.json
+      - name: Download SBOM artifact
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: meta-dgtf-package.spdx.json
+          path: sbom
       - name: Install cosign
         uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
-      - name: Sign checksums (keyless)
+      - name: Sign checksums (keyless bundle)
         run: |
           cosign sign-blob --yes \
-            --output-signature SHA256SUMS.sig \
-            --output-certificate SHA256SUMS.pem \
+            --bundle SHA256SUMS.bundle \
             SHA256SUMS
       - uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda # v2.2.1
         with:
           files: |
             meta-dgtf-${{ github.ref_name }}.zip
             SHA256SUMS
-            SHA256SUMS.sig
-            SHA256SUMS.pem
-            meta-dgtf-${{ github.ref_name }}.spdx.json
+            SHA256SUMS.bundle
+            sbom/meta-dgtf-package.spdx.json
