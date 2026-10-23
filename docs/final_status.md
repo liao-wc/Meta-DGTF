@@ -23,3 +23,13 @@
 
 - git push / 远端仓库 / 凭据 / ACL / 生产部署 / 服务账户：仍需人工确认。
 - 真实联网质量受搜索源影响；算法层已用答案门/相关性门兜底，不再把噪声冒充事实。
+
+## 用户复核项完成记录（2026-10-23）
+
+- [x] 本机打开 App：已通过 show_access_url 打开；认证页面关键控件存在，dgtf_app/selftest.py PASS 371/0。
+- [x] 浏览器 favicon 与桌面快捷方式图标统一为 dgtf_app/static/dgtf.ico；桌面 .lnk 与快速 .url 均指向该图标。
+- [x] python scripts/cleanup_runtime.py --apply：删除 4 个 __pycache__，未动 outputs/dgtf_memory。
+- [x] auto_policy vs profile A/B：auto_policy 90 calls/881364 tokens/1164.7s，verified 4/4；profile auto 116 calls/1073702 tokens，1201.6s 超时无 packed。报告 reports/goal_ab_auto_policy_20261023.md。
+- [ ] git push：远端 github.com:443 连接失败（无法访问），未推送。
+- [ ] 生产部署：无远端部署目标；本机 App 继续运行在生产入口 https://127.0.0.1:8765/。
+
