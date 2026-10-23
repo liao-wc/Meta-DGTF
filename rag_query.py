@@ -3,7 +3,7 @@
 import json, os, sys
 import torch
 from transformers import AutoTokenizer, AutoModel
-MODEL = os.environ.get('DGTF_EMBED_MODEL', 'D:/dgtf_models/bge-small-zh-v1.5')
+MODEL = os.environ.get('DGTF_EMBED_MODEL', 'D:/元DGTF-多模并行架构/local_model/models/bge-small-zh-v1.5')
 q = sys.stdin.read()
 tok = AutoTokenizer.from_pretrained(MODEL, trust_remote_code=True)
 m = AutoModel.from_pretrained(MODEL, torch_dtype=torch.float16, trust_remote_code=True)

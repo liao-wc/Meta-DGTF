@@ -11,7 +11,7 @@ https://github.com/liao-wc/meta-dgtf
 本地仓库：
 
 ```text
-C:\Users\18432\Desktop\元DGTF-多模并行架构
+D:\元DGTF-多模并行架构
 ```
 
 ## DSH 管理命令

@@ -1,7 +1,7 @@
 # scan_n.py
 from pathlib import Path
 
-p = Path(r"C:\Users\18432\Desktop\元DGTF-多模并行架构\元DGTF-V1.21.50.py")
+p = Path(r"D:\元DGTF-多模并行架构\元DGTF-V1.21.50.py")
 src = p.read_text(encoding="utf-8")
 lines = src.splitlines()
 

@@ -108,8 +108,8 @@ if (Test-Path -LiteralPath $tls) {
 }
 $dshDir = Split-Path -Parent (Split-Path -Parent $DSH)
 icacls $dshDir /grant ($Account + ':(OI)(CI)RX') | Out-Null
-if (Test-Path -LiteralPath "D:\dgtf_llm_env") {
-  icacls "D:\dgtf_llm_env" /grant ($Account + ':(OI)(CI)RX') | Out-Null
+if (Test-Path -LiteralPath "D:\元DGTF-多模并行架构\local_model\envs\dgtf_llm_env") {
+  icacls "D:\元DGTF-多模并行架构\local_model\envs\dgtf_llm_env" /grant ($Account + ':(OI)(CI)RX') | Out-Null
 }
 
 $wrapper = Join-Path $Data "run_server.ps1"

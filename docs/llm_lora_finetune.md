@@ -60,7 +60,7 @@
 
 ## adapter merge
 
-- merge_lora.py 将 0.5B adapter 合并进基座，导出 D:/dgtf_models/Qwen2.5-0.5B-Instruct-merged-v1（约 988MB）；
+- merge_lora.py 将 0.5B adapter 合并进基座，导出 D:/元DGTF-多模并行架构/local_model/models/Qwen2.5-0.5B-Instruct-merged-v1（约 988MB）；
 - 实测 merged 模型输出合法 JSON route/rounds；
 - 默认 app 仍加载 adapter（便于切换/回滚），merge 产物用于自包含部署。
 

@@ -17,6 +17,7 @@
       "scripts/build_app_icon"
     ],
     "local_model": [
+      "local_model/",
       "llm_sft/",
       "models/",
       "*lora*",

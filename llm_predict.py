@@ -38,7 +38,7 @@ def parse(txt):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--question", required=True)
-    ap.add_argument("--model", default="D:/dgtf_models/Qwen2.5-0.5B-Instruct")
+    ap.add_argument("--model", default="D:/元DGTF-多模并行架构/local_model/models/Qwen2.5-0.5B-Instruct")
     ap.add_argument("--adapter", default="llm_sft/adapter_qwen05b_v1")
     ap.add_argument("--max_new", type=int, default=96)
     args = ap.parse_args()

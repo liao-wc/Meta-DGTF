@@ -6,7 +6,7 @@ import torch
 from transformers import AutoTokenizer, AutoModel
 
 ROOT = Path(__file__).resolve().parent
-MODEL = os.environ.get('DGTF_EMBED_MODEL', 'D:/dgtf_models/bge-small-zh-v1.5')
+MODEL = os.environ.get('DGTF_EMBED_MODEL', 'D:/元DGTF-多模并行架构/local_model/models/bge-small-zh-v1.5')
 OUT = ROOT / 'dgtf_memory' / 'rag_index.json'
 MAX_ITEMS = int(os.environ.get('DGTF_RAG_MAX_ITEMS', '1200'))
 

@@ -107,7 +107,7 @@
 ### 3.4 可复现命令（在有相同快照时）
 
     python train_scheduler_model.py --out dgtf_memory/scheduler_model_repro.json --lam 2.0 --holdout 0.2
-    D:/dgtf_llm_env/Scripts/python.exe eval_llm_lora.py --model D:/dgtf_models/Qwen2.5-0.5B-Instruct --adapter llm_sft/adapter_qwen05b_v1 --max 14 --out llm_sft/eval_repro.json
+    D:/元DGTF-多模并行架构/local_model/envs/dgtf_llm_env/Scripts/python.exe eval_llm_lora.py --model D:/元DGTF-多模并行架构/local_model/models/Qwen2.5-0.5B-Instruct --adapter llm_sft/adapter_qwen05b_v1 --max 14 --out llm_sft/eval_repro.json
     # 读数（只读）：
     # GET /api/schedule/policy  /api/schedule/v2/pareto  /api/schedule/model  /api/schedule/llm/status  /api/consistency
     # 复算窗口：见 §3.2 脚本逻辑（读 v2_events.jsonl 末尾 N 行，按模板聚合）
@@ -161,7 +161,7 @@
 
 ### 5.3 失败回退（必须零阻塞）
 
-- 本地模型不可用（adapter/model 路径不存在、`D:/dgtf_llm_env` 不存在、GPU/OOM、子进程 180s 超时）→ 立即回退到 **profile=方案F** 或规则 auto，不重试、不阻断任务（`server.py:6121-6153` 已有 ok/error 结构，可复用）。
+- 本地模型不可用（adapter/model 路径不存在、`D:/元DGTF-多模并行架构/local_model/envs/dgtf_llm_env` 不存在、GPU/OOM、子进程 180s 超时）→ 立即回退到 **profile=方案F** 或规则 auto，不重试、不阻断任务（`server.py:6121-6153` 已有 ok/error 结构，可复用）。
 - 非法输出（JSON 不合法 / route 越权 / rounds 越界）→ 丢弃建议，fallback，记录原因。
 - Pareto 无候选/样本不足 → 保持旧 policy，不写空策略；自动选优写盘前做**幂等检查**（chosen+candidates hash 未变则只更新心跳，不追加审计，避免 24h 114 条噪声）。
 - V2 仲裁异常 → engine 已 fallback_v1（`engine:23962-23967`）；takeover 保持 false。
