@@ -1,0 +1,46 @@
+{
+ "tag": "G1_v65",
+ "src": "元DGTF-V1.21.65.py",
+ "route": "1",
+ "rounds": "1:6",
+ "mode": "serial",
+ "orientation": "decision",
+ "llm_calls": 53,
+ "tri_state": [
+  3,
+  5
+ ],
+ "meta_closure_all": null,
+ "duel_suspensions_both": [],
+ "engagements_by_view": {
+  "1": [
+   {
+    "target": "针对特定老城区，其地下管线现状、汇水条件、可用预算和财政承受力等外部事实是什么？",
+    "tension_id": null
+   },
+   {
+    "target": "在给定重现期（如3年、5年、10年）下，排水系统重建与局部改造加海绵城市措施分别对应的设计标准、技术可行性和典型工程约束是什么？",
+    "tension_id": null
+   }
+  ]
+ },
+ "suspensions_with_tid": {
+  "1": []
+ },
+ "pools_all_engagements": [],
+ "views_errors": {
+  "1": []
+ },
+ "pools_meta_p16": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": []
+ },
+ "pools_meta_len": {
+  "0": 0,
+  "1": 9,
+  "both": 0,
+  "all": 0
+ }
+}

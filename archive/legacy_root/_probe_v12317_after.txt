@@ -1,0 +1,33 @@
+   🔬 rephrase streak=1 sc=False direct=True ing_rr=60% susp_c=0
+   🔬 rephrase streak=2 sc=False direct=True ing_rr=60% susp_c=0
+   ⏸ self-check 反复复述（连续 2 圈，why=direct），标记为空转
+   🔬 rephrase streak=1 sc=False direct=True ing_rr=60% susp_c=0
+   🔬 rephrase streak=2 sc=False direct=True ing_rr=60% susp_c=0
+   ⏸ self-check 反复复述（连续 2 圈，why=direct），标记为空转
+A_sat_缺省字面                     ['2']
+A_soft_or字面                    ['2']
+A_soft_缺省字面                    ['2']
+B_def_sat                      2
+B_def_soft_max                 2
+C_entry0_含复述                   True
+C_entry0_含点名                   True
+C_entry0_理由                    ing 连续 2 圈复述（层内空转） | 自省连续 2 圈点名同一批问题未消化（层内空转）
+C_entry0_软阈2_有理由               True
+C_entry1_含复述                   True
+C_entry1_含点名                   True
+C_entry1_理由                    ing 连续 2 圈复述（层内空转） | 自省连续 2 圈点名同一批问题未消化（层内空转）
+C_entry1_软阈2_有理由               True
+C_soft2_ln2_有理由                True
+C_soft2_ln3_有理由                True
+C_soft3_ln2_有理由                False
+C_soft3_ln3_有理由                True
+C_门槛仍在_stop_reasons内           0
+D_entry0_rephrased_streak      2
+D_entry0_view_meta_idle        2
+D_entry0_读到                    2
+D_entry1_rephrased_streak      2
+D_entry1_view_meta_idle        2
+D_entry1_读到                    2
+E_yaml与默认一致_sat                True
+E_yaml生效_sat                   2
+E_yaml生效_soft                  2

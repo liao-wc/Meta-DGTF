@@ -1,0 +1,22 @@
+{
+ "engine": "元DGTF-V1.25.0.py",
+ "A_warn_ok": {
+  "core_ok": false,
+  "core_ok_true": false,
+  "has_flag": true
+ },
+ "B_warn_gap": {
+  "core_ok": false,
+  "core_ok_true": false,
+  "gaps": [
+   "0: aspect/probe/suspension 核心不足",
+   "all: actions.all_v2=true 但 all 未执行"
+  ],
+  "has_flag": true
+ },
+ "C_off_gap": {
+  "has_core_ok": false,
+  "has_flag": false,
+  "core_audited": true
+ }
+}

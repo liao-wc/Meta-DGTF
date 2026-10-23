@@ -1,0 +1,18 @@
+name: release-artifact
+on:
+  push:
+    tags: ['app-v*', 'engine-v*']
+permissions:
+  contents: write
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Package source without local model binaries
+        run: |
+          zip -r "meta-dgtf-${GITHUB_REF_NAME}.zip" . \
+            -x 'local_model/models/*' 'local_model/envs/*' 'outputs/*' 'dgtf_memory/*' 'archive/*' '*.log'
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: meta-dgtf-${{ github.ref_name }}.zip

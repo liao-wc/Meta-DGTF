@@ -1,0 +1,362 @@
+[
+ {
+  "name": "人有灵魂吗",
+  "kind": "新默认",
+  "probe": 1,
+  "order": "full_first",
+  "rep": 0,
+  "trunc": 30253,
+  "pick": "甲",
+  "why": "甲明确列出可判定与不可判定两栏并逐条给出判不出理由"
+ },
+ {
+  "name": "人有灵魂吗",
+  "kind": "新默认",
+  "probe": 1,
+  "order": "full_first",
+  "rep": 1,
+  "trunc": 30253,
+  "pick": "甲",
+  "why": "甲明确列出可判定与不可判定两栏并逐条给出理由"
+ },
+ {
+  "name": "人有灵魂吗",
+  "kind": "新默认",
+  "probe": 1,
+  "order": "light_first",
+  "rep": 0,
+  "trunc": 30253,
+  "pick": "甲",
+  "why": "甲明确列出可判定与不可判定条目并给出各自理由"
+ },
+ {
+  "name": "人有灵魂吗",
+  "kind": "新默认",
+  "probe": 1,
+  "order": "light_first",
+  "rep": 1,
+  "trunc": 30253,
+  "pick": "甲",
+  "why": "甲明确列出可判定与不可判定条目并给出各自理由"
+ },
+ {
+  "name": "人有灵魂吗",
+  "kind": "新默认",
+  "probe": 2,
+  "order": "full_first",
+  "rep": 0,
+  "trunc": 30253,
+  "pick": "乙",
+  "why": "乙给出可操作判定方案与待办清单，甲只停在句法分析无下一步"
+ },
+ {
+  "name": "人有灵魂吗",
+  "kind": "新默认",
+  "probe": 2,
+  "order": "full_first",
+  "rep": 1,
+  "trunc": 30253,
+  "pick": "乙",
+  "why": "乙给出可操作测量方案与待办回访条件，甲多为悬置线头"
+ },
+ {
+  "name": "人有灵魂吗",
+  "kind": "新默认",
+  "probe": 2,
+  "order": "light_first",
+  "rep": 0,
+  "trunc": 30253,
+  "pick": "甲",
+  "why": "甲给出可执行判定方案与明确待办，乙多为悬置与不可判"
+ },
+ {
+  "name": "人有灵魂吗",
+  "kind": "新默认",
+  "probe": 2,
+  "order": "light_first",
+  "rep": 1,
+  "trunc": 30253,
+  "pick": "甲",
+  "why": "甲给出可执行判定方案与明确待办，乙多为悬置无落地步骤"
+ },
+ {
+  "name": "人有灵魂吗",
+  "kind": "新默认",
+  "probe": 3,
+  "order": "full_first",
+  "rep": 0,
+  "trunc": 30253,
+  "pick": "乙",
+  "why": "乙有风险登记表与待办清单，明确标出两路判定分叉并挂账未决项"
+ },
+ {
+  "name": "人有灵魂吗",
+  "kind": "新默认",
+  "probe": 3,
+  "order": "full_first",
+  "rep": 1,
+  "trunc": 30253,
+  "pick": "乙",
+  "why": "乙明确标出判定分叉并单列风险，甲无此自检痕迹"
+ },
+ {
+  "name": "人有灵魂吗",
+  "kind": "新默认",
+  "probe": 3,
+  "order": "light_first",
+  "rep": 0,
+  "trunc": 30253,
+  "pick": "乙",
+  "why": "乙列出延迟债务与未交代张力，甲称无遗留却仍有悬置"
+ },
+ {
+  "name": "人有灵魂吗",
+  "kind": "新默认",
+  "probe": 3,
+  "order": "light_first",
+  "rep": 1,
+  "trunc": 30253,
+  "pick": "乙",
+  "why": "乙列出延迟债务与未交代张力，甲称无遗留"
+ },
+ {
+  "name": "自由意志",
+  "kind": "新默认",
+  "probe": 1,
+  "order": "full_first",
+  "rep": 0,
+  "trunc": 49020,
+  "pick": "甲",
+  "why": "甲明确列出可判定与不可判定条目并逐条给出判不出理由"
+ },
+ {
+  "name": "自由意志",
+  "kind": "新默认",
+  "probe": 1,
+  "order": "full_first",
+  "rep": 1,
+  "trunc": 49020,
+  "pick": "甲",
+  "why": "甲明确列出可判定与不可判定条目并逐条给出判不出理由"
+ },
+ {
+  "name": "自由意志",
+  "kind": "新默认",
+  "probe": 1,
+  "order": "light_first",
+  "rep": 0,
+  "trunc": 49020,
+  "pick": "甲",
+  "why": "甲明确列出可判定与不可判定条目并给出各自理由"
+ },
+ {
+  "name": "自由意志",
+  "kind": "新默认",
+  "probe": 1,
+  "order": "light_first",
+  "rep": 1,
+  "trunc": 49020,
+  "pick": "甲",
+  "why": "甲明确列出可判定与不可判定条目并给出各自理由"
+ },
+ {
+  "name": "自由意志",
+  "kind": "新默认",
+  "probe": 2,
+  "order": "full_first",
+  "rep": 0,
+  "trunc": 49020,
+  "pick": "乙",
+  "why": "乙给出可查的判定点与具体待办，甲多为不可判定的自指结构"
+ },
+ {
+  "name": "自由意志",
+  "kind": "新默认",
+  "probe": 2,
+  "order": "full_first",
+  "rep": 1,
+  "trunc": 49020,
+  "pick": "乙",
+  "why": "乙给出可查的判定点与具体回访条件，甲多为不可读结构。"
+ },
+ {
+  "name": "自由意志",
+  "kind": "新默认",
+  "probe": 2,
+  "order": "light_first",
+  "rep": 0,
+  "trunc": 49020,
+  "pick": "甲",
+  "why": "甲给出可执行待办与明确判定点，乙多为接口隐喻且清算未交代"
+ },
+ {
+  "name": "自由意志",
+  "kind": "新默认",
+  "probe": 2,
+  "order": "light_first",
+  "rep": 1,
+  "trunc": 49020,
+  "pick": "甲",
+  "why": "甲给出可执行待办与明确判定点，乙多为悬置与不可读"
+ },
+ {
+  "name": "自由意志",
+  "kind": "新默认",
+  "probe": 3,
+  "order": "full_first",
+  "rep": 0,
+  "trunc": 49020,
+  "pick": "乙",
+  "why": "乙自省点名判为逃避并标出未推步骤，甲无此类审查痕迹"
+ },
+ {
+  "name": "自由意志",
+  "kind": "新默认",
+  "probe": 3,
+  "order": "full_first",
+  "rep": 1,
+  "trunc": 49020,
+  "pick": "乙",
+  "why": "乙自省点名判为逃避并标出未推步骤，甲无此类审查痕迹"
+ },
+ {
+  "name": "自由意志",
+  "kind": "新默认",
+  "probe": 3,
+  "order": "light_first",
+  "rep": 0,
+  "trunc": 49020,
+  "pick": "乙",
+  "why": "乙自省点名判为逃避并记录违例，甲无此类独立审查痕迹"
+ },
+ {
+  "name": "自由意志",
+  "kind": "新默认",
+  "probe": 3,
+  "order": "light_first",
+  "rep": 1,
+  "trunc": 49020,
+  "pick": "乙",
+  "why": "乙自省点名判为逃避并记录违例，甲无此类独立审查痕迹"
+ },
+ {
+  "name": "整体大于部分",
+  "kind": "新默认",
+  "probe": 1,
+  "order": "full_first",
+  "rep": 0,
+  "trunc": 55107,
+  "pick": "甲",
+  "why": "甲明确列出可判定与不可判定条目并给出判不出理由"
+ },
+ {
+  "name": "整体大于部分",
+  "kind": "新默认",
+  "probe": 1,
+  "order": "full_first",
+  "rep": 1,
+  "trunc": 55107,
+  "pick": "甲",
+  "why": "甲明确列出可判定与不可判定条目并给出各自理由"
+ },
+ {
+  "name": "整体大于部分",
+  "kind": "新默认",
+  "probe": 1,
+  "order": "light_first",
+  "rep": 0,
+  "trunc": 55107,
+  "pick": "甲",
+  "why": "甲明确分列可判定/不可判定并给出各自理由与边界"
+ },
+ {
+  "name": "整体大于部分",
+  "kind": "新默认",
+  "probe": 1,
+  "order": "light_first",
+  "rep": 1,
+  "trunc": 55107,
+  "pick": "甲",
+  "why": "甲明确分列可判定/不可判定并给出各自理由与边界"
+ },
+ {
+  "name": "整体大于部分",
+  "kind": "新默认",
+  "probe": 2,
+  "order": "full_first",
+  "rep": 0,
+  "trunc": 55107,
+  "pick": "乙",
+  "why": "乙给出明确结论\"不能\"及可执行判定条件，甲停在悬置无结论"
+ },
+ {
+  "name": "整体大于部分",
+  "kind": "新默认",
+  "probe": 2,
+  "order": "full_first",
+  "rep": 1,
+  "trunc": 55107,
+  "pick": "乙",
+  "why": "乙给出明确结论“不能”及可执行判定条件，甲停在悬置无结论。"
+ },
+ {
+  "name": "整体大于部分",
+  "kind": "新默认",
+  "probe": 2,
+  "order": "light_first",
+  "rep": 0,
+  "trunc": 55107,
+  "pick": "甲",
+  "why": "甲给出明确结论、待办与风险，乙结论偏题且待办挂账"
+ },
+ {
+  "name": "整体大于部分",
+  "kind": "新默认",
+  "probe": 2,
+  "order": "light_first",
+  "rep": 1,
+  "trunc": 55107,
+  "pick": "甲",
+  "why": "甲给出明确结论、待办与风险，乙结论偏题且遗留未交代"
+ },
+ {
+  "name": "整体大于部分",
+  "kind": "新默认",
+  "probe": 3,
+  "order": "full_first",
+  "rep": 0,
+  "trunc": 55107,
+  "pick": "甲",
+  "why": "甲明确标注判定平台未落位、前提缺失，并列出判不出与决定不碰的边界。"
+ },
+ {
+  "name": "整体大于部分",
+  "kind": "新默认",
+  "probe": 3,
+  "order": "full_first",
+  "rep": 1,
+  "trunc": 55107,
+  "pick": "甲",
+  "why": "甲明确标出判定平台未落位、前提缺失，并列出判不出与决定不碰的边界。"
+ },
+ {
+  "name": "整体大于部分",
+  "kind": "新默认",
+  "probe": 3,
+  "order": "light_first",
+  "rep": 0,
+  "trunc": 55107,
+  "pick": "乙",
+  "why": "乙有延迟债务、未交代张力与覆盖率分母警告，甲称无债务且clean"
+ },
+ {
+  "name": "整体大于部分",
+  "kind": "新默认",
+  "probe": 3,
+  "order": "light_first",
+  "rep": 1,
+  "trunc": 55107,
+  "pick": "乙",
+  "why": "乙有自省判为逃避、违例1条、清算未交代3类，显示被独立审过"
+ }
+]

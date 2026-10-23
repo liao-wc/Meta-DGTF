@@ -1,0 +1,32 @@
+v1.23.38：联网按需「回喂」（池复用式）+ 放宽目标表扩展 4→8
+
+· 联网按需「回喂」：v1.23.37 只做到「声明⇒检索⇒进池+留痕」，结果没回到后续环节。
+  本版让 `LLM._web_augment` 在检索**之前**先扫池：命中（`used_as=="record"`
+  且 `stage` 匹配）⇒ **直接复用**，不再调 `_searcher`。
+  ★ 回喂路径下 `_searcher` 调用次数 = **0**（成本判据：省钱真发生）。
+  ★ 复用安全：这些条目当年进池时**已过 Gate**，只是取出来用 ⇒ 无新增外部调用。
+  ★ 改动只两处、都在既有函数体内、**不新增任何 AST 符号**：
+    ① 注入侧 `MetaDGTF.run` 的 `_llm_ctx_set` 多注入
+       `backfeed_pool=self.pools.get("1")`；
+    ② 消费侧 `LLM._web_augment` 检索前先扫池 + `[WEB-BACKFEED]` 留痕。
+  ★ 零行为差：不带池 / 池里没有 record / `stage` 不匹配 / 无注入器 ⇒ 原路不变。
+
+· 放宽目标表扩展（`MetaDGTF._TICK_WEB_RELAX` 4 → 8）：
+  补 `he`（与 `ing` 对偶）/ `phase_probe`（与 `probe_*` 同族）/
+  `expand_pair` + `expand_pair_merged_once`（停滞=没有新对 ⇒ 该问外面）。
+  ★ 只在「上一圈零增量 + 联网总闸已开」时经 `ControlSurface` 放宽。
+  ★ 与 `web_search.stages` **两向对账**（8/8 全在 30 个环节里）——
+    否则「放宽」是**死配置**（不生效且不报错）。
+
+· 判据与变异体：
+  · 冒烟新增 2 条：`check_v12338_backfeed`（构造性真驱动 `_web_augment`）/
+    `check_v12338_relax_targets`（放宽表与 stages 两向对账）；
+  · 变异体新增 3 条：M80（回喂不按 used_as 筛选）/ M81（回喂短路）/
+    M82（放宽表塞入不存在的环节名）。
+  ★ `check_v12338_relax_targets` 定位/解析**一律用纯字符串操作不用正则** ——
+    本轮实测踩到 raw 字符串双反斜杠 ⇒ 正则匹配字面反斜杠 ⇒ 判据恒报
+    「找不到定义」且不报错。
+
+· 配置：`dgtf_config.yaml` 头部升 v1.23.38 + 升级段；**无新增配置键**
+  ⇒ `load_config` 逐字差异 **0 项**。
+· CHANGELOG 加 v1.23.38 段（最新在最前）。

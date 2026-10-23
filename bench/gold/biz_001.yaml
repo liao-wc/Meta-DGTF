@@ -1,0 +1,41 @@
+# [v122 bench] gold · biz_001
+id: biz_001
+decidability_gold:
+  adjudicators: 3
+  final: partial
+  dec_aspects:
+    - "两条路径的现金消耗曲线可以按月建模"
+    - "裁员补偿与产线处置价可询价"
+  und_aspects:
+    - "订单恢复的概率不可判定，只能给情景"
+practice_target:
+  min_amps: 3
+  min_threads: 2
+  min_suspensions: 1
+  max_ing_rephrase: 0.3
+  min_anchor_touch_rate: 0.4
+research_target:
+  min_answered: 3
+  max_distance: 0.5
+  min_evidence_traced: 0.8
+  must_mention:
+    - "现金消耗速率"
+  must_not_mention:
+    - "先裁员一定更快"
+collision_target:
+  min_third_party: 1
+  min_tensions: 2
+meta_target:
+  meta_clean: true
+  min_coverage: 0.6
+action_rubric:
+  min_actions: 3
+  required_fields_per_action:
+    - verb
+    - object
+    - owner_role
+    - deadline_hint
+    - acceptance
+  must_have_fallback: true
+  must_have_not_do_list: true
+anchor_gold: []

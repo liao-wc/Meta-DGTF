@@ -1,0 +1,96 @@
+v1.23.33 续：各环节量化 + 降本（第六期）+ 四层目标进圈内动作（第二期）
+
+一、用户指令
+> 「各层的锚点重述是否也要考虑量化，以及阴阳展开，候选生成，ing 的输出内容，
+> 还有 view 的输出重点等也要有相关依据……最好可以减少 LLM 的调用或者寻找最优解
+> 来减少时间和金钱成本。」
+
+⇒ 先检索前沿依据，再落地；每条落地都挂一条依据（全文见
+`_各环节量化与降本依据_v12333.md`）。
+
+二、五条前沿依据（逐条对应一处落地）
+  ① 重述失真毁下游链 —— BenchDrift (arXiv:2608.11694)：「含义保持的重述」使答案
+     **双向漂移**，且**强模型损失远大于收益**；Revisiting Reliability
+     (arXiv:2512.14754)：同意图换措辞 ⇒ 指令跟随**最多掉 61.8%**。→ 锚点保真度。
+  ② 对撞是否真发生 —— SIEV (arXiv:2510.18134)：核心指标 = **对抗性依从率**；
+     「过于胆怯」的模型 pS 高但推理深度低 = **假对撞**。→ 阴阳分歧度。
+  ③ 早期信号提前停 —— RASC (NAACL 2025) 省 ~70% 采样；DeepConf (ICLR 2026) 省
+     **84.7% token**（★ **全局平均会掩盖局部塌陷**）；Think@n 成本 **−49%**。
+     → **依据储备**（未接主循环）。
+  ④ 语义密度 / 信息瓶颈 —— 提示压缩率 `R = I(X;Y)/H(X) > 0.6` 为优；
+     **超过 5 个无信息 token ⇒ 性能降 15%+**。→ 语义密度。
+  ⑤ 降本叠加顺序 —— Tokonomics 2025：单策略 30~50%、**叠加达 85%**；顺序 =
+     批处理 → Prompt 缓存（**静态在前动态在后**）→ 模型路由 → 提示压缩 →
+     输出长度控制 → 语义缓存。
+
+三、现状核查逮到「第 1 类失败」（能力存在但不可达）
+  · `_expand_pair_merged_once`（阴阳合并成一次调用）**零真实调用点** ——
+    v1.23.16 删档造成；历史文档（`CHANGELOG.md` / `v12316_报告.md` /
+    `.workbuddy/memory/2026-10-09.md:1156`）明确记「**未删**，冒烟判据直接调用它」
+    ⇒ 删档删掉了**唯一入口**。
+  · 对照：`parallel_expand` 已达且可达，但它只省**往返**、同 prompt 仍发 N 份
+    ⇒ **不省 token**；合并才同时省往返与重复 user 输入。
+
+四、落地四项（统一规格：纯函数 + 零成本 + 可开关 + 有留痕）
+  L1 **激活阴阳合并**（opt-in `merge_expand`，默认 **false** ⇒ 零行为差）：
+     `_expand_pair` 内 `len(jobs)==2 and _action_on(cfg,"merge_expand",False)`
+     ⇒ 走 `_expand_pair_merged_once`；不可用则回落两臂独立调用并**打印留痕**。
+  L2 **`yin_yang_divergence(yin, yang)`**：`1 - max_i max_j sim`（`_overlap_coef`
+     + `_similar` 两把尺子取大）；`< 0.30 ⇒ "fake_duel"`；任一侧空 ⇒
+     `divergence=None` + `verdict=""`（不表态）。
+  L3 **`restate_fidelity(question, anchor)`**：`coverage`（问句关键词被锚点覆盖比）
+     / `ratio`（长度比）；`coverage<0.20 ⇒ drifted`、`ratio<0.35 ⇒ thin`；
+     任一空 ⇒ 全 `None` + `""`。
+  L4 **`semantic_density(text)`**：分子 = 扣**填充语**（的/了/是/在/和/与/或/及…
+     …综上所述…）+ **标点**（`unicodedata.category` 首字母 ∈ P/S）后的字符数；
+     分母 = 全字符数；空输入 ⇒ `None`；**纯字符统计，零 LLM 调用**。
+  · 出口 `View.quant_readings: Dict[str, dict]` + `to_dict`（**有才出**）；
+    唯一写入口 `_quant_note(view, key, val)`（值不可用就**不写键** ⇒
+    「没测」与「测出来是 0」**必须区分**）。
+  · 三处**真实入口**接线：ing 输出后（`semantic_density(view.collision)`，<0.6 告警）
+    / 锚点确定后（`restate_fidelity(_q0, str(view.anchor))`，drifted 告警）/
+    `_expand` 调用后（`yin_yang_divergence`，fake_duel 告警）。
+
+五、第二期：四层目标读数**进入圈内动作**（★ **零新增接线点**）
+  · 第一期已在**每圈结束时**调 `_layer_goal_now(entry, view)`（串行 15144 / 并行 16810）
+    ⇒ 第二期在**同一位置**追加 `self._refresh_goal_hint(entry, view)`：把本圈读数
+    转成**下一圈**的形状指引（写 `self._goal_hint_next`），由两条 `build_user`
+    （`_expand_from_question` / `_expand_from_views`）读 `{goal_hint}` 注入。
+  · 纯函数 `layer_goal_action_hint(entry, goal, prev=None) -> str`：
+    0 修行 = 换未挖的面（Heaps 饱和）/ n_aspects<4 先摊开新面；
+    1 研究 = 先给未答的面答案（★ 写着长 ≠ 收敛）；
+    both 对撞 = 换融合轴（CORE 停滞罚）/ fuse<0.3 去看矛盾处；
+    all 元 = 按 n_hits 补四件事（闭环/回看/决策/行动）。
+    **达标 ⇒ ""（做到就闭嘴）**；**缺读数 ⇒ ""（不表态）**；
+    **不返 role 名**（保住 role 语义单一真相源）。
+  · ★ **一处真缺陷**（自洽核查逮到）：P2-1 的 A7 锚点只命中**串行**那处（15144），
+    **并行**那处（16810）因上文注释不同而**漏接** ⇒ 补
+    `_patch_v12333_goal_action_p2.py`。判据 ㉖ ④（两通道计数 < 2 ⇒ 判红）专拦这个。
+
+六、★ 本轮三条判据通则（都被实测踩到）
+  1. **变异体注入必须真实可执行** —— M48 第一版写 `_LLM_HOOK[0](_t)`，而引擎里
+     **没有** `_LLM_HOOK` ⇒ 变体 NameError、spy 计数仍是 0 ⇒ **假绿**。改成
+     `globals()["L"+"L"+"M"].call(prompt="x")`（真走 `LLM.call`，判据 ㉚ 的 spy
+     打的正是它）⇒ 立刻判红。**注入必须落在判据实际读的那个东西上**。
+  2. **「不调 LLM」要构造性证明**：spy 包 `LLM.call` 计 **0** 次
+     （不是「我看代码没调」而是「跑一遍，计数为 0」）。
+  3. **Write 工具会把文档里的转义序列变成真字符** —— 我在报告正文写「反斜杠 r
+     反斜杠 r 反斜杠 n」讲换行污染，Write 直接写成**真 CR**，导致脚本自检把自己的
+     说明文字当污染顶红 ⇒ 文档行文统一写「**CR-CR-LF 三元组**」这种不含转义的
+     说法（与 R48「注释里的字面 token 污染判据」同源，这是**第三次**栽）。
+
+七、降本账
+  · 真跑基准 `_fullrun_GOALRUN` = **136 calls / 1.27M tok / 57.2 min**。
+  · L1 合并：每处 pair 省 **1 次往返 + 1 份重复 user token**（估全场 **6~12%** 调用）。
+  · L4：若用于筛 prompt 保守估省 **5~15% 输入 token**（**尚未接**）。
+  · ★ 依据 ⑤ 建议：本项目**性价比最高的下一项降本 = Prompt 缓存**
+    （role/prompt 模板是天然静态前缀；要求**静态在前动态在后**）。
+
+八、验收
+  · 主文件 **24505 行 / 纯 CRLF**（CR-CR-LF 三元组 = 0）；
+  · 冒烟 **EXIT=0 / 0 ✗**；AUDIT **68 PASS / 0 FAIL**；配置两向对账 0 差；
+  · 变异体 **48 / 48 判红**（新增 M45 开关默认打开 / M46 分歧度方向反 /
+    M47 保真度缺输入硬表态 / M48 语义密度偷偷调 LLM）；
+  · 判据 **㉖**（第二期）+ **㉗~㉛**（第六期）全部就位；
+  · 真跑 `_fullrun_QUANT`（route 四层齐 / 2 圈）验证 `quant_readings`
+    在**真实产物**里有值（纯函数绿 ≠ 引擎里可达）。

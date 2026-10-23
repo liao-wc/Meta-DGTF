@@ -1,0 +1,50 @@
+{
+ "tag": "G1r",
+ "src": "元DGTF-V1.21.66.py",
+ "route": "1",
+ "rounds": "1:2",
+ "mode": "serial",
+ "orientation": "auto",
+ "llm_calls": 24,
+ "tri_state": [
+  2,
+  5
+ ],
+ "meta_closure_all": null,
+ "duel_suspensions_both": [],
+ "engagements_by_view": {
+  "1": [
+   {
+    "target": "两类方案的全生命周期成本（建设、运维、改造周期内的社会成本）在给定边界条件下能否用统一口径量化比较？",
+    "tension_id": null
+   },
+   {
+    "target": "该老城区的管网现状、地形坡度、土壤渗透性、地下水位等实测数据是否足以支撑方案比选？",
+    "tension_id": null
+   },
+   {
+    "target": "在极端降雨情景下，海绵城市措施的性能衰减曲线与管网重建的冗余度之间，是否存在可判定的工程阈值？",
+    "tension_id": null
+   }
+  ]
+ },
+ "suspensions_with_tid": {
+  "1": []
+ },
+ "pools_all_engagements": [],
+ "views_errors": {
+  "1": []
+ },
+ "pools_meta_p16": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": []
+ },
+ "pools_meta_len": {
+  "0": 0,
+  "1": 5,
+  "both": 0,
+  "all": 0
+ }
+}

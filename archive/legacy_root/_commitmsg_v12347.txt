@@ -1,0 +1,9 @@
+元 DGTF v1.23.47 定稿存档
+
+主题：P-2b 早停阈值 α 由 AutoTune 跨跑建议（只建议，不执行）。
+依据：SOTA 点名 static thresholds 是学习回路失败模式。
+新增纯函数 autotune_suggest_gain_floor（从「被截断的层 + 当时质量」推建议 α），
+挂进 autotune_phase_learn 输出；零新配置键（只建议）。红线：建议与执行分开。
+
+验收：冒烟 244/0 · verify 319/0 · AUDIT 69/0 · 变异体 96/96（三片 1-32/33-64/65-96）。
+主文件 元DGTF-V1.23.47.py（26115 行 / 纯 CRLF / AST OK / 新增 1 符号已登记）。

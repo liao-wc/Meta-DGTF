@@ -1,0 +1,22 @@
+{
+ "0": {
+  "restate_fidelity": {
+   "coverage": 0.9333,
+   "ratio": 1.0263,
+   "fidelity": 0.9333,
+   "verdict": "ok"
+  },
+  "yin_yang_divergence": {
+   "n_yin": 6,
+   "n_yang": 7,
+   "max_sim": 0.4375,
+   "divergence": 0.5625,
+   "verdict": "ok"
+  },
+  "ing_density": {
+   "value": 0.8224,
+   "chars": 1084,
+   "verdict": "ok"
+  }
+ }
+}

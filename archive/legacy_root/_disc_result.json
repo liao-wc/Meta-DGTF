@@ -1,0 +1,722 @@
+[
+ {
+  "name": "欧盟AI法案",
+  "kind": "取证",
+  "probe": 1,
+  "order": "full_first",
+  "rep": 0,
+  "trunc": 27874,
+  "pick": "甲",
+  "why": "甲明确列出可判定与不可判定两通道并给出各自理由"
+ },
+ {
+  "name": "欧盟AI法案",
+  "kind": "取证",
+  "probe": 1,
+  "order": "full_first",
+  "rep": 1,
+  "trunc": 27874,
+  "pick": "甲",
+  "why": "甲明确列出可判定与不可判定两通道并给出各自理由"
+ },
+ {
+  "name": "欧盟AI法案",
+  "kind": "取证",
+  "probe": 1,
+  "order": "light_first",
+  "rep": 0,
+  "trunc": 27874,
+  "pick": "乙",
+  "why": "乙明确列出判不出与决定不碰两类并各附理由，甲判不出栏多为内部结构复述"
+ },
+ {
+  "name": "欧盟AI法案",
+  "kind": "取证",
+  "probe": 1,
+  "order": "light_first",
+  "rep": 1,
+  "trunc": 27874,
+  "pick": "乙",
+  "why": "乙明确列出判不出与决定不碰两类并各附理由，甲判不出栏多为内部结构复述"
+ },
+ {
+  "name": "欧盟AI法案",
+  "kind": "取证",
+  "probe": 2,
+  "order": "full_first",
+  "rep": 0,
+  "trunc": 27874,
+  "pick": "甲",
+  "why": "甲给出可判定结论与明确待办，乙结论为空、全挂原文"
+ },
+ {
+  "name": "欧盟AI法案",
+  "kind": "取证",
+  "probe": 2,
+  "order": "full_first",
+  "rep": 1,
+  "trunc": 27874,
+  "pick": "甲",
+  "why": "甲给出可判定结论与待办，乙结论为空、全挂原文"
+ },
+ {
+  "name": "欧盟AI法案",
+  "kind": "取证",
+  "probe": 2,
+  "order": "light_first",
+  "rep": 0,
+  "trunc": 27874,
+  "pick": "乙",
+  "why": "乙给出明确结论与答出子问题，甲结论为无法回答"
+ },
+ {
+  "name": "欧盟AI法案",
+  "kind": "取证",
+  "probe": 2,
+  "order": "light_first",
+  "rep": 1,
+  "trunc": 27874,
+  "pick": "乙",
+  "why": "乙给出明确结论与答出子问题编号，甲结论为无法回答"
+ },
+ {
+  "name": "欧盟AI法案",
+  "kind": "取证",
+  "probe": 3,
+  "order": "full_first",
+  "rep": 0,
+  "trunc": 27874,
+  "pick": "乙",
+  "why": "乙明确标注一致率低于验收线并承认被截断，甲把低一致率解释成标签边界"
+ },
+ {
+  "name": "欧盟AI法案",
+  "kind": "取证",
+  "probe": 3,
+  "order": "full_first",
+  "rep": 1,
+  "trunc": 27874,
+  "pick": "乙",
+  "why": "乙明确标注一致率低于验收线并承认被截断，甲把未达标包装成定性边界"
+ },
+ {
+  "name": "欧盟AI法案",
+  "kind": "取证",
+  "probe": 3,
+  "order": "light_first",
+  "rep": 0,
+  "trunc": 27874,
+  "pick": "乙",
+  "why": "乙有独立元层复核并明确登记未交代张力与悬置"
+ },
+ {
+  "name": "欧盟AI法案",
+  "kind": "取证",
+  "probe": 3,
+  "order": "light_first",
+  "rep": 1,
+  "trunc": 27874,
+  "pick": "乙",
+  "why": "乙明确标注一致率低于验收线并解释其边界，还列出未交代的张力"
+ },
+ {
+  "name": "IPv6",
+  "kind": "取证",
+  "probe": 1,
+  "order": "full_first",
+  "rep": 0,
+  "trunc": 31914,
+  "pick": "甲",
+  "why": "甲明确列出可判定与不可判定两类并各附理由"
+ },
+ {
+  "name": "IPv6",
+  "kind": "取证",
+  "probe": 1,
+  "order": "full_first",
+  "rep": 1,
+  "trunc": 31914,
+  "pick": "甲",
+  "why": "甲明确列出可判定与不可判定两类并各附理由"
+ },
+ {
+  "name": "IPv6",
+  "kind": "取证",
+  "probe": 1,
+  "order": "light_first",
+  "rep": 0,
+  "trunc": 31914,
+  "pick": "甲",
+  "why": "甲明确列出可判定与不可判定项并给出不可判定的具体理由"
+ },
+ {
+  "name": "IPv6",
+  "kind": "取证",
+  "probe": 1,
+  "order": "light_first",
+  "rep": 1,
+  "trunc": 31914,
+  "pick": "甲",
+  "why": "甲明确列出可判定与不可判定项并给出不可判定的具体理由"
+ },
+ {
+  "name": "IPv6",
+  "kind": "取证",
+  "probe": 2,
+  "order": "full_first",
+  "rep": 0,
+  "trunc": 31914,
+  "pick": "甲",
+  "why": "甲给出可判定结论与待办清单，乙停在边界未定无清单"
+ },
+ {
+  "name": "IPv6",
+  "kind": "取证",
+  "probe": 2,
+  "order": "full_first",
+  "rep": 1,
+  "trunc": 31914,
+  "pick": "甲",
+  "why": "甲给出可判定结论与待办清单，乙停在边界未定无清单"
+ },
+ {
+  "name": "IPv6",
+  "kind": "取证",
+  "probe": 2,
+  "order": "light_first",
+  "rep": 0,
+  "trunc": 31914,
+  "pick": "乙",
+  "why": "乙给出52位删除清单与两本账，可直接核对；甲停在边界未定。"
+ },
+ {
+  "name": "IPv6",
+  "kind": "取证",
+  "probe": 2,
+  "order": "light_first",
+  "rep": 1,
+  "trunc": 31914,
+  "pick": "乙",
+  "why": "乙给出可逐位核对的52位删除清单与两本账，甲停在条件句"
+ },
+ {
+  "name": "IPv6",
+  "kind": "取证",
+  "probe": 3,
+  "order": "full_first",
+  "rep": 0,
+  "trunc": 31914,
+  "pick": "甲",
+  "why": "甲明确标出停止判据被截断、清算未交代2类，乙称自然停止且清算未记录"
+ },
+ {
+  "name": "IPv6",
+  "kind": "取证",
+  "probe": 3,
+  "order": "full_first",
+  "rep": 1,
+  "trunc": 31914,
+  "pick": "甲",
+  "why": "甲明确标出停止判据被截断、清算未交代2类，乙称自然停止且清算未记录"
+ },
+ {
+  "name": "IPv6",
+  "kind": "取证",
+  "probe": 3,
+  "order": "light_first",
+  "rep": 0,
+  "trunc": 31914,
+  "pick": "乙",
+  "why": "乙明确标出停止被截断、清算未交代，并列出未决缺口与延迟债务"
+ },
+ {
+  "name": "IPv6",
+  "kind": "取证",
+  "probe": 3,
+  "order": "light_first",
+  "rep": 1,
+  "trunc": 31914,
+  "pick": "乙",
+  "why": "乙明确标出停止被截断、清算未交代，甲称自然停止且清算未记录"
+ },
+ {
+  "name": "TLS",
+  "kind": "取证",
+  "probe": 1,
+  "order": "full_first",
+  "rep": 0,
+  "trunc": 33391,
+  "pick": "甲",
+  "why": "甲明确列出可判定与不可判定条目并给出各自理由"
+ },
+ {
+  "name": "TLS",
+  "kind": "取证",
+  "probe": 1,
+  "order": "full_first",
+  "rep": 1,
+  "trunc": 33391,
+  "pick": "甲",
+  "why": "甲明确列出可判定与不可判定条目并给出各自理由"
+ },
+ {
+  "name": "TLS",
+  "kind": "取证",
+  "probe": 1,
+  "order": "light_first",
+  "rep": 0,
+  "trunc": 33391,
+  "pick": "甲",
+  "why": "甲明确列出可判定与不可判定条目并给出各自理由"
+ },
+ {
+  "name": "TLS",
+  "kind": "取证",
+  "probe": 1,
+  "order": "light_first",
+  "rep": 1,
+  "trunc": 33391,
+  "pick": "甲",
+  "why": "甲明确列出可判定与不可判定条目并给出各自理由"
+ },
+ {
+  "name": "TLS",
+  "kind": "取证",
+  "probe": 2,
+  "order": "full_first",
+  "rep": 0,
+  "trunc": 33391,
+  "pick": "乙",
+  "why": "乙给出阻塞点计数（1.3约2步）可直接核验，甲只停在编号载体未定"
+ },
+ {
+  "name": "TLS",
+  "kind": "取证",
+  "probe": 2,
+  "order": "full_first",
+  "rep": 1,
+  "trunc": 33391,
+  "pick": "乙",
+  "why": "乙给出阻塞点计数3-4/2并指明核验点，甲只给不可判定结构"
+ },
+ {
+  "name": "TLS",
+  "kind": "取证",
+  "probe": 2,
+  "order": "light_first",
+  "rep": 0,
+  "trunc": 33391,
+  "pick": "乙",
+  "why": "乙给出可判定结论与待办回访条件，甲多为不可判定结构。"
+ },
+ {
+  "name": "TLS",
+  "kind": "取证",
+  "probe": 2,
+  "order": "light_first",
+  "rep": 1,
+  "trunc": 33391,
+  "pick": "乙",
+  "why": "乙给出可判定结论与待办回访条件，甲多为不可判定结构。"
+ },
+ {
+  "name": "TLS",
+  "kind": "取证",
+  "probe": 3,
+  "order": "full_first",
+  "rep": 0,
+  "trunc": 33391,
+  "pick": "甲",
+  "why": "甲明确标出不可判定条目无池内追溯并列为风险，乙未做此自查"
+ },
+ {
+  "name": "TLS",
+  "kind": "取证",
+  "probe": 3,
+  "order": "full_first",
+  "rep": 1,
+  "trunc": 33391,
+  "pick": "甲",
+  "why": "甲明确标出不可判定条目无池内追溯，并列出待办与风险，显示被独立审过。"
+ },
+ {
+  "name": "TLS",
+  "kind": "取证",
+  "probe": 3,
+  "order": "light_first",
+  "rep": 0,
+  "trunc": 33391,
+  "pick": "乙",
+  "why": "乙有对撞层与元层，明确裁决并撤回悬置，甲无独立审查环节"
+ },
+ {
+  "name": "TLS",
+  "kind": "取证",
+  "probe": 3,
+  "order": "light_first",
+  "rep": 1,
+  "trunc": 33391,
+  "pick": "乙",
+  "why": "乙有对撞层裁决与撤回悬置，甲无独立审查环节"
+ },
+ {
+  "name": "自由意志",
+  "kind": "开放",
+  "probe": 1,
+  "order": "full_first",
+  "rep": 0,
+  "trunc": 30581,
+  "pick": "甲",
+  "why": "甲明确列出可判定与不可判定条目并逐条给出判不出理由"
+ },
+ {
+  "name": "自由意志",
+  "kind": "开放",
+  "probe": 1,
+  "order": "full_first",
+  "rep": 1,
+  "trunc": 30581,
+  "pick": "甲",
+  "why": "甲明确列出可判定与不可判定条目并逐条给出判不出理由"
+ },
+ {
+  "name": "自由意志",
+  "kind": "开放",
+  "probe": 1,
+  "order": "light_first",
+  "rep": 0,
+  "trunc": 30581,
+  "pick": "甲",
+  "why": "甲明确列出可判定与不可判定条目并逐条给出判不出理由"
+ },
+ {
+  "name": "自由意志",
+  "kind": "开放",
+  "probe": 1,
+  "order": "light_first",
+  "rep": 1,
+  "trunc": 30581,
+  "pick": "甲",
+  "why": "甲明确列出可判定与不可判定条目并逐条给出判不出理由"
+ },
+ {
+  "name": "自由意志",
+  "kind": "开放",
+  "probe": 2,
+  "order": "full_first",
+  "rep": 0,
+  "trunc": 30581,
+  "pick": "乙",
+  "why": "乙给出可核验的删测结论与具体栏位缺失，甲多为悬置与自指。"
+ },
+ {
+  "name": "自由意志",
+  "kind": "开放",
+  "probe": 2,
+  "order": "full_first",
+  "rep": 1,
+  "trunc": 30581,
+  "pick": "乙",
+  "why": "乙给出可核验的删测落点与缺失栏位，甲多为自指结构无下一步"
+ },
+ {
+  "name": "自由意志",
+  "kind": "开放",
+  "probe": 2,
+  "order": "light_first",
+  "rep": 0,
+  "trunc": 30581,
+  "pick": "甲",
+  "why": "甲给出明确决议书与待办清单，直接可执行；乙多为悬置与递归。"
+ },
+ {
+  "name": "自由意志",
+  "kind": "开放",
+  "probe": 2,
+  "order": "light_first",
+  "rep": 1,
+  "trunc": 30581,
+  "pick": "甲",
+  "why": "甲给出明确决议书与待办，乙多为悬置张力，下一步动作不清。"
+ },
+ {
+  "name": "自由意志",
+  "kind": "开放",
+  "probe": 3,
+  "order": "full_first",
+  "rep": 0,
+  "trunc": 30581,
+  "pick": "甲",
+  "why": "甲明确标出3条不可判定无池内追溯，并列出未决缺口与停止清算"
+ },
+ {
+  "name": "自由意志",
+  "kind": "开放",
+  "probe": 3,
+  "order": "full_first",
+  "rep": 1,
+  "trunc": 30581,
+  "pick": "甲",
+  "why": "甲明确标出3条不可判定无池内追溯并列为风险，乙未做此自查"
+ },
+ {
+  "name": "自由意志",
+  "kind": "开放",
+  "probe": 3,
+  "order": "light_first",
+  "rep": 0,
+  "trunc": 30581,
+  "pick": "乙",
+  "why": "乙有对撞层与元层，明确标出两视角未对齐处及未交代张力"
+ },
+ {
+  "name": "自由意志",
+  "kind": "开放",
+  "probe": 3,
+  "order": "light_first",
+  "rep": 1,
+  "trunc": 30581,
+  "pick": "乙",
+  "why": "乙有对撞层与元层，明确标出两处未交代张力并判clean=False"
+ },
+ {
+  "name": "整体大于部分",
+  "kind": "开放",
+  "probe": 1,
+  "order": "full_first",
+  "rep": 0,
+  "trunc": 31091,
+  "pick": "甲",
+  "why": "甲明确列出可判定与不可判定条目并给出各自理由"
+ },
+ {
+  "name": "整体大于部分",
+  "kind": "开放",
+  "probe": 1,
+  "order": "full_first",
+  "rep": 1,
+  "trunc": 31091,
+  "pick": "甲",
+  "why": "甲明确分列可判定与不可判定条目并给出判不出的结构理由"
+ },
+ {
+  "name": "整体大于部分",
+  "kind": "开放",
+  "probe": 1,
+  "order": "light_first",
+  "rep": 0,
+  "trunc": 31091,
+  "pick": "甲",
+  "why": "甲明确列出可判定与不可判定条目并给出各自理由"
+ },
+ {
+  "name": "整体大于部分",
+  "kind": "开放",
+  "probe": 1,
+  "order": "light_first",
+  "rep": 1,
+  "trunc": 31091,
+  "pick": "甲",
+  "why": "甲明确列出可判定与不可判定条目并给出各自理由"
+ },
+ {
+  "name": "整体大于部分",
+  "kind": "开放",
+  "probe": 2,
+  "order": "full_first",
+  "rep": 0,
+  "trunc": 31091,
+  "pick": "甲",
+  "why": "甲给出可判定子问题的最小结构与哥德尔作用边界，可直接核。"
+ },
+ {
+  "name": "整体大于部分",
+  "kind": "开放",
+  "probe": 2,
+  "order": "full_first",
+  "rep": 1,
+  "trunc": 31091,
+  "pick": "甲",
+  "why": "甲给出可判定子问题的最小结构与哥德尔作用边界，可直接核。"
+ },
+ {
+  "name": "整体大于部分",
+  "kind": "开放",
+  "probe": 2,
+  "order": "light_first",
+  "rep": 0,
+  "trunc": 31091,
+  "pick": "甲",
+  "why": "甲给出明确决议书、待办与风险，乙多为悬置未决"
+ },
+ {
+  "name": "整体大于部分",
+  "kind": "开放",
+  "probe": 2,
+  "order": "light_first",
+  "rep": 1,
+  "trunc": 31091,
+  "pick": "甲",
+  "why": "甲给出明确决议、待办与风险，乙多为悬置与缺页，下一步动作不明确"
+ },
+ {
+  "name": "整体大于部分",
+  "kind": "开放",
+  "probe": 3,
+  "order": "full_first",
+  "rep": 0,
+  "trunc": 31091,
+  "pick": "乙",
+  "why": "乙自曝两条不可判定无池内追溯，甲未标此类缺口"
+ },
+ {
+  "name": "整体大于部分",
+  "kind": "开放",
+  "probe": 3,
+  "order": "full_first",
+  "rep": 1,
+  "trunc": 31091,
+  "pick": "乙",
+  "why": "乙自曝2条不可判定无池内追溯，甲未自曝此类缺口"
+ },
+ {
+  "name": "整体大于部分",
+  "kind": "开放",
+  "probe": 3,
+  "order": "light_first",
+  "rep": 0,
+  "trunc": 31091,
+  "pick": "乙",
+  "why": "乙有自省违例记录与主动悬置清单，显示被独立审过"
+ },
+ {
+  "name": "整体大于部分",
+  "kind": "开放",
+  "probe": 3,
+  "order": "light_first",
+  "rep": 1,
+  "trunc": 31091,
+  "pick": "乙",
+  "why": "乙有自省违例记录与主动悬置清单，显示被独立审过"
+ },
+ {
+  "name": "人有灵魂吗",
+  "kind": "开放",
+  "probe": 1,
+  "order": "full_first",
+  "rep": 0,
+  "trunc": 32717,
+  "pick": "甲",
+  "why": "甲明确列出可判定与不可判定两栏并逐条给出判不出理由"
+ },
+ {
+  "name": "人有灵魂吗",
+  "kind": "开放",
+  "probe": 1,
+  "order": "full_first",
+  "rep": 1,
+  "trunc": 32717,
+  "pick": "甲",
+  "why": "甲明确列出可判定与不可判定两栏并逐条给出判不出理由"
+ },
+ {
+  "name": "人有灵魂吗",
+  "kind": "开放",
+  "probe": 1,
+  "order": "light_first",
+  "rep": 0,
+  "trunc": 32717,
+  "pick": "甲",
+  "why": "甲明确分列可判定与不可判定条目并给出判不出理由"
+ },
+ {
+  "name": "人有灵魂吗",
+  "kind": "开放",
+  "probe": 1,
+  "order": "light_first",
+  "rep": 1,
+  "trunc": 32717,
+  "pick": "甲",
+  "why": "甲明确分列可判定与不可判定条目并给出判不出理由"
+ },
+ {
+  "name": "人有灵魂吗",
+  "kind": "开放",
+  "probe": 2,
+  "order": "full_first",
+  "rep": 0,
+  "trunc": 32717,
+  "pick": "乙",
+  "why": "乙有带回访条件的待办清单，甲待办为空"
+ },
+ {
+  "name": "人有灵魂吗",
+  "kind": "开放",
+  "probe": 2,
+  "order": "full_first",
+  "rep": 1,
+  "trunc": 32717,
+  "pick": "乙",
+  "why": "乙有带回访条件的待办清单，甲待办为空"
+ },
+ {
+  "name": "人有灵魂吗",
+  "kind": "开放",
+  "probe": 2,
+  "order": "light_first",
+  "rep": 0,
+  "trunc": 32717,
+  "pick": "乙",
+  "why": "乙给出决议书、无待办、四层齐备，甲仍留待办与分叉风险。"
+ },
+ {
+  "name": "人有灵魂吗",
+  "kind": "开放",
+  "probe": 2,
+  "order": "light_first",
+  "rep": 1,
+  "trunc": 32717,
+  "pick": "乙",
+  "why": "乙给出决议书、待办清单与风险登记，甲只有分叉判定和悬空线头。"
+ },
+ {
+  "name": "人有灵魂吗",
+  "kind": "开放",
+  "probe": 3,
+  "order": "full_first",
+  "rep": 0,
+  "trunc": 32717,
+  "pick": "乙",
+  "why": "乙有风险登记表记录两路判定分叉，甲无风险登记"
+ },
+ {
+  "name": "人有灵魂吗",
+  "kind": "开放",
+  "probe": 3,
+  "order": "full_first",
+  "rep": 1,
+  "trunc": 32717,
+  "pick": "乙",
+  "why": "乙有风险登记表记录两路判定分叉并说明以池判为准"
+ },
+ {
+  "name": "人有灵魂吗",
+  "kind": "开放",
+  "probe": 3,
+  "order": "light_first",
+  "rep": 0,
+  "trunc": 32717,
+  "pick": "乙",
+  "why": "乙列出元层主动悬置与未交代张力，甲无此自检痕迹"
+ },
+ {
+  "name": "人有灵魂吗",
+  "kind": "开放",
+  "probe": 3,
+  "order": "light_first",
+  "rep": 1,
+  "trunc": 32717,
+  "pick": "乙",
+  "why": "乙列出元层主动悬置与未交代张力，显示有环节审过自身边界"
+ }
+]

@@ -1,0 +1,44 @@
+V68 行 17433 / V69 行 17844；改动块 27 / 删 50 / 增 461
+
+===== 真跑对照 V68（改前） vs V69（改后） =====
+  指标               |                          V68 |                          V69
+  llm_calls        |                           43 |                           43
+  tokens           |                       194993 |                       185901
+  耗时               |                       9.7min |                       8.9min
+  tri_state[一致,有效] |                       [4, 6] |                       [0, 6]
+  views errors     |           {'0': [], '1': []} |           {'0': [], '1': []}
+  dispatch         | order=['0', '1'] missing=[] skipped=[] | order=['0', '1'] missing=[] skipped=[]
+  日志字符/行           |                       123313 |                       152825
+  圈留痕段             |                            4 |                            4
+  收尾留痕段            |                            0 |                            2
+  ing 就地行          |                          135 |                          153
+  （↑ 头 6 行是同题同比的对照；口径差别的项见下表）
+
+-- D 不可判定追溯 --
+  V68: decidability=partial _divergent=False _und_untraced=2 条 _und_traced=2 条
+        ✗ 时间尺度（一场雨/汛期/管网寿命）结论相反且无仲裁规则
+        ✗ 行政档案与居民记忆两份留痕之差不能被对撞消掉
+  V69: decidability=partial _divergent=True _und_untraced=0 条 _und_traced=0 条
+
+-- B 不可判定覆盖率（pool 1）--
+  V68: struct_cov=0.0 hit=0/8 | aligned_cov=None hit=None | struct_amps=8 aligned_amps=3
+  V69: struct_cov=0.0 hit=0/3 | aligned_cov=0.0 hit=0 | struct_amps=0 aligned_amps=0
+
+-- A [P3] & 候选（各圈累计）行（按层）--
+  V68 entry=0    N=11   [P3] & 候选（各圈累计）11 条 / 本层 amps 7 条（比值 0.64；amps 可能含 adjudications/上游合并的贡献，比值只作方向参考）
+  V68 entry=1    N=12   [P3] & 候选（各圈累计）12 条 / 本层 amps 7 条（比值 0.58；amps 可能含 adjudications/上游合并的贡献，比值只作方向参考）
+  V69 entry=0    N=10   [P3] & 候选（各圈累计）10 条 / 本层 amps 10 条（比值 1.00；amps 可能含 adjudications/上游合并的贡献，比值只作方向参考）
+  V69 entry=1    N=8    [P3] & 候选（各圈累计）8 条 / 本层 amps 0 条（比值 0.00；amps 可能含 adjudications/上游合并的贡献，比值只作方向参考） ⚠️ 候选有但 amps 一
+
+-- C ing 正文词面（错标签会留下「各个局部/上游 view」的痕迹）--
+  V68: ing 行 135｜含「各个局部」0 行｜含「上游」0 行
+  V69: ing 行 153｜含「各个局部」0 行｜含「上游」3 行
+
+-- E 收尾留痕里的累积字段（项数）--
+  V68: （没有收尾留痕段）
+  V69 entry=0    共 2 圈 · 摊开 → 转向    省略=40/54 round_log=2 roles_run=2 carry_checks=1
+  V69 entry=1    共 2 圈 · 摊开 → 转向    省略=38/53 round_log=2 roles_run=2 carry_checks=1
+
+-- 产物 md 的不可判定通道行 --
+  V68: （正文没有这一行）
+  V69: （正文没有这一行）

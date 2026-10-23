@@ -1,0 +1,43 @@
+v1.23.58：晋升门槛 `_eff_n` 与 shadow 拦截原因进产物
+
+## 问题（可达性审计留下的洞）
+审计 §十 我写了「库 11 < 冷启 20 ⇒ `_eff_n` 从 3 降到 1，3 个 shadow 过了门槛
+但被质量闸挡下」。这段话逻辑站得住，**但产物里查不到任何证据**：
+`_eff_n` 只活在 `eml_promote` 内部，shadow 为什么没升级也没有记录。
+产物里只有 `promoted: []`，读的人只会得出「没有东西可升」。
+
+「我推断它降到了 1」与「产物里写着 1」是两件事。
+
+## 改了什么（14 块 / 删 4 行 / 增 54 行，净 +50）
+`eml_promote(..., trace: dict = None)` —— 多收一个可选 dict，**返回值一个字不动**：
+· `eff_n`（自适应后的实际门槛）/ `promote_n` / `adaptive` / `n_lib` / `cold_lib`
+· `shadow`：逐条 `id` / `n_evidence` / `contra` / `quality_delta` / `cost_delta` / `verdict`
+· `shadow_verdicts`：分类计数
+
+**五类 verdict**：`n_short` / `contra` / `quality_down` / `cost_only` / `promoted`
+—— 只有分类才能回答「为什么 0 升级」。
+
+调用方挂成 `_blk["promote_trace"]`，产物 md 正文加一行：
+    ↳ 晋升门槛 ≥1（名义 3；自适应：库 11 < 冷启 20 ⇒ 降到 1）｜shadow 拦截：n_short×3
+
+## 判据（`check_v12358_promote_trace`）
+P1 源码指纹三段；P2 自适应+小库 ⇒ `eff_n==1`；P3 五类 verdict 各命中一条 +
+变更列表只有 S4/S5 + `n_lib`/`promote_n` 记对；
+P4 负对照：`adaptive=False` ⇒ `eff_n==3`，且**传/不传 trace 返回值一致**。
+
+## 验收
+- 冒烟 **257 ✓ / 0 ✗**（上版 256，+1）
+- `--phase all` **PASS 319 / FAIL 0**
+- AUDIT **69 / 0**
+- 变异体 **107 / 107 判红**（M109）
+- app 自检 **368 / 0**
+- 开发期 `_chk_v12358_dev.py` 15 项全过，含**旧版对照**：不传 trace 时返回值与
+  条目状态（含 weight）与 v1.23.57 **逐字相同** ⇒ 证明是纯增量出口
+
+## 一条教训
+**"推断"要显式标成推断。** 我在 §十 写了推断却没标记，很容易被后来的人
+（包括我自己）当成实测。能出口的读数就该出口，不能出口的就要标"未测"。
+
+## 未做
+`gain_floor` 去留（A 承认不可用 / B 换信号改语义）；`shape_limit` 取值扫描
+（现在它是唯一"有值可扫"的键）；更细粒度检查点。

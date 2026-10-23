@@ -1,0 +1,1526 @@
+{
+ "added": 355,
+ "baseline": "_baseline_v12177.py",
+ "current": "元DGTF-V1.25.0.py",
+ "n_symbols_baseline": 290,
+ "n_symbols_current": 644,
+ "registry": {
+  "AnchorRetriever": {
+   "phase": "4",
+   "reason": "五档里的真检索后端（snapshot 零调用 / tavily + 缓存）"
+  },
+  "DecidabilityFreeze": {
+   "phase": "2",
+   "reason": "可判定性冻结：判定跑完那一刻的名单快照 + 防篡改签名"
+  },
+  "WebSearchCache": {
+   "phase": "W1",
+   "reason": "检索缓存：sha256 + TTL，cache/websearch/（与 cache/anchors/ 分开）"
+  },
+  "WebSearchClient": {
+   "phase": "W1",
+   "reason": "HTTP 客户端：超时/重试/退避 + 五类失败分类（_http 是可打桩的缝）"
+  },
+  "WebSearchGate": {
+   "phase": "W1",
+   "reason": "授权 + 配额三层 + 连续失败降级（note_failure 显式置 disabled）"
+  },
+  "_act_text": {
+   "phase": "3",
+   "reason": "取结论文本（View / dict 两形态都要吃）"
+  },
+  "_adjudicate_sub_tristate_multi": {
+   "phase": "2",
+   "reason": "三态多票判决（3 票独立 → 多数）"
+  },
+  "_anchor_enters_citation": {
+   "phase": "4",
+   "reason": "tier 门的唯一判据：tier ≤ tier_floor 才进引用表"
+  },
+  "_anchor_lane_lines": {
+   "phase": "12",
+   "reason": "外部锚点两条通道渲染（文本锚点 / 联网检索），四处共用单一实现"
+  },
+  "_anchor_tier": {
+   "phase": "4",
+   "reason": "as_evidence 五档归一（含 v1.21.75 布尔兼容）"
+  },
+  "_append_self_check_writeback": {
+   "phase": "11",
+   "reason": "自省回写：把高置信自省诊断提升为落地层里的可执行动作"
+  },
+  "_appendix_to_file": {
+   "phase": "10",
+   "reason": "附录外置：内联全量 JSON 搬到旁挂 .packed.json，失败回退内联并留痕"
+  },
+  "_apply_auto_dispatch": {
+   "phase": "13",
+   "reason": "把 auto 项写进配置键（只写 auto 来源的项）"
+  },
+  "_apply_runtime": {
+   "phase": "v1234",
+   "reason": "★ 运行期三项总控的**唯一生效点**：深拷后写具体键，auto 一律不动。纯函数（不改入参）"
+  },
+  "_ask_runtime": {
+   "phase": "v1234",
+   "reason": "★ 交互询问三项总控（回车=auto）；返回 dict，**不改 cfg**"
+  },
+  "_assemble_plan": {
+   "phase": "13",
+   "reason": "唯一装配器：所有调度出口同 schema（清 auto_plan 双形状技术债）"
+  },
+  "_auto_dispatch_lines": {
+   "phase": "13",
+   "reason": "产物头部「自动调度·逐项来源」表"
+  },
+  "_auto_enabled": {
+   "phase": "13",
+   "reason": "调度总开关缺省判定（auto.enabled）"
+  },
+  "_auto_features": {
+   "phase": "13",
+   "reason": "题型特征提取（纯规则）：事实/元/多分句/选择/过程/规模"
+  },
+  "_auto_history": {
+   "phase": "13",
+   "reason": "历史读数：扫最近 N 份 packed，抽成本/截断率/停圈/联网/取向错配"
+  },
+  "_auto_normalize_explicit": {
+   "phase": "13",
+   "reason": "命令行原值归一（auto/空 = 没给 ⇒ None）"
+  },
+  "_auto_pick_decidability": {
+   "phase": "13",
+   "reason": "策略·是否跑外部可判定性评估"
+  },
+  "_auto_pick_effort": {
+   "phase": "13",
+   "reason": "策略·强度"
+  },
+  "_auto_pick_landing": {
+   "phase": "13",
+   "reason": "策略·落地层模板"
+  },
+  "_auto_pick_mode": {
+   "phase": "13",
+   "reason": "策略·并行模式（规则优先，拿不准交 LLM）"
+  },
+  "_auto_pick_orientation": {
+   "phase": "13",
+   "reason": "策略·取向路由"
+  },
+  "_auto_pick_rounds": {
+   "phase": "13",
+   "reason": "策略·圈数（历史停圈 +1）"
+  },
+  "_auto_pick_route": {
+   "phase": "13",
+   "reason": "策略·层集合"
+  },
+  "_auto_pick_stop": {
+   "phase": "13",
+   "reason": "策略·停止阈值"
+  },
+  "_auto_pick_thinking": {
+   "phase": "13",
+   "reason": "策略·思考"
+  },
+  "_auto_pick_web": {
+   "phase": "13",
+   "reason": "策略·联网"
+  },
+  "_auto_pick_web_downgrade": {
+   "phase": "13",
+   "reason": "策略·联网降级阈值与配额"
+  },
+  "_auto_save_dir": {
+   "phase": "13",
+   "reason": "取值：output.save_dir（历史扫描根）"
+  },
+  "_bm25_best": {
+   "phase": "v12326-28",
+   "reason": "v1.23.26 稀疏层：单条对语料的最佳 BM25（用于复述检测的旧口径）"
+  },
+  "_bm25_corpus": {
+   "phase": "v12326-28",
+   "reason": "v1.23.26 稀疏层：把一批文本编成 BM25 语料（doc_tfs/dfs/avgdl/N）"
+  },
+  "_bm25_pair": {
+   "phase": "v12326-28",
+   "reason": "v1.23.26 稀疏层：a 与 b 之间的 BM25（只累加双方共有词 ⇒ 无关必 0）"
+  },
+  "_cache_path": {
+   "phase": "4",
+   "reason": "AnchorRetriever 的检索缓存路径（queries 的 sha256）"
+  },
+  "_canonical_sub_ids": {
+   "phase": "v1233",
+   "reason": "★ 子问题 id 按位置重编号成 1..n —— 原实现直接用模型给的 id（0 起/带洞/重复），而下游一律按 1..n 用"
+  },
+  "_cfg_get_path": {
+   "phase": "13",
+   "reason": "嵌套配置取值"
+  },
+  "_cfg_has_path": {
+   "phase": "13",
+   "reason": "嵌套配置「改过没」（与 DEFAULT_CONFIG 比）"
+  },
+  "_cfg_overridden": {
+   "phase": "13",
+   "reason": "该项的任一配置路径被改过"
+  },
+  "_classify_unsaid": {
+   "phase": "1",
+   "reason": "「此处未生」的 real/lazy 分类（G1.5）"
+  },
+  "_compute_rephrase_streak": {
+   "phase": "6",
+   "reason": "复述圈数的唯一实现（收口两处各一份的旧写法）"
+  },
+  "_dedup_suspensions_for_render": {
+   "phase": "8",
+   "reason": "渲染层归一：同 target 的悬置只渲染一条 + 合并条数留痕"
+  },
+  "_digest": {
+   "phase": "2",
+   "reason": "DecidabilityFreeze 的 sha256 摘要"
+  },
+  "_duel_arbitration_queries": {
+   "phase": "W3",
+   "reason": "[W3] 张力 → 「哪个更合理」仲裁问句（只作仲裁材料）"
+  },
+  "_e6_note_stop": {
+   "phase": "v12326-28",
+   "reason": "v1.23.27 E6 记录一条停止信号的内部实现"
+  },
+  "_endpoint": {
+   "phase": "W1",
+   "reason": "WebSearchClient 的端点解析（未知后端抛错，不静默降级）"
+  },
+  "_extract_actions": {
+   "phase": "3",
+   "reason": "从结论文本抽行动条目（六字段，G3.4）"
+  },
+  "_extract_actions_lexical": {
+   "phase": "P1",
+   "reason": "原词法版行动抽取（schema 优先之后的兜底路径，正文一字未动）"
+  },
+  "_extract_not_do": {
+   "phase": "3",
+   "reason": "抽「不做什么」清单（G3.5 的 not_do_missing 依据）"
+  },
+  "_extract_not_do_lexical": {
+   "phase": "v1222",
+   "reason": "原 _extract_not_do 的词法版（改名保留，仅作 schema 缺失时的兜底）"
+  },
+  "_files": {
+   "phase": "14",
+   "reason": "局部便利函数（在 _auto_history 内）：按 mtime 倒序取最近 N 个文件"
+  },
+  "_g": {
+   "phase": "1",
+   "reason": "`_layer_objective_lines` 内的取视图小闭包（无副作用）"
+  },
+  "_guess_acceptance": {
+   "phase": "3",
+   "reason": "行动字段猜测：验收"
+  },
+  "_guess_deadline": {
+   "phase": "3",
+   "reason": "行动字段猜测：时限"
+  },
+  "_guess_fallback": {
+   "phase": "3",
+   "reason": "行动字段猜测：回退"
+  },
+  "_guess_role": {
+   "phase": "3",
+   "reason": "行动字段猜测：负责人角色"
+  },
+  "_has_decision_context": {
+   "phase": "9",
+   "reason": "取向分流守卫：题面有无决策语境（决定 decision 模板适不适用）"
+  },
+  "_hist_add": {
+   "phase": "14",
+   "reason": "把一条历史记录并进累加器（字段缺省一律容忍）"
+  },
+  "_hist_blank": {
+   "phase": "14",
+   "reason": "历史累加器的空模板"
+  },
+  "_hist_decay": {
+   "phase": "15",
+   "reason": "取配置里的半衰期（auto.history_halflife_days，缺省 14）"
+  },
+  "_hist_finish": {
+   "phase": "14",
+   "reason": "把累加器收成读数（含每层样本数，供策略判断可信度）"
+  },
+  "_hist_for": {
+   "phase": "14",
+   "reason": "取与本题同题型的那份历史（无同型则退全语料）"
+  },
+  "_hist_from_batch": {
+   "phase": "14",
+   "reason": "从跑批 JSON 抽记录（富字段、样本少）"
+  },
+  "_hist_from_md": {
+   "phase": "14",
+   "reason": "从产物 md 头部抽一条（只读 8KB；圈数归种子上限）"
+  },
+  "_hist_from_packed": {
+   "phase": "14",
+   "reason": "从 packed 抽一条（★ 实际停圈字段是 rounds_run）"
+  },
+  "_hist_quant": {
+   "phase": "14",
+   "reason": "分位数（线性插值）：历史读数的 p50/p75"
+  },
+  "_hist_weight": {
+   "phase": "15",
+   "reason": "时间衰减权重 0.5**(age/半衰期)；半衰期≤0 或 mtime 缺失 → 1.0"
+  },
+  "_hist_wquant": {
+   "phase": "15",
+   "reason": "加权分位数（时间衰减）：pairs=[(值,权重)]，as_int=False 用于比率"
+  },
+  "_hit_by_answers": {
+   "phase": "P2b",
+   "reason": "triage 第二条匹配路径：锚点自报 answers（_overlap_coef + _UNTRACED_OVERLAP）"
+  },
+  "_hit_by_claim": {
+   "phase": "P2b",
+   "reason": "triage 原 claim 路径（阈值 0.6 一字不动，向后兼容）"
+  },
+  "_http": {
+   "phase": "W1",
+   "reason": "WebSearchClient 的可打桩缝：返回 (results, fail_kind)，映射 urllib 异常到五档"
+  },
+  "_i": {
+   "phase": "W1",
+   "reason": "WebSearchGate 读顶层整数键（auto_disable_after_failures）"
+  },
+  "_is_mine": {
+   "phase": "13",
+   "reason": "局部便利函数（在 _apply_auto_dispatch 内）：判断该项是否由调度器写入（auto 或显式）"
+  },
+  "_is_never_downgrade": {
+   "phase": "P2a",
+   "reason": "真·自指型不可判定不许降级（锚点无关）"
+  },
+  "_is_triage_candidate": {
+   "phase": "P2a",
+   "reason": "triage 触发条件改挂结构标签（[外] 前缀 ∪ 语义关键词）"
+  },
+  "_jaccard": {
+   "phase": "v12326-28",
+   "reason": "v1.23.26 字面层：Jaccard（对称，不做 min 分母）"
+  },
+  "_layer_objective_lines": {
+   "phase": "1",
+   "reason": "分层目标四行（计数口径，G1.6）"
+  },
+  "_load_config_raw": {
+   "phase": "v1234",
+   "reason": "原 `load_config` 本体（改名）；外层 `load_config` 套运行期总控，覆盖它的**四个** return 出口"
+  },
+  "_meta_clean_queries": {
+   "phase": "W3",
+   "reason": "[W3] uncovered → 存在性问句（只用于核对，不用于清算）"
+  },
+  "_next_web_id": {
+   "phase": "W2",
+   "reason": "W# 编号（跨层全局唯一）"
+  },
+  "_norm_schema_actions": {
+   "phase": "P1",
+   "reason": "schema 归一化白名单里保留 actions —— 不加就是**静默吞字段**"
+  },
+  "_norm_schema_not_do": {
+   "phase": "v1222",
+   "reason": "decidable_product.not_do 的归一化（空 what 丢弃、最多 6 条）"
+  },
+  "_normalize_judgment_ids": {
+   "phase": "v1233",
+   "reason": "★ 把一票的 {id: label} 归一到 1..n（1 起原样 / 0 起整体 +1 / 越界判 None） —— 修「模型给 0 起 id ⇒ 整票错位一格且无声」（受控实验抓到）"
+  },
+  "_normalize_orientation": {
+   "phase": "13",
+   "reason": "取向归一化唯一实现（合并前有三份，fallback 做成显式参数）"
+  },
+  "_normalize_plan_mode": {
+   "phase": "v1235",
+   "reason": "pending_fix #1 收口：调度 mode 白名单归一化的唯一实现（A~H 或 serial）。原在三处各写一份。"
+  },
+  "_normalize_plan_rounds": {
+   "phase": "v1235",
+   "reason": "pending_fix #1 收口：逐层圈数归一化的唯一实现（解析 + 中位数补漏 + 钳制 + 可选按 route 裁）。原在两处各写一份。"
+  },
+  "_normalize_runtime_effort": {
+   "phase": "v1234",
+   "reason": "强度归一 auto/low/high/max；空输入(回车)=auto；集合外返回 None"
+  },
+  "_normalize_runtime_switch": {
+   "phase": "v1234",
+   "reason": "开关归一 auto/on/off + 中文/字母别名；认不出返回 None（不静默）"
+  },
+  "_plan_conf": {
+   "phase": "v1235",
+   "reason": "pending_fix #1 收口：confidence 归一化的唯一实现（不可解析记 0.0，保守退 serial）。原在三处各写一份。"
+  },
+  "_pool_meta_summary": {
+   "phase": "3",
+   "reason": "池级留痕汇总：两个落地层模板共用的一份实现"
+  },
+  "_put": {
+   "phase": "14",
+   "reason": "局部便利函数（在 _auto_history 内）：把一条记录按题型分桶累加"
+  },
+  "_q": {
+   "phase": "W1",
+   "reason": "WebSearchGate 读配额三层（quota.*）"
+  },
+  "_raw_entropy": {
+   "phase": "v12326-28",
+   "reason": "v1.23.27 E1 未决集合的**原始**语义熵 -Σp·ln p（不归一化）"
+  },
+  "_record_web_hits": {
+   "phase": "v12326-28",
+   "reason": "web_search 命中记录（W# 编号与配额）"
+  },
+  "_render_landing_boundary": {
+   "phase": "3",
+   "reason": "原 render_landing 整体改名（老五块模板）"
+  },
+  "_render_landing_decision": {
+   "phase": "3",
+   "reason": "decision 模式的六段行动闭环模板"
+  },
+  "_research_decompose_queries": {
+   "phase": "W2",
+   "reason": "[W2] 拆解前检索词（原问题 + 池内结构型印记）"
+  },
+  "_research_decompose_with_web": {
+   "phase": "W2",
+   "reason": "研究层拆解的**唯一实现**（串行/并行两条通道共用）"
+  },
+  "_research_evidence_queries": {
+   "phase": "W2",
+   "reason": "[W2] 只对 →partial 的提案配检索词（方向纪律）"
+  },
+  "_research_precedent_queries": {
+   "phase": "W2",
+   "reason": "[W2] [外] 标签的不可判定方面 → 存在性问句"
+  },
+  "_research_round_no": {
+   "phase": "W2",
+   "reason": "研究层圈序号（配额口径的 round）"
+  },
+  "_research_web_prep": {
+   "phase": "W2",
+   "reason": "拆解前的联网准备（decompose + precedent），返回可注入摘要"
+  },
+  "_rounds_run_line": {
+   "phase": "14",
+   "reason": "产物「实际停圈」一行：rounds_run + rounds_cap"
+  },
+  "_runtime_snapshot": {
+   "phase": "v1234",
+   "reason": "本跑实际生效的三项读数（写进产物 `_runtime`，供复盘）"
+  },
+  "_runtime_summary_line": {
+   "phase": "v1234",
+   "reason": "一行生效摘要；交互与 CLI **共用**同一个函数，避免两处走样"
+  },
+  "_runtime_thinking_on": {
+   "phase": "v1234",
+   "reason": "本跑思考是否开（看 default；stages 由总控同步过）"
+  },
+  "_sat_override": {
+   "phase": "16",
+   "reason": "sat 判定 → 两条计数的唯一实现（四层同等；0 层走 stall）"
+  },
+  "_scan": {
+   "phase": "v12326-28",
+   "reason": "锚点目录扫描的内部实现（白名单扩展名）"
+  },
+  "_set_cfg_path": {
+   "phase": "13",
+   "reason": "嵌套配置写值"
+  },
+  "_sim3": {
+   "phase": "v12326-28",
+   "reason": "v1.23.26 三级相似度（结构 ⊃ 字面 ⊃ 稀疏），语料不足自动降级"
+  },
+  "_sim3_pair": {
+   "phase": "v12326-28",
+   "reason": "v1.23.26 `_sim3` 的 (分, detail) 包装，供留痕"
+  },
+  "_single_vote_stability": {
+   "phase": "v1222",
+   "reason": "单票路径的 stability 口径（弃权=abstained，与多票同层级但不同尺子）"
+  },
+  "_stop_kind_summary": {
+   "phase": "8",
+   "reason": "各层 stop_reason 归纳成一行「自然 n / 被截断 m」，接在产物头部"
+  },
+  "_susp_key": {
+   "phase": "8",
+   "reason": "悬置归并键：target 首个分句（「；」前），短串退回全长"
+  },
+  "_tavily": {
+   "phase": "4",
+   "reason": "Tavily 检索实现（tier 缺省 3）"
+  },
+  "_thinking_stage": {
+   "phase": "v1232",
+   "reason": "★ 环节名→thinking stage 键；**只在配置里声明过**时返回（否则 None）。修「15 个 stage 永远选不中」"
+  },
+  "_tier_floor": {
+   "phase": "4",
+   "reason": "读 tier_floor 配置（带类型兜底）"
+  },
+  "_triage_suggestions": {
+   "phase": "v1232",
+   "reason": "★ 分诊降级建议清单（**纯函数**，从 _anchor_crosscheck 抽出）——让「能力存在性」可构造性验证，不必靠 n=3 采样"
+  },
+  "_und_self_touch_symbols": {
+   "phase": "v12326-28",
+   "reason": "v1.23.27 A2 给「后来被谁按 id 引用」建凭据（符号对账）"
+  },
+  "_und_self_touch_texts": {
+   "phase": "v12326-28",
+   "reason": "v1.23.27 A2 上一条的文本口径镜像（历史 packed 兼容）"
+  },
+  "_und_text": {
+   "phase": "3",
+   "reason": "取不可判定结论文本（不做什么可能落在这一侧）"
+  },
+  "_vp_preview": {
+   "phase": "v12326-28",
+   "reason": "View 预览渲染（调试用）"
+  },
+  "_web_auto_for_facts": {
+   "phase": "11",
+   "reason": "事实题自动联网：--web auto 时事实型询问视同 on"
+  },
+  "_web_cfg_of": {
+   "phase": "v1232",
+   "reason": "把完整 config / web_search 子段归一成子段（两种写法都收，防静默读不到）"
+  },
+  "_web_digest_block": {
+   "phase": "W2",
+   "reason": "把 W# 渲染成【外部检索摘要】**参照**段（空→空串，加性）"
+  },
+  "_web_domain_of": {
+   "phase": "v1231",
+   "reason": "从 URL 取域名（tier 提案的输入规范化）"
+  },
+  "_web_duel_arbitration": {
+   "phase": "W3",
+   "reason": "[W3] 对撞层第三方仲裁：入 pool.web_arbitration + [W-ARB] 留痕"
+  },
+  "_web_enters_citation": {
+   "phase": "v1232",
+   "reason": "W# 是否够格进引用表（与 X# 同纪律：tier ≤ floor）"
+  },
+  "_web_evidence_gate": {
+   "phase": "W2",
+   "reason": "web_search.as_evidence 是否属于「允许 W# 进引用表」的两档"
+  },
+  "_web_evidence_hook": {
+   "phase": "W2",
+   "reason": "research_evidence 接入点：提案应用前先做一次外部检索"
+  },
+  "_web_lane_stats": {
+   "phase": "12",
+   "reason": "联网检索侧读数（纯函数）：条数/编号/环节/tier/失败，供两条通道渲染"
+  },
+  "_web_meta_clean_check": {
+   "phase": "W3",
+   "reason": "[W3] 元层缺失区间核对：入 pool.web_clean_check + [W-CHK] 留痕"
+  },
+  "_web_search": {
+   "phase": "W2",
+   "reason": "联网检索**唯一实现**：Gate→Client→W# 入池→失败留痕"
+  },
+  "_web_tier_confirmed": {
+   "phase": "v1232",
+   "reason": "★ 只读**人工确认表**的 tier；绝不读提案（提案→生效无自动路径）"
+  },
+  "_web_tier_effective": {
+   "phase": "v1232",
+   "reason": "W# 的有效 tier：人工确认值优先，否则它自带的 tier"
+  },
+  "_web_tier_floor": {
+   "phase": "v1232",
+   "reason": "W# 进引用表的 tier 门（读 web_search.tier_floor；该键此前从未被读过）"
+  },
+  "_web_tier_proposal": {
+   "phase": "v1231",
+   "reason": "★纯函数：tier **提案**（待审）。不改入参、不写盘、不进判定路径；同时接受完整 config 与 web_search 子段"
+  },
+  "_with_form_declaration": {
+   "phase": "10",
+   "reason": "落地层形态声明：写明本次用哪套模板与依据"
+  },
+  "_write_tri_stability": {
+   "phase": "v1222",
+   "reason": "给每条 sub 写 stability + _vote_mode；必须在**每个出口前**调（单票有 5 处早退）"
+  },
+  "add_aspect_unit": {
+   "phase": "v12326-28",
+   "reason": "v1.23.27 A1 `View.add_aspect_unit()`（幂等登记 + 编号 A{n}）"
+  },
+  "allow": {
+   "phase": "W1",
+   "reason": "WebSearchGate 的唯一准入判据：授权 + 三层配额 + 降级，三个否定方向均可读"
+  },
+  "aspect_carry_rate": {
+   "phase": "v12326-28",
+   "reason": "v1.23.27 A3 双读数之二：延续读数（后来还追不追）；property"
+  },
+  "aspect_targets_v12327": {
+   "phase": "v12326-28",
+   "reason": "v1.23.27 A2 覆盖对账符号化：收敛 amp#N/th#N/probe#N/A{N} 四种编号"
+  },
+  "auto_dispatch": {
+   "phase": "13",
+   "reason": "统一调度入口：十二项逐项来源（显式>配置>auto>默认）"
+  },
+  "belief_status_counts": {
+   "phase": "v12326-28",
+   "reason": "v1.23.27 D1 四态计数（可观测量出口）"
+  },
+  "belief_transition": {
+   "phase": "v12326-28",
+   "reason": "v1.23.27 D2 迁移规则**纯函数**：resolved > revoked > stable > 保持"
+  },
+  "build_web_search": {
+   "phase": "W1",
+   "reason": "从配置造 Gate+Client+Cache；**不发起任何调用**"
+  },
+  "domains_load": {
+   "phase": "v1231",
+   "reason": "WebSearchCache：已见域名（tier 提案的「首次出现」判据，只登记域名不存 tier）"
+  },
+  "domains_save": {
+   "phase": "v1231",
+   "reason": "WebSearchCache：把新域名并进 cache/websearch/_domains.json"
+  },
+  "e6_stop_verdict": {
+   "phase": "v12326-28",
+   "reason": "v1.23.27 E6 纯函数：由 seen/max_gain/min_gain/stop_floor 判停"
+  },
+  "freeze": {
+   "phase": "2",
+   "reason": "DecidabilityFreeze.freeze：写冻结键 → 再算签名"
+  },
+  "get": {
+   "phase": "W1",
+   "reason": "WebSearchCache 读缓存（过期/损坏 → 未命中，不抛）"
+  },
+  "key": {
+   "phase": "W1",
+   "reason": "WebSearchCache 的 sha256(backend:query) 前 24 位"
+  },
+  "make_aspect_unit": {
+   "phase": "v12326-28",
+   "reason": "v1.23.27 A1 AspectUnit 的**单一构造点**（双写 desc/text）"
+  },
+  "make_belief_item": {
+   "phase": "v12326-28",
+   "reason": "v1.23.27 D1 BeliefItem 的**单一构造点**（四态 + 熵默认 None）"
+  },
+  "note_call": {
+   "phase": "W1",
+   "reason": "WebSearchGate 记一次调用（三层计数同时 +1）"
+  },
+  "note_failure": {
+   "phase": "W1",
+   "reason": "WebSearchGate 记一次失败；★ 达阈值时**显式置 disabled**（修正 B3）"
+  },
+  "note_probe_stop": {
+   "phase": "v12326-28",
+   "reason": "v1.23.27 E6 停止信号留痕（只留痕，不拦不改行为）"
+  },
+  "note_success": {
+   "phase": "W1",
+   "reason": "WebSearchGate 清零连续失败计数"
+  },
+  "path_for": {
+   "phase": "W1",
+   "reason": "WebSearchCache 的落盘路径 cache/websearch/<key>.json"
+  },
+  "probe_information_gain": {
+   "phase": "v12326-28",
+   "reason": "v1.23.27 E1 EIG 可计算化：G = (h_before-h_after)/h_before"
+  },
+  "put": {
+   "phase": "W1",
+   "reason": "WebSearchCache 写缓存（写失败只告警，不影响本次结果）"
+  },
+  "refresh_belief_entropy": {
+   "phase": "v12326-28",
+   "reason": "v1.23.28 D3 刷新所有条目的 semantic_entropy（唯一调用点）"
+  },
+  "search": {
+   "phase": "4",
+   "reason": "AnchorRetriever.search：缓存 TTL + 后端分发"
+  },
+  "select_probe_focus_submodular": {
+   "phase": "v12326-28",
+   "reason": "v1.23.27 E2 子模贪心批选（宁少勿滥，G < floor 停手）"
+  },
+  "semantic_entropy_of": {
+   "phase": "v12326-28",
+   "reason": "v1.23.27 D3 语义熵：单链聚类到簇代表，n<2 返回 None"
+  },
+  "summary": {
+   "phase": "W1",
+   "reason": "WebSearchGate 的状态快照（含 disable_reason，供产物留痕）"
+  },
+  "touch_rate": {
+   "phase": "v12326-28",
+   "reason": "v1.23.27 A3 双读数之一：能力读数（碰没碰过）；property"
+  },
+  "upsert_belief": {
+   "phase": "v12326-28",
+   "reason": "v1.23.28 D1/D2 信念条目登记 + 四态迁移（登记与去重解耦）"
+  },
+  "verify": {
+   "phase": "2",
+   "reason": "DecidabilityFreeze.verify：签名不匹配即 RuntimeError"
+  },
+  "BudgetBandit": {
+   "phase": "预算 bandit",
+   "reason": "圈数上限 bandit（动作空间故意做小：越大探索代价越高）"
+  },
+  "_apply_all_on": {
+   "phase": "all_on",
+   "reason": "all_on 开关批量应用"
+  },
+  "_at_med": {
+   "phase": "AutoTune",
+   "reason": "中位数辅助（★ 分母只算有质量读数的跑次）"
+  },
+  "_at_num": {
+   "phase": "AutoTune",
+   "reason": "数值归一化辅助"
+  },
+  "_goal_action_hint": {
+   "phase": "目标读数",
+   "reason": "第二期：动作指引的方法包装（读配置 + 组 prompt 片段）"
+  },
+  "_goal_stop_signal": {
+   "phase": "目标读数",
+   "reason": "目标读数 → 停因的迁移判定"
+  },
+  "_layer_goal_now": {
+   "phase": "目标读数",
+   "reason": "第一期接线：取当前层目标读数（并行/串行共用）"
+  },
+  "_lg_aspect_margin": {
+   "phase": "目标读数",
+   "reason": "目标读数 · 侧面边际"
+  },
+  "_lg_diverge_state": {
+   "phase": "目标读数",
+   "reason": "目标读数 · 发散状态"
+  },
+  "_lg_flat": {
+   "phase": "目标读数",
+   "reason": "目标读数 · 扁平化"
+  },
+  "_lg_num": {
+   "phase": "目标读数",
+   "reason": "目标读数 · 数值归一化"
+  },
+  "_lg_ratio": {
+   "phase": "目标读数",
+   "reason": "目标读数 · 比率"
+  },
+  "_lg_stag_ratio": {
+   "phase": "目标读数",
+   "reason": "目标读数 · 停滞比率"
+  },
+  "_load_bandit": {
+   "phase": "预算 bandit",
+   "reason": "bandit 状态载入"
+  },
+  "_quant_note": {
+   "phase": "第六期-量化",
+   "reason": "六个量化读数的**唯一写入口**（模块级：调用点在 DGTF，与 MetaDGTF 无继承）"
+  },
+  "_refresh_goal_hint": {
+   "phase": "目标读数",
+   "reason": "第二期：每圈刷新 `_goal_hint_next`（复用 `_layer_goal_now`，零新增接线点）"
+  },
+  "_rv": {
+   "phase": "AutoTune",
+   "reason": "读数取值辅助"
+  },
+  "_save_bandit": {
+   "phase": "预算 bandit",
+   "reason": "bandit 状态落盘"
+  },
+  "_score": {
+   "phase": "AutoTune",
+   "reason": "打分辅助"
+  },
+  "_sd_is_punct": {
+   "phase": "第六期-量化",
+   "reason": "语义密度的标点判定辅函数"
+  },
+  "_toks": {
+   "phase": "第六期-量化",
+   "reason": "分词辅助（语义密度用）"
+  },
+  "_var": {
+   "phase": "AutoTune",
+   "reason": "方差辅助"
+  },
+  "adjudication_aspect": {
+   "phase": "裁决维度",
+   "reason": "裁决维度标签"
+  },
+  "anchor_evidence_standard": {
+   "phase": "锚点证据",
+   "reason": "锚点证据标准（作 gate 证据）"
+  },
+  "anchor_interest_hint": {
+   "phase": "锚点兴趣",
+   "reason": "锚点兴趣提示"
+  },
+  "anchor_offline_check": {
+   "phase": "锚点离线",
+   "reason": "锚点离线自检"
+  },
+  "anytime_majority_decided": {
+   "phase": "anytime",
+   "reason": "anytime 停止：多数已定即停（**opt-in**）"
+  },
+  "autotune_archive": {
+   "phase": "AutoTune",
+   "reason": "开放探索档案（DGM 已证优于贪心留最优臂）"
+  },
+  "autotune_decide": {
+   "phase": "AutoTune",
+   "reason": "主决策"
+  },
+  "autotune_dominates": {
+   "phase": "AutoTune",
+   "reason": "支配判定（缺读数 ⇒ 淘汰已知是错的，必须回 None）"
+  },
+  "autotune_load_episodes": {
+   "phase": "AutoTune",
+   "reason": "历史 episode 载入"
+  },
+  "autotune_pareto": {
+   "phase": "AutoTune",
+   "reason": "质量×成本帕累托前沿"
+  },
+  "autotune_phase_adjust": {
+   "phase": "AutoTune",
+   "reason": "三阶段决策 · 阶段二：调整"
+  },
+  "autotune_phase_learn": {
+   "phase": "AutoTune",
+   "reason": "三阶段决策 · 阶段三：学习"
+  },
+  "autotune_phase_select": {
+   "phase": "AutoTune",
+   "reason": "三阶段决策 · 阶段一：选择"
+  },
+  "autotune_progress": {
+   "phase": "AutoTune",
+   "reason": "学习进度（前期选择 / 后期学习分段）"
+  },
+  "autotune_rank": {
+   "phase": "AutoTune",
+   "reason": "前沿内排序"
+  },
+  "autotune_recommend": {
+   "phase": "AutoTune",
+   "reason": "推荐输出（**只出建议不落地配置** —— 红线：建议与执行分开）"
+  },
+  "autotune_run": {
+   "phase": "AutoTune",
+   "reason": "跑批入口"
+  },
+  "autotune_score": {
+   "phase": "AutoTune",
+   "reason": "单臂打分（质量 + 成本）"
+  },
+  "autotune_sh_rounds": {
+   "phase": "AutoTune",
+   "reason": "圈数建议（截断层不加圈 = 硬约束）"
+  },
+  "belief_staleness": {
+   "phase": "陈旧度",
+   "reason": "信念陈旧度读数"
+  },
+  "best_round_index": {
+   "phase": "best-round",
+   "reason": "取最佳圈索引"
+  },
+  "candidate_yield": {
+   "phase": "第六期-量化",
+   "reason": "候选生成产出率：本圈候选相对上圈是否只是复述（依据 ③ 早期信号；缺输入不表态）"
+  },
+  "compact_plan": {
+   "phase": "compact",
+   "reason": "compact 读数计划"
+  },
+  "divergence_state": {
+   "phase": "发散+指针",
+   "reason": "发散状态（带指针）"
+  },
+  "eml_lock": {
+   "phase": "EML",
+   "reason": "经验记忆库锁（O_EXCL 互斥，防并发互相覆盖）"
+  },
+  "layer_goal_action_hint": {
+   "phase": "目标读数",
+   "reason": "第二期：目标读数转**圈内动作**指引（纯函数）"
+  },
+  "layer_goal_readings": {
+   "phase": "目标读数",
+   "reason": "四层目标读数（excavate/settle/fuse/crystallize）逐层计算"
+  },
+  "layer_goal_stop_signal": {
+   "phase": "目标读数",
+   "reason": "目标读数转停止信号（与体力/结构化停因并列）"
+  },
+  "layer_goal_summary": {
+   "phase": "目标读数",
+   "reason": "四层目标读数汇总（层末并列判定与留痕）"
+  },
+  "pick": {
+   "phase": "AutoTune",
+   "reason": "取用辅助"
+  },
+  "restate_fidelity": {
+   "phase": "第六期-量化",
+   "reason": "锚点保真度：重述 vs 原锚点的保真读数（依据 ① 重述失真毁下游链）"
+  },
+  "semantic_density": {
+   "phase": "第六期-量化",
+   "reason": "语义密度：实词占比（依据 ④ 信息瓶颈，>5 个无信息 token 性能降 15%+）"
+  },
+  "stitched_hoeffding_lower": {
+   "phase": "分级证明标准",
+   "reason": "缝接 Hoeffding 下界（分级证明标准的低档）"
+  },
+  "update": {
+   "phase": "目标读数",
+   "reason": "目标读数增量更新"
+  },
+  "yin_yang_divergence": {
+   "phase": "第六期-量化",
+   "reason": "阴阳分歧度：正反题是否真分叉（依据 ② 对抗性依从率，区别真对撞/假对撞）"
+  },
+  "_d": {
+   "phase": "辅助",
+   "reason": "通用字典取值辅助"
+  },
+  "_duty_marginal_streak": {
+   "phase": "层职责",
+   "reason": "职责边际连续未提升计数"
+  },
+  "_eml_apply": {
+   "phase": "EML",
+   "reason": "经验记忆：把召回条目应用到本轮"
+  },
+  "_eml_finish": {
+   "phase": "EML",
+   "reason": "经验记忆：收尾（升格 / 隔离）"
+  },
+  "_eml_note_use": {
+   "phase": "EML",
+   "reason": "经验记忆：记录一次使用（RRIF 只增）"
+  },
+  "_eml_prepare": {
+   "phase": "EML",
+   "reason": "经验记忆：写前准备（闸门 + 去重检查）"
+  },
+  "_grams": {
+   "phase": "辅助",
+   "reason": "n-gram 切分辅助"
+  },
+  "_hit": {
+   "phase": "打分",
+   "reason": "命中判定辅助"
+  },
+  "_layer_csd_now": {
+   "phase": "学科吸收",
+   "reason": "当前层 CSD 读数"
+  },
+  "_layer_duty_now": {
+   "phase": "层职责",
+   "reason": "当前层职责读数"
+  },
+  "_lv_med": {
+   "phase": "留痕",
+   "reason": "留痕中位数辅助"
+  },
+  "_marg": {
+   "phase": "边际",
+   "reason": "边际辅助"
+  },
+  "_mode_rule": {
+   "phase": "模式判别",
+   "reason": "模式判别方法包装"
+  },
+  "_tri_rank": {
+   "phase": "三角排序",
+   "reason": "三值排序辅助"
+  },
+  "_w": {
+   "phase": "辅助",
+   "reason": "通用权重辅助"
+  },
+  "alpha_verdict": {
+   "phase": "学科吸收",
+   "reason": "α 判定"
+  },
+  "cost_bucket": {
+   "phase": "学科吸收",
+   "reason": "成本分桶（成本两分）"
+  },
+  "csd_indicators": {
+   "phase": "学科吸收",
+   "reason": "CSD 临界慢化指标"
+  },
+  "csd_line": {
+   "phase": "学科吸收",
+   "reason": "CSD 留痕行"
+  },
+  "cut_two_way": {
+   "phase": "两向切分",
+   "reason": "两向切分辅助"
+  },
+  "diversity_budget": {
+   "phase": "学科吸收",
+   "reason": "多样性预算"
+  },
+  "duty_components": {
+   "phase": "层职责",
+   "reason": "层职责分项"
+  },
+  "duty_of_layer": {
+   "phase": "层职责",
+   "reason": "层职责打分（覆盖 C × 相关 R）"
+  },
+  "duty_short_line": {
+   "phase": "层职责",
+   "reason": "层职责不足留痕行"
+  },
+  "eml_aggregate_macro": {
+   "phase": "EML",
+   "reason": "经验宏聚合"
+  },
+  "eml_append_jsonl": {
+   "phase": "EML",
+   "reason": "经验记忆追加 JSONL（只增）"
+  },
+  "eml_candidates_from_result": {
+   "phase": "EML",
+   "reason": "从本轮产物抽经验候选"
+  },
+  "eml_dir": {
+   "phase": "EML",
+   "reason": "经验记忆目录解析"
+  },
+  "eml_merge_candidate": {
+   "phase": "EML",
+   "reason": "经验候选去重合并（入池前挡重复）"
+  },
+  "eml_note_contra": {
+   "phase": "EML",
+   "reason": "经验反面证据记录（双面）"
+  },
+  "eml_promote": {
+   "phase": "EML",
+   "reason": "经验升格（跨轮稳定才升）"
+  },
+  "eml_q_features": {
+   "phase": "EML",
+   "reason": "经验条目质量特征"
+  },
+  "eml_read_jsonl": {
+   "phase": "EML",
+   "reason": "经验记忆读 JSONL"
+  },
+  "eml_recall": {
+   "phase": "EML",
+   "reason": "经验召回"
+  },
+  "eml_rewrite_jsonl": {
+   "phase": "EML",
+   "reason": "经验记忆重写（升格路径专用）"
+  },
+  "eml_summarize": {
+   "phase": "EML",
+   "reason": "经验库汇总（留痕行）"
+  },
+  "eml_sweep_forget": {
+   "phase": "EML",
+   "reason": "经验遗忘扫描"
+  },
+  "eml_write_memory_md": {
+   "phase": "EML",
+   "reason": "经验写回 memory.md"
+  },
+  "episode_from_result": {
+   "phase": "EML",
+   "reason": "从产物构造 episode（AutoTune 消费）"
+  },
+  "fmea_detectability": {
+   "phase": "学科吸收",
+   "reason": "FMEA 检测度评估"
+  },
+  "gate_check": {
+   "phase": "停因",
+   "reason": "闸门检查（留痕 vs 拦截的分界，走 `_quality_verdict`）"
+  },
+  "illocution_dist": {
+   "phase": "言语行为",
+   "reason": "言语行为分布"
+  },
+  "illocution_of": {
+   "phase": "言语行为",
+   "reason": "语句的言语行为归类"
+  },
+  "input_red_flags": {
+   "phase": "学科吸收",
+   "reason": "输入红旗（FMEA 检测度）"
+  },
+  "krippendorff_alpha_ordinal": {
+   "phase": "学科吸收",
+   "reason": "序数 Krippendorff α（多标注者一致率）"
+  },
+  "mode_rule": {
+   "phase": "模式判别",
+   "reason": "模式判别唯一实现（三处接线同源）"
+  },
+  "nogood_record": {
+   "phase": "nogood",
+   "reason": "禁止记录（约束违反留痕）"
+  },
+  "question_aspects": {
+   "phase": "裁决维度",
+   "reason": "题面侧面抽取"
+  },
+  "rare_class_agreement": {
+   "phase": "学科吸收",
+   "reason": "稀有类一致率（α 对稀有类不敏感 ⇒ 要单列）"
+  },
+  "reading_scale": {
+   "phase": "学科吸收",
+   "reason": "读数量级尺"
+  },
+  "scale_word_violations": {
+   "phase": "学科吸收",
+   "reason": "量级词的越界检查"
+  },
+  "sem_thr_relative": {
+   "phase": "学科吸收",
+   "reason": "语义熵阈值相对分位（本批相对，非绝对）"
+  },
+  "stop_cascade": {
+   "phase": "停因",
+   "reason": "停因级联"
+  },
+  "stop_priority": {
+   "phase": "停因",
+   "reason": "停因优先级（档 0~3）"
+  },
+  "weighted_kappa_pair": {
+   "phase": "学科吸收",
+   "reason": "配对加权 kappa"
+  },
+  "orientation_rule": {
+   "phase": "第六期-降本",
+   "reason": "规则优先的取向判断（零成本纯函数，与 _has_decision_context 同源；规则命中不再补调 LLM）"
+  },
+  "_render_layer_glance": {
+   "phase": "提示词/可读性",
+   "reason": "本层速览渲染辅助：在 DGTF._render 的正文最前面给一行全局（跑了 N 圈 / 候选 / & / 线头 / 悬置），只增一行、不改既有结构"
+  },
+  "ControlSurface": {
+   "phase": "v1.23.36",
+   "reason": "显式控制面（白名单+边界+必留痕）：所有运行时调度调整的唯一收口"
+  },
+  "_lookup": {
+   "phase": "v1.23.36",
+   "reason": "控制面：白名单查找"
+  },
+  "read": {
+   "phase": "v1.23.36",
+   "reason": "控制面：读当前值（改过读数改后的）"
+  },
+  "write": {
+   "phase": "v1.23.36",
+   "reason": "控制面：写入（白名单外/缺why/缺trace_ref/越界 ⇒ 拒且留痕）"
+  },
+  "snapshot": {
+   "phase": "v1.23.36",
+   "reason": "控制面：快照（供产物对账）"
+  },
+  "_check_bounds": {
+   "phase": "v1.23.36",
+   "reason": "控制面：边界校验（只拒不夹取）"
+  },
+  "_control": {
+   "phase": "v1.23.36",
+   "reason": "控制面惰性访问器（覆盖所有路径，不动 __init__）"
+  },
+  "_llm_ctx_set": {
+   "phase": "v1.23.36",
+   "reason": "联网全接：线程局部上下文写入（题面/层/圈/联网回调）"
+  },
+  "_llm_ctx_get": {
+   "phase": "v1.23.36",
+   "reason": "联网全接：线程局部上下文读取"
+  },
+  "_infer_stage_from_stack": {
+   "phase": "v1.23.36",
+   "reason": "联网全接：从调用栈推断环节名（30 环节各自一个开关）"
+  },
+  "_web_augment": {
+   "phase": "v1.23.36",
+   "reason": "联网全接：统一增强层（所有层都注入；全部经 Gate；默认关零行为差）"
+  },
+  "_trace_note": {
+   "phase": "v1.23.36",
+   "reason": "可追溯：通用行为 trace 写入（模块级：调用点在两个无继承类上）"
+  },
+  "trace_decide": {
+   "phase": "v1.23.36",
+   "reason": "可追溯：L1 决策（必须带「考虑过的全部选项」）"
+  },
+  "trace_outcome": {
+   "phase": "v1.23.36",
+   "reason": "可追溯：L3 归因（动作前后读数对比）"
+  },
+  "_readings_bundle": {
+   "phase": "v1.23.36",
+   "reason": "读数显示：一层全部读数的单一真相源（日志/产物共用）"
+  },
+  "_readings_line": {
+   "phase": "v1.23.36",
+   "reason": "读数显示：运行中每层一行（走 logger，不受 verbose 控制）"
+  },
+  "_readings_table": {
+   "phase": "v1.23.36",
+   "reason": "读数显示：跨层总表（日志等宽版 / 产物 Markdown 版，同源）"
+  },
+  "_practice_term_calibration_prep": {
+   "phase": "v1.23.36",
+   "reason": "修行层术语校准（默认关；打开只进 pool+留痕、不注入）"
+  },
+  "_stop_criteria_check": {
+   "phase": "v1.23.36",
+   "reason": "停止理由复核（默认关；打开只留痕、不改决策）"
+  },
+  "_schedule_tick": {
+   "phase": "v1.23.36",
+   "reason": "心跳级调度：层收尾时**主动**检查（不等失败）⇒ 调下一层策略；全过控制面（可追溯+可控）；默认零行为差"
+  },
+  "_web_need_report": {
+   "phase": "v1.23.37",
+   "reason": "联网按需协议：把声明逐条过 Gate ⇒ 检索 ⇒ 进池 + logger 留痕（本版不回喂）"
+  },
+  "parse_web_need": {
+   "phase": "v1.23.37",
+   "reason": "联网按需协议：从产出里解析「我需要外部事实」声明（容错；解不出当没声明）"
+  },
+  "_hdr": {
+   "phase": "42",
+   "reason": "shape_of 窗口化的表头渲染（「共 N，只列最近 M」）—— P-1 上下文裁剪"
+  },
+  "refinement_gain": {
+   "phase": "43",
+   "reason": "P-2 早停的单标量增益（各层目标读数的逐圈增量，方向统一）"
+  },
+  "layer_gain_stop_signal": {
+   "phase": "43",
+   "reason": "P-2 早停判据：gain_floor>0 时连续 N 圈增益趋零 ⇒ 停"
+  },
+  "output_repetition": {
+   "phase": "45",
+   "reason": "P-4 输出内逐字复读率（补集合式 n-gram 信号对输出内复读的结构盲）"
+  },
+  "autotune_suggest_gain_floor": {
+   "phase": "47",
+   "reason": "P-2b 从历史跑建议早停阈值 α（截断多且质量不差 ⇒ 建议抬高）"
+  },
+  "run_ckpt_dir": {
+   "phase": "49",
+   "reason": "跑中快照目录（outputs/_run_ckpt/）"
+  },
+  "run_ckpt_path": {
+   "phase": "49",
+   "reason": "跑中快照路径"
+  },
+  "write_run_ckpt": {
+   "phase": "49",
+   "reason": "原子写跑中快照（tmp + os.replace）"
+  },
+  "_ckpt_snapshot": {
+   "phase": "49",
+   "reason": "从引擎抽可恢复状态（各层 View.to_dict）"
+  },
+  "start_run_ckpt": {
+   "phase": "49",
+   "reason": "起 daemon 心跳线程（返回 stop 回调）"
+  },
+  "stop_run_ckpt": {
+   "phase": "49",
+   "reason": "停心跳并落最后一份"
+  },
+  "recover_orphan_runs": {
+   "phase": "49",
+   "reason": "孤儿快照回填 interrupted（幂等）"
+  },
+  "_beat": {
+   "phase": "49",
+   "reason": "跑中快照心跳体（start_run_ckpt 内层 daemon 循环）"
+  },
+  "from_dict": {
+   "phase": "50",
+   "reason": "断点续跑：`to_dict()` 的逆（从快照还原 View）"
+  },
+  "load_resume_snapshot": {
+   "phase": "50",
+   "reason": "断点续跑入口（三道硬校验 + 还原 View/Pool）"
+  },
+  "eml_store_dir": {
+   "phase": "EML",
+   "reason": "记忆库目录唯一解析（playbook.dir ＞ eml_dir；bandit 也跟着走）"
+  },
+  "_wall_clock_over": {
+   "phase": "54",
+   "reason": "墙钟预算唯一判据（serial 层间 + 三个并行单层执行器共用）"
+  },
+  "_token_budget_over": {
+   "phase": "F",
+   "reason": "总 token 软预算判定（层/圈边界优雅停；与 max_calls 互补）"
+  },
+  "ArgumentationFramework": {
+   "phase": "F",
+   "reason": "F4 论证框架：grounded 扩展 + 负担排序 + 弱连通分量"
+  },
+  "attackers": {
+   "phase": "F",
+   "reason": "F4 取某论证的攻击者集合"
+  },
+  "burdens": {
+   "phase": "F",
+   "reason": "F4 负担式排序（阻尼迭代求不动点）"
+  },
+  "components": {
+   "phase": "F",
+   "reason": "F4 攻击图的弱连通分量"
+  },
+  "defeated": {
+   "phase": "F",
+   "reason": "F4 不在 grounded 扩展里的论证"
+  },
+  "grounded_extension": {
+   "phase": "F",
+   "reason": "F4 grounded 语义不动点"
+  },
+  "find": {
+   "phase": "F",
+   "reason": "F4 连通分量内部辅助（并查集）"
+  },
+  "_strength": {
+   "phase": "F",
+   "reason": "F4 负担并列时的证据强度破平"
+  },
+  "_bocpd_pred": {
+   "phase": "F",
+   "reason": "F3 NIG 共轭的 Student-t 预测密度"
+  },
+  "bocpd_run": {
+   "phase": "F",
+   "reason": "F3 贝叶斯在线变点检测（run-length 后验）"
+  },
+  "_ev_log_wealth": {
+   "phase": "F",
+   "reason": "F1 e-process 对数财富的网格混合"
+  },
+  "evalue_bernoulli": {
+   "phase": "F",
+   "reason": "F1 任意停时 e-value（0/1 序列）"
+  },
+  "anytime_decided_e": {
+   "phase": "F",
+   "reason": "F1 e-process 版「多数已确立」停止判据"
+  },
+  "anytime_decided": {
+   "phase": "F",
+   "reason": "F1 停止判据分派：hoeffding（默认）/ evalue"
+  },
+  "conformal_quantile": {
+   "phase": "F",
+   "reason": "F2 保形分位数（有限样本修正）"
+  },
+  "conformal_pvalue": {
+   "phase": "F",
+   "reason": "F2 保形 p 值"
+  },
+  "conformal_prediction_set": {
+   "phase": "F",
+   "reason": "F2 保形预测集（多标签/空集=弃权）"
+  },
+  "arguments_from_playbook": {
+   "phase": "F",
+   "reason": "F4 playbook 条目 → 论证图"
+  },
+  "resolve_playbook_conflicts": {
+   "phase": "F",
+   "reason": "F4 只标不删的冲突裁决（并列保持 undecided）"
+  },
+  "_eml_pid_alive": {
+   "phase": "F",
+   "reason": "EML 锁：陈旧锁回收前的活进程判定"
+  },
+  "_retry_delay": {
+   "phase": "F",
+   "reason": "LLM 重试：指数退避 + 抖动 + Retry-After"
+  },
+  "_retryable": {
+   "phase": "F",
+   "reason": "LLM 重试：错误分类（4xx 除 408/409/429 不重试）"
+  },
+  "_quality_report": {
+   "phase": "F",
+   "reason": "质量闭环读数：覆盖率/三态/决策完整度/各层质量线索（只读，不改输出）"
+  },
+  "_repair_json": {
+   "phase": "F",
+   "reason": "严格 JSON 解析失败时一次低温自修复：只修格式、不改语义；成本计 ops"
+  },
+  "anytime_stagnant_decided": {
+   "phase": "F",
+   "reason": "anytime-valid 停滞判据：生长序列取反后判「多数不再长」，纠 v1.23.63 判据反向"
+  },
+  "stage_stats": {
+   "phase": "F",
+   "reason": "分环节成本读数：按 stage 汇总 calls/tokens/ms，线程安全"
+  },
+  "_l0_v2_guidance_block": {
+   "phase": "5",
+   "reason": "L0-v2 下一圈方向提示注入；actions.l0_v2_curate 默认关"
+  },
+  "_build_decision_trace": {
+   "phase": "V2",
+   "reason": "统一决策回执：问题类型/检索/四层/一致性/停止，md与packed共用"
+  },
+  "_dates": {
+   "phase": "V2",
+   "reason": "决策回执里的日期归一化提取（只读比较，不改结论）"
+  },
+  "_sync_config": {
+   "phase": "V2",
+   "reason": "ControlSurface 配置同步（EML config_hint 细粒度微调）"
+  },
+  "_eml_store": {
+   "phase": "V2",
+   "reason": "EML 目录唯一解析实例包装（避免新增字面量破坏单点判据）"
+  },
+  "_local_date": {
+   "phase": "V1.26",
+   "reason": "官方检索日期转 Asia/Shanghai 显示（UTC 16:00=次日）"
+  },
+  "_ld": {
+   "phase": "V1.26",
+   "reason": "事实预检日期转北京时间（局部辅助）"
+  },
+  "dedupe_markdown": {
+   "phase": "V1.26",
+   "reason": "MD 重复长段落/表格行去重"
+  },
+  "_bg": {
+   "phase": "V1.28",
+   "reason": "MD 语义近似去重 bigram 辅助"
+  },
+  "fetch": {
+   "phase": "V1.29",
+   "reason": "DeepSeek Fetch 客户端"
+  },
+  "_tool_preflight": {
+   "phase": "V1.30",
+   "reason": "Tool Calls 事实预检"
+  },
+  "_exec": {
+   "phase": "V1.30",
+   "reason": "Tool Calls executor"
+  },
+  "_reconcile_input_sanity": {
+   "phase": "input_sanity",
+   "reason": "input sanity reconcile: do not assert nonexistent without evidence"
+  },
+  "_backfill_diagnose": {
+   "phase": "v1.30.0",
+   "reason": "candidate backfill diagnosis: reason/source/dedup-key/confidence/verdict; pure function"
+  },
+  "_candidate_dedup_key": {
+   "phase": "v1.30.0",
+   "reason": "stable candidate dedup key for cross-round log alignment"
+  },
+  "_cdesc": {
+   "phase": "v1.30.0",
+   "reason": "nested helper: candidate description accessor"
+  },
+  "_cget": {
+   "phase": "v1.30.0",
+   "reason": "nested helper: candidate field accessor"
+  },
+  "_record_backfill_diag": {
+   "phase": "v1.30.0",
+   "reason": "method wiring backfill diagnosis into view/log once per round"
+  },
+  "_amp_diagnose": {
+   "phase": "v1.30.0",
+   "reason": "AMP ratio diagnosis for both candidates"
+  },
+  "_amp_dist": {
+   "phase": "v1.30.0",
+   "reason": "AMP candidate ratio/distribution helper"
+  },
+  "_amp_is_candidate": {
+   "phase": "v1.30.0",
+   "reason": "classify whether a candidate is an AMP candidate"
+  },
+  "_amp_ratio_max": {
+   "phase": "v1.30.0",
+   "reason": "read per-entry amp ratio max with clamped fallback"
+  },
+  "_apply": {
+   "phase": "v1.30.0",
+   "reason": "nested helper for applying a diagnosis/config"
+  },
+  "_calibrate_amp_both": {
+   "phase": "v1.30.0",
+   "reason": "calibrate both-layer AMP candidate ratio within bounds"
+  },
+  "_dump_amp_diagnostic": {
+   "phase": "v1.30.0",
+   "reason": "emit AMP diagnostic into view/log"
+  },
+  "_maybe_structural_resample": {
+   "phase": "v1.31",
+   "reason": "one-shot structural resample guard: max once, evidence-preserving, logs before/after/used/reason"
+  },
+  "_structural_resample_hint": {
+   "phase": "v1.31",
+   "reason": "build evidence-based resample hint without forcing diversity"
+  }
+ },
+ "removed": 0
+}

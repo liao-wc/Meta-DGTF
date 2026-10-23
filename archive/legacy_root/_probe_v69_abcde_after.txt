@@ -1,0 +1,64 @@
+Building prefix dict from the default dictionary ...
+Loading model from cache C:\Users\18432\AppData\Local\Temp\jieba.cache
+Loading model cost 0.828 seconds.
+Prefix dict has been built successfully.
+== 目标 ==
+  SRC = 元DGTF-V1.21.69.py | __version__ = 1.21.69
+
+== A · _b_merge 的 all_amp_cands 累加次数 ==
+  amps=3 条且 _amp_cand_count=5 → all_amp_cands=5 （正确=5，重复累加则=15）
+  amps=0 条且 _amp_cand_count=7 → all_amp_cands=7 （正确=7，漏累加则=0）
+
+== B · 不可判定覆盖率用错输入 ==
+  und_aspects=8 条 / structural_amps=8 条 / aligned_amps=3 条
+  旧口径 struct_cov = 0/8 = 0.000   （产物里记的是 0.0）
+  新口径 aligned_cov = 3/8 = 0.375
+      · 命中：时间尺度（一场雨/汛期/管网寿命）结论相反且无仲裁规则
+      · 命中：地下历史欠账使「整体」边界无法闭合，重建与改造代价不可通约
+      · 命中：行政档案与居民记忆两份留痕之差不能被对撞消掉
+  生产入口 add_undecidable → last_struct_coverage=0.0 / last_struct_hit=0
+                          → last_aligned_coverage=0.375 / last_aligned_hit=3
+
+== C · ing 收到的「对撞的对象」= ==
+  entry=0    is_base=True  → 对象=「这个问题里的 0 和 1」  上游引入语=「（无上游 speech 段）」
+  entry=0    is_base=False → 对象=「上游留下的形状与本圈的候选」  上游引入语=「上游留下的形状各自」
+  entry=1    is_base=True  → 对象=「这个问题里的 0 和 1」  上游引入语=「（无上游 speech 段）」
+  entry=1    is_base=False → 对象=「上游留下的形状与本圈的候选」  上游引入语=「上游留下的形状各自」
+  entry=both is_base=True  → 对象=「这个问题里的 0 和 1」  上游引入语=「（无上游 speech 段）」
+  entry=both is_base=False → 对象=「两个已经完成的形状」  上游引入语=「要相撞的两端各自」
+  entry=all  is_base=True  → 对象=「这个问题里的 0 和 1」  上游引入语=「（无上游 speech 段）」
+  entry=all  is_base=False → 对象=「整体与每一个局部」  上游引入语=「这个整体所包含的各个局部」
+
+== D · _untraced_undecidable 的误报 ==
+  旧判据（_similar 0.55 + 子串）：4/8 条被判无追溯
+      ✗ [外] 具体选择重建还是局部改造加海绵，取决于特定城市数据，无法给出唯一答案
+      ✗ [外] 具体老城区的预算、地质、管网现状、政策支持等外部信息不可得
+      ✗ [外] 未来气候变化和极端降雨的不确定性
+      ✗ [外] 当地居民偏好和社会接受度
+  新判据（+_overlap_coef≥0.6）  ：4/8 条被判无追溯
+      ✗ [外] 具体选择重建还是局部改造加海绵，取决于特定城市数据，无法给出唯一答案
+      ✗ [外] 具体老城区的预算、地质、管网现状、政策支持等外部信息不可得
+      ✗ [外] 未来气候变化和极端降雨的不确定性
+      ✗ [外] 当地居民偏好和社会接受度
+      救回：[外] 具体选择重建还是局部改造加海绵，取决于特定城市数据，无法给出… → 最高包含度 0.25 vs「海绵上限可本地标定」
+      救回：[外] 具体老城区的预算、地质、管网现状、政策支持等外部信息不可得… → 最高包含度 0.333 vs「管网欠账与设计标准可查」
+      救回：[外] 未来气候变化和极端降雨的不确定性… → 最高包含度 0.0 vs「管网欠账与设计标准可查」
+      救回：[外] 当地居民偏好和社会接受度… → 最高包含度 0.0 vs「管网欠账与设计标准可查」
+
+== E · 日志里的累积型字段 ==
+  日志 123313 字符 / 3759 行；留痕段 4 段
+  seg | entry | round | chars | round_log | roles_run
+    1 |     0 |     1 | 25980 |         0 |         0
+    2 |     0 |     2 | 26877 |         0 |         0
+    3 |     1 |     1 | 30861 |         0 |         0
+    4 |     1 |     2 | 29885 |         0 |         0
+  → 累积型字段在各段留痕里的项数如上；全 0 表示**从未被 dump**（不是重复）。
+  → 各段体积主要由 candidates / rendered / untouched 撑起（逐圈内容，非累积）。
+  → 最大一段 30861 字符（entry=1 第 1 圈）
+
+== 汇总 ==
+  A: (5, 7)   （期望 新=(5, 7) / 旧=(15, 0)）
+  B: (0, 3, 8)   （旧 hit/新 hit/总数）
+  C: 8 个组合
+  D: (4, 4)   （旧误报条数 / 新误报条数）
+  E: 4 段留痕

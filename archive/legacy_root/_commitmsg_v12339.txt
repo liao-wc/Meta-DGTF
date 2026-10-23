@@ -1,0 +1,39 @@
+v1.23.39：按需联网「四层一致」（声明即查，不再被逐环节开关挡）
+
+· 问题：37 个 `web_search.stages.*` 默认只开 5 个（研究/对撞/元层），
+  **修行层一个都没开** ⇒ 修行层环节即使写了 `===WEB-NEED===` 声明，
+  也会被 `stage 未授权` 挡掉 ⇒ **声明了却查不到 = 四层行为不一致**
+  （用户口径：四个层都应该一致，按需联网检索）。
+
+· 修法（两处，都在既有函数体内，不新增 AST 符号）：
+  ① `WebSearchGate.allow(..., on_demand=False)`：`on_demand=True` 时
+     **跳过 `stages` 静态授权**（那份开关只管「引擎主动注入」）；
+  ② `MetaDGTF._web_search`：`used_as == "record"`（按需声明路径）
+     ⇒ 传 `on_demand=True`。
+  ★ **成本闸门一条不减**：总闸 / 连续失败降级 / 三层配额全部照旧；
+    引擎主动注入路径（evidence）语义不变；不声明仍零调用。
+
+· 验收：
+  · 冒烟 233 ✓ / 0 ✗（新增 check_v12339_ondemand 七项）；
+    负对照（指向 v1.23.38）判红 6 条 ⇒ 判据有判别力。
+  · verify --phase all PASS 319 / FAIL 0；AUDIT PASS 69 / FAIL 0。
+  · 变异体 82 判红 / 82（新增 M83 去按需豁免 / M84 短路总闸）。
+  · 真跑（靶点跑，直接 v1.23.39，**不跑对照臂**）：
+    R1 修行层 route=["0"] 5 圈：48 calls / 256,583 tokens / 收 24 条 W#；
+       **4 次 [WEB-NEED] 声明 ⇒ 每次采纳 6 条**（「未授权」0 次）。
+    R2 回归 route=["0","1"]：84 calls / 484,638 tokens / 收 36 条 W#；
+       「未授权」0 次；研究层 & 16。
+    成本 ≈ ¥2 / 33min（原三跑方案 ¥13-15 / 3.5h ⇒ 省 ~80%）。
+
+· ★ 真跑逮到第二个缺口（探针/判据看不见）：回喂按
+  `record["stage"] == 当前环节名` 匹配，而按需声明**全部发生在
+  `LLM.call(stage=None)`**（日志实证 4 次全 stage=None）⇒ record 的 stage
+  为空 ⇒ **回喂永远匹配不上** ⇒ v1.23.38 的回喂在真实调用图上从未生效过
+  （探针能触发是因为探针显式传了 stage）。
+  候选修法（下一版）：`_web_need_report` 在 stage 为空时用
+  `_infer_stage_from_stack()` 兜底取真实环节名再入库。
+
+· 变更文件：元DGTF-V1.23.39.py（25787 行 / 纯 CRLF / AST OK）、
+  dgtf_config.yaml（头部升版 + 升级段，无新增键）、
+  smoke_test.py（新增判据 + SRC 切换）、_mut_v12332.py（M83/M84）、
+  v12339_报告.md、CHANGELOG.md。

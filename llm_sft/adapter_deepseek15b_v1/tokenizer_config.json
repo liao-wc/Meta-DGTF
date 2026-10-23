@@ -1,0 +1,15 @@
+{
+  "add_prefix_space": null,
+  "backend": "tokenizers",
+  "bos_token": "<｜begin▁of▁sentence｜>",
+  "clean_up_tokenization_spaces": false,
+  "eos_token": "<｜end▁of▁sentence｜>",
+  "is_local": true,
+  "legacy": true,
+  "local_files_only": true,
+  "model_max_length": 16384,
+  "pad_token": "<｜end▁of▁sentence｜>",
+  "sp_model_kwargs": {},
+  "tokenizer_class": "Qwen2Tokenizer",
+  "unk_token": null
+}

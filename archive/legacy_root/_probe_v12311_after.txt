@@ -1,0 +1,14 @@
+Building prefix dict from the default dictionary ...
+Loading model from cache C:\Users\18432\AppData\Local\Temp\jieba.cache
+Loading model cost 0.838 seconds.
+Prefix dict has been built successfully.
+📁 已保存: C:\Users\18432\AppData\Local\Temp\tmp0lrarppc\20261009_132104_新中国的成立时间是什么时候.md
+A_真实产物_自省回写 = True
+A_真实产物_条数 = 2
+A_真实产物_形态声明 = True
+A_负对照_无诊断不渲染 = True
+A_正对照_有诊断渲染 = True
+B_有函数 = True
+B_事实题 = True
+B_决策题 = False
+B_main接线 = True

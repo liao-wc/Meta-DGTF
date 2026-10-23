@@ -1,0 +1,291 @@
+{
+  "ON": [
+    {
+      "high": 5,
+      "medium": 0,
+      "low": 0,
+      "total": 5,
+      "consistency": 1.0
+    },
+    {
+      "high": 4,
+      "medium": 1,
+      "low": 0,
+      "total": 5,
+      "consistency": 1.0
+    },
+    {
+      "high": 5,
+      "medium": 0,
+      "low": 0,
+      "total": 5,
+      "consistency": 1.0
+    }
+  ],
+  "OFF": [
+    {
+      "high": 0,
+      "medium": 0,
+      "low": 0,
+      "total": 6,
+      "consistency": 0.0
+    },
+    {
+      "high": 0,
+      "medium": 0,
+      "low": 0,
+      "total": 5,
+      "consistency": 0.0
+    },
+    {
+      "high": 0,
+      "medium": 0,
+      "low": 0,
+      "total": 5,
+      "consistency": 0.0
+    }
+  ],
+  "items": {
+    "ON": [
+      {
+        "rep": 1,
+        "calls": 45,
+        "tokens": 202635,
+        "md_reading": {
+          "high": 5,
+          "medium": 0,
+          "low": 0,
+          "total": 5,
+          "consistency": 1.0
+        },
+        "structured": {
+          "high": 5,
+          "medium": 0,
+          "low": 0,
+          "total": 5,
+          "consistency": 1.0
+        },
+        "tri_consensus": [
+          5,
+          0,
+          0
+        ],
+        "tri_state": [
+          4,
+          5
+        ]
+      },
+      {
+        "rep": 2,
+        "calls": 46,
+        "tokens": 209590,
+        "md_reading": {
+          "high": 4,
+          "medium": 1,
+          "low": 0,
+          "total": 5,
+          "consistency": 1.0
+        },
+        "structured": {
+          "high": 4,
+          "medium": 1,
+          "low": 0,
+          "total": 5,
+          "consistency": 1.0
+        },
+        "tri_consensus": [
+          4,
+          1,
+          0
+        ],
+        "tri_state": [
+          4,
+          5
+        ]
+      },
+      {
+        "rep": 3,
+        "calls": 46,
+        "tokens": 169687,
+        "md_reading": {
+          "high": 5,
+          "medium": 0,
+          "low": 0,
+          "total": 5,
+          "consistency": 1.0
+        },
+        "structured": {
+          "high": 5,
+          "medium": 0,
+          "low": 0,
+          "total": 5,
+          "consistency": 1.0
+        },
+        "tri_consensus": [
+          5,
+          0,
+          0
+        ],
+        "tri_state": [
+          4,
+          5
+        ]
+      }
+    ],
+    "OFF": [
+      {
+        "rep": 1,
+        "calls": 44,
+        "tokens": 225862,
+        "md_reading": {
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "total": 6,
+          "consistency": 0.0
+        },
+        "structured": {
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "total": 6,
+          "consistency": 0.0
+        },
+        "tri_consensus": [],
+        "tri_state": [
+          3,
+          6
+        ]
+      },
+      {
+        "rep": 2,
+        "calls": 44,
+        "tokens": 204528,
+        "md_reading": {
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "total": 5,
+          "consistency": 0.0
+        },
+        "structured": {
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "total": 5,
+          "consistency": 0.0
+        },
+        "tri_consensus": [],
+        "tri_state": [
+          4,
+          5
+        ]
+      },
+      {
+        "rep": 3,
+        "calls": 45,
+        "tokens": 212429,
+        "md_reading": {
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "total": 5,
+          "consistency": 0.0
+        },
+        "structured": {
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "total": 5,
+          "consistency": 0.0
+        },
+        "tri_consensus": [],
+        "tri_state": [
+          3,
+          5
+        ]
+      }
+    ]
+  },
+  "tri_state": {
+    "ON": [
+      [
+        4,
+        5
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        4,
+        5
+      ]
+    ],
+    "OFF": [
+      [
+        3,
+        6
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        3,
+        5
+      ]
+    ]
+  },
+  "alerts": [
+    "md 口径在 OFF 臂不可用（缺 stability 键）→ 不能用它得出「多票更好 +100%」这类结论"
+  ],
+  "summary": {
+    "n_on": 3,
+    "n_off": 3,
+    "on_avg": 1.0,
+    "off_avg": 0.0,
+    "diff": 1.0,
+    "on_spread": 0.0,
+    "off_spread": 0.0,
+    "verdict": "多票更好",
+    "no_conclusion": false
+  },
+  "md_metric": {
+    "name": "md 行「三态多票：high/medium/low」一致率",
+    "usable": false,
+    "stability_key_present": {
+      "ON": [
+        true,
+        true,
+        true
+      ],
+      "OFF": [
+        false,
+        false,
+        false
+      ]
+    },
+    "reason": "OFF 臂子问题**没有 stability 键** → 引擎那一行按 (0+0)/n 印成「一致率 0%」，那是**非读数**（没算），不是测量值。该口径在 OFF 臂上不可用。"
+  },
+  "fair": {
+    "metric": "tri_state 一致率（agree/total，两臂都可得）",
+    "on": [
+      0.8,
+      0.8,
+      0.8
+    ],
+    "off": [
+      0.5,
+      0.8,
+      0.6
+    ],
+    "on_avg": 0.8000000000000002,
+    "off_avg": 0.6333333333333333,
+    "diff": 0.16666666666666685,
+    "on_spread": 0.0,
+    "off_spread": 0.30000000000000004,
+    "verdict": "无结论（组内极差 ≥ 组间差）",
+    "no_conclusion": true
+  }
+}

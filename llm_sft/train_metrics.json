@@ -1,0 +1,47 @@
+{
+ "model": "D:/元DGTF-多模并行架构/local_model/models/Qwen2.5-0.5B-Instruct",
+ "epochs": 5,
+ "lr": 0.0002,
+ "train_n": 108,
+ "val_n": 14,
+ "history": [
+  {
+   "epoch": 1,
+   "train_loss": 0.055,
+   "val_loss": 0.1308,
+   "sec": 143.6
+  },
+  {
+   "epoch": 2,
+   "train_loss": 0.0154,
+   "val_loss": 0.1495,
+   "sec": 174.4
+  },
+  {
+   "epoch": 3,
+   "train_loss": 0.0131,
+   "val_loss": 0.1427,
+   "sec": 181
+  },
+  {
+   "epoch": 4,
+   "train_loss": 0.0111,
+   "val_loss": 0.106,
+   "sec": 176.6
+  },
+  {
+   "epoch": 5,
+   "train_loss": 0.0099,
+   "val_loss": 0.1278,
+   "sec": 177.3
+  }
+ ],
+ "best_val_loss": 0.106,
+ "eval": {
+  "route_exact": 0.357,
+  "round_mae": 1.929,
+  "n": 14
+ },
+ "adapter": "llm_sft/adapter_qwen05b_v1",
+ "note": "0.5B LoRA SFT；history 来自训练日志；eval 为训练脚本留出生成评估"
+}

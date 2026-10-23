@@ -1,0 +1,9 @@
+元 DGTF v1.23.45 定稿存档
+
+主题：P-4 输出内逐字复读率读数（补集合式 n-gram 信号的结构盲区）。
+依据：Reflective Budget Governor（Zenodo 22844856）。
+新增纯函数 output_repetition（输出内重复 n-gram 占比 0-1），接进 ing 环节零成本读数
+（_READING_LABELS + _QUANT_LABELS 两出口）；无新配置键。
+
+验收：冒烟 242/0 · verify 319/0 · AUDIT 69/0 · 变异体 94/94（三片 1-32/33-63/64-94）。
+主文件 元DGTF-V1.23.45.py（26041 行 / 纯 CRLF / AST OK / 新增 1 符号已登记 / 零新配置键）。

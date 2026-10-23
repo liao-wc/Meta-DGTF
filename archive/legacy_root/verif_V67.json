@@ -1,0 +1,50 @@
+{
+ "tag": "V67",
+ "src": "元DGTF-V1.21.67.py",
+ "route": "1",
+ "rounds": "1:2",
+ "mode": "serial",
+ "orientation": "auto",
+ "llm_calls": 23,
+ "tri_state": [
+  4,
+  5
+ ],
+ "meta_closure_all": null,
+ "duel_suspensions_both": [],
+ "engagements_by_view": {
+  "1": [
+   {
+    "target": "针对具体老城区，应选择排水系统重建还是局部改造加海绵城市措施？",
+    "tension_id": null
+   },
+   {
+    "target": "如何设计监测评估指标（积水点数量、径流控制率、排放能力）以验证工程措施的实际效果？",
+    "tension_id": null
+   },
+   {
+    "target": "在缺乏当地预算、财政、居民接受度等约束的情况下，能否完成实际权衡并确定最优方案组合与实施优先级？",
+    "tension_id": null
+   }
+  ]
+ },
+ "suspensions_with_tid": {
+  "1": []
+ },
+ "pools_all_engagements": [],
+ "views_errors": {
+  "1": []
+ },
+ "pools_meta_p16": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": []
+ },
+ "pools_meta_len": {
+  "0": 0,
+  "1": 5,
+  "both": 0,
+  "all": 0
+ }
+}

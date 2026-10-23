@@ -1,0 +1,27 @@
+新增推送前检查 _pre_push_check.py，并把 GitHub 发布准备做到位
+
+aL 问「怎么把项目放到 GitHub」+「桌面两个应用有什么区别」。查清后：
+
+两个应用（解析 .lnk 得到真实目标）：
+- GitHub Desktop.lnk -> %LOCALAPPDATA%\GitHubDesktop\GitHubDesktop.exe (app-3.6.7)
+  Git 图形客户端，背后调用 git。与 Copilot 不是同类、不能互替。
+- GitHub Copilot.lnk -> %LOCALAPPDATA%\Programs\GitHub Copilot\github.exe (425 MB)
+  AI 编程助手桌面应用：带 onnxruntime 与 Microsoft.AI.Foundry.Local.Core
+  （可本地跑模型）、plugins（computer-use / excel / word / powerpoint）、
+  terminal-integration、git-credential-copilot.exe。两者都还没登录。
+
+新增 _pre_push_check.py：四项检查（.env 是否被跟踪 / 拿 .env 真实值全库搜索
+加密钥前缀 / 体积构成 / 身份与分支），退出码非 0 不许推。
+本仓库实测通过：.env 被 .gitignore:6 挡住；DGTF_API_KEY 与 TAVILY_API_KEY
+各 0 命中；81 处命中全是 DGTF_BASE_URL = https://api.deepseek.com/v1
+（公开接口地址，不含凭据，本就写在 dgtf_config.yaml）；体积 158.42 MB，
+最大单文件 1.37 MB；分支 master；未配远程。
+
+修掉一版假阳性：原先把「还有几个键没被放行」当判红条件，导致 2 把 0 命中的
+密钥把干净仓库压成「有 1 项需要处理」。正解是判红只看「真正命中的那个值」。
+负对照已做：真 key 塞进已跟踪文件 -> 判红；清理后 -> 四项通过、exit 0。
+
+没有替 aL 执行推送：对外公开动作且需要他自己的 GitHub 授权，只能由他做。
+可自决的部分已全部完成（安全扫描、身份对齐、体积核查、临时脚本清理）。
+
+清理：删掉 4 个临时探测脚本，合并保留成 _pre_push_check.py。

@@ -1,0 +1,2782 @@
+{
+ "src": "元DGTF-V1.23.3.py",
+ "reps": 3,
+ "n_inputs": 2,
+ "margin": 0.3,
+ "stages": {
+  "adjudicate_sub_tristate_multi": {
+   "n_pair": 6,
+   "delta": 0.167,
+   "ci": [
+    0.0,
+    0.5
+   ],
+   "verdict": "**不可判定**（区间 [0.000, 0.500] 跨界；本 n 的 MDE ≈ 0.500）",
+   "mde": 0.5,
+   "off": {
+    "json_ok": 1.0,
+    "chars": 813.7,
+    "secs": 3.0,
+    "score": 1.833
+   },
+   "on": {
+    "json_ok": 1.0,
+    "chars": 639.7,
+    "secs": 30.1,
+    "score": 2.0
+   }
+  },
+  "anchor_crosscheck": {
+   "n_pair": 6,
+   "delta": 0.667,
+   "ci": [
+    -0.167,
+    1.333
+   ],
+   "verdict": "**不可判定**（区间 [-0.167, 1.333] 跨界；本 n 的 MDE ≈ 1.333）",
+   "mde": 1.333,
+   "off": {
+    "json_ok": 1.0,
+    "chars": 1511.3,
+    "secs": 2.9,
+    "score": 0.667
+   },
+   "on": {
+    "json_ok": 1.0,
+    "chars": 1238.3,
+    "secs": 14.3,
+    "score": 1.333
+   }
+  },
+  "ask_missing_polarity": {
+   "n_pair": 3,
+   "delta": 2.0,
+   "ci": [
+    2.0,
+    2.0
+   ],
+   "verdict": "有收益 ✅（下界 2.000 > margin 0.3）",
+   "mde": null,
+   "off": {
+    "json_ok": 1.0,
+    "chars": 12.0,
+    "secs": 1.2,
+    "score": 0.0
+   },
+   "on": {
+    "json_ok": 1.0,
+    "chars": 85.7,
+    "secs": 2.7,
+    "score": 2.0
+   }
+  },
+  "assess_decidability": {
+   "n_pair": 6,
+   "delta": 0.0,
+   "ci": [
+    0.0,
+    0.0
+   ],
+   "verdict": "无收益（等效）✅ 区间 [0.000, 0.000] 全在 ±0.3 内",
+   "mde": 0.0,
+   "off": {
+    "json_ok": 1.0,
+    "chars": 467.3,
+    "secs": 2.5,
+    "score": 2.0
+   },
+   "on": {
+    "json_ok": 1.0,
+    "chars": 625.2,
+    "secs": 8.8,
+    "score": 2.0
+   }
+  },
+  "assess_decidability_from_pool_view": {
+   "n_pair": 6,
+   "delta": -0.167,
+   "ci": [
+    -0.5,
+    0.0
+   ],
+   "verdict": "**不可判定**（区间 [-0.500, 0.000] 跨界；本 n 的 MDE ≈ 0.500）",
+   "mde": 0.5,
+   "off": {
+    "json_ok": 1.0,
+    "chars": 950.7,
+    "secs": 2.9,
+    "score": 1.167
+   },
+   "on": {
+    "json_ok": 1.0,
+    "chars": 771.7,
+    "secs": 13.5,
+    "score": 1.0
+   }
+  },
+  "check_input_sanity": {
+   "n_pair": 6,
+   "delta": -0.167,
+   "ci": [
+    -0.5,
+    0.0
+   ],
+   "verdict": "**不可判定**（区间 [-0.500, 0.000] 跨界；本 n 的 MDE ≈ 0.500）",
+   "mde": 0.5,
+   "off": {
+    "json_ok": 1.0,
+    "chars": 35.8,
+    "secs": 1.2,
+    "score": 1.167
+   },
+   "on": {
+    "json_ok": 1.0,
+    "chars": 37.3,
+    "secs": 2.1,
+    "score": 1.0
+   }
+  },
+  "check_structure_saturation": {
+   "n_pair": 3,
+   "delta": 0.0,
+   "ci": [
+    0.0,
+    0.0
+   ],
+   "verdict": "无收益（等效）✅ 区间 [0.000, 0.000] 全在 ±0.3 内",
+   "mde": 0.0,
+   "off": {
+    "json_ok": 1.0,
+    "chars": 95.3,
+    "secs": 1.5,
+    "score": 2.0
+   },
+   "on": {
+    "json_ok": 1.0,
+    "chars": 94.3,
+    "secs": 3.9,
+    "score": 2.0
+   }
+  },
+  "decide_parallel_mode": {
+   "n_pair": 3,
+   "delta": 0.0,
+   "ci": [
+    0.0,
+    0.0
+   ],
+   "verdict": "无收益（等效）✅ 区间 [0.000, 0.000] 全在 ±0.3 内",
+   "mde": 0.0,
+   "off": {
+    "json_ok": 1.0,
+    "chars": 77.3,
+    "secs": 1.4,
+    "score": 2.0
+   },
+   "on": {
+    "json_ok": 1.0,
+    "chars": 81.3,
+    "secs": 2.2,
+    "score": 2.0
+   }
+  },
+  "decompose_from_pool": {
+   "n_pair": 6,
+   "delta": 0.0,
+   "ci": [
+    0.0,
+    0.0
+   ],
+   "verdict": "无收益（等效）✅ 区间 [0.000, 0.000] 全在 ±0.3 内",
+   "mde": 0.0,
+   "off": {
+    "json_ok": 1.0,
+    "chars": 1158.0,
+    "secs": 3.2,
+    "score": 2.0
+   },
+   "on": {
+    "json_ok": 1.0,
+    "chars": 1218.8,
+    "secs": 18.2,
+    "score": 2.0
+   }
+  },
+  "decompose_hybrid": {
+   "n_pair": 3,
+   "delta": 1.0,
+   "ci": [
+    1.0,
+    1.0
+   ],
+   "verdict": "有收益 ✅（下界 1.000 > margin 0.3）",
+   "mde": null,
+   "off": {
+    "json_ok": 1.0,
+    "chars": 692.0,
+    "secs": 2.1,
+    "score": 1.0
+   },
+   "on": {
+    "json_ok": 1.0,
+    "chars": 685.0,
+    "secs": 8.6,
+    "score": 2.0
+   }
+  },
+  "decompose_koan": {
+   "n_pair": 3,
+   "delta": 0.0,
+   "ci": [
+    0.0,
+    0.0
+   ],
+   "verdict": "无收益（等效）✅ 区间 [0.000, 0.000] 全在 ±0.3 内",
+   "mde": 0.0,
+   "off": {
+    "json_ok": 1.0,
+    "chars": 1281.7,
+    "secs": 4.5,
+    "score": 2.0
+   },
+   "on": {
+    "json_ok": 1.0,
+    "chars": 1373.7,
+    "secs": 13.9,
+    "score": 2.0
+   }
+  },
+  "decompose_normal": {
+   "n_pair": 3,
+   "delta": 1.0,
+   "ci": [
+    1.0,
+    1.0
+   ],
+   "verdict": "有收益 ✅（下界 1.000 > margin 0.3）",
+   "mde": null,
+   "off": {
+    "json_ok": 1.0,
+    "chars": 743.3,
+    "secs": 2.2,
+    "score": 1.0
+   },
+   "on": {
+    "json_ok": 1.0,
+    "chars": 594.7,
+    "secs": 9.6,
+    "score": 2.0
+   }
+  },
+  "dual_judge": {
+   "n_pair": 6,
+   "delta": 0.167,
+   "ci": [
+    -0.333,
+    0.667
+   ],
+   "verdict": "**不可判定**（区间 [-0.333, 0.667] 跨界；本 n 的 MDE ≈ 0.667）",
+   "mde": 0.667,
+   "off": {
+    "json_ok": 1.0,
+    "chars": 511.5,
+    "secs": 2.1,
+    "score": 1.167
+   },
+   "on": {
+    "json_ok": 1.0,
+    "chars": 463.0,
+    "secs": 17.3,
+    "score": 1.333
+   }
+  },
+  "phase_probe": {
+   "n_pair": 6,
+   "delta": 0.0,
+   "ci": [
+    0.0,
+    0.0
+   ],
+   "verdict": "无收益（等效）✅ 区间 [0.000, 0.000] 全在 ±0.3 内",
+   "mde": 0.0,
+   "off": {
+    "json_ok": 1.0,
+    "chars": 925.7,
+    "secs": 3.4,
+    "score": 2.0
+   },
+   "on": {
+    "json_ok": 1.0,
+    "chars": 1067.5,
+    "secs": 21.9,
+    "score": 2.0
+   }
+  },
+  "probe_duel": {
+   "n_pair": 3,
+   "delta": 0.0,
+   "ci": [
+    0.0,
+    0.0
+   ],
+   "verdict": "无收益（等效）✅ 区间 [0.000, 0.000] 全在 ±0.3 内",
+   "mde": 0.0,
+   "off": {
+    "json_ok": 1.0,
+    "chars": 1088.0,
+    "secs": 3.0,
+    "score": 2.0
+   },
+   "on": {
+    "json_ok": 1.0,
+    "chars": 884.0,
+    "secs": 18.3,
+    "score": 2.0
+   }
+  },
+  "probe_meta": {
+   "n_pair": 6,
+   "delta": -0.167,
+   "ci": [
+    -0.5,
+    0.0
+   ],
+   "verdict": "**不可判定**（区间 [-0.500, 0.000] 跨界；本 n 的 MDE ≈ 0.500）",
+   "mde": 0.5,
+   "off": {
+    "json_ok": 1.0,
+    "chars": 708.8,
+    "secs": 2.7,
+    "score": 2.0
+   },
+   "on": {
+    "json_ok": 1.0,
+    "chars": 507.7,
+    "secs": 16.4,
+    "score": 1.833
+   }
+  },
+  "probe_research": {
+   "n_pair": 6,
+   "delta": 0.167,
+   "ci": [
+    0.0,
+    0.5
+   ],
+   "verdict": "**不可判定**（区间 [0.000, 0.500] 跨界；本 n 的 MDE ≈ 0.500）",
+   "mde": 0.5,
+   "off": {
+    "json_ok": 1.0,
+    "chars": 1161.0,
+    "secs": 3.4,
+    "score": 1.833
+   },
+   "on": {
+    "json_ok": 1.0,
+    "chars": 953.7,
+    "secs": 17.2,
+    "score": 2.0
+   }
+  },
+  "re_anchor": {
+   "n_pair": 6,
+   "delta": 0.167,
+   "ci": [
+    0.0,
+    0.5
+   ],
+   "verdict": "**不可判定**（区间 [0.000, 0.500] 跨界；本 n 的 MDE ≈ 0.500）",
+   "mde": 0.5,
+   "off": {
+    "json_ok": 1.0,
+    "chars": 184.2,
+    "secs": 1.8,
+    "score": 1.833
+   },
+   "on": {
+    "json_ok": 1.0,
+    "chars": 245.2,
+    "secs": 10.5,
+    "score": 2.0
+   }
+  },
+  "re_evaluate_pool": {
+   "n_pair": 6,
+   "delta": 0.0,
+   "ci": [
+    0.0,
+    0.0
+   ],
+   "verdict": "无收益（等效）✅ 区间 [0.000, 0.000] 全在 ±0.3 内",
+   "mde": 0.0,
+   "off": {
+    "json_ok": 1.0,
+    "chars": 762.8,
+    "secs": 2.1,
+    "score": 1.0
+   },
+   "on": {
+    "json_ok": 1.0,
+    "chars": 589.5,
+    "secs": 27.5,
+    "score": 1.0
+   }
+  },
+  "self_check": {
+   "n_pair": 6,
+   "delta": 0.167,
+   "ci": [
+    -0.333,
+    0.667
+   ],
+   "verdict": "**不可判定**（区间 [-0.333, 0.667] 跨界；本 n 的 MDE ≈ 0.667）",
+   "mde": 0.667,
+   "off": {
+    "json_ok": 1.0,
+    "chars": 406.0,
+    "secs": 2.3,
+    "score": 1.5
+   },
+   "on": {
+    "json_ok": 1.0,
+    "chars": 427.5,
+    "secs": 32.6,
+    "score": 1.667
+   }
+  },
+  "settle_research": {
+   "n_pair": 6,
+   "delta": 0.0,
+   "ci": [
+    0.0,
+    0.0
+   ],
+   "verdict": "无收益（等效）✅ 区间 [0.000, 0.000] 全在 ±0.3 内",
+   "mde": 0.0,
+   "off": {
+    "json_ok": 1.0,
+    "chars": 183.2,
+    "secs": 1.6,
+    "score": 2.0
+   },
+   "on": {
+    "json_ok": 1.0,
+    "chars": 183.0,
+    "secs": 8.5,
+    "score": 2.0
+   }
+  }
+ },
+ "rows": [
+  {
+   "stage": "adjudicate_sub_tristate_multi",
+   "input": 1,
+   "arm": "off",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 820,
+   "secs": 3.0,
+   "score": 2,
+   "out": "{\n  \"judgments\": [\n    {\n      \"id\": 1,\n      \"reason\": \"测绘能提供管道状况数据，但'推翻或确认重建选项'的判定阈值需要决策规则，该规则未定义，阈值本身是空槽。\",\n      \"decidability\": \"partial\"\n    },\n    {\n      \"id\": 2,\n      \"reason\": \"外河水位-历时曲线可测，边际效益衰减可建模，但'顶托阈值'的具体数值需依赖具体水文数据和工程标准，当前未指定，阈值位置空。\",\n      \"decidability\": \"partial\"\n    },\n    {\n      \"id\": 3,\n      \"reason\": \"匹配机制（如重现期对齐）是设计规范问题，存在可指认的工程标准，但'联合失效边界'需具体计算，边界值未定。\",\n      \"decidability\": \"partial\"\n    },\n    {\n      \"id\": 4,\n      \"reason\": \"可逆与不可逆动作的排序触发条件可基于风险原则制定，但'不依赖具体预算数字的通用规则'需明确决策框架，框架未生成。\",\n      \"decidability\": \"partial\"\n    },\n    {\n      \"id\": 5,\n      \"reason\": \"内涝频次定义不同会改变比选结果，但'制度原因'涉及决策过程，缺乏可观测的决策记录，原因槽空。\",\n      \"decidability\": \"partial\"\n    },\n    {\n      \"id\": 6,\n      \"reason\": \"社会成本量化框架可构建，但'补偿通道缺失是否构成硬否决点'需法律或政策依据，依据未指定，否决点位置空。\",\n      \"decidability\": \"partial\"\n    }\n  ]\n}"
+  },
+  {
+   "stage": "adjudicate_sub_tristate_multi",
+   "input": 1,
+   "arm": "off",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 835,
+   "secs": 2.8,
+   "score": 2,
+   "out": "{\n  \"judgments\": [\n    {\n      \"id\": 1,\n      \"reason\": \"测绘能提供管道状况数据，但'推翻或确认重建选项'的判定阈值需要决策规则，而该规则未定义，角色槽为空。\",\n      \"decidability\": \"undecidable\"\n    },\n    {\n      \"id\": 2,\n      \"reason\": \"外河水位-历时曲线可测，但'顶托阈值'和'边际效益衰减'的具体判定标准未定义，承载答案的位置未生成。\",\n      \"decidability\": \"undecidable\"\n    },\n    {\n      \"id\": 3,\n      \"reason\": \"匹配机制（如重现期对齐）是设计选择，但'不落入两个都不达标'的联合失效边界需要具体标准，该标准未定义。\",\n      \"decidability\": \"undecidable\"\n    },\n    {\n      \"id\": 4,\n      \"reason\": \"可逆与不可逆动作的排序触发条件需要具体规则，而'不依赖预算数字的通用规则'尚未生成，角色槽为空。\",\n      \"decidability\": \"undecidable\"\n    },\n    {\n      \"id\": 5,\n      \"reason\": \"内涝频次定义可指认（如每年两三次或十年一遇），但'如何改变比选结果'需要具体决策规则，该规则未定义；制度原因可分析但非判定问题。\",\n      \"decidability\": \"partial\"\n    },\n    {\n      \"id\": 6,\n      \"reason\": \"社会成本量化框架和补偿通道缺失是否构成硬否决点，需要具体标准和决策规则，这些均未定义，角色槽为空。\",\n      \"decidability\": \"undecidable\"\n    }\n  ]\n}"
+  },
+  {
+   "stage": "adjudicate_sub_tristate_multi",
+   "input": 1,
+   "arm": "off",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 810,
+   "secs": 3.1,
+   "score": 1,
+   "out": "{\n  \"judgments\": [\n    {\n      \"id\": 1,\n      \"reason\": \"测绘能提供管道状况数据，但'推翻或确认重建选项'的判定阈值依赖于决策规则，而该规则未定义，因此阈值位置空缺。\",\n      \"decidability\": \"partial\"\n    },\n    {\n      \"id\": 2,\n      \"reason\": \"外河水位-历时曲线可测，顶托阈值可定义为使管网扩容边际效益为零的水位，该位置可被占据。\",\n      \"decidability\": \"decidable\"\n    },\n    {\n      \"id\": 3,\n      \"reason\": \"匹配机制需要设计重现期对齐等具体规则，但'两个都不达标'的联合失效边界定义未生成，承载答案的位置空缺。\",\n      \"decidability\": \"undecidable\"\n    },\n    {\n      \"id\": 4,\n      \"reason\": \"可逆与不可逆动作的排序触发条件可基于动作性质（可逆性、影响范围）制定通用规则，不依赖预算数字。\",\n      \"decidability\": \"decidable\"\n    },\n    {\n      \"id\": 5,\n      \"reason\": \"内涝频次定义改变比选结果可量化分析，但决策者跳过量化的制度原因涉及未指派的角色和未生成的制度框架，无法判定。\",\n      \"decidability\": \"partial\"\n    },\n    {\n      \"id\": 6,\n      \"reason\": \"社会成本可量化纳入框架，但补偿通道缺失是否构成硬否决点取决于未定义的补偿政策与决策规则，该位置空缺。\",\n      \"decidability\": \"partial\"\n    }\n  ]\n}"
+  },
+  {
+   "stage": "adjudicate_sub_tristate_multi",
+   "input": 1,
+   "arm": "on",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 729,
+   "secs": 50.9,
+   "score": 2,
+   "out": "{\"judgments\":[{\"id\":1,\"reason\":\"内窥、补测缺失管段、水位计可产出管道缺陷、过流能力等可指认数据，但‘多大程度推翻重建’与‘判定阈值’需要先定义设计标准、风险接受度和成本比较基准，该阈值槽未生成；部分可指认，部分落在空槽。\",\"decidability\":\"partial\"},{\"id\":2,\"reason\":\"外河水位-历时曲线与管网出流条件可建立水力模型；顶托阈值可指认为出水口淹没或重力流丧失对应的外河水位，边际效益衰减和阈值存在性有可计算的判定位置。\",\"decidability\":\"decidable\"},{\"id\":3,\"reason\":\"设计重现期对齐、联合失效边界是可指认的工程条款，但‘两个都不达标’的联合性能目标、超标准暴雨边界和匹配机制需由规范或决策另行定义，缺乏统一参照系。\",\"decidability\":\"partial\"},{\"id\":4,\"reason\":\"监测、测绘、内窥、预留管位与大面积开挖、古树迁移、文物扰动的可逆性归类可指认，但不依赖预算数字的通用触发条件涉及风险、法律和价值排序，无既定规则槽。\",\"decidability\":\"partial\"},{\"id\":5,\"reason\":\"频次定义改变比选结果可用水文风险模型计算，属可指认；但决策者跳过量化的制度原因需具体制度与案例证据，无通用因果槽。\",\"decidability\":\"partial\"},{\"id\":6,\"reason\":\"人口与商业密度导致的社会成本有交通、营业损失等量化通道；补偿通道缺失是否构成硬否决点取决于法律授权、产权与政治决策，无统一判定槽。\",\"decidability\":\"partial\"}]}"
+  },
+  {
+   "stage": "adjudicate_sub_tristate_multi",
+   "input": 1,
+   "arm": "on",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 665,
+   "secs": 37.7,
+   "score": 2,
+   "out": "{\"judgments\":[{\"id\":1,\"reason\":\"测绘可产出管道缺陷、水位等可指认事实，但‘推翻或确认重建’的阈值取决于风险偏好、成本与标准，当前未生成共同判定规则，阈值槽为空。\",\"decidability\":\"partial\"},{\"id\":2,\"reason\":\"外河水位-历时曲线与管网模型给定后，边际效益衰减和顶托阈值是可计算、可测的；‘显著改善’可设为明确指标，因此存在可占据的阈值位置。\",\"decidability\":\"decidable\"},{\"id\":3,\"reason\":\"设计重现期对齐、联合失效边界等要素可被指认，但‘两个都不达标’的联合失效边界和可接受风险未有共同定义，匹配机制不是唯一可判定命题。\",\"decidability\":\"partial\"},{\"id\":4,\"reason\":\"可逆与不可逆动作清单可指认，触发条件也能提出若干规则；但‘不依赖预算的通用规则’是否成立取决于制度与价值前提，缺少统一参照系。\",\"decidability\":\"partial\"},{\"id\":5,\"reason\":\"频次定义改变比选结果可在给定损失函数下做敏感性判定；跳过量化的制度原因则是多因、解释性命题，无单一0/1位置。\",\"decidability\":\"partial\"},{\"id\":6,\"reason\":\"施工期社会成本能否量化有可指认方法，属可判定部分；补偿通道缺失是否构成硬否决点取决于法定或制度定义，当前无统一否决规则。\",\"decidability\":\"partial\"}]}"
+  },
+  {
+   "stage": "adjudicate_sub_tristate_multi",
+   "input": 1,
+   "arm": "on",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 622,
+   "secs": 24.6,
+   "score": 2,
+   "out": "{\"judgments\":[{\"id\":1,\"reason\":\"管道内窥、补测缺失管段、水位计及其结果（缺陷等级、过流能力）可指认，但‘最低成本’与‘推翻/确认重建’的决策阈值未给定决策规则和风险基准，阈值槽空。\",\"decidability\":\"partial\"},{\"id\":2,\"reason\":\"外河水位-历时曲线与管网扩容边际效益可建模指认，但‘显著改善’需先定义内涝频次与统计显著性，该定义槽未生成。\",\"decidability\":\"partial\"},{\"id\":3,\"reason\":\"设计重现期对齐、联合失效边界是可指认的工程参数或条款，但‘不落入两个都不达标’依赖具体暴雨标准与达标阈值，未给定。\",\"decidability\":\"partial\"},{\"id\":4,\"reason\":\"可逆/不可逆动作清单可指认，但排序触发条件与不依赖预算的通用规则需价值或法规授权，规则生成槽空。\",\"decidability\":\"partial\"},{\"id\":5,\"reason\":\"内涝频次口径可指认且会改变设计标准与比选参数，但‘制度原因’需指定决策制度与因果框架，该槽空。\",\"decidability\":\"partial\"},{\"id\":6,\"reason\":\"施工期社会成本有可量化指标（延误、营业额损失等），但‘硬否决点’需法域、审批与补偿制度授权，该位置空。\",\"decidability\":\"partial\"}]}"
+  },
+  {
+   "stage": "adjudicate_sub_tristate_multi",
+   "input": 2,
+   "arm": "off",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 733,
+   "secs": 2.5,
+   "score": 2,
+   "out": "{\n  \"judgments\": [\n    {\n      \"reason\": \"系统清单的分级标准（等保级别、涉密与否、实时性要求）是制度性技术标准，其内容独立于选址、预算、窗口等决策变量，存在可指认的判定依据（如等保2.0标准、保密法），因此能独立产出。\",\n      \"decidability\": \"decidable\"\n    },\n    {\n      \"reason\": \"比较基准的建立需要预算上限作为关键输入，但单位算力成本、等保合规成本等指标可独立采集，因此部分可独立粗比，部分依赖预算，属于部分可判定。\",\n      \"decidability\": \"partial\"\n    },\n    {\n      \"reason\": \"选址、预算、窗口的拍板权归属及否决路径需依据现行制度的具体规定，但现行制度未明确指定，角色槽为空，无法指认具体部门或法定路径。\",\n      \"decidability\": \"undecidable\"\n    },\n    {\n      \"reason\": \"「全部迁」的边界崩解后，第一份清单是否必然包含「不迁」项，以及该「不迁」项是否构成否定或边界显形，取决于对「全部」的语义解释，缺乏共同参照系，无法判定。\",\n      \"decidability\": \"undecidable\"\n    },\n    {\n      \"reason\": \"在选址、预算、窗口永远不定的条件下，是否存在不依赖任何输入的迁移决定，以及现状是否为唯一稳定产物，涉及决策理论中的空输入问题，无客观判定标准，无法指认。\",\n      \"decidability\": \"undecidable\"\n    }\n  ]\n}"
+  },
+  {
+   "stage": "adjudicate_sub_tristate_multi",
+   "input": 2,
+   "arm": "off",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 861,
+   "secs": 3.5,
+   "score": 2,
+   "out": "{\n  \"judgments\": [\n    {\n      \"reason\": \"系统清单的分级标准（等保级别、涉密与否、实时性要求）是制度性技术标准，其内容独立于选址、预算、窗口，可以逐项指认某个系统属于哪一级、是否涉密、实时性要求如何，因此存在可被占据的答案位置。\",\n      \"decidability\": \"decidable\"\n    },\n    {\n      \"reason\": \"比较基准的建立需要预算上限作为共同参照系，但单位算力成本、等保合规成本等指标虽可独立采集，其作为比较基准的合法性仍取决于预算约束下的取舍框架；在预算上限未定时，基准本身尚未生成，无法指认哪个指标构成有效比较位置。\",\n      \"decidability\": \"undecidable\"\n    },\n    {\n      \"reason\": \"选址、预算、窗口的拍板权归属及否决路径，在现行制度下需要具体法规、部门职责和程序规则来指认；这些规则本身可能因制度空白或未生成而无法确定，因此不存在可被占据的法定路径位置。\",\n      \"decidability\": \"undecidable\"\n    },\n    {\n      \"reason\": \"「全部迁」的边界崩解后，第一份清单是否必然包含「不迁」项，以及该「不迁」项是对「全部」的否定还是边界的首次显形，取决于清单生成的具体规则和语境；在边界未显形前，无法指认清单中是否存在「不迁」项及其性质。\",\n      \"decidability\": \"undecidable\"\n    },\n    {\n      \"reason\": \"在选址、预算、窗口永远不定的条件下，是否存在不依赖任何输入的迁移决定，以及现状（不迁）是否为唯一稳定产物，涉及对决策逻辑和稳定性的判断；由于输入条件本身被设定为永远不定，决策位置无法生成，无法指认任何可执行的迁移决定。\",\n      \"decidability\": \"undecidable\"\n    }\n  ]\n}"
+  },
+  {
+   "stage": "adjudicate_sub_tristate_multi",
+   "input": 2,
+   "arm": "off",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 823,
+   "secs": 3.1,
+   "score": 2,
+   "out": "{\n  \"judgments\": [\n    {\n      \"reason\": \"系统清单的分级标准（等保级别、涉密与否、实时性要求）是制度性技术标准，其内容独立于选址、预算、窗口，可以逐项指认某系统属于哪一级、是否涉密、实时性要求如何，因此存在可被占据的判定位置。\",\n      \"decidability\": \"decidable\"\n    },\n    {\n      \"reason\": \"比较基准的建立需要预算上限作为共同参照系，但单位算力成本、等保合规成本等指标虽可独立采集，其作为比较基准的权重和取舍规则仍依赖预算约束，因此基准本身无法在预算未定时完整建立，只能部分指认。\",\n      \"decidability\": \"partial\"\n    },\n    {\n      \"reason\": \"选址、预算、窗口的拍板权归属及否决路径需要现行制度的具体条款和部门职权划分作为参照系，而题目未提供任何制度文本或职权清单，角色槽本身为空，无法指认是否存在同源或否决路径。\",\n      \"decidability\": \"undecidable\"\n    },\n    {\n      \"reason\": \"「全部迁」的边界崩解后交出的第一份清单是否必然包含「不迁」项，以及该「不迁」项是否构成否定或边界显形，取决于「全部」一词的语义规则和清单生成机制，这些规则未被给定，无法指认具体项或判定其逻辑地位。\",\n      \"decidability\": \"undecidable\"\n    },\n    {\n      \"reason\": \"在选址、预算、窗口永远不定的条件下，是否存在不依赖任何输入即可执行的迁移决定，以及现状是否唯一稳定产物，需要决策规则和稳定性判据，这些均未定义，无法指认任何可执行的迁移决定或稳定状态。\",\n      \"decidability\": \"undecidable\"\n    }\n  ]\n}"
+  },
+  {
+   "stage": "adjudicate_sub_tristate_multi",
+   "input": 2,
+   "arm": "on",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 549,
+   "secs": 22.3,
+   "score": 2,
+   "out": "{\"judgments\":[{\"id\":1,\"reason\":\"等保级别、涉密与否、实时性要求都有可逐项指认的法规或业务判据，且不要求先有选址、预算、窗口，因此“能否独立产出”存在是/否位置。\",\"decidability\":\"decidable\"},{\"id\":2,\"reason\":\"单位算力成本、等保合规成本等指标可被指名采集并形成粗比，预算上限并非建立比较基准的前置必要条件，故“必须/不必”有可占据答案。\",\"decidability\":\"decidable\"},{\"id\":3,\"reason\":\"未指定城市、具体部门与法条，选址、预算、窗口三项的拍板权归属和否决路径没有可指认的制度角色，缺共同参照系。\",\"decidability\":\"undecidable\"},{\"id\":4,\"reason\":\"“全部”的边界和边界崩解后的第一份清单尚未生成，不迁项是否存在及其属否定还是边界显形没有共同语义位置可占据。\",\"decidability\":\"undecidable\"},{\"id\":5,\"reason\":\"“不依赖任何输入即可执行的迁移决定”可逻辑判为不存在；但“不迁是唯一稳定产物”需依赖制度默认和稳定定义，该槽未生成。\",\"decidability\":\"partial\"}]}"
+  },
+  {
+   "stage": "adjudicate_sub_tristate_multi",
+   "input": 2,
+   "arm": "on",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 719,
+   "secs": 22.7,
+   "score": 2,
+   "out": "{\n  \"judgments\": [\n    {\n      \"id\": 1,\n      \"reason\": \"等保级别、涉密与否、实时性要求是可独立指认的制度与技术维度，不引用选址、预算、窗口，因此能对“能否独立产出”作出是或否判定。\",\n      \"decidability\": \"decidable\"\n    },\n    {\n      \"id\": 2,\n      \"reason\": \"单位算力成本、等保合规成本是可指认指标，能对“是否必须等预算上限才能建立比较基准、能否先粗比”作出是或否判定。\",\n      \"decidability\": \"decidable\"\n    },\n    {\n      \"id\": 3,\n      \"reason\": \"未指明具体城市、部门职责与法定权限，拍板权是否同源及否决路径缺乏共同参照系，承载答案的位置未生成。\",\n      \"decidability\": \"undecidable\"\n    },\n    {\n      \"id\": 4,\n      \"reason\": \"“无宾语意志声张”“边界崩解”“首次显形”均无操作定义，无法指认“不迁项”是在否定“全部”还是显现边界。\",\n      \"decidability\": \"undecidable\"\n    },\n    {\n      \"id\": 5,\n      \"reason\": \"“不依赖任何输入即可执行的迁移决定”可依执行迁移需输入判为不存在；但“唯一稳定产物”的“稳定”无定义，唯一性无法指认，故为部分可判。\",\n      \"decidability\": \"partial\"\n    }\n  ]\n}"
+  },
+  {
+   "stage": "adjudicate_sub_tristate_multi",
+   "input": 2,
+   "arm": "on",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 554,
+   "secs": 22.3,
+   "score": 2,
+   "out": "{\"judgments\":[{\"id\":1,\"reason\":\"等保级别、涉密属性、实时性要求均有法定或技术判别口径，可在不依赖选址、预算、窗口的情况下独立产出，存在“能/不能”的可占据位置。\",\"decidability\":\"decidable\"},{\"id\":2,\"reason\":\"预算上限只影响总投资约束，单位算力成本、等保合规成本等粗比指标有可指认的采集与比较口径，因此“必须等预算”或“可先粗比”可判。\",\"decidability\":\"decidable\"},{\"id\":3,\"reason\":\"未给出具体城市、部门职责和现行审批制度，选址、预算、窗口的拍板权归属及否决法定路径没有可指认的制度槽位。\",\"decidability\":\"undecidable\"},{\"id\":4,\"reason\":\"没有生成具体系统清单与迁移约束，无法判定第一份清单是否“必然”含不迁项；“否定全部”还是“边界显形”也缺共同定义参照。\",\"decidability\":\"undecidable\"},{\"id\":5,\"reason\":\"“是否存在无输入可执行的迁移决定”可依三项前置条件判为否，但“现状不迁是否唯一稳定产物”缺稳定性判据，故仅部分可指认。\",\"decidability\":\"partial\"}]}"
+  },
+  {
+   "stage": "anchor_crosscheck",
+   "input": 1,
+   "arm": "off",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 1503,
+   "secs": 3.0,
+   "score": 1,
+   "out": "{\n  \"items\": [\n    {\n      \"claim_id\": \"c1\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未涉及老城区管线档案完整度或重新测绘问题。\"\n    },\n    {\n      \"claim_id\": \"c2\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未讨论开挖不可逆成本或风险排序。\"\n    },\n    {\n      \"claim_id\": \"c3\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未涉及内涝频次定义或决策量化问题。\"\n    },\n    {\n      \"claim_id\": \"c4\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未讨论海绵设施失效阈值或冗余度。\"\n    },\n    {\n      \"claim_id\": \"c5\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未涉及人口商业密度与施工社会成本。\"\n    },\n    {\n      \"claim_id\": \"c6\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未讨论权衡后果承担主体或权重分配。\"\n    },\n    {\n      \"claim_id\": \"c7\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未涉及分期重建策略或触发条件。\"\n    },\n    {\n      \"claim_id\": \"c8\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未讨论气候变化非平稳性或设计标准漂移。\"\n    },\n    {\n      \"claim_id\": \"c9\",\n      \"verdict\": \"印证\",\n      \"anchor_ids\": [\"a2\"],\n      \"note\": \"a2指出老城区改造需整体翻新管网并同步调蓄，支持先普查评估。\"\n    },\n    {\n      \"claim_id\": \"c10\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n "
+  },
+  {
+   "stage": "anchor_crosscheck",
+   "input": 1,
+   "arm": "off",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 1557,
+   "secs": 3.1,
+   "score": 0,
+   "out": "{\n  \"items\": [\n    {\n      \"claim_id\": \"c1\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未涉及老城区管线档案完整度或重新测绘问题。\"\n    },\n    {\n      \"claim_id\": \"c2\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未讨论开挖对建筑基础、古树、文物的不可逆扰动成本。\"\n    },\n    {\n      \"claim_id\": \"c3\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未涉及内涝频次定义或决策者跳过量化的问题。\"\n    },\n    {\n      \"claim_id\": \"c4\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未讨论海绵设施在超设计标准降雨下的失效阈值或冗余度。\"\n    },\n    {\n      \"claim_id\": \"c5\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未涉及人口商业密度与施工期社会成本纳入比选的问题。\"\n    },\n    {\n      \"claim_id\": \"c6\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未讨论不同主体承担后果及权重进入决策的问题。\"\n    },\n    {\n      \"claim_id\": \"c7\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未涉及分期重建策略或触发条件。\"\n    },\n    {\n      \"claim_id\": \"c8\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未讨论气候变化非平稳性导致设计标准漂移。\"\n    },\n    {\n      \"claim_id\": \"c9\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未提及雨污合流制、管径偏小或淤积等现状问题。\"\n    },\n    {\n      \"claim_id\": \"c10\",\n      \"verdict\": \"无对应"
+  },
+  {
+   "stage": "anchor_crosscheck",
+   "input": 1,
+   "arm": "off",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 1527,
+   "secs": 3.0,
+   "score": 0,
+   "out": "{\n  \"items\": [\n    {\n      \"claim_id\": \"c1\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未涉及老城区管线档案完整度或重新测绘问题。\"\n    },\n    {\n      \"claim_id\": \"c2\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未讨论开挖对建筑基础、古树、文物的不可逆扰动。\"\n    },\n    {\n      \"claim_id\": \"c3\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未涉及内涝频次定义或决策者跳过量化的问题。\"\n    },\n    {\n      \"claim_id\": \"c4\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未讨论海绵设施超设计标准时的失效与冗余度。\"\n    },\n    {\n      \"claim_id\": \"c5\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未涉及人口商业密度与施工期社会成本。\"\n    },\n    {\n      \"claim_id\": \"c6\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未讨论不同主体承担后果与权重问题。\"\n    },\n    {\n      \"claim_id\": \"c7\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未涉及分期重建策略及其触发条件。\"\n    },\n    {\n      \"claim_id\": \"c8\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未讨论气候变化非平稳性与设计标准漂移。\"\n    },\n    {\n      \"claim_id\": \"c9\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未提及雨污合流制、管径偏小或淤积现状。\"\n    },\n    {\n      \"claim_id\": \"c10\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\":"
+  },
+  {
+   "stage": "anchor_crosscheck",
+   "input": 1,
+   "arm": "on",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 1209,
+   "secs": 15.9,
+   "score": 1,
+   "out": "{\n  \"items\": [\n    {\"claim_id\": \"c1\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未涉及老城区管线档案完整度或重新测绘问题。\"},\n    {\"claim_id\": \"c2\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未讨论开挖的不可逆成本与风险排序逻辑。\"},\n    {\"claim_id\": \"c3\", \"verdict\": \"印证\", \"anchor_ids\": [\"a1\"], \"note\": \"a1以重现期3~5年、10~50年分档设防，说明频次量化直接决定设计选择。\"},\n    {\"claim_id\": \"c4\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未比较海绵设施与集中管网的失效阈值或冗余度。\"},\n    {\"claim_id\": \"c5\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未涉及施工期道路封闭及其社会经济成本。\"},\n    {\"claim_id\": \"c6\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未讨论权衡后果由哪些主体承担及权重分配。\"},\n    {\"claim_id\": \"c7\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未涉及分期重建策略及其触发条件。\"},\n    {\"claim_id\": \"c8\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"a1给出设防标准，但未涉及气候变化导致的非平稳性。\", \"anchor_ids_note\": \"\"},\n    {\"claim_id\": \"c9\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未涉及雨污合流制、管网淤积及改造前普查评估。\"},\n    {\"claim_id\": \"c10\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未涉及全系统重建的开挖工期与资金规模。\"},\n    {\"claim_id\": \"c11\", \"verdict\": \"印证\", \"anchor_ids\": [\"a2\"], \"note\": \"a2主张老城区以源头减排+过程控制为主并配调蓄设施，与组合路径一致。\"},\n    {\"claim_id\": \"c12\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未提及建筑密度、绿地不足等海绵落地空间约束"
+  },
+  {
+   "stage": "anchor_crosscheck",
+   "input": 1,
+   "arm": "on",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 1184,
+   "secs": 11.1,
+   "score": 1,
+   "out": "{\n  \"items\": [\n    {\"claim_id\": \"c1\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未涉及老城区管线档案完整度或重新测绘问题\"},\n    {\"claim_id\": \"c2\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未涉及开挖不可逆性及建筑基础、古树、文物扰动\"},\n    {\"claim_id\": \"c3\", \"verdict\": \"印证\", \"anchor_ids\": [\"a1\"], \"note\": \"a1 按重现期给出3~5年、10~50年分档，说明频次量化确为方案设计依据\"},\n    {\"claim_id\": \"c4\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未讨论海绵设施超设计标准时的失效与冗余度\"},\n    {\"claim_id\": \"c5\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未涉及施工期封路的社会成本或人口商业密度\"},\n    {\"claim_id\": \"c6\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未涉及后果承担主体与权重分配问题\"},\n    {\"claim_id\": \"c7\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"a2 提海绵与管网同步，但未涉分期策略的触发条件\"},\n    {\"claim_id\": \"c8\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未涉及气候变化导致设计标准漂移的问题\"},\n    {\"claim_id\": \"c9\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未提及雨污合流、管径偏小及管线普查评估\"},\n    {\"claim_id\": \"c10\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"a2 仅提整体翻新管网需配调蓄，未涉工期与资金规模\"},\n    {\"claim_id\": \"c11\", \"verdict\": \"印证\", \"anchor_ids\": [\"a2\"], \"note\": \"a2 要求老城区源头减排+过程控制并与调蓄设施同步，支持组合路径\"},\n    {\"claim_id\": \"c12\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未涉及建筑密度、绿地与地下空间对海绵落地的约束\"}\n  ]\n}"
+  },
+  {
+   "stage": "anchor_crosscheck",
+   "input": 1,
+   "arm": "on",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 1191,
+   "secs": 16.2,
+   "score": 2,
+   "out": "{\n  \"items\": [\n    {\"claim_id\": \"c1\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未涉及老城区管线档案完整度或重新测绘环节。\"},\n    {\"claim_id\": \"c2\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未讨论开挖的不可逆性、扰动成本或风险排序。\"},\n    {\"claim_id\": \"c3\", \"verdict\": \"印证\", \"anchor_ids\": [\"a1\"], \"note\": \"a1 按重现期分档规定设计标准，印证频次取值是方案关键参数。\"},\n    {\"claim_id\": \"c4\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未涉及海绵设施失效阈值或冗余度比较。\"},\n    {\"claim_id\": \"c5\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未涉及施工期道路封闭的社会成本核算。\"},\n    {\"claim_id\": \"c6\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未涉及受损主体权重如何进入决策。\"},\n    {\"claim_id\": \"c7\", \"verdict\": \"印证\", \"anchor_ids\": [\"a2\"], \"note\": \"a2 主张老城区以源头减排+过程控制为主，支持先局部加海绵的路径。\"},\n    {\"claim_id\": \"c8\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未涉及气候变化非平稳性或设计标准漂移。\"},\n    {\"claim_id\": \"c9\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未提及雨污合流、管径淤积或管线普查评估。\"},\n    {\"claim_id\": \"c10\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未涉及全系统重建的开挖范围、工期与资金规模。\"},\n    {\"claim_id\": \"c11\", \"verdict\": \"印证\", \"anchor_ids\": [\"a2\"], \"note\": \"a2 要求源头减排与调蓄设施同步，覆盖调蓄池、透水铺装等组合措施。\"},\n    {\"claim_id\": \"c12\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未涉及老城区建筑密度、绿地与地下空间对海绵落地的限制。\"}\n  ]\n}"
+  },
+  {
+   "stage": "anchor_crosscheck",
+   "input": 2,
+   "arm": "off",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 1484,
+   "secs": 2.9,
+   "score": 1,
+   "out": "{\n  \"items\": [\n    {\n      \"claim_id\": \"c1\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未涉及历史图纸丢失或管线探测的不确定性\"\n    },\n    {\n      \"claim_id\": \"c2\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未讨论局部与整体边界如何界定\"\n    },\n    {\n      \"claim_id\": \"c3\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未涉及施工期内涝风险与责任分担\"\n    },\n    {\n      \"claim_id\": \"c4\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未涉及地下空间占用与管线协调\"\n    },\n    {\n      \"claim_id\": \"c5\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未提及汇水区硬化率或受纳水体顶托\"\n    },\n    {\n      \"claim_id\": \"c6\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未涉及决策时限压力来源\"\n    },\n    {\n      \"claim_id\": \"c7\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未涉及海绵设施维护责任与衰减\"\n    },\n    {\n      \"claim_id\": \"c8\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未涉及资金渠道对方案选择的影响\"\n    },\n    {\n      \"claim_id\": \"c9\",\n      \"verdict\": \"印证\",\n      \"anchor_ids\": [\"a1\"],\n      \"note\": \"a1规定设计重现期标准，间接说明老管网标准低、合流制是既有条件\"\n    },\n    {\n      \"claim_id\": \"c10\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未涉及"
+  },
+  {
+   "stage": "anchor_crosscheck",
+   "input": 2,
+   "arm": "off",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 1491,
+   "secs": 2.5,
+   "score": 1,
+   "out": "{\n  \"items\": [\n    {\n      \"claim_id\": \"c1\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未涉及历史图纸丢失或管线探测的不确定性。\"\n    },\n    {\n      \"claim_id\": \"c2\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未讨论局部与整体边界论证问题。\"\n    },\n    {\n      \"claim_id\": \"c3\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未涉及施工期内涝风险与责任承担。\"\n    },\n    {\n      \"claim_id\": \"c4\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未涉及地下空间占用与管线冲突协调。\"\n    },\n    {\n      \"claim_id\": \"c5\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未讨论汇水区硬化率或受纳水体顶托。\"\n    },\n    {\n      \"claim_id\": \"c6\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未涉及决策时限压力来源。\"\n    },\n    {\n      \"claim_id\": \"c7\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未涉及海绵设施维护责任与衰减问题。\"\n    },\n    {\n      \"claim_id\": \"c8\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未涉及资金渠道对方案选择的影响。\"\n    },\n    {\n      \"claim_id\": \"c9\",\n      \"verdict\": \"印证\",\n      \"anchor_ids\": [\"a1\"],\n      \"note\": \"a1规定设计重现期标准，间接支持老管网设计标准低。\"\n    },\n    {\n      \"claim_id\": \"c10\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": "
+  },
+  {
+   "stage": "anchor_crosscheck",
+   "input": 2,
+   "arm": "off",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 1506,
+   "secs": 2.8,
+   "score": 1,
+   "out": "{\n  \"items\": [\n    {\n      \"claim_id\": \"c1\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未涉及历史图纸丢失或管线探测的不确定性。\"\n    },\n    {\n      \"claim_id\": \"c2\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未讨论局部与整体边界如何界定。\"\n    },\n    {\n      \"claim_id\": \"c3\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未涉及施工期内涝风险与责任分担。\"\n    },\n    {\n      \"claim_id\": \"c4\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未涉及地下空间占用与管线协调。\"\n    },\n    {\n      \"claim_id\": \"c5\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未讨论汇水区硬化率或受纳水体顶托。\"\n    },\n    {\n      \"claim_id\": \"c6\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未涉及决策时限压力来源。\"\n    },\n    {\n      \"claim_id\": \"c7\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未涉及海绵设施维护责任与衰减问题。\"\n    },\n    {\n      \"claim_id\": \"c8\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未涉及资金渠道对方案选择的影响。\"\n    },\n    {\n      \"claim_id\": \"c9\",\n      \"verdict\": \"印证\",\n      \"anchor_ids\": [\"a1\"],\n      \"note\": \"a1显示现行标准重现期3~5年，反衬老管网设计标准低、年代久。\"\n    },\n    {\n      \"claim_id\": \"c10\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"not"
+  },
+  {
+   "stage": "anchor_crosscheck",
+   "input": 2,
+   "arm": "on",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 1574,
+   "secs": 26.3,
+   "score": 0,
+   "out": "{\n  \"items\": [\n    {\n      \"claim_id\": \"c1\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未涉及历史图纸丢失或管线重新探测的不确定性。\"\n    },\n    {\n      \"claim_id\": \"c2\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未讨论局部与整体边界，也未涉及连片合流制边界论证。\"\n    },\n    {\n      \"claim_id\": \"c3\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未涉及施工期开挖封堵带来的内涝风险与责任承担。\"\n    },\n    {\n      \"claim_id\": \"c4\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未涉及地下空间冲突或管线、地铁、人防协调难度。\"\n    },\n    {\n      \"claim_id\": \"c5\",\n      \"verdict\": \"印证\",\n      \"anchor_ids\": [\"a2\"],\n      \"note\": \"a2指出单靠扩容收效有限，需源头减排与调蓄同步，支持重建未必解决。\"\n    },\n    {\n      \"claim_id\": \"c6\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未涉及决策时限压力来源或财政资金申报窗口。\"\n    },\n    {\n      \"claim_id\": \"c7\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未涉及海绵设施维护责任分散或后期调蓄能力衰减。\"\n    },\n    {\n      \"claim_id\": \"c8\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"锚点未涉及两种方案的资金渠道及其对方案选择的影响。\"\n    },\n    {\n      \"claim_id\": \"c9\",\n      \"verdict\": \"无对应\",\n      \"anchor_ids\": [],\n      \"note\": \"a1只规定设计重现期，未说明老城区现状年代、标准或合流制。\"\n    },\n    {\n      \"claim_id\": \"c10"
+  },
+  {
+   "stage": "anchor_crosscheck",
+   "input": 2,
+   "arm": "on",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 1124,
+   "secs": 6.0,
+   "score": 2,
+   "out": "{\n  \"items\": [\n    {\"claim_id\": \"c1\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未涉及历史图纸丢失或管线探测问题\"},\n    {\"claim_id\": \"c2\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未涉及'局部'边界如何界定的论证\"},\n    {\"claim_id\": \"c3\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未涉及施工期封堵开挖带来的内涝风险\"},\n    {\"claim_id\": \"c4\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未涉及地下空间占用与既有管线地铁冲突\"},\n    {\"claim_id\": \"c5\", \"verdict\": \"印证\", \"anchor_ids\": [\"a2\"], \"note\": \"a2称单靠扩容收效有限，支持重建未必解决内涝\"},\n    {\"claim_id\": \"c6\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未涉及决策时限压力来源\"},\n    {\"claim_id\": \"c7\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未涉及海绵设施维护责任与衰减\"},\n    {\"claim_id\": \"c8\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未涉及资金来源渠道对方案选择的影响\"},\n    {\"claim_id\": \"c9\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"a1只给设计重现期规定值，未描述老城现状\"},\n    {\"claim_id\": \"c10\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未涉及整体重建的开挖范围与工期影响\"},\n    {\"claim_id\": \"c11\", \"verdict\": \"印证\", \"anchor_ids\": [\"a2\"], \"note\": \"a2要求老城改造以源头减排+过程控制为主，对应分散海绵措施\"},\n    {\"claim_id\": \"c12\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未涉及两类方案的资金投入方式与成本\"}\n  ]\n}"
+  },
+  {
+   "stage": "anchor_crosscheck",
+   "input": 2,
+   "arm": "on",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 1148,
+   "secs": 10.3,
+   "score": 2,
+   "out": "{\n  \"items\": [\n    {\"claim_id\": \"c1\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未涉及历史图纸丢失或管线探测的不确定性。\"},\n    {\"claim_id\": \"c2\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未讨论“局部”边界的界定问题。\"},\n    {\"claim_id\": \"c3\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未涉及施工期临时内涝风险与责任归属。\"},\n    {\"claim_id\": \"c4\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未涉及地下空间与既有管线、地铁、人防的冲突。\"},\n    {\"claim_id\": \"c5\", \"verdict\": \"印证\", \"anchor_ids\": [\"a2\"], \"note\": \"a2称单靠扩容收效有限，支持重建排水未必解决内涝。\"},\n    {\"claim_id\": \"c6\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未涉及决策时限压力来源。\"},\n    {\"claim_id\": \"c7\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未涉及海绵设施维护责任与效能衰减。\"},\n    {\"claim_id\": \"c8\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未涉及资金渠道对方案选择的塑造。\"},\n    {\"claim_id\": \"c9\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"a1只给设计重现期标准，未述老城区管网现状或合流制。\"},\n    {\"claim_id\": \"c10\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未涉及整体重建的开挖范围与施工周期。\"},\n    {\"claim_id\": \"c11\", \"verdict\": \"印证\", \"anchor_ids\": [\"a2\"], \"note\": \"a2主张源头减排加过程控制、配调蓄设施，与海绵分散设施相符。\"},\n    {\"claim_id\": \"c12\", \"verdict\": \"无对应\", \"anchor_ids\": [], \"note\": \"锚点未涉及两方案的投资方式与单位效果成本。\"}\n  ]\n}"
+  },
+  {
+   "stage": "ask_missing_polarity",
+   "input": 1,
+   "arm": "off",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 12,
+   "secs": 1.1,
+   "score": 0,
+   "out": "{\"items\":[]}"
+  },
+  {
+   "stage": "ask_missing_polarity",
+   "input": 1,
+   "arm": "off",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 12,
+   "secs": 1.7,
+   "score": 0,
+   "out": "{\"items\":[]}"
+  },
+  {
+   "stage": "ask_missing_polarity",
+   "input": 1,
+   "arm": "off",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 12,
+   "secs": 0.9,
+   "score": 0,
+   "out": "{\"items\":[]}"
+  },
+  {
+   "stage": "ask_missing_polarity",
+   "input": 1,
+   "arm": "on",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 84,
+   "secs": 3.0,
+   "score": 2,
+   "out": "{\"items\":[{\"idx\":1,\"missing\":\"张力原文缺失，无待裁对象\"},{\"idx\":2,\"missing\":\"张力原文缺失，两侧立场均未写出\"}]}"
+  },
+  {
+   "stage": "ask_missing_polarity",
+   "input": 1,
+   "arm": "on",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 87,
+   "secs": 2.6,
+   "score": 2,
+   "out": "{\"items\":[{\"idx\":1,\"missing\":\"张力正文为空，两侧立场均未写出\"},{\"idx\":2,\"missing\":\"张力正文为空，两侧立场均未写出\"}]}"
+  },
+  {
+   "stage": "ask_missing_polarity",
+   "input": 1,
+   "arm": "on",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 86,
+   "secs": 2.5,
+   "score": 2,
+   "out": "{\"items\":[{\"idx\":1,\"missing\":\"张力内容为空，两侧主张未写出\"},{\"idx\":2,\"missing\":\"张力内容为空，待裁的两侧未出现\"}]}"
+  },
+  {
+   "stage": "assess_decidability",
+   "input": 1,
+   "arm": "off",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 452,
+   "secs": 2.3,
+   "score": 2,
+   "out": "{\n  \"decidability\": \"partial\",\n  \"reason\": \"决策框架可判定，但具体取舍依赖未定的选址、预算、窗口等外部事实，无法给出唯一答案。\",\n  \"features\": [\n    \"信息不足：关键参数未定\",\n    \"可操作化定义可转化为可测命题\"\n  ],\n  \"decidable_aspects\": [\n    \"可建立多准则决策框架（成本、安全、合规、业务连续性）\",\n    \"可列出迁移前必须确定的前置条件清单\",\n    \"可给出分阶段决策流程（先定预算再选址再定窗口）\",\n    \"可引用通用政务云安全与等保要求作为约束\"\n  ],\n  \"undecidable_aspects\": [\n    \"具体选址方案（依赖地质、电力、网络等未提供信息）\",\n    \"预算上限的具体数值（未给定）\",\n    \"迁移窗口的具体时间（未给定）\",\n    \"最终是否迁移的取舍结论（依赖上述未定参数）\"\n  ],\n  \"anchor_refs\": []\n}"
+  },
+  {
+   "stage": "assess_decidability",
+   "input": 1,
+   "arm": "off",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 384,
+   "secs": 2.2,
+   "score": 2,
+   "out": "{\n  \"decidability\": \"partial\",\n  \"reason\": \"选址、预算、窗口未定，无法做具体取舍；但迁移决策的一般框架（成本、合规、风险）可判定。\",\n  \"features\": [\n    \"信息不足：关键参数（选址、预算、窗口）缺失\",\n    \"可操作化：一般性决策框架可转化为可测命题\"\n  ],\n  \"decidable_aspects\": [\n    \"政务系统迁移的一般决策框架（成本效益、合规性、风险）\",\n    \"自建机房与租用/云方案的通用对比维度\",\n    \"迁移项目管理的通用阶段与风险清单\"\n  ],\n  \"undecidable_aspects\": [\n    \"具体选址方案（未定）\",\n    \"具体预算上限（未定）\",\n    \"具体迁移窗口（未定）\",\n    \"针对该市的具体取舍结论\"\n  ]\n}"
+  },
+  {
+   "stage": "assess_decidability",
+   "input": 1,
+   "arm": "off",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 460,
+   "secs": 2.8,
+   "score": 2,
+   "out": "{\n  \"decidability\": \"partial\",\n  \"reason\": \"取舍需结合未定的选址、预算、窗口等具体参数，这些外部事实无法获取；但可给出一般性决策框架与权衡原则。\",\n  \"features\": [\n    \"信息不足：关键参数（选址、预算、窗口）未定\",\n    \"可操作化：可建立多准则决策框架\"\n  ],\n  \"decidable_aspects\": [\n    \"可构建成本-风险-合规性的多准则决策框架\",\n    \"可列出迁移政务系统的通用风险清单（数据安全、业务连续性等）\",\n    \"可给出分阶段迁移与回退预案的一般原则\"\n  ],\n  \"undecidable_aspects\": [\n    \"具体选址的优劣（需地质、电力、网络等未提供数据）\",\n    \"预算上限下的具体取舍（预算数值未知）\",\n    \"迁移窗口的具体安排（业务低峰期等未定）\",\n    \"自建机房与现有政务云的具体成本对比（缺乏报价与规模）\"\n  ],\n  \"anchor_refs\": []\n}"
+  },
+  {
+   "stage": "assess_decidability",
+   "input": 1,
+   "arm": "on",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 595,
+   "secs": 9.3,
+   "score": 2,
+   "out": "{\n  \"decidability\": \"partial\",\n  \"reason\": \"最终是否全部迁移取决于未定的选址、预算、窗口及本地系统信息，无法得出确定结论；但可给出条件化取舍框架。\",\n  \"features\": [\n    \"信息不足：机房选址、预算上限、迁移窗口等关键参数缺失\",\n    \"最终结论依赖未获取的地方财政、运维与系统现状\",\n    \"可先用条件化规则和评估指标部分操作化\"\n  ],\n  \"decidable_aspects\": [\n    \"自建机房与政务云或混合云的一般优劣比较\",\n    \"按预算、选址、窗口、系统分级制定条件化决策框架\",\n    \"将全部迁移拆分为核心与非核心系统分类处理\",\n    \"列出需补充的数据清单和评估指标，如TCO、SLA、灾备、合规\",\n    \"判断在关键参数未定时不宜作最终一次性决断\"\n  ],\n  \"undecidable_aspects\": [\n    \"该市具体机房选址的电力、网络、地价、灾备条件是否可行\",\n    \"具体预算上限与财政承受能力未知\",\n    \"迁移窗口与业务连续性约束未知\",\n    \"各政务系统规模、依赖、数据敏感级别、既有合同等本地事实未知\",\n    \"最终是否全部迁移的二元政策结论依赖未获取的地方信息与价值权重\"\n  ],\n  \"anchor_refs\": []\n}"
+  },
+  {
+   "stage": "assess_decidability",
+   "input": 1,
+   "arm": "on",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 627,
+   "secs": 5.6,
+   "score": 2,
+   "out": "{\n  \"decidability\": \"partial\",\n  \"reason\": \"决策方法论与「全部迁移」是否合理等原则问题可判；但该市选址、预算上限、迁移窗口等关键参数未定且不可获得，具体取舍无法得出。\",\n  \"features\": [\n    \"信息不足：选址、预算、窗口均未给定\",\n    \"预设了无法获得的参照系（该市财政与机房条件）\",\n    \"本体论/价值权衡部分无法用判决实验验证\"\n  ],\n  \"decidable_aspects\": [\n    \"可判定「全部迁移」通常不是最优解，应按系统密级与业务连续性分级分类迁移\",\n    \"可判定需先补全决策变量：选址、预算上限、迁移窗口、SLA、等保要求、TCO 模型\",\n    \"可判定自建机房与政务云的通用取舍维度：可控性/合规 vs 弹性、运维成本、灾备能力\",\n    \"可判定在关键参数缺失时，任何「迁或不迁」的结论都是条件性的，需先做差距分析\"\n  ],\n  \"undecidable_aspects\": [\n    \"该市是否真的应该迁——取决于其财政承受力与既有云服务合同，评估者无法获取\",\n    \"预算上限与机房选址方案——属未定且未观测的地方决策数据\",\n    \"迁移窗口与业务停摆容忍度——需该市各部门实际业务节奏信息\",\n    \"「全部」系统迁移后的实际风险与收益——属未发生的未来结果\"\n  ],\n  \"anchor_refs\": []\n}"
+  },
+  {
+   "stage": "assess_decidability",
+   "input": 1,
+   "arm": "on",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 594,
+   "secs": 10.0,
+   "score": 2,
+   "out": "{\n  \"decidability\": \"partial\",\n  \"reason\": \"最终是否迁移取决于未定的选址、预算、窗口及本地系统现状，无法给出唯一取舍；但可提供条件化决策框架与一般权衡。\",\n  \"features\": [\n    \"信息不足：选址、预算、迁移窗口未定\",\n    \"整体决策需访问本地系统、财政等外部事实\",\n    \"一般权衡与条件方案可操作化\"\n  ],\n  \"decidable_aspects\": [\n    \"可列出自建机房与政务云、托管在成本、可控性、合规、弹性、运维、安全上的通用权衡维度\",\n    \"可给出先定选址、预算与迁移窗口再决策的流程和所需评估清单\",\n    \"可将全部迁移拆成系统分类、分批迁移、灾备双活等条件方案\",\n    \"给定预算与窗口后，可比较TCO、RTO/RPO、等保合规差距等可测指标\"\n  ],\n  \"undecidable_aspects\": [\n    \"该市最终应否全部迁移，缺本地系统清单、数据敏感级别与财政约束\",\n    \"机房选址未定，时延、地灾、电力、网络等风险无法量化\",\n    \"预算上限未定，成本可行性与采购模式无法判断\",\n    \"迁移窗口未定，业务中断与切换风险无法评估\",\n    \"本地合规、等保密评要求及现有合同约束未知\"\n  ],\n  \"anchor_refs\": []\n}"
+  },
+  {
+   "stage": "assess_decidability",
+   "input": 2,
+   "arm": "off",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 469,
+   "secs": 2.5,
+   "score": 2,
+   "out": "{\n  \"decidability\": \"partial\",\n  \"reason\": \"方案选择涉及可量化的工程标准与经验判断，但具体权衡取决于本地数据、预算与决策偏好，无法给出唯一答案。\",\n  \"features\": [\n    \"含可操作化定义（重现期、海绵措施）\",\n    \"含经验判断（本地条件、成本效益）\",\n    \"信息不足（具体城市数据缺失）\"\n  ],\n  \"decidable_aspects\": [\n    \"排水设计重现期等规范要求可查（a1）\",\n    \"海绵城市与管网改造需同步的技术原则可判（a2）\",\n    \"两种方案的技术优缺点可基于工程知识比较\",\n    \"可设计监测与模拟实验评估内涝缓解效果\"\n  ],\n  \"undecidable_aspects\": [\n    \"具体老城区的内涝成因与管网现状需实地数据\",\n    \"重建与改造的最终权衡取决于地方预算与决策偏好\",\n    \"长期气候与城市发展情景不确定\"\n  ],\n  \"anchor_refs\": [\"a1\", \"a2\"]\n}"
+  },
+  {
+   "stage": "assess_decidability",
+   "input": 2,
+   "arm": "off",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 450,
+   "secs": 2.5,
+   "score": 2,
+   "out": "{\n  \"decidability\": \"partial\",\n  \"reason\": \"方案选择涉及可量化的工程标准与成本效益分析，但具体决策依赖地方财政、居民意愿等无法获取的本地信息。\",\n  \"features\": [\n    \"信息不足：缺乏具体城市数据\",\n    \"可操作化定义：部分指标可测\",\n    \"本体论判断：价值权衡部分\"\n  ],\n  \"decidable_aspects\": [\n    \"排水设计重现期标准（如GB50014规定）\",\n    \"海绵城市措施的技术有效性（如源头减排）\",\n    \"不同方案的成本效益分析框架\",\n    \"工程可行性的一般原则\"\n  ],\n  \"undecidable_aspects\": [\n    \"具体老城区的财政承受能力\",\n    \"当地居民对改造的接受度\",\n    \"特定暴雨事件的精确影响\",\n    \"政治优先级的权衡\"\n  ],\n  \"anchor_refs\": [\n    \"a1\",\n    \"a2\"\n  ]\n}"
+  },
+  {
+   "stage": "assess_decidability",
+   "input": 2,
+   "arm": "off",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 589,
+   "secs": 2.9,
+   "score": 2,
+   "out": "{\n  \"decidability\": \"partial\",\n  \"reason\": \"排水标准、海绵措施效果等可凭规范与工程知识判定；但具体选重建还是局部改造，取决于老城区未公开的管网现状、地质、预算等外部事实，无法得出唯一答案。\",\n  \"features\": [\n    \"信息不足：具体管网现状、预算、地质条件等外部事实无法获得\",\n    \"可操作化：设计重现期、海绵措施效果等可转化为可测命题\"\n  ],\n  \"decidable_aspects\": [\n    \"雨水管渠设计重现期应满足GB50014规定的3~5年（重要地区10~50年）\",\n    \"老城区改造应以源头减排+过程控制为主，管网扩容需与调蓄设施同步\",\n    \"重建与局部改造的工程优缺点、适用条件可基于规范与案例比较\",\n    \"权衡框架可操作化为成本、工期、内涝削减率、维护难度等指标\"\n  ],\n  \"undecidable_aspects\": [\n    \"该老城区现有排水管网的具体管径、埋深、破损程度等现状数据\",\n    \"该地区的可用财政预算、施工期间交通影响等约束条件\",\n    \"具体地质条件（如地下水位、土壤渗透性）对海绵设施选型的影响\",\n    \"最终应选重建还是局部改造的唯一最优决策\"\n  ],\n  \"anchor_refs\": [\"a1\", \"a2\"]\n}"
+  },
+  {
+   "stage": "assess_decidability",
+   "input": 2,
+   "arm": "on",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 542,
+   "secs": 8.5,
+   "score": 2,
+   "out": "{\n  \"decidability\": \"partial\",\n  \"reason\": \"通用权衡框架与规范原则可判；但未给出具体老城区数据，无法判定应重建还是局部改造+海绵。\",\n  \"features\": [\"信息不足\", \"可操作化为可测命题\", \"经验与规范问题\"],\n  \"decidable_aspects\": [\n    \"可依据GB50014等规范确定排水设计重现期基准（a1）\",\n    \"可依据海绵城市指南分析源头减排与管网协同原则（a2）\",\n    \"可建立成本、防洪标准、施工影响、运维等多目标权衡框架\",\n    \"可定性比较重建与局部改造+海绵的适用条件与风险\",\n    \"可指出需因地制宜，不能一概而论\"\n  ],\n  \"undecidable_aspects\": [\n    \"未指定具体老城区，缺少管网现状、内涝成因、水文地质等本地数据\",\n    \"缺少预算、土地、拆迁、运维能力等约束条件\",\n    \"未来暴雨强度与极端气候情景不确定\",\n    \"社会接受度、政策优先级等非技术因素难以量化\",\n    \"网友断言无出处，不能作为可靠判决依据（a3）\"\n  ],\n  \"anchor_refs\": [\"a1\", \"a2\", \"a3\"]\n}"
+  },
+  {
+   "stage": "assess_decidability",
+   "input": 2,
+   "arm": "on",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 740,
+   "secs": 9.9,
+   "score": 2,
+   "out": "{\n  \"decidability\": \"partial\",\n  \"reason\": \"该问题含可判定的工程标准与权衡框架，但具体选型依赖未提供的地方参数、预算和目标，无法仅凭问题给出唯一方案。\",\n  \"features\": [\n    \"信息不足：缺少当地管网、地形、降雨、预算等数据\",\n    \"无单一判决实验：多目标权重下无唯一最优解\",\n    \"可操作化：通用标准与模型指标可判\"\n  ],\n  \"decidable_aspects\": [\n    \"可依据GB50014确定雨水管渠设计重现期范围，作为重建或改造的校核标准。\",\n    \"可依据海绵城市建设指南判断老城区宜以源头减排和过程控制为主，管网扩容需与调蓄同步。\",\n    \"可建立多准则权衡框架，如成本、内涝风险、施工影响、运维、生态和社会接受度。\",\n    \"可通过水文水力模型模拟不同方案，并设置积水点、径流控制率等可测指标进行比较。\",\n    \"可识别“单靠翻新管网就完事”的绝对化说法不充分，但仍需结合具体条件判断。\"\n  ],\n  \"undecidable_aspects\": [\n    \"最终应选全面重建还是局部改造加海绵措施，取决于未给出的当地具体参数。\",\n    \"最优投资规模与重建/改造比例无法脱离当地财政、土地、成本和运维能力确定。\",\n    \"未来极端降雨与气候变化影响无法精确预知，只能做情景分析而非唯一判决。\",\n    \"居民偏好、政治优先级和社会接受度等主观权重不可客观唯一裁定。\",\n    \"若问题要求唯一正确方案，则没有可执行的判决实验能直接给出答案。\"\n  ],\n  \"anchor_refs\": [\n    \"a1\",\n    \"a2\"\n  ]\n}"
+  },
+  {
+   "stage": "assess_decidability",
+   "input": 2,
+   "arm": "on",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 653,
+   "secs": 9.4,
+   "score": 2,
+   "out": "{\n  \"decidability\": \"partial\",\n  \"reason\": \"总体权衡原则可依规范和指南推理；但具体选重建或局部改造，需当地管网、降雨、预算等实测数据，当前无法得出唯一结论。\",\n  \"features\": [\n    \"信息不足\",\n    \"可通过操作化定义转化为可测命题\",\n    \"经验问题\"\n  ],\n  \"decidable_aspects\": [\n    \"可依据GB50014确定雨水管渠设计重现期等基本要求[a1]\",\n    \"可依据海绵城市指南确定老城区宜源头减排、过程控制，并与调蓄设施同步[a2]\",\n    \"可提出权衡维度：内涝风险、改造成本、施工影响、运维、生态效益、工期\",\n    \"可设计评估流程：积水点调查、水力模型、方案比选、成本效益分析\",\n    \"可判断通常不宜单靠局部扩容或单靠海绵，而需组合措施\"\n  ],\n  \"undecidable_aspects\": [\n    \"特定老城区应全面重建还是局部改造，取决于未提供的管网、降雨、地质、预算等数据\",\n    \"具体工程规模、调蓄容积、重现期取值需详细勘察建模，当前无法给出唯一数值\",\n    \"未来极端暴雨变化与财政承受能力等外部不确定性\",\n    \"居民接受度、拆迁协调等社会政治因素\",\n    \"网友“翻新就完事”无出处，不能作为判据[a3]\"\n  ],\n  \"anchor_refs\": [\n    \"a1\",\n    \"a2\",\n    \"a3\"\n  ]\n}"
+  },
+  {
+   "stage": "assess_decidability_from_pool_view",
+   "input": 1,
+   "arm": "off",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 607,
+   "secs": 2.4,
+   "score": 1,
+   "out": "{\n  \"decidability\": \"decidable\",\n  \"reason\": \"候选普遍能判出0/1，核心诉求（权衡）可判；悬置与线头属未决或可规定，非原则判不出。\",\n  \"features\": [\"候选普遍可判0/1\", \"悬置属未决\", \"线头属可规定\"],\n  \"decidable_aspects\": [\n    \"主因判定（管网能力/外河顶托/地势）可查可测\",\n    \"停排影响图可逐段绘制，标出不允许停排段\",\n    \"排空时间可作跨方案指标，分别报告\",\n    \"资金渠道、施工期社会成本可规定分摊规则\",\n    \"设计暴雨标准可依规范或地方规定确定\"\n  ],\n  \"undecidable_aspects\": [],\n  \"evidence\": [\n    {\"aspect\": \"主因判定可查可测\", \"source\": \"候选15\"},\n    {\"aspect\": \"停排影响图可逐段绘制\", \"source\": \"ing 四\"},\n    {\"aspect\": \"排空时间可作跨方案指标\", \"source\": \"ing 四\"},\n    {\"aspect\": \"资金渠道、社会成本可规定\", \"source\": \"候选8、候选12、主动悬置2\"},\n    {\"aspect\": \"设计暴雨标准可依规范确定\", \"source\": \"外部锚点X1\"}\n  ]\n}"
+  },
+  {
+   "stage": "assess_decidability_from_pool_view",
+   "input": 1,
+   "arm": "off",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 1193,
+   "secs": 3.4,
+   "score": 1,
+   "out": "{\n  \"decidability\": \"partial\",\n  \"reason\": \"池内多数候选能判出0/1（现状、方案、约束），但核心权衡依赖两个原则性缺失：峰前腾空/峰后排空时间模型未生成，且外河水位与管网出口同步曲线缺失，导致洪峰时段两方案效果无法区分；施工期社会成本无共同分母。\",\n  \"features\": [\n    \"时间模型未生成\",\n    \"同步曲线缺失\",\n    \"社会成本无共同分母\"\n  ],\n  \"decidable_aspects\": [\n    \"老城区排水系统现状可判：管网老旧、设计标准低、雨污合流\",\n    \"整体重建的施工影响可判：开挖主要道路、周期以年计\",\n    \"局部改造加海绵的设施类型可判：调蓄池、透水铺装、下凹绿地等\",\n    \"资金渠道差异可判：重建走大基建、海绵走专项\",\n    \"两种方案可组合可判：主干提标与源头海绵可组合，需定比例顺序\"\n  ],\n  \"undecidable_aspects\": [\n    \"峰前腾空与峰后排空的时间模型未生成，两方案效果无法在同一时间轴上比较\",\n    \"外河水位与管网出口同步曲线缺失，洪峰时段重建与海绵效果无法区分\",\n    \"施工期社会成本分摊规则缺失，0与1的社会成本缺乏共同分母\"\n  ],\n  \"evidence\": [\n    {\n      \"aspect\": \"老城区排水系统现状可判\",\n      \"source\": \"候选9\"\n    },\n    {\n      \"aspect\": \"整体重建的施工影响可判\",\n      \"source\": \"候选10\"\n    },\n    {\n      \"aspect\": \"局部改造加海绵的设施类型可判\",\n      \"source\": \"候选11\"\n    },\n    {\n      \"aspect\": \"资金渠道差异可判\",\n      \"source\": \"候选8\"\n    },\n    {\n      \"aspect\": \"两种方案可组合可判\",\n      \"source\": \"候选16\"\n    },\n    {\n      \"aspect\": \"峰前腾空与峰后排空的时间模型未生成\",\n      \"source\": \"&印记[ontological] / 主动悬置1 / ing输出二\"\n    },\n    {\n      \"aspect\": \"外河水位与管网出口同步曲线缺失\",\n      \"source\": \"悬空线头1 / ing输出五\"\n    },\n    {\n      \"aspect\": \"施工期社会成本分摊规则缺失\",\n      \"source\": \"&印记[axiological] / 主动悬置2 / ing输出五\"\n    }\n  ]\n}"
+  },
+  {
+   "stage": "assess_decidability_from_pool_view",
+   "input": 1,
+   "arm": "off",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 1083,
+   "secs": 3.4,
+   "score": 2,
+   "out": "{\n  \"decidability\": \"partial\",\n  \"reason\": \"池内多数候选能判出0/1（现状、资金、空间、组合等），但核心权衡依赖的峰前腾空/峰后排空时间模型、施工期社会成本分摊规则、外河同步曲线等，属无共同参照系或本体论判断，原则判不出。\",\n  \"features\": [\n    \"候选普遍能判出0/1，但核心权衡依赖未生成的同步曲线与时间模型\",\n    \"&印记显示两端缺乏共同分母（社会成本）与共同时间模型\",\n    \"主动悬置与悬空线头指向原则性缺失的参照系\"\n  ],\n  \"decidable_aspects\": [\n    \"老城区排水系统现状（合流制、标准低）可判\",\n    \"整体重建与局部加海绵的技术特征可判\",\n    \"资金渠道、地下空间冲突、可用空间等约束可判\",\n    \"两方案非互斥、可组合，组合比例可判\",\n    \"内涝主因（管网能力/顶托/地势）可通过调查判定\"\n  ],\n  \"undecidable_aspects\": [\n    \"峰前腾空与峰后排空的时间模型未生成，无共同时间轴比较两方案\",\n    \"施工期社会成本分摊规则缺失，0与1的社会成本无共同分母\",\n    \"外河水位与管网出口同步曲线缺失，洪峰时段效果无法区分\",\n    \"地下管线产权与迁改责任不在排水部门，逐段方案无法单方面执行\",\n    \"维护费用来源未定，海绵衰减与管道折旧无法进入合同\"\n  ],\n  \"evidence\": [\n    {\"aspect\": \"峰前腾空与峰后排空的时间模型未生成\", \"source\": \"主动悬置1 / &印记[ontological] / ing五\"},\n    {\"aspect\": \"施工期社会成本分摊规则缺失\", \"source\": \"主动悬置2 / &印记[axiological] / ing五\"},\n    {\"aspect\": \"外河水位与管网出口同步曲线缺失\", \"source\": \"悬空线头1 / ing五\"},\n    {\"aspect\": \"地下管线产权与迁改责任不在排水部门\", \"source\": \"悬空线头2 / ing五\"},\n    {\"aspect\": \"维护费用来源未定\", \"source\": \"悬空线头3 / ing五\"},\n    {\"aspect\": \"老城区排水系统现状可判\", \"source\": \"候选9\"},\n    {\"aspect\": \"两方案非互斥可组合\", \"source\": \"候选16\"}\n  ]\n}"
+  },
+  {
+   "stage": "assess_decidability_from_pool_view",
+   "input": 1,
+   "arm": "on",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 759,
+   "secs": 15.0,
+   "score": 1,
+   "out": "{\n  \"decidability\": \"decidable\",\n  \"reason\": \"池内候选多为可查证的事实与约束；ing把全局二选一消解为逐段属性，并生成跨方案共同指标（排空时间），权衡可结构化。&与悬置点均属曲线缺失、责任挂点未定、模型未生等未决，差的是工作与外部动作，非原则判不出。\",\n  \"features\": [\n    \"候选普遍可判（多为可查证事实与显形约束）\",\n    \"撞出第三者：逐段属性 + 排空时间共同指标\",\n    \"全局二选一被消解为按管段的逐段决策\"\n  ],\n  \"decidable_aspects\": [\n    \"内涝主因（管网/顶托/地势）可由探测与观测判定\",\n    \"地下管线冲突与迁改成本可探明协商\",\n    \"权衡可化为逐段属性，用排空时间同轴比较\",\n    \"资金渠道与维护责任属可规定的制度安排\",\n    \"设计重现期可依GB50014等标准确定\"\n  ],\n  \"undecidable_aspects\": [],\n  \"evidence\": [\n    {\"aspect\": \"内涝主因可由探测与水位观测判定\", \"source\": \"候选15\"},\n    {\"aspect\": \"权衡可化为逐段属性并用同一时间轴比较\", \"source\": \"ing输出 四\"},\n    {\"aspect\": \"外河同步曲线缺失属数据缺口（未决）\", \"source\": \"悬空线头1\"},\n    {\"aspect\": \"施工期社会成本分摊需责任挂点（未决）\", \"source\": \"主动悬置2\"},\n    {\"aspect\": \"峰前腾空/排空时间模型尚未生成（未决）\", \"source\": \"&印记 ontological\"}\n  ]\n}"
+  },
+  {
+   "stage": "assess_decidability_from_pool_view",
+   "input": 1,
+   "arm": "on",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 771,
+   "secs": 12.9,
+   "score": 1,
+   "out": "{\n  \"decidability\": \"decidable\",\n  \"reason\": \"候选普遍能判出0/1；&印记与悬空线头均为'缺模型/缺曲线/缺规则'的未决，非原则判不出；ing生成排空时间轴与逐段判定，把全局二选一降解为可判的逐段属性，核心诉求可判。\",\n  \"features\": [\n    \"全局二选一被降解为逐段属性\",\n    \"生成跨方案共同参照系（排空时间轴）\",\n    \"两侧不可比处可分别报告\"\n  ],\n  \"decidable_aspects\": [\n    \"全局'重建还是海绵'被降解为逐段属性，核心权衡可逐段判\",\n    \"各管段'是否允许停排'可逐段标注，给出0/1\",\n    \"排空时间轴让重建与海绵在洪峰时段可比（ing生成共同参照）\",\n    \"主因判定（管网不足/外河顶托/地势低洼）可经观测确定\",\n    \"施工期社会成本两侧可分别报告，无需共同分母即成立\"\n  ],\n  \"undecidable_aspects\": [],\n  \"evidence\": [\n    {\"aspect\": \"全局二选一降解为逐段属性\", \"source\": \"ing 第四步/第六步\"},\n    {\"aspect\": \"排空时间轴作为共同参照系\", \"source\": \"ing 第三步/第四步\"},\n    {\"aspect\": \"时间模型尚未生成属未决\", \"source\": \"amp ontological / suspension1\"},\n    {\"aspect\": \"社会成本缺共同分母可分别报告\", \"source\": \"amp axiological\"},\n    {\"aspect\": \"同步曲线缺失属未决（需外部数据）\", \"source\": \"悬空线头1\"}\n  ]\n}"
+  },
+  {
+   "stage": "assess_decidability_from_pool_view",
+   "input": 1,
+   "arm": "on",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 872,
+   "secs": 16.1,
+   "score": 1,
+   "out": "{\n  \"decidability\": \"decidable\",\n  \"reason\": \"候选多为可勘察、可监测、可对照标准的条件与约束；&印记、悬置、悬空线头均是需补数据或定规则的未决，非原则不可判；ing已生成逐段属性与排空时间指标，核心权衡可判。\",\n  \"features\": [\n    \"候选普遍可落到0或1的条件判断\",\n    \"ing撞出第三者：逐段属性与排空时间指标\",\n    \"悬置与线头均为外部数据或规则未定，属未决\"\n  ],\n  \"decidable_aspects\": [\n    \"管网现状、合流制、设计标准可由勘察与GB50014对照判定\",\n    \"内涝主因是管网能力、外河顶托还是地势，可通过监测水文分析判定\",\n    \"全局二选一可转为逐段属性：画停排影响图后逐段选方案\",\n    \"跨方案可用排空时间等时间轴指标比较，而非只比容积\",\n    \"资金渠道、维护责任、社会成本分摊可经规定和合同拆分确定\"\n  ],\n  \"undecidable_aspects\": [],\n  \"evidence\": [\n    {\n      \"aspect\": \"管网现状与设计标准可勘察或对照\",\n      \"source\": \"候选9 / 候选10 / X1\"\n    },\n    {\n      \"aspect\": \"内涝主因可监测判定\",\n      \"source\": \"候选5 / 候选15\"\n    },\n    {\n      \"aspect\": \"全局二选一转为逐段属性\",\n      \"source\": \"ing输出四、六\"\n    },\n    {\n      \"aspect\": \"跨方案排空时间指标\",\n      \"source\": \"ing输出四\"\n    },\n    {\n      \"aspect\": \"资金维护责任等可规定而非原则判不出\",\n      \"source\": \"&印记axiological / 悬空线头3 / 主动悬置2\"\n    }\n  ]\n}"
+  },
+  {
+   "stage": "assess_decidability_from_pool_view",
+   "input": 2,
+   "arm": "off",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 634,
+   "secs": 2.3,
+   "score": 1,
+   "out": "{\n  \"decidability\": \"decidable\",\n  \"reason\": \"候选普遍能判出0/1，核心权衡可拆为可判变量；&候选与悬空线头属未决（需补测/外部动作/可规定），非原则判不出。\",\n  \"features\": [\n    \"候选普遍判出0/1\",\n    \"&候选属未决\",\n    \"悬空线头需外部动作\"\n  ],\n  \"decidable_aspects\": [\n    \"内涝频次定义可量化（年遇/次），定后方案选择确定\",\n    \"管网能力评估可做（普查、内窥、水力模型）\",\n    \"海绵与管网设计标准可匹配（按规范取值）\",\n    \"分期策略触发条件可规定（水位、雨强、外河顶托）\",\n    \"可逆/不可逆动作排序可制定（先测量后开挖）\"\n  ],\n  \"undecidable_aspects\": [],\n  \"evidence\": [\n    {\"aspect\": \"内涝频次定义可量化\", \"source\": \"候选3\"},\n    {\"aspect\": \"管网能力评估可做\", \"source\": \"候选9\"},\n    {\"aspect\": \"海绵与管网标准可匹配\", \"source\": \"候选15\"},\n    {\"aspect\": \"分期触发条件可规定\", \"source\": \"候选7\"},\n    {\"aspect\": \"可逆/不可逆排序可制定\", \"source\": \"ing输出四\"}\n  ]\n}"
+  },
+  {
+   "stage": "assess_decidability_from_pool_view",
+   "input": 2,
+   "arm": "off",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 1147,
+   "secs": 2.9,
+   "score": 1,
+   "out": "{\n  \"decidability\": \"partial\",\n  \"reason\": \"核心权衡可判：候选普遍能判0/1，ing撞出可逆/不可逆排序。但外河顶托、资金机制、气候非平稳、补偿通道属原则性撞不动，核心诉求含真不可判定部分。\",\n  \"features\": [\n    \"候选普遍能判0/1\",\n    \"ing撞出可逆/不可逆排序\",\n    \"存在原则性撞不动点\"\n  ],\n  \"decidable_aspects\": [\n    \"管网档案缺失→先测绘，可判\",\n    \"内涝频次定义可量化，可判\",\n    \"海绵失效阈值与管网标准匹配，可判\",\n    \"分期策略触发条件可设定，可判\",\n    \"可逆/不可逆动作排序可判\"\n  ],\n  \"undecidable_aspects\": [\n    \"外河顶托超自排设计时，重建与海绵均撞不开\",\n    \"清淤维护长期预算无机制保证，撞不动\",\n    \"历史雨量非平稳，设计标准会过期，时间差不可消除\",\n    \"低洼住户与商户无补偿通道，施工期反对可拖停方案\"\n  ],\n  \"evidence\": [\n    {\n      \"aspect\": \"管网档案缺失→先测绘，可判\",\n      \"source\": \"候选1\"\n    },\n    {\n      \"aspect\": \"内涝频次定义可量化，可判\",\n      \"source\": \"候选3\"\n    },\n    {\n      \"aspect\": \"海绵失效阈值与管网标准匹配，可判\",\n      \"source\": \"候选4\"\n    },\n    {\n      \"aspect\": \"分期策略触发条件可设定，可判\",\n      \"source\": \"候选7\"\n    },\n    {\n      \"aspect\": \"可逆/不可逆动作排序可判\",\n      \"source\": \"ing四\"\n    },\n    {\n      \"aspect\": \"外河顶托超自排设计时，重建与海绵均撞不开\",\n      \"source\": \"ing五\"\n    },\n    {\n      \"aspect\": \"清淤维护长期预算无机制保证，撞不动\",\n      \"source\": \"ing五\"\n    },\n    {\n      \"aspect\": \"历史雨量非平稳，设计标准会过期，时间差不可消除\",\n      \"source\": \"ing五\"\n    },\n    {\n      \"aspect\": \"低洼住户与商户无补偿通道，施工期反对可拖停方案\",\n      \"source\": \"ing五\"\n    }\n  ]\n}"
+  },
+  {
+   "stage": "assess_decidability_from_pool_view",
+   "input": 2,
+   "arm": "off",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 1040,
+   "secs": 3.3,
+   "score": 1,
+   "out": "{\n  \"decidability\": \"partial\",\n  \"reason\": \"池内多数候选能判出0/1（管网普查、施工社会成本、分期策略等），但核心诉求中「主因是管网不足还是外河顶托」在无共同参照系下原则性对不上，且「设计标准随气候漂移」属本体论判断，两者均落在核心诉求上。\",\n  \"features\": [\n    \"核心诉求可判部分占多数\",\n    \"存在无共同参照系的结构性对撞\",\n    \"存在本体论判断（设计标准漂移）\"\n  ],\n  \"decidable_aspects\": [\n    \"老城区地下管线档案完整度：需重新测绘，可查可测\",\n    \"重建与局部改造的不可逆决策点：可识别并排序\",\n    \"施工期社会成本（道路封闭、商户损失）：可量化纳入比选\",\n    \"混合分期策略的触发条件：可规定并执行\",\n    \"海绵措施失效阈值与管网标准匹配：可分别报告\"\n  ],\n  \"undecidable_aspects\": [\n    \"内涝主因是管网不足还是外河顶托：无共同参照系，重建是否有效原则判不出\",\n    \"设计标准随气候变化漂移：无经验判决实验，工程建成就可能落后\"\n  ],\n  \"evidence\": [\n    {\n      \"aspect\": \"地下管线档案完整度可查可测\",\n      \"source\": \"候选1\"\n    },\n    {\n      \"aspect\": \"不可逆决策点可识别排序\",\n      \"source\": \"候选2\"\n    },\n    {\n      \"aspect\": \"施工期社会成本可量化\",\n      \"source\": \"候选5\"\n    },\n    {\n      \"aspect\": \"分期策略触发条件可规定\",\n      \"source\": \"候选7\"\n    },\n    {\n      \"aspect\": \"海绵失效阈值与管网标准可分别报告\",\n      \"source\": \"候选15\"\n    },\n    {\n      \"aspect\": \"主因是管网不足还是外河顶托原则判不出\",\n      \"source\": \"候选16 / &印记[logical]\"\n    },\n    {\n      \"aspect\": \"设计标准随气候漂移属本体论判断\",\n      \"source\": \"候选8 / ing五\"\n    }\n  ]\n}"
+  },
+  {
+   "stage": "assess_decidability_from_pool_view",
+   "input": 2,
+   "arm": "on",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 720,
+   "secs": 9.5,
+   "score": 1,
+   "out": "{\n  \"decidability\": \"decidable\",\n  \"reason\": \"候选多能读出0/1，&候选集中于频次定义、主因判定、标准匹配，均可由测绘、监测或规定确定；撞不动处皆属需外部动作或未来风险，属未决而非原则上判不出。\",\n  \"features\": [\n    \"候选普遍判得明确(0/1)\",\n    \"&候选均为可量化/可规定\",\n    \"ing撞出可逆与不可逆动作排序\"\n  ],\n  \"decidable_aspects\": [\n    \"管网现状与排水能力可经测绘普查确定（候选1、9）\",\n    \"内涝主因是管网不足还是外河顶托可由水文监测判定（候选16、X1）\",\n    \"内涝频次定义可量化规定（候选3）\",\n    \"权衡核心变量可枚举（候选13）\",\n    \"分期策略与不可逆触发条件可设定（候选7、14）\"\n  ],\n  \"undecidable_aspects\": [],\n  \"evidence\": [\n    {\"aspect\": \"管线普查与排水能力评估\", \"source\": \"候选1 / 候选9\"},\n    {\"aspect\": \"内涝主因判定\", \"source\": \"候选16 / X1\"},\n    {\"aspect\": \"频次定义量化\", \"source\": \"候选3\"},\n    {\"aspect\": \"权衡变量枚举\", \"source\": \"候选13\"},\n    {\"aspect\": \"分期触发条件\", \"source\": \"候选7 / 候选14\"},\n    {\"aspect\": \"撞不动处属未决\", \"source\": \"ing五\"}\n  ]\n}"
+  },
+  {
+   "stage": "assess_decidability_from_pool_view",
+   "input": 2,
+   "arm": "on",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 742,
+   "secs": 12.3,
+   "score": 1,
+   "out": "{\n  \"decidability\": \"decidable\",\n  \"reason\": \"池内候选多能判出0/1，&印记与悬空线头均为未决（需补测绘、定义、机制或外部数据），无自指循环、无共同参照系或本体论判断等原则判不出成分。\",\n  \"features\": [\n    \"候选能判出0/1\",\n    \"&印记为未决\",\n    \"无主动悬置\"\n  ],\n  \"decidable_aspects\": [\n    \"排水管网现状与档案完整度可测绘评估\",\n    \"内涝频次与降雨设计标准可量化定义\",\n    \"海绵设施空间约束与失效阈值可分析\",\n    \"重建与局部改造的施工社会成本可估算\",\n    \"混合方案的分期触发条件可设定\"\n  ],\n  \"undecidable_aspects\": [],\n  \"evidence\": [\n    {\n      \"aspect\": \"管网档案完整度可测绘\",\n      \"source\": \"候选1\"\n    },\n    {\n      \"aspect\": \"内涝频次可定义\",\n      \"source\": \"候选3 / &印记axiological\"\n    },\n    {\n      \"aspect\": \"主因可调查\",\n      \"source\": \"候选16 / &印记logical\"\n    },\n    {\n      \"aspect\": \"海绵匹配机制可建立\",\n      \"source\": \"候选15 / &印记structural\"\n    },\n    {\n      \"aspect\": \"分期触发条件可设定\",\n      \"source\": \"候选7\"\n    }\n  ]\n}"
+  },
+  {
+   "stage": "assess_decidability_from_pool_view",
+   "input": 2,
+   "arm": "on",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 766,
+   "secs": 15.0,
+   "score": 1,
+   "out": "{\n  \"decidability\": \"decidable\",\n  \"reason\": \"候选多数读出0/0或1/1两面同一答案，锚点可触及；三条&印记（频次定义、匹配机制、主因判定）均属可规定或可查的未决，非原则判不出；ing撞出可逆/不可逆动作排序，给出可判决策程序，核心诉求可判。\",\n  \"features\": [\n    \"候选普遍判出0/1两面同一答案\",\n    \"无主动悬置\",\n    \"ing撞出可对撞的第三者（动作排序）\"\n  ],\n  \"decidable_aspects\": [\n    \"管网档案缺失须先测绘、排水能力可评估（候选1/9）\",\n    \"权衡核心变量：成因、资金、社会成本可评（候选13）\",\n    \"分期策略与触发条件可设定（候选7/14）\",\n    \"海绵落地空间硬约束可现场测量（候选12）\",\n    \"设计重现期等外部标准可对照（X1/X2）\"\n  ],\n  \"undecidable_aspects\": [],\n  \"evidence\": [\n    {\"aspect\": \"管网现状与内涝成因可普查判定（属未决非不可判）\", \"source\": \"候选1/候选9/候选16\"},\n    {\"aspect\": \"权衡核心变量可量化评估\", \"source\": \"候选13\"},\n    {\"aspect\": \"分期/混合方案触发条件可规定\", \"source\": \"候选7/候选14\"},\n    {\"aspect\": \"内涝频次属可规定，非原则判不出\", \"source\": \"&印记 axiological / 候选3\"},\n    {\"aspect\": \"撞不动点均属需外部动作或可测量，非判不出\", \"source\": \"ing五 / 悬空线头\"}\n  ]\n}"
+  },
+  {
+   "stage": "check_input_sanity",
+   "input": 1,
+   "arm": "off",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 38,
+   "secs": 1.3,
+   "score": 1,
+   "out": "{\"issues\":[],\"note\":\"无悬空符号，问题为常规决策描述\"}"
+  },
+  {
+   "stage": "check_input_sanity",
+   "input": 1,
+   "arm": "off",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 35,
+   "secs": 1.0,
+   "score": 0,
+   "out": "{\"issues\":[],\"note\":\"无悬空符号，均为常规表述\"}"
+  },
+  {
+   "stage": "check_input_sanity",
+   "input": 1,
+   "arm": "off",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 35,
+   "secs": 1.0,
+   "score": 0,
+   "out": "{\"issues\":[],\"note\":\"无悬空符号，均为常规表述\"}"
+  },
+  {
+   "stage": "check_input_sanity",
+   "input": 1,
+   "arm": "on",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 38,
+   "secs": 2.6,
+   "score": 0,
+   "out": "{\"issues\":[],\"note\":\"未发现悬空符号或形似标准记号。\"}"
+  },
+  {
+   "stage": "check_input_sanity",
+   "input": 1,
+   "arm": "on",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 30,
+   "secs": 2.3,
+   "score": 0,
+   "out": "{\"issues\":[],\"note\":\"未发现悬空符号\"}"
+  },
+  {
+   "stage": "check_input_sanity",
+   "input": 1,
+   "arm": "on",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 30,
+   "secs": 1.7,
+   "score": 0,
+   "out": "{\"issues\":[],\"note\":\"未发现悬空符号\"}"
+  },
+  {
+   "stage": "check_input_sanity",
+   "input": 2,
+   "arm": "off",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 36,
+   "secs": 1.5,
+   "score": 2,
+   "out": "{\"issues\":[],\"note\":\"无悬空符号，均为常规术语。\"}"
+  },
+  {
+   "stage": "check_input_sanity",
+   "input": 2,
+   "arm": "off",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 35,
+   "secs": 1.3,
+   "score": 2,
+   "out": "{\"issues\":[],\"note\":\"无悬空符号，均为常规术语\"}"
+  },
+  {
+   "stage": "check_input_sanity",
+   "input": 2,
+   "arm": "off",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 36,
+   "secs": 1.0,
+   "score": 2,
+   "out": "{\"issues\":[],\"note\":\"无悬空符号，均为常规术语。\"}"
+  },
+  {
+   "stage": "check_input_sanity",
+   "input": 2,
+   "arm": "on",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 44,
+   "secs": 1.5,
+   "score": 2,
+   "out": "{\"issues\":[],\"note\":\"无符号或缩写，纯自然语言提问，无需检查项。\"}"
+  },
+  {
+   "stage": "check_input_sanity",
+   "input": 2,
+   "arm": "on",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 44,
+   "secs": 2.2,
+   "score": 2,
+   "out": "{\"issues\":[],\"note\":\"未发现悬空符号或形似标准记号的非标准记号。\"}"
+  },
+  {
+   "stage": "check_input_sanity",
+   "input": 2,
+   "arm": "on",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 38,
+   "secs": 2.1,
+   "score": 2,
+   "out": "{\"issues\":[],\"note\":\"未发现悬空符号或形似标准记号。\"}"
+  },
+  {
+   "stage": "check_structure_saturation",
+   "input": 1,
+   "arm": "off",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 99,
+   "secs": 1.3,
+   "score": 2,
+   "out": "{\"new_dimension\": true, \"reason\": \"从投资上限（资源约束轴）跳到管网能力与调蓄扩容的物理耦合轴，引入新关系类型\", \"shared_axes\": [\"资源约束\"]}"
+  },
+  {
+   "stage": "check_structure_saturation",
+   "input": 1,
+   "arm": "off",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 91,
+   "secs": 1.4,
+   "score": 2,
+   "out": "{\"new_dimension\": true, \"reason\": \"从投资上限跳到管网能力与调蓄扩容的物理约束，引入新对象类别\", \"shared_axes\": [\"投资约束\"]}"
+  },
+  {
+   "stage": "check_structure_saturation",
+   "input": 1,
+   "arm": "off",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 96,
+   "secs": 1.7,
+   "score": 2,
+   "out": "{\"new_dimension\": true, \"reason\": \"从投资上限（资源约束）跳到管网能力与调蓄扩容的物理耦合，引入新关系轴\", \"shared_axes\": [\"资源约束\"]}"
+  },
+  {
+   "stage": "check_structure_saturation",
+   "input": 1,
+   "arm": "on",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 93,
+   "secs": 3.7,
+   "score": 2,
+   "out": "{\"new_dimension\": true, \"reason\": \"新增管网能力与汇水叠加、调蓄与扩容同步两个结构轴，均非投资上限的重复表达。\", \"shared_axes\": []}"
+  },
+  {
+   "stage": "check_structure_saturation",
+   "input": 1,
+   "arm": "on",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 94,
+   "secs": 5.0,
+   "score": 2,
+   "out": "{\n  \"new_dimension\": true,\n  \"reason\": \"从投资边界缺失扩展到水文空间叠加与工程时序协同，区分轴不同。\",\n  \"shared_axes\": []\n}"
+  },
+  {
+   "stage": "check_structure_saturation",
+   "input": 1,
+   "arm": "on",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 96,
+   "secs": 3.1,
+   "score": 2,
+   "out": "{\"new_dimension\":true,\"reason\":\"N1引入能力-汇水叠加的物理风险轴，N2引入工程措施时序协同轴；均不同于已有投资上限未定。\",\"shared_axes\":[]}"
+  },
+  {
+   "stage": "decide_parallel_mode",
+   "input": 1,
+   "arm": "off",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 84,
+   "secs": 1.4,
+   "score": 2,
+   "out": "{\"mode\":\"B\",\"reason\":\"含'还是'选择与'怎么权衡'过程性，层次不分明，需震荡收敛权衡两方案，适合轮次并行。\",\"confidence\":0.85}"
+  },
+  {
+   "stage": "decide_parallel_mode",
+   "input": 1,
+   "arm": "off",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 74,
+   "secs": 1.3,
+   "score": 2,
+   "out": "{\"mode\":\"B\",\"reason\":\"含'还是'选择与权衡过程，层次不分明，需震荡收敛，适合轮次并行。\",\"confidence\":0.85}"
+  },
+  {
+   "stage": "decide_parallel_mode",
+   "input": 1,
+   "arm": "off",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 74,
+   "secs": 1.6,
+   "score": 2,
+   "out": "{\"mode\":\"B\",\"reason\":\"含'还是'选择与权衡过程，层次不分明，需震荡收敛，适合轮次并行。\",\"confidence\":0.85}"
+  },
+  {
+   "stage": "decide_parallel_mode",
+   "input": 1,
+   "arm": "on",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 80,
+   "secs": 2.1,
+   "score": 2,
+   "out": "{\"mode\":\"B\",\"reason\":\"含‘还是’形成方案选择，且需权衡过程，层次不分明，适合轮次并行反复校准收敛。\",\"confidence\":0.82}"
+  },
+  {
+   "stage": "decide_parallel_mode",
+   "input": 1,
+   "arm": "on",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 83,
+   "secs": 2.7,
+   "score": 2,
+   "out": "{\"mode\":\"B\",\"reason\":\"含“还是”表示选择，且“怎么权衡”是过程性问题，层次不分明，适合轮次并行逐步收敛。\",\"confidence\":0.82}"
+  },
+  {
+   "stage": "decide_parallel_mode",
+   "input": 1,
+   "arm": "on",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 81,
+   "secs": 1.9,
+   "score": 2,
+   "out": "{\"mode\":\"B\",\"reason\":\"问题含“还是”选择与权衡过程，层次不分明，需多视角反复校准收敛，适合轮次并行。\",\"confidence\":0.78}"
+  },
+  {
+   "stage": "decompose_from_pool",
+   "input": 1,
+   "arm": "off",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 1069,
+   "secs": 2.6,
+   "score": 2,
+   "out": "{\n  \"sub_questions\": [\n    {\n      \"id\": 1,\n      \"question\": \"能否用一场已知暴雨的实测数据反推外河水位与管网出口的同步曲线，而不依赖完整水动力模型？\",\n      \"weight\": 0.9,\n      \"decidability\": \"decidable\",\n      \"source\": \"P1\"\n    },\n    {\n      \"id\": 2,\n      \"question\": \"在连片合流制老城中，'局部'的边界按汇水分区划与按产权单元划，是否会产生不同的可行方案集合？\",\n      \"weight\": 0.8,\n      \"decidability\": \"decidable\",\n      \"source\": \"P2\"\n    },\n    {\n      \"id\": 3,\n      \"question\": \"现有制度中是否存在可挂靠的条款，用于界定施工期封堵管道遇暴雨造成的损失责任？\",\n      \"weight\": 0.7,\n      \"decidability\": \"undecidable\",\n      \"source\": \"P3\"\n    },\n    {\n      \"id\": 4,\n      \"question\": \"能否构建一个时间模型，计算峰前腾空容量与峰后排空时间，使重建与海绵在洪峰时段的效果可区分？\",\n      \"weight\": 0.9,\n      \"decidability\": \"partial\",\n      \"source\": \"A1 / S1 / T1\"\n    },\n    {\n      \"id\": 5,\n      \"question\": \"施工期社会成本（交通、商业损失）的分摊规则缺失，是否导致整体重建与局部加海绵方案的社会成本无法用同一分母比较？\",\n      \"weight\": 0.6,\n      \"decidability\": \"undecidable\",\n      \"source\": \"A2 / S2\"\n    },\n    {\n      \"id\": 6,\n      \"question\": \"在现有结构中，0端的分片维护责任与1端的集中停排决策权能否同时成立？\",\n      \"weight\": 0.8,\n      \"decidability\": \"undecidable\",\n      \"source\": \"A3\"\n    }\n  ]\n}"
+  },
+  {
+   "stage": "decompose_from_pool",
+   "input": 1,
+   "arm": "off",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 1221,
+   "secs": 3.4,
+   "score": 2,
+   "out": "{\n  \"sub_questions\": [\n    {\n      \"id\": 1,\n      \"question\": \"能否用一场已知暴雨的实测数据（如雨量、内河水位、泵站运行记录）反推外河水位与管网出口的同步曲线，而不依赖完整的水文水力模型？\",\n      \"weight\": 0.9,\n      \"decidability\": \"decidable\",\n      \"source\": \"P1\"\n    },\n    {\n      \"id\": 2,\n      \"question\": \"在连片合流制老城区，按汇水分区与按产权单元划分'局部'边界，分别会产生哪些不同的可行方案集合？两种划法是否会导致某些管段在一种划法下可改造、在另一种划法下不可改造？\",\n      \"weight\": 0.8,\n      \"decidability\": \"partial\",\n      \"source\": \"P2\"\n    },\n    {\n      \"id\": 3,\n      \"question\": \"现有制度中是否存在可挂靠的条款，用于界定施工期封堵管道遇暴雨造成损失的责任主体？若不存在，需要创设何种责任挂靠点才能将重建方案排入工期？\",\n      \"weight\": 0.7,\n      \"decidability\": \"undecidable\",\n      \"source\": \"P3\"\n    },\n    {\n      \"id\": 4,\n      \"question\": \"能否构建一个时间模型，计算在给定同步曲线和调度规则下，峰前能腾出多少调蓄容积、峰后多久排空？该模型需要哪些最小输入集？\",\n      \"weight\": 0.85,\n      \"decidability\": \"partial\",\n      \"source\": \"A1 / S1\"\n    },\n    {\n      \"id\": 5,\n      \"question\": \"施工期社会成本（交通、商业损失）的分摊规则缺失，是否导致整体重建与局部加海绵方案的社会成本无法用同一分母比较？若引入责任挂靠点，能否建立共同分母？\",\n      \"weight\": 0.75,\n      \"decidability\": \"undecidable\",\n      \"source\": \"A2 / S2\"\n    },\n    {\n      \"id\": 6,\n      \"question\": \"在现有结构下，分片维护责任与集中停排决策权能否同时成立？若不能，需要改变哪一层的制度安排（如产权、调度权、合同结构）才能使逐段方案可执行？\",\n      \"weight\": 0.8,\n      \"decidability\": \"undecidable\",\n      \"source\": "
+  },
+  {
+   "stage": "decompose_from_pool",
+   "input": 1,
+   "arm": "off",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 1213,
+   "secs": 3.3,
+   "score": 2,
+   "out": "{\n  \"sub_questions\": [\n    {\n      \"id\": 1,\n      \"question\": \"能否用一场已知暴雨的实测数据（雨量、内河水位、泵站运行记录）反推外河水位与管网出口的同步曲线，而不依赖完整的水文水力模型？\",\n      \"weight\": 0.9,\n      \"decidability\": \"decidable\",\n      \"source\": \"P1\"\n    },\n    {\n      \"id\": 2,\n      \"question\": \"在连片合流制老城中，'局部'的边界按汇水分区划与按产权单元划，分别会产生哪些不同的可行方案集合？两种划法下，不允许停排的管段清单是否一致？\",\n      \"weight\": 0.8,\n      \"decidability\": \"partial\",\n      \"source\": \"P2\"\n    },\n    {\n      \"id\": 3,\n      \"question\": \"现有制度中，施工期封堵管道遇暴雨造成内涝损失，是否有可挂靠的责任条款？若无，需要创设何种责任挂靠点才能将重建方案排入工期？\",\n      \"weight\": 0.7,\n      \"decidability\": \"undecidable\",\n      \"source\": \"P3\"\n    },\n    {\n      \"id\": 4,\n      \"question\": \"能否构建一个仅依赖同步曲线和调度规则的'峰前腾空-峰后排空'时间模型，用以在同一时间轴上比较海绵调蓄与管道排空？该模型的最小输入集是什么？\",\n      \"weight\": 0.6,\n      \"decidability\": \"partial\",\n      \"source\": \"A1 / S1\"\n    },\n    {\n      \"id\": 5,\n      \"question\": \"施工期社会成本（交通、商业损失）的分摊规则缺失，是否导致整体重建与局部加海绵方案的社会成本无法用同一分母比较？若引入'停排影响图'作为中介，能否建立共同分母？\",\n      \"weight\": 0.5,\n      \"decidability\": \"undecidable\",\n      \"source\": \"A2 / S2\"\n    },\n    {\n      \"id\": 6,\n      \"question\": \"在现有结构中，0端的分片维护责任与1端的集中停排决策权能否通过合同拆分和资金分批同时成立？若不能，哪种权力配置更接近'不允许停排清单'的执行要求？\",\n      \"weight\": 0.6,\n      \"decidability\": \"undecidable\",\n      \"source\": \"A3"
+  },
+  {
+   "stage": "decompose_from_pool",
+   "input": 1,
+   "arm": "on",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 1262,
+   "secs": 16.0,
+   "score": 2,
+   "out": "{\n  \"sub_questions\": [\n    {\n      \"id\": 1,\n      \"question\": \"用一场已知暴雨的雨量、检查井水位、外河潮位、泵站运行记录，能否反推出外河水位与管网出口的同步曲线？反推需要哪几个测点、什么时间步长？\",\n      \"weight\": 0.92,\n      \"decidability\": \"decidable\",\n      \"source\": \"P1 / T1 / ing\"\n    },\n    {\n      \"id\": 2,\n      \"question\": \"在连片合流制老城里，按汇水分区划“局部”与按产权单元划“局部”，分别得到的可施工管段集合差在哪里？差集是否改变局部改造加海绵的可行域？\",\n      \"weight\": 0.82,\n      \"decidability\": \"partial\",\n      \"source\": \"P2 / C2 / T2\"\n    },\n    {\n      \"id\": 3,\n      \"question\": \"现有制度里，施工期封堵管道遇暴雨造成积水损失，能否挂靠到市政施工、安全生产、防洪调度或保险的既有条款？若挂靠不上，必须先造哪一类责任条款？\",\n      \"weight\": 0.74,\n      \"decidability\": \"partial\",\n      \"source\": \"P3 / C3 / S2 / A2\"\n    },\n    {\n      \"id\": 4,\n      \"question\": \"逐段画停排影响图时，每段需要汇水面积、地面标高、临时排水替代路径、退水时间中的哪些量？缺哪些量时该段只能标为“不允许停排”？\",\n      \"weight\": 0.8,\n      \"decidability\": \"decidable\",\n      \"source\": \"ing / A1 / S1 / C4\"\n    },\n    {\n      \"id\": 5,\n      \"question\": \"内涝主因是管网排水能力不足、外河水位顶托、地势低洼、上游硬化率变化中的哪一项或哪几项组合？现有雨量、水位、地面积水记录能否把这些项分开？\",\n      \"weight\": 0.88,\n      \"decidability\": \"decidable\",\n      \"source\": \"C5 / C15 / ing\"\n    },\n    {\n      \"id\": 6,\n      \"question\": \"若维护费用来源未定，分片维护责任与集中停排决策权能否在同一合同结构里同时成立？不能时，卡点是费用来源，还是决策权归属？\",\n      \"weight\": 0.68,\n      \"decidability\": "
+  },
+  {
+   "stage": "decompose_from_pool",
+   "input": 1,
+   "arm": "on",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 1242,
+   "secs": 12.9,
+   "score": 2,
+   "out": "{\n  \"sub_questions\": [\n    {\n      \"id\": 1,\n      \"question\": \"用一场已知暴雨的实测数据反推外河水位与管网出口同步曲线，需要哪些水位、流量、泵站运行记录，反推结果能否把重建与海绵在洪峰时段的效果分开？\",\n      \"weight\": 0.9,\n      \"decidability\": \"decidable\",\n      \"source\": \"P1 / T1 / A1\"\n    },\n    {\n      \"id\": 2,\n      \"question\": \"在连片合流制老城，按汇水分区划“局部”和按产权单元划“局部”，各自产生哪些可独立施工的管段或地块集合，两集合差异能否用现有图纸与产权登记枚举？\",\n      \"weight\": 0.8,\n      \"decidability\": \"decidable\",\n      \"source\": \"P2 / C2 / T2\"\n    },\n    {\n      \"id\": 3,\n      \"question\": \"施工期封堵管道遇暴雨造成内涝损失时，现行法规、合同、应急预案中可挂靠的责任条款有哪些；若缺失，新造条款需要谁签、覆盖哪些主体？\",\n      \"weight\": 0.7,\n      \"decidability\": \"undecidable\",\n      \"source\": \"P3 / S2 / A2 / C3\"\n    },\n    {\n      \"id\": 4,\n      \"question\": \"不先建完整时间模型，逐段“停排影响图”能否只靠管道拓扑、地面高程、历史积水点和一场暴雨实测生成；生成的“不允许停排清单”是否足够支撑施工排序？\",\n      \"weight\": 0.8,\n      \"decidability\": \"decidable\",\n      \"source\": \"ing / T1 / C4 / C15\"\n    },\n    {\n      \"id\": 5,\n      \"question\": \"若设计暴雨标准未定，能否用历史暴雨频率区间替代，先给不允许停排门槛和临时排水容量定一个可调区间？\",\n      \"weight\": 0.6,\n      \"decidability\": \"undecidable\",\n      \"source\": \"ing / A1 / S1\"\n    },\n    {\n      \"id\": 6,\n      \"question\": \"是否存在一种合同或调度结构，使分片维护责任与集中停排决策权同时成立；还是该结构在现有部门权责中必然互斥？\",\n      \"weight\": 0.7,\n      \"decidability\": \"undecidable\",\n "
+  },
+  {
+   "stage": "decompose_from_pool",
+   "input": 1,
+   "arm": "on",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 1251,
+   "secs": 31.7,
+   "score": 2,
+   "out": "{\n  \"sub_questions\": [\n    {\n      \"id\": 1,\n      \"question\": \"用一场已知暴雨的雨量、外河水位、管网出口流量实测，能否反推出外河水位与管网出口的同步曲线，并把重建与海绵在洪峰时段的效果分开比较？\",\n      \"weight\": 0.9,\n      \"decidability\": \"decidable\",\n      \"source\": \"P1 / T1 / A1 / ing\"\n    },\n    {\n      \"id\": 2,\n      \"question\": \"连片合流制老城中，把“局部”按汇水分区划与按产权单元划，分别会生成哪些可施工段集合？两个集合的差集是否足以改变方案选择？\",\n      \"weight\": 0.8,\n      \"decidability\": \"undecidable\",\n      \"source\": \"P2 / C2\"\n    },\n    {\n      \"id\": 3,\n      \"question\": \"施工期封堵管道遇暴雨造成损失，现有法规、合同和保险条款中是否已有可挂靠的责任主体？如果没有，需要先造哪一条挂靠规则才能把重建排进工期？\",\n      \"weight\": 0.85,\n      \"decidability\": \"undecidable\",\n      \"source\": \"P3 / A2 / S2 / C3\"\n    },\n    {\n      \"id\": 4,\n      \"question\": \"用实测峰后回到低水位的时间作为跨方案指标，能否替代完整的峰前腾空与峰后排空模型，用于在同一时间轴上比较重建与海绵？\",\n      \"weight\": 0.75,\n      \"decidability\": \"decidable\",\n      \"source\": \"A1 / S1 / P1 / ing\"\n    },\n    {\n      \"id\": 5,\n      \"question\": \"用现有雨量、外河水位、管网流量和积水点记录，能否区分老城区内涝主因是管网能力不足、外河顶托、地势低洼还是叠加，而不是先假设排水能力不足？\",\n      \"weight\": 0.8,\n      \"decidability\": \"decidable\",\n      \"source\": \"C5 / C15 / ing\"\n    },\n    {\n      \"id\": 6,\n      \"question\": \"在现有管网数据（含历史图纸可能丢失）下，能否先画出逐段停排影响图并生成“不允许停排清单”，而不先选重建或局部加海绵？\",\n      \"weight\": 0.85,\n      \"decidability\": \"decidable"
+  },
+  {
+   "stage": "decompose_from_pool",
+   "input": 2,
+   "arm": "off",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 992,
+   "secs": 3.2,
+   "score": 2,
+   "out": "{\n  \"sub_questions\": [\n    {\n      \"id\": 1,\n      \"question\": \"在管网档案缺失的老城区，最低成本的测绘动作（如管道内窥、补测缺失管段、水位计安装）能在多大程度上推翻或确认'全面重建'选项？\",\n      \"weight\": 0.25,\n      \"decidability\": \"decidable\",\n      \"source\": \"P2 / C1 / ing\"\n    },\n    {\n      \"id\": 2,\n      \"question\": \"外河顶托时段与降雨峰值重叠的频率和持续时间，能否在方案定稿前通过现有闸泵记录和短期水位监测判定为主因？\",\n      \"weight\": 0.2,\n      \"decidability\": \"partial\",\n      \"source\": \"P1 / A3 / ing\"\n    },\n    {\n      \"id\": 3,\n      \"question\": \"海绵削峰上限与管网排放标准之间缺失的匹配机制，能否用可测的降雨-径流-排放曲线建立失效阈值？\",\n      \"weight\": 0.2,\n      \"decidability\": \"partial\",\n      \"source\": \"P3 / A2 / C15\"\n    },\n    {\n      \"id\": 4,\n      \"question\": \"可逆动作（监测、测绘、内窥）与不可逆动作（大面积开挖）的触发条件，能否用同一低洼点连续两个雨季的水深和外河顶托重叠作为判定基准？\",\n      \"weight\": 0.2,\n      \"decidability\": \"decidable\",\n      \"source\": \"T2 / C2 / ing\"\n    },\n    {\n      \"id\": 5,\n      \"question\": \"河道、财政、产权三条线同时进入决策所需的制度接口是否存在，若不存在，混合方案的分期触发条件是否无法判定？\",\n      \"weight\": 0.15,\n      \"decidability\": \"undecidable\",\n      \"source\": \"T1 / S2 / ing\"\n    }\n  ]\n}"
+  },
+  {
+   "stage": "decompose_from_pool",
+   "input": 2,
+   "arm": "off",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 1221,
+   "secs": 3.8,
+   "score": 2,
+   "out": "{\n  \"sub_questions\": [\n    {\n      \"id\": 1,\n      \"question\": \"在管网档案缺失的老城区，最低成本的现状测绘（管道内窥、补测缺失管段、水位计布设）能否在方案定稿前直接推翻'全面重建'选项？\",\n      \"weight\": 0.9,\n      \"decidability\": \"decidable\",\n      \"source\": \"P2 / C1 / ing\"\n    },\n    {\n      \"id\": 2,\n      \"question\": \"外河顶托时段与降雨峰值重叠时，老城内管网扩容对低洼点积水深度的削减是否可忽略？这个判定需要哪些最低限度的水位序列和泵站曲线？\",\n      \"weight\": 0.85,\n      \"decidability\": \"partial\",\n      \"source\": \"P1 / A3 / ing\"\n    },\n    {\n      \"id\": 3,\n      \"question\": \"海绵削峰上限与管网排放标准之间缺失的匹配机制，能否用'超标准暴雨下混合方案是否等于两个都不达标'的失效边界来反向定义？\",\n      \"weight\": 0.8,\n      \"decidability\": \"partial\",\n      \"source\": \"P3 / A2 / C15\"\n    },\n    {\n      \"id\": 4,\n      \"question\": \"大面积开挖作为不可逆动作，其触发条件（同一低洼点连续两个雨季达到设定水深、外河顶托时段与降雨峰值重叠、下游已有确定扩容路径）是否构成可操作的排序规则？\",\n      \"weight\": 0.75,\n      \"decidability\": \"decidable\",\n      \"source\": \"T2 / C2 / ing\"\n    },\n    {\n      \"id\": 5,\n      \"question\": \"在历史雨量序列非平稳的条件下，重建按什么设计标准设防？这个标准本身的漂移速度是否超过工程寿命内的可修正范围？\",\n      \"weight\": 0.7,\n      \"decidability\": \"undecidable\",\n      \"source\": \"C8 / ing\"\n    },\n    {\n      \"id\": 6,\n      \"question\": \"低洼一楼住户和沿街商户若没有补偿通道，施工期反对拖停方案的概率是否高到使'先做局部可逆动作'成为唯一可执行路径？\",\n      \"weight\": 0.65,\n      \"decidability\": \"partial\",\n      \"source\": \"C5 / C6 / "
+  },
+  {
+   "stage": "decompose_from_pool",
+   "input": 2,
+   "arm": "off",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 1232,
+   "secs": 3.1,
+   "score": 2,
+   "out": "{\n  \"sub_questions\": [\n    {\n      \"id\": 1,\n      \"question\": \"在方案定稿前，用什么最低成本动作判定外河顶托是否为内涝主因？若顶托为主因，重建管网后内涝仍发生，这个判定能否在开挖前完成？\",\n      \"weight\": 0.9,\n      \"decidability\": \"decidable\",\n      \"source\": \"P1 / A3\"\n    },\n    {\n      \"id\": 2,\n      \"question\": \"老城区地下管线档案缺失时，测绘结果在多大程度上会直接推翻重建选项？档案完整度是否构成重建前提是否成立的硬条件？\",\n      \"weight\": 0.8,\n      \"decidability\": \"decidable\",\n      \"source\": \"P2 / C1\"\n    },\n    {\n      \"id\": 3,\n      \"question\": \"海绵削峰上限与管网排放标准若不匹配，混合方案在超标准暴雨下是否等于两个都不达标？匹配机制未建立时，混合方案的失效边界能否被实验或基准判定？\",\n      \"weight\": 0.85,\n      \"decidability\": \"partial\",\n      \"source\": \"P3 / A2 / C15\"\n    },\n    {\n      \"id\": 4,\n      \"question\": \"内涝频次定义未定（每年两三次还是十年一遇）时，方案选择是否已被跳过量化？这个定义能否在决策前通过历史数据和入户调查判定？\",\n      \"weight\": 0.7,\n      \"decidability\": \"partial\",\n      \"source\": \"A1 / C3\"\n    },\n    {\n      \"id\": 5,\n      \"question\": \"可逆动作（装水位计、补测管段、管道内窥）与不可逆动作（大面积开挖）的排序原则，能否形成通用规则？触发不可逆动作的条件（连续两个雨季达到设定水深、外河顶托与降雨峰值重叠、下游确定扩容路径）是否可操作化？\",\n      \"weight\": 0.75,\n      \"decidability\": \"partial\",\n      \"source\": \"T2 / ing\"\n    },\n    {\n      \"id\": 6,\n      \"question\": \"河道、财政、产权三条线如何同时进入决策？若三条线无法同时进入，是否意味着此处未生，权衡只能停留在时间顺序而非同一笔钱的比较？\",\n      \"weight\": 0.6,\n      \"decidability\": \"undecidable\",\n      "
+  },
+  {
+   "stage": "decompose_from_pool",
+   "input": 2,
+   "arm": "on",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 1182,
+   "secs": 9.8,
+   "score": 2,
+   "out": "{\n  \"sub_questions\": [\n    {\n      \"id\": 1,\n      \"question\": \"在开挖前，能否用'低洼点水位计+缺失管段补测+外河闸泵启闭记录+管道内窥'这一最低成本组合，把某次内涝的主因判定为管网能力不足或外河顶托？\",\n      \"weight\": 0.9,\n      \"decidability\": \"decidable\",\n      \"source\": \"P1 / A3 / C13\"\n    },\n    {\n      \"id\": 2,\n      \"question\": \"管网档案缺失率到什么水平时，测绘结果会直接推翻'重建'选项——即现状管径、坡向、合流口位置与图纸不符，导致重建容量假设失效？\",\n      \"weight\": 0.8,\n      \"decidability\": \"partial\",\n      \"source\": \"P2 / C1\"\n    },\n    {\n      \"id\": 3,\n      \"question\": \"海绵削峰上限与管网排放标准之间是否存在一个可测的降雨强度区间，在该区间内混合方案的两部分同时失效？\",\n      \"weight\": 0.75,\n      \"decidability\": \"partial\",\n      \"source\": \"P3 / A2 / C4\"\n    },\n    {\n      \"id\": 4,\n      \"question\": \"老城区地下文物与古树分布图未公开时，'预留未来开挖管位'这类可逆动作是否仍可执行，还是必须先等图公开才能落位？\",\n      \"weight\": 0.6,\n      \"decidability\": \"undecidable\",\n      \"source\": \"T4 / C2 / ing\"\n    },\n    {\n      \"id\": 5,\n      \"question\": \"被跳过的'内涝频次'定义，能否仅用历史积水点记录与降雨序列回填，而不依赖被悬置的入户调查？\",\n      \"weight\": 0.65,\n      \"decidability\": \"partial\",\n      \"source\": \"A1 / C3 / S1\"\n    },\n    {\n      \"id\": 6,\n      \"question\": \"可逆动作与不可逆动作的排序规则，能否脱离具体老城现场形成通用触发条件，还是每一处都需按外河水位序列、产权、财政重新判定？\",\n      \"weight\": 0.7,\n      \"decidability\": \"undecidable\",\n      \"source\": \"T2 / ing\"\n    }\n  ]\n}"
+  },
+  {
+   "stage": "decompose_from_pool",
+   "input": 2,
+   "arm": "on",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 1169,
+   "secs": 18.2,
+   "score": 2,
+   "out": "{\n  \"sub_questions\": [\n    {\n      \"id\": 1,\n      \"question\": \"在方案定稿前，用哪些不封路且失败可重来的动作，能把外河顶托与管网能力不足区分到足以决定重建是否有意义？\",\n      \"weight\": 0.9,\n      \"decidability\": \"partial\",\n      \"source\": \"P1 / A3 / ing\"\n    },\n    {\n      \"id\": 2,\n      \"question\": \"老城区排水管网图纸缺失或与现状不符时，管线普查与排水能力评估出现哪些结果，会直接使全系统重建从候选变为不可行？\",\n      \"weight\": 0.8,\n      \"decidability\": \"decidable\",\n      \"source\": \"P2 / C1 / C9\"\n    },\n    {\n      \"id\": 3,\n      \"question\": \"在给定设计暴雨标准下，海绵削峰上限与管网排放标准之间需要什么匹配判据，才能判定混合方案在超标准暴雨时是否同时失效？\",\n      \"weight\": 0.8,\n      \"decidability\": \"partial\",\n      \"source\": \"P3 / A2 / C4 / C15\"\n    },\n    {\n      \"id\": 4,\n      \"question\": \"把内涝频发操作化为每年次数、积水深度、退水时间和受影响主体阈值后，重建与局部改造加海绵的排序是否改变？\",\n      \"weight\": 0.7,\n      \"decidability\": \"partial\",\n      \"source\": \"A1 / C3\"\n    },\n    {\n      \"id\": 5,\n      \"question\": \"从不封路监测、补测、内窥推进到大面积开挖，触发条件应包含哪些可观测变量，并要连续几个雨季满足才允许触发？\",\n      \"weight\": 0.7,\n      \"decidability\": \"partial\",\n      \"source\": \"T2 / C7 / C2 / ing\"\n    },\n    {\n      \"id\": 6,\n      \"question\": \"主因未判定前，谁有权设定可逆动作与不可逆动作的触发条件，并对施工期低洼一楼住户与沿街商户的损失承担补偿？\",\n      \"weight\": 0.6,\n      \"decidability\": \"undecidable\",\n      \"source\": \"S2 / T1 / C6\"\n    }\n  ]\n}"
+  },
+  {
+   "stage": "decompose_from_pool",
+   "input": 2,
+   "arm": "on",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 1207,
+   "secs": 20.7,
+   "score": 2,
+   "out": "{\n  \"sub_questions\": [\n    {\n      \"id\": 1,\n      \"question\": \"在不开挖管网的条件下，用泵站启闭记录、外河水位序列和管道内窥，能否在方案定稿前判定外河顶托是否为内涝主因？\",\n      \"weight\": 0.9,\n      \"decidability\": \"partial\",\n      \"source\": \"P1/A3\"\n    },\n    {\n      \"id\": 2,\n      \"question\": \"老城区排水管网档案缺失率或图纸与现状偏差达到什么水平时，重建方案不能直接进入设计，必须先完成管线普查与排水能力评估？\",\n      \"weight\": 0.8,\n      \"decidability\": \"decidable\",\n      \"source\": \"P2/C1\"\n    },\n    {\n      \"id\": 3,\n      \"question\": \"海绵削峰上限与管网排放标准按什么匹配规则，才能判定混合方案在超标准暴雨下是否同时失效？\",\n      \"weight\": 0.8,\n      \"decidability\": \"partial\",\n      \"source\": \"P3/A2/C15\"\n    },\n    {\n      \"id\": 4,\n      \"question\": \"把大面积开挖设为不可逆动作、先做水位计/补测/内窥等可逆动作，触发开挖的条件——同一低洼点连续两个雨季达到设定水深、外河顶托时段与降雨峰值重叠、下游已有确定扩容路径——能否用历史序列回测来检验？\",\n      \"weight\": 0.7,\n      \"decidability\": \"decidable\",\n      \"source\": \"T2/C2/ing\"\n    },\n    {\n      \"id\": 5,\n      \"question\": \"内涝频次按每年两三次还是十年一遇定义，以及居民与商户受损经验是否量化，这两项是否直接改变重建与局部改造的选择，还是可留到主因判定后？\",\n      \"weight\": 0.7,\n      \"decidability\": \"partial\",\n      \"source\": \"A1/C3/S1\"\n    },\n    {\n      \"id\": 6,\n      \"question\": \"决策主体与问责结构、资金年度安排、文物古树分布图和气候非平稳设计标准，这些不可得或悬置项是否使权衡只能退为可逆动作排序，而无法完成方案比选？\",\n      \"weight\": 0.6,\n      \"decidability\": \"undecidable\",\n      \"source\": \"S2/T3/T4/C8\"\n    "
+  },
+  {
+   "stage": "decompose_hybrid",
+   "input": 1,
+   "arm": "off",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 718,
+   "secs": 2.3,
+   "score": 1,
+   "out": "{\n  \"sub_questions\": [\n    {\n      \"id\": 1,\n      \"question\": \"现行国家标准或地方规范中，老城区雨水管网设计重现期的官方规定是多少？\",\n      \"weight\": 0.2,\n      \"decidability\": \"decidable\"\n    },\n    {\n      \"id\": 2,\n      \"question\": \"在给定财政约束下，排水系统重建与局部改造加海绵城市措施的最大可投入资金分别是多少？\",\n      \"weight\": 0.2,\n      \"decidable\": \"decidable\"\n    },\n    {\n      \"id\": 3,\n      \"question\": \"本市近十年内涝点的具体成因分布、各成因占比及空间分布是什么？\",\n      \"weight\": 0.25,\n      \"decidability\": \"undecidable\"\n    },\n    {\n      \"id\": 4,\n      \"question\": \"旧城地下管线迁改的单位成本及总成本是多少？\",\n      \"weight\": 0.2,\n      \"decidability\": \"undecidable\"\n    },\n    {\n      \"id\": 5,\n      \"question\": \"在成因分布和成本数据缺失的情况下，如何权衡重建与局部改造加海绵城市措施的优劣？\",\n      \"weight\": 0.15,\n      \"decidability\": \"partial\"\n    }\n  ]\n}"
+  },
+  {
+   "stage": "decompose_hybrid",
+   "input": 1,
+   "arm": "off",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 679,
+   "secs": 1.7,
+   "score": 1,
+   "out": "{\n  \"sub_questions\": [\n    {\n      \"id\": 1,\n      \"question\": \"老城区排水管网当前的设计重现期是多少？\",\n      \"weight\": 0.15,\n      \"decidability\": \"decidable\"\n    },\n    {\n      \"id\": 2,\n      \"question\": \"可用于排水系统改造的总投资上限是多少？\",\n      \"weight\": 0.15,\n      \"decidable\": \"decidable\"\n    },\n    {\n      \"id\": 3,\n      \"question\": \"近十年内涝点的具体成因分布、各成因占比及空间分布是什么？\",\n      \"weight\": 0.25,\n      \"decidability\": \"undecidable\"\n    },\n    {\n      \"id\": 4,\n      \"question\": \"旧城地下管线迁改的成本数据是多少？\",\n      \"weight\": 0.2,\n      \"decidability\": \"undecidable\"\n    },\n    {\n      \"id\": 5,\n      \"question\": \"在投资上限内，排水系统重建与局部改造加海绵城市措施，哪种方案能更有效降低内涝频率？\",\n      \"weight\": 0.25,\n      \"decidability\": \"partial\"\n    }\n  ]\n}"
+  },
+  {
+   "stage": "decompose_hybrid",
+   "input": 1,
+   "arm": "off",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 679,
+   "secs": 2.4,
+   "score": 1,
+   "out": "{\n  \"sub_questions\": [\n    {\n      \"id\": 1,\n      \"question\": \"老城区排水系统重建的工程投资上限是多少？\",\n      \"weight\": 0.2,\n      \"decidability\": \"decidable\"\n    },\n    {\n      \"id\": 2,\n      \"question\": \"局部改造加海绵城市措施的投资上限是多少？\",\n      \"weight\": 0.2,\n      \"decidable\": \"decidable\"\n    },\n    {\n      \"id\": 3,\n      \"question\": \"本市近十年内涝点的具体成因分布、各成因占比及空间分布是什么？\",\n      \"weight\": 0.25,\n      \"decidability\": \"undecidable\"\n    },\n    {\n      \"id\": 4,\n      \"question\": \"旧城地下管线迁改的成本数据是多少？\",\n      \"weight\": 0.2,\n      \"decidability\": \"undecidable\"\n    },\n    {\n      \"id\": 5,\n      \"question\": \"在给定投资上限下，重建方案与局部改造加海绵城市措施的预期内涝削减效果如何比较？\",\n      \"weight\": 0.15,\n      \"decidability\": \"partial\"\n    }\n  ]\n}"
+  },
+  {
+   "stage": "decompose_hybrid",
+   "input": 1,
+   "arm": "on",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 757,
+   "secs": 9.3,
+   "score": 2,
+   "out": "{\n  \"sub_questions\": [\n    {\n      \"id\": 1,\n      \"question\": \"现行国家和本地规范对老城区雨水管网设计重现期的规定值、适用条件和强制条款是什么？\",\n      \"weight\": 0.15,\n      \"decidability\": \"decidable\"\n    },\n    {\n      \"id\": 2,\n      \"question\": \"本项目可用的财政资金、专项债、上级补助合计上限是多少，审批约束是什么？\",\n      \"weight\": 0.15,\n      \"decidability\": \"decidable\"\n    },\n    {\n      \"id\": 3,\n      \"question\": \"本市近十年内涝点的具体成因、各成因占比及空间分布是什么？\",\n      \"weight\": 0.25,\n      \"decidability\": \"undecidable\"\n    },\n    {\n      \"id\": 4,\n      \"question\": \"旧城地下管线迁改的成本数据、协调周期和不可预见费是多少？\",\n      \"weight\": 0.2,\n      \"decidability\": \"undecidable\"\n    },\n    {\n      \"id\": 5,\n      \"question\": \"在管网重现期要求和投资上限给定后，全系统重建与局部改造加海绵城市措施在排水能力、施工期影响、维护成本和单位风险降低投资上的差异如何量化？\",\n      \"weight\": 0.25,\n      \"decidability\": \"partial\"\n    }\n  ]\n}"
+  },
+  {
+   "stage": "decompose_hybrid",
+   "input": 1,
+   "arm": "on",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 719,
+   "secs": 8.1,
+   "score": 2,
+   "out": "{\n  \"sub_questions\": [\n    {\n      \"id\": 1,\n      \"question\": \"老城区排水系统按现行国家或地方标准应采用的雨水管网设计重现期是多少年？\",\n      \"weight\": 0.15,\n      \"decidability\": \"decidable\"\n    },\n    {\n      \"id\": 2,\n      \"question\": \"本次可改造的投资上限具体数额是多少？\",\n      \"weight\": 0.15,\n      \"decidability\": \"decidable\"\n    },\n    {\n      \"id\": 3,\n      \"question\": \"本市近十年内涝点的成因分类、各成因占比及空间分布是什么？\",\n      \"weight\": 0.25,\n      \"decidability\": \"undecidable\"\n    },\n    {\n      \"id\": 4,\n      \"question\": \"旧城地下管线迁改的单位成本或总成本数据是多少？\",\n      \"weight\": 0.2,\n      \"decidability\": \"undecidable\"\n    },\n    {\n      \"id\": 5,\n      \"question\": \"在仅使用可获得数据时，重建方案与局部改造加海绵城市措施在满足管网重现期和投资上限上的预期成本与减涝效果差异是什么？\",\n      \"weight\": 0.25,\n      \"decidability\": \"partial\"\n    }\n  ]\n}"
+  },
+  {
+   "stage": "decompose_hybrid",
+   "input": 1,
+   "arm": "on",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 579,
+   "secs": 8.5,
+   "score": 2,
+   "out": "{\"sub_questions\":[{\"id\":1,\"question\":\"按官方口径，老城区现有排水管网的设计重现期是多少，内涝防治设计重现期要求是多少？\",\"weight\":0.2,\"decidability\":\"decidable\"},{\"id\":2,\"question\":\"本市可用于老城区排水系统重建或局部改造加海绵城市的投资上限是多少，资金按年度如何分摊？\",\"weight\":0.2,\"decidability\":\"decidable\"},{\"id\":3,\"question\":\"在官方重现期要求和投资上限同时约束下，排水系统重建方案是否满足最低合规要求，局部改造加海绵城市方案是否满足最低合规要求？\",\"weight\":0.2,\"decidability\":\"partial\"},{\"id\":4,\"question\":\"本市近十年内涝点的具体成因分布、各成因占比及空间分布无法获得时，局部改造加海绵城市措施应优先布置在哪些点位？\",\"weight\":0.2,\"decidability\":\"undecidable\"},{\"id\":5,\"question\":\"旧城地下管线迁改成本数据缺失时，重建方案与局部改造加海绵城市方案的全生命周期成本差额是多少？\",\"weight\":0.2,\"decidability\":\"undecidable\"}]}"
+  },
+  {
+   "stage": "decompose_koan",
+   "input": 1,
+   "arm": "off",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 1254,
+   "secs": 4.6,
+   "score": 2,
+   "out": "{\n  \"dimensions\": [\n    {\n      \"id\": 1,\n      \"dimension\": \"工程确定性\",\n      \"why_undecidable\": \"重建与局部改造的长期性能均无法通过现有模型精确预测，因为未来降雨模式、城市发展速度、维护水平等输入变量不可知。\",\n      \"what_can_probe\": \"历史内涝点与管网缺陷的对应关系；不同重现期下两种方案的模拟淹没范围差异。\"\n    },\n    {\n      \"id\": 2,\n      \"dimension\": \"经济可承受性\",\n      \"why_undecidable\": \"全生命周期成本涉及未来数十年的维护、更新、灾害损失和土地机会成本，折现率和社会成本参数无客观标准。\",\n      \"what_can_probe\": \"当前财政预算上限；两种方案的单位面积投资与年维护费用估算；内涝直接经济损失的历史均值。\"\n    },\n    {\n      \"id\": 3,\n      \"dimension\": \"社会接受度\",\n      \"why_undecidable\": \"居民对施工干扰、房价影响、改造效果的偏好无法被单一指标聚合，且不同群体利益冲突无仲裁依据。\",\n      \"what_can_probe\": \"受影响社区的听证意见分布；类似项目的社会阻力案例；居民对海绵设施的认知与支付意愿调查。\"\n    },\n    {\n      \"id\": 4,\n      \"dimension\": \"生态与空间约束\",\n      \"why_undecidable\": \"海绵城市的渗、滞、蓄能力依赖具体土壤、地下水位和空间布局，而老城区地下管线密集、地面空间有限，这些条件无法在决策前完全探明。\",\n      \"what_can_probe\": \"土壤渗透系数与地下水位埋深；可改造为海绵设施的空地面积与分布；合流制溢流污染负荷。\"\n    },\n    {\n      \"id\": 5,\n      \"dimension\": \"制度与治理能力\",\n      \"why_undecidable\": \"重建或改造涉及多部门协调、长期运维责任分配，而行政效率、资金持续性和法规变化无法预判。\",\n      \"what_can_probe\": \"现行排水管理条例的修订频率；跨部门协作的历史项目成功率；专项维护资金的拨付稳定性。\"\n    },\n    {\n      \"id\": 6,\n      \"dimension\": \"时间与风险权衡\",\n      \"why_undecidable\": \"重建工期长但可能一劳永逸，局部改造见效快但可能反复施工，两者在不确定气候下的风险概率分布无法比较。\",\n      \"what_can_probe\": \"极端降"
+  },
+  {
+   "stage": "decompose_koan",
+   "input": 1,
+   "arm": "off",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 1451,
+   "secs": 5.5,
+   "score": 2,
+   "out": "{\"dimensions\": [{\"id\": 1, \"dimension\": \"水文与管网现状的精确诊断\", \"why_undecidable\": \"老城区地下管网数据往往缺失或失真，历史图纸与现状不符，管道淤积、私接、错接无法通过有限探测完全掌握。降雨-径流模型需要精确的管网拓扑和参数，但实际只能获得抽样数据，导致内涝成因的归因永远存在多个可能解释。\", \"what_can_probe\": \"通过CCTV检测、流量监测和降雨事件后的积水点反演，可以缩小不确定性范围，但无法消除对‘重建是否必要’的争议。\"}, {\"id\": 2, \"dimension\": \"海绵城市措施的效能边界\", \"why_undecidable\": \"海绵设施（透水铺装、雨水花园、绿色屋顶）的滞蓄效果高度依赖当地土壤渗透性、地下水位和长期维护水平。在暴雨强度超过设计标准时，其削峰作用急剧衰减。老城区建筑密度高、地下空间复杂，可改造的绿色基础设施面积有限，其实际径流削减率无法在规划阶段精确预测。\", \"what_can_probe\": \"通过小规模试点监测和模型模拟，可以估算不同降雨重现期下的效能区间，但无法给出确定性的‘足够’或‘不足’结论。\"}, {\"id\": 3, \"dimension\": \"经济成本与全生命周期权衡\", \"why_undecidable\": \"重建排水系统的直接成本、施工期间的社会成本（交通中断、商业损失）、以及未来维护成本难以货币化。海绵城市的分散式设施维护责任主体模糊，长期性能衰减曲线未知。两种方案的比较涉及折现率、时间跨度、风险偏好等主观参数，不同利益相关者会得出不同结论。\", \"what_can_probe\": \"通过生命周期成本分析和敏感性分析，可以展示关键变量对结论的影响，但无法给出唯一最优解。\"}, {\"id\": 4, \"dimension\": \"社会接受度与实施可行性\", \"why_undecidable\": \"老城区居民对施工扰动的容忍度、对海绵设施占用公共空间的接受度、对财产损失的担忧，都是动态且异质的。决策还涉及多部门协调（市政、规划、园林、交通）和资金分配，政治优先级无法用技术指标完全刻画。\", \"what_can_probe\": \"通过公众参与、问卷调查和利益相关者访谈，可以识别主要冲突点和潜在共识，但无法保证实施过程中不出现新的反对。\"}, {\"id\": 5, \"dimension\": \"气候变化的非平稳性\", \"why_undecidable\": \"未来暴雨强度和频率的预估存在巨大不确定性，不同气候模型给出不同情景。排水系统设计标准基于历史降雨统计，但气候变化使历史数据不再代表未来。无论重建还是海绵城市，其设计标准都可能被未来的极端事件超越。\", \"what_can_probe\": \"通过气候情景分析和鲁棒决策方法，可以评估方案在不同"
+  },
+  {
+   "stage": "decompose_koan",
+   "input": 1,
+   "arm": "off",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 1140,
+   "secs": 3.4,
+   "score": 2,
+   "out": "{\n  \"dimensions\": [\n    {\n      \"id\": 1,\n      \"dimension\": \"工程确定性\",\n      \"why_undecidable\": \"重建与局部改造的工程效果受地下未知条件（如管线老化、地质空洞）影响，无法通过现有勘察完全确定。\",\n      \"what_can_probe\": \"通过补充地质雷达探测和管线CCTV检测，量化未知区域的比例和风险等级。\"\n    },\n    {\n      \"id\": 2,\n      \"dimension\": \"成本与资金\",\n      \"why_undecidable\": \"全生命周期成本涉及未来降雨模式、维护费用、资金时间价值等变量，无法精确预测。\",\n      \"what_can_probe\": \"进行敏感性分析，设定不同降雨情景和折现率，计算成本区间和关键阈值。\"\n    },\n    {\n      \"id\": 3,\n      \"dimension\": \"社会影响\",\n      \"why_undecidable\": \"居民对施工扰动的容忍度、对改造效果的感知，以及社区参与程度，难以量化并预测。\",\n      \"what_can_probe\": \"开展社会调查和公众参与，评估不同方案的接受度，识别关键利益相关者诉求。\"\n    },\n    {\n      \"id\": 4,\n      \"dimension\": \"环境效益\",\n      \"why_undecidable\": \"海绵城市的径流控制、水质改善等生态效益受气候、土壤、维护水平影响，难以精确测量和货币化。\",\n      \"what_can_probe\": \"建立监测系统，在小范围试点中收集数据，评估实际性能与理论值的偏差。\"\n    },\n    {\n      \"id\": 5,\n      \"dimension\": \"政策与制度\",\n      \"why_undecidable\": \"政策变化、法规调整、跨部门协调效率等制度因素具有不确定性，影响方案实施和长期运维。\",\n      \"what_can_probe\": \"分析现有政策框架，识别制度障碍，与相关部门沟通明确责任和资源分配。\"\n    },\n    {\n      \"id\": 6,\n      \"dimension\": \"时间与气候\",\n      \"why_undecidable\": \"未来降雨频率和强度受气候变化影响，无法准确预测，导致设计标准可能失效。\",\n      \"what_can_probe\": \"采用气候模型降尺度分析，生成不同概率的降雨情景，进行鲁棒性决策分析。\"\n    }\n  ]\n}"
+  },
+  {
+   "stage": "decompose_koan",
+   "input": 1,
+   "arm": "on",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 1299,
+   "secs": 14.7,
+   "score": 2,
+   "out": "{\"dimensions\":[{\"id\":1,\"dimension\":\"风险目标与保护对象优先级\",\"why_undecidable\":\"内涝频发的定义、可接受积水深度和时长、优先保护对象没有统一尺度。居民、商户、学校、医院、文物、交通和财政部门的损失函数不同，无法用同一指标证明重建或局部改造加海绵更优。\",\"what_can_probe\":\"历史积水点清单、淹没深度和时长、受影响人口与设施、直接和间接损失、法定排水防涝标准、各主体风险容忍度、应急转移成本。\"},{\"id\":2,\"dimension\":\"内涝成因归因与系统边界\",\"why_undecidable\":\"内涝由管网容量、地表汇流、河道或潮位顶托、泵站调度、错接混接、施工堵塞、低洼地形等共同造成。边界取到哪一层会改变结论，重建可能只解决管内问题，海绵可能只削减中小降雨径流。\",\"what_can_probe\":\"管网普查和容量评估、排口高程、受纳水体水位和潮位过程、泵站能力与调度记录、地表径流模型、错接混接点、淤积和堵塞频率、不同重现期下的瓶颈段。\"},{\"id\":3,\"dimension\":\"地下条件与施工不可逆约束\",\"why_undecidable\":\"老城区地下管线、地铁、地下室、房屋基础、文物和道路空间限制使重建的可行性和代价难以在决策前完全查明。局部改造也受开挖面、占地和维护通道限制。\",\"what_can_probe\":\"物探和地勘、管线普查、文物和建筑保护红线、拆迁量、施工期交通影响、临时排水能力、地下空间权属、可施工断面、噪声和振动限制。\"},{\"id\":4,\"dimension\":\"降雨与城市变化的时间外推\",\"why_undecidable\":\"设计暴雨、极端降雨频率、城市硬化率、人口和资产密度、河道水位都在变化。用历史降雨推未来，再用未来推工程规模，会留下无法闭合的不确定性。\",\"what_can_probe\":\"区域气候降尺度结果、极端降雨趋势、设计标准更新、城市扩张情景、硬化率变化、海平面或河道水位情景、不同重现期下的溢流和淹没模拟。\"},{\"id\":5,\"dimension\":\"全生命周期成本与责任分配\",\"why_undecidable\":\"重建资本支出高但管网集中；局部改造加海绵初始分散但维护长期且依赖多主体。收益和成本落在不同层级，财政、水务、居民、商户、开发商没有统一折现和分担规则。\",\"what_can_probe\":\"全生命周期成本、运维人员和预算、海绵设施失效和清理频率、收费与补贴机制、责任边界、合同绩效指标、故障恢复时间、融资渠道和还款压力。\"},{\"id\":6,\"dimension\":\"路径依赖与分阶段选择权\",\"why_undecidable\":\"先重建会锁定管网走向、标高和投资，先局部改造可能保留后续调整空间但延误大暴雨防护。组合方案中的顺序、触"
+  },
+  {
+   "stage": "decompose_koan",
+   "input": 1,
+   "arm": "on",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 1341,
+   "secs": 13.2,
+   "score": 2,
+   "out": "{\"dimensions\":[{\"id\":1,\"dimension\":\"目标函数与评价指标不唯一\",\"why_undecidable\":\"方案优劣取决于把什么放进目标：积水深度、退水时间、投资额、维护成本、交通中断、房屋受损、生态指标、居民满意度。这些指标量纲不同，权重没有客观来源，决策者偏好和受影响群体不同会改变排序。\",\"what_can_probe\":\"列出候选方案对各指标的实测或模拟值；做权重敏感性分析，记录哪些权重区间会翻转结论；把无法货币化的指标单独列阈值。\"},{\"id\":2,\"dimension\":\"水文与管网系统的状态不可完全观测\",\"why_undecidable\":\"老城区地下管线、暗渠、渗漏、错接、历史填埋河道等资料常缺失。暴雨、产流、汇流、管流、地表漫流是耦合过程，模型参数不能由有限监测点唯一确定。重建和局部改造的长期效果依赖这些未观测结构。\",\"what_can_probe\":\"开展管线探测、流量与水位监测、降雨空间分布观测；用多模型集合给出结果区间；识别对结论影响最大的未知参数，安排补充勘测。\"},{\"id\":3,\"dimension\":\"气候变化与降雨序列非平稳\",\"why_undecidable\":\"历史降雨频率不能直接外推未来。短历时强降雨的强度和频率在变化，设计重现期对应的雨量本身有不确定性。按现状数据判定的经济最优方案，在另一气候情景下可能失效。\",\"what_can_probe\":\"采用多种气候情景和降雨降尺度结果，计算方案在不同重现期下的失效概率；做鲁棒性排序而非单一期望值排序；设置可触发改造升级的监测指标。\"},{\"id\":4,\"dimension\":\"制度、资金与实施能力约束\",\"why_undecidable\":\"重建涉及道路开挖、管线迁移、交通组织、居民安置、审批和跨部门协调；局部加海绵涉及地块权属、维护责任、长期运维资金。两种路径的可行边界由财力和治理能力决定，而财力与能力在决策时并不固定。\",\"what_can_probe\":\"测算全生命周期成本与年度可承受投资；列出审批链条和关键卡点；评估施工期社会成本；做分期实施与资金到位的条件表。\"},{\"id\":5,\"dimension\":\"公平与利益分配\",\"why_undecidable\":\"内涝风险分布不均，低洼区、老旧小区、商户、地下空间使用者承受不同损失。重建可能整体抬升标准但施工扰民广；局部海绵可能优先保护部分区域。谁受益、谁承担成本没有唯一判据。\",\"what_can_probe\":\"按街区、人群、资产类型分解风险与成本；记录不同方案的受益和受损清单；设置补偿、优先级和公众参与规则，观察是否可接受。\"},{\"id\":6,\"dimension\":\"时间尺度与不可逆性\",\"why_undecidable\":\"重建一次投入大、路径锁定强、再次调整成本高；"
+  },
+  {
+   "stage": "decompose_koan",
+   "input": 1,
+   "arm": "on",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 1481,
+   "secs": 13.9,
+   "score": 2,
+   "out": "{\n  \"dimensions\": [\n    {\n      \"id\": 1,\n      \"dimension\": \"目标权重与不可通约指标\",\n      \"why_undecidable\": \"防洪标准、全生命周期成本、施工期交通影响、历史街区风貌、生态效果、居民与商户损失不能换算成同一单位。谁有权给这些指标排序没有先验答案。\",\n      \"what_can_probe\": \"可测不同重现期下的积水点、深度、退水时间；估算各方案建设费、运维费、征拆费；调查居民支付意愿、商户停业损失、历史建筑保护要求。\"\n    },\n    {\n      \"id\": 2,\n      \"dimension\": \"老城区管网与边界条件的不确定性\",\n      \"why_undecidable\": \"既有管线、错接混接、地下水入渗、河道顶托、下游泵站能力常缺完整资料。模型参数和未来暴雨情景无法被完全验证，因此方案效果不能确定。\",\n      \"what_can_probe\": \"做管线探测、CCTV检测、流量与液位监测；收集历年积水记录；建立不同降雨情景和河道水位边界下的水文水力模型；标定入渗与错接量。\"\n    },\n    {\n      \"id\": 3,\n      \"dimension\": \"重建、局部改造、海绵措施的定义与组合边界\",\n      \"why_undecidable\": \"三者不是互斥选项。某段换管可称局部改造，扩大管径可称重建，透水铺装和调蓄池可归入海绵。空间尺度一变，分类和成本边界就变。\",\n      \"what_can_probe\": \"按子汇水区拆分，识别瓶颈管段、低洼点、可透水地面、可建调蓄空间；列出灰色、绿色、混合、分期方案集；比较各组合的排水能力增量。\"\n    },\n    {\n      \"id\": 4,\n      \"dimension\": \"财政、审批与维护责任\",\n      \"why_undecidable\": \"技术最优方案可能因预算周期、专项债额度、跨部门权责、历史保护审批、征拆和居民反对而不可实施。决策权分散，没有单一裁决者。\",\n      \"what_can_probe\": \"查年度预算与资金渠道；明确建设、运维、应急责任主体；梳理规划、文保、交通、水务审批流程；评估征拆量与居民协商难度。\"\n    },\n    {\n      \"id\": 5,\n      \"dimension\": \"分期路径与不可逆成本\",\n      \"why_undecidable\": \"先局部改造可能形成沉没成本并限制后续重建，先重建可能造成长期施工干扰和资金挤占。选择会改变未来可选方案和成本，静态比较无法处理。\",\n      \"what_can_probe\": \"做分期实施与触发条件分析；设定积水频率、深度、损失阈值作"
+  },
+  {
+   "stage": "decompose_normal",
+   "input": 1,
+   "arm": "off",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 695,
+   "secs": 2.5,
+   "score": 1,
+   "out": "{\n  \"sub_questions\": [\n    {\n      \"id\": 1,\n      \"question\": \"现行国家标准或地方规范对老城区雨水管网设计重现期的规定是什么？\",\n      \"weight\": 0.2,\n      \"decidability\": \"decidable\"\n    },\n    {\n      \"id\": 2,\n      \"question\": \"可用于该老城区排水系统改造或重建的财政资金上限是多少？\",\n      \"weight\": 0.2,\n      \"decidable\": \"decidable\"\n    },\n    {\n      \"id\": 3,\n      \"question\": \"在缺乏内涝点成因分布数据的情况下，能否通过现场踏勘或补充监测获得？\",\n      \"weight\": 0.2,\n      \"decidable\": \"partial\"\n    },\n    {\n      \"id\": 4,\n      \"question\": \"旧城地下管线迁改的成本数据是否可以通过公开渠道或市场询价获得？\",\n      \"weight\": 0.2,\n      \"decidable\": \"partial\"\n    },\n    {\n      \"id\": 5,\n      \"question\": \"排水系统重建与局部改造加海绵城市措施在应对不同重现期暴雨时的效果差异如何量化？\",\n      \"weight\": 0.2,\n      \"decidable\": \"partial\"\n    }\n  ]\n}"
+  },
+  {
+   "stage": "decompose_normal",
+   "input": 1,
+   "arm": "off",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 723,
+   "secs": 2.3,
+   "score": 1,
+   "out": "{\n  \"sub_questions\": [\n    {\n      \"id\": 1,\n      \"question\": \"老城区排水管网当前的设计重现期是多少年？官方规划中对该区域的重现期目标是多少年？\",\n      \"weight\": 0.25,\n      \"decidability\": \"decidable\"\n    },\n    {\n      \"id\": 2,\n      \"question\": \"可用于该区域排水系统改造或重建的投资上限是多少？资金来源和年度预算如何？\",\n      \"weight\": 0.25,\n      \"decidable\": \"decidable\"\n    },\n    {\n      \"id\": 3,\n      \"question\": \"在投资上限内，排水系统重建的工程可行性和主要技术障碍是什么？\",\n      \"weight\": 0.2,\n      \"decidable\": \"partial\"\n    },\n    {\n      \"id\": 4,\n      \"question\": \"在投资上限内，局部改造加海绵城市措施能达到的径流控制效果和排水能力提升幅度是多少？\",\n      \"weight\": 0.2,\n      \"decidable\": \"partial\"\n    },\n    {\n      \"id\": 5,\n      \"question\": \"两种方案在应对不同暴雨强度时的性能差异如何？是否存在临界降雨条件使某一方案失效？\",\n      \"weight\": 0.1,\n      \"decidable\": \"partial\"\n    }\n  ]\n}"
+  },
+  {
+   "stage": "decompose_normal",
+   "input": 1,
+   "arm": "off",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 812,
+   "secs": 1.9,
+   "score": 1,
+   "out": "{\n  \"sub_questions\": [\n    {\n      \"id\": 1,\n      \"question\": \"现行国家标准或地方规范对老城区雨水管网设计重现期的规定是什么？\",\n      \"weight\": 0.2,\n      \"decidability\": \"decidable\"\n    },\n    {\n      \"id\": 2,\n      \"question\": \"可用于该老城区排水系统改造或重建的财政投资上限是多少？\",\n      \"weight\": 0.2,\n      \"decidable\": \"decidable\"\n    },\n    {\n      \"id\": 3,\n      \"question\": \"在投资上限内，排水系统重建方案的总成本估算范围是多少？\",\n      \"weight\": 0.2,\n      \"decidable\": \"partial\"\n    },\n    {\n      \"id\": 4,\n      \"question\": \"在投资上限内，局部改造加海绵城市措施方案的总成本估算范围是多少？\",\n      \"weight\": 0.2,\n      \"decidable\": \"partial\"\n    },\n    {\n      \"id\": 5,\n      \"question\": \"本市近十年内涝点的具体成因分布、各成因占比及空间分布数据是否可获得？\",\n      \"weight\": 0.1,\n      \"decidable\": \"undecidable\"\n    },\n    {\n      \"id\": 6,\n      \"question\": \"旧城地下管线迁改的成本数据是否可获得？\",\n      \"weight\": 0.1,\n      \"decidable\": \"undecidable\"\n    }\n  ]\n}"
+  },
+  {
+   "stage": "decompose_normal",
+   "input": 1,
+   "arm": "on",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 629,
+   "secs": 12.0,
+   "score": 2,
+   "out": "{\"sub_questions\":[{\"id\":1,\"question\":\"本市现行排水防涝规划或地方标准对老城区雨水管网设计重现期的官方口径是什么？\",\"weight\":0.2,\"decidability\":\"decidable\"},{\"id\":2,\"question\":\"老城区排水系统重建或局部改造加海绵城市措施的可改造投资上限是多少，资金来源和年度支付能力约束是什么？\",\"weight\":0.2,\"decidability\":\"decidable\"},{\"id\":3,\"question\":\"本市近十年内涝点的具体成因分布、各成因占比及空间分布是什么？\",\"weight\":0.15,\"decidability\":\"undecidable\"},{\"id\":4,\"question\":\"旧城地下管线迁改的成本数据是多少？\",\"weight\":0.15,\"decidability\":\"undecidable\"},{\"id\":5,\"question\":\"在管网重现期和投资上限已知、成因分布和迁改成本未知时，重建方案与局部改造加海绵城市方案的比较指标和决策规则是什么？\",\"weight\":0.15,\"decidability\":\"partial\"},{\"id\":6,\"question\":\"若采用分阶段改造，哪些监测指标可作为从局部海绵措施转向管网重建的触发条件？\",\"weight\":0.15,\"decidability\":\"partial\"}]}"
+  },
+  {
+   "stage": "decompose_normal",
+   "input": 1,
+   "arm": "on",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 589,
+   "secs": 5.5,
+   "score": 2,
+   "out": "{\"sub_questions\":[{\"id\":1,\"question\":\"老城区现行排水管网设计重现期的官方口径是多少，是否区分雨水管、泵站、排涝河道等不同设施的标准？\",\"weight\":0.2,\"decidability\":\"decidable\"},{\"id\":2,\"question\":\"本市可用于老城区排水系统重建或局部改造的财政资金、专项债、社会资本等投资上限是多少，约束条件是什么？\",\"weight\":0.2,\"decidability\":\"decidable\"},{\"id\":3,\"question\":\"本市近十年内涝点的具体成因分布、各成因占比及空间分布能否获得；若不能，可用哪些替代数据推断？\",\"weight\":0.15,\"decidability\":\"undecidable\"},{\"id\":4,\"question\":\"旧城地下管线迁改的成本数据能否获得；若不能，重建方案的成本敏感性区间应如何估算？\",\"weight\":0.15,\"decidability\":\"undecidable\"},{\"id\":5,\"question\":\"在给定管网重现期官方口径和投资上限下，排水系统重建与局部改造加海绵城市措施在防洪标准、施工影响、运维成本、可扩展性上的可比较指标是什么？\",\"weight\":0.3,\"decidability\":\"partial\"}]}"
+  },
+  {
+   "stage": "decompose_normal",
+   "input": 1,
+   "arm": "on",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 566,
+   "secs": 11.4,
+   "score": 2,
+   "out": "{\"sub_questions\":[{\"id\":1,\"question\":\"本市现行排水防涝规划或地方标准中，老城区雨水管网设计重现期的官方口径是多少？\",\"weight\":0.2,\"decidability\":\"decidable\"},{\"id\":2,\"question\":\"老城区排水系统重建或局部改造加海绵城市措施，已批复或可争取的投资上限是多少？\",\"weight\":0.2,\"decidability\":\"decidable\"},{\"id\":3,\"question\":\"本市近十年内涝点的具体成因分布、各成因占比及空间分布是什么？该数据无法获得时，可用哪些替代指标？\",\"weight\":0.2,\"decidability\":\"undecidable\"},{\"id\":4,\"question\":\"旧城地下管线迁改的成本数据是多少？缺少该外部材料时，重建方案如何估算迁改成本？\",\"weight\":0.2,\"decidability\":\"undecidable\"},{\"id\":5,\"question\":\"在明确管网重现期目标和投资上限后，排水系统重建与局部改造加海绵城市措施的总成本、内涝削减效果和运维差异如何比较，选择在什么条件下翻转？\",\"weight\":0.2,\"decidability\":\"partial\"}]}"
+  },
+  {
+   "stage": "dual_judge",
+   "input": 1,
+   "arm": "off",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 191,
+   "secs": 1.5,
+   "score": 1,
+   "out": "{\"judgments\":[{\"idx\":1,\"position\":\"0\",\"why_position\":\"冗余度反转是未吸收的局部，整体未收\"},{\"idx\":2,\"position\":\"0\",\"why_position\":\"最低成本动作序列未进all，仍悬空\"},{\"idx\":3,\"position\":\"0\",\"why_position\":\"测绘推档案缺失属未吸收局部\"}]}"
+  },
+  {
+   "stage": "dual_judge",
+   "input": 1,
+   "arm": "off",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 227,
+   "secs": 1.9,
+   "score": 1,
+   "out": "{\"judgments\":[{\"idx\":1,\"position\":\"0\",\"why_position\":\"超标准降雨下分散先失效、集中仍有余量，此反转局部尚未被all吸收\"},{\"idx\":2,\"position\":\"0\",\"why_position\":\"顶托为主因的最低成本判定动作，尚未进入all的登记表\"},{\"idx\":3,\"position\":\"0\",\"why_position\":\"管网档案缺失时测绘结果直接推判定，此局部仍未被收进\"}]}"
+  },
+  {
+   "stage": "dual_judge",
+   "input": 1,
+   "arm": "off",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 215,
+   "secs": 1.6,
+   "score": 1,
+   "out": "{\"judgments\":[{\"idx\":1,\"position\":\"0\",\"why_position\":\"海绵失效阈值与管网冗余度反转，此局部尚未被all吸收\"},{\"idx\":2,\"position\":\"0\",\"why_position\":\"顶托主因的最低成本判定动作，尚未进入all登记表\"},{\"idx\":3,\"position\":\"0\",\"why_position\":\"管网档案缺失下测绘推翻重建，此局部未被吸收\"}]}"
+  },
+  {
+   "stage": "dual_judge",
+   "input": 1,
+   "arm": "on",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 253,
+   "secs": 29.8,
+   "score": 1,
+   "out": "{\"judgments\":[{\"idx\":1,\"position\":\"1\",\"why_position\":\"两套失败判据同时判负，已进冲突矩阵\"},{\"idx\":2,\"position\":\"1\",\"why_position\":\"顶托已定为可测条件，属不关闭判定的动作段\"},{\"idx\":3,\"position\":\"0\",\"why_position\":\"挂账等样本，值不可写，未被收进\"},{\"idx\":4,\"position\":\"1\",\"why_position\":\"频次口径冲突已列在张力线头中\"}]}"
+  },
+  {
+   "stage": "dual_judge",
+   "input": 1,
+   "arm": "on",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 253,
+   "secs": 24.5,
+   "score": 1,
+   "out": "{\"judgments\":[{\"idx\":1,\"position\":\"0\",\"why_position\":\"冗余度反转仍是待验探针，未入决策链\"},{\"idx\":2,\"position\":\"1\",\"why_position\":\"顶托判定已定为测自排口关闭水位历时\"},{\"idx\":3,\"position\":\"0\",\"why_position\":\"测绘阈值形式在、数值未填，未吸收\"},{\"idx\":4,\"position\":\"0\",\"why_position\":\"频次口径仍悬置，未择一套，未收进\"}]}"
+  },
+  {
+   "stage": "dual_judge",
+   "input": 1,
+   "arm": "on",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 261,
+   "secs": 17.5,
+   "score": 1,
+   "out": "{\"judgments\":[{\"idx\":1,\"position\":\"0\",\"why_position\":\"超标准下失效反转是新探针，all 未收此判据\"},{\"idx\":2,\"position\":\"1\",\"why_position\":\"顶托可测条件与测量对象已定，已并入\"},{\"idx\":3,\"position\":\"0\",\"why_position\":\"管网档案缺席，测绘阈值数值未填，未入册\"},{\"idx\":4,\"position\":\"0\",\"why_position\":\"频次口径与记录者仍悬置，未被吸收\"}]}"
+  },
+  {
+   "stage": "dual_judge",
+   "input": 2,
+   "arm": "off",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 1061,
+   "secs": 3.1,
+   "score": 2,
+   "out": "{\n  \"judgments\": [\n    {\n      \"idx\": 1,\n      \"position\": \"1\",\n      \"why_position\": \"整体三块已成形在场，已被吸收\"\n    },\n    {\n      \"idx\": 2,\n      \"position\": \"1\",\n      \"why_position\": \"动作顺序已确认并作为前置条件稳定成立\"\n    },\n    {\n      \"idx\": 3,\n      \"position\": \"1\",\n      \"why_position\": \"匹配问题已识别并固定在结构层被吸收\"\n    },\n    {\n      \"idx\": 4,\n      \"position\": \"0\",\n      \"why_position\": \"三条线接口悬空无主人，未被吸收\"\n    },\n    {\n      \"idx\": 5,\n      \"position\": \"1\",\n      \"why_position\": \"频次未定义即选方案作为事实已稳定确认\"\n    },\n    {\n      \"idx\": 6,\n      \"position\": \"1\",\n      \"why_position\": \"不合拢姿态已作为当前稳定状态被确认\"\n    },\n    {\n      \"idx\": 7,\n      \"position\": \"0\",\n      \"why_position\": \"三条探针未连成触发链，整体尚缺顺序\"\n    },\n    {\n      \"idx\": 8,\n      \"position\": \"0\",\n      \"why_position\": \"权衡对象应为风险暴露顺序，尚未被吸收\"\n    },\n    {\n      \"idx\": 9,\n      \"position\": \"0\",\n      \"why_position\": \"频次定义权归属无人回答，未被吸收\"\n    },\n    {\n      \"idx\": 10,\n      \"position\": \"0\",\n      \"why_position\": \"三条线进入形式未区分，分类缺失未吸收\"\n    },\n    {\n      \"idx\": 11,\n      \"position\": \"0\",\n      \"why_position\": \"联合观测受权属分散限制，判定链可能闭合不了\"\n    }\n  ]\n}"
+  },
+  {
+   "stage": "dual_judge",
+   "input": 2,
+   "arm": "off",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 669,
+   "secs": 2.2,
+   "score": 1,
+   "out": "{\"judgments\":[{\"idx\":1,\"position\":\"1\",\"why_position\":\"三块同时在场已被整体收进，不再晃动\"},{\"idx\":2,\"position\":\"1\",\"why_position\":\"先判主因再谈重建已作为前置条件被吸收\"},{\"idx\":3,\"position\":\"1\",\"why_position\":\"匹配问题已固定在结构层，被整体吸收\"},{\"idx\":4,\"position\":\"0\",\"why_position\":\"三条线接口仍悬空无主人，未被收进\"},{\"idx\":5,\"position\":\"1\",\"why_position\":\"频次未定义即选方案已作为事实被确认\"},{\"idx\":6,\"position\":\"1\",\"why_position\":\"不需求合拢的姿态已稳定成立\"},{\"idx\":7,\"position\":\"0\",\"why_position\":\"三条探针间触发顺序未连成链，尚缺\"},{\"idx\":8,\"position\":\"1\",\"why_position\":\"权衡对象是风险暴露顺序已被确认\"},{\"idx\":9,\"position\":\"0\",\"why_position\":\"频次定义权归属无人回答，仍悬空\"},{\"idx\":10,\"position\":\"0\",\"why_position\":\"三条线进入形式未区分，分类缺失未收\"},{\"idx\":11,\"position\":\"0\",\"why_position\":\"联合观测受权属分散阻碍，判定链未闭合\"}]}"
+  },
+  {
+   "stage": "dual_judge",
+   "input": 2,
+   "arm": "off",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 706,
+   "secs": 2.4,
+   "score": 1,
+   "out": "{\"judgments\":[{\"idx\":1,\"position\":\"1\",\"why_position\":\"整体问题三块已同时在场，不再晃动，已被吸收\"},{\"idx\":2,\"position\":\"1\",\"why_position\":\"先判主因再谈重建的顺序已稳定成立，已收进整体\"},{\"idx\":3,\"position\":\"1\",\"why_position\":\"匹配问题已固定在结构层被吸收，机制未建不影响位置\"},{\"idx\":4,\"position\":\"0\",\"why_position\":\"三条线接口仍悬空无主人，未被整体收进去\"},{\"idx\":5,\"position\":\"1\",\"why_position\":\"频次未定义即选方案作为事实已确认稳定\"},{\"idx\":6,\"position\":\"1\",\"why_position\":\"不需求合拢的姿态是当前唯一稳定状态，已吸收\"},{\"idx\":7,\"position\":\"0\",\"why_position\":\"三条探针间触发顺序未连成链，整体尚缺\"},{\"idx\":8,\"position\":\"1\",\"why_position\":\"权衡对象是风险暴露顺序已被确认吸收\"},{\"idx\":9,\"position\":\"0\",\"why_position\":\"定义权归属被所有候选跳过，未被收进\"},{\"idx\":10,\"position\":\"0\",\"why_position\":\"三条线进入形式未区分，分类缺失未被吸收\"},{\"idx\":11,\"position\":\"0\",\"why_position\":\"判定链可能闭合不了，此局部尚未被整体收进\"}]}"
+  },
+  {
+   "stage": "dual_judge",
+   "input": 2,
+   "arm": "on",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 671,
+   "secs": 13.1,
+   "score": 1,
+   "out": "{\"judgments\":[{\"idx\":1,\"position\":\"1\",\"why_position\":\"三块同时在场且不再晃动，已并入整体\"},{\"idx\":2,\"position\":\"1\",\"why_position\":\"已确认的先决顺序，稳定压在比选之前\"},{\"idx\":3,\"position\":\"1\",\"why_position\":\"已识别并固定在结构层，作为整体一部分被吸收\"},{\"idx\":4,\"position\":\"0\",\"why_position\":\"悬空且无主人、始终没有入口，未被吸收\"},{\"idx\":5,\"position\":\"1\",\"why_position\":\"作为事实被确认并已稳定在整体中\"},{\"idx\":6,\"position\":\"1\",\"why_position\":\"当前稳定姿态本身即整体所处状态\"},{\"idx\":7,\"position\":\"0\",\"why_position\":\"触发链未连成，整体尚缺该环节\"},{\"idx\":8,\"position\":\"1\",\"why_position\":\"风险暴露顺序的重构已成立并进入整体\"},{\"idx\":9,\"position\":\"0\",\"why_position\":\"定义权归属被跳过，未进入整体\"},{\"idx\":10,\"position\":\"0\",\"why_position\":\"以何形式进入未被区分，分类缺失未吸收\"},{\"idx\":11,\"position\":\"0\",\"why_position\":\"判定链能否闭合未定，未进入整体\"}]}"
+  },
+  {
+   "stage": "dual_judge",
+   "input": 2,
+   "arm": "on",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 644,
+   "secs": 12.2,
+   "score": 2,
+   "out": "{\"judgments\":[{\"idx\":1,\"position\":\"1\",\"why_position\":\"三块已在场，整体不再晃动\"},{\"idx\":2,\"position\":\"1\",\"why_position\":\"先判主因已压前，作为前置成立\"},{\"idx\":3,\"position\":\"1\",\"why_position\":\"匹配问题已识别并吸收，机制未建\"},{\"idx\":4,\"position\":\"0\",\"why_position\":\"三线仍悬空无入口，未被吸收\"},{\"idx\":5,\"position\":\"1\",\"why_position\":\"频次未定义事实已确认并稳定\"},{\"idx\":6,\"position\":\"1\",\"why_position\":\"不需求合拢姿态已稳定成立\"},{\"idx\":7,\"position\":\"0\",\"why_position\":\"触发顺序未连成链，仍缺统一链\"},{\"idx\":8,\"position\":\"1\",\"why_position\":\"可逆性差异已转为风险暴露顺序\"},{\"idx\":9,\"position\":\"0\",\"why_position\":\"定义权归属未被任何 view 回答\"},{\"idx\":10,\"position\":\"0\",\"why_position\":\"进入形式未区分，分类缺失未吸收\"},{\"idx\":11,\"position\":\"0\",\"why_position\":\"联合观测受限，判定链闭合未吸收\"}]}"
+  },
+  {
+   "stage": "dual_judge",
+   "input": 2,
+   "arm": "on",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 696,
+   "secs": 6.5,
+   "score": 2,
+   "out": "{\"judgments\":[{\"idx\":1,\"position\":\"1\",\"why_position\":\"三块主因/可逆排序/外部线已同时在场，整体成形\"},{\"idx\":2,\"position\":\"1\",\"why_position\":\"先判主因再谈重建已确认为决策前置条件\"},{\"idx\":3,\"position\":\"1\",\"why_position\":\"问题已识别并固定在结构层，被整体吸收\"},{\"idx\":4,\"position\":\"0\",\"why_position\":\"悬空无主人、反复出现却始终无入口\"},{\"idx\":5,\"position\":\"1\",\"why_position\":\"频次未定义即选方案作为事实已确认稳定\"},{\"idx\":6,\"position\":\"1\",\"why_position\":\"不合拢、可逆前移正是当下稳定的整体姿态\"},{\"idx\":7,\"position\":\"0\",\"why_position\":\"三条探针间触发顺序未连成链，仍在整体外\"},{\"idx\":8,\"position\":\"1\",\"why_position\":\"权衡即风险暴露顺序这一认识已在整体内\"},{\"idx\":9,\"position\":\"0\",\"why_position\":\"频次定义权归属无任何 view 回答，未被吸收\"},{\"idx\":10,\"position\":\"0\",\"why_position\":\"分类缺失只是推测，未进入整体\"},{\"idx\":11,\"position\":\"0\",\"why_position\":\"联合观测能否在开挖前完成未定，缺口未闭合\"}]}"
+  },
+  {
+   "stage": "phase_probe",
+   "input": 1,
+   "arm": "off",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 869,
+   "secs": 3.2,
+   "score": 2,
+   "out": "{\"probes\":[{\"question\":\"若把方案选择推迟到外河水位-管网出口同步曲线测出之后，这半年里下一次暴雨的损失记在谁的账上？\",\"link\":\"时限压力反过来决定曲线测量是否来得及进入决策\",\"expected_gain\":0.7,\"covers\":[\"T10\",\"T18\"]},{\"question\":\"合流制连片老城里，'局部'的边界是按汇水分区划、按道路划、还是按产权单位划？三种划法各自会漏掉什么？\",\"link\":\"局部边界不定，则海绵与重建的组合比例无从谈起\",\"expected_gain\":0.75,\"covers\":[\"T6\",\"T19\"]},{\"question\":\"施工期临时封堵若遇暴雨，责任写在施工合同里还是写在排水部门的应急预案里——这两种写法分别锁死了什么？\",\"link\":\"施工期风险归属决定方案能否分片推进\",\"expected_gain\":0.65,\"covers\":[\"T7\",\"T14\"]}],\"engagements\":[{\"target\":\"局部与整体的边界定义\",\"how\":\"追问按什么单元切分连片合流制老城\"},{\"target\":\"决策时限的来源\",\"how\":\"把曲线测量周期与暴雨周期对齐比较\"}],\"suspensions\":[{\"target\":\"外河水位与管网出口同步曲线\",\"reason\":\"我看清了这是区分两方案洪峰效果的关键，选择不碰，因为曲线本身要汛期实测才出得来\",\"reason_type\":\"explicit\"},{\"target\":\"维护费用来源与合同化\",\"reason\":\"我看清了衰减与折旧需要进合同，选择不碰，因为资金来源未定前合同无从起草\",\"reason_type\":\"explicit\"}],\"threads\":[\"地下管线产权与迁改责任不在排水部门，逐段方案无法单方面执行\",\"老城区管网历史图纸可能已丢失，重建第一步的探测本身产生新不确定性\"],\"reconfirmations\":[],\"revocations\":[]}"
+  },
+  {
+   "stage": "phase_probe",
+   "input": 1,
+   "arm": "off",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 879,
+   "secs": 3.5,
+   "score": 2,
+   "out": "{\"probes\":[{\"question\":\"外河水位与管网出口的同步曲线缺失，缺的是数据还是缺一个把两者放在同一时间轴上的约定？\",\"link\":\"曲线不生成，重建与海绵在洪峰时段的效果无法区分\",\"expected_gain\":0.7,\"covers\":[\"T18\",\"T9\"]},{\"question\":\"若把'局部'定义为一次暴雨中先溢流的那个节点上游，这个边界是否可被管网拓扑直接读出？\",\"link\":\"局部边界不定，改造加海绵的'局部'就是空指\",\"expected_gain\":0.6,\"covers\":[\"T6\"]},{\"question\":\"施工期封堵管道的时段能否与暴雨频率曲线对齐，从而把过渡期风险变成可排期的约束？\",\"link\":\"过渡期风险无归属，重建方案的时间表本身不成立\",\"expected_gain\":0.5,\"covers\":[\"T7\",\"T14\"]}],\"engagements\":[{\"target\":\"外河水位与管网出口同步曲线\",\"how\":\"追问缺的是数据还是时间轴约定\"},{\"target\":\"局部边界的可定义性\",\"how\":\"用管网拓扑先溢流节点定义局部\"},{\"target\":\"施工期封堵与暴雨频率对齐\",\"how\":\"把过渡期风险转为可排期约束\"}],\"suspensions\":[{\"target\":\"权衡标准由谁定\",\"reason\":\"我看清了标准问题可碰，但选择不碰，因为标准未定前先定标准会掩盖方案本身的技术分歧\",\"reason_type\":\"explicit\"},{\"target\":\"资金渠道塑造方案选择\",\"reason\":\"我看清了资金渠道会反向塑造选择，但选择不碰，因为渠道信息不在本层材料内\",\"reason_type\":\"intuitive\"}],\"threads\":[\"地下管线产权与迁改责任不在排水部门，逐段方案无法单方面执行\",\"维护费用来源未定，海绵衰减与管道折旧无法进入合同\"],\"reconfirmations\":[],\"revocations\":[]}"
+  },
+  {
+   "stage": "phase_probe",
+   "input": 1,
+   "arm": "off",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 915,
+   "secs": 3.4,
+   "score": 2,
+   "out": "{\"probes\":[{\"question\":\"外河水位与管网出口的同步曲线缺失，缺的是监测数据还是没人把两个部门的记录叠在一张时间轴上？\",\"link\":\"曲线不出来，重建与海绵在洪峰时段的效果就不可比\",\"expected_gain\":0.7,\"covers\":[\"T4\",\"T18\",\"T9\"]},{\"question\":\"0端分片维护责任与1端集中停排决策权，卡在哪个具体环节——是调度指令的发出权，还是汛期闸门的操作权？\",\"link\":\"权责不并立，方案组合就落不到一张操作表上\",\"expected_gain\":0.6,\"covers\":[\"T1\",\"T6\",\"T19\"]},{\"question\":\"施工期遇暴雨的损失分摊，是缺一份过渡期责任条款，还是缺一个能签这份条款的主体？\",\"link\":\"过渡期责任不定，工期越长方案越不可选\",\"expected_gain\":0.65,\"covers\":[\"T7\",\"T14\",\"T3\"]}],\"engagements\":[{\"target\":\"外河水位与出口同步曲线\",\"how\":\"追问缺的是数据还是叠图动作\"},{\"target\":\"分片维护与集中停排的权责冲突\",\"how\":\"定位到调度指令或闸门操作的具体环节\"},{\"target\":\"施工期暴雨损失分摊\",\"how\":\"区分缺条款还是缺签约主体\"}],\"suspensions\":[{\"target\":\"峰前腾空与峰后排空的时间模型\",\"reason\":\"我看清了它必须先生成才能比较两方案，但选择不碰，因为它依赖同步曲线先出来\",\"reason_type\":\"explicit\"},{\"target\":\"海绵衰减与管道折旧进入合同\",\"reason\":\"我看清了维护费来源未定是卡点，但选择不碰，因为合同主体还没确定\",\"reason_type\":\"intuitive\"}],\"threads\":[\"地下管线产权与迁改责任不在排水部门，逐段方案无法单方面执行\",\"历史图纸可能已丢失，重建第一步的管线探测本身产生新不确定性\"],\"reconfirmations\":[],\"revocations\":[]}"
+  },
+  {
+   "stage": "phase_probe",
+   "input": 1,
+   "arm": "on",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 910,
+   "secs": 10.9,
+   "score": 2,
+   "out": "{\"probes\":[{\"question\":\"不先定峰前腾空的时间模型，重建与海绵在洪峰时段的差别靠哪个变量分开？\",\"link\":\"区分两方案在暴雨洪峰期的效果\",\"expected_gain\":0.7,\"covers\":[\"T18\",\"T19\",\"T9\"]},{\"question\":\"施工期开挖与临时封堵若遇暴雨，损失分摊规则不立，两方案社会成本如何同分母比较？\",\"link\":\"把施工期风险拉回方案取舍的共同成本\",\"expected_gain\":0.6,\"covers\":[\"T7\",\"T3\",\"T14\"]},{\"question\":\"分片维护责任与集中停排决策权，是维护合同主体可改，还是调度权限归属可改？\",\"link\":\"让改造加海绵的维护与排涝调度能共存\",\"expected_gain\":0.55,\"covers\":[\"T11\",\"T1\",\"T12\"]}],\"engagements\":[{\"target\":\"峰前腾空/峰后排空时间模型\",\"how\":\"以内外水位同步为入口先立模型，再比方案效果\"},{\"target\":\"施工期社会成本的分摊规则\",\"how\":\"把施工期内涝损失设为两方案共同分母\"},{\"target\":\"维护责任与调度权限的结构冲突\",\"how\":\"查合同主体与调度归属能否改一处解冲突\"}],\"suspensions\":[{\"target\":\"组合比例与先后顺序的定量排序\",\"reason\":\"我看清了T19组合逻辑可碰，但选择不碰，因为缺时间模型\",\"reason_type\":\"explicit\"},{\"target\":\"权衡标准的最终确定主体\",\"reason\":\"我看清了T1标准可论，但选择不碰，因为标准之争先于技术比较\",\"reason_type\":\"explicit\"}],\"threads\":[\"外河水位与管网出口同步曲线缺失，洪峰期两方案效果无法区分\",\"地下管线产权与迁改责任不在排水部门，逐段方案无法单方面执行\",\"维护费用来源未定，海绵衰减与管道折旧无法进入合同\"],\"reconfirmations\":[],\"revocations\":[]}"
+  },
+  {
+   "stage": "phase_probe",
+   "input": 1,
+   "arm": "on",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 1296,
+   "secs": 21.5,
+   "score": 2,
+   "out": "{\n  \"probes\": [\n    {\n      \"question\": \"能否用汛期实测外河水位—出口流量曲线，替代缺失的峰前腾空/排空模型，先区分两方案洪峰效果？\",\n      \"link\": \"把方案取舍拉回洪峰期可测差异\",\n      \"expected_gain\": 0.72,\n      \"covers\": [\"T18\", \"T9\", \"T4\"]\n    },\n    {\n      \"question\": \"在连片雨污合流老城，能否先划出可独立运行、可计量调蓄效果的‘局部’单元？划不出，局部加海绵还成立吗？\",\n      \"link\": \"把‘局部’逼成可验证边界\",\n      \"expected_gain\": 0.65,\n      \"covers\": [\"T6\", \"T13\", \"T19\"]\n    },\n    {\n      \"question\": \"若把施工期暴雨损失与建成后维护费并入同一份全周期账，重建与海绵的社会成本能否对齐？\",\n      \"link\": \"给两方案的社会成本找共同分母\",\n      \"expected_gain\": 0.68,\n      \"covers\": [\"T7\", \"T11\", \"T3\"]\n    }\n  ],\n  \"engagements\": [\n    {\n      \"target\": \"洪峰期效果区分\",\n      \"how\": \"用实测水位—流量曲线替代缺失时间模型\"\n    },\n    {\n      \"target\": \"‘局部’边界\",\n      \"how\": \"在合流连片老城先划独立计量单元\"\n    },\n    {\n      \"target\": \"社会成本共同分母\",\n      \"how\": \"把施工期损失与维护费并入全周期账\"\n    }\n  ],\n  \"suspensions\": [\n    {\n      \"target\": \"权衡标准由谁定\",\n      \"reason\": \"我看清可碰，但选择不碰，因先需洪峰可测差异作对象\",\n      \"reason_type\": \"explicit\"\n    },\n    {\n      \"target\": \"决策时限压力来源\",\n      \"reason\": \"我看清可查，但选择不碰，因会先扭曲技术比较权重\",\n      \"reason_type\": \"explicit\"\n    },\n    {\n      \"target\": \"资金渠道对方案塑造\",\n      \"reason\": \"我看清可碰，但选择不碰，因缺社会成本共同分母\",\n      \"reason_type\": \"explicit\"\n    }\n  ],\n  \"threads\": [\n    \"地下管线产权与迁改责任不在排水部门，"
+  },
+  {
+   "stage": "phase_probe",
+   "input": 1,
+   "arm": "on",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 1051,
+   "secs": 20.3,
+   "score": 2,
+   "out": "{\n  \"probes\": [\n    {\n      \"question\": \"外河水位与出口同步曲线若只覆盖涨水段，峰前腾空与峰后排空的窗口是否根本不存在？\",\n      \"link\": \"窗口不存在则取舍轴从排得快变为能不能不排\",\n      \"expected_gain\": 0.7,\n      \"covers\": [\"T4\", \"T9\", \"T18\"]\n    },\n    {\n      \"question\": \"分片维护责任与集中停排决策权不能同持时，组合方案是否先要切出两个主体才算局部？\",\n      \"link\": \"带回到局部边界与组合比例能否落地\",\n      \"expected_gain\": 0.6,\n      \"covers\": [\"T1\", \"T6\", \"T11\"]\n    },\n    {\n      \"question\": \"0与1的社会成本要有共同分母，是否必须先有一份施工期分摊规则，否则时限压力成唯一权重？\",\n      \"link\": \"把决策时限与分摊规则绑在一起回看取舍\",\n      \"expected_gain\": 0.55,\n      \"covers\": [\"T3\", \"T7\", \"T10\", \"T14\"]\n    }\n  ],\n  \"engagements\": [\n    {\n      \"target\": \"外河顶托与管网能力在洪峰期的因果权重\",\n      \"how\": \"用同步曲线把洪峰拆成能排与不能排两段\"\n    },\n    {\n      \"target\": \"组合方案的权责前提\",\n      \"how\": \"看维护责任与停排权是否必须先分属两个主体\"\n    }\n  ],\n  \"suspensions\": [\n    {\n      \"target\": \"老城区居民与商户的实际承受\",\n      \"reason\": \"能推，但碰它会提前锁定公平权重，压住技术判定轴\",\n      \"reason_type\": \"explicit\"\n    }\n  ],\n  \"threads\": [\n    \"地下管线产权与迁改责任不在排水部门，逐段方案无法单方面执行\",\n    \"维护费用来源未定，海绵衰减与管道折旧无法进入合同\",\n    \"管网历史图纸可能已丢失，走向探测本身产生新不确定性\"\n  ],\n  \"reconfirmations\": [],\n  \"revocations\": []\n}"
+  },
+  {
+   "stage": "phase_probe",
+   "input": 2,
+   "arm": "off",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 968,
+   "secs": 3.8,
+   "score": 2,
+   "out": "{\"probes\":[{\"question\":\"临时水位标尺读出顶托高度与持续时间后，这个读数要交给谁才能变成'不重建'的正式依据？\",\"link\":\"顶托判定→主因归属→重建选项存废\",\"expected_gain\":0.7,\"covers\":[\"T4\",\"T7\",\"T10\"]},{\"question\":\"检查井开启记录若显示某段已被私接封堵，这算管网不足还是自排失效——归因错位会让重建挖错哪一段？\",\"link\":\"开启记录→归因分叉→开挖范围\",\"expected_gain\":0.65,\"covers\":[\"T5\",\"T9\"]},{\"question\":\"一场雨的水位—流量同步观测，能不能在方案定稿前就替代开挖前的全部论证，还是只够否掉重建？\",\"link\":\"观测→论证替代边界→可逆动作排序\",\"expected_gain\":0.6,\"covers\":[\"T4\",\"T8\"]}],\"engagements\":[{\"target\":\"外河顶托的最低成本判定动作\",\"how\":\"把临时水位标尺读数与检查井开启记录并置，看两者是否指向同一主因\"},{\"target\":\"主因判定的责任人缺口\",\"how\":\"追问标尺读数交给谁，才能让'不重建'成为可执行的正式依据\"}],\"suspensions\":[{\"target\":\"居民与商户受损经验的量化\",\"reason\":\"我看清了可入户调查，但选择不碰，因为当前探针聚焦顶托与管网归因，经验数据留到主因判定后再引入\",\"reason_type\":\"explicit\"},{\"target\":\"决策主体与问责结构\",\"reason\":\"我看清了可访谈，但选择不碰，因为主因未判定前谈谁决策会先锁死方案空间\",\"reason_type\":\"explicit\"}],\"threads\":[\"老城区地下文物与古树分布图未公开，开挖型重建的物理可行性边界无法在此圈内确定\"],\"reconfirmations\":[{\"suspension_id\":\"s_001\",\"reason\":\"主因判定链仍未闭合，经验数据引入时机未到\"},{\"suspension_id\":\"s_002\",\"reason\":\"主因未判定，谈决策主体仍会先锁死方案空间\"}],\"revocations\":[]}"
+  },
+  {
+   "stage": "phase_probe",
+   "input": 2,
+   "arm": "off",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 980,
+   "secs": 3.3,
+   "score": 2,
+   "out": "{\"probes\":[{\"question\":\"临时水位标尺读出顶托高度后，这个读数由谁签字才进入主因判定，否则读数只是数据？\",\"link\":\"把T10的动作接回T7的责任人缺口\",\"expected_gain\":0.7,\"covers\":[\"T10\",\"T7\"]},{\"question\":\"检查井开启记录若显示某段已被私接封堵，这段的'重建'是否应降级为'恢复原设计'？\",\"link\":\"测绘对象扩到开启记录后，重建选项的边界被改写\",\"expected_gain\":0.6,\"covers\":[\"T9\",\"T5\"]},{\"question\":\"内涝频次若按'每年几次积水'定义，主因判定的观测窗口该取几年，才够区分顶托与管不足？\",\"link\":\"频次定义直接决定观测窗口长度\",\"expected_gain\":0.5,\"covers\":[\"T3\",\"T8\"]}],\"engagements\":[{\"target\":\"T10临时水位标尺\",\"how\":\"追问读数签字主体，接回责任人缺口\"},{\"target\":\"T9检查井开启记录\",\"how\":\"追问私接封堵段是否改写重建边界\"},{\"target\":\"T3内涝频次定义\",\"how\":\"追问定义方式决定观测窗口长度\"}],\"suspensions\":[{\"target\":\"居民与商户受损经验的量化\",\"reason\":\"我看清了可入户调查，但选择不碰，因为本层聚焦观测动作与责任签字，经验数据留到主因判定后\",\"reason_type\":\"explicit\"},{\"target\":\"决策主体与问责结构\",\"reason\":\"我看清了可访谈，但选择不碰，因为本层只追问签字动作，不谈谁该签\",\"reason_type\":\"explicit\"}],\"threads\":[\"地下文物与古树分布图未公开，开挖型重建的物理边界无法在本层闭合\",\"0样本耗尽后保护分母与重置分母无共同尺度，可逆边界在此断裂\"],\"reconfirmations\":[{\"suspension_id\":\"s_001\",\"reason\":\"本层聚焦观测动作，经验数据仍留后\"},{\"suspension_id\":\"s_002\",\"reason\":\"本层只追问签字动作，不谈问责结构\"}],\"revocations\":[]}"
+  },
+  {
+   "stage": "phase_probe",
+   "input": 2,
+   "arm": "off",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 943,
+   "secs": 3.5,
+   "score": 2,
+   "out": "{\"probes\":[{\"question\":\"出水口内侧临时水位标尺读出顶托高度与持续时间后，用什么阈值判定'顶托为主因'而非'管网不足为主因'？\",\"link\":\"把T10的观测动作接到主因判定，避免观测完仍无判据\",\"expected_gain\":0.7,\"covers\":[\"T4\",\"T10\",\"T8\"]},{\"question\":\"检查井开启记录若显示某段已被私接或封堵，这段的'重建'与'改造'边界是否由私接事实而非管径决定？\",\"link\":\"把T9的测绘对象接到可逆/不可逆边界，看私接是否改写开挖范围\",\"expected_gain\":0.6,\"covers\":[\"T5\",\"T9\"]},{\"question\":\"若地下文物与古树分布图未公开，开挖型重建的可行性边界在方案定稿前由谁出具、以什么形式出具？\",\"link\":\"把T6的物理约束接到决策主体缺口，看谁签字才能定开挖范围\",\"expected_gain\":0.5,\"covers\":[\"T6\",\"T7\"]}],\"engagements\":[{\"target\":\"T10临时水位标尺观测\",\"how\":\"把观测动作接到主因判定的阈值，而非只停在'能读出'\"}],\"suspensions\":[{\"target\":\"居民与商户受损经验的量化\",\"reason\":\"我看清了可入户调查，但选择不碰，因为本层聚焦把观测动作接到主因判据，经验数据留到阈值确定后再引入\",\"reason_type\":\"explicit\"},{\"target\":\"决策主体与问责结构\",\"reason\":\"我看清了可访谈，但选择不碰，因为主因判据未定前谈谁签字会先锁死开挖范围\",\"reason_type\":\"explicit\"}],\"threads\":[\"地下文物与古树分布图未公开，无许可渠道获取，开挖可行性边界暂时不可判\"],\"reconfirmations\":[{\"suspension_id\":\"s_001\",\"reason\":\"本层仍聚焦工程判定链，经验数据继续留后\"},{\"suspension_id\":\"s_002\",\"reason\":\"主因判据未定，谈决策主体仍会先锁方案空间\"}],\"revocations\":[]}"
+  },
+  {
+   "stage": "phase_probe",
+   "input": 2,
+   "arm": "on",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 1094,
+   "secs": 33.5,
+   "score": 2,
+   "out": "{\n  \"probes\": [\n    {\n      \"question\": \"内涝频次按积水深度×历时还是按年来次数定？定义不同，重建与海绵的分界会不会翻转？\",\n      \"link\": \"回主因判定与可逆边界，松开频次口径。\",\n      \"expected_gain\": 0.7,\n      \"covers\": [\"T3\"]\n    },\n    {\n      \"question\": \"主因判定中，暴雨时写0/1的记录员由谁指定？若不指定，判定动作是否无法启动？\",\n      \"link\": \"记录权先于技术判定，指定者缺位。\",\n      \"expected_gain\": 0.8,\n      \"covers\": [\"T7\"]\n    },\n    {\n      \"question\": \"冻结写0/1的权力若未定解冻条件，它是否比开挖更不可逆，从而锁死方案选择？\",\n      \"link\": \"可逆边界被冻结动作反噬。\",\n      \"expected_gain\": 0.75,\n      \"covers\": [\"T2\", \"T7\"]\n    }\n  ],\n  \"engagements\": [\n    {\"target\": \"内涝频次定义\", \"how\": \"用近五年积水记录分深度×历时档，回判主因\"},\n    {\"target\": \"写0/1的记录责任人\", \"how\": \"设临时记录员，明确可撤与解冻条件\"},\n    {\"target\": \"冻结写0/1权力的解冻条件\", \"how\": \"把解冻条件写进判定动作排序\"}\n  ],\n  \"suspensions\": [\n    {\n      \"target\": \"河道、财政、产权三线并轨\",\n      \"reason\": \"我看清了可分别访谈，但选择不碰，因为主因未定前并轨会提前锁死投资主体\",\n      \"reason_type\": \"explicit\"\n    }\n  ],\n  \"threads\": [\n    \"老城区地下文物与古树分布图未公开，开挖型重建边界无法先验确认\"\n  ],\n  \"reconfirmations\": [\n    {\"suspension_id\": \"s_001\", \"reason\": \"当前仍聚焦工程判定链，经验数据留到主因判定后\"}\n  ],\n  \"revocations\": [\n    {\"suspension_id\": \"s_002\", \"reason\": \"权力分配先于技术判定，指定者缺位使主因判定无法启动\"}\n  ]\n}"
+  },
+  {
+   "stage": "phase_probe",
+   "input": 2,
+   "arm": "on",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 1285,
+   "secs": 27.0,
+   "score": 2,
+   "out": "{\n  \"probes\": [\n    {\n      \"question\": \"若先指定一名“降雨过程记录权”临时持有者，只负责把水位—流量读数入档，主因判定是否能不锁方案地启动？\",\n      \"link\": \"记录权主体缺位卡住主因判定\",\n      \"expected_gain\": 0.7,\n      \"covers\": [\"T7\", \"T10\"]\n    },\n    {\n      \"question\": \"检查井开启记录若显示某段被私接或封堵，这算局部改造可逆边界内的主因，还是重建不可逆的触发条件？\",\n      \"link\": \"开启记录暴露主因归属，切可逆边界\",\n      \"expected_gain\": 0.6,\n      \"covers\": [\"T9\"]\n    },\n    {\n      \"question\": \"把“内涝频发”先固定为同一积水点年超阈值次数，主因判定和可逆边界排序会因此改变吗？\",\n      \"link\": \"频次口径未定，方案已在选\",\n      \"expected_gain\": 0.5,\n      \"covers\": [\"T3\"]\n    }\n  ],\n  \"engagements\": [\n    {\n      \"target\": \"T7 主因判定的责任人缺口\",\n      \"how\": \"先指定临时记录权持有者，不涉问责结构\"\n    },\n    {\n      \"target\": \"T9 检查井开启记录\",\n      \"how\": \"用开启记录区分私接封堵与管网容量不足\"\n    }\n  ],\n  \"suspensions\": [\n    {\n      \"target\": \"T1 河道、财政、产权三线同入决策\",\n      \"reason\": \"我看清可访谈，但选择不碰，因为三线同时展开会冲散记录权入口\",\n      \"reason_type\": \"explicit\"\n    },\n    {\n      \"target\": \"T2 可逆与不可逆排序跨案例\",\n      \"reason\": \"我看清可找第二老城，但选择不碰，因为当前只在一个案例判主因\",\n      \"reason_type\": \"explicit\"\n    }\n  ],\n  \"threads\": [\n    \"地下文物与古树分布图未公开，开挖型重建物理边界不可测\",\n    \"超标准降雨下0和1同时失效，记录权悬空，决策依据暂时消失\"\n  ],\n  \"reconfirmations\": [\n    {\n      \"suspension_id\": \"s_001\",\n      \"reason\": \"当前仍锁工程判定链，经验数据留后\"\n    }\n  ],\n  \"revocations\": [\n    {"
+  },
+  {
+   "stage": "phase_probe",
+   "input": 2,
+   "arm": "on",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 769,
+   "secs": 18.4,
+   "score": 2,
+   "out": "{\"probes\":[{\"question\":\"若超标准降雨下0和1同时失效，谁有权宣布主因判定暂停并冻结记录权？\",\"link\":\"把指定者缺位接到主因判定前置\",\"expected_gain\":0.7,\"covers\":[\"T7\"]},{\"question\":\"定义“频发”用年还是场次分母，若不定，重建与海绵的触发先后由谁排序？\",\"link\":\"把频次未定义接回主因与可逆排序\",\"expected_gain\":0.6,\"covers\":[\"T3\",\"T2\"]},{\"question\":\"冻结0/1记录权的执行者，是否必须同时持有开挖许可与财政签字权？\",\"link\":\"把冻结动作主体接回河道财政产权同一入口\",\"expected_gain\":0.5,\"covers\":[\"T1\",\"T7\"]}],\"engagements\":[{\"target\":\"T7 指定者缺位\",\"how\":\"用0/1失效时谁有权暂停方案切入主体缺口\"},{\"target\":\"T3 频次未定义\",\"how\":\"问分母口径牵出触发排序责任人\"}],\"suspensions\":[{\"target\":\"跨案例可逆顺序比较\",\"reason\":\"我看清可比较，但选择不碰，因为记录权未指定前比较会掩盖权力变量\",\"reason_type\":\"explicit\"}],\"threads\":[\"T6：地下文物与古树分布图未公开，开挖型重建边界碰不动\"],\"reconfirmations\":[{\"suspension_id\":\"s_001\",\"reason\":\"频次定义未定，经验数据仍会先锁分母\"}],\"revocations\":[{\"suspension_id\":\"s_002\",\"reason\":\"记录权悬空使主体缺位成主因判定前置，不碰无法排序\"}]}"
+  },
+  {
+   "stage": "probe_duel",
+   "input": 1,
+   "arm": "off",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 1015,
+   "secs": 3.0,
+   "score": 2,
+   "out": "{\n  \"probes\": [\n    {\n      \"question\": \"若把内涝频次定义为报警口径，重建与海绵的触发阈值是否落在同一张时间轴上？\",\n      \"link\": \"频次定义先于方案比选\",\n      \"expected_gain\": 0.7\n    },\n    {\n      \"question\": \"合流制溢流污染若进入目标函数，海绵的削峰收益是否被放江水质成本抵消？\",\n      \"link\": \"缺席变量强制入账\",\n      \"expected_gain\": 0.6\n    },\n    {\n      \"question\": \"施工期临时排水责任若按上游来水与施工节奏拆分，是否仍不可通约？\",\n      \"link\": \"责任分割的不可通约性测试\",\n      \"expected_gain\": 0.5\n    }\n  ],\n  \"adjudications\": [\n    {\n      \"tension\": \"重建误判锁死建设科目 vs 海绵误判分散到运维科目\",\n      \"polarity\": \"0\",\n      \"how\": \"误判成本不可同尺度比较，先冻结科目之争，只按可逆性排序动作\"\n    },\n    {\n      \"tension\": \"施工期临时排水责任归属不可通约\",\n      \"polarity\": \"1\",\n      \"how\": \"承认不可通约，责任分割不进入选型，只作为施工期独立预案\"\n    }\n  ],\n  \"duel_suspensions\": [\n    {\n      \"tension\": \"河道、财政、产权三条线如何同时进入决策\",\n      \"quadrant\": \"③\",\n      \"reason\": \"入口缺失，触发条件无主体承接\",\n      \"reason_type\": \"explicit\"\n    },\n    {\n      \"tension\": \"地下管线与建筑基础净距争夺同一空间\",\n      \"quadrant\": \"③\",\n      \"reason\": \"未在同一张图上对过，无法裁决\",\n      \"reason_type\": \"intuitive\"\n    }\n  ],\n  \"reconfirmations\": [],\n  \"revocations\": []\n}"
+  },
+  {
+   "stage": "probe_duel",
+   "input": 1,
+   "arm": "off",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 1122,
+   "secs": 3.0,
+   "score": 2,
+   "out": "{\n  \"probes\": [\n    {\n      \"question\": \"把'内涝频次'从气象口径换成理赔口径，重建与海绵的触发阈值会各自移到哪一年？\",\n      \"link\": \"频次口径未定，方案已在选\",\n      \"expected_gain\": 0.6\n    },\n    {\n      \"question\": \"若先定'施工期临时排水责任'，重建与海绵的先后是否自动翻转？\",\n      \"link\": \"责任分割不可通约\",\n      \"expected_gain\": 0.5\n    },\n    {\n      \"question\": \"合流制溢流污染若进入目标函数，海绵的削峰上限还成立吗？\",\n      \"link\": \"目标函数缺席放江水质\",\n      \"expected_gain\": 0.55\n    }\n  ],\n  \"adjudications\": [\n    {\n      \"tension\": \"重建误判锁死建设科目 vs 海绵误判分散到运维科目\",\n      \"polarity\": \"both\",\n      \"how\": \"两本账不可通约，先承认误判成本不可比，再各自设止损线\"\n    },\n    {\n      \"tension\": \"施工方不控上游来水 vs 水务局不控施工节奏\",\n      \"polarity\": \"0\",\n      \"how\": \"改造期临时排水责任先归水务局，施工方只报节奏\"\n    },\n    {\n      \"tension\": \"内涝频次未定义 vs 方案已在选\",\n      \"polarity\": \"1\",\n      \"how\": \"先停选型，把频次口径与理赔口径统一后再触发\"\n    }\n  ],\n  \"duel_suspensions\": [\n    {\n      \"tension\": \"河道、财政、产权三条线如何同时进入决策\",\n      \"quadrant\": \"③\",\n      \"reason\": \"入口主体未生，强行并线会造出假主人\",\n      \"reason_type\": \"explicit\"\n    },\n    {\n      \"tension\": \"可逆与不可逆动作排序是否跨老城成立\",\n      \"quadrant\": \"③\",\n      \"reason\": \"仅此案例成立，换城未验\",\n      \"reason_type\": \"intuitive\"\n    }\n  ],\n  \"reconfirmations\": [],\n  \"revocations\": []\n}"
+  },
+  {
+   "stage": "probe_duel",
+   "input": 1,
+   "arm": "off",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 1127,
+   "secs": 3.0,
+   "score": 2,
+   "out": "{\n  \"probes\": [\n    {\n      \"question\": \"若先定内涝报警口径（如30cm/2h），重建与海绵的触发条件会否自动分岔？\",\n      \"link\": \"口径统一先于方案比选\",\n      \"expected_gain\": 0.6\n    },\n    {\n      \"question\": \"把合流制溢流污染作为第三目标，重建与海绵的账本能否合并成同一张图？\",\n      \"link\": \"目标函数扩容倒逼方案重排\",\n      \"expected_gain\": 0.6\n    },\n    {\n      \"question\": \"若施工期临时排水责任由上游河道水位触发，水务局与施工方的边界能否重划？\",\n      \"link\": \"责任分割依赖外部水文变量\",\n      \"expected_gain\": 0.6\n    }\n  ],\n  \"adjudications\": [\n    {\n      \"tension\": \"重建误判锁死建设科目 vs 海绵误判分散到运维科目\",\n      \"polarity\": \"0\",\n      \"how\": \"裁决为不可比，误判成本无同一尺度，暂不排序\"\n    },\n    {\n      \"tension\": \"改造期暴雨临时排水责任归属施工方 vs 水务局\",\n      \"polarity\": \"1\",\n      \"how\": \"裁决为水务局兜底，因其控上游来水与预警\"\n    },\n    {\n      \"tension\": \"合流制溢流污染缺席 vs 选型只对内涝负责\",\n      \"polarity\": \"both\",\n      \"how\": \"裁决为必须纳入目标函数，否则选型无效\"\n    }\n  ],\n  \"duel_suspensions\": [\n    {\n      \"tension\": \"地下管线与建筑基础净距争夺同一空间\",\n      \"quadrant\": \"③\",\n      \"reason\": \"需先有地下空间一张图，当前无\",\n      \"reason_type\": \"explicit\"\n    },\n    {\n      \"tension\": \"河道、财政、产权三条线进入决策的入口\",\n      \"quadrant\": \"③\",\n      \"reason\": \"入口主体未生，悬置待触发\",\n      \"reason_type\": \"intuitive\"\n    }\n  ],\n  \"reconfirmations\": [],\n  \"revocations\": []\n}"
+  },
+  {
+   "stage": "probe_duel",
+   "input": 1,
+   "arm": "on",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 926,
+   "secs": 22.3,
+   "score": 2,
+   "out": "{\"probes\":[{\"question\":\"把内涝频次与量级先定，再让重建和海绵各自回答：哪些动作仍成立？\",\"link\":\"频次未定义即选型\",\"expected_gain\":0.7},{\"question\":\"把放江水质设为第二目标，重建与海绵的先后是否会同时翻转？\",\"link\":\"合流制溢流缺席\",\"expected_gain\":0.6},{\"question\":\"让施工期临时排水责任先于方案比选裁决，谁的前置条件先失效？\",\"link\":\"责任不可通约\",\"expected_gain\":0.65}],\"adjudications\":[{\"tension\":\"自排失效与管内输送不足未分开\",\"polarity\":\"1\",\"how\":\"先分主因再谈重建或海绵；未分前不动土建。\"},{\"tension\":\"合流制溢流污染未入目标函数\",\"polarity\":\"1\",\"how\":\"放江水质列为否决项，不因内涝紧迫而排除。\"},{\"tension\":\"改造期临时排水责任不可通约\",\"polarity\":\"0\",\"how\":\"按控制范围切责：水务局控上游调度，施工方控场内节奏。\"},{\"tension\":\"内涝频次未定义即选型\",\"polarity\":\"0\",\"how\":\"频次与量级未定时，重建和海绵都不进入投资决策。\"}],\"duel_suspensions\":[{\"tension\":\"河道、财政、产权三条线无同一决策入口\",\"quadrant\":\"③\",\"reason\":\"缺共同入口，合并会造出假主人。\",\"reason_type\":\"explicit\"},{\"tension\":\"地下管线与建筑基础净距争夺同一空间\",\"quadrant\":\"③\",\"reason\":\"无同比例地下图，当前无共同底图。\",\"reason_type\":\"explicit\"},{\"tension\":\"可逆与不可逆动作排序能否外推\",\"quadrant\":\"③\",\"reason\":\"只有单案例，外推条件不足。\",\"reason_type\":\"explicit\"}],\"reconfirmations\":[],\"revocations\":[]}"
+  },
+  {
+   "stage": "probe_duel",
+   "input": 1,
+   "arm": "on",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 907,
+   "secs": 15.4,
+   "score": 2,
+   "out": "{\"probes\":[{\"question\":\"若先定义内涝频次与报警理赔口径，再问重建还是海绵，动作顺序怎么变？\",\"link\":\"口径统一后触发条件\",\"expected_gain\":0.7},{\"question\":\"把合流制溢流污染放进目标函数，重建与海绵的失效边界各在哪？\",\"link\":\"选型只对内涝负责\",\"expected_gain\":0.6},{\"question\":\"施工期临时排水按暴雨场次动态切分，是否比按主体归属更可执行？\",\"link\":\"责任分割不可通约\",\"expected_gain\":0.6}],\"adjudications\":[{\"tension\":\"重建与海绵争动作先后\",\"polarity\":\"both\",\"how\":\"先分离自排与输送主因，再定先后\"},{\"tension\":\"误判成本跨建设与运维科目\",\"polarity\":\"both\",\"how\":\"以同一暴雨事件损失折算\"},{\"tension\":\"合流制溢流污染缺席选型\",\"polarity\":\"both\",\"how\":\"纳入水质变量，重排失效边界\"}],\"duel_suspensions\":[{\"tension\":\"改造期暴雨临时排水责任归属\",\"quadrant\":\"③\",\"reason\":\"上游来水与施工节奏分属不同主体\",\"reason_type\":\"explicit\"},{\"tension\":\"可逆与不可逆动作排序是否可移植\",\"quadrant\":\"③\",\"reason\":\"仅单案例成立，样本不足\",\"reason_type\":\"explicit\"},{\"tension\":\"河道、财政、产权三条线进同一决策\",\"quadrant\":\"③\",\"reason\":\"入口主体未生\",\"reason_type\":\"explicit\"},{\"tension\":\"内涝频次报警与理赔口径统一\",\"quadrant\":\"③\",\"reason\":\"统一口径主体未生\",\"reason_type\":\"explicit\"}],\"reconfirmations\":[],\"revocations\":[]}"
+  },
+  {
+   "stage": "probe_duel",
+   "input": 1,
+   "arm": "on",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 819,
+   "secs": 17.1,
+   "score": 2,
+   "out": "{\"probes\":[{\"question\":\"把内涝频次报警口径和理赔口径合成同一触发条件，重建与海绵的动作先后由谁重排？\",\"link\":\"口径未统一，触发条件无主体\",\"expected_gain\":0.7},{\"question\":\"合流制溢流污染进入目标函数后，老城区重建与海绵的账本是否仍不可比？\",\"link\":\"选型只对内涝负责，放江水质缺席\",\"expected_gain\":0.68},{\"question\":\"改造期暴雨临时排水责任按上游来水和施工节奏切分，能否先于重建或海绵下挖？\",\"link\":\"责任分割不可通约，动作顺序无边界\",\"expected_gain\":0.65}],\"adjudications\":[{\"tension\":\"重建误判锁建设科目，海绵误判散运维科目，成本不可同尺度\",\"polarity\":\"both\",\"how\":\"不合并账本，按各自锁定周期披露误判成本\"},{\"tension\":\"改造期暴雨临时排水责任无法归属\",\"polarity\":\"both\",\"how\":\"先切上游来水与施工节奏，未切不批开挖\"},{\"tension\":\"合流制溢流污染缺席，选型只对内涝负责\",\"polarity\":\"both\",\"how\":\"加放江水质否决项，先于重建海绵选择\"}],\"duel_suspensions\":[{\"tension\":\"河道、财政、产权三条线无同一决策入口\",\"quadrant\":\"③\",\"reason\":\"入口主体未生，分期触发器落不到人\",\"reason_type\":\"explicit\"},{\"tension\":\"可逆与不可逆动作排序只在个案成立\",\"quadrant\":\"③\",\"reason\":\"异地老城样本未出现，无法外推\",\"reason_type\":\"intuitive\"}],\"reconfirmations\":[],\"revocations\":[]}"
+  },
+  {
+   "stage": "probe_meta",
+   "input": 1,
+   "arm": "off",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 757,
+   "secs": 3.0,
+   "score": 2,
+   "out": "{\"probes\":[{\"question\":\"三条轴各有单位（样本、地下空间、误判成本），谁有权宣布它们进入同一次权衡？\",\"link\":\"跨轴换算口径缺失\",\"expected_gain\":0.7},{\"question\":\"局部各自假想的主人若不同一，核对动作由谁执行、向谁报结果？\",\"link\":\"缺核对栏，非缺授权\",\"expected_gain\":0.65},{\"question\":\"召集权与读数位置既非同一位置，两者之间谁向谁报'我这边对齐了'？\",\"link\":\"进场与时间对齐未接\",\"expected_gain\":0.6}],\"engagements\":[{\"tension_id\":\"t_001\",\"target\":\"合流制溢流污染是否进入选型目标函数\",\"how\":\"判为缺判据不可裁定：无跨轴换算口径，进不进目标函数无法在本层比较。\"},{\"tension_id\":\"t_002\",\"target\":\"可逆与不可逆动作排序能否跨老城复用\",\"how\":\"判为不可裁定：排序只在本案例成立，复用需核对动作是否改动分母，此核对无岗位。\"}],\"suspensions\":[{\"tension_id\":\"t_001\",\"target\":\"合流制溢流污染是否进入选型目标函数\",\"reason\":\"污染轴与内涝轴无共同单位，本层给不出权重\",\"reason_type\":\"explicit\"},{\"tension_id\":\"t_002\",\"target\":\"可逆与不可逆动作排序能否跨老城复用\",\"reason\":\"复用条件依赖核对动作，核对动作本身缺岗位\",\"reason_type\":\"intuitive\"}],\"reconfirmations\":[],\"revocations\":[]}"
+  },
+  {
+   "stage": "probe_meta",
+   "input": 1,
+   "arm": "off",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 758,
+   "secs": 2.9,
+   "score": 2,
+   "out": "{\"probes\":[{\"question\":\"三条不可逆轴（样本、地下空间、误判成本）若无法换算，'权衡'一词是否应改为'登记三条轴各自越限与否'？\",\"link\":\"跨轴交换率无单位\",\"expected_gain\":0.55},{\"question\":\"局部各自假想的主人是否同一，能否用一次'同一主体签字确认'动作替代核对栏？\",\"link\":\"缺核对动作本身\",\"expected_gain\":0.5},{\"question\":\"召集权与读数位置若不能互相替代，谁在进场后宣布'我这边先出结果'？\",\"link\":\"缺报结果界面\",\"expected_gain\":0.6}],\"engagements\":[{\"tension_id\":\"t_001\",\"target\":\"合流制溢流污染是否进入选型目标函数\",\"how\":\"判为缺判据不可裁定：无受纳水体标准接口，进不进目标函数都无验收对象\"},{\"tension_id\":\"t_002\",\"target\":\"可逆与不可逆动作排序能否跨老城复用\",\"how\":\"判为不可跨案例裁定：排序依赖各老城产权碎片度，无通用顺序\"}],\"suspensions\":[{\"tension_id\":\"t_001\",\"target\":\"合流制溢流污染是否进入选型目标函数\",\"reason\":\"受纳水体标准未定，进与不进都无验收对象\",\"reason_type\":\"explicit\"},{\"tension_id\":\"t_002\",\"target\":\"可逆与不可逆动作排序能否跨老城复用\",\"reason\":\"产权碎片度不同，顺序不可通用\",\"reason_type\":\"intuitive\"}],\"reconfirmations\":[],\"revocations\":[]}"
+  },
+  {
+   "stage": "probe_meta",
+   "input": 1,
+   "arm": "off",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 1053,
+   "secs": 3.2,
+   "score": 2,
+   "out": "{\n  \"probes\": [\n    {\n      \"question\": \"三条不可逆轴各带单位，谁持有把三轴读成同一决策的那张换算表？\",\n      \"link\": \"跨轴交换率无单位，权衡停在过程描述\",\n      \"expected_gain\": 0.6\n    },\n    {\n      \"question\": \"三个局部各自假想的主人，是否同一主体？核对动作由谁执行、记在哪一栏？\",\n      \"link\": \"缺的不是授权，是核对动作本身\",\n      \"expected_gain\": 0.55\n    },\n    {\n      \"question\": \"召集权与读数位置若分属两个岗位，谁先向谁报'我这边出结果了'？\",\n      \"link\": \"进场与时间对齐不是同一位置\",\n      \"expected_gain\": 0.5\n    }\n  ],\n  \"engagements\": [\n    {\n      \"tension_id\": \"t_001\",\n      \"target\": \"合流制溢流污染是否进入选型目标函数\",\n      \"how\": \"判为缺判据不可裁定：污染口径与内涝频次口径不同源，无共同分母\"\n    },\n    {\n      \"tension_id\": \"t_002\",\n      \"target\": \"可逆与不可逆动作排序能否跨老城复用\",\n      \"how\": \"不消解：复用条件依赖各老城是否共用同一时间戳，本层无此数据\"\n    }\n  ],\n  \"suspensions\": [\n    {\n      \"tension_id\": \"t_001\",\n      \"target\": \"合流制溢流污染是否进入选型目标函数\",\n      \"reason\": \"污染与内涝两套判据无共同分母，强行合入会掩盖失败点归属\",\n      \"reason_type\": \"explicit\"\n    },\n    {\n      \"tension_id\": \"t_002\",\n      \"target\": \"可逆与不可逆动作排序能否跨老城复用\",\n      \"reason\": \"跨案例复用取决于时间戳是否共用，本层无此观测\",\n      \"reason_type\": \"intuitive\"\n    }\n  ],\n  \"reconfirmations\": [],\n  \"revocations\": []\n}"
+  },
+  {
+   "stage": "probe_meta",
+   "input": 1,
+   "arm": "on",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 555,
+   "secs": 15.3,
+   "score": 2,
+   "out": "{\"probes\":[{\"question\":\"三条不可逆轴同时可读却无换算单位，哪条越限压过哪条，这个裁定动作归谁？\",\"link\":\"三轴各有单位，权衡缺折算维\",\"expected_gain\":0.6},{\"question\":\"按是否依赖假想主人同一重切判据，物理约束类能否先走、主人依赖类排队？\",\"link\":\"古树、文物、产权碎片与主人无关\",\"expected_gain\":0.65},{\"question\":\"三条探针各有判据却互不设等待条件，我这算出结果了报给谁才算数？\",\"link\":\"缺报告界面，判据并行不收敛\",\"expected_gain\":0.55}],\"engagements\":[{\"tension_id\":\"t_001\",\"target\":\"合流制溢流污染是否进入选型目标函数\",\"how\":\"不进入比较，改列否决项，其口径不在本方案内\"}],\"suspensions\":[{\"tension_id\":\"t_002\",\"target\":\"可逆与不可逆动作排序能否跨老城复用\",\"reason\":\"复用需跨案例台账作共同分母，现有结构无此栏\",\"reason_type\":\"explicit\"}],\"reconfirmations\":[],\"revocations\":[]}"
+  },
+  {
+   "stage": "probe_meta",
+   "input": 1,
+   "arm": "on",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 554,
+   "secs": 11.6,
+   "score": 2,
+   "out": "{\"probes\":[{\"question\":\"谁登记「我这边的动作否决你那边」这一行，冲突矩阵第一行才写得出来？\",\"link\":\"召集权解决进场，否决登记未落任何局部\",\"expected_gain\":0.6},{\"question\":\"三条不可逆轴无换算口径，能否改判为「谁先越限谁停工」，不设权重？\",\"link\":\"跨轴交换率无单位，越限可替代合成\",\"expected_gain\":0.55},{\"question\":\"三个假想主人是否同一，能否用既有签署栏核对，而不新设岗位？\",\"link\":\"核对动作缺载体，签署栏是现成的\",\"expected_gain\":0.5}],\"engagements\":[{\"tension_id\":\"t_001\",\"target\":\"合流制溢流污染是否进入选型目标函数\",\"how\":\"判 1：它有现成排放口监测口，不依赖悬空定义权\"}],\"suspensions\":[{\"tension_id\":\"t_002\",\"target\":\"可逆与不可逆动作排序能否跨老城复用\",\"reason\":\"取决于各地档案完整度，本层无该指标\",\"reason_type\":\"explicit\"}],\"reconfirmations\":[],\"revocations\":[]}"
+  },
+  {
+   "stage": "probe_meta",
+   "input": 1,
+   "arm": "on",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 609,
+   "secs": 15.5,
+   "score": 2,
+   "out": "{\"probes\":[{\"question\":\"三条轴各自可读但时间戳不共用时，是否先切出“时间对齐人”，多一摞对齐记录？\",\"link\":\"跨轴不可合成先查时间戳统一\",\"expected_gain\":0.6},{\"question\":\"三条线互不设等待条件，方案比选是否改成越限通报矩阵，多一摞接收记录？\",\"link\":\"t_002排序缺核对动作\",\"expected_gain\":0.7},{\"question\":\"合流制溢流污染若进入目标函数，失败判据分母是否被换，多一摞水质考核记录？\",\"link\":\"t_001目标函数边界未定\",\"expected_gain\":0.5}],\"engagements\":[{\"tension_id\":\"t_002\",\"target\":\"可逆与不可逆动作排序能否跨老城复用：排序依赖样本、地下空间、误判成本三条轴，轴单位不同。\",\"how\":\"判不可跨城复用；每城须重立核对动作与时间戳。\"}],\"suspensions\":[{\"tension_id\":\"t_001\",\"target\":\"合流制溢流污染是否进入选型目标函数：本层无水质标准与排口许可权限，判不了。\",\"reason\":\"缺受纳水体考核与排口许可判据，进入与否无共同尺度。\",\"reason_type\":\"explicit\"}],\"reconfirmations\":[],\"revocations\":[]}"
+  },
+  {
+   "stage": "probe_meta",
+   "input": 2,
+   "arm": "off",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 544,
+   "secs": 2.4,
+   "score": 2,
+   "out": "{\"probes\":[{\"question\":\"三条线（河道/财政/产权）各自以约束、前置条件还是否决权进入决策，分类本身是否就是入口缺失的真因？\",\"link\":\"从'没有入口'转向'分类缺失'\",\"expected_gain\":0.55},{\"question\":\"主因判定所需的降雨—外河水位—管网联合观测，在开挖前能否闭合？若不能，主因判定是否应降为开挖后回填判据？\",\"link\":\"判定链闭合性 vs 开挖不可逆\",\"expected_gain\":0.6},{\"question\":\"内涝频次由谁定义：若定义权不在排水方案内，方案空间是否应改为'按定义权归属分档'而非'按措施分档'？\",\"link\":\"定义权归属 → 方案空间重切\",\"expected_gain\":0.65}],\"engagements\":[],\"suspensions\":[{\"tension_id\":\"t_none\",\"target\":\"内涝频次定义权归属：不同主体分别定义且互不承认，样本无法合并\",\"reason\":\"定义权来自行政/政治授权，不在本问题可裁定范围\",\"reason_type\":\"explicit\"}],\"reconfirmations\":[],\"revocations\":[]}"
+  },
+  {
+   "stage": "probe_meta",
+   "input": 2,
+   "arm": "off",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 392,
+   "secs": 2.3,
+   "score": 2,
+   "out": "{\"probes\":[{\"question\":\"三条线以约束/前置/否决三种形式进入决策后，是否仍缺一个同步场合？还是分类本身就能替代场合？\",\"link\":\"承接「没有入口可能是分类缺失」\",\"expected_gain\":0.55},{\"question\":\"主因判定所需的降雨—外河水位—管网能力联合观测，在开挖前能否闭合？若不能，判定链断在哪一环？\",\"link\":\"承接判定链可能根本闭合不了\",\"expected_gain\":0.6},{\"question\":\"内涝频次由谁定义、按哪段历史数据定义，若定义权漂移，方案空间整体偏移多少？\",\"link\":\"承接「谁来定义内涝频次」\",\"expected_gain\":0.5}],\"engagements\":[],\"suspensions\":[],\"reconfirmations\":[],\"revocations\":[]}"
+  },
+  {
+   "stage": "probe_meta",
+   "input": 2,
+   "arm": "off",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 749,
+   "secs": 2.4,
+   "score": 2,
+   "out": "{\"probes\":[{\"question\":\"内涝频次由谁定义、按哪套观测口径，这个定义权能否在开挖前落到具体主体？\",\"link\":\"频次定义权归属未定，方案空间整体偏移\",\"expected_gain\":0.7},{\"question\":\"河道、财政、产权三条线各自以约束、前置条件还是否决权进入决策？\",\"link\":\"三条线反复悬空，可能缺的是分类而非入口\",\"expected_gain\":0.65},{\"question\":\"降雨—外河水位—管网能力的联合观测，在河道权属分散下能否在开挖前闭合？\",\"link\":\"主因判定链可能根本闭合不了\",\"expected_gain\":0.6}],\"engagements\":[],\"suspensions\":[{\"tension_id\":\"t_定义权不能由技术系统自授\",\"target\":\"定义权来自行政/政治授权，不在排水方案内，本层无法裁定其归属\",\"reason\":\"授权场域不在本问题内，缺判据\",\"reason_type\":\"explicit\"},{\"tension_id\":\"t_不同主体分别定义内涝且互不承认\",\"target\":\"不同主体分别定义内涝且互不承认时，主因判定的样本无法合并\",\"reason\":\"样本不可合并，对撞在此停\",\"reason_type\":\"explicit\"},{\"tension_id\":\"t_外河水位顶托超过自排设计\",\"target\":\"外河水位顶托超过自排设计时，定义权不改变等水位退的物理事实\",\"reason\":\"物理事实不受定义权影响，无需消解\",\"reason_type\":\"intuitive\"}],\"reconfirmations\":[],\"revocations\":[]}"
+  },
+  {
+   "stage": "probe_meta",
+   "input": 2,
+   "arm": "on",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 565,
+   "secs": 21.5,
+   "score": 1,
+   "out": "{\n  \"probes\": [\n    {\n      \"question\": \"管网图纸缺失且与现状不符时，方案比较前是否应先切出测绘与探测这一层？\",\n      \"link\": \"档案完整度未进入方案分法\",\n      \"expected_gain\": 0.7\n    },\n    {\n      \"question\": \"不可回收扰动由谁承担，是否比技术经济比较更先决定开挖边界？\",\n      \"link\": \"沿街建筑、古树、文物损失无主体\",\n      \"expected_gain\": 0.65\n    },\n    {\n      \"question\": \"联合观测因河道权属分散无法在开挖前完成时，主因判定是否应改为可撤回的分段判定？\",\n      \"link\": \"判定链因观测许可闭合不了\",\n      \"expected_gain\": 0.6\n    }\n  ],\n  \"engagements\": [],\n  \"suspensions\": [],\n  \"reconfirmations\": [],\n  \"revocations\": [],\n  \"note\": \"对撞悬置张力清单为空，无 t_ 编号可原样复制；为避免自造编号，engagements 与 suspensions 留空。\"\n}"
+  },
+  {
+   "stage": "probe_meta",
+   "input": 2,
+   "arm": "on",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 399,
+   "secs": 14.2,
+   "score": 2,
+   "out": "{\"probes\":[{\"question\":\"三条线不是待并入方案的变量，而是能否决方案的主体。按「谁能一票否决」重切，多出一摞否决权清单。\",\"link\":\"河道/财政/产权反复无入口\",\"expected_gain\":0.7},{\"question\":\"主因判定需开挖前完成联合观测，老城区做不到。按「判定可否闭合」切方案，多出一摞闭合不了时仍可逆的动作。\",\"link\":\"判定链闭合性未验证\",\"expected_gain\":0.6},{\"question\":\"本层未收到任何 t_ 编号的对撞张力，无可定位的裁决对象；裁决栏与悬置栏只能空着。此处未生。\",\"link\":\"清单为空，编号不可自造\",\"expected_gain\":0.1}],\"engagements\":[],\"suspensions\":[],\"reconfirmations\":[],\"revocations\":[]}"
+  },
+  {
+   "stage": "probe_meta",
+   "input": 2,
+   "arm": "on",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 364,
+   "secs": 20.4,
+   "score": 2,
+   "out": "{\"probes\":[{\"question\":\"把河道、财政、产权从外部约束改为决策票权，谁出票谁否票，入口是否才存在？\",\"link\":\"三条线反复悬空且无主人\",\"expected_gain\":0.7},{\"question\":\"主因判定需降雨—外河水位—管网能力联合观测，哪些动作在观测闭合前必须等待？\",\"link\":\"判定链可能因权属分散闭不上\",\"expected_gain\":0.65},{\"question\":\"内涝频次定义权拆成行政、住户、保险三种口径，方案标准会分叉到哪？\",\"link\":\"定义权归属被所有候选跳过\",\"expected_gain\":0.6}],\"engagements\":[],\"suspensions\":[],\"reconfirmations\":[],\"revocations\":[]}"
+  },
+  {
+   "stage": "probe_research",
+   "input": 1,
+   "arm": "off",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 1066,
+   "secs": 3.5,
+   "score": 2,
+   "out": "{\"probes\":[{\"question\":\"枯水作业窗口与顶托阈值历时，能否用同一出口近5年逐日水位记录直接叠出重叠月？\",\"link\":\"不重叠则P2算出的阈值不可测，重建效益判定悬空\",\"expected_gain\":0.7,\"covers\":[\"T4\",\"T7\",\"T10\"]},{\"question\":\"同一段管的内窥报告，按自排口布点与按干管中段布点，结论是否必然分叉？取一段实测报告对照。\",\"link\":\"分叉则P1的'分开两因'需两份报告，成本翻倍\",\"expected_gain\":0.65,\"covers\":[\"T6\",\"T8\",\"T9\"]},{\"question\":\"抽一段老城管网纵断面图，看坡度符号正负能否先于任何数值判定该段是否重建？\",\"link\":\"若符号即阈值，T5的城市数据依赖可降级\",\"expected_gain\":0.6,\"covers\":[\"T5\",\"T11\"]}],\"engagements\":[{\"sub_id\":2,\"how\":\"顶托阈值从'存在'推进到'可测性'：阈值历时与枯水窗口是否重叠\",\"depth\":0.5},{\"sub_id\":3,\"how\":\"匹配机制接口层已定，参数层仍卡在顶托阈值未测\",\"depth\":0.4},{\"sub_id\":4,\"how\":\"排序判据再确认：不关闭判定→关闭可扩容→关闭不可扩容\",\"depth\":0.7},{\"sub_id\":5,\"how\":\"频次口径影响方向已定，制度原因指向缺可追责验收开关\",\"depth\":0.6}],\"deferrals\":[{\"sub_id\":1,\"reason\":\"测绘阈值需具体城市数据，本圈仍无样本\",\"revisit_condition\":\"拿到某城管网档案样本\"},{\"sub_id\":6,\"reason\":\"社会成本量化框架与补偿通道仍缺\",\"revisit_condition\":\"出现补偿政策或案例数据\"}],\"reconfirmations\":[{\"deferral_id\":\"d_002\",\"reason\":\"仍无管网档案样本，回访条件未满足\"},{\"deferral_id\":\"d_003\",\"reason\":\"仍无补偿政策或案例数据\"}],\"resolutions\":[{\"deferral_id\":\"d_001\",\"how\":\"接口层已定（重现期对齐+联合失效边界），参数层待顶托阈值实测\"}],\"escalations\":[],\"reclassifications\":[]}"
+  },
+  {
+   "stage": "probe_research",
+   "input": 1,
+   "arm": "off",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 1621,
+   "secs": 3.8,
+   "score": 1,
+   "out": "{\n  \"probes\": [\n    {\n      \"question\": \"枯水作业窗口与顶托阈值历时是否重叠？查一份外河水位-历时记录与管网抽检作业记录即可判定。\",\n      \"link\": \"不重叠则顶托阈值算出来也测不了，重建与扩容的比选失去数据入口。\",\n      \"expected_gain\": 0.55,\n      \"covers\": [\"T4\", \"T7\", \"T10\"]\n    },\n    {\n      \"question\": \"同一份内窥抽检报告，按自排口布点与按干管中段布点，能否各出一份结论而不互相污染？\",\n      \"link\": \"孔位决定报告服务哪个判定，决定自排失效与输送不足能否分开。\",\n      \"expected_gain\": 0.6,\n      \"covers\": [\"T6\", \"T8\", \"T9\"]\n    },\n    {\n      \"question\": \"测绘结果与重建决策的阈值，是否可能只是图上一段管段的坡度符号（正/负），而非数值大小？\",\n      \"link\": \"若阈值是符号，则重建决策可在拿到具体城市数据前先行判定。\",\n      \"expected_gain\": 0.5,\n      \"covers\": [\"T5\", \"T11\"]\n    }\n  ],\n  \"engagements\": [\n    {\n      \"sub_id\": 2,\n      \"how\": \"顶托阈值从定性耦合转为可测条件，但历时-窗口重叠未查，阈值仍测不了。\",\n      \"depth\": 0.7\n    },\n    {\n      \"sub_id\": 3,\n      \"how\": \"接口层（重现期对齐、联合失效边界）已定，参数层仍缺顶托阈值与产权连片判定。\",\n      \"depth\": 0.6\n    },\n    {\n      \"sub_id\": 4,\n      \"how\": \"排序判据为是否关闭后续判定，三段顺序成立；但可逆动作占用地下空间后是否缩小不可逆可行集，未验证。\",\n      \"depth\": 0.7\n    },\n    {\n      \"sub_id\": 5,\n      \"how\": \"频次口径改变比选方向已定，制度原因指向缺可追责的验收开关；定义权归属仍未落位。\",\n      \"depth\": 0.6\n    }\n  ],\n  \"deferrals\": [\n    {\n      \"sub_id\": 1,\n      \"reason\": \"测绘阈值需具体城市数据，当前无样本。\",\n      \"revisit_condition\": \"拿到某城管网档案样本\"\n    },\n    {\n      \"sub_id\": 6,\n      \"reason\":"
+  },
+  {
+   "stage": "probe_research",
+   "input": 1,
+   "arm": "off",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 1080,
+   "secs": 3.5,
+   "score": 2,
+   "out": "{\"probes\":[{\"question\":\"枯水作业窗口与顶托阈值历时是否重叠？查同一水文站近5年逐日水位，标出可作业日与阈值历时日，看交集天数。\",\"link\":\"顶托阈值算得出但测不了，则子问题2的'可测'要降级\",\"expected_gain\":0.7,\"covers\":[\"T4\",\"T10\",\"T7\"]},{\"question\":\"同一段管，按自排口布孔与按干管中段布孔，结论是否相反？取一段已知坡度的管做双布孔对照。\",\"link\":\"决定内窥报告能否同时服务自排失效与输送不足两个判定\",\"expected_gain\":0.65,\"covers\":[\"T6\",\"T8\",\"T9\"]},{\"question\":\"坡度符号能否先于数值判定重建？查规范是否把坡度正负列为判定阈值而非设计参数，并找一段反坡管验证。\",\"link\":\"若成立，测绘阈值问题从'缺数值'变成'缺符号判读权'\",\"expected_gain\":0.6,\"covers\":[\"T5\",\"T11\"]}],\"engagements\":[{\"sub_id\":2,\"how\":\"顶托阈值从'可测'细化为'可测但窗口可能不重叠'\",\"depth\":0.6},{\"sub_id\":3,\"how\":\"匹配机制回访条件部分满足：阈值方向已定，参数层仍缺\",\"depth\":0.5},{\"sub_id\":1,\"how\":\"测绘阈值可能不是数值而是坡度符号，判定对象改变\",\"depth\":0.5}],\"deferrals\":[{\"sub_id\":1,\"reason\":\"仍需具体城市档案样本，本层只改判定对象\",\"revisit_condition\":\"拿到一段含坡度符号的管段图\"},{\"sub_id\":6,\"reason\":\"补偿政策与案例数据仍未出现\",\"revisit_condition\":\"出现补偿政策或案例数据\"}],\"reconfirmations\":[{\"deferral_id\":\"d_001\",\"reason\":\"阈值方向已定，参数层仍缺，回访条件部分满足\"}],\"resolutions\":[{\"deferral_id\":\"d_002\",\"how\":\"判定对象从数值阈值改为坡度符号，回访条件可放宽\"}],\"escalations\":[],\"reclassifications\":[{\"sub_id\":1,\"to\":\"partial\",\"reason\":\"判定阈值可能不是数值而是坡度符号，缺的是判读权而非数据\",\"evidence\":[\"C12\",\"T11\"]}]}"
+  },
+  {
+   "stage": "probe_research",
+   "input": 1,
+   "arm": "on",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 1042,
+   "secs": 25.4,
+   "score": 2,
+   "out": "{\"probes\":[{\"question\":\"查排水设计标准与地方内涝治理导则，管道坡度正/负/平是否被列为「需重建」的强制判定阈值，而非设计参数？\",\"link\":\"把测绘阈值从数值问题转成符号问题\",\"expected_gain\":0.55,\"covers\":[\"T11\",\"T5\"]},{\"question\":\"取某城水文年鉴水位-历时曲线，叠加内窥可作业的低水位窗口，按月份列出重叠区间；若全年重叠为零，顶托阈值算出来也测不了。\",\"link\":\"决定顶托阈值能否实测，回填子问题2\",\"expected_gain\":0.6,\"covers\":[\"T10\",\"T4\"]},{\"question\":\"取2-3份市级内涝治理实施方案，追频次口径（重现期或年次数）的签字主体，查该主体是否同时掌握产权窗口关闭权。\",\"link\":\"落定频次定义权与占用许可权是否同一手\",\"expected_gain\":0.5,\"covers\":[\"T1\",\"T3\"]}],\"engagements\":[{\"sub_id\":1,\"how\":\"坡度符号作重建判定阈值，替换数值阈值\",\"depth\":0.4},{\"sub_id\":5,\"how\":\"追频次口径签字主体是否兼掌产权窗口关闭权\",\"depth\":0.4},{\"sub_id\":2,\"how\":\"枯水窗口与顶托历时的重叠决定阈值可否实测\",\"depth\":0.3}],\"deferrals\":[],\"reconfirmations\":[{\"deferral_id\":\"d_002\",\"reason\":\"档案样本仍未到手，只是阈值形态可能变\"},{\"deferral_id\":\"d_003\",\"reason\":\"补偿案例数据未出现，仅判据可能换成窗口置换\"}],\"resolutions\":[{\"deferral_id\":\"d_001\",\"how\":\"接口层已定：重现期对齐＋超标准下联合失效边界，参数层另开\"}],\"escalations\":[],\"reclassifications\":[{\"sub_id\":1,\"to\":\"partial\",\"reason\":\"阈值若为坡度正负号，测绘数据依赖减弱，可读性提高\",\"evidence\":[\"C12\",\"T11\"]},{\"sub_id\":6,\"to\":\"partial\",\"reason\":\"硬否决点判据从量化金额转为施工期内产权窗口可否置换\",\"evidence\":[\"C13\"]}]}"
+  },
+  {
+   "stage": "probe_research",
+   "input": 1,
+   "arm": "on",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 1302,
+   "secs": 23.1,
+   "score": 2,
+   "out": "{\n  \"probes\": [\n    {\n      \"question\": \"圈出调蓄池、干管换管、河道拓宽的空间重叠段，标出产权窗口闭合顺序，看位置占用优先级由哪个主体裁定？\",\n      \"link\": \"若无裁定主体，可逆与不可逆排序链失去触发人\",\n      \"expected_gain\": 0.55,\n      \"covers\": [\"T1\", \"T2\"]\n    },\n    {\n      \"question\": \"取某城多年逐日河水位记录，统计顶托阈值水位出现历时是否落在管网可作业的枯水窗口内？\",\n      \"link\": \"不重叠则阈值算出来也测不了，重建扩容判据落空\",\n      \"expected_gain\": 0.6,\n      \"covers\": [\"T10\", \"T4\"]\n    },\n    {\n      \"question\": \"查规范：管段坡度符号正负是否被列为重建/改造的判定阈值，还是仅作设计参数？\",\n      \"link\": \"若坡度符号是阈值，比选第一判据是符号而非容量或预算\",\n      \"expected_gain\": 0.5,\n      \"covers\": [\"T11\"]\n    }\n  ],\n  \"engagements\": [\n    {\n      \"sub_id\": 2,\n      \"how\": \"顶托定为可测条件：自排口关闭水位及其历时；管内扩容效益随其衰减\",\n      \"depth\": 0.8\n    },\n    {\n      \"sub_id\": 3,\n      \"how\": \"接口层定：重现期对齐+超标准暴雨联合失效边界；参数层未定\",\n      \"depth\": 0.6\n    },\n    {\n      \"sub_id\": 4,\n      \"how\": \"排序判据定为是否关闭后续判定，三段顺序不含预算数字\",\n      \"depth\": 0.8\n    },\n    {\n      \"sub_id\": 5,\n      \"how\": \"频次口径改变比选方向；制度原因：缺可追责的频次验收开关\",\n      \"depth\": 0.7\n    }\n  ],\n  \"deferrals\": [],\n  \"reconfirmations\": [\n    {\n      \"deferral_id\": \"d_002\",\n      \"reason\": \"仍未拿到城市管网档案样本\"\n    },\n    {\n      \"deferral_id\": \"d_003\",\n      \"reason\": \"仍未出现补偿政策或案例数据\"\n    }\n  ],\n  \"resolutions\": [\n    {\n      \"deferral_id\": \"d_001\",\n  "
+  },
+  {
+   "stage": "probe_research",
+   "input": 1,
+   "arm": "on",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 872,
+   "secs": 20.8,
+   "score": 2,
+   "out": "{\"probes\":[{\"question\":\"顶托阈值水位对应的历时，与内窥抽检可作业的枯水窗口，在同一年内是否重叠？\",\"link\":\"不重叠则子问题2的阈值测不到，答案要降级\",\"expected_gain\":0.6,\"covers\":[\"T10\",\"T4\"]},{\"question\":\"取一份竣工图，看管段坡度符号（顺坡/逆坡/平坡）是否在任何数值阈值之前就已判定该段必须重建？\",\"link\":\"决定子问题1的阈值是符号还是数值\",\"expected_gain\":0.55,\"covers\":[\"T11\",\"T5\"]},{\"question\":\"现行防汛预案里，是否有一条把某段地下空间的占用优先级裁给某个具体岗位？\",\"link\":\"条文在则子问题1有入口，不在则岗位缺位被证实\",\"expected_gain\":0.5,\"covers\":[\"T1\"]}],\"engagements\":[{\"sub_id\":1,\"how\":\"追问阈值是否只是坡度符号，从而不需城市数据\",\"depth\":0.3},{\"sub_id\":2,\"how\":\"追问阈值历时能否被枯水作业窗口测到\",\"depth\":0.3},{\"sub_id\":3,\"how\":\"接口层已定，回访条件满足，参数层仍空\",\"depth\":0.3}],\"deferrals\":[],\"reconfirmations\":[{\"deferral_id\":\"d_002\",\"reason\":\"仍无城市管网档案样本\"},{\"deferral_id\":\"d_003\",\"reason\":\"仍无补偿政策或案例数据\"}],\"resolutions\":[{\"deferral_id\":\"d_001\",\"how\":\"接口层已定：重现期对齐加超标准失效边界\"}],\"escalations\":[],\"reclassifications\":[{\"sub_id\":1,\"to\":\"partial\",\"reason\":\"阈值可能是坡度符号，未必需要城市数据\",\"evidence\":[\"C12\"]}]}"
+  },
+  {
+   "stage": "probe_research",
+   "input": 2,
+   "arm": "off",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 1204,
+   "secs": 3.2,
+   "score": 2,
+   "out": "{\n  \"probes\": [\n    {\n      \"question\": \"外河水位-历时曲线与干管过流能力能否画出耦合图，标出顶托使管内扩容失效的阈值水位？\",\n      \"link\": \"把T12从并列陈述推成可测阈值，回接子问题2的边际效益衰减\",\n      \"expected_gain\": 0.55,\n      \"covers\": [\"T12\", \"T2\"]\n    },\n    {\n      \"question\": \"把调蓄池开挖、干管换管、河道拓宽、透水铺装逐一归入可逆/不可逆两侧，看分界点落在哪一工程属性上？\",\n      \"link\": \"为子问题4的排序触发条件提供可操作的分类依据\",\n      \"expected_gain\": 0.5,\n      \"covers\": [\"T10\"]\n    },\n    {\n      \"question\": \"内涝频次定义若先固定为'积水深度×退水时间'，重建与局部改造的比选结论会翻转吗？\",\n      \"link\": \"用反事实检验频次定义是否真能改变方案排序\",\n      \"expected_gain\": 0.45,\n      \"covers\": [\"T11\", \"T4\"]\n    }\n  ],\n  \"engagements\": [\n    {\n      \"sub_id\": 2,\n      \"how\": \"把顶托阈值作为可测变量提出，但未给出具体水位-历时曲线\",\n      \"depth\": 0.4\n    },\n    {\n      \"sub_id\": 4,\n      \"how\": \"提出按工程属性而非预算数字归类可逆/不可逆\",\n      \"depth\": 0.4\n    },\n    {\n      \"sub_id\": 5,\n      \"how\": \"用反事实检验频次定义对方案排序的影响\",\n      \"depth\": 0.35\n    }\n  ],\n  \"deferrals\": [\n    {\n      \"sub_id\": 1,\n      \"reason\": \"测绘判定阈值需具体城市管道档案数据，当前无\",\n      \"revisit_condition\": \"拿到任一老城区内窥与补测数据后\"\n    },\n    {\n      \"sub_id\": 6,\n      \"reason\": \"社会成本量化框架与补偿通道缺失，无数据支撑硬否决判定\",\n      \"revisit_condition\": \"出现施工期社会成本核算案例或补偿标准文件\"\n    }\n  ],\n  \"reconfirmations\": [],\n  \"resolutions\": [],\n  \"escalations\": [],\n  \"reclassifications\": "
+  },
+  {
+   "stage": "probe_research",
+   "input": 2,
+   "arm": "off",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 1056,
+   "secs": 3.4,
+   "score": 2,
+   "out": "{\n  \"probes\": [\n    {\n      \"question\": \"调蓄池开挖、干管换管、河道拓宽各属可逆还是不可逆，能否逐一归类并给出分界判据？\",\n      \"link\": \"分界点落到具体工程，才能谈先后排序\",\n      \"expected_gain\": 0.7,\n      \"covers\": [\"T5\", \"T9\"]\n    },\n    {\n      \"question\": \"外河水位-历时曲线与干管排放能力耦合后，是否存在一个可测顶托阈值，超过后管内扩容对内涝频次无显著改善？\",\n      \"link\": \"把顶托阈值作为重建触发的前置指标\",\n      \"expected_gain\": 0.65,\n      \"covers\": [\"T12\"]\n    },\n    {\n      \"question\": \"产权碎片到什么程度会让分散滞蓄退化为零散花坛，从而决定混合方案上限？可否用连片率作代理指标？\",\n      \"link\": \"产权线进入决策的入口，决定海绵侧上限\",\n      \"expected_gain\": 0.6,\n      \"covers\": [\"T10\"]\n    }\n  ],\n  \"engagements\": [\n    {\n      \"sub_id\": 4,\n      \"how\": \"把可逆/不可逆分界从抽象两端压到具体工程归类\",\n      \"depth\": 0.5\n    },\n    {\n      \"sub_id\": 2,\n      \"how\": \"顶托阈值作为可测指标，检验扩容边际效益衰减\",\n      \"depth\": 0.4\n    },\n    {\n      \"sub_id\": 3,\n      \"how\": \"产权碎片经连片率影响削峰上限，间接牵动匹配机制\",\n      \"depth\": 0.4\n    }\n  ],\n  \"deferrals\": [\n    {\n      \"sub_id\": 5,\n      \"reason\": \"频次定义需具体城市积水记录，当前无数据\",\n      \"revisit_condition\": \"拿到至少一个老城区的积水频次与深度记录\"\n    }\n  ],\n  \"reconfirmations\": [],\n  \"resolutions\": [],\n  \"escalations\": [],\n  \"reclassifications\": []\n}"
+  },
+  {
+   "stage": "probe_research",
+   "input": 2,
+   "arm": "off",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 939,
+   "secs": 3.1,
+   "score": 2,
+   "out": "{\"probes\":[{\"question\":\"把C8的三类工程（调蓄池开挖/干管换管/河道拓宽）逐项归入可逆或不可逆，判定标准是什么？\",\"link\":\"归类结果直接决定[4]的排序触发条件能否成立\",\"expected_gain\":0.7,\"covers\":[\"T5\",\"T9\"]},{\"question\":\"外河高水位时自排口倒灌的历时曲线，能否给出一个顶托阈值，超过后管内扩容对内涝频次无改善？\",\"link\":\"这是[2]可测阈值的唯一入口，也决定T12是否真能进入权衡\",\"expected_gain\":0.6,\"covers\":[\"T12\",\"T6\"]},{\"question\":\"内涝频次定义（几年一遇/积水深度/退水时间）三要素中，哪一个先固定就能让比选结果翻转？\",\"link\":\"找出最小可固定的那一个，绕开[5]的制度原因追问\",\"expected_gain\":0.55,\"covers\":[\"T4\",\"T11\",\"T8\"]}],\"engagements\":[{\"sub_id\":4,\"how\":\"用C8三类工程做可逆/不可逆归类，检验排序规则能否不依赖预算数字\",\"depth\":0.5},{\"sub_id\":2,\"how\":\"把顶托阈值从'可测'推进到'历时曲线上的具体切点'\",\"depth\":0.4},{\"sub_id\":5,\"how\":\"将频次定义拆成三要素，找最小可先固定的那一个\",\"depth\":0.4},{\"sub_id\":3,\"how\":\"削峰上限与排放口径的匹配，退回到顶托阈值是否先行\",\"depth\":0.3}],\"deferrals\":[{\"sub_id\":6,\"reason\":\"补偿通道缺失是否构成硬否决，缺本地数据\",\"revisit_condition\":\"拿到低洼一楼与商户补偿案例后\"},{\"sub_id\":1,\"reason\":\"测绘判定阈值需具体城市管网档案样本\",\"revisit_condition\":\"取得一个老城区的内窥+水位计实测数据后\"}],\"reconfirmations\":[],\"resolutions\":[],\"escalations\":[],\"reclassifications\":[]}"
+  },
+  {
+   "stage": "probe_research",
+   "input": 2,
+   "arm": "on",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 880,
+   "secs": 11.9,
+   "score": 2,
+   "out": "{\"probes\":[{\"question\":\"监测、内窥、预留管位各占用的地下空间/财政年度/产权窗口，能否逐项写出'实施即锁死重建'的判定条件？\",\"link\":\"把可逆转不可逆的机制落到具体动作上\",\"expected_gain\":0.6,\"covers\":[\"T13\",\"T7\",\"T3\"]},{\"question\":\"取一城的外河水位-历时曲线与自排口标高，能否定出顶托临界组合，超过它管内扩容对内涝频次即无显著改善？\",\"link\":\"把子问题2的阈值压到可算的曲线上\",\"expected_gain\":0.55,\"covers\":[\"T12\"]},{\"question\":\"同一年内涝场次序列下，'每年两三次'与'十年一遇'两种口径，会不会给出相反的方案排序？临界点在哪里？\",\"link\":\"频次口径直接挂到比选结论的翻转点\",\"expected_gain\":0.5,\"covers\":[\"T4\",\"T8\",\"T11\"]}],\"engagements\":[{\"sub_id\":2,\"how\":\"提出以外河水位-历时曲线定顶托临界组合的可算路径\",\"depth\":0.4},{\"sub_id\":4,\"how\":\"加入反例：可逆动作占用窗口后自身转为不可逆，排序规则须容此项\",\"depth\":0.5},{\"sub_id\":5,\"how\":\"提出两种频次口径下比选结论可能反转的检验\",\"depth\":0.4}],\"deferrals\":[{\"sub_id\":6,\"reason\":\"补偿通道缺个案材料，本圈无新证据可推\",\"revisit_condition\":\"出现具体城市的征收补偿清单或标准文件\"}],\"reconfirmations\":[],\"resolutions\":[],\"escalations\":[],\"reclassifications\":[{\"sub_id\":1,\"to\":\"partial\",\"reason\":\"测绘的判定作用可落到自排失效与输送不足的分离上，非全无阈值\",\"evidence\":[\"C3\",\"C7\"]}]}"
+  },
+  {
+   "stage": "probe_research",
+   "input": 2,
+   "arm": "on",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 847,
+   "secs": 13.4,
+   "score": 2,
+   "out": "{\"probes\":[{\"question\":\"现存老城排水分期方案里，有无以水位或频次越限为触发、由具名岗位签字的条款？\",\"link\":\"给[4]排序触发条件补主体侧，检验T13是否落空\",\"expected_gain\":0.6,\"covers\":[\"T13\",\"T7\"]},{\"question\":\"某老城片区中，监测井、内窥、预留管位占用的地下通道与财政年度，是否已压缩后续干管扩容管径的可选集？\",\"link\":\"回接[3]削峰与排放口径匹配，验可逆是否已转为不可逆\",\"expected_gain\":0.55,\"covers\":[\"T2\",\"T10\"]},{\"question\":\"同一老城区分别按「年均两三次积水」与「十年一遇」口径代入，重建与局部改造的排序是否反转？\",\"link\":\"回接[5]，把频次定义变成可翻转的比选变量\",\"expected_gain\":0.7,\"covers\":[\"T4\",\"T8\",\"T11\"]}],\"engagements\":[{\"sub_id\":4,\"how\":\"由触发条款的签字主体侧切入排序条件\",\"depth\":0.4},{\"sub_id\":3,\"how\":\"用可逆动作占位检验削峰与排放口径是否脱钩\",\"depth\":0.4},{\"sub_id\":5,\"how\":\"把频次口径设为可翻转比选的变量\",\"depth\":0.5}],\"deferrals\":[{\"sub_id\":1,\"reason\":\"测绘图幅与重建判定阈值需该城实际管网数据\",\"revisit_condition\":\"取得该城管网测绘成果后\"},{\"sub_id\":2,\"reason\":\"缺该城外河水位-历时曲线，边际效益无法算\",\"revisit_condition\":\"拿到水位历时曲线与内涝频次序列\"}],\"reconfirmations\":[],\"resolutions\":[],\"escalations\":[],\"reclassifications\":[]}"
+  },
+  {
+   "stage": "probe_research",
+   "input": 2,
+   "arm": "on",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 779,
+   "secs": 8.5,
+   "score": 2,
+   "out": "{\"probes\":[{\"question\":\"外河水位高于自排口内底高程的年累计天数，能否定出一个可测顶托阈值？\",\"link\":\"阈值之上，管内扩容对内涝频次是否还有改善\",\"expected_gain\":0.55,\"covers\":[\"T12\",\"T6\"]},{\"question\":\"可逆动作里占用地下空间与财政年度的项，是否与不可逆动作的可行集重叠？\",\"link\":\"重叠即分界点失效，顺序需重排\",\"expected_gain\":0.6,\"covers\":[\"T10\",\"T13\"]},{\"question\":\"近三年老城排水立项批复文件里，有没有『内涝频次』这一栏？\",\"link\":\"无此栏，说明定义被后置到设计阶段\",\"expected_gain\":0.5,\"covers\":[\"T4\",\"T8\",\"T11\"]}],\"engagements\":[{\"sub_id\":2,\"how\":\"提出用倒灌天数作可测阈值，未定量\",\"depth\":0.4},{\"sub_id\":3,\"how\":\"把匹配落到水位-历时与排放口径同一时间轴\",\"depth\":0.4},{\"sub_id\":4,\"how\":\"把触发条件改写为占用型可逆动作是否挤压不可逆可行集\",\"depth\":0.5},{\"sub_id\":5,\"how\":\"把制度原因指向批复文件字段缺位可查\",\"depth\":0.5}],\"deferrals\":[],\"reconfirmations\":[],\"resolutions\":[],\"escalations\":[],\"reclassifications\":[{\"sub_id\":1,\"to\":\"partial\",\"reason\":\"测绘并非定不出阈值，而是先分离主因即可推翻或确认重建\",\"evidence\":[\"C3\",\"C7\"]}]}"
+  },
+  {
+   "stage": "re_anchor",
+   "input": 1,
+   "arm": "off",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 213,
+   "secs": 1.7,
+   "score": 2,
+   "out": "{\"anchor\":\"老城区暴雨内涝频发，排水系统重建还是局部改造加海绵城市措施？怎么权衡？\",\"touched\":[\"重建与局部改造加海绵被并列为两个选项\",\"权衡被当作需要方法的问题提出\",\"老城区、暴雨内涝频发是给定背景\"],\"untouched\":[\"谁有权把一次积水写成0或1，未触及\",\"可逆动作是否缩小不可逆可行集，未触及\",\"外河顶托阈值水位能否算出，未触及\",\"频次口径按次数、深度还是持续时间，未触及\"]}"
+  },
+  {
+   "stage": "re_anchor",
+   "input": 1,
+   "arm": "off",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 196,
+   "secs": 1.5,
+   "score": 2,
+   "out": "{\"anchor\":\"老城区内涝该重建还是局部改造加海绵，权衡的支点在'哪个动作先做会关掉后续判定'。\",\"touched\":[\"重建与海绵被拆成可逆/不可逆两类动作\",\"权衡变量已识别为成因、资金、社会成本\",\"顶托阈值可测，属未决非判不出\"],\"untouched\":[\"具体城市的管网现状与降雨数据\",\"可逆动作占用地下空间后是否缩小不可逆可行集\",\"补偿通道缺失是否构成硬否决点\"]}"
+  },
+  {
+   "stage": "re_anchor",
+   "input": 1,
+   "arm": "off",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 186,
+   "secs": 1.7,
+   "score": 2,
+   "out": "{\"anchor\":\"老城区暴雨内涝频发，该重建排水系统还是局部改造加海绵，怎么权衡——支点在'权衡'按什么排序。\",\"touched\":[\"重建与局部加海绵被当作两个可选项\",\"权衡被要求给出方法而非结论\",\"老城区与暴雨内涝是既定处境\"],\"untouched\":[\"权衡的排序依据是预算还是动作可逆性\",\"谁有权判定内涝频次与主因\",\"施工期再遇暴雨的兜底主体\"]}"
+  },
+  {
+   "stage": "re_anchor",
+   "input": 1,
+   "arm": "on",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 249,
+   "secs": 11.9,
+   "score": 2,
+   "out": "{\"anchor\":\"把“重建还是局部改造加海绵”的选型，收拢为按“动作是否关闭后续判定”排序，并先定越限触发与签字人；数据未全时先做不关判定的动作。\",\"touched\":[\"老城区暴雨内涝频发是触发条件\",\"重建与局部改造加海绵被并列为选项\",\"问题请求权衡，而非直接选方案\",\"可逆动作与不可逆动作已进入排序视野\"],\"untouched\":[\"具体城市管网、地形、降雨数据未进入\",\"外河顶托阈值与水位-历时曲线未测\",\"内涝频次按次数还是深度未定\",\"失败记录、签字、召集的授权未定\"]}"
+  },
+  {
+   "stage": "re_anchor",
+   "input": 1,
+   "arm": "on",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 213,
+   "secs": 10.8,
+   "score": 2,
+   "out": "{\"anchor\":\"它问的是“频发”按什么口径算，而不是先选重建或海绵；支点在“频发”，先定可测阈值，再谈方案权衡。\",\"touched\":[\"重建与局部改造加海绵是并列候选\",\"内涝频发是选型动因但未定义\",\"怎么权衡指向比较标准缺失\",\"老城区限定场景但未给具体数据\"],\"untouched\":[\"频次按次数、深度或持续时间未定\",\"外河顶托阈值水位未实测\",\"可逆与不可逆动作未排序\",\"失败由谁记录、签字未定\"]}"
+  },
+  {
+   "stage": "re_anchor",
+   "input": 1,
+   "arm": "on",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 178,
+   "secs": 8.2,
+   "score": 2,
+   "out": "{\"anchor\":\"把‘怎么权衡’钉在动作是否关闭后续判定上：老城区内涝频发下，重建与局部改造加海绵先按此排序。\",\"touched\":[\"老城区是空间限定\",\"内涝频发是触发条件\",\"重建与海绵是候选动作\",\"权衡要求排序判据\"],\"untouched\":[\"具体城市管网数据未给\",\"频次口径未定\",\"可逆与不可逆未分\",\"社会成本补偿未入判据\"]}"
+  },
+  {
+   "stage": "re_anchor",
+   "input": 2,
+   "arm": "off",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 189,
+   "secs": 1.8,
+   "score": 2,
+   "out": "{\"anchor\":\"在选址、预算、窗口都未定时，该先切哪一层来让'是否全迁'变成可判的取舍。\",\"touched\":[\"是否全迁被拆成建不建、迁哪些、按何节奏三层\",\"系统清单与分级可不等选址预算先行\",\"资产建设与迁移运行可分别决定\"],\"untouched\":[\"三层里哪一层先被要求交出边界\",\"外部主体先开口时先要求哪一项显形\",\"清单、预算、窗口三者的交界次序\"]}"
+  },
+  {
+   "stage": "re_anchor",
+   "input": 2,
+   "arm": "off",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 186,
+   "secs": 2.0,
+   "score": 2,
+   "out": "{\"anchor\":\"在选址、预算、窗口都未定时，先切哪一刀才能让'是否全迁'变成可答的问题？\",\"touched\":[\"全部迁移这个总问被拆成建不建、迁哪些、按何节奏\",\"系统清单与分级可不等选址预算先行\",\"资产建设与迁移运行可分头决定\"],\"untouched\":[\"谁先被要求交出边界：范围、前提还是决定\",\"外部主体先开口时先要哪一项显形\",\"交界次序本身\"]}"
+  },
+  {
+   "stage": "re_anchor",
+   "input": 2,
+   "arm": "off",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 135,
+   "secs": 2.1,
+   "score": 1,
+   "out": "{\"anchor\":\"在选址、预算、窗口都未定时，该先切哪一刀，才能让'是否全迁'变成可判的取舍？\",\"touched\":[\"全部迁移是待判项\",\"选址预算窗口均未定\",\"取舍可拆层\"],\"untouched\":[\"先切哪一层\",\"外部主体先要求哪项\",\"切口次序\"]}"
+  },
+  {
+   "stage": "re_anchor",
+   "input": 2,
+   "arm": "on",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 304,
+   "secs": 13.3,
+   "score": 2,
+   "out": "{\n  \"anchor\": \"它到底在问什么：在选址、预算、窗口未定时，支点是“全部”——先定迁哪些，而非迁不迁。\",\n  \"touched\": [\n    \"“全部迁移”是待决定项，不是已定前提。\",\n    \"选址、预算上限、迁移窗口明确未定。\",\n    \"系统清单与分级可先于选址预算决定。\",\n    \"迁移可拆成建不建、迁哪些、按何节奏。\"\n  ],\n  \"untouched\": [\n    \"现网系统清单与业务连续性要求未给。\",\n    \"预算、土地、电力、网络等外部数据未给。\",\n    \"谁有权先要求范围或资金显形未定。\",\n    \"自建机房承接现网资产的安排未展开。\"\n  ]\n}"
+  },
+  {
+   "stage": "re_anchor",
+   "input": 2,
+   "arm": "on",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 252,
+   "secs": 7.4,
+   "score": 2,
+   "out": "{\"anchor\":\"把“全部政务系统迁不迁”收拢为：在选址预算窗口未定时，先定“全部”是否可拆为建不建、迁哪些、按何节奏。支点是“全部”。\",\"touched\":[\"原问直接要求对“是否全部迁移”给取舍。\",\"三项未定已列出：选址、预算上限、迁移窗口。\",\"可先行的是系统清单与分级。\",\"建机房与迁运行可分别决定。\"],\"untouched\":[\"现网系统清单与业务连续性要求未给。\",\"预算上限依赖财政采购数据未给。\",\"选址依赖地质电力网络土地未给。\",\"谁批准及“全部”的例外范围未触及。\"]}"
+  },
+  {
+   "stage": "re_anchor",
+   "input": 2,
+   "arm": "on",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 275,
+   "secs": 11.6,
+   "score": 2,
+   "out": "{\"anchor\":\"支点不在‘是否迁’，在‘全部’与三个未定项：先把决定拆成建不建、迁哪些、按何节奏，找出不被选址、预算、窗口卡住的那层。\",\"touched\":[\"范围被写成‘全部政务系统’，不是部分或试点\",\"选址、预算、窗口三个变量已被标为未定\",\"要求是‘取舍’，要在不定项中决定先动哪层\",\"前置评估已给出可先行的子决策：清单分级、建迁分离、三层拆分\"],\"untouched\":[\"最终是否全部迁，仍依赖预算、清单和连续性要求\",\"机房选址的判据与数据未展开\",\"预算上限的财政或采购来源未展开\",\"迁移窗口与业务节奏的约束未展开\"]}"
+  },
+  {
+   "stage": "re_evaluate_pool",
+   "input": 1,
+   "arm": "off",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 1060,
+   "secs": 2.4,
+   "score": 1,
+   "out": "{\n  \"revals\": [\n    {\n      \"idx\": 1,\n      \"polarity\": \"1\",\n      \"why\": \"定义权来自外部授权，已明确\"\n    },\n    {\n      \"idx\": 2,\n      \"polarity\": \"1\",\n      \"why\": \"读取者随项目结束消失，已确定\"\n    },\n    {\n      \"idx\": 3,\n      \"polarity\": \"1\",\n      \"why\": \"同步需同一场合，该场合不在问题内\"\n    },\n    {\n      \"idx\": 4,\n      \"polarity\": \"1\",\n      \"why\": \"物理事实不因定义权改变，已成立\"\n    },\n    {\n      \"idx\": 5,\n      \"polarity\": \"1\",\n      \"why\": \"无跨轴换算口径，已确定\"\n    },\n    {\n      \"idx\": 6,\n      \"polarity\": \"1\",\n      \"why\": \"缺核对动作本身，已明确\"\n    },\n    {\n      \"idx\": 7,\n      \"polarity\": \"1\",\n      \"why\": \"两者位置不同，不能替代，已成立\"\n    },\n    {\n      \"idx\": 8,\n      \"polarity\": \"0\",\n      \"why\": \"对撞停在此，未继续\"\n    },\n    {\n      \"idx\": 9,\n      \"polarity\": \"0\",\n      \"why\": \"未验证，悬空\"\n    },\n    {\n      \"idx\": 10,\n      \"polarity\": \"0\",\n      \"why\": \"入口未找到，未生\"\n    },\n    {\n      \"idx\": 11,\n      \"polarity\": \"0\",\n      \"why\": \"无对应岗位，未生\"\n    },\n    {\n      \"idx\": 12,\n      \"polarity\": \"0\",\n      \"why\": \"不能给出权重，停在过程描述\"\n    },\n    {\n      \"idx\": 13,\n      \"polarity\": \"0\",\n      \"why\": \"缺乏核对动作，仍可无限成立\"\n    }\n  ]\n}"
+  },
+  {
+   "stage": "re_evaluate_pool",
+   "input": 1,
+   "arm": "off",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 616,
+   "secs": 2.3,
+   "score": 1,
+   "out": "{\"revals\":[{\"idx\":1,\"polarity\":\"1\",\"why\":\"定义权来源已明确，不在方案内\"},{\"idx\":2,\"polarity\":\"1\",\"why\":\"读取者预算与消失风险已确定\"},{\"idx\":3,\"polarity\":\"1\",\"why\":\"同步场合不在本问题内，已判\"},{\"idx\":4,\"polarity\":\"1\",\"why\":\"物理事实不受定义权影响，已定\"},{\"idx\":5,\"polarity\":\"1\",\"why\":\"无跨轴换算口径，已确认\"},{\"idx\":6,\"polarity\":\"1\",\"why\":\"缺核对动作本身，已判\"},{\"idx\":7,\"polarity\":\"1\",\"why\":\"召集权与读数位置不同，已定\"},{\"idx\":8,\"polarity\":\"0\",\"why\":\"样本无法合并，对撞停在此\"},{\"idx\":9,\"polarity\":\"0\",\"why\":\"是否都能绑定主体，未验证\"},{\"idx\":10,\"polarity\":\"0\",\"why\":\"决策场合入口未找到\"},{\"idx\":11,\"polarity\":\"0\",\"why\":\"无对应岗位，谁设立未生\"},{\"idx\":12,\"polarity\":\"0\",\"why\":\"跨轴交换率无单位，只能停\"},{\"idx\":13,\"polarity\":\"0\",\"why\":\"缺核对动作，方案仍可无限成立\"}]}"
+  },
+  {
+   "stage": "re_evaluate_pool",
+   "input": 1,
+   "arm": "off",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 1076,
+   "secs": 2.3,
+   "score": 1,
+   "out": "{\n  \"revals\": [\n    {\n      \"idx\": 1,\n      \"polarity\": \"1\",\n      \"why\": \"定义权归属已明确，不在方案内\"\n    },\n    {\n      \"idx\": 2,\n      \"polarity\": \"1\",\n      \"why\": \"预算属运维，项目后读取者可能消失\"\n    },\n    {\n      \"idx\": 3,\n      \"polarity\": \"1\",\n      \"why\": \"同步需同一决策场合，但场合不在问题内\"\n    },\n    {\n      \"idx\": 4,\n      \"polarity\": \"1\",\n      \"why\": \"物理事实不因定义权改变\"\n    },\n    {\n      \"idx\": 5,\n      \"polarity\": \"1\",\n      \"why\": \"三轴单位不同，无跨轴换算口径\"\n    },\n    {\n      \"idx\": 6,\n      \"polarity\": \"1\",\n      \"why\": \"缺核对动作，机制无核对栏\"\n    },\n    {\n      \"idx\": 7,\n      \"polarity\": \"1\",\n      \"why\": \"召集权与读数位置不同，不可替代\"\n    },\n    {\n      \"idx\": 8,\n      \"polarity\": \"0\",\n      \"why\": \"样本无法合并，对撞停\"\n    },\n    {\n      \"idx\": 9,\n      \"polarity\": \"0\",\n      \"why\": \"未验证所有可逆动作能否绑定主体\"\n    },\n    {\n      \"idx\": 10,\n      \"polarity\": \"0\",\n      \"why\": \"决策场合入口未找到\"\n    },\n    {\n      \"idx\": 11,\n      \"polarity\": \"0\",\n      \"why\": \"无对应岗位，谁设立未生\"\n    },\n    {\n      \"idx\": 12,\n      \"polarity\": \"0\",\n      \"why\": \"无单位，不能给权重\"\n    },\n    {\n      \"idx\": 13,\n      \"polarity\": \"0\",\n      \"why\": \"缺核对动作，方案仍可无限成立\"\n    }\n  ]\n}"
+  },
+  {
+   "stage": "re_evaluate_pool",
+   "input": 1,
+   "arm": "on",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 587,
+   "secs": 31.1,
+   "score": 1,
+   "out": "{\"revals\":[{\"idx\":1,\"polarity\":\"1\",\"why\":\"定义权外置，方案不裁\"},{\"idx\":2,\"polarity\":\"1\",\"why\":\"读取者靠运维，项目后不稳\"},{\"idx\":3,\"polarity\":\"1\",\"why\":\"需同一场合，场合外置\"},{\"idx\":4,\"polarity\":\"1\",\"why\":\"顶托物理事实，定义权无效\"},{\"idx\":5,\"polarity\":\"1\",\"why\":\"无跨轴换算，不可合成\"},{\"idx\":6,\"polarity\":\"1\",\"why\":\"已确认缺核对动作\"},{\"idx\":7,\"polarity\":\"1\",\"why\":\"两权不同位，不可替代\"},{\"idx\":8,\"polarity\":\"0\",\"why\":\"样本无法合并，对撞停\"},{\"idx\":9,\"polarity\":\"0\",\"why\":\"能否绑定主体未验证\"},{\"idx\":10,\"polarity\":\"0\",\"why\":\"决策场合入口未找到\"},{\"idx\":11,\"polarity\":\"0\",\"why\":\"无岗位，设立责任未生\"},{\"idx\":12,\"polarity\":\"0\",\"why\":\"无单位，权重未成形\"},{\"idx\":13,\"polarity\":\"0\",\"why\":\"缺核对，主人同一未定\"}]}"
+  },
+  {
+   "stage": "re_evaluate_pool",
+   "input": 1,
+   "arm": "on",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 595,
+   "secs": 63.3,
+   "score": 1,
+   "out": "{\"revals\":[{\"idx\":1,\"polarity\":\"1\",\"why\":\"授权外置，边界已定\"},{\"idx\":2,\"polarity\":\"0\",\"why\":\"读取者未保，项目后可能断\"},{\"idx\":3,\"polarity\":\"0\",\"why\":\"所需场合不在，同步未成形\"},{\"idx\":4,\"polarity\":\"1\",\"why\":\"水位顶托物理事实已定\"},{\"idx\":5,\"polarity\":\"0\",\"why\":\"无换算口径，合成未成形\"},{\"idx\":6,\"polarity\":\"0\",\"why\":\"核对动作缺位，未成形\"},{\"idx\":7,\"polarity\":\"1\",\"why\":\"召集与读数位置已分，不可替代\"},{\"idx\":8,\"polarity\":\"0\",\"why\":\"样本不可合并，对撞停\"},{\"idx\":9,\"polarity\":\"0\",\"why\":\"绑定主体未验证，悬空\"},{\"idx\":10,\"polarity\":\"0\",\"why\":\"决策场合入口未找到\"},{\"idx\":11,\"polarity\":\"0\",\"why\":\"跨轴读取岗位未生\"},{\"idx\":12,\"polarity\":\"0\",\"why\":\"交换率无单位，权重未生\"},{\"idx\":13,\"polarity\":\"0\",\"why\":\"缺核对动作，仍各自成立\"}]}"
+  },
+  {
+   "stage": "re_evaluate_pool",
+   "input": 1,
+   "arm": "on",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 602,
+   "secs": 10.8,
+   "score": 1,
+   "out": "{\"revals\":[{\"idx\":1,\"polarity\":\"0\",\"why\":\"授权在方案外，未进场\"},{\"idx\":2,\"polarity\":\"0\",\"why\":\"读取者随项目结束可能消失\"},{\"idx\":3,\"polarity\":\"0\",\"why\":\"共同决策场合不在问题内\"},{\"idx\":4,\"polarity\":\"1\",\"why\":\"顶托物理事实已定，不随定义\"},{\"idx\":5,\"polarity\":\"0\",\"why\":\"无跨轴换算口径，合不成\"},{\"idx\":6,\"polarity\":\"0\",\"why\":\"缺核对动作本身，未成形\"},{\"idx\":7,\"polarity\":\"1\",\"why\":\"两位置不同，不可替代已定\"},{\"idx\":8,\"polarity\":\"0\",\"why\":\"样本无法合并，对撞停\"},{\"idx\":9,\"polarity\":\"0\",\"why\":\"能否绑定主体，未验证\"},{\"idx\":10,\"polarity\":\"0\",\"why\":\"决策场合入口未找到\"},{\"idx\":11,\"polarity\":\"0\",\"why\":\"无对应岗位，谁设立未生\"},{\"idx\":12,\"polarity\":\"0\",\"why\":\"交换率无单位，给不出权重\"},{\"idx\":13,\"polarity\":\"0\",\"why\":\"缺核对动作，各自无限成立\"}]}"
+  },
+  {
+   "stage": "re_evaluate_pool",
+   "input": 2,
+   "arm": "off",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 604,
+   "secs": 1.9,
+   "score": 1,
+   "out": "{\"revals\":[{\"idx\":1,\"polarity\":\"0\",\"why\":\"定义未定，量化跳过，方案悬空\"},{\"idx\":2,\"polarity\":\"0\",\"why\":\"匹配机制未建立，两端未接\"},{\"idx\":3,\"polarity\":\"0\",\"why\":\"主因未判定，重建有效性悬置\"},{\"idx\":4,\"polarity\":\"0\",\"why\":\"技术无解，权力分配未定\"},{\"idx\":5,\"polarity\":\"0\",\"why\":\"共同尺度缺失，边界断裂\"},{\"idx\":6,\"polarity\":\"0\",\"why\":\"0和1同时失效，依据消失\"},{\"idx\":7,\"polarity\":\"0\",\"why\":\"三线如何同时进入未探索\"},{\"idx\":8,\"polarity\":\"0\",\"why\":\"排序原则未形成通用规则\"},{\"idx\":9,\"polarity\":\"0\",\"why\":\"具体数字不可得，未显\"},{\"idx\":10,\"polarity\":\"0\",\"why\":\"分布图未公开，未显\"},{\"idx\":11,\"polarity\":\"0\",\"why\":\"指定者缺位，次序不发生\"},{\"idx\":12,\"polarity\":\"0\",\"why\":\"执行与解冻未进入排序\"},{\"idx\":13,\"polarity\":\"0\",\"why\":\"物理边界无法确认，未显\"}]}"
+  },
+  {
+   "stage": "re_evaluate_pool",
+   "input": 2,
+   "arm": "off",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 610,
+   "secs": 1.9,
+   "score": 1,
+   "out": "{\"revals\":[{\"idx\":1,\"polarity\":\"0\",\"why\":\"定义未定，量化跳过，未成形\"},{\"idx\":2,\"polarity\":\"0\",\"why\":\"匹配机制未建立，悬空\"},{\"idx\":3,\"polarity\":\"0\",\"why\":\"主因未判定，偏向未显\"},{\"idx\":4,\"polarity\":\"both\",\"why\":\"工程学无解，权力先于技术，两端都撑\"},{\"idx\":5,\"polarity\":\"0\",\"why\":\"无共同尺度，边界断裂，未定\"},{\"idx\":6,\"polarity\":\"0\",\"why\":\"0和1同时失效，依据消失\"},{\"idx\":7,\"polarity\":\"0\",\"why\":\"三线如何进入决策未探索\"},{\"idx\":8,\"polarity\":\"0\",\"why\":\"排序原则未形成通用规则\"},{\"idx\":9,\"polarity\":\"0\",\"why\":\"具体数字不可得，未显\"},{\"idx\":10,\"polarity\":\"0\",\"why\":\"分布图未公开，未显\"},{\"idx\":11,\"polarity\":\"0\",\"why\":\"指定者缺位，次序不发生\"},{\"idx\":12,\"polarity\":\"0\",\"why\":\"执行者与解冻未进入排序\"},{\"idx\":13,\"polarity\":\"0\",\"why\":\"物理边界无法确认，未显\"}]}"
+  },
+  {
+   "stage": "re_evaluate_pool",
+   "input": 2,
+   "arm": "off",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 611,
+   "secs": 1.9,
+   "score": 1,
+   "out": "{\"revals\":[{\"idx\":1,\"polarity\":\"0\",\"why\":\"定义未定，量化被跳过，方案已开始\"},{\"idx\":2,\"polarity\":\"0\",\"why\":\"匹配机制未建立，两端悬空\"},{\"idx\":3,\"polarity\":\"0\",\"why\":\"主因未判定，重建有效性悬置\"},{\"idx\":4,\"polarity\":\"0\",\"why\":\"权力分配先于技术，答案未出\"},{\"idx\":5,\"polarity\":\"0\",\"why\":\"共同尺度缺失，边界断裂\"},{\"idx\":6,\"polarity\":\"0\",\"why\":\"0和1同时失效，依据消失\"},{\"idx\":7,\"polarity\":\"0\",\"why\":\"三线如何同时进入，未探索\"},{\"idx\":8,\"polarity\":\"0\",\"why\":\"排序原则未形成通用规则\"},{\"idx\":9,\"polarity\":\"0\",\"why\":\"具体数字不可得，未显\"},{\"idx\":10,\"polarity\":\"0\",\"why\":\"分布图未公开，未显\"},{\"idx\":11,\"polarity\":\"0\",\"why\":\"指定者缺位，次序不发生\"},{\"idx\":12,\"polarity\":\"0\",\"why\":\"冻结执行与解冻未进入排序\"},{\"idx\":13,\"polarity\":\"0\",\"why\":\"物理边界无法确认，未显\"}]}"
+  },
+  {
+   "stage": "re_evaluate_pool",
+   "input": 2,
+   "arm": "on",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 573,
+   "secs": 32.7,
+   "score": 1,
+   "out": "{\"revals\":[{\"idx\":1,\"polarity\":\"0\",\"why\":\"定义未定，量化跳过\"},{\"idx\":2,\"polarity\":\"0\",\"why\":\"匹配机制未建立\"},{\"idx\":3,\"polarity\":\"0\",\"why\":\"主因未判定\"},{\"idx\":4,\"polarity\":\"0\",\"why\":\"技术未答，主体未定\"},{\"idx\":5,\"polarity\":\"0\",\"why\":\"共同尺度缺失，边界断裂\"},{\"idx\":6,\"polarity\":\"0\",\"why\":\"0/1失效，记录权悬空\"},{\"idx\":7,\"polarity\":\"0\",\"why\":\"三条线未同时进入决策\"},{\"idx\":8,\"polarity\":\"0\",\"why\":\"排序原则未成通用规则\"},{\"idx\":9,\"polarity\":\"0\",\"why\":\"具体数字不可得\"},{\"idx\":10,\"polarity\":\"0\",\"why\":\"分布图未公开\"},{\"idx\":11,\"polarity\":\"0\",\"why\":\"指定者缺位，次序不发生\"},{\"idx\":12,\"polarity\":\"0\",\"why\":\"执行解冻未入排序\"},{\"idx\":13,\"polarity\":\"0\",\"why\":\"未公开，物理边界未确认\"}]}"
+  },
+  {
+   "stage": "re_evaluate_pool",
+   "input": 2,
+   "arm": "on",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 604,
+   "secs": 5.6,
+   "score": 1,
+   "out": "{\"revals\":[{\"idx\":1,\"polarity\":\"0\",\"why\":\"定义未定，量化已被跳过\"},{\"idx\":2,\"polarity\":\"0\",\"why\":\"匹配机制未建立，两侧悬空\"},{\"idx\":3,\"polarity\":\"0\",\"why\":\"主因未判，重建依据未定\"},{\"idx\":4,\"polarity\":\"both\",\"why\":\"技术无解已定，权属未定\"},{\"idx\":5,\"polarity\":\"0\",\"why\":\"无共同尺度，边界断裂\"},{\"idx\":6,\"polarity\":\"0\",\"why\":\"0与1同失效，依据暂失\"},{\"idx\":7,\"polarity\":\"0\",\"why\":\"尚未探索，进入方式未成形\"},{\"idx\":8,\"polarity\":\"0\",\"why\":\"排序原则未成通用规则\"},{\"idx\":9,\"polarity\":\"0\",\"why\":\"具体数字不可得，未显\"},{\"idx\":10,\"polarity\":\"0\",\"why\":\"分布图未公开，未显\"},{\"idx\":11,\"polarity\":\"0\",\"why\":\"指定者缺位，次序不落\"},{\"idx\":12,\"polarity\":\"both\",\"why\":\"可逆性已定，执行者未定\"},{\"idx\":13,\"polarity\":\"0\",\"why\":\"图未公开，开挖边界未确认\"}]}"
+  },
+  {
+   "stage": "re_evaluate_pool",
+   "input": 2,
+   "arm": "on",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 576,
+   "secs": 21.7,
+   "score": 1,
+   "out": "{\"revals\":[{\"idx\":1,\"polarity\":\"both\",\"why\":\"定义未定，选择已启动\"},{\"idx\":2,\"polarity\":\"0\",\"why\":\"匹配机制未建立\"},{\"idx\":3,\"polarity\":\"0\",\"why\":\"主因未判定\"},{\"idx\":4,\"polarity\":\"0\",\"why\":\"工程学无答案，未定\"},{\"idx\":5,\"polarity\":\"0\",\"why\":\"无共同尺度，边界断\"},{\"idx\":6,\"polarity\":\"0\",\"why\":\"记录权悬空，依据消失\"},{\"idx\":7,\"polarity\":\"0\",\"why\":\"三线进入方式未探索\"},{\"idx\":8,\"polarity\":\"0\",\"why\":\"排序原则未形成\"},{\"idx\":9,\"polarity\":\"0\",\"why\":\"具体数字不可得\"},{\"idx\":10,\"polarity\":\"0\",\"why\":\"分布图未公开\"},{\"idx\":11,\"polarity\":\"0\",\"why\":\"指定者缺位，次序未发生\"},{\"idx\":12,\"polarity\":\"both\",\"why\":\"可逆已定，执行未排序\"},{\"idx\":13,\"polarity\":\"0\",\"why\":\"分布未公开，边界无法确认\"}]}"
+  },
+  {
+   "stage": "self_check",
+   "input": 1,
+   "arm": "off",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 392,
+   "secs": 2.4,
+   "score": 1,
+   "out": "{\"suspicious_candidates\":[3,4,5,8],\"suspicious_amps\":[],\"ing_rephrased\":false,\"honest_about_empty\":true,\"unsaid_count\":0,\"unsaid_is_escape\":false,\"unsaid_where\":\"\",\"flow_verdict\":\"对撞生成了矩阵、可逆实验、开关、造价规则，但开关被时间顺序轴打断，未闭合\",\"view_verdict\":\"定下可判定三项：同步曲线可拟合、两种边界划法设施集合不重叠、封堵条款有缺口；不可判定六轴单列\",\"amp_ratio_verdict\":\"5条&全部structural，均从对撞中长出，无凑数\",\"notes\":\"候选3-5、8是上一轮遗留物，非本圈展开长出；子问题6计数与文本不一致，view已诚实标为接口缺口\"}"
+  },
+  {
+   "stage": "self_check",
+   "input": 1,
+   "arm": "off",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 382,
+   "secs": 2.1,
+   "score": 2,
+   "out": "{\"suspicious_candidates\":[3,4,5,8],\"suspicious_amps\":[1,2,3,4,5],\"ing_rephrased\":false,\"honest_about_empty\":true,\"unsaid_count\":0,\"unsaid_is_escape\":false,\"unsaid_where\":\"\",\"flow_verdict\":\"对撞生成了矩阵、开关、造价与施工规则，但主因阈值未换算，开关无法落地。\",\"view_verdict\":\"定下可判定三项：同步曲线可拟合、边界划法产生不同设施集合、封堵条款有缺口；其余六轴标为结构缺口。\",\"amp_ratio_verdict\":\"& 印记五条全部来自候选与对撞，无凑数。\",\"notes\":\"候选3-5、8未进对撞，停在旁边；子问题6计数与文本不一致，是本轮断点。\"}"
+  },
+  {
+   "stage": "self_check",
+   "input": 1,
+   "arm": "off",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 366,
+   "secs": 2.0,
+   "score": 1,
+   "out": "{\"suspicious_candidates\":[3,4,5,8],\"suspicious_amps\":[],\"ing_rephrased\":false,\"honest_about_empty\":true,\"unsaid_count\":0,\"unsaid_is_escape\":false,\"unsaid_where\":\"\",\"flow_verdict\":\"对撞生成了矩阵、可逆实验、开关、造价与施工规则，但主因阈值未换算，开关落不了地。\",\"view_verdict\":\"定下可判定三项与六根结构缺口；未定的是主因判据、同步曲线可用阈值、社会成本分母。\",\"amp_ratio_verdict\":\"五条&均从对撞中长出，无凑数。\",\"notes\":\"候选3-5、8为回看时补入，非本圈展开所生；ing未复述上游view原话。\"}"
+  },
+  {
+   "stage": "self_check",
+   "input": 1,
+   "arm": "on",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 415,
+   "secs": 29.4,
+   "score": 2,
+   "out": "{\"suspicious_candidates\":[5,8],\"suspicious_amps\":[6],\"ing_rephrased\":false,\"honest_about_empty\":true,\"unsaid_count\":6,\"unsaid_is_escape\":true,\"unsaid_where\":\"候选6/7/8把'不可得'当结论收尾，未推子问题1已给的'用已知暴雨实测反推同步曲线'一步。\",\"flow_verdict\":\"展开、极端、反转、判定矩阵都有真推进；短板是&多为上圈原话搬运，判据未换算。\",\"view_verdict\":\"定下曲线可拟合范围、两种边界划法的设施集不重叠、封堵条款须创设；六轴缺口单列未混入。\",\"amp_ratio_verdict\":\"6条&中4条与上圈近同，新增仅1条，比例偏高。\",\"notes\":\"候选5是上圈落地物回搬，8是预算缺口补位；&6由候选8派生，为凑齐六轴。\"}"
+  },
+  {
+   "stage": "self_check",
+   "input": 1,
+   "arm": "on",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 430,
+   "secs": 13.0,
+   "score": 1,
+   "out": "{\"suspicious_candidates\":[6,7,8],\"suspicious_amps\":[],\"ing_rephrased\":false,\"honest_about_empty\":true,\"unsaid_count\":6,\"unsaid_is_escape\":true,\"unsaid_where\":\"主因判据该推：ing已给关阀/停泵/封出口可逆实验，却只列延迟，未推阈值或开关落地。\",\"flow_verdict\":\"两端推极端、反转点、开关与造价规则生成扎实；主因判据与子问题6文本缺口未闭合，流程有断点。\",\"view_verdict\":\"定下同步曲线可拟合、两种边界划法设施集合不同、封堵条款有缺口三项；主因阈值、社会成本分母、子问题6仍悬。\",\"amp_ratio_verdict\":\"五条&均有实体对应，无凑数。\",\"notes\":\"候选6-8偏补约束输入；&印记与view、ing互证，非凑数。延迟债务6处超3，探针未深推。\"}"
+  },
+  {
+   "stage": "self_check",
+   "input": 1,
+   "arm": "on",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 417,
+   "secs": 45.5,
+   "score": 2,
+   "out": "{\"suspicious_candidates\":[2,6,7,8],\"suspicious_amps\":[],\"ing_rephrased\":false,\"honest_about_empty\":true,\"unsaid_count\":0,\"unsaid_is_escape\":false,\"unsaid_where\":\"未超过3处；无“此处未生”字样，缺项以不可判定/暂缓标出。\",\"flow_verdict\":\"基本好：候选、极端、反转、对撞、&、view齐全；但候选2越权，子问题6计数与文本断点。\",\"view_verdict\":\"合格：定下同步曲线可拟合、两种边界方案集、封堵无挂靠；未定主因判据等已分栏。\",\"amp_ratio_verdict\":\"&印记5条均对应ing撞不动点，比例合理无凑数。\",\"notes\":\"候选2/6/7/8像补入；&无凑数；ing未复述上游view超半；未生以不可判定/暂缓诚实标出。\"}"
+  },
+  {
+   "stage": "self_check",
+   "input": 2,
+   "arm": "off",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 441,
+   "secs": 2.5,
+   "score": 2,
+   "out": "{\"suspicious_candidates\":[6],\"suspicious_amps\":[],\"ing_rephrased\":false,\"honest_about_empty\":true,\"unsaid_count\":3,\"unsaid_is_escape\":false,\"unsaid_where\":\"三处均落在真缺口：跨轴单位、回执签发者、外部频次标准，非收尾套路\",\"flow_verdict\":\"候选→&→ing→view 链条完整，ing 生成读数位置与暂停申报，view 接住并压到暂停，未空转\",\"view_verdict\":\"all 形态=同场雨下无共同单位的不可逆消耗；不可通约=局部把别处暂停当环境、整体当动作；新东西=暂停申报与回执\",\"amp_ratio_verdict\":\"3 条 & 各有独立轴，无凑数，比例正常\",\"notes\":\"候选6 偏外部标准平移，略像补位；其余候选均从展开长出。ing 未复述上游 view 原话，比例远低于半数。\"}"
+  },
+  {
+   "stage": "self_check",
+   "input": 2,
+   "arm": "off",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 437,
+   "secs": 2.4,
+   "score": 2,
+   "out": "{\"suspicious_candidates\":[2,5],\"suspicious_amps\":[3],\"ing_rephrased\":false,\"honest_about_empty\":true,\"unsaid_count\":3,\"unsaid_is_escape\":false,\"unsaid_where\":\"三处均落在真缺口：跨轴单位、回执签发者、外部标准，非收尾套路\",\"flow_verdict\":\"候选→&→ing→view 链条完整，ing 的交换率反转被 view 接住并长成暂停申报，未空转\",\"view_verdict\":\"all 形态=无共同单位的并发不可逆消耗；不可通约=局部当别处暂停是环境、整体当它是动作；新生=暂停申报与回执\",\"amp_ratio_verdict\":\"三条 & 各有独立轴，非凑数，但存在论与逻辑性两条略近\",\"notes\":\"候选2、5 偏界面/入口描述，略像补位；ing 未复述上游 view 原话，比例远低于一半\"}"
+  },
+  {
+   "stage": "self_check",
+   "input": 2,
+   "arm": "off",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 418,
+   "secs": 2.3,
+   "score": 1,
+   "out": "{\"suspicious_candidates\":[2,5],\"suspicious_amps\":[2],\"ing_rephrased\":false,\"honest_about_empty\":true,\"unsaid_count\":3,\"unsaid_is_escape\":false,\"unsaid_where\":\"三处均落在已推到极限后的真实断点：跨轴单位、回执签发人、外部标准，非收尾套路\",\"flow_verdict\":\"候选到ing到view一路压深，反转点与回执生成物是实推出来的，未凑数\",\"view_verdict\":\"all=同时发生的不可逆消耗无共同单位，不可通约在'别处暂停'是环境还是动作，新东西是暂停申报与回执\",\"amp_ratio_verdict\":\"3条&各有独立轴，无凑数，但第2条与候选2近义\",\"notes\":\"候选2与候选5偏界面描述，略像补位；ing未复述上游view原话，比例远低于一半。\"}"
+  },
+  {
+   "stage": "self_check",
+   "input": 2,
+   "arm": "on",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 412,
+   "secs": 24.8,
+   "score": 2,
+   "out": "{\"suspicious_candidates\":[4],\"suspicious_amps\":[],\"ing_rephrased\":true,\"honest_about_empty\":true,\"unsaid_count\":3,\"unsaid_is_escape\":false,\"unsaid_where\":\"未超过3处；ing末、view二、view四各一处。\",\"flow_verdict\":\"推进到暂停/读数，但 ing 大量复述上游 view；候选4有补入感，未生诚实但中段偏收束。\",\"view_verdict\":\"基本达标：写 all 暂停形态、不可通约、前置申报/回执与新姿态；但新东西与 ing 重复。\",\"amp_ratio_verdict\":\"& 3/候选 7≈43%，比例合理；未见明显凑数。\",\"notes\":\"候选4疑为后补；ing 与 view 近义重复超半；未生3处不逃逸；流程应减少复述。\"}"
+  },
+  {
+   "stage": "self_check",
+   "input": 2,
+   "arm": "on",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 435,
+   "secs": 40.4,
+   "score": 2,
+   "out": "{\"suspicious_candidates\":[],\"suspicious_amps\":[],\"ing_rephrased\":false,\"honest_about_empty\":true,\"unsaid_count\":3,\"unsaid_is_escape\":false,\"unsaid_where\":\"3处：ing跨轴单位、view回执落点、view跨轴权衡；均诚实，未超3。\",\"flow_verdict\":\"流程推进有序：候选→动作排序→指定者→召集→读数→暂停；但ing与view共享概念多，新东西偏命名。\",\"view_verdict\":\"符合标准：all是三条不可逆消耗共在；不可通约在别处暂停当环境还是动作；新东西前置申报/回执；姿态留暂停记录。\",\"amp_ratio_verdict\":\"&三条均对应核心张力，无凑数，比例正常。\",\"notes\":\"候选无明显后补，&无凑数；ing未过半复述上游，未生3处诚实；流程可再压实一处新东西的落点。\"}"
+  },
+  {
+   "stage": "self_check",
+   "input": 2,
+   "arm": "on",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 456,
+   "secs": 42.5,
+   "score": 1,
+   "out": "{\"suspicious_candidates\":[6,7],\"suspicious_amps\":[],\"ing_rephrased\":true,\"honest_about_empty\":true,\"unsaid_count\":3,\"unsaid_is_escape\":false,\"unsaid_where\":\"未超过3处；未生集中在回执落点与跨轴单位。\",\"flow_verdict\":\"层进清楚：方案→动作→定义权→召集→读数→暂停；但ing复述上游view偏多，新推被稀释。\",\"view_verdict\":\"符合标准：all是同时不可逆消耗的暂停记录，局部与整体不可通约在「别处暂停」，长出申报与回执，姿态为允许空着。\",\"amp_ratio_verdict\":\"三条&覆盖结构/存在/逻辑，非硬凑；但1、2与上游view近义，新增有限。\",\"notes\":\"ing约六成句子与view的不可逆轴、无共同单位、假想主人、读数、未生近义，故判rephrased；候选6、7几乎由view线头直接搬入。\"}"
+  },
+  {
+   "stage": "settle_research",
+   "input": 1,
+   "arm": "off",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 177,
+   "secs": 1.3,
+   "score": 2,
+   "out": "{\"settlements\":[{\"deferral_id\":\"d_002\",\"decision\":\"escalated\",\"reason\":\"阈值依赖具体城市档案样本，当前无数据不可判定\"},{\"deferral_id\":\"d_003\",\"decision\":\"escalated\",\"reason\":\"量化框架与补偿通道均缺失，无基准不可判定\"}]}"
+  },
+  {
+   "stage": "settle_research",
+   "input": 1,
+   "arm": "off",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 179,
+   "secs": 1.6,
+   "score": 2,
+   "out": "{\"settlements\":[{\"deferral_id\":\"d_002\",\"decision\":\"escalated\",\"reason\":\"阈值依赖具体城市管网样本，当前无样本，不可判定\"},{\"deferral_id\":\"d_003\",\"decision\":\"escalated\",\"reason\":\"社会成本量化框架与补偿通道均缺失，不可判定\"}]}"
+  },
+  {
+   "stage": "settle_research",
+   "input": 1,
+   "arm": "off",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 198,
+   "secs": 1.4,
+   "score": 2,
+   "out": "{\"settlements\":[{\"deferral_id\":\"d_002\",\"decision\":\"escalated\",\"reason\":\"无管网样本则阈值不可定，测绘能否推翻重建取决于缺失率，当前不可判定\"},{\"deferral_id\":\"d_003\",\"decision\":\"escalated\",\"reason\":\"补偿通道缺失本身即否决条件，量化框架缺数据无法比选，不可判定\"}]}"
+  },
+  {
+   "stage": "settle_research",
+   "input": 1,
+   "arm": "on",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 183,
+   "secs": 8.3,
+   "score": 2,
+   "out": "{\"settlements\":[{\"deferral_id\":\"d_002\",\"decision\":\"dropped\",\"reason\":\"无样本，阈值随城市个案变化，无通用判定，放弃。\"},{\"deferral_id\":\"d_003\",\"decision\":\"escalated\",\"reason\":\"补偿通道属政策与价值选择，缺地方政策，不可判定，升级。\"}]}"
+  },
+  {
+   "stage": "settle_research",
+   "input": 1,
+   "arm": "on",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 181,
+   "secs": 12.4,
+   "score": 2,
+   "out": "{\"settlements\":[{\"deferral_id\":\"d_002\",\"decision\":\"escalated\",\"reason\":\"阈值须按城市管网样本标定，当前无样本不可判\"},{\"deferral_id\":\"d_003\",\"decision\":\"handled\",\"reason\":\"社会成本可量化；补偿通道缺失构成硬否决，须先设补偿预算\"}]}"
+  },
+  {
+   "stage": "settle_research",
+   "input": 1,
+   "arm": "on",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 178,
+   "secs": 10.0,
+   "score": 2,
+   "out": "{\"settlements\":[{\"deferral_id\":\"d_002\",\"decision\":\"escalated\",\"reason\":\"无具体城市管网档案，重建阈值不可先验判定。\"},{\"deferral_id\":\"d_003\",\"decision\":\"escalated\",\"reason\":\"补偿政策与案例缺失，社会成本硬否决不可判定。\"}]}"
+  },
+  {
+   "stage": "settle_research",
+   "input": 2,
+   "arm": "off",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 184,
+   "secs": 1.6,
+   "score": 2,
+   "out": "{\"settlements\":[{\"deferral_id\":\"d_001\",\"decision\":\"escalated\",\"reason\":\"缺同步曲线与调度规则，回访条件未触发，当前不可判定\"},{\"deferral_id\":\"d_002\",\"decision\":\"escalated\",\"reason\":\"分母缺失且风险条款未定，比较基准不成立，不可判定\"}]}"
+  },
+  {
+   "stage": "settle_research",
+   "input": 2,
+   "arm": "off",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 178,
+   "secs": 1.8,
+   "score": 2,
+   "out": "{\"settlements\":[{\"deferral_id\":\"d_001\",\"decision\":\"escalated\",\"reason\":\"退水时长序列未产出，时间模型无输入，不可判定\"},{\"deferral_id\":\"d_002\",\"decision\":\"escalated\",\"reason\":\"社会成本分母缺失，风险条款未挂靠，不可判定\"}]}"
+  },
+  {
+   "stage": "settle_research",
+   "input": 2,
+   "arm": "off",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 183,
+   "secs": 1.8,
+   "score": 2,
+   "out": "{\"settlements\":[{\"deferral_id\":\"d_001\",\"decision\":\"escalated\",\"reason\":\"缺同步曲线与调度规则，回访条件未触发，当前不可判定\"},{\"deferral_id\":\"d_002\",\"decision\":\"escalated\",\"reason\":\"社会成本分母缺失，风险条款未挂靠，当前不可判定\"}]}"
+  },
+  {
+   "stage": "settle_research",
+   "input": 2,
+   "arm": "on",
+   "rep": 0,
+   "json_ok": true,
+   "chars": 184,
+   "secs": 4.6,
+   "score": 2,
+   "out": "{\"settlements\":[{\"deferral_id\":\"d_001\",\"decision\":\"escalated\",\"reason\":\"缺同步曲线与调度规则，无法建可比时间模型，不可判定\"},{\"deferral_id\":\"d_002\",\"decision\":\"escalated\",\"reason\":\"缺社会成本分摊规则与同一分母，无法比较，不可判定\"}]}"
+  },
+  {
+   "stage": "settle_research",
+   "input": 2,
+   "arm": "on",
+   "rep": 1,
+   "json_ok": true,
+   "chars": 192,
+   "secs": 10.7,
+   "score": 2,
+   "out": "{\"settlements\":[{\"deferral_id\":\"d_001\",\"decision\":\"handled\",\"reason\":\"用单点退水时长作排空项，峰前可调库容差作腾空量，同峰窗比较。\"},{\"deferral_id\":\"d_002\",\"decision\":\"escalated\",\"reason\":\"分摊规则属政策分配，缺授权与价值判据，技术无法定同一分母。\"}]}"
+  },
+  {
+   "stage": "settle_research",
+   "input": 2,
+   "arm": "on",
+   "rep": 2,
+   "json_ok": true,
+   "chars": 180,
+   "secs": 5.1,
+   "score": 2,
+   "out": "{\"settlements\":[{\"deferral_id\":\"d_001\",\"decision\":\"escalated\",\"reason\":\"缺同步曲线与调度规则，时间模型无输入，当前不可判定\"},{\"deferral_id\":\"d_002\",\"decision\":\"escalated\",\"reason\":\"分摊规则未定且分母缺失，无法比较社会成本\"}]}"
+  }
+ ]
+}

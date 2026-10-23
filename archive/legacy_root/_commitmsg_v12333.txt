@@ -1,0 +1,91 @@
+v1.23.33：机制级吸收 —— 把「随时看随时停」变成有保证的事
+
+一、本版把映射清单剩余 11 项一次做完（含 3 项机制级）
+
+机制级三项（都是「可开关 + 有读数 + 有留痕」，默认全关）：
+  ① anytime-valid 停止（stop.anytime_alpha，默认 0=关）
+     本项目每圈边跑边判 = optional stopping，原先**无任何有效性保证**。
+     新增 stitched Hoeffding 置信序列（Howard et al. 2021）：「结构仍在长」的
+     0/1 序列，其均值下界**对任意停时成立**（E[φ_τ] ≤ α）；下界跌破 0.5 ⇒ 追加停因。
+     实测：12 个 1 ⇒ 下界 0.5606 > 0.5 可停；3 个 1 ⇒ 不判（样本不足不表态）。
+  ② 发散检测 + 回滚指针（只出读数与指针，不改停止行为）
+     三态：收敛/平稳/停滞/发散（方差前后半 + lag-1 自相关，与 CSD 同源）+
+     「历史最佳圈」指针。★ 依据 LoopGain，但只给指针：被回滚的圈不删（红线）。
+  ③ 预算 bandit（auto.bandit.enabled，默认 false）
+     UCB1-with-cost（吸收 AAAI'26 Budget-Aware LinUCB 思想，不引依赖、不做上下文特征）；
+     臂=圈数上限三档(3/4/6)，奖励=职责度中位−cost_w×(tokens/1000)；
+     状态落 dgtf_memory/bandit.json。★ 探索会故意选较差档 ⇒ 必须显式打开且必留痕。
+
+读数/结构八项：
+  ④ compact 内部面预算（率失真）：只出读数与政策，**不自动压缩**（ACE 教训：
+     1.8 万 token 压到 122 ⇒ 准确率 66.7→57.1）。
+  ⑤ 锚点离线解析验证（refchecker「按可审计表面判」）：URL 形态/协议/域名完整性，零网络。
+  ⑥ 锚点内部批判（史学 Quellenkritik）：外部批判已有 tier，内部批判此前缺失 ⇒
+     按域名类型给「立场/利益倾向提示」（gov/edu/org/com/媒体…），不是判词。
+  ⑦ 分级证明标准 + 谁主张谁举证（法学）：causal→beyond_reasonable_doubt、
+     numerical/predictive→clear_and_convincing、其余 preponderance；不改 gate。
+  ⑧ 裁决维度拆分（逻辑/事实/边界/后果）：对撞层 adjudications 增 aspect。
+  ⑨ 信念陈旧度读数（ABES + ftl-beliefs STALE）：age≥3 圈未再确认 ⇒ 提示；不改四态。
+  ⑩ 产物新增读数块：层读数（每层：主因/三态/历史最佳/anytime 下界/早预警）+
+     内部面预算 + 信念陈旧度 + 预算 bandit。
+  ⑪ 两个 opt-in 键 + 出厂 yaml 同步。
+
+二、★★ 最终真跑抓出的真缺口（本版最重要的修复）
+  【主因】/【发散三态】/【anytime 下界】/【早期预警】原先只写在
+  `dump_view_fields()`（**控制台转储**）里 ⇒ **产物 md 完全看不到** ——
+  读者视角等于这些读数不存在。修法：在 `save_result` 头部新增「层读数（每层）」块，
+  逐层输出；并加**行为判据**（造最小 packed 夹具 → 走真实 save_result →
+  断言 6 个读数块都在产物里），防回归。
+
+三、本轮两条判据通则（都被实测踩到）
+  1) 变异体要打在「**行为出口**」上：M21 拆掉锚点离线检查的协议守卫后，
+     域名守卫仍然拦住同一条输入 ⇒ 行为没变 ⇒ 假绿。改成破坏最终判定才判红。
+  2) 能变成纯函数判据的，不要写成「驱动大函数看副作用」（承 v1.23.32）——
+     后者一旦「没跑到」，表现与「通过」完全一样。
+
+四、工程坑（写进过程文档）
+  · heredoc 吃转义（第 3 次）：newline="\n" 在 heredoc 里成真换行 ⇒ 目标文件语法错。
+    ⇒ 凡内容含反斜杠/三层引号，一律走脚本文件 + @@NL@@ 占位替换。
+  · 模块缺 import math：新增模块级纯函数要先确认模块级 import。
+  · 变异体列表缺逗号：追加条目时上一条末尾无逗号 ⇒ 元组被当函数调用。
+  · importlib 相对路径失败：直测脚本要用**绝对路径**加载主文件。
+
+五、验收
+  主文件 <行数> / 纯 CRLF / 无 CRCRLF；
+  真实入口探针 52 ✓ / 0 ✗；变异体 23 / 23 判红；冒烟 223 ✓ / 0 ✗；
+  --phase all EXIT=0 / 0 ✗；AUDIT PASS 68 / FAIL 0；复审 16 / 0；
+  配置两向对账 0 差；最终真跑见 v12333_报告.md。
+
+六、未做（有意）
+  anytime 只用于「结构增长」这一维（一致率每跑只采一次，无逐圈序列）；
+  bandit 只做圈数上限（动作空间越大、探索代价越高，违「探索代价有界」）；
+  锚点联网可达性验证留给联网通道（不把可选成本塞进主路径）。
+
+七、dgtf_app 同步（前后端一致性，逐环节已查）
+  改了两个文件：
+   · `params.py`：`_KEY_CN` 补 **19 条**中文标签（17 个本轮新增 + 2 个历史遗漏：
+     probe.marginal_floor / belief.revoke_sources）—— 未登记会让面板露出英文键名。
+   · `selftest.py`：「联网读数解析出了条数/环节」判据改为**数据自洽**（原来只看
+     items[0]，最新产物若是没开 --web 的跑次就必然红 = 数据依赖的假回归）。
+  逐环节结论（每个环节都有证据）：
+   · engine_runner / layers / dashboard / outputs_index / library / docparse /
+     server / app.js / style.css / mock_engine ⇒ **无需同步**（本轮未改任何被应用
+     解析的格式；用真跑总日志实测四层切分 145K/168K/152K/153K 均衡、[tok] 解析正常）。
+   · 新配置键**类型往返实测 16/16 零漂移**（bool/float/int/str 全对）——
+     这是 skill 记过的最高危项（历史上列表被写成字符串 ⇒ 引擎逐字符迭代 ⇒ 真跑即崩）。
+  验收：`selftest.py` **PASS 367 / FAIL 0**（过程中踩到「改完 params.py 自检仍红 =
+   服务是陈旧进程」⇒ 按流程杀干净端口上的**全部** PID 再启一个）；
+  浏览器验收 `_accept.html?m=probe` **PASS 192 / FAIL 15** —— 15 条全在
+  style.css/app.js 的样式契约上，而这两个文件本轮未改（git 可证）⇒ **既有漂移**，
+  建议单独一轮按当前样式意图对齐。
+
+八、本版又抓出的两个**沉默失效**（真跑逐项核对时）
+  P7 **把 `View` 当 `dict` 用**：`(results.get(e) or {}).get("...")` 而 results 的值是
+     View 对象 ⇒ AttributeError ⇒ 被 `except Exception` 吞掉 ⇒ compact /
+     belief_staleness / bandit 三键**从未写进 packed**（产物里整行读数消失且不报错）。
+     修：加鸭子类型 helper `_rv(obj,key,default)`；两处 except 改为「异常名写进产物」。
+  P8 **读数算在「序列被赋值」之前**：`_layer_csd_now` 排在
+     `view.round_log = list(state["round_log"])` 之前 ⇒ CSD/发散三态/anytime 下界
+     **永远算不出**。修：调用点后移。
+  ★ 通则：`except: pass` + 类型假设错误 = 沉默失效；读逐圈序列的计算必须排在
+     序列赋值之后。两条都只能靠「核对产物里到底有没有那行」发现。

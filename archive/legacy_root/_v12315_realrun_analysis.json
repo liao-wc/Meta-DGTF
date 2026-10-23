@@ -1,0 +1,88 @@
+[
+ {
+  "group": "up2",
+  "md": "20261009_165235_老城区暴雨内涝频发排水系统重建还是局部.md",
+  "calls": 79,
+  "tokens": 739219,
+  "cap": {
+   "修行": 2,
+   "研究": 2,
+   "对撞": 2,
+   "元": 3
+  },
+  "mode": "严格串行",
+  "profile": "economy",
+  "nat": 0,
+  "cut": 4,
+  "rounds_run": {
+   "修行": {
+    "run": 2,
+    "cap": 2
+   },
+   "研究": {
+    "run": 2,
+    "cap": 2
+   },
+   "对撞": {
+    "run": 2,
+    "cap": 2
+   },
+   "元": {
+    "run": 3,
+    "cap": 3
+   }
+  },
+  "tri": 0.5,
+  "web_line": "**关** —— 本次未接入联网检索；事实类结论没有外部证据支撑（要接入：`--web on`）",
+  "auto_head": "总开关开，auto 接管 5 项",
+  "has_auto_table": true,
+  "has_rounds_run_line": true
+ },
+ {
+  "group": "up6",
+  "md": null
+ },
+ {
+  "group": "up10",
+  "md": null
+ },
+ {
+  "group": "auto",
+  "md": "20261009_171141_老城区暴雨内涝频发排水系统重建还是局部.md",
+  "calls": 193,
+  "tokens": 2420429,
+  "cap": {
+   "修行": 4,
+   "研究": 4,
+   "对撞": 5,
+   "元": 7
+  },
+  "mode": "B",
+  "profile": "balanced",
+  "nat": 1,
+  "cut": 3,
+  "rounds_run": {
+   "修行": {
+    "run": 4,
+    "cap": 4
+   },
+   "研究": {
+    "run": 4,
+    "cap": 4
+   },
+   "对撞": {
+    "run": 5,
+    "cap": 5
+   },
+   "元": {
+    "run": 7,
+    "cap": 7
+   }
+  },
+  "tri": 0.5,
+  "web_line": "**开** —— 收 24 条（W1、W2、W3、W4、W5、W6…；4 个环节；tier 3×24）；失败 0 条",
+  "auto_head": "总开关开，auto 接管 12 项",
+  "has_auto_table": true,
+  "has_rounds_run_line": true
+ }
+]

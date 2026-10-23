@@ -1,0 +1,61 @@
+{
+ "model": "D:/元DGTF-多模并行架构/local_model/models/DeepSeek-R1-Distill-Qwen-1.5B",
+ "epochs": 3,
+ "lr": 0.0002,
+ "train_n": 108,
+ "val_n": 14,
+ "history": [
+  {
+   "epoch": 1,
+   "train_loss": 0.0988,
+   "val_loss": 0.1621,
+   "sec": 425.9
+  },
+  {
+   "epoch": 2,
+   "train_loss": 0.0162,
+   "val_loss": 0.1504,
+   "sec": 427.1
+  },
+  {
+   "epoch": 3,
+   "train_loss": 0.0129,
+   "val_loss": 0.1374,
+   "sec": 458.3
+  }
+ ],
+ "best_val_loss": 0.1374,
+ "eval": {
+  "route_exact": 0.214,
+  "round_mae": 1.286,
+  "n": 14
+ },
+ "samples": [
+  {
+   "route_ok": false,
+   "pred": "{\"route\":[\"0\",\"1\",\"both\",\"all\"],\"rounds\":{\"0\":3,\"1\":3,\"both\":2,\"all\":2},\"why\":\"按问题结构选择层与圈数\"}",
+   "gold": "{\"route\":[\"0\",\"1\",\"both\"],\"rounds\":{\"0\":4,\"1\":4,\"both\":4},\"why\":\"按问题结构选择层与圈数\"}",
+   "round_mae": 1.5
+  },
+  {
+   "route_ok": false,
+   "pred": "{\"route\":[\"0\",\"1\",\"both\",\"all\"],\"rounds\":{\"0\":3,\"1\":2,\"both\":2,\"all\":1},\"why\":\"按问题结构选择层与圈数\"}",
+   "gold": "{\"route\":[\"0\",\"1\"],\"rounds\":{\"0\":2,\"1\":2},\"why\":\"按问题结构选择层与圈数\"}",
+   "round_mae": 1.0
+  },
+  {
+   "route_ok": false,
+   "pred": "{\"route\":[\"0\",\"1\",\"both\",\"all\"],\"rounds\":{\"0\":3,\"1\":3,\"both\":2,\"all\":2},\"why\":\"按问题结构选择层与圈数\"}",
+   "gold": "{\"route\":[\"0\",\"1\"],\"rounds\":{\"0\":2,\"1\":2},\"why\":\"按问题结构选择层与圈数\"}",
+   "round_mae": 1.5
+  },
+  {
+   "route_ok": false,
+   "pred": "{\"route\":[\"0\",\"1\",\"both\",\"all\"],\"rounds\":{\"0\":3,\"1\":3,\"both\":2,\"all\":2},\"why\":\"按问题结构选择层与圈数\"}",
+   "gold": "{\"route\":[\"0\",\"1\"],\"rounds\":{\"0\":2,\"1\":2},\"why\":\"按问题结构选择层与圈数\"}",
+   "round_mae": 1.5
+  }
+ ],
+ "adapter": "llm_sft/adapter_deepseek15b_v1",
+ "note": "LoRA SFT：问题→route/rounds JSON；fp16；留出按问题分组"
+}

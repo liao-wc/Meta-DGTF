@@ -1,0 +1,31 @@
+📁 已保存: C:\Users\18432\AppData\Local\Temp\tmpxn4y1qrj\20261010_004540_新中国的成立时间是什么时候.md
+A_def_retriever            snapshot
+B2_snapshot_含尚未实现          False
+B2_snapshot_异常             无
+B2_snapshot_池里条数           0
+B2_web_search_含尚未实现        False
+B2_web_search_异常           无
+B2_web_search_池里条数         0
+B_snapshot_err             
+B_snapshot_异常              无
+B_snapshot_检索后anchors      0
+B_snapshot_检索调用            0
+B_snapshot_池里条数            0
+B_tavily_err               
+B_tavily_异常                无
+B_tavily_检索后anchors        0
+B_tavily_检索调用              0
+B_tavily_池里条数              0
+B_web_search_err           
+B_web_search_异常            无
+B_web_search_检索后anchors    0
+B_web_search_检索调用          0
+B_web_search_池里条数          0
+C_snapshot_err             ''
+C_snapshot_unconfigured    True
+C_tavily_err               ''
+C_tavily_unconfigured      True
+D2_明细_原文                   **锚点对照**：未做 —— 通道开着但**没有挂锚点文件**（设 `external_anchor.path` 即接入）
+D2_明细_给两条路                 False
+D_未挂文件_原文                  **外部锚点 · 文本**（锚点文件 `external_anchor`）：**开（未挂锚点文件）** —— 把 `external_anchor.path` 指向锚点快照 JSON 即自动接入；本次结论只取决于池内材料
+D_未挂文件_给两条路                False

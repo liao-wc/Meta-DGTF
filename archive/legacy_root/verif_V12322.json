@@ -1,0 +1,48 @@
+{
+ "tag": "V12322",
+ "src": "元DGTF-V1.23.22.py",
+ "route": "0",
+ "rounds": "0:1",
+ "mode": "serial",
+ "orientation": "auto",
+ "llm_calls": 11,
+ "tri_state": [
+  0,
+  0
+ ],
+ "meta_closure_all": null,
+ "duel_suspensions_both": [],
+ "engagements_by_view": {
+  "0": [
+   {
+    "target": "'最新'的集合与时刻",
+    "tension_id": null
+   }
+  ]
+ },
+ "suspensions_with_tid": {
+  "0": [
+   {
+    "target": "用户真实处境（选型/追新）",
+    "tension_id": null,
+    "status": "active"
+   }
+  ]
+ },
+ "pools_all_engagements": [],
+ "views_errors": {
+  "0": []
+ },
+ "pools_meta_p16": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": []
+ },
+ "pools_meta_len": {
+  "0": 2,
+  "1": 0,
+  "both": 0,
+  "all": 0
+ }
+}

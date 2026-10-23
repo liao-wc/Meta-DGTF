@@ -1,0 +1,9 @@
+开始探活 04:11:24
+04:11:45 第1次 FAIL APITimeoutError 20.3s
+04:13:20 第2次 FAIL APITimeoutError 20.2s
+04:14:55 第3次 FAIL APITimeoutError 20.3s
+04:16:30 第4次 FAIL APITimeoutError 20.2s
+04:18:05 第5次 FAIL APITimeoutError 20.2s
+04:19:41 第6次 FAIL APITimeoutError 20.2s
+04:21:16 第7次 FAIL APITimeoutError 20.2s
+04:22:51 第8次 FAIL APITimeoutError 20.2s

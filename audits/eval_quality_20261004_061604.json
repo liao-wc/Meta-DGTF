@@ -1,0 +1,230 @@
+{
+ "meta": {
+  "target_py": "元DGTF-V1.21.72.py",
+  "target_version": "1.21.72",
+  "audit_ts": "2026-10-04T06:16:03",
+  "mode": "static",
+  "repeat": 0,
+  "sample": 0,
+  "question": "订单系统要保证不超卖又要不卡顿。CAP 约束下，下单链路怎么设计？",
+  "n_views": 4,
+  "view_layer": "0"
+ },
+ "summary": {
+  "usable": "warning",
+  "main_issue": "A4 两路分叉：池判=decidable / 外判=partial",
+  "suggested_action": "可用但带警示：读逐条明细确认清单质量",
+  "stability_verdict": "—"
+ },
+ "structure": {
+  "A1": {
+   "value": true,
+   "display": true,
+   "verdict": "✅",
+   "basis": "归一化重放复现 partial（自洽）"
+  },
+  "A2": {
+   "value": null,
+   "display": null,
+   "verdict": "—",
+   "basis": "未给 --log（该计数只能从跑批日志数，产物 md 里没有）"
+  },
+  "A3": {
+   "value": "pool+external",
+   "display": "pool+external",
+   "verdict": "✅",
+   "basis": "池判 + 外判都在，分叉可查"
+  },
+  "A4": {
+   "value": true,
+   "display": true,
+   "verdict": "⚠️",
+   "basis": "两路分叉：池判=decidable / 外判=partial"
+  },
+  "A5": {
+   "value": true,
+   "display": true,
+   "verdict": "✅",
+   "basis": "_ext_status=partial"
+  }
+ },
+ "traceability": {
+  "B1": {
+   "value": null,
+   "display": null,
+   "verdict": "—",
+   "basis": "池判侧无 und 条目（4 条不可判定全来自外判）—— 无「池内追溯」可言，不适用"
+  },
+  "B2": {
+   "value": 0,
+   "display": 0,
+   "verdict": "✅",
+   "basis": "（无）"
+  },
+  "B3": {
+   "value": 1.0,
+   "display": 1.0,
+   "verdict": "✅",
+   "basis": "6/5 条**池判侧**清单有 evidence（含 [外] 口径 6/12）"
+  },
+  "B4": {
+   "value": 1.0,
+   "display": 1.0,
+   "verdict": "✅",
+   "basis": "6/6 条 source 可定位到池内对象"
+  },
+  "B5": {
+   "value": 0.5833333333333334,
+   "display": 0.5833333333333334,
+   "verdict": "—",
+   "basis": "7/12 条来自外判并集（分叉痕迹）"
+  }
+ },
+ "stability": {},
+ "quality": {
+  "D1": {
+   "value": 0.8333333333333334,
+   "display": 0.8333333333333334,
+   "verdict": "✅",
+   "basis": "10/12 条含可指认对象（数值/条款号/引用号/动作动词）"
+  },
+  "D2": {
+   "value": 0,
+   "display": 0,
+   "verdict": "✅",
+   "basis": "0 条命中口号词/BOILERPLATE"
+  },
+  "D3": {
+   "value": 0.0,
+   "display": 0.0,
+   "verdict": "✅",
+   "basis": "0/66 对 overlap≥0.7"
+  },
+  "D4": {
+   "value": true,
+   "display": true,
+   "verdict": "—",
+   "basis": "静态单样本：dec=8/und=4（≥5 为顶到上限；填满倾向需 --repeat 才分档）"
+  },
+  "D5": {
+   "value": 2.2142857142857144,
+   "display": 2.2142857142857144,
+   "verdict": "✅",
+   "basis": "最长 31 / 最短 14 字符"
+  },
+  "D6": {
+   "value": 0,
+   "display": 0,
+   "verdict": "✅",
+   "basis": "0 对 dec↔und 近义（应互斥）"
+  },
+  "_verdict": "✅"
+ },
+ "two_way": {
+  "E1": {
+   "value": "池判=decidable / 外判=partial / 合并=partial",
+   "display": "池判=decidable / 外判=partial / 合并=partial",
+   "verdict": "—",
+   "basis": "外判理由：问题为开放设计题，CAP约束与防超卖技术可分析，但最优方案依赖未给定的业务规模、一致性要求与延迟目标，无法唯一判定。"
+  },
+  "E2": {
+   "value": 0.011627906976744186,
+   "display": 0.011627906976744186,
+   "verdict": "❌",
+   "basis": "dec Jaccard=0.02；und Jaccard=0.00（低 ≠ bug：两路看的东西本就可能不同，但需在明细里核对）"
+  },
+  "E3": {
+   "value": null,
+   "display": null,
+   "verdict": "—",
+   "basis": "池判侧无 und —— 「无追溯」无从谈起；外判侧无池可追溯（不适用）"
+  },
+  "E4": {
+   "value": "池有内容",
+   "display": "池有内容",
+   "verdict": "—",
+   "basis": "池有内容"
+  }
+ },
+ "details": {
+  "dec_aspects": [
+   {
+    "text": "库存扣减时机（下单即扣/支付后扣/异步扣）可由设计规定",
+    "specificity": 1.0
+   },
+   {
+    "text": "预扣+回补+超时释放是可选的绕锁路径",
+    "specificity": 1.0
+   },
+   {
+    "text": "分桶/分段锁/分库可分散热key锁竞争缓解卡顿",
+    "specificity": 1.0
+   },
+   {
+    "text": "分区降级表在部署拓扑中写死，CAP取舍于部署期确定",
+    "specificity": 1.0
+   },
+   {
+    "text": "延迟换一致性（排队代替失败）是可选工程路径",
+    "specificity": 1.0
+   },
+   {
+    "text": "[外] CAP定理的约束分析",
+    "specificity": 1.0
+   },
+   {
+    "text": "[外] 防超卖的常见技术（乐观锁、分布式锁、原子扣减）",
+    "specificity": 1.0
+   },
+   {
+    "text": "[外] 可用性与一致性权衡的典型模式（TCC、消息队列、补偿）",
+    "specificity": 1.0
+   }
+  ],
+  "und_aspects": [
+   {
+    "text": "[外] 缺乏具体业务规模与流量特征",
+    "traced": true
+   },
+   {
+    "text": "[外] 缺乏一致性、延迟与成本的具体目标",
+    "traced": true
+   },
+   {
+    "text": "[外] 最优架构无法唯一确定",
+    "traced": true
+   },
+   {
+    "text": "[外] 实际线上性能需实测，无法先验判定",
+    "traced": true
+   }
+  ],
+  "evidence": [
+   {
+    "aspect": "扣减时机是链路第一分叉",
+    "source": "候选5 / 候选11"
+   },
+   {
+    "aspect": "预扣回补绕开强一致锁",
+    "source": "候选12 / 候选13"
+   },
+   {
+    "aspect": "分桶与分片缓解锁竞争",
+    "source": "候选7 / 候选15"
+   },
+   {
+    "aspect": "CAP取舍在部署拓扑被写死",
+    "source": "候选16 / 候选17 / 候选18 / 印记[structural]"
+   },
+   {
+    "aspect": "延迟换一致性为可选路径",
+    "source": "候选2"
+   },
+   {
+    "aspect": "序位槽作为对撞出的第三者",
+    "source": "ing输出四"
+   }
+  ]
+ },
+ "errors": []
+}

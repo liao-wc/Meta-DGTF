@@ -1,0 +1,1211 @@
+/* 元DGTF 工作台 — 视觉语言：Modern Tool（anchor: Linear）
+   warm near-black · hairline 分隔 · 单一 accent · 等宽数字 · 克制动效 */
+
+:root{
+  /* ground & surfaces */
+  --ground:#08090A;
+  /* ★ R27：**页面画布 = 纯白**。抽屉仍是暗面（--ground），
+     面板页（#sheet）另给一套浅色档（见 .sheet 里的变量覆盖），
+     避免「白底白字」。 */
+  --canvas:#FFFFFF;
+  --s1:#16171C;
+  --s2:#1E1F25;
+  --s3:#26272E;
+  /* hairline */
+  --hair:rgba(255,255,255,.06);
+  --hair-2:rgba(255,255,255,.10);
+  /* text */
+  --t1:#F7F8F8;
+  --t2:#9CA3AF;
+  --t3:#6B7280;
+  /* accent & semantic */
+  --accent:#5E6AD2;
+  --accent-hi:#7078DE;
+  --code:#A78BFA;
+  --ok:#3FB950;
+  --err:#F85149;
+  --warn:#D29922;
+  /* shape */
+  --r-sm:6px; --r-md:12px; --r-lg:16px;
+  --shadow:0 1px 2px rgba(0,0,0,.3);
+  --shadow-lg:0 16px 48px rgba(0,0,0,.55);
+  /* motion */
+  --ease:cubic-bezier(.22,1,.36,1);
+  --dur:.15s;
+  /* type */
+  --f-display:"Inter Tight","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  --f-body:"Inter","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono","Cascadia Code",Consolas,monospace;
+  /* 抽屉宽度：自适应，且尽量不越过输入框左边界（首屏靠它「让位」，见 body.drawer-open） */
+  --drawer-w:min(400px, max(220px, calc((100vw - 960px) / 2)));
+  /* ★ R37：让位量**封顶为视口的一半**——窄视口（<960px）下 --drawer-w 会退化成 220~400px，
+     主区右移后右侧内容被顶出视口（用户报「展开右边看不见了」）。取 min(抽屉宽, 50vw)
+     ⇒ 右侧恒留一半视口，画布右缘永远可见。宽视口下 50vw 远大于 400px，取值与旧行为一致。 */
+  --shift-w:min(var(--drawer-w), 50vw);
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+/* ★ 仪表盘按视口定高：用 **100% 的 flex 链**（body → main → .dash），不要用 vh。
+   无头浏览器里 CSS 的 100vh 实测比 JS innerHeight 大一个顶栏高，会让整页多出一条
+   56px 的滚动条 —— 面板内部的 .scroll 就永远滚不到底，且判据 docH<=vp 会翻红。 */
+body{
+  background:var(--canvas);   /* ★ R27：整体页面背景 → **纯白** */
+  color:var(--t1);
+  font:400 15px/1.55 var(--f-body);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.mono,pre,code,.log,.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+button,input,select,textarea{font-family:inherit;color:inherit}
+button{cursor:pointer}
+a{color:var(--accent)}
+::selection{background:rgba(94,106,210,.35)}
+
+/* 细滚动条 —— ★ R27：画布变纯白 ⇒ 滑块换成**中性灰**（白底与暗抽屉上都看得见） */
+*{scrollbar-width:thin;scrollbar-color:rgba(128,132,140,.36) transparent}
+*::-webkit-scrollbar{width:10px;height:10px}
+*::-webkit-scrollbar-thumb{background:rgba(128,132,140,.36);
+  border:3px solid transparent;background-clip:padding-box;border-radius:6px}
+*::-webkit-scrollbar-thumb:hover{background:rgba(128,132,140,.55);background-clip:padding-box}
+*::-webkit-scrollbar-track{background:transparent}
+/* ★ R33：运行日志的滚动条改成**短的椭圆点**：隐藏原生滚动条，改用自绘的 #rl-bar
+   （跟着滚动位置走，长度固定 ~26px、圆角胶囊 —— 原生滚动条的长度由内容比例决定，CSS 改不了）。
+   ★★ R37：用户报「**滚动条用鼠标拖不动**」——
+   ① 原因是 R33 把它设成了 `pointer-events:none`（纯指示器、不可交互）；
+   ② 现在改成**可拖动的圆点**：`pointer-events:auto` + `cursor:grab`，
+      `app.js` 里给它挂了 `pointerdown/move/up` 的拖拽（按住拖动 ⇒ 按比例同步 `scrollTop`）。
+   ③ 形状从长胶囊（26px 高）缩成**圆点**（直径 12px）—— 用户要求「改成一个圆点」。 */
+#runlog{position:relative}
+#runlog-body{scrollbar-width:none}
+#runlog-body::-webkit-scrollbar{width:0;height:0;display:none}
+/* ★ R39：① 颜色改成**蓝色**（用户「滚动的点颜色改为蓝色」）；② 贴到日志区**最右侧边缘**
+   （原来 right:5px 落在内侧、看着「悬空」）；③ 上下范围仍然由 JS 按 `#runlog-body`
+   的轨道算（`top ∈ [head 之下, 正文区底部]`）⇒ 只在这一页的正文范围内滑动。 */
+#rl-bar{position:absolute;right:1px;width:12px;height:12px;border-radius:50%;
+  background:rgba(47,58,168,.55);pointer-events:auto;cursor:grab;opacity:0;
+  touch-action:none;
+  transition:opacity .15s var(--ease),background .15s var(--ease)}
+#rl-bar.on{opacity:1}
+#rl-bar:hover,#rl-bar.drag{background:rgba(35,47,158,.88)}
+#rl-bar.drag{cursor:grabbing}
+#rl-bar:hover{background:rgba(47,58,168,.75)}
+
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+
+h1,h2,h3,.task-q,.item .t,.md p{text-wrap:pretty}
+
+/* ── 品牌 / 四层 glyph（修行 研究 对撞 元）───────────────────── */
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--f-display);
+  font-weight:600;font-size:15px;letter-spacing:-.01em;white-space:nowrap}
+/* ★ R20：内嵌图形（品牌/欢迎语的方块标）放大一点、更厚实 */
+.glyph{display:grid;grid-template-columns:repeat(2,1fr);gap:2.5px;width:18px;height:18px;flex:0 0 auto}
+.glyph i{background:var(--s3);border-radius:2px}
+.glyph i:nth-child(1){background:var(--accent)}
+.glyph i:nth-child(2){background:var(--accent);opacity:.72}
+.glyph i:nth-child(3){background:var(--accent);opacity:.44}
+.glyph i:nth-child(4){background:var(--accent);opacity:.22}
+.glyph.big{width:32px;height:32px;gap:4.5px}
+.brand .sub{color:var(--t3);font-weight:500;font-size:12px;letter-spacing:.02em}
+
+/* 引擎 / 凭据状态（收进抽屉顶部）：**文字白色 + 整体居中** */
+.env{color:var(--t1);font-size:12px;line-height:1.7;font-variant-numeric:tabular-nums;
+  padding:12px 2px 2px;text-align:center}
+.env b{color:#fff;font-weight:600;font-family:var(--f-mono);font-size:11.5px}
+/* 状态点：**配好了 = 高亮**（绿 + 光晕）、**没配 = 灰**（低对比） */
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;
+  margin-right:5px;vertical-align:0}
+.dot.ok{background:var(--ok);box-shadow:0 0 0 3px rgba(63,185,80,.16),0 0 8px rgba(63,185,80,.7)}
+.dot.no{background:var(--t3);box-shadow:none}
+
+/* ── 左上角圆按钮组：抽屉 / 搜索对话产物 / 开启新对话 ────────────── */
+.corner-actions{position:fixed;left:14px;top:14px;z-index:40;display:flex;gap:6px}
+/* ── 按钮的悬停描述气泡 ─────────────────────────────────────────
+   ★ 用**挂 body 的 fixed 气泡**（JS 定位）：`overflow:auto` 的祖先会把按钮自带的
+     `::after` 气泡整块裁掉，而 fixed 后代不受祖先 overflow 裁剪。
+   ★ 外观按要求：**背景透明 + 文字白色**；配一层暗色 text-shadow 保可读
+     （气泡会落在深色卡片或日志上，纯透明 + 纯白会和底下的浅色文字糊在一起）。 */
+.tip{position:fixed;z-index:88;max-width:340px;pointer-events:none;
+  background:transparent;border:0;padding:0;
+  /* ★ R32：悬停描述统一成**应用里的提示灰**（#6B7280，与输入框占位同款；
+     白页 4.8:1、暗抽屉 4.4:1，两处都读得清）。 */
+  color:#6B7280;font-size:12px;font-weight:500;line-height:1.5;
+  text-shadow:none;
+  opacity:0;transition:opacity .12s var(--ease)}
+.tip.show{opacity:1}
+/* 圆按钮（左上角那排 / 面板关闭键 / 抽屉收起键）：**只留图标**，直径 34 */
+.icon-btn{position:relative;display:inline-flex;align-items:center;justify-content:center;
+  gap:6px;height:34px;width:34px;border-radius:50%;border:1px solid var(--hair);
+  background:transparent;color:#eef1f7;flex:0 0 auto;   /* ★ R23：高亮（同排三个圆钮） */
+  transition:background var(--dur) var(--ease),color var(--dur) var(--ease),
+             border-color var(--dur) var(--ease)}
+.icon-btn:hover{background:var(--s2);border-color:var(--hair-3, rgba(255,255,255,.20));
+  color:#fff}
+/* 图标尺寸也钉死（只写 svg 的 width 属性会被 flex 压小） */
+.icon-btn svg{width:17px;height:17px;flex:0 0 auto}
+/* ★ R23：笔画**加粗** —— CSS 的 stroke-width 会覆盖 SVG 上的同名**表现属性** */
+.icon-btn svg *{stroke-width:2.1}
+/* ★ R25：画布转浅灰后，落在画布上的左上三个圆钮改**深色**（近白图标在浅灰上几乎看不见）。
+   （写在基础规则**之后** —— `_rule(".icon-btn")` 只取第一条，提前写会把基础规则读空。） */
+.corner-actions .icon-btn{color:#24272F;border-color:rgba(0,0,0,.14)}
+.corner-actions .icon-btn:hover{background:rgba(0,0,0,.06);
+  border-color:rgba(0,0,0,.24);color:#000}
+
+/* 导入结果提示（在输入框下方，空则不占位） */
+.attach-msg{font-size:11.5px;color:var(--t3);padding:6px 4px 0}
+.attach-msg:empty{display:none}
+
+/* ── 搜索对话产物：居中搜索框 + 结果列表 ───────────────────────── */
+.search-overlay{position:fixed;inset:0;z-index:45;display:flex;justify-content:center;
+  align-items:flex-start;padding:11vh 16px 40px;background:rgba(4,5,6,.74);
+  backdrop-filter:blur(6px);animation:rise .2s var(--ease) both}
+.search-overlay.hidden{display:none}
+.search-panel{width:100%;max-width:640px;display:flex;flex-direction:column;gap:10px;min-height:0}
+.search-box{display:flex;align-items:center;gap:10px;padding:0 10px 0 15px;
+  background:rgba(22,23,28,.20);backdrop-filter:blur(8px);
+  border:1px solid var(--hair-2);border-radius:24px;
+  box-shadow:var(--shadow-lg)}
+.search-box:focus-within{border-color:rgba(94,106,210,.55)}
+.sb-icon{color:var(--t3);flex:0 0 auto}
+#search-input{flex:1 1 auto;background:transparent;border:0;outline:none;color:var(--t1);
+  font-size:15px;padding:14px 0;min-width:0}
+#search-input::placeholder{color:var(--t3)}
+.search-results{max-height:56vh;background:rgba(22,23,28,.20);backdrop-filter:blur(8px);
+  border:1px solid var(--hair-2);border-radius:var(--r-md);overflow:auto;box-shadow:var(--shadow-lg)}
+.search-results:empty{display:none}
+
+/* ── 侧边抽屉：读数台 / 最近跑过 / 产物库 / 资料库 / 检索库 / 高级参数 ──
+   首屏要和对话工具一样干净，所以这些面板全部收进来，点左上角图标才拉开。 */
+.drawer{position:fixed;left:0;top:0;bottom:0;z-index:60;
+  width:var(--drawer-w);
+  max-width:94vw;
+  display:flex;flex-direction:column;overflow:hidden;
+  background:var(--ground);border-right:1px solid var(--hair-2);box-shadow:var(--shadow-lg);
+  /* ★ R38：平移 + **淡出**（用户要求「侧边栏效果为淡出」）+ 放慢到 .6s
+     —— 与 main.stage 同一条时长，开门时「让位平移」与「抽屉淡入」同步落点。 */
+  opacity:0;
+  transform:translateX(-102%);
+  transition:transform .6s var(--ease),opacity .6s var(--ease)}
+.drawer.open{transform:none;opacity:1}
+/* 抽屉头：**内容整体居中**；关闭键绝对定位到右侧（不把标题挤偏） */
+.drawer-head{position:relative;display:flex;align-items:center;justify-content:center;
+  gap:10px;padding:12px 14px;border-bottom:1px solid var(--hair);flex:0 0 auto}
+.drawer-head .icon-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%)}
+.drawer-body{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;
+  gap:clamp(9px,2.2vh,24px);padding:clamp(10px,2.2vh,20px) 14px 8px}
+/* ★ R25：底部落款（原来跟在品牌后面，现移到最底） */
+.drawer-foot{flex:0 0 auto;text-align:center;color:var(--t3);
+  font-family:var(--f-display);font-size:12px;font-weight:500;letter-spacing:.16em;
+  padding:clamp(8px,1.8vh,16px) 14px clamp(12px,2.4vh,24px);
+  border-top:1px solid var(--hair)}
+.drawer-mask{position:fixed;inset:0;z-index:55;background:rgba(2,3,4,.56);
+  opacity:0;pointer-events:none;transition:opacity .24s var(--ease)}
+.drawer-mask.show{opacity:1;pointer-events:auto}
+
+/* 抽屉里只放**按钮**：点一个 → 对应面板在全屏层里铺开 */
+/* 按钮间距**自适应**：随抽屉高度伸缩（高窗口松一点、矮窗口紧一点），不写死 px */
+/* ★ R26：七个按钮在「环境信息之下、落款之上」的那段空间里**上下居中**
+   （上下 `margin:auto` 平分剩余高度；视口矮时自动压成 0，不会挤掉内容）。 */
+/* ★ R28：按钮组在剩余空间里居中后，再**整体上移一段**（用户要求往上挪） ——
+   仍用自动外边距居中（矮窗口内容溢出时会自然退化成顶对齐、不会把人挤出屏幕）。 */
+.drawer-nav{display:flex;flex-direction:column;gap:clamp(8px, 1.6vh, 16px);
+  margin-top:auto;margin-bottom:auto;
+  transform:translateY(clamp(-136px, -10vh, -92px))}
+.nav-btn{display:flex;align-items:center;justify-content:flex-start;gap:9px;
+  text-align:center;width:100%;
+  /* 高度自适应：随抽屉高度伸缩（高窗口松一点、矮窗口紧一点） */
+  padding:clamp(11px, 1.5vh, 15px) 13px;border-radius:var(--r-md);border:1px solid var(--hair);
+  background:var(--s1);color:var(--t1);
+  transition:background var(--dur) var(--ease),border-color var(--dur) var(--ease)}
+.nav-btn:hover{background:var(--s2);border-color:var(--hair-2)}
+.nav-btn:active{background:var(--s3)}
+/* 分组按钮：右侧「N 项 ›」——项数顶到右边，再补一个箭头暗示「点进去」 */
+.adv-groups .nav-btn{position:relative;padding-right:52px}
+.adv-groups .nav-btn em{display:block;position:absolute;right:26px;top:50%;
+  transform:translateY(-50%);font-size:11.5px;color:var(--t3);font-style:normal}
+.adv-groups .nav-btn::after{content:"\203A";position:absolute;right:12px;top:50%;
+  transform:translateY(-50%);color:var(--t3);font-size:15px;line-height:1}
+.adv-groups .nav-btn:hover::after{color:var(--accent-hi)}
+.nav-btn svg{color:var(--t2);flex:0 0 auto}
+.nav-btn:hover svg{color:var(--accent-hi)}
+/* 名称不换行；描述已改成悬停气泡 ⇒ 按钮高度**自适应**（不再被描述撑成两行） */
+/* 图标贴左、名字在**剩余空间里居中**：右侧补一个与图标等宽的占位，视觉才是正中 */
+.nav-btn .nb-name{font-size:13.5px;font-weight:500;flex:1 1 auto;
+  white-space:nowrap;text-align:center;padding-right:24px}
+.nav-btn em{display:none}
+/* ★ R25：矮视口把抽屉压紧一点 —— 保证「环境信息 + 7 个按钮 + 落款」仍放得下 */
+@media (max-height:660px){
+  .drawer-body{gap:8px}
+  .drawer-nav{gap:6px;padding-top:4px}
+  .nav-btn{padding:9px 12px}
+  .drawer-foot{padding:6px 14px 10px}
+}
+
+/* ── 面板页（#sheet）：**不再是另起的全屏浮层**，而是这一页的内容本身 ──
+   ★ R27：点抽屉里的按钮 ⇒ 抽屉**收回**、面板打开；
+   ★ R30：面板层是**固定覆盖 + 10% 半透明**，主视图**不再隐藏** —— 透过这层能看见背景。
+   `.sheet-page.active` 铺满 `.sheet-body`。关闭后抽屉再弹回来（见 app.js）。 */
+.sheet{position:fixed;inset:0;z-index:65;display:flex;flex-direction:column;
+  /* ★ R33：整体改成 **85% 不透明**。
+     ★★ R37：用户要求「背景改成**漆黑透明**，透明度不变，字体改成白色加粗高亮」——
+     底色从白档换成**近黑**（`#08090A`，与抽屉 `--ground` 同色系），alpha 仍是 .85。
+     内容整体改**白字 + 加粗**（--t 系列翻成浅色；正文用 500 字重、强调用 700）。 */
+  background:rgba(8,9,10,.85);
+  animation:rise .22s var(--ease) both;
+  /* ★ R37：**暗面**配色 —— --t1 最亮（标题/正文主色）、--t2 次亮、--t3 弱化；
+     语义色换成「暗底上更亮」的一档，保证对比度。 */
+  --t1:#F5F7FA;--t2:#CFD5DE;--t3:#8C95A2;
+  --ok:#4ADE80;--err:#FF6B6B;--warn:#F5C453;--accent-hi:#A5B0F5;
+  --hair:rgba(255,255,255,.10);--hair-2:rgba(255,255,255,.18);
+  --s1:#111214;--s2:#191B1F;--s3:#22252B;
+  color:var(--t1);font-weight:500}
+.sheet.hidden{display:none}
+/* ★ R30：面板层是**固定覆盖 + 半透明** —— 主视图（首屏/日志）**保持可见**，
+   透过这层水洗就能看见背景（用户要求「打开应该能看见背景」）。
+   ★ R37：底色换成近黑（不透明度不变），内容转白字加粗。
+   左上角那三个圆钮仍收起：它们会和面板标题重叠（且它们只服务于主视图）。 */
+body.panel-open .corner-actions{display:none}
+.sheet-head{display:flex;align-items:center;gap:12px;padding:15px 22px;
+  border-bottom:1px solid var(--hair);flex:0 0 auto}
+.sheet-title{flex:0 0 auto;font-family:var(--f-display);font-weight:700;
+  font-size:16px;letter-spacing:-.01em;color:#FFFFFF}
+/* ★ R28：标题旁的**描述**（计数 / 更新时间 / 说明）—— 面板里不再重复一条标题行 */
+.sheet-desc{flex:1 1 auto;min-width:0;font-size:12.5px;line-height:1.5;color:var(--t2);
+  font-weight:500;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.sheet-desc .sd{display:none}
+.sheet-desc .sd.on{display:inline}
+.sheet-desc code{font-family:var(--f-mono);background:rgba(255,255,255,.10);color:#E6E9EF;
+  border-radius:3px;padding:0 4px;font-size:12px}
+/* 进了参数分组页 ⇒ 右上角由「× 关闭」变成「← 返回」，点一下退回上一级（分组列表） */
+#sheet-close.back{width:auto;height:32px;border-radius:var(--r-sm);padding:0 11px;gap:6px}
+#sheet-close.back svg{width:16px;height:16px}
+#sheet-close.back span{font-size:13px;font-weight:600;white-space:nowrap}
+.sheet-body{flex:1 1 auto;min-height:0;display:flex;padding:18px 22px 22px}
+.sheet-page{display:none;flex:1 1 auto;min-width:0;min-height:0}
+.sheet-page.active{display:flex;flex-direction:column}
+/* 铺满时不需要圆角阴影，边框留着做分区；**面板本身半透明**（底下首屏透得出来） */
+/* ★ R29：面板卡**不再自己铺色** —— 整页那层就是背景，卡只用细边分区。
+   （上一轮卡里那层 20% 会把「整页 10%」叠成两层。） */
+.sheet .panel{background:transparent;border:1px solid var(--hair-2);
+  border-radius:var(--r-md);overflow:hidden}
+.sheet .lib-list{background:transparent;box-shadow:none}
+/* ★ R32：列表行悬停**不再用发白的底**（用户报「悬停变白色」）——
+   ★ R37：暗面上改成**提亮的白洗**（深底再压暗看不出来）。 */
+.sheet .hist:hover,.sheet .item:hover,.sheet .web-group .wg-head:hover{background:rgba(255,255,255,.07)}
+.sheet .nav-btn{background:transparent;border-color:transparent}
+.sheet .nav-btn:hover{background:rgba(255,255,255,.08)}
+/* ★ R37：分组行（.nav-btn）的标题/描述在暗面上要**白字加粗** */
+.sheet .nav-btn .nb-t,.sheet .nav-btn span{color:var(--t1)}
+/* ★ 面板里的内容区**必须能滚**：`flex:1 1 auto` + `min-height:0`。
+   没这两条时，内容（如产物库 300 条）会把面板撑破、再被 `overflow:hidden` 裁掉 ——
+   既看不全、也滚不动。凡是「面板 + 长列表」都按这个模式来。 */
+.sheet .panel>.lib-list,
+.sheet .panel>.stats-body,
+.sheet .panel>.hist-list,
+.sheet .panel>.adv-group-body{flex:1 1 auto;min-height:0;overflow:auto}
+/* 高级参数页：只列**分组按钮**（点一个进下一层新页看该组参数） */
+.sheet .advanced{background:transparent;border:1px solid var(--hair-2);
+  border-radius:var(--r-md);padding:16px 18px;overflow:auto;max-height:none}
+/* ★ R37：面板页里的圆按钮 —— 暗面上**白前景 + 白描边**（原来是对白底写的深色） */
+.sheet .icon-btn{color:#E6E9EF;border-color:rgba(255,255,255,.20)}
+.sheet .icon-btn:hover{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.34);color:#FFF}
+/* ★ R37：下拉 / 输入框 / 勾选框 —— 暗面上换**深底 + 白字**（原来是白底深字） */
+.sheet .grid input,.sheet .grid select,.sheet .dd-btn,.sheet .ck{background:#15171B;color:#F0F2F6;
+  border-color:rgba(255,255,255,.18)}
+.sheet .hint code{color:#C4B5FD}
+.sheet .chip.packed{color:#C4B5FD;border-color:rgba(167,139,250,.42);background:rgba(167,139,250,.14)}
+.sheet .item .del:hover{color:#FF6B6B}
+.adv-groups{display:flex;flex-direction:column;gap:clamp(8px, 1.6vh, 16px)}
+/* 分组页：参数网格铺满、自己滚 */
+.adv-group-body{flex:1 1 auto;min-height:0;overflow:auto;padding:16px 18px}
+.adv-group-body .grid{margin-top:0}
+/* ★ R37：参数标签（`.lb`）在暗面上**白字加粗**，一眼看清键名 */
+.adv-group-body .lb,.adv-group-body .grid label{color:var(--t1);font-weight:600}
+/* 参数分组页底部的操作条：**两个出口**（顶部「← 返回」＝不保存退出）。
+   「保存」= 写回用户配置 dgtf_config.user.yaml（持久，主 action）；
+   「恢复出厂设置」= 删用户配置、回落到后端出厂 yaml（危险操作，给了红字）。
+   ★ R37：用户要求「**保存按钮居中**」+ 只留这两个按钮：
+     排布 = `[隐形占位][保存][恢复出厂设置]` —— 左侧占位与「恢复」等宽，
+     于是「保存」落在整条栏的**正中**（而不是两个按钮整体居中）。
+   ★★ R38：它是 `.sheet` 的直接子项（`.sheet-body` 的**后一个兄弟**）——
+     `.sheet` 是 `flex-direction:column`，`flex:0 0 auto` ⇒ 恒定贴在面板底部、
+     不参与 `.sheet-body` 的溢出裁剪；参数相关的两页共用同一条，位置永远一致。 */
+/* ★ R39：保存按钮**底部居中** —— 改成 `1fr auto 1fr` 三列网格（中间列恒为「保存」，
+   两侧等宽）⇒ 保存的位置与右边「恢复出厂设置」的宽度**无关**，恒在正中央。
+   原来靠 `.sa-spacer` 占位，但它的宽度是 `padding:0 22px`（恒 44px），**并不等于**
+   右侧按钮宽 ⇒ 保存只是「大致靠中、略偏左」（用户报「保存按钮底部居中」）。 */
+.sheet-actions{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  align-items:center;justify-content:center;
+  gap:10px;flex:0 0 auto;padding:12px 18px;border-top:1px solid var(--hair-2)}
+/* 隐形占位（占第一列，`visibility:hidden`）—— 保留它让「保存」落在**第二列** */
+.sheet-actions .sa-spacer{grid-column:1;grid-row:1;visibility:hidden;height:0;overflow:hidden;
+  flex:0 0 auto;padding:0 22px;font-size:14px;font-weight:600}
+.sheet-actions #adv-save{grid-column:2;grid-row:1;justify-self:center}
+.sheet-actions #adv-reset{grid-column:3;grid-row:1;justify-self:start}
+/* 窄屏兜底：三列排不下时退回两列（居中让位给「两个按钮都完整」） */
+@media (max-width:560px){
+  .sheet-actions{grid-template-columns:auto minmax(0,1fr)}
+  .sheet-actions .sa-spacer{display:none}
+  .sheet-actions #adv-save{grid-column:1;justify-self:start}
+  .sheet-actions #adv-reset{grid-column:2;justify-self:end}
+}
+.sheet-actions button.ghost{display:inline-flex;align-items:center;gap:9px;
+  height:38px;padding:0 22px;font-size:14px;font-weight:600;
+  background:transparent;border-color:transparent;color:var(--t1)}
+.sheet-actions button.ghost:hover{background:rgba(255,255,255,.10);color:#FFF}
+/* 主 action：有改动时描边 + 亮字，一眼看出「这里有东西可存」；无改动置灰 */
+.sheet-actions button.ghost.primary{border-color:color-mix(in srgb, #8E9BF0 42%, transparent)}
+.sheet-actions button.ghost.primary.has-dirty{background:rgba(142,155,240,.18);color:#DDE3FF}
+/* 危险 action（恢复出厂设置）：亮红字 + 悬停淡红底，与「保存」拉开距离、防误触 */
+.sheet-actions button.ghost.danger{color:#FF7A6B}
+.sheet-actions button.ghost.danger:hover{background:rgba(255,107,107,.14);color:#FFB4AA}
+.sheet-actions button.ghost:disabled{opacity:.42;cursor:default}
+.sheet-actions button.ghost:disabled:hover{background:transparent;color:var(--t3)}
+/* 分组按钮上的「N 项待保存」小标（改了但还没写回文件的才计数） */
+.nav-btn em.dirty{color:#F5C453}
+.nav-btn .adv-dirty{font-style:normal;font-size:10.5px;font-weight:700;margin-left:7px;
+  padding:2px 7px;border-radius:20px;color:#F7D885;
+  background:rgba(214,168,44,.26);border:1px solid rgba(245,196,83,.48)}
+/* 密钥类参数的只读胶囊（值不回传前端，面板上不给编辑） */
+.grid .ro.ro-key{color:#7EE6A0;background:rgba(74,222,128,.14);
+  border:1px solid rgba(74,222,128,.36);border-radius:20px;padding:3px 10px;
+  font-size:11.5px;font-weight:600}
+/* 保存反馈（成功/警告/失败），挂 #sheet 上 ⇒ 切页也跟着走 */
+.adv-toast{position:fixed;left:50%;bottom:74px;transform:translate(-50%,10px);
+  z-index:90;pointer-events:none;opacity:0;transition:opacity .18s ease,transform .18s ease;
+  padding:9px 18px;border-radius:22px;font-size:13px;font-weight:700;white-space:nowrap;
+  color:#F5F7FA;background:rgba(12,14,17,.96);border:1px solid rgba(255,255,255,.20);
+  box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.adv-toast.show{opacity:1;transform:translate(-50%,0)}
+.adv-toast.ok{color:#7EE6A0;border-color:rgba(74,222,128,.55);background:rgba(10,20,13,.96)}
+.adv-toast.warn{color:#F7D885;border-color:rgba(245,196,83,.6);background:rgba(22,19,10,.96)}
+.adv-toast.err{color:#FFB4AA;border-color:rgba(255,107,107,.6);background:rgba(24,12,12,.96)}
+/* 本地资料库的「现成锚点快照」：**默认展开**，展开区限高、内部滚 */
+.cand>summary{cursor:pointer;font-size:11.5px;color:var(--t3);padding:8px 14px 0;list-style:none}
+.cand>summary::-webkit-details-marker{display:none}
+.cand>summary::before{content:"▸";display:inline-block;margin-right:6px;transition:transform var(--dur)}
+.cand[open]>summary::before{transform:rotate(90deg)}
+.cand>#local-cand{max-height:min(38vh, 300px);overflow:auto}
+.sheet .grid{grid-template-columns:repeat(auto-fill,minmax(262px,1fr))}
+
+/* ── 舞台：首屏居中（欢迎语 + 输入框）；跑起来后欢迎语收走、日志占主位 ── */
+main.stage{flex:1 1 auto;min-height:0;width:100%;display:flex;flex-direction:column;
+  padding:20px 18px;gap:14px;
+  /* ★ R37：让位平移放慢（.24s → .42s）；★ R38：再放慢到 .6s 并**同时过渡 padding**
+     —— 让位时左右内边距一起补间，内容中心才是**连续**移过去的（只动 transform
+     会让「内容居中」跳一下：平移是补间的、padding 是瞬变的）。 */
+  transition:transform .6s var(--ease),padding .6s var(--ease)}
+/* ★ R38：让位半量 —— 内容要「居中被让出的那块区域的正中」，平移必须是**抽屉宽的一半**：
+     目标中心 = (抽屉宽 + 视口宽) / 2；不平移时中心在 视口宽/2
+     ⇒ 平移量 = 抽屉宽/2。同时左右各补等量 padding，内容可用宽度自是「视口 − 抽屉宽」。 */
+:root{--shift-half:calc(var(--shift-w) / 2)}
+/* ★ R37：让位量用 --shift-w（= min(抽屉宽, 50vw)），保证右侧至少留一半视口可见。
+   ★★ R36 修「右边页面会跳」：原来让位同时改 `margin-left` 与 `width:calc(…减掉抽屉宽)`，
+     而 `width` 没有过渡 ⇒ 一开一关时宽度**瞬变**、margin 才补间，两者不同步；
+     再叠加 `body.stage-empty` 下 welcome/composer 是**居中**的（宽度一变位置就跳），
+     视觉上就是「右边页面跳一下」。现在改成**只平移、不改宽度**（width 恒 100%），
+     单一属性驱动 ⇒ 布局零重排、居中内容随整体平滑右移，不再抖。
+   ★★ R38：平移量改成**半量**（`--shift-half`）+ **左右对称等量内边距** ——
+     这样「内容中心」正好落在**被让出的可用区域的正中**（用户要求「始终居中自适应」）。
+     只平移不补 padding 时，内容中心停在 `抽屉宽/2 + 视口/2` 之外，视觉上偏右被顶出；
+     只补右侧 padding（R37 做法）又会把中心推偏左。左右等量 ⇒ 几何上严格居中。
+   （`body{overflow:hidden}`，右缘探出视口不会产生滚动条。） */
+body.drawer-open main.stage{
+  transform:translateX(var(--shift-half));
+  padding-left:calc(18px + var(--shift-half));
+  padding-right:calc(18px + var(--shift-half))}
+body.stage-empty main.stage{justify-content:center;align-items:center}
+body.stage-empty #welcome{display:flex}
+body.stage-empty .composer{width:100%;max-width:760px}
+body.stage-run #welcome{display:none}
+/* ★ 运行态的主区宽度和空态**统一到 900px** —— 之前 1080 太宽（1600 视口下左右只剩 260px），
+   抽屉一展开就越过输入框左边界把它压住（用户报的现象）。900 留出的空白带够抽屉站。
+   抽屉宽度就是按这个 900 反算的（见 `.drawer` 的注释），改这里要一起改。 */
+body.stage-run .runlog{flex:1 1 auto;width:100%;max-width:1080px;margin:0 auto}
+body.stage-run .composer{width:100%;max-width:1080px;margin:0 auto}
+/* ★ R37：抽屉展开时主区内容宽度让出被平移占掉的那部分 —— 否则 max-width 太宽 ⇒
+   右缘仍被顶出视口（用户报「展开右边看不见了」）。
+   ★ R38：左右**对称**补偿之后，可用宽度已经是「视口 − 抽屉宽 − 36px」，
+     这里只需把上限跟着收一收（原来只减了右侧 + 固定 48px，会偏）。 */
+body.drawer-open.stage-run .runlog,
+body.drawer-open.stage-run .composer{
+  max-width:min(1080px, calc(100vw - var(--shift-w) - 36px))}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.welcome{display:none;align-items:center;gap:12px;
+  font-family:var(--f-display);font-weight:600;font-size:22px;letter-spacing:-.02em;
+  /* ★ R25：画布变浅 ⇒ 欢迎语改深色（原来是近白 --t1，在浅灰上会看不见） */
+  color:#1F2229;margin-bottom:16px;animation:rise .4s var(--ease) both}
+
+.panel-head{display:flex;align-items:center;gap:10px;padding:9px 14px;
+  border-bottom:1px solid var(--hair);flex:0 0 auto}
+/* 标题不许换行（右列窄，读数的 muted 会把标题挤成两行）—— 让 muted 那边截断 */
+.panel-title{font-family:var(--f-display);font-weight:600;font-size:13px;
+  letter-spacing:-.01em;flex:0 0 auto;white-space:nowrap}
+.panel-head .muted{margin-left:auto;min-width:0;font-size:11.5px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.scroll{overflow:auto;min-height:0}
+/* 只读的结构值（嵌套列表，如 domain_tier_rules）——不给编辑，避免往返写坏结构 */
+.ro{font-family:var(--f-mono);font-size:11px;color:var(--t3);
+  border:1px dashed var(--hair-2);border-radius:var(--r-sm);padding:2px 7px;cursor:help}
+/* 说明文字最多两行（右列高度金贵，长说明会把列表挤没） */
+.hint.tight{margin:8px 14px 0;font-size:11.5px;line-height:1.5;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+/* 「现成的锚点快照」是只读参考，默认收起 */
+details.cand{margin:6px 14px 8px;font-size:11.5px;color:var(--t3)}
+details.cand>summary{cursor:pointer;padding:3px 0;color:var(--t2)}
+details.cand .lib-list{margin-top:6px}
+.searchbar.tight{margin:8px 14px;gap:8px}
+
+/* ── 运行台 ───────────────────────────────────────────────────── */
+/* 输入框：上下来收紧、左右尽量宽 */
+/* 输入框：对话工具式 —— 大圆角、下方一行功能胶囊、右下角圆形发送键 */
+.composer{
+  background:var(--s1);border:1px solid var(--hair-2);border-radius:22px;
+  padding:14px 14px 10px;box-shadow:var(--shadow);
+  transition:border-color var(--dur) var(--ease),box-shadow var(--dur) var(--ease);
+}
+.composer:focus-within{border-color:rgba(94,106,210,.55);
+  box-shadow:0 0 0 3px rgba(94,106,210,.12),var(--shadow)}
+textarea#question{
+  width:100%;background:transparent;color:var(--t1);border:0;outline:none;resize:none;
+  font-size:15px;line-height:1.55;padding:2px 4px 8px;min-height:26px;
+  max-height:180px;overflow:auto;
+}
+textarea#question::placeholder{color:var(--t3)}
+/* ★ R24：输入框**不出滚动条**（内容变高由 JS 撑高，不靠滚动） */
+textarea#question{scrollbar-width:none;-ms-overflow-style:none}
+textarea#question::-webkit-scrollbar{width:0;height:0;display:none}
+/* 输入内容与占位都**居中**（用户要求「对话框内容居中显示、问题居中输入」） */
+textarea#question{text-align:center}
+.composer-row{display:flex;align-items:center;gap:8px;padding-top:4px}
+/* 功能胶囊：点一下开 / 再点关（不点 = 交给引擎 auto 自决） */
+/* 胶囊与圆形按钮**统一尺寸**（同 34px 高、全圆角、同边框），文字统一白色 */
+.pill{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 11px;
+  border-radius:16px;border:1px solid var(--hair-2);background:transparent;
+  color:var(--t1);font-size:12.5px;
+  transition:background var(--dur) var(--ease),color var(--dur) var(--ease),
+             border-color var(--dur) var(--ease)}
+.pill:hover{background:var(--s2);border-color:var(--hair-3, rgba(255,255,255,.16))}
+.pill.on{color:var(--accent-hi);border-color:rgba(94,106,210,.55);background:rgba(94,106,210,.14)}
+.pill .p-name{font-size:12.5px;font-weight:500;flex:0 0 auto;white-space:nowrap}
+/* 演练模式也做成胶囊（与「深度思考 / 智能搜索」同一排）：input 藏起来。
+   选中态用 `:has()` 表达 —— `loadConfig()` 是异步设 `#mock.checked` 的，
+   用 CSS 就自动跟着变，不必再写一段 JS 去同步 class。 */
+.mock-pill{cursor:pointer;-webkit-user-select:none;user-select:none}
+.mock-pill input{position:absolute;opacity:0;width:0;height:0}
+/* ★ 这两条**必须分开写**：逗号分隔的选择器列表里只要有一个不被支持（老浏览器不认
+   `:has()`），**整条规则都会被丢弃** —— 连着写会把 `.mock-pill.on` 一起拖死。 */
+.mock-pill.on{color:var(--accent-hi);border-color:rgba(94,106,210,.55);
+  background:rgba(94,106,210,.14)}
+.mock-pill:has(#mock:checked){color:var(--accent-hi);border-color:rgba(94,106,210,.55);
+  background:rgba(94,106,210,.14)}
+/* ★ 发送键重新设计：**渐变底 + 投影 + 悬停微抬升**（圆钮更有分量感）。
+   尺寸保持 32px —— 要和同一排的胶囊**等高**（有一条判据盯这个）。 */
+#run-btn.send{margin-left:auto;width:32px;height:32px;padding:0;border-radius:50%;flex:0 0 auto;
+  display:inline-flex;align-items:center;justify-content:center;
+  /* ★ R30：整个按钮**高亮**（底色提亮一档 + 外圈微光 + 更亮的投影） */
+  border:1px solid rgba(255,255,255,.22);color:#fff;
+  background:linear-gradient(180deg,#8f98f4 0%,#6671e2 100%);
+  box-shadow:0 0 0 3px rgba(94,106,210,.20),0 3px 14px rgba(94,106,210,.55),
+             inset 0 1px 0 rgba(255,255,255,.28);
+  transition:transform var(--dur) var(--ease),box-shadow var(--dur) var(--ease),
+             background var(--dur) var(--ease),filter var(--dur) var(--ease)}
+#run-btn.send:hover{transform:translateY(-1px);filter:brightness(1.06);
+  background:linear-gradient(180deg,#9aa3f6 0%,#7280ea 100%);
+  box-shadow:0 0 0 4px rgba(94,106,210,.26),0 6px 20px rgba(94,106,210,.62),
+             inset 0 1px 0 rgba(255,255,255,.34)}
+#run-btn.send:active{transform:translateY(0) scale(.95);
+  box-shadow:0 1px 6px rgba(94,106,210,.4),inset 0 1px 0 rgba(255,255,255,.15)}
+#run-btn.send:disabled{opacity:.45;cursor:default;transform:none;box-shadow:none}
+/* ★ R31：图标 = **按钮的 25%**（32px 钮 → 图标 14px，字形高 ≈8px）；
+   发送箭头与终止方块共用这条（两者字形都占 viewBox 的 ~58%）。
+   ★★ 必须 `flex:0 0 auto` —— 只写 width/height 会被 flex 压扁（实测被压到 6px 宽、
+     箭头只有 3×4px，就是用户看到「箭头太小」的根因）。 */
+#run-btn.send svg{width:14px;height:14px;flex:0 0 auto;
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}
+#run-btn.send svg path,#run-btn.send svg rect{stroke-width:3.2}
+/* 回形针：只留图标 ⇒ 收窄成一个小胶囊 */
+#attach-btn{padding:0 9px}
+/* 运行中 → **终止键**：红色渐变的圆（方块图标） */
+#run-btn.send.stop{border-color:rgba(255,255,255,.12);
+  background:linear-gradient(180deg,#ec5a52 0%,#d0392f 100%);
+  box-shadow:0 2px 10px rgba(224,74,64,.45),inset 0 1px 0 rgba(255,255,255,.18)}
+#run-btn.send.stop:hover{filter:brightness(1.08);
+  box-shadow:0 5px 18px rgba(224,74,64,.6),inset 0 1px 0 rgba(255,255,255,.22)}
+
+/* 自绘 toggle */
+.mock-toggle{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--t2);cursor:pointer;user-select:none}
+.mock-toggle input{position:absolute;opacity:0;width:0;height:0}
+.mock-toggle .sw{width:32px;height:18px;border-radius:20px;background:var(--s3);position:relative;
+  flex:0 0 auto;transition:background var(--dur) var(--ease)}
+.mock-toggle .sw::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;
+  background:#9AA0AA;transition:transform var(--dur) var(--ease),background var(--dur) var(--ease)}
+.mock-toggle input:checked + .sw{background:rgba(94,106,210,.42)}
+.mock-toggle input:checked + .sw::after{transform:translateX(14px);background:#fff}
+.mock-toggle input:focus-visible + .sw{outline:2px solid var(--accent);outline-offset:2px}
+.mock-toggle:hover{color:var(--t1)}
+
+button.primary{
+  margin-left:auto;display:inline-flex;align-items:center;gap:8px;
+  background:var(--accent);border:0;color:#fff;font-weight:500;font-size:13px;
+  padding:0 16px;height:34px;border-radius:var(--r-sm);
+  transition:background var(--dur) var(--ease),transform var(--dur) var(--ease);
+}
+button.primary:hover{background:var(--accent-hi)}
+button.primary:active{transform:translateY(1px)}
+button.primary:disabled{opacity:.45;cursor:not-allowed;transform:none}
+button.primary .kbd{margin-left:2px}
+button.primary kbd{color:#fff;background:rgba(255,255,255,.18);border-color:transparent;padding:2px 5px}
+
+button{background:var(--s1);border:1px solid var(--hair);color:var(--t1);
+  font-size:13px;padding:0 12px;height:30px;border-radius:var(--r-sm);
+  transition:background var(--dur) var(--ease),border-color var(--dur) var(--ease),color var(--dur) var(--ease)}
+button:hover{background:var(--s2);border-color:var(--hair-2)}
+button.ghost{background:transparent;border-color:transparent;color:var(--t2)}
+button.ghost:hover{background:var(--s2);color:var(--t1)}
+
+kbd{font-family:var(--f-mono);font-size:10.5px;line-height:1;color:var(--t2);
+  background:var(--s2);border:1px solid var(--hair);border-radius:4px;padding:2px 5px}
+
+.advanced{margin-top:14px;border-top:1px solid var(--hair);padding-top:12px}
+.advanced summary{cursor:pointer;color:var(--t3);font-size:12.5px;list-style:none;
+  display:flex;align-items:center;gap:7px;transition:color var(--dur) var(--ease)}
+.advanced summary::-webkit-details-marker{display:none}
+.advanced summary::before{content:"";width:5px;height:5px;border-right:1.5px solid currentColor;
+  border-bottom:1.5px solid currentColor;transform:rotate(-45deg);transition:transform var(--dur) var(--ease)}
+.advanced[open] summary::before{transform:rotate(45deg)}
+.advanced summary:hover{color:var(--t1)}
+/* 演练模式与「高级参数」同一行：左 = 展开箭头 + 标题，右 = 演练模式开关 */
+.advanced summary .adv-label{flex:0 1 auto;min-width:0}
+.advanced summary .mock-toggle{margin-left:auto;flex:0 0 auto;font-size:12px;gap:8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:12px;margin-top:14px}
+
+/* yaml 配置面板（按组折叠，展开后可滚） */
+.advanced{max-height:48vh;overflow:auto}
+.cfg-group{border-top:1px solid var(--hair);margin-top:10px;padding-top:8px}
+.cfg-group summary{cursor:pointer;color:var(--t3);font-size:12px;list-style:none;
+  display:flex;align-items:center;gap:7px}
+.cfg-group summary::-webkit-details-marker{display:none}
+.cfg-group summary::before{content:"";width:5px;height:5px;border-right:1.5px solid currentColor;
+  border-bottom:1.5px solid currentColor;transform:rotate(-45deg);
+  transition:transform var(--dur) var(--ease)}
+.cfg-group[open] summary::before{transform:rotate(45deg)}
+.cfg-group summary:hover{color:var(--t1)}
+.grid select{background:rgba(0,0,0,.22);border:1px solid var(--hair);color:var(--t1);
+  border-radius:var(--r-sm);padding:7px 8px;font-size:12.5px;outline:none;font-family:var(--f-mono)}
+/* 下拉项用 <div class="field">：原生 select 的弹层在页面底部/滚动容器里会跑到窗口
+   左上角，所以换成自绘下拉；而 <label> 包 <button> 会把点击转发给 button（点一次触发两回），
+   因此下拉项不用 label。样式与 label 保持一致。 */
+.grid label,.grid .field{display:flex;flex-direction:column;gap:6px;font-size:11.5px;color:var(--t1);
+  text-align:center;align-items:stretch;justify-content:flex-end;   /* ★ 控件贴底 */
+  letter-spacing:.02em;min-width:0}
+/* ★ R22：标签占位**固定两行**（短标签也留两行）——否则「一行标签」的控件会浮在
+   「两行标签」的控件上面，同一行的输入框/下拉**竖直错位**（用户截图圈的就是这个）。 */
+/* ★ R24：标签**单行**显示（不再折成 2~3 行把整行撑高、控件错位）——
+   超长用省略号，完整键名/说明走 `title` 悬停看。`line-height` 30px 与原来的
+   `min-height:30px` 等高 ⇒ 同一行的控件仍然严格对齐。 */
+.grid .lb{display:block;min-height:30px;line-height:30px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+.grid label.pinned,.grid .field.pinned{color:var(--t1)}
+.grid label.pinned input,.grid label.pinned select,.grid .field.pinned .dd-btn{border-color:var(--hair-2)}
+.grid input{text-align:center;background:rgba(0,0,0,.22);border:1px solid var(--hair);color:var(--t2);
+  border-radius:var(--r-sm);padding:8px 10px;font-size:12.5px;outline:none;font-family:var(--f-mono);
+  transition:border-color var(--dur) var(--ease)}
+.grid input::placeholder{color:#4B5563;font-family:var(--f-body)}
+.grid input:focus{border-color:var(--accent)}
+
+/* ── 自绘下拉（高级参数的参数下拉）─────────────────────────────────
+   点开后菜单贴触发控件的**左上角**、向**右**展开（不跟原生弹层跑窗口左上角）。
+   用 position:fixed 是为了跳出 .advanced{overflow:auto} 的裁剪框；
+   空间不够时由 JS 改成向上翻（见 app.js openDD）。 */
+.dd{position:relative;display:block;min-width:0}
+.dd-btn{display:flex;align-items:center;gap:8px;width:100%;height:auto;min-height:33px;
+  background:rgba(0,0,0,.22);border:1px solid var(--hair);color:var(--t1);
+  border-radius:var(--r-sm);padding:7px 10px;font-size:12.5px;font-family:var(--f-mono);
+  text-align:left}
+/* ★ R34：悬停原来落在 --ground（近黑、像块黑砖）⇒ 改成 **85% 透明的淡洗** */
+.dd-btn:hover{background:rgba(22,23,28,.15);border-color:var(--hair-2)}
+.dd.open .dd-btn{border-color:var(--accent)}
+.dd-cur{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;text-align:center;
+  white-space:nowrap;color:var(--t2)}   /* 下拉的**当前值**也默认灰 */
+.dd-car{width:0;height:0;flex:0 0 auto;border-left:4px solid transparent;
+  border-right:4px solid transparent;border-top:5px solid var(--t3)}
+.dd.open .dd-car{border-top:0;border-bottom:5px solid var(--accent)}
+/* ★ `z-index` 必须**高于全屏面板层**（`#sheet` = 65）：菜单挂在 body 上、在 sheet 之外，
+   层级低了会被整个盖住 —— 表现就是「点开下拉看不见任何选项」。 */
+.dd-menu{display:none;position:fixed;z-index:80;max-height:242px;overflow:auto;padding:4px;
+  background:var(--s2);border:1px solid var(--hair-2);border-radius:var(--r-sm);
+  box-shadow:var(--shadow-lg)}
+/* 展开时菜单会被 app.js 挂到 <body>（躲开 .advanced 的裁剪与 #view-run 的 transform），
+   所以显隐靠自己的 .show，不再依赖 .dd.open 这个祖先。 */
+.dd-menu.show{display:block;animation:ddIn .12s var(--ease) both}
+@keyframes ddIn{from{opacity:0;transform:translateX(-3px)}to{opacity:1;transform:none}}
+.dd-opt{display:block;width:100%;height:auto;background:transparent;border:0;border-radius:4px;
+  text-align:left;padding:7px 9px;font-size:12.5px;font-family:var(--f-mono);color:var(--t2);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dd-opt:hover{background:var(--s3);color:var(--t1);border-color:transparent}
+.dd-opt.on{color:var(--t1);background:rgba(94,106,210,.16)}
+.dd-opt.on::after{content:"✓";float:right;color:var(--accent);font-size:11px}
+
+.warn{margin-top:12px;font-size:12.5px;color:var(--warn);min-height:0}
+.warn:empty{display:none}
+
+/* ── 状态条（页面只剩输入框 + 四窗口，任务卡列表已去掉）────────── */
+.run-status{display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  margin-top:16px;padding:10px 14px;background:var(--s1);
+  border:1px solid var(--hair);border-radius:var(--r-md);font-size:12.5px}
+.run-status:empty{display:none}
+.run-status .st-q{font-weight:500;font-size:13px;color:var(--t1);min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.run-status .st-time{font-family:var(--f-mono);color:var(--t3);font-size:11.5px}
+.run-status a{font-family:var(--f-mono);font-size:11.5px;text-decoration:none}
+.run-status a:hover{text-decoration:underline}
+.run-status button{height:26px;font-size:11.5px;padding:0 10px}
+
+/* ── 运行日志面板（四层日志**一条流**；默认隐藏，点「开始深究」后才出现）──
+   ★ 必须显式解掉 .log 的 max-height:264px —— 它是「上限」不是「定高」，
+     日志到 264px 就封顶、下半截留空。解掉后日志区吃掉面板剩余高度。 */
+.runlog{flex:1 1 auto;min-height:0;min-width:0;display:flex;flex-direction:column;
+  /* ★ R26：日志页**全透明**（底色交给画布）—— 画布已是灰色 ⇒ 日志里的
+     文字 / 数字 / 高亮色一律**加深**，直接在灰底上读得清。
+     色板定义在这里（一处），子树各处 `color:var(--log-*)` **就地引用**。 */
+  background:transparent;backdrop-filter:none;
+  --log-blue:#232F9E;      /* 深蓝：标签 / 序号 / 元信息 / 链接悬停（R27 再加深一档） */
+  --log-green:#0E5A22;     /* 深绿：正文 / 属性 / 链接（R27 再加深一档） */
+  --log-num:#000000;       /* ★ R27：数字**纯黑**（用户要求「数字字体为黑色」） */
+  --log-dim:#5A6472;       /* 深灰：诊断行 / 原悬置 */
+  --log-hair:rgba(0,0,0,.12);   /* 分隔线 / 折叠块描边（原来用白 6%，灰底上看不见） */
+  /* ★ R37：日志区**统一字号规范**（一处定义、各处引用）——
+     h1 = 层标题 / 「第 N/M 圈」（原 clamp(14px,2vh,18px)）
+     h2 = 小标题 / 步骤 / 名称标签（原 clamp(14px,2vh,18px) 与 clamp(13.5px,1.9vh,17px) 并存）
+     正文 / 属性（原 clamp(13.5px,1.9vh,17px)）
+     之前「层」和「圈」用的是同一条 clamp，但各自的 margin 与行高不一致 ⇒ 观感不齐；
+     现在共用一个变量，改一处即全齐。 */
+  --rl-h1:clamp(14px,2vh,18px);
+  --rl-h2:clamp(13.5px,1.9vh,17px);
+  border:1px solid transparent;border-radius:var(--r-md);
+  overflow:hidden;box-shadow:none;animation:rise .35s var(--ease) both;
+  /* 发送动画「点亮」日志区靠这两个属性过渡（不用 animation，避免和 rise 打架） */
+  transition:box-shadow .5s var(--ease),border-color .5s var(--ease)}
+.runlog.hidden{display:none}
+/* 发送动画期间的「先收起日志」：只变透明、**保留占位** ——
+   直接 display:none 会把输入框顶到页面最上面（用户报「输入框位置跳了」）。 */
+.runlog.fading{opacity:0;pointer-events:none}
+/* 空态提示：占满「深究」区剩余空间并**垂直居中**（否则一字提示孤零零贴在上边） */
+#tasks-empty{flex:1 1 auto;display:flex;align-items:center;justify-content:center;
+  margin:0;text-align:center}
+/* ★ R28：日志头 **flex 三段**：徽章贴左 / **题目 + 元信息同栏、一起居中** / 三个链接贴右。
+   左右两组等权（flex:1 1 0）⇒ 中间那栏恒在页面正中。题目与元信息同色同字号（蓝）。 */
+.runlog-head{display:flex;align-items:center;gap:14px;padding:11px 16px;
+  border-bottom:1px solid var(--log-hair);flex:0 0 auto;position:relative;
+  /* ★★ R39：**状态色同源变量** —— 左边的状态徽章（`.runlog-head .badge.*`）与右边的
+     三个胶囊（`.rl-files.st-* a`）都引用**这同一组**，改一处两边同时变 ⇒
+     从机制上消灭「运行中两边颜色不一致」（用户连报两轮同一现象）。
+     色值 = 灰画布上的深档；底色 alpha 统一 `.12`（原来两边一个 .10 一个 .14）。 */
+  --st-done-c:#1E7A34;    --st-done-bd:rgba(30,122,52,.38);    --st-done-bg:rgba(30,122,52,.10);
+  --st-running-c:#2F3AA8; --st-running-bd:rgba(47,58,168,.36); --st-running-bg:rgba(47,58,168,.10);
+  --st-queued-c:#8A6414;  --st-queued-bd:rgba(138,100,20,.36); --st-queued-bg:rgba(210,153,34,.14);
+  --st-error-c:#B42318;   --st-error-bd:rgba(180,35,24,.36);   --st-error-bg:rgba(248,81,73,.12)}
+/* ★ R28：左右两组**等权（flex:1 1 0）** ⇒ 中间那栏恒在页面正中。
+   ★ 但**不能缩到比内容还窄**：右组一旦窄过链接宽度，`justify-content:flex-end` 的溢出方向是
+     **向左** ⇒ 链接会压到元信息上（实测踩到：`终止 17:10:16` 被「产物」盖住）。
+     所以给两组 `min-width:max-content` 兜底 —— 宽度不够时由**中间栏**先缩
+     （题目省略号 + 元信息折行），side 组不许被压。 */
+/* ★ R34：两侧组仍用 `min-width:max-content` 兜底（绝不缩到比内容窄 —— 否则右组链接会向左溢出压住元信息）。
+   代价：两组自然宽度不等（徽章 ~123 / 三链接 ~227）⇒ 中间栏是**在两组之间居中**（不是严格的页面正中，
+   偏「两侧差的一半」，实测 ~52px）。这正是 R27/R28 要的「居中于徽章与起始之间」，且任何宽度下都不重叠。 */
+.rl-head-l{display:flex;align-items:center;gap:10px;flex:1 1 0;min-width:max-content;
+  justify-content:flex-start}
+/* ★ R28：中间栏 = **题目 + 元信息**（并排、一起居中）；题目**蓝色 + 与元信息同一档字号**，
+   两者间距随窗口自适应（clamp）。 */
+.rl-head-c{display:flex;align-items:center;justify-content:center;
+  gap:clamp(10px,.9vw,20px);flex:0 1 auto;min-width:0;overflow:hidden}
+#rl-question{flex:0 1 auto;font-weight:700;letter-spacing:.01em;
+  font-size:clamp(13px,1.85vh,16.5px);   /* 与 .rl-meta 同档 */
+  color:var(--log-blue);
+  min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* 右侧组：三个链接（贴右）—— 与左侧徽章组等权 ⇒ 中间栏恒居中 */
+.rl-head-r{display:flex;align-items:center;gap:14px;flex:1 1 0;min-width:max-content;
+  justify-content:flex-end}
+/* 元信息：**除数字以外一律蓝色、加大加粗**（数字保持黑色），组内居中 */
+.rl-meta{font-size:clamp(13px,1.85vh,16.5px);color:var(--log-blue);font-weight:700;
+  letter-spacing:.01em;
+  font-variant-numeric:tabular-nums;
+  display:flex;align-items:center;justify-content:center;flex-wrap:wrap;
+  min-width:0}
+.rl-meta b{color:var(--log-num);font-family:var(--f-mono);font-weight:400;margin:0 4px 0 5px}
+.rl-sep{color:var(--log-blue);margin:0 7px;opacity:.6;font-weight:700}
+/* ★ R22 产物分类标签（md/log/json + 层级） */
+.chip.k-md{color:var(--t2)}
+.chip.k-log{color:var(--warn)}
+.chip.k-json{color:var(--accent)}
+.chip.lay{color:var(--ok)}
+
+/* ★ R22 勾选模式：条目左侧出现勾选框，选中态描边高亮 */
+.ck{width:15px;height:15px;border-radius:4px;border:1px solid var(--hair-2);
+  flex:0 0 auto;display:inline-block;position:relative;background:rgba(0,0,0,.25)}
+.item.selmode,.web-group.selmode{cursor:pointer}
+.item.selmode{display:flex;align-items:flex-start;gap:10px}
+.item.selmode>.t,.item.selmode>.m,.item.selmode>.snip{flex:1 1 auto;min-width:0}
+.item.on>.ck,.web-group.on .ck{background:var(--accent);border-color:var(--accent)}
+.item.on>.ck::after,.web-group.on .ck::after{content:"";position:absolute;left:4px;top:1px;
+  width:4px;height:8px;border-right:2px solid #fff;border-bottom:2px solid #fff;
+  transform:rotate(45deg)}
+.item.on,.web-group.on{background:rgba(94,106,210,.10)}
+#lib-export.on,#web-export.on{border-color:var(--accent);color:var(--accent)}
+
+/* 三个链接：右侧组里的最后一段（贴右） */
+.rl-files{display:inline-flex;gap:6px;flex:0 0 auto}
+/* 三个链接＝与「运行状态」徽章同款的小胶囊：**前面一个灯**（灯色 = 文字色）+ 淡绿底 + 描边 */
+.rl-files a{display:inline-flex;align-items:center;gap:6px;
+  font-family:var(--f-mono);font-size:clamp(12px,1.7vh,14.5px);
+  font-variant-numeric:tabular-nums;
+  /* ★ R34：与运行状态徽章 `.badge.done` **同一套绿**（字色 / 底色 / 描边都对齐） */
+  color:var(--st-done-c);
+  font-weight:700;text-decoration:none;padding:3px 10px 3px 8px;border:1px solid var(--st-done-bd);
+  border-radius:20px;background:var(--st-done-bg);
+  transition:color var(--dur) var(--ease),background var(--dur) var(--ease)}
+/* ★ R33：与「运行状态」徽章同一款式 —— **前面一个灯**，灯色 = 文字色（currentColor）。 */
+.rl-files a::before{content:"";width:6px;height:6px;border-radius:50%;
+  background:currentColor;box-shadow:0 0 5px currentColor;flex:0 0 auto}
+.rl-files a:hover{color:#186428;background:rgba(30,122,52,.24);border-color:rgba(30,122,52,.5)}
+/* ★ R34：**运行中也要看得见这三个按钮**（还没有产物 ⇒ 先给个待生成态） */
+.rl-files a.pend{opacity:.55;pointer-events:none;cursor:default}
+/* ★★ R38：三个胶囊的**状态色档**（用户要求「右边三个按钮和左边按钮运行状态一致，
+   灯和字体颜色变化一致」）—— 上面那条 `.rl-files a` 的绿色只是**完成态**的基线；
+   这里按容器上的 `st-<status>` 一档一档改（**两级选择器**，特异性高于单级，
+   就地压过基线，不必追加同选择器第二条规则）。
+   色值与 `.badge.<st>` / `.runlog-head .badge.<st>` 那几档**逐字对齐**，
+   于是左右两边「灯 + 字 + 描边 + 底」完全同步。 */
+/* ★★ R39：四档**改引用 `.runlog-head` 上的同源变量**（与左边徽章 `.runlog-head .badge.*`
+   同一组值）—— 「灯 + 字 + 描边 + 底」两边逐项同步，且以后只改一处。 */
+.rl-files.st-done a{color:var(--st-done-c);border-color:var(--st-done-bd);background:var(--st-done-bg)}
+.rl-files.st-running a{color:var(--st-running-c);border-color:var(--st-running-bd);background:var(--st-running-bg)}
+.rl-files.st-queued a{color:var(--st-queued-c);border-color:var(--st-queued-bd);background:var(--st-queued-bg)}
+.rl-files.st-error a{color:var(--st-error-c);border-color:var(--st-error-bd);background:var(--st-error-bg)}
+.rl-files.st-cancelled a,.rl-files.st-canceled a,
+.rl-files.st-interrupted a{color:var(--st-queued-c);border-color:var(--st-queued-bd);background:var(--st-queued-bg)}
+/* 运行中：灯与左徽章一样**脉动**（同步的视觉信号） */
+.rl-files.st-running a::before{animation:pulse 1.3s var(--ease) infinite}
+/* 悬停时仍按状态走（不是一律回绿）—— 只提亮，不换色相 */
+.rl-files.st-running a:hover{color:#232C86;background:rgba(47,58,168,.20);border-color:rgba(47,58,168,.5)}
+.rl-files.st-queued a:hover,
+.rl-files.st-cancelled a:hover,.rl-files.st-canceled a:hover,
+.rl-files.st-interrupted a:hover{color:#6E4F10;background:rgba(138,100,20,.18);border-color:rgba(138,100,20,.5)}
+.rl-files.st-error a:hover{color:#8F1C13;background:rgba(180,35,24,.18);border-color:rgba(180,35,24,.5)}
+/* ★ 选择器写两级（`.runlog .runlog-body`）：元素同时带着 `.log`，而 `.log` 的
+   `max-height:264px` 定义在本段**之后** —— 同优先级按源顺序会被它盖掉，
+   日志区就封顶在 264px、下半截留空。两级选择器特异性更高，稳压它。 */
+/* 运行日志：**按层分块**，容器只管滚动 */
+.runlog .runlog-body{flex:1 1 auto;min-height:0;max-height:none;overflow:auto;
+  margin:0;padding:10px 16px 16px}
+.rl-lane{margin-bottom:16px}
+.rl-lane:last-child{margin-bottom:0}
+/* ★ R37：日志**开头块**（载入调度配置 / 调度模式 / 圈数上限 …）——
+   在第一个层标题之前，给一道很轻的下边分隔 + 略压暗，与「层」区分开，但排版规范一致。 */
+.rl-boot{border-bottom:1px solid var(--log-hair);padding-bottom:10px;margin-bottom:14px}
+/* 层小标题：**文字蓝、加粗加大；数字黑**（运行时是「第 N/M 圈」，跑完是「共 N 圈」） */
+.rl-lane-head{text-align:center;color:var(--log-blue);font-family:var(--f-mono);
+  font-size:var(--rl-h1);
+  letter-spacing:.05em;font-weight:700;padding:2px 0 10px;
+  display:flex;align-items:center;gap:10px;
+  /* ★ R37：层标题与「第 N/M 圈」**共用同一套排版规范**（同一字号档 / 同一字重 / 同一字距） */
+  line-height:1.35}
+.rl-lane-head::before,.rl-lane-head::after{content:"";flex:1 1 auto;height:1px;
+  background:var(--log-hair)}
+.rl-lane-head b{color:var(--log-num)}
+/* ★ R21：**名称与内容同一行**（用户要求「内容不再从下一行开始，换到同行开始」）：
+   `名称：` 蓝粗、内容绿，整行居中自适应换行。 */
+.rl-line{margin:0 0 7px;display:flex;flex-wrap:wrap;gap:.35em;
+  justify-content:center;align-items:baseline;text-align:center}
+.rl-line:last-child{margin-bottom:0}
+.rl-lab{margin:0;color:var(--log-blue);font-family:var(--f-mono);
+  font-size:var(--rl-h2);
+  font-weight:700;white-space:pre-wrap;word-break:break-word;flex:0 0 auto}
+.rl-lab b{color:var(--log-num)}
+/* 正文内容：**只把文字改成绿色** */
+/* ★ R26：日志页全透明 ⇒ 正文直接在灰画布上，绿加深 */
+.rl-txt{margin:0;font-family:var(--f-mono);font-size:clamp(13.5px,1.9vh,17px);line-height:1.7;
+  color:var(--log-green);white-space:pre-wrap;word-break:break-word;flex:0 1 auto;min-width:0}
+/* 轮次 / 步骤 / 小标题 / 收官读数：**文字蓝 + 加粗** */
+.rl-round,.rl-title,.rl-step,.rl-summary{align-self:center;text-align:center;
+  color:var(--log-blue);font-family:var(--f-mono);font-weight:700;letter-spacing:.02em}
+.rl-round{font-size:var(--rl-h1);margin:12px 0 5px;line-height:1.35}
+.rl-title{font-size:var(--rl-h1);margin:8px 0 3px;line-height:1.35}
+.rl-step{font-size:var(--rl-h2);margin:7px 0 2px;line-height:1.4}
+.rl-summary{font-size:clamp(14.5px,2.1vh,19px);margin:6px 0}
+.rl-round b,.rl-title b,.rl-step b,.rl-summary b{color:var(--log-num)}
+/* ★ R23：日志里的**数字统一缩小一档**（用户要求「整体数字缩小一点」）；
+   行内间距一律用 em ⇒ 随字号自适应，不会因字号变小而留下空档。 */
+/* ★ R24：数字**不加粗**（`<b>` 的 UA 样式是 `bolder`，父级 700 会把它推到 900）——
+   显式压到 400；顺带比正文再细一档的观感由「不加粗」本身给到。 */
+.runlog-body b,.rl-meta b{font-size:.92em;font-weight:400;color:var(--log-num)}
+.rl-line{gap:.42em;margin:0 0 .52em}
+.rl-lane{margin-bottom:clamp(10px,1.5vh,18px)}
+/* 序号条目：序号蓝粗，`属性=…` 插在**序号与内容之间** */
+.rl-seq{justify-content:center}
+/* ★ R33：收官/结论句（停止 / 产物已落盘 / 完成）与标志同色 —— 蓝、加深（不跟正文的绿） */
+.rl-mark{color:var(--log-blue);font-weight:700}
+.rl-num{color:var(--log-blue);font-weight:400;font-family:var(--f-mono);
+  font-size:clamp(12.5px,1.7vh,15px);flex:0 0 auto}
+.rl-attr{color:var(--log-green);font-family:var(--f-mono);font-size:var(--rl-h2);flex:0 1 auto;min-width:0;
+  white-space:pre-wrap;word-break:break-word}   /* ★ 属于内容 ⇒ 与正文同色 */
+/* 引擎内部诊断行（[fix-NN diag] / 🔬 rephrase）：压暗，不做成步骤名 */
+.rl-diag{color:var(--log-dim);font-family:var(--f-mono);font-size:clamp(12.5px,1.7vh,15px);
+  white-space:pre-wrap;word-break:break-word;text-align:center}
+/* 悬置还原出的原内容：压暗一级，不抢正文 */
+.rl-susp{color:var(--log-dim);font-family:var(--f-mono);font-size:clamp(13px,1.8vh,16px);flex:0 1 auto;min-width:0}
+/* view 全文：**默认展开**的折叠块 */
+/* ★ R39：去掉 `overflow:hidden` —— 它会**裁掉折叠块内溢出的行**（用户报「阴视角 / 阳视角
+   内容没显示完全」：折叠块里的行一旦触发任何溢出就只显示半截）。
+   这里没有需要靠它兜住的出血内容（背景与边框都是元素自身的），去掉后零副作用。 */
+.rl-fold{width:100%;margin:7px 0;border:1px solid var(--log-hair);border-radius:8px;
+  background:rgba(0,0,0,.03)}
+.rl-fold>summary{cursor:pointer;list-style:none;
+  color:var(--log-blue);font-weight:700;
+  font-family:var(--f-mono);font-size:var(--rl-h2);padding:6px 10px}
+.rl-fold>summary::-webkit-details-marker{display:none}
+.rl-fold>summary::before{content:"▾ ";color:var(--log-blue)}
+.rl-fold:not([open])>summary::before{content:"▸ "}
+.rl-fold-body{padding:2px 12px 10px;border-top:1px solid var(--hair)}
+.task{background:var(--s1);border:1px solid var(--hair);border-radius:var(--r-md);
+  overflow:hidden;box-shadow:var(--shadow);animation:rise .35s var(--ease) both}
+.task-head{display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--hair)}
+.task-q{font-weight:500;font-size:14px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.task-time{color:var(--t3);font-size:11.5px;font-family:var(--f-mono)}
+.task-head button{height:26px;font-size:11.5px;padding:0 10px}
+
+/* 状态徽章：**带淡色底**（比只有描边更醒目，状态一眼可辨）
+   ★ R37：字号 / 粗细 / 灯尺寸与右侧三个链接（`.rl-files a`）**完全一致** ——
+     用户报「运行中和产物/运行日志/json 字体大小粗细不一样」。 */
+.badge{display:inline-flex;align-items:center;gap:6px;
+  font-size:clamp(12px,1.7vh,14.5px);color:var(--t2);
+  padding:3px 10px 3px 8px;border:1px solid var(--hair);border-radius:20px;white-space:nowrap;
+  font-weight:700;font-variant-numeric:tabular-nums}
+/* ★ R37：灯 = **实心高亮**（加粗到 6px + 同色光晕），与 `.rl-files a::before` 一致 */
+.badge::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;
+  box-shadow:0 0 5px currentColor;flex:0 0 auto}
+.badge.running{color:var(--accent);border-color:rgba(94,106,210,.38);background:rgba(94,106,210,.12)}
+.badge.running::before{animation:pulse 1.3s var(--ease) infinite}
+.badge.queued{color:var(--warn);border-color:rgba(210,153,34,.32);background:rgba(210,153,34,.10)}
+.badge.done{color:var(--ok);border-color:rgba(63,185,80,.32);background:rgba(63,185,80,.10)}
+.badge.error{color:var(--err);border-color:rgba(248,81,73,.32);background:rgba(248,81,73,.10)}
+.badge.cancelled,.badge.canceled{color:var(--warn);
+  border-color:rgba(210,153,34,.34);background:rgba(210,153,34,.10)}
+/* ★ R26：日志页全透明 ⇒ 徽章落在灰画布上，五个状态色都换成**深档**才读得清。
+   ★★ R39：五档**改引用 `.runlog-head` 上的同源变量** —— 与右边三个胶囊（`.rl-files.st-* a`）
+   用的是同一组值，两处不可能再不一致（用户要求「灯和字体颜色变化一致」）。 */
+.runlog-head .badge{color:#3A4048;border-color:rgba(0,0,0,.16)}
+.runlog-head .badge.done{color:var(--st-done-c);border-color:var(--st-done-bd);
+  background:var(--st-done-bg)}
+.runlog-head .badge.running{color:var(--st-running-c);border-color:var(--st-running-bd);
+  background:var(--st-running-bg)}
+.runlog-head .badge.queued{color:var(--st-queued-c);border-color:var(--st-queued-bd);
+  background:var(--st-queued-bg)}
+.runlog-head .badge.cancelled,.runlog-head .badge.canceled{color:var(--st-queued-c);
+  border-color:var(--st-queued-bd);background:var(--st-queued-bg)}
+.runlog-head .badge.error{color:var(--st-error-c);border-color:var(--st-error-bd);
+  background:var(--st-error-bg)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+.log{
+  margin:0;padding:12px 14px;max-height:264px;overflow:auto;
+  font-size:12px;line-height:1.62;color:#9AA3B2;background:#0B0C0F;
+  white-space:pre-wrap;word-break:break-word;
+}
+.log:empty{display:none}
+.task-foot{display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid var(--hair);
+  font-size:12.5px;flex-wrap:wrap}
+.task-foot a{font-family:var(--f-mono);font-size:12px;text-decoration:none}
+.task-foot a:hover{text-decoration:underline}
+.task-foot .foot-right{margin-left:auto;display:inline-flex;gap:10px;align-items:center;font-size:11.5px}
+.log.expanded{max-height:70vh}
+.err{color:var(--err)}
+
+/* ── 产物库 ───────────────────────────────────────────────────── */
+.searchbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px}
+.search-wrap{position:relative;flex:1;min-width:240px}
+.search-wrap input{width:100%;height:36px;padding:0 40px 0 12px;background:var(--s1);
+  border:1px solid var(--hair);border-radius:var(--r-sm);color:var(--t1);font-size:13.5px;outline:none;
+  transition:border-color var(--dur) var(--ease)}
+.search-wrap input::placeholder{color:var(--t3)}
+.search-wrap input:focus{border-color:var(--accent)}
+.search-wrap kbd{position:absolute;right:10px;top:50%;transform:translateY(-50%);pointer-events:none}
+
+.chk{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--t2);cursor:pointer;
+  height:36px;padding:0 12px;border:1px solid var(--hair);border-radius:var(--r-sm);background:var(--s1)}
+.chk:hover{border-color:var(--hair-2)}
+.chk input{accent-color:var(--accent);width:14px;height:14px}
+
+select{height:36px;padding:0 30px 0 12px;background:var(--s1);border:1px solid var(--hair);
+  border-radius:var(--r-sm);color:var(--t2);font-size:12.5px;outline:none;appearance:none;
+  background-image:linear-gradient(45deg,transparent 50%,var(--t3) 50%),linear-gradient(135deg,var(--t3) 50%,transparent 50%);
+  background-position:calc(100% - 15px) 15px,calc(100% - 10px) 15px;
+  background-size:5px 5px,5px 5px;background-repeat:no-repeat;
+  transition:border-color var(--dur) var(--ease),color var(--dur) var(--ease)}
+select:hover{border-color:var(--hair-2);color:var(--t1)}
+select:focus{border-color:var(--accent)}
+#lib-search{height:36px;padding:0 16px;background:var(--s2);border-color:var(--hair-2)}
+#lib-search:hover{background:var(--s3)}
+
+.muted{color:var(--t3)}
+#lib-count{font-size:12px;font-family:var(--f-mono);margin-bottom:10px;letter-spacing:.01em}
+
+/* 视图说明行 · 行内码 · 导入条 */
+.hint{font-size:12.5px;color:var(--t3);line-height:1.6;margin-bottom:12px}
+.hint strong{color:var(--t2)}
+.import-bar{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.import-bar input[type=file]{display:none}
+.import-bar .chk{cursor:pointer;background:var(--s2);border-color:var(--hair-2)}
+.item .del{color:var(--t3);text-decoration:none}
+.item .del:hover{color:var(--err)}
+.hint code{background:var(--s2);color:var(--code);padding:1px 6px;border-radius:4px;
+  font-size:12px;font-family:var(--f-mono)}
+
+/* 列表（不是卡片堆叠：一整块 + hairline 分隔行） */
+.lib-list{background:var(--s1);border:1px solid var(--hair);border-radius:var(--r-md);
+  overflow:hidden;box-shadow:var(--shadow)}
+.lib-list:empty{display:none}
+.item{padding:9px 74px 9px 16px;border-bottom:1px solid var(--hair);cursor:pointer;   /* ★ 右侧给「导出」让位；★R34 上下边距收紧 */
+  transition:background var(--dur) var(--ease)}
+.item:last-child{border-bottom:0}
+.item:hover{background:var(--s2)}
+/* ★ R34：**时间 / 大小挪到标题这一行**（右侧），整条更矮 */
+.item .t{display:flex;align-items:center;gap:8px;
+  font-weight:500;font-size:14.5px;letter-spacing:-.005em}
+.item .t .t-t{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:6px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .t .t-r{flex:0 0 auto;display:inline-flex;align-items:center;gap:10px;
+  color:var(--t1);font-size:11.5px;font-weight:500}
+.item .m{display:flex;align-items:center;gap:12px;flex-wrap:wrap;color:var(--t3);
+  font-size:11.5px}
+/* 「时间日期」这类信息推到右边，其余一律靠左 —— 靠类名精确控制，不靠位置猜 */
+.ms-right{margin-left:auto}
+/* 信息行的**末项统一右对齐**（时间 → chips → 大小，让大小贴住右边缘）。
+   产物库 / 本地资料库 / 搜索结果 / 联网命中 的条目共用 `.item`，一处改全都跟。 */
+.item .m .num,.item .t .num{font-family:var(--f-mono)}
+.item .snip{color:var(--t2);font-size:12.5px;margin-top:8px;line-height:1.5;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+/* ── 联网检索结果库：按「检索问题 / 关键词」聚合的分组 ──────────── */
+/* 每组一张卡；标题行整行可点，内容**默认收起**，展开后限高、内部自己滚 ——
+   检索内容不直接铺开（一屏塞不下几条，还得滚很久才看得到下一组）。 */
+/* ★ R29：分组卡也**不自己铺色**（透出整页那层 10%），只留细边 */
+.web-group{position:relative;background:transparent;border:1px solid var(--hair-2);border-radius:var(--r-md);
+  overflow:hidden;margin-bottom:8px}
+.web-group .wg-head{display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+  padding:12px 74px 12px 14px;   /* ★ 右侧让位给「导出」，不再压住「去重后 x / 共 y 条」 */
+  background:transparent;border:0;color:var(--t1);cursor:pointer;
+  transition:background var(--dur) var(--ease)}
+.web-group .wg-head:hover{background:var(--s2)}
+.wg-car{color:var(--t3);flex:0 0 auto;transition:transform var(--dur) var(--ease)}
+.web-group.open .wg-car{transform:rotate(90deg)}
+.web-group .wg-q{flex:1 1 auto;min-width:0;font-weight:500;font-size:13px;color:var(--t1);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* 标题后面的「时间 · 检索模型」—— ★ R38：改**白**（用户报「时间字体显示白色」） */
+.wg-meta{flex:0 0 auto;font-size:11px;color:var(--t1);font-weight:500;
+  font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.web-group .wg-body{display:none;border-top:1px solid var(--hair)}
+/* 展开后**自适应铺满**：不再写死 `min(46vh,420px)`（内容多时白白留一条滚动缝），
+   整段展开、由外层列表统一滚。 */
+.web-group.open .wg-body{display:block}
+.web-group .wg-body .item{padding:12px 16px 12px 28px}
+
+/* 条目右上角的「导出」 */
+.item{position:relative}
+/* ★ R38：导出按钮字色改**白**（用户报「导出字体显示白色」）—— 原来 --t3 在深底上偏灰、
+   看不清。`color` 提到 --t1（近白），悬停再亮到纯白。 */
+.item .exp,.wg-exp{position:absolute;right:8px;top:8px;height:22px;padding:0 8px;
+  font-size:11px;line-height:1;border-radius:var(--r-sm);border:1px solid transparent;
+  background:transparent;color:var(--t1);cursor:pointer;
+  transition:color var(--dur) var(--ease),border-color var(--dur) var(--ease)}
+.item:hover .exp,.web-group:hover .wg-exp{color:#FFFFFF;border-color:var(--hair)}
+.item .exp:hover,.wg-exp:hover{color:var(--ok);border-color:rgba(63,185,80,.45)}
+.wg-exp{top:9px;right:10px}
+
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:clamp(11.5px,1.6vh,13.5px);
+  color:var(--t2);font-weight:600;
+  background:var(--s2);border:1px solid var(--hair);border-radius:20px;padding:2px 10px 2px 8px;
+  font-variant-numeric:tabular-nums}
+.chip.packed{color:var(--code);border-color:rgba(167,139,250,.28);background:rgba(167,139,250,.08)}
+/* 产物状态标：中途终止 / 部分 → 醒目的告警色 */
+.chip.state{color:var(--warn);border-color:rgba(210,153,34,.38);background:rgba(210,153,34,.10);
+  margin-left:6px;white-space:nowrap}
+/* ★ R37：统一「灯」—— `.chip .d` 与 `.rl-files a::before`、`.badge::before` 同一款式
+   （前面一个圆点，颜色 = currentColor，含高亮描边光晕）。 */
+.chip .d{width:6px;height:6px;border-radius:50%;background:var(--t3);flex:0 0 auto}
+.chip .d.ok,.chip.lay .d{background:currentColor;box-shadow:0 0 5px currentColor}
+.chip .d.partial{background:var(--warn);box-shadow:0 0 5px var(--warn)}
+.chip .d.no{background:var(--err);box-shadow:0 0 5px var(--err)}
+
+.empty{padding:56px 0;text-align:center}
+
+/* ── 详情浮层：**独立的一页** —— 顶部标题/关闭键固定，正文只在本页内滚 ── */
+.detail{position:fixed;inset:0;z-index:90;display:flex;justify-content:center;
+  padding:5vh 4vw;background:rgba(4,5,6,.66);backdrop-filter:blur(10px) saturate(120%)}
+.detail.hidden{display:none}
+/* ★ 内层撑满可视高度：头 `flex:0 0 auto`（不参与收缩）、正文 `flex:1 1 auto` + 自滚
+   ⇒ 「内容只在详情页内部滚」，标题与关闭键永远在正文上方、不会被滚上来的内容盖住。 */
+.detail-inner{max-width:880px;width:100%;margin:0 auto;display:flex;
+  flex-direction:column;min-height:0}
+.detail-head{display:flex;align-items:center;gap:14px;margin-bottom:12px;flex:0 0 auto}
+#detail-title{font-size:13.5px;font-weight:600;font-family:var(--f-mono);flex:1;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#fff}
+#detail-close{height:30px;background:transparent;border-color:var(--hair);color:#fff}
+#detail-close:hover{background:var(--s2);color:#fff}
+/* 正文自己是滚动容器（不再让整个 `.detail` 滚） */
+#detail-body{flex:1 1 auto;min-height:0;overflow:auto}
+/* ★ 卡片背景 **30% 透明**（与面板同口径，能透出底下的页面） */
+.detail .md{background:rgba(22,23,28,.20);backdrop-filter:blur(8px);
+  border:1px solid var(--hair-2);border-radius:var(--r-lg);
+  padding:34px 40px 40px;box-shadow:var(--shadow-lg);font-size:14.5px;line-height:1.7;color:#DDE1E7}
+.md h1,.md h2,.md h3,.md h4{font-family:var(--f-display);font-weight:600;letter-spacing:-.015em;color:var(--t1)}
+.md h1{font-size:22px;margin:0 0 18px;padding-bottom:12px;border-bottom:1px solid var(--hair)}
+.md h2{font-size:17px;margin:30px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--hair)}
+.md h3{font-size:15px;margin:22px 0 8px}
+.md p{margin:10px 0}
+.md code{background:var(--s2);color:var(--code);padding:1.5px 6px;border-radius:4px;font-size:12.5px}
+.md pre{background:var(--ground);border:1px solid var(--hair);padding:14px 16px;border-radius:var(--r-sm);
+  overflow:auto;font-size:12.5px;line-height:1.6;color:#9AA3B2}
+.md pre code{background:none;padding:0;color:inherit}
+.md ul{padding-left:22px;margin:10px 0}
+.md li{margin:5px 0}
+.md hr{border:0;border-top:1px solid var(--hair);margin:24px 0}
+.md blockquote{margin:14px 0;padding:2px 0 2px 16px;border-left:2px solid var(--accent);color:var(--t2)}
+.md a{text-decoration:none;border-bottom:1px solid rgba(94,106,210,.4)}
+.md a:hover{border-bottom-color:var(--accent)}
+.md b{color:var(--t1);font-weight:600}
+.md table{border-collapse:collapse;font-size:13px;margin:14px 0}
+.md th,.md td{border:1px solid var(--hair);padding:7px 12px;text-align:left}
+.md th{background:var(--s2);font-weight:500;color:var(--t1)}
+
+/* ── 读数台（R23 重设计：内容**变大**、整块**竖向居中**、间距 `clamp` 自适应）── */
+.stats-body{padding:clamp(14px,3.4vh,40px) 16px;overflow:auto;
+  display:flex;flex-direction:column;justify-content:center;
+  gap:clamp(1px,.8vh,9px)}
+.stat-row{display:flex;align-items:baseline;gap:clamp(8px,1.6vh,14px);
+  padding:clamp(6px,1.5vh,15px) 0;
+  justify-content:center;flex-wrap:wrap;   /* ★ 内容整体居中自适应（用户要求） */
+  border-bottom:1px solid var(--hair)}
+.stat-row:last-child{border-bottom:0}
+.stat-k{color:var(--t1);font-size:clamp(12.5px,1.62vh,15.5px);flex:0 0 auto;
+  letter-spacing:.01em}
+.stat-v{font-family:var(--f-mono);font-size:clamp(13px,1.72vh,16.5px);color:var(--t1);
+  font-variant-numeric:tabular-nums}
+.stat-v .u{color:var(--t3);font-size:clamp(11px,1.28vh,12.5px);margin-left:4px}
+.stat-v .ok{color:var(--ok)}
+.stat-v .no{color:var(--err)}
+/* 主读数（深究轮次）：最大 + **强调蓝**，一眼能抓住 */
+.stat-row.big .stat-v{font-family:var(--f-display);
+  font-size:clamp(26px,5.6vh,42px);font-weight:600;letter-spacing:-.02em;
+  color:var(--accent-hi)}
+/* ★ R29：读数台与其余面板**统一不自己铺色**（整页那层 10% 就是背景） */
+#dash-stats{background:transparent}
+
+@media (max-width:900px){
+  /* 窄屏：三段各占一行（都居中），别挤成一条 */
+  .runlog-head{flex-direction:column;align-items:center;gap:8px}
+  .rl-head-c{flex-direction:column;gap:6px;flex:0 1 auto;max-width:92%}
+  #rl-question{max-width:100%}
+}
+
+/* ── 最近跑过 ─────────────────────────────────────────────────── */
+.hist{padding:5px 14px;border-bottom:1px solid var(--hair);cursor:pointer}   /* ★R34 收紧上下边距 */
+.hist:last-child{border-bottom:0}
+.hist:hover{background:var(--s2)}
+/* ★ R34：**日期并到标题行右侧**（原来占第二行） */
+.hist .q{display:flex;align-items:baseline;gap:8px;font-size:13px;color:var(--t1);margin-bottom:2px}
+.hist .q .q-t{flex:1 1 auto;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hist .q .q-r{flex:0 0 auto;color:var(--t1);font-family:var(--f-mono);font-size:11.5px}
+/* 与 `.item .m` 同一套：信息行**整体右对齐**
+   ★ R38：时间行改**白**（用户报「时间字体显示白色」，图 5 就是这一栏）——
+   时间 / 模型 / 大小这一串原是 --t3 灰，深底上偏暗；提到 --t1。 */
+.hist .m{display:flex;align-items:center;gap:10px;color:var(--t1);   /* 最近跑过：信息在**左** */
+  
+  font-size:11px;font-weight:500;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.hist .st{font-weight:500}
+.hist .st.done{color:var(--ok)}
+.hist .st.error{color:var(--err)}
+.hist .st.cancelled,.hist .st.canceled{color:var(--warn)}
+.hist .st.running,.hist .st.queued{color:var(--warn)}
+/* ★ R36：服务崩溃/被强杀后回填的中断任务 —— 单独一档配色（红字 + 淡红底），
+   跟「失败」（引擎报错）与「已终止」（用户手动终止）明确区分开。 */
+.hist .st.interrupted{color:var(--err);background:rgba(180,35,24,.10);
+  border-radius:4px;padding:0 5px}
+/* ★ R36：中断/失败任务的**原因**（后端 `error` 字段）—— 压暗、单行省略，
+   完整文本挂 `title`。用户要求「标注状态原因」，这条就是那个原因。 */
+.hist .m .why{flex:1 1 auto;min-width:0;color:var(--t3);font-size:11px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right}
+.hist .tag{background:var(--s3);border-radius:4px;padding:0 5px;color:var(--t2)}
+
+/* ── 发送的星光动画：问题化作光点飞向日志区、并把日志区点亮 ──────────
+   一次性、纯装饰：层本身 `pointer-events:none`，动画结束由 JS 摘掉节点。
+   尊重 `prefers-reduced-motion`（下面统一关掉）。 */
+.fx{position:fixed;inset:0;z-index:86;pointer-events:none;overflow:hidden}
+.spark{position:fixed;left:0;top:0;width:var(--sz,5px);height:var(--sz,5px);
+  border-radius:50%;transform:translate(-50%,-50%);
+  background:radial-gradient(circle,#fff 0%,#fff 22%,rgba(160,170,255,.95) 46%,rgba(94,106,210,0) 74%);
+  box-shadow:0 0 6px 1px rgba(190,200,255,.9),0 0 16px 3px rgba(120,130,255,.55);
+  animation:sparkfly .82s cubic-bezier(.22,.68,.28,1) both}
+@keyframes sparkfly{
+  /* ★ 三段：在输入框里出现 → **在框内散开** → 飞向日志区 */
+  0%  {left:var(--sx);top:var(--sy);opacity:0;transform:translate(-50%,-50%) scale(.4)}
+  12% {opacity:1;transform:translate(-50%,-50%) scale(.9)}
+  34% {left:var(--mx);top:var(--my);opacity:1;transform:translate(-50%,-50%) scale(1.15)}
+  74% {opacity:1}
+  100%{left:var(--tx);top:var(--ty);opacity:0;transform:translate(-50%,-50%) scale(1.05)}
+}
+/* 问题文字残影：从输入框位置抽走、边淡边糊 */
+.q-ghost{position:fixed;z-index:87;pointer-events:none;color:#fff;
+  font-size:14px;font-weight:500;letter-spacing:-.01em;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;max-width:60vw;
+  text-shadow:0 0 14px rgba(150,160,255,.95),0 1px 3px rgba(0,0,0,.6);
+  transform-origin:left center;animation:qghost .62s var(--ease) both}
+@keyframes qghost{
+  0%  {opacity:0;filter:blur(0);transform:translateY(0) scale(1)}
+  16% {opacity:1}
+  100%{opacity:0;filter:blur(5px);transform:translateY(-44px) scale(.84)}
+}
+/* ★ R23：发送时问题文字**逐字裂解**成星光点（每个字随机方向散开、缩小消失） */
+.q-char{position:fixed;z-index:87;pointer-events:none;color:#fff;
+  font-size:15px;font-weight:500;line-height:1;white-space:pre;
+  transform:translate(-50%,-50%);
+  text-shadow:0 0 12px rgba(160,170,255,.95),0 1px 3px rgba(0,0,0,.6);
+  animation:qchar .68s var(--ease) both}
+@keyframes qchar{
+  0%  {opacity:1;transform:translate(-50%,-50%) scale(1)}
+  40% {opacity:.92;transform:translate(-50%,-50%)
+        translate(calc(var(--dx) * .35),calc(var(--dy) * .3)) scale(1.06)}
+  100%{opacity:0;transform:translate(-50%,-50%)
+        translate(var(--dx),var(--dy)) scale(.28)}
+}
+/* 日志区被「点亮」：辉光脉冲（用 transition 不用 animation，避免和入场 rise 冲突） */
+.runlog.lit{border-color:rgba(130,140,255,.55);
+  box-shadow:0 0 26px 2px rgba(120,130,255,.45),0 0 60px 6px rgba(120,130,255,.18)}
+
+/* ── 小屏 ─────────────────────────────────────────────────────── */
+/* 仪表盘平铺需要横向空间：窄于 1100px 就退成单列、整页滚动（面板内部不再自滚） */
+/* ── 小屏 ───────────────────────────────────────────────────────
+   舞台是「首屏居中 / 运行态日志占主位」的纵向弹性布局，本来就适配各种尺寸；
+   只有两处需要照顾：窄屏的抽屉要占满宽度，矮屏的日志要限高自滚。 */
+@media (max-width:760px){
+  .drawer{width:100%;max-width:100%}
+  main.stage{padding:16px 13px}
+  body.stage-empty .composer{max-width:100%}
+  .welcome{font-size:19px}
+}
+/* 矮屏：日志一长就会把输入框挤出可视区 ⇒ 日志区限高、自己滚 */
+@media (max-height:660px){
+  body.stage-run .runlog{flex:0 0 auto;max-height:52vh}
+}
+@media (max-width:720px){
+  .detail{padding:3vh 3vw}
+  .detail .md{padding:24px 20px 30px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;transition-duration:.001ms !important}
+}

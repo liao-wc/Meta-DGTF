@@ -1,0 +1,79 @@
+{
+  "src": "元DGTF-V1.22.0-rc1.py",
+  "version": "1.22.0-rc1",
+  "A_switch": true,
+  "B_render_boundary_exists": true,
+  "B2_render_decision_exists": true,
+  "C_extract": {
+    "n": 3,
+    "ids": [
+      "A1",
+      "A2",
+      "A3"
+    ],
+    "verbs": [
+      "指派",
+      "申请",
+      "清淤"
+    ],
+    "fields_complete": true,
+    "roles": [
+      "排水公司",
+      "信息科",
+      "项目组"
+    ],
+    "deadlines": [
+      "汛期前",
+      "本月内",
+      "本季度"
+    ]
+  },
+  "C2_extract_empty": 0,
+  "C3_extract_cached": [
+    {
+      "id": "A1"
+    }
+  ],
+  "D_not_do": [
+    "不要整体翻新"
+  ],
+  "D2_not_do_none": [],
+  "E_dispatch": {
+    "boundary": {
+      "decision_template": false,
+      "has_action_section": false,
+      "has_not_do_section": false,
+      "pool_meta_summary": false,
+      "len": 500
+    },
+    "decision": {
+      "decision_template": true,
+      "has_action_section": true,
+      "has_not_do_section": true,
+      "pool_meta_summary": false,
+      "len": 708
+    },
+    "decision_off": {
+      "decision_template": false,
+      "has_action_section": false,
+      "has_not_do_section": false,
+      "pool_meta_summary": false,
+      "len": 500
+    },
+    "auto": {
+      "decision_template": true,
+      "has_action_section": true,
+      "has_not_do_section": true,
+      "pool_meta_summary": false,
+      "len": 708
+    }
+  },
+  "F_src_action_incomplete": true,
+  "F2_src_not_do_missing": true,
+  "F3_src_orientation_field": true,
+  "G_pack_keys": [
+    "orientation",
+    "_config"
+  ],
+  "H_boundary_template_unchanged": true
+}

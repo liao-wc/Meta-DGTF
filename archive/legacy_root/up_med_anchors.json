@@ -1,0 +1,104 @@
+{
+  "question": "社区医院人力有限，慢性病管理推远程监测还是加派人手上门随访？资源怎么配？",
+  "retrieved_at": "2026-10-04T10:20:00+0800",
+  "retriever": "agent WebSearch（4 次检索：远程血压监测 RCT/Meta / 成本效果 / 依从性与脱落 / 数字鸿沟与农村边界）",
+  "retriever_note": "本快照是**检索结果的事实摘录**。本领域的硬证据集中在『血压/心衰等可量化生理指标的 RCT 与 Meta 分析』，来源多为同行评审期刊（学术论文），是五个领域中硬证据密度较高的一档。但要注意三个边界：① 效果量普遍偏小（收缩压降 3–5 mmHg 量级），临床意义需结合基线；② 死亡率等硬终点在部分高质量 RCT 中未获益甚至反向（见 a6）；③ 成本结论对切口（医疗成本 vs 全社会成本）极度敏感（见 a1）。",
+  "anchors": [
+    {
+      "id": "a1",
+      "kind": "学术论文（Meta 分析）",
+      "claim": "家庭血压远程监测（HBPT）vs 常规照护，23 项 RCT、7037 名患者的汇总：诊室收缩压多降 4.71 mmHg（95%CI 5.18/3.24 反向区间，P<0.001），舒张压多降 2.45 mmHg；血压达标率 RR=1.16。代价：HBPT 组医疗费用显著更高——每位患者多约 662.92 欧元（P<0.001），但若只计『医疗成本』口径则两组无差异（-12.4 欧元，P=0.767）。结论原话：『HBPT 或是有用工具，但仍比常规照护更贵。』",
+      "source": "Omboni 等, Journal of Hypertension 2013,『Clinical usefulness and cost effectiveness of home blood pressure telemonitoring: meta-analysis of randomized controlled studies』（同行评审 Meta 分析，Wiley 收录）",
+      "url": "https://onlinelibrary.wiley.com/resolve/reference/PMED?id=23299557",
+      "as_of": "2013"
+    },
+    {
+      "id": "a2",
+      "kind": "学术论文（网络 Meta 分析）",
+      "claim": "网络 Meta 分析（24 项 RCT，检索至 2024-05-15）：远程监测（telemonitoring）相对常规监测，收缩压多降 3.69 mmHg（95%CI -5.82/-1.57，P<0.001）、舒张压多降 1.82 mmHg；家庭自测血压（HBPM）相对常规，收缩压 -2.73 mmHg（P=0.069，不显著）、舒张压 -2.09 mmHg（显著）。关键：远程监测与 HBPM 之间无显著差异——即『远程』相对『家庭自测』的增量价值在本分析中不显著。",
+      "source": "Grover 等, Journal of Hypertension 2025,『Effect of telemonitoring and home blood pressure monitoring on blood pressure reduction in hypertensive adults: a network meta-analysis』（PubMed PMID 40156340，同行评审）",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40156340",
+      "as_of": "2025"
+    },
+    {
+      "id": "a3",
+      "kind": "学术论文（系统综述+Meta 分析）",
+      "claim": "46 项 RCT、13875 例：HBPT 相对常规照护收缩压多降 3.99 mmHg、舒张压多降 1.99 mmHg，达标 RR=1.16。反面条件：『HBPT + 附加支持（咨询/教育/行为管理/用药管理/依从契约）』相对『单纯 HBPT』的额外收缩压获益仅 2.44 mmHg（95%CI -4.88/0.00，P=0.05），处于显著边缘。含义：单纯给设备、不加人（咨询/用药跟进）效果有限。",
+      "source": "Duan 等, Journal of Human Hypertension 2017,『Effectiveness of home blood pressure telemonitoring: a systematic review and meta-analysis of randomised controlled studies』（同行评审）",
+      "url": "https://bmjopen.bmj.com/lookup/external-ref?access_num=10.1038/jhh.2016.99&link_type=DOI",
+      "as_of": "2017"
+    },
+    {
+      "id": "a4",
+      "kind": "学术论文（Meta 分析，权威期刊）",
+      "claim": "美国心脏协会期刊汇总 37 项 RCT、9446 人：家庭血压监测相对诊室测量，收缩压改善 -2.63 mmHg、舒张压 -1.68 mmHg；且『使用远程监测时降幅更大』。机制证据：家庭血压监测使降压药调整频率增加（RR 2.02），并降低『治疗惰性』（血压偏高却未调整用药的 RR=0.82）。即远程监测的价值一部分来自它触发了医生调药，而非设备本身。",
+      "source": "Agarwal 等, Hypertension (AHA) 2011,『Role of Home Blood Pressure Monitoring in Overcoming Therapeutic Inertia and Improving Hypertension Control』（同行评审，权威期刊）",
+      "url": "https://www.ahajournals.org/doi/10.1161/HYPERTENSIONAHA.110.160911",
+      "as_of": "2011-01"
+    },
+    {
+      "id": "a5",
+      "kind": "学术论文（成本效果分析）",
+      "claim": "EPOCA 远程监测（法国 Vigie-Age 试点，722 人、其中 408 人长期随访，10 年 Markov 模型）：急诊就诊降 54%、住院降 46%，平均住院天数从 55.6 天降到 30.6 天；人均总成本远程组 29,165 欧元 vs 标准照护 39,929 欧元，全社会视角省 10,764 欧元、国家医保视角省 7,430 欧元；增量 0.04 QALY。该方案被评估为『90% 概率占优（更省且更有效）』。是少数给出明确成本节约数字的正面证据。",
+      "source": "Leleu 等, JMIR 2026;28:e80302,『EPOCA Tele-Monitoring System for Older Adults at High Risk of Hospitalization: Budget Impact and Cost-Effectiveness Analysis』（同行评审，厂商相关作者需注意利益关联）",
+      "url": "https://www.jmir.org/2026/1/e80302/PDF",
+      "as_of": "2026"
+    },
+    {
+      "id": "a6",
+      "kind": "专业报告转述（引 RCT）",
+      "claim": "反面条件（设备不等于疗效）：Mayo Clinic 的 Tele-ERA 试验针对有多种慢病、有住院风险的老年人做远程监测，结果在住院率、急诊率、住院时长上与对照组无差异；且远程监测组死亡率反而更高（14.7% vs 3.9%），自我感知的身心健康状况也未显著改善。这是最硬的反例之一——说明远程监测在『高住院风险、多重慢病老年人群』这一子集上未必成立。",
+      "source": "Maine Hospice Council 编《Using Telehealth to Improve Home-Based Care for Older Adults and Family Caregivers》（专业综述报告，转述 Mayo Tele-ERA 试验）",
+      "url": "https://mainehospicecouncil.org/images/PDFs/using-telehealth-to-improve-home-based-care-for-older-adults-and-family-caregivers.pdf",
+      "as_of": "2022 前后"
+    },
+    {
+      "id": "a7",
+      "kind": "学术论文（依从性研究）",
+      "claim": "适用人群边界（硬数字）：一项面向 ≥65 岁多重慢病患者的家庭远程监测研究（n=113，平均年龄 78.8 岁）中，34.5% 提前退出、31.1% 在筛查合格后拒绝参与、23% 报告网速慢或无网络连接。退出主因是『感知不到健康获益』『内容单一』『无兴趣/无需求』，而非单纯技术故障。含义：老年人对远程监测的接受度是主要瓶颈，且年龄越大（非参与与退出者平均年龄更高）越明显。",
+      "source": "Lang 等, Journal of Telemedicine and Telecare 2022,『Adherence and acceptance of a home-based telemonitoring application used by multi-morbid patients aged 65 years and older』（同行评审）",
+      "url": "https://journals.sagepub.com/doi/abs/10.1177/1357633X20901400",
+      "as_of": "2022"
+    },
+    {
+      "id": "a8",
+      "kind": "专业报告转述（引 RCT）",
+      "claim": "反面条件（依从性衰减）：某心衰远程监测大型试验中，患者对监测和回访电话的依从性是突出问题；到研究最后一周，仅 55% 患者仍保持每周使用系统≥3 次——而该试验『投入了相当多的资源去优化患者参与度』。说明即便有经费和人力加持，依从性仍会随时间衰减，这会直接侵蚀效果估计。",
+      "source": "同 a6 报告（Maine Hospice Council，转述心衰远程监测试验）",
+      "url": "https://mainehospicecouncil.org/images/PDFs/using-telehealth-to-improve-home-based-care-for-older-adults-and-family-caregivers.pdf",
+      "as_of": "2022 前后"
+    },
+    {
+      "id": "a9",
+      "kind": "官方/专业报告",
+      "claim": "成本效果的条件性：对 91 项 RPM 研究的系统综述显示，约一半干预降低了住院/急诊/住院时长，另一半无效果，少数反而增加急性照护使用。对 34 项经济分析的汇总显示，RPM 对高血压高度成本有效，对 COPD、心衰有一定证据；但成本节约『多在长期而非短期显现』，且是否划算取决于初始投入、疾病严重度、服务语境与支付意愿。澳大利亚的结论是：社区远程监测尚无大规模拨款，Medicare 福利目录（MBS）未覆盖 RPM。",
+      "source": "Australian Government 资助的《International Remote Patient Monitoring Programs》综述（官方/专业报告）",
+      "url": "https://healthsystemsustainability.com.au/wp-content/uploads/2022/01/International-Remote-Patient-Monitoring-Programs.pdf",
+      "as_of": "2022-01"
+    },
+    {
+      "id": "a10",
+      "kind": "学术论文（系统综述）",
+      "claim": "数字鸿沟的边界条件（含反直觉结论）：面向农村/服务不足地区 ≥60 岁人群的数字与远程健康系统综述指出，数字素养低与宽带不可靠是主要障碍；但两项高质量试验给出相反信号——TIM-HF2 中农村居民对远程监测的依从性反而高于城市居民（尤其配备患者教育与规律接触时）；IDEATel 中低社会经济人群的获益不低于（甚至高于）高收入人群。即『远程监测会加剧不平等』这一直觉在部分证据中不成立，关键在配套的教育与接触。",
+      "source": "JMIR Aging 2026,《Digital and Remote Health for Older Adults in Rural or Underserved Settings: Systematic Review...》（同行评审，PRISMA 系统综述）",
+      "url": "https://aging.jmir.org/2026/1/e78913",
+      "as_of": "2026"
+    },
+    {
+      "id": "a11",
+      "kind": "行业媒体转述（试点自述，弱证据）",
+      "claim": "上门随访侧的宣称数字（应大幅打折）：某文称家庭医生上门随访可使高血压控制率提升 28%、糖尿病并发症发生率降低 35%、老人急诊次数减少 40%、人均年医疗费用降低 1200 元；另一处称物联网随访使高血压患者人均年管理成本增加 120 元，但因急诊减少节省 860 元，投入产出比 1:7.2。这些为试点自述、无原始研究出处，仅可作为『上门/随访侧也存在正面宣称』的对照，不可作为统计证据。",
+      "source": "贵州省卫生摄影协会转载文 + 人人文库《物联网技术助力社区慢病随访实践》（行业媒体/资料，试点自述，来源不可核）",
+      "url": "http://www.gzswssy.com/paper/2025-11/14/23748.shtml",
+      "as_of": "2025-11"
+    },
+    {
+      "id": "a12",
+      "kind": "行业媒体转述（官方统计口径转述）",
+      "claim": "结构性人力约束：我国每万人口仅有约 2.3 名全科医生，远低于发达国家水平；部分地区上门服务费用未纳入医保，影响医生积极性。这条给出『加派人手上门随访』一侧的天花板——不是钱的问题，是全科医生存量本身有限（与 a9 中『家庭血压远程监测需配咨询/用药跟进人力』相互印证）。",
+      "source": "贵州省卫生摄影协会转载文（转述我国全科医生配置口径，数字未见一手来源，按中等证据处理）",
+      "url": "http://www.gzswssy.com/paper/2025-11/14/23748.shtml",
+      "as_of": "2025-11"
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "src": "_baseline_v12177.py",
+  "version": "1.21.77",
+  "A_objective": {
+    "0": null,
+    "1": null,
+    "both": null,
+    "all": null
+  },
+  "B_cov_entry": {
+    "0": "TypeError: coverage_of() got an unexpected keyword argument 'entry'",
+    "1": "TypeError: coverage_of() got an unexpected keyword argument 'entry'",
+    "both": "TypeError: coverage_of() got an unexpected keyword argument 'entry'",
+    "all": "TypeError: coverage_of() got an unexpected keyword argument 'entry'"
+  },
+  "B2_cov_entry_passed_positionally": "TypeError: coverage_of() takes 2 positional arguments but 3 were given",
+  "B3_cov_parts_entry0": "TypeError: coverage_parts() got an unexpected keyword argument 'entry'",
+  "C_classify_view_empty": "AttributeError: module 'dgtf_probe1' has no attribute '_classify_unsaid'",
+  "C_classify_view_real": "AttributeError: module 'dgtf_probe1' has no attribute '_classify_unsaid'",
+  "C_classify_view_unsaid_kw": "AttributeError: module 'dgtf_probe1' has no attribute '_classify_unsaid'",
+  "C_classify_dict_real": "AttributeError: module 'dgtf_probe1' has no attribute '_classify_unsaid'",
+  "C_classify_dict_empty": "AttributeError: module 'dgtf_probe1' has no attribute '_classify_unsaid'",
+  "D_header_has_layer_target": false,
+  "D2_layer_objective_lines": "AttributeError: module 'dgtf_probe1' has no attribute '_layer_objective_lines'",
+  "E_stop_reason_src_未生质量": false,
+  "E2_stop_reason_src_修行层不追求收敛": false,
+  "F_settle_meta_ref_p0": false,
+  "G_route_boundary": [
+    "0",
+    "1",
+    "both",
+    "all"
+  ],
+  "G2_route_two_layers": [
+    "0",
+    "1"
+  ],
+  "H_bench_questions": 20,
+  "H2_bench_gold": 3,
+  "D3_legend": "AttributeError: module 'dgtf_probe1' has no attribute '_layer_objective_lines'"
+}

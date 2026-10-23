@@ -1,0 +1,32 @@
+v1.23.11：把「如实记账」里剩下的两条做完（R1 后半 + R10 后半）
+
+改了什么
+- R1 后半 · 自省回写：新增 _append_self_check_writeback(res, body)，把自省的
+  高置信结论（self_check.unsaid_is_escape、quality_flags 里的 xxx_overused(n) /
+  action_incomplete / not_do_missing）提升为落地层里的一条**可执行动作**。
+  原先它们只落在逐层明细里 —— 诊断与动作之间是断的。没有高置信信号时不渲染；
+  顺序固定「形态声明 → 自省回写」。
+- R10 后半 · 事实题自动联网：新增 _web_auto_for_facts(question)；--web auto
+  （默认）跑事实型询问时自动视同 on。要关掉：--web off。
+
+判据数字
+- 主文件 17107 -> 17171 行（+64，wc -l 口径）/ 纯 CRLF。
+- 探针（真实 packed 驱动 + 合成正/负对照）：自省回写 0 -> 2 条；无诊断不渲染
+  （负对照不变）；事实题 True / 决策题 False；main 接线在。
+- 冒烟 exit 0 / 0 失败 / 206 通过（守卫 98 到 99）。
+- 变异体：control 判绿；M1 自省不回写 / M2 事实题不联网 两个判红。
+- 真跑一次（--route 1 --rounds 1，不显式传 --web，走默认 auto）：
+  终端留痕「事实型询问 + --web auto ⇒ 自动接入外部校验」；
+  packed _runtime 里 web_enabled=true；
+  pool["1"].meta = "[W-OK] research_decompose 收 3 条（W1、W2、W3）" +
+  "[W-OK] research_evidence 收 3 条（W4、W5、W6）"，web_errors = []；
+  => 联网真的跑了 6 条、零失败。
+- load_config 逐字差异 0 项；AST 登记 added 100 到 102。
+
+如实记账
+- 未做：无。R1-R10 十条至此全部落地（各半条也都有判据与变异体钉住）。
+- 本版唯一改变默认行为的点：--web auto 下事实型询问会自动联网（--web off 可关），
+  已在 dgtf_config.yaml 升级段用「★ 对你的影响」明写。
+- 排查教训：我一度按 tavily / 检索 / [W- 这些词在终端日志里搜、全是 0 次，
+  差点下「没触发」的结论；真证据在结构化字段 pool.meta 里（[W-OK] ... 收 3 条）。
+  同一件事的标记串，日志侧与产物侧可以完全不同。

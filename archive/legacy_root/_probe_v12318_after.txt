@@ -1,0 +1,24 @@
+📁 已保存: C:\Users\18432\AppData\Local\Temp\tmpsn7hryc8\20261009_234233_新中国的成立时间是什么时候.md
+📁 已保存: C:\Users\18432\AppData\Local\Temp\tmpp5l4gw6s\20261009_234234_新中国的成立时间是什么时候.md
+📁 已保存: C:\Users\18432\AppData\Local\Temp\tmp73mcbevq\20261009_234234_新中国的成立时间是什么时候.md
+A_def_enabled            True
+A_def_path               ''
+B2_enabled               True
+B2_error                 ''
+B2_unconfigured          True
+B_anchors                0
+B_err                    ''
+B_unconfigured           True
+C_失败                     **外部锚点 · 文本**（锚点文件 `external_anchor`）：**开** —— 已接入 0 条；⚠️ 接入失败（明细见下方「锚点异常」）
+C_已接入                    **外部锚点 · 文本**（锚点文件 `external_anchor`）：**开** —— 已接入 3 条（a.json，检索于 t0）
+C_未挂文件                   **外部锚点 · 文本**（锚点文件 `external_anchor`）：**开（未挂锚点文件）** —— 把 `external_anchor.path` 指向锚点快照 JSON 即自动接入；本次结论只取决于池内材料
+C_缺失                     **外部锚点 · 文本**（锚点文件 `external_anchor`）：**关** —— 本次未接入锚点文件（关闭时产物不写该通道状态）；要接入：`external_anchor.enabled: true` + `path`。结论可信度只取决于池内材料的一致性（设计边界，不是缺陷）
+D_无锚点_triage 降级          False
+D_无锚点_冲突                 False
+D_无锚点_锚点入池               False
+D_无锚点_锚点分级               False
+D_无锚点_锚点对照               True
+D_无锚点_锚点异常               False
+E2_留痕原文                  ★ **本题是事实型询问，但本次未接入外部校验**（锚点通道：开着但未挂文件；联网检索：关） —— 这是一次**显式选择**，不是默认特权：
+E_有未接入留痕                 True
+E_留痕原文                   ★ **本题是事实型询问，但本次未接入外部校验**（锚点通道：关；联网检索：关） —— 这是一次**显式选择**，不是默认特权：

@@ -1,0 +1,13 @@
+v1.23.20：留痕从 verbose 拆出独立开关（运行时只留进度）
+
+- 新增 output.dump_rounds（默认 false）；dump_round / dump_final 的守卫改为
+  `self.verbose and self.dump_rounds`，于是「有进度、无留痕」第一次能同时成立。
+- 出厂 dgtf_config.yaml 的 output.show_ing / show_manifest 改回 false
+  （这两键注释里本来就写「建议默认 false」）。
+- DEFAULT_CONFIG.output 新增 "dump_rounds": False。
+- 产物 md / packed.json 零改动（只动 stdout 守卫）。
+- smoke_test：SRC 指向 v1.23.20；新增 check_v12320_quiet_output
+  （打桩 dump_view_fields 做行为断言 + 开/关两侧负对照）；5 处「手动开 verbose
+  测留痕」的判据显式补 dump_rounds = True；CONFIG_TUNED 销账 2 条。
+- 验收：冒烟 exit 0 / 0 ✗ / PASS 213；离线 E2E 全绿；
+  真跑 route 0（126s / 11 calls / 30445 tokens）留痕 0 次、全文框 0 次、━━━ 62 次。

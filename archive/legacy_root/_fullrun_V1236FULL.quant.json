@@ -1,0 +1,86 @@
+{
+ "0": {
+  "restate_fidelity": {
+   "coverage": 0.5,
+   "ratio": 1.5,
+   "fidelity": 0.5,
+   "verdict": "ok"
+  },
+  "candidate_yield": {
+   "n": 10,
+   "n_new": 10,
+   "new_ratio": 1.0,
+   "max_sim": 0.2727,
+   "collapsed": false,
+   "verdict": "ok"
+  },
+  "ing_density": {
+   "value": 0.7455,
+   "chars": 1072,
+   "verdict": "ok"
+  }
+ },
+ "1": {
+  "restate_fidelity": {
+   "coverage": 0.25,
+   "ratio": 1.65,
+   "fidelity": 0.25,
+   "verdict": "ok"
+  },
+  "candidate_yield": {
+   "n": 10,
+   "n_new": 10,
+   "new_ratio": 1.0,
+   "max_sim": 0.2857,
+   "collapsed": false,
+   "verdict": "ok"
+  },
+  "ing_density": {
+   "value": 0.7663,
+   "chars": 950,
+   "verdict": "ok"
+  }
+ },
+ "both": {
+  "restate_fidelity": {
+   "coverage": 1.0,
+   "ratio": 1.0,
+   "fidelity": 1.0,
+   "verdict": "ok"
+  },
+  "candidate_yield": {
+   "n": 12,
+   "n_new": 11,
+   "new_ratio": 0.9167,
+   "max_sim": 1,
+   "collapsed": false,
+   "verdict": "ok"
+  },
+  "ing_density": {
+   "value": 0.718,
+   "chars": 1475,
+   "verdict": "ok"
+  }
+ },
+ "all": {
+  "restate_fidelity": {
+   "coverage": 1.0,
+   "ratio": 1.0,
+   "fidelity": 1.0,
+   "verdict": "ok"
+  },
+  "candidate_yield": {
+   "n": 13,
+   "n_new": 13,
+   "new_ratio": 1.0,
+   "max_sim": 0.6429,
+   "collapsed": false,
+   "verdict": "ok"
+  },
+  "ing_density": {
+   "value": 0.729,
+   "chars": 1859,
+   "verdict": "ok"
+  }
+ }
+}

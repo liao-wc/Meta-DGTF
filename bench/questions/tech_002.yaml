@@ -1,0 +1,10 @@
+# [v122 bench] tech_002 · CAP 取舍
+id: tech_002
+domain: tech
+question: "分布式订单系统在 CAP 约束下该牺牲哪一端"
+orientation: decision
+budget:
+  profile: balanced
+  max_calls: 180
+  rounds: "0:5,1:5,both:5,all:6"
+  mode: serial

@@ -1,0 +1,177 @@
+{
+ "tag": "V71S",
+ "src": "元DGTF-V1.21.71.py",
+ "route": "0,1,both,all",
+ "rounds": "0:1,1:1,both:1,all:1",
+ "mode": "serial",
+ "orientation": "auto",
+ "llm_calls": 49,
+ "tri_state": [
+  1,
+  6
+ ],
+ "meta_closure_all": {
+  "clean": true,
+  "unsettled": 0,
+  "total": 2,
+  "uncovered": [],
+  "closed": 0,
+  "duel_total": 2,
+  "by_id": 2,
+  "covered_ids": 2,
+  "by_id_inactive": 0,
+  "by_id_unknown": 0
+ },
+ "duel_suspensions_both": [
+  {
+   "id": "t_001",
+   "target": "海绵设施运维责任落空",
+   "status": "active",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_002",
+   "target": "财政年历/容忍时钟/验收时钟不共享刻度",
+   "status": "active",
+   "quadrant": "③"
+  }
+ ],
+ "engagements_by_view": {
+  "0": [
+   {
+    "target": "施工期临时排水能力下降的汛期窗口",
+    "tension_id": null
+   },
+   {
+    "target": "外河顶托与本地暴雨遭遇频率",
+    "tension_id": null
+   },
+   {
+    "target": "海绵设施运维责任落空",
+    "tension_id": null
+   }
+  ],
+  "1": [
+   {
+    "target": "外河顶托与本地暴雨的遭遇频率，若只改变暴露时间而不改变0/1，暴露时间需要乘以什么量（如淹没深度、持续时间、受影响人口）才够格进入权衡？",
+    "tension_id": null
+   },
+   {
+    "target": "海绵设施分散到多产权单位后，运维责任落空是否足以单独否掉「局部改造加海绵」路线？需要哪些制度设计才能填补这一空缺？",
+    "tension_id": null
+   },
+   {
+    "target": "财政分年支付能力与居民对施工的容忍度不共享同一个时钟，两者的错位如何影响方案选择？错位达到什么程度会改变0/1的先后？",
+    "tension_id": null
+   },
+   {
+    "target": "先补外河水位、管网实际过流、施工期临时排水三组资料，再谈0与1的比例——这三组资料中，哪一组缺失最致命，导致0/1的争论只是在预算表上换位置？",
+    "tension_id": null
+   }
+  ],
+  "both": [],
+  "all": [
+   {
+    "target": "海绵设施分散到多产权后运维承接主体未出现，否掉路线与补制度两个方向都无处落地",
+    "tension_id": "t_001"
+   },
+   {
+    "target": "财政年历、居民容忍时钟、验收时钟不共享刻度，未找到共享换算量",
+    "tension_id": "t_002"
+   }
+  ]
+ },
+ "suspensions_with_tid": {
+  "0": [
+   {
+    "target": "老城区具体空间与人口条件",
+    "tension_id": null,
+    "status": "active"
+   },
+   {
+    "target": "谁来做决定、谁承担后果",
+    "tension_id": null,
+    "status": "active"
+   }
+  ],
+  "1": [],
+  "both": [],
+  "all": [
+   {
+    "target": "财政年历、居民容忍时钟、验收时钟三者不共享刻度，未找到共享换算量",
+    "tension_id": null,
+    "status": "resolved"
+   },
+   {
+    "target": "海绵设施运维责任落空，承接主体未出现",
+    "tension_id": null,
+    "status": "active"
+   },
+   {
+    "target": "财政年历、容忍时钟、验收时钟不共享刻度",
+    "tension_id": null,
+    "status": "active"
+   }
+  ]
+ },
+ "pools_all_engagements": [
+  {
+   "target": "海绵设施分散到多产权后，运维责任承接者未出现，是否单独否掉「局部改造加海绵」",
+   "tension_id": "t_001"
+  },
+  {
+   "target": "海绵设施分散到多产权后运维承接主体未出现，否掉路线与补制度两个方向都无处落地",
+   "tension_id": "t_001"
+  },
+  {
+   "target": "财政年历、居民容忍时钟、验收时钟不共享刻度，未找到共享换算量",
+   "tension_id": "t_002"
+  },
+  {
+   "target": "施工期临时排水能力下降的汛期窗口",
+   "tension_id": null
+  },
+  {
+   "target": "外河顶托与本地暴雨遭遇频率",
+   "tension_id": null
+  },
+  {
+   "target": "海绵设施运维责任落空",
+   "tension_id": null
+  },
+  {
+   "target": "外河顶托与本地暴雨的遭遇频率，若只改变暴露时间而不改变0/1，暴露时间需要乘以什么量（如淹没深度、持续时间、受影响人口）才够格进入权衡？",
+   "tension_id": null
+  },
+  {
+   "target": "海绵设施分散到多产权单位后，运维责任落空是否足以单独否掉「局部改造加海绵」路线？需要哪些制度设计才能填补这一空缺？",
+   "tension_id": null
+  },
+  {
+   "target": "财政分年支付能力与居民对施工的容忍度不共享同一个时钟，两者的错位如何影响方案选择？错位达到什么程度会改变0/1的先后？",
+   "tension_id": null
+  },
+  {
+   "target": "先补外河水位、管网实际过流、施工期临时排水三组资料，再谈0与1的比例——这三组资料中，哪一组缺失最致命，导致0/1的争论只是在预算表上换位置？",
+   "tension_id": null
+  }
+ ],
+ "views_errors": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": []
+ },
+ "pools_meta_p16": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": []
+ },
+ "pools_meta_len": {
+  "0": 2,
+  "1": 2,
+  "both": 2,
+  "all": 4
+ }
+}

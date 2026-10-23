@@ -1,0 +1,224 @@
+{
+ "tag": "D2_v63",
+ "src": "元DGTF-V1.21.63.py",
+ "route": "0,1,both,all",
+ "rounds": "0:4,1:4,both:5,all:5",
+ "mode": "serial",
+ "orientation": "boundary",
+ "llm_calls": 172,
+ "tri_state": [
+  3,
+  6
+ ],
+ "meta_closure_all": {
+  "clean": false,
+  "unsettled": 3,
+  "total": 3,
+  "uncovered": [
+   "清空第一次读位次的动作没有持有者",
+   "位次表来源两边都空着",
+   "感知动作与残差是否占同一位次"
+  ],
+  "closed": 2,
+  "duel_total": 5,
+  "by_id": 0,
+  "covered_ids": 3,
+  "by_id_inactive": 0,
+  "by_id_unknown": 3
+ },
+ "duel_suspensions_both": [
+  {
+   "id": "t_001",
+   "target": "操作位可列举则操作消失，不可列举则清单缺位",
+   "status": "resolved",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_002",
+   "target": "清空第一次读位次的动作没有持有者",
+   "status": "active",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_003",
+   "target": "拆分是一次性动作、可被单独记账",
+   "status": "revoked",
+   "quadrant": "④"
+  },
+  {
+   "id": "t_004",
+   "target": "位次表来源两边都空着",
+   "status": "active",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_005",
+   "target": "感知动作与残差是否占同一位次",
+   "status": "active",
+   "quadrant": "③"
+  }
+ ],
+ "engagements_by_view": {
+  "0": [
+   {
+    "target": "T4 拆前耦合作为读的条件",
+    "tension_id": null
+   },
+   {
+    "target": "T8 拆的时点承载者",
+    "tension_id": null
+   }
+  ],
+  "1": [
+   {
+    "target": "若把'已被列举'这层关系本身列入清单，清单会多出哪一项？多出的那一项算不算被列举？",
+    "tension_id": null
+   },
+   {
+    "target": "补入动作若也要一条目来记，这条目记的是'补入'还是'被补入者'？二者若同一，清单是否在补入瞬间就漏掉了补入？",
+    "tension_id": null
+   },
+   {
+    "target": "排除动作占一个操作位，这个位次是否可被清单列举？若可，排除就被收编；若不可，清单永远缺这一位。",
+    "tension_id": null
+   },
+   {
+    "target": "划界者的'不在'是被指认的，还是被排除后剩下的空位？",
+    "tension_id": null
+   },
+   {
+    "target": "清单列举完毕后，'列举已完成'这一判定由谁做出？判定者若在清单外，清单的闭合就不是清单自身完成的。",
+    "tension_id": null
+   }
+  ],
+  "both": [],
+  "all": []
+ },
+ "suspensions_with_tid": {
+  "0": [
+   {
+    "target": "位次可重复性的保证机制",
+    "tension_id": null,
+    "status": "stable"
+   }
+  ],
+  "1": [],
+  "both": [],
+  "all": [
+   {
+    "target": "all 被追问时已不可指认，追问要求占格，而它是格子的来源",
+    "tension_id": null,
+    "status": "resolved"
+   },
+   {
+    "target": "「没有第二个摆法」本身是否也是一种摆法，在摆法内判不了",
+    "tension_id": null,
+    "status": "resolved"
+   }
+  ]
+ },
+ "pools_all_engagements": [
+  {
+   "target": "all 是拆分后未被吸收的剩余，不以条目存在，只在部分列完后显形",
+   "tension_id": "t_all_residual"
+  },
+  {
+   "target": "all 被追问时已不可指认，追问要求占格，而它是格子的来源",
+   "tension_id": "s_001"
+  },
+  {
+   "target": "「没有第二个摆法」本身是否也是一种摆法，在摆法内判不了",
+   "tension_id": "t_000"
+  },
+  {
+   "target": "'已被列举'这层关系的自我覆盖",
+   "tension_id": null
+  },
+  {
+   "target": "耦合约束失去载体后的存在状态",
+   "tension_id": null
+  },
+  {
+   "target": "划界者的'不在'如何被指认",
+   "tension_id": null
+  },
+  {
+   "target": "补入动作自身的条目化",
+   "tension_id": null
+  },
+  {
+   "target": "排除动作占位的可列举性",
+   "tension_id": null
+  },
+  {
+   "target": "拆前耦合事件的时点归属",
+   "tension_id": null
+  },
+  {
+   "target": "补入动作与被补入者的同一性",
+   "tension_id": null
+  },
+  {
+   "target": "时点归属与排除占位的汇合",
+   "tension_id": null
+  },
+  {
+   "target": "三条自问汇聚点",
+   "tension_id": null
+  },
+  {
+   "target": "T4 拆前耦合作为读的条件",
+   "tension_id": null
+  },
+  {
+   "target": "T8 拆的时点承载者",
+   "tension_id": null
+  },
+  {
+   "target": "若把'已被列举'这层关系本身列入清单，清单会多出哪一项？多出的那一项算不算被列举？",
+   "tension_id": null
+  },
+  {
+   "target": "排除动作占一个操作位，这个位次是否可被清单列举？若可，排除就被收编；若不可，清单永远缺这一位。",
+   "tension_id": null
+  },
+  {
+   "target": "补入动作若也要一条目来记，这条目记的是'补入'还是'被补入者'？二者若同一，清单是否在补入瞬间就漏掉了补入？",
+   "tension_id": null
+  },
+  {
+   "target": "划界者的'不在'是被指认的，还是被排除后剩下的空位？",
+   "tension_id": null
+  },
+  {
+   "target": "清单列举完毕后，'列举已完成'这一判定由谁做出？判定者若在清单外，清单的闭合就不是清单自身完成的。",
+   "tension_id": null
+  },
+  {
+   "target": "耦合约束失去载体后，它靠什么维持'还是同一个约束'？若靠的是拆前的那次耦合，那载体从未失去。",
+   "tension_id": null
+  }
+ ],
+ "views_errors": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": [
+   "元层 tension_id 不合法：'t_all_residual' —— 池里没有这个编号（可能是自造/抄示例/串了 s_ 命名空间；当前可引用的只有 []）",
+   "元层 tension_id 不合法：'s_001' —— 池里没有这个编号（可能是自造/抄示例/串了 s_ 命名空间；当前可引用的只有 []）",
+   "元层 tension_id 不合法：'t_000' —— 池里没有这个编号（可能是自造/抄示例/串了 s_ 命名空间；当前可引用的只有 []）"
+  ]
+ },
+ "pools_meta_p16": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": []
+ },
+ "pools_meta_len": {
+  "0": 10,
+  "1": 10,
+  "both": 8,
+  "all": 12
+ }
+}

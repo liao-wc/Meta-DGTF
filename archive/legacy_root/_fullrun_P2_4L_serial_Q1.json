@@ -1,0 +1,192 @@
+{
+ "llm_calls": 126,
+ "llm_tokens": 1115757,
+ "llm_ops_calls": 85,
+ "llm_eval_calls": 41,
+ "tri_state": [
+  2,
+  6
+ ],
+ "tri_alpha": {
+  "alpha": -0.3533834586466167,
+  "kappa": 0.0,
+  "rare": {
+   "rare": "undecidable",
+   "units": 6,
+   "unanimous": 0,
+   "rate": 0.0
+  },
+  "n_units": 6,
+  "verdict": "不可靠（α<0.667，Krippendorff 下限）"
+ },
+ "diversity": {
+  "layers": 4,
+  "channels": 3,
+  "mode": "serial",
+  "combos": 12,
+  "note": "组合数 = 层数 × 通道数（模式另计）；低于「层×通道满配」时，结论的可迁移性受限"
+ },
+ "compact": {
+  "inner_share": 0.9637,
+  "budget": 0.6,
+  "over": true,
+  "verdict": "内部面超预算 ⇒ 本轮**索引化**（不删内容，正文回退到索引 + 指向 packed 全量）"
+ },
+ "belief_staleness": {
+  "n": 10,
+  "stale_n": 3,
+  "max_age": 3,
+  "items": [
+   {
+    "id": "B1",
+    "age": 3,
+    "stale_hint": true
+   },
+   {
+    "id": "B2",
+    "age": 3,
+    "stale_hint": true
+   },
+   {
+    "id": "B3",
+    "age": 3,
+    "stale_hint": true
+   },
+   {
+    "id": "B4",
+    "age": 2,
+    "stale_hint": false
+   },
+   {
+    "id": "B5",
+    "age": 2,
+    "stale_hint": false
+   },
+   {
+    "id": "B6",
+    "age": 2,
+    "stale_hint": false
+   },
+   {
+    "id": "B7",
+    "age": 1,
+    "stale_hint": false
+   },
+   {
+    "id": "B8",
+    "age": 1,
+    "stale_hint": false
+   },
+   {
+    "id": "B9",
+    "age": 1,
+    "stale_hint": false
+   },
+   {
+    "id": "B10",
+    "age": 1,
+    "stale_hint": false
+   }
+  ]
+ },
+ "bandit": {
+  "enabled": true,
+  "arm": 0,
+  "reward": 0.0385,
+  "cost": 1115.757,
+  "explore": false,
+  "mean": [
+   0.0526,
+   0.0,
+   0.0
+  ],
+  "n": [
+   2,
+   1,
+   1
+  ]
+ },
+ "playbook": {
+  "mode": "on",
+  "used": [
+   {
+    "id": "L0001",
+    "kind": "schedule",
+    "score": 1.045819,
+    "action": {
+     "key": "rounds_delta",
+     "layer": "1",
+     "delta": 1
+    },
+    "applied": true
+   },
+   {
+    "id": "L0003",
+    "kind": "schedule",
+    "score": 0.979284,
+    "action": {
+     "key": "rounds_delta",
+     "layer": "0",
+     "delta": 1
+    },
+    "applied": true
+   }
+  ],
+  "applied": [
+   {
+    "id": "L0001",
+    "key": "rounds_delta",
+    "layer": "1",
+    "rounds": "2→3"
+   },
+   {
+    "id": "L0003",
+    "key": "rounds_delta",
+    "layer": "0",
+    "rounds": "2→3"
+   }
+  ],
+  "candidates": [
+   {
+    "key": "rounds_delta",
+    "layer": "0",
+    "delta": 1
+   },
+   {
+    "key": "rounds_delta",
+    "layer": "1",
+    "delta": 1
+   },
+   {
+    "key": "rounds_delta",
+    "layer": "all",
+    "delta": 1
+   },
+   {
+    "key": "carve_first",
+    "layers": [
+     "0",
+     "1",
+     "all",
+     "both"
+    ]
+   }
+  ],
+  "gated_out": [],
+  "merged": [
+   "L0003",
+   "L0001",
+   "L0004",
+   "L0007"
+  ],
+  "promoted": [],
+  "retired": [],
+  "parents": [],
+  "strengthen": {
+   "strengthened": 0,
+   "negative": 2,
+   "duty_med": 0.0385
+  },
+  "n_playbook": 7
+ }
+}

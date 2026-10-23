@@ -1,0 +1,52 @@
+v1.23.31：EML 经验记忆回路 —— 跨跑储存记忆 + 每次跑自我学习与迭代
+
+一、缺口诊断
+  原来只有版本记忆（CHANGELOG）与统计记忆（auto 读历史读数），缺**经验层**
+  （哪类做法有效）与**闭环**（跑完写回 → 下次生效 → 再验证）：
+  auto 只读数不读内容；.workbuddy/memory 是人写的、机器不回写；
+  v1.23.30 的 duty 读数只留痕、不参与「下次怎么跑」。
+
+二、前沿依据（2025）与开源对照
+  · ACE（arXiv 2510.04618）：三角色 Generator/Reflector/Curator；★ 不重写知识
+    （实测把 1.8 万 token 压缩成 122 token，准确率 66.7→57.1）；
+  · Memory-R1/Mem0：ADD/MERGE/UPDATE + 矛盾单独建档；
+  · WebCoach：经验作建议注入（成功率 47%→61% 且步数不增）⇒ 强制双边记账；
+  · MRRL：质量闸四问 + micro/meso/macro 三级反思 + 遗忘清扫；
+  · NAACL'25 子问题覆盖 / SAGE 遗忘曲线；
+  · 开源对照（本轮检索）：kvyb/llmace、ulandz/evermind（RRIF 四维）、
+    hanishkeloth/agentmemory（procedural execution-tracking）、
+    aravindvaddi/MemoryMCP（访问加强）。
+
+三、改动
+  1) 存储 dgtf_memory/{episodes.jsonl, playbook.jsonl, MEMORY.md}；
+     playbook **append-only**，retired 只改状态位不删行。
+  2) 读：RRIF 四维打分（补 Frequency 维，吸收 evermind）；只取 active。
+  3) 用：生效面只有 ① 截断过的层 rounds+1 ② duty.floor；
+     ★ 绝不注入答案内容（红线「输入是形状不是数据」）。
+  4) 写：micro 抽候选（必须带本跑读数）→ 质量闸四问 → 只增合并（同键累证据）
+     → meso 升级 → macro 父条目（只索引，子条目原文一字不动）→ 遗忘清扫
+     → 访问加强（used_outcomes，达标才加强）。
+  5) 新增 playbook 配置段，出厂默认 mode=shadow ⇒ 零行为差。
+  6) 产物头部新增「本次记忆（EML 经验回路）」块。
+
+四、本轮 5 个真 bug（全部写进通则）
+  1) 同键候选被判「重复」拒掉 ⇒ 证据累不到 promote_n ⇒ 学不会（探针 T9 抓出）。
+  2) n_evidence 从 0 起 ⇒ 改 max(1, ...)（写下它的那次跑本身就是证据）。
+  3) MEMORY.md 落默认目录而非配置目录（dirpath 未透传）。
+  4) YAML 注释里混进裸 \r（误打 $\ref{eq}$）把行劈断 ⇒ 解析失败。
+     ★ 写进配置/代码的字符串要扫裸 CR。
+  5) 阈值判据缺负向用例（meso 只测「够则升」⇒ M4 假绿）⇒ 门槛类判据必须两向测。
+
+五、验收
+  主文件 21551 行 / 纯 CRLF / 无 CRCRLF；
+  冒烟 223 ✓ / 0 ✗；真实入口探针 35 ✓ / 0 ✗；
+  变异体 10 / 10 判红（干净基线先绿）；
+  AUDIT PASS 67 / FAIL 0；复审探针 PASS 16 / FAIL 0；
+  配置两向对账 0 差；
+  ★ 构造性证明「会学」：第 1 跑新增 2 条(shadow) → 第 2 跑升级 2 条(active)
+    → 第 5 跑读到 2 条、真生效 1 条（rounds 3→4）、访问加强 1 条。
+  ★ 记忆库首建：最近 5 次真跑补录成 episode ⇒ 9 条经验、2 条 active。
+
+六、未做（有意）
+  不自动切 on（出厂 shadow，先观察）；不注入答案/结论；不把学习效果做成分数；
+  检索用规则（无向量库/embedding 依赖），embedding 去重留作可选升级点。

@@ -1,0 +1,36 @@
+==================================================================
+## 变异测试（每条判据都必须对它的畸形体判红）
+==================================================================
+Building prefix dict from the default dictionary ...
+Loading model from cache C:\Users\18432\AppData\Local\Temp\jieba.cache
+Loading model cost 0.811 seconds.
+Prefix dict has been built successfully.
+
+   M1 #13 一起停 → 只停一层
+      → check_v72_bbarrier_semantics() = False   判红（对）
+        ✗ [v72 #13] [#13] 预算耗尽只停了 1/4 层（['0']）—— barrier 语义被改成了「本层截断」
+
+   M2 #13 注释被删
+      → check_v72_bbarrier_semantics() = False   判红（对）
+        ✗ [v72 #13] [#13] 注释没写进 _run_parallel_B（没接线）
+
+   M3 #22 机制出现第二份实现
+      → check_v72_mechanism_single_source() = False   判红（对）
+        ✗ [v72 #22] [#22] _normalize_decidability 有 2 处定义（应为 1）
+
+   M4 #22/F6 再直调一次外部评估
+      → check_v72_mechanism_single_source() = False   判红（对）
+        ✗ [v72 #22] [#22] _assess_decidability 有 2 个调用点（应为 1 —— F6 的唯一入口，多一个就说明又直调了）
+
+   M5 #22 复活 serial 侧旧门
+      → check_v72_mechanism_single_source() = False   判红（对）
+        ✗ [v72 #22] [#22] v1.21.71 删掉的旧门复活了：serial=1 / B=0
+
+   M6 #20 指向 v1.21.71（段序颠倒 + 63 段重复）
+      → check_v72_changelog_hygiene() = False   判红（对）
+        ✗ [v72 #20] [#20] 收束摘要标题重复：{'★ v1.21.63 收束摘要': 2}
+          ✗ [v72 #20] [#20] 段序不是严格递减：1.21.68 → 1.21.69
+
+==================================================================
+## 结论：全部判红 —— 4 条判据都有判别力
+==================================================================

@@ -1,0 +1,64 @@
+{
+  "A_method_auto_plan": {
+    "confidence": 0.8,
+    "mode": "serial",
+    "reason": "stub",
+    "rounds": {
+      "0": 4,
+      "1": 4,
+      "all": 5,
+      "both": 4
+    }
+  },
+  "A_stages": [
+    "auto_plan"
+  ],
+  "B_module_auto_plan": {
+    "_auto": true,
+    "_orientation_reason": "stub",
+    "confidence": 0.8,
+    "cost_profile": "balanced",
+    "max_calls": 96,
+    "mode": "serial",
+    "orientation": "decision",
+    "reason": "规划给「不限」，按 12/圈兜到 96；stub",
+    "rounds": {
+      "0": 4,
+      "1": 4
+    },
+    "route": [
+      "0",
+      "1"
+    ]
+  },
+  "B_stages": [
+    "plan_orientation",
+    "plan_resources"
+  ],
+  "C_module_auto_plan_with_llm": {
+    "confidence": 0.8,
+    "mode": "serial",
+    "reason": "stub",
+    "rounds": {
+      "0": 4,
+      "1": 4,
+      "all": 5,
+      "both": 4
+    }
+  },
+  "C_stages": [
+    "auto_plan"
+  ],
+  "D_rephrase_streak": {
+    "impl": "module-level _compute_rephrase_streak",
+    "values": [
+      2,
+      3,
+      0,
+      0
+    ]
+  },
+  "question": "老城区暴雨内涝频发，排水系统重建还是局部改造加海绵措施？",
+  "src": "元DGTF-V1.22.0-rc1.py",
+  "version": "1.22.0-rc1"
+}

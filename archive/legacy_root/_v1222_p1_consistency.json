@@ -1,0 +1,44 @@
+[
+  {
+    "arm": "ON",
+    "rep": 1,
+    "multi": true,
+    "n_subs": 6,
+    "stability": [
+      "medium",
+      "medium",
+      "medium",
+      "medium",
+      "medium",
+      "medium"
+    ],
+    "vote_mode": [
+      "multi"
+    ],
+    "header": "**三态判决（多票）**：high 0 / medium 6 / low 0（已判 6 条）　一致率 100%　口径=三票之间（共 6 条）",
+    "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\outputs\\v1222_p1\\ON_1\\20261005_214600_老城区排水管网的现有设计标准是多少年一遇.md",
+    "secs": 645.6,
+    "llm_calls": 48
+  },
+  {
+    "arm": "OFF",
+    "rep": 1,
+    "multi": false,
+    "n_subs": 6,
+    "stability": [
+      "high",
+      "high",
+      "high",
+      "high",
+      "high",
+      "high"
+    ],
+    "vote_mode": [
+      "single"
+    ],
+    "header": "**三态判决（单票）**：high 6 / medium 0 / low 0（已判 6 条）　一致率 100%　口径=单票 vs 拆解原标签（共 6 条）",
+    "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\outputs\\v1222_p1\\OFF_1\\20261005_215655_老城区排水管网的现有设计标准是多少年一遇.md",
+    "secs": 655.7,
+    "llm_calls": 46
+  }
+]

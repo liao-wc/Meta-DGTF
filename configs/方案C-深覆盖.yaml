@@ -1,0 +1,96 @@
+# ============================================================
+# 方案 C · 深覆盖（要最大覆盖面 · 选题 / 尽调 / 学术式穷举）
+#   配套文档：元DGTF-参数全景与影响面分析-v1.21.61.md §10
+# ============================================================
+# 定位：预算取宽档，来自 真跑验证报告 §12.6 / §12.8 的**实测配置**：
+#     修行 6 / 研究 4 / 对撞 7 / 元 5（+1=6）
+#
+# 实测对照报告写在 §12.8（同一道题、同版本、balanced、serial）：
+#   | 指标         | 省档(rounds=3) | 宽档(6/4/7/5+1) |
+#   | 调用         | 125            | 220 (+76%)      |
+#   | token        | 548 108        | 1 058 585 (+93%)|
+#   | 各层实际圈数 | 3/3/3/4        | 6/4/7/6         |
+#   | answered     | [1,2]          | [1,2,3]         |
+#   | 池 & 印记    | 68             | 132             |
+#   | 悬空线头     | 45             | 74              |
+#   | 质量线索     | 1              | 1（没变差）     |
+#
+# ★ 结论要读全：**宽档多花约 95% 的钱，换回约 2 倍池产出、多答 1 个子问题，
+#   质量线索条数不变**。这是一笔纯取舍，不是“更多更好”。
+#   而且 §12.8 原话：四层全部顶到上限，每圈仍有 2-4 条真新增 —— 判据没触发。
+#   → 所以这套的预算就是实付预算，不是上限。
+# ============================================================
+
+cost_profile: balanced         # ★ 刻意不用 economy：economy 会砍探针，砍了就没有覆盖可言
+
+api:
+  timeout: 300                 # 深覆盖的单次调用更长（re_eval_recent_k 调高）
+  max_retries: 3
+  retry_backoff: 1.8
+
+output:
+  verbose: true
+  show_dual_judge: true
+  show_probe_diag: true        # 覆盖-oriented：探针诊断值得看
+  self_check: true
+
+actions:
+  parallel_mode: serial        # 深覆盖优先保证层间信息完整，先不并行
+  input_sanity: true
+  phase_probe: true            # ★ 覆盖的主引擎
+  # 其余动作全开，没有一个开关是免费的（§5.1）
+  re_anchor: true
+  expand_yin: true
+  expand_yang: true
+  dual_judge: true
+  ing: true
+  he: true
+  manifest: true
+  self_check: true
+  re_evaluate_pool: true
+  settle_research: true
+  assess_decidability: true
+  decompose_question: true
+  decidability_source: pool
+  decompose_source: pool
+
+memory:
+  channels: [content, context, self]
+  self_layers: 4
+  self_layers_per_entry: 2
+  carry_feedback: true
+
+probe:
+  min_gain: 0.25               # ★ 覆盖优先：门槛从 0.3 降到 0.25，让更多探针入选
+  select_n: 4                  # ★ 每圈多问一个方向
+
+spiral:
+  hard_max: 12
+  soft_max: 3
+  all_extra_rounds: 1
+
+  per_entry:
+    "0":    {hard_max: 6, soft_max: 3}          # 修行最容易跑满（§13.6：12圈全跑满）
+    "1":    {hard_max: 4, soft_max: 3}          # 饱和度间隔 3 后自然停在 3
+    "both": {hard_max: 7, soft_max: 5}          # 自然停止点 5-6，7 封顶切长尾
+    "all":  {hard_max: 5, soft_max: 3}          # 实际封顶 5+1=6
+
+  # ⚠️ balanced 下 +1：写 2 → 实际 3。
+  # v1.21.60 已把代码默认对齐到 3（原为过期值 2），这里写 2 是为了在 balanced 下得到真正的 3。
+  structure_saturation_enabled: true
+  structure_saturation_every_n: 2
+  re_eval_every_n: 1                            # → 实际 2
+
+  re_eval_recent_k: 14         # ★ 深覆盖：多看几条（默认 10）。线性乘 token，别再往上
+  stable_layers: 3
+  idle_limit: 2                # ★ 别调到 3：5 份真跑日志里没有任何样本到过 3（§4.1）
+  new_item_similarity: 0.55
+  new_item_overlap: 0.55
+  thread_new_similarity: 0.70
+  thread_new_overlap: 0.70
+
+  stall_streak_limit: 2
+  min_distance_improvement: 0.03
+
+# ★ max_calls 设得比估算高一点，因为这套就是要让它跑满
+max_calls: 260

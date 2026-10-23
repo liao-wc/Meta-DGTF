@@ -1,0 +1,1302 @@
+[
+ {
+  "stem": "20261009_132409_新中国的成立时间是什么时候",
+  "question": "新中国的成立时间是什么时候",
+  "layers": [
+   "1"
+  ],
+  "complete": false,
+  "errs": 0,
+  "manual": false,
+  "status": "",
+  "calls": 18,
+  "tokens": 34479,
+  "route": [
+   "1"
+  ],
+  "rounds": {
+   "0": 1,
+   "1": 1,
+   "both": 1,
+   "all": 1
+  },
+  "tri": [
+   3,
+   3
+  ],
+  "coverage": null,
+  "md_chars": 10187,
+  "practice": 0.0,
+  "research": 0.0,
+  "decision": 0,
+  "n_actions": 0,
+  "boundary": 1.0
+ },
+ {
+  "stem": "20261010_023209_AI能否独立完成数字IC设计",
+  "question": "AI能否独立完成数字IC设计",
+  "layers": [
+   "0",
+   "1",
+   "all",
+   "both"
+  ],
+  "complete": true,
+  "errs": 0,
+  "manual": false,
+  "status": "",
+  "calls": 59,
+  "tokens": 371492,
+  "route": [
+   "0",
+   "1",
+   "both",
+   "all"
+  ],
+  "rounds": {
+   "0": 1,
+   "1": 1,
+   "both": 1,
+   "all": 1
+  },
+  "tri": [
+   4,
+   6
+  ],
+  "coverage": null,
+  "md_chars": 36673,
+  "practice": 0.0,
+  "research": 0.0,
+  "decision": 1,
+  "n_actions": 3,
+  "boundary": 0.0
+ },
+ {
+  "stem": "20261010_075416_月亮的来源是什么",
+  "question": "月亮的来源是什么",
+  "layers": [
+   "0",
+   "1"
+  ],
+  "complete": false,
+  "errs": 0,
+  "manual": false,
+  "status": "",
+  "calls": 38,
+  "tokens": 114069,
+  "route": [
+   "0",
+   "1"
+  ],
+  "rounds": {
+   "0": 2,
+   "1": 2,
+   "both": 2,
+   "all": 2
+  },
+  "tri": [
+   2,
+   6
+  ],
+  "coverage": null,
+  "md_chars": 23613,
+  "practice": 0.0,
+  "research": 0.0,
+  "decision": 0,
+  "n_actions": 0,
+  "boundary": 1.0
+ },
+ {
+  "stem": "20261011_121940_人类如何延长寿命乃至实现永生",
+  "question": "人类如何延长寿命乃至实现永生？",
+  "layers": [
+   "0",
+   "1",
+   "all",
+   "both"
+  ],
+  "complete": true,
+  "errs": 0,
+  "manual": false,
+  "status": "",
+  "calls": 117,
+  "tokens": 1228155,
+  "route": [
+   "0",
+   "1",
+   "both",
+   "all"
+  ],
+  "rounds": {
+   "0": 4,
+   "1": 4,
+   "both": 5,
+   "all": 6
+  },
+  "tri": [
+   1,
+   6
+  ],
+  "coverage": null,
+  "md_chars": 46622,
+  "practice": 0.0,
+  "research": 0.0,
+  "decision": 1,
+  "n_actions": 3,
+  "boundary": 0.0
+ },
+ {
+  "stem": "20261011_193403_科学家什么时候发现中微子的它的别名叫什",
+  "question": "科学家什么时候发现中微子的，它的别名叫什么，它又有什么作用？",
+  "layers": [
+   "0",
+   "1",
+   "both"
+  ],
+  "complete": false,
+  "errs": 0,
+  "manual": false,
+  "status": "",
+  "calls": 89,
+  "tokens": 758953,
+  "route": [
+   "0",
+   "1",
+   "both"
+  ],
+  "rounds": {
+   "0": 4,
+   "1": 4,
+   "both": 4,
+   "all": 6
+  },
+  "tri": [
+   3,
+   6
+  ],
+  "coverage": null,
+  "md_chars": 37605,
+  "practice": 0.0,
+  "research": 0.0,
+  "decision": 0,
+  "n_actions": 0,
+  "boundary": 1.0
+ },
+ {
+  "stem": "20261012_121240_我们所处的世界是虚拟的吗有没有可能一切",
+  "question": "我们所处的世界是虚拟的吗，有没有可能一切都是全息投影的？",
+  "layers": [
+   "1"
+  ],
+  "complete": false,
+  "errs": 0,
+  "manual": false,
+  "status": "",
+  "calls": 48,
+  "tokens": 344737,
+  "route": [
+   "1"
+  ],
+  "rounds": {
+   "0": 4,
+   "1": 4,
+   "both": 4,
+   "all": 6
+  },
+  "tri": [
+   3,
+   5
+  ],
+  "coverage": null,
+  "md_chars": 24472,
+  "practice": 0.0,
+  "research": 0.0,
+  "decision": 0,
+  "n_actions": 0,
+  "boundary": 1.0
+ },
+ {
+  "stem": "20261013_050650_普通人应该做些什么来迎接AI时代的到来",
+  "question": "普通人应该做些什么来迎接AI时代的到来?",
+  "layers": [
+   "0",
+   "1"
+  ],
+  "complete": false,
+  "errs": 0,
+  "manual": false,
+  "status": "",
+  "calls": 92,
+  "tokens": 634981,
+  "route": [
+   "0",
+   "1"
+  ],
+  "rounds": {
+   "0": 4,
+   "1": 4,
+   "both": 4,
+   "all": 4
+  },
+  "tri": [
+   3,
+   6
+  ],
+  "coverage": null,
+  "md_chars": 35069,
+  "practice": 0.0,
+  "research": 0.0,
+  "decision": 0,
+  "n_actions": 0,
+  "boundary": 1.0
+ },
+ {
+  "stem": "20261013_071430_普通人应该做些什么来迎接AI时代的到来",
+  "question": "普通人应该做些什么来迎接AI时代的到来?",
+  "layers": [
+   "0",
+   "1"
+  ],
+  "complete": false,
+  "errs": 0,
+  "manual": false,
+  "status": "",
+  "calls": 82,
+  "tokens": 597554,
+  "route": [
+   "0",
+   "1"
+  ],
+  "rounds": {
+   "0": 4,
+   "1": 4,
+   "both": 4,
+   "all": 4
+  },
+  "tri": [
+   4,
+   6
+  ],
+  "coverage": null,
+  "md_chars": 32379,
+  "practice": 0.0,
+  "research": 0.0,
+  "decision": 0,
+  "n_actions": 0,
+  "boundary": 1.0
+ },
+ {
+  "stem": "20261013_131751_城市内涝频发排水系统改造应该优先做管网",
+  "question": "城市内涝频发，排水系统改造应该优先做管网扩容还是海绵城市分散调蓄？",
+  "layers": [
+   "0",
+   "1",
+   "all",
+   "both"
+  ],
+  "complete": true,
+  "errs": 0,
+  "manual": false,
+  "status": "",
+  "calls": 199,
+  "tokens": 2938969,
+  "route": [
+   "0",
+   "1",
+   "both",
+   "all"
+  ],
+  "rounds": {
+   "0": 4,
+   "1": 5,
+   "both": 4,
+   "all": 6
+  },
+  "tri": [
+   3,
+   6
+  ],
+  "coverage": null,
+  "md_chars": 65901,
+  "practice": 0.0,
+  "research": 0.0,
+  "decision": 1,
+  "n_actions": 5,
+  "boundary": 0.0
+ },
+ {
+  "stem": "20261013_144044_验证信念四态与语义熵是否真的落盘",
+  "question": "验证：信念四态与语义熵是否真的落盘",
+  "layers": [
+   "0",
+   "1"
+  ],
+  "complete": false,
+  "errs": 0,
+  "manual": false,
+  "status": "",
+  "calls": 44,
+  "tokens": 172900,
+  "route": [
+   "0",
+   "1"
+  ],
+  "rounds": {
+   "0": 2,
+   "1": 2,
+   "both": 2,
+   "all": 2
+  },
+  "tri": [
+   1,
+   6
+  ],
+  "coverage": null,
+  "md_chars": 24106,
+  "practice": 0.0,
+  "research": 0.0,
+  "decision": 0,
+  "n_actions": 0,
+  "boundary": 1.0
+ },
+ {
+  "stem": "20261013_152451_验证信念四态与语义熵是否真的落盘",
+  "question": "验证信念四态与语义熵是否真的落盘",
+  "layers": [
+   "0",
+   "1"
+  ],
+  "complete": false,
+  "errs": 0,
+  "manual": false,
+  "status": "",
+  "calls": 52,
+  "tokens": 213943,
+  "route": [
+   "0",
+   "1"
+  ],
+  "rounds": {
+   "0": 2,
+   "1": 2,
+   "both": 2,
+   "all": 2
+  },
+  "tri": [
+   2,
+   6
+  ],
+  "coverage": null,
+  "md_chars": 25814,
+  "practice": 0.0,
+  "research": 0.0,
+  "decision": 0,
+  "n_actions": 0,
+  "boundary": 1.0
+ },
+ {
+  "stem": "20261013_154323_验证信念四态与语义熵是否真的落盘",
+  "question": "验证信念四态与语义熵是否真的落盘",
+  "layers": [
+   "0",
+   "1"
+  ],
+  "complete": false,
+  "errs": 0,
+  "manual": false,
+  "status": "",
+  "calls": 49,
+  "tokens": 210312,
+  "route": [
+   "0",
+   "1"
+  ],
+  "rounds": {
+   "0": 2,
+   "1": 2,
+   "both": 2,
+   "all": 2
+  },
+  "tri": [
+   2,
+   6
+  ],
+  "coverage": null,
+  "md_chars": 26407,
+  "practice": 0.0,
+  "research": 0.0,
+  "decision": 0,
+  "n_actions": 0,
+  "boundary": 1.0
+ },
+ {
+  "stem": "20261013_155217_验证信念四态与语义熵是否真的落盘",
+  "question": "验证信念四态与语义熵是否真的落盘",
+  "layers": [
+   "0",
+   "1"
+  ],
+  "complete": false,
+  "errs": 0,
+  "manual": false,
+  "status": "",
+  "calls": 30,
+  "tokens": 119617,
+  "route": [
+   "0",
+   "1"
+  ],
+  "rounds": {
+   "0": 1,
+   "1": 1,
+   "both": 1,
+   "all": 1
+  },
+  "tri": [
+   1,
+   6
+  ],
+  "coverage": null,
+  "md_chars": 22822,
+  "practice": 0.0,
+  "research": 0.0,
+  "decision": 0,
+  "n_actions": 0,
+  "boundary": 1.0
+ },
+ {
+  "stem": "20261013_155915_验证信念四态与语义熵是否真的落盘",
+  "question": "验证信念四态与语义熵是否真的落盘",
+  "layers": [
+   "0",
+   "1"
+  ],
+  "complete": false,
+  "errs": 0,
+  "manual": false,
+  "status": "",
+  "calls": 28,
+  "tokens": 101719,
+  "route": [
+   "0",
+   "1"
+  ],
+  "rounds": {
+   "0": 1,
+   "1": 1,
+   "both": 1,
+   "all": 1
+  },
+  "tri": [
+   2,
+   5
+  ],
+  "coverage": null,
+  "md_chars": 21503,
+  "practice": 0.0,
+  "research": 0.0,
+  "decision": 0,
+  "n_actions": 0,
+  "boundary": 1.0
+ },
+ {
+  "stem": "20261013_205109_如何利用AI来帮助人类实现财富自由甚至文",
+  "question": "如何利用AI来帮助人类实现财富自由甚至文明升级？",
+  "layers": [
+   "0",
+   "1",
+   "all",
+   "both"
+  ],
+  "complete": true,
+  "errs": 0,
+  "manual": false,
+  "status": "",
+  "calls": 167,
+  "tokens": 1851705,
+  "route": [
+   "0",
+   "1",
+   "both",
+   "all"
+  ],
+  "rounds": {
+   "0": 4,
+   "1": 4,
+   "both": 4,
+   "all": 6
+  },
+  "tri": [
+   3,
+   6
+  ],
+  "coverage": null,
+  "md_chars": 54422,
+  "practice": 0.0,
+  "research": 0.0,
+  "decision": 1,
+  "n_actions": 6,
+  "boundary": 0.0
+ },
+ {
+  "stem": "20261014_050542_如何利用AI来帮助人类实现财富自由甚至文",
+  "question": "如何利用AI来帮助人类实现财富自由甚至文明升级？",
+  "layers": [
+   "0",
+   "1"
+  ],
+  "complete": false,
+  "errs": 0,
+  "manual": false,
+  "status": "",
+  "calls": 50,
+  "tokens": 190798,
+  "route": [
+   "0",
+   "1"
+  ],
+  "rounds": {
+   "0": 2,
+   "1": 2,
+   "both": 4,
+   "all": 4
+  },
+  "tri": [
+   4,
+   6
+  ],
+  "coverage": null,
+  "md_chars": 20981,
+  "practice": 0.0,
+  "research": 0.0,
+  "decision": 1,
+  "n_actions": 3,
+  "boundary": 0.0
+ },
+ {
+  "stem": "20261014_054623_如何利用AI来帮助人类实现财富自由甚至文",
+  "question": "如何利用AI来帮助人类实现财富自由甚至文明升级？",
+  "layers": [
+   "0",
+   "1",
+   "both"
+  ],
+  "complete": false,
+  "errs": 0,
+  "manual": false,
+  "status": "",
+  "calls": 79,
+  "tokens": 444729,
+  "route": [
+   "0",
+   "1",
+   "both"
+  ],
+  "rounds": {
+   "0": 2,
+   "1": 3,
+   "both": 3,
+   "all": 4
+  },
+  "tri": [
+   4,
+   6
+  ],
+  "coverage": null,
+  "md_chars": 34460,
+  "practice": 0.0,
+  "research": 0.0,
+  "decision": 1,
+  "n_actions": 3,
+  "boundary": 0.0
+ },
+ {
+  "stem": "20261014_063224_如何利用AI来帮助人类实现财富自由甚至文",
+  "question": "如何利用AI来帮助人类实现财富自由甚至文明升级？",
+  "layers": [
+   "0",
+   "1",
+   "both"
+  ],
+  "complete": false,
+  "errs": 0,
+  "manual": false,
+  "status": "",
+  "calls": 63,
+  "tokens": 293501,
+  "route": [
+   "0",
+   "1",
+   "both"
+  ],
+  "rounds": {
+   "0": 2,
+   "1": 2,
+   "both": 2,
+   "all": 4
+  },
+  "tri": [
+   3,
+   6
+  ],
+  "coverage": null,
+  "md_chars": 25624,
+  "practice": 0.0,
+  "research": 0.0,
+  "decision": 0,
+  "n_actions": 0,
+  "boundary": 0.0
+ },
+ {
+  "stem": "20261014_071434_如何利用AI来帮助人类实现财富自由甚至文",
+  "question": "如何利用AI来帮助人类实现财富自由甚至文明升级？",
+  "layers": [
+   "0",
+   "1"
+  ],
+  "complete": false,
+  "errs": 0,
+  "manual": false,
+  "status": "",
+  "calls": 50,
+  "tokens": 196834,
+  "route": [
+   "0",
+   "1"
+  ],
+  "rounds": {
+   "0": 2,
+   "1": 2,
+   "both": 4,
+   "all": 4
+  },
+  "tri": [
+   1,
+   6
+  ],
+  "coverage": null,
+  "md_chars": 20794,
+  "practice": 0.0,
+  "research": 0.0,
+  "decision": 1,
+  "n_actions": 3,
+  "boundary": 0.0
+ },
+ {
+  "stem": "20261014_082924_AI会先取代设计师还是程序员",
+  "question": "AI 会先取代设计师还是程序员？",
+  "layers": [
+   "0",
+   "1"
+  ],
+  "complete": false,
+  "errs": 0,
+  "manual": false,
+  "status": "",
+  "calls": 39,
+  "tokens": 210144,
+  "route": [
+   "0",
+   "1"
+  ],
+  "rounds": {
+   "0": 1,
+   "1": 2,
+   "both": 4,
+   "all": 4
+  },
+  "tri": [
+   5,
+   6
+  ],
+  "coverage": null,
+  "md_chars": 22332,
+  "practice": 0.0,
+  "research": 0.0,
+  "decision": 1,
+  "n_actions": 5,
+  "boundary": 0.0
+ },
+ {
+  "stem": "20261014_084853_AI会先取代设计师还是程序员",
+  "question": "AI 会先取代设计师还是程序员？",
+  "layers": [
+   "0",
+   "1"
+  ],
+  "complete": false,
+  "errs": 0,
+  "manual": false,
+  "status": "",
+  "calls": 38,
+  "tokens": 231316,
+  "route": [
+   "0",
+   "1"
+  ],
+  "rounds": {
+   "0": 1,
+   "1": 2,
+   "both": 4,
+   "all": 4
+  },
+  "tri": [
+   2,
+   6
+  ],
+  "coverage": null,
+  "md_chars": 22508,
+  "practice": 0.0,
+  "research": 0.0,
+  "decision": 1,
+  "n_actions": 5,
+  "boundary": 0.0
+ },
+ {
+  "stem": "20261014_091408_AI会先取代设计师还是程序员",
+  "question": "AI 会先取代设计师还是程序员？",
+  "layers": [
+   "0",
+   "1"
+  ],
+  "complete": false,
+  "errs": 0,
+  "manual": false,
+  "status": "",
+  "calls": 69,
+  "tokens": 391154,
+  "route": [
+   "0",
+   "1"
+  ],
+  "rounds": {
+   "0": 3,
+   "1": 3,
+   "both": 4,
+   "all": 4
+  },
+  "tri": [
+   0,
+   6
+  ],
+  "coverage": null,
+  "md_chars": 25662,
+  "practice": 0.0,
+  "research": 0.0,
+  "decision": 1,
+  "n_actions": 6,
+  "boundary": 0.0
+ },
+ {
+  "stem": "20261014_100151_如何利用AI来帮助人类实现财富自由甚至文",
+  "question": "如何利用AI来帮助人类实现财富自由甚至文明升级？",
+  "layers": [
+   "0",
+   "1"
+  ],
+  "complete": false,
+  "errs": 0,
+  "manual": false,
+  "status": "",
+  "calls": 70,
+  "tokens": 378837,
+  "route": [
+   "0",
+   "1"
+  ],
+  "rounds": {
+   "0": 3,
+   "1": 3,
+   "both": 4,
+   "all": 4
+  },
+  "tri": [
+   2,
+   6
+  ],
+  "coverage": null,
+  "md_chars": 28387,
+  "practice": 0.0,
+  "research": 0.0,
+  "decision": 1,
+  "n_actions": 4,
+  "boundary": 0.0
+ },
+ {
+  "stem": "20261014_103118_AI会先取代设计师还是程序员",
+  "question": "AI 会先取代设计师还是程序员？",
+  "layers": [
+   "0",
+   "1",
+   "all",
+   "both"
+  ],
+  "complete": true,
+  "errs": 0,
+  "manual": false,
+  "status": "",
+  "calls": 126,
+  "tokens": 1115757,
+  "route": [
+   "0",
+   "1",
+   "both",
+   "all"
+  ],
+  "rounds": {
+   "0": 3,
+   "1": 3,
+   "both": 2,
+   "all": 2
+  },
+  "tri": [
+   2,
+   6
+  ],
+  "coverage": null,
+  "md_chars": 45375,
+  "practice": 0.0,
+  "research": 0.0,
+  "decision": 1,
+  "n_actions": 4,
+  "boundary": 0.0
+ },
+ {
+  "stem": "20261014_103546_如何利用AI来帮助人类实现财富自由甚至文",
+  "question": "如何利用AI来帮助人类实现财富自由甚至文明升级？",
+  "layers": [
+   "0",
+   "1",
+   "all",
+   "both"
+  ],
+  "complete": true,
+  "errs": 0,
+  "manual": false,
+  "status": "",
+  "calls": 129,
+  "tokens": 1158107,
+  "route": [
+   "0",
+   "1",
+   "both",
+   "all"
+  ],
+  "rounds": {
+   "0": 3,
+   "1": 3,
+   "both": 2,
+   "all": 2
+  },
+  "tri": [
+   3,
+   5
+  ],
+  "coverage": null,
+  "md_chars": 45339,
+  "practice": 0.0,
+  "research": 0.0,
+  "decision": 1,
+  "n_actions": 3,
+  "boundary": 0.0
+ },
+ {
+  "stem": "20261014_104001_AI会先取代设计师还是程序员",
+  "question": "AI 会先取代设计师还是程序员？",
+  "layers": [
+   "0",
+   "1",
+   "both"
+  ],
+  "complete": false,
+  "errs": 0,
+  "manual": false,
+  "status": "",
+  "calls": 91,
+  "tokens": 661002,
+  "route": [
+   "0",
+   "1",
+   "both"
+  ],
+  "rounds": {
+   "0": 3,
+   "1": 3,
+   "both": 2,
+   "all": 4
+  },
+  "tri": [
+   1,
+   6
+  ],
+  "coverage": null,
+  "md_chars": 35236,
+  "practice": 0.0,
+  "research": 0.0,
+  "decision": 1,
+  "n_actions": 3,
+  "boundary": 0.0
+ },
+ {
+  "stem": "20261014_110629_如何利用AI来帮助人类实现财富自由甚至文",
+  "question": "如何利用AI来帮助人类实现财富自由甚至文明升级？",
+  "layers": [
+   "0",
+   "1",
+   "both"
+  ],
+  "complete": false,
+  "errs": 0,
+  "manual": false,
+  "status": "",
+  "calls": 89,
+  "tokens": 600785,
+  "route": [
+   "0",
+   "1",
+   "both"
+  ],
+  "rounds": {
+   "0": 3,
+   "1": 3,
+   "both": 2,
+   "all": 4
+  },
+  "tri": [
+   3,
+   6
+  ],
+  "coverage": null,
+  "md_chars": 34502,
+  "practice": 0.0,
+  "research": 0.0,
+  "decision": 1,
+  "n_actions": 4,
+  "boundary": 0.0
+ },
+ {
+  "stem": "20261014_122903_为什么复杂系统的收敛判断往往不可靠请给",
+  "question": "为什么复杂系统的收敛判断往往不可靠？请给出可检验的判据。",
+  "layers": [
+   "1"
+  ],
+  "complete": false,
+  "errs": 0,
+  "manual": false,
+  "status": "",
+  "calls": 38,
+  "tokens": 200354,
+  "route": [
+   "1",
+   "both",
+   "all"
+  ],
+  "rounds": {
+   "0": 5,
+   "1": 4,
+   "both": 4,
+   "all": 3
+  },
+  "tri": [
+   4,
+   5
+  ],
+  "coverage": null,
+  "md_chars": 19885,
+  "practice": 0.0,
+  "research": 0.0,
+  "decision": 0,
+  "n_actions": 0,
+  "boundary": 1.0
+ },
+ {
+  "stem": "20261014_135334_复杂系统的收敛判断为什么不可靠给出可检",
+  "question": "复杂系统的收敛判断为什么不可靠？给出可检验判据。",
+  "layers": [
+   "0",
+   "1",
+   "all",
+   "both"
+  ],
+  "complete": true,
+  "errs": 0,
+  "manual": false,
+  "status": "",
+  "calls": 136,
+  "tokens": 1271475,
+  "route": [
+   "0",
+   "1",
+   "both",
+   "all"
+  ],
+  "rounds": {
+   "0": 3,
+   "1": 3,
+   "both": 3,
+   "all": 2
+  },
+  "tri": [
+   1,
+   6
+  ],
+  "coverage": null,
+  "md_chars": 53603,
+  "practice": 0.0,
+  "research": 0.0,
+  "decision": 0,
+  "n_actions": 0,
+  "boundary": 1.0
+ },
+ {
+  "stem": "20261014_154915_只用被动观测能否排除外部驱动或测量滤波制",
+  "question": "只用被动观测能否排除外部驱动或测量滤波制造的伪收敛？若不能，判据需包含干预。请给出可检验的判据并说明其边界条件。",
+  "layers": [
+   "0",
+   "1",
+   "all",
+   "both"
+  ],
+  "complete": true,
+  "errs": 0,
+  "manual": false,
+  "status": "",
+  "calls": 136,
+  "tokens": 1331059,
+  "route": [
+   "0",
+   "1",
+   "both",
+   "all"
+  ],
+  "rounds": {
+   "0": 3,
+   "1": 2,
+   "both": 3,
+   "all": 3
+  },
+  "tri": [
+   2,
+   6
+  ],
+  "coverage": null,
+  "md_chars": 52070,
+  "practice": 0.0,
+  "research": 0.0,
+  "decision": 0,
+  "n_actions": 0,
+  "boundary": 1.0
+ },
+ {
+  "stem": "20261014_161239_只用被动观测能否排除外部驱动或测量滤波制",
+  "question": "只用被动观测能否排除外部驱动或测量滤波制造的伪收敛？若不能，判据需包含干预。",
+  "layers": [
+   "0"
+  ],
+  "complete": false,
+  "errs": 0,
+  "manual": false,
+  "status": "",
+  "calls": 22,
+  "tokens": 109140,
+  "route": [
+   "0"
+  ],
+  "rounds": {
+   "0": 2,
+   "1": 4,
+   "both": 5,
+   "all": 5
+  },
+  "tri": [
+   0,
+   0
+  ],
+  "coverage": null,
+  "md_chars": 11898,
+  "practice": 0.0,
+  "research": 0.0,
+  "decision": 0,
+  "n_actions": 0,
+  "boundary": 1.0
+ },
+ {
+  "stem": "20261014_201423_一个领域的基础知识究竟指什么它是否正在",
+  "question": "一个领域的基础知识究竟指什么，它是否正在被 AI 快速贬值？",
+  "layers": [
+   "0",
+   "1",
+   "all",
+   "both"
+  ],
+  "complete": true,
+  "errs": 0,
+  "manual": false,
+  "status": "",
+  "calls": 159,
+  "tokens": 1570901,
+  "route": [
+   "0",
+   "1",
+   "both",
+   "all"
+  ],
+  "rounds": {
+   "0": 4,
+   "1": 5,
+   "both": 5,
+   "all": 6
+  },
+  "tri": [
+   3,
+   6
+  ],
+  "coverage": null,
+  "md_chars": 55251,
+  "practice": 0.0,
+  "research": 0.0,
+  "decision": 1,
+  "n_actions": 3,
+  "boundary": 0.0
+ },
+ {
+  "stem": "20261015_042745_一个领域里的常识是如何形成的它可靠吗",
+  "question": "一个领域里的常识是如何形成的，它可靠吗？",
+  "layers": [
+   "0",
+   "1",
+   "all",
+   "both"
+  ],
+  "complete": true,
+  "errs": 0,
+  "manual": false,
+  "status": "",
+  "calls": 143,
+  "tokens": 1152428,
+  "route": [
+   "0",
+   "1",
+   "both",
+   "all"
+  ],
+  "rounds": {
+   "0": 5,
+   "1": 4,
+   "both": 5,
+   "all": 6
+  },
+  "tri": [
+   2,
+   6
+  ],
+  "coverage": null,
+  "md_chars": 48047,
+  "practice": 0.0,
+  "research": 0.0,
+  "decision": 1,
+  "n_actions": 3,
+  "boundary": 0.0
+ },
+ {
+  "stem": "20261015_133525_AI在数字IC设计的前端流程RT",
+  "question": "AI 在数字 IC 设计的前端流程（RTL→验证→综合→DFT）里，哪些环节已经被 AI 工具真实接管？请给出具体的工具",
+  "layers": [
+   "0"
+  ],
+  "complete": false,
+  "errs": 0,
+  "manual": false,
+  "status": "",
+  "calls": 48,
+  "tokens": 256583,
+  "route": [
+   "0"
+  ],
+  "rounds": {
+   "0": 5,
+   "1": 8,
+   "both": 7,
+   "all": 6
+  },
+  "tri": [
+   0,
+   0
+  ],
+  "coverage": null,
+  "md_chars": 19325,
+  "practice": 0.0,
+  "research": 0.0,
+  "decision": 0,
+  "n_actions": 0,
+  "boundary": 1.0
+ },
+ {
+  "stem": "20261015_140414_AI在数字IC设计的前端流程RT",
+  "question": "AI 在数字 IC 设计的前端流程（RTL→验证→综合→DFT）里，哪些环节已经被 AI 工具真实接管？请给出具体的工具",
+  "layers": [
+   "0",
+   "1"
+  ],
+  "complete": false,
+  "errs": 0,
+  "manual": false,
+  "status": "",
+  "calls": 84,
+  "tokens": 484638,
+  "route": [
+   "0",
+   "1"
+  ],
+  "rounds": {
+   "0": 5,
+   "1": 4,
+   "both": 7,
+   "all": 6
+  },
+  "tri": [
+   3,
+   6
+  ],
+  "coverage": null,
+  "md_chars": 34307,
+  "practice": 0.0,
+  "research": 0.0,
+  "decision": 0,
+  "n_actions": 0,
+  "boundary": 1.0
+ },
+ {
+  "stem": "20261015_151102_AI在数字IC设计的前端流程RT",
+  "question": "AI 在数字 IC 设计的前端流程（RTL→验证→综合→DFT）里，哪些环节已经被 AI 工具真实接管？请给出具体的工具",
+  "layers": [
+   "0"
+  ],
+  "complete": false,
+  "errs": 0,
+  "manual": false,
+  "status": "",
+  "calls": 39,
+  "tokens": 179775,
+  "route": [
+   "0"
+  ],
+  "rounds": {
+   "0": 5,
+   "1": 8,
+   "both": 7,
+   "all": 6
+  },
+  "tri": [
+   0,
+   0
+  ],
+  "coverage": null,
+  "md_chars": 20213,
+  "practice": 0.0,
+  "research": 0.0,
+  "decision": 0,
+  "n_actions": 0,
+  "boundary": 1.0
+ }
+]

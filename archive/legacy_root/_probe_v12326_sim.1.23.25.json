@@ -1,0 +1,105 @@
+{
+  "version": "1.23.25",
+  "file": "元DGTF-V1.23.25.py",
+  "B1_overlap_short": [
+    {
+      "a": "人工智能 模型 部署",
+      "b": "人工智能 模型 训练",
+      "overlap": 0.6667,
+      "similar": 0.0,
+      "sim_ratio": 0.6667
+    },
+    {
+      "a": "神经网络 优化",
+      "b": "神经网络 训练",
+      "overlap": 0.5,
+      "similar": 0.0,
+      "sim_ratio": 0.0
+    },
+    {
+      "a": "模型 部署",
+      "b": "模型 训练",
+      "overlap": 0.5,
+      "similar": 0.0,
+      "sim_ratio": 0.0
+    },
+    {
+      "a": "人工智能 模型 部署 管线 优化 推理 加速 量化",
+      "b": "人工智能 模型 部署 管线 优化",
+      "overlap": 1.0,
+      "similar": 0.0,
+      "sim_ratio": 0.625
+    },
+    {
+      "a": "人工智能模型部署管线优化推理加速量化压缩蒸馏",
+      "b": "人工智能模型部署管线优化推理加速",
+      "overlap": 1.0,
+      "similar": 0.0,
+      "sim_ratio": 0.7
+    }
+  ],
+  "B2_merge_literals": [
+    "0.9",
+    "0.9",
+    "0.9",
+    "0.85"
+  ],
+  "B2_merge_reads_config": false,
+  "B2_all_similar_literals": {
+    "0.75": 1,
+    "0.55": 2,
+    "0.6": 2,
+    "0.7": 1,
+    "0.8": 1
+  },
+  "B3_fill_unrelated_in": 4,
+  "B3_fill_unrelated_out": 1,
+  "B3_empty_out": 0,
+  "B4_num_branch_semantic": false,
+  "B4_else_branch_calls": [
+    "_similar"
+  ],
+  "B4_fallback": {
+    "present": true,
+    "calls": [
+      "_similar"
+    ]
+  },
+  "B6_gate_lines": [
+    6567,
+    6767,
+    6941,
+    7127
+  ],
+  "B6_min_gain_lines": [
+    6467,
+    6468,
+    6567,
+    6715,
+    6767,
+    6871,
+    6941,
+    7049,
+    7127,
+    17828
+  ],
+  "B7_consts": {
+    "_DUP_SIM": 0.85,
+    "_REPHRASE_SIM": 0.75,
+    "_REPHRASE_OVERLAP": 0.62,
+    "_BAN_SIM": 0.85,
+    "_BAN_OVERLAP": 0.7,
+    "_KW_TOP_N": 8,
+    "_TAKE_SIM": 0.75,
+    "_QC_DUP_SIM": 0.7,
+    "_MERGE_SIM": 0.7,
+    "_SUSP_SAME_SIM": 0.8,
+    "_UNTRACED_OVERLAP": 0.6
+  },
+  "B8_present": {
+    "sim3": false,
+    "_sim3": false,
+    "_bm25": false,
+    "_bm25_sim": false
+  }
+}

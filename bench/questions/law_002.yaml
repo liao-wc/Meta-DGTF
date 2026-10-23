@@ -1,0 +1,10 @@
+# [v122 bench] law_002 · 数据共享边界
+id: law_002
+domain: law
+question: "集团内部各子公司数据共享的合法边界在哪里"
+orientation: boundary
+budget:
+  profile: balanced
+  max_calls: 180
+  rounds: "0:5,1:5,both:5,all:6"
+  mode: serial

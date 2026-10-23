@@ -1,0 +1,40 @@
+Building prefix dict from the default dictionary ...
+Loading model from cache C:\Users\18432\AppData\Local\Temp\jieba.cache
+Loading model cost 0.854 seconds.
+Prefix dict has been built successfully.
+ver                                = 1.23.16
+A__COST_PROFILES_在                 = False
+A__profile_plan_在                  = False
+A__auto_pick_cost_profile_在        = False
+A__auto_profile_在                  = False
+A_DEFAULT_CONFIG含cost_profile      = False
+A_auto项数                           = 11
+A_auto含cost_profile                = False
+A_源码含--profile                     = False
+A_源码含_COST_PROFILES                = False
+B_lazy_every_n_3                   = 3
+C_窗口串_serial                       = 0
+C_窗口串_b通道                          = 0
+C_sat入口含entry限制                    = False
+C_sat_override只对entry1             = False
+D_sat触发次数                          = 0
+D_0_停圈                             = 3
+D_0_自然停                            = True
+D_0_元维度停                           = False
+D_0_停因                             = 连续 2 轮无线头新增（方向走完了），螺旋停止
+D_1_停圈                             = 3
+D_1_自然停                            = True
+D_1_元维度停                           = False
+D_1_停因                             = 连续 3 轮无新 &（沉淀完了） + 连续 3 轮无线头新增（方向走完了），螺旋停止
+D_both_停圈                          = 3
+D_both_自然停                         = True
+D_both_元维度停                        = False
+D_both_停因                          = 连续 3 轮无新 &（沉淀完了） + 连续 3 轮无线头新增（方向走完了），螺旋停止
+D_all_停圈                           = 3
+D_all_自然停                          = True
+D_all_元维度停                         = False
+D_all_停因                           = 连续 3 轮无新 &（沉淀完了） + 连续 3 轮无线头新增（方向走完了），螺旋停止
+D_自然停层数                            = 4
+D_四层停圈                             = [3, 3, 3, 3]
+E_auto项                            = 11
+E_auto含cost_profile                = False

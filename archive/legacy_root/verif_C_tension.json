@@ -1,0 +1,240 @@
+{
+ "tag": "C_tension",
+ "src": "元DGTF-V1.21.62.py",
+ "route": "0,1,both,all",
+ "rounds": "0:4,1:4,both:5,all:5",
+ "mode": "serial",
+ "orientation": "boundary",
+ "llm_calls": 168,
+ "tri_state": [
+  2,
+  6
+ ],
+ "meta_closure_all": {
+  "clean": false,
+  "unsettled": 3,
+  "total": 3,
+  "uncovered": [
+   "接口被用掉那一轮，用掉动作本身有无不依赖下一轮接上的痕迹",
+   "接缝被先行命名时，命名动作落在哪一轮",
+   "0的下一轮栏位与1的剩余项在接缝相遇那一下能否同轮说出"
+  ],
+  "closed": 4,
+  "duel_total": 7,
+  "by_id": 0,
+  "covered_ids": 2
+ },
+ "duel_suspensions_both": [
+  {
+   "id": "t_001",
+   "target": "拆解动作占的格与回指新发声占的格是否同一",
+   "status": "resolved",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_002",
+   "target": "两次指认之间剩没剩下有无独立于指认的读法",
+   "status": "revoked",
+   "quadrant": "④"
+  },
+  {
+   "id": "t_003",
+   "target": "承付者是谁——拆解动作还是计数动作",
+   "status": "resolved",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_004",
+   "target": "用掉是否已发生：0端失败与1端成功",
+   "status": "resolved",
+   "quadrant": "④"
+  },
+  {
+   "id": "t_005",
+   "target": "接口被用掉那一轮，用掉动作本身有无不依赖下一轮接上的痕迹",
+   "status": "active",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_006",
+   "target": "接缝被先行命名时，命名动作落在哪一轮",
+   "status": "active",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_007",
+   "target": "0的下一轮栏位与1的剩余项在接缝相遇那一下能否同轮说出",
+   "status": "active",
+   "quadrant": "④"
+  }
+ ],
+ "engagements_by_view": {
+  "0": [
+   {
+    "target": "「剩下」的发生位置",
+    "tension_id": null
+   }
+  ],
+  "1": [
+   {
+    "target": "拆解者位置被对象化后产生的新未计入位置，与「同时性」丢失是否同源？",
+    "tension_id": null
+   },
+   {
+    "target": "若拆解者被算进整体，那个「未被拆的一角」是每次拆都新长出来的，还是同一个角被反复指认？",
+    "tension_id": null
+   },
+   {
+    "target": "换无时间副词的拆法，剩余物是否还能被指认为索引？",
+    "tension_id": null
+   }
+  ],
+  "both": [],
+  "all": [
+   {
+    "target": "对撞层标为未裁的四对：用掉的身份、剩余项与接口、停的归属、同一性",
+    "tension_id": "t_none"
+   }
+  ]
+ },
+ "suspensions_with_tid": {
+  "0": [
+   {
+    "target": "回指能否不启动新拆解",
+    "tension_id": null,
+    "status": "active"
+   },
+   {
+    "target": "推迟能否仅靠自身维持为索引",
+    "tension_id": null,
+    "status": "active"
+   },
+   {
+    "target": "复裁是否越出被裁序列",
+    "tension_id": null,
+    "status": "active"
+   },
+   {
+    "target": "「不碰」如何留下可回指的痕迹",
+    "tension_id": null,
+    "status": "active"
+   },
+   {
+    "target": "复裁定0或1与序列外终止的先后",
+    "tension_id": null,
+    "status": "active"
+   }
+  ],
+  "1": [],
+  "both": [],
+  "all": [
+   {
+    "target": "整体只在编号之前成立，追问必在编号之后；此先后差不可被拆成两端之和",
+    "tension_id": null,
+    "status": "resolved"
+   },
+   {
+    "target": "all若答'编号之前'，该回答已在编号之后；all不能同时是剩余与可被回答者",
+    "tension_id": null,
+    "status": "resolved"
+   },
+   {
+    "target": "每个子view占用'第k'都要求其他子view尚未编号，同一轮给不出先后",
+    "tension_id": null,
+    "status": "active"
+   },
+   {
+    "target": "all 的剩余身份与可被回答身份在同一轮互斥，此互斥本身无账位",
+    "tension_id": null,
+    "status": "active"
+   },
+   {
+    "target": "「问」本身没有落点，一被说出就变成某一方的答案或判定；是否存在不落栏的问法",
+    "tension_id": null,
+    "status": "resolved"
+   },
+   {
+    "target": "all 的「迟到」若被正着说出，是否立刻变成新的 0 面或 1 面",
+    "tension_id": null,
+    "status": "active"
+   },
+   {
+    "target": "交换动作本身落在哪一端的栏里——0端与1端在尽头交换身份",
+    "tension_id": null,
+    "status": "active"
+   },
+   {
+    "target": "取走动作留下的空位是否就是未计入的观察点本身",
+    "tension_id": null,
+    "status": "active"
+   },
+   {
+    "target": "用掉的身份、剩余项与接口、停的归属、同一性四对张力",
+    "tension_id": null,
+    "status": "active"
+   }
+  ]
+ },
+ "pools_all_engagements": [
+  {
+   "target": "整体只在编号之前成立，追问必在编号之后；此先后差不可被拆成两端之和",
+   "tension_id": "t_001"
+  },
+  {
+   "target": "对撞层未裁的四对：用掉的身份、剩余项与接口、停的归属、同一性",
+   "tension_id": "t_none"
+  },
+  {
+   "target": "all若答'编号之前'，该回答已在编号之后；all不能同时是剩余与可被回答者",
+   "tension_id": "t_001"
+  },
+  {
+   "target": "「问」本身没有落点，一被说出就变成某一方的答案或判定；是否存在不落栏的问法",
+   "tension_id": "t_001"
+  },
+  {
+   "target": "对撞层标为未裁的四对：用掉的身份、剩余项与接口、停的归属、同一性",
+   "tension_id": "t_none"
+  },
+  {
+   "target": "回指链的推迟给出",
+   "tension_id": null
+  },
+  {
+   "target": "拆解者位置对象化后的缺口",
+   "tension_id": null
+  },
+  {
+   "target": "「几个」的发生次序",
+   "tension_id": null
+  },
+  {
+   "target": "停的两种归属",
+   "tension_id": null
+  },
+  {
+   "target": "不碰的动作性",
+   "tension_id": null
+  },
+  {
+   "target": "「剩下」的发生位置",
+   "tension_id": null
+  },
+  {
+   "target": "拆解者位置被对象化后产生的新未计入位置，与「同时性」丢失是否同源？",
+   "tension_id": null
+  },
+  {
+   "target": "若拆解者被算进整体，那个「未被拆的一角」是每次拆都新长出来的，还是同一个角被反复指认？",
+   "tension_id": null
+  },
+  {
+   "target": "换无时间副词的拆法，剩余物是否还能被指认为索引？",
+   "tension_id": null
+  },
+  {
+   "target": "「几个」这个数是在拆之前就定好的，还是拆完回指时才被追认的？",
+   "tension_id": null
+  }
+ ]
+}

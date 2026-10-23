@@ -1,0 +1,10 @@
+# [v122 bench] law_003 · 合同自动审查
+id: law_003
+domain: law
+question: "法务人手不足，合同能不能用模型自动审查，风险怎么控"
+orientation: decision
+budget:
+  profile: balanced
+  max_calls: 180
+  rounds: "0:5,1:5,both:5,all:6"
+  mode: serial

@@ -1,0 +1,130 @@
+{
+ "llm_calls": 39,
+ "llm_tokens": 210144,
+ "llm_ops_calls": 25,
+ "llm_eval_calls": 14,
+ "tri_state": [
+  5,
+  6
+ ],
+ "tri_alpha": {
+  "alpha": 0.4049586776859504,
+  "kappa": 0.7272727272727272,
+  "rare": {
+   "rare": "undecidable",
+   "units": 2,
+   "unanimous": 1,
+   "rate": 0.5
+  },
+  "n_units": 6,
+  "verdict": "不可靠（α<0.667，Krippendorff 下限）"
+ },
+ "diversity": {
+  "layers": 2,
+  "channels": 3,
+  "mode": "serial",
+  "combos": 6,
+  "note": "组合数 = 层数 × 通道数（模式另计）；低于「层×通道满配」时，结论的可迁移性受限"
+ },
+ "compact": {
+  "inner_share": 0.9644,
+  "budget": 0.6,
+  "over": true,
+  "verdict": "内部面超预算 ⇒ 本轮**索引化**（不删内容，正文回退到索引 + 指向 packed 全量）"
+ },
+ "belief_staleness": {
+  "n": 8,
+  "stale_n": 0,
+  "max_age": 1,
+  "items": [
+   {
+    "id": "B1",
+    "age": 1,
+    "stale_hint": false
+   },
+   {
+    "id": "B2",
+    "age": 1,
+    "stale_hint": false
+   },
+   {
+    "id": "B3",
+    "age": 1,
+    "stale_hint": false
+   },
+   {
+    "id": "B4",
+    "age": 1,
+    "stale_hint": false
+   },
+   {
+    "id": "B5",
+    "age": 0,
+    "stale_hint": false
+   },
+   {
+    "id": "B6",
+    "age": 0,
+    "stale_hint": false
+   },
+   {
+    "id": "B7",
+    "age": 0,
+    "stale_hint": false
+   },
+   {
+    "id": "B8",
+    "age": 0,
+    "stale_hint": false
+   }
+  ]
+ },
+ "bandit": {
+  "enabled": true,
+  "arm": 0,
+  "reward": 0.0667,
+  "cost": 210.144,
+  "explore": true,
+  "mean": [
+   0.0667,
+   0.0,
+   0.0
+  ],
+  "n": [
+   1,
+   0,
+   0
+  ]
+ },
+ "playbook": {
+  "mode": "on",
+  "used": [
+   {
+    "id": "L0001",
+    "kind": "schedule",
+    "score": 0.87118,
+    "action": {
+     "key": "rounds_delta",
+     "layer": "1",
+     "delta": 1
+    },
+    "applied": true
+   }
+  ],
+  "applied": [
+   {
+    "id": "L0001",
+    "key": "rounds_delta",
+    "layer": "1",
+    "rounds": "1→2"
+   }
+  ],
+  "candidates": [],
+  "gated_out": [],
+  "merged": [],
+  "promoted": [],
+  "retired": [],
+  "parents": [],
+  "anon_skipped": true
+ }
+}

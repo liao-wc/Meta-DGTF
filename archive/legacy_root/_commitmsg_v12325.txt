@@ -1,0 +1,60 @@
+v1.23.25：不可判定「结构覆盖率」按本义重设计（自触及）
+
+【为什么这一版】上一版把「结构覆盖率」改名成「独立度」（结构视角：有多新）——
+改名是对的（旧口径确实跟提示词反着来：一边要求 structural_amps「不得复述」
+und_aspects，一边用「跟 und_aspects 一致的比例」打分 ⇒ 必然恒 0）。
+但**原名位置就此空着**，说明还有一路视角没被承载：结构除了「新不新」，还该看
+「活不活」。本版把这一路按用户给的语义钉定并加回。
+
+【定义（由用户钉定）】结构覆盖率 = 被研究出**自己触及**的概率
+  = 后续圈**自己的产物**（线头 / 探针 / 自报触及）里再次呼应到的
+    structural_amps 条数 ÷ structural_amps 总条数。
+  · 分子凭据 = `_und_self_touch_texts()`：threads[].desc / threads[].polarity_why
+    / probes[].question / covered_unders[]。
+    ★ 刻意不取 und_aspects（会和独立度互为函数 ⇒ 破坏正交），
+      也不取 evidence[].cite 的 A#（实测真产物引用 0 次）。
+  · 分母 = 结构条数（与独立度同分母，故两者可横向比、可验正交）。
+  · 空池记 None（不可计算）—— 不印 0.00 冒充读数。
+
+【六个候选凭据全部实测排除】①结构撞方面 4/5 max≤0.17（= 上版换掉的那条）
+②aligned 撞方面已被「对齐覆盖率」占用 ③covered_aspects 实测 aligned ⊇ covered
+（子集）④struct_trace.newly 全空 ⑤amp.polarity 100% 填充零判别力
+⑥引用表 A# 真产物 0 次。详见 v12325_报告.md §2。
+
+【改了哪几处】主文件 18491 → 18593 行（896053 bytes / 纯 CRLF），11 处编辑：
+  1. 版本号 ×2（docstring 标题 + __version__）
+  2. 新键初始化：last_sc_ratio / last_sc_pool / last_sc_touched / sc_history
+     / sc_touched_amps
+  3. 自触及计算（紧跟 indep_history.append 之后）
+  4. 新方法 Pool._und_self_touch_texts()
+  5. Pool.covered_unders 累积（按 _DUP_SIM 去重追加）
+  6. add_undecidable 签名加 covered_aspects: Optional[List[str]] = None
+  7. 产物渲染 _und_channel_line（多印结构覆盖率，带口径标注）
+  8. 终端 _update_trackers（多印一行）
+  9. 调用点 _apply_view_to_pool 传 view.covered_aspects
+  10. Pool dataclass 新字段 covered_unders
+  11. Pool.to_dict 白名单加 covered_unders 出口
+      ★ 第 11 处是冒烟前向守卫当场抓出来的（我漏挂了）—— 见报告 §5.1。
+  · 第七节三个读数并列印出：清晰度 ｜ 独立度 ｜ 对齐覆盖率 ｜ 结构覆盖率。
+  · 旧键 last_struct_coverage / struct_coverage_history / last_struct_hit
+    / struct_trace 一字未动。
+  · 提示词没动 —— 本版只加读数与产物描述，不改任何判定逻辑。
+
+【验收】
+  · 冒烟 smoke_test.py：EXIT=0 / ✓=218 / ✗=0
+  · 变异体 _mut_v12325.py：8 / 8 判红 + 正对照判绿
+  · 真产物对照 _cmp_v12325_structcov.py：新旧不同 7/7；新值范围 [0.143, 1.000]
+    （有跨度）；独立度范围 [0.800, 1.000]；两者 Pearson r ≈ 0.13（正交）
+  · 配置同步：164 键 / 0 差异（本版无新增配置键）
+  · 主文件 CRLF：CRLF=18593 / 裸 LF=0 / lone CR=0 / \r\r\n=0
+
+【未做】真跑（full run）。本版只加读数与描述（喂进模型的是多一行自述式读数），
+不改判定逻辑；真产物对照已在 7 份真实历史产物上验出口径差异 7/7 且正交，
+以零成本对照替代单次真跑（~¥4.17 / 65min）。如需真跑证据，留待下次
+`--phase all` 时顺带比对第七节三读数并列的实际输出。
+
+【新增文件】元DGTF-V1.23.25.py / v12325_报告.md / _mk_v12325_patch.py
+  / _mk_v12325_smoke.py / _mk_v12325_config_sync.py / _mk_v12325_changelog.py
+  / _cmp_v12325_structcov.py / _mut_v12325.py / _smoke_v12325.log
+  / _mut_v12325.log / _cmp_v12325_structcov.log；备份 _bak_*.pre_v12325.*
+【改动文件】smoke_test.py / dgtf_config.yaml / CHANGELOG.md

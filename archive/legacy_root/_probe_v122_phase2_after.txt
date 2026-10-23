@@ -1,0 +1,41 @@
+{
+  "src": "元DGTF-V1.22.0-rc1.py",
+  "version": "1.22.0-rc1",
+  "A_tri_vote_prompts": 3,
+  "A2_tri_vote_prompts_distinct": 3,
+  "B_multi_method": true,
+  "B2_single_method_still_there": true,
+  "C_freeze": {
+    "sig_len": 64,
+    "has_frozen_keys": true,
+    "clean_verify": true,
+    "tamper": {
+      "decidable→partial": "RuntimeError",
+      "decidable→undecidable": "RuntimeError",
+      "signature 手改": "RuntimeError"
+    }
+  },
+  "D_cov_frozen": {
+    "frozen_denominator": [
+      1,
+      1
+    ],
+    "unfrozen_denominator": [
+      1,
+      0
+    ]
+  },
+  "E_calib_roundtrip": {
+    "export_rc": 0,
+    "rows": 12,
+    "import_rc": 0,
+    "verdicts_n": 1
+  },
+  "F_header_src_三态多票": true,
+  "F2_header_src_冻结": true,
+  "G_action_switch": true,
+  "G2_pack_keys": [
+    "calibration_queue",
+    "freeze"
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "layers": {
+    "0": {
+      "ok": true,
+      "aspects": 48,
+      "probes": 3,
+      "suspensions": 4
+    },
+    "1": {
+      "ok": true,
+      "subs": 6,
+      "decidable": 0,
+      "cited": 0,
+      "layer_evidence": 2
+    },
+    "both": {
+      "ok": true,
+      "adjudications": 3,
+      "threads": 6
+    },
+    "all": {
+      "ok": true,
+      "required": {
+        "decision": true,
+        "actions": true,
+        "not_do": true,
+        "residual_risks": true,
+        "provenance": true
+      },
+      "actions": 5,
+      "not_do": 3
+    }
+  },
+  "gaps": [],
+  "overreach": [],
+  "repairs": [],
+  "ok": true
+}

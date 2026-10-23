@@ -1,0 +1,1595 @@
+{
+ "serial": {
+  "llm_calls": 104,
+  "dispatch": {
+   "order": [
+    "0",
+    "1",
+    "both",
+    "all"
+   ],
+   "ran": [
+    "0",
+    "1",
+    "both",
+    "all"
+   ],
+   "missing": [],
+   "skipped": [],
+   "failed": {}
+  },
+  "views": {
+   "0": {
+    "stop": "连续 2 轮无线头新增（方向走完了） + 连续 2 轮有新增但无推进（修行层无新增或无推进） + 产物相似度高，自然安住，螺旋停止",
+    "round_log": [
+     [
+      1,
+      1,
+      0,
+      0,
+      ""
+     ],
+     [
+      2,
+      2,
+      1,
+      1,
+      "修行层无新增或无推进"
+     ],
+     [
+      3,
+      3,
+      2,
+      2,
+      "修行层无新增或无推进"
+     ]
+    ],
+    "closure": "",
+    "errors": 0
+   },
+   "1": {
+    "stop": "连续 3 轮无新 &（沉淀完了） + 连续 3 轮无线头新增（方向走完了） + 产物相似度高，自然安住，螺旋停止",
+    "round_log": [
+     [
+      1,
+      1,
+      1,
+      0,
+      ""
+     ],
+     [
+      2,
+      2,
+      2,
+      0,
+      ""
+     ],
+     [
+      3,
+      3,
+      3,
+      0,
+      ""
+     ]
+    ],
+    "closure": "",
+    "errors": 0
+   },
+   "all": {
+    "stop": "ing 连续 3 圈复述（层内空转） + 自省连续 3 圈点名同一批问题未消化（层内空转） + 连续 3 轮无新 &（沉淀完了） + 连续 3 轮无线头新增（方向走完了） + 产物相似度高，自然安住，螺旋停止",
+    "round_log": [
+     [
+      1,
+      1,
+      1,
+      0,
+      ""
+     ],
+     [
+      2,
+      2,
+      2,
+      0,
+      ""
+     ],
+     [
+      3,
+      3,
+      3,
+      0,
+      ""
+     ]
+    ],
+    "closure": "",
+    "errors": 0
+   },
+   "both": {
+    "stop": "ing 连续 3 圈复述（层内空转） + 自省连续 3 圈点名同一批问题未消化（层内空转） + 连续 3 轮无新 &（沉淀完了） + 连续 3 轮无线头新增（方向走完了） + 产物相似度高，自然安住，螺旋停止",
+    "round_log": [
+     [
+      1,
+      1,
+      1,
+      0,
+      ""
+     ],
+     [
+      2,
+      2,
+      2,
+      0,
+      ""
+     ],
+     [
+      3,
+      3,
+      3,
+      0,
+      ""
+     ]
+    ],
+    "closure": "",
+    "errors": 0
+   }
+  },
+  "pools": {
+   "0": {
+    "amps": 0,
+    "threads": 1,
+    "probes": 1,
+    "suspensions": 1,
+    "sub_questions": 0,
+    "deferrals": 0,
+    "escalations": 0,
+    "duel_suspensions": 0
+   },
+   "1": {
+    "amps": 0,
+    "threads": 0,
+    "probes": 0,
+    "suspensions": 0,
+    "sub_questions": 1,
+    "deferrals": 0,
+    "escalations": 0,
+    "duel_suspensions": 0
+   },
+   "all": {
+    "amps": 0,
+    "threads": 1,
+    "probes": 1,
+    "suspensions": 1,
+    "sub_questions": 0,
+    "deferrals": 0,
+    "escalations": 0,
+    "duel_suspensions": 0
+   },
+   "both": {
+    "amps": 0,
+    "threads": 0,
+    "probes": 0,
+    "suspensions": 0,
+    "sub_questions": 0,
+    "deferrals": 0,
+    "escalations": 0,
+    "duel_suspensions": 0
+   }
+  },
+  "stop_lines": []
+ },
+ "A": {
+  "llm_calls": 115,
+  "dispatch": {
+   "order": [
+    "0",
+    "1",
+    "both",
+    "all"
+   ],
+   "ran": [
+    "0",
+    "1",
+    "both",
+    "all"
+   ],
+   "missing": [],
+   "skipped": [],
+   "failed": {}
+  },
+  "views": {
+   "0": {
+    "stop": "连续 2 轮无线头新增（方向走完了） + 连续 2 轮有新增但无推进（修行层无新增或无推进） + 产物相似度高，自然安住，螺旋停止",
+    "round_log": [
+     [
+      1,
+      1,
+      0,
+      0,
+      ""
+     ],
+     [
+      2,
+      2,
+      1,
+      1,
+      "修行层无新增或无推进"
+     ],
+     [
+      3,
+      3,
+      2,
+      2,
+      "修行层无新增或无推进"
+     ]
+    ],
+    "closure": "",
+    "errors": 0
+   },
+   "1": {
+    "stop": "连续 3 轮无新 &（沉淀完了） + 连续 3 轮无线头新增（方向走完了） + 产物相似度高，自然安住，螺旋停止",
+    "round_log": [
+     [
+      1,
+      1,
+      1,
+      0,
+      ""
+     ],
+     [
+      2,
+      2,
+      2,
+      0,
+      ""
+     ],
+     [
+      3,
+      3,
+      3,
+      0,
+      ""
+     ]
+    ],
+    "closure": "",
+    "errors": 0
+   },
+   "all": {
+    "stop": "ing 连续 3 圈复述（层内空转） + 自省连续 3 圈点名同一批问题未消化（层内空转） + 连续 3 轮无新 &（沉淀完了） + 连续 3 轮无线头新增（方向走完了） + 产物相似度高，自然安住，螺旋停止",
+    "round_log": [
+     [
+      1,
+      1,
+      1,
+      0,
+      ""
+     ],
+     [
+      2,
+      2,
+      2,
+      0,
+      ""
+     ],
+     [
+      3,
+      3,
+      3,
+      0,
+      ""
+     ]
+    ],
+    "closure": "",
+    "errors": 0
+   },
+   "both": {
+    "stop": "ing 连续 3 圈复述（层内空转） + 自省连续 3 圈点名同一批问题未消化（层内空转） + 连续 3 轮无新 &（沉淀完了） + 连续 3 轮无线头新增（方向走完了） + 产物相似度高，自然安住，螺旋停止",
+    "round_log": [
+     [
+      1,
+      1,
+      1,
+      0,
+      ""
+     ],
+     [
+      2,
+      2,
+      2,
+      0,
+      ""
+     ],
+     [
+      3,
+      3,
+      3,
+      0,
+      ""
+     ]
+    ],
+    "closure": "",
+    "errors": 0
+   }
+  },
+  "pools": {
+   "0": {
+    "amps": 0,
+    "threads": 1,
+    "probes": 1,
+    "suspensions": 1,
+    "sub_questions": 0,
+    "deferrals": 0,
+    "escalations": 0,
+    "duel_suspensions": 0
+   },
+   "1": {
+    "amps": 0,
+    "threads": 0,
+    "probes": 0,
+    "suspensions": 0,
+    "sub_questions": 1,
+    "deferrals": 0,
+    "escalations": 0,
+    "duel_suspensions": 0
+   },
+   "all": {
+    "amps": 0,
+    "threads": 1,
+    "probes": 1,
+    "suspensions": 1,
+    "sub_questions": 0,
+    "deferrals": 0,
+    "escalations": 0,
+    "duel_suspensions": 0
+   },
+   "both": {
+    "amps": 0,
+    "threads": 0,
+    "probes": 0,
+    "suspensions": 0,
+    "sub_questions": 0,
+    "deferrals": 0,
+    "escalations": 0,
+    "duel_suspensions": 0
+   }
+  },
+  "stop_lines": []
+ },
+ "B": {
+  "llm_calls": 103,
+  "dispatch": {
+   "order": [
+    "0",
+    "1",
+    "both",
+    "all"
+   ],
+   "ran": [
+    "0",
+    "1",
+    "both",
+    "all"
+   ],
+   "missing": [],
+   "skipped": [],
+   "failed": {}
+  },
+  "views": {
+   "0": {
+    "stop": "连续 2 轮无线头新增（方向走完了） + 连续 2 轮有新增但无推进（修行层无新增或无推进） + 产物相似度高，自然安住，螺旋停止",
+    "round_log": [
+     [
+      1,
+      1,
+      0,
+      0,
+      ""
+     ],
+     [
+      2,
+      2,
+      1,
+      1,
+      "修行层无新增或无推进"
+     ],
+     [
+      3,
+      3,
+      2,
+      2,
+      "修行层无新增或无推进"
+     ]
+    ],
+    "closure": "",
+    "errors": 0
+   },
+   "1": {
+    "stop": "连续 3 轮无新 &（沉淀完了） + 连续 3 轮无线头新增（方向走完了） + 产物相似度高，自然安住，螺旋停止",
+    "round_log": [
+     [
+      1,
+      1,
+      1,
+      0,
+      ""
+     ],
+     [
+      2,
+      2,
+      2,
+      0,
+      ""
+     ],
+     [
+      3,
+      3,
+      3,
+      0,
+      ""
+     ]
+    ],
+    "closure": "",
+    "errors": 0
+   },
+   "all": {
+    "stop": "ing 连续 3 圈复述（层内空转） + 自省连续 3 圈点名同一批问题未消化（层内空转） + 连续 3 轮无新 &（沉淀完了） + 连续 3 轮无线头新增（方向走完了） + 产物相似度高，自然安住，螺旋停止",
+    "round_log": [
+     [
+      1,
+      1,
+      1,
+      0,
+      ""
+     ],
+     [
+      2,
+      2,
+      2,
+      0,
+      ""
+     ],
+     [
+      3,
+      3,
+      3,
+      0,
+      ""
+     ]
+    ],
+    "closure": "",
+    "errors": 0
+   },
+   "both": {
+    "stop": "ing 连续 3 圈复述（层内空转） + 自省连续 3 圈点名同一批问题未消化（层内空转） + 连续 3 轮无新 &（沉淀完了） + 连续 3 轮无线头新增（方向走完了） + 产物相似度高，自然安住，螺旋停止",
+    "round_log": [
+     [
+      1,
+      1,
+      1,
+      0,
+      ""
+     ],
+     [
+      2,
+      2,
+      2,
+      0,
+      ""
+     ],
+     [
+      3,
+      3,
+      3,
+      0,
+      ""
+     ]
+    ],
+    "closure": "",
+    "errors": 0
+   }
+  },
+  "pools": {
+   "0": {
+    "amps": 0,
+    "threads": 1,
+    "probes": 1,
+    "suspensions": 1,
+    "sub_questions": 0,
+    "deferrals": 0,
+    "escalations": 0,
+    "duel_suspensions": 0
+   },
+   "1": {
+    "amps": 0,
+    "threads": 0,
+    "probes": 0,
+    "suspensions": 0,
+    "sub_questions": 1,
+    "deferrals": 0,
+    "escalations": 0,
+    "duel_suspensions": 0
+   },
+   "all": {
+    "amps": 0,
+    "threads": 1,
+    "probes": 1,
+    "suspensions": 1,
+    "sub_questions": 0,
+    "deferrals": 0,
+    "escalations": 0,
+    "duel_suspensions": 0
+   },
+   "both": {
+    "amps": 0,
+    "threads": 0,
+    "probes": 0,
+    "suspensions": 0,
+    "sub_questions": 0,
+    "deferrals": 0,
+    "escalations": 0,
+    "duel_suspensions": 0
+   }
+  },
+  "stop_lines": []
+ },
+ "C": {
+  "llm_calls": 101,
+  "dispatch": {
+   "order": [
+    "0",
+    "1",
+    "both",
+    "all"
+   ],
+   "ran": [
+    "0",
+    "1",
+    "both",
+    "all"
+   ],
+   "missing": [],
+   "skipped": [],
+   "failed": {}
+  },
+  "views": {
+   "0": {
+    "stop": "连续 2 轮无线头新增（方向走完了） + 连续 2 轮有新增但无推进（修行层无新增或无推进） + 产物相似度高，自然安住，螺旋停止",
+    "round_log": [
+     [
+      1,
+      1,
+      0,
+      0,
+      ""
+     ],
+     [
+      2,
+      2,
+      1,
+      1,
+      "修行层无新增或无推进"
+     ],
+     [
+      3,
+      3,
+      2,
+      2,
+      "修行层无新增或无推进"
+     ]
+    ],
+    "closure": "",
+    "errors": 0
+   },
+   "1": {
+    "stop": "连续 3 轮无新 &（沉淀完了） + 连续 3 轮无线头新增（方向走完了） + 产物相似度高，自然安住，螺旋停止",
+    "round_log": [
+     [
+      1,
+      1,
+      1,
+      0,
+      ""
+     ],
+     [
+      2,
+      2,
+      2,
+      0,
+      ""
+     ],
+     [
+      3,
+      3,
+      3,
+      0,
+      ""
+     ]
+    ],
+    "closure": "",
+    "errors": 0
+   },
+   "all": {
+    "stop": "ing 连续 3 圈复述（层内空转） + 自省连续 3 圈点名同一批问题未消化（层内空转） + 连续 3 轮无新 &（沉淀完了） + 连续 3 轮无线头新增（方向走完了） + 产物相似度高，自然安住，螺旋停止",
+    "round_log": [
+     [
+      1,
+      1,
+      1,
+      0,
+      ""
+     ],
+     [
+      2,
+      2,
+      2,
+      0,
+      ""
+     ],
+     [
+      3,
+      3,
+      3,
+      0,
+      ""
+     ]
+    ],
+    "closure": "",
+    "errors": 0
+   },
+   "both": {
+    "stop": "ing 连续 3 圈复述（层内空转） + 自省连续 3 圈点名同一批问题未消化（层内空转） + 连续 3 轮无新 &（沉淀完了） + 连续 3 轮无线头新增（方向走完了） + 产物相似度高，自然安住，螺旋停止",
+    "round_log": [
+     [
+      1,
+      1,
+      1,
+      0,
+      ""
+     ],
+     [
+      2,
+      2,
+      2,
+      0,
+      ""
+     ],
+     [
+      3,
+      3,
+      3,
+      0,
+      ""
+     ]
+    ],
+    "closure": "",
+    "errors": 0
+   }
+  },
+  "pools": {
+   "0": {
+    "amps": 0,
+    "threads": 1,
+    "probes": 1,
+    "suspensions": 1,
+    "sub_questions": 0,
+    "deferrals": 0,
+    "escalations": 0,
+    "duel_suspensions": 0
+   },
+   "1": {
+    "amps": 0,
+    "threads": 0,
+    "probes": 0,
+    "suspensions": 0,
+    "sub_questions": 1,
+    "deferrals": 0,
+    "escalations": 0,
+    "duel_suspensions": 0
+   },
+   "all": {
+    "amps": 0,
+    "threads": 1,
+    "probes": 1,
+    "suspensions": 1,
+    "sub_questions": 0,
+    "deferrals": 0,
+    "escalations": 0,
+    "duel_suspensions": 0
+   },
+   "both": {
+    "amps": 0,
+    "threads": 0,
+    "probes": 0,
+    "suspensions": 0,
+    "sub_questions": 0,
+    "deferrals": 0,
+    "escalations": 0,
+    "duel_suspensions": 0
+   }
+  },
+  "stop_lines": []
+ },
+ "D": {
+  "llm_calls": 101,
+  "dispatch": {
+   "order": [
+    "0",
+    "1",
+    "both",
+    "all"
+   ],
+   "ran": [
+    "0",
+    "1",
+    "both",
+    "all"
+   ],
+   "missing": [],
+   "skipped": [],
+   "failed": {}
+  },
+  "views": {
+   "0": {
+    "stop": "连续 2 轮无线头新增（方向走完了） + 连续 2 轮有新增但无推进（修行层无新增或无推进） + 产物相似度高，自然安住，螺旋停止",
+    "round_log": [
+     [
+      1,
+      1,
+      0,
+      0,
+      ""
+     ],
+     [
+      2,
+      2,
+      1,
+      1,
+      "修行层无新增或无推进"
+     ],
+     [
+      3,
+      3,
+      2,
+      2,
+      "修行层无新增或无推进"
+     ]
+    ],
+    "closure": "",
+    "errors": 0
+   },
+   "1": {
+    "stop": "连续 3 轮无新 &（沉淀完了） + 连续 3 轮无线头新增（方向走完了） + 产物相似度高，自然安住，螺旋停止",
+    "round_log": [
+     [
+      1,
+      1,
+      1,
+      0,
+      ""
+     ],
+     [
+      2,
+      2,
+      2,
+      0,
+      ""
+     ],
+     [
+      3,
+      3,
+      3,
+      0,
+      ""
+     ]
+    ],
+    "closure": "",
+    "errors": 0
+   },
+   "all": {
+    "stop": "ing 连续 3 圈复述（层内空转） + 自省连续 3 圈点名同一批问题未消化（层内空转） + 连续 3 轮无新 &（沉淀完了） + 连续 3 轮无线头新增（方向走完了） + 产物相似度高，自然安住，螺旋停止",
+    "round_log": [
+     [
+      1,
+      1,
+      1,
+      0,
+      ""
+     ],
+     [
+      2,
+      2,
+      2,
+      0,
+      ""
+     ],
+     [
+      3,
+      3,
+      3,
+      0,
+      ""
+     ]
+    ],
+    "closure": "",
+    "errors": 0
+   },
+   "both": {
+    "stop": "ing 连续 3 圈复述（层内空转） + 自省连续 3 圈点名同一批问题未消化（层内空转） + 连续 3 轮无新 &（沉淀完了） + 连续 3 轮无线头新增（方向走完了） + 产物相似度高，自然安住，螺旋停止",
+    "round_log": [
+     [
+      1,
+      1,
+      1,
+      0,
+      ""
+     ],
+     [
+      2,
+      2,
+      2,
+      0,
+      ""
+     ],
+     [
+      3,
+      3,
+      3,
+      0,
+      ""
+     ]
+    ],
+    "closure": "",
+    "errors": 0
+   }
+  },
+  "pools": {
+   "0": {
+    "amps": 0,
+    "threads": 1,
+    "probes": 1,
+    "suspensions": 1,
+    "sub_questions": 0,
+    "deferrals": 0,
+    "escalations": 0,
+    "duel_suspensions": 0
+   },
+   "1": {
+    "amps": 0,
+    "threads": 0,
+    "probes": 0,
+    "suspensions": 0,
+    "sub_questions": 1,
+    "deferrals": 0,
+    "escalations": 0,
+    "duel_suspensions": 0
+   },
+   "all": {
+    "amps": 0,
+    "threads": 1,
+    "probes": 1,
+    "suspensions": 1,
+    "sub_questions": 0,
+    "deferrals": 0,
+    "escalations": 0,
+    "duel_suspensions": 0
+   },
+   "both": {
+    "amps": 0,
+    "threads": 0,
+    "probes": 0,
+    "suspensions": 0,
+    "sub_questions": 0,
+    "deferrals": 0,
+    "escalations": 0,
+    "duel_suspensions": 0
+   }
+  },
+  "stop_lines": []
+ },
+ "E": {
+  "llm_calls": 101,
+  "dispatch": {
+   "order": [
+    "0",
+    "1",
+    "both",
+    "all"
+   ],
+   "ran": [
+    "0",
+    "1",
+    "both",
+    "all"
+   ],
+   "missing": [],
+   "skipped": [],
+   "failed": {}
+  },
+  "views": {
+   "0": {
+    "stop": "连续 2 轮无线头新增（方向走完了） + 连续 2 轮有新增但无推进（修行层无新增或无推进） + 产物相似度高，自然安住，螺旋停止",
+    "round_log": [
+     [
+      1,
+      1,
+      0,
+      0,
+      ""
+     ],
+     [
+      2,
+      2,
+      1,
+      1,
+      "修行层无新增或无推进"
+     ],
+     [
+      3,
+      3,
+      2,
+      2,
+      "修行层无新增或无推进"
+     ]
+    ],
+    "closure": "",
+    "errors": 0
+   },
+   "1": {
+    "stop": "连续 3 轮无新 &（沉淀完了） + 连续 3 轮无线头新增（方向走完了） + 产物相似度高，自然安住，螺旋停止",
+    "round_log": [
+     [
+      1,
+      1,
+      1,
+      0,
+      ""
+     ],
+     [
+      2,
+      2,
+      2,
+      0,
+      ""
+     ],
+     [
+      3,
+      3,
+      3,
+      0,
+      ""
+     ]
+    ],
+    "closure": "",
+    "errors": 0
+   },
+   "all": {
+    "stop": "ing 连续 3 圈复述（层内空转） + 自省连续 3 圈点名同一批问题未消化（层内空转） + 连续 3 轮无新 &（沉淀完了） + 连续 3 轮无线头新增（方向走完了） + 产物相似度高，自然安住，螺旋停止",
+    "round_log": [
+     [
+      1,
+      1,
+      1,
+      0,
+      ""
+     ],
+     [
+      2,
+      2,
+      2,
+      0,
+      ""
+     ],
+     [
+      3,
+      3,
+      3,
+      0,
+      ""
+     ]
+    ],
+    "closure": "",
+    "errors": 0
+   },
+   "both": {
+    "stop": "ing 连续 3 圈复述（层内空转） + 自省连续 3 圈点名同一批问题未消化（层内空转） + 连续 3 轮无新 &（沉淀完了） + 连续 3 轮无线头新增（方向走完了） + 产物相似度高，自然安住，螺旋停止",
+    "round_log": [
+     [
+      1,
+      1,
+      1,
+      0,
+      ""
+     ],
+     [
+      2,
+      2,
+      2,
+      0,
+      ""
+     ],
+     [
+      3,
+      3,
+      3,
+      0,
+      ""
+     ]
+    ],
+    "closure": "",
+    "errors": 0
+   }
+  },
+  "pools": {
+   "0": {
+    "amps": 0,
+    "threads": 1,
+    "probes": 1,
+    "suspensions": 1,
+    "sub_questions": 0,
+    "deferrals": 0,
+    "escalations": 0,
+    "duel_suspensions": 0
+   },
+   "1": {
+    "amps": 0,
+    "threads": 0,
+    "probes": 0,
+    "suspensions": 0,
+    "sub_questions": 1,
+    "deferrals": 0,
+    "escalations": 0,
+    "duel_suspensions": 0
+   },
+   "all": {
+    "amps": 0,
+    "threads": 1,
+    "probes": 1,
+    "suspensions": 1,
+    "sub_questions": 0,
+    "deferrals": 0,
+    "escalations": 0,
+    "duel_suspensions": 0
+   },
+   "both": {
+    "amps": 0,
+    "threads": 0,
+    "probes": 0,
+    "suspensions": 0,
+    "sub_questions": 0,
+    "deferrals": 0,
+    "escalations": 0,
+    "duel_suspensions": 0
+   }
+  },
+  "stop_lines": []
+ },
+ "F": {
+  "llm_calls": 101,
+  "dispatch": {
+   "order": [
+    "0",
+    "1",
+    "both",
+    "all"
+   ],
+   "ran": [
+    "0",
+    "1",
+    "both",
+    "all"
+   ],
+   "missing": [],
+   "skipped": [],
+   "failed": {}
+  },
+  "views": {
+   "0": {
+    "stop": "连续 2 轮无线头新增（方向走完了） + 连续 2 轮有新增但无推进（修行层无新增或无推进） + 产物相似度高，自然安住，螺旋停止",
+    "round_log": [
+     [
+      1,
+      1,
+      0,
+      0,
+      ""
+     ],
+     [
+      2,
+      2,
+      1,
+      1,
+      "修行层无新增或无推进"
+     ],
+     [
+      3,
+      3,
+      2,
+      2,
+      "修行层无新增或无推进"
+     ]
+    ],
+    "closure": "",
+    "errors": 0
+   },
+   "1": {
+    "stop": "连续 3 轮无新 &（沉淀完了） + 连续 3 轮无线头新增（方向走完了） + 产物相似度高，自然安住，螺旋停止",
+    "round_log": [
+     [
+      1,
+      1,
+      1,
+      0,
+      ""
+     ],
+     [
+      2,
+      2,
+      2,
+      0,
+      ""
+     ],
+     [
+      3,
+      3,
+      3,
+      0,
+      ""
+     ]
+    ],
+    "closure": "",
+    "errors": 0
+   },
+   "all": {
+    "stop": "ing 连续 3 圈复述（层内空转） + 自省连续 3 圈点名同一批问题未消化（层内空转） + 连续 3 轮无新 &（沉淀完了） + 连续 3 轮无线头新增（方向走完了） + 产物相似度高，自然安住，螺旋停止",
+    "round_log": [
+     [
+      1,
+      1,
+      1,
+      0,
+      ""
+     ],
+     [
+      2,
+      2,
+      2,
+      0,
+      ""
+     ],
+     [
+      3,
+      3,
+      3,
+      0,
+      ""
+     ]
+    ],
+    "closure": "",
+    "errors": 0
+   },
+   "both": {
+    "stop": "ing 连续 3 圈复述（层内空转） + 自省连续 3 圈点名同一批问题未消化（层内空转） + 连续 3 轮无新 &（沉淀完了） + 连续 3 轮无线头新增（方向走完了） + 产物相似度高，自然安住，螺旋停止",
+    "round_log": [
+     [
+      1,
+      1,
+      1,
+      0,
+      ""
+     ],
+     [
+      2,
+      2,
+      2,
+      0,
+      ""
+     ],
+     [
+      3,
+      3,
+      3,
+      0,
+      ""
+     ]
+    ],
+    "closure": "",
+    "errors": 0
+   }
+  },
+  "pools": {
+   "0": {
+    "amps": 0,
+    "threads": 1,
+    "probes": 1,
+    "suspensions": 1,
+    "sub_questions": 0,
+    "deferrals": 0,
+    "escalations": 0,
+    "duel_suspensions": 0
+   },
+   "1": {
+    "amps": 0,
+    "threads": 0,
+    "probes": 0,
+    "suspensions": 0,
+    "sub_questions": 1,
+    "deferrals": 0,
+    "escalations": 0,
+    "duel_suspensions": 0
+   },
+   "all": {
+    "amps": 0,
+    "threads": 1,
+    "probes": 1,
+    "suspensions": 1,
+    "sub_questions": 0,
+    "deferrals": 0,
+    "escalations": 0,
+    "duel_suspensions": 0
+   },
+   "both": {
+    "amps": 0,
+    "threads": 0,
+    "probes": 0,
+    "suspensions": 0,
+    "sub_questions": 0,
+    "deferrals": 0,
+    "escalations": 0,
+    "duel_suspensions": 0
+   }
+  },
+  "stop_lines": []
+ },
+ "G": {
+  "llm_calls": 101,
+  "dispatch": {
+   "order": [
+    "0",
+    "1",
+    "both",
+    "all"
+   ],
+   "ran": [
+    "0",
+    "1",
+    "both",
+    "all"
+   ],
+   "missing": [],
+   "skipped": [],
+   "failed": {}
+  },
+  "views": {
+   "0": {
+    "stop": "连续 2 轮无线头新增（方向走完了） + 连续 2 轮有新增但无推进（修行层无新增或无推进） + 产物相似度高，自然安住，螺旋停止",
+    "round_log": [
+     [
+      1,
+      1,
+      0,
+      0,
+      ""
+     ],
+     [
+      2,
+      2,
+      1,
+      1,
+      "修行层无新增或无推进"
+     ],
+     [
+      3,
+      3,
+      2,
+      2,
+      "修行层无新增或无推进"
+     ]
+    ],
+    "closure": "",
+    "errors": 0
+   },
+   "1": {
+    "stop": "连续 3 轮无新 &（沉淀完了） + 连续 3 轮无线头新增（方向走完了） + 产物相似度高，自然安住，螺旋停止",
+    "round_log": [
+     [
+      1,
+      1,
+      1,
+      0,
+      ""
+     ],
+     [
+      2,
+      2,
+      2,
+      0,
+      ""
+     ],
+     [
+      3,
+      3,
+      3,
+      0,
+      ""
+     ]
+    ],
+    "closure": "",
+    "errors": 0
+   },
+   "all": {
+    "stop": "ing 连续 3 圈复述（层内空转） + 自省连续 3 圈点名同一批问题未消化（层内空转） + 连续 3 轮无新 &（沉淀完了） + 连续 3 轮无线头新增（方向走完了） + 产物相似度高，自然安住，螺旋停止",
+    "round_log": [
+     [
+      1,
+      1,
+      1,
+      0,
+      ""
+     ],
+     [
+      2,
+      2,
+      2,
+      0,
+      ""
+     ],
+     [
+      3,
+      3,
+      3,
+      0,
+      ""
+     ]
+    ],
+    "closure": "",
+    "errors": 0
+   },
+   "both": {
+    "stop": "ing 连续 3 圈复述（层内空转） + 自省连续 3 圈点名同一批问题未消化（层内空转） + 连续 3 轮无新 &（沉淀完了） + 连续 3 轮无线头新增（方向走完了） + 产物相似度高，自然安住，螺旋停止",
+    "round_log": [
+     [
+      1,
+      1,
+      1,
+      0,
+      ""
+     ],
+     [
+      2,
+      2,
+      2,
+      0,
+      ""
+     ],
+     [
+      3,
+      3,
+      3,
+      0,
+      ""
+     ]
+    ],
+    "closure": "",
+    "errors": 0
+   }
+  },
+  "pools": {
+   "0": {
+    "amps": 0,
+    "threads": 1,
+    "probes": 1,
+    "suspensions": 1,
+    "sub_questions": 0,
+    "deferrals": 0,
+    "escalations": 0,
+    "duel_suspensions": 0
+   },
+   "1": {
+    "amps": 0,
+    "threads": 0,
+    "probes": 0,
+    "suspensions": 0,
+    "sub_questions": 1,
+    "deferrals": 0,
+    "escalations": 0,
+    "duel_suspensions": 0
+   },
+   "all": {
+    "amps": 0,
+    "threads": 1,
+    "probes": 1,
+    "suspensions": 1,
+    "sub_questions": 0,
+    "deferrals": 0,
+    "escalations": 0,
+    "duel_suspensions": 0
+   },
+   "both": {
+    "amps": 0,
+    "threads": 0,
+    "probes": 0,
+    "suspensions": 0,
+    "sub_questions": 0,
+    "deferrals": 0,
+    "escalations": 0,
+    "duel_suspensions": 0
+   }
+  },
+  "stop_lines": []
+ },
+ "H": {
+  "llm_calls": 101,
+  "dispatch": {
+   "order": [
+    "0",
+    "1",
+    "both",
+    "all"
+   ],
+   "ran": [
+    "0",
+    "1",
+    "both",
+    "all"
+   ],
+   "missing": [],
+   "skipped": [],
+   "failed": {}
+  },
+  "views": {
+   "0": {
+    "stop": "连续 2 轮无线头新增（方向走完了） + 连续 2 轮有新增但无推进（修行层无新增或无推进） + 产物相似度高，自然安住，螺旋停止",
+    "round_log": [
+     [
+      1,
+      1,
+      0,
+      0,
+      ""
+     ],
+     [
+      2,
+      2,
+      1,
+      1,
+      "修行层无新增或无推进"
+     ],
+     [
+      3,
+      3,
+      2,
+      2,
+      "修行层无新增或无推进"
+     ]
+    ],
+    "closure": "",
+    "errors": 0
+   },
+   "1": {
+    "stop": "连续 3 轮无新 &（沉淀完了） + 连续 3 轮无线头新增（方向走完了） + 产物相似度高，自然安住，螺旋停止",
+    "round_log": [
+     [
+      1,
+      1,
+      1,
+      0,
+      ""
+     ],
+     [
+      2,
+      2,
+      2,
+      0,
+      ""
+     ],
+     [
+      3,
+      3,
+      3,
+      0,
+      ""
+     ]
+    ],
+    "closure": "",
+    "errors": 0
+   },
+   "all": {
+    "stop": "ing 连续 3 圈复述（层内空转） + 自省连续 3 圈点名同一批问题未消化（层内空转） + 连续 3 轮无新 &（沉淀完了） + 连续 3 轮无线头新增（方向走完了） + 产物相似度高，自然安住，螺旋停止",
+    "round_log": [
+     [
+      1,
+      1,
+      1,
+      0,
+      ""
+     ],
+     [
+      2,
+      2,
+      2,
+      0,
+      ""
+     ],
+     [
+      3,
+      3,
+      3,
+      0,
+      ""
+     ]
+    ],
+    "closure": "",
+    "errors": 0
+   },
+   "both": {
+    "stop": "ing 连续 3 圈复述（层内空转） + 自省连续 3 圈点名同一批问题未消化（层内空转） + 连续 3 轮无新 &（沉淀完了） + 连续 3 轮无线头新增（方向走完了） + 产物相似度高，自然安住，螺旋停止",
+    "round_log": [
+     [
+      1,
+      1,
+      1,
+      0,
+      ""
+     ],
+     [
+      2,
+      2,
+      2,
+      0,
+      ""
+     ],
+     [
+      3,
+      3,
+      3,
+      0,
+      ""
+     ]
+    ],
+    "closure": "",
+    "errors": 0
+   }
+  },
+  "pools": {
+   "0": {
+    "amps": 0,
+    "threads": 1,
+    "probes": 1,
+    "suspensions": 1,
+    "sub_questions": 0,
+    "deferrals": 0,
+    "escalations": 0,
+    "duel_suspensions": 0
+   },
+   "1": {
+    "amps": 0,
+    "threads": 0,
+    "probes": 0,
+    "suspensions": 0,
+    "sub_questions": 1,
+    "deferrals": 0,
+    "escalations": 0,
+    "duel_suspensions": 0
+   },
+   "all": {
+    "amps": 0,
+    "threads": 1,
+    "probes": 1,
+    "suspensions": 1,
+    "sub_questions": 0,
+    "deferrals": 0,
+    "escalations": 0,
+    "duel_suspensions": 0
+   },
+   "both": {
+    "amps": 0,
+    "threads": 0,
+    "probes": 0,
+    "suspensions": 0,
+    "sub_questions": 0,
+    "deferrals": 0,
+    "escalations": 0,
+    "duel_suspensions": 0
+   }
+  },
+  "stop_lines": []
+ }
+}

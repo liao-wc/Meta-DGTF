@@ -1,0 +1,23 @@
+name: repo-classification
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  classify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Classify tracked files
+        run: python scripts/dsh_repo_classify.py classify
+      - name: Guard categories
+        run: python scripts/dsh_repo_classify.py check
+      - name: Publish summary
+        run: cat reports/repo_classification.md >> "$GITHUB_STEP_SUMMARY"

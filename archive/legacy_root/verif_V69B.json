@@ -1,0 +1,107 @@
+{
+ "tag": "V69B",
+ "src": "元DGTF-V1.21.69.py",
+ "route": "0,1",
+ "rounds": "0:2,1:2",
+ "mode": "B",
+ "orientation": "auto",
+ "llm_calls": 44,
+ "tri_state": [
+  2,
+  5
+ ],
+ "meta_closure_all": null,
+ "duel_suspensions_both": [],
+ "engagements_by_view": {
+  "0": [
+   {
+    "target": "T11 比例随重现期是否稳定",
+    "tension_id": null
+   }
+  ],
+  "1": [
+   {
+    "target": "若将重建拆成按管网权属分段的多个小重建，每段各自面对已知管段而非整片未知，权衡会变成什么？",
+    "tension_id": null
+   },
+   {
+    "target": "老城区地下管线实况与图纸不符的程度（如错接、缺失、管径偏差）是否使得按权属分段重建的边界划分无法可靠进行？",
+    "tension_id": null
+   },
+   {
+    "target": "外江水位顶托比例（顶托水量占总排水需求的比例）的实测值是多少？该比例是否直接决定重建与局部改造的优劣排序？",
+    "tension_id": null
+   }
+  ]
+ },
+ "suspensions_with_tid": {
+  "0": [
+   {
+    "target": "居民与商户逐户协商的承受",
+    "tension_id": null,
+    "status": "active"
+   },
+   {
+    "target": "谁决策、对谁负责",
+    "tension_id": null,
+    "status": "active"
+   },
+   {
+    "target": "逐户协商承受与谁决策负责",
+    "tension_id": null,
+    "status": "active"
+   }
+  ],
+  "1": []
+ },
+ "pools_all_engagements": [
+  {
+   "target": "重建方案的前提是地下未知",
+   "tension_id": null
+  },
+  {
+   "target": "海绵在连续降雨下的衰减",
+   "tension_id": null
+  },
+  {
+   "target": "T11 比例随重现期是否稳定",
+   "tension_id": null
+  },
+  {
+   "target": "在连续多场降雨条件下，海绵措施（如透水铺装、下沉绿地）的削减能力衰减曲线是什么？单场重现期口径下的削减率能否外推到连续场？",
+   "tension_id": null
+  },
+  {
+   "target": "外江水位顶托比例（顶托水量占总排水需求的比例）的实测值是多少？该比例是否直接决定重建与局部改造的优劣排序？",
+   "tension_id": null
+  },
+  {
+   "target": "老城区地下管线实况与图纸不符的程度（如错接、缺失、管径偏差）是否使得按权属分段重建的边界划分无法可靠进行？",
+   "tension_id": null
+  },
+  {
+   "target": "在连续降雨条件下，海绵措施削减衰减是否意味着局部改造加海绵的可行域仅存在于单场重现期口径内，而老城区暴雨恰恰是连续场？",
+   "tension_id": null
+  },
+  {
+   "target": "若将重建拆成按管网权属分段的多个小重建，每段各自面对已知管段而非整片未知，权衡会变成什么？",
+   "tension_id": null
+  }
+ ],
+ "views_errors": {
+  "0": [],
+  "1": []
+ },
+ "pools_meta_p16": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": []
+ },
+ "pools_meta_len": {
+  "0": 5,
+  "1": 4,
+  "both": 0,
+  "all": 0
+ }
+}

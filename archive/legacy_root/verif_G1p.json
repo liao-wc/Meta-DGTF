@@ -1,0 +1,50 @@
+{
+ "tag": "G1p",
+ "src": "元DGTF-V1.21.66.py",
+ "route": "1",
+ "rounds": "1:6",
+ "mode": "serial",
+ "orientation": "auto",
+ "llm_calls": 53,
+ "tri_state": [
+  0,
+  0
+ ],
+ "meta_closure_all": null,
+ "duel_suspensions_both": [],
+ "engagements_by_view": {
+  "1": [
+   {
+    "target": "在给定老城区的管网拓扑、管径、坡度、检查井与排口数据下，重建方案与局部改造加海绵城市方案各自的径流控制率、峰值削减率可计算到什么精度？",
+    "tension_id": null
+   },
+   {
+    "target": "两类方案的全生命周期成本（建设、运维、更换、灾害损失期望）在给定折现率与设计重现期下能否给出唯一排序？",
+    "tension_id": null
+   },
+   {
+    "target": "若仅要求方案在'不劣于现状且不超预算'的约束下可行，能否判定至少存在一个满足约束的局部改造加海绵城市组合？",
+    "tension_id": null
+   }
+  ]
+ },
+ "suspensions_with_tid": {
+  "1": []
+ },
+ "pools_all_engagements": [],
+ "views_errors": {
+  "1": []
+ },
+ "pools_meta_p16": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": []
+ },
+ "pools_meta_len": {
+  "0": 0,
+  "1": 12,
+  "both": 0,
+  "all": 0
+ }
+}

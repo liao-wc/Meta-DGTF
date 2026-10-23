@@ -1,0 +1,69 @@
+{
+ "tag": "V68",
+ "src": "元DGTF-V1.21.68.py",
+ "route": "0,1",
+ "rounds": "0:2,1:2",
+ "mode": "serial",
+ "orientation": "auto",
+ "llm_calls": 43,
+ "tri_state": [
+  4,
+  6
+ ],
+ "meta_closure_all": null,
+ "duel_suspensions_both": [],
+ "engagements_by_view": {
+  "0": [
+   {
+    "target": "三个节点选点标准",
+    "tension_id": null
+   }
+  ],
+  "1": [
+   {
+    "target": "在积水最严重的三个节点做局部强排后，观察多久能给出‘是否扩大’的判据？若一个汛期内拿不到判据，程序上有没有明文节点允许中止局部改造、转全重建？",
+    "tension_id": null
+   },
+   {
+    "target": "三个严重节点的选点标准（投诉量/深度/历史）由谁定？这个定法是否已经预先决定了局部改造的示范范围，从而在未测主因前就锁定了权衡尺子？",
+    "tension_id": null
+   },
+   {
+    "target": "截污与排涝调度顺序由哪个部门定？在管径偏小段上，这个顺序是否直接决定海绵布点位置？若是，调度顺序的变更权是否等价于方案选择权？",
+    "tension_id": null
+   }
+  ]
+ },
+ "suspensions_with_tid": {
+  "0": [
+   {
+    "target": "海绵削减上限的本地标定",
+    "tension_id": null,
+    "status": "active"
+   },
+   {
+    "target": "重建与改造代价的可通约口径",
+    "tension_id": null,
+    "status": "active"
+   }
+  ],
+  "1": []
+ },
+ "pools_all_engagements": [],
+ "views_errors": {
+  "0": [],
+  "1": []
+ },
+ "pools_meta_p16": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": []
+ },
+ "pools_meta_len": {
+  "0": 5,
+  "1": 5,
+  "both": 0,
+  "all": 0
+ }
+}

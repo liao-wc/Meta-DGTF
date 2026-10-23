@@ -1,0 +1,22 @@
+==========================================================================
+v1.23.28 复审探针 · 元DGTF-V1.23.28.py
+==========================================================================
+  ✓ M1 两个 A{n} 生成点都在（非空）  aspect_units=1 处 / aspect_targets=1 处
+  ✓ M2 ★ A{n} 在两套登记表里指向同一物  aspect_units[A2]='未触及项乙' vs aspect_targets[A2]='未触及项乙'
+  ✓ P1 shape_of 读 untouched 的 id 前缀
+  ✓ P2 ★ untouched 的写入点必须带 id（否则渲染恒无前缀）  写入点 2 处，带 id 的 2 处
+  ✓ N1 touch_rate 有定义
+  ✓ N2 ★ touch_rate 在引擎内有消费点（不是死字段）  非定义非注释真实引用 1 处 ['_tr = self.touch_rate']
+  ✓ N1 aspect_carry_rate 有定义
+  ✓ N2 ★ aspect_carry_rate 在引擎内有消费点（不是死字段）  非定义非注释真实引用 1 处 ['_acr = self.aspect_carry_rate']
+  ✓ O1 ★ upsert_belief 的调用点不在「新条目」守卫里（否则复现永远登记不上）  调用点 1 处；前置守卫=False
+  ✓ O2 ★ 迁移驱动（attack/resolved）在注入点与消费点都接了  注入 atk/res=True/True；消费 atk/res=True/True
+  ✓ Q1 ★ refresh_belief_entropy 有引擎内调用点  调用点 2 处
+  ✓ Q1 ★ belief_status_counts 有引擎内调用点  调用点 2 处
+  ✓ R1 冒烟测了 belief_transition 纯函数
+  ✓ R2 ★ 冒烟也测了真实登记入口（add_undecidable 产出迁移）  纯函数=True 真入口=True（直塞夹具=True 属正常）
+  ✓ S1 ★ E2 marginal floor > 0（否则 below_floor 分支恒不触发）  _GAIN_MARGINAL_FLOOR=0.02
+  ✓ T1 ★ 探针落盘 dict 带 gain_source（双写要落到同一份）
+
+
+REVIEW PASS 16 / FAIL 0

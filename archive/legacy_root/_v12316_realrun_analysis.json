@@ -1,0 +1,219 @@
+{
+ "md": [
+  "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\outputs\\_v12316_auto\\20261009_215012_老城区暴雨内涝频发排水系统重建还是局部.md"
+ ],
+ "packed": [
+  "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\outputs\\_v12316_auto\\20261009_215012_老城区暴雨内涝频发排水系统重建还是局部.packed.json"
+ ],
+ "头部关键行": [
+  "**调度**：修行(4圈) → 研究(4圈) → 对撞(5圈) → 元(7圈)",
+  "**停止**：自然 3 层 / 被截断（体力耗尽）1 层",
+  "**实际停圈**：修行 3 圈（上限 4） / 研究 4 圈（上限 4） / 对撞 3 圈（上限 5） / 元 7 圈（上限 7）",
+  "**并行模式**：B · 轮次并行",
+  "**自动调度**（十二项逐项来源；总开关开，auto 接管 11 项）",
+  "**外部锚点 · 文本**（锚点文件 `external_anchor`）：无 —— 本次未挂外部事实文件；结论可信度只取决于池内材料的一致性（设计边界，不是缺陷）",
+  "**外部锚点 · 联网**（`web_search`）：**开** —— 收 18 条（W1、W2、W3、W4、W5、W6…；4 个环节；tier 3×18）；失败 0 条"
+ ],
+ "llm_calls": 174,
+ "llm_tokens": 2080311,
+ "自然停层数": 4,
+ "各层停圈": [
+  3,
+  4,
+  3,
+  7
+ ],
+ "calls": 174,
+ "tokens": 2080311,
+ "round_log": [
+  {
+   "round": 1,
+   "role": "摊开",
+   "new_amps": 3,
+   "new_threads": 5,
+   "idle_amp": 0,
+   "idle_thread": 0,
+   "idle_stall": 0,
+   "why": "",
+   "entry": "0"
+  },
+  {
+   "round": 2,
+   "role": "转向",
+   "new_amps": 4,
+   "new_threads": 6,
+   "idle_amp": 0,
+   "idle_thread": 0,
+   "idle_stall": 0,
+   "why": "",
+   "entry": "0"
+  },
+  {
+   "round": 3,
+   "role": "复裁",
+   "new_amps": 3,
+   "new_threads": 6,
+   "idle_amp": 2,
+   "idle_thread": 0,
+   "idle_stall": 2,
+   "why": "",
+   "entry": "0"
+  },
+  {
+   "round": 1,
+   "role": "摊开",
+   "new_amps": 4,
+   "new_threads": 3,
+   "idle_amp": 0,
+   "idle_thread": 0,
+   "idle_stall": 0,
+   "why": "",
+   "entry": "1"
+  },
+  {
+   "round": 2,
+   "role": "深入",
+   "new_amps": 5,
+   "new_threads": 3,
+   "idle_amp": 0,
+   "idle_thread": 0,
+   "idle_stall": 0,
+   "why": "",
+   "entry": "1"
+  },
+  {
+   "round": 3,
+   "role": "复裁",
+   "new_amps": 3,
+   "new_threads": 2,
+   "idle_amp": 0,
+   "idle_thread": 0,
+   "idle_stall": 0,
+   "why": "",
+   "entry": "1"
+  },
+  {
+   "round": 4,
+   "role": "转向",
+   "new_amps": 4,
+   "new_threads": 3,
+   "idle_amp": 0,
+   "idle_thread": 0,
+   "idle_stall": 0,
+   "why": "",
+   "entry": "1"
+  },
+  {
+   "round": 1,
+   "role": "摊开",
+   "new_amps": 2,
+   "new_threads": 3,
+   "idle_amp": 0,
+   "idle_thread": 0,
+   "idle_stall": 0,
+   "why": "",
+   "entry": "both"
+  },
+  {
+   "round": 2,
+   "role": "转向",
+   "new_amps": 4,
+   "new_threads": 1,
+   "idle_amp": 0,
+   "idle_thread": 0,
+   "idle_stall": 0,
+   "why": "",
+   "entry": "both"
+  },
+  {
+   "round": 3,
+   "role": "复裁",
+   "new_amps": 4,
+   "new_threads": 3,
+   "idle_amp": 2,
+   "idle_thread": 0,
+   "idle_stall": 2,
+   "why": "",
+   "entry": "both"
+  },
+  {
+   "round": 1,
+   "role": "摊开",
+   "new_amps": 4,
+   "new_threads": 3,
+   "idle_amp": 0,
+   "idle_thread": 0,
+   "idle_stall": 1,
+   "why": "池在长、判断没动",
+   "entry": "all"
+  },
+  {
+   "round": 2,
+   "role": "转向",
+   "new_amps": 4,
+   "new_threads": 2,
+   "idle_amp": 0,
+   "idle_thread": 0,
+   "idle_stall": 0,
+   "why": "",
+   "entry": "all"
+  },
+  {
+   "round": 3,
+   "role": "收束",
+   "new_amps": 4,
+   "new_threads": 3,
+   "idle_amp": 0,
+   "idle_thread": 0,
+   "idle_stall": 0,
+   "why": "",
+   "entry": "all"
+  },
+  {
+   "round": 4,
+   "role": "转向",
+   "new_amps": 4,
+   "new_threads": 3,
+   "idle_amp": 0,
+   "idle_thread": 0,
+   "idle_stall": 0,
+   "why": "",
+   "entry": "all"
+  },
+  {
+   "round": 5,
+   "role": "深入",
+   "new_amps": 3,
+   "new_threads": 3,
+   "idle_amp": 0,
+   "idle_thread": 0,
+   "idle_stall": 0,
+   "why": "",
+   "entry": "all"
+  },
+  {
+   "round": 6,
+   "role": "深入",
+   "new_amps": 4,
+   "new_threads": 0,
+   "idle_amp": 0,
+   "idle_thread": 1,
+   "idle_stall": 0,
+   "why": "",
+   "entry": "all"
+  },
+  {
+   "round": 7,
+   "role": "转向",
+   "new_amps": 4,
+   "new_threads": 3,
+   "idle_amp": 0,
+   "idle_thread": 0,
+   "idle_stall": 0,
+   "why": "",
+   "entry": "all"
+  }
+ ],
+ "sat_判定次数": 5,
+ "螺旋停止次数": 7
+}

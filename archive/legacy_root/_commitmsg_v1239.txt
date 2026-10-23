@@ -1,0 +1,33 @@
+v1.23.9：取向分流守卫（无决策语境的题面不再套 decision 模板）
+
+改了什么（只在渲染层分流壳 render_landing）
+- 新增纯函数 _has_decision_context(question) + 决策语汇词表（只增不减）。
+- render_landing 加一条分流：auto 且题面无决策语境 → boundary 五块模板。
+  切掉的是 v1.23.7 真跑里那套编出来的执行流程（负责人：党史研究室编研岗 /
+  时限：定稿会前2个工作日 / 验收：逐条注出处并签字）。
+- 三条边界都由探针钉住：显式 --orientation decision 不被覆盖；空题面 / 缺
+  question 键保守走 boundary；词表只增不减。
+- 顺带修掉本版自己造成的不一致：产物与终端里「auto 未指定时按 decision」的
+  旧措辞改了 5 处（路由层的 auto 行为未变，其 docstring 保留）。
+
+判据数字
+- 主文件 16973 → 17013 行（+40，wc -l 口径）/ 纯 CRLF（CRCRLF 0）。
+- 探针 _probe_v1239_orientation.py before 到 after：7 例分流全中（含 3 例负对照）；
+  词表 3 例命中 + 4 例不命中。
+- 冒烟 exit 0 / 0 失败 / 204 通过（守卫 96 到 97）。
+- 变异体：control 判绿；M1 ctx 恒 True / M2 ctx 恒 False / M3 删 auto 短路 /
+  M4 短路放宽到 decision 四个全部判红。
+- 验收档 phase 6：PASS 9 / FAIL 1（唯一红 G.del 1010，与 v1.23.7、v1.23.8 同值，
+  是相对 baseline 的历史累计）；6.6 AST 登记对账绿（新增 97 / 未登记 0 / 过期登记 0）。
+- 验收档 phase all：PASS 310 / FAIL 5，红名单与 v1.23.8 完全相同（无新增红）。
+- 真跑一次（同题，对照 v1.23.7 旧产物）：落地层由 decision 模板变为 boundary，
+  行动清单段与负责人行整段消失；产物无空节；头部出现
+  「停止：自然 4 层 / 被截断（体力耗尽）0 层」；悬置渲染出现合并标注。
+- load_config 逐字差异 0 项；AST 登记 added 96 到 97。
+
+如实记账
+- 本版真跑的成本判断有误：--profile economy 只改 token 裁剪、不改圈数上限，
+  本次四层上限 12/12/12/14 圈，实跑 188 次 LLM / 141.8 万 tokens，
+  比 quality 那次（72 次 / 63.9 万）更贵。要控成本须同时限 --rounds。
+- 未做：R1 自省到动作回写 / R8 附录默认裁剪 / R9 成本档按难度路由 /
+  R10 事实题外部锚点开关（逐条记账见 v1239_报告.md 第五节）。

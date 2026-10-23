@@ -1,0 +1,158 @@
+{
+ "tag": "V71B",
+ "src": "元DGTF-V1.21.71.py",
+ "route": "0,1,both,all",
+ "rounds": "0:1,1:1,both:1,all:1",
+ "mode": "B",
+ "orientation": "auto",
+ "llm_calls": 52,
+ "tri_state": [
+  2,
+  6
+ ],
+ "meta_closure_all": {
+  "clean": true,
+  "unsettled": 0,
+  "total": 2,
+  "uncovered": [],
+  "closed": 0,
+  "duel_total": 2,
+  "by_id": 2,
+  "covered_ids": 3,
+  "by_id_inactive": 0,
+  "by_id_unknown": 1
+ },
+ "duel_suspensions_both": [
+  {
+   "id": "t_001",
+   "target": "0不可逆集中可归责 vs 1不可逆分散无主语",
+   "status": "active",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_002",
+   "target": "规模换防护 vs 分配换可接受",
+   "status": "active",
+   "quadrant": "③"
+  }
+ ],
+ "engagements_by_view": {
+  "0": [
+   {
+    "target": "结算口径与政治命名的不可通约",
+    "tension_id": null
+   }
+  ],
+  "1": [
+   {
+    "target": "在给定管网拓扑与泵站调度规则下，是否存在一个可实测的水位-流量组合，使得该组合下管网重建的边际效益（以淹没频率或深度减少量计）为零？",
+    "tension_id": null
+   },
+   {
+    "target": "海绵设施削减小雨径流后，管网实际入流偏离原设计流量的程度，是否足以使现有运行调度依据失效？",
+    "tension_id": null
+   },
+   {
+    "target": "分片改造使每片失败不足以触发问责，整体重建锁定总责任人——这一责任结构差异是否可被合同条款（如汇水单元总责）改变？",
+    "tension_id": null
+   },
+   {
+    "target": "换届周期短于管网寿命，长期维护承诺不能只靠本届签字——是否存在可执行的跨届约束机制（如维护基金、自动续约条款）？",
+    "tension_id": null
+   }
+  ],
+  "both": [],
+  "all": [
+   {
+    "target": "0不可逆集中可归责 vs 1不可逆分散无主语",
+    "tension_id": "t_001"
+   },
+   {
+    "target": "规模换防护 vs 分配换可接受",
+    "tension_id": "t_002"
+   }
+  ]
+ },
+ "suspensions_with_tid": {
+  "0": [
+   {
+    "target": "海绵削掉小雨径流后管网入流偏离原设计流量",
+    "tension_id": null,
+    "status": "active"
+   }
+  ],
+  "1": [],
+  "both": [],
+  "all": [
+   {
+    "target": "可接受内涝定义权归属：0 与 1 都把它放在自己外面，本层无编号可挂",
+    "tension_id": null,
+    "status": "active"
+   },
+   {
+    "target": "0不可逆集中可归责 vs 1不可逆分散无主语",
+    "tension_id": null,
+    "status": "resolved"
+   },
+   {
+    "target": "规模换防护 vs 分配换可接受",
+    "tension_id": null,
+    "status": "resolved"
+   }
+  ]
+ },
+ "pools_all_engagements": [
+  {
+   "target": "对撞悬置清单为空，无可定位张力编号可处置",
+   "tension_id": "（无）"
+  },
+  {
+   "target": "0不可逆集中可归责 vs 1不可逆分散无主语",
+   "tension_id": "t_001"
+  },
+  {
+   "target": "规模换防护 vs 分配换可接受",
+   "tension_id": "t_002"
+  },
+  {
+   "target": "结算口径与政治命名的不可通约",
+   "tension_id": null
+  },
+  {
+   "target": "在给定管网拓扑与泵站调度规则下，是否存在一个可实测的水位-流量组合，使得该组合下管网重建的边际效益（以淹没频率或深度减少量计）为零？",
+   "tension_id": null
+  },
+  {
+   "target": "海绵设施削减小雨径流后，管网实际入流偏离原设计流量的程度，是否足以使现有运行调度依据失效？",
+   "tension_id": null
+  },
+  {
+   "target": "分片改造使每片失败不足以触发问责，整体重建锁定总责任人——这一责任结构差异是否可被合同条款（如汇水单元总责）改变？",
+   "tension_id": null
+  },
+  {
+   "target": "换届周期短于管网寿命，长期维护承诺不能只靠本届签字——是否存在可执行的跨届约束机制（如维护基金、自动续约条款）？",
+   "tension_id": null
+  }
+ ],
+ "views_errors": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": [
+   "元层 tension_id 不合法：'（无）' —— 池里没有这个编号（可能是自造/抄示例/串了 s_ 命名空间；当前可引用的只有 []）"
+  ]
+ },
+ "pools_meta_p16": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": []
+ },
+ "pools_meta_len": {
+  "0": 2,
+  "1": 2,
+  "both": 2,
+  "all": 4
+ }
+}

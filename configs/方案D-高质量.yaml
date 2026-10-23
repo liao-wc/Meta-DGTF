@@ -1,0 +1,114 @@
+# ============================================================
+# 方案 D · 高质量（不改预算，把钱从「省调用」挪到「喂得足」）
+#   配套文档：元DGTF-参数全景与影响面分析-v1.21.61.md §10
+# ============================================================
+# 定位：预算与方案 B 接近，但把 cost_profile 提到 quality ——
+#       quality 不做任何裁剪（不截断候选、shape 原值、every_n 原样）。
+#       省掉的那点 token 换回来的是「每条 Judge/self_check 看到的信息更完整」。
+#
+# 这一套是针对本分析的核心发现写的（§7.1）：
+#   ★ temperature / max_tokens 目前写死在 38 个调用点，不可配。
+#     所以在「不动代码」的前提下，唯一能从外面影响输出质量的旋钮，
+#     就是**喂给模型多少信息**（shape / 候选截断 / 重估范围）和**去重放宽与否**。
+#     本方案就是把这几个全部放到最松。
+#
+# 预计成本（估算）：总圈数 5+4+6+(4+1)=20；调用 ≈192；token ≈0.92M
+#
+# ⚠️ 唯一能把 shape_* 真正生效的办法就是 cost_profile: quality。
+#    balanced/economy 会在 MetaDGTF.__init__ 就地改写（源码:8374-8380），
+#    写在配置文件里也会被覆盖（§8 陷阱 2）。本方案正是靠 quality 解除这层封锁。
+# ============================================================
+
+cost_profile: quality          # ★ 关键：不裁剪 —— 这是 shape_* 能生效的唯一前提
+
+api:
+  timeout: 300
+  max_retries: 3
+  retry_backoff: 1.8
+
+output:
+  verbose: true
+  show_dual_judge: true        # 人工复核裁决质量
+  show_ing: true               # ★ 打开摄取段，便于人看内容质量
+  show_manifest: false
+  show_probe_diag: true
+  self_check: true
+
+actions:
+  parallel_mode: serial
+  input_sanity: true
+  re_anchor: true
+  expand_yin: true
+  expand_yang: true
+  dual_judge: true
+  ing: true
+  he: true
+  phase_probe: true
+  manifest: true
+  self_check: true
+  re_evaluate_pool: true
+  settle_research: true
+  assess_decidability: true
+  decompose_question: true
+  decidability_source: pool
+  decompose_source: pool
+
+memory:
+  channels: [content, context, self]
+  self_layers: 5               # ★ 比默认多留一层自我记忆（并行时每层各自的机制不受影响）
+  self_layers_per_entry: 2
+  carry_feedback: true
+  # ★ 这两行在 quality 下才真的生效 —— 喂得更足：
+  shape_items: 9               # 默认 6：池摘要每类多喂 3 条
+  shape_chars: 1200            # 默认 900：每条摘要多留 300 字
+
+probe:
+  min_gain: 0.25               # 多选探针（质量视角：宁可多问一句）
+  select_n: 4
+
+spiral:
+  hard_max: 8
+  soft_max: 3
+  all_extra_rounds: 1
+
+  per_entry:
+    "0":    {hard_max: 5, soft_max: 3}
+    "1":    {hard_max: 4, soft_max: 3}
+    "both": {hard_max: 6, soft_max: 5}
+    "all":  {hard_max: 4, soft_max: 3}          # 实际封顶 5
+
+  # ★ quality 下 _lazy_every_n 原样返回（源码:8583），写几就是几 —— 没有 +1 的隐性偏移
+  structure_saturation_enabled: true
+  structure_saturation_every_n: 3
+  re_eval_every_n: 1
+
+  re_eval_recent_k: 12         # 重估多看几条
+
+  # ---- 质量层阈值：往「宁可留、不误杀」方向挪 ----
+  # 默认 0.65/0.70（候选）→ 放宽，减少把不同候选判成重复的风险
+  dedup_candidate_overlap: 0.75
+  dedup_candidate_similarity: 0.80
+  # 默认 0.60/0.62（&/线头）→ 同样放宽一档
+  dedup_amp_overlap: 0.70
+  dedup_amp_similarity: 0.72
+  # 极性 both 说明裁决没做实。别把改判线放松太多，
+  # 否则两边沾的答案会占位
+  both_quota: {enabled: true, max_ratio: 0.7, min_items: 2}
+  both_tighten_ratio: 0.35     # 默认 0.3：略放松，给真正的 both 留一点空间
+  # 四象限对齐：略放松，提高配对成功率（短侧包含度是关键那条）
+  alignment_similarity: 0.65
+  alignment_containment: 0.55
+  # 质量线索阈值：不放宽 —— 这些是给自己看的报警线，放宽等于把警报调静音（§5.3）
+  qc_rephrase_ratio: 0.5
+  qc_both_ratio: 0.6
+  all_drift_threshold: 0.5
+  all_selfref_threshold: 0.4
+
+  stable_layers: 3
+  batch_similarity: 0.6
+  unsaid_escape_limit: 3
+
+  stall_streak_limit: 2
+  min_distance_improvement: 0.03
+
+max_calls: 230

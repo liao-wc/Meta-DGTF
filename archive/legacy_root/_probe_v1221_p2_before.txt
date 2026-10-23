@@ -1,0 +1,28 @@
+{
+  "A1_旧词表 _TRIAGE_KEYS 仍在": true,
+  "A1b_旧词表值": [
+    "信息不足",
+    "需外部动作",
+    "缺数据",
+    "无外部"
+  ],
+  "A2_结构标签前缀常量": false,
+  "A3_语义关键词常量": false,
+  "A4__is_triage_candidate": false,
+  "A5_never 常量": false,
+  "A6__is_never_downgrade": false,
+  "C1_crosscheck 仍用旧词表": true,
+  "C2_crosscheck 调 _is_triage_candidate": false,
+  "C3_crosscheck 调 _is_never_downgrade": false,
+  "C4_产物侧渲染点仍在": true,
+  "A7_动词白名单条数（旁证没动别的）": 19,
+  "B1_结构标签命中": "AttributeError: module 'dgtf_p2_probe' has no attribute '_is_triage_candidate'",
+  "B2_语义关键词命中": "AttributeError: module 'dgtf_p2_probe' has no attribute '_is_triage_candidate'",
+  "B2b_旧四类之一": "AttributeError: module 'dgtf_p2_probe' has no attribute '_is_triage_candidate'",
+  "B3_负对照_无标签无语义词": "AttributeError: module 'dgtf_p2_probe' has no attribute '_is_triage_candidate'",
+  "B3b_负对照_空串": "AttributeError: module 'dgtf_p2_probe' has no attribute '_is_triage_candidate'",
+  "B4_自指判定": "AttributeError: module 'dgtf_p2_probe' has no attribute '_is_never_downgrade'",
+  "B4b_本体论判定": "AttributeError: module 'dgtf_p2_probe' has no attribute '_is_never_downgrade'",
+  "B5_负对照_结构标签不是自指": "AttributeError: module 'dgtf_p2_probe' has no attribute '_is_never_downgrade'",
+  "D_三题产物 triage 读数": "（尚未真跑）"
+}

@@ -1,0 +1,83 @@
+{
+ "tag": "V68R2",
+ "src": "元DGTF-V1.21.68.py",
+ "route": "0,1",
+ "rounds": "0:2,1:2",
+ "mode": "serial",
+ "orientation": "auto",
+ "llm_calls": 44,
+ "tri_state": [
+  3,
+  5
+ ],
+ "meta_closure_all": null,
+ "duel_suspensions_both": [],
+ "engagements_by_view": {
+  "0": [
+   {
+    "target": "成因分类的边界条件",
+    "tension_id": null
+   },
+   {
+    "target": "合流制衔接的匹配问题",
+    "tension_id": null
+   }
+  ],
+  "1": [
+   {
+    "target": "最近三次内涝的积水深度、退水时间、点位成因数据，在现有观测记录中是否足以支撑成因分类？若数据缺失，分类本身是否先塌？",
+    "tension_id": null
+   },
+   {
+    "target": "老城区合流制管网中，局部改造加海绵措施在源头削减径流后，主干管溢流频次能否降到可接受水平？若旱季流量与截流倍数匹配不上，这个可接受水平是否存在？",
+    "tension_id": null
+   },
+   {
+    "target": "同一积水点在不同重现期下归入不同成因类别时，重建边界按最不利那场雨画还是按最常发生那场画？这个分类标准由谁定，分界画在哪？",
+    "tension_id": null
+   }
+  ]
+ },
+ "suspensions_with_tid": {
+  "0": [
+   {
+    "target": "产权分散导致的协调成本",
+    "tension_id": null,
+    "status": "active"
+   },
+   {
+    "target": "商户现金流与围挡时长反馈",
+    "tension_id": null,
+    "status": "active"
+   },
+   {
+    "target": "设计暴雨参数修订导致的工程内部参数断层",
+    "tension_id": null,
+    "status": "active"
+   },
+   {
+    "target": "海绵维护责任转移后的效果衰减速度",
+    "tension_id": null,
+    "status": "active"
+   }
+  ],
+  "1": []
+ },
+ "pools_all_engagements": [],
+ "views_errors": {
+  "0": [],
+  "1": []
+ },
+ "pools_meta_p16": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": []
+ },
+ "pools_meta_len": {
+  "0": 4,
+  "1": 4,
+  "both": 0,
+  "all": 0
+ }
+}

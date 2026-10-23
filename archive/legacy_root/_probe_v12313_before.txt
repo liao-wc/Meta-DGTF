@@ -1,0 +1,3 @@
+HAS_取向唯一实现                     = False
+HAS_唯一装配器                      = False
+HAS_调度器                        = False

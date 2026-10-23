@@ -1,0 +1,58 @@
+{
+ "tag": "F1_v64",
+ "src": "元DGTF-V1.21.64.py",
+ "route": "0,1",
+ "rounds": "0:4,1:4",
+ "mode": "serial",
+ "orientation": "decision",
+ "llm_calls": 53,
+ "tri_state": [
+  3,
+  6
+ ],
+ "meta_closure_all": null,
+ "duel_suspensions_both": [],
+ "engagements_by_view": {
+  "0": [
+   {
+    "target": "考核指标与远端方案的科目错配",
+    "tension_id": null
+   }
+  ],
+  "1": [
+   {
+    "target": "远程监测的停止指令由谁触发、谁有权下？从触发到停止之间的人力响应是否进入任何排班表或成本科目？",
+    "tension_id": null
+   },
+   {
+    "target": "未到达的上门随访（取消、拒访、无人）在统计中是否被计为一次随访？其出行准备与路途时间落在哪张成本表？",
+    "tension_id": null
+   },
+   {
+    "target": "病人或家属采集数据出错时，核对与修正的工时是否进入任何人的排班表？如果没有，这部分工作由谁在什么时间完成？",
+    "tension_id": null
+   }
+  ]
+ },
+ "suspensions_with_tid": {
+  "0": [],
+  "1": []
+ },
+ "pools_all_engagements": [],
+ "views_errors": {
+  "0": [],
+  "1": []
+ },
+ "pools_meta_p16": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": []
+ },
+ "pools_meta_len": {
+  "0": 4,
+  "1": 6,
+  "both": 0,
+  "all": 0
+ }
+}

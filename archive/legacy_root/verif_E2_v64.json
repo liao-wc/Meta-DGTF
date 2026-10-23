@@ -1,0 +1,257 @@
+{
+ "tag": "E2_v64",
+ "src": "元DGTF-V1.21.64.py",
+ "route": "0,1,both,all",
+ "rounds": "0:3,1:4,both:5,all:5",
+ "mode": "serial",
+ "orientation": "boundary",
+ "llm_calls": 149,
+ "tri_state": [
+  2,
+  6
+ ],
+ "meta_closure_all": {
+  "clean": true,
+  "unsettled": 0,
+  "total": 6,
+  "uncovered": [],
+  "closed": 5,
+  "duel_total": 11,
+  "by_id": 4,
+  "covered_ids": 4,
+  "by_id_inactive": 0,
+  "by_id_unknown": 0
+ },
+ "duel_suspensions_both": [
+  {
+   "id": "t_001",
+   "target": "读取动作留痕与否的裁决权归属",
+   "status": "resolved",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_002",
+   "target": "签字位置能否替代声明位置",
+   "status": "revoked",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_003",
+   "target": "拼接权枚举表成为新资产后归谁",
+   "status": "resolved",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_004",
+   "target": "时间差归读取方、裁定方还是接缝",
+   "status": "revoked",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_005",
+   "target": "第三类动作留痕与否都读不出自身类别",
+   "status": "active",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_006",
+   "target": "换人记录由谁写",
+   "status": "active",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_007",
+   "target": "写序权与默认权是否必须同处",
+   "status": "revoked",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_008",
+   "target": "默认被谁安装，两端都不给安装位",
+   "status": "active",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_009",
+   "target": "免留痕授权由留痕还是不留痕动作承载",
+   "status": "active",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_010",
+   "target": "接缝数量随表增长是否收敛",
+   "status": "active",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_011",
+   "target": "转换失败链的终止条件",
+   "status": "active",
+   "quadrant": "③"
+  }
+ ],
+ "engagements_by_view": {
+  "0": [
+   {
+    "target": "不留痕裁决权的归属",
+    "tension_id": null
+   },
+   {
+    "target": "参考行为留痕归属",
+    "tension_id": null
+   }
+  ],
+  "1": [
+   {
+    "target": "若把最终解释权绑到一次具体共享请求的发起人身上，他先声明用途再裁自己，自指链是否断在请求位置？",
+    "tension_id": null
+   },
+   {
+    "target": "声明与审互锁链若强制在第三层插入'不声明只签字'的位置，链条是否断在签字而非声明？签字位置能否替代声明位置？",
+    "tension_id": null
+   },
+   {
+    "target": "读取动作的留痕与否决定边界，但该决定无预设停止点。若强制每次读取都留痕，隐私是否只剩'尚未被记录'状态？",
+    "tension_id": null
+   }
+  ],
+  "both": [],
+  "all": [
+   {
+    "target": "第三类动作留痕与否都读不出自身类别",
+    "tension_id": "t_005"
+   },
+   {
+    "target": "免留痕授权由留痕还是不留痕动作承载",
+    "tension_id": "t_009"
+   },
+   {
+    "target": "默认被谁安装，两端都不给安装位",
+    "tension_id": "t_008"
+   }
+  ]
+ },
+ "suspensions_with_tid": {
+  "0": [
+   {
+    "target": "脱敏判定权授予链",
+    "tension_id": null,
+    "status": "active"
+   }
+  ],
+  "1": [],
+  "both": [],
+  "all": [
+   {
+    "target": "第三类动作留痕与否都读不出自身类别",
+    "tension_id": null,
+    "status": "resolved"
+   },
+   {
+    "target": "接缝数量随表增长是否收敛",
+    "tension_id": null,
+    "status": "stable"
+   },
+   {
+    "target": "转换失败链的终止条件",
+    "tension_id": null,
+    "status": "stable"
+   },
+   {
+    "target": "默认被谁安装，两端都不给安装位",
+    "tension_id": null,
+    "status": "resolved"
+   },
+   {
+    "target": "第三类动作留痕与否都读不出自身类别",
+    "tension_id": null,
+    "status": "resolved"
+   },
+   {
+    "target": "免留痕授权由留痕还是不留痕动作承载",
+    "tension_id": null,
+    "status": "resolved"
+   }
+  ]
+ },
+ "pools_all_engagements": [
+  {
+   "target": "免留痕授权由留痕动作还是不留痕动作承载",
+   "tension_id": "t_009"
+  },
+  {
+   "target": "默认被谁安装，两端都不给安装位",
+   "tension_id": "t_008"
+  },
+  {
+   "target": "换人记录由谁写",
+   "tension_id": "t_006"
+  },
+  {
+   "target": "第三类动作留痕与否都读不出自身类别",
+   "tension_id": "t_005"
+  },
+  {
+   "target": "最终解释权悬空",
+   "tension_id": null
+  },
+  {
+   "target": "拒批记录的可共享性",
+   "tension_id": null
+  },
+  {
+   "target": "泄露追溯的段间缝",
+   "tension_id": null
+  },
+  {
+   "target": "不留痕裁决权的归属",
+   "tension_id": null
+  },
+  {
+   "target": "参考行为留痕归属",
+   "tension_id": null
+  },
+  {
+   "target": "读取动作的留痕与否决定边界，但该决定无预设停止点。若强制每次读取都留痕，隐私是否只剩'尚未被记录'状态？",
+   "tension_id": null
+  },
+  {
+   "target": "拒批记录被下一部门参考时，参考行为本身要不要留痕？若参考者必须追加'我参考了'，这行算共享数据还是新拒批？",
+   "tension_id": null
+  },
+  {
+   "target": "若把最终解释权绑到一次具体共享请求的发起人身上，他先声明用途再裁自己，自指链是否断在请求位置？",
+   "tension_id": null
+  },
+  {
+   "target": "负担方拒绝成为共享单元一端时，走拒批流程还是单元选择流程？单元选择权归属是否决定负担方能否单方退出？",
+   "tension_id": null
+  },
+  {
+   "target": "声明与审互锁链若强制在第三层插入'不声明只签字'的位置，链条是否断在签字而非声明？签字位置能否替代声明位置？",
+   "tension_id": null
+  },
+  {
+   "target": "授权链在报表生成时要求携带源数据授权凭证，链是否就不算断？若消费方在收到凭证前先回执'待收'状态，这段空白是否就有了主体？",
+   "tension_id": null
+  }
+ ],
+ "views_errors": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": []
+ },
+ "pools_meta_p16": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": []
+ },
+ "pools_meta_len": {
+  "0": 8,
+  "1": 8,
+  "both": 14,
+  "all": 11
+ }
+}

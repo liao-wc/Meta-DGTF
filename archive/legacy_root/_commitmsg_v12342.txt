@@ -1,0 +1,23 @@
+元 DGTF v1.23.42 定稿存档
+
+主题：P-1 上下文裁剪（backlog 第 1 项，成本最大杠杆）。
+
+问题（真跑实测）：_fullrun_V1236FULL 143 calls / 1.15M tok / 57min，最贵 20% 调用
+占 46.5% token 且集中后段圈。根因：View.shape_of 无窗口渲染整个 view，而
+_expand_from_views 每圈把它当 views_text 重灌 ⇒ 后段圈单次 prompt 随圈数上涨。
+
+修法（SOTA observation masking）：shape_of(v, limit=0)；limit>0 每类只列最近 N 条
++ 表头标总数；_expand_from_views 读 spiral.shape_limit（默认 0）传入。
+★ 默认 0 = 不限 ⇒ 逐字零行为差；开启才裁剪。
+
+验收（全程 mock，零 API）：
+- 零行为差：shape_of(v) 与 v1.23.41 逐字相同（2308 字符）
+- 纯函数压缩：limit=8 2308 → 1016（↓56%）
+- 接线可达：_expand_from_views user prompt 5106 → 2534（↓50%）
+- 冒烟 239 ✓ / 0 ✗；verify --phase all PASS 319 / FAIL 0；AUDIT PASS 69 / FAIL 0
+- 变异体 91 判红 / 91（新增 M93；三片并行 --only 1-31/32-61/62-91，并集覆盖 1..91 无漏无重）
+
+主文件 元DGTF-V1.23.42.py（25908 行 / 纯 CRLF / AST OK / 零新 AST 符号 /
+新配置键 1 个 spiral.shape_limit 默认 0）。配套：v12342_报告.md、CHANGELOG.md v1.23.42 段、
+dgtf_config.yaml（头 + 升级段 + 新键）、dgtf_app/params.py（新键标签）、
+smoke_test.py（+check_v12342_ctx_shape）、_mut_v12332.py（+M93）、_v122_ast_registry.json（登记 _hdr）。

@@ -1,0 +1,12 @@
+文件: 元DGTF-V1.21.75.py
+换行: CRLF=19354 LF=19354 纯CRLF=True
+行数: 19355
+
+P1  _anchor_round 直调 总/归拢在_before_round: 1/0   (期望 1/0 -> 1/1)
+P2  _before_round def / 调用点            : 0/0     (期望 0/0 -> 1/2)
+P3  _anchor_calls 初始化 / 自增           : 0/0     (期望 0/0 -> 1/1)
+P4  _budget_exhausted 引用 _anchor_calls  : True     (期望 True -> False)
+P5  _run_one_round_B 含 _before_round     : False     (期望 False -> True)
+P6  Pool.to_dict 挂 anchor_as_evidence    : False     (期望 False -> True)
+
+附  _print_polarity_snapshot 直接调用点   : 2     (改后期望 1，在 _before_round 里)

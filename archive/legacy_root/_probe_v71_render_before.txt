@@ -1,0 +1,39 @@
+Building prefix dict from the default dictionary ...
+Loading model from cache C:\Users\18432\AppData\Local\Temp\jieba.cache
+Loading model cost 0.919 seconds.
+Prefix dict has been built successfully.
+
+==============================================================
+## 模式 serial · 四层各 1 圈
+==============================================================
+   层 0     roles_run=0 rounds_cap=0 round_log=0 | stop=''
+   层 1     roles_run=0 rounds_cap=0 round_log=0 | stop=''
+   层 both  roles_run=0 rounds_cap=0 round_log=0 | stop=''
+   层 all   roles_run=0 rounds_cap=0 round_log=0 | stop='连续 2 轮无新 &（沉淀完了） + 连'
+   日志「收尾留痕」段：0 段 → []
+   日志「⏹」行：1 条
+      · 螺旋停止（第 2 圈）：连续 2 轮无新 &（沉淀完了） + 连续 2 轮无线头新增（方向走完了），螺旋停止
+   产物：**螺旋停止** 1 处 / **实际走了** 4 处 / round_log 表 0 张
+   产物头部调度 = 修行(1圈) → 研究(1圈) → 对撞(1圈) → 元(1圈)
+
+==============================================================
+## 模式 B · 四层各 1 圈
+==============================================================
+   层 0     roles_run=0 rounds_cap=0 round_log=0 | stop=''
+   层 1     roles_run=0 rounds_cap=0 round_log=0 | stop=''
+   层 both  roles_run=0 rounds_cap=0 round_log=0 | stop=''
+   层 all   roles_run=2 rounds_cap=2 round_log=2 | stop='连续 2 轮无新 &（沉淀完了） + 连'
+   日志「收尾留痕」段：1 段 → [('all', '2', '摊开 → 转向')]
+   日志「⏹」行：1 条
+      · B 第 2 圈停止：连续 2 轮无新 &（沉淀完了） + 连续 2 轮无线头新增（方向走完了），螺旋停止
+   产物：**螺旋停止** 1 处 / **实际走了** 4 处 / round_log 表 1 张
+   产物头部调度 = 修行(1圈) → 研究(1圈) → 对撞(1圈) → 元(2圈)
+
+==============================================================
+## 汇总
+==============================================================
+   serial 收尾留痕 0 段 / md 螺旋停止 1 处 / 实际走了 4 处 / round_log 表 0 张
+   B      收尾留痕 1 段 / md 螺旋停止 1 处 / 实际走了 4 处 / round_log 表 1 张
+
+   预期（v1.21.71）：两种模式都应「收尾留痕 4 段 + md 螺旋停止 4 处+ 实际走了 4 处 + round_log 表 4 张」；
+   v1.21.70：单圈层被 `> 1` 门挡掉 → 后三项全少（serial 侧为 0）。

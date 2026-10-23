@@ -1,0 +1,1881 @@
+# ============================================================
+# 元 DGTF · v1.23.15 配置文件
+# ============================================================
+#
+#
+# ============================================================
+# 统一自适应调度器（v1.23.13）—— 十二项逐项可单独接管
+#   优先级：命令行显式 ＞ 本配置（**改过**才认）＞ auto ＞ 出厂默认
+# ------------------------------------------------------------------
+# enabled：总开关。true（出厂）= auto 按题型/成本/历史接管十二项；
+#   false ⇒ 全项退回「配置 / 默认」，行为回到 v1.23.12（**可回退**）。
+# allow_route_trim：false ⇒ auto 永不砍层（层集合恒为 0,1,both,all）。
+# history_limit：调度器扫多少份 `outputs/*.packed.json` 做历史读数
+#   （成本中位 / 被截断率 / 各层实际停圈 / 联网命中与失败 / 取向错配）。
+# ★ 想固定某一项：命令行显式传（`--route/--profile/--parallel/--rounds/
+#   --orientation/--landing/--decidability/--web/--thinking/--effort`），
+#   或改这里对应的键（如 `spiral.round_stall_limit` / `web_search.quota`）。
+#   产物头部「自动调度」表会逐项写出**取值 / 来源 / 理由**。
+# ============================================================
+auto:
+  enabled: true
+  allow_route_trim: true
+  # 语料实测：outputs/ 里有 368 份产物 md + 16 条跑批记录；默认只扫 20 份
+  # 等于把历史样本丢了 95%。200 够覆盖现有语料（实测扫描耗时 ~0.16s）。
+  history_limit: 200
+  # 历史取样源开关：
+  #   history_md    —— 扫产物 md 的头部行（只读前 8KB，覆盖最广）
+  #   history_batch —— 扫仓库根的 *_runs.json 跑批记录（富字段、样本少）
+  # 关掉任一项都会显著减少样本（判据里有负对照守着这一点）。
+  history_md: true
+  history_batch: true
+  # 历史读数的**时间衰减半衰期**（天）。0 = 不衰减（等权）。
+  # 语料跨十几天，旧样本是旧配置下的读数；不加权会把新读数拉向旧行为。
+  history_halflife_days: 14
+
+# 【v1.23.11 → v1.23.12】外部锚点拆成两条通道分别写明（文本 / 联网）
+#   ★ **本版不改任何配置键、不改任何默认值** ⇒ 升级后行为**逐字不变**。
+#   问题：旧产物只写一行「**外部锚点**：无」—— 而真跑里 `web_search`
+#   **联网确实收了 6 条**（W1–W6，两个环节，零失败）。读者看到「无」
+#   会以为本次没做任何外部校验。
+#   做法：新增纯函数 `_web_lane_stats` / `_anchor_lane_lines`，在产物**四处**
+#   （头部 / 显化说明 / decision 落地 / boundary 落地）分别写明：
+#     · **外部锚点 · 文本**（锚点文件 `external_anchor`）：接了 N 条 / 对照结果
+#     · **外部锚点 · 联网**（`web_search`）：**开/关** + 收 N 条（W#）/ 环节数 /
+#       tier 分布 / 失败条数
+#   两条通道**互相独立**，一条没有时也各自写明（不省略、不合并）。
+#   另：旧的「本次未接入外部校验」留痕改为**仅在联网关时**出现
+#   （原来只看锚点文件有没有）—— 联网开着却写「未接入」是口径错位。
+#   ★ 对你的影响：**无**。本文件无需改动（没有新键、没有改过的默认值）。
+#   ★ 判据：`check_v12312_anchor_lanes`（四处渲染点 + 开/关/未记录三态 +
+#      失败与零条读数 + 负对照）+ 5 个变异体。
+#
+# 【v1.23.14 → v1.23.15】把「未做 / 边界」四条做完
+#   ★ 新增 1 个键（`auto.history_halflife_days`，出厂 14 天）。
+#   ① **分层抽样**：`auto.history_limit` 的语义从「总样本数」改成
+#      **「每题型上限」** —— 按题型分两桶各自取最多 N 条。原语义下窗口一缩，
+#      事实型会被整体挤掉，「按题型比同类」退化成「比全语料」。
+#      扫描上限相应放宽到 4×N（两桶都要收满）。
+#   ② **时间衰减**：历史读数改**加权分位**，权重 = 0.5^(age/半衰期)。
+#      语料跨十几天，旧样本是旧配置下的读数；不加权会把新读数拉向旧行为。
+#   ③ **抽取器补齐**：产物里 254/368 份都写了「**三态判决一致率**」这一行，
+#      而上一版抽取器漏了它 ⇒ 该读数只有 n=1，规则形同没校准。
+#      本版补抽（实测 n=255、p10=0.167、中位 0.333）；联网行也一并抽取。
+#      ★ 抽不到的字段**不写键**（`web_fail=0` 与「没有这一行」是两件事）。
+#   ④ **三条规则按实测定**：
+#      · 三态一致率的异常线：0.5 → **0.167（实测 p10）**，并要求 ≥30 份样本。
+#        原 0.5 落在实测**中位数之上**（中位 0.333）⇒ 会拦掉 54% 的情况，
+#        这条「质量优先保护」实际等于把降档功能废掉。
+#      · 截断率要 ≥24 **层**样本才表态（实测语料只有 6 层）。
+#      · 圈数三级回退保留（实际停圈需 ≥3 份样本）。
+#   ★ 对你的影响：**无需改配置**。首次调度仍约 0.2~0.6 秒扫历史。
+#   ★ 判据：`check_v12315_history_calibration`（分层夹具 / 衰减数值 / 抽取补齐 /
+#      三条规则两向）+ 7 个变异体。真跑对照实验见 `v12315_报告.md`。
+#
+# 【v1.23.13 → v1.23.14】用**真实历史语料**校准自适应调度
+#   ★ 新增 2 个键（`auto.history_md` / `auto.history_batch`）；
+#     `auto.history_limit` 默认 20 → **200**。
+#   ① 修一个**静默 bug**：`_auto_history` 把「实际停圈」的字段名读成了
+#      `rounds`，真实字段是 `rounds_run` ⇒ `dict.get` 返回 None，
+#      「实际停圈」**永远取不到**。产物里也没有任何渲染点写它。
+#   ② 历史取样从「只扫 packed」（全仓只有 1 份）扩到**三类来源**：
+#      packed 全量 / 产物 md 头部 / 跑批 JSON ⇒ 实测样本 1 → **217 份**。
+#   ③ 读数扩到分位（token/calls 的 p50/p75）+ 按题型分桶
+#      （事实型 79 / 决策型 132），策略变成「同类题比同类题」。
+#   ④ 阈值从「拍脑袋」换成**实测**：
+#      · 成本档降档改用**相对判据**（同类成本中位 ≥ 全语料 p75 才降），
+#        不再写死「40 万 token」；实测 tokens_p75 = 711,161、calls_p75 = 135。
+#      · 圈数改三级回退（实际停圈 → 种子上限 → 按层实测默认），
+#        并按样本数决定信不信（实际停圈需 ≥3 份样本，防单条噪声）。
+#        实测种子上限 p50：修行 3 / 研究 3 / 对撞 5 / 元 6。
+#      · 被截断率实测 0.33（但只有 6 层样本）、三态一致率实测 n=1、
+#        联网失败 0 条 / 空结果 0 次 ⇒ 这三条规则**当前无数据支撑**，
+#        保留但如实标注，不作为「已校准」。
+#   ⑤ 产物新增「**实际停圈**」一行（`rounds_run` + `rounds_cap`）——
+#      此前这条信号既没被读也没被记，本版把它落进产物，语料才积累得起来。
+#   ★ 对你的影响：**无需改配置**。但若你的 `outputs/` 很大，首次调度会多花
+#     ~0.2 秒扫历史（只读每个 md 的前 8KB）。想关掉扩源：
+#     `auto.history_md: false` / `auto.history_batch: false`。
+#   ★ 判据：`check_v12314_history_corpus`（三源/字段名/分桶/门槛/相对判据/
+#      落产物，含 6 组负对照）+ 7 个变异体。
+#
+# 【v1.23.12 → v1.23.13】十二项收进一个统一自适应调度器
+#   ★ **本版新增 3 个键**（`auto.*`，出厂见上方；另有一个可回退总开关）。
+#   之前「自动」散在 8 处，读者无从知道「这一次是谁定了 route / 圈数 / 联网」。
+#   现在十二项 —— 层集合 / 成本档 / 并行模式 / 圈数 / 取向路由 / 联网 /
+#   思考 / 强度 / 停止阈值 / 联网降级 / 可判定性判定 / 落地层模板 ——
+#   每项按 `显式 ＞ 配置 ＞ auto ＞ 默认` 独立取值，逐项留痕（产物头部有表）。
+#   auto 的输入是**题型特征 + 成本质量意图 + 历史读数**（零 LLM）。
+#   ★ 行为变化（如实说明）：不给命令行时，十二项默认由 auto 接管。
+#     例：事实型短题会走 economy / serial / 联网开 / 思考关 / 落地层 boundary。
+#     要回到 v1.23.12 的「按配置来」：`auto.enabled: false`。
+#   ★ 技术债已清：`auto_plan()` 两条路径经**唯一装配器** `_assemble_plan`
+#     输出同一 schema（此前单调用路径缺 route / cost_profile / max_calls）；
+#     取向归一化合并成唯一实现 `_normalize_orientation`（原三份）。
+#   ★ 判据：`check_v12313_auto_dispatch`（十二项 + 逐项独立 + 总开关 +
+#     历史自适应 5 正 3 负 + 唯一实现与两路同 schema + 产物表）+ 7 个变异体。
+#
+# 【v1.23.10 → v1.23.11】把「如实记账」里剩下的两条做完
+#   ★ **本版不改任何配置键、不改任何默认值** ⇒ 升级后行为**逐字不变**。
+#   ① R1 后半 · 自省回写：新增 `_append_self_check_writeback`，把自省的
+#      **高置信诊断**提升为落地层里的一条**可执行动作**（原先它们只落在逐层
+#      明细里，读落地层的人看不到 —— 诊断与动作之间是断的）。触发信号：
+#      `self_check.unsaid_is_escape=True`（自省判「用『未生』收尾=逃避」）、
+#      `quality_flags` 里的 `xxx_overused(n)` / `action_incomplete` /
+#      `not_do_missing`。**没有高置信信号时不渲染**（不制造动作）。
+#   ② R10 后半 · 事实题自动联网：新增 `_web_auto_for_facts`，`--web auto` 时
+#      事实型询问（无决策语境）自动视同 `on`。要关掉：`--web off`。
+#   ★ 对你的影响：指令行不变；但 `--web auto`（默认）跑**事实型**询问时会
+#     自动接入外部校验（联网）。想保持旧行为请显式 `--web off`。
+#   ★ 判据：`check_v12311_writeback_and_web` + 2 个变异体。
+
+# 【v1.23.9 → v1.23.10】剩余四项一次做完（全在渲染 / 落盘层）
+#   ★ **本版不改任何配置键、不改任何默认值** ⇒ 升级后行为**逐字不变**。
+#   ① R1 形态声明：落地层标题后插一行，写明本次用哪套模板（boundary/decision）
+#      与依据 —— 模板里的分节是**渲染约定**，不等于提问者的要求。
+#   ② R8 附录外置：全量字段 JSON 默认搬到旁挂 `<产物名>.packed.json`，
+#      正文只留统计行 + 文件名 + 读法。**红线不变**（不得因为没写渲染点就丢
+#      信息），变的是位置；外置失败自动退回内联并留痕。
+#      回旧行为：`--appendix inline`。实测收益：真跑产物 9987 行 → 1431 行
+#      （附录从占全文 75% 降到 0%，信息一条没少）。
+#   ③ R9 成本档自动路由：`--profile auto` 按题面规则选档（无决策语境 → economy，
+#      有 → balanced）。纯规则，不调 LLM。**要真控规模还得显式传 `--rounds`**。
+#   ④ R10 事实题未校验留痕：事实型询问在产物里显式写明「本次未接入外部校验」
+#      与接入方式（`--web on`）—— 把「没校验」从设计边界升级为一次显式选择。
+#   ★ 对你的影响：**无**。本文件无需改动（没有新键、没有改过的默认值）。
+#   ★ 判据：`check_v12310_render_ops`（四项 + 负对照）+ `check_v67_full_appendix`
+#      取源支持「内联 / 旁挂」两路（意图一字未改）。
+#
+# 【v1.23.8 → v1.23.9】取向分流守卫：无决策语境的题面不再套 decision 模板
+#   ★ **本版不改任何配置键、不改任何默认值** ⇒ 升级后行为**逐字不变**。
+#     改动只在**渲染层分流壳** `render_landing`（产物用哪套模板渲染）。
+#   ① 问题（真跑实证）：单点事实询问（「新中国的成立时间是什么时候」）走
+#      decision 模板后，落地层出现一整套**不存在的执行流程** ——
+#      行动清单 / 负责人（「党史研究室编研岗」）/ 时限 / 验收 / 回退。
+#   ② 改法：新增纯函数 `_has_decision_context(question)`（词表只增不减）+
+#      在 `render_landing` 里加一条分流：`orientation == "auto"` **且**题面
+#      无决策语境 → 走 boundary 五块模板。
+#      **显式 `--orientation decision` 仍走 decision**（不覆盖用户选择）；
+#      `boundary` 与「关掉开关」两条老短路保持原样；题面取不到时保守走
+#      boundary（不知道题面就不套决策模板）。
+#   ③ 对你的影响：**无**（没有新键、没有改过的默认值）。默认取向仍写
+#      `auto`；只是 auto 现在会看题面了。
+#   ★ 判据：`check_v1239_orientation_guard`（7 例分流 + 词表 3+3 + 接线 + 4 变异体）。
+
+# 【v1.23.7 → v1.23.8】渲染层三处守卫（空节 / 停因上头部 / 悬置渲染去重）
+#   ★ **本版不改任何配置键、不改任何默认值** ⇒ 升级后行为**逐字不变**。
+#     改动全在**渲染层**（产物 md 怎么写），不碰 prompt、不碰 LLM 调用、
+#     不碰判定语义：
+#   ① 落地层 decision 模板：「三、所需数据清单」「六、如果只能做一件事」
+#      在无内容时输出**显式说明**（不再留一个空标题），节编号保持连续。
+#   ② 新增纯函数 `_stop_kind_summary(views)`：把各层 stop_reason 归纳成
+#      「自然 n 层 / 被截断（体力耗尽）m 层」，接在产物头部「**调度**」之后；
+#      四层全被截断时带 ⚠️「无一层自然收敛」；没有任何停因时**不渲染**
+#      （不印 0/0 冒充读数）。
+#   ③ 新增纯函数 `_dedup_suspensions_for_render()` + `_susp_key()`：渲染
+#      「决定不消解」时按 target 的**首个分句**归并同 target 的重复条
+#      （真跑里同一条张力被登记成「X」与「X；元层决定不消解。」，全长不等），
+#      合并条数打印留痕。
+#   ★ 对你的影响：**无**。本文件无需改动（没有新键、没有改过的默认值）。
+#   ★ 判据：`check_v1238_render_guards`（自带负对照 + 3 个变异体）。
+
+# 【v1.23.6 → v1.23.7】changelog 搬出代码，落到 `CHANGELOG.md`
+#   ★ **本版不改任何配置键、不改任何默认值** ⇒ 升级后行为**逐字不变**。
+#   ① 模块 docstring 里的版本段（4954 行 / 占全文件 22.7%）**原样**搬进仓库根目录
+#      `CHANGELOG.md`；代码里的 docstring 换成短版（标题 + 一句话 + 指向）。
+#      ★ 标题必须留在前 4000 字符内 —— `_probe_v1232_audit.py` 的 C1
+#        「docstring 标题版本 == __version__」按这个范围取。
+#   ② 规模：21841 → **16894 行**（-4954）。
+#   ③ 引擎自己**不读自己的 `__doc__`**（全文件仅 1 处 `__doc__`，且在注释里），
+#      模块 docstring 不参与执行 ⇒ 硬断言：抠掉 docstring 后代码部分逐字相同 +
+#      AST 严格等价。
+#   ④ 判据随实现更新 2 处（是**位置变了**，不是放宽）：`check_v72_changelog_hygiene`
+#      与 `check_v76_changelog_wording` 的取源从「源码/模块 docstring」改到
+#      `CHANGELOG.md`；前者另抽纯函数 `_changelog_lint()` 并用**合成坏样本**做
+#      负对照（旧负对照手法「把 SRC 指回旧版」在取源外移后失效）。
+#   ⑤ 新增 `check_v1237_changelog_outside_code`（两向对账：代码里 0 处版本段，
+#      且 `CHANGELOG.md` 段数 ≥ 10，防「搬出去」变成「删掉」）。
+#   ★ 对你的影响：**无**。本文件无需改动（没有新键、没有改过的默认值）。
+
+# 【v1.23.5 → v1.23.6】代码正文不再留「版次批注」
+#   ★ **本版不改任何配置键、不改任何默认值** ⇒ 升级后行为**逐字不变**。
+#     改的是**主文件的注释与 docstring**：把散落在代码正文里的版次批注清掉
+#     （378 个批注块 / 1476 行、9 处行尾批注、66 个函数 docstring 的前导版次
+#     标记），变更记录统一由主文件顶部 docstring 的 changelog 承担。
+#   ★ 对你的影响：**无** —— 阈值、常量、控制流、返回值一律未动。
+#     可执行语句零改动有机器证明：删注释后 AST 严格等价；剥 docstring 前导标记后
+#     只有那 66 处字符串常量变化、且每处都恰好等于「剥掉一个前导标记」。
+#   ★ 被删内容**全文存档**：`docs/版次批注存档-v1.23.5.md`（3092 行，带行号与
+#     最近的 def/class 归属），配 git 历史可完全复原。
+#   ★ 判据随实现更新两处（是**判据过时**，不是放宽）：
+#     · `check_v72_bbarrier_semantics` 原拿 `[v1.21.72 #13]` 当锚点 → 换成同一段
+#       注释里的两条内容短语（`刻意的 barrier` + 既有的 `同时停掉所有层`）；
+#     · 变异体 M3 的锚点原含两行注释 → 改成只锚代码行，变异意图一字未改。
+#   ★ 升级后要做的：**无**。本文件无需改动（没有新键、没有改过的默认值）。
+
+# 【v1.23.4 → v1.23.5】清挂账：调度归一化收口 + 布尔兼容可观测化
+#   ★ **本版不改任何配置键、不改任何默认值** ⇒ 升级后行为**逐字不变**。
+#     改的是引擎内部：把「同一套调度规则写了三份」收口成唯一实现。
+#   ① pending_fix #1（已收口）自动调度的归一化规则：
+#      原在 `_decide_parallel_mode` / `plan_resources` / `auto_plan`
+#      三处各写一份（模式白名单 3 处、confidence 解析 3 处、圈数归一化
+#      2 处）。现在抽成 `_plan_conf` / `_normalize_plan_mode` /
+#      `_normalize_plan_rounds` 三个唯一实现，三处各留一行调用。
+#      ★ 对你的影响：**无**（改前/改后同一支探针 16 组输入逐字相同）。
+#      ★ 唯一可观测变化：模型返回非数字 confidence 不再抛 ValueError，
+#        而是按 0.0 处理（保守方向 ⇒ 退 serial）。
+#   ② pending_fix #3（可观测化）`external_anchor.as_evidence`：
+#      布尔写法 `true` / `false`（v1.21.75 的旧写法）**仍然认**，
+#      但走一次会在日志里留一条 warning，提示迁到五档字符串
+#      （off / record / crosscheck / evidence / gate）。
+#      ★ 本版**不删**兼容分支 —— 删了会让外部配置静默降级（true 不在
+#        五档里 ⇒ 落 off，「作证据」变「关闭」且无任何提示）。
+#        等留痕确认没人走再删。
+#      ★ 本文件与引擎默认值两处**都已经是字符串档**，无需改动。
+#   ③ pending_fix #2（未动）单票三态判决 `_adjudicate_sub_tristate`
+#      整段保留作退路，等多票稳定若干批后再评估归档。本版只给它配了
+#      判据，代码未动。
+#   ★ 登记表随之更新：`docs/机制审计-v122.md` 的 pending_fix 从 3 项
+#     变 2 项（#1 移入 ## resolved），产物头部也会印「pending_fix 2 项」。
+#
+# 【v1.23.3 → v1.23.4】新增**运行期三项总控**（联网 / 思考 / 强度）
+#   本版新增顶层 `runtime:` 段（就在下面 `cost_profile` 之后）。
+#   ★ 出厂三项全 `auto` = **不覆盖本文件任何既有键** ⇒ 升级后行为不变
+#     （与 `cost_profile` 一样是「顶层总控」，但它管的是**人的当场决定**：
+#      这一问要不要联网、要不要思考、思考多用力）。
+#   ★ 两种用法：
+#     ① 临时（推荐）：交互模式里每轮会问这三项；或命令行
+#        `--web on|off --thinking on|off --effort low|high|max`。
+#        两者都不改本文件、也不跨轮/跨次记忆。
+#     ② 长期：把下面的 `runtime:` 三项改成想要的值（下次加载即生效）。
+#   ★ 优先级：命令行 > 本文件 `runtime:` 段 > 本文件里各处的既有键。
+#   ★ on/off 会**改写** `web_search.enabled` 与 `api.thinking.default`
+#     **加整张 `api.thinking.stages` 表** —— 只改 default 会被 stage 表
+#     盖住（优先级：显式 thinking > stage > default），总开关就成了空话。
+#   ★ `effort` 取值只认 **low / high / max**（本文件 api.thinking 段的
+#     注释里记着 2026-10-02 的实测结论）；且**只在思考开启时**才随请求
+#     发出 —— 思考关着还设强度，引擎会当场提示「不生效」。
+#   ★ 要「真开思考」仍建议改 `api.thinking.stages` 里**具体环节**的值：
+#     总开关 `thinking: on` 会把**全部**环节打开（成本显著上升，
+#     思考 ⇒ 每次调用 max_tokens ≥ 32000）。
+#
+# 【v1.23.2 → v1.23.3】§十「仍未做 / 如实记账」五条全清
+#   ★ **本版不改任何配置键**（只在引擎侧加函数与判据）⇒ 升级后行为不变。
+#   ① 正交度：判据从「观测式采样」改成**受控实验**
+#      （固定子问题 × W4 开/关 × 温度 0.0/0.7 × 证据反事实）。
+#      ★ 原因：观侧口径**结构性不可判定** —— 子问题每跑重新拆解，
+#        「组内变异」里混进了上游拆解的变异（实测同题两跑 agree13 = 0.0 vs 1.0）。
+#   ② 思考分档：那 15 行「无收益」**不再是注释里的断言** —— 由
+#      `_ab_thinking_v1233.py`（录播式 A/B + 等效检验）实测，
+#      逐环节判定见 `_v1233_thinking.md`。本版**不改任何 stage 的默认值**：
+#      实测「有收益」的 3 个环节里，思考开 ⇒ `max_tokens ≥ 32000`，
+#      那是**成本决策**，需要显式确认（要开就把该键的值改成 "enabled"）。
+#   ③ tier 确认：`tier_confirmed` 由**真跑旁证**补上（空表 → 实填 + 应用）。
+#   ⑤ triage 频度：`_run_v1233_triage.py` 专项批 + Wilson 区间 + 负对照。
+#   ★ 引擎侧修掉一类静默 bug（**不改配置**）：模型返回的 id 未归一化
+#     会**整票错位一格且无声**（`_normalize_judgment_ids`）；
+#     子问题 id 改为本地重编号（`_canonical_sub_ids`）；三票 `voter`
+#     记**真票号**（丢票时不再重编号）。
+#
+# 【v1.23.1 → v1.23.2】整体审计 + 遗留收尾
+#   ① ★ `api.thinking.stages` 里 **15 行注释写着「关」、值却是 enabled** ——
+#      与本节自己的注释意图矛盾；而它们此前**从未生效**（调用点没传
+#      `stage=`，一律掉回 `thinking.default`）。本版把值改成 `disabled`：
+#      **与注释一致、与实际行为一致，行为零变化**。
+#      ⇒ 要让它们真的开思考，把值改回 "enabled"（**本版起才会真正生效**）。
+#   ② 补 2 个「代码在传、配置没声明」的 stage（按默认值 disabled）：
+#      `adjudicate_sub_tristate_multi` / `anchor_crosscheck`。
+#   ③ `web_search.tier_floor` 2 → 3（此键在 v1.23.1 及以前**从未被读过**）；
+#      新增 `web_search.tier_confirmed: {}`（人工确认表，默认空 = 零差异）。
+#   ④ 新增 `actions.tri_vote_retry_empty: 1`（三票里空票重试 1 次）。
+#
+# 【v1.23.0 → v1.23.1】遗留收尾：两个联网新键（纯加性）
+#   · tier_proposal: false            ← 联网结果的 tier **提案**（待审）。
+#     ★ 默认 false = 行为与 v1.23.0 逐字相同（零副作用）。
+#     ★ 即便打开也只写建议（pool.web_tier_proposals + [W-TIER?] 留痕），
+#       **绝不**改 item 的 tier、**绝不**进任何判定路径 ——
+#       首次出现的新域名进待审队列，由人确认后才谈 tier 生效。
+#   · domain_tier_rules: [...]        ← 提案依据表（子串 → tier，越小越硬）。
+#     未知域名保守取 3（> tier_floor 2 ⇒ 进不了引用表）。
+#   ★ 同时修正 round_no 口径：圈内传**真圈号**，拆解前置为 0 ——
+#     原先所有环节的 round 都是「拆解序号」（每跑恒 1），三层配额的
+#     per_stage_round 实际退化成「每跑」。此项**不涉及配置键**。
+#
+# 【v1.22.2 → v1.23.0 W1】核心联网（W 系列）基础设施
+#   ★ 本 Phase **不接入任何环节**：所有键都「只配不接」，改动是纯加性。
+#   新增段 `web_search`（20 个键，全部默认值写在此文件里）：
+#     enabled: false                  ← 全局总闸。**默认关 = 零调用**。
+#     backend / api_key_env / timeout_seconds / max_retries /
+#     backoff_seconds / cache_ttl_hours
+#     quota.{per_stage_round, per_stage_total, per_run_total}
+#                                     ← 配额**三层**，三层都过才允许调用。
+#     stages.{practice_term_calibration, research_decompose,
+#             research_evidence, research_precedent, duel_arbitration,
+#             meta_clean_check, stop_criteria}
+#                                     ← 按**环节**授权（不是全局 ON/OFF）。
+#       修行层 term_calibration 与 stop_criteria 默认 false。
+#     as_evidence / tier_floor         ← 引用授权（与 external_anchor 同名
+#                                       但**独立**，两段互不影响）。
+#     auto_disable_after_failures: 3   ← 连续失败 3 次 → 本跑联网关闭，
+#                                       留痕 [W-DISABLED]。
+#   怎么退回旧行为：什么都不用改 —— enabled 默认 false，行为与 v1.22.2 相同。
+#   另：检索缓存落 `cache/websearch/`，**与锚点的 `cache/anchors/` 分开**。
+#
+# 【v1.22.1 → v1.22.2】
+#   新增字段（都有默认值；本文件已按「列全」原则写出）：
+#     external_anchor.answers_min_len: 6   ← 锚点 answers 的**最短长度**
+#         （中文字符）。短 answer 会让 overlap_coef 假命中 —— 它分母取
+#         min，2 字 answer 被长 aspect 包住就是 1.000。0 = 不过滤。
+#     external_anchor.answers_max_n: 5     ← 单条锚点 answers 上限。
+#         原先硬编码，本版提成配置（值不变 = 行为不变）。
+#   行为变化（不需要改配置）：
+#     · 产物头部新增「⚠️ **锚点 answers 警告**」一行（有 answer 被过滤
+#       时才出现，与「未声明 answers」是**两条不同**的告警，不互相覆盖）。
+#     · 研究层三态判决行改成**按口径分印**：单票路径标「三态判决（单票）」
+#       且口径 = 单票 vs 拆解原标签；多票标「三态判决（多票）」，口径 =
+#       三票之间。**不再把单票路径印成「三态多票 high 0/low 0/一致率 0%」**。
+#       分母只数**有判决的条**，判决官弃权的条单列。
+#     · decision 取向的产物新增「不做什么」清单实际内容 —— 研究层
+#       schema 增加了 not_do[]，rubric 第三项（不做什么）从此能拿到分。
+#   怎么退回旧行为：
+#     external_anchor.answers_min_len 置 0 → 不过滤（= v1.22.1 行为）；
+#     actions.tri_multi_vote 置 false → 三态退回单票路径。
+# 【v1.21.77 → v1.22.0】
+#   新增字段（都有默认值；本文件已按「列全」原则写出，见下方【完整覆盖层】）：
+#     external_anchor.as_evidence: "off"  ← 布尔升级为**五档**：
+#         off / record / crosscheck / evidence / gate
+#         （旧写法 true / false 仍认，true → "evidence"，兼容一版）
+#     external_anchor.retriever: "snapshot"
+#         "snapshot" = 零调用读快照；其它值走真检索（当前实现 tavily，
+#         结果按 queries 的 sha256 落 cache/anchors/，TTL 内不打网络）；
+#         未知取值**抛错留痕**，不静默降级。
+#     external_anchor.tier_floor: 2    ← 锚点分级门槛：tier ≤ 2 才允许
+#         进「结论 → 锚点」引用表（1 一手标准 / 2 权威二手 / 3 一般二手
+#         / 4 传闻转述 —— 转述可以留痕，但不当证据）。
+#     external_anchor.per_round: 2     ← 每圈最多并入几条锚点（元层不检索）
+#     external_anchor.api_key_env / cache_ttl_hours
+#         ← 真检索后端的 key 环境变量名 / 结果缓存小时数（key 不进本文件）
+#     external_anchor.triage: false    ← 分诊降级：undecidable 的理由若是
+#         「信息不足 / 需外部动作 / 缺数据 / 无外部」，而锚点里**有**材料
+#         能答，该条降为 decidable 或 partial；「自指循环 / 无共同参照系 /
+#         本体论判断」一律**不降**。
+#     actions.tri_multi_vote: true     ← 子问题可判定性**三态多票**：同一条
+#         问三个视角各判一次取多数；三票互异 = 无多数票 → 进校准队列
+#         （不再是「每条都塞进队列」，队列只收真要人工核的）。
+#     actions.landing_decision: true   ← 取向 decision 时，落脚段改渲染
+#         「行动清单六字段（verb/object/owner_role/deadline_hint/
+#         acceptance/fallback）+ 不做什么 + 决策 rubric」。
+#         取向 boundary 或关掉本项 → 退回老模板（池级留痕两者共用，不丢）。
+#     actions.input_sanity: true       ← 输入健全性自检（只报告、不改写）
+#     actions.parallel_expand: true    ← 一次展开里多个 job 并发调 LLM
+#     memory.self_layers_per_entry: 2  ← self 通道**每层**保留几条
+#         （与 memory.self_layers 是两个口径，别当替代关系）
+#     spiral.both_quota.{enabled,max_ratio,min_items}
+#         ← both 占比超 max_ratio 就去问「缺什么」（**追问**，不动极性；
+#           both_tighten_ratio 才是**改判**，两条语义完全不同）
+#   行为变化（不需要改配置）：
+#     · 产物头部多「分层目标（修行/研究/对撞/元）」「三态多票 / 冻结
+#       签名」「机制审计」三段；日志同印。
+#     · 硬约束 flag（action_incomplete / not_do_missing）不再被
+#       quality_flags 的重算冲掉。
+#   怎么退回旧行为：
+#     actions.tri_multi_vote / actions.landing_decision /
+#     actions.input_sanity / actions.parallel_expand 全置 false，
+#     external_anchor 保持 enabled: false（默认即关）→ 与 v1.21.77 同。
+#
+# 【v1.21.55 → v1.21.56】
+#   新增字段（都有默认值，旧的 dgtf_config.yaml 不改也能跑）：
+#     spiral.both_tighten_ratio: 0.3      ← 展开后处理里 both 占比的
+#                                           **改判**阈值。以前写死在
+#                                           调用处。注意它与
+#                                           spiral.both_quota.max_ratio
+#                                           （默认 0.7）不是一回事：
+#                                           前者动极性，后者追问缺什么。
+#     spiral.alignment_similarity: 0.7    ← 四象限对齐的关键词相似度
+#     spiral.alignment_containment: 0.6   ← 四象限对齐的包含度
+#                                           （短的一侧有多少关键词落在
+#                                            长的那侧；修行层的 target
+#                                            短、研究层的 sub_question
+#                                            长，只有这条可能对上）
+#     【参数配置化 · 收拢魔法数字】新增三组（都带默认值）：
+#       spiral.dedup_candidate_overlap: 0.65     ← 合并后二次去重：候选
+#       spiral.dedup_candidate_similarity: 0.70
+#       spiral.dedup_amp_overlap: 0.60           ← 合并后二次去重：& / 线头
+#       spiral.dedup_amp_similarity: 0.62           （线头更容易近义改写，更松）
+#       spiral.qc_rephrase_ratio: 0.5            ← 质量线索：ing 复述率触发线
+#       spiral.qc_both_ratio: 0.6                ← 质量线索：候选 both 占比触发线
+#       spiral.all_drift_threshold: 0.5          ← all 层候选跨层漂移触发线
+#       spiral.all_selfref_threshold: 0.4        ← all 层候选自指触发线
+#     其余散落的相似度阈值（0.85 / 0.75 / 0.62 / 0.8 …）已收拢成
+#     模块顶部「判据阈值」命名常量，不再散落在调用点；其中 ing 复述
+#     判定（_REPHRASE_*）有意不做配置项——样本只有 n=1，调它=过拟合。
+#   行为变化（不需要改配置）：
+#     · 停止理由不再一律叫「ing 复述」——拆成「ing 连续 N 圈复述」
+#       和「自省连续 N 圈点名同一批问题未消化」两条，各说各的。
+#     · md 自省段：ing 复述率 0% 也会打印（以前被 falsy 跳过）。
+#     · md 的【自省回流核对】改成逐圈列出。
+#     · md 的【闭环清算】补一行分母说明（已了结的不参与清算）。
+#     · md 的【四象限对齐】未对齐时补「两侧各几条 / 最接近的一对几分」。
+#     · md 的【悬置总览】同名条目合并，只显示最新状态并标注迁移。
+#
+# 【本文件是 DEFAULT_CONFIG 的完整覆盖层】
+#   本文件把 DEFAULT_CONFIG 的键**列全**（冒烟 check_config_parses
+#   会核「有没有漏键」）；值上与默认不同的那批手调（同步时 48 项）登记在
+#   CONFIG_TUNED 里 —— 未登记的差异判红、过期登记也判红。
+#   ★ 列全 ≠ 钉死：任何一项与当前默认值不符且未登记，冒烟立刻报红，
+#     所以「默认改了而本文件没跟上」不会静默发生。
+#
+# 【参数优先级（高 → 低）】
+#   ① 命令行参数（CLI）
+#   ② 交互模式询问（无 CLI 参数时）
+#   ③ 本 YAML 配置文件
+#   ④ 代码 DEFAULT_CONFIG
+#
+# 【环境变量优先级（高于 api 段）】
+#   DGTF_API_KEY        > OPENAI_API_KEY    > api.key
+#   DGTF_BASE_URL       > api.base_url
+#   DGTF_MODEL          > api.default_model
+#   DGTF_REASONER_MODEL > api.reasoner_model
+#
+# 【分层说明】
+#   cost_profile    —— 成本档位（economy / balanced / quality，顶层总控）
+#   api      —— API 连接
+#   output   —— 展示开关（只影响日志/终端显示）
+#   actions  —— 逻辑开关（决定"做不做某一步"）
+#   probe    —— 探针筛选参数
+#   memory   —— 三通道记忆参数
+#   external_anchor —— 外部事实锚点（题外参照：不进池、不参与清算）
+#   spiral   —— 螺旋停止 / 循环判据
+#
+# 【修改心法】
+#   调"要不要做某事"   → 改 actions
+#   调"要不要打印某事" → 改 output
+#   调"跑多久 / 多严"  → 改 spiral
+#   调"用哪个并行模式" → 改 actions.parallel_mode
+#                        （serial/A/B/C/D/E/F/G/H/auto，auto 现在九选一）
+#   调"B/C 预热几圈"   → 改 actions.parallel_warmup_rounds
+#   调"要不要行动清单"   → 改 actions.landing_decision（取向 decision 时才生效）
+#   调"子问题判得准不准" → 改 actions.tri_multi_vote（三态多票）
+#   调"接不接外部事实"   → 改 external_anchor.*（默认全关，不花调用）
+#
+# ⚠️ 【曾经的坑 · v1.21.51 [fix-105] 已修】
+#   --parallel 的 argparse default 原来是硬编码 "auto"，
+#   不传也会覆盖本文件的 parallel_mode。现在 default=None，
+#   不传 → 回落本文件；显式传 → 覆盖本文件。两条都对。
+# ============================================================
+
+
+# ------------------------------------------------------------
+# ★ 成本档位（v1.21.56 · 顶层总控）
+# ------------------------------------------------------------
+# 三档可选，跨段生效（见代码 _profile_plan）：
+#   quality  —— 维持现状，不做任何裁剪
+#   balanced —— （默认）token 精简：候选截断 / shape 收紧 / 低频惰性化，
+#               不动调用次数
+#   economy  —— 在 balanced 之上再省调用次数：阴阳展开合并成一次、
+#               探针回归每 2 圈一次
+# ★ self_check 降频刻意不在任何档里（它是质量的核心来源）。
+# 实测（2 圈 × 4 层）：quality 81 次 / balanced 80 次 / economy 69 次。
+cost_profile: quality
+
+# ------------------------------------------------------------
+# 运行期总控（三层里的**最外层**：命令行 / 交互 / 本段）
+# ------------------------------------------------------------
+# 三项都是「人的当场决定」，默认 auto = 不覆盖任何既有键（行为不变）。
+#   web      —— 联网总开关：auto / on / off
+#               on  仍受 `web_search.stages` 的环节授权与配额约束；
+#               off 一律不发起检索（也就不会有 W# 进引用表）。
+#   thinking —— 思考总开关：auto / on / off
+#               on  = **全部环节**开思考（成本显著上升，慎用）；
+#               off = 全部环节关思考（覆盖 stages 表里的每一个键）。
+#   effort   —— 思考强度：auto / low / high / max
+#               只在思考开启时生效；取自 2026-10-02 实测可用集。
+# ★ 「auto」的语义是「按本文件的既有键」，**不是**「跟上次一样」。
+runtime:
+  web: auto
+  thinking: auto
+  effort: auto
+
+# ------------------------------------------------------------
+# API 连接
+# ------------------------------------------------------------
+api:
+  # 【建议】留空，用环境变量。
+  #   避免 API Key 进版本库。
+  #   设置方法：export DGTF_API_KEY="sk-xxx"
+  #           或写 .env 文件（代码会自动 load_dotenv）
+  #
+  # 【优先级】DGTF_API_KEY > OPENAI_API_KEY > 本字段
+  key: ""
+
+  # 【建议】保持默认 DeepSeek。
+  #   换其他端点需测试兼容性（尤其是 response_format: json_object）。
+  # 【环境变量】DGTF_BASE_URL 覆盖本字段
+  # 【可选值】
+  #   https://api.deepseek.com/v1      （DeepSeek，默认）
+  #   https://api.openai.com/v1        （OpenAI）
+  #   https://api.moonshot.cn/v1       （Moonshot）
+  base_url: "https://api.deepseek.com/v1"
+
+  # 【用途】大部分 LLM 调用（展开 / 对偶判断 / & 沉淀 / 探针 / self-check）
+  # 【环境变量】DGTF_MODEL 可覆盖本字段
+  #   ⚠️ 优先级校正（2026-10-02 实测）：实际是 **本文件 > 环境变量**。
+  #      DEFAULT_CONFIG 里虽写了 os.getenv("DGTF_MODEL", ...)，但只要本文件
+  #      显式给出 default_model，_deep_merge 就会把它盖掉。
+  #      与旧注释宣称的「环境变量优先」相反，别再照旧注释行事。
+  #
+  # 【2026-10-02 迁移】原为 legacy 别名 "deepseek-chat"。
+  #   官方公告该别名 2026-07-24 停服；实测当天仍可用（官方对老别名一向延期），
+  #   但它是**第三方可控的间接层**：请求 deepseek-chat，返回体里的 model 却是
+  #   deepseek-flash —— 实际服务者不受我们控制，且此前无任何留痕。
+  #   现改显式 ID，语义对齐旧别名的实测行为（V4.1-Flash 非思考模式）。
+  default_model: "deepseek-flash"
+
+  # 【用途】需要长链推理的两处：ing 对撞 / view 显形
+  # 【环境变量】DGTF_REASONER_MODEL 可覆盖本字段
+  #
+  # 【识别判据已废弃】_is_reasoner() 过去检查名字里是否含
+  #   "reasoner" / "-r1" / "reasoning"。
+  #   ⚠️ 换成任何新式 ID（deepseek-flash / deepseek-v4-pro）名字里都不含这些字，
+  #      会被**静默判 False** → 不再强制 max_tokens≥32000（推理 token 会吃满
+  #      预算导致 finish_reason=length）、json_mode 也会走错分支。
+  #   现改为显式 thinking 开关，不再靠名字猜。
+  #
+  # ★ 本字段允许与 default_model **同名** —— 两者的区别只在下方 thinking 段，
+  #   所以任何「拿 model 名反推是不是推理调用」的写法在这里都会失效。
+  #
+  # 【2026-10-02 迁移】原为 legacy 别名 "deepseek-reasoner"，现为显式 ID。
+  reasoner_model: "deepseek-flash"
+
+  # 【请求级思考模式】V4 系列起，thinking 是**请求参数**而不是另一个模型 ID。
+  #   实测可用（2026-10-02）：type = disabled / enabled，effort = low / high / max
+  #   ★ OpenAI SDK 的顶层 reasoning_effort= 参数会被吞掉、无效；
+  #     必须走 extra_body={"thinking": {...}}。
+  #   ★ 不写这段（或值为 null）= 用服务端默认 —— deepseek-flash 默认是
+  #     **开思考**，那会把全部普通调用变成贵的思考模式，务必显式关掉。
+  #
+  #   default  —— 普通调用（对齐旧 deepseek-chat：非思考）
+  #   reasoner —— 推理调用（对齐旧 deepseek-reasoner：思考）
+  #   effort   —— 仅 type=enabled 时生效；null = 服务端默认力度
+  #
+  # 【逐环节思考档位】2026-10-02 拍板：需要的开，不需要的关。
+  #
+  # ★ 判据不是「生成长文本才需要」，而是「这一步是不是多步推理」。
+  #   依据（§7.19）：有区分度的题上，非思考 0/4、思考三档都是 4/4。
+  #   按老判据开的那两个（ing 对撞 / view 显形）恰好都是生成型 —— 那是
+  #   历史遗留，不是因为生成更需要思考。
+  #
+  # ★ 硬约束已排除（§7.21）：思考模式下 response_format 不生效，JSON 只能
+  #   靠 prompt 约束。实测真实 schema（嵌套数组 + 6 字段 + 理由）：
+  #   思考档 5/5 可解析、5/5 结构完整 —— 所以判定环节开思考**可行**。
+  #
+  # ★ 代价：output 约 18 倍（349 → 6308 中位）。**不能全开**，只给真需要的开。
+  #   高频环节（每层每圈都调）开思考会把整批成本抬到超支，故先关、待测量。
+  #
+  # 优先级：调用点显式传 thinking  >  本表按环节  >  default
+  # 不在表里的环节 → 跟随 default（关闭）。
+  thinking:
+    default: "disabled"
+    reasoner: "enabled"
+    # low / high / max 在题库上正确率完全相同（§7.19），选最便宜的 low。
+    # ⚠️ 该结论测于 v4-pro，flash 恢复后需重测确认（成本很低，64 次调用）。
+    effort: "high"
+    stages:
+      # ── 开：多步推理，且判定质量直接进 X/Y ──
+      auto_plan: "enabled"                # 五维规划决策，1 次/跑（v61 及以前的单次版）
+      plan_orientation: "enabled"         # [v1.21.62 P2-8] 取向判读，1 次/跑
+      plan_resources: "enabled"           # [v1.21.62 P2-8] 资源配置，1 次/跑
+      adjudicate_sub_tristate: "enabled"  # 三态判决，决定 X（分子）
+
+      # ── 开（2026-10-02 按报告先验开启）：多步推理判定，高频 ──
+      #   ★ 这些是「先验需要」，不是「已实测验证」。依据：实测多步推理题
+      #     上思考 4/4 vs 非思考 0/4（§7.19）；代价是 output ×18。
+      #   ★ 余额已充到 ¥156，够跑；但仍须在专项对照批里用真实 X/Y 判据
+      #     验证「开 vs 关」的质量差，不能只信先验。
+      dual_judge: "enabled"               # 对偶判断，约 20~30 次/跑
+      assess_decidability: "enabled"      # 可判定性，决定 Y（分母），高频
+      assess_decidability_from_pool_view: "enabled"  # 池视图可判定性（同源）
+      re_evaluate_pool: "enabled"         # 池再评估（重分类），跑级低频
+
+      # ── 关：简单映射 / 结构化罗列 / 输出本来就短，思考无收益 ──
+      #   ★ [v1.23.2] 此前这 15 行的值误写成 "enabled"（注释写的是「关」）；
+      #     而它们当时**从未生效**（调用点没传 stage=）⇒ 实际行为一直是「关」。
+      #     本版改为 disabled：与注释一致、与实际行为一致，**行为零变化**。
+      decide_parallel_mode: "disabled"
+      check_input_sanity: "disabled"
+      check_structure_saturation: "disabled"
+      re_anchor: "disabled"
+      ask_missing_polarity: "disabled"
+      decompose_normal: "disabled"
+      decompose_hybrid: "disabled"
+      decompose_koan: "disabled"
+      decompose_from_pool: "disabled"
+      probe_research: "disabled"
+      probe_duel: "disabled"
+      probe_meta: "disabled"
+      phase_probe: "disabled"
+      self_check: "disabled"
+      settle_research: "disabled"
+      # [v1.23.2] 下面两个是「代码在传、配置此前没声明」的（按默认值列出）。
+      adjudicate_sub_tristate_multi: "disabled"   # 三态多票判决（3 票）
+      anchor_crosscheck: "disabled"               # 锚点交叉核对
+
+  # 【建议】≥ 180。
+  #   reasoner 输出长，单次可能 60-120 秒。
+  #   太小会导致频繁超时重试，反而更慢。
+  timeout: 240
+
+  # 【建议】
+  #   网络稳定：3
+  #   网络不稳：5
+  # 【注意】太大拖慢失败感知；每次重试等待 backoff^n 秒。
+  max_retries: 3
+
+  # 【建议】1.8
+  #   第 n 次重试等待 backoff^n 秒。
+  #   1.8 → 1.8 / 3.24 / 5.83 秒。
+  # 【注意】别小于 1.5，否则可能被 API 限流。
+  retry_backoff: 1.8
+
+
+# ------------------------------------------------------------
+# 展示开关（只影响日志 / 终端显示，不影响逻辑）
+# ------------------------------------------------------------
+output:
+  # 【用途】结果保存目录。相对当前工作目录。
+  # 【产物】outputs/YYYYMMDD_HHMMSS_<问题前20字>.md
+  #         outputs/diagnostic_position_*.log（position_all_same 时）
+  save_dir: "outputs"
+
+  # 【建议】
+  #   开发调试：true（详细日志，好定位）
+  #   批量生产：false（只打印 view 显形和最终摘要）
+  # 【影响】false = 安静模式
+  verbose: true
+
+  # 【用途】是否打印对偶判断的每条候选细节。
+  # 【建议】
+  #   调对偶判断时：true
+  #   日常：false（可减 80% 输出）
+  show_dual_judge: true
+
+  # 【用途】是否在终端完整打印 ing 输出全文。
+  # 【注意】ing 通常 1000-2000 字，全开会淹没终端。
+  # 【建议】
+  #   默认：false
+  #   调试对撞质量：临时开
+  # 【CLI 覆盖】--show-ing
+  show_ing: true
+
+  # 【用途】是否在终端完整打印 view 显形全文。
+  # 【注意】view 通常 800-2000 字，全开会淹没终端。
+  # 【建议】
+  #   默认：false
+  #   想直接读终端：临时开
+  # 【CLI 覆盖】--show-view
+  show_manifest: true
+
+  # 【用途】对偶判断后回看一遍（LLM 自省）。
+  # 【建议】
+  #   质量优先：true
+  #   速度优先：false（每圈省 1 次 LLM 调用）
+  # 【⚠️ 重要】关闭后 streak 机制失效：
+  #   _rephrased_streak / meta_idle_streak 不累积，
+  #   fix-72 v3（对撞/元层 ing 复述直接判 idle）不再触发，
+  #   对撞层/元层可能跑得更久。
+  # 【CLI 覆盖】--no-self-check
+  self_check: true
+
+  # 【用途】探针 covers 字段诊断日志。
+  # 【行为】
+  #   false（默认）：只打印异常（字段缺失 / 类型非 list）
+  #   true：每次探针都打印 covers_raw → parsed
+  # 【建议】只在排查 "探针为什么没 covers" 时开。
+  # 【典型日志】
+  #   [fix-89 diag] 探针 covers_raw=['T1','T3'] → parsed=['T1','T3']
+  #   [fix-89 diag] 探针 covers 字段缺失（模型未输出）
+  show_probe_diag:  true
+
+
+# ------------------------------------------------------------
+# 逻辑开关（决定"做不做某一步"）
+# ------------------------------------------------------------
+actions:
+  # ---------- 层间调度 ----------
+
+  # 【用途】输入健全性自检（v1.21.50 [P1-6] 引入）。
+  #   「PN 不是任何标准复杂度类」那次事故：引擎不知道，把一个可能
+  #   是笔误的符号当合法对象收下，跑了 168 次调用。
+  # 【建议】保持 true。
+  # 【注意】只报告、不改写 —— 替用户改写问题等于替他决定想问什么。
+  # 【关闭后】本步不跑，产物里 input_sanity 段为空。
+  input_sanity: true
+
+  # 【用途】是否做全局可判定性评估。
+  # 【建议】保持 true。
+  # 【关闭后】decidability_result 默认 decidable，所有层按"可判定"处理。
+  assess_decidability: true
+
+  # 【用途】是否做子问题分解（研究层专用）。
+  # 【建议】保持 true。
+  # 【关闭后】研究层无 sub_questions，双通道产物退化。
+  decompose_question: true
+
+  # 【用途】评估来源（三选一）。
+  # 【可选值】
+  #   "pool"       —— 从修行池读，并与外部评估合成（最稳，推荐）
+  #   "external"   —— 只用外部评估（0 和 1 可并行，A 模式前提）
+  #   "pool_only"  —— 只用池评估（省 1 次 LLM 调用）
+  # 【选择逻辑】
+  #   pool        → 必须先跑 0 层，从修行池读评估
+  #                 + 同时跑外部评估，两路合成
+  #   external    → 跳过池读，只用外部评估
+  #   pool_only   → 只用池评估，不跑外部
+  # 【⚠️ A 模式】会被强制改为 external（B~H 有 0 层预热，能走 pool）。
+  #   池还没产物），本字段的配置不生效。
+  decidability_source: "pool"
+
+  # 【用途】分解来源（二选一）。
+  # 【可选值】
+  #   "pool"     —— 从修行池探针/&/悬置里生发研究子问题（推荐）
+  #   "external" —— 从问题本身重新拆解
+  # 【选择逻辑】
+  #   pool     → 从修行层产物长，继承修行成果
+  #              要求 0 层先跑完（层间依赖强）
+  #   external → 从问题本身重新拆解
+  #              好处：0 和 1 可并行
+  #              坏处：修行层白跑（研究层不继承修行成果）
+  # 【⚠️ A 模式】会被强制改为 external（B~H 有 0 层预热，能走 pool）。
+  decompose_source: "pool"
+
+  # 【用途】子问题可判定性的**三态多票**（v1.22 引入）。
+  #   同一条子问题问三个视角各判一次（decidable / partial /
+  #   undecidable），取多数票；三票互异 = 无多数票 → 进校准队列。
+  # 【建议】保持 true。
+  # 【关闭后】退回单票判定，产物无 tri_consensus / calibration_queue。
+  tri_multi_vote: true
+  # [v1.23.2] 三票里某票返回**合法 dict 但 judgments 为空**时的重试次数。
+  #   ★ 空票是**失败**不是弃权（实测 10 跑里 4 跑因此只有 2 票可用）。
+  tri_vote_retry_empty: 1
+
+  # ---------- ★ v1.21.54 并行模式 ----------
+  # 【用途】四层执行策略。
+  # 【可选值】
+  #   "serial" —— 严格串行（0→1→both→all），最稳（原逻辑）
+  #   "A"      —— 四层独立并行 + 汇流圈，快
+  #   "B"      —— 轮次并行（Jacobi），每波 barrier，读上一波定格
+  #   "C"      —— 流水线并行，只等上游交出第一圈，之后各跑各的
+  #   "D"      —— 0∥1 各自跑完 → both 起 → both 出圈后 all 跟上
+  #   "E"      —— 0∥1 各自跑完 → both 跑完 → all 起
+  #   "F"      —— 0 跑完 → 1 出圈 both 跟上 → both 出圈 all 跟上
+  #   "G"      —— 0 跑完 → 1 出圈 both 跟上 → both 跑完 all 起
+  #   "H"      —— 0 跑完 → 1 跑完 → both 起 → both 出圈后 all 跟上
+  #   "auto"   —— 由 MetaDGTF 按问题性质自动决策
+  #
+  # 【★ D~H 的一句话区别】只差"哪一层必须先收工"：
+  #   记 waits 的层 —— 它**跑完所有圈**下游才动（硬闸）
+  #   记 gates 的层 —— 它**交出第一圈**下游就动（软闸）
+  #   表在源码 _MODE_GRAPH 里（每个模式 4 行），加新排布改表即可，
+  #   跑圈/停止/合并逻辑五档共用同一套（_run_one_round_B）。
+  #
+  #   ┌────┬──────────────┬──────────────┬────────────────────┐
+  #   │模式│ 修行 0       │ 研究 1       │ 对撞 both / 元 all │
+  #   ├────┼──────────────┼──────────────┼────────────────────┤
+  #   │ D  │ 立即 ∥ 1     │ 立即 ∥ 0     │ both 等 0+1 跑完   │
+  #   │    │              │              │ all 等 both 出圈   │
+  #   │ E  │ 立即 ∥ 1     │ 立即 ∥ 0     │ both 等 0+1 跑完   │
+  #   │    │              │              │ all 等 both 跑完   │
+  #   │ F  │ 立即         │ 等 0 跑完    │ both 等 1 出圈     │
+  #   │    │              │              │ all 等 both 出圈   │
+  #   │ G  │ 立即         │ 等 0 跑完    │ both 等 1 出圈     │
+  #   │    │              │              │ all 等 both 跑完   │
+  #   │ H  │ 立即         │ 等 0 跑完    │ both 等 1 跑完     │
+  #   │    │              │              │ all 等 both 出圈   │
+  #   └────┴──────────────┴──────────────┴────────────────────┘
+  #
+  # 【auto 决策逻辑】
+  #   调 LLM 读问题性质，返回模式 + 理由 + 置信度。
+  #   低置信（< 0.5）退回 serial。
+  #   经验映射：
+  #     明确单一问题           → serial
+  #     多分句 / 并列          → A
+  #     含"或/还是"/过程性      → B
+  #     层界清楚、只想快        → C
+  #     0/1 互不依赖、撞点是关键→ D
+  #     同上 + 元层要最终对撞   → E
+  #     修行是地基、后三层接力  → F
+  #     元层要清算完整对撞      → G
+  #     研究要吃完整修行        → H
+  #     拿不准                 → serial
+  #
+  # 【九模式对比】
+  #   ┌────────┬──────────────┬──────┬──────────────────────┐
+  #   │ 模式   │ 层间关系     │ 并行 │ 可复现性             │
+  #   ├────────┼──────────────┼──────┼──────────────────────┤
+  #   │ serial │ 跑完才起     │ 1×   │ ✅                   │
+  #   │ A      │ 互不读+汇流  │ 4×   │ ✅                   │
+  #   │ B      │ 每波 barrier │ 4×   │ ✅                   │
+  #   │ C      │ 首圈放行     │ ~4×  │ ❌ 时序依赖          │
+  #   │ D      │ 0∥1→撞→元   │ ~2×  │ ❌ all 读活对撞      │
+  #   │ E      │ 0∥1→撞→元   │ ~2×  │ ⚠️ 1 与 0 并发抢池   │
+  #   │ F      │ 全流水       │ ~2×  │ ❌ 时序依赖          │
+  #   │ G      │ 撞毕收元     │ ~2×  │ ❌ both 读活研究     │
+  #   │ H      │ 逐层接力     │ ~2×  │ ❌ all 读活对撞      │
+  #   └────────┴──────────────┴──────┴──────────────────────┘
+  #   D/E 的"0∥1 并发"有个副作用：研究层读修行池分解子问题时，
+  #   修行层可能正在往池里写 —— 严格讲是竞态。
+  #   想要完全去掉它，把 parallel_warmup_rounds 设到 ≥0 层 hard_max
+  #   （0 层整层先行），或改用 F/G/H。
+  #
+  # 【曾经的坑 · v1.21.51 [fix-105] 已修】
+  #   --parallel 的 argparse default 原来是硬编码 "auto"，
+  #   不传也会覆盖本字段。现在 default=None，
+  #   不传时回落本文件的 parallel_mode —— 本字段真正生效。
+  #   显式传 --parallel 仍然覆盖本字段（这是想要的）。
+  #
+  # 【CLI 覆盖】--parallel serial|A|B|C|D|E|F|G|H|auto
+  # 【交互模式】会单独询问，回车用 auto
+  parallel_mode: "auto"
+
+  # 【用途】一次展开里多个 job（阴/阳、&/线头）**并发**调 LLM。
+  # 【建议】true —— 每层每圈省一次往返。
+  # 【关闭后】job 串行执行：调用数不变、耗时变长（排查限流时用）。
+  parallel_expand: true
+
+  # ---------- ★ v1.21.54 B~H 的 0 层预热 ----------
+  # 【用途】B/C/D/E/F/G/H 模式下，0 层先单独跑几圈做预热，
+  #         再带着进度回到并行队列（A 模式不看本字段）。
+  #
+  # 【为什么需要】不预热的话：
+  #   · 研究层第 1 圈读不到修行池 → decompose_source 退回 external，
+  #     修行层等于白跑，研究层不继承修行成果；
+  #   · 对撞层第 1 圈没有两侧可对齐 → 只能写空对齐占位；
+  #   · 可判定性只能拿问题字符串本身当判据。
+  #
+  # 【可选值】
+  #   1（默认）—— 只预热一圈，之后 0 层从第 2 圈接着跑。
+  #               正确性（走池路径）和时间（不整层串行）两头都要。
+  #   0        —— 完全不预热。
+  #               代价：可判定性退回 external，研究层退回外部分解。
+  #   ≥0 层 hard_max —— 整层先行（v1.21.52 的行为）。
+  #               最稳也最慢：0 层那段是完全串行的瓶颈。
+  #
+  # 【D/E 特别注意】这两种模式用户描述是"修行和研究一起开始"。
+  #   本字段默认 1 时，修行层先跑一圈，研究层晚一圈才出发 ——
+  #   换来研究层能读到修行池、可判定性走 pool+external。
+  #   要字面意义的严格同时出发：把本字段设 0（代价见上）。
+  #
+  # 【调法】
+  #   在乎可判定性判得准 → 2 ~ 3（池里材料更多，池视角判定更准）
+  #   在乎速度           → 1
+  #   做对照实验          → 0 与 ≥hard_max 各跑一遍对比
+  parallel_warmup_rounds: 3
+
+  # 【用途】C/D/E/F/G/H 模式层间放行的最长等待（秒）。
+  #         上游线程崩了或卡死时不至于把下游一起吊死。
+  #         每层线程 finally 里都会放行，超时只是双保险。
+  # 【建议】900。
+  # 【调大】单次 reasoner 调用经常逼近 api.timeout 时往上调。
+  pipeline_gate_timeout: 900
+
+  # ---------- 层内动作（每层每圈依次执行）----------
+
+  # 【用途】是否重述锚点。
+  # 【建议】true。
+  # 【关闭后】锚点用原文，省 1 次 LLM 调用/圈。
+  re_anchor: true
+
+  # 【用途】阴视角展开（0 端）。
+  # 【建议】true。关了候选会偏向一边。
+  expand_yin: true
+
+  # 【用途】阳视角展开（1 端）。
+  # 【建议】true。关了候选会偏向一边。
+  expand_yang: true
+
+  # 【⚠️ 强烈建议不要关】DGTF 核心机制。
+  # 【用途】对偶判断：判候选的 position（0/1/both）。
+  # 【关闭后果】全部候选 position=0，& 无出生。
+  dual_judge: true
+
+  # 【⚠️ 强烈建议不要关】DGTF 核心机制。
+  # 【用途】ing 对撞（六步展开）。
+  # 【关闭后果】无对撞，& 沉淀无输入。
+  ing: true
+
+  # 【⚠️ 强烈建议不要关】DGTF 核心机制。
+  # 【用途】& 沉淀（提取 & 印记 / 线头 / 元反思）。
+  # 【关闭后果】池子不长。
+  he: true
+
+  # 【用途】探针回归（生发下一圈 seeds）。
+  # 【建议】true。
+  # 【关闭后果】无 seeds，下一圈从零开始。
+  phase_probe: true
+
+  # 【用途】view 显形（生成 manifest）。
+  # 【建议】true。
+  # 【关闭后】view 全为"（manifest 动作已关闭）"，省 1 次 reasoner 调用/圈。
+  manifest: true
+
+  # 【用途】落地决策模板（v1.22 引入）。
+  #   取向为 decision 时，落脚段渲染「行动清单六字段（verb / object /
+  #   owner_role / deadline_hint / acceptance / fallback）+ 不做什么 +
+  #   决策 rubric」，而不是原来的 boundary 留痕模板。
+  # 【建议】true。
+  # 【关闭 / 取向 boundary】退回老模板（池级留痕两个模板共用，不丢）。
+  landing_decision: true
+
+  # 【用途】self-check（自省）。
+  # 【⚠️ 与 output.self_check 是同一个开关】。
+  # 【建议】true。
+  # 【关闭后果】streak 机制失效（fix-72 v3 不触发）。
+  self_check: true
+
+  # ---------- 池维护 ----------
+
+  # 【用途】每圈重估池中 & / 线头的极性。
+  # 【建议】true。
+  # 【关闭后果】池极性永远 "?"，polarity_all_same 误报，
+  #             探针筛选的极性加权失效。
+  re_evaluate_pool: true
+
+  # 【用途】研究层跑完后债务终局清算。
+  # 【建议】true。
+  # 【关闭后果】延迟债务悬空（clean=False）。
+  settle_research: true
+
+
+# ------------------------------------------------------------
+# 探针筛选参数
+# ------------------------------------------------------------
+probe:
+  # 【用途】探针最低 expected_gain，低于此值丢弃。
+  # 【建议】
+  #   默认 0.3
+  #   探针总为空     → 0.2
+  #   探针质量差     → 0.4 ~ 0.5
+  min_gain: 0.5
+
+  # 【用途】每圈从新探针中筛出几条进下一轮。
+  # 【建议】
+  #   默认 3
+  #   圈数少但想多跑 → 5
+  # 【注意】太多会稀释注意力。
+  select_n: 5
+
+
+# ------------------------------------------------------------
+# 三通道记忆参数
+# ------------------------------------------------------------
+memory:
+  # 【用途】三通道：
+  #   content —— 内容通道：读上游 View 的形状（candidates/amps/threads）
+  #   context —— 背景通道：读上游已跑层的摘要
+  #   self    —— 自我通道：**单次运行内**各层 view 的自我累积（四段式）。
+  #               ★ 它**不跨问题、不跨会话**：self_text 是进程内 list，
+  #                 每次 run 重置，交互模式每题新建一个 MetaDGTF。
+  #                 （原文写「跨问题累积」，与实现不符；v1.21.60 更正。）
+  #
+  # 【建议】不要关 content。
+  #   context / self 可视情况关（省 prompt 长度）。
+  #
+  # 【关闭影响】
+  #   关 content → 展开/对偶判断看不到池和历史，退化为"每次从零开始"
+  #   关 context → 对撞层看不到修行/研究的来路，可能误判张力
+  #   关 self    → 无跨问题记忆，单次运行不受影响
+  #
+  # 【全关】用 [] 或 ["none"]
+  # 【CLI 覆盖】--channels content,context,self
+  channels: ["content", "context", "self"]
+
+  # 【用途】self 通道保留最近几层的记忆。
+  # 【建议】4。
+  self_layers: 4
+
+  # 【用途】self 通道**每层**保留几条（v1.21.50 [P1-4] 引入）。
+  #   以前是「最近 self_layers 条」，0 层刷屏会把研究层的挤掉；改成
+  #   每层各留本项条数，再按（圈序, 层序）交错。
+  # 【建议】2。
+  # 【注意】与 self_layers 是**两个口径**：总条数 ≈ 本项 × 参与的层数。
+  self_layers_per_entry: 2
+
+  # 【用途】池形状注入 prompt 时最多几条。
+  # 【建议】6。
+  # 【调大】给 LLM 更多上下文，但 prompt 变长。
+  shape_items: 10
+
+  # 【用途】每条形状截断字符数。
+  # 【建议】900。
+  shape_chars: 1200
+
+  # ---------- ★ v1.21.55 自省回流（[P1-5] 引入，[P2-7] 修好）----------
+  # 【用途】把每一圈 self-check 的结论变成下一圈的硬约束。
+  #   · 可疑候选      → 下一圈禁止原样/换说法/扩写重述（kind=candidate）
+  #   · ing 复述=True → 下一圈 ing 必须写上游 view 没有的句子（kind=ing）
+  #   · both 配额缺项 → 下一圈把缺的东西生出来、裁成 0/1（kind=dual）
+  #   · 「此处未生」>3 处 → 下一圈不许再拿未生收尾（kind=any）
+  #
+  # 【关掉的代价】自省会照常抓到"候选凑数""ing 复述=True"，
+  #   然后什么都不会发生 —— 花一次调用做质检，结论只进 md。
+  #   这是 v1.21.52~v1.21.54 实测产物里的现象。
+  #
+  # 【为什么以前看着没生效（[P2-7] 已修）】
+  #   约束原来混进 seed_probes，渲染成"上一圈没带走的自问"——
+  #   一条普通探针，模型当参考看，不当约束听。
+  #   现在走独立通道（Input.carry_constraints）：
+  #     置顶进展开 prompt 的硬约束块，并按 kind 分流进 ing / 对偶判断。
+  #   同时每圈多了【自省回流核对】：禁条目有没有重现、
+  #   ing 复述率有没有降，结论进 md 的【自省回流核对】段。
+  #
+  # 【调试】想看注入了什么：开 output.verbose，
+  #   找日志里的 "🔁 [自省回流]" 与 "✅/⚠️ [自省回流核对]"。
+  carry_feedback: true
+
+
+# ------------------------------------------------------------
+# 螺旋停止 / 循环判据
+
+# ------------------------------------------------------------
+# [v1.21.73] 外部锚点（题外独立事实，只当校验参照）
+# ------------------------------------------------------------
+external_anchor:
+  # 【用途】是否接入外部事实锚点。锚点是**运行前**由外部检索得到的
+  #   事实快照（anchors/*.json），用来在收尾回答「这次跑出来的结论与
+  #   外部事实对得上吗」。
+  # 【默认】false —— 关闭时行为与 v1.21.72 逐字相同，不花额外调用。
+  # 【注意】锚点**不进池、不参与对撞与清算、不改判定**。它是校验标尺，
+  #   不是题面输入。想让结论更"正确"不是它的职能。
+  enabled: false
+
+  # 【用途】锚点快照 JSON 路径（相对工作目录，或绝对路径）。
+  #   格式见 anchors/up_biz_anchors.json：
+  #     {"question", "retrieved_at", "retriever",
+  #      "anchors":[{"id","claim","source","url","as_of","kind"}]}
+  # 【失败行为】读不到 / 结构不对 → 记进 external_anchor.error 并写进
+  #   产物，**不静默降级**成"没接入"。
+  path: ""
+
+  # 【用途】最多用几条锚点（防 prompt 膨胀）。
+  max_items: 12
+
+  # 【用途】锚点检索后端（v1.22 引入）。
+  #   "snapshot" —— **零调用**：直接读上面 path 指的快照 JSON（默认）。
+  #   其它取值    —— 走真检索：当前实现 `tavily`，结果按 queries 的
+  #                  sha256 落 `cache/anchors/`，TTL 内不再打网络；
+  #                  未知取值**抛错留痕**，不静默降级。
+  retriever: "snapshot"
+
+  # 【用途】真检索后端读 API key 的环境变量名（key 不写进本文件）。
+  api_key_env: "TAVILY_API_KEY"
+
+  # 【用途】真检索结果的缓存有效期（小时）：期内同 queries 不再打网络。
+  cache_ttl_hours: 24
+
+  # 【用途】每圈最多并入几条锚点（0 = 本圈不检索）。元层（all）不检索。
+  per_round: 2
+
+  # 【用途】锚点**分级门槛**（v1.22 引入）：tier ≤ 此值的锚点才允许进
+  #   「结论 → 锚点」引用表。tier 越小越硬：
+  #     1 = 一手标准/官方　2 = 权威二手　3 = 一般二手　4 = 传闻转述
+  # 【建议】2 —— 网络转述（3/4）可以留痕，但不当证据。
+  # 【失败行为】值不合法 → 回落 2，不静默放松成「全都进表」。
+  tier_floor: 2
+
+  # 【用途】收尾要不要做「结论 vs 锚点」只读对照（一次额外 LLM 调用）。
+  crosscheck: true
+
+  # 【用途】answers 的**最短长度**（中文字符）。短 answer 会让
+  #   overlap_coef 假命中 —— 分母取 min，2 字 answer 被长 aspect
+  #   包住就是 1.000。被丢弃的 answer 会写进产物头部的
+  #   「锚点 answers 警告」并记在 anchors.<id>._answers_dropped。
+  # 【默认】6。置 0 = 不过滤（退回 v1.22.1 行为）。
+  answers_min_len: 6
+
+  # 【用途】单条锚点 answers 的上限（防侧面对比表膨胀）。
+  # 【默认】5（原硬编码值，v1.22.2 提成配置）。
+  answers_max_n: 5
+
+  # 【用途】锚点**证据资格**五档（v1.22 引入，取代旧的布尔写法）。
+  #   "off"        不参与（旧 false 等价，默认）
+  #   "record"     只记进产物，不进引用表
+  #   "crosscheck" 只做收尾只读对照
+  #   "evidence"   允许被「结论 → 锚点」引用表引用（再受 tier_floor 门控）
+  #   "gate"       最高档
+  # 【建议】"off" —— 打开要多花调用；想验锚点链路时逐档上调。
+  # 【兼容】旧写法 as_evidence: true / false 仍认（true → "evidence"）。
+  as_evidence: "off"
+
+  # 【用途】分诊降级（v1.22 引入）。
+  #   开启后，研究层某条 undecidable 的理由若属于
+  #   「信息不足 / 需外部动作 / 缺数据 / 无外部」，而池里的外部锚点
+  #   **有**材料能答 → 该条降为 decidable 或 partial；
+  #   理由若是「自指循环 / 无共同参照系 / 本体论判断」→ 检索无关，
+  #   **保持 undecidable，不许降级**。
+  # 【建议】false（默认）—— 只在这四类理由上动，且只出建议清单。
+  triage: false
+
+# ------------------------------------------------------------
+
+# ============================================================
+# [v1.23.0 W1] 核心联网（W 系列）· 基础设施。★ 默认全关，纯加性。
+#   它是什么：运行时**发起**的检索。与 external_anchor（事先落盘的冻结
+#   事实快照）是两件事；编号 W# 与 X# **不互换**。
+#   红线：检索结果只作**参照** —— 不进 view.candidates、不进 _ing、
+#   不进对撞第三者；失败走独立 logger（dgtf.websearch, propagate=False）。
+# ============================================================
+web_search:
+  # 【用途】全局总闸。【默认】false —— 不显式打开就是**零调用**。
+  enabled: false
+
+  # 【用途】检索后端（key 走环境变量，不落盘本文件）。
+  backend: "tavily"
+  api_key_env: "TAVILY_API_KEY"
+
+  # 【用途】单次请求超时（秒）/ 重试次数 / 线性退避基数（秒）。
+  timeout_seconds: 30
+  max_retries: 2
+  backoff_seconds: 1.8
+
+  # 【用途】检索结果缓存小时数（sha256 落 cache/websearch/）。
+  cache_ttl_hours: 24
+
+  # 【配额三层】每环节每圈 / 每环节全程 / 每跑总。三层都过才允许调用。
+  quota:
+    per_stage_round: 2
+    per_stage_total: 8
+    per_run_total: 30
+
+  # 【环节授权】逐环节开关（不是全局 ON/OFF）。
+  #   修行层与停止判据**默认关** —— 修行层联网会污染
+  #   「输入是形状不是数据」这条宪法级特性。
+  stages:
+    practice_term_calibration: false
+    research_decompose: true
+    research_evidence: true
+    research_precedent: true
+    duel_arbitration: true
+    meta_clean_check: true
+    stop_criteria: false
+
+  # 【引用授权】off / record / crosscheck / evidence / gate。
+  as_evidence: "crosscheck"
+  # 【tier 门】[v1.23.2] W# 进引用表的有效 tier 上限。
+  #   ★ 本键在 v1.23.1 及以前**从未被读过**（审计 J 类抓出来的）。
+  #   ★ 默认 3 = 与 v1.23.1 行为一致：客户端初值 3 能进表；
+  #     人把某域名在 `tier_confirmed` 里确认成 4 就进不了。
+  tier_floor: 3
+
+  # 【失败降级】连续失败达到此值 → 本跑联网关闭（留痕 [W-DISABLED]）。
+  auto_disable_after_failures: 3
+
+  # 【人工确认表】[v1.23.2] 域名 → tier。**默认空 = 零差异**。
+  #   ★ 从「提案」（tier_proposal）到「生效」没有自动路径：只有人把域名
+  #     写进这张表才生效。写 4（博客/论坛档）会把它挡在引用表外。
+  #   例：{natcm.gov.cn: 1, zhihu.com: 4}
+  tier_confirmed: {}
+
+  # 【tier 提案】[v1.23.1 遗留2] 是否给联网结果提「建议 tier」。
+  #   ★ 默认 false = 与 v1.23.0 逐字相同（零副作用）。
+  #   ★ 即便 true 也只写**待审**建议：绝不改 item 的 tier、
+  #     绝不进任何判定路径 —— 由人确认后才谈 tier 生效。
+  tier_proposal: false
+
+  # 【域名启发式】提案依据表：`[子串, tier]`，tier 越小越硬。
+  #   未知域名保守取 3（> 默认 tier_floor 2 ⇒ 进不了引用表）。
+  domain_tier_rules:
+    - [".gov.cn", 1]
+    - [".gov", 1]
+    - [".edu", 2]
+    - ["iso.org", 1]
+    - ["standard", 1]
+    - ["wikipedia.org", 3]
+    - ["blog", 4]
+    - ["forum", 4]
+
+spiral:
+  # ---------- 圈数控制 ----------
+
+  # 【用途】软最大圈数：超过它才开始检查"自然安住"。
+  # 【建议】3。
+  # 【注意】soft_max 必须 < hard_max 才能触发自然安住。
+  soft_max: 3
+
+  # 【用途】硬最大圈数：体力上限，走满即截断。
+  # 【建议】
+  #   开发调试：4
+  #   日常：8
+  #   深度研究：12-15
+  #   批量：6
+  # 【注意】走满时 stop_reason 会写"体力耗尽...是被截断不是自然停止"。
+  hard_max: 12
+
+  # 【用途】元层额外多跑 N 圈（用于闭环清算）。
+  # 【建议】1。
+  # 【关闭】0。
+  all_extra_rounds: 2
+
+  # ---------- 停止判据阈值 ----------
+  # 【调松（更早停）↔ 调严（跑更久）】
+
+  # 【用途】产物相似度阈值：连续两圈 view 相似 ≥ 此值 → 自然安住。
+  # 【建议】0.8。
+  # 【调松】0.7（更早停）。
+  # 【调严】0.9（跑更久）。
+  stop_similarity: 0.7
+
+  # 【用途】悬置稳定所需条数。
+  # 【建议】2。
+  # 【调松】1。【调严】3。
+  stable_need: 3
+
+  # 【用途】悬置转稳所需的连续层数。
+  # 【建议】3。
+  # 【调松】2（更早停）。【调严】4。
+  stable_layers: 2
+
+  # 【用途】判定"同一批"的相似度阈值。
+  # 【建议】0.6。
+  batch_similarity: 0.7
+
+  # 【用途】元层闭环清算的覆盖相似度阈值。
+  # 【建议】0.6。
+  meta_cover_similarity: 0.7
+
+  # 【用途】空转上限：连续 N 圈 idle 即停。
+  # 【建议】2。
+  # 【调松】1。【调严】3。
+  idle_limit: 2
+
+  # 【用途】每圈空转上限：连续 N 圈无新 & / 线头即停。
+  # 【建议】2。
+  # 【调松】1。【调严】3。
+  round_idle_limit: 2
+
+  # ---------- 新条目判据 ----------
+
+  # 【用途】新条目相似度阈值（辅助判据）。
+  # 【建议】0.55。
+  # 【调松】0.7（更容易判"重复"）。【调严】0.4。
+  new_item_similarity: 0.7
+
+  # 【用途】新条目 overlap coefficient 阈值（主判据）。
+  # 【说明】overlap = |A∩B| / min(|A|,|B|)，
+  #         比 Jaccard 对长短不均的句子更宽容。
+  # 【建议】0.55。
+  new_item_overlap: 0.7
+
+  # ---------- ★ v1.21.49 线程去重（比候选更严）----------
+  # 【原因】修行/对撞层换措辞的线头被算作"新"，
+  #         导致 11 圈不触发"无线头新增"。
+  # 【建议】0.70 / 0.70。
+  thread_new_similarity: 0.70
+  thread_new_overlap: 0.70
+
+  # ---------- 结构饱和度检查 ----------
+
+  # 【用途】LLM 判断"是否引入新结构维度"。
+  # 【建议】true。
+  # 【关闭后果】无"无新维度"停止判据，研究层可能跑更久。
+  structure_saturation_enabled: true
+
+  # 【用途】每 N 圈检查一次结构饱和度。
+  # 【v1.21.58 起全层统一 3】
+  #   · 这个检查只在**研究层与元层**跑（条件里写着 entry in ("1","all")），
+  #     所以统一成 3 与原先把这两层各写成 3 **行为完全相同**。
+  #   · 为什么是 3 不是 2：v1.21.48 研究层 2 圈就停，可判定覆盖率仅 33%；
+  #     v1.21.49 把间隔放宽到 3，研究层才走到 3 圈。
+  # 【注意】
+  #   every_n: 1 → 每圈都跑 LLM，慢
+  #   every_n: 3 → 3 圈才检查一次，可能错过
+  #   该检查额外消耗 LLM 调用（每 N 圈 1 次）。
+  structure_saturation_every_n: 1   # v1.21.60 对齐：原为过期值 2
+
+  # ---------- 跨圈比对窗口 ----------
+
+  # 【用途】跨圈比对时往前看几圈。
+  # 【建议】2。
+  round_window: 3
+
+  # 【用途】连续有新增但无推进的上限。
+  # 【建议】2。
+  round_stall_limit: 2
+
+  # ---------- 反向触发点：无进展 → 迁向不可判定 ----------
+
+  # 【用途】一个子问题连续 N 圈**没有任何进展**（没被回答 / 没挂新账 /
+  #   没被复确认 / 没被清偿 / 没发生分类变更），且名下挂着未清偿的账
+  #   → 迁向 undecidable，账连着关成 escalated。
+  # 【为什么有它】三态在真跑里是**单向漂移**的：40 份日志里 reclass 成立
+  #   18 次，方向只有 und→partial / dec→partial，从无 partial→und。
+  #   于是 escalation 恒为 0，而复债只在"曾被 escalation 关过账"时才能开，
+  #   所以复债也恒为 0 —— 两个 0 是同一条断链的两端。
+  # 【自我约束】① 没有未清偿债务就不动手（不硬造证据）；② 本圈有任何进展
+  #   就清零计数；③ 仍然双向 —— 救回时复债会把账重新挂上。
+  # 【债务编号只能支撑 →undecidable】硬约束在 apply_decidability_change 里。
+  # 【N 取 2 的理由】N=3 时真跑 0 次触发：要么研究层每圈都在复确认
+  #   （v61a —— 已把复确认剔出"进展"），要么债务第 2 圈就被清偿（v61b）
+  #   —— 债务活不过 2 圈，3 圈的门槛天然够不到。
+  # 【建议】2。设 0 = 关闭（退回旧行为）。
+  escalate_starve_rounds: 3
+
+  # 【用途】停止判据是「层内空转」时，不再被「还有未深入的方向」推迟。
+  # 【为什么】两条判据互相矛盾：空转说的是"已经给过 ≥2 圈机会、同一批
+  #   问题没消化掉"，未深入方向说的是"还有低垂果实、值得再买一圈"。
+  #   空转恰恰是在说没有。
+  # 【实证】86 个真跑：48 次被迫停里 14 次属推迟，被推迟掉的判据 19/33
+  #   是层内空转；推迟后那一圈仍以走满收场（对撞层 5 圈自然停率 27%、
+  #   元层 32%）—— 花钱买一个已经知道的结果。
+  # 【建议】1（启用）。设 0 = 退回旧行为。
+  no_push_when_idle: 2
+
+  # 【用途】自动规划给的 max_calls 若低于「总圈数 × 本值」，抬到这个量。
+  # 【为什么】实测平均每圈 9.6 次调用（86 个真跑），而模型给的预算常低于
+  #   圈数所需 —— y61d 给 180、四层共 21 圈，实跑 191 撞线，三层写成
+  #   「预算用尽」。那是主动买截断：层内还没判停就被外部掐掉。
+  # 【只抬上限，不抬消耗】层内自然停照样提前收尾，预算只在真失控时拦。
+  # 【建议】10。设 0 = 关闭。
+  budget_per_round_floor: 10
+
+  # 【用途】模型把 max_calls 给成「不限」（0）时，兜到「总圈数 × 本值」。
+  # 【为什么】y61e 的规划就给了「不限」，后果是动态提前停在 auto 这条
+  #   最常走的路径上**永远触发不到** —— 机制写了、冒烟过了，真跑里跑不到。
+  #   而且模型和 cost_profile 一样无从判断该花多少（它看不见 token 账）。
+  # 【系数】12 比实测每圈成本 9.6 高 ~25%：正常跑碰不到，只在真失控时拦。
+  #   是安全网，不是节流阀。
+  # 【建议】12。设 0 = 关闭（允许不限）。用户显式传 0 的语义不受影响。
+  budget_per_round_cap: 12
+
+  # ---------- 入池挡重复 ----------
+
+  # 【用途】入池前挡重复的相似度阈值。
+  # 【建议】0.6 ~ 0.7。
+  # 【⚠️ 太低会误杀】0.3 → 稍有相似就判"翻回老地方"，池永远长不大。
+  rehash_similarity: 0.7
+
+  # ---------- 双通道停滞 ----------
+
+  # 【用途】双通道停滞判据：qdist 无改善连续 N 次。
+  # 【建议】2。
+  stall_streak_limit: 2
+
+  # 【用途】qdist 最小改善量。
+  # 【建议】0.03。
+  min_distance_improvement: 0.03
+
+  # 【用途】双通道收敛窗口。
+  # 【建议】2。
+  convergence_window: 2
+
+  # ---------- ★ v1.21.55 「此处未生」阈值 ----------
+  # 【用途】一圈的产物里，「此处未生」出现超过几处就判为**逃避**。
+  #   「此处未生」是宪法允许的诚实姿态（折中不合法，未生合法）。
+  #   但每次都拿它收尾就成了套路：探针没真的往里推，
+  #   用一句「未生」把该走的路结掉。这个字段就是那条分界线。
+  #
+  # 【统计口径】代码按产物硬数一遍（ing / view / 线头 / & /
+  #   不可判定通道），与模型自报的 unsaid_count 取**较大值**——
+  #   模型靠少报藏不住。
+  #
+  # 【建议】3。
+  #   调大（4~6）→ 更宽容，适合本来就难推的问题（如不可判定类）
+  #   调小（1~2）→ 更严，适合要逼出实际产物的场景
+  #   0         → 不设限，永远只当诚实姿态，不做判据
+  #
+  # 【触发后发生什么】
+  #   quality_flags 加 unsaid_overused(n)（进质量评价）
+  #   self_check.unsaid_is_escape = true
+  #   下一圈注入一条硬约束：「不许再拿未生收尾，
+  #     先把上一圈标了未生的地方真的推一遍」
+  #
+  # 【按层覆盖】per_entry."0".unsaid_escape_limit: 5
+  #   例：修行层本来就常以「未生」收尾，可以只对它放宽。
+  #
+  # 【看结果】md 每段末尾的【「此处未生」计数】。
+  unsaid_escape_limit: 2
+
+  # ---------- ★ v1.21.56 · 两条 both 阈值（语义完全不同）----------
+
+  # 【用途】展开后处理里 both 占比超过它 → 把多余的按两端理由长度
+  #         对称性**改判**回 0/1。
+  # 【建议】0.3。
+  # ⚠️ 它和 spiral.both_quota.max_ratio（默认 0.7）不是同一个东西：
+  #    both_tighten_ratio = 改判阈值（动极性）
+  #    both_quota.max_ratio = 追问阈值（不动极性，只追问「缺什么」）
+  #    v1.21.56 以前，0.3 是写死在调用处的，读代码的人容易以为
+  #    0.7 是唯一的 both 配额。
+  both_tighten_ratio: 0.5
+
+  # ---------- ★ v122 · both 配额（**追问**，不动极性）----------
+
+  # 【用途】both 占比超过 max_ratio → 去问「缺什么」，把答案挂进
+  #   view.both_quota.missing，下一圈据此要求把缺的东西生出来。
+  # 【建议】max_ratio 0.7 / min_items 2（条数太少不判占比）。
+  # 【关闭】enabled: false → 不追问（both 占比再高也不补裁）。
+  # ⚠️ 上面 both_tighten_ratio 是**改判**（动极性），这里才是**追问**，
+  #    两条阈值语义完全不同，别混。
+  both_quota:
+    enabled: true
+    max_ratio: 0.7
+    min_items: 2
+
+  # ---------- ★ v1.21.56 · 四象限对齐的两条判据 ----------
+
+  # 【用途】修行层的悬置 target × 研究层的 sub_question 配对的相似度。
+  # 【说明】分母取两侧关键词数的**最大值**，所以短 target 对长问句
+  #         几乎永远上不去 0.7——实测 10 份产物匹配率全是 0%。
+  # 【建议】0.7。
+  alignment_similarity: 0.7
+
+  # 【用途】包含度判据：短的一侧有多少关键词落在长的那一侧里。
+  # 【说明】这是 v1.21.56 补的第二条判据，专门救「短 target × 长问句」。
+  # 【建议】0.6。调松到 0.5 会更容易配上，也更容易误配。
+  # ⚠️ 未对齐仍然是**合法结果**（宪法级）。这两条只决定"能不能对上"，
+  #    不决定"该不该对上"——真的没有同一件事可对时，产物仍写
+  #    unaligned，只是现在它「有可能」对上，且会打印两侧各几条、
+  #    最接近的一对几分，让 0% 变得可解释。
+  alignment_containment: 0.7
+
+  # ---------- ★ v1.21.56 配置化 · 合并后二次去重 ----------
+
+  # 候选更怕误杀，& 和线头更容易近义改写（同一件事换三种说法）。
+  # 【调松（更多去重）】候选 0.55/0.60；&/线头 0.55/0.58。
+  # 【调严（更多保留）】候选 0.75/0.80；&/线头 0.65/0.68。
+  dedup_candidate_overlap: 0.7
+  dedup_candidate_similarity: 0.70
+  dedup_amp_overlap: 0.7
+  dedup_amp_similarity: 0.7
+
+  # ---------- ★ v1.21.56 配置化 · 质量线索触发线 ----------
+
+  # 【用途】ing 复述率超过它 → 挂 ing_rephrased_direct 质量线索。
+  # 【建议】0.5。【调严】0.4（更敏感）。【调松】0.6。
+  qc_rephrase_ratio: 0.7
+
+  # 【用途】候选极性 both 占比超过它 → 挂 judge_mostly_both。
+  # 【建议】0.6。【调严】0.5。
+  qc_both_ratio: 0.7
+
+  # ---------- ★ v1.21.56 配置化 · all 层漂移/自指标记 ----------
+
+  # 【用途】all 层候选里跨层描述占比超过它 → all_candidate_drift。
+  # 【建议】0.5。
+  all_drift_threshold: 0.7
+
+  # 【用途】all 层候选里本层自指占比超过它 → all_candidate_selfref。
+  # 【建议】0.4。
+  all_selfref_threshold: 0.7
+
+  # ---------- 极性重估 ----------
+
+  # 【用途】极性重估频率（每 N 圈跑一次）。
+  # 【建议】1（每圈）。
+  # 【关闭】配合 actions.re_evaluate_pool: false。
+  re_eval_every_n: 1
+
+  # 【用途】极性重估取池尾几条。
+  # 【建议】10。
+  re_eval_recent_k: 10
+
+  # ---------- 每层最低圈数 ----------
+  # 【用途】低于此值不允许停止（拦截早停）。
+  # 【⚠️ 注意】会覆盖停止判据：
+  #   即使"材料耗尽"命中，圈数未到 min_rounds 也不会停。
+  # 【v1.21.58 起全层归零】
+  #   · 它想防的「研究层 2 圈就停」已由 structure_saturation_every_n: 3
+  #     解决，数值下限与那个机制叠着，反而多一处看不见的行为来源。
+  #   · 各层停止理由自身都带累计门槛（复述 / 自省点名 / 无新 & 都要
+  #     累计 >= 2 圈），第 1 圈不可能产生任何理由 —— 下限 2 只能拦
+  #     "第 1 圈停止"，而那件事本来就不会发生（v1.21.57 复查结论）。
+  #   · 元层真正的下限是**语义下限**「闭环未清算→推迟停止」，不看圈号。
+  # 【想按层加】运行时用 spiral.per_entry（见下方说明），别写回这里。
+  min_rounds:
+    "0": 0
+    "1": 0
+  #             ↑ 原为过期值 2；v1.21.58 起「全层归零」，yaml 因语法错误从未生效，首次生效前对齐（v1.21.60）
+    "both": 0
+    "all": 0
+
+  # ---------- 按层覆盖（可选，默认不启用） ----------
+  # 【v1.21.58 起这里**默认留空**】—— 出厂是全层一致
+  #   （soft_max 3 / hard_max 12），按层差异一律走运行时，三条路：
+  #
+  #   1) 命令行（最常用，只管预算）
+  #        --rounds "0:4,both:6"        # 只写想改的层，其余用 hard_max
+  #        --rounds 3                   # 全层同圈数
+  #        --rounds 0                   # 全层用 hard_max（默认）
+  #   2) 交互式（不给参数时问）
+  #        圈数 [0=用 hard_max]> 0:2,1:2,both:3,all:3
+  #   3) 配置文件（要改的**不只是预算**时，临时加这一段）
+  # spiral:
+  # per_entry:
+  # "both": { soft_max: 3, hard_max: 6 }
+  # "all":  { stable_layers: 2 }
+  #
+  # 【⚠️ per_entry 是浅合并，不是整体替换】未列出的字段仍从顶层继承：
+  #     sp = dict(config["spiral"]); sp.update(per_entry[entry])
+  #   所以要完全隔离某层，得把该层所有要覆盖的字段都写出来。
+  #
+  # 【⚠️ 预算必须 > soft_max】否则「自然安住」永远触发不了
+  #   （旧默认预算 3 而对撞层 soft_max 5，那条判据一直是死的）。
+  #
+  # ---------- 显式恢复 v1.21.57 之前的元层行为 ----------
+  # v1.21.58 去 per_entry 时，元层的 stable_layers 从 2 提到了全局 3。
+  # 这**不是打字错误，是行为变化**：元层「悬置决定稳定 → 自然安住」
+  # 的门槛提高，自然安住更难触发，元层会跑更久。
+  # 想要回原来那样（门槛 2），把下面这段取消注释即可：
+  #
+  # spiral:
+  # per_entry:
+  # "all": { stable_layers: 2 }
+  #
+  # 另外两个同样可在运行时恢复的旧值（v1.21.58 统一掉了）：
+  #   · 对撞层的 soft_max 5（旧值）：
+  #       spiral:
+  #         per_entry:
+  #           "both": { soft_max: 5 }
+  #     注意同时要保证该层预算 > 5，否则那条判据是死的（见上面的 ⚠️）。
+  #   · 按层加「最低圈数」下限（旧值：研究 2 / 对撞 3）：
+  #       spiral:
+  #         per_entry:
+  #           "1":    { min_rounds: { "1": 2 } }      # 注意 min_rounds 是
+  #           "both": { min_rounds: { "both": 3 } }   # **字典**，不是标量；
+  #     而且 per_entry 是浅合并，写它会**整块替换**顶层的 min_rounds，
+  #     所以要把该层那一条写全。写错了个数是静默失效，不报错。
+
+
+# ============================================================
+# 三套推荐配置（按需切换）
+# ============================================================
+#
+# 【场景 1 · 开发调试】
+#   想快速定位问题，用便宜模型，跑得短。
+#   ------------------------------------------------------------
+#   api:
+#     reasoner_model: "deepseek-chat"      # 调试时用便宜模型
+#   output:
+#     verbose: true
+#     show_dual_judge: true
+#     show_ing: true
+#     show_manifest: true
+#     show_probe_diag: true
+#   actions:
+#     parallel_mode: "serial"              # 调试用串行，好定位
+#   spiral:
+#     hard_max: 4                          # 全层统一，短平快
+#   # 命令行覆盖：--rounds 2  或  --rounds "0:2,both:3"
+#
+# ------------------------------------------------------------
+# 【场景 2 · 日常使用】
+#   平衡速度与质量。
+#   ------------------------------------------------------------
+#   actions:
+#     parallel_mode: "auto"
+#   output:
+#     verbose: true
+#     self_check: true
+#   spiral:
+#     hard_max: 8                          # 全层统一
+#   # 想让某层多跑：命令行 --rounds "both:10,all:8"
+#
+# ------------------------------------------------------------
+# 【场景 3 · 批量生产】
+#   多问题并行，最省成本，最安静。
+#   ------------------------------------------------------------
+#   output:
+#     verbose: false
+#     self_check: false                    # 省 1 次/圈
+#   actions:
+#     parallel_mode: "C"                   # 最快（A 也可，见下）
+#     re_evaluate_pool: false              # 省 1 次/圈
+#   spiral:
+#     hard_max: 4                          # 压低预算（全层统一）
+#     all_extra_rounds: 0
+#
+#   A 与 C 的取舍：
+#     A —— 四层互不相干地跑完再汇流，结果确定，但 both/all 的
+#          "读上游"语义是退化后靠汇流圈补回来的。
+#     C —— 每层真的在读上游（部分受限地保留了 both/all 语义），
+#          也最快，但结果带时序依赖，跑两次可能不一样。
+#     批量且不需要复现 → C；批量但要能对着上一版复盘 → A。
+#
+# ============================================================
+
+
+# ============================================================
+# 调试与诊断速查
+# ============================================================
+#
+# 【想知道为什么停止了】
+#   看 outputs/*.md 里的 **螺旋停止** 字段，
+#   或日志里的 ⏹ 螺旋停止（第 N 圈）。
+#   停止理由可能是多条拼起来的：
+#     "产物相似度高，自然安住 + 连续 2 轮无新 &"
+#   排查顺序：
+#     1. 看 round_log 表格，找到哪一圈先触发
+#     2. 对比 idle_amp / idle_thread / idle_stall 是否超阈值
+#     3. 若"产物相似" → 调 stop_similarity
+#     4. 若"无新 &"  → 调 new_item_overlap
+#
+# 【想看探针为什么没 covers】
+#   output.show_probe_diag: true
+#   日志会出现：
+#     [fix-89 diag] 探针 covers_raw=['T1','T3'] → parsed=['T1','T3']
+#   或：
+#     [fix-89 diag] 探针 covers 字段缺失（模型未输出）
+#
+# 【想看 ing 复述率】
+#   默认不打印。看 view.quality_flags：
+#     ing_rephrased_direct(75%)
+#   百分数是复述率。若 ≥ 50%，_ing_rephrase_ratio 被设置。
+#
+# 【想看池极性分布】
+#   每次跑池快照会打印：
+#     📋 池极性快照（1 第 3 圈，共 12 条，未判 2 条）：
+#           & [1] 前端设计的责任边界
+#           & [0] 验证环节的归属
+#           ... [both] 需求到实现的转换
+#   [?] 是未判的，re_evaluate_pool: true 后会补上。
+#
+# 【想看某个动作的开销】
+#   output.verbose: true
+#   跑完后会打印：
+#     完成 | 87 次 LLM | 132456 tokens
+#   单层单圈约 10 次 LLM：
+#     re_anchor        1 次
+#     expand_yin/yang  2 次
+#     dual_judge       1-3 次
+#     ing              1 次（reasoner）
+#     he               1 次
+#     phase_probe      1 次
+#     manifest         1 次（reasoner）
+#     self_check       1 次
+#     re_evaluate_pool 1 次
+#     结构饱和度        1 次/N 圈
+#
+# ============================================================
+
+
+# ============================================================
+# 常见坑与陷阱（速查表）
+# ============================================================
+#
+# 【坑 1】--parallel 默认值覆盖 YAML（v1.21.51 [fix-105] 已修）
+#   现象（旧版）：YAML 里写 parallel_mode: "A"，CLI 不传 --parallel，
+#               实际跑的是 "auto"。
+#   原因：argparse default="auto" 硬编码。
+#   现状：default 改成 None，不传就回落本文件的 parallel_mode。
+#   仍然要注意：显式传 --parallel 会覆盖本文件（这是想要的）。
+#
+# 【坑 1.5】C 模式结果不可复现
+#   现象：同一个问题跑两遍，both/all 的产物不一样。
+#   原因：C 是流水线，both 的第 2 圈读到 0 的第几圈取决于谁先跑完。
+#   想可复现 → 用 B（每圈 barrier）或 serial。
+#   想最快 → 用 C。两者不能兼得。
+#
+# 【坑 2】per_entry 是浅合并
+#   现象：per_entry."1".structure_saturation_every_n: 3
+#         期望 "1" 层完全隔离配置，
+#         实际 hard_max 仍继承顶层 12。
+#   修法：把该层所有要覆盖的字段都写出来。
+#
+# 【坑 3】A 模式强制走 external（B~H 已不用强制了）
+#   现象：decidability_source: "pool" 配了，A 模式实际走 external。
+#   原因：A 模式四层互不读产物，池里没有东西可读。
+#   修法：设计如此，A 模式本来就不继承。
+#
+#   B/C/D/E/F/G/H 模式不同 —— v1.21.53 加了 0 层预热之后
+#   它们都能走池路径（_source = pool+external）。
+#   但预热圈数决定这条路走不走得成：
+#     parallel_warmup_rounds = 0   → 退回 external
+#     parallel_warmup_rounds >= 1  → 走池路径 ✅
+#   所以看到 B~H 的判定源是 external 时，先查这个字段。
+# 【坑 4】self_check: false 会让 fix-72 失效
+#   现象：对撞/元层跑得比预期久。
+#   原因：_rephrased_streak / meta_idle_streak 不累积，
+#         fix-72 v3 不再触发。
+#   修法：除非调试速度，保持 self_check: true。
+#   v1.21.55 起还多一条：self_check 关掉 → _build_carry 没有输入，
+#         memory.carry_feedback 形同虚设（自省结论不再回流）。
+#         两个开关是串在同一条链上的。
+#
+# 【坑 5】rehash_similarity 太低会误杀
+#   现象：池永远长不大，每次都"翻回老地方"。
+#   原因：0.3 太低，稍有相似就判重复。
+#   修法：保持 0.6 ~ 0.7。
+#
+# 【坑 6】min_rounds 会覆盖停止判据
+#   现象：即使"材料耗尽"命中，层仍继续跑。
+#   原因：min_rounds 拦截早停。
+#   修法：默认全 0；确实需要最低圈数的层再设。
+#
+# 【坑 7】批量跑时共享 LLM 实例
+#   现象：无法区分哪个问题花了多少 LLM 调用。
+#   原因：多 MetaDGTF 共享一个 LLM，计数累加正确但无归属。
+#   修法：每个问题用独立 MetaDGTF（默认行为）。
+#
+# ============================================================
+
+
+# ============================================================
+# 版本升级注意事项
+# ============================================================
+#
+# 【v1.21.55 第二批（跑出第一份真模型产物之后的修订）】
+#   （同一版本号内的第二批改动，编号 P2-9a ~ P2-9g，见主文件 changelog）
+#   新增字段：无。
+#   兼容性：
+#     ✅ 旧的 dgtf_config.yaml 可直接用，不改也能跑
+#   行为变化（比上一批影响更直接，注意）：
+#     ⚠️ 自省回流现在是**硬执行**：上一圈点名禁掉的候选，
+#        这一圈再写出来会被当场丢掉（md 里多一段
+#        【回流硬执行 · 拦下的重现候选】）。
+#        保底留一半、且至少留一条 —— 全丢会把层内的
+#        自省 → 回流链路一起掐断。
+#        想回到旧行为（只记录不拦）：memory.carry_feedback: false。
+#     ⚠️ 角色排班改了：有 carry 时 2 圈 = 摊开 → 转向、
+#        3 圈 = 摊开 → 转向 → 复裁。原来是永远「摊开」
+#        （被自己的返回值喂回去了）。本轮形状那段文案会跟着变。
+#     ⚠️ 展开的量词从「输出 0-8 条」改成「能写几条写几条」，
+#        且【宁可空，不要凑】挪到 prompt 最前面。
+#        候选条数会比上一批少，这是目的不是故障。
+#     ⚠️ md 的「上限 N 圈」改成 rounds_cap：元层会显示
+#        请求圈数 + spiral.all_extra_rounds（默认 1）。
+#     ⚠️ 自省段多一行「ing 复述率（代码实算）」。
+#        模型自判与它不一致时（元层见过 False vs 50%），
+#        以这一行为准去裁决；两者的阈值 0.75 / 0.62 仍未做成配置项，
+#        样本够了再说。
+#     （以上都不需要改配置；没有新的可配开关。）
+#
+# 【v1.21.54 → v1.21.55】
+#   新增字段：
+#     spiral.unsaid_escape_limit: 3   ← 新增，有默认值
+#     memory.carry_feedback: true     ← 字段 v1.21.52 [P1-5] 就有，
+#                                       本文件此前没写出来，这次补上
+#   （两者都有默认值，旧的 dgtf_config.yaml 不改也能跑。）
+#   兼容性：
+#     ✅ 旧的 dgtf_config.yaml 可直接用，不改也能跑
+#   行为变化（都是判据纠偏，不改调度）：
+#     ⚠️ 自省回流现在真的进下一圈 prompt，且每圈多一段【自省回流核对】。
+#        产物会比 v1.21.54 更"被约束"：可疑候选不许重现、
+#        ing 不许复述上游。想回到旧行为：memory.carry_feedback: false。
+#     ⚠️ 对偶判断允许少判（judgments 条数 < 候选条数）。
+#        日志里会出现 "🔮 未判 N/M 条"，这是合法的，不是失败；
+#        只有"一条都没判到"才记 error。
+#     ⚠️ ing 复述率不再把本层候选算作"上游"。
+#        同样的输出，复述率数字会比 v1.21.54 低（以前把吃候选也算成复述）。
+#        换说法（扩写）现在也能抓到 —— 判据补了 overlap coefficient。
+#     ⚠️ self_check 多报两项：unsaid_count / unsaid_is_escape。
+#        一圈里「此处未生」超过 3 处会被标 unsaid_overused(n)，
+#        并把"不许再拿未生收尾"回流进下一圈。
+#        阈值走 spiral.unsaid_escape_limit（默认 3，
+#        per_entry."0".unsaid_escape_limit 可按层覆盖；0 = 不设限）。
+#        代码里的 UNSAID_ESCAPE_LIMIT = 3 只是没读到配置时的兜底。
+#     ⚠️ md 每层末尾新增两段：【「此处未生」计数】、【自省回流核对】。
+#        此前这两块只在 view.rendered（日志）里，md 里查不到。
+#     ⚠️ 修行层探针多了 threads 字段：
+#        材料不够 / 工具限制 / 外部约束这类"推不动"的硬边界进 threads，
+#        不再占 suspensions（主动悬置）。产物里"我决定不碰什么"会变短，
+#        "悬空线头"会变长——这是刻意的，不是丢东西。
+#
+# 【v1.21.53 → v1.21.54】
+#   新增字段：无（复用 parallel_warmup_rounds / pipeline_gate_timeout）
+#   parallel_mode 新增可选值："D" "E" "F" "G" "H"
+#   兼容性：
+#     ✅ 旧的 dgtf_config.yaml 可直接用，不改也能跑
+#     ✅ 默认仍是 auto，auto 现在九选一
+#   行为变化（不影响已有模式）：
+#     ✅ serial / A / B / C 的调度逻辑一行没动
+#     ⚠️ auto 的候选集从 4 个扩到 9 个，
+#        觉得选得飘就把 parallel_mode 写死成某一档
+#   新增默认值：
+#     parallel_warmup_rounds 现在也作用于 D/E ——
+#     默认 1 意味着 D/E 的研究层比修行层晚一圈出发。
+#     想要严格同时出发，显式设为 0。
+#
+
+# 【v1.21.52 → v1.21.53】
+#   新增字段：
+#     actions.parallel_warmup_rounds: 1
+#     actions.pipeline_gate_timeout: 900
+#   parallel_mode 新增可选值："C"
+#   兼容性：
+#     ✅ 旧的 dgtf_config.yaml 可直接用，新字段有默认值
+#     ⚠️ 旧配置文件里没有 parallel_warmup_rounds，默认按 1 处理
+#   行为变化（只影响 B 模式，C 是新的）：
+#     ⚠️ B 模式不再是"0 层整层跑完再并行"，
+#        改成"0 层预热 1 圈后带着进度继续并行"。
+#        好处：研究层能继承修行池、对撞层能真对齐、总时长下降；
+#        风险：可判定性读的池形状比整层先行时要薄。
+#        想恢复 v1.21.52 行为：parallel_warmup_rounds 设到 ≥0 层 hard_max。
+#     ⚠️ B 模式的日志行前缀从"B 第 N 圈"变成"B 第 N 波"
+#        （0 层领先 warm 圈以后，同一个波次里各层的圈号不再相同）。
+#   新增：C 模式（流水线并行）—— 见 actions.parallel_mode 注释。
+#
+# 【v1.21.49 → v1.21.50】
+#   兼容性：
+#     ✅ 旧的 dgtf_config.yaml 可直接用，新字段有默认值
+#     ⚠️ actions.parallel_mode 是新增字段
+#     ⚠️ --parallel 参数是新增的
+#   行为变化：
+#     ⚠️ 默认走 auto 决策：不再永远串行
+#        短问题 → 决策 serial（行为一致）
+#        长问题/多分句 → 可能决策 A 或 B（行为不同）
+#     想保持 v1.21.49 行为：
+#       actions.parallel_mode: "serial"
+#       或 CLI --parallel serial
+#
+# 【v1.21.48 → v1.21.49】
+#   新增字段：
+#     spiral.thread_new_similarity: 0.70
+#     spiral.thread_new_overlap: 0.70
+#     output.show_probe_diag: false
+#   行为变化：
+#     fix-90：_prev_missed_n 从 0 改为 None，fix-88b 真正生效
+#     fix-91：per_entry 新增 structure_saturation_every_n 覆盖
+#     fix-93：_apply_view_to_pool streak 更新独立于 _sc
+#
+# ============================================================
+
+
+# ============================================================
+# 性能与成本估算
+# ============================================================
+#
+# 【时间估算】假设单次 LLM 平均 5 秒（chat）/ 15 秒（reasoner）
+#   ┌────────┬──────────────────┬──────────────┬────────────┐
+#   │ 模式   │ 四层 3 圈的调用数 │ 时间估算     │ 可复现性   │
+#   ├────────┼──────────────────┼──────────────┼────────────┤
+#   │ serial │ 4 层 × 3 圈 × 10 │ ~600 秒      │ ✅         │
+#   │ A      │ 3 圈 × 10 × 4    │ ~180 秒      │ ✅         │
+#   │ B      │ 3 圈 barrier     │ ~200 秒      │ ✅         │
+#   │ C      │ 流水线，无 barrier│ ~150 秒      │ ❌ 时序依赖│
+#   │ D      │ 0∥1 后两段       │ ~300 秒      │ ❌ 时序依赖│
+#   │ E      │ 0∥1 后两段串行   │ ~380 秒      │ ⚠️ 并发抢池│
+#   │ F      │ 0 先行后全流水   │ ~230 秒      │ ❌ 时序依赖│
+#   │ G      │ 0 先行，撞毕收元 │ ~300 秒      │ ❌ 时序依赖│
+#   │ H      │ 逐层接力         │ ~340 秒      │ ❌ 时序依赖│
+#   └────────┴──────────────────┴──────────────┴────────────┘
+
+#   调用总数上 C 和 A/B 差不多（同一批 LLM 调用），
+#   差别在墙钟时间：A/B 每圈/每波要等最慢的一层，
+#   C 每层自己往下走，只有开头那一个圈要排队。
+#   实测（冒烟 mock 环境，四层各 2 圈）：
+#     serial 79 次 / A 89 次 / B 78 次 / C 76 次调用。
+#
+# 【成本估算】以 deepseek-chat 为例
+#   单次完整运行：80-150 次 LLM 调用
+#   平均输入：~2000 token（含 prompt + 池形状）
+#   平均输出：~800 token
+#   总 token：~280k
+#   成本估算：¥0.5 ~ ¥1 / 问题
+#
+#   reasoner 模型贵 5-10 倍（ing / manifest 各占 1 次/圈）。
+#
+# 【省钱建议】
+#   self_check: false            → 省 1 次/圈
+#   re_evaluate_pool: false      → 省 1 次/圈
+#   manifest: false              → 省 1 次 reasoner 调用/圈
+#   structure_saturation_every_n: 4  → 省 1 次/几圈
+#
+# ============================================================

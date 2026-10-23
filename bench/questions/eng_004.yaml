@@ -1,0 +1,10 @@
+# [v122 bench] eng_004 · 地下管廊改造
+id: eng_004
+domain: eng
+question: "老城区地下管线反复开挖，要不要改成综合管廊"
+orientation: decision
+budget:
+  profile: balanced
+  max_calls: 180
+  rounds: "0:5,1:5,both:5,all:6"
+  mode: serial

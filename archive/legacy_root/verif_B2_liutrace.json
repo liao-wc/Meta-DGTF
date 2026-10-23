@@ -1,0 +1,71 @@
+{
+ "tag": "B2_liutrace",
+ "src": "_tmp_B_inject.py",
+ "route": "0,1",
+ "rounds": "0:2,1:4",
+ "mode": "serial",
+ "orientation": "decision",
+ "llm_calls": 63,
+ "tri_state": [
+  3,
+  6
+ ],
+ "meta_closure_all": null,
+ "duel_suspensions_both": [],
+ "engagements_by_view": {
+  "0": [
+   {
+    "target": "可判/不可判的操作性定义",
+    "tension_id": null
+   }
+  ],
+  "1": [
+   {
+    "target": "开源豁免下系统性风险举证责任落在提供者还是监管者？法案文本哪一条分配了这一责任？若未分配，同一豁免条款是否可读出相反判定值？",
+    "tension_id": null
+   },
+   {
+    "target": "格式可判的条款（如是否提交文档、是否套模板）与实质可判的条款，在判定链上是不是同一层？若不是，跨层时判定值在哪一步开始漂移？",
+    "tension_id": null
+   },
+   {
+    "target": "训练数据摘要模板发布后，是否只能判'是否用了模板'，而不能判'摘要是否省略关键数据'？这种局部反转是否会在其他义务中复现？",
+    "tension_id": null
+   }
+  ]
+ },
+ "suspensions_with_tid": {
+  "0": [
+   {
+    "target": "判定线随机构空窗期移动的问题",
+    "tension_id": null,
+    "status": "active"
+   }
+  ],
+  "1": []
+ },
+ "pools_all_engagements": [],
+ "views_errors": {
+  "0": [],
+  "1": [
+   "deferral 被拦（revisit_condition 不合格）：子问题[1] 条件='ZZTEST_INVALID（B 段注入：必然不合格）'"
+  ]
+ },
+ "pools_meta_p16": {
+  "0": [],
+  "1": [
+   "[P1-6] deferral 被拦（revisit_condition 不合格）：子问题[1] 条件='ZZTEST_INVALID（B 段注入：必然不合格）'",
+   "[P1-6] deferral 被拦（revisit_condition 不合格）：子问题[1] 条件='ZZTEST_INVALID（B 段注入：必然不合格）'",
+   "[P1-6] deferral 被拦（revisit_condition 不合格）：子问题[1] 条件='ZZTEST_INVALID（B 段注入：必然不合格）'",
+   "[P1-6] deferral 被拦（revisit_condition 不合格）：子问题[1] 条件='ZZTEST_INVALID（B 段注入：必然不合格）'"
+  ],
+  "both": [],
+  "all": []
+ },
+ "pools_meta_len": {
+  "0": 5,
+  "1": 15,
+  "both": 0,
+  "all": 0
+ }
+}

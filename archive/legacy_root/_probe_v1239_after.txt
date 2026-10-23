@@ -1,0 +1,15 @@
+auto+事实题 = boundary
+auto+决策题 = decision
+auto+无question键 = boundary
+auto+空题面 = boundary
+boundary+决策题 = boundary
+ctx|1949年10月1日的开国大 = False
+ctx|《共同纲领》是哪一年通过的 = False
+ctx|三条路径的利弊取舍 = True
+ctx|我要不要现在买 = True
+ctx|新中国的成立时间是什么时候 = False
+ctx|老城区暴雨内涝频发，排水系统 = True
+ctx|这个方案怎么落地 = True
+decision+事实题 = decision
+关开关+决策题 = boundary
+有函数 = True

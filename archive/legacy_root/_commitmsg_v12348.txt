@@ -1,0 +1,9 @@
+元 DGTF v1.23.48 定稿存档
+
+主题：P-3b EML commit 前语义近重合并（防冗余堆积）。
+实测：eml_merge_candidate 只按精确 (kind,cond,action) 去重 ⇒ 值差一点就另开一条。
+修法：加 semantic_merge 形参 —— 精确键不中再按粗键（kind+cond.issue+action.key）并入；
+新键 memory.eml_semantic_merge（默认 false ⇒ 逐字零行为差）。
+
+验收：冒烟 245/0 · verify 319/0 · AUDIT 69/0 · 变异体 97/97（三片 1-33/34-65/66-97）。
+主文件 元DGTF-V1.23.48.py（26137 行 / 纯 CRLF / AST OK / 零新符号 / 新键 memory.eml_semantic_merge）。

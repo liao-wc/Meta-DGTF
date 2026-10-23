@@ -1,0 +1,204 @@
+{
+ "tag": "D3_v63",
+ "src": "元DGTF-V1.21.63.py",
+ "route": "0,1,both,all",
+ "rounds": "0:3,1:4,both:5,all:5",
+ "mode": "serial",
+ "orientation": "boundary",
+ "llm_calls": 135,
+ "tri_state": [
+  4,
+  6
+ ],
+ "meta_closure_all": {
+  "clean": true,
+  "unsettled": 0,
+  "total": 4,
+  "uncovered": [],
+  "closed": 5,
+  "duel_total": 9,
+  "by_id": 3,
+  "covered_ids": 3,
+  "by_id_inactive": 0,
+  "by_id_unknown": 0
+ },
+ "duel_suspensions_both": [
+  {
+   "id": "t_001",
+   "target": "S必须发生却不进U与R比较账，悬置差由谁占",
+   "status": "resolved",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_002",
+   "target": "拆前整体＝拆后剩余这个等号本身真假",
+   "status": "resolved",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_003",
+   "target": "参照系如何被指认而不落入1",
+   "status": "revoked",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_004",
+   "target": "位置无法自足：指认机制 vs 循环结构",
+   "status": "revoked",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_005",
+   "target": "递归拆分换的是剩余内容还是位置主人",
+   "status": "revoked",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_006",
+   "target": "悬置差与时间差是否指同一个不占位项",
+   "status": "active",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_007",
+   "target": "动作不可回头查：再落归因 vs 替换归因",
+   "status": "active",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_008",
+   "target": "维持机制本身落在0还是1",
+   "status": "active",
+   "quadrant": "③"
+  },
+  {
+   "id": "t_009",
+   "target": "同物判据若被造，造它的动作是否又需判据",
+   "status": "active",
+   "quadrant": "③"
+  }
+ ],
+ "engagements_by_view": {
+  "0": [
+   {
+    "target": "T4 等号本身",
+    "tension_id": null
+   }
+  ],
+  "1": [
+   {
+    "target": "把「拆分」当作第n+1个部分再拆一次后，被指认为「剩余」的，是同一个位置换了内容，还是同一个内容换了位置？",
+    "tension_id": null
+   },
+   {
+    "target": "拆分动作的剩余（结算未完成那格）与对象被分后残留的剩余，能否在同一时刻被同时指认？若能，二者是否可被区分为两个独立变量？",
+    "tension_id": null
+   },
+   {
+    "target": "「剩下」若只是位置（拆完留出的空位），为什么每次被填入的都是内容而非空？位置与内容的区分是否足以判定整体能否被正面说？",
+    "tension_id": null
+   }
+  ],
+  "both": [],
+  "all": [
+   {
+    "target": "同物判据若被造，造它的动作是否又需判据",
+    "tension_id": "t_009"
+   }
+  ]
+ },
+ "suspensions_with_tid": {
+  "0": [
+   {
+    "target": "时间差归谁",
+    "tension_id": null,
+    "status": "active"
+   },
+   {
+    "target": "时间差归属",
+    "tension_id": null,
+    "status": "active"
+   }
+  ],
+  "1": [],
+  "both": [],
+  "all": [
+   {
+    "target": "维持机制本身落在0还是1",
+    "tension_id": null,
+    "status": "active"
+   },
+   {
+    "target": "悬置差与时间差是否指同一个不占位项",
+    "tension_id": null,
+    "status": "resolved"
+   },
+   {
+    "target": "悬置差与时间差是否指同一个不占位项",
+    "tension_id": null,
+    "status": "active"
+   },
+   {
+    "target": "动作不可回头查：再落归因 vs 替换归因",
+    "tension_id": null,
+    "status": "active"
+   }
+  ]
+ },
+ "pools_all_engagements": [
+  {
+   "target": "悬置差与时间差是否指同一个不占位项",
+   "tension_id": "t_006"
+  },
+  {
+   "target": "同物判据若被造，造它的动作是否又需判据",
+   "tension_id": "t_009"
+  },
+  {
+   "target": "动作不可回头查：再落归因 vs 替换归因",
+   "tension_id": "t_007"
+  },
+  {
+   "target": "「剩下」的位置/内容之别",
+   "tension_id": null
+  },
+  {
+   "target": "两个「整体」的等号",
+   "tension_id": null
+  },
+  {
+   "target": "T4 等号本身",
+   "tension_id": null
+  },
+  {
+   "target": "把「拆分」当作第n+1个部分再拆一次后，被指认为「剩余」的，是同一个位置换了内容，还是同一个内容换了位置？",
+   "tension_id": null
+  },
+  {
+   "target": "「剩下」若只是位置（拆完留出的空位），为什么每次被填入的都是内容而非空？位置与内容的区分是否足以判定整体能否被正面说？",
+   "tension_id": null
+  },
+  {
+   "target": "拆分动作的剩余（结算未完成那格）与对象被分后残留的剩余，能否在同一时刻被同时指认？若能，二者是否可被区分为两个独立变量？",
+   "tension_id": null
+  }
+ ],
+ "views_errors": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": []
+ },
+ "pools_meta_p16": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": []
+ },
+ "pools_meta_len": {
+  "0": 6,
+  "1": 6,
+  "both": 8,
+  "all": 10
+ }
+}

@@ -1,0 +1,169 @@
+{
+  "n_series": 51,
+  "n_rounds": 245,
+  "eprocess": {
+    "n_compared": 51,
+    "e_only": 4,
+    "h_only": 0,
+    "both": 0,
+    "median_saved_rounds": null,
+    "examples": [
+      {
+        "run": "20261011_121940_人类如何延长寿命乃至实现永生.packed.json",
+        "layer": "all",
+        "n": 4,
+        "mean": 1.0,
+        "e_stop": null,
+        "h_stop": null
+      },
+      {
+        "run": "20261011_193403_科学家什么时候发现中微子的它的别名叫什.packed.json",
+        "layer": "1",
+        "n": 4,
+        "mean": 1.0,
+        "e_stop": null,
+        "h_stop": null
+      },
+      {
+        "run": "20261012_121240_我们所处的世界是虚拟的吗有没有可能一切.packed.json",
+        "layer": "1",
+        "n": 4,
+        "mean": 1.0,
+        "e_stop": null,
+        "h_stop": null
+      },
+      {
+        "run": "20261013_050650_普通人应该做些什么来迎接AI时代的到来.packed.json",
+        "layer": "0",
+        "n": 4,
+        "mean": 1.0,
+        "e_stop": null,
+        "h_stop": null
+      },
+      {
+        "run": "20261013_050650_普通人应该做些什么来迎接AI时代的到来.packed.json",
+        "layer": "1",
+        "n": 4,
+        "mean": 1.0,
+        "e_stop": null,
+        "h_stop": null
+      },
+      {
+        "run": "20261013_071430_普通人应该做些什么来迎接AI时代的到来.packed.json",
+        "layer": "1",
+        "n": 4,
+        "mean": 1.0,
+        "e_stop": null,
+        "h_stop": null
+      },
+      {
+        "run": "20261013_131751_城市内涝频发排水系统改造应该优先做管网.packed.json",
+        "layer": "1",
+        "n": 4,
+        "mean": 1.0,
+        "e_stop": null,
+        "h_stop": null
+      },
+      {
+        "run": "20261013_131751_城市内涝频发排水系统改造应该优先做管网.packed.json",
+        "layer": "both",
+        "n": 4,
+        "mean": 1.0,
+        "e_stop": null,
+        "h_stop": null
+      },
+      {
+        "run": "20261013_131751_城市内涝频发排水系统改造应该优先做管网.packed.json",
+        "layer": "all",
+        "n": 8,
+        "mean": 1.0,
+        "e_stop": 7,
+        "h_stop": null
+      },
+      {
+        "run": "20261013_205109_如何利用AI来帮助人类实现财富自由甚至文.packed.json",
+        "layer": "0",
+        "n": 4,
+        "mean": 1.0,
+        "e_stop": null,
+        "h_stop": null
+      }
+    ]
+  },
+  "conformal": {
+    "n_cal": 139,
+    "n_test": 55,
+    "q90": 3.0,
+    "coverage": 0.9636,
+    "alpha": 0.1
+  },
+  "series_len": {
+    "n": 51,
+    "min": 4,
+    "median": 4,
+    "max": 8
+  },
+  "bocpd": {
+    "n_with_change": 0,
+    "examples": [],
+    "cross_run_cost": {
+      "n": 24,
+      "detected": [
+        15
+      ],
+      "max_change_prob": 0.1
+    }
+  },
+  "argumentation": {
+    "n_playbook": 11,
+    "real": {
+      "semantics": "grounded",
+      "n_args": 11,
+      "n_attacks": 2,
+      "grounded": [
+        "L0001",
+        "L0003",
+        "L0004",
+        "L0006",
+        "L0007",
+        "L0008",
+        "L0009",
+        "L0010",
+        "L0011"
+      ],
+      "winners": [],
+      "defeated": [],
+      "undecided": [
+        "L0002",
+        "L0005"
+      ],
+      "components": [
+        [
+          "L0002",
+          "L0005"
+        ]
+      ]
+    },
+    "injected_conflict_detected": true,
+    "injected": {
+      "semantics": "grounded",
+      "n_args": 3,
+      "n_attacks": 2,
+      "grounded": [
+        "L0002"
+      ],
+      "winners": [],
+      "defeated": [],
+      "undecided": [
+        "INJ-1",
+        "L0001"
+      ],
+      "components": [
+        [
+          "INJ-1",
+          "L0001"
+        ]
+      ]
+    }
+  }
+}

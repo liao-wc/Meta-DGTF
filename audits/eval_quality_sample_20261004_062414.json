@@ -1,0 +1,653 @@
+{
+ "meta": {
+  "target_py": "元DGTF-V1.21.72.py",
+  "target_version": "1.21.72",
+  "audit_ts": "2026-10-04T06:21:22",
+  "mode": "dynamic",
+  "repeat": 5,
+  "sample": 3,
+  "question": "现金流紧张的中小制造企业，上自动化产线还是维持人工加局部优化？怎么决策？",
+  "n_views": 4,
+  "source": "20261004_053744_现金流紧张的中小制造企业上自动化产线还.md",
+  "view_layer": "0"
+ },
+ "summary": {
+  "usable": "warning",
+  "main_issue": "跨题采样 3 题，题型分布 {'biz': 1, 'tech': 2}；单题明细见第 6 节",
+  "suggested_action": "横向看分布：某题型判定分布 >90% 或一致率中位偏低 → 该题型不适合当前评估 prompt",
+  "stability_verdict": "⚠️"
+ },
+ "structure": {
+  "A1": {
+   "value": true,
+   "display": true,
+   "verdict": "✅",
+   "basis": "归一化重放复现 partial（自洽）"
+  },
+  "A2": {
+   "value": null,
+   "display": null,
+   "verdict": "—",
+   "basis": "未给 --log（该计数只能从跑批日志数，产物 md 里没有）"
+  },
+  "A3": {
+   "value": "pool+external",
+   "display": "pool+external",
+   "verdict": "✅",
+   "basis": "池判 + 外判都在，分叉可查"
+  },
+  "A4": {
+   "value": true,
+   "display": true,
+   "verdict": "⚠️",
+   "basis": "两路分叉：池判=decidable / 外判=partial"
+  },
+  "A5": {
+   "value": true,
+   "display": true,
+   "verdict": "✅",
+   "basis": "_ext_status=partial"
+  }
+ },
+ "traceability": {
+  "B1": {
+   "value": null,
+   "display": null,
+   "verdict": "—",
+   "basis": "池判侧无 und 条目（5 条不可判定全来自外判）—— 无「池内追溯」可言，不适用"
+  },
+  "B2": {
+   "value": 0,
+   "display": 0,
+   "verdict": "✅",
+   "basis": "（无）"
+  },
+  "B3": {
+   "value": 1.0,
+   "display": 1.0,
+   "verdict": "✅",
+   "basis": "5/5 条**池判侧**清单有 evidence（含 [外] 口径 5/13）"
+  },
+  "B4": {
+   "value": 1.0,
+   "display": 1.0,
+   "verdict": "✅",
+   "basis": "5/5 条 source 可定位到池内对象"
+  },
+  "B5": {
+   "value": 0.6153846153846154,
+   "display": 0.6153846153846154,
+   "verdict": "—",
+   "basis": "8/13 条来自外判并集（分叉痕迹）"
+  }
+ },
+ "stability": {
+  "_n": 5,
+  "_errors": [],
+  "_raw": [
+   {
+    "decidability": "decidable",
+    "reason": "候选普遍能判出0/1，ing对撞出可延期付款清单、断点工位试跑等新结构，并给出两闸门决策程序；少数未决因缺具体企业金额与订单连续长度等外部素材，属可补测量或可规定，非原则判不出。",
+    "features": [
+     "候选位置明确、两面多数能判0/1",
+     "ing对撞生成第三者结构（可延期付款清单、断点试跑、回款触发器）",
+     "未决项源于外部素材缺失而非结构对立"
+    ],
+    "decidable_aspects": [
+     "决策分界线在订单能否稳定喂饱产线，而非技术先进",
+     "选择对象可换为哪组付款条件能活过下一个应收周期",
+     "局部优化靠排产顺序与换模时间零成本释放产能",
+     "用最小可行工位/断点试跑，按结果付尾款先行验证",
+     "两闸门过滤：客户回款到账日、供应商是否接受回款后付款"
+    ],
+    "undecidable_aspects": [],
+    "evidence": [
+     {
+      "aspect": "决策分界线在订单稳定性",
+      "source": "候选11"
+     },
+     {
+      "aspect": "选择对象换成付款条件存活",
+      "source": "ing输出·六·回到原始问题"
+     },
+     {
+      "aspect": "最小工位试跑先行验证",
+      "source": "候选16 / ing生成物B"
+     },
+     {
+      "aspect": "两闸门决策程序",
+      "source": "ing输出·六"
+     },
+     {
+      "aspect": "缺具体企业金额属可补测量",
+      "source": "suspension1 / suspension2 / 悬空线头"
+     }
+    ],
+    "_evidence_full": [
+     {
+      "aspect": "决策分界线在订单稳定性",
+      "source": "候选11"
+     },
+     {
+      "aspect": "选择对象换成付款条件存活",
+      "source": "ing输出·六·回到原始问题"
+     },
+     {
+      "aspect": "最小工位试跑先行验证",
+      "source": "候选16 / ing生成物B"
+     },
+     {
+      "aspect": "两闸门决策程序",
+      "source": "ing输出·六"
+     },
+     {
+      "aspect": "缺具体企业金额属可补测量",
+      "source": "suspension1 / suspension2 / 悬空线头"
+     }
+    ],
+    "_source": "pool",
+    "_und_untraced": [],
+    "_und_traced": []
+   },
+   {
+    "decidability": "decidable",
+    "reason": "池里0/1候选多数能读出明确取向，ing对撞直接生成可操作的决策框架（回款闸门+可撤回动作），主要卡点都是缺素材、缺外部动作或可分别报告的未决，而非原则上判不出。",
+    "features": [
+     "ing 生成可操作决策框架",
+     "& 印记多为现实约束条件",
+     "悬置/悬空线头属缺素材的未决"
+    ],
+    "decidable_aspects": [
+     "融资方式可比较：租赁看设备残值、银行看报表，可查可问",
+     "支付条件闸门可谈定：回款到账日、按件/回款后付款",
+     "订单波动可查历史台账与客户合同，非原则不可知",
+     "最小可行工位试点可先跑，用真实数据验证",
+     "可延期付款清单可逐项列出并核对"
+    ],
+    "undecidable_aspects": [],
+    "evidence": [
+     {
+      "aspect": "两端付款条件可分别报告比较",
+      "source": "候选9 / 候选10 / 候选3"
+     },
+     {
+      "aspect": "ing 生成两闸门过滤与可撤回动作",
+      "source": "ing输出 第六节 / 生成物A、B、C"
+     },
+     {
+      "aspect": "缺具体企业与金额属缺素材未决",
+      "source": "suspension1 / suspension2 / 悬空线头"
+     },
+     {
+      "aspect": "账期/月供/残值时序可分别报告",
+      "source": "amp [logical] 时序不可通约"
+     },
+     {
+      "aspect": "订单连续性靠历史与合同可估",
+      "source": "候选4 / 候选11 / & [logical]"
+     }
+    ],
+    "_evidence_full": [
+     {
+      "aspect": "两端付款条件可分别报告比较",
+      "source": "候选9 / 候选10 / 候选3"
+     },
+     {
+      "aspect": "ing 生成两闸门过滤与可撤回动作",
+      "source": "ing输出 第六节 / 生成物A、B、C"
+     },
+     {
+      "aspect": "缺具体企业与金额属缺素材未决",
+      "source": "suspension1 / suspension2 / 悬空线头"
+     },
+     {
+      "aspect": "账期/月供/残值时序可分别报告",
+      "source": "amp [logical] 时序不可通约"
+     },
+     {
+      "aspect": "订单连续性靠历史与合同可估",
+      "source": "候选4 / 候选11 / & [logical]"
+     }
+    ],
+    "_source": "pool",
+    "_und_untraced": [],
+    "_und_traced": []
+   },
+   {
+    "decidability": "decidable",
+    "reason": "候选普遍能判出0/1（融资、工序拆分、试跑均可判）；&候选是两面读法差异，按'可分别报告'处理即可；主动悬置与悬空线头缺的是真实素材与外部动作，属未决非不可判定；ing已产出两闸门过滤与可延期付款清单等判据。",
+    "features": [
+     "候选0×0/1×1占多数，锚点可触及",
+     "&候选（0×1、1×0）为两面读法差异，可分别报告",
+     "ing生成可执行的判据：回款到账日+供应商是否接受回款后付款"
+    ],
+    "decidable_aspects": [
+     "融资租赁看残值、银行贷款看报表，审批逻辑可分别比较",
+     "拆分'哪些工序必须自动化/可外包'而非整线二选一，可直接判",
+     "最小可行工位试跑，用真实数据验证后再决定铺开",
+     "隐性成本（换型、维保、备件、培训）可逐项核算后判",
+     "两闸门过滤：客户回款有无到账日、供应商接不接受回款后付款"
+    ],
+    "undecidable_aspects": [],
+    "evidence": [
+     {
+      "aspect": "融资与工序拆分的可判性",
+      "source": "候选3 / 候选8 / 候选14"
+     },
+     {
+      "aspect": "最小试跑可验证",
+      "source": "候选16 / ing生成物B"
+     },
+     {
+      "aspect": "两闸门过滤判据",
+      "source": "ing输出·六"
+     },
+     {
+      "aspect": "订单长度不可预知属经验未决，非原则判不出",
+      "source": "悬空线头·订单连续长度 / 候选4"
+     },
+     {
+      "aspect": "缺真实企业素材属未决而非不可判定",
+      "source": "主动悬置·T10 / T1"
+     }
+    ],
+    "_evidence_full": [
+     {
+      "aspect": "融资与工序拆分的可判性",
+      "source": "候选3 / 候选8 / 候选14"
+     },
+     {
+      "aspect": "最小试跑可验证",
+      "source": "候选16 / ing生成物B"
+     },
+     {
+      "aspect": "两闸门过滤判据",
+      "source": "ing输出·六"
+     },
+     {
+      "aspect": "订单长度不可预知属经验未决，非原则判不出",
+      "source": "悬空线头·订单连续长度 / 候选4"
+     },
+     {
+      "aspect": "缺真实企业素材属未决而非不可判定",
+      "source": "主动悬置·T10 / T1"
+     }
+    ],
+    "_source": "pool",
+    "_und_untraced": [],
+    "_und_traced": []
+   },
+   {
+    "decidability": "decidable",
+    "reason": "候选普遍能判出0/1；ing对撞生成付款清单、断点工位试跑与两道闸门，给出可用决策程序。悬置与线头多为缺企业名、金额、到账日等真实素材，属未决，非原则判不出。",
+    "features": [
+     "候选大量判出0/1，锚点可触及",
+     "ing对撞撞出第三者（付款清单、试跑、闸门）",
+     "主动悬置与悬空线头多为缺外部素材"
+    ],
+    "decidable_aspects": [
+     "一次性资本支出vs渐进投入的回收周期与可撤回性对比（候选9、10、14）",
+     "订单波动性决定固定成本是否放大亏损（候选4、11、12）",
+     "融资租赁看残值、银行看报表的融资渠道差异（候选3）",
+     "先做最小可行工位试点，用真实数据再决定铺开（候选16）",
+     "两道闸门：回款到账日、供应商是否接受回款后付款（ing生成物/闸门）"
+    ],
+    "undecidable_aspects": [],
+    "evidence": [
+     {
+      "aspect": "一次性支出回收周期可算",
+      "source": "候选9 / 候选10"
+     },
+     {
+      "aspect": "订单稳定性是决策分界",
+      "source": "候选4 / 候选11 / 候选12"
+     },
+     {
+      "aspect": "融资渠道审批逻辑可比较",
+      "source": "候选3"
+     },
+     {
+      "aspect": "最小试点可验证",
+      "source": "候选16 / ing生成物B"
+     },
+     {
+      "aspect": "悬置与线头属缺素材之未决",
+      "source": "suspension T10 / suspension T1 / 悬空线头"
+     }
+    ],
+    "_evidence_full": [
+     {
+      "aspect": "一次性支出回收周期可算",
+      "source": "候选9 / 候选10"
+     },
+     {
+      "aspect": "订单稳定性是决策分界",
+      "source": "候选4 / 候选11 / 候选12"
+     },
+     {
+      "aspect": "融资渠道审批逻辑可比较",
+      "source": "候选3"
+     },
+     {
+      "aspect": "最小试点可验证",
+      "source": "候选16 / ing生成物B"
+     },
+     {
+      "aspect": "悬置与线头属缺素材之未决",
+      "source": "suspension T10 / suspension T1 / 悬空线头"
+     }
+    ],
+    "_source": "pool",
+    "_und_untraced": [],
+    "_und_traced": []
+   },
+   {
+    "decidability": "decidable",
+    "reason": "候选普遍判得明确（0×0与1×1成对），&印记多指向需现场数据或可谈判的外部条件（属未决）；ing已生成可操作决策程序：以回款到账日与供应商付款条件两道闸过滤，核心诉求'怎么决策'可判。",
+    "features": [
+     "候选0/1成对判明，判据清晰",
+     "ing撞出可落地的决策程序而非空转",
+     "&印记多指向外部数据/谈判，属未决而非原则不可判"
+    ],
+    "decidable_aspects": [
+     "决策可拆成'哪些工序必须自动化、哪些可外包'，非整线二选一",
+     "可先做最小可行工位试点，用真实数据验证再决定铺开",
+     "两端成本项可逐条列出并算回收周期与垫资额",
+     "可以客户回款到账日作共同触发器过滤两端方案",
+     "账期、月供、残值等条件可通过查询与谈判确定"
+    ],
+    "undecidable_aspects": [],
+    "evidence": [
+     {
+      "aspect": "核心诉求可判：ing给出两道闸过滤的决策程序",
+      "source": "ing输出（六、回到原始问题）"
+     },
+     {
+      "aspect": "局部优化可零成本释放产能，判据明确",
+      "source": "候选2"
+     },
+     {
+      "aspect": "最小可行工位试点作为可判定路径",
+      "source": "候选16 / 生成物B"
+     },
+     {
+      "aspect": "同行实例可主动打听，信息源可甄别",
+      "source": "候选19 / 候选20"
+     },
+     {
+      "aspect": "主动悬置仅因缺真实素材，属未决",
+      "source": "suspension T10 / T1"
+     }
+    ],
+    "_evidence_full": [
+     {
+      "aspect": "核心诉求可判：ing给出两道闸过滤的决策程序",
+      "source": "ing输出（六、回到原始问题）"
+     },
+     {
+      "aspect": "局部优化可零成本释放产能，判据明确",
+      "source": "候选2"
+     },
+     {
+      "aspect": "最小可行工位试点作为可判定路径",
+      "source": "候选16 / 生成物B"
+     },
+     {
+      "aspect": "同行实例可主动打听，信息源可甄别",
+      "source": "候选19 / 候选20"
+     },
+     {
+      "aspect": "主动悬置仅因缺真实素材，属未决",
+      "source": "suspension T10 / T1"
+     }
+    ],
+    "_source": "pool",
+    "_und_untraced": [],
+    "_und_traced": []
+   }
+  ],
+  "_insufficient": false,
+  "C1": {
+   "value": 1.0,
+   "display": 1.0,
+   "verdict": "✅",
+   "basis": "最常见判定 decidable 出现 5/5；分布 {'decidable': 5}"
+  },
+  "C2": {
+   "value": 0,
+   "display": 0,
+   "verdict": "✅",
+   "basis": "条数=[5, 5, 5, 5, 5]，极差=0"
+  },
+  "C3": {
+   "value": 0.26,
+   "display": 0.26,
+   "verdict": "❌",
+   "basis": "10 个配对，均值 0.260"
+  },
+  "C4": {
+   "value": 0.0,
+   "display": 0.0,
+   "verdict": "—",
+   "basis": "0/25 条逐字重复出现"
+  },
+  "C5": {
+   "value": true,
+   "display": true,
+   "verdict": "✅",
+   "basis": "样本 5 ≥ 5"
+  }
+ },
+ "quality": {
+  "D1": {
+   "value": 0.7692307692307693,
+   "display": 0.7692307692307693,
+   "verdict": "✅",
+   "basis": "10/13 条含可指认对象（数值/条款号/引用号/动作动词）"
+  },
+  "D2": {
+   "value": 0,
+   "display": 0,
+   "verdict": "✅",
+   "basis": "0 条命中口号词/BOILERPLATE"
+  },
+  "D3": {
+   "value": 0.0,
+   "display": 0.0,
+   "verdict": "✅",
+   "basis": "0/78 对 overlap≥0.7"
+  },
+  "D4": {
+   "value": 1.0,
+   "display": 1.0,
+   "verdict": "❌",
+   "basis": "5/5 轮有清单顶到上限 5"
+  },
+  "D5": {
+   "value": 1.9411764705882353,
+   "display": 1.9411764705882353,
+   "verdict": "✅",
+   "basis": "最长 33 / 最短 17 字符"
+  },
+  "D6": {
+   "value": 0,
+   "display": 0,
+   "verdict": "✅",
+   "basis": "0 对 dec↔und 近义（应互斥）"
+  },
+  "_verdict": "✅"
+ },
+ "two_way": {
+  "E1": {
+   "value": "池判=decidable / 外判=partial / 合并=partial",
+   "display": "池判=decidable / 外判=partial / 合并=partial",
+   "verdict": "—",
+   "basis": "外判理由：通用决策框架可判定，但具体企业选自动化还是局部优化，取决于未知内部数据与未来变量，无法直接给出唯一答案。"
+  },
+  "E2": {
+   "value": 0.011111111111111112,
+   "display": 0.011111111111111112,
+   "verdict": "❌",
+   "basis": "dec Jaccard=0.02；und Jaccard=0.00（低 ≠ bug：两路看的东西本就可能不同，但需在明细里核对）"
+  },
+  "E3": {
+   "value": null,
+   "display": null,
+   "verdict": "—",
+   "basis": "池判侧无 und —— 「无追溯」无从谈起；外判侧无池可追溯（不适用）"
+  },
+  "E4": {
+   "value": "池有内容",
+   "display": "池有内容",
+   "verdict": "—",
+   "basis": "池有内容"
+  }
+ },
+ "distribution": {
+  "F1": {
+   "value": {
+    "biz": {
+     "partial": 1
+    },
+    "tech": {
+     "partial": 2
+    }
+   },
+   "display": {
+    "biz": {
+     "partial": 1
+    },
+    "tech": {
+     "partial": 2
+    }
+   },
+   "verdict": "—",
+   "basis": "biz:{'partial': 1}；tech:{'partial': 2}"
+  },
+  "F2": {
+   "value": 1.0,
+   "display": 1.0,
+   "verdict": "✅",
+   "basis": "各组 C1 中位 = 1.000（n=3）"
+  },
+  "F3": {
+   "value": null,
+   "display": null,
+   "verdict": "—",
+   "basis": "各题池判侧均无 und（不适用）"
+  },
+  "F4": {
+   "value": 3,
+   "display": 3,
+   "verdict": "—",
+   "basis": "逐题三元组见附录 json 的 distribution.F4"
+  },
+  "_rows": [
+   {
+    "type": "biz",
+    "question": "现金流紧张的中小制造企业，上自动化产线还是维持人",
+    "decidability": "partial",
+    "size_span": 0,
+    "C1": 1.0,
+    "B1": null
+   },
+   {
+    "type": "tech",
+    "question": "订单系统要保证不超卖又要不卡顿。CAP 约束下，",
+    "decidability": "partial",
+    "size_span": 0,
+    "C1": 1.0,
+    "B1": null
+   },
+   {
+    "type": "tech",
+    "question": "老城区暴雨内涝频发，排水系统重建还是局部改造加海",
+    "decidability": "partial",
+    "size_span": 0,
+    "C1": 1.0,
+    "B1": null
+   }
+  ]
+ },
+ "details": {
+  "dec_aspects": [
+   {
+    "text": "可延期付款清单能把两端支出分成刚性/可撤回，是核心决策抓手",
+    "specificity": 1.0
+   },
+   {
+    "text": "客户回款到账日、供应商是否接受回款后付款，均可查可谈",
+    "specificity": 1.0
+   },
+   {
+    "text": "隐性成本、融资审批、订单波动、人工弹性均可测算或调研",
+    "specificity": 1.0
+   },
+   {
+    "text": "最小工位试点/按件试跑能用真实数据验证，再决定铺开",
+    "specificity": 1.0
+   },
+   {
+    "text": "同行死因多为设备月供与客户账期错配，可访谈验证",
+    "specificity": 1.0
+   },
+   {
+    "text": "[外] 可建立投资决策框架：NPV、IRR、回收期、现金流压力测试",
+    "specificity": 1.0
+   },
+   {
+    "text": "[外] 可比较自动化产线与人工加局部优化的成本、产能、质量差异",
+    "specificity": 1.0
+   },
+   {
+    "text": "[外] 可设计分阶段试点与退出机制",
+    "specificity": 1.0
+   }
+  ],
+  "und_aspects": [
+   {
+    "text": "[外] 该企业具体应选哪条路线，因内部现金流、订单稳定性未知",
+    "traced": true
+   },
+   {
+    "text": "[外] 融资渠道、利率与供应商报价等外部具体条件未知",
+    "traced": true
+   },
+   {
+    "text": "[外] 未来市场需求、原材料价格与劳动力成本不确定",
+    "traced": true
+   },
+   {
+    "text": "[外] 企业主风险偏好与组织执行力无法量化",
+    "traced": true
+   },
+   {
+    "text": "[外] 具体工艺瓶颈与自动化适配度需现场诊断",
+    "traced": true
+   }
+  ],
+  "evidence": [
+   {
+    "aspect": "可延期付款清单能把两端支出分成刚性/可撤回",
+    "source": "ing生成物A"
+   },
+   {
+    "aspect": "客户回款到账日、供应商是否接受回款后付款可查可谈",
+    "source": "ing第六节两个闸门"
+   },
+   {
+    "aspect": "隐性成本、融资审批、订单波动、人工弹性可测算",
+    "source": "候选1/3/4/5/12"
+   },
+   {
+    "aspect": "最小工位试点/按件试跑可产出真实数据",
+    "source": "候选16/ing生成物B、C"
+   },
+   {
+    "aspect": "同行死因多为月供与账期错配，可访谈验证",
+    "source": "候选17/18"
+   }
+  ]
+ },
+ "errors": []
+}

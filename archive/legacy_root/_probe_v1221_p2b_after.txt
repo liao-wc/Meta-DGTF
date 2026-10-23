@@ -1,0 +1,18 @@
+Building prefix dict from the default dictionary ...
+Loading model from cache C:\Users\18432\AppData\Local\Temp\jieba.cache
+Loading model cost 0.846 seconds.
+Prefix dict has been built successfully.
+{
+  "A1_hit_by_answers": true,
+  "A2_hit_by_claim": true,
+  "B1_exact": true,
+  "B2_overlap": true,
+  "B3_neg_no_answers": false,
+  "B4_neg_unrelated": false,
+  "B5_neg_none": false,
+  "C1_claim_0.6_intact": true,
+  "C2_answers_uses_UNTRACED": true,
+  "D1_answers_in_crosscheck": true,
+  "D2_claim_in_crosscheck": true,
+  "E1_answers_key": true
+}

@@ -1,0 +1,80 @@
+{
+ "tag": "B3_liutrace",
+ "src": "_tmp_B_inject.py",
+ "route": "0,1",
+ "rounds": "0:2,1:4",
+ "mode": "serial",
+ "orientation": "decision",
+ "llm_calls": 66,
+ "tri_state": [
+  2,
+  6
+ ],
+ "meta_closure_all": null,
+ "duel_suspensions_both": [],
+ "engagements_by_view": {
+  "0": [
+   {
+    "target": "第53条判定起点：谁宣布'可比较'",
+    "tension_id": null
+   },
+   {
+    "target": "责任链断点：整合动作无签收方",
+    "tension_id": null
+   }
+  ],
+  "1": [
+   {
+    "target": "第53条系统性风险认定中，'同等规模与能力'的判定主体在文本里是否被指定？若未指定，提供者自行声明与委员会宣布之间的程序缺口，是否构成判定起点悬空？",
+    "tension_id": null
+   },
+   {
+    "target": "10^25 FLOPs 阈值条款在授权法案修改后，是变成不可判定，还是仅数值移位而判定结构不变？",
+    "tension_id": null
+   },
+   {
+    "target": "第53条义务中，技术文档、版权政策、训练数据摘要的'存在与否'可判定，但'充分性'是否因程度词无共同尺度而不可判定？",
+    "tension_id": null
+   }
+  ]
+ },
+ "suspensions_with_tid": {
+  "0": [
+   {
+    "target": "T3 问题本身预设的二分",
+    "tension_id": null,
+    "status": "active"
+   },
+   {
+    "target": "T3 阈值被改后是变判不了还是只换个数",
+    "tension_id": null,
+    "status": "active"
+   }
+  ],
+  "1": []
+ },
+ "pools_all_engagements": [],
+ "views_errors": {
+  "0": [],
+  "1": [
+   "deferral 被拦（revisit_condition 不合格）：子问题[1] 条件='ZZTEST_INVALID（B 段注入：第 4 圈，必然不合格）'"
+  ]
+ },
+ "pools_meta_p16": {
+  "0": [],
+  "1": [
+   "[P1-6] deferral 被拦（revisit_condition 不合格）：子问题[1] 条件='ZZTEST_INVALID（B 段注入：第 1 圈，必然不合格）'",
+   "[P1-6] deferral 被拦（revisit_condition 不合格）：子问题[1] 条件='ZZTEST_INVALID（B 段注入：第 2 圈，必然不合格）'",
+   "[P1-6] deferral 被拦（revisit_condition 不合格）：子问题[1] 条件='ZZTEST_INVALID（B 段注入：第 3 圈，必然不合格）'",
+   "[P1-6] deferral 被拦（revisit_condition 不合格）：子问题[1] 条件='ZZTEST_INVALID（B 段注入：第 4 圈，必然不合格）'"
+  ],
+  "both": [],
+  "all": []
+ },
+ "pools_meta_len": {
+  "0": 5,
+  "1": 14,
+  "both": 0,
+  "all": 0
+ }
+}

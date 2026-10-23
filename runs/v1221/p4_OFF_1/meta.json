@@ -1,0 +1,26 @@
+{
+  "arm": "OFF",
+  "rep": 1,
+  "ok": true,
+  "error": "",
+  "tri_multi_vote": false,
+  "md": "C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\runs\\v1221\\p4_OFF_1\\20261005_080129_订单系统要保证不超卖又要不卡顿CAP.md",
+  "calls": 44,
+  "tokens": 225862,
+  "md_reading": {
+    "high": 0,
+    "medium": 0,
+    "low": 0,
+    "total": 6,
+    "consistency": 0.0
+  },
+  "structured": {
+    "high": 0,
+    "medium": 0,
+    "low": 0,
+    "total": 6,
+    "consistency": 0.0
+  },
+  "tri_consensus": [],
+  "elapsed_s": 689.0
+}

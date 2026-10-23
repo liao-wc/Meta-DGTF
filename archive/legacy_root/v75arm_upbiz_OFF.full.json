@@ -1,0 +1,3094 @@
+{
+ "question": "现金流紧张的中小制造企业，上自动化产线还是维持人工加局部优化？怎么决策？",
+ "route": [
+  "0",
+  "1"
+ ],
+ "keep": {
+  "0": "all",
+  "1": "all"
+ },
+ "rounds": {
+  "0": 3,
+  "1": 3,
+  "both": 4,
+  "all": 4
+ },
+ "dispatch": {
+  "requested": [
+   "0",
+   "1"
+  ],
+  "order": [
+   "0",
+   "1"
+  ],
+  "ran": [
+   "0",
+   "1"
+  ],
+  "missing": [],
+  "failed": {},
+  "skipped": [],
+  "_parallel_mode": "serial"
+ },
+ "channels": [
+  "content",
+  "context",
+  "self"
+ ],
+ "self_text": [
+  "[修行层] ## 一、这一路看到了什么\n0 和 1 分开看的成本、柔性、日历，落到一起后没有汇成一个选择。它们先分出了两种时间机制：一个靠事件推动，一个靠前序闭合串联。真正被推到桌面的，是“还有没有可比日期”，不是“哪条路更好”。倒推唯一启动日让外部时点能落进厂内日历，候选也从方案比较变成日期先后。到这里，能操作的点变少，但每个点更硬。\n\n## 二、哪些还没看清\n- 线头：倒推出的唯一启动日还没有和现金断点日并排落地；先写它还是先谈 N，没有先后。\n- 线头：切换频率变化对两条路的侵蚀没有量，是否会在现金断点前先废掉某条路，不知道。\n- 线头：供应商要求到货后第 N 天付款的 N，可谈下界未知；这个数一变，提前量跟着变。\n- &：0 的隐性成本只以单笔事件出现，聚不成可比较的总量。\n- &：1 的柔性要等订单稳了才调得出来，而订单不稳正是它被考虑的原因。\n\n## 三、我决定不碰什么，为什么\n- 不碰：废品率峰值周与现金最低周重叠时，两笔账谁先入账的顺序裁决。\n  为什么：这两笔损失可以分别估，但入账主体跟厂内科目表走；科目表当前不在手里，现在定顺序等于替厂内排账。\n  保持了多久：从本层辨认出这个顺序问题到本次收束。\n  状态：active——科目表到手后这条悬置会被打开。\n本层没有撤回的悬置。\n\n## 四、与问题相处的姿态\n我把它当作日期判定来对待：先把倒推唯一启动日写出来，与现金断点日并排；如果前者更晚，就停止为 1 找补，也不把 0 说成被选中的答案。外部答复没来，不替它定；第三条路这次没生，就留空。悬置不是等我凑齐信息再动的区域，是我看清后主动留出的空位。",
+  "[研究层] ## 一、可判定部分 · 直接回答\n\n可判定通道只把子问题5收进 answer，distance 0.85。逐条回应：\n\n- 子问题5：回答是二值的。翻一次上月工资表，得到“工时/人次/单价明细”或“只有总额”之一。若是前者，0路可压缩上界进入可算状态；若是后者，上界算不出，0路成本是否被高估无从判。注意它没有给出上界数值，只给出“能否算”的判定。\n- 子问题1：未进入可判定通道。差值没有数值，因为两个日期本身没有落纸记录。\n- 子问题2：未进入可判定通道。共同锁定日没有数值，因为排产表与调试计划不在手。\n- 子问题3：未进入可判定通道。产能恢复时间没有数值，因为切换日实测记录不存在。\n- 子问题4：未进入可判定通道，且它的可判定性挂在子问题5的结果上。若子问题5翻出明细，子问题4可能从不可判定转为可算；当前翻表动作未执行，所以仍不可判定。\n- 子问题6：未进入可判定通道。科目表缺失，且元反思已指出科目表不决定入账时点。\n\n综合距离0.55。可判定通道窄，窄到只剩一个动作。\n\n## 二、不可判定部分 · 结构揭示\n\n逐条揭示不可判定的结构，不是复述原因：\n\n- 子问题1：缺的不是计算链，是记录层。两个日期在厂内现有文件里没有候选值。口头条件没有变成带日期的函件，于是判定点没有输入端。这不是算不出，是没有可引用的对象。\n- 子问题2：共同锁定日不是可查询量，是两个尚未生成的计划的交集。排产计划与调试计划未生成，交集的定义域为空。它不可能从现有文件里翻出来。\n- 子问题3：恢复时间属于切换后事件。当前没有记录，意味着它只能在切换发生后才存在。现在要这个数，等于要一个尚未发生事件的实测值。\n- 子问题4：它的上界依赖子问题5的分类维度。工资表给的是已发生工时，可停工时需要排产计划与技能矩阵交叉。分类维度不重合，所以翻表深度增加不能自动推出上界。\n- 子问题6：科目表决定科目，不决定时点。时点由凭证日、付款日、验收日分别决定，分散在不同单据。上一层的悬置被重新定位：钥匙不在科目表，在单据日期。\n- 配对表结"
+ ],
+ "decidability": {
+  "decidability": "decidable",
+  "reason": "候选多为0/1判明，核心决策要素（现金缺口量级与持续期、订单结构、产线可否拆分、回本与现金周期冲突）均可查可判。&印记的两侧可分别报告，悬置与'撞不动'是外部时点/计数未决，非原则判不出。",
+  "features": [
+   "多数候选判得明确(0/1)",
+   "&候选两侧可分别报告",
+   "悬置属未决(外部节奏/计数)"
+  ],
+  "decidable_aspects": [
+   "现金流缺口量级与持续时间可查，决定有无资格谈自动化",
+   "订单结构(批量/品种)可查，决定自动化是否划算",
+   "产线可否拆分(单工位先换)可判，决定选项空间",
+   "回本周期与短现金周期的冲突可算(候选10)",
+   "负向波动承受期/断点日可随事件观测确认",
+   "[外] 投资回收期、NPV/IRR、现金流压力测试",
+   "[外] 人工成本、良率、产能利用率、订单波动等运营参数",
+   "[外] 自动化产线投入、维护、折旧与融资成本"
+  ],
+  "undecidable_aspects": [],
+  "evidence": [
+   {
+    "aspect": "现金缺口量级与持续时间可判",
+    "source": "候选15"
+   },
+   {
+    "aspect": "订单结构决定自动化是否划算",
+    "source": "候选5"
+   },
+   {
+    "aspect": "产线可否拆分决定选项空间",
+    "source": "候选4"
+   },
+   {
+    "aspect": "两条时间尺度可分别报告",
+    "source": "&印记[ontological]"
+   },
+   {
+    "aspect": "供应商答复/回款时点属外部未决非不可判",
+    "source": "ing 五、撞不动"
+   },
+   {
+    "aspect": "0/1两端成本可分别估",
+    "source": "主动悬置(废品率与现金最低周)"
+   }
+  ],
+  "_evidence_full": [
+   {
+    "aspect": "现金缺口量级与持续时间可判",
+    "source": "候选15"
+   },
+   {
+    "aspect": "订单结构决定自动化是否划算",
+    "source": "候选5"
+   },
+   {
+    "aspect": "产线可否拆分决定选项空间",
+    "source": "候选4"
+   },
+   {
+    "aspect": "两条时间尺度可分别报告",
+    "source": "&印记[ontological]"
+   },
+   {
+    "aspect": "供应商答复/回款时点属外部未决非不可判",
+    "source": "ing 五、撞不动"
+   },
+   {
+    "aspect": "0/1两端成本可分别估",
+    "source": "主动悬置(废品率与现金最低周)"
+   }
+  ],
+  "_source": "pool+external",
+  "_und_untraced": [],
+  "_und_traced": [],
+  "_ext_status": "decidable",
+  "_ext_reason": "该问题问的是通用决策方法，而非某家企业的具体选择；可用财务与运营指标操作化，并通过情景/试点比较，因此可判定。",
+  "_ext_features": [
+   "可通过操作化定义转化为可测命题",
+   "有可设计的情景比较与试点判决",
+   "属经验/管理决策问题"
+  ],
+  "_divergent": false,
+  "_pool_status": "decidable"
+ },
+ "views": {
+  "0": {
+   "entry": "0",
+   "anchor": "现金流紧张的中小制造企业，在自动化产线与人工局部优化之间，决策被现金流断点、供应商账期、订单切换频率等未定条件悬置。",
+   "candidates": [
+    {
+     "desc": "自动化产线的隐性负债：设备到厂后产能爬坡期的废品率上升、调试停机，这些成本不计入采购合同",
+     "kind": "concept",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点只提自动化产线，未触及爬坡废品率与调试停机",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "人工加局部优化的隐性上限：优化到某个点后，瓶颈来自人的生理节律与技能断层，不是流程问题",
+     "kind": "concept",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点未提生理节律、技能断层这类隐性上限",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "决策的真正起点不是“选哪条”，而是先摸清当前现金流能承受多长的负向波动周期",
+     "kind": "startpoint",
+     "attribute": "0",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点点明现金流紧张又问怎么决策，直指此维度",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "自动化产线是否可拆分：单工位先换，还是必须整线换？拆分的可行性决定选项空间",
+     "kind": "question",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点未提能否拆分、单工位先换还是整线换",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "订单结构：是小批量多品种还是大批量少品种？这个信息没出现在问题里，但直接决定自动化是否划算",
+     "kind": "thread",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "订单结构不在锚点内，是外部拉入的信息",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "被忽略的第三选项：把局部优化赚到的钱先还债或留作缓冲，推迟两条路的选择",
+     "kind": "object",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点只摆两条路，未提第三选项或推迟选择",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "谁在推动这个决策？是老板焦虑、客户压价、还是同行示范效应？推动者的动机影响判断权重",
+     "kind": "person",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点未提决策推动者是谁及其动机",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "人工加局部优化的“优化”具体指什么，如果只是买几台半自动设备，本质上已是轻量自动化，与“自动化产线”边界模糊",
+     "kind": "concept",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点未提“优化”的定义与两者边界模糊问题",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "现金流紧张意味着决策窗口被压缩，任何需要持续垫资的方案在时间轴上先被剔除",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点明写现金流紧张与决策，正指向决策窗口",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "自动化产线是一次性大额资本支出，但回本周期通常以年计，与现金流紧张的短周期形成直接冲突",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点并列自动化产线与现金流紧张，正对此冲突",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "人工加局部优化是碎片化投入，每次支出小，但累积起来未必比整线便宜",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点未提人工方案碎片化投入与累积成本",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "订单稳定性决定了自动化产线能不能跑满产能，跑不满的产线是负资产",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点未提订单稳定性或产能能否跑满",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "人工方案保留了弹性：订单波动时可以减班、停线，自动化产线做不到",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点未提人工方案可减班停线的弹性",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "局部优化的天花板是人的物理极限和工序间的不匹配，不改布局只改单点往往收效有限",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点未提局部优化的天花板与人的物理极限",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "当前现金流缺口的具体量级和持续时间，决定了是否有资格谈自动化",
+     "kind": "question",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点点明现金流紧张，缺口量级属该维度",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "企业主对\"三年后还做不做这行\"的判断，会直接改变两条路的权重",
+     "kind": "question",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点未提企业主对几年后去留的长期判断",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "0路的负向波动承受期到底由谁给出？不是企业主，是主要客户回款节奏和工资发放日的固定间隔在替企业设限",
+     "kind": "question",
+     "attribute": "0",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点『现金流计时器』即0路承受期，已触及",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "供应商付款节奏若能与回款对齐，1路的启动门槛不取决于自有现金，而取决于供应商愿不愿意把账期当入股——这条线没被拉过",
+     "kind": "thread",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "供应商账期/付款节奏锚点未提",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "订单从多品种切至少品种的那一次切换，是0与1优势同时归零的瞬间，此前算的产能账在切换当天全部失效",
+     "kind": "event",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "订单多品种至少品种切换锚点未提",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "现金流断点日不是算出来的，是债权人第一次拒绝展期或供应商第一次要求现款现货的那一天被通知的",
+     "kind": "concept",
+     "attribute": "0",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "断点日即计时器终点，锚点已指向",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "若0路的人工优化收益被优先用于还债，企业主实际上是在买\"不决策\"的时间，这段时间的价格怎么算",
+     "kind": "question",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "还债/买时间的第三选项锚点未提",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "谁在厂内能同时看到回款日历和产线切换记录？这个人不在0/1框架里，但没有他两条路都算不准",
+     "kind": "person",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "厂内兼看回款与切换记录者锚点未提",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "上一圈标未生的三处中，\"外部条件未定价\"一处可推：定价方式是把供应商的账期要求直接翻译成1路最晚启动日的提前量，推不动的地方在于供应商不会提前告诉你他的底线",
+     "kind": "other",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "供应商账期定价锚点未提",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "现金流断点日之前要分两笔算：0路的可观察支出是加班费与临时工，1路是首付、旧设备处置差价、爬坡期废品率——后者的负向波动峰值出现在设备进场后第几周，而不是签约日",
+     "kind": "thread",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "两条路成本明细锚点未提",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "两条路的最晚启动点不对称：0路靠人到位和排班调整，可能两三周内见效；1路的付款审批、安装调试、试产出合格品这条链，倒推到今天还剩多少缓冲周？",
+     "kind": "question",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "最晚启动日/缓冲周即计时器，锚点已指向",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "切换侵蚀不是均摊的：人工线换型损失的是当班小时数且可加班补，自动化线换型损失的是整段调试窗口且可能停掉整条线，频率越高后者越难靠加班抹平",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "换型损失锚点未提",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "供应商付款节奏这件事要先拆成两问：能不能延后首付、能不能接受按回款分期——第二问若是不能，1路在断点日之前就已经出局，无需再比效率",
+     "kind": "thread",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "供应商付款拆两问锚点未提",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "决策桌上真正缺的不是效率对比表，是一张按周排的现金进出表：哪一周现金最低、那周0路和1路各自要往外掏多少",
+     "kind": "object",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "按周现金进出表是外部工具锚点未提",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "把断点日填上具体日期，0路和1路各自的最晚启动日就会自动浮出来，两者的差值就是这场决策实际拥有的犹豫时间",
+     "kind": "startpoint",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "断点日与最晚启动日锚点已指向",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "供应商账期答复若晚于1路最晚启动日，1路不是在决策中出局，而是被日历直接删掉",
+     "kind": "event",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点字面未触及该条件",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "1路最晚启动日不是由企业主选定，是把首付日、安装周、调试窗加总后倒推得到的唯一日期，谈判只改这个日期不改可行性",
+     "kind": "concept",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点字面未触及该条件",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "废品率峰值周与现金最低周若落在同一周，两笔账谁先记？记错顺序则1路在断点前已失血，但两笔账的记账主体不同",
+     "kind": "question",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点字面未触及该条件",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "把供应商账期要求直接写成1路最晚启动日的提前量：供应商要求到货后第N天付款→1路首付款须在到货前筹齐→最晚启动日=到货日减安装调试周数",
+     "kind": "startpoint",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点字面未触及该条件",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "若这个提前量推出来晚于现金断点日，1路在断点前无法完成付款准备，直接出局，不再进入两条路的比较",
+     "kind": "thread",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点字面未触及该条件",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    }
+   ],
+   "collision": "一、两端各自把话说完\n\n0 的显现没有启动动作。今天在跑，不需要签字、不需要首付、不需要等谁答复。成本按事件散开：一次换型、一批次品、一个加班。每笔小到不进议程。\n\n1 的显现是一条不能并行的链：钱到位、设备到场、安装、调试，前一个不闭合，后一个不开始。每一段有自己的日历，这些日历叠不到一起。\n\n二、各推到极端\n\n0 推到极端：切换频率极高时，0 的总隐性成本超过 1 的总投资，但成本永远以\"这一单\"为单位出现，没有任何一单能单独证明这件事。决策需要的信息在结构上无法成形。\n\n1 推到极端：条件全齐，1 落地。落地那刻资本支出固化，订单结构继续变。1 的柔性不是装上就有的，是调出来的；调需要订单先稳一段——而 1 被考虑，恰恰因为订单不稳。\n\n三、反转点\n\n等待 1 成形的这段时间不是空的。0 在里面持续运行，持续改 1 的前提：余额在动，供应商条件在动，订单结构在动。1 的窗口每过一天离现在近一天，内部约束一天都没缩短。\n\n反转：让 1 出局的不一定是钱的总量，是两条反向时间轴谁先合上。倒推的窗口向现在收缩，顺推的断点向未来延伸。\n\n四、生成\n\n把 0 和 1 摆进同一张表，需要把 0 按在当下不动。0 的属性就是不停。比较做得越久，表上的 0 越不是正在跑的 0。\n\n生成出来的是次序，不是取舍：不是先决定、再等条件，而是条件先成、决定才有对象。条件不齐时 1 还没成形；没成形的东西摆上桌，比较的其实是 0 和一张条件清单。\n\n五、撞不动\n\n& 供应商答复的时点不由企业排期。\n& 现金断点的精确日期挂在回款到账上，回款也不由企业排期。\n& 等待期间切换频率怎么变，客户不给预告。\n& 这三个不由企业排期的时点之间的空隙，就是悬置实际发生的位置。它不是待补的信息缺口，是三个不可控节奏的交错。\n\n六、回到原始问题\n\n原始问题问 0 和 1 怎么选。对撞显示：0 不需要被选，它默认在执行；1 需要的不是被选中，是被排进一个还有余量的日历。被决策的不是路线，是窗口。窗口不存在时，问题不是\"选不了\"，是\"没有可选项\"。\n\n未生：0 和 1 之间有没有第三条路，这次对撞没显出来。它们对撞只产生时间轴错位，不产生新路线。",
+   "amps": [
+    {
+     "desc": "0与1的不可逆点性质不同：0依赖关键人与数据，1依赖付款与安装，两者无法用同一时间尺度比较。",
+     "type": "ontological",
+     "source": "0",
+     "polarity": "?"
+    },
+    {
+     "desc": "现金流作为计时器，先于选项存在，决定哪条路的话能说完，而非选项决定现金流。",
+     "type": "structural",
+     "source": "0",
+     "polarity": "?"
+    },
+    {
+     "desc": "0的尽头可转化为1的定价输入，1的尽头可反向筛选订单，两者在极端处互生而非互斥。",
+     "type": "logical",
+     "source": "0",
+     "polarity": "?"
+    },
+    {
+     "desc": "供应商拒绝权是未定价的外部条件，其行使日决定1路最晚启动日，价格等于1路全部准备成本。",
+     "type": "ontological",
+     "source": "0",
+     "polarity": "1",
+     "polarity_why": "拒绝权约束已可定价"
+    },
+    {
+     "desc": "修改权表首次出现'不能改'的日期是路径锁死日，早于断点日则路径话可说尽。",
+     "type": "structural",
+     "source": "0",
+     "polarity": "1",
+     "polarity_why": "锁死日由修改权表确定"
+    },
+    {
+     "desc": "熟练工离岗周一旦确定，0路最晚启动日不再由企业主决定，而是由该周锁定。",
+     "type": "axiological",
+     "source": "0",
+     "polarity": "1",
+     "polarity_why": "离岗周确定即锁定0路"
+    },
+    {
+     "desc": "0的隐性成本永远以单笔事件出现，无法聚合成决策对象，信息结构上不可成形。",
+     "type": "ontological",
+     "source": "0",
+     "polarity": "?"
+    },
+    {
+     "desc": "1的柔性不是安装属性，是调试产物，而调试需要订单先稳，与1被考虑的原因相悖。",
+     "type": "logical",
+     "source": "0",
+     "polarity": "?"
+    },
+    {
+     "desc": "等待1成形的期间，0在持续改写1的前提，两条时间轴反向运动，窗口收缩与断点延伸同时发生。",
+     "type": "structural",
+     "source": "0",
+     "polarity": "?"
+    },
+    {
+     "desc": "把0按在当下不动才能与1同表比较，但0的属性就是不停，比较越久越偏离正在跑的0。",
+     "type": "axiological",
+     "source": "0",
+     "polarity": "?"
+    }
+   ],
+   "threads": [
+    {
+     "desc": "供应商是否接受与回款周期匹配的付款节奏，这一外部条件未在0/1框架内被定价。",
+     "kind": "thread",
+     "polarity": "?"
+    },
+    {
+     "desc": "客户对0方案下换型变慢或人工波动的接受度，是厂内无法控制的盲区。",
+     "kind": "thread",
+     "polarity": "?"
+    },
+    {
+     "desc": "订单从多品种切到少品种或反向切换时，切换本身对两条路优势的侵蚀未被讨论。",
+     "kind": "thread",
+     "polarity": "?"
+    },
+    {
+     "desc": "供应商分期答复周与1路最晚启动日的先后关系未量化，排不到前面则1路不进比较。",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "先后未量化"
+    },
+    {
+     "desc": "客户逾期天数只能按历史分布做区间，合同罚则无法给出实际回款日。",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "回款日不可确定"
+    },
+    {
+     "desc": "设备进场后废品率峰值在无同类产线先例时只能留空，不能用平均值填。",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "无先例只能留空"
+    },
+    {
+     "desc": "供应商不会提前告诉你他的账期底线，T9推不动",
+     "kind": "thread",
+     "source": "probe_boundary",
+     "polarity_why": "账期底线未知",
+     "polarity": "0"
+    },
+    {
+     "desc": "0和1之间是否存在第三条路，本次对撞只产生时间轴错位，未生成新路线。",
+     "kind": "thread",
+     "polarity": "?"
+    },
+    {
+     "desc": "切换频率变化对两条路优势的侵蚀未被量化，切换本身可能先于现金断点使某条路失效。",
+     "kind": "thread",
+     "polarity": "?"
+    },
+    {
+     "desc": "供应商账期底线与回款周期的匹配节奏，是厂内无法单方面决定的外部条件，其答复时点决定1路是否进入比较。",
+     "kind": "thread",
+     "polarity": "?"
+    },
+    {
+     "desc": "供应商账期答复时点由对方决定，厂内无法单方面获取，答复晚于倒推日则1路被日历删除",
+     "kind": "thread",
+     "source": "probe_boundary"
+    }
+   ],
+   "probes": [
+    {
+     "question": "把首付日、安装周、调试窗倒推出的那个唯一日期写下来，它落在现金断点日之前还是之后？",
+     "link": "倒推唯一日期与断点日的先后，决定1路是否还进入比较",
+     "expected_gain": 0.75,
+     "covers": [
+      "T2",
+      "T4",
+      "T5"
+     ]
+    },
+    {
+     "question": "供应商要求到货后第N天付款，这个N在合同里是固定数还是可谈区间？可谈区间下界是多少天？",
+     "link": "N的下界决定首付款提前量能否压进断点日之前",
+     "expected_gain": 0.6,
+     "covers": [
+      "T4",
+      "T1"
+     ]
+    },
+    {
+     "question": "废品率峰值周的损失记在产线成本项还是现金流出项？现金最低周记在哪个科目？两者是否同一本账？",
+     "link": "两笔账的记账主体不同，决定谁先记、记错顺序是否真失血",
+     "expected_gain": 0.55,
+     "covers": [
+      "T3"
+     ]
+    }
+   ],
+   "meta": [
+    "本次对撞的产物是次序而非取舍：条件先成，决定才有对象；条件不齐时，比较的其实是0和一张条件清单。",
+    "三个不由企业排期的时点之间的空隙，是悬置实际发生的位置，它不是待补的信息缺口，而是不可控节奏的交错。",
+    "[P3] & 候选（各圈累计）14 条 / 本层 amps 10 条（比值 0.71；amps 可能含 adjudications/上游合并的贡献，比值只作方向参考）"
+   ],
+   "decidable_product": {},
+   "undecidable_product": {},
+   "distance_to_question": 1.0,
+   "covered_aspects": [],
+   "uncovered_aspects": [],
+   "untouched": [
+    {
+     "desc": "供应商账期答复若晚于1路最晚启动日，1路不是在决策中出局，而是被日历直接删掉",
+     "source": "judge"
+    },
+    {
+     "desc": "1路最晚启动日不是由企业主选定，是把首付日、安装周、调试窗加总后倒推得到的唯一日期，谈判只改这个日期不改可行性",
+     "source": "judge"
+    },
+    {
+     "desc": "废品率峰值周与现金最低周若落在同一周，两笔账谁先记？记错顺序则1路在断点前已失血，但两笔账的记账主体不同",
+     "source": "judge"
+    },
+    {
+     "desc": "把供应商账期要求直接写成1路最晚启动日的提前量：供应商要求到货后第N天付款→1路首付款须在到货前筹齐→最晚启动日=到货日减安装调试周数",
+     "source": "judge"
+    },
+    {
+     "desc": "若这个提前量推出来晚于现金断点日，1路在断点前无法完成付款准备，直接出局，不再进入两条路的比较",
+     "source": "judge"
+    }
+   ],
+   "suspensions": [
+    {
+     "id": "s_001",
+     "target": "自动化产线隐性负债的定价",
+     "reason": "看清了爬坡废品与调试停机可估，但选择不碰，因为当前现金断点未定，估了也无处挂",
+     "reason_type": "explicit",
+     "layer": 1,
+     "last_confirmed_layer": 3,
+     "confirmed_layers": [
+      1,
+      2,
+      3
+     ],
+     "status": "active",
+     "revoked_at": null,
+     "revoke_reason": "",
+     "resolved_at": null,
+     "stable_since": null,
+     "needs_review": false
+    },
+    {
+     "id": "s_002",
+     "target": "企业主三年后是否还做这行",
+     "reason": "看清了这个判断会翻转权重，但选择不碰，因为它不是可观测变量，问了也拿不到真话",
+     "reason_type": "intuitive",
+     "layer": 1,
+     "last_confirmed_layer": 2,
+     "confirmed_layers": [
+      1,
+      2
+     ],
+     "status": "active",
+     "revoked_at": null,
+     "revoke_reason": "",
+     "resolved_at": null,
+     "stable_since": null,
+     "needs_review": false
+    },
+    {
+     "id": "s_003",
+     "target": "T7 买不决策时间的价格",
+     "reason": "看清了0路收益可标价，但选择不碰，因为断点日未定，标了也无处挂",
+     "reason_type": "explicit",
+     "layer": 2,
+     "last_confirmed_layer": 3,
+     "confirmed_layers": [
+      2,
+      3
+     ],
+     "status": "active",
+     "revoked_at": null,
+     "revoke_reason": "",
+     "resolved_at": null,
+     "stable_since": null,
+     "needs_review": false
+    },
+    {
+     "id": "s_004",
+     "target": "废品率峰值与现金最低周同周的记账顺序",
+     "reason": "看清了两笔账可分别估，但选择不碰，因为记账主体不同，谁先记取决于厂内科目设置，当前拿不到科目表",
+     "reason_type": "explicit",
+     "layer": 3,
+     "last_confirmed_layer": 3,
+     "confirmed_layers": [
+      3
+     ],
+     "status": "active",
+     "revoked_at": null,
+     "revoke_reason": "",
+     "resolved_at": null,
+     "stable_since": null,
+     "needs_review": false
+    }
+   ],
+   "engagements": [
+    {
+     "target": "1路最晚启动日的倒推结构",
+     "how": "把首付日、安装周、调试窗三个数加总，倒推唯一日期，与断点日比先后"
+    }
+   ],
+   "refinements": [],
+   "reconfirmations": [
+    {
+     "suspension_id": "s_001",
+     "target": "",
+     "reason": "断点日仍未定，隐性负债定价仍无处挂"
+    },
+    {
+     "suspension_id": "s_003",
+     "target": "",
+     "reason": "断点日未定，买不决策时间的价格仍无处挂"
+    }
+   ],
+   "revocations": [],
+   "deferrals": [],
+   "resolutions": [],
+   "escalations": [],
+   "reclassifications": [],
+   "settlement": {},
+   "adjudications": [],
+   "both_quota": {},
+   "carry": [
+    {
+     "question": "上面这几条候选被判为「后补／换说法复述」，本圈禁止以任何形式重述它们——原样、换说法、扩写都算。只交真的长出来的新东西：废品率峰值周与现金最低周若落在同一周，两笔账谁先记？记错顺序则1路在断点前已失血，但两笔账的记账主体不同",
+     "link": "self-check 判定的复述条目，绕开去重就能喷更多，但那不叫展开",
+     "expected_gain": 0.6,
+     "kind": "candidate",
+     "text": "上面这几条候选被判为「后补／换说法复述」，本圈禁止以任何形式重述它们——原样、换说法、扩写都算。只交真的长出来的新东西：废品率峰值周与现金最低周若落在同一周，两笔账谁先记？记错顺序则1路在断点前已失血，但两笔账的记账主体不同",
+     "banned": [
+      "废品率峰值周与现金最低周若落在同一周，两笔账谁先记？记错顺序则1路在断点前已失血，但两笔账的记账主体不同"
+     ]
+    }
+   ],
+   "carry_check": {
+    "checked": 1,
+    "violations": 0,
+    "items": [],
+    "notes": "注入 1 条、可核对 1 条，违例 0 条",
+    "round": 3
+   },
+   "carry_checks": [
+    {
+     "checked": 1,
+     "violations": 0,
+     "items": [],
+     "notes": "注入 1 条、可核对 1 条，违例 0 条",
+     "round": 3
+    }
+   ],
+   "carry_dropped": [],
+   "carry_dropped_all": [],
+   "rephrase_ratio": null,
+   "probe_skipped": false,
+   "rounds_cap": 3,
+   "duel_suspensions": [],
+   "meta_closure": {},
+   "stop_reason": "体力耗尽（3 圈走满，未触发任何停止判据，是被截断不是自然停止）",
+   "rounds_run": 3,
+   "roles_run": [
+    "摊开",
+    "转向",
+    "复裁"
+   ],
+   "closure_reason": "",
+   "round_log": [
+    {
+     "round": 1,
+     "role": "摊开",
+     "new_amps": 3,
+     "new_threads": 5,
+     "idle_amp": 0,
+     "idle_thread": 0,
+     "idle_stall": 0,
+     "why": ""
+    },
+    {
+     "round": 2,
+     "role": "转向",
+     "new_amps": 3,
+     "new_threads": 4,
+     "idle_amp": 0,
+     "idle_thread": 0,
+     "idle_stall": 0,
+     "why": ""
+    },
+    {
+     "round": 3,
+     "role": "复裁",
+     "new_amps": 4,
+     "new_threads": 3,
+     "idle_amp": 0,
+     "idle_thread": 0,
+     "idle_stall": 0,
+     "why": ""
+    }
+   ],
+   "rehashed": [],
+   "idle": false,
+   "rendered": "━━━ 修行 · entry=0 ━━━\n\n【锚点】现金流紧张的中小制造企业，在自动化产线与人工局部优化之间，决策被现金流断点、供应商账期、订单切换频率等未定条件悬置。\n\n【候选】\n  [0×0] 供应商账期答复若晚于1路最晚启动日，1路不是在决策中出局，而是被日历直接删掉  属性◈阴展开\n  [0×0] 1路最晚启动日不是由企业主选定，是把首付日、安装周、调试窗加总后倒推得到的唯一日期，谈判只改这个日期不改可行性  属性◈阴展开\n  [0×0] 废品率峰值周与现金最低周若落在同一周，两笔账谁先记？记错顺序则1路在断点前已失血，但两笔账的记账主体不同  属性◈阴展开\n  [1×0] 把供应商账期要求直接写成1路最晚启动日的提前量：供应商要求到货后第N天付款→1路首付款须在到货前筹齐→最晚启动日=到货日减安装调试周数  ⚡& 属性◈阳展开\n  [1×0] 若这个提前量推出来晚于现金断点日，1路在断点前无法完成付款准备，直接出局，不再进入两条路的比较  ⚡& 属性◈阳展开\n\n【ing 对撞】\n一、两端各自把话说完\n\n0 的显现没有启动动作。今天在跑，不需要签字、不需要首付、不需要等谁答复。成本按事件散开：一次换型、一批次品、一个加班。每笔小到不进议程。\n\n1 的显现是一条不能并行的链：钱到位、设备到场、安装、调试，前一个不闭合，后一个不开始。每一段有自己的日历，这些日历叠不到一起。\n\n二、各推到极端\n\n0 推到极端：切换频率极高时，0 的总隐性成本超过 1 的总投资，但成本永远以\"这一单\"为单位出现，没有任何一单能单独证明这件事。决策需要的信息在结构上无法成形。\n\n1 推到极端：条件全齐，1 落地。落地那刻资本支出固化，订单结构继续变。1 的柔性不是装上就有的，是调出来的；调需要订单先稳一段——而 1 被考虑，恰恰因为订单不稳。\n\n三、反转点\n\n等待 1 成形的这段时间不是空的。0 在里面持续运行，持续改 1 的前提：余额在动，供应商条件在动，订单结构在动。1 的窗口每过一天离现在近一天，内部约束一天都没缩短。\n\n反转：让 1 出局的不一定是钱的总量，是两条反向时间轴谁先合上。倒推的窗口向现在收缩，顺推的断点向未来延伸。\n\n四、生成\n\n把 0 和 1 摆进同一张表，需要把 0 按在当下不动。0 的属性就是不停。比较做得越久，表上的 0 越不是正在跑的 0。\n\n生成出来的是次序，不是取舍：不是先决定、再等条件，而是条件先成、决定才有对象。条件不齐时 1 还没成形；没成形的东西摆上桌，比较的其实是 0 和一张条件清单。\n\n五、撞不动\n\n& 供应商答复的时点不由企业排期。\n& 现金断点的精确日期挂在回款到账上，回款也不由企业排期。\n& 等待期间切换频率怎么变，客户不给预告。\n& 这三个不由企业排期的时点之间的空隙，就是悬置实际发生的位置。它不是待补的信息缺口，是三个不可控节奏的交错。\n\n六、回到原始问题\n\n原始问题问 0 和 1 怎么选。对撞显示：0 不需要被选，它默认在执行；1 需要的不是被选中，是被排进一个还有余量的日历。被决策的不是路线，是窗口。窗口不存在时，问题不是\"选不了\"，是\"没有可选项\"。\n\n未生：0 和 1 之间有没有第三条路，这次对撞没显出来。它们对撞只产生时间轴错位，不产生新路线。\n\n【& 印记】\n  - [存在论] 0的隐性成本永远以单笔事件出现，无法聚合成决策对象，信息结构上不可成形。\n  - [逻辑性] 1的柔性不是安装属性，是调试产物，而调试需要订单先稳，与1被考虑的原因相悖。\n  - [结构性] 等待1成形的期间，0在持续改写1的前提，两条时间轴反向运动，窗口收缩与断点延伸同时发生。\n  - [价值性] 把0按在当下不动才能与1同表比较，但0的属性就是不停，比较越久越偏离正在跑的0。\n\n【悬空线头】\n  💭 0和1之间是否存在第三条路，本次对撞只产生时间轴错位，未生成新路线。\n  💭 切换频率变化对两条路优势的侵蚀未被量化，切换本身可能先于现金断点使某条路失效。\n  💭 供应商账期底线与回款周期的匹配节奏，是厂内无法单方面决定的外部条件，其答复时点决定1路是否进入比较。\n  💭 供应商账期答复时点由对方决定，厂内无法单方面获取，答复晚于倒推日则1路被日历删除\n\n【探针回归】\n  ? 把首付日、安装周、调试窗倒推出的那个唯一日期写下来，它落在现金断点日之前还是之后？（回来：倒推唯一日期与断点日的先后，决定1路是否还进入比较｜增益0.75）\n  ? 供应商要求到货后第N天付款，这个N在合同里是固定数还是可谈区间？可谈区间下界是多少天？（回来：N的下界决定首付款提前量能否压进断点日之前｜增益0.6）\n  ? 废品率峰值周的损失记在产线成本项还是现金流出项？现金最低周记在哪个科目？两者是否同一本账？（回来：两笔账的记账主体不同，决定谁先记、记错顺序是否真失血｜增益0.55）\n\n【尚未触及的方面】\n  💭 供应商账期答复若晚于1路最晚启动日，1路不是在决策中出局，而是被日历直接删掉（judge）\n  💭 1路最晚启动日不是由企业主选定，是把首付日、安装周、调试窗加总后倒推得到的唯一日期，谈判只改这个日期不改可行性（judge）\n  💭 废品率峰值周与现金最低周若落在同一周，两笔账谁先记？记错顺序则1路在断点前已失血，但两笔账的记账主体不同（judge）\n  💭 把供应商账期要求直接写成1路最晚启动日的提前量：供应商要求到货后第N天付款→1路首付款须在到货前筹齐→最晚启动日=到货日减安装调试周数（judge）\n  💭 若这个提前量推出来晚于现金断点日，1路在断点前无法完成付款准备，直接出局，不再进入两条路的比较（judge）\n\n【本层碰了】\n  - 1路最晚启动日的倒推结构：把首付日、安装周、调试窗三个数加总，倒推唯一日期，与断点日比先后\n\n【主动悬置（决定不碰）】\n  - 废品率峰值与现金最低周同周的记账顺序：看清了两笔账可分别估，但选择不碰，因为记账主体不同，谁先记取决于厂内科目设置，当前拿不到科目表[explicit]\n\n【view】\n## 一、这一路看到了什么\n0 和 1 分开看的成本、柔性、日历，落到一起后没有汇成一个选择。它们先分出了两种时间机制：一个靠事件推动，一个靠前序闭合串联。真正被推到桌面的，是“还有没有可比日期”，不是“哪条路更好”。倒推唯一启动日让外部时点能落进厂内日历，候选也从方案比较变成日期先后。到这里，能操作的点变少，但每个点更硬。\n\n## 二、哪些还没看清\n- 线头：倒推出的唯一启动日还没有和现金断点日并排落地；先写它还是先谈 N，没有先后。\n- 线头：切换频率变化对两条路的侵蚀没有量，是否会在现金断点前先废掉某条路，不知道。\n- 线头：供应商要求到货后第 N 天付款的 N，可谈下界未知；这个数一变，提前量跟着变。\n- &：0 的隐性成本只以单笔事件出现，聚不成可比较的总量。\n- &：1 的柔性要等订单稳了才调得出来，而订单不稳正是它被考虑的原因。\n\n## 三、我决定不碰什么，为什么\n- 不碰：废品率峰值周与现金最低周重叠时，两笔账谁先入账的顺序裁决。\n  为什么：这两笔损失可以分别估，但入账主体跟厂内科目表走；科目表当前不在手里，现在定顺序等于替厂内排账。\n  保持了多久：从本层辨认出这个顺序问题到本次收束。\n  状态：active——科目表到手后这条悬置会被打开。\n本层没有撤回的悬置。\n\n## 四、与问题相处的姿态\n我把它当作日期判定来对待：先把倒推唯一启动日写出来，与现金断点日并排；如果前者更晚，就停止为 1 找补，也不把 0 说成被选中的答案。外部答复没来，不替它定；第三条路这次没生，就留空。悬置不是等我凑齐信息再动的区域，是我看清后主动留出的空位。\n\n【元反思】\n  ∘ 本次对撞的产物是次序而非取舍：条件先成，决定才有对象；条件不齐时，比较的其实是0和一张条件清单。\n  ∘ 三个不由企业排期的时点之间的空隙，是悬置实际发生的位置，它不是待补的信息缺口，而是不可控节奏的交错。\n\n【质量线索】position_all_same\n\n【质量评价】对偶判断塌缩（机械全同）：position 维度全同，判断没起作用\n\n【自省】候选3的记账主体问题在view里被主动悬置，处理得当；候选4/5是1路日历化的自然延伸，非补丁。\n\n【「此处未生」计数】本圈 1 处（阈值 3）　（诚实姿态，未越界）",
+   "manifest": "## 一、这一路看到了什么\n0 和 1 分开看的成本、柔性、日历，落到一起后没有汇成一个选择。它们先分出了两种时间机制：一个靠事件推动，一个靠前序闭合串联。真正被推到桌面的，是“还有没有可比日期”，不是“哪条路更好”。倒推唯一启动日让外部时点能落进厂内日历，候选也从方案比较变成日期先后。到这里，能操作的点变少，但每个点更硬。\n\n## 二、哪些还没看清\n- 线头：倒推出的唯一启动日还没有和现金断点日并排落地；先写它还是先谈 N，没有先后。\n- 线头：切换频率变化对两条路的侵蚀没有量，是否会在现金断点前先废掉某条路，不知道。\n- 线头：供应商要求到货后第 N 天付款的 N，可谈下界未知；这个数一变，提前量跟着变。\n- &：0 的隐性成本只以单笔事件出现，聚不成可比较的总量。\n- &：1 的柔性要等订单稳了才调得出来，而订单不稳正是它被考虑的原因。\n\n## 三、我决定不碰什么，为什么\n- 不碰：废品率峰值周与现金最低周重叠时，两笔账谁先入账的顺序裁决。\n  为什么：这两笔损失可以分别估，但入账主体跟厂内科目表走；科目表当前不在手里，现在定顺序等于替厂内排账。\n  保持了多久：从本层辨认出这个顺序问题到本次收束。\n  状态：active——科目表到手后这条悬置会被打开。\n本层没有撤回的悬置。\n\n## 四、与问题相处的姿态\n我把它当作日期判定来对待：先把倒推唯一启动日写出来，与现金断点日并排；如果前者更晚，就停止为 1 找补，也不把 0 说成被选中的答案。外部答复没来，不替它定；第三条路这次没生，就留空。悬置不是等我凑齐信息再动的区域，是我看清后主动留出的空位。",
+   "quality_flags": [],
+   "quality_verdict": "判断正常，无质量线索",
+   "self_check": {
+    "suspicious_candidates": [
+     3
+    ],
+    "suspicious_amps": [],
+    "ing_rephrased": false,
+    "honest_about_empty": true,
+    "unsaid_count": 1,
+    "unsaid_is_escape": false,
+    "unsaid_where": "",
+    "flow_verdict": "展开→对撞→反转→生成→撞不动链条完整，次序生成是真新东西，收束干净。",
+    "view_verdict": "停在'窗口是否存在'而非'选哪条'，是显形不是判定，结论开放，合格。",
+    "amp_ratio_verdict": "4条&均从对撞中长出，无凑数，比例合理。",
+    "notes": "候选3的记账主体问题在view里被主动悬置，处理得当；候选4/5是1路日历化的自然延伸，非补丁。"
+   },
+   "errors": [],
+   "anchor_touched": [
+    {
+     "desc": "现金流作为计时器先于选项",
+     "source": "anchor"
+    },
+    {
+     "desc": "0与1启动日受不同外部条件锁定",
+     "source": "anchor"
+    },
+    {
+     "desc": "供应商与客户构成厂外盲区",
+     "source": "anchor"
+    }
+   ],
+   "ing_structured": {}
+  },
+  "1": {
+   "entry": "1",
+   "anchor": "现金紧张的中小制造企业，该按哪个日期判定上自动化还是维持人工？",
+   "candidates": [
+    {
+     "desc": "现金缺口能否撑过自动化回本周期，这个判断需要先知道缺口量级和持续期，还是先知道回本周期本身？",
+     "kind": "question",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点直接问现金缺口与回本周期先后",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "自动化回本周期依赖订单批量稳定性，订单不稳则回本周期不可计算，这是先决条件而非并行项",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点同时提到回本周期与订单结构",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "产线可否拆成单工位先换，决定了选项空间是\"全自动/全人工\"二分还是存在中间态",
+     "kind": "thread",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点未提产线可拆分或单工位先换",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "现金断点日：账上现金能覆盖固定支出的最后一天，这是所有时间比较的基准点",
+     "kind": "startpoint",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点问能否撑过回本周期，隐含现金断点",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "订单结构（批量大小、品种切换频率）可查，直接决定自动化是否划算——批量小、切换多则自动化优势被侵蚀",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点明提订单结构配不配自动化",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "现金流紧张到什么程度才算\"没有资格谈自动化\"？这个阈值由谁定、依据什么定？",
+     "kind": "question",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点问现金流紧张下如何决策，指向阈值",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "供应商付款条件（到货后第N天付款）的N值可谈，直接影响现金缺口的时间分布",
+     "kind": "object",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点未提供应商付款条件或N值",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "局部优化在维持人工的前提下能释放多少产能/质量提升，这个量级若足够大，自动化就不再是唯一解",
+     "kind": "thread",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点明提维持人工加局部优化",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "现金缺口的“时间形状”：不是总额，而是最低点何时到、持续几周、之后是否回升，这决定自动化分期付款能否踩在回升段",
+     "kind": "concept",
+     "attribute": "0",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点问现金缺口能否撑过，指向时间形状",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "自动化回本周期在现金流语境下应换算为“现金回正周期”，而非会计利润回本——两者可能差出一个应付账期",
+     "kind": "concept",
+     "attribute": "0",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点将现金流与自动化回本周期并置",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "订单结构里“品种数”与“换型频次”哪个才是自动化真正吃不消的变量，尚未落到具体订单数据上",
+     "kind": "question",
+     "attribute": "0",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点提订单结构，指向具体变量",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "人工加局部优化路径下，哪几道工序的产出瓶颈最硬，是否恰好是自动化最贵的那一段，未展开",
+     "kind": "thread",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点未提人工路径的工序瓶颈",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "供应商或设备商是否接受“先租后买/按件付费”的产线接入方式，这个选项还没进入比较池",
+     "kind": "object",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点未提先租后买或按件付费",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "如果现金断点早于自动化设备到货日，谈判筹码会从“选不选”变成“退不退定金”，这个切换点没被标出",
+     "kind": "startpoint",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点未提设备到货日或退定金",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "谁在厂内对“订单不稳”负责——销售还是生产计划，决定自动化论证时用哪套订单预测",
+     "kind": "person",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点未提厂内订单不稳的责任人",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "局部优化中“人”的隐性可压缩空间（加班、兼岗、计件弹性）未被量化，导致人工路径成本可能被高估",
+     "kind": "concept",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点未提人工隐性可压缩空间",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "现金流缺口量级与持续期是否已被厂内实际数据锁定，还是仅凭\"紧张\"二字在谈资格？（判定\"有无资格谈自动化\"的阈值必须先有缺口数字）",
+     "kind": "question",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点只问排序被日期锁定，缺口量级未提及",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "订单批量稳定性的观测窗口多长才算够：一个月、一个季度还是一个订单周期？窗口长度不同，回本周期可算或不可算的结论会翻转",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点未提订单批量稳定性，系外部拉入",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "产线可否拆分（单工位先换）这一判定，直接决定 1 路不是整线开关，而是可在现金断点前分段落地的选项空间",
+     "kind": "startpoint",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "产线可否拆分不在锚点内，为外部引入",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "0 路可压缩空间上界若低于 1 路首期现金流出，则\"维持人工\"在现金排序上未必占优——这条要等工时/人次/单价数据到位才能算",
+     "kind": "thread",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点正问0/1路现金净流出排序，此条直对",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "阈值由谁定：老板、财务、银行还是供应商账期？定阈值的主体不同，资格线跟着变，这是可判但尚无归属的空白",
+     "kind": "question",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "阈值归属不在锚点，锚点只问日期锁定",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "此处未生：0 路与 1 路在可观测日期的先后比较，本圈未产出新内容",
+     "kind": "other",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点即0/1路可观测日期先后比较",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "“没有资格谈自动化”的阈值不是一条线，而是看现金缺口能否被一笔外部时点覆盖；覆盖不了才叫没资格，与缺口大小无关",
+     "kind": "concept",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "外部时点覆盖缺口属阈值论，锚点未涉",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "阈值由谁定：若由银行续贷审批日倒推，则阈值是外部给定的；若由厂内现金最低周倒推，则阈值内部可变——两条来源会给出不同答案",
+     "kind": "question",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "阈值由谁定不在锚点，属外部拉入",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "上一圈把“订单批量稳定性”当作回本周期可算的先决条件，但批量稳定性本身无法在启动前观测，只能从历史订单的批次数列反推——这反推是否成立，未验证",
+     "kind": "thread",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "订单批量反推不在锚点，为外部引入",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "自动化的回本周期不是单一数：设备折旧年限、订单批次的方差、换型时间三项中任一项不确定，周期就退化为区间，区间跨过现金断点日则判断翻转",
+     "kind": "concept",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "回本周期区间非锚点，仅共用断点日",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "0路加班工时、兼岗人次、计件单价三项若已存在台账，可压缩空间上界可算；若只有工资总额无明细，则上界不可算——先确认台账形态，再谈量化",
+     "kind": "thread",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "台账与可压缩空间不在锚点，属外部",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "科目表若不存在，废品损失与设备折旧的记账主体未定，现金流出确认时点被推迟到何时，取决于谁先垫付——这个“谁”当前不在场",
+     "kind": "question",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "科目表与记账主体不在锚点，属外部",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "供应商分期付款的最晚答复日目前是否已有落纸日期，还是仍停在意向阶段；没有落纸日期，T1 差值算不出来，1 路锁能否覆盖现金断点日就无从判起",
+     "kind": "question",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点未提供应商分期答复日",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "厂内现金缺口至今只有“紧张”二字，还是账上已有一个估算数字；无数字则 0 路与 1 路的排序比较缺基准，任何先后判定都是空转",
+     "kind": "question",
+     "attribute": "1",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点‘现金流紧张’已指向现金缺口",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "上月工资台账是工时/人次/单价明细，还是只有总额一栏；这决定 0 路可压缩上界能否算出来，直接决定 0 路成本是否被高估",
+     "kind": "question",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点未提工资台账",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "1 路锁钉的是付款日历而非净流出金额，因此即便 1 路最晚启动日早于现金断点日，也不能推出 1 路能覆盖断点——锁的是时间顺序，不是现金流缺口本身",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点未提付款日历与净流出金额",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "记账主体差异会延迟现金流出确认：废品损失与设备折旧若不入厂内科目表，0 路的隐性成本就聚不成可比较的总量，0 与 1 的排序会在账面上失真",
+     "kind": "concept",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点未提记账主体或科目表",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "先翻一次上月工资表确认台账是明细还是总额——这一步可当场完成，是当前唯一不依赖外部答复、不依赖科目表的可动手点",
+     "kind": "startpoint",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点未提翻工资表动作",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "0 路熟练工离岗周与 1 路设备调试窗是否存在共同可观测锁定日，取决于排产计划与调试计划是否已排出；两个计划都不在手里时，这条线只能挂着",
+     "kind": "thread",
+     "attribute": "1",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阳",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阳展开",
+     "why_position": "锚点未提离岗周与调试窗",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "供应商分期付款答复日与1路最晚启动日，两个日期在厂内现有文件里都没有落纸的候选值——不是缺计算，是缺这两个日期本身的记录，卡在没人把供应商口头条件写成带日期的函件",
+     "kind": "thread",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点未提供应商答复与启动日",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "现金缺口厂内只有\"紧张\"这个词，没有写下数字。卡在没人被要求把下月到期应付逐笔加总，缺的不是估不准，是没人起头估",
+     "kind": "thread",
+     "attribute": "0",
+     "position": "1",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点正以‘紧张’描述现金缺口",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": true
+    },
+    {
+     "desc": "工资台账若只有总额，0路可压缩上界算不出；若为明细（工时/人次/单价），上界可算。这条判定的成本是翻一次上月工资表，不需要新数据",
+     "kind": "concept",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点未提工资台账明细",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "缺一个已落纸的现金断点日。没有这个日期，\"倒推唯一启动日\"没有比较对象，1路锁能否覆盖断点日的结论悬空",
+     "kind": "question",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点未提现金断点日",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    },
+    {
+     "desc": "科目表是否存在决定废品损失与设备折旧由谁记账、何时入账。厂内若无科目表，子问题4的入账顺序裁决无法进行",
+     "kind": "thread",
+     "attribute": "0",
+     "position": "0",
+     "yin": "0",
+     "yang": "0",
+     "source": "阴",
+     "attribute_anchored": true,
+     "why_attribute": "来源：阴展开",
+     "why_position": "锚点未提科目表",
+     "why_0": "",
+     "why_1": "",
+     "is_amp_candidate": false
+    }
+   ],
+   "collision": "上一圈 self-check 点名三处「此处未生」，但那份点名没有随记忆到本层；我手上只有“上一次是谁”的修行层，里面没有这三处的编号。我不假装知道是哪三处。当前候选里最像未生的是三处：供应商分期条件不落纸、工资台账粒度、科目表。下面逐一推，推不动写卡点。\n\n## 一、两端各自把话说完（结构版）\n\n0 路的承力构件是工资台账的粒度。但工资表按工时/人次/单价分类，不按“可停/不可停”分类。翻表得到的是计算原料，不是可压缩边界。可压缩边界取决于排产计划里哪些工时能被停掉，而排产计划不在工资表里。0 路的承力面比“翻一次工资表”更深一层，卡在分类维度不重合。\n\n1 路的承力构件是供应商付款条件变成厂内可引用的日期。这个结构里只有到期日，没有每期流出额。日期能承受“排不排得下”，不能承受“流不流得出”。更关键的是：1 路的右列——每期金额——不由 1 路自己决定，由供应商每期金额决定。\n\n## 二、各推到极端\n\n0 路推到极限：所有可停工时都停，熟练工全部离岗。此时它已经不是“维持人工”，而是“部分停产”。它的比较单位从工资支出变成停产损失，与 1 路的资本支出仍不在同一单位上。\n\n1 路推到极限：供应商同意无限分期，每期金额趋近零。日期结构完全撑住，任何单日断点都能被拉平。但总付款额可能上升，且“最晚启动日”这个判定点消失，因为启动不再受单日现金约束。日期撑住了，金额方向可能更塌。\n\n## 三、找反转点\n\n通常把现金断点日当作两条路共同的比较基准。反转：断点日不是基准，是两条路共同改写的对象。1 路改写它的分布，把一点切成多期；0 路改写它的高度，把峰值削低或推后。两者改写的方向不同。“并排比较”预设了断点日不变，这个预设与两条路的作用方式矛盾。\n\n另一个反转：判定 0 或 1，通常被当作厂内决策。但 1 路的支座在厂外，供应商是否把意愿变成构件，决定 1 路能不能进入比较。0 路的支座在厂内，排产计划是否允许停工时，决定 0 路上界是否可算。真正的先后不是 0 与 1 的先后，是哪个支座先被固定。\n\n## 四、让对撞生成新东西\n\n把两条路都改写成一张“每期净出流配对表”：左列是日期，右列是该期净出流。0 路和 1 路只有落在同一张表的同一时间轴上，才第一次有了共同承力单位。\n\n生成条件：现金断点被确认是一个点还是多个点。若是一个点，0 路按单点压缩上界与单点缺口比较，1 路按单次支出与单点缺口比较，比较成立但粗糙。若是多个点，唯一启动日倒推失效，必须用配对表。\n\n配对表不是折中方案。它是把两条路的结构翻译成同一单位后得到的新判定面。由此，翻工资表只能填 0 路左列的一部分，右列净出流仍空；供应商函件填 1 路左列日期，右列净出流也空。两列都空右列。先翻工资表不能完成排序，只能完成一半左列。\n\n## 五、撞不动的地方\n\n&：供应商分期条件不落纸时，配对表 1 路右列无法生成。不是算不出，是这一列的定义依赖供应商每期金额，而每期金额只能由供应商给。卡在厂外意愿，不是厂内计算。\n\n&：工资表即使翻到明细，也只能给出“已发生工时”的粒度，不能给出“可停工时”的粒度。可停工时需要排产计划与工人技能矩阵交叉，这两件不在工资表。卡在分类维度。\n\n&：科目表即使到手，也只决定入账科目，不决定入账时点。入账时点取决于凭证日/付款日/验收日，这三个日期分散在不同单据。科目表不是打开那个悬置的钥匙。卡在单据日期。\n\n## 六、回到原始问题\n\n问的是按哪个日期判定上自动化还是维持人工。本层能给的：判定的日期不是单一启动日。若现金断点被确认是单点，判定日是最晚启动日与断点日的先后。若供应商分期把断点变成多期，判定日失效，改用配对表。\n\n当前可做的不是选 0 或 1。是确认断点是一个点还是多个点——这只能从厂内已承诺的付款排期看出；以及确认 1 路能不能从供应商意愿变成可引用的构件——这不在厂内。这两件事没有先后，因为它们分别决定配对表的行数和列数；先做哪件，都不会让另一件自动完成。",
+   "amps": [
+    {
+     "desc": "0路的锁是重复日期切割，锁住当期可调空间，不锁全程排序。",
+     "type": "structural",
+     "source": "1",
+     "polarity": "1",
+     "polarity_why": "锁性质已明确"
+    },
+    {
+     "desc": "1路的锁是事件顺序钉住，锁住付款日历，不锁净流出金额。",
+     "type": "structural",
+     "source": "1",
+     "polarity": "1",
+     "polarity_why": "锁范围已明确"
+    },
+    {
+     "desc": "弱锁先到不构成排序锁定，强锁后到可以覆盖弱锁。",
+     "type": "structural",
+     "source": "1",
+     "polarity": "1",
+     "polarity_why": "覆盖规则已成立"
+    },
+    {
+     "desc": "可逆转与不可逆的跨越是反转点，不是日期先后。",
+     "type": "structural",
+     "source": "1",
+     "polarity": "1",
+     "polarity_why": "反转判据已确定"
+    }
+   ],
+   "threads": [
+    {
+     "desc": "供应商分期付款可行性的最晚答复日与1路最晚启动日的差值，待两个日期锁定后计算。",
+     "kind": "thread",
+     "polarity": "?"
+    },
+    {
+     "desc": "0路熟练工离岗周与1路设备调试窗是否存在共同可观测锁定日，待排产与调试计划。",
+     "kind": "thread",
+     "polarity": "?"
+    },
+    {
+     "desc": "记账主体差异是否延迟现金流出确认，待厂内科目表。",
+     "kind": "thread",
+     "polarity": "?"
+    }
+   ],
+   "probes": [
+    {
+     "question": "翻一次上月工资表：是工时/人次/单价明细还是只有总额？若是明细，0路可压缩上界能否当场算出？",
+     "link": "算得出上界，0路成本才能与1路投资额同表比较",
+     "expected_gain": 0.7,
+     "covers": [
+      "T3",
+      "T6",
+      "T9",
+      "T12"
+     ]
+    },
+    {
+     "question": "厂内现有文件里，现金断点日与供应商分期答复日，是否各自已有落纸的候选日期？",
+     "link": "两个日期落纸，倒推唯一启动日才有比较对象",
+     "expected_gain": 0.6,
+     "covers": [
+      "T1",
+      "T2",
+      "T5",
+      "T11",
+      "T13"
+     ]
+    }
+   ],
+   "meta": [
+    "本层把判定日从单一启动日改写为条件分支：断点单点用先后，多点用配对表。",
+    "配对表两路右列均空，说明当前比较缺的不是算法而是外部输入。",
+    "[P3] & 候选（各圈累计）16 条 / 本层 amps 4 条（比值 0.25；amps 可能含 adjudications/上游合并的贡献，比值只作方向参考）"
+   ],
+   "decidable_product": {
+    "answer": "当前唯一可当场完成、不依赖外部答复与科目表的动作：翻一次上月工资表，确认台账是工时/人次/单价明细还是只有总额。这决定0路可压缩上界能否算、0路成本是否被高估。其余可判定子问题（1、2、3、4、6）均因缺日期、缺计划、缺科目表而无法给出数值答案。",
+    "answered_sub_ids": [
+     5
+    ],
+    "evidence": [
+     "工资表按工时/人次/单价分类，不按可停/不可停分类；翻表得到计算原料，不是可压缩边界。",
+     "可压缩边界取决于排产计划中哪些工时能被停掉，排产计划不在工资表里。"
+    ],
+    "distance": 0.85
+   },
+   "undecidable_product": {
+    "why_undecidable": "本层评估阶段未列出不可判定子问题，ing 输出中亦无新增不可通约处；三条 & 均为可判定但当前缺件（落纸日期、排产计划、科目表），不构成不可判定结构。此处未生。",
+    "structural_amps": [
+     "0路的锁是重复日期切割，锁住当期可调空间，不锁全程排序。",
+     "1路的锁是事件顺序钉住，锁住付款日历，不锁净流出金额。",
+     "弱锁先到不构成排序锁定，强锁后到可以覆盖弱锁。",
+     "可逆转与不可逆的跨越是反转点，不是日期先后。"
+    ],
+    "aligned_amps": [],
+    "clarity": 0.0,
+    "distance": 1.0
+   },
+   "distance_to_question": 0.55,
+   "covered_aspects": [
+    "0路承力构件是工资台账粒度，卡在分类维度不重合",
+    "1路承力构件是付款日历，不锁净流出金额",
+    "断点日是被两条路共同改写的对象，不是固定基准",
+    "配对表作为共同承力单位，两路右列均空",
+    "支座先后：厂外供应商意愿与厂内排产计划分别决定1路与0路能否进入比较"
+   ],
+   "uncovered_aspects": [
+    "断点是一个点还是多个点，未确认",
+    "供应商分期条件是否落纸，未确认",
+    "工资台账是明细还是总额，未确认",
+    "科目表是否到手，未确认",
+    "T1差值（供应商最晚答复日与1路最晚启动日）未计算"
+   ],
+   "untouched": [
+    {
+     "desc": "现金缺口是否已有落纸数字，还是只有'紧张'",
+     "source": "anchor"
+    },
+    {
+     "desc": "供应商分期答复日与1路最晚启动日是否已有候选值",
+     "source": "anchor"
+    },
+    {
+     "desc": "工资台账是明细还是只有总额",
+     "source": "anchor"
+    },
+    {
+     "desc": "熟练工离岗周与设备调试窗是否存在共同可观测锁定日",
+     "source": "anchor"
+    },
+    {
+     "desc": "供应商分期付款的最晚答复日目前是否已有落纸日期，还是仍停在意向阶段；没有落纸日期，T1 差值算不出来，1 路锁能否覆盖现金断点日就无从判起",
+     "source": "judge"
+    },
+    {
+     "desc": "上月工资台账是工时/人次/单价明细，还是只有总额一栏；这决定 0 路可压缩上界能否算出来，直接决定 0 路成本是否被高估",
+     "source": "judge"
+    },
+    {
+     "desc": "1 路锁钉的是付款日历而非净流出金额，因此即便 1 路最晚启动日早于现金断点日，也不能推出 1 路能覆盖断点——锁的是时间顺序，不是现金流缺口本身",
+     "source": "judge"
+    },
+    {
+     "desc": "记账主体差异会延迟现金流出确认：废品损失与设备折旧若不入厂内科目表，0 路的隐性成本就聚不成可比较的总量，0 与 1 的排序会在账面上失真",
+     "source": "judge"
+    },
+    {
+     "desc": "先翻一次上月工资表确认台账是明细还是总额——这一步可当场完成，是当前唯一不依赖外部答复、不依赖科目表的可动手点",
+     "source": "judge"
+    },
+    {
+     "desc": "0 路熟练工离岗周与 1 路设备调试窗是否存在共同可观测锁定日，取决于排产计划与调试计划是否已排出；两个计划都不在手里时，这条线只能挂着",
+     "source": "judge"
+    },
+    {
+     "desc": "供应商分期付款答复日与1路最晚启动日，两个日期在厂内现有文件里都没有落纸的候选值——不是缺计算，是缺这两个日期本身的记录，卡在没人把供应商口头条件写成带日期的函件",
+     "source": "judge"
+    },
+    {
+     "desc": "工资台账若只有总额，0路可压缩上界算不出；若为明细（工时/人次/单价），上界可算。这条判定的成本是翻一次上月工资表，不需要新数据",
+     "source": "judge"
+    },
+    {
+     "desc": "缺一个已落纸的现金断点日。没有这个日期，\"倒推唯一启动日\"没有比较对象，1路锁能否覆盖断点日的结论悬空",
+     "source": "judge"
+    },
+    {
+     "desc": "科目表是否存在决定废品损失与设备折旧由谁记账、何时入账。厂内若无科目表，子问题4的入账顺序裁决无法进行",
+     "source": "judge"
+    }
+   ],
+   "suspensions": [],
+   "engagements": [
+    {
+     "sub_id": 1,
+     "target": "供应商答复分期付款可行性的最晚日期，与1路最晚启动日之间的差值是多少天？这个差值能否覆盖设备进场到调试完成的全部前置时间？",
+     "how": "再确认：差值算不出，缺的是两个日期本身的落纸记录",
+     "depth": 0.7
+    },
+    {
+     "sub_id": 2,
+     "target": "现金断点日之前，是否存在一个可观测的日期，在该日期上0路的熟练工离岗周与1路的设备调试窗同时被锁定？如果存在，该日期是否早于路径锁死日？",
+     "how": "回访条件未满足，排产与调试计划仍不在手",
+     "depth": 0.4
+    },
+    {
+     "sub_id": 3,
+     "target": "在订单从多品种切换到少品种的那一天，0路加班补产与1路调试停线，哪一条的产能恢复时间更短？这个恢复时间差是否足以改变两条路在切换日的现金净流出排序？",
+     "how": "回访条件未满足，切换日实测记录仍缺",
+     "depth": 0.4
+    },
+    {
+     "sub_id": 5,
+     "target": "在等待1路条件齐备的期间，0路的切换频率变化是否有一个可观测的上界？如果没有，0路隐性成本的累积速度是否在结构上无法与1路投资总额做同期比较？",
+     "how": "再确认：0路上界算不出，因台账明细与否未定",
+     "depth": 0.6
+    }
+   ],
+   "refinements": [
+    {
+     "sub_id": 5,
+     "sub_question": "在等待1路条件齐备的期间，0路的切换频率变化是否有一个可观测的上界？如果没有，0路隐性成本的累积速度是否在结构上无法与1路投资总额做同期比较？",
+     "how": "台账形态决定0路隐性成本能否聚成上界",
+     "layer": 2
+    },
+    {
+     "sub_id": 1,
+     "sub_question": "供应商答复分期付款可行性的最晚日期，与1路最晚启动日之间的差值是多少天？这个差值能否覆盖设备进场到调试完成的全部前置时间？",
+     "how": "追问两个日期是否已有候选值，差值可算性",
+     "layer": 2
+    },
+    {
+     "sub_id": 1,
+     "sub_question": "供应商答复分期付款可行性的最晚日期，与1路最晚启动日之间的差值是多少天？这个差值能否覆盖设备进场到调试完成的全部前置时间？",
+     "how": "再确认：差值算不出，缺的是两个日期本身的落纸记录",
+     "layer": 3
+    },
+    {
+     "sub_id": 5,
+     "sub_question": "在等待1路条件齐备的期间，0路的切换频率变化是否有一个可观测的上界？如果没有，0路隐性成本的累积速度是否在结构上无法与1路投资总额做同期比较？",
+     "how": "再确认：0路上界算不出，因台账明细与否未定",
+     "layer": 3
+    }
+   ],
+   "reconfirmations": [
+    {
+     "deferral_id": "d_001",
+     "reason": "排产与调试计划仍未到手，条件未满足"
+    },
+    {
+     "deferral_id": "d_002",
+     "reason": "切换日实测记录仍缺，条件未满足"
+    }
+   ],
+   "revocations": [],
+   "deferrals": [
+    {
+     "id": "d_001",
+     "sub_id": 2,
+     "sub_question": "现金断点日之前，是否存在一个可观测的日期，在该日期上0路的熟练工离岗周与1路的设备调试窗同时被锁定？如果存在，该日期是否早于路径锁死日？",
+     "reason": "排产与调试计划未到手，无法定共同锁定日",
+     "revisit_condition": "拿到排产表与调试计划",
+     "layer": 1,
+     "last_reconfirmed_layer": 3,
+     "status": "handled",
+     "resolved_at": 3,
+     "resolution_reason": "对应子问题被直接回答"
+    },
+    {
+     "id": "d_002",
+     "sub_id": 3,
+     "sub_question": "在订单从多品种切换到少品种的那一天，0路加班补产与1路调试停线，哪一条的产能恢复时间更短？这个恢复时间差是否足以改变两条路在切换日的现金净流出排序？",
+     "reason": "切换日产能恢复时间需实测数据",
+     "revisit_condition": "有切换日实测记录",
+     "layer": 1,
+     "last_reconfirmed_layer": 3,
+     "status": "handled",
+     "resolved_at": 3,
+     "resolution_reason": "对应子问题被直接回答"
+    },
+    {
+     "id": "d_003",
+     "sub_id": 6,
+     "sub_question": "把0路按在当下不动来与1路同表比较，这个操作本身需要冻结哪些变量？冻结期间，0路实际运行中哪些变量的漂移会使得比较表在断点日之前失效？",
+     "reason": "冻结变量清单依赖科目表与订单数据",
+     "revisit_condition": "科目表与订单数据到手",
+     "layer": 1,
+     "last_reconfirmed_layer": 2,
+     "status": "handled",
+     "resolved_at": 2,
+     "resolution_reason": "对应子问题被直接回答"
+    }
+   ],
+   "resolutions": [],
+   "escalations": [],
+   "reclassifications": [],
+   "settlement": {
+    "clean": true,
+    "leftover": 0,
+    "coverage": 0.6428571428571429,
+    "answered": 6,
+    "total": 6,
+    "decidable_channel": {
+     "answers": [
+      {
+       "answer": "无法计算具体天数差值，因为供应商答复最晚日期与1路最晚启动日均未锁定；但可判定：该差值必须覆盖设备进场到调试完成的前置时间，否则1路不可行。当前该覆盖关系无法验证。",
+       "answered_sub_ids": [
+        1
+       ],
+       "evidence": [
+        "ing输出指出设备商是否接受验收后起算账期只有口头可能，没有书面条款，N的起点未定。",
+        "1路最晚启动日取决于订单冻结窗，而冻结窗未锁，因此最晚启动日不可计算。"
+       ]
+      },
+      {
+       "answer": "子问题1：差值天数无法计算，因为供应商答复最晚日和1路最晚启动日均未锁定。子问题2：不存在可观测的共同锁定日，因为0路熟练工离岗周与1路设备调试窗分属不同计划体系，当前无交叉观测点。子问题3：产能恢复时间差无法比较，因为0路加班补产恢复时间取决于加班工时明细（未提供），1路调试停线恢复时间取决于调试计划（未提供）。子问题4：记账主体不同会导致现金流出确认时点差异，但延迟确认是否制造虚假缓冲取决于科目表，当前科目表不在手，无法判定。子问题5：0路切换频率变化没有可观测上界，因为切换频率由订单波动驱动，订单波动无历史上界数据；隐性成本累积速度在结构上无法与1路投资总额做同期比较，因为两者计量单位不同（人工工时 vs 设备折旧）。子问题6：冻结变量至少包括：订单批量、切换频率、加班工时、兼岗人次、计件单价、供应商账期N。冻结期间，订单批量和切换频率的漂移会使比较表在断点日前失效，因为这两个变量直接改变0路现金流出节奏。",
+       "answered_sub_ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+       ],
+       "evidence": [
+        "ing输出指出：0路发薪日锁单期应付，1路定金日锁付款日历，两者锁定对象不同。",
+        "ing输出指出：科目表缺席时，废品损失与设备折旧无同一入账主体，日期先后失去比较轴。"
+       ]
+      },
+      {
+       "answer": "当前唯一可当场完成、不依赖外部答复与科目表的动作：翻一次上月工资表，确认台账是工时/人次/单价明细还是只有总额。这决定0路可压缩上界能否算、0路成本是否被高估。其余可判定子问题（1、2、3、4、6）均因缺日期、缺计划、缺科目表而无法给出数值答案。",
+       "answered_sub_ids": [
+        5
+       ],
+       "evidence": [
+        "工资表按工时/人次/单价分类，不按可停/不可停分类；翻表得到计算原料，不是可压缩边界。",
+        "可压缩边界取决于排产计划中哪些工时能被停掉，排产计划不在工资表里。"
+       ]
+      }
+     ],
+     "coverage_history": [],
+     "last_coverage": 0.0
+    },
+    "undecidable_channel": {
+     "structural_amps": [
+      "0路的锁是重复日期切割，锁住当期可调空间，不锁全程排序。",
+      "1路的锁是事件顺序钉住，锁住付款日历，不锁净流出金额。",
+      "弱锁先到不构成排序锁定，强锁后到可以覆盖弱锁。",
+      "可逆转与不可逆的跨越是反转点，不是日期先后。"
+     ],
+     "clarity_history": [
+      0.0,
+      0.6,
+      0.0
+     ],
+     "last_clarity": 0.0,
+     "und_aspects": [],
+     "struct_coverage_history": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "last_struct_coverage": 0.0,
+     "aligned_amps": [],
+     "last_struct_hit": 0,
+     "last_aligned_hit": 0,
+     "aligned_coverage_history": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "last_aligned_coverage": 0.0,
+     "aspect_first_hit": {},
+     "struct_trace": [
+      {
+       "layer": 1,
+       "hit": 0,
+       "total": 0,
+       "cov": 0.0,
+       "newly": []
+      },
+      {
+       "layer": 2,
+       "hit": 0,
+       "total": 0,
+       "cov": 0.0,
+       "newly": []
+      },
+      {
+       "layer": 3,
+       "hit": 0,
+       "total": 0,
+       "cov": 0.0,
+       "newly": []
+      }
+     ],
+     "aligned_first_hit": {},
+     "aligned_trace": [
+      {
+       "layer": 1,
+       "hit": 0,
+       "total": 0,
+       "cov": 0.0,
+       "newly": []
+      },
+      {
+       "layer": 2,
+       "hit": 0,
+       "total": 0,
+       "cov": 0.0,
+       "newly": []
+      },
+      {
+       "layer": 3,
+       "hit": 0,
+       "total": 0,
+       "cov": 0.0,
+       "newly": []
+      }
+     ]
+    },
+    "snapshot_coverage": 0.6428571428571429,
+    "drifted_out": 0
+   },
+   "adjudications": [],
+   "both_quota": {},
+   "carry": [
+    {
+     "question": "上面这几条候选被判为「后补／换说法复述」，本圈禁止以任何形式重述它们——原样、换说法、扩写都算。只交真的长出来的新东西：上月工资台账是工时/人次/单价明细，还是只有总额一栏；这决定 0 路可压缩上界能否算出来，直接决定 0 路成本是否被高估；先翻一次上月工资表确认台账是明细还是总额——这一步可当场完成，是当前唯一不依赖外部答复、不依赖科目表的可动手点",
+     "link": "self-check 判定的复述条目，绕开去重就能喷更多，但那不叫展开",
+     "expected_gain": 0.6,
+     "kind": "candidate",
+     "text": "上面这几条候选被判为「后补／换说法复述」，本圈禁止以任何形式重述它们——原样、换说法、扩写都算。只交真的长出来的新东西：上月工资台账是工时/人次/单价明细，还是只有总额一栏；这决定 0 路可压缩上界能否算出来，直接决定 0 路成本是否被高估；先翻一次上月工资表确认台账是明细还是总额——这一步可当场完成，是当前唯一不依赖外部答复、不依赖科目表的可动手点",
+     "banned": [
+      "上月工资台账是工时/人次/单价明细，还是只有总额一栏；这决定 0 路可压缩上界能否算出来，直接决定 0 路成本是否被高估",
+      "先翻一次上月工资表确认台账是明细还是总额——这一步可当场完成，是当前唯一不依赖外部答复、不依赖科目表的可动手点"
+     ]
+    },
+    {
+     "question": "上一圈出现 3 处「此处未生」，已超过阈值 2——这一圈不许再拿它收尾。先把上一圈标了未生的地方真的推一遍，推不动要说清卡在哪一步，不是写一句「未生」就交卷。",
+     "link": "「此处未生」是诚实姿态，用成套路就是逃避",
+     "expected_gain": 0.75,
+     "kind": "any",
+     "text": "上一圈出现 3 处「此处未生」，已超过阈值 2——这一圈不许再拿它收尾。先把上一圈标了未生的地方真的推一遍，推不动要说清卡在哪一步，不是写一句「未生」就交卷。",
+     "banned": []
+    }
+   ],
+   "carry_check": {
+    "checked": 1,
+    "violations": 0,
+    "items": [],
+    "notes": "注入 2 条、可核对 1 条，违例 0 条",
+    "round": 3
+   },
+   "carry_checks": [
+    {
+     "checked": 1,
+     "violations": 0,
+     "items": [],
+     "notes": "注入 2 条、可核对 1 条，违例 0 条",
+     "round": 3
+    }
+   ],
+   "carry_dropped": [],
+   "carry_dropped_all": [],
+   "rephrase_ratio": null,
+   "probe_skipped": false,
+   "rounds_cap": 3,
+   "duel_suspensions": [],
+   "meta_closure": {},
+   "stop_reason": "连续 3 轮无新 &（沉淀完了） + 连续 2 轮无线头新增（方向走完了），螺旋停止",
+   "rounds_run": 3,
+   "roles_run": [
+    "摊开",
+    "转向",
+    "复裁"
+   ],
+   "closure_reason": "",
+   "round_log": [
+    {
+     "round": 1,
+     "role": "摊开",
+     "new_amps": 0,
+     "new_threads": 3,
+     "idle_amp": 1,
+     "idle_thread": 0,
+     "idle_stall": 0,
+     "why": ""
+    },
+    {
+     "round": 2,
+     "role": "转向",
+     "new_amps": 4,
+     "new_threads": 0,
+     "idle_amp": 2,
+     "idle_thread": 1,
+     "idle_stall": 0,
+     "why": ""
+    },
+    {
+     "round": 3,
+     "role": "复裁",
+     "new_amps": 0,
+     "new_threads": 0,
+     "idle_amp": 3,
+     "idle_thread": 2,
+     "idle_stall": 0,
+     "why": ""
+    }
+   ],
+   "rehashed": [
+    {
+     "desc": "供应商分期付款可行性的最晚答复日与1路最晚启动日的差值，待两个日期锁定后计算。",
+     "same_as": "供应商分期付款可行性的最晚答复日与1路最晚启动日的差值，待两个日期锁定后计算。",
+     "kind": "线头",
+     "round": 2
+    },
+    {
+     "desc": "0路熟练工离岗周与1路设备调试窗是否存在共同可观测锁定日，待排产与调试计划。",
+     "same_as": "0路熟练工离岗周与1路设备调试窗是否存在共同可观测锁定日，待排产与调试计划。",
+     "kind": "线头",
+     "round": 2
+    },
+    {
+     "desc": "记账主体差异是否延迟现金流出确认，待厂内科目表。",
+     "same_as": "记账主体差异是否延迟现金流出确认，待厂内科目表。",
+     "kind": "线头",
+     "round": 2
+    },
+    {
+     "desc": "供应商分期付款最晚答复日与1路最晚启动日的差值，待两个日期锁定后计算。",
+     "same_as": "供应商分期付款可行性的最晚答复日与1路最晚启动日的差值，待两个日期锁定后计算。",
+     "kind": "线头",
+     "round": 3
+    },
+    {
+     "desc": "0路熟练工离岗周与1路设备调试窗是否存在共同可观测锁定日，待排产与调试计划。",
+     "same_as": "0路熟练工离岗周与1路设备调试窗是否存在共同可观测锁定日，待排产与调试计划。",
+     "kind": "线头",
+     "round": 3
+    },
+    {
+     "desc": "记账主体差异是否延迟现金流出确认，待厂内科目表。",
+     "same_as": "记账主体差异是否延迟现金流出确认，待厂内科目表。",
+     "kind": "线头",
+     "round": 3
+    }
+   ],
+   "idle": false,
+   "rendered": "━━━ 研究 · entry=1 ━━━\n\n【锚点】现金紧张的中小制造企业，该按哪个日期判定上自动化还是维持人工？\n\n【候选】\n  [1×0] 供应商分期付款的最晚答复日目前是否已有落纸日期，还是仍停在意向阶段；没有落纸日期，T1 差值算不出来，1 路锁能否覆盖现金断点日就无从判起  ⚡& 属性◈阳展开\n  [1×1] 厂内现金缺口至今只有“紧张”二字，还是账上已有一个估算数字；无数字则 0 路与 1 路的排序比较缺基准，任何先后判定都是空转  属性◈阳展开\n  [1×0] 上月工资台账是工时/人次/单价明细，还是只有总额一栏；这决定 0 路可压缩上界能否算出来，直接决定 0 路成本是否被高估  ⚡& 属性◈阳展开\n  [1×0] 1 路锁钉的是付款日历而非净流出金额，因此即便 1 路最晚启动日早于现金断点日，也不能推出 1 路能覆盖断点——锁的是时间顺序，不是现金流缺口本身  ⚡& 属性◈阳展开\n  [1×0] 记账主体差异会延迟现金流出确认：废品损失与设备折旧若不入厂内科目表，0 路的隐性成本就聚不成可比较的总量，0 与 1 的排序会在账面上失真  ⚡& 属性◈阳展开\n  [1×0] 先翻一次上月工资表确认台账是明细还是总额——这一步可当场完成，是当前唯一不依赖外部答复、不依赖科目表的可动手点  ⚡& 属性◈阳展开\n  [1×0] 0 路熟练工离岗周与 1 路设备调试窗是否存在共同可观测锁定日，取决于排产计划与调试计划是否已排出；两个计划都不在手里时，这条线只能挂着  ⚡& 属性◈阳展开\n  [0×0] 供应商分期付款答复日与1路最晚启动日，两个日期在厂内现有文件里都没有落纸的候选值——不是缺计算，是缺这两个日期本身的记录，卡在没人把供应商口头条件写成带日期的函件  属性◈阴展开\n  [0×1] 现金缺口厂内只有\"紧张\"这个词，没有写下数字。卡在没人被要求把下月到期应付逐笔加总，缺的不是估不准，是没人起头估  ⚡& 属性◈阴展开\n  [0×0] 工资台账若只有总额，0路可压缩上界算不出；若为明细（工时/人次/单价），上界可算。这条判定的成本是翻一次上月工资表，不需要新数据  属性◈阴展开\n  [0×0] 缺一个已落纸的现金断点日。没有这个日期，\"倒推唯一启动日\"没有比较对象，1路锁能否覆盖断点日的结论悬空  属性◈阴展开\n  [0×0] 科目表是否存在决定废品损失与设备折旧由谁记账、何时入账。厂内若无科目表，子问题4的入账顺序裁决无法进行  属性◈阴展开\n\n【ing 对撞】\n上一圈 self-check 点名三处「此处未生」，但那份点名没有随记忆到本层；我手上只有“上一次是谁”的修行层，里面没有这三处的编号。我不假装知道是哪三处。当前候选里最像未生的是三处：供应商分期条件不落纸、工资台账粒度、科目表。下面逐一推，推不动写卡点。\n\n## 一、两端各自把话说完（结构版）\n\n0 路的承力构件是工资台账的粒度。但工资表按工时/人次/单价分类，不按“可停/不可停”分类。翻表得到的是计算原料，不是可压缩边界。可压缩边界取决于排产计划里哪些工时能被停掉，而排产计划不在工资表里。0 路的承力面比“翻一次工资表”更深一层，卡在分类维度不重合。\n\n1 路的承力构件是供应商付款条件变成厂内可引用的日期。这个结构里只有到期日，没有每期流出额。日期能承受“排不排得下”，不能承受“流不流得出”。更关键的是：1 路的右列——每期金额——不由 1 路自己决定，由供应商每期金额决定。\n\n## 二、各推到极端\n\n0 路推到极限：所有可停工时都停，熟练工全部离岗。此时它已经不是“维持人工”，而是“部分停产”。它的比较单位从工资支出变成停产损失，与 1 路的资本支出仍不在同一单位上。\n\n1 路推到极限：供应商同意无限分期，每期金额趋近零。日期结构完全撑住，任何单日断点都能被拉平。但总付款额可能上升，且“最晚启动日”这个判定点消失，因为启动不再受单日现金约束。日期撑住了，金额方向可能更塌。\n\n## 三、找反转点\n\n通常把现金断点日当作两条路共同的比较基准。反转：断点日不是基准，是两条路共同改写的对象。1 路改写它的分布，把一点切成多期；0 路改写它的高度，把峰值削低或推后。两者改写的方向不同。“并排比较”预设了断点日不变，这个预设与两条路的作用方式矛盾。\n\n另一个反转：判定 0 或 1，通常被当作厂内决策。但 1 路的支座在厂外，供应商是否把意愿变成构件，决定 1 路能不能进入比较。0 路的支座在厂内，排产计划是否允许停工时，决定 0 路上界是否可算。真正的先后不是 0 与 1 的先后，是哪个支座先被固定。\n\n## 四、让对撞生成新东西\n\n把两条路都改写成一张“每期净出流配对表”：左列是日期，右列是该期净出流。0 路和 1 路只有落在同一张表的同一时间轴上，才第一次有了共同承力单位。\n\n生成条件：现金断点被确认是一个点还是多个点。若是一个点，0 路按单点压缩上界与单点缺口比较，1 路按单次支出与单点缺口比较，比较成立但粗糙。若是多个点，唯一启动日倒推失效，必须用配对表。\n\n配对表不是折中方案。它是把两条路的结构翻译成同一单位后得到的新判定面。由此，翻工资表只能填 0 路左列的一部分，右列净出流仍空；供应商函件填 1 路左列日期，右列净出流也空。两列都空右列。先翻工资表不能完成排序，只能完成一半左列。\n\n## 五、撞不动的地方\n\n&：供应商分期条件不落纸时，配对表 1 路右列无法生成。不是算不出，是这一列的定义依赖供应商每期金额，而每期金额只能由供应商给。卡在厂外意愿，不是厂内计算。\n\n&：工资表即使翻到明细，也只能给出“已发生工时”的粒度，不能给出“可停工时”的粒度。可停工时需要排产计划与工人技能矩阵交叉，这两件不在工资表。卡在分类维度。\n\n&：科目表即使到手，也只决定入账科目，不决定入账时点。入账时点取决于凭证日/付款日/验收日，这三个日期分散在不同单据。科目表不是打开那个悬置的钥匙。卡在单据日期。\n\n## 六、回到原始问题\n\n问的是按哪个日期判定上自动化还是维持人工。本层能给的：判定的日期不是单一启动日。若现金断点被确认是单点，判定日是最晚启动日与断点日的先后。若供应商分期把断点变成多期，判定日失效，改用配对表。\n\n当前可做的不是选 0 或 1。是确认断点是一个点还是多个点——这只能从厂内已承诺的付款排期看出；以及确认 1 路能不能从供应商意愿变成可引用的构件——这不在厂内。这两件事没有先后，因为它们分别决定配对表的行数和列数；先做哪件，都不会让另一件自动完成。\n\n【& 印记】\n  （无）\n\n【悬空线头】\n  （无）\n\n【探针回归】\n  ? 翻一次上月工资表：是工时/人次/单价明细还是只有总额？若是明细，0路可压缩上界能否当场算出？（回来：算得出上界，0路成本才能与1路投资额同表比较｜增益0.7）\n  ? 厂内现有文件里，现金断点日与供应商分期答复日，是否各自已有落纸的候选日期？（回来：两个日期落纸，倒推唯一启动日才有比较对象｜增益0.6）\n\n【尚未触及的方面】\n  💭 现金缺口是否已有落纸数字，还是只有'紧张'（anchor）\n  💭 供应商分期答复日与1路最晚启动日是否已有候选值（anchor）\n  💭 工资台账是明细还是只有总额（anchor）\n  💭 熟练工离岗周与设备调试窗是否存在共同可观测锁定日（anchor）\n  💭 供应商分期付款的最晚答复日目前是否已有落纸日期，还是仍停在意向阶段；没有落纸日期，T1 差值算不出来，1 路锁能否覆盖现金断点日就无从判起（judge）\n  💭 上月工资台账是工时/人次/单价明细，还是只有总额一栏；这决定 0 路可压缩上界能否算出来，直接决定 0 路成本是否被高估（judge）\n  💭 1 路锁钉的是付款日历而非净流出金额，因此即便 1 路最晚启动日早于现金断点日，也不能推出 1 路能覆盖断点——锁的是时间顺序，不是现金流缺口本身（judge）\n  💭 记账主体差异会延迟现金流出确认：废品损失与设备折旧若不入厂内科目表，0 路的隐性成本就聚不成可比较的总量，0 与 1 的排序会在账面上失真（judge）\n  💭 先翻一次上月工资表确认台账是明细还是总额——这一步可当场完成，是当前唯一不依赖外部答复、不依赖科目表的可动手点（judge）\n  💭 0 路熟练工离岗周与 1 路设备调试窗是否存在共同可观测锁定日，取决于排产计划与调试计划是否已排出；两个计划都不在手里时，这条线只能挂着（judge）\n  💭 供应商分期付款答复日与1路最晚启动日，两个日期在厂内现有文件里都没有落纸的候选值——不是缺计算，是缺这两个日期本身的记录，卡在没人把供应商口头条件写成带日期的函件（judge）\n  💭 工资台账若只有总额，0路可压缩上界算不出；若为明细（工时/人次/单价），上界可算。这条判定的成本是翻一次上月工资表，不需要新数据（judge）\n  💭 缺一个已落纸的现金断点日。没有这个日期，\"倒推唯一启动日\"没有比较对象，1路锁能否覆盖断点日的结论悬空（judge）\n  💭 科目表是否存在决定废品损失与设备折旧由谁记账、何时入账。厂内若无科目表，子问题4的入账顺序裁决无法进行（judge）\n\n【本层碰了】\n  - 供应商答复分期付款可行性的最晚日期，与1路最晚启动日之间的差值是多少天？这个差值能否覆盖设备进场到调试完成的全部前置时间？：再确认：差值算不出，缺的是两个日期本身的落纸记录\n  - 现金断点日之前，是否存在一个可观测的日期，在该日期上0路的熟练工离岗周与1路的设备调试窗同时被锁定？如果存在，该日期是否早于路径锁死日？：回访条件未满足，排产与调试计划仍不在手\n  - 在订单从多品种切换到少品种的那一天，0路加班补产与1路调试停线，哪一条的产能恢复时间更短？这个恢复时间差是否足以改变两条路在切换日的现金净流出排序？：回访条件未满足，切换日实测记录仍缺\n  - 在等待1路条件齐备的期间，0路的切换频率变化是否有一个可观测的上界？如果没有，0路隐性成本的累积速度是否在结构上无法与1路投资总额做同期比较？：再确认：0路上界算不出，因台账明细与否未定\n\n【延迟债务（暂缓，非悬置）】\n  - 子问题2：排产表与调试计划仍未到手，共同锁定日无法定（回访条件：拿到排产表与调试计划）\n  - 子问题3：切换日产能恢复时间需实测，现无记录（回访条件：有切换日实测记录）\n\n【📗 可判定通道】\n  answer：当前唯一可当场完成、不依赖外部答复与科目表的动作：翻一次上月工资表，确认台账是工时/人次/单价明细还是只有总额。这决定0路可压缩上界能否算、0路成本是否被高估。其余可判定子问题（1、2、3、4、6）均因缺日期、缺计划、缺科目表而无法给出数值答案。\n  answered_sub_ids：[5]\n  distance：0.85\n  evidence：工资表按工时/人次/单价分类，不按可停/不可停分类；翻表得到计算原料，不是可压缩边界。\n  evidence：可压缩边界取决于排产计划中哪些工时能被停掉，排产计划不在工资表里。\n\n【综合距离】0.55\n  covered_aspects：0路承力构件是工资台账粒度，卡在分类维度不重合、1路承力构件是付款日历，不锁净流出金额、断点日是被两条路共同改写的对象，不是固定基准、配对表作为共同承力单位，两路右列均空、支座先后：厂外供应商意愿与厂内排产计划分别决定1路与0路能否进入比较\n  uncovered_aspects：断点是一个点还是多个点，未确认、供应商分期条件是否落纸，未确认、工资台账是明细还是总额，未确认、科目表是否到手，未确认、T1差值（供应商最晚答复日与1路最晚启动日）未计算\n\n【view】\n## 一、可判定部分 · 直接回答\n\n可判定通道只把子问题5收进 answer，distance 0.85。逐条回应：\n\n- 子问题5：回答是二值的。翻一次上月工资表，得到“工时/人次/单价明细”或“只有总额”之一。若是前者，0路可压缩上界进入可算状态；若是后者，上界算不出，0路成本是否被高估无从判。注意它没有给出上界数值，只给出“能否算”的判定。\n- 子问题1：未进入可判定通道。差值没有数值，因为两个日期本身没有落纸记录。\n- 子问题2：未进入可判定通道。共同锁定日没有数值，因为排产表与调试计划不在手。\n- 子问题3：未进入可判定通道。产能恢复时间没有数值，因为切换日实测记录不存在。\n- 子问题4：未进入可判定通道，且它的可判定性挂在子问题5的结果上。若子问题5翻出明细，子问题4可能从不可判定转为可算；当前翻表动作未执行，所以仍不可判定。\n- 子问题6：未进入可判定通道。科目表缺失，且元反思已指出科目表不决定入账时点。\n\n综合距离0.55。可判定通道窄，窄到只剩一个动作。\n\n## 二、不可判定部分 · 结构揭示\n\n逐条揭示不可判定的结构，不是复述原因：\n\n- 子问题1：缺的不是计算链，是记录层。两个日期在厂内现有文件里没有候选值。口头条件没有变成带日期的函件，于是判定点没有输入端。这不是算不出，是没有可引用的对象。\n- 子问题2：共同锁定日不是可查询量，是两个尚未生成的计划的交集。排产计划与调试计划未生成，交集的定义域为空。它不可能从现有文件里翻出来。\n- 子问题3：恢复时间属于切换后事件。当前没有记录，意味着它只能在切换发生后才存在。现在要这个数，等于要一个尚未发生事件的实测值。\n- 子问题4：它的上界依赖子问题5的分类维度。工资表给的是已发生工时，可停工时需要排产计划与技能矩阵交叉。分类维度不重合，所以翻表深度增加不能自动推出上界。\n- 子问题6：科目表决定科目，不决定时点。时点由凭证日、付款日、验收日分别决定，分散在不同单据。上一层的悬置被重新定位：钥匙不在科目表，在单据日期。\n- 配对表结构：两路右列均空。0路右列依赖可停工时，1路右列依赖供应商每期金额。比较缺的不是算法，是两列外部输入。\n- 1路锁的结构：锁的是付款日历，不是净出流金额。时间顺序与现金流缺口是两个判定面，满足前者不能推出后者。\n- 支座结构：0路支座在厂内排产计划，1路支座在厂外供应商意愿。先后不是0与1的先后，是哪个支座先被固定。\n\n## 三、★ 暂缓处理的部分（延迟债务）\n\n- 子问题1：供应商答复日与1路最晚启动日的差值。\n  为什么延迟：厂内现有文件没有这两个日期的落纸候选值；卡在没人把口头条件写成带日期的函件。\n  原本的回访条件：两个日期各自落纸。\n  最终状态：未满足，挂账。自问增益0.6。\n- 子问题2：共同锁定日。\n  为什么延迟：排产表与调试计划未到手。\n  原本的回访条件：拿到排产表与调试计划。\n  最终状态：未满足，挂账。\n- 子问题3：切换日产能恢复时间。\n  为什么延迟：实测记录不存在。\n  原本的回访条件：有切换日实测记录。\n  最终状态：未满足，挂账。\n- 旧悬置（科目表／入账顺序）：废品损失与设备折旧的入账顺序裁决。\n  为什么延迟：科目表只决定科目，不决定时点；时点分散在凭证日、付款日、验收日。\n  原本的回访条件：科目表到手。\n  最终状态：原条件被本层判定为不充分。债务未关闭，条件改写为单据日期到手。这是对旧账的修正，不是关闭。\n\n本层没有新增可关闭的债务。\n\n## 四、螺旋轨迹\n\n这一批产物没有把任何不可判定子问题推成可判定。净移动如下：\n\n- 判定日从一个启动日分叉为条件分支：断点单点用先后，断点多点用配对表。\n- 配对表作为新的共同承力单位生成，但两路右列皆空。框架已立，承重输入不在厂内。\n- 可操作点没有增加，只定位出一个无依赖动作：翻工资表。它只填左列的一部分。\n- 旧悬置的钥匙从科目表移到单据日期。旧账被改写，未被关闭。\n- 支座概念出现：0路在厂内排产计划，1路在厂外供应商意愿。\n- 可判定通道distance 0.85，综合distance 0.55。通道窄，整体离判定仍远。\n\n## 五、& 张力与悬空线头\n\n- &：可当场完成的动作与最终判定之间没有直接连线。翻工资表只填半列，不能完成排序。\n- &：配对表框架已生成，承重输入都不在厂内。框架越完整，空列越显眼。\n- &：1路日期顺序满足不能推出覆盖断点。两个判定面错配，不能互推。\n- &：现金缺口只有“紧张”，没有数字。基准缺位，任何排序都是空转。\n- &：科目表旧悬置的钥匙被移走，但单据日期没有一件在手。\n- &：0路可压缩上界卡在分类维度，不是翻表深度。\n- 悬空线头：供应商答复日、1路最晚启动日、共同锁定日、切换日实测记录、单据日期、现金缺口数字——六个输入端没有落点。\n- 未生：本层没有生成可执行的比较结果。配对表右列为空，新判定面还不能判定。此处未生的是“可用的判定值”。\n\n【元反思】\n  ∘ 本层把判定日从单一启动日改写为条件分支：断点单点用先后，多点用配对表。\n  ∘ 配对表两路右列均空，说明当前比较缺的不是算法而是外部输入。\n\n【质量线索】polarity_all_same_structural(1), unsaid_overused(3)\n\n【质量评价】池极性全同（polarity_all_same_structural(1)）但 why 多样——结构性一致，非坍缩\n\n【自省】候选3与6同指工资表粒度，疑为拆分凑数；其余候选从展开长出。\n\n【「此处未生」计数】本圈 3 处（阈值 3）　⚠ 判为逃避：探针没有真的往里推\n  分布：三处未生分别落在ing、view、不可判定通道，指向同一件事：配对表右列无输入，非套路收尾。",
+   "manifest": "## 一、可判定部分 · 直接回答\n\n可判定通道只把子问题5收进 answer，distance 0.85。逐条回应：\n\n- 子问题5：回答是二值的。翻一次上月工资表，得到“工时/人次/单价明细”或“只有总额”之一。若是前者，0路可压缩上界进入可算状态；若是后者，上界算不出，0路成本是否被高估无从判。注意它没有给出上界数值，只给出“能否算”的判定。\n- 子问题1：未进入可判定通道。差值没有数值，因为两个日期本身没有落纸记录。\n- 子问题2：未进入可判定通道。共同锁定日没有数值，因为排产表与调试计划不在手。\n- 子问题3：未进入可判定通道。产能恢复时间没有数值，因为切换日实测记录不存在。\n- 子问题4：未进入可判定通道，且它的可判定性挂在子问题5的结果上。若子问题5翻出明细，子问题4可能从不可判定转为可算；当前翻表动作未执行，所以仍不可判定。\n- 子问题6：未进入可判定通道。科目表缺失，且元反思已指出科目表不决定入账时点。\n\n综合距离0.55。可判定通道窄，窄到只剩一个动作。\n\n## 二、不可判定部分 · 结构揭示\n\n逐条揭示不可判定的结构，不是复述原因：\n\n- 子问题1：缺的不是计算链，是记录层。两个日期在厂内现有文件里没有候选值。口头条件没有变成带日期的函件，于是判定点没有输入端。这不是算不出，是没有可引用的对象。\n- 子问题2：共同锁定日不是可查询量，是两个尚未生成的计划的交集。排产计划与调试计划未生成，交集的定义域为空。它不可能从现有文件里翻出来。\n- 子问题3：恢复时间属于切换后事件。当前没有记录，意味着它只能在切换发生后才存在。现在要这个数，等于要一个尚未发生事件的实测值。\n- 子问题4：它的上界依赖子问题5的分类维度。工资表给的是已发生工时，可停工时需要排产计划与技能矩阵交叉。分类维度不重合，所以翻表深度增加不能自动推出上界。\n- 子问题6：科目表决定科目，不决定时点。时点由凭证日、付款日、验收日分别决定，分散在不同单据。上一层的悬置被重新定位：钥匙不在科目表，在单据日期。\n- 配对表结构：两路右列均空。0路右列依赖可停工时，1路右列依赖供应商每期金额。比较缺的不是算法，是两列外部输入。\n- 1路锁的结构：锁的是付款日历，不是净出流金额。时间顺序与现金流缺口是两个判定面，满足前者不能推出后者。\n- 支座结构：0路支座在厂内排产计划，1路支座在厂外供应商意愿。先后不是0与1的先后，是哪个支座先被固定。\n\n## 三、★ 暂缓处理的部分（延迟债务）\n\n- 子问题1：供应商答复日与1路最晚启动日的差值。\n  为什么延迟：厂内现有文件没有这两个日期的落纸候选值；卡在没人把口头条件写成带日期的函件。\n  原本的回访条件：两个日期各自落纸。\n  最终状态：未满足，挂账。自问增益0.6。\n- 子问题2：共同锁定日。\n  为什么延迟：排产表与调试计划未到手。\n  原本的回访条件：拿到排产表与调试计划。\n  最终状态：未满足，挂账。\n- 子问题3：切换日产能恢复时间。\n  为什么延迟：实测记录不存在。\n  原本的回访条件：有切换日实测记录。\n  最终状态：未满足，挂账。\n- 旧悬置（科目表／入账顺序）：废品损失与设备折旧的入账顺序裁决。\n  为什么延迟：科目表只决定科目，不决定时点；时点分散在凭证日、付款日、验收日。\n  原本的回访条件：科目表到手。\n  最终状态：原条件被本层判定为不充分。债务未关闭，条件改写为单据日期到手。这是对旧账的修正，不是关闭。\n\n本层没有新增可关闭的债务。\n\n## 四、螺旋轨迹\n\n这一批产物没有把任何不可判定子问题推成可判定。净移动如下：\n\n- 判定日从一个启动日分叉为条件分支：断点单点用先后，断点多点用配对表。\n- 配对表作为新的共同承力单位生成，但两路右列皆空。框架已立，承重输入不在厂内。\n- 可操作点没有增加，只定位出一个无依赖动作：翻工资表。它只填左列的一部分。\n- 旧悬置的钥匙从科目表移到单据日期。旧账被改写，未被关闭。\n- 支座概念出现：0路在厂内排产计划，1路在厂外供应商意愿。\n- 可判定通道distance 0.85，综合distance 0.55。通道窄，整体离判定仍远。\n\n## 五、& 张力与悬空线头\n\n- &：可当场完成的动作与最终判定之间没有直接连线。翻工资表只填半列，不能完成排序。\n- &：配对表框架已生成，承重输入都不在厂内。框架越完整，空列越显眼。\n- &：1路日期顺序满足不能推出覆盖断点。两个判定面错配，不能互推。\n- &：现金缺口只有“紧张”，没有数字。基准缺位，任何排序都是空转。\n- &：科目表旧悬置的钥匙被移走，但单据日期没有一件在手。\n- &：0路可压缩上界卡在分类维度，不是翻表深度。\n- 悬空线头：供应商答复日、1路最晚启动日、共同锁定日、切换日实测记录、单据日期、现金缺口数字——六个输入端没有落点。\n- 未生：本层没有生成可执行的比较结果。配对表右列为空，新判定面还不能判定。此处未生的是“可用的判定值”。\n\n## 七、原始问题覆盖率\n研究层可判定通道最近一次覆盖率：0.64（模型自评折算·depth 加权，累计 3 次记录）｜代码实算：已答子问题 6/6\n研究层不可判定通道：清晰度 0.00（模型自评，累计 3 次记录）｜结构覆盖率 0.00（代码实算）｜对齐覆盖率 0.00（代码实算）\n",
+   "quality_flags": [
+    "polarity_all_same_structural(1)",
+    "unsaid_overused(3)"
+   ],
+   "quality_verdict": "池极性全同（polarity_all_same_structural(1)）但 why 多样——结构性一致，非坍缩",
+   "self_check": {
+    "suspicious_candidates": [
+     3,
+     6
+    ],
+    "suspicious_amps": [],
+    "ing_rephrased": false,
+    "honest_about_empty": true,
+    "unsaid_count": 3,
+    "unsaid_is_escape": true,
+    "unsaid_where": "三处未生分别落在ing、view、不可判定通道，指向同一件事：配对表右列无输入，非套路收尾。",
+    "flow_verdict": "候选到ing到view链条完整，反转点与配对表是真推进，未生是撞墙后的诚实落点。",
+    "view_verdict": "定下：判定日分叉为单点用先后、多点用配对表；旧悬置钥匙从科目表移到单据日期。未定：两路右列输入。",
+    "amp_ratio_verdict": "&印记为空，view内&为张力陈述，非凑数。",
+    "notes": "候选3与6同指工资表粒度，疑为拆分凑数；其余候选从展开长出。"
+   },
+   "errors": [],
+   "anchor_touched": [
+    {
+     "desc": "现金缺口量级与持续期是可查的",
+     "source": "anchor"
+    },
+    {
+     "desc": "订单结构决定自动化是否划算",
+     "source": "anchor"
+    },
+    {
+     "desc": "产线可否拆分决定选项空间",
+     "source": "anchor"
+    },
+    {
+     "desc": "两条路各有锁：0锁当期可调空间，1锁付款日历",
+     "source": "anchor"
+    }
+   ],
+   "ing_structured": {}
+  }
+ },
+ "pools": {
+  "0": {
+   "amps": [
+    {
+     "desc": "0与1的不可逆点性质不同：0依赖关键人与数据，1依赖付款与安装，两者无法用同一时间尺度比较。",
+     "type": "ontological",
+     "source": "0",
+     "polarity": "both",
+     "polarity_why": "两端性质不同，无法同尺度"
+    },
+    {
+     "desc": "现金流作为计时器，先于选项存在，决定哪条路的话能说完，而非选项决定现金流。",
+     "type": "structural",
+     "source": "0",
+     "polarity": "1",
+     "polarity_why": "现金流先决，已成立"
+    },
+    {
+     "desc": "0的尽头可转化为1的定价输入，1的尽头可反向筛选订单，两者在极端处互生而非互斥。",
+     "type": "logical",
+     "source": "0",
+     "polarity": "both",
+     "polarity_why": "极端处互生，无偏向"
+    },
+    {
+     "desc": "供应商拒绝权是未定价的外部条件，其行使日决定1路最晚启动日，价格等于1路全部准备成本。",
+     "type": "ontological",
+     "source": "0",
+     "polarity": "1",
+     "polarity_why": "拒绝权约束已可定价"
+    },
+    {
+     "desc": "修改权表首次出现'不能改'的日期是路径锁死日，早于断点日则路径话可说尽。",
+     "type": "structural",
+     "source": "0",
+     "polarity": "1",
+     "polarity_why": "锁死日由修改权表确定"
+    },
+    {
+     "desc": "熟练工离岗周一旦确定，0路最晚启动日不再由企业主决定，而是由该周锁定。",
+     "type": "axiological",
+     "source": "0",
+     "polarity": "1",
+     "polarity_why": "离岗周确定即锁定0路"
+    },
+    {
+     "desc": "0的隐性成本永远以单笔事件出现，无法聚合成决策对象，信息结构上不可成形。",
+     "type": "ontological",
+     "source": "0",
+     "polarity": "?"
+    },
+    {
+     "desc": "1的柔性不是安装属性，是调试产物，而调试需要订单先稳，与1被考虑的原因相悖。",
+     "type": "logical",
+     "source": "0",
+     "polarity": "?"
+    },
+    {
+     "desc": "等待1成形的期间，0在持续改写1的前提，两条时间轴反向运动，窗口收缩与断点延伸同时发生。",
+     "type": "structural",
+     "source": "0",
+     "polarity": "?"
+    },
+    {
+     "desc": "把0按在当下不动才能与1同表比较，但0的属性就是不停，比较越久越偏离正在跑的0。",
+     "type": "axiological",
+     "source": "0",
+     "polarity": "?"
+    }
+   ],
+   "threads": [
+    {
+     "desc": "供应商是否接受与回款周期匹配的付款节奏，这一外部条件未在0/1框架内被定价。",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "外部条件未定价"
+    },
+    {
+     "desc": "客户对0方案下换型变慢或人工波动的接受度，是厂内无法控制的盲区。",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "客户接受度不可控"
+    },
+    {
+     "desc": "订单从多品种切到少品种或反向切换时，切换本身对两条路优势的侵蚀未被讨论。",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "切换侵蚀未讨论"
+    },
+    {
+     "desc": "供应商是否接受与回款周期匹配的付款节奏——外部条件，厂内无法单方面决定",
+     "kind": "thread",
+     "source": "probe_boundary",
+     "polarity_why": "外部条件未决",
+     "polarity": "0"
+    },
+    {
+     "desc": "客户对人工线换型变慢的接受度——厂内无法控制的盲区",
+     "kind": "thread",
+     "source": "probe_boundary",
+     "polarity_why": "盲区未决",
+     "polarity": "0"
+    },
+    {
+     "desc": "供应商分期答复周与1路最晚启动日的先后关系未量化，排不到前面则1路不进比较。",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "先后未量化"
+    },
+    {
+     "desc": "客户逾期天数只能按历史分布做区间，合同罚则无法给出实际回款日。",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "回款日不可确定"
+    },
+    {
+     "desc": "设备进场后废品率峰值在无同类产线先例时只能留空，不能用平均值填。",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "无先例只能留空"
+    },
+    {
+     "desc": "供应商不会提前告诉你他的账期底线，T9推不动",
+     "kind": "thread",
+     "source": "probe_boundary",
+     "polarity_why": "账期底线未知",
+     "polarity": "0"
+    },
+    {
+     "desc": "0和1之间是否存在第三条路，本次对撞只产生时间轴错位，未生成新路线。",
+     "kind": "thread",
+     "polarity": "?"
+    },
+    {
+     "desc": "切换频率变化对两条路优势的侵蚀未被量化，切换本身可能先于现金断点使某条路失效。",
+     "kind": "thread",
+     "polarity": "?"
+    },
+    {
+     "desc": "供应商账期底线与回款周期的匹配节奏，是厂内无法单方面决定的外部条件，其答复时点决定1路是否进入比较。",
+     "kind": "thread",
+     "polarity": "?"
+    },
+    {
+     "desc": "供应商账期答复时点由对方决定，厂内无法单方面获取，答复晚于倒推日则1路被日历删除",
+     "kind": "thread",
+     "source": "probe_boundary"
+    }
+   ],
+   "probes": [
+    {
+     "question": "现金流断点日是哪天？把它当倒计时，0和1各自最晚必须启动的日期差多少？",
+     "link": "计时器先于选项，倒推两条路的最晚启动点",
+     "expected_gain": 0.7,
+     "covers": [
+      "T1",
+      "T2"
+     ]
+    },
+    {
+     "question": "订单切换频率是多少？每次切换，人工线损失几小时、自动化线损失几小时？",
+     "link": "切换侵蚀两条路优势，量化后才知道谁先崩",
+     "expected_gain": 0.65,
+     "covers": [
+      "T8",
+      "T13",
+      "T14"
+     ]
+    },
+    {
+     "question": "供应商能否接受付款节奏与回款周期对齐？若不能，1路是否直接出局？",
+     "link": "外部条件未定价，直接决定1路可行性",
+     "expected_gain": 0.6,
+     "covers": [
+      "T2"
+     ]
+    },
+    {
+     "question": "设备进场后第几周废品率峰值撞上现金最低周？两笔账能不能排到同一张周表上？",
+     "link": "峰值周与现金最低周重合则1路在断点前先失血",
+     "expected_gain": 0.7,
+     "covers": [
+      "T10",
+      "T13",
+      "T1"
+     ]
+    },
+    {
+     "question": "首付延后与按回款分期，哪一问先答？若第二问答否，1路在断点日前是否已出局？",
+     "link": "把供应商两问拆开，先答能否按回款分期",
+     "expected_gain": 0.65,
+     "covers": [
+      "T12",
+      "T3",
+      "T5"
+     ]
+    },
+    {
+     "question": "多品种切至少品种那一次，0与1的产能账在切换当天同时失效，之前算的还挂在哪个变量上？",
+     "link": "切换日归零后，0路加班补、1路调试窗停线，谁先恢复",
+     "expected_gain": 0.55,
+     "covers": [
+      "T6",
+      "T11",
+      "T2"
+     ]
+    },
+    {
+     "question": "把首付日、安装周、调试窗倒推出的那个唯一日期写下来，它落在现金断点日之前还是之后？",
+     "link": "倒推唯一日期与断点日的先后，决定1路是否还进入比较",
+     "expected_gain": 0.75,
+     "covers": [
+      "T2",
+      "T4",
+      "T5"
+     ]
+    },
+    {
+     "question": "供应商要求到货后第N天付款，这个N在合同里是固定数还是可谈区间？可谈区间下界是多少天？",
+     "link": "N的下界决定首付款提前量能否压进断点日之前",
+     "expected_gain": 0.6,
+     "covers": [
+      "T4",
+      "T1"
+     ]
+    },
+    {
+     "question": "废品率峰值周的损失记在产线成本项还是现金流出项？现金最低周记在哪个科目？两者是否同一本账？",
+     "link": "两笔账的记账主体不同，决定谁先记、记错顺序是否真失血",
+     "expected_gain": 0.55,
+     "covers": [
+      "T3"
+     ]
+    }
+   ],
+   "meta": [
+    "本次对撞中，0与1的冲突被重新描述为不可逆点的时间竞争，但两者共同绕开了‘谁承担切换成本’的问题。",
+    "‘此处未生’出现在回款与设备付款相位差拉不平的情形，表明该条件下选项本身失效，而非选择困难。",
+    "此处未生：0路与1路在修改权表上的具体填写规则尚未成形，仅知每行填两格。",
+    "此处未生：债权人展期与现金表改善不同步，其参照是抵押物处置价和替代债权人报价，但未与0/1框架连接。",
+    "本次对撞的产物是次序而非取舍：条件先成，决定才有对象；条件不齐时，比较的其实是0和一张条件清单。",
+    "三个不由企业排期的时点之间的空隙，是悬置实际发生的位置，它不是待补的信息缺口，而是不可控节奏的交错。"
+   ],
+   "suspensions": [
+    {
+     "id": "s_001",
+     "target": "自动化产线隐性负债的定价",
+     "reason": "看清了爬坡废品与调试停机可估，但选择不碰，因为当前现金断点未定，估了也无处挂",
+     "reason_type": "explicit",
+     "layer": 1,
+     "last_confirmed_layer": 3,
+     "confirmed_layers": [
+      1,
+      2,
+      3
+     ],
+     "status": "active",
+     "revoked_at": null,
+     "revoke_reason": "",
+     "resolved_at": null,
+     "stable_since": null,
+     "needs_review": false
+    },
+    {
+     "id": "s_002",
+     "target": "企业主三年后是否还做这行",
+     "reason": "看清了这个判断会翻转权重，但选择不碰，因为它不是可观测变量，问了也拿不到真话",
+     "reason_type": "intuitive",
+     "layer": 1,
+     "last_confirmed_layer": 2,
+     "confirmed_layers": [
+      1,
+      2
+     ],
+     "status": "active",
+     "revoked_at": null,
+     "revoke_reason": "",
+     "resolved_at": null,
+     "stable_since": null,
+     "needs_review": false
+    },
+    {
+     "id": "s_003",
+     "target": "T7 买不决策时间的价格",
+     "reason": "看清了0路收益可标价，但选择不碰，因为断点日未定，标了也无处挂",
+     "reason_type": "explicit",
+     "layer": 2,
+     "last_confirmed_layer": 3,
+     "confirmed_layers": [
+      2,
+      3
+     ],
+     "status": "active",
+     "revoked_at": null,
+     "revoke_reason": "",
+     "resolved_at": null,
+     "stable_since": null,
+     "needs_review": false
+    },
+    {
+     "id": "s_004",
+     "target": "废品率峰值与现金最低周同周的记账顺序",
+     "reason": "看清了两笔账可分别估，但选择不碰，因为记账主体不同，谁先记取决于厂内科目设置，当前拿不到科目表",
+     "reason_type": "explicit",
+     "layer": 3,
+     "last_confirmed_layer": 3,
+     "confirmed_layers": [
+      3
+     ],
+     "status": "active",
+     "revoked_at": null,
+     "revoke_reason": "",
+     "resolved_at": null,
+     "stable_since": null,
+     "needs_review": false
+    }
+   ],
+   "sub_questions": [],
+   "deferrals": [],
+   "escalations": [],
+   "decidability_log": [],
+   "duel_suspensions": [],
+   "duel_alignment": {},
+   "engagements": [
+    {
+     "target": "现金流断点与两条路启动窗口",
+     "how": "用断点日倒推0和1各自最晚启动时间，比较窗口差"
+    },
+    {
+     "target": "订单切换对两条路的侵蚀",
+     "how": "量化每次切换的停机小时，乘以切换频率，看谁先被吃穿"
+    },
+    {
+     "target": "T10 两笔现金支出的峰值周",
+     "how": "把1路废品率峰值周与0路加班费峰值周排到同一张周表上比"
+    },
+    {
+     "target": "T12 供应商两问拆解",
+     "how": "先问能否按回款分期，答否则1路在断点日前出局"
+    },
+    {
+     "target": "1路最晚启动日的倒推结构",
+     "how": "把首付日、安装周、调试窗三个数加总，倒推唯一日期，与断点日比先后"
+    }
+   ],
+   "refinements": [],
+   "decidable_channel": {},
+   "undecidable_channel": {}
+  },
+  "1": {
+   "amps": [
+    {
+     "desc": "0路的锁是重复日期切割，锁住当期可调空间，不锁全程排序。",
+     "type": "structural",
+     "source": "1",
+     "polarity": "1",
+     "polarity_why": "锁性质已明确"
+    },
+    {
+     "desc": "1路的锁是事件顺序钉住，锁住付款日历，不锁净流出金额。",
+     "type": "structural",
+     "source": "1",
+     "polarity": "1",
+     "polarity_why": "锁范围已明确"
+    },
+    {
+     "desc": "弱锁先到不构成排序锁定，强锁后到可以覆盖弱锁。",
+     "type": "structural",
+     "source": "1",
+     "polarity": "1",
+     "polarity_why": "覆盖规则已成立"
+    },
+    {
+     "desc": "可逆转与不可逆的跨越是反转点，不是日期先后。",
+     "type": "structural",
+     "source": "1",
+     "polarity": "1",
+     "polarity_why": "反转判据已确定"
+    }
+   ],
+   "threads": [
+    {
+     "desc": "供应商分期付款可行性的最晚答复日与1路最晚启动日的差值，待两个日期锁定后计算。",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "日期未锁，差值未生"
+    },
+    {
+     "desc": "0路熟练工离岗周与1路设备调试窗是否存在共同可观测锁定日，待排产与调试计划。",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "待排产调试，未成形"
+    },
+    {
+     "desc": "记账主体差异是否延迟现金流出确认，待厂内科目表。",
+     "kind": "thread",
+     "polarity": "0",
+     "polarity_why": "待科目表，未显"
+    }
+   ],
+   "probes": [
+    {
+     "question": "把0路最近一个月的加班工时、兼岗人次、计件单价拉出来，能否算出可压缩空间的上界？",
+     "link": "量化人工路径隐性成本，检验0路成本是否被高估",
+     "expected_gain": 0.6,
+     "covers": [
+      "T10",
+      "T6"
+     ]
+    },
+    {
+     "question": "厂内是否已有科目表？若无，废品损失与设备折旧分别由谁记账、何时入账？",
+     "link": "记账主体差异决定现金流出确认是否被延迟，直接卡住子问题4",
+     "expected_gain": 0.5,
+     "covers": [
+      "T1"
+     ]
+    },
+    {
+     "question": "厂内工资台账是明细（工时/人次/单价）还是只有总额？翻一次上月工资表即可判。",
+     "link": "决定0路可压缩上界能否算，直接喂给排序比较",
+     "expected_gain": 0.75,
+     "covers": [
+      "T12",
+      "T4"
+     ]
+    },
+    {
+     "question": "现金缺口量级与持续期，厂内有没有一个已写下的数字（哪怕估算），还是只有'紧张'？",
+     "link": "无缺口数字则排序比较缺基准，先确认有无",
+     "expected_gain": 0.7,
+     "covers": [
+      "T4",
+      "T8"
+     ]
+    },
+    {
+     "question": "供应商分期付款答复日与1路最晚启动日，两个日期各自是否已有落纸的候选值？",
+     "link": "T1差值一旦可算，1路锁能否覆盖断点日立见",
+     "expected_gain": 0.6,
+     "covers": [
+      "T1"
+     ]
+    },
+    {
+     "question": "翻一次上月工资表：是工时/人次/单价明细还是只有总额？若是明细，0路可压缩上界能否当场算出？",
+     "link": "算得出上界，0路成本才能与1路投资额同表比较",
+     "expected_gain": 0.7,
+     "covers": [
+      "T3",
+      "T6",
+      "T9",
+      "T12"
+     ]
+    },
+    {
+     "question": "厂内现有文件里，现金断点日与供应商分期答复日，是否各自已有落纸的候选日期？",
+     "link": "两个日期落纸，倒推唯一启动日才有比较对象",
+     "expected_gain": 0.6,
+     "covers": [
+      "T1",
+      "T2",
+      "T5",
+      "T11",
+      "T13"
+     ]
+    }
+   ],
+   "meta": [
+    "本层未生新的不可判定结构，因评估阶段无不可判定子问题且ing输出未产生不可通约处。",
+    "本层未生新的不可判定结构，因为可判定子问题均因数据缺失而无法给出具体数值答案。",
+    "悬置科目表缺席导致的比较轴消失，是当前最硬的结构性障碍。",
+    "[上一圈 self-check 反馈] 可疑候选 [6, 7, 8]",
+    "本层把判定日从单一启动日改写为条件分支：断点单点用先后，多点用配对表。",
+    "配对表两路右列均空，说明当前比较缺的不是算法而是外部输入。"
+   ],
+   "suspensions": [],
+   "sub_questions": [
+    {
+     "id": 1,
+     "question": "供应商答复分期付款可行性的最晚日期，与1路最晚启动日之间的差值是多少天？这个差值能否覆盖设备进场到调试完成的全部前置时间？",
+     "weight": 0.9,
+     "decidability": "partial",
+     "status": "answered",
+     "depth": 1.0,
+     "source": "P5 / P7 / T6 / A4",
+     "first_label": "partial",
+     "label_disagreed": [
+      "partial",
+      "decidable"
+     ],
+     "_decided_answerable": true,
+     "answered_at_layer": 1,
+     "_starve_rounds": 0,
+     "_starve_max_seen": 0
+    },
+    {
+     "id": 2,
+     "question": "现金断点日之前，是否存在一个可观测的日期，在该日期上0路的熟练工离岗周与1路的设备调试窗同时被锁定？如果存在，该日期是否早于路径锁死日？",
+     "weight": 0.8,
+     "decidability": "partial",
+     "status": "answered",
+     "depth": 0.4,
+     "source": "P1 / A5 / A6",
+     "first_label": "partial",
+     "label_disagreed": [
+      "partial",
+      "decidable"
+     ],
+     "_decided_answerable": true,
+     "_starve_rounds": 0,
+     "_starve_max_seen": 0,
+     "answered_at_layer": 3
+    },
+    {
+     "id": 3,
+     "question": "在订单从多品种切换到少品种的那一天，0路加班补产与1路调试停线，哪一条的产能恢复时间更短？这个恢复时间差是否足以改变两条路在切换日的现金净流出排序？",
+     "weight": 0.7,
+     "decidability": "decidable",
+     "status": "answered",
+     "depth": 0.4,
+     "source": "P6 / T3",
+     "first_label": "decidable",
+     "_decided_answerable": true,
+     "_starve_rounds": 0,
+     "_starve_max_seen": 0,
+     "answered_at_layer": 3
+    },
+    {
+     "id": 4,
+     "question": "设备进场后废品率峰值周与现金最低周重合时，两笔账的记账主体不同，是否会导致现金流出被延迟确认，从而在断点日之前制造出虚假的现金缓冲？",
+     "weight": 0.6,
+     "decidability": "partial",
+     "status": "answered",
+     "depth": 0.5,
+     "source": "P4 / P9 / S4",
+     "first_label": "undecidable",
+     "label_disagreed": [
+      "undecidable",
+      "partial"
+     ],
+     "_decided_answerable": true,
+     "answered_at_layer": 1,
+     "_starve_rounds": 0,
+     "_starve_max_seen": 0
+    },
+    {
+     "id": 5,
+     "question": "在等待1路条件齐备的期间，0路的切换频率变化是否有一个可观测的上界？如果没有，0路隐性成本的累积速度是否在结构上无法与1路投资总额做同期比较？",
+     "weight": 0.7,
+     "decidability": "partial",
+     "status": "answered",
+     "depth": 1.0,
+     "source": "A7 / A9 / ing",
+     "first_label": "undecidable",
+     "label_disagreed": [
+      "undecidable",
+      "partial"
+     ],
+     "_decided_answerable": true,
+     "answered_at_layer": 1,
+     "_starve_rounds": 0,
+     "_starve_max_seen": 0
+    },
+    {
+     "id": 6,
+     "question": "把0路按在当下不动来与1路同表比较，这个操作本身需要冻结哪些变量？冻结期间，0路实际运行中哪些变量的漂移会使得比较表在断点日之前失效？",
+     "weight": 0.5,
+     "decidability": "partial",
+     "status": "answered",
+     "depth": 0.4,
+     "source": "A10 / ing",
+     "first_label": "partial",
+     "_decided_answerable": true,
+     "_starve_rounds": 0,
+     "_starve_max_seen": 0,
+     "answered_at_layer": 2
+    }
+   ],
+   "deferrals": [
+    {
+     "id": "d_001",
+     "sub_id": 2,
+     "sub_question": "现金断点日之前，是否存在一个可观测的日期，在该日期上0路的熟练工离岗周与1路的设备调试窗同时被锁定？如果存在，该日期是否早于路径锁死日？",
+     "reason": "排产与调试计划未到手，无法定共同锁定日",
+     "revisit_condition": "拿到排产表与调试计划",
+     "layer": 1,
+     "last_reconfirmed_layer": 3,
+     "status": "handled",
+     "resolved_at": 3,
+     "resolution_reason": "对应子问题被直接回答"
+    },
+    {
+     "id": "d_002",
+     "sub_id": 3,
+     "sub_question": "在订单从多品种切换到少品种的那一天，0路加班补产与1路调试停线，哪一条的产能恢复时间更短？这个恢复时间差是否足以改变两条路在切换日的现金净流出排序？",
+     "reason": "切换日产能恢复时间需实测数据",
+     "revisit_condition": "有切换日实测记录",
+     "layer": 1,
+     "last_reconfirmed_layer": 3,
+     "status": "handled",
+     "resolved_at": 3,
+     "resolution_reason": "对应子问题被直接回答"
+    },
+    {
+     "id": "d_003",
+     "sub_id": 6,
+     "sub_question": "把0路按在当下不动来与1路同表比较，这个操作本身需要冻结哪些变量？冻结期间，0路实际运行中哪些变量的漂移会使得比较表在断点日之前失效？",
+     "reason": "冻结变量清单依赖科目表与订单数据",
+     "revisit_condition": "科目表与订单数据到手",
+     "layer": 1,
+     "last_reconfirmed_layer": 2,
+     "status": "handled",
+     "resolved_at": 2,
+     "resolution_reason": "对应子问题被直接回答"
+    }
+   ],
+   "escalations": [],
+   "decidability_log": [],
+   "duel_suspensions": [],
+   "duel_alignment": {},
+   "engagements": [
+    {
+     "sub_id": 1,
+     "target": "供应商答复分期付款可行性的最晚日期，与1路最晚启动日之间的差值是多少天？这个差值能否覆盖设备进场到调试完成的全部前置时间？",
+     "how": "确认差值计算需先锁两个日期，当前均未锁",
+     "depth": 0.4
+    },
+    {
+     "sub_id": 4,
+     "target": "设备进场后废品率峰值周与现金最低周重合时，两笔账的记账主体不同，是否会导致现金流出被延迟确认，从而在断点日之前制造出虚假的现金缓冲？",
+     "how": "记账主体差异是否延迟确认，取决于科目表归属",
+     "depth": 0.5
+    },
+    {
+     "sub_id": 5,
+     "target": "在等待1路条件齐备的期间，0路的切换频率变化是否有一个可观测的上界？如果没有，0路隐性成本的累积速度是否在结构上无法与1路投资总额做同期比较？",
+     "how": "0路隐性成本累积速度与1路投资总额是否可比，仍无上界",
+     "depth": 0.4
+    },
+    {
+     "sub_id": 6,
+     "target": "把0路按在当下不动来与1路同表比较，这个操作本身需要冻结哪些变量？冻结期间，0路实际运行中哪些变量的漂移会使得比较表在断点日之前失效？",
+     "how": "冻结变量清单依赖台账与订单数据，仍未到手",
+     "depth": 0.4
+    },
+    {
+     "sub_id": 2,
+     "target": "现金断点日之前，是否存在一个可观测的日期，在该日期上0路的熟练工离岗周与1路的设备调试窗同时被锁定？如果存在，该日期是否早于路径锁死日？",
+     "how": "回访条件未满足，排产与调试计划仍不在手",
+     "depth": 0.4
+    },
+    {
+     "sub_id": 3,
+     "target": "在订单从多品种切换到少品种的那一天，0路加班补产与1路调试停线，哪一条的产能恢复时间更短？这个恢复时间差是否足以改变两条路在切换日的现金净流出排序？",
+     "how": "回访条件未满足，切换日实测记录仍缺",
+     "depth": 0.4
+    }
+   ],
+   "refinements": [
+    {
+     "sub_id": 5,
+     "sub_question": "在等待1路条件齐备的期间，0路的切换频率变化是否有一个可观测的上界？如果没有，0路隐性成本的累积速度是否在结构上无法与1路投资总额做同期比较？",
+     "how": "台账形态决定0路隐性成本能否聚成上界",
+     "layer": 2
+    },
+    {
+     "sub_id": 1,
+     "sub_question": "供应商答复分期付款可行性的最晚日期，与1路最晚启动日之间的差值是多少天？这个差值能否覆盖设备进场到调试完成的全部前置时间？",
+     "how": "追问两个日期是否已有候选值，差值可算性",
+     "layer": 2
+    },
+    {
+     "sub_id": 1,
+     "sub_question": "供应商答复分期付款可行性的最晚日期，与1路最晚启动日之间的差值是多少天？这个差值能否覆盖设备进场到调试完成的全部前置时间？",
+     "how": "再确认：差值算不出，缺的是两个日期本身的落纸记录",
+     "layer": 3
+    },
+    {
+     "sub_id": 5,
+     "sub_question": "在等待1路条件齐备的期间，0路的切换频率变化是否有一个可观测的上界？如果没有，0路隐性成本的累积速度是否在结构上无法与1路投资总额做同期比较？",
+     "how": "再确认：0路上界算不出，因台账明细与否未定",
+     "layer": 3
+    }
+   ],
+   "decidable_channel": {
+    "answers": [
+     {
+      "answer": "无法计算具体天数差值，因为供应商答复最晚日期与1路最晚启动日均未锁定；但可判定：该差值必须覆盖设备进场到调试完成的前置时间，否则1路不可行。当前该覆盖关系无法验证。",
+      "answered_sub_ids": [
+       1
+      ],
+      "evidence": [
+       "ing输出指出设备商是否接受验收后起算账期只有口头可能，没有书面条款，N的起点未定。",
+       "1路最晚启动日取决于订单冻结窗，而冻结窗未锁，因此最晚启动日不可计算。"
+      ]
+     },
+     {
+      "answer": "子问题1：差值天数无法计算，因为供应商答复最晚日和1路最晚启动日均未锁定。子问题2：不存在可观测的共同锁定日，因为0路熟练工离岗周与1路设备调试窗分属不同计划体系，当前无交叉观测点。子问题3：产能恢复时间差无法比较，因为0路加班补产恢复时间取决于加班工时明细（未提供），1路调试停线恢复时间取决于调试计划（未提供）。子问题4：记账主体不同会导致现金流出确认时点差异，但延迟确认是否制造虚假缓冲取决于科目表，当前科目表不在手，无法判定。子问题5：0路切换频率变化没有可观测上界，因为切换频率由订单波动驱动，订单波动无历史上界数据；隐性成本累积速度在结构上无法与1路投资总额做同期比较，因为两者计量单位不同（人工工时 vs 设备折旧）。子问题6：冻结变量至少包括：订单批量、切换频率、加班工时、兼岗人次、计件单价、供应商账期N。冻结期间，订单批量和切换频率的漂移会使比较表在断点日前失效，因为这两个变量直接改变0路现金流出节奏。",
+      "answered_sub_ids": [
+       1,
+       2,
+       3,
+       4,
+       5,
+       6
+      ],
+      "evidence": [
+       "ing输出指出：0路发薪日锁单期应付，1路定金日锁付款日历，两者锁定对象不同。",
+       "ing输出指出：科目表缺席时，废品损失与设备折旧无同一入账主体，日期先后失去比较轴。"
+      ]
+     },
+     {
+      "answer": "当前唯一可当场完成、不依赖外部答复与科目表的动作：翻一次上月工资表，确认台账是工时/人次/单价明细还是只有总额。这决定0路可压缩上界能否算、0路成本是否被高估。其余可判定子问题（1、2、3、4、6）均因缺日期、缺计划、缺科目表而无法给出数值答案。",
+      "answered_sub_ids": [
+       5
+      ],
+      "evidence": [
+       "工资表按工时/人次/单价分类，不按可停/不可停分类；翻表得到计算原料，不是可压缩边界。",
+       "可压缩边界取决于排产计划中哪些工时能被停掉，排产计划不在工资表里。"
+      ]
+     }
+    ],
+    "coverage_history": [],
+    "last_coverage": 0.0
+   },
+   "undecidable_channel": {
+    "structural_amps": [
+     "0路的锁是重复日期切割，锁住当期可调空间，不锁全程排序。",
+     "1路的锁是事件顺序钉住，锁住付款日历，不锁净流出金额。",
+     "弱锁先到不构成排序锁定，强锁后到可以覆盖弱锁。",
+     "可逆转与不可逆的跨越是反转点，不是日期先后。"
+    ],
+    "clarity_history": [
+     0.0,
+     0.6,
+     0.0
+    ],
+    "last_clarity": 0.0,
+    "und_aspects": [],
+    "struct_coverage_history": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "last_struct_coverage": 0.0,
+    "aligned_amps": [],
+    "last_struct_hit": 0,
+    "last_aligned_hit": 0,
+    "aligned_coverage_history": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "last_aligned_coverage": 0.0,
+    "aspect_first_hit": {},
+    "struct_trace": [
+     {
+      "layer": 1,
+      "hit": 0,
+      "total": 0,
+      "cov": 0.0,
+      "newly": []
+     },
+     {
+      "layer": 2,
+      "hit": 0,
+      "total": 0,
+      "cov": 0.0,
+      "newly": []
+     },
+     {
+      "layer": 3,
+      "hit": 0,
+      "total": 0,
+      "cov": 0.0,
+      "newly": []
+     }
+    ],
+    "aligned_first_hit": {},
+    "aligned_trace": [
+     {
+      "layer": 1,
+      "hit": 0,
+      "total": 0,
+      "cov": 0.0,
+      "newly": []
+     },
+     {
+      "layer": 2,
+      "hit": 0,
+      "total": 0,
+      "cov": 0.0,
+      "newly": []
+     },
+     {
+      "layer": 3,
+      "hit": 0,
+      "total": 0,
+      "cov": 0.0,
+      "newly": []
+     }
+    ]
+   }
+  },
+  "both": {
+   "amps": [],
+   "threads": [],
+   "probes": [],
+   "meta": [],
+   "suspensions": [],
+   "sub_questions": [],
+   "deferrals": [],
+   "escalations": [],
+   "decidability_log": [],
+   "duel_suspensions": [],
+   "duel_alignment": {},
+   "engagements": [],
+   "refinements": [],
+   "decidable_channel": {},
+   "undecidable_channel": {}
+  },
+  "all": {
+   "amps": [],
+   "threads": [],
+   "probes": [],
+   "meta": [],
+   "suspensions": [],
+   "sub_questions": [],
+   "deferrals": [],
+   "escalations": [],
+   "decidability_log": [],
+   "duel_suspensions": [],
+   "duel_alignment": {},
+   "engagements": [],
+   "refinements": [],
+   "decidable_channel": {},
+   "undecidable_channel": {}
+  }
+ },
+ "llm_calls": 62,
+ "llm_tokens": 276816,
+ "tri_state": [
+  2,
+  6
+ ],
+ "layer_contribution": {
+  "0": {
+   "rounds": 3,
+   "stop": "体力耗尽（3 圈走满，未触发任何停止判据，是被截",
+   "idle": false
+  },
+  "1": {
+   "rounds": 3,
+   "stop": "连续 3 轮无新 &（沉淀完了） + 连续 2 ",
+   "idle": false
+  }
+ },
+ "cost_profile": "balanced",
+ "orientation": "auto",
+ "input_sanity": {
+  "issues": [],
+  "note": "无悬空符号，术语均正常。",
+  "checked": true
+ }
+}

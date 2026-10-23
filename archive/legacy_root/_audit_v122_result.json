@@ -1,0 +1,139 @@
+{
+  "rows": [
+    {
+      "mechanism": "escalate_starve_rounds",
+      "condition": "连续 N 圈无进展 + 名下有账",
+      "log_mark": "escalate_starve_rounds",
+      "prod_mark": "escalate_starve_rounds",
+      "src_hits": 7,
+      "log_hits": 164,
+      "prod_hits": 0,
+      "verdict": "可达"
+    },
+    {
+      "mechanism": "no_push_when_idle",
+      "condition": "空转类判据 + 未深入方向",
+      "log_mark": "no_push_when_idle",
+      "prod_mark": "no_push_when_idle",
+      "src_hits": 4,
+      "log_hits": 164,
+      "prod_hits": 0,
+      "verdict": "可达"
+    },
+    {
+      "mechanism": "_reopen_closed_debt",
+      "condition": "分类被推翻 + 曾有 escalated",
+      "log_mark": "_reopen_closed_debt",
+      "prod_mark": "_reopen_closed_debt",
+      "src_hits": 10,
+      "log_hits": 164,
+      "prod_hits": 0,
+      "verdict": "可达"
+    },
+    {
+      "mechanism": "stable_layers",
+      "condition": "悬置连续 N 圈同批",
+      "log_mark": "stable_layers",
+      "prod_mark": "stable_layers",
+      "src_hits": 17,
+      "log_hits": 9,
+      "prod_hits": 0,
+      "verdict": "可达"
+    },
+    {
+      "mechanism": "both_quota.max_ratio",
+      "condition": "both 占比超阈值",
+      "log_mark": "both_quota",
+      "prod_mark": "both_quota",
+      "src_hits": 3,
+      "log_hits": 497,
+      "prod_hits": 349,
+      "verdict": "可达"
+    },
+    {
+      "mechanism": "both_tighten_ratio",
+      "condition": "同上，改判",
+      "log_mark": "both_tighten_ratio",
+      "prod_mark": "both_tighten_ratio",
+      "src_hits": 5,
+      "log_hits": 164,
+      "prod_hits": 0,
+      "verdict": "可达"
+    },
+    {
+      "mechanism": "_all_settle_streak",
+      "condition": "元层清算未下降",
+      "log_mark": "_all_settle_streak",
+      "prod_mark": "_all_settle_streak",
+      "src_hits": 10,
+      "log_hits": 164,
+      "prod_hits": 0,
+      "verdict": "可达"
+    },
+    {
+      "mechanism": "min_rounds",
+      "condition": "layer_no < min_r",
+      "log_mark": "min_rounds",
+      "prod_mark": "min_rounds",
+      "src_hits": 54,
+      "log_hits": 301,
+      "prod_hits": 0,
+      "verdict": "可达"
+    },
+    {
+      "mechanism": "structure_saturation",
+      "condition": "每 N 圈无新维度",
+      "log_mark": "structure_saturation",
+      "prod_mark": "structure_saturation",
+      "src_hits": 14,
+      "log_hits": 244,
+      "prod_hits": 2,
+      "verdict": "可达"
+    },
+    {
+      "mechanism": "_budget_exhausted",
+      "condition": "调用数超预算",
+      "log_mark": "_budget_exhausted",
+      "prod_mark": "_budget_exhausted",
+      "src_hits": 10,
+      "log_hits": 145,
+      "prod_hits": 0,
+      "verdict": "可达"
+    },
+    {
+      "mechanism": "DecidabilityFreeze.verify",
+      "condition": "签名不匹配",
+      "log_mark": "DecidabilityFreeze",
+      "prod_mark": "freeze",
+      "src_hits": 0,
+      "log_hits": 16,
+      "prod_hits": 70,
+      "verdict": "可达"
+    },
+    {
+      "mechanism": "triage_downgrades",
+      "condition": "信息不足型 und + 锚点命中",
+      "log_mark": "triage_downgrades",
+      "prod_mark": "triage 降级",
+      "src_hits": 2,
+      "log_hits": 168,
+      "prod_hits": 6,
+      "verdict": "可达"
+    },
+    {
+      "mechanism": "_anchor_crosscheck.conflict",
+      "condition": "结论与锚点相反",
+      "log_mark": "锚点冲突",
+      "prod_mark": "锚点冲突",
+      "src_hits": 0,
+      "log_hits": 168,
+      "prod_hits": 2,
+      "verdict": "可达"
+    }
+  ],
+  "n_logs": 1229,
+  "n_prods": 511,
+  "n_reach": 13,
+  "n_src_only": 0,
+  "n_check": 0
+}

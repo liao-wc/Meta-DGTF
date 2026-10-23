@@ -1,0 +1,10 @@
+# [v122 bench] org_003 · 跨团队协作
+id: org_003
+domain: org
+question: "跨团队协作长期卡在交接环节，边界责任该怎么划"
+orientation: boundary
+budget:
+  profile: balanced
+  max_calls: 180
+  rounds: "0:5,1:5,both:5,all:6"
+  mode: serial

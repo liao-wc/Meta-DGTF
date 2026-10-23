@@ -1,0 +1,69 @@
+{
+ "tag": "V69",
+ "src": "元DGTF-V1.21.69.py",
+ "route": "0,1",
+ "rounds": "0:2,1:2",
+ "mode": "serial",
+ "orientation": "auto",
+ "llm_calls": 43,
+ "tri_state": [
+  0,
+  6
+ ],
+ "meta_closure_all": null,
+ "duel_suspensions_both": [],
+ "engagements_by_view": {
+  "0": [
+   {
+    "target": "T7过渡期风险与T16工期切段",
+    "tension_id": null
+   }
+  ],
+  "1": [
+   {
+    "target": "在资金分叉点（T5）上，先投下游主干瓶颈而非上游积水点，局部改造的可见收益会推迟多久显形？投资次序如何影响方案可见性？",
+    "tension_id": null
+   },
+   {
+    "target": "下游顶托截断（T3）在什么条件下会使局部改造在上游的投入完全无效？需要哪些实测数据（如管道内部状态、暴雨峰值水位）才能判定顶托抵消的方向和程度？",
+    "tension_id": null
+   },
+   {
+    "target": "把地下管线迁改成本（T1）纳入决策表后，重建方案总价是否超过某个阈值，使得局部改造从次优变为唯一可行？该阈值如何随迁改成本变化？",
+    "tension_id": null
+   }
+  ]
+ },
+ "suspensions_with_tid": {
+  "0": [
+   {
+    "target": "T9决策者任期偏好",
+    "tension_id": null,
+    "status": "active"
+   },
+   {
+    "target": "T4跨部门许可时长",
+    "tension_id": null,
+    "status": "active"
+   }
+  ],
+  "1": []
+ },
+ "pools_all_engagements": [],
+ "views_errors": {
+  "0": [],
+  "1": []
+ },
+ "pools_meta_p16": {
+  "0": [],
+  "1": [],
+  "both": [],
+  "all": []
+ },
+ "pools_meta_len": {
+  "0": 4,
+  "1": 4,
+  "both": 0,
+  "all": 0
+ }
+}

@@ -1,0 +1,16 @@
+元 DGTF v1.23.50 定稿存档
+
+主题：断点续跑（复用已完成层）+ 快照记账 + route 死捕获 + 墙钟预算 —— 由真事故催生。
+实测：A/B 真跑被宿主回收两次（18.2 / 12.7 min，约 ¥2）——v1.23.49 的快照只能「留痕」不能
+      「接着跑」⇒ 烧掉的钱不可回收；且快照没记账（查不出花了多少）；route 是死捕获（恒 []）。
+修法：run(..., resume_ckpt=路径) 复用快照里已完成层（不重跑、不再花那部分钱）并还原其池；
+      快照加 llm_calls/llm_tokens/rounds_run/mode/pools（asdict 全字段）；run() 补
+      self._route = list(route)；run(..., max_minutes=N) 层间墙钟预算 ⇒ 优雅停 paused。
+      三道硬校验（状态可续 / 题面逐字相同 / 只支持 serial），不过就按原样全跑并说明理由。
+自曝并修：from_dict 把留痕写进内容字段 meta；write_run_ckpt 写失败静默（Windows os.replace
+      被占 ⇒ 最后一份快照没落盘，6 分片并发时实测咬到一次）⇒ 重试一次 + loud warning。
+★ 零新配置键（两项都是 run() 形参）⇒ 不传参时与 v1.23.49 逐字相同。
+
+验收：冒烟 247/0 · verify 319/0 · AUDIT 69/0 · 变异体 99 判红 / 99（+M101 续跑不跳过已完成层）。
+主文件 元DGTF-V1.23.50.py（26498 行 / 纯 CRLF / AST OK / 新增符号 2：View.from_dict、
+load_resume_snapshot 已登记 / 零新键）。

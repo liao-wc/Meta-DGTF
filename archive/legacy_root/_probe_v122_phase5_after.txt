@@ -1,0 +1,42 @@
+{
+  "src": "元DGTF-V1.22.0.py",
+  "version": "1.22.0",
+  "A_audit_script": true,
+  "B_audit_run": {
+    "rc": 0,
+    "md_exists": true,
+    "n_logs": 311,
+    "n_prods": 292,
+    "n_reach": 8,
+    "n_src_only": 5,
+    "n_check": 0,
+    "mechs": [
+      "escalate_starve_rounds",
+      "no_push_when_idle",
+      "_reopen_closed_debt",
+      "stable_layers",
+      "both_quota.max_ratio",
+      "both_tighten_ratio",
+      "_all_settle_streak",
+      "min_rounds",
+      "structure_saturation",
+      "_budget_exhausted",
+      "DecidabilityFreeze.verify",
+      "triage_downgrades",
+      "_anchor_crosscheck.conflict"
+    ]
+  },
+  "C_doc": {
+    "has_pending_fix": true,
+    "has_dual": true,
+    "has_resolved": true,
+    "mentions_auto_plan": true
+  },
+  "D_const_pending_fix": 3,
+  "D2_const_dual": 2,
+  "E_src_注释条数": 3,
+  "F_src_机制审计行": true,
+  "G_src_pending_fix_串": true,
+  "H_del_lines": 0,
+  "H2_mechanism_removed": []
+}
