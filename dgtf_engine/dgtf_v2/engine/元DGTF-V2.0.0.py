@@ -30,10 +30,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-# V2 物理分类：引擎位于 v2/engine/，核心包位于 v2/dgtf_v2/。
-# 先补 import 路径与项目根，保证直接 `python v2/engine/元DGTF-V2.0.0.py` 可跑。
-_V2_PROJECT_ROOT = Path(__file__).resolve().parents[2]
-_V2_CORE_ROOT = _V2_PROJECT_ROOT / "v2"
+# V2 物理分类：dgtf_engine/dgtf_v2/engine/，核心包 dgtf_engine/dgtf_v2/。
+# 先补 import 路径与项目根，保证直接 `python dgtf_engine/dgtf_v2/engine/元DGTF-V2.0.0.py` 可跑。
+_V2_PROJECT_ROOT = Path(__file__).resolve().parents[3]
+_V2_CORE_ROOT = _V2_PROJECT_ROOT / "dgtf_engine"
 for _p in (str(_V2_PROJECT_ROOT), str(_V2_CORE_ROOT)):
     if _p not in sys.path:
         sys.path.insert(0, _p)

@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-V1_SRC = HERE / "v1/engine/元DGTF-V1.30.4.py"
+V1_SRC = HERE / "dgtf_engine/dgtf_v1/engine/元DGTF-V1.30.4.py"
 # V1-only 门禁：V2 默认跳过；显式 DGTF_V1_SMOKE=1 才运行。
 if os.environ.get("DGTF_V1_SMOKE") != "1":
     print("V1-only smoke gate: skipped (set DGTF_V1_SMOKE=1 to run)")
@@ -47,13 +47,13 @@ if os.environ.get("DGTF_V1_SMOKE") == "1":
             _V1_TEMP_CONFIG = _ct
             _cfg.write_text(_ct.replace("v2.0.0 配置文件", "v1.30.4 配置文件"),
                             encoding="utf-8")
-    _rep_src = HERE / "v1" / "reports" / "v1304_报告.md"
+    _rep_src = HERE / "dgtf_engine" / "dgtf_v1" / "reports" / "v1304_报告.md"
     _rep_dst = HERE / "v1304_报告.md"
     if _rep_src.is_file() and not _rep_dst.is_file():
         import shutil as _sh
         _sh.copy2(_rep_src, _rep_dst)
         _V1_TEMP_REPORT = True
-    _fx = HERE / "v1" / "fixtures"
+    _fx = HERE / "dgtf_engine" / "dgtf_v1" / "fixtures"
     if _fx.is_dir():
         import shutil as _sh2
         for _f in _fx.iterdir():

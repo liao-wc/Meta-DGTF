@@ -37,8 +37,8 @@
       "_probe_v130",
       "_verify",
       "engine",
-      "v2/engine/元DGTF-V",
-      "v2/engine/元DGTF-V2.0.0.py"
+      "dgtf_engine/dgtf_v2/engine/元DGTF-V",
+      "dgtf_engine/dgtf_v2/engine/元DGTF-V2.0.0.py"
     ],
     "docs": [
       "docs/",
@@ -74,26 +74,28 @@
       "_"
     ],
     "other": [],
-    "v2": [
-      "元DGTF-V2.0.0.py",
-      "v2/",
-      "v200_报告.md",
-      "docs/releases/V2.0.0.md",
-      "v2/engine/",
-      "v2/engine/元DGTF-V2.0.0.py",
-      "v2/dgtf_v2/"
+    "dgtf_engine": [
+      "dgtf_engine/"
     ],
-    "v1": [
-      "v1/",
-      "v1/engine/",
-      "v1/reports/",
-      "v1/scripts/",
-      "v1/legacy/"
+    "dgtf_v2": [
+      "dgtf_engine/dgtf_v2/",
+      "dgtf_engine/dgtf_v2/engine/",
+      "dgtf_engine/dgtf_v2/engine/元DGTF-V",
+      "dgtf_engine/dgtf_v2/engine/元DGTF-V2.0.0.py"
+    ],
+    "dgtf_v1": [
+      "dgtf_engine/dgtf_v1/",
+      "dgtf_engine/dgtf_v1/engine/",
+      "dgtf_engine/dgtf_v1/reports/",
+      "dgtf_engine/dgtf_v1/scripts/",
+      "dgtf_engine/dgtf_v1/fixtures/",
+      "dgtf_engine/dgtf_v1/legacy/"
     ]
   },
   "order": [
-    "v2",
-    "v1",
+    "dgtf_v2",
+    "dgtf_v1",
+    "dgtf_engine",
     "runtime",
     "app",
     "local_model",

@@ -94,8 +94,8 @@ dgtf_app/
 | 块 | 中文标签 | 数据来源 | 在哪看 |
 |---|---|---|---|
 | `decision_trace` | 统一决策回执 | 引擎 `packed["decision_trace"]`（只读 packed，不重跑） | 总产物 md 的「结论摘要」；packed JSON |
-| `fact_flow` | 事实流 | `v2/dgtf_v2/fact_flow.py` 确定性读数；开关 `auto.fact_flow.rounds_max` | 接入后随产物 / packed 落盘；缺读数写「未测」 |
-| `evidence` | 证据链 | `v2/dgtf_v2/evidence.py` 证据指纹 / 引用 | 同上 |
+| `fact_flow` | 事实流 | `dgtf_engine/dgtf_v2/fact_flow.py` 确定性读数；开关 `auto.fact_flow.rounds_max` | 接入后随产物 / packed 落盘；缺读数写「未测」 |
+| `evidence` | 证据链 | `dgtf_engine/dgtf_v2/evidence.py` 证据指纹 / 引用 | 同上 |
 | `unified_eml` | 统一 EML 记忆 | V1 `playbook` + V2 `v2_events` 合并读数 | 产物 md「本次记忆（EML 经验回路）」；packed |
 
 ### 统一决策回执（decision_trace）怎么读

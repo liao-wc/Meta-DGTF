@@ -13,8 +13,8 @@ except Exception:
 
 CHECKS = [
     ("compile", [sys.executable, "-c",
-     "import py_compile;py_compile.compile('v2/engine/元DGTF-V2.0.0.py',doraise=True)"]),
-    ("audit70", [sys.executable, "_probe_v1232_audit.py", "v2/engine/元DGTF-V2.0.0.py"]),
+     "import py_compile;py_compile.compile('dgtf_engine/dgtf_v2/engine/元DGTF-V2.0.0.py',doraise=True)"]),
+    ("audit70", [sys.executable, "_probe_v1232_audit.py", "dgtf_engine/dgtf_v2/engine/元DGTF-V2.0.0.py"]),
     ("input_sanity", [sys.executable, "-c",
      "import dgtf_v2.tests_input_sanity as t;raise SystemExit(t.main())"]),
     ("facet", [sys.executable, "-c", "import dgtf_v2.tests_facet_ledger as t;raise SystemExit(t.main())"]),
@@ -26,7 +26,7 @@ CHECKS = [
     ("agent_bridge", [sys.executable, "-c", "import dgtf_v2.tests_agent_bridge as t;raise SystemExit(t.main())"]),
     ("agent_worker", [sys.executable, "-c", "import dgtf_v2.tests_agent_worker as t;t.main()"]),
     ("agent_repair", [sys.executable, "-c", "import dgtf_v2.tests_agent_repair as t;t.main()"]),
-    ("agent_daemon", [sys.executable, "v2/dgtf_v2/tests_agent_daemon.py"]),
+    ("agent_daemon", [sys.executable, "dgtf_engine/dgtf_v2/tests_agent_daemon.py"]),
 ]
 
 
@@ -37,7 +37,8 @@ def main() -> int:
         child_env["PYTHONUTF8"] = "1"
         child_env["PYTHONIOENCODING"] = "utf-8"
         _root = str(Path(__file__).resolve().parent)
-        child_env["PYTHONPATH"] = (_root + os.pathsep + str(Path(_root) / "v2")
+        child_env["PYTHONPATH"] = (_root + os.pathsep
+                                   + str(Path(_root) / "dgtf_engine")
                                    + os.pathsep + child_env.get("PYTHONPATH", ""))
         futs = {ex.submit(subprocess.run, cmd, capture_output=True, text=True,
                           encoding="utf-8", errors="replace", env=child_env,

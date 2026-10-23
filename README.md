@@ -2,10 +2,10 @@
 
 一个**单文件**的四层螺旋推理引擎：修行 / 研究 / 对撞 / 元，跑出可审计的产物。
 
-- **当前版本**：`v2/engine/元DGTF-V2.0.0.py`（V2 生产引擎）
+- **当前版本**：`dgtf_engine/dgtf_v2/engine/元DGTF-V2.0.0.py`（V2 生产引擎）
 - **人用界面**：`dgtf_app/`（app V2.0.0；本地 Web 工作台，见 `dgtf_app/README.md`）
 - **V1 归档**：`v1/`（历史引擎与报告；仅回滚和 V1-only smoke 使用）
-- **V2 命名**：`v2/NAMING.md`（V2 起所有版本/发布命名以 V2 开头）
+- **V2 命名**：`dgtf_engine/dgtf_v2/NAMING.md`（V2 起所有版本/发布命名以 V2 开头）
 - **F5**：0 层生成+审计已完成
 - **版本历史**：`CHANGELOG.md`；app 发布说明见 `docs/releases/`
 
@@ -92,7 +92,7 @@
 - 知识面 EML v2：双时态事件溯源 + AGM/TMS + 混合检索 + 只给数值先验。
 - 控制面 Scheduler v2：MAPE-K + EVOI + 有限视界 MPC + Pareto + 安全盾。
 - 执行面四层契约：0 发散 / 1 收敛 / both 辩证 / all 闭合；越权直接 ContractViolation。
-- 参考实现 v2/dgtf_v2/：41 项判据；真实 packed 回放 20 份。
+- 参考实现 dgtf_engine/dgtf_v2/：41 项判据；真实 packed 回放 20 份。
 - **V2 已接 Phase 1–4**：影子建议 + 双写 + 契约 warn；takeover 默认 false，开启才接管串行初始排程（层内仍是 V1）。
 - **5 对真跑 pilot**：V2 5/5 闭合，calls −24%、tokens −16%，研究覆盖 90% vs 86%，三态 .633 vs .447；推荐 preset：configs/方案G-V2接管.yaml（2M）。
 - **2M 追加**：V2 89 calls / 528k 闭合；V1 到 128 calls / 882k 仍卡在 both（手动停止）。
@@ -132,10 +132,10 @@ TAVILY_API_KEY=tvly-...        # 可选：联网检索；不填则联网自动�
 ### 跑一次
 
 ```bash
-python v2/engine/元DGTF-V2.0.0.py "一个领域里那些被当作常识的东西是怎么来的，它靠不靠得住"
+python dgtf_engine/dgtf_v2/engine/元DGTF-V2.0.0.py "一个领域里那些被当作常识的东西是怎么来的，它靠不靠得住"
 
 # 质量/成本帕累托预设（v1.23.65 基线实测：129 calls / 1.16M → 覆盖 100% / 三态 60%；v1.23.66 预设已同步）
-python v2/engine/元DGTF-V2.0.0.py -c configs/方案F-帕累托最优.yaml "你的问题"
+python dgtf_engine/dgtf_v2/engine/元DGTF-V2.0.0.py -c configs/方案F-帕累托最优.yaml "你的问题"
 ```
 
 常用参数（`--help` 有全量）：
@@ -209,7 +209,7 @@ python dgtf_app/selftest.py
 | `_v122_verify.py` / `_probe_v1232_audit.py` | 跨档验收 / 工程审计 | 同上 |
 | `_run_gate.py` / `_git_save.py` | 门禁包装 / 存档（四项防呆） | 同上 |
 | `dgtf_app/` | 本地 Web 工作台（标准库 + 原生前端） | 可改，须跑 selftest |
-| `v2/dgtf_v2/` | V2 三平面参考内核（EML / 调度 / 四层契约） | **设计验证器，不接管生产**；不改 V1 引擎 |
+| `dgtf_engine/dgtf_v2/` | V2 三平面参考内核（EML / 调度 / 四层契约） | **设计验证器，不接管生产**；不改 V1 引擎 |
 | `docs/` | 设计文档与**决策记录** | 只增；`docs/不做什么-v1221.md` 请先读；V2 见 `docs/元DGTF-V2-三平面架构.md` |
 | `docs/架构图/` | 整体架构图（PNG / SVG / Mermaid + 读图说明） | 只增；升版后同步重生成 |
 | `dgtf_memory/` | EML 记忆库（episodes / playbook / nogoods） | **运行数据，改动前先问** |

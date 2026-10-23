@@ -3,7 +3,7 @@
 ## 分类
 
 - App：`dgtf_app/`、启动器
-- Engine：`v2/dgtf_v2/`、`元DGTF-V*.py`、`bench/`
+- Engine：`dgtf_engine/dgtf_v2/`、`元DGTF-V*.py`、`bench/`
 - Local Model：`local_model/`、`llm_sft/`
 - Docs：`docs/`、`reports/`
 - Ops：`.github/`、`scripts/`

@@ -3,8 +3,8 @@
 **知识面 EML × 控制面调度 × 执行面四层契约**
 
 - 版本：V2.0.0 生产发布
-- 生产入口：v2/engine/元DGTF-V2.0.0.py
-- 生产实现：v2/engine/元DGTF-V2.0.0.py + v2/dgtf_v2/（纯标准库、无 API、确定性）
+- 生产入口：dgtf_engine/dgtf_v2/engine/元DGTF-V2.0.0.py
+- 生产实现：dgtf_engine/dgtf_v2/engine/元DGTF-V2.0.0.py + dgtf_engine/dgtf_v2/（纯标准库、无 API、确定性）
 - 目标：把“记忆、调度、四层”从同一条流程里的三段代码，改成三个职责分离、可独立验证、可回放的平面。
 
 ---
@@ -284,7 +284,7 @@ SafetyShield 在执行前检查依赖/契约/预算/层状态；高风险动作�
 
 ## 8. 参考实现
 
-    v2/dgtf_v2/
+    dgtf_engine/dgtf_v2/
       contracts.py     # 四层契约 + LayerState/Budget/LayerResult + validate_result
       memory.py        # 双时态 EML + BM25/RRF/MMR + AGM/TMS + 巩固/遗忘/先验
       scheduler.py     # MAPE-K + EVOI + MPC + 安全盾 + credit
@@ -294,7 +294,7 @@ SafetyShield 在执行前检查依赖/契约/预算/层状态；高风险动作�
 
 运行：
 
-    python v2/dgtf_v2/tests.py
+    python dgtf_engine/dgtf_v2/tests.py
     python -m dgtf_v2.replay --limit 5
 
 参考实现是**设计验证器**，不是生产替换：它不调 LLM、不写 outputs、不改 V1 引擎。

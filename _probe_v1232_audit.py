@@ -274,7 +274,7 @@ if _sm.is_file():
     _ms = re.search(r'SRC = HERE / "([^"]+)"', _st)
     if "V1-only smoke gate" in _st:
         ck("C2 smoke_test.py 是 V1-only 门禁",
-           bool(_ms) and _ms.group(1) == "v1/engine/元DGTF-V1.30.4.py"
+           bool(_ms) and _ms.group(1) == "dgtf_engine/dgtf_v1/engine/元DGTF-V1.30.4.py"
            and "DGTF_V1_SMOKE" in _st,
            "smoke SRC=%r，门禁=%r" % (_ms.group(1) if _ms else None,
                                       "V1-only" if "V1-only smoke gate" in _st else "?"))

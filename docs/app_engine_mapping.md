@@ -108,7 +108,7 @@ engine 元DGTF-V1.30.0.py
 | `GET /api/schedule/v2/ab?paired=1` | 同一 run_id 的配对检验；检测 V2 影子模板 quality 是否可区分 |
 | `POST /api/schedule/v2/rebuild` | 用 packed 重算历史 schedule_outcome 的按层 quality；写前备份 |
 | `POST /api/schedule/v2/replay` | 用修复后的按层质量公式回放现存 packed，追加到 V2 记忆（先备份）；limit=120 可全量 |
-| `v2/dgtf_v2/replay.py::_entry_quality` | V2 回放按层质量代理：不再把整跑 quality 复制给所有模板 |
+| `dgtf_engine/dgtf_v2/replay.py::_entry_quality` | V2 回放按层质量代理：不再把整跑 quality 复制给所有模板 |
 | `opts.auto_template` | 任务自动套用 policy 中的 V2 模板 route/rounds；探针验证任务 opts 实际带 route/rounds |
 | `GET/POST /api/schedule/policy` | 读取/应用真实历史帕累托推荐；profiles/auto_pareto 使用持久化策略 |
 | `dgtf_memory/schedule_policy.json` | 保存推荐 profile、coverage、tokens、prefer、applied_at |
@@ -146,7 +146,7 @@ PROBE PASS 39 / FAIL 0
 |---|---|
 | 候选回填留痕：原因 + 来源层/轮次/相 + 去重键 + 置信/评估 | `_probe_v130_backfill.py` 30 PASS / 0 FAIL |
 | AMP 占比上限配置化：`spiral.amp_ratio_max` + `amp_ratio_max_by_entry` | 同步 `dgtf_config.yaml` / 方案F；smoke 配置同步检查通过 |
-| input_sanity 官方证据回放：18 条官方证据、升级条目清除、短记号防误命中 | `v2/dgtf_v2/tests_input_sanity.py` 22 PASS / 0 FAIL |
+| input_sanity 官方证据回放：18 条官方证据、升级条目清除、短记号防误命中 | `dgtf_engine/dgtf_v2/tests_input_sanity.py` 22 PASS / 0 FAIL |
 | AST 登记：5 个新符号逐条解释 | verify 6.6 已过 |
 
 ## 9. 本轮 goal 结论

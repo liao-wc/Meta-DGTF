@@ -35,7 +35,7 @@ from pathlib import Path
 import yaml  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "v2"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "dgtf_engine"))
 import dashboard  # noqa: E402
 import engine_runner as runner  # noqa: E402
 import library  # noqa: E402
