@@ -3,13 +3,16 @@
 ## App 运行时
 
 App server 主要使用 Python 标准库，不把本地模型权重打进仓库。
+运行时依赖锁定在 `requirements.txt`；核对记录见
+`docs/dependency_update_20261023.md`。
 
 本地 BGE embedding 服务需要：
 
     torch
     transformers
 
-安装与锁定以 local_model/envs/dgtf_llm_env 的实际环境为准：
+安装与版本锁定见 `requirements-local-model.txt`；以
+local_model/envs/dgtf_llm_env 的实际环境为准：
 
     local_model\envs\dgtf_llm_env\Scripts\python.exe -c "import torch,transformers;print(torch.__version__,transformers.__version__)"
 

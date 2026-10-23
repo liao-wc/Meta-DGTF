@@ -1,0 +1,6 @@
+# 元DGTF V2 运行时依赖（Python 3.13）
+# 版本与 2026-10-23 本机实测环境一致；升级后先跑 fast_gate + selftest。
+openai==3.3.1
+python-dotenv==1.2.3
+PyYAML==6.0.3
+jieba==0.42.1

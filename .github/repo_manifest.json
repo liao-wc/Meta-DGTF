@@ -25,7 +25,8 @@
       "*ridge*",
       "local_model",
       "scheduler_model",
-      "local_model/MODEL_CHECKSUMS.md"
+      "local_model/MODEL_CHECKSUMS.md",
+      "scripts/local_model/"
     ],
     "engine": [
       "bench/",
@@ -48,13 +49,25 @@
       "CHANGELOG.md",
       "v13",
       "PROJECT_MAP.md",
-      "PROJECT_LAYOUT.md"
+      "PROJECT_LAYOUT.md",
+      "V2.0.0-发布报告.md",
+      "docs/dependency_update_20261023.md",
+      "CONTRIBUTING.md",
+      "SECURITY.md",
+      "LICENSE",
+      "NOTICE",
+      "CODE_OF_CONDUCT.md",
+      "THIRD_PARTY_NOTICES.md"
     ],
     "ops": [
       "scripts/",
       "install_repo_hooks",
       "deploy_github",
-      ".github/"
+      ".github/",
+      "requirements.txt",
+      "requirements-local-model.txt",
+      ".gitattributes",
+      ".gitignore"
     ],
     "archive": [
       "archive/",

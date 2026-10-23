@@ -17,6 +17,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
+sys.path.insert(0, str(HERE.parent.parent / "dgtf_app"))
 
 import agent_daemon as D  # noqa: E402
 

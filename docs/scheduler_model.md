@@ -4,7 +4,7 @@
 
 用带 numpy 的 Python 执行：
 
-    python train_scheduler_model.py
+    python scripts/local_model/train_scheduler_model.py
 
 数据：EML/V2 schedule_outcome + packed question/bucket/qlen/rounds。
 按 run_id 分组切分训练/留出，避免同题泄漏。

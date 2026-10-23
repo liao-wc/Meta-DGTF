@@ -19,7 +19,7 @@
 - 方法：LoRA r=8 / alpha=16，fp16，gradient checkpointing；
 - 可训练参数：4,399,104 / 498,431,872（0.88%）；
 - batch=1，grad accumulation=8，max_len=512，epochs=5；
-- 训练脚本：train_llm_lora.py；
+- 训练脚本：scripts/local_model/train_llm_lora.py；
 - 最佳 val loss 0.106（epoch 4）；
 - adapter：llm_sft/adapter_qwen05b_v1。
 
@@ -31,7 +31,7 @@
 | route 完全匹配 | 0.000 | 0.429 |
 | rounds MAE | 2.625 | 1.446 |
 
-评估脚本：eval_llm_lora.py；结果：llm_sft/eval_base_vs_lora.json。
+评估脚本：scripts/local_model/eval_llm_lora.py；结果：llm_sft/eval_base_vs_lora.json。
 
 ## app/引擎接入
 
@@ -60,7 +60,7 @@
 
 ## adapter merge
 
-- merge_lora.py 将 0.5B adapter 合并进基座，导出 D:/元DGTF-多模并行架构/local_model/models/Qwen2.5-0.5B-Instruct-merged-v1（约 988MB）；
+- scripts/local_model/merge_lora.py 将 0.5B adapter 合并进基座，导出 D:/元DGTF-多模并行架构/local_model/models/Qwen2.5-0.5B-Instruct-merged-v1（约 988MB）；
 - 实测 merged 模型输出合法 JSON route/rounds；
 - 默认 app 仍加载 adapter（便于切换/回滚），merge 产物用于自包含部署。
 

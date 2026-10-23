@@ -7,16 +7,17 @@
       dgtf_v1/      V1 引擎/报告/脚本/夹具/备份
       dgtf_v2/      V2 三平面核心
         engine/     V2 生产入口：元DGTF-V2.0.0.py
-    docs/           设计与发布文档
+    docs/           设计与发布文档（含 docs/index.html 静态门户）
+    requirements.txt / requirements-local-model.txt  运行与本地模型依赖
     reports/        安全、迁移、验收报告
     audits/         审计证据
     bench/          评测与基准
     configs/        配置预设
     scripts/        启动、同步、部署、安全
     .github/        CI / Pages / Release / 安全
-    site/           Pages 静态门户
     local_model/    权重、环境、模型说明
     llm_sft/        LoRA 微调
+    scripts/local_model/  本地模型训练/评估/合并
     archive/        本地归档（忽略）
 
 ## 版本边界

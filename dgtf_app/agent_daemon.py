@@ -13,9 +13,9 @@
    （日志写失败也吞掉，绝不让「记日志失败」把守护进程打死）。
 
 用法：
-    python agent_daemon.py --once
-    python agent_daemon.py --interval 5 --max-runs 10
-    python agent_daemon.py --stop-file dgtf_memory/agent_daemon.stop
+    python dgtf_app/agent_daemon.py --once
+    python dgtf_app/agent_daemon.py --interval 5 --max-runs 10
+    python dgtf_app/agent_daemon.py --stop-file dgtf_memory/agent_daemon.stop
 
 ★ 只写 dgtf_memory/ 下的运行产物（两处 worker 输出 + 本模块日志），
   不碰引擎/app/源码；不联网、不调 LLM。
@@ -28,10 +28,12 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-# 允许在仓库根之外用 python /abs/path/agent_daemon.py 启动（导入同仓内核）。
+# 允许在仓库根之外启动（导入同仓内核）。
 _HERE = Path(__file__).resolve().parent
-if str(_HERE) not in sys.path:
-    sys.path.insert(0, str(_HERE))
+_ROOT = _HERE.parent
+for _p in (str(_HERE), str(_ROOT), str(_ROOT / "dgtf_engine")):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
 
 from dgtf_v2 import agent_worker  # noqa: E402
 

@@ -8,7 +8,7 @@
 | 引擎总目录 | dgtf_engine/ | 统一存放 dgtf_v1/ 与 dgtf_v2/ |
 | V2 核心 | dgtf_engine/dgtf_v2/ | EML / Scheduler / 四层契约 / 证据与决策 |
 | V2 发布说明 | V2.0.0-发布报告.md、docs/releases/V2.0.0.md | 发布、验证、边界 |
-| V2 门户 | site/ | GitHub Pages 静态入口 |
+| V2 门户 | docs/index.html | GitHub Pages 静态入口 |
 
 ## V1 归档层
 
@@ -24,7 +24,7 @@
 | 类别 | 物理位置 | 说明 |
 |---|---|---|
 | App | dgtf_app/ | 本地 Web 工作台 |
-| 启动/运维 | scripts/ | 启动、同步、部署、安全脚本 |
+| 启动/运维 | scripts/、scripts/local_model/ | 启动、同步、部署、安全与本地模型脚本 |
 | 默认配置 | dgtf_config.yaml | V2 生产配置 |
 | 预设 | configs/ | 方案 A/B/C/F/G/H 等配置 |
 | 自动化 | .github/ | CI、Pages、Release、分类、安全 |
@@ -45,7 +45,7 @@
 |---|---|---|
 | 权重 | local_model/models/ | 本地权重，不进 Git |
 | 环境 | local_model/envs/dgtf_llm_env/ | 训练/推理 venv，不进 Git |
-| 微调 | llm_sft/ | LoRA 配置与产物 |
+| 微调 | llm_sft/、scripts/local_model/ | LoRA 配置、产物与训练/评估脚本 |
 
 ## 运行态（本地，不入库）
 

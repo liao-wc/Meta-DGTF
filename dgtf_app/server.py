@@ -483,7 +483,7 @@ def _agent_daemon_paths():
     mem = root / "dgtf_memory"
     return {
         "root": root,
-        "script": root / "agent_daemon.py",
+        "script": root / "dgtf_app" / "agent_daemon.py",
         "log": mem / "agent_daemon.log",
         "stdout": mem / "agent_daemon.stdout.log",
         "pid": mem / "agent_daemon.app.pid",

@@ -5,7 +5,7 @@ DSH Agent 面板的「常驻守护」开关：开启后由 app 管理队列守�
 
 ## 开关
 - 开关状态持久化：`dgtf_memory/agent_autopilot.json`。
-- 开：启动 `agent_daemon.py`（队列消费/提案）+ Autopilot 线程。
+- 开：启动 `dgtf_app/agent_daemon.py`（队列消费/提案）+ Autopilot 线程。
 - 关：停止线程，写停止文件让队列守护退出；不再自动修复。
 - 默认关闭，避免空转和持续 API 消耗。
 

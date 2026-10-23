@@ -4,7 +4,7 @@
 
 - **当前版本**：`dgtf_engine/dgtf_v2/engine/元DGTF-V2.0.0.py`（V2 生产引擎）
 - **人用界面**：`dgtf_app/`（app V2.0.0；本地 Web 工作台，见 `dgtf_app/README.md`）
-- **V1 归档**：`v1/`（历史引擎与报告；仅回滚和 V1-only smoke 使用）
+- **V1 归档**：`dgtf_engine/dgtf_v1/`（历史引擎与报告；仅回滚和 V1-only smoke 使用）
 - **V2 命名**：`dgtf_engine/dgtf_v2/NAMING.md`（V2 起所有版本/发布命名以 V2 开头）
 - **F5**：0 层生成+审计已完成
 - **版本历史**：`CHANGELOG.md`；app 发布说明见 `docs/releases/`
@@ -113,11 +113,14 @@
 
 ### 依赖
 
-Python 3.11+，第三方只要四个：
+Python 3.11+（当前实测 3.13），运行时依赖锁定在 `requirements.txt`：
 
 ```bash
-pip install openai pyyaml jieba python-dotenv
+pip install -r requirements.txt
 ```
+
+本地 BGE / LoRA 训练环境见 `requirements-local-model.txt`，安装到
+`local_model/envs/dgtf_llm_env/`，不要装进 App 的运行环境。
 
 ### 凭据
 

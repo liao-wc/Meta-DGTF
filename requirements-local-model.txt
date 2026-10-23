@@ -1,4 +1,10 @@
-# Local BGE embedding service (optional; app server itself uses stdlib)
-# Installed in local_model/envs/dgtf_llm_env; update only after fast_gate.
+# 本地模型/Embedding 环境依赖（安装到 local_model/envs/dgtf_llm_env）
+# CUDA 版 torch 请按 https://pytorch.org 的 cu126 wheel 安装；此处锁版本号。
 torch==2.14.1
 transformers==5.20.2
+accelerate==1.15.0
+numpy==2.5.4
+peft==0.21.2
+datasets==5.1.0
+pandas==3.0.6
+sentencepiece==0.2.2

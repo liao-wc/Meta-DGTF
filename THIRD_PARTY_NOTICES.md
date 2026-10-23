@@ -1,7 +1,7 @@
 # Third-Party Notices
 
 本仓库代码采用 Apache License 2.0，详见 LICENSE 与 NOTICE。
-以下组件不因本项目 MIT 许可证而改变其自身许可证。
+以下组件不因本项目 Apache-2.0 许可证而改变其自身许可证。
 
 ## 本地模型（权重不随本仓库分发）
 
@@ -20,14 +20,23 @@
 | 组件 | 许可证 |
 |---|---|
 | Python | PSF License |
+| openai | MIT |
+| python-dotenv | BSD-3-Clause |
+| PyYAML | MIT |
+| jieba | MIT |
 | PyTorch | BSD-3-Clause |
 | Transformers | Apache-2.0 |
+| Accelerate | Apache-2.0 |
+| PEFT | Apache-2.0 |
+| Datasets | Apache-2.0 |
+| pandas | BSD-3-Clause |
+| sentencepiece | Apache-2.0 |
 | NumPy | BSD-3-Clause |
 
 ## GitHub Actions
 
-工作流使用 actions/checkout、actions/setup-python、actions/configure-pages、
-actions/upload-pages-artifact、actions/deploy-pages、actions/dependency-review-action、
+工作流使用 actions/checkout、actions/setup-python、actions/dependency-review-action、
+actions/download-artifact、anchore/sbom-action、sigstore/cosign-installer、
 softprops/action-gh-release。它们遵循各自仓库许可证，不属于本仓库再分发内容。
 
 ## 第三方数据与文档
