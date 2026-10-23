@@ -1,6 +1,6 @@
 # Meta-DGTF-道生三阶模型 · 版本演化史
 
-本文件由 V2.1.0 历史融合层根据历史清单生成。清单记录 178 个版本快照（含归档补丁/重复快照），时间跨度为 V1.0 到 V2.1.0。
+本文件由 V2.2.0 单引擎内联融合层根据历史清单生成。清单记录 178 个版本快照（含归档补丁/重复快照），时间跨度为 V1.0 到 V2.2.0。
 
 ## 1. 时代总览
 
@@ -78,3 +78,16 @@
 - 记忆与答案隔离：V1 的 EML/playbook 只影响调度，V2 把它升级为双时态事件面。
 - 失败留痕：悬置、败方、冲突、预算耗尽都保留，不以删行换整洁。
 - V2.1 的新增不是推翻历史，而是把历史变成可验证的产物 provenance。
+
+## 5. V2.2.0 · 行为级融合
+
+V2.2.0 在 V2.1.0 的历史 provenance 之上增加 behavior arm：
+
+- v1_spiral / v1_frontier / v2_contract / v2_pareto / fusion_full；
+- auto 调度项（mode/rounds/stop/thinking/effort）由 arm 实际改变；
+- 显式 CLI 始终优先；
+- outcome 写数值统计，下一跑 UCB；
+- fusion_full 覆盖 17 条能力轴；
+- packed 增 behavior_fusion provenance。
+
+这版把“历史被记录”推进到“历史影响调度”，同时保持答案生成不变。

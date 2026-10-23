@@ -1,7 +1,7 @@
 # Meta-DGTF-道生三阶模型 · 版本命名与迭代规范
 
-当前版本：**V2.1.0**（融合版）
-上一基线：V2.0.0
+当前版本：**V2.2.0**（行为级融合版）
+上一基线：V2.1.0（历史谱系融合）
 历史归档：V1.x（dgtf_engine/dgtf_v1/ 与 V1 历史归档）
 
 ## 1. 版本号
@@ -9,25 +9,26 @@
 采用语义化版本：VMAJOR.MINOR.PATCH。
 
 - MAJOR：架构断代或不可回滚的契约变更；
-- MINOR：能力融合、新增机制、发布级功能（V2.1.0 属于此项）；
+- MINOR：能力融合、新增机制、发布级功能（V2.2.0 属于此项）；
 - PATCH：修复、判据补强、文档/依赖同步，不改默认行为。
 
 版本号只增不减；旧版本文件与标签保留，不覆盖历史。
 
-## 2. 当前映射（V2.1.0）
+## 2. 当前映射（V2.2.0）
 
 | 对象 | 命名 |
 |---|---|
-| 生产引擎 | dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.1.0.py |
-| App | 2.1.0 |
+| 生产引擎 | dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.0.py |
+| App | 2.0.0（本次未改动） |
 | V2 核心 | dgtf_engine/dgtf_v2/ |
-| 历史谱系融合 | dgtf_engine/dgtf_v2/history_fusion.py |
-| 历史清单 | dgtf_engine/dgtf_v2/history_manifest.json |
-| 主版本标签 | V2.1.0 |
-| App 发布标签 | app-V2.1.0 |
-| Engine 发布标签 | engine-V2.1.0 |
-| 发布说明 | docs/releases/V2.1.0.md |
-| 收束报告 | V2.1.0-收束报告.md |
+| 融合实现 | Meta-DGTF-V2.2.0.py 内联（history + behavior） |
+| 历史清单 | dgtf_engine/dgtf_v2/history_manifest.json（数据） |
+| 单引擎融合判据 | dgtf_engine/dgtf_v2/tests_inline_fusion.py |
+| 主版本标签 | V2.2.0 |
+| App 发布标签 | app-V2.0.0（本次不新增 App 标签） |
+| Engine 发布标签 | engine-V2.2.0 |
+| 发布说明 | docs/releases/V2.2.0.md |
+| 收束报告 | V2.2.0-收束报告.md |
 
 ## 3. 迭代流程
 
@@ -45,4 +46,5 @@
 2. V1 名称只保留在 dgtf_engine/dgtf_v1/、历史归档、回滚引用和 V1-only smoke 中。
 3. dgtf_engine/dgtf_v2/ 是 V2 核心包名，保留以兼容已有导入。
 4. 版本标签一旦发布不移动、不重写；内容变化用新版本。
-5. 任何“融合”不得改变历史版本的只读归档事实。
+5. 行为融合只作用于调度/阈值，不生成或改写答案。
+6. 任何“融合”不得改变历史版本的只读归档事实。

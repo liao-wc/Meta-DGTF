@@ -12,6 +12,28 @@
 
 ---
 
+V2.2.0
+
+【主题】行为级融合：历史能力 arm 接管 auto 调度。
+
+【改变】
+- 新增 dgtf_engine/dgtf_v2/behavior_fusion.py：5 个历史 arm、UCB、outcome 学习。
+- 新增 tests_behavior_fusion.py：12 项判据。
+- 引擎 Meta-DGTF-V2.2.0.py 新增 --behavior-fusion auto/on/off。
+- 只修改 source=auto 的 mode/rounds/stop/thinking/effort；显式 CLI 优先。
+- packed 新增 behavior_fusion provenance。
+- fusion_full 覆盖 17 条能力轴，与 history_fusion 连续性审计同源。
+- App 本次未改动，版本保持 V2.0.0；只接入新引擎。
+- 新增 docs/history/行为级融合文档与 V2.2.0 发布/收束报告。
+- 更新 README、PROJECT_MAP、PROJECT_LAYOUT、NAMING、CHANGELOG。
+
+【验证】
+- fast_gate 12/0；V2 tests 34/34；App selftest 371/0。
+- 行为融合 12/12；历史融合 12/12；V1 历史 516/516。
+- 四层真跑结果见 V2.2.0-收束报告。
+
+---
+
 V2.1.0
 
 【主题】历史谱系融合与收束。

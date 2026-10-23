@@ -2,9 +2,9 @@
 
 **知识面 EML × 控制面调度 × 执行面四层契约**
 
-- 版本：V2.1.0 生产发布
-- 生产入口：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.1.0.py
-- 生产实现：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.1.0.py + dgtf_engine/dgtf_v2/（纯标准库、无 API、确定性）
+- 版本：V2.2.0 生产发布
+- 生产入口：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.0.py
+- 生产实现：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.0.py + dgtf_engine/dgtf_v2/（纯标准库、无 API、确定性）
 - 目标：把“记忆、调度、四层”从同一条流程里的三段代码，改成三个职责分离、可独立验证、可回放的平面。
 
 ---
@@ -417,3 +417,19 @@ V2.1.0 在三平面之上增加一层**只读 provenance**：
 融合层的价值不是“再加一个模块”，而是让 V2 能回答：
 **当前能力从 V1 的哪一版来、有没有在演化中丢失、这次跑实际覆盖了哪些。**
 
+
+---
+
+## 11. V2.2.0 单引擎行为融合
+
+V2.2.0 把历史谱系与行为融合内联进 Meta-DGTF-V2.2.0.py，生产不再依赖外部融合模块。
+
+- 5 个 arm：v1_spiral / v1_frontier / v2_contract / v2_pareto / fusion_full；
+- 只改 auto 的 mode/rounds/stop/thinking/effort；
+- 显式 CLI 永远优先；
+- outcome 只存 quality/calls/tokens，下一跑 UCB；
+- fusion_full 覆盖 17 条能力轴；
+- packed 增 behavior_fusion provenance；
+- App 保持 V2.0.0，本次只接入新引擎。
+
+判据：tests_inline_fusion.py（12 项）；外部 V2.1 reference 模块保留给回滚。

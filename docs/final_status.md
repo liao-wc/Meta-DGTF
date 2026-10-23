@@ -39,9 +39,20 @@
 ## V2.1.0 收束状态（2026-10-23）
 
 - 版本：V2.1.0（历史谱系融合）
-- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.1.0.py
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.0.py
 - App：2.1.0
 - 历史融合：178 个版本 / 17 条能力轴 / readiness 1.00
 - 门禁：fast_gate 12/0、V2 tests 33/33、App selftest 371/0、pip check 0 broken
 - 文档：docs/history/、docs/releases/V2.1.0.md、V2.1.0-收束报告.md
 - 历史仓库名：GitHub 仓库名仅 ASCII，使用 Meta-DGTF；完整中文名用于描述和文档
+
+---
+
+## V2.2.0 行为融合状态（2026-10-23）
+
+- 引擎：Meta-DGTF-V2.2.0.py
+- App：2.0.0（本次未改动）
+- 行为 arm：5 个（v1_spiral / v1_frontier / v2_contract / v2_pareto / fusion_full）
+- 行为融合：auto mode/rounds/stop/thinking/effort；显式 CLI 优先
+- 判据：V2 tests 34/34、单引擎内联融合 12/12（含 history + behavior）
+- 文档：docs/history/行为级融合、V2.2.0-收束报告

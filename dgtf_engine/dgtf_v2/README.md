@@ -1,6 +1,6 @@
 # Meta-DGTF-道生三阶模型 · dgtf_v2 三平面内核
 
-**状态：V2.1.0 融合版已收束。** 生产引擎是 Meta-DGTF-V2.1.0.py；F2/F3/F4/F5 契约层默认开，L0-v2 archive 只读默认开；F5 生成机制已完成。2026-10-23 复测：dgtf_v2 下 33 个 tests_*.py 全部通过（含 tests_history_fusion 12/12；运行需 PYTHONPATH=项目根）。
+**状态：V2.2.0 行为融合版已收束。** 生产引擎是 Meta-DGTF-V2.2.0.py；历史融合与行为融合已内联进单引擎文件。2026-10-23 复测：dgtf_v2 下 34 个 tests_*.py 全部通过（含 tests_inline_fusion 12/12；运行需 PYTHONPATH=项目根）。
 
 ## 是什么
 
@@ -72,10 +72,17 @@
 
 判据：tests_fact_flow 15、tests_evidence 20、tests_decision_policy 23、
 tests_unified_memory 19。全部无 LLM/网络，使用注入 fake search 与 tmp 记忆。
-## 历史谱系融合（V2.1.0）
+## 单引擎融合（V2.2.0 起）
 
-    history_fusion.py          V1 全版本谱系、能力轴、作业剖面、运行 provenance
-    history_manifest.json      178 个历史版本快照清单
-    tests_history_fusion.py    12 项融合判据
+历史融合与行为融合已内联进：
 
-融合层只写元数据，不改写答案；历史清单缺失时自动降级。
+    engine/Meta-DGTF-V2.2.0.py
+
+引擎内包含：
+
+    _HF_AXES / _HF_ERAS / _hf_plan / apply_history_fusion / audit_history_fusion
+    _BEHAVIOR_ARMS / _bf_choose / apply_behavior_fusion / audit_behavior / record_outcome
+    tests_inline_fusion.py（12 项单引擎判据）
+
+外部 history_fusion.py / behavior_fusion.py 仅保留给 V2.1 回滚参考，
+V2.2 生产不依赖它们。行为融合只作用于调度与阈值，不生成或改写答案。

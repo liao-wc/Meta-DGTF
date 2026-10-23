@@ -59,4 +59,4 @@
 
     python fast_gate.py
     python dgtf_app/selftest.py
-    python -m py_compile dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.1.0.py
+    python -m py_compile dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.0.py

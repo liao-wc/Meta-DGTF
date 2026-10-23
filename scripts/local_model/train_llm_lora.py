@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Qwen2.5-0.5B-Instruct LoRA SFT：元DGTF 问题→route/rounds JSON。
+"""Qwen2.5-0.5B-Instruct LoRA SFT：Meta-DGTF 问题→route/rounds JSON。
 
 在 6GB GPU 上跑；fp16 + LoRA，不合并全量权重。
 用法：
