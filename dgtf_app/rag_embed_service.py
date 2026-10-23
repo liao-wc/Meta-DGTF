@@ -5,7 +5,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import torch
 from transformers import AutoTokenizer, AutoModel
 
-MODEL = os.environ.get('DGTF_EMBED_MODEL', 'D:/Meta-DGTF/local_model/models/bge-small-zh-v1.5')
+MODEL = os.environ.get('DGTF_EMBED_MODEL', 'D:/Meta-DGTF-道生三阶模型/local_model/models/bge-small-zh-v1.5')
 PORT = int(os.environ.get('DGTF_EMBED_PORT', '8771'))
 _tok = None
 _model = None

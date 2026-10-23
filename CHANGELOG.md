@@ -22,7 +22,7 @@ V2.0.0
 - V1 引擎/报告/脚本归档到 dgtf_engine/dgtf_v1/；32 个 tests_*.py 全部通过。
 - F5 0 层生成机制完成（aspect/probe/suspension/novelty + 审计）。
 - V1 smoke 明确改为 V1-only 门禁；V2 命名规范见 dgtf_engine/dgtf_v2/NAMING.md。
-- 项目更名为 Meta-DGTF；主引擎文件更名为 Meta-DGTF-V2.0.0.py，App 品牌同步更新。
+- 项目更名为 Meta-DGTF-道生三阶模型；主引擎文件为 Meta-DGTF-V2.0.0.py，App 名称为 Meta-DGTF。
 - 文件整理：根目录历史报告/脚本归档，本地模型脚本移入 scripts/local_model/，移除重复 site/ 与废弃文件。
 - 依赖同步：新增 requirements.txt，更新 requirements-local-model.txt，pip check 通过。
 - 更新 README、PROJECT_MAP、PROJECT_LAYOUT、V2 发布说明与 Pages。

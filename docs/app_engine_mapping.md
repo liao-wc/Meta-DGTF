@@ -1,4 +1,4 @@
-# Meta-DGTF → app 完整映射与可靠性审计
+# Meta-DGTF-道生三阶模型 → app 完整映射与可靠性审计
 
 生成时间：2026-10-20（goal round 1）
 引擎：`Meta-DGTF-V1.30.0.py`（__version__ = 1.30.0）

@@ -1,4 +1,4 @@
-# dgtf_v2 · 三平面参考内核
+# Meta-DGTF-道生三阶模型 · dgtf_v2 三平面内核
 
 **状态：V2 已发布（reference + production 契约层）。** 生产引擎是 Meta-DGTF-V2.0.0.py；F2/F3/F4/F5 契约层默认开，L0-v2 archive 只读默认开；F5 生成机制已完成（V2.0.0）。2026-10-23 复测：dgtf_v2 下 32 个 tests_*.py 全部通过（运行需 PYTHONPATH=项目根）。
 
@@ -10,7 +10,7 @@
 - **控制面（Scheduler v2）**：MAPE-K + EVOI + 有限视界 MPC + Pareto + 安全盾；只决定层/圈数/停止。
 - **执行面（四层契约）**：0 修行 / 1 研究 / both 对撞 / all 元；每层有必须产出、禁止产出、退出判据。
 
-详细设计见 ../docs/Meta-DGTF-V2-三平面架构.md。
+详细设计见 ../docs/Meta-DGTF-道生三阶模型-V2-三平面架构.md。
 
 ## 文件
 

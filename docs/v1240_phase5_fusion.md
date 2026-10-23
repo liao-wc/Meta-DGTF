@@ -1,4 +1,4 @@
-# Meta-DGTF Phase 5 · V2 控制面 × 四层执行面融合设计
+# Meta-DGTF-道生三阶模型 Phase 5 · V2 控制面 × 四层执行面融合设计
 
 > **性质**：设计与接入决策记录。本文只定**规则、顺序、门禁、回滚**，不改代码/配置。
 > **基线**：`Meta-DGTF-V1.24.0.py`（生产单文件）+ `dgtf_engine/dgtf_v2/`（参考内核，判据 41/41）。
@@ -100,12 +100,12 @@
 
 ### 2.2 组合规则
 
-- **R1 控制面不产文本，执行面不选层。** 调度器只拿到数值先验（`docs/Meta-DGTF-V2-三平面架构.md` §2、§4.6）；层内机制只拿到 rounds/预算/上游产物。
+- **R1 控制面不产文本，执行面不选层。** 调度器只拿到数值先验（`docs/Meta-DGTF-道生三阶模型-V2-三平面架构.md` §2、§4.6）；层内机制只拿到 rounds/预算/上游产物。
 - **R2 依赖以契约为单一来源。** `contracts.legal_actions` 已写死：1 至少吃 1 圈 0、both 要 0/1 done、all 要 both done（`contracts.py:226-248`）。`Scheduler._legal` 目前**复制了一份同样逻辑**（`scheduler.py:191-211`）——语义当前一致，但两套实现会漂移；F1 必须收敛到一处（控制面调用契约函数，或反过来）。
 - **R3 credit 必须晚于校验。** 当前 `V2Shadow.finish` 的顺序是：at_end → **写 EML outcome**（`shadow.py:169-174`）→ priors → core 审计 → 契约（`shadow.py:181-186`）；且 `record_packed` 的 outcome **无条件 success=True**（`bridge.py:94-99`）。后果：越权产物会被当作成功样本学进先验。F1 必须先校验再 credit，或给 outcome 加 `contract_ok/core_ok` 并由先验读取。
 - **R4 closure 定义统一。** 调度器判断「可闭合」必须等于 `validate_result(all)` 通过；当前 `_state_from_packed` 的 closure 是 stub：`decision_actions>0 且 not_do>0` 就造一个假闭包（`shadow.py:103-118`）；`Scheduler.quality` 的 closure 只查 5 个键且仅用于 mock/replay（`scheduler.py:291-303`）。**生产质量读数只认 bench，不认 mock quality。**
 - **R5 一次只翻一个变量。** takeover 与层 flag 正交；A/B 期间 route、预算、模型、serial 全部固定。takeover 的对照变量只允许在控制面 A/B 里翻。
-- **R6 记忆与答案隔离。** EML 出口只有 `scheduler_priors()`（数值）；答案文本不进调度器；`contains_content=False` 由测试守（`docs/Meta-DGTF-V2-三平面架构.md` §4.6）。
+- **R6 记忆与答案隔离。** EML 出口只有 `scheduler_priors()`（数值）；答案文本不进调度器；`contains_content=False` 由测试守（`docs/Meta-DGTF-道生三阶模型-V2-三平面架构.md` §4.6）。
 - **R7 repair 只做兼容，不作通过证据。** `repair_packed` 是「搬已有内容 + 换字段名」，明确不造新句子（`core_duty.py:34-86`）。审计必须用**修复前** overreach（`core_duty.py:89-103`）；新跑必须源干净。
 
 ### 2.3 当前实现里必须先补的六个接缝（不改层内机制）

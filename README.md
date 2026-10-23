@@ -1,4 +1,4 @@
-# Meta-DGTF
+# Meta-DGTF-道生三阶模型
 
 一个**单文件**的四层螺旋推理引擎：修行 / 研究 / 对撞 / 元，跑出可审计的产物。
 
@@ -105,7 +105,7 @@
 - **L0-v2 恢复**：默认 `l0_v2_curate: true` / `l0_v2_mode: archive`（只读档案/novelty，不改生成）；guide/filter 仍实验。tests_l0 16/16。
 - **右栏实时日志**：DSH 右栏 Browser 打开 http://127.0.0.1:8770 ；说明见 docs/实时日志右栏.md。
 - **三态口径**：tri_ratio 是原始一致率，不是三态质量；quality 增 tri_alpha/tri_reliable/tri_unreliable/tri_distribution，α 是跨视角（非 test-retest），未重测前不放行。
-- 详细设计：docs/Meta-DGTF-V2-三平面架构.md。
+- 详细设计：docs/Meta-DGTF-道生三阶模型-V2-三平面架构.md。
 
 ---
 
@@ -213,7 +213,7 @@ python dgtf_app/selftest.py
 | `_run_gate.py` / `_git_save.py` | 门禁包装 / 存档（四项防呆） | 同上 |
 | `dgtf_app/` | 本地 Web 工作台（标准库 + 原生前端） | 可改，须跑 selftest |
 | `dgtf_engine/dgtf_v2/` | V2 三平面参考内核（EML / 调度 / 四层契约） | **设计验证器，不接管生产**；不改 V1 引擎 |
-| `docs/` | 设计文档与**决策记录** | 只增；`docs/不做什么-v1221.md` 请先读；V2 见 `docs/Meta-DGTF-V2-三平面架构.md` |
+| `docs/` | 设计文档与**决策记录** | 只增；`docs/不做什么-v1221.md` 请先读；V2 见 `docs/Meta-DGTF-道生三阶模型-V2-三平面架构.md` |
 | `docs/架构图/` | 整体架构图（PNG / SVG / Mermaid + 读图说明） | 只增；升版后同步重生成 |
 | `dgtf_memory/` | EML 记忆库（episodes / playbook / nogoods） | **运行数据，改动前先问** |
 | `outputs/` | 产物 | 永不删 |

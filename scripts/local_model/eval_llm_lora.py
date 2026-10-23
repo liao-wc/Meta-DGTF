@@ -56,7 +56,7 @@ def run(model, tok, val, max_new=96):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--model", default="D:/Meta-DGTF/local_model/models/Qwen2.5-0.5B-Instruct")
+    ap.add_argument("--model", default="D:/Meta-DGTF-道生三阶模型/local_model/models/Qwen2.5-0.5B-Instruct")
     ap.add_argument("--adapter", default="llm_sft/adapter_qwen05b_v1")
     ap.add_argument("--max", type=int, default=14)
     ap.add_argument("--base-only", action="store_true")

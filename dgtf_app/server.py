@@ -904,7 +904,7 @@ def _autopilot_self_propose():
     try:
         learn = _autopilot_knowledge({
             "id": "self-learn-" + str(int(_t.time() * 1000)),
-            "task": {"title": "Meta-DGTF 项目自学习优化 最佳实践",
+            "task": {"title": "Meta-DGTF-道生三阶模型 项目自学习优化 最佳实践",
                      "detail": "现有项目优化与修复提案"}})
     except Exception:
         learn = ""
@@ -5601,18 +5601,18 @@ _SCHED_MODEL_FILE = Path(__file__).resolve().parent.parent / "models" / "schedul
 _SCHED_MODEL_RUNTIME = Path(__file__).resolve().parent.parent / "dgtf_memory" / "scheduler_model.json"
 
 
-_LLM_PY = os.getenv("DGTF_LLM_PYTHON", r"D:\Meta-DGTF\local_model\envs\dgtf_llm_env\Scripts\python.exe")
-_LLM_MODEL = os.getenv("DGTF_LLM_MODEL", r"D:/Meta-DGTF/local_model/models/Qwen2.5-0.5B-Instruct")
+_LLM_PY = os.getenv("DGTF_LLM_PYTHON", r"D:\Meta-DGTF-道生三阶模型\local_model\envs\dgtf_llm_env\Scripts\python.exe")
+_LLM_MODEL = os.getenv("DGTF_LLM_MODEL", r"D:/Meta-DGTF-道生三阶模型/local_model/models/Qwen2.5-0.5B-Instruct")
 _LLM_ADAPTER = Path(__file__).resolve().parent.parent / "llm_sft" / "adapter_qwen05b_v1"
 _LLM_SCRIPT = Path(__file__).resolve().parent.parent / "llm_predict.py"
 _LLM_BACKENDS = {
-    "qwen05b": {"model": r"D:/Meta-DGTF/local_model/models/Qwen2.5-0.5B-Instruct",
+    "qwen05b": {"model": r"D:/Meta-DGTF-道生三阶模型/local_model/models/Qwen2.5-0.5B-Instruct",
                 "adapter": Path(__file__).resolve().parent.parent / "llm_sft" / "adapter_qwen05b_v1",
                 "label": "Qwen2.5-0.5B + LoRA"},
-    "qwen15b": {"model": r"D:/Meta-DGTF/local_model/models/Qwen2.5-1.5B-Instruct",
+    "qwen15b": {"model": r"D:/Meta-DGTF-道生三阶模型/local_model/models/Qwen2.5-1.5B-Instruct",
                 "adapter": Path(__file__).resolve().parent.parent / "llm_sft" / "adapter_qwen15b_v1",
                 "label": "Qwen2.5-1.5B + LoRA"},
-    "deepseek15b": {"model": r"D:/Meta-DGTF/local_model/models/DeepSeek-R1-Distill-Qwen-1.5B",
+    "deepseek15b": {"model": r"D:/Meta-DGTF-道生三阶模型/local_model/models/DeepSeek-R1-Distill-Qwen-1.5B",
                     "adapter": Path(__file__).resolve().parent.parent / "llm_sft" / "adapter_deepseek15b_v1",
                     "label": "DeepSeek-R1-Distill-Qwen-1.5B + LoRA"},
 }
@@ -6034,7 +6034,7 @@ def _project_context(question="", limit=6):
                               "claim": str(it.get("claim") or it.get("summary") or "")[:600]})
     except Exception:
         knowledge = []
-    parts = ["【Meta-DGTF 项目权威背景（内置，本地文档+资料库注入）】", _PROJECT_BRIEF]
+    parts = ["【Meta-DGTF-道生三阶模型 项目权威背景（内置，本地文档+资料库注入）】", _PROJECT_BRIEF]
     imported = []
     try:
         cands = []
