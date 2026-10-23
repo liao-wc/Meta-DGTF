@@ -131,6 +131,7 @@ python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.1.0.py -c configs/方案F-帕累�
 | App selftest | PASS 371 / FAIL 0 |
 | 依赖 pip check | 0 broken |
 | 历史融合 readiness | 1.00 / continuity_ok=True |
+| 定向0层真跑 | 20 calls / 85,807 tokens / zero_contract ok / provenance 17/17 |
 
 ~~~bash
 python fast_gate.py
