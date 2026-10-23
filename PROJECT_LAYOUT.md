@@ -3,8 +3,8 @@
 ## 顶层结构
 
     app/            dgtf_app/        本地 Web 工作台
-    engine/         元DGTF-V2.0.0.py  V2 单文件生产入口
-    core/           dgtf_v2/         V2 三平面核心
+    engine/         v2/engine/元DGTF-V2.0.0.py  V2 单文件生产入口
+    core/           v2/dgtf_v2/         V2 三平面核心
     v1/             V1 引擎/报告/脚本/备份
     v2/             V2 说明与发布索引
     docs/           设计与发布文档
@@ -21,8 +21,8 @@
 
 ## 版本边界
 
-    V2 生产：元DGTF-V2.0.0.py + dgtf_v2/
-    V2 测试：dgtf_v2/tests_*.py（32 个）
+    V2 生产：v2/engine/元DGTF-V2.0.0.py + v2/dgtf_v2/
+    V2 测试：v2/dgtf_v2/tests_*.py（32 个）
     V1 归档：v1/engine/元DGTF-V1.30.4.py
     V1 回滚：DGTF_APP_ENGINE=v1/engine/元DGTF-V1.30.4.py
 
@@ -39,7 +39,7 @@
 
 ## 状态
 
-- V2 生产入口：元DGTF-V2.0.0.py
+- V2 生产入口：v2/engine/元DGTF-V2.0.0.py
 - App：2.0.0
 - Engine：2.0.0
 - V2 tests：32 / 32 PASS（F5 判据 11/11）

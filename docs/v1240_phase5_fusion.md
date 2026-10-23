@@ -1,7 +1,7 @@
 # 元DGTF Phase 5 · V2 控制面 × 四层执行面融合设计
 
 > **性质**：设计与接入决策记录。本文只定**规则、顺序、门禁、回滚**，不改代码/配置。
-> **基线**：`元DGTF-V1.24.0.py`（生产单文件）+ `dgtf_v2/`（参考内核，判据 41/41）。
+> **基线**：`元DGTF-V1.24.0.py`（生产单文件）+ `v2/dgtf_v2/`（参考内核，判据 41/41）。
 > **时点**：2026-10-19。以下结论只引真实产物，不引方案自述：
 > `v1240_ab_pilot.md`、`v1240_core_report.md`、`v1240_phase5_l0.md`、
 > `audits/core_duty_20.json`、`audits/v2_replay_20.json`、`audits/l0_v2_replay.json`。
@@ -94,7 +94,7 @@
 | # | 接口 | 方向 | 现有实现 | 硬规则 |
 |---|---|---|---|---|
 | I1 | dispatch plan | 控制面 → 执行面 | `V2Shadow.propose()` → `rounds_plan` / `_dispatch_plan`（`元DGTF-V1.24.0.py:21695-21725`） | 提案必须覆盖全部 route，否则整体回退 V1，不混跑；只接管 `mode=serial` |
-| I2 | 层状态读数 | 执行面 → 控制面 | `_initial_state` / `_state_from_packed`（`dgtf_v2/shadow.py:46-118`） | 只读结构计数与质量数，不读答案正文；**done 必须以层完成状态为准**（当前实现见 §2.3 S3） |
+| I2 | 层状态读数 | 执行面 → 控制面 | `_initial_state` / `_state_from_packed`（`v2/dgtf_v2/shadow.py:46-118`） | 只读结构计数与质量数，不读答案正文；**done 必须以层完成状态为准**（当前实现见 §2.3 S3） |
 | I3 | 契约/职责报告 | 执行面 → 控制面/报告 | `V2MemoryBridge.contract_report`（`bridge.py:202-217`）+ `core_duty.audit_packed`（`core_duty.py:89-177`） | 必须分「修复前 / 修复后」两栏；只有修复前干净才算过 |
 | I4 | credit / 先验 | 执行面 → EML → 控制面 | `record_packed`（`bridge.py:57-106`）→ `scheduler_priors`（`scheduler.py:151-158`） | 先 validate/audit 再 credit；outcome 必须带 contract_ok/core_ok；先验只数值 |
 
@@ -179,7 +179,7 @@ core_gate 是本设计定义的**四层核心职责闸序列**（当前只有 G1
 | **G3 质量** | 有没有损害交付质量？ | bench coverage / tri / decision rubric + 层级读数 | `bench/bench_report.py`（离线） | §5.2 | 回滚该层 flag |
 | **G4 成本** | 值不值？ | calls/tokens Pareto + ±10% 规则 | bench + packed | §5.3 | 回滚 |
 | **G5 闭合** | all 真的闭合了吗？ | 六件套 + 动作四字段 + not_do/residual/provenance + `exit_tests` | contract + bench | 全部非空且合法 | 不算闭合；闭合率不计 |
-| **G6 复现** | 同输入同决策吗？ | replay / tests 固定 seed；packed→决策 | `dgtf_v2/replay.py`、`tests.py` 41/41 | 确定 | 冻结 flag |
+| **G6 复现** | 同输入同决策吗？ | replay / tests 固定 seed；packed→决策 | `v2/dgtf_v2/replay.py`、`tests.py` 41/41 | 确定 | 冻结 flag |
 | **G7 回滚** | 关掉 flag 能逐字回基线吗？ | flag off 跑同题，对比 route/order/calls | 方案G 配置 + A/B | 行为回基线 | 不许改默认值 |
 
 ### 4.1 为什么必须是这个顺序
@@ -413,9 +413,9 @@ Exit：5 题新跑 `violations_raw=0`、`overreach=0`、`gaps=0`、all 六件套
 ### 10.1 现在就能做（不依赖 API）
 
 ```bash
-python dgtf_v2/tests.py        # 期望 41/41
-python dgtf_v2/tests_core.py   # 期望 9/9
-python dgtf_v2/tests_l0.py     # 期望 16/16（0 层冻结，仅回归）
+python v2/dgtf_v2/tests.py        # 期望 41/41
+python v2/dgtf_v2/tests_core.py   # 期望 9/9
+python v2/dgtf_v2/tests_l0.py     # 期望 16/16（0 层冻结，仅回归）
 python -m dgtf_v2.replay --limit 5
 ```
 

@@ -59,6 +59,8 @@ from urllib.parse import unquote, parse_qs, urlparse
 APP_DIR = Path(__file__).resolve().parent
 STATIC_DIR = APP_DIR / "static"
 sys.path.insert(0, str(APP_DIR))
+# V2 物理分类：核心包在 v2/dgtf_v2/
+sys.path.insert(0, str(APP_DIR.parent / "v2"))
 
 import dashboard as dash  # noqa: E402
 import engine_runner as runner  # noqa: E402
@@ -1264,7 +1266,7 @@ def _commit_scope(paths, allowed=None):
         # 未显式给出 allowed 时，只放行已知源码/文档目录或已跟踪文件；
         # 防止日志、临时脚本、token 文件被 UI 自动提交。
         if p not in tracked and p not in allowed:
-            safe_prefixes = ("dgtf_app/", "dgtf_v2/", "docs/",
+            safe_prefixes = ("dgtf_app/", "v2/engine/", "v2/dgtf_v2/", "dgtf_v2/", "docs/",
                              "scripts/", "configs/", "anchors/",
                              "bench/", "llm_sft/")
             if not p.startswith(safe_prefixes):
@@ -1476,7 +1478,7 @@ def _proposal_project_context():
         head_ts = int((r2.stdout or "0").strip() or 0)
     except Exception:
         pass
-    files = ["元DGTF-V2.0.0.py", "dgtf_v2/agent_bridge.py",
+    files = ["v2/engine/元DGTF-V2.0.0.py", "v2/dgtf_v2/agent_bridge.py",
              "dgtf_app/server.py", "dgtf_app/static/app.js"]
     parts = [head]
     mtimes = {}
@@ -1492,8 +1494,8 @@ def _proposal_project_context():
         qn = sum(1 for _ in q.open(encoding="utf-8", errors="replace"))
     except Exception:
         qn = 0
-    eng = _prop_cached_text(root / "元DGTF-V2.0.0.py")
-    br = _prop_cached_text(root / "dgtf_v2/agent_bridge.py")
+    eng = _prop_cached_text(root / "v2/engine/元DGTF-V2.0.0.py")
+    br = _prop_cached_text(root / "v2/dgtf_v2/agent_bridge.py")
     return {
         "head": head[:12],
         "head_ts": head_ts,
@@ -3150,8 +3152,9 @@ def _targeted_acceptance(changed):
     cmds = []
     if any(str(p).startswith("dgtf_app/") for p in changed):
         cmds.append([_sys.executable, "dgtf_app/selftest.py", "app-selftest"])
-    if any(str(p).endswith(("元DGTF-V2.0.0.py", "元DGTF-V1.30.4.py"))
-           or str(p).startswith("dgtf_v2/") for p in changed):
+    if any(str(p).endswith(("v2/engine/元DGTF-V2.0.0.py",
+                              "元DGTF-V2.0.0.py", "元DGTF-V1.30.4.py"))
+           or str(p).startswith(("v2/dgtf_v2/", "dgtf_v2/")) for p in changed):
         cmds.append([_sys.executable, "smoke_test.py", "smoke"])
     out = []
     ok = True
@@ -5625,7 +5628,7 @@ _PROJECT_DOCS = [
     "v1/reports/v1110_报告.md",
 ]
 _PROJECT_BRIEF = (
-    "元DGTF 是一个本地四层螺旋推理引擎，版本 元DGTF-V2.0.0.py / 2.0.0。"
+    "元DGTF 是一个本地四层螺旋推理引擎，版本 v2/engine/元DGTF-V2.0.0.py / 2.0.0。"
     "四层固定为：0 修行（展开/候选/锚点）、1 研究（证据/子问题/收敛）、"
     "both 对撞（裁决/冲突/线头）、all 元（闭环/决策/停止）。"
     "EML 是事件溯源记忆与自学习反馈层，含 V1 playbook 与 V2 schedule_outcome；"

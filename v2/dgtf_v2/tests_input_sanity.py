@@ -23,7 +23,7 @@ from dgtf_v2.input_sanity import (
 P = []
 F = []
 HERE = Path(__file__).resolve().parent
-ROOT = HERE.parent
+ROOT = HERE.parent.parent
 REPLAY = ROOT / "outputs" / "20261020_154010_DeepSeek-V41-Flash-.packed.json"
 
 

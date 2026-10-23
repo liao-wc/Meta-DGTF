@@ -2,6 +2,7 @@
 """快速门禁：并行跑关键语法/模块/审计检查，缩短反馈；完整门禁仍用 _run_gate。"""
 from __future__ import annotations
 import os, subprocess, sys
+from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 try:
@@ -12,8 +13,8 @@ except Exception:
 
 CHECKS = [
     ("compile", [sys.executable, "-c",
-     "import py_compile;py_compile.compile('元DGTF-V2.0.0.py',doraise=True)"]),
-    ("audit70", [sys.executable, "_probe_v1232_audit.py", "元DGTF-V2.0.0.py"]),
+     "import py_compile;py_compile.compile('v2/engine/元DGTF-V2.0.0.py',doraise=True)"]),
+    ("audit70", [sys.executable, "_probe_v1232_audit.py", "v2/engine/元DGTF-V2.0.0.py"]),
     ("input_sanity", [sys.executable, "-c",
      "import dgtf_v2.tests_input_sanity as t;raise SystemExit(t.main())"]),
     ("facet", [sys.executable, "-c", "import dgtf_v2.tests_facet_ledger as t;raise SystemExit(t.main())"]),
@@ -25,7 +26,7 @@ CHECKS = [
     ("agent_bridge", [sys.executable, "-c", "import dgtf_v2.tests_agent_bridge as t;raise SystemExit(t.main())"]),
     ("agent_worker", [sys.executable, "-c", "import dgtf_v2.tests_agent_worker as t;t.main()"]),
     ("agent_repair", [sys.executable, "-c", "import dgtf_v2.tests_agent_repair as t;t.main()"]),
-    ("agent_daemon", [sys.executable, "dgtf_v2/tests_agent_daemon.py"]),
+    ("agent_daemon", [sys.executable, "v2/dgtf_v2/tests_agent_daemon.py"]),
 ]
 
 
@@ -35,6 +36,9 @@ def main() -> int:
         child_env = dict(os.environ)
         child_env["PYTHONUTF8"] = "1"
         child_env["PYTHONIOENCODING"] = "utf-8"
+        _root = str(Path(__file__).resolve().parent)
+        child_env["PYTHONPATH"] = (_root + os.pathsep + str(Path(_root) / "v2")
+                                   + os.pathsep + child_env.get("PYTHONPATH", ""))
         futs = {ex.submit(subprocess.run, cmd, capture_output=True, text=True,
                           encoding="utf-8", errors="replace", env=child_env,
                           timeout=900): name for name, cmd in CHECKS}

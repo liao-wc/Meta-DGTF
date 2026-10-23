@@ -62,19 +62,20 @@ _tasks_lock = threading.Lock()
 
 # ── 引擎定位 / 配置 ──────────────────────────────────────────────
 def find_engine() -> Path:
-    """项目根下版本号最高的 元DGTF-V*.py；可用 DGTF_APP_ENGINE 覆盖。"""
+    """V2 物理分类：优先 v2/engine/，兼容根目录旧布局；可用 DGTF_APP_ENGINE 覆盖。"""
     env = os.environ.get("DGTF_APP_ENGINE")
     if env:
         p = Path(env)
         return p if p.is_absolute() else PROJECT_ROOT / p
-    cands = list(PROJECT_ROOT.glob("元DGTF-V*.py"))
+    cands = list((PROJECT_ROOT / "v2" / "engine").glob("元DGTF-V*.py"))
+    cands += list(PROJECT_ROOT.glob("元DGTF-V*.py"))
 
     def ver(p: Path) -> tuple:
         m = re.search(r"V(\d+)\.(\d+)\.(\d+)", p.name)
         return tuple(int(x) for x in m.groups()) if m else (0, 0, 0)
 
     cands.sort(key=ver)
-    return cands[-1] if cands else PROJECT_ROOT / "元DGTF-V1.23.19.py"
+    return cands[-1] if cands else PROJECT_ROOT / "v2" / "engine" / "元DGTF-V2.0.0.py"
 
 
 def load_dotenv() -> dict:

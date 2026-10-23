@@ -28,7 +28,6 @@
       "local_model/MODEL_CHECKSUMS.md"
     ],
     "engine": [
-      "dgtf_v2/",
       "bench/",
       "configs/",
       "元DGTF-V",
@@ -37,7 +36,9 @@
       "dgtf_config.yaml",
       "_probe_v130",
       "_verify",
-      "engine"
+      "engine",
+      "v2/engine/元DGTF-V",
+      "v2/engine/元DGTF-V2.0.0.py"
     ],
     "docs": [
       "docs/",
@@ -75,10 +76,12 @@
     "other": [],
     "v2": [
       "元DGTF-V2.0.0.py",
-      "dgtf_v2/",
       "v2/",
       "v200_报告.md",
-      "docs/releases/V2.0.0.md"
+      "docs/releases/V2.0.0.md",
+      "v2/engine/",
+      "v2/engine/元DGTF-V2.0.0.py",
+      "v2/dgtf_v2/"
     ],
     "v1": [
       "v1/",

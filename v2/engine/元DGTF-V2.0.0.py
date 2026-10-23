@@ -30,6 +30,14 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+# V2 物理分类：引擎位于 v2/engine/，核心包位于 v2/dgtf_v2/。
+# 先补 import 路径与项目根，保证直接 `python v2/engine/元DGTF-V2.0.0.py` 可跑。
+_V2_PROJECT_ROOT = Path(__file__).resolve().parents[2]
+_V2_CORE_ROOT = _V2_PROJECT_ROOT / "v2"
+for _p in (str(_V2_PROJECT_ROOT), str(_V2_CORE_ROOT)):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
+
 import openai
 
 try:
@@ -2907,7 +2915,7 @@ _EML_GATE_Q = ("evidence", "contradiction", "verifiable", "redline")
 
 def eml_dir(base=None) -> Path:
     """记忆库目录（默认仓库根 `dgtf_memory/`）。"""
-    _b = Path(base) if base else Path(__file__).resolve().parent
+    _b = Path(base) if base else _V2_PROJECT_ROOT
     return _b / _EML_DIRNAME
 
 
@@ -15237,7 +15245,7 @@ _RUN_CKPT_STALE = 900.0             # 超过这么久还 `running` ⇒ 判孤儿
 
 def run_ckpt_dir(base=None) -> Path:
     """跑中快照目录（默认 `<repo>/outputs/_run_ckpt/`；建不动也不抛）。"""
-    _b = Path(base) if base else (Path(__file__).resolve().parent / "outputs")
+    _b = Path(base) if base else (_V2_PROJECT_ROOT / "outputs")
     _d = _b / _RUN_CKPT_DIRNAME
     try:
         _d.mkdir(parents=True, exist_ok=True)
