@@ -1,2 +1,0 @@
-2026-10-20T20:59:43 [INFO] start queue=C:\Users\18432\Desktop\元DGTF-多模并行架构\.dsh_tmp\fastgate_temp\agent_daemon_c1fe84b496d2412eb33d91b70dbac861\qdir interval=5.0 max_runs=0 once=True stop_file=C:\Users\18432\Desktop\元DGTF-多模并行架构\.dsh_tmp\fastgate_temp\agent_daemon_c1fe84b496d2412eb33d91b70dbac861\stop
-2026-10-20T20:59:43 [ERROR] cycle_error cycle=1 error=PermissionError: [Errno 13] Permission denied: 'C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\.dsh_tmp\\fastgate_temp\\agent_daemon_c1fe84b496d2412eb33d91b70dbac861\\qdir' elapsed_s=0.0

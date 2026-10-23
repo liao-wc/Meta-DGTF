@@ -1,5 +1,0 @@
-{"kind": "eml_candidate", "severity": "med", "title": "验证/应用 EML 候选：thinking_hint", "detail": "{\"kind\": \"guard\", \"action\": {\"key\": \"thinking_hint\"}}", "source_run": "r1", "id": "4f48c1b90872", "ts": 1792501183.3175366}
-{"kind": "audit_gap", "severity": "high", "title": "研究判定缺口：x", "detail": "{\"status\": \"bad\", \"claim\": \"x\"}", "source_run": "r1", "id": "c2470375b30e", "ts": 1792501183.3175821}
-{"kind": "process_gap", "severity": "high", "title": "层 0 过程标准未达标", "detail": "{\"standard_ok\": false}", "source_run": "r1", "id": "9597cde03f2c", "ts": 1792501183.317617}
-{"kind": "quality_flag", "severity": "low", "title": "质量线索：probe_link_dangling(2)", "detail": "probe_link_dangling(2)", "source_run": "r1", "id": "50346c43b03e", "ts": 1792501183.3176382}
-{"kind": "api_gap", "severity": "med", "title": "Tool Calls 未触发，排查预检/配置", "detail": "{\"tools_calls\": 0}", "source_run": "r1", "id": "25c91baef5ec", "ts": 1792501183.317656}

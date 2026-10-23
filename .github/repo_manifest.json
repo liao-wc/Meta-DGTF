@@ -43,7 +43,8 @@
       "audits/",
       "README.md",
       "CHANGELOG.md",
-      "v13"
+      "v13",
+      "PROJECT_MAP.md"
     ],
     "ops": [
       "scripts/",
@@ -52,6 +53,8 @@
       ".github/"
     ],
     "archive": [
+      "archive/",
+      "archive/project_artifacts/",
       ".dsh_tmp/",
       ".gate_",
       ".gate_tmp_is",
