@@ -1,6 +1,6 @@
 # Meta-DGTF-道生三阶模型 · dgtf_v2 三平面内核
 
-**状态：V2.2.0 行为融合版已收束。** 生产引擎是 Meta-DGTF-V2.2.0.py；历史融合与行为融合已内联进单引擎文件。2026-10-23 复测：dgtf_v2 下 34 个 tests_*.py 全部通过（含 tests_inline_fusion 12/12；运行需 PYTHONPATH=项目根）。
+**状态：V2.2.0 行为融合版已收束。** 生产引擎是 Meta-DGTF-V2.2.0.py；历史融合与行为融合已内联进单引擎文件。2026-10-23 复测：dgtf_v2 下 34 个 tests_*.py 全部通过（含 tests_inline_fusion 13/13；运行需 PYTHONPATH=项目根）。
 
 ## 是什么
 

@@ -120,6 +120,14 @@ def case_history_audit():
     assert a['views_present'] == ['0', '1', 'both', 'all']
 
 
+def case_runtime_thinking_off():
+    # V2.2.0 fix：--thinking off 必须同时关掉 reasoner 档，否则长调用会挂。
+    cfg, notes = ENG._apply_runtime({}, {"thinking": "off"})
+    assert cfg["api"]["thinking"]["default"] == "disabled"
+    assert cfg["api"]["thinking"]["reasoner"] == "disabled"
+    assert any("思考" in n for n in notes)
+
+
 def case_record_outcome():
     old = ENG._bf_stats_path
     with tempfile.TemporaryDirectory() as td:
@@ -140,7 +148,8 @@ def case_record_outcome():
 CASES = [case_axes_inline, case_history_plan, case_behavior_arms,
          case_fact_arm, case_decision_arm, case_open_arm,
          case_explicit_preserved, case_auto_changed, case_metadata,
-         case_audit_pack, case_history_audit, case_record_outcome]
+         case_audit_pack, case_history_audit, case_record_outcome,
+         case_runtime_thinking_off]
 
 
 def main():

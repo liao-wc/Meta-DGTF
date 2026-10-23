@@ -43,7 +43,7 @@
 - V2 生产入口：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.0.py
 - App：2.0.0（本次未改动）
 - Engine：2.2.0
-- V2 tests：34 / 34 PASS（内联融合 12/12）
+- V2 tests：34 / 34 PASS（内联融合 13/13）
 - F5：生成机制完成
 - 历史融合：178 个版本 / 17 条能力轴 / readiness 1.00
 - 行为融合：5 个 arm / auto 调度 / outcome UCB

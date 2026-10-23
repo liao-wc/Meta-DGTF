@@ -1389,6 +1389,9 @@ def _apply_runtime(base_cfg: dict, runtime=None):
         _thc = cfg.setdefault("api", {}).setdefault("thinking", {})
         _val = "enabled" if th == "on" else "disabled"
         _thc["default"] = _val
+        # ★ [V2.2.0 fix] reasoner 档也必须跟着总开关走；
+        #   否则 --thinking off 仍会在 ing/view 长调用启用高 token 推理。
+        _thc["reasoner"] = _val
         _stages = _thc.get("stages") or {}
         for _k in list(_stages):
             _stages[_k] = _val

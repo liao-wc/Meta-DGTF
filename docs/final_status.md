@@ -54,5 +54,5 @@
 - App：2.0.0（本次未改动）
 - 行为 arm：5 个（v1_spiral / v1_frontier / v2_contract / v2_pareto / fusion_full）
 - 行为融合：auto mode/rounds/stop/thinking/effort；显式 CLI 优先
-- 判据：V2 tests 34/34、单引擎内联融合 12/12（含 history + behavior）
+- 判据：V2 tests 34/34、单引擎内联融合 13/13（含 history + behavior）
 - 文档：docs/history/行为级融合、V2.2.0-收束报告
