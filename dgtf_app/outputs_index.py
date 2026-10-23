@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import time
 from pathlib import Path
@@ -353,7 +354,7 @@ def reap_mock(max_age: float = 300.0, min_interval: float = 60.0) -> int:
 
 def read_body(name: str, limit: int | None = None) -> str:
     """读取某份产物正文（整篇；limit 为字符上限）。"""
-    p = OUTPUTS_DIR / Path(name).name  # 只取文件名，挡目录穿越
+    p = OUTPUTS_DIR / os.path.basename(str(name).replace("\\", "/"))  # 只取文件名，挡目录穿越
     try:
         with open(p, "r", encoding="utf-8", errors="replace") as f:
             return f.read(limit) if limit else f.read()
@@ -364,7 +365,7 @@ def read_body(name: str, limit: int | None = None) -> str:
 def read_packed(name: str) -> dict:
     """读取某份产物对应的 packed.json（只读；找不到返回空 dict）。"""
     import json as _j
-    p = OUTPUTS_DIR / Path(name).name
+    p = OUTPUTS_DIR / os.path.basename(str(name).replace("\\", "/"))
     if not p.name.endswith(".packed.json"):
         p = p.with_suffix(".packed.json")
     try:

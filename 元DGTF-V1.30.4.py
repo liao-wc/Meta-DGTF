@@ -23,6 +23,7 @@ import time
 import unicodedata
 import contextlib
 import threading
+from urllib.parse import urlparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field, asdict
 from datetime import datetime
@@ -21202,8 +21203,8 @@ class MetaDGTF:
                 continue
             if kind:
                 gate.note_failure(kind)
-                logger_web.warning("[W-%s] stage=%s q=%s", kind.upper(),
-                                   stage, q[:80])
+                logger_web.warning("[W-%s] stage=%s q_len=%d", kind.upper(),
+                                   stage, len(q))
                 if pool is not None:
                     pool.meta.append("[W-" + kind.upper() + "] " + stage
                                      + " q=" + q[:60])
@@ -23633,8 +23634,8 @@ class MetaDGTF:
                             try:
                                 _ourl = next(
                                     (str(x.get("url") or "") for x in _got
-                                     if "api-docs.deepseek.com" in str(
-                                         x.get("url") or "")), "")
+                                     if (urlparse(str(x.get("url") or "")).hostname
+                                         or "").lower() == "api-docs.deepseek.com"), "")
                                 if _ourl:
                                     _fpage = _cl.fetch(_ourl)
                                     if _fpage.get("content"):

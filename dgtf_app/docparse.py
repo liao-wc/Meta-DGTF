@@ -74,8 +74,10 @@ def _printable_ratio(s: str) -> float:
 
 def _clean(s: str) -> str:
     s = s.replace("\r\n", "\n").replace("\r", "\n")
-    s = re.sub(r"[ \t]+\n", "\n", s)
-    s = re.sub(r"\n{4,}", "\n\n\n", s)
+    # 不依赖正则做空白归一，避免 ReDoS；逐行 rstrip 是线性的。
+    s = "\n".join(line.rstrip(" \t") for line in s.split("\n"))
+    while "\n\n\n\n" in s:
+        s = s.replace("\n\n\n\n", "\n\n\n")
     return s.strip()[:MAX_CHARS]
 
 
@@ -182,6 +184,7 @@ def parse_pdf(data: bytes) -> tuple[str, str]:
         except zlib.error:
             pass                              # 没压缩 / 别的滤镜：就当明文试试
         body = []
+        raw = raw[:4_000_000]  # 限制 PDF 内容流扫描窗口，降低异常输入风险
         for tm in re.finditer(rb"((?:\((?:\\.|[^\\()])*\)\s*)|(?:\[[^\]]*\]\s*TJ)|(?:T\*)|(?:Td|TD|ET|BT))",
                               raw):
             tok = tm.group(1)
@@ -255,11 +258,20 @@ def _gif_info(data: bytes) -> tuple[str, list[str]]:
         raise ValueError("不是 GIF")
     w, h = struct.unpack("<HH", data[6:10])
     texts = []
-    for m in re.finditer(rb"\x21\xfe(.)(.*?)\x00", data, re.S):
+    pos = 0
+    while True:
+        start = data.find(b"\x21\xfe", pos)
+        if start < 0 or start + 3 > len(data):
+            break
+        size = data[start + 2]
+        end = data.find(b"\x00", start + 3)
+        if end < 0:
+            break
         try:
-            texts.append(m.group(2)[:m.group(1)[0]].decode("utf-8", "replace").strip())
+            texts.append(data[start + 3:end][:size].decode("utf-8", "replace").strip())
         except Exception:  # noqa: BLE001
             pass
+        pos = end + 1
     return f"{w}x{h}", texts
 
 
@@ -291,7 +303,8 @@ def parse_image(name: str, data: bytes) -> tuple[str, str]:
             info, texts = _gif_info(data)
     except Exception:  # noqa: BLE001
         info, texts = "", []
-    with tempfile.NamedTemporaryFile(suffix=ext, delete=False) as f:
+    _safe_ext = ext if ext in (".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tif", ".tiff", ".webp") else ".bin"
+    with tempfile.NamedTemporaryFile(suffix=_safe_ext, delete=False) as f:
         f.write(data)
         tmp = Path(f.name)
     try:

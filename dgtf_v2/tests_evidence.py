@@ -244,7 +244,7 @@ def case_answer_relevance_gate():
         "title": "DeepSeek docs", "url": "https://api-docs.deepseek.com/",
         "snippet": "baseURL: 'https://api.deepseek.com'"}])
     assert "https://api.deepseek.com" in answer_from_evidence(
-        good, "DeepSeek API 的 base URL 是什么？")
+        good, "DeepSeek API 的 base URL 是什么？")  # codeql[py/incomplete-url-substring-sanitization]
 
 
 # ---------------------------------------------------------------- 引用绑定

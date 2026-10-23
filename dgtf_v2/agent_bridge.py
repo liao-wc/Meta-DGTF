@@ -3,6 +3,7 @@
 from __future__ import annotations
 import hashlib, json, time
 from pathlib import Path
+from urllib.parse import urlparse
 
 DEFAULT_QUEUE = "dgtf_memory/agent_tasks.jsonl"
 DEFAULT_KNOWLEDGE = "dgtf_memory/agent_knowledge.jsonl"
@@ -498,7 +499,9 @@ def refresh_knowledge_http(queries, path: str = DEFAULT_KNOWLEDGE,
         url = cand["url"]
         title = cand["title"]
         pdf_url = cand.get("pdf_url") or _paper_pdf_url(url)
-        if not pdf_url and "semanticscholar.org" in url.lower():
+        _host = (urlparse(url).hostname or "").lower()
+        if not pdf_url and (_host == "semanticscholar.org"
+                            or _host.endswith(".semanticscholar.org")):
             pdf_url = _paper_pdf_url(url)
         cand["pdf_url"] = pdf_url
         content = ""

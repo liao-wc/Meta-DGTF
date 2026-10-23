@@ -69,6 +69,22 @@ import params as prm  # noqa: E402
 _FACETS = ("decidability", "orientation", "parallel", "stop", "kind", "layer")
 
 
+def _safe_id(value, default="x"):
+    """只允许本地文件/会话 ID 使用安全字符，避免路径拼接注入。"""
+    s = re.sub(r"[^A-Za-z0-9_.-]", "_", str(value or ""))[:120]
+    return s if s and s not in (".", "..") else default
+
+
+def _safe_basename(value):
+    """去掉目录部分，只保留文件名。"""
+    return os.path.basename(str(value or "").replace("\\", "/"))
+
+
+def _header_safe(value):
+    """响应头值去掉 CR/LF，避免 response splitting。"""
+    return str(value or "").replace("\r", "").replace("\n", "")
+
+
 # ══ ★ R42：局域网访问（--lan）+ 可选访问口令（--token）═══════════════════════
 # 默认仍然是**只监听 127.0.0.1**（最安全）；只有显式 `--lan` 才绑 0.0.0.0。
 # 口令默认**关闭** —— 一开 `--lan`，同一网段里任何人都能跑任务（花 API 额度）、
@@ -1383,7 +1399,8 @@ def _list_dsh_sessions(limit=50):
 
 def _get_dsh_session(sid):
     import json as _json
-    p = _dsh_session_dir() / (str(sid) + ".json")
+    sid = _safe_id(sid, "session")
+    p = _dsh_session_dir() / (sid + ".json")
     if not p.exists():
         return {}
     try:
@@ -1858,7 +1875,8 @@ def _split_proposal(pid):
 
 def _get_proposal(pid):
     import json as _json
-    p = _proposal_dir() / (str(pid) + ".json")
+    pid = _safe_id(pid, "proposal")
+    p = _proposal_dir() / (pid + ".json")
     if not p.exists():
         return {}
     try:
@@ -1910,8 +1928,9 @@ def _list_dsh_artifacts(limit=50):
 
 def _read_dsh_artifact(sid):
     import json as _json
+    sid = _safe_id(sid, "artifact")
     d = _dsh_artifact_dir()
-    pj = d / (str(sid) + ".json")
+    pj = d / (sid + ".json")
     if pj.exists():
         try:
             rec = _json.loads(pj.read_text(encoding="utf-8", errors="replace"))
@@ -7207,10 +7226,10 @@ class Handler(BaseHTTPRequestHandler):
         self._security_headers()
         self.send_header("Content-Type", ctype)
         self.send_header("Content-Length", str(len(data)))
-        ascii_name = filename.encode("ascii", "ignore").decode() or "export"
+        ascii_name = _header_safe(filename.encode("ascii", "ignore").decode() or "export")
         self.send_header("Content-Disposition",
                          "attachment; filename=\"%s\"; filename*=UTF-8''%s"
-                         % (ascii_name, urllib.parse.quote(filename)))
+                         % (ascii_name, urllib.parse.quote(_header_safe(filename))))
         self.send_header("Cache-Control", "no-store")
         self.end_headers()
         self.wfile.write(data)
@@ -7378,7 +7397,7 @@ class Handler(BaseHTTPRequestHandler):
             return {}
 
     def _serve_static(self, rel: str):
-        rel = rel.split("?", 1)[0].lstrip("/")
+        rel = _safe_basename(rel.split("?", 1)[0])
         base = STATIC_DIR.resolve()
         target = (base / rel).resolve()
         if base not in target.parents and target != base:
@@ -7386,6 +7405,7 @@ class Handler(BaseHTTPRequestHandler):
         if not target.is_file():
             return self._json({"error": "not found"}, 404)
         ctype = mimetypes.guess_type(str(target))[0] or "application/octet-stream"
+        ctype = _header_safe(ctype)
         if ctype.startswith("text/") or ctype in ("application/javascript", "application/json"):
             ctype += "; charset=utf-8"
         data = target.read_bytes()
@@ -7645,7 +7665,7 @@ class Handler(BaseHTTPRequestHandler):
             })
 
         if p == "/api/agent/knowledge/pdf":
-            name = Path(str((q.get("name") or [""])[0])).name
+            name = _safe_basename(str((q.get("name") or [""])[0]))
             pdf = Path(__file__).resolve().parent.parent / "dgtf_memory" / "agent_knowledge_pdfs" / name
             if not name.lower().endswith(".pdf") or not pdf.is_file():
                 return self._json({"error": "pdf not found"}, 404)
@@ -7654,7 +7674,7 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_response(200)
                 self.send_header("Content-Type", "application/pdf")
                 self.send_header("Content-Length", str(len(data)))
-                self.send_header("Content-Disposition", "inline; filename=\"" + name + "\"")
+                self.send_header("Content-Disposition", "inline; filename=\"" + _header_safe(name) + "\"")
                 self.send_header("Connection", "close")
                 self.end_headers()
                 self.wfile.write(data)

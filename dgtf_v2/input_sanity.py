@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import re
 from typing import Any
+from urllib.parse import urlparse
 
 # 存在性否定词：出现这些词就说明检查者在没有证据地下结论。
 NEGATIVE_CLAIM_RE = re.compile(
@@ -86,7 +87,9 @@ def is_official_item(item: dict) -> bool:
         from dgtf_v2.evidence import is_official_source
         return bool(is_official_source(url))
     except Exception:  # pragma: no cover - 只作降级兜底
-        return ("deepseek.com" in url) or ("deepseek.ai" in url)
+        host = (urlparse(url).hostname or "").lower()
+        return (host == "deepseek.com" or host.endswith(".deepseek.com")
+                or host == "deepseek.ai" or host.endswith(".deepseek.ai"))
 
 
 def official_evidence(packed: Any) -> list:

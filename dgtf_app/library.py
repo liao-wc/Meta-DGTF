@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import base64
 import json
+import os
 import re
 from pathlib import Path
 
@@ -233,7 +234,7 @@ def import_files(files: list[dict]) -> dict:
 
     for f in (files or [])[:MAX_FILES]:
         f = f or {}
-        n = Path(str(f.get("name") or "")).name
+        n = os.path.basename(str(f.get("name") or "").replace("\\", "/"))
         if not n or n == ANCHOR_FILE.name or n.startswith("."):
             skipped.append(n or "(无名)")
             results.append({"name": n or "(无名)", "ok": False, "kind": "", "chars": 0,
