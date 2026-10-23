@@ -57,3 +57,12 @@ DSH 的 Windows 文件沙箱（dsh-sandbox-windows-acl）只限制写入，不�
 - Git 提交范围收紧：未跟踪文件只在 dgtf_app/dgtf_v2/docs/scripts/configs/anchors/bench/llm_sft 下放行；日志/临时文件忽略。
 - 真实任务默认 3600s 超时，可用 `DGTF_TASK_TIMEOUT_S` 调整。
 
+## 2026-10-23 公开仓库安全
+
+- 公开仓库已移除 `dgtf_memory`、跑批日志、缓存和运行态输出，并重建为干净历史。
+- 开启 Secret scanning、Push protection、Private Vulnerability Reporting、CodeQL 默认扫描。
+- 所有 GitHub Actions 固定到完整 commit SHA，并显式声明最小权限。
+- main 分支禁止强推和删除，并配置 required checks。
+- 本地模型权重、训练环境、访问口令和会话数据不进入仓库。
+- 公网访问应使用正式 TLS、登录、限流；自签名证书只用于本机。
+
