@@ -143,13 +143,12 @@
 - CodeQL open：0；CodeQL dismissed：37（均有复核理由）
 - 开放 Pull Request：0
 
-## 8. 仍需你完成的一次性动作
+## 8. 签名闭环与剩余事项
 
-1. 把 `C:\Users\18432\.ssh\id_rsa.pub` 添加到 GitHub：
-   Settings -> SSH and GPG keys -> New SSH key -> Key type: Signing Key。
-   当前 Token 作用域不含 `admin:ssh_signing_key`，无法由 DSH 自动上传。
-   添加后，后续 DSH 提交即可显示 verified。
-2. 外部贡献现在需要 1 个 approving review；你自己作为仓库所有者仍可通过管理员绕过直接推送。
+1. 已完成：签名公钥已添加到 GitHub（标题 mate-dgtf）。
+   main 提交 82f81daf 的 GitHub verification 为 True / valid。
+   本地 Git 已配置 SSH 签名，后续提交会继续签名。
+2. 外部贡献现在需要 1 个 approving review；仓库所有者仍可通过管理员绕过直接推送。
 3. 当前开放 PR 为 0；Dependabot 配置仍启用，后续自动升级 PR 需要 review。
 4. GitHub Pages 只是静态门户，Python App 后端仍只在本地/自托管运行。
 5. 发布工作流已实际验证：tag app-v1.5.24-open-source 的 Release 含 zip、SPDX SBOM、SHA256SUMS、cosign bundle。
