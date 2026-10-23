@@ -39,3 +39,25 @@ _repo_manager.log
 - `dgtf_memory/` 等运行态文件的未提交修改不会被自动提交/推送。
 - 自动同步只做 fast-forward 推送；不解决历史分叉。
 - 公网网站运行仍需服务器/隧道目标。
+
+
+## 定时重试
+
+已注册 Windows 计划任务：
+
+```text
+DSH-MetaDGTF-RepoSync
+每 5 分钟
+```
+
+即使某次网络断开，计划任务会继续重试推送已提交的 main。手动运行一次：
+
+```powershell
+schtasks.exe /Run /TN "DSH-MetaDGTF-RepoSync"
+```
+
+查看日志：
+
+```text
+_repo_manager.log
+```
