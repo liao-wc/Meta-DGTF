@@ -9618,7 +9618,7 @@ def check_v1236_no_version_tags():
         bad.append("仍有以版次标记开头的 docstring %d 处，前 5 个行号 %s"
                    % (len(leads), leads[:5]))
     # ---- 负对照：上一版必须判红 ----
-    prev = HERE / "元DGTF-V1.23.5.py"
+    prev = HERE / "v1/scripts/_negctl_version_tag.py"
     pn = 0
     if not prev.is_file():
         bad.append("负对照文件缺失 %s —— 判据判别力无法自证" % prev.name)
