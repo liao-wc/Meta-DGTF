@@ -106,7 +106,8 @@
     DeepSeek-R1-Distill-Qwen-1.5B：MIT
 - 已生成本地 7 个权重文件的 SHA256：local_model/MODEL_CHECKSUMS.md
 - 已记录上游 revision：local_model/MODEL_SOURCES.md
-- release-artifact 增加 SPDX SBOM、SHA256SUMS、cosign keyless 签名和证书。
+- release-artifact 增加 SPDX SBOM、SHA256SUMS、cosign keyless bundle（含签名和证书）。
+- 已实际运行 tag app-v1.5.24-open-source，Release 产出：源码 zip、SPDX SBOM、SHA256SUMS、SHA256SUMS.bundle。
 
 ## 6. 文档与合规
 
@@ -129,7 +130,7 @@
 ## 7. 验证
 
 - git 工作区：干净
-- 验证时 main：43f087a3a156d17b44612e6ca0082132a0241732
+- 验证时 main：da8303bdc9c266314596822deebbf6a37802d919
 - fast_gate：PASS 12 / FAIL 0
 - selftest：PASS 371 / FAIL 0
 - py_compile：通过
@@ -151,4 +152,4 @@
 2. 外部贡献现在需要 1 个 approving review；你自己作为仓库所有者仍可通过管理员绕过直接推送。
 3. 当前开放 PR 为 0；Dependabot 配置仍启用，后续自动升级 PR 需要 review。
 4. GitHub Pages 只是静态门户，Python App 后端仍只在本地/自托管运行。
-5. 发布工作流已配置 SBOM/signing；下一次打 tag 时会生成并上传这些资产。
+5. 发布工作流已实际验证：tag app-v1.5.24-open-source 的 Release 含 zip、SPDX SBOM、SHA256SUMS、cosign bundle。
