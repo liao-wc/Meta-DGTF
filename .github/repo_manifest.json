@@ -24,7 +24,8 @@
       "*qwen*",
       "*ridge*",
       "local_model",
-      "scheduler_model"
+      "scheduler_model",
+      "local_model/MODEL_CHECKSUMS.md"
     ],
     "engine": [
       "dgtf_v2/",
@@ -45,7 +46,8 @@
       "README.md",
       "CHANGELOG.md",
       "v13",
-      "PROJECT_MAP.md"
+      "PROJECT_MAP.md",
+      "PROJECT_LAYOUT.md"
     ],
     "ops": [
       "scripts/",
@@ -70,9 +72,25 @@
     "legacy": [
       "_"
     ],
-    "other": []
+    "other": [],
+    "v2": [
+      "元DGTF-V2.0.0.py",
+      "dgtf_v2/",
+      "v2/",
+      "v200_报告.md",
+      "docs/releases/V2.0.0.md"
+    ],
+    "v1": [
+      "v1/",
+      "v1/engine/",
+      "v1/reports/",
+      "v1/scripts/",
+      "v1/legacy/"
+    ]
   },
   "order": [
+    "v2",
+    "v1",
     "runtime",
     "app",
     "local_model",

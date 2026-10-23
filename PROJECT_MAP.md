@@ -1,19 +1,56 @@
 # 元DGTF 项目文件地图
 
-| 分类 | 物理位置 | 说明 |
+## V2 生产层
+
+| 类别 | 物理位置 | 说明 |
 |---|---|---|
-| app | `dgtf_app/`、`scripts/start_app.*`、`scripts/open_app.*` | Web 工作台与启动器 |
-| engine | `dgtf_v2/`、`bench/`、`configs/`、根目录 `元DGTF-V*.py`、`fast_gate.py` | 引擎、评测、配置 |
-| local_model | `local_model/models/`、`local_model/envs/dgtf_llm_env/`、`llm_sft/` | 本地模型权重、训练/推理环境、适配器 |
-| docs | `docs/`、`reports/`、`audits/` | 设计、报告、审计 |
-| ops | `scripts/`、`.github/` | 启动、部署、仓库管理 |
-| runtime | `dgtf_memory/` | 运行态状态，默认不入库 |
-| archive | `archive/` | 历史 scratch / 实验产物 |
-| legacy | 根目录 `_*.py` 等历史脚本 | 保留兼容引用，逐步归档 |
+| V2 生产入口 | 元DGTF-V2.0.0.py | 单文件生产引擎，App 自动选用最高版本 |
+| V2 核心 | dgtf_v2/ | EML / Scheduler / 四层契约 / 证据与决策 |
+| V2 发布说明 | v200_报告.md、docs/releases/V2.0.0.md | 发布、验证、边界 |
+| V2 门户 | site/ | GitHub Pages 静态入口 |
 
-## DSH 管理
+## V1 归档层
 
-```text
-python scripts/dsh_repo_classify.py classify
-powershell -File scripts/dsh_repo_manage.ps1
-```
+| 类别 | 物理位置 | 说明 |
+|---|---|---|
+| V1 引擎 | v1/engine/元DGTF-V1.30.4.py | 回滚基线，不再作为默认生产入口 |
+| V1 报告 | v1/reports/ | V1 历史报告 |
+| V1 脚本 | v1/scripts/ | V1 历史验证/实验脚本 |
+| V1 备份 | v1/legacy/ | 旧配置和 smoke 备份 |
+
+## App 与配置
+
+| 类别 | 物理位置 | 说明 |
+|---|---|---|
+| App | dgtf_app/ | 本地 Web 工作台 |
+| 启动/运维 | scripts/ | 启动、同步、部署、安全脚本 |
+| 默认配置 | dgtf_config.yaml | V2 生产配置 |
+| 预设 | configs/ | 方案 A/B/C/F/G/H 等配置 |
+| 自动化 | .github/ | CI、Pages、Release、分类、安全 |
+
+## 文档与证据
+
+| 类别 | 物理位置 | 说明 |
+|---|---|---|
+| 设计与发布 | docs/ | 架构、发布说明、依赖与安全 |
+| 安全报告 | reports/ | 开源安全与迁移报告 |
+| 审计 | audits/ | 历史审计证据 |
+| 基准 | bench/ | 评测脚本与结果 |
+| 历史归档 | archive/ | 本地忽略，不入公开 Git |
+
+## 本地模型
+
+| 类别 | 物理位置 | 说明 |
+|---|---|---|
+| 权重 | local_model/models/ | 本地权重，不进 Git |
+| 环境 | local_model/envs/dgtf_llm_env/ | 训练/推理 venv，不进 Git |
+| 微调 | llm_sft/ | LoRA 配置与产物 |
+
+## 运行态（本地，不入库）
+
+    dgtf_memory/  outputs/  runs/  cache/  dgtf_app/runs/
+
+## 管理命令
+
+    python scripts/dsh_repo_classify.py classify
+    powershell -File scripts/dsh_repo_manage.ps1

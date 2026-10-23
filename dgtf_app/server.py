@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "1.5.24"
+APP_VERSION = "2.0.0"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -1476,7 +1476,7 @@ def _proposal_project_context():
         head_ts = int((r2.stdout or "0").strip() or 0)
     except Exception:
         pass
-    files = ["元DGTF-V1.30.4.py", "dgtf_v2/agent_bridge.py",
+    files = ["元DGTF-V2.0.0.py", "dgtf_v2/agent_bridge.py",
              "dgtf_app/server.py", "dgtf_app/static/app.js"]
     parts = [head]
     mtimes = {}
@@ -1492,7 +1492,7 @@ def _proposal_project_context():
         qn = sum(1 for _ in q.open(encoding="utf-8", errors="replace"))
     except Exception:
         qn = 0
-    eng = _prop_cached_text(root / "元DGTF-V1.30.4.py")
+    eng = _prop_cached_text(root / "元DGTF-V2.0.0.py")
     br = _prop_cached_text(root / "dgtf_v2/agent_bridge.py")
     return {
         "head": head[:12],
@@ -3150,7 +3150,7 @@ def _targeted_acceptance(changed):
     cmds = []
     if any(str(p).startswith("dgtf_app/") for p in changed):
         cmds.append([_sys.executable, "dgtf_app/selftest.py", "app-selftest"])
-    if any(str(p).endswith(("元DGTF-V1.30.4.py", "元DGTF-V1.30.0.py"))
+    if any(str(p).endswith(("元DGTF-V2.0.0.py", "元DGTF-V1.30.4.py"))
            or str(p).startswith("dgtf_v2/") for p in changed):
         cmds.append([_sys.executable, "smoke_test.py", "smoke"])
     out = []
@@ -5621,11 +5621,11 @@ _PROJECT_DOCS = [
     "docs/full_loop.md",
     "docs/llm_lora_finetune.md",
     "docs/scheduler_model.md",
-    "v1200_报告.md",
-    "v1110_报告.md",
+    "v1/reports/v1200_报告.md",
+    "v1/reports/v1110_报告.md",
 ]
 _PROJECT_BRIEF = (
-    "元DGTF 是一个本地四层螺旋推理引擎，版本 元DGTF-V1.30.4.py / 1.30.4。"
+    "元DGTF 是一个本地四层螺旋推理引擎，版本 元DGTF-V2.0.0.py / 2.0.0。"
     "四层固定为：0 修行（展开/候选/锚点）、1 研究（证据/子问题/收敛）、"
     "both 对撞（裁决/冲突/线头）、all 元（闭环/决策/停止）。"
     "EML 是事件溯源记忆与自学习反馈层，含 V1 playbook 与 V2 schedule_outcome；"

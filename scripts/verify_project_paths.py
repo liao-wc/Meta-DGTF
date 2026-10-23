@@ -7,7 +7,7 @@ ROOT = Path(r'D:\元DGTF-多模并行架构')
 checks = {
   'root': ROOT,
   'app_server': ROOT/'dgtf_app'/'server.py',
-  'engine': ROOT/'元DGTF-V1.30.4.py',
+  'engine': ROOT/'元DGTF-V2.0.0.py',
   'dgtf_v2': ROOT/'dgtf_v2',
   'models': ROOT/'local_model'/'models',
   'bge': ROOT/'local_model'/'models'/'bge-small-zh-v1.5',

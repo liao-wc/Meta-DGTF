@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE / "元DGTF-V1.30.4.py"
+SRC = HERE / "元DGTF-V2.0.0.py"
 
 os.environ.setdefault("DGTF_API_KEY", "sk-smoke-test-key")
 
@@ -6622,6 +6622,7 @@ def check_v130_input_sanity_evidence():
 #   ★ 说明文字一律放注释，不要塞进 dict 当第一个元素：相邻的两个字符串
 #     字面量会被 Python **静默拼接**成一个键，dict 里就只剩一条巨型条目（实测踩过）。
 CONFIG_TUNED = {
+    "scheduler.v2.takeover": "V2 生产发布：默认接管调度",
     "actions.parallel_warmup_rounds": "并行预热圈数手调",
     "memory.shape_chars": "形状记忆条数与字数手调",
     "memory.shape_items": "形状记忆条数与字数手调",

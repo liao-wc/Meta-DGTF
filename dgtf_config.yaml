@@ -1,5 +1,5 @@
 # ============================================================
-# 元 DGTF · v1.30.4 配置文件
+# 元 DGTF · v2.0.0 配置文件
 # ============================================================
 #
 #
@@ -31,7 +31,7 @@ scheduler:
     contract_gate: warn
     allow_anon: false
     # Phase 4：true 才接管「串行初始排程」；层内算法仍是 V1。
-    takeover: false
+    takeover: true
     # [v1.24.0] 四层核心职责审计门禁（core_duty 读数）：
     #   warn（默认）= 只告警 + packed.quality.flags 加 "core_audit_gaps"，不阻断运行；
     #   off = 完全不出读数（不写 packed.core_ok、不加旗标）。

@@ -1,0 +1,13 @@
+{
+  "frozen_at": "2026-10-05（P3 档执行时点）",
+  "src_only_at_p3_time": [
+    "_all_settle_streak",
+    "_reopen_closed_debt",
+    "both_tighten_ratio",
+    "escalate_starve_rounds",
+    "no_push_when_idle"
+  ],
+  "n_src_only": 5,
+  "source": "audit_v122_dead_mechanisms.md（当时判「仅源码」的 5 条）",
+  "note": "该集合是**时点快照**：语料每多跑一题就多几份日志与产物，原本「仅源码」的机制会逐渐变成「可达」（机制被真跑走到了）。本版实测：P3 时点 5 条；到 2026-10-05 09:42 重跑审计（语料 368 日志 / 317 产物）→ 13 条全「可达」、「仅源码」0 条。所以 P3.4 对的是**这份冻结快照**，不是移动靶。"
+}

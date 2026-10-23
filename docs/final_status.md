@@ -13,8 +13,8 @@
 
 ## 版本
 
-- app：1.5.24（app-v1.5.24）
-- engine：1.30.4（engine-v1.30.4）
+- app：2.0.0（app-v2.0.0）
+- engine：2.0.0（engine-v2.0.0）
 - 最新提交：8da4977
 - pending 提案：0
 - auto_strategy：local_model
