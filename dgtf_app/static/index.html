@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
 <title>元DGTF 个人工作台</title>
-<link rel="icon" type="image/x-icon" href="/static/dgtf.ico?v=1.5.24">
-<link rel="shortcut icon" type="image/x-icon" href="/static/dgtf.ico?v=1.5.24">
+<link rel="icon" type="image/x-icon" href="/static/dgtf.ico?v=1.5.24-desktop">
+<link rel="shortcut icon" type="image/x-icon" href="/static/dgtf.ico?v=1.5.24-desktop">
 <link rel="stylesheet" href="/static/style.css?v=1.5.24">
 </head>
 <body class="stage-empty">
@@ -39,7 +39,7 @@
 <!-- 抽屉：只放**按钮**（点一个 → 对应的面板全屏铺开，见 #sheet） -->
 <aside id="drawer" class="drawer" aria-hidden="true">
   <div class="drawer-head">
-    <span class="brand"><span class="glyph" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+    <span class="brand"><img class="app-logo" src="/static/desktop-icon-64.png" alt="" aria-hidden="true">
       元DGTF</span>
     <button id="drawer-close" class="icon-btn" data-tip="收起面板（Esc）" aria-label="收起面板">
       <!-- ★ R30：图形与左上角那个「面板」键**一致**（用户要求） -->
@@ -383,7 +383,7 @@
 <main class="stage">
   <!-- 首屏：只有欢迎语 + 输入框，其余留白 -->
   <div id="welcome" class="welcome">
-    <span class="glyph big" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+    <img class="app-logo big" src="/static/desktop-icon-128.png" alt="" aria-hidden="true">
     <span id="welcome-text">欢迎回来，随时开始吧</span>
   </div>
 
