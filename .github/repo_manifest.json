@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "description": "DSH repository classification. Paths are logical; physical layout preserved to avoid breaking imports.",
+  "categories": {
+    "runtime": [
+      "dgtf_memory/"
+    ],
+    "app": [
+      "dgtf_app/",
+      "scripts/start_app",
+      "scripts/open_app",
+      "scripts/show_access_url",
+      "scripts/stop_app",
+      "scripts/trust_https_cert",
+      "scripts/create_desktop_shortcut",
+      "scripts/create_fast_shortcut",
+      "scripts/build_app_icon"
+    ],
+    "local_model": [
+      "llm_sft/",
+      "models/",
+      "*lora*",
+      "*qwen*",
+      "*ridge*",
+      "local_model",
+      "scheduler_model"
+    ],
+    "engine": [
+      "dgtf_v2/",
+      "bench/",
+      "configs/",
+      "元DGTF-V",
+      "fast_gate.py",
+      "smoke_test.py",
+      "dgtf_config.yaml",
+      "_probe_v130",
+      "_verify",
+      "engine"
+    ],
+    "docs": [
+      "docs/",
+      "reports/",
+      "audits/",
+      "README.md",
+      "CHANGELOG.md",
+      "v13"
+    ],
+    "ops": [
+      "scripts/",
+      "install_repo_hooks",
+      "deploy_github",
+      ".github/"
+    ],
+    "archive": [
+      ".dsh_tmp/",
+      ".gate_",
+      ".gate_tmp_is",
+      ".gate_shim_is",
+      "_ab_v1255",
+      "_ab_v1255_all",
+      "_salvage",
+      "smoke55_outputs/",
+      "_audit_tmp/",
+      "_runs_tmp/"
+    ],
+    "legacy": [
+      "_"
+    ],
+    "other": []
+  },
+  "order": [
+    "runtime",
+    "app",
+    "local_model",
+    "engine",
+    "docs",
+    "ops",
+    "archive",
+    "legacy",
+    "other"
+  ]
+}
