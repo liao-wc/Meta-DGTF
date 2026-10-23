@@ -425,8 +425,10 @@ def extract_numeric_claims(text: str) -> list:
             ctx = clause[:m.start()] + clause[m.end():]
             ctx = re.sub(r"[\d.\-]", "", ctx)
             ctx = re.sub(r"\s+", "", ctx).strip(_STRIP_CTX)
+            # 只有数字+单位、没有额外上下文时，用单位作为最小上下文；
+            # 否则「100 条 / 200 条」这类跨来源数值冲突会被静默漏掉。
             if not ctx:
-                continue
+                ctx = unit or "number"
             out.append({"context": ctx, "unit": unit, "value": val,
                         "anchor": anchor, "raw": m.group(0)})
     return out

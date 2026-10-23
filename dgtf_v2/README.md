@@ -1,6 +1,6 @@
 # dgtf_v2 · 三平面参考内核
 
-**状态：V2 reference 完成。** 生产引擎是 元DGTF-V1.25.0.py；F2/F3/F4/F5 契约层默认开，L0-v2 archive 只读默认开；F5 生成机制延期。
+**状态：V2 reference 完成。** 生产引擎是 元DGTF-V1.30.4.py；F2/F3/F4/F5 契约层默认开，L0-v2 archive 只读默认开；F5 生成机制延期。2026-10-23 复测：dgtf_v2 下 32 个 tests_*.py 全部通过（运行需 PYTHONPATH=项目根）。
 
 ## 是什么
 
