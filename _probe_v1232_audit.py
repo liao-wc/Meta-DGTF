@@ -264,7 +264,7 @@ for _prod, _normvar in (("decidable_product", "dec_norm"),
 # ============================================================ C 版本一致性
 print("── C 版本一致性 ──")
 _ver = str(getattr(mod, "__version__", ""))
-_m = re.search(r"元 DGTF · v([\d.]+)", txt[:4000])
+_m = re.search(r"元 DGTF · [vV]([\d.]+)", txt[:4000])
 _docver = _m.group(1) if _m else ""
 ck("C1 docstring 标题版本 == __version__", bool(_ver) and _docver == _ver,
    "doc=%r ver=%r" % (_docver, _ver))
@@ -288,7 +288,7 @@ if _y.is_file():
     _yl = _y.read_bytes().decode("utf-8").replace("\r\n", "\n").split("\n")
     _yv = ""
     for _l in _yl[:6]:
-        _mm = re.search(r"元 DGTF · v([\d.]+) 配置文件", _l)
+        _mm = re.search(r"元 DGTF · [vV]([\d.]+) 配置文件", _l)
         if _mm:
             _yv = _mm.group(1)
     ck("C3 yaml 头部版本 == __version__", _yv == _ver, "yaml=%r ver=%r" % (_yv, _ver))

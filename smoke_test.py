@@ -43,9 +43,9 @@ if os.environ.get("DGTF_V1_SMOKE") == "1":
     _cfg = HERE / "dgtf_config.yaml"
     if _cfg.is_file():
         _ct = _cfg.read_text(encoding="utf-8")
-        if "v2.0.0 配置文件" in _ct:
+        if "V2.0.0 配置文件" in _ct:
             _V1_TEMP_CONFIG = _ct
-            _cfg.write_text(_ct.replace("v2.0.0 配置文件", "v1.30.4 配置文件"),
+            _cfg.write_text(_ct.replace("V2.0.0 配置文件", "v1.30.4 配置文件"),
                             encoding="utf-8")
     _rep_src = HERE / "dgtf_engine" / "dgtf_v1" / "reports" / "v1304_报告.md"
     _rep_dst = HERE / "v1304_报告.md"

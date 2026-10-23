@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-元 DGTF · v2.0.0
+元 DGTF · V2.0.0
 
 单文件多模并行推理引擎：四层 0/1/both/all × 螺旋跑圈，三通道 content/context/self。
 

@@ -1,7 +1,7 @@
 name: release-artifact
 on:
   push:
-    tags: ['app-v*', 'engine-v*']
+    tags: ['app-V*', 'engine-V*']
 permissions:
   contents: write
   id-token: write
