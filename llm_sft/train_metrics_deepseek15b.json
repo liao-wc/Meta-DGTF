@@ -1,5 +1,5 @@
 {
- "model": "D:/Meta-DGTF-道生三阶模型/local_model/models/DeepSeek-R1-Distill-Qwen-1.5B",
+ "model": "D:/Meta-DGTF/local_model/models/DeepSeek-R1-Distill-Qwen-1.5B",
  "epochs": 3,
  "lr": 0.0002,
  "train_n": 108,

@@ -1,8 +1,8 @@
-# Meta-DGTF-道生三阶模型
+# Meta-DGTF
 
 一个**单文件**的四层螺旋推理引擎：修行 / 研究 / 对撞 / 元，跑出可审计的产物。
 
-- **当前版本**：`dgtf_engine/dgtf_v2/engine/Meta-DGTF-道生三阶模型-V2.0.0.py`（V2 生产引擎）
+- **当前版本**：`dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.0.0.py`（V2 生产引擎）
 - **人用界面**：`dgtf_app/`（app V2.0.0；本地 Web 工作台，见 `dgtf_app/README.md`）
 - **V1 归档**：`dgtf_engine/dgtf_v1/`（历史引擎与报告；仅回滚和 V1-only smoke 使用）
 - **V2 命名**：`dgtf_engine/dgtf_v2/NAMING.md`（V2 起所有版本/发布命名以 V2 开头）
@@ -14,7 +14,7 @@
 ## 开源与安全
 
 - **许可证**：Apache-2.0，见 [LICENSE](LICENSE) 与 [NOTICE](NOTICE)；模型权重不随仓库分发，模型许可证见 [local_model/MODEL_SOURCES.md](local_model/MODEL_SOURCES.md)。
-- **项目门户**：https://liao-wc.github.io/meta-dgtf/ （GitHub Pages 静态门户，不运行 Python 后端）。
+- **项目门户**：https://liao-wc.github.io/Meta-DGTF/ （GitHub Pages 静态门户，不运行 Python 后端）。
 - **运行数据**：`dgtf_memory/`、`outputs/`、`runs/`、`cache/` 不进入公开仓库。
 - **漏洞报告**：使用 GitHub Private Vulnerability Reporting，不要公开 Issue 披露细节。
 - **安全边界**：App 默认仅监听本机，公网部署必须自行加 TLS、认证、限流和独立服务账户。
@@ -135,10 +135,10 @@ TAVILY_API_KEY=tvly-...        # 可选：联网检索；不填则联网自动�
 ### 跑一次
 
 ```bash
-python dgtf_engine/dgtf_v2/engine/Meta-DGTF-道生三阶模型-V2.0.0.py "一个领域里那些被当作常识的东西是怎么来的，它靠不靠得住"
+python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.0.0.py "一个领域里那些被当作常识的东西是怎么来的，它靠不靠得住"
 
 # 质量/成本帕累托预设（v1.23.65 基线实测：129 calls / 1.16M → 覆盖 100% / 三态 60%；v1.23.66 预设已同步）
-python dgtf_engine/dgtf_v2/engine/Meta-DGTF-道生三阶模型-V2.0.0.py -c configs/方案F-帕累托最优.yaml "你的问题"
+python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.0.0.py -c configs/方案F-帕累托最优.yaml "你的问题"
 ```
 
 常用参数（`--help` 有全量）：

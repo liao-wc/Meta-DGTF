@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Meta-DGTF-道生三阶模型 · V2.0.0
+Meta-DGTF · V2.0.0
 
 单文件多模并行推理引擎：四层 0/1/both/all × 螺旋跑圈，三通道 content/context/self。
 
@@ -31,7 +31,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 # V2 物理分类：dgtf_engine/dgtf_v2/engine/，核心包 dgtf_engine/dgtf_v2/。
-# 先补 import 路径与项目根，保证直接 `python dgtf_engine/dgtf_v2/engine/Meta-DGTF-道生三阶模型-V2.0.0.py` 可跑。
+# 先补 import 路径与项目根，保证直接 `python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.0.0.py` 可跑。
 _V2_PROJECT_ROOT = Path(__file__).resolve().parents[3]
 _V2_CORE_ROOT = _V2_PROJECT_ROOT / "dgtf_engine"
 for _p in (str(_V2_PROJECT_ROOT), str(_V2_CORE_ROOT)):

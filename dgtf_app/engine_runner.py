@@ -78,7 +78,7 @@ def find_engine() -> Path:
 
     cands.sort(key=ver)
     return cands[-1] if cands else (PROJECT_ROOT / "dgtf_engine" / "dgtf_v2" /
-                                     "engine" / "Meta-DGTF-道生三阶模型-V2.0.0.py")
+                                     "engine" / "Meta-DGTF-V2.0.0.py")
 
 
 def load_dotenv() -> dict:

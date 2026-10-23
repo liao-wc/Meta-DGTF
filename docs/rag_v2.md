@@ -25,7 +25,7 @@
 
 - citations：id/kind/source/url（S/K/I/E 四类）；
 - BGE 索引：dgtf_memory/rag_index.json（136 chunks，512 维）；
-- 重建：`D:\Meta-DGTF-道生三阶模型\local_model\envs\dgtf_llm_env\Scripts\python.exe build_rag_index.py`；
+- 重建：`D:\Meta-DGTF\local_model\envs\dgtf_llm_env\Scripts\python.exe build_rag_index.py`；
 - /api/tasks 创建时写 dgtf_memory/context_traces.jsonl；
 - /api/project/context/history 查询最近 50 次。
 

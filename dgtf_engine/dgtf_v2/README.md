@@ -1,6 +1,6 @@
 # dgtf_v2 · 三平面参考内核
 
-**状态：V2 已发布（reference + production 契约层）。** 生产引擎是 Meta-DGTF-道生三阶模型-V2.0.0.py；F2/F3/F4/F5 契约层默认开，L0-v2 archive 只读默认开；F5 生成机制已完成（V2.0.0）。2026-10-23 复测：dgtf_v2 下 32 个 tests_*.py 全部通过（运行需 PYTHONPATH=项目根）。
+**状态：V2 已发布（reference + production 契约层）。** 生产引擎是 Meta-DGTF-V2.0.0.py；F2/F3/F4/F5 契约层默认开，L0-v2 archive 只读默认开；F5 生成机制已完成（V2.0.0）。2026-10-23 复测：dgtf_v2 下 32 个 tests_*.py 全部通过（运行需 PYTHONPATH=项目根）。
 
 ## 是什么
 

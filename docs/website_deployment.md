@@ -5,13 +5,13 @@
 GitHub Desktop 使用的仓库：
 
 ```text
-https://github.com/liao-wc/meta-dgtf
+https://github.com/liao-wc/Meta-DGTF
 ```
 
 本地仓库：
 
 ```text
-D:\Meta-DGTF-道生三阶模型
+D:\Meta-DGTF
 ```
 
 ## DSH 管理命令

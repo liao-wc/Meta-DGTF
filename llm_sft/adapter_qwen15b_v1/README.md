@@ -1,9 +1,9 @@
 ---
-base_model: D:/Meta-DGTF-道生三阶模型/local_model/models/Qwen2.5-1.5B-Instruct
+base_model: D:/Meta-DGTF/local_model/models/Qwen2.5-1.5B-Instruct
 library_name: peft
 pipeline_tag: text-generation
 tags:
-- base_model:adapter:D:/Meta-DGTF-道生三阶模型/local_model/models/Qwen2.5-1.5B-Instruct
+- base_model:adapter:D:/Meta-DGTF/local_model/models/Qwen2.5-1.5B-Instruct
 - lora
 - transformers
 ---

@@ -3,8 +3,8 @@
 **知识面 EML × 控制面调度 × 执行面四层契约**
 
 - 版本：V2.0.0 生产发布
-- 生产入口：dgtf_engine/dgtf_v2/engine/Meta-DGTF-道生三阶模型-V2.0.0.py
-- 生产实现：dgtf_engine/dgtf_v2/engine/Meta-DGTF-道生三阶模型-V2.0.0.py + dgtf_engine/dgtf_v2/（纯标准库、无 API、确定性）
+- 生产入口：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.0.0.py
+- 生产实现：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.0.0.py + dgtf_engine/dgtf_v2/（纯标准库、无 API、确定性）
 - 目标：把“记忆、调度、四层”从同一条流程里的三段代码，改成三个职责分离、可独立验证、可回放的平面。
 
 ---

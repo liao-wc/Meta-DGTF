@@ -1,10 +1,10 @@
-# Meta-DGTF-道生三阶模型 项目文件地图
+# Meta-DGTF 项目文件地图
 
 ## V2 生产层
 
 | 类别 | 物理位置 | 说明 |
 |---|---|---|
-| V2 生产入口 | dgtf_engine/dgtf_v2/engine/Meta-DGTF-道生三阶模型-V2.0.0.py | 单文件生产引擎，App 自动选用最高版本 |
+| V2 生产入口 | dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.0.0.py | 单文件生产引擎，App 自动选用最高版本 |
 | 引擎总目录 | dgtf_engine/ | 统一存放 dgtf_v1/ 与 dgtf_v2/ |
 | V2 核心 | dgtf_engine/dgtf_v2/ | EML / Scheduler / 四层契约 / 证据与决策 |
 | V2 发布说明 | V2.0.0-发布报告.md、docs/releases/V2.0.0.md | 发布、验证、边界 |
