@@ -353,7 +353,7 @@ async function buildAdv() {
     rawLabel: g.label,
     label: ADV_GROUP_CN[g.key] || g.label,
   }));
-  // 恢复元DGTF 原有的细分按钮：一个配置组一个按钮，不合并；
+  // 恢复MetaDGTF 原有的细分按钮：一个配置组一个按钮，不合并；
   // 按钮标签做中文重命名，分组里的参数名/结构保持原样。
   advGroups = [{ key: '_cli', rawLabel: 'CLM 参数（随机任务传）',
                 label: '任务指令参数', items: cli }, ...groups];
@@ -1481,9 +1481,9 @@ async function retryTask() {
    进度取自「哪一层已经有内容」；用户一开始打字就让位（不动他自己的内容）。 */
 /* ★ R39：首屏输入框文案（用户指定原文，含中间两个空格）—— 与 index.html 的
    `#question` placeholder **保持同一句**（跑完/新对话时 JS 会把它写回去）。 */
-const Q_PLACEHOLDER = '此刻 你又想到了什么？ 可以发给元DGTF 我们一起去探索吧';
+const Q_PLACEHOLDER = '此刻 你又想到了什么？ 可以发给MetaDGTF 我们一起去探索吧';
 const RUN_WHISPER = {
-  boot: ['元DGTF 引擎已启动 · 您愿意和我一起探寻吗？',
+  boot: ['MetaDGTF 引擎已启动 · 您愿意和我一起探寻吗？',
          '我先把这个问题钉牢，再动手…',
          '别急，几个视角正在被唤醒…'],
   '修行': ['锚点已经固化，我正把它摊开…',
@@ -1566,7 +1566,7 @@ function toggleDshMode(on) {
   if (dshAttachTaskId) dshCurrent = null;
   if (q) q.placeholder = dshMode
     ? 'DSH Agent：输入任务，读取项目文件 / outputs 产物 / app 导入文件…'
-    : '此刻 你又想到了什么？ 可以发给元DGTF 我们一起去探索吧';
+    : '此刻 你又想到了什么？ 可以发给MetaDGTF 我们一起去探索吧';
   if (dshMode) agentTaskMode = false;
   updateDshConvBar();
   if (dshMode) {
@@ -1985,7 +1985,7 @@ function persistTaskDsh() {
   } catch (_) {}
 }
 function renderDshAttachBlock(c) {
-  let inner = '<div class="rl-lane rl-dsh-attach"><div class="rl-lane-head">DSH Agent · 属于当前元DGTF 会话 · ' + esc(c.session || '') + '</div>';
+  let inner = '<div class="rl-lane rl-dsh-attach"><div class="rl-lane-head">DSH Agent · 属于当前MetaDGTF 会话 · ' + esc(c.session || '') + '</div>';
   inner += '<div class="rl-line"><span class="rl-lab">用户</span><span class="rl-txt">' + esc(c.question || '') + '</span></div>';
   (c.events || []).forEach(function (e, i) { inner += dshEventHtml(e, i); });
   if (c.status === 'running') inner += '<div class="rl-summary">DSH 运行中…</div>';
@@ -3049,7 +3049,7 @@ async function renderPackedCard(name) {
     const aud = d.decidability_audit || {};
     const rec = d.recall || {};
     return '<div class="muted" style="margin:10px 0 16px">'
-      + '<b>元DGTF 过程账本</b>　'
+      + '<b>MetaDGTF 过程账本</b>　'
       + '四层标准：' + (pl.standard_all ? '✅' : '⚠') + '　'
       + '外部来源：官方 ' + esc(soul.external_official || 0)
       + ' / 参考 ' + esc(soul.external_reference || 0) + '　'
@@ -3388,7 +3388,7 @@ async function openChat(c) {
 function newChat() {
   const wasDsh = dshMode;
   /* ★ 新会话统一回到首屏：清空**当前视图**，但不动历史任务/DSH 会话数据。
-     元DGTF 与 DSH 的原对话分别保留在任务历史 / DSH 会话库里，可随时回溯。 */
+     MetaDGTF 与 DSH 的原对话分别保留在任务历史 / DSH 会话库里，可随时回溯。 */
   chatMode = 'live'; activeChat = null; followLatest = false;
   logFollow = true;
   archivedTask = null;
@@ -4537,7 +4537,7 @@ async function autopilotAction(action) {
   const tasks = {
     learn: '请经当前 DeepSeek Harness 对话执行技术知识检索/学习刷新，整理高置信知识并给出摘要。',
     spawn: '请从当前 Agent 任务队列挑一条高价值任务，经当前 DSH 对话生成可执行修复提案；高风险保留人工确认。',
-    scan: '请经当前 DSH 对话自主审视元DGTF项目，提出并执行可安全验证的优化/修复；给出验证结果。',
+    scan: '请经当前 DSH 对话自主审视MetaDGTF项目，提出并执行可安全验证的优化/修复；给出验证结果。',
     selflearn: '请结合项目现状与技术知识库自学习，提出并执行可安全验证的优化/修复；给出验证结果。'
   };
   try { await dshDispatchAction(label, tasks[action] || ('执行 DSH 动作：' + action)); }
@@ -4964,7 +4964,7 @@ async function autoAgent(stage) {
   // 合并后的“DSH 接管：闭环 + 修复”动作：不在 app 内起本地自动任务/headless，
   // 直接交给当前 DeepSeek Harness 对话执行。
   const label = 'DSH 接管：闭环 + 修复';
-  const task = '执行元DGTF DSH接管自动化闭环，由你（当前 DeepSeek Harness 对话）完成：'
+  const task = '执行MetaDGTF DSH接管自动化闭环，由你（当前 DeepSeek Harness 对话）完成：'
     + '1) 读取任务队列、提案、知识库、项目现状与最近日志；'
     + '2) 自我反馈：定位质量/流程/测试/依赖缺口；'
     + '3) 学习：检索并筛选可复用知识，必要时更新知识库；'
@@ -5891,7 +5891,7 @@ function init() {
     try { localStorage.removeItem(DSH_CONV_KEY); } catch (_) {}
     stopDshConvPoll(); setDshHistoryOpen(false);
     const log = document.querySelector('#runlog-body');
-    if (log) log.innerHTML = '<div class="rl-lane rl-boot"><div class="rl-lane-head">DeepSeek Harness Agent · 新会话</div><div class="rl-line"><span class="rl-txt">DSH 会话已重置；元DGTF 会话与当前内容保留。</span></div></div>';
+    if (log) log.innerHTML = '<div class="rl-lane rl-boot"><div class="rl-lane-head">DeepSeek Harness Agent · 新会话</div><div class="rl-line"><span class="rl-txt">DSH 会话已重置；MetaDGTF 会话与当前内容保留。</span></div></div>';
     document.body.classList.add('stage-run'); document.body.classList.remove('stage-empty');
     const rl = document.querySelector('#runlog'); if (rl) rl.classList.remove('hidden');
   });
@@ -5981,7 +5981,7 @@ function init() {
       const pid = pl.dataset.propPlan;
       try {
         await dshDispatchAction('补充提案方案',
-          '请为元DGTF修复提案 ' + pid + ' 补充具体可执行方案（涉及文件、步骤、验证方式），'
+          '请为MetaDGTF修复提案 ' + pid + ' 补充具体可执行方案（涉及文件、步骤、验证方式），'
           + '并写入提案库；Agent面板不再弹输入框。');
       } catch (err) {
         agentLogAction('补充提案方案', '失败：' + err.message, false);

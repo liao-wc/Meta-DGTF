@@ -1,6 +1,6 @@
-# 元DGTF 工作台（本地 Web 应用）
+# MetaDGTF 工作台（本地 Web 应用）
 
-给元DGTF 引擎套的一层人用界面：**提问 → 后台跑 → 实时进度 → 读产物**，
+给MetaDGTF 引擎套的一层人用界面：**提问 → 后台跑 → 实时进度 → 读产物**，
 外加一个可检索的**历史产物库**。
 
 零额外依赖（Python 标准库 + 原生前端），**不改动引擎主文件**。
@@ -20,7 +20,7 @@
 - **质量替代分**：/api/quality/<task> 覆盖×回答率×收尾完整度−flags。
 - **三本地底座**：Qwen2.5-0.5B / 1.5B / DeepSeek-R1-Distill-Qwen-1.5B（LoRA）。
 - **自洽审计**：/api/consistency + 审计历史 + 面板。
-- **项目背景内置**：真实任务默认注入元DGTF权威背景，融合本地资料库与 app 本地导入文件（RAG v2：BM25 重排/引用/隐私策略/追溯）；/api/project/context 可查看，无前端按钮。
+- **项目背景内置**：真实任务默认注入MetaDGTF权威背景，融合本地资料库与 app 本地导入文件（RAG v2：BM25 重排/引用/隐私策略/追溯）；/api/project/context 可查看，无前端按钮。
 - **针对性真跑**：60 calls / 341K tokens / 758.9s（见 docs/real_run_20261021.md）。
 
 边界：本地 LLM 只做调度建议，不替代 DeepSeek API 的四层推理。
@@ -47,7 +47,7 @@ python dgtf_app/server.py
 - 需要项目根 `.env` 里有 `DGTF_API_KEY`（可选 `TAVILY_API_KEY` 走联网检索）。
 - 真实一次跑 **约 30–45 分钟、几十万 token、约 ¥4–9**（DeepSeek 计价）。
   启动前界面会弹确认；任务在服务端后台跑，**可以关掉页面**，回来再看。
-- 引擎取项目根下**版本号最高**的 `元DGTF-V*.py`；用环境变量
+- 引擎取项目根下**版本号最高**的 `MetaDGTF-V*.py`；用环境变量
   `DGTF_APP_ENGINE` 可指定某个版本，`DGTF_APP_MAX_CONCURRENT` 调并发上限（默认 3）。
 
 ---

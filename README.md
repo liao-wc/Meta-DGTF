@@ -1,8 +1,8 @@
-# meta-dgtf · 元 DGTF
+# MetaDGTF-道生三阶模型
 
 一个**单文件**的四层螺旋推理引擎：修行 / 研究 / 对撞 / 元，跑出可审计的产物。
 
-- **当前版本**：`dgtf_engine/dgtf_v2/engine/元DGTF-V2.0.0.py`（V2 生产引擎）
+- **当前版本**：`dgtf_engine/dgtf_v2/engine/MetaDGTF-道生三阶模型-V2.0.0.py`（V2 生产引擎）
 - **人用界面**：`dgtf_app/`（app V2.0.0；本地 Web 工作台，见 `dgtf_app/README.md`）
 - **V1 归档**：`dgtf_engine/dgtf_v1/`（历史引擎与报告；仅回滚和 V1-only smoke 使用）
 - **V2 命名**：`dgtf_engine/dgtf_v2/NAMING.md`（V2 起所有版本/发布命名以 V2 开头）
@@ -26,7 +26,7 @@
 - **调度与帕累托**：方案F profile、V2 模板质量-成本前沿、UCB/上下文 UCB、本地调度模型；见 docs/scheduler_model.md。
 - **自洽审计**：GET /api/consistency + 审计历史；见 docs/app_engine_mapping.md。
 - **针对性真跑**：60 calls / 341K tokens / 758.9s；见 docs/real_run_20261021.md。
-- **项目背景内置**：真实任务默认注入元DGTF权威背景，融合本地资料库与 app 本地上传文件；RAG v2 = BGE 语义检索 + BM25 + 引用 + 分层索引 + 追溯；GET /api/project/context 可查看。
+- **项目背景内置**：真实任务默认注入MetaDGTF权威背景，融合本地资料库与 app 本地上传文件；RAG v2 = BGE 语义检索 + BM25 + 引用 + 分层索引 + 追溯；GET /api/project/context 可查看。
 - **DSH 会话**：当前/历史、点击续聊、同一会话多轮=一条历史、实时事件、按会话取消；workspace-write 可读写项目，禁止 danger-full-access。
 - **知识检索**：Agent 面板“知识检索”与查询框统一走 DSH 知识检索会话，按官方/权威/最新/高置信/高相关筛选后入库；本地资料库导入文件参与 RAG，不训练、不外发。
 - **V2 自动选优**：只保留挡位选择；切换挡位自动评估帕累托/最佳模板/UCB 并写最优。
@@ -105,7 +105,7 @@
 - **L0-v2 恢复**：默认 `l0_v2_curate: true` / `l0_v2_mode: archive`（只读档案/novelty，不改生成）；guide/filter 仍实验。tests_l0 16/16。
 - **右栏实时日志**：DSH 右栏 Browser 打开 http://127.0.0.1:8770 ；说明见 docs/实时日志右栏.md。
 - **三态口径**：tri_ratio 是原始一致率，不是三态质量；quality 增 tri_alpha/tri_reliable/tri_unreliable/tri_distribution，α 是跨视角（非 test-retest），未重测前不放行。
-- 详细设计：docs/元DGTF-V2-三平面架构.md。
+- 详细设计：docs/MetaDGTF-V2-三平面架构.md。
 
 ---
 
@@ -135,10 +135,10 @@ TAVILY_API_KEY=tvly-...        # 可选：联网检索；不填则联网自动�
 ### 跑一次
 
 ```bash
-python dgtf_engine/dgtf_v2/engine/元DGTF-V2.0.0.py "一个领域里那些被当作常识的东西是怎么来的，它靠不靠得住"
+python dgtf_engine/dgtf_v2/engine/MetaDGTF-道生三阶模型-V2.0.0.py "一个领域里那些被当作常识的东西是怎么来的，它靠不靠得住"
 
 # 质量/成本帕累托预设（v1.23.65 基线实测：129 calls / 1.16M → 覆盖 100% / 三态 60%；v1.23.66 预设已同步）
-python dgtf_engine/dgtf_v2/engine/元DGTF-V2.0.0.py -c configs/方案F-帕累托最优.yaml "你的问题"
+python dgtf_engine/dgtf_v2/engine/MetaDGTF-道生三阶模型-V2.0.0.py -c configs/方案F-帕累托最优.yaml "你的问题"
 ```
 
 常用参数（`--help` 有全量）：
@@ -164,10 +164,10 @@ python dgtf_engine/dgtf_v2/engine/元DGTF-V2.0.0.py -c configs/方案F-帕累托
 python smoke_test.py
 
 # 2) 跨档验收（319 项）：审计 + 探针 + 一致性
-python _v122_verify.py --src 元DGTF-V1.23.61.py --phase all
+python _v122_verify.py --src MetaDGTF-V1.23.61.py --phase all
 
 # 3) 工程审计（70 项）
-python _probe_v1232_audit.py 元DGTF-V1.23.61.py
+python _probe_v1232_audit.py MetaDGTF-V1.23.61.py
 
 # 4) 变异体（110 条，每条都必须判红 —— 证明判据有牙）
 python _mut_v12332.py --only 1,2,3          # 吃逗号列表 + 1-based，不吃区间
@@ -206,14 +206,14 @@ python dgtf_app/selftest.py
 
 | 路径 | 是什么 | 能不能动 |
 |---|---|---|
-| `元DGTF-V1.23.*.py` | **主文件各版本**（99 个） | 只增不改；新版复制上一版再改 |
+| `MetaDGTF-V1.23.*.py` | **主文件各版本**（99 个） | 只增不改；新版复制上一版再改 |
 | `smoke_test.py` | 冒烟判据（含 `SRC` 指向当前版） | 每版随之更新 |
 | `_mut_v12332.py` | 变异体清单（113 条） | 每版追加 |
 | `_v122_verify.py` / `_probe_v1232_audit.py` | 跨档验收 / 工程审计 | 同上 |
 | `_run_gate.py` / `_git_save.py` | 门禁包装 / 存档（四项防呆） | 同上 |
 | `dgtf_app/` | 本地 Web 工作台（标准库 + 原生前端） | 可改，须跑 selftest |
 | `dgtf_engine/dgtf_v2/` | V2 三平面参考内核（EML / 调度 / 四层契约） | **设计验证器，不接管生产**；不改 V1 引擎 |
-| `docs/` | 设计文档与**决策记录** | 只增；`docs/不做什么-v1221.md` 请先读；V2 见 `docs/元DGTF-V2-三平面架构.md` |
+| `docs/` | 设计文档与**决策记录** | 只增；`docs/不做什么-v1221.md` 请先读；V2 见 `docs/MetaDGTF-V2-三平面架构.md` |
 | `docs/架构图/` | 整体架构图（PNG / SVG / Mermaid + 读图说明） | 只增；升版后同步重生成 |
 | `dgtf_memory/` | EML 记忆库（episodes / playbook / nogoods） | **运行数据，改动前先问** |
 | `outputs/` | 产物 | 永不删 |

@@ -3,11 +3,11 @@
 """迁移后的项目路径/运行依赖检查。"""
 from pathlib import Path
 import sys, json
-ROOT = Path(r'D:\元DGTF-多模并行架构')
+ROOT = Path(r'D:\MetaDGTF-多模并行架构')
 checks = {
   'root': ROOT,
   'app_server': ROOT/'dgtf_app'/'server.py',
-  'engine': ROOT/'dgtf_engine'/'dgtf_v2'/'engine'/'元DGTF-V2.0.0.py',
+  'engine': ROOT/'dgtf_engine'/'dgtf_v2'/'engine'/'MetaDGTF-道生三阶模型-V2.0.0.py',
   'dgtf_v2': ROOT/'dgtf_engine'/'dgtf_v2',
   'models': ROOT/'local_model'/'models',
   'bge': ROOT/'local_model'/'models'/'bge-small-zh-v1.5',

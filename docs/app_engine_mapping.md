@@ -1,7 +1,7 @@
-# 元DGTF → app 完整映射与可靠性审计
+# MetaDGTF → app 完整映射与可靠性审计
 
 生成时间：2026-10-20（goal round 1）
-引擎：`元DGTF-V1.30.0.py`（__version__ = 1.30.0）
+引擎：`MetaDGTF-V1.30.0.py`（__version__ = 1.30.0）
 app：`dgtf_app/`，入口 `server.py --port 8765`
 
 ## 1. 四层引擎映射
@@ -38,7 +38,7 @@ app：`dgtf_app/`，入口 `server.py --port 8765`
 ## 4. 依赖链
 
 ```text
-engine 元DGTF-V1.30.0.py
+engine MetaDGTF-V1.30.0.py
   → dgtf_v2.layers_*/orchestrator
   → self_feedback / llm_feedback / online_adapt
   → packed 产物

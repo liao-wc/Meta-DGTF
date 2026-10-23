@@ -59,4 +59,4 @@
 
     python fast_gate.py
     python dgtf_app/selftest.py
-    python -m py_compile dgtf_engine/dgtf_v2/engine/元DGTF-V2.0.0.py
+    python -m py_compile dgtf_engine/dgtf_v2/engine/MetaDGTF-道生三阶模型-V2.0.0.py

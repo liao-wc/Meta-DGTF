@@ -1,10 +1,10 @@
-# 元DGTF V2 · 三平面架构设计
+# MetaDGTF V2 · 三平面架构设计
 
 **知识面 EML × 控制面调度 × 执行面四层契约**
 
 - 版本：V2.0.0 生产发布
-- 生产入口：dgtf_engine/dgtf_v2/engine/元DGTF-V2.0.0.py
-- 生产实现：dgtf_engine/dgtf_v2/engine/元DGTF-V2.0.0.py + dgtf_engine/dgtf_v2/（纯标准库、无 API、确定性）
+- 生产入口：dgtf_engine/dgtf_v2/engine/MetaDGTF-道生三阶模型-V2.0.0.py
+- 生产实现：dgtf_engine/dgtf_v2/engine/MetaDGTF-道生三阶模型-V2.0.0.py + dgtf_engine/dgtf_v2/（纯标准库、无 API、确定性）
 - 目标：把“记忆、调度、四层”从同一条流程里的三段代码，改成三个职责分离、可独立验证、可回放的平面。
 
 ---
@@ -117,7 +117,7 @@ V2 不是把这些函数重写一遍，而是先**换控制面**：让每层有�
 
 ### 4.1 为什么不是向量库
 
-向量库回答“相似”，元DGTF 需要回答：
+向量库回答“相似”，MetaDGTF 需要回答：
 
 - 在某个时刻我们相信什么？（bitemporal）
 - 这条信念凭什么成立？（provenance/support）

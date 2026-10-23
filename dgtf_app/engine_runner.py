@@ -67,7 +67,9 @@ def find_engine() -> Path:
     if env:
         p = Path(env)
         return p if p.is_absolute() else PROJECT_ROOT / p
-    cands = list((PROJECT_ROOT / "dgtf_engine" / "dgtf_v2" / "engine").glob("元DGTF-V*.py"))
+    _eng_dir = PROJECT_ROOT / "dgtf_engine" / "dgtf_v2" / "engine"
+    cands = list(_eng_dir.glob("MetaDGTF*-V*.py"))
+    cands += list(_eng_dir.glob("元DGTF-V*.py"))  # 兼容旧文件名
     cands += list(PROJECT_ROOT.glob("元DGTF-V*.py"))
 
     def ver(p: Path) -> tuple:
@@ -76,7 +78,7 @@ def find_engine() -> Path:
 
     cands.sort(key=ver)
     return cands[-1] if cands else (PROJECT_ROOT / "dgtf_engine" / "dgtf_v2" /
-                                     "engine" / "元DGTF-V2.0.0.py")
+                                     "engine" / "MetaDGTF-道生三阶模型-V2.0.0.py")
 
 
 def load_dotenv() -> dict:

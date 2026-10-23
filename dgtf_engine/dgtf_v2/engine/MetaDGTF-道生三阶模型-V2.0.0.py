@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-元 DGTF · V2.0.0
+MetaDGTF-道生三阶模型 · V2.0.0
 
 单文件多模并行推理引擎：四层 0/1/both/all × 螺旋跑圈，三通道 content/context/self。
 
@@ -31,7 +31,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 # V2 物理分类：dgtf_engine/dgtf_v2/engine/，核心包 dgtf_engine/dgtf_v2/。
-# 先补 import 路径与项目根，保证直接 `python dgtf_engine/dgtf_v2/engine/元DGTF-V2.0.0.py` 可跑。
+# 先补 import 路径与项目根，保证直接 `python dgtf_engine/dgtf_v2/engine/MetaDGTF-道生三阶模型-V2.0.0.py` 可跑。
 _V2_PROJECT_ROOT = Path(__file__).resolve().parents[3]
 _V2_CORE_ROOT = _V2_PROJECT_ROOT / "dgtf_engine"
 for _p in (str(_V2_PROJECT_ROOT), str(_V2_CORE_ROOT)):
@@ -3591,7 +3591,7 @@ def eml_summarize(playbook: list, limit: int = 40) -> str:
     cnt = {}
     for e in rows:
         cnt[e.get("status", "?")] = cnt.get(e.get("status", "?"), 0) + 1
-    L = ["# 元DGTF 记忆库（EML 自动生成）", "",
+    L = ["# MetaDGTF 记忆库（EML 自动生成）", "",
          "> 本文件是**索引**，权威数据在 `playbook.jsonl` / `episodes.jsonl`。",
          "> 状态：`active` 生效 / `shadow` 隔离观察 / `retired` 已遗忘"
          "（**行仍在**，只改状态位）。", "",
@@ -21356,7 +21356,7 @@ class MetaDGTF:
                 pg = client.fetch(str((args or {}).get("url") or ""))
                 return (pg.get("content") or "")[:2500]
             return "unknown tool"
-        system = ("你是元DGTF的工具代理。优先用 search_web 找官方更新页，"
+        system = ("你是MetaDGTF的工具代理。优先用 search_web 找官方更新页，"
                   "再用 fetch_url 抓正文；只陈述工具返回的事实，最后给出"
                   "一句结论。不得编造 URL 或日期。")
         user = ("原始问题：%s\n请用工具核实：官方来源、发布日期、模型名。"
@@ -28483,7 +28483,7 @@ def save_result(result: dict, save_dir: str = "outputs") -> Path:
                     f"｜answer_ready={_dt.get('answer_ready')}\n\n")
         _pl = result.get("process_ledger") or {}
         if _pl:
-            f.write("## 元DGTF 过程账本\n\n")
+            f.write("## MetaDGTF 过程账本\n\n")
             _soul = _pl.get("soul") or {}
             f.write("**形状/数据**: %s → %s；侧面 %s；四层标准 %s\n\n"
                     % (_soul.get("input_shape"), _soul.get("output_shape"),

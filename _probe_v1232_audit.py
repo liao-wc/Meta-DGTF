@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """[v1.23.2] 整体性检查探针：对**整份工程**做机械审计（不只针对本轮改动）。
 
-用法：python _probe_v1232_audit.py [元DGTF-V1.23.2.py]
+用法：python _probe_v1232_audit.py [MetaDGTF-V1.23.2.py]
 
 八类检查（每一类都对应本项目真实踩过的坑）：
   A 出口完整性 / 死类          —— `to_dict` 白名单漏字段；定义了没人用的类
@@ -31,7 +31,7 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = Path(sys.argv[1]) if len(sys.argv) > 1 else HERE / "元DGTF-V1.23.2.py"
+SRC = Path(sys.argv[1]) if len(sys.argv) > 1 else HERE / "MetaDGTF-V1.23.2.py"
 if not SRC.is_absolute():
     SRC = HERE / SRC
 
@@ -264,7 +264,7 @@ for _prod, _normvar in (("decidable_product", "dec_norm"),
 # ============================================================ C 版本一致性
 print("── C 版本一致性 ──")
 _ver = str(getattr(mod, "__version__", ""))
-_m = re.search(r"元 DGTF · [vV]([\d.]+)", txt[:4000])
+_m = re.search(r"(?:元 DGTF|MetaDGTF(?:-道生三阶模型)?) · [vV]([\d.]+)", txt[:4000])
 _docver = _m.group(1) if _m else ""
 ck("C1 docstring 标题版本 == __version__", bool(_ver) and _docver == _ver,
    "doc=%r ver=%r" % (_docver, _ver))
@@ -288,7 +288,7 @@ if _y.is_file():
     _yl = _y.read_bytes().decode("utf-8").replace("\r\n", "\n").split("\n")
     _yv = ""
     for _l in _yl[:6]:
-        _mm = re.search(r"元 DGTF · [vV]([\d.]+) 配置文件", _l)
+        _mm = re.search(r"(?:元 DGTF|MetaDGTF(?:-道生三阶模型)?) · [vV]([\d.]+) 配置文件", _l)
         if _mm:
             _yv = _mm.group(1)
     ck("C3 yaml 头部版本 == __version__", _yv == _ver, "yaml=%r ver=%r" % (_yv, _ver))

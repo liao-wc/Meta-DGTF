@@ -374,7 +374,7 @@ async function run() {
     });
     /* ★ R23：文字裂解的同时，输入框已清空并换成「引擎已启动」寄语（定格看得见） */
     d.querySelector('#question').value = '';
-    d.querySelector('#question').placeholder = '元DGTF 引擎已启动 · 您愿意和我一起探寻吗？';
+    d.querySelector('#question').placeholder = 'MetaDGTF 引擎已启动 · 您愿意和我一起探寻吗？';
     const _rl = d.querySelector('#runlog');
     if (_rl) {
       _rl.style.borderColor = 'rgba(130,140,255,.55)';
@@ -1500,9 +1500,9 @@ async function run() {
           + ' body.bottom=' + (bodyR ? Math.round(bodyR.bottom) : '?')
           + ' navs=' + navs.length + ' 距底=' + Math.round(dr.bottom - fr.bottom));
       const brand = d.querySelector('#drawer .brand');
-      chk('品牌只剩「元DGTF」（「个人工作台」已从头部移走）',
+      chk('品牌只剩「MetaDGTF」（「个人工作台」已从头部移走）',
           !!brand && !/个人工作台/.test(brand.textContent || '')
-          && /元DGTF/.test(brand.textContent || ''),
+          && /MetaDGTF/.test(brand.textContent || ''),
           'brand=[' + (brand ? brand.textContent.trim() : '') + ']');
       /* ★ R28：按钮组居中之后**再整体上移一段**（中心明显高于剩余空间的中线） */
       const envEl = d.querySelector('#drawer #env-info');
@@ -1790,11 +1790,11 @@ async function run() {
     chk('发送之后键变成**终止键**（方块图标 + 标题「终止运行」）',
         !!stopBtn && /终止/.test(stopBtn.title || ''),
         'cls=[' + (stopBtn ? stopBtn.className : '—') + '] title=[' + (stopBtn ? stopBtn.title : '') + ']');
-    /* ★ R23：发送后输入框**清空**并换成「元DGTF 引擎已启动」寄语（占位文字，随进度轮换） */
+    /* ★ R23：发送后输入框**清空**并换成「MetaDGTF 引擎已启动」寄语（占位文字，随进度轮换） */
     {
       const _qs = d.querySelector('#question');
-      chk('发送后：输入框清空 + 换成「元DGTF 引擎已启动…」寄语',
-          !!_qs && _qs.value.trim() === '' && /元DGTF/.test(_qs.placeholder || ''),
+      chk('发送后：输入框清空 + 换成「MetaDGTF 引擎已启动…」寄语',
+          !!_qs && _qs.value.trim() === '' && /MetaDGTF/.test(_qs.placeholder || ''),
           'val=[' + (_qs ? _qs.value : '—') + '] ph=[' + (_qs ? _qs.placeholder : '—') + ']');
     }
     /* ★ 星光动画： `#fx` 里出现粒子/问题残影，且**动画期间运行日志页还没露出来**

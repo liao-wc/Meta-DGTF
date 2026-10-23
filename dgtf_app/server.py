@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""元DGTF 应用层 · 本地 HTTP 服务（默认只监听 127.0.0.1；`--lan` 放开到同一局域网）。
+"""MetaDGTF 应用层 · 本地 HTTP 服务（默认只监听 127.0.0.1；`--lan` 放开到同一局域网）。
 
 纯标准库 ThreadingHTTPServer。路由：
 
@@ -795,7 +795,7 @@ def _autopilot_knowledge(prop):
         def _do_learn():
             try:
                 box["r"] = _knowledge_agent_search(
-                    [str((prop.get("task") or {}).get("title") or "元DGTF 技术优化") + " 最佳实践"],
+                    [str((prop.get("task") or {}).get("title") or "MetaDGTF 技术优化") + " 最佳实践"],
                     mode="query", limit=2)
             except Exception as exc:
                 box["err"] = exc
@@ -875,7 +875,7 @@ def _autopilot_learn():
     try:
         _knowledge_agent_search(
             ["LLM agent 自我修复 代码优化 2026 官方",
-             "元DGTF 调度 记忆 RAG 最佳实践"],
+             "MetaDGTF 调度 记忆 RAG 最佳实践"],
             mode="refresh", limit=3)
         _AUTOPILOT["last_learn"] = _t.time()
         _AUTOPILOT["last_error"] = ""
@@ -889,7 +889,7 @@ def _autopilot_scan():
     try:
         title = "自主审视与优化提案 " + _t.strftime("%Y-%m-%d %H:%M")
         _auto_proposal(
-            task_text=("请审视当前元DGTF项目（源码、配置、docs、outputs 与最近质量问题），"
+            task_text=("请审视当前MetaDGTF项目（源码、配置、docs、outputs 与最近质量问题），"
                        "结合技术知识库/近期技术趋势，给出 1-3 条可验证的优化或更新提案；"
                        "必须读取项目文件核对，不要直接修改源码。"),
             title=title, model="deepseek-flash")
@@ -904,7 +904,7 @@ def _autopilot_self_propose():
     try:
         learn = _autopilot_knowledge({
             "id": "self-learn-" + str(int(_t.time() * 1000)),
-            "task": {"title": "元DGTF 项目自学习优化 最佳实践",
+            "task": {"title": "MetaDGTF-道生三阶模型 项目自学习优化 最佳实践",
                      "detail": "现有项目优化与修复提案"}})
     except Exception:
         learn = ""
@@ -1479,7 +1479,7 @@ def _proposal_project_context():
         head_ts = int((r2.stdout or "0").strip() or 0)
     except Exception:
         pass
-    files = ["dgtf_engine/dgtf_v2/engine/元DGTF-V2.0.0.py",
+    files = ["dgtf_engine/dgtf_v2/engine/MetaDGTF-道生三阶模型-V2.0.0.py",
              "dgtf_engine/dgtf_v2/agent_bridge.py",
              "dgtf_app/server.py", "dgtf_app/static/app.js"]
     parts = [head]
@@ -1496,7 +1496,7 @@ def _proposal_project_context():
         qn = sum(1 for _ in q.open(encoding="utf-8", errors="replace"))
     except Exception:
         qn = 0
-    eng = _prop_cached_text(root / "dgtf_engine/dgtf_v2/engine/元DGTF-V2.0.0.py")
+    eng = _prop_cached_text(root / "dgtf_engine/dgtf_v2/engine/MetaDGTF-道生三阶模型-V2.0.0.py")
     br = _prop_cached_text(root / "dgtf_engine/dgtf_v2/agent_bridge.py")
     return {
         "head": head[:12],
@@ -1587,11 +1587,11 @@ def _proposal_triage():
             elif ('"rounds":0' in detail.replace(" ", "")
                   and '"product_chars":0' in detail.replace(" ", "")):
                 fixed_reason = "fixture_empty_run"
-            elif cat == "fact_correctness" and ctx["fixed"]["fact_wording"] and ctx["mtimes"].get("元DGTF-V1.30.0.py", 0) > float(rec.get("ts") or 0):
+            elif cat == "fact_correctness" and ctx["fixed"]["fact_wording"] and ctx["mtimes"].get("MetaDGTF-V1.30.0.py", 0) > float(rec.get("ts") or 0):
                 fixed_reason = "fixed_fact_wording_in_current_project"
-            elif cat == "probe_quality" and ctx["fixed"]["probe_link_guard"] and ctx["mtimes"].get("元DGTF-V1.30.0.py", 0) > float(rec.get("ts") or 0):
+            elif cat == "probe_quality" and ctx["fixed"]["probe_link_guard"] and ctx["mtimes"].get("MetaDGTF-V1.30.0.py", 0) > float(rec.get("ts") or 0):
                 fixed_reason = "fixed_probe_link_guard_in_current_project"
-            elif cat == "input_sanity" and ctx["fixed"]["input_sanity"] and ctx["mtimes"].get("元DGTF-V1.30.0.py", 0) > float(rec.get("ts") or 0):
+            elif cat == "input_sanity" and ctx["fixed"]["input_sanity"] and ctx["mtimes"].get("MetaDGTF-V1.30.0.py", 0) > float(rec.get("ts") or 0):
                 fixed_reason = "fixed_input_sanity_in_current_project"
             elif cat == "agent_runtime" and ctx["fixed"]["queue_gate"] and ctx["mtimes"].get("dgtf_v2/agent_bridge.py", 0) > float(rec.get("ts") or 0):
                 fixed_reason = "fixed_queue_gate_in_current_project"
@@ -2160,7 +2160,7 @@ def _dsh_current_prompt(task: str, dry_run: bool = False, mode: str = "queue") -
         return {"ok": True, "mode": "current-session", "dry_run": True,
                 "session_id": sid, "accepted": False,
                 "text": "已连接 DSH 本对话会话（dry-run，未发送）"}
-    wrapped = ("来自元DGTF app 的“DSH 本对话”入口任务。请直接在当前会话执行；"
+    wrapped = ("来自MetaDGTF app 的“DSH 本对话”入口任务。请直接在当前会话执行；"
                "如需修改项目可修改，完成后用简体中文给出修改摘要与验证结果。\n\n" + task)
     val = _dsh_current_rpc("session/prompt", {"request": {
         "requestId": "dgtf-" + secrets.token_hex(12),
@@ -2540,9 +2540,9 @@ def _dsh_guard_loop(stop_event):
             rec["last_result"] = "busy: 当前 DSH 会话运行中，跳过本轮巡检"
             rec["last_error"] = ""
         else:
-            task = ("[DSH守护自动巡检] 请检查元DGTF当前状态：最近日志、任务队列、提案、"
+            task = ("[DSH守护自动巡检] 请检查MetaDGTF当前状态：最近日志、任务队列、提案、"
                     "依赖/门禁与工作区变更。当前为完全接管模式：允许在本项目内修改源码/文档/配置/测试、"
-                    "git add/commit/revert、版本号与 CHANGELOG 迭代、验证并修复/关闭所有与元DGTF相关的"
+                    "git add/commit/revert、版本号与 CHANGELOG 迭代、验证并修复/关闭所有与MetaDGTF相关的"
                     "pending 提案、自动修复并跑门禁。禁止 git push/force/reset --hard、删除项目数据、"
                     "读取或外发密钥、账户/ACL/系统级改动及不可逆外部操作；这些列入人工确认。"
                     "不要启动 headless，全程在当前 DSH 对话执行。"
@@ -2700,7 +2700,7 @@ def _run_dsh_agent_raw(task: str, sid: str = "", timeout: int = 300,
     if _auto_review:
         _mode += (" 当前为自动接管模式：项目内修复可自动验证并提交；"
                   "仅密钥/账户/ACL/外部不可逆操作需停下说明。")
-    auth = ("你在元DGTF项目根目录：%s。请始终使用简体中文回答，"
+    auth = ("你在MetaDGTF项目根目录：%s。请始终使用简体中文回答，"
             "思考过程（thinking）也必须使用简体中文，禁止输出英文思考；"
             "包括思考摘要、解释和最终答复；代码/命令保持原文。"
             "你有权读取该工作区内的项目文件、"
@@ -3065,7 +3065,7 @@ def _agent_queue_snapshot():
 def _auto_submit_task(emit=None, model=""):
     """DSH Agent 审阅队列并自动提交一条用户任务；解析失败时退回一条安全任务。"""
     queue = _agent_queue_snapshot()
-    prompt = ("你是元DGTF Agent 面板操作员。审阅下面的任务队列，"
+    prompt = ("你是MetaDGTF Agent 面板操作员。审阅下面的任务队列，"
               "提出一条最有价值的新用户任务。只输出 JSON，不要改源码："
               '{"title":"...","detail":"...","severity":"med"}。'
               "队列：" + json.dumps(queue, ensure_ascii=False)[:3000])
@@ -3154,7 +3154,8 @@ def _targeted_acceptance(changed):
     cmds = []
     if any(str(p).startswith("dgtf_app/") for p in changed):
         cmds.append([_sys.executable, "dgtf_app/selftest.py", "app-selftest"])
-    if any(str(p).endswith(("dgtf_engine/dgtf_v2/engine/元DGTF-V2.0.0.py",
+    if any(str(p).endswith(("dgtf_engine/dgtf_v2/engine/MetaDGTF-道生三阶模型-V2.0.0.py",
+                              "MetaDGTF-道生三阶模型-V2.0.0.py",
                               "元DGTF-V2.0.0.py", "元DGTF-V1.30.4.py"))
            or str(p).startswith(("dgtf_engine/dgtf_v2/", "v2/dgtf_v2/",
                                  "dgtf_v2/")) for p in changed):
@@ -3821,7 +3822,7 @@ def _auto_engine_run(emit=None, question="", mock=True, opts=None, timeout=300):
     import time as _t
     # 复用模块级 runner：若再 from dgtf_app import engine_runner，
     # 会把同一文件加载成第二个模块，_tasks 等运行态与 API 侧不共享。
-    q = str(question or "").strip() or "元DGTF 全流程自检：如何让 EML 反馈驱动调度细度？"
+    q = str(question or "").strip() or "MetaDGTF 全流程自检：如何让 EML 反馈驱动调度细度？"
     o = dict(opts or {})
     o["mock"] = bool(mock)
     if emit:
@@ -4996,7 +4997,7 @@ def _app_health():
     warnings = [k for k in ("api_key", "dsh_headless", "agent_daemon") if not checks[k]]
     return {
         "ok": all(bool(checks[k]) for k in critical),
-        "app": {"name": "元DGTF app", "version": APP_VERSION,
+        "app": {"name": "MetaDGTF-道生三阶模型", "version": APP_VERSION,
                 "commit": _git(["rev-parse", "HEAD"]).get("out", "")[:12]},
         "engine": {"file": eng.name, "version": ver,
                    "layers": ["0", "1", "both", "all"],
@@ -5342,7 +5343,7 @@ def _eml_export_dataset(limit=5000):
 
 
 def _self_consistency():
-    """元DGTF 自洽审计：把引擎/EML/V2/策略/持久化/映射集中校验。"""
+    """MetaDGTF 自洽审计：把引擎/EML/V2/策略/持久化/映射集中校验。"""
     import json as _json
     import sys as _sys
     root = Path(__file__).resolve().parent.parent
@@ -5600,18 +5601,18 @@ _SCHED_MODEL_FILE = Path(__file__).resolve().parent.parent / "models" / "schedul
 _SCHED_MODEL_RUNTIME = Path(__file__).resolve().parent.parent / "dgtf_memory" / "scheduler_model.json"
 
 
-_LLM_PY = os.getenv("DGTF_LLM_PYTHON", r"D:\元DGTF-多模并行架构\local_model\envs\dgtf_llm_env\Scripts\python.exe")
-_LLM_MODEL = os.getenv("DGTF_LLM_MODEL", r"D:/元DGTF-多模并行架构/local_model/models/Qwen2.5-0.5B-Instruct")
+_LLM_PY = os.getenv("DGTF_LLM_PYTHON", r"D:\MetaDGTF-多模并行架构\local_model\envs\dgtf_llm_env\Scripts\python.exe")
+_LLM_MODEL = os.getenv("DGTF_LLM_MODEL", r"D:/MetaDGTF-多模并行架构/local_model/models/Qwen2.5-0.5B-Instruct")
 _LLM_ADAPTER = Path(__file__).resolve().parent.parent / "llm_sft" / "adapter_qwen05b_v1"
 _LLM_SCRIPT = Path(__file__).resolve().parent.parent / "llm_predict.py"
 _LLM_BACKENDS = {
-    "qwen05b": {"model": r"D:/元DGTF-多模并行架构/local_model/models/Qwen2.5-0.5B-Instruct",
+    "qwen05b": {"model": r"D:/MetaDGTF-多模并行架构/local_model/models/Qwen2.5-0.5B-Instruct",
                 "adapter": Path(__file__).resolve().parent.parent / "llm_sft" / "adapter_qwen05b_v1",
                 "label": "Qwen2.5-0.5B + LoRA"},
-    "qwen15b": {"model": r"D:/元DGTF-多模并行架构/local_model/models/Qwen2.5-1.5B-Instruct",
+    "qwen15b": {"model": r"D:/MetaDGTF-多模并行架构/local_model/models/Qwen2.5-1.5B-Instruct",
                 "adapter": Path(__file__).resolve().parent.parent / "llm_sft" / "adapter_qwen15b_v1",
                 "label": "Qwen2.5-1.5B + LoRA"},
-    "deepseek15b": {"model": r"D:/元DGTF-多模并行架构/local_model/models/DeepSeek-R1-Distill-Qwen-1.5B",
+    "deepseek15b": {"model": r"D:/MetaDGTF-多模并行架构/local_model/models/DeepSeek-R1-Distill-Qwen-1.5B",
                     "adapter": Path(__file__).resolve().parent.parent / "llm_sft" / "adapter_deepseek15b_v1",
                     "label": "DeepSeek-R1-Distill-Qwen-1.5B + LoRA"},
 }
@@ -5631,7 +5632,8 @@ _PROJECT_DOCS = [
     "dgtf_engine/dgtf_v1/reports/v1110_报告.md",
 ]
 _PROJECT_BRIEF = (
-    "元DGTF 是一个本地四层螺旋推理引擎，版本 dgtf_engine/dgtf_v2/engine/元DGTF-V2.0.0.py / 2.0.0。"
+    "MetaDGTF-道生三阶模型 是一个本地四层螺旋推理引擎，版本 "
+    "dgtf_engine/dgtf_v2/engine/MetaDGTF-道生三阶模型-V2.0.0.py / 2.0.0。"
     "四层固定为：0 修行（展开/候选/锚点）、1 研究（证据/子问题/收敛）、"
     "both 对撞（裁决/冲突/线头）、all 元（闭环/决策/停止）。"
     "EML 是事件溯源记忆与自学习反馈层，含 V1 playbook 与 V2 schedule_outcome；"
@@ -5639,7 +5641,7 @@ _PROJECT_BRIEF = (
     "app 通过 dgtf_app/server.py 调用引擎子进程，提供任务、分层日志、调度策略、"
     "V2/EML/自洽审计、LLM LoRA 调度建议等接口。"
     "当前边界：本地 LLM 仅做 route/rounds 调度建议；四层深度推理仍走 DeepSeek API；"
-    "项目知识需要显式注入，模型参数本身不含元DGTF事实。"
+    "项目知识需要显式注入，模型参数本身不含MetaDGTF事实。"
 )
 
 
@@ -5982,7 +5984,7 @@ def _project_context(question="", limit=6):
     """RAG-lite：从项目文档取相关段落 + 固定权威摘要。"""
     import re as _re
     q = str(question or "")
-    keys = [k for k in ("元DGTF", "四层", "修行", "研究", "对撞", "元层", "EML",
+    keys = [k for k in ("MetaDGTF", "四层", "修行", "研究", "对撞", "元层", "EML",
                         "DSH", "调度", "LoRA", "app", "映射", "自洽", "边界",
                         "route", "rounds") if k in q]
     import re as _re_q
@@ -5992,7 +5994,7 @@ def _project_context(question="", limit=6):
     for rel in _PROJECT_DOCS:
         for para in _project_doc_paras(rel):
             score = sum(para.count(k) for k in keys) if keys else 0
-            score += 1 if "元DGTF" in para else 0
+            score += 1 if "MetaDGTF" in para else 0
             chunks.append((score, rel, para))
     chunks.sort(key=lambda x: x[0], reverse=True)
     _pre = [{"source": rel, "text": para} for _s, rel, para in chunks[:40]]
@@ -6032,7 +6034,7 @@ def _project_context(question="", limit=6):
                               "claim": str(it.get("claim") or it.get("summary") or "")[:600]})
     except Exception:
         knowledge = []
-    parts = ["【元DGTF 项目权威背景（内置，本地文档+资料库注入）】", _PROJECT_BRIEF]
+    parts = ["【MetaDGTF-道生三阶模型 项目权威背景（内置，本地文档+资料库注入）】", _PROJECT_BRIEF]
     imported = []
     try:
         cands = []
@@ -6093,7 +6095,7 @@ def _project_context(question="", limit=6):
             parts.append("[" + it["cid"] + "] " + it["source"] + ": " + it["text"])
     if not external:
         parts.append("【隐私策略】外部上下文已禁用：本地资料/导入资料未随请求外发。")
-    parts.append("【回答约束】涉及元DGTF时必须依据以上背景；引用时标注 [S#]/[K#]/[I#]；背景没有的，明确说不知道，不得编造。")
+    parts.append("【回答约束】涉及MetaDGTF时必须依据以上背景；引用时标注 [S#]/[K#]/[I#]；背景没有的，明确说不知道，不得编造。")
     _max = max(1000, min(12000, int(os.getenv(
         "DGTF_PROJECT_CONTEXT_MAX_CHARS", "7000"))))
     _layer_kw = {"0": ["修行", "展开", "候选", "锚点"],
@@ -7955,7 +7957,7 @@ class Handler(BaseHTTPRequestHandler):
                     return self._json({"error": "没有可导出的产物"}, 404)
                 ts0 = time.strftime("%Y%m%d_%H%M%S")
                 return self._download(buf.getvalue(), "application/zip",
-                                      "元DGTF_选中产物_%s.zip" % ts0)
+                                      "MetaDGTF_选中产物_%s.zip" % ts0)
             body = (q.get("body") or ["0"])[0] == "1"
             filters: dict = {}
             for k in _FACETS:
@@ -7981,7 +7983,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"error": "没有可导出的产物"}, 404)
             ts = time.strftime("%Y%m%d_%H%M%S")
             return self._download(buf.getvalue(), "application/zip",
-                                  "元DGTF_产物_%s.zip" % ts)
+                                  "MetaDGTF_产物_%s.zip" % ts)
 
         # ── 导出：联网检索库（按问题聚合的 md）────────────────────
         if p == "/api/export/web":
@@ -7989,7 +7991,7 @@ class Handler(BaseHTTPRequestHandler):
             picked_q = [x for x in (q.get("qs") or []) if x]
             picked_ts = {x for x in (q.get("ts") or []) if x}
             kw = ((q.get("q") or [""])[0] or "").strip().lower()
-            lines = ["# 元DGTF · 联网检索库", "",
+            lines = ["# MetaDGTF · 联网检索库", "",
                      "**导出时间**: " + time.strftime("%Y-%m-%dT%H:%M:%S"), ""]
             n_g = 0
             for g in groups:
@@ -8026,7 +8028,7 @@ class Handler(BaseHTTPRequestHandler):
             ts = time.strftime("%Y%m%d_%H%M%S")
             return self._download("\n".join(lines).encode("utf-8"),
                                   "text/markdown; charset=utf-8",
-                                  "元DGTF_联网检索库_%s.md" % ts)
+                                  "MetaDGTF_联网检索库_%s.md" % ts)
 
         m = re.match(r"^/api/outputs/(.+)/packed$", p)
         if m:
@@ -9011,7 +9013,7 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="元DGTF 本地 Web 应用")
+    ap = argparse.ArgumentParser(description="MetaDGTF 本地 Web 应用")
     ap.add_argument("--host", default="127.0.0.1",
                     help="监听地址（默认只监听本机回环）")
     ap.add_argument("--lan", action="store_true",
@@ -9104,7 +9106,7 @@ def main() -> int:
             return 3
     mock = "开" if os.environ.get("DGTF_APP_MOCK") == "1" else "关"
     _local_url = f"{scheme}://127.0.0.1:{args.port}"
-    print(f"元DGTF 应用已启动： {_local_url}", flush=True)
+    print(f"MetaDGTF 应用已启动： {_local_url}", flush=True)
     if token:
         print("  本机访问口令已启用：不在启动日志打印；"
               "请运行 scripts/show_access_url.ps1 获取带口令地址，或读取 dgtf_memory/.access_token", flush=True)
