@@ -9,14 +9,14 @@
 公开仓库的开源安全基础工作已完成：
 
 - 公开可见性：Public
-- 许可证：MIT
+- 许可证：Apache-2.0，附 NOTICE
 - 历史：重建为干净基线，移除归档、历史版本和运行态数据
 - 漏洞扫描：CodeQL 已配置；当前 open 告警 0，37 条已分类处置
 - Secret scanning：open 告警 0
 - Dependabot alerts：open 告警 0
 - Actions：全部固定 commit SHA，开启 SHA pinning
 - 分支保护：禁止强推/删除，required checks + conversation resolution
-- 发布：release-artifact 生成 SHA256SUMS
+- 发布：release-artifact 生成 SHA256SUMS、SPDX SBOM 和 cosign 签名
 - 文档：SECURITY / PRIVACY / THIRD_PARTY_NOTICES / GOVERNANCE / 依赖与模型安全
 
 ## 2. 代码与仓库清理
@@ -44,6 +44,8 @@
     main 禁止删除
     required checks: app / engine / local-model / dependency-review
     required conversation resolution
+    required PR approval（外部贡献）
+    required signed commits（管理员可绕过）
 
 ## 4. CodeQL 告警处置
 
@@ -96,18 +98,30 @@
   - 文件名统一 os.path.basename
 - 测试断言：仅用于测试的 URL 子串断言已标注为测试用途。
 
+## 5.1 模型与发布供应链
+
+- 已核对上游模型许可证：
+    BAAI/bge-small-zh-v1.5：MIT
+    Qwen2.5-0.5B/1.5B-Instruct：Apache-2.0
+    DeepSeek-R1-Distill-Qwen-1.5B：MIT
+- 已生成本地 7 个权重文件的 SHA256：local_model/MODEL_CHECKSUMS.md
+- 已记录上游 revision：local_model/MODEL_SOURCES.md
+- release-artifact 增加 SPDX SBOM、SHA256SUMS、cosign keyless 签名和证书。
+
 ## 6. 文档与合规
 
 新增：
 
-- LICENSE：MIT
+- LICENSE：Apache-2.0
+- NOTICE：版权与第三方提示
 - SECURITY.md：漏洞报告、支持版本、禁止公开内容
 - THIRD_PARTY_NOTICES.md：模型与依赖许可证提示
 - docs/PRIVACY.md：本地数据边界、删除方式、联网说明
 - docs/OPEN_SOURCE_GOVERNANCE.md：维护、发布、安全响应
 - docs/dependency_security.md：依赖与模型加载安全
 - docs/security_hardening.md：公开仓库安全说明
-- local_model/MODEL_SOURCES.md：模型来源与校验方法
+- local_model/MODEL_SOURCES.md：模型来源、上游许可证与 revision
+- local_model/MODEL_CHECKSUMS.md：7 个权重文件实际 SHA256
 - requirements-local-model.txt：本地 BGE 服务依赖固定版本
 
 模型权重仍未随仓库分发；模型许可证以各上游 model card 为准。
@@ -128,11 +142,13 @@
 - CodeQL open：0；CodeQL dismissed：37（均有复核理由）
 - 开放 Pull Request：0
 
-## 8. 仍需你确认或后续处理
+## 8. 仍需你完成的一次性动作
 
-1. 当前开放 PR 为 0；Dependabot 配置仍启用，后续自动升级 PR 需要 review 后再合并。
-2. MIT 是本次选择的代码许可证；如需要专利条款，可改 Apache-2.0。
-3. 上游模型许可证需按实际下载的 model card 最终确认。
-4. 实际模型权重 SHA256 尚未写入清单；MODEL_SOURCES 已给出校验命令。
-5. 签名提交、PR 必须审批、SBOM/发布签名属于可选进阶项，当前未强制开启。
-6. GitHub Pages 只是静态门户，Python App 后端仍只在本地/自托管运行。
+1. 把 `C:\Users\18432\.ssh\id_rsa.pub` 添加到 GitHub：
+   Settings -> SSH and GPG keys -> New SSH key -> Key type: Signing Key。
+   当前 Token 作用域不含 `admin:ssh_signing_key`，无法由 DSH 自动上传。
+   添加后，后续 DSH 提交即可显示 verified。
+2. 外部贡献现在需要 1 个 approving review；你自己作为仓库所有者仍可通过管理员绕过直接推送。
+3. 当前开放 PR 为 0；Dependabot 配置仍启用，后续自动升级 PR 需要 review。
+4. GitHub Pages 只是静态门户，Python App 后端仍只在本地/自托管运行。
+5. 发布工作流已配置 SBOM/signing；下一次打 tag 时会生成并上传这些资产。
