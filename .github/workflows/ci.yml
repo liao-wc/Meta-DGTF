@@ -8,14 +8,14 @@ jobs:
   app:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v5
         with: { python-version: '3.13' }
       - run: python -m py_compile dgtf_app/server.py dgtf_app/rag_embed_service.py
   engine:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v5
         with: { python-version: '3.13' }
       - run: python -m py_compile 元DGTF-V1.30.4.py
@@ -23,12 +23,12 @@ jobs:
   local-model:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: test -f local_model/README.md && test -f .github/repo_manifest.json
   classify:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v5
         with: { python-version: '3.13' }
       - run: python scripts/dsh_repo_classify.py classify

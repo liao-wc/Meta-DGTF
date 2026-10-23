@@ -8,7 +8,7 @@ jobs:
   package:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Package source without local model binaries
         run: |
           zip -r "meta-dgtf-${GITHUB_REF_NAME}.zip" . \
