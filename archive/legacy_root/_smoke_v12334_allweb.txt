@@ -4,7 +4,7 @@ Loading model cost 0.776 seconds.
 Prefix dict has been built successfully.
 B 模式 1 第 2 波失败: 冒烟注入：研究层失败
 Traceback (most recent call last):
-  File "C:\Users\18432\Desktop\元DGTF-多模并行架构\元DGTF-V1.23.34.py", line 16297, in _run_parallel_B
+  File "D:\元DGTF-多模并行架构\元DGTF-V1.23.34.py", line 16297, in _run_parallel_B
     view = f.result()
   File "C:\Users\18432\AppData\Local\Programs\Python\Python313\Lib\concurrent\futures\_base.py", line 453, in result
     return self.__get_result()
@@ -13,17 +13,17 @@ Traceback (most recent call last):
     raise self._exception
   File "C:\Users\18432\AppData\Local\Programs\Python\Python313\Lib\concurrent\futures\thread.py", line 59, in run
     result = self.fn(*self.args, **self.kwargs)
-  File "C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_test.py", line 3128, in _boom
+  File "D:\元DGTF-多模并行架构\smoke_test.py", line 3128, in _boom
     raise RuntimeError("冒烟注入：研究层失败")
 RuntimeError: 冒烟注入：研究层失败
 串行 both 失败: 冒烟注入：对撞层失败
 Traceback (most recent call last):
-  File "C:\Users\18432\Desktop\元DGTF-多模并行架构\元DGTF-V1.23.34.py", line 20115, in _run_serial
+  File "D:\元DGTF-多模并行架构\元DGTF-V1.23.34.py", line 20115, in _run_serial
     self._results[entry] = self._run_layer(
                            ~~~~~~~~~~~~~~~^
         entry, self._rounds.get(entry, 0))
         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_test.py", line 3167, in _boom2
+  File "D:\元DGTF-多模并行架构\smoke_test.py", line 3167, in _boom2
     raise RuntimeError("冒烟注入：对撞层失败")
 RuntimeError: 冒烟注入：对撞层失败
   · v1.22 阶段1：四层 objective / 覆盖率归属 / 未生分类 / 头部四行
@@ -83,28 +83,28 @@ RuntimeError: 冒烟注入：对撞层失败
   ✓ [thinking] kwargs 四线正确：非思考=disabled+temperature+原 max_tokens+response_format；思考=enabled+撤 temperature+max_tokens≥32000+不带 response_format；effort 只挂 enabled
   ✓ [清算对账] 按 tension_id 精确对账（带编号判已交代、无编号退回措辞、只交代一条不算 clean）
   ✓ [层守卫] B 模式缺层被发现并留痕：missing=['1']，views 里仍有占位（errors 写入）
-📁 已保存: C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_outputs\20261014_200031_冒烟层缺失守卫.md
+📁 已保存: D:\元DGTF-多模并行架构\smoke_outputs\20261014_200031_冒烟层缺失守卫.md
   ✓ [层守卫] 产物头部明写「❌ 缺层」+ 原因
   ✓ [层守卫] 串行逐层隔离：other 层照常产出，both 记为缺层（4 个 view）
   ✓ [层守卫] 跳过留痕在（`both`：上游 1 在调度顺序里排在它之后），且该层确实没跑
   ✓ [P0-1] 重述两半都入 view：touched 2 / untouched 3，且 source=anchor
   ✓ [P0-2] 空转触发 1 次重试并补上碰 （21→22），最后一圈不重试（12→12）
-📁 已保存: C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_outputs\20261014_200032_冒烟状态标记.md
+📁 已保存: D:\元DGTF-多模并行架构\smoke_outputs\20261014_200032_冒烟状态标记.md
   ✓ [P0-3] 产物头部有图例，且 💭/⏸/📘 各司其职
   ✓ [P1-4] both 层 ing_structured 解析成功：third='冒烟撞出的第三者'，tensions=1 条
   ✓ [P1-5] _he 三份 prompt 互不相同，且 & 带 tension_from
   ✓ [P1-6] 白名单双向边界：12 条应通过全通过、8 条应拦全拦下
   ✓ [P1-6 修] 被拦必留痕：3 条 invalid → view.errors 3 条 + pool.meta 3 条；合格 1 条照常入池
   ✓ [P1-6 修] 明细限流 20 条 + 汇总留痕：[P1-6] 本层 deferral 被拦共 30 条，仅前 20 条写入 view.errors；完整…
-📁 已保存: C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_outputs\20261014_200033_冒烟留痕进产物.md
+📁 已保存: D:\元DGTF-多模并行架构\smoke_outputs\20261014_200033_冒烟留痕进产物.md
   ✓ [P1-6 修] 留痕进产物：【失败记录】段可查到「deferral 被拦」
   ✓ [P2-7] 判据=想要什么：boundary 保四层 / decision·auto 按可判定性砍层
   ✓ [P2-8] 拆成两段：取向=decision，boundary→route full，auto_plan 带 orientation=decision
-📁 已保存: C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_outputs\20261014_200033_冒烟显化层.md
+📁 已保存: D:\元DGTF-多模并行架构\smoke_outputs\20261014_200033_冒烟显化层.md
   ✓ [P2-9] render_manifestation 纯函数、含动作清单与「没有显化的」，且已进产物头部
-📁 已保存: C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_outputs\20261014_200033_冒烟显化层.md
-📁 已保存: C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_outputs\20261014_200033_冒烟显化层.md
-📁 已保存: C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_outputs\20261014_200033_冒烟显化层.md
+📁 已保存: D:\元DGTF-多模并行架构\smoke_outputs\20261014_200033_冒烟显化层.md
+📁 已保存: D:\元DGTF-多模并行架构\smoke_outputs\20261014_200033_冒烟显化层.md
+📁 已保存: D:\元DGTF-多模并行架构\smoke_outputs\20261014_200033_冒烟显化层.md
   ✓ [P3-11] 一致率分级三档都对：≥80% ✅高 / ≥50% ⚠️中 / >0 ❌低
   ✓ [P3-10 修] 元层 prompt：schema 用占位符、清单给 active 编号（t_005/t_006，已排除 resolved）、且要求原样复制20:00:35 [WARNING] dgtf: 上游 view 的 entry 非法（9），已剔除 1 条、不参与元层配对
 20:00:35 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
@@ -192,7 +192,7 @@ RuntimeError: 冒烟注入：对撞层失败
   ✓ [P1] 同圈新建+同圈命中 → self_resolved=1
   ✓ [P1] 旧账被碰 → resolved=1 但 self_resolved=0（跨圈不误判）
   ✓ [P1] 对撞层同口径：self_resolved=1
-📁 已保存: C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_outputs\20261014_200034_冒烟自解比例渲染.md
+📁 已保存: D:\元DGTF-多模并行架构\smoke_outputs\20261014_200034_冒烟自解比例渲染.md
   ✓ [P1] 产物池统计段有「一圈内自解 N/M（比例）」
   ✓ [P2] render_manifestation 永远列出「外部锚点」
   ✓ [P3] 候选数口径对齐：run 写 → _run_layer/_b_merge 逐圈累加 → _finalize 用 all_amp_cands（不再拿最后一圈做分母）

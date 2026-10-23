@@ -1,10 +1,10 @@
 Building prefix dict from the default dictionary ...
 Loading model from cache C:\Users\18432\AppData\Local\Temp\jieba.cache
-Loading model cost 0.859 seconds.
+Loading model cost 1.129 seconds.
 Prefix dict has been built successfully.
 B 模式 1 第 2 波失败: 冒烟注入：研究层失败
 Traceback (most recent call last):
-  File "C:\Users\18432\Desktop\元DGTF-多模并行架构\元DGTF-V1.23.34.py", line 15986, in _run_parallel_B
+  File "D:\元DGTF-多模并行架构\元DGTF-V1.23.33.py", line 15923, in _run_parallel_B
     view = f.result()
   File "C:\Users\18432\AppData\Local\Programs\Python\Python313\Lib\concurrent\futures\_base.py", line 453, in result
     return self.__get_result()
@@ -13,17 +13,17 @@ Traceback (most recent call last):
     raise self._exception
   File "C:\Users\18432\AppData\Local\Programs\Python\Python313\Lib\concurrent\futures\thread.py", line 59, in run
     result = self.fn(*self.args, **self.kwargs)
-  File "C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_test.py", line 3128, in _boom
+  File "D:\元DGTF-多模并行架构\smoke_test.py", line 3128, in _boom
     raise RuntimeError("冒烟注入：研究层失败")
 RuntimeError: 冒烟注入：研究层失败
 串行 both 失败: 冒烟注入：对撞层失败
 Traceback (most recent call last):
-  File "C:\Users\18432\Desktop\元DGTF-多模并行架构\元DGTF-V1.23.34.py", line 19708, in _run_serial
+  File "D:\元DGTF-多模并行架构\元DGTF-V1.23.33.py", line 19645, in _run_serial
     self._results[entry] = self._run_layer(
                            ~~~~~~~~~~~~~~~^
         entry, self._rounds.get(entry, 0))
         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_test.py", line 3167, in _boom2
+  File "D:\元DGTF-多模并行架构\smoke_test.py", line 3167, in _boom2
     raise RuntimeError("冒烟注入：对撞层失败")
 RuntimeError: 冒烟注入：对撞层失败
   · v1.22 阶段1：四层 objective / 覆盖率归属 / 未生分类 / 头部四行
@@ -48,7 +48,7 @@ RuntimeError: 冒烟注入：对撞层失败
   ✓ [走满] 由公共收口点统一交代（含被推迟的理由），并行通道不再沉默
   ✓ [预算] rounds=0 逐层读配置；显式值语义不变；min_rounds 是下限不是预算
   ✓ [停止理由] 13 条理由**只有一处实现**（_stop_reasons），两条通道各调一次，无人自己加料
-📁 已保存: C:\Users\18432\AppData\Local\Temp\tmp3cgos4lw\20261014_190040_冒烟池段子问题口径.md
+📁 已保存: C:\Users\18432\AppData\Local\Temp\tmphntrzeit\20261014_181838_冒烟池段子问题口径.md
   ✓ [池段口径] 子问题行分开数（总 4：可判定 1 / 不可判定 2 / 另有 1 条 partial 等），不再把总数冒充可判定数
   ✓ [可判定性] 三态 6 个方向全部可转（旧实现只有 decidable→undecidable 一条腿）
   ✓ [可判定性] 无证据必驳回且留痕：「没有给证据（至少要一条能定位到池中对象的引用）…」
@@ -57,7 +57,7 @@ RuntimeError: 冒烟注入：对撞层失败
   ✓ [可判定性] 履历 append-only，来回转两条都在：[('decidable', 'undecidable'), ('undecidable', 'decidable')]
   ✓ [可判定性] 与当前判定相同的提案不记账
   ✓ [可判定性] 迁向不可判定仍连账（deferred→escalated），留痕改口为「三态可转·须证据」
-📁 已保存: C:\Users\18432\AppData\Local\Temp\tmp7nmiw27l\20261014_190040_冒烟可判定性变更账.md
+📁 已保存: C:\Users\18432\AppData\Local\Temp\tmp6yiv3sza\20261014_181838_冒烟可判定性变更账.md
   ✓ [可判定性] 产物同时摆出变更轨迹与被驳回的提案
   ✓ [归一化] 三态×方面清单真值表 7 条全对
   ✓ [归一化] 合并后 partial（外判原文仍留在 _ext_status=partial），可判定方面 3 条不再被丢
@@ -69,7 +69,7 @@ RuntimeError: 冒烟注入：对撞层失败
   ✓ [复债] 从没欠过账的子问题不凭空开账
   ✓ [复债] 已有在挂的账时不重复开
   ✓ [复债] 转 partial 同样复债
-📁 已保存: C:\Users\18432\AppData\Local\Temp\tmp1wk5nudf\20261014_190040_冒烟复债渲染.md
+📁 已保存: C:\Users\18432\AppData\Local\Temp\tmp0pp9x1qd\20261014_181838_冒烟复债渲染.md
   ✓ [复债] 产物可见：轨迹行点出「并重新挂账」，债务明细标出「← 重新挂账（接 d_001）」
   ✓ [反向触发] 连续 3 圈无进展 → 迁向不可判定，名下债务连着关成 escalated
   ✓ [反向触发] 本圈被回答时不触发，计数清零
@@ -77,110 +77,110 @@ RuntimeError: 冒烟注入：对撞层失败
   ✓ [反向触发] 没有未清偿债务时不动手（不硬造证据）
   ✓ [反向触发] 债务编号只能支撑 →undecidable，不能用来证明答案已找到
   ✓ [反向触发] 迁走后再救回 → 复债触发，escalation→复债 这条链通了
-📁 已保存: C:\Users\18432\AppData\Local\Temp\tmpjuit7wub\20261014_190040_冒烟汇流圈落盘.md
+📁 已保存: C:\Users\18432\AppData\Local\Temp\tmpoqttip6f\20261014_181838_冒烟汇流圈落盘.md
   ✓ [汇流圈] route 不含 all 时汇流圈结果落进产物（锚点/ing/&/显形 四块都在）
   ✓ [thinking] 两端 ID 同名（deepseek-flash）而档位仍能分开 {'None': 30, 'enabled': 8} —— 不再依赖名字猜
   ✓ [thinking] kwargs 四线正确：非思考=disabled+temperature+原 max_tokens+response_format；思考=enabled+撤 temperature+max_tokens≥32000+不带 response_format；effort 只挂 enabled
   ✓ [清算对账] 按 tension_id 精确对账（带编号判已交代、无编号退回措辞、只交代一条不算 clean）
   ✓ [层守卫] B 模式缺层被发现并留痕：missing=['1']，views 里仍有占位（errors 写入）
-📁 已保存: C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_outputs\20261014_190040_冒烟层缺失守卫.md
+📁 已保存: D:\元DGTF-多模并行架构\smoke_outputs\20261014_181839_冒烟层缺失守卫.md
   ✓ [层守卫] 产物头部明写「❌ 缺层」+ 原因
   ✓ [层守卫] 串行逐层隔离：other 层照常产出，both 记为缺层（4 个 view）
   ✓ [层守卫] 跳过留痕在（`both`：上游 1 在调度顺序里排在它之后），且该层确实没跑
   ✓ [P0-1] 重述两半都入 view：touched 2 / untouched 3，且 source=anchor
   ✓ [P0-2] 空转触发 1 次重试并补上碰 （21→22），最后一圈不重试（12→12）
-📁 已保存: C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_outputs\20261014_190041_冒烟状态标记.md
+📁 已保存: D:\元DGTF-多模并行架构\smoke_outputs\20261014_181840_冒烟状态标记.md
   ✓ [P0-3] 产物头部有图例，且 💭/⏸/📘 各司其职
   ✓ [P1-4] both 层 ing_structured 解析成功：third='冒烟撞出的第三者'，tensions=1 条
   ✓ [P1-5] _he 三份 prompt 互不相同，且 & 带 tension_from
   ✓ [P1-6] 白名单双向边界：12 条应通过全通过、8 条应拦全拦下
   ✓ [P1-6 修] 被拦必留痕：3 条 invalid → view.errors 3 条 + pool.meta 3 条；合格 1 条照常入池
   ✓ [P1-6 修] 明细限流 20 条 + 汇总留痕：[P1-6] 本层 deferral 被拦共 30 条，仅前 20 条写入 view.errors；完整…
-📁 已保存: C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_outputs\20261014_190041_冒烟留痕进产物.md
+📁 已保存: D:\元DGTF-多模并行架构\smoke_outputs\20261014_181840_冒烟留痕进产物.md
   ✓ [P1-6 修] 留痕进产物：【失败记录】段可查到「deferral 被拦」
   ✓ [P2-7] 判据=想要什么：boundary 保四层 / decision·auto 按可判定性砍层
   ✓ [P2-8] 拆成两段：取向=decision，boundary→route full，auto_plan 带 orientation=decision
-📁 已保存: C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_outputs\20261014_190042_冒烟显化层.md
+📁 已保存: D:\元DGTF-多模并行架构\smoke_outputs\20261014_181840_冒烟显化层.md
   ✓ [P2-9] render_manifestation 纯函数、含动作清单与「没有显化的」，且已进产物头部
-📁 已保存: C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_outputs\20261014_190042_冒烟显化层.md
-📁 已保存: C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_outputs\20261014_190042_冒烟显化层.md
-📁 已保存: C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_outputs\20261014_190042_冒烟显化层.md
+📁 已保存: D:\元DGTF-多模并行架构\smoke_outputs\20261014_181840_冒烟显化层.md
+📁 已保存: D:\元DGTF-多模并行架构\smoke_outputs\20261014_181840_冒烟显化层.md
+📁 已保存: D:\元DGTF-多模并行架构\smoke_outputs\20261014_181840_冒烟显化层.md
   ✓ [P3-11] 一致率分级三档都对：≥80% ✅高 / ≥50% ⚠️中 / >0 ❌低
-  ✓ [P3-10 修] 元层 prompt：schema 用占位符、清单给 active 编号（t_005/t_006，已排除 resolved）、且要求原样复制19:00:44 [WARNING] dgtf: 上游 view 的 entry 非法（9），已剔除 1 条、不参与元层配对
-19:00:44 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
-19:00:44 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
-19:00:45 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:00:45 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
-19:00:45 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:00:45 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:00:45 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:00:45 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
-19:00:45 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
-19:00:45 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
-19:00:45 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
-19:00:45 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:00:45 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
-19:00:45 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:00:45 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:00:46 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:00:46 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
-19:00:46 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
-19:00:46 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:00:46 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
-19:00:46 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:00:46 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:00:46 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:00:46 [INFO] dgtf: position 诊断已写：C:\Users\18432\AppData\Local\Temp\smoke71_diag_f34t8eq5\diagnostic_position_0_20261014_190046.log
-19:00:46 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:00:46 [INFO] dgtf: 自动调度漏层，按中位数 5 补齐：{'0': 5, '1': 5, 'both': 5, 'all': 5}
-19:00:46 [INFO] dgtf: 自动调度漏层，按中位数 5 补齐：{'0': 5, '1': 5, 'both': 5, 'all': 5}
-19:00:46 [INFO] dgtf: 自动调度漏层，按中位数 4 补齐：{'0': 4, 'both': 4, 'all': 4, '1': 4}
-19:00:46 [INFO] dgtf: 自动调度漏层，按中位数 4 补齐：{'0': 4, 'both': 4, 'all': 4, '1': 4}
-19:00:46 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
-19:00:46 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
-19:00:46 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
-19:00:47 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:00:47 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:00:47 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:00:47 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:00:47 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
-19:00:47 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
-19:00:47 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
-19:00:47 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:00:47 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:00:47 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:00:47 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:00:47 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
-19:00:47 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
-19:00:47 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:00:47 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
-19:00:47 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:00:47 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:00:48 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:00:48 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:00:48 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
-19:00:48 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
-19:00:48 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:00:48 [WARNING] dgtf: 锚点 answers 全部缺失：全部 3 条锚点未声明 answers，triage 只能走 claim 路径（历史实测：claim 路径对「缺什么」型侧面命中率 ≈ 0）
-19:00:48 [WARNING] dgtf: 锚点 tier 全部缺省：全部 3 条锚点未显式声明 tier（缺省 3 > tier_floor 2），引用表将收不到任何锚点
-19:00:48 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:00:48 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
-19:00:48 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
-19:00:48 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:00:48 [WARNING] dgtf: 锚点 answers 全部缺失：全部 3 条锚点未声明 answers，triage 只能走 claim 路径（历史实测：claim 路径对「缺什么」型侧面命中率 ≈ 0）
-19:00:48 [WARNING] dgtf: 锚点 tier 全部缺省：全部 3 条锚点未显式声明 tier（缺省 3 > tier_floor 2），引用表将收不到任何锚点
-19:00:48 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:00:48 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
-19:00:48 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
-19:00:48 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:00:48 [WARNING] dgtf: 外部锚点加载失败：锚点文件读取失败：FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\18432\\AppData\\Local\\Temp\\smoke73_muue85tj\\__nope__.json'
-19:00:48 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:00:48 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
-19:00:48 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
-19:00:48 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:00:48 [WARNING] dgtf: external_anchor.as_evidence 用了 v1.21.75 的布尔写法 False → off（请迁到五档字符串 off/record/crosscheck/evidence/gate）
-19:00:48 [WARNING] dgtf: external_anchor.as_evidence 用了 v1.21.75 的布尔写法 False → off（请迁到五档字符串 off/record/crosscheck/evidence/gate）
-19:00:48 [WARNING] dgtf: 外部锚点检索失败：external_anchor.retriever='web_search' 尚未实现（当前只有 'snapshot' 与 'tavily'）；不静默降级
+  ✓ [P3-10 修] 元层 prompt：schema 用占位符、清单给 active 编号（t_005/t_006，已排除 resolved）、且要求原样复制18:18:43 [WARNING] dgtf: 上游 view 的 entry 非法（9），已剔除 1 条、不参与元层配对
+18:18:43 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
+18:18:43 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
+18:18:43 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:18:43 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
+18:18:44 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:18:44 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:18:44 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:18:44 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
+18:18:44 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
+18:18:44 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
+18:18:44 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
+18:18:44 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:18:44 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
+18:18:44 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:18:44 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:18:45 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:18:45 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
+18:18:45 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
+18:18:45 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:18:45 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
+18:18:45 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:18:45 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:18:45 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:18:45 [INFO] dgtf: position 诊断已写：C:\Users\18432\AppData\Local\Temp\smoke71_diag_grzsydze\diagnostic_position_0_20261014_181845.log
+18:18:45 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:18:45 [INFO] dgtf: 自动调度漏层，按中位数 5 补齐：{'0': 5, '1': 5, 'both': 5, 'all': 5}
+18:18:45 [INFO] dgtf: 自动调度漏层，按中位数 5 补齐：{'0': 5, '1': 5, 'both': 5, 'all': 5}
+18:18:45 [INFO] dgtf: 自动调度漏层，按中位数 4 补齐：{'0': 4, 'both': 4, 'all': 4, '1': 4}
+18:18:45 [INFO] dgtf: 自动调度漏层，按中位数 4 补齐：{'0': 4, 'both': 4, 'all': 4, '1': 4}
+18:18:45 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
+18:18:45 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
+18:18:45 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
+18:18:46 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:18:46 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:18:46 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:18:46 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:18:46 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
+18:18:46 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
+18:18:46 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
+18:18:46 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:18:46 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:18:46 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:18:46 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:18:46 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
+18:18:46 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
+18:18:46 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:18:46 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
+18:18:46 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:18:47 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:18:47 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:18:47 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:18:47 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
+18:18:47 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
+18:18:47 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:18:47 [WARNING] dgtf: 锚点 answers 全部缺失：全部 3 条锚点未声明 answers，triage 只能走 claim 路径（历史实测：claim 路径对「缺什么」型侧面命中率 ≈ 0）
+18:18:47 [WARNING] dgtf: 锚点 tier 全部缺省：全部 3 条锚点未显式声明 tier（缺省 3 > tier_floor 2），引用表将收不到任何锚点
+18:18:47 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:18:47 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
+18:18:47 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
+18:18:47 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:18:47 [WARNING] dgtf: 锚点 answers 全部缺失：全部 3 条锚点未声明 answers，triage 只能走 claim 路径（历史实测：claim 路径对「缺什么」型侧面命中率 ≈ 0）
+18:18:47 [WARNING] dgtf: 锚点 tier 全部缺省：全部 3 条锚点未显式声明 tier（缺省 3 > tier_floor 2），引用表将收不到任何锚点
+18:18:47 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:18:47 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
+18:18:47 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
+18:18:47 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:18:47 [WARNING] dgtf: 外部锚点加载失败：锚点文件读取失败：FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\18432\\AppData\\Local\\Temp\\smoke73_4ar575vr\\__nope__.json'
+18:18:47 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:18:47 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
+18:18:47 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
+18:18:47 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:18:47 [WARNING] dgtf: external_anchor.as_evidence 用了 v1.21.75 的布尔写法 False → off（请迁到五档字符串 off/record/crosscheck/evidence/gate）
+18:18:47 [WARNING] dgtf: external_anchor.as_evidence 用了 v1.21.75 的布尔写法 False → off（请迁到五档字符串 off/record/crosscheck/evidence/gate）
+18:18:47 [WARNING] dgtf: 外部锚点检索失败：external_anchor.retriever='web_search' 尚未实现（当前只有 'snapshot' 与 'tavily'）；不静默降级
 
   ✓ [P1-6 补] serial 通道：早写者 2/2、晚写者 3/3，跨圈 errors 全保住
   ✓ [P1-6 补] B 通道：早写者 2/2、晚写者 3/3，跨圈 errors 全保住
@@ -192,27 +192,27 @@ RuntimeError: 冒烟注入：对撞层失败
   ✓ [P1] 同圈新建+同圈命中 → self_resolved=1
   ✓ [P1] 旧账被碰 → resolved=1 但 self_resolved=0（跨圈不误判）
   ✓ [P1] 对撞层同口径：self_resolved=1
-📁 已保存: C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_outputs\20261014_190043_冒烟自解比例渲染.md
+📁 已保存: D:\元DGTF-多模并行架构\smoke_outputs\20261014_181841_冒烟自解比例渲染.md
   ✓ [P1] 产物池统计段有「一圈内自解 N/M（比例）」
   ✓ [P2] render_manifestation 永远列出「外部锚点」
   ✓ [P3] 候选数口径对齐：run 写 → _run_layer/_b_merge 逐圈累加 → _finalize 用 all_amp_cands（不再拿最后一圈做分母）
-📁 已保存: C:\Users\18432\AppData\Local\Temp\tmp8dctt61v\20261014_190043_测试题.md
+📁 已保存: C:\Users\18432\AppData\Local\Temp\tmpqpg4wiif\20261014_181842_测试题.md
   ✓ [v64 A] pool.meta 渲染兑现：池段分类计数 + 落地层顶部汇总（P1-6 拦截 1 / 自省未生效 1 / 自省回流 1，三类都识别对）
   ✓ [v64 B] by_id=3（active+resolved 都算）/ covered_ids=4 / inactive=1 / unknown=1 / unsettled=0 —— 口径已覆盖已了结的编号
-📁 已保存: C:\Users\18432\AppData\Local\Temp\tmpuh7x55wb\20261014_190043_测试题.md
+📁 已保存: C:\Users\18432\AppData\Local\Temp\tmpplurm4_z\20261014_181842_测试题.md
   ✓ [v65 A] 机制一的「离门槛差多少」有出口了：分布 0/1/2 圈各 1 条、最高 2 圈、名下有挂账 1 条
-📁 已保存: C:\Users\18432\AppData\Local\Temp\tmp9r73jkpo\20261014_190043_测试题.md
-📁 已保存: C:\Users\18432\AppData\Local\Temp\tmpjl43yswx\20261014_190043_测试题.md
+📁 已保存: C:\Users\18432\AppData\Local\Temp\tmpjvbkf1tt\20261014_181842_测试题.md
+📁 已保存: C:\Users\18432\AppData\Local\Temp\tmp9c0u7qa4\20261014_181842_测试题.md
   ✓ [v66] 快照 0 圈 / 峰值 2 圈（「够到过、被清零」看得见）；旧前缀正则仍匹配；字段缺席时显式报「机制未运行」
   ✓ [v66] 写入语义：计数无条件写（2/2 条）；被触碰清零后峰值仍留 1
-📁 已保存: C:\Users\18432\AppData\Local\Temp\tmp2z9mq2sn\20261014_190043_测试题.md
+📁 已保存: C:\Users\18432\AppData\Local\Temp\tmpqvf4ytke\20261014_181842_测试题.md
   ✓ [v67] 全量附录：顶层键齐全、无渲染点的内部量也在、JSON 可解析
   ✓ [v68] 每圈全量留痕：字段全覆盖、ing 正文在内、不截断、且真被 DGTF.run 调用
   ✓ [v69] A 累加次数两向都对（5/7）；B 双覆盖率都有出口且旧键不动、旧 dict 不破坏；
         C 对撞对象逐 entry 正确、兜底不串层；D 真误报救回 + 负对照仍抓得住；
         E 收尾增量留痕真省略 + 累积字段有出口 + 接线在
-📁 已保存: C:\Users\18432\AppData\Local\Temp\tmpc_hvly9k\20261014_190043_轨迹渲染.md
-📁 已保存: C:\Users\18432\AppData\Local\Temp\tmp3ul07sz6\20261014_190043_轨迹渲染.md
+📁 已保存: C:\Users\18432\AppData\Local\Temp\tmpda35njne\20261014_181842_轨迹渲染.md
+📁 已保存: C:\Users\18432\AppData\Local\Temp\tmpwjh5k7yu\20261014_181842_轨迹渲染.md
   ✓ [v70 F] aligned_trace / aligned_first_hit 建起来且只记首次；struct_trace 原样保留；
           两条轨迹行同时渲染，老 dict 仍只出独立那条（加性成立）；接线在
   ✓ [v70 K] entry=1 与 entry=all 都追加覆盖率段（entry=0 不追加，条目是定点的）；接线在
@@ -235,9 +235,9 @@ RuntimeError: 冒烟注入：对撞层失败
   ✓ [v72 #20] CHANGELOG.md：53 个版本段严格递减、38 个收束摘要标题无重复（首段 v1.23.33）；负对照判红
   ✓ [v72 #22] 10 个机制各 1 处定义；_assess_decidability 调用点=1；finalize/stop 各 2 调用点 1 实现；旧门未复活
   ✓ [v72 #24] mock 长度谱无异常（阈值 2000，_OVERSIZED=['manifest', 'rendered']）；合成 6000 字 collision 被检出且正文落日志（负对照有判别力）；manifest 仍只打长度
-📁 已保存: C:\Users\18432\AppData\Local\Temp\smoke73_muue85tj\on\20261014_190048_现金流紧张的中小制造企业上自动化产线还.md
-📁 已保存: C:\Users\18432\AppData\Local\Temp\smoke73_muue85tj\bad\20261014_190048_现金流紧张的中小制造企业上自动化产线还.md
-📁 已保存: C:\Users\18432\AppData\Local\Temp\smoke73_muue85tj\off\20261014_190048_现金流紧张的中小制造企业上自动化产线还.md
+📁 已保存: C:\Users\18432\AppData\Local\Temp\smoke73_4ar575vr\on\20261014_181847_现金流紧张的中小制造企业上自动化产线还.md
+📁 已保存: C:\Users\18432\AppData\Local\Temp\smoke73_4ar575vr\bad\20261014_181847_现金流紧张的中小制造企业上自动化产线还.md
+📁 已保存: C:\Users\18432\AppData\Local\Temp\smoke73_4ar575vr\off\20261014_181847_现金流紧张的中小制造企业上自动化产线还.md
   ✓ [v73 锚点] 关闭逐字同构 / 开启挂键+对照 / 失败留痕 / 编号校验 / 接线 / 只读（六组各带负对照）
 
 [v1.21.74] 外部锚点引用在合并后的留存
@@ -277,27 +277,27 @@ RuntimeError: 冒烟注入：对撞层失败
   ✓ snapshot 直接跳过检索层（零调用）；非 snapshot 抛错留痕
 
 [v1.21.76 B5] 分诊判据不跨段
-  ✓ `_anchor_triage_sys` 已空壳；判据与锚点清单同处 user 段19:01:01 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
-19:01:01 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
-19:01:01 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
-19:01:01 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:01:01 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:01:01 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:01:02 [WARNING] dgtf: 锚点 answers 过滤：1 条 answer 因短于 6 字被丢弃（overlap_coef 分母取 min，短 answer 会产生假命中）
-19:01:03 [WARNING] dgtf: 锚点 answers 全部缺失：全部 2 条锚点未声明 answers，triage 只能走 claim 路径（历史实测：claim 路径对「缺什么」型侧面命中率 ≈ 0）
-19:01:03 [WARNING] dgtf: 锚点 tier 全部缺省：全部 2 条锚点未显式声明 tier（缺省 3 > tier_floor 2），引用表将收不到任何锚点
-19:01:03 [WARNING] dgtf: 锚点 answers 全部缺失：全部 2 条锚点未声明 answers，triage 只能走 claim 路径（历史实测：claim 路径对「缺什么」型侧面命中率 ≈ 0）
-19:01:04 [WARNING] dgtf: 三态独立判决失败（保留拆解原标签）: 打桩失败
-19:01:04 [WARNING] dgtf: 三态多票：一票失败（跳过）: 打桩失败
-19:01:04 [WARNING] dgtf: 三态多票：一票失败（跳过）: 打桩失败
-19:01:04 [WARNING] dgtf: 三态多票：一票失败（跳过）: 打桩失败
-19:01:04 [WARNING] dgtf: 三态多票：无有效票（全失败或全部弃票） → 保留拆解原标签
-19:01:04 [WARNING] dgtf: 三态独立判决返回空（保留拆解原标签）
-19:01:04 [WARNING] dgtf: 锚点 answers 过滤：1 条 answer 因短于 6 字被丢弃（overlap_coef 分母取 min，短 answer 会产生假命中）
-19:01:04 [WARNING] dgtf: 锚点 tier 全部缺省：全部 1 条锚点未显式声明 tier（缺省 3 > tier_floor 2），引用表将收不到任何锚点
-19:01:04 [WARNING] dgtf: 锚点 tier 全部缺省：全部 1 条锚点未显式声明 tier（缺省 3 > tier_floor 2），引用表将收不到任何锚点
-19:01:04 [WARNING] dgtf: 锚点 answers 全部缺失：全部 1 条锚点未声明 answers，triage 只能走 claim 路径（历史实测：claim 路径对「缺什么」型侧面命中率 ≈ 0）
-19:01:04 [WARNING] dgtf: 锚点 tier 全部缺省：全部 1 条锚点未显式声明 tier（缺省 3 > tier_floor 2），引用表将收不到任何锚点
+  ✓ `_anchor_triage_sys` 已空壳；判据与锚点清单同处 user 段18:19:00 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
+18:19:00 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
+18:19:00 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
+18:19:00 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:19:00 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:19:00 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:19:01 [WARNING] dgtf: 锚点 answers 过滤：1 条 answer 因短于 6 字被丢弃（overlap_coef 分母取 min，短 answer 会产生假命中）
+18:19:01 [WARNING] dgtf: 锚点 answers 全部缺失：全部 2 条锚点未声明 answers，triage 只能走 claim 路径（历史实测：claim 路径对「缺什么」型侧面命中率 ≈ 0）
+18:19:01 [WARNING] dgtf: 锚点 tier 全部缺省：全部 2 条锚点未显式声明 tier（缺省 3 > tier_floor 2），引用表将收不到任何锚点
+18:19:01 [WARNING] dgtf: 锚点 answers 全部缺失：全部 2 条锚点未声明 answers，triage 只能走 claim 路径（历史实测：claim 路径对「缺什么」型侧面命中率 ≈ 0）
+18:19:02 [WARNING] dgtf: 三态独立判决失败（保留拆解原标签）: 打桩失败
+18:19:02 [WARNING] dgtf: 三态多票：一票失败（跳过）: 打桩失败
+18:19:02 [WARNING] dgtf: 三态多票：一票失败（跳过）: 打桩失败
+18:19:02 [WARNING] dgtf: 三态多票：一票失败（跳过）: 打桩失败
+18:19:02 [WARNING] dgtf: 三态多票：无有效票（全失败或全部弃票） → 保留拆解原标签
+18:19:02 [WARNING] dgtf: 三态独立判决返回空（保留拆解原标签）
+18:19:02 [WARNING] dgtf: 锚点 answers 过滤：1 条 answer 因短于 6 字被丢弃（overlap_coef 分母取 min，短 answer 会产生假命中）
+18:19:02 [WARNING] dgtf: 锚点 tier 全部缺省：全部 1 条锚点未显式声明 tier（缺省 3 > tier_floor 2），引用表将收不到任何锚点
+18:19:02 [WARNING] dgtf: 锚点 tier 全部缺省：全部 1 条锚点未显式声明 tier（缺省 3 > tier_floor 2），引用表将收不到任何锚点
+18:19:02 [WARNING] dgtf: 锚点 answers 全部缺失：全部 1 条锚点未声明 answers，triage 只能走 claim 路径（历史实测：claim 路径对「缺什么」型侧面命中率 ≈ 0）
+18:19:02 [WARNING] dgtf: 锚点 tier 全部缺省：全部 1 条锚点未显式声明 tier（缺省 3 > tier_floor 2），引用表将收不到任何锚点
 [W-SMOKE] 不许出现在主 logger
 [W-DISABLED] 连续失败 3 次（限 3），本跑联网关闭
 [W-TIMEOUT] query=Q-timeout attempt=1/3
@@ -353,24 +353,24 @@ RuntimeError: 冒烟注入：对撞层失败
   ✓ v1.22.2 P2：schema/白名单/抽取/渲染四处打通 + 空 what 过滤 + 空 view 归零 + rubric 三段负对照
   ✓ v1.22.2 P3：短 answer 过滤 + 留痕 + 两条告警分离 + min_len=0 不过滤 + 阈值未动
   ✓ v1.23.0 W1：配置段/独立通道(propagate=False)/Gate 三方向/连续失败置位/五档失败/缓存命中/空结果终态/未知后端抛错/锚点目录未混用 —— 全部带负对照
-19:01:10 [INFO] dgtf: 拆解未产生 undecidable 子问题，从评估阶段兜底强加 1 条
+18:19:08 [INFO] dgtf: 拆解未产生 undecidable 子问题，从评估阶段兜底强加 1 条
   ✓ v1.23.0 W2：W# 编号/引用门/只许→partial/默认关零调用/配额/失败留痕/空结果终态/摘要只进 prompt + **3 变异体全判红**
   ✓ v1.23.0 W5-fix：Pool 字段出口前向守卫（全字段填满必须全出口 + 空 Pool 零联网键 + 变异体判红）
   ✓ v1.23.1 遗留收尾：前置圈号=0 / 圈内=真圈号 / round_kind / tier 提案默认关零副作用 / gov.cn→1 待审 / 提案纯留痕 + **变异体判红**
-  ✓ v1.23.2 整体审计：AUDIT PASS 68 / FAIL 0  （元DGTF-V1.23.34.py）
-19:01:55 [WARNING] dgtf: 三态多票：第 2 票返回 0 条判决（合法 dict 但空），重试 2/2
-19:01:55 [WARNING] dgtf: 三态多票：第 2 票返回 0 条判决（空票，等于弃权）
+  ✓ v1.23.2 整体审计：AUDIT PASS 68 / FAIL 0  （元DGTF-V1.23.33.py）
+18:19:53 [WARNING] dgtf: 三态多票：第 2 票返回 0 条判决（合法 dict 但空），重试 2/2
+18:19:53 [WARNING] dgtf: 三态多票：第 2 票返回 0 条判决（空票，等于弃权）
   ✓ v1.23.2 遗留3 tier 确认：默认零差异 / 确认成 4 出门 / 成 1 显示生效档 / floor 可调 / 加性 / **变异体判红**
-19:01:57 [WARNING] dgtf: 三态多票：第 2 票返回 0 条判决（合法 dict 但空），重试 2/2
-19:01:57 [WARNING] dgtf: 三态多票：第 2 票返回 0 条判决（空票，等于弃权）
-19:02:00 [WARNING] dgtf: 三态多票：第 2 票 id 档位=越界 → 弃票
+18:19:55 [WARNING] dgtf: 三态多票：第 2 票返回 0 条判决（合法 dict 但空），重试 2/2
+18:19:55 [WARNING] dgtf: 三态多票：第 2 票返回 0 条判决（空票，等于弃权）
+18:19:58 [WARNING] dgtf: 三态多票：第 2 票 id 档位=越界 → 弃票
   ✓ v1.23.2 遗留1 空票重试：默认 1 次得 3 票 / 置 0 退回 2 票 / 留痕正确 / **变异体判红**
   ✓ v1.23.3 id 归一化：纯函数四向正确
   ✓ v1.23.3 id 归一化：多票 / 单票两条路径都已接线
   ✓ v1.23.3 端到端：0 起票被 +1 归一，逐票逐条对齐且留痕
   ✓ v1.23.3 负对照：正常票行为与留痕都未变（加性）
   ✓ v1.23.3 越界票：弃票 + 真票号 + 可用票数已扣除
-19:02:02 [WARNING] dgtf: 三态多票：第 2 票 id 档位=越界 → 弃票
+18:20:00 [WARNING] dgtf: 三态多票：第 2 票 id 档位=越界 → 弃票
   ✓ v1.23.3 变异体：抠掉 0 起 +1 ⇒ 端到端判据判红
   ✓ v1.23.4 总控：6 个符号与两个取值集都对
   ✓ v1.23.4 总控：三项 auto = 配置逐字恒等（与 v1.23.3 同行为）
@@ -386,7 +386,7 @@ RuntimeError: 冒烟注入：对撞层失败
    · 思考强度：max（runtime.effort=max）
    · ⚠️ 强度已设为 max，但本跑**思考是关的** ⇒ 强度不生效（`effort` 只在 thinking 开启时随请求发出）
 
-⚠️  配置文件解析失败：C:\Users\18432\AppData\Local\Temp\tmp80w16fch\bad.yaml
+⚠️  配置文件解析失败：C:\Users\18432\AppData\Local\Temp\tmpn8ov8ov3\bad.yaml
    位置：第 2 行，第 1 列
    问题：expected ',' or ']', but got '<stream end>'
 
@@ -397,8 +397,8 @@ RuntimeError: 冒烟注入：对撞层失败
      4. 同一个顶层 key 定义了两次
      5. Tab 和空格混用（YAML 只允许空格）
 
-   已退回默认配置（C:\Users\18432\AppData\Local\Temp\tmp80w16fch\bad.yaml 被忽略）。
-   想禁用该文件：删除或重命名为 C:\Users\18432\AppData\Local\Temp\tmp80w16fch\bad.yaml.bak
+   已退回默认配置（C:\Users\18432\AppData\Local\Temp\tmpn8ov8ov3\bad.yaml 被忽略）。
+   想禁用该文件：删除或重命名为 C:\Users\18432\AppData\Local\Temp\tmpn8ov8ov3\bad.yaml.bak
 
   ✓ v1.23.4 总控：load_config 四个出口都过总控且不炸
   ✓ v1.23.4 总控：CLI 三开关 + 交互询问 + 深拷副本都已接线
@@ -406,50 +406,64 @@ RuntimeError: 冒烟注入：对撞层失败
   ✓ v1.23.4 变异体 M1：把 auto 当 on ⇒ auto 恒等判据判红
   ✓ v1.23.4 变异体 M2：只改 default 不改 stages ⇒ 判红
   ✓ v1.23.4 变异体 M3：effort 不校验 ⇒ 非法值静默通过，判红
-19:02:12 [INFO] dgtf: 自动调度漏层，按中位数 5 补齐：{'0': 5, '1': 5, 'both': 5, 'all': 5}
-19:02:12 [INFO] dgtf: 自动调度漏层，按中位数 5 补齐：{'0': 5, '1': 5, 'both': 5, 'all': 5}
-19:02:12 [INFO] dgtf: 自动调度漏层，按中位数 4 补齐：{'0': 4, 'both': 4, 'all': 4, '1': 4}
-19:02:12 [INFO] dgtf: 自动调度漏层，按中位数 4 补齐：{'0': 4, 'both': 4, 'all': 4, '1': 4}
-19:02:12 [INFO] dgtf: 自动调度漏层，按中位数 5 补齐：{'0': 5, '1': 5, 'both': 5, 'all': 5}
-19:02:12 [INFO] dgtf: 自动调度漏层，按中位数 5 补齐：{'0': 5, '1': 5, 'both': 5, 'all': 5}
-19:02:12 [INFO] dgtf: 自动调度漏层，按中位数 4 补齐：{'0': 4, 'both': 4, 'all': 4, '1': 4}
-19:02:12 [INFO] dgtf: 自动调度漏层，按中位数 4 补齐：{'0': 4, 'both': 4, 'all': 4, '1': 4}
-19:02:12 [INFO] dgtf: 自动调度漏层，按中位数 5 补齐：{'0': 5, '1': 5, 'both': 5, 'all': 5}
-19:02:12 [INFO] dgtf: 自动调度漏层，按中位数 5 补齐：{'0': 5, '1': 5, 'both': 5, 'all': 5}
-19:02:12 [INFO] dgtf: 自动调度漏层，按中位数 4 补齐：{'0': 4, 'both': 4, 'all': 4, '1': 4}
-19:02:12 [INFO] dgtf: 自动调度漏层，按中位数 4 补齐：{'0': 4, 'both': 4, 'all': 4, '1': 4}
-19:02:12 [INFO] dgtf: 自动调度漏层，按中位数 5 补齐：{'0': 5, '1': 5, 'both': 5, 'all': 5}
-19:02:12 [INFO] dgtf: 自动调度漏层，按中位数 5 补齐：{'0': 5, '1': 5, 'both': 5, 'all': 5}
-19:02:12 [INFO] dgtf: 自动调度漏层，按中位数 4 补齐：{'0': 4, 'both': 4, 'all': 4, '1': 4}
-19:02:12 [INFO] dgtf: 自动调度漏层，按中位数 4 补齐：{'0': 4, 'both': 4, 'all': 4, '1': 4}
-19:02:12 [WARNING] dgtf: external_anchor.as_evidence 用了 v1.21.75 的布尔写法 True → evidence（请迁到五档字符串 off/record/crosscheck/evidence/gate）
-19:02:25 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
-19:02:25 [WARNING] dgtf: 外部锚点加载失败：锚点文件读取失败：FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\__nope_anchor__.json'
-19:02:25 [WARNING] dgtf: 外部锚点检索失败：external_anchor.retriever='web_search' 尚未实现（当前只有 'snapshot' 与 'tavily'）；不静默降级
-19:02:25 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
-19:02:25 [INFO] dgtf: 外部锚点：retriever=tavily —— 不读快照文件，按圈真检索
-19:02:27 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
-19:02:27 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:27 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
-19:02:27 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
+18:20:11 [INFO] dgtf: 自动调度漏层，按中位数 5 补齐：{'0': 5, '1': 5, 'both': 5, 'all': 5}
+18:20:11 [INFO] dgtf: 自动调度漏层，按中位数 5 补齐：{'0': 5, '1': 5, 'both': 5, 'all': 5}
+18:20:11 [INFO] dgtf: 自动调度漏层，按中位数 4 补齐：{'0': 4, 'both': 4, 'all': 4, '1': 4}
+18:20:11 [INFO] dgtf: 自动调度漏层，按中位数 4 补齐：{'0': 4, 'both': 4, 'all': 4, '1': 4}
+18:20:11 [INFO] dgtf: 自动调度漏层，按中位数 5 补齐：{'0': 5, '1': 5, 'both': 5, 'all': 5}
+18:20:11 [INFO] dgtf: 自动调度漏层，按中位数 5 补齐：{'0': 5, '1': 5, 'both': 5, 'all': 5}
+18:20:11 [INFO] dgtf: 自动调度漏层，按中位数 4 补齐：{'0': 4, 'both': 4, 'all': 4, '1': 4}
+18:20:11 [INFO] dgtf: 自动调度漏层，按中位数 4 补齐：{'0': 4, 'both': 4, 'all': 4, '1': 4}
+18:20:11 [INFO] dgtf: 自动调度漏层，按中位数 5 补齐：{'0': 5, '1': 5, 'both': 5, 'all': 5}
+18:20:11 [INFO] dgtf: 自动调度漏层，按中位数 5 补齐：{'0': 5, '1': 5, 'both': 5, 'all': 5}
+18:20:11 [INFO] dgtf: 自动调度漏层，按中位数 4 补齐：{'0': 4, 'both': 4, 'all': 4, '1': 4}
+18:20:11 [INFO] dgtf: 自动调度漏层，按中位数 4 补齐：{'0': 4, 'both': 4, 'all': 4, '1': 4}
+18:20:11 [INFO] dgtf: 自动调度漏层，按中位数 5 补齐：{'0': 5, '1': 5, 'both': 5, 'all': 5}
+18:20:11 [INFO] dgtf: 自动调度漏层，按中位数 5 补齐：{'0': 5, '1': 5, 'both': 5, 'all': 5}
+18:20:11 [INFO] dgtf: 自动调度漏层，按中位数 4 补齐：{'0': 4, 'both': 4, 'all': 4, '1': 4}
+18:20:11 [INFO] dgtf: 自动调度漏层，按中位数 4 补齐：{'0': 4, 'both': 4, 'all': 4, '1': 4}
+18:20:11 [WARNING] dgtf: external_anchor.as_evidence 用了 v1.21.75 的布尔写法 True → evidence（请迁到五档字符串 off/record/crosscheck/evidence/gate）
+18:20:26 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
+18:20:26 [WARNING] dgtf: 外部锚点加载失败：锚点文件读取失败：FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\18432\\Desktop\\元DGTF-多模并行架构\\__nope_anchor__.json'
+18:20:26 [WARNING] dgtf: 外部锚点检索失败：external_anchor.retriever='web_search' 尚未实现（当前只有 'snapshot' 与 'tavily'）；不静默降级
+18:20:26 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
+18:20:26 [INFO] dgtf: 外部锚点：retriever=tavily —— 不读快照文件，按圈真检索
+18:20:28 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
+18:20:28 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:28 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
+18:20:28 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
+18:20:28 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
+18:20:28 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
+18:20:28 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:28 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
+18:20:28 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:28 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:28 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:28 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
+18:20:28 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
+18:20:29 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:29 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
+18:20:29 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:29 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:29 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
   ✓ v1.23.4 变异体 M4：不写回请求值 ⇒ requested 只剩 yaml，判红
   ✓ [v1235] pending_fix：归一化唯一实现+三处接线+16 组逐字一致；低置信差异保留；单票仍在且登记 2 项；布尔兼容留痕/不误报
   ✓ [v1236] 正文注释 0 处版次批注、docstring 0 处前导标记；负对照（v1.23.5）判红 441 行成块批注
   ✓ [v1237] 代码里 0 处版本段 / 0 处收束摘要；CHANGELOG.md 53 段（两向对账）
   ✓ [v1238] 空节守卫(三/六+负对照) / 停因汇总(3 读数) / 悬置去重(真跑形态 3+2、异 target 不合) / 三处接线均在
   ✓ [v1239] 取向分流：事实题→boundary / 决策题→decision / 显式 decision 不被覆盖 / 空题面保守走 boundary；词表 3+3 例；接线在
-📁 已保存: C:\Users\18432\AppData\Local\Temp\tmpmda_7x5w\20261014_190214_新中国的成立时间是什么时候.md
-📁 已保存: C:\Users\18432\AppData\Local\Temp\tmpib7x8lio\20261014_190214_新中国的成立时间是什么时候.md
-📁 已保存: C:\Users\18432\AppData\Local\Temp\tmpocbtfjn9\20261014_190214_这份方案怎么落地.md
+📁 已保存: C:\Users\18432\AppData\Local\Temp\tmp5c1bcikh\20261014_182014_新中国的成立时间是什么时候.md
+📁 已保存: C:\Users\18432\AppData\Local\Temp\tmpwaf5nr06\20261014_182014_新中国的成立时间是什么时候.md
+📁 已保存: C:\Users\18432\AppData\Local\Temp\tmpw8o_fl0j\20261014_182014_这份方案怎么落地.md
   ✓ [v12310] 形态声明(boundary+decision) / 附录两向对账(外置+内联) / 成本档规则(事实 economy·决策 balanced) / 未校验留痕(仅事实题) / 接线在
   ✓ [v12311] 自省回写(逃避/质量线索/硬约束 三触发 + 无诊断不渲染 + 顺序) / 事实题自动联网(事实 True·决策 False + 源码接线在)
-📁 已保存: C:\Users\18432\AppData\Local\Temp\tmp9v7szfwu\20261014_190215_新中国的成立时间是什么时候.md
-📁 已保存: C:\Users\18432\AppData\Local\Temp\tmp6ytxuqsg\20261014_190215_新中国的成立时间是什么时候.md
-📁 已保存: C:\Users\18432\AppData\Local\Temp\tmpa1ibdwcn\20261014_190215_新中国的成立时间是什么时候.md
-📁 已保存: C:\Users\18432\AppData\Local\Temp\tmpkd7nlitt\20261014_190215_这份方案怎么落地.md
+📁 已保存: C:\Users\18432\AppData\Local\Temp\tmpbh82i_kp\20261014_182015_新中国的成立时间是什么时候.md
+📁 已保存: C:\Users\18432\AppData\Local\Temp\tmp3wzp20n0\20261014_182015_新中国的成立时间是什么时候.md
+📁 已保存: C:\Users\18432\AppData\Local\Temp\tmpvjwj4yyt\20261014_182015_新中国的成立时间是什么时候.md
+📁 已保存: C:\Users\18432\AppData\Local\Temp\tmpdejluh21\20261014_182015_这份方案怎么落地.md
   ✓ [v12312] 外部锚点两条通道（文本/联网）分别写明 / 开·关·未记录三态 / 失败与零条读数 / 四处渲染点 / 口径不打架
   ✓ [v12313] 十二项逐项接管（10 项 CLI + 2 项配置）/ 总开关 / 历史自适应（5 正 3 负）/ 技术债（唯一实现 + 两路同 schema）/ 产物表
-📁 已保存: C:\Users\18432\AppData\Local\Temp\tmpc2c_ujos\20261014_190221_只用被动观测能否排除外部驱动或测量滤波制.md
+📁 已保存: C:\Users\18432\AppData\Local\Temp\tmpe7pmuvzg\20261014_182022_只用被动观测能否排除外部驱动或测量滤波制.md
   ✓ [v12314] 历史三源（475 份）· rounds_run 字段 · 按题型分桶 · 圈数三级回退+样本门槛 · 成本档相对判据 · 实际停圈落产物
   ✓ [v12315] 分层（每题型 20 条，快照 423 份）· 时间衰减（半衰期 14.0 天）· 三态一致率 n=305 p10=0.1667 · 联网行 · 三条规则按实测定
   ✓ [v12316] 档位维度已删（配置/auto 项/符号/CLI 四处）；惰性化归零；sat 落点四层同等（含 0 层走 stall）；元层拿到 sat 结论后会停；参照集改池内全量
@@ -464,9 +478,9 @@ RuntimeError: 冒烟注入：对撞层失败
    · [all_on] web_search.enabled：False → True（联网检索）
    · [all_on] external_anchor.as_evidence：'off' → 'gate'（锚点作 gate 证据）
    · [all_on] api.thinking.default：'disabled' → 'enabled'（思考档默认开）
-📁 已保存: C:\Users\18432\AppData\Local\Temp\tmp1v81b4bz\20261014_190225_新中国的成立时间是什么时候.md
+📁 已保存: C:\Users\18432\AppData\Local\Temp\tmpj690_6m6\20261014_182026_新中国的成立时间是什么时候.md
   ✓ [v12318] 锚点默认开（DEFAULT + yaml）；未挂文件=干净态（不记 error、负对照仍记）；渲染四态分明；产物不写五行零、不写「锚点异常」
-📁 已保存: C:\Users\18432\AppData\Local\Temp\tmp03xn_723\20261014_190225_新中国的成立时间是什么时候.md
+📁 已保存: C:\Users\18432\AppData\Local\Temp\tmpezqvevu9\20261014_182026_新中国的成立时间是什么时候.md
   ✓ [v12319] 锚点真检索可达（tavily+空锚点 ⇒ 真调）；snapshot 仍零调用；未实现后端真抛错留痕；unconfigured 只在 snapshot；渲染给两条路
   ✓ [v12320] 留痕独立开关默认关：关时静音且不往下走、开时真打；show_ing/show_manifest 默认 false；yaml 与默认一致
   ✓ [v12321] LLM 调用后打 [tok] 累计行（logging、非 vp）
@@ -499,121 +513,106 @@ RuntimeError: 冒烟注入：对撞层失败
    ⚠️ [api.thinking] 形状非法（int，应为 mapping）⇒ 已降级为 {}；请检查 dgtf_config.yaml 的 api.thinking 段是否被整段覆盖成了标量。
   OK v1.23.32 学科吸收（α/κ · 尺度 · 级联 · 成本两分 · CSD）全过
   OK v1.23.33 AutoTune（帕累托 · 层集膝盖 · 圈数+1 · 不瞎猜 · 纯读 · 四层目标读数 · 目标入运行 · 三阶段决策 · archive 开放探索）全过
-  ✓ v1.23.34 提示词优化（VOICE/EVIDENCE/EXPLORE_FORMAT 三常量接线 · 格式契约未动 · 反漂亮未削弱 · 内容级引用/管道级禁止 · ing 输出结构 · mock 分流字样保留）全过19:02:27 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
-19:02:27 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
-19:02:27 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:27 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
-19:02:27 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:27 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:27 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:28 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
-19:02:28 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
-19:02:28 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:28 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
-19:02:28 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:28 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:28 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:28 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
-19:02:28 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
-19:02:28 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
-19:02:28 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:28 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:28 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:28 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:28 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
-19:02:28 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
-19:02:28 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
-19:02:29 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:29 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:29 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:29 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:29 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
-19:02:29 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
-19:02:29 [INFO] dgtf: 拆解未产生 undecidable 子问题，从评估阶段兜底强加 1 条
-19:02:29 [WARNING] dgtf: 三态多票：第 1 票返回 0 条判决（合法 dict 但空），重试 2/2
-19:02:29 [WARNING] dgtf: 三态多票：第 1 票返回 0 条判决（空票，等于弃权）
-19:02:29 [WARNING] dgtf: 三态多票：第 2 票返回 0 条判决（合法 dict 但空），重试 2/2
-19:02:29 [WARNING] dgtf: 三态多票：第 2 票返回 0 条判决（空票，等于弃权）
-19:02:29 [WARNING] dgtf: 三态多票：第 3 票返回 0 条判决（合法 dict 但空），重试 2/2
-19:02:29 [WARNING] dgtf: 三态多票：第 3 票返回 0 条判决（空票，等于弃权）
-19:02:29 [WARNING] dgtf: 三态多票：无有效票（全失败或全部弃票） → 保留拆解原标签
-19:02:29 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:29 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:29 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:29 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:29 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
-19:02:29 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
-19:02:29 [INFO] dgtf: 拆解未产生 undecidable 子问题，从评估阶段兜底强加 1 条
-19:02:29 [WARNING] dgtf: 三态多票：第 1 票返回 0 条判决（合法 dict 但空），重试 2/2
-19:02:29 [WARNING] dgtf: 三态多票：第 1 票返回 0 条判决（空票，等于弃权）
-19:02:29 [WARNING] dgtf: 三态多票：第 2 票返回 0 条判决（合法 dict 但空），重试 2/2
-19:02:29 [WARNING] dgtf: 三态多票：第 2 票返回 0 条判决（空票，等于弃权）
-19:02:29 [WARNING] dgtf: 三态多票：第 3 票返回 0 条判决（合法 dict 但空），重试 2/2
-19:02:29 [WARNING] dgtf: 三态多票：第 3 票返回 0 条判决（空票，等于弃权）
-19:02:29 [WARNING] dgtf: 三态多票：无有效票（全失败或全部弃票） → 保留拆解原标签
-19:02:29 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:29 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:29 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:29 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:29 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
-19:02:29 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
-19:02:30 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
-19:02:30 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:30 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:30 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:30 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:30 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
-19:02:30 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
-19:02:30 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
-19:02:30 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:30 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:30 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:30 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:30 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
-19:02:30 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
-19:02:31 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
-19:02:31 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:31 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:31 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:31 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:31 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
-19:02:31 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
-19:02:31 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:31 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
-19:02:31 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:31 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:31 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:31 [INFO] dgtf: 可判定性归一化：decidable → partial
-19:02:31 [INFO] dgtf: 可判定性归一化（合并池+外判）：decidable → partial
-19:02:31 [INFO] dgtf: 自动调度漏层，按中位数 4 补齐：{'all': 4, '0': 4, '1': 4, 'both': 4}
-19:02:31 [INFO] dgtf: 可判定性归一化（拆解分派）：undecidable → partial
-19:02:31 [INFO] dgtf: 拆解未产生 undecidable 子问题，从评估阶段兜底强加 1 条
-19:02:31 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
-19:02:31 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
-19:02:32 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:32 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
-19:02:32 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-19:02:32 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
-
-📁 已保存: C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_outputs\20261014_190227_测试问题AI在数字IC设计里到底.md
+📁 已保存: D:\元DGTF-多模并行架构\smoke_outputs\20261014_182028_测试问题AI在数字IC设计里到底.md
   ✓ serial 跑通
-📁 已保存: C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_outputs\20261014_190228_测试问题AI在数字IC设计里到底.md
+📁 已保存: D:\元DGTF-多模并行架构\smoke_outputs\20261014_182029_测试问题AI在数字IC设计里到底.md18:20:29 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
+18:20:29 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
+18:20:29 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
+18:20:29 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:29 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:29 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:29 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:29 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
+18:20:29 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
+18:20:29 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
+18:20:29 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:29 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:29 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:29 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:29 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
+18:20:29 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
+18:20:29 [INFO] dgtf: 拆解未产生 undecidable 子问题，从评估阶段兜底强加 1 条
+18:20:29 [WARNING] dgtf: 三态多票：第 1 票返回 0 条判决（合法 dict 但空），重试 2/2
+18:20:30 [WARNING] dgtf: 三态多票：第 1 票返回 0 条判决（空票，等于弃权）
+18:20:30 [WARNING] dgtf: 三态多票：第 2 票返回 0 条判决（合法 dict 但空），重试 2/2
+18:20:30 [WARNING] dgtf: 三态多票：第 2 票返回 0 条判决（空票，等于弃权）
+18:20:30 [WARNING] dgtf: 三态多票：第 3 票返回 0 条判决（合法 dict 但空），重试 2/2
+18:20:30 [WARNING] dgtf: 三态多票：第 3 票返回 0 条判决（空票，等于弃权）
+18:20:30 [WARNING] dgtf: 三态多票：无有效票（全失败或全部弃票） → 保留拆解原标签
+18:20:30 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:30 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:30 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:30 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:30 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
+18:20:30 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
+18:20:30 [INFO] dgtf: 拆解未产生 undecidable 子问题，从评估阶段兜底强加 1 条
+18:20:30 [WARNING] dgtf: 三态多票：第 1 票返回 0 条判决（合法 dict 但空），重试 2/2
+18:20:30 [WARNING] dgtf: 三态多票：第 1 票返回 0 条判决（空票，等于弃权）
+18:20:30 [WARNING] dgtf: 三态多票：第 2 票返回 0 条判决（合法 dict 但空），重试 2/2
+18:20:30 [WARNING] dgtf: 三态多票：第 2 票返回 0 条判决（空票，等于弃权）
+18:20:30 [WARNING] dgtf: 三态多票：第 3 票返回 0 条判决（合法 dict 但空），重试 2/2
+18:20:30 [WARNING] dgtf: 三态多票：第 3 票返回 0 条判决（空票，等于弃权）
+18:20:30 [WARNING] dgtf: 三态多票：无有效票（全失败或全部弃票） → 保留拆解原标签
+18:20:30 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:30 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:30 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:30 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:30 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
+18:20:30 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
+18:20:30 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
+18:20:31 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:31 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:31 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:31 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:31 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
+18:20:31 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
+18:20:31 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
+18:20:31 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:31 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:31 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:31 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:31 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
+18:20:31 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
+18:20:31 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
+18:20:32 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:32 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:32 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:32 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:32 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
+18:20:32 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
+18:20:32 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:32 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
+18:20:32 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:32 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:32 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:32 [INFO] dgtf: 可判定性归一化：decidable → partial
+18:20:32 [INFO] dgtf: 可判定性归一化（合并池+外判）：decidable → partial
+18:20:32 [INFO] dgtf: 自动调度漏层，按中位数 4 补齐：{'all': 4, '0': 4, '1': 4, 'both': 4}
+18:20:32 [INFO] dgtf: 可判定性归一化（拆解分派）：undecidable → partial
+18:20:32 [INFO] dgtf: 拆解未产生 undecidable 子问题，从评估阶段兜底强加 1 条
+18:20:32 [INFO] dgtf: 外部锚点：已开启但未配置 path（未挂锚点文件）
+18:20:32 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
+18:20:32 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:32 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
+18:20:32 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+18:20:32 [INFO] dgtf: position_all_same（收尾复核）：write_diag=False，不重复写诊断文件
+
   ✓ A      跑通
-📁 已保存: C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_outputs\20261014_190228_测试问题AI在数字IC设计里到底.md
+📁 已保存: D:\元DGTF-多模并行架构\smoke_outputs\20261014_182029_测试问题AI在数字IC设计里到底.md
   ✓ B      跑通
-📁 已保存: C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_outputs\20261014_190229_测试问题AI在数字IC设计里到底.md
+📁 已保存: D:\元DGTF-多模并行架构\smoke_outputs\20261014_182029_测试问题AI在数字IC设计里到底.md
   ✓ C      跑通
-📁 已保存: C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_outputs\20261014_190229_测试问题AI在数字IC设计里到底.md
+📁 已保存: D:\元DGTF-多模并行架构\smoke_outputs\20261014_182030_测试问题AI在数字IC设计里到底.md
   ✓ D      跑通
-📁 已保存: C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_outputs\20261014_190229_测试问题AI在数字IC设计里到底.md
+📁 已保存: D:\元DGTF-多模并行架构\smoke_outputs\20261014_182030_测试问题AI在数字IC设计里到底.md
   ✓ E      跑通
-📁 已保存: C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_outputs\20261014_190230_测试问题AI在数字IC设计里到底.md
+📁 已保存: D:\元DGTF-多模并行架构\smoke_outputs\20261014_182031_测试问题AI在数字IC设计里到底.md
   ✓ F      跑通
-📁 已保存: C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_outputs\20261014_190230_测试问题AI在数字IC设计里到底.md
+📁 已保存: D:\元DGTF-多模并行架构\smoke_outputs\20261014_182031_测试问题AI在数字IC设计里到底.md
   ✓ G      跑通
-📁 已保存: C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_outputs\20261014_190231_测试问题AI在数字IC设计里到底.md
+📁 已保存: D:\元DGTF-多模并行架构\smoke_outputs\20261014_182032_测试问题AI在数字IC设计里到底.md
   ✓ H      跑通
-📁 已保存: C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_outputs\20261014_190231_测试问题AI在数字IC设计里到底.md
+📁 已保存: D:\元DGTF-多模并行架构\smoke_outputs\20261014_182032_测试问题AI在数字IC设计里到底.md
   ✓ auto    跑通（决策器返回 A）
   ✓ 自动规划 auto_plan：五维生效，脏值兜底（非法档/负预算/越界圈数/未知 route），圈数钳在 [4,6]
   ✓ 动态提前停：预算用尽可判、留痕，0 表示不设限；四条跑圈通道都挂了守卫
@@ -625,16 +624,16 @@ RuntimeError: 冒烟注入：对撞层失败
 ==========================================================================
 模式          views                  调用 self  层判定源               缺  配额 care  输入  预热     秒
 ==========================================================================
-serial      0,1,both,all           70    4  4pool+external     0   0   12   1   -  0.57
-A           0,1,both,all           82    4  4pool+external     0   0   12   1   -  0.35
+serial      0,1,both,all           70    4  4pool+external     0   0   12   1   -  0.52
+A           0,1,both,all           82    4  4pool+external     0   0   12   1   -  0.33
 B           0,1,both,all           71    8  4pool+external     0   0   12   1   1  0.25
-C           0,1,both,all           70    8  4pool+external     0   0   12   1   1  0.39
-D           0,1,both,all           75    8  4external          0   0   12   1   0   0.4
-E           0,1,both,all           75    8  4external          0   0   12   1   0  0.47
+C           0,1,both,all           70    8  4pool+external     0   0   12   1   1  0.37
+D           0,1,both,all           75    8  4external          0   0   12   1   0  0.38
+E           0,1,both,all           75    8  4external          0   0   12   1   0  0.44
 F           0,1,both,all           70    8  4pool+external     0   0   12   1   2  0.43
 G           0,1,both,all           70    8  4pool+external     0   0   12   1   2  0.48
-H           0,1,both,all           70    8  4pool+external     0   0   12   1   2  0.48
-auto→A      0,1,both,all           83    4  4pool+external     0   0   12   1   -  0.35
+H           0,1,both,all           70    8  4pool+external     0   0   12   1   2  0.47
+auto→A      0,1,both,all           83    4  4pool+external     0   0   12   1   -  0.34
 A(no-all)   0,1,both               38    3  3pool+external     0   0    9   1   -     0
 ==========================================================================
   层 = self 段出现的层数（[P0-1] 应为 4）　判定源 = 可判定性来源（[P0-2] 应为 pool+external）
@@ -657,4 +656,4 @@ A(no-all)   0,1,both               38    3  3pool+external     0   0    9   1   
   未生 = self_check 报的「此处未生」处数（[P2-4]）　逃避/超标 = 判为逃避的圈数 / 质量线索数
 
   ✓ P0-1 / P0-2 / P0-3（判定判据可查）/ P1-4 / P1-5 / P1-6 全部生效
-落盘目录： C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_outputs
+落盘目录： D:\元DGTF-多模并行架构\smoke_outputs

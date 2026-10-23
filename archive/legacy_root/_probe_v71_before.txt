@@ -3,12 +3,12 @@ Loading model from cache C:\Users\18432\AppData\Local\Temp\jieba.cache
 Loading model cost 0.818 seconds.
 Prefix dict has been built successfully.
 02:18:33 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
-02:18:33 [INFO] dgtf: position 诊断已写：C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_outputs\diagnostic_position_0_20261004_021833.log
+02:18:33 [INFO] dgtf: position 诊断已写：D:\元DGTF-多模并行架构\smoke_outputs\diagnostic_position_0_20261004_021833.log
 02:18:33 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
 02:18:33 [INFO] dgtf: 可判定性归一化（修行池评估）：undecidable → partial
-02:18:33 [INFO] dgtf: position 诊断已写：C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_outputs\diagnostic_position_1_20261004_021833.log
-02:18:33 [INFO] dgtf: position 诊断已写：C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_outputs\diagnostic_position_both_20261004_021833.log
-02:18:33 [INFO] dgtf: position 诊断已写：C:\Users\18432\Desktop\元DGTF-多模并行架构\smoke_outputs\diagnostic_position_all_20261004_021833.log
+02:18:33 [INFO] dgtf: position 诊断已写：D:\元DGTF-多模并行架构\smoke_outputs\diagnostic_position_1_20261004_021833.log
+02:18:33 [INFO] dgtf: position 诊断已写：D:\元DGTF-多模并行架构\smoke_outputs\diagnostic_position_both_20261004_021833.log
+02:18:33 [INFO] dgtf: position 诊断已写：D:\元DGTF-多模并行架构\smoke_outputs\diagnostic_position_all_20261004_021833.log
 02:18:33 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
 02:18:33 [INFO] dgtf: position 诊断已写：C:\Users\18432\AppData\Local\Temp\probe71_run_svfv9egr\diagnostic_position_0_20261004_021833.log
 02:18:33 [INFO] dgtf: 可判定性归一化（外部评估）：decidable → partial
