@@ -77,6 +77,8 @@ tmp*/
 
 # DSH 项目文件归档（本地保留，不入库）
 archive/project_artifacts/
+archive/logs/
+archive/screenshots/
 
 # 本地模型权重与训练环境（体积大、机器相关，本地保留不入库）
 local_model/models/
