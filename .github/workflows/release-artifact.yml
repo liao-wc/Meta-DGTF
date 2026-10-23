@@ -13,6 +13,6 @@ jobs:
         run: |
           zip -r "meta-dgtf-${GITHUB_REF_NAME}.zip" . \
             -x 'local_model/models/*' 'local_model/envs/*' 'outputs/*' 'dgtf_memory/*' 'archive/*' '*.log'
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           files: meta-dgtf-${{ github.ref_name }}.zip
