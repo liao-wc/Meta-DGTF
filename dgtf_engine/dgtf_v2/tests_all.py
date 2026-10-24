@@ -65,8 +65,11 @@ def main():
                               d.get("quality") or {})
         check("真实 packed 闭合包可组装", "closure_completeness" in p6.to_dict(),
               p6.to_dict())
+    elif os.getenv("DGTF_REQUIRE_REPLAY") == "1":
+        check("真实 packed 闭合包可组装", False, "no packed (DGTF_REQUIRE_REPLAY=1)")
     else:
-        check("真实 packed 闭合包可组装", False, "no packed")
+        # CI 是干净 checkout：outputs/ 不入库，本地回放检查显式 SKIP（不是假绿）。
+        print("  · SKIP 真实 packed 闭合包可组装（无 outputs 回放数据）")
 
     print("\nPASS %d / FAIL %d" % (len(PASS), len(FAIL)))
     if FAIL:
