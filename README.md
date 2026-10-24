@@ -3,8 +3,8 @@
 一个**单文件四层螺旋推理引擎** + **V2 三平面核心** + **本地 Web 工作台**：
 修行 / 研究 / 对撞 / 元，跑出可审计、可回放、可融合的产物。
 
-- **当前版本**：V2.2.0（行为级融合版）
-- **生产引擎**：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.0.py
+- **当前版本**：V2.2.1（V2.2.0 行为级融合 + 补丁迭代）
+- **生产引擎**：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.1.py
 - **V2 核心**：dgtf_engine/dgtf_v2/
 - **人用界面**：dgtf_app/（App V2.0.0，本次未改动）
 - **融合实现**：单引擎内联（Meta-DGTF-V2.2.0.py）；V2.1 外部模块仅作回滚参考
@@ -32,7 +32,7 @@ Meta-DGTF-道生三阶模型源于用户与 DGTF 的长对话（分享 ID: 44iyn
 
 详细定义、边界、不是什么：docs/history/Meta-DGTF-道生三阶模型-来源与定义.md。
 
-## 二、V2.2.0 的核心能力
+## 二、V2.2.x 的核心能力（V2.2.0 行为融合 + V2.2.1 补丁）
 
 ### 四层螺旋
 
@@ -108,13 +108,13 @@ TAVILY_API_KEY=tvly-...        # 可选：联网检索
 ### 跑一次
 
 ~~~bash
-python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.0.py "你的问题"
+python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.1.py "你的问题"
 
 # 四层各一圈
-python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.0.py --route 0,1,both,all --rounds 1 "你的问题"
+python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.1.py --route 0,1,both,all --rounds 1 "你的问题"
 
 # 质量/成本预设
-python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.0.py -c configs/方案F-帕累托最优.yaml "你的问题"
+python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.1.py -c configs/方案F-帕累托最优.yaml "你的问题"
 ~~~
 
 常用参数：
@@ -136,7 +136,7 @@ python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.0.py -c configs/方案F-帕累�
 | 门 | 结果 |
 |---|---|
 | fast_gate | PASS 12 / FAIL 0 |
-| V2 tests_*.py | 37 / 37 PASS（含 inline_fusion 13/13） |
+| V2 tests_*.py | 38 / 38 PASS（含 inline_fusion 13/13） |
 | App selftest | PASS 371 / FAIL 0 |
 | 依赖 pip check | 0 broken |
 | 历史融合 readiness | 1.00 / continuity_ok=True |
@@ -162,7 +162,7 @@ local_model\envs\dgtf_llm_env\Scripts\python.exe -m pip check
 
 | 路径 | 是什么 |
 |---|---|
-| dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.0.py | 当前生产引擎 |
+| dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.1.py | 当前生产引擎 |
 | dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.0.0.py | 上一基线（保留回滚） |
 | dgtf_engine/dgtf_v2/ | V2 核心：契约/EML/调度/四层/F2–F5/融合 |
 | dgtf_engine/dgtf_v1/ | V1 归档（引擎/报告/脚本/fixtures） |
@@ -217,9 +217,9 @@ local_model\envs\dgtf_llm_env\Scripts\python.exe -m pip check
 
 ## 九、当前收束
 
-- 版本：V2.2.0
+- 版本：V2.2.1
 - 历史版本：178 个快照（V1.0 → V2.0.0）
 - 能力轴：17 条，readiness=1.00
 - 行为臂：5 个（v1_spiral / v1_frontier / v2_contract / v2_pareto / fusion_full）
-- 收束报告：V2.2.0-收束报告.md
-- 发布说明：docs/releases/V2.2.0.md
+- 收束报告：V2.2.1-收束报告.md
+- 发布说明：docs/releases/V2.2.1.md

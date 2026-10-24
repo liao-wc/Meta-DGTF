@@ -60,6 +60,18 @@ python audits/_core_audit.py one --packed "outputs/<产物>.packed.json" --out a
 - App selftest：PASS 371 / FAIL 0
 - pip check：App / local_model 两环境 0 broken
 
+## 5.1 V2.2.1 补丁迭代（2026-10-24）
+
+- 职责读数：交付面按层取真实产品（duty_deliver_text）+ R 实词级命中 + 下限 0.15；元层按闭合职责判 short。
+  离线复算最新真跑四层：S=0.36/0.27/0.16/0（元层 closure 门）⇒ **duty_short 消失**。
+- 质量线索：candidates_backfilled 收尾复核阈值 0.75、self-check 单源留痕；polarity_all_same_structural 与
+  probe_link_dangling 改 view.meta 留痕（不挂质量旗）。
+- 质量读数：coverage 兜底链（最新真跑 0.8875，basis=decidable_weighted）；tri_ratio 在 α 可用时改报
+  tri_consistency（最新真跑 α=1.0，不再用 0.1667 冒充质量）。
+- 验收：fast_gate 12/0、V2 tests 38/38（480 项检查）、App selftest 371/0、pip check 0 broken；
+  新增离线预检 scripts/precheck_quality.py（不烧真跑即可复算质量门）。
+- 版本：V2.2.1（引擎）、App 2.0.1；旧版 V2.2.0 文件保留。
+
 ## 6. 边界与剩余读数（非质量门）
 
 - `duty_short` 与「体力耗尽」停止文案仍在：职责 S 是交付面被内部面稀释的**读数**，

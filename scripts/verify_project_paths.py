@@ -7,7 +7,7 @@ ROOT = Path(r'D:\Meta-DGTF-道生三阶模型')
 checks = {
   'root': ROOT,
   'app_server': ROOT/'dgtf_app'/'server.py',
-  'engine': ROOT/'dgtf_engine'/'dgtf_v2'/'engine'/'Meta-DGTF-V2.2.0.py',
+  'engine': ROOT/'dgtf_engine'/'dgtf_v2'/'engine'/'Meta-DGTF-V2.2.1.py',
   'dgtf_v2': ROOT/'dgtf_engine'/'dgtf_v2',
   'models': ROOT/'local_model'/'models',
   'bge': ROOT/'local_model'/'models'/'bge-small-zh-v1.5',

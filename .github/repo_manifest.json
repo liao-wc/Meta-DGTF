@@ -39,7 +39,7 @@
       "_verify",
       "engine",
       "dgtf_engine/dgtf_v2/engine/Meta-DGTF-V",
-      "dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.0.py"
+      "dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.1.py"
     ],
     "docs": [
       "docs/",
@@ -50,7 +50,10 @@
       "v13",
       "PROJECT_MAP.md",
       "PROJECT_LAYOUT.md",
-      "V2.2.0-发布报告.md",
+      "V2.2.1-发布报告.md",
+      "V2.2.1-收束报告.md",
+      "docs/releases/",
+      "docs/queue_closeout_20261024.md",
       "docs/dependency_update_20261023.md",
       "CONTRIBUTING.md",
       "SECURITY.md",
@@ -94,7 +97,7 @@
       "dgtf_engine/dgtf_v2/",
       "dgtf_engine/dgtf_v2/engine/",
       "dgtf_engine/dgtf_v2/engine/Meta-DGTF-V",
-      "dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.0.py"
+      "dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.1.py"
     ],
     "dgtf_v1": [
       "dgtf_engine/dgtf_v1/",

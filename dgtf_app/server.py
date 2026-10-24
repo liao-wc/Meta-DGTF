@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "2.0.0"
+APP_VERSION = "2.0.1"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -1497,7 +1497,7 @@ def _proposal_project_context():
         head_ts = int((r2.stdout or "0").strip() or 0)
     except Exception:
         pass
-    files = ["dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.0.py",
+    files = ["dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.1.py",
              "dgtf_engine/dgtf_v2/agent_bridge.py",
              "dgtf_app/server.py", "dgtf_app/static/app.js"]
     parts = [head]
@@ -1514,7 +1514,7 @@ def _proposal_project_context():
         qn = sum(1 for _ in q.open(encoding="utf-8", errors="replace"))
     except Exception:
         qn = 0
-    eng = _prop_cached_text(root / "dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.0.py")
+    eng = _prop_cached_text(root / "dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.1.py")
     br = _prop_cached_text(root / "dgtf_engine/dgtf_v2/agent_bridge.py")
     return {
         "head": head[:12],
@@ -2193,21 +2193,63 @@ def _dsh_current_rpc(endpoint: str, args: dict, timeout: float = 25) -> dict:
     return result.get("value") or {}
 
 
-def _dsh_current_session_id() -> str:
+def _dsh_session_is_subagent(item) -> bool:
+    """子代理（Team 队友 / subagent）会话：带 parentSessionId 或 origin=subagent。"""
+    item = item or {}
+    return (str(item.get("origin") or "") == "subagent"
+            or bool(item.get("parentSessionId")))
+
+
+def _dsh_pick_session(items) -> str:
+    """从 session/list 里选出「DSH GUI 当前对话」的会话 id。
+
+    规则（App V2.0.1）：
+    1. 显式 DSH_SESSION_ID 且不是子代理会话 ⇒ 直接用（保留旧行为）；若它指向
+       队友/subagent 会话则忽略并回退 —— 这类会话的 session/page 需要 durable
+       parent 地址，App 读不了，「DSH 本对话」必须落在 DSH GUI 根会话上。
+    2. 优先 cwd=项目根、非空、非子代理的会话，按 updatedAt 取最新；再退到任意
+       非子代理会话、最后任意会话。旧实现只看 cwd+updatedAt，运行中的队友会话
+       （更新更频繁）会把「本对话」抢走 ⇒ 视图空白或 502，与 GUI 对话不一致。
+    """
     env = str(os.getenv("DSH_SESSION_ID") or "").strip()
-    val = _dsh_current_rpc("session/list", {"_request": {}})
-    items = val.get("items") or []
+    items = [x for x in (items or []) if isinstance(x, dict)]
     if env:
         for item in items:
-            if str(item.get("sessionId") or "") == env:
+            if str(item.get("sessionId") or "") != env:
+                continue
+            if not _dsh_session_is_subagent(item):
                 return env
-    # 没有显式 env 时，优先选当前工作目录、正在运行、最近更新的会话。
+            break
     root = str(Path(__file__).resolve().parent.parent)
-    candidates = [x for x in items if str(x.get("cwd") or "") == root] or items
-    candidates.sort(key=lambda x: float(x.get("updatedAt") or 0), reverse=True)
+
+    def _newest(pred):
+        cand = [x for x in items if pred(x)]
+        cand.sort(key=lambda x: float(x.get("updatedAt") or 0), reverse=True)
+        return cand
+
+    candidates = _newest(lambda x: str(x.get("cwd") or "") == root
+                         and not _dsh_session_is_subagent(x) and not x.get("blank"))
+    if not candidates:
+        candidates = _newest(lambda x: not _dsh_session_is_subagent(x) and not x.get("blank"))
+    if not candidates:
+        candidates = _newest(lambda x: not _dsh_session_is_subagent(x))
+    if not candidates:
+        candidates = _newest(lambda x: True)
     if not candidates:
         raise RuntimeError("DSH 当前没有可用会话")
     return str(candidates[0].get("sessionId") or "")
+
+
+def _dsh_current_session_id() -> str:
+    return _dsh_pick_session(_dsh_current_rpc("session/list", {"_request": {}}).get("items") or [])
+
+
+def _dsh_current_session_item():
+    """一次 session/list 同时取出当前会话 id 与投影条目（full 视图轮询省一次 RPC）。"""
+    items = _dsh_current_rpc("session/list", {"_request": {}}).get("items") or []
+    sid = _dsh_pick_session(items)
+    cur = next((x for x in items if str(x.get("sessionId") or "") == sid), {})
+    return sid, cur, items
 
 
 def _dsh_current_prompt(task: str, dry_run: bool = False, mode: str = "queue") -> dict:
@@ -2486,6 +2528,281 @@ def _dsh_current_events(since: int = 0, limit: int = 300) -> dict:
             "since": since,
             "events": events,
             "last_seq": max([int(x.get("seq") or 0) for x in events] + [since])}
+
+
+# ── ★ App V2.0.1：「DSH 本对话」整段会话实时视图（full=1）───────────────────
+# 旧的 /api/dsh/current/events 从 active 逻辑会话 start_seq 起算、只回传增量，
+# 看不到本会话更早内容也没有回看；full=1 直接以 DSH 当前根会话为准：
+#   默认   → 整段会话最近 limit 条（App 首次载入，约 200 条）
+#   since  → seq>since 的增量（App 每 700ms 轮询）
+#   before → seq<before 的最近 limit 条（App「载入更早」向上翻页）
+# 默认（不带 full）的旧行为完全不变，保持旧调用方兼容。
+_DSH_FULL_LIMIT_DEFAULT = 200
+_DSH_FULL_LIMIT_MAX = 600
+_DSH_EVENT_TEXT_MAX = 12000
+
+
+def _dsh_session_page(sid, through, max_messages=64):
+    """读 session/page：截止 throughSeq（含）、向前 maxMessages 条消息的记录（seq 升序）。"""
+    req = {"address": {"kind": "session", "sessionId": str(sid or "")},
+           "throughSeq": max(0, int(through or 0)),
+           "maxMessages": max(1, int(max_messages or 1))}
+    return _dsh_current_rpc("session/page", {"request": req}).get("records") or []
+
+
+def _dsh_trim_text(txt, limit=None) -> str:
+    limit = int(limit or _DSH_EVENT_TEXT_MAX)
+    txt = str(txt or "")
+    if len(txt) <= limit:
+        return txt
+    return txt[:limit] + "\n…（已截断，共 %d 字符）" % len(txt)
+
+
+def _dsh_blocks_text(blocks) -> str:
+    out = []
+    for b in blocks or []:
+        if isinstance(b, dict) and b.get("type") == "text" and b.get("text"):
+            out.append(str(b.get("text")))
+    return "\n".join(out).strip()
+
+
+def _dsh_parse_tool_args(args):
+    import json as _json
+    if isinstance(args, str):
+        try:
+            return _json.loads(args)
+        except Exception:
+            return args
+    return args if args is not None else {}
+
+
+def _dsh_events_from_record(ev, ctx, seen_calls):
+    """把一条 DSH 原始事件转换成 App 展示事件（与 DSH GUI 同构）。
+
+    覆盖：用户/助手文本、思考（reasoning）、工具调用（名称+参数）、工具结果
+    （截断）、turn 状态行；assistant/message 内嵌 tool-call 与独立 tool/call
+    事件按 callId 去重；run_code 里的并行子调用（tool/ptc-dispatch-*）也保留，
+    标注 nested=True，和 Harness GUI 里的工具卡一致。
+    ctx 记录当前 turn/step（后续事件补全用），seen_calls 用于调用去重。
+    """
+    et = str((ev or {}).get("type") or "")
+    data = (ev or {}).get("data") or {}
+    seq = int((ev or {}).get("seq") or 0)
+    ts = (ev or {}).get("time") or 0
+    if not isinstance(data, dict):
+        data = {}
+    for key in ("turn", "step"):
+        if data.get(key) is not None:
+            try:
+                ctx[key] = int(data.get(key))
+            except (TypeError, ValueError):
+                pass
+    turn = int(ctx.get("turn") or 0)
+    step = int(ctx.get("step") or 0)
+
+    def _mk(idx, **kw):
+        rec = {"seq": seq, "time": ts, "idx": int(idx),
+               "turn": turn, "step": step,
+               "type": str(kw.pop("type") or "text")}
+        rec.update(kw)
+        return rec
+
+    if et == "turn/start":
+        return [_mk(0, type="status", phase="turn_start", turn=data.get("turn"))]
+    if et == "turn/end":
+        reason = data.get("reason")
+        if isinstance(reason, dict):
+            reason = reason.get("kind") or reason.get("error") or ""
+        return [_mk(0, type="status", phase="turn_end",
+                    turn=data.get("turn"), reason=str(reason or ""))]
+    if et == "user/message":
+        txt = _dsh_blocks_text(data.get("content"))
+        return [_mk(0, type="user", text=_dsh_trim_text(txt, 8000))] if txt else []
+    if et == "assistant/message":
+        out = []
+        idx = 0
+        for b in ((data.get("message") or {}).get("content") or []):
+            if not isinstance(b, dict):
+                continue
+            bt = str(b.get("type") or "")
+            if bt == "reasoning" and b.get("text"):
+                out.append(_mk(idx, type="thinking", text=_dsh_trim_text(b.get("text"))))
+                idx += 1
+            elif bt == "text" and b.get("text"):
+                out.append(_mk(idx, type="text", text=_dsh_trim_text(b.get("text"))))
+                idx += 1
+            elif bt == "tool-call":
+                cid = str(b.get("id") or "")
+                if cid:
+                    seen_calls.add(cid)
+                out.append(_mk(idx, type="tool_call",
+                               tool=str(b.get("name") or "tool"),
+                               input=_dsh_parse_tool_args(b.get("arguments")),
+                               call_id=cid))
+                idx += 1
+        return out
+    if et == "tool/call":
+        cid = str(data.get("callId") or "")
+        if cid and cid in seen_calls:
+            return []
+        if cid:
+            seen_calls.add(cid)
+        return [_mk(0, type="tool_call", tool=str(data.get("name") or "tool"),
+                    input=_dsh_parse_tool_args(data.get("arguments")),
+                    call_id=cid)]
+    if et == "tool/ptc-dispatch-start":
+        cid = str(data.get("subCallId") or "")
+        if cid:
+            seen_calls.add(cid)
+        return [_mk(0, type="tool_call", tool=str(data.get("name") or "tool"),
+                    input=_dsh_parse_tool_args(data.get("arguments")),
+                    call_id=cid, nested=True)]
+    if et == "tool/ptc-dispatch":
+        return [_mk(0, type="tool_result",
+                    status=("error" if data.get("isError") else "ok"),
+                    result=_dsh_trim_text(_dsh_blocks_text(data.get("content"))),
+                    call_id=str(data.get("subCallId") or ""), nested=True)]
+    if et == "tool/result":
+        msg = data.get("message") or {}
+        cid = str(msg.get("toolCallId") or data.get("toolCallId") or "")
+        return [_mk(0, type="tool_result",
+                    status=("error" if msg.get("isError") else "ok"),
+                    result=_dsh_trim_text(_dsh_blocks_text(msg.get("content"))),
+                    call_id=cid)]
+    return []
+
+
+def _dsh_current_events_full(since: int = 0, limit: int = _DSH_FULL_LIMIT_DEFAULT,
+                             before: int = 0) -> dict:
+    """当前 DSH 会话的整段展示事件（full=1；见本节头部注释）。"""
+    def _int(v, default=0, lo=0, hi=None):
+        try:
+            n = int(v)
+        except (TypeError, ValueError):
+            n = default
+        n = max(lo, n)
+        if hi is not None:
+            n = min(hi, n)
+        return n
+
+    since = _int(since, 0)
+    before = _int(before, 0)
+    limit = _int(limit, _DSH_FULL_LIMIT_DEFAULT, 1, _DSH_FULL_LIMIT_MAX)
+    sid, cur, _items = _dsh_current_session_item()
+    proj = (cur or {}).get("projections") or {}
+    as_of = _int(proj.get("asOfSeq"), 0)
+    vals = proj.get("values") or {}
+    inbox = vals.get("inbox") or {}
+    stats = vals.get("sessionStats") or {}
+    if not isinstance(inbox, dict):
+        inbox = {}
+    if not isinstance(stats, dict):
+        stats = {}
+    mode = "initial"
+    through = as_of
+    if before > 0:
+        mode, through = "before", max(0, before - 1)
+    elif since > 0:
+        mode = "since"
+
+    # 从 as_of 往前一页页取，直到：增量已覆盖 since / 首次载入凑够 limit 条展示事件。
+    mx = 128 if mode != "since" else 8
+    records = []
+    seen_seqs = set()
+    min_seq = through
+    exhausted = False
+    pages = 0
+    while pages < 12:
+        pages += 1
+        recs = _dsh_session_page(sid, through, mx)
+        if not recs:
+            exhausted = True
+            break
+        fresh = []
+        for rec in recs:
+            ev = (rec or {}).get("event") or {}
+            sq = _int(ev.get("seq"), 0)
+            if sq > through or sq in seen_seqs:
+                continue
+            seen_seqs.add(sq)
+            fresh.append(rec)
+        if not fresh:
+            exhausted = True
+            break
+        fresh.sort(key=lambda r: _int(((r or {}).get("event") or {}).get("seq"), 0))
+        records = fresh + records
+        min_seq = _int(((fresh[0] or {}).get("event") or {}).get("seq"), 0)
+        if min_seq <= 0:
+            exhausted = True
+        if mode == "since":
+            if exhausted or min_seq <= since + 1:
+                break
+            through = min_seq - 1
+            mx = min(2048, max(16, mx * 2))
+            continue
+        probe_ctx = {"turn": 0, "step": 0}
+        probe_calls = set()
+        n_disp = 0
+        for rec in records:
+            n_disp += len(_dsh_events_from_record(
+                (rec or {}).get("event") or {}, probe_ctx, probe_calls))
+        if n_disp >= limit or exhausted:
+            break
+        through = min_seq - 1
+        if through <= 0:
+            exhausted = True
+            break
+        mx = min(2048, max(128, mx * 2))
+
+    ctx = {"turn": 0, "step": 0}
+    seen_calls = set()
+    events = []
+    for rec in records:
+        events.extend(_dsh_events_from_record(
+            (rec or {}).get("event") or {}, ctx, seen_calls))
+    if mode == "since":
+        events = [e for e in events if _int(e.get("seq"), 0) > since]
+        first_seq = _int(events[0].get("seq"), as_of) if events else as_of
+        last_seq = as_of
+        has_more = False
+        if len(events) > limit:
+            events = events[-limit:]
+            first_seq = _int(events[0].get("seq"), as_of) if events else as_of
+            has_more = True
+    else:
+        if len(events) > limit:
+            events = events[-limit:]
+        fallback = max(0, before - 1) if mode == "before" else as_of
+        first_seq = _int(events[0].get("seq"), fallback) if events else fallback
+        last_seq = _int(events[-1].get("seq"), first_seq) if events else first_seq
+        has_more = bool(events) and _int(min_seq, 0) > 0 and _int(first_seq, 0) > 0
+    running = bool((cur or {}).get("running"))
+    inbox_next_turn = len(inbox.get("next-turn") or [])
+    inbox_next_step = len(inbox.get("next-step") or [])
+    turn = int(ctx.get("turn") or stats.get("turns") or 0)
+    step = int(ctx.get("step") or stats.get("steps") or 0)
+    return {"ok": True, "full": True, "mode": mode,
+            "session_id": sid,
+            "as_of": as_of,
+            "since": since if mode == "since" else 0,
+            "before": before if mode == "before" else 0,
+            "limit": limit,
+            "count": len(events),
+            "events": events,
+            "first_seq": _int(first_seq, 0),
+            "last_seq": _int(last_seq, 0),
+            "has_more": bool(has_more),
+            "running": running,
+            "queued": bool(inbox_next_turn or inbox_next_step),
+            "turn": turn,
+            "step": step,
+            "turns": int(stats.get("turns") or turn),
+            "steps": int(stats.get("steps") or step),
+            "inbox": {"next_turn": inbox_next_turn, "next_step": inbox_next_step},
+            "inbox_next_turn": inbox_next_turn,
+            "inbox_next_step": inbox_next_step,
+            "pages": pages,
+            "updated_at": (cur or {}).get("updatedAt") or 0}
 
 
 _DSH_TAKEOVER_DEFAULT = {
@@ -3231,8 +3548,8 @@ def _targeted_acceptance(changed):
     cmds = []
     if any(str(p).startswith("dgtf_app/") for p in changed):
         cmds.append([_sys.executable, "dgtf_app/selftest.py", "app-selftest"])
-    if any(str(p).endswith(("dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.0.py",
-                              "Meta-DGTF-V2.2.0.py",
+    if any(str(p).endswith(("dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.1.py",
+                              "Meta-DGTF-V2.2.1.py",
                               "Meta-DGTF-V2.1.0.py",
                               "元DGTF-V2.0.0.py", "元DGTF-V1.30.4.py"))
            or str(p).startswith(("dgtf_engine/dgtf_v2/", "v2/dgtf_v2/",
@@ -5711,7 +6028,7 @@ _PROJECT_DOCS = [
 ]
 _PROJECT_BRIEF = (
     "Meta-DGTF 是一个本地四层螺旋推理引擎，版本 "
-    "dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.0.py / 2.2.0。"
+    "dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.1.py / 2.2.1。"
     "四层固定为：0 修行（展开/候选/锚点）、1 研究（证据/子问题/收敛）、"
     "both 对撞（裁决/冲突/线头）、all 元（闭环/决策/停止）。"
     "EML 是事件溯源记忆与自学习反馈层，含 V1 playbook 与 V2 schedule_outcome；"
@@ -7800,6 +8117,19 @@ class Handler(BaseHTTPRequestHandler):
                 _evlim = int((q.get("limit") or ["300"])[0] or 300)
             except (TypeError, ValueError):
                 _evlim = 300
+            # ★ App V2.0.1：full=1 走整段会话视图（默认最近 limit 条 / since 增量 /
+            #   before 向上回看）；不带 full 的旧调用保持原样（兼容旧调用方）。
+            _full = str((q.get("full") or [""])[0] or "").strip().lower() in (
+                "1", "true", "yes", "on")
+            if _full:
+                try:
+                    _before = int((q.get("before") or ["0"])[0] or 0)
+                except (TypeError, ValueError):
+                    _before = 0
+                try:
+                    return self._json(_dsh_current_events_full(_since, _evlim, _before))
+                except Exception as exc:  # noqa: BLE001
+                    return self._json({"ok": False, "error": str(exc)}, 502)
             try:
                 return self._json(_dsh_current_events(_since, _evlim))
             except Exception as exc:  # noqa: BLE001

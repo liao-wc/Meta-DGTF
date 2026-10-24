@@ -10,6 +10,31 @@
 > （`check_v72_changelog_hygiene`）；代码文件里**不得**再出现版本段
 > （`check_v1237_changelog_outside_code`）。
 
+V2.2.1
+
+【主题】补丁迭代：推理题质量门闭环、职责读数与质量线索修正、App DSH 实时视图对齐。
+
+【改变】
+- 解释型「为什么 / 原因 / 机制」题归 reasoning，走非事实门（不再误判 fact）。
+- 研究层判定审计并入 dgtf_engine/dgtf_v2 池内子问题；元层闭环清算在池汇总后刷新。
+- 判定审计只拦越权断言（decidable 无证据 / undecidable 有证据）；纯数字 token 不再冒充证据命中。
+- 职责读数：交付面按层取真实产品（duty_deliver_text）；R 增问项实词级命中；duty.floor 0.35 → 0.15；元层按闭合职责判 short。
+- 质量线索：candidates_backfilled 收尾复核阈值 0.75、self-check 单源降为留痕；polarity_all_same_structural / probe_link_dangling 改 view.meta 留痕（不挂质量旗）。
+- 质量读数：coverage 兜底链（coverage_basis：可判定加权 / 重算可回答子问题 / 不可判定方面覆盖）；α 可用时 tri_ratio 不再冒充质量，改报 tri_consistency。
+- App 2.0.1：DSH 本对话实时视图与 DSH GUI 当前会话一致（full=1 整段回放、before 翻页、增量轮询、同构渲染）。
+- 新增 dgtf_engine/dgtf_v2/tests_patch_release.py；生产引用切到 Meta-DGTF-V2.2.1.py。
+- 成本优化：新增 scripts/precheck_quality.py（离线复算五道质量门，零 LLM 成本）；
+  队列 7 条高严重度项核验关闭（docs/queue_closeout_20261024.md，high 归零）。
+
+【验证】
+- fast_gate 12/0；V2 tests 38/38（480 项检查）；App selftest 371/0；pip check 0 broken（两环境）。
+- 真实跑 outputs/20261024_134620_为什么城市热岛效应在夜间比白天更明显.packed.json：answer_ready/process_ready/verified、standard_all=true、core audit gaps/overreach=[]。
+
+★ v2.2.1 收束摘要
+- 交付物：Meta-DGTF-V2.2.1.py、tests_patch_release.py、V2.2.1-发布报告.md、V2.2.1-收束报告.md、docs/releases/V2.2.1.md、App 2.0.1。
+- 验收数字：见上【验证】。
+- 未做：未新增真跑（验收改用离线预检 + 既有真跑产物重算）；融合目标版本仍记 2.2.0 谱系。
+
 ---
 
 V2.2.0

@@ -2,7 +2,7 @@
 """V2.2.0 单引擎内联融合判据（12 项）。
 
 不再依赖 dgtf_v2.history_fusion / behavior_fusion 外部模块；
-直接加载 Meta-DGTF-V2.2.0.py，验证内联函数。
+直接加载 Meta-DGTF-V2.2.1.py，验证内联函数。
 """
 import importlib.util
 import json
@@ -11,7 +11,7 @@ import tempfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-ENGINE = HERE / "engine" / "Meta-DGTF-V2.2.0.py"
+ENGINE = HERE / "engine" / "Meta-DGTF-V2.2.1.py"
 
 
 def _load():

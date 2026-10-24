@@ -1116,6 +1116,8 @@ function renderTasks() {
     retryBtn.textContent = (retryPending === tid) ? '重试中…' : '重试';
     retryBtn.disabled = !!retryPending;
   }
+  const earlierBtn = $('#rl-earlier');
+  if (earlierBtn) earlierBtn.classList.add('hidden');   // 只有 DSH 实时视图用
   const q = $('#rl-question');
   if (q) q.textContent = t.question || '';
   const files = $('#rl-files');
@@ -1571,13 +1573,19 @@ function toggleDshMode(on) {
   updateDshConvBar();
   if (dshMode) {
     startDshHistoryPoll();
-    if (dshCurrent) startDshViewPoll();
+    if (dshCurrent && dshCurrent.live) startDshViewPoll();
     loadDshChats();
+    let _restored = false;
     if (!dshAttachTaskId && !dshConversationId) {
       try {
         const saved = localStorage.getItem(DSH_CONV_KEY);
-        if (saved) { dshConversationId = saved; loadDshConversation(); }
+        if (saved) { dshConversationId = saved; _restored = true; loadDshConversation(); }
       } catch (_) {}
+    }
+    /* ★ V2.0.1：进入 DSH 模式且没有历史/任务会话时，默认展示「DSH 本对话」
+       实时视图（full=1 载入本会话最近约 200 条），不必先发一条消息才出现。 */
+    if (!_restored && !dshAttachTaskId && !dshConversationId && !dshConversation) {
+      openDshCurrentLiveView();
     }
   } else {
     stopDshHistoryPoll();
@@ -1687,8 +1695,36 @@ function dshToolLabel(name) {
 }
 
 function dshFoldKey(ev, idx) {
-  return 'dsh-' + String(ev.seq || 0) + '-' + String(idx == null ? 'x' : idx)
-    + '-' + String(ev.type || '');
+  // 服务端 full=1 事件带稳定的块内序号 idx；用它当折叠 key，
+  // 「载入更早」前插 / 700ms 轮询追加都不会丢用户展开状态。
+  const sub = (ev && ev.idx !== undefined && ev.idx !== null)
+    ? ev.idx : (idx == null ? 'x' : idx);
+  return 'dsh-' + String((ev && ev.seq) || 0) + '-' + String(sub)
+    + '-' + String((ev && ev.type) || '');
+}
+function dshArgBrief(input) {
+  // 工具调用摘要：优先展示 description/command/path 等人类可读字段。
+  let obj = input;
+  if (typeof obj === 'string') {
+    const s0 = obj.trim();
+    if (!s0) return '';
+    try { obj = JSON.parse(s0); } catch (_) {
+      return s0.replace(/\s+/g, ' ').slice(0, 140);
+    }
+  }
+  if (!obj || typeof obj !== 'object') return String(obj || '').slice(0, 140);
+  const keys = ['description', 'command', 'path', 'file_path', 'pattern', 'query',
+    'task', 'text', 'url', 'label', 'code'];
+  for (const k of keys) {
+    const v = obj[k];
+    if (typeof v === 'string' && v.trim()) {
+      return v.trim().replace(/\s+/g, ' ').slice(0, 140);
+    }
+  }
+  try {
+    const s = JSON.stringify(obj);
+    return (s && s !== '{}' && s !== '[]') ? s.slice(0, 140) : '';
+  } catch (_) { return ''; }
 }
 
 function captureDshFoldState(body) {
@@ -1710,24 +1746,39 @@ function dshEventHtml(ev, idx) {
   const dk = dshFoldKey(ev, idx);
   if (!ev || !ev.type) return '';
   if (ev.type === 'status') {
-    if (ev.phase === 'turn_start') return '<div class="rl-summary">第 ' + esc(ev.turn || '') + ' 轮开始</div>';
+    const tn = ev.turn == null ? '' : esc(ev.turn);
+    if (ev.phase === 'turn_start') return '<div class="rl-summary">第 ' + tn + ' 轮开始</div>';
     if (ev.phase === 'step_start') return '<div class="rl-summary">第 ' + esc(ev.step || '') + ' 步</div>';
-    if (ev.phase === 'turn_end') return '<div class="rl-summary">第 ' + esc(ev.turn || '') + ' 轮结束</div>';
+    if (ev.phase === 'turn_end') {
+      const why = (ev.reason && ev.reason !== 'completed') ? (' · ' + esc(ev.reason)) : '';
+      return '<div class="rl-summary">第 ' + tn + ' 轮结束' + why + '</div>';
+    }
     return '';
   }
   if (ev.type === 'user' && ev.text) {
     return '<details class="rl-fold" data-dsh-key="' + dk + '" open><summary>用户</summary><div class="rl-fold-body"><div class="rl-line"><span class="rl-txt">' + esc(ev.text) + '</span></div></div></details>';
   }
   if (ev.type === 'thinking' && ev.text) {
-    return '<details class="rl-fold" data-dsh-key="' + dk + '"><summary>思考过程（模型原始推理）</summary><div class="rl-fold-body"><div class="rl-line"><span class="rl-txt">' + esc(ev.text) + '</span></div></div></details>';
+    return '<details class="rl-fold" data-dsh-key="' + dk + '"><summary>思考过程（模型原始推理）</summary><div class="rl-fold-body"><div class="rl-line"><span class="rl-txt muted">' + esc(ev.text) + '</span></div></div></details>';
   }
   if (ev.type === 'tool_call') {
     const zh = dshToolLabel(ev.tool);
-    return '<details class="rl-fold" data-dsh-key="' + dk + '"><summary>🔧 ' + esc(zh) + ' · ' + esc(ev.tool || '工具') + '</summary><div class="rl-fold-body"><div class="rl-line"><span class="rl-txt">' + esc(String(JSON.stringify(ev.input || {})).slice(0, 12000)) + '</span></div></div></details>';
+    const brief = dshArgBrief(ev.input);
+    const nest = ev.nested ? ' ↳ ' : ' ';
+    return '<details class="rl-fold" data-dsh-key="' + dk + '"><summary>🔧' + nest + esc(zh) + ' · ' + esc(ev.tool || '工具')
+      + (brief ? (' · ' + esc(brief)) : '')
+      + '</summary><div class="rl-fold-body"><div class="rl-line"><span class="rl-txt">'
+      + esc(String(JSON.stringify(ev.input || {})).slice(0, 12000)) + '</span></div></div></details>';
   }
   if (ev.type === 'tool_result') {
     const ok = ev.status === 'ok';
-    return '<details class="rl-fold" data-dsh-key="' + dk + '"><summary>工具结果 · ' + (ok ? '成功' : '失败') + '</summary><div class="rl-fold-body"><div class="rl-line"><span class="rl-txt">' + esc(String(ev.result || '').slice(0, 12000)) + '</span></div></div></details>';
+    const full = String(ev.result || '');
+    const shown = full.length > 6000
+      ? (full.slice(0, 6000) + '\n…（已截断，共 ' + full.length + ' 字符）')
+      : full;
+    return '<details class="rl-fold" data-dsh-key="' + dk + '"><summary>工具结果 · ' + (ok ? '成功' : '失败')
+      + (ev.nested ? '（子调用）' : '')
+      + '</summary><div class="rl-fold-body"><div class="rl-line"><span class="rl-txt">' + esc(shown) + '</span></div></div></details>';
   }
   if (ev.type === 'text' && ev.text) {
     return '<details class="rl-fold" data-dsh-key="' + dk + '" open><summary>助手回复</summary><div class="rl-fold-body"><div class="rl-line"><span class="rl-txt">' + esc(ev.text) + '</span></div></div></details>';
@@ -1761,6 +1812,10 @@ function renderDshConversationView() {
   /* DSH 视图没有任务级「重试」：隐藏按钮，避免沿用上一个失败任务的显示状态 */
   const _rbtn = document.querySelector('#rl-retry');
   if (_rbtn) _rbtn.classList.add('hidden');
+  const _earlier = document.querySelector('#rl-earlier');
+  if (_earlier) _earlier.classList.add('hidden');
+  const _meta = document.querySelector('#rl-meta');
+  if (_meta) _meta.textContent = '';
   const q = document.querySelector('#rl-question');
   if (q) q.textContent = 'DSH Agent 会话 · ' + (c.id || '');
   const f = document.querySelector('#rl-files');
@@ -1868,9 +1923,12 @@ async function cancelDshCurrent() {
     }
     if (dshCurrent) {
       dshCurrent.status = 'done';
-      dshCurrent.events = (dshCurrent.events || []).concat([{type:'text', text:'已请求终止当前 DSH 轮次。'}]);
+      /* 实时镜像视图由 /api/dsh/current/events 回填真实内容，不塞合成事件 */
+      if (!dshCurrent.live) {
+        dshCurrent.events = (dshCurrent.events || []).concat([{type:'text', text:'已请求终止当前 DSH 轮次。'}]);
+      }
     }
-    stopDshViewPoll();
+    if (!(dshCurrent && dshCurrent.live)) stopDshViewPoll();
     stopDshConvPoll();
     renderDshView();
     agentLogAction('终止DSH本轮', r && r.accepted ? '已请求取消' : '请求已发送', true);
@@ -1891,30 +1949,82 @@ function renderDshView() {
   document.body.classList.add('stage-run');
   const bd = document.querySelector('#rl-badge');
   if (bd) {
-    bd.className = 'badge ' + (c.status || 'running');
-    bd.textContent = c.status === 'done' ? '完成' : (c.status === 'error' ? '失败'
-      : (c.status === 'queued' ? '排队' : '运行中'));
+    const st = c.status || 'running';
+    bd.className = 'badge ' + st;
+    if (c.live) {
+      bd.textContent = st === 'error' ? '失败'
+        : (st === 'queued' ? '排队' : (st === 'running' ? '运行中' : '完成'));
+    } else {
+      bd.textContent = st === 'done' ? '完成' : (st === 'error' ? '失败'
+        : (st === 'queued' ? '排队' : '运行中'));
+    }
   }
   /* 同上：DSH 视图没有任务级「重试」 */
   const _rbtn2 = document.querySelector('#rl-retry');
   if (_rbtn2) _rbtn2.classList.add('hidden');
+  const earlier = document.querySelector('#rl-earlier');
   const q = document.querySelector('#rl-question');
-  if (q) q.textContent = c.question || 'DeepSeek Harness Agent';
+  const meta = document.querySelector('#rl-meta');
   const f = document.querySelector('#rl-files');
   if (f) f.innerHTML = '';
   const evs = c.events || [];
-  let inner = '<div class="rl-lane rl-boot"><div class="rl-lane-head">DeepSeek Harness Agent · ' + esc(c.session || dshSession || '新会话') + '</div>';
-  inner += '<div class="rl-round">Agent 会话</div>';
-  inner += '<div class="rl-line"><span class="rl-lab">用户</span><span class="rl-txt">' + esc(c.question || '') + '</span></div>';
-  evs.forEach((e, i) => { inner += dshEventHtml(e, i); });
-  if (c.status === 'running') inner += '<div class="rl-summary">DSH 运行中…</div>';
-  else if (c.status === 'queued') inner += '<div class="rl-summary">已排队，等待当前 DSH 轮次完成…</div>';
-  inner += '</div>';
+  let inner;
+  if (c.live) {
+    /* ★ V2.0.1：与本机 DSH GUI 同一条会话的整段实时视图 */
+    const sid = String(c.sessionId || '');
+    const sidMain = sid.indexOf('session-') === 0 ? sid.slice(8) : sid;
+    if (q) q.textContent = '与 DSH GUI 同一会话 · ' + (sidMain ? sidMain.slice(0, 8) : '…');
+    if (meta) {
+      const bits = [];
+      bits.push(c.status === 'error' ? '读取失败'
+        : (c.running ? (c.status === 'queued' ? '排队中' : '运行中') : '已结束'));
+      if (c.turn) bits.push('第 ' + c.turn + ' 轮');
+      if (c.step) bits.push('第 ' + c.step + ' 步');
+      if (c.inbox) bits.push('排队 ' + c.inbox);
+      meta.textContent = bits.join(' · ');
+    }
+    if (earlier) {
+      earlier.classList.toggle('hidden', !c.hasMore);
+      earlier.disabled = !!dshLiveLoadingEarlier;
+      earlier.textContent = dshLiveLoadingEarlier ? '载入中…' : '载入更早';
+    }
+    inner = '<div class="rl-lane rl-boot rl-dsh-live">'
+      + '<div class="rl-lane-head">DSH 本对话 · 整段会话 · 与 DSH GUI 同一 session</div>';
+    if (!evs.length) {
+      inner += '<div class="rl-summary">'
+        + esc(c.error ? ('读取失败：' + c.error) : '正在载入本会话事件…') + '</div>';
+    }
+    evs.forEach(function (e, i) { inner += dshEventHtml(e, i); });
+    if (c.error && evs.length) {
+      inner += '<div class="rl-summary">同步失败：' + esc(c.error) + '</div>';
+    }
+    if (c.running) inner += '<div class="rl-summary">DSH 运行中…</div>';
+    inner += '</div>';
+  } else {
+    if (earlier) earlier.classList.add('hidden');
+    if (meta) meta.textContent = '';
+    if (q) q.textContent = c.question || 'DeepSeek Harness Agent';
+    inner = '<div class="rl-lane rl-boot"><div class="rl-lane-head">DeepSeek Harness Agent · ' + esc(c.session || dshSession || '新会话') + '</div>';
+    inner += '<div class="rl-round">Agent 会话</div>';
+    inner += '<div class="rl-line"><span class="rl-lab">用户</span><span class="rl-txt">' + esc(c.question || '') + '</span></div>';
+    evs.forEach((e, i) => { inner += dshEventHtml(e, i); });
+    if (c.status === 'running') inner += '<div class="rl-summary">DSH 运行中…</div>';
+    else if (c.status === 'queued') inner += '<div class="rl-summary">已排队，等待当前 DSH 轮次完成…</div>';
+    inner += '</div>';
+  }
   const foldState = captureDshFoldState(body);
   const fromBottom = body.scrollHeight - body.scrollTop;
   body.innerHTML = inner;
   restoreDshFoldState(body, foldState);
-  if (logFollow) scrollDshBottom();
+  if (dshPendingScrollAnchor) {
+    /* 「载入更早」前插：保持用户当前阅读位置不跳 */
+    const anchor = dshPendingScrollAnchor;
+    dshPendingScrollAnchor = null;
+    logFollow = false;
+    requestAnimationFrame(function () {
+      body.scrollTop = Math.max(0, anchor.top + (body.scrollHeight - anchor.height));
+    });
+  } else if (logFollow) scrollDshBottom();
   else body.scrollTop = Math.max(0, body.scrollHeight - fromBottom);
   updateDshControls();
 } 
@@ -5170,42 +5280,210 @@ async function sendDshAgent() {
 let dshViewPollTimer = null;
 let dshLiveSeq = 0;
 let dshLiveEvents = [];
+let dshLiveFirstSeq = 0;
+let dshLiveHasMore = false;
+let dshLiveInited = false;
+let dshLiveLoadingEarlier = false;
+let dshLiveSessionId = '';
+let dshLiveState = {running: false, queued: false, turn: 0, step: 0, inbox: 0, asOf: 0};
+let dshLiveError = '';
+let dshPendingScrollAnchor = null;
+const DSH_LIVE_BATCH = 200;      // 首次载入最近约 200 条
+const DSH_LIVE_POLL_MS = 700;    // 与 DSH GUI 实时同步的轮询间隔
+const DSH_LIVE_MAX_EVENTS = 4000;
 
 function resetDshLiveEvents() {
   dshLiveSeq = 0;
   dshLiveEvents = [];
+  dshLiveFirstSeq = 0;
+  dshLiveHasMore = false;
+  dshLiveInited = false;
+  dshLiveLoadingEarlier = false;
+  dshLiveSessionId = '';
+  dshLiveState = {running: false, queued: false, turn: 0, step: 0, inbox: 0, asOf: 0};
+  dshLiveError = '';
+  dshPendingScrollAnchor = null;
 }
 
 function stopDshViewPoll() {
   if (dshViewPollTimer) { clearInterval(dshViewPollTimer); dshViewPollTimer = null; }
 }
 
-async function syncDshCurrentView() {
-  try {
-    const r = await api('/api/dsh/current/events?since=' + encodeURIComponent(dshLiveSeq) + '&limit=300');
-    if (!r || !r.ok || !dshCurrent) return;
-    (r.events || []).forEach(function (ev) {
-      if (!ev) return;
-      dshLiveEvents.push(ev);
-    });
-    if (dshLiveEvents.length > 500) dshLiveEvents = dshLiveEvents.slice(-500);
-    dshLiveSeq = Number(r.last_seq || dshLiveSeq) || dshLiveSeq;
-    dshCurrent.events = dshLiveEvents;
-    if (r.running) {
-      dshCurrent.status = (Number(r.inbox_next_turn || 0) + Number(r.inbox_next_step || 0) > 0)
-        ? 'queued' : 'running';
-    } else {
-      dshCurrent.status = 'done';
-      stopDshViewPoll();
+function _dshLiveFail(msg) {
+  if (!dshCurrent || !dshCurrent.live) return;
+  msg = String(msg || '读取 DSH 会话失败');
+  if (dshLiveError === msg) return;
+  dshLiveError = msg;
+  dshCurrent.status = 'error';
+  dshCurrent.error = msg;
+  dshCurrent.full = true;
+  dshCurrent.events = dshLiveEvents;
+  renderDshView();
+}
+
+function dshLiveMerge(incoming, prepend) {
+  // 追加 / 前插实时事件：按 fold key（seq+idx+type）去重，工具调用/结果再按
+  // call_id+type 去重 —— 分页边界可能把 assistant 内嵌 tool-call 与独立
+  // tool/call 事件切到两页，这里保证同一工具卡只出现一次。
+  const seenKeys = {};
+  const callKeys = {};
+  dshLiveEvents.forEach(function (ev) {
+    if (!ev) return;
+    seenKeys[dshFoldKey(ev, null)] = true;
+    if (ev.call_id) callKeys[String(ev.type) + ':' + String(ev.call_id)] = true;
+  });
+  const add = [];
+  (incoming || []).forEach(function (ev) {
+    if (!ev) return;
+    const k = dshFoldKey(ev, null);
+    if (seenKeys[k]) return;
+    if (ev.call_id) {
+      const ck = String(ev.type) + ':' + String(ev.call_id);
+      if (callKeys[ck]) return;
+      callKeys[ck] = true;
     }
-    renderDshView();
-  } catch (_) { /* 同步失败不改变已有内容 */ }
+    seenKeys[k] = true;
+    add.push(ev);
+  });
+  if (!add.length) return 0;
+  if (prepend) {
+    add.sort(function (a, b) { return Number(a.seq || 0) - Number(b.seq || 0); });
+    dshLiveEvents = add.concat(dshLiveEvents);
+  } else {
+    dshLiveEvents = dshLiveEvents.concat(add);
+  }
+  return add.length;
+}
+
+function _dshLiveStateFrom(r, firstLoad) {
+  const inbox = Number(r.inbox_next_turn || 0) + Number(r.inbox_next_step || 0);
+  return {
+    running: !!r.running,
+    queued: inbox > 0,
+    turn: Number(r.turn || 0) || (firstLoad ? 0 : dshLiveState.turn),
+    step: Number(r.step || 0) || (firstLoad ? 0 : dshLiveState.step),
+    inbox: inbox,
+    asOf: Number(r.as_of || 0),
+    updatedAt: r.updated_at || 0
+  };
+}
+
+async function syncDshCurrentView() {
+  if (!dshCurrent || !dshCurrent.live) return;
+  const firstLoad = !dshLiveInited;
+  let r;
+  try {
+    r = firstLoad
+      ? await api('/api/dsh/current/events?full=1&limit=' + DSH_LIVE_BATCH)
+      : await api('/api/dsh/current/events?full=1&since=' + encodeURIComponent(dshLiveSeq)
+          + '&limit=' + DSH_LIVE_BATCH);
+  } catch (e) {
+    if (firstLoad) _dshLiveFail((e && e.message) || '读取 DSH 会话失败');
+    return;
+  }
+  if (!r || !dshCurrent || !dshCurrent.live) return;
+  if (!r.ok) {
+    if (firstLoad) _dshLiveFail(r.error || '读取 DSH 会话失败');
+    return;
+  }
+  let changed = false;
+  if (firstLoad) {
+    dshLiveEvents = (r.events || []).slice();
+    dshLiveInited = true;
+    changed = true;
+  } else if (dshLiveMerge(r.events || [], false)) {
+    changed = true;
+  }
+  if (dshLiveEvents.length > DSH_LIVE_MAX_EVENTS) {
+    dshLiveEvents = dshLiveEvents.slice(-DSH_LIVE_MAX_EVENTS);
+    changed = true;
+  }
+  const nextState = _dshLiveStateFrom(r, firstLoad);
+  const nextSession = String(r.session_id || dshLiveSessionId || '');
+  const nextHasMore = firstLoad ? !!r.has_more : (!!r.has_more || dshLiveHasMore);
+  const nextStatus = nextState.running ? (nextState.queued ? 'queued' : 'running') : 'done';
+  if (nextStatus !== dshCurrent.status) changed = true;
+  if (nextState.turn !== dshLiveState.turn || nextState.step !== dshLiveState.step) changed = true;
+  if (nextState.inbox !== dshLiveState.inbox) changed = true;
+  if (nextHasMore !== dshLiveHasMore) changed = true;
+  if (nextSession !== dshLiveSessionId) changed = true;
+  const lastSeq = Number(r.last_seq || 0);
+  if (lastSeq > dshLiveSeq) dshLiveSeq = lastSeq;
+  if (dshLiveEvents.length) {
+    const firstSeq = Number(dshLiveEvents[0].seq || 0);
+    if (firstSeq !== dshLiveFirstSeq) { dshLiveFirstSeq = firstSeq; changed = true; }
+  } else if (firstLoad) {
+    dshLiveFirstSeq = Number(r.first_seq || 0);
+  }
+  dshLiveHasMore = nextHasMore;
+  dshLiveSessionId = nextSession;
+  dshLiveState = nextState;
+  dshLiveError = '';
+  if (dshCurrent.error) { dshCurrent.error = ''; changed = true; }
+  dshCurrent.sessionId = dshLiveSessionId;
+  dshCurrent.session = dshLiveSessionId;
+  dshCurrent.events = dshLiveEvents;
+  dshCurrent.status = nextStatus;
+  dshCurrent.full = true;
+  dshCurrent.running = dshLiveState.running;
+  dshCurrent.hasMore = dshLiveHasMore;
+  dshCurrent.firstSeq = dshLiveFirstSeq;
+  dshCurrent.lastSeq = dshLiveSeq;
+  dshCurrent.turn = dshLiveState.turn;
+  dshCurrent.step = dshLiveState.step;
+  dshCurrent.inbox = dshLiveState.inbox;
+  if (changed) renderDshView();
 }
 
 function startDshViewPoll() {
   stopDshViewPoll();
   syncDshCurrentView();
-  dshViewPollTimer = setInterval(syncDshCurrentView, 700);
+  dshViewPollTimer = setInterval(syncDshCurrentView, DSH_LIVE_POLL_MS);
+}
+
+async function loadEarlierDshEvents() {
+  if (!dshCurrent || !dshCurrent.live || dshLiveLoadingEarlier || !dshLiveHasMore) return;
+  const before = Number(dshLiveFirstSeq
+    || (dshLiveEvents.length ? dshLiveEvents[0].seq : 0) || 0);
+  if (!before) return;
+  dshLiveLoadingEarlier = true;
+  const body = document.querySelector('#runlog-body');
+  const anchor = body ? {top: body.scrollTop, height: body.scrollHeight} : null;
+  renderDshView();   // 按钮先显示「载入中…」
+  try {
+    const r = await api('/api/dsh/current/events?full=1&before=' + encodeURIComponent(before)
+      + '&limit=' + DSH_LIVE_BATCH);
+    if (!r || !r.ok) throw new Error((r && r.error) || '接口返回失败');
+    const add = (r.events || []).filter(function (ev) {
+      return ev && Number(ev.seq || 0) < before;
+    });
+    const added = dshLiveMerge(add, true);
+    dshLiveFirstSeq = dshLiveEvents.length ? Number(dshLiveEvents[0].seq || 0) : before;
+    dshLiveHasMore = !!(r.has_more && added);
+    dshCurrent.events = dshLiveEvents;
+    dshCurrent.firstSeq = dshLiveFirstSeq;
+    dshCurrent.hasMore = dshLiveHasMore;
+    dshCurrent.error = '';
+    dshPendingScrollAnchor = anchor;
+  } catch (e) {
+    if (dshCurrent) dshCurrent.error = '载入更早失败：' + ((e && e.message) || '未知错误');
+  } finally {
+    dshLiveLoadingEarlier = false;
+    renderDshView();
+  }
+}
+
+function openDshCurrentLiveView() {
+  // 直接打开「DSH 本对话」实时视图：由 /api/dsh/current/events?full=1 填充当前
+  // DSH GUI 会话的整段内容；没有内容时显示「正在载入本会话事件…」。
+  if (dshCurrent && dshCurrent.live) { if (dshMode) startDshViewPoll(); return; }
+  resetDshLiveEvents();
+  logFollow = true;
+  dshCurrent = { question: '', session: '当前 DSH 对话', status: 'running',
+    live: true, sessionId: '', running: true, full: true, events: [] };
+  closeSheet(); closeDrawer();
+  renderDshView();
+  startDshViewPoll();
 }
 
 async function newDshCurrentConversation(title, opts) {
@@ -5220,7 +5498,8 @@ async function newDshCurrentConversation(title, opts) {
   if (!opts.silent) {
     dshConversation = null; dshConversationId = null; stopDshConvPoll();
     dshCurrent = { question: String(title || '新对话'), session: '当前 DSH 对话',
-      status: 'queued', events: [{type:'text', text:'已开启新的 DSH 对话，输入后开始。'}] };
+      status: 'queued', live: true, sessionId: '', running: true, full: true,
+      events: [{type:'text', text:'已开启新的 DSH 对话，输入后开始。'}] };
     renderDshView();
     startDshViewPoll();
   }
@@ -5255,9 +5534,11 @@ async function dshDispatchAction(label, task) {
     logFollow = true;
     await newDshCurrentConversation(label, {silent: true});
     const r = await submitDshCurrentTask(String(task || label));
-    dshCurrent = { question: label, session: '当前 DSH 对话', status: 'queued', events: [
-      { type: 'text', text: '已交给当前 DSH 对话；等待当前轮次完成后执行。' }
-    ]};
+    dshCurrent = { question: label, session: '当前 DSH 对话', status: 'queued',
+      live: true, sessionId: '', running: true, full: true,
+      events: [
+        { type: 'text', text: '已交给当前 DSH 对话；等待当前轮次完成后执行。' }
+      ]};
     renderDshView();
     startDshViewPoll();
     agentLogAction(label, '已交给 DSH 本对话', true);
@@ -5279,11 +5560,14 @@ async function startDshCurrentRun(question) {
     || (dshConversation && (dshConversation.turns || []).some(t => t.status === 'queued' || t.status === 'running')));
   if (!_steer) resetDshElapsed();
   logFollow = true;
+  resetDshLiveEvents();
   toggleDshMode(true);
   if (dshConversation) { dshConversation = null; dshConversationId = null; stopDshConvPoll(); }
-  dshCurrent = { question: question, session: '当前 DSH 对话', status: 'queued', events: [
-    { type: 'text', text: _steer ? '已发送插话，正在插入当前 DSH 轮次。' : '已交给当前 DSH 对话；等待当前轮次完成后执行。' }
-  ]};
+  dshCurrent = { question: question, session: '当前 DSH 对话', status: 'queued',
+    live: true, sessionId: '', running: true, full: true,
+    events: [
+      { type: 'text', text: _steer ? '已发送插话，正在插入当前 DSH 轮次。' : '已交给当前 DSH 对话；等待当前轮次完成后执行。' }
+    ]};
   renderDshView();
   try {
     const r = await submitDshCurrentTask(question, _steer ? 'steer' : 'queue');
@@ -5298,6 +5582,8 @@ async function startDshCurrentRun(question) {
   }
 }
 function initDshAgent() {
+  const earlier = document.querySelector('#rl-earlier');
+  if (earlier) earlier.addEventListener('click', loadEarlierDshEvents);
   const b = document.querySelector('#dsh-agent-btn');
   if (b) b.addEventListener('click', openDshAgent);
   const c = document.querySelector('#dsh-close');

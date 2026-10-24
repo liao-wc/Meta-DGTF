@@ -65,3 +65,17 @@
 - 门禁：fast_gate 12/0；V2 tests 37/37；App selftest 371/0；pip check 0 broken。
 - 随机真跑（城市热岛昼夜差异）4 轮迭代后：answer_ready/process_ready/verified、standard_all=true、研究层判定审计 verified、元层闭环 clean、core audit gaps/overreach=[]；最终 138 calls / 1,581,220 tokens。
 - 详见 `docs/real_run_V2.2.0.md` §4.7、`docs/verification_reasoning_gate.md`。
+
+---
+
+## V2.2.1 补丁发布状态（2026-10-24）
+
+- 版本：V2.2.1（PATCH：质量门闭环 + 职责读数 + 质量线索降噪 + 覆盖率/三态读数 + App DSH 实时视图）
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.1.py（V2.2.0 保留可回滚）
+- App：2.0.1
+- 门禁：fast_gate 12/0、V2 tests 38/38（480 项检查）、App selftest 371/0、pip check 0 broken
+- 真实跑复核：最新真跑 answer_ready/process_ready/verified、standard_all=true、core audit gaps/overreach=[]
+- 成本：本轮未新增真跑；新增离线质量门预检（scripts/precheck_quality.py）验收既有产物；
+  4 份历史真跑正负对照 4/4 符合预期（FAIL/FAIL/FAIL/PASS）
+- 队列：7 条高严重度项核验关闭（docs/queue_closeout_20261024.md），high 归零
+- 文档：docs/releases/V2.2.1.md、V2.2.1-发布报告.md、V2.2.1-收束报告.md、CHANGELOG.md

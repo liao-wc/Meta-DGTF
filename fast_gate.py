@@ -13,8 +13,8 @@ except Exception:
 
 CHECKS = [
     ("compile", [sys.executable, "-c",
-     "import py_compile;py_compile.compile('dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.0.py',doraise=True)"]),
-    ("audit70", [sys.executable, "_probe_v1232_audit.py", "dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.0.py"]),
+     "import py_compile;py_compile.compile('dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.1.py',doraise=True)"]),
+    ("audit70", [sys.executable, "_probe_v1232_audit.py", "dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.1.py"]),
     ("input_sanity", [sys.executable, "-c",
      "import dgtf_v2.tests_input_sanity as t;raise SystemExit(t.main())"]),
     ("facet", [sys.executable, "-c", "import dgtf_v2.tests_facet_ledger as t;raise SystemExit(t.main())"]),
