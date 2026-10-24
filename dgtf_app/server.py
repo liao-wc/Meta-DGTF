@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "2.0.21"
+APP_VERSION = "2.0.22"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -9744,7 +9744,8 @@ class Handler(BaseHTTPRequestHandler):
                 try:
                     _cached = _find_cached_pack(
                         question, opts,
-                        str(opts.get("_prompt_prefix") or ""))
+                        str(opts.get("_prompt_prefix") or ""),
+                        semantic=bool(opts.get("use_semantic_cache", True)))
                 except Exception:
                     _cached = None
             try:
@@ -9758,6 +9759,9 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"error": str(e)}, 400)
             if _cache_hit:
                 return self._json({"id": tid, "cache_hit": True,
+                                   "dedup_hit": False,
+                                   "semantic_cache": bool((_cached or {}).get("semantic")),
+                                   "cache_similarity": (_cached or {}).get("similarity"),
                                    "cached_from": _cached_from,
                                    "auto_pareto": _auto_pareto,
                                    "auto_template": _auto_template,
@@ -9792,6 +9796,7 @@ class Handler(BaseHTTPRequestHandler):
                                "quality_retry": bool(_quality_retry),
                                "cache_hit": False,
                                "dedup_hit": False,
+                               "semantic_cache": False,
                                "mode_fusion": _fused_info}, 201)
 
         return self._json({"error": "not found"}, 404)
@@ -9834,7 +9839,8 @@ def _find_running_duplicate(question: str, opts: dict, prefix: str):
     return None
 
 
-def _find_cached_pack(question: str, opts: dict, prefix: str = ""):
+def _find_cached_pack(question: str, opts: dict, prefix: str = "",
+                      semantic: bool = False):
     """查找同题、同 web/parallel 的已验证 packed，复用其产物。"""
     import json as _json
     import time as _time
@@ -9847,13 +9853,12 @@ def _find_cached_pack(question: str, opts: dict, prefix: str = ""):
                        key=lambda x: x.stat().st_mtime, reverse=True)[:300]
     except Exception:
         return None
+    _sem_candidates = []
     for p in packs:
         try:
             if now - p.stat().st_mtime > _CACHE_TTL_S:
                 continue
             d = _json.loads(p.read_text(encoding="utf-8"))
-            if str(d.get("question") or "") != full_q:
-                continue
             q = d.get("quality") or {}
             if not (q.get("answer_ready") and q.get("answer_quality") == "verified"):
                 continue
@@ -9863,15 +9868,53 @@ def _find_cached_pack(question: str, opts: dict, prefix: str = ""):
             mode = str((d.get("dispatch") or {}).get("_parallel_mode") or "")
             if want_par and mode and mode != want_par:
                 continue
+            dq = str(d.get("question") or "")
+            if dq != full_q:
+                if semantic and len(_sem_candidates) < 12:
+                    _sem_candidates.append((p, d, dq, q))
+                continue
             name = p.name[:-len(".packed.json")]
             out = oi.OUTPUTS_DIR / (name + ".md")
             log = oi.OUTPUTS_DIR / (name + ".run.log")
             return {"id": str(d.get("id") or name),
                     "pack": p.name,
                     "output_name": out.name if out.exists() else "",
-                    "log": str(log) if log.exists() else ""}
+                    "log": str(log) if log.exists() else "",
+                    "semantic": False, "similarity": 1.0}
         except Exception:
             continue
+    if semantic and _sem_candidates:
+        try:
+            from dgtf_v2.quality_predictor import question_features as _qf
+            import math as _math
+            v1 = _embed_query(full_q)
+            if v1:
+                n1 = _math.sqrt(sum(float(x) * float(x) for x in v1)) or 1.0
+                new_is_fact = bool((_qf(question) or {}).get("fact"))
+                best = None
+                for p, d, dq, q in _sem_candidates:
+                    v2 = _embed_query(dq)
+                    if not v2:
+                        continue
+                    n2 = _math.sqrt(sum(float(x) * float(x) for x in v2)) or 1.0
+                    sim = sum(float(a) * float(b) for a, b in zip(v1, v2)) / (n1 * n2)
+                    old_qtype = str(((q.get("answer_summary") or {}).get("question_type")) or "")
+                    if old_qtype and ((old_qtype == "fact") != new_is_fact):
+                        continue
+                    if sim >= 0.98 and (best is None or sim > best[0]):
+                        best = (sim, p, d)
+                if best:
+                    sim, p, d = best
+                    name = p.name[:-len(".packed.json")]
+                    out = oi.OUTPUTS_DIR / (name + ".md")
+                    log = oi.OUTPUTS_DIR / (name + ".run.log")
+                    return {"id": str(d.get("id") or name),
+                            "pack": p.name,
+                            "output_name": out.name if out.exists() else "",
+                            "log": str(log) if log.exists() else "",
+                            "semantic": True, "similarity": round(sim, 4)}
+        except Exception:
+            pass
     return None
 
 

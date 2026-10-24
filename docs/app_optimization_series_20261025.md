@@ -60,3 +60,10 @@
 - running/queued 中已有同题、同 web/parallel/rounds/config/behavior 的任务时，新 POST 直接复用，返回 dedup_hit=true；
 - 与答案缓存互补：运行中去重、完成后缓存；
 - 实测同题连续两次 POST：第二次 dedup_hit=true 且 id 相同；取消首个任务后无残留。
+
+## 七、语义答案缓存（App 2.0.22）
+
+- 精确缓存未命中时，用本地 BGE 对近期 verified packed 的问题向量比较；
+- 仅当余弦≥0.98 且问题类型一致时复用，返回 semantic_cache=true/cache_similarity；
+- 实测：“1+1 等于几 ?” 命中 “1+1等于几?”（相似度 0.9806）耗时 134.6ms，原约 320s；
+- 默认 use_semantic_cache=true，可 API 关闭；精确缓存优先。

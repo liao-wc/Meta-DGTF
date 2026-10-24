@@ -5,7 +5,7 @@
 
 零额外依赖（Python 标准库 + 原生前端），**不改动引擎主文件**。
 
-**当前 app 版本：V2.0.21**（DSH 本对话实时视图对齐 DSH GUI 当前会话；引擎生产入口 V2.2.2 / `Meta-DGTF-V2.2.2.py`，引擎发布说明见 docs/releases/V2.2.2.md）。
+**当前 app 版本：V2.0.22**（DSH 本对话实时视图对齐 DSH GUI 当前会话；引擎生产入口 V2.2.2 / `Meta-DGTF-V2.2.2.py`，引擎发布说明见 docs/releases/V2.2.2.md）。
 
 ### 新增能力
 
