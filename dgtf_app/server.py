@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "2.0.18"
+APP_VERSION = "2.0.19"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -6538,6 +6538,30 @@ def _project_context_relevant(question: str) -> bool:
     return any(k in q for k in _PROJECT_CTX_MARKS)
 
 
+_PROJECT_CTX_CACHE: dict = {}
+_PROJECT_CTX_LOCK = None
+_PROJECT_CTX_CACHE_MAX = 32
+
+
+def _project_context_cached(question: str, limit: int = 6):
+    """项目背景 RAG 结果缓存：同一问题重复建任务时不再重复扫文档。"""
+    global _PROJECT_CTX_LOCK
+    if _PROJECT_CTX_LOCK is None:
+        import threading as _th
+        _PROJECT_CTX_LOCK = _th.Lock()
+    key = (str(question or ""), int(limit))
+    with _PROJECT_CTX_LOCK:
+        hit = _PROJECT_CTX_CACHE.get(key)
+        if hit is not None:
+            return dict(hit)
+    val = _project_context(question, limit=limit)
+    with _PROJECT_CTX_LOCK:
+        if len(_PROJECT_CTX_CACHE) >= _PROJECT_CTX_CACHE_MAX:
+            _PROJECT_CTX_CACHE.clear()
+        _PROJECT_CTX_CACHE[key] = dict(val)
+    return val
+
+
 def _project_context(question="", limit=6):
     """RAG-lite：从项目文档取相关段落 + 固定权威摘要。"""
     import re as _re
@@ -9559,7 +9583,7 @@ class Handler(BaseHTTPRequestHandler):
                 _project_ctx = bool(_pctx_opt)
             _pc = {}
             if _project_ctx:
-                _pc = _project_context(question)
+                _pc = _project_context_cached(question)
                 if _pc.get("text"):
                     opts["_prompt_prefix"] = (_pc["text"]
                                              + "\n\n【用户问题】\n")
