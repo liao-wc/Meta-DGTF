@@ -25,8 +25,10 @@
 - App 重启后 `/api/health` → ok=true、app=2.0.2、engine=2.2.1
 - 首页缓存串 → `?v=2.0.2-dshlive`；`/static/app.js` 已含新分支
 - `/api/dsh/chats` 返回 `external=dsh-current` 会话；selftest **PASS 371 / FAIL 0**
-- 会话独立性实测：当前会话共 **20 个独立窗口**，**0 条事件越界、0 对窗口重叠**；
+- 会话独立性实测：当前会话共 **24 个独立窗口**，**0 条事件越界、0 对窗口重叠**；
   运行中会话 600ms 轮询持续刷新（`ISOLATED=True`）
+- 陈旧记录过滤：DSH session 重建可能残留 `start_seq > 当前 asOf` 的旧记录（实测 102095 > asOf≈6300），
+  这类记录不参与窗口边界计算、也不在会话列表显示；修复后当前窗口正常返回 30 条事件。
 
 ## 边界
 

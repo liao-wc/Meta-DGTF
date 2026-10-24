@@ -4569,6 +4569,15 @@ def _dsh_conv_slice(conv):
         start = int(c.get("start_seq") or 0)
         if start <= 0:
             return None
+        # 先取当前 asOf：DSH session 重建后可能残留 start_seq 大于当前 asOf 的
+        # 旧记录（真跑实测 102095 > asOf≈6300），这类记录不参与窗口/边界计算。
+        as_of0 = 0
+        try:
+            as_of0 = int((_dsh_current_asof() or {}).get("as_of") or 0)
+        except Exception:
+            as_of0 = 0
+        if as_of0 and start > as_of0 + 5:
+            return None
         ends = []
         _owners = {}
         try:
@@ -4582,6 +4591,8 @@ def _dsh_conv_slice(conv):
                 if str(x.get("external") or "") != "dsh-current":
                     continue
                 s2 = int(x.get("start_seq") or 0)
+                if as_of0 and s2 > as_of0 + 5:
+                    continue
                 if s2 > start:
                     ends.append(s2)
                 if s2 == start and s2 > 0:
@@ -4593,11 +4604,7 @@ def _dsh_conv_slice(conv):
         except Exception:
             ends = []
         end = min(ends) if ends else 0
-        as_of = 0
-        try:
-            as_of = int((_dsh_current_asof() or {}).get("as_of") or 0)
-        except Exception:
-            as_of = 0
+        as_of = as_of0
         if end <= 0:
             end = as_of
         # 同 start_seq 的重复会话：非最新创建者不重复拿内容（独立记录）。
@@ -4719,6 +4726,16 @@ def _conv_list(limit=50):
                 keep[key] = r
         other.extend(keep.values())
         other.sort(key=lambda x: float(x.get("created_at") or 0), reverse=True)
+        # 隐藏 start_seq 超过当前 asOf 的陈旧记录（DSH session 重建残留）。
+        _as_of = 0
+        try:
+            _as_of = int((_dsh_current_asof() or {}).get("as_of") or 0)
+        except Exception:
+            _as_of = 0
+        if _as_of:
+            other = [r for r in other
+                     if not (str(r.get("external") or "") == "dsh-current"
+                             and int(r.get("start_seq") or 0) > _as_of + 5)]
         rows = other
     return rows
 
