@@ -35,11 +35,13 @@ App：
 | 20261024_160020（V2.2.2 成本档） | 0.909 | 969,376 | 89 | auto | 1 圈预算 → 2 圈；默认 DeepSeek 官方联网 |
 | 20261024_163455（V2.2.2 成本档·无网） | **0.990** | **997,457** | 107 | auto | rounds 0:3/1:2/both:2/all:3；**flags=0**；web off（合法成本档） |
 | 20261024_171058（V2.2.2 均衡档·无网） | 0.951 | 1,210,815 | 134 | auto | rounds 0:3/1:4/both:2/all:4；flags=0；被成本档 run7 支配 |
+| 20261024_175452（V2.2.2 质量档·官方联网） | 0.980 | 1,844,908 | 154 | auto | rounds 0:3/1:5/both:4/all:5；flags 1；被 run7 支配 |
 
-读数：**同题当前非支配点 = 0.909 @ 96.9万（官方联网成本档 run6）与 0.990 @ 99.7万
-（无网成本档 run7，flags=0）**；均衡档 0.951 @ 121.1万（run8）被 run7 支配——
-**成本档反而质量更高**，故 V2.2.2 的 Pareto 最优引擎配置收敛到 run7（全四层、effort low、web off、
-实测 rounds 0:3/1:2/both:2/all:3）。
+**三档受控 A/B 完成**：同题非支配点仍只有 **run6（0.909 @96.9万，官方联网）** 与
+**run7（0.990 @99.7万，无网，flags=0）**；均衡档 run8（0.951@121.1万）与质量档 run9
+（0.980@184.5万）均被 run7 支配——质量档多花 85% tokens 质量反而略低。
+结论：V2.2.2 引擎 Pareto 最优配置 = **run7（全四层、effort low、web off、实测 rounds 0:3/1:2/both:2/all:3）**；
+仅当必须联网时退到 run6。
 注意：这些 run 跨版本且问题不同，只能作方向。V2.2.2 已用 20261024_160020 验证：
 质量门 PASS、standard_all=true、flags 仅 probe_no_target_covered、四层 duty 均不 short；
 默认官方联网实测 search=11 / fetch=4（抓取生效）。
@@ -105,6 +107,7 @@ App：
 | J1 推荐 | run7 + App 读数缓存 + BGE 批量 n=32 | 0.990 | 997,457 | health ~14–17ms、chats ~19ms、BGE 451 texts/s | 预算 ≥1.0M 时最优 |
 | J2 | run6（官方联网）+ App 缓存 | 0.909 | 969,376 | search=11/fetch=4，联网时延另计 | 预算 <1.0M 且必须联网时 |
 | J3 | 均衡档 run8 + App 缓存 | 0.951 | 1,210,815 | flags=0 | 被 J1 支配 |
+| J4 | 质量档 run9（官方联网）+ App 缓存 | 0.980 | 1,844,908 | search=13/fetch=5 | 被 J1 支配，质量未过 0.99 |
 
 联动选档器（Round 5）：`scripts/pareto_flow.py --budget-tokens 1000000 --min-quality 0.9 --with-components --joint-select`
 → 选中 run7（0.990/997,457/107，无网档）；加 `--require-web` 且预算 <1.0M 时自动退到 run6 官方联网档，
