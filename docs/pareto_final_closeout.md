@@ -134,3 +134,9 @@
 - 发现 behavior_fusion=auto 覆盖 M4 的 web off/quality 档，默认 App 任务变成高价联网；
 - 修复：behavior_fusion=off + 显式 web/thinking/effort，auto_fused 跳过 auto_policy 圈数；
 - 真实任务 cmd 验证：--parallel B --web off --behavior-fusion off；App 2.0.12。
+
+## 十六、Round 11 App 2.0.13 真实验证
+
+- M4 默认链修复后完整任务：310.7s / 588,205 tokens / 90 calls / 2/2/2/2 圈，quality 0.8374；
+- 对照修复前：1800s 超时 / 1.92M tokens / 5/6/4/7 圈；
+- 项目背景改为按相关性注入；项目相关问题仍保留背景。

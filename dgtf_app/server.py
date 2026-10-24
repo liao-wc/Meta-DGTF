@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "2.0.12"
+APP_VERSION = "2.0.13"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -6527,6 +6527,17 @@ def _semantic_items(q, limit=4):
              "score": round(float(sc), 4)} for sc, x in out[:max(1, int(limit))]]
 
 
+_PROJECT_CTX_MARKS = ("meta-dgtf", "dgtf", "道生三阶", "四层", "修行", "研究",
+                     "对撞", "元层", "eml", "dsh", "调度", "lora", "自洽",
+                     "route", "rounds", "app", "项目")
+
+
+def _project_context_relevant(question: str) -> bool:
+    """只有问题确实涉及本项目时才注入权威背景；通用任务不再被背景拖慢。"""
+    q = str(question or "").lower()
+    return any(k in q for k in _PROJECT_CTX_MARKS)
+
+
 def _project_context(question="", limit=6):
     """RAG-lite：从项目文档取相关段落 + 固定权威摘要。"""
     import re as _re
@@ -9531,8 +9542,10 @@ class Handler(BaseHTTPRequestHandler):
                 except (TypeError, ValueError):
                     opts["timeout_s"] = 3600
             if _pctx_opt is None:
-                # 项目背景内置：真实任务默认注入；mock/自检保持原文以稳定基线。
-                _project_ctx = not _is_mock_task
+                # 项目背景内置：只对项目相关问题注入；通用任务不注入，
+                # 否则无关背景会把 1+1 这类题拖成高价长跑（真实链路实测）。
+                _project_ctx = (not _is_mock_task
+                                and _project_context_relevant(question))
             else:
                 _project_ctx = bool(_pctx_opt)
             _pc = {}
@@ -9610,6 +9623,9 @@ class Handler(BaseHTTPRequestHandler):
                     # ★ 关键：M4 选档必须显式落成引擎参数，否则
                     #   behavior_fusion=auto 会再把 web/thinking 强制打开，
                     #   把“质量/墙钟优先”变成高价档（App 真实链路实测发现）。
+                    #   圈数也要给提示档：App 默认 no-rounds 实测跑到 5/6/4/7 圈，
+                    #   tokens 1.92M、wall 26.9min；直接 B 给 1 圈提示只到 2/2/2/5。
+                    opts.setdefault("rounds", "0:1,1:1,both:1,all:1")
                     opts.setdefault("behavior_fusion", "off")
                     if _mode == "B":
                         opts.setdefault("parallel", "B")
@@ -9644,7 +9660,7 @@ class Handler(BaseHTTPRequestHandler):
                         "features": _feat,
                         "applied_opts": {k: opts.get(k) for k in (
                             "parallel", "web", "thinking", "effort",
-                            "behavior_fusion")},
+                            "behavior_fusion", "rounds")},
                     })
                     print("[mode-fusion] task 选择模式 %s：%s"
                           % (_mode, _sel.get("reason")), flush=True)

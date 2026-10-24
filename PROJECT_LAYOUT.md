@@ -41,7 +41,7 @@
 ## 状态
 
 - V2 生产入口：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.2.py
-- App：2.0.12（DSH 实时视图补丁 + 读数缓存 + V2 帕累托图 + BGE 缓存 + M4 auto-fused 任务启动）
+- App：2.0.13（DSH 实时视图补丁 + 读数缓存 + V2 帕累托图 + BGE 缓存 + M4 auto-fused 任务启动）
 - Engine：2.2.2
 - V2 tests：39 / 39 PASS（534 项检查；含题型判定 / 元层清算 / 判定审计 / V2.2.2 补丁与帕累托判据）
 - F5：生成机制完成

@@ -98,7 +98,11 @@ B+web（20261024_215545）：unknown 1,095,801ms / dual_judge 201,144ms / self_c
 - 修复：M4 选档显式落 behavior_fusion=off、web/thinking/effort；auto_fused 时跳过 auto_policy 的
   0:4 圈数覆盖；runner 增加 --behavior-fusion 透传；
 - 验证：真实任务启动后 cmd = --parallel B --web off --behavior-fusion off，无 0:4 强制圈数，随后取消；
-- 该修复把“M4 默认 auto”从名义接入变成真正可控，避免 App 默认链路成本/墙钟失控。
+- 2.0.13 复跑（无项目背景、rounds 提示 0:1...）：完成 310.7s、588,205 tokens、90 calls、2/2/2/2 圈、
+  quality 0.8374、answer_ready=true、answer_quality=unverified、duty_short；
+- 对照修复前（带项目背景）：1800s 超时、1.38M+ tokens、154 calls、5/6/4/7 圈、quality 0.9598；
+- 结论：默认通用任务墙钟从超时降到 5.2min，代价是通用事实题答案质量标记 unverified；
+  涉及项目的问题仍注入背景，质量优先可显式传 project_context/rounds。
 
 ## 五、剩余优化空间（下一轮候选）
 
