@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "2.0.19"
+APP_VERSION = "2.0.20"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -9714,10 +9714,40 @@ class Handler(BaseHTTPRequestHandler):
                     _fused_info["error"] = str(exc)
                     print("[mode-fusion] 选择模式失败，退回默认：%s" % exc,
                           flush=True)
+            _cache_hit = False
+            _cached_from = ""
+            _cached = None
+            if (not _is_mock_task and opts.get("use_cache", True)
+                    and not _quality_retry):
+                try:
+                    _cached = _find_cached_pack(
+                        question, opts,
+                        str(opts.get("_prompt_prefix") or ""))
+                except Exception:
+                    _cached = None
             try:
-                tid = runner.start_task(question, opts)
+                if _cached:
+                    tid = runner.start_cached_task(question, dict(opts), _cached)
+                    _cache_hit = True
+                    _cached_from = str(_cached.get("id") or "")
+                else:
+                    tid = runner.start_task(question, opts)
             except ValueError as e:
                 return self._json({"error": str(e)}, 400)
+            if _cache_hit:
+                return self._json({"id": tid, "cache_hit": True,
+                                   "cached_from": _cached_from,
+                                   "auto_pareto": _auto_pareto,
+                                   "auto_template": _auto_template,
+                                   "auto_llm": _auto_llm,
+                                   "auto_policy": _auto_policy,
+                                   "auto_policy_rounds": _auto_policy_rounds,
+                                   "project_context": _project_ctx,
+                                   "timeout_s": opts.get("timeout_s") or 0,
+                                   "profile": opts.get("profile") or "",
+                                   "quality_policy": _quality_policy,
+                                   "quality_retry": bool(_quality_retry),
+                                   "mode_fusion": _fused_info}, 201)
             if _quality_retry and not _is_mock_task:
                 try:
                     import threading as _th
@@ -9738,9 +9768,54 @@ class Handler(BaseHTTPRequestHandler):
                                "profile": opts.get("profile") or "",
                                "quality_policy": _quality_policy,
                                "quality_retry": bool(_quality_retry),
+                               "cache_hit": False,
                                "mode_fusion": _fused_info}, 201)
 
         return self._json({"error": "not found"}, 404)
+
+
+_CACHE_TTL_S = 6 * 3600
+
+
+def _find_cached_pack(question: str, opts: dict, prefix: str = ""):
+    """查找同题、同 web/parallel 的已验证 packed，复用其产物。"""
+    import json as _json
+    import time as _time
+    want_web = str(opts.get("web") or "") == "on"
+    want_par = str(opts.get("parallel") or "")
+    full_q = (prefix or "") + question
+    now = _time.time()
+    try:
+        packs = sorted(oi.OUTPUTS_DIR.glob("*.packed.json"),
+                       key=lambda x: x.stat().st_mtime, reverse=True)[:300]
+    except Exception:
+        return None
+    for p in packs:
+        try:
+            if now - p.stat().st_mtime > _CACHE_TTL_S:
+                continue
+            d = _json.loads(p.read_text(encoding="utf-8"))
+            if str(d.get("question") or "") != full_q:
+                continue
+            q = d.get("quality") or {}
+            if not (q.get("answer_ready") and q.get("answer_quality") == "verified"):
+                continue
+            usage = d.get("api_usage") or {}
+            if bool(usage.get("web_enabled")) != want_web:
+                continue
+            mode = str((d.get("dispatch") or {}).get("_parallel_mode") or "")
+            if want_par and mode and mode != want_par:
+                continue
+            name = p.name[:-len(".packed.json")]
+            out = oi.OUTPUTS_DIR / (name + ".md")
+            log = oi.OUTPUTS_DIR / (name + ".run.log")
+            return {"id": str(d.get("id") or name),
+                    "pack": p.name,
+                    "output_name": out.name if out.exists() else "",
+                    "log": str(log) if log.exists() else ""}
+        except Exception:
+            continue
+    return None
 
 
 def _watch_fact_quality_retry(tid: str, question: str, base_opts: dict) -> None:

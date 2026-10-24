@@ -692,6 +692,43 @@ def start_task(question: str, opts: dict | None = None) -> str:
     return tid
 
 
+def start_cached_task(question: str, opts: dict | None = None,
+                      source: dict | None = None) -> str:
+    """创建一个“已完成”的缓存任务（不启动引擎，复用已验证产物）。"""
+    question = (question or "").strip()
+    source = dict(source or {})
+    tid = time.strftime("%Y%m%d_%H%M%S") + "_" + uuid.uuid4().hex[:6]
+    task = {
+        "id": tid,
+        "question": question,
+        "opts": dict(opts or {}),
+        "status": "done",
+        "mock": False,
+        "created_at": time.time(),
+        "started_at": time.time(),
+        "ended_at": time.time(),
+        "exit_code": 0,
+        "cancelled": False,
+        "partial": False,
+        "log": str(source.get("log") or ""),
+        "output_name": str(source.get("output_name") or ""),
+        "error": "",
+        "cmd": [],
+        "before_outputs": {},
+        "pid": None,
+        "timeout_s": float((opts or {}).get("timeout_s") or 0),
+        "timeout": False,
+        "start_balance": current_balance(),
+        "tok_calls": 0,
+        "tok_tokens": 0,
+        "cached_from": str(source.get("id") or ""),
+        "cache_hit": True,
+    }
+    with _tasks_lock:
+        _tasks[tid] = task
+    return tid
+
+
 def _run(tid: str) -> None:
     with _tasks_lock:
         task = _tasks.get(tid)

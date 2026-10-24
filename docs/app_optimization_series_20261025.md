@@ -47,3 +47,10 @@
 - dual_judge/self_check 细粒度替换：理论收益 ≤7% 墙钟，质量风险已由负结果验证；
 - C/D/E 之外新并行架构：现有并行模式均质量受损，安全方案退化为 B；
 - 建议后续如继续，先做小流量 A/B 试点与质量门对照，再考虑引擎版本迭代。
+
+## 五、已验证答案缓存（App 2.0.20）
+
+- 6h 内同题、同 web/parallel 的 verified packed 直接复用；
+- 命中创建缓存任务（status=done，cached_from 可审计），不启动引擎；
+- 实测：1+1 显式 web 复跑 POST 54.8ms 命中缓存（原约 320s/76万 tokens）；
+- 未命中（如默认 stable 无 verified 源）正常启动引擎。
