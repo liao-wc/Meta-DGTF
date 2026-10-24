@@ -36,6 +36,7 @@ App：
 | 20261024_163455（V2.2.2 成本档·无网） | **0.990** | **997,457** | 107 | auto | rounds 0:3/1:2/both:2/all:3；**flags=0**；web off（合法成本档） |
 | 20261024_171058（V2.2.2 均衡档·无网） | 0.951 | 1,210,815 | 134 | auto | rounds 0:3/1:4/both:2/all:4；flags=0；被成本档 run7 支配 |
 | 20261024_175452（V2.2.2 质量档·官方联网） | 0.980 | 1,844,908 | 154 | auto | rounds 0:3/1:5/both:4/all:5；flags 1；被 run7 支配 |
+| 20261024_190707（3层 route 0,1,both） | **不可行** | 545,869 | 74 | auto | all 元层未执行（rounds all=0），answer_ready=false；flags duty_short / all_closure_unavailable / core_audit_gaps |
 
 **三档受控 A/B 完成**：同题非支配点仍只有 **run6（0.909 @96.9万，官方联网）** 与
 **run7（0.990 @99.7万，无网，flags=0）**；均衡档 run8（0.951@121.1万）与质量档 run9
@@ -78,6 +79,12 @@ App：
   · DeepSeek-R1-1.5B：proxy 0.592、sim 0.665、kw 0.2、生成 p50 5.37s。
   · 结论：两模型质量代理接近且事实性弱（会泛化/走题），**本地 LLM 不进答案主路径**；
     本地组件的 Pareto 价值在 BGE 检索/embedding（高吞吐低时延），LLM 仅做轻量辅助。
+
+**3 层边界（Round 8 负结果）**：去掉 all 元层省 token 的路线不可行——
+all 层 rounds=0、product_chars=0，answer_ready/process_ready=false，standard_all=false，
+flags=duty_short/all_closure_unavailable/core_audit_gaps；产物已归档到 outputs/negative_runs/。
+结论：四层全跑是「答案可交付 + 元层闭合」的硬约束，不能为省 tokens 去掉 all 层；
+引擎 Pareto 优化只能在四层内做（run6/run7）。
 
 ## 4.1 组件内帕累托前沿（Round 4 实测）
 
