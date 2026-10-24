@@ -70,6 +70,9 @@ App：
   recall@1=1.000、recall@3=1.000、MRR=1.000；语料批量 embedding 313.5ms，查询 embedding p50 28.4ms。
   结论：本地检索质量在本语料上达标，配合 n=32 批量 451 texts/s，本地 BGE 是「质量-时延」双优组件；
   但本地 LLM 生成质量弱，不应进答案主路径。
+- **BGE 文本级 LRU 缓存（V2.0.9）**：同文本首访冷 ~240ms（含 CUDA 预热），命中 p50 ~13ms；
+  3 条批量冷 59.2ms → 热 20.8ms（/health 带 hits/misses/size）。缓存向量与原向量一致，
+  属纯时延改进；重复查询场景下本地检索时延下降约 65%（批量）。
 - 本地 LLM 生成基线（GTX 1660 Ti 6GB，fp16，scripts/local_llm_bench.py）：
   · Qwen2.5-0.5B-Instruct：加载 3.22s，32 tokens p50=2.11s（15.2 tok/s）；
   · DeepSeek-R1-Distill-Qwen-1.5B：加载 10.06s，16 tokens p50=1.41s（11.4 tok/s）；

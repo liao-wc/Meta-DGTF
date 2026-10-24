@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """本地 BGE embedding HTTP 服务（仅 127.0.0.1）。"""
-import json, os, sys, threading
+import hashlib, json, os, sys, threading
+from collections import OrderedDict
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import torch
 from transformers import AutoTokenizer, AutoModel
@@ -11,6 +12,11 @@ _tok = None
 _model = None
 _dev = 'cpu'
 _lock = threading.Lock()
+_CACHE = OrderedDict()
+_CACHE_MAX = int(os.environ.get('DGTF_EMBED_CACHE_MAX', '1024'))
+_CACHE_HITS = 0
+_CACHE_MISSES = 0
+_CACHE_LOCK = threading.Lock()
 
 
 def _load():
@@ -25,19 +31,52 @@ def _load():
     _model.to(_dev)
 
 
+def _cache_stats():
+    with _CACHE_LOCK:
+        return {'size': len(_CACHE), 'max': _CACHE_MAX,
+                'hits': _CACHE_HITS, 'misses': _CACHE_MISSES}
+
+
 def embed(texts):
+    """批量 embedding；文本级 LRU 缓存（重复文本直接命中，向量逐位一致）。"""
     _load()
-    out = []
-    with _lock:
-        for i in range(0, len(texts), 16):
-            batch = [str(x)[:2000] for x in texts[i:i+16]]
-            enc = _tok(batch, padding=True, truncation=True, max_length=512,
-                       return_tensors='pt')
-            enc = {k: v.to(_dev) for k, v in enc.items()}
-            with torch.no_grad():
-                v = _model(**enc).last_hidden_state[:, 0]
-            v = torch.nn.functional.normalize(v.float(), p=2, dim=1)
-            out.extend([[round(float(x), 5) for x in row] for row in v.cpu().tolist()])
+    global _CACHE_HITS, _CACHE_MISSES
+    keys = []
+    for x in texts:
+        t = str(x)[:2000]
+        keys.append(hashlib.sha256(t.encode('utf-8')).hexdigest())
+    out = [None] * len(texts)
+    missing = []
+    with _CACHE_LOCK:
+        for i, k in enumerate(keys):
+            if k in _CACHE:
+                out[i] = list(_CACHE[k])
+                _CACHE.move_to_end(k)
+                _CACHE_HITS += 1
+            else:
+                missing.append(i)
+    if missing:
+        miss_texts = [str(texts[i])[:2000] for i in missing]
+        vecs = []
+        with _lock:
+            for i in range(0, len(miss_texts), 16):
+                batch = miss_texts[i:i+16]
+                enc = _tok(batch, padding=True, truncation=True, max_length=512,
+                           return_tensors='pt')
+                enc = {k: v.to(_dev) for k, v in enc.items()}
+                with torch.no_grad():
+                    v = _model(**enc).last_hidden_state[:, 0]
+                v = torch.nn.functional.normalize(v.float(), p=2, dim=1)
+                vecs.extend([[round(float(x), 5) for x in row]
+                             for row in v.cpu().tolist()])
+        with _CACHE_LOCK:
+            for idx, vec in zip(missing, vecs):
+                out[idx] = vec
+                _CACHE[keys[idx]] = tuple(vec)
+                _CACHE.move_to_end(keys[idx])
+                _CACHE_MISSES += 1
+                while len(_CACHE) > _CACHE_MAX:
+                    _CACHE.popitem(last=False)
     return out
 
 
@@ -58,7 +97,7 @@ class H(BaseHTTPRequestHandler):
             try:
                 _load()
                 self._send(200, {'ok': True, 'model': MODEL, 'dev': _dev,
-                                 'dim': 512})
+                                 'dim': 512, 'cache': _cache_stats()})
             except Exception as exc:
                 self._send(500, {'ok': False, 'error': str(exc)})
         else:
