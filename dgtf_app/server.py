@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "2.0.11"
+APP_VERSION = "2.0.12"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -9545,6 +9545,9 @@ class Handler(BaseHTTPRequestHandler):
             # 默认自动帕累托：真实任务默认启用；mock/自检默认关闭以稳定基线。
             _auto_pareto = (bool(_ap_opt) if _ap_opt is not None
                             else not _is_mock_task)
+            _fused_opt = opts.pop("auto_fused", None)
+            _auto_fused = (bool(_fused_opt) if _fused_opt is not None
+                           else not _is_mock_task)
             _auto_template = bool(opts.pop("auto_template", False))
             _auto_llm = bool(opts.pop("auto_llm", False))
             # [v1.5.20] 自动帕累托执行面：把 policy 的圈数预算扩到四层，
@@ -9570,8 +9573,8 @@ class Handler(BaseHTTPRequestHandler):
                 _pol = _schedule_policy_load()
                 opts["profile"] = str(_pol.get("profile") or "方案F-帕累托最优.yaml")
             if (_auto_pareto and _auto_policy and not _auto_template
-                    and not _auto_llm and not opts.get("route")
-                    and not opts.get("rounds")):
+                    and not _auto_llm and not _auto_fused
+                    and not opts.get("route") and not opts.get("rounds")):
                 _pol = _schedule_policy_load()
                 _raw_r = str(_pol.get("rounds") or _pol.get("auto_rounds") or "")
                 try:
@@ -9583,9 +9586,6 @@ class Handler(BaseHTTPRequestHandler):
                                        "0:%d,1:%d,both:%d,all:%d" % (_r, _r, _r, _r))
                 opts["rounds"] = _auto_policy_rounds
                 opts["auto_policy"] = True
-            _fused_opt = opts.pop("auto_fused", None)
-            _auto_fused = (bool(_fused_opt) if _fused_opt is not None
-                           else not _is_mock_task)
             _fused_info = {"enabled": bool(_auto_fused)}
             if _auto_fused:
                 try:
@@ -9607,16 +9607,30 @@ class Handler(BaseHTTPRequestHandler):
                         features=_feat)
                     _sel = _plan.get("first") or {}
                     _mode = str(_sel.get("mode") or "")
+                    # ★ 关键：M4 选档必须显式落成引擎参数，否则
+                    #   behavior_fusion=auto 会再把 web/thinking 强制打开，
+                    #   把“质量/墙钟优先”变成高价档（App 真实链路实测发现）。
+                    opts.setdefault("behavior_fusion", "off")
                     if _mode == "B":
                         opts.setdefault("parallel", "B")
+                        opts.setdefault("web", "off")
+                        opts.setdefault("thinking", "auto")
+                        opts.setdefault("effort", "auto")
                     elif _mode == "serial":
                         opts.setdefault("parallel", "serial")
+                        opts.setdefault("web", "off")
+                        opts.setdefault("thinking", "auto")
+                        opts.setdefault("effort", "auto")
                     elif _mode == "fast":
                         opts.setdefault("parallel", "serial")
+                        opts.setdefault("web", "off")
                         opts.setdefault("thinking", "off")
+                        opts.setdefault("effort", "auto")
                     elif _mode == "web":
                         opts.setdefault("parallel", "serial")
                         opts.setdefault("web", "on")
+                        opts.setdefault("thinking", "auto")
+                        opts.setdefault("effort", "auto")
                     _fused_info.update({
                         "mode": _mode,
                         "reason": _sel.get("reason"),
@@ -9628,6 +9642,9 @@ class Handler(BaseHTTPRequestHandler):
                         "quality_guard": _plan.get("quality_guard"),
                         "cascade": _plan.get("cascade"),
                         "features": _feat,
+                        "applied_opts": {k: opts.get(k) for k in (
+                            "parallel", "web", "thinking", "effort",
+                            "behavior_fusion")},
                     })
                     print("[mode-fusion] task 选择模式 %s：%s"
                           % (_mode, _sel.get("reason")), flush=True)

@@ -53,6 +53,7 @@ _ARG_SPEC = {
     "effort": "--effort",
     "actions-off": "--actions-off",
     "actions-on": "--actions-on",
+    "behavior_fusion": "--behavior-fusion",
 }
 _BOOL_FLAGS = {"no-self-check": "--no-self-check", "quiet": "--quiet", "debug": "--debug"}
 

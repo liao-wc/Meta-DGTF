@@ -128,3 +128,9 @@
 - D DAG：0.9500 / 1,093,196 / 1402.3s / duty_short；被 B/fast 支配；
 - A/C/D/E 全部并行模式均未前移前沿，保留 B/serial/fast + web 回退；
 - 详细报告：docs/analysis_report_20261024.md。
+
+## 十五、Round 10 App 真实默认链路修复
+
+- 发现 behavior_fusion=auto 覆盖 M4 的 web off/quality 档，默认 App 任务变成高价联网；
+- 修复：behavior_fusion=off + 显式 web/thinking/effort，auto_fused 跳过 auto_policy 圈数；
+- 真实任务 cmd 验证：--parallel B --web off --behavior-fusion off；App 2.0.12。

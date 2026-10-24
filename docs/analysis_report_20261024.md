@@ -91,6 +91,15 @@ B+web（20261024_215545）：unknown 1,095,801ms / dual_judge 201,144ms / self_c
    - BGE 文本级 LRU 缓存；cache-clean 批量 n=16 约 14.4ms/1109 texts/s；检索 recall@1=1.0、MRR=1.0；
    - 本地 LLM 质量代理弱，不进答案主路径。
 
+## 四（补）、App 真实默认链路发现与修复（Round 10）
+
+- 实测：App 默认任务由 M4 选 B（web off / quality 优先），但引擎 behavior_fusion=auto 随后强制
+  web=on / thinking=high，实际变成高价联网档，20 分钟仍未完成（已取消）；
+- 修复：M4 选档显式落 behavior_fusion=off、web/thinking/effort；auto_fused 时跳过 auto_policy 的
+  0:4 圈数覆盖；runner 增加 --behavior-fusion 透传；
+- 验证：真实任务启动后 cmd = --parallel B --web off --behavior-fusion off，无 0:4 强制圈数，随后取消；
+- 该修复把“M4 默认 auto”从名义接入变成真正可控，避免 App 默认链路成本/墙钟失控。
+
 ## 五、剩余优化空间（下一轮候选）
 
 - unknown 阶段的 DeepSeek KV cache 命中率追踪与稳定前缀优化（最大墙钟块）；
