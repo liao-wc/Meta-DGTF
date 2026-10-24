@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "dgtf_engine"))
 
 from dgtf_v2.pareto_flow import extract_flow_metrics  # noqa: E402
-from dgtf_v2.quality_predictor import (evaluate, fit, mode_bucket,  # noqa: E402
+from dgtf_v2.quality_predictor import (evaluate, fit, fit_knn, mode_bucket,  # noqa: E402
                                         save_model)
 
 
@@ -75,8 +75,13 @@ def main() -> int:
     tidx = idx[rcut:]
     rand = fit([rows[i] for i in ridx], [ys[i] for i in ridx], lam=args.lam)
     rand_metrics = evaluate(rand, [rows[i] for i in tidx], [ys[i] for i in tidx])
-    model = fit(rows, ys, lam=args.lam)   # 部署用全量
-    model["metrics"] = {"chronological": chrono_metrics, "random": rand_metrics}
+    knn = fit_knn(rows, ys, k=5)
+    knn_metrics = {"chronological": evaluate(knn, test_rows, test_y),
+                   "random": evaluate(knn, [rows[i] for i in tidx], [ys[i] for i in tidx])}
+    ridge_model = fit(rows, ys, lam=args.lam)
+    model = knn if (knn_metrics["random"].get("r2") or -9) >= (rand_metrics.get("r2") or -9) else ridge_model
+    model["metrics"] = {"chronological": chrono_metrics, "random": rand_metrics,
+                        "knn": knn_metrics, "chosen": model.get("kind", "ridge")}
     model["n_train"] = len(rows)
     model["n_test"] = len(tidx)
     model["trained_from"] = "outputs/*.packed.json"

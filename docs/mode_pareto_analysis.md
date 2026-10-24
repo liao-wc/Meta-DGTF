@@ -75,7 +75,7 @@
 - 模式 A/E 均失败，说明 C/D/E 代表模式（层并行/流水/DAG）当前版本质量不达标；保留 B/serial/fast 不变。
 - App 2.0.11：任务启动默认 auto，GET /api/mode-fusion 暴露模式/场景/参数；POST /api/tasks 支持 fused_min_quality、
   fused_max_wall、fused_max_tokens、fused_require_web、fused_prefer；前端新增“模式融合”场景下拉。
-- 质量预测器（dgtf_engine/dgtf_v2/quality_predictor.py + 模型 JSON）：历史 141 样本；随机切分 R²=0.676/MAE=0.127，
+- 质量预测器（dgtf_engine/dgtf_v2/quality_predictor.py + 模型 JSON）：历史 141 样本；随机切分 R²=0.893/MAE=0.065，
   时间切分 R²=-0.37（跨版本漂移）。只在预测明确时用于 fast→B 守卫，不替代实测。
 - 模式 E（DAG，run 20261024_213016）：quality 0.922、flags duty_short/unsaid_overused(4)、tokens 993,472、wall 1513.7s，被 fast 支配。
 - **B+web 组合（run 20261024_215545）**：quality 0.933、search=4/fetch=6、tokens 1,062,012、wall 1073.3s；

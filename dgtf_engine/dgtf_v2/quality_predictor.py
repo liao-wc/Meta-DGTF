@@ -166,8 +166,61 @@ def fit(rows: List[dict], y: List[float], lam: float = 1.0) -> dict:
             "lambda": lam}
 
 
+def fit_knn(rows: List[dict], y: List[float], k: int = 5) -> dict:
+    """k 近邻回归（纯 Python，小样本更稳；与 ridge 同特征）。"""
+    feat_rows = []
+    for r in rows:
+        if isinstance(r, dict) and ("_features" in r or "_route_n" in r):
+            feat_rows.append(featurize(
+                r.get("_features") or {},
+                int(_f(r.get("_route_n"), 4)),
+                _f(r.get("_rounds_avg"), 2),
+                bool(r.get("_web")),
+                str(r.get("_mode") or "other"),
+                r.get("_history") or {}))
+        else:
+            feat_rows.append(r or {})
+    Xs, stats = _standardize(feat_rows)
+    return {"kind": "knn", "k": int(k), "features": FEATURES,
+            "mean": {k: stats[k][0] for k in FEATURES},
+            "std": {k: stats[k][1] for k in FEATURES},
+            "X": Xs, "y": [float(v) for v in y]}
+
+
+def predict_knn(model: dict, features: dict, route_n=4, rounds_avg=2.0,
+                web=False, mode="other", history=None) -> float:
+    f = featurize(features, route_n, rounds_avg, web, mode, history)
+    x = []
+    mean = model.get("mean") or {}
+    std = model.get("std") or {}
+    for k in model.get("features") or FEATURES:
+        x.append((_f(f.get(k)) - _f(mean.get(k))) / (_f(std.get(k), 1.0) or 1.0))
+    X = model.get("X") or []
+    y = model.get("y") or []
+    if not X:
+        return 0.0
+    ds = []
+    for i, row in enumerate(X):
+        d = 0.0
+        for a, b in zip(x, row):
+            d += (a - b) ** 2
+        ds.append((d, i))
+    ds.sort(key=lambda z: z[0])
+    kk = max(1, min(int(model.get("k") or 5), len(ds)))
+    near = ds[:kk]
+    wsum = 0.0
+    acc = 0.0
+    for d, i in near:
+        w = 1.0 / (1.0 + d)
+        acc += w * y[i]
+        wsum += w
+    return max(0.0, min(1.0, acc / wsum)) if wsum else 0.0
+
+
 def predict(model: dict, features: dict, route_n=4, rounds_avg=2.0,
             web=False, mode="other", history=None) -> float:
+    if model.get("kind") == "knn":
+        return predict_knn(model, features, route_n, rounds_avg, web, mode, history)
     f = featurize(features, route_n, rounds_avg, web, mode, history)
     z = _f(model.get("intercept"))
     coef = model.get("coef") or []

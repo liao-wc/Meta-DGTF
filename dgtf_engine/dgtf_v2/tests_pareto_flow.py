@@ -11,7 +11,7 @@ from dgtf_v2.pareto_flow import (dominates, extract_flow_metrics, joint_snapshot
                                  load_packed_runs, pareto_frontier, recommend, report,
                                  select_joint)
 from dgtf_v2.mode_fusion import fused_plan, scenario_table, select_mode
-from dgtf_v2.quality_predictor import fit, predict
+from dgtf_v2.quality_predictor import fit, fit_knn, predict
 
 P, F = [], []
 
@@ -166,6 +166,10 @@ def main():
                       features={"len": 19, "why": True, "what": True,
                                 "short": True})
     ck("M4 质量预测守卫", "quality_prediction" in _fp2, _fp2)
+    _mk = fit_knn(_rows, _ys, k=5)
+    ck("kNN 模型 kind", _mk.get("kind") == "knn", _mk.get("kind"))
+    _pk = predict(_mk, {"len": 90, "why": True}, 4, 2.0, False, "serial")
+    ck("kNN 预测在 0..1", 0.0 <= _pk <= 1.0, _pk)
     with tempfile.TemporaryDirectory() as td2:
         pp = Path(td2) / "x.packed.json"
         pp.write_text(json.dumps(_pack("verified", 100000, 100)), encoding="utf-8")

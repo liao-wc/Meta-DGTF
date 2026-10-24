@@ -22,7 +22,7 @@ V2.2.2
 - 新增 pareto_flow 模块/脚本/判据（全流程质量-成本非支配前沿第一版）。
 
 【验证】
-- fast_gate 12/0；V2 tests 39/39（532 项检查）；App selftest 371/0；pip check 0 broken（两环境）。
+- fast_gate 12/0；V2 tests 39/39（534 项检查）；App selftest 371/0；pip check 0 broken（两环境）。
 - 职责离线复算：四层 short=false、元层 closure_delivered=true；unsaid 双源闸 4 项判据通过。
 - 真跑 20261024_160020：质量门 PASS、四层 duty 均不 short、官方联网 search=11/fetch=4。
 - 真跑 20261024_163455（同题成本档）：quality score 0.99、flags=0、997,457 tokens / 107 calls；四层 duty 全部 short=false。

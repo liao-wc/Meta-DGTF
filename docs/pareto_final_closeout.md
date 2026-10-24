@@ -56,7 +56,7 @@
 
 ## 五、验证
 
-- fast_gate 12/0；V2 tests 39/39（532 项检查）；App selftest 371/0；pip check 0 broken（两环境）；project paths PASS；DSH loop check 6/0；最新真跑离线预检 5/5；
+- fast_gate 12/0；V2 tests 39/39（534 项检查）；App selftest 371/0；pip check 0 broken（两环境）；project paths PASS；DSH loop check 6/0；最新真跑离线预检 5/5；
 - 真跑数据与墙钟侧车、联动报告均可复现（scripts/pareto_report.py）；
 - 提交与标签：Git 历史已推送 origin/main；引擎 V2.2.2、App 2.0.10、App 发布标签本地保留。
 
@@ -80,14 +80,14 @@
 - 第四种模式 M4 auto-fused：按质量/墙钟/tokens/联网约束自适应，并支持 fast→B 级联；
   单模式部署建议使用 M4（静态单模式则选 B）。
 - 产物：docs/mode_pareto_analysis.md、dgtf_engine/dgtf_v2/mode_fusion.py、scripts/mode_fusion.py；
-  V2 判据新增 7 项（共 532 项检查）。
+  V2 判据新增 7 项（共 534 项检查）。
 
 ## 八、Round 1 模式补测与 M4 App 接入
 
 - 模式 E 负结果：quality 0.922、flags duty_short/unsaid_overused(4)、tokens 993,472、wall 1513.7s；被 fast 支配。
 - App 2.0.11：任务启动默认 M4 auto；/api/mode-fusion 暴露模式与场景参数；前端场景下拉。
-- 质量预测器：历史 packed 训练 ridge（141 样本），随机 R²=0.676 / MAE=0.127；时间 R²=-0.37，仅作保守守卫。
-- V2 判据增至 532 项检查。
+- 质量预测器：历史 packed 训练 ridge（141 样本），随机 R²=0.893 / MAE=0.065；时间 R²=-0.37，仅作保守守卫。
+- V2 判据增至 534 项检查。
 - 模式 E（DAG）0.922/993,472/1513.7s 被 fast 支配；B+web 0.933/1,062,012/1073.3s 成为联网最佳档。
 
 ## 九、Round 2 阶段级与组合补测
@@ -96,3 +96,9 @@
 - B-no-selfcheck：quality 0.94、flags duty_short、tokens 1,029,966、wall 985.1s；质量/墙钟优先不采纳。
 - 模式 E（DAG）：0.922/993,472/1513.7s，被 fast 支配；A（层并行）质量门失败。
 - 结论：B 仍是质量/墙钟最优；fast 时间最优；serial 低 tokens；联网用 B+web。
+
+## 十、Round 3 预测器与 App 编排
+
+- 质量预测器改用 kNN：随机 R²=0.893/MAE=0.065；时间切分 R²=0.376/MAE=0.202（已转正）；
+- M4 预测采用 0.5 模型 + 0.5 模式先验校准；
+- App mock 端到端：POST 265.6ms、首条日志 408.6ms、完成 3478.3ms；编排为亚秒级。

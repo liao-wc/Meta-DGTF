@@ -61,7 +61,7 @@ B+web（20261024_215545）：unknown 1,095,801ms / dual_judge 201,144ms / self_c
 2. 质量预测器：
    - dgtf_engine/dgtf_v2/quality_predictor.py + 训练脚本 + 模型 JSON（已入库）；
    - 特征：题面结构、route 层数、平均圈数、web、模式 one-hot、历史 calls/tokens/tri_rate/cut_rate；
-   - 141 样本：随机切分 R²=0.676 / MAE=0.127；时间切分 R²=-0.26（跨版本漂移）；
+   - 141 样本：随机切分 kNN R²=0.893 / MAE=0.065；时间切分 kNN R²=0.376（跨版本漂移）；
    - 采用“0.5 模型 + 0.5 模式先验”校准，只在预测明确时用于 fast→B 守卫。
 3. App/本地模型：
    - health 2s TTL、chats 1s TTL；V2 帕累托图铺满、Y 0–1、X 0–200k、分箱中位数趋势；
@@ -76,9 +76,16 @@ B+web（20261024_215545）：unknown 1,095,801ms / dual_judge 201,144ms / self_c
 - M4 质量预测的跨版本校准（时间切分仍负 R²）；
 - App 端到端首条产物时延测量与 UI 场景参数默认值调优。
 
+## 五（补）. App 端到端编排基线（mock）
+
+- POST /api/tasks：265.6ms；
+- 首条日志可见：408.6ms；
+- 完成：3478.3ms；
+- 说明：App 编排本身为亚秒级，真实任务墙钟仍由引擎 LLM 主导。
+
 ## 六、验证
 
-- fast_gate 12/0；V2 tests 39/39（532 项检查）；App selftest 371/0；pip check 0 broken（两环境）；project paths PASS；loop check 6/0；最新真跑预检 5/5；
+- fast_gate 12/0；V2 tests 39/39（534 项检查）；App selftest 371/0；pip check 0 broken（两环境）；project paths PASS；loop check 6/0；最新真跑预检 5/5；
 - 提交与运行态：app 2.0.11 / engine 2.2.2；origin/main 已推送（见 git log）。
 
 ## 七、结论

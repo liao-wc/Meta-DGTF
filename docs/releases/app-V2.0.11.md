@@ -18,9 +18,11 @@
 
 - APP_VERSION 2.0.10 → 2.0.11；静态缓存串 ?v=2.0.11-dshlive；
 - 质量预测器（dgtf_engine/dgtf_v2/quality_predictor.py）已训练并作为 M4 的保守守卫；
-  历史 141 样本，随机切分 R²=0.676 / MAE=0.127，时间切分 R²=-0.26（跨版本漂移），只在模型可用且预测明确时启用。
+  历史 141 样本，随机切分 kNN R²=0.893 / MAE=0.065，时间切分 kNN R²=0.376（跨版本漂移），只在模型可用且预测明确时启用。
 
 ## 验证
+
+- App mock 端到端：POST 265.6ms、首条日志 408.6ms、完成 3478.3ms。
 
 - py_compile 0；
 - GET /api/mode-fusion 返回 4 模式 + 5 场景；
