@@ -6,7 +6,7 @@
 - **当前版本**：V2.2.1（V2.2.0 行为级融合 + 补丁迭代）
 - **生产引擎**：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.1.py
 - **V2 核心**：dgtf_engine/dgtf_v2/
-- **人用界面**：dgtf_app/（App 2.0.1，DSH 本对话实时镜像）
+- **人用界面**：dgtf_app/（App 2.0.2，DSH 本对话实时镜像 + 会话列表实时打开）
 - **融合实现**：单引擎内联（Meta-DGTF-V2.2.1.py）；V2.1 外部模块仅作回滚参考
 - **历史清单**：dgtf_engine/dgtf_v2/history_manifest.json
 - **版本规范**：dgtf_engine/dgtf_v2/NAMING.md

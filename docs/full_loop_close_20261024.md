@@ -69,6 +69,20 @@
 - t1：按失败信息追加 14 条核验关闭（含 940c/占位/已修复线索）。
 - t2：复跑 → **PASS 5 / FAIL 0**；其余门禁全绿，停止迭代。
 
+## 6.1 继续优化（2026-10-24 15:00–15:20，用户点开运行中会话无内容反馈）
+
+- **App 2.0.2**：修复「DSH 会话」列表点开正在运行/当前会话时只显示空壳的问题——
+  `dsh-current-*` 会话直接打开「DSH 本对话」整段实时镜像；localStorage 不再恢复空壳；
+  Agent 面板读库对瞬时 `Failed to fetch` 自动重试 1 次并点名失败库。
+  验证：py_compile/node --check 0；health app=2.0.2/engine=2.2.1；页面缓存串 2.0.2-dshlive；selftest 371/0。
+- **api_gap 25c91baef5ec 复核关闭**：最新真跑 api_usage 显示 web_enabled=true、
+  tools_calls=4、search_calls=10；`dsh_loop_check.py` 新增 E 检查（联网/工具调用遥测）PASS。
+- **EML 候选对账**：`1135dd11cd09`（all_actions_missing）与 `d30bf5383297`
+  （context_web_on_demand）由最新真跑证伪 ⇒ 关闭；其余 4 个 id 的混合条件保留观察。
+- **低危质量读数**（unsaid_overused / too_many_amp_candidates）：逐条核对生成判据
+  （self-check 未说标记超阈值 / 候选→& 比超该层上限），属真实读数，保留观察，不做静默清洗。
+- 下一步：等待本轮第五次四层真跑（V2.2.1 验证）完成，跑 precheck + dsh_loop_check 复核。
+
 ## 7. 剩余风险 / 人工确认
 
 1. `25c91baef5ec`（api_gap：Tool Calls 未触发）需联网真跑/配置侧复核，保留开放。

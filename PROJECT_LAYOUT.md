@@ -41,7 +41,7 @@
 ## 状态
 
 - V2 生产入口：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.1.py
-- App：2.0.1（DSH 实时视图补丁）
+- App：2.0.2（DSH 实时视图补丁 + 会话列表实时打开）
 - Engine：2.2.1
 - V2 tests：38 / 38 PASS（内联融合 13/13；含题型判定 / 元层清算 / 判定审计 / V2.2.1 补丁判据）
 - F5：生成机制完成

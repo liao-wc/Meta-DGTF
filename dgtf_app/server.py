@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "2.0.1"
+APP_VERSION = "2.0.2"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -2530,7 +2530,7 @@ def _dsh_current_events(since: int = 0, limit: int = 300) -> dict:
             "last_seq": max([int(x.get("seq") or 0) for x in events] + [since])}
 
 
-# ── ★ App V2.0.1：「DSH 本对话」整段会话实时视图（full=1）───────────────────
+# ── ★ App V2.0.1 引入 / V2.0.2 修复：「DSH 本对话」整段实时视图（full=1）──────
 # 旧的 /api/dsh/current/events 从 active 逻辑会话 start_seq 起算、只回传增量，
 # 看不到本会话更早内容也没有回看；full=1 直接以 DSH 当前根会话为准：
 #   默认   → 整段会话最近 limit 条（App 首次载入，约 200 条）

@@ -1579,7 +1579,13 @@ function toggleDshMode(on) {
     if (!dshAttachTaskId && !dshConversationId) {
       try {
         const saved = localStorage.getItem(DSH_CONV_KEY);
-        if (saved) { dshConversationId = saved; _restored = true; loadDshConversation(); }
+        /* ★ V2.0.1：恢复到的若是「当前 DSH 会话」链（dsh-current-*），App 侧
+           turn 壳没有内容 ⇒ 不恢复它，交给下面的「DSH 本对话」实时视图。 */
+        if (saved && String(saved).indexOf('dsh-current-') === 0) {
+          localStorage.removeItem(DSH_CONV_KEY);
+        } else if (saved) {
+          dshConversationId = saved; _restored = true; loadDshConversation();
+        }
       } catch (_) {}
     }
     /* ★ V2.0.1：进入 DSH 模式且没有历史/任务会话时，默认展示「DSH 本对话」
@@ -1661,8 +1667,21 @@ function setDshHistoryOpen(on) {
 async function resumeDshChat(id) {
   if (!id) return;
   if (String(id).indexOf('dsh-current-') === 0) {
+    /* ★ V2.0.1：当前 DSH GUI 会话（external=dsh-current）的 App 侧 turn 记录
+       只有壳（guard/入口任务的真实内容在 DSH GUI 会话里）⇒ 点开时直接展示
+       「DSH 本对话」整段实时视图（full=1），不要停留在「用户 新对话 / 运行中…」。 */
     try { await resumeDshCurrentConversation(id); } catch (_) {}
-    resetDshLiveEvents();
+    stopDshConvPoll();
+    dshConversationId = null;
+    dshConversation = null;
+    try { localStorage.removeItem(DSH_CONV_KEY); } catch (_) {}
+    dshHistoryOpen = false;
+    dshCurrent = null;
+    toggleDshMode(true);
+    openDshCurrentLiveView();
+    await loadDshChats();
+    setDshHistoryOpen(false);
+    return;
   }
   stopDshConvPoll();
   dshConversationId = id;
@@ -4712,13 +4731,30 @@ async function loadAgent() {
     const el = $('#' + id);
     if (el) el.innerHTML = agentEmpty('读取中…');
   });
+  /* ★ V2.0.1：读库偶发瞬时网络错误（Failed to fetch）时自动重试 1 次，
+     并在最终失败时点名是哪个库，避免信息屏只显示「部分失败：Failed to fetch」。 */
+  async function _lib(path, label, fallback) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try { return await api(path); }
+      catch (e) {
+        if (attempt === 0) {
+          await new Promise(function (res) { setTimeout(res, 350); });
+          continue;
+        }
+        const fb = Object.assign({}, fallback || {});
+        fb.error = label + '：' + ((e && e.message) ? e.message : '读取失败');
+        return fb;
+      }
+    }
+    return Object.assign({}, fallback || {}, { error: label + '：未知错误' });
+  }
   const [t, r, k, ds, da, pr, ap, v2, pa, vab, vpar, con, mdl, llm] = await Promise.all([
-    api('/api/agent/tasks').catch(e => ({ tasks: [], error: e.message })),
-    api('/api/agent/results').catch(e => ({ results: [], error: e.message })),
-    api('/api/agent/knowledge').catch(e => ({ items: [], error: e.message })),
-    api('/api/dsh/chats').catch(e => ({ chats: [], error: e.message })),
-    api('/api/dsh/artifacts').catch(e => ({ artifacts: [], error: e.message })),
-    api('/api/dsh/proposals').catch(e => ({ proposals: [], error: e.message })),
+    _lib('/api/agent/tasks', '任务队列', { tasks: [] }),
+    _lib('/api/agent/results', '消费者结果', { results: [] }),
+    _lib('/api/agent/knowledge', '知识库', { items: [] }),
+    _lib('/api/dsh/chats', 'DSH 会话', { chats: [] }),
+    _lib('/api/dsh/artifacts', 'DSH 产物', { artifacts: [] }),
+    _lib('/api/dsh/proposals', '修复提案', { proposals: [] }),
     api('/api/agent/autopilot').catch(e => ({ enabled: false, error: e.message })),
     api('/api/schedule/v2').catch(e => ({ n: 0, error: e.message })),
     api('/api/schedule/pareto?prefer=' + encodeURIComponent((document.querySelector('#pareto-prefer') || {}).value || 'balanced')).catch(e => ({ ok: false, error: e.message })),

@@ -9,6 +9,8 @@
   B. 最新真跑离线质量门预检（scripts/precheck_quality.py，零 LLM 成本）。
   C. App 运行态 + 「DSH 本对话」full=1 整段视图（本地 127.0.0.1，口令只读本地文件）。
   D. 提案 pending=0；high 严重度任务无未关闭项。
+  E. 最新真跑联网/工具调用遥测（对应 api_gap 25c91baef5ec 验收）：
+     web_enabled=true 且 tools_calls/search_calls 至少有真实活动；quality.flags 只作读数展示。
 
 退出码：0 = 无 FAIL（N/A 表示本机缺依赖文件，clean checkout 下允许）；1 = 有 FAIL。
 用法：python scripts/dsh_loop_check.py [--json]
@@ -191,6 +193,25 @@ def check_ledger():
             if high else "")
 
 
+def check_api_telemetry():
+    out = ROOT / "outputs"
+    packs = sorted(out.glob("*.packed.json"), key=lambda x: x.stat().st_mtime) \
+        if out.exists() else []
+    if not packs:
+        return None, "outputs/ 无 packed（clean checkout 跳过）"
+    pack = packs[-1]
+    d = json.loads(pack.read_text(encoding="utf-8", errors="replace"))
+    api = d.get("api_usage") or {}
+    flags = (d.get("quality") or {}).get("flags") or []
+    web = bool(api.get("web_enabled"))
+    tools = int(api.get("tools_calls") or 0)
+    search = int(api.get("search_calls") or 0)
+    ok = web and (tools > 0 or search > 0)
+    return ok, ("%s ⇒ web_enabled=%s tools_calls=%d search_calls=%d fetch=%d；flags=%d 条（读数展示）"
+                % (pack.name, web, tools, search, int(api.get("fetch_calls") or 0),
+                   len(flags)))
+
+
 def main():
     print("DSH 全流程闭环检查 · %s" % time.strftime("%Y-%m-%d %H:%M:%S"))
     check("A.  队列来源可信度闸（940c8d165eed 验收）", check_queue_gate)
@@ -198,6 +219,7 @@ def main():
     check("B.  最新真跑离线质量门预检", check_precheck)
     check("C.  App 运行态 + DSH 本对话 full=1 视图", check_app_live)
     check("D.  提案 pending=0 且 high 队列清零", check_ledger)
+    check("E.  最新真跑联网/工具调用遥测", check_api_telemetry)
     print()
     print("RESULT: PASS %d / FAIL %d / N/A %d" % (PASS, FAIL, NA))
     if "--json" in sys.argv:

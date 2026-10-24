@@ -214,4 +214,36 @@ Select-String -Path dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.1.py -Pattern 'fla
 $env:PYTHONPATH="$PWD\dgtf_engine"
 python scripts/dsh_loop_check.py
 ```
+---
+
+## 附录 E：继续优化（2026-10-24 14:52）——api_gap 复核 + EML 候选对账
+
+### E1. api_gap 25c91baef5ec 复核关闭
+
+- 旧任务 detail：`web_enabled=false, tools_calls=0, search_calls=0`（旧跑未开网，不是链路故障）。
+- 最新真跑 `20261024_134620` 的 `api_usage`：**web_enabled=true、tools_calls=4、search_calls=10、tools_text=true**。
+- 新增 `scripts/dsh_loop_check.py` **E 检查**（联网/工具调用遥测）：复跑 **PASS**；
+  `web_enabled` 为假或 tools/search 全零才判 FAIL。该任务按「前提已不成立」关闭。
+
+### E2. EML 候选对账（12 行 / 6 个 id）
+
+| 候选 id | 条件 | 对账结论 | 处置 |
+|---|---|---|---|
+| 1135dd11cd09 | all_actions_missing | 最新真跑 all 层 actions=4 ⇒ 条件已不成立 | **closed** |
+| d30bf5383297 | context_web_on_demand | web_enabled=true/search=10/tools=4 ⇒ 条件已不成立 | **closed** |
+| 94b3aa6d4624 | rounds_delta（both_unresolved / layer1_duty_short） | layer1_duty_short 已由 V2.2.1 duty 修正消除；both_unresolved 需 A/B 真跑验证 | 保留观察 |
+| 4f48c1b90872 | thinking_hint（both_tension_high / 3 条 flags 噪声） | flags 类条件已被 V2.2.1 消除；both_tension_high 需 A/B | 保留观察 |
+| 92f2fc613a41 | carve_first（all_residual / layer0_duty_short / layer1_citation_low） | duty 条件已消除；all_residual、citation_low 仍成立 | 保留观察 |
+| c440fb190a44 | config_hint facet_empty | 需下一跑 facet 读数复核（不允许未验证改配置） | 保留观察 |
+
+### E3. 低危质量读数（保留观察，不伪装关闭）
+
+| 线索 | 生成判据（Meta-DGTF-V2.2.1.py） | 结论 |
+|---|---|---|
+| unsaid_overused(N) | `_self_check` 中「未说」标记数 > `_lim`（默认阈值）⇒ 探针没真往里推 | 真实自省信号，保留观察 |
+| too_many_amp_candidates(P) | 候选→& 转化比 > 该层 `_amp_ratio_max` 上限 | 真实结构信号，保留观察 |
+
+- 这两类线索只在 `quality.flags` 留痕，不拦截质量门（precheck/loop check 均 PASS）；
+  若强行关闭会丢失真实读数，因此保留并在本附录登记，不做静默清洗。
+
 
