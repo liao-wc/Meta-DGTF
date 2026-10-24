@@ -179,3 +179,39 @@ Select-String -Path dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.1.py -Pattern 'fla
   `action` 写明核验证据与判据/文件行号，`ts` 记录关闭时刻。
 - 本次仅新增/修改：`scripts/precheck_quality.py`、`docs/queue_closeout_20261024.md`、
   `dgtf_memory/agent_results.jsonl`（追加）。未 commit/push，未改引擎/App/其他文件。
+---
+
+## 附录 D：DSH 全流程闭环追加关闭（2026-10-24 14:44）
+
+> 触发：DSH 接管「全流程闭环」任务（full）。新增一键验收器
+> `scripts/dsh_loop_check.py`，先跑出 A2 FAIL（2 条占位标题任务未关闭），
+> 按失败信息补齐关闭后复跑 **PASS 5 / FAIL 0 / N/A 0**。
+
+### 本次追加关闭 14 条（agent_results.jsonl 追加，不删旧行）
+
+| task_id | 原线索/任务 | 关闭依据 |
+|---|---|---|
+| 940c8d165eed | 队列来源可信度闸 | V2.2.1 build_tasks 夹具过滤 + append_task 空/占位标题拒绝与去重；`scripts/dsh_loop_check.py` A/A2 验收 PASS |
+| 3b97b8164147 | 占位任务「app ????」 | append_task invalid_title 拒绝；A2 复核队列无未关闭占位项 |
+| 8e84dfd76bc8 | 自指任务「根据生成的提案执行任务」 | append_task 显式拒绝清单命中；A2 PASS |
+| a17c3c28a05d | duty_short | V2.2.1 按层交付面 + 问项实词 R + floor 0.15 + 元层闭合门；最新真跑离线复算 S=0.36/0.27/0.16/0 |
+| 50346c43b03e / 26162523b4d0 / 84871886623d | probe_link_dangling(1/2/3) | V2.2.1 悬空 link 置空 + link_original 留痕，不挂质量旗 |
+| d2f46d091b80 / 84797cf9bb0f | candidates_backfilled(sc:5/6) | 收尾复核阈值 0.75 + self-check 单源降为留痕（双源才挂旗） |
+| d81190c3ce7f / ec379fc0b563 | polarity_all_same_structural(1/0) | 结构性一致（非坍缩）改 view.meta 留痕，不挂质量旗 |
+| 1a809523846f | all_closure_gaps | 元层闭环在池汇总后刷新；最新真跑 meta_closure clean=true |
+| 445c639646f8 | core_audit_gaps | 最新真跑 core audit gaps=[]/overreach=[]（precheck G2 PASS） |
+| e97115b223a3 | all_closure_unavailable | route 全四层时不再置旗；闭合可审计（precheck PASS） |
+
+### 仍开放（不强行关闭，列人工确认）
+
+- `25c91baef5ec`（api_gap：Tool Calls 未触发）——需联网真跑/配置侧复核，保留；
+- 10 条 eml_candidate / 2 条 user_task / 若干 quality_flag 低危观察项（unsaid_overused、too_many_amp_candidates、ing_rephrased_direct 等）——属真实读数或待验证提案，保留观察；
+- 本附录不改引擎/App 源码；仅新增 `scripts/dsh_loop_check.py` 与文档，运行数据（agent_results/knowledge）为本地追加。
+
+### 复跑命令
+
+```powershell
+$env:PYTHONPATH="$PWD\dgtf_engine"
+python scripts/dsh_loop_check.py
+```
+

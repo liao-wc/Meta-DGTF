@@ -28,6 +28,7 @@
 |---|---|---|
 | App | dgtf_app/ | 本地 Web 工作台 |
 | 启动/运维 | scripts/、scripts/local_model/ | 启动、同步、部署、安全与本地模型脚本 |
+| 闭环检查 | scripts/dsh_loop_check.py | 一键验收：队列来源闸、质量门预检、App live 视图、提案/high 队列 |
 | 默认配置 | dgtf_config.yaml | V2 生产配置 |
 | 预设 | configs/ | 方案 A/B/C/F/G/H 等配置 |
 | 自动化 | .github/ | CI、Pages、Release、分类、安全 |

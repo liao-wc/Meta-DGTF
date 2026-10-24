@@ -139,6 +139,7 @@ python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.1.py -c configs/方案F-帕累�
 | V2 tests_*.py | 38 / 38 PASS（含 inline_fusion 13/13） |
 | App selftest | PASS 371 / FAIL 0 |
 | 依赖 pip check | 0 broken |
+| DSH 全流程闭环检查 | PASS 5 / FAIL 0 |
 | 历史融合 readiness | 1.00 / continuity_ok=True |
 | 行为融合 | 5 arms / auto 调度融合 / outcome UCB |
 | 定向0层真跑 | 20 calls / 85,807 tokens / zero_contract ok / provenance 17/17 |
