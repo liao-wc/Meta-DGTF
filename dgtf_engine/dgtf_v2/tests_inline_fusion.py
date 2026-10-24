@@ -93,14 +93,24 @@ def case_auto_changed():
 
 def case_metadata():
     cfg = {"actions": {"zero_v2": True}}
-    s = ENG.apply_behavior_fusion(cfg, "如何决定？", {"_items": {}})
+    old = ENG._bf_load_stats
+    ENG._bf_load_stats = lambda: _empty_stats()
+    try:
+        s = ENG.apply_behavior_fusion(cfg, "如何决定？", {"_items": {}})
+    finally:
+        ENG._bf_load_stats = old
     assert cfg["_behavior_fusion"] is s
     assert s["capabilities_total"] == 17
     assert s["history_versions"] == ENG._HF_VERSION_COUNT
 
 
 def case_audit_pack():
-    s = ENG.apply_behavior_fusion({}, "如何决定？", {"_items": {}})
+    old = ENG._bf_load_stats
+    ENG._bf_load_stats = lambda: _empty_stats()
+    try:
+        s = ENG.apply_behavior_fusion({}, "如何决定？", {"_items": {}})
+    finally:
+        ENG._bf_load_stats = old
     pack = {"route": ["0", "1", "both", "all"],
             "views": {k: {} for k in ("0", "1", "both", "all")},
             "quality": {"answer_quality": "verified", "coverage": 1.0,

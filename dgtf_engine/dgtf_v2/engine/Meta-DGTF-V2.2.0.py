@@ -24633,6 +24633,21 @@ class MetaDGTF:
             elif _dt0.get("raw_answer_ready") and _dt0.get("answer_quality") == "needs_evidence":
                 _dt0["answer_ready"] = False
                 _dt0["answer_ready_reason"] = "事实证据未覆盖题面/无官方依据"
+            # ★ [V2.2.0] 非事实题（decision/reasoning）没有 fact_card 可走官方证据；
+            #   四层过程全达标且答案已就绪时，verified 表示“过程合同验证”，
+            #   不是“事实官方源验证”。事实题仍走上面的 official evidence 分支。
+            # ★ [V2.2.0] 非事实题的对外门：过程四层全达标且答案非空 ->
+            #   decision/reasoning 的 verified 是“过程合同验证”，不是事实官方源。
+            _nonfact = str(_dt0.get("question_type")) != "fact"
+            if _nonfact:
+                _ans_probe = str(((_dt0.get("reasoning") or {}).get("answer"))
+                                 or _dt0.get("answer") or "").strip()
+                if _process_ok and _ans_probe:
+                    _dt0["raw_answer_ready"] = True
+                    _dt0["answer_ready"] = True
+                    _dt0["answer_quality"] = "verified"
+                    _dt0["answer_ready_reason"] = (
+                        "非事实题：四层过程合同全达标且答案非空")
             # 统一 answer_summary / depth 契约：md、app、bench 读同一份。
             _led0 = packed.get("process_ledger") or {}
             _lay0 = _led0.get("layers") or {}

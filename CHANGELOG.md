@@ -8953,3 +8953,8 @@ v1.21.51 相对 v1.21.50 的改动（稳定性 + 并行展开）
   - 失败必须留痕
   - 入池前挡重复
   - 按层覆盖参数
+
+## V2.2.0 质量门
+
+- 四层真跑 answer_ready=true / answer_quality=verified（decision，82 calls / 511,634 tokens）。
+- 事实题仍走官方证据；不冒充 verified。
