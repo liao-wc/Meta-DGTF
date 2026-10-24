@@ -85,7 +85,16 @@
   （context_web_on_demand）由最新真跑证伪 ⇒ 关闭；其余 4 个 id 的混合条件保留观察。
 - **低危质量读数**（unsaid_overused / too_many_amp_candidates）：逐条核对生成判据
   （self-check 未说标记超阈值 / 候选→& 比超该层上限），属真实读数，保留观察，不做静默清洗。
-- 下一步：等待本轮第五次四层真跑（V2.2.1 验证）完成，跑 precheck + dsh_loop_check 复核。
+- 第五次四层真跑（2026-10-24 15:27 完成，`20261024_152709`，117 calls / 1,295,308 tokens）：
+  * 质量门全绿：answer_ready/process_ready/verified、standard_all=true、core audit OK；
+  * 覆盖读数 **0.7857**（basis=decidable_weighted，不再 null）；tri_state=[0,0]（本轮无三态单元，读数为空而非 0.1667）；
+  * 质量线索从 5 条降到 **2 条**：`duty_short`、`unsaid_overused(3)`；
+    `candidates_backfilled / polarity_all_same_structural / probe_link_dangling` 已消失；
+  * api_usage：web_enabled=true、tools_calls=4、search_calls=8；
+  * 职责读数：both S=0.304 通过；0/1 层 C=0（交付面用「强度/城乡温差」等同义表述，未逐字覆盖问句
+    ⇒ 规则 C 的已知局限，duty_short 保留观察）；all 层 runtime 读数在产物落定前计算（下一步可做
+    终局刷新，但需新引擎补丁版本，见剩余风险）；
+  * `dsh_loop_check.py` 复跑 **PASS 6 / FAIL 0**（B 用新 packed、E 用新遥测）。
 
 ## 7. 剩余风险 / 人工确认
 

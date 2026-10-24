@@ -160,7 +160,12 @@ def check_app_live():
 
     h = _get("/api/health")
     ev = _get("/api/dsh/current/events?full=1&limit=5")
-    ok = (bool(h.get("ok")) and str((h.get("app") or {}).get("version")) == "2.0.1"
+    _av = str((h.get("app") or {}).get("version") or "")
+    try:
+        _av_ok = tuple(int(x) for x in _av.split(".")[:3]) >= (2, 0, 1)
+    except Exception:
+        _av_ok = False
+    ok = (bool(h.get("ok")) and _av_ok
           and bool(ev.get("ok")) and bool(ev.get("full"))
           and isinstance(ev.get("events"), list) and bool(ev.get("session_id")))
     return ok, ("app=%s engine=%s full=%s events=%d turn=%s step=%s"
