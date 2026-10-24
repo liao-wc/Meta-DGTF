@@ -122,3 +122,9 @@
 
 - C 流水线：0.9464 / 931,439 / 1266.5s / flags 0；为低 tokens 折中点，不进入保留三模式；
 - 至此 C/D/E 代表、B+web、B-no-self、静态前缀均已实测；B（1.000/1064.3s）仍为质量/墙钟最优。
+
+## 十四、Round 9 模式 D 补测与矩阵收尾
+
+- D DAG：0.9500 / 1,093,196 / 1402.3s / duty_short；被 B/fast 支配；
+- A/C/D/E 全部并行模式均未前移前沿，保留 B/serial/fast + web 回退；
+- 详细报告：docs/analysis_report_20261024.md。
