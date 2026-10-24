@@ -43,7 +43,7 @@
 - V2 生产入口：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.2.py
 - App：2.0.3（DSH 实时视图补丁 + 会话列表实时打开 + 健康读数缓存）
 - Engine：2.2.2
-- V2 tests：39 / 39 PASS（515 项检查；含题型判定 / 元层清算 / 判定审计 / V2.2.2 补丁与帕累托判据）
+- V2 tests：39 / 39 PASS（519 项检查；含题型判定 / 元层清算 / 判定审计 / V2.2.2 补丁与帕累托判据）
 - F5：生成机制完成
 - 历史融合：178 个版本 / 17 条能力轴 / readiness 1.00
 - 行为融合：5 个 arm / auto 调度 / outcome UCB

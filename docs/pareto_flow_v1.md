@@ -67,6 +67,11 @@ App：
   · Qwen2.5-0.5B-Instruct：加载 3.22s，32 tokens p50=2.11s（15.2 tok/s）；
   · DeepSeek-R1-Distill-Qwen-1.5B：加载 10.06s，16 tokens p50=1.41s（11.4 tok/s）；
   · 结论：本地模型适合短文本/低并发兜底；长生成仍走云端更快（云端单跑 ~0.5–2s/步）。
+- 本地模型质量代理（scripts/local_model_quality.py；BGE 相似度+关键词覆盖+长度，非人工评阅）：
+  · Qwen2.5-0.5B：proxy 0.579、sim 0.676、kw 0.2、生成 p50 5.05s；
+  · DeepSeek-R1-1.5B：proxy 0.592、sim 0.665、kw 0.2、生成 p50 5.37s。
+  · 结论：两模型质量代理接近且事实性弱（会泛化/走题），**本地 LLM 不进答案主路径**；
+    本地组件的 Pareto 价值在 BGE 检索/embedding（高吞吐低时延），LLM 仅做轻量辅助。
 
 ## 4.1 组件内帕累托前沿（Round 4 实测）
 
@@ -96,6 +101,10 @@ App：
 | J1 推荐 | run7 + App 读数缓存 + BGE 批量 n=32 | 0.990 | 997,457 | health ~14–17ms、chats ~19ms、BGE 451 texts/s | 预算 ≥1.0M 时最优 |
 | J2 | run6（官方联网）+ App 缓存 | 0.909 | 969,376 | search=11/fetch=4，联网时延另计 | 预算 <1.0M 且必须联网时 |
 | J3 | 均衡档 run8 + App 缓存 | 0.951 | 1,210,815 | flags=0 | 被 J1 支配 |
+
+联动选档器（Round 5）：`scripts/pareto_flow.py --budget-tokens 1000000 --min-quality 0.9 --with-components --joint-select`
+→ 选中 run7（0.990/997,457/107，无网档）；加 `--require-web` 且预算 <1.0M 时自动退到 run6 官方联网档，
+无可行候选时返回原因（不静默换算法）。
 联合快照：`docs/pareto_joint_snapshot_20261024.json`（引擎前沿 + App health/chats p50 + BGE health）。
 
 ## 6. 下一迭代（按优先级）

@@ -8,7 +8,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from dgtf_v2.pareto_flow import (dominates, extract_flow_metrics, joint_snapshot,
-                                 load_packed_runs, pareto_frontier, recommend, report)
+                                 load_packed_runs, pareto_frontier, recommend, report,
+                                 select_joint)
 
 P, F = [], []
 
@@ -97,6 +98,25 @@ def main():
     js = joint_snapshot({"n": 1, "frontier": ["x"], "recommend": {"row": runs[0]}},
                         app={"health": {"p50_ms": 15}}, local={"bge": {"p50_ms": 3}})
     ck("联动快照含三组件", set(js.keys()) >= {"engine", "app", "local", "note"}, js)
+
+    # ── 三组件联动选档（Round 5）──
+    web = [
+        {"id": "webcost", "quality": 0.909, "tokens": 969376, "calls": 89,
+         "web_enabled": True},
+        {"id": "nowebcost", "quality": 0.990, "tokens": 997457, "calls": 107,
+         "web_enabled": False},
+    ]
+    j1 = select_joint(web, app={"health": {"p50_ms": 15}},
+                      local={"bge": {"texts_per_s": 451}},
+                      budget_tokens=1000000, min_quality=0.9)
+    ck("联动选档优先高质量无网档", (j1.get("row") or {}).get("id") == "nowebcost", j1)
+    j2 = select_joint(web, budget_tokens=1000000, min_quality=0.9, require_web=True)
+    ck("要求联网时选官方联网档", (j2.get("row") or {}).get("id") == "webcost", j2)
+    j3 = select_joint(web, budget_tokens=980000, min_quality=0.95)
+    ck("预算不足时给出回退原因", (j3.get("row") or {}).get("id") == "nowebcost"
+       and "退为" in str(j3.get("reason")), j3)
+    j4 = select_joint(web, budget_tokens=980000, min_quality=0.9, require_web=True)
+    ck("联网档超预算回退", (j4.get("row") or {}).get("id") == "webcost", j4)
 
     print()
     print("PASS %d / FAIL %d" % (len(P), len(F)))

@@ -21,7 +21,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "dgtf_engine"))
 
-from dgtf_v2.pareto_flow import joint_snapshot, load_packed_runs, report  # noqa: E402
+from dgtf_v2.pareto_flow import (joint_snapshot, load_packed_runs, report,  # noqa: E402
+                                 select_joint)
 
 
 def _p50(url: str, token: str = "", n: int = 3) -> dict:
@@ -66,6 +67,9 @@ def main() -> int:
     ap.add_argument("--with-components", action="store_true")
     ap.add_argument("--snapshot", default="",
                     help="把本次联合快照写入 JSON 路径（便于跨轮次对比）")
+    ap.add_argument("--joint-select", action="store_true",
+                    help="三组件联动选档（引擎行 + App/BGE 读数）")
+    ap.add_argument("--require-web", action="store_true")
     args = ap.parse_args()
     packs = sorted((ROOT / args.dir).glob("*.packed.json"),
                    key=lambda p: p.stat().st_mtime)
@@ -75,6 +79,14 @@ def main() -> int:
     comp = _components() if args.with_components else None
     out = joint_snapshot(rep, app=(comp or {}).get("app"),
                          local=(comp or {}).get("local")) if comp else rep
+    if args.joint_select:
+        js = select_joint(rows, app=(comp or {}).get("app"),
+                          local=(comp or {}).get("local"),
+                          budget_tokens=args.budget_tokens,
+                          min_quality=args.min_quality,
+                          require_web=args.require_web)
+        out = {"engine_report": rep, "joint_select": js,
+               "app": (comp or {}).get("app"), "local": (comp or {}).get("local")}
     if args.snapshot:
         sp = ROOT / args.snapshot
         sp.parent.mkdir(parents=True, exist_ok=True)
@@ -100,6 +112,13 @@ def main() -> int:
               % (rec.get("reason"), row.get("id"), row.get("quality", 0),
                  row.get("tokens", 0), row.get("calls", 0)))
         print("配置：route=%s rounds=%s" % (row.get("route"), row.get("rounds")))
+    if args.joint_select and isinstance(out, dict) and out.get("joint_select"):
+        js = out["joint_select"]
+        row = js.get("row") or {}
+        print("\n联动选档（%s）：%s quality=%.4f tokens=%d calls=%d web=%s"
+              % (js.get("reason"), row.get("id"), row.get("quality", 0),
+                 row.get("tokens", 0), row.get("calls", 0),
+                 "on" if row.get("web_enabled") else "off"))
     if comp:
         print("\n组件快照：App %s；BGE %s"
               % (json.dumps(comp["app"], ensure_ascii=False),

@@ -188,6 +188,32 @@ def report(rows: List[dict], budget_tokens: Optional[int] = None,
     }
 
 
+def select_joint(rows: Iterable[dict], app: Optional[dict] = None,
+                 local: Optional[dict] = None, budget_tokens: Optional[int] = None,
+                 min_quality: Optional[float] = None,
+                 require_web: bool = False) -> dict:
+    """三组件联动选档：在引擎候选行上叠加 App/本地模型读数与联网约束。
+
+    当前组件读数（App 读数缓存、本地 BGE 批量档）是固定配置，因此联动选档
+    等价于在引擎非支配行里按预算/质量/联网要求选一行，并把组件读数一起返回。
+    require_web=True 时只保留最近一次真跑里 web_enabled=True 的行。
+    """
+    rows = [r for r in (rows or []) if r]
+    if require_web:
+        rows = [r for r in rows if bool(r.get("web_enabled"))]
+    rec = recommend(rows, budget_tokens=budget_tokens, min_quality=min_quality)
+    row = rec.get("row")
+    return {
+        "row": row,
+        "reason": rec.get("reason"),
+        "require_web": bool(require_web),
+        "app": app or {},
+        "local": local or {},
+        "joint_tokens": (row or {}).get("tokens"),
+        "joint_quality": (row or {}).get("quality"),
+    }
+
+
 def joint_snapshot(engine_report: dict, app: Optional[dict] = None,
                    local: Optional[dict] = None) -> dict:
     """三组件联动快照：引擎前沿 + App/本地模型端点读数（只读，不猜）。"""
