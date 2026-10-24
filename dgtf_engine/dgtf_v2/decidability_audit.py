@@ -11,7 +11,19 @@ def _text(x):
 
 
 def _terms(s):
-    return [t.lower() for t in _TOKEN.findall(_text(s))]
+    """问题里的**可辨识术语**（用于判「证据里有没有这条的落点」）。
+
+    ★ 只收含字母的 token：纯数字（"3.4"、"39"、"20:00"）在证据里几乎必然
+      出现，拿它当「证据命中」会把「不可判定」误判成
+      `undecidable_but_evidence_exists`（真跑实测：3.4 K 的数值命中把两条
+      不可判定子问题打成 partial/bad）。数值是**度量**不是**命题落点**。
+    """
+    out = []
+    for t in _TOKEN.findall(_text(s)):
+        if not any(c.isalpha() for c in t):
+            continue
+        out.append(t.lower())
+    return out
 
 
 def audit_view(view: dict, evidence=None, fact_answer: str = "") -> dict:
@@ -27,6 +39,7 @@ def audit_view(view: dict, evidence=None, fact_answer: str = "") -> dict:
         cites = list(sq.get("citations") or sq.get("evidence") or [])
         hit = any(t in blob for t in _terms(q)[:4]) if blob else False
         issue = ""
+        warn = ""
         new_st = st
         if st in ("decidable", "可判定", "true"):
             if not cites:
@@ -39,10 +52,15 @@ def audit_view(view: dict, evidence=None, fact_answer: str = "") -> dict:
             else:
                 n_ok += 1
         elif st == "partial":
+            # ★ 审计只拦**越权断言**（decidable 无证据 / undecidable 有证据）。
+            #   「partial」本身已是降级声明：没有证据说明它没有升格成
+            #   可判定结论，不是 overclaim。旧口径把它记 bad ⇒ 研究层
+            #   standard_ok=False（真跑实测）。这里留告警、不记 bad。
             if cites or hit:
                 n_ok += 1
             else:
-                issue = "partial_without_evidence"
+                warn = "partial_without_evidence"
+                n_ok += 1
         if issue:
             n_bad += 1
             sq["audit_issue"] = issue
@@ -50,9 +68,12 @@ def audit_view(view: dict, evidence=None, fact_answer: str = "") -> dict:
                 sq["status_before_audit"] = st
                 sq["decidability"] = new_st
                 sq["status"] = new_st
+        if warn:
+            sq["audit_warning"] = warn
         rows.append({"id": sq.get("id"), "before": st,
                      "after": str(sq.get("decidability") or st),
-                     "issue": issue, "citations": len(cites),
+                     "issue": issue, "warning": warn,
+                     "citations": len(cites),
                      "evidence_term_hit": bool(hit)})
     # 没有结构化子问题时，审计研究产物本身：有外部证据却答“无法”，
     # 或未引用已核实事实，都要记为未证。
