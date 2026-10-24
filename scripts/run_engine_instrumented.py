@@ -34,12 +34,22 @@ def _load_engine(path: Path):
     return mod
 
 
-def _patch(probe_out: Path):
+def _patch(probe_out: Path, prefix: str = ""):
     import openai.resources.chat.completions as occ
     orig = occ.Completions.create
     seen = set()
 
     def create(self, *args, **kwargs):
+        if prefix:
+            try:
+                msgs = kwargs.get("messages") or []
+                if msgs and str(msgs[0].get("role")) == "system":
+                    _m = [dict(x) for x in msgs]
+                    _m[0]["content"] = prefix + "\n\n" + str(
+                        _m[0].get("content") or "")
+                    kwargs["messages"] = _m
+            except Exception:
+                pass
         resp = orig(self, *args, **kwargs)
         try:
             usage = getattr(resp, "usage", None)
@@ -79,13 +89,15 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--engine", default=str(ROOT / "dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.2.py"))
     ap.add_argument("--probe-out", required=True)
+    ap.add_argument("--prefix", default="",
+                    help="可选：给每条 system 消息前置的静态前缀（KV cache 实验）")
     ap.add_argument("engine_args", nargs=argparse.REMAINDER)
     args = ap.parse_args()
     argv = list(args.engine_args)
     if argv and argv[0] == "--":
         argv = argv[1:]
     mod = _load_engine(Path(args.engine))
-    _patch(Path(args.probe_out))
+    _patch(Path(args.probe_out), args.prefix)
     sys.argv = ["Meta-DGTF", *argv]
     code = 0
     try:
