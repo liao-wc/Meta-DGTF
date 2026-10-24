@@ -716,9 +716,13 @@ def _run(tid: str) -> None:
     log_path = Path(task["log"])
     try:
         with open(log_path, "w", encoding="utf-8", errors="replace") as lf:
+            _no_win = 0x08000000 if os.name == "nt" else 0
             proc = subprocess.Popen(
                 task["cmd"], cwd=str(PROJECT_ROOT), env=env,
                 stdout=lf, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
+                # ★ [V2.2.0] App 发起的引擎任务必须无控制台窗口；
+                #   否则用户每跑一题都看到黑窗弹出。
+                creationflags=_no_win,
             )
             task["pid"] = proc.pid
             # ★ 用轮询代替 `proc.wait()`：每轮把引擎日志同步进「活痕迹」文件，

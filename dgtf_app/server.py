@@ -9149,9 +9149,14 @@ def main() -> int:
                                       if _auto0.get("ok") else "无样本，跳过"))
     except Exception as _e:  # noqa: BLE001
         print("  V2 自动策略跳过：" + str(_e))
+    # ★ [V2.2.0 fix] BGE 冷启动很慢（模型加载可达 30-120s）。
+    #   不能阻塞 HTTP 服务启动，否则一键启动器的健康检查会超时并杀掉 app。
+    #   改为后台线程初始化；health 可先返回，embedding 就绪后自然可用。
     try:
-        _er = _ensure_rag_embed()
-        print("  BGE embedding：" + ("已就绪" if _er.get("ok") else "不可用（回退 BM25）"))
+        import threading as _th_bge
+        _th_bge.Thread(target=_ensure_rag_embed, daemon=True,
+                       name="bge-embed-init").start()
+        print("  BGE embedding：后台初始化（不阻塞启动；就绪后 health 可见）")
     except Exception as _e:  # noqa: BLE001
         print("  BGE embedding 启动失败（回退 BM25）：" + str(_e))
 

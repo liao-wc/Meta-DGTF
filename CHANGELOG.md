@@ -8958,3 +8958,11 @@ v1.21.51 相对 v1.21.50 的改动（稳定性 + 并行展开）
 
 - 四层真跑 answer_ready=true / answer_quality=verified（decision，82 calls / 511,634 tokens）。
 - 事实题仍走官方证据；不冒充 verified。
+
+## V2.2.0 App/事实门修复
+
+- PS1 脚本 UTF-8 BOM 修复，PowerShell 5 启动不再 ParserError。
+- BGE 后台初始化，避免 APP 冷启动被健康检查误杀。
+- App 引擎子进程 CREATE_NO_WINDOW，消除黑窗。
+- evidence 裸数字误判修复；事实题 answer_ready=true / verified（83 calls）。
+

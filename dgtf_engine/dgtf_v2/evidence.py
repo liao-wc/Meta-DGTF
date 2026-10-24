@@ -484,6 +484,11 @@ def detect_conflicts(items: Iterable) -> list:
         _term = (key[0] + " " if key[0] else "") + key[1]
         if any(k in _term for k in ("月", "日", "date", "日期")):
             continue
+        # ★ [V2.2.0 fix] 裸数字（无 anchor/context/unit）不是同一事实主张；
+        #   “1..30 个任务/步骤”这类页面计数会被误判成数值冲突。
+        #   只对带上下文或单位的数字做跨证据冲突判定。
+        if not key[0] and (key[1] in ("", "number", "num") or not key[2]):
+            continue
         value_map = buckets[key]
         if len(value_map) < 2:
             continue
@@ -504,7 +509,7 @@ _QUESTION_STOP_PHRASES = (
     "是否", "多少", "吗", "呢", "？", "?",
     # 通用提问/泛化词不当作事实项；否则英文官方证据会被中文泛化词误判未覆盖。
     "的作用", "作用", "函数", "方法", "表示什么", "表示", "含义",
-    "是什么作用", "状态码",
+    "是什么作用", "状态码", "的返回值", "返回值", "返回什么",
 )
 
 

@@ -7,7 +7,7 @@
   [switch]$NewToken,
   [switch]$DryRun,
   [switch]$NoAgentDaemon,
-  [int]$HealthTimeoutSec = 60
+  [int]$HealthTimeoutSec = 120
 )
 
 # 元DGTF 一键启动器。
@@ -344,13 +344,17 @@ if ($runningDgtf.Count -gt 0) {
     }
   }
   if (-not $health.Ok) {
-    Fail ("端口 " + $Port + " 上已有 DGTF app，但健康检查失败：" + $health.Message + "；可用 -Restart 重启（会先停止该实例）")
+    Write-Host ("已有 DGTF app 但健康检查失败：" + $health.Message) -ForegroundColor Yellow
+    Write-Host "自动停止该实例并重新启动（避免双击后发现应用卡死无法恢复）..." -ForegroundColor Yellow
+    Stop-AppProcesses
+    $runningDgtf = @()
+  } else {
+    $url = ($health.Scheme + "://127.0.0.1:" + $Port + "/?t=" + $token)
+    Write-Host ("DGTF app 已在运行：pid=" + ((@($runningDgtf | ForEach-Object { $_.Pid })) -join ",") + "，健康检查通过（HTTP 200）")
+    Write-Host "访问地址：已用浏览器自动打开（含口令 URL 不写入日志）"
+    Open-AppBrowser $url
+    exit 0
   }
-  $url = ($health.Scheme + "://127.0.0.1:" + $Port + "/?t=" + $token)
-  Write-Host ("DGTF app 已在运行：pid=" + ((@($runningDgtf | ForEach-Object { $_.Pid })) -join ",") + "，健康检查通过（HTTP 200）")
-  Write-Host "访问地址：已用浏览器自动打开（含口令 URL 不写入日志）"
-  Open-AppBrowser $url
-  exit 0
 }
 
 # ---------- 启动新实例 ----------

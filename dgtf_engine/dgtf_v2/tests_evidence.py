@@ -155,6 +155,14 @@ def case_detect_conflicts():
     same = from_search_hits([OFFICIAL, dict(OFFICIAL2,
                                             snippet=OFFICIAL["snippet"])])
     assert detect_conflicts(same) == []
+    # ★ [V2.2.0 fix] 裸数字（无 anchor/context/unit）不算事实冲突。
+    bare = from_search_hits([
+        {"title": "步骤", "url": "https://a.example.com/b1",
+         "snippet": "任务列表：1 2 3 4 5"},
+        {"title": "步骤", "url": "https://b.example.org/b2",
+         "snippet": "任务列表：6 7 8 9 10"},
+    ])
+    assert detect_conflicts(bare) == []
     # 负对照 ②：不同年份锚不冲突
     y1 = from_search_hits([{"title": "2022", "url": "https://a.example.com/1",
                             "snippet": "2022年中国GDP增长3.0%"}])
