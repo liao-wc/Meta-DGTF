@@ -89,6 +89,6 @@
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.2.py（V2.2.1/V2.2.0 保留可回滚）
 - App：2.0.3（health/chats 读数缓存）
 - 门禁：fast_gate 12/0、V2 tests 39/39（515 项检查）、App selftest 371/0、pip check 0 broken
-- 真实跑复核：20261024_160020 官方联网 search=11/fetch=4；20261024_163455 同题成本档 quality=0.99、flags=0、997,457 tokens/107 calls，四层 duty 全 short=false
+- 真实跑复核：20261024_160020 官方联网 search=11/fetch=4；20261024_163455 成本档 quality=0.99、flags=0、997,457 tokens/107 calls；20261024_171058 均衡档 quality=0.951、flags=0、1,210,815 tokens（被成本档支配）
 - 帕累托：scripts/pareto_flow.py（预算选档/联动快照）+ scripts/local_model_bench.py；基线 docs/pareto_flow_v1.md
 - 文档：docs/releases/V2.2.2.md、V2.2.2-发布报告.md、V2.2.2-收束报告.md、docs/releases/app-V2.0.3.md
