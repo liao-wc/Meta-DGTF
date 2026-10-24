@@ -148,3 +148,5 @@ B+web（20261024_215545）：unknown 1,095,801ms / dual_judge 201,144ms / self_c
 - 事实题显式联网可 verified 且墙钟仅比无联网多约 10-20s，但官方源抓取有波动（一次失败样本）；
 - 结论：App 2.0.14 把事实题联网接地做成 opt-in（fused_ground_web=true），默认仍 web off；
 - 若强制通用任务 verified，可显式传 web=on/fused_ground_web，或接受项目背景长墙钟。
+
+- 剩余优化空间评估：docs/remaining_optimization_assessment_20261025.md（dual_judge/self_check、C/D/E 外并行、App 取舍）。

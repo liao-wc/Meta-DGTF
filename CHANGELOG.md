@@ -9027,3 +9027,5 @@ v1.21.51 相对 v1.21.50 的改动（稳定性 + 并行展开）
 - App 引擎子进程 CREATE_NO_WINDOW，消除黑窗。
 - evidence 裸数字误判修复；事实题 answer_ready=true / verified（83 calls）。
 
+
+- 2026-10-25：新增 docs/remaining_optimization_assessment_20261025.md（剩余优化低收益/高风险评估）。
