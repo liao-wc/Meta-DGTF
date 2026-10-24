@@ -555,8 +555,6 @@ function collectOpts() {
   if ($('#mock').checked) opts.mock = true;
   /* M4 auto-fused 场景：默认 auto = 后端默认（真实任务启用、mock 关闭）。
      选具体场景时显式传参，后端按约束选 B/serial/fast/web。 */
-  const _qp = $('#quality-policy');
-  if (_qp && _qp.value && _qp.value !== 'auto') opts.quality_policy = _qp.value;
   const _fs = $('#fused-scenario');
   if (_fs && _fs.value && _fs.value !== 'auto') {
     opts.auto_fused = true;

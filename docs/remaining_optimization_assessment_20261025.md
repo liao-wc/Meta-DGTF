@@ -73,3 +73,7 @@
 - 机制：quality_policy=web-retry 时，首跑后若 answer_quality 为 unverified/needs_evidence，自动补跑一次同题 web 任务；首个任务记录 retry_task_id/quality_retry。
 - 代价：最坏 2 次任务（约 10min）；不改变默认策略；仅在用户显式选择 web-retry 时启用。
 - 验证：cmd 已确认 web-retry→--web on/behavior_fusion off/rounds 提示；取消路径 watcher 不误触发。
+
+- 默认全自动：项目相关 -> auto:verified（注入背景）；其它通用题 -> auto:stable（web off）。
+- 联网/重试改为 opt-in：API 显式 quality_policy=web/web-retry（或 web=on/fused_ground_web）才启用；前端不再提供选择按钮。
+- 验证：auto-fact -> web off/retry false；explicit web-retry -> web on/retry true；auto-project -> 背景注入。

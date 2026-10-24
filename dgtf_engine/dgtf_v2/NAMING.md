@@ -19,13 +19,13 @@
 | 对象 | 命名 |
 |---|---|
 | 生产引擎 | dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.2.py |
-| App | 2.0.16（DSH 实时视图补丁 + 读数缓存 + V2 帕累托图 + BGE 缓存 + M4 任务启动） |
+| App | 2.0.17（DSH 实时视图补丁 + 读数缓存 + V2 帕累托图 + BGE 缓存 + M4 任务启动） |
 | V2 核心 | dgtf_engine/dgtf_v2/ |
 | 融合实现 | Meta-DGTF-V2.2.2.py 内联（history + behavior；融合目标版本仍为 2.2.0 谱系） |
 | 历史清单 | dgtf_engine/dgtf_v2/history_manifest.json（数据） |
 | 单引擎融合判据 | dgtf_engine/dgtf_v2/tests_inline_fusion.py |
 | 主版本标签 | V2.2.2 |
-| App 发布标签 | app-V2.0.16 |
+| App 发布标签 | app-V2.0.17 |
 | Engine 发布标签 | engine-V2.2.2 |
 | 发布说明 | docs/releases/V2.2.2.md |
 | 收束报告 | V2.2.2-收束报告.md |
