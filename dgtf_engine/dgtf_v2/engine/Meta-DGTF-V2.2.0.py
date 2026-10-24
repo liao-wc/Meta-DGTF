@@ -22522,13 +22522,9 @@ class MetaDGTF:
         try:
             _disp = packed.get("_auto_dispatch") or {}
             _feat = (_disp.get("_features") or {})
-            if _feat.get("fact") and _feat.get("short"):
-                _qtype = "fact"
-            elif (_feat.get("meta") or _feat.get("choice")
-                  or _feat.get("how")):
-                _qtype = "decision"
-            else:
-                _qtype = "boundary"
+            # ★ 题型判定收口到 `question_type_from_features`：决策回执 / 产物 / 测试
+            #   共用同一份规则，避免「为什么」这类解释型题被当成事实短题。
+            _qtype = question_type_from_features(_feat)
             _views = packed.get("views") or {}
             _rounds = packed.get("rounds") or {}
             _layers = {}
@@ -24567,6 +24563,12 @@ class MetaDGTF:
         except Exception as _ebe:
             logger.warning("0/1 外部证据绑定失败（不阻断）：%s", _ebe)
         # ★ 研究层判定审计：可判定必须有证据；不可判定不得与证据相反。
+        #   ★ [fix] 子问题存在 pools["1"].sub_questions（views 只是渲染副本）。
+        #     旧版把**不含 sub_questions 的 views["1"]** 交给审计 ⇒ 审计只能审
+        #     「研究产物本身」，把「有 52 条外部证据但产物未引用」判成
+        #     research_ignores_available_evidence ⇒ status=unverified ⇒ 研究层
+        #     standard_ok=False ⇒ 整个过程门 False（真跑实测）。这里把子问题并入
+        #     审计入参，并把审计改写过（partial/补证）的子问题回写池，两处同源。
         try:
             from dgtf_v2.decidability_audit import annotate as _dann
             _ev1 = []
@@ -24575,8 +24577,21 @@ class MetaDGTF:
                         else getattr(_p0, "web_results", None)) or []
                 _ev1.extend([x for x in _wr0 if isinstance(x, dict)])
             _led1 = getattr(self, "_fact_ledger", None) or {}
-            _aud = _dann((packed.get("views") or {}).get("1") or {}, _ev1,
+            _v1aud = dict((packed.get("views") or {}).get("1") or {})
+            _p1aud = (packed.get("pools") or {}).get("1") or {}
+            _sq1aud = list(_v1aud.get("sub_questions") or
+                           _p1aud.get("sub_questions") or [])
+            if _sq1aud:
+                _v1aud["sub_questions"] = _sq1aud
+            _aud = _dann(_v1aud, _ev1,
                          fact_answer=str(_led1.get("answer") or ""))
+            # 审计结果写回渲染视图（process_ledger 读 views["1"].decidability_audit）
+            _v1real = (packed.get("views") or {}).get("1")
+            if isinstance(_v1real, dict):
+                _v1real["decidability_audit"] = _aud
+            # 审计标注（decidability→partial 等）回写池，避免两处口径分叉
+            if _sq1aud and isinstance(_p1aud, dict):
+                _p1aud["sub_questions"] = _sq1aud
             packed["decidability_audit"] = _aud
             if _aud.get("bad"):
                 self.vp("   🔬 判定审计：%d 项未证 / 共 %d 项"
@@ -26269,6 +26284,39 @@ def _has_decision_context(question: str) -> bool:
     return any(_c in _q for _c in _DECISION_CUES)
 
 
+#: [题型] 解释型「为什么 / 原因 / 机制」问句引导词。
+#   ★ 它们不是决策语境（不要行动方案），也不是事实短题（没有单一官方事实答案）；
+#   旧版把「为什么…」并进 fact 短题 ⇒ 事实预检、收紧圈数、事实卡未 answered 直接
+#   把四层过程全达标的结果打成 answer_ready=False（真跑实测）。单独一类。
+_WHY_CUES = ("为什么", "为何", "原因", "成因", "机制", "原理",
+             "怎么会", "凭什么", "为什么会")
+
+
+def _is_why_question(question: str) -> bool:
+    """题面是否在问「为什么/原因/机制」类解释型问题（纯规则，可复现）。"""
+    q = str(question or "")
+    return any(_c in q for _c in _WHY_CUES)
+
+
+def question_type_from_features(feat: dict) -> str:
+    """题型判定（决策回执/产物共用的一份规则）。
+
+    fact：空题或「事实型短题」（无决策语境、非解释型）。
+    decision：含元/选择/落地语境。
+    reasoning：解释型问句（为什么/原因/机制）——非事实路线，verified 表示
+      四层过程合同验证，不是官方事实源验证。
+    boundary：其余（无决策语境的边界题）。
+    """
+    feat = feat or {}
+    if feat.get("fact") and feat.get("short"):
+        return "fact"
+    if feat.get("meta") or feat.get("choice") or feat.get("how"):
+        return "decision"
+    if feat.get("why"):
+        return "reasoning"
+    return "boundary"
+
+
 def _with_form_declaration(res: dict, body: str, template: str,
                            why: str) -> str:
     """把「形态声明」插到落地层标题之后，返回新正文。
@@ -27421,12 +27469,19 @@ def _auto_normalize_explicit(ex) -> dict:
 # ① 题型特征（纯规则，零 LLM）
 # ------------------------------------------------------------
 def _auto_features(question: str) -> dict:
-    """题型 + 规模 + 意图线索。全部来自题面字符，可复现、可断言。"""
+    """题型 + 规模 + 意图线索。全部来自题面字符，可复现、可断言。
+
+    ★ [why] 解释型问句（为什么/原因/机制）**不算 fact 短题**：没有单一官方
+      事实答案，走事实预检/收紧圈数/事实卡会把四层已达标的结果打成
+      answer_ready=False（真跑实测）。单独标记 why，由决策回执归为 reasoning。
+    """
     q = str(question or "").strip()
+    _why = _is_why_question(q)
     return {
         "len": len(q),
         "blank": not q,
-        "fact": (not q) or (not _has_decision_context(q)),
+        "why": _why,
+        "fact": (not q) or (not _has_decision_context(q) and not _why),
         "meta": any(k in q for k in _AUTO_META_MARKS),
         "multi": (q.count("，") + q.count(",")) >= 3,
         "choice": ("或" in q) or ("还是" in q),
