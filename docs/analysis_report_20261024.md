@@ -134,3 +134,17 @@ B+web（20261024_215545）：unknown 1,095,801ms / dual_judge 201,144ms / self_c
 
 - M4 预测再加“历史区间”约束：模式质量取 [quality_low, quality]（B=0.959–1.000，fast=0.930，serial=0.990），
   校准后裁剪进区间，避免小样本/跨版本预测过度乐观；预测不明确时保持静态选档。
+
+
+## 四（补2）、App 默认链路质量-墙钟取舍（2026-10-25 复跑）
+
+| 变体 | wall | tokens | quality | answer_quality |
+|---|---|---|---|---|
+| 无背景、无联网 | 310.7s | 588,205 | 0.8374 | unverified |
+| 无背景、显式联网 | 320.8s / 330.9s | 765,619 / 747,263 | 0.9783 / 0.9263 | verified |
+| 无背景、默认联网失败样本 | 280.4s | 731,619 | 0.4900 | needs_evidence（no_official_source） |
+| 有项目背景、无联网 | 约1800s 超时 | 1.92M | 0.9598 | verified |
+
+- 事实题显式联网可 verified 且墙钟仅比无联网多约 10-20s，但官方源抓取有波动（一次失败样本）；
+- 结论：App 2.0.14 把事实题联网接地做成 opt-in（fused_ground_web=true），默认仍 web off；
+- 若强制通用任务 verified，可显式传 web=on/fused_ground_web，或接受项目背景长墙钟。

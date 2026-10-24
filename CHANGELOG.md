@@ -28,6 +28,7 @@ V2.2.2
 - 真跑 20261024_163455（同题成本档）：quality score 0.99、flags=0、997,457 tokens / 107 calls；四层 duty 全部 short=false。
 - App 2.0.12：M4 选档显式落 behavior_fusion=off / web / thinking / effort，避免引擎行为融合覆盖。
 - App 2.0.13：M4 rounds 提示 0:1... + 项目背景按相关性注入；真实通用任务 310.7s / 588,205 tokens 完成。
+- App 2.0.14：通用事实题联网接地改为 opt-in（fused_ground_web）；默认 web off，显式联网事实题可达 verified（0.9783/320.8s）。
 
 ★ v2.2.2 收束摘要
 - 交付物：Meta-DGTF-V2.2.2.py、pareto_flow.py、scripts/pareto_flow.py、tests_pareto_flow.py、

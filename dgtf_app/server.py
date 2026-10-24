@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "2.0.13"
+APP_VERSION = "2.0.14"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -9612,6 +9612,12 @@ class Handler(BaseHTTPRequestHandler):
                     _fr = bool(opts.pop("fused_require_web", False))
                     _fp = str(opts.pop("fused_prefer", "quality") or "quality")
                     _feat = question_features(question)
+                    # 通用事实题联网接地是 opt-in：实测显式 web 曾 verified
+                    # （0.9783/320.8s），但默认 web 变体出现 no_official_source
+                    # （quality 0.49/needs_evidence），因此默认保持 web off。
+                    _fg = bool(opts.pop("fused_ground_web", False))
+                    _ground_web = bool(_fg and (not _project_ctx)
+                                       and _feat.get("fact"))
                     _plan = fused_plan(
                         min_quality=(float(_fq) if _fq not in (None, "") else None),
                         max_wall=(float(_fw) if _fw not in (None, "") else None),
@@ -9629,7 +9635,7 @@ class Handler(BaseHTTPRequestHandler):
                     opts.setdefault("behavior_fusion", "off")
                     if _mode == "B":
                         opts.setdefault("parallel", "B")
-                        opts.setdefault("web", "off")
+                        opts.setdefault("web", "on" if _ground_web else "off")
                         opts.setdefault("thinking", "auto")
                         opts.setdefault("effort", "auto")
                     elif _mode == "serial":
@@ -9658,6 +9664,7 @@ class Handler(BaseHTTPRequestHandler):
                         "quality_guard": _plan.get("quality_guard"),
                         "cascade": _plan.get("cascade"),
                         "features": _feat,
+                        "grounding_web": bool(_ground_web),
                         "applied_opts": {k: opts.get(k) for k in (
                             "parallel", "web", "thinking", "effort",
                             "behavior_fusion", "rounds")},
