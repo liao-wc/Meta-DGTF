@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "2.0.22"
+APP_VERSION = "2.0.23"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -9587,12 +9587,25 @@ class Handler(BaseHTTPRequestHandler):
                 if _pc.get("text"):
                     opts["_prompt_prefix"] = (_pc["text"]
                                              + "\n\n【用户问题】\n")
-            # 质量策略全自动：项目相关 -> 项目背景；其它通用题 -> 稳定
-            # （不注入背景、默认不联网）。联网/重试为 opt-in：只有 API 显式
-            # 传 quality_policy=web/web-retry（或 web=on/fused_ground_web）才启用。
+            # 质量/联网策略全自动：项目相关 -> 项目背景；
+            # 通用事实题 -> 自动官方联网 + 失败自动补跑一次（web-retry）；
+            # 其它通用题 -> 稳定（不注入背景、默认不联网）。
             if _quality_policy in ("auto", ""):
-                _quality_policy = ("auto:verified" if _project_ctx
-                                   else "auto:stable")
+                try:
+                    import sys as _sys_q
+                    _sys_q.path.insert(0, str(Path(__file__).resolve().parent.parent))
+                    from dgtf_v2.quality_predictor import question_features as _qf
+                    _af = _qf(question)
+                except Exception:
+                    _af = {}
+                if _project_ctx:
+                    _quality_policy = "auto:verified"
+                elif _af.get("fact"):
+                    _quality_policy = "auto:web-retry"
+                    opts["fused_ground_web"] = True
+                    _quality_retry = True
+                else:
+                    _quality_policy = "auto:stable"
             _ap_opt = opts.pop("auto_pareto", None)
             # 默认自动帕累托：真实任务默认启用；mock/自检默认关闭以稳定基线。
             _auto_pareto = (bool(_ap_opt) if _ap_opt is not None
