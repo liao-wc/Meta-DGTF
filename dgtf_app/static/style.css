@@ -633,7 +633,7 @@ textarea#question{text-align:center}
 /* 演练模式也做成胶囊（与「深度思考 / 智能搜索」同一排）：input 藏起来。
    选中态用 `:has()` 表达 —— `loadConfig()` 是异步设 `#mock.checked` 的，
    用 CSS 就自动跟着变，不必再写一段 JS 去同步 class。 */
-.agent-pareto-svg{display:block;width:100%;max-width:560px;height:auto;color:var(--text);margin:8px auto 4px}
+.agent-pareto-svg{display:block;width:100%;max-width:100%;height:auto;color:var(--text);margin:10px auto 6px}
 .mock-pill{cursor:pointer;-webkit-user-select:none;user-select:none}
 .mock-pill input{position:absolute;opacity:0;width:0;height:0}
 /* ★ 这两条**必须分开写**：逗号分隔的选择器列表里只要有一个不被支持（老浏览器不认

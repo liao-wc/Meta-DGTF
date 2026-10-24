@@ -4390,7 +4390,7 @@ function agentRenderProps() {
 function agentV2ParetoSvg(d) {
   const pts = (d && d.points) || [];
   if (!pts.length) return '';
-  const W = 560, H = 250, L = 52, R = 18, T = 26, B = 46;
+  const W = 1000, H = 270, L = 70, R = 26, T = 28, B = 54;
   const XMAX = 150000;
   const x0 = L, x1 = W - R, y0 = H - B, y1 = T;
   const clamp01 = function (v) { return Math.max(0, Math.min(1, Number(v) || 0)); };
@@ -4405,16 +4405,16 @@ function agentV2ParetoSvg(d) {
   for (let i = 0; i <= 4; i++) {
     const tx = x0 + (x1 - x0) * i / 4;
     s += '<line x1="' + tx.toFixed(1) + '" y1="' + y1 + '" x2="' + tx.toFixed(1) + '" y2="' + y0 + '" stroke="currentColor" opacity=".08"/>';
-    s += '<text x="' + tx.toFixed(1) + '" y="' + (y0 + 15) + '" text-anchor="middle" font-size="10.5" fill="currentColor" opacity=".6">' + esc(fmtT(XMAX * i / 4)) + '</text>';
+    s += '<text x="' + tx.toFixed(1) + '" y="' + (y0 + 15) + '" text-anchor="middle" font-size="9" fill="currentColor" opacity=".6">' + esc(fmtT(XMAX * i / 4)) + '</text>';
     const ty = y0 - (y0 - y1) * i / 4;
     s += '<line x1="' + x0 + '" y1="' + ty.toFixed(1) + '" x2="' + x1 + '" y2="' + ty.toFixed(1) + '" stroke="currentColor" opacity=".08"/>';
-    s += '<text x="' + (x0 - 7) + '" y="' + (ty + 3.5).toFixed(1) + '" text-anchor="end" font-size="10.5" fill="currentColor" opacity=".6">' + esc(fmtQ(i / 4)) + '</text>';
+    s += '<text x="' + (x0 - 7) + '" y="' + (ty + 3.5).toFixed(1) + '" text-anchor="end" font-size="9" fill="currentColor" opacity=".6">' + esc(fmtQ(i / 4)) + '</text>';
   }
   s += '<line x1="' + x0 + '" y1="' + y0 + '" x2="' + x1 + '" y2="' + y0 + '" stroke="currentColor" opacity=".4"/>';
   s += '<line x1="' + x0 + '" y1="' + y1 + '" x2="' + x0 + '" y2="' + y0 + '" stroke="currentColor" opacity=".4"/>';
-  s += '<text x="' + ((x0 + x1) / 2) + '" y="' + (H - 24) + '" text-anchor="middle" font-size="11" fill="currentColor" opacity=".85">成本（tokens，上限 150k）</text>';
-  s += '<text x="14" y="' + ((y0 + y1) / 2) + '" transform="rotate(-90 14 ' + ((y0 + y1) / 2) + ')" text-anchor="middle" font-size="11" fill="currentColor" opacity=".85">质量下界（0–1）</text>';
-  s += '<g font-size="10.5" fill="currentColor" opacity=".85">'
+  s += '<text x="' + ((x0 + x1) / 2) + '" y="' + (H - 24) + '" text-anchor="middle" font-size="9.5" fill="currentColor" opacity=".85">成本（tokens，上限 150k）</text>';
+  s += '<text x="14" y="' + ((y0 + y1) / 2) + '" transform="rotate(-90 18 ' + ((y0 + y1) / 2) + ')" text-anchor="middle" font-size="9.5" fill="currentColor" opacity=".85">质量下界（0–1）</text>';
+  s += '<g font-size="9.5" fill="currentColor" opacity=".85">'
     + '<circle cx="' + (W - 280) + '" cy="14" r="3.5" fill="var(--accent)"/><text x="' + (W - 272) + '" y="18">推荐</text>'
     + '<circle cx="' + (W - 220) + '" cy="14" r="3.5" fill="var(--accent-hi)"/><text x="' + (W - 212) + '" y="18">前沿</text>'
     + '<circle cx="' + (W - 160) + '" cy="14" r="3" fill="currentColor" opacity=".45"/><text x="' + (W - 152) + '" y="18">其他</text>'
@@ -4443,13 +4443,13 @@ function agentV2ParetoSvg(d) {
       if (ly > y0 - 3) ly = cy - 10;
       const lx = cx > (x1 - 90) ? cx - 6 : cx + 6;
       const anchor = cx > (x1 - 90) ? 'end' : 'start';
-      s += '<text x="' + lx.toFixed(1) + '" y="' + ly.toFixed(1) + '" text-anchor="' + anchor + '" font-size="9.5" fill="currentColor" opacity=".9">' + esc(short) + '</text>';
+      s += '<text x="' + lx.toFixed(1) + '" y="' + ly.toFixed(1) + '" text-anchor="' + anchor + '" font-size="8.5" fill="currentColor" opacity=".9">' + esc(short) + '</text>';
     }
     if (clamped) {
       s += '<text x="' + (x1 - 1) + '" y="' + (cy + 3).toFixed(1) + '" text-anchor="end" font-size="9" fill="currentColor" opacity=".55">→</text>';
     }
   });
-  s += '<text x="' + x1 + '" y="' + (H - 6) + '" text-anchor="end" font-size="9.5" fill="currentColor" opacity=".55">非支配 ' + fr.length + ' / 总 ' + pts.length + '；X 上限 150k' + (over ? '，超出 ' + over + ' 点贴右缘（实际最大 ' + fmtT(Math.max.apply(null, pts.map(function (p) { return Number(p.tokens) || 0; }))) + '）' : '') + '</text>';
+  s += '<text x="' + x1 + '" y="' + (H - 6) + '" text-anchor="end" font-size="8.5" fill="currentColor" opacity=".55">非支配 ' + fr.length + ' / 总 ' + pts.length + '；X 上限 150k' + (over ? '，超出 ' + over + ' 点贴右缘（实际最大 ' + fmtT(Math.max.apply(null, pts.map(function (p) { return Number(p.tokens) || 0; }))) + '）' : '') + '</text>';
   return s + '</svg>';
 }
 
