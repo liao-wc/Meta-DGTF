@@ -44,6 +44,16 @@ B+web（20261024_215545）：unknown 1,095,801ms / dual_judge 201,144ms / self_c
 - B-no-selfcheck 实验验证：exact 省一次自省调用换来质量 1.000→0.940，不划算；
 - 进一步墙钟优化应针对 unknown 的并行/缓存/输出长度，而不是盲关判据阶段。
 
+## 二（补）、KV 缓存探针（B 模式，不改引擎文件）
+
+- 探针方式：scripts/run_engine_instrumented.py 注入 OpenAI SDK create 钩子；
+- 命中：prompt_cache_hit_tokens=77,184；miss=489,340；cache_hit_ratio=13.62%；
+- 重复 prompt：0 / 90；=> 响应去重无收益；
+- 本次 B 变体：quality 0.9592 / tokens 773,603 / wall 869.7s / flags duty_short；
+  说明 B 存在运行间方差（0.959–1.000，wall 870–1064s），质量/墙钟优先仍取 1.000 的 B。
+- 优化方向：13.6% 命中偏低，说明多数调用的 system/上下文前缀不稳定；下一步可做静态前缀拆分/稳定化，
+  预计提升 KV 命中、降低 unknown 阶段墙钟；响应级去重可直接放弃。
+
 ## 三、模式级结论
 
 - serial：历史 152 次，稳定；本次 0.990/99.7万/1920.6s。

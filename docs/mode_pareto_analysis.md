@@ -85,3 +85,9 @@
 - 阶段级 B-no-selfcheck（run 20261024_221714，关 output.actions.self_check）：quality 0.94、flags duty_short、
   tokens 1,029,966、wall 985.1s。相对 B（1.000/1064.3s）质量降 6%、墙钟降 79s、tokens 降 24 万；
   按质量/墙钟优先不采纳（self_check 保留），仅作为“更快折中档”备选记录。
+
+## 八、KV 缓存探针（Round 4）
+
+- B 模式插桩：90 calls，prompt_cache_hit=77,184 / miss=489,340（命中率 13.62%），重复 prompt=0；
+- 同一配置 B 变体：0.9592 / 773,603 / 869.7s；B 质量/墙钟存在运行间方差（0.959–1.000，870–1064s）；
+- 结论：响应级去重无收益；下一步做静态 system 前缀拆分以提升 KV 命中。

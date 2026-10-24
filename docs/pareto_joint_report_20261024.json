@@ -1,14 +1,10 @@
 {
  "engine_report": {
-  "n": 11,
+  "n": 12,
   "frontier": [
-   "20261024_160020",
    "20261024_163455",
-   "20261024_193452",
    "20261024_205018",
-   "20261024_213016",
-   "20261024_215545",
-   "20261024_221714"
+   "20261024_223944"
   ],
   "best_quality": {
    "id": "20261024_205018",
@@ -39,7 +35,7 @@
    "quality": 1.0
   },
   "cheapest": {
-   "id": "20261024_193452",
+   "id": "20261024_223944",
    "question": "为什么城市热岛效应在夜间比白天更明显？",
    "route": [
     "0",
@@ -48,26 +44,25 @@
     "all"
    ],
    "rounds": {
-    "0": 3,
+    "0": 2,
     "1": 2,
     "both": 2,
-    "all": 3
+    "all": 6
    },
    "answer_ready": true,
    "process_ready": true,
    "answer_quality": "verified",
-   "coverage": 0.5,
+   "coverage": 0.6917,
    "standard_all": true,
    "flags": [
-    "ing_rephrased_direct(72%)",
-    "ing_rephrased_direct(73%)"
+    "duty_short"
    ],
-   "tokens": 816983,
-   "calls": 106,
+   "tokens": 773603,
+   "calls": 89,
    "web_enabled": false,
    "tools_calls": 0,
-   "elapsed": 782.6,
-   "quality": 0.93
+   "elapsed": 869.7,
+   "quality": 0.9592
   },
   "recommend": {
    "row": {
@@ -429,12 +424,10 @@
     "tools_calls": 0,
     "elapsed": 985.1,
     "quality": 0.94
-   }
-  ],
-  "frontier_rows": [
+   },
    {
-    "id": "20261024_160020",
-    "question": "DeepSeek V4.1 Flash 是哪一天发布的？",
+    "id": "20261024_223944",
+    "question": "为什么城市热岛效应在夜间比白天更明显？",
     "route": [
      "0",
      "1",
@@ -445,23 +438,25 @@
      "0": 2,
      "1": 2,
      "both": 2,
-     "all": 2
+     "all": 6
     },
     "answer_ready": true,
     "process_ready": true,
     "answer_quality": "verified",
-    "coverage": 0.1889,
+    "coverage": 0.6917,
     "standard_all": true,
     "flags": [
-     "probe_no_target_covered"
+     "duty_short"
     ],
-    "tokens": 969376,
+    "tokens": 773603,
     "calls": 89,
-    "web_enabled": true,
+    "web_enabled": false,
     "tools_calls": 0,
-    "elapsed": 1889.7,
-    "quality": 0.9089
-   },
+    "elapsed": 869.7,
+    "quality": 0.9592
+   }
+  ],
+  "frontier_rows": [
    {
     "id": "20261024_163455",
     "question": "为什么城市热岛效应在夜间比白天更明显？",
@@ -489,37 +484,6 @@
     "tools_calls": 0,
     "elapsed": 1920.6,
     "quality": 0.99
-   },
-   {
-    "id": "20261024_193452",
-    "question": "为什么城市热岛效应在夜间比白天更明显？",
-    "route": [
-     "0",
-     "1",
-     "both",
-     "all"
-    ],
-    "rounds": {
-     "0": 3,
-     "1": 2,
-     "both": 2,
-     "all": 3
-    },
-    "answer_ready": true,
-    "process_ready": true,
-    "answer_quality": "verified",
-    "coverage": 0.5,
-    "standard_all": true,
-    "flags": [
-     "ing_rephrased_direct(72%)",
-     "ing_rephrased_direct(73%)"
-    ],
-    "tokens": 816983,
-    "calls": 106,
-    "web_enabled": false,
-    "tools_calls": 0,
-    "elapsed": 782.6,
-    "quality": 0.93
    },
    {
     "id": "20261024_205018",
@@ -550,69 +514,7 @@
     "quality": 1.0
    },
    {
-    "id": "20261024_213016",
-    "question": "为什么城市热岛效应在夜间比白天更明显？",
-    "route": [
-     "0",
-     "1",
-     "both",
-     "all"
-    ],
-    "rounds": {
-     "0": 3,
-     "1": 2,
-     "both": 2,
-     "all": 3
-    },
-    "answer_ready": true,
-    "process_ready": true,
-    "answer_quality": "verified",
-    "coverage": 0.42,
-    "standard_all": true,
-    "flags": [
-     "duty_short",
-     "unsaid_overused(4)"
-    ],
-    "tokens": 993472,
-    "calls": 99,
-    "web_enabled": false,
-    "tools_calls": 0,
-    "elapsed": 1513.7,
-    "quality": 0.922
-   },
-   {
-    "id": "20261024_215545",
-    "question": "为什么城市热岛效应在夜间比白天更明显？",
-    "route": [
-     "0",
-     "1",
-     "both",
-     "all"
-    ],
-    "rounds": {
-     "0": 3,
-     "1": 2,
-     "both": 2,
-     "all": 5
-    },
-    "answer_ready": true,
-    "process_ready": true,
-    "answer_quality": "verified",
-    "coverage": 0.529,
-    "standard_all": true,
-    "flags": [
-     "duty_short",
-     "probe_no_target_covered"
-    ],
-    "tokens": 1062012,
-    "calls": 99,
-    "web_enabled": true,
-    "tools_calls": 4,
-    "elapsed": 1073.3,
-    "quality": 0.9329
-   },
-   {
-    "id": "20261024_221714",
+    "id": "20261024_223944",
     "question": "为什么城市热岛效应在夜间比白天更明显？",
     "route": [
      "0",
@@ -622,40 +524,40 @@
     ],
     "rounds": {
      "0": 2,
-     "1": 4,
+     "1": 2,
      "both": 2,
-     "all": 3
+     "all": 6
     },
     "answer_ready": true,
     "process_ready": true,
     "answer_quality": "verified",
-    "coverage": 0.5,
+    "coverage": 0.6917,
     "standard_all": true,
     "flags": [
      "duty_short"
     ],
-    "tokens": 1029966,
-    "calls": 106,
+    "tokens": 773603,
+    "calls": 89,
     "web_enabled": false,
     "tools_calls": 0,
-    "elapsed": 985.1,
-    "quality": 0.94
+    "elapsed": 869.7,
+    "quality": 0.9592
    }
   ]
  },
  "components": {
   "app": {
    "health": {
-    "p50_ms": 20.3,
-    "max_ms": 405.9
+    "p50_ms": 30.6,
+    "max_ms": 393.7
    },
    "chats": {
-    "p50_ms": 24.7,
-    "max_ms": 275.4
+    "p50_ms": 27.8,
+    "max_ms": 252.2
    },
    "events_full": {
-    "p50_ms": 257.6,
-    "max_ms": 304.9
+    "p50_ms": 262.7,
+    "max_ms": 342.9
    }
   },
   "bge": {
@@ -665,25 +567,25 @@
     "dev": "cuda",
     "dim": 512,
     "cache": {
-     "size": 188,
+     "size": 189,
      "max": 1024,
-     "hits": 665,
-     "misses": 188
+     "hits": 668,
+     "misses": 189
     }
    },
    "embed_cold": {
-    "p50_ms": 35.1,
-    "max_ms": 35.1
+    "p50_ms": 36.1,
+    "max_ms": 36.1
    },
    "embed_hot": {
-    "p50_ms": 15.8,
-    "max_ms": 26.6
+    "p50_ms": 15.1,
+    "max_ms": 25.3
    }
   }
  },
  "joint": {
   "row": {
-   "id": "20261024_193452",
+   "id": "20261024_223944",
    "question": "为什么城市热岛效应在夜间比白天更明显？",
    "route": [
     "0",
@@ -692,41 +594,40 @@
     "all"
    ],
    "rounds": {
-    "0": 3,
+    "0": 2,
     "1": 2,
     "both": 2,
-    "all": 3
+    "all": 6
    },
    "answer_ready": true,
    "process_ready": true,
    "answer_quality": "verified",
-   "coverage": 0.5,
+   "coverage": 0.6917,
    "standard_all": true,
    "flags": [
-    "ing_rephrased_direct(72%)",
-    "ing_rephrased_direct(73%)"
+    "duty_short"
    ],
-   "tokens": 816983,
-   "calls": 106,
+   "tokens": 773603,
+   "calls": 89,
    "web_enabled": false,
    "tools_calls": 0,
-   "elapsed": 782.6,
-   "quality": 0.93
+   "elapsed": 869.7,
+   "quality": 0.9592
   },
   "reason": "满足预算与质量下限，质量最高",
   "require_web": false,
   "app": {
    "health": {
-    "p50_ms": 20.3,
-    "max_ms": 405.9
+    "p50_ms": 30.6,
+    "max_ms": 393.7
    },
    "chats": {
-    "p50_ms": 24.7,
-    "max_ms": 275.4
+    "p50_ms": 27.8,
+    "max_ms": 252.2
    },
    "events_full": {
-    "p50_ms": 257.6,
-    "max_ms": 304.9
+    "p50_ms": 262.7,
+    "max_ms": 342.9
    }
   },
   "local": {
@@ -736,24 +637,24 @@
     "dev": "cuda",
     "dim": 512,
     "cache": {
-     "size": 188,
+     "size": 189,
      "max": 1024,
-     "hits": 665,
-     "misses": 188
+     "hits": 668,
+     "misses": 189
     }
    },
    "embed_cold": {
-    "p50_ms": 35.1,
-    "max_ms": 35.1
+    "p50_ms": 36.1,
+    "max_ms": 36.1
    },
    "embed_hot": {
-    "p50_ms": 15.8,
-    "max_ms": 26.6
+    "p50_ms": 15.1,
+    "max_ms": 25.3
    }
   },
-  "joint_tokens": 816983,
-  "joint_elapsed": 782.6,
-  "joint_quality": 0.93
+  "joint_tokens": 773603,
+  "joint_elapsed": 869.7,
+  "joint_quality": 0.9592
  },
  "generated": "scripts/pareto_report.py"
 }
