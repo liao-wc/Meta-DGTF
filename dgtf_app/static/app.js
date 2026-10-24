@@ -1579,13 +1579,9 @@ function toggleDshMode(on) {
     if (!dshAttachTaskId && !dshConversationId) {
       try {
         const saved = localStorage.getItem(DSH_CONV_KEY);
-        /* ★ V2.0.1：恢复到的若是「当前 DSH 会话」链（dsh-current-*），App 侧
-           turn 壳没有内容 ⇒ 不恢复它，交给下面的「DSH 本对话」实时视图。 */
-        if (saved && String(saved).indexOf('dsh-current-') === 0) {
-          localStorage.removeItem(DSH_CONV_KEY);
-        } else if (saved) {
-          dshConversationId = saved; _restored = true; loadDshConversation();
-        }
+        /* ★ V2.0.2：dsh-current-* 会话现在由服务端提供「自身时段」事件切片，
+           恢复时按普通会话加载（每个会话独立、只显示当时内容）。 */
+        if (saved) { dshConversationId = saved; _restored = true; loadDshConversation(); }
       } catch (_) {}
     }
     /* ★ V2.0.1：进入 DSH 模式且没有历史/任务会话时，默认展示「DSH 本对话」
@@ -1667,21 +1663,10 @@ function setDshHistoryOpen(on) {
 async function resumeDshChat(id) {
   if (!id) return;
   if (String(id).indexOf('dsh-current-') === 0) {
-    /* ★ V2.0.1：当前 DSH GUI 会话（external=dsh-current）的 App 侧 turn 记录
-       只有壳（guard/入口任务的真实内容在 DSH GUI 会话里）⇒ 点开时直接展示
-       「DSH 本对话」整段实时视图（full=1），不要停留在「用户 新对话 / 运行中…」。 */
+    /* ★ V2.0.2：切成该逻辑会话（服务端 /api/dsh/chat/<id> 会返回它自己的时段切片），
+       每个会话只展示当时的记录；不跳成全段实时视图。 */
     try { await resumeDshCurrentConversation(id); } catch (_) {}
-    stopDshConvPoll();
-    dshConversationId = null;
-    dshConversation = null;
-    try { localStorage.removeItem(DSH_CONV_KEY); } catch (_) {}
-    dshHistoryOpen = false;
-    dshCurrent = null;
-    toggleDshMode(true);
-    openDshCurrentLiveView();
-    await loadDshChats();
-    setDshHistoryOpen(false);
-    return;
+    resetDshLiveEvents();
   }
   stopDshConvPoll();
   dshConversationId = id;
@@ -1821,7 +1806,7 @@ function renderDshConversationView() {
   document.body.classList.remove('stage-empty');
   document.body.classList.add('stage-run');
   const turns = c.turns || [];
-  const busy = turns.some(t => t.status === 'queued' || t.status === 'running');
+  const busy = turns.some(t => t.status === 'queued' || t.status === 'running') || !!c.running;
   const interrupted = turns.some(t => ['interrupted', 'canceled', 'error'].includes(t.status));
   const bd = document.querySelector('#rl-badge');
   if (bd) {
@@ -1840,19 +1825,39 @@ function renderDshConversationView() {
   const f = document.querySelector('#rl-files');
   if (f) f.innerHTML = '';
   let inner = '<div class="rl-lane rl-boot"><div class="rl-lane-head">DeepSeek Harness Agent · ' + esc(c.id || '') + '</div>';
-  turns.forEach(function (t, i) {
-    inner += '<div class="rl-round">第 ' + (i + 1) + ' 轮 · ' + esc(t.status || '') + '</div>';
-    inner += '<div class="rl-line"><span class="rl-lab">用户</span><span class="rl-txt">' + esc(t.task || '') + '</span></div>';
-    if (t.status === 'queued') inner += '<div class="rl-summary">已插入，排队等待前一轮完成…</div>';
-    if (t.status === 'running') inner += '<div class="rl-summary">DSH Agent 运行中…</div>';
-    (t.events || []).forEach(function (e, i) {
-      inner += dshEventHtml(e, String(t.id || t.turn || 't') + '-' + i);
+  /* ★ V2.0.2：external=dsh-current 会话由服务端返回「自身时段」事件切片
+     （start_seq → end_seq），每个会话只记录/展示当时那段内容，互不混入。 */
+  if (c.start_seq != null && Array.isArray(c.events)) {
+    const _range = 'seq ' + esc(String(c.start_seq)) + ' → ' + esc(String(c.end_seq || '进行中'));
+    inner += '<div class="rl-round">本次会话记录（独立会话 · ' + _range + (c.events_truncated ? ' · 仅显示最近部分' : '') + '）</div>';
+    if (c.running) inner += '<div class="rl-summary">DSH Agent 运行中…（本会话内容实时更新）</div>';
+    (c.events || []).forEach(function (e, i) {
+      inner += dshEventHtml(e, 'win-' + i);
     });
-    if ((!t.events || !t.events.length) && t.text) {
-      inner += '<div class="rl-line"><span class="rl-txt">' + esc(t.text) + '</span></div>';
+    if (!(c.events || []).length) {
+      inner += '<div class="rl-summary">' + (c.running
+        ? '正在载入本次会话内容…'
+        : '本次会话时段内没有可展示的对话内容（仅有内部事件）') + '</div>';
     }
-    if (t.status === 'canceled') inner += '<div class="rl-summary">已终止</div>';
-  });
+    if (_meta) {
+      _meta.textContent = (c.running ? '运行中' : '已结束') + ' · 本会话 ' + _range
+        + ' · ' + String((c.events || []).length) + ' 条事件';
+    }
+  } else {
+    turns.forEach(function (t, i) {
+      inner += '<div class="rl-round">第 ' + (i + 1) + ' 轮 · ' + esc(t.status || '') + '</div>';
+      inner += '<div class="rl-line"><span class="rl-lab">用户</span><span class="rl-txt">' + esc(t.task || '') + '</span></div>';
+      if (t.status === 'queued') inner += '<div class="rl-summary">已插入，排队等待前一轮完成…</div>';
+      if (t.status === 'running') inner += '<div class="rl-summary">DSH Agent 运行中…</div>';
+      (t.events || []).forEach(function (e, i) {
+        inner += dshEventHtml(e, String(t.id || t.turn || 't') + '-' + i);
+      });
+      if ((!t.events || !t.events.length) && t.text) {
+        inner += '<div class="rl-line"><span class="rl-txt">' + esc(t.text) + '</span></div>';
+      }
+      if (t.status === 'canceled') inner += '<div class="rl-summary">已终止</div>';
+    });
+  }
   inner += '</div>';
   const foldState = captureDshFoldState(body);
   const fromBottom = body.scrollHeight - body.scrollTop;
@@ -2157,7 +2162,8 @@ function startDshConvPoll() {
     await loadDshConversation(cid);
     if (cid !== dshConversationId) return;
     const turns = (dshConversation && dshConversation.turns) || [];
-    const busy = turns.some(t => t.status === 'queued' || t.status === 'running');
+    const busy = turns.some(t => t.status === 'queued' || t.status === 'running')
+      || !!(dshConversation && dshConversation.running);
     if (!busy) { setRunBtn('send'); stopDshConvPoll(); }
   }, 600);
 }

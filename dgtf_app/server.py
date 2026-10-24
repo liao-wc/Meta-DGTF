@@ -4549,6 +4549,82 @@ def _conv_snapshot(cid):
     return conv
 
 
+def _dsh_conv_slice(conv):
+    """external=dsh-current 会话的「自身时段」内容切片（每个会话独立记录）。
+
+    窗口 = (start_seq, end_seq]：
+      · start_seq = 会话创建时的 DSH asOfSeq（该会话第一条内容从 start_seq+1 起）；
+      · end_seq = 同 session 下一会话的 start_seq（不含下一会话内容）；
+        没有下一会话时取当前 DSH 会话 asOf。
+    只读 DSH 事件，不写生产数据；找不到窗口/非当前 session 时返回 None（调用方回退 turns）。
+    """
+    import json as _json
+    try:
+        c = dict(conv or {})
+        if str(c.get("external") or "") != "dsh-current":
+            return None
+        sid = str(c.get("session_id") or "")
+        if not sid or sid != _dsh_current_session_id():
+            return None
+        start = int(c.get("start_seq") or 0)
+        if start <= 0:
+            return None
+        ends = []
+        _owners = {}
+        try:
+            for p in _conv_dir().glob("*.json"):
+                try:
+                    x = _json.loads(p.read_text(encoding="utf-8", errors="replace"))
+                except Exception:
+                    continue
+                if str(x.get("session_id") or "") != sid:
+                    continue
+                if str(x.get("external") or "") != "dsh-current":
+                    continue
+                s2 = int(x.get("start_seq") or 0)
+                if s2 > start:
+                    ends.append(s2)
+                if s2 == start and s2 > 0:
+                    # 同一 start_seq 的重复逻辑会话：只让最新创建者拥有该时段。
+                    _xid = str(x.get("id") or "")
+                    _xca = float(x.get("created_at") or 0)
+                    if _xid and (_xid not in _owners or _xca > _owners[_xid][0]):
+                        _owners[_xid] = (_xca, _xid)
+        except Exception:
+            ends = []
+        end = min(ends) if ends else 0
+        as_of = 0
+        try:
+            as_of = int((_dsh_current_asof() or {}).get("as_of") or 0)
+        except Exception:
+            as_of = 0
+        if end <= 0:
+            end = as_of
+        # 同 start_seq 的重复会话：非最新创建者不重复拿内容（独立记录）。
+        if _owners:
+            _best = max(_owners.values(), key=lambda t: t[0]) if _owners else None
+            if _best and str(conv.get("id") or "") != _best[1]:
+                return {"events": [], "start_seq": start, "end_seq": end,
+                        "as_of": as_of, "events_truncated": False,
+                        "events_count": 0, "duplicate_of": _best[1]}
+        evs = []
+        try:
+            r = _dsh_current_events_full(start, _DSH_FULL_LIMIT_MAX, end + 1)
+            for e in (r.get("events") or []):
+                sq = int(e.get("seq") or 0)
+                if sq > start and (end <= 0 or sq <= end):
+                    evs.append(e)
+        except Exception:
+            evs = []
+        # 窗口完整抓取；只有展示事件达到单次上限才视为「仅显示最近部分」。
+        truncated = bool(len(evs) >= _DSH_FULL_LIMIT_MAX)
+        return {"events": evs, "start_seq": start, "end_seq": end,
+                "as_of": as_of, "events_truncated": truncated,
+                "events_count": len(evs)}
+    except Exception:
+        return None
+
+
 def _conv_reconcile_on_start():
     """服务重启后，磁盘里遗留的 queued/running 已经没有 worker，统一标记 interrupted。"""
     import json as _json
@@ -4615,6 +4691,7 @@ def _conv_list(limit=50):
             rows.append({"id": c.get("id") or p.stem,
                          "session_id": c.get("session_id") or "",
                          "external": _external,
+                         "start_seq": int(c.get("start_seq") or 0),
                          "created_at": c.get("created_at"),
                          "updated_at": c.get("updated_at"),
                          "turns": len(turns),
@@ -4623,6 +4700,26 @@ def _conv_list(limit=50):
                          "last_task": str(last.get("task") or "")[:200]})
     except Exception:
         pass
+    # ★ V2.0.2：同一 DSH 会话、同一 start_seq 的重复逻辑会话只保留最新一条
+    #   （guard/入口重复 dispatch 会生成同时段重复记录）⇒ 会话列表独立且时段不重叠。
+    if rows:
+        keep = {}
+        other = []
+        for r in rows:
+            if str(r.get("external") or "") != "dsh-current":
+                other.append(r)
+                continue
+            _st = int(r.get("start_seq") or 0)
+            if _st <= 0:
+                other.append(r)
+                continue
+            key = (str(r.get("session_id") or ""), _st)
+            cur = keep.get(key)
+            if cur is None or float(r.get("created_at") or 0) > float(cur.get("created_at") or 0):
+                keep[key] = r
+        other.extend(keep.values())
+        other.sort(key=lambda x: float(x.get("created_at") or 0), reverse=True)
+        rows = other
     return rows
 
 
@@ -8152,6 +8249,18 @@ class Handler(BaseHTTPRequestHandler):
             rec = _conv_snapshot(unquote(m.group(1)))
             if not rec:
                 return self._json({"error": "conversation not found"}, 404)
+            # ★ App V2.0.2：external=dsh-current 会话补上「自身时段」事件切片，
+            #   每个会话只展示当时那段内容（不再空壳、也不混入整段会话）。
+            rec = dict(rec)
+            _sl = _dsh_conv_slice(rec)
+            if _sl:
+                rec.update(_sl)
+                try:
+                    _active = _dsh_active_load()
+                    _is_active = str(_active.get("conversation_id") or "") == str(rec.get("id") or "")
+                    rec["running"] = bool(_is_active and (_dsh_current_asof() or {}).get("running"))
+                except Exception:
+                    rec["running"] = bool(rec.get("running"))
             return self._json(rec)
         m = re.match(r"^/api/dsh/sessions/([^/]+)$", p)
         if m:

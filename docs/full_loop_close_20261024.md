@@ -75,6 +75,10 @@
   `dsh-current-*` 会话直接打开「DSH 本对话」整段实时镜像；localStorage 不再恢复空壳；
   Agent 面板读库对瞬时 `Failed to fetch` 自动重试 1 次并点名失败库。
   验证：py_compile/node --check 0；health app=2.0.2/engine=2.2.1；页面缓存串 2.0.2-dshlive；selftest 371/0。
+- **会话独立记录（用户补充要求）**：每个 `dsh-current-*` 会话按 `start_seq → end_seq`
+  （下一会话起点）从 DSH 事件流切出**自身时段**内容；会话列表去重同时段重复记录；
+  运行中的会话保持 600ms 轮询实时刷新。实测 20 个当前会话窗口：0 条事件越界、
+  0 对窗口重叠，运行会话事件数随轮询更新（仅显示当时那段）。
 - **api_gap 25c91baef5ec 复核关闭**：最新真跑 api_usage 显示 web_enabled=true、
   tools_calls=4、search_calls=10；`dsh_loop_check.py` 新增 E 检查（联网/工具调用遥测）PASS。
 - **EML 候选对账**：`1135dd11cd09`（all_actions_missing）与 `d30bf5383297`
