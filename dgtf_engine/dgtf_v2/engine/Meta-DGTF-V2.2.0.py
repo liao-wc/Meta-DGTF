@@ -17934,6 +17934,40 @@ class MetaDGTF:
                 "by_id_inactive": len(_inactive),
                 "by_id_unknown": len(_unknown)}
 
+    def _refresh_all_meta_closure(self):
+        """[fix] 元层闭环清算要在**池汇总之后**重算一次。
+
+        跨层 engagements/suspensions 由 `_totalize_all_pool()` 汇总进 all 池，
+        而 all 层 view 的 `meta_closure` 是在汇总**之前**（`_run_layer` 收尾）
+        算的 ⇒ 产物会保留「未交代」假缺口。真跑实测：t_001「夜间风与稳定度
+        阈值判据」在最终 all 池里已被 engagement 文本覆盖（相似度 1.00），
+        但 `meta_closure` 仍是汇总前的 clean=False ⇒ process_ledger 的
+        all.standard_ok=False ⇒ process_ready=False。
+
+        ★ 只刷新**清算读数**（meta_closure/closure_reason），不改任何内容、
+          不改停止判据、不造假通过：覆盖与否仍由 `_settle_meta` 的真实匹配决定。
+        """
+        try:
+            v = (self._results or {}).get("all")
+        except Exception:
+            v = None
+        if v is None or not hasattr(v, "meta_closure"):
+            return
+        try:
+            clo = self._settle_meta()
+        except Exception:
+            return
+        v.meta_closure = clo
+        if clo.get("clean"):
+            v.closure_reason = ""
+        else:
+            _unc = clo.get("uncovered") or []
+            v.closure_reason = (
+                "meta_unsettled（%d/%d 类张力未交代：%s）"
+                % (int(clo.get("unsettled") or 0),
+                   int(clo.get("total") or 0),
+                   "；".join(str(u)[:40] for u in _unc[:5])))
+
     def _totalize_all_pool(self):
         dst = self.pools["all"]
         for k in ("0", "1", "both"):
@@ -19448,6 +19482,7 @@ class MetaDGTF:
 
         with self._pool_lock:
             self._totalize_all_pool()
+        self._refresh_all_meta_closure()
         self._merge_self_text()
 
         packed = self._pack_result(
@@ -19581,6 +19616,7 @@ class MetaDGTF:
         # [fix-100] _totalize_all_pool 必须串行，且在所有层跑完后执行
         with self._pool_lock:
             self._totalize_all_pool()
+        self._refresh_all_meta_closure()
         self._merge_self_text()
 
         packed = self._pack_result(
@@ -19678,6 +19714,7 @@ class MetaDGTF:
         # 同 B：汇总必须串行，且在所有层跑完后执行
         with self._pool_lock:
             self._totalize_all_pool()
+        self._refresh_all_meta_closure()
         self._merge_self_text()
 
         packed = self._pack_result(
@@ -19919,6 +19956,7 @@ class MetaDGTF:
 
         with self._pool_lock:
             self._totalize_all_pool()
+        self._refresh_all_meta_closure()
         self._merge_self_text()
 
         packed = self._pack_result(
@@ -25686,6 +25724,7 @@ class MetaDGTF:
         if "all" in self._results:
             with self._pool_lock:
                 self._totalize_all_pool()
+            self._refresh_all_meta_closure()
         self._merge_self_text()
 
         packed = self._pack_result(question, route, keep, rounds,
