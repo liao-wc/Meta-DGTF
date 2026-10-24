@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "2.0.10"
+APP_VERSION = "2.0.11"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -8206,6 +8206,23 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(_app_health_cached())
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/mode-fusion":
+            try:
+                import sys as _sys
+                _sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+                from dgtf_v2.mode_fusion import MODES, scenario_table
+                return self._json({
+                    "ok": True,
+                    "modes": MODES,
+                    "kept": ["B", "serial", "fast"],
+                    "web_fallback": "web",
+                    "scenarios": scenario_table(),
+                    "params": ["min_quality", "max_wall", "max_tokens",
+                                "require_web", "prefer"],
+                    "default": "auto (M4 auto-fused)",
+                })
+            except Exception as exc:  # noqa: BLE001
+                return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/config":
             try:
                 oi.reap_mock()          # 顺手回收过期的演练/验收产物
@@ -9566,6 +9583,58 @@ class Handler(BaseHTTPRequestHandler):
                                        "0:%d,1:%d,both:%d,all:%d" % (_r, _r, _r, _r))
                 opts["rounds"] = _auto_policy_rounds
                 opts["auto_policy"] = True
+            _fused_opt = opts.pop("auto_fused", None)
+            _auto_fused = (bool(_fused_opt) if _fused_opt is not None
+                           else not _is_mock_task)
+            _fused_info = {"enabled": bool(_auto_fused)}
+            if _auto_fused:
+                try:
+                    import sys as _sys
+                    _sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+                    from dgtf_v2.mode_fusion import fused_plan
+                    from dgtf_v2.quality_predictor import question_features
+                    _fw = opts.pop("fused_max_wall", None)
+                    _ft = opts.pop("fused_max_tokens", None)
+                    _fq = opts.pop("fused_min_quality", None)
+                    _fr = bool(opts.pop("fused_require_web", False))
+                    _fp = str(opts.pop("fused_prefer", "quality") or "quality")
+                    _feat = question_features(question)
+                    _plan = fused_plan(
+                        min_quality=(float(_fq) if _fq not in (None, "") else None),
+                        max_wall=(float(_fw) if _fw not in (None, "") else None),
+                        max_tokens=(int(_ft) if _ft not in (None, "") else None),
+                        require_web=_fr, cascade=not _is_mock_task,
+                        features=_feat)
+                    _sel = _plan.get("first") or {}
+                    _mode = str(_sel.get("mode") or "")
+                    if _mode == "B":
+                        opts.setdefault("parallel", "B")
+                    elif _mode == "serial":
+                        opts.setdefault("parallel", "serial")
+                    elif _mode == "fast":
+                        opts.setdefault("parallel", "serial")
+                        opts.setdefault("thinking", "off")
+                    elif _mode == "web":
+                        opts.setdefault("parallel", "serial")
+                        opts.setdefault("web", "on")
+                    _fused_info.update({
+                        "mode": _mode,
+                        "reason": _sel.get("reason"),
+                        "scenario": {"min_quality": _fq, "max_wall": _fw,
+                                     "max_tokens": _ft, "require_web": _fr,
+                                     "prefer": _fp},
+                        "readout": _sel.get("info") or {},
+                        "quality_prediction": _plan.get("quality_prediction"),
+                        "quality_guard": _plan.get("quality_guard"),
+                        "cascade": _plan.get("cascade"),
+                        "features": _feat,
+                    })
+                    print("[mode-fusion] task 选择模式 %s：%s"
+                          % (_mode, _sel.get("reason")), flush=True)
+                except Exception as exc:  # noqa: BLE001
+                    _fused_info["error"] = str(exc)
+                    print("[mode-fusion] 选择模式失败，退回默认：%s" % exc,
+                          flush=True)
             try:
                 tid = runner.start_task(question, opts)
             except ValueError as e:
@@ -9579,7 +9648,8 @@ class Handler(BaseHTTPRequestHandler):
                                "auto_policy_rounds": _auto_policy_rounds,
                                "project_context": _project_ctx,
                                "timeout_s": opts.get("timeout_s") or 0,
-                               "profile": opts.get("profile") or ""}, 201)
+                               "profile": opts.get("profile") or "",
+                               "mode_fusion": _fused_info}, 201)
 
         return self._json({"error": "not found"}, 404)
 

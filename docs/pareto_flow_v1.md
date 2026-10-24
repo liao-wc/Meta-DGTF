@@ -41,6 +41,8 @@ App：
 | 20261024_195354（hybrid thinking·关判断环节思考） | 0.946 | 1,131,199 | 115 | auto | rounds 0:2/1:2/both:2/all:5；flags 1；wall 2033.7s；**被 run7 支配**（关判断思考未降墙钟，all 层反而多跑） |
 | 20261024_205018（模式 B·动态规划） | **1.000** | 1,269,082 | 119 | **B** | coverage=1.0；**flags=0**；wall **1064.3s**；质量/墙钟双优 |
 | 20261024_203201（模式 A·层并行） | **不可行(0.220)** | 868,718 | 121 | A | answer_ready=false、standard_all=false；flags duty_short/probe/unsaid_overused；层并行丢对齐 |
+| 20261024_213016（模式 E·DAG） | 0.922 | 993,472 | 99 | E | flags duty_short/unsaid_overused(4)；wall 1513.7s；被 fast 支配 |
+| 20261024_215545（模式 B + 官方联网） | 0.933 | 1,062,012 | 99 | B | search=4/fetch=6；flags duty_short/probe；wall 1073.3s；联网最佳档 |
 
 **模式级 A/B（Round 14）**：模式 B（动态规划）quality=1.000、coverage=1.0、flags=0、
 tokens=1,269,082、wall=1064.3s，**质量/墙钟双优**；模式 A（层并行）质量门失败（0.220），
@@ -56,7 +58,7 @@ tokens=1,269,082、wall=1064.3s，**质量/墙钟双优**；模式 A（层并行
 - **质量/墙钟优先：模式 B（动态规划）**，quality 1.000、wall 1064.3s（tokens 126.9万，成本放宽）；
 - **低 tokens 质量档：run7（serial）**，quality 0.990、tokens 99.7万、wall 1920.6s；
 - **时间/成本优先：run11（thinking off）**，quality 0.930、wall 782.6s、tokens 81.7万；
-- 必须联网：run6（官方联网，0.909/96.9万）；
+- 必须联网：**B+web（20261024_215545，0.933/106.2万/1073.3s）** 优于旧 serial+web（0.909/96.9万/1889.7s），成为联网场景推荐；
 - 模式 A（层并行）质量门失败，不保留；C–H 暂无同题实测，不纳入保留模式。
 - Hybrid 负结果（run12）：只关 dual_judge/plan 等判断环节思考，quality 0.946、tokens 113.1万、
   wall 2033.7s，被 run7 支配（all 层从 3 圈涨到 5 圈，墙钟反升）——逐环节关思考不是有效的墙钟优化路径。
@@ -137,7 +139,7 @@ flags=duty_short/all_closure_unavailable/core_audit_gaps；产物已归档到 ou
 | J1b 质量/墙钟优先 | **模式 B** + App 缓存 + BGE n=16–32 | **1.000** | 1,269,082 | wall 1064.3s；flags=0 | 质量/墙钟双优，成本放宽 |
 | J1 推荐 | run7 + App 读数缓存 + BGE 批量 n=16–32 | 0.990 | 997,457 | health ~5–17ms、chats ~4–19ms、BGE 1109–1371 texts/s | 预算 ≥1.0M 时最优 |
 | J0（时间优先） | run11（关思考成本档）+ App 缓存 | 0.930 | 816,983 | wall 782.6s；flags 2 | wall 最低，质量 0.93 |
-| J2 | run6（官方联网）+ App 缓存 | 0.909 | 969,376 | search=11/fetch=4，联网时延另计 | 预算 <1.0M 且必须联网时 |
+| J2 | **B+web（官方联网）** + App 缓存 | 0.933 | 1,062,012 | search=4/fetch=6，wall 1073.3s | 必须联网时（质量/墙钟最佳联网档） |
 | J3 | 均衡档 run8 + App 缓存 | 0.951 | 1,210,815 | flags=0 | 被 J1 支配 |
 | J4 | 质量档 run9（官方联网）+ App 缓存 | 0.980 | 1,844,908 | search=13/fetch=5 | 被 J1 支配，质量未过 0.99 |
 

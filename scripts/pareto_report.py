@@ -82,8 +82,7 @@ def main() -> int:
     if sp.exists():
         side = json.loads(sp.read_text(encoding="utf-8", errors="replace"))
     _packs = (list((ROOT / "outputs").glob("20261024_1[6-9]*.packed.json"))
-              + list((ROOT / "outputs").glob("20261024_20*.packed.json"))
-              + list((ROOT / "outputs").glob("20261024_21*.packed.json")))
+              + list((ROOT / "outputs").glob("20261024_2[0-2]*.packed.json")))
     packs = sorted(_packs, key=lambda p: p.stat().st_mtime)
     # 只保留质量门可读且非负例产物（负例已归档到 negative_runs）
     rows = load_packed_runs(packs, elapsed_map=side)

@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
 <title>Meta-DGTF · 个人工作台</title>
-<link rel="icon" type="image/x-icon" href="/static/dgtf.ico?v=2.0.10-dshlive">
-<link rel="shortcut icon" type="image/x-icon" href="/static/dgtf.ico?v=2.0.10-dshlive">
-<link rel="stylesheet" href="/static/style.css?v=2.0.10-dshlive">
+<link rel="icon" type="image/x-icon" href="/static/dgtf.ico?v=2.0.11-dshlive">
+<link rel="shortcut icon" type="image/x-icon" href="/static/dgtf.ico?v=2.0.11-dshlive">
+<link rel="stylesheet" href="/static/style.css?v=2.0.11-dshlive">
 </head>
 <body class="stage-empty">
 
@@ -440,6 +440,13 @@
         </svg>
         <span class="p-name">演练模式</span>
       </label>
+      <select id="fused-scenario" class="pill" data-tip="模式融合场景：自动=按约束选 B/serial/fast；质量/墙钟=推 B；墙钟/tokens/联网=对应档">
+        <option value="auto">模式融合：自动</option>
+        <option value="quality">质量/墙钟优先</option>
+        <option value="wall">墙钟 ≤900s</option>
+        <option value="tokens">tokens ≤1M</option>
+        <option value="web">必须联网</option>
+      </select>
 
       <button type="button" class="pill dsh-pill" id="pill-dsh" data-tip="连接 DeepSeek Harness 当前对话：首屏输入直接进入本对话，可读写项目文件并实时同步对话内容">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -554,6 +561,6 @@
 
 
 
-<script src="/static/app.js?v=2.0.10-dshlive"></script>
+<script src="/static/app.js?v=2.0.11-dshlive"></script>
 </body>
 </html>

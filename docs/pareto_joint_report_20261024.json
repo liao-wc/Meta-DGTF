@@ -1,11 +1,13 @@
 {
  "engine_report": {
-  "n": 8,
+  "n": 10,
   "frontier": [
    "20261024_160020",
    "20261024_163455",
    "20261024_193452",
-   "20261024_205018"
+   "20261024_205018",
+   "20261024_213016",
+   "20261024_215545"
   ],
   "best_quality": {
    "id": "20261024_205018",
@@ -334,6 +336,68 @@
     "tools_calls": 0,
     "elapsed": 1064.3,
     "quality": 1.0
+   },
+   {
+    "id": "20261024_213016",
+    "question": "为什么城市热岛效应在夜间比白天更明显？",
+    "route": [
+     "0",
+     "1",
+     "both",
+     "all"
+    ],
+    "rounds": {
+     "0": 3,
+     "1": 2,
+     "both": 2,
+     "all": 3
+    },
+    "answer_ready": true,
+    "process_ready": true,
+    "answer_quality": "verified",
+    "coverage": 0.42,
+    "standard_all": true,
+    "flags": [
+     "duty_short",
+     "unsaid_overused(4)"
+    ],
+    "tokens": 993472,
+    "calls": 99,
+    "web_enabled": false,
+    "tools_calls": 0,
+    "elapsed": 1513.7,
+    "quality": 0.922
+   },
+   {
+    "id": "20261024_215545",
+    "question": "为什么城市热岛效应在夜间比白天更明显？",
+    "route": [
+     "0",
+     "1",
+     "both",
+     "all"
+    ],
+    "rounds": {
+     "0": 3,
+     "1": 2,
+     "both": 2,
+     "all": 5
+    },
+    "answer_ready": true,
+    "process_ready": true,
+    "answer_quality": "verified",
+    "coverage": 0.529,
+    "standard_all": true,
+    "flags": [
+     "duty_short",
+     "probe_no_target_covered"
+    ],
+    "tokens": 1062012,
+    "calls": 99,
+    "web_enabled": true,
+    "tools_calls": 4,
+    "elapsed": 1073.3,
+    "quality": 0.9329
    }
   ],
   "frontier_rows": [
@@ -453,22 +517,84 @@
     "tools_calls": 0,
     "elapsed": 1064.3,
     "quality": 1.0
+   },
+   {
+    "id": "20261024_213016",
+    "question": "为什么城市热岛效应在夜间比白天更明显？",
+    "route": [
+     "0",
+     "1",
+     "both",
+     "all"
+    ],
+    "rounds": {
+     "0": 3,
+     "1": 2,
+     "both": 2,
+     "all": 3
+    },
+    "answer_ready": true,
+    "process_ready": true,
+    "answer_quality": "verified",
+    "coverage": 0.42,
+    "standard_all": true,
+    "flags": [
+     "duty_short",
+     "unsaid_overused(4)"
+    ],
+    "tokens": 993472,
+    "calls": 99,
+    "web_enabled": false,
+    "tools_calls": 0,
+    "elapsed": 1513.7,
+    "quality": 0.922
+   },
+   {
+    "id": "20261024_215545",
+    "question": "为什么城市热岛效应在夜间比白天更明显？",
+    "route": [
+     "0",
+     "1",
+     "both",
+     "all"
+    ],
+    "rounds": {
+     "0": 3,
+     "1": 2,
+     "both": 2,
+     "all": 5
+    },
+    "answer_ready": true,
+    "process_ready": true,
+    "answer_quality": "verified",
+    "coverage": 0.529,
+    "standard_all": true,
+    "flags": [
+     "duty_short",
+     "probe_no_target_covered"
+    ],
+    "tokens": 1062012,
+    "calls": 99,
+    "web_enabled": true,
+    "tools_calls": 4,
+    "elapsed": 1073.3,
+    "quality": 0.9329
    }
   ]
  },
  "components": {
   "app": {
    "health": {
-    "p50_ms": 28.9,
-    "max_ms": 585.2
+    "p50_ms": 31.1,
+    "max_ms": 373.6
    },
    "chats": {
-    "p50_ms": 5.1,
-    "max_ms": 855.3
+    "p50_ms": 16.8,
+    "max_ms": 202.7
    },
    "events_full": {
-    "p50_ms": 287.9,
-    "max_ms": 300.5
+    "p50_ms": 251.4,
+    "max_ms": 268.8
    }
   },
   "bge": {
@@ -478,19 +604,19 @@
     "dev": "cuda",
     "dim": 512,
     "cache": {
-     "size": 185,
+     "size": 187,
      "max": 1024,
-     "hits": 656,
-     "misses": 185
+     "hits": 662,
+     "misses": 187
     }
    },
    "embed_cold": {
-    "p50_ms": 41.9,
-    "max_ms": 41.9
+    "p50_ms": 42.3,
+    "max_ms": 42.3
    },
    "embed_hot": {
-    "p50_ms": 2.1,
-    "max_ms": 17.6
+    "p50_ms": 15.6,
+    "max_ms": 20.2
    }
   }
  },
@@ -530,16 +656,16 @@
   "require_web": false,
   "app": {
    "health": {
-    "p50_ms": 28.9,
-    "max_ms": 585.2
+    "p50_ms": 31.1,
+    "max_ms": 373.6
    },
    "chats": {
-    "p50_ms": 5.1,
-    "max_ms": 855.3
+    "p50_ms": 16.8,
+    "max_ms": 202.7
    },
    "events_full": {
-    "p50_ms": 287.9,
-    "max_ms": 300.5
+    "p50_ms": 251.4,
+    "max_ms": 268.8
    }
   },
   "local": {
@@ -549,19 +675,19 @@
     "dev": "cuda",
     "dim": 512,
     "cache": {
-     "size": 185,
+     "size": 187,
      "max": 1024,
-     "hits": 656,
-     "misses": 185
+     "hits": 662,
+     "misses": 187
     }
    },
    "embed_cold": {
-    "p50_ms": 41.9,
-    "max_ms": 41.9
+    "p50_ms": 42.3,
+    "max_ms": 42.3
    },
    "embed_hot": {
-    "p50_ms": 2.1,
-    "max_ms": 17.6
+    "p50_ms": 15.6,
+    "max_ms": 20.2
    }
   },
   "joint_tokens": 816983,

@@ -11,6 +11,7 @@ from dgtf_v2.pareto_flow import (dominates, extract_flow_metrics, joint_snapshot
                                  load_packed_runs, pareto_frontier, recommend, report,
                                  select_joint)
 from dgtf_v2.mode_fusion import fused_plan, scenario_table, select_mode
+from dgtf_v2.quality_predictor import fit, predict
 
 P, F = [], []
 
@@ -146,6 +147,25 @@ def main():
     ck("M4 级联 fast→B", (fp.get("first") or {}).get("mode") == "fast"
        and (fp.get("cascade") or {}).get("upgrade_to") == "B", fp)
     ck("场景表 5 项", len(scenario_table()) == 5)
+    # ── 质量预测器（Round 1 新目标）──
+    import random as _rnd
+    _rnd.seed(7)
+    _rows, _ys = [], []
+    for _i in range(30):
+        _x = _rnd.random()
+        _rows.append({"_features": {"len": _x * 100, "why": 1.0,
+                                    "fact": 0.0, "short": 1.0},
+                      "_route_n": 4, "_rounds_avg": 2.0, "_web": False,
+                      "_mode": "serial", "_history": {}})
+        _ys.append(0.5 + 0.4 * _x)
+    _m = fit(_rows, _ys, lam=0.5)
+    ck("预测器系数非零", any(abs(c) > 1e-6 for c in _m.get("coef") or []), _m)
+    _p = predict(_m, {"len": 90, "why": True}, 4, 2.0, False, "serial")
+    ck("预测值在 0..1", 0.0 <= _p <= 1.0, _p)
+    _fp2 = fused_plan(min_quality=0.9, max_wall=900, cascade=True,
+                      features={"len": 19, "why": True, "what": True,
+                                "short": True})
+    ck("M4 质量预测守卫", "quality_prediction" in _fp2, _fp2)
     with tempfile.TemporaryDirectory() as td2:
         pp = Path(td2) / "x.packed.json"
         pp.write_text(json.dumps(_pack("verified", 100000, 100)), encoding="utf-8")

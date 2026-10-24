@@ -12,6 +12,7 @@ M4 auto-fused = 在三种模式间按质量/墙钟/tokens/联网约束自适应�
 """
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Dict, List, Optional
 
 MODES: Dict[str, dict] = {
@@ -24,9 +25,9 @@ MODES: Dict[str, dict] = {
     "fast": {"name": "thinking off·时间档", "quality": 0.93, "tokens": 816983,
              "wall": 782.6, "web": False, "run": "20261024_193452",
              "strength": "墙钟/tokens 最低"},
-    "web": {"name": "serial 官方联网", "quality": 0.909, "tokens": 969376,
-            "wall": 1889.7, "web": True, "run": "20261024_160020",
-            "strength": "必须联网场景"},
+    "web": {"name": "B + 官方联网", "quality": 0.933, "tokens": 1062012,
+            "wall": 1073.3, "web": True, "run": "20261024_215545",
+            "strength": "必须联网场景（质量/墙钟最佳联网档）"},
 }
 
 KEPT = ("B", "serial", "fast")
@@ -77,14 +78,47 @@ def fused_plan(min_quality: Optional[float] = None,
                max_wall: Optional[float] = None,
                max_tokens: Optional[int] = None,
                require_web: bool = False,
-               cascade: bool = True) -> dict:
+               cascade: bool = True,
+               features: Optional[dict] = None,
+               history: Optional[dict] = None,
+               model_path: str = "dgtf_memory/quality_predictor.json") -> dict:
     """M4 auto-fused：先选首选模式；cascade=True 给 fast→B 的升级路径。"""
     first = select_mode(min_quality=min_quality, max_wall=max_wall,
                         max_tokens=max_tokens, require_web=require_web,
                         prefer="quality")
     plan = {"first": first, "cascade": None,
             "policy": "B/serial/fast 三模式按约束自适应；quality 优先默认 B"}
-    if cascade and not require_web and first.get("mode") == "fast":
+    # 质量预测守卫：只在模型可用且特征已给时启用；预测 fast 不达标则直接选 B，
+    # 避免“先跑 fast 再升级”的级联浪费。
+    if features:
+        try:
+            from dgtf_v2.quality_predictor import load_model, predict
+            model = load_model(str((Path(__file__).resolve().parents[2]
+                                    / model_path))) if not Path(model_path).is_absolute() else load_model(model_path)
+            if model:
+                pred = {
+                    m: predict(model, features, route_n=4, rounds_avg=2.0,
+                               web=bool(require_web), mode=m,
+                               history=history or {})
+                    for m in ("fast", "B", "serial")
+                }
+                plan["quality_prediction"] = {k: round(v, 4)
+                                              for k, v in pred.items()}
+                _first_mode = (first or {}).get("mode")
+                if (_first_mode == "fast" and min_quality is not None
+                        and pred["fast"] < min_quality
+                        and pred["B"] >= min_quality):
+                    plan["first"] = {"mode": "B", "info": dict(MODES["B"]),
+                                     "reason": "质量预测：fast 预测 %.3f < %.2f，直接选 B"
+                                               % (pred["fast"], min_quality)}
+                    plan["cascade"] = None
+                    plan["quality_guard"] = "fast→B by predictor"
+                elif (_first_mode == "fast" and min_quality is not None
+                      and pred["fast"] >= min_quality):
+                    plan["quality_guard"] = "predict fast meets target"
+        except Exception as exc:  # noqa: BLE001
+            plan["quality_prediction_error"] = str(exc)
+    if cascade and not require_web and (plan.get("first") or {}).get("mode") == "fast":
         plan["cascade"] = {
             "on_quality_below": min_quality,
             "upgrade_to": "B",

@@ -553,6 +553,16 @@ function collectOpts() {
   });
   if (Object.keys(ov).length) opts.overrides = ov;   // → 后端生成临时 config
   if ($('#mock').checked) opts.mock = true;
+  /* M4 auto-fused 场景：默认 auto = 后端默认（真实任务启用、mock 关闭）。
+     选具体场景时显式传参，后端按约束选 B/serial/fast/web。 */
+  const _fs = $('#fused-scenario');
+  if (_fs && _fs.value && _fs.value !== 'auto') {
+    opts.auto_fused = true;
+    if (_fs.value === 'quality') { opts.fused_min_quality = 0.99; opts.fused_prefer = 'quality'; }
+    else if (_fs.value === 'wall') { opts.fused_min_quality = 0.9; opts.fused_max_wall = 900; opts.fused_prefer = 'quality'; }
+    else if (_fs.value === 'tokens') { opts.fused_min_quality = 0.95; opts.fused_max_tokens = 1000000; opts.fused_prefer = 'quality'; }
+    else if (_fs.value === 'web') { opts.fused_min_quality = 0.9; opts.fused_require_web = true; }
+  }
   /* 输入框里的两个功能胶囊（不点 = 不传 = 交给引擎 auto 自决）：
        深度思考 → runtime.thinking    智能搜索 → runtime.web
      ★ R38：CLM 组里显式填的 thinking/web **优先于**胶囊（胶囊是「快捷开关」，
