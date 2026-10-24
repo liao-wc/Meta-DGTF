@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-"""V2.2.1 补丁判据：职责读数 / 质量线索降噪 / 覆盖率与三态读数。
+"""V2.2.2 补丁判据：职责终局刷新 / 部分覆盖 C / unsaid 双源闸 / 官方联网默认。
 
-对应补丁：
-  · 职责交付面按层取真实产品 + 长问项实词命中 + 下限 0.15 + 元层闭合职责门；
-  · candidates_backfilled 收尾复核阈值 0.75、self-check 单源降为留痕；
-  · polarity_all_same_structural / probe_link_dangling 改 view.meta 留痕；
-  · coverage 兜底链（coverage_basis）与 tri_alpha 质量读数（tri_consistency）。
+承接 V2.2.1 判据（职责交付面、质量线索降噪、覆盖与三态读数），V2.2.2 新增：
+  · C 改为部分覆盖计分（同义表述不再假 0），根治 duty_short 误报；
+  · _refresh_duty_final：产物落定后重算四层职责（元层闭合 false 根治）；
+  · unsaid_overused 双源闸：单源计数只留痕，模型判逃避/显著超阈才挂旗；
+  · 默认联网检索+抓取切到 DeepSeek 官方（backend=deepseek / DGTF_API_KEY）。
 """
 import importlib.util
 import sys
@@ -13,7 +13,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 HERE = Path(__file__).resolve().parent
-ENGINE = HERE / "engine" / "Meta-DGTF-V2.2.1.py"
+ENGINE = HERE / "engine" / "Meta-DGTF-V2.2.2.py"
 
 
 def _load():
@@ -43,7 +43,7 @@ def _fake_engine(entry_view, question):
 
 
 def main():
-    ck("版本号按补丁位递增", ENG.__version__ == "2.2.1", ENG.__version__)
+    ck("版本号按补丁位递增", ENG.__version__ == "2.2.2", ENG.__version__)
     # 融合 provenance 目标版本保持 2.2.0 谱系（补丁不改变融合事实）
     ck("历史融合目标保持 2.2.0", ENG._HF_TARGET == "2.2.0", ENG._HF_TARGET)
     ck("行为融合目标保持 2.2.0", ENG._BEHAVIOR_TARGET == "2.2.0", ENG._BEHAVIOR_TARGET)
@@ -138,6 +138,54 @@ def main():
     ck("收尾复核后补阈值 0.75",
        "_bf_thr" in src and "min(0.9, _QC_BACKFILL_RATIO * 1.5)" in src)
     ck("self-check 双源门槛", "_sc_need" in src)
+
+    # ── 7. V2.2.2：部分覆盖 C / 终局职责刷新 / unsaid 双源闸 / 官方联网默认 ──
+    q2 = "为什么城市热岛效应在夜间比白天更明显？"
+    asp2 = ENG.question_aspects(q2)
+    paraphrase = "夜间城乡温差比白天更大。"
+    dp = ENG.duty_components(asp2, paraphrase, span_tolerant=True)
+    ck("部分覆盖 C 在 (0,1)", 0 < dp["C"] < 1, dp)
+    ck("部分覆盖 S 达到下限", dp["S"] >= ENG._DUTY_FLOOR, dp)
+    du = ENG.duty_components(asp2, "今天天气不错。我们聊点别的。", span_tolerant=True)
+    ck("无关交付 C 接近 0", du["C"] <= 0.01, du)
+
+    eng3 = _fake_engine({}, q2)
+    views = {
+        "0": {"manifest": "夜间城乡温差明显，白天差异小。", "threads": [], "rounds_run": 2},
+        "1": {"manifest": "", "decidable_product": {"answer": "夜间更强，白天差异小。"},
+              "rounds_run": 2},
+        "both": {"collision": "夜间城乡温差更强，白天偏弱。", "rounds_run": 3},
+        "all": {"decision": "结论", "actions": [{"what": "行动"}],
+                "residual_risks": ["风险"], "rounds_run": 3},
+    }
+    results = {e: SimpleNamespace(quality_flags=["duty_short"], duty_trace=[], duty={})
+               for e in views}
+    eng3._results = results
+    eng3._refresh_duty_final({"views": views, "rounds": {e: 2 for e in views}})
+    ck("终局刷新后四层均不 short",
+       all((views[e].get("duty") or {}).get("short") is False for e in views),
+       {e: views[e].get("duty") for e in views})
+    ck("终局刷新清除 duty_short",
+       all("duty_short" not in (results[e].quality_flags or []) for e in results))
+    ck("元层终局闭合交付", views["all"]["duty"].get("closure_delivered") is True,
+       views["all"]["duty"])
+
+    ck("unsaid 单源计数降为留痕", ENG._unsaid_flag_gate(3, 2, False) == "note")
+    ck("unsaid 模型判逃避挂旗", ENG._unsaid_flag_gate(3, 2, True) == "flag")
+    ck("unsaid 显著超阈挂旗", ENG._unsaid_flag_gate(6, 2, False) == "flag")
+    ck("unsaid 未超阈关闭", ENG._unsaid_flag_gate(1, 2, False) == "off")
+
+    ws_def = (ENG.DEFAULT_CONFIG.get("web_search") or {})
+    ck("引擎默认联网后端=deepseek", ws_def.get("backend") == "deepseek", ws_def)
+    ck("引擎默认联网 key=DGTF_API_KEY",
+       ws_def.get("api_key_env") == "DGTF_API_KEY", ws_def)
+    ck("官方搜索端点正确",
+       ENG.WebSearchClient("deepseek", "")._endpoint()
+       == "https://api.deepseek.com/v1/tools/search")
+    cfg_path = HERE.parents[1] / "dgtf_config.yaml"
+    cfg_txt = cfg_path.read_text(encoding="utf-8", errors="replace")
+    ck("主配置联网后端=deepseek", 'backend: "deepseek"' in cfg_txt)
+    ck("主配置联网 key=DGTF_API_KEY", 'api_key_env: "DGTF_API_KEY"' in cfg_txt)
 
     print()
     print("PASS %d / FAIL %d" % (len(P), len(F)))

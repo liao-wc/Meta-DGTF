@@ -5,11 +5,12 @@
 
 零额外依赖（Python 标准库 + 原生前端），**不改动引擎主文件**。
 
-**当前 app 版本：V2.0.2**（DSH 本对话实时视图对齐 DSH GUI 当前会话；引擎生产入口 V2.2.1 / `Meta-DGTF-V2.2.1.py`，引擎发布说明见 docs/releases/V2.2.1.md）。
+**当前 app 版本：V2.0.3**（DSH 本对话实时视图对齐 DSH GUI 当前会话；引擎生产入口 V2.2.2 / `Meta-DGTF-V2.2.2.py`，引擎发布说明见 docs/releases/V2.2.2.md）。
 
 ### 新增能力
 
-- **DSH 本对话实时镜像（V2.0.1 引入；V2.0.2 修复：会话列表点开运行中会话直接显示实时内容、每个会话按自身时段独立记录/渲染、读库瞬时失败自动重试并点名失败库）**：实时视图直接读 DSH GUI 当前会话（`full=1` 整段会话、首屏最近约 200 条、700ms 增量、顶部「载入更早」向上回看），用户/助手文本、思考、工具调用与结果、轮次状态同构渲染，头部标注「与 DSH GUI 同一会话 · <session 前 8 位>」。
+- **DSH 本对话实时镜像（V2.0.1 引入；V2.0.2/2.0.3 修复：会话列表点开运行中会话直接显示实时内容、每个会话按自身时段独立记录/渲染、读库瞬时失败自动重试并点名失败库）**：实时视图直接读 DSH GUI 当前会话（`full=1` 整段会话、首屏最近约 200 条、700ms 增量、顶部「载入更早」向上回看），用户/助手文本、思考、工具调用与结果、轮次状态同构渲染，头部标注「与 DSH GUI 同一会话 · <session 前 8 位>」。
+- **健康读数缓存（V2.0.3）**：/api/health 2s TTL（冷 ~900ms，命中 ~17ms），高频轮询成本显著下降。
 - **EML + DSH 全流程闭环**：知识刷新 → 引擎跑次 → 消费者/任务 → 自审提案；Agent 面板只保留“DSH 全流程闭环”一个按钮。
 - **产物时间标注**：技术知识分别标检索/爬取时间；产物库、资料库、检索库、DSH 产物、修复提案、审计与 V2 事件均带对应时间。
 - **本地 LLM LoRA 调度建议**：Qwen2.5-0.5B-Instruct，问题→route/rounds；接口 /api/schedule/llm/*，任务 opts.auto_llm。
@@ -45,7 +46,7 @@ python dgtf_app/server.py
 
 ## 真实运行
 
-- 需要项目根 `.env` 里有 `DGTF_API_KEY`（可选 `TAVILY_API_KEY` 走联网检索）。
+- 需要项目根 `.env` 里有 `DGTF_API_KEY`（联网检索/抓取默认走 DeepSeek 官方，复用同一 Key）。
 - 真实一次跑 **约 30–45 分钟、几十万 token、约 ¥4–9**（DeepSeek 计价）。
   启动前界面会弹确认；任务在服务端后台跑，**可以关掉页面**，回来再看。
 - 引擎取项目根下**版本号最高**的 `Meta-DGTF-V*.py`；用环境变量
@@ -167,9 +168,11 @@ python dgtf_app/selftest.py        # 371 项端到端断言（mock 全链路）
 
 ## 联网检索后端
 
-- web_search.backend 支持 tavily / deepseek / snapshot；
-- deepseek 走官方 POST https://api.deepseek.com/v1/tools/search，请求 query/count/need_content，Bearer Key；
-- Key 优先 web_search.api_key_env，DeepSeek 后端缺省回退 api.key。
+- **默认 web_search.backend = deepseek**（DeepSeek 官方）；可选 tavily / snapshot；
+- 检索走官方 POST https://api.deepseek.com/v1/tools/search，请求 query/count/need_content，Bearer Key；
+- 抓取走官方 POST https://api.deepseek.com/v1/tools/fetch（单页转 Markdown）；
+- Key 优先 web_search.api_key_env（默认 DGTF_API_KEY），DeepSeek 后端缺省回退 api.key。
+- 工作台「联网」状态显示 DeepSeek 官方；旧 TAVILY_API_KEY 仅在显式把 backend 切回 tavily 时需要。
 
 ### v1.28 展示块
 

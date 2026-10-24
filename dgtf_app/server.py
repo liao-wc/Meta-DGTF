@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "2.0.2"
+APP_VERSION = "2.0.3"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -1497,7 +1497,7 @@ def _proposal_project_context():
         head_ts = int((r2.stdout or "0").strip() or 0)
     except Exception:
         pass
-    files = ["dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.1.py",
+    files = ["dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.2.py",
              "dgtf_engine/dgtf_v2/agent_bridge.py",
              "dgtf_app/server.py", "dgtf_app/static/app.js"]
     parts = [head]
@@ -1514,7 +1514,7 @@ def _proposal_project_context():
         qn = sum(1 for _ in q.open(encoding="utf-8", errors="replace"))
     except Exception:
         qn = 0
-    eng = _prop_cached_text(root / "dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.1.py")
+    eng = _prop_cached_text(root / "dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.2.py")
     br = _prop_cached_text(root / "dgtf_engine/dgtf_v2/agent_bridge.py")
     return {
         "head": head[:12],
@@ -3548,8 +3548,8 @@ def _targeted_acceptance(changed):
     cmds = []
     if any(str(p).startswith("dgtf_app/") for p in changed):
         cmds.append([_sys.executable, "dgtf_app/selftest.py", "app-selftest"])
-    if any(str(p).endswith(("dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.1.py",
-                              "Meta-DGTF-V2.2.1.py",
+    if any(str(p).endswith(("dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.2.py",
+                              "Meta-DGTF-V2.2.2.py",
                               "Meta-DGTF-V2.1.0.py",
                               "元DGTF-V2.0.0.py", "元DGTF-V1.30.4.py"))
            or str(p).startswith(("dgtf_engine/dgtf_v2/", "v2/dgtf_v2/",
@@ -5461,6 +5461,26 @@ def _v2_shadow_status(limit=0):
             "paths": str(p)}
 
 
+_HEALTH_CACHE = {"t": 0.0, "val": None}
+_HEALTH_CACHE_TTL = 2.0
+
+
+def _app_health_cached():
+    """[V2.0.2 帕累托] 健康读数 2s TTL 缓存。
+
+    /api/health 原先每次重算 import 探测 + git commit + 参数展平 + daemon 状态
+    （实测 p50≈475ms）；2s 缓存把高频轮询/启动检查的成本摊掉，读数最多滞后 2s。
+    """
+    import time as _t
+    if _HEALTH_CACHE["val"] is not None and (
+            _t.time() - float(_HEALTH_CACHE["t"] or 0.0) < _HEALTH_CACHE_TTL):
+        return _HEALTH_CACHE["val"]
+    val = _app_health()
+    _HEALTH_CACHE["t"] = _t.time()
+    _HEALTH_CACHE["val"] = val
+    return val
+
+
 def _app_health():
     import importlib.util as _iu
     _proj = Path(__file__).resolve().parent.parent
@@ -6142,7 +6162,7 @@ _PROJECT_DOCS = [
 ]
 _PROJECT_BRIEF = (
     "Meta-DGTF 是一个本地四层螺旋推理引擎，版本 "
-    "dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.1.py / 2.2.1。"
+    "dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.2.py / 2.2.2。"
     "四层固定为：0 修行（展开/候选/锚点）、1 研究（证据/子问题/收敛）、"
     "both 对撞（裁决/冲突/线头）、all 元（闭环/决策/停止）。"
     "EML 是事件溯源记忆与自学习反馈层，含 V1 playbook 与 V2 schedule_outcome；"
@@ -8165,7 +8185,7 @@ class Handler(BaseHTTPRequestHandler):
             return self._json({"jobs": _auto_job_list()})
         if p == "/api/health":
             try:
-                return self._json(_app_health())
+                return self._json(_app_health_cached())
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/config":

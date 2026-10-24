@@ -4,11 +4,11 @@
 
 | 类别 | 物理位置 | 说明 |
 |---|---|---|
-| V2 生产入口 | dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.1.py | 单文件生产引擎，App 自动选用最高版本 |
+| V2 生产入口 | dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.2.py | 单文件生产引擎，App 自动选用最高版本 |
 | 引擎总目录 | dgtf_engine/ | 统一存放 dgtf_v1/ 与 dgtf_v2/ |
 | V2 核心 | dgtf_engine/dgtf_v2/ | EML / Scheduler / 四层契约 / 证据与决策 |
-| V2 发布说明 | V2.2.1-发布报告.md、V2.2.1-收束报告.md、docs/releases/V2.2.1.md | 发布、验证、边界 |
-| 融合实现 | Meta-DGTF-V2.2.1.py 内联（history + behavior） | 单引擎文件：历史谱系、5 个 arm、auto 调度融合、outcome UCB |
+| V2 发布说明 | V2.2.2-发布报告.md、V2.2.2-收束报告.md、docs/releases/V2.2.2.md | 发布、验证、边界 |
+| 融合实现 | Meta-DGTF-V2.2.2.py 内联（history + behavior） | 单引擎文件：历史谱系、5 个 arm、auto 调度融合、outcome UCB |
 | 历史清单 | dgtf_engine/dgtf_v2/history_manifest.json | 178 个历史快照数据；仅文档/审计参考 |
 | 历史文档 | docs/history/ | 来源、定义、版本演化、能力矩阵 |
 | V2 门户 | docs/index.html | GitHub Pages 静态入口 |
@@ -28,6 +28,7 @@
 |---|---|---|
 | App | dgtf_app/ | 本地 Web 工作台 |
 | 启动/运维 | scripts/、scripts/local_model/ | 启动、同步、部署、安全与本地模型脚本 |
+| 帕累托基线 | scripts/pareto_flow.py | 全流程质量/成本非支配前沿（第一版） |
 | 闭环检查 | scripts/dsh_loop_check.py | 一键验收：队列来源闸、质量门预检、App live 视图、提案/high 队列、联网/工具调用遥测 |
 | 默认配置 | dgtf_config.yaml | V2 生产配置 |
 | 预设 | configs/ | 方案 A/B/C/F/G/H 等配置 |

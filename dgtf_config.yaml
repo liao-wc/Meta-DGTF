@@ -1,5 +1,5 @@
 # ============================================================
-# Meta-DGTF-道生三阶模型 · V2.2.1 配置文件
+# Meta-DGTF-道生三阶模型 · V2.2.2 配置文件
 # ============================================================
 #
 #
@@ -2117,9 +2117,10 @@ web_search:
   enabled: true
 
   # 【用途】检索后端（key 走环境变量，不落盘本文件）。
-  # tavily | deepseek（官方 /v1/tools/search）| snapshot
-  backend: "tavily"
-  api_key_env: "TAVILY_API_KEY"
+  # deepseek（默认；官方 /v1/tools/search 检索 + /v1/tools/fetch 抓取）
+  # | tavily（可选旧后端）| snapshot（读快照，零调用）
+  backend: "deepseek"
+  api_key_env: "DGTF_API_KEY"
 
   # 【用途】单次请求超时（秒）/ 重试次数 / 线性退避基数（秒）。
   timeout_seconds: 30

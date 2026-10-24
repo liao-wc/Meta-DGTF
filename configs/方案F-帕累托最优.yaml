@@ -2080,8 +2080,8 @@ web_search:
   enabled: true
 
   # 【用途】检索后端（key 走环境变量，不落盘本文件）。
-  backend: "tavily"
-  api_key_env: "TAVILY_API_KEY"
+  backend: "deepseek"
+  api_key_env: "DGTF_API_KEY"
 
   # 【用途】单次请求超时（秒）/ 重试次数 / 线性退避基数（秒）。
   timeout_seconds: 30

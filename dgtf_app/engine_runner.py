@@ -78,7 +78,7 @@ def find_engine() -> Path:
 
     cands.sort(key=ver)
     return cands[-1] if cands else (PROJECT_ROOT / "dgtf_engine" / "dgtf_v2" /
-                                     "engine" / "Meta-DGTF-V2.2.1.py")
+                                     "engine" / "Meta-DGTF-V2.2.2.py")
 
 
 def load_dotenv() -> dict:
@@ -104,6 +104,7 @@ def credential_status() -> dict:
     return {
         "api_key": bool(env.get("DGTF_API_KEY")),
         "base_url": env.get("DGTF_BASE_URL", "https://api.deepseek.com/v1"),
+        "web_search": bool(env.get("DGTF_API_KEY")),  # 默认官方检索/抓取共用 DGTF_API_KEY
         "tavily": bool(env.get("TAVILY_API_KEY")),
     }
 

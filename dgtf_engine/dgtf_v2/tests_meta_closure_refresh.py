@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-ENGINE = HERE / "engine" / "Meta-DGTF-V2.2.1.py"
+ENGINE = HERE / "engine" / "Meta-DGTF-V2.2.2.py"
 
 
 def _load():

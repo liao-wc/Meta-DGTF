@@ -74,8 +74,8 @@ md 顶部结论摘要：问题类型、检索结论、四层推理结论、一�
 
 ## 九、DeepSeek 官方联网
 
-- web_search.backend 支持 tavily / deepseek / snapshot。
-- deepseek 走 POST https://api.deepseek.com/v1/tools/search
+- **默认 web_search.backend = deepseek（DeepSeek 官方）**；可选 tavily / snapshot。
+- 检索走 POST https://api.deepseek.com/v1/tools/search；抓取走 POST https://api.deepseek.com/v1/tools/fetch（单页转 Markdown）
 - 请求：query, count, need_content；Bearer API Key。
 - 响应：title/url/snippet/summary/content/date/authority -> claim/tier。
 - Key：web_search.api_key_env；缺省时 DeepSeek 后端回退 api.key。

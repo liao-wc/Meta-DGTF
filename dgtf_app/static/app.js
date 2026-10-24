@@ -3347,7 +3347,7 @@ async function loadConfig() {
       line('应用', 'v' + esc(appVer || '—'), !!appVer) +
       line('引擎', esc(c.engine), engineOk) +
       line('模型', 'DeepSeek-Flash', !!k.api_key) +
-      line('联网', 'Tavily', !!k.tavily) +
+      line('联网', 'DeepSeek 官方', !!(k.web_search || k.api_key)) +
       line('本地 LLM', nBack + ' 个底座 · 默认 Qwen0.5B', nBack > 0) +
       line('Agent', agentText, agentOk) +
       line('产物', c.outputs.count + ' 份 · ' + c.outputs.total_mb + ' MB', c.outputs.count > 0);

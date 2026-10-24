@@ -10,6 +10,29 @@
 > （`check_v72_changelog_hygiene`）；代码文件里**不得**再出现版本段
 > （`check_v1237_changelog_outside_code`）。
 
+V2.2.2
+
+【主题】职责读数根治 + unsaid 双源闸 + DeepSeek 官方联网默认 + 帕累托先行模块。
+
+【改变】
+- C 改为部分覆盖计分：同义表述不再二值归零；最新真跑离线复算四层 S=0.25/0.23/0.30/0.24，duty_short 消除。
+- 新增 _refresh_duty_final：产物落定后重算四层职责，元层 closure_delivered 时序误判根治。
+- unsaid_overused 双源闸：单源计数留痕，模型判逃避/显著超阈才挂旗。
+- web_search 默认切 DeepSeek 官方：backend=deepseek、api_key_env=DGTF_API_KEY；检索 /v1/tools/search、抓取 /v1/tools/fetch。
+- 新增 pareto_flow 模块/脚本/判据（全流程质量-成本非支配前沿第一版）。
+
+【验证】
+- fast_gate 12/0；V2 tests 39/39（508 项检查）；App selftest 371/0；pip check 0 broken（两环境）。
+- 职责离线复算：四层 short=false、元层 closure_delivered=true；unsaid 双源闸 4 项判据通过。
+
+★ v2.2.2 收束摘要
+- 交付物：Meta-DGTF-V2.2.2.py、pareto_flow.py、scripts/pareto_flow.py、tests_pareto_flow.py、
+  V2.2.2-发布报告.md、V2.2.2-收束报告.md、docs/releases/V2.2.2.md。
+- 验收数字：见上【验证】。
+- 未做：未新增真跑；app/本地模型/三者联动帕累托在后续迭代接入。
+
+---
+
 V2.2.1
 
 【主题】补丁迭代：推理题质量门闭环、职责读数与质量线索修正、App DSH 实时视图对齐。
