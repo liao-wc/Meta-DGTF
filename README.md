@@ -136,7 +136,7 @@ python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.0.py -c configs/方案F-帕累�
 | 门 | 结果 |
 |---|---|
 | fast_gate | PASS 12 / FAIL 0 |
-| V2 tests_*.py | 34 / 34 PASS（含 inline_fusion 12/12） |
+| V2 tests_*.py | 37 / 37 PASS（含 inline_fusion 13/13） |
 | App selftest | PASS 371 / FAIL 0 |
 | 依赖 pip check | 0 broken |
 | 历史融合 readiness | 1.00 / continuity_ok=True |

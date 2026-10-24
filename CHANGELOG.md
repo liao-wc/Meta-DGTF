@@ -32,6 +32,14 @@ V2.2.0
 - 行为融合 12/12；历史融合 12/12；V1 历史 516/516。
 - 四层真跑结果见 V2.2.0-收束报告。
 
+【2026-10-24 补丁迭代 · 推理题质量门】
+- 「为什么 / 原因 / 机制」类解释型题归 reasoning，走非事实门（不再要求官方事实卡 answered）。
+- 研究层判定审计并入 `pools["1"].sub_questions`（此前只审渲染视图 ⇒ 假 unverified ⇒ 研究层 standard_ok=False）。
+- 元层闭环清算在 `_totalize_all_pool()` 之后刷新（修复 all.standard_ok 假缺口）。
+- 判定审计只拦越权断言（decidable 无证据 / undecidable 有证据）；纯数字 token 不再冒充「证据命中」。
+- 新增 tests_question_type.py（10 项）/ tests_meta_closure_refresh.py（7 项）；V2 tests 37/37。
+- 随机真跑 4 轮迭代后达 answer_ready / process_ready / verified、standard_all=true、研究层审计 verified、元层闭环 clean、core audit gaps/overreach=[]。
+
 ---
 
 V2.1.0

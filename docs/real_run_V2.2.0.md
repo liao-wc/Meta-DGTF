@@ -45,3 +45,22 @@
 - process_ready=true；raw_answer_ready=true；answer_ready=true；answer_quality=verified；coverage=0.5。
 - 产物：outputs/20261024_083648_Python中len函数的作用是什.packed.json
 - App 冷启动：stop→hidden start，6.8s 后 health 200；PID 13196；App 2.0.0 / Engine 2.2.0。
+
+## 4.7 推理题四层真跑与质量门（2026-10-24 补丁迭代）
+
+- 主题（随机领域）：**为什么城市热岛效应在夜间比白天更明显？**
+- 出发点：守护巡检后随机真跑，首轮暴露 4 类缺陷（why 题误判 fact、研究层判定审计假失败、元层清算 stale、判定审计口径过严）。
+- 迭代 4 轮（route 0,1,both,all；实际圈数按需 2~5 圈）：
+
+| 轮 | calls | tokens | 质量门 | 卡点 |
+|---|---|---|---|---|
+| 1 | 92 | 1,014,870 | ❌ | why 题判成 fact ⇒ 事实卡未 answered ⇒ needs_evidence |
+| 2 | 145 | 1,793,098 | ❌ | all.meta_closure 在 `_totalize_all_pool()` 之前计算 ⇒ 假缺口 |
+| 3 | 118 | 1,359,159 | ❌ | 判定审计 mixed/bad=3（纯数字命中 + partial 被判 bad） |
+| 4 | 138 | 1,581,220 | ✅ | — |
+
+- 第 4 轮最终指标：question_type=reasoning；answer_ready=true、raw_answer_ready=true、process_ready=true、answer_quality=verified；
+  process_ledger.standard_all=true（四层 standard_ok 全 true）；研究层判定审计 verified（6/6）；元层闭环 clean=true（unsettled=0/3）；
+  core_duty 审计 audit_ok=true、gaps=[]、overreach=[]；V2 memory bridge contract ok。
+- 产物：outputs/20261024_134620_为什么城市热岛效应在夜间比白天更明显.md / .packed.json
+- 修复提交：`d12140d`（why→reasoning + 判定审计入参）、`27bbe5c`（元层清算汇总后刷新）、`c8d43d5`（审计只拦越权 + 纯数字过滤）。

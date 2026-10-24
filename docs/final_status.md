@@ -55,3 +55,13 @@
 - 行为融合：auto mode/rounds/stop/thinking/effort；显式 CLI 优先
 - 判据：V2 tests 34/34、单引擎内联融合 13/13（含 history + behavior）
 - 文档：docs/history/行为级融合、V2.2.0-收束报告
+
+---
+
+## 2026-10-24 推理题质量门迭代（V2.2.0 补丁）
+
+- 修复提交：`d12140d`（why→reasoning + 研究层判定审计并入池内子问题）、`27bbe5c`（元层闭环清算汇总后刷新）、`c8d43d5`（判定审计只拦越权断言 + 纯数字过滤）。
+- 新增判据：tests_question_type.py（10 项）、tests_meta_closure_refresh.py（7 项）、tests_decidability_audit.py +4 项。
+- 门禁：fast_gate 12/0；V2 tests 37/37；App selftest 371/0；pip check 0 broken。
+- 随机真跑（城市热岛昼夜差异）4 轮迭代后：answer_ready/process_ready/verified、standard_all=true、研究层判定审计 verified、元层闭环 clean、core audit gaps/overreach=[]；最终 138 calls / 1,581,220 tokens。
+- 详见 `docs/real_run_V2.2.0.md` §4.7、`docs/verification_reasoning_gate.md`。

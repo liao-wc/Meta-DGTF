@@ -23,7 +23,7 @@
 ## 版本边界
 
     V2 生产：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.0.py + dgtf_engine/dgtf_v2/
-    V2 测试：dgtf_engine/dgtf_v2/tests_*.py（35 个，含单引擎内联融合 12 项）
+    V2 测试：dgtf_engine/dgtf_v2/tests_*.py（37 个，含单引擎内联融合 13 项）
     V1 归档：dgtf_engine/dgtf_v1/engine/元DGTF-V1.30.4.py
     V1 回滚：DGTF_APP_ENGINE=dgtf_engine/dgtf_v1/engine/元DGTF-V1.30.4.py
 
@@ -43,7 +43,7 @@
 - V2 生产入口：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.0.py
 - App：2.0.0（本次未改动）
 - Engine：2.2.0
-- V2 tests：34 / 34 PASS（内联融合 13/13）
+- V2 tests：37 / 37 PASS（内联融合 13/13；含题型判定 / 元层清算 / 判定审计判据）
 - F5：生成机制完成
 - 历史融合：178 个版本 / 17 条能力轴 / readiness 1.00
 - 行为融合：5 个 arm / auto 调度 / outcome UCB
