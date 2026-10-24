@@ -86,6 +86,13 @@
 
 - 模式 E 负结果：quality 0.922、flags duty_short/unsaid_overused(4)、tokens 993,472、wall 1513.7s；被 fast 支配。
 - App 2.0.11：任务启动默认 M4 auto；/api/mode-fusion 暴露模式与场景参数；前端场景下拉。
-- 质量预测器：历史 packed 训练 ridge（140 样本），随机 R²=0.698 / MAE=0.112；时间 R²=-0.37，仅作保守守卫。
+- 质量预测器：历史 packed 训练 ridge（141 样本），随机 R²=0.676 / MAE=0.127；时间 R²=-0.37，仅作保守守卫。
 - V2 判据增至 532 项检查。
 - 模式 E（DAG）0.922/993,472/1513.7s 被 fast 支配；B+web 0.933/1,062,012/1073.3s 成为联网最佳档。
+
+## 九、Round 2 阶段级与组合补测
+
+- B+web：quality 0.933、search=4/fetch=6、tokens 1,062,012、wall 1073.3s；联网场景最佳档。
+- B-no-selfcheck：quality 0.94、flags duty_short、tokens 1,029,966、wall 985.1s；质量/墙钟优先不采纳。
+- 模式 E（DAG）：0.922/993,472/1513.7s，被 fast 支配；A（层并行）质量门失败。
+- 结论：B 仍是质量/墙钟最优；fast 时间最优；serial 低 tokens；联网用 B+web。

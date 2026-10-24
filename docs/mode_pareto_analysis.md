@@ -75,9 +75,13 @@
 - 模式 A/E 均失败，说明 C/D/E 代表模式（层并行/流水/DAG）当前版本质量不达标；保留 B/serial/fast 不变。
 - App 2.0.11：任务启动默认 auto，GET /api/mode-fusion 暴露模式/场景/参数；POST /api/tasks 支持 fused_min_quality、
   fused_max_wall、fused_max_tokens、fused_require_web、fused_prefer；前端新增“模式融合”场景下拉。
-- 质量预测器（dgtf_engine/dgtf_v2/quality_predictor.py + 模型 JSON）：历史 140 样本；随机切分 R²=0.698/MAE=0.112，
+- 质量预测器（dgtf_engine/dgtf_v2/quality_predictor.py + 模型 JSON）：历史 141 样本；随机切分 R²=0.676/MAE=0.127，
   时间切分 R²=-0.37（跨版本漂移）。只在预测明确时用于 fast→B 守卫，不替代实测。
 - 模式 E（DAG，run 20261024_213016）：quality 0.922、flags duty_short/unsaid_overused(4)、tokens 993,472、wall 1513.7s，被 fast 支配。
 - **B+web 组合（run 20261024_215545）**：quality 0.933、search=4/fetch=6、tokens 1,062,012、wall 1073.3s；
   成为联网场景最佳档（优于旧 serial+web 的 0.909/1,889.7s），但被 B 的质量/墙钟支配，仅在必须联网时使用。
 - 结论：C/D/E 代表模式（层并行/流水/DAG）当前版本质量不达标，保留 B/serial/fast 不变；web 档更新为 B+web。
+
+- 阶段级 B-no-selfcheck（run 20261024_221714，关 output.actions.self_check）：quality 0.94、flags duty_short、
+  tokens 1,029,966、wall 985.1s。相对 B（1.000/1064.3s）质量降 6%、墙钟降 79s、tokens 降 24 万；
+  按质量/墙钟优先不采纳（self_check 保留），仅作为“更快折中档”备选记录。

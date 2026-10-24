@@ -1,13 +1,14 @@
 {
  "engine_report": {
-  "n": 10,
+  "n": 11,
   "frontier": [
    "20261024_160020",
    "20261024_163455",
    "20261024_193452",
    "20261024_205018",
    "20261024_213016",
-   "20261024_215545"
+   "20261024_215545",
+   "20261024_221714"
   ],
   "best_quality": {
    "id": "20261024_205018",
@@ -398,6 +399,36 @@
     "tools_calls": 4,
     "elapsed": 1073.3,
     "quality": 0.9329
+   },
+   {
+    "id": "20261024_221714",
+    "question": "为什么城市热岛效应在夜间比白天更明显？",
+    "route": [
+     "0",
+     "1",
+     "both",
+     "all"
+    ],
+    "rounds": {
+     "0": 2,
+     "1": 4,
+     "both": 2,
+     "all": 3
+    },
+    "answer_ready": true,
+    "process_ready": true,
+    "answer_quality": "verified",
+    "coverage": 0.5,
+    "standard_all": true,
+    "flags": [
+     "duty_short"
+    ],
+    "tokens": 1029966,
+    "calls": 106,
+    "web_enabled": false,
+    "tools_calls": 0,
+    "elapsed": 985.1,
+    "quality": 0.94
    }
   ],
   "frontier_rows": [
@@ -579,22 +610,52 @@
     "tools_calls": 4,
     "elapsed": 1073.3,
     "quality": 0.9329
+   },
+   {
+    "id": "20261024_221714",
+    "question": "为什么城市热岛效应在夜间比白天更明显？",
+    "route": [
+     "0",
+     "1",
+     "both",
+     "all"
+    ],
+    "rounds": {
+     "0": 2,
+     "1": 4,
+     "both": 2,
+     "all": 3
+    },
+    "answer_ready": true,
+    "process_ready": true,
+    "answer_quality": "verified",
+    "coverage": 0.5,
+    "standard_all": true,
+    "flags": [
+     "duty_short"
+    ],
+    "tokens": 1029966,
+    "calls": 106,
+    "web_enabled": false,
+    "tools_calls": 0,
+    "elapsed": 985.1,
+    "quality": 0.94
    }
   ]
  },
  "components": {
   "app": {
    "health": {
-    "p50_ms": 31.1,
-    "max_ms": 373.6
+    "p50_ms": 20.3,
+    "max_ms": 405.9
    },
    "chats": {
-    "p50_ms": 16.8,
-    "max_ms": 202.7
+    "p50_ms": 24.7,
+    "max_ms": 275.4
    },
    "events_full": {
-    "p50_ms": 251.4,
-    "max_ms": 268.8
+    "p50_ms": 257.6,
+    "max_ms": 304.9
    }
   },
   "bge": {
@@ -604,19 +665,19 @@
     "dev": "cuda",
     "dim": 512,
     "cache": {
-     "size": 187,
+     "size": 188,
      "max": 1024,
-     "hits": 662,
-     "misses": 187
+     "hits": 665,
+     "misses": 188
     }
    },
    "embed_cold": {
-    "p50_ms": 42.3,
-    "max_ms": 42.3
+    "p50_ms": 35.1,
+    "max_ms": 35.1
    },
    "embed_hot": {
-    "p50_ms": 15.6,
-    "max_ms": 20.2
+    "p50_ms": 15.8,
+    "max_ms": 26.6
    }
   }
  },
@@ -656,16 +717,16 @@
   "require_web": false,
   "app": {
    "health": {
-    "p50_ms": 31.1,
-    "max_ms": 373.6
+    "p50_ms": 20.3,
+    "max_ms": 405.9
    },
    "chats": {
-    "p50_ms": 16.8,
-    "max_ms": 202.7
+    "p50_ms": 24.7,
+    "max_ms": 275.4
    },
    "events_full": {
-    "p50_ms": 251.4,
-    "max_ms": 268.8
+    "p50_ms": 257.6,
+    "max_ms": 304.9
    }
   },
   "local": {
@@ -675,19 +736,19 @@
     "dev": "cuda",
     "dim": 512,
     "cache": {
-     "size": 187,
+     "size": 188,
      "max": 1024,
-     "hits": 662,
-     "misses": 187
+     "hits": 665,
+     "misses": 188
     }
    },
    "embed_cold": {
-    "p50_ms": 42.3,
-    "max_ms": 42.3
+    "p50_ms": 35.1,
+    "max_ms": 35.1
    },
    "embed_hot": {
-    "p50_ms": 15.6,
-    "max_ms": 20.2
+    "p50_ms": 15.8,
+    "max_ms": 26.6
    }
   },
   "joint_tokens": 816983,

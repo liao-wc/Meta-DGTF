@@ -1,0 +1,90 @@
+# Meta-DGTF 深度优化分析报告（2026-10-24）
+
+目标：对实测数据取长补短，在设计/算法/每环节上继续优化；质量与墙钟优先、成本可放宽；按顶配标准逼近帕累托最优。
+
+## 一、实测数据总览
+
+同题受控真跑（问题：为什么城市热岛效应在夜间比白天更明显？），四层、web 默认关闭，墙钟由作业起止精确记录。
+
+| run | 模式/配置 | quality | tokens | calls | wall(s) | flags |
+|---|---|---|---|---|---|---|
+| 20261024_205018 | B 动态规划 | **1.000** | 1,269,082 | 119 | 1064.3 | 0 |
+| 20261024_221714 | B + 关 self_check | 0.940 | 1,029,966 | 106 | 985.1 | duty_short |
+| 20261024_215545 | B + 官方联网 | 0.933 | 1,062,012 | 99 | 1073.3 | duty_short, probe |
+| 20261024_193452 | thinking off（fast） | 0.930 | 816,983 | 106 | 782.6 | 2 |
+| 20261024_163455 | serial 成本档 | 0.990 | 997,457 | 107 | 1920.6 | 0 |
+| 20261024_203201 | A 层并行 | 0.220 | 868,718 | 121 | 1079.3 | duty_short, probe, unsaid |
+| 20261024_213016 | E DAG | 0.922 | 993,472 | 99 | 1513.7 | duty_short, unsaid |
+| 20261024_195354 | hybrid 关判断思考 | 0.946 | 1,131,199 | 115 | 2033.7 | 1 |
+
+结论：
+- 质量/墙钟双优：B（1.000 / 1064.3s / 126.9万 tokens，成本放宽下最优）。
+- 时间最优：fast（0.930 / 782.6s / 81.7万 tokens）。
+- 低 tokens 质量档：serial（0.990 / 99.7万 tokens / 1920.6s）。
+- 联网最优：B+web（0.933 / 1062,012 / 1073.3s），优于旧 serial+web（0.909 / 1889.7s）。
+- A/E 失败：层并行/DAG 丢跨层对齐，质量门不通过；hybrid 关部分思考反而更慢；B-no-selfcheck 质量降 6% 仅换 79s，不采纳。
+
+## 二、阶段级耗时分析（来自 llm_by_stage）
+
+B（20261024_205018）：
+| 阶段 | calls | tokens | ms |
+|---|---|---|---|
+| unknown（核心生成） | 50 | 778,927 | 1,373,351 |
+| dual_judge | 12 | 149,254 | 226,619 |
+| self_check | 12 | 151,083 | 138,662 |
+| re_evaluate_pool | 12 | 14,133 | 22,883 |
+| phase_probe | 2 | 13,424 | 21,706 |
+| probe_research | 4 | 45,801 | 15,915 |
+
+E（20261024_213016）：unknown 1,334,046ms / dual_judge 177,741ms / self_check 176,837ms。
+B+web（20261024_215545）：unknown 1,095,801ms / dual_judge 201,144ms / self_check 125,879ms。
+
+判断：
+- 墙钟由 unknown 核心生成主导（约 6 成以上），其次 dual_judge/self_check；阶段开关可以削 100–200s，但会伤质量/停止判据；
+- B-no-selfcheck 实验验证：exact 省一次自省调用换来质量 1.000→0.940，不划算；
+- 进一步墙钟优化应针对 unknown 的并行/缓存/输出长度，而不是盲关判据阶段。
+
+## 三、模式级结论
+
+- serial：历史 152 次，稳定；本次 0.990/99.7万/1920.6s。
+- B：本次 1.000/126.9万/1064.3s，质量/墙钟双优；保留为默认质量模式。
+- fast：0.930/81.7万/782.6s，时间档。
+- A：质量门失败，不保留；E：被 fast 支配，不保留；C/D 未测（E 作为 DAG 代表已给负结果）。
+- B+web：联网最佳档；B-no-selfcheck：折中备选，不默认。
+- 保留三种模式：B、serial、fast；web 作为必须联网回退。M4 auto-fused 按场景选档，并支持 fast→B 级联。
+
+## 四、已实施升级
+
+1. M4 auto-fused 接入 App 2.0.11：
+   - 真实任务默认 auto；GET /api/mode-fusion；POST /api/tasks 支持 fused_min_quality / fused_max_wall / fused_max_tokens / fused_require_web / fused_prefer；
+   - 前端运行栏新增模式融合场景下拉；响应带 mode/reason/readout/quality_prediction。
+2. 质量预测器：
+   - dgtf_engine/dgtf_v2/quality_predictor.py + 训练脚本 + 模型 JSON（已入库）；
+   - 特征：题面结构、route 层数、平均圈数、web、模式 one-hot、历史 calls/tokens/tri_rate/cut_rate；
+   - 141 样本：随机切分 R²=0.676 / MAE=0.127；时间切分 R²=-0.26（跨版本漂移）；
+   - 采用“0.5 模型 + 0.5 模式先验”校准，只在预测明确时用于 fast→B 守卫。
+3. App/本地模型：
+   - health 2s TTL、chats 1s TTL；V2 帕累托图铺满、Y 0–1、X 0–200k、分箱中位数趋势；
+   - BGE 文本级 LRU 缓存；cache-clean 批量 n=16 约 14.4ms/1109 texts/s；检索 recall@1=1.0、MRR=1.0；
+   - 本地 LLM 质量代理弱，不进答案主路径。
+
+## 五、剩余优化空间（下一轮候选）
+
+- unknown 阶段的 DeepSeek KV cache 命中率追踪与稳定前缀优化（最大墙钟块）；
+- dual_judge/self_check 的更细粒度替换（只对低风险候选调用），而非全局关闭；
+- 模式 C/D 的同题实测（本轮只测代表 E）；
+- M4 质量预测的跨版本校准（时间切分仍负 R²）；
+- App 端到端首条产物时延测量与 UI 场景参数默认值调优。
+
+## 六、验证
+
+- fast_gate 12/0；V2 tests 39/39（532 项检查）；App selftest 371/0；pip check 0 broken（两环境）；project paths PASS；loop check 6/0；最新真跑预检 5/5；
+- 提交与运行态：app 2.0.11 / engine 2.2.2；origin/main 已推送（见 git log）。
+
+## 七、结论
+
+按质量/墙钟优先、成本可放宽的顶配口径：
+- 引擎：B 为质量/墙钟最优；fast 为时间最优；serial 低 tokens；B+web 联网最优；
+- App/本地模型：缓存、图表、BGE 检索与缓存已到当前可测前沿；
+- 联动：M4 auto-fused + 质量预测守卫已接入 App 并可解释选档；
+- 尚无同方向实验能改进 B 的质量/墙钟，剩余优化集中在 unknown 阶段缓存与细粒度判据，已列入下一轮。

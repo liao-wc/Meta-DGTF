@@ -96,14 +96,19 @@ def fused_plan(min_quality: Optional[float] = None,
             model = load_model(str((Path(__file__).resolve().parents[2]
                                     / model_path))) if not Path(model_path).is_absolute() else load_model(model_path)
             if model:
-                pred = {
+                pred_raw = {
                     m: predict(model, features, route_n=4, rounds_avg=2.0,
                                web=bool(require_web), mode=m,
                                history=history or {})
                     for m in ("fast", "B", "serial")
                 }
-                plan["quality_prediction"] = {k: round(v, 4)
-                                              for k, v in pred.items()}
+                # 模式先验校准：模型跨版本漂移时，用实测模式均值做锚，避免过度自信。
+                pred = {k: round(0.5 * v + 0.5 * MODES[k]["quality"], 4)
+                        for k, v in pred_raw.items()}
+                plan["quality_prediction_raw"] = {k: round(v, 4)
+                                                  for k, v in pred_raw.items()}
+                plan["quality_prediction"] = pred
+                plan["quality_prediction_kind"] = "ridge+mode_prior(0.5/0.5)"
                 _first_mode = (first or {}).get("mode")
                 if (_first_mode == "fast" and min_quality is not None
                         and pred["fast"] < min_quality
