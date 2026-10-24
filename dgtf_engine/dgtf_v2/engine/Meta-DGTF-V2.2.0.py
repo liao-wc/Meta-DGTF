@@ -23,6 +23,21 @@ import time
 import unicodedata
 import contextlib
 import threading
+
+# ── [V2.2.0 fix] 引擎进程内的所有子进程默认无控制台窗口 ───────────────
+# 防止刷新/自动修复/工具链路径在引擎侧再次弹出 cmd/PowerShell。
+import subprocess as _subprocess_guard_engine
+if os.name == "nt" and not getattr(_subprocess_guard_engine, "_DGTF_ENGINE_NO_WINDOW", False):
+    _OrigEnginePopen = _subprocess_guard_engine.Popen
+
+    class _DgtfEngineNoWindowPopen(_OrigEnginePopen):
+        def __init__(self, *args, **kwargs):
+            flags = int(kwargs.get("creationflags") or 0) | 0x08000000
+            kwargs["creationflags"] = flags
+            super().__init__(*args, **kwargs)
+
+    _subprocess_guard_engine.Popen = _DgtfEngineNoWindowPopen
+    _subprocess_guard_engine._DGTF_ENGINE_NO_WINDOW = True
 from urllib.parse import urlparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field, asdict

@@ -56,6 +56,24 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote, parse_qs, urlparse
 
+# ── [V2.2.0 fix] App 全局子进程无窗口兜底 ───────────────────────────
+# 任何按钮/刷新路径里的 subprocess.Popen / subprocess.run 都自动加
+# CREATE_NO_WINDOW，避免刷新时弹出一批 cmd/PowerShell 黑窗。
+# 只影响 App 进程及其 Python 子进程；GUI 进程、os.startfile 不受影响。
+if os.name == "nt":
+    import subprocess as _subprocess_guard
+    if not getattr(_subprocess_guard, "_DGTF_NO_WINDOW_GUARD", False):
+        _OrigPopen = _subprocess_guard.Popen
+
+        class _DgtfNoWindowPopen(_OrigPopen):
+            def __init__(self, *args, **kwargs):
+                flags = int(kwargs.get("creationflags") or 0) | 0x08000000
+                kwargs["creationflags"] = flags
+                super().__init__(*args, **kwargs)
+
+        _subprocess_guard.Popen = _DgtfNoWindowPopen
+        _subprocess_guard._DGTF_NO_WINDOW_GUARD = True
+
 APP_DIR = Path(__file__).resolve().parent
 STATIC_DIR = APP_DIR / "static"
 sys.path.insert(0, str(APP_DIR))
