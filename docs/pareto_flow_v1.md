@@ -65,8 +65,8 @@ App：
 - DeepSeek-R1-Distill-Qwen-1.5B 模型目录存在；`local_model/envs/dgtf_llm_env` 环境存在。
 - BGE /embed 批量基线（3 次中位）：n=1 31.3ms（32 texts/s）；n=4 65.8ms（61/s）；
   n=8 64.3ms（124/s）；n=16 42.7ms（375/s）。
-- BGE 检索质量代理（scripts/local_retrieval_eval.py；12 条语料 / 6 查询）：
-  recall@1=1.000、recall@3=1.000、MRR=1.000；语料批量 embedding 367ms，查询 embedding p50 29.4ms。
+- BGE 检索质量代理（scripts/local_retrieval_eval.py；24 条项目语料 / 10 查询）：
+  recall@1=1.000、recall@3=1.000、MRR=1.000；语料批量 embedding 313.5ms，查询 embedding p50 28.4ms。
   结论：本地检索质量在本语料上达标，配合 n=32 批量 451 texts/s，本地 BGE 是「质量-时延」双优组件；
   但本地 LLM 生成质量弱，不应进答案主路径。
 - 本地 LLM 生成基线（GTX 1660 Ti 6GB，fp16，scripts/local_llm_bench.py）：

@@ -4390,61 +4390,66 @@ function agentRenderProps() {
 function agentV2ParetoSvg(d) {
   const pts = (d && d.points) || [];
   if (!pts.length) return '';
-  const W = 680, H = 320, L = 64, R = 24, T = 34, B = 64;
-  const maxT = Math.max.apply(null, pts.map(function (p) { return p.tokens || 0; })) || 1;
-  const maxL = Math.max.apply(null, pts.map(function (p) { return p.low || 0; })) || 1;
+  const W = 560, H = 250, L = 52, R = 18, T = 26, B = 46;
+  const XMAX = 150000;
   const x0 = L, x1 = W - R, y0 = H - B, y1 = T;
-  function X(p) { return x0 + ((p.tokens || 0) / maxT) * (x1 - x0); }
-  function Y(p) { return y0 - ((p.low || 0) / maxL) * (y0 - y1); }
-  function fmtT(v) { return v >= 1000 ? (v / 1000).toFixed(v >= 100000 ? 0 : 1) + 'k' : String(Math.round(v)); }
+  const clamp01 = function (v) { return Math.max(0, Math.min(1, Number(v) || 0)); };
+  function X(p) { return x0 + (Math.min(Number(p.tokens) || 0, XMAX) / XMAX) * (x1 - x0); }
+  function Y(p) { return y0 - clamp01(p.low) * (y0 - y1); }
+  function fmtT(v) { return v >= 1000 ? Math.round(v / 1000) + 'k' : String(Math.round(v)); }
   function fmtQ(v) { return Number(v || 0).toFixed(2); }
   const rec = d.recommended || {};
   const fr = (d.frontier || []).slice().sort(function (a, b) { return (a.tokens || 0) - (b.tokens || 0); });
+  const over = pts.filter(function (p) { return (Number(p.tokens) || 0) > XMAX; }).length;
   let s = '<svg class="agent-pareto-svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="V2 质量-成本帕累托图">';
   for (let i = 0; i <= 4; i++) {
     const tx = x0 + (x1 - x0) * i / 4;
-    s += '<line x1="' + tx.toFixed(1) + '" y1="' + y0 + '" x2="' + tx.toFixed(1) + '" y2="' + y1 + '" stroke="currentColor" opacity=".08"/>';
-    s += '<text x="' + tx.toFixed(1) + '" y="' + (y0 + 17) + '" text-anchor="middle" font-size="11" fill="currentColor" opacity=".65">' + esc(fmtT(maxT * i / 4)) + '</text>';
+    s += '<line x1="' + tx.toFixed(1) + '" y1="' + y1 + '" x2="' + tx.toFixed(1) + '" y2="' + y0 + '" stroke="currentColor" opacity=".08"/>';
+    s += '<text x="' + tx.toFixed(1) + '" y="' + (y0 + 15) + '" text-anchor="middle" font-size="10.5" fill="currentColor" opacity=".6">' + esc(fmtT(XMAX * i / 4)) + '</text>';
     const ty = y0 - (y0 - y1) * i / 4;
     s += '<line x1="' + x0 + '" y1="' + ty.toFixed(1) + '" x2="' + x1 + '" y2="' + ty.toFixed(1) + '" stroke="currentColor" opacity=".08"/>';
-    s += '<text x="' + (x0 - 8) + '" y="' + (ty + 4).toFixed(1) + '" text-anchor="end" font-size="11" fill="currentColor" opacity=".65">' + esc(fmtQ(maxL * i / 4)) + '</text>';
+    s += '<text x="' + (x0 - 7) + '" y="' + (ty + 3.5).toFixed(1) + '" text-anchor="end" font-size="10.5" fill="currentColor" opacity=".6">' + esc(fmtQ(i / 4)) + '</text>';
   }
-  s += '<line x1="' + x0 + '" y1="' + y0 + '" x2="' + x1 + '" y2="' + y0 + '" stroke="currentColor" opacity=".45"/>';
-  s += '<line x1="' + x0 + '" y1="' + y1 + '" x2="' + x0 + '" y2="' + y0 + '" stroke="currentColor" opacity=".45"/>';
-  s += '<text x="' + ((x0 + x1) / 2) + '" y="' + (H - 28) + '" text-anchor="middle" font-size="12" fill="currentColor" opacity=".85">成本（tokens，越低越好）</text>';
-  s += '<text x="16" y="' + ((y0 + y1) / 2) + '" transform="rotate(-90 16 ' + ((y0 + y1) / 2) + ')" text-anchor="middle" font-size="12" fill="currentColor" opacity=".85">质量下界（low，越高越好）</text>';
-  s += '<g font-size="11" fill="currentColor" opacity=".85">'
-    + '<circle cx="' + (W - 360) + '" cy="18" r="4" fill="var(--accent)"/><text x="' + (W - 350) + '" y="22">推荐</text>'
-    + '<circle cx="' + (W - 285) + '" cy="18" r="4" fill="var(--accent-hi)"/><text x="' + (W - 275) + '" y="22">前沿</text>'
-    + '<circle cx="' + (W - 210) + '" cy="18" r="3" fill="currentColor" opacity=".45"/><text x="' + (W - 200) + '" y="22">其他</text>'
-    + '<line x1="' + (W - 125) + '" y1="18" x2="' + (W - 105) + '" y2="18" stroke="currentColor" opacity=".35" stroke-dasharray="4 3"/><text x="' + (W - 98) + '" y="22">趋势</text>'
+  s += '<line x1="' + x0 + '" y1="' + y0 + '" x2="' + x1 + '" y2="' + y0 + '" stroke="currentColor" opacity=".4"/>';
+  s += '<line x1="' + x0 + '" y1="' + y1 + '" x2="' + x0 + '" y2="' + y0 + '" stroke="currentColor" opacity=".4"/>';
+  s += '<text x="' + ((x0 + x1) / 2) + '" y="' + (H - 24) + '" text-anchor="middle" font-size="11" fill="currentColor" opacity=".85">成本（tokens，上限 150k）</text>';
+  s += '<text x="14" y="' + ((y0 + y1) / 2) + '" transform="rotate(-90 14 ' + ((y0 + y1) / 2) + ')" text-anchor="middle" font-size="11" fill="currentColor" opacity=".85">质量下界（0–1）</text>';
+  s += '<g font-size="10.5" fill="currentColor" opacity=".85">'
+    + '<circle cx="' + (W - 280) + '" cy="14" r="3.5" fill="var(--accent)"/><text x="' + (W - 272) + '" y="18">推荐</text>'
+    + '<circle cx="' + (W - 220) + '" cy="14" r="3.5" fill="var(--accent-hi)"/><text x="' + (W - 212) + '" y="18">前沿</text>'
+    + '<circle cx="' + (W - 160) + '" cy="14" r="3" fill="currentColor" opacity=".45"/><text x="' + (W - 152) + '" y="18">其他</text>'
+    + '<line x1="' + (W - 95) + '" y1="14" x2="' + (W - 78) + '" y2="14" stroke="currentColor" opacity=".35" stroke-dasharray="3 3"/><text x="' + (W - 72) + '" y="18">趋势</text>'
     + '</g>';
-  const allSorted = pts.slice().sort(function (a, b) { return (a.tokens || 0) - (b.tokens || 0); });
+  const allSorted = pts.slice().sort(function (a, b) { return (Math.min(Number(a.tokens) || 0, XMAX)) - (Math.min(Number(b.tokens) || 0, XMAX)); });
   if (allSorted.length > 1) {
-    s += '<polyline fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="4 4" opacity=".22" points="'
+    s += '<polyline fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="4 4" opacity=".2" points="'
       + allSorted.map(function (p) { return X(p).toFixed(1) + ',' + Y(p).toFixed(1); }).join(' ') + '"/>';
   }
   if (fr.length > 1) {
-    s += '<polyline fill="none" stroke="var(--accent)" stroke-width="2" opacity=".85" points="'
+    s += '<polyline fill="none" stroke="var(--accent)" stroke-width="1.8" opacity=".85" points="'
       + fr.map(function (p) { return X(p).toFixed(1) + ',' + Y(p).toFixed(1); }).join(' ') + '"/>';
   }
   pts.forEach(function (p, i) {
     const isRec = rec && p.template === rec.template;
     const isFront = fr.some(function (q) { return q.template === p.template; });
     const cx = X(p), cy = Y(p);
-    s += '<circle cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="' + (isRec ? 6 : isFront ? 4.5 : 3) + '" fill="' + (isRec ? 'var(--accent)' : isFront ? 'var(--accent-hi)' : 'currentColor') + '" opacity="' + (isFront ? '.95' : '.35') + '"><title>' + esc(String(p.template || '')) + '\ntokens ' + esc(String(Math.round(p.tokens || 0))) + ' · quality低界 ' + esc(fmtQ(p.low)) + ' · n=' + esc(String(p.n || 0)) + ' · ci95 ' + esc(String(p.ci95 || 0)) + '</title></circle>';
+    const clamped = (Number(p.tokens) || 0) > XMAX;
+    s += '<circle cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="' + (isRec ? 5 : isFront ? 4 : 2.6) + '" fill="' + (isRec ? 'var(--accent)' : isFront ? 'var(--accent-hi)' : 'currentColor') + '" opacity="' + (isFront ? '.95' : (clamped ? '.5' : '.35')) + '"><title>' + esc(String(p.template || '')) + ' · tokens ' + esc(String(Math.round(p.tokens || 0))) + ' · quality低界 ' + esc(fmtQ(p.low)) + ' · n=' + esc(String(p.n || 0)) + '</title></circle>';
     if (isRec || isFront) {
       const label = String(p.template || '');
-      const short = label.length > 22 ? label.slice(0, 21) + '…' : label;
-      let ly = cy + (i % 2 === 0 ? -10 : 18);
-      if (ly < T + 16) ly = cy + 18;
-      if (ly > y0 - 4) ly = cy - 12;
-      const lx = cx > (x1 - 110) ? cx - 8 : cx + 8;
-      const anchor = cx > (x1 - 110) ? 'end' : 'start';
-      s += '<text x="' + lx.toFixed(1) + '" y="' + ly.toFixed(1) + '" text-anchor="' + anchor + '" font-size="10.5" fill="currentColor" opacity=".9">' + esc(short) + '</text>';
+      const short = label.length > 18 ? label.slice(0, 17) + '…' : label;
+      let ly = cy + (i % 2 === 0 ? -8 : 14);
+      if (ly < T + 12) ly = cy + 14;
+      if (ly > y0 - 3) ly = cy - 10;
+      const lx = cx > (x1 - 90) ? cx - 6 : cx + 6;
+      const anchor = cx > (x1 - 90) ? 'end' : 'start';
+      s += '<text x="' + lx.toFixed(1) + '" y="' + ly.toFixed(1) + '" text-anchor="' + anchor + '" font-size="9.5" fill="currentColor" opacity=".9">' + esc(short) + '</text>';
+    }
+    if (clamped) {
+      s += '<text x="' + (x1 - 1) + '" y="' + (cy + 3).toFixed(1) + '" text-anchor="end" font-size="9" fill="currentColor" opacity=".55">→</text>';
     }
   });
-  s += '<text x="' + x1 + '" y="' + (H - 6) + '" text-anchor="end" font-size="10.5" fill="currentColor" opacity=".6">非支配 ' + fr.length + ' / 总 ' + pts.length + ' 个模板' + (fr.length <= 1 ? '（其余点被支配，故无前沿折线）' : '') + '</text>';
+  s += '<text x="' + x1 + '" y="' + (H - 6) + '" text-anchor="end" font-size="9.5" fill="currentColor" opacity=".55">非支配 ' + fr.length + ' / 总 ' + pts.length + '；X 上限 150k' + (over ? '，超出 ' + over + ' 点贴右缘（实际最大 ' + fmtT(Math.max.apply(null, pts.map(function (p) { return Number(p.tokens) || 0; }))) + '）' : '') + '</text>';
   return s + '</svg>';
 }
 
