@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 """源码自修复审批门：patch 落盘/路径校验/显式 approve/审计，不自动改源码。"""
 from __future__ import annotations
-import json, subprocess
+import json, os, subprocess
 from pathlib import Path
 
 PATCH_DIR = "dgtf_memory/patches"
 AUDIT = "dgtf_memory/agent_patch_audit.jsonl"
+# 审计落盘路径可用环境变量覆盖（测试用临时文件，避免污染生产运行数据）。
+AUDIT_ENV = "DGTF_AGENT_AUDIT"
 ALLOWED = ("元DGTF-", "dgtf_v2/", "dgtf_app/", "smoke_test.py",
            "fast_gate.py", "v1", "v2", "docs/")
 
@@ -26,8 +28,12 @@ def stage_patch(task_id: str, patch_text: str, files, path: str = PATCH_DIR) -> 
     return rec
 
 
+def _audit_path() -> Path:
+    return Path(os.environ.get(AUDIT_ENV) or AUDIT)
+
+
 def _audit(rec: dict) -> None:
-    p = Path(AUDIT); p.parent.mkdir(parents=True, exist_ok=True)
+    p = _audit_path(); p.parent.mkdir(parents=True, exist_ok=True)
     with p.open("a", encoding="utf-8") as f:
         f.write(json.dumps(rec, ensure_ascii=False) + "\n")
 
@@ -61,4 +67,5 @@ def apply_patch(patch: str, approve_token: str = "", repo: str = ".") -> dict:
     _audit(rec); return rec
 
 
-__all__ = ["stage_patch", "check_patch", "apply_patch", "PATCH_DIR", "AUDIT"]
+__all__ = ["stage_patch", "check_patch", "apply_patch", "PATCH_DIR", "AUDIT",
+           "AUDIT_ENV"]
