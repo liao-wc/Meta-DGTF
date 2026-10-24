@@ -29,6 +29,7 @@
 | App | dgtf_app/ | 本地 Web 工作台 |
 | 启动/运维 | scripts/、scripts/local_model/ | 启动、同步、部署、安全与本地模型脚本 |
 | 帕累托基线 | scripts/pareto_flow.py | 全流程质量/成本非支配前沿（第一版） |
+| 联动报告 | scripts/pareto_report.py | 三组件联动质量/成本/墙钟报告（MD/JSON） |
 | 闭环检查 | scripts/dsh_loop_check.py | 一键验收：队列来源闸、质量门预检、App live 视图、提案/high 队列、联网/工具调用遥测 |
 | 默认配置 | dgtf_config.yaml | V2 生产配置 |
 | 预设 | configs/ | 方案 A/B/C/F/G/H 等配置 |

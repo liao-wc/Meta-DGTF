@@ -130,6 +130,10 @@ flags=duty_short/all_closure_unavailable/core_audit_gaps；产物已归档到 ou
 无可行候选时返回原因（不静默换算法）。
 联合快照：`docs/pareto_joint_snapshot_20261024.json`（引擎前沿 + App health/chats p50 + BGE health）。
 
+- **三组件联动报告（Round 12）**：`docs/pareto_joint_report_20261024.md` / `.json`，
+  由 `scripts/pareto_report.py` 只读生成（引擎真跑 + 墙钟 + App 端点 + BGE 冷热读数 + 联动选档）。
+  本机实测：health ~5ms、chats ~4ms、events(full) ~313ms、BGE embed 冷 107ms / 热 1.9ms。
+
 ## 6. 下一迭代（按优先级）
 
 1. V2.2.2 同题受控 A/B（省成本/均衡/质量优先三档各一次），重画引擎前沿；
