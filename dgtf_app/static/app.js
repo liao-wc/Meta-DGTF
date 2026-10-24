@@ -4390,31 +4390,53 @@ function agentRenderProps() {
 function agentV2ParetoSvg(d) {
   const pts = (d && d.points) || [];
   if (!pts.length) return '';
-  const W = 560, H = 210, P = 38;
+  const W = 680, H = 300, L = 64, R = 24, T = 34, B = 56;
   const maxT = Math.max.apply(null, pts.map(function (p) { return p.tokens || 0; })) || 1;
   const maxL = Math.max.apply(null, pts.map(function (p) { return p.low || 0; })) || 1;
-  function X(p) { return P + ((p.tokens || 0) / maxT) * (W - P * 2); }
-  function Y(p) { return H - P - ((p.low || 0) / maxL) * (H - P * 2); }
+  const x0 = L, x1 = W - R, y0 = H - B, y1 = T;
+  function X(p) { return x0 + ((p.tokens || 0) / maxT) * (x1 - x0); }
+  function Y(p) { return y0 - ((p.low || 0) / maxL) * (y0 - y1); }
+  function fmtT(v) { return v >= 1000 ? (v / 1000).toFixed(v >= 100000 ? 0 : 1) + 'k' : String(Math.round(v)); }
+  function fmtQ(v) { return Number(v || 0).toFixed(2); }
   const rec = d.recommended || {};
   const fr = (d.frontier || []).slice().sort(function (a, b) { return (a.tokens || 0) - (b.tokens || 0); });
-  let s = '<svg class="agent-pareto-svg" viewBox="0 0 ' + W + ' ' + H + '">';
-  s += '<line x1="' + P + '" y1="' + (H - P) + '" x2="' + (W - P) + '" y2="' + (H - P) + '" stroke="currentColor" opacity=".35"/>';
-  s += '<line x1="' + P + '" y1="' + P + '" x2="' + P + '" y2="' + (H - P) + '" stroke="currentColor" opacity=".35"/>';
-  s += '<text x="' + (W / 2) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="11" fill="currentColor" opacity=".7">tokens</text>';
-  s += '<text x="10" y="' + (P - 10) + '" font-size="11" fill="currentColor" opacity=".7">quality low</text>';
+  let s = '<svg class="agent-pareto-svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="V2 质量-成本帕累托图">';
+  for (let i = 0; i <= 4; i++) {
+    const tx = x0 + (x1 - x0) * i / 4;
+    s += '<line x1="' + tx.toFixed(1) + '" y1="' + y0 + '" x2="' + tx.toFixed(1) + '" y2="' + y1 + '" stroke="currentColor" opacity=".08"/>';
+    s += '<text x="' + tx.toFixed(1) + '" y="' + (y0 + 17) + '" text-anchor="middle" font-size="11" fill="currentColor" opacity=".65">' + esc(fmtT(maxT * i / 4)) + '</text>';
+    const ty = y0 - (y0 - y1) * i / 4;
+    s += '<line x1="' + x0 + '" y1="' + ty.toFixed(1) + '" x2="' + x1 + '" y2="' + ty.toFixed(1) + '" stroke="currentColor" opacity=".08"/>';
+    s += '<text x="' + (x0 - 8) + '" y="' + (ty + 4).toFixed(1) + '" text-anchor="end" font-size="11" fill="currentColor" opacity=".65">' + esc(fmtQ(maxL * i / 4)) + '</text>';
+  }
+  s += '<line x1="' + x0 + '" y1="' + y0 + '" x2="' + x1 + '" y2="' + y0 + '" stroke="currentColor" opacity=".45"/>';
+  s += '<line x1="' + x0 + '" y1="' + y1 + '" x2="' + x0 + '" y2="' + y0 + '" stroke="currentColor" opacity=".45"/>';
+  s += '<text x="' + ((x0 + x1) / 2) + '" y="' + (H - 12) + '" text-anchor="middle" font-size="12" fill="currentColor" opacity=".85">成本（tokens，越低越好）</text>';
+  s += '<text x="16" y="' + ((y0 + y1) / 2) + '" transform="rotate(-90 16 ' + ((y0 + y1) / 2) + ')" text-anchor="middle" font-size="12" fill="currentColor" opacity=".85">质量下界（low，越高越好）</text>';
+  s += '<g font-size="11" fill="currentColor" opacity=".8">'
+    + '<circle cx="' + (W - 250) + '" cy="18" r="4" fill="var(--accent)"/><text x="' + (W - 240) + '" y="22">推荐</text>'
+    + '<circle cx="' + (W - 175) + '" cy="18" r="4" fill="var(--accent-hi)"/><text x="' + (W - 165) + '" y="22">前沿</text>'
+    + '<circle cx="' + (W - 100) + '" cy="18" r="3" fill="currentColor" opacity=".45"/><text x="' + (W - 90) + '" y="22">其他</text>'
+    + '</g>';
   if (fr.length > 1) {
-    s += '<polyline fill="none" stroke="var(--accent)" stroke-width="1.5" opacity=".75" points="'
+    s += '<polyline fill="none" stroke="var(--accent)" stroke-width="2" opacity=".85" points="'
       + fr.map(function (p) { return X(p).toFixed(1) + ',' + Y(p).toFixed(1); }).join(' ') + '"/>';
   }
-  pts.forEach(function (p) {
-    const isRec = rec.template && p.template === rec.template;
+  pts.forEach(function (p, i) {
+    const isRec = rec && p.template === rec.template;
     const isFront = fr.some(function (q) { return q.template === p.template; });
-    s += '<circle cx="' + X(p).toFixed(1) + '" cy="' + Y(p).toFixed(1) + '" r="'
-      + (isRec ? 5 : isFront ? 4 : 3) + '" fill="'
-      + (isRec ? 'var(--accent)' : isFront ? 'var(--accent-hi)' : 'currentColor')
-      + '" opacity="' + (isFront ? '.95' : '.35') + '">'
-      + '<title>' + esc(String(p.template || '')) + ' tokens ' + esc(String(p.tokens || 0))
-      + ' quality ' + esc(String(p.quality || 0)) + '</title></circle>';
+    const cx = X(p), cy = Y(p);
+    s += '<circle cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="' + (isRec ? 6 : isFront ? 4.5 : 3) + '" fill="' + (isRec ? 'var(--accent)' : isFront ? 'var(--accent-hi)' : 'currentColor') + '" opacity="' + (isFront ? '.95' : '.35') + '"><title>' + esc(String(p.template || '')) + '\ntokens ' + esc(String(Math.round(p.tokens || 0))) + ' · quality低界 ' + esc(fmtQ(p.low)) + ' · n=' + esc(String(p.n || 0)) + ' · ci95 ' + esc(String(p.ci95 || 0)) + '</title></circle>';
+    if (isRec || isFront) {
+      const label = String(p.template || '');
+      const short = label.length > 22 ? label.slice(0, 21) + '…' : label;
+      let ly = cy + (i % 2 === 0 ? -10 : 18);
+      if (ly < T + 16) ly = cy + 18;
+      if (ly > y0 - 4) ly = cy - 12;
+      const lx = cx > (x1 - 110) ? cx - 8 : cx + 8;
+      const anchor = cx > (x1 - 110) ? 'end' : 'start';
+      s += '<text x="' + lx.toFixed(1) + '" y="' + ly.toFixed(1) + '" text-anchor="' + anchor + '" font-size="10.5" fill="currentColor" opacity=".9">' + esc(short) + '</text>';
+    }
   });
   return s + '</svg>';
 }
@@ -4491,7 +4513,12 @@ function agentRenderV2() {
       });
     html += '</div>';
   }
-  if (agentV2Pareto) html += agentV2ParetoSvg(agentV2Pareto);
+  if (agentV2Pareto && agentV2Pareto.points && agentV2Pareto.points.length) {
+    html += '<div class="agent-item"><div class="agent-row"><span class="chip">质量-成本帕累托</span>'
+      + '<span class="agent-t">' + esc(String(agentV2Pareto.metric_note || '质量下界 (low) 越高越好，tokens 越低越好'))
+      + ' · ' + esc(String((agentV2Pareto.points || []).length)) + ' 个模板点</span></div>'
+      + agentV2ParetoSvg(agentV2Pareto) + '</div>';
+  }
   (d.recent || []).slice().reverse().forEach(function (e) {
     html += '<div class="agent-item"><div class="agent-row">'
       + '<span class="chip">' + esc(String(e.kind || '')) + '</span>'
