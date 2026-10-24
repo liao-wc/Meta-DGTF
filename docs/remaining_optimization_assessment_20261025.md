@@ -77,3 +77,9 @@
 - 默认全自动：项目相关 -> auto:verified（注入背景）；其它通用题 -> auto:stable（web off）。
 - 联网/重试改为 opt-in：API 显式 quality_policy=web/web-retry（或 web=on/fused_ground_web）才启用；前端不再提供选择按钮。
 - 验证：auto-fact -> web off/retry false；explicit web-retry -> web on/retry true；auto-project -> 背景注入。
+
+## 七、App 交互收口
+
+- 2.0.17 移除质量策略选择按钮：项目题自动注入背景，通用题默认 stable，联网/重试为 API opt-in；
+- 2.0.18 移除模式融合场景按钮：默认自动按 quality 优先选 B，fused_* 参数保留为 API opt-in；
+- 前端运行栏只保留提问、思考/搜索胶囊、演练/DSH 等基础控件。

@@ -32,6 +32,7 @@ V2.2.2
 - App 2.0.15：新增 quality_policy（auto/stable/web/verified）与前端质量策略下拉，显式暴露质量-墙钟取舍。
 - App 2.0.16：新增 web-retry 策略——事实题联网首次 unverified/needs_evidence 时自动补跑一次 web。
 - App 2.0.17：质量策略全自动，移除前端选择按钮；通用题默认 stable，联网/重试改为 API opt-in（web/web-retry）。
+- App 2.0.18：模式融合全自动，移除前端场景选择按钮；默认按 quality 优先选 B，fused_* 参数保留为 API opt-in。
 
 ★ v2.2.2 收束摘要
 - 交付物：Meta-DGTF-V2.2.2.py、pareto_flow.py、scripts/pareto_flow.py、tests_pareto_flow.py、
