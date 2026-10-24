@@ -2468,8 +2468,19 @@ def _dsh_current_events(since: int = 0, limit: int = 300) -> dict:
             out["time"] = ev.get("time") or 0
             events.append(out)
     events = events[-limit:]
+    running = bool(cur.get("running"))
+    if not running:
+        # ★ 闭环：DSH 对话视图的实时轮询也会收口「当前逻辑会话」。
+        #   以前只有 /api/dsh/current/messages 轮询才同步归档；若用户一直停在
+        #   「DSH 本对话」视图，轮次结束后会话库/产物会一直显示“运行中/ok=false”。
+        try:
+            _active = _dsh_active_load()
+            if str(_active.get("session_id") or "") == sid:
+                _finalize_active_current()
+        except Exception:
+            pass
     return {"ok": True, "session_id": sid, "as_of": as_of,
-            "running": bool(cur.get("running")),
+            "running": running,
             "inbox_next_turn": len(inbox.get("next-turn") or []),
             "inbox_next_step": len(inbox.get("next-step") or []),
             "since": since,
