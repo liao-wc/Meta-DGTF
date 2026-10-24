@@ -34,3 +34,15 @@
 - 本次巡检只做本地 git commit，未执行 git push（守护模式禁止）；如需要请人工推送；
 - 最新质量跑 tokens 1,768,649、wall 约 31min，属长跑样本；不影响质量门但成本需注意；
 - 历史 App 超时任务的部分中间产物保留在 dgtf_app/runs/ 与 outputs/，未删除（删除项目数据被禁止）。
+
+
+## 二次巡检（2026-10-25 04:25）
+
+- 工作区：git status 干净，HEAD=c742787（App 2.0.13 巡检报告/CHANGELOG 提交）；
+- 运行态：app 2.0.13 / engine 2.2.2 / commit c742787aa029；
+- 守护：enabled、last_error 空、checks=19、thread_running=true、takeover 开启；
+- 队列：4 条任务，running/queued=0；未关闭占位/空标题=0；
+- 提案：197 条，pending=0、high 未关闭=0；
+- 依赖：两环境 pip check 0 broken；
+- 门禁：fast 12/0、V2 39/39（534）、selftest 371/0、verify PASS、loop 6/0、precheck 5/5；
+- 结论：本轮无需代码修复；仅记录状态。
