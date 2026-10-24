@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "2.0.14"
+APP_VERSION = "2.0.15"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -9533,7 +9533,15 @@ class Handler(BaseHTTPRequestHandler):
             opts = data.get("opts") or {}
             if not isinstance(opts, dict):
                 opts = {}
+            _quality_policy = str(opts.pop("quality_policy", "auto") or "auto").strip().lower()
             _pctx_opt = opts.pop("project_context", None)
+            if _quality_policy == "verified" and _pctx_opt is None:
+                _pctx_opt = True
+            elif _quality_policy in ("web", "auto-web") and _pctx_opt is None:
+                _pctx_opt = False
+                opts["fused_ground_web"] = True
+            elif _quality_policy == "stable" and _pctx_opt is None:
+                _pctx_opt = False
             _is_mock_task = bool(opts.get("mock"))
             # 生产默认任务上限：防止真实跑失控；可通过环境变量调整。
             if not _is_mock_task and not opts.get("timeout_s") and not opts.get("max_seconds"):
@@ -9689,6 +9697,7 @@ class Handler(BaseHTTPRequestHandler):
                                "project_context": _project_ctx,
                                "timeout_s": opts.get("timeout_s") or 0,
                                "profile": opts.get("profile") or "",
+                               "quality_policy": _quality_policy,
                                "mode_fusion": _fused_info}, 201)
 
         return self._json({"error": "not found"}, 404)

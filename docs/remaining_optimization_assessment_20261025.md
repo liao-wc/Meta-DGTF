@@ -58,3 +58,11 @@
 - App 取舍已通过 opt-in 暴露，默认保持稳定档。
 
 建议：保留 B/serial/fast + web 回退、M4 auto-fused 与 App 2.0.14 opt-in；后续若继续，应先做小规模 A/B 试点与质量门对照，再考虑引擎版本迭代。
+
+## 五、质量策略可选项（App 2.0.15）
+
+- stable：不注入项目背景、默认不联网（约 5.2min，可能 unverified）；
+- web：通用事实题 web=on（约 5.3min，verified 概率高但有抓取波动）；
+- verified：强制项目背景（约 26min 级，质量更稳）；
+- auto：默认按问题相关性选择；前端运行栏已提供下拉，接口字段 quality_policy；
+- 实测 cmd：stable/web/verified 分别落 --web off / --web on / 项目背景前缀，均 --behavior-fusion off、--parallel B。
