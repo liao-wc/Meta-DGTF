@@ -48,3 +48,17 @@ scripts/*.ps1 存为 UTF-8 无 BOM。Windows PowerShell 5 按 GBK/ANSI 读取中
 - wscript 隐藏快捷方式冷启动：health=200，PID=17840。
 - App selftest：PASS 371 / FAIL 0。
 - 不再出现 cmd/黑窗；只有明显需要交互的 DSH/GitHub Desktop 操作才会开窗口。
+## 最终版：完全无 PowerShell 的启动器
+
+- 桌面快捷方式直接指向：
+  C:\Users\18432\AppData\Local\Programs\Python\Python313\pythonw.exe
+  "D:\Meta-DGTF-道生三阶模型\dgtf_app\launcher.py" --open
+- 开机自启直接指向：
+  pythonw.exe launcher.py --start --no-browser
+- launcher.py 用 DETACHED_PROCESS + CREATE_NEW_PROCESS_GROUP + CREATE_NO_WINDOW 启动 server.py；
+  不调用 PowerShell/cmd，不产生控制台窗口。
+- 已删除旧后台弹窗源：
+  - 计划任务 DSH-MetaDGTF-RepoSync（旧路径 D:\元DGTF-多模并行架构，每 5 分钟启动 powershell.exe）
+  - 启动文件夹 DGTF-Agent-Daemon.lnk（旧路径 wscript/vbs）
+- 旧路径 D:\元DGTF-多模并行架构 不存在；旧任务已移除。
+- 冷启动 pythonw launcher.py：health=200，App 正常；无黑窗。
