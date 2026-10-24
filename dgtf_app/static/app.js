@@ -4391,7 +4391,7 @@ function agentV2ParetoSvg(d) {
   const pts = (d && d.points) || [];
   if (!pts.length) return '';
   const W = 1000, H = 270, L = 70, R = 26, T = 28, B = 54;
-  const XMIN = 75000, XMAX = 200000;
+  const XMIN = 0, XMAX = 200000;
   const x0 = L, x1 = W - R, y0 = H - B, y1 = T;
   const clamp01 = function (v) { return Math.max(0, Math.min(1, Number(v) || 0)); };
   function X(p) { return x0 + ((Math.max(XMIN, Math.min(Number(p.tokens) || 0, XMAX)) - XMIN) / (XMAX - XMIN)) * (x1 - x0); }
@@ -4413,7 +4413,7 @@ function agentV2ParetoSvg(d) {
   }
   s += '<line x1="' + x0 + '" y1="' + y0 + '" x2="' + x1 + '" y2="' + y0 + '" stroke="currentColor" opacity=".4"/>';
   s += '<line x1="' + x0 + '" y1="' + y1 + '" x2="' + x0 + '" y2="' + y0 + '" stroke="currentColor" opacity=".4"/>';
-  s += '<text x="' + ((x0 + x1) / 2) + '" y="' + (H - 24) + '" text-anchor="middle" font-size="9.5" fill="currentColor" opacity=".85">成本（tokens，75k–200k）</text>';
+  s += '<text x="' + ((x0 + x1) / 2) + '" y="' + (H - 24) + '" text-anchor="middle" font-size="9.5" fill="currentColor" opacity=".85">成本（tokens，0–200k）</text>';
   s += '<text x="14" y="' + ((y0 + y1) / 2) + '" transform="rotate(-90 18 ' + ((y0 + y1) / 2) + ')" text-anchor="middle" font-size="9.5" fill="currentColor" opacity=".85">质量下界（0–1）</text>';
   s += '<g font-size="9.5" fill="currentColor" opacity=".85">'
     + '<circle cx="' + (W - 280) + '" cy="14" r="3.5" fill="var(--accent)"/><text x="' + (W - 272) + '" y="18">推荐</text>'
@@ -4469,7 +4469,7 @@ function agentV2ParetoSvg(d) {
       s += '<text x="' + (x0 + 1) + '" y="' + (cy + 3).toFixed(1) + '" text-anchor="start" font-size="9" fill="currentColor" opacity=".55">←</text>';
     }
   });
-  s += '<text x="' + x1 + '" y="' + (H - 6) + '" text-anchor="end" font-size="8.5" fill="currentColor" opacity=".55">非支配 ' + fr.length + ' / 总 ' + pts.length + '；X 范围 75k–200k；虚线=分箱中位数趋势' + ((over || under) ? '，超出 ' + (over + under) + ' 点贴边（实际 ' + fmtT(Math.min.apply(null, pts.map(function (p) { return Number(p.tokens) || 0; }))) + '–' + fmtT(Math.max.apply(null, pts.map(function (p) { return Number(p.tokens) || 0; }))) + '）' : '') + '</text>';
+  s += '<text x="' + x1 + '" y="' + (H - 6) + '" text-anchor="end" font-size="8.5" fill="currentColor" opacity=".55">非支配 ' + fr.length + ' / 总 ' + pts.length + '；X 范围 0–200k；虚线=分箱中位数趋势' + ((over || under) ? '，超出 ' + (over + under) + ' 点贴边（实际 ' + fmtT(Math.min.apply(null, pts.map(function (p) { return Number(p.tokens) || 0; }))) + '–' + fmtT(Math.max.apply(null, pts.map(function (p) { return Number(p.tokens) || 0; }))) + '）' : '') + '</text>';
   return s + '</svg>';
 }
 
