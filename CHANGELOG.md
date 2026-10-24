@@ -9034,3 +9034,5 @@ v1.21.51 相对 v1.21.50 的改动（稳定性 + 并行展开）
 
 
 - 2026-10-25：新增 docs/remaining_optimization_assessment_20261025.md（剩余优化低收益/高风险评估）。
+
+- 2026-10-25：新增 docs/app_optimization_series_20261025.md（全自动质量/模式策略、web-retry、RAG 缓存等机制汇总）。
