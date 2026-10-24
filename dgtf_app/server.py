@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "2.0.20"
+APP_VERSION = "2.0.21"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -9714,6 +9714,28 @@ class Handler(BaseHTTPRequestHandler):
                     _fused_info["error"] = str(exc)
                     print("[mode-fusion] 选择模式失败，退回默认：%s" % exc,
                           flush=True)
+            _dedup = None
+            if not _is_mock_task and not _quality_retry:
+                try:
+                    _dedup = _find_running_duplicate(
+                        question, opts,
+                        str(opts.get("_prompt_prefix") or ""))
+                except Exception:
+                    _dedup = None
+            if _dedup:
+                return self._json({
+                    "id": _dedup.get("id"), "dedup_hit": True,
+                    "auto_pareto": _auto_pareto,
+                    "auto_template": _auto_template,
+                    "auto_llm": _auto_llm,
+                    "auto_policy": _auto_policy,
+                    "auto_policy_rounds": _auto_policy_rounds,
+                    "project_context": _project_ctx,
+                    "timeout_s": (_dedup.get("opts") or {}).get("timeout_s") or 0,
+                    "profile": (_dedup.get("opts") or {}).get("profile") or "",
+                    "quality_policy": _quality_policy,
+                    "quality_retry": bool(_quality_retry),
+                    "mode_fusion": _fused_info}, 201)
             _cache_hit = False
             _cached_from = ""
             _cached = None
@@ -9769,12 +9791,47 @@ class Handler(BaseHTTPRequestHandler):
                                "quality_policy": _quality_policy,
                                "quality_retry": bool(_quality_retry),
                                "cache_hit": False,
+                               "dedup_hit": False,
                                "mode_fusion": _fused_info}, 201)
 
         return self._json({"error": "not found"}, 404)
 
 
 _CACHE_TTL_S = 6 * 3600
+
+
+def _task_sig(opts: dict, prefix: str):
+    _cfg = str(opts.get("_config") or "")
+    if not _cfg and opts.get("profile"):
+        try:
+            _p = runner.profile_path(str(opts.get("profile")))
+            _cfg = str(_p) if _p else str(opts.get("profile") or "")
+        except Exception:
+            _cfg = str(opts.get("profile") or "")
+    return (str(prefix or ""),
+            str(opts.get("web") or ""),
+            str(opts.get("parallel") or ""),
+            str(opts.get("rounds") or ""),
+            _cfg,
+            str(opts.get("behavior_fusion") or ""))
+
+
+def _find_running_duplicate(question: str, opts: dict, prefix: str):
+    """同题、同关键参数的任务已在跑时，直接复用它，避免重复计费。"""
+    try:
+        want = _task_sig(opts, prefix)
+        for t in runner.list_tasks():
+            if str(t.get("status")) not in ("running", "queued"):
+                continue
+            if str(t.get("question") or "") != str(question or ""):
+                continue
+            if _task_sig(t.get("opts") or {},
+                         str((t.get("opts") or {}).get("_prompt_prefix") or "")) != want:
+                continue
+            return t
+    except Exception:
+        return None
+    return None
 
 
 def _find_cached_pack(question: str, opts: dict, prefix: str = ""):

@@ -54,3 +54,9 @@
 - 命中创建缓存任务（status=done，cached_from 可审计），不启动引擎；
 - 实测：1+1 显式 web 复跑 POST 54.8ms 命中缓存（原约 320s/76万 tokens）；
 - 未命中（如默认 stable 无 verified 源）正常启动引擎。
+
+## 六、同题运行任务去重（App 2.0.21）
+
+- running/queued 中已有同题、同 web/parallel/rounds/config/behavior 的任务时，新 POST 直接复用，返回 dedup_hit=true；
+- 与答案缓存互补：运行中去重、完成后缓存；
+- 实测同题连续两次 POST：第二次 dedup_hit=true 且 id 相同；取消首个任务后无残留。

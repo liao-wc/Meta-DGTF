@@ -35,6 +35,7 @@ V2.2.2
 - App 2.0.18：模式融合全自动，移除前端场景选择按钮；默认按 quality 优先选 B，fused_* 参数保留为 API opt-in。
 - App 2.0.19：项目背景 RAG 结果 LRU 缓存；同题任务 POST 延迟实测 276.8ms→69.9ms。
 - App 2.0.20：已验证答案缓存（6h、同题同 web/parallel）；复跑 1+1 web 任务 54.8ms 命中，零 LLM 调用。
+- App 2.0.21：同题运行任务去重，重复 POST 直接复用 running/queued 任务，避免双倍计费。
 
 ★ v2.2.2 收束摘要
 - 交付物：Meta-DGTF-V2.2.2.py、pareto_flow.py、scripts/pareto_flow.py、tests_pareto_flow.py、

@@ -6,7 +6,7 @@
 - **当前版本**：V2.2.2（V2.2.1 质量门补丁 + 职责终局刷新 + DeepSeek 官方联网默认）
 - **生产引擎**：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.2.py
 - **V2 核心**：dgtf_engine/dgtf_v2/
-- **人用界面**：dgtf_app/（App 2.0.20，DSH 本对话实时镜像 + 会话列表实时打开 + 健康读数缓存）
+- **人用界面**：dgtf_app/（App 2.0.21，DSH 本对话实时镜像 + 会话列表实时打开 + 健康读数缓存）
 - **融合实现**：单引擎内联（Meta-DGTF-V2.2.2.py）；V2.1 外部模块仅作回滚参考
 - **历史清单**：dgtf_engine/dgtf_v2/history_manifest.json
 - **版本规范**：dgtf_engine/dgtf_v2/NAMING.md
