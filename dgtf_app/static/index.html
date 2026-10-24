@@ -7,7 +7,7 @@
 <title>Meta-DGTF · 个人工作台</title>
 <link rel="icon" type="image/x-icon" href="/static/dgtf.ico?v=1.5.24-desktop">
 <link rel="shortcut icon" type="image/x-icon" href="/static/dgtf.ico?v=1.5.24-desktop">
-<link rel="stylesheet" href="/static/style.css?v=1.5.24-logo2">
+<link rel="stylesheet" href="/static/style.css?v=1.5.25-dshguard">
 </head>
 <body class="stage-empty">
 
@@ -247,7 +247,7 @@
     <section id="view-agent" class="panel sheet-page">
       <div class="searchbar tight agent-toolbar">
         <button id="agent-refresh" class="ghost" data-tip="刷新 Agent 面板全部库：队列/结果/知识/DSH会话/DSH产物/提案/运行/V2/审计/资料库/联网库">刷新全部库</button>
-        <button id="dsh-config-btn" class="ghost" data-tip="DSH 功能配置：模型 / 推理强度 / 联网 / 权限，与 Harness 对话框配置项对应">DSH 配置</button>
+        <button id="dsh-config-btn" class="ghost" data-tip="DSH 功能配置：模型 / 推理强度 / 联网 / 权限 / DSH守护巡检间隔，与 Harness 对话框配置项对应">DSH 配置</button>
         <button id="agent-auto" class="ghost" data-tip="交由当前 DeepSeek Harness 对话执行：自动流程闭环 + 安全提案自动修复（Agent 面板不再提供输入框）">DSH 接管：闭环 + 修复</button>
         <button id="agent-autopilot-btn" class="ghost" data-tip="DSH守护：开关交由当前 DeepSeek Harness 对话执行，不在 app 内起本地守护进程">DSH守护：关</button>
         <button id="agent-knowledge-btn" class="ghost" data-tip="统一知识检索：检索/爬取官方权威、最新、高置信、高相关资料，并在 DSH 会话中展示过程">知识检索</button>
@@ -289,7 +289,11 @@
           <option value="danger-full-access">权限：完全访问（危险）</option>
           <option value="auto">权限：自动审查</option>
         </select>
-        <button id="dsh-config-save" class="ghost" data-tip="保存 DSH 配置">保存配置</button>
+        <span class="chip">巡检</span>
+        <input id="dsh-guard-interval" class="pill dsh-sel" type="number" min="1" max="1440" step="1"
+               value="10" data-tip="DSH守护自动巡检轮询间隔（分钟，1–1440；保存配置后立即生效）">
+        <span class="muted">分钟/轮</span>
+        <button id="dsh-config-save" class="ghost" data-tip="保存 DSH 配置（含 DSH守护巡检间隔）">保存配置</button>
         <span class="muted" id="dsh-config-msg"></span>
       </div>
       <div class="agent-tabs">
@@ -550,6 +554,6 @@
 
 
 
-<script src="/static/app.js?v=1.5.24"></script>
+<script src="/static/app.js?v=1.5.25-dshguard"></script>
 </body>
 </html>

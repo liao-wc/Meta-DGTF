@@ -4443,6 +4443,17 @@ async function loadDshConfig() {
     set('#dsh-effort', c.effort);
     set('#dsh-perm', c.permission);
     set('#dsh-network', c.network === 'public' ? '1' : '0');
+    // ★ DSH守护巡检间隔也放进「DSH 配置」：从 /api/dsh/guard 回显（秒 → 分钟）
+    try {
+      const g = await api('/api/dsh/guard');
+      if (g) {
+        dshGuardStatus = g;
+        dshGuardOn = !!g.enabled;
+        agentRenderAutopilot();
+        const iv = document.querySelector('#dsh-guard-interval');
+        if (iv) iv.value = String(Math.max(1, Math.round(Number(g.interval || 600) / 60)));
+      }
+    } catch (_) { /* 守护状态读不到时保持输入框现值 */ }
     const msg = document.querySelector('#dsh-config-msg');
     if (msg) msg.textContent = '配置已载入';
   } catch (_) {}
@@ -4464,11 +4475,32 @@ async function saveDshConfig() {
       })
     });
     if (!r || !r.ok) throw new Error((r && r.error) || '保存失败');
+    // ★ DSH守护巡检间隔：同一个「DSH 配置」框一起保存（服务端 clamp 60–86400 秒）。
+    //   单独 try：间隔保存失败不影响上面的模型/权限配置已保存结果。
+    let guardText = '';
+    try {
+      const ivEl = document.querySelector('#dsh-guard-interval');
+      let ivMin = parseInt((ivEl && ivEl.value) || '10', 10);
+      if (!isFinite(ivMin) || ivMin < 1) ivMin = 10;
+      if (ivMin > 1440) ivMin = 1440;
+      if (ivEl) ivEl.value = String(ivMin);
+      const g = await api('/api/dsh/guard', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({interval: ivMin * 60})
+      });
+      dshGuardStatus = g || null;
+      dshGuardOn = !!(g && g.enabled);
+      agentRenderAutopilot();
+      const savedMin = Math.max(1, Math.round(Number((g && g.interval) || ivMin * 60) / 60));
+      guardText = '；巡检间隔 ' + savedMin + ' 分钟';
+    } catch (ge) {
+      guardText = '；巡检间隔保存失败：' + ge.message;
+    }
     if (msg) msg.textContent = '配置已保存：' + (r.config && r.config.model || '') + ' / '
-      + (r.config && r.config.effort || '');
+      + (r.config && r.config.effort || '') + guardText;
     agentLogAction('DSH配置', '模型 ' + (r.config && r.config.model || '') + ' · 推理 '
       + (r.config && r.config.effort || '') + ' · 权限 ' + (r.config && r.config.permission || '')
-      + ' · 联网 ' + (r.config && r.config.network || ''), true);
+      + ' · 联网 ' + (r.config && r.config.network || '') + guardText, true);
   } catch (e) {
     if (msg) msg.textContent = '保存失败：' + e.message;
     agentLogAction('DSH配置', '失败：' + e.message, false);
@@ -5817,12 +5849,14 @@ function init() {
     const enable = !dshGuardOn;
     _apBtn.disabled = true;
     try {
+      // ★ 开关只改 enabled，不再硬编码 interval：巡检间隔统一在「DSH 配置」里维护。
       const r = await api('/api/dsh/guard', {
         method: 'POST', headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({enabled: enable, interval: 600})
+        body: JSON.stringify({enabled: enable})
       });
       dshGuardStatus = r || null;
       dshGuardOn = !!(r && r.enabled);
+      const ivMin = Math.max(1, Math.round(Number((r && r.interval) || 600) / 60));
       if (enable) {
         try { await newDshCurrentConversation('DSH守护', {silent: true}); }
         catch (ne) { agentLogAction('DSH守护会话', '创建失败：' + ne.message, false); }
@@ -5831,9 +5865,9 @@ function init() {
       refreshDshLibraries();
       const msg = $('#agent-msg');
       if (msg) msg.textContent = enable
-        ? 'DSH守护已开启：当前 DSH 对话将按 10 分钟周期巡检；高风险留人工'
+        ? ('DSH守护已开启：当前 DSH 对话将按 ' + ivMin + ' 分钟周期巡检；间隔可在「DSH 配置」里改；高风险留人工')
         : 'DSH守护已关闭';
-      agentLogAction('DSH守护', enable ? '已开启（10 分钟自动巡检）' : '已关闭', true);
+      agentLogAction('DSH守护', enable ? ('已开启（' + ivMin + ' 分钟自动巡检）') : '已关闭', true);
     } catch (e) {
       const msg = $('#agent-msg');
       if (msg) msg.textContent = 'DSH守护切换失败：' + e.message;

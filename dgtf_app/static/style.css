@@ -1492,6 +1492,7 @@ body.dsh-mode .dsh-ctl{display:inline-flex;align-items:center}
 /* 原生下拉在深色抽屉里会继承浅色文字却用白色选项底 ⇒ 选中项看不见 */
 .dsh-sel option{background-color:var(--ground);color:var(--t1)}
 .dsh-sel option:checked{background-color:var(--s2);color:#FFF}
+#dsh-guard-interval{width:58px;text-align:center;padding:0 6px}
 .gh-ok{color:var(--ok)} .gh-bad{color:var(--err)}
 .agent-tabs{display:flex;gap:6px;flex-wrap:wrap;padding:8px 0 2px}
 .agent-tabs .pill{font-size:12px}
