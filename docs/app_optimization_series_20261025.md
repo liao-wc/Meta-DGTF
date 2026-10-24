@@ -67,3 +67,18 @@
 - 仅当余弦≥0.98 且问题类型一致时复用，返回 semantic_cache=true/cache_similarity；
 - 实测：“1+1 等于几 ?” 命中 “1+1等于几?”（相似度 0.9806）耗时 134.6ms，原约 320s；
 - 默认 use_semantic_cache=true，可 API 关闭；精确缓存优先。
+## 八、全自动运行链路（最终形态）
+
+- 质量策略：项目题 auto:verified；通用事实题 auto:web-retry；其它通用题 auto:stable；前端无按钮；
+- 模式融合：默认 quality 优先选 B；fused_* 参数仅 API opt-in；
+- 联网/爬取：事实题自动 web on，首次失败自动补跑一次；
+- 思考：B/serial 走 engine thinking=auto；fast 档 thinking=off；由 M4 显式落参，behavior_fusion=off 防覆盖；
+- 缓存：精确（54.8ms 命中）→ 语义（相似度 0.9806，134.6ms）→ 运行中同题去重；
+- 项目背景：32 条 LRU，同题 POST 276.8ms→69.9ms；
+- 运行态：App 2.0.23 / Engine 2.2.2；质量参考跑 answer_ready=true、answer_quality=verified。
+
+## 九、验证与结论
+
+- fast_gate 12/0；V2 39/39（534）；selftest 371/0；pip 两环境 0 broken；verify PASS；loop 6/0；precheck 5/5；
+- 已验证缓存/语义缓存/去重均实测；
+- 剩余 dual_judge/self_check 细粒度与新并行架构按“低收益/高风险”保留，不进入生产默认。
