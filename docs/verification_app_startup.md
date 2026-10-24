@@ -31,3 +31,20 @@ scripts/*.ps1 存为 UTF-8 无 BOM。Windows PowerShell 5 按 GBK/ANSI 读取中
 - 87 calls / 733,605 tokens；answer_ready=true；answer_quality=verified；process_ready=true。
 - 产物 20261024_083648_Python中len函数的作用是什.packed.json。
 - 冷启动 stop→hidden start：6.8s health 200；启动器不再依赖 BGE 冷加载完成。
+## 第二轮根因（桌面快捷方式仍启动不了）
+
+桌面快捷方式指向 scripts/open_app.cmd，会打开可见 cmd/powershell 窗口；
+启动器内部又用了 curl --noproxy *，在本机 Windows 上对 127.0.0.1 返回 exit 7，
+健康检查误判失败，超时后把已经启动的 app 杀掉；同时 python.exe 会继承控制台句柄，
+窗口看起来一直不关。
+
+修复：
+- 去掉 curl --noproxy *；HTTP 200 即视为 health 就绪（PS5 解析中文 JSON 偶发失败，不再误杀）。
+- app 改用 pythonw.exe 启动（无控制台）。
+- 新增 scripts/open_app_hidden.vbs，桌面快捷方式改为 wscript.exe 隐藏启动。
+- start_app.ps1 仍保留 120s 健康超时与自动重启。
+
+实测：
+- wscript 隐藏快捷方式冷启动：health=200，PID=17840。
+- App selftest：PASS 371 / FAIL 0。
+- 不再出现 cmd/黑窗；只有明显需要交互的 DSH/GitHub Desktop 操作才会开窗口。

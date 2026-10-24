@@ -143,7 +143,9 @@ function Invoke-BoundedHttpGet([string]$Url, [int]$TimeoutSec = 4) {
   $curl = $null
   try { $curl = (Get-Command curl.exe -ErrorAction Stop).Source } catch { $curl = $null }
   if ($curl) {
-    $raw = & $curl '-k' '-s' '--noproxy' '*' '--max-time' ([string]$TimeoutSec) '-w' '__CODE__%{http_code}' $Url 2>$null
+    # ★ [V2.2.0 fix] 不要加 --noproxy '*'：本机 Windows curl 在该参数下
+    #   对 127.0.0.1 直连会返回 exit 7，启动器误判健康失败并杀掉已启动的 app。
+    $raw = & $curl '-k' '-s' '--max-time' ([string]$TimeoutSec) '-w' '__CODE__%{http_code}' $Url 2>$null
     $exitCode = $LASTEXITCODE
     $text = [string]($raw | Out-String)
     $idx = $text.LastIndexOf('__CODE__')
@@ -180,6 +182,12 @@ function Get-HealthStatus([string]$Scheme, [string]$Token) {
   $body = $null
   try { $body = $probe.Body | ConvertFrom-Json } catch { $body = $null }
   if ($body -and $body.ok -eq $true) {
+    return @{ Ok = $true; Scheme = $Scheme; Url = $url }
+  }
+  # ★ [V2.2.0 fix] PS5 对含中文的 health JSON 偶发 ConvertFrom-Json 失败；
+  #   本机 127.0.0.1 + token 已由 URL 校验，HTTP 200 就视为就绪，
+  #   避免启动器误判并超时杀掉已经启动的 app。
+  if ($code -eq "200") {
     return @{ Ok = $true; Scheme = $Scheme; Url = $url }
   }
   return @{ Ok = $false; Scheme = $Scheme; Url = $url; Message = "HTTP 200，但健康响应缺少 ok=true" }
@@ -222,6 +230,17 @@ function Resolve-Python {
   try { return (Get-Command python -ErrorAction Stop).Source } catch { return "" }
 }
 
+function Resolve-Pythonw([string]$Python) {
+  # App 是无界面的本地服务：优先 pythonw.exe，避免带控制台进程
+  # 在启动器关闭/console Ctrl+C 时被一起带走，也避免用户看到黑窗。
+  if (-not $Python) { return "" }
+  try {
+    $cand = Join-Path (Split-Path -Parent $Python) "pythonw.exe"
+    if (Test-Path -LiteralPath $cand) { return $cand }
+  } catch { }
+  return $Python
+}
+
 function Enter-LauncherLock {
   # 同一端口只允许一个启动器操作：防止双击/并发 -Restart 互相抢停、互相杀进程。
   # 进程退出/被关时 mutex 自动释放；若是被强杀的“已放弃”mutex，WaitOne 会抛
@@ -253,6 +272,7 @@ function Enter-LauncherLock {
 Write-Host "=== 元DGTF 启动器 ==="
 
 $py = Resolve-Python
+$pyw = Resolve-Pythonw $py
 $portState = @(Get-PortState)
 $runningDgtf = @($portState | Where-Object { $_.IsDgtf })
 $runningOther = @($portState | Where-Object { -not $_.IsDgtf })
@@ -380,9 +400,9 @@ $serverArgs = @("dgtf_app\server.py", "--port", [string]$Port)
 if ($Http) { $serverArgs += "--http" }
 if ($NoAgentDaemon) { $serverArgs += "--no-agent-daemon" }
 
-Write-Host ("启动: python " + ($serverArgs -join " "))
+Write-Host ("启动: " + $pyw + " " + ($serverArgs -join " "))
 try {
-  $p = Start-Process -FilePath $py -ArgumentList $serverArgs -WorkingDirectory $Root -WindowStyle Hidden -PassThru -RedirectStandardOutput $Log -RedirectStandardError $ErrLog
+  $p = Start-Process -FilePath $pyw -ArgumentList $serverArgs -WorkingDirectory $Root -WindowStyle Hidden -PassThru -RedirectStandardOutput $Log -RedirectStandardError $ErrLog
 } catch {
   Fail ("无法启动 python 进程：" + $_.Exception.Message)
 }
