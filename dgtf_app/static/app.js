@@ -4391,28 +4391,29 @@ function agentV2ParetoSvg(d) {
   const pts = (d && d.points) || [];
   if (!pts.length) return '';
   const W = 1000, H = 270, L = 70, R = 26, T = 28, B = 54;
-  const XMAX = 150000;
+  const XMIN = 75000, XMAX = 200000;
   const x0 = L, x1 = W - R, y0 = H - B, y1 = T;
   const clamp01 = function (v) { return Math.max(0, Math.min(1, Number(v) || 0)); };
-  function X(p) { return x0 + (Math.min(Number(p.tokens) || 0, XMAX) / XMAX) * (x1 - x0); }
+  function X(p) { return x0 + ((Math.max(XMIN, Math.min(Number(p.tokens) || 0, XMAX)) - XMIN) / (XMAX - XMIN)) * (x1 - x0); }
   function Y(p) { return y0 - clamp01(p.low) * (y0 - y1); }
   function fmtT(v) { return v >= 1000 ? Math.round(v / 1000) + 'k' : String(Math.round(v)); }
   function fmtQ(v) { return Number(v || 0).toFixed(2); }
   const rec = d.recommended || {};
   const fr = (d.frontier || []).slice().sort(function (a, b) { return (a.tokens || 0) - (b.tokens || 0); });
   const over = pts.filter(function (p) { return (Number(p.tokens) || 0) > XMAX; }).length;
+  const under = pts.filter(function (p) { return (Number(p.tokens) || 0) < XMIN; }).length;
   let s = '<svg class="agent-pareto-svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="V2 质量-成本帕累托图">';
   for (let i = 0; i <= 4; i++) {
     const tx = x0 + (x1 - x0) * i / 4;
     s += '<line x1="' + tx.toFixed(1) + '" y1="' + y1 + '" x2="' + tx.toFixed(1) + '" y2="' + y0 + '" stroke="currentColor" opacity=".08"/>';
-    s += '<text x="' + tx.toFixed(1) + '" y="' + (y0 + 15) + '" text-anchor="middle" font-size="9" fill="currentColor" opacity=".6">' + esc(fmtT(XMAX * i / 4)) + '</text>';
+    s += '<text x="' + tx.toFixed(1) + '" y="' + (y0 + 15) + '" text-anchor="middle" font-size="9" fill="currentColor" opacity=".6">' + esc(fmtT(XMIN + (XMAX - XMIN) * i / 4)) + '</text>';
     const ty = y0 - (y0 - y1) * i / 4;
     s += '<line x1="' + x0 + '" y1="' + ty.toFixed(1) + '" x2="' + x1 + '" y2="' + ty.toFixed(1) + '" stroke="currentColor" opacity=".08"/>';
     s += '<text x="' + (x0 - 7) + '" y="' + (ty + 3.5).toFixed(1) + '" text-anchor="end" font-size="9" fill="currentColor" opacity=".6">' + esc(fmtQ(i / 4)) + '</text>';
   }
   s += '<line x1="' + x0 + '" y1="' + y0 + '" x2="' + x1 + '" y2="' + y0 + '" stroke="currentColor" opacity=".4"/>';
   s += '<line x1="' + x0 + '" y1="' + y1 + '" x2="' + x0 + '" y2="' + y0 + '" stroke="currentColor" opacity=".4"/>';
-  s += '<text x="' + ((x0 + x1) / 2) + '" y="' + (H - 24) + '" text-anchor="middle" font-size="9.5" fill="currentColor" opacity=".85">成本（tokens，上限 150k）</text>';
+  s += '<text x="' + ((x0 + x1) / 2) + '" y="' + (H - 24) + '" text-anchor="middle" font-size="9.5" fill="currentColor" opacity=".85">成本（tokens，75k–200k）</text>';
   s += '<text x="14" y="' + ((y0 + y1) / 2) + '" transform="rotate(-90 18 ' + ((y0 + y1) / 2) + ')" text-anchor="middle" font-size="9.5" fill="currentColor" opacity=".85">质量下界（0–1）</text>';
   s += '<g font-size="9.5" fill="currentColor" opacity=".85">'
     + '<circle cx="' + (W - 280) + '" cy="14" r="3.5" fill="var(--accent)"/><text x="' + (W - 272) + '" y="18">推荐</text>'
@@ -4420,10 +4421,27 @@ function agentV2ParetoSvg(d) {
     + '<circle cx="' + (W - 160) + '" cy="14" r="3" fill="currentColor" opacity=".45"/><text x="' + (W - 152) + '" y="18">其他</text>'
     + '<line x1="' + (W - 95) + '" y1="14" x2="' + (W - 78) + '" y2="14" stroke="currentColor" opacity=".35" stroke-dasharray="3 3"/><text x="' + (W - 72) + '" y="18">趋势</text>'
     + '</g>';
-  const allSorted = pts.slice().sort(function (a, b) { return (Math.min(Number(a.tokens) || 0, XMAX)) - (Math.min(Number(b.tokens) || 0, XMAX)); });
-  if (allSorted.length > 1) {
-    s += '<polyline fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="4 4" opacity=".2" points="'
-      + allSorted.map(function (p) { return X(p).toFixed(1) + ',' + Y(p).toFixed(1); }).join(' ') + '"/>';
+  const trendN = 6;
+  const buckets = {};
+  pts.forEach(function (p) {
+    const t = Number(p.tokens) || 0;
+    if (t < XMIN || t > XMAX) return;
+    const b = Math.min(trendN - 1, Math.floor((t - XMIN) / (XMAX - XMIN) * trendN));
+    (buckets[b] = buckets[b] || []).push(Number(p.low) || 0);
+  });
+  const trend = Object.keys(buckets).map(Number).sort(function (a, b) { return a - b; }).map(function (b) {
+    const arr = buckets[b].slice().sort(function (x, y) { return x - y; });
+    const med = arr[Math.floor(arr.length / 2)];
+    return { x: x0 + (b + 0.5) / trendN * (x1 - x0), y: y0 - clamp01(med) * (y0 - y1), n: arr.length };
+  });
+  if (trend.length > 1) {
+    let dpath = 'M' + trend[0].x.toFixed(1) + ',' + trend[0].y.toFixed(1);
+    for (let ti = 1; ti < trend.length; ti++) {
+      const pv = trend[ti - 1], cu = trend[ti];
+      const mx = ((pv.x + cu.x) / 2).toFixed(1);
+      dpath += ' C' + mx + ',' + pv.y.toFixed(1) + ' ' + mx + ',' + cu.y.toFixed(1) + ' ' + cu.x.toFixed(1) + ',' + cu.y.toFixed(1);
+    }
+    s += '<path d="' + dpath + '" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="6 4" opacity=".5"/>';
   }
   if (fr.length > 1) {
     s += '<polyline fill="none" stroke="var(--accent)" stroke-width="1.8" opacity=".85" points="'
@@ -4447,9 +4465,11 @@ function agentV2ParetoSvg(d) {
     }
     if (clamped) {
       s += '<text x="' + (x1 - 1) + '" y="' + (cy + 3).toFixed(1) + '" text-anchor="end" font-size="9" fill="currentColor" opacity=".55">→</text>';
+    } else if ((Number(p.tokens) || 0) < XMIN) {
+      s += '<text x="' + (x0 + 1) + '" y="' + (cy + 3).toFixed(1) + '" text-anchor="start" font-size="9" fill="currentColor" opacity=".55">←</text>';
     }
   });
-  s += '<text x="' + x1 + '" y="' + (H - 6) + '" text-anchor="end" font-size="8.5" fill="currentColor" opacity=".55">非支配 ' + fr.length + ' / 总 ' + pts.length + '；X 上限 150k' + (over ? '，超出 ' + over + ' 点贴右缘（实际最大 ' + fmtT(Math.max.apply(null, pts.map(function (p) { return Number(p.tokens) || 0; }))) + '）' : '') + '</text>';
+  s += '<text x="' + x1 + '" y="' + (H - 6) + '" text-anchor="end" font-size="8.5" fill="currentColor" opacity=".55">非支配 ' + fr.length + ' / 总 ' + pts.length + '；X 范围 75k–200k；虚线=分箱中位数趋势' + ((over || under) ? '，超出 ' + (over + under) + ' 点贴边（实际 ' + fmtT(Math.min.apply(null, pts.map(function (p) { return Number(p.tokens) || 0; }))) + '–' + fmtT(Math.max.apply(null, pts.map(function (p) { return Number(p.tokens) || 0; }))) + '）' : '') + '</text>';
   return s + '</svg>';
 }
 
@@ -4528,7 +4548,7 @@ function agentRenderV2() {
   if (agentV2Pareto && agentV2Pareto.points && agentV2Pareto.points.length) {
     html += '<div class="agent-item"><div class="agent-row"><span class="chip">质量-成本帕累托</span>'
       + '<span class="agent-t">' + esc(String(agentV2Pareto.metric_note || '质量下界 (low) 越高越好，tokens 越低越好'))
-      + ' · ' + esc(String((agentV2Pareto.points || []).length)) + ' 个模板点</span></div>'
+      + ' · ' + esc(String((agentV2Pareto.points || []).length)) + ' 个模板点 · 虚线=分箱中位数趋势</span></div>'
       + agentV2ParetoSvg(agentV2Pareto) + '</div>';
   }
   (d.recent || []).slice().reverse().forEach(function (e) {

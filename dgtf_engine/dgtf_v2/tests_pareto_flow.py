@@ -117,6 +117,24 @@ def main():
        and "退为" in str(j3.get("reason")), j3)
     j4 = select_joint(web, budget_tokens=980000, min_quality=0.9, require_web=True)
     ck("联网档超预算回退", (j4.get("row") or {}).get("id") == "webcost", j4)
+    # ── 墙钟（Round 10）──
+    lat = [
+        {"id": "fast", "quality": 0.909, "tokens": 969376, "calls": 89,
+         "elapsed": 1889.7, "web_enabled": True},
+        {"id": "slow", "quality": 0.990, "tokens": 997457, "calls": 107,
+         "elapsed": 1920.6, "web_enabled": False},
+    ]
+    j5 = select_joint(lat, budget_tokens=1000000, min_quality=0.9,
+                      max_wall_seconds=1900)
+    ck("墙钟约束选低时延档", (j5.get("row") or {}).get("id") == "fast", j5)
+    j6 = select_joint(lat, budget_tokens=1000000, min_quality=0.9,
+                      max_wall_seconds=1930)
+    ck("墙钟放宽选高质量档", (j6.get("row") or {}).get("id") == "slow", j6)
+    with tempfile.TemporaryDirectory() as td2:
+        pp = Path(td2) / "x.packed.json"
+        pp.write_text(json.dumps(_pack("verified", 100000, 100)), encoding="utf-8")
+        merged = load_packed_runs([pp], {"r-verified-100000": 1234.5})
+    ck("侧车墙钟合并", bool(merged) and merged[0].get("elapsed") == 1234.5, merged)
 
     print()
     print("PASS %d / FAIL %d" % (len(P), len(F)))

@@ -116,6 +116,12 @@ flags=duty_short/all_closure_unavailable/core_audit_gaps；产物已归档到 ou
 | J3 | 均衡档 run8 + App 缓存 | 0.951 | 1,210,815 | flags=0 | 被 J1 支配 |
 | J4 | 质量档 run9（官方联网）+ App 缓存 | 0.980 | 1,844,908 | search=13/fetch=5 | 被 J1 支配，质量未过 0.99 |
 
+- **墙钟维度（Round 10）**：`docs/pareto_engine_times.json` 记录真跑墙钟（秒）——
+  run6=1889.7、run7=1920.6、run8=2116.9、run9=2933.3；App health/chats 与 BGE 查询为毫秒级，
+  相对引擎分钟级可忽略。三目标（quality↑ / tokens↓ / wall↓）下非支配点仍是 **run6 与 run7**：
+  run7 用 +30.9s / +28k tokens 换 +0.081 quality；J3/J4 在三个目标上都被 run7 支配。
+  选档器已支持 `--elapsed-json docs/pareto_engine_times.json --max-wall-seconds N`。
+
 联动选档器（Round 5）：`scripts/pareto_flow.py --budget-tokens 1000000 --min-quality 0.9 --with-components --joint-select`
 → 选中 run7（0.990/997,457/107，无网档）；加 `--require-web` 且预算 <1.0M 时自动退到 run6 官方联网档，
 无可行候选时返回原因（不静默换算法）。

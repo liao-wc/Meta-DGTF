@@ -117,15 +117,21 @@ def pareto_frontier(rows: Iterable[dict], objectives=OBJECTIVES) -> List[dict]:
 
 
 def recommend(rows: Iterable[dict], budget_tokens: Optional[int] = None,
-              min_quality: Optional[float] = None) -> dict:
+              min_quality: Optional[float] = None,
+              max_wall_seconds: Optional[float] = None) -> dict:
     """预算/质量约束下的选档（返回 row + reason）。"""
     rows = [r for r in (rows or []) if r]
     if not rows:
         return {"row": None, "reason": "无可用真跑行"}
     budget = None if budget_tokens in (None, 0, "") else int(budget_tokens)
     qmin = None if min_quality in (None, "") else float(min_quality)
+    wall = None if max_wall_seconds in (None, "") else float(max_wall_seconds)
 
     def _ok(r):
+        if wall is not None:
+            _w = r.get("elapsed")
+            if _w is None or float(_w) > wall:
+                return False
         return ((budget is None or int(r.get("tokens") or 0) <= budget)
                 and (qmin is None or float(r.get("quality") or 0) >= qmin))
 
@@ -153,8 +159,8 @@ def recommend(rows: Iterable[dict], budget_tokens: Optional[int] = None,
     return {"row": best, "reason": "无约束：质量最高档"}
 
 
-def load_packed_runs(paths: Iterable) -> List[dict]:
-    """读取 packed 文件列表，返回指标行（坏文件跳过）。"""
+def load_packed_runs(paths: Iterable, elapsed_map: Optional[dict] = None) -> List[dict]:
+    """读取 packed 文件列表，返回指标行（坏文件跳过；可合并墙钟侧车）。"""
     out = []
     for p in paths or []:
         try:
@@ -165,18 +171,22 @@ def load_packed_runs(paths: Iterable) -> List[dict]:
             row = extract_flow_metrics(d)
             if not row.get("id"):
                 row["id"] = Path(p).stem
+            if elapsed_map and row["id"] in elapsed_map:
+                row["elapsed"] = elapsed_map[row["id"]]
             out.append(row)
     return out
 
 
 def report(rows: List[dict], budget_tokens: Optional[int] = None,
-           min_quality: Optional[float] = None) -> dict:
+           min_quality: Optional[float] = None,
+           max_wall_seconds: Optional[float] = None) -> dict:
     """前沿报告：前沿行 + 全局最优读数 + 预算推荐。"""
     rows = list(rows or [])
     front = pareto_frontier(rows)
     best_quality = max(rows, key=lambda r: r.get("quality", 0), default=None)
     cheapest = min(rows, key=lambda r: (r.get("tokens", 0) or 0), default=None)
-    rec = recommend(rows, budget_tokens=budget_tokens, min_quality=min_quality)
+    rec = recommend(rows, budget_tokens=budget_tokens, min_quality=min_quality,
+                    max_wall_seconds=max_wall_seconds)
     return {
         "n": len(rows),
         "frontier": [r.get("id") for r in front],
@@ -191,7 +201,8 @@ def report(rows: List[dict], budget_tokens: Optional[int] = None,
 def select_joint(rows: Iterable[dict], app: Optional[dict] = None,
                  local: Optional[dict] = None, budget_tokens: Optional[int] = None,
                  min_quality: Optional[float] = None,
-                 require_web: bool = False) -> dict:
+                 require_web: bool = False,
+                 max_wall_seconds: Optional[float] = None) -> dict:
     """三组件联动选档：在引擎候选行上叠加 App/本地模型读数与联网约束。
 
     当前组件读数（App 读数缓存、本地 BGE 批量档）是固定配置，因此联动选档
@@ -201,7 +212,8 @@ def select_joint(rows: Iterable[dict], app: Optional[dict] = None,
     rows = [r for r in (rows or []) if r]
     if require_web:
         rows = [r for r in rows if bool(r.get("web_enabled"))]
-    rec = recommend(rows, budget_tokens=budget_tokens, min_quality=min_quality)
+    rec = recommend(rows, budget_tokens=budget_tokens, min_quality=min_quality,
+                    max_wall_seconds=max_wall_seconds)
     row = rec.get("row")
     return {
         "row": row,
@@ -210,6 +222,7 @@ def select_joint(rows: Iterable[dict], app: Optional[dict] = None,
         "app": app or {},
         "local": local or {},
         "joint_tokens": (row or {}).get("tokens"),
+        "joint_elapsed": (row or {}).get("elapsed"),
         "joint_quality": (row or {}).get("quality"),
     }
 

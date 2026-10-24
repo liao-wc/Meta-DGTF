@@ -63,6 +63,9 @@ def main() -> int:
     ap.add_argument("--dir", default="outputs")
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--budget-tokens", type=int, default=None)
+    ap.add_argument("--elapsed-json", default="",
+                    help="真跑墙钟侧车 JSON（id -> 秒）")
+    ap.add_argument("--max-wall-seconds", type=float, default=None)
     ap.add_argument("--min-quality", type=float, default=None)
     ap.add_argument("--with-components", action="store_true")
     ap.add_argument("--snapshot", default="",
@@ -73,9 +76,17 @@ def main() -> int:
     args = ap.parse_args()
     packs = sorted((ROOT / args.dir).glob("*.packed.json"),
                    key=lambda p: p.stat().st_mtime)
-    rows = load_packed_runs(packs)
+    elapsed = {}
+    if args.elapsed_json:
+        try:
+            elapsed = json.loads((ROOT / args.elapsed_json).read_text(
+                encoding="utf-8", errors="replace"))
+        except Exception:
+            elapsed = {}
+    rows = load_packed_runs(packs, elapsed_map=elapsed)
     rep = report(rows, budget_tokens=args.budget_tokens,
-                 min_quality=args.min_quality)
+                 min_quality=args.min_quality,
+                 max_wall_seconds=args.max_wall_seconds)
     comp = _components() if args.with_components else None
     out = joint_snapshot(rep, app=(comp or {}).get("app"),
                          local=(comp or {}).get("local")) if comp else rep
@@ -84,7 +95,8 @@ def main() -> int:
                           local=(comp or {}).get("local"),
                           budget_tokens=args.budget_tokens,
                           min_quality=args.min_quality,
-                          require_web=args.require_web)
+                          require_web=args.require_web,
+                          max_wall_seconds=args.max_wall_seconds)
         out = {"engine_report": rep, "joint_select": js,
                "app": (comp or {}).get("app"), "local": (comp or {}).get("local")}
     if args.snapshot:
@@ -115,9 +127,10 @@ def main() -> int:
     if args.joint_select and isinstance(out, dict) and out.get("joint_select"):
         js = out["joint_select"]
         row = js.get("row") or {}
-        print("\n联动选档（%s）：%s quality=%.4f tokens=%d calls=%d web=%s"
+        print("\n联动选档（%s）：%s quality=%.4f tokens=%d calls=%d wall=%ss web=%s"
               % (js.get("reason"), row.get("id"), row.get("quality", 0),
                  row.get("tokens", 0), row.get("calls", 0),
+                 row.get("elapsed"),
                  "on" if row.get("web_enabled") else "off"))
     if comp:
         print("\n组件快照：App %s；BGE %s"
