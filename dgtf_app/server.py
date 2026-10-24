@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "2.0.15"
+APP_VERSION = "2.0.16"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -9534,10 +9534,11 @@ class Handler(BaseHTTPRequestHandler):
             if not isinstance(opts, dict):
                 opts = {}
             _quality_policy = str(opts.pop("quality_policy", "auto") or "auto").strip().lower()
+            _quality_retry = _quality_policy in ("web-retry", "web_retry")
             _pctx_opt = opts.pop("project_context", None)
             if _quality_policy == "verified" and _pctx_opt is None:
                 _pctx_opt = True
-            elif _quality_policy in ("web", "auto-web") and _pctx_opt is None:
+            elif _quality_policy in ("web", "auto-web", "web-retry", "web_retry") and _pctx_opt is None:
                 _pctx_opt = False
                 opts["fused_ground_web"] = True
             elif _quality_policy == "stable" and _pctx_opt is None:
@@ -9687,6 +9688,14 @@ class Handler(BaseHTTPRequestHandler):
                 tid = runner.start_task(question, opts)
             except ValueError as e:
                 return self._json({"error": str(e)}, 400)
+            if _quality_retry and not _is_mock_task:
+                try:
+                    import threading as _th
+                    _th.Thread(target=_watch_fact_quality_retry,
+                               args=(tid, question, dict(opts)),
+                               daemon=True).start()
+                except Exception:
+                    pass
             if _project_ctx and _pc:
                 _context_trace_save(tid, _pc, question, {"kind": "task"})
             return self._json({"id": tid, "auto_pareto": _auto_pareto,
@@ -9698,9 +9707,55 @@ class Handler(BaseHTTPRequestHandler):
                                "timeout_s": opts.get("timeout_s") or 0,
                                "profile": opts.get("profile") or "",
                                "quality_policy": _quality_policy,
+                               "quality_retry": bool(_quality_retry),
                                "mode_fusion": _fused_info}, 201)
 
         return self._json({"error": "not found"}, 404)
+
+
+def _watch_fact_quality_retry(tid: str, question: str, base_opts: dict) -> None:
+    """事实题 web-retry：首次跑 needs_evidence/unverified 时自动补跑一次 web。"""
+    import json as _json
+    import threading as _th  # noqa: F401
+    import time as _time
+    task = None
+    for _ in range(360):
+        _time.sleep(5)
+        task = runner.get_task(tid)
+        if not task:
+            return
+        if str(task.get("status")) in ("done", "error", "cancelled"):
+            break
+    if not task or str(task.get("status")) != "done" or task.get("cancelled"):
+        return
+    name = str(task.get("output_name") or "")
+    if not name:
+        return
+    pack = oi.OUTPUTS_DIR / ((name[:-3] + ".packed.json")
+                            if name.lower().endswith(".md")
+                            else (name + ".packed.json"))
+    try:
+        d = _json.loads(pack.read_text(encoding="utf-8"))
+        aq = str(((d.get("quality") or {}).get("answer_quality")) or "")
+    except Exception:
+        return
+    if aq in ("verified", ""):
+        return
+    try:
+        retry_opts = dict(base_opts)
+        retry_opts.pop("_retry_of", None)
+        retry_opts["quality_policy"] = "web"
+        retry_opts["fused_ground_web"] = True
+        retry_opts["web"] = "on"
+        retry_opts["_retry_of"] = tid
+        rid = runner.start_task(question, retry_opts)
+        with runner._tasks_lock:  # noqa: SLF001
+            cur = runner._tasks.get(tid)
+            if cur is not None:
+                cur["retry_task_id"] = rid
+                cur["quality_retry"] = "started:" + str(rid)
+    except Exception:
+        return
 
 
 def main() -> int:

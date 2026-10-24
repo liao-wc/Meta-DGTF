@@ -66,3 +66,10 @@
 - verified：强制项目背景（约 26min 级，质量更稳）；
 - auto：默认按问题相关性选择；前端运行栏已提供下拉，接口字段 quality_policy；
 - 实测 cmd：stable/web/verified 分别落 --web off / --web on / 项目背景前缀，均 --behavior-fusion off、--parallel B。
+
+## 六、事实题联网自动重试（App 2.0.16）
+
+- 背景：同一 1+1 事实题显式 web 两次成功（0.9783/320.8s、0.9263/330.9s），但一次默认 web 变体 no_official_source（0.49）；说明官方源抓取有波动。
+- 机制：quality_policy=web-retry 时，首跑后若 answer_quality 为 unverified/needs_evidence，自动补跑一次同题 web 任务；首个任务记录 retry_task_id/quality_retry。
+- 代价：最坏 2 次任务（约 10min）；不改变默认策略；仅在用户显式选择 web-retry 时启用。
+- 验证：cmd 已确认 web-retry→--web on/behavior_fusion off/rounds 提示；取消路径 watcher 不误触发。

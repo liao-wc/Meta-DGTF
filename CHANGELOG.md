@@ -30,6 +30,7 @@ V2.2.2
 - App 2.0.13：M4 rounds 提示 0:1... + 项目背景按相关性注入；真实通用任务 310.7s / 588,205 tokens 完成。
 - App 2.0.14：通用事实题联网接地改为 opt-in（fused_ground_web）；默认 web off，显式联网事实题可达 verified（0.9783/320.8s）。
 - App 2.0.15：新增 quality_policy（auto/stable/web/verified）与前端质量策略下拉，显式暴露质量-墙钟取舍。
+- App 2.0.16：新增 web-retry 策略——事实题联网首次 unverified/needs_evidence 时自动补跑一次 web。
 
 ★ v2.2.2 收束摘要
 - 交付物：Meta-DGTF-V2.2.2.py、pareto_flow.py、scripts/pareto_flow.py、tests_pareto_flow.py、
