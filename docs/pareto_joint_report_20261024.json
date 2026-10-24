@@ -1,6 +1,6 @@
 {
  "engine_report": {
-  "n": 13,
+  "n": 14,
   "frontier": [
    "20261024_163455",
    "20261024_205018",
@@ -484,6 +484,34 @@
     "tools_calls": 0,
     "elapsed": 1442.3,
     "quality": 0.9741
+   },
+   {
+    "id": "20261024_232902",
+    "question": "为什么城市热岛效应在夜间比白天更明显？",
+    "route": [
+     "0",
+     "1",
+     "both",
+     "all"
+    ],
+    "rounds": {
+     "0": 2,
+     "1": 2,
+     "both": 2,
+     "all": 3
+    },
+    "answer_ready": true,
+    "process_ready": true,
+    "answer_quality": "verified",
+    "coverage": 0.4643,
+    "standard_all": true,
+    "flags": [],
+    "tokens": 931439,
+    "calls": 96,
+    "web_enabled": false,
+    "tools_calls": 0,
+    "elapsed": 1266.5,
+    "quality": 0.9464
    }
   ],
   "frontier_rows": [
@@ -578,16 +606,16 @@
  "components": {
   "app": {
    "health": {
-    "p50_ms": 28.5,
-    "max_ms": 389.8
+    "p50_ms": 31.0,
+    "max_ms": 394.2
    },
    "chats": {
-    "p50_ms": 15.7,
-    "max_ms": 204.3
+    "p50_ms": 29.7,
+    "max_ms": 251.6
    },
    "events_full": {
-    "p50_ms": 244.3,
-    "max_ms": 256.0
+    "p50_ms": 259.1,
+    "max_ms": 380.0
    }
   },
   "bge": {
@@ -597,25 +625,25 @@
     "dev": "cuda",
     "dim": 512,
     "cache": {
-     "size": 191,
+     "size": 192,
      "max": 1024,
-     "hits": 674,
-     "misses": 191
+     "hits": 677,
+     "misses": 192
     }
    },
    "embed_cold": {
-    "p50_ms": 42.5,
-    "max_ms": 42.5
+    "p50_ms": 44.4,
+    "max_ms": 44.4
    },
    "embed_hot": {
-    "p50_ms": 16.1,
-    "max_ms": 17.9
+    "p50_ms": 12.8,
+    "max_ms": 18.4
    }
   }
  },
  "joint": {
   "row": {
-   "id": "20261024_223944",
+   "id": "20261024_163455",
    "question": "为什么城市热岛效应在夜间比白天更明显？",
    "route": [
     "0",
@@ -624,40 +652,38 @@
     "all"
    ],
    "rounds": {
-    "0": 2,
+    "0": 3,
     "1": 2,
     "both": 2,
-    "all": 6
+    "all": 3
    },
    "answer_ready": true,
    "process_ready": true,
    "answer_quality": "verified",
-   "coverage": 0.6917,
+   "coverage": 0.9,
    "standard_all": true,
-   "flags": [
-    "duty_short"
-   ],
-   "tokens": 773603,
-   "calls": 89,
+   "flags": [],
+   "tokens": 997457,
+   "calls": 107,
    "web_enabled": false,
    "tools_calls": 0,
-   "elapsed": 869.7,
-   "quality": 0.9592
+   "elapsed": 1920.6,
+   "quality": 0.99
   },
   "reason": "满足预算与质量下限，质量最高",
   "require_web": false,
   "app": {
    "health": {
-    "p50_ms": 28.5,
-    "max_ms": 389.8
+    "p50_ms": 31.0,
+    "max_ms": 394.2
    },
    "chats": {
-    "p50_ms": 15.7,
-    "max_ms": 204.3
+    "p50_ms": 29.7,
+    "max_ms": 251.6
    },
    "events_full": {
-    "p50_ms": 244.3,
-    "max_ms": 256.0
+    "p50_ms": 259.1,
+    "max_ms": 380.0
    }
   },
   "local": {
@@ -667,24 +693,24 @@
     "dev": "cuda",
     "dim": 512,
     "cache": {
-     "size": 191,
+     "size": 192,
      "max": 1024,
-     "hits": 674,
-     "misses": 191
+     "hits": 677,
+     "misses": 192
     }
    },
    "embed_cold": {
-    "p50_ms": 42.5,
-    "max_ms": 42.5
+    "p50_ms": 44.4,
+    "max_ms": 44.4
    },
    "embed_hot": {
-    "p50_ms": 16.1,
-    "max_ms": 17.9
+    "p50_ms": 12.8,
+    "max_ms": 18.4
    }
   },
-  "joint_tokens": 773603,
-  "joint_elapsed": 869.7,
-  "joint_quality": 0.9592
+  "joint_tokens": 997457,
+  "joint_elapsed": 1920.6,
+  "joint_quality": 0.99
  },
  "generated": "scripts/pareto_report.py"
 }
