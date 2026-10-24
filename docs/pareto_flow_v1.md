@@ -38,6 +38,7 @@ App：
 | 20261024_175452（V2.2.2 质量档·官方联网） | 0.980 | 1,844,908 | 154 | auto | rounds 0:3/1:5/both:4/all:5；flags 1；被 run7 支配 |
 | 20261024_190707（3层 route 0,1,both） | **不可行** | 545,869 | 74 | auto | all 元层未执行（rounds all=0），answer_ready=false；flags duty_short / all_closure_unavailable / core_audit_gaps |
 | 20261024_193452（关思考超省成本档·无网） | **0.930** | **816,983** | 106 | auto | rounds 0:3/1:2/both:2/all:3；flags 2（ing_rephrased_direct）；wall 782.6s；墙钟维度新增前沿点 |
+| 20261024_195354（hybrid thinking·关判断环节思考） | 0.946 | 1,131,199 | 115 | auto | rounds 0:2/1:2/both:2/all:5；flags 1；wall 2033.7s；**被 run7 支配**（关判断思考未降墙钟，all 层反而多跑） |
 
 **四档受控 A/B 完成**：
 - 质量/成本/calls 三目标非支配：run6（0.909@96.9万/calls89）、run7（0.990@99.7万/calls107）、
@@ -49,6 +50,8 @@ App：
 - 质量优先：run7（全四层、effort low、web off）；
 - 时间/成本优先：run11（同四层、thinking off、web off），wall 降 59%、tokens 降 18%，质量 0.930；
 - 必须联网：run6（官方联网，0.909/96.9万）。
+- Hybrid 负结果（run12）：只关 dual_judge/plan 等判断环节思考，quality 0.946、tokens 113.1万、
+  wall 2033.7s，被 run7 支配（all 层从 3 圈涨到 5 圈，墙钟反升）——逐环节关思考不是有效的墙钟优化路径。
 注意：这些 run 跨版本且问题不同，只能作方向。V2.2.2 已用 20261024_160020 验证：
 质量门 PASS、standard_all=true、flags 仅 probe_no_target_covered、四层 duty 均不 short；
 默认官方联网实测 search=11 / fetch=4（抓取生效）。
@@ -99,8 +102,9 @@ flags=duty_short/all_closure_unavailable/core_audit_gaps；产物已归档到 ou
 
 - App（时延 vs 新鲜度）：health 2s TTL ~14ms（冷 ~475ms）；chats 1s TTL ~19ms（冷 ~300ms）；
   events 保持实时 ~300ms。当前取 2s/1s/实时三档，属于用户可接受的读数新鲜度前沿点。
-- 本地 embedding（批量 n vs 时延/吞吐）：n=1 31ms/32 texts·s⁻¹；n=8 64ms/124；n=16 45ms/356；
-  n=32 71ms/451；n=64 136ms/472（吞吐更高但时延翻倍）。建议：单条查询 n=1，批量索引 n=32。
+- 本地 embedding（cache-clean、GPU 空闲实测）：n=1 25.7ms/39 texts·s⁻¹；n=4 24.2ms/166；
+  n=8 21.5ms/373；n=16 **14.4ms/1109**；n=32 23.3ms/1371；n=64 43.4ms/1476。
+  建议：单条查询 n=1，批量索引 n=16–32（此前旧值含 GPU 争用/缓存干扰，已修正）。
 - 本地 LLM（模型 vs 速度）：Qwen0.5 15.2 tok/s、加载 3.22s；DeepSeek1.5 11.4 tok/s、加载 10.06s。
   小模型适合轻量/低延迟兜底，大模型只在需要推理时按需加载。
 
@@ -120,7 +124,7 @@ flags=duty_short/all_closure_unavailable/core_audit_gaps；产物已归档到 ou
 
 | 联动档位 | 组合 | 质量 | 引擎 tokens | 组件读数 | 结论 |
 |---|---|---|---|---|---|
-| J1 推荐 | run7 + App 读数缓存 + BGE 批量 n=32 | 0.990 | 997,457 | health ~14–17ms、chats ~19ms、BGE 451 texts/s | 预算 ≥1.0M 时最优 |
+| J1 推荐 | run7 + App 读数缓存 + BGE 批量 n=16–32 | 0.990 | 997,457 | health ~5–17ms、chats ~4–19ms、BGE 1109–1371 texts/s | 预算 ≥1.0M 时最优 |
 | J0（时间优先） | run11（关思考成本档）+ App 缓存 | 0.930 | 816,983 | wall 782.6s；flags 2 | wall 最低，质量 0.93 |
 | J2 | run6（官方联网）+ App 缓存 | 0.909 | 969,376 | search=11/fetch=4，联网时延另计 | 预算 <1.0M 且必须联网时 |
 | J3 | 均衡档 run8 + App 缓存 | 0.951 | 1,210,815 | flags=0 | 被 J1 支配 |

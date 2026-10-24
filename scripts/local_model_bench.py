@@ -49,7 +49,8 @@ def main() -> int:
         print(json.dumps(out, ensure_ascii=False))
         return 1
     for n in (1, 4, 8, 16, 32, 64):
-        texts = [TEXTS[i % len(TEXTS)] for i in range(n)]
+        texts = [TEXTS[i % len(TEXTS)] + " #" + str(time.time_ns()) + "-" + str(i)
+                 for i in range(n)]
         lat = []
         for _ in range(3):
             t0 = time.perf_counter()
