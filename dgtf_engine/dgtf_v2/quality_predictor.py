@@ -166,7 +166,8 @@ def fit(rows: List[dict], y: List[float], lam: float = 1.0) -> dict:
             "lambda": lam}
 
 
-def fit_knn(rows: List[dict], y: List[float], k: int = 5) -> dict:
+def fit_knn(rows: List[dict], y: List[float], k: int = 5,
+            weights: Optional[List[float]] = None) -> dict:
     """k 近邻回归（纯 Python，小样本更稳；与 ridge 同特征）。"""
     feat_rows = []
     for r in rows:
@@ -184,7 +185,8 @@ def fit_knn(rows: List[dict], y: List[float], k: int = 5) -> dict:
     return {"kind": "knn", "k": int(k), "features": FEATURES,
             "mean": {k: stats[k][0] for k in FEATURES},
             "std": {k: stats[k][1] for k in FEATURES},
-            "X": Xs, "y": [float(v) for v in y]}
+            "X": Xs, "y": [float(v) for v in y],
+            "w": [float(w) for w in (weights or [1.0] * len(y))]}
 
 
 def predict_knn(model: dict, features: dict, route_n=4, rounds_avg=2.0,
@@ -208,10 +210,11 @@ def predict_knn(model: dict, features: dict, route_n=4, rounds_avg=2.0,
     ds.sort(key=lambda z: z[0])
     kk = max(1, min(int(model.get("k") or 5), len(ds)))
     near = ds[:kk]
+    ws = model.get("w") or []
     wsum = 0.0
     acc = 0.0
     for d, i in near:
-        w = 1.0 / (1.0 + d)
+        w = (float(ws[i]) if i < len(ws) else 1.0) / (1.0 + d)
         acc += w * y[i]
         wsum += w
     return max(0.0, min(1.0, acc / wsum)) if wsum else 0.0

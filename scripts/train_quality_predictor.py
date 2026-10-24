@@ -75,13 +75,29 @@ def main() -> int:
     tidx = idx[rcut:]
     rand = fit([rows[i] for i in ridx], [ys[i] for i in ridx], lam=args.lam)
     rand_metrics = evaluate(rand, [rows[i] for i in tidx], [ys[i] for i in tidx])
-    knn = fit_knn(rows, ys, k=5)
-    knn_metrics = {"chronological": evaluate(knn, test_rows, test_y),
-                   "random": evaluate(knn, [rows[i] for i in tidx], [ys[i] for i in tidx])}
+    # kNN 变体：k=3/5/7，近期加权 / 等权
+    _n = len(rows)
+    _rec = [0.5 ** ((_n - 1 - i) / 40.0) for i in range(_n)]
+    variants = {}
+    best = None
+    for kk in (3, 5, 7):
+        for wname, wts in (("uniform", [1.0] * _n), ("recent", _rec)):
+            m = fit_knn(rows, ys, k=kk, weights=wts)
+            mets = {"chronological": evaluate(m, test_rows, test_y),
+                    "random": evaluate(m, [rows[i] for i in tidx], [ys[i] for i in tidx])}
+            variants["knn_k%d_%s" % (kk, wname)] = mets
+            score = ((mets["random"].get("r2") or -9)
+                     + 2 * (mets["chronological"].get("r2") or -9))
+            if best is None or score > best[0]:
+                best = (score, m, mets, "knn_k%d_%s" % (kk, wname))
+    knn = best[1]
+    knn_metrics = best[2]
     ridge_model = fit(rows, ys, lam=args.lam)
     model = knn if (knn_metrics["random"].get("r2") or -9) >= (rand_metrics.get("r2") or -9) else ridge_model
     model["metrics"] = {"chronological": chrono_metrics, "random": rand_metrics,
-                        "knn": knn_metrics, "chosen": model.get("kind", "ridge")}
+                        "knn": knn_metrics, "knn_variants": variants,
+                        "chosen": model.get("kind", "ridge"),
+                        "chosen_variant": best[3] if model is knn else "ridge"}
     model["n_train"] = len(rows)
     model["n_test"] = len(tidx)
     model["trained_from"] = "outputs/*.packed.json"

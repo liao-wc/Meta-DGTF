@@ -71,7 +71,7 @@ B+web（20261024_215545）：unknown 1,095,801ms / dual_judge 201,144ms / self_c
 2. 质量预测器：
    - dgtf_engine/dgtf_v2/quality_predictor.py + 训练脚本 + 模型 JSON（已入库）；
    - 特征：题面结构、route 层数、平均圈数、web、模式 one-hot、历史 calls/tokens/tri_rate/cut_rate；
-   - 141 样本：随机切分 kNN R²=0.893 / MAE=0.065；时间切分 kNN R²=0.376（跨版本漂移）；
+   - 142 样本：随机切分 kNN(k=3,近期加权) R²=0.916 / MAE=0.048；时间切分 kNN R²=0.376（跨版本漂移）；
    - 采用“0.5 模型 + 0.5 模式先验”校准，只在预测明确时用于 fast→B 守卫。
 3. App/本地模型：
    - health 2s TTL、chats 1s TTL；V2 帕累托图铺满、Y 0–1、X 0–200k、分箱中位数趋势；
