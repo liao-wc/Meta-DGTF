@@ -6,8 +6,8 @@
 - **当前版本**：V2.2.1（V2.2.0 行为级融合 + 补丁迭代）
 - **生产引擎**：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.1.py
 - **V2 核心**：dgtf_engine/dgtf_v2/
-- **人用界面**：dgtf_app/（App V2.0.0，本次未改动）
-- **融合实现**：单引擎内联（Meta-DGTF-V2.2.0.py）；V2.1 外部模块仅作回滚参考
+- **人用界面**：dgtf_app/（App 2.0.1，DSH 本对话实时镜像）
+- **融合实现**：单引擎内联（Meta-DGTF-V2.2.1.py）；V2.1 外部模块仅作回滚参考
 - **历史清单**：dgtf_engine/dgtf_v2/history_manifest.json
 - **版本规范**：dgtf_engine/dgtf_v2/NAMING.md
 - **历史归档**：元DGTF-V1历史归档-20261023.zip（V1.0 → V1.30.4）
@@ -163,7 +163,7 @@ local_model\envs\dgtf_llm_env\Scripts\python.exe -m pip check
 | 路径 | 是什么 |
 |---|---|
 | dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.1.py | 当前生产引擎 |
-| dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.0.0.py | 上一基线（保留回滚） |
+| dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.0.py | 上一基线（保留回滚） |
 | dgtf_engine/dgtf_v2/ | V2 核心：契约/EML/调度/四层/F2–F5/融合 |
 | dgtf_engine/dgtf_v1/ | V1 归档（引擎/报告/脚本/fixtures） |
 | dgtf_app/ | 本地 Web 工作台 |
