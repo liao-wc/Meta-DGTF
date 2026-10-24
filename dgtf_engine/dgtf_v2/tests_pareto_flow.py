@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from dgtf_v2.pareto_flow import (dominates, extract_flow_metrics, joint_snapshot,
                                  load_packed_runs, pareto_frontier, recommend, report,
                                  select_joint)
+from dgtf_v2.mode_fusion import fused_plan, scenario_table, select_mode
 
 P, F = [], []
 
@@ -130,6 +131,21 @@ def main():
     j6 = select_joint(lat, budget_tokens=1000000, min_quality=0.9,
                       max_wall_seconds=1930)
     ck("墙钟放宽选高质量档", (j6.get("row") or {}).get("id") == "slow", j6)
+    # ── 模式级 Pareto / M4 auto-fused（Round 14）──
+    m1 = select_mode(min_quality=0.99)
+    ck("质量优先选模式 B", m1.get("mode") == "B", m1)
+    m2 = select_mode(min_quality=0.9, max_wall=900)
+    ck("墙钟约束选 fast", m2.get("mode") == "fast", m2)
+    m3 = select_mode(min_quality=0.95, max_tokens=1000000)
+    ck("tokens 约束选 serial", m3.get("mode") == "serial", m3)
+    m4 = select_mode(min_quality=0.9, require_web=True)
+    ck("必须联网选 web", m4.get("mode") == "web", m4)
+    m5 = select_mode(min_quality=0.999)
+    ck("质量不可行退最高质量", m5.get("mode") == "B", m5)
+    fp = fused_plan(min_quality=0.9, max_wall=900, cascade=True)
+    ck("M4 级联 fast→B", (fp.get("first") or {}).get("mode") == "fast"
+       and (fp.get("cascade") or {}).get("upgrade_to") == "B", fp)
+    ck("场景表 5 项", len(scenario_table()) == 5)
     with tempfile.TemporaryDirectory() as td2:
         pp = Path(td2) / "x.packed.json"
         pp.write_text(json.dumps(_pack("verified", 100000, 100)), encoding="utf-8")

@@ -56,7 +56,7 @@
 
 ## 五、验证
 
-- fast_gate 12/0；V2 tests 39/39（522 项检查）；App selftest 371/0；pip check 0 broken（两环境）；project paths PASS；DSH loop check 6/0；最新真跑离线预检 5/5；
+- fast_gate 12/0；V2 tests 39/39（529 项检查）；App selftest 371/0；pip check 0 broken（两环境）；project paths PASS；DSH loop check 6/0；最新真跑离线预检 5/5；
 - 真跑数据与墙钟侧车、联动报告均可复现（scripts/pareto_report.py）；
 - 提交与标签：Git 历史已推送 origin/main；引擎 V2.2.2、App 2.0.10、App 发布标签本地保留。
 
@@ -71,3 +71,13 @@
 ## 结论
 
 在现有预算与测量范围内：引擎、App、本地模型均已达到各自可测帕累托最优配置；三者联动选档器与报告已完成；继续同方向实验均为被支配或负结果。目标按“质量/墙钟优先、成本可放宽”的口径完成。
+
+## 七、模式级更新（Round 14）
+
+- 模式 A 负结果：四层并行 wall 1079.3s，但 answer_ready=false、standard_all=false、flags 3，质量门失败。
+- 模式 B 正结果：quality 1.000、coverage 1.0、flags 0、tokens 1,269,082、wall 1064.3s。
+- 保留三种模式：B（质量/墙钟）、serial（低 tokens）、fast（时间档）；web 作为必须联网的回退档。
+- 第四种模式 M4 auto-fused：按质量/墙钟/tokens/联网约束自适应，并支持 fast→B 级联；
+  单模式部署建议使用 M4（静态单模式则选 B）。
+- 产物：docs/mode_pareto_analysis.md、dgtf_engine/dgtf_v2/mode_fusion.py、scripts/mode_fusion.py；
+  V2 判据新增 7 项（共 529 项检查）。
