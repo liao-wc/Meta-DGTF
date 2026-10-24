@@ -24,8 +24,8 @@ CHECKS = [
     ("api_policy", [sys.executable, "-c", "import dgtf_v2.tests_api_policy as t;raise SystemExit(t.main())"]),
     ("vision", [sys.executable, "-c", "import dgtf_v2.tests_vision_input as t;raise SystemExit(t.main())"]),
     ("agent_bridge", [sys.executable, "-c", "import dgtf_v2.tests_agent_bridge as t;raise SystemExit(t.main())"]),
-    ("agent_worker", [sys.executable, "-c", "import dgtf_v2.tests_agent_worker as t;t.main()"]),
-    ("agent_repair", [sys.executable, "-c", "import dgtf_v2.tests_agent_repair as t;t.main()"]),
+    ("agent_worker", [sys.executable, "-c", "import dgtf_v2.tests_agent_worker as t;raise SystemExit(t.main())"]),
+    ("agent_repair", [sys.executable, "-c", "import dgtf_v2.tests_agent_repair as t;raise SystemExit(t.main())"]),
     ("agent_daemon", [sys.executable, "dgtf_engine/dgtf_v2/tests_agent_daemon.py"]),
 ]
 

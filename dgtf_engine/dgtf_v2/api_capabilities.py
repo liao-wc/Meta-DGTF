@@ -17,7 +17,7 @@ MATRIX = [
     {"feature": "Context Disk Cache", "stages": "全部调用",
      "status": "auto", "why": "服务端自动缓存，客户端不显式开关"},
     {"feature": "Multi-turn", "stages": "适配器可用",
-     "status": "adapter", "why": "LLM.call(history=...)/run_turns 已通；默认层循环仍一跑一呼"},
+     "status": "adapted", "why": "LLM.call(history=...)/run_turns 已通；默认层循环仍一跑一呼"},
     {"feature": "Tool Calls", "stages": "事实预检",
      "status": "used", "why": "_tool_preflight 真跑 tools_calls=4"},
     {"feature": "Files API", "stages": "视觉大图/复用",
