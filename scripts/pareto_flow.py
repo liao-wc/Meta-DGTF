@@ -64,6 +64,8 @@ def main() -> int:
     ap.add_argument("--budget-tokens", type=int, default=None)
     ap.add_argument("--min-quality", type=float, default=None)
     ap.add_argument("--with-components", action="store_true")
+    ap.add_argument("--snapshot", default="",
+                    help="把本次联合快照写入 JSON 路径（便于跨轮次对比）")
     args = ap.parse_args()
     packs = sorted((ROOT / args.dir).glob("*.packed.json"),
                    key=lambda p: p.stat().st_mtime)
@@ -73,6 +75,13 @@ def main() -> int:
     comp = _components() if args.with_components else None
     out = joint_snapshot(rep, app=(comp or {}).get("app"),
                          local=(comp or {}).get("local")) if comp else rep
+    if args.snapshot:
+        sp = ROOT / args.snapshot
+        sp.parent.mkdir(parents=True, exist_ok=True)
+        sp.write_text(json.dumps(out, ensure_ascii=False, indent=1),
+                      encoding="utf-8")
+        if not args.json:
+            print("snapshot -> %s" % sp)
     if args.json:
         print(json.dumps(out, ensure_ascii=False, indent=1))
         return 0

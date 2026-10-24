@@ -199,22 +199,43 @@ def check_ledger():
 
 
 def check_api_telemetry():
+    """联网/工具调用能力遥测：看最近多次真跑窗口，而不是只看最新一跑。
+
+    成本档可以显式关网（web off 是合法配置）；若只看最新一跑会把合法成本档
+    误判成链路故障。判据：最近 8 份产物里至少一份有 web_enabled 且有真实
+    search/tool/fetch 活动；最新一跑的具体读数写进 detail 供审计。
+    """
     out = ROOT / "outputs"
     packs = sorted(out.glob("*.packed.json"), key=lambda x: x.stat().st_mtime) \
         if out.exists() else []
     if not packs:
         return None, "outputs/ 无 packed（clean checkout 跳过）"
-    pack = packs[-1]
-    d = json.loads(pack.read_text(encoding="utf-8", errors="replace"))
+    window = packs[-8:]
+    latest = window[-1]
+    d = json.loads(latest.read_text(encoding="utf-8", errors="replace"))
     api = d.get("api_usage") or {}
     flags = (d.get("quality") or {}).get("flags") or []
     web = bool(api.get("web_enabled"))
     tools = int(api.get("tools_calls") or 0)
     search = int(api.get("search_calls") or 0)
-    ok = web and (tools > 0 or search > 0)
-    return ok, ("%s ⇒ web_enabled=%s tools_calls=%d search_calls=%d fetch=%d；flags=%d 条（读数展示）"
-                % (pack.name, web, tools, search, int(api.get("fetch_calls") or 0),
-                   len(flags)))
+    fetch = int(api.get("fetch_calls") or 0)
+    active = 0
+    for pk in window:
+        try:
+            a = (json.loads(pk.read_text(encoding="utf-8", errors="replace"))
+                 .get("api_usage") or {})
+        except Exception:
+            continue
+        if bool(a.get("web_enabled")) and (
+                int(a.get("tools_calls") or 0)
+                or int(a.get("search_calls") or 0)
+                or int(a.get("fetch_calls") or 0)):
+            active += 1
+    ok = active > 0
+    return ok, ("最新 %s ⇒ web_enabled=%s tools=%d search=%d fetch=%d；"
+                "窗口 %d 份中有联网活动 %d 份；flags=%d 条"
+                % (latest.name, web, tools, search, fetch,
+                   len(window), active, len(flags)))
 
 
 def main():

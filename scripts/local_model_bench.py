@@ -48,7 +48,7 @@ def main() -> int:
         out["bge"] = {"ok": False, "error": str(e)[:120]}
         print(json.dumps(out, ensure_ascii=False))
         return 1
-    for n in (1, 4, 8, 16):
+    for n in (1, 4, 8, 16, 32, 64):
         texts = [TEXTS[i % len(TEXTS)] for i in range(n)]
         lat = []
         for _ in range(3):

@@ -33,8 +33,10 @@ App：
 | 20261024_082820 | 0.920 | 733,605 | 87 | v2_contract | rounds 2/2/2/2，effort high |
 | 20261024_145240 | 0.959 | 1,295,308 | 117 | v1_frontier | auto 2 圈 → 实际 3 圈，thinking/effort auto |
 | 20261024_160020（V2.2.2 成本档） | 0.909 | 969,376 | 89 | auto | 1 圈预算 → 2 圈；默认 DeepSeek 官方联网 |
+| 20261024_163455（V2.2.2 成本档·无网） | **0.990** | **997,457** | 107 | auto | rounds 0:3/1:2/both:2/all:3；**flags=0**；web off（合法成本档） |
 
-读数：**当前质量-成本前沿在 0.86@51万 tokens 到 0.96@130万 tokens 之间**。
+读数：**V2.2.2 同题成本档把前沿推到 0.990 @ 99.7万 tokens（flags=0）**，同时优于 V2.2.1 的
+0.959 @ 129.5 万（run5）与带官方联网成本档 0.909 @ 96.9 万（run6）——质量↑、成本↓、旗清零。
 注意：这些 run 跨版本且问题不同，只能作方向。V2.2.2 已用 20261024_160020 验证：
 质量门 PASS、standard_all=true、flags 仅 probe_no_target_covered、四层 duty 均不 short；
 默认官方联网实测 search=11 / fetch=4（抓取生效）。
@@ -71,8 +73,9 @@ App：
 联动当前结论：质量从 0.86→0.96 的成本约 **+153%**（51万→130万）；若目标质量 ≤0.92，
 均衡档在成本上明显占优。下一迭代把 App p50 与本地模型时延并入目标，做预算约束下的选优。
 
-（Round 2 新增）预算选档实测：`scripts/pareto_flow.py --budget-tokens 800000 --min-quality 0.9`
-→ 推荐 `20261022_184514`：quality=0.9304、651,596 tokens、70 calls（全四层，rounds 0:1,1:2,both:1,all:2）。
+（Round 3 更新）预算选档实测：`--budget-tokens 1100000 --min-quality 0.9`
+→ 推荐 `20261024_163455`：quality=0.990、997,457 tokens、107 calls（flags=0，全四层）。
+联合快照：`docs/pareto_joint_snapshot_20261024.json`（引擎前沿 + App health/chats p50 + BGE health）。
 
 ## 6. 下一迭代（按优先级）
 
