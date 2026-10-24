@@ -20,7 +20,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "dgtf_engine"))
 
-from dgtf_v2.pareto_flow import load_packed_runs, report, select_joint  # noqa: E402
+from dgtf_v2.pareto_flow import (load_packed_runs, pareto_frontier, report,  # noqa: E402
+                                 select_joint)
 
 
 def _p50(url, token="", n=3, payload=None):
@@ -74,12 +75,13 @@ def main() -> int:
     ap.add_argument("--json-out", default="")
     ap.add_argument("--budget-tokens", type=int, default=1000000)
     ap.add_argument("--min-quality", type=float, default=0.9)
+    ap.add_argument("--max-wall-seconds", type=float, default=None)
     args = ap.parse_args()
     side = {}
     sp = ROOT / "docs" / "pareto_engine_times.json"
     if sp.exists():
         side = json.loads(sp.read_text(encoding="utf-8", errors="replace"))
-    packs = sorted((ROOT / "outputs").glob("20261024_1[6-8]*.packed.json"),
+    packs = sorted((ROOT / "outputs").glob("20261024_1[6-9]*.packed.json"),
                    key=lambda p: p.stat().st_mtime)
     # 只保留质量门可读且非负例产物（负例已归档到 negative_runs）
     rows = load_packed_runs(packs, elapsed_map=side)
@@ -90,7 +92,8 @@ def main() -> int:
     rec_row = rec.get("row") or {}
     joint = select_joint(rows, app=comp["app"], local=comp["bge"],
                          budget_tokens=args.budget_tokens,
-                         min_quality=args.min_quality)
+                         min_quality=args.min_quality,
+                         max_wall_seconds=args.max_wall_seconds)
     lines = []
     lines.append("# 三组件联动帕累托报告（2026-10-24）")
     lines.append("")
@@ -105,7 +108,12 @@ def main() -> int:
             r["id"], r["quality"], r["tokens"], r["calls"],
             r.get("elapsed"), len(r.get("flags") or [])))
     lines.append("")
-    lines.append("非支配点：" + "、".join(rep.get("frontier") or []))
+    lines.append("非支配点（quality/tokens/calls）：" + "、".join(rep.get("frontier") or []))
+    wall_rows = [r for r in rows if r.get("elapsed") is not None]
+    wf = pareto_frontier(wall_rows, (("quality", "max"), ("tokens", "min"),
+                                     ("elapsed", "min")))
+    lines.append("墙钟三目标非支配点（quality/tokens/wall）：" + "、".join(
+        r["id"] for r in wf))
     lines.append("")
     lines.append("## 2. 组件读数（本机实测）")
     lines.append("")
@@ -120,14 +128,20 @@ def main() -> int:
         comp["bge"]["embed_cold"].get("p50_ms"),
         comp["bge"]["embed_hot"].get("p50_ms")))
     lines.append("")
-    lines.append("## 3. 联动选档（预算 %d tokens、质量 >= %.2f）" % (
-        args.budget_tokens, args.min_quality))
+    wall_note = ("、wall <= %ss" % args.max_wall_seconds
+                 if args.max_wall_seconds else "")
+    lines.append("## 3. 联动选档（预算 %d tokens、质量 >= %.2f%s）" % (
+        args.budget_tokens, args.min_quality, wall_note))
     lines.append("")
-    lines.append("- 推荐：%s（%s）" % (rec_row.get("id"), rec.get("reason")))
+    lines.append("- 质量最大档：%s（%s）" % (rec_row.get("id"), rec.get("reason")))
     lines.append("- quality=%.4f、tokens=%d、calls=%d、wall=%ss" % (
         rec_row.get("quality", 0), rec_row.get("tokens", 0),
         rec_row.get("calls", 0), rec_row.get("elapsed")))
-    lines.append("- 联动选档结果：%s" % json.dumps(joint, ensure_ascii=False))
+    jrow = joint.get("row") or {}
+    lines.append("- 联动选档（含 wall 约束）：%s（%s）quality=%.4f tokens=%d wall=%ss" % (
+        jrow.get("id"), joint.get("reason"), jrow.get("quality", 0),
+        jrow.get("tokens", 0), jrow.get("elapsed")))
+    lines.append("- 完整选档 JSON：%s" % json.dumps(joint, ensure_ascii=False))
     lines.append("")
     lines.append("## 4. 结论与边界")
     lines.append("")

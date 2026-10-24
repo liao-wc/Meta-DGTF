@@ -10,20 +10,23 @@
 | 20261024_163455 | 0.9900 | 997457 | 107 | 1920.6 | 0 |
 | 20261024_171058 | 0.9514 | 1210815 | 134 | 2116.9 | 0 |
 | 20261024_175452 | 0.9800 | 1844908 | 154 | 2933.3 | 1 |
+| 20261024_193452 | 0.9300 | 816983 | 106 | 782.6 | 2 |
 
-非支配点：20261024_160020、20261024_163455
+非支配点（quality/tokens/calls）：20261024_160020、20261024_163455、20261024_193452
+墙钟三目标非支配点（quality/tokens/wall）：20261024_163455、20261024_193452
 
 ## 2. 组件读数（本机实测）
 
-App 端点 p50：health 5.3ms、chats 3.8ms、events(full) 313.5ms
-BGE：ok=True dev=cuda dim=512 cache={"size": 4, "max": 1024, "hits": 16, "misses": 4}
-BGE embed：冷 107.3ms、热 p50 1.9ms
+App 端点 p50：health 21.0ms、chats 29.2ms、events(full) 278.1ms
+BGE：ok=True dev=cuda dim=512 cache={"size": 6, "max": 1024, "hits": 22, "misses": 6}
+BGE embed：冷 155.4ms、热 p50 2.1ms
 
-## 3. 联动选档（预算 1000000 tokens、质量 >= 0.90）
+## 3. 联动选档（预算 1000000 tokens、质量 >= 0.90、wall <= 900.0s）
 
-- 推荐：20261024_163455（满足预算与质量下限，质量最高）
+- 质量最大档：20261024_163455（满足预算与质量下限，质量最高）
 - quality=0.9900、tokens=997457、calls=107、wall=1920.6s
-- 联动选档结果：{"row": {"id": "20261024_163455", "question": "为什么城市热岛效应在夜间比白天更明显？", "route": ["0", "1", "both", "all"], "rounds": {"0": 3, "1": 2, "both": 2, "all": 3}, "answer_ready": true, "process_ready": true, "answer_quality": "verified", "coverage": 0.9, "standard_all": true, "flags": [], "tokens": 997457, "calls": 107, "web_enabled": false, "tools_calls": 0, "elapsed": 1920.6, "quality": 0.99}, "reason": "满足预算与质量下限，质量最高", "require_web": false, "app": {"health": {"p50_ms": 5.3, "max_ms": 572.2}, "chats": {"p50_ms": 3.8, "max_ms": 337.2}, "events_full": {"p50_ms": 313.5, "max_ms": 352.2}}, "local": {"health": {"ok": true, "model": "D:/Meta-DGTF-道生三阶模型/local_model/models/bge-small-zh-v1.5", "dev": "cuda", "dim": 512, "cache": {"size": 4, "max": 1024, "hits": 16, "misses": 4}}, "embed_cold": {"p50_ms": 107.3, "max_ms": 107.3}, "embed_hot": {"p50_ms": 1.9, "max_ms": 2.4}}, "joint_tokens": 997457, "joint_elapsed": 1920.6, "joint_quality": 0.99}
+- 联动选档（含 wall 约束）：20261024_193452（满足预算与质量下限，质量最高）quality=0.9300 tokens=816983 wall=782.6s
+- 完整选档 JSON：{"row": {"id": "20261024_193452", "question": "为什么城市热岛效应在夜间比白天更明显？", "route": ["0", "1", "both", "all"], "rounds": {"0": 3, "1": 2, "both": 2, "all": 3}, "answer_ready": true, "process_ready": true, "answer_quality": "verified", "coverage": 0.5, "standard_all": true, "flags": ["ing_rephrased_direct(72%)", "ing_rephrased_direct(73%)"], "tokens": 816983, "calls": 106, "web_enabled": false, "tools_calls": 0, "elapsed": 782.6, "quality": 0.93}, "reason": "满足预算与质量下限，质量最高", "require_web": false, "app": {"health": {"p50_ms": 21.0, "max_ms": 484.7}, "chats": {"p50_ms": 29.2, "max_ms": 249.1}, "events_full": {"p50_ms": 278.1, "max_ms": 366.7}}, "local": {"health": {"ok": true, "model": "D:/Meta-DGTF-道生三阶模型/local_model/models/bge-small-zh-v1.5", "dev": "cuda", "dim": 512, "cache": {"size": 6, "max": 1024, "hits": 22, "misses": 6}}, "embed_cold": {"p50_ms": 155.4, "max_ms": 155.4}, "embed_hot": {"p50_ms": 2.1, "max_ms": 21.8}}, "joint_tokens": 816983, "joint_elapsed": 782.6, "joint_quality": 0.93}
 
 ## 4. 结论与边界
 

@@ -37,12 +37,18 @@ App：
 | 20261024_171058（V2.2.2 均衡档·无网） | 0.951 | 1,210,815 | 134 | auto | rounds 0:3/1:4/both:2/all:4；flags=0；被成本档 run7 支配 |
 | 20261024_175452（V2.2.2 质量档·官方联网） | 0.980 | 1,844,908 | 154 | auto | rounds 0:3/1:5/both:4/all:5；flags 1；被 run7 支配 |
 | 20261024_190707（3层 route 0,1,both） | **不可行** | 545,869 | 74 | auto | all 元层未执行（rounds all=0），answer_ready=false；flags duty_short / all_closure_unavailable / core_audit_gaps |
+| 20261024_193452（关思考超省成本档·无网） | **0.930** | **816,983** | 106 | auto | rounds 0:3/1:2/both:2/all:3；flags 2（ing_rephrased_direct）；wall 782.6s；墙钟维度新增前沿点 |
 
-**三档受控 A/B 完成**：同题非支配点仍只有 **run6（0.909 @96.9万，官方联网）** 与
-**run7（0.990 @99.7万，无网，flags=0）**；均衡档 run8（0.951@121.1万）与质量档 run9
-（0.980@184.5万）均被 run7 支配——质量档多花 85% tokens 质量反而略低。
-结论：V2.2.2 引擎 Pareto 最优配置 = **run7（全四层、effort low、web off、实测 rounds 0:3/1:2/both:2/all:3）**；
-仅当必须联网时退到 run6。
+**四档受控 A/B 完成**：
+- 质量/成本/calls 三目标非支配：run6（0.909@96.9万/calls89）、run7（0.990@99.7万/calls107）、
+  run11（0.930@81.7万/calls106）；
+- 加入墙钟（quality/tokens/wall）：**run11 支配 run6**（质量更高、tokens 更少、wall 782.6s vs 1889.7s），
+  前沿 = **run11（0.930/81.7万/782.6s）与 run7（0.990/99.7万/1920.6s）**；
+  run6 仅在「低 calls / 必须联网」约束下保留。
+结论：
+- 质量优先：run7（全四层、effort low、web off）；
+- 时间/成本优先：run11（同四层、thinking off、web off），wall 降 59%、tokens 降 18%，质量 0.930；
+- 必须联网：run6（官方联网，0.909/96.9万）。
 注意：这些 run 跨版本且问题不同，只能作方向。V2.2.2 已用 20261024_160020 验证：
 质量门 PASS、standard_all=true、flags 仅 probe_no_target_covered、四层 duty 均不 short；
 默认官方联网实测 search=11 / fetch=4（抓取生效）。
@@ -115,15 +121,16 @@ flags=duty_short/all_closure_unavailable/core_audit_gaps；产物已归档到 ou
 | 联动档位 | 组合 | 质量 | 引擎 tokens | 组件读数 | 结论 |
 |---|---|---|---|---|---|
 | J1 推荐 | run7 + App 读数缓存 + BGE 批量 n=32 | 0.990 | 997,457 | health ~14–17ms、chats ~19ms、BGE 451 texts/s | 预算 ≥1.0M 时最优 |
+| J0（时间优先） | run11（关思考成本档）+ App 缓存 | 0.930 | 816,983 | wall 782.6s；flags 2 | wall 最低，质量 0.93 |
 | J2 | run6（官方联网）+ App 缓存 | 0.909 | 969,376 | search=11/fetch=4，联网时延另计 | 预算 <1.0M 且必须联网时 |
 | J3 | 均衡档 run8 + App 缓存 | 0.951 | 1,210,815 | flags=0 | 被 J1 支配 |
 | J4 | 质量档 run9（官方联网）+ App 缓存 | 0.980 | 1,844,908 | search=13/fetch=5 | 被 J1 支配，质量未过 0.99 |
 
-- **墙钟维度（Round 10）**：`docs/pareto_engine_times.json` 记录真跑墙钟（秒）——
-  run6=1889.7、run7=1920.6、run8=2116.9、run9=2933.3；App health/chats 与 BGE 查询为毫秒级，
-  相对引擎分钟级可忽略。三目标（quality↑ / tokens↓ / wall↓）下非支配点仍是 **run6 与 run7**：
-  run7 用 +30.9s / +28k tokens 换 +0.081 quality；J3/J4 在三个目标上都被 run7 支配。
-  选档器已支持 `--elapsed-json docs/pareto_engine_times.json --max-wall-seconds N`。
+- **墙钟维度（Round 10/13）**：`docs/pareto_engine_times.json` 记录真跑墙钟（秒）——
+  run6=1889.7、run7=1920.6、run8=2116.9、run9=2933.3、**run11=782.6**；App/BGE 为毫秒级，可忽略。
+  三目标（quality↑ / tokens↓ / wall↓）下非支配点 = **run11（0.930/81.7万/782.6s）与 run7（0.990/99.7万/1920.6s）**；
+  run6 被 run11 支配（仅低 calls/必须联网时保留）。
+  选档器支持 `--elapsed-json docs/pareto_engine_times.json --max-wall-seconds N`。
 
 联动选档器（Round 5）：`scripts/pareto_flow.py --budget-tokens 1000000 --min-quality 0.9 --with-components --joint-select`
 → 选中 run7（0.990/997,457/107，无网档）；加 `--require-web` 且预算 <1.0M 时自动退到 run6 官方联网档，
