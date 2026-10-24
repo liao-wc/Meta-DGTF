@@ -2085,12 +2085,56 @@ def _dsh_net_clause():
 
 
 def _dsh_current_web_base() -> str:
-    base = (os.getenv("DSH_WEB_URL") or "http://127.0.0.1:56632").rstrip("/")
-    if base.startswith("ws://"):
-        base = "http://" + base[5:]
-    if base.startswith("wss://"):
-        base = "https://" + base[6:]
-    return base
+    """定位当前 DSH Web GUI。
+
+    旧实现把 56632 写死，但当前 DSH Web 端口是 53664，于是 App 的
+    「DSH 本对话」提交时报 WinError 10061。这里按 env/本地覆盖/常见端口
+    依次探测，探测不到再回退到 53664。
+    """
+    import urllib.request as _url
+    import urllib.error as _urlerr
+
+    def _norm(base: str) -> str:
+        base = str(base or "").strip().rstrip("/")
+        if base.startswith("ws://"):
+            base = "http://" + base[5:]
+        if base.startswith("wss://"):
+            base = "https://" + base[6:]
+        return base
+
+    candidates = []
+    for key in ("DSH_WEB_URL", "DGTF_DSH_WEB_URL"):
+        val = os.getenv(key)
+        if val:
+            candidates.append(_norm(val))
+    try:
+        p = APP_DIR.parent / "dgtf_memory" / "dsh_web_url.txt"
+        if p.is_file():
+            val = p.read_text(encoding="utf-8", errors="replace").strip()
+            if val:
+                candidates.append(_norm(val))
+    except Exception:
+        pass
+    candidates.extend([
+        "http://127.0.0.1:53664",
+        "http://127.0.0.1:56632",
+        "http://127.0.0.1:53665",
+    ])
+    seen = set()
+    for base in candidates:
+        if not base or base in seen:
+            continue
+        seen.add(base)
+        try:
+            with _url.urlopen(base + "/", timeout=1.2) as resp:
+                if 100 <= int(resp.status) < 500:
+                    return base
+        except _urlerr.HTTPError as exc:
+            if 100 <= int(exc.code) < 500:
+                return base
+        except Exception:
+            continue
+    return "http://127.0.0.1:53664"
 
 
 def _dsh_current_cookie(base: str):
