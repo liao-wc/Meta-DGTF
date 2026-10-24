@@ -79,3 +79,16 @@
   4 份历史真跑正负对照 4/4 符合预期（FAIL/FAIL/FAIL/PASS）
 - 队列：7 条高严重度项核验关闭（docs/queue_closeout_20261024.md），high 归零
 - 文档：docs/releases/V2.2.1.md、V2.2.1-发布报告.md、V2.2.1-收束报告.md、CHANGELOG.md
+
+
+---
+
+## V2.2.2 补丁发布状态（2026-10-24）
+
+- 版本：V2.2.2（职责终局刷新 + 部分覆盖 C + unsaid 双源闸 + DeepSeek 官方联网默认 + 帕累托先行模块）
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.2.py（V2.2.1/V2.2.0 保留可回滚）
+- App：2.0.3（health/chats 读数缓存）
+- 门禁：fast_gate 12/0、V2 tests 39/39（515 项检查）、App selftest 371/0、pip check 0 broken
+- 真实跑复核：20261024_160020 质量门 PASS、standard_all=true、flags 仅 1；官方联网 search=11/fetch=4
+- 帕累托：scripts/pareto_flow.py（预算选档/联动快照）+ scripts/local_model_bench.py；基线 docs/pareto_flow_v1.md
+- 文档：docs/releases/V2.2.2.md、V2.2.2-发布报告.md、V2.2.2-收束报告.md、docs/releases/app-V2.0.3.md

@@ -32,29 +32,33 @@ App：
 | 20261024_081519 | 0.917 | 671,144 | 83 | v2_contract | rounds 2/2/2/2，effort high |
 | 20261024_082820 | 0.920 | 733,605 | 87 | v2_contract | rounds 2/2/2/2，effort high |
 | 20261024_145240 | 0.959 | 1,295,308 | 117 | v1_frontier | auto 2 圈 → 实际 3 圈，thinking/effort auto |
+| 20261024_160020（V2.2.2 成本档） | 0.909 | 969,376 | 89 | auto | 1 圈预算 → 2 圈；默认 DeepSeek 官方联网 |
 
 读数：**当前质量-成本前沿在 0.86@51万 tokens 到 0.96@130万 tokens 之间**。
-注意：这些 run 跨 V2.2.0→V2.2.1 版本且问题不同，只能作方向；V2.2.2（职责/unsaid 修复 +
-官方联网默认）需要用同题受控 A/B 重画前沿（后续迭代）。
+注意：这些 run 跨版本且问题不同，只能作方向。V2.2.2 已用 20261024_160020 验证：
+质量门 PASS、standard_all=true、flags 仅 probe_no_target_covered、四层 duty 均不 short；
+默认官方联网实测 search=11 / fetch=4（抓取生效）。
 
 ## 3. App 基线（本机实测，TLS 新连接/次）
 
 | 端点 | 优化前 p50 | 优化后（2s TTL 缓存） |
 |---|---|---|
-| /api/health | 475 ms（冷 900 ms） | **16–18 ms**（冷 900 ms） |
-| /api/dsh/chats | 306–331 ms | 306–331 ms（未缓存） |
+| /api/health | 475 ms（冷 900 ms） | **12–17 ms**（冷 ~460–900 ms） |
+| /api/dsh/chats | 306–331 ms | **~19 ms**（1s TTL 缓存；冷 ~565 ms） |
 | /api/dsh/current/events?full=1 | 301–320 ms | 301–320 ms |
 | /api/agent/tasks | 6.6–20.5 ms | 6.6–20.5 ms |
 
 静态资源：app.js 317,661 B / index.html 35,168 B / style.css 120,527 B。
-本轮改进：health 读数 2s TTL 缓存（最多滞后 2s），高频轮询成本从 ~475ms 降到 ~17ms。
+本轮改进：health 2s TTL（~475ms→~14ms）+ chats 1s TTL（~300ms→~19ms），只影响读数新鲜度（≤2s/≤1s）。
 
 ## 4. 本地模型基线
 
 - BGE 服务 127.0.0.1:8771 /health：ok=true、cuda、dim=512、响应 **~2.9 ms**；
   模型目录 `local_model/models/bge-small-zh-v1.5`（服务内路径）。
 - DeepSeek-R1-Distill-Qwen-1.5B 模型目录存在；`local_model/envs/dgtf_llm_env` 环境存在。
-- 待补：embedding 批量吞吐、本地 LLM 首 token/总时延、失败率（下一迭代）。
+- BGE /embed 批量基线（3 次中位）：n=1 31.3ms（32 texts/s）；n=4 65.8ms（61/s）；
+  n=8 64.3ms（124/s）；n=16 42.7ms（375/s）。
+- 待补：本地 LLM 首 token/总时延、失败率、batching 最优档（下一迭代）。
 
 ## 5. 三者联动建议档位（首版，待受控 A/B）
 
@@ -66,6 +70,9 @@ App：
 
 联动当前结论：质量从 0.86→0.96 的成本约 **+153%**（51万→130万）；若目标质量 ≤0.92，
 均衡档在成本上明显占优。下一迭代把 App p50 与本地模型时延并入目标，做预算约束下的选优。
+
+（Round 2 新增）预算选档实测：`scripts/pareto_flow.py --budget-tokens 800000 --min-quality 0.9`
+→ 推荐 `20261022_184514`：quality=0.9304、651,596 tokens、70 calls（全四层，rounds 0:1,1:2,both:1,all:2）。
 
 ## 6. 下一迭代（按优先级）
 

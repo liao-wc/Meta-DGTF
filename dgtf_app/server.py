@@ -4655,6 +4655,24 @@ def _conv_reconcile_on_start():
         pass
 
 
+_CONV_LIST_CACHE = {"t": 0.0, "val": None, "limit": 0}
+_CONV_LIST_TTL = 1.0
+
+
+def _conv_list_cached(limit=50):
+    """[V2.0.3 帕累托] 会话列表 1s TTL 缓存（轮询热点；最多滞后 1s）。"""
+    import time as _t
+    if (_CONV_LIST_CACHE["val"] is not None
+            and int(_CONV_LIST_CACHE.get("limit") or 0) == int(limit)
+            and (_t.time() - float(_CONV_LIST_CACHE["t"] or 0.0)) < _CONV_LIST_TTL):
+        return _CONV_LIST_CACHE["val"]
+    val = _conv_list(limit)
+    _CONV_LIST_CACHE["t"] = _t.time()
+    _CONV_LIST_CACHE["val"] = val
+    _CONV_LIST_CACHE["limit"] = int(limit)
+    return val
+
+
 def _conv_list(limit=50):
     import json as _json
     rows = []
@@ -8331,7 +8349,7 @@ class Handler(BaseHTTPRequestHandler):
         if p == "/api/dsh/sessions":
             return self._json({"sessions": _list_dsh_sessions()})
         if p == "/api/dsh/chats":
-            return self._json({"chats": _conv_list(50)})
+            return self._json({"chats": _conv_list_cached(50)})
         if p == "/api/git/status":
             return self._json(_git_status())
         if p == "/api/agent/daemon":

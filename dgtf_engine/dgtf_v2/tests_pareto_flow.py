@@ -7,8 +7,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from dgtf_v2.pareto_flow import (dominates, extract_flow_metrics, load_packed_runs,
-                                 pareto_frontier, report)
+from dgtf_v2.pareto_flow import (dominates, extract_flow_metrics, joint_snapshot,
+                                 load_packed_runs, pareto_frontier, recommend, report)
 
 P, F = [], []
 
@@ -72,6 +72,31 @@ def main():
         rep = report(rows)
         ck("report 前沿非空", len(rep["frontier"]) >= 1, rep["frontier"])
         ck("best_quality 存在", rep["best_quality"] is not None)
+
+    # ── 预算选档（Round 2）──
+    runs = [
+        {"id": "cost", "quality": 0.83, "tokens": 478000, "calls": 80},
+        {"id": "low", "quality": 0.86, "tokens": 512000, "calls": 82},
+        {"id": "balanced", "quality": 0.917, "tokens": 671000, "calls": 83},
+        {"id": "quality", "quality": 0.959, "tokens": 1295000, "calls": 117},
+    ]
+    r1 = recommend(runs, budget_tokens=800000, min_quality=0.9)
+    ck("预算内满足质量选均衡档", (r1.get("row") or {}).get("id") == "balanced", r1)
+    r2 = recommend(runs, budget_tokens=600000)
+    ck("预算内质量最高", (r2.get("row") or {}).get("id") == "low", r2)
+    r3 = recommend(runs, min_quality=0.95)
+    ck("质量下限选质量档", (r3.get("row") or {}).get("id") == "quality", r3)
+    r4 = recommend(runs, budget_tokens=600000, min_quality=0.9)
+    ck("无可行候选退为满足质量最便宜", (r4.get("row") or {}).get("id") == "balanced"
+       and "最便宜" in str(r4.get("reason")), r4)
+    r5 = recommend(runs, min_quality=0.999)
+    ck("质量不可能时退全局最高", (r5.get("row") or {}).get("id") == "quality", r5)
+    r6 = recommend([], budget_tokens=100)
+    ck("空表不崩", r6.get("row") is None)
+
+    js = joint_snapshot({"n": 1, "frontier": ["x"], "recommend": {"row": runs[0]}},
+                        app={"health": {"p50_ms": 15}}, local={"bge": {"p50_ms": 3}})
+    ck("联动快照含三组件", set(js.keys()) >= {"engine", "app", "local", "note"}, js)
 
     print()
     print("PASS %d / FAIL %d" % (len(P), len(F)))

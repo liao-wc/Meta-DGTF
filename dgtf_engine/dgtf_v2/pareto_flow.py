@@ -1,17 +1,19 @@
 # -*- coding: utf-8 -*-
-"""全流程帕累托最优先行模块（V2.2.2 第一版）。
+"""全流程帕累托最优先行模块（V2.2.2 第一版；Round 2 扩展预算选档与联动快照）。
 
 目标：把「质量 / 成本 / 时延」统一成可比较的流程读数，并给出非支配前沿。
-当前数据源：outputs/*.packed.json（真跑产物）。后续扩展：
-  · app 组件：端点时延、静态资源、一次任务端到端耗时；
-  · 本地模型：BGE/LLM 时延、命中率、失败率；
-  · 三者联动：route/rounds/web/thinking/effort 与总质量、总成本、总时延的联合前沿。
+数据源：outputs/*.packed.json（引擎真跑）+ 本机 App/BGE 端点读数（组件快照）。
 
-指标口径（全部来自产物，不猜）：
+指标口径（产物直读，不猜）：
   quality     0..1 综合（answer_ready / verified / standard_all / coverage / flags）
-  tokens      llm_tokens（成本代理）
-  calls       llm_calls（时延/成本代理）
-  elapsed     产物若有 elapsed_seconds 则用之，否则 None（不插值）
+  tokens      llm_tokens（成本代理）；calls llm_calls（时延/成本代理）
+  elapsed     产物有 elapsed_seconds 才用，否则 None。
+
+预算选档：
+  recommend(rows, budget_tokens=..., min_quality=...)
+    · 满足质量下限且成本不超预算的行里，选质量最高（同质量选 tokens 更少）；
+    · 无满足项时：先退「满足质量的最便宜」，再退「预算内质量最高」，最后全局最佳；
+    · 返回原因，便于审计（不静默换算法）。
 """
 from __future__ import annotations
 
@@ -32,7 +34,6 @@ def _as_float(v, default=0.0) -> float:
 
 def _quality_score(packed: dict, metrics: dict) -> float:
     q = (packed or {}).get("quality") or {}
-    dt = (packed or {}).get("decision_trace") or {}
     answer_ready = bool(metrics.get("answer_ready"))
     quality = str(metrics.get("answer_quality") or "")
     standard_all = bool(metrics.get("standard_all"))
@@ -88,7 +89,6 @@ def dominates(a: dict, b: dict, objectives=OBJECTIVES) -> bool:
         av = a.get(key)
         bv = b.get(key)
         if av is None or bv is None:
-            # 缺失值不参与支配判断（保守：视为不可比）
             if av is None and bv is None:
                 continue
             return False
@@ -110,16 +110,47 @@ def pareto_frontier(rows: Iterable[dict], objectives=OBJECTIVES) -> List[dict]:
     rows = [r for r in (rows or []) if r]
     front = []
     for i, r in enumerate(rows):
-        dominated = False
-        for j, other in enumerate(rows):
-            if i == j:
-                continue
-            if dominates(other, r, objectives):
-                dominated = True
-                break
-        if not dominated:
+        if not any(dominates(other, r, objectives)
+                   for j, other in enumerate(rows) if i != j):
             front.append(r)
     return front
+
+
+def recommend(rows: Iterable[dict], budget_tokens: Optional[int] = None,
+              min_quality: Optional[float] = None) -> dict:
+    """预算/质量约束下的选档（返回 row + reason）。"""
+    rows = [r for r in (rows or []) if r]
+    if not rows:
+        return {"row": None, "reason": "无可用真跑行"}
+    budget = None if budget_tokens in (None, 0, "") else int(budget_tokens)
+    qmin = None if min_quality in (None, "") else float(min_quality)
+
+    def _ok(r):
+        return ((budget is None or int(r.get("tokens") or 0) <= budget)
+                and (qmin is None or float(r.get("quality") or 0) >= qmin))
+
+    feasible = [r for r in rows if _ok(r)]
+    if feasible:
+        best = max(feasible, key=lambda r: (float(r.get("quality") or 0),
+                                            -int(r.get("tokens") or 0)))
+        return {"row": best, "reason": "满足预算与质量下限，质量最高"}
+    if qmin is not None:
+        above = [r for r in rows if float(r.get("quality") or 0) >= qmin]
+        if above:
+            best = min(above, key=lambda r: (int(r.get("tokens") or 0),
+                                             -float(r.get("quality") or 0)))
+            return {"row": best, "reason": "无满足预算候选，退为满足质量下限的最便宜档"}
+        best = max(rows, key=lambda r: float(r.get("quality") or 0))
+        return {"row": best, "reason": "无满足质量下限候选，退为全局质量最高档"}
+    if budget is not None:
+        under = [r for r in rows if int(r.get("tokens") or 0) <= budget]
+        if under:
+            best = max(under, key=lambda r: float(r.get("quality") or 0))
+            return {"row": best, "reason": "预算内质量最高档"}
+        best = min(rows, key=lambda r: int(r.get("tokens") or 0))
+        return {"row": best, "reason": "无预算内候选，退为最便宜档"}
+    best = max(rows, key=lambda r: float(r.get("quality") or 0))
+    return {"row": best, "reason": "无约束：质量最高档"}
 
 
 def load_packed_runs(paths: Iterable) -> List[dict]:
@@ -138,17 +169,35 @@ def load_packed_runs(paths: Iterable) -> List[dict]:
     return out
 
 
-def report(rows: List[dict]) -> dict:
-    """前沿报告：前沿行 + 全局最优读数 + 推荐配置。"""
+def report(rows: List[dict], budget_tokens: Optional[int] = None,
+           min_quality: Optional[float] = None) -> dict:
+    """前沿报告：前沿行 + 全局最优读数 + 预算推荐。"""
     rows = list(rows or [])
     front = pareto_frontier(rows)
     best_quality = max(rows, key=lambda r: r.get("quality", 0), default=None)
-    chepeast = min(rows, key=lambda r: (r.get("tokens", 0) or 0), default=None)
+    cheapest = min(rows, key=lambda r: (r.get("tokens", 0) or 0), default=None)
+    rec = recommend(rows, budget_tokens=budget_tokens, min_quality=min_quality)
     return {
         "n": len(rows),
         "frontier": [r.get("id") for r in front],
         "best_quality": best_quality,
-        "cheapest": chepeast,
+        "cheapest": cheapest,
+        "recommend": rec,
         "rows": rows,
         "frontier_rows": front,
+    }
+
+
+def joint_snapshot(engine_report: dict, app: Optional[dict] = None,
+                   local: Optional[dict] = None) -> dict:
+    """三组件联动快照：引擎前沿 + App/本地模型端点读数（只读，不猜）。"""
+    return {
+        "engine": {
+            "n": engine_report.get("n"),
+            "frontier": engine_report.get("frontier"),
+            "recommend": engine_report.get("recommend"),
+        },
+        "app": app or {},
+        "local": local or {},
+        "note": "app/local 为单实例快照；联合前沿需同一配置下的多轮 A/B 才可排序",
     }
