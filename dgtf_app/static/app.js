@@ -4390,7 +4390,7 @@ function agentRenderProps() {
 function agentV2ParetoSvg(d) {
   const pts = (d && d.points) || [];
   if (!pts.length) return '';
-  const W = 680, H = 300, L = 64, R = 24, T = 34, B = 56;
+  const W = 680, H = 320, L = 64, R = 24, T = 34, B = 64;
   const maxT = Math.max.apply(null, pts.map(function (p) { return p.tokens || 0; })) || 1;
   const maxL = Math.max.apply(null, pts.map(function (p) { return p.low || 0; })) || 1;
   const x0 = L, x1 = W - R, y0 = H - B, y1 = T;
@@ -4411,13 +4411,19 @@ function agentV2ParetoSvg(d) {
   }
   s += '<line x1="' + x0 + '" y1="' + y0 + '" x2="' + x1 + '" y2="' + y0 + '" stroke="currentColor" opacity=".45"/>';
   s += '<line x1="' + x0 + '" y1="' + y1 + '" x2="' + x0 + '" y2="' + y0 + '" stroke="currentColor" opacity=".45"/>';
-  s += '<text x="' + ((x0 + x1) / 2) + '" y="' + (H - 12) + '" text-anchor="middle" font-size="12" fill="currentColor" opacity=".85">成本（tokens，越低越好）</text>';
+  s += '<text x="' + ((x0 + x1) / 2) + '" y="' + (H - 28) + '" text-anchor="middle" font-size="12" fill="currentColor" opacity=".85">成本（tokens，越低越好）</text>';
   s += '<text x="16" y="' + ((y0 + y1) / 2) + '" transform="rotate(-90 16 ' + ((y0 + y1) / 2) + ')" text-anchor="middle" font-size="12" fill="currentColor" opacity=".85">质量下界（low，越高越好）</text>';
-  s += '<g font-size="11" fill="currentColor" opacity=".8">'
-    + '<circle cx="' + (W - 250) + '" cy="18" r="4" fill="var(--accent)"/><text x="' + (W - 240) + '" y="22">推荐</text>'
-    + '<circle cx="' + (W - 175) + '" cy="18" r="4" fill="var(--accent-hi)"/><text x="' + (W - 165) + '" y="22">前沿</text>'
-    + '<circle cx="' + (W - 100) + '" cy="18" r="3" fill="currentColor" opacity=".45"/><text x="' + (W - 90) + '" y="22">其他</text>'
+  s += '<g font-size="11" fill="currentColor" opacity=".85">'
+    + '<circle cx="' + (W - 360) + '" cy="18" r="4" fill="var(--accent)"/><text x="' + (W - 350) + '" y="22">推荐</text>'
+    + '<circle cx="' + (W - 285) + '" cy="18" r="4" fill="var(--accent-hi)"/><text x="' + (W - 275) + '" y="22">前沿</text>'
+    + '<circle cx="' + (W - 210) + '" cy="18" r="3" fill="currentColor" opacity=".45"/><text x="' + (W - 200) + '" y="22">其他</text>'
+    + '<line x1="' + (W - 125) + '" y1="18" x2="' + (W - 105) + '" y2="18" stroke="currentColor" opacity=".35" stroke-dasharray="4 3"/><text x="' + (W - 98) + '" y="22">趋势</text>'
     + '</g>';
+  const allSorted = pts.slice().sort(function (a, b) { return (a.tokens || 0) - (b.tokens || 0); });
+  if (allSorted.length > 1) {
+    s += '<polyline fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="4 4" opacity=".22" points="'
+      + allSorted.map(function (p) { return X(p).toFixed(1) + ',' + Y(p).toFixed(1); }).join(' ') + '"/>';
+  }
   if (fr.length > 1) {
     s += '<polyline fill="none" stroke="var(--accent)" stroke-width="2" opacity=".85" points="'
       + fr.map(function (p) { return X(p).toFixed(1) + ',' + Y(p).toFixed(1); }).join(' ') + '"/>';
@@ -4438,6 +4444,7 @@ function agentV2ParetoSvg(d) {
       s += '<text x="' + lx.toFixed(1) + '" y="' + ly.toFixed(1) + '" text-anchor="' + anchor + '" font-size="10.5" fill="currentColor" opacity=".9">' + esc(short) + '</text>';
     }
   });
+  s += '<text x="' + x1 + '" y="' + (H - 6) + '" text-anchor="end" font-size="10.5" fill="currentColor" opacity=".6">非支配 ' + fr.length + ' / 总 ' + pts.length + ' 个模板' + (fr.length <= 1 ? '（其余点被支配，故无前沿折线）' : '') + '</text>';
   return s + '</svg>';
 }
 
