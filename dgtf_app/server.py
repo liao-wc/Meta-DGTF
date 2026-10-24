@@ -2820,10 +2820,14 @@ def _run_dsh_agent_raw(task: str, sid: str = "", timeout: int = 300,
         import queue as _q
         import threading as _th
         import time as _t
+        # ★ [V2.2.0 fix] App 的“DSH 本对话”按钮会走这里。
+        #   不隐藏 cmd 控制台时，每次点按钮都会弹一个黑色命令窗口。
+        _dsh_flags = getattr(_sp, "CREATE_NO_WINDOW", 0) if os.name == "nt" else 0
         proc = _sp.Popen(cmd, cwd=str(root), env=env,
                          stdin=_sp.PIPE, stdout=_sp.PIPE,
                          stderr=_sp.PIPE, text=True,
-                         encoding="utf-8", errors="replace")
+                         encoding="utf-8", errors="replace",
+                         creationflags=_dsh_flags)
         _DSH_ACTIVE.add(proc)
         if proc_ref is not None:
             try:

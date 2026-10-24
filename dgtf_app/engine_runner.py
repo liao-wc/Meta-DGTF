@@ -853,8 +853,9 @@ def cancel_task(tid: str) -> bool:
     if pid:
         try:
             if os.name == "nt":
+                _flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
                 subprocess.run(["taskkill", "/F", "/T", "/PID", str(pid)],
-                               capture_output=True)
+                               creationflags=_flags, capture_output=True)
             else:
                 os.kill(pid, 15)
         except Exception:  # noqa: BLE001

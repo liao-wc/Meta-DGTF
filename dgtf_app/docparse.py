@@ -285,7 +285,8 @@ def _external_ocr(path: Path) -> str:
     if not shutil.which(cmd[0]):
         return ""
     try:
-        r = subprocess.run(cmd, capture_output=True, timeout=120)
+        _flags = getattr(subprocess, "CREATE_NO_WINDOW", 0) if os.name == "nt" else 0
+        r = subprocess.run(cmd, capture_output=True, timeout=120, creationflags=_flags)
         return r.stdout.decode("utf-8", "replace").strip()
     except Exception:  # noqa: BLE001
         return ""

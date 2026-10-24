@@ -62,3 +62,10 @@ scripts/*.ps1 存为 UTF-8 无 BOM。Windows PowerShell 5 按 GBK/ANSI 读取中
   - 启动文件夹 DGTF-Agent-Daemon.lnk（旧路径 wscript/vbs）
 - 旧路径 D:\元DGTF-多模并行架构 不存在；旧任务已移除。
 - 冷启动 pythonw launcher.py：health=200，App 正常；无黑窗。
+
+## 按钮弹窗修复
+
+- App 的「DSH 本对话」按钮走 server.py `_run_dsh_agent`，已加 `CREATE_NO_WINDOW`。
+- 文档解析、任务取消 taskkill 同样加隐藏标志。
+- RAG、Agent daemon、引擎子进程此前已隐藏。
+- App 重启后 health=200。
