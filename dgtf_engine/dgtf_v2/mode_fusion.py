@@ -16,17 +16,21 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 MODES: Dict[str, dict] = {
-    "B": {"name": "模式B·动态规划", "quality": 1.0, "tokens": 1269082,
-          "wall": 1064.3, "web": False, "run": "20261024_205018",
-          "strength": "质量/墙钟双优"},
-    "serial": {"name": "serial·低tokens", "quality": 0.99, "tokens": 997457,
-               "wall": 1920.6, "web": False, "run": "20261024_163455",
+    "B": {"name": "模式B·动态规划", "quality": 1.0, "quality_low": 0.9592,
+          "tokens": 1269082, "wall": 1064.3, "wall_high": 1064.3,
+          "web": False, "run": "20261024_205018",
+          "strength": "质量/墙钟双优（方差 0.959–1.000）"},
+    "serial": {"name": "serial·低tokens", "quality": 0.99, "quality_low": 0.99,
+               "tokens": 997457, "wall": 1920.6, "wall_high": 1920.6,
+               "web": False, "run": "20261024_163455",
                "strength": "质量高且 tokens 最低"},
-    "fast": {"name": "thinking off·时间档", "quality": 0.93, "tokens": 816983,
-             "wall": 782.6, "web": False, "run": "20261024_193452",
+    "fast": {"name": "thinking off·时间档", "quality": 0.93, "quality_low": 0.93,
+             "tokens": 816983, "wall": 782.6, "wall_high": 782.6,
+             "web": False, "run": "20261024_193452",
              "strength": "墙钟/tokens 最低"},
-    "web": {"name": "B + 官方联网", "quality": 0.933, "tokens": 1062012,
-            "wall": 1073.3, "web": True, "run": "20261024_215545",
+    "web": {"name": "B + 官方联网", "quality": 0.933, "quality_low": 0.933,
+            "tokens": 1062012, "wall": 1073.3, "wall_high": 1073.3,
+            "web": True, "run": "20261024_215545",
             "strength": "必须联网场景（质量/墙钟最佳联网档）"},
 }
 
@@ -102,9 +106,15 @@ def fused_plan(min_quality: Optional[float] = None,
                                history=history or {})
                     for m in ("fast", "B", "serial")
                 }
-                # 模式先验校准：模型跨版本漂移时，用实测模式均值做锚，避免过度自信。
-                pred = {k: round(0.5 * v + 0.5 * MODES[k]["quality"], 4)
-                        for k, v in pred_raw.items()}
+                # 模式先验校准：用实测模式下界做锚（B 有 0.959–1.000 方差），
+                # 并把结果限制在该模式历史区间内，避免过度自信。
+                pred = {}
+                for k, v in pred_raw.items():
+                    _lo = float(MODES[k].get("quality_low",
+                                             MODES[k]["quality"]))
+                    _hi = float(MODES[k]["quality"])
+                    _cal = 0.5 * v + 0.5 * _lo
+                    pred[k] = round(max(_lo, min(_hi, _cal)), 4)
                 plan["quality_prediction_raw"] = {k: round(v, 4)
                                                   for k, v in pred_raw.items()}
                 plan["quality_prediction"] = pred

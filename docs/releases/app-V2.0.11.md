@@ -28,3 +28,6 @@
 - GET /api/mode-fusion 返回 4 模式 + 5 场景；
 - mock 任务启动返回 mode_fusion.mode 且不报错；
 - selftest 371/0。
+
+- M4 预测再加“历史区间”约束：模式质量取 [quality_low, quality]（B=0.959–1.000，fast=0.930，serial=0.990），
+  校准后裁剪进区间，避免小样本/跨版本预测过度乐观；预测不明确时保持静态选档。
