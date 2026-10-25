@@ -1349,3 +1349,27 @@ fact_flow 15、official_precedence 19、evidence_coverage **46**、app_runs 10�
 ### 41.4 门禁
 
 全量 **V2 51/51（782 checks）**、fast_gate 12/12。
+
+
+## 42. App 法律任务 e2e + 亿美元单位（Round 36）
+
+### 42.1 App e2e：法定婚龄
+
+`daosheng_fast` +「我国法定结婚年龄是多少岁？」：任务墙钟 **465.0s**，
+plan fast/web on/thinking off，产物 **aq=verified / ready=True**
+（quality 0.9769 / 719,919 tok / 97 calls）；
+answer「我国婚姻法第六条明确规定…男不得早于二十二周岁，女不得早于二十周岁」、
+**display=二十二周岁**。App 维度实测矩阵 4→**5 行**（fast fact 3 条 / reasoning 1 /
+quality fact 1）。
+
+### 42.2 亿美元单位（贸易类基础量纲）
+
+`_NUM_RE` 补 `亿美元/万美元/万辆` 等复合单位；判据 A41（「贸易顺差9922亿美元」可抽取）。
+贸易顺差题真实跑次仍 unverified：其检索池仅有 **2023** 年数据（海关 8221 亿美元 /
+外管局 5939 亿美元），题问 2024 → `year_mismatch` 防护正确拒答（宁缺毋假）；
+2024 口径数据待检索侧补充（下一轮：年度锚定 query 复查）。
+
+### 42.3 门禁
+
+evidence_coverage **47 项**、app_runs 10、scene_matrix 23；全量
+**V2 51/51（783 checks）**、fast_gate 12/12。

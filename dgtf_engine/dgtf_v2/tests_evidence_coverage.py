@@ -233,6 +233,12 @@ def main():
        and "historical_answer_rejected" in _card_old.gaps,
        (_card_old.status, _card_old.gaps))
 
+    # ── A16：亿美元/贸易口径（Round 36）──────────────
+    _trade_claims = extract_numeric_claims("2024年，我国贸易顺差9922亿美元。")
+    ck("A41 亿美元单位可抽取",
+       any(c.get("unit") == "亿美元" and float(c.get("value")) == 9922
+           for c in _trade_claims), _trade_claims)
+
     # ── B：整体量语义加权 ────────────────────────
     ck("B1 问长度 + 全长标记 → 加分",
        _overall_quantity_bonus("黄河全长约5464公里", "黄河的长度是多少千米") > 0)
