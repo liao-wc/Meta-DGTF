@@ -220,6 +220,11 @@ class LocalEngine:
         self.cache: OrderedDict = OrderedDict()
         self.cache_max = 200
         self._lock = threading.Lock()
+        # ★ [Round 25] 可观测性统计（App/引擎动态调度用；线程安全）
+        self._stats_lock = threading.Lock()
+        self.stats = {"requests_total": 0, "by_stage": {}, "errors": 0,
+                      "total_ms": 0.0, "max_ms": 0.0, "busy_now": False,
+                      "last_ms": 0.0, "last_stage": "", "last_adapter": ""}
         if autostart:
             threading.Thread(target=self._load, daemon=True).start()
             threading.Thread(target=self._worker, daemon=True).start()
@@ -313,6 +318,27 @@ class LocalEngine:
             self.error = f"{type(e).__name__}: {e}"
             traceback.print_exc()
             print(f"[load] FAILED: {self.error}", flush=True)
+
+    def stat_begin(self, stage: str) -> None:
+        with self._stats_lock:
+            self.stats["busy_now"] = True
+            self.stats["last_stage"] = str(stage or "")
+
+    def stat_end(self, stage: str, t0: float, adapter: str = "",
+                 ok: bool = True) -> None:
+        import time as _time
+        ms = (_time.perf_counter() - t0) * 1000.0
+        with self._stats_lock:
+            self.stats["requests_total"] += 1
+            self.stats["by_stage"][str(stage or "")] = int(
+                self.stats["by_stage"].get(str(stage or ""), 0)) + 1
+            if not ok:
+                self.stats["errors"] += 1
+            self.stats["total_ms"] = float(self.stats["total_ms"]) + ms
+            self.stats["max_ms"] = max(float(self.stats["max_ms"]), ms)
+            self.stats["last_ms"] = ms
+            self.stats["last_adapter"] = str(adapter or "")
+            self.stats["busy_now"] = False
 
     # ---------- 生成（prefill fp32 GEMM + decode fp16） ----------
     @torch.inference_mode()
@@ -611,11 +637,25 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(data)
 
     def do_GET(self):
+        if self.path.split("?")[0] == "/metrics":
+            h = self.engine.health()
+            st = dict(getattr(self.engine, "stats", {}) or {})
+            n = max(1, int(st.get("requests_total") or 0))
+            payload = {
+                "ok": True,
+                "state": h.get("status") or h.get("state") or "ready",
+                "model": h.get("model"),
+                "adapter_paths": h.get("adapter_paths"),
+                "stats": st,
+                "avg_ms": round(float(st.get("total_ms") or 0) / n, 1),
+            }
+            self._send(200, payload)
+            return
         if self.path.split("?")[0] in ("/health", "/healthz", "/"):
             self._send(200, self.engine.health())
         elif self.path.split("?")[0] == "/":
             self._send(200, {"ok": True, "service": "dgtf_local_llm",
-                             "endpoints": ["/health", "/generate"]})
+                             "endpoints": ["/health", "/generate", "/metrics"]})
         else:
             self._send(404, {"ok": False, "error": {"code": "NOT_FOUND",
                                                     "message": self.path}})
@@ -653,8 +693,16 @@ class Handler(BaseHTTPRequestHandler):
             return
         timeout = float(req.get("timeout") or 60)
         timeout = max(1.0, min(120.0, timeout))
+        import time as _time
+        _t0 = _time.perf_counter()
+        _stage = str(req.get("stage") or "")
+        _adapter = ""
+        _ok = False
+        self.engine.stat_begin(_stage)
         try:
             res = self.engine.submit(req, timeout + 2.0)
+            _adapter = str((res or {}).get("adapter") or "")
+            _ok = True
             self._send(200, res)
         except TimeoutError:
             self._send(503, {"ok": False, "error": {
@@ -663,6 +711,11 @@ class Handler(BaseHTTPRequestHandler):
         except Exception as e:
             self._send(503, {"ok": False, "error": {
                 "code": "INTERNAL", "message": f"{type(e).__name__}: {e}"}})
+        finally:
+            try:
+                self.engine.stat_end(_stage, _t0, adapter=_adapter, ok=_ok)
+            except Exception:
+                pass
 
 
 def main() -> int:

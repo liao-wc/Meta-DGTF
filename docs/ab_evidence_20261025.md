@@ -957,3 +957,13 @@ A22–A23 词项切分正负对照）；全量 **V2 50/50（751 checks）**、fa
 事实题成本档（fast+web）在「状态码/统计/地理/科学」四类已有 verified 实证
 （404、500、GDP、长江、光速）；剩余风险主要在检索是否召回权威源（白名单持续可扩）
 与题面短语覆盖（词项切分已覆盖常见句式）。
+
+
+## 31. 本地服务 /metrics + 并发实测（Round 25）
+
+`GET /metrics` 上线（requests_total/by_stage/errors/total_ms/max_ms/busy_now/
+last_adapter 等），`scripts/check_local_service.py` 可复现验证。实测：
+- 单发 self_check_min 3.7–4.1s（生成 ms）；并发 4 请求**串行化**，
+  total wall 15.58s（4×3.9s），排队体现在请求 wall（4.1/7.9/11.7/15.6s）；
+- 统计正确（requests_total=8 / errors=0）；
+- 用途：App/引擎可用 busy_now/avg_ms 做「本地忙→云端/降档」动态最优。

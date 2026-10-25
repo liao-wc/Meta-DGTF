@@ -591,3 +591,32 @@ train_loss 0.2789 / **val_loss 0.2352**（v2 0.2238）。
 3. **质量在噪声内 ±2pp**（事实题本样本 +2.1pp、推理题 −1~2pp）；
 4. **决策：不设为默认**（墙钟与质量不确定性 > 成本收益），保留为 opt-in
    （`--self-check-mode local`）；默认仍 llm 模式。
+
+
+## 5.8 本地服务可观测性 `/metrics` + 并发实测（Round 25）
+
+### 5.8.1 新增能力
+
+`dgtf_local_llm/service.py` 新增：
+- `GET /metrics`：返回 `state/model/adapter_paths/stats/avg_ms`；
+  stats = `{requests_total, by_stage, errors, total_ms, max_ms, last_ms,
+  last_stage, last_adapter, busy_now}`（线程安全）；
+- 每次 `/generate` 记录阶段耗时/适配器/错误；`busy_now` 可直接用于 App 动态降级；
+- 新增 `scripts/check_local_service.py`（health/metrics/单发/并发 可复现检查）。
+
+### 5.8.2 实测（v5 服务，script 复现）
+
+- 单发：`self_check_min` 3.7–4.1s，adapter=v5；
+- 并发 4 请求：**串行化**（total wall 15.58s ≈ 4×3.9s；单项 wall 4.1/7.9/11.7/15.6s，
+  生成 ms 稳定 3.8–4.1s）——GPU 生成受全局锁保护，排队时间计入请求 wall；
+- 统计正确：`requests_total=8, by_stage={self_check_min:8}, errors=0,
+  avg_ms=10913.9`（avg 含排队；`ms` 字段仍为纯生成时间，可区分）；
+- 健康检查：`/health` state=ready，adapter_paths self_check/self_check_min=v5。
+
+### 5.8.3 判读与用途
+
+1. App/引擎可用 `/metrics.busy_now` 与 `avg_ms` 做「本地忙 → 走云端 / 降档」决策，
+   避免并发排队把任务 wall 拉长；
+2. 单任务（引擎串行调用）不受影响；多任务并发时建议 App 侧限制本地 self_check 并发
+   或按 busy 自动回退云端（fail-open）；
+3. 证据：`llm_sft/service_metrics_round25.json`、`scripts/check_local_service.py`。

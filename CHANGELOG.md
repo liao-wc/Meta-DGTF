@@ -45,6 +45,11 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 25 增补（2026-10-25 同日）】
+- 本地服务新增 GET /metrics（requests_total/by_stage/errors/avg/max/busy_now/
+  last_adapter，线程安全）+ scripts/check_local_service.py 可复现检查。
+- 并发实测：单发 3.7–4.1s；4 并发串行化（total 15.58s，排队计入 wall），
+  统计正确；为 App/引擎「本地忙→降级」动态调度提供观测面。
 【Round 24 增补（2026-10-25 同日）】
 - 科学类事实题三层修复：① 官方白名单补 cas.cn/kepu.net.cn/kepuchina.cn/
   cma.gov.cn/most.gov.cn；② 数值短答比较句过滤（不取「只比空气中慢约90公里/秒」）；
