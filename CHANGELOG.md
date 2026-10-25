@@ -50,6 +50,8 @@ V2.2.3
   查询（tests_fact_queries 10 项）。
 - 法条中文数字抽取：cn_num_to_int（十八/二十/二十二/一百零五）+ 带上下文参与评分；
   法定婚龄题离线重放 answered（二十二/二十周岁，gaps=[]，此前 unverified）。
+- 真实复验：法定婚龄 **0.9495/verified/ready**（二十二/二十周岁，684,973 tok/98 calls/271s）；
+  此前 0.4817/unverified（历史旧规被拒）。
 - 防护记录：historical_answer_rejected / year_mismatch 按宁缺毋假生效。
 - 全量 V2 51/51（782 checks）、fast_gate 12/12。
 【Round 34 增补（2026-10-25 同日）】

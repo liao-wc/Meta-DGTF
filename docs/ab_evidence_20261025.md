@@ -1336,6 +1336,9 @@ fact_flow 15、official_precedence 19、evidence_coverage **46**、app_runs 10�
 一百零五），带上下文（如前文「结婚年龄，男不得早于」）参与概念/现行性评分。
 离线重放同题 pack：**answered/gaps=[]**，answer「…男不得早于二十二周岁，女不得早于
 二十周岁」✔（此前为 unverified）。
+**真实复验（fast+web）**：**quality 0.9495 / verified / ready=True**（684,973 tok /
+98 calls / 271s），gaps=[]，answer「我国婚姻法第六条明确规定…男不得早于二十二周岁，
+女不得早于二十周岁」、display=「二十二周岁」；轨迹 0.4817/unverified → **0.9495/verified**。
 
 ### 41.3 法律/贸易防护生效记录
 
