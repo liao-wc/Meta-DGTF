@@ -23,6 +23,22 @@ def _evidence(pools):
     return out
 
 
+def _fact_verified(packed: dict) -> bool:
+    """事实门是否已给出来源可信的 answered 结论（无硬缺口）。"""
+    _dt = packed.get("decision_trace") or {}
+    if str(_dt.get("question_type")) != "fact":
+        return False
+    card = (_dt.get("fact_card") or {})
+    if str(card.get("status")) != "answered":
+        return False
+    if not (card.get("official_evidence_ids") or []):
+        return False
+    _hard = ("conflict_unresolved", "insufficient_evidence", "no_query",
+             "search_error", "no_record", "question_token_not_in_evidence")
+    gaps = [str(g) for g in (card.get("gaps") or [])]
+    return not any(g in _hard or g.startswith("uncovered:") for g in gaps)
+
+
 def build_ledger(packed: dict) -> dict:
     views = packed.get("views") or {}
     pools = packed.get("pools") or {}
@@ -35,6 +51,7 @@ def build_ledger(packed: dict) -> dict:
     refs = [x for x in evs if str(x.get("tier") or "") == "reference"
             or str(x.get("used_as") or "") == "reference"]
     layers = {}
+    _notes: dict = {}
     for e in LAYERS:
         v = _v(views, e)
         fc = (packed.get("fact_contract") or {}).get("layers", {}).get(e) or {}
@@ -58,9 +75,16 @@ def build_ledger(packed: dict) -> dict:
         elif e == "1":
             product = str(dp.get("answer") or v.get("manifest") or "")
             _aud = v.get("decidability_audit") or {}
+            # ★ [Round 21] 审计「已修复行」（after≠before）不再阻断：审计的价值
+            #   是把越权断言改正；改正后的层已无 overclaim。仅未修复行计阻断。
+            _rows = list(_aud.get("rows") or [])
+            _repaired = sum(1 for _r in _rows
+                            if isinstance(_r, dict) and _r.get("issue")
+                            and str(_r.get("after")) != str(_r.get("before")))
+            _unrepaired = max(0, int(_aud.get("bad") or 0) - _repaired)
             # [v1.30.1] n=0/empty 表示本轮没做审计，不能当成「标准失败」。
             _aud_ok = ((not _aud) or (
-                int(_aud.get("bad") or 0) == 0 and (
+                _unrepaired == 0 and (
                     int(_aud.get("n") or 0) == 0
                     or _aud.get("status") in ("verified", "mixed"))))
             ok = bool(product) and bool(fc.get("ok", True)) and (
@@ -72,8 +96,13 @@ def build_ledger(packed: dict) -> dict:
             product = str(v.get("decision") or v.get("summary")
                           or v.get("manifest") or "")
             mc = v.get("meta_closure") or {}
-            ok = bool(product) and bool(fc.get("ok", True)) and bool(
-                mc.get("clean", True))
+            _waived = bool(mc.get("clean") is False
+                           and _fact_verified(packed))
+            ok = bool(product) and bool(fc.get("ok", True)) and (
+                bool(mc.get("clean", True)) or _waived)
+            if _waived:
+                _notes["closure_waived"] = True
+                _notes["closure_unsettled"] = int(mc.get("unsettled") or 0)
         layers[e] = {
             "rounds": int(v.get("rounds_run") or 0),
             "product_chars": len(product),
@@ -110,7 +139,7 @@ def build_ledger(packed: dict) -> dict:
             sum(float(x.get("confidence") or 0) for x in evs)
             / max(1, len(evs)), 4),
     }
-    return {"layers": layers, "soul": soul,
+    return {"layers": layers, "soul": soul, "notes": _notes,
             "standard_all": soul["standard_all"]}
 
 
