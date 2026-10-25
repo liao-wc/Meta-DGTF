@@ -672,3 +672,43 @@ status/code/response/server/page/url/the/and/…共 40 余词）：这些词在�
 ### 23.4 门禁
 
 全量 V2 **48/48（716 checks）**、fast_gate 12/12。
+
+
+## 24. Round 18 三线验证：过程门泛化 + App fact 全链路 ready + 时效机制边界
+
+### 24.1 过程门修复泛化（HTTP 500）
+
+同 Round 17 的审计通用词修复，换题验证：HTTP 500 状态码（web on）→
+**quality 0.9415 / verified / ready=True**（tokens 947,597 / calls 100 / wall 997s），
+四层过程标准全达标。说明修复不是单题特例。
+
+### 24.2 App fact 全链路首次 ready=True（珠峰）
+
+App `daosheng` 真实任务（新跑次 2026-10-25 18:23）：
+- plan：tier=quality、engine_mode=B、web=on、route=0,1,both,all（场景 fact 规则生效）；
+- 产物：**aq=verified / answer_ready=True**；official E8,E27,E30；gaps 仅
+  `conflict_resolved_official:official_precedence`（辅助冲突已消解）；
+- **answer_display=8844.43米**（展示分离在真实 App 任务中生效）。
+⇒ 事实题「App plan → 引擎事实门 → 过程门 → 展示」全链路首次端到端 ready。
+
+### 24.3 时效优先（prefer_recent）的边界：冲突题仍走 conflict（负结果）
+
+设计验证题：「2024年中国GDP增速最新数据是多少？」（web on）：
+- 结果 0.238 / unverified / ready=False；fact_card=**conflict**，3 处未消解数值冲突；
+  官方源 7 条（stats.gov.cn / gov.cn / ndrc 等）均已捕获。
+- 原因：该题证据同时含「2024 全年增速 5.0%」「总量 134.9 万亿 / 1348066 亿元」
+  「2024 最终核实 vs 初步核算」等**不同口径/修订期**数值；现有消解只允许
+  「日期类辅助冲突」按官方源优先，目标量冲突按红线保持 conflict。
+- 结论：`prefer_recent` 只在**非冲突的多个答案候选**间生效（设计如此）；要覆盖
+  「最新/修订版数据」类问题，需要**口径/修订期感知**的取值策略（识别
+  「初步核算/最终核实/分季度」并取对应期 + 最新修订），属下一轮候选机制。
+
+### 24.4 离线重放（忠实版，零 API）
+
+`scripts/lead_offline_fact_replay.py`（现包含全部 web_results）当天 17 个 fact 跑次：
+answered 17/17、数值答案（含「值+单位」）before 4 → **after 6**；黄河重放答案
+「全长约5464千米」、珠峰答案「8844.43米」。机制改动可在真跑前先用重放检查回归。
+
+### 24.5 门禁
+
+全量 V2 **48/48（716 checks）**、fast_gate 12/12。

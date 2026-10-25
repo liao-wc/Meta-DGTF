@@ -1,16 +1,16 @@
 {
- "n_today": 14,
- "today_answered": 11,
+ "n_today": 17,
+ "today_answered": 17,
  "today_gaps_cleared": 1,
- "today_numeric_before": 3,
- "today_numeric_after": 1,
- "n_fact_replayed": 61,
- "n_numeric": 12,
- "answered_now": 25,
- "gaps_cleared": 6,
- "numeric_answer_before": 3,
- "numeric_answer_after": 1,
- "official_now": 40,
+ "today_numeric_before": 4,
+ "today_numeric_after": 6,
+ "n_fact_replayed": 64,
+ "n_numeric": 13,
+ "answered_now": 32,
+ "gaps_cleared": 7,
+ "numeric_answer_before": 4,
+ "numeric_answer_after": 6,
+ "official_now": 59,
  "rows": [
   {
    "file": "20261020_015222_DeepSeek-V41-Flash-.packed.json",
@@ -26,7 +26,9 @@
    "new_status": "answered",
    "new_gaps": [],
    "new_official": [
-    "E1"
+    "E4",
+    "E7",
+    "E8"
    ],
    "new_answer": "DeepSeek V4.1 Flash-1017新版本发布：许愿式编程一键成真 IT之家 10 月 17 日消息，DeepSeek V4.1 Flash 现已更新至 V4.1-Fl",
    "new_display": "DeepSeek V4.1 Flash-1017新版本发布：许愿式编程一键成真 IT之家 10 月 17 日消息，DeepSeek V4.1 Flash 现已更新至 V4.1-Fl",
@@ -49,7 +51,9 @@
    "new_status": "answered",
    "new_gaps": [],
    "new_official": [
-    "E1"
+    "E4",
+    "E10",
+    "E13"
    ],
    "new_answer": "DeepSeek V4.1 Flash-1017新版本发布：许愿式编程一键成真 IT之家 10 月 17 日消息，DeepSeek V4.1 Flash 现已更新至 V4.1-Fl",
    "new_display": "DeepSeek V4.1 Flash-1017新版本发布：许愿式编程一键成真 IT之家 10 月 17 日消息，DeepSeek V4.1 Flash 现已更新至 V4.1-Fl",
@@ -79,7 +83,7 @@
     "E1",
     "E2",
     "E3",
-    "E13"
+    "E46"
    ],
    "new_answer": "",
    "new_display": "",
@@ -138,7 +142,8 @@
    "new_official": [
     "E1",
     "E2",
-    "E3"
+    "E3",
+    "E10"
    ],
    "new_answer": "",
    "new_display": "",
@@ -164,7 +169,8 @@
    "new_official": [
     "E1",
     "E2",
-    "E3"
+    "E3",
+    "E15"
    ],
    "new_answer": "",
    "new_display": "",
@@ -216,7 +222,8 @@
    "new_official": [
     "E1",
     "E2",
-    "E3"
+    "E3",
+    "E44"
    ],
    "new_answer": "",
    "new_display": "",
@@ -294,7 +301,9 @@
    "new_official": [
     "E1",
     "E2",
-    "E3"
+    "E3",
+    "E11",
+    "E24"
    ],
    "new_answer": "",
    "new_display": "",
@@ -321,7 +330,9 @@
    "new_official": [
     "E1",
     "E2",
-    "E3"
+    "E3",
+    "E42",
+    "E49"
    ],
    "new_answer": "",
    "new_display": "",
@@ -347,7 +358,8 @@
    "new_official": [
     "E1",
     "E2",
-    "E3"
+    "E3",
+    "E29"
    ],
    "new_answer": "",
    "new_display": "",
@@ -373,7 +385,8 @@
    "new_official": [
     "E1",
     "E2",
-    "E3"
+    "E3",
+    "E31"
    ],
    "new_answer": "",
    "new_display": "",
@@ -399,7 +412,8 @@
    "new_official": [
     "E1",
     "E2",
-    "E3"
+    "E3",
+    "E17"
    ],
    "new_answer": "",
    "new_display": "",
@@ -427,7 +441,10 @@
    "new_official": [
     "E1",
     "E2",
-    "E3"
+    "E3",
+    "E29",
+    "E46",
+    "E54"
    ],
    "new_answer": "",
    "new_display": "",
@@ -453,7 +470,8 @@
    "new_official": [
     "E1",
     "E2",
-    "E3"
+    "E3",
+    "E36"
    ],
    "new_answer": "",
    "new_display": "",
@@ -480,7 +498,9 @@
    "new_official": [
     "E1",
     "E2",
-    "E3"
+    "E3",
+    "E49",
+    "E55"
    ],
    "new_answer": "",
    "new_display": "",
@@ -506,7 +526,9 @@
    "new_official": [
     "E1",
     "E2",
-    "E3"
+    "E3",
+    "E41",
+    "E42"
    ],
    "new_answer": "",
    "new_display": "",
@@ -533,7 +555,9 @@
     "E1",
     "E2",
     "E3",
-    "E22"
+    "E41",
+    "E42",
+    "E48"
    ],
    "new_answer": "",
    "new_display": "",
@@ -559,7 +583,9 @@
    "new_official": [
     "E1",
     "E2",
-    "E3"
+    "E3",
+    "E38",
+    "E39"
    ],
    "new_answer": "",
    "new_display": "",
@@ -613,7 +639,8 @@
    "new_official": [
     "E1",
     "E2",
-    "E3"
+    "E3",
+    "E41"
    ],
    "new_answer": "",
    "new_display": "",
@@ -667,7 +694,12 @@
    "new_official": [
     "E1",
     "E2",
-    "E3"
+    "E3",
+    "E29",
+    "E30",
+    "E31",
+    "E44",
+    "E45"
    ],
    "new_answer": "",
    "new_display": "",
@@ -745,7 +777,10 @@
    "new_official": [
     "E1",
     "E2",
-    "E3"
+    "E3",
+    "E29",
+    "E31",
+    "E52"
    ],
    "new_answer": "",
    "new_display": "",
@@ -771,7 +806,8 @@
    "new_official": [
     "E1",
     "E2",
-    "E3"
+    "E3",
+    "E54"
    ],
    "new_answer": "",
    "new_display": "",
@@ -797,7 +833,10 @@
    "new_official": [
     "E1",
     "E2",
-    "E3"
+    "E3",
+    "E26",
+    "E27",
+    "E28"
    ],
    "new_answer": "",
    "new_display": "",
@@ -818,7 +857,6 @@
    "stored_answer": "2026-10-17",
    "new_status": "unknown",
    "new_gaps": [
-    "single_source",
     "insufficient_evidence"
    ],
    "new_official": [
@@ -850,7 +888,11 @@
    "new_official": [
     "E1",
     "E2",
-    "E3"
+    "E3",
+    "E27",
+    "E28",
+    "E45",
+    "E46"
    ],
    "new_answer": "",
    "new_display": "",
@@ -896,14 +938,15 @@
     "E45"
    ],
    "stored_answer": "更多》 央网信息 省政府信息 更多》 更多》 ## 各地动态 更多》 沈阳：七旬老人竟是“全球大网... 铁岭：功德箱≠提款机 朝阳：此团伙专偷农村监控设备... 葫芦岛：轿车斜着",
-   "new_status": "unknown",
+   "new_status": "answered",
    "new_gaps": [
-    "no_official_source",
-    "insufficient_evidence"
+    "uncovered:用一句话说明元DGTF的修行层"
    ],
-   "new_official": [],
-   "new_answer": "",
-   "new_display": "",
+   "new_official": [
+    "E45"
+   ],
+   "new_answer": "更多》 央网信息 省政府信息 更多》 更多》 各地动态 更多》 沈阳：七旬老人竟是“全球大网... 铁岭：功德箱≠提款机 朝阳：此团伙专偷农村监控设备... 葫芦岛：轿车斜着停路边",
+   "new_display": "更多》 央网信息 省政府信息 更多》 更多》 各地动态 更多》 沈阳：七旬老人竟是“全球大网... 铁岭：功德箱≠提款机 朝阳：此团伙专偷农村监控设备... 葫芦岛：轿车斜着停路边",
    "numeric_q": false,
    "stored_answer_numeric": false,
    "new_answer_numeric": false,
@@ -929,8 +972,10 @@
    ],
    "new_official": [
     "E5",
-    "E7",
-    "E9"
+    "E8",
+    "E10",
+    "E43",
+    "E45"
    ],
    "new_answer": "",
    "new_display": "",
@@ -953,7 +998,11 @@
    "new_status": "answered",
    "new_gaps": [],
    "new_official": [
-    "E2"
+    "E2",
+    "E28",
+    "E34",
+    "E35",
+    "E46"
    ],
    "new_answer": "跳转到主要内容 跳转到搜索 切换侧边栏 1. 面向开发者的 Web 技术 2. HTTP 3. 参考 4. HTTP 响应状态码 5. 404 Not Found 记住语言 了解更",
    "new_display": "跳转到主要内容 跳转到搜索 切换侧边栏 1. 面向开发者的 Web 技术 2. HTTP 3. 参考 4. HTTP 响应状态码 5. 404 Not Found 记住语言 了解更",
@@ -977,16 +1026,18 @@
    ],
    "stored_answer": "类型构造器 `list(seq)` 可将任意序列或可迭代对象转换为数据项和顺序均不变的列表。例如，`list((1,2,3))` 会生成 `[1,2,3]` 而 `list('ab",
    "new_status": "answered",
-   "new_gaps": [
-    "no_official_source"
+   "new_gaps": [],
+   "new_official": [
+    "E13",
+    "E26",
+    "E31"
    ],
-   "new_official": [],
    "new_answer": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
    "new_display": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
    "numeric_q": false,
    "stored_answer_numeric": false,
    "new_answer_numeric": false,
-   "gaps_cleared": false
+   "gaps_cleared": true
   },
   {
    "file": "20261022_202654_Python中len函数的作用.packed.json",
@@ -1002,10 +1053,13 @@
    ],
    "stored_answer": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
    "new_status": "answered",
-   "new_gaps": [
-    "no_official_source"
+   "new_gaps": [],
+   "new_official": [
+    "E12",
+    "E30",
+    "E46",
+    "E51"
    ],
-   "new_official": [],
    "new_answer": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
    "new_display": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
    "numeric_q": false,
@@ -1024,10 +1078,10 @@
    ],
    "stored_answer": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
    "new_status": "answered",
-   "new_gaps": [
-    "no_official_source"
+   "new_gaps": [],
+   "new_official": [
+    "E12"
    ],
-   "new_official": [],
    "new_answer": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
    "new_display": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
    "numeric_q": false,
@@ -1046,10 +1100,10 @@
    ],
    "stored_answer": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
    "new_status": "answered",
-   "new_gaps": [
-    "no_official_source"
+   "new_gaps": [],
+   "new_official": [
+    "E12"
    ],
-   "new_official": [],
    "new_answer": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
    "new_display": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
    "numeric_q": false,
@@ -1073,16 +1127,19 @@
    ],
    "stored_answer": "",
    "new_status": "answered",
-   "new_gaps": [
-    "no_official_source"
+   "new_gaps": [],
+   "new_official": [
+    "E26",
+    "E46",
+    "E47",
+    "E48"
    ],
-   "new_official": [],
    "new_answer": "在Python中，len()函数用来确定给定对象中的元素的数量。它可以作用于各种数据类型，如列表、字符串、元组和字典等。 使用len()函数 len()函数的语法非常简单： len",
    "new_display": "在Python中，len()函数用来确定给定对象中的元素的数量。它可以作用于各种数据类型，如列表、字符串、元组和字典等。 使用len()函数 len()函数的语法非常简单： len",
    "numeric_q": false,
    "stored_answer_numeric": false,
    "new_answer_numeric": false,
-   "gaps_cleared": false
+   "gaps_cleared": true
   },
   {
    "file": "20261024_072943_Python中len函数返回什么.packed.json",
@@ -1099,16 +1156,18 @@
    ],
    "stored_answer": "| ``` Yep, len() has to return something less than sys.maxsize. ``` | | msg136646 - (view)",
    "new_status": "answered",
-   "new_gaps": [
-    "no_official_source"
+   "new_gaps": [],
+   "new_official": [
+    "E10",
+    "E21",
+    "E30"
    ],
-   "new_official": [],
-   "new_answer": "The `len()` function in Python is a built-in function that returns the length of an object",
-   "new_display": "The `len()` function in Python is a built-in function that returns the length of an object",
+   "new_answer": "| ``` Yep, len() has to return something less than sys.maxsize. ``` | | msg136646 - (view)",
+   "new_display": "| ``` Yep, len() has to return something less than sys.maxsize. ``` | | msg136646 - (view)",
    "numeric_q": false,
    "stored_answer_numeric": false,
    "new_answer_numeric": false,
-   "gaps_cleared": false
+   "gaps_cleared": true
   },
   {
    "file": "20261024_073909_Python中len函数的返回值是.packed.json",
@@ -1130,16 +1189,24 @@
    ],
    "stored_answer": "",
    "new_status": "answered",
-   "new_gaps": [],
-   "new_official": [
-    "E3"
+   "new_gaps": [
+    "uncovered:类型"
    ],
-   "new_answer": "Python常用的内置函数 - 什么是len()函数？ Channel: JH哥 6.47K subscribers 1 likes Description 31 views Po",
-   "new_display": "Python常用的内置函数 - 什么是len()函数？ Channel: JH哥 6.47K subscribers 1 likes Description 31 views Po",
+   "new_official": [
+    "E3",
+    "E21",
+    "E22",
+    "E23",
+    "E24",
+    "E31",
+    "E36"
+   ],
+   "new_answer": "CPython implementation detail: In CPython, the length is required to be at most `sys.maxsi",
+   "new_display": "CPython implementation detail: In CPython, the length is required to be at most `sys.maxsi",
    "numeric_q": false,
    "stored_answer_numeric": false,
    "new_answer_numeric": false,
-   "gaps_cleared": true
+   "gaps_cleared": false
   },
   {
    "file": "20261024_082341_Python中len函数的作用是什.packed.json",
@@ -1158,10 +1225,16 @@
    ],
    "stored_answer": "在Python中，len()函数用来确定给定对象中的元素的数量。它可以作用于各种数据类型，如列表、字符串、元组和字典等。 使用len()函数 len()函数的语法非常简单： len",
    "new_status": "answered",
-   "new_gaps": [
-    "no_official_source"
+   "new_gaps": [],
+   "new_official": [
+    "E19",
+    "E20",
+    "E21",
+    "E22",
+    "E38",
+    "E57",
+    "E66"
    ],
-   "new_official": [],
    "new_answer": "在Python中，len()函数用来确定给定对象中的元素的数量。它可以作用于各种数据类型，如列表、字符串、元组和字典等。 使用len()函数 len()函数的语法非常简单： len",
    "new_display": "在Python中，len()函数用来确定给定对象中的元素的数量。它可以作用于各种数据类型，如列表、字符串、元组和字典等。 使用len()函数 len()函数的语法非常简单： len",
    "numeric_q": false,
@@ -1182,10 +1255,12 @@
    ],
    "stored_answer": "在Python中，len()函数用来确定给定对象中的元素的数量。它可以作用于各种数据类型，如列表、字符串、元组和字典等。 使用len()函数 len()函数的语法非常简单： len",
    "new_status": "answered",
-   "new_gaps": [
-    "no_official_source"
+   "new_gaps": [],
+   "new_official": [
+    "E30",
+    "E40",
+    "E44"
    ],
-   "new_official": [],
    "new_answer": "在Python中，len()函数用来确定给定对象中的元素的数量。它可以作用于各种数据类型，如列表、字符串、元组和字典等。 使用len()函数 len()函数的语法非常简单： len",
    "new_display": "在Python中，len()函数用来确定给定对象中的元素的数量。它可以作用于各种数据类型，如列表、字符串、元组和字典等。 使用len()函数 len()函数的语法非常简单： len",
    "numeric_q": false,
@@ -1210,16 +1285,22 @@
    ],
    "stored_answer": "2003~2013年我国39个城市平均夜间城市热岛强度(3.4 K±0.2 K)明显高于白天城市热岛强度(2.1 K±0.3 K, P < 0.001).这一现象尤其在半干旱/干旱",
    "new_status": "answered",
-   "new_gaps": [],
+   "new_gaps": [
+    "uncovered:城市热岛效应在夜间比白天更明显"
+   ],
    "new_official": [
-    "E4"
+    "E4",
+    "E12",
+    "E26",
+    "E34",
+    "E35"
    ],
    "new_answer": "2003~2013年我国39个城市平均夜间城市热岛强度(3.4 K±0.2 K)明显高于白天城市热岛强度(2.1 K±0.3 K, P < 0.001).这一现象尤其在半干旱/干旱",
-   "new_display": "39个",
+   "new_display": "2003~2013年我国39个城市平均夜间城市热岛强度(3.4 K±0.2 K)明显高于白天城市热岛强度(2.1 K±0.3 K, P < 0.001).这一现象尤其在半干旱/干旱",
    "numeric_q": false,
    "stored_answer_numeric": true,
    "new_answer_numeric": true,
-   "gaps_cleared": true
+   "gaps_cleared": false
   },
   {
    "file": "20261024_163141_DeepSeekV41Flash.packed.json",
@@ -1240,8 +1321,9 @@
    "new_official": [
     "E1",
     "E5",
-    "E10",
-    "E11"
+    "E13",
+    "E14",
+    "E44"
    ],
    "new_answer": "Date: ... DeepSeek-V4-Flash Update The official release of the DeepSeek-V4-Flash API is no",
    "new_display": "Date: ... DeepSeek-V4-Flash Update The official release of the DeepSeek-V4-Flash API is no",
@@ -1287,7 +1369,9 @@
    "new_status": "answered",
    "new_gaps": [],
    "new_official": [
-    "E13"
+    "E19",
+    "E26",
+    "E29"
    ],
    "new_answer": "1+1等于几？ ... 1+1可以等于2，也可以等于3，也可以等于4，这要根据具体的情况具体分析",
    "new_display": "1+1等于几？ ... 1+1可以等于2，也可以等于3，也可以等于4，这要根据具体的情况具体分析",
@@ -1329,10 +1413,10 @@
    ],
    "stored_answer": "[2022-09-29] # 1+1等于几？ ... 1+1可以等于2，也可以等于3，也可以等于4，这要根据具体的情况具体分析",
    "new_status": "answered",
-   "new_gaps": [
-    "no_official_source"
+   "new_gaps": [],
+   "new_official": [
+    "E32"
    ],
-   "new_official": [],
    "new_answer": "1+1等于几？ ... 1+1可以等于2，也可以等于3，也可以等于4，这要根据具体的情况具体分析",
    "new_display": "1+1等于几？ ... 1+1可以等于2，也可以等于3，也可以等于4，这要根据具体的情况具体分析",
    "numeric_q": true,
@@ -1351,10 +1435,10 @@
    ],
    "stored_answer": "2+2等于几？ 「2+2=5」是一个混合梗，来源于第20集第二部分《罢工的胃》。[] 在《罢工的胃》中，昂崔的三个器官（胃、大脑、心脏）罢工后从昂崔的身体里逃出。其中，昂崔的大脑获",
    "new_status": "answered",
-   "new_gaps": [
-    "no_official_source"
+   "new_gaps": [],
+   "new_official": [
+    "E24"
    ],
-   "new_official": [],
    "new_answer": "2+2等于几？ 「2+2=5」是一个混合梗，来源于第20集第二部分《罢工的胃》。[] 在《罢工的胃》中，昂崔的三个器官（胃、大脑、心脏）罢工后从昂崔的身体里逃出。其中，昂崔的大脑获",
    "new_display": "2+2等于几？ 「2+2=5」是一个混合梗，来源于第20集第二部分《罢工的胃》。[] 在《罢工的胃》中，昂崔的三个器官（胃、大脑、心脏）罢工后从昂崔的身体里逃出。其中，昂崔的大脑获",
    "numeric_q": true,
@@ -1373,10 +1457,10 @@
    ],
    "stored_answer": "[2024-07-14] 光在水中传播的速度比空气中 小小（选填“大”或“小”）",
    "new_status": "answered",
-   "new_gaps": [
-    "no_official_source"
+   "new_gaps": [],
+   "new_official": [
+    "E23"
    ],
-   "new_official": [],
    "new_answer": "光在水中传播的速度比空气中 小小（选填“大”或“小”）",
    "new_display": "光在水中传播的速度比空气中 小小（选填“大”或“小”）",
    "numeric_q": true,
@@ -1418,17 +1502,18 @@
     "E8"
    ],
    "stored_answer": "",
-   "new_status": "conflict",
+   "new_status": "answered",
    "new_gaps": [
-    "no_official_source",
-    "conflict_unresolved"
+    "conflict_resolved_official:official_precedence"
    ],
-   "new_official": [],
-   "new_answer": "",
-   "new_display": "",
+   "new_official": [
+    "E8"
+   ],
+   "new_answer": "关于珠峰高度 ... 我看2005年公布的高程是8844.43米",
+   "new_display": "8844.43米",
    "numeric_q": true,
    "stored_answer_numeric": false,
-   "new_answer_numeric": false,
+   "new_answer_numeric": true,
    "gaps_cleared": false
   },
   {
@@ -1443,17 +1528,18 @@
     "E8"
    ],
    "stored_answer": "",
-   "new_status": "conflict",
+   "new_status": "answered",
    "new_gaps": [
-    "no_official_source",
-    "conflict_unresolved"
+    "conflict_resolved_official:official_precedence"
    ],
-   "new_official": [],
-   "new_answer": "",
-   "new_display": "",
+   "new_official": [
+    "E8"
+   ],
+   "new_answer": "关于珠峰高度 ... 我看2005年公布的高程是8844.43米",
+   "new_display": "8844.43米",
    "numeric_q": true,
    "stored_answer_numeric": false,
-   "new_answer_numeric": false,
+   "new_answer_numeric": true,
    "gaps_cleared": false
   },
   {
@@ -1474,7 +1560,8 @@
    "new_official": [
     "E1",
     "E3",
-    "E4"
+    "E4",
+    "E29"
    ],
    "new_answer": "6280千米与0.88千米的对话——记长江局与四唯街道六合社区联合开展十九届五中全会精神学习 ... 6280千米是长江的长度，0.88千米是湖北省武汉市江岸区四唯街道六合社区辖区",
    "new_display": "6280千米",
@@ -1495,17 +1582,18 @@
     "E8"
    ],
    "stored_answer": "[2018-09-20] ### 关于珠峰高度 ... 我看2005年公布的高程是8844.43米",
-   "new_status": "conflict",
+   "new_status": "answered",
    "new_gaps": [
-    "no_official_source",
-    "conflict_unresolved"
+    "conflict_resolved_official:official_precedence"
    ],
-   "new_official": [],
-   "new_answer": "",
-   "new_display": "",
+   "new_official": [
+    "E8"
+   ],
+   "new_answer": "关于珠峰高度 ... 我看2005年公布的高程是8844.43米",
+   "new_display": "8844.43米",
    "numeric_q": true,
    "stored_answer_numeric": true,
-   "new_answer_numeric": false,
+   "new_answer_numeric": true,
    "gaps_cleared": false
   },
   {
@@ -1525,11 +1613,11 @@
    "new_official": [
     "E3"
    ],
-   "new_answer": "黄河，我国第二大河，中华民族的母亲河，哺育了灿烂的中华文明",
-   "new_display": "黄河，我国第二大河，中华民族的母亲河，哺育了灿烂的中华文明",
+   "new_answer": "黄河，中国北部大河，全长约5464千米，流域面积约79.5万平方千米",
+   "new_display": "5464千米",
    "numeric_q": true,
    "stored_answer_numeric": true,
-   "new_answer_numeric": false,
+   "new_answer_numeric": true,
    "gaps_cleared": true
   },
   {
@@ -1547,10 +1635,12 @@
    "stored_answer": "你的工作会被AI取代吗？哪些职位受到的影响最大 ... 人工智能（AI）企业正在大肆宣传其工具取代人类劳动的能力",
    "new_status": "answered",
    "new_gaps": [
-    "no_official_source",
     "uncovered:会先取代哪类工作"
    ],
-   "new_official": [],
+   "new_official": [
+    "E29",
+    "E33"
+   ],
    "new_answer": "你的工作会被AI取代吗？哪些职位受到的影响最大 ... 人工智能（AI）企业正在大肆宣传其工具取代人类劳动的能力",
    "new_display": "你的工作会被AI取代吗？哪些职位受到的影响最大 ... 人工智能（AI）企业正在大肆宣传其工具取代人类劳动的能力",
    "numeric_q": false,
@@ -1570,12 +1660,85 @@
    "stored_answer": "工具 search_web({'query': 'RFC 9110 404 Not Found definition'}) 返回：- HTTP_NOT_FOUND constant",
    "new_status": "answered",
    "new_gaps": [
-    "no_official_source",
-    "uncovered:HTTP"
+    "no_official_source"
    ],
    "new_official": [],
-   "new_answer": "出现网页错误时 404、502这些数字代表啥 ... 所以，在网页响应中还要加入相应的状态码来告诉浏览器当前请求的处理状态，这就是我们在链接网页出错时所看到的404、502等状态码",
-   "new_display": "出现网页错误时 404、502这些数字代表啥 ... 所以，在网页响应中还要加入相应的状态码来告诉浏览器当前请求的处理状态，这就是我们在链接网页出错时所看到的404、502等状态码",
+   "new_answer": "工具 search_web({'query': 'RFC 9110 404 Not Found definition'}) 返回：- HTTP_NOT_FOUND constant",
+   "new_display": "工具 search_web({'query': 'RFC 9110 404 Not Found definition'}) 返回：- HTTP_NOT_FOUND constant",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261025_174443_黄河的长度是多少千米.packed.json",
+   "question": "黄河的长度是多少千米？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E3"
+   ],
+   "stored_answer": "黄河，中国北部大河，全长约5464千米，流域面积约79.5万平方千米",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E3"
+   ],
+   "new_answer": "黄河，中国北部大河，全长约5464千米，流域面积约79.5万平方千米",
+   "new_display": "5464千米",
+   "numeric_q": true,
+   "stored_answer_numeric": true,
+   "new_answer_numeric": true,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261025_174637_HTTP404状态码表示什么.packed.json",
+   "question": "HTTP 404状态码表示什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "stored_answer": "404 Not Found HTTP 响应状态码404 Not Found 指的是服务器无法找到所请求的资源",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "new_answer": "404 Not Found HTTP 响应状态码404 Not Found 指的是服务器无法找到所请求的资源",
+   "new_display": "404 Not Found HTTP 响应状态码404 Not Found 指的是服务器无法找到所请求的资源",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261025_180653_HTTP404状态码表示什么.packed.json",
+   "question": "HTTP 404状态码表示什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "stored_answer": "404 Not Found HTTP 响应状态码404 Not Found 指的是服务器无法找到所请求的资源",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "new_answer": "404 Not Found HTTP 响应状态码404 Not Found 指的是服务器无法找到所请求的资源",
+   "new_display": "404 Not Found HTTP 响应状态码404 Not Found 指的是服务器无法找到所请求的资源",
    "numeric_q": false,
    "stored_answer_numeric": false,
    "new_answer_numeric": false,

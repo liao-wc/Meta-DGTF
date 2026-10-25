@@ -45,6 +45,14 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 18 增补（2026-10-25 同日）】
+- 过程门修复泛化验证：HTTP 500 → 0.9415/verified/ready=True（四层全达标）。
+- App fact 全链路首次 ready=True：珠峰 daosheng 真实任务 aq=verified、ready=True、
+  official E8,E27,E30、answer_display=8844.43米（事实门+过程门+展示全链路打通）。
+- 时效优先边界（负结果）：「2024中国GDP增速最新」题因口径/修订期冲突 3 处仍走
+  conflict（unverified）；prefer_recent 仅作用于非冲突候选，口径/修订感知选值
+  列为下一轮机制。
+- 离线重放（忠实版）：当天 17/17 fact answered，数值答案 4→6。
 【Round 17 增补（2026-10-25 同日）】
 - 修 decidability_audit 通用词误判：not/found/http/status… 40+ 高频词不再冒充
   证据命中（真跑 HTTP404 研究层被 not/found 误判 undecidable overclaim ⇒ 层不达标）。
