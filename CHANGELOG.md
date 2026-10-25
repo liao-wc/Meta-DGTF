@@ -42,6 +42,11 @@ V2.2.3
   - 前缀缓存实测：全量跑 prompt cache hit ratio **13.9%~17.6%**（已自动省约 ¥0.2/跑）；
     prompt 静态段前置可进一步省，但需质量 A/B，列为下一轮 opt-in 项。
 
+【Round 9 增补（2026-10-25 同日）】
+- 事实答案展示分离：FactCard.to_dict 新增 answer_display（数值紧凑「值+单位」），
+  answer 本体保持完整供一致性校验；引擎 answer_summary 优先取 answer_display。
+  修「verified 事实答案混入网页标题/日期/长文本」；判据 tests_fact_official_precedence
+  19 项、tests_fact_flow 15 项全 PASS（零 API 成本，预算受限下的性价比改进）。
 【Round 8 增补（2026-10-25 同日）】
 - 新机制：事实门「官方源优先」冲突消解（仅日期类辅助冲突可消解，目标量冲突不越权）
   + 证据去重官方优先（官方源顶替非官方重复项）；fact_flow/evidence 默认生效，

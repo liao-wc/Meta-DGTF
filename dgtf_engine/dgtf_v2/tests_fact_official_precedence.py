@@ -155,6 +155,30 @@ def main():
     ck("契约：JSON 往返稳定",
        json.loads(json.dumps(a, ensure_ascii=False))["status"] == a["status"])
 
+    # ⑨ answer_display：逻辑用完整 answer，展示用数值紧凑版
+    long_item = ev("E1", "珠穆朗玛峰海拔测量历史可追溯到1852年，最新公布"
+                        "海拔8848.86米，本次测量由自然资源部发布，测量方法"
+                        "包括雪深雷达与GNSS联测等多项技术")
+    card7 = build_fact_card(Q, report(
+        [long_item, ev("E2", "珠穆朗玛峰海拔8848.86米"), off],
+        [], gaps=["single_source"]))
+    d7 = card7.to_dict()
+    ck("展示分离：to_dict 含 answer_display",
+       isinstance(d7.get("answer_display"), str) and d7["answer_display"])
+    ck("展示分离：answer 保持完整短文本（一致性用）",
+       "测量方法" in str(d7.get("answer")) or len(str(d7.get("answer"))) > 20)
+    ck("展示分离：数值型题 answer_display 收窄为值+单位",
+       "8848.86" in str(d7.get("answer_display"))
+       and len(str(d7.get("answer_display"))) <= 20,
+       d7.get("answer_display"))
+    d8 = build_fact_card("珠穆朗玛峰属于哪个国家？", report(
+        [ev("E1", "珠穆朗玛峰位于中国与尼泊尔边界"),
+         ev("E2", "珠穆朗玛峰位于中国与尼泊尔边界"), off], [],
+        gaps=["single_source"])).to_dict()
+    ck("展示分离：非数值题 answer_display 与 answer 相同",
+       d8.get("answer_display") == d8.get("answer"),
+       (d8.get("answer_display"), d8.get("answer")))
+
     print("\nTOTAL PASS %d / FAIL %d" % (len(P), len(F)))
     return 0 if not F else 1
 

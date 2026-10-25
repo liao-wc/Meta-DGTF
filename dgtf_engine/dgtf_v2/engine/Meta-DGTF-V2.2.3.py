@@ -25821,7 +25821,9 @@ class MetaDGTF:
                 "claim_gaps": list(_card0.get("gaps") or []),
             }
             # 事实题只有 verified 才把证据原文当答案；needs_evidence 不得显示无关网页文本。
-            _ans0 = str((_card0.get("answer") if _card0.get("status") == "answered"
+            _card_ans0 = (_card0.get("answer_display")
+                          or _card0.get("answer"))
+            _ans0 = str((_card_ans0 if _card0.get("status") == "answered"
                          and _dt0.get("answer_quality") == "verified"
                          else ("" if _dt0.get("question_type") == "fact"
                                else ((_dt0.get("reasoning") or {}).get("answer")))) or "")

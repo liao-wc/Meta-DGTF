@@ -394,3 +394,26 @@ rounds=0:2,1:3,both:2,all:2 | scenario=reasoning → 推荐 fast_domain2
    排序与语义过滤，作为下一轮机制候选。
 3. 预算状态：Round 8 末尾账户余额约 **¥3.3**，不足以再跑完整引擎跑次（单次 ¥2.5+）；
    后续轮次转入零/低 API 成本工作（代码、判据、文档、离线分析），直到预算耗尽。
+
+
+## 16. 事实答案「展示分离」：answer_display 数值紧凑（Round 9，零 API 成本）
+
+问题（来自已存真实 pack）：verified 事实答案字段混入网页噪声——
+- 长江长度：「[2020-12-28] 6280千米与0.88千米的对话——记长江局与…（整段网页文本）」
+- 珠峰海拔：「…我看2005年公布的高程是8844.43米」（日期/标题前缀）
+
+第一版把 `card.answer` 直接收窄成「值+单位」→ **真实回归**：consistency 校验按
+`card.answer` 做检索 vs 推理比对，收窄后相似度 0.17 判 mismatch
+（tests_fact_flow 两处失败）。故改为**展示分离**：
+- `card.answer` 保持完整短文本（逻辑/一致性用，零改动）；
+- `FactCard.to_dict()` 新增 **`answer_display`** = 数值紧凑版
+  （`_compact_numeric_answer`：题面含数值信号时抽「值+单位」，单位命中题面优先、
+  再按原文位置；抽不到则回退清洗文本）；
+- 引擎 `answer_summary.answer` 优先取 `answer_display`（Show/App/契约统一）。
+
+判据：tests_fact_official_precedence 增至 **19 项**（新增 4 项展示分离：字段存在、
+answer 完整、数值题收窄 ≤20 字、非数值题两者相同）；tests_fact_flow 15 项回归通过
+（一致性路径不受影响）。全量 V2 45 文件、fast_gate 12/12 绿。
+
+说明：紧凑答案的「最新值优先」（珠峰 8844.43 vs 最新 8848.86）需要按证据日期排序 +
+语义过滤，属下一轮候选；本轮余额约 ¥3，无法再跑真实 e2e 验证，故先落机制与离线判据。

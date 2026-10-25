@@ -287,8 +287,11 @@ class FactCard:
         return True
 
     def to_dict(self) -> dict:
+        _display = _compact_numeric_answer(self.question, self.answer)
         return {"question": self.question, "status": self.status,
-                "answer": self.answer, "queries": list(self.queries),
+                "answer": self.answer,
+                "answer_display": _display or self.answer,
+                "queries": list(self.queries),
                 "evidence_ids": list(self.evidence_ids),
                 "official_evidence_ids": list(self.official_evidence_ids),
                 "conflicts": [dict(c) if isinstance(c, dict) else c
@@ -314,6 +317,54 @@ def _clean_card_answer(ans: str) -> str:
     s = re.sub(r"^#+\s*", "", s)
     s = re.sub(r"\s+#+\s*", " ", s)
     return s.strip()[:200]
+
+
+#: 数值型问句的信号词（答案应收窄为 值+单位）
+_NUM_Q_HINTS: tuple[str, ...] = (
+    "多少", "几", "多大", "多长", "多高", "多重", "多远", "多深",
+    "多宽", "多厚", "多快", "多慢", "百分比", "百分之", "比例",
+    "千米", "公里", "米", "厘米", "毫米", "千米", "kg", "公斤", "吨",
+    "%", "℃", "度", "年", "个月", "天", "小时", "分钟", "秒",
+)
+
+
+def _compact_numeric_answer(question: str, answer: str) -> str:
+    """数值型题：从答案文本里抽「值+单位」，返回紧凑短答；抽不到则原样返回。"""
+    q = str(question or "")
+    ans = str(answer or "").strip()
+    if not ans or not any(h in q for h in _NUM_Q_HINTS):
+        return ans
+    try:
+        from .evidence import extract_numeric_claims
+    except Exception:  # noqa: BLE001
+        return ans
+    claims = []
+    for c in extract_numeric_claims(ans):
+        try:
+            val = float(c.get("value"))
+        except (TypeError, ValueError):
+            continue
+        unit = str(c.get("unit") or "").strip()
+        if not unit:
+            continue
+        claims.append((val, unit, str(c.get("raw") or "")))
+    if not claims:
+        return ans
+    # 单位命中题面的优先；其次数值在答案中出现更早的优先（保持原文顺序）
+    q_units = [u for u in ("千米", "公里", "米", "厘米", "毫米", "%", "℃",
+                           "年", "吨", "公斤", "kg", "小时", "分钟", "秒")
+               if u in q or u.lower() in q.lower()]
+
+    def rank(c):
+        val, unit, raw = c
+        u_hit = 0 if any(u and (u in unit or unit in u) for u in q_units) else 1
+        pos = ans.find(raw) if raw else 10 ** 6
+        return (u_hit, pos if pos >= 0 else 10 ** 6, -abs(val))
+    val, unit, raw = sorted(claims, key=rank)[0]
+    if raw:
+        return raw.strip()[:60]
+    txt = ("%g" % val) + unit
+    return txt[:60]
 
 
 def _is_aux_date_conflict(c: dict) -> bool:
