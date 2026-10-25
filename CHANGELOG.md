@@ -45,6 +45,10 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 56 增补（2026-10-26）】
+- 全量回归复验（零 API）：App 自检 444/0；离线事实重放全 answered；
+  过程门 85 packs 审计已修复 27/未修复 0；fast_gate 12/12、V2 51/51（804 checks）。
+  Round 40–55 机制改动对 App/引擎无回归。
 【Round 54/55 增补（2026-10-26）】
 - v6 服务重启清零最终探针（health/metrics/generate，errors=0）。
 - 列举型答案收窄（A58/A59）：五环颜色 display=蓝、黄、黑、绿、红色；

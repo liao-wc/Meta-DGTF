@@ -1775,3 +1775,16 @@ gaps=「uncovered:民法典规定」「uncovered:岁成年」；answer 取「八
 ### 61.3 门禁
 
 全量 **V2 51/51（804 checks）**、fast_gate 12/12。
+
+
+## 62. 全量回归复验（Round 56，零 API）
+
+| 项 | 结果 |
+|---|---|
+| App 自检（mock server，含 T3/道生 plan/busy 回退/display） | **PASS 444 / FAIL 0** |
+| 离线事实重放（全部已存 pack 用新引擎重算） | 全部 answered，与历史一致/更优（404、len 等） |
+| 过程门审计（85 fact packs） | 审计已修复 **27 / 未修复 0**；fail layers {all:13, both:4, 1:5} |
+| fast_gate / V2 | 12/12、51/51（804 checks） |
+
+结论：Round 40–55 的连续机制改动（事实口径/展示收窄/列举/命名/全长等）对
+App 与引擎均**无回归**；离线重放证明历史 pack 在新版下仍 answered。
