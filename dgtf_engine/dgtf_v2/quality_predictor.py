@@ -257,6 +257,141 @@ def evaluate(model: dict, rows: List[dict], y: List[float]) -> dict:
             "pred_max": round(max(preds), 3)}
 
 
+# ── Conformal 保形下界（2026-10-25，Round 2）────────────────────────────
+# 动机：M4 的 point prediction 只能排序，不能回答「切这一档会不会掉质量」。
+# 做法：K-fold 交叉验证残差 residual = actual - oof_pred；取 alpha 分位数为
+#       单侧修正量 q；下界 = clip(point_pred + q, 0, 1)。
+# 语义（交叉保形 CV+ 近似）：在可交换性假设下，新样本真实质量有约 1-alpha
+#       的概率不小于该下界；有限样本实测覆盖率见 calibrate_conformal()。
+# 约束：纯 Python / 无随机性（folds 按 idx % folds 固定划分，可复现）。
+def _quantile(vals: List[float], q: float) -> float:
+    """线性插值分位数（q∈[0,1]）。空列表返回 0.0。"""
+    xs = sorted(float(v) for v in (vals or []))
+    if not xs:
+        return 0.0
+    q = max(0.0, min(1.0, float(q)))
+    if len(xs) == 1:
+        return xs[0]
+    pos = q * (len(xs) - 1)
+    lo = int(math.floor(pos))
+    hi = int(math.ceil(pos))
+    if lo == hi:
+        return xs[lo]
+    w = pos - lo
+    return xs[lo] * (1.0 - w) + xs[hi] * w
+
+
+def predict_row(model: dict, row: dict) -> float:
+    """对训练器/校准器的 dict 行做预测（口径与 predict() 完全一致）。"""
+    r = row or {}
+    return predict(model, r.get("_features") or {},
+                   int(_f(r.get("_route_n"), 4)),
+                   _f(r.get("_rounds_avg"), 2),
+                   bool(r.get("_web")),
+                   str(r.get("_mode") or "other"),
+                   r.get("_history") or {})
+
+
+def _subfit(model: dict, rows: List[dict], y: List[float]) -> dict:
+    if str(model.get("kind")) == "knn":
+        return fit_knn(rows, y, k=int(model.get("k") or 5))
+    return fit(rows, y, lam=float(model.get("lambda") or 2.0))
+
+
+def calibrate_conformal(model: dict, rows: List[dict], y: List[float],
+                        alpha: float = 0.2, folds: int = 5) -> dict:
+    """K-fold 交叉残差 → 单侧保形下界修正量与实测覆盖率。
+
+    返回 dict（写入 model["conformal"]）：
+      {alpha, folds, n, q_global, q_by_mode, coverage_oof, mae_oof,
+       residual_q10/q50/q90, kind}
+    """
+    n = min(len(rows), len(y))
+    rows, y = list(rows[:n]), [float(v) for v in y[:n]]
+    if n < 8:
+        return {"alpha": float(alpha), "folds": 0, "n": n, "q_global": 0.0,
+                "q_by_mode": {}, "coverage_oof": None, "mae_oof": None,
+                "note": "样本不足 8，不校准"}
+    folds = max(2, min(int(folds or 5), n))
+    oof: List[Optional[float]] = [None] * n
+    for f in range(folds):
+        test_idx = [i for i in range(n) if i % folds == f]
+        train_idx = [i for i in range(n) if i % folds != f]
+        if len(train_idx) < 4 or not test_idx:
+            continue
+        sub = _subfit(model, [rows[i] for i in train_idx],
+                      [y[i] for i in train_idx])
+        for i in test_idx:
+            oof[i] = predict_row(sub, rows[i])
+    pairs = [(float(y[i]), float(oof[i])) for i in range(n)
+             if oof[i] is not None]
+    if not pairs:
+        return {"alpha": float(alpha), "folds": folds, "n": n,
+                "q_global": 0.0, "q_by_mode": {}, "coverage_oof": None,
+                "mae_oof": None, "note": "交叉验证无有效预测"}
+    resid = [a - p for a, p in pairs]
+    q_global = _quantile(resid, alpha)
+    by_mode: Dict[str, List[float]] = {}
+    for i in range(n):
+        if oof[i] is None:
+            continue
+        mb = mode_bucket(str(rows[i].get("_mode") or "other"))
+        by_mode.setdefault(mb, []).append(float(y[i]) - float(oof[i]))
+    # 每模式至少 15 条残差才单独给分位数，且与全局值偏离 ≤0.15 才采用；
+    # 否则回落到全局（少量样本的模式分位数会在小样本上过度保守，例：B 桶
+    # 21 条算出 -0.47 的极端下界，会让切档永远弃权）。这是工程护栏，
+    # 说明见 docs/quality_conformal_20261025.md。
+    q_by_mode = {}
+    for k, v in by_mode.items():
+        if len(v) < 15:
+            continue
+        _qk = _quantile(v, alpha)
+        if abs(_qk - q_global) <= 0.15:
+            q_by_mode[k] = round(_qk, 4)
+    covered = sum(1 for a, p in pairs if a >= p + q_global)
+    mae = sum(abs(a - p) for a, p in pairs) / len(pairs)
+    return {
+        "alpha": round(float(alpha), 4),
+        "folds": folds,
+        "n": n,
+        "kind": str(model.get("kind") or "ridge"),
+        "q_global": round(q_global, 4),
+        "q_by_mode": q_by_mode,
+        "coverage_oof": round(covered / len(pairs), 4),
+        "mae_oof": round(mae, 4),
+        "residual_q10": round(_quantile(resid, 0.10), 4),
+        "residual_q50": round(_quantile(resid, 0.50), 4),
+        "residual_q90": round(_quantile(resid, 0.90), 4),
+        "note": "K-fold 交叉保形下界；coverage_oof≈1-alpha 时可用",
+    }
+
+
+def predict_lower(model: Optional[dict], features: dict, route_n=4,
+                  rounds_avg=2.0, web=False, mode="other",
+                  history=None) -> Optional[float]:
+    """保形下界（无 conformal 段时返回 None ⇒ 调用方保持旧行为）。"""
+    if not isinstance(model, dict):
+        return None
+    conf = model.get("conformal") or {}
+    if conf.get("alpha") is None or conf.get("q_global") is None:
+        return None
+    p = predict(model, features, route_n, rounds_avg, web, mode, history)
+    mb = mode_bucket(str(mode or "other"))
+    q = (conf.get("q_by_mode") or {}).get(mb, conf.get("q_global") or 0.0)
+    return max(0.0, min(1.0, float(p) + float(q)))
+
+
+def predict_lower_row(model: Optional[dict], row: dict) -> Optional[float]:
+    """对训练器/校准器的 dict 行做「保形下界」预测（口径同 predict_row）。"""
+    r = row or {}
+    return predict_lower(model, r.get("_features") or {},
+                         int(_f(r.get("_route_n"), 4)),
+                         _f(r.get("_rounds_avg"), 2),
+                         bool(r.get("_web")),
+                         str(r.get("_mode") or "other"),
+                         r.get("_history") or {})
+
+
 def load_model(path: str) -> Optional[dict]:
     try:
         p = Path(path)

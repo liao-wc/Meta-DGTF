@@ -161,3 +161,17 @@ python scripts/run_v2_tests.py                             # V2 全量（含 tes
 python scripts/eval_self_check_replay.py                   # 离线回放（零 API）
 python dgtf_engine/dgtf_v2/tests_fine_check.py             # 机制层判据（48 checks）
 ```
+
+## 八、Round 2 增补（2026-10-25）
+
+- **M4 保形下界**：`dgtf_v2/quality_predictor.py` 新增
+  `calibrate_conformal()/predict_lower()/predict_lower_row()`；
+  训练脚本默认 `alpha=0.2, folds=5`，模型 JSON 带 `conformal` 段；
+  `mode_fusion.fused_plan` 在有 conformal 段时输出 `quality_prediction_lower` /
+  `conformal` 字段并启用 fast→B 下界守卫与 `abstain` 标记，无该段时零行为差。
+  证据：`docs/quality_conformal_20261025.md`；判据：`tests_quality_conformal.py`（23 项）。
+- **local 端点参数修正**：`api.local_llm` / `output.local_llm` 增加
+  `max_new_tokens`（默认 **160**）与 `timeout`（默认 **45s**）。
+  原因：0.5B 本地模型实测 ~6 tok/s，旧值 600 tokens/30s 必超时；
+  min schema 160 tokens 足够。超时/非200/低置信/解析失败仍回退 llm 并留痕。
+

@@ -859,10 +859,14 @@ def m4_prediction(question: str, history: dict, preset: dict | None = None) -> d
         feats = question_features(question) or {}
         plan = fused_plan(cascade=True, features=feats, history=m4_hist)
         first = plan.get("first") or {}
+        # [Round 2] 保形下界与弃权状态进入 plan，供 App/审计侧读取
+        #   （无 conformal 段时为空 dict，旧行为不变）。
         return {"enabled": True, "ok": True, "features": feats,
                 "first_mode": str(first.get("mode") or ""),
                 "first_reason": str(first.get("reason") or ""),
                 "quality_prediction": plan.get("quality_prediction") or {},
+                "quality_prediction_lower": plan.get("quality_prediction_lower") or {},
+                "conformal": plan.get("conformal") or {},
                 "quality_prediction_kind": plan.get("quality_prediction_kind") or "",
                 "quality_guard": plan.get("quality_guard") or "",
                 "history_input": m4_hist}

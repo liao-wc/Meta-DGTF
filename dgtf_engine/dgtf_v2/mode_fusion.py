@@ -119,16 +119,65 @@ def fused_plan(min_quality: Optional[float] = None,
                                                   for k, v in pred_raw.items()}
                 plan["quality_prediction"] = pred
                 plan["quality_prediction_kind"] = "ridge+mode_prior(0.5/0.5)"
+                # ── [Round 2] 保形下界：把「点预测」升级为「带风险保证的下界」 ──
+                #   模型 JSON 若带 conformal 段（scripts/train_quality_predictor.py
+                #   生成），则用 K-fold 交叉保形下界做更保守的切档；没有该段时
+                #   完全保持旧行为（零行为差）。
+                _lower: dict = {}
+                try:
+                    from dgtf_v2.quality_predictor import predict_lower
+                    for _m in ("fast", "B", "serial"):
+                        _lv = predict_lower(model, features, route_n=4,
+                                            rounds_avg=2.0,
+                                            web=bool(require_web), mode=_m,
+                                            history=history or {})
+                        if _lv is not None:
+                            _lower[_m] = round(float(_lv), 4)
+                    if _lower:
+                        _conf = model.get("conformal") or {}
+                        plan["quality_prediction_lower"] = _lower
+                        plan["conformal"] = {
+                            "alpha": _conf.get("alpha"),
+                            "q_global": _conf.get("q_global"),
+                            "coverage_oof": _conf.get("coverage_oof"),
+                        }
+                except Exception as _ce:  # noqa: BLE001
+                    plan["conformal_error"] = str(_ce)
                 _first_mode = (first or {}).get("mode")
-                if (_first_mode == "fast" and min_quality is not None
-                        and pred["fast"] < min_quality
-                        and pred["B"] >= min_quality):
+                _conf_handled = False
+                if (_lower and min_quality is not None
+                        and max(_lower.values()) < min_quality):
+                    plan["quality_guard"] = (
+                        "conformal abstain：所有模式保形下界 < 目标 %.2f，"
+                        "保留点预测选择并标记弃权" % min_quality)
+                    plan["conformal"]["decision"] = "abstain"
+                    _conf_handled = True
+                elif (_lower and _first_mode == "fast" and min_quality is not None
+                        and _lower.get("fast", 1.0) < min_quality
+                        and _lower.get("B", 0.0) >= min_quality):
+                    plan["first"] = {
+                        "mode": "B", "info": dict(MODES["B"]),
+                        "reason": "保形下界：fast %.3f < %.2f ≤ B %.3f，直接选 B"
+                                  % (_lower.get("fast", 0.0), min_quality,
+                                     _lower.get("B", 0.0))}
+                    plan["cascade"] = None
+                    plan["quality_guard"] = "fast→B by conformal lower"
+                    _conf_handled = True
+                elif (_lower and _first_mode == "fast" and min_quality is not None
+                      and _lower.get("fast", 0.0) >= min_quality):
+                    plan["quality_guard"] = "conformal lower: fast meets target"
+                    _conf_handled = True
+                if not _conf_handled and (_first_mode == "fast"
+                                         and min_quality is not None
+                                         and pred["fast"] < min_quality
+                                         and pred["B"] >= min_quality):
                     plan["first"] = {"mode": "B", "info": dict(MODES["B"]),
                                      "reason": "质量预测：fast 预测 %.3f < %.2f，直接选 B"
                                                % (pred["fast"], min_quality)}
                     plan["cascade"] = None
                     plan["quality_guard"] = "fast→B by predictor"
-                elif (_first_mode == "fast" and min_quality is not None
+                elif (not _conf_handled and _first_mode == "fast"
+                      and min_quality is not None
                       and pred["fast"] >= min_quality):
                     plan["quality_guard"] = "predict fast meets target"
         except Exception as exc:  # noqa: BLE001

@@ -15,8 +15,9 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "dgtf_engine"))
 
 from dgtf_v2.pareto_flow import extract_flow_metrics  # noqa: E402
-from dgtf_v2.quality_predictor import (evaluate, fit, fit_knn, mode_bucket,  # noqa: E402
-                                        save_model)
+from dgtf_v2.quality_predictor import (calibrate_conformal,  # noqa: E402
+                                        evaluate, fit, fit_knn, mode_bucket,
+                                        predict_lower_row, save_model)
 
 
 def _rounds_avg(rounds) -> float:
@@ -35,6 +36,9 @@ def main() -> int:
     ap.add_argument("--model", default="dgtf_memory/quality_predictor.json")
     ap.add_argument("--lam", type=float, default=2.0)
     ap.add_argument("--test-ratio", type=float, default=0.2)
+    ap.add_argument("--conformal-alpha", type=float, default=0.2,
+                    help="保形下界的风险水平（0.2 ⇒ 实测覆盖率目标 80%%）")
+    ap.add_argument("--conformal-folds", type=int, default=5)
     args = ap.parse_args()
     rows, ys, metas = [], [], []
     for p in sorted((ROOT / "outputs").glob("*.packed.json"),
@@ -101,6 +105,32 @@ def main() -> int:
     model["n_train"] = len(rows)
     model["n_test"] = len(tidx)
     model["trained_from"] = "outputs/*.packed.json"
+    # [Round 2] 保形下界：K-fold 交叉残差校准 + 留出集覆盖率实测。
+    #   · q_global 进入 model["conformal"]，mode_fusion 用它做切档下界；
+    #   · coverage_test 是「留出集真实质量 ≥ 下界」的比例，应接近 1-alpha；
+    #   · 校准失败不阻断训练（写 error 段，mode_fusion 自动保持旧行为）。
+    try:
+        conf = calibrate_conformal(model, rows, ys,
+                                   alpha=args.conformal_alpha,
+                                   folds=args.conformal_folds)
+        # ★ 必须先挂到 model 上，predict_lower_row 才看得到 conformal 段
+        model["conformal"] = conf
+        _ok = _n = 0
+        for _i, _r in enumerate(test_rows):
+            _pl = predict_lower_row(model, _r)
+            if _pl is None:
+                continue
+            _n += 1
+            if float(test_y[_i]) >= float(_pl):
+                _ok += 1
+        conf["coverage_test"] = round(_ok / _n, 4) if _n else None
+        conf["coverage_test_n"] = _n
+        model["conformal"] = conf
+        print("conformal:", json.dumps(conf, ensure_ascii=False))
+    except Exception as _exc:  # noqa: BLE001
+        model["conformal"] = {"error": str(_exc)}
+        print("conformal 校准失败（不阻断）：", _exc)
+
     if save_model(model, str(ROOT / args.model)):
         print("model ->", ROOT / args.model)
     try:

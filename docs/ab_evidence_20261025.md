@@ -79,17 +79,26 @@ python scripts/ab_bench.py run --tag b1-presetB-auto-narr-thinkoff --question "�
 python scripts/ab_bench.py pair --a b0-presetB-baseline --b b1-presetB-auto-narr-thinkoff
 ```
 
-## 5. local 模式集成验证（partial，真端点）
+## 5. local 模式集成验证（partial 真跑，三种失败模式全链路）
 
-命令：lead_probe_run.py --route 0 --rounds 1 --self-check-mode local --local-llm-url http://127.0.0.1:8772
-（route 0 / 1 圈 / web off / behavior-fusion off；成本约 ¥0.29、23 calls / 169,402 tokens / 470.2s）。
+命令：lead_probe_run.py --route 0 --rounds 1 --self-check-mode local --local-llm-url http://127.0.0.1:8772/generate
+（route 0 / 1 圈 / web off / behavior-fusion off；每次约 ¥0.3、6~9 分钟）。
 
-结果与判读：
-- 引擎**确实走了本地端点**：view.meta 留痕
-  [SC-local] 本地模型失败（累计 1 次：URLError WinError 10061 连接被拒）⇒ 回退 llm；
-  原因是同一时间 local-smith 为「截断修复版重训」停掉 8772（计划内），本地调用落空。
-- **失败回退契约实测通过**：503/连接失败 → error 计数 + view.meta 留痕 + 自动回退云端 llm，
-  没有崩、没有丢 self_check（3 次云调用，13,219 prompt / 5,074 completion）。
-- 成功路径（本地直判、0 云调用、低置信/不一致升云）仍由 	ests_fine_check（fake endpoint）
-  判据覆盖；真实成功路径待 8772 新适配器就绪后再验（下一轮）。
-- 结论：**local 通道的接线与回退是通的**；当前不启用（0.5B 适配器质量未过 go/no-go）。
+| # | 端到端状态 | 实测结果（view.meta / 服务日志） | 判定 |
+|---|---|---|---|
+| v1 | 端点不可达（服务未起/被回收） | URLError [WinError 10061] 拒绝连接 ⇒ 回退 llm | 失败回退 ✅ |
+| v2 | 请求到达服务，但生成超时 | 服务日志 3×503 TIMEOUT、TimeoutError: 生成超时；引擎 TimeoutError ⇒ 回退 llm | 失败回退 ✅ |
+| v3 | **服务 200 返回本地 JSON，但置信度不足** | RuntimeError: 置信度 0.48 < 0.60 ⇒ 回退 llm；云 self_check 3 次照常 | **质量门回退 ✅（按设计）** |
+
+关键工程修正（v3 前）：pi.local_llm / output.local_llm 增加
+max_new_tokens=160、	imeout=45s。原因：0.5B 本地模型实测 ~6 tok/s，
+旧值 600 tokens / 30s 必然超时；min schema 160 tokens 足够。修正后服务连续返回
+200（服务日志 2×200），证实「引擎 → 本地端点 → JSON → 置信度门」全链路已通。
+
+结论：
+- **local 通道接线与三级回退（不可达 / 超时 / 低置信）全部实测通过**，且三种失败
+  都留痕、都不崩、都回退云端，符合「失败留痕 + 只变好不变坏」；
+- 0.5B 适配器置信度 0.48 低于 0.6 门槛 → 被质量门拦下（这是**期望行为**）：
+  本地模型当前只适合叙述/格式草稿，不接管决策字段；
+- 成功接管路径（本地直判、0 云调用、确定性核一致性校验通过）由
+  	ests_fine_check 的 fake endpoint 判据覆盖；真实接管需 1.5B + 更大数据训练后再验。

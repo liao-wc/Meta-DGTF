@@ -10826,7 +10826,8 @@ class DGTF:
         self.local_llm_cfg = {
             "url": str(_llm_loc.get("url")
                        or "http://127.0.0.1:8772/generate"),
-            "timeout": float(_llm_loc.get("timeout") or 30.0),
+            "timeout": float(_llm_loc.get("timeout") or 45.0),
+            "max_new_tokens": int(_llm_loc.get("max_new_tokens") or 160),
             "enabled": bool(_llm_loc.get("enabled", True)),
             "fallback": str(_llm_loc.get("fallback") or "llm"),
             "min_confidence": float(_llm_loc.get("min_confidence") or 0.6),
@@ -15708,13 +15709,13 @@ class DGTF:
         except Exception as e:
             self._local_llm_fail(e)
             return None
-        timeout = float(cfg.get("timeout") or 30.0)
+        timeout = float(cfg.get("timeout") or 45.0)
         body = json.dumps({
             "stage": "self_check",
             "messages": [{"role": "system", "content": system},
                          {"role": "user", "content": user}],
             "text": system + "\n\n" + user,
-            "max_new_tokens": 600,
+            "max_new_tokens": int(cfg.get("max_new_tokens") or 160),
             "temperature": 0.3,
             "timeout": timeout,
         }, ensure_ascii=False).encode("utf-8")
@@ -31242,7 +31243,10 @@ DEFAULT_CONFIG = {
         #   失败（超时/非200/ok=false/低置信/解析失败）⇒ 回退 llm + 留痕。
         "local_llm": {
             "url": "http://127.0.0.1:8772/generate",
-            "timeout": 30.0,
+            # ★ [Round 2] 30→45s、600→160 tokens：0.5B 本地模型 ~6 tok/s，
+            #   600 tokens 要 100s，必然超时；min schema 160 tokens 足够。
+            "timeout": 45.0,
+            "max_new_tokens": 160,
             "enabled": True,
             "min_confidence": 0.6,
         },
@@ -31292,7 +31296,8 @@ DEFAULT_CONFIG = {
         # ★ [V2.2.3] local 档的本地模型端点（仅 self_check_mode="local" 读取）。
         "local_llm": {
             "url": "http://127.0.0.1:8772/generate",
-            "timeout": 30.0,
+            "timeout": 45.0,
+            "max_new_tokens": 160,
             "fallback": "llm",       # 失败/低置信 → 升级 llm（默认）
             "min_confidence": 0.6,
         },

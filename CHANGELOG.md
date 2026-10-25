@@ -42,6 +42,16 @@ V2.2.3
   - 前缀缓存实测：全量跑 prompt cache hit ratio **13.9%~17.6%**（已自动省约 ¥0.2/跑）；
     prompt 静态段前置可进一步省，但需质量 A/B，列为下一轮 opt-in 项。
 
+【Round 2 增补（2026-10-25 同日）】
+- M4 质量预测升级为保形下界：quality_predictor 新增 calibrate_conformal/predict_lower、
+  K-fold 交叉保形（alpha=0.2），mode_fusion.fused_plan 暴露 quality_prediction_lower/
+  conformal 并做 fast→B 下界守卫与 abstain 标记；无 conformal 段时零行为差。
+  实测：OOF 覆盖率 0.8012（n=166）、留出集 0.7647（n=34）、q_global -0.0438；
+  判据 tests_quality_conformal.py 23 项全 PASS；文档 docs/quality_conformal_20261025.md。
+- 本地模型第二轮（截断修复）：适配器 v2 sc_min JSON 0.857（base 0.0）、11 字段 full 1.0、
+  dj 0.625；决策三项全对仍 0 ⇒ 收口「仅叙述/格式草稿，不接管决策」，服务/契约/回退链路可交付。
+- local 档工程修正：api/output.local_llm 增加 max_new_tokens=160、timeout 45s
+  （0.5B ~6 tok/s，600 tokens 必超时）；真实链路实测「请求到达服务→生成超时→回退 llm+留痕」。
 【未做】
 - prefix-cache prompt 重排（需 A/B 质量对照，下一轮 opt-in）。
 - 本地模型 1.5B 适配（本轮受 6GB 卡与时间盒限制，交付 0.5B 端点 + 契约；1.5B 训练留待下一轮长窗口）。
