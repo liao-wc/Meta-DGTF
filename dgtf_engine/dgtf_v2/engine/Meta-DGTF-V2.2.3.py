@@ -11052,6 +11052,17 @@ class DGTF:
                 "anchor_refs": _refs,
                 "_anchors_given": len(anchors or [])}
 
+    # ── [Round 6 · 前缀缓存] prompt 稳定前缀（opt-in）──────────────
+    # 把「每圈变化的块」（self_block / carry 约束）从 system 末尾移到 user 末尾，
+    # 让 system 的静态前缀跨圈稳定 ⇒ DeepSeek 上下文缓存命中更多。
+    # 默认关（output.prompt_stable_first=false）⇒ 与旧版 prompt 逐字一致。
+    def _stable_first(self) -> bool:
+        try:
+            return bool((self.config.get("output") or {}).get(
+                "prompt_stable_first"))
+        except Exception:
+            return False
+
     def _self_block(self) -> str:
         if not self.use_self or not self.self_memory:
             return ""
@@ -11059,6 +11070,16 @@ class DGTF:
             "\n【你上一次是谁】（这是记忆，不是要求，也不要模仿它的腔调）\n"
             f"{self.self_memory}\n"
         )
+
+    @staticmethod
+    def _move_var_to_user(system: str, var_blocks, user: str):
+        """把变量块拼到 user 末尾；返回 (system, user)。纯函数、无副作用。"""
+        var = "\n".join([str(b).strip() for b in (var_blocks or [])
+                         if str(b or "").strip()])
+        if not var:
+            return str(system), str(user)
+        return (str(system).rstrip() + "\n",
+                str(user).rstrip() + "\n\n" + var + "\n")
 
     def _pool_shape(self, pool: "Pool", label: str = "") -> str:
         cfg = self.config.get("memory", {})
@@ -12657,21 +12678,26 @@ class DGTF:
                 "不要回看前一个答案去迁就后一个。\n"
                 "不一致是常态，不是错误——不一致处正是 & 的出生地。\n"
             )
-        system = (
+        _carry_txt = self._carry_block_text(
+            getattr(inp, "carry_constraints", None) or [], "candidate")
+        _selfb_txt = self._self_block()
+        _static_sys = (
             "你是【对偶判断者】。\n"
             + self._dual_judge_spec() + how +
             "both 只在真的看不出偏向时才用；\n"
             "不要为了省事把两端都填 both，那是逃避判断。\n"
             + NO_FILL_JUDGE_RULE
-            + self._carry_block_text(
-                getattr(inp, "carry_constraints", None) or [], "candidate")
             + "严格 JSON：\n" + schema
-            + self._self_block()
         )
         dec_block = self._decidability_block(inp)
         user = (f"【处境】\n{self._judge_context(inp, anchor)}"
                 f"\n{dec_block}\n"
                 f"\n【候选列表】\n{cand_text}")
+        if self._stable_first():
+            system, user = self._move_var_to_user(
+                _static_sys, [_carry_txt, _selfb_txt], user)
+        else:
+            system = _static_sys + _carry_txt + _selfb_txt
         if diversity_hint:
             user += "\n\n【结构复检】\n" + str(diversity_hint)
 
@@ -15951,7 +15977,7 @@ class DGTF:
             '"view_verdict":"≤60字",'
             '"amp_ratio_verdict":"≤40字",'
             '"notes":"≤80字"}'
-            + self._self_block()
+            + ("" if self._stable_first() else self._self_block())
         )
         user = (
             f"【锚点】\n{view.anchor}\n\n"
@@ -15962,6 +15988,10 @@ class DGTF:
             f"【代码已发现的质量线索】\n"
             f"{', '.join(view.quality_flags) or '（无）'}\n"
         )
+        if self._stable_first():
+            _sb = self._self_block()
+            if str(_sb or "").strip():
+                system, user = self._move_var_to_user(system, [_sb], user)
         if any("too_many_amp_candidates" in f for f in view.quality_flags):
             user += (
                 "\n\n【★ 深究请求】本轮 amp 候选占比偏高。请专门判断：\n"
@@ -31261,6 +31291,12 @@ DEFAULT_CONFIG = {
         "show_manifest": False,
         "self_check": True,
         "show_probe_diag": False,
+        # ★ [V2.2.3 · Round 6] 前缀缓存优化（opt-in，默认关=零行为差）：
+        #   把每圈变化的 self_block / carry 块从 system 末尾移到 user 末尾，
+        #   使 system 静态前缀跨圈稳定，提高 DeepSeek 上下文缓存命中率
+        #   （cache hit 价格约为 miss 的 1/50）。只在 dual_judge / self_check
+        #   两个高频阶段生效；CLI: --prompt-stable-first。
+        "prompt_stable_first": False,
         # ★ [V2.2.3] 自省档位（默认 "llm" ⇒ 与 V2.2.2 **逐字行为一致**）：
         #   · "llm"       —— 原样：一次 LLM 调用产出全部 11 个字段（默认）；
         #   · "auto_narr" —— 决策字段仍走 LLM，但 prompt **收窄**为
@@ -32175,6 +32211,8 @@ def main():
                              '"dual_judge=disabled,self_check=disabled"'
                              '（优先级：显式 thinking= > 本覆盖 > '
                              'api.thinking.stages > default）')
+    parser.add_argument("--prompt-stable-first", action="store_true",
+                        help="前缀缓存优化：变量块后置（self_block/carry 移到 user 末尾）")
     parser.add_argument("--local-llm-url", default=None,
                         help="local 档本地模型端点（默认 output.local_llm.url）")
     parser.add_argument("--quiet", action="store_true")
@@ -32300,6 +32338,8 @@ def main():
     if getattr(args, "dual_judge_mode", None):
         cfg.setdefault("output", {})["dual_judge_mode"] = args.dual_judge_mode
         print(f"   ✓ 双判档位：{args.dual_judge_mode}")
+    if getattr(args, "prompt_stable_first", False):
+        cfg.setdefault("output", {})["prompt_stable_first"] = True
     if getattr(args, "local_llm_url", None):
         _ll = cfg.setdefault("output", {}).setdefault("local_llm", {})
         _ll["url"] = str(args.local_llm_url)

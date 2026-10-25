@@ -231,3 +231,34 @@ ecommend_scenario(kind, min_quality, max_wall, prefer) 已把这套规则机器�
   serial 被 fast/auto 支配（仅历史对照保留）。
 - App 道生 plan 已把规则落到**决策**而非审计字段：
   预算档 reasoning/choice → fast；预算档/降级遇事实题 → 保 B + 强制 web on + thinking auto。
+
+
+## 11. 前缀缓存 prompt 重排：机制已实现，但无收益（Round 6 负结果）
+
+动机：DeepSeek cache hit/miss 单价差约 50 倍（$0.003 vs $0.15/M）。研究 Top5 提出
+「静态段前置、变量段后置」以扩大可缓存前缀。本轮实现 opt-in 机制后做局部对照：
+
+实现（V2.2.3，默认关=零行为差）：
+- 新配置 `output.prompt_stable_first`（默认 False）与 CLI `--prompt-stable-first`；
+- 开启时把 `dual_judge` 的 carry 约束块 / `self_check` 的 self_block
+  （每圈变化的变量块）从 system 末尾移到 user 末尾；
+- 纯函数 `_move_var_to_user()` + 14 项判据（tests_prompt_cache.py）。
+
+局部实测（route 0 / 1 圈 / web off / behavior-fusion off，同题）：
+
+| 指标 | 基线（off） | 变体（--prompt-stable-first） |
+|---|---|---|
+| prompt cache hit ratio | **0.4279** | 0.3970 |
+| cache hit / miss tokens | 46,592 / 62,283 | 44,544 / 67,657 |
+| tokens / calls / wall | 159,740 / 29 / 462.1s | 168,633 / 29 / 487.3s |
+| self_check tokens（3 calls） | 22,648 | 23,292 |
+| dual_judge tokens（3 calls） | 17,596 | 19,427 |
+
+判读：
+1. 变体**没有提升缓存命中**（−3.1pp），tokens/墙钟略升；差异在单跑噪声量级内。
+2. 原因：当前 prompt 本来就「system 静态在前」——self_check 的 self_block 已在 system
+   末尾（静态前缀已是 system 的绝大部分）；dual_judge 的 carry 块虽在中间，但
+   schema 等静态段较短，可扩展空间有限，且缓存按 64 token 块对齐，位移后仍需重算。
+3. **结论：不采纳为默认**（机制保留为 opt-in/可回退），并把「前缀缓存已接近上限」
+   写入结论：局部跑缓存命中率已达 **42.8%**（此前全量跑 11~18% 是跨阶段/间隔更长
+   导致的缓存失效，不代表布局问题）。下一步省钱重点回到「轮数/档位/本地模型」。

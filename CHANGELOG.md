@@ -42,6 +42,13 @@ V2.2.3
   - 前缀缓存实测：全量跑 prompt cache hit ratio **13.9%~17.6%**（已自动省约 ¥0.2/跑）；
     prompt 静态段前置可进一步省，但需质量 A/B，列为下一轮 opt-in 项。
 
+【Round 6 增补（2026-10-25 同日）】
+- 前缀缓存 prompt 重排（opt-in）：V2.2.3 新增 output.prompt_stable_first +
+  --prompt-stable-first，把 dual_judge carry 块 / self_check self_block 从 system
+  末尾移到 user 末尾；纯函数 _move_var_to_user + tests_prompt_cache 14 项判据。
+  实测局部跑 cache hit 0.4279→0.3970（无收益、token/墙钟略升）⇒ **不采纳为默认，
+  保留 opt-in**；结论：当前「system 静态在前」布局已接近缓存上限。
+  证据：docs/ab_evidence_20261025.md §11。
 【Round 5 增补（2026-10-25 同日）】
 - fast 档泛化实测（3 题 × 2 题型）：推理·静电 fast 0.9535/579K/283s（auto 0.9400/718K/585s）；
   选择·补观测 fast 0.9481/594K/273s（auto 0.9487/842K/869s）⇒ 与 auto 同质量、
