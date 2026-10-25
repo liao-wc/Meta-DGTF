@@ -562,6 +562,73 @@ def question_terms(question: str, limit: int = 3) -> list:
     return out[:max(0, int(limit))]
 
 
+_TERM_SPLIT_RE = re.compile(r"的|是|多少|什么|几|了|吗|呢|？|\?|，|,|\s+")
+_OVERALL_UNIT_MARKERS: tuple[str, ...] = (
+    "全长", "总长", "总长度", "长度", "最高", "海拔", "最宽", "宽度",
+    "最深", "深度", "距离", "速度", "面积", "重量", "总计", "合计",
+    "整体", "总里程", "总高度",
+)
+
+
+#: 整体量词项的近义覆盖（题面「长度」被证据「全长/总长」覆盖是正常表述）。
+_SEG_ALIASES: dict[str, tuple[str, ...]] = {
+    "长度": ("长度", "全长", "总长", "总长度", "长"),
+    "高度": ("高度", "高程", "海拔", "高"),
+    "宽度": ("宽度", "宽"),
+    "深度": ("深度", "深"),
+    "距离": ("距离", "远"),
+    "速度": ("速度", "快慢"),
+    "面积": ("面积", "占地"),
+    "重量": ("重量", "质量", "重"),
+    "大小": ("大小", "规模"),
+    "千米": ("千米", "公里", "km", "KM", "Km"),
+    "公里": ("公里", "千米", "km", "KM", "Km"),
+    "米": ("米", "meter", "m"),
+}
+
+
+def _seg_covered(seg: str, corpus: str) -> bool:
+    if seg in corpus:
+        return True
+    return any(a in corpus for a in _SEG_ALIASES.get(seg, ()))
+
+
+def _term_covered(term: str, corpus: str) -> bool:
+    """词项覆盖判定：整短语命中优先；否则按语气词切片段，全片段（含近义）命中即可。"""
+    term = str(term or "").strip()
+    corpus = str(corpus or "")
+    if not term:
+        return True
+    if term in corpus:
+        return True
+    parts = [x.strip() for x in _TERM_SPLIT_RE.split(term) if x.strip()]
+    parts = [x for x in parts if len(x) >= 2]
+    if len(parts) < 1:
+        return False
+    return all(_seg_covered(x, corpus) for x in parts)
+
+
+#: 题面「整体量」问法（问全长/总高，而不是分段值）
+_Q_OVERALL: tuple[str, ...] = (
+    "长度", "多长", "全长", "总长", "总长度", "高度", "多高", "海拔",
+    "宽度", "多宽", "深度", "多深", "距离", "多远", "速度", "多快",
+    "面积", "重量", "多重", "多大", "总里程",
+)
+
+
+def _overall_quantity_bonus(text: str, question: str) -> float:
+    """题面问整体量时，整体量标记证据加分（区分「全长」与「河段长」）。
+
+    权重取 1.0：黄河真实跑次里官方「河段长3472千米」的相关度 0.8 + 官方 0.15
+    = 0.95，必须让「黄河全长约5464公里」的口径语义优先（+1.0）反超。
+    """
+    q = str(question or "")
+    if not any(k in q for k in _Q_OVERALL):
+        return 0.0
+    txt = str(text or "")
+    return 1.0 if any(k in txt for k in _OVERALL_UNIT_MARKERS) else 0.0
+
+
 def detect_gaps(question: str, items: Iterable,
                 budget: EvidenceBudget | None = None,
                 dropped: Iterable | None = None,
@@ -607,7 +674,7 @@ def detect_gaps(question: str, items: Iterable,
         for e in evs)
     corpus = unicodedata.normalize("NFKC", corpus)
     uncovered = [str(t) for t in terms
-                 if str(t) and str(t) not in corpus]
+                 if str(t) and not _term_covered(str(t), corpus)]
     for t in uncovered[:3]:
         gaps.append("uncovered:" + t)
     return gaps
@@ -738,6 +805,7 @@ def answer_from_evidence(items: Iterable, question: str = "",
         score = _answer_relevance(text, q)
         if bool(getattr(e, "official", False)):
             score += 0.15
+        score += _overall_quantity_bonus(text, q)
         if _recent and _max_date > 0 and _i < len(_dates) \
                 and _dates[_i] == _max_date:
             # 时效题：最新日期证据加权（0.5 足以反超非最新官方源的 0.15）

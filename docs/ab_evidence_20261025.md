@@ -477,3 +477,50 @@ tests_fact_flow 15、tests_fact_official_precedence 19 全 PASS；
 该审计给出**零 API 成本的回归检查面**：每次机制改动后，用已存 packs 重算
 gaps/status/显示字段即可发现「机制命中率、真实瓶颈、回归」；后续可作为
 `scripts/lead_offline_pack_audit.py` 纳入例行检查（docs 账本 + git 留档）。
+
+
+## 19. 事实门两处真实跑次驱动的修复：uncovered 片段覆盖 + 整体量语义（Round 12）
+
+### 19.1 真实反例
+
+黄河长度真跑（web on，官方源 hnb.yrcc.gov.cn 已捕获）终态 `aq=needs_evidence`：
+- `gaps=['uncovered:黄河的长度']`：题面整短语「黄河的长度」不在原文（原文是
+  「黄河…全长约5464公里」）⇒ 硬 gap 把 answered 事实卡挡在 verified 外；
+- 答案取了官方 E3「河段长3472千米」（上游分段值），而多源非官方证据给出
+  「黄河全长约5464公里」⇒ 官方 +0.15 压过了目标量语义。
+
+### 19.2 修复 A：词项片段级覆盖（含近义）
+
+`detect_gaps` 的 `uncovered:<term>` 判定改为 `_term_covered`：
+- 整短语命中 ⇒ 覆盖；
+- 否则按语气词（的/是/多少/什么/几/了/吗/？/，/空格）切片段，要求**全部 ≥2 字
+  片段**命中；片段允许近义覆盖（长度←全长/总长，高度←高程/海拔，千米←公里/km，
+  大小←规模…）；
+- 真缺目标项（如问「面积」而证据无面积/占地）仍报 uncovered（负对照保留）。
+
+### 19.3 修复 B：整体量目标语义加权
+
+`answer_from_evidence` 评分新增 `_overall_quantity_bonus`：题面问整体量
+（长度/多长/全长/高度/海拔/宽度/深度/距离/速度/面积/重量…）时，
+含整体量标记（全长/总长/总长度/最高/海拔/最大/总计/面积…）的证据 **+1.0**。
+权重取 1.0 是为了压过「官方 0.15 + 相关度 0.8」（黄河真实分数 0.95）。
+
+### 19.4 判据与验证
+
+`tests_evidence_coverage.py` **11 项**（片段覆盖 7 + 整体量语义 5）：
+- 片段覆盖：整短语/片段全命中/缺片段/近义覆盖/真缺目标项负对照/unit 近义；
+- 整体量：问长+全长加分、非整体量题不加分、「河段长」不加分、
+  官方分段值 vs 非官方全长值 → 取 5464（反超官方加权）。
+回归：tests_evidence 21、tests_fact_flow 15、tests_fact_official_precedence 19 全 PASS。
+
+> 真实复验说明：计划中「fact-gapfix-huanghe」复验跑次因 harness 重启丢失（无
+> ab_results 记录），机制当前仅由 12 项离线判据 + 历史真实 pack 反例验证；
+> 复验需在预算允许时补跑一次（约 ¥2.5）。
+
+### 19.5 同期发现（下一轮）
+
+HTTP 404 事实跑（17:01）终态 `needs_evidence` 的 gaps 是 `no_official_source`：
+检索池里出现过 MDN/RFC/IANA，但进入 evidence 层的 8 条（docs.oracle.com 等）
+不含官方源；且答案字段混入工具调用文本（「工具 search_web(...) 返回：…」）。
+⇒ 下一轮：核对检索记录（used_as=record 的官方页）是否该纳入证据层 +
+事实答案过滤工具调用噪声。
