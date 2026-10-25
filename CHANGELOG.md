@@ -45,6 +45,11 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 88 增补（2026-10-26）】
+- P1 dual_judge local 仍阻塞（引擎文件被并发占用）：方案文档
+  docs/dual_judge_local_patch_plan.md 已就绪（3 处最小 diff、5 条离线判据、1 次真跑验收）。
+- 零成本维护：final_acceptance --with-service **9/9 PASS**、巡检/守卫 CHECK PASS、
+  服务 v8b ready（errors=0）。今日真跑配额用尽，暂停真跑。
 【Round 87 增补（2026-10-26）】
 - P0 治理：ab_bench 成本口径修正（cost_window_cny/attribution/note，禁止相加归因）
   + real_run.lock 并发锁（TTL 1800s、活跃锁拒绝、--force-concurrent 覆盖）；
