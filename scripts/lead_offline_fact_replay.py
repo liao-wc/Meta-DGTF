@@ -150,6 +150,25 @@ def main() -> int:
               % (r["file"][:40], r["stored_status"], r["stored_gaps"],
                  r["new_status"], r["new_gaps"], r["new_answer"][:44]))
     print("→", OUT)
+    # ★ [Round 64] 回归护栏：低于历史基线即失败（退出码 1），防「偷偷变差」
+    _bad_ans = [r for r in rows
+                if str(r.get("stored_status")) == "answered"
+                and str(r.get("new_status")) == "answered"
+                and not str(r.get("new_answer") or "").strip()]
+    _checks = [
+        ("answered_now >= 80", summary["answered_now"] >= 80),
+        ("gaps_cleared >= 15", summary["gaps_cleared"] >= 15),
+        ("numeric_after >= before",
+         summary["numeric_answer_after"] >= summary["numeric_answer_before"]),
+        ("official_now >= 110", summary["official_now"] >= 110),
+        ("stored→new 空答案 == 0", len(_bad_ans) == 0),
+    ]
+    for _n, _ok in _checks:
+        print(("PASS " if _ok else "FAIL ") + "guard: " + _n)
+    if any(not _ok for _n, _ok in _checks):
+        print("REPLAY GUARD FAILED:", [n for n, ok in _checks if not ok])
+        return 1
+    print("REPLAY GUARD PASS")
     return 0
 
 

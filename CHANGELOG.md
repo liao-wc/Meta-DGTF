@@ -45,6 +45,9 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 64 增补（2026-10-26）】
+- 离线重放回归护栏：answered≥80、gaps_cleared≥15、numeric after≥before、
+  official≥110、stored→new 空答案=0，任一不满足即 exit 1；实测 5/5 PASS。
 【Round 63 增补（2026-10-26）】
 - 定义型问句分支：合成用例通过但离线重放导致 404 等题答案变差 ⇒ 按「只变好不变坏」
   立即回退（负结果留档）。

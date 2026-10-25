@@ -1896,3 +1896,21 @@ display 对同时含「男/女」的年龄问句，匹配「男…岁」「女�
 ### 67.3 门禁
 
 全量 **V2 51/51（806 checks）**、fast_gate 12/12。
+
+
+## 68. 离线重放回归护栏（Round 64）
+
+`scripts/lead_offline_fact_replay.py` 末尾新增**回归护栏**（低于基线即 exit 1）：
+
+| 护栏 | 基线 |
+|---|---|
+| answered_now | ≥ 80 |
+| gaps_cleared | ≥ 15 |
+| numeric_answer_after | ≥ before |
+| official_now | ≥ 110 |
+| stored→new 空答案 | == 0 |
+
+实测（当前）：answered 81 / gaps 清零 17 / numeric 34→38 / official 119 /
+空答案 0 —— **REPLAY GUARD PASS（5/5）**。
+意义：未来任何事实机制改动若使历史 pack 的「回答覆盖/官方源/数值答案」变差，
+护栏会直接失败，把「只变好不变坏」变成可执行的 CI 级判据。
