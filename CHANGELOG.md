@@ -45,6 +45,12 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 30 增补（2026-10-25 同日）】
+- 事实矩阵 16→18 行（auto2 GDP 0.9764、auto3 404 0.9062）；live 与锚点 Δ≤0.012。
+- 19xx 日期答案修复：_DATE_RE 支持 19xx/20xx、日期句按题面 2-gram 概念排序、
+  claim 答案支持日期问法；判据 tests_evidence_coverage 33 项；V2 51/51（766 checks）。
+- 政策类已知缺口留档（宪法题 needs_evidence：限定词覆盖与证据选择待修），
+  按「只变好不变坏」未放宽事实门；本地 v6（2 epochs）后台训练中。
 【Round 29 增补（2026-10-25 同日）】
 - App e2e 修订期/展示闭环：GDP 总量 fast 任务 463.5s / verified / ready，answer 取
   最终核实 1348066 亿元、display=1348066亿元。

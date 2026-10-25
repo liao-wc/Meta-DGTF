@@ -745,7 +745,7 @@ def detect_gaps(question: str, items: Iterable,
 
 
 _DATE_RE = re.compile(
-    r"20\d{2}[-/年]\d{1,2}[-/月]\d{1,2}(?:日)?")
+    r"(?:19|20)\d{2}[-/年]\d{1,2}[-/月]\d{1,2}(?:日)?")
 
 
 def _short_answer(text: str, question: str = "") -> str:
@@ -790,10 +790,20 @@ def _short_answer(text: str, question: str = "") -> str:
             _cands.sort(reverse=True)
             return _cands[0][3].strip()[:240]
     if _dates:
-        # 优先取日期所在短句
-        for part in re.split(r"[。；;\n]", s):
-            if _DATE_RE.search(part):
-                return part.strip()[:240]
+        # ★ [Round 30] 日期句也加题面概念排序（避免取到无关文书的日期）
+        _dc = re.findall(r"[A-Za-z]{2,}", _q)
+        _dc += [str(_q[_i:_i + 2]) for _i in range(len(_q) - 1)
+                if "\u4e00" <= _q[_i] <= "\u9fa5"
+                and "\u4e00" <= _q[_i + 1] <= "\u9fa5"]
+        _cands = []
+        for _idx, part in enumerate(re.split(r"[。；;\n]", s)):
+            if not _DATE_RE.search(part):
+                continue
+            _hit = sum(1 for c in _dc if c in part)
+            _cands.append((_hit, -_idx, part))
+        if _cands:
+            _cands.sort(reverse=True)
+            return _cands[0][2].strip()[:240]
     return s[:240]
 
 

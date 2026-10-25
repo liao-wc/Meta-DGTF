@@ -26,7 +26,7 @@ def ck(n, ok, info=""):
 
 def main():
     rows = measured_matrix()
-    ck("矩阵行数 = 16（reasoning 5 / choice 3 / fact 8）", len(rows) == 16, len(rows))
+    ck("矩阵行数 = 18（reasoning 5 / choice 3 / fact 10）", len(rows) == 18, len(rows))
     ck("三个场景桶齐全",
        set(MEASURED_SCENARIOS) == {"reasoning", "choice", "fact"},
        list(MEASURED_SCENARIOS))
@@ -39,7 +39,9 @@ def main():
            and float(r["wall"] or 0) > 0 for r in rows))
 
     fact = MEASURED_SCENARIOS["fact"]
-    ck("fact：web_on_auto 为 verified", fact["runs"]["web_on_auto"]["verified"] is True)
+    ck("fact：web_on_auto 及其变体均为 verified",
+       all(fact["runs"][k]["verified"] is True
+           for k in ("web_on_auto", "web_on_auto2", "web_on_auto3")))
     ck("fact：web_off_auto 与修复前 fast 未 verified（历史对照）",
        fact["runs"]["web_off_auto"]["verified"] is False
        and fact["runs"]["web_on_fast_pre_fix"]["verified"] is False)

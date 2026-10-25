@@ -453,9 +453,14 @@ def _numeric_claim_answer(question: str, evs: list) -> str:
         q_units.extend(["平方公里", "万平方"])
     if any(k in q for k in ("元", "亿元", "万元", "美元", "金额", "总量")):
         q_units.extend(["亿元", "万元", "元", "美元"])
-    if not any(k in q for k in ("多少", "几", "多长", "多高", "多重", "多远",
-                                "多深", "多宽", "多大", "多快", "增速", "增长",
-                                "率", "海拔", "速度", "面积", "重量", "温度")):
+    _asks_date = any(k in q for k in ("哪一年", "哪年", "何时", "什么时候",
+                                      "年份", "哪一天"))
+    if _asks_date:
+        q_units.append("年")
+    if not _asks_date and not any(
+            k in q for k in ("多少", "几", "多长", "多高", "多重", "多远",
+                             "多深", "多宽", "多大", "多快", "增速", "增长",
+                             "率", "海拔", "速度", "面积", "重量", "温度")):
         return ""
     # 繁简归一（官方繁体页常见）
     _T2S = str.maketrans({"國": "国", "長": "长", "內": "内", "產": "产",

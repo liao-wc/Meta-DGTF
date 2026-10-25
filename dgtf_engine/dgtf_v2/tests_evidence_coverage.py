@@ -122,6 +122,15 @@ def main():
     ck("A25 非修订问句也取最新核实值（官方最新口径）",
        "1348066" in _ans_norm, _ans_norm)
     _ans_only_prelim = _numeric_claim_answer("2024年GDP总量是多少亿元？", [_prelim])
+    # ── A8：日期类答案（Round 30）──────────────────
+    _sa_date = _short_answer(
+        "中华人民共和国立法法 2000年通过。1982年宪法是现行宪法，"
+        "1982年12月4日通过。", "中国现行宪法是哪一年颁布的")
+    ck("A27 19xx 日期可识别（1982 年宪法句）",
+       "1982" in _sa_date and "宪法" in _sa_date, _sa_date)
+    ck("A28 日期句按题面概念排序（不取无关文书日期）",
+       "立法法" not in _sa_date, _sa_date)
+
     ck("A26 仅有初步核算时回退初步值（不空）",
        "1349084" in _ans_only_prelim, _ans_only_prelim)
     # ── B：整体量语义加权 ────────────────────────
