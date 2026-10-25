@@ -275,10 +275,20 @@ MEASURED_SCENARIOS: Dict[str, dict] = {
             "web_on_auto": {"quality": 0.9581, "tokens": 1154024, "calls": 108,
                             "wall": 965.7, "verified": True,
                             "config": "B parallel + thinking auto + web on"},
-            "web_on_fast": {"quality": 0.4741, "tokens": 836464, "calls": 108,
-                            "wall": 316.1, "verified": False,
-                            "config": "B parallel + thinking off + web on",
-                            "answer_quality": "needs_evidence"},
+            "web_on_fast_pre_fix": {"quality": 0.4741, "tokens": 836464,
+                                    "calls": 108, "wall": 316.1,
+                                    "verified": False,
+                                    "config": "B parallel + thinking off + web on",
+                                    "answer_quality": "needs_evidence",
+                                    "note": "修复前历史负结果（官方检索/审计未修时）"},
+            "web_on_fast": {"quality": 0.9472, "tokens": 558195, "calls": 88,
+                            "wall": 174.4, "verified": True,
+                            "question": "HTTP 404状态码表示什么？",
+                            "config": "B parallel + thinking off + web on"},
+            "web_on_fast2": {"quality": 0.9726, "tokens": 738637, "calls": 107,
+                             "wall": 202.2, "verified": True,
+                             "question": "2024年中国GDP增速最新数据是多少？",
+                             "config": "B parallel + thinking off + web on"},
             "web_off_auto": {"quality": 0.4440, "tokens": 1015910, "calls": 111,
                              "wall": 980.3, "verified": False,
                              "config": "B parallel + thinking auto + web off",
@@ -286,11 +296,14 @@ MEASURED_SCENARIOS: Dict[str, dict] = {
         },
         "rules": {
             "quality_first": "web_on_auto",
+            "cost_first": "web_on_fast",
             "requires_web": True,
-            "forbid": ["web_off_auto", "web_on_fast"],
-            "note": ("事实门需要官方证据（web on）；且必须保留 thinking —— "
-                     "thinking off 时质量 0.474/needs_evidence。"
-                     "「事实题无 web」是更高成本+更低质量的双输档"),
+            "forbid": ["web_off_auto", "web_on_fast_pre_fix"],
+            "note": ("事实门需要官方证据（web on）；2026-10-25 修复后重测："
+                     "fast + web on（thinking off）质量 0.9472/0.9726 且 verified，"
+                     "tokens −34~44%、墙钟 −82% ⇒ 成本档可用。"
+                     "旧 0.4741/needs_evidence 为修复前历史（保留对照）。"
+                     "「事实题无 web」仍是双输档。"),
         },
     },
 }
@@ -320,8 +333,9 @@ def kind_of_question(question: str) -> str:
     q = str(question or "")
     if not q.strip():
         return "reasoning"
-    fact_markers = ("多少", "是什么", "哪一年", "是谁", "等于几", "速度",
-                    "多少度", "几岁", "多远")
+    fact_markers = ("多少", "是什么", "表示什么", "什么意思", "什么含义",
+                    "指什么", "哪一年", "是谁", "等于几", "速度",
+                    "多少度", "几岁", "多远", "定义")
     choice_markers = ("还是", "或者", "应该", "如何取舍", "优先", "选择",
                       "方案")
     if any(k in q for k in choice_markers):

@@ -1036,8 +1036,10 @@ def _choose_engine_mode(tier: str, m4: dict) -> tuple[str, str]:
     kind = str(sc.get("kind") or "")
     if tier == "fast":
         if sc.get("require_web") or kind == "fact":
-            return "B", ("预算档不适用于事实题（实测 fast 事实题 0.474/needs_evidence）"
-                         "→ 回 B + 强制联网")
+            # ★ [Round 23] 修复后重测：fast+web on 事实题 0.9472/0.9726 verified，
+            #   tokens −34~44%、墙钟 −82% ⇒ 允许 fast（web 由场景规则强制 on）
+            return "fast", ("预算档：fast + web on（实测事实题 0.9472/0.9726 "
+                            "verified，tokens −34~44%、墙钟 −82%）")
         return "fast", ("预算档：fast（thinking off、低圈；实测推理 tokens −33%、"
                         "墙钟 −68%、质量 −1pp）")
     first = str((m4 or {}).get("first_mode") or "")
@@ -1082,11 +1084,13 @@ def build_plan(question: str, opts: dict | None = None, *,
     if tier == "quality" and bg.get("decision") in ("degrade", "warn"):
         _sc0 = _scenario_of(m4)
         if _sc0.get("require_web") or str(_sc0.get("kind") or "") == "fact":
-            # 事实题降 fast 会掉质量门（实测 0.474/needs_evidence）⇒ 保 B + 强制联网
-            mode_reason = ("预算守卫 %s，但事实题不降 fast（保 B + 强制联网）：%s"
+            # ★ [Round 23] fast+web on 事实题已实测 verified 且更省 ⇒ 降级也允许 fast
+            tier = "fast"
+            engine_mode = "fast"
+            mode_reason = ("预算守卫 %s → fast + 强制联网（事实题成本档）：%s"
                            % (bg.get("decision"), bg.get("reason") or ""))
             degrade_reason = str(bg.get("reason") or "")
-            warnings.append("预算守卫触发：事实题保持 B 档（禁 fast）")
+            warnings.append("预算守卫触发：事实题降 fast（web 强制 on）")
         else:
             tier = "fast"
             engine_mode = "fast"
@@ -1126,11 +1130,11 @@ def build_plan(question: str, opts: dict | None = None, *,
     if tier == "fast":
         rounds = ds.get("rounds_fast") or "0:2,1:3,both:2,all:2"
         parallel, web, thinking, effort = "serial", "off", "off", "auto"
-        # [Round 5] 事实题在 fast 档必须保留 thinking（实测 fast 事实题
-        # thinking off → 0.474/needs_evidence）；web 由后面的场景规则强制 on。
+        # [Round 23] 修复后重测：fast+web on 事实题 thinking off 亦 verified
+        #（0.9472/0.9726）⇒ 不再强制 thinking=auto；web 仍由场景规则强制 on。
         _scf = _scenario_of(m4)
         if _scf.get("require_web") or str(_scf.get("kind") or "") == "fact":
-            thinking = "auto"
+            web = "on"
     else:
         rounds = (ds.get("rounds_quality") or "0:3,1:3,both:4,all:4") if (
             quality_first and bg.get("decision") == "ok") else (ds.get("rounds") or "auto")

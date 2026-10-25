@@ -26,7 +26,7 @@ def ck(n, ok, info=""):
 
 def main():
     rows = measured_matrix()
-    ck("矩阵行数 = 11（reasoning 5 / choice 3 / fact 3）", len(rows) == 11, len(rows))
+    ck("矩阵行数 = 13（reasoning 5 / choice 3 / fact 5）", len(rows) == 13, len(rows))
     ck("三个场景桶齐全",
        set(MEASURED_SCENARIOS) == {"reasoning", "choice", "fact"},
        list(MEASURED_SCENARIOS))
@@ -40,13 +40,19 @@ def main():
 
     fact = MEASURED_SCENARIOS["fact"]
     ck("fact：web_on_auto 为 verified", fact["runs"]["web_on_auto"]["verified"] is True)
-    ck("fact：web_off_auto 与 web_on_fast 均未 verified",
+    ck("fact：web_off_auto 与修复前 fast 未 verified（历史对照）",
        fact["runs"]["web_off_auto"]["verified"] is False
-       and fact["runs"]["web_on_fast"]["verified"] is False)
-    ck("fact：规则强制联网 + 禁用档位",
+       and fact["runs"]["web_on_fast_pre_fix"]["verified"] is False)
+    ck("fact：修复后 fast+web 已 verified（成本档可用）",
+       fact["runs"]["web_on_fast"]["verified"] is True
+       and fact["runs"]["web_on_fast2"]["verified"] is True)
+    ck("fact：成本档 tokens 低于 auto 且质量不低",
+       fact["runs"]["web_on_fast"]["tokens"] < fact["runs"]["web_on_auto"]["tokens"]
+       and fact["runs"]["web_on_fast2"]["tokens"] < fact["runs"]["web_on_auto"]["tokens"])
+    ck("fact：规则强制联网 + 仅禁用无 web/修复前档",
        fact["rules"]["requires_web"] is True
        and "web_off_auto" in fact["rules"]["forbid"]
-       and "web_on_fast" in fact["rules"]["forbid"])
+       and "web_on_fast_pre_fix" in fact["rules"]["forbid"])
 
     rea = MEASURED_SCENARIOS["reasoning"]
     ck("reasoning：quality_first=auto / cost_first=fast",
@@ -58,6 +64,8 @@ def main():
     ck("分桶：为什么…→reasoning",
        kind_of_question("为什么城市热岛效应在夜间比白天更明显？") == "reasoning")
     ck("分桶：多少→fact", kind_of_question("光在水中传播的速度是多少？") == "fact")
+    ck("分桶：表示什么→fact",
+       kind_of_question("HTTP 404状态码表示什么？") == "fact")
     ck("分桶：还是/应该→choice",
        kind_of_question("应该优先补观测还是先统一定义？") == "choice")
     ck("分桶：空题兜底 reasoning", kind_of_question("") == "reasoning")
@@ -81,9 +89,9 @@ def main():
        and _ch["fast"]["tokens"] < _ch["auto"]["tokens"]
        and _ch["fast"]["wall"] < _ch["auto"]["wall"], _ch)
     r4 = recommend_scenario("fact", prefer="wall")
-    ck("推荐：fact 无论偏好都只从 verified 池选（web_on_auto）",
-       r4["mode"] == "web_on_auto" and r4["require_web"] is True and
-       r4["forbid"], r4)
+    ck("推荐：fact 墙钟优先 → web_on_fast（已验证成本档）",
+       r4["mode"] in ("web_on_fast", "web_on_fast2") and
+       r4["require_web"] is True and r4["forbid"], r4)
     r5 = recommend_scenario("fact", min_quality=0.999)
     ck("推荐：约束不可满足 → 回退且 reason 可审计",
        "回退" in str(r5.get("reason")), r5.get("reason"))
