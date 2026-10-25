@@ -323,3 +323,54 @@ rounds=0:2,1:3,both:2,all:2 | scenario=reasoning → 推荐 fast_domain2
   换全新题后触发真实跑次，故本次为真实引擎证据。
 - 证据：`llm_sft/_round7_evidence/app_fast_e2e.json`、
   `outputs/20261025_143654_为什么在高原上煮饭更容易夹生.packed.json`。
+
+
+## 14. 事实门「官方源优先」冲突消解 + 证据去重官方优先（Round 8）
+
+真实反例（App 事实题 real e2e「珠穆朗玛峰的海拔是多少米？」）：
+- 修复前：web on + 全四层 → quality 0.4273 / **unverified**（gaps=conflict_unresolved），
+  1,257,791 tokens 白跑；
+- 根因：证据间冲突项是**年份**（1852 vs 1856，辅助信息），不是题面目标值；
+  官方源 E8 已给出海拔，但现逻辑「有冲突就 conflict」直接卡死事实门。
+- 另一根因：同一文本先被非官方镜像召回时，`dedup_evidence` 保留首个出现，
+  后到的官方源被当重复丢弃 → 假性 `no_official_source`。
+
+两个机制（`dgtf_v2/fact_flow.py` + `dgtf_v2/evidence.py`，默认生效）：
+1. **官方源优先消解**：当冲突**全部是日期类辅助冲突**（单位/锚点含年/月/日/date，
+   或数值全在 1000~2100 像年份）且官方源能给出题面相关答案时 → status=answered、
+   答案取官方原文（清洗掉行首 [日期]/### 等）、原冲突存 `resolved_conflicts`、
+   gaps 记 `conflict_resolved_official:official_precedence`（非硬缺口）。
+   负对照：目标量冲突（GDP 5.2 vs 6.8，单位 %）**不会被消解**；官方源参与冲突、
+   无官方源、官方源答不出 → 保持 conflict。
+2. **去重官方优先**：同 URL/文本多渠道时，若保留者非官方而后到者官方 → 用官方源
+   顶替（旧项记 `dedup_prefer_official`），避免官方证据被当重复丢掉。
+
+判据：`tests_fact_official_precedence.py` **14 项**（7 正/负对照 + 边界 + 确定性）、
+`tests_fact_flow.py` 15 项、`tests_evidence.py` 21 项全 PASS；全量 V2 45 文件绿。
+
+真实端到端验证（本轮运行）：
+| 场景 | 结果 |
+|---|---|
+| App 事实题（珠峰）修复前 | 0.4273 / unverified / ready=False / 1,257,791 tok |
+| App 事实题（珠峰）修复后 | **answer_quality=verified**（conflict 消解为 1 条辅助冲突），
+  gaps 仅 `conflict_resolved_official`；ready=False 原因是**过程门**（元层 all 产物 400 字
+  未达标），非事实门 —— 下一轮修过程门 |
+| CLI 长江长度（web on，对照） | 0.9746 / verified / ready=True / 1,120,972 tok / 108 calls / 1070s |
+
+## 15. 上下文压缩（self_memory ≤N 字，opt-in，默认关）（Round 8）
+
+机制：V2.2.3 `output.self_memory_max_chars`（默认 0=不压缩）+ CLI
+`--self-memory-max-chars`：self_check 的「上一次是谁」记忆只保留最近 N 字并加压缩标记，
+降低跨圈/跨层重复计费；`tests_memory_compact.py` 13 项判据。
+
+局部 A/B（route 0 / 5 圈 / web off，同题）：
+| 指标 | 基线（cap=0） | 变体（cap=1200） |
+|---|---|---|
+| 总 tokens / calls | 211,762 / 39 | 132,388 / 29 |
+| self_check | 4 calls / 29,251 tok（7.3K/次） | 3 calls / 20,159 tok（6.7K/次） |
+| dual_judge | 4 calls / 21,992 tok | 3 calls / 19,566 tok |
+
+判读：self_check 单次 prompt tokens −8.3%；总 tokens 差异主要来自**轮次/停止点不同**
+（非纯压缩），不能当压缩收益。self_check 只占全量 ~10-15%，故总收益约 1% 量级 ⇒
+**保留 opt-in，不设默认**；上下文压缩的真正大头在层 prompt（manifest/collision），
+需质量 A/B 预算，留待后续。

@@ -42,6 +42,17 @@ V2.2.3
   - 前缀缓存实测：全量跑 prompt cache hit ratio **13.9%~17.6%**（已自动省约 ¥0.2/跑）；
     prompt 静态段前置可进一步省，但需质量 A/B，列为下一轮 opt-in 项。
 
+【Round 8 增补（2026-10-25 同日）】
+- 新机制：事实门「官方源优先」冲突消解（仅日期类辅助冲突可消解，目标量冲突不越权）
+  + 证据去重官方优先（官方源顶替非官方重复项）；fact_flow/evidence 默认生效，
+  判据 tests_fact_official_precedence 14 项 + fact_flow 15 + evidence 21 全 PASS。
+  真实 App 事实题：unverified→**verified**（gaps 仅冲突已消解标记）；CLI 长江长度
+  verified 0.9746 对照通过。
+- 新机制：self_memory 上下文压缩（output.self_memory_max_chars / --self-memory-max-chars，
+  默认关）；局部 A/B self_check 单次 tokens −8.3%，总量差异主要来自停止点 ⇒ opt-in。
+- App 事实题规则修正：短事实题不再省掉对撞/元层（route 恒 0,1,both,all）；
+  实测 2 层 → 0.2253/unverified，全四层修复后 verified（过程门另议）。
+- 判据/门禁：V2 45/45（687 checks）、fast_gate 12/12。
 【Round 7 增补（2026-10-25 同日）】
 - v4 本地适配器（197 样本 / fp16 compute / max_len 1792）负结果：
   val_loss 0.2331（v2 0.2238）、JSON 0.583（v2 0.857）、字段平均 0.250（v2 0.476）、

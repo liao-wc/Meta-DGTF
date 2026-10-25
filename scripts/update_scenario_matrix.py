@@ -143,6 +143,11 @@ def compare(matrix: dict) -> list[dict]:
             if auto is None and mode.startswith("web_off_"):
                 base = mode.replace("web_off_", "")
                 auto = (matrix.get(kind) or {}).get(base)
+            # fast_domainN / fastN 都是 fast 档的重复实测 ⇒ 归并对照
+            if auto is None and (mode.startswith("fast_domain")
+                                 or (mode.startswith("fast")
+                                     and mode[4:].isdigit())):
+                auto = (matrix.get(kind) or {}).get("fast")
             if not auto:
                 out.append({"scenario": kind, "mode": mode,
                             "human_quality": run.get("quality"),

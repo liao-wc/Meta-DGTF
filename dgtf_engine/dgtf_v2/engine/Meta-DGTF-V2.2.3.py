@@ -11066,9 +11066,20 @@ class DGTF:
     def _self_block(self) -> str:
         if not self.use_self or not self.self_memory:
             return ""
+        # ★ [V2.2.3 Round 8] 可选上下文压缩：只保留最近 N 字（默认 0 = 不压缩）
+        _mem = str(self.self_memory)
+        try:
+            _cap = int((self.config.get("output") or {}).get(
+                "self_memory_max_chars") or 0)
+        except Exception:  # noqa: BLE001
+            _cap = 0
+        if _cap > 0 and len(_mem) > _cap:
+            _head = ("…（更早的记忆已压缩，共 %d 字，保留最近 %d 字）\n"
+                     % (len(_mem), _cap))
+            _mem = _head + _mem[-_cap:]
         return (
             "\n【你上一次是谁】（这是记忆，不是要求，也不要模仿它的腔调）\n"
-            f"{self.self_memory}\n"
+            f"{_mem}\n"
         )
 
     @staticmethod
@@ -31297,6 +31308,9 @@ DEFAULT_CONFIG = {
         #   （cache hit 价格约为 miss 的 1/50）。只在 dual_judge / self_check
         #   两个高频阶段生效；CLI: --prompt-stable-first。
         "prompt_stable_first": False,
+        # ★ [V2.2.3 · Round 8] self_memory 上下文压缩（opt-in，默认 0=不压缩）：
+        #   self_check 的「上一次是谁」记忆按最近 N 字截断，降低跨圈/跨层重复计费。
+        "self_memory_max_chars": 0,
         # ★ [V2.2.3] 自省档位（默认 "llm" ⇒ 与 V2.2.2 **逐字行为一致**）：
         #   · "llm"       —— 原样：一次 LLM 调用产出全部 11 个字段（默认）；
         #   · "auto_narr" —— 决策字段仍走 LLM，但 prompt **收窄**为
@@ -32211,6 +32225,8 @@ def main():
                              '"dual_judge=disabled,self_check=disabled"'
                              '（优先级：显式 thinking= > 本覆盖 > '
                              'api.thinking.stages > default）')
+    parser.add_argument("--self-memory-max-chars", type=int, default=None,
+                        help="上下文压缩：self_check 记忆最多保留最近 N 字（0=不压缩）")
     parser.add_argument("--prompt-stable-first", action="store_true",
                         help="前缀缓存优化：变量块后置（self_block/carry 移到 user 末尾）")
     parser.add_argument("--local-llm-url", default=None,
@@ -32338,6 +32354,9 @@ def main():
     if getattr(args, "dual_judge_mode", None):
         cfg.setdefault("output", {})["dual_judge_mode"] = args.dual_judge_mode
         print(f"   ✓ 双判档位：{args.dual_judge_mode}")
+    if getattr(args, "self_memory_max_chars", None) is not None:
+        cfg.setdefault("output", {})["self_memory_max_chars"] = int(
+            args.self_memory_max_chars)
     if getattr(args, "prompt_stable_first", False):
         cfg.setdefault("output", {})["prompt_stable_first"] = True
     if getattr(args, "local_llm_url", None):

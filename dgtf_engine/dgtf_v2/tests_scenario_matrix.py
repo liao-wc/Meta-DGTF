@@ -26,7 +26,7 @@ def ck(n, ok, info=""):
 
 def main():
     rows = measured_matrix()
-    ck("矩阵行数 = 9（reasoning 4 / choice 2 / fact 3）", len(rows) == 9, len(rows))
+    ck("矩阵行数 = 11（reasoning 5 / choice 3 / fact 3）", len(rows) == 11, len(rows))
     ck("三个场景桶齐全",
        set(MEASURED_SCENARIOS) == {"reasoning", "choice", "fact"},
        list(MEASURED_SCENARIOS))

@@ -657,8 +657,13 @@ def _rules_prediction(question: str, preset: dict | None = None) -> dict:
     route = ds.get("route") or "0,1,both,all"
     route_list = _norm_route(route) or list(VALID_ROUTE)
     _short = bool(feats.get("short")) or len(str(question or "")) <= 40
-    if feats.get("fact") and _short and not feats.get("meta"):
-        route_list = ["0", "1"]          # 事实短题：省掉对撞/元层
+    # ★ Round 8 修正：事实短题**不再**省掉对撞/元层。
+    #   实测（App daosheng + web on + route=0,1）：「珠穆朗玛峰的海拔是多少米？」
+    #   → quality 0.2253 / unverified（conflict_unresolved、layers_standard=2）；
+    #   同题 CLI 全四层 → 0.9581 / verified。事实门需要 both/all 层做证据冲突
+    #   消解与元层闭合 ⇒ 事实题一律全四层。
+    if False and feats.get("fact") and _short and not feats.get("meta"):
+        route_list = ["0", "1"]  # 已废弃：见上（保留分支形状便于回滚）
     rounds = _norm_rounds(ds.get("rounds") or "")
     return {"ok": True, "source": "rules", "route": route_list, "rounds": rounds,
             "features": feats,

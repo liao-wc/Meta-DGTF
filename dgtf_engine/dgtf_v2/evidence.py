@@ -319,25 +319,48 @@ def from_search_hits(hits: Iterable, query: str = "", start_id: int = 1,
 
 def dedup_evidence(items: Iterable) -> tuple[list, list]:
     """证据去重：先按归一化 URL、再按文本指纹；保留**首次出现**，
-    后到的记 dropped = {evidence_id, reason, against}。"""
+    后到的记 dropped = {evidence_id, reason, against}。
+
+    ★ [V2.2.3 Round 8] 官方源优先：同一 URL/文本多渠道时，若保留者是非官方、
+    后到者是官方源，则**用官方源替换保留者**（旧项记 dedup_prefer_official）。
+    否则事实门会因「官方源被当重复丢掉」出现假性 no_official_source/unverified。
+    """
     kept: list[Evidence] = []
     dropped: list[dict] = []
     seen_url: dict[str, str] = {}
     seen_fp: dict[str, str] = {}
+    kept_idx: dict[str, int] = {}
     for it in list(items or []):
         u = normalize_url(it.url)
-        if u and u in seen_url:
-            dropped.append({"evidence_id": it.evidence_id, "reason": "dup_url",
-                            "against": seen_url[u]})
-            continue
-        if it.fingerprint and it.fingerprint in seen_fp:
-            dropped.append({"evidence_id": it.evidence_id, "reason": "dup_text",
-                            "against": seen_fp[it.fingerprint]})
+        dup_id = seen_url.get(u) if u else None
+        if dup_id is None and it.fingerprint:
+            dup_id = seen_fp.get(it.fingerprint)
+        if dup_id is not None:
+            old = kept[kept_idx[str(dup_id)]] if str(dup_id) in kept_idx else None
+            if (old is not None and bool(getattr(it, "official", False))
+                    and not bool(getattr(old, "official", False))):
+                # 官方源顶替非官方保留者（保持原位置，审计留痕）
+                dropped.append({"evidence_id": str(old.evidence_id),
+                                "reason": "dedup_prefer_official",
+                                "against": str(it.evidence_id)})
+                kept[kept_idx[str(dup_id)]] = it
+                if u and seen_url.get(u) == str(dup_id):
+                    seen_url[u] = it.evidence_id
+                if it.fingerprint and seen_fp.get(it.fingerprint) == str(dup_id):
+                    seen_fp[it.fingerprint] = it.evidence_id
+                kept_idx.pop(str(dup_id), None)
+                kept_idx[str(it.evidence_id)] = len(kept) - 1
+                continue
+            dropped.append({"evidence_id": it.evidence_id,
+                            "reason": "dup_url" if u and u in seen_url
+                            else "dup_text",
+                            "against": dup_id})
             continue
         if u:
             seen_url[u] = it.evidence_id
         if it.fingerprint:
             seen_fp[it.fingerprint] = it.evidence_id
+        kept_idx[str(it.evidence_id)] = len(kept)
         kept.append(it)
     return kept, dropped
 

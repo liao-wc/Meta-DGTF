@@ -1,5 +1,5 @@
 {
- "n_valid_runs": 16,
+ "n_valid_runs": 18,
  "since": "",
  "matrix": {
   "reasoning": {
@@ -59,15 +59,15 @@
     ]
    },
    "fast": {
-    "n_runs": 2,
-    "n_verified": 2,
-    "quality_mean": 0.945,
-    "quality_mean_all": 0.945,
-    "tokens_mean": 530066,
-    "wall_mean": 235.6,
+    "n_runs": 3,
+    "n_verified": 3,
+    "quality_mean": 0.953,
+    "quality_mean_all": 0.953,
+    "tokens_mean": 549444,
+    "wall_mean": 227.7,
     "verified_ratio": 1.0,
-    "latest_tag": "mode-fast-reason2",
-    "latest_quality": 0.9535,
+    "latest_tag": "mode-fast-reason3",
+    "latest_quality": 0.9687,
     "samples": [
      {
       "tag": "mode-fast-reason",
@@ -81,6 +81,13 @@
       "quality": 0.9535,
       "tokens": 579083,
       "wall": 282.7,
+      "verified": true
+     },
+     {
+      "tag": "mode-fast-reason3",
+      "quality": 0.9687,
+      "tokens": 588198,
+      "wall": 212.0,
       "verified": true
      }
     ]
@@ -190,21 +197,28 @@
     ]
    },
    "fast": {
-    "n_runs": 1,
-    "n_verified": 1,
-    "quality_mean": 0.948,
-    "quality_mean_all": 0.948,
-    "tokens_mean": 593788,
-    "wall_mean": 272.8,
+    "n_runs": 2,
+    "n_verified": 2,
+    "quality_mean": 0.949,
+    "quality_mean_all": 0.949,
+    "tokens_mean": 632900,
+    "wall_mean": 246.2,
     "verified_ratio": 1.0,
-    "latest_tag": "mode-fast-choice",
-    "latest_quality": 0.9481,
+    "latest_tag": "mode-fast-choice2",
+    "latest_quality": 0.9497,
     "samples": [
      {
       "tag": "mode-fast-choice",
       "quality": 0.9481,
       "tokens": 593788,
       "wall": 272.8,
+      "verified": true
+     },
+     {
+      "tag": "mode-fast-choice2",
+      "quality": 0.9497,
+      "tokens": 672011,
+      "wall": 219.6,
       "verified": true
      }
     ]
@@ -234,18 +248,28 @@
    "scenario": "reasoning",
    "mode": "fast",
    "human_quality": 0.9366,
-   "live_quality": 0.945,
-   "delta": 0.008,
-   "n_runs": 2,
+   "live_quality": 0.953,
+   "delta": 0.016,
+   "n_runs": 3,
    "verified_ratio": 1.0
   },
   {
    "scenario": "reasoning",
    "mode": "fast_domain2",
    "human_quality": 0.9535,
-   "live_quality": null,
-   "delta": null,
-   "note": "无对应有效真跑"
+   "live_quality": 0.953,
+   "delta": -0.001,
+   "n_runs": 3,
+   "verified_ratio": 1.0
+  },
+  {
+   "scenario": "reasoning",
+   "mode": "fast_domain3",
+   "human_quality": 0.9687,
+   "live_quality": 0.953,
+   "delta": -0.016,
+   "n_runs": 3,
+   "verified_ratio": 1.0
   },
   {
    "scenario": "choice",
@@ -260,9 +284,18 @@
    "scenario": "choice",
    "mode": "fast",
    "human_quality": 0.9481,
-   "live_quality": 0.948,
-   "delta": -0.0,
-   "n_runs": 1,
+   "live_quality": 0.949,
+   "delta": 0.001,
+   "n_runs": 2,
+   "verified_ratio": 1.0
+  },
+  {
+   "scenario": "choice",
+   "mode": "fast2",
+   "human_quality": 0.9497,
+   "live_quality": 0.949,
+   "delta": -0.001,
+   "n_runs": 2,
    "verified_ratio": 1.0
   },
   {

@@ -175,3 +175,11 @@ App 的事实题联网仍由 quality_policy 的 auto:web-retry 执行。
 
 注意：这是**规则层**的动态最优（实测锚点 + 保守方向），不引入额外 LLM 调用；
 失败路径全部 fail-open（场景识别失败时退回原默认选择）。
+
+## 附三：事实短题不再省层（Round 8 修正）
+
+实测反例：App daosheng + 事实题（web on）+ 规则回退 route=0,1 →
+quality 0.2253 / unverified（`conflict_unresolved`，layers_standard=2）；
+同题 CLI 全四层 web on → 0.9581 / verified。
+⇒ 事实门需要 both/all 层做证据冲突消解与元层闭合，**事实题一律 route=0,1,both,all**；
+原「事实短题省掉对撞/元层」规则已停用（`daosheng_mode.predict_route_rounds`）。

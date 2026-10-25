@@ -233,14 +233,19 @@ MEASURED_SCENARIOS: Dict[str, dict] = {
                              "wall": 282.7, "verified": True,
                              "question": "为什么冬天的静电现象比夏天更常见？",
                              "config": "B parallel + thinking off + rounds auto"},
+            "fast_domain3": {"quality": 0.9687, "tokens": 588198, "calls": 98,
+                             "wall": 212.0, "verified": True,
+                             "question": "为什么飞机在起飞前要除冰？",
+                             "config": "B parallel + thinking off + rounds auto"},
         },
         "rules": {
             "quality_first": "auto",
             "cost_first": "fast",
             "low_tokens": "fast",
-            "note": ("fast 已在两个推理域验证（0.9366/0.9535 vs auto 0.9465；单跑方差内），"
-                     "tokens −33%、墙钟 −68~70% ⇒ 成本档首选；serial 只省 11% tokens "
-                     "但墙钟 +74%，已被 fast/auto 支配（仅作历史对照保留）"),
+            "note": ("fast 已在三个推理域验证（0.9366 / 0.9535 / 0.9687 vs auto 0.9465；"
+                     "差值在单跑方差内），tokens −33%、墙钟 −68~75% ⇒ 成本档首选；"
+                     "serial 只省 11% tokens 但墙钟 +74%，已被 fast/auto 支配"
+                     "（仅作历史对照保留）"),
         },
     },
     "choice": {
@@ -253,6 +258,10 @@ MEASURED_SCENARIOS: Dict[str, dict] = {
             "fast": {"quality": 0.9481, "tokens": 593788, "calls": 97,
                      "wall": 272.8, "verified": True,
                      "config": "B parallel + thinking off + rounds auto"},
+            "fast2": {"quality": 0.9497, "tokens": 672011, "calls": 109,
+                      "wall": 219.6, "verified": True,
+                      "question": "在选择保温材料时应该优先考虑导热系数还是防火等级？",
+                      "config": "B parallel + thinking off + rounds auto"},
         },
         "rules": {"quality_first": "auto", "cost_first": "fast",
                   "note": ("fast 实测与 auto 同质量（0.9481 vs 0.9487，差值在单跑方差内），"

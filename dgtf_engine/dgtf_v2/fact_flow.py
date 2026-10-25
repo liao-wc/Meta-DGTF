@@ -267,6 +267,8 @@ class FactCard:
     evidence_ids: list = field(default_factory=list)
     official_evidence_ids: list = field(default_factory=list)
     conflicts: list = field(default_factory=list)
+    #: 已被「官方源优先」消解的原始冲突（保留可审计，不计入阻断项）
+    resolved_conflicts: list = field(default_factory=list)
     gaps: list = field(default_factory=list)
     reason: str = ""
 
@@ -291,6 +293,8 @@ class FactCard:
                 "official_evidence_ids": list(self.official_evidence_ids),
                 "conflicts": [dict(c) if isinstance(c, dict) else c
                               for c in self.conflicts],
+                "resolved_conflicts": [dict(c) if isinstance(c, dict) else c
+                                       for c in self.resolved_conflicts],
                 "gaps": list(self.gaps), "reason": self.reason,
                 "ok": bool(self.ok)}
 
@@ -301,6 +305,62 @@ def _dedup(seq) -> list:
         if x not in out:
             out.append(x)
     return out
+
+
+def _clean_card_answer(ans: str) -> str:
+    """事实卡答案清洗：去行首时间戳/标题符号，压到 ≤200 字。"""
+    s = str(ans or "").strip()
+    s = re.sub(r"^(\[\d{4}-\d{2}-\d{2}\]|\d{4}-\d{2}-\d{2})[\s:：]*", "", s)
+    s = re.sub(r"^#+\s*", "", s)
+    s = re.sub(r"\s+#+\s*", " ", s)
+    return s.strip()[:200]
+
+
+def _is_aux_date_conflict(c: dict) -> bool:
+    """日期类辅助冲突（年份/月份/日期）——与题面目标量无关，可被官方源消解。"""
+    if not isinstance(c, dict):
+        return False
+    # 只认「单位/锚点是日期类」或「数值全是年份」的冲突；
+    # 不能因为 term 里出现「年」字就判辅助（如 "2023 年中国GDP增长" 含年字，
+    # 但它是目标量冲突，必须保持 conflict —— 这是真实 GDP 反例给出的边界）。
+    unit_anchor = (str(c.get("unit") or "") + " " + str(c.get("anchor") or ""))
+    if any(k in unit_anchor for k in ("年", "月", "日", "date", "日期")):
+        return True
+    vals = []
+    for v in (c.get("values") or []):
+        try:
+            vals.append(float(v))
+        except (TypeError, ValueError):
+            pass
+    return len(vals) >= 2 and all(1000 <= v <= 2100 for v in vals)
+
+
+def _official_precedence_answer(question: str, evs: list,
+                                conflicts: list, official_ids: list):
+    """官方源优先消解：返回 (answer, remaining_conflicts) 或 (None, conflicts)。
+
+    只在「冲突不含官方源 && 官方源能给出题面相关答案」时消解；否则原样返回。
+    """
+    if not conflicts or not official_ids:
+        return None, list(conflicts)
+    off_set = {str(x) for x in official_ids if str(x)}
+    off_evs = [e for e in evs if str(getattr(e, "evidence_id", "")) in off_set]
+    if not off_evs:
+        return None, list(conflicts)
+    for c in conflicts:
+        if not isinstance(c, dict):
+            return None, list(conflicts)
+        cids = {str(x) for x in (c.get("evidence_ids") or [])}
+        if cids & off_set:          # 官方源自己参与冲突 ⇒ 不越权消解
+            return None, list(conflicts)
+        if not _is_aux_date_conflict(c):
+            # 目标量冲突（如 GDP 增速 5.2 vs 6.8）不得被官方优先掩盖
+            return None, list(conflicts)
+    ans = _clean_card_answer(
+        str(answer_from_evidence(off_evs, question) or "").strip())
+    if len(ans) < 2 or len(ans) > 200:
+        return None, list(conflicts)
+    return ans, []
 
 
 def build_fact_card(question: str, report: EvidenceReport,
@@ -346,6 +406,20 @@ def build_fact_card(question: str, report: EvidenceReport,
                         reason="检索已执行 %d 次，但没有取到任何可用证据"
                         % searches, **base)
     if conflicts:
+        _ans, _left = _official_precedence_answer(question, evs, conflicts,
+                                                  official_ids)
+        if _ans and not _left:
+            # 官方源优先：辅助冲突被消解，答案取官方源原文（可审计）
+            _resolved = [dict(c) if isinstance(c, dict) else c
+                         for c in conflicts]
+            _gaps = [g for g in gaps if str(g) != "conflict_unresolved"]
+            return FactCard(status="answered", answer=_ans,
+                            resolved_conflicts=_resolved,
+                            gaps=_dedup(_gaps + [
+                                "conflict_resolved_official:official_precedence"]),
+                            reason=("证据间有 %d 处冲突，但均不含官方源；"
+                                    "按官方源优先消解并取官方原文作答"
+                                    % len(conflicts)), **base)
         return FactCard(status="conflict", conflicts=conflicts,
                         gaps=_dedup(gaps + ["conflict_unresolved"]),
                         reason="证据之间有 %d 处未消解的数值冲突"

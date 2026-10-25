@@ -18,7 +18,9 @@ import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-OUT = ROOT / "outputs" / "_lead_audit" / "app_fast_e2e.json"
+OUT = ROOT / "outputs" / "_lead_audit" / (
+    "app_fact_e2e.json" if len(sys.argv) > 2 and sys.argv[2] == "daosheng"
+    else "app_fast_e2e.json")
 TOKEN = "lead-e2e-token-7"
 BASE = "http://127.0.0.1:8768"
 QUESTION = (sys.argv[1] if len(sys.argv) > 1
@@ -45,7 +47,9 @@ def main() -> int:
         [sys.executable, "-u", str(ROOT / "dgtf_app" / "server.py"),
          "--port", "8768", "--http", "--token", TOKEN, "--no-agent-daemon"],
         cwd=str(ROOT), stdout=log, stderr=subprocess.STDOUT, env=env)
-    result = {"ok": False, "server_pid": srv.pid}
+    result = {"ok": False, "server_pid": srv.pid,
+          "requested_mode": (sys.argv[2] if len(sys.argv) > 2
+                             else "daosheng_fast")}
     try:
         deadline = time.time() + 90
         while time.time() < deadline:
@@ -60,8 +64,9 @@ def main() -> int:
             result["error"] = "server 未 ready"
             return 1
         t0 = time.time()
+        _mode = (sys.argv[2] if len(sys.argv) > 2 else "daosheng_fast")
         r = req("/api/tasks", {"question": QUESTION,
-                               "mode": "daosheng_fast", "opts": {}}, timeout=60)
+                               "mode": _mode, "opts": {}}, timeout=60)
         result["task_post_status"] = 201
         result["task_id"] = r.get("id") or r.get("task", {}).get("id")
         mode = r.get("mode") or (r.get("task") or {}).get("mode") or {}
