@@ -440,3 +440,40 @@ tests_fact_flow 15、tests_fact_official_precedence 19 全 PASS；
 边界：若多来源给出不同数值（如 8844.43 vs 8848.86 同上下文），会先走冲突判定
 （conflict 分支），时效优先只在「非冲突的多个答案候选」之间生效；这也符合
 「冲突必须显式消解」的红线。
+
+
+## 18. 离线 pack 审计：212 个真实产物的机制覆盖与剩余问题（Round 12，零 API）
+
+预算受限后改为审计已存 `outputs/*.packed.json`（**212 个真实产物，其中 64 条事实题**），
+脚本 `scripts/lead_offline_pack_audit.py`，结果 `docs/offline_pack_audit_20261025.json`。
+
+### 18.1 分布
+
+- 事实题 answer_quality：verified **44** / unverified 33 / needs_evidence 8；
+- fact_card 状态：answered **50** / conflict 8 / 无卡 6；
+- fact gaps 频次：conflict_unresolved 8、no_official_source **7**、uncovered:* 8、
+  conflict_resolved_official:official_precedence 1（本轮新机制已生效 1 次）；
+- 冲突覆盖：8 个跑次有冲突，其中仅 **2 个**是日期类辅助冲突（可被官方源优先消解），
+  本轮新机制真实命中 1 次（珠峰）；其余 6 个是目标量/官方互冲（按设计保持 conflict）；
+- 过程门：`standard_all=False` **41** 跑次、`meta_clean=False` **19** 跑次、
+  meta_closure 未交代张力合计 **53** ⇒ ready=False 的最大来源是**过程门**而非事实门。
+
+### 18.2 关键发现（下一轮候选，均需小额 A/B 验证）
+
+1. **官方证据捕获可靠性**：7 个 `no_official_source` 跑次的原始检索池里其实**存在
+   官方域名**（如 developer.mozilla.org / iana / rfc-editor / cas.cn），但进入
+   evidence 层的 8 条里 official=0 ⇒ 官方证据在「检索→归一化→预算保留」链路被
+   丢弃或未识别。修复方向：核对 `from_search_hits` 的 url/link 字段映射与
+   budget 保留顺序；若确认是字段映射问题，可显著提升 verified 率（零成本修复，
+   但需一轮真实跑验证）。
+2. **过程门是 readiness 主瓶颈**：41/64 事实跑次 standard_all=False；
+   meta_closure 未交代张力 53 处。候选：短事实题的探针纪律（不引入与答案无关的
+   张力）+ 元层收束提示词；需质量 A/B。
+3. **答案展示机制待真跑验证**：212 个产物均早于 Round 9 的 `answer_display` 变更
+   ⇒ 实跑中暂未出现展示分离；离线判据（19+7 项）已覆盖逻辑。
+
+### 18.3 方法学价值
+
+该审计给出**零 API 成本的回归检查面**：每次机制改动后，用已存 packs 重算
+gaps/status/显示字段即可发现「机制命中率、真实瓶颈、回归」；后续可作为
+`scripts/lead_offline_pack_audit.py` 纳入例行检查（docs 账本 + git 留档）。

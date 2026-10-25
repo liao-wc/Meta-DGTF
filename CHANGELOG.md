@@ -42,6 +42,13 @@ V2.2.3
   - 前缀缓存实测：全量跑 prompt cache hit ratio **13.9%~17.6%**（已自动省约 ¥0.2/跑）；
     prompt 静态段前置可进一步省，但需质量 A/B，列为下一轮 opt-in 项。
 
+【Round 12 增补（2026-10-25 同日）】
+- 离线 pack 审计（212 产物/64 事实题）：verified 44、no_official_source 7、
+  官方源优先真实命中 1 次、目标量冲突 6 次按设计拦截；过程门 standard_all=False 41 次
+  ⇒ readiness 主瓶颈是过程门而非事实门。
+- 新发现：7 个 no_official_source 跑次的检索池里存在官方域名但未进 evidence 层，
+  疑为检索→归一化→预算链路丢失官方证据（下一轮零成本修复候选）。
+- 新增 scripts/lead_offline_pack_audit.py（零 API 回归检查面）+ docs/offline_pack_audit_20261025.json。
 【Round 11 增补（2026-10-25 同日）】
 - 事实答案时效优先：answer_from_evidence 新增 prefer_recent（默认 False=零行为差），
   仅题面含「最新/当前/现在…」时按证据日期加权取最新；日期解析限定 1800–2099 年份
