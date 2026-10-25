@@ -854,10 +854,21 @@ def m4_prediction(question: str, history: dict, preset: dict | None = None) -> d
                "tri_rate": hist.get("tri_rate") or 0,
                "cut_rate": hist.get("cut_rate") or 0}
     try:
-        from dgtf_v2.mode_fusion import fused_plan
+        from dgtf_v2.mode_fusion import (fused_plan, kind_of_question,
+                                         recommend_scenario)
         from dgtf_v2.quality_predictor import question_features
         feats = question_features(question) or {}
         plan = fused_plan(cascade=True, features=feats, history=m4_hist)
+        # [Round 4] 实测场景矩阵：题面→场景桶→推荐档（含事实题强制联网规则）。
+        #   只做 plan 字段与审计，不改变既有 opts 决策路径（失败即忽略）。
+        _scenario = {}
+        try:
+            _kind = kind_of_question(question)
+            _scenario = recommend_scenario(_kind, min_quality=0.9,
+                                           prefer="quality")
+            _scenario["kind"] = _kind
+        except Exception as _se:  # noqa: BLE001
+            _scenario = {"error": "%s: %s" % (type(_se).__name__, _se)}
         first = plan.get("first") or {}
         # [Round 2] 保形下界与弃权状态进入 plan，供 App/审计侧读取
         #   （无 conformal 段时为空 dict，旧行为不变）。
@@ -869,6 +880,7 @@ def m4_prediction(question: str, history: dict, preset: dict | None = None) -> d
                 "conformal": plan.get("conformal") or {},
                 "quality_prediction_kind": plan.get("quality_prediction_kind") or "",
                 "quality_guard": plan.get("quality_guard") or "",
+                "scenario": _scenario,
                 "history_input": m4_hist}
     except Exception as exc:  # noqa: BLE001
         return {"enabled": True, "ok": False,

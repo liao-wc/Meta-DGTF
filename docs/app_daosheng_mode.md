@@ -139,3 +139,20 @@ mock 任务余额为 `null` 是**设计如此**（不查网络）；真实任务
    `budget` 段可调，`DGTF_DAOSHENG_BALANCE_CNY` 可离线注入测试。
 5. **回退开关**：`mode=standard` 完全不启用道生 plan；或删 `configs/道生专属模式.yaml`
    （内置兜底仍可用，只会丢自定义阈值）。回退不动任何引擎/配置出厂值。
+
+## 附：实测场景矩阵接入（Round 4）
+
+道生模式 plan 的 m4.scenario 现在由 mode_fusion.kind_of_question() +
+
+ecommend_scenario() 生成（实测矩阵 3 场景 7 行，见
+docs/ab_evidence_20261025.md §9）：
+
+- 
+easoning（推理/机制）→ uto（B 并行 + thinking auto + rounds auto）；
+- choice（选择/决策）→ uto；
+- act（事实/数值）→ web_on_auto，且 
+equire_web=true、orbid 含
+  web_off_auto/web_on_fast（事实题必须联网 + 保留 thinking，否则质量 0.44~0.47）。
+
+该字段只进 plan 审计与展示，不改变既有 opts 决策路径（失败即忽略）；
+App 的事实题联网仍由 quality_policy 的 auto:web-retry 执行。
