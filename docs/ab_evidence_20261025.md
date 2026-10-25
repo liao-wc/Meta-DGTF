@@ -1984,3 +1984,14 @@ scripts/update_scenario_matrix.py 末尾新增护栏：所有有 live 对照的�
 意义：场景矩阵不再只是「打印对照」，而是把「人工锚点 vs 现场实测」的一致性
 变成可执行判据；与 replay guard / process gate guard / plan matrix 共同构成
 **四道自动护栏**。
+
+
+## 75. 最终验收串跑器（Round 73）
+
+新增 scripts/final_acceptance.py：**一条命令**依次跑完 8 项零成本验收与护栏
+（fast_gate / V2 51 文件 / 重放护栏 / 过程门护栏 / App plan 矩阵 / dual_judge 护栏 /
+compare_eval 自检 / 场景矩阵护栏），任一失败即 exit 1。
+
+实测：**FINAL ACCEPTANCE: 8/8 PASS / ALL GUARDS PASS**（总耗时约 2.5 分钟）。
+--with-service 可附带本地服务检查（服务停机训练期间默认跳过）。
+意义：「只变好不变坏」的四道护栏 + 基础判据变成单命令可复跑，供交付/回归使用。
