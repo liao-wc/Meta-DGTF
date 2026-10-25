@@ -11,12 +11,14 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
 
-from dgtf_v2.evidence import (Evidence, is_official_source,  # noqa: E402
+from dgtf_v2.evidence import (Evidence, EvidenceReport,  # noqa: E402
+                              is_official_source,
                               _overall_quantity_bonus,
                               _short_answer, _term_covered,
                               answer_from_evidence, detect_gaps)
 from dgtf_v2.fact_flow import (_compact_numeric_answer,  # noqa: E402
-                                     _numeric_claim_answer)
+                                     _numeric_claim_answer,
+                                     build_fact_card)
 
 P, F = [], []
 
@@ -165,6 +167,21 @@ def main():
     ck("A32 年度口径优先（取全年 0.2%，非月度/核心项）",
        "0.2" in _cpi_ans and "0.5" not in _cpi_ans, _cpi_ans)
 
+    # ── A12：年份不一致拒答（Round 32）──────────────
+    _rep_2023 = EvidenceReport(question="2024年中国CPI涨幅是多少？", queries=["q"], searches=1,
+        items=[ev("E1", "2023年全年CPI上涨0.7%（官方）")],
+        conflicts=[], gaps=["single_source"])
+    _card_bad = build_fact_card("2024年中国CPI涨幅是多少？", _rep_2023)
+    ck("A33 题面 2024 而证据只有 2023 → 拒答 unknown/year_mismatch",
+       _card_bad.status == "unknown" and "year_mismatch" in _card_bad.gaps,
+       (_card_bad.status, _card_bad.gaps))
+    _rep_2024 = EvidenceReport(question="2024年中国CPI涨幅是多少？", queries=["q"], searches=1,
+        items=[ev("E1", "国家统计局：2024年全年CPI同比上涨0.2%（官方）", official=True)],
+        conflicts=[], gaps=["single_source"])
+    _card_ok = build_fact_card("2024年中国CPI涨幅是多少？", _rep_2024)
+    ck("A34 对应年份证据 → 正常 answered",
+       _card_ok.status == "answered" and "0.2" in _card_ok.answer,
+       (_card_ok.status, _card_ok.answer))
     # ── B：整体量语义加权 ────────────────────────
     ck("B1 问长度 + 全长标记 → 加分",
        _overall_quantity_bonus("黄河全长约5464公里", "黄河的长度是多少千米") > 0)

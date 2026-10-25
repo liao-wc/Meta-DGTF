@@ -51,6 +51,9 @@ V2.2.3
 - 领域扩展实测（fast+web）：医疗体温 **0.9625/verified/ready**（593K/238s）、
   金融 CPI 0.9417、政策宪法 0.9789 ⇒ 事实成本档覆盖 8 类。
 - 事实矩阵 21 行（fact 13）；判据 tests_evidence_coverage 38 项；V2 51/51（771 checks）。
+- 年份锚定加固：题面年份命中加权 + 年份不一致拒答（year_mismatch），
+  防「错年份 verified」；判据 A33/A34；V2 51/51（773 checks）。
+
 【Round 31 增补（2026-10-25 同日）】
 - 政策类事实三层修复：长复合词 2-gram 覆盖（≥80% 带防护）、日期问句证据概念加权、
   日期问句 display 收窄（1982年）。宪法题 0.4663/needs_evidence →

@@ -509,6 +509,7 @@ def _numeric_claim_answer(question: str, evs: list) -> str:
     _FINAL_MARK = ("最终核实", "最终数据", "修订后", "更新后", "final")
     _PRELIM_MARK = ("初步核算", "初步数据", "初步统计", "预计", "预估",
                     "初值", "prelim")
+    _year_q = re.findall(r"(?:19|20)\d{2}", q)
     _annual_q = bool(re.search(r"(?:19|20)\d{2}年", q)) and any(
         k in q for k in ("涨幅", "增速", "增长", "总量", "全年", "年度"))
     _PEN = ("上游", "中游", "下游", "河段", "分产业", "第一产业", "第二产业",
@@ -545,19 +546,22 @@ def _numeric_claim_answer(question: str, evs: list) -> str:
             _rec = _tds(snip) if _recency else 0
             _final = 1 if any(k in snip for k in _FINAL_MARK) else 0
             _prelim = 1 if any(k in snip for k in _PRELIM_MARK) else 0
+            _year_hit = 1 if any(y in snip for y in _year_q) else 0
+            _year_miss = 1 if (_year_q and not _year_hit
+                               and re.search(r"(?:19|20)\d{2}", snip)) else 0
             _annual = 1 if (_annual_q and "全年" in snip) else 0
             _month = 1 if (_annual_q and any(
                 k in snip for k in ("月份", "月度", "环比"))) else 0
             # 修订期感知：最终核实 > 初步核算（对统计类事实题的「最新/最终」问法）
-            score = (u_hit, concept, _final, _rec, _annual, -_month, ov,
-                     -_prelim, -pen, -len(raw))
+            score = (u_hit, concept, _year_hit, -_year_miss, _final, _rec,
+                     _annual, -_month, ov, -_prelim, -pen, -len(raw))
             if best is None or score > best[0]:
                 best = (score, snip, raw)
     if best is None:
         return ""
     score, snip, raw = best
     # 严格门槛：单位类命中 + 题面概念命中 + 非分段语义，否则回退旧逻辑
-    if not (score[0] and score[1] and not score[8]):
+    if not (score[0] and score[1] and not score[10]):
         return ""
     for part in re.split(r"[。；;\n]", snip):
         if raw and raw in part:
@@ -665,6 +669,15 @@ def build_fact_card(question: str, report: EvidenceReport,
     answer = _clean_card_answer(
         _numeric_claim_answer(question, _cand_evs)
         or answer_from_evidence(_cand_evs, question, prefer_recent=True))
+    # ★ [Round 32] 时间锚定问句：题面含明确年份、答案却只给「另一年份」时拒答
+    #   （宁缺毋假；避免把 2023 的核心 CPI 当成 2024 的 CPI 涨幅 verified 出街）
+    _yq = re.findall(r"(?:19|20)\d{2}", str(question or ""))
+    if _yq and answer and not any(y in answer for y in _yq):
+        if re.search(r"(?:19|20)\d{2}", answer):
+            return FactCard(status="unknown",
+                            gaps=_dedup(gaps + ["year_mismatch"]),
+                            reason=("答案年份与题面不一致（题面 %s），拒绝输出"
+                                    % "/".join(_yq[:2])), **base)
     if answer and (official_n >= int(min_official)
                    or independent >= int(min_independent)):
         return FactCard(status="answered", answer=answer,

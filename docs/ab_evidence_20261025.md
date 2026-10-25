@@ -1231,3 +1231,15 @@ CPI 题（fast+web）首跑 0.9417/verified/ready，但 answer 取到「扣除�
 全量 V2 **51/51（771 checks）**、fast_gate 12/12。
 本地 v6（230×2 epochs）训练中：step-60 checkpoint 已落盘（22:41），
 预计 ~01:00 完成，完成后评测对比 v5。
+
+
+### 38.5 年份锚定加固（Round 32 补）
+
+真实复跑发现：CPI 复验（0.9625/verified/ready）答案却取到「2023 年核心 CPI 0.7%」——
+检索池中 2024 全年 CPI 官方值缺失时，模型仍给出**错年份**的 verified 答案。
+按「宁缺毋假」加固两层：
+1. **年份命中加权**：题面含 19/20xx 年份时，命中该年份的证据 +1、只含其他年份的 −1；
+2. **年份不一致拒答**：答案年份与题面不一致（题面 2024、答案只有 2023）→ 事实卡
+   unknown + year_mismatch（拒绝输出，而不是假 verified）。
+离线重放最新 CPI pack：**unknown/year_mismatch**（诚实拒答）✔；
+判据 A33（年份不一致→拒答）/A34（对应年份→answered）通过。
