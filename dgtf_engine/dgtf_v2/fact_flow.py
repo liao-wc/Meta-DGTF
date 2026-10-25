@@ -406,6 +406,24 @@ def _compact_numeric_answer(question: str, answer: str) -> str:
         _parts = re.findall(r"[\u4e00-\u9fa5]{2,4}市", _tail)
         if _parts:
             return _parts[0]
+        # ★ [Round 59] 国家名兜底（哪个国家 → 美国/法国…）
+        _stop = set("的是在于和大的我全各两该本出回进以及与中要这那有为对从到")
+        for _m in re.finditer("国", ans):
+            _i = _m.start()
+            for _ln in (2, 3):
+                _s = _i - _ln + 1
+                if _s < 0:
+                    continue
+                _c = ans[_s:_i + 1]
+                if any(ch in _stop for ch in _c):
+                    continue
+                _prev = ans[_s - 1] if _s > 0 else ""
+                if _prev and _prev not in "在于是设位，。、 ":
+                    continue
+                if _c in ("我国", "全国", "各国", "本国", "该国", "外国",
+                          "国际", "中国") or _c in q:
+                    continue
+                return _c
     if not any(h in q for h in _NUM_Q_HINTS):
         return ans
     try:
