@@ -45,6 +45,12 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 44 增补（2026-10-26）】
+- 金融题：万亿美元复合单位（display=3.2万亿美元），判据 A49；
+- 医疗题：次每分钟全标记词项视为覆盖 + 范围答案 display（60-100次/分），
+  离线 answered/gaps=[]；判据 A48/A50；
+- v7（300 样本 ×1 epoch）训练完成但 val_loss 0.2339 劣于 v6 0.2221 ⇒ 保持 v6 默认，
+  v7 归档负结果；V2 51/51（795 checks）。
 【Round 43 增补（2026-10-26）】
 - 地点问句答案收窄：answer_from_evidence 地点加分、_short_answer 地点分支优先于日期
   分支、display 收窄城市名；联合国总部题 **0.9507/verified/ready + display=纽约市**。

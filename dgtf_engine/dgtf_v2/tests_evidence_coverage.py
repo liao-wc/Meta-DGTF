@@ -264,6 +264,17 @@ def main():
     _loc_disp = _compact_numeric_answer("联合国的总部设在哪个城市？",
                                          "此次会议决定将联合国总部的地址设在纽约市附近")
     ck("A47 地点 display 收窄为纽约市", _loc_disp == "纽约市", _loc_disp)
+    # ── A20：范围/复合单位/标记词项（Round 44）────────
+    ck("A48 「次每分钟」全标记词项视为覆盖",
+       _term_covered("次每分钟", "正常成年人每分钟心跳60到100次") is True)
+    _fx = extract_numeric_claims("外汇储备连续12个月高于3.2万亿美元")
+    ck("A49 万亿美元复合单位可抽取",
+       any(c.get("unit") == "万亿美元" and abs(float(c.get("value")) - 3.2) < 1e-6
+           for c in _fx), _fx)
+    _rng_disp = _compact_numeric_answer("成年人正常心率是多少次每分钟？",
+        "正常成人心率为60-100次/分，通常为70-80次/分。")
+    ck("A50 范围型 display 收窄（60-100次/分）",
+       _rng_disp == "60-100次/分", _rng_disp)
     # ── B：整体量语义加权 ────────────────────────
     ck("B1 问长度 + 全长标记 → 加分",
        _overall_quantity_bonus("黄河全长约5464公里", "黄河的长度是多少千米") > 0)

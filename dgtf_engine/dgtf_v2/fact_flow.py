@@ -372,6 +372,12 @@ def _compact_numeric_answer(question: str, answer: str) -> str:
             if _m2:
                 return _m2.group(1) + "年"
             return _years[-1]
+    # ★ [Round 44] 范围型答案：display 收窄为「区间+单位」（如 60-100次/分）
+    _rng = re.search(
+        r"\d+(?:\.\d+)?\s*[-—~～至到]\s*\d+(?:\.\d+)?\s*"
+        r"(?:%|次/分|次每分钟|次|岁|米|公里|千米|千克|公斤|小时|分钟|秒)", ans)
+    if _rng:
+        return _rng.group(0).replace(" ", "")
     # ★ [Round 43] 地点问句：display 收窄到城市名（纽约市）
     if any(k in q for k in ("哪个城市", "哪座城市", "哪个国家", "何地",
                             "哪里", "在什么地方")):
@@ -394,7 +400,7 @@ def _compact_numeric_answer(question: str, answer: str) -> str:
                    "份", "家", "所", "岁")
     _STRONG_UNITS = ("千米", "公里", "米", "厘米", "毫米", "%", "℃",
                      "吨", "公斤", "kg", "元", "万", "周岁", "岁",
-                     "万人", "万辆", "亿美元")
+                     "万人", "万辆", "亿美元", "万亿美元")
     claims = []
     for c in extract_numeric_claims(ans):
         try:
