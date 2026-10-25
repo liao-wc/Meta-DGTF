@@ -806,3 +806,44 @@ ready/quality 波动来自**过程门**而非事实门（本次 fact_card answer
    （repaired 记 warning/ok，bad 仅保留未修复项），避免过程门被单条修复阻断；
 2. **短事实题探针纪律**：无提问日期的「最新」类题不开启无法闭合的元层张力；
 3. v5 本地模型训练（GPU 进行中，240 样本/1900/len/fp32）完成后评测对比 v2。
+
+
+## 27. 过程门语义修正：审计修复不阻断 + 事实已证时元层张力豁免（Round 21）
+
+### 27.1 问题（GDP Round 20 跑次）
+
+事实卡已 verified、gaps=[]，但 ready=False 由过程门阻断：
+1. layer1 的 `decidability_audit` 有 1 行**已修复**（undecidable→partial），仍计入 bad；
+2. layer all 的 `meta_closure.clean=false`，unsettled 2 条正是题面自身歧义
+   （「最终核实」是否修订周期终点 / 无提问日期时「最新」无法闭合）。
+
+### 27.2 修正（process_ledger.py，判据 10 项）
+
+1. **审计修复不阻断**：bad 计数扣除 `after != before` 的已修复行，仅**未修复**行阻断
+   （审计的价值在于改正越权断言；改正后的层已无 overclaim）；
+2. **事实已证时元层辅助张力豁免**：`question_type=fact` 且 fact_card=answered+
+   official、gaps 无硬缺口时，all 层允许 meta_closure 不 clean，但账本显式标注
+   `notes.closure_waived=True` 与 `closure_unsettled=<n>`（可审计、默认不外泄）。
+   负对照全部保留：无官方源 / conflict / 非事实题 → 不豁免。
+
+### 27.3 离线验证（已存 pack 重算账本）
+
+| 跑次 | 修正前 standard_all | 修正后 |
+|---|---|---|
+| GDP Round 20 跑次 | False | **True**（closure_waived, unsettled=2） |
+| HTTP 404 / 黄河 / 珠峰 App | True | True（无 notes，未受影响） |
+
+### 27.4 真实验证（同题 web on 复跑）
+
+**quality 0.9764 / aq=verified / ready=True**；standard_all=True
+（closure_waived，unsettled=1）；answer「…国内生产总值…比上年增长5.0%…」；
+display=5.0%；tokens 1,120,591 / calls 109 / wall 1218s。
+
+同一题三轮轨迹：0.238/unverified（假冲突）→ 0.43/verified 未 ready（过程门）→
+**0.9764/verified/ready**（数据+过程门全达标）。
+
+### 27.5 门禁与本轮其他
+
+- 全量 V2 **50/50（741 checks）**、fast_gate 12/12；
+- 本地模型 v5（0.5B / 240 样本 / max_len 1900 / fp32 GEMM）训练进行中：
+  step-120 checkpoint 已落盘，预计 20:40 左右完成，下一轮评测对比 v2。

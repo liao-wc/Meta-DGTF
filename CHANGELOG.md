@@ -45,6 +45,13 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 21 增补（2026-10-25 同日）】
+- 过程门语义修正：① 审计「已修复行」（after≠before）不再计 bad/阻断；
+  ② 事实已证（answered+official 无硬缺口）时元层辅助张力豁免，账本
+  notes.closure_waived 可审计；负对照（无官方/conflict/非事实题）保留。
+  判据 tests_process_ledger_waiver 10 项；全量 V2 50/50（741 checks）。
+- GDP 真实验证：**0.9764 / verified / ready=True**（standard_all 豁免生效，
+  answer 5.0%、display=5.0%，tokens 1,120,591 / calls 109 / wall 1218s）。
 【Round 20 增补（2026-10-25 同日）】
 - 数值题 claim 级答案：目标量纲/题面概念（含繁简归一、GDP↔国内生产总值）/分段惩罚/
   整体量标记守卫，无单位主张不作答案（修日期 12/8 回归），时效题按证据日期取新；
