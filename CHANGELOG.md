@@ -45,6 +45,9 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 69 增补（2026-10-26）】
+- 最终交付说明补 Round 61–68 增量（护栏/延迟/compare_eval/复合双值/定义回退等）。
+- v8b（mixed）训练中（ep1 step 30/336）。
 【Round 68 增补（2026-10-26）】
 - compare_eval 自检脚本（5 项回归：SWITCH/KEEP/噪声容差/stages 结构/未知结构），
   实测 5/5 PASS。
