@@ -1243,3 +1243,43 @@ CPI 题（fast+web）首跑 0.9417/verified/ready，但 answer 取到「扣除�
    unknown + year_mismatch（拒绝输出，而不是假 verified）。
 离线重放最新 CPI pack：**unknown/year_mismatch**（诚实拒答）✔；
 判据 A33（年份不一致→拒答）/A34（对应年份→answered）通过。
+
+
+## 39. 统计类口径深化：「分别」序位 + 官方权威消解 + 两题真实复验（Round 33）
+
+### 39.1 反例与根因
+
+| 题（fast+web） | 首跑 | 根因 |
+|---|---|---|
+| 2024 中国出生人口（万人） | 0.4517 / unverified / insufficient_evidence | 答案候选被概念门槛全拒（长中文串 token 不切）→ 答案空 |
+| 2024 新能源产量（万辆） | 0.4459 / unverified / conflict_unresolved（5 处） | 「产销量分别达1288.8万辆和1286.6万辆」产/销数值上下文相同；不同来源「分别」单位顺序不同；%增长口径混判 |
+
+### 39.2 修复（确定性）
+
+1. **概念匹配改 claim 上下文 2-gram**：概念命中按「该数值主张的上下文」计题面 2-gram，
+   同 snippet 里「汽车产销3128.2」与「新能源汽车产销1288.8」可区分（修出生人口 + 取对目标）；
+2. **「分别」序位语义**：题面问产量/生产 → 优先第 1 个数（ord0），销量/销售 → 第 2 个；
+   `extract_numeric_claims` 对「分别」句按数字序号写 context（ordN）；
+3. **官方权威冲突消解**（带三重防护）：仅当 ① 官方证据能给出目标数值答案、
+   ② 冲突不是「官方源互冲」（≥2 官方 id 同冲突）、③ 冲突值来源**年份不同（期间错配）**
+   时，以官方为准 answered + `conflict_resolved_official_authority` 留档；
+4. **通用单位推断**：题面出现「万人/万辆/亿…」直接纳入目标量纲。
+
+判据：tests_evidence_coverage 增至 43 项（A35 分别序位、A36 万人单位、A37 官方权威）；
+fact_flow 15、official_precedence 19 全 PASS；V2 51/51（776 checks）。
+
+### 39.3 真实复验（同题 fast+web）
+
+| 题 | 首跑 | 复验 |
+|---|---|---|
+| 2024 出生人口 | 0.4517 / unverified | **0.9673 / verified / ready**（705,691 tok / 108 calls / 263s；answer 954万人，display=954万人） |
+| 2024 新能源产量 | 0.4459 / unverified | **0.99 / verified / ready**（793,041 tok / 108 calls / 273s；answer 1288.8万辆，display=1288.8万，gaps=官方权威消解标记） |
+
+### 39.4 事实矩阵 23 行
+
+新增 fast9（出生 0.9673）、fast10（新能源 0.99），矩阵 **23 行**（fact 15）；
+live 对照 fact fast+web n=15 质量 0.962，Δ≤0.028。
+
+### 39.5 本地模型 v6
+
+v6（230×2 epochs）训练继续进行（step-180 checkpoint 已落盘），完成后评测对比 v5。

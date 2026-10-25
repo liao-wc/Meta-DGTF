@@ -472,8 +472,18 @@ def _numeric_claim_answer(question: str, evs: list) -> str:
         q_units.extend(["平方公里", "万平方"])
     if any(k in q for k in ("元", "亿元", "万元", "美元", "金额", "总量")):
         q_units.extend(["亿元", "万元", "元", "美元"])
+    # ★ [Round 33] 通用单位提及：题面出现「万人/万辆/亿…」等直接纳入单位类
+    q_units.extend([u for u in ("万人", "万辆", "万", "亿", "吨", "公斤",
+                                "千米", "公里", "米", "%", "℃", "岁",
+                                "度", "小时", "分钟", "秒") if u in q])
     _asks_date = any(k in q for k in ("哪一年", "哪年", "何时", "什么时候",
                                       "年份", "哪一天"))
+    # ★ [Round 33] 「分别」句序位：产量/生产→第1个数，销量/销售→第2个数
+    _ord_pref = None
+    if any(k in q for k in ("产量", "生产")):
+        _ord_pref = 0
+    elif any(k in q for k in ("销量", "销售")):
+        _ord_pref = 1
     if _asks_date:
         q_units.append("年")
     if not _asks_date and not any(
@@ -530,6 +540,12 @@ def _numeric_claim_answer(question: str, evs: list) -> str:
                 concept += 1
             elif any(a in nsnip for a in _ALIAS.get(_tk, ())):
                 concept += 1
+        # ★ [Round 33] 概念兜底用「主张上下文」的题面 2-gram 命中数：
+        #   同一 snippet 里「汽车产销3128.2」与「新能源汽车产销1288.8」的上下文不同，
+        #   用 snip 会打平；用 context 才能区分目标（新能源产量）。
+        _q_grams = [q[_i:_i + 2] for _i in range(len(q) - 1)
+                    if "\u4e00" <= q[_i] <= "\u9fa5"
+                    and "\u4e00" <= q[_i + 1] <= "\u9fa5"]
         for c in extract_numeric_claims(snip):
             unit = str(c.get("unit") or "")
             raw = str(c.get("raw") or "").strip()
@@ -544,6 +560,15 @@ def _numeric_claim_answer(question: str, evs: list) -> str:
             pen = 1 if any(k in ctx for k in _PEN) else 0
             ov = 1 if any(k in ctx for k in _OV) else 0
             _rec = _tds(snip) if _recency else 0
+            _nctx = _norm(ctx)
+            _gh = sum(1 for _g in _q_grams if _g in _nctx)
+            _concept = max(concept, min(_gh, 5))
+            _ord_hit = 0
+            if _ord_pref is not None and "分别" in snip:
+                if str(_ord_pref) in ctx:
+                    _ord_hit = 1
+            _ord_miss = 1 if (_ord_pref is not None and "分别" in snip
+                              and not _ord_hit) else 0
             _final = 1 if any(k in snip for k in _FINAL_MARK) else 0
             _prelim = 1 if any(k in snip for k in _PRELIM_MARK) else 0
             _year_hit = 1 if any(y in snip for y in _year_q) else 0
@@ -553,15 +578,16 @@ def _numeric_claim_answer(question: str, evs: list) -> str:
             _month = 1 if (_annual_q and any(
                 k in snip for k in ("月份", "月度", "环比"))) else 0
             # 修订期感知：最终核实 > 初步核算（对统计类事实题的「最新/最终」问法）
-            score = (u_hit, concept, _year_hit, -_year_miss, _final, _rec,
-                     _annual, -_month, ov, -_prelim, -pen, -len(raw))
+            score = (u_hit, _concept, _year_hit, -_year_miss, _ord_hit,
+                     -_ord_miss, _final, _rec, _annual, -_month, ov,
+                     -_prelim, -pen, -len(raw))
             if best is None or score > best[0]:
                 best = (score, snip, raw)
     if best is None:
         return ""
     score, snip, raw = best
     # 严格门槛：单位类命中 + 题面概念命中 + 非分段语义，否则回退旧逻辑
-    if not (score[0] and score[1] and not score[10]):
+    if not (score[0] and score[1] and not score[12]):
         return ""
     for part in re.split(r"[。；;\n]", snip):
         if raw and raw in part:
@@ -612,6 +638,43 @@ def build_fact_card(question: str, report: EvidenceReport,
                         reason="检索已执行 %d 次，但没有取到任何可用证据"
                         % searches, **base)
     if conflicts:
+        # ★ [Round 33] 官方权威：官方证据单独能给出稳定数值答案时，以官方为准
+        #   例外：若冲突发生在**两个及以上官方证据之间**（官方源互冲），不越权消解。
+        _off_set = {str(x) for x in official_ids if str(x)}
+        _off_conflict_many = any(
+            len({str(i) for i in (c.get("evidence_ids") or [])} & _off_set) >= 2
+            for c in conflicts if isinstance(c, dict))
+        # 还需「期间错配」证据：冲突各值的来源年份不同（2023 vs 2024），
+        # 才属于可被官方最新值消解的口径差；同年互冲仍是真冲突。
+        _ev_year = {}
+        for _e in evs:
+            _eid = str(getattr(_e, "evidence_id", ""))
+            _ys = re.findall(r"(?:19|20)\d{2}", str(
+                getattr(_e, "snippet", "") or ""))
+            _ev_year[_eid] = set(_ys)
+        _period_mismatch = bool(conflicts) and all(
+            len({_y for _i in (c.get("evidence_ids") or [])
+                 for _y in _ev_year.get(str(_i), set())}) >= 2
+            for c in conflicts if isinstance(c, dict))
+        if official_ids and not _off_conflict_many and _period_mismatch:
+            _off_evs = [e for e in evs if str(getattr(e, "evidence_id", ""))
+                        in {str(x) for x in official_ids}]
+            _off_ans = _clean_card_answer(
+                _numeric_claim_answer(question, _off_evs) or "")
+            if _off_ans and any(k in str(question or "")
+                                for k in ("多少", "几", "多长", "多高", "多重",
+                                          "多远", "多深", "多宽", "多大", "多快",
+                                          "产量", "销量", "总量", "增速", "增长",
+                                          "率", "面积", "重量", "温度", "价格")):
+                _resolved = [dict(c) if isinstance(c, dict) else c
+                             for c in conflicts]
+                _gaps = [g for g in gaps if str(g) != "conflict_unresolved"]
+                return FactCard(
+                    status="answered", answer=_off_ans,
+                    resolved_conflicts=_resolved,
+                    gaps=_dedup(_gaps + ["conflict_resolved_official_authority"]),
+                    reason=("证据间有 %d 处口径冲突，官方证据可稳定给出目标数值，"
+                            "按官方权威消解" % len(conflicts)), **base)
         _ans, _left = _official_precedence_answer(question, evs, conflicts,
                                                   official_ids)
         if _ans and not _left:

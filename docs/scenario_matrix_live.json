@@ -1,5 +1,5 @@
 {
- "n_valid_runs": 46,
+ "n_valid_runs": 56,
  "since": "",
  "matrix": {
   "reasoning": {
@@ -155,15 +155,15 @@
     ]
    },
    "fast+web": {
-    "n_runs": 8,
-    "n_verified": 5,
-    "quality_mean": 0.963,
-    "quality_mean_all": 0.749,
-    "tokens_mean": 670526,
-    "wall_mean": 220.6,
-    "verified_ratio": 0.625,
-    "latest_tag": "v29-fast-fact-code",
-    "latest_quality": 0.99,
+    "n_runs": 15,
+    "n_verified": 9,
+    "quality_mean": 0.962,
+    "quality_mean_all": 0.747,
+    "tokens_mean": 671008,
+    "wall_mean": 238.7,
+    "verified_ratio": 0.6,
+    "latest_tag": "v33-fast-fact-population",
+    "latest_quality": 0.4517,
     "samples": [
      {
       "tag": "mode-fast-fact-web",
@@ -220,6 +220,55 @@
       "tokens": 637852,
       "wall": 228.3,
       "verified": true
+     },
+     {
+      "tag": "v30-fast-fact-policy",
+      "quality": 0.4663,
+      "tokens": 740435,
+      "wall": 267.3,
+      "verified": false
+     },
+     {
+      "tag": "v31-fast-fact-policy2",
+      "quality": 0.9789,
+      "tokens": 679027,
+      "wall": 258.2,
+      "verified": true
+     },
+     {
+      "tag": "v32-fast-fact-health",
+      "quality": 0.9625,
+      "tokens": 592698,
+      "wall": 238.4,
+      "verified": true
+     },
+     {
+      "tag": "v32-fast-fact-finance",
+      "quality": 0.9417,
+      "tokens": 686520,
+      "wall": 281.4,
+      "verified": true
+     },
+     {
+      "tag": "v32-fast-fact-cpi2",
+      "quality": 0.9625,
+      "tokens": 728201,
+      "wall": 267.5,
+      "verified": true
+     },
+     {
+      "tag": "v33-fast-fact-nev",
+      "quality": 0.4459,
+      "tokens": 738942,
+      "wall": 243.1,
+      "verified": false
+     },
+     {
+      "tag": "v33-fast-fact-population",
+      "quality": 0.4517,
+      "tokens": 671755,
+      "wall": 263.8,
+      "verified": false
      }
     ]
    }
@@ -386,46 +435,91 @@
    "scenario": "fact",
    "mode": "web_on_fast",
    "human_quality": 0.9472,
-   "live_quality": 0.963,
-   "delta": 0.016,
-   "n_runs": 8,
-   "verified_ratio": 0.625
+   "live_quality": 0.962,
+   "delta": 0.015,
+   "n_runs": 15,
+   "verified_ratio": 0.6
   },
   {
    "scenario": "fact",
    "mode": "web_on_fast2",
    "human_quality": 0.9726,
-   "live_quality": 0.963,
-   "delta": -0.01,
-   "n_runs": 8,
-   "verified_ratio": 0.625
+   "live_quality": 0.962,
+   "delta": -0.011,
+   "n_runs": 15,
+   "verified_ratio": 0.6
   },
   {
    "scenario": "fact",
    "mode": "web_on_fast3",
    "human_quality": 0.9532,
-   "live_quality": 0.963,
-   "delta": 0.01,
-   "n_runs": 8,
-   "verified_ratio": 0.625
+   "live_quality": 0.962,
+   "delta": 0.009,
+   "n_runs": 15,
+   "verified_ratio": 0.6
   },
   {
    "scenario": "fact",
    "mode": "web_on_fast4",
    "human_quality": 0.9508,
-   "live_quality": 0.963,
-   "delta": 0.012,
-   "n_runs": 8,
-   "verified_ratio": 0.625
+   "live_quality": 0.962,
+   "delta": 0.011,
+   "n_runs": 15,
+   "verified_ratio": 0.6
   },
   {
    "scenario": "fact",
    "mode": "web_on_fast5",
    "human_quality": 0.9633,
-   "live_quality": 0.963,
-   "delta": -0.0,
-   "n_runs": 8,
-   "verified_ratio": 0.625
+   "live_quality": 0.962,
+   "delta": -0.001,
+   "n_runs": 15,
+   "verified_ratio": 0.6
+  },
+  {
+   "scenario": "fact",
+   "mode": "web_on_fast6",
+   "human_quality": 0.9789,
+   "live_quality": 0.962,
+   "delta": -0.017,
+   "n_runs": 15,
+   "verified_ratio": 0.6
+  },
+  {
+   "scenario": "fact",
+   "mode": "web_on_fast7",
+   "human_quality": 0.9625,
+   "live_quality": 0.962,
+   "delta": -0.001,
+   "n_runs": 15,
+   "verified_ratio": 0.6
+  },
+  {
+   "scenario": "fact",
+   "mode": "web_on_fast8",
+   "human_quality": 0.9417,
+   "live_quality": 0.962,
+   "delta": 0.02,
+   "n_runs": 15,
+   "verified_ratio": 0.6
+  },
+  {
+   "scenario": "fact",
+   "mode": "web_on_fast9",
+   "human_quality": 0.9673,
+   "live_quality": 0.962,
+   "delta": -0.005,
+   "n_runs": 15,
+   "verified_ratio": 0.6
+  },
+  {
+   "scenario": "fact",
+   "mode": "web_on_fast10",
+   "human_quality": 0.99,
+   "live_quality": 0.962,
+   "delta": -0.028,
+   "n_runs": 15,
+   "verified_ratio": 0.6
   },
   {
    "scenario": "fact",

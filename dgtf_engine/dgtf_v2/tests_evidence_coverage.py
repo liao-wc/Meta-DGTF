@@ -182,6 +182,33 @@ def main():
     ck("A34 对应年份证据 → 正常 answered",
        _card_ok.status == "answered" and "0.2" in _card_ok.answer,
        (_card_ok.status, _card_ok.answer))
+    # ── A13：分别序位/官方权威/万人（Round 33）──────────
+    _nev_snip = ("2024年，我国汽车产销量分别达3128.2万辆和3143.6万辆；"
+                "其中，新能源汽车产销量分别达1288.8万辆和1286.6万辆。")
+    _nev_ans = _numeric_claim_answer("2024年中国新能源汽车产量是多少万辆？",
+                                     [ev("E1", _nev_snip, official=True)])
+    ck("A35 分别句按题面取产量（1288.8，非汽车总量/销量）",
+       "1288.8" in _nev_ans and "3128" not in _nev_ans, _nev_ans)
+    _pop_ans = _numeric_claim_answer("2024年中国出生人口是多少万人？",
+                                     [ev("E2", "2024年全年出生人口954万人。",
+                                         official=True)])
+    ck("A36 「万人」单位可作答案（954 万人）", "954" in _pop_ans, _pop_ans)
+    # 官方权威冲突消解：非官方口径冲突 + 官方可答 → answered + 标记
+    _rep_nev = EvidenceReport(
+        question="2024年中国新能源汽车产量是多少万辆？",
+        queries=["q"], searches=2,
+        items=[ev("E1", _nev_snip, official=True),
+               ev("E2", "2023年新能源汽车产量958.7万辆。")],
+        conflicts=[{"term": "2024 产量", "unit": "万",
+                    "values": [1288.8, 958.7],
+                    "evidence_ids": ["E1", "E2"]}],
+        gaps=[])
+    _card_nev = build_fact_card("2024年中国新能源汽车产量是多少万辆？",
+                                _rep_nev)
+    ck("A37 官方权威消解冲突 → answered + 标记",
+       _card_nev.status == "answered"
+       and "conflict_resolved_official_authority" in _card_nev.gaps,
+       (_card_nev.status, _card_nev.gaps))
     # ── B：整体量语义加权 ────────────────────────
     ck("B1 问长度 + 全长标记 → 加分",
        _overall_quantity_bonus("黄河全长约5464公里", "黄河的长度是多少千米") > 0)

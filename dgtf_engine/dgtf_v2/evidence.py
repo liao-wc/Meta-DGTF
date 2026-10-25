@@ -457,6 +457,13 @@ def extract_numeric_claims(text: str) -> list:
             # 否则「100 条 / 200 条」这类跨来源数值冲突会被静默漏掉。
             if not ctx:
                 ctx = unit or "number"
+            # ★ [Round 33] 「分别」句式：按数字出现序号区分（产/销、进口/出口…）
+            if "分别" in clause:
+                _seq = [mm.start() for mm in _NUM_RE.finditer(clause)]
+                try:
+                    ctx = ctx + "|ord%d" % _seq.index(m.start())
+                except ValueError:
+                    pass
             # ★ [Round 19] 短尾分句（如「比上年增长%」）需要主语残留：拼上一分句
             #   的主语，否则 GDP/第一产业/人均收入 的不同数值会被归到同一桶成假冲突。
             if len(ctx) < 8 and _prev:
