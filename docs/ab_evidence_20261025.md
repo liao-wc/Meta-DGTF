@@ -1676,3 +1676,12 @@ answer「港珠澳大桥跨越伶仃洋…**总长约55公里**」、**display=5
 ### 56.4 门禁
 
 全量 **V2 51/51（799 checks）**、fast_gate 12/12；矩阵 fast20 更新为修复后跑次。
+
+
+## 57. App 港珠澳 e2e：全长口径 display=55公里（Round 49）
+
+`daosheng_fast` +「港珠澳大桥全长多少公里？」：任务墙钟 **353.2s**，
+产物 **aq=verified / ready=True**（quality 0.9744 / 658,091 tok / 87 calls），
+**display=55公里**（全长口径修复在 App 端到端生效）。App 维度实测矩阵 6→**7 行**。
+
+验收总览同步更新（矩阵 34 行、App 7 行、Round 47–49 机制增补）。

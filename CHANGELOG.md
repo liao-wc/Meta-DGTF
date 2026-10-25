@@ -45,6 +45,10 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 49 增补（2026-10-26）】
+- App 港珠澳 e2e：353.2s / verified / ready，display=**55公里**（全长口径修复
+  App 端到端生效）；App 实测矩阵 6→7 行。
+- 验收总览更新（矩阵 34 行、App 7 行、Round 47–49 机制增补）。
 【Round 48 增补（2026-10-26）】
 - 全长/总长口径修复：_numeric_claim_answer 增加 _whole/_tot/_mag 三元偏好（置于概念前）
   + 概念整段兜底；display 优先「全长/总长」分句最大值。港珠澳真题真实验证
