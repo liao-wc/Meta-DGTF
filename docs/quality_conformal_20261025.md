@@ -68,3 +68,34 @@ M4 质量预测器（kNN/ridge，见 `dgtf_engine/dgtf_v2/quality_predictor.py`�
 
 删掉模型 JSON 里的 `conformal` 段即回到旧行为（无需改代码）；或在
 `mode_fusion.fused_plan` 调用侧不传 `features`（预测路径不启用）。
+
+
+## 6. Round 4 修正：有效样本过滤 + OOD 护栏（2026-10-25）
+
+上线后发现两个让 M4 预测**塌到 0.1** 的问题（实测于道生模式查询）：
+
+1. **训练样本污染**：A/B/探针的「部分跑」（route 只跑 1~2 层、预算硬顶截断、
+   无决策轨迹）以低质量标签进入训练集，近期加权 kNN 的邻居被它们主导。
+   修正：quality_predictor.training_sample_ok() + 训练脚本默认只收
+   「四层齐全 / 非 budget_hard_hit / 有 decision_trace / 非极短产物」的完整跑。
+   实测丢弃：partial_route 60、
+o_decision_trace 39、udget_hard_hit 7
+   ⇒ 166 → **90 条有效样本**（训练 72 / 留出 18）。
+2. **历史特征 OOD 外推**：App 侧历史读数口径与引擎 _auto_dispatch._history 不同
+   （tokens_med z=+21.6、cut_rate z=-20.4），kNN 挑到最远邻居 ⇒ 三个模式都预测 0.11。
+   修正：_z_vector() 统一标准化 —— hist_* 缺失按均值填补（z=0）；
+   **|z|>3 的特征按均值填补（拒绝外推，不做 ±3 截断）**。
+
+修正前后（同题「城市热岛」features）：
+
+| 指标 | 修正前 | 修正后 |
+|---|---|---|
+| raw predict（fast/B/serial） | 0.11 / 0.11 / 0.11 | **0.953 / 0.955 / 0.957** |
+| 保形下界（fast/B/serial） | 0.0 / 0.0 / 0.0 | **0.724 / 0.726 / 0.772** |
+| 保形 q_global | -0.0438 | **-0.2288** |
+| conformal coverage_oof | 0.8012（n=166） | **0.8000（n=90）** |
+| conformal coverage_test | 0.7647（n=34） | **0.7778（n=18）** |
+
+判读：修正后 M4 点预测与保形下界都回到可用区间（下界 0.72~0.77，不再恒 0）；
+min_quality 守卫由此才真正生效（例如目标 0.9 时会显式弃权，目标 0.7 时可选 fast/B）。
+判据：	ests_quality_conformal.py 增至 **31 项**（新增有效样本过滤 6 项、OOD 护栏 3 项）。

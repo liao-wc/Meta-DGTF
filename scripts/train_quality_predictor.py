@@ -17,7 +17,8 @@ sys.path.insert(0, str(ROOT / "dgtf_engine"))
 from dgtf_v2.pareto_flow import extract_flow_metrics  # noqa: E402
 from dgtf_v2.quality_predictor import (calibrate_conformal,  # noqa: E402
                                         evaluate, fit, fit_knn, mode_bucket,
-                                        predict_lower_row, save_model)
+                                        predict_lower_row, save_model,
+                                        training_sample_ok)
 
 
 def _rounds_avg(rounds) -> float:
@@ -39,14 +40,22 @@ def main() -> int:
     ap.add_argument("--conformal-alpha", type=float, default=0.2,
                     help="保形下界的风险水平（0.2 ⇒ 实测覆盖率目标 80%%）")
     ap.add_argument("--conformal-folds", type=int, default=5)
+    ap.add_argument("--include-invalid", action="store_true",
+                    help="关闭「完整跑」过滤（默认开：排除部分跑/预算硬顶/无答案门）")
     args = ap.parse_args()
     rows, ys, metas = [], [], []
+    drop_reasons = {}
     for p in sorted((ROOT / "outputs").glob("*.packed.json"),
                     key=lambda x: x.stat().st_mtime):
         try:
             d = json.loads(p.read_text(encoding="utf-8", errors="replace"))
         except Exception:
             continue
+        if not args.include_invalid:
+            _ok, _why = training_sample_ok(d)
+            if not _ok:
+                drop_reasons[_why] = drop_reasons.get(_why, 0) + 1
+                continue
         m = extract_flow_metrics(d)
         feats = ((d.get("_auto_dispatch") or {}).get("_features") or {})
         if not feats or m.get("quality") is None:
@@ -139,6 +148,7 @@ def main() -> int:
         print("model(repo) ->", repo_model)
     except Exception:
         pass
+    print("dropped:", json.dumps(drop_reasons, ensure_ascii=False), flush=True)
     print("samples:", len(rows), "train:", len(train_rows), "test:", len(test_rows))
     print("metrics:", json.dumps(model["metrics"], ensure_ascii=False))
     print("modes:", json.dumps({m: sum(1 for x in metas if x["mode"] == m)

@@ -189,14 +189,36 @@ def fit_knn(rows: List[dict], y: List[float], k: int = 5,
             "w": [float(w) for w in (weights or [1.0] * len(y))]}
 
 
+def _z_vector(model: dict, f: dict, history) -> List[float]:
+    """标准化特征向量（kNN 与 ridge 共用）。
+
+    [Round 4] 两处工程护栏，防止 OOD 输入把预测带塌：
+      ① hist_* 缺失（history 为空）⇒ 用训练均值填补（z=0），而不是当 0 值；
+      ② z 截断到 ±3 温莎化 —— App 侧历史读数口径与训练分布的
+         `_auto_dispatch._history` 不同（实测 tokens_med/cut_rate 的 z 可达 ±20），
+         不截断时 kNN 会挑到最远邻居、把预测拉到 0.1（2026-10-25 实测）。
+    """
+    mean = model.get("mean") or {}
+    std = model.get("std") or {}
+    hist_missing = not history
+    zs: List[float] = []
+    for k in model.get("features") or FEATURES:
+        v = _f(f.get(k))
+        zz = (v - _f(mean.get(k))) / (_f(std.get(k), 1.0) or 1.0)
+        if hist_missing and str(k).startswith("hist_"):
+            zz = 0.0
+        # OOD（|z|>3）按均值填补，而不是截断到边界 —— 截断到 ±3 仍会把邻居
+        # 拉到分布极端（实测仍塌到 0.1）；拒绝外推才是稳健做法。
+        if abs(zz) > 3.0:
+            zz = 0.0
+        zs.append(zz)
+    return zs
+
+
 def predict_knn(model: dict, features: dict, route_n=4, rounds_avg=2.0,
                 web=False, mode="other", history=None) -> float:
     f = featurize(features, route_n, rounds_avg, web, mode, history)
-    x = []
-    mean = model.get("mean") or {}
-    std = model.get("std") or {}
-    for k in model.get("features") or FEATURES:
-        x.append((_f(f.get(k)) - _f(mean.get(k))) / (_f(std.get(k), 1.0) or 1.0))
+    x = _z_vector(model, f, history)
     X = model.get("X") or []
     y = model.get("y") or []
     if not X:
@@ -227,13 +249,11 @@ def predict(model: dict, features: dict, route_n=4, rounds_avg=2.0,
     f = featurize(features, route_n, rounds_avg, web, mode, history)
     z = _f(model.get("intercept"))
     coef = model.get("coef") or []
-    mean = model.get("mean") or {}
-    std = model.get("std") or {}
+    x = _z_vector(model, f, history)
     for i, k in enumerate(model.get("features") or FEATURES):
         if i >= len(coef):
             break
-        v = (_f(f.get(k)) - _f(mean.get(k))) / (_f(std.get(k), 1.0) or 1.0)
-        z += coef[i] * v
+        z += coef[i] * x[i]
     return max(0.0, min(1.0, z))
 
 
@@ -390,6 +410,43 @@ def predict_lower_row(model: Optional[dict], row: dict) -> Optional[float]:
                          bool(r.get("_web")),
                          str(r.get("_mode") or "other"),
                          r.get("_history") or {})
+
+
+# ── 训练样本有效性（Round 4）────────────────────────────────────────────
+# 背景：A/B/探针的部分跑（route 单层、预算硬顶截断、未走答案门）会以低质量
+# 标签进入训练集；「近期加权 kNN」的邻居被这些残次样本污染后，M4 对新题
+# 会预测塌到 0.1~0.3（2026-10-25 实测：道生模式查询原始下界仅 0.06）。
+# 口径：只收「四层齐全 + 非预算硬顶 + 有决策轨迹与圈数」的完整跑。
+def training_sample_ok(packed: dict) -> Tuple[bool, str]:
+    """判断一条 packed 是否可作为 M4 训练样本；返回 (ok, 原因)。"""
+    p = packed or {}
+    route = p.get("route") or []
+    try:
+        route_set = {str(x) for x in route}
+    except Exception:  # noqa: BLE001
+        route_set = set()
+    if not {"0", "1", "both", "all"}.issubset(route_set):
+        return False, "partial_route"
+    budget = p.get("budget") or {}
+    if bool(budget.get("hard_hit")):
+        return False, "budget_hard_hit"
+    rounds = p.get("rounds") or {}
+    if not isinstance(rounds, dict) or not rounds:
+        return False, "no_rounds"
+    dt = p.get("decision_trace") or {}
+    q = p.get("quality") or {}
+    if not isinstance(dt, dict) or not dt:
+        return False, "no_decision_trace"
+    if "answer_ready" not in dt and "answer_ready" not in q:
+        return False, "no_answer_gate"
+    depth = q.get("depth") or {}
+    try:
+        _chars = int(depth.get("structured_chars") or 0)
+    except (TypeError, ValueError):
+        _chars = 0
+    if _chars and _chars < 200:
+        return False, "too_short_product"
+    return True, "ok"
 
 
 def load_model(path: str) -> Optional[dict]:

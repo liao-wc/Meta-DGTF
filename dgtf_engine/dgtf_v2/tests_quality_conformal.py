@@ -187,6 +187,46 @@ def main():
            and (plan3.get("first") or {}).get("mode") == "B",
            (plan3.get("quality_guard"), plan3.get("first")))
 
+    # ── 6. 训练样本有效性（Round 4）──────────────
+    from dgtf_v2.quality_predictor import training_sample_ok
+    _good = {"route": ["0", "1", "both", "all"],
+             "budget": {"hard_hit": False},
+             "rounds": {"0": 2, "1": 2, "both": 2, "all": 2},
+             "decision_trace": {"answer_ready": True},
+             "quality": {"answer_ready": True,
+                         "depth": {"structured_chars": 1200}}}
+    ck("完整跑 → 有效样本", training_sample_ok(_good) == (True, "ok"),
+       training_sample_ok(_good))
+    ck("预算硬顶 → 无效（budget_hard_hit）",
+       training_sample_ok(dict(_good, budget={"hard_hit": True}))
+       == (False, "budget_hard_hit"))
+    ck("部分跑（route 单层）→ 无效（partial_route）",
+       training_sample_ok(dict(_good, route=["0"]))
+       == (False, "partial_route"))
+    ck("无决策轨迹 → 无效（no_decision_trace）",
+       training_sample_ok({k: v for k, v in _good.items()
+                           if k != "decision_trace"})[0] is False)
+    ck("极短产物 → 无效（too_short_product）",
+       training_sample_ok(dict(
+           _good, quality={"answer_ready": True,
+                           "depth": {"structured_chars": 50}}))
+       == (False, "too_short_product"))
+
+    # ── 7. OOD 护栏（Round 4）──────────────
+    from dgtf_v2.quality_predictor import fit_knn as _fit_knn
+    from dgtf_v2.quality_predictor import predict_knn as _pk
+    rows2, ys2 = _rows(n_per=18)
+    m2 = _fit_knn(rows2, ys2, k=3)
+    p_none = _pk(m2, feats, 4, 2.0, False, "B", None)
+    p_ood = _pk(m2, feats, 4, 2.0, False, "B",
+                {"calls_med": 5, "tokens_med": 50_000_000,
+                 "tri_rate": 9.9, "cut_rate": -5})
+    ck("OOD 历史不把预测拉塌（|p_ood-p_none|≤0.5）",
+       abs(p_ood - p_none) <= 0.5, (p_none, p_ood))
+    ck("空历史预测 ∈[0,1]", 0.0 <= p_none <= 1.0, p_none)
+    ck("hist_* 缺失按均值填补（空 dict 与 None 一致）",
+       abs(p_none - _pk(m2, feats, 4, 2.0, False, "B", {})) < 1e-9)
+
     print("\nTOTAL PASS %d / FAIL %d" % (len(P), len(F)))
     return 0 if not F else 1
 
