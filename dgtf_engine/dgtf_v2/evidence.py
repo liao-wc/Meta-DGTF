@@ -865,6 +865,19 @@ def _short_answer(text: str, question: str = "") -> str:
         if _cands:
             _cands.sort(reverse=True)
             return _cands[0][3].strip()[:240]
+    # ★ [Round 47] 命名问句：优先返回含命名动词的句子
+    if any(k in _q for k in ("名字", "名称", "叫什么", "命名", "代号")):
+        _cands = []
+        for _idx, part in enumerate(re.split(r"[。；;\n]", s)):
+            if not any(k in part for k in ("命名为", "被命名", "称为", "名为",
+                                           "代号", "全称", "简称")):
+                continue
+            _hit = sum(1 for c in re.findall(r"[\u4e00-\u9fa5]{2,}", _q)
+                       if c in part)
+            _cands.append((_hit, -_idx, part))
+        if _cands:
+            _cands.sort(reverse=True)
+            return str(_cands[0][2]).strip()[:240]
     # ★ [Round 45] 范围型问句（多少次/范围/每分钟）：优先返回含「A-B次」区间的句子
     if any(k in _q for k in ("多少次", "范围", "每分钟", "区间")):
         _rng = re.compile(r"\d+(?:\.\d+)?\s*[-—~～至到]\s*\d+(?:\.\d+)?"
@@ -1001,6 +1014,8 @@ def answer_from_evidence(items: Iterable, question: str = "",
                                         "年份"))
     _asks_loc_q = any(k in q for k in ("哪个城市", "哪座城市", "哪个国家", "何地",
                                        "哪里", "在什么地方", "位于"))
+    _asks_name_q = any(k in q for k in ("名字", "名称", "叫什么", "命名", "代号",
+                                        "全称", "简称"))
     scored = []
     _recent = bool(prefer_recent) and any(k in q for k in _RECENCY_CUES)
     _dates = [_text_date_score(str(getattr(e, "snippet", "") or ""))
@@ -1011,6 +1026,10 @@ def answer_from_evidence(items: Iterable, question: str = "",
         score = _answer_relevance(text, q)
         if bool(getattr(e, "official", False)):
             score += 0.15
+        # ★ [Round 47] 命名问句：含命名动词的证据加分
+        if _asks_name_q and any(k in text for k in (
+                "命名为", "被命名", "称为", "名为", "代号", "全称", "简称")):
+            score += 0.5
         # ★ [Round 43] 地点问句：城市句式/地址句式证据加分
         if _asks_loc_q:
             _city_n = len(re.findall(r"[\u4e00-\u9fa5]{2,6}市", text))
