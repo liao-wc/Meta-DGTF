@@ -45,6 +45,9 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 37 增补（2026-10-26）】
+- App 全量自检复验（mock server）：**PASS 444 / FAIL 0**（含道生 busy 回退、
+  事实 fast 档、display 分离、T3 端到端 mode/plan/resume），连续 14 轮引擎改造后无回归。
 【Round 36 增补（2026-10-26）】
 - App e2e 法律题：465.0s / verified / ready，display=二十二周岁（quality 0.9769、
   719,919 tok、97 calls）；App 维度实测矩阵 4→5 行。

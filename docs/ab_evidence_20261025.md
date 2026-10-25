@@ -1373,3 +1373,17 @@ quality fact 1）。
 
 evidence_coverage **47 项**、app_runs 10、scene_matrix 23；全量
 **V2 51/51（783 checks）**、fast_gate 12/12。
+
+
+## 43. App 全量自检复验（Round 37，444/0）
+
+在 mock server（`DGTF_APP_MOCK=1`，port 8768，token）上重跑
+`dgtf_app/selftest.py`：**PASS 444 / FAIL 0**。
+
+覆盖到本轮新增链路的关键项：
+- 道生 plan 的 `local_llm.metrics` / busy 回退（Round 26）；
+- 事实题 fast 档、web 强制、display 分离与场景字段（Round 23–36 引擎改进后无回归）；
+- T3 端到端 mode/plan/resume 可审计（含 daosheng/standard 判定）。
+
+结论：App↔引擎接线在连续 14 轮引擎机制改造后**无回归**；App 维度实测锚点
+（5 条 e2e）与自检 444 项共同构成 App 侧验收基线。
