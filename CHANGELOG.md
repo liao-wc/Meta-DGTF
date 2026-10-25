@@ -45,6 +45,10 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 39 增补（2026-10-26）】
+- v6 服务侧 A/B（fast+web，--self-check-mode local，两题）：光速 0.9814（+3.1pp、
+  token −19.8%、墙钟 +30.6%）；出生人口 0.9250（−4.2pp、token −11.8%、墙钟 +56.5%）；
+  结论：v6 local 维持 opt-in（默认 llm），/metrics 确认 self_check 全走 v6。
 【Round 38 增补（2026-10-26）】
 - 本地模型 v6 训练完成并切换默认：best_val_loss 0.22212（v5 0.23518）；
   30 条 held-out 字段 0.589 vs 0.378、escape 0.800 vs 0.200、all3 0.033 vs 0.0、

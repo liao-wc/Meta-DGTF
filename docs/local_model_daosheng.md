@@ -650,3 +650,25 @@ train_loss 0.2789 / **val_loss 0.2352**（v2 0.2238）。
 `train_metrics_dgtf_selfcheck_05b_v6.json` 归档；实测 `/health.adapter_paths`
 self_check(self_check_min)=v6；`scripts/check_local_service.py` 单发生成通过；
 并发/排队特性不变（单一 GPU 锁）。
+
+
+## 5.10 v6 服务侧 A/B（local self_check opt-in，Round 39）
+
+引擎真实跑次（fast+web，`--self-check-mode local`，服务默认 v6）：
+
+| 题 | self_check | quality | tokens | calls | wall |
+|---|---|---|---|---|---|
+| 光速 | llm（基线） | 0.9508 | 727,103 | 98 | 276s |
+| 光速 | **local v6** | **0.9814** | **583,161（−19.8%）** | 89 | 360s（+30.6%） |
+| 出生人口 | llm（基线） | 0.9673 | 705,691 | 108 | 263s |
+| 出生人口 | **local v6** | 0.9250（−4.2pp） | **622,434（−11.8%）** | 100 | 412s（+56.5%） |
+
+判读：
+1. **质量**：一题 +3.1pp、一题 −4.2pp（均值 −0.6pp，噪声级；两题均 verified/ready）；
+2. **token**：−11.8% ~ −19.8%（v6 self_check 判断更准，减少重试/回环）；
+3. **墙钟**：+31% ~ +57%（本地 0.5B 单发 ~6s × 16 次 self_check 的固有开销）；
+4. 服务 `/metrics` 记录 self_check 16 次全走 v6（by_stage 可审计）。
+
+**结论：v6 local 自检维持 opt-in（默认仍 llm）**——质量不显著变差、token 明显省，
+但墙钟代价大；仅建议预算敏感且可等待的场景显式开启。与 v5 时代策略一致，
+符合「只变好」：默认路径质量未变，opt-in 路径 token 更省。
