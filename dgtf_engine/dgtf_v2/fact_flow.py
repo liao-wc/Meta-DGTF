@@ -477,6 +477,9 @@ def _numeric_claim_answer(question: str, evs: list) -> str:
     _ALIAS = {"GDP": ("国内生产总值", "GDP"), "CPI": ("居民消费价格", "CPI"),
               "增速": ("增长", "增速"), "增长": ("增长", "增速"),
               "长度": ("全长", "长度"), "海拔": ("海拔", "高程")}
+    from .evidence import _text_date_score as _tds
+    _recency = any(k in q for k in ("最新", "当前", "现在", "目前", "截至",
+                                     "如今", "现行", "latest", "current"))
     _PEN = ("上游", "中游", "下游", "河段", "分产业", "第一产业", "第二产业",
             "第三产业", "人均", "居民", "占比", "比重", "研发", "投资",
             "出口", "进口", "消费", "其中", "合计中")
@@ -499,18 +502,24 @@ def _numeric_claim_answer(question: str, evs: list) -> str:
             raw = str(c.get("raw") or "").strip()
             if not raw:
                 continue
+            # 无单位主张（如日期里的 12/8）不能作数值答案；空 unit 会让
+            # `"" in "米"` 恒真 ⇒ 假 u_hit（recency 回归由此暴露）。
+            if not unit or unit in ("年", "月", "日"):
+                continue
             u_hit = 1 if any(u in unit or unit in u for u in q_units) else 0
             ctx = _norm(c.get("context") or "")
             pen = 1 if any(k in ctx for k in _PEN) else 0
             ov = 1 if any(k in ctx for k in _OV) else 0
-            score = (u_hit, concept, ov, -pen, -len(raw))
+            _rec = _tds(snip) if _recency else 0
+            # 时效题：日期越新越优先（rec 位于 unit/concept 之后、ov 之前）
+            score = (u_hit, concept, _rec, ov, -pen, -len(raw))
             if best is None or score > best[0]:
                 best = (score, snip, raw)
     if best is None:
         return ""
     score, snip, raw = best
     # 严格门槛：单位类命中 + 题面概念命中 + 非分段语义，否则回退旧逻辑
-    if not (score[0] and score[1] and not score[3]):
+    if not (score[0] and score[1] and not score[4]):
         return ""
     for part in re.split(r"[。；;\n]", snip):
         if raw and raw in part:
