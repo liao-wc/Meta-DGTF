@@ -43,6 +43,10 @@ V2.2.3
     prompt 静态段前置可进一步省，但需质量 A/B，列为下一轮 opt-in 项。
 
 【Round 6 增补（2026-10-25 同日）】
+- 实测矩阵回灌管线 scripts/update_scenario_matrix.py：从 docs/ab_results.jsonl 有效真跑
+  按「场景×模式×web」聚合（质量锚点只用 verified 真跑），输出 docs/scenario_matrix_live.json
+  并与人工锚点对照（Δ≤0.012）⇒ 形成「跑→汇总→校准锚点」闭环。
+
 - 前缀缓存 prompt 重排（opt-in）：V2.2.3 新增 output.prompt_stable_first +
   --prompt-stable-first，把 dual_judge carry 块 / self_check self_block 从 system
   末尾移到 user 末尾；纯函数 _move_var_to_user + tests_prompt_cache 14 项判据。

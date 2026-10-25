@@ -1,0 +1,296 @@
+{
+ "n_valid_runs": 16,
+ "since": "",
+ "matrix": {
+  "reasoning": {
+   "auto": {
+    "n_runs": 6,
+    "n_verified": 4,
+    "quality_mean": 0.959,
+    "quality_mean_all": 0.726,
+    "tokens_mean": 1268989,
+    "wall_mean": 894.6,
+    "verified_ratio": 0.667,
+    "latest_tag": "daosheng-scenario-reason2",
+    "latest_quality": 0.94,
+    "samples": [
+     {
+      "tag": "b1-presetB-auto-narr-thinkoff",
+      "quality": 0.2632,
+      "tokens": 1457052,
+      "wall": 922.6,
+      "verified": false
+     },
+     {
+      "tag": "b0-presetB-baseline",
+      "quality": 0.9615,
+      "tokens": 1788798,
+      "wall": 1275.6,
+      "verified": true
+     },
+     {
+      "tag": "b2-presetB-thinkoff-only",
+      "quality": 0.986,
+      "tokens": 1846074,
+      "wall": 1131.8,
+      "verified": true
+     },
+     {
+      "tag": "daosheng-e2e-cli",
+      "quality": 0.9465,
+      "tokens": 723064,
+      "wall": 586.2,
+      "verified": true
+     },
+     {
+      "tag": "d1-presetB-dj-thinkoff",
+      "quality": 0.2573,
+      "tokens": 1262637,
+      "wall": 688.8,
+      "verified": false
+     },
+     {
+      "tag": "daosheng-scenario-reason2",
+      "quality": 0.94,
+      "tokens": 718020,
+      "wall": 584.7,
+      "verified": true
+     }
+    ]
+   },
+   "fast": {
+    "n_runs": 2,
+    "n_verified": 2,
+    "quality_mean": 0.945,
+    "quality_mean_all": 0.945,
+    "tokens_mean": 530066,
+    "wall_mean": 235.6,
+    "verified_ratio": 1.0,
+    "latest_tag": "mode-fast-reason2",
+    "latest_quality": 0.9535,
+    "samples": [
+     {
+      "tag": "mode-fast-reason",
+      "quality": 0.9366,
+      "tokens": 481050,
+      "wall": 188.4,
+      "verified": true
+     },
+     {
+      "tag": "mode-fast-reason2",
+      "quality": 0.9535,
+      "tokens": 579083,
+      "wall": 282.7,
+      "verified": true
+     }
+    ]
+   },
+   "serial": {
+    "n_runs": 1,
+    "n_verified": 1,
+    "quality_mean": 0.946,
+    "quality_mean_all": 0.946,
+    "tokens_mean": 644954,
+    "wall_mean": 1019.0,
+    "verified_ratio": 1.0,
+    "latest_tag": "mode-serial-reason",
+    "latest_quality": 0.9456,
+    "samples": [
+     {
+      "tag": "mode-serial-reason",
+      "quality": 0.9456,
+      "tokens": 644954,
+      "wall": 1019.0,
+      "verified": true
+     }
+    ]
+   }
+  },
+  "fact": {
+   "auto": {
+    "n_runs": 1,
+    "n_verified": 0,
+    "quality_mean": 0.444,
+    "quality_mean_all": 0.444,
+    "tokens_mean": 1015910,
+    "wall_mean": 980.3,
+    "verified_ratio": 0.0,
+    "latest_tag": "daosheng-scenario-fact",
+    "latest_quality": 0.444,
+    "samples": [
+     {
+      "tag": "daosheng-scenario-fact",
+      "quality": 0.444,
+      "tokens": 1015910,
+      "wall": 980.3,
+      "verified": false
+     }
+    ]
+   },
+   "auto+web": {
+    "n_runs": 1,
+    "n_verified": 1,
+    "quality_mean": 0.958,
+    "quality_mean_all": 0.958,
+    "tokens_mean": 1154024,
+    "wall_mean": 965.7,
+    "verified_ratio": 1.0,
+    "latest_tag": "daosheng-scenario-fact-web",
+    "latest_quality": 0.9581,
+    "samples": [
+     {
+      "tag": "daosheng-scenario-fact-web",
+      "quality": 0.9581,
+      "tokens": 1154024,
+      "wall": 965.7,
+      "verified": true
+     }
+    ]
+   },
+   "fast+web": {
+    "n_runs": 1,
+    "n_verified": 0,
+    "quality_mean": 0.474,
+    "quality_mean_all": 0.474,
+    "tokens_mean": 836464,
+    "wall_mean": 316.1,
+    "verified_ratio": 0.0,
+    "latest_tag": "mode-fast-fact-web",
+    "latest_quality": 0.4741,
+    "samples": [
+     {
+      "tag": "mode-fast-fact-web",
+      "quality": 0.4741,
+      "tokens": 836464,
+      "wall": 316.1,
+      "verified": false
+     }
+    ]
+   }
+  },
+  "choice": {
+   "auto": {
+    "n_runs": 1,
+    "n_verified": 1,
+    "quality_mean": 0.949,
+    "quality_mean_all": 0.949,
+    "tokens_mean": 842151,
+    "wall_mean": 869.3,
+    "verified_ratio": 1.0,
+    "latest_tag": "daosheng-scenario-choice",
+    "latest_quality": 0.9487,
+    "samples": [
+     {
+      "tag": "daosheng-scenario-choice",
+      "quality": 0.9487,
+      "tokens": 842151,
+      "wall": 869.3,
+      "verified": true
+     }
+    ]
+   },
+   "fast": {
+    "n_runs": 1,
+    "n_verified": 1,
+    "quality_mean": 0.948,
+    "quality_mean_all": 0.948,
+    "tokens_mean": 593788,
+    "wall_mean": 272.8,
+    "verified_ratio": 1.0,
+    "latest_tag": "mode-fast-choice",
+    "latest_quality": 0.9481,
+    "samples": [
+     {
+      "tag": "mode-fast-choice",
+      "quality": 0.9481,
+      "tokens": 593788,
+      "wall": 272.8,
+      "verified": true
+     }
+    ]
+   }
+  }
+ },
+ "diff_vs_manual": [
+  {
+   "scenario": "reasoning",
+   "mode": "auto",
+   "human_quality": 0.9465,
+   "live_quality": 0.959,
+   "delta": 0.012,
+   "n_runs": 6,
+   "verified_ratio": 0.667
+  },
+  {
+   "scenario": "reasoning",
+   "mode": "serial",
+   "human_quality": 0.9456,
+   "live_quality": 0.946,
+   "delta": 0.0,
+   "n_runs": 1,
+   "verified_ratio": 1.0
+  },
+  {
+   "scenario": "reasoning",
+   "mode": "fast",
+   "human_quality": 0.9366,
+   "live_quality": 0.945,
+   "delta": 0.008,
+   "n_runs": 2,
+   "verified_ratio": 1.0
+  },
+  {
+   "scenario": "reasoning",
+   "mode": "fast_domain2",
+   "human_quality": 0.9535,
+   "live_quality": null,
+   "delta": null,
+   "note": "无对应有效真跑"
+  },
+  {
+   "scenario": "choice",
+   "mode": "auto",
+   "human_quality": 0.9487,
+   "live_quality": 0.949,
+   "delta": 0.0,
+   "n_runs": 1,
+   "verified_ratio": 1.0
+  },
+  {
+   "scenario": "choice",
+   "mode": "fast",
+   "human_quality": 0.9481,
+   "live_quality": 0.948,
+   "delta": -0.0,
+   "n_runs": 1,
+   "verified_ratio": 1.0
+  },
+  {
+   "scenario": "fact",
+   "mode": "web_on_auto",
+   "human_quality": 0.9581,
+   "live_quality": 0.958,
+   "delta": -0.0,
+   "n_runs": 1,
+   "verified_ratio": 1.0
+  },
+  {
+   "scenario": "fact",
+   "mode": "web_on_fast",
+   "human_quality": 0.4741,
+   "live_quality": 0.474,
+   "delta": -0.0,
+   "n_runs": 1,
+   "verified_ratio": 0.0
+  },
+  {
+   "scenario": "fact",
+   "mode": "web_off_auto",
+   "human_quality": 0.444,
+   "live_quality": 0.444,
+   "delta": 0.0,
+   "n_runs": 1,
+   "verified_ratio": 0.0
+  }
+ ]
+}

@@ -262,3 +262,30 @@ ecommend_scenario(kind, min_quality, max_wall, prefer) 已把这套规则机器�
 3. **结论：不采纳为默认**（机制保留为 opt-in/可回退），并把「前缀缓存已接近上限」
    写入结论：局部跑缓存命中率已达 **42.8%**（此前全量跑 11~18% 是跨阶段/间隔更长
    导致的缓存失效，不代表布局问题）。下一步省钱重点回到「轮数/档位/本地模型」。
+
+
+## 12. 实测矩阵回灌管线（learning loop，Round 6）
+
+问题：`mode_fusion.MEASURED_SCENARIOS` 是人工锚点，每轮 A/B 新数据不会自动进来。
+新增 `scripts/update_scenario_matrix.py`：
+- 扫描 `docs/ab_results.jsonl` 的**有效真跑**（valid=true），按
+  「题型场景（kind_of_question）× 引擎模式（auto/fast/serial × web on/off）」聚合；
+- **质量锚点只用 verified 真跑**（负结果机制实验如 B1 auto_narr / D1 thinking off
+  虽然 valid=true，但不能进入场景质量锚点——首版脚本因此把 reasoning auto 拉低到
+  0.726，已修正为 verified-only）；
+- 输出 `docs/scenario_matrix_live.json`（每格含 n/verified 比例/均值/latest/样本），
+  并与人工锚点逐项对照打印 Δ，供人工/CI 决定是否更新代码锚点（不自动改代码，
+  避免悄悄改变选档行为与测试基准）。
+
+本轮实测一致性（人工锚点 vs 真跑汇总）：
+
+| 场景 | 模式 | 人工 | 实测 | Δ |
+|---|---|---|---|---|
+| reasoning | auto | 0.947 | 0.959（n=6，verified 4） | +0.012 |
+| reasoning | fast | 0.937 | 0.945（n=2） | +0.008 |
+| reasoning | serial | 0.946 | 0.946（n=1） | 0 |
+| choice | auto / fast | 0.949 / 0.948 | 0.949 / 0.948 | 0 |
+| fact | web_on_auto / web_on_fast / web_off_auto | 0.958 / 0.474 / 0.444 | 同 | 0 |
+
+结论：人工锚点与真跑数据一致（Δ≤0.012），矩阵可信；回灌管线可在后续轮次把新跑次
+自动纳入并提示更新，形成「跑→汇总→校准锚点→再选档」的闭环。
