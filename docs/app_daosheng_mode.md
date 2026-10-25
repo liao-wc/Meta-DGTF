@@ -156,3 +156,22 @@ equire_web=true、orbid 含
 
 该字段只进 plan 审计与展示，不改变既有 opts 决策路径（失败即忽略）；
 App 的事实题联网仍由 quality_policy 的 auto:web-retry 执行。
+
+## 附二：场景规则进入决策路径（Round 5）
+
+实测矩阵（`mode_fusion.MEASURED_SCENARIOS`，9 行真跑）已从「plan 审计字段」
+升级为**决策依据**：
+
+| 场景 | 质量档（默认） | 预算档（daosheng_fast / 降级） | 说明 |
+|---|---|---|---|
+| reasoning | auto（B + thinking auto） | **fast**（thinking off） | 实测 fast 跨两域 0.9366/0.9535 vs auto 0.9465，tokens −33%/墙钟 −68% |
+| choice | auto | **fast** | 实测 fast 0.9481 vs auto 0.9487（同质量），tokens −30%/墙钟 −69% |
+| fact | web_on_auto（web 强制 on + thinking auto） | **禁止 fast**：保 B + web on + thinking auto | 实测 fast/无 web 事实题 0.44~0.47（needs_evidence/unverified） |
+
+实现位置：`daosheng_mode._choose_engine_mode()` / `build_plan()` 中
+- 预算档 reasoning/choice → `engine_mode=fast`；
+- 预算档或预算守卫降级遇 **fact** → `engine_mode=B` + `web=on` + `thinking=auto`；
+- plan 顶层 `scenario` 与 `mode_summary.scenario` 供审计/前端展示。
+
+注意：这是**规则层**的动态最优（实测锚点 + 保守方向），不引入额外 LLM 调用；
+失败路径全部 fail-open（场景识别失败时退回原默认选择）。
