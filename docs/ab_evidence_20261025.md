@@ -1957,3 +1957,11 @@ p95 −1932ms；suspF1 −0.012 在噪声内）——与 Round 38 的历史决�
 scripts/local_model/test_compare_eval.py：对评测对比脚本做 5 项回归（零 API）——
 ① 全面更优→SWITCH；② 明显变差→KEEP；③ suspF1 −0.01 在噪声内不阻断；
 ④ stages 字典结构可解析；⑤ 未知结构不崩溃且 KEEP。实测 **5/5 PASS**。
+
+
+## 72. 过程门审计护栏（Round 70）
+
+scripts/lead_process_gate_audit.py 末尾新增阈值护栏（与重放护栏一致）：
+fact packs≥80、**审计未修复行==0**、standard_all 比例≥0.75、元层豁免≤12。
+实测 **4/4 PASS**（85 packs / standard 83.5% / 已修复 27 / 未修复 0）。
+意义：过程门的「审计语义 + 豁免边界」也有 CI 级回归保护，防止未来改动放宽或漏修。

@@ -88,6 +88,22 @@ def main() -> int:
           summary["audit_repaired_rows"], "/",
           summary["audit_unrepaired_rows"])
     print("→", OUT)
+    # ★ [Round 70] 过程门护栏：未修复行必须为 0；standard 比例不降
+    _ratio = (summary["all_standard_true"] / summary["n_fact"]
+              if summary["n_fact"] else 0.0)
+    _checks = [
+        ("fact packs >= 80", summary["n_fact"] >= 80),
+        ("audit unrepaired == 0", summary["audit_unrepaired_rows"] == 0),
+        ("standard_all ratio >= 0.75", _ratio >= 0.75),
+        ("waived runs <= 12", int(summary["waived_runs"]) <= 12),
+    ]
+    for _n, _ok in _checks:
+        print(("PASS " if _ok else "FAIL ") + "guard: " + _n)
+    if any(not ok for _n, ok in _checks):
+        print("PROCESS GATE GUARD FAILED:",
+              [n for n, ok in _checks if not ok])
+        return 1
+    print("PROCESS GATE GUARD PASS")
     return 0
 
 
