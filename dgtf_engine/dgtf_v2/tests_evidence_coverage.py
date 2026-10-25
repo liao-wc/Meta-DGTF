@@ -18,6 +18,7 @@ from dgtf_v2.evidence import (Evidence, EvidenceReport,  # noqa: E402
                               _short_answer, _term_covered,
                               answer_from_evidence, detect_gaps)
 from dgtf_v2.fact_flow import (_compact_numeric_answer,  # noqa: E402
+                                     _looks_like_choice,
                                      _numeric_claim_answer,
                                      build_fact_card)
 
@@ -345,6 +346,12 @@ def main():
        and _card_adult.to_dict().get("answer_display") == "十八周岁",
        (_card_adult.status, _card_adult.answer,
         _card_adult.to_dict().get("answer_display")))
+    # ── A32：选择题官方源豁免（Round 86）──────────────
+    ck("A64 选择题识别（A./B./C./D. ≥2）",
+       _looks_like_choice("以下哪项属于可再生能源？"
+                          "A. 煤炭 B. 太阳能 C. 石油 D. 天然气") is True)
+    ck("A65 非选择题不识别", _looks_like_choice("水的沸点是多少摄氏度？") is False)
+
     # ── B：整体量语义加权 ────────────────────────
     ck("B1 问长度 + 全长标记 → 加分",
        _overall_quantity_bonus("黄河全长约5464公里", "黄河的长度是多少千米") > 0)

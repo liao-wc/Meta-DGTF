@@ -208,6 +208,17 @@ def plan_fact_run(question: str, hard_max: int = 12,
               "rounds_max=%d 收紧），层内到点自然停。" % int(rounds_max)))
 
 
+# ============================================================ 题型小工具
+def _looks_like_choice(question: str) -> bool:
+    """题面是否选择题（A./B./C./D. 至少两个选项标记；或「哪项/哪一项」+选项）。"""
+    q = str(question or "")
+    import re as _re
+    marks = _re.findall(r"(?:^|[\s（(])[A-DＡＢＣＤ]\s*[.、)）．]", q)
+    if len(marks) >= 2:
+        return True
+    return bool(_re.search(r"哪一?项", q) and _re.search(r"[A-DＡＢＣＤ]\s*[.、)）．]", q))
+
+
 # ============================================================ 检索 query
 _QUERY_PREFIX = ("请问", "请帮我", "帮我", "想知道", "想了解")
 _QUERY_SUFFIX = ("？", "?", "吗", "呢")
@@ -746,6 +757,9 @@ def build_fact_card(question: str, report: EvidenceReport,
     gaps = list(getattr(report, "gaps", None) or [])
     if evs and not gaps:
         gaps = detect_gaps(question, evs, conflicts=conflicts)
+        # ★ [Round 86] 选择题不需要官方事实源（选项题是选择/推理，不是事实查找）
+        if _looks_like_choice(question):
+            gaps = [g for g in gaps if str(g) != "no_official_source"]
     evidence_ids = [str(getattr(e, "evidence_id", "")) for e in evs]
     official_ids = [str(getattr(e, "evidence_id", "")) for e in evs
                     if bool(getattr(e, "official", False))]

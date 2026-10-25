@@ -26,7 +26,7 @@ def ck(n, ok, info=""):
 
 def main():
     rows = measured_matrix()
-    ck("矩阵行数 = 36（reasoning 5 / choice 3 / fact 28）", len(rows) == 36, len(rows))
+    ck("矩阵行数 = 38（reasoning 5 / choice 3 / fact 30）", len(rows) == 38, len(rows))
     ck("三个场景桶齐全",
        set(MEASURED_SCENARIOS) == {"reasoning", "choice", "fact"},
        list(MEASURED_SCENARIOS))
@@ -49,7 +49,7 @@ def main():
        all(fact["runs"][k]["verified"] is True
            for k in ("web_on_fast", "web_on_fast2", "web_on_fast3",
                      "web_on_fast4", "web_on_fast5", "web_on_fast6", "web_on_fast7",
-                     "web_on_fast8", "web_on_fast9", "web_on_fast10", "web_on_fast11", "web_on_fast12", "web_on_fast13", "web_on_fast14", "web_on_fast15", "web_on_fast16", "web_on_fast17", "web_on_fast18", "web_on_fast19", "web_on_fast20", "web_on_fast21", "web_on_fast22", "web_on_fast23")))
+                     "web_on_fast8", "web_on_fast9", "web_on_fast10", "web_on_fast11", "web_on_fast12", "web_on_fast13", "web_on_fast14", "web_on_fast15", "web_on_fast16", "web_on_fast17", "web_on_fast18", "web_on_fast19", "web_on_fast20", "web_on_fast21", "web_on_fast22", "web_on_fast23", "web_on_fast24", "web_on_fast25")))
     ck("fact：成本档 tokens 低于 auto 且质量不低",
        fact["runs"]["web_on_fast"]["tokens"] < fact["runs"]["web_on_auto"]["tokens"]
        and fact["runs"]["web_on_fast2"]["tokens"] < fact["runs"]["web_on_auto"]["tokens"])
