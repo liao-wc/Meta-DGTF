@@ -2033,3 +2033,15 @@ max_len 1900；train_loss 0.831、**val_loss 0.9895**（v6 0.2221，明显偏高
 重启后 `/health` self_check_min=v8b、`/metrics` 正常（单发 3.39s，latency p50 可读）；
 `final_acceptance.py --with-service` → **9/9 PASS**。
 `train_metrics_dgtf_selfcheck_05b_v8b.json` 归档，主指标恢复到 v6。
+
+
+## 78. v8b 服务侧证据：并发/延迟/App 回归（Round 80）
+
+- `/health`：self_check=self_check_min=**v8b**（v6 兜底）；
+- 并发 3：runs 0.0/3.24/6.77s 串行化（单锁），`latency n=5 p50=3240ms p95=6750ms`、
+  `errors=0`（延迟分位数在真实并发下可读）；
+- **App 自检**（mock，含 v8b 在线时的道生 plan/busy 回退/T3）：**PASS 444 / FAIL 0**；
+- 证据：`llm_sft/service_probe_v8b_concurrency.json`。
+
+结论：v8b 切换后服务行为与 v6 一致（串行化特性不变），延迟分位数提供 p95 可观测性；
+App 无回归。
