@@ -373,6 +373,11 @@ def _compact_numeric_answer(question: str, answer: str) -> str:
             if _m2:
                 return _m2.group(1) + "年"
             return _years[-1]
+    # ★ [Round 85] 成年问句 display：收窄到「十八周岁」（成年人条款）
+    if any(k in q for k in ("成年", "成年年龄")):
+        _mad = re.search(r"(十八|18)\s*(?:周岁|岁)", ans)
+        if _mad:
+            return "十八周岁"
     # ★ [Round 62] 复合双值：结婚年龄「男X周岁、女Y周岁」
     if ("男" in ans and "女" in ans
             and any(k in q for k in ("年龄", "婚龄", "岁"))):
@@ -855,6 +860,44 @@ def build_fact_card(question: str, report: EvidenceReport,
     answer = _clean_card_answer(
         _numeric_claim_answer(question, _cand_evs)
         or answer_from_evidence(_cand_evs, question, prefer_recent=True))
+    # ★ [Round 85] 成年年龄 sanity：答案 <18 周岁 ⇒ 优先成年人条款，否则拒答
+    _qadult = any(k in str(question or "") for k in ("成年", "成年年龄"))
+    if _qadult and answer:
+        _m_age = re.search(
+            r"(\d{1,2}|[一二三四五六七八九十]{1,3})\s*(?:周)?岁", answer)
+        _age = None
+        if _m_age:
+            _raw_age = _m_age.group(1)
+            try:
+                _age = float(_raw_age)
+            except ValueError:
+                try:
+                    from .evidence import cn_num_to_int
+                    _age = cn_num_to_int(_raw_age)
+                except Exception:  # noqa: BLE001
+                    _age = None
+        if _age is not None and float(_age) < 18:
+            _adult_ans = ""
+            _adult_re = re.compile(
+                r"(?:十八|18)\s*(?:周岁|岁)[^。；;\n]{0,16}(?:成年人|完全民事)")
+            for _e in _cand_evs:
+                _sn = str(getattr(_e, "snippet", "") or "")
+                for _part in re.split(r"[。；;\n]", _sn):
+                    _mm = _adult_re.search(_part)
+                    if _mm:
+                        _adult_ans = _part[max(0, _mm.start() - 2):].strip()[:240]
+                        break
+                if _adult_ans:
+                    break
+            if _adult_ans:
+                _adult_ans = re.sub(r"^(?:第?[一二三四五六七八九十百零]+条|条)\s*",
+                                    "", _adult_ans)
+                answer = _clean_card_answer(_adult_ans)
+            else:
+                return FactCard(status="unknown",
+                                gaps=_dedup(gaps + ["adult_age_mismatch"]),
+                                reason=("成年问句答案 %s 岁 < 18 且证据无成年人条款，"
+                                        "拒绝输出低龄答案" % int(_age)), **base)
     # ★ [Round 34] 现行性问句（法定/现行/我国/最新）若答案只有历史旧规 → 拒答
     _curq = any(k in str(question or "") for k in (
         "法定", "现行", "目前", "现在", "最新", "有效", "我国"))

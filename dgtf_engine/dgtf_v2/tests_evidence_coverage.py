@@ -333,6 +333,18 @@ def main():
         "我国婚姻法第六条明确规定，结婚年龄，男不得早于二十二周岁，女不得早于二十周岁。")
     ck("A61 结婚年龄双值展示（男22周岁、女20周岁）",
        _dual_disp == "男22周岁、女20周岁", _dual_disp)
+    # ── A31：成年年龄 sanity（Round 85）──────────────
+    _rep_adult = EvidenceReport(
+        question="民法典规定多少岁成年？", queries=["q"], searches=1,
+        items=[ev("E1", "民法典第十七条：十八周岁以上的自然人为成年人。",
+                  official=True)], conflicts=[], gaps=["single_source"])
+    _card_adult = build_fact_card("民法典规定多少岁成年？", _rep_adult)
+    ck("A63 成年题取十八周岁（display 收窄）",
+       _card_adult.status == "answered"
+       and "十八周岁" in _card_adult.answer
+       and _card_adult.to_dict().get("answer_display") == "十八周岁",
+       (_card_adult.status, _card_adult.answer,
+        _card_adult.to_dict().get("answer_display")))
     # ── B：整体量语义加权 ────────────────────────
     ck("B1 问长度 + 全长标记 → 加分",
        _overall_quantity_bonus("黄河全长约5464公里", "黄河的长度是多少千米") > 0)
