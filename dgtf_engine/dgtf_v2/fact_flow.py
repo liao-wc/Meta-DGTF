@@ -373,6 +373,22 @@ def _compact_numeric_answer(question: str, answer: str) -> str:
             if _m2:
                 return _m2.group(1) + "年"
             return _years[-1]
+    # ★ [Round 55] 列举问句：display 取「顿号列举」短语本身（如 蓝、黄、黑、绿、红）
+    if any(k in q for k in ("哪几种", "哪些", "有哪", "列举")):
+        _m = re.search(r"[\u4e00-\u9fa5]{1,2}(?:、[\u4e00-\u9fa5]{1,2}){1,8}",
+                       ans)
+        if _m:
+            _s = _m.group(0)
+            _changed = True
+            while _changed:
+                _changed = False
+                for _w in ("用", "采", "为", "是", "的", "和", "与",
+                           "及", "等", "以", "将", "把", "让", "使",
+                           "对", "在", "由", "从", "其中", "它", "其"):
+                    if _s.startswith(_w) and len(_s) > len(_w) + 1:
+                        _s = _s[len(_w):]
+                        _changed = True
+            return _s
     # ★ [Round 44] 范围型答案：display 收窄为「区间+单位」（如 60-100次/分）
     _rng = re.search(
         r"\d+(?:\.\d+)?\s*[-—~～至到]\s*\d+(?:\.\d+)?\s*"

@@ -865,6 +865,19 @@ def _short_answer(text: str, question: str = "") -> str:
         if _cands:
             _cands.sort(reverse=True)
             return _cands[0][3].strip()[:240]
+    # ★ [Round 55] 列举问句（哪几种/哪些/列举）：优先顿号列举句
+    if any(k in _q for k in ("哪几种", "哪些", "有哪", "列举")):
+        _cands = []
+        for _idx, part in enumerate(re.split(r"[。；;\n]", s)):
+            _comma = part.count("、")
+            if _comma < 1:
+                continue
+            _hit = sum(1 for c in re.findall(r"[\u4e00-\u9fa5]{2,}", _q)
+                       if c in part)
+            _cands.append((_comma, _hit, -_idx, part))
+        if _cands:
+            _cands.sort(reverse=True)
+            return str(_cands[0][3]).strip()[:240]
     # ★ [Round 47] 命名问句：优先返回含命名动词的句子
     if any(k in _q for k in ("名字", "名称", "叫什么", "命名", "代号")):
         _cands = []

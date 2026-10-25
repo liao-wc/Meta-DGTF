@@ -314,6 +314,15 @@ def main():
             official=True)])
     ck("A57 成年题取成年人语境（十八周岁）",
        "十八" in _adult_ans or "18" in _adult_ans, _adult_ans)
+    # ── A27：列举型答案收窄（Round 55）──────────────
+    _enum_ans = _short_answer("奥林匹克标志最早设计。起初采用蓝、黄、黑、绿、红色作为五环的颜色。",
+                           "奥林匹克五环的颜色有哪几种？")
+    ck("A58 列举问句取顿号列举句",
+       "蓝、黄、黑、绿、红" in _enum_ans, _enum_ans)
+    _enum_disp = _compact_numeric_answer("奥林匹克五环的颜色有哪几种？",
+        "起初采用蓝、黄、黑、绿、红色作为五环的颜色。")
+    ck("A59 列举 display 收窄（颜色列举短语）",
+       "蓝、黄、黑、绿、红" in _enum_disp, _enum_disp)
     # ── B：整体量语义加权 ────────────────────────
     ck("B1 问长度 + 全长标记 → 加分",
        _overall_quantity_bonus("黄河全长约5464公里", "黄河的长度是多少千米") > 0)
