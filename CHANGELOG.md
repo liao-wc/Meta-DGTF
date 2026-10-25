@@ -45,6 +45,9 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 75 增补（2026-10-26）】
+- eval_and_compare.py：候选适配器一键评测（30 条 held-out）+ compare_eval 判定；
+  训练完成后直接出 SWITCH/KEEP。v8b 训练中（step 110/336）。
 【Round 74 增补（2026-10-26）】
 - 最终交付说明补「自动化护栏总览」与一键验收命令；v8b 训练 step 100+ 正常。
 【Round 73 增补（2026-10-26）】

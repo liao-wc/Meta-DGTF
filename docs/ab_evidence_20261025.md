@@ -1995,3 +1995,11 @@ compare_eval 自检 / 场景矩阵护栏），任一失败即 exit 1。
 实测：**FINAL ACCEPTANCE: 8/8 PASS / ALL GUARDS PASS**（总耗时约 2.5 分钟）。
 --with-service 可附带本地服务检查（服务停机训练期间默认跳过）。
 意义：「只变好不变坏」的四道护栏 + 基础判据变成单命令可复跑，供交付/回归使用。
+
+
+## 76. 候选适配器一键评测+对比（Round 75）
+
+新增 scripts/local_model/eval_and_compare.py：训练完成后一条命令完成
+「DGTF_LOCAL_ADAPTER 指定候选 → eval_dgtf_stage 30 条 → compare_eval 对基线判定」，
+退出码即 SWITCH/KEEP（0=SWITCH_CANDIDATE）；eval 脚本末尾附加评测偶发 OOM 时，
+只要 JSON 已写出仍继续对比（v5/v6/v7 均出现该现象）。
