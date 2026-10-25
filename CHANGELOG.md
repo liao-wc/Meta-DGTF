@@ -45,6 +45,11 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 31 增补（2026-10-25 同日）】
+- 政策类事实三层修复：长复合词 2-gram 覆盖（≥80% 带防护）、日期问句证据概念加权、
+  日期问句 display 收窄（1982年）。宪法题 0.4663/needs_evidence →
+  **0.9789/verified/ready**（679,027 tok/98 calls/258s）。
+- tests_evidence_coverage 37 项；全量 V2 51/51（770 checks）、fast_gate 12/12。
 【Round 30 增补（2026-10-25 同日）】
 - 事实矩阵 16→18 行（auto2 GDP 0.9764、auto3 404 0.9062）；live 与锚点 Δ≤0.012。
 - 19xx 日期答案修复：_DATE_RE 支持 19xx/20xx、日期句按题面 2-gram 概念排序、

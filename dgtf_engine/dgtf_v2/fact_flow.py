@@ -335,7 +335,26 @@ def _compact_numeric_answer(question: str, answer: str) -> str:
     """数值型题：从答案文本里抽「值+单位」，返回紧凑短答；抽不到则原样返回。"""
     q = str(question or "")
     ans = str(answer or "").strip()
-    if not ans or not any(h in q for h in _NUM_Q_HINTS):
+    if not ans:
+        return ans
+    # ★ [Round 31] 日期问句（哪一年/何时）：展示收窄为「YYYY年」，优先「现行/通过/
+    #   颁布」所在分句的年份（宪法题：现行宪法为1982年宪法 ⇒ 1982年）。
+    if any(k in q for k in ("哪一年", "哪年", "何时", "什么时候", "年份",
+                            "哪一天")):
+        import re as _re2
+        _parts = _re2.split(r"[。；;\n]", ans)
+        _years = _re2.findall(r"(?:19|20)\d{2}年", ans)
+        if _years:
+            # 优先「现行…1982年」锚定（宪法题），其次「颁布/通过…年份」，最后取末个年份
+            _m = _re2.search(r"现行[^。；;\n]{0,16}?((?:19|20)\d{2})年", ans)
+            if _m:
+                return _m.group(1) + "年"
+            _m2 = _re2.search(r"(?:颁布|通过)[^。；;\n]{0,24}?((?:19|20)\d{2})年",
+                              ans)
+            if _m2:
+                return _m2.group(1) + "年"
+            return _years[-1]
+    if not any(h in q for h in _NUM_Q_HINTS):
         return ans
     try:
         from .evidence import extract_numeric_claims

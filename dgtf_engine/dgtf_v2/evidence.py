@@ -650,6 +650,13 @@ def _term_tokens_covered(term: str, corpus: str) -> bool:
             return False
         if _seg_covered(pc, corpus):
             continue
+        # ★ [Round 31] 长复合词（≥4 字）：2-gram 覆盖率 ≥80% 视为覆盖
+        #   （「中国现行宪法」被「中国/现行/宪法」覆盖；随机切分会因比例不足被拒）
+        if len(pc) >= 4:
+            _grams = [pc[_i:_i + 2] for _i in range(len(pc) - 1)]
+            _hit = sum(1 for _g in _grams if _g in corpus)
+            if _grams and _hit / len(_grams) >= 0.8:
+                continue
         return False
     return True
 
@@ -889,6 +896,8 @@ def answer_from_evidence(items: Iterable, question: str = "",
         return _short_answer(str(getattr(order[0], "snippet", "") or ""), q)
     wants_url = bool(re.search(r"(?:base\s*url|base_url|接口地址|访问地址|url)",
                                q, re.I))
+    _asks_date_q = any(k in q for k in ("哪一年", "哪年", "何时", "什么时候",
+                                        "年份"))
     scored = []
     _recent = bool(prefer_recent) and any(k in q for k in _RECENCY_CUES)
     _dates = [_text_date_score(str(getattr(e, "snippet", "") or ""))
@@ -899,6 +908,13 @@ def answer_from_evidence(items: Iterable, question: str = "",
         score = _answer_relevance(text, q)
         if bool(getattr(e, "official", False)):
             score += 0.15
+        # ★ [Round 31] 日期问句：同时含题面 2-gram 与年份的证据额外加权
+        if _asks_date_q and re.search(r"(?:19|20)\d{2}", text):
+            _qg = [q[_i:_i + 2] for _i in range(len(q) - 1)
+                   if "\u4e00" <= q[_i] <= "\u9fa5"
+                   and "\u4e00" <= q[_i + 1] <= "\u9fa5"]
+            _hits = sum(1 for g in _qg if g in text)
+            score += 0.35 * min(_hits, 3)
         score += _overall_quantity_bonus(text, q)
         if _recent and _max_date > 0 and _i < len(_dates) \
                 and _dates[_i] == _max_date:
