@@ -240,6 +240,15 @@ def extract_queries(question: str, extra=None,
     # ★ [Round 35] 法定/现行类：补「现行 民法典」查询，避免检索池只有历史旧规；
     #   贸易口径类：补海关总署/外汇管理局查询，避免海关 vs 外管局口径混判。
     _subj = cleaned or q
+    # ★ [Round 42] 国际组织 → 官方站内查询
+    _ORG_SITES = (("联合国", "un.org"), ("世界卫生组织", "who.int"),
+                  ("世界银行", "worldbank.org"), ("国际货币基金组织", "imf.org"),
+                  ("世贸组织", "wto.org"), ("世界贸易组织", "wto.org"),
+                  ("国际奥委会", "olympics.com"), ("国际足联", "fifa.com"))
+    for _org, _site in _ORG_SITES:
+        if _org in _subj:
+            _add("%s site:%s" % (_subj, _site))
+            break
     if any(k in _subj for k in ("法定", "现行", "民法典", "刑法", "条例",
                                 "法律规定")):
         _add("%s 现行 民法典" % _subj)

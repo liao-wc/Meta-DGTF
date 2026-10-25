@@ -53,6 +53,11 @@ def main():
     ck("⑩ 扩展不越界（HTTP 协议题仍无 site:）",
        not any("site:" in x for x in qs3))
 
+    qs8 = extract_queries("联合国的总部设在哪个城市？")
+    ck("⑪ 国际组织类补官方站内查询（un.org）",
+       any("site:un.org" in x for x in qs8), qs8)
+    ck("⑫ 国际组织扩展不干扰普通题",
+       not any("site:un.org" in x for x in qs3))
     print("\nTOTAL PASS %d / FAIL %d" % (len(P), len(F)))
     return 0 if not F else 1
 

@@ -1513,3 +1513,25 @@ display=384399公里，全量 V2 **51/51（788 checks）**。
 
 v7（300 样本 ×1 epoch）训练进行中（GPU 满载），预计 ~03:05 完成；
 完成后与 v6 在 30 条 held-out 上对比，只变好才切默认。
+
+
+## 50. 国际组织官方站内 query + 联合国题复验（Round 42）
+
+### 50.1 机制
+
+`extract_queries` 新增国际组织官方站内查询（MAX_QUERIES=3 内优先）：
+联合国→un.org、世卫→who.int、世界银行→worldbank.org、IMF→imf.org、
+WTO→wto.org、国际奥委会→olympics.com、国际足联→fifa.com。
+判据 tests_fact_queries 增至 **12 项**（⑪ un.org 注入、⑫ 普通题不干扰）。
+
+### 50.2 真实复验（联合国总部题）
+
+fast+web：**quality 0.94 / verified / ready=True**（663,920 tok / 99 calls / 223s），
+gaps=[]；但 answer 仍为「1945年12月10日，美国国会一致同意邀请联合国将其总部设在美国」，
+**未收窄到「纽约」**——检索池虽有 un.org 也仍偏历史段落。
+诚实记录：**答案收窄（城市级）是国际类遗留问题**，已纳入待办：
+后续在 `answer_from_evidence` 加「地点问句 → 城市/位于句式优先」评分。
+
+### 50.3 门禁
+
+全量 **V2 51/51（790 checks）**、fast_gate 12/12。v7 训练中（step-100 checkpoint 01:23）。

@@ -45,6 +45,11 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 42 增补（2026-10-26）】
+- 国际组织官方站内 query：联合国→un.org、WHO→who.int、WB→worldbank.org、
+  IMF→imf.org、WTO→wto.org 等（tests_fact_queries 12 项）。
+- 联合国总部题复验 0.94/verified/ready（663,920 tok/99 calls/223s）；答案仍偏
+  「总部设在美国」未收窄到纽约，地点级答案收窄列为待办。V2 51/51（790 checks）。
 【Round 41 增补（2026-10-26）】
 - 千分位数字归一：384,399公里 → 384399公里（display 不再截断为「399公里」），
   判据 A44/A45；V2 51/51（788 checks）。
