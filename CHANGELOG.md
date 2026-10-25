@@ -42,6 +42,13 @@ V2.2.3
   - 前缀缓存实测：全量跑 prompt cache hit ratio **13.9%~17.6%**（已自动省约 ¥0.2/跑）；
     prompt 静态段前置可进一步省，但需质量 A/B，列为下一轮 opt-in 项。
 
+【Round 3 增补（2026-10-25 同日）】
+- 1.5B 本地适配可行性结论（负结果）：6GB 卡上 1.5B 训练 OOM（峰值 6.78GB>6.44GB，
+  fp32 GEMM 100s/step；fp16 GEMM 47s/step），20 步半成品适配器评测三项全对仍 0、
+  p50 15.4s（0.5B 的 2.5 倍）⇒ 生产保持 0.5B 服务、仅叙述/草稿；要接管决策需 ≥12GB 显存。
+  证据：docs/local_model_daosheng.md §5.3、llm_sft/eval_dgtf_stage_15b.json、
+  scripts/local_model/eval_15b_adapter.py。
+- docs/ab_results.jsonl 补 D1/道生 e2e 两次真跑记录；docs/probe_*.json 不入库。
 【Round 2 增补（2026-10-25 同日）】
 - M4 质量预测升级为保形下界：quality_predictor 新增 calibrate_conformal/predict_lower、
   K-fold 交叉保形（alpha=0.2），mode_fusion.fused_plan 暴露 quality_prediction_lower/

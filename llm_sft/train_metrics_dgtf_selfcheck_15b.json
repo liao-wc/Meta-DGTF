@@ -1,0 +1,184 @@
+{
+ "stage": "self_check",
+ "variant": "min",
+ "model": "D:\\Meta-DGTF-道生三阶模型\\local_model\\models\\Qwen2.5-1.5B-Instruct",
+ "adapter": "llm_sft\\adapter_dgtf_selfcheck_15b_v1",
+ "train_n": 80,
+ "val_n": 10,
+ "epochs": 1,
+ "steps": 20,
+ "batch": 1,
+ "accum": 8,
+ "lr": 0.0002,
+ "max_len": 2048,
+ "lora": {
+  "r": 8,
+  "alpha": 16,
+  "target_modules": [
+   "q_proj",
+   "k_proj",
+   "v_proj",
+   "o_proj",
+   "gate_proj",
+   "up_proj",
+   "down_proj"
+  ],
+  "dropout": 0.05
+ },
+ "fp32_gemm_patched_layers": 0,
+ "gradient_checkpointing": true,
+ "dtype": "fp16 weights + fp32 GEMM",
+ "trainable_params": 9232384,
+ "prompt_len": {
+  "p50": 1657,
+  "p95": 1875
+ },
+ "target_len": {
+  "p50": 27
+ },
+ "truncated_samples": 0,
+ "best_val_loss": Infinity,
+ "best_step": 0,
+ "epoch_history": [],
+ "loss_curve": [
+  {
+   "step": 1,
+   "epoch": 1,
+   "loss": 0.58673,
+   "lr": 4e-05
+  },
+  {
+   "step": 2,
+   "epoch": 1,
+   "loss": 0.51937,
+   "lr": 6e-05
+  },
+  {
+   "step": 3,
+   "epoch": 1,
+   "loss": 0.42295,
+   "lr": 8e-05
+  },
+  {
+   "step": 4,
+   "epoch": 1,
+   "loss": 0.46554,
+   "lr": 0.0001
+  },
+  {
+   "step": 5,
+   "epoch": 1,
+   "loss": 0.13522,
+   "lr": 0.00012
+  },
+  {
+   "step": 6,
+   "epoch": 1,
+   "loss": 0.2194,
+   "lr": 0.00014
+  },
+  {
+   "step": 7,
+   "epoch": 1,
+   "loss": 0.43179,
+   "lr": 0.00016
+  },
+  {
+   "step": 8,
+   "epoch": 1,
+   "loss": 0.61702,
+   "lr": 0.00018
+  },
+  {
+   "step": 9,
+   "epoch": 1,
+   "loss": 0.20919,
+   "lr": 0.0002
+  },
+  {
+   "step": 10,
+   "epoch": 1,
+   "loss": 0.2061,
+   "lr": 0.0002
+  },
+  {
+   "step": 11,
+   "epoch": 1,
+   "loss": 0.20198,
+   "lr": 0.0001956
+  },
+  {
+   "step": 12,
+   "epoch": 1,
+   "loss": 0.41394,
+   "lr": 0.00018281
+  },
+  {
+   "step": 13,
+   "epoch": 1,
+   "loss": 0.44096,
+   "lr": 0.0001629
+  },
+  {
+   "step": 14,
+   "epoch": 1,
+   "loss": 0.48315,
+   "lr": 0.00013781
+  },
+  {
+   "step": 15,
+   "epoch": 1,
+   "loss": 0.18419,
+   "lr": 0.00011
+  },
+  {
+   "step": 16,
+   "epoch": 1,
+   "loss": 0.50897,
+   "lr": 8.219e-05
+  },
+  {
+   "step": 17,
+   "epoch": 1,
+   "loss": 0.31806,
+   "lr": 5.71e-05
+  },
+  {
+   "step": 18,
+   "epoch": 1,
+   "loss": 0.32745,
+   "lr": 3.719e-05
+  },
+  {
+   "step": 19,
+   "epoch": 1,
+   "loss": 0.49464,
+   "lr": 2.44e-05
+  },
+  {
+   "step": 20,
+   "epoch": 1,
+   "loss": 0.26632,
+   "lr": 2e-05
+  }
+ ],
+ "gen_smoke": {
+  "json_ok": 2,
+  "n": 2,
+  "samples": [
+   {
+    "pred": "{\"suspicious_candidates\":[1,2,3,4,5,6,7,8], \"ing_rephrased\":true, \"unsaid_is_escape\":false}",
+    "gold": "{\"suspicious_candidates\":[11,6],\"ing_rephrased\":false,\"unsaid_is_escape\":false}"
+   },
+   {
+    "pred": "{\"suspicious_candidates\":[1,2,3,4,5,6,7,8], \"ing_rephrased\":false, \"unsaid_is_escape\":true}",
+    "gold": "{\"suspicious_candidates\":[3,6],\"ing_rephrased\":false,\"unsaid_is_escape\":false}"
+   }
+  ]
+ },
+ "peak_vram_gb": 6.78,
+ "train_sec": 943.0,
+ "samples_per_sec": 0.021,
+ "tokens_per_sec_est": 35.8,
+ "note": "LoRA SFT：引擎同构 prompt → stage JSON；fp16 权重 + fp32 GEMM （SM75 HGEMM 慢的适配）；grad checkpointing；按问题分组留出"
+}

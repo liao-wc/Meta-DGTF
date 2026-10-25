@@ -1,0 +1,309 @@
+{
+ "base_model": "D:\\Meta-DGTF-道生三阶模型\\local_model\\models\\Qwen2.5-1.5B-Instruct",
+ "rows": 12,
+ "adapter": {
+  "stage": "self_check_min",
+  "n": 12,
+  "json_valid_rate": 1.0,
+  "latency_ms": {
+   "p50": 15396.5,
+   "p95": 16170.2
+  },
+  "adapter": "D:\\Meta-DGTF-道生三阶模型\\llm_sft\\adapter_dgtf_selfcheck_15b_v1",
+  "decision_all3_acc": 0.0,
+  "susp_f1": 0.213,
+  "susp_set_acc": 0.0,
+  "ing_rephrased_acc": 0.833,
+  "unsaid_is_escape_acc": 0.417,
+  "decision_field_mean_acc": 0.417,
+  "agree": 0.0,
+  "gating": [
+   {
+    "tau": 0.8,
+    "coverage": 1.0,
+    "agreement": 0.0,
+    "n_covered": 12
+   },
+   {
+    "tau": 0.9,
+    "coverage": 0.167,
+    "agreement": 0.0,
+    "n_covered": 2
+   },
+   {
+    "tau": 0.95,
+    "coverage": 0.0,
+    "agreement": null,
+    "n_covered": 0
+   }
+  ],
+  "samples": [
+   {
+    "id": "scmin::c20e5fa6::20261009_132409_新中国的成立时间是什么时候.packed::1",
+    "json": true,
+    "ms": 9308.0,
+    "confidence": 0.8975,
+    "agree": false,
+    "score": {
+     "json": true,
+     "all3": false,
+     "susp_set": false,
+     "susp_f1": 0.0,
+     "ing_ok": true,
+     "esc_ok": false,
+     "pred_ing": false,
+     "gold_ing": false,
+     "pred_esc": true,
+     "gold_esc": false,
+     "unsaid_mae": null
+    },
+    "pred": "{\"suspicious_candidates\": [1, 2], \"ing_rephrased\": false, \"unsaid_is_escape\": true}",
+    "gold": "{\"suspicious_candidates\": [3], \"ing_rephrased\": false, \"unsaid_is_escape\": false}"
+   },
+   {
+    "id": "scmin::a7c4a721::20261010_023209_AI能否独立完成数字IC设计.packed::0",
+    "json": true,
+    "ms": 16077.2,
+    "confidence": 0.882,
+    "agree": false,
+    "score": {
+     "json": true,
+     "all3": false,
+     "susp_set": false,
+     "susp_f1": 0.4,
+     "ing_ok": true,
+     "esc_ok": false,
+     "pred_ing": false,
+     "gold_ing": false,
+     "pred_esc": true,
+     "gold_esc": false,
+     "unsaid_mae": null
+    },
+    "pred": "{\"suspicious_candidates\": [1, 2, 3, 4, 5, 6, 7, 8], \"ing_rephrased\": false, \"unsaid_is_escape\": true}",
+    "gold": "{\"suspicious_candidates\": [7, 8], \"ing_rephrased\": false, \"unsaid_is_escape\": false}"
+   },
+   {
+    "id": "scmin::a7c4a721::20261010_023209_AI能否独立完成数字IC设计.packed::1",
+    "json": true,
+    "ms": 12905.8,
+    "confidence": 0.86,
+    "agree": false,
+    "score": {
+     "json": true,
+     "all3": false,
+     "susp_set": false,
+     "susp_f1": 0.0,
+     "ing_ok": false,
+     "esc_ok": true,
+     "pred_ing": true,
+     "gold_ing": false,
+     "pred_esc": true,
+     "gold_esc": true,
+     "unsaid_mae": null
+    },
+    "pred": "{\"suspicious_candidates\": [1, 2, 3, 4, 5, 6, 7], \"ing_rephrased\": true, \"unsaid_is_escape\": true}",
+    "gold": "{\"suspicious_candidates\": [9, 10, 11, 12, 13, 14, 15], \"ing_rephrased\": false, \"unsaid_is_escape\": true}"
+   },
+   {
+    "id": "scmin::a7c4a721::20261010_023209_AI能否独立完成数字IC设计.packed::both",
+    "json": true,
+    "ms": 15788.1,
+    "confidence": 0.9013,
+    "agree": false,
+    "score": {
+     "json": true,
+     "all3": false,
+     "susp_set": false,
+     "susp_f1": 0.222,
+     "ing_ok": true,
+     "esc_ok": true,
+     "pred_ing": false,
+     "gold_ing": false,
+     "pred_esc": true,
+     "gold_esc": true,
+     "unsaid_mae": null
+    },
+    "pred": "{\"suspicious_candidates\": [1, 2, 3, 4, 5, 6, 7, 8], \"ing_rephrased\": false, \"unsaid_is_escape\": true}",
+    "gold": "{\"suspicious_candidates\": [7], \"ing_rephrased\": false, \"unsaid_is_escape\": true}"
+   },
+   {
+    "id": "scmin::a7c4a721::20261010_023209_AI能否独立完成数字IC设计.packed::all",
+    "json": true,
+    "ms": 15481.8,
+    "confidence": 0.8859,
+    "agree": false,
+    "score": {
+     "json": true,
+     "all3": false,
+     "susp_set": false,
+     "susp_f1": 0.4,
+     "ing_ok": true,
+     "esc_ok": false,
+     "pred_ing": false,
+     "gold_ing": false,
+     "pred_esc": true,
+     "gold_esc": false,
+     "unsaid_mae": null
+    },
+    "pred": "{\"suspicious_candidates\": [1, 2, 3, 4, 5, 6, 7, 8], \"ing_rephrased\": false, \"unsaid_is_escape\": true}",
+    "gold": "{\"suspicious_candidates\": [3, 4], \"ing_rephrased\": false, \"unsaid_is_escape\": false}"
+   }
+  ]
+ },
+ "base": {
+  "stage": "self_check_min",
+  "n": 12,
+  "json_valid_rate": 1.0,
+  "latency_ms": {
+   "p50": 13378.0,
+   "p95": 13995.4
+  },
+  "adapter": null,
+  "decision_all3_acc": 0.0,
+  "susp_f1": 0.042,
+  "susp_set_acc": 0.0,
+  "ing_rephrased_acc": 0.917,
+  "unsaid_is_escape_acc": 0.583,
+  "decision_field_mean_acc": 0.5,
+  "agree": 0.0,
+  "gating": [
+   {
+    "tau": 0.8,
+    "coverage": 1.0,
+    "agreement": 0.0,
+    "n_covered": 12
+   },
+   {
+    "tau": 0.9,
+    "coverage": 0.75,
+    "agreement": 0.0,
+    "n_covered": 9
+   },
+   {
+    "tau": 0.95,
+    "coverage": 0.083,
+    "agreement": 0.0,
+    "n_covered": 1
+   }
+  ],
+  "samples": [
+   {
+    "id": "scmin::c20e5fa6::20261009_132409_新中国的成立时间是什么时候.packed::1",
+    "json": true,
+    "ms": 10481.9,
+    "confidence": 0.9439,
+    "agree": false,
+    "score": {
+     "json": true,
+     "all3": false,
+     "susp_set": false,
+     "susp_f1": 0.0,
+     "ing_ok": true,
+     "esc_ok": true,
+     "pred_ing": false,
+     "gold_ing": false,
+     "pred_esc": false,
+     "gold_esc": false,
+     "unsaid_mae": null
+    },
+    "pred": "{\"suspicious_candidates\": [1], \"ing_rephrased\": false, \"unsaid_is_escape\": false}",
+    "gold": "{\"suspicious_candidates\": [3], \"ing_rephrased\": false, \"unsaid_is_escape\": false}"
+   },
+   {
+    "id": "scmin::a7c4a721::20261010_023209_AI能否独立完成数字IC设计.packed::0",
+    "json": true,
+    "ms": 13821.1,
+    "confidence": 0.8881,
+    "agree": false,
+    "score": {
+     "json": true,
+     "all3": false,
+     "susp_set": false,
+     "susp_f1": 0.0,
+     "ing_ok": true,
+     "esc_ok": false,
+     "pred_ing": false,
+     "gold_ing": false,
+     "pred_esc": true,
+     "gold_esc": false,
+     "unsaid_mae": null
+    },
+    "pred": "{\"suspicious_candidates\": [1], \"ing_rephrased\": false, \"unsaid_is_escape\": true}",
+    "gold": "{\"suspicious_candidates\": [7, 8], \"ing_rephrased\": false, \"unsaid_is_escape\": false}"
+   },
+   {
+    "id": "scmin::a7c4a721::20261010_023209_AI能否独立完成数字IC设计.packed::1",
+    "json": true,
+    "ms": 11524.4,
+    "confidence": 0.9451,
+    "agree": false,
+    "score": {
+     "json": true,
+     "all3": false,
+     "susp_set": false,
+     "susp_f1": 0.0,
+     "ing_ok": true,
+     "esc_ok": false,
+     "pred_ing": false,
+     "gold_ing": false,
+     "pred_esc": false,
+     "gold_esc": true,
+     "unsaid_mae": null
+    },
+    "pred": "{\"suspicious_candidates\": [], \"ing_rephrased\": false, \"unsaid_is_escape\": false}",
+    "gold": "{\"suspicious_candidates\": [9, 10, 11, 12, 13, 14, 15], \"ing_rephrased\": false, \"unsaid_is_escape\": true}"
+   },
+   {
+    "id": "scmin::a7c4a721::20261010_023209_AI能否独立完成数字IC设计.packed::both",
+    "json": true,
+    "ms": 13654.5,
+    "confidence": 0.9241,
+    "agree": false,
+    "score": {
+     "json": true,
+     "all3": false,
+     "susp_set": false,
+     "susp_f1": 0.0,
+     "ing_ok": true,
+     "esc_ok": false,
+     "pred_ing": false,
+     "gold_ing": false,
+     "pred_esc": false,
+     "gold_esc": true,
+     "unsaid_mae": null
+    },
+    "pred": "{\"suspicious_candidates\": [1, 2], \"ing_rephrased\": false, \"unsaid_is_escape\": false}",
+    "gold": "{\"suspicious_candidates\": [7], \"ing_rephrased\": false, \"unsaid_is_escape\": true}"
+   },
+   {
+    "id": "scmin::a7c4a721::20261010_023209_AI能否独立完成数字IC设计.packed::all",
+    "json": true,
+    "ms": 13160.0,
+    "confidence": 0.9348,
+    "agree": false,
+    "score": {
+     "json": true,
+     "all3": false,
+     "susp_set": false,
+     "susp_f1": 0.0,
+     "ing_ok": true,
+     "esc_ok": true,
+     "pred_ing": false,
+     "gold_ing": false,
+     "pred_esc": false,
+     "gold_esc": false,
+     "unsaid_mae": null
+    },
+    "pred": "{\"suspicious_candidates\": [1], \"ing_rephrased\": false, \"unsaid_is_escape\": false}",
+    "gold": "{\"suspicious_candidates\": [3, 4], \"ing_rephrased\": false, \"unsaid_is_escape\": false}"
+   }
+  ]
+ },
+ "delta": {
+  "json_valid_rate": 0.0,
+  "decision_all3_acc": 0.0,
+  "susp_f1": 0.171,
+  "ing_rephrased_acc": -0.084,
+  "unsaid_is_escape_acc": -0.166
+ }
+}

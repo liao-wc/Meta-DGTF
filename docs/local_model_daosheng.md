@@ -462,3 +462,32 @@ else:
 - **后续若要接管决策**：1.5B 底座 + 全量 2,490/478 条 × 2-3 epochs（6GB 卡约
   6-10 小时独占 GPU）+ 更大 eval 集；数据/训练/评测管线已就绪，直接改
   `--model/--max-train/--epochs` 即可。
+
+## 5.3 1.5B 适配可行性（Round 3，2026-10-25）
+
+目标：验证「换 1.5B 底座能否让本地模型接管决策」。结论：**当前 6GB 显卡不可行**。
+
+训练尝试（	rain_dgtf_stage_lora.py）：
+- A：1.5B + fp16 权重 + **fp32 GEMM** + max_len 2048 + 120 样本：显存峰值 **6.78GB > 6.44GB**
+  → CUDA allocator 反复 OOM 重试，实测 **~100s/step**（22 分钟只走到 step 10）⇒ 中止。
+- B：1.5B + **fp16 GEMM** + r=8 + 80 样本 + max-steps 20：943s / 47s/step 完成 20 步
+  （仍伴随 OOM 重试告警），适配器 llm_sft/adapter_dgtf_selfcheck_15b_v1；
+  est_val_loss=Infinity（OOM 下验证未算完）⇒ 只能算「半成品」。
+
+评测（scripts/local_model/eval_15b_adapter.py，held-out self_check_min 12 条，含 base 对照）：
+
+| 指标 | 1.5B+适配器(20步) | 1.5B base | 0.5B v2 适配器（对照上表） |
+|---|---|---|---|
+| JSON 合法率 | 1.000 | 1.000 | 0.857 |
+| 三项全对率 | 0.000 | 0.000 | 0.000 |
+| suspicious F1 | 0.213 | 0.042 | 0.132 |
+| ing_rephrased acc | 0.833 | 0.917 | 0.786 |
+| unsaid_is_escape acc | 0.417 | 0.583 | 0.643 |
+| p50 延迟 | **15.4s** | 13.4s | **6.1s** |
+
+判读：
+- 1.5B base 的 JSON 格式能力本身就好（1.0），但**语义决策仍全错**；20 步适配器只在
+  suspicious F1 上略优于 base，其余更差 ⇒ 训练量远不够（且被 OOM 拖到 47s/step）。
+- 1.5B 推理 p50 15.4s ≈ 0.5B 的 2.5 倍，却拿不到更好的决策质量 ⇒ 在本机没有部署价值。
+- **收口**：生产保持 0.5B 服务（仅叙述/格式草稿，不接管决策）；要真正接管决策，
+  需要 ≥12GB 显存 + 2~3 小时以上训练 + 更大评测集。1.5B 适配器与 metrics 留档为负证据。
