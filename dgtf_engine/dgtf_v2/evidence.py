@@ -424,10 +424,13 @@ def extract_numeric_claims(text: str) -> list:
     """
     out: list[dict] = []
     last_anchor = ""
+    prev_raw = ""
     for clause in _CLAUSE_RE.split(str(text or "")):
         clause = clause.strip()
         if not clause:
             continue
+        _prev = prev_raw
+        prev_raw = clause
         anchors = _YEAR_RE.findall(clause)
         # 同句内后续分句沿用前面的年份锚（"2023年GDP…，增长5.2%"）。
         if anchors:
@@ -452,6 +455,13 @@ def extract_numeric_claims(text: str) -> list:
             # 否则「100 条 / 200 条」这类跨来源数值冲突会被静默漏掉。
             if not ctx:
                 ctx = unit or "number"
+            # ★ [Round 19] 短尾分句（如「比上年增长%」）需要主语残留：拼上一分句
+            #   的主语，否则 GDP/第一产业/人均收入 的不同数值会被归到同一桶成假冲突。
+            if len(ctx) < 8 and _prev:
+                _p = re.sub(r"[\d.\-]", "", str(_prev))
+                _p = re.sub(r"\s+", "", _p).strip(_STRIP_CTX)[:24]
+                if _p:
+                    ctx = _p + "|" + ctx
             out.append({"context": ctx, "unit": unit, "value": val,
                         "anchor": anchor, "raw": m.group(0)})
     return out
@@ -510,6 +520,10 @@ def detect_conflicts(items: Iterable) -> list:
         # ★ [V2.2.0 fix] 裸数字（无 anchor/context/unit）不是同一事实主张；
         #   “1..30 个任务/步骤”这类页面计数会被误判成数值冲突。
         #   只对带上下文或单位的数字做跨证据冲突判定。
+        # ★ [Round 19] 裸数字（无单位+无上下文）不是同一事实主张——即使带年份锚，
+        #   也不能把 R&D 支出里的 4.0 与 GDP 的 5.0 判成冲突（GDP 真实反例）。
+        if key[1] in ("", "number", "num") and not key[2]:
+            continue
         if not key[0] and (key[1] in ("", "number", "num") or not key[2]):
             continue
         value_map = buckets[key]
@@ -581,6 +595,11 @@ _SEG_ALIASES: dict[str, tuple[str, ...]] = {
     "面积": ("面积", "占地"),
     "重量": ("重量", "质量", "重"),
     "大小": ("大小", "规模"),
+    "增速": ("增速", "增长", "增长率", "同比增"),
+    "增长": ("增长", "增速", "增长率"),
+    "GDP": ("GDP", "gdp", "国内生产总值", "国内生产总值"),
+    "CPI": ("CPI", "cpi", "居民消费价格"),
+    "PPI": ("PPI", "ppi", "工业生产者出厂价格"),
     "千米": ("千米", "公里", "km", "KM", "Km"),
     "公里": ("公里", "千米", "km", "KM", "Km"),
     "米": ("米", "meter", "m"),
@@ -591,6 +610,45 @@ def _seg_covered(seg: str, corpus: str) -> bool:
     if seg in corpus:
         return True
     return any(a in corpus for a in _SEG_ALIASES.get(seg, ()))
+
+
+_TERM_TOKEN_RE = re.compile(r"[A-Za-z0-9._]+|[\u4e00-\u9fa5]+")
+
+
+def _term_tokens_covered(term: str, corpus: str) -> bool:
+    """末级判定：把词项切成中/英数片段，逐段命中（含近义）即视为覆盖。
+
+    真实反例（GDP 题）：词项「2024年中国GDP增速最新数据」在证据里永远找不到
+    整短语；但「2024」「中国」「GDP」「增速→增长」都已出现 ⇒ 应算覆盖。
+    """
+    raw_pieces = [x for x in _TERM_TOKEN_RE.findall(str(term or "")) if x]
+    pieces = []
+    for x in raw_pieces:
+        if x.isdigit() or re.fullmatch(r"[A-Za-z0-9._]+", x):
+            if len(x) >= 2:
+                pieces.append(x)
+            continue
+        # 中文片段：按功能字切分，再去泛化后缀
+        subs = [y for y in re.split(r"[年的了是与和在对为]", x) if len(y) >= 2]
+        for y in (subs or [x]):
+            _trim = re.sub(r"(最新数据|数据|数值|是多少|多少|是什么|最新)$", "",
+                           y)
+            if _trim and len(_trim) >= 2:
+                y = _trim
+            pieces.append(y)
+    pieces = [x for x in pieces if len(x) >= 2]
+    if not pieces:
+        return False
+    for pc in pieces:
+        if pc in corpus:
+            continue
+        # 数字/年份片段：未出现则不算覆盖
+        if pc.isdigit():
+            return False
+        if _seg_covered(pc, corpus):
+            continue
+        return False
+    return True
 
 
 def _term_covered(term: str, corpus: str) -> bool:
@@ -605,7 +663,10 @@ def _term_covered(term: str, corpus: str) -> bool:
     parts = [x for x in parts if len(x) >= 2]
     if len(parts) < 1:
         return False
-    return all(_seg_covered(x, corpus) for x in parts)
+    if all(_seg_covered(x, corpus) for x in parts):
+        return True
+    # ★ [Round 19] 末级：token 级覆盖（中/英数分段 + 近义 + 去泛化后缀）
+    return _term_tokens_covered(term, corpus)
 
 
 #: 题面「整体量」问法（问全长/总高，而不是分段值）

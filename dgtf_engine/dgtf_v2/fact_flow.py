@@ -492,8 +492,18 @@ def build_fact_card(question: str, report: EvidenceReport,
     official_n = len(official_ids)
     domains = sorted({str(getattr(e, "domain", "") or "") for e in evs} - {""})
     independent = len(domains)
+    # ★ [Round 19] 数值题：答案优先取自「含值+单位」的证据，避免答案落到
+    #   只有总述、没有目标数值的长网页正文（GDP 真实反例）。
+    _cand_evs = evs
+    if any(k in str(question or "") for k in _NUM_Q_HINTS):
+        _vu = re.compile(r"\d+(?:\.\d+)?\s*(?:多|余|约|近)?\s*(?:千米|公里|"
+                         r"米|厘米|毫米|%|℃|吨|公斤|kg|元|万|亿|岁|度)")
+        _n = [e for e in evs
+              if _vu.search(str(getattr(e, "snippet", "") or ""))]
+        if _n:
+            _cand_evs = _n
     answer = _clean_card_answer(
-        answer_from_evidence(evs, question, prefer_recent=True))
+        answer_from_evidence(_cand_evs, question, prefer_recent=True))
     if answer and (official_n >= int(min_official)
                    or independent >= int(min_independent)):
         return FactCard(status="answered", answer=answer,

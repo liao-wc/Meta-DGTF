@@ -712,3 +712,46 @@ answered 17/17、数值答案（含「值+单位」）before 4 → **after 6**�
 ### 24.5 门禁
 
 全量 V2 **48/48（716 checks）**、fast_gate 12/12。
+
+
+## 25. 假冲突修复：主语残留/裸数字/词项 token 覆盖（Round 19）
+
+### 25.1 真实反例
+
+「2024年中国GDP增速最新数据是多少？」（Round 18）被 **3 处数值冲突**打成 conflict
+（0.238/unverified）：但细看冲突桶——
+- `{"term":"2024 增长","%","values":[5.0,5.3]}`：5.3 是「居民人均可支配收入」；
+- `{"term":"2024 比上年增长","%","values":[3.5,5.0]}`：3.5 是「第一产业」；
+- `{"term":"2024 number","values":[4.0,5.0]}`：4.0 来自 R&D 支出。
+根因：`extract_numeric_claims` 的 context 只取当前分句去数字，短尾分句
+（「比上年增长%」）丢失主语 ⇒ 不同统计量被归到同一桶 ⇒ 假冲突；且裸数字
+（无单位无上下文）在带年份锚时仍参与比较。
+
+### 25.2 三处修复（evidence.py，确定性、零 LLM）
+
+1. **主语残留**：context 过短（<8 字）时拼接前一分句的主语残段再入桶
+   → GDP/第一产业/人均收入不再互撞；同一主语不同值仍判冲突（负对照）；
+2. **裸数字排除**：无单位且 context 为 number/空 的数值主张不参与冲突
+   （即使带年份锚）——R&D 的 4.0 不再撞 GDP 的 5.0；
+3. **词项 token 级覆盖**：uncovered 判定末级——按中/英数切分、中文去功能字
+   （年/的/是/与…）与泛化后缀（最新数据/数据/多少…）、支持近义
+   （增速↔增长、GDP↔国内生产总值、CPI↔居民消费价格、千米↔公里），
+   全部片段命中即算覆盖（修「uncovered:2024年中国GDP增速最新数据」）。
+
+### 25.3 判据
+
+`tests_conflict_context.py` **8 项**（同文不同主语不冲突 / 同主语冲突负对照 /
+跨证据不冲突 / 裸数字排除 / token 覆盖正反例 / 增速近义 / 确定性）；
+回归 tests_evidence 21、tests_evidence_coverage 17、tests_fact_flow 15、
+tests_fact_official_precedence 19 全 PASS；全量 V2 **49/49（724 checks）**、
+fast_gate 12/12。
+
+### 25.4 真实验证（同题 web on 复跑）
+
+| 阶段 | quality | aq | ready | 说明 |
+|---|---|---|---|---|
+| Round 18 | 0.238 | unverified | False | 3 处假冲突 |
+| **Round 19** | **0.9525** | **verified** | **True** | gaps=[]；tokens 1,050,378 / calls 104 / wall 1054s / cost ¥3.87 |
+
+事实题「假冲突 → 真 verified/ready」闭环；同轮还记录离线重放（GDP replay：
+status answered、gaps=[]、official 8 条）。

@@ -45,6 +45,13 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 19 增补（2026-10-25 同日）】
+- 修假冲突三处：冲突上下文主语残留（GDP/第一产业/人均收入不再互撞）、裸数字
+  （无单位无上下文）不参与冲突、词项 token 级覆盖（增速↔增长、GDP↔国内生产总值、
+  去掉年/的/最新数据等泛化词）。判据 tests_conflict_context 8 项；
+  全量 V2 49/49（724 checks）。
+- GDP 真实验证：0.238/unverified/ready=False → **0.9525/verified/ready=True**
+  （gaps=[]，tokens 1,050,378 / calls 104 / wall 1054s / cost ¥3.87）。
 【Round 18 增补（2026-10-25 同日）】
 - 过程门修复泛化验证：HTTP 500 → 0.9415/verified/ready=True（四层全达标）。
 - App fact 全链路首次 ready=True：珠峰 daosheng 真实任务 aq=verified、ready=True、
