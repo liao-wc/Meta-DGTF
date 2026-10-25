@@ -373,6 +373,23 @@ def _compact_numeric_answer(question: str, answer: str) -> str:
             if _m2:
                 return _m2.group(1) + "年"
             return _years[-1]
+    # ★ [Round 62] 复合双值：结婚年龄「男X周岁、女Y周岁」
+    if ("男" in ans and "女" in ans
+            and any(k in q for k in ("年龄", "婚龄", "岁"))):
+        _num = r"(\d+(?:\.\d+)?|[一二两三四五六七八九十百]{1,5})"
+        _m = re.search(r"男(?:子|方)?(?:不得早于|不得低于|为)?\s*" + _num
+                       + r"\s*周?岁", ans)
+        _f = re.search(r"女(?:子|方)?(?:不得早于|不得低于|为)?\s*" + _num
+                       + r"\s*周?岁", ans)
+        if _m and _f:
+            def _nv(s: str) -> str:
+                try:
+                    from .evidence import cn_num_to_int
+                    _v = cn_num_to_int(s)
+                    return str(_v) if _v is not None else s
+                except Exception:  # noqa: BLE001
+                    return s
+            return "男%s周岁、女%s周岁" % (_nv(_m.group(1)), _nv(_f.group(1)))
     # ★ [Round 55] 列举问句：display 取「顿号列举」短语本身（如 蓝、黄、黑、绿、红）
     if any(k in q for k in ("哪几种", "哪些", "有哪", "列举")):
         _m = re.search(r"[\u4e00-\u9fa5]{1,2}(?:、[\u4e00-\u9fa5]{1,2}){1,8}",
