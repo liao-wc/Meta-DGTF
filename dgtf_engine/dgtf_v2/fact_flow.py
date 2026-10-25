@@ -21,6 +21,7 @@
 from __future__ import annotations
 
 import re
+from math import log10
 from dataclasses import dataclass, field
 
 from .consistency import ConsistencyReport, compare_retrieval_vs_reasoning
@@ -433,10 +434,22 @@ def _compact_numeric_answer(question: str, answer: str) -> str:
     if any(k in q for k in ("面积", "平方公里")):
         q_units = ["平方公里", "万平方"] + q_units
 
+    _whole_q = any(k in q for k in ("全长", "总长", "总长度", "全程"))
+
     def rank(c):
         val, unit, raw = c
         u_hit = 0 if any(u and (u in unit or unit in u) for u in q_units) else 1
         pos = ans.find(raw) if raw else 10 ** 6
+        if _whole_q:
+            # ★ [Round 48] 全长/总长问句：优先「全长/总长」分句，且取该分句最大值
+            _in_whole = 0
+            for _part in re.split(r"[。；;\n]", ans):
+                if raw and raw in _part and any(
+                        k in _part for k in ("全长", "总长", "全程")):
+                    _in_whole = 1
+                    break
+            return (0 if _in_whole else 1, -abs(val), u_hit,
+                    pos if pos >= 0 else 10 ** 6)
         return (u_hit, pos if pos >= 0 else 10 ** 6, -abs(val))
     val, unit, raw = sorted(claims, key=rank)[0]
     if raw:
@@ -514,6 +527,7 @@ def _numeric_claim_answer(question: str, evs: list) -> str:
                                 "度", "小时", "分钟", "秒") if u in q])
     _asks_date = any(k in q for k in ("哪一年", "哪年", "何时", "什么时候",
                                       "年份", "哪一天"))
+    _asks_whole = any(k in q for k in ("全长", "总长", "总长度", "全程"))
     # ★ [Round 33] 「分别」句序位：产量/生产→第1个数，销量/销售→第2个数
     _ord_pref = None
     if any(k in q for k in ("产量", "生产")):
@@ -602,7 +616,10 @@ def _numeric_claim_answer(question: str, evs: list) -> str:
             _rec = _tds(snip) if _recency else 0
             _nctx = _norm(ctx)
             _gh = sum(1 for _g in _q_grams if _g in _nctx)
-            _concept = max(concept, min(_gh, 5))
+            # 概念兜底：主张上下文无概念（「总长度为55公里」这类短尾）时，
+            # 用同一条证据的整段文本兜底（否则 55 被 42 的上下文概念挤掉）
+            _gh_snip = sum(1 for _g in _q_grams if _g in nsnip)
+            _concept = max(concept, min(_gh, 5), min(_gh_snip, 4))
             _curhit = 1 if (_current_q and any(
                 k in snip for k in _CUR)) else 0
             _oldpen = 1 if (_current_q and any(
@@ -619,19 +636,25 @@ def _numeric_claim_answer(question: str, evs: list) -> str:
             _year_miss = 1 if (_year_q and not _year_hit
                                and re.search(r"(?:19|20)\d{2}", snip)) else 0
             _annual = 1 if (_annual_q and "全年" in snip) else 0
+            _whole = 1 if (_asks_whole and any(
+                k in snip for k in ("全长", "总长", "全程"))) else 0
+            _tot = 1 if (_asks_whole and "总" in snip) else 0
+            _mag = (round(log10(max(float(c.get("value") or 0.0), 1.0)), 3)
+                    * 0.1 if _asks_whole else 0.0)
             _month = 1 if (_annual_q and any(
                 k in snip for k in ("月份", "月度", "环比"))) else 0
             # 修订期感知：最终核实 > 初步核算（对统计类事实题的「最新/最终」问法）
-            score = (u_hit, _concept, _year_hit, -_year_miss, _ord_hit,
-                     -_ord_miss, _curhit, -_oldpen, _final, _rec, _annual,
-                     -_month, ov, -_prelim, -pen, -len(raw))
+            score = (u_hit, _whole, _tot, _mag, _concept, _year_hit,
+                     -_year_miss, _ord_hit, -_ord_miss, _curhit, -_oldpen,
+                     _final, _rec, _annual, -_month, ov, -_prelim, -pen,
+                     -len(raw))
             if best is None or score > best[0]:
                 best = (score, snip, raw)
     if best is None:
         return ""
     score, snip, raw = best
     # 严格门槛：单位类命中 + 题面概念命中 + 非分段语义，否则回退旧逻辑
-    if not (score[0] and score[1] and not score[14]):
+    if not (score[0] and score[4] and not score[17]):
         return ""
     for part in re.split(r"[。；;\n]", snip):
         if raw and raw in part:

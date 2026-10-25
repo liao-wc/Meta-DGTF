@@ -366,9 +366,10 @@ MEASURED_SCENARIOS: Dict[str, dict] = {
                               "wall": 247.3, "verified": True,
                               "question": "成年人正常心率是多少次每分钟？",
                               "config": "B parallel + thinking off + web on"},
-            "web_on_fast20": {"quality": 0.9393, "tokens": 700165, "calls": 99,
-                              "wall": 225.1, "verified": True,
-                              "question": "港珠澳大桥全长多少公里？",
+            "web_on_fast20": {"quality": 0.9200, "tokens": 708694, "calls": 98,
+                              "wall": 205.0, "verified": True,
+                              "question": "港珠澳大桥全长多少公里？"
+                                            "（全长口径修复后）",
                               "config": "B parallel + thinking off + web on"},
             "web_on_fast21": {"quality": 0.9900, "tokens": 704307, "calls": 98,
                               "wall": 192.1, "verified": True,

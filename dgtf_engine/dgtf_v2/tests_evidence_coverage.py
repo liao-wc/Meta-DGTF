@@ -291,6 +291,14 @@ def main():
                             "中国空间站的名字是什么？")
     ck("A53 命名型问句取命名句（天宫）",
        "天宫" in _name_ans and "命名为" in _name_ans, _name_ans)
+    # ── A24：全长口径 display（Round 48）──────────────
+    _whole_disp = _compact_numeric_answer(
+        "港珠澳大桥全长多少公里？",
+        "香港口岸至珠海口岸全长约42公里。再加上约13.4公里长的珠海接线，"
+        "总长度为55公里。")
+    ck("A54 全长问句 display 取总长 55公里（非分段 42）",
+       _whole_disp == "55公里", _whole_disp)
+
     # ── B：整体量语义加权 ────────────────────────
     ck("B1 问长度 + 全长标记 → 加分",
        _overall_quantity_bonus("黄河全长约5464公里", "黄河的长度是多少千米") > 0)
