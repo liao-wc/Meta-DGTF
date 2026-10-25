@@ -509,3 +509,31 @@ else:
   本地推理服务），并先观察 step/s 再放大样本；下一轮用独占窗口跑 180~240 条。
 - 证据：llm_sft/eval_dgtf_stage_05b_v3_step120.json、
   llm_sft/_round4_evidence/v3_training_partial.log。
+
+
+## 5.5 第四轮重训（197 样本 / fp16 compute / max_len 1792）：未超过 v2（Round 7）
+
+目标：绕开 2048 序列的 fp32 logits 显存瓶颈，用 fp16 compute + 1792 序列把样本量
+从前两轮 180 条提到 240 条（drop-truncated 后实际 **197 条**）。
+
+训练：train_loss 0.2848 / **val_loss 0.2331**（v2 0.22379），197 steps，58 分钟，
+峰值显存 4.71GB（fp16 compute；仍有零星 OOM 重试但不致命）。
+
+held-out 评测（self_check_min 12 条，base 0.5B JSON=0.0）：
+
+| 指标 | v4（197 样本, fp16 compute, 1792） | v2（180 样本, fp32 GEMM, 2048） |
+|---|---|---|
+| JSON 合法率 | 0.583 | **0.857** |
+| 三项全对率 | 0 | 0 |
+| suspicious F1 | 0.099 | **0.132** |
+| ing_rephrased acc | 0.583 | **0.786** |
+| unsaid_is_escape acc | 0.167 | **0.643** |
+| 字段平均 acc | 0.250 | **0.476** |
+| p50 延迟 | 8.65s | **6.10s** |
+
+判读：**v4 未超过 v2**（各字段一致更差；样本 n=12 有噪声，但方向一致）。
+可能原因：① fp16 compute 训练数值精度/梯度质量下降；② max_len 1792 仍裁掉
+43 条长样本，且截断策略对候选完整性有损；③ 0.5B 容量已到语义决策上限。
+⇒ **服务默认保持 v2**（`adapter_dgtf_selfcheck_05b_v2`）。v4 适配器、metrics、
+loss 曲线与评测结果作为负证据留档；6GB 卡上继续堆样本/换训练精度不解决问题，
+本地模型定位维持「叙述/格式草稿，不接管决策」。

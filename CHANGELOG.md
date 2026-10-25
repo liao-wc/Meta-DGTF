@@ -43,6 +43,11 @@ V2.2.3
     prompt 静态段前置可进一步省，但需质量 A/B，列为下一轮 opt-in 项。
 
 【Round 7 增补（2026-10-25 同日）】
+- v4 本地适配器（197 样本 / fp16 compute / max_len 1792）负结果：
+  val_loss 0.2331（v2 0.2238）、JSON 0.583（v2 0.857）、字段平均 0.250（v2 0.476）、
+  p50 8.65s（v2 6.10s）⇒ **未超过 v2，服务默认保持 v2**；v4 留档为负证据。
+  文档 docs/local_model_daosheng.md §5.5。
+
 - App daosheng_fast 成本档**真实任务 e2e 验证**：新题「为什么在高原上煮饭更容易夹生？」
   → plan(tier=fast/engine_mode=fast/thinking off/rounds 0:2,1:3,both:2,all:2) 生效 →
   quality 0.9588 / verified / answer_ready=True / 698,602 tokens / 107 calls / 573s；
