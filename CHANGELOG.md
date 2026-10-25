@@ -49,6 +49,7 @@ V2.2.3
 - 离线过程门审计（85 fact packs）：standard_all 83.5%、元层豁免 8.2%、审计已修复 21 行
   未修复 0 行 ⇒ 审计语义落地；探针纪律收益上限个位数，优先级下调。
   scripts/lead_process_gate_audit.py + docs/process_gate_audit_20261025.json。
+- 真实验证：2024 GDP 总量 fast+web **0.9633/verified/ready**，answer 取最终核实 1348066 亿元、display=1348066亿元（tokens 746,308 / calls 101 / wall 291s）。
 - 数值答案修订期感知：最终核实 +1 / 初步核算 −1 + 金额量纲；判据 A24–A26
   （tests_evidence_coverage 31 项）；全量 V2 51/51（764 checks）。
 【Round 27 增补（2026-10-25 同日）】
