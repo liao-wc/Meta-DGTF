@@ -529,6 +529,7 @@ def _numeric_claim_answer(question: str, evs: list) -> str:
     _asks_date = any(k in q for k in ("哪一年", "哪年", "何时", "什么时候",
                                       "年份", "哪一天"))
     _asks_whole = any(k in q for k in ("全长", "总长", "总长度", "全程"))
+    _asks_adult = any(k in q for k in ("成年", "成人年龄", "成年年龄"))
     # ★ [Round 33] 「分别」句序位：产量/生产→第1个数，销量/销售→第2个数
     _ord_pref = None
     if any(k in q for k in ("产量", "生产")):
@@ -637,6 +638,9 @@ def _numeric_claim_answer(question: str, evs: list) -> str:
             _year_miss = 1 if (_year_q and not _year_hit
                                and re.search(r"(?:19|20)\d{2}", snip)) else 0
             _annual = 1 if (_annual_q and "全年" in snip) else 0
+            _adult = 1 if (_asks_adult and "成年人" in snip
+                           and "未成年" not in ctx) else 0
+            _minor = 1 if (_asks_adult and "未成年" in ctx) else 0
             _whole = 1 if (_asks_whole and any(
                 k in snip for k in ("全长", "总长", "全程"))) else 0
             _tot = 1 if (_asks_whole and "总" in snip) else 0
@@ -645,17 +649,17 @@ def _numeric_claim_answer(question: str, evs: list) -> str:
             _month = 1 if (_annual_q and any(
                 k in snip for k in ("月份", "月度", "环比"))) else 0
             # 修订期感知：最终核实 > 初步核算（对统计类事实题的「最新/最终」问法）
-            score = (u_hit, _whole, _tot, _mag, _concept, _year_hit,
-                     -_year_miss, _ord_hit, -_ord_miss, _curhit, -_oldpen,
-                     _final, _rec, _annual, -_month, ov, -_prelim, -pen,
-                     -len(raw))
+            score = (u_hit, _adult, -_minor, _whole, _tot, _mag, _concept,
+                     _year_hit, -_year_miss, _ord_hit, -_ord_miss, _curhit,
+                     -_oldpen, _final, _rec, _annual, -_month, ov, -_prelim,
+                     -pen, -len(raw))
             if best is None or score > best[0]:
                 best = (score, snip, raw)
     if best is None:
         return ""
     score, snip, raw = best
     # 严格门槛：单位类命中 + 题面概念命中 + 非分段语义，否则回退旧逻辑
-    if not (score[0] and score[4] and not score[17]):
+    if not (score[0] and score[6] and not score[19]):
         return ""
     for part in re.split(r"[。；;\n]", snip):
         if raw and raw in part:

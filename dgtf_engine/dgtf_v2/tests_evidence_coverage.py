@@ -308,6 +308,12 @@ def main():
         "全国粮食总产量14130亿斤，比上年增长1.6%。")
     ck("A56 粮食题 display 取亿斤值（非 1.6%）",
        "14130" in _grain_disp and "亿斤" in _grain_disp, _grain_disp)
+    # ── A26：成年年龄语境（Round 52）──────────────
+    _adult_ans = _numeric_claim_answer("民法典规定多少岁成年？",
+        [ev("E1", "民法典规定：十八周岁以上的自然人为成年人。八周岁以上的未成年人为限制民事行为能力人。",
+            official=True)])
+    ck("A57 成年题取成年人语境（十八周岁）",
+       "十八" in _adult_ans or "18" in _adult_ans, _adult_ans)
     # ── B：整体量语义加权 ────────────────────────
     ck("B1 问长度 + 全长标记 → 加分",
        _overall_quantity_bonus("黄河全长约5464公里", "黄河的长度是多少千米") > 0)
