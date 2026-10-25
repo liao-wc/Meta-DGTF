@@ -1588,3 +1588,15 @@ GPU 评测因 v7 val_loss 已劣于 v6 而中止，节省算力。
 ### 52.4 门禁
 
 evidence_coverage **54 项**；全量 **V2 51/51（795 checks）**、fast_gate 12/12。
+
+
+## 53. 金融/医疗修复真实验证（Round 45）
+
+| 题（fast+web） | 修复前 | 修复后 |
+|---|---|---|
+| 2024年末外汇储备（亿美元） | 0.9329 verified，display=3.2万 | **0.9374 verified，display=32024亿美元**（answer 含官方 12 月末值） |
+| 成年人正常心率（次/分） | 0.4664 needs_evidence（uncovered） | **0.99 verified/ready，display=60-100次/分** |
+
+心率题追加**范围型答案收窄**（`_short_answer` 对「多少次/范围/每分钟」优先返回区间句），
+answer=「正常成人心率为60-100次/分，通常为70-80次/分，平均约72次/分」；
+判据 A51；事实矩阵 30→**32 行**（fact 24）；全量 **V2 51/51（796 checks）**。

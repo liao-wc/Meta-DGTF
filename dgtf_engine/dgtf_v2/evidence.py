@@ -865,6 +865,20 @@ def _short_answer(text: str, question: str = "") -> str:
         if _cands:
             _cands.sort(reverse=True)
             return _cands[0][3].strip()[:240]
+    # ★ [Round 45] 范围型问句（多少次/范围/每分钟）：优先返回含「A-B次」区间的句子
+    if any(k in _q for k in ("多少次", "范围", "每分钟", "区间")):
+        _rng = re.compile(r"\d+(?:\.\d+)?\s*[-—~～至到]\s*\d+(?:\.\d+)?"
+                          r"\s*(?:次/分|次每分钟|次|岁|米|%|分钟|秒)")
+        _cands = []
+        for _idx, part in enumerate(re.split(r"[。；;\n]", s)):
+            if not _rng.search(part):
+                continue
+            _hit = sum(1 for c in re.findall(r"[\u4e00-\u9fa5]{2,}", _q)
+                       if c in part)
+            _cands.append((_hit, -_idx, part))
+        if _cands:
+            _cands.sort(reverse=True)
+            return str(_cands[0][2]).strip()[:240]
     # ★ [Round 43] 地点问句优先于日期句分支（避免被历史日期句截走）
     _loc_q2 = any(k in _q for k in ("哪个城市", "哪座城市", "哪个国家", "何地",
                                     "哪里", "在什么地方", "位于", "设在"))
