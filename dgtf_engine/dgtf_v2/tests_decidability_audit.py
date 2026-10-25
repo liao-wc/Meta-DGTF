@@ -34,5 +34,19 @@ def main():
  vhit={"sub_questions":[{"id":1,"question":"GDP 增速可分解吗","decidability":"undecidable"}]}
  rhit=audit_view(vhit,[{"id":"W1","claim":"GDP 增速与用电量相关"}])
  ck("字母术语命中仍判 overclaim",rhit["bad"]==1 and rhit["status"]=="unverified",rhit)
+ # ★ [Round 17] 通用词（not/found/http…）不冒充证据命中：
+ #   真跑实测 HTTP 404 研究层被 "not"/"found" 误判 ⇒ 层不达标。
+ vgen={"sub_questions":[{"id":1,"question":"对确实存在的资源故意回 404 时，Not Found 是从描述滑成语义漂移吗","decidability":"undecidable"}]}
+ evgen=[{"id":"W1","claim":"404 Not Found HTTP status code means server cannot find the resource"}]
+ rgen=audit_view(vgen,evgen)
+ ck("通用词不冒充证据命中（undecidable 不误判 overclaim）",rgen["bad"]==0 and rgen["status"]=="verified",rgen)
+ # 负对照：仍含真术语（RFC）⇒ 继续判 overclaim
+ vmix={"sub_questions":[{"id":1,"question":"RFC 9110 是否规定 404 的语义","decidability":"undecidable"}]}
+ rmix=audit_view(vmix,[{"id":"W1","claim":"RFC 9110 defines 404 semantics"}])
+ ck("真术语+RFC 命中仍判 overclaim",rmix["bad"]==1,rmix)
+ # 通用词 + 真术语混合：真术语仍在 ⇒ overclaim
+ vmix2={"sub_questions":[{"id":1,"question":"HTTP 404 下 Not Found 与 GDP 无关的判据","decidability":"undecidable"}]}
+ rmix2=audit_view(vmix2,[{"id":"W1","claim":"GDP growth 5.2%"}])
+ ck("混合问题里真术语命中 → 判 overclaim",rmix2["bad"]==1,rmix2)
  print();print("PASS %d / FAIL %d"%(len(P),len(F)));return 1 if F else 0
 if __name__=="__main__":raise SystemExit(main())

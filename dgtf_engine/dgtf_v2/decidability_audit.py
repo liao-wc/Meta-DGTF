@@ -5,6 +5,18 @@ import re
 
 _TOKEN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{2,}")
 
+#: 通用英文/技术高频词：在证据里几乎必然出现，不能当「命题落点」。
+#: 真跑实测（HTTP 404 研究层）：子问题「Not Found 是语义漂移还是语用借用」被
+#: "not"/"found" 命中 ⇒ 误判 undecidable_but_evidence_exists ⇒ 层不达标。
+_GENERIC_TERMS: frozenset[str] = frozenset((
+    "not", "found", "http", "https", "status", "code", "error",
+    "errors", "response", "server", "client", "request", "requests",
+    "page", "web", "url", "urls", "html", "json", "api", "the",
+    "and", "for", "with", "from", "this", "that", "are", "was",
+    "were", "will", "can", "does", "did", "data", "test", "true",
+    "false", "none", "null", "type", "value", "name", "list",
+))
+
 
 def _text(x):
     return str(x or "").strip()
@@ -21,6 +33,8 @@ def _terms(s):
     out = []
     for t in _TOKEN.findall(_text(s)):
         if not any(c.isalpha() for c in t):
+            continue
+        if t.lower() in _GENERIC_TERMS:
             continue
         out.append(t.lower())
     return out
