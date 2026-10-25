@@ -2003,3 +2003,33 @@ compare_eval 自检 / 场景矩阵护栏），任一失败即 exit 1。
 「DGTF_LOCAL_ADAPTER 指定候选 → eval_dgtf_stage 30 条 → compare_eval 对基线判定」，
 退出码即 SWITCH/KEEP（0=SWITCH_CANDIDATE）；eval 脚本末尾附加评测偶发 OOM 时，
 只要 JSON 已写出仍继续对比（v5/v6/v7 均出现该现象）。
+
+
+## 77. v8b（mixed 配方）训练/评测/切换（Round 79）
+
+### 77.1 训练
+
+self_check，variant **mixed**，168 样本（drop-truncated）×2 epochs、lr 8e-5、
+max_len 1900；train_loss 0.831、**val_loss 0.9895**（v6 0.2221，明显偏高——不同 val 子集
+与 mixed 配方导致，需以 held-out 评测为准）；峰值显存 4.93GB、训练 4761s。
+
+### 77.2 30 条 held-out 评测（v8b vs v6）
+
+| 指标 | v8b | v6 | Δ |
+|---|---|---|---|
+| JSON 合法率 | 1.000 | 1.000 | 0 |
+| 字段平均 acc | **0.589** | 0.589 | 0 |
+| escape acc | **0.800** | 0.800 | 0 |
+| suspF1 | 0.141 | 0.153 | −0.012（噪声内） |
+| ing acc | 0.933 | 0.933 | 0 |
+| all3 / set | 0.033 / 0.033 | 0.033 / 0.033 | 0 |
+| p50 / p95 | **5858 / 6340ms** | 6271 / 7474ms | **更快 −413 / −1134ms** |
+
+判定（compare_eval）：**SWITCH_CANDIDATE**（质量持平、延迟更优；suspF1 在噪声容差内）。
+
+### 77.3 切换与验收
+
+服务 `ADAPTER_CANDIDATES` 默认切 **v8b**（v6→v5→v2→v1 兜底，因 val_loss 偏高保留回退）；
+重启后 `/health` self_check_min=v8b、`/metrics` 正常（单发 3.39s，latency p50 可读）；
+`final_acceptance.py --with-service` → **9/9 PASS**。
+`train_metrics_dgtf_selfcheck_05b_v8b.json` 归档，主指标恢复到 v6。

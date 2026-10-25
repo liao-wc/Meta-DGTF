@@ -672,3 +672,12 @@ self_check(self_check_min)=v6；`scripts/check_local_service.py` 单发生成通
 **结论：v6 local 自检维持 opt-in（默认仍 llm）**——质量不显著变差、token 明显省，
 但墙钟代价大；仅建议预算敏感且可等待的场景显式开启。与 v5 时代策略一致，
 符合「只变好」：默认路径质量未变，opt-in 路径 token 更省。
+
+
+## 5.11 v8b（mixed 配方）评测与切换（Round 79）
+
+- 训练：mixed 变体，168 样本 ×2 epochs，val_loss 0.9895（不同 val 子集，偏高）；
+- 30 条 held-out：字段 0.589 / escape 0.800 / JSON 1.0 / all3 0.033 —— **与 v6 完全持平**；
+  suspF1 0.141 vs 0.153（噪声内）；**p50 5858 vs 6271ms、p95 6340 vs 7474ms（更快）**；
+- 判定：SWITCH_CANDIDATE；服务默认切 **v8b**（v6/v5/v2/v1 兜底，val_loss 偏高保留回退）；
+- 验收：`final_acceptance.py --with-service` **9/9 PASS**；`/metrics` latency p50 可读。
