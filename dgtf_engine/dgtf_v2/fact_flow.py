@@ -244,7 +244,9 @@ def extract_queries(question: str, extra=None,
         _add("%s site:api-docs.deepseek.com" % _toks[0])
     # 技术标准/官方文档类事实题：补一条官方站内查询，避免只召回博客/CTF。
     _low = (cleaned or q).lower()
-    _sc = _re2.search(r"\b([1-5]\d\d)\b", _low)
+    # ★ [Round 16] 数字被中文字符紧邻时 \b 不成立（「404状态码」中文是 word char）
+    #   ⇒ 用数字前后非数字断言，保证「HTTP 404状态码」也能进入官方站内检索。
+    _sc = _re2.search(r"(?<!\d)([1-5]\d\d)(?!\d)", _low)
     if _sc and ("http" in _low or "状态码" in _low):
         _add("site:developer.mozilla.org HTTP %s" % _sc.group(1))
         _add("site:rfc-editor.org RFC 9110 %s" % _sc.group(1))

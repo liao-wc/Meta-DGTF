@@ -83,8 +83,7 @@ def main() -> int:
         wr = []
         for p in (d.get("pools") or {}).values():
             for w in (p.get("web_results") or []):
-                if isinstance(w, dict) and w.get("used_as") in ("evidence",
-                                                               "tri_vote"):
+                if isinstance(w, dict):
                     wr.append(w)
         if not wr:
             continue
