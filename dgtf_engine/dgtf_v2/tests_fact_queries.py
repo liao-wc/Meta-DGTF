@@ -44,6 +44,15 @@ def main():
        len(extract_queries("HTTP 404状态码表示什么？", limit=2)) <= 2,
        extract_queries("HTTP 404状态码表示什么？", limit=2))
 
+    qs6 = extract_queries("我国法定结婚年龄是多少岁？")
+    ck("⑧ 法定类补「现行 民法典」查询",
+       any("民法典" in x for x in qs6), qs6)
+    qs7 = extract_queries("2024年中国贸易顺差是多少亿美元？")
+    ck("⑨ 贸易口径类补海关总署查询",
+       any("海关总署" in x for x in qs7), qs7)
+    ck("⑩ 扩展不越界（HTTP 协议题仍无 site:）",
+       not any("site:" in x for x in qs3))
+
     print("\nTOTAL PASS %d / FAIL %d" % (len(P), len(F)))
     return 0 if not F else 1
 

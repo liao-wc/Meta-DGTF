@@ -45,6 +45,13 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 35 增补（2026-10-25 同日）】
+- 检索 query 扩展：法定/现行类追加「现行 民法典」查询；贸易类追加海关总署/外汇管理局
+  查询（tests_fact_queries 10 项）。
+- 法条中文数字抽取：cn_num_to_int（十八/二十/二十二/一百零五）+ 带上下文参与评分；
+  法定婚龄题离线重放 answered（二十二/二十周岁，gaps=[]，此前 unverified）。
+- 防护记录：historical_answer_rejected / year_mismatch 按宁缺毋假生效。
+- 全量 V2 51/51（782 checks）、fast_gate 12/12。
 【Round 34 增补（2026-10-25 同日）】
 - App e2e 人口统计题：385.8s / verified / ready，display=954万人（quality 0.9724、
   567,594 tok、87 calls）；App 维度实测矩阵 3→4 行。

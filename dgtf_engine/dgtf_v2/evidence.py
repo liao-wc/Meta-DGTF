@@ -417,6 +417,32 @@ def _norm_unit(unit: str) -> str:
     return "%" if u in ("%", "％") else u
 
 
+_CN_DIGIT = {"零": 0, "一": 1, "二": 2, "两": 2, "三": 3, "四": 4, "五": 5,
+             "六": 6, "七": 7, "八": 8, "九": 9}
+_CN_UNIT = {"十": 10, "百": 100, "千": 1000}
+
+
+def cn_num_to_int(s: str):
+    """中文数字转整数（支持 十八/二十/二十二/一百零五 等常见写法）。"""
+    s = str(s or "").strip()
+    if not s:
+        return None
+    total = 0
+    section = 0
+    num = 0
+    for ch in s:
+        if ch in _CN_DIGIT:
+            num = _CN_DIGIT[ch]
+        elif ch in _CN_UNIT:
+            if num == 0:
+                num = 1
+            section += num * _CN_UNIT[ch]
+            num = 0
+        else:
+            return None
+    return total + section + num
+
+
 def extract_numeric_claims(text: str) -> list:
     """从一段文本里抽「数值主张」：{context, unit, value, anchor, raw}。
 
@@ -473,6 +499,20 @@ def extract_numeric_claims(text: str) -> list:
                     ctx = _p + "|" + ctx
             out.append({"context": ctx, "unit": unit, "value": val,
                         "anchor": anchor, "raw": m.group(0)})
+    # ★ [Round 35] 中文数字（法条/古文献常见：二十二周岁、二十岁）
+    _cn_re = re.compile(r"([一二两三四五六七八九十百千零]{1,6})(周岁|岁)")
+    _txt = str(text or "")
+    for _m in _cn_re.finditer(_txt):
+        _val = cn_num_to_int(_m.group(1))
+        if _val is None or not (0 < _val < 200):
+            continue
+        _ctx = _txt[max(0, _m.start() - 60):_m.start()]
+        _ctx = re.sub(r"[\d.\-]", "", _ctx)
+        _ctx = re.sub(r"\s+", "", _ctx).strip(_STRIP_CTX)
+        out.append({"context": (_ctx + "|cn" + _m.group(2)) if _ctx
+                    else "cn|" + _m.group(2),
+                    "unit": _m.group(2), "value": float(_val),
+                    "anchor": "", "raw": _m.group(0)})
     return out
 
 

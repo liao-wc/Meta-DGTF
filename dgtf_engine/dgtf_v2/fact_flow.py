@@ -237,6 +237,15 @@ def extract_queries(question: str, extra=None,
             cleaned = cleaned[len(w):].strip()
     if cleaned and cleaned != q:
         _add(cleaned)
+    # ★ [Round 35] 法定/现行类：补「现行 民法典」查询，避免检索池只有历史旧规；
+    #   贸易口径类：补海关总署/外汇管理局查询，避免海关 vs 外管局口径混判。
+    _subj = cleaned or q
+    if any(k in _subj for k in ("法定", "现行", "民法典", "刑法", "条例",
+                                "法律规定")):
+        _add("%s 现行 民法典" % _subj)
+    elif any(k in _subj for k in ("顺差", "逆差", "进出口", "贸易", "海关")):
+        _add("%s 海关总署" % _subj)
+        _add("%s 外汇管理局" % _subj)
     # ★ 4 位事实 token（如 1017）：加一条官方站内精确检索，避免通用 query
     #   只召回到其它版本的日期。
     import re as _re2
