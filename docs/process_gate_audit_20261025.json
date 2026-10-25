@@ -1,0 +1,1513 @@
+{
+ "n_packs_with_trace": 150,
+ "n_fact": 85,
+ "all_standard_true": 71,
+ "waived_runs": 7,
+ "waived_unsettled": {
+  "1": 3,
+  "5": 1,
+  "2": 3
+ },
+ "fact_fail_layers": {
+  "all": 12,
+  "both": 4,
+  "1": 5
+ },
+ "audit_repaired_rows": 21,
+ "audit_unrepaired_rows": 0,
+ "rows": [
+  {
+   "file": "20261020_014441_DeepSeek-V41-Flash-.packed.json",
+   "qtype": "fact",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261020_015222_DeepSeek-V41-Flash-.packed.json",
+   "qtype": "fact",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261020_015933_DeepSeek-V41-Flash-.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261020_022537_DeepSeek-V41-Flash-.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261020_023407_DeepSeek-V41-Flash-.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261020_055412_DeepSeek-V41-Flash-.packed.json",
+   "qtype": "fact",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261020_060016_DeepSeek-V41-Flash-.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261020_065509_DeepSeek-V41-Flash-.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {
+    "closure_waived": true,
+    "closure_unsettled": 1
+   },
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261020_071351_DeepSeek-V41-Flash-.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261020_072240_DeepSeek-V41-Flash-.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261020_073134_DeepSeek-V41-Flash-.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261020_073959_DeepSeek-V41-Flash-.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261020_081008_DeepSeek-V41-Flash-.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261020_083208_DeepSeek-V41-Flash-.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261020_090210_DeepSeek-V41-Flash-.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261020_092123_DeepSeek-V41-Flash-.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261020_094536_DeepSeek-V41-Flash-.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261020_100816_DeepSeek-V41-Flash-.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 1
+  },
+  {
+   "file": "20261020_102957_DeepSeek-V41-Flash-.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 1
+  },
+  {
+   "file": "20261020_105722_DeepSeek-V41-Flash-.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261020_111220_DeepSeek-V41-Flash-.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261020_113141_DeepSeek-V41-Flash-.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 1
+  },
+  {
+   "file": "20261020_113213_DeepSeek-V41-Flash-.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261020_121030_DeepSeek-V41-Flash-.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 1
+  },
+  {
+   "file": "20261020_122958_DeepSeek-V41-Flash-.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 1
+  },
+  {
+   "file": "20261020_131656_DeepSeek-V41-Flash-.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 1
+  },
+  {
+   "file": "20261020_132800_DeepSeek-V41-Flash-.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 1
+  },
+  {
+   "file": "20261020_135317_DeepSeek-V41-Flash-.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 1
+  },
+  {
+   "file": "20261020_144637_DeepSeek-V41-Flash-.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 1
+  },
+  {
+   "file": "20261020_150402_DeepSeek-V41-Flash-.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 1
+  },
+  {
+   "file": "20261020_152037_DeepSeek-V41-Flash-.packed.json",
+   "qtype": "fact",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "both",
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 1
+  },
+  {
+   "file": "20261020_152217_DeepSeek-V41-Flash-.packed.json",
+   "qtype": "fact",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "1",
+    "both",
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261020_154010_DeepSeek-V41-Flash-.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 1
+  },
+  {
+   "file": "20261021_123939_EML事件记忆如何提升元DGTF多模调.packed.json",
+   "qtype": "decision",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "1",
+    "both",
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261021_125449_EML事件记忆如何提升元DGTF多模调.packed.json",
+   "qtype": "decision",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "both",
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261021_151144_本地LLM微调与EML事件记忆如何协同改.packed.json",
+   "qtype": "decision",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261021_162051_元DGTF项目权威背景内置本地文.packed.json",
+   "qtype": "decision",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261021_183125_RAG、本地DeepSeek血统基座与D.packed.json",
+   "qtype": "decision",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261022_091935_用一句话说明元DGTF的修行层作用.packed.json",
+   "qtype": "fact",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "1",
+    "both",
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261022_113206_元DGTF是什么？.packed.json",
+   "qtype": "decision",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261022_183329_用一句话说明元DGTF的修行层作用.packed.json",
+   "qtype": "fact",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "1"
+   ],
+   "audit_bad": 1,
+   "audit_repaired": 1
+  },
+  {
+   "file": "20261022_185552_DeepSeekAPI的base.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261022_192541_HTTP404状态码表示什么.packed.json",
+   "qtype": "fact",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "1",
+    "all"
+   ],
+   "audit_bad": 1,
+   "audit_repaired": 1
+  },
+  {
+   "file": "20261022_195840_Python中len函数的作用.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261022_202654_Python中len函数的作用.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261023_082429_Python中len函数的作用.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261023_211218_用一句话说明四层推理系统的最小可行闭环是.packed.json",
+   "qtype": "boundary",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "1",
+    "both",
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261023_V2.2.0_full_baseline_replay.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261023_230954_Python中len函数的作用是什.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261023_231902_Python中len函数的作用是什.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261024_071023_如何决定一个四层推理系统先优化哪一层.packed.json",
+   "qtype": "decision",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261024_071938_Python中len函数的作用是什.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261024_072943_Python中len函数返回什么.packed.json",
+   "qtype": "fact",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261024_073909_Python中len函数的返回值是.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261024_074852_如何决定一个四层推理系统先优化哪一层.packed.json",
+   "qtype": "decision",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261024_075807_如何决定一个四层推理系统先优化哪一层.packed.json",
+   "qtype": "decision",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261024_082341_Python中len函数的作用是什.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261024_083648_Python中len函数的作用是什.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261024_113505_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "fact",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "1"
+   ],
+   "audit_bad": 1,
+   "audit_repaired": 1
+  },
+  {
+   "file": "20261024_122709_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261024_130547_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "1"
+   ],
+   "audit_bad": 3,
+   "audit_repaired": 2
+  },
+  {
+   "file": "20261024_134620_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261024_152709_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261024_163141_DeepSeekV41Flash.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261024_170648_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261024_174607_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261024_184338_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261024_194746_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261024_202740_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261024_204953_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261024_210755_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261024_215521_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261024_221331_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261024_223333_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261024_225407_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261024_232645_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261024_235003_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_001532_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_014509_11等于几.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_020840_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_022430_11等于几.packed.json",
+   "qtype": "fact",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_041804_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_050504_11等于几.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_051032_11等于几.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_051705_11等于几.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_055506_11等于几.packed.json",
+   "qtype": "fact",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_060033_22等于几.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {
+    "closure_waived": true,
+    "closure_unsettled": 5
+   },
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_062041_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_064705_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_072624_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "1",
+    "both",
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_075235_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "1",
+    "both",
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_080109_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "1",
+    "both",
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_082655_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_084402_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_084955_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_091143_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_092333_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "1",
+    "both",
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_101509_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "1",
+    "both",
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_102327_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "1",
+    "both",
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_103702_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "1",
+    "both",
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_104739_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "1",
+    "both",
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_105212_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "1",
+    "both",
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_105951_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_110059_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "1",
+    "both",
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_111531_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_122549_为什么冬天的静电现象比夏天更常见.packed.json",
+   "qtype": "reasoning",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_123225_光在水中传播的速度是多少.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_124928_在城市热岛研究中应该优先补观测还是优先.packed.json",
+   "qtype": "decision",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_125104_光在水中传播的速度是多少.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_125712_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_125920_光在水中传播的速度是多少.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_131103_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_135045_在城市热岛研究中应该优先补观测还是优先.packed.json",
+   "qtype": "decision",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_135055_为什么冬天的静电现象比夏天更常见.packed.json",
+   "qtype": "reasoning",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_141307_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "1",
+    "both",
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_141333_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "1",
+    "both",
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_143654_为什么在高原上煮饭更容易夹生.packed.json",
+   "qtype": "reasoning",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_150956_为什么飞机在起飞前要除冰.packed.json",
+   "qtype": "reasoning",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_151003_在选择保温材料时应该优先考虑导热系数还是.packed.json",
+   "qtype": "decision",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_152215_珠穆朗玛峰的海拔是多少米.packed.json",
+   "qtype": "fact",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "both",
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_154501_珠穆朗玛峰的海拔是多少米.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_160200_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "1",
+    "both",
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_160257_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "1",
+    "both",
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_161052_长江的长度是多少千米.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_161055_珠穆朗玛峰的海拔是多少米.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {
+    "closure_waived": true,
+    "closure_unsettled": 2
+   },
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_165802_黄河的长度是多少千米.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_165943_AIAgent会先取代哪类工作.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_170132_HTTP404状态码表示什么.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_174443_黄河的长度是多少千米.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_174637_HTTP404状态码表示什么.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 1,
+   "audit_repaired": 1
+  },
+  {
+   "file": "20261025_180653_HTTP404状态码表示什么.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_182318_珠穆朗玛峰的海拔是多少米.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_182433_HTTP500状态码表示什么.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_182547_2024年中国GDP增速最新数据是多少.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 1,
+   "audit_repaired": 1
+  },
+  {
+   "file": "20261025_183900_首例确凿的黑洞重复潮汐瓦解恒星事件说明了.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_184823_2024年中国GDP增速最新数据是多少.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_190907_2024年中国GDP增速最新数据是多少.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {
+    "closure_waived": true,
+    "closure_unsettled": 2
+   },
+   "layers_fail": [],
+   "audit_bad": 1,
+   "audit_repaired": 1
+  },
+  {
+   "file": "20261025_194121_2024年中国GDP增速最新数据是多少.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {
+    "closure_waived": true,
+    "closure_unsettled": 1
+   },
+   "layers_fail": [],
+   "audit_bad": 1,
+   "audit_repaired": 1
+  },
+  {
+   "file": "20261025_201440_绿藻感光研究为什么能拿诺贝尔生理学或医学.packed.json",
+   "qtype": "decision",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_202718_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "qtype": "reasoning",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_202810_为什么冬天的静电现象比夏天更常见.packed.json",
+   "qtype": "reasoning",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_205120_HTTP404状态码表示什么.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_205544_HTTP404状态码表示什么.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {
+    "closure_waived": true,
+    "closure_unsettled": 2
+   },
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_205612_2024年中国GDP增速最新数据是多少.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {
+    "closure_waived": true,
+    "closure_unsettled": 1
+   },
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_211219_HTTP500状态码表示什么.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 1,
+   "audit_repaired": 1
+  },
+  {
+   "file": "20261025_211926_长江的长度是多少千米.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_212011_光在水中传播的速度是多少.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_213215_光在水中传播的速度是多少.packed.json",
+   "qtype": "fact",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "all"
+   ],
+   "audit_bad": 1,
+   "audit_repaired": 1
+  },
+  {
+   "file": "20261025_213606_为什么越刷手机越焦虑.packed.json",
+   "qtype": "reasoning",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_213935_光在水中传播的速度是多少.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  }
+ ]
+}

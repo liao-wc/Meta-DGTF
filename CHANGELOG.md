@@ -45,6 +45,12 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 28 增补（2026-10-25 同日）】
+- 离线过程门审计（85 fact packs）：standard_all 83.5%、元层豁免 8.2%、审计已修复 21 行
+  未修复 0 行 ⇒ 审计语义落地；探针纪律收益上限个位数，优先级下调。
+  scripts/lead_process_gate_audit.py + docs/process_gate_audit_20261025.json。
+- 数值答案修订期感知：最终核实 +1 / 初步核算 −1 + 金额量纲；判据 A24–A26
+  （tests_evidence_coverage 31 项）；全量 V2 51/51（764 checks）。
 【Round 27 增补（2026-10-25 同日）】
 - 真实 busy 验证：并发注入 8772 后 /metrics busy=True → App plan 自动回退云端 llm
   （via=busy-fallback + warnings），app_local_metrics_check --real-busy 6/6 PASS。

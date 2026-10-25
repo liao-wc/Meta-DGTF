@@ -451,6 +451,8 @@ def _numeric_claim_answer(question: str, evs: list) -> str:
         q_units.extend(["吨", "公斤"])
     if any(k in q for k in ("面积", "平方公里")):
         q_units.extend(["平方公里", "万平方"])
+    if any(k in q for k in ("元", "亿元", "万元", "美元", "金额", "总量")):
+        q_units.extend(["亿元", "万元", "元", "美元"])
     if not any(k in q for k in ("多少", "几", "多长", "多高", "多重", "多远",
                                 "多深", "多宽", "多大", "多快", "增速", "增长",
                                 "率", "海拔", "速度", "面积", "重量", "温度")):
@@ -480,6 +482,9 @@ def _numeric_claim_answer(question: str, evs: list) -> str:
     from .evidence import _text_date_score as _tds
     _recency = any(k in q for k in ("最新", "当前", "现在", "目前", "截至",
                                      "如今", "现行", "latest", "current"))
+    _FINAL_MARK = ("最终核实", "最终数据", "修订后", "更新后", "final")
+    _PRELIM_MARK = ("初步核算", "初步数据", "初步统计", "预计", "预估",
+                    "初值", "prelim")
     _PEN = ("上游", "中游", "下游", "河段", "分产业", "第一产业", "第二产业",
             "第三产业", "人均", "居民", "占比", "比重", "研发", "投资",
             "出口", "进口", "消费", "其中", "合计中")
@@ -511,15 +516,18 @@ def _numeric_claim_answer(question: str, evs: list) -> str:
             pen = 1 if any(k in ctx for k in _PEN) else 0
             ov = 1 if any(k in ctx for k in _OV) else 0
             _rec = _tds(snip) if _recency else 0
-            # 时效题：日期越新越优先（rec 位于 unit/concept 之后、ov 之前）
-            score = (u_hit, concept, _rec, ov, -pen, -len(raw))
+            _final = 1 if any(k in snip for k in _FINAL_MARK) else 0
+            _prelim = 1 if any(k in snip for k in _PRELIM_MARK) else 0
+            # 修订期感知：最终核实 > 初步核算（对统计类事实题的「最新/最终」问法）
+            score = (u_hit, concept, _final, _rec, ov, -_prelim, -pen,
+                     -len(raw))
             if best is None or score > best[0]:
                 best = (score, snip, raw)
     if best is None:
         return ""
     score, snip, raw = best
     # 严格门槛：单位类命中 + 题面概念命中 + 非分段语义，否则回退旧逻辑
-    if not (score[0] and score[1] and not score[4]):
+    if not (score[0] and score[1] and not score[6]):
         return ""
     for part in re.split(r"[。；;\n]", snip):
         if raw and raw in part:

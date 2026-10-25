@@ -112,6 +112,18 @@ def main():
                      "光可以在水中传播，传播速度约22.4万公里/秒") is True)
     ck("A23 「中国」不被 中(?!国) 切坏（负对照）",
        _term_covered("中国GDP", "中国 GDP 总量 134 万亿元") is True)
+    # ── A7：修订期感知（Round 28）────────────────────
+    _prelim = ev("E1", "初步核算，2024年全年国内生产总值1349084亿元，比上年增长5.0%。")
+    _final = ev("E2", "经最终核实，2024年国内生产总值1348066亿元，比上年增长5.0%。")
+    _ans_rev = _numeric_claim_answer("2024年GDP总量最终核实是多少亿元？", [_prelim, _final])
+    ck("A24 修订期感知：最终核实数值 1348066 优先",
+       "1348066" in _ans_rev, _ans_rev)
+    _ans_norm = _numeric_claim_answer("2024年GDP总量是多少亿元？", [_prelim, _final])
+    ck("A25 非修订问句也取最新核实值（官方最新口径）",
+       "1348066" in _ans_norm, _ans_norm)
+    _ans_only_prelim = _numeric_claim_answer("2024年GDP总量是多少亿元？", [_prelim])
+    ck("A26 仅有初步核算时回退初步值（不空）",
+       "1349084" in _ans_only_prelim, _ans_only_prelim)
     # ── B：整体量语义加权 ────────────────────────
     ck("B1 问长度 + 全长标记 → 加分",
        _overall_quantity_bonus("黄河全长约5464公里", "黄河的长度是多少千米") > 0)

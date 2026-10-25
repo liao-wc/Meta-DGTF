@@ -1039,3 +1039,43 @@ TOTAL 6/6 PASS
 ### 33.4 门禁
 
 全量 V2 **51/51（761 checks）**、fast_gate 12/12。
+
+
+## 34. 离线过程门审计 + 数值答案修订期感知（Round 28）
+
+### 34.1 过程门审计（85 条 fact pack 重算 ledger，零 API）
+
+`scripts/lead_process_gate_audit.py`（输出 `docs/process_gate_audit_20261025.json`）：
+
+| 指标 | 值 |
+|---|---|
+| fact 跑次（有 trace） | 85 |
+| standard_all=True | **71（83.5%）** |
+| 元层张力豁免（closure_waived） | **7（8.2%）**，unsettled 分布 {1:3, 2:3, 5:1} |
+| 未达标层分布 | all 12 / both 4 / layer1 5 |
+| 审计已修复行 / 未修复行 | **21 / 0** |
+
+判读：Round 21 的「审计已修复不阻断」语义落地后，**未修复行 0**；
+豁免只覆盖 8.2% 跑次且 unsettled 多为 1-2（题面歧义辅助张力），
+「短事实题探针纪律」的收益上限约为个位数百分点，优先级下调。
+
+### 34.2 数值答案修订期感知（最终核实 > 初步核算）
+
+统计类事实题里「初步核算」与「最终核实」数值不同（GDP 总量 1349084 亿 vs
+1348066 亿）。`_numeric_claim_answer` 评分新增：
+- `_FINAL_MARK`（最终核实/最终数据/修订后/更新后）**+1**；
+- `_PRELIM_MARK`（初步核算/初步数据/预计/预估/初值）**−1**；
+- 金额量纲（亿元/万元/元/美元）纳入单位类匹配。
+
+判据（tests_evidence_coverage 增至 **31 项**）：
+A24 最终核实题取 1348066；A25 非修订问句也取最新官方值；A26 仅有初步核算时回退初步值不空。
+
+### 34.3 真实验证（同题 fast+web）
+
+「2024年中国GDP总量是多少亿元？」（thinking off + web on）跑次结果见
+`docs/ab_results.jsonl` 的 `v28-gdp-total-rev` 记录；目标：verified/ready 且
+answer 含 **1348066**（最终核实值），display 为「1348066亿元」量级。
+
+### 34.4 门禁
+
+全量 V2 **51/51（764 checks）**、fast_gate 12/12。
