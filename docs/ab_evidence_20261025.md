@@ -132,3 +132,32 @@ max_new_tokens=160、	imeout=45s。原因：0.5B 本地模型实测 ~6 tok/s，
   不能据此说「专属模式比 B 档差」；只能说它是**更省的成本档**，质量仍过门。
 - 该结果证明「道生专属模式」预设可被引擎直接加载并跑出 verified 产物；
   App 侧 mock 验收（444/0）与本次 CLI e2e 合起来覆盖了「配置→引擎→产物」链路。
+
+
+## 7. 负结果：dual_judge thinking off（2026-10-25 11:15）
+
+动机：dual_judge 是 reasoning token 大户（B2 基线 22 calls / 286,935 tokens / 400,320ms，
+其中推理占大部分）。若关掉它的 thinking 能保质量，就是一条可观的省钱/省时路径。
+
+命令：b_bench.py run --tag d1-presetB-dj-thinkoff --config configs/方案B-标准.yaml
+--parallel B --web off --behavior-fusion off --extra=--stage-thinking --extra=dual_judge=disabled
+（同题；基线用 B0/B2 两次同配置跑：quality 0.9615 / 0.9860，tokens 1.79M / 1.85M，
+calls 177 / 182，dual_judge 17~22 calls / 177K~287K tokens / 358K~400K ms。）
+
+| 指标 | D1（dual_judge thinking off） | 基线 B0/B2 |
+|---|---|---|
+| quality | **0.2573** | 0.9615 / 0.9860 |
+| answer_quality / ready | **unverified / False**（duty_short） | verified / True |
+| tokens | 1,262,637 | 1,788,798 / 1,846,074 |
+| calls | 148 | 177 / 182 |
+| dual_judge tokens / ms | **116,078 / 36,537** | 286,935 / 400,320（B2） |
+| self_check tokens / ms | 137,937 / 30,779 | 179,520 / 38,030（B2） |
+| wall | 688.8s | 1131.8s（B2 单跑） |
+
+判读：
+- 经济性巨大：dual_judge 推理 token **-60%**、耗时 **-91%**，总 tokens -32%、
+  wall -39%；但质量从 0.96~0.99 崩到 **0.257**（answer_ready=False、duty_short）。
+- 与 B1（auto_narr）同向：一旦削弱这两个辅助阶段，四层「职责交付面」就短，
+  答案门直接不过。⇒ **dual_judge 的 thinking 是质量保险，不是可裁剪开销**。
+- 结论：**不采纳**；默认与所有质量档保持 dual_judge thinking=enabled，
+  该 lever 关闭；成本优化只剩「前缀缓存/更优轮数/本地模型」三条路。

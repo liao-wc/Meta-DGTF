@@ -48,6 +48,9 @@ V2.2.3
   conformal 并做 fast→B 下界守卫与 abstain 标记；无 conformal 段时零行为差。
   实测：OOF 覆盖率 0.8012（n=166）、留出集 0.7647（n=34）、q_global -0.0438；
   判据 tests_quality_conformal.py 23 项全 PASS；文档 docs/quality_conformal_20261025.md。
+- 负结果：dual_judge thinking off 全量 A/B（D1）→ quality 0.9615→**0.2573**（unverified、
+  ready=False）、dual_judge 推理 -60%/耗时 -91%、总 tokens -32%，但质量门失败 ⇒
+  **不采纳，dual_judge thinking 保持 enabled**；证据 docs/ab_evidence_20261025.md §7。
 - 本地模型第二轮（截断修复）：适配器 v2 sc_min JSON 0.857（base 0.0）、11 字段 full 1.0、
   dj 0.625；决策三项全对仍 0 ⇒ 收口「仅叙述/格式草稿，不接管决策」，服务/契约/回退链路可交付。
 - 道生专属模式 CLI e2e 首跑（同题城市热岛）：quality 0.9465 / verified / ready=True /
