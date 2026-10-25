@@ -1,0 +1,13 @@
+[v3 self_check 0.5B 训练（被中止）] 2026-10-25 12:54~13:40
+- 计划：478 样本 / r=16 / lr=2e-4 / max_len 2048 / save-every 120
+- 实际：step 135/477 @ 13:40，step/s=0.05（≈20s/step），ETA 115min → 中止
+- 根因：GPU 被并发 app/BGE 进程部分占用 + 2048 序列 fp32 logits 分配 ~1.2GB，
+  CUDA allocator 反复 OOM 重试（日志见 stderr 大量 allocate failed）
+- 产出：step-120 适配器 llm_sft/adapter_dgtf_selfcheck_05b_v3_step120（本地保留，
+  权重不入库）；评测 eval_dgtf_stage_05b_v3_step120.json
+- 与 v2（180 样本）对比（held-out self_check_min 12 条）：
+  v3_120: JSON 0.833 / 三项全对 0 / susp F1 0.231 / ing 0.75 / esc 0.333 / p50 8.4s
+  v2_180: JSON 0.857 / 三项全对 0 / susp F1 0.132 / ing 0.786 / esc 0.643 / p50 6.1s
+  ⇒ 样本更少 + 并发干扰，v3 未超过 v2；服务默认保持 v2。
+- 结论：6GB 卡上训练必须 GPU 独占（先停 BGE/本地服务），且 max_len 2048 的
+  logits 分配接近上限；下轮用 GPU 独占窗口 + 180~240 样本 + 观察 step/s 再放大。
