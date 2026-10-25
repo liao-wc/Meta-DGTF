@@ -45,6 +45,14 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 23 增补（2026-10-25 同日）】
+- 事实题成本档重新验证（修复后重测）：fast+web on 在 404/500/GDP 三题均
+  verified/ready，质量持平或更好，tokens −21~44%、墙钟 −51~83%。旧 0.4741/needs_evidence
+  为修复前历史（保留 web_on_fast_pre_fix 对照）。
+- mode_fusion 矩阵 13 行（fact cost_first=web_on_fast）；kind_of_question 补
+  「表示什么/什么意思」；App plan fast 档事实题允许 fast+web on（不再强回 B）。
+  tests_scenario_matrix 23 项；全量 V2 50/50（744 checks）。
+- App e2e：HTTP 500 fast+web 真实任务 verified/ready，745,091 tok / 493s（auto 997s）。
 【Round 22 增补（2026-10-25 同日）】
 - 本地 v5 接管 self_check 端到端三跑次：推理×2 + 事实×1 全部 verified；
   self_check stage tokens −28~34%（total −4~8%），墙钟 +11~33%，质量 ±2pp 噪声内。

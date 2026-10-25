@@ -868,3 +868,52 @@ suspF1 0.161→0.165、ing 0.900→0.933、escape 持平**；p50 6.02→6.73s。
 - 服务日志 27 次 /generate 全 200，无回退。
 结论：本地 self_check 模式**可用、省钱有限、墙钟上升、质量噪声内** ⇒ 保留 opt-in，
 默认 llm 模式不变（只变好不变坏的保守选择）。
+
+
+## 29. 事实题成本档重新验证：fast + web on（Round 23）
+
+### 29.1 背景
+
+Round 2 曾测得「事实题 fast」（thinking off + web on）0.4741/needs_evidence，
+据此把 fast 列入事实题禁用档。但该结论早于 Round 8–21 的一系列修复
+（状态码官方站内检索、官方源优先、去重官方优先、审计通用词、过程门语义、
+数值答案）。本轮**用修复后代码重测同题**：
+
+| 跑次 | 模式 | quality | aq/ready | tokens | calls | wall |
+|---|---|---|---|---|---|---|
+| HTTP 404 | auto（v17） | 0.9062 | verified/ready | 992,929 | 101 | 958s |
+| HTTP 404 | **fast+web** | **0.9472** | verified/ready | **558,195（−44%）** | 88 | **174s（−82%）** |
+| GDP 增速 | auto（v21） | 0.9764 | verified/ready | 1,120,591 | 109 | 1218s |
+| GDP 增速 | **fast+web** | **0.9726** | verified/ready | **738,637（−34%）** | 107 | **202s（−83%）** |
+| HTTP 500 | auto（v18） | 0.9415 | verified/ready | 947,597 | 100 | 997s |
+| HTTP 500 | **App e2e fast+web** | verified | verified/ready | **745,091（−21%）** | 99 | **493s（−51%）** |
+
+### 29.2 规则同步（只变好不变坏）
+
+1. `mode_fusion.MEASURED_SCENARIOS.fact`：矩阵 13 行（reasoning 5/choice 3/fact 5）；
+   新增 web_on_fast / web_on_fast2（verified），旧值改名 `web_on_fast_pre_fix`
+   保留为历史负结果；规则：`cost_first=web_on_fast`，forbid 仅
+   `web_off_auto`/`web_on_fast_pre_fix`，requires_web 不变；
+2. `kind_of_question` 补事实问法（「表示什么/什么意思/什么含义/指什么/定义」），
+   修「HTTP 404状态码表示什么」被误分 reasoning（导致 App plan web off）；
+3. App 道生 plan：fast 档事实题不再强回 B（允许 fast+web on；web 由场景规则强制），
+   降级路径同样允许；不再强制 thinking=auto（新证据 thinking off 已验证）；
+4. 判据 tests_scenario_matrix 23 项（含 fact 成本档 verified/tokens 更省/规则 checks）。
+
+### 29.3 App 端到端验证（真实任务）
+
+`POST /api/tasks {mode: daosheng_fast, question: "HTTP 500状态码表示什么？"}`：
+- plan 实际生效：tier=fast / engine_mode=**fast** / web=**on** / thinking=**off** /
+  rounds=0:2,1:3,both:2,all:2 / scenario=**fact** → web_on_fast2；
+- 产物：**verified / ready=True**，tokens 745,091 / calls 99 / 493s（auto 997s）；
+- 事实答案：「500 Internal Server Error …服务器遇到意外情况无法完成请求」。
+
+### 29.4 门禁
+
+全量 V2 **50/50（744 checks）**、fast_gate 12/12。
+
+### 29.5 意义
+
+事实题成本结构从此前「必须 auto（~1M tokens/1000s）」变为
+「auto 质量档 + fast 成本档（−21~44% tokens、−51~83% 墙钟，质量持平）」，
+场景矩阵「不同场景动态最优」第一次覆盖事实类成本档。
