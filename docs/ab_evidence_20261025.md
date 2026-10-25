@@ -1468,6 +1468,8 @@ gaps=「uncovered:奥林匹克五环的颜色有哪几种」；但答案文本�
 
 判据：全量 V2 仍 **51/51（788 checks）**；离线重放同题 pack：
 **answered / gaps=[]**（answer 正确）。
+**真实复验（fast+web）**：**quality 0.98 / verified / ready=True**
+（670,445 tok / 98 calls / 260s）；轨迹 0.4697/needs_evidence → **0.98/verified**。
 
 ### 48.3 教育/历史类真题（fast+web）
 
