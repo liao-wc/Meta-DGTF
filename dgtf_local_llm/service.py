@@ -90,14 +90,19 @@ STAGES = ("self_check", "self_check_min", "dual_judge", "route")
 # stage -> 适配器目录（self_check 与 self_check_min 共用同一个混训适配器）
 # 每个 stage 的适配器候选（按优先级）：重训版 _v2 优先，第一轮 _v1 兜底
 ADAPTER_CANDIDATES = {
+    # ★ [Round 38] v6（230×2 epochs/lr8e-5）30 条 held-out：字段 0.589 vs 0.378、
+    #   escape 0.800 vs 0.200、all3 0.033 vs 0.0、p50 6.27 vs 6.73s（suspF1 -0.012 噪声内）
+    #   ⇒ 默认 v6，v5 兜底。
     # ★ [Round 21] v5（240 样本/len1900/fp32）在 30 条 held-out 上质量全面 ≥ v2：
     #   JSON 1.000 vs 0.967、字段 0.378 vs 0.367、suspF1 0.165 vs 0.161、
     #   ing 0.933 vs 0.900、escape 持平 0.200；p50 6.73s vs 6.02s（可接受）。
     #   默认 v5，v2 兜底；DGTF_LOCAL_ADAPTER 可覆盖。
-    "self_check": ["llm_sft/adapter_dgtf_selfcheck_05b_v5",
+    "self_check": ["llm_sft/adapter_dgtf_selfcheck_05b_v6",
+                   "llm_sft/adapter_dgtf_selfcheck_05b_v5",
                    "llm_sft/adapter_dgtf_selfcheck_05b_v2",
                    "llm_sft/adapter_dgtf_selfcheck_05b_v1"],
-    "self_check_min": ["llm_sft/adapter_dgtf_selfcheck_05b_v5",
+    "self_check_min": ["llm_sft/adapter_dgtf_selfcheck_05b_v6",
+                       "llm_sft/adapter_dgtf_selfcheck_05b_v5",
                        "llm_sft/adapter_dgtf_selfcheck_05b_v2",
                        "llm_sft/adapter_dgtf_selfcheck_05b_v1"],
     "dual_judge": ["llm_sft/adapter_dgtf_judge_05b_v2",

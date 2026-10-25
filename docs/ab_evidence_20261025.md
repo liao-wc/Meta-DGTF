@@ -1420,3 +1420,19 @@ display=**7679亿美元**。轨迹：0.4752/unverified → **0.9431/verified**�
 ### 44.5 门禁
 
 全量 **V2 51/51（785 checks）**、fast_gate 12/12。
+
+
+## 45. 本地模型 v6 训练/评测/切换（Round 38）
+
+v6（230×2 epochs，lr 8e-5）best_val_loss **0.22212**（v5 0.23518）；30 条 held-out：
+字段 acc **0.589 vs 0.378**、escape **0.800 vs 0.200**、all3 **0.033 vs 0.0**、
+p50 **6.27s vs 6.73s**、p95 **7.47s vs 9.41s**、JSON 均 1.0；
+susp_f1 0.153 vs 0.165（−0.012 噪声级）。
+决策：**服务默认切 v6**（v5/v2/v1 兜底）；`/health.adapter_paths` 验证 v6；
+`llm_sft/eval_dgtf_stage_05b_v6_limit30.json` + `train_metrics_dgtf_selfcheck_05b_v6.json`
+归档。三体中「本地模型」维度完成一次真正变好（不只是不后退）。
+
+## 46. 事实成本档 25 行（Round 38）
+
+事实矩阵 25 行（fact 17），新增贸易顺差 fast12（0.9431/749,542 tok/101 calls/283s）；
+阶段总览见 §44。

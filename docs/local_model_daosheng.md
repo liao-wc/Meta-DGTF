@@ -620,3 +620,33 @@ train_loss 0.2789 / **val_loss 0.2352**（v2 0.2238）。
 2. 单任务（引擎串行调用）不受影响；多任务并发时建议 App 侧限制本地 self_check 并发
    或按 busy 自动回退云端（fail-open）；
 3. 证据：`llm_sft/service_metrics_round25.json`、`scripts/check_local_service.py`。
+
+
+## 5.9 v6 训练与切换（Round 38，230 样本 × 2 epochs）
+
+### 5.9.1 训练
+
+`train_dgtf_stage_lora.py`：230 样本（min 变体、max_len 1900、fp32 GEMM、lr 8e-5、
+`--epochs 2`、save-every 60）。结果：epoch2 train_loss 0.23294 / val_loss 0.23382，
+**best_val_loss 0.22212**（v5 为 0.23518），steps 442，训练 7715s，峰值显存 4.92GB。
+（收尾评测阶段 OOM 与 v5 相同：仅影响脚本末尾附加评测，适配器与指标已保存。）
+
+### 5.9.2 30 条 held-out A/B（同集）
+
+| 指标 | v5 | **v6** | 判读 |
+|---|---|---|---|
+| json_valid_rate | 1.000 | 1.000 | 持平（已饱和） |
+| decision_field_mean_acc | 0.378 | **0.589** | +21.1pp |
+| unsaid_is_escape_acc | 0.200 | **0.800** | +60pp |
+| decision_all3_acc / set_acc | 0.0 / 0.0 | **0.033 / 0.033** | 首次破零 |
+| susp_f1 | 0.165 | 0.153 | −0.012（噪声级） |
+| ing_rephrased_acc | 0.933 | 0.933 | 持平 |
+| 延迟 p50 / p95 | 6.73s / 9.41s | **6.27s / 7.47s** | 更快 |
+
+### 5.9.3 决策与落地
+
+综合显著更优（字段/escape/all3/延迟全面提升，仅 suspF1 噪声级回落）⇒
+**服务默认适配器切 v6**（`ADAPTER_CANDIDATES`：v6 → v5 → v2 → v1 兜底），
+`train_metrics_dgtf_selfcheck_05b_v6.json` 归档；实测 `/health.adapter_paths`
+self_check(self_check_min)=v6；`scripts/check_local_service.py` 单发生成通过；
+并发/排队特性不变（单一 GPU 锁）。

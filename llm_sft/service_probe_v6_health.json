@@ -1,0 +1,91 @@
+{
+ "base": "http://127.0.0.1:8772",
+ "ts": "2026-10-26 00:33:55",
+ "health": {
+  "ok": true,
+  "status": "ready",
+  "model": "D:\\Meta-DGTF-道生三阶模型\\local_model\\models\\Qwen2.5-0.5B-Instruct",
+  "adapter": [
+   "self_check",
+   "self_check_min",
+   "dual_judge",
+   "route"
+  ],
+  "adapters": {
+   "self_check": true,
+   "self_check_min": true,
+   "dual_judge": true,
+   "route": true
+  },
+  "adapter_paths": {
+   "self_check": "llm_sft/adapter_dgtf_selfcheck_05b_v6",
+   "self_check_min": "llm_sft/adapter_dgtf_selfcheck_05b_v6",
+   "dual_judge": "llm_sft/adapter_dgtf_judge_05b_v2",
+   "route": "llm_sft/adapter_qwen05b_v1"
+  },
+  "gpu_mem_mb": 1042,
+  "queue_depth": 0,
+  "uptime_sec": 34.9,
+  "load_sec": 7.2,
+  "warmup_ms": 914.6,
+  "error": null
+ },
+ "metrics_before": {
+  "ok": true,
+  "state": "ready",
+  "model": "D:\\Meta-DGTF-道生三阶模型\\local_model\\models\\Qwen2.5-0.5B-Instruct",
+  "adapter_paths": {
+   "self_check": "llm_sft/adapter_dgtf_selfcheck_05b_v6",
+   "self_check_min": "llm_sft/adapter_dgtf_selfcheck_05b_v6",
+   "dual_judge": "llm_sft/adapter_dgtf_judge_05b_v2",
+   "route": "llm_sft/adapter_qwen05b_v1"
+  },
+  "stats": {
+   "requests_total": 0,
+   "by_stage": {},
+   "errors": 0,
+   "total_ms": 0.0,
+   "max_ms": 0.0,
+   "busy_now": false,
+   "last_ms": 0.0,
+   "last_stage": "",
+   "last_adapter": ""
+  },
+  "avg_ms": 0.0
+ },
+ "runs": [
+  {
+   "ok": true,
+   "wall_s": 5.55,
+   "ms": 5524.5,
+   "adapter": "llm_sft/adapter_dgtf_selfcheck_05b_v6"
+  }
+ ],
+ "total_wall_s": 5.55,
+ "metrics_after": {
+  "ok": true,
+  "state": "ready",
+  "model": "D:\\Meta-DGTF-道生三阶模型\\local_model\\models\\Qwen2.5-0.5B-Instruct",
+  "adapter_paths": {
+   "self_check": "llm_sft/adapter_dgtf_selfcheck_05b_v6",
+   "self_check_min": "llm_sft/adapter_dgtf_selfcheck_05b_v6",
+   "dual_judge": "llm_sft/adapter_dgtf_judge_05b_v2",
+   "route": "llm_sft/adapter_qwen05b_v1"
+  },
+  "stats": {
+   "requests_total": 1,
+   "by_stage": {
+    "self_check_min": 1
+   },
+   "errors": 0,
+   "total_ms": 5535.81810000469,
+   "max_ms": 5535.81810000469,
+   "busy_now": false,
+   "last_ms": 5535.81810000469,
+   "last_stage": "self_check_min",
+   "last_adapter": "llm_sft/adapter_dgtf_selfcheck_05b_v6"
+  },
+  "avg_ms": 5535.8
+ },
+ "serialized": false
+}

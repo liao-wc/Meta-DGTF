@@ -46,6 +46,11 @@ V2.2.3
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
 【Round 38 增补（2026-10-26）】
+- 本地模型 v6 训练完成并切换默认：best_val_loss 0.22212（v5 0.23518）；
+  30 条 held-out 字段 0.589 vs 0.378、escape 0.800 vs 0.200、all3 0.033 vs 0.0、
+  p50 6.27s/6.73s、p95 7.47s/9.41s；服务 ADAPTER_CANDIDATES 切 v6（v5/v2/v1 兜底），
+  /health 实测 v6，check_local_service 单发通过。
+
 - 年份错配守卫去误伤：比较性年份（较/比/同比+YYYY年）不计入答案年份；判据 A42/A43。
 - 贸易顺差真实复验：0.4752/unverified → **0.9431/verified/ready**
   （7679亿美元，display=7679亿美元，749,542 tok/101 calls/283s）。
