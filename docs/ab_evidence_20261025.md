@@ -607,3 +607,32 @@ Round 13 的「句子级数值优先」修复；claim 级抽取仅在加日期�
 
 本轮为纯离线修复（¥0 API）；真实验证需一次 web on 跑次（约 ¥2.5），余额约 ¥3.2
 仅够 1 次 ⇒ 留待预算恢复后补验，当前以「真实 pack 离线重放」作为证据。
+
+
+## 22. 状态码官方站内检索修复 + 两题真实验证（Round 16）
+
+### 22.1 根因与修复
+
+HTTP 404 事实题连续两次 `no_official_source`（检索池 34 条、官方 URL 0 条）。
+根因：`extract_queries` 的官方站内检索条件用 `\b([1-5]\d\d)\b` 匹配状态码，
+但**中文是 word 字符**——「HTTP 404状态码」里 404 后紧跟「状」，`\b` 不成立
+⇒ `site:developer.mozilla.org HTTP 404` / `site:rfc-editor.org RFC 9110 404`
+官方检索从未注入。修复：改用数字前后断言 `(?<!\d)([1-5]\d\d)(?!\d)`。
+判据 `tests_fact_queries.py` 7 项（404/500 注入、HTTP 协议不误注入、1404 年份不误注入、
+确定性、limit 约束）。
+
+### 22.2 真实验证（同题 web on，脚本化复跑）
+
+| 题 | 修复前 | 修复后 |
+|---|---|---|
+| 黄河长度（Round 12 修复复验） | 0.4325 / needs_evidence / ready=False / gaps=['uncovered:黄河的长度'] | **0.9633 / verified / ready=True**；gaps=[]；official E3；answer=「全长约5464千米」；**display=5464千米** |
+| HTTP 404 状态码 | 0.4033 / needs_evidence / ready=False / official=0 | **aq=verified**；official **E1,E2,E3**（MDN 等官方源已捕获）；gaps=[]；answer=「404 Not Found…服务器无法找到所请求的资源」；ready=False 仍为**过程门**（standard_all=False，3/4 层达标） |
+
+### 22.3 判读
+
+- 「uncovered 片段覆盖 + 整体量语义 + 口语量词数值句 + 展示分离」四层修复在**真实跑次**
+  全部生效：黄河从 needs_evidence → **verified/ready/0.9633**，display 直接给「5464千米」；
+- 状态码官方检索修复让 404 题从 `no_official_source` → **官方源 3 条 + verified**；
+- 两题质量门（quality 0.43 / 0.96）差异主要来自**过程门**（层产物标准/元层收束），
+  与事实门解耦；下一步聚焦过程门（HTTP404 为 3/4 层达标，定位失败层）。
+- 门禁：V2 **48/48（713 checks）**、fast_gate 12/12。

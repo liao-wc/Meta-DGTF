@@ -45,6 +45,13 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 16 增补（2026-10-25 同日）】
+- 修 extract_queries 中文紧邻状态码的 \b 失效：「HTTP 404状态码」现在会注入
+  site:developer.mozilla.org / site:rfc-editor.org 官方检索；判据 tests_fact_queries 7 项。
+- 真实验证（同题 web on）：黄河长度 **0.9633/verified/ready**（gaps=[], official E3,
+  answer 全长约5464千米, display=5464千米）；HTTP 404 **aq=verified**（official E1,E2,E3,
+  MDN 已捕获），ready=False 仅剩过程门（3/4 层达标）。
+- 门禁：V2 48/48（713 checks）、fast_gate 12/12；证据 docs/ab_evidence §22。
 【Round 15 增补（2026-10-25 同日）】
 - 数值答案句修复：_short_answer 支持「5400多公里/约5464公里/5400余公里」等口语量词
   （此前匹配失败回退整段）；展示层 _compact_numeric_answer 过滤弱量词（9个/3条…）。
