@@ -847,3 +847,11 @@ display=5.0%；tokens 1,120,591 / calls 109 / wall 1218s。
 - 全量 V2 **50/50（741 checks）**、fast_gate 12/12；
 - 本地模型 v5（0.5B / 240 样本 / max_len 1900 / fp32 GEMM）训练进行中：
   step-120 checkpoint 已落盘，预计 20:40 左右完成，下一轮评测对比 v2。
+
+
+### 27.6 本地模型 v5 A/B（Round 21）
+
+30 条 held-out 同批：v5 相对 v2 **JSON 0.967→1.000、字段 0.367→0.378、
+suspF1 0.161→0.165、ing 0.900→0.933、escape 持平**；p50 6.02→6.73s。
+按「只变好不变坏」切换服务默认适配器为 v5（v2 兜底，DGTF_LOCAL_ADAPTER 可覆盖），
+重启 8772 后 `/health.adapter_paths` 与 `/generate` 实测通过。

@@ -90,9 +90,15 @@ STAGES = ("self_check", "self_check_min", "dual_judge", "route")
 # stage -> 适配器目录（self_check 与 self_check_min 共用同一个混训适配器）
 # 每个 stage 的适配器候选（按优先级）：重训版 _v2 优先，第一轮 _v1 兜底
 ADAPTER_CANDIDATES = {
-    "self_check": ["llm_sft/adapter_dgtf_selfcheck_05b_v2",
+    # ★ [Round 21] v5（240 样本/len1900/fp32）在 30 条 held-out 上质量全面 ≥ v2：
+    #   JSON 1.000 vs 0.967、字段 0.378 vs 0.367、suspF1 0.165 vs 0.161、
+    #   ing 0.933 vs 0.900、escape 持平 0.200；p50 6.73s vs 6.02s（可接受）。
+    #   默认 v5，v2 兜底；DGTF_LOCAL_ADAPTER 可覆盖。
+    "self_check": ["llm_sft/adapter_dgtf_selfcheck_05b_v5",
+                   "llm_sft/adapter_dgtf_selfcheck_05b_v2",
                    "llm_sft/adapter_dgtf_selfcheck_05b_v1"],
-    "self_check_min": ["llm_sft/adapter_dgtf_selfcheck_05b_v2",
+    "self_check_min": ["llm_sft/adapter_dgtf_selfcheck_05b_v5",
+                       "llm_sft/adapter_dgtf_selfcheck_05b_v2",
                        "llm_sft/adapter_dgtf_selfcheck_05b_v1"],
     "dual_judge": ["llm_sft/adapter_dgtf_judge_05b_v2",
                    "llm_sft/adapter_dgtf_judge_05b_v1"],
@@ -102,10 +108,20 @@ ADAPTER_CANDIDATES = {
 ADAPTER_DIRS = {k: v[0] for k, v in ADAPTER_CANDIDATES.items()}
 
 
+def _env_adapter_overrides() -> list[str]:
+    """DGTF_LOCAL_ADAPTER：逗号分隔的适配器相对路径，优先级最高（默认空=不改行为）。
+
+    用途：A/B 实验或灰度切换适配器（例如 v5）时无需改代码；
+    默认仍走 ADAPTER_CANDIDATES（v2 优先），保证线上行为不变。
+    """
+    raw = str(os.environ.get("DGTF_LOCAL_ADAPTER") or "").strip()
+    return [x.strip() for x in raw.split(",") if x.strip()]
+
+
 def resolve_adapter(stage: str, root: Path | None = None):
     """返回 (rel_path, abs_path)；不存在返回 (None, None)。"""
     base = root or ROOT
-    for rel in ADAPTER_CANDIDATES.get(stage, []):
+    for rel in _env_adapter_overrides() + list(ADAPTER_CANDIDATES.get(stage, [])):
         p = base / rel
         if (p / "adapter_config.json").exists():
             return rel, p

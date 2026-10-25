@@ -46,6 +46,11 @@ V2.2.3
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
 【Round 21 增补（2026-10-25 同日）】
+- 本地模型 v5（0.5B/230 样本/max_len1900/fp32）30 条 held-out A/B：JSON 0.967→1.000、
+  字段 0.367→0.378、suspF1 0.161→0.165、ing 0.900→0.933、escape 持平；延迟 6.02→6.73s。
+  决策：服务默认适配器切换 **v5 优先（v2 兜底）**，新增 DGTF_LOCAL_ADAPTER 覆盖；
+  重启 8772 验证 health/generate 通过。
+
 - 过程门语义修正：① 审计「已修复行」（after≠before）不再计 bad/阻断；
   ② 事实已证（answered+official 无硬缺口）时元层辅助张力豁免，账本
   notes.closure_waived 可审计；负对照（无官方/conflict/非事实题）保留。

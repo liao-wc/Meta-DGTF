@@ -537,3 +537,33 @@ held-out 评测（self_check_min 12 条，base 0.5B JSON=0.0）：
 ⇒ **服务默认保持 v2**（`adapter_dgtf_selfcheck_05b_v2`）。v4 适配器、metrics、
 loss 曲线与评测结果作为负证据留档；6GB 卡上继续堆样本/换训练精度不解决问题，
 本地模型定位维持「叙述/格式草稿，不接管决策」。
+
+
+## 5.6 第五轮（v5）：240 样本 / max_len 1900 / fp32 GEMM —— 全面 ≥ v2，切换为服务默认（Round 21）
+
+训练：0.5B self_check_min（min 变体），240 样本保留 **230 条**（drop-truncated），
+1900 max_len，fp32 GEMM（GPU 独占，峰值 4.92GB），lr 1e-4，75 分钟：
+train_loss 0.2789 / **val_loss 0.2352**（v2 0.2238）。
+
+**30 条 held-out 同批 A/B（apply_self_check_min，脚本 eval_15b_adapter）**：
+
+| 指标 | v2（180 样本） | **v5（230 样本）** | 判读 |
+|---|---|---|---|
+| JSON 合法率 | 0.967 | **1.000** | v5 全合法，解析失败归零 |
+| 字段平均 acc | 0.367 | **0.378** | +1.1pp |
+| suspicious F1 | 0.161 | **0.165** | +0.4pp |
+| ing_rephrased acc | 0.900 | **0.933** | +3.3pp |
+| unsaid_is_escape acc | 0.200 | 0.200 | 持平 |
+| p50 / p95 延迟 | 6.02s / 7.42s | 6.73s / 9.41s | 略慢（narration 可接受） |
+
+⇒ **v5 在全部质量指标上 ≥ v2**（「只变好不变坏」），延迟略增；决策：
+`ADAPTER_CANDIDATES` 默认改为 **v5 优先、v2 兜底**；新增 `DGTF_LOCAL_ADAPTER`
+环境变量可覆盖（A/B/灰度），默认行为由候选顺序决定。
+
+服务验证（8772，重启后）：
+- `/health.adapter_paths`：self_check/self_check_min = **adapter_dgtf_selfcheck_05b_v5**；
+- `/generate`（self_check_min 样例）：4463ms，输出合法 JSON
+  `{"suspicious_candidates":[1,2],"ing_rephrased":false,"unsaid_is_escape":false}`；
+- 证据：`llm_sft/eval_dgtf_stage_05b_v{2,5}_limit30.json`、
+  `llm_sft/eval_dgtf_stage_05b_v5.json`、`llm_sft/train_metrics_dgtf_selfcheck_05b_v5.json`、
+  `llm_sft/service_probe_v5_health.json`。

@@ -1,0 +1,29 @@
+﻿{
+    "ok":  true,
+    "status":  "ready",
+    "model":  "D:\\Meta-DGTF-道生三阶模型\\local_model\\models\\Qwen2.5-0.5B-Instruct",
+    "adapter":  [
+                    "self_check",
+                    "self_check_min",
+                    "dual_judge",
+                    "route"
+                ],
+    "adapters":  {
+                     "self_check":  true,
+                     "self_check_min":  true,
+                     "dual_judge":  true,
+                     "route":  true
+                 },
+    "adapter_paths":  {
+                          "self_check":  "llm_sft/adapter_dgtf_selfcheck_05b_v5",
+                          "self_check_min":  "llm_sft/adapter_dgtf_selfcheck_05b_v5",
+                          "dual_judge":  "llm_sft/adapter_dgtf_judge_05b_v2",
+                          "route":  "llm_sft/adapter_qwen05b_v1"
+                      },
+    "gpu_mem_mb":  1042,
+    "queue_depth":  0,
+    "uptime_sec":  33.0,
+    "load_sec":  6.4,
+    "warmup_ms":  697.5,
+    "error":  null
+}
