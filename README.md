@@ -136,8 +136,13 @@ python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.3.py -c configs/方案F-帕累�
 | 门 | 结果 |
 |---|---|
 | fast_gate | PASS 12 / FAIL 0 |
-| V2 tests_*.py | 40 / 40 PASS（582 项检查，含 fine_check 48/48） |
+| V2 tests_*.py | **51 / 51 PASS（806 项检查）** |
 | App selftest | PASS 444 / FAIL 0 |
+| 一键验收 `scripts/final_acceptance.py --with-service` | **9 / 9 PASS**（含四道护栏） |
+| 离线重放护栏（124 packs） | answered 81 / gaps 清零 17 / 数值 34→38 / **0 新答案变差** |
+| 过程门审计护栏（85 packs） | standard 83.5% / 审计已修复 27 / **未修复 0** |
+| App plan 不变量 / dual_judge 防护 | 18/18、7/7 |
+| 场景矩阵一致性 | 34 行 live 对照，max |Δ| 0.032 |
 | 依赖 pip check | 0 broken |
 | DSH 全流程闭环检查 | PASS 6 / FAIL 0 |
 | 全流程帕累托基线 | scripts/pareto_flow.py（质量/tokens/calls 非支配前沿） |
@@ -145,7 +150,7 @@ python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.3.py -c configs/方案F-帕累�
 | 行为融合 | 5 arms / auto 调度融合 / outcome UCB |
 | 细粒度自省回放 | 177 packs / 577 views；auto 跳过率上界 23.7%；auto_narr prompt -29.9% |
 | M4 保形下界 | OOF 覆盖率 0.800（n=90 有效样本）/ 留出 0.778（n=18）；下界 0.72~0.77；alpha=0.2 |
-| 本地模型 stage 服务 | 8772 /health 1.8ms；self_check p50 3.9s、JSON 2/2；仅叙述/草稿（决策不接管） |
+| 本地模型 stage 服务 | 8772 /health、/metrics（含 latency p50/p95）；**v8b 默认**（30 条 held-out：字段 0.589 / escape 0.800 / JSON 1.0 / p50 5.86s，v6/v5/v2 兜底） |
 | 道生专属模式 e2e | quality 0.9465 / verified / ready=True；723K tokens / 97 calls / 586s（rounds=auto 8 圈） |
 | 道生专属模式 | mode=daosheng mock 201；selftest ★T3 73 条全绿 |
 | 定向0层真跑 | 20 calls / 85,807 tokens / zero_contract ok / provenance 17/17 |
@@ -230,3 +235,10 @@ local_model\envs\dgtf_llm_env\Scripts\python.exe -m pip check
 - 行为臂：5 个（v1_spiral / v1_frontier / v2_contract / v2_pareto / fusion_full）
 - 收束报告：V2.2.2-收束报告.md
 - 发布说明：docs/releases/V2.2.3.md / docs/releases/app-V2.0.24.md
+- **优化交付（Round 1–83）**：`docs/最终交付说明-20261026.md`、
+  `docs/验收总览-20261026.md`、`docs/ab_evidence_20261025.md`（§1–§78）
+- **本地模型默认**：v8b（mixed 配方，质量持平 v6、p50/p95 更快；训练/评测/切换全链证据）
+- **事实成本档**：fast+web 20 类领域 verified，质量 0.92–0.99、tokens 570–750K、
+  墙钟 190–290s；场景矩阵事实 35 行 + App e2e 7 行
+- **一键验收**：`python scripts/final_acceptance.py --with-service` → 9/9 PASS
+- 已知边界：检索依赖、跨片段语义（成年年龄）、多值列举、dual_judge 无 local 档
