@@ -1965,3 +1965,12 @@ scripts/lead_process_gate_audit.py 末尾新增阈值护栏（与重放护栏一
 fact packs≥80、**审计未修复行==0**、standard_all 比例≥0.75、元层豁免≤12。
 实测 **4/4 PASS**（85 packs / standard 83.5% / 已修复 27 / 未修复 0）。
 意义：过程门的「审计语义 + 豁免边界」也有 CI 级回归保护，防止未来改动放宽或漏修。
+
+
+## 73. App plan 不变量检查（Round 71，零 API）
+
+新增 scripts/app_plan_matrix_check.py：对 uild_plan 做 18 项不变量断言——
+事实题 scenario=fact 且 web 强制 on、推理/选择题场景正确、route 恒 0,1,both,all、
+m4/local_llm.metrics 存在、低预算事实题降级 fast+web on、dual_judge/self_check_mode
+合法值、budget_guard 存在、mode_id/requested 可审计。实测 **18/18 PASS**。
+意义：App 的「场景→成本档→预算→机制」动态最优路径有了独立回归判据。
