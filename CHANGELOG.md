@@ -45,6 +45,14 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 20 增补（2026-10-25 同日）】
+- 数值题 claim 级答案：目标量纲/题面概念（含繁简归一、GDP↔国内生产总值）/分段惩罚/
+  整体量标记守卫，无单位主张不作答案（修日期 12/8 回归），时效题按证据日期取新；
+  展示层量纲优先（增速题 display=5.0%）。判据 tests_evidence_coverage 21 项、
+  tests_recency_preference 7 项；全量 V2 49/49（731 checks）。
+- GDP 真跑验证：answer「…比上年增长5.0%」、display=**5.0%**、aq=verified；
+  ready=False 来自过程门（layer1 审计修复仍计 bad + meta_closure 对「最新」歧义
+  的 unsettled），已列为下一轮候选（修复语义/短事实题探针纪律）。
 【Round 19 增补（2026-10-25 同日）】
 - 修假冲突三处：冲突上下文主语残留（GDP/第一产业/人均收入不再互撞）、裸数字
   （无单位无上下文）不参与冲突、词项 token 级覆盖（增速↔增长、GDP↔国内生产总值、

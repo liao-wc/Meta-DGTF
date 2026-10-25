@@ -755,3 +755,54 @@ fast_gate 12/12。
 
 事实题「假冲突 → 真 verified/ready」闭环；同轮还记录离线重放（GDP replay：
 status answered、gaps=[]、official 8 条）。
+
+
+## 26. 数值题 claim 级答案 + 展示量纲优先（Round 20）
+
+### 26.1 问题
+
+Round 19 GDP 复跑已 verified/ready，但 answer 仍是报告总述（无目标数值）：
+多条证据都含数字，相关度选中总述页；展示层又把「134万亿」当答案（题问增速）。
+
+### 26.2 机制（fact_flow，确定性、零 LLM）
+
+1. **claim 级答案** `_numeric_claim_answer`：
+   - 目标量纲守卫（增速/增长/率→%；长度/海拔→长度单位；重量；面积）；
+   - 题面概念守卫（中文/英文 token + 近义：GDP↔国内生产总值、增速↔增长、
+     长度↔全长、海拔↔高程；繁简归一 國→国/長→长…）；
+   - 分段语义惩罚（上游/中游/下游/河段/第一产业/人均/占比/研发/R&D…）；
+   - 整体量标记加分（全长/总长/修正为/现为/调整为/增长…）；
+   - **无单位主张不作答案**（修日期 `[2024-07-14]` 里 12/8 被当答案的回归）；
+   - 时效题按证据日期取新（最新/当前…）。
+2. **展示量纲优先** `_compact_numeric_answer`：题面有目标量纲线索时优先该量纲
+   的 claim（增速题 display=5.0%，不再是 134万）。
+
+### 26.3 判据
+
+`tests_evidence_coverage.py` 增至 **21 项**（+A13 GDP 取 5.0% 不取人均 5.3%、
++A14 黄河取全长 5464 不取分段 786/3472、+A15 非数值题回退、+A16 display 增速取 %）；
+`tests_recency_preference.py` 7 项（修无单位日期回归后全绿）；
+全量 V2 **49/49（731 checks）**、fast_gate 12/12。
+
+### 26.4 真实验证（同题 web on）
+
+| 指标 | Round 19 | Round 20 |
+|---|---|---|
+| answer | 报告总述（无数值） | 「…国内生产总值…比上年增长5.0%…」✔ |
+| display | 无 | **5.0%** ✔ |
+| aq | verified | verified |
+| ready | True（该次跑次） | False（本次跑次过程门未全达标） |
+| quality | 0.9525 | 0.43 |
+
+ready/quality 波动来自**过程门**而非事实门（本次 fact_card answered、gaps=[]）：
+- layer1 审计修复 1 行（`undecidable_but_evidence_exists` → partial）仍计 bad；
+- layer all 的 meta_closure `clean=false`（unsettled 2：**「最终核实」是否为修订周期
+  终点 / 无提问日期时「最新」无法在文本内闭合**）——这类张力正是题面自身歧义，
+  属于「门按设计工作」。
+
+### 26.5 下一轮候选
+
+1. **审计修复语义**：把「已修复（after≠before）」的审计行与「未修复」分开计数
+   （repaired 记 warning/ok，bad 仅保留未修复项），避免过程门被单条修复阻断；
+2. **短事实题探针纪律**：无提问日期的「最新」类题不开启无法闭合的元层张力；
+3. v5 本地模型训练（GPU 进行中，240 样本/1900/len/fp32）完成后评测对比 v2。
