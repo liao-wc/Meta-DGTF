@@ -146,6 +146,7 @@ python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.3.py -c configs/方案F-帕累�
 | 细粒度自省回放 | 177 packs / 577 views；auto 跳过率上界 23.7%；auto_narr prompt -29.9% |
 | M4 保形下界 | OOF 覆盖率 0.8012（n=166）/ 留出集 0.7647（n=34）；alpha=0.2 |
 | 本地模型 stage 服务 | 8772 /health 1.8ms；self_check p50 3.9s、JSON 2/2；仅叙述/草稿（决策不接管） |
+| 道生专属模式 e2e | quality 0.9465 / verified / ready=True；723K tokens / 97 calls / 586s（rounds=auto 8 圈） |
 | 道生专属模式 | mode=daosheng mock 201；selftest ★T3 73 条全绿 |
 | 定向0层真跑 | 20 calls / 85,807 tokens / zero_contract ok / provenance 17/17 |
 

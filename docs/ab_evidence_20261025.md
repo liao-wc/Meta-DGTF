@@ -88,7 +88,9 @@ python scripts/ab_bench.py pair --a b0-presetB-baseline --b b1-presetB-auto-narr
 |---|---|---|---|
 | v1 | 端点不可达（服务未起/被回收） | URLError [WinError 10061] 拒绝连接 ⇒ 回退 llm | 失败回退 ✅ |
 | v2 | 请求到达服务，但生成超时 | 服务日志 3×503 TIMEOUT、TimeoutError: 生成超时；引擎 TimeoutError ⇒ 回退 llm | 失败回退 ✅ |
-| v3 | **服务 200 返回本地 JSON，但置信度不足** | RuntimeError: 置信度 0.48 < 0.60 ⇒ 回退 llm；云 self_check 3 次照常 | **质量门回退 ✅（按设计）** |
+| v3 | **服务 200 返回本地 JSON，但置信度不足** | RuntimeError: 置信度 0.48 < 0.60 ⇒ 回退 llm；云 self_check 照常 | **质量门回退 ✅（按设计）** |
+| v4 | 同 v3（第二次） | 置信度 0.24 < 0.60 ⇒ 回退 llm | 质量门回退 ✅ |
+| v5 | 200 返回、门槛降到 0.2 后继续过闸 | 	ext 解析不出 JSON ⇒ 回退 llm（0.5B 在引擎窄 prompt 上 JSON 合法率不足） | JSON 门回退 ✅ |
 
 关键工程修正（v3 前）：pi.local_llm / output.local_llm 增加
 max_new_tokens=160、	imeout=45s。原因：0.5B 本地模型实测 ~6 tok/s，
@@ -102,3 +104,31 @@ max_new_tokens=160、	imeout=45s。原因：0.5B 本地模型实测 ~6 tok/s，
   本地模型当前只适合叙述/格式草稿，不接管决策字段；
 - 成功接管路径（本地直判、0 云调用、确定性核一致性校验通过）由
   	ests_fine_check 的 fake endpoint 判据覆盖；真实接管需 1.5B + 更大数据训练后再验。
+
+
+## 6. 道生专属模式 CLI e2e（首跑，2026-10-25 11:01）
+
+命令（App 侧 daosheng 预设的引擎等价调用）：
+b_bench.py run --tag daosheng-e2e-cli --config configs/道生专属模式.yaml --web off，
+同题（城市热岛）。
+
+| 指标 | 结果 | 对照（方案B preset / 同题） |
+|---|---|---|
+| quality | **0.9465** | 0.9615 / 0.9860（B0/B2） |
+| answer_quality / ready | **verified / True** | verified / True |
+| tokens | **723,064** | 1,457,052 ~ 1,846,074 |
+| calls | **97** | 159 ~ 182 |
+| wall | **586.2s** | 922.6 ~ 1275.6s（含并行/单跑差异） |
+| rounds | {0:2,1:2,both:2,all:2}（引擎 auto 自适应） | {0:4,1:4,both:4,all:5}（preset B 硬上限路径） |
+| cache hit ratio | 11.4% | 13.9%~17.9% |
+| 费用（tokens 估算） | ≈ ¥1.4~1.6 | ≈ ¥2.6~3.4 |
+
+判读：
+- 道生专属预设（rounds=auto + parallel=B + self_check=llm + web off）在**同题上以约
+  一半的 tokens/calls 拿到 verified + answer_ready=True，quality 只低 1.5pp**；
+  这符合「rounds=auto 由引擎自然停止点决定成本」的既有结论（preset B 的 19 圈是被
+  上限推着走的）。
+- 质量 0.9465 与 B0 的 0.9615 差异中，rounds 不同是主因（8 圈 vs 19 圈），
+  不能据此说「专属模式比 B 档差」；只能说它是**更省的成本档**，质量仍过门。
+- 该结果证明「道生专属模式」预设可被引擎直接加载并跑出 verified 产物；
+  App 侧 mock 验收（444/0）与本次 CLI e2e 合起来覆盖了「配置→引擎→产物」链路。

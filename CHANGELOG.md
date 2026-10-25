@@ -50,6 +50,9 @@ V2.2.3
   判据 tests_quality_conformal.py 23 项全 PASS；文档 docs/quality_conformal_20261025.md。
 - 本地模型第二轮（截断修复）：适配器 v2 sc_min JSON 0.857（base 0.0）、11 字段 full 1.0、
   dj 0.625；决策三项全对仍 0 ⇒ 收口「仅叙述/格式草稿，不接管决策」，服务/契约/回退链路可交付。
+- 道生专属模式 CLI e2e 首跑（同题城市热岛）：quality 0.9465 / verified / ready=True /
+  tokens 723,064 / calls 97 / wall 586.2s（rounds=auto 8 圈）—— 相对方案B preset
+  同题省约 50% tokens/calls 仍过质量门；证据 docs/ab_evidence_20261025.md §6。
 - local 档工程修正：api/output.local_llm 增加 max_new_tokens=160、timeout 45s
   （0.5B ~6 tok/s，600 tokens 必超时）；真实链路实测「请求到达服务→生成超时→回退 llm+留痕」。
 【未做】
