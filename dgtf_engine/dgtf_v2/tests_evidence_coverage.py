@@ -11,7 +11,8 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
 
-from dgtf_v2.evidence import (Evidence, _overall_quantity_bonus,  # noqa: E402
+from dgtf_v2.evidence import (Evidence, is_official_source,  # noqa: E402
+                              _overall_quantity_bonus,
                               _short_answer, _term_covered,
                               answer_from_evidence, detect_gaps)
 from dgtf_v2.fact_flow import (_compact_numeric_answer,  # noqa: E402
@@ -93,6 +94,19 @@ def main():
                                  "国内生产总值超过134万亿元，比上年增长5.0%")
     ck("A16 展示层增速题优先 %（非 134万）", "5.0%" in d3, d3)
 
+    # ── A5：科学权威域白名单（Round 24）──────────────
+    ck("A17 中科院域官方", is_official_source("https://ciomp.cas.cn/x") is True)
+    ck("A18 科普中国/科普博览官方",
+       is_official_source("https://www.kepu.net.cn/x") is True
+       and is_official_source("https://cloud.kepuchina.cn/x") is True)
+    ck("A19 商业博客仍非官方（负对照）",
+       is_official_source("https://blog.csdn.net/x") is False)
+    # ── A6：数值短答比较句过滤（Round 24）────────────
+    _sa = _short_answer("光进入水中会变慢：只比真空中慢约90公里/秒。在水中光速减至约22.5万公里/秒。",
+                      "光在水中传播的速度是多少")
+    ck("A20 数值短答跳过比较句（取目标量）",
+       ("22.5" in _sa) or ("22.4" in _sa), _sa)
+    ck("A21 比较句数值不被当作答案", "90公里/秒" not in _sa, _sa)
     # ── B：整体量语义加权 ────────────────────────
     ck("B1 问长度 + 全长标记 → 加分",
        _overall_quantity_bonus("黄河全长约5464公里", "黄河的长度是多少千米") > 0)

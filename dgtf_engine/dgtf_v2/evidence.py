@@ -51,6 +51,8 @@ OFFICIAL_DOMAINS: tuple[str, ...] = (
     "europa.eu", "un.org", "who.int", "worldbank.org", "imf.org",
     "oecd.org", "wto.org", "nih.gov", "cdc.gov", "nasa.gov",
     "sec.gov", "bls.gov", "census.gov",
+    # ★ [Round 24] 国家级科研/科普权威域（科学类事实题常只召回这些）
+    "cas.cn", "kepu.net.cn", "kepuchina.cn", "cma.gov.cn", "most.gov.cn",
     "deepseek.com", "deepseek.ai",
     # 技术标准/官方文档源（用于 HTTP/RFC/W3C/Python 类事实题）
     "rfc-editor.org", "ietf.org", "w3.org", "iana.org",
@@ -770,11 +772,22 @@ def _short_answer(text: str, question: str = "") -> str:
     if any(k in _q for k in ("多少", "几", "多长", "多高", "多重", "多远",
                              "多深", "多宽", "多大", "多快", "千米", "公里",
                              "米", "%", "海拔", "速度", "面积", "重量")):
-        for part in re.split(r"[。；;\n]", s):
-            # 允许「5400多公里 / 约5464公里 / 5400余公里」这类口语量词
-            if re.search(r"\d+(?:\.\d+)?\s*(?:多|余|约|近)?\s*(?:千米|公里|米|"
-                         r"厘米|毫米|%|℃|吨|公斤|kg|年|小时|分钟|秒|万)", part):
-                return part.strip()[:240]
+        _NUM_UNIT_PAT = re.compile(
+            r"\d+(?:\.\d+)?\s*(?:多|余|约|近)?\s*(?:千米|公里|米|厘米|"
+            r"毫米|%|℃|吨|公斤|kg|年|小时|分钟|秒|万)")
+        _concepts = re.findall(r"[A-Za-z]{2,}|[\u4e00-\u9fa5]{2,}", _q)
+        _cmp = ("比", "慢约", "快约", "高约", "低约", "相差", "差异", "差约",
+                "只比", "约慢", "约快")
+        _cands = []
+        for _idx, part in enumerate(re.split(r"[。；;\n]", s)):
+            if not _NUM_UNIT_PAT.search(part):
+                continue
+            _hit = sum(1 for c in _concepts if c in part)
+            _cmp_pen = 1 if any(c in part for c in _cmp) else 0
+            _cands.append((_hit, -_cmp_pen, -_idx, part))
+        if _cands:
+            _cands.sort(reverse=True)
+            return _cands[0][3].strip()[:240]
     if _dates:
         # 优先取日期所在短句
         for part in re.split(r"[。；;\n]", s):

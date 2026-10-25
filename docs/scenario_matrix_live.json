@@ -1,5 +1,5 @@
 {
- "n_valid_runs": 18,
+ "n_valid_runs": 39,
  "since": "",
  "matrix": {
   "reasoning": {
@@ -155,15 +155,15 @@
     ]
    },
    "fast+web": {
-    "n_runs": 1,
-    "n_verified": 0,
-    "quality_mean": 0.474,
-    "quality_mean_all": 0.474,
-    "tokens_mean": 836464,
-    "wall_mean": 316.1,
-    "verified_ratio": 0.0,
-    "latest_tag": "mode-fast-fact-web",
-    "latest_quality": 0.4741,
+    "n_runs": 3,
+    "n_verified": 2,
+    "quality_mean": 0.96,
+    "quality_mean_all": 0.798,
+    "tokens_mean": 648416,
+    "wall_mean": 188.3,
+    "verified_ratio": 0.667,
+    "latest_tag": "v23-fast-fact-gdp",
+    "latest_quality": 0.9726,
     "samples": [
      {
       "tag": "mode-fast-fact-web",
@@ -171,6 +171,20 @@
       "tokens": 836464,
       "wall": 316.1,
       "verified": false
+     },
+     {
+      "tag": "v23-fast-fact-404",
+      "quality": 0.9472,
+      "tokens": 558195,
+      "wall": 174.4,
+      "verified": true
+     },
+     {
+      "tag": "v23-fast-fact-gdp",
+      "quality": 0.9726,
+      "tokens": 738637,
+      "wall": 202.2,
+      "verified": true
      }
     ]
    }
@@ -309,12 +323,28 @@
   },
   {
    "scenario": "fact",
-   "mode": "web_on_fast",
+   "mode": "web_on_fast_pre_fix",
    "human_quality": 0.4741,
-   "live_quality": 0.474,
-   "delta": -0.0,
-   "n_runs": 1,
-   "verified_ratio": 0.0
+   "live_quality": null,
+   "delta": null,
+   "note": "无对应有效真跑"
+  },
+  {
+   "scenario": "fact",
+   "mode": "web_on_fast",
+   "human_quality": 0.9472,
+   "live_quality": 0.96,
+   "delta": 0.013,
+   "n_runs": 3,
+   "verified_ratio": 0.667
+  },
+  {
+   "scenario": "fact",
+   "mode": "web_on_fast2",
+   "human_quality": 0.9726,
+   "live_quality": null,
+   "delta": null,
+   "note": "无对应有效真跑"
   },
   {
    "scenario": "fact",
