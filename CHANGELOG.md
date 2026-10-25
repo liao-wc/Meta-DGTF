@@ -45,6 +45,12 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 24 增补（2026-10-25 同日）】
+- 科学类事实题三层修复：① 官方白名单补 cas.cn/kepu.net.cn/kepuchina.cn/
+  cma.gov.cn/most.gov.cn；② 数值短答比较句过滤（不取「只比空气中慢约90公里/秒」）；
+  ③ 词项切分补「在 / 中(?!国)」，修「光在水中传播的速度」uncovered 假阴性。
+  光速 fast+web 从 0.4667/unverified → **0.9508/verified/ready**（727K tok/276s）。
+- 判据 tests_evidence_coverage 28 项；全量 V2 50/50（751 checks）、fast_gate 12/12。
 【Round 23 增补（2026-10-25 同日）】
 - 事实题成本档重新验证（修复后重测）：fast+web on 在 404/500/GDP 三题均
   verified/ready，质量持平或更好，tokens −21~44%、墙钟 −51~83%。旧 0.4741/needs_evidence

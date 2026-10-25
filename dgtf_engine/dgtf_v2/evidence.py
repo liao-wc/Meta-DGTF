@@ -578,7 +578,8 @@ def question_terms(question: str, limit: int = 3) -> list:
     return out[:max(0, int(limit))]
 
 
-_TERM_SPLIT_RE = re.compile(r"的|是|多少|什么|几|了|吗|呢|？|\?|，|,|\s+")
+_TERM_SPLIT_RE = re.compile(
+    r"的|是|多少|什么|几|了|吗|呢|？|\?|，|,|\s+|在|中(?!国)")
 _OVERALL_UNIT_MARKERS: tuple[str, ...] = (
     "全长", "总长", "总长度", "长度", "最高", "海拔", "最宽", "宽度",
     "最深", "深度", "距离", "速度", "面积", "重量", "总计", "合计",
