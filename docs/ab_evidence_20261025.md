@@ -1685,3 +1685,30 @@ answer「港珠澳大桥跨越伶仃洋…**总长约55公里**」、**display=5
 **display=55公里**（全长口径修复在 App 端到端生效）。App 维度实测矩阵 6→**7 行**。
 
 验收总览同步更新（矩阵 34 行、App 7 行、Round 47–49 机制增补）。
+
+
+## 58. 验收串跑 + dual_judge local 限制（Round 50）
+
+### 58.1 零成本验收串跑（全绿）
+
+| 命令 | 结果 |
+|---|---|
+| `python fast_gate.py` | **12/12** |
+| `python scripts/run_v2_tests.py` | **51/51（799 checks）** |
+| `python scripts/lead_offline_pack_audit.py` | OK（离线事实重放） |
+| `python scripts/lead_process_gate_audit.py` | 审计已修复 27 / 未修复 **0** |
+| `python scripts/update_scenario_matrix.py` | fact fast+web n=23 质量 0.957 |
+| `python scripts/check_local_service.py` | 单发 3.76s / v6 / errors 来自被中止客户端（非服务端缺陷） |
+
+### 58.2 dual_judge 本地化限制（诚实留档）
+
+尝试 `--dual-judge-mode local` 时引擎 CLI 报：
+`invalid choice: 'local' (choose from 'llm', 'cache', 'auto')`。
+即：**self_check 支持 local，dual_judge 尚不支持**；dual_judge 的 0.5B 适配器
+（`adapter_dgtf_judge_05b_v2`）已存在但未接入引擎。属下一轮工作（需改单文件引擎，
+当前工作树有并发改动，避免冲突而暂缓）。本次失败记录已从 `ab_results.jsonl` 清理。
+
+### 58.3 结论
+
+除 dual_judge local 外，本轮验收链路全部通过；「self_check 细粒度替换」已在
+App/引擎/服务三层打通，「dual_judge 细粒度替换」待引擎接入 local 档。

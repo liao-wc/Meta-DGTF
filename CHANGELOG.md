@@ -45,6 +45,11 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 50 增补（2026-10-26）】
+- 零成本验收串跑全绿：fast_gate 12/12、V2 51/51（799 checks）、离线审计/过程门
+  （审计已修复 27、未修复 0）、矩阵 live、服务单发 v6。
+- dual_judge local 限制留档：引擎 CLI 无 local 档（仅 llm/cache/auto），
+  dual_judge 0.5B 适配器待接入；失败跑次已清理。
 【Round 49 增补（2026-10-26）】
 - App 港珠澳 e2e：353.2s / verified / ready，display=**55公里**（全长口径修复
   App 端到端生效）；App 实测矩阵 6→7 行。

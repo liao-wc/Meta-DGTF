@@ -1,19 +1,19 @@
 {
- "n_packs_with_trace": 150,
- "n_fact": 85,
- "all_standard_true": 71,
- "waived_runs": 7,
+ "n_packs_with_trace": 195,
+ "n_fact": 128,
+ "all_standard_true": 113,
+ "waived_runs": 8,
  "waived_unsettled": {
-  "1": 3,
+  "1": 4,
   "5": 1,
   "2": 3
  },
  "fact_fail_layers": {
-  "all": 12,
+  "all": 13,
   "both": 4,
   "1": 5
  },
- "audit_repaired_rows": 21,
+ "audit_repaired_rows": 27,
  "audit_unrepaired_rows": 0,
  "rows": [
   {
@@ -1502,6 +1502,416 @@
   },
   {
    "file": "20261025_213935_光在水中传播的速度是多少.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_220230_2024年中国GDP总量是多少亿元.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_221103_Python中len函数的返回值是什么.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 2,
+   "audit_repaired": 2
+  },
+  {
+   "file": "20261025_221456_2024年中国GDP总量是多少亿元.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 2,
+   "audit_repaired": 2
+  },
+  {
+   "file": "20261025_222130_中国现行宪法是哪一年颁布的.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_223531_中国现行宪法是哪一年颁布的.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_224334_人体的正常体温是多少摄氏度.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 1,
+   "audit_repaired": 1
+  },
+  {
+   "file": "20261025_224417_2024年中国CPI涨幅是多少.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 1,
+   "audit_repaired": 1
+  },
+  {
+   "file": "20261025_225432_2024年中国CPI涨幅是多少.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_230757_这座中字形汉墓藏着什么.packed.json",
+   "qtype": "fact",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_230918_2024年中国新能源汽车产量是多少万辆.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_230938_2024年中国出生人口是多少万人.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_231648_2024年中国出生人口是多少万人.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {
+    "closure_waived": true,
+    "closure_unsettled": 1
+   },
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_231658_2024年中国新能源汽车产量是多少万辆.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_232453_我国法定结婚年龄是多少岁.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_232539_2024年中国贸易顺差是多少亿美元.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_232704_2024年中国出生人口是多少万人.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_233339_我国法定结婚年龄是多少岁.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_234802_2024年中国贸易顺差是多少亿美元.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_234818_我国法定结婚年龄是多少岁.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_235138_中字形西汉大墓的墓主是谁.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261025_235734_我国法定结婚年龄是多少岁.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261026_000641_我国法定结婚年龄是多少岁.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261026_002019_2024年中国贸易顺差是多少亿美元.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261026_003642_扩内需与新质生产力会改变哪些行业.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261026_004033_光在水中传播的速度是多少.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261026_004124_2024年中国出生人口是多少万人.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261026_004909_中国恢复高考是哪一年.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261026_005109_奥林匹克五环的颜色有哪几种.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261026_005148_扩内需与新质生产力会改变哪些行业.packed.json",
+   "qtype": "reasoning",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261026_010332_奥林匹克五环的颜色有哪几种.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261026_011034_地球到月球的平均距离是多少千米.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261026_011047_联合国的总部设在哪个城市.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261026_012602_联合国的总部设在哪个城市.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261026_014836_联合国的总部设在哪个城市.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261026_015800_成年人正常心率是多少次每分钟.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261026_015819_2024年末中国外汇储备是多少亿美元.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261026_020417_厄尔尼诺强度可能史无前例意味着什么.packed.json",
+   "qtype": "reasoning",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261026_021815_2024年末中国外汇储备是多少亿美元.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261026_021829_成年人正常心率是多少次每分钟.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261026_023011_成年人正常心率是多少次每分钟.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261026_024035_中国空间站的名字是什么.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261026_024056_港珠澳大桥全长多少公里.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261026_024916_中国空间站的名字是什么.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261026_030442_港珠澳大桥全长多少公里.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261026_031517_港珠澳大桥全长多少公里.packed.json",
    "qtype": "fact",
    "standard_all": true,
    "notes": {},
