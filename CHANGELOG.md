@@ -45,6 +45,12 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 17 增补（2026-10-25 同日）】
+- 修 decidability_audit 通用词误判：not/found/http/status… 40+ 高频词不再冒充
+  证据命中（真跑 HTTP404 研究层被 not/found 误判 undecidable overclaim ⇒ 层不达标）。
+  审计判据 17 项；全量 V2 48/48（716 checks）、fast_gate 12/12。
+- HTTP404 真实验证：0.4033/needs_evidence/ready=False → **0.9062/verified/ready=True**
+  （standard_all=True，四层全达标；tokens 992,929/calls 101/wall 958s）。
 【Round 16 增补（2026-10-25 同日）】
 - 修 extract_queries 中文紧邻状态码的 \b 失效：「HTTP 404状态码」现在会注入
   site:developer.mozilla.org / site:rfc-editor.org 官方检索；判据 tests_fact_queries 7 项。

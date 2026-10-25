@@ -636,3 +636,39 @@ HTTP 404 事实题连续两次 `no_official_source`（检索池 34 条、官方 
 - 两题质量门（quality 0.43 / 0.96）差异主要来自**过程门**（层产物标准/元层收束），
   与事实门解耦；下一步聚焦过程门（HTTP404 为 3/4 层达标，定位失败层）。
 - 门禁：V2 **48/48（713 checks）**、fast_gate 12/12。
+
+
+## 23. 过程门修复：通用词不冒充证据命中（Round 17）
+
+### 23.1 根因
+
+HTTP 404 题（Round 16）事实门已 verified，但 ready=False：`process_ledger` 显示
+**layer 1 standard False**（decidability_audit status=mixed、bad=1）。
+审计明细行：子问题 4「对确实存在的资源故意回 404 时，Not Found 是语义漂移还是
+语用借用」被判 `undecidable_but_evidence_exists` ⇒ bad。
+但证据命中来源只是通用词 **not / found**（MDN 文本必然出现），并非该子问题的
+命题落点 ⇒ **审计误判**，被修复成「将不可判定降级为 partial 并记 bad」，进而层不达标。
+
+### 23.2 修复
+
+`decidability_audit._terms()` 增加**通用英文/技术高频词过滤**（not/found/http/
+status/code/response/server/page/url/the/and/…共 40 余词）：这些词在证据里几乎
+必然出现，不能当「命题落点」；真术语（GDP/RFC/MDN…）仍照常命中。
+判据 `tests_decidability_audit.py` 增至 **17 项**（新增：通用词不误判、真术语
+（RFC）仍判 overclaim、混合问题真术语仍判 overclaim）。
+
+### 23.3 真实验证（HTTP 404，web on 三次跑次轨迹）
+
+| 阶段 | quality | answer_quality | ready | 说明 |
+|---|---|---|---|---|
+| 修复前（Round 15 前） | 0.4033 | needs_evidence | False | 检索池无官方源 |
+| Round 16（官方站内检索修复） | 0.4269 | **verified** | False | 官方源 E1,E2,E3 已捕获；卡在过程门 |
+| **Round 17（通用词审计修复）** | **0.9062** | **verified** | **True** | standard_all=True，四层全达标 |
+
+结论：三个独立机制（状态码官方检索、事实门官方源优先/去重、审计通用词过滤）
+串起来把该题从「未证不可用」推到 **0.9062/verified/ready**；质量跃升主要来自
+过程门放行（四层标准全达标）与事实答案确定性。
+
+### 23.4 门禁
+
+全量 V2 **48/48（716 checks）**、fast_gate 12/12。
