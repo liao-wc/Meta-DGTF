@@ -1974,3 +1974,13 @@ fact packs≥80、**审计未修复行==0**、standard_all 比例≥0.75、元�
 m4/local_llm.metrics 存在、低预算事实题降级 fast+web on、dual_judge/self_check_mode
 合法值、budget_guard 存在、mode_id/requested 可审计。实测 **18/18 PASS**。
 意义：App 的「场景→成本档→预算→机制」动态最优路径有了独立回归判据。
+
+
+## 74. 场景矩阵现场一致性护栏（Round 72）
+
+scripts/update_scenario_matrix.py 末尾新增护栏：所有有 live 对照的人工锚点行，
+|live−人工| 必须 ≤ **0.06**，否则 exit 1（并打印偏差行）。
+实测：**34 行 live 对照、最大偏差 0.032 → MATRIX GUARD PASS**。
+意义：场景矩阵不再只是「打印对照」，而是把「人工锚点 vs 现场实测」的一致性
+变成可执行判据；与 replay guard / process gate guard / plan matrix 共同构成
+**四道自动护栏**。

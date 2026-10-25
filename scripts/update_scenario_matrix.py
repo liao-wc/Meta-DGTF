@@ -202,6 +202,19 @@ def main() -> int:
             print("  %-10s %-18s 人工=%.3f 实测=%.3f Δ=%+.3f（n=%d）"
                   % (d["scenario"], d["mode"], d["human_quality"],
                      d["live_quality"], d["delta"], d["n_runs"]))
+    # ★ [Round 72] 矩阵一致性护栏：有 live 对照的行，|Δ| ≤ 0.06
+    _bad = [d for d in diffs if d.get("live_quality") is not None
+            and abs(float(d.get("delta") or 0.0)) > 0.06]
+    _matched = sum(1 for d in diffs if d.get("live_quality") is not None)
+    print("\nPASS guard: matrix live 对照行数 = %d" % _matched)
+    if _bad:
+        print("FAIL guard: live 与人工锚点偏差 > 0.06：")
+        for d in _bad:
+            print("  %s/%s delta=%+.3f (n=%d)"
+                  % (d.get("scenario"), d.get("mode"),
+                     float(d.get("delta") or 0.0), d.get("n_runs") or 0))
+        return 1
+    print("MATRIX GUARD PASS")
     return 0
 
 
