@@ -289,3 +289,37 @@ ecommend_scenario(kind, min_quality, max_wall, prefer) 已把这套规则机器�
 
 结论：人工锚点与真跑数据一致（Δ≤0.012），矩阵可信；回灌管线可在后续轮次把新跑次
 自动纳入并提示更新，形成「跑→汇总→校准锚点→再选档」的闭环。
+
+
+## 13. App 道生 fast 成本档真实任务端到端（Round 7）
+
+目的：验证「App plan → 引擎参数 → 真实跑次」链路上，新场景规则（fast 成本档）
+能正确落到引擎并产出 verified 质量。此前只做过 mock 与 CLI 直跑。
+
+执行：起 App server（8768 真实非 mock）→ `POST /api/tasks`
+`{mode:"daosheng_fast", question:"为什么在高原上煮饭更容易夹生？"}` → 轮询到 done。
+
+plan 实际生效（响应回显）：
+```
+tier=fast | engine_mode=fast | parallel=serial | thinking=off | web=off
+rounds=0:2,1:3,both:2,all:2 | scenario=reasoning → 推荐 fast_domain2
+```
+
+真实跑次（packed 读数，非缓存）：
+| 指标 | 值 |
+|---|---|
+| question | 为什么在高原上煮饭更容易夹生？（跨领域推理，全新题） |
+| **quality / answer_quality / answer_ready** | **0.9588 / verified / True** |
+| tokens / calls | **698,602 / 107** |
+| rounds | {0:2, 1:3, both:2, all:2}（与 plan 完全一致） |
+| 任务墙钟（App 计时） | 573.3s |
+
+判读：
+- 场景规则在真实 App 任务中生效：reasoning → fast 档（thinking off + 低圈），
+  以 **69.9 万 tokens / 9.5 分钟** 拿到 **verified + answer_ready=True**；
+- 与 CLI fast 档实测（481K~579K tokens / 188~283s）同向；App 侧多出的时间是
+  任务编排/归档/内容落盘与并发环境差异，量级合理；
+- 首次尝试同一题（热岛）时命中 App 答案缓存（11.2s done），说明缓存路径正常；
+  换全新题后触发真实跑次，故本次为真实引擎证据。
+- 证据：`llm_sft/_round7_evidence/app_fast_e2e.json`、
+  `outputs/20261025_143654_为什么在高原上煮饭更容易夹生.packed.json`。

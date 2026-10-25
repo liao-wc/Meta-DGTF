@@ -1,0 +1,456 @@
+{
+ "ok": false,
+ "server_pid": 24388,
+ "health": {
+  "ok": true,
+  "app": {
+   "name": "Meta-DGTF",
+   "version": "2.0.24",
+   "commit": "0ffb2f931e36"
+  },
+  "engine": {
+   "file": "Meta-DGTF-V2.2.3.py",
+   "version": "2.2.3",
+   "layers": [
+    "0",
+    "1",
+    "both",
+    "all"
+   ],
+   "eml": true,
+   "scheduler": true
+  },
+  "checks": {
+   "engine_file": true,
+   "engine_version": "2.2.3",
+   "dgtf_v2_modules": true,
+   "self_feedback_loop": true,
+   "eml_memory": true,
+   "fact_flow": true,
+   "scheduler": true,
+   "api_key": true,
+   "dsh_headless": true,
+   "agent_daemon": false,
+   "outputs_dir": true
+  },
+  "warnings": [
+   "agent_daemon"
+  ],
+  "modules": {
+   "self_feedback": true,
+   "llm_feedback": true,
+   "online_adapt": true,
+   "frontier_feedback": true,
+   "unified_memory": true,
+   "scheduler": true,
+   "orchestrator": true,
+   "facet_flow": true,
+   "fact_flow": true,
+   "evidence": true,
+   "process_ledger": true,
+   "shadow": true
+  },
+  "config": {
+   "auto_enabled": true,
+   "history_limit": 200,
+   "v2_shadow": true,
+   "parallel_mode": "auto",
+   "max_tokens": 2000000
+  },
+  "daemon": {
+   "running": false,
+   "pid": 0,
+   "last_log": "2026-10-25T11:06:12 [INFO] cycle cycle=3 triaged=0 proposals=58 elapsed_s=0.003"
+  },
+  "eml": {
+   "ok": true,
+   "playbook": {
+    "path": "D:\\Meta-DGTF-道生三阶模型\\dgtf_memory\\playbook.jsonl",
+    "n": 76,
+    "by_kind": {
+     "schedule": 52,
+     "probe": 19,
+     "guard": 5
+    },
+    "last": {
+     "id": "L0076",
+     "kind": "schedule",
+     "cond": {
+      "issue": "cost_no_gain"
+     },
+     "action": {
+      "key": "note_cost_no_gain",
+      "tokens": 836464,
+      "duty_med": 0.15810000000000002
+     },
+     "readings": {
+      "before": {
+       "tokens": 836464,
+       "duty_med": 0.15810000000000002
+      },
+      "after": {
+       "duty_med": "期望上升"
+      }
+     },
+     "why": "成本超过历史 p75 而职责未升（只贵不好）",
+     "evidence": [
+      "20261025_125411"
+     ],
+     "n_evidence": 1,
+     "status": "shadow",
+     "weight": 1.0,
+     "contra": 0,
+     "t_written": 1792904360.3662324,
+     "t_last": 1792904360.3662324,
+     "t_used": [],
+     "source": "engine",
+     "cost_delta": 0.0,
+     "quality_delta": 0.0,
+     "arg_status": "undecided",
+     "arg_burden": 7.0765
+    }
+   },
+   "v2_shadow": {
+    "path": "D:\\Meta-DGTF-道生三阶模型\\dgtf_memory\\v2_events.jsonl",
+    "n": 916,
+    "by_kind": {
+     "structure": 458,
+     "schedule_outcome": 458
+    },
+    "last": {
+     "id": "evt-000832",
+     "run_id": "20261025_140533",
+     "plane": "procedural",
+     "layer": "scheduler",
+     "kind": "schedule_outcome",
+     "key": "schedule:0:r3",
+     "payload": {
+      "template": "0:r3",
+      "quality": 0.0,
+      "calls": 1,
+      "tokens": 168633,
+      "success": true
+     },
+     "event_time": 832.0,
+     "ingest_time": 832.0,
+     "valid_from": 832.0,
+     "valid_to": null,
+     "tx_time": 832.0,
+     "provenance": [],
+     "confidence": 0.6,
+     "support": [],
+     "defeaters": [],
+     "supersedes": null
+    }
+   },
+   "agent": {
+    "tasks": 60,
+    "results": 81,
+    "knowledge": 24,
+    "proposals": 197
+   },
+   "proposal_status": {
+    "expired": 156,
+    "superseded": 18,
+    "rejected": 12,
+    "failed": 4,
+    "applied": 6,
+    "rolled_back": 1
+   },
+   "self_feedback": {
+    "engine_module": true,
+    "app_tasks": 60,
+    "app_proposals": 197
+   }
+  },
+  "mapping": {
+   "engine_layers": "→ /api/chats /api/tasks /api/outputs/layers",
+   "EML_self_feedback": "→ /api/tasks 产物 + /api/agent/* + eML/反馈",
+   "scheduler": "→ /api/tasks opts + /api/params + /api/schedule/preview",
+   "outputs": "→ /api/outputs /api/outputs/facets /api/export/*",
+   "knowledge": "→ /api/agent/knowledge*",
+   "DSH": "→ /api/dsh/* /api/agent/auto*"
+  }
+ },
+ "task_post_status": 201,
+ "task_id": "20261025_142727_cebe38",
+ "mode": {
+  "id": "daosheng_fast",
+  "requested": "daosheng_fast",
+  "tier": "fast",
+  "policy": "daosheng.v1",
+  "engine_mode": "fast",
+  "quality_policy": "auto:stable",
+  "reason": "显式 daosheng_fast：便宜档（低圈 + thinking off），质量让位于预算；预算档：fast（thinking off、低圈；实测推理 tokens −33%、墙钟 −68%、质量 −1pp）；本地服务不可达→规则回退（route=0,1,both,all）；场景=reasoning → 推荐 fast_domain2（0.9535）；M4 预测 fast=0.930/B=0.959/serial=0.990",
+  "context_injected": [],
+  "budget_guard": {
+   "balance_cny": 20.09,
+   "balance_source": "runner",
+   "est_tokens": 720542,
+   "est_cost_cny": 1.44,
+   "raw_max_tokens": 2000000,
+   "cny_per_million_tokens": 2.0,
+   "fail_open": false,
+   "decision": "ok",
+   "reason": "余额 ¥20.09 ≥ ¥8：允许质量档（估算 0.72M tokens / ¥1.44）"
+  },
+  "engine": {
+   "ok": true,
+   "path": "D:\\Meta-DGTF-道生三阶模型\\dgtf_engine\\dgtf_v2\\engine\\Meta-DGTF-V2.2.3.py",
+   "version": "2.2.3",
+   "supports": {
+    "self_check_mode": true,
+    "dual_judge_mode": true,
+    "history_fusion": true
+   },
+   "supports_config": {
+    "self_check_mode": true,
+    "dual_judge_mode": true,
+    "history_fusion": true
+   }
+  },
+  "preset": "D:\\Meta-DGTF-道生三阶模型\\configs\\道生专属模式.yaml",
+  "plan": {
+   "policy": "daosheng.v1",
+   "mode_id": "daosheng_fast",
+   "requested": "daosheng_fast",
+   "mode_source": "explicit",
+   "tier": "fast",
+   "engine_mode": "fast",
+   "mode_reason": "预算档：fast（thinking off、低圈；实测推理 tokens −33%、墙钟 −68%、质量 −1pp）",
+   "quality_first": false,
+   "preset": "D:\\Meta-DGTF-道生三阶模型\\configs\\道生专属模式.yaml",
+   "preset_info": {
+    "path": "D:\\Meta-DGTF-道生三阶模型\\configs\\道生专属模式.yaml",
+    "name": "道生专属模式.yaml",
+    "exists": true,
+    "bytes": 6850,
+    "mtime": 1792889575.9193668,
+    "error": ""
+   },
+   "route": "0,1,both,all",
+   "rounds": "0:2,1:3,both:2,all:2",
+   "parallel": "serial",
+   "web": "off",
+   "thinking": "off",
+   "effort": "auto",
+   "self_check_mode": "auto",
+   "self_check_mode_via": "config",
+   "dual_judge_mode": "auto",
+   "dual_judge_mode_via": "config",
+   "history_fusion": "auto",
+   "history_fusion_via": "engine-default",
+   "quality_policy": "auto:stable",
+   "project_related": false,
+   "project_context": false,
+   "context_injected": [],
+   "memory": {
+    "text": "",
+    "chars": 0,
+    "injected": false,
+    "truncated": false,
+    "cache": "miss",
+    "lessons": 0,
+    "playbook": 0,
+    "sources": [],
+    "reason": "非项目相关题：不注入 EML 记忆（避免无关内容进 prompt）"
+   },
+   "local_llm": {
+    "available": false,
+    "source": "rules",
+    "route": [
+     "0",
+     "1",
+     "both",
+     "all"
+    ],
+    "rounds": {},
+    "why": "规则回退：fact=False/short=True/meta=False → route=0,1,both,all",
+    "attempts": [
+     {
+      "source": "http",
+      "ok": false,
+      "available": false,
+      "latency_ms": 608.3,
+      "error": "URLError: <urlopen error timed out>"
+     },
+     {
+      "source": "subprocess",
+      "ok": false,
+      "error": "无 JSON 输出"
+     },
+     {
+      "source": "rules",
+      "ok": true
+     }
+    ]
+   },
+   "m4": {
+    "enabled": true,
+    "ok": true,
+    "first_mode": "B",
+    "first_reason": "满足全部约束（prefer=quality）",
+    "quality_prediction": {
+     "fast": 0.93,
+     "B": 0.9592,
+     "serial": 0.99
+    },
+    "quality_prediction_lower": {
+     "fast": 0.5406,
+     "B": 0.5454,
+     "serial": 0.7394
+    },
+    "conformal": {
+     "alpha": 0.2,
+     "q_global": -0.2288,
+     "coverage_oof": 0.8
+    },
+    "scenario": {
+     "scenario": "reasoning",
+     "label": "推理/机制解释",
+     "mode": "fast_domain2",
+     "run": {
+      "quality": 0.9535,
+      "tokens": 579083,
+      "calls": 98,
+      "wall": 282.7,
+      "verified": true,
+      "question": "为什么冬天的静电现象比夏天更常见？",
+      "config": "B parallel + thinking off + rounds auto"
+     },
+     "require_web": false,
+     "forbid": [],
+     "reason": "按实测场景矩阵选择（prefer=quality）",
+     "note": "fast 已在两个推理域验证（0.9366/0.9535 vs auto 0.9465；单跑方差内），tokens −33%、墙钟 −68~70% ⇒ 成本档首选；serial 只省 11% tokens 但墙钟 +74%，已被 fast/auto 支配（仅作历史对照保留）",
+     "kind": "reasoning"
+    },
+    "quality_guard": "",
+    "error": null
+   },
+   "scenario": {
+    "scenario": "reasoning",
+    "label": "推理/机制解释",
+    "mode": "fast_domain2",
+    "run": {
+     "quality": 0.9535,
+     "tokens": 579083,
+     "calls": 98,
+     "wall": 282.7,
+     "verified": true,
+     "question": "为什么冬天的静电现象比夏天更常见？",
+     "config": "B parallel + thinking off + rounds auto"
+    },
+    "require_web": false,
+    "forbid": [],
+    "reason": "按实测场景矩阵选择（prefer=quality）",
+    "note": "fast 已在两个推理域验证（0.9366/0.9535 vs auto 0.9465；单跑方差内），tokens −33%、墙钟 −68~70% ⇒ 成本档首选；serial 只省 11% tokens 但墙钟 +74%，已被 fast/auto 支配（仅作历史对照保留）",
+    "kind": "reasoning"
+   },
+   "history": {
+    "n": 80,
+    "mode_counts": {
+     "serial": 45,
+     "A": 1,
+     "B": 31,
+     "E": 1,
+     "C": 1,
+     "D": 1
+    },
+    "tokens_med": 720542.0,
+    "calls_med": 89.0,
+    "cut_rate": 0.825,
+    "web_ratio": 0.375,
+    "tri_rate": 0.0,
+    "latest_run_id": "20261025_140533"
+   },
+   "cache": {
+    "exact": false,
+    "exact_from": "",
+    "semantic_capable": true,
+    "semantic_min_similarity": 0.98,
+    "note": "精确缓存未命中；语义缓存可用（BGE 余弦 ≥0.98 才复用）"
+   },
+   "budget_guard": {
+    "balance_cny": 20.09,
+    "balance_source": "runner",
+    "est_tokens": 720542,
+    "est_cost_cny": 1.44,
+    "raw_max_tokens": 2000000,
+    "cny_per_million_tokens": 2.0,
+    "fail_open": false,
+    "decision": "ok",
+    "reason": "余额 ¥20.09 ≥ ¥8：允许质量档（估算 0.72M tokens / ¥1.44）"
+   },
+   "engine": {
+    "ok": true,
+    "path": "D:\\Meta-DGTF-道生三阶模型\\dgtf_engine\\dgtf_v2\\engine\\Meta-DGTF-V2.2.3.py",
+    "version": "2.2.3",
+    "supports": {
+     "self_check_mode": true,
+     "dual_judge_mode": true,
+     "history_fusion": true
+    },
+    "supports_config": {
+     "self_check_mode": true,
+     "dual_judge_mode": true,
+     "history_fusion": true
+    }
+   },
+   "warnings": [],
+   "elapsed_ms": 1302.4,
+   "reason": "显式 daosheng_fast：便宜档（低圈 + thinking off），质量让位于预算；预算档：fast（thinking off、低圈；实测推理 tokens −33%、墙钟 −68%、质量 −1pp）；本地服务不可达→规则回退（route=0,1,both,all）；场景=reasoning → 推荐 fast_domain2（0.9535）；M4 预测 fast=0.930/B=0.959/serial=0.990",
+   "applied_opts": {
+    "route": "0,1,both,all",
+    "rounds": "0:2,1:3,both:2,all:2",
+    "parallel": "serial",
+    "web": "off",
+    "thinking": "off",
+    "profile": "道生专属模式.yaml"
+   }
+  }
+ },
+ "plan_summary": {
+  "tier": "fast",
+  "engine_mode": "fast",
+  "parallel": "serial",
+  "thinking": "off",
+  "web": "off",
+  "rounds": "0:2,1:3,both:2,all:2",
+  "scenario": "reasoning",
+  "scenario_rec": "fast_domain2",
+  "budget_decision": "ok",
+  "reason": "显式 daosheng_fast：便宜档（低圈 + thinking off），质量让位于预算；预算档：fast（thinking off、低圈；实测推理 tokens −33%、墙钟 −68%、质量 −1pp）；本地服务不可达→规则回退（route=0,1,both,all）；场景=reasoning → 推荐 fast_domain2（0.9535）；M4 预测 fast=0.930/B=0.959/serial=0.990"
+ },
+ "task": {
+  "id": "20261025_142727_cebe38",
+  "status": "done",
+  "tokens": null,
+  "calls": null,
+  "elapsed": null,
+  "quality": null,
+  "answer_quality": null,
+  "answer_ready": null,
+  "error": "",
+  "packed": null,
+  "output": null
+ },
+ "elapsed_task_s": 573.3,
+ "packed_error": "No module named 'dgtf_v2'",
+ "packed_real_run": {
+  "file": "outputs/20261025_143654_为什么在高原上煮饭更容易夹生.packed.json",
+  "id": "20261025_142736",
+  "quality": 0.9588,
+  "answer_quality": "verified",
+  "answer_ready": true,
+  "tokens": 698602,
+  "calls": 107,
+  "rounds": {
+   "0": 2,
+   "1": 3,
+   "both": 2,
+   "all": 2
+  },
+  "question": "为什么在高原上煮饭更容易夹生？",
+  "note": "task 字段 tokens/calls 口径与 packed 不同（旧字段名），以 packed 读数为准；本次为真实引擎跑次，非缓存。"
+ }
+}

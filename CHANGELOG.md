@@ -42,6 +42,13 @@ V2.2.3
   - 前缀缓存实测：全量跑 prompt cache hit ratio **13.9%~17.6%**（已自动省约 ¥0.2/跑）；
     prompt 静态段前置可进一步省，但需质量 A/B，列为下一轮 opt-in 项。
 
+【Round 7 增补（2026-10-25 同日）】
+- App daosheng_fast 成本档**真实任务 e2e 验证**：新题「为什么在高原上煮饭更容易夹生？」
+  → plan(tier=fast/engine_mode=fast/thinking off/rounds 0:2,1:3,both:2,all:2) 生效 →
+  quality 0.9588 / verified / answer_ready=True / 698,602 tokens / 107 calls / 573s；
+  证据 docs/ab_evidence_20261025.md §13、llm_sft/_round7_evidence/app_fast_e2e.json。
+- 新增 scripts/app_fast_e2e.py（App API 端到端验证：起 server→POST 任务→轮询→
+  packed 指标汇总→关 server，可复现）。
 【Round 6 增补（2026-10-25 同日）】
 - 实测矩阵回灌管线 scripts/update_scenario_matrix.py：从 docs/ab_results.jsonl 有效真跑
   按「场景×模式×web」聚合（质量锚点只用 verified 真跑），输出 docs/scenario_matrix_live.json
