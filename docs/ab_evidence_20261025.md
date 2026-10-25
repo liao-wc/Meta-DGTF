@@ -374,3 +374,23 @@ rounds=0:2,1:3,both:2,all:2 | scenario=reasoning → 推荐 fast_domain2
 （非纯压缩），不能当压缩收益。self_check 只占全量 ~10-15%，故总收益约 1% 量级 ⇒
 **保留 opt-in，不设默认**；上下文压缩的真正大头在层 prompt（manifest/collision），
 需质量 A/B 预算，留待后续。
+
+
+### 14.1 真实跑次明细与收尾说明（Round 8 末尾）
+
+| 跑次 | 关键读数 |
+|---|---|
+| 珠峰 App e2e（修复前，web on，全四层） | 0.4273 / unverified / ready=False / 1,257,791 tok / 111 calls |
+| 珠峰 App e2e（官方源优先后，pre-clean 版本） | **0.37 / verified / ready=False** / 1,114,650 tok / 101 calls；fact_card=answered，resolved_conflicts=1，gaps 仅 `conflict_resolved_official:official_precedence`；ready=False 仍由**过程门**（元层 all 产物 400 字未达标）阻断，非事实门 |
+| 长江长度 CLI（web on，对照） | **0.9746 / verified / ready=True** / 1,120,972 tok / 108 calls / 1070s；fact_card=answered 无冲突 |
+
+两个遗留观察（下一轮处理）：
+1. **过程门**：珠峰跑次元层 all 产物仅 400 字、无引用 ⇒ `process_ledger.standard_all=False`
+   ⇒ answer_ready 仍 False。事实门与过程门是两套合同，需分别优化（过程门属元层收束问题）。
+2. **答案抽取**：`answer_from_evidence` 曾把 `[2018-09-20] ### 关于珠峰高度…8844.43米`
+   这类带日期/标题/旧值的网页片段当答案（官方源是 2005 年公布值）。本轮已给
+   official-precedence 路径加 `_clean_card_answer` 清洗（去行首 [日期]/###、压 200 字），
+   并把同一清洗用于**普通 answered 路径**；更进一步的「最新值优先」需要按证据日期
+   排序与语义过滤，作为下一轮机制候选。
+3. 预算状态：Round 8 末尾账户余额约 **¥3.3**，不足以再跑完整引擎跑次（单次 ¥2.5+）；
+   后续轮次转入零/低 API 成本工作（代码、判据、文档、离线分析），直到预算耗尽。

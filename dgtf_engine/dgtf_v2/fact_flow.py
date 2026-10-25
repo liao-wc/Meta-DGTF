@@ -427,7 +427,7 @@ def build_fact_card(question: str, report: EvidenceReport,
     official_n = len(official_ids)
     domains = sorted({str(getattr(e, "domain", "") or "") for e in evs} - {""})
     independent = len(domains)
-    answer = answer_from_evidence(evs, question)
+    answer = _clean_card_answer(answer_from_evidence(evs, question))
     if answer and (official_n >= int(min_official)
                    or independent >= int(min_independent)):
         return FactCard(status="answered", answer=answer,

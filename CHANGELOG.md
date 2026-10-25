@@ -52,7 +52,8 @@ V2.2.3
   默认关）；局部 A/B self_check 单次 tokens −8.3%，总量差异主要来自停止点 ⇒ opt-in。
 - App 事实题规则修正：短事实题不再省掉对撞/元层（route 恒 0,1,both,all）；
   实测 2 层 → 0.2253/unverified，全四层修复后 verified（过程门另议）。
-- 判据/门禁：V2 45/45（687 checks）、fast_gate 12/12。
+- 判据/门禁：V2 45/45（675 checks）、fast_gate 12/12。
+- 答案清洗：fact_card 普通 answered 路径也走 _clean_card_answer（去行首 [日期]/###、压 200 字），修「verified 但答案带网页标题/旧值前缀」。
 【Round 7 增补（2026-10-25 同日）】
 - v4 本地适配器（197 样本 / fp16 compute / max_len 1792）负结果：
   val_loss 0.2331（v2 0.2238）、JSON 0.583（v2 0.857）、字段平均 0.250（v2 0.476）、
