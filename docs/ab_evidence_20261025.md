@@ -185,3 +185,29 @@ calls 177 / 182，dual_judge 17~22 calls / 177K~287K tokens / 358K~400K ms。）
    动态调度里「题型→web」是**质量开关**而不是成本开关，应优先质量。
 4. 该矩阵可作为 M4/mode_fusion 场景表的实测锚点：推理/选择→daosheng(auto rounds,
    web off)；事实→daosheng + web on（web-retry）。
+
+
+## 9. 场景 × 模式矩阵（Round 4：补 fast / serial 两档实测）
+
+同一推理题（城市热岛，道生预设 + 引擎 CLI）三种模式各跑一次：
+
+| 模式 | 配置 | quality | verified/ready | tokens | calls | wall |
+|---|---|---|---|---|---|---|
+| auto（B 并行 + thinking auto + rounds auto） | 道生预设默认 | 0.9465 | ✅ / ✅ | 723,064 | 97 | 586.2s |
+| serial（串行） | --parallel serial | 0.9456 | ✅ / ✅ | 644,954 | 89 | 1019.0s |
+| fast（thinking off） | --thinking off | 0.9366 | ✅ / ✅ | **481,050** | 89 | **188.4s** |
+
+事实题（光速）fast 对照：**quality 0.4741 / needs_evidence / ready=False**
+（836K tokens / 316s）⇒ 事实题不能关 thinking。
+
+判读（写进 mode_fusion.MEASURED_SCENARIOS 与 
+ecommend_scenario()）：
+1. **推理/选择类**：auto 质量最高（0.9465/0.9487）；**fast 是成本/墙钟档**
+   （tokens −33%、墙钟 −68%，质量 −1.0pp）；serial 仅省 11% tokens 但墙钟 +74%，
+   是受支配档（只在 min_quality≥0.94 且 tokens 优先时有用）。
+2. **事实类**：必须 web on + thinking on；web off（0.444）与 thinking off（0.474）
+   都是「成本不低、质量不达标」的双输档。
+3. 
+ecommend_scenario(kind, min_quality, max_wall, prefer) 已把这套规则机器化：
+   按实测 verified 池筛选 → 偏好排序 → 约束不可满足时显式回退并写 reason。
+   判据：tests_scenario_matrix.py 19/19 PASS。

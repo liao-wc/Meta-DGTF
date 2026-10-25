@@ -210,3 +210,145 @@ def scenario_table() -> List[dict]:
                     "tokens": (r.get("info") or {}).get("tokens"),
                     "wall": (r.get("info") or {}).get("wall")})
     return out
+
+# ── 实测场景矩阵（2026-10-25 Round 4，引擎 CLI 真跑）────────────────────
+# 用途：把「不同场景/领域/维度」的实测最优形态写成机器可读表，供 App/M4 选档
+# 与文档展示。数字全部来自 docs/ab_results.jsonl 的同题真跑（引擎 V2.2.3，
+# configs/道生专属模式.yaml，web 按场景开关）。
+MEASURED_SCENARIOS: Dict[str, dict] = {
+    "reasoning": {
+        "label": "推理/机制解释",
+        "question": "为什么城市热岛效应在夜间比白天更明显？",
+        "runs": {
+            "auto": {"quality": 0.9465, "tokens": 723064, "calls": 97,
+                     "wall": 586.2, "verified": True,
+                     "config": "B parallel + thinking auto + rounds auto"},
+            "serial": {"quality": 0.9456, "tokens": 644954, "calls": 89,
+                       "wall": 1019.0, "verified": True,
+                       "config": "serial + thinking auto + rounds auto"},
+            "fast": {"quality": 0.9366, "tokens": 481050, "calls": 89,
+                     "wall": 188.4, "verified": True,
+                     "config": "B parallel + thinking off + rounds auto"},
+        },
+        "rules": {
+            "quality_first": "auto",
+            "cost_first": "fast",
+            "low_tokens_with_quality_ge_0.94": "serial",
+            "note": ("fast 是成本/墙钟档（质量 -1.0pp）；serial 只比 auto 省 11% tokens "
+                     "但墙钟 +74%，仅在 min_quality>=0.94 且 tokens 优先时有用"),
+        },
+    },
+    "choice": {
+        "label": "选择/决策",
+        "question": "在城市热岛研究中，应该优先补观测还是优先统一定义？",
+        "runs": {
+            "auto": {"quality": 0.9487, "tokens": 842151, "calls": 98,
+                     "wall": 869.3, "verified": True,
+                     "config": "B parallel + thinking auto + rounds auto"},
+        },
+        "rules": {"quality_first": "auto",
+                  "note": "选择类与推理类同档；未测 fast 档，默认不降档"},
+    },
+    "fact": {
+        "label": "事实/数值",
+        "question": "光在水中传播的速度是多少？",
+        "runs": {
+            "web_on_auto": {"quality": 0.9581, "tokens": 1154024, "calls": 108,
+                            "wall": 965.7, "verified": True,
+                            "config": "B parallel + thinking auto + web on"},
+            "web_on_fast": {"quality": 0.4741, "tokens": 836464, "calls": 108,
+                            "wall": 316.1, "verified": False,
+                            "config": "B parallel + thinking off + web on",
+                            "answer_quality": "needs_evidence"},
+            "web_off_auto": {"quality": 0.4440, "tokens": 1015910, "calls": 111,
+                             "wall": 980.3, "verified": False,
+                             "config": "B parallel + thinking auto + web off",
+                             "answer_quality": "unverified"},
+        },
+        "rules": {
+            "quality_first": "web_on_auto",
+            "requires_web": True,
+            "forbid": ["web_off_auto", "web_on_fast"],
+            "note": ("事实门需要官方证据（web on）；且必须保留 thinking —— "
+                     "thinking off 时质量 0.474/needs_evidence。"
+                     "「事实题无 web」是更高成本+更低质量的双输档"),
+        },
+    },
+}
+
+KIND_BUCKETS = ("reasoning", "choice", "fact")
+
+
+def measured_matrix() -> List[dict]:
+    """返回实测场景矩阵（扁平列表，便于 App/文档渲染）。"""
+    out = []
+    for kind, cfg in MEASURED_SCENARIOS.items():
+        for mode, run in (cfg.get("runs") or {}).items():
+            out.append({"scenario": kind, "label": cfg.get("label", kind),
+                        "mode": mode, "question": cfg.get("question", ""),
+                        "quality": run.get("quality"),
+                        "verified": run.get("verified"),
+                        "tokens": run.get("tokens"),
+                        "calls": run.get("calls"),
+                        "wall": run.get("wall"),
+                        "config": run.get("config", ""),
+                        "answer_quality": run.get("answer_quality", "")})
+    return out
+
+
+def kind_of_question(question: str) -> str:
+    """题面→场景桶（轻量规则；未知返回 reasoning）。"""
+    q = str(question or "")
+    if not q.strip():
+        return "reasoning"
+    fact_markers = ("多少", "是什么", "哪一年", "是谁", "等于几", "速度",
+                    "多少度", "几岁", "多远")
+    choice_markers = ("还是", "或者", "应该", "如何取舍", "优先", "选择",
+                      "方案")
+    if any(k in q for k in choice_markers):
+        return "choice"
+    if any(k in q for k in fact_markers) and not any(
+            k in q for k in ("为什么", "为何", "机制", "原因")):
+        return "fact"
+    return "reasoning"
+
+
+def recommend_scenario(kind: str = "reasoning",
+                       min_quality: Optional[float] = None,
+                       max_wall: Optional[float] = None,
+                       prefer: str = "quality") -> dict:
+    """按实测场景矩阵给推荐档；不满足约束时回退并写入 reason。"""
+    k = kind if kind in MEASURED_SCENARIOS else "reasoning"
+    cfg = MEASURED_SCENARIOS[k]
+    rules = cfg.get("rules") or {}
+    runs = cfg.get("runs") or {}
+    require_web = bool(rules.get("requires_web"))
+    pool = {name: r for name, r in runs.items() if r.get("verified")}
+    if not pool:
+        return {"scenario": k, "mode": None, "reason": "该场景无 verified 实测档"}
+    feasible = {}
+    for name, r in pool.items():
+        if min_quality is not None and float(r.get("quality") or 0) < min_quality:
+            continue
+        if max_wall is not None and float(r.get("wall") or 1e9) > max_wall:
+            continue
+        feasible[name] = r
+    fallback = False
+    if not feasible:
+        feasible = pool
+        fallback = True
+    if prefer == "wall":
+        name = min(feasible, key=lambda n: feasible[n].get("wall") or 1e9)
+    elif prefer == "tokens":
+        name = min(feasible, key=lambda n: feasible[n].get("tokens") or 1e18)
+    else:
+        name = max(feasible, key=lambda n: (feasible[n].get("quality") or 0,
+                                            -(feasible[n].get("wall") or 1e9)))
+    reason = "按实测场景矩阵选择（prefer=%s）" % prefer
+    if fallback:
+        reason = "无满足约束的档，回退为最接近档（prefer=%s）" % prefer
+    return {"scenario": k, "label": cfg.get("label", k), "mode": name,
+            "run": dict(feasible[name]), "require_web": require_web,
+            "forbid": list(rules.get("forbid") or []), "reason": reason,
+            "note": rules.get("note", "")}
+

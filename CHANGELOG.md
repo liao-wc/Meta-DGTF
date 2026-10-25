@@ -43,6 +43,11 @@ V2.2.3
     prompt 静态段前置可进一步省，但需质量 A/B，列为下一轮 opt-in 项。
 
 【Round 4 增补（2026-10-25 同日）】
+- 场景 × 模式矩阵实测（推理题）：auto 0.9465/723K/586s；serial 0.9456/645K/1019s；
+  fast 0.9366/481K/188s（成本档）；事实题 fast 0.4741 needs_evidence（禁止）。
+  机器化到 mode_fusion.MEASURED_SCENARIOS + recommend_scenario()，
+  判据 tests_scenario_matrix.py 19 项全 PASS；证据 docs/ab_evidence_20261025.md §9。
+
 - M4 预测器两处根因修正：①训练样本只收「完整跑」（training_sample_ok，丢弃 106 条
   部分跑/硬顶/无轨迹样本，166→90）；②特征 OOD 护栏（hist_* 缺失按均值填补、
   |z|>3 拒绝外推）。修正后同题 raw 预测 0.11→0.953、保形下界 0→0.72~0.77，
