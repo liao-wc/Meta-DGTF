@@ -352,6 +352,15 @@ def main():
                           "A. 煤炭 B. 太阳能 C. 石油 D. 天然气") is True)
     ck("A65 非选择题不识别", _looks_like_choice("水的沸点是多少摄氏度？") is False)
 
+    # ── A33：辟谣证据降权（Round 88）──────────────
+    _debunk_ans = answer_from_evidence([
+        ev("E1", "间质是人体最大的器官？专家：说法并不科学，属流言。",
+           official=True),
+        ev("E2", "皮肤是人体最大的器官，成年人皮肤面积约1.5–2平方米。",
+           official=True)],
+        "人体最大的器官是什么？")
+    ck("A66 辟谣证据降权（取皮肤而非流言文）",
+       "皮肤" in _debunk_ans and "流言" not in _debunk_ans, _debunk_ans)
     # ── B：整体量语义加权 ────────────────────────
     ck("B1 问长度 + 全长标记 → 加分",
        _overall_quantity_bonus("黄河全长约5464公里", "黄河的长度是多少千米") > 0)

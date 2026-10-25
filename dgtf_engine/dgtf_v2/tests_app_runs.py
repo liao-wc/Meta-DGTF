@@ -20,7 +20,7 @@ def ck(n, ok, info=""):
 
 def main():
     rows = measured_app_runs()
-    ck("① 行数 = 7（App e2e 真跑）", len(rows) == 7, len(rows))
+    ck("① 行数 = 8（App e2e 真跑）", len(rows) == 8, len(rows))
     need = {"id", "mode", "tier", "scenario", "question", "quality",
             "tokens", "calls", "wall", "verified", "ready", "plan"}
     ck("② 必需字段齐全", all(need.issubset(set(r)) for r in rows),

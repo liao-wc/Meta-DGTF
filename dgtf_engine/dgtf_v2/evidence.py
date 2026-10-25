@@ -1039,6 +1039,10 @@ def answer_from_evidence(items: Iterable, question: str = "",
         score = _answer_relevance(text, q)
         if bool(getattr(e, "official", False)):
             score += 0.15
+        # ★ [Round 88] 辟谣/流言证据降权（避免把「说法并不科学」当答案）
+        if any(k in text for k in ("流言", "谣言", "辟谣", "并不科学", "不科学",
+                                   "并非", "误传", "错误说法")):
+            score -= 0.7
         # ★ [Round 47] 命名问句：含命名动词的证据加分
         if _asks_name_q and any(k in text for k in (
                 "命名为", "被命名", "称为", "名为", "代号", "全称", "简称")):

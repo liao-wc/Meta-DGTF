@@ -45,7 +45,14 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
-【Round 88 增补（2026-10-26）】
+【Round 88 增补（扩展）】
+- 辟谣降权：answer_from_evidence 对 流言/谣言/辟谣/并不科学/并非 等 −0.7
+  （A66）；人体最大器官 0.9523/verified（answer=皮肤）。
+- 三领域覆盖：淡水湖 0.986、最大器官 0.9523、安理会常任国 0.9446（全 verified）；
+  事实矩阵 42 行（fact 33）。
+- App e2e 成年：423.2s / quality 0.9677 / verified，display=十八周岁；App 矩阵 8 行。
+- 并发锁实战：2 条被锁拒绝（未消耗）→ --force-concurrent 重跑成功；V2 810 checks。
+
 - P1 dual_judge local 仍阻塞（引擎文件被并发占用）：方案文档
   docs/dual_judge_local_patch_plan.md 已就绪（3 处最小 diff、5 条离线判据、1 次真跑验收）。
 - 零成本维护：final_acceptance --with-service **9/9 PASS**、巡检/守卫 CHECK PASS、
