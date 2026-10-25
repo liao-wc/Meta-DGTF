@@ -45,6 +45,9 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 68 增补（2026-10-26）】
+- compare_eval 自检脚本（5 项回归：SWITCH/KEEP/噪声容差/stages 结构/未知结构），
+  实测 5/5 PASS。
 【Round 66 增补（2026-10-26）】
 - 本地模型评测对比脚本 compare_eval.py：指标差值 + 噪声容差 + SWITCH_CANDIDATE/
   KEEP_BASELINE 判定；v6 vs v5 实测判为 SWITCH_CANDIDATE（与历史决策一致）。

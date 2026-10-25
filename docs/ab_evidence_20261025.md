@@ -1950,3 +1950,10 @@ v8 训练在 backward 阶段报 `CUDA error: CUBLAS_STATUS_EXECUTION_FAILED`
 实测：v6 vs v5 → `SWITCH_CANDIDATE`（字段 +0.211、escape +0.60、p50 −454ms、
 p95 −1932ms；suspF1 −0.012 在噪声内）——与 Round 38 的历史决策一致，脚本可作为
 未来 v8b/v9 切换的统一判据。
+
+
+## 71. compare_eval 自检（Round 68）
+
+scripts/local_model/test_compare_eval.py：对评测对比脚本做 5 项回归（零 API）——
+① 全面更优→SWITCH；② 明显变差→KEEP；③ suspF1 −0.01 在噪声内不阻断；
+④ stages 字典结构可解析；⑤ 未知结构不崩溃且 KEEP。实测 **5/5 PASS**。
