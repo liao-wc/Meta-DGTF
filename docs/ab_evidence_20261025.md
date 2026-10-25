@@ -999,3 +999,43 @@ fact fast+web **n=7、质量 0.956、tokens 678,694、墙钟 218.7s**，与人�
 ### 32.3 门禁
 
 全量 V2 **50/50（751 checks）**、fast_gate 12/12。
+
+
+## 33. 真实 busy 信号验证 + App 维度实测矩阵（Round 27）
+
+### 33.1 真实 busy → plan 回退验证（非模拟）
+
+`scripts/app_local_metrics_check.py --real-busy`：并发向 8772 注入 3 个
+`max_new_tokens=400` 请求（造成真实单锁排队），1.2s 后连续读 `/metrics`：
+
+```
+PASS ① 并发注入下 /metrics 观察到 real busy=True
+PASS ② busy 下 plan 回退云端 llm（self_check_mode=llm / via=busy-fallback）
+PASS ③ plan warnings 记录回退
+PASS ④ 并发注入请求全部成功（3/3）
+TOTAL 6/6 PASS
+```
+⇒ Round 26 的「本地忙 → 云端自省」不是纸面逻辑：真实并发下 `/metrics.busy_now`
+被观察到，plan 自动切 llm 并留痕。
+
+### 33.2 App 维度实测矩阵 `MEASURED_APP_RUNS`（3 条 e2e 真跑）
+
+| id | 场景 | tier | quality | tokens | calls | wall | 门 |
+|---|---|---|---|---|---|---|---|
+| app-fast-reasoning（高原煮饭） | reasoning | fast | 0.9588 | 698,602 | 107 | 573s | verified/ready |
+| app-fast-fact（HTTP 500） | fact | fast | 0.9740 | 745,091 | 99 | 493s | verified/ready |
+| app-quality-fact（珠峰） | fact | quality | 0.9447 | 1,182,916 | 112 | — | verified/ready |
+
+`measured_app_runs()` / `app_runs_summary()`（按 scenario×tier 聚合）已加入
+`mode_fusion`，供 App 展示与选档参考；判据 `tests_app_runs.py` **10 项**
+（字段/verified/质量域/fast 覆盖/聚合/省 tokens/确定性/副本隔离）。
+
+### 33.3 意义
+
+此前场景矩阵只有引擎 CLI 维度；App 端到端（plan/编排/归档）的成本-质量独立锚点
+补齐后，「App ↔ 引擎 ↔ 本地模型」三体动态最优在**三个维度**均有实测锚点：
+引擎 CLI（15 行）、App e2e（3 行）、本地服务（v5 A/B + metrics/并发）。
+
+### 33.4 门禁
+
+全量 V2 **51/51（761 checks）**、fast_gate 12/12。

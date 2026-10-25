@@ -45,6 +45,12 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 27 增补（2026-10-25 同日）】
+- 真实 busy 验证：并发注入 8772 后 /metrics busy=True → App plan 自动回退云端 llm
+  （via=busy-fallback + warnings），app_local_metrics_check --real-busy 6/6 PASS。
+- 新增 App 维度实测矩阵 MEASURED_APP_RUNS（3 条 e2e：fast 推理 0.9588/698K、
+  fast 事实 0.9740/745K、quality 事实 0.9447/1.18M，均 verified/ready）+
+  app_runs_summary() 聚合；tests_app_runs 10 项；全量 V2 51/51（761 checks）。
 【Round 26 增补（2026-10-25 同日）】
 - App 道生 plan 接入本地服务 /metrics：local_llm.metrics 暴露 busy/avg_ms/counters；
   预设 local 自省且本地 busy 时本次自动回云端 llm（via=busy-fallback + warnings）。

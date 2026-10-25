@@ -402,3 +402,53 @@ def recommend_scenario(kind: str = "reasoning",
             "forbid": list(rules.get("forbid") or []), "reason": reason,
             "note": rules.get("note", "")}
 
+
+# ── App 维度实测跑次（2026-10-25 e2e 真跑，Round 27）────────────────────
+# 用途：场景矩阵此前只有引擎 CLI 维度；App 端到端（含 plan/编排/归档）的实际
+# 成本-质量需要独立锚点，供 App 展示与动态选档参考。
+MEASURED_APP_RUNS: List[dict] = [
+    {"id": "app-fast-reasoning", "mode": "daosheng_fast", "tier": "fast",
+     "scenario": "reasoning", "question": "为什么在高原上煮饭更容易夹生？",
+     "quality": 0.9588, "tokens": 698602, "calls": 107, "wall": 573.3,
+     "verified": True, "ready": True, "plan": "fast/thinking off/web off"},
+    {"id": "app-fast-fact", "mode": "daosheng_fast", "tier": "fast",
+     "scenario": "fact", "question": "HTTP 500状态码表示什么？",
+     "quality": 0.9740, "tokens": 745091, "calls": 99, "wall": 493.0,
+     "verified": True, "ready": True, "plan": "fast/thinking off/web on"},
+    {"id": "app-quality-fact", "mode": "daosheng", "tier": "quality",
+     "scenario": "fact", "question": "珠穆朗玛峰的海拔是多少米？",
+     "quality": 0.9447, "tokens": 1182916, "calls": 112, "wall": None,
+     "verified": True, "ready": True, "plan": "B/thinking auto/web on"},
+]
+
+
+def measured_app_runs() -> List[dict]:
+    """App 维度实测跑次（扁平副本）。"""
+    return [dict(x) for x in MEASURED_APP_RUNS]
+
+
+def app_runs_summary() -> List[dict]:
+    """按 (scenario, tier) 聚合 App 实测：均值质量/tokens/calls、verified 率。"""
+    groups: Dict[tuple, List[dict]] = {}
+    for r in MEASURED_APP_RUNS:
+        groups.setdefault((str(r.get("scenario")), str(r.get("tier"))),
+                          []).append(r)
+    out = []
+    for (sc, tier), rows in sorted(groups.items()):
+        n = len(rows)
+        out.append({
+            "scenario": sc, "tier": tier, "n_runs": n,
+            "quality_mean": round(sum(float(r.get("quality") or 0)
+                                      for r in rows) / n, 4),
+            "tokens_mean": int(sum(int(r.get("tokens") or 0)
+                                   for r in rows) / n),
+            "calls_mean": round(sum(int(r.get("calls") or 0)
+                                    for r in rows) / n, 1),
+            "walls": [r.get("wall") for r in rows],
+            "verified_ratio": round(sum(1 for r in rows
+                                        if r.get("verified")) / n, 3),
+            "ready_ratio": round(sum(1 for r in rows
+                                     if r.get("ready")) / n, 3),
+        })
+    return out
+
