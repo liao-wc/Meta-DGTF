@@ -230,6 +230,9 @@ class LocalEngine:
         self.stats = {"requests_total": 0, "by_stage": {}, "errors": 0,
                       "total_ms": 0.0, "max_ms": 0.0, "busy_now": False,
                       "last_ms": 0.0, "last_stage": "", "last_adapter": ""}
+        # ★ [Round 65] 延迟分位数滑动窗口（最近 50 次真实生成耗时）
+        import collections as _collections
+        self._lat_window = _collections.deque(maxlen=50)
         if autostart:
             threading.Thread(target=self._load, daemon=True).start()
             threading.Thread(target=self._worker, daemon=True).start()
@@ -344,6 +347,7 @@ class LocalEngine:
             self.stats["last_ms"] = ms
             self.stats["last_adapter"] = str(adapter or "")
             self.stats["busy_now"] = False
+            self._lat_window.append(ms)
 
     # ---------- 生成（prefill fp32 GEMM + decode fp16） ----------
     @torch.inference_mode()
@@ -646,6 +650,12 @@ class Handler(BaseHTTPRequestHandler):
             h = self.engine.health()
             st = dict(getattr(self.engine, "stats", {}) or {})
             n = max(1, int(st.get("requests_total") or 0))
+            _lat = sorted(getattr(self.engine, "_lat_window", []) or [])
+            def _pct(q: float) -> float:
+                if not _lat:
+                    return 0.0
+                _i = min(len(_lat) - 1, int(round((len(_lat) - 1) * q)))
+                return round(_lat[_i], 1)
             payload = {
                 "ok": True,
                 "state": h.get("status") or h.get("state") or "ready",
@@ -653,6 +663,10 @@ class Handler(BaseHTTPRequestHandler):
                 "adapter_paths": h.get("adapter_paths"),
                 "stats": st,
                 "avg_ms": round(float(st.get("total_ms") or 0) / n, 1),
+                "latency": {"n": len(_lat), "p50": _pct(0.50),
+                            "p95": _pct(0.95),
+                            "mean": round(sum(_lat) / len(_lat), 1)
+                            if _lat else 0.0},
             }
             self._send(200, payload)
             return
