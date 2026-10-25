@@ -372,6 +372,17 @@ def _compact_numeric_answer(question: str, answer: str) -> str:
             if _m2:
                 return _m2.group(1) + "年"
             return _years[-1]
+    # ★ [Round 43] 地点问句：display 收窄到城市名（纽约市）
+    if any(k in q for k in ("哪个城市", "哪座城市", "哪个国家", "何地",
+                            "哪里", "在什么地方")):
+        _tail = ans
+        for _mk in ("地址", "设在", "位于", "地处", "总部", "：", ":"):
+            _pos = _tail.find(_mk)
+            if _pos >= 0:
+                _tail = _tail[_pos + len(_mk):]
+        _parts = re.findall(r"[\u4e00-\u9fa5]{2,4}市", _tail)
+        if _parts:
+            return _parts[0]
     if not any(h in q for h in _NUM_Q_HINTS):
         return ans
     try:

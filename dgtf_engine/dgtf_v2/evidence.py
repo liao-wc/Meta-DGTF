@@ -863,7 +863,10 @@ def _short_answer(text: str, question: str = "") -> str:
         if _cands:
             _cands.sort(reverse=True)
             return _cands[0][3].strip()[:240]
-    if _dates:
+    # ★ [Round 43] 地点问句优先于日期句分支（避免被历史日期句截走）
+    _loc_q2 = any(k in _q for k in ("哪个城市", "哪座城市", "哪个国家", "何地",
+                                    "哪里", "在什么地方", "位于", "设在"))
+    if _dates and not _loc_q2:
         # ★ [Round 30] 日期句也加题面概念排序（避免取到无关文书的日期）
         _dc = re.findall(r"[A-Za-z]{2,}", _q)
         _dc += [str(_q[_i:_i + 2]) for _i in range(len(_q) - 1)
@@ -877,7 +880,22 @@ def _short_answer(text: str, question: str = "") -> str:
             _cands.append((_hit, -_idx, part))
         if _cands:
             _cands.sort(reverse=True)
-            return _cands[0][2].strip()[:240]
+            return str(_cands[0][2]).strip()[:240]
+    # ★ [Round 43] 地点问句：优先返回含「城市/位于/设在」的短句
+    if _loc_q2:
+        _lc = re.findall(r"[A-Za-z]{2,}|[\u4e00-\u9fa5]{2,}", _q)
+        _cands = []
+        for _idx, part in enumerate(re.split(r"[。；;\n]", s)):
+            if not (re.search(r"[\u4e00-\u9fa5]{2,6}市", part)
+                    or "位于" in part or "设在" in part):
+                continue
+            _hit = sum(1 for c in _lc if c in part)
+            _city = 1 if re.search(r"[\u4e00-\u9fa5]{2,6}市", part) else 0
+            _addr = 1 if any(k in part for k in ("地址", "位于", "设在")) else 0
+            _cands.append((_city + _addr, _hit, -_idx, part))
+        if _cands:
+            _cands.sort(reverse=True)
+            return str(_cands[0][3]).strip()[:240]
     return s[:240]
 
 
@@ -965,6 +983,8 @@ def answer_from_evidence(items: Iterable, question: str = "",
                                q, re.I))
     _asks_date_q = any(k in q for k in ("哪一年", "哪年", "何时", "什么时候",
                                         "年份"))
+    _asks_loc_q = any(k in q for k in ("哪个城市", "哪座城市", "哪个国家", "何地",
+                                       "哪里", "在什么地方", "位于"))
     scored = []
     _recent = bool(prefer_recent) and any(k in q for k in _RECENCY_CUES)
     _dates = [_text_date_score(str(getattr(e, "snippet", "") or ""))
@@ -975,6 +995,14 @@ def answer_from_evidence(items: Iterable, question: str = "",
         score = _answer_relevance(text, q)
         if bool(getattr(e, "official", False)):
             score += 0.15
+        # ★ [Round 43] 地点问句：城市句式/地址句式证据加分
+        if _asks_loc_q:
+            _city_n = len(re.findall(r"[\u4e00-\u9fa5]{2,6}市", text))
+            if _city_n or "位于" in text or "设在" in text:
+                score += 0.6 + 0.15 * min(_city_n, 3)
+            _head = str(text or "")[:90]
+            if any(k in _head for k in ("地址", "位于", "设在", "总部")):
+                score += 0.4
         # ★ [Round 31] 日期问句：同时含题面 2-gram 与年份的证据额外加权
         if _asks_date_q and re.search(r"(?:19|20)\d{2}", text):
             _qg = [q[_i:_i + 2] for _i in range(len(q) - 1)

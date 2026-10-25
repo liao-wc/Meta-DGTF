@@ -257,6 +257,13 @@ def main():
        _card_bad.status == "unknown"
        and "year_mismatch" in _card_bad.gaps,
        (_card_bad.status, _card_bad.gaps))
+    # ── A19：地点问句收窄（Round 43）──────────────────
+    _loc_ans = _short_answer("1945年，美国国会同意邀请联合国将总部设在美国。""联合国总部位于纽约市曼哈顿。", "联合国的总部设在哪个城市？")
+    ck("A46 地点问句取城市句（纽约市）",
+       "纽约市" in _loc_ans and "1945" not in _loc_ans, _loc_ans)
+    _loc_disp = _compact_numeric_answer("联合国的总部设在哪个城市？",
+                                         "此次会议决定将联合国总部的地址设在纽约市附近")
+    ck("A47 地点 display 收窄为纽约市", _loc_disp == "纽约市", _loc_disp)
     # ── B：整体量语义加权 ────────────────────────
     ck("B1 问长度 + 全长标记 → 加分",
        _overall_quantity_bonus("黄河全长约5464公里", "黄河的长度是多少千米") > 0)

@@ -353,6 +353,11 @@ MEASURED_SCENARIOS: Dict[str, dict] = {
                               "wall": 243.0, "verified": True,
                               "question": "联合国的总部设在哪个城市？",
                               "config": "B parallel + thinking off + web on"},
+            "web_on_fast17": {"quality": 0.9507, "tokens": 661287, "calls": 98,
+                              "wall": 250.4, "verified": True,
+                              "question": "联合国的总部设在哪个城市？"
+                                            "（地点收窄复验）",
+                              "config": "B parallel + thinking off + web on"},
             "web_off_auto": {"quality": 0.4440, "tokens": 1015910, "calls": 111,
                              "wall": 980.3, "verified": False,
                              "config": "B parallel + thinking auto + web off",

@@ -45,6 +45,10 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 43 增补（2026-10-26）】
+- 地点问句答案收窄：answer_from_evidence 地点加分、_short_answer 地点分支优先于日期
+  分支、display 收窄城市名；联合国总部题 **0.9507/verified/ready + display=纽约市**。
+  判据 A46/A47；矩阵 30 行（fact 22）；V2 51/51（792 checks）。
 【Round 42 增补（2026-10-26）】
 - 国际组织官方站内 query：联合国→un.org、WHO→who.int、WB→worldbank.org、
   IMF→imf.org、WTO→wto.org 等（tests_fact_queries 12 项）。
