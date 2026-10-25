@@ -262,6 +262,12 @@ MEASURED_SCENARIOS: Dict[str, dict] = {
                       "wall": 219.6, "verified": True,
                       "question": "在选择保温材料时应该优先考虑导热系数还是防火等级？",
                       "config": "B parallel + thinking off + rounds auto"},
+            "auto3": {"quality": 0.9387, "tokens": 976311, "calls": 98,
+                      "wall": 905.5, "verified": True,
+                      "question": "以下哪项属于可再生能源？"
+                                  "A. 煤炭 B. 太阳能 C. 石油 D. 天然气",
+                      "config": "B parallel + thinking auto + web auto"
+                                "（选项题官方源豁免后）"},
         },
         "rules": {"quality_first": "auto", "cost_first": "fast",
                   "note": ("fast 实测与 auto 同质量（0.9481 vs 0.9487，差值在单跑方差内），"

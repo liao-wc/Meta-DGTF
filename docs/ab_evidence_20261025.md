@@ -2104,3 +2104,28 @@ App 无回归。
 ### 80.5 门禁
 
 全量 **V2 51/51（809 checks）**、fast_gate 12/12。
+
+
+## 81. P0 治理 + 选择题真题闭环（Round 87）
+
+### 81.1 选择题官方源豁免：真实闭环
+
+「以下哪项属于可再生能源？A.煤炭 B.太阳能 C.石油 D.天然气」auto：
+**0.9387 / verified / ready**（976,311 tok / 98 calls / 906s）；
+此前同题 0.4686/needs_evidence（被 fact 门要求官方源）。
+矩阵 choice 3→4 行；总矩阵 38→**39 行**。
+
+### 81.2 成本口径与并发治理（ab_bench）
+
+- 新增 `cost_window_cny`、`cost_attribution=not_attributable_concurrent_runs`、
+  `cost_note`；`cost_cny` 仅兼容；pair 改用 `cost_window_cny` + 口径说明；
+- 新增 `dgtf_memory/real_run.lock`（活跃锁拒绝，--force-concurrent 覆盖，finally 释放）；
+- 台账：`docs/budget_ledger_20261026.md`；边界：`docs/known_boundaries_20261026.md`。
+
+### 81.3 巡检/守卫
+
+`check_patrol_report.py --check` CHECK PASS；`guard_policy_check.py` CHECK PASS。
+
+### 81.4 门禁
+
+全量 V2 51/51（**809 checks**）、fast_gate 12/12。

@@ -36,6 +36,57 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "dgtf_engine"))
 
 AB_RESULTS = ROOT / "docs" / "ab_results.jsonl"
+# ★ [Round 87] 真跑并发锁：dgtf_memory/real_run.lock（pid/tag/start/est/ttl）
+REAL_RUN_LOCK = ROOT / "dgtf_memory" / "real_run.lock"
+COST_ATTRIBUTION = "not_attributable_concurrent_runs"
+COST_NOTE = ("账户窗口差（balance_before - balance_after）：并发/连续跑次会共享同一段"
+             "余额下降，不可相加、不可归因到单跑；精确成本需按 API usage 单价结算。")
+
+
+def _lock_check() -> dict:
+    """返回仍有效的锁内容（无锁/过期锁返回 {}）。"""
+    try:
+        if not REAL_RUN_LOCK.exists():
+            return {}
+        data = json.loads(REAL_RUN_LOCK.read_text(encoding="utf-8"))
+    except Exception:  # noqa: BLE001
+        return {}
+    try:
+        age = time.time() - float(data.get("start_ts") or 0)
+        ttl = float(data.get("ttl_s") or 1800)
+    except Exception:  # noqa: BLE001
+        return {}
+    if age < ttl:
+        return data
+    try:
+        REAL_RUN_LOCK.unlink()
+    except Exception:  # noqa: BLE001
+        pass
+    return {}
+
+
+def _lock_write(tag: str, est_cost) -> None:
+    try:
+        REAL_RUN_LOCK.parent.mkdir(parents=True, exist_ok=True)
+        REAL_RUN_LOCK.write_text(json.dumps({
+            "pid": os.getpid(),
+            "tag": str(tag),
+            "start_ts": time.time(),
+            "started_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "estimated_cny": est_cost,
+            "ttl_s": 1800,
+        }, ensure_ascii=False), encoding="utf-8")
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def _lock_release() -> None:
+    try:
+        data = json.loads(REAL_RUN_LOCK.read_text(encoding="utf-8"))
+        if int(data.get("pid") or -1) == os.getpid():
+            REAL_RUN_LOCK.unlink()
+    except Exception:  # noqa: BLE001
+        pass
 OUTPUTS = ROOT / "outputs"
 MIN_BALANCE_DEFAULT = 4.0
 
@@ -277,6 +328,18 @@ def cmd_run(args) -> int:
     print("命令：%s" % " ".join(cmd))
     if args.dry_run:
         return 0
+    # ★ [Round 87] 并发锁：有活跃真跑则拒绝（--force-concurrent 显式覆盖）
+    _holder = _lock_check()
+    if _holder and not getattr(args, "force_concurrent", False):
+        print("拒绝真跑：检测到活跃真跑 pid=%s tag=%s started=%s（TTL 内）；"
+              "等待结束后重试，或 --force-concurrent 显式覆盖"
+              % (_holder.get("pid"), _holder.get("tag"),
+                 _holder.get("started_at")))
+        return 3
+    if _holder:
+        print("警告：--force-concurrent 覆盖活跃真跑（pid=%s tag=%s）"
+              % (_holder.get("pid"), _holder.get("tag")))
+    _lock_write(args.tag, getattr(args, "est_cost", 0.0))
 
     env = dict(os.environ)
     env["PYTHONUTF8"] = "1"
@@ -303,9 +366,13 @@ def cmd_run(args) -> int:
         code = proc.wait()
     finally:
         logf.close()
+        _lock_release()
     wall = time.time() - t0
     bal1 = get_balance()
-    cost = None if (bal0 is None or bal1 is None) else round(bal0 - bal1, 4)
+    # ★ [Round 87] 成本 = 账户窗口差；保留 cost_cny 兼容，新增明确字段
+    cost_window = (None if (bal0 is None or bal1 is None)
+                   else round(bal0 - bal1, 4))
+    cost = cost_window
     # 并行真跑时「最新 packed」可能属于另一个 run ⇒ 优先从本 run 的日志里
     # 解析引擎自己打印的「已保存: outputs/xxx.md」，再回退到 mtime 法。
     pack = _pack_from_log(logp) or _newest_pack_since(t0 - 5)
@@ -321,6 +388,9 @@ def cmd_run(args) -> int:
         "balance_before": bal0,
         "balance_after": bal1,
         "cost_cny": cost,
+        "cost_window_cny": cost_window,
+        "cost_attribution": COST_ATTRIBUTION,
+        "cost_note": COST_NOTE,
         "probe": json.loads(probe.read_text(encoding="utf-8")) if probe.exists() else {},
         "packed": str(pack.relative_to(ROOT)) if pack else None,
         "log": str(logp.relative_to(ROOT)),
@@ -340,8 +410,9 @@ def cmd_run(args) -> int:
     with AB_RESULTS.open("a", encoding="utf-8") as f:
         f.write(json.dumps(row, ensure_ascii=False) + "\n")
     print("\n== 本次真跑 ==")
-    print("tag=%s exit=%s wall=%.1fs cost=%s CNY" % (args.tag, code, wall,
-                                                      cost if cost is not None else "?"))
+    print("tag=%s exit=%s wall=%.1fs cost_window=%s CNY（窗口差，不可归因）"
+          % (args.tag, code, wall,
+             cost if cost is not None else "?"))
     print("quality=%s tokens=%s calls=%s aq=%s ready=%s"
           % (row.get("quality"), row.get("tokens"), row.get("calls"),
              row.get("answer_quality"), row.get("answer_ready")))
@@ -383,7 +454,7 @@ def cmd_pair(args) -> int:
               % (args.a, args.b))
         return 2
     keys = [("quality", "max", 4), ("tokens", "min", 0), ("calls", "min", 0),
-            ("wall_s", "min", 1), ("cost_cny", "min", 4)]
+            ("wall_s", "min", 1), ("cost_window_cny", "min", 4)]
     print("%-10s %-20s %-20s %-12s %s" % ("指标", "A", "B", "Δ(B-A)", "方向"))
     verdict = {"better": 0, "worse": 0, "same": 0}
     for k, direction, nd in keys:
@@ -412,6 +483,7 @@ def cmd_pair(args) -> int:
             print("  %-28s calls %+d  tokens %+d" % (name, cb - ca, tb - ta))
     print("\n判定：better=%d worse=%d same=%d（worse 必须为 0 才符合“只变好不变坏”）"
           % (verdict["better"], verdict["worse"], verdict["same"]))
+    print("注：cost_window 为账户窗口差，并发/连续跑次不可相加、不可归因到单跑。")
     return 0
 
 
@@ -431,6 +503,10 @@ def main() -> int:
     p = sub.add_parser("run")
     p.add_argument("--question", required=True)
     p.add_argument("--tag", default="")
+    p.add_argument("--est-cost", type=float, default=0.0,
+                   help="预估成本（写入 real_run.lock，便于并发审计）")
+    p.add_argument("--force-concurrent", action="store_true",
+                   help="显式覆盖 real_run.lock（默认拒绝并发展开）")
     p.add_argument("--note", default="")
     p.add_argument("--engine", default="")
     p.add_argument("--config", default="")

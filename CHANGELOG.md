@@ -45,6 +45,12 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 87 增补（2026-10-26）】
+- P0 治理：ab_bench 成本口径修正（cost_window_cny/attribution/note，禁止相加归因）
+  + real_run.lock 并发锁（TTL 1800s、活跃锁拒绝、--force-concurrent 覆盖）；
+  台账 docs/budget_ledger_20261026.md、边界 docs/known_boundaries_20261026.md。
+- 选择题真题闭环：auto3 0.9387/verified/ready（豁免 no_official_source）；矩阵 39 行。
+- 巡检/守卫 CHECK PASS；V2 51/51（809 checks）。
 【Round 86 增补（2026-10-26）】
 - fast+web 跨域：中国最长河流 0.94、水沸点 0.9544（均 verified）；矩阵 38 行（fact 30）。
 - 核心推理同题回归：高原煮饭 0.9549 vs 历史 0.9588（Δ−0.4pp，无回归）。
