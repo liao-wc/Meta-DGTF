@@ -704,12 +704,20 @@ def _short_answer(text: str, question: str = "") -> str:
         # 同一段落里同时有 token 和日期：直接给日期，避免把整篇正文当答案。
         if _dates:
             return _dates[0]
+    # ★ [Round 13] 数值型问句：优先返回含「数值+单位」的句子（必须早于
+    #   日期句分支，否则带日期的无数值首句会先返回，答案丢失目标数值）。
+    if any(k in _q for k in ("多少", "几", "多长", "多高", "多重", "多远",
+                             "多深", "多宽", "多大", "多快", "千米", "公里",
+                             "米", "%", "海拔", "速度", "面积", "重量")):
+        for part in re.split(r"[。；;\n]", s):
+            if re.search(r"\d+(?:\.\d+)?\s*(?:千米|公里|米|厘米|毫米|%|"
+                         r"℃|吨|公斤|kg|年|小时|分钟|秒|万)", part):
+                return part.strip()[:240]
     if _dates:
         # 优先取日期所在短句
         for part in re.split(r"[。；;\n]", s):
             if _DATE_RE.search(part):
                 return part.strip()[:240]
-        return _dates[0]
     return s[:240]
 
 

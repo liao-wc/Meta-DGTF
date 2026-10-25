@@ -524,3 +524,21 @@ HTTP 404 事实跑（17:01）终态 `needs_evidence` 的 gaps 是 `no_official_s
 不含官方源；且答案字段混入工具调用文本（「工具 search_web(...) 返回：…」）。
 ⇒ 下一轮：核对检索记录（used_as=record 的官方页）是否该纳入证据层 +
 事实答案过滤工具调用噪声。
+
+
+### 19.6 离线重放验证 + 机制 C（数值句优先）
+
+用黄河真实 pack 离线重放（pools→from_search_hits→dedup→budget→build_fact_card，
+零 API）对比修复前后：
+- 修复前：status=answered、gaps=['uncovered:黄河的长度']、official=['E3']、
+  answer=「河段长3472千米」；
+- 修复后：status=answered、**gaps=[]**、official=['E3'] —— uncovered 误报已消除、
+  官方源保留 ✓；
+- 但 answer 仍取到「黄河，我国第二大河……哺育了灿烂的中华文明」这类**无数值首句**
+  ⇒ 新增机制 C：_short_answer 面对数值型问句时**优先返回含数值+单位的句子**
+  （须早于「日期句优先」分支，否则带日期的无数值首句会抢先返回）。
+- 复跑重放：answer 仍为首句（该 pack 的 evidence 片段中数值句不在同一切分段内），
+  说明「答案句选择」还依赖证据片段质量/切分，下一轮需要针对数值题做
+  **claim 级抽取**（从数值主张上下文出答案，而非从长 snippet 首句）。
+- 机制 C 回归：tests_evidence 21、tests_evidence_coverage 12、tests_fact_flow 15、
+  tests_fact_official_precedence 19、全量 V2 47/47（701 checks）、fast_gate 12/12 全绿。
