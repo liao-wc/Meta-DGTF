@@ -451,10 +451,17 @@ def extract_numeric_claims(text: str) -> list:
     - context：去掉数字后的上下文（谁在说哪个量）；
     - 年份（1900–2100 且单位「年」）只当时间锚，不算被主张的数值。
     """
+    # ★ [Round 41] 千分位归一：384,399 → 384399（仅「逗号后恰好三位数字」，
+    #   不误伤「1, 2」这类列表分隔）
+    _txt = str(text or "")
+    _prev = None
+    while _prev != _txt:
+        _prev = _txt
+        _txt = re.sub(r"(?<=\d),(?=\d{3}(?:\D|$))", "", _txt)
     out: list[dict] = []
     last_anchor = ""
     prev_raw = ""
-    for clause in _CLAUSE_RE.split(str(text or "")):
+    for clause in _CLAUSE_RE.split(_txt):
         clause = clause.strip()
         if not clause:
             continue
