@@ -408,7 +408,8 @@ def _official_precedence_answer(question: str, evs: list,
             # 目标量冲突（如 GDP 增速 5.2 vs 6.8）不得被官方优先掩盖
             return None, list(conflicts)
     ans = _clean_card_answer(
-        str(answer_from_evidence(off_evs, question) or "").strip())
+        str(answer_from_evidence(off_evs, question, prefer_recent=True)
+            or "").strip())
     if len(ans) < 2 or len(ans) > 200:
         return None, list(conflicts)
     return ans, []
@@ -478,7 +479,8 @@ def build_fact_card(question: str, report: EvidenceReport,
     official_n = len(official_ids)
     domains = sorted({str(getattr(e, "domain", "") or "") for e in evs} - {""})
     independent = len(domains)
-    answer = _clean_card_answer(answer_from_evidence(evs, question))
+    answer = _clean_card_answer(
+        answer_from_evidence(evs, question, prefer_recent=True))
     if answer and (official_n >= int(min_official)
                    or independent >= int(min_independent)):
         return FactCard(status="answered", answer=answer,

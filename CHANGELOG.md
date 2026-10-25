@@ -42,6 +42,11 @@ V2.2.3
   - 前缀缓存实测：全量跑 prompt cache hit ratio **13.9%~17.6%**（已自动省约 ¥0.2/跑）；
     prompt 静态段前置可进一步省，但需质量 A/B，列为下一轮 opt-in 项。
 
+【Round 11 增补（2026-10-25 同日）】
+- 事实答案时效优先：answer_from_evidence 新增 prefer_recent（默认 False=零行为差），
+  仅题面含「最新/当前/现在…」时按证据日期加权取最新；日期解析限定 1800–2099 年份
+  （修小数误判）。判据 tests_recency_preference 7 项；全量 V2 46/46（686 checks）、
+  fast_gate 12/12。零 API 成本（预算 ¥2.8 受限）。
 【Round 9 增补（2026-10-25 同日）】
 - 事实答案展示分离：FactCard.to_dict 新增 answer_display（数值紧凑「值+单位」），
   answer 本体保持完整供一致性校验；引擎 answer_summary 优先取 answer_display。

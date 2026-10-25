@@ -678,7 +678,39 @@ def _answer_relevance(text: str, question: str) -> float:
     return hit / total
 
 
-def answer_from_evidence(items: Iterable, question: str = "") -> str:
+_RECENCY_CUES: tuple[str, ...] = (
+    "最新", "当前", "现在", "目前", "截至", "如今", "现行", "updated",
+    "latest", "current",
+)
+
+
+def _text_date_score(text: str) -> float:
+    """从文本里抽最近日期（YYYY-MM-DD / YYYY年/月）用于时效排序；无则 -1。"""
+    import re as _re
+    s = str(text or "")
+    best = -1.0
+    # 年份只认 1800-2099，且要求前面不是数字（避免把 8844.43 这类小数的
+    # 「8844.」当成 8844 年）；月/日可选。
+    pat = (r"(?<!\d)(1[89]\d{2}|20\d{2})"
+           r"(?:[-/年.](0?[1-9]|1[0-2]))?"
+           r"(?:[-/月.](0?[1-9]|[12]\d|3[01]))?")
+    for mt in _re.finditer(pat, s):
+        y = mt.group(1)
+        m = mt.group(2)
+        d = mt.group(3)
+        try:
+            yv = float(y)
+        except (TypeError, ValueError):
+            continue
+        mv = float(m) if m else 6.0
+        dv = float(d) if d else 15.0
+        score = yv * 10000 + mv * 100 + dv
+        best = max(best, score)
+    return best
+
+
+def answer_from_evidence(items: Iterable, question: str = "",
+                         prefer_recent: bool = False) -> str:
     """从已有证据里挑一条最可用的短答（题面相关优先、官方优先）。
 
     只摘原文，不改写；长网页会压到日期/相关短句，避免把整页当答案。
@@ -697,11 +729,19 @@ def answer_from_evidence(items: Iterable, question: str = "") -> str:
     wants_url = bool(re.search(r"(?:base\s*url|base_url|接口地址|访问地址|url)",
                                q, re.I))
     scored = []
-    for e in evs:
+    _recent = bool(prefer_recent) and any(k in q for k in _RECENCY_CUES)
+    _dates = [_text_date_score(str(getattr(e, "snippet", "") or ""))
+              for e in evs] if _recent else []
+    _max_date = max(_dates) if _dates else -1.0
+    for _i, e in enumerate(evs):
         text = str(getattr(e, "snippet", "") or "")
         score = _answer_relevance(text, q)
         if bool(getattr(e, "official", False)):
             score += 0.15
+        if _recent and _max_date > 0 and _i < len(_dates) \
+                and _dates[_i] == _max_date:
+            # 时效题：最新日期证据加权（0.5 足以反超非最新官方源的 0.15）
+            score += 0.5
         scored.append((score, -int(getattr(e, "rank", 0)), e))
     scored.sort(key=lambda x: (x[0], x[1]), reverse=True)
     for score, _neg_rank, e in scored:
