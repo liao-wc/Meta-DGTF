@@ -967,3 +967,35 @@ last_adapter 等），`scripts/check_local_service.py` 可复现验证。实测�
   total wall 15.58s（4×3.9s），排队体现在请求 wall（4.1/7.9/11.7/15.6s）；
 - 统计正确（requests_total=8 / errors=0）；
 - 用途：App/引擎可用 busy_now/avg_ms 做「本地忙→云端/降档」动态最优。
+
+
+## 32. App 接入本地服务 metrics + 事实矩阵回灌（Round 26）
+
+### 32.1 App 读取 /metrics（busy 动态回退）
+
+`dgtf_app/daosheng_mode.py` 新增 `local_llm_metrics()`（GET /metrics，0.8s 超时，
+2s 轻缓存，fail-open），plan 的 `local_llm.metrics` 暴露
+`{busy, avg_ms, requests_total, errors, adapter}`（http/subprocess/rules 三分支都带）。
+
+**动态回退**：若预设 `self_check_mode=local` 且本地 `busy_now=True`，本次 plan 把
+self_check 改走云端 llm（`self_check_mode_via="busy-fallback"` + warnings 记录），
+避免并发排队把任务墙钟拉长（Round 25 实测 4 并发排队 4.1→15.6s）。
+
+验证（`scripts/app_local_metrics_check.py --sim`，离线模拟）：
+① /metrics 可达且字段完整；② busy+local → self_check_mode=llm；
+③ via=busy-fallback；④ warnings 记录；⑤ local_llm.metrics 可审计 —— **6/6 PASS**。
+
+### 32.2 事实矩阵回灌（13→15 行）
+
+`mode_fusion.MEASURED_SCENARIOS.fact` 增补 Round 23–24 实证：
+- web_on_fast3（长江）：0.9532 / 690,842 tok / 98 calls / 222.5s / verified；
+- web_on_fast4（光速）：0.9508 / 727,103 tok / 98 calls / 275.6s / verified；
+矩阵共 **15 行**（reasoning 5 / choice 3 / fact 7）；场景判据 23 项同步。
+
+`update_scenario_matrix.py` 对照映射支持 `web_on_fastN → fast+web`，回灌结果：
+fact fast+web **n=7、质量 0.956、tokens 678,694、墙钟 218.7s**，与人工锚点
+Δ≤0.017（一致）；对比事实 auto（~1M tokens / ~960s）为成本档的可靠替代。
+
+### 32.3 门禁
+
+全量 V2 **50/50（751 checks）**、fast_gate 12/12。

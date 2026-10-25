@@ -26,7 +26,7 @@ def ck(n, ok, info=""):
 
 def main():
     rows = measured_matrix()
-    ck("矩阵行数 = 13（reasoning 5 / choice 3 / fact 5）", len(rows) == 13, len(rows))
+    ck("矩阵行数 = 15（reasoning 5 / choice 3 / fact 7）", len(rows) == 15, len(rows))
     ck("三个场景桶齐全",
        set(MEASURED_SCENARIOS) == {"reasoning", "choice", "fact"},
        list(MEASURED_SCENARIOS))
@@ -43,9 +43,10 @@ def main():
     ck("fact：web_off_auto 与修复前 fast 未 verified（历史对照）",
        fact["runs"]["web_off_auto"]["verified"] is False
        and fact["runs"]["web_on_fast_pre_fix"]["verified"] is False)
-    ck("fact：修复后 fast+web 已 verified（成本档可用）",
-       fact["runs"]["web_on_fast"]["verified"] is True
-       and fact["runs"]["web_on_fast2"]["verified"] is True)
+    ck("fact：修复后 fast+web 已 verified（成本档可用，4 题）",
+       all(fact["runs"][k]["verified"] is True
+           for k in ("web_on_fast", "web_on_fast2", "web_on_fast3",
+                     "web_on_fast4")))
     ck("fact：成本档 tokens 低于 auto 且质量不低",
        fact["runs"]["web_on_fast"]["tokens"] < fact["runs"]["web_on_auto"]["tokens"]
        and fact["runs"]["web_on_fast2"]["tokens"] < fact["runs"]["web_on_auto"]["tokens"])

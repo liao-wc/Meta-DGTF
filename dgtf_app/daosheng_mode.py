@@ -480,6 +480,41 @@ def _http_json(url: str, payload: dict | None, timeout: float) -> dict:
     return obj if isinstance(obj, dict) else {"_raw": body, "_value": obj}
 
 
+_LOCAL_METRICS_CACHE: dict = {"ts": 0.0, "data": {}}
+
+
+def local_llm_metrics(preset: dict | None = None,
+                      force: bool = False) -> dict:
+    """GET /metrics（本地服务可观测性）；fail-open，2 秒轻缓存。
+
+    返回 {ok, busy, avg_ms, requests_total, errors, adapter}；
+    服务不可达/旧版无 /metrics 时返回 {"ok": False, "reason": ...}（不抛错）。
+    """
+    ds = preset or load_preset()
+    cfg = dict(_BUILTIN_DS["local_llm"])
+    cfg.update(ds.get("local_llm") or {})
+    if not cfg.get("enabled", True) or os.getenv("DGTF_LOCAL_LLM", "").strip().lower() in (
+            "0", "false", "off"):
+        return {"ok": False, "reason": "disabled"}
+    now = time.time()
+    if (not force) and now - float(_LOCAL_METRICS_CACHE.get("ts") or 0) < 2.0:
+        return dict(_LOCAL_METRICS_CACHE.get("data") or {})
+    out = {"ok": False}
+    try:
+        detail = _http_json(cfg["url"] + "/metrics", None, timeout=0.8)
+        st = (detail or {}).get("stats") or {}
+        out = {"ok": True, "busy": bool(st.get("busy_now")),
+               "avg_ms": (detail or {}).get("avg_ms"),
+               "requests_total": st.get("requests_total"),
+               "errors": st.get("errors"),
+               "adapter": (detail or {}).get("adapter_paths") or {}}
+    except Exception as e:  # noqa: BLE001
+        out = {"ok": False, "reason": "%s: %s" % (type(e).__name__, e)}
+    _LOCAL_METRICS_CACHE["ts"] = now
+    _LOCAL_METRICS_CACHE["data"] = dict(out)
+    return out
+
+
 def local_llm_health(preset: dict | None = None, force: bool = False) -> dict:
     """GET /health（成功/失败都缓存；`DGTF_LOCAL_LLM=0` 可整体关闭）。"""
     cfg = _llm_cfg(preset)
@@ -1079,6 +1114,14 @@ def build_plan(question: str, opts: dict | None = None, *,
                                  subprocess_predict=subprocess_predict)
     m4 = m4_prediction(question, history, ds)
     engine_mode, mode_reason = _choose_engine_mode(tier, m4)
+    # ★ [Round 26] 本地服务可观测性：busy 时若预设要求本地自省，本次回云端（fail-open）
+    _lm = local_llm_metrics(ds)
+    _busy_fallback = False
+    if _lm.get("ok") and _lm.get("busy"):
+        _scm0 = str(ds.get("self_check_mode") or "auto")
+        if _scm0 == "local":
+            _busy_fallback = True
+            warnings.append("本地服务忙（busy_now）→ 本次 self_check 改走云端 llm")
     bg = budget_guard(history, ds, balance_cny=balance_cny, is_mock=is_mock)
     degrade_reason = ""
     if tier == "quality" and bg.get("decision") in ("degrade", "warn"):
@@ -1115,6 +1158,8 @@ def build_plan(question: str, opts: dict | None = None, *,
         return None, None
 
     scm_via, scm = _mechanism_via("self_check_mode")
+    if _busy_fallback:
+        scm_via, scm = "busy-fallback", "llm"
     djm_via, djm = _mechanism_via("dual_judge_mode")
     # history_fusion 的 auto 本来就是引擎默认（V2.2.2 已有 --history-fusion auto），
     # 记「engine-default」而不是假装 App 传了参数；显式 off/on 才走 CLI。
@@ -1180,14 +1225,17 @@ def build_plan(question: str, opts: dict | None = None, *,
     if local.get("source") == "http":
         local_desc = {"available": True, "source": "http",
                       "route": local.get("route"), "rounds": local.get("rounds"),
-                      "latency_ms": local.get("latency_ms"), "url": local.get("url")}
+                      "latency_ms": local.get("latency_ms"), "url": local.get("url"),
+                      "metrics": _lm}
     elif local.get("source") == "subprocess":
         local_desc = {"available": True, "source": "subprocess",
-                      "route": local.get("route"), "rounds": local.get("rounds")}
+                      "route": local.get("route"), "rounds": local.get("rounds"),
+                      "metrics": _lm}
     else:
         local_desc = {"available": False, "source": "rules",
                       "route": local.get("route"), "rounds": local.get("rounds"),
-                      "why": local.get("why"), "attempts": local.get("attempts")}
+                      "why": local.get("why"), "attempts": local.get("attempts"),
+                      "metrics": _lm}
     m4_desc = {k: m4.get(k) for k in
                ("enabled", "ok", "first_mode", "first_reason",
                 "quality_prediction", "quality_prediction_lower",

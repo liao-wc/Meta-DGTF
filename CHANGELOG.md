@@ -45,6 +45,12 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 26 增补（2026-10-25 同日）】
+- App 道生 plan 接入本地服务 /metrics：local_llm.metrics 暴露 busy/avg_ms/counters；
+  预设 local 自省且本地 busy 时本次自动回云端 llm（via=busy-fallback + warnings）。
+  scripts/app_local_metrics_check.py 6/6 PASS。
+- 事实矩阵回灌 13→15 行（fast3 长江 0.9532、fast4 光速 0.9508，均 verified）；
+  live 汇总 fact fast+web n=7 质量 0.956/678,694 tok/218.7s，与锚点 Δ≤0.017。
 【Round 25 增补（2026-10-25 同日）】
 - 本地服务新增 GET /metrics（requests_total/by_stage/errors/avg/max/busy_now/
   last_adapter，线程安全）+ scripts/check_local_service.py 可复现检查。

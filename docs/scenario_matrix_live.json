@@ -1,5 +1,5 @@
 {
- "n_valid_runs": 39,
+ "n_valid_runs": 44,
  "since": "",
  "matrix": {
   "reasoning": {
@@ -155,15 +155,15 @@
     ]
    },
    "fast+web": {
-    "n_runs": 3,
-    "n_verified": 2,
-    "quality_mean": 0.96,
-    "quality_mean_all": 0.798,
-    "tokens_mean": 648416,
-    "wall_mean": 188.3,
-    "verified_ratio": 0.667,
-    "latest_tag": "v23-fast-fact-gdp",
-    "latest_quality": 0.9726,
+    "n_runs": 7,
+    "n_verified": 4,
+    "quality_mean": 0.956,
+    "quality_mean_all": 0.715,
+    "tokens_mean": 678694,
+    "wall_mean": 218.7,
+    "verified_ratio": 0.571,
+    "latest_tag": "v24-fast-fact-science3",
+    "latest_quality": 0.9508,
     "samples": [
      {
       "tag": "mode-fast-fact-web",
@@ -184,6 +184,34 @@
       "quality": 0.9726,
       "tokens": 738637,
       "wall": 202.2,
+      "verified": true
+     },
+     {
+      "tag": "v24-fast-fact-geo",
+      "quality": 0.9532,
+      "tokens": 690842,
+      "wall": 222.5,
+      "verified": true
+     },
+     {
+      "tag": "v24-fast-fact-science",
+      "quality": 0.4667,
+      "tokens": 790526,
+      "wall": 267.0,
+      "verified": false
+     },
+     {
+      "tag": "v24-fast-fact-science2",
+      "quality": 0.2404,
+      "tokens": 704921,
+      "wall": 253.2,
+      "verified": false
+     },
+     {
+      "tag": "v24-fast-fact-science3",
+      "quality": 0.9508,
+      "tokens": 727103,
+      "wall": 275.6,
       "verified": true
      }
     ]
@@ -333,18 +361,37 @@
    "scenario": "fact",
    "mode": "web_on_fast",
    "human_quality": 0.9472,
-   "live_quality": 0.96,
-   "delta": 0.013,
-   "n_runs": 3,
-   "verified_ratio": 0.667
+   "live_quality": 0.956,
+   "delta": 0.009,
+   "n_runs": 7,
+   "verified_ratio": 0.571
   },
   {
    "scenario": "fact",
    "mode": "web_on_fast2",
    "human_quality": 0.9726,
-   "live_quality": null,
-   "delta": null,
-   "note": "无对应有效真跑"
+   "live_quality": 0.956,
+   "delta": -0.017,
+   "n_runs": 7,
+   "verified_ratio": 0.571
+  },
+  {
+   "scenario": "fact",
+   "mode": "web_on_fast3",
+   "human_quality": 0.9532,
+   "live_quality": 0.956,
+   "delta": 0.003,
+   "n_runs": 7,
+   "verified_ratio": 0.571
+  },
+  {
+   "scenario": "fact",
+   "mode": "web_on_fast4",
+   "human_quality": 0.9508,
+   "live_quality": 0.956,
+   "delta": 0.005,
+   "n_runs": 7,
+   "verified_ratio": 0.571
   },
   {
    "scenario": "fact",

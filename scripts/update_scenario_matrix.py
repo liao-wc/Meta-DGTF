@@ -140,6 +140,10 @@ def compare(matrix: dict) -> list[dict]:
             if auto is None and mode.startswith("web_on_"):
                 base = mode.replace("web_on_", "")
                 auto = (matrix.get(kind) or {}).get(base + "+web")
+                if auto is None:
+                    import re as _re
+                    base2 = _re.sub(r"\d+$", "", base)
+                    auto = (matrix.get(kind) or {}).get(base2 + "+web")
             if auto is None and mode.startswith("web_off_"):
                 base = mode.replace("web_off_", "")
                 auto = (matrix.get(kind) or {}).get(base)
