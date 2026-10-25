@@ -45,6 +45,11 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 15 增补（2026-10-25 同日）】
+- 数值答案句修复：_short_answer 支持「5400多公里/约5464公里/5400余公里」等口语量词
+  （此前匹配失败回退整段）；展示层 _compact_numeric_answer 过滤弱量词（9个/3条…）。
+- 离线重放验证：黄河 answer 从「河段长3472千米」→「全长5400多公里」（含数值）；
+  长江 display=6280千米。判据 tests_evidence_coverage 16 项；V2 47/47、fast_gate 12/12。
 【Round 14 增补（2026-10-25 同日）】
 - 新增 scripts/lead_offline_fact_replay.py（离线 FactCard 重放，零 API 回归面）+
   docs/fact_replay_20261025.json。

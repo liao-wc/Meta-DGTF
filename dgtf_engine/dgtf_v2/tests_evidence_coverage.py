@@ -12,8 +12,9 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
 
 from dgtf_v2.evidence import (Evidence, _overall_quantity_bonus,  # noqa: E402
-                              _term_covered, answer_from_evidence,
-                              detect_gaps)
+                              _short_answer, _term_covered,
+                              answer_from_evidence, detect_gaps)
+from dgtf_v2.fact_flow import _compact_numeric_answer  # noqa: E402
 
 P, F = [], []
 
@@ -52,6 +53,25 @@ def main():
                         [ev("E1", "黄河全长约5464公里，中国第二长河")])
     ck("A7 真缺目标项仍报 uncovered",
        any(str(g).startswith("uncovered:") for g in gaps2), gaps2)
+
+    # ── A2：口语量词数值句（Round 15）────────────────
+    ck("A8 「5400多公里」句子被识别为数值句",
+       "5400" in _short_answer("黄河，我国第二大河。全长5400多公里。",
+                               "黄河的长度是多少千米"))
+    ck("A9 「约5464公里」句子被识别为数值句",
+       "5464" in _short_answer("说明一段话。它全长约5464公里。",
+                               "黄河有多长"))
+    ck("A10 「5400余公里」句子被识别为数值句",
+       "5400" in _short_answer("一些背景。全长5400余公里。",
+                               "黄河的长度是多少千米"))
+
+    # ── A3：展示紧凑的弱量词过滤（Round 15）──────────
+    d1 = _compact_numeric_answer("黄河的长度是多少千米",
+                                 "黄河流经9个省（区），全长5400多公里")
+    ck("A11 展示不取弱量词「9个」（不得只给 9个）",
+       d1 != "9个" and ("5400" in d1 or "公里" in d1), d1)
+    d2 = _compact_numeric_answer("长江的长度是多少千米", "长江总长6280千米。")
+    ck("A12 展示取强单位「6280千米」", "6280千米" in d2, d2)
 
     # ── B：整体量语义加权 ────────────────────────
     ck("B1 问长度 + 全长标记 → 加分",

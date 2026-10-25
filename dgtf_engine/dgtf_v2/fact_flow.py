@@ -338,6 +338,11 @@ def _compact_numeric_answer(question: str, answer: str) -> str:
         from .evidence import extract_numeric_claims
     except Exception:  # noqa: BLE001
         return ans
+    # 量词噪声：9个/3条/2项 这类计数单位不是题面目标量（问的是长度/面积/…）
+    _WEAK_UNITS = ("个", "条", "处", "项", "次", "种", "位", "名",
+                   "份", "家", "所", "岁")
+    _STRONG_UNITS = ("千米", "公里", "米", "厘米", "毫米", "%", "℃",
+                     "吨", "公斤", "kg", "元", "万")
     claims = []
     for c in extract_numeric_claims(ans):
         try:
@@ -345,9 +350,15 @@ def _compact_numeric_answer(question: str, answer: str) -> str:
         except (TypeError, ValueError):
             continue
         unit = str(c.get("unit") or "").strip()
+        raw = str(c.get("raw") or "").strip()
         if not unit:
             continue
-        claims.append((val, unit, str(c.get("raw") or "")))
+        if any(unit == w for w in _WEAK_UNITS) and unit not in q:
+            continue
+        if not any(u in raw for u in _STRONG_UNITS) \
+                and not any(u == unit or u in unit for u in _STRONG_UNITS):
+            continue
+        claims.append((val, unit, raw))
     if not claims:
         return ans
     # 单位命中题面的优先；其次数值在答案中出现更早的优先（保持原文顺序）
