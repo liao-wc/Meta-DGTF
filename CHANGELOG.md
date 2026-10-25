@@ -45,6 +45,12 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 46 增补（2026-10-26）】
+- App 心率 e2e：403.3s / verified / ready，display=**60-100次/分**（范围型答案
+  App 端到端生效）；App 实测矩阵 5→6 行。
+- 新增 docs/验收总览-20261026.md（一键验收命令、三体锚点、机制清单、已知边界）；
+  本地服务重启为 v6 默认、metrics 清零（total=0 errors=0）。
+- 判据 evidence_coverage 56 项；V2 51/51（797 checks）。
 【Round 45 增补（2026-10-26）】
 - 金融/医疗修复真实验证：外汇储备 **0.9374 verified，display=32024亿美元**；
   心率题 **0.99 verified，display=60-100次/分**（范围型答案收窄，判据 A51）。

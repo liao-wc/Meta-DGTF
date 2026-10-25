@@ -1600,3 +1600,24 @@ evidence_coverage **54 项**；全量 **V2 51/51（795 checks）**、fast_gate 1
 心率题追加**范围型答案收窄**（`_short_answer` 对「多少次/范围/每分钟」优先返回区间句），
 answer=「正常成人心率为60-100次/分，通常为70-80次/分，平均约72次/分」；
 判据 A51；事实矩阵 30→**32 行**（fact 24）；全量 **V2 51/51（796 checks）**。
+
+
+## 54. App 心率 e2e + 验收总览（Round 46）
+
+### 54.1 App e2e：范围型答案
+
+`daosheng_fast` +「成年人正常心率是多少次每分钟？」：任务墙钟 **403.3s**，
+产物 **aq=verified / ready=True**（quality 0.9581 / 640,366 tok / 90 calls），
+**display=60-100次/分**（范围型答案收窄在 App 端到端生效）。App 维度实测矩阵 5→**6 行**。
+
+### 54.2 验收总览
+
+新增 `docs/验收总览-20261026.md`：一键验收命令（fast_gate / run_v2_tests /
+update_scenario_matrix / 离线审计 / 本地服务检查 / App selftest）、三体实测锚点
+（引擎事实门 32 行、App 6 条 e2e、本地模型 v5↔v6 A/B）、机制清单与**已知边界**
+（检索依赖、国际/地点、多值展示、local opt-in 墙钟、closure_waived 治理）。
+本地服务已重启（v6 默认、metrics 计数清零：total=0 errors=0）。
+
+### 54.3 门禁
+
+evidence_coverage 56 项、app_runs 10 项；全量 **V2 51/51（797 checks）**、fast_gate 12/12。
