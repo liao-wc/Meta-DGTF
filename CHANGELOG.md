@@ -45,6 +45,12 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 40 增补（2026-10-26）】
+- 词项覆盖加固：_TERM_SPLIT_RE 补「哪些/哪几/哪/有」，片段级长片段 2-gram ≥80% 覆盖；
+  奥运五环题 0.4697/needs_evidence → 离线 answered（gaps=[]）；V2 51/51（788 checks）。
+- 教育类真题：恢复高考年份 fast+web **0.98/verified/ready**（display=1977年）；
+  成本档覆盖 13 类。
+- v7 训练启动（300 样本 ×1 epoch，数据覆盖方向）。
 【Round 39 增补（2026-10-26）】
 - v6 服务侧 A/B（fast+web，--self-check-mode local，两题）：光速 0.9814（+3.1pp、
   token −19.8%、墙钟 +30.6%）；出生人口 0.9250（−4.2pp、token −11.8%、墙钟 +56.5%）；

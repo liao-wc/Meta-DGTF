@@ -627,7 +627,7 @@ def question_terms(question: str, limit: int = 3) -> list:
 
 
 _TERM_SPLIT_RE = re.compile(
-    r"的|是|多少|什么|几|了|吗|呢|？|\?|，|,|\s+|在|中(?!国)")
+    r"哪些|哪几|哪|的|是|多少|什么|几|了|吗|呢|有|？|\?|，|,|\s+|在|中(?!国)")
 _OVERALL_UNIT_MARKERS: tuple[str, ...] = (
     "全长", "总长", "总长度", "长度", "最高", "海拔", "最宽", "宽度",
     "最深", "深度", "距离", "速度", "面积", "重量", "总计", "合计",
@@ -721,7 +721,19 @@ def _term_covered(term: str, corpus: str) -> bool:
     parts = [x for x in parts if len(x) >= 2]
     if len(parts) < 1:
         return False
-    if all(_seg_covered(x, corpus) for x in parts):
+    def _part_ok(x: str) -> bool:
+        if _seg_covered(x, corpus):
+            return True
+        # ★ [Round 40] 长片段（≥4 字）2-gram 覆盖率 ≥80% 也视为覆盖：
+        #   「奥林匹克五环」被 奥林匹克/五环 覆盖（语料里常写作「奥林匹克…五环」）
+        if len(x) >= 4:
+            _g = [x[_i:_i + 2] for _i in range(len(x) - 1)]
+            _h = sum(1 for _gg in _g if _gg in corpus)
+            if _g and _h / len(_g) >= 0.8:
+                return True
+        return False
+
+    if all(_part_ok(x) for x in parts):
         return True
     # ★ [Round 19] 末级：token 级覆盖（中/英数分段 + 近义 + 去泛化后缀）
     return _term_tokens_covered(term, corpus)
