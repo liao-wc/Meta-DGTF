@@ -401,7 +401,7 @@ def _compact_numeric_answer(question: str, answer: str) -> str:
                    "份", "家", "所", "岁")
     _STRONG_UNITS = ("千米", "公里", "米", "厘米", "毫米", "%", "℃",
                      "吨", "公斤", "kg", "元", "万", "周岁", "岁",
-                     "万人", "万辆", "亿美元", "万亿美元")
+                     "万人", "万辆", "亿美元", "万亿美元", "亿斤", "亿")
     claims = []
     for c in extract_numeric_claims(ans):
         try:
@@ -422,7 +422,8 @@ def _compact_numeric_answer(question: str, answer: str) -> str:
         return ans
     # 单位命中题面的优先；其次数值在答案中出现更早的优先（保持原文顺序）
     q_units = [u for u in ("千米", "公里", "米", "厘米", "毫米", "%", "℃",
-                           "年", "吨", "公斤", "kg", "小时", "分钟", "秒")
+                           "年", "吨", "公斤", "kg", "小时", "分钟", "秒",
+                           "亿斤", "亿", "斤")
                if u in q or u.lower() in q.lower()]
     # ★ [Round 20] 目标量纲线索：增速/增长→%；长度/海拔→长度单位；重量；面积
     if any(k in q for k in ("增速", "增长", "率", "百分", "CPI", "PPI")):

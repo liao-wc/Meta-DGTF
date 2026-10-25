@@ -299,6 +299,15 @@ def main():
     ck("A54 全长问句 display 取总长 55公里（非分段 42）",
        _whole_disp == "55公里", _whole_disp)
 
+    # ── A25：亿斤单位（Round 51）──────────────────
+    _grain_claims = extract_numeric_claims("2024年全国粮食总产量14130亿斤，增长1.6%。")
+    ck("A55 亿斤复合单位可抽取",
+       any(c.get("unit") == "亿斤" and float(c.get("value")) == 14130
+           for c in _grain_claims), _grain_claims)
+    _grain_disp = _compact_numeric_answer("2024年我国粮食总产量是多少亿斤？",
+        "全国粮食总产量14130亿斤，比上年增长1.6%。")
+    ck("A56 粮食题 display 取亿斤值（非 1.6%）",
+       "14130" in _grain_disp and "亿斤" in _grain_disp, _grain_disp)
     # ── B：整体量语义加权 ────────────────────────
     ck("B1 问长度 + 全长标记 → 加分",
        _overall_quantity_bonus("黄河全长约5464公里", "黄河的长度是多少千米") > 0)
