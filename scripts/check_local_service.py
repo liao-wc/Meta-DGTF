@@ -77,6 +77,12 @@ def main() -> int:
                                      or {}), ensure_ascii=False)[:160])
     print("runs:", [(r.get("ok"), r.get("wall_s"), r.get("ms")) for r in out["runs"]])
     print("total wall:", out["total_wall_s"], "s | serialized:", out["serialized"])
+    _lat = (out["metrics_after"].get("latency") or {}) if isinstance(
+        out["metrics_after"], dict) else {}
+    if _lat:
+        print("latency: n=%s p50=%sms p95=%sms mean=%sms"
+              % (_lat.get("n"), _lat.get("p50"), _lat.get("p95"),
+                 _lat.get("mean")))
     st = (out["metrics_after"].get("stats") or {})
     print("metrics: total=%s avg_ms=%s by_stage=%s errors=%s"
           % (st.get("requests_total"), out["metrics_after"].get("avg_ms"),
