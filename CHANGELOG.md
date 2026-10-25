@@ -45,6 +45,10 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 57 增补（2026-10-26）】
+- 离线重放 124 packs：answered 81、gaps 清零 17、数值答案 34→38、官方源 119，
+  **0 回归**（stored answered → new 非 answered）。
+- v8 训练启动（self_check，mixed 变体，230×2 epochs，GPU 后台）。
 【Round 56 增补（2026-10-26）】
 - 全量回归复验（零 API）：App 自检 444/0；离线事实重放全 answered；
   过程门 85 packs 审计已修复 27/未修复 0；fast_gate 12/12、V2 51/51（804 checks）。

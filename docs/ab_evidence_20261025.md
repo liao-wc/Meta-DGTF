@@ -1788,3 +1788,26 @@ gaps=「uncovered:民法典规定」「uncovered:岁成年」；answer 取「八
 
 结论：Round 40–55 的连续机制改动（事实口径/展示收窄/列举/命名/全长等）对
 App 与引擎均**无回归**；离线重放证明历史 pack 在新版下仍 answered。
+
+
+## 63. 离线重放回归统计 + v8（mixed）训练启动（Round 57，零 API）
+
+### 63.1 离线重放（124 packs，新引擎重算）
+
+| 指标 | 值 |
+|---|---|
+| answered_now | **81** |
+| gaps_cleared | 17 |
+| numeric_answer_before → after | 34 → **38** |
+| official_now | 119 |
+| **regressions（stored answered → new 非 answered）** | **0** |
+
+结论：新引擎在历史 pack 上「只变好不变坏」——0 回归、17 处 gaps 清零、
+数值答案 +4、官方源 119 条。
+
+### 63.2 v8 训练启动（本地模型继续优化）
+
+`--stage self_check --variant mixed`（与 v6 的 min 变体不同的数据配方），
+230 样本 × 2 epochs、max_len 1900、lr 8e-5，GPU 后台训练（预计 ~2.5h）。
+完成后与 v6（字段 0.589 / escape 0.800 / p50 6.27s）在 30 条 held-out 对比，
+只变好才切默认；否则归档负结果。
