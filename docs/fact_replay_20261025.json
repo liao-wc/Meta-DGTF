@@ -1,0 +1,1585 @@
+{
+ "n_today": 14,
+ "today_answered": 11,
+ "today_gaps_cleared": 1,
+ "today_numeric_before": 3,
+ "today_numeric_after": 1,
+ "n_fact_replayed": 61,
+ "n_numeric": 12,
+ "answered_now": 25,
+ "gaps_cleared": 6,
+ "numeric_answer_before": 3,
+ "numeric_answer_after": 1,
+ "official_now": 40,
+ "rows": [
+  {
+   "file": "20261020_015222_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "sparse": false,
+   "stored_status": "conflict",
+   "stored_gaps": [
+    "no_official_source",
+    "conflict_unresolved"
+   ],
+   "stored_official": [],
+   "stored_answer": "",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1"
+   ],
+   "new_answer": "DeepSeek V4.1 Flash-1017新版本发布：许愿式编程一键成真 IT之家 10 月 17 日消息，DeepSeek V4.1 Flash 现已更新至 V4.1-Fl",
+   "new_display": "DeepSeek V4.1 Flash-1017新版本发布：许愿式编程一键成真 IT之家 10 月 17 日消息，DeepSeek V4.1 Flash 现已更新至 V4.1-Fl",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": true
+  },
+  {
+   "file": "20261020_015933_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "sparse": false,
+   "stored_status": "conflict",
+   "stored_gaps": [
+    "no_official_source",
+    "conflict_unresolved"
+   ],
+   "stored_official": [],
+   "stored_answer": "",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1"
+   ],
+   "new_answer": "DeepSeek V4.1 Flash-1017新版本发布：许愿式编程一键成真 IT之家 10 月 17 日消息，DeepSeek V4.1 Flash 现已更新至 V4.1-Fl",
+   "new_display": "DeepSeek V4.1 Flash-1017新版本发布：许愿式编程一键成真 IT之家 10 月 17 日消息，DeepSeek V4.1 Flash 现已更新至 V4.1-Fl",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": true
+  },
+  {
+   "file": "20261020_022537_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E46"
+   ],
+   "stored_answer": "# DeepSeek V4.1 Flash 新版本：许愿式编程一键成真\n\nDeepSeek V4.1 Flash 现已更新至 V4.1-Flash-1017 版本，官方网页端、AP",
+   "new_status": "unknown",
+   "new_gaps": [
+    "insufficient_evidence"
+   ],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E13"
+   ],
+   "new_answer": "",
+   "new_display": "",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261020_023407_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "stored_answer": "[2026-10-16T16:00:00+00:00] # DeepSeek V4.1 Flash 新版本：许愿式编程一键成真 DeepSeek V4.1 Flash 现已更新至 ",
+   "new_status": "unknown",
+   "new_gaps": [
+    "insufficient_evidence"
+   ],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "new_answer": "",
+   "new_display": "",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261020_055412_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "sparse": false,
+   "stored_status": "conflict",
+   "stored_gaps": [
+    "conflict_unresolved"
+   ],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E10"
+   ],
+   "stored_answer": "",
+   "new_status": "unknown",
+   "new_gaps": [
+    "insufficient_evidence"
+   ],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "new_answer": "",
+   "new_display": "",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261020_060016_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1"
+   ],
+   "stored_answer": "2026-10-16",
+   "new_status": "unknown",
+   "new_gaps": [
+    "insufficient_evidence"
+   ],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "new_answer": "",
+   "new_display": "",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261020_065509_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1"
+   ],
+   "stored_answer": "2026-10-17",
+   "new_status": "unknown",
+   "new_gaps": [
+    "insufficient_evidence"
+   ],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "new_answer": "",
+   "new_display": "",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261020_071351_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1"
+   ],
+   "stored_answer": "2026-10-17",
+   "new_status": "unknown",
+   "new_gaps": [
+    "insufficient_evidence"
+   ],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "new_answer": "",
+   "new_display": "",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261020_072240_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1"
+   ],
+   "stored_answer": "2026-10-17",
+   "new_status": "unknown",
+   "new_gaps": [
+    "insufficient_evidence"
+   ],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "new_answer": "",
+   "new_display": "",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261020_073134_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1"
+   ],
+   "stored_answer": "2026-10-17",
+   "new_status": "unknown",
+   "new_gaps": [
+    "insufficient_evidence"
+   ],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "new_answer": "",
+   "new_display": "",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261020_073959_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1"
+   ],
+   "stored_answer": "2026-10-17",
+   "new_status": "unknown",
+   "new_gaps": [
+    "insufficient_evidence"
+   ],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "new_answer": "",
+   "new_display": "",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261020_081008_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E49"
+   ],
+   "stored_answer": "2026-10-17",
+   "new_status": "unknown",
+   "new_gaps": [
+    "insufficient_evidence"
+   ],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "new_answer": "",
+   "new_display": "",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261020_083208_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1"
+   ],
+   "stored_answer": "2026-10-17",
+   "new_status": "unknown",
+   "new_gaps": [
+    "insufficient_evidence"
+   ],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "new_answer": "",
+   "new_display": "",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261020_090210_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1"
+   ],
+   "stored_answer": "2026-10-17",
+   "new_status": "unknown",
+   "new_gaps": [
+    "insufficient_evidence"
+   ],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "new_answer": "",
+   "new_display": "",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261020_092123_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1"
+   ],
+   "stored_answer": "2026-10-17",
+   "new_status": "unknown",
+   "new_gaps": [
+    "insufficient_evidence"
+   ],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "new_answer": "",
+   "new_display": "",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261020_094536_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E29",
+    "E54"
+   ],
+   "stored_answer": "2026-10-17",
+   "new_status": "unknown",
+   "new_gaps": [
+    "insufficient_evidence"
+   ],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "new_answer": "",
+   "new_display": "",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261020_100816_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1"
+   ],
+   "stored_answer": "2026-10-17",
+   "new_status": "unknown",
+   "new_gaps": [
+    "insufficient_evidence"
+   ],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "new_answer": "",
+   "new_display": "",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261020_102957_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E55"
+   ],
+   "stored_answer": "2026-10-17",
+   "new_status": "unknown",
+   "new_gaps": [
+    "insufficient_evidence"
+   ],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "new_answer": "",
+   "new_display": "",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261020_105722_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1"
+   ],
+   "stored_answer": "2026-10-17",
+   "new_status": "unknown",
+   "new_gaps": [
+    "insufficient_evidence"
+   ],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "new_answer": "",
+   "new_display": "",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261020_111220_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1"
+   ],
+   "stored_answer": "2026-10-17",
+   "new_status": "unknown",
+   "new_gaps": [
+    "insufficient_evidence"
+   ],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E22"
+   ],
+   "new_answer": "",
+   "new_display": "",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261020_113141_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1"
+   ],
+   "stored_answer": "2026-10-17",
+   "new_status": "unknown",
+   "new_gaps": [
+    "insufficient_evidence"
+   ],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "new_answer": "",
+   "new_display": "",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261020_113213_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "sparse": false,
+   "stored_status": "conflict",
+   "stored_gaps": [
+    "conflict_unresolved"
+   ],
+   "stored_official": [
+    "E1"
+   ],
+   "stored_answer": "",
+   "new_status": "unknown",
+   "new_gaps": [
+    "insufficient_evidence"
+   ],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "new_answer": "",
+   "new_display": "",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261020_121030_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1"
+   ],
+   "stored_answer": "2026-10-17",
+   "new_status": "unknown",
+   "new_gaps": [
+    "insufficient_evidence"
+   ],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "new_answer": "",
+   "new_display": "",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261020_122958_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1"
+   ],
+   "stored_answer": "2026-10-17",
+   "new_status": "unknown",
+   "new_gaps": [
+    "insufficient_evidence"
+   ],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "new_answer": "",
+   "new_display": "",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261020_131656_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [
+    "single_source"
+   ],
+   "stored_official": [
+    "E1"
+   ],
+   "stored_answer": "2026-10-17",
+   "new_status": "unknown",
+   "new_gaps": [
+    "insufficient_evidence"
+   ],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "new_answer": "",
+   "new_display": "",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261020_132800_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1"
+   ],
+   "stored_answer": "2026-10-17",
+   "new_status": "unknown",
+   "new_gaps": [
+    "insufficient_evidence"
+   ],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "new_answer": "",
+   "new_display": "",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261020_135317_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1"
+   ],
+   "stored_answer": "2026-10-17",
+   "new_status": "unknown",
+   "new_gaps": [
+    "insufficient_evidence"
+   ],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "new_answer": "",
+   "new_display": "",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261020_144637_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1"
+   ],
+   "stored_answer": "2026-10-17",
+   "new_status": "unknown",
+   "new_gaps": [
+    "insufficient_evidence"
+   ],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "new_answer": "",
+   "new_display": "",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261020_150402_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1"
+   ],
+   "stored_answer": "2026-10-17",
+   "new_status": "unknown",
+   "new_gaps": [
+    "insufficient_evidence"
+   ],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "new_answer": "",
+   "new_display": "",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261020_152037_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1"
+   ],
+   "stored_answer": "2026-10-17",
+   "new_status": "unknown",
+   "new_gaps": [
+    "insufficient_evidence"
+   ],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "new_answer": "",
+   "new_display": "",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261020_152217_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1"
+   ],
+   "stored_answer": "2026-10-17",
+   "new_status": "unknown",
+   "new_gaps": [
+    "single_source",
+    "insufficient_evidence"
+   ],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "new_answer": "",
+   "new_display": "",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261020_154010_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1"
+   ],
+   "stored_answer": "2026-10-17",
+   "new_status": "unknown",
+   "new_gaps": [
+    "insufficient_evidence"
+   ],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "new_answer": "",
+   "new_display": "",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261022_091935_用一句话说明元DGTF的修行层作用.packed.json",
+   "question": "用一句话说明元DGTF的修行层作用。",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [
+    "no_official_source",
+    "uncovered:用一句话说明元DGTF的修行层作用"
+   ],
+   "stored_official": [],
+   "stored_answer": "境界划分 从低到高分为练气、筑基、金丹、元婴、化神、炼虚，每个境界又分为初、中、后三个等级。 初期：1-3层 中期：4-7层 后期：8-10层 10层修满又称为大圆满 练气 寿一百",
+   "new_status": "unknown",
+   "new_gaps": [
+    "no_official_source",
+    "uncovered:用一句话说明元DGTF的修行层",
+    "insufficient_evidence"
+   ],
+   "new_official": [],
+   "new_answer": "",
+   "new_display": "",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261022_183329_用一句话说明元DGTF的修行层作用.packed.json",
+   "question": "用一句话说明元DGTF的修行层作用。",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [
+    "uncovered:用一句话说明元DGTF的修行层作用"
+   ],
+   "stored_official": [
+    "E45"
+   ],
+   "stored_answer": "更多》 央网信息 省政府信息 更多》 更多》 ## 各地动态 更多》 沈阳：七旬老人竟是“全球大网... 铁岭：功德箱≠提款机 朝阳：此团伙专偷农村监控设备... 葫芦岛：轿车斜着",
+   "new_status": "unknown",
+   "new_gaps": [
+    "no_official_source",
+    "insufficient_evidence"
+   ],
+   "new_official": [],
+   "new_answer": "",
+   "new_display": "",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261022_185552_DeepSeekAPI的base.packed.json",
+   "question": "DeepSeek API 的 base URL 是什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E5",
+    "E8",
+    "E10",
+    "E43",
+    "E45"
+   ],
+   "stored_answer": "import OpenAI from \"openai\"; const openai = new OpenAI({ baseURL: ' apiKey: process.env.DE",
+   "new_status": "unknown",
+   "new_gaps": [
+    "insufficient_evidence"
+   ],
+   "new_official": [
+    "E5",
+    "E7",
+    "E9"
+   ],
+   "new_answer": "",
+   "new_display": "",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261022_192541_HTTP404状态码表示什么.packed.json",
+   "question": "HTTP 404 状态码表示什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [
+    "no_official_source",
+    "uncovered:状态码表示什么"
+   ],
+   "stored_official": [],
+   "stored_answer": "CTFshow-CRYPTO（持续更新） 密 _码_ 学签到 }wohs.ftc{galf 将字符串逆序即可 letters = '}wohs.ftc{galf' a = list",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E2"
+   ],
+   "new_answer": "跳转到主要内容 跳转到搜索 切换侧边栏 1. 面向开发者的 Web 技术 2. HTTP 3. 参考 4. HTTP 响应状态码 5. 404 Not Found 记住语言 了解更",
+   "new_display": "跳转到主要内容 跳转到搜索 切换侧边栏 1. 面向开发者的 Web 技术 2. HTTP 3. 参考 4. HTTP 响应状态码 5. 404 Not Found 记住语言 了解更",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": true
+  },
+  {
+   "file": "20261022_195840_Python中len函数的作用.packed.json",
+   "question": "Python 中 len() 函数的作用是什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [
+    "uncovered:函数的作用"
+   ],
+   "stored_official": [
+    "E13",
+    "E26",
+    "E31"
+   ],
+   "stored_answer": "类型构造器 `list(seq)` 可将任意序列或可迭代对象转换为数据项和顺序均不变的列表。例如，`list((1,2,3))` 会生成 `[1,2,3]` 而 `list('ab",
+   "new_status": "answered",
+   "new_gaps": [
+    "no_official_source"
+   ],
+   "new_official": [],
+   "new_answer": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
+   "new_display": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261022_202654_Python中len函数的作用.packed.json",
+   "question": "Python 中 len() 函数的作用是什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E12",
+    "E30",
+    "E46",
+    "E51"
+   ],
+   "stored_answer": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
+   "new_status": "answered",
+   "new_gaps": [
+    "no_official_source"
+   ],
+   "new_official": [],
+   "new_answer": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
+   "new_display": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261023_082429_Python中len函数的作用.packed.json",
+   "question": "Python 中 len() 函数的作用是什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E12"
+   ],
+   "stored_answer": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
+   "new_status": "answered",
+   "new_gaps": [
+    "no_official_source"
+   ],
+   "new_official": [],
+   "new_answer": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
+   "new_display": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261023_V2.2.0_full_baseline_replay.packed.json",
+   "question": "Python 中 len() 函数的作用是什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E12"
+   ],
+   "stored_answer": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
+   "new_status": "answered",
+   "new_gaps": [
+    "no_official_source"
+   ],
+   "new_official": [],
+   "new_answer": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
+   "new_display": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261024_071938_Python中len函数的作用是什.packed.json",
+   "question": "Python 中 len 函数的作用是什么？",
+   "sparse": false,
+   "stored_status": "conflict",
+   "stored_gaps": [
+    "conflict_unresolved"
+   ],
+   "stored_official": [
+    "E26",
+    "E46",
+    "E47",
+    "E48"
+   ],
+   "stored_answer": "",
+   "new_status": "answered",
+   "new_gaps": [
+    "no_official_source"
+   ],
+   "new_official": [],
+   "new_answer": "在Python中，len()函数用来确定给定对象中的元素的数量。它可以作用于各种数据类型，如列表、字符串、元组和字典等。 使用len()函数 len()函数的语法非常简单： len",
+   "new_display": "在Python中，len()函数用来确定给定对象中的元素的数量。它可以作用于各种数据类型，如列表、字符串、元组和字典等。 使用len()函数 len()函数的语法非常简单： len",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261024_072943_Python中len函数返回什么.packed.json",
+   "question": "Python 中 len 函数返回什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [
+    "uncovered:返回什么"
+   ],
+   "stored_official": [
+    "E10",
+    "E21",
+    "E30"
+   ],
+   "stored_answer": "| ``` Yep, len() has to return something less than sys.maxsize. ``` | | msg136646 - (view)",
+   "new_status": "answered",
+   "new_gaps": [
+    "no_official_source"
+   ],
+   "new_official": [],
+   "new_answer": "The `len()` function in Python is a built-in function that returns the length of an object",
+   "new_display": "The `len()` function in Python is a built-in function that returns the length of an object",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261024_073909_Python中len函数的返回值是.packed.json",
+   "question": "Python 中 len 函数的返回值是什么类型？",
+   "sparse": false,
+   "stored_status": "conflict",
+   "stored_gaps": [
+    "conflict_unresolved",
+    "uncovered:的返回值"
+   ],
+   "stored_official": [
+    "E3",
+    "E21",
+    "E22",
+    "E23",
+    "E24",
+    "E31",
+    "E36"
+   ],
+   "stored_answer": "",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E3"
+   ],
+   "new_answer": "Python常用的内置函数 - 什么是len()函数？ Channel: JH哥 6.47K subscribers 1 likes Description 31 views Po",
+   "new_display": "Python常用的内置函数 - 什么是len()函数？ Channel: JH哥 6.47K subscribers 1 likes Description 31 views Po",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": true
+  },
+  {
+   "file": "20261024_082341_Python中len函数的作用是什.packed.json",
+   "question": "Python 中 len 函数的作用是什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E19",
+    "E20",
+    "E21",
+    "E22",
+    "E38",
+    "E57",
+    "E66"
+   ],
+   "stored_answer": "在Python中，len()函数用来确定给定对象中的元素的数量。它可以作用于各种数据类型，如列表、字符串、元组和字典等。 使用len()函数 len()函数的语法非常简单： len",
+   "new_status": "answered",
+   "new_gaps": [
+    "no_official_source"
+   ],
+   "new_official": [],
+   "new_answer": "在Python中，len()函数用来确定给定对象中的元素的数量。它可以作用于各种数据类型，如列表、字符串、元组和字典等。 使用len()函数 len()函数的语法非常简单： len",
+   "new_display": "在Python中，len()函数用来确定给定对象中的元素的数量。它可以作用于各种数据类型，如列表、字符串、元组和字典等。 使用len()函数 len()函数的语法非常简单： len",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261024_083648_Python中len函数的作用是什.packed.json",
+   "question": "Python 中 len 函数的作用是什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E30",
+    "E40",
+    "E44"
+   ],
+   "stored_answer": "在Python中，len()函数用来确定给定对象中的元素的数量。它可以作用于各种数据类型，如列表、字符串、元组和字典等。 使用len()函数 len()函数的语法非常简单： len",
+   "new_status": "answered",
+   "new_gaps": [
+    "no_official_source"
+   ],
+   "new_official": [],
+   "new_answer": "在Python中，len()函数用来确定给定对象中的元素的数量。它可以作用于各种数据类型，如列表、字符串、元组和字典等。 使用len()函数 len()函数的语法非常简单： len",
+   "new_display": "在Python中，len()函数用来确定给定对象中的元素的数量。它可以作用于各种数据类型，如列表、字符串、元组和字典等。 使用len()函数 len()函数的语法非常简单： len",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261024_113505_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [
+    "uncovered:城市热岛效应在夜间比白天更明显"
+   ],
+   "stored_official": [
+    "E4",
+    "E12",
+    "E26",
+    "E34",
+    "E35"
+   ],
+   "stored_answer": "2003~2013年我国39个城市平均夜间城市热岛强度(3.4 K±0.2 K)明显高于白天城市热岛强度(2.1 K±0.3 K, P < 0.001).这一现象尤其在半干旱/干旱",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E4"
+   ],
+   "new_answer": "2003~2013年我国39个城市平均夜间城市热岛强度(3.4 K±0.2 K)明显高于白天城市热岛强度(2.1 K±0.3 K, P < 0.001).这一现象尤其在半干旱/干旱",
+   "new_display": "39个",
+   "numeric_q": false,
+   "stored_answer_numeric": true,
+   "new_answer_numeric": true,
+   "gaps_cleared": true
+  },
+  {
+   "file": "20261024_163141_DeepSeekV41Flash.packed.json",
+   "question": "DeepSeek V4.1 Flash 是哪一天发布的？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E5",
+    "E13",
+    "E14",
+    "E44"
+   ],
+   "stored_answer": "[2026-09-10] ## Date: ... ### DeepSeek-V4-Flash Update The official release of the DeepSee",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E5",
+    "E10",
+    "E11"
+   ],
+   "new_answer": "Date: ... DeepSeek-V4-Flash Update The official release of the DeepSeek-V4-Flash API is no",
+   "new_display": "Date: ... DeepSeek-V4-Flash Update The official release of the DeepSeek-V4-Flash API is no",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261025_022430_11等于几.packed.json",
+   "question": "1+1等于几？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [
+    "no_official_source"
+   ],
+   "stored_official": [],
+   "stored_answer": "[2022-09-29] # 1+1等于几？ ... 1+1可以等于2，也可以等于3，也可以等于4，这要根据具体的情况具体分析",
+   "new_status": "answered",
+   "new_gaps": [
+    "no_official_source"
+   ],
+   "new_official": [],
+   "new_answer": "1+1等于几？ ... 1+1可以等于2，也可以等于3，也可以等于4，这要根据具体的情况具体分析",
+   "new_display": "1+1等于几？ ... 1+1可以等于2，也可以等于3，也可以等于4，这要根据具体的情况具体分析",
+   "numeric_q": true,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261025_050504_11等于几.packed.json",
+   "question": "1+1等于几？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E19",
+    "E26",
+    "E29"
+   ],
+   "stored_answer": "[2022-09-29] # 1+1等于几？ ... 1+1可以等于2，也可以等于3，也可以等于4，这要根据具体的情况具体分析",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E13"
+   ],
+   "new_answer": "1+1等于几？ ... 1+1可以等于2，也可以等于3，也可以等于4，这要根据具体的情况具体分析",
+   "new_display": "1+1等于几？ ... 1+1可以等于2，也可以等于3，也可以等于4，这要根据具体的情况具体分析",
+   "numeric_q": true,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261025_051032_11等于几.packed.json",
+   "question": "1+1等于几？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [
+    "no_official_source"
+   ],
+   "stored_official": [],
+   "stored_answer": "[2022-09-29] # 1+1等于几？ ... 1+1可以等于2，也可以等于3，也可以等于4，这要根据具体的情况具体分析",
+   "new_status": "answered",
+   "new_gaps": [
+    "no_official_source"
+   ],
+   "new_official": [],
+   "new_answer": "1+1等于几？ ... 1+1可以等于2，也可以等于3，也可以等于4，这要根据具体的情况具体分析",
+   "new_display": "1+1等于几？ ... 1+1可以等于2，也可以等于3，也可以等于4，这要根据具体的情况具体分析",
+   "numeric_q": true,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261025_051705_11等于几.packed.json",
+   "question": "1+1等于几？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E32"
+   ],
+   "stored_answer": "[2022-09-29] # 1+1等于几？ ... 1+1可以等于2，也可以等于3，也可以等于4，这要根据具体的情况具体分析",
+   "new_status": "answered",
+   "new_gaps": [
+    "no_official_source"
+   ],
+   "new_official": [],
+   "new_answer": "1+1等于几？ ... 1+1可以等于2，也可以等于3，也可以等于4，这要根据具体的情况具体分析",
+   "new_display": "1+1等于几？ ... 1+1可以等于2，也可以等于3，也可以等于4，这要根据具体的情况具体分析",
+   "numeric_q": true,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261025_060033_22等于几.packed.json",
+   "question": "2+2等于几？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E24"
+   ],
+   "stored_answer": "2+2等于几？ 「2+2=5」是一个混合梗，来源于第20集第二部分《罢工的胃》。[] 在《罢工的胃》中，昂崔的三个器官（胃、大脑、心脏）罢工后从昂崔的身体里逃出。其中，昂崔的大脑获",
+   "new_status": "answered",
+   "new_gaps": [
+    "no_official_source"
+   ],
+   "new_official": [],
+   "new_answer": "2+2等于几？ 「2+2=5」是一个混合梗，来源于第20集第二部分《罢工的胃》。[] 在《罢工的胃》中，昂崔的三个器官（胃、大脑、心脏）罢工后从昂崔的身体里逃出。其中，昂崔的大脑获",
+   "new_display": "2+2等于几？ 「2+2=5」是一个混合梗，来源于第20集第二部分《罢工的胃》。[] 在《罢工的胃》中，昂崔的三个器官（胃、大脑、心脏）罢工后从昂崔的身体里逃出。其中，昂崔的大脑获",
+   "numeric_q": true,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261025_125104_光在水中传播的速度是多少.packed.json",
+   "question": "光在水中传播的速度是多少？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E23"
+   ],
+   "stored_answer": "[2024-07-14] 光在水中传播的速度比空气中 小小（选填“大”或“小”）",
+   "new_status": "answered",
+   "new_gaps": [
+    "no_official_source"
+   ],
+   "new_official": [],
+   "new_answer": "光在水中传播的速度比空气中 小小（选填“大”或“小”）",
+   "new_display": "光在水中传播的速度比空气中 小小（选填“大”或“小”）",
+   "numeric_q": true,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261025_125920_光在水中传播的速度是多少.packed.json",
+   "question": "光在水中传播的速度是多少？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [
+    "no_official_source"
+   ],
+   "stored_official": [],
+   "stored_answer": "[2024-07-14] 光在水中传播的速度比空气中 小小（选填“大”或“小”）",
+   "new_status": "answered",
+   "new_gaps": [
+    "no_official_source"
+   ],
+   "new_official": [],
+   "new_answer": "光在水中传播的速度比空气中 小小（选填“大”或“小”）",
+   "new_display": "光在水中传播的速度比空气中 小小（选填“大”或“小”）",
+   "numeric_q": true,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261025_152215_珠穆朗玛峰的海拔是多少米.packed.json",
+   "question": "珠穆朗玛峰的海拔是多少米？",
+   "sparse": false,
+   "stored_status": "conflict",
+   "stored_gaps": [
+    "conflict_unresolved"
+   ],
+   "stored_official": [
+    "E8"
+   ],
+   "stored_answer": "",
+   "new_status": "conflict",
+   "new_gaps": [
+    "no_official_source",
+    "conflict_unresolved"
+   ],
+   "new_official": [],
+   "new_answer": "",
+   "new_display": "",
+   "numeric_q": true,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261025_154501_珠穆朗玛峰的海拔是多少米.packed.json",
+   "question": "珠穆朗玛峰的海拔是多少米？",
+   "sparse": false,
+   "stored_status": "conflict",
+   "stored_gaps": [
+    "conflict_unresolved"
+   ],
+   "stored_official": [
+    "E8"
+   ],
+   "stored_answer": "",
+   "new_status": "conflict",
+   "new_gaps": [
+    "no_official_source",
+    "conflict_unresolved"
+   ],
+   "new_official": [],
+   "new_answer": "",
+   "new_display": "",
+   "numeric_q": true,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261025_161052_长江的长度是多少千米.packed.json",
+   "question": "长江的长度是多少千米？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E3",
+    "E4",
+    "E29"
+   ],
+   "stored_answer": "[2020-12-28] 6280千米与0.88千米的对话——记长江局与四唯街道六合社区联合开展十九届五中全会精神学习 ... 6280千米是长江的长度，0.88千米是湖北省武汉市",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E3",
+    "E4"
+   ],
+   "new_answer": "6280千米与0.88千米的对话——记长江局与四唯街道六合社区联合开展十九届五中全会精神学习 ... 6280千米是长江的长度，0.88千米是湖北省武汉市江岸区四唯街道六合社区辖区",
+   "new_display": "6280千米",
+   "numeric_q": true,
+   "stored_answer_numeric": true,
+   "new_answer_numeric": true,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261025_161055_珠穆朗玛峰的海拔是多少米.packed.json",
+   "question": "珠穆朗玛峰的海拔是多少米？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [
+    "conflict_resolved_official:official_precedence"
+   ],
+   "stored_official": [
+    "E8"
+   ],
+   "stored_answer": "[2018-09-20] ### 关于珠峰高度 ... 我看2005年公布的高程是8844.43米",
+   "new_status": "conflict",
+   "new_gaps": [
+    "no_official_source",
+    "conflict_unresolved"
+   ],
+   "new_official": [],
+   "new_answer": "",
+   "new_display": "",
+   "numeric_q": true,
+   "stored_answer_numeric": true,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261025_165802_黄河的长度是多少千米.packed.json",
+   "question": "黄河的长度是多少千米？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [
+    "uncovered:黄河的长度"
+   ],
+   "stored_official": [
+    "E3"
+   ],
+   "stored_answer": "黄河上游自河源至内蒙古河口镇，河段长3472千米",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E3"
+   ],
+   "new_answer": "黄河，我国第二大河，中华民族的母亲河，哺育了灿烂的中华文明",
+   "new_display": "黄河，我国第二大河，中华民族的母亲河，哺育了灿烂的中华文明",
+   "numeric_q": true,
+   "stored_answer_numeric": true,
+   "new_answer_numeric": false,
+   "gaps_cleared": true
+  },
+  {
+   "file": "20261025_165943_AIAgent会先取代哪类工作.packed.json",
+   "question": "AI Agent 会先取代哪类工作？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [
+    "uncovered:会先取代哪类工作"
+   ],
+   "stored_official": [
+    "E29",
+    "E33"
+   ],
+   "stored_answer": "你的工作会被AI取代吗？哪些职位受到的影响最大 ... 人工智能（AI）企业正在大肆宣传其工具取代人类劳动的能力",
+   "new_status": "answered",
+   "new_gaps": [
+    "no_official_source",
+    "uncovered:会先取代哪类工作"
+   ],
+   "new_official": [],
+   "new_answer": "你的工作会被AI取代吗？哪些职位受到的影响最大 ... 人工智能（AI）企业正在大肆宣传其工具取代人类劳动的能力",
+   "new_display": "你的工作会被AI取代吗？哪些职位受到的影响最大 ... 人工智能（AI）企业正在大肆宣传其工具取代人类劳动的能力",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261025_170132_HTTP404状态码表示什么.packed.json",
+   "question": "HTTP 404状态码表示什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [
+    "no_official_source"
+   ],
+   "stored_official": [],
+   "stored_answer": "工具 search_web({'query': 'RFC 9110 404 Not Found definition'}) 返回：- HTTP_NOT_FOUND constant",
+   "new_status": "answered",
+   "new_gaps": [
+    "no_official_source",
+    "uncovered:HTTP"
+   ],
+   "new_official": [],
+   "new_answer": "出现网页错误时 404、502这些数字代表啥 ... 所以，在网页响应中还要加入相应的状态码来告诉浏览器当前请求的处理状态，这就是我们在链接网页出错时所看到的404、502等状态码",
+   "new_display": "出现网页错误时 404、502这些数字代表啥 ... 所以，在网页响应中还要加入相应的状态码来告诉浏览器当前请求的处理状态，这就是我们在链接网页出错时所看到的404、502等状态码",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  }
+ ]
+}

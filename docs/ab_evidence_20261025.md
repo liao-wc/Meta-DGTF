@@ -542,3 +542,33 @@ HTTP 404 事实跑（17:01）终态 `needs_evidence` 的 gaps 是 `no_official_s
   **claim 级抽取**（从数值主张上下文出答案，而非从长 snippet 首句）。
 - 机制 C 回归：tests_evidence 21、tests_evidence_coverage 12、tests_fact_flow 15、
   tests_fact_official_precedence 19、全量 V2 47/47（701 checks）、fast_gate 12/12 全绿。
+
+
+## 20. 离线事实重放工具 + claim 级答案抽取尝试（Round 14，零 API；负结果留档）
+
+### 20.1 工具：`scripts/lead_offline_fact_replay.py`
+
+用已存 pack 的检索池**离线重算 FactCard**（与引擎 finalize 同口径：
+pools.web_results → from_search_hits → dedup → budget → build_fact_card），
+对比存储卡与新卡（status/gaps/official/answer/display），统计数值答案覆盖率。
+输出 `docs/fact_replay_20261025.json`。零 API，可作为机制改动的**回归检查面**。
+
+当天（2026-10-25）14 个 fact 跑次重放：answered 11、gaps 清除 1；
+数值答案（含「值+单位」）before 3 / after 1。差异来自：
+- 旧存储答案含日期前缀（`[2024-07-14] …14` 之类），"before 数值" 含噪声；
+- 部分跑次（珠峰）重放证据集与当轮不同（引擎当轮还用了 fetch/records 层），
+  重放卡 status 与存储卡不一致 ⇒ 重放只对「当前引擎同口径」跑次可信。
+
+### 20.2 尝试：claim 级数值答案抽取（**回退，未采纳**）
+
+设计：数值题从 `extract_numeric_claims` 抽「数值+单位」主张，按「单位量纲类命中
+（千米/公里同属长度）> 整体量标记（全长/总长/海拔）> raw 长度」排序取答案。
+
+离线重放暴露两个无法接受的问题：
+1. **日期噪声**：`[2024-07-14]` 的 14 被当成答案（光速题重放 answer="14"）；
+2. **回归**：数值答案覆盖率 after 反而下降（7/3 波动），且单位字段在
+   `extract_numeric_claims` 里不稳定（raw 自带单位、unit 为空等边界多）。
+
+处置：**按「只变好不变坏」原则回退**（`git checkout -- evidence.py`），保留
+Round 13 的「句子级数值优先」修复；claim 级抽取仅在加日期剥离+量纲类匹配+
+多轮真实跑验证后才考虑重新引入。工具与负结果留档，避免重复踩坑。
