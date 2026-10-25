@@ -45,6 +45,10 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 83 增补（2026-10-26）】
+- 预算终点：余额 2.67 < ab_bench 真跑门槛 4.00，最终回归单跑被预算守卫**拒绝**（未消耗）；
+  已清理失败记录。真实跑次阶段正式结束，项目进入零成本维护态
+  （最终稳态：final_acceptance 9/9 PASS、v8b 服务 errors=0、App 444/0）。
 【Round 82 增补（2026-10-26）】
 - 最终稳态验收：final_acceptance --with-service **9/9 PASS**（fast_gate、V2 806 checks、
   四道护栏、本地服务 v8b errors=0）；工作树仅并发 R49 会话文件未触碰。
