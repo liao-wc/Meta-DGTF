@@ -101,12 +101,23 @@ async function api(path, opts) {
     opts = Object.assign({}, opts, { headers: headers });
   }
   // 前端请求超时：避免后端卡住时界面永远转圈。
+  // DSH 整段会话读取可能较慢，给 90s；Abort 时换成可读提示，避免暴露
+  // 浏览器原始 "signal is aborted without reason"。
+  const _slowRead = /\/api\/dsh\/current\/(events|messages)/.test(path);
+  const _timeoutMs = _slowRead ? 90000 : 30000;
   const _ctrl = new AbortController();
-  const _timer = setTimeout(function () { _ctrl.abort(); }, 30000);
+  const _timer = setTimeout(function () { _ctrl.abort(); }, _timeoutMs);
   if (!opts.signal) opts = Object.assign({}, opts, { signal: _ctrl.signal });
   let r;
   try {
-    r = await fetch(path, opts);
+    try {
+      r = await fetch(path, opts);
+    } catch (e) {
+      if (e && (e.name === 'AbortError' || /aborted/i.test(String(e.message || '')))) {
+        throw new Error('读取超时（DSH 会话较大或后端忙），正在自动重试…');
+      }
+      throw e;
+    }
   } finally {
     clearTimeout(_timer);
   }
@@ -1227,6 +1238,27 @@ function renderMeta() {
   const running = chatMode !== 'archive' && (t.status === 'running' || t.status === 'queued');
   const m = curLanes().meta || {};
   const bits = [];
+  /* ★ T3「道生专属模式」：把后端回显的 mode/plan 渲染成**只读**小标签
+     （保持「无多余按钮」原则：没有新开关、没有新面板，只有一行模式说明）。
+     数据源：POST 201 的 created.mode → 轮询后 GET 单任务的 task.mode（resume 不丢）。 */
+  const _mode = (t.mode && typeof t.mode === 'object' && t.mode.id) ? t.mode : null;
+  if (_mode) {
+    const _plan = (_mode.plan && typeof _mode.plan === 'object') ? _mode.plan : {};
+    const _label = { daosheng: '道生专属', daosheng_fast: '道生专属·省档',
+                     standard: '标准模式' }[_mode.id] || _mode.id;
+    const _eng = _mode.engine_mode || _plan.engine_mode || '';
+    const _budget = (_mode.budget_guard || _plan.budget_guard || {}).decision || '';
+    const _hint = [(_mode.reason || _plan.reason || ''),
+                   _plan.quality_policy ? ('质量策略 ' + _plan.quality_policy) : '',
+                   (_mode.context_injected || _plan.context_injected || []).length
+                     ? ('注入 ' + (_mode.context_injected || _plan.context_injected).join('+'))
+                     : '',
+                   _budget ? ('预算守卫 ' + _budget) : '',
+                   _mode.preset ? ('预设 ' + _mode.preset) : '']
+                  .filter(Boolean).join('；');
+    bits.push(`<span class="rl-mode" data-mode="${esc(_mode.id)}" title="${esc(_hint)}">`
+      + `模式 · ${esc(_label)}${_eng ? ' / ' + esc(_eng) : ''}</span>`);
+  }
   /* ★ 起始用**任务自己的** started_at：与 ended_at 同源。
      之前写的是 「m.started_at || t.started_at」，而 lanes 是异步刷新的 ——
      刚换任务那一下会拿到**上一条的 started_at** 配新任务的 ended_at。 */
@@ -1336,7 +1368,7 @@ function setRunBtn(mode) {
   runMode = mode;
   const stop = mode === 'stop';
   b.classList.toggle('stop', stop);
-  b.title = stop ? '终止运行（已跑到的部分会存下来）' : '开始深究（⌘/Ctrl+↵）';
+  b.title = stop ? '终止运行（已跑到的部分会存下来）' : '开始深究';
   b.setAttribute('aria-label', stop ? '终止运行' : '开始深究');
   b.innerHTML = stop ? _SVG_STOP : _SVG_SEND;
 }
@@ -1485,7 +1517,7 @@ async function retryTask() {
    进度取自「哪一层已经有内容」；用户一开始打字就让位（不动他自己的内容）。 */
 /* ★ R39：首屏输入框文案（用户指定原文，含中间两个空格）—— 与 index.html 的
    `#question` placeholder **保持同一句**（跑完/新对话时 JS 会把它写回去）。 */
-const Q_PLACEHOLDER = '此刻 你又想到了什么？ 可以发给Meta-DGTF 我们一起去探索吧';
+const Q_PLACEHOLDER = '给Meta-DGTF发消息 我们一起探索吧 ....';
 const RUN_WHISPER = {
   boot: ['Meta-DGTF 引擎已启动 · 您愿意和我一起探寻吗？',
          '我先把这个问题钉牢，再动手…',
@@ -1570,27 +1602,15 @@ function toggleDshMode(on) {
   if (dshAttachTaskId) dshCurrent = null;
   if (q) q.placeholder = dshMode
     ? 'DSH Agent：输入任务，读取项目文件 / outputs 产物 / app 导入文件…'
-    : '此刻 你又想到了什么？ 可以发给Meta-DGTF 我们一起去探索吧';
+    : '给Meta-DGTF发消息 我们一起探索吧 ....';
   if (dshMode) agentTaskMode = false;
   updateDshConvBar();
   if (dshMode) {
     startDshHistoryPoll();
     if (dshCurrent && dshCurrent.live) startDshViewPoll();
     loadDshChats();
-    let _restored = false;
-    if (!dshAttachTaskId && !dshConversationId) {
-      try {
-        const saved = localStorage.getItem(DSH_CONV_KEY);
-        /* ★ V2.0.2：dsh-current-* 会话现在由服务端提供「自身时段」事件切片，
-           恢复时按普通会话加载（每个会话独立、只显示当时内容）。 */
-        if (saved) { dshConversationId = saved; _restored = true; loadDshConversation(); }
-      } catch (_) {}
-    }
-    /* ★ V2.0.1：进入 DSH 模式且没有历史/任务会话时，默认展示「DSH 本对话」
-       实时视图（full=1 载入本会话最近约 200 条），不必先发一条消息才出现。 */
-    if (!_restored && !dshAttachTaskId && !dshConversationId && !dshConversation) {
-      openDshCurrentLiveView();
-    }
+    /* 点击 DSH Agent 只切换模式，不自动进入/恢复会话；
+       用户发送第一条消息时由 startDshCurrentRun() 进入当前 DSH 对话。 */
   } else {
     stopDshHistoryPoll();
     stopDshViewPoll();
@@ -1931,10 +1951,10 @@ function updateDshControls() {
   if (rb) {
     rb.dataset.tip = busy
       ? (hasText ? '发送插话（Enter）' : '终止本轮（空输入点击）')
-      : '开始深究（⌘/Ctrl+↵）';
+      : '开始深究';
     rb.title = busy
       ? (hasText ? '发送插话' : '终止本轮')
-      : '开始深究（⌘/Ctrl+↵）';
+      : '开始深究';
   }
 }
 
@@ -2336,11 +2356,16 @@ async function startRun() {
   if (real && !confirm('真实运行会调用 DeepSeek：单次约 30–45 分钟、几十万 token、真花钱（约 ¥4–9）。确认启动？')) return;
   $('#run-btn').disabled = true;
   try {
-    const { id } = await api('/api/tasks', {
+    const created = await api('/api/tasks', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ question, opts }),
     });
-    taskData[id] = { id, question, status: 'queued', created_at: Date.now() / 1000, opts, mock: !!opts.mock };
+    const id = created.id;
+    /* ★ T3：后端在 201 响应里回显 mode/plan（道生专属模式可审计）。
+       任务对象带上 mode ⇒ renderMeta 立刻显示「模式 · 策略」，轮询后 GET 单任务
+       也带同一份 mode（resume/重试不丢），不会再被覆盖掉。 */
+    taskData[id] = { id, question, status: 'queued', created_at: Date.now() / 1000,
+                     opts, mock: !!opts.mock, mode: created.mode || null };
     activeChat = id; followLatest = false;      // 新会话立刻锁定为「当前会话」
     setRunBtn('stop');                  // 立刻切成终止键（不等日志露面）
     /* ★ R23：输入框清空、换上「引擎已启动」寄语（此后随运行进度轮换） */
@@ -6084,6 +6109,13 @@ function init() {
     ta.style.height = 'auto';
     ta.style.height = Math.min(ta.scrollHeight, 180) + 'px';
   });
+  /* 回车发送；Ctrl/Cmd+回车、Shift+回车、Alt+回车保留换行。 */
+  if (ta) ta.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    startRun();
+  });
   /* ★ R44：「选择文件导入」改成**真按钮**去点隐藏的 input —— 原来靠 `<label>` 包着
      `display:none` 的 input，用户报「点了没反应」；按钮这条路最直、最不容易被样式影响。
      `value=''` 保证同一个文件删了还能再选一次。 */
@@ -6567,7 +6599,11 @@ function init() {
 
   // 键盘优先：⌘/Ctrl+Enter 提交 · / 聚焦搜索 · Esc 关闭浮层
   document.addEventListener('keydown', e => {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); startRun(); return; }
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+      const _tg = (e.target && e.target.id === 'question');
+      if (_tg) return;              /* 输入框内 Ctrl/Cmd+Enter = 换行 */
+      e.preventDefault(); startRun(); return;
+    }
     const tag = (e.target.tagName || '');
     if (e.key === '/' && !/^(INPUT|TEXTAREA|SELECT)$/.test(tag)) {
       e.preventDefault();

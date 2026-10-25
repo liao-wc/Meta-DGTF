@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "2.0.23"
+APP_VERSION = "2.0.24"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -81,6 +81,7 @@ sys.path.insert(0, str(APP_DIR))
 sys.path.insert(0, str(APP_DIR.parent / "dgtf_engine"))
 
 import dashboard as dash  # noqa: E402
+import daosheng_mode  # noqa: E402  ★ T3 道生专属模式（三体动态最优计划）
 import engine_runner as runner  # noqa: E402
 import library as lib  # noqa: E402
 import outputs_index as oi  # noqa: E402
@@ -2102,11 +2103,9 @@ def _dsh_current_web_base() -> str:
             base = "https://" + base[6:]
         return base
 
+    # 本地写入的当前 URL 优先：App 进程可能继承旧 DSH_WEB_URL，
+    # 旧端口仍活着时会把请求送到错误会话；dsh_web_url.txt 由 App 启动/维护。
     candidates = []
-    for key in ("DSH_WEB_URL", "DGTF_DSH_WEB_URL"):
-        val = os.getenv(key)
-        if val:
-            candidates.append(_norm(val))
     try:
         p = APP_DIR.parent / "dgtf_memory" / "dsh_web_url.txt"
         if p.is_file():
@@ -2115,7 +2114,13 @@ def _dsh_current_web_base() -> str:
                 candidates.append(_norm(val))
     except Exception:
         pass
+    for key in ("DSH_WEB_URL", "DGTF_DSH_WEB_URL"):
+        val = os.getenv(key)
+        if val:
+            candidates.append(_norm(val))
     candidates.extend([
+        "http://127.0.0.1:61044",
+        "http://127.0.0.1:61045",
         "http://127.0.0.1:53664",
         "http://127.0.0.1:56632",
         "http://127.0.0.1:53665",
@@ -2128,13 +2133,25 @@ def _dsh_current_web_base() -> str:
         try:
             with _url.urlopen(base + "/", timeout=1.2) as resp:
                 if 100 <= int(resp.status) < 500:
+                    _persist_dsh_web_base(base)
                     return base
         except _urlerr.HTTPError as exc:
             if 100 <= int(exc.code) < 500:
+                _persist_dsh_web_base(base)
                 return base
         except Exception:
             continue
     return "http://127.0.0.1:53664"
+
+
+def _persist_dsh_web_base(base: str) -> None:
+    """把探测到的当前 DSH Web URL 写入本地覆盖，避免进程继承旧端口。"""
+    try:
+        p = APP_DIR.parent / "dgtf_memory" / "dsh_web_url.txt"
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(str(base or "").rstrip("/") + "\n", encoding="utf-8")
+    except Exception:
+        pass
 
 
 def _dsh_current_cookie(base: str):
@@ -9540,7 +9557,8 @@ class Handler(BaseHTTPRequestHandler):
                                    "status": _status}, 409)
             try:
                 _new_id = runner.start_task(str(_t.get("question") or ""),
-                                            _t.get("opts") or {})
+                                            _t.get("opts") or {},
+                                            mode_info=_t.get("mode") or None)
             except ValueError as _e:
                 return self._json({"error": str(_e)}, 400)
             except Exception as _e:  # noqa: BLE001
@@ -9557,17 +9575,63 @@ class Handler(BaseHTTPRequestHandler):
             opts = data.get("opts") or {}
             if not isinstance(opts, dict):
                 opts = {}
+            _is_mock_task = (bool(opts.get("mock"))
+                             or os.environ.get("DGTF_APP_MOCK") == "1")
+
+            # ══ ★ T3「道生专属模式」：mode 判定必须在 quality_policy / 项目背景注入之前 ══
+            #   Lead 决策 2：daosheng 分支自己注入「项目背景 + EML 记忆」，
+            #   判定落在 quality_policy 注入之前 ⇒ 不会出现双份背景；
+            #   plan.context_injected 记录实际注入了什么（可审计）。
+            #   mode 默认 auto：项目相关题 → daosheng；其它 → 既有 quality_policy 全自动链路。
+            _mode_req = data.get("mode")
+            if _mode_req is None:
+                _mode_req = opts.pop("mode", None)
+            _mode_req = str(_mode_req or "auto").strip().lower() or "auto"
+            if _mode_req not in daosheng_mode.VALID_MODES:
+                return self._json(
+                    {"error": "未知 mode：%r" % _mode_req,
+                     "allowed": list(daosheng_mode.VALID_MODES)}, 400)
+            _mode_resolved = daosheng_mode.resolve_mode(_mode_req, question)
+            _mode_fallback = ""
+            _ds_plan = None
+            if _mode_resolved.get("id") in ("daosheng", "daosheng_fast"):
+                try:
+                    _ds_plan = daosheng_mode.build_plan(
+                        question, opts=dict(opts),
+                        requested=_mode_resolved["id"],
+                        project_related=_mode_resolved.get("project_related"),
+                        is_mock=_is_mock_task,
+                        subprocess_predict=lambda q: _llm_predict_local(
+                            q, backend=str(opts.get("llm_backend") or "qwen05b")))
+                except Exception as _exc:  # noqa: BLE001  计划失败不该拖垮任务
+                    _mode_fallback = "%s: %s" % (type(_exc).__name__, _exc)
+                    _ds_plan = None
+                    _mode_resolved = {
+                        "id": "standard", "requested": _mode_req,
+                        "source": "fallback",
+                        "project_related": _mode_resolved.get("project_related"),
+                        "reason": "道生计划生成失败 → fail-open 回退既有 "
+                                  "quality_policy 链路：" + _mode_fallback}
+                    print("[daosheng] 计划生成失败，fail-open 回退既有链路："
+                          + _mode_fallback, flush=True)
             _quality_policy = str(opts.pop("quality_policy", "auto") or "auto").strip().lower()
             _quality_retry = _quality_policy in ("web-retry", "web_retry")
             _pctx_opt = opts.pop("project_context", None)
-            if _quality_policy == "verified" and _pctx_opt is None:
+            if _ds_plan is not None:
+                # 道生分支：质量策略 / 背景注入由 plan 决定（用户显式 quality_policy 仍优先）
+                if _quality_policy in ("auto", ""):
+                    _quality_policy = str(_ds_plan.get("quality_policy")
+                                          or "auto:verified")
+                _quality_retry = _quality_policy in ("web-retry", "web_retry")
+                if _pctx_opt is None:
+                    _pctx_opt = bool(_ds_plan.get("project_context"))
+            elif _quality_policy == "verified" and _pctx_opt is None:
                 _pctx_opt = True
             elif _quality_policy in ("web", "auto-web", "web-retry", "web_retry") and _pctx_opt is None:
                 _pctx_opt = False
                 opts["fused_ground_web"] = True
             elif _quality_policy == "stable" and _pctx_opt is None:
                 _pctx_opt = False
-            _is_mock_task = bool(opts.get("mock"))
             # 生产默认任务上限：防止真实跑失控；可通过环境变量调整。
             if not _is_mock_task and not opts.get("timeout_s") and not opts.get("max_seconds"):
                 try:
@@ -9582,15 +9646,26 @@ class Handler(BaseHTTPRequestHandler):
             else:
                 _project_ctx = bool(_pctx_opt)
             _pc = {}
+            _mem_info = {}
             if _project_ctx:
                 _pc = _project_context_cached(question)
                 if _pc.get("text"):
                     opts["_prompt_prefix"] = (_pc["text"]
                                              + "\n\n【用户问题】\n")
+            if _ds_plan is not None:
+                # ★ 道生分支：EML 自进化记忆拼在**项目背景之后**（只注入一次：
+                #   plan 判定 project_context=True 时这里已注入背景，不会再走
+                #   下面的 auto:verified 自动注入）；注入清单见 plan.context_injected。
+                _mem_info = _ds_plan.get("memory") or {}
+                if _mem_info.get("injected"):
+                    opts["_prompt_prefix"] = daosheng_mode.inject_prefix(
+                        (_pc.get("text") if _project_ctx else "") or "",
+                        _mem_info.get("text") or "")
             # 质量/联网策略全自动：项目相关 -> 项目背景；
             # 通用事实题 -> 自动官方联网 + 失败自动补跑一次（web-retry）；
             # 其它通用题 -> 稳定（不注入背景、默认不联网）。
-            if _quality_policy in ("auto", ""):
+            # ★ 道生分支不进这里：_quality_policy 已由 plan 落定，避免双份注入/双份策略。
+            if _ds_plan is None and _quality_policy in ("auto", ""):
                 try:
                     import sys as _sys_q
                     _sys_q.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -9606,6 +9681,9 @@ class Handler(BaseHTTPRequestHandler):
                     _quality_retry = True
                 else:
                     _quality_policy = "auto:stable"
+            if _ds_plan is not None:
+                # ★ plan 落 opts（只补不改：用户显式 route/rounds/parallel… 永远优先）
+                daosheng_mode.apply_plan(_ds_plan, opts)
             _ap_opt = opts.pop("auto_pareto", None)
             # 默认自动帕累托：真实任务默认启用；mock/自检默认关闭以稳定基线。
             _auto_pareto = (bool(_ap_opt) if _ap_opt is not None
@@ -9620,6 +9698,12 @@ class Handler(BaseHTTPRequestHandler):
             _apol_opt = opts.pop("auto_policy", None)
             _auto_policy = (bool(_apol_opt) if _apol_opt is not None
                             else not _is_mock_task)
+            if _ds_plan is not None:
+                # ★ 道生分支：调度已由 plan 接管 ⇒ 关闭 App 的自动帕累托 /
+                #   auto_policy / auto_fused，避免两套调度互相覆盖（plan 可审计优先）。
+                _auto_pareto = False
+                _auto_policy = False
+                _auto_fused = False
             _auto_policy_rounds = ""
             if _auto_llm:
                 _lr = _llm_predict_local(question,
@@ -9652,6 +9736,15 @@ class Handler(BaseHTTPRequestHandler):
                 opts["rounds"] = _auto_policy_rounds
                 opts["auto_policy"] = True
             _fused_info = {"enabled": bool(_auto_fused)}
+            if _ds_plan is not None:
+                # ★ 道生分支：M4 选档由 plan.mode_reason 记录，App 的 auto-fused 不参与
+                _fused_info = {"enabled": False, "skipped": "daosheng_plan",
+                               "mode": _ds_plan.get("engine_mode"),
+                               "reason": _ds_plan.get("mode_reason")}
+                print("[daosheng] mode=%s tier=%s engine_mode=%s：%s"
+                      % (_ds_plan.get("mode_id"), _ds_plan.get("tier"),
+                         _ds_plan.get("engine_mode"),
+                         _ds_plan.get("reason")), flush=True)
             if _auto_fused:
                 try:
                     import sys as _sys
@@ -9727,6 +9820,56 @@ class Handler(BaseHTTPRequestHandler):
                     _fused_info["error"] = str(exc)
                     print("[mode-fusion] 选择模式失败，退回默认：%s" % exc,
                           flush=True)
+            # ══ ★ T3 响应回显：mode 对象（id/requested/tier/policy/reason/plan）══
+            #   道生分支：完整 plan（可审计）；standard：plan 里放既有链路的
+            #   quality_policy / project_context / engine_mode，字段结构一致。
+            if _ds_plan is not None:
+                _mode_info = {
+                    "id": _ds_plan.get("mode_id") or _mode_resolved.get("id"),
+                    "requested": _mode_req,
+                    "tier": _ds_plan.get("tier"),
+                    "policy": _ds_plan.get("policy"),
+                    "engine_mode": _ds_plan.get("engine_mode"),
+                    "quality_policy": _quality_policy,
+                    "reason": _ds_plan.get("reason"),
+                    "context_injected": _ds_plan.get("context_injected") or [],
+                    "budget_guard": _ds_plan.get("budget_guard") or {},
+                    "engine": _ds_plan.get("engine") or {},
+                    "preset": _ds_plan.get("preset") or "",
+                    "plan": _ds_plan,
+                }
+            else:
+                _mode_info = {
+                    "id": "standard", "requested": _mode_req,
+                    "tier": "standard", "policy": "legacy.quality_policy",
+                    "engine_mode": str((_fused_info or {}).get("mode") or ""),
+                    "quality_policy": _quality_policy,
+                    "reason": str((_mode_resolved or {}).get("reason") or "标准链路")
+                              + (("；道生计划失败 fail-open 回退：" + _mode_fallback)
+                                 if _mode_fallback else ""),
+                    "context_injected": (["project_context:RAG"]
+                                         if _project_ctx else []),
+                    "budget_guard": {},
+                    "engine": {},
+                    "preset": "",
+                    "plan": {
+                        "policy": "legacy.quality_policy",
+                        "quality_policy": _quality_policy,
+                        "project_context": bool(_project_ctx),
+                        "engine_mode": str((_fused_info or {}).get("mode") or ""),
+                        "mode_fusion": _fused_info,
+                        "cache": {"exact": False,
+                                  "note": "标准链路沿用既有精确/语义缓存实现"},
+                        "reason": str((_mode_resolved or {}).get("reason") or ""),
+                    },
+                }
+            # resume/重试不丢：请求档位随 opts 落盘（活痕迹/归档 run.json 都带 opts），
+            # 单任务接口与 /api/tasks 列表都回 mode（完整 plan 走单任务接口）。
+            try:
+                opts["_mode_request"] = _mode_req
+                opts["_mode_id"] = _mode_info.get("id") or ""
+            except Exception:  # noqa: BLE001
+                pass
             _dedup = None
             if not _is_mock_task and not _quality_retry:
                 try:
@@ -9748,6 +9891,7 @@ class Handler(BaseHTTPRequestHandler):
                     "profile": (_dedup.get("opts") or {}).get("profile") or "",
                     "quality_policy": _quality_policy,
                     "quality_retry": bool(_quality_retry),
+                    "mode": _mode_info,
                     "mode_fusion": _fused_info}, 201)
             _cache_hit = False
             _cached_from = ""
@@ -9763,11 +9907,12 @@ class Handler(BaseHTTPRequestHandler):
                     _cached = None
             try:
                 if _cached:
-                    tid = runner.start_cached_task(question, dict(opts), _cached)
+                    tid = runner.start_cached_task(question, dict(opts), _cached,
+                                                   mode_info=_mode_info)
                     _cache_hit = True
                     _cached_from = str(_cached.get("id") or "")
                 else:
-                    tid = runner.start_task(question, opts)
+                    tid = runner.start_task(question, opts, mode_info=_mode_info)
             except ValueError as e:
                 return self._json({"error": str(e)}, 400)
             if _cache_hit:
@@ -9786,12 +9931,13 @@ class Handler(BaseHTTPRequestHandler):
                                    "profile": opts.get("profile") or "",
                                    "quality_policy": _quality_policy,
                                    "quality_retry": bool(_quality_retry),
+                                   "mode": _mode_info,
                                    "mode_fusion": _fused_info}, 201)
             if _quality_retry and not _is_mock_task:
                 try:
                     import threading as _th
                     _th.Thread(target=_watch_fact_quality_retry,
-                               args=(tid, question, dict(opts)),
+                               args=(tid, question, dict(opts), dict(_mode_info)),
                                daemon=True).start()
                 except Exception:
                     pass
@@ -9807,6 +9953,7 @@ class Handler(BaseHTTPRequestHandler):
                                "profile": opts.get("profile") or "",
                                "quality_policy": _quality_policy,
                                "quality_retry": bool(_quality_retry),
+                               "mode": _mode_info,
                                "cache_hit": False,
                                "dedup_hit": False,
                                "semantic_cache": False,
@@ -9931,7 +10078,8 @@ def _find_cached_pack(question: str, opts: dict, prefix: str = "",
     return None
 
 
-def _watch_fact_quality_retry(tid: str, question: str, base_opts: dict) -> None:
+def _watch_fact_quality_retry(tid: str, question: str, base_opts: dict,
+                              mode_info: dict | None = None) -> None:
     """事实题 web-retry：首次跑 needs_evidence/unverified 时自动补跑一次 web。"""
     import json as _json
     import threading as _th  # noqa: F401
@@ -9966,7 +10114,7 @@ def _watch_fact_quality_retry(tid: str, question: str, base_opts: dict) -> None:
         retry_opts["fused_ground_web"] = True
         retry_opts["web"] = "on"
         retry_opts["_retry_of"] = tid
-        rid = runner.start_task(question, retry_opts)
+        rid = runner.start_task(question, retry_opts, mode_info=mode_info)
         with runner._tasks_lock:  # noqa: SLF001
             cur = runner._tasks.get(tid)
             if cur is not None:

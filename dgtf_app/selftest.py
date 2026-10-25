@@ -37,6 +37,7 @@ import yaml  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "dgtf_engine"))
 import dashboard  # noqa: E402
+import daosheng_mode  # noqa: E402  ★ T3 道生专属模式（离线计划/回退链/记忆注入）
 import engine_runner as runner  # noqa: E402
 import library  # noqa: E402
 import outputs_index as oi  # noqa: E402
@@ -202,7 +203,7 @@ def check_r39_frontend(css: str, js: str, html: str) -> None:
     # ── 需求 9b：首屏对话框文案（两处必须同步）──────────────────────────────
     # ★ R44 改口径：文案本身换了（用户给定新文案），判据的**意图不变**
     #   —— 仍然是「两处必须同步」，只是字面跟着新版走。
-    _ph = "此刻 你又想到了什么？ 可以发给Meta-DGTF 我们一起去探索吧"
+    _ph = "给Meta-DGTF发消息 我们一起探索吧 ...."
     check("★R39 首屏提示语**两处同步**（index.html 的 placeholder + app.js 的 Q_PLACEHOLDER）",
           _ph in html and _ph in js, "html=" + str(_ph in html) + " js=" + str(_ph in js))
 
@@ -364,7 +365,7 @@ def check_r44_frontend(css: str, js: str, html: str, srv_src: str,
           "stage-empty" in js and "e.target.closest('main.stage')" in js, "")
 
     # ── ③ 首屏文案 + 字号 ───────────────────────────────────────────────────
-    _ph = "此刻 你又想到了什么？ 可以发给Meta-DGTF 我们一起去探索吧"
+    _ph = "给Meta-DGTF发消息 我们一起探索吧 ...."
     check("★R44 首屏文案两处同步（index.html 的 placeholder + app.js 的 Q_PLACEHOLDER）",
           _ph in html and _ph in js, "")
     check("★R44 输入框字号**调小一档**（≤14px）",
@@ -855,6 +856,601 @@ def check_r46_frontend(js: str) -> None:
           "e.target.value = ''" in seg and "if (fs.length)" in seg, "")
 
 
+def check_t3_daosheng(base: str, srv_src: str, runner_src: str,
+                      js: str, html: str) -> None:
+    """★T3「道生专属模式」+ 三体动态最优：离线单测 + mock HTTP 端到端判据。
+
+    覆盖：预设契约、mode 解析、plan 结构/可审计字段、预算守卫三档、
+    daosheng_fast 便宜档、apply_plan 只补不改、本地模型三级回退链
+    （fake 8772 HTTP → 不可达 → 规则）、记忆注入门控/缓存/上限、
+    引擎能力门控、后端/runner/前端源码接线、mock 201 端到端、resume/重试不丢 mode。
+    """
+    import threading
+    import urllib.error
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+    dm = daosheng_mode
+    q_prj = "Meta-DGTF 道生三阶模型的项目当前状态如何？"
+
+    def _preset_has_key(text, key):
+        """YAML 里是否**真的定义了**该键（忽略注释；嵌套也查）。"""
+        try:
+            data = yaml.safe_load(text) or {}
+        except Exception:  # noqa: BLE001
+            return True                      # 解析不了 ⇒ 保守判「有」（判红）
+
+        def _walk(d):
+            if isinstance(d, dict):
+                for k, v in d.items():
+                    if str(k) == key:
+                        return True
+                    if _walk(v):
+                        return True
+            elif isinstance(d, list):
+                return any(_walk(x) for x in d)
+            return False
+
+        return _walk(data)
+
+    # ── ① 预设契约（configs/道生专属模式.yaml）──────────────────
+    pth = dm.preset_path()
+    raw = ""
+    try:
+        raw = pth.read_text(encoding="utf-8")
+    except OSError:
+        pass
+    ds = dm.load_preset(force=True)
+    check("★T3 预设 configs/道生专属模式.yaml 存在且可解析",
+          pth.is_file() and ds.get("schema") == "metadgtf.app_daosheng.v1",
+          "%d 字节 · schema=%s" % (len(raw.encode("utf-8")), ds.get("schema")))
+    check("★T3 预设：route 四层全开 + rounds=auto（不硬编码高圈）",
+          dm._norm_route(ds.get("route")) == ["0", "1", "both", "all"]
+          and ds.get("rounds") == "auto",
+          "route=%s rounds=%s" % (ds.get("route"), ds.get("rounds")))
+    check("★T3 预设：质量档/便宜档圈数齐备（rounds_quality / rounds_fast）",
+          bool(dm._norm_rounds(ds.get("rounds_quality")))
+          and bool(dm._norm_rounds(ds.get("rounds_fast"))),
+          "%s / %s" % (ds.get("rounds_quality"), ds.get("rounds_fast")))
+    _SCM_OK = ("llm", "auto_narr", "auto", "local", "off")
+    _DJM_OK = ("llm", "cache", "auto")
+    check("★T3 预设：parallel=B；web/thinking/history_fusion=auto；"
+          "self_check_mode/dual_judge_mode 为合法枚举（默认 llm，实验档 opt-in）",
+          str(ds.get("parallel")) == "B"
+          and all(str(ds.get(k)) == "auto" for k in
+                  ("web", "thinking", "history_fusion"))
+          and str(ds.get("self_check_mode")) in _SCM_OK
+          and str(ds.get("dual_judge_mode")) in _DJM_OK,
+          json.dumps({k: ds.get(k) for k in
+                      ("parallel", "web", "thinking", "self_check_mode",
+                       "dual_judge_mode", "history_fusion")},
+                     ensure_ascii=False))
+    check("★T3 预设：l0_v2 / merge_expand 等既有开关刻意不写（保持出厂默认）",
+          not _preset_has_key(raw, "l0_v2")
+          and not _preset_has_key(raw, "l0_v2_curate")
+          and not _preset_has_key(raw, "merge_expand"),
+          "注释里可以提到，但**键**不能出现")
+    check("★T3 预设含引擎可识别子集（runtime / actions.parallel_mode / output.*_mode）",
+          "runtime:" in raw and 'parallel_mode: "B"' in raw
+          and re.search(r"self_check_mode:\s*(llm|auto_narr|auto|local|off)", raw)
+          and re.search(r"dual_judge_mode:\s*(llm|cache|auto)", raw),
+          "parallel_mode=%r" % ('parallel_mode: "B"' in raw))
+    check("★T3 预设 budget_guard 阈值可审计（<8 降级 / <4 告警）",
+          float(ds["budget"]["degrade_below_cny"]) == 8.0
+          and float(ds["budget"]["warn_below_cny"]) == 4.0,
+          "degrade=%s warn=%s" % (ds["budget"].get("degrade_below_cny"),
+                                  ds["budget"].get("warn_below_cny")))
+
+    # ── ② mode 解析 ─────────────────────────────────────────
+    m_auto_prj = dm.resolve_mode("auto", q_prj)
+    m_auto_gen = dm.resolve_mode("auto", "1+1等于几？")
+    check("★T3 mode=auto：项目相关题 → daosheng（auto-rule）",
+          m_auto_prj["id"] == "daosheng" and m_auto_prj["source"] == "auto-rule",
+          m_auto_prj.get("reason"))
+    check("★T3 mode=auto：非项目题 → standard（既有 quality_policy 链路不变）",
+          m_auto_gen["id"] == "standard", m_auto_gen.get("reason"))
+    check("★T3 显式 mode=daosheng / daosheng_fast / standard 都能解析",
+          all(dm.resolve_mode(x, q_prj)["id"] == x
+              for x in ("daosheng", "daosheng_fast", "standard")), "")
+    check("★T3 mode 白名单准确（auto/daosheng/daosheng_fast/standard）",
+          set(dm.VALID_MODES) == {"auto", "daosheng", "daosheng_fast",
+                                  "standard"}, str(dm.VALID_MODES))
+    _bad_mode = False
+    try:
+        dm.resolve_mode("bogus", "x")
+    except ValueError:
+        _bad_mode = True
+    check("★T3 非法 mode 抛 ValueError（HTTP 层转 400）", _bad_mode, "")
+
+    # ── ③ plan 结构（mock；免余额查询 ⇒ 不碰网络/API）─────────
+    plan = dm.build_plan(q_prj, requested="daosheng", is_mock=True)
+    _need = ("policy", "mode_id", "tier", "engine_mode", "route", "rounds",
+             "parallel", "web", "thinking", "quality_policy",
+             "project_related", "project_context", "context_injected",
+             "memory", "local_llm", "m4", "history", "cache",
+             "budget_guard", "engine", "reason", "warnings", "applied_opts")
+    _miss = [k for k in _need if k not in plan]
+    check("★T3 plan 结构完整（policy/plan/reason 可审计字段齐）",
+          not _miss, "缺：" + ",".join(_miss))
+    check("★T3 plan：policy=daosheng.v1 / tier=quality / engine_mode∈{B,serial}",
+          plan["policy"] == "daosheng.v1" and plan["mode_id"] == "daosheng"
+          and plan["tier"] == "quality"
+          and plan["engine_mode"] in ("B", "serial"),
+          "engine_mode=%s" % plan["engine_mode"])
+    check("★T3 plan：route 四层 + rounds=auto + parallel=B + quality=auto:verified",
+          plan["route"] == "0,1,both,all" and plan["rounds"] == "auto"
+          and plan["parallel"] == "B"
+          and plan["quality_policy"] == "auto:verified",
+          "route=%s rounds=%s parallel=%s qp=%s"
+          % (plan["route"], plan["rounds"], plan["parallel"],
+             plan["quality_policy"]))
+    check("★T3 plan.context_injected 记录真实注入（项目背景 + EML 记忆，各一次）",
+          "project_context:RAG" in plan["context_injected"]
+          and sum(1 for x in plan["context_injected"]
+                  if x.startswith("memory:EML")) == 1,
+          "、".join(plan["context_injected"]))
+    check("★T3 plan.memory 有界（≤1600 字）且带来源清单",
+          0 < int(plan["memory"]["chars"]) <= 1600
+          and plan["memory"]["injected"]
+          and bool(plan["memory"]["sources"]),
+          "%s 字 · %s" % (plan["memory"]["chars"],
+                          "/".join(plan["memory"]["sources"])))
+    check("★T3 plan.local_llm 记录回退链（mock 跳过 → rules）",
+          plan["local_llm"]["source"] == "rules"
+          and isinstance(plan["local_llm"].get("attempts"), list),
+          str([a.get("source") for a in plan["local_llm"]["attempts"]]))
+    check("★T3 plan.m4 字段存在且 fail-open 可控（enabled/ok）",
+          plan["m4"].get("enabled") is True and "ok" in plan["m4"], str(plan["m4"].get("ok")))
+    check("★T3 plan.history 带 episodes 读数（n/中位/砍层率）",
+          isinstance(plan["history"], dict)
+          and ("n" in plan["history"] and "tokens_med" in plan["history"]),
+          "n=%s tokens_med=%s" % (plan["history"].get("n"),
+                                  plan["history"].get("tokens_med")))
+    check("★T3 plan.cache 有精确/语义缓存命中预判",
+          "exact" in plan["cache"] and "semantic_capable" in plan["cache"],
+          plan["cache"].get("note"))
+    check("★T3 plan.reason 非空（可审计的选择理由）",
+          len(plan.get("reason") or "") > 20, (plan.get("reason") or "")[:80])
+    check("★T3 plan.budget_guard 字段齐（balance/est_tokens/est_cost/decision/reason）",
+          set(("balance_cny", "est_tokens", "est_cost_cny",
+               "decision", "reason")) <= set(plan["budget_guard"]),
+          "decision=%s est=%s/¥%s" % (plan["budget_guard"].get("decision"),
+                                      plan["budget_guard"].get("est_tokens"),
+                                      plan["budget_guard"].get("est_cost_cny")))
+    check("★T3 plan.engine 带能力探测（版本 + 新机制 flag 支持表）",
+          bool(plan["engine"].get("version"))
+          and "self_check_mode" in (plan["engine"].get("supports") or {}),
+          "%s supports=%s" % (plan["engine"].get("version"),
+                              json.dumps(plan["engine"].get("supports"),
+                                         ensure_ascii=False)))
+
+    # ── ④ 预算守卫三档（Lead 决策 3）+ daosheng_fast ─────────
+    p_ok = dm.build_plan(q_prj, requested="daosheng", is_mock=True,
+                         balance_cny=10)
+    p_deg = dm.build_plan(q_prj, requested="daosheng", is_mock=True,
+                          balance_cny=6)
+    p_warn = dm.build_plan(q_prj, requested="daosheng", is_mock=True,
+                           balance_cny=3)
+    check("★T3 预算守卫：余额 ¥10 ≥8 → ok + 质量档",
+          p_ok["budget_guard"]["decision"] == "ok"
+          and p_ok["tier"] == "quality", p_ok["budget_guard"].get("reason"))
+    check("★T3 预算守卫：余额 ¥6 <8 → degrade + 自动降级 fast 档",
+          p_deg["budget_guard"]["decision"] == "degrade"
+          and p_deg["tier"] == "fast" and p_deg["engine_mode"] == "fast",
+          p_deg["mode_reason"])
+    check("★T3 预算守卫：降级后落低圈/串行/thinking off（可执行参数一致）",
+          p_deg["parallel"] == "serial" and p_deg["thinking"] == "off"
+          and dm._norm_rounds(p_deg["rounds"]) == dm._norm_rounds(ds["rounds_fast"]),
+          "parallel=%s thinking=%s rounds=%s"
+          % (p_deg["parallel"], p_deg["thinking"], p_deg["rounds"]))
+    check("★T3 预算守卫：余额 ¥3 <4 → warn，但任务仍可创建（不拒绝）",
+          p_warn["budget_guard"]["decision"] == "warn"
+          and p_warn["tier"] == "fast"
+          and "仍可创建" in str(p_warn["budget_guard"].get("reason")),
+          p_warn["budget_guard"].get("reason"))
+    check("★T3 预算守卫 fail-open：余额未知不拒绝任务（decision=ok）",
+          plan["budget_guard"].get("fail_open") is True
+          and plan["budget_guard"]["decision"] == "ok",
+          plan["budget_guard"].get("reason"))
+    check("★T3 预算守卫：est_tokens 用历史中位并受 raw_max_tokens 约束",
+          0 < int(plan["budget_guard"]["est_tokens"])
+          <= int(plan["budget_guard"]["raw_max_tokens"]),
+          "%s ≤ %s" % (plan["budget_guard"]["est_tokens"],
+                       plan["budget_guard"]["raw_max_tokens"]))
+    p_fast = dm.build_plan(q_prj, requested="daosheng_fast", is_mock=True,
+                           balance_cny=10)
+    check("★T3 daosheng_fast 便宜档：tier=fast / 低圈 / thinking off",
+          p_fast["mode_id"] == "daosheng_fast" and p_fast["tier"] == "fast"
+          and dm._norm_rounds(p_fast["rounds"]) == dm._norm_rounds(ds["rounds_fast"])
+          and p_fast["thinking"] == "off",
+          "rounds=%s" % p_fast["rounds"])
+
+    # ── ⑤ apply_plan：只补不改（显式 opts 优先）──────────────
+    o_new = {}
+    _ap = dm.apply_plan(dict(p_ok), o_new)
+    check("★T3 apply_plan：空 opts 落 route/parallel/预设 profile",
+          o_new.get("route") == "0,1,both,all" and o_new.get("parallel") == "B"
+          and o_new.get("profile") == dm.PRESET_NAME,
+          json.dumps(o_new, ensure_ascii=False))
+    o_user = {"route": "0,1", "rounds": "0:1,1:1,both:1,all:1", "parallel": "serial"}
+    dm.apply_plan(dict(p_ok), o_user)
+    check("★T3 apply_plan：用户显式 opts 永不被覆盖",
+          o_user.get("route") == "0,1" and o_user.get("parallel") == "serial"
+          and o_user.get("rounds") == "0:1,1:1,both:1,all:1",
+          json.dumps(o_user, ensure_ascii=False))
+    check("★T3 apply_plan：auto 值不落 opts（web/thinking 交给引擎自决）",
+          "web" not in o_new and "thinking" not in o_new,
+          "web=%r thinking=%r" % (o_new.get("web"), o_new.get("thinking")))
+    check("★T3 inject_prefix：项目背景 → EML 记忆 → 用户问题（只出现一次）",
+          dm.inject_prefix("【项目背景】", "【记忆】").count("【用户问题】") == 1
+          and dm.inject_prefix("【项目背景】", "【记忆】").index("【项目背景】")
+          < dm.inject_prefix("【项目背景】", "【记忆】").index("【记忆】"),
+          "")
+
+    # ── ⑥ 本地模型：HTTP 8772 客户端 + 三级回退链（fake 服务）──
+    class _FakeLLM(BaseHTTPRequestHandler):
+        def log_message(self, *a):  # noqa: D401 静音
+            pass
+
+        def _send(self, obj, code=200):
+            body = json.dumps(obj, ensure_ascii=False).encode("utf-8")
+            self.send_response(code)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def do_GET(self):
+            if self.path.startswith("/health"):
+                self._send({"ok": True, "stage": "route"})
+            else:
+                self._send({"ok": False, "error": "not found"}, 404)
+
+        def do_POST(self):
+            n = int(self.headers.get("Content-Length") or 0)
+            try:
+                req = json.loads(self.rfile.read(n).decode("utf-8") or "{}")
+            except ValueError:
+                req = {}
+            self.last_req = req
+            # 契约（local-smith）：{ok, text} —— text 内是 route/rounds JSON。
+            self._send({"ok": True,
+                        "text": json.dumps({"route": ["0", "1"],
+                                            "rounds": {"0": 2}}),
+                        "stage": req.get("stage")})
+
+    fake = ThreadingHTTPServer(("127.0.0.1", 0), _FakeLLM)
+    fake_port = fake.server_address[1]
+    th = threading.Thread(target=fake.serve_forever, daemon=True)
+    th.start()
+    _old_url = os.environ.get("DGTF_LOCAL_LLM_URL")
+    os.environ["DGTF_LOCAL_LLM_URL"] = "http://127.0.0.1:%d" % fake_port
+    try:
+        hr = dm.local_llm_health(force=True)
+        rr = dm.local_llm_route("Meta-DGTF 项目下一步怎么优化？")
+        pr_http = dm.predict_route_rounds("Meta-DGTF 项目下一步怎么优化？",
+                                          is_mock=False)
+        check("★T3 本地模型 HTTP：/health 可探测（ok=True）",
+              hr.get("ok") is True, str(hr.get("error") or ""))
+        check("★T3 本地模型 HTTP：/generate(stage=route) 解析出 route/rounds",
+              rr.get("ok") and rr.get("route") == ["0", "1"]
+              and (rr.get("rounds") or {}).get("0") == 2,
+              json.dumps({k: rr.get(k) for k in ("route", "rounds", "how")},
+                         ensure_ascii=False))
+        check("★T3 本地模型优先：HTTP 可用时 source=http（不回退规则）",
+              pr_http.get("ok") and pr_http.get("source") == "http", "")
+    finally:
+        fake.shutdown()
+        fake.server_close()
+        if _old_url is None:
+            os.environ.pop("DGTF_LOCAL_LLM_URL", None)
+        else:
+            os.environ["DGTF_LOCAL_LLM_URL"] = _old_url
+    # 8772 未就绪（必然连不上的端口）→ 子进程缺失 → 规则回退，全程 fail-open
+    os.environ["DGTF_LOCAL_LLM_URL"] = "http://127.0.0.1:9"
+    try:
+        t_fb = time.time()
+        fb = dm.predict_route_rounds("Meta-DGTF 项目下一步怎么优化？",
+                                     is_mock=False)
+        fb_dt = time.time() - t_fb
+        check("★T3 本地模型不可达 → 规则回退（fail-open，总耗时 <3s）",
+              fb.get("ok") and fb.get("source") == "rules" and fb_dt < 3.0,
+              "%.2fs · route=%s" % (fb_dt, fb.get("route")))
+        check("★T3 回退链留痕：http 失败 → subprocess 缺失 → rules",
+              [a.get("source") for a in (fb.get("attempts") or [])]
+              == ["http", "subprocess", "rules"],
+              str([a.get("source") for a in (fb.get("attempts") or [])]))
+        t_nc = time.time()
+        fb2 = dm.predict_route_rounds("Meta-DGTF 项目下一步怎么优化？",
+                                      is_mock=False)
+        nc_dt = time.time() - t_nc
+        check("★T3 本地模型健康探测负缓存（第二次不再等超时，<0.5s）",
+              fb2.get("source") == "rules" and nc_dt < 0.5,
+              "%.3fs" % nc_dt)
+    finally:
+        if _old_url is None:
+            os.environ.pop("DGTF_LOCAL_LLM_URL", None)
+        else:
+            os.environ["DGTF_LOCAL_LLM_URL"] = _old_url
+    _mres = dm.predict_route_rounds(q_prj, is_mock=True)
+    check("★T3 mock 任务跳过本地模型探测（不阻塞建任务）",
+          _mres.get("source") == "rules"
+          and "skipped" in json.dumps(_mres.get("attempts") or [],
+                                      ensure_ascii=False), "")
+
+    # ── ⑦ 记忆注入：门控 / 缓存 / 上限（Lead：不得注入无关内容）──
+    mem_off = dm.memory_summary(q_prj, project_related=False)
+    mem_on = dm.memory_summary(q_prj, project_related=True, force=True)
+    mem_hit = dm.memory_summary(q_prj, project_related=True)
+    check("★T3 记忆注入门控：非项目题不注入（text 为空）",
+          mem_off["injected"] is False and mem_off["chars"] == 0,
+          mem_off.get("reason"))
+    check("★T3 记忆注入：项目题注入 EML 摘要（≤max_chars 上限）",
+          mem_on["injected"] and 0 < mem_on["chars"] <= int(ds["memory"]["max_chars"])
+          and "EML" in mem_on["text"],
+          "%s 字 / 上限 %s" % (mem_on["chars"], ds["memory"]["max_chars"]))
+    check("★T3 记忆注入缓存：同问题第二次 cache=hit",
+          mem_hit.get("cache") == "hit", mem_hit.get("cache"))
+
+    # ── ⑧ 引擎能力探测 + CLI 透传门控 ────────────────────────
+    caps = dm.engine_capabilities()
+    check("★T3 引擎能力探测：路径/版本/flag 支持表可用",
+          caps.get("ok") and bool(caps.get("version")),
+          "%s · %s" % (caps.get("version"), caps.get("path")))
+    _cap_cfg = caps.get("supports_config") or {}
+    check("★T3 引擎能力：config 键通道单独探测（V2.2.3 的 output.*_mode）",
+          "self_check_mode" in _cap_cfg and "dual_judge_mode" in _cap_cfg,
+          json.dumps(_cap_cfg, ensure_ascii=False))
+    check("★T3 plan：新机制键标注生效通道（cli / config / engine-default）",
+          "self_check_mode_via" in plan and "dual_judge_mode_via" in plan
+          and "supports_config" in (plan["engine"] or {})
+          and (str(plan["self_check_mode"]) in
+               ("llm", "auto_narr", "auto", "local", "off")
+               if plan["self_check_mode_via"] in ("cli", "config")
+               else plan["self_check_mode"] is None)
+          and (plan.get("history_fusion") == "auto"
+               and plan.get("history_fusion_via") == "engine-default"),
+          "scm=%s/%s · djm=%s/%s · hf=%s/%s"
+          % (plan.get("self_check_mode"), plan.get("self_check_mode_via"),
+             plan.get("dual_judge_mode"), plan.get("dual_judge_mode_via"),
+             plan.get("history_fusion"), plan.get("history_fusion_via")))
+    check("★T3 能力门控：新机制 CLI 透传与引擎能力严格一致（能力探测门控）",
+          ("--self-check-mode" in runner.build_cmd(
+              "q", {"self_check_mode": "off"}))
+          == bool((caps.get("supports") or {}).get("self_check_mode"))
+          and ("--dual-judge-mode" in runner.build_cmd(
+              "q", {"dual_judge_mode": "cache"}))
+          == bool((caps.get("supports") or {}).get("dual_judge_mode")),
+          "cli_support=" + json.dumps(caps.get("supports"), ensure_ascii=False))
+    check("★T3 能力门控：引擎已支持的 --history-fusion 照常透传",
+          "--history-fusion" in runner.build_cmd("q", {"history_fusion": "off"}),
+          "")
+    check("★T3 runner._ARG_SPEC 注册三个新机制键",
+          all(k in runner._ARG_SPEC for k in
+              ("self_check_mode", "dual_judge_mode", "history_fusion")),
+          str([k for k in ("self_check_mode", "dual_judge_mode",
+                           "history_fusion") if k in runner._ARG_SPEC]))
+
+    # ── ⑨ 源码接线：server / runner / 前端（最小改动）─────────
+    check("★T3 server：mode 判定先于 quality_policy / 背景注入（不二次注入）",
+          "import daosheng_mode" in srv_src
+          and "mode 判定必须在 quality_policy / 项目背景注入之前" in srv_src
+          and "daosheng_mode.build_plan(" in srv_src
+          and "daosheng_mode.apply_plan(" in srv_src,
+          "")
+    check("★T3 server：POST /api/tasks 回显 mode（含 plan/reason/context/budget）",
+          '"mode": _mode_info' in srv_src
+          and '"plan": _ds_plan' in srv_src
+          and '"context_injected": _ds_plan.get("context_injected")' in srv_src
+          and '"budget_guard": _ds_plan.get("budget_guard")' in srv_src,
+          "")
+    check("★T3 server：resume/重试保留 mode（retry 透传 mode_info + opts 记档位）",
+          'mode_info=_t.get("mode") or None' in srv_src
+          and 'opts["_mode_request"] = _mode_req' in srv_src
+          and "mode_info=_mode_info" in srv_src,
+          "")
+    check("★T3 runner：任务/活痕迹/归档/list 都带 mode（resume 不丢）",
+          '"mode": dict(mode_info)' in runner_src
+          and runner_src.count('"mode": task.get("mode") or {}') >= 2
+          and '"has_plan"' in runner_src,
+          "")
+    check("★T3 runner：engine_capabilities / _GATED_FLAGS 接线",
+          "def engine_capabilities(" in runner_src
+          and "_GATED_FLAGS" in runner_src
+          and "engine_supports_flag(" in runner_src, "")
+    check("★T3 前端：最小改动展示「模式 · 策略」（只读标签，无新按钮）",
+          "created.mode" in js and "rl-mode" in js and "模式 · " in js
+          and "data-mode=" in js and "renderMeta" in js,
+          "rl-mode=%d" % js.count("rl-mode"))
+
+    # ── ⑩ mock HTTP 端到端（201 + plan + 可审计 + resume）─────
+    def _post_status(path, obj):
+        try:
+            return _post(base, path, obj)
+        except urllib.error.HTTPError as exc:
+            try:
+                body = json.loads(exc.read().decode("utf-8"))
+            except Exception:  # noqa: BLE001
+                body = {}
+            return int(exc.code), body
+
+    def _cancel_wait(tid, timeout=12.0):
+        try:
+            _post_status("/api/tasks/%s/cancel" % tid, {})
+        except Exception:  # noqa: BLE001
+            pass
+        end = time.time() + timeout
+        last = {}
+        while time.time() < end:
+            try:
+                _s, t = _get(base, "/api/tasks/" + tid)
+                last = t
+                if str(t.get("status")) in ("cancelled", "error", "done"):
+                    return t
+            except Exception:  # noqa: BLE001
+                pass
+            time.sleep(0.2)
+        return last
+
+    def _cleanup_tid(tid):
+        try:
+            _s, t = _get(base, "/api/tasks/" + tid)
+        except Exception:  # noqa: BLE001
+            return 0
+        names = []
+        for _k in ("output_name", "archive_log", "archive_json"):
+            if t.get(_k):
+                names.append(str(t[_k]))
+        nm = str(t.get("output_name") or "")
+        if nm.endswith(".md"):
+            stamp = nm[:-3]
+            for _lay in ("修行", "研究", "对撞", "元"):
+                names += [f"{stamp}.{_lay}.md", f"{stamp}.{_lay}.json",
+                          f"{stamp}.{_lay}.run.log"]
+        trash = oi.OUTPUTS_DIR.parent / "_audit_tmp" / "_selftest_trash"
+        left = 0
+        for n in sorted(set(names)):
+            if not n or "/" in n or "\\" in n:
+                continue
+            p = oi.OUTPUTS_DIR / n
+            try:
+                p.unlink()
+            except OSError:
+                pass
+            if p.exists():
+                try:
+                    trash.mkdir(parents=True, exist_ok=True)
+                    shutil.move(str(p), str(trash / n))
+                except OSError:
+                    left += 1
+        return left
+
+    _tids = []
+    s_ds, r_ds = _post_status("/api/tasks", {
+        "question": q_prj, "mode": "daosheng", "opts": {"mock": True}})
+    tid_ds = str(r_ds.get("id") or "")
+    if tid_ds:
+        _tids.append(tid_ds)
+    _m = r_ds.get("mode") or {}
+    _p = _m.get("plan") or {}
+    check("★T3 mock 端到端：POST /api/tasks mode=daosheng 返回 201",
+          s_ds == 201 and bool(tid_ds), "status=%s id=%s" % (s_ds, tid_ds))
+    check("★T3 响应回显 mode 对象（id/requested/tier/policy/reason）",
+          _m.get("id") == "daosheng" and _m.get("requested") == "daosheng"
+          and _m.get("tier") in ("quality", "fast")
+          and bool(_m.get("policy")) and bool(_m.get("reason")),
+          json.dumps({k: _m.get(k) for k in
+                      ("id", "requested", "tier", "policy")},
+                     ensure_ascii=False))
+    check("★T3 响应回显完整 plan（policy/route/rounds/quality_policy/预算）",
+          _p.get("policy") == "daosheng.v1"
+          and _p.get("route") == "0,1,both,all"
+          and "rounds" in _p and "quality_policy" in _p
+          and "budget_guard" in _p and "applied_opts" in _p,
+          "route=%s rounds=%s" % (_p.get("route"), _p.get("rounds")))
+    check("★T3 响应回显可审计清单（context_injected + budget_guard.decision）",
+          isinstance(_m.get("context_injected"), list)
+          and bool(_m.get("context_injected"))
+          and (_m.get("budget_guard") or {}).get("decision") in
+          ("ok", "degrade", "warn"),
+          "、".join(_m.get("context_injected") or []))
+    check("★T3 mock 端到端不触发真实引擎/API（mock 任务 + mock_engine + 零余额查询）",
+          bool(r_ds.get("id"))
+          and bool((r_ds.get("mode") or {}).get("plan")),
+          "plan.local_llm=%s" % (r_ds.get("mode", {}).get("plan", {})
+                                 .get("local_llm", {}).get("source")))
+    if tid_ds:
+        _s_t, _t_ds = _get(base, "/api/tasks/" + tid_ds)
+        _tm = _t_ds.get("mode") or {}
+        check("★T3 GET 单任务带完整 mode（轮询/resume 不丢）",
+              (_tm.get("id") == "daosheng"
+               and ((_tm.get("plan") or {}).get("policy") == "daosheng.v1")),
+              "id=%s" % _tm.get("id"))
+        check("★T3 任务 opts 保存 _mode_request/_mode_id（重试可复原档位）",
+              (_t_ds.get("opts") or {}).get("_mode_request") == "daosheng"
+              and (_t_ds.get("opts") or {}).get("_mode_id") == "daosheng", "")
+        # Lead 必交：GET /api/tasks（列表）也要回显 mode（摘要形态，has_plan 标记完整度）
+        _s_ls, _ls = _get(base, "/api/tasks")
+        _row = next((x for x in (_ls.get("tasks") or [])
+                     if str(x.get("id")) == tid_ds), {})
+        _lm = _row.get("mode") or {}
+        check("★T3 GET /api/tasks 列表回显 mode 摘要（id/has_plan）",
+              _s_ls == 200 and _lm.get("id") == "daosheng"
+              and _lm.get("has_plan") is True
+              and _lm.get("policy") == "daosheng.v1",
+              json.dumps(_lm, ensure_ascii=False)[:160])
+        check("★T3 mock 任务确认走 mock_engine（不触发真实 API）",
+              bool(_t_ds.get("mock"))
+              and any("mock_engine" in str(x) for x in (_t_ds.get("cmd") or [])),
+              "mock=%s" % _t_ds.get("mock"))
+        check("★T3 项目背景不重复注入（_prompt_prefix 里两个头各一次）",
+              str((_t_ds.get("opts") or {}).get("_prompt_prefix") or "")
+              .count("项目权威背景") == 1
+              and str((_t_ds.get("opts") or {}).get("_prompt_prefix") or "")
+              .count("【项目自进化记忆") == 1,
+              "%d 字" % len(str((_t_ds.get("opts") or {})
+                                .get("_prompt_prefix") or "")))
+        _cancel_wait(tid_ds)
+
+    s_bad, b_bad = _post_status("/api/tasks",
+                                {"question": "x", "mode": "bogus",
+                                 "opts": {"mock": True}})
+    check("★T3 非法 mode → HTTP 400（带 allowed 白名单）",
+          s_bad == 400 and bool(b_bad.get("allowed")),
+          "status=%s" % s_bad)
+
+    s_gen, r_gen = _post_status("/api/tasks", {
+        "question": "1+1等于几？", "mode": "auto", "opts": {"mock": True}})
+    _mg = r_gen.get("mode") or {}
+    check("★T3 mode=auto 非项目题 → standard（既有链路/质量策略不变）",
+          s_gen == 201 and _mg.get("id") == "standard"
+          and str(r_gen.get("quality_policy") or "").startswith("auto:"),
+          "id=%s qp=%s" % (_mg.get("id"), r_gen.get("quality_policy")))
+    if r_gen.get("id"):
+        _tids.append(str(r_gen["id"]))
+        _cancel_wait(str(r_gen["id"]))
+
+    s_sd, r_sd = _post_status("/api/tasks", {
+        "question": q_prj, "mode": "standard", "opts": {"mock": True}})
+    check("★T3 显式 mode=standard：不改用道生 plan（mode.id=standard）",
+          s_sd == 201 and ((r_sd.get("mode") or {}).get("id") == "standard"), "")
+    if r_sd.get("id"):
+        _tids.append(str(r_sd["id"]))
+        _cancel_wait(str(r_sd["id"]))
+
+    # ★ Lead 验收项：真实链路 resume / 重试时 mode 字段不丢
+    s_rt0, r_rt0 = _post_status("/api/tasks", {
+        "question": q_prj + "（重试档位验证）", "mode": "daosheng",
+        "opts": {"mock": True}})
+    tid_rt0 = str(r_rt0.get("id") or "")
+    if tid_rt0:
+        _tids.append(tid_rt0)
+        _cancel_wait(tid_rt0)
+        s_rt1, r_rt1 = _post_status("/api/tasks/%s/retry" % tid_rt0, {})
+        _rt1 = r_rt1.get("task") or {}
+        _m_retry = _rt1.get("mode") or {}
+        check("★T3 resume/重试：retry 响应带 mode（不丢档位）",
+              s_rt1 == 200 and _m_retry.get("id") in ("daosheng", "daosheng_fast"),
+              "status=%s mode=%s" % (s_rt1, _m_retry.get("id")))
+        if r_rt1.get("id"):
+            _tids.append(str(r_rt1["id"]))
+            _s_rt2, _t_rt2 = _get(base, "/api/tasks/" + str(r_rt1["id"]))
+            _m_rt2 = _t_rt2.get("mode") or {}
+            check("★T3 resume/重试：新任务 GET 带完整 mode.plan（可审计）",
+                  _m_rt2.get("id") == "daosheng"
+                  and ((_m_rt2.get("plan") or {}).get("policy")
+                       == "daosheng.v1"),
+                  "id=%s" % _m_rt2.get("id"))
+            check("★T3 resume/重试：新任务 opts 仍记 _mode_request（可再次恢复）",
+                  (_t_rt2.get("opts") or {}).get("_mode_request") == "daosheng",
+                  "")
+    _left = 0
+    for _tid in sorted(set(_tids)):
+        _cancel_wait(_tid)
+        _left += _cleanup_tid(_tid)
+    print("  · 已清理 T3 端到端自检任务 %d 条%s"
+          % (len(set(_tids)), ("（%d 个未删净）" % _left) if _left else ""))
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--base", default=os.environ.get(
@@ -1185,8 +1781,8 @@ def main() -> int:
           "text-align:center" in _rule(css, ".grid label,.grid .field")
           and "height:38px" in _rule(css, ".sheet-actions button.ghost"),
           "")
-    check("输入框：内容与占位**居中**，发送时问题先在框内散成星光再飞走（三段动画）",
-          "textarea#question{text-align:center}" in css.replace(" ", "")
+    check("输入框：内容与占位**左对齐**，发送时问题先在框内散成星光再飞走（三段动画）",
+          "textarea#question{text-align:left}" in css.replace(" ", "")
           and "--mx" in css and "var(--mx)" in css
           and "34%" in css and "'--mx'" in js,
           "")
@@ -2525,6 +3121,13 @@ def main() -> int:
                 pass
         print("  \u00b7 已清理自检产物与归档：" + st["output_name"]
               + (f"（{_left} 个未删净）" if _left else ""))
+
+    # ★ T3 道生专属模式 + 三体动态最优（离线单测 + mock HTTP 端到端）
+    try:
+        check_t3_daosheng(base, srv_src, runner_src, js, html)
+    except Exception as _t3_exc:  # noqa: BLE001  T3 段异常必须显式翻红
+        check("★T3 自检段执行未抛异常", False,
+              "%s: %s" % (type(_t3_exc).__name__, _t3_exc))
 
     print(f"\n结果：PASS {len(PASS)} / FAIL {len(FAIL)}")
     if FAIL:

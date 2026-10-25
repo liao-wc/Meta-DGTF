@@ -1,0 +1,11 @@
+{
+ "calls": 159,
+ "total_tokens": 1457052,
+ "prompt_cache_hit_tokens": 194176,
+ "prompt_cache_miss_tokens": 961506,
+ "dup_prompts": 1,
+ "unique_prompts": 158,
+ "usage_has_cache_fields": true,
+ "cache_hit_ratio": 0.168,
+ "finished_at": "2026-10-25 08:44:02"
+}

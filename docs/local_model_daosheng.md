@@ -1,0 +1,433 @@
+# 道生专属本地模型（stage LoRA + 本地推理服务）
+
+> 任务：T2 · 本地模型 —— 把本地 Qwen2.5 改造成 Meta-DGTF-道生三阶模型的
+> **stage 级适配器**（`self_check` / `dual_judge`，route 复用旧适配器），
+> 并提供 **8772 本地推理服务** 供 engine / app 调用。
+> 全部离线：只用 `outputs/*.packed.json` 历史产物，不联网、不调用真实 API。
+> 底座：**Qwen2.5-0.5B-Instruct**（1.5B 在本机 6GB/持续训练降频条件下不可行，
+> 原因与实测见 §4.2；1.5B 路径保留）。
+
+## 0. TL;DR
+
+| 项 | 状态 |
+|---|---|
+| 数据集 | `llm_sft/dgtf_stage/`：dual_judge 2,966 条（2490/476）、self_check full+min 各 568 条（478/90）；按问题分组留出 29 题（~16% 样本） |
+| 训练 | `scripts/local_model/train_dgtf_stage_lora.py`：**Qwen2.5-0.5B-Instruct**（1.5B 在本机持续训练降频，见 §4.1）、fp16 LoRA r=16/α=32、7 个 target module、gradient checkpointing、batch1+accum8、max_len 2048、**fp16 权重 + fp32 GEMM** |
+| 适配器 | `llm_sft/adapter_dgtf_selfcheck_05b_v2`（第二轮：min 变体、干净数据）、`llm_sft/adapter_dgtf_judge_05b_v2`（第二轮）；第一轮负结果留档 `llm_sft/adapter_dgtf_*_05b_v1_truncated_bak/`，服务按「v2 优先、v1 兜底」解析 |
+| 服务 | `dgtf_local_llm/service.py` → `127.0.0.1:8772`，`GET /health`（p50 16ms）、`POST /generate`（self_check p50 3.9s）、单卡串行队列、LRU 缓存、warmup、结构化 503 |
+| 客户端 | `dgtf_local_llm/client.py`（零依赖，失败返回 `{"ok":false,...}`，便于云回退级联） |
+| 启动 | `scripts/local_model/start_local_llm.ps1`（后台 + 等 ready）；停止 `stop_local_llm.ps1`；重训编排 `retrain_after_window.ps1` |
+| 评测 | 首轮结果 **go/no-go = 不通过**（适配器不可用于决策字段），根因已定位为「训练数据被中段截断」→ §5.2；服务链路本身可用 |
+
+## 1. 目录与文件
+
+```
+scripts/local_model/
+  build_dgtf_stage_dataset.py   # 从 packed 产物重建 stage 数据集（含统计/防泄漏）
+  make_filtered_stats.py        # 过滤后训练集统计（drop-truncated 口径，零 GPU）
+  train_dgtf_stage_lora.py      # stage LoRA 训练（fp16 权重 + fp32 GEMM；--dry-run/--drop-truncated）
+  eval_dgtf_stage.py            # 离线评测（JSON 合法率/position/self_check 决策字段/QC 门控）
+  probe_local_llm.py            # 8772 服务实测探针（health/generate/错误回退/并发）
+  start_local_llm.ps1           # 启动服务（后台，等 ready，打印 PID/端口）
+  stop_local_llm.ps1            # 按端口停止服务
+  retrain_after_window.ps1      # 第二轮重训编排：停服务→训练(sc min/dj)→重启→重评
+dgtf_local_llm/
+  service.py                    # 本地推理服务（HTTP，127.0.0.1:8772）
+  client.py                     # engine/app 侧客户端（stdlib）
+llm_sft/dgtf_stage/
+  dual_judge_{train,val}.jsonl
+  self_check_{train,val}.jsonl          # 11 字段完整自省 JSON
+  self_check_min_{train,val}.jsonl      # 3 个决策字段（省 decode）
+  dataset_stats.json                    # 样本数/去重/长度分布/按题分组/防泄漏
+  dataset_stats_filtered.json           # 过滤后（drop-truncated/计划样本数）统计
+  eval_dgtf_stage*.json / service_probe.json
+llm_sft/
+  adapter_dgtf_selfcheck_05b_v2/        # 第二轮：self_check min 变体
+  adapter_dgtf_judge_05b_v2/            # 第二轮：dual_judge
+  adapter_dgtf_*_05b_v1_truncated_bak/  # 第一轮负结果留档（截断数据训练）
+  _round1_evidence/                     # 第一轮 metrics/loss/eval/probe/日志归档
+  train_metrics_dgtf_{selfcheck,judge}.json   # loss 曲线 + 训练指标
+  loss_curve_dgtf_{selfcheck,judge}.svg
+```
+
+## 2. 硬件与运行环境（实测事实）
+
+| 项 | 值 |
+|---|---|
+| GPU | NVIDIA GeForce GTX 1660 Ti **6GB**（SM 7.5，24 SM，**无 tensor core**） |
+| CPU / RAM | i7-10750H 12 线程 / 32GB |
+| Python | `local_model/envs/dgtf_llm_env/Scripts/python.exe`（3.13.15） |
+| torch | 2.14.1+cu126，CUDA 12.6，`torch.cuda.is_available()=True` |
+| transformers / peft | 5.20.2 / 0.21.2（无 bitsandbytes ⇒ **fp16 LoRA，不做 4bit**） |
+| 本地权重 | `local_model/models/Qwen2.5-1.5B-Instruct`（离线 `local_files_only`） |
+
+> 服务启动后显存占用约 **3.4-3.6GB**（< 5GB 余量目标 ✅）；训练时峰值 ~5.2-5.8GB，
+> 训练与服务**互斥**（6GB 卡放不下两者同时），切换方式见 §7。
+
+## 3. 数据集构建
+
+```powershell
+# 全量（复现）
+$env:PYTHONUTF8="1"; $env:HF_HUB_OFFLINE="1"
+local_model\envs\dgtf_llm_env\Scripts\python.exe scripts\local_model\build_dgtf_stage_dataset.py `
+  --outdir llm_sft/dgtf_stage --shard 6 --sc-cand-max 8 --sc-collision-cap 400 `
+  --sc-manifest-cap 300 --sc-amp-max 5 --tokenizer-stats
+```
+
+### 3.1 prompt 与引擎同构（不自创格式）
+
+模板不是手抄的，而是 **AST 只读提取** 自
+`dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.2.py`：
+
+- `PHASE_PRACTICE/RESEARCH/DUEL/META` 的 `dual_spec`、`view_focus`（按 `entry`
+  0/1/both/all 映射：修行/研究/对撞/元）
+- `NO_FILL_JUDGE_RULE`、`AMP_TYPES`、`UNSAID_ESCAPE_LIMIT`
+- 拼装顺序对齐 `_dual_judge`（12234-12300）与 `_self_check`（15162-15310）：
+  - dual_judge：`system = 你是【对偶判断者】+ dual_spec + how(anchored) + both 约束
+    + NO_FILL_JUDGE_RULE + schema`；`user = 【处境】+ _judge_context(inp,anchor)
+    + _decidability_block + 【候选列表】`
+  - self_check：引擎原文 system（含 `view_focus`）+ `user = 【锚点】【候选】【& 印记】
+    【ing 输出】【view】【代码已发现的质量线索】`（+ 深究请求 / ★代码统计块）；
+    `_count_unsaid` 复刻引擎实现
+- **两处有意偏差**（代码注释已标）：
+  1. dual_judge 的 schema 精简为 `{idx,position,why_position}`（任务契约三字段），
+     `why_0/why_1` 在引擎解析侧缺失时按空串处理，不影响 `_extract_judgments`；
+  2. 省略 `_self_block`（线上无 self_memory 时引擎本来返回空）与
+     `_carry_block_text`（carry 是运行期输入，历史产物里没有原值）。
+- `is_amp_candidate` 是 `position` 的派生量（标签泄漏），**未作为输入特征**。
+
+### 3.2 两类样本
+
+| stage | 输入 | 目标 |
+|---|---|---|
+| dual_judge | 锚点（+透传问题/上游 view shape）+ 全局可判定性 + 候选列表 | `{"judgments":[{"idx","position","why_position"}]}`，由 `candidates[].position/why_position` 还原 |
+| self_check (full) | 锚点+候选(属性×位置)+& 印记+ing 输出+manifest+质量线索(+未生计数) | `views.*.self_check` 原 JSON（11 键） |
+| self_check_min | 同上（同一模板，schema 换成 3 决策字段） | `{"suspicious_candidates","ing_rephrased","unsaid_is_escape"}` |
+
+**dual_judge 分片**：一个 view 的候选 p50=27 / max=60，整包放不进 2048 token；
+引擎自身命中率低时也会「候选减半再判」（`_dual_judge` 降级重试），说明该任务
+逐候选独立 ⇒ 按顺序切成 `shard=6` 的小批，`idx` 每个样本内从 1 重编号。
+
+**标签清洗**：`why_position` 为空的候选 = 未判/默认 0 噪声，共丢弃 796 条
+（4.6%）；候选 desc 去重；全量精确去重（dj 去 20、sc 去 4）。
+
+### 3.3 统计（`llm_sft/dgtf_stage/dataset_stats.json`）
+
+| 指标 | dual_judge | self_check full | self_check min |
+|---|---|---|---|
+| 样本（train/val） | 2,966（2,490/476） | 568（478/90） | 568（478/90） |
+| 来源 view / 候选 | 577 view / 16,623 judged 候选 | 568 view | 568 view |
+| 按 phase | 见 `dataset_stats.json` | 见 `dataset_stats.json` | 同 full |
+| prompt token p50 / p95 | 1,140 / 1,593 | 1,709 / 1,921 | 1,638 / 1,856 |
+| target token p50 | 150 | 212 | **27** |
+| total token max | 1,821 | 2,324 | 1,966 |
+| over max_len(2048) | 0 | 79（第一轮；第二轮丢弃策略） | 0 |
+
+> 数据快照说明：构建时 `outputs/` 有 179 份 packed（并行 run 会持续新增，
+> 数字随快照变化）；上述为第二轮重训所用快照。
+
+**防泄漏**：按「问题」分组（问题字符串全等），53 个唯一问题 → val 29 题 /
+train 24 题，val 样本占比 **15.9%**；两个 stage 共用同一 holdout 问题。
+同一问题的所有 run / view / 分片只在同一侧。
+
+标签分布（val）：dual_judge `0=54.0% / 1=43.1% / both=2.9%`（多数类基线 54%）；
+self_check `suspicious_candidates 非空 86.8%`、`ing_rephrased=True 7.7%`、
+`unsaid_is_escape=True 17.6%` —— 都是强多数类基线，因此评测同时报 **F1** 与
+**QC 门控 coverage/agreement 曲线**，不只报「一致率」。
+
+## 4. 训练
+
+```powershell
+# ── 第一轮（负结果，保留作证据链）──
+# self_check full+min 混训 60 条（max_len 1536 → 58 条被截断，详见 §5.2）
+local_model\envs\dgtf_llm_env\Scripts\python.exe scripts/local_model/train_dgtf_stage_lora.py `
+  --model local_model/models/Qwen2.5-0.5B-Instruct --stage self_check --variant mixed `
+  --max-train 60 --max-len 1536 --epochs 1 --val-subset 10 --save-every 20 `
+  --lr 1.5e-4 --out llm_sft/adapter_dgtf_selfcheck_05b_v1
+
+# ── 第二轮（Lead 修正方案：干净数据，超长样本直接丢弃）──
+# P0 self_check：只用 min 变体（3 字段 target，26 token）
+local_model\envs\dgtf_llm_env\Scripts\python.exe scripts/local_model/train_dgtf_stage_lora.py `
+  --model local_model/models/Qwen2.5-0.5B-Instruct --stage self_check --variant min `
+  --max-train 180 --max-len 2048 --epochs 1 --val-subset 20 --save-every 60 `
+  --lr 1e-4 --drop-truncated --out llm_sft/adapter_dgtf_selfcheck_05b_v1
+# P1 dual_judge
+local_model\envs\dgtf_llm_env\Scripts\python.exe scripts/local_model/train_dgtf_stage_lora.py `
+  --model local_model/models/Qwen2.5-0.5B-Instruct --stage dual_judge `
+  --max-train 130 --max-len 2048 --epochs 1 --val-subset 20 --save-every 60 `
+  --lr 1e-4 --drop-truncated --out llm_sft/adapter_dgtf_judge_05b_v1
+```
+
+配置：LoRA `r=16, alpha=32, dropout=0.05, bias=none`，target modules
+`q/k/v/o/gate/up/down_proj`（0.5B 可训练参数 8.80M），`gradient_checkpointing=True`，
+`batch=1, accum=8`，AdamW `lr=1e-4`（10 步 warmup + cosine 到 10%），
+`max_len=2048`，fp16 + GradScaler，**超长样本丢弃（不中段截断）**。
+
+第一轮训练实测（60 条样本，max_len 1536）：
+
+| stage | train_loss | best_val_loss | 步数 | 耗时 | 峰值显存 | 截断样本 |
+|---|---|---|---|---|---|---|
+| self_check（mixed） | 2.035 | 1.679 | 60 | 296s | 4.2GB | **58/60** |
+| dual_judge | 1.740 | 1.772 | 60 | 282s | 4.2GB | 19/60 |
+
+吞吐约 290-310 tok/s（0.5B + fp32 GEMM 补丁）；loss 曲线见
+`llm_sft/loss_curve_dgtf_*.svg` 与 `train_metrics_dgtf_*.json`。
+
+### 4.1 关键适配：fp16 权重 + fp32 GEMM
+
+在 GTX 1660 Ti（SM75，无 tensor core）上实测：
+
+| GEMM | 实测吞吐 |
+|---|---|
+| `torch.matmul` fp16（1024×1536×1536） | **0.54 TFLOPS** |
+| `torch.matmul` fp32（同形状） | **2.47 TFLOPS** |
+
+cuBLAS 12.6 的 HGEMM 在该架构上严重劣化 ⇒ 直接 fp16 训练只有 **55 tok/s**。
+训练脚本因此把每个 `nn.Linear` 的 GEMM 换成 fp32 计算、输出转回 fp16
+（`enable_fp32_compute`，权重/激活仍是 fp16，显存基本不变）：
+**fwd+bwd 提到 110-160 tok/s（2-3x）**，seq1024 8.95s/step、峰值 5.22GB。
+
+**超长截断策略**（第一轮教训 → 第二轮改为丢弃）：
+- 第一轮 `max_len=1536` 时 self_check 样本 58/60 超长，`build_token` 会「保留
+  prompt 头（system 模板）+ 尾（候选列表末尾/统计块）、丢中间」——结果把候选
+  列表中段切掉，模型学到「按残留索引尾部乱喷」的伪规律（详见 §5.2）。
+- 第二轮按 Lead 修正：`--drop-truncated`，**超长样本直接丢弃，不切候选**。
+  预检（`--dry-run`，08:22）：self_check min 180 条 `dropped=0`、total max
+  1,966 < 2,048 ✅；dual_judge 130 条 `dropped=0`、total max 1,821 < 2,048 ✅。
+
+### 4.2 为什么切到 0.5B 底座（如实记录）
+
+任务原始要求 1.5B 底座。实测：
+- 1.5B + fp16 LoRA 在 **持续负载**下 GPU 从 1,845MHz 降到 1,530MHz（功耗墙 59W、
+  76-81°C），step 时间从 14s 劣化到 **32s/step**（seq 1792）；
+- 6GB 卡上 1.5B 训练峰值 5.8GB，几乎没有余量，90 条 × 1 epoch 要 48 分钟，
+  08:20 联调时间盒内不可行；
+- 按 Lead 授权切 **Qwen2.5-0.5B-Instruct**（本地 env 已验证）：同样 fp32-GEMM
+  补丁下 **4.2s/step（seq 1536）/ ~5s（seq 2048）**，可训练样本量提升 3 倍，
+  推理 decode 也从 1.5B 的 ~6.5 tok/s 提升到 ~9-10 tok/s。
+- 1.5B 路径未删除：`train_dgtf_stage_lora.py --model .../Qwen2.5-1.5B-Instruct`
+  即可，但需要数小时独占 GPU（全量 479/2,508 条），非本轮时间盒内可行。
+
+### 4.2 产物
+
+- `llm_sft/adapter_dgtf_selfcheck_15b_v1/`（adapter_config + safetensors + tokenizer）
+- `llm_sft/adapter_dgtf_judge_15b_v1/`
+- `llm_sft/train_metrics_dgtf_{selfcheck,judge}.json`：loss 曲线（每步）、epoch 汇总、
+  best_val_loss、峰值显存、吞吐、截断数、生成冒烟 JSON 合法率
+- `llm_sft/loss_curve_dgtf_{selfcheck,judge}.svg`（零依赖 SVG）
+
+## 5. 离线评测
+
+```powershell
+local_model\envs\dgtf_llm_env\Scripts\python.exe scripts/local_model/eval_dgtf_stage.py `
+  --limit-dj 10 --limit-sc 6 --limit-scmin 16 --base
+```
+指标定义：
+
+- **JSON 合法率**：生成文本能被 `try_parse_json` 解析出 JSON 对象的比例
+- **position 准确率**：按 gold `idx` 对齐，`position ∈ {0,1,both}` 三分类准确率；
+  另报 `coverage`（模型真正判了几条）、三分类 **macro-F1**
+- **self_check 决策字段一致率**：`suspicious_candidates` 集合完全一致、
+  `ing_rephrased`/`unsaid_is_escape` 布尔一致；三项全对 = `all3`；
+  另报 `suspicious` 集合 F1 与 `unsaid_count` MAE（full）
+- **QC 门控曲线**：置信度 = 生成 token 平均概率（`confidence`），
+  τ∈{0.8,0.9,0.95} 报 `coverage`（conf≥τ 的样本占比）与 `agreement`
+  （covered 样本上的样本级一致率），用于「本地草稿 + 云校准」级联/conformal 弃权
+
+> 评测生成用与服务相同的 **prefill(fp32 GEMM)+decode(fp16)** 混合路径，
+> 因此评测延迟 ≈ 服务单次延迟。
+
+**结果**：见 §5.1（实测数字由 `eval_dgtf_stage.py` 写入
+`llm_sft/dgtf_stage/eval_dgtf_stage.json`；下表为本轮实测摘要）。
+
+### 5.1 实测结果
+
+| 指标 | dual_judge | self_check_min | self_check (full) |
+|---|---|---|---|
+| n（val 抽样） | 8 | 14 | 6 |
+| JSON 合法率 | **0.875** | **0.286** | **0.333** |
+| position 准确率 | **0.45**（多数类基线 0.54） | — | — |
+| position coverage | 0.925 | — | — |
+| 三分类 macro-F1 | **0.163**（0=0.488 / 1=0 / both=0） | — | — |
+| 三项字段全对率 | — | **0.0** | **0.0** |
+| suspicious 集合 F1 | — | 0.02 | 0.037 |
+| ing_rephrased acc | — | 0.286 | 0.333 |
+| unsaid_is_escape acc | — | 0.286 | 0.333 |
+| 单次延迟 p50 | 33.1s | 10.3s | 41.2s |
+| decode 吞吐 | 6.6 tok/s | 5.7 tok/s | 7.1 tok/s |
+| QC τ=0.8 coverage/agreement | 0.75 / 0.222 | 1.0 / 0.0 | 0.667 / 0.0 |
+| QC τ=0.9 / 0.95 | 0.125/0.167 · 0/— | 0/— · 0/— | 0.5/0.0 · 0.167/0.0 |
+
+**go/no-go：这一轮适配器不可用于决策字段**（position 0.45 ≈ 多数类基线、
+self_check 三项全对 0）。置信度分布也不区分对错（agreement 不随 τ 上升），
+暂时不能作为 conformal 弃权阈值。
+
+### 5.2 负结果与根因（截断训练数据）—— 项目证据链
+
+| 项 | 内容 |
+|---|---|
+| 现象 | self_check_min 输出 `suspicious_candidates` 出现 `[10,11,…,39]` 一路喷到 token 上限；JSON 非法率 ~71%；决策三项全错。dual_judge 格式基本学会（0.875 合法）但 position 0.45 ≈ 基线。 |
+| 根因 | 第一轮 self_check 训练 60 条样本在 `max_len=1536` 下 **58 条被截断**：`build_token` 的截断策略是「保 prompt 头（system 模板）+ 保尾（候选列表末尾/统计块）、丢中间」，导致**候选列表中段被切掉**。模型能看到的是候选索引的“尾部”，于是学到「按看到的索引区间喷 suspicious_candidates」。评测 prompt 完整（1,700 tok），与训练分布不一致 ⇒ 全错。 |
+| 证据 | ①训练日志 `truncated=58/60`（selfcheck）/ `19/60`（judge）；②生成冒烟样例 `[10..39]` 与训练里被切后残留的尾部索引一致；③`self_check` 的 prompt p50=1,709 + target 212 > 1536；min 变体总长 p95=1,892 > 1536 同样被切。 |
+| 结论 | 在 6GB 卡上，**不能靠“中段截断”省 token** 去喂结构敏感任务；要么把 prompt 压到 max_len 内，要么直接丢弃超长样本。这也解释了为什么「60 样本 + 截断」是负结果——不是模板/字段错（demo 字段还原 100% 通过），是训练数据被破坏。 |
+| 修正（第二轮，已实现待跑） | `--drop-truncated`（超长样本直接丢弃，不切候选）+ `max_len=2048` + self_check 只用 **min 变体**（target 26 tok）+ `lr=1e-4`、180 条 × 1 epoch；dual_judge 把 `why_position` 截到 30 字缩短 target 后 130 条 × 1 epoch。评测目标：JSON 合法率 > 0.9、三项全对 > 0.2 即算「有信号」。 |
+| 本轮价值 | go/no-go 结论明确：**本地 0.5B + 60 样本 + 截断数据不可用于决策**；但服务链路（/health 秒回、/generate 3.9s、串行队列、503 回退、JSON 抢救）已可联调，engine/app 集成不被质量结论阻塞。 |
+
+## 6. 本地推理服务（127.0.0.1:8772）
+
+### 6.1 启动 / 停止
+
+```powershell
+# 启动（后台，等 ready，打印 PID/端口；日志 llm_sft/local_llm/service.{out,err}.log）
+powershell -ExecutionPolicy Bypass -File scripts/local_model/start_local_llm.ps1
+# 前台调试
+powershell -ExecutionPolicy Bypass -File scripts/local_model/start_local_llm.ps1 -Foreground
+# 停止
+powershell -ExecutionPolicy Bypass -File scripts/local_model/stop_local_llm.ps1
+```
+
+冷启动：加载 1.5B fp16（~10-15s）+ 3 个适配器 + warmup ⇒ **ready < 90s**（实测见 §6.3）。
+模型在后台线程加载，`/health` 立刻可访问（`status=loading`），不阻塞。
+
+### 6.2 接口契约
+
+**GET /health** → 200（永远秒回）
+
+```json
+{"ok": true, "status": "ready", "model": ".../Qwen2.5-1.5B-Instruct",
+ "adapter": ["self_check", "self_check_min", "route"],
+ "adapters": {"self_check": true, "self_check_min": true, "dual_judge": false, "route": true},
+ "gpu_mem_mb": 3500, "queue_depth": 0, "uptime_sec": 42.1,
+ "load_sec": 14.2, "warmup_ms": 820.0, "error": null}
+```
+
+**POST /generate**
+
+| 字段 | 说明 |
+|---|---|
+| `stage` | `self_check` \| `self_check_min` \| `dual_judge` \| `route`（必填） |
+| `text` | 用户内容。若为 JSON 对象字符串，服务按引擎模板拼装结构化 prompt（见下） |
+| `messages` | 完整 messages（可含 system）；与 `text` 二选一 |
+| `entry` | `0/1/both/all`，选层模板（默认 `1`=研究） |
+| `variant` | `full/min`，仅 `self_check` 用（默认 full） |
+| `max_new_tokens` | 默认：self_check 320 / self_check_min 64 / dual_judge 320 / route 96 |
+| `temperature` | 0=贪心（默认 0） |
+| `timeout` | 秒，默认 60，上限 120 |
+
+`text` 传 JSON 对象可自动结构化（引擎/App 最省事）：
+
+- `self_check*`：`{"anchor","candidates":[{desc,attribute,position}],"amps":[...],
+  "collision","manifest","quality_flags":[...]}` → 按 `_self_check` user 模板拼装
+- `dual_judge`：`{"anchor","question","candidates":[{desc,kind}],"decidability":{...}}`
+
+成功 → 200：
+
+```json
+{"ok": true, "stage": "self_check_min", "text": "{\"suspicious_candidates\":[3],...}",
+ "json": {"suspicious_candidates":[3],"ing_rephrased":false,"unsaid_is_escape":false},
+ "ms": 6120.5, "adapter": "llm_sft/adapter_dgtf_selfcheck_15b_v1",
+ "confidence": 0.87, "gen_tokens": 27, "prompt_tokens": 1650,
+ "gpu_mem_mb": 3542, "cached": false, "queue_ms": 0.4}
+```
+
+失败 → 503/400（结构化，不崩进程）：
+
+```json
+{"ok": false, "error": {"code": "TIMEOUT|UNAVAILABLE|BAD_REQUEST|INTERNAL",
+                        "message": "..."}}
+```
+
+**客户端**（engine/app 直接用，失败返回 dict 不抛异常，便于云回退）：
+
+```python
+from dgtf_local_llm.client import LocalLLMClient
+cli = LocalLLMClient()                     # 127.0.0.1:8772
+r = cli.generate("self_check", text=view_json, timeout=60)
+if r["ok"] and r["confidence"] >= 0.9:
+    use_local(r["json"])                   # 高置信走本地
+else:
+    fallback_cloud()                       # 低置信/不可用走云校准
+```
+
+实现要点：
+
+- **单卡串行队列**：所有生成进单 worker 队列（`queue.Queue`），GPU 不并发；
+  请求按 `timeout` 截止（生成循环内检查 deadline）。
+- **启动 warmup**：ready 前跑一次短生成预热 CUDA kernel。
+- **LRU 缓存**：`(stage, entry, variant, prompt hash, max_new_tokens, temperature)`
+  → 200 条（重复请求 0 GPU 开销）。
+- **错误回退**：loading/error → 503 `UNAVAILABLE`；超时 → 503 `TIMEOUT`；
+  参数错 → 400 `BAD_REQUEST`；内部异常 → 503 `INTERNAL`（进程不退出）。
+
+### 6.3 实测（`scripts/local_model/probe_local_llm.py`）
+
+实测（`probe_local_llm.py --reps 2`，0.5B + 4 适配器，服务 PID 28388）：
+
+| 项 | 结果 |
+|---|---|
+| 冷启动 | load **7.6-8.7s** + warmup **726-1196ms**（ready < 90s ✅） |
+| GET /health | p50 **16ms**（max 21ms），秒回 ✅ |
+| POST /generate `self_check`（默认 min schema） | p50 **3.89s**，JSON 合法 2/2 |
+| POST /generate `self_check_min` | p50 **4.13s**，JSON 合法 2/2 |
+| POST /generate `route`（旧 0.5B route 适配器） | p50 **3.60s**，JSON 2/2，confidence 0.947 |
+| 错误回退 | bad stage → **400** `BAD_REQUEST`；`timeout=1` → **503** `TIMEOUT`（1.08s 返回）；缺 `text/messages` → **400** `BAD_REQUEST` |
+| 并发 3 请求 | 串行排队：wall 7.38s，3/3 200，无 OOM/崩溃 ✅ |
+| 显存 | 服务常驻 **1,075MB**（< 5GB 余量 ✅） |
+| 缓存 | 相同请求 `cached=true`，`ms` ~1ms 级（LRU 200 条） |
+
+> dual_judge / self_check(full) 因 0.5B decode 只有 ~6-7 tok/s、目标较长，
+> 单次 30-40s，**不建议**在联调链路里同步调用；需要全量字段时用
+> `variant:"full"` 并给足 timeout（≤60s）。
+
+### 6.4 服务实现要点（gf）
+
+- **prompt 所有权**：`stage` 决定 system prompt（引擎 V2.2.2 模板）；调用方传
+  `messages` 时**默认保留其 user 内容、替换 system 为服务模板**（本地适配器只
+  认自己训练过的模板）；要原样透传自己的 system 传 `"preserve_system": true`。
+- **JSON 抢救**：输出被截断/带杂音时用正则抠出三个决策字段（`salvaged: true`），
+  保证结构化返回；调用方应按 `confidence` + `salvaged` 决定是否回退云。
+- **混合精度**：prefill 用 fp32 GEMM（0.5B 实测 ~1200 tok/s），decode 用 fp16
+  （M=1 带宽瓶颈，~9-10 tok/s）；`_set_fp32` 开关在有/无 patch 的 forward 间切换。
+- **失败不崩**：所有 handler 包 try/except，异常 → 结构化 503；worker 线程常驻。
+
+## 7. GPU 占用与训练/服务切换
+
+- **训练**：独占 GPU，峰值 ~5.2-5.8GB；**训练时不要起服务**（会 OOM/爆显存）。
+- **服务**：常驻 ~3.4-3.6GB（<5GB 余量目标）。
+- 切换：`stop_local_llm.ps1` → 训练 → 训练进程退出显存自动释放 →
+  `start_local_llm.ps1`。
+- 训练完成后**释放显存**的方式就是让训练进程结束（本脚本训练结束即退出，
+  不常驻）。
+
+## 8. 已知限制与下一步
+
+1. **底座为 0.5B（非任务原始 1.5B）**：1.5B 在 6GB 卡持续训练降频到 32s/step，
+   时间盒内跑不出可用适配器（§4.2 有实测证据）。0.5B 在同时间预算下可多训
+   3 倍数据、推理快 2-3 倍；1.5B 路径保留，需要数小时独占 GPU。
+2. **第一轮适配器质量不达标（负结果）**：position 0.45≈基线、三项全对 0，
+   根因是训练数据被中段截断（§5.2）；第二轮已按 Lead 方案修正（丢弃截断样本 +
+   min 变体 + lr 1e-4 + 180/110 条），结果见 `eval_dgtf_stage_v2.json`。
+3. **decode 慢**：0.5B fp16 decode 实测 ~9-10 tok/s（M=1 带宽/内核瓶颈），
+   `self_check_min`（3 字段、27 token）单次 ~4s 可接受；11 字段全量（~212 token）
+   单次 20-40s，生产建议只走 min 变体，需要解释性 verdict 时再让云补。
+4. **route 适配器**沿用旧任务 `llm_sft/adapter_qwen05b_v1`（route_exact 0.357，
+   旧基线），本轮未重训（P2）；但在 8772 服务里实测可用（p50 3.6s，JSON 2/2）。
+5. **QC 门控尚未可用**：第一轮 confidence 不区分对错（agreement 不随 τ 上升）；
+   第二轮重训后会重算 τ∈{0.8,0.9,0.95} 的 coverage/agreement 曲线。
+6. **训练数据规模**：全量可用 2,490（judge）/ 478（sc_min）条，本轮时间盒只用
+   180/110 条 × 1 epoch；要逼近云标签需要数小时全量训练 + 更多 epoch。
+7. **数据快照会漂移**：并行 run 持续往 `outputs/` 写 packed，数据集每次重建的
+   样本数会变（当前快照 179 份）；`dataset_stats.json` 记录构建时间与统计口径。
+
+## 9. 本轮结论（给 Lead 的取舍依据）
+
+- **服务层：可交付 ✅**。8772 四 stage 接口、/health 秒回（16ms）、单次
+  self_check 3.9s、GPU 1.08GB、串行队列、超时/错误结构化 503、JSON 抢救兜底
+  全部实测通过，engine/app 可直接联调（失败回退云）。
+- **模型层：第一轮 go/no-go = 不通过 ⛔**。适配器不可用于决策字段；根因已定位
+  （训练数据中段截断），不是模板/字段问题（dataset demo 字段还原 100%）。
+- **第二轮**：数据已按其要求重建（丢弃截断样本：sc 180 条 dropped=0、
+  dj 130 条 dropped=0，预检 `--dry-run` 通过），等 GPU 窗口重训后补 §5.1 数字与
+  τ 曲线；目标 JSON 合法率 > 0.9、三项全对 > 0.2 即算「有信号」。
+- 第一轮全部证据已归档 `llm_sft/_round1_evidence/`（adapter、metrics、loss 曲线、
+  eval、probe、训练日志），供复盘。

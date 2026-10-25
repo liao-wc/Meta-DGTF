@@ -54,8 +54,19 @@ _ARG_SPEC = {
     "actions-off": "--actions-off",
     "actions-on": "--actions-on",
     "behavior_fusion": "--behavior-fusion",
+    # ★ T3 道生专属模式：V2.2.3 新机制键（默认 llm=零行为差）。
+    #   透传前必须过**引擎能力探测**（见下方 _GATED_FLAGS）——
+    #   engine-mech 的 V2.2.3 还没落地时透传会让 argparse 直接报错、任务当场失败。
+    "history_fusion": "--history-fusion",
+    "self_check_mode": "--self-check-mode",
+    "dual_judge_mode": "--dual-judge-mode",
 }
 _BOOL_FLAGS = {"no-self-check": "--no-self-check", "quiet": "--quiet", "debug": "--debug"}
+
+#: ★ 能力门控 flag：引擎源码里**没出现**该长 flag 就不透传（= 缺省，交给引擎默认）。
+#: 对应新机制：self_check_mode/dual_judge_mode 由 engine-mech 在 V2.2.3 增加；
+#: history_fusion 在 V2.2.2 已有（探测通过后照常透传）。
+_GATED_FLAGS = {"--history-fusion", "--self-check-mode", "--dual-judge-mode"}
 
 _tasks: dict[str, dict] = {}
 _tasks_lock = threading.Lock()
@@ -80,6 +91,77 @@ def find_engine() -> Path:
     cands.sort(key=ver)
     return cands[-1] if cands else (PROJECT_ROOT / "dgtf_engine" / "dgtf_v2" /
                                      "engine" / "Meta-DGTF-V2.2.2.py")
+
+
+# ── 引擎能力探测（新机制 CLI 能力门控）────────────────────────────
+#: 能力名 → 长 flag。键名与 `_ARG_SPEC` 的 opts 键一一对应，便于 App/文档对账。
+_CAPABILITY_FLAGS = {
+    "self_check_mode": "--self-check-mode",
+    "dual_judge_mode": "--dual-judge-mode",
+    "history_fusion": "--history-fusion",
+}
+#: 能力名 → 引擎 **config 键**（DEFAULT_CONFIG 里的字面 key）。
+#: V2.2.3 先落 config 键、CLI 参数稍后；App 预设走 `--config` 时以 config 键为准，
+#: 所以两条通道要分开探测（CLI flag ≠ config 键）。
+_CAPABILITY_CONFIG_KEYS = {
+    "self_check_mode": '"self_check_mode"',
+    "dual_judge_mode": '"dual_judge_mode"',
+    "history_fusion": '"history_fusion"',
+}
+_CAP_LOCK = threading.Lock()
+_CAP_CACHE: dict = {"stamp": None, "data": None}
+
+
+def engine_capabilities(force: bool = False) -> dict:
+    """探测当前引擎源码支持哪些新机制（CLI flag / config 键分开报）。
+
+    返回 {ok, path, version, mock, supports:{CLI flag}, supports_config:{config 键}, error}。
+    App 侧据此决定「透传 CLI / 依赖预设 config 键 / 缺省」——engine-mech 交付
+    V2.2.3 后本函数自动从「不支持」翻成「支持」，**App 不需要再改代码**。
+    """
+    env_mock = os.environ.get("DGTF_APP_MOCK") == "1"
+    try:
+        p = find_engine()
+        st = p.stat()
+        stamp = (str(p), int(st.st_mtime_ns), int(st.st_size))
+    except Exception as exc:  # noqa: BLE001
+        return {"ok": False, "path": "", "version": "", "mock": bool(env_mock),
+                "supports": {k: False for k in _CAPABILITY_FLAGS},
+                "supports_config": {k: False for k in _CAPABILITY_CONFIG_KEYS},
+                "error": "%s: %s" % (type(exc).__name__, exc)}
+    with _CAP_LOCK:
+        if (not force and _CAP_CACHE.get("stamp") == stamp
+                and isinstance(_CAP_CACHE.get("data"), dict)):
+            return dict(_CAP_CACHE["data"])
+    supports = {k: False for k in _CAPABILITY_FLAGS}
+    supports_cfg = {k: False for k in _CAPABILITY_CONFIG_KEYS}
+    err = ""
+    try:
+        src = p.read_text(encoding="utf-8", errors="replace")
+        for key, flag in _CAPABILITY_FLAGS.items():
+            supports[key] = flag in src
+        for key, literal in _CAPABILITY_CONFIG_KEYS.items():
+            supports_cfg[key] = literal in src
+    except OSError as exc:
+        err = "%s: %s" % (type(exc).__name__, exc)
+    m = re.search(r"V(\d+)\.(\d+)\.(\d+)", p.name)
+    data = {"ok": bool(not err), "path": str(p), "mock": bool(env_mock),
+            "version": (".".join(m.groups()) if m else ""),
+            "supports": supports, "supports_config": supports_cfg, "error": err}
+    with _CAP_LOCK:
+        if len(_CAP_CACHE) > 8:
+            _CAP_CACHE.clear()
+        _CAP_CACHE.update(stamp=stamp, data=dict(data))
+    return data
+
+
+def engine_supports_flag(flag: str) -> bool:
+    """该引擎是否支持某个长 flag（未知 flag 一律按不支持处理）。"""
+    for key, f in _CAPABILITY_FLAGS.items():
+        if f == flag:
+            return bool((engine_capabilities().get("supports") or {}).get(key))
+    return True
+
 
 
 def load_dotenv() -> dict:
@@ -176,6 +258,10 @@ def build_cmd(question: str, opts: dict) -> list[str]:
     for key, flag in _ARG_SPEC.items():
         v = opts.get(key)
         if v not in (None, "", "auto"):
+            # ★ 能力门控：V2.2.3 新机制 flag 在旧引擎上不透传（= 缺省），
+            #   否则 argparse 会因未知参数直接让整个任务失败。
+            if flag in _GATED_FLAGS and not engine_supports_flag(flag):
+                continue
             cmd += [flag, str(v)]
     for key, flag in _BOOL_FLAGS.items():
         if opts.get(key):
@@ -245,6 +331,7 @@ def _write_live_run(task: dict) -> None:
         "partial": False, "mock": task["mock"],
         "engine": "mock_engine" if task["mock"] else find_engine().name,
         "opts": task["opts"],
+        "mode": task.get("mode") or {},
         "created_at": task["created_at"], "started_at": task["started_at"],
         "ended_at": None, "duration_sec": None,
         "output_name": None, "error": "", "cmd": task["cmd"],
@@ -555,6 +642,8 @@ def _archive(task: dict, status: str | None = None) -> None:
             "mock": task["mock"],
             "engine": "mock_engine" if task["mock"] else find_engine().name,
             "opts": task["opts"],
+            # ★ T3：模式/计划随归档落盘 —— 服务重启 / resume / 历史对话都能看到当时的选择。
+            "mode": task.get("mode") or {},
             "created_at": task["created_at"], "started_at": task["started_at"],
             "ended_at": task["ended_at"],
             "duration_sec": (round(task["ended_at"] - task["started_at"], 1)
@@ -619,7 +708,8 @@ def _archive_layers(task: dict, stamp: str, status: str | None = None) -> None:
 
 
 # ── 任务生命周期 ─────────────────────────────────────────────────
-def start_task(question: str, opts: dict | None = None) -> str:
+def start_task(question: str, opts: dict | None = None,
+               mode_info: dict | None = None) -> str:
     question = (question or "").strip()
     if not question:
         raise ValueError("question 不能为空")
@@ -660,6 +750,8 @@ def start_task(question: str, opts: dict | None = None) -> str:
         "id": tid,
         "question": question,
         "opts": opts,
+        # ★ T3：模式/计划回显（POST 响应 + GET 单任务 + 重试/resume 都不丢）
+        "mode": dict(mode_info) if isinstance(mode_info, dict) else {},
         "status": status,
         "mock": _is_mock(opts),
         "created_at": time.time(),
@@ -693,7 +785,8 @@ def start_task(question: str, opts: dict | None = None) -> str:
 
 
 def start_cached_task(question: str, opts: dict | None = None,
-                      source: dict | None = None) -> str:
+                      source: dict | None = None,
+                      mode_info: dict | None = None) -> str:
     """创建一个“已完成”的缓存任务（不启动引擎，复用已验证产物）。"""
     question = (question or "").strip()
     source = dict(source or {})
@@ -702,6 +795,7 @@ def start_cached_task(question: str, opts: dict | None = None,
         "id": tid,
         "question": question,
         "opts": dict(opts or {}),
+        "mode": dict(mode_info) if isinstance(mode_info, dict) else {},
         "status": "done",
         "mock": False,
         "created_at": time.time(),
@@ -926,6 +1020,25 @@ def list_tasks() -> list[dict]:
     for t in items:
         row = {k: v for k, v in t.items()
                if not k.startswith("_") and k != "before_outputs"}
+        # ★ T3：列表接口只回 mode 摘要（完整 plan 走单任务接口），避免每次轮询
+        #   /api/tasks 把每条任务的 plan 都吐一遍。
+        _mode = row.get("mode")
+        if isinstance(_mode, dict) and _mode:
+            _full = _mode.get("plan") if isinstance(_mode.get("plan"), dict) else {}
+            row["mode"] = {
+                "id": _mode.get("id") or _full.get("mode_id") or "",
+                "requested": _mode.get("requested") or "",
+                "tier": _mode.get("tier") or _full.get("tier") or "",
+                "policy": _mode.get("policy") or _full.get("policy") or "",
+                "engine_mode": _mode.get("engine_mode") or _full.get("engine_mode") or "",
+                "quality_policy": (_mode.get("quality_policy")
+                                   or _full.get("quality_policy") or ""),
+                "budget_decision": ((_mode.get("budget_guard") or {}).get("decision")
+                                    if isinstance(_mode.get("budget_guard"), dict) else ""),
+                "reason": str(_mode.get("reason")
+                              or _full.get("reason") or "")[:300],
+                "has_plan": bool(_full),
+            }
         if row.get("status") == "queued":
             row["queue_pos"] = queue_pos.get(str(t.get("id")), 0)
         out.append(row)

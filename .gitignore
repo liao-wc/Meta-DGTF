@@ -90,3 +90,21 @@ cache/
 dgtf_app/runs/
 runs/
 
+# ── V2.2.3 / App 2.0.24 新增的生成物（本地保留，不进公开仓库）──────────
+# ① stage 数据集：可由 scripts/local_model/build_dgtf_stage_dataset.py 从 outputs/*.packed.json
+#    重建（21MB 级），属「内部数据」，不随源码分发；dataset_stats.json 保留作读数证据。
+llm_sft/dgtf_stage/
+llm_sft/dgtf_stage_demo/
+# ② 道生 stage LoRA 适配器权重：项目口径「模型权重不随仓库分发」；
+#    adapter_config.json / README.md / 训练 metrics 与 loss 曲线仍跟库（可复现/可审阅）。
+llm_sft/adapter_dgtf_*/adapter_model.safetensors
+llm_sft/adapter_dgtf_*/tokenizer.json
+llm_sft/adapter_dgtf_*/chat_template.jinja
+# ③ 本地推理服务的运行态日志/缓存
+llm_sft/local_llm/
+# ④ 训练过程日志（metrics/曲线已保留）
+llm_sft/_train_*.log
+# ⑤ A/B 真跑的过程日志（数值已落 docs/ab_results.jsonl；probe JSON 在 outputs/ 内）
+docs/abrun_*.log
+
+

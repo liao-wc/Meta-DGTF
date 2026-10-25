@@ -161,3 +161,28 @@ PROBE PASS 39 / FAIL 0
 3. **帕累托最优**：app 现在支持通过 `profile` 选择 `方案F-帕累托最优.yaml`，但默认仍走 `dgtf_config.yaml`；尚未用实测延迟/质量/成本自动计算帕累托前沿。
 4. **后台 job**：进程内存态；app 服务重启会丢失进行中的 auto/autofix job。
 5. **健康检查**：`/api/health` 已复测 `ok=true`，模块 12/12。
+
+## 10. 道生专属模式映射（T3，2026-10-25）
+
+明细契约见 [app_daosheng_mode.md](app_daosheng_mode.md)；本节只补「引擎 ↔ app」映射。
+
+| 引擎侧 | app 侧 | 传输方式 |
+|---|---|---|
+| `--config configs/道生专属模式.yaml`（runtime.web/thinking/effort=auto、actions.parallel_mode=B、output.self_check_mode/dual_judge_mode=auto） | `daosheng_mode.apply_plan()` 把 `opts.profile=道生专属模式.yaml` 交给 `runner.start_task` → `build_cmd --config` | 预设文件（引擎 `load_config` 与 DEFAULT_CONFIG 深合并） |
+| `--route/--rounds/--parallel/--web/--thinking/--effort` | plan 以 **setdefault** 落 opts（显式用户 opts 优先）；质量档 rounds=auto=引擎自适应 | `_ARG_SPEC` 透传 |
+| `--self-check-mode/--dual-judge-mode`（V2.2.3 新增 CLI） | `engine_runner._ARG_SPEC` 注册 + `engine_capabilities()` 能力门控；不支持则**跳过=缺省** | CLI（仅显式非 auto 值） |
+| `--history-fusion auto/on/off`（V2.2.2 已有） | 能力探测通过即透传；auto=引擎默认 | CLI |
+| 引擎 EML 记忆 `dgtf_memory/{MEMORY.md,episodes.jsonl,playbook.jsonl}` | `daosheng_mode.read_history()/memory_summary()` **只读**聚合，相关性摘要 ≤1600 字，仅项目题注入；不写回 | app 读取 |
+| 本地推理服务 127.0.0.1:8772（local-smith） | `local_llm_route()`：GET /health + POST /generate(stage=route)，总预算 1.5s，fail-open → 子进程 → 规则 | HTTP |
+| M4 质量预测（`dgtf_v2.mode_fusion/predictor`） | `m4_prediction()` 结果进入 plan（first_mode/quality_prediction），预算守卫可降级 fast | Python import |
+| 四层 `0/1/both/all` | plan.route 默认四层全开；本地模型/规则可裁层 | opts.route |
+
+API 变化：`POST /api/tasks` 新增顶层 `mode`（`auto` 默认/`daosheng`/`daosheng_fast`/`standard`）；
+201 响应、`GET /api/tasks/<id>`、`GET /api/tasks`（摘要）与 retry/resume 均回显
+`mode{id,tier,policy,engine_mode,quality_policy,reason,context_injected,budget_guard,plan}`。
+`mode` 同步落 `opts._mode_request`、活痕迹与终态归档 run.json，服务重启/重试不丢。
+
+实测：selftest 基线 371 → **443 PASS / 0 FAIL**（新增 ★T3 72 条）；mock 端到端 201；
+`scripts/app_daosheng_check.py` 10/10；V2.2.3 `load_config` 实测预设键生效
+（self_check_mode=auto / dual_judge_mode=auto / parallel_mode=B / l0_v2_mode 保持出厂 archive）；
+真实 API 运行 0 次。

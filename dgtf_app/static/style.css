@@ -617,8 +617,8 @@ textarea#question::placeholder{color:var(--t3)}
 /* ★ R24：输入框**不出滚动条**（内容变高由 JS 撑高，不靠滚动） */
 textarea#question{scrollbar-width:none;-ms-overflow-style:none}
 textarea#question::-webkit-scrollbar{width:0;height:0;display:none}
-/* 输入内容与占位都**居中**（用户要求「对话框内容居中显示、问题居中输入」） */
-textarea#question{text-align:center}
+/* 输入内容与占位**左对齐**（用户要求：提示语与输入指针都靠左） */
+textarea#question{text-align:left}
 .composer-row{display:flex;align-items:center;gap:8px;padding-top:4px}
 /* 功能胶囊：点一下开 / 再点关（不点 = 交给引擎 auto 自决） */
 /* 胶囊与圆形按钮**统一尺寸**（同 34px 高、全圆角、同边框），文字统一白色 */

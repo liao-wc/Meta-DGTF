@@ -1,0 +1,132 @@
+# ============================================================
+# Meta-DGTF-道生三阶模型 · 「道生专属模式」App 预设
+# ============================================================
+# 生成：2026-10-25（T3 App 集成）
+# 定位：App 任务接口 mode="daosheng" 的**项目专属调度预设**。
+#
+# 这个文件同时承担两件事：
+#   ① `app_daosheng:` 段 = App 侧 plan 生成器的**唯一数据源**
+#      （dgtf_app/daosheng_mode.py 读取；改这里即可调整模式，不用改代码）；
+#   ② 下面的 `runtime:` / `actions:` / `output:` = **引擎可识别子集**。
+#      App 会把本文件作为 `--config` profile 传给引擎（engine_runner.profile_path），
+#      引擎 `load_config` 对 DEFAULT_CONFIG 做深合并 ⇒ 未写的键全部保持出厂默认。
+#
+# 零行为差边界：
+#   · 本预设**只在显式 mode=daosheng / 项目相关题的 auto 分流**时使用；
+#     普通任务继续走 dgtf_config.yaml + 既有 quality_policy 全自动链路。
+#   · `output.self_check_mode` / `output.dual_judge_mode` 是 V2.2.3 新键；
+#     V2.2.2 及更早引擎会**忽略未知键**（不报错、不改变行为）。
+#     App 侧还有第二道保险：CLI 透传前做**引擎能力探测**，不支持就不传 flag。
+#
+# 成本取舍（重要）：
+#   · 质量档默认 rounds=auto（交给引擎自适应），**不硬编码高圈数**。
+#     基线实测：全量 B 模式一次约 1.27M tokens / 墙钟约 1064s / 约 ¥2~4；
+#     App 预算守卫在余额 < ¥8 时自动降级 daosheng_fast（低圈 + thinking off）。
+#   · 固定高圈 `rounds_quality` 只在「预算守卫 ok（余额 ≥ ¥8）且用户显式
+#     quality_first=true」时使用；否则它只是可审计的备选项。
+#   · `l0_v2_curate / l0_v2_mode / merge_expand / all_v2 / one_v2 / both_v2 /
+#     zero_v2` 等既有开关**刻意不写**：保持 dgtf_config.yaml 出厂默认，
+#     避免本预设悄悄改掉已在跑批里验证过的行为。
+# ============================================================
+
+# ------------------------------------------------------------
+# ① App 计划生成器数据源
+# ------------------------------------------------------------
+app_daosheng:
+  schema: "metadgtf.app_daosheng.v1"
+  version: "1.0.0"
+
+  # ---- 调度基线（App 以 setdefault 落 opts：显式 opts 永远优先）----
+  # 四层全开：道生专属模式面向项目研究题，缺层=叙事不闭环。
+  route: "0,1,both,all"
+  # 圈数：默认 auto = 交给引擎自适应（按题型/成本/历史接管）。
+  rounds: auto
+  # 质量档固定高圈（仅 budget_guard=ok 且 quality_first=true 时启用）；
+  # 参考语义：0 修行 3 圈 / 1 研究 3 圈 / both 对撞 4 圈 / all 元 4 圈。
+  rounds_quality: "0:3,1:3,both:4,all:4"
+  # 便宜档固定低圈（budget_guard 触发 degrade/warn 时启用）：
+  # 研究层保 3 圈（证据收敛最吃圈），修行/对撞/元压到 2 圈。
+  rounds_fast: "0:2,1:3,both:2,all:2"
+  # 并行模式：B 是历史实测质量/墙钟双优档（quality 1.0 / 1064s）。
+  parallel: B
+  # 以下四项 auto = 不透传，交给引擎/配置自决（零行为差的前提）。
+  web: auto
+  thinking: auto
+  effort: auto
+  # V2.2.3 机制键：auto = 确定性核 + 条件式 LLM（引擎支持时 App 才透传/写配置）。
+  self_check_mode: auto
+  dual_judge_mode: auto
+  # 历史谱系融合：auto 交给引擎；引擎 V2.2.2+ 已有 --history-fusion auto/on/off。
+  history_fusion: auto
+
+  # ---- 质量策略（App 层 quality_policy 的取值；不是引擎键）----
+  # project：项目相关题 → 项目背景 RAG + 引用追溯（auto:verified 语义）；
+  # fact   ：通用事实题 → 官方联网 + 失败自动补跑一次；
+  # other  ：其它通用题 → 稳定档（不注入背景、默认不联网）。
+  quality_policy:
+    project: "auto:verified"
+    fact: "auto:web-retry"
+    other: "auto:stable"
+
+  # ---- 预算守卫（Lead 决策 3：只用本地读数，fail-open，绝不因余额查询失败拒任务）----
+  budget:
+    # deepseek-flash 混合单价估算（缓存未命中输入 $0.15/M + 输出 $0.6/M 的保守混合）。
+    cny_per_million_tokens: 2.0
+    # 余额 < 8 元：自动降级 daosheng_fast（plan.reason 写明原因）。
+    degrade_below_cny: 8.0
+    # 余额 < 4 元：仍允许创建任务，但 plan 明确告警（decision=warn）。
+    warn_below_cny: 4.0
+    # 无历史读数时的估算 tokens（B 模式实测中位 ~1.3M）。
+    est_tokens_default: 1300000
+    # 引擎预算上限（packed.json → budget.raw_max_tokens；缺省 2,000,000）。
+    raw_max_tokens_fallback: 2000000
+
+  # ---- 历史读数（episodes.jsonl / playbook.jsonl / MEMORY.md）----
+  history:
+    episodes_limit: 80
+    min_samples: 5
+  memory:
+    # 注入上限：只给「项目连续性」最小摘要，防止把无关内容塞进 prompt。
+    max_chars: 1600
+    max_lessons: 2          # MEMORY.md active 经验条数
+    max_playbook: 2         # playbook.jsonl 经验条数
+    episodes_recent: 80     # 用于聚合读数的最近跑次数
+    cache_entries: 64       # 摘要缓存条数（按问题 + 文件 mtime）
+
+  # ---- 本地推理服务（local-smith 提供；fail-open 非阻塞）----
+  local_llm:
+    enabled: true
+    url: "http://127.0.0.1:8772"
+    stage: route
+    max_new_tokens: 96
+    temperature: 0.0
+    # 总预算 1.5s（/health 0.6s + /generate 剩余）；绝不让建任务被它拖慢。
+    total_timeout_s: 1.5
+    health_timeout_s: 0.6
+    # 健康探测缓存（成功/失败都缓存），避免每个任务都等一次超时。
+    health_cache_s: 30
+
+  # ---- M4 质量预测（dgtf_v2.mode_fusion + quality_predictor）----
+  m4:
+    enabled: true
+
+# ------------------------------------------------------------
+# ② 引擎可识别子集（load_config 深合并；未列出的键全部保持出厂默认）
+# ------------------------------------------------------------
+runtime:
+  web: auto
+  thinking: auto
+  effort: auto
+
+actions:
+  # 道生专属默认并行档：B（质量/墙钟双优；只改模式，不改任何动作开关）
+  parallel_mode: "B"
+
+output:
+  # ★ V2.2.3 新增（默认 llm = 零行为差）；旧引擎忽略未知键。
+  # ★★ 2026-10-25 全量 A/B 负结果（见 docs/ab_evidence_20261025.md）：
+  #    auto_narr + self_check thinking off 变体 quality 0.9615→0.2632（ready True→False），
+  #    显著降质 ⇒ 道生专属模式（质量优先档）固定 llm。
+  #    实验档（auto_narr/auto/local）只允许在显式 opt-in 的预算实验中使用。
+  self_check_mode: llm
+  dual_judge_mode: llm

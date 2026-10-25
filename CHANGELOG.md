@@ -10,6 +10,43 @@
 > （`check_v72_changelog_hygiene`）；代码文件里**不得**再出现版本段
 > （`check_v1237_changelog_outside_code`）。
 
+V2.2.3
+
+【主题】细粒度自省三档 + 环节 thinking 预算 + 本地自省端点 + 道生专属模式（App 2.0.24）。
+
+【改变】
+- 引擎新增确定性自省核 `dgtf_engine/dgtf_v2/fine_check.py`：纯函数 audit(view_dict,cfg)，覆盖「此处未生」计数/复述率（字符 2-gram Jaccard）/可疑候选与 & 的代理判据/触发器/决策投影/trace；零 IO、零 LLM，可直接回放历史 packed。
+- 自省档位 output.self_check_mode 五档：llm（默认，零行为差）/ auto_narr（决策仍 LLM、prompt 字符 -29.9%、输出上限 -60%）/ local（本地端点，失败/低置信/不一致三重回退 LLM）/ auto（实验档，不进默认）/ off。
+- 双判档位 output.dual_judge_mode：llm（默认）/ cache（判定缓存，同题重跑零风险）/ auto（cache+结构先验，opt-in）。
+- 环节级 thinking 预算 output.thinking_stage_overrides（CLI --stage-thinking）；本地端点 api.local_llm（CLI --local-llm-url）。
+- CLI 新增 --self-check-mode / --dual-judge-mode / --stage-thinking / --local-llm-url（全部默认不改变行为）。
+- tests_fine_check 48 条机制判据（含默认档 system+user 字节级一致、auto 0 调用、auto_narr 收窄、local 成功/失败契约、cache 全命中、thinking 优先级）；fast_gate 与既有 tests_* 引用升级 V2.2.3；dgtf_config.yaml 头部版本同步。
+- 新增 scripts/eval_self_check_replay.py（177 packs/577 views 离线回放）、docs/engine_fine_check_evidence.md、docs/engine_mechanisms_registry.md、V2.2.3-发布报告.md、docs/releases/V2.2.3.md。
+- App 2.0.24：新增「道生专属模式」mode=daosheng（configs/道生专属模式.yaml + dgtf_app/daosheng_mode.py）：plan 可审计（模式/联网/质量策略/预算守卫/本地模型回退/记忆注入）、201 与 GET/retry 全链路回显 mode、预算守卫（<¥8 降 fast、<¥4 告警、查询失败 fail-open）、本地模型三级回退、项目记忆注入门控；selftest 444/0。
+- 新增预算/验证工具：scripts/ab_bench.py（真跑 A/B + 余额守门 + 花费落账 + pair 差）、scripts/lead_probe_run.py（分阶段 prompt/completion/reasoning/cache 探针）、scripts/lead_offline_labels.py、scripts/lead_verify_finecheck.py、scripts/lead_prefix_cache_test.py。
+
+【验证】
+- 门禁：fast_gate 12/12（audit70 71/0）；V2 tests 40/40（582 checks）；App selftest 444/0；app_daosheng_check 10/10。
+- 离线回放（177 packs/577 views）：auto 静态跳过率 23.7%（<50% 线 ⇒ 实验档）；unsaid_count 精确 82.8% / ±1 91.9%；双源闸判定相同 94.8%（漏挂 5.2%）；ing_rephrased 召回 0.035、suspicious_candidates 单圈索引 F1 0.330 ⇒ 确定性核**不接管决策字段**；Lead 独立复核口径一致（跳过率 24.3%、carry F1 0.888）。
+- dual_judge 跨跑候选重复仅 0.64%（命中时 position 一致率 100%）；结构先验高置信覆盖 23.0%、准确率 87.0% ⇒ 仅 opt-in。
+- 前缀缓存机制实测：同 system + 不同 user 第二次命中 1024/1269 tokens、TTL>8min；变体前置到 system 头则 0 命中 ⇒ prompt 静态段前置登记为下一轮优化项。
+- 真实 A/B（V2.2.3，同题同配置，详见 docs/ab_evidence_20261025.md）：
+  - B0 基线（self_check=llm）：quality **0.9615** / verified / answer_ready=True / tokens 1,788,798 / calls 177；
+  - B1 变体（auto_narr，收窄 prompt）：quality **0.2632** / unverified / ready=False / tokens 1,457,052 / calls 159
+    （self_check token -27%、耗时 -52%）⇒ **负结果，不采纳**；auto_narr 降为实验档，生产默认保持 `llm`；
+  - B2 对照复跑（同 B0）：quality **0.9860** / tokens 1,846,074 / calls 182 ⇒ 单跑方差范围；
+    且基线 `self_check` thinking 本就关闭（`api.thinking.stages.self_check=disabled`），
+    故 `--stage-thinking self_check=disabled` 是 no-op，B1 落差可干净归因到 auto_narr 的
+    「收窄 prompt + 去 multi-turn 历史」；
+  - 另有一次 rounds 手工指定失败的无效跑（r1-baseline-default，预算硬顶截断，valid=false），已留档不进对照。
+  - 前缀缓存实测：全量跑 prompt cache hit ratio **13.9%~17.6%**（已自动省约 ¥0.2/跑）；
+    prompt 静态段前置可进一步省，但需质量 A/B，列为下一轮 opt-in 项。
+
+【未做】
+- prefix-cache prompt 重排（需 A/B 质量对照，下一轮 opt-in）。
+- 本地模型 1.5B 适配（本轮受 6GB 卡与时间盒限制，交付 0.5B 端点 + 契约；1.5B 训练留待下一轮长窗口）。
+- auto 档跳过率上界 23.7%，未达 50% 验收线 ⇒ 不默认启用、不承诺指标。
+
 V2.2.2
 
 【主题】职责读数根治 + unsaid 双源闸 + DeepSeek 官方联网默认 + 帕累托先行模块。

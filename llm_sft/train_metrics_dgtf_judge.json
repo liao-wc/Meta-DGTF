@@ -1,0 +1,432 @@
+{
+ "stage": "dual_judge",
+ "variant": "mixed",
+ "model": "local_model/models/Qwen2.5-0.5B-Instruct",
+ "adapter": "llm_sft\\adapter_dgtf_judge_05b_v1",
+ "train_n": 60,
+ "val_n": 10,
+ "epochs": 1,
+ "steps": 60,
+ "batch": 1,
+ "accum": 8,
+ "lr": 0.00015,
+ "max_len": 1536,
+ "lora": {
+  "r": 16,
+  "alpha": 32,
+  "target_modules": [
+   "q_proj",
+   "k_proj",
+   "v_proj",
+   "o_proj",
+   "gate_proj",
+   "up_proj",
+   "down_proj"
+  ],
+  "dropout": 0.05
+ },
+ "fp32_gemm_patched_layers": 504,
+ "gradient_checkpointing": true,
+ "dtype": "fp16 weights + fp32 GEMM",
+ "trainable_params": 8798208,
+ "prompt_len": {
+  "p50": 1265,
+  "p95": 1392
+ },
+ "target_len": {
+  "p50": 150
+ },
+ "truncated_samples": 19,
+ "best_val_loss": 1.77238,
+ "best_step": 60,
+ "epoch_history": [
+  {
+   "epoch": 1,
+   "train_loss": 1.73984,
+   "val_loss": 1.77238,
+   "steps": 60,
+   "sec": 240.0
+  }
+ ],
+ "loss_curve": [
+  {
+   "step": 1,
+   "epoch": 1,
+   "loss": 2.30209,
+   "lr": 3e-05
+  },
+  {
+   "step": 2,
+   "epoch": 1,
+   "loss": 1.64108,
+   "lr": 4.5e-05
+  },
+  {
+   "step": 3,
+   "epoch": 1,
+   "loss": 1.77423,
+   "lr": 6e-05
+  },
+  {
+   "step": 4,
+   "epoch": 1,
+   "loss": 1.58185,
+   "lr": 7.5e-05
+  },
+  {
+   "step": 5,
+   "epoch": 1,
+   "loss": 1.64224,
+   "lr": 9e-05
+  },
+  {
+   "step": 6,
+   "epoch": 1,
+   "loss": 3.19996,
+   "lr": 0.000105
+  },
+  {
+   "step": 7,
+   "epoch": 1,
+   "loss": 1.67989,
+   "lr": 0.00012
+  },
+  {
+   "step": 8,
+   "epoch": 1,
+   "loss": 2.72349,
+   "lr": 0.000135
+  },
+  {
+   "step": 9,
+   "epoch": 1,
+   "loss": 1.74893,
+   "lr": 0.00015
+  },
+  {
+   "step": 10,
+   "epoch": 1,
+   "loss": 1.96109,
+   "lr": 0.00015
+  },
+  {
+   "step": 11,
+   "epoch": 1,
+   "loss": 2.13918,
+   "lr": 0.00014987
+  },
+  {
+   "step": 12,
+   "epoch": 1,
+   "loss": 1.8464,
+   "lr": 0.00014947
+  },
+  {
+   "step": 13,
+   "epoch": 1,
+   "loss": 1.53002,
+   "lr": 0.0001488
+  },
+  {
+   "step": 14,
+   "epoch": 1,
+   "loss": 1.43527,
+   "lr": 0.00014788
+  },
+  {
+   "step": 15,
+   "epoch": 1,
+   "loss": 0.92132,
+   "lr": 0.0001467
+  },
+  {
+   "step": 16,
+   "epoch": 1,
+   "loss": 1.32398,
+   "lr": 0.00014526
+  },
+  {
+   "step": 17,
+   "epoch": 1,
+   "loss": 1.37932,
+   "lr": 0.00014358
+  },
+  {
+   "step": 18,
+   "epoch": 1,
+   "loss": 1.23652,
+   "lr": 0.00014165
+  },
+  {
+   "step": 19,
+   "epoch": 1,
+   "loss": 1.85753,
+   "lr": 0.00013949
+  },
+  {
+   "step": 20,
+   "epoch": 1,
+   "loss": 1.74988,
+   "lr": 0.00013711
+  },
+  {
+   "step": 21,
+   "epoch": 1,
+   "loss": 2.15315,
+   "lr": 0.00013451
+  },
+  {
+   "step": 22,
+   "epoch": 1,
+   "loss": 0.98886,
+   "lr": 0.00013171
+  },
+  {
+   "step": 23,
+   "epoch": 1,
+   "loss": 2.01513,
+   "lr": 0.00012871
+  },
+  {
+   "step": 24,
+   "epoch": 1,
+   "loss": 1.35478,
+   "lr": 0.00012553
+  },
+  {
+   "step": 25,
+   "epoch": 1,
+   "loss": 2.08255,
+   "lr": 0.00012218
+  },
+  {
+   "step": 26,
+   "epoch": 1,
+   "loss": 1.78653,
+   "lr": 0.00011867
+  },
+  {
+   "step": 27,
+   "epoch": 1,
+   "loss": 0.91835,
+   "lr": 0.00011502
+  },
+  {
+   "step": 28,
+   "epoch": 1,
+   "loss": 1.82281,
+   "lr": 0.00011124
+  },
+  {
+   "step": 29,
+   "epoch": 1,
+   "loss": 1.77046,
+   "lr": 0.00010735
+  },
+  {
+   "step": 30,
+   "epoch": 1,
+   "loss": 2.05376,
+   "lr": 0.00010336
+  },
+  {
+   "step": 31,
+   "epoch": 1,
+   "loss": 2.52658,
+   "lr": 9.929e-05
+  },
+  {
+   "step": 32,
+   "epoch": 1,
+   "loss": 1.58758,
+   "lr": 9.515e-05
+  },
+  {
+   "step": 33,
+   "epoch": 1,
+   "loss": 0.51793,
+   "lr": 9.096e-05
+  },
+  {
+   "step": 34,
+   "epoch": 1,
+   "loss": 2.34548,
+   "lr": 8.674e-05
+  },
+  {
+   "step": 35,
+   "epoch": 1,
+   "loss": 1.5781,
+   "lr": 8.25e-05
+  },
+  {
+   "step": 36,
+   "epoch": 1,
+   "loss": 1.3163,
+   "lr": 7.826e-05
+  },
+  {
+   "step": 37,
+   "epoch": 1,
+   "loss": 1.80601,
+   "lr": 7.404e-05
+  },
+  {
+   "step": 38,
+   "epoch": 1,
+   "loss": 1.23146,
+   "lr": 6.985e-05
+  },
+  {
+   "step": 39,
+   "epoch": 1,
+   "loss": 2.31237,
+   "lr": 6.571e-05
+  },
+  {
+   "step": 40,
+   "epoch": 1,
+   "loss": 1.14416,
+   "lr": 6.164e-05
+  },
+  {
+   "step": 41,
+   "epoch": 1,
+   "loss": 1.42217,
+   "lr": 5.765e-05
+  },
+  {
+   "step": 42,
+   "epoch": 1,
+   "loss": 1.1496,
+   "lr": 5.376e-05
+  },
+  {
+   "step": 43,
+   "epoch": 1,
+   "loss": 1.49681,
+   "lr": 4.998e-05
+  },
+  {
+   "step": 44,
+   "epoch": 1,
+   "loss": 2.41224,
+   "lr": 4.633e-05
+  },
+  {
+   "step": 45,
+   "epoch": 1,
+   "loss": 1.54726,
+   "lr": 4.282e-05
+  },
+  {
+   "step": 46,
+   "epoch": 1,
+   "loss": 1.94718,
+   "lr": 3.947e-05
+  },
+  {
+   "step": 47,
+   "epoch": 1,
+   "loss": 1.59847,
+   "lr": 3.629e-05
+  },
+  {
+   "step": 48,
+   "epoch": 1,
+   "loss": 1.72901,
+   "lr": 3.329e-05
+  },
+  {
+   "step": 49,
+   "epoch": 1,
+   "loss": 1.68234,
+   "lr": 3.049e-05
+  },
+  {
+   "step": 50,
+   "epoch": 1,
+   "loss": 2.31494,
+   "lr": 2.789e-05
+  },
+  {
+   "step": 51,
+   "epoch": 1,
+   "loss": 1.90492,
+   "lr": 2.551e-05
+  },
+  {
+   "step": 52,
+   "epoch": 1,
+   "loss": 2.02655,
+   "lr": 2.335e-05
+  },
+  {
+   "step": 53,
+   "epoch": 1,
+   "loss": 1.28513,
+   "lr": 2.142e-05
+  },
+  {
+   "step": 54,
+   "epoch": 1,
+   "loss": 1.93424,
+   "lr": 1.974e-05
+  },
+  {
+   "step": 55,
+   "epoch": 1,
+   "loss": 2.48479,
+   "lr": 1.83e-05
+  },
+  {
+   "step": 56,
+   "epoch": 1,
+   "loss": 1.78493,
+   "lr": 1.712e-05
+  },
+  {
+   "step": 57,
+   "epoch": 1,
+   "loss": 1.89897,
+   "lr": 1.62e-05
+  },
+  {
+   "step": 58,
+   "epoch": 1,
+   "loss": 1.50443,
+   "lr": 1.553e-05
+  },
+  {
+   "step": 59,
+   "epoch": 1,
+   "loss": 1.93822,
+   "lr": 1.513e-05
+  },
+  {
+   "step": 60,
+   "epoch": 1,
+   "loss": 1.34164,
+   "lr": 1.5e-05
+  }
+ ],
+ "gen_smoke": {
+  "json_ok": 0,
+  "n": 2,
+  "samples": [
+   {
+    "pred": "{\"judgments\":[{\"idx\":1,\"position\":\"0\",\"why_position\":\"锚点未提归层权\"},{\"idx\":2,\"position\":\"0\",\"why_position\":\"锚点未提归层权\"},{\"idx\":3,\"position\":\"0\",\"why_position\":\"锚点未提归层权\"},{\"idx\":4,\"position\":\"0\",\"why_position\":\"锚点未提归层权\"},{\"idx\":5,\"position\":\"0\",\"why_position\":\"锚点未提归",
+    "gold": "{\"judgments\":[{\"idx\":1,\"position\":\"0\",\"why_position\":\"锚点未触及提交者与合并者字段\"},{\"idx\":2,\"position\":\"0\",\"why_position\":\"锚点未提两分发口归属差异\"},{\"idx\":3,\"position\":\"0\",\"why_position\":\"锚点只说无主，未区分不认领与不署名\"},{\"idx\":4,\"position\":\"1\",\"why_position\":\"锚点已指向归层权为排序前置判据\"},{\"idx\":5,\"position\":\"0\",\"why_position\":\"锚点未提测试先红反推路径\"},{"
+   },
+   {
+    "pred": "比例反向：产流侧先越限，输送侧先减压\n    - 法律条款互斥：产流侧先越限，输送侧先减压\n    - 其他：其他未决项\n  无直接可判定方向\n\n### 【立场】\n  - 本体：先扩容还是先海绵？先做还是先做？\n  - 本体：先做还是先做？先做还是",
+    "gold": "{\"judgments\":[{\"idx\":1,\"position\":\"0\",\"why_position\":\"两属性不同，缺换算，不可合并排序\"},{\"idx\":2,\"position\":\"0\",\"why_position\":\"参照不需权力，拒绝需冻结权，不能同门槛\"},{\"idx\":3,\"position\":\"both\",\"why_position\":\"翻转视三件套是否齐备\"},{\"idx\":4,\"position\":\"0\",\"why_position\":\"空间与时间相加不同步，无换算不可合并\"},{\"idx\":5,\"position\":\"0\",\"why_position\":\"侧别随指标翻转，"
+   }
+  ]
+ },
+ "peak_vram_gb": 4.2,
+ "train_sec": 282.1,
+ "samples_per_sec": 0.213,
+ "tokens_per_sec_est": 287.9,
+ "note": "LoRA SFT：引擎同构 prompt → stage JSON；fp16 权重 + fp32 GEMM （SM75 HGEMM 慢的适配）；grad checkpointing；按问题分组留出"
+}
