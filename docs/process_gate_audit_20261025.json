@@ -1,7 +1,7 @@
 {
- "n_packs_with_trace": 195,
- "n_fact": 128,
- "all_standard_true": 113,
+ "n_packs_with_trace": 198,
+ "n_fact": 130,
+ "all_standard_true": 115,
  "waived_runs": 8,
  "waived_unsettled": {
   "1": 4,
@@ -1913,6 +1913,33 @@
   {
    "file": "20261026_031517_港珠澳大桥全长多少公里.packed.json",
    "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261026_032916_民法典规定多少岁成年.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261026_032930_2024年我国粮食总产量是多少亿斤.packed.json",
+   "qtype": "fact",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261026_033229_如何为人工智能校准价值坐标.packed.json",
+   "qtype": "decision",
    "standard_all": true,
    "notes": {},
    "layers_fail": [],
