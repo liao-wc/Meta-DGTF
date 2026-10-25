@@ -1,0 +1,210 @@
+{
+ "model": "D:\\Meta-DGTF-道生三阶模型\\local_model\\models\\Qwen2.5-0.5B-Instruct",
+ "adapters": {
+  "dual_judge": "llm_sft/adapter_dgtf_judge_05b_v2",
+  "self_check": "llm_sft/adapter_dgtf_selfcheck_05b_v2",
+  "self_check_min": "llm_sft/adapter_dgtf_selfcheck_05b_v2"
+ },
+ "loaded_adapters": {
+  "self_check": "llm_sft/adapter_dgtf_selfcheck_05b_v2",
+  "self_check_min": "llm_sft/adapter_dgtf_selfcheck_05b_v2",
+  "dual_judge": "llm_sft/adapter_dgtf_judge_05b_v2",
+  "route": "llm_sft/adapter_qwen05b_v1"
+ },
+ "gpu": "NVIDIA GeForce GTX 1660 Ti",
+ "torch": "2.14.1+cu126",
+ "limits": {
+  "dual_judge": 10,
+  "self_check": 8,
+  "self_check_min": 14
+ },
+ "note": "生成用 prefill(fp32 GEMM)+decode(fp16) 混合；confidence = 生成 token 平均概率，用于 QC 门控 τ 曲线",
+ "stages": {
+  "self_check_min": {
+   "stage": "self_check_min",
+   "base_model": false,
+   "n": 14,
+   "json_valid_rate": 0.857,
+   "latency_ms": {
+    "p50": 4755.8,
+    "p95": 10200.7,
+    "mean": 5455.5
+   },
+   "gen_tokens_per_sec": 6.22,
+   "errors": 0,
+   "gating": [
+    {
+     "tau": 0.8,
+     "coverage": 0.857,
+     "agreement": 0.0,
+     "n_covered": 12
+    },
+    {
+     "tau": 0.9,
+     "coverage": 0.0,
+     "agreement": null,
+     "n_covered": 0
+    },
+    {
+     "tau": 0.95,
+     "coverage": 0.0,
+     "agreement": null,
+     "n_covered": 0
+    }
+   ],
+   "samples": [
+    {
+     "id": "scmin::c20e5fa6::20261009_132409_新中国的成立时间是什么时候.packed::1",
+     "phase": "研究",
+     "ms": 3724.6,
+     "confidence": 0.8599,
+     "json": true,
+     "agree": 0.0
+    },
+    {
+     "id": "scmin::a7c4a721::20261010_023209_AI能否独立完成数字IC设计.packed::0",
+     "phase": "修行",
+     "ms": 4540.9,
+     "confidence": 0.8512,
+     "json": true,
+     "agree": 0.0
+    },
+    {
+     "id": "scmin::a7c4a721::20261010_023209_AI能否独立完成数字IC设计.packed::1",
+     "phase": "研究",
+     "ms": 10200.7,
+     "confidence": 0.8157,
+     "json": false,
+     "agree": 0.0
+    },
+    {
+     "id": "scmin::a7c4a721::20261010_023209_AI能否独立完成数字IC设计.packed::both",
+     "phase": "对撞",
+     "ms": 5796.3,
+     "confidence": 0.7948,
+     "json": true,
+     "agree": 0.0
+    },
+    {
+     "id": "scmin::a7c4a721::20261010_023209_AI能否独立完成数字IC设计.packed::all",
+     "phase": "元",
+     "ms": 4226.1,
+     "confidence": 0.843,
+     "json": true,
+     "agree": 0.0
+    },
+    {
+     "id": "scmin::cbc22817::20261010_075416_月亮的来源是什么.packed::0",
+     "phase": "修行",
+     "ms": 4294.7,
+     "confidence": 0.8589,
+     "json": true,
+     "agree": 0.0
+    }
+   ],
+   "wall_sec": 76.6,
+   "decision_all3_acc": 0.0,
+   "susp_set_acc": 0.0,
+   "susp_f1": 0.132,
+   "ing_rephrased_acc": 0.786,
+   "unsaid_is_escape_acc": 0.643,
+   "unsaid_count_mae": null,
+   "ing_rephrased_f1_true": 0.0,
+   "unsaid_is_escape_f1_true": 0.0,
+   "decision_field_mean_acc": 0.476,
+   "base": {
+    "stage": "self_check_min",
+    "base_model": true,
+    "n": 14,
+    "json_valid_rate": 0.0,
+    "latency_ms": {
+     "p50": 6504.8,
+     "p95": 8072.3,
+     "mean": 5400.5
+    },
+    "gen_tokens_per_sec": 8.62,
+    "errors": 0,
+    "gating": [
+     {
+      "tau": 0.8,
+      "coverage": 0.643,
+      "agreement": 0.0,
+      "n_covered": 9
+     },
+     {
+      "tau": 0.9,
+      "coverage": 0.143,
+      "agreement": 0.0,
+      "n_covered": 2
+     },
+     {
+      "tau": 0.95,
+      "coverage": 0.0,
+      "agreement": null,
+      "n_covered": 0
+     }
+    ],
+    "samples": [
+     {
+      "id": "scmin::c20e5fa6::20261009_132409_新中国的成立时间是什么时候.packed::1",
+      "phase": "研究",
+      "ms": 1510.6,
+      "confidence": 0.6011,
+      "json": false,
+      "agree": 0.0
+     },
+     {
+      "id": "scmin::a7c4a721::20261010_023209_AI能否独立完成数字IC设计.packed::0",
+      "phase": "修行",
+      "ms": 7425.6,
+      "confidence": 0.9402,
+      "json": false,
+      "agree": 0.0
+     },
+     {
+      "id": "scmin::a7c4a721::20261010_023209_AI能否独立完成数字IC设计.packed::1",
+      "phase": "研究",
+      "ms": 6251.8,
+      "confidence": 0.82,
+      "json": false,
+      "agree": 0.0
+     },
+     {
+      "id": "scmin::a7c4a721::20261010_023209_AI能否独立完成数字IC设计.packed::both",
+      "phase": "对撞",
+      "ms": 6504.8,
+      "confidence": 0.9416,
+      "json": false,
+      "agree": 0.0
+     },
+     {
+      "id": "scmin::a7c4a721::20261010_023209_AI能否独立完成数字IC设计.packed::all",
+      "phase": "元",
+      "ms": 6681.3,
+      "confidence": 0.8745,
+      "json": false,
+      "agree": 0.0
+     },
+     {
+      "id": "scmin::cbc22817::20261010_075416_月亮的来源是什么.packed::0",
+      "phase": "修行",
+      "ms": 1966.7,
+      "confidence": 0.4505,
+      "json": false,
+      "agree": 0.0
+     }
+    ],
+    "wall_sec": 75.8,
+    "decision_all3_acc": 0.0,
+    "susp_set_acc": 0.0,
+    "susp_f1": 0.0,
+    "ing_rephrased_acc": 0.0,
+    "unsaid_is_escape_acc": 0.0,
+    "unsaid_count_mae": null,
+    "ing_rephrased_f1_true": 0.0,
+    "unsaid_is_escape_f1_true": 0.0,
+    "decision_field_mean_acc": 0.0
+   }
+  }
+ }
+}

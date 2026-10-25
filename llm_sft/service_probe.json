@@ -1,0 +1,93 @@
+{
+ "health": {
+  "status": "ready",
+  "p50_ms": 1.8,
+  "max_ms": 1.9,
+  "gpu_mem_mb": 1042,
+  "adapters": {
+   "self_check": true,
+   "self_check_min": true,
+   "dual_judge": true,
+   "route": true
+  }
+ },
+ "generate": {
+  "self_check_min": {
+   "n": 2,
+   "p50_ms": 4261.2,
+   "p95_ms": 4261.2,
+   "mean_ms": 2139.5,
+   "json_ok": "2/2",
+   "confidence": 0.8599,
+   "sample_output": "{\"suspicious_candidates\":[1,2],\"ing_rephrased\":false,\"unsaid_is_escape\":false}",
+   "gold": "{\"suspicious_candidates\":[3],\"ing_rephrased\":false,\"unsaid_is_escape\":false}"
+  },
+  "self_check": {
+   "n": 2,
+   "p50_ms": 3901.3,
+   "p95_ms": 3901.3,
+   "mean_ms": 1951.8,
+   "json_ok": "2/2",
+   "confidence": 0.8599,
+   "sample_output": "{\"suspicious_candidates\":[1,2],\"ing_rephrased\":false,\"unsaid_is_escape\":false}",
+   "gold": "{\"suspicious_candidates\":[3],\"suspicious_amps\":[],\"ing_rephrased\":false,\"honest_about_empty\":true,\"unsaid_count\":2,\"unsaid_is_escape\":false,\"unsaid_where\":\"view×1、不可判定通道×1\",\"flow_verdict\":\"展开基本对称，但0端未"
+  },
+  "route": {
+   "n": 2,
+   "p50_ms": 3852.1,
+   "p95_ms": 3852.1,
+   "mean_ms": 1936.3,
+   "json_ok": "2/2",
+   "confidence": 0.947,
+   "sample_output": "{\"route\":[\"0\",\"1\"],\"rounds\":{\"0\":2,\"1\":2},\"why\":\"按问题结构选择层与圈数\"}",
+   "gold": null
+  }
+ },
+ "errors": {
+  "bad_stage": {
+   "http": 400,
+   "body": {
+    "code": "BAD_REQUEST",
+    "message": "stage 必须是 ('self_check', 'self_check_min', 'dual_judge', 'route')"
+   }
+  },
+  "timeout": {
+   "http": 503,
+   "body": {
+    "code": "TIMEOUT",
+    "message": "生成超过 timeout=1.0s"
+   },
+   "ms": 1056.5
+  },
+  "missing_input": {
+   "http": 400,
+   "body": {
+    "code": "BAD_REQUEST",
+    "message": "需要 text 或 messages"
+   }
+  }
+ },
+ "concurrency": {
+  "n": 3,
+  "wall_ms": 7263.9,
+  "results": [
+   {
+    "http": 200,
+    "ok": true,
+    "ms": 2185.2
+   },
+   {
+    "http": 200,
+    "ok": true,
+    "ms": 4666.8
+   },
+   {
+    "http": 200,
+    "ok": true,
+    "ms": 7262.6
+   }
+  ]
+ },
+ "port": 8772,
+ "tested_at": "2026-10-25 10:07:39"
+}

@@ -2,15 +2,15 @@
  "stage": "dual_judge",
  "variant": "mixed",
  "model": "local_model/models/Qwen2.5-0.5B-Instruct",
- "adapter": "llm_sft\\adapter_dgtf_judge_05b_v1",
- "train_n": 60,
- "val_n": 10,
+ "adapter": "llm_sft\\adapter_dgtf_judge_05b_v2",
+ "train_n": 110,
+ "val_n": 20,
  "epochs": 1,
- "steps": 60,
+ "steps": 110,
  "batch": 1,
  "accum": 8,
- "lr": 0.00015,
- "max_len": 1536,
+ "lr": 0.0001,
+ "max_len": 2048,
  "lora": {
   "r": 16,
   "alpha": 32,
@@ -30,384 +30,684 @@
  "dtype": "fp16 weights + fp32 GEMM",
  "trainable_params": 8798208,
  "prompt_len": {
-  "p50": 1265,
-  "p95": 1392
+  "p50": 1133,
+  "p95": 1592
  },
  "target_len": {
-  "p50": 150
+  "p50": 151
  },
- "truncated_samples": 19,
- "best_val_loss": 1.77238,
- "best_step": 60,
+ "truncated_samples": 0,
+ "best_val_loss": 1.48363,
+ "best_step": 110,
  "epoch_history": [
   {
    "epoch": 1,
-   "train_loss": 1.73984,
-   "val_loss": 1.77238,
-   "steps": 60,
-   "sec": 240.0
+   "train_loss": 1.66721,
+   "val_loss": 1.48363,
+   "steps": 110,
+   "sec": 695.0
   }
  ],
  "loss_curve": [
   {
    "step": 1,
    "epoch": 1,
-   "loss": 2.30209,
-   "lr": 3e-05
+   "loss": 2.4876,
+   "lr": 2e-05
   },
   {
    "step": 2,
    "epoch": 1,
-   "loss": 1.64108,
-   "lr": 4.5e-05
+   "loss": 1.95014,
+   "lr": 3e-05
   },
   {
    "step": 3,
    "epoch": 1,
-   "loss": 1.77423,
-   "lr": 6e-05
+   "loss": 2.33048,
+   "lr": 4e-05
   },
   {
    "step": 4,
    "epoch": 1,
-   "loss": 1.58185,
-   "lr": 7.5e-05
+   "loss": 1.70426,
+   "lr": 5e-05
   },
   {
    "step": 5,
    "epoch": 1,
-   "loss": 1.64224,
-   "lr": 9e-05
+   "loss": 1.43742,
+   "lr": 6e-05
   },
   {
    "step": 6,
    "epoch": 1,
-   "loss": 3.19996,
-   "lr": 0.000105
+   "loss": 2.31543,
+   "lr": 7e-05
   },
   {
    "step": 7,
    "epoch": 1,
-   "loss": 1.67989,
-   "lr": 0.00012
+   "loss": 1.72543,
+   "lr": 8e-05
   },
   {
    "step": 8,
    "epoch": 1,
-   "loss": 2.72349,
-   "lr": 0.000135
+   "loss": 2.35697,
+   "lr": 9e-05
   },
   {
    "step": 9,
    "epoch": 1,
-   "loss": 1.74893,
-   "lr": 0.00015
+   "loss": 2.32766,
+   "lr": 0.0001
   },
   {
    "step": 10,
    "epoch": 1,
-   "loss": 1.96109,
-   "lr": 0.00015
+   "loss": 1.69618,
+   "lr": 0.0001
   },
   {
    "step": 11,
    "epoch": 1,
-   "loss": 2.13918,
-   "lr": 0.00014987
+   "loss": 1.75011,
+   "lr": 9.998e-05
   },
   {
    "step": 12,
    "epoch": 1,
-   "loss": 1.8464,
-   "lr": 0.00014947
+   "loss": 2.41093,
+   "lr": 9.991e-05
   },
   {
    "step": 13,
    "epoch": 1,
-   "loss": 1.53002,
-   "lr": 0.0001488
+   "loss": 1.81171,
+   "lr": 9.98e-05
   },
   {
    "step": 14,
    "epoch": 1,
-   "loss": 1.43527,
-   "lr": 0.00014788
+   "loss": 1.4242,
+   "lr": 9.965e-05
   },
   {
    "step": 15,
    "epoch": 1,
-   "loss": 0.92132,
-   "lr": 0.0001467
+   "loss": 1.82621,
+   "lr": 9.945e-05
   },
   {
    "step": 16,
    "epoch": 1,
-   "loss": 1.32398,
-   "lr": 0.00014526
+   "loss": 1.88202,
+   "lr": 9.92e-05
   },
   {
    "step": 17,
    "epoch": 1,
-   "loss": 1.37932,
-   "lr": 0.00014358
+   "loss": 1.59311,
+   "lr": 9.892e-05
   },
   {
    "step": 18,
    "epoch": 1,
-   "loss": 1.23652,
-   "lr": 0.00014165
+   "loss": 1.69245,
+   "lr": 9.859e-05
   },
   {
    "step": 19,
    "epoch": 1,
-   "loss": 1.85753,
-   "lr": 0.00013949
+   "loss": 1.75587,
+   "lr": 9.821e-05
   },
   {
    "step": 20,
    "epoch": 1,
-   "loss": 1.74988,
-   "lr": 0.00013711
+   "loss": 1.25215,
+   "lr": 9.78e-05
   },
   {
    "step": 21,
    "epoch": 1,
-   "loss": 2.15315,
-   "lr": 0.00013451
+   "loss": 2.42159,
+   "lr": 9.734e-05
   },
   {
    "step": 22,
    "epoch": 1,
-   "loss": 0.98886,
-   "lr": 0.00013171
+   "loss": 2.16549,
+   "lr": 9.684e-05
   },
   {
    "step": 23,
    "epoch": 1,
-   "loss": 2.01513,
-   "lr": 0.00012871
+   "loss": 2.49478,
+   "lr": 9.63e-05
   },
   {
    "step": 24,
    "epoch": 1,
-   "loss": 1.35478,
-   "lr": 0.00012553
+   "loss": 1.99916,
+   "lr": 9.572e-05
   },
   {
    "step": 25,
    "epoch": 1,
-   "loss": 2.08255,
-   "lr": 0.00012218
+   "loss": 1.61619,
+   "lr": 9.51e-05
   },
   {
    "step": 26,
    "epoch": 1,
-   "loss": 1.78653,
-   "lr": 0.00011867
+   "loss": 2.50953,
+   "lr": 9.443e-05
   },
   {
    "step": 27,
    "epoch": 1,
-   "loss": 0.91835,
-   "lr": 0.00011502
+   "loss": 2.02185,
+   "lr": 9.373e-05
   },
   {
    "step": 28,
    "epoch": 1,
-   "loss": 1.82281,
-   "lr": 0.00011124
+   "loss": 1.84472,
+   "lr": 9.299e-05
   },
   {
    "step": 29,
    "epoch": 1,
-   "loss": 1.77046,
-   "lr": 0.00010735
+   "loss": 1.80138,
+   "lr": 9.222e-05
   },
   {
    "step": 30,
    "epoch": 1,
-   "loss": 2.05376,
-   "lr": 0.00010336
+   "loss": 2.23953,
+   "lr": 9.141e-05
   },
   {
    "step": 31,
    "epoch": 1,
-   "loss": 2.52658,
-   "lr": 9.929e-05
+   "loss": 1.53568,
+   "lr": 9.056e-05
   },
   {
    "step": 32,
    "epoch": 1,
-   "loss": 1.58758,
-   "lr": 9.515e-05
+   "loss": 1.97084,
+   "lr": 8.967e-05
   },
   {
    "step": 33,
    "epoch": 1,
-   "loss": 0.51793,
-   "lr": 9.096e-05
+   "loss": 1.38463,
+   "lr": 8.875e-05
   },
   {
    "step": 34,
    "epoch": 1,
-   "loss": 2.34548,
-   "lr": 8.674e-05
+   "loss": 1.42782,
+   "lr": 8.78e-05
   },
   {
    "step": 35,
    "epoch": 1,
-   "loss": 1.5781,
-   "lr": 8.25e-05
+   "loss": 1.34317,
+   "lr": 8.682e-05
   },
   {
    "step": 36,
    "epoch": 1,
-   "loss": 1.3163,
-   "lr": 7.826e-05
+   "loss": 1.60325,
+   "lr": 8.58e-05
   },
   {
    "step": 37,
    "epoch": 1,
-   "loss": 1.80601,
-   "lr": 7.404e-05
+   "loss": 1.06235,
+   "lr": 8.476e-05
   },
   {
    "step": 38,
    "epoch": 1,
-   "loss": 1.23146,
-   "lr": 6.985e-05
+   "loss": 1.72697,
+   "lr": 8.368e-05
   },
   {
    "step": 39,
    "epoch": 1,
-   "loss": 2.31237,
-   "lr": 6.571e-05
+   "loss": 1.21952,
+   "lr": 8.258e-05
   },
   {
    "step": 40,
    "epoch": 1,
-   "loss": 1.14416,
-   "lr": 6.164e-05
+   "loss": 2.04464,
+   "lr": 8.145e-05
   },
   {
    "step": 41,
    "epoch": 1,
-   "loss": 1.42217,
-   "lr": 5.765e-05
+   "loss": 2.10636,
+   "lr": 8.029e-05
   },
   {
    "step": 42,
    "epoch": 1,
-   "loss": 1.1496,
-   "lr": 5.376e-05
+   "loss": 1.56287,
+   "lr": 7.911e-05
   },
   {
    "step": 43,
    "epoch": 1,
-   "loss": 1.49681,
-   "lr": 4.998e-05
+   "loss": 1.12201,
+   "lr": 7.791e-05
   },
   {
    "step": 44,
    "epoch": 1,
-   "loss": 2.41224,
-   "lr": 4.633e-05
+   "loss": 1.74295,
+   "lr": 7.668e-05
   },
   {
    "step": 45,
    "epoch": 1,
-   "loss": 1.54726,
-   "lr": 4.282e-05
+   "loss": 2.29657,
+   "lr": 7.543e-05
   },
   {
    "step": 46,
    "epoch": 1,
-   "loss": 1.94718,
-   "lr": 3.947e-05
+   "loss": 1.65875,
+   "lr": 7.416e-05
   },
   {
    "step": 47,
    "epoch": 1,
-   "loss": 1.59847,
-   "lr": 3.629e-05
+   "loss": 1.43454,
+   "lr": 7.287e-05
   },
   {
    "step": 48,
    "epoch": 1,
-   "loss": 1.72901,
-   "lr": 3.329e-05
+   "loss": 1.77811,
+   "lr": 7.157e-05
   },
   {
    "step": 49,
    "epoch": 1,
-   "loss": 1.68234,
-   "lr": 3.049e-05
+   "loss": 2.13193,
+   "lr": 7.024e-05
   },
   {
    "step": 50,
    "epoch": 1,
-   "loss": 2.31494,
-   "lr": 2.789e-05
+   "loss": 2.30166,
+   "lr": 6.891e-05
   },
   {
    "step": 51,
    "epoch": 1,
-   "loss": 1.90492,
-   "lr": 2.551e-05
+   "loss": 1.24837,
+   "lr": 6.755e-05
   },
   {
    "step": 52,
    "epoch": 1,
-   "loss": 2.02655,
-   "lr": 2.335e-05
+   "loss": 1.10089,
+   "lr": 6.619e-05
   },
   {
    "step": 53,
    "epoch": 1,
-   "loss": 1.28513,
-   "lr": 2.142e-05
+   "loss": 2.46771,
+   "lr": 6.482e-05
   },
   {
    "step": 54,
    "epoch": 1,
-   "loss": 1.93424,
-   "lr": 1.974e-05
+   "loss": 1.95297,
+   "lr": 6.343e-05
   },
   {
    "step": 55,
    "epoch": 1,
-   "loss": 2.48479,
-   "lr": 1.83e-05
+   "loss": 0.80633,
+   "lr": 6.204e-05
   },
   {
    "step": 56,
    "epoch": 1,
-   "loss": 1.78493,
-   "lr": 1.712e-05
+   "loss": 1.35059,
+   "lr": 6.064e-05
   },
   {
    "step": 57,
    "epoch": 1,
-   "loss": 1.89897,
-   "lr": 1.62e-05
+   "loss": 1.41263,
+   "lr": 5.923e-05
   },
   {
    "step": 58,
    "epoch": 1,
-   "loss": 1.50443,
-   "lr": 1.553e-05
+   "loss": 1.47025,
+   "lr": 5.783e-05
   },
   {
    "step": 59,
    "epoch": 1,
-   "loss": 1.93822,
-   "lr": 1.513e-05
+   "loss": 2.19191,
+   "lr": 5.641e-05
   },
   {
    "step": 60,
    "epoch": 1,
-   "loss": 1.34164,
-   "lr": 1.5e-05
+   "loss": 1.76252,
+   "lr": 5.5e-05
+  },
+  {
+   "step": 61,
+   "epoch": 1,
+   "loss": 0.89988,
+   "lr": 5.359e-05
+  },
+  {
+   "step": 62,
+   "epoch": 1,
+   "loss": 1.53921,
+   "lr": 5.217e-05
+  },
+  {
+   "step": 63,
+   "epoch": 1,
+   "loss": 1.24509,
+   "lr": 5.077e-05
+  },
+  {
+   "step": 64,
+   "epoch": 1,
+   "loss": 1.44377,
+   "lr": 4.936e-05
+  },
+  {
+   "step": 65,
+   "epoch": 1,
+   "loss": 1.37952,
+   "lr": 4.796e-05
+  },
+  {
+   "step": 66,
+   "epoch": 1,
+   "loss": 1.98659,
+   "lr": 4.657e-05
+  },
+  {
+   "step": 67,
+   "epoch": 1,
+   "loss": 1.44522,
+   "lr": 4.518e-05
+  },
+  {
+   "step": 68,
+   "epoch": 1,
+   "loss": 1.55318,
+   "lr": 4.381e-05
+  },
+  {
+   "step": 69,
+   "epoch": 1,
+   "loss": 1.16696,
+   "lr": 4.245e-05
+  },
+  {
+   "step": 70,
+   "epoch": 1,
+   "loss": 1.89143,
+   "lr": 4.109e-05
+  },
+  {
+   "step": 71,
+   "epoch": 1,
+   "loss": 2.28131,
+   "lr": 3.976e-05
+  },
+  {
+   "step": 72,
+   "epoch": 1,
+   "loss": 1.37533,
+   "lr": 3.843e-05
+  },
+  {
+   "step": 73,
+   "epoch": 1,
+   "loss": 2.49774,
+   "lr": 3.713e-05
+  },
+  {
+   "step": 74,
+   "epoch": 1,
+   "loss": 0.80142,
+   "lr": 3.584e-05
+  },
+  {
+   "step": 75,
+   "epoch": 1,
+   "loss": 1.72807,
+   "lr": 3.457e-05
+  },
+  {
+   "step": 76,
+   "epoch": 1,
+   "loss": 1.14382,
+   "lr": 3.332e-05
+  },
+  {
+   "step": 77,
+   "epoch": 1,
+   "loss": 1.32278,
+   "lr": 3.209e-05
+  },
+  {
+   "step": 78,
+   "epoch": 1,
+   "loss": 1.40135,
+   "lr": 3.089e-05
+  },
+  {
+   "step": 79,
+   "epoch": 1,
+   "loss": 1.33272,
+   "lr": 2.971e-05
+  },
+  {
+   "step": 80,
+   "epoch": 1,
+   "loss": 1.55411,
+   "lr": 2.855e-05
+  },
+  {
+   "step": 81,
+   "epoch": 1,
+   "loss": 1.18241,
+   "lr": 2.742e-05
+  },
+  {
+   "step": 82,
+   "epoch": 1,
+   "loss": 1.87663,
+   "lr": 2.632e-05
+  },
+  {
+   "step": 83,
+   "epoch": 1,
+   "loss": 0.87732,
+   "lr": 2.524e-05
+  },
+  {
+   "step": 84,
+   "epoch": 1,
+   "loss": 1.4304,
+   "lr": 2.42e-05
+  },
+  {
+   "step": 85,
+   "epoch": 1,
+   "loss": 2.04097,
+   "lr": 2.318e-05
+  },
+  {
+   "step": 86,
+   "epoch": 1,
+   "loss": 1.87472,
+   "lr": 2.22e-05
+  },
+  {
+   "step": 87,
+   "epoch": 1,
+   "loss": 1.90394,
+   "lr": 2.125e-05
+  },
+  {
+   "step": 88,
+   "epoch": 1,
+   "loss": 1.06962,
+   "lr": 2.033e-05
+  },
+  {
+   "step": 89,
+   "epoch": 1,
+   "loss": 1.50219,
+   "lr": 1.944e-05
+  },
+  {
+   "step": 90,
+   "epoch": 1,
+   "loss": 1.45847,
+   "lr": 1.859e-05
+  },
+  {
+   "step": 91,
+   "epoch": 1,
+   "loss": 1.13822,
+   "lr": 1.778e-05
+  },
+  {
+   "step": 92,
+   "epoch": 1,
+   "loss": 1.50228,
+   "lr": 1.701e-05
+  },
+  {
+   "step": 93,
+   "epoch": 1,
+   "loss": 1.96084,
+   "lr": 1.627e-05
+  },
+  {
+   "step": 94,
+   "epoch": 1,
+   "loss": 1.08893,
+   "lr": 1.557e-05
+  },
+  {
+   "step": 95,
+   "epoch": 1,
+   "loss": 1.92582,
+   "lr": 1.49e-05
+  },
+  {
+   "step": 96,
+   "epoch": 1,
+   "loss": 1.36547,
+   "lr": 1.428e-05
+  },
+  {
+   "step": 97,
+   "epoch": 1,
+   "loss": 1.21219,
+   "lr": 1.37e-05
+  },
+  {
+   "step": 98,
+   "epoch": 1,
+   "loss": 2.43618,
+   "lr": 1.316e-05
+  },
+  {
+   "step": 99,
+   "epoch": 1,
+   "loss": 1.86098,
+   "lr": 1.266e-05
+  },
+  {
+   "step": 100,
+   "epoch": 1,
+   "loss": 1.33271,
+   "lr": 1.22e-05
+  },
+  {
+   "step": 101,
+   "epoch": 1,
+   "loss": 1.21412,
+   "lr": 1.179e-05
+  },
+  {
+   "step": 102,
+   "epoch": 1,
+   "loss": 1.22562,
+   "lr": 1.141e-05
+  },
+  {
+   "step": 103,
+   "epoch": 1,
+   "loss": 1.53067,
+   "lr": 1.108e-05
+  },
+  {
+   "step": 104,
+   "epoch": 1,
+   "loss": 1.55853,
+   "lr": 1.08e-05
+  },
+  {
+   "step": 105,
+   "epoch": 1,
+   "loss": 1.60024,
+   "lr": 1.055e-05
+  },
+  {
+   "step": 106,
+   "epoch": 1,
+   "loss": 1.28888,
+   "lr": 1.035e-05
+  },
+  {
+   "step": 107,
+   "epoch": 1,
+   "loss": 1.98789,
+   "lr": 1.02e-05
+  },
+  {
+   "step": 108,
+   "epoch": 1,
+   "loss": 1.18105,
+   "lr": 1.009e-05
+  },
+  {
+   "step": 109,
+   "epoch": 1,
+   "loss": 1.22326,
+   "lr": 1.002e-05
+  },
+  {
+   "step": 110,
+   "epoch": 1,
+   "loss": 1.48999,
+   "lr": 1e-05
   }
  ],
  "gen_smoke": {
@@ -415,18 +715,18 @@
   "n": 2,
   "samples": [
    {
-    "pred": "{\"judgments\":[{\"idx\":1,\"position\":\"0\",\"why_position\":\"锚点未提归层权\"},{\"idx\":2,\"position\":\"0\",\"why_position\":\"锚点未提归层权\"},{\"idx\":3,\"position\":\"0\",\"why_position\":\"锚点未提归层权\"},{\"idx\":4,\"position\":\"0\",\"why_position\":\"锚点未提归层权\"},{\"idx\":5,\"position\":\"0\",\"why_position\":\"锚点未提归",
-    "gold": "{\"judgments\":[{\"idx\":1,\"position\":\"0\",\"why_position\":\"锚点未触及提交者与合并者字段\"},{\"idx\":2,\"position\":\"0\",\"why_position\":\"锚点未提两分发口归属差异\"},{\"idx\":3,\"position\":\"0\",\"why_position\":\"锚点只说无主，未区分不认领与不署名\"},{\"idx\":4,\"position\":\"1\",\"why_position\":\"锚点已指向归层权为排序前置判据\"},{\"idx\":5,\"position\":\"0\",\"why_position\":\"锚点未提测试先红反推路径\"},{"
+    "pred": "{\"judgments\":[{\"idx\":1,\"position\":\"0\",\"why_position\":\"锚点未提‘内涝频发’，锚点未提‘排水系统改造’\"},{\"idx\":2,\"position\":\"0\",\"why_position\":\"锚点未提‘排水系统改造’\"},{\"idx\":3,\"position\":\"0\",\"why_position\":\"锚点未提‘排水系统改造’\"},{\"idx\":4,\"position\":\"0\",\"why_position\":\"锚点未提‘排水系统",
+    "gold": "{\"judgments\":[{\"idx\":1,\"position\":\"1\",\"why_position\":\"锚点以'还是'并置两方向为可选优先级\"},{\"idx\":2,\"position\":\"1\",\"why_position\":\"锚点已指向排水系统改造、管网与调蓄设施\"},{\"idx\":3,\"position\":\"1\",\"why_position\":\"锚点起点即'城市内涝频发'这一现象\"},{\"idx\":4,\"position\":\"1\",\"why_position\":\"锚点'应该优先做'即资源排序之问\"},{\"idx\":5,\"position\":\"0\",\"why_position\":\"锚点只问"
    },
    {
-    "pred": "比例反向：产流侧先越限，输送侧先减压\n    - 法律条款互斥：产流侧先越限，输送侧先减压\n    - 其他：其他未决项\n  无直接可判定方向\n\n### 【立场】\n  - 本体：先扩容还是先海绵？先做还是先做？\n  - 本体：先做还是先做？先做还是",
-    "gold": "{\"judgments\":[{\"idx\":1,\"position\":\"0\",\"why_position\":\"两属性不同，缺换算，不可合并排序\"},{\"idx\":2,\"position\":\"0\",\"why_position\":\"参照不需权力，拒绝需冻结权，不能同门槛\"},{\"idx\":3,\"position\":\"both\",\"why_position\":\"翻转视三件套是否齐备\"},{\"idx\":4,\"position\":\"0\",\"why_position\":\"空间与时间相加不同步，无换算不可合并\"},{\"idx\":5,\"position\":\"0\",\"why_position\":\"侧别随指标翻转，"
+    "pred": "{\"judgments\":[{\"idx\":1,\"position\":\"0\",\"why_position\":\"锚点未明确，区间的点落不明\"},{\"idx\":2,\"position\":\"0\",\"why_position\":\"锚点未明确，区间的点落不明\"},{\"idx\":3,\"position\":\"0\",\"why_position\":\"锚点未明确，区间的点落不明\"},{\"idx\":4,\"position\":\"0\",\"why_position\":\"锚点未明确，区间的点落不明\"},{\"idx\":5,\"",
+    "gold": "{\"judgments\":[{\"idx\":1,\"position\":\"1\",\"why_position\":\"选点主体缺位则区间点落不下去，必须补主体\"},{\"idx\":2,\"position\":\"0\",\"why_position\":\"只划可判定范围，不裁决该不该碰跨层部分\"},{\"idx\":3,\"position\":\"1\",\"why_position\":\"先看有无同规格品，这是必须碰的前置分流\"},{\"idx\":4,\"position\":\"0\",\"why_position\":\"份额毛利在方法外，本层不该替它裁决\"},{\"idx\":5,\"position\":\"0\",\"why_position\":"
    }
   ]
  },
- "peak_vram_gb": 4.2,
- "train_sec": 282.1,
- "samples_per_sec": 0.213,
- "tokens_per_sec_est": 287.9,
+ "peak_vram_gb": 4.77,
+ "train_sec": 735.3,
+ "samples_per_sec": 0.15,
+ "tokens_per_sec_est": 201.1,
  "note": "LoRA SFT：引擎同构 prompt → stage JSON；fp16 权重 + fp32 GEMM （SM75 HGEMM 慢的适配）；grad checkpointing；按问题分组留出"
 }

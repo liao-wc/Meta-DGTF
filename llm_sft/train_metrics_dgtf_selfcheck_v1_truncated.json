@@ -1,0 +1,432 @@
+{
+ "stage": "self_check",
+ "variant": "mixed",
+ "model": "local_model/models/Qwen2.5-0.5B-Instruct",
+ "adapter": "llm_sft\\adapter_dgtf_selfcheck_05b_v1",
+ "train_n": 60,
+ "val_n": 10,
+ "epochs": 1,
+ "steps": 60,
+ "batch": 1,
+ "accum": 8,
+ "lr": 0.00015,
+ "max_len": 1536,
+ "lora": {
+  "r": 16,
+  "alpha": 32,
+  "target_modules": [
+   "q_proj",
+   "k_proj",
+   "v_proj",
+   "o_proj",
+   "gate_proj",
+   "up_proj",
+   "down_proj"
+  ],
+  "dropout": 0.05
+ },
+ "fp32_gemm_patched_layers": 504,
+ "gradient_checkpointing": true,
+ "dtype": "fp16 weights + fp32 GEMM",
+ "trainable_params": 8798208,
+ "prompt_len": {
+  "p50": 1375,
+  "p95": 1512
+ },
+ "target_len": {
+  "p50": 161
+ },
+ "truncated_samples": 58,
+ "best_val_loss": 1.67863,
+ "best_step": 60,
+ "epoch_history": [
+  {
+   "epoch": 1,
+   "train_loss": 2.03519,
+   "val_loss": 1.67863,
+   "steps": 60,
+   "sec": 260.9
+  }
+ ],
+ "loss_curve": [
+  {
+   "step": 1,
+   "epoch": 1,
+   "loss": 2.32033,
+   "lr": 3e-05
+  },
+  {
+   "step": 2,
+   "epoch": 1,
+   "loss": 2.00696,
+   "lr": 4.5e-05
+  },
+  {
+   "step": 3,
+   "epoch": 1,
+   "loss": 3.00045,
+   "lr": 6e-05
+  },
+  {
+   "step": 4,
+   "epoch": 1,
+   "loss": 0.70661,
+   "lr": 7.5e-05
+  },
+  {
+   "step": 5,
+   "epoch": 1,
+   "loss": 3.59951,
+   "lr": 9e-05
+  },
+  {
+   "step": 6,
+   "epoch": 1,
+   "loss": 4.17197,
+   "lr": 0.000105
+  },
+  {
+   "step": 7,
+   "epoch": 1,
+   "loss": 0.8064,
+   "lr": 0.00012
+  },
+  {
+   "step": 8,
+   "epoch": 1,
+   "loss": 3.58023,
+   "lr": 0.000135
+  },
+  {
+   "step": 9,
+   "epoch": 1,
+   "loss": 0.33528,
+   "lr": 0.00015
+  },
+  {
+   "step": 10,
+   "epoch": 1,
+   "loss": 3.62636,
+   "lr": 0.00015
+  },
+  {
+   "step": 11,
+   "epoch": 1,
+   "loss": 0.60897,
+   "lr": 0.00014987
+  },
+  {
+   "step": 12,
+   "epoch": 1,
+   "loss": 3.90559,
+   "lr": 0.00014947
+  },
+  {
+   "step": 13,
+   "epoch": 1,
+   "loss": 0.33494,
+   "lr": 0.0001488
+  },
+  {
+   "step": 14,
+   "epoch": 1,
+   "loss": 0.51581,
+   "lr": 0.00014788
+  },
+  {
+   "step": 15,
+   "epoch": 1,
+   "loss": 0.42844,
+   "lr": 0.0001467
+  },
+  {
+   "step": 16,
+   "epoch": 1,
+   "loss": 0.13416,
+   "lr": 0.00014526
+  },
+  {
+   "step": 17,
+   "epoch": 1,
+   "loss": 3.22273,
+   "lr": 0.00014358
+  },
+  {
+   "step": 18,
+   "epoch": 1,
+   "loss": 3.78798,
+   "lr": 0.00014165
+  },
+  {
+   "step": 19,
+   "epoch": 1,
+   "loss": 0.33488,
+   "lr": 0.00013949
+  },
+  {
+   "step": 20,
+   "epoch": 1,
+   "loss": 0.33869,
+   "lr": 0.00013711
+  },
+  {
+   "step": 21,
+   "epoch": 1,
+   "loss": 0.29945,
+   "lr": 0.00013451
+  },
+  {
+   "step": 22,
+   "epoch": 1,
+   "loss": 1.75475,
+   "lr": 0.00013171
+  },
+  {
+   "step": 23,
+   "epoch": 1,
+   "loss": 3.6615,
+   "lr": 0.00012871
+  },
+  {
+   "step": 24,
+   "epoch": 1,
+   "loss": 0.26261,
+   "lr": 0.00012553
+  },
+  {
+   "step": 25,
+   "epoch": 1,
+   "loss": 0.34623,
+   "lr": 0.00012218
+  },
+  {
+   "step": 26,
+   "epoch": 1,
+   "loss": 3.34115,
+   "lr": 0.00011867
+  },
+  {
+   "step": 27,
+   "epoch": 1,
+   "loss": 3.65352,
+   "lr": 0.00011502
+  },
+  {
+   "step": 28,
+   "epoch": 1,
+   "loss": 2.87854,
+   "lr": 0.00011124
+  },
+  {
+   "step": 29,
+   "epoch": 1,
+   "loss": 0.20048,
+   "lr": 0.00010735
+  },
+  {
+   "step": 30,
+   "epoch": 1,
+   "loss": 3.27201,
+   "lr": 0.00010336
+  },
+  {
+   "step": 31,
+   "epoch": 1,
+   "loss": 3.58017,
+   "lr": 9.929e-05
+  },
+  {
+   "step": 32,
+   "epoch": 1,
+   "loss": 3.47161,
+   "lr": 9.515e-05
+  },
+  {
+   "step": 33,
+   "epoch": 1,
+   "loss": 0.26377,
+   "lr": 9.096e-05
+  },
+  {
+   "step": 34,
+   "epoch": 1,
+   "loss": 3.04999,
+   "lr": 8.674e-05
+  },
+  {
+   "step": 35,
+   "epoch": 1,
+   "loss": 0.73699,
+   "lr": 8.25e-05
+  },
+  {
+   "step": 36,
+   "epoch": 1,
+   "loss": 3.84528,
+   "lr": 7.826e-05
+  },
+  {
+   "step": 37,
+   "epoch": 1,
+   "loss": 0.18613,
+   "lr": 7.404e-05
+  },
+  {
+   "step": 38,
+   "epoch": 1,
+   "loss": 4.22727,
+   "lr": 6.985e-05
+  },
+  {
+   "step": 39,
+   "epoch": 1,
+   "loss": 0.2868,
+   "lr": 6.571e-05
+  },
+  {
+   "step": 40,
+   "epoch": 1,
+   "loss": 0.36217,
+   "lr": 6.164e-05
+  },
+  {
+   "step": 41,
+   "epoch": 1,
+   "loss": 0.29915,
+   "lr": 5.765e-05
+  },
+  {
+   "step": 42,
+   "epoch": 1,
+   "loss": 2.87845,
+   "lr": 5.376e-05
+  },
+  {
+   "step": 43,
+   "epoch": 1,
+   "loss": 0.3187,
+   "lr": 4.998e-05
+  },
+  {
+   "step": 44,
+   "epoch": 1,
+   "loss": 3.16305,
+   "lr": 4.633e-05
+  },
+  {
+   "step": 45,
+   "epoch": 1,
+   "loss": 4.00373,
+   "lr": 4.282e-05
+  },
+  {
+   "step": 46,
+   "epoch": 1,
+   "loss": 3.14599,
+   "lr": 3.947e-05
+  },
+  {
+   "step": 47,
+   "epoch": 1,
+   "loss": 3.23042,
+   "lr": 3.629e-05
+  },
+  {
+   "step": 48,
+   "epoch": 1,
+   "loss": 3.0558,
+   "lr": 3.329e-05
+  },
+  {
+   "step": 49,
+   "epoch": 1,
+   "loss": 0.51692,
+   "lr": 3.049e-05
+  },
+  {
+   "step": 50,
+   "epoch": 1,
+   "loss": 3.17984,
+   "lr": 2.789e-05
+  },
+  {
+   "step": 51,
+   "epoch": 1,
+   "loss": 2.40625,
+   "lr": 2.551e-05
+  },
+  {
+   "step": 52,
+   "epoch": 1,
+   "loss": 3.23101,
+   "lr": 2.335e-05
+  },
+  {
+   "step": 53,
+   "epoch": 1,
+   "loss": 3.16962,
+   "lr": 2.142e-05
+  },
+  {
+   "step": 54,
+   "epoch": 1,
+   "loss": 0.19141,
+   "lr": 1.974e-05
+  },
+  {
+   "step": 55,
+   "epoch": 1,
+   "loss": 2.47837,
+   "lr": 1.83e-05
+  },
+  {
+   "step": 56,
+   "epoch": 1,
+   "loss": 0.47638,
+   "lr": 1.712e-05
+  },
+  {
+   "step": 57,
+   "epoch": 1,
+   "loss": 0.21751,
+   "lr": 1.62e-05
+  },
+  {
+   "step": 58,
+   "epoch": 1,
+   "loss": 2.63185,
+   "lr": 1.553e-05
+  },
+  {
+   "step": 59,
+   "epoch": 1,
+   "loss": 2.20688,
+   "lr": 1.513e-05
+  },
+  {
+   "step": 60,
+   "epoch": 1,
+   "loss": 3.86351,
+   "lr": 1.5e-05
+  }
+ ],
+ "gen_smoke": {
+  "json_ok": 0,
+  "n": 2,
+  "samples": [
+   {
+    "pred": "儿没轮到\"。这俩个动词的先后顺序，是两道题的逻辑起点。它们都是 \"不作数\" 和 \"不存在\" 的对立面，是 \"不作数\" 和 \"不存在\" 的替代品。它们是 \"不作数\" 和 \"不存在\" 的对立面，是 \"不作数\" 和 \"不存在\" 的替代品。它们是 \"不作数\" 和 \"不存在\" 的对立面，",
+    "gold": "{\"suspicious_candidates\":[6,7],\"suspicious_amps\":[],\"ing_rephrased\":false,\"honest_about_empty\":true,\"unsaid_count\":1,\"unsaid_is_escape\":false,\"unsaid_where\":\"仅 view 第四节末尾一处，收在收紧之后，非收尾套路\",\"flow_verdict\":\"收紧动作（降级反转点、记切分成本）是真实推进；但裁决段的极性标签多为事后回填，先有结论再倒推候选\",\"view_verdict\":\"偏元层对账：讲两层各缺谁、退还给谁，是方法论对话，不是两个形状"
+   },
+   {
+    "pred": "才出现，不能在 1 出现前就出现。\n- 反转三：1 和 0 都有出场条件，但 1 更重要。1 被选为 0 的前提，是 0 要求 1 不能被丢弃。这 1 不能被丢弃，是因为 0 要求 1 不能被丢弃，所以 1 被选为 0",
+    "gold": "{\"suspicious_candidates\":[],\"suspicious_amps\":[],\"ing_rephrased\":false,\"honest_about_empty\":true,\"unsaid_count\":1,\"unsaid_is_escape\":false,\"unsaid_where\":\"view×1\",\"flow_verdict\":\"两端推到极端后靠反转与分界生成新支点，未生处诚实标出，流程完整。\",\"view_verdict\":\"定下引用分两类、支点移到引用方；未定的是加栏者与判定标准，已单列挂账。\",\"amp_ratio_verdict\":\"四条&均从候选结构长出，无"
+   }
+  ]
+ },
+ "peak_vram_gb": 4.2,
+ "train_sec": 296.4,
+ "samples_per_sec": 0.202,
+ "tokens_per_sec_est": 309.1,
+ "note": "LoRA SFT：引擎同构 prompt → stage JSON；fp16 权重 + fp32 GEMM （SM75 HGEMM 慢的适配）；grad checkpointing；按问题分组留出"
+}

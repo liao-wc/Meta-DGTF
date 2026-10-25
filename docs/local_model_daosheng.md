@@ -17,7 +17,7 @@
 | 服务 | `dgtf_local_llm/service.py` → `127.0.0.1:8772`，`GET /health`（p50 16ms）、`POST /generate`（self_check p50 3.9s）、单卡串行队列、LRU 缓存、warmup、结构化 503 |
 | 客户端 | `dgtf_local_llm/client.py`（零依赖，失败返回 `{"ok":false,...}`，便于云回退级联） |
 | 启动 | `scripts/local_model/start_local_llm.ps1`（后台 + 等 ready）；停止 `stop_local_llm.ps1`；重训编排 `retrain_after_window.ps1` |
-| 评测 | 首轮结果 **go/no-go = 不通过**（适配器不可用于决策字段），根因已定位为「训练数据被中段截断」→ §5.2；服务链路本身可用 |
+| 评测 | 两轮。第一轮 **go/no-go 不通过**（训练数据中段截断，根因见 §5.2）；第二轮修正后：**格式层有信号**（self_check JSON 0.286→0.857，base 0.0），**决策层未达标**（三项全对仍 0、QC 门控不可用）→ 结论见 §5.1 / §9 |
 
 ## 1. 目录与文件
 
@@ -240,27 +240,43 @@ local_model\envs\dgtf_llm_env\Scripts\python.exe scripts/local_model/eval_dgtf_s
 **结果**：见 §5.1（实测数字由 `eval_dgtf_stage.py` 写入
 `llm_sft/dgtf_stage/eval_dgtf_stage.json`；下表为本轮实测摘要）。
 
-### 5.1 实测结果
+### 5.1 实测结果（第二轮 v2：干净数据，v2 适配器）
 
-| 指标 | dual_judge | self_check_min | self_check (full) |
-|---|---|---|---|
-| n（val 抽样） | 8 | 14 | 6 |
-| JSON 合法率 | **0.875** | **0.286** | **0.333** |
-| position 准确率 | **0.45**（多数类基线 0.54） | — | — |
-| position coverage | 0.925 | — | — |
-| 三分类 macro-F1 | **0.163**（0=0.488 / 1=0 / both=0） | — | — |
-| 三项字段全对率 | — | **0.0** | **0.0** |
-| suspicious 集合 F1 | — | 0.02 | 0.037 |
-| ing_rephrased acc | — | 0.286 | 0.333 |
-| unsaid_is_escape acc | — | 0.286 | 0.333 |
-| 单次延迟 p50 | 33.1s | 10.3s | 41.2s |
-| decode 吞吐 | 6.6 tok/s | 5.7 tok/s | 7.1 tok/s |
-| QC τ=0.8 coverage/agreement | 0.75 / 0.222 | 1.0 / 0.0 | 0.667 / 0.0 |
-| QC τ=0.9 / 0.95 | 0.125/0.167 · 0/— | 0/— · 0/— | 0.5/0.0 · 0.167/0.0 |
+训练侧（val loss，20 条 holdout，1 epoch）：self_check **1.679 → 0.224**、
+dual_judge **1.772 → 1.484**（截断修复后同样步数 loss 明显更低）。
 
-**go/no-go：这一轮适配器不可用于决策字段**（position 0.45 ≈ 多数类基线、
-self_check 三项全对 0）。置信度分布也不区分对错（agreement 不随 τ 上升），
-暂时不能作为 conformal 弃权阈值。
+| 指标 | dual_judge | self_check_min | self_check (11 字段) | base 0.5B 对照(sc_min) |
+|---|---|---|---|---|
+| n（val 抽样） | 8 | 14 | 5 | 14 |
+| JSON 合法率 | 0.625 | **0.857**（v1 0.286） | **1.0**（v1 0.333） | **0.0** |
+| position 准确率 | 0.25（多数类基线 0.54） | — | — | — |
+| position coverage | 0.55 | — | — | — |
+| 三分类 macro-F1 | 0.115（0=0.344/1=0/both=0） | — | — | — |
+| 三项字段全对率 | — | **0.0**（目标 >0.2 未达） | 0.0 | 0.0 |
+| suspicious 集合 F1 | — | **0.132**（v1 0.02） | 0.044 | 0.0 |
+| ing_rephrased acc | — | 0.786（恒 false 基线 0.923） | 1.0 | 0.0 |
+| unsaid_is_escape acc | — | 0.643（恒 false 基线 0.824） | 0.6 | 0.0 |
+| 字段级平均 acc | — | **0.476**（v1 0.19） | 0.533 | 0.0 |
+| 单次延迟 p50 | 19.1s | 4.8-6.1s | 16.2s | 5.4s |
+| QC τ=0.8 coverage/agreement | 0.625 / 0.133 | 0.857 / 0.0 | 1.0 / 0.0 | 0.643 / 0.0 |
+| QC τ=0.9 | 0.25 / 0.084 | 0 / — | 0.2 / 0.0 | 0.143 / 0.0 |
+| QC τ=0.95 | 0 / — | 0 / — | 0 / — | 0 / — |
+
+**结论（本轮收口）**
+
+1. **格式/结构层：v2 有明确信号 ✅**。丢弃截断样本后，self_check_min JSON 合法率
+   0.286 → **0.857**、11 字段 full 到 **1.0**，而 base 0.5B 为 **0.0**；说明
+   「训练数据被截断」的根因判断正确、适配器确实学到了 stage 输出格式。
+2. **决策语义层：未达标 ⛔**。三项全对仍为 0（目标 >0.2）；失败模式是
+   `suspicious_candidates` 退化成常量先验（几乎总输出 `[1,2]`），并没有逐候选判；
+   `ing_rephrased`/`unsaid_is_escape` 的 acc 低于「恒填 false」多数类基线
+   （0.923 / 0.824）；dual_judge position acc 0.25 < 多数类基线 0.54。
+3. **QC 门控：不可用 ⛔**。τ∈{0.8,0.9,0.95} 下 agreement 不随 τ 上升（≈0），
+   `confidence`（生成 token 平均概率）与正确性不相关，不能做 conformal 弃权阈值。
+4. **最终判定**：本地模型（0.5B + 180/110 条 × 1 epoch）**仅可用于叙述/联调/
+   格式草稿，不可接管决策字段**；工程链路（8772 服务、4 stage 契约、串行队列、
+   超时/失败结构化 503、JSON 抢救、p50 ~4s、显存 1.04GB）已可交付。
+   要接管决策需要 1.5B + 数小时全量训练（数据与训练/评测管线已就绪，见 §4.2）。
 
 ### 5.2 负结果与根因（截断训练数据）—— 项目证据链
 
@@ -270,7 +286,7 @@ self_check 三项全对 0）。置信度分布也不区分对错（agreement 不
 | 根因 | 第一轮 self_check 训练 60 条样本在 `max_len=1536` 下 **58 条被截断**：`build_token` 的截断策略是「保 prompt 头（system 模板）+ 保尾（候选列表末尾/统计块）、丢中间」，导致**候选列表中段被切掉**。模型能看到的是候选索引的“尾部”，于是学到「按看到的索引区间喷 suspicious_candidates」。评测 prompt 完整（1,700 tok），与训练分布不一致 ⇒ 全错。 |
 | 证据 | ①训练日志 `truncated=58/60`（selfcheck）/ `19/60`（judge）；②生成冒烟样例 `[10..39]` 与训练里被切后残留的尾部索引一致；③`self_check` 的 prompt p50=1,709 + target 212 > 1536；min 变体总长 p95=1,892 > 1536 同样被切。 |
 | 结论 | 在 6GB 卡上，**不能靠“中段截断”省 token** 去喂结构敏感任务；要么把 prompt 压到 max_len 内，要么直接丢弃超长样本。这也解释了为什么「60 样本 + 截断」是负结果——不是模板/字段错（demo 字段还原 100% 通过），是训练数据被破坏。 |
-| 修正（第二轮，已实现待跑） | `--drop-truncated`（超长样本直接丢弃，不切候选）+ `max_len=2048` + self_check 只用 **min 变体**（target 26 tok）+ `lr=1e-4`、180 条 × 1 epoch；dual_judge 把 `why_position` 截到 30 字缩短 target 后 130 条 × 1 epoch。评测目标：JSON 合法率 > 0.9、三项全对 > 0.2 即算「有信号」。 |
+| 修正（第二轮，已执行 ✅） | `--drop-truncated`（超长样本直接丢弃，不切候选）+ `max_len=2048` + self_check 只用 **min 变体**（target 26 tok）+ `lr=1e-4`、180 条 × 1 epoch；dual_judge 把 `why_position` 截到 30 字缩短 target 后 130 条 × 1 epoch。评测目标：JSON 合法率 > 0.9、三项全对 > 0.2 即算「有信号」；结果见 §5.1（格式达标、决策未达标）。 |
 | 本轮价值 | go/no-go 结论明确：**本地 0.5B + 60 样本 + 截断数据不可用于决策**；但服务链路（/health 秒回、/generate 3.9s、串行队列、503 回退、JSON 抢救）已可联调，engine/app 集成不被质量结论阻塞。 |
 
 ## 6. 本地推理服务（127.0.0.1:8772）
@@ -361,23 +377,24 @@ else:
 
 ### 6.3 实测（`scripts/local_model/probe_local_llm.py`）
 
-实测（`probe_local_llm.py --reps 2`，0.5B + 4 适配器，服务 PID 28388）：
+实测（`probe_local_llm.py --reps 2`，0.5B + **v2 适配器**，服务 PID 22256，2026-10-25 10:07）：
 
 | 项 | 结果 |
 |---|---|
 | 冷启动 | load **7.6-8.7s** + warmup **726-1196ms**（ready < 90s ✅） |
-| GET /health | p50 **16ms**（max 21ms），秒回 ✅ |
-| POST /generate `self_check`（默认 min schema） | p50 **3.89s**，JSON 合法 2/2 |
-| POST /generate `self_check_min` | p50 **4.13s**，JSON 合法 2/2 |
-| POST /generate `route`（旧 0.5B route 适配器） | p50 **3.60s**，JSON 2/2，confidence 0.947 |
+| GET /health | p50 **1.8ms**（max 1.9ms），秒回 ✅ |
+| POST /generate `self_check`（默认 min schema，**v2 适配器**） | p50 **3.90s**，JSON 合法 2/2 |
+| POST /generate `self_check_min` | p50 **4.26s**，JSON 合法 2/2 |
+| POST /generate `route`（旧 0.5B route 适配器） | p50 **3.85s**，JSON 2/2，confidence 0.947 |
 | 错误回退 | bad stage → **400** `BAD_REQUEST`；`timeout=1` → **503** `TIMEOUT`（1.08s 返回）；缺 `text/messages` → **400** `BAD_REQUEST` |
-| 并发 3 请求 | 串行排队：wall 7.38s，3/3 200，无 OOM/崩溃 ✅ |
-| 显存 | 服务常驻 **1,075MB**（< 5GB 余量 ✅） |
+| 并发 3 请求 | 串行排队：wall 7.26s，3/3 200，无 OOM/崩溃 ✅ |
+| 显存 | 服务常驻 **1,042MB**（< 5GB 余量 ✅） |
 | 缓存 | 相同请求 `cached=true`，`ms` ~1ms 级（LRU 200 条） |
 
 > dual_judge / self_check(full) 因 0.5B decode 只有 ~6-7 tok/s、目标较长，
-> 单次 30-40s，**不建议**在联调链路里同步调用；需要全量字段时用
-> `variant:"full"` 并给足 timeout（≤60s）。
+> 单次 **16-20s**（v2 target 更短，比 v1 的 33-41s 快约 2 倍），仍**不建议**
+> 放进秒级链路；需要全量字段时给足 timeout（≤60s）。
+> 服务冷启动 7.2s + warmup 786ms（v2），远低于 90s 要求。
 
 ### 6.4 服务实现要点（gf）
 
@@ -404,16 +421,16 @@ else:
 1. **底座为 0.5B（非任务原始 1.5B）**：1.5B 在 6GB 卡持续训练降频到 32s/step，
    时间盒内跑不出可用适配器（§4.2 有实测证据）。0.5B 在同时间预算下可多训
    3 倍数据、推理快 2-3 倍；1.5B 路径保留，需要数小时独占 GPU。
-2. **第一轮适配器质量不达标（负结果）**：position 0.45≈基线、三项全对 0，
-   根因是训练数据被中段截断（§5.2）；第二轮已按 Lead 方案修正（丢弃截断样本 +
-   min 变体 + lr 1e-4 + 180/110 条），结果见 `eval_dgtf_stage_v2.json`。
+2. **决策质量不达标（两轮负结果收口）**：第一轮根因是训练数据中段截断（§5.2），
+   第二轮修复后格式达标（JSON 0.857/1.0）但决策仍不达标（三项全对 0）；
+   结论见 §5.1 / §9 —— 本地模型仅可用于叙述/联调，不可接管决策。
 3. **decode 慢**：0.5B fp16 decode 实测 ~9-10 tok/s（M=1 带宽/内核瓶颈），
    `self_check_min`（3 字段、27 token）单次 ~4s 可接受；11 字段全量（~212 token）
    单次 20-40s，生产建议只走 min 变体，需要解释性 verdict 时再让云补。
 4. **route 适配器**沿用旧任务 `llm_sft/adapter_qwen05b_v1`（route_exact 0.357，
    旧基线），本轮未重训（P2）；但在 8772 服务里实测可用（p50 3.6s，JSON 2/2）。
-5. **QC 门控尚未可用**：第一轮 confidence 不区分对错（agreement 不随 τ 上升）；
-   第二轮重训后会重算 τ∈{0.8,0.9,0.95} 的 coverage/agreement 曲线。
+5. **QC 门控不可用**：两轮 confidence 均不区分对错（τ=0.8/0.9/0.95 下
+   agreement 不上升，见 §5.1），不能作为 conformal 弃权阈值；级联需另设规则。
 6. **训练数据规模**：全量可用 2,490（judge）/ 478（sc_min）条，本轮时间盒只用
    180/110 条 × 1 epoch；要逼近云标签需要数小时全量训练 + 更多 epoch。
 7. **数据快照会漂移**：并行 run 持续往 `outputs/` 写 packed，数据集每次重建的
@@ -421,13 +438,27 @@ else:
 
 ## 9. 本轮结论（给 Lead 的取舍依据）
 
-- **服务层：可交付 ✅**。8772 四 stage 接口、/health 秒回（16ms）、单次
-  self_check 3.9s、GPU 1.08GB、串行队列、超时/错误结构化 503、JSON 抢救兜底
-  全部实测通过，engine/app 可直接联调（失败回退云）。
-- **模型层：第一轮 go/no-go = 不通过 ⛔**。适配器不可用于决策字段；根因已定位
-  （训练数据中段截断），不是模板/字段问题（dataset demo 字段还原 100%）。
-- **第二轮**：数据已按其要求重建（丢弃截断样本：sc 180 条 dropped=0、
-  dj 130 条 dropped=0，预检 `--dry-run` 通过），等 GPU 窗口重训后补 §5.1 数字与
-  τ 曲线；目标 JSON 合法率 > 0.9、三项全对 > 0.2 即算「有信号」。
-- 第一轮全部证据已归档 `llm_sft/_round1_evidence/`（adapter、metrics、loss 曲线、
-  eval、probe、训练日志），供复盘。
+- **服务层：可交付 ✅**。8772 四 stage 接口、`/health` 秒回（p50 1.8ms）、
+  `self_check`/`self_check_min` 单次 3.9-4.3s、`route` 3.9s、GPU 常驻 1.04GB、
+  冷启动 7.2s + warmup 786ms、单卡串行队列（3 并发 wall 7.3s 不崩）、
+  超时/错误结构化 503、JSON 抢救兜底——全部实测通过，engine/app 可联调
+  （低置信/salvaged 时回退云）。
+- **模型层（第二轮 v2，干净数据训练）：格式有信号 ✅ / 决策未达标 ⛔**。
+  - 格式：self_check_min JSON 合法率 **0.286 → 0.857**，11 字段 full 到 **1.0**，
+    base 0.5B 为 **0.0**；sc 适配器 val loss 1.679 → **0.224**，
+    dj val loss 1.772 → **1.484**。⇒「截断训练数据」根因判断正确。
+  - 决策：三项全对仍 **0**（目标 >0.2 未达）；`suspicious_candidates` 退化为
+    常量先验（几乎总输出 `[1,2]`），`ing_rephrased`/`unsaid_is_escape` acc 低于
+    「恒 false」多数类基线（0.923/0.824），dual_judge position acc 0.25 < 0.54。
+  - **QC 门控不可用 ⛔**：τ∈{0.8,0.9,0.95} 下 agreement 不随 τ 上升（≈0），
+    confidence 不区分对错，不能当 conformal 弃权阈值。
+- **收口判定**：本地模型（0.5B + 180/110 条 × 1 epoch，6GB 卡时间盒内）
+  **仅可用于叙述/联调/格式草稿，不可接管决策字段**。该结论已足够支撑
+  「本地草稿 + 云校准」级联的工程决策：级联中的本地档只做预填/草稿，
+  决策与自省判定仍走云。
+- 第一轮全部证据归档 `llm_sft/_round1_evidence/`；第一轮适配器留档
+  `llm_sft/adapter_dgtf_*_05b_v1_truncated_bak/`；第二轮为
+  `llm_sft/adapter_dgtf_*_05b_v2/`。
+- **后续若要接管决策**：1.5B 底座 + 全量 2,490/478 条 × 2-3 epochs（6GB 卡约
+  6-10 小时独占 GPU）+ 更大 eval 集；数据/训练/评测管线已就绪，直接改
+  `--model/--max-train/--epochs` 即可。

@@ -1,0 +1,258 @@
+{
+ "built_at": "2026-10-25T08:20:36",
+ "engine_templates": "D:\\Meta-DGTF-道生三阶模型\\dgtf_engine\\dgtf_v2\\engine\\Meta-DGTF-V2.2.2.py",
+ "inputs": {
+  "packed_files": 179,
+  "bad_files": 0,
+  "outputs_dir": "outputs/*.packed.json",
+  "lead_judge_labels": "outputs/_lead_audit/judge_labels.jsonl（未用：packed 已含 desc/kind/source/position/why_position + 完整上下文）"
+ },
+ "caps": {
+  "dual_judge": {
+   "shard": 6,
+   "anchor": 300,
+   "question": 300,
+   "upstream_per_view": 320,
+   "upstream_max": 2,
+   "desc": 120,
+   "why_position": 30
+  },
+  "self_check": {
+   "collision": 400,
+   "manifest": 300,
+   "cand_max": 8,
+   "amp_max": 5
+  },
+  "max_len": 2048,
+  "train_sample_cap": 0,
+  "aligned_dj_cap": 0
+ },
+ "dual_judge": {
+  "samples_total": 2966,
+  "train": 2490,
+  "val": 476,
+  "dedupe_removed": 20,
+  "build_stats": {
+   "views": 575,
+   "judged_candidates": 16522,
+   "shards": 2986,
+   "drop_unjudged": 792,
+   "skip_no_cands": 4
+  },
+  "by_phase": {
+   "研究": 850,
+   "修行": 821,
+   "元": 684,
+   "对撞": 611
+  },
+  "by_entry": {
+   "1": 850,
+   "0": 821,
+   "all": 684,
+   "both": 611
+  },
+  "avg_candidates": 5.53
+ },
+ "leakage_guard": {
+  "by": "question（问题字符串全等分组）",
+  "val_questions_used_for_all_stages": true,
+  "note": "同一问题的所有 run / view / 分片只会出现在同一侧"
+ },
+ "target_schema": {
+  "dual_judge": "{\"judgments\":[{\"idx\",\"position\",\"why_position\"}]}",
+  "self_check": [
+   "suspicious_candidates",
+   "suspicious_amps",
+   "ing_rephrased",
+   "honest_about_empty",
+   "unsaid_count",
+   "unsaid_is_escape",
+   "unsaid_where",
+   "flow_verdict",
+   "view_verdict",
+   "amp_ratio_verdict",
+   "notes"
+  ],
+  "self_check_min": [
+   "suspicious_candidates",
+   "ing_rephrased",
+   "unsaid_is_escape"
+  ]
+ },
+ "self_check": {
+  "samples_total": 568,
+  "train": 478,
+  "val": 90,
+  "dedupe_removed": 4,
+  "build_stats": {
+   "views": 1144,
+   "skip_blank_view": 6,
+   "skip_no_self_check": 8
+  },
+  "by_phase": {
+   "研究": 164,
+   "修行": 160,
+   "对撞": 132,
+   "元": 112
+  },
+  "by_entry": {
+   "1": 164,
+   "0": 160,
+   "both": 132,
+   "all": 112
+  },
+  "avg_candidates": 7.97,
+  "variant": "full",
+  "avg_amps": 4.47
+ },
+ "self_check_min": {
+  "samples_total": 568,
+  "train": 478,
+  "val": 90,
+  "dedupe_removed": 4,
+  "build_stats": {
+   "views": 1144,
+   "skip_blank_view": 6,
+   "skip_no_self_check": 8
+  },
+  "by_phase": {
+   "研究": 164,
+   "修行": 160,
+   "对撞": 132,
+   "元": 112
+  },
+  "by_entry": {
+   "1": 164,
+   "0": 160,
+   "both": 132,
+   "all": 112
+  },
+  "avg_candidates": 7.97,
+  "variant": "min(decision-only)",
+  "note": "与 full 共用同一 prompt 模板，仅严格 JSON schema 换成 3 个决策字段；用于压低本地 decode 延迟"
+ },
+ "split": {
+  "questions_total": 52,
+  "val_questions": [
+   {
+    "question": "新中国的成立时间是什么时候",
+    "n": 3
+   },
+   {
+    "question": "AI能否独立完成数字IC设计",
+    "n": 21
+   },
+   {
+    "question": "月亮的来源是什么",
+    "n": 12
+   },
+   {
+    "question": "人类如何延长寿命乃至实现永生？",
+    "n": 34
+   },
+   {
+    "question": "科学家什么时候发现中微子的，它的别名叫什么，它又有什么作用？",
+    "n": 25
+   },
+   {
+    "question": "我们所处的世界是虚拟的吗，有没有可能一切都是全息投影的？",
+    "n": 12
+   },
+   {
+    "question": "验证：信念四态与语义熵是否真的落盘",
+    "n": 9
+   },
+   {
+    "question": "为什么复杂系统的收敛判断往往不可靠？请给出可检验的判据。",
+    "n": 10
+   },
+   {
+    "question": "只用被动观测能否排除外部驱动或测量滤波制造的伪收敛？若不能，判据需包含干预。",
+    "n": 7
+   },
+   {
+    "question": "一个领域的基础知识究竟指什么，它是否正在被 AI 快速贬值？",
+    "n": 38
+   },
+   {
+    "question": "一个领域里的常识是如何形成的，它可靠吗？",
+    "n": 37
+   },
+   {
+    "question": "一个开源项目如何在不增加维护者负担的情况下扩大贡献者？",
+    "n": 54
+   },
+   {
+    "question": "如何判断一份关于气候变化的政策报告是否可信？",
+    "n": 60
+   },
+   {
+    "question": "订单系统该选一致性还是可用性，CAP 怎么取舍",
+    "n": 21
+   },
+   {
+    "question": "早高峰地铁站台拥挤越来越严重，运营效率该怎么提升",
+    "n": 7
+   },
+   {
+    "question": "多部门共享数据，权限与责任怎么划",
+    "n": 13
+   },
+   {
+    "question": "社区医院远程监测，先做哪类慢病",
+    "n": 13
+   },
+   {
+    "question": "老城区暴雨内涝频发，排水系统要不要整体翻新，怎么定优先级",
+    "n": 29
+   },
+   {
+    "question": "deepseek-V4.1-Flash 1017什么时候发布的",
+    "n": 24
+   },
+   {
+    "question": "EML 事件记忆如何提升元DGTF多模调度的细度、准确性和动态调节精度？请给出可执行的机制与验证指标。",
+    "n": 30
+   },
+   {
+    "question": "【元DGTF 项目权威背景（内置，本地文档+资料库注入）】\n元DGTF 是一个本地四层螺旋推理引擎，版本 元DGTF-V1.30.0.py / 1.30.0。四层固定为：0 修行（展开/候选/锚点）、1 研究（证据/子问题/收敛）、both 对撞（裁决/冲突/线头）、all 元（闭环/决策/停止）。EML 是事件溯源记忆与自学习反馈层，含 V1 playbook 与 V2 schedule_outcome；DSH 是本机 DeepSeek Harness headless Agent，用于自动闭环、提案与源码修复。app 通过 dgtf_app/server.py 调用引擎子进程，提供任务、分层日志、调度策略、V2/EML/自洽审计、LLM LoRA 调度建议等接口。当前边界：本地 LLM 仅做 route/rounds 调度建议；四层深度推理仍走 DeepSeek API；项目知识需要显式注入，模型参数本身不含元DGTF事实。\n[S1] README.md: - **EML + DSH 全流程闭环**：知识刷新 → 引擎跑次 → 消费者/任务 → 自审提案；见 docs/full_loop.md。\n- **本地 LLM LoRA fine-tune**：Qwen2.5-0.5B-Instruct 学习“问题 → route/rounds JSON”；留出 route 42.9% / rounds MAE 1.446；见 docs/llm_lora_finetune.md。\n- **调度与帕累托**：方案F profile、V2 模板质量-成本前沿、UCB/上下文 UCB、本地调度模型；见 docs/scheduler_model.md。\n- **自洽审计**：GET /api/consistency + 审计历史；见 docs/app_engine_mapping.md。\n- **针对性真跑**：60 calls / 341K tokens / 758.9s；见 docs/real_run_20261021.md。\n- **项目背景内置**：真实任务默认注入元DGTF权威背景，融合本地资料库与 app 本地上传文件；RAG v2 = BGE 语义检索 + BM25 + 引用 + 分层索引 + 追溯；GET /api/project/context 可查看。\n- **DSH 会话**：当前/历史、点击续聊、同一会话多轮=一条历史、实时事件、按会话取消；workspace-write 可读写项目，禁止 danger-full-access。\n- **V2 自动选优**：只保留挡位选择；切换挡位自动评估帕累托/最佳模板/UCB 并写最优。\n- **三本地底座**：Qwen2.5-0.5B / 1.5B / DeepSeek-R1-Distill-Qwen-1.5B；hybrid = Qwen route + DeepSeek rounds。\n- **质量替代分**：/api/quality/<task>，覆盖×回答率×收尾完整度−flags。\n[S2] README.md: - **当前版本**：`元DGTF-V1.30.0.py`（单文件引擎）\n- **人用界面**：`dgtf_app/`（app V1.4.0；本地 Web 工作台，见 `dgtf_app/README.md`）\n- **版本历史**：`CHANGELOG.md`；app 发布说明见 `docs/releases/`\n[S3] docs/full_loop.md: 1. 知识刷新：DeepSeek Search 优先，arXiv API 兜底，入库去重。\n2. 引擎跑次：默认 mock；显式 mock=False 才真跑。\n3. 消费者/任务：agent_worker.run_once 处理任务队列。\n4. 自审提案：DSH 批量提案；已确认提案可进入 autofix。\n[S4] v1200_报告.md: - app V1.2.3（LLM LoRA 接入 + 内置项目上下文 + 导入文件 RAG + UI 顺序修复）；\n- 引擎仍 元DGTF-V1.30.0.py / 1.30.0；\n- release：docs/releases/APP-V1.2.0.md。\n[S5] v1200_报告.md: - 真实任务默认自动注入元DGTF权威背景；mock/自检默认不注入；\n- 与本地资料库（agent_knowledge）融合，取相关标题/摘要/URL；\n- app 本地上传文件（dgtf_app/anchors/external_anchor.json）纳入 RAG，取 top-3 相关分块；\n- 保留 GET /api/project/context 与 opts.project_context 覆盖；\n- 移除前端“项目上下文”按钮；文档读取按 mtime 缓存、敏感过滤、默认 7000 字符上限；\n- 实测导入 rag_probe.txt 后 imported_sources 命中，随后清理。\n[S6] v1110_报告.md: - 起始 ¥38.08；结束约 ¥34.35，总消耗约 ¥3.73（含真跑、知识检索、DSH Agent 调用）。\n【本地资料库（导入/检索）】\n- [K1] Release v0.2.1-rc.1 · deepseek-ai/deepseek-harness | @tianyicui, @turtle2099\n...\n- 优化含超长源码行的文件预览性能，超长行使用无高亮文本展示，普通行继续进行语法高亮。\n...\n- Office 文档任务按需加载编辑、渲染和导出指引，减少简单修改及 PDF 导出后的无关检查与预览，并避免在回复中引用已删除的预览图。 @yudshj\n- DeepSeek 账号的模型列表随账号可用模型更新，并隐藏当前客户端版本不支持的模型。\n...\n- 模型设置更清楚地提示凭据来源和检测状态，支持按需显示输入的 API Key。\n...\n### 问题修复\n\n- 目标编辑支持多行文本和 Shift+Enter 换行，并改善目标与排队消息编辑器的中文输入及宽度适配。\n...\n- 修复目标任务停止、恢复并再次停止后，新消息滞留队列的问题。\n...\n- 修复 Trajectory 将等待、流式输出或重试中的请求标为完成，以及压缩任务提前显示结果的问题。 @turtle2099, @kermanx\n- 修复后台工作流仍在运行，却因父级工具步骤或对话轮次正常结束而被标为已中断的问题。\n...\n- 恢复可继续子代理输入栏的图片粘贴和拖放，支持运 | https://github.com/deepseek-ai/deepseek-harness/releases/tag/dsh-v0.2.1-rc.1\n- [K2] deepseek-harness（deepseek-ai/deepseek-harness） | # deepseek-harness（deepseek-ai/deepseek-harness）\n\ndeepseek-harness是托管在鲸智社区的代码仓库。\n\ndeepseek-harness是 DeepSeek AI 开源的智能体开发与运行框架，面向复杂 Agent 应用的构建、扩展和交互执行。其核心采用“一切皆插件（Everything-is-a-Plugin）”的架构思想，并由 Cordis 框架提供底层支持，使模型、工具、运行环境及其他能力能够以模块化方式组合和扩展。项目提供 Web UI，可通过 npm 快速启动，也支持从源码构建运行，适合用于智能体工作流开发、工具能力集成和 Agent 系统实验。\n\n- 所属组织\n- deepseek-ai\n- 开源许可证\n- apache-2.0\n\n由 深度求索 提供 更新时间：2026-09-01下载量：0\n...\nDeepSeek Harness (dsh) is an open-source agent harness developed by DeepSeek AI.\n\nIt is built on an everything | https://aihub.caict.ac.cn/codes/deepseek-ai/deepseek-harness#1\n- [K3] Change Log | DeepSeek API Docs - Change Log | ## Date:\n...\nFor more details, please refer to this documentation.\n...\n- DeepSWE: 59.3\n- DSBench-Hard: 63.6\n- AutomationBench (Public):\n...\nThe new prices will take effect at 16:00 (UTC Time) on August 16, 2026.\n...\n2026-07-31\n\n### DeepSeek-V4-Flash Update\n\nThe official release of the DeepSeek-V4-Flash API is now in public beta. The API calling method remains unchanged — simply set the model name  | https://api-docs.deepseek.com/updates/#1\n- [K4] DeepSeek-V4.1-Flash-1017: Wish-Driven Programming Made Real | DeepSeek API Docs | # DeepSeek-V4.1-Flash-1017: Wish-Driven Programming Made Real\n\n## 🚀 DeepSeek-V4.1-Flash-1017 is here!\n\nStronger benchmark performance, faster task completion, and shorter outputs than the previous version—a Pareto improvement in performance and cost. Now live on our website, app, and API.\n\n🛠️ Optimized for DeepSeek Harness, Tencent CodeBuddy, WorkBuddy, and more. Upgrade to DeepSeek Harness v0.2.1 | https://api-docs.deepseek.com/news/news261017/?ref=aisecret.us\n【语义检索（BGE 本地）】\n[E1] dgtf_app/README.md: 给元DGTF 引擎套的一层人用界面：**提问 → 后台跑 → 实时进度 → 读产物**，\n外加一个可检索的**历史产物库**。\n[E2] dgtf_app/README.md: 边界：本地 LLM 只做调度建议，不替代 DeepSeek API 的四层推理。\n[E3] docs/llm_lora_finetune.md: - 0.5B + 122 条只能学格式与浅层调度，不是强领域模型；\n- route 42.9% 只能做建议/预填，不应直接替代 API 调度；\n- 不是 DeepSeek LLM 微调；基座是开源 Qwen；\n- 真实跑/长文四层分析仍由 DeepSeek API 承担。\n[E4] docs/real_run_20261021.md: - 任务：20261021_124210_765e5d\n- 问题：EML 事件记忆如何提升元DGTF多模调度的细度、准确性和动态调节精度？请给出可执行的机制与验证指标。\n- 引擎：元DGTF-V1.30.0.py\n- 模式：真实 API，web=off，max_tokens=400000，parallel=auto\n- 结果：done，exit 0\n- 时长：758.9 秒（约 12.6 分钟）\n- 调用：60 calls\n- token：341,487\n- 产出：outputs/20261021_125449_EML事件记忆如何提升元DGTF多模调.md（74,917 字节）\n- 产物：同名 .packed.json / 分层 md / run.log\n【回答约束】涉及元DGTF时必须依据以上背景；引用时标注 [S#]/[K#]/[I#]；背景没有的，明确说不知道，不得编造。\n\n【用户问题】\nRAG、本地DeepSeek血统基座与DSH多会话如何协同让元DGTF可追溯升级？",
+    "n": 5
+   },
+   {
+    "question": "用一句话说明元DGTF的修行层作用。",
+    "n": 28
+   },
+   {
+    "question": "DeepSeek API 的 base URL 是什么？",
+    "n": 25
+   },
+   {
+    "question": "HTTP 404 状态码表示什么？",
+    "n": 28
+   },
+   {
+    "question": "用一句话说明四层推理系统的最小可行闭环是什么？",
+    "n": 5
+   },
+   {
+    "question": "Python 中 len 函数返回什么？",
+    "n": 26
+   },
+   {
+    "question": "Python 中 len 函数的返回值是什么类型？",
+    "n": 25
+   },
+   {
+    "question": "DeepSeek V4.1 Flash 是哪一天发布的？",
+    "n": 30
+   },
+   {
+    "question": "2+2等于几？",
+    "n": 25
+   }
+  ],
+  "train_questions": 23,
+  "val_share": 0.16
+ },
+ "note_dual_judge": "is_amp_candidate 是 position 的派生量（标签泄漏），未作为输入特征；why_position 为空的候选是未判/默认 0，作为噪声丢弃"
+}

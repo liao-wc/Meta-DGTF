@@ -1,0 +1,61 @@
+{
+ "filter_policy": {
+  "max_len": 2048,
+  "drop_truncated": true,
+  "note": "超长样本直接丢弃（不中段切候选）；由 train_dgtf_stage_lora --drop-truncated 执行"
+ },
+ "tokenizer": "local_model\\models\\Qwen2.5-0.5B-Instruct",
+ "stages": {
+  "self_check_min": {
+   "available": 478,
+   "after_drop_truncated": 477,
+   "planned_train": 180,
+   "n": 180,
+   "prompt_tokens": {
+    "p50": 1651,
+    "p95": 1835,
+    "max": 1932
+   },
+   "target_tokens": {
+    "p50": 27,
+    "p95": 42,
+    "max": 53
+   },
+   "total_tokens": {
+    "p50": 1680,
+    "p95": 1859,
+    "max": 1956,
+    "mean": 1686.2
+   },
+   "truncated": 0,
+   "label_dist": {
+    "true": 53,
+    "false": 424,
+    "null": 1
+   }
+  },
+  "dual_judge": {
+   "available": 2490,
+   "after_drop_truncated": 2490,
+   "planned_train": 110,
+   "n": 110,
+   "prompt_tokens": {
+    "p50": 1036,
+    "p95": 1609,
+    "max": 1663
+   },
+   "target_tokens": {
+    "p50": 144,
+    "p95": 170,
+    "max": 197
+   },
+   "total_tokens": {
+    "p50": 1185,
+    "p95": 1753,
+    "max": 1854,
+    "mean": 1249.2
+   },
+   "truncated": 0
+  }
+ }
+}

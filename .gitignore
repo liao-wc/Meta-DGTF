@@ -107,4 +107,19 @@ llm_sft/_train_*.log
 # ⑤ A/B 真跑的过程日志（数值已落 docs/ab_results.jsonl；probe JSON 在 outputs/ 内）
 docs/abrun_*.log
 
+# ── 2026-10-25 第二轮：本地模型证据与用户上传文件 ─────────────────────
+# ① 第一轮失败适配器的留档（截断训练；权重按项目口径不入库，config/README 也不跟库）
+llm_sft/*_truncated_bak/
+# ② 用户在 App 里上传的个人文件（截图/恢复码/密钥等）：绝不进公开仓库
+dgtf_app/anchors/QQ截图*
+dgtf_app/anchors/image.png.txt
+dgtf_app/anchors/github-recovery-codes.txt
+dgtf_app/anchors/secret key.txt
+# ④ 第一轮失败适配器备份（权重不入库；metrics/eval/log 证据已单独跟库）
+llm_sft/_round1_evidence/adapter_*/
+# ③ 本地模型调试用的一次性脚本（_ 前缀 = scratch，不入库）
+scripts/local_model/_*.py
+
+
+
 
