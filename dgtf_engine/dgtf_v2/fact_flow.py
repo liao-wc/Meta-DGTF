@@ -509,7 +509,10 @@ def _numeric_claim_answer(question: str, evs: list) -> str:
     _FINAL_MARK = ("最终核实", "最终数据", "修订后", "更新后", "final")
     _PRELIM_MARK = ("初步核算", "初步数据", "初步统计", "预计", "预估",
                     "初值", "prelim")
+    _annual_q = bool(re.search(r"(?:19|20)\d{2}年", q)) and any(
+        k in q for k in ("涨幅", "增速", "增长", "总量", "全年", "年度"))
     _PEN = ("上游", "中游", "下游", "河段", "分产业", "第一产业", "第二产业",
+            "核心CPI", "核心", "扣除食品", "扣除", "分项",
             "第三产业", "人均", "居民", "占比", "比重", "研发", "投资",
             "出口", "进口", "消费", "其中", "合计中")
     _OV = ("全长", "总长", "总长度", "修正为", "现为", "调整为", "增长",
@@ -542,16 +545,19 @@ def _numeric_claim_answer(question: str, evs: list) -> str:
             _rec = _tds(snip) if _recency else 0
             _final = 1 if any(k in snip for k in _FINAL_MARK) else 0
             _prelim = 1 if any(k in snip for k in _PRELIM_MARK) else 0
+            _annual = 1 if (_annual_q and "全年" in snip) else 0
+            _month = 1 if (_annual_q and any(
+                k in snip for k in ("月份", "月度", "环比"))) else 0
             # 修订期感知：最终核实 > 初步核算（对统计类事实题的「最新/最终」问法）
-            score = (u_hit, concept, _final, _rec, ov, -_prelim, -pen,
-                     -len(raw))
+            score = (u_hit, concept, _final, _rec, _annual, -_month, ov,
+                     -_prelim, -pen, -len(raw))
             if best is None or score > best[0]:
                 best = (score, snip, raw)
     if best is None:
         return ""
     score, snip, raw = best
     # 严格门槛：单位类命中 + 题面概念命中 + 非分段语义，否则回退旧逻辑
-    if not (score[0] and score[1] and not score[6]):
+    if not (score[0] and score[1] and not score[8]):
         return ""
     for part in re.split(r"[。；;\n]", snip):
         if raw and raw in part:
