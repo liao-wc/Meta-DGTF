@@ -45,6 +45,27 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 82 增补（2026-10-26）】
+- 最终稳态验收：final_acceptance --with-service **9/9 PASS**（fast_gate、V2 806 checks、
+  四道护栏、本地服务 v8b errors=0）；工作树仅并发 R49 会话文件未触碰。
+【Round 81 增补（2026-10-26）】
+- 最终交付说明本地模型段更新为 **v8b 默认**（质量持平 v6、p50/p95 更快）；
+- 服务 5 次顺序探测 3.15–3.51s、errors=0，latency n=10 p50=3240ms/p95=6750ms。
+【Round 80 增补（2026-10-26）】
+- v8b 服务侧证据：/health v8b、并发 3 串行化（latency p50 3240ms/p95 6750ms、
+  errors=0）、App 自检 444/0；service_probe_v8b_concurrency.json 归档。
+【Round 79 增补（2026-10-26）】
+- v8b（mixed 配方，168 样本×2 epochs）训练完成（val_loss 0.9895，val 子集不同偏高）；
+  30 条 held-out 与 v6 质量完全持平（字段 0.589 / escape 0.800 / JSON 1.0 / all3 0.033；
+  suspF1 −0.012 噪声内），p50/p95 更快（5858/6340 vs 6271/7474ms）⇒ SWITCH_CANDIDATE；
+  服务默认切 v8b（v6/v5/v2/v1 兜底）；/health 验证 v8b；final_acceptance 9/9 PASS。
+【Round 78 增补（2026-10-26）】
+- v8b 训练进行中（step 250/336，检查点 200 已存）；无代码变更。
+【Round 77 增补（2026-10-26）】
+- eval_and_compare 控制流修复 + `--skip-eval`（compare 路径以 v6 vs v5 验证：
+  SWITCH_CANDIDATE）。
+【Round 76 增补（2026-10-26）】
+- scripts/README.md 工具清单（验收/护栏/真实跑次/App/本地模型/子系统，标注零成本项）。
 【Round 75 增补（2026-10-26）】
 - eval_and_compare.py：候选适配器一键评测（30 条 held-out）+ compare_eval 判定；
   训练完成后直接出 SWITCH/KEEP。v8b 训练中（step 110/336）。
