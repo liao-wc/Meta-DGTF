@@ -161,3 +161,25 @@ calls 177 / 182，dual_judge 17~22 calls / 177K~287K tokens / 358K~400K ms。）
   答案门直接不过。⇒ **dual_judge 的 thinking 是质量保险，不是可裁剪开销**。
 - 结论：**不采纳**；默认与所有质量档保持 dual_judge thinking=enabled，
   该 lever 关闭；成本优化只剩「前缀缓存/更优轮数/本地模型」三条路。
+
+
+## 8. 道生专属模式 × 跨场景矩阵（引擎 CLI 直跑，web off）
+
+同一预设（configs/道生专属模式.yaml）在两个不同领域/题型上各跑一次：
+
+| 场景 | 题 | quality | answer_quality / ready | tokens | calls | wall | flags |
+|---|---|---|---|---|---|---|---|
+| 推理（物理·城市气候） | 为什么城市热岛效应在夜间比白天更明显？ | 0.9465 | verified / True | 723,064 | 97 | 586s | duty_short |
+| 推理（物理·静电） | 为什么冬天的静电现象比夏天更常见？ | **0.9400** | **verified / True** | **718,020** | 100 | 585s | duty_short |
+| 事实（介质光速） | 光在水中传播的速度是多少？ | 0.4440 | **unverified / False** | 1,015,910 | 111 | 980s | duty_short、probe_no_target_covered |
+
+判读：
+- **跨领域推理题**：道生预设表现稳定（两题都是 ~0.94、verified、ready=True、
+  ~72 万 tokens/100 calls/585s），说明预设本身对推理类问题具备跨领域一致性。
+- **事实题**：CLI 直跑且 --web off 时 100 万 tokens 仍 unverified（事实门需要官方证据），
+  且 flags 显示探针未覆盖目标。这不是预设缺陷：**App 层 quality_policy 的事实题
+  策略是 auto:web-retry（自动联网 + 失败补跑）**，会走 web on；此处是引擎直跑绕过了
+  App 策略。⇒ 结论：事实题必须联网档，不能省 web；App 的全自动分流（2.0.23）已覆盖。
+- 另一发现：事实题在无证据时的成本（101 万 tokens）高于推理题（72 万），却拿不到
+  verified ⇒ 「事实题无 web」是低效档，App/引擎都应在事实题型上强制 web-retry
+  （现状已如此，文档化以防回退）。
