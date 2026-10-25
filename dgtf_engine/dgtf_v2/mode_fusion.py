@@ -229,13 +229,18 @@ MEASURED_SCENARIOS: Dict[str, dict] = {
             "fast": {"quality": 0.9366, "tokens": 481050, "calls": 89,
                      "wall": 188.4, "verified": True,
                      "config": "B parallel + thinking off + rounds auto"},
+            "fast_domain2": {"quality": 0.9535, "tokens": 579083, "calls": 98,
+                             "wall": 282.7, "verified": True,
+                             "question": "为什么冬天的静电现象比夏天更常见？",
+                             "config": "B parallel + thinking off + rounds auto"},
         },
         "rules": {
             "quality_first": "auto",
             "cost_first": "fast",
-            "low_tokens_with_quality_ge_0.94": "serial",
-            "note": ("fast 是成本/墙钟档（质量 -1.0pp）；serial 只比 auto 省 11% tokens "
-                     "但墙钟 +74%，仅在 min_quality>=0.94 且 tokens 优先时有用"),
+            "low_tokens": "fast",
+            "note": ("fast 已在两个推理域验证（0.9366/0.9535 vs auto 0.9465；单跑方差内），"
+                     "tokens −33%、墙钟 −68~70% ⇒ 成本档首选；serial 只省 11% tokens "
+                     "但墙钟 +74%，已被 fast/auto 支配（仅作历史对照保留）"),
         },
     },
     "choice": {
@@ -245,9 +250,14 @@ MEASURED_SCENARIOS: Dict[str, dict] = {
             "auto": {"quality": 0.9487, "tokens": 842151, "calls": 98,
                      "wall": 869.3, "verified": True,
                      "config": "B parallel + thinking auto + rounds auto"},
+            "fast": {"quality": 0.9481, "tokens": 593788, "calls": 97,
+                     "wall": 272.8, "verified": True,
+                     "config": "B parallel + thinking off + rounds auto"},
         },
-        "rules": {"quality_first": "auto",
-                  "note": "选择类与推理类同档；未测 fast 档，默认不降档"},
+        "rules": {"quality_first": "auto", "cost_first": "fast",
+                  "note": ("fast 实测与 auto 同质量（0.9481 vs 0.9487，差值在单跑方差内），"
+                           "tokens −30%、墙钟 −69% ⇒ 成本档/多数场景可用；"
+                           "质量优先仍保留 auto（thinking 保留更稳）")},
     },
     "fact": {
         "label": "事实/数值",
@@ -337,6 +347,15 @@ def recommend_scenario(kind: str = "reasoning",
     if not feasible:
         feasible = pool
         fallback = True
+    _qfirst = str(rules.get("quality_first") or "")
+    if (prefer == "quality" and min_quality is None and max_wall is None
+            and _qfirst in feasible):
+        name = _qfirst
+        reason = "按实测场景规则选择质量优先档（rules.quality_first）"
+        return {"scenario": k, "label": cfg.get("label", k), "mode": name,
+                "run": dict(feasible[name]), "require_web": require_web,
+                "forbid": list(rules.get("forbid") or []), "reason": reason,
+                "note": rules.get("note", "")}
     if prefer == "wall":
         name = min(feasible, key=lambda n: feasible[n].get("wall") or 1e9)
     elif prefer == "tokens":

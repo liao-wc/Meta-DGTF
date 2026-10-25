@@ -26,7 +26,7 @@ def ck(n, ok, info=""):
 
 def main():
     rows = measured_matrix()
-    ck("矩阵行数 = 7（reasoning 3 / choice 1 / fact 3）", len(rows) == 7, len(rows))
+    ck("矩阵行数 = 9（reasoning 4 / choice 2 / fact 3）", len(rows) == 9, len(rows))
     ck("三个场景桶齐全",
        set(MEASURED_SCENARIOS) == {"reasoning", "choice", "fact"},
        list(MEASURED_SCENARIOS))
@@ -63,15 +63,23 @@ def main():
     ck("分桶：空题兜底 reasoning", kind_of_question("") == "reasoning")
 
     r1 = recommend_scenario("reasoning", prefer="quality")
-    ck("推荐：reasoning 质量优先 → auto（质量最高）",
-       r1["mode"] == "auto"
-       and r1["run"]["quality"] == max(x["quality"] for x in rea["runs"].values()),
-       r1)
-    r2 = recommend_scenario("reasoning", max_wall=300)
-    ck("推荐：墙钟≤300s → fast", r2["mode"] == "fast", r2.get("mode"))
+    ck("推荐：reasoning 质量优先 → 规则档 auto（实测方差内取稳档）",
+       r1["mode"] == "auto" and "规则" in str(r1.get("reason")), r1)
+    r2 = recommend_scenario("reasoning", max_wall=300, prefer="wall")
+    ck("推荐：墙钟≤300s 且 prefer=wall → fast（188s）",
+       r2["mode"] == "fast", r2.get("mode"))
     r3 = recommend_scenario("reasoning", min_quality=0.94, prefer="tokens")
-    ck("推荐：质量≥0.94 且 tokens 优先 → serial", r3["mode"] == "serial",
+    ck("推荐：质量≥0.94 且 tokens 优先 → 最少 tokens 的 verified 档",
+       r3["mode"] == "fast_domain2"
+       and r3["run"]["tokens"] == min(
+           x["tokens"] for x in rea["runs"].values()
+           if x["verified"] and x["quality"] >= 0.94),
        (r3.get("mode"), r3.get("run", {}).get("tokens")))
+    _ch = MEASURED_SCENARIOS["choice"]["runs"]
+    ck("choice：fast 与 auto 同质量（Δ≤0.01）且更省 tokens/墙钟",
+       abs(_ch["fast"]["quality"] - _ch["auto"]["quality"]) <= 0.01
+       and _ch["fast"]["tokens"] < _ch["auto"]["tokens"]
+       and _ch["fast"]["wall"] < _ch["auto"]["wall"], _ch)
     r4 = recommend_scenario("fact", prefer="wall")
     ck("推荐：fact 无论偏好都只从 verified 池选（web_on_auto）",
        r4["mode"] == "web_on_auto" and r4["require_web"] is True and

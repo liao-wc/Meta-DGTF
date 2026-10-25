@@ -211,3 +211,23 @@ ecommend_scenario()）：
 ecommend_scenario(kind, min_quality, max_wall, prefer) 已把这套规则机器化：
    按实测 verified 池筛选 → 偏好排序 → 约束不可满足时显式回退并写 reason。
    判据：tests_scenario_matrix.py 19/19 PASS。
+
+
+## 10. fast 档泛化实测（Round 5：推理跨域 + 选择题）
+
+| 场景 | 模式 | quality | verified/ready | tokens | calls | wall |
+|---|---|---|---|---|---|---|
+| 推理·静电（跨领域） | auto | 0.9400 | ✅/✅ | 718,020 | 100 | 585s |
+| 推理·静电（跨领域） | **fast** | **0.9535** | ✅/✅ | **579,083** | 98 | **283s** |
+| 选择·补观测 vs 定义 | auto | 0.9487 | ✅/✅ | 842,151 | 98 | 869s |
+| 选择·补观测 vs 定义 | **fast** | **0.9481** | ✅/✅ | **593,788** | 97 | **273s** |
+
+判读：
+- **fast 在跨领域推理与选择类上与 auto 同质量（差值 ≤0.01，单跑方差内），
+  tokens −19~30%、墙钟 −52~69%** ⇒ 成本档从「仅热岛单题」升级为「3 题 × 2 题型验证」。
+- 事实题仍然禁止 fast（上节：0.4741/needs_evidence；thinking off 与 web 缺一不可）。
+- 更新 `mode_fusion.MEASURED_SCENARIOS`（9 行实测）与规则：
+  reasoning/choice 的 `cost_first=fast`；质量优先仍 `auto`（保留 thinking，方差更稳）；
+  serial 被 fast/auto 支配（仅历史对照保留）。
+- App 道生 plan 已把规则落到**决策**而非审计字段：
+  预算档 reasoning/choice → fast；预算档/降级遇事实题 → 保 B + 强制 web on + thinking auto。

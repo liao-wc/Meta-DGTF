@@ -42,6 +42,15 @@ V2.2.3
   - 前缀缓存实测：全量跑 prompt cache hit ratio **13.9%~17.6%**（已自动省约 ¥0.2/跑）；
     prompt 静态段前置可进一步省，但需质量 A/B，列为下一轮 opt-in 项。
 
+【Round 5 增补（2026-10-25 同日）】
+- fast 档泛化实测（3 题 × 2 题型）：推理·静电 fast 0.9535/579K/283s（auto 0.9400/718K/585s）；
+  选择·补观测 fast 0.9481/594K/273s（auto 0.9487/842K/869s）⇒ 与 auto 同质量、
+  tokens −19~30%、墙钟 −52~69%；事实题仍禁 fast（0.4741/needs_evidence）。
+- mode_fusion.MEASURED_SCENARIOS 扩到 9 行；规则改：reasoning/choice cost_first=fast，
+  质量优先 auto，serial 被支配；recommend_scenario(prefer=quality) 尊重 rules.quality_first；
+  判据 tests_scenario_matrix 20 项全 PASS。
+- App 道生 plan 场景规则进入决策：预算档 reasoning/choice→fast；事实题（含降级路径）
+  保 B + 强制 web on + thinking auto；plan 顶层暴露 scenario，mode_summary 带 scenario。
 【Round 4 增补（2026-10-25 同日）】
 - 场景 × 模式矩阵实测（推理题）：auto 0.9465/723K/586s；serial 0.9456/645K/1019s；
   fast 0.9366/481K/188s（成本档）；事实题 fast 0.4741 needs_evidence（禁止）。

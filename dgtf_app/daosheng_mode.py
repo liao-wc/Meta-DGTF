@@ -845,9 +845,9 @@ def m4_prediction(question: str, history: dict, preset: dict | None = None) -> d
     ds = preset or load_preset()
     if not (ds.get("m4") or {}).get("enabled", True):
         return {"enabled": False, "ok": False, "reason": "预设关闭 M4 预测"}
-    root = str(PROJECT_ROOT)
-    if root not in sys.path:
-        sys.path.insert(0, root)
+    for _sp in (str(PROJECT_ROOT), str(PROJECT_ROOT / "dgtf_engine")):
+        if _sp not in sys.path:
+            sys.path.insert(0, _sp)
     hist = history.get("episodes") or {}
     m4_hist = {"calls_med": hist.get("calls_med") or 0,
                "tokens_med": hist.get("tokens_med") or 0,
@@ -1014,9 +1014,27 @@ def cache_prediction(question: str, opts: dict | None = None) -> dict:
 
 
 # ── 计划生成 ───────────────────────────────────────────────────
+def _scenario_of(m4: dict) -> dict:
+    sc = (m4 or {}).get("scenario") or {}
+    return sc if isinstance(sc, dict) else {}
+
+
 def _choose_engine_mode(tier: str, m4: dict) -> tuple[str, str]:
+    """按 tier + 实测场景矩阵选引擎模式。
+
+    Round 5：场景规则真正生效（不只做审计字段）：
+      · fact 场景要求 web + thinking ⇒ 预算档不得降到 fast（实测 fast 事实题
+        0.474/needs_evidence），回 B 并强制 web on；
+      · reasoning/choice 的预算档用 fast（实测 tokens −33%、墙钟 −68%、质量 −1pp）。
+    """
+    sc = _scenario_of(m4)
+    kind = str(sc.get("kind") or "")
     if tier == "fast":
-        return "fast", "预算档：fast（thinking off、低圈）"
+        if sc.get("require_web") or kind == "fact":
+            return "B", ("预算档不适用于事实题（实测 fast 事实题 0.474/needs_evidence）"
+                         "→ 回 B + 强制联网")
+        return "fast", ("预算档：fast（thinking off、低圈；实测推理 tokens −33%、"
+                        "墙钟 −68%、质量 −1pp）")
     first = str((m4 or {}).get("first_mode") or "")
     if first in ("B", "serial"):
         return first, "M4 预测首选 %s（%s）" % (first, (m4 or {}).get("first_reason") or "-")
@@ -1057,11 +1075,19 @@ def build_plan(question: str, opts: dict | None = None, *,
     bg = budget_guard(history, ds, balance_cny=balance_cny, is_mock=is_mock)
     degrade_reason = ""
     if tier == "quality" and bg.get("decision") in ("degrade", "warn"):
-        tier = "fast"
-        engine_mode = "fast"
-        mode_reason = "预算守卫 %s → %s" % (bg.get("decision"), bg.get("reason") or "")
-        degrade_reason = str(bg.get("reason") or "")
-        warnings.append("预算守卫触发：已自动降级 daosheng_fast")
+        _sc0 = _scenario_of(m4)
+        if _sc0.get("require_web") or str(_sc0.get("kind") or "") == "fact":
+            # 事实题降 fast 会掉质量门（实测 0.474/needs_evidence）⇒ 保 B + 强制联网
+            mode_reason = ("预算守卫 %s，但事实题不降 fast（保 B + 强制联网）：%s"
+                           % (bg.get("decision"), bg.get("reason") or ""))
+            degrade_reason = str(bg.get("reason") or "")
+            warnings.append("预算守卫触发：事实题保持 B 档（禁 fast）")
+        else:
+            tier = "fast"
+            engine_mode = "fast"
+            mode_reason = "预算守卫 %s → %s" % (bg.get("decision"), bg.get("reason") or "")
+            degrade_reason = str(bg.get("reason") or "")
+            warnings.append("预算守卫触发：已自动降级 daosheng_fast")
     if tier == "quality" and bg.get("fail_open"):
         warnings.append("余额未知：fail-open 继续质量档（未因余额查询失败拒任务）")
 
@@ -1095,6 +1121,11 @@ def build_plan(question: str, opts: dict | None = None, *,
     if tier == "fast":
         rounds = ds.get("rounds_fast") or "0:2,1:3,both:2,all:2"
         parallel, web, thinking, effort = "serial", "off", "off", "auto"
+        # [Round 5] 事实题在 fast 档必须保留 thinking（实测 fast 事实题
+        # thinking off → 0.474/needs_evidence）；web 由后面的场景规则强制 on。
+        _scf = _scenario_of(m4)
+        if _scf.get("require_web") or str(_scf.get("kind") or "") == "fact":
+            thinking = "auto"
     else:
         rounds = (ds.get("rounds_quality") or "0:3,1:3,both:4,all:4") if (
             quality_first and bg.get("decision") == "ok") else (ds.get("rounds") or "auto")
@@ -1112,6 +1143,14 @@ def build_plan(question: str, opts: dict | None = None, *,
         quality_policy = str(qp_cfg.get("fact") or "auto:web-retry")
     else:
         quality_policy = str(qp_cfg.get("other") or "auto:stable")
+
+    # [Round 5] 实测场景规则：事实题强制联网（web off 实测 0.444/unverified，
+    # web on 0.958/verified；成本只多 ~13.6 万 tokens）。
+    _sc1 = _scenario_of(m4)
+    if (_sc1.get("require_web") or str(_sc1.get("kind") or "") == "fact") \
+            and str(web) != "on":
+        web = "on"
+        warnings.append("场景规则：事实题强制联网（web on，实测 +0.51 质量）")
 
     memory = memory_summary(question, ds, project_related=_prj, history=history)
     context_injected: list[str] = []
@@ -1142,7 +1181,8 @@ def build_plan(question: str, opts: dict | None = None, *,
                       "why": local.get("why"), "attempts": local.get("attempts")}
     m4_desc = {k: m4.get(k) for k in
                ("enabled", "ok", "first_mode", "first_reason",
-                "quality_prediction", "quality_guard", "error")}
+                "quality_prediction", "quality_prediction_lower",
+                "conformal", "scenario", "quality_guard", "error")}
     hist_desc = {k: (history.get("episodes") or {}).get(k) for k in
                  ("n", "mode_counts", "tokens_med", "calls_med", "cut_rate",
                   "web_ratio", "tri_rate", "latest_run_id")}
@@ -1151,6 +1191,11 @@ def build_plan(question: str, opts: dict | None = None, *,
         reasons.append("本地模型 HTTP 可用→route=%s" % ",".join(local.get("route") or []))
     else:
         reasons.append("本地服务不可达→规则回退（route=%s）" % route)
+    _sc2 = _scenario_of(m4)
+    if _sc2.get("kind"):
+        reasons.append("场景=%s → 推荐 %s（%s）"
+                       % (_sc2.get("kind"), _sc2.get("mode"),
+                          (_sc2.get("run") or {}).get("quality")))
     if m4.get("ok") and m4.get("quality_prediction"):
         pred = m4.get("quality_prediction") or {}
         reasons.append("M4 预测 " + "/".join("%s=%.3f" % (k, float(v))
@@ -1191,6 +1236,7 @@ def build_plan(question: str, opts: dict | None = None, *,
         "memory": memory,
         "local_llm": local_desc,
         "m4": m4_desc,
+        "scenario": _scenario_of(m4),
         "history": hist_desc,
         "cache": cache,
         "budget_guard": bg,
@@ -1249,9 +1295,11 @@ def mode_summary(plan: dict | None) -> dict:
     if not isinstance(plan, dict) or not plan:
         return {}
     bg = plan.get("budget_guard") or {}
+    _sc = plan.get("scenario") or {}
     return {"id": plan.get("mode_id") or "", "tier": plan.get("tier") or "",
             "policy": plan.get("policy") or "",
             "engine_mode": plan.get("engine_mode") or "",
+            "scenario": _sc.get("kind") or "",
             "quality_policy": plan.get("quality_policy") or "",
             "budget_decision": bg.get("decision") or "",
             "reason": str(plan.get("reason") or "")[:300]}
