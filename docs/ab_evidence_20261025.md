@@ -1811,3 +1811,31 @@ App 与引擎均**无回归**；离线重放证明历史 pack 在新版下仍 an
 230 样本 × 2 epochs、max_len 1900、lr 8e-5，GPU 后台训练（预计 ~2.5h）。
 完成后与 v6（字段 0.589 / escape 0.800 / p50 6.27s）在 30 条 held-out 对比，
 只变好才切默认；否则归档负结果。
+
+
+## 64. dual_judge local 防护（Round 58，零 API）
+
+### 64.1 问题
+
+引擎 `--dual-judge-mode` 仅接受 llm/cache/auto（无 local，Round 50 已留档）；
+若预设写 `dual_judge_mode: local`，App 可能把非法 flag 透传给引擎，直接导致任务失败。
+
+### 64.2 修复（App 层确定性回退）
+
+`build_plan` 检测预设原始值（`dual_judge_mode == local`）→ 回退 `llm`，并写：
+- `dual_judge_mode_via = "local-unsupported-fallback"`
+- warning「dual_judge 不支持 local 档（引擎仅 llm/cache/auto），已回退 llm」
+
+判据脚本 `scripts/app_dual_judge_guard_check.py`：**7/7 PASS**
+（local→llm、via 标记、warning；llm/auto 不被改写）。
+
+### 64.3 意义
+
+补齐「self_check 支持 local / dual_judge 不支持」的 App 侧防护：
+用户误配不会再打挂引擎，而是自动降级并醒目提示；为未来引擎接入
+`--dual-judge-mode local` 保留升级空间。
+
+### 64.4 门禁
+
+全量 V2 51/51（804 checks）、fast_gate 12/12（本轮未改引擎/V2 代码）。
+v8（mixed）训练进行中（GPU）。

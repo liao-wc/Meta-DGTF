@@ -1161,6 +1161,12 @@ def build_plan(question: str, opts: dict | None = None, *,
     if _busy_fallback:
         scm_via, scm = "busy-fallback", "llm"
     djm_via, djm = _mechanism_via("dual_judge_mode")
+    # ★ [Round 58] 引擎 --dual-judge-mode 只接受 llm/cache/auto（无 local 档）；
+    #   预设若写了 local，这里确定性回退 llm，避免透传非法 flag 直接把引擎打挂。
+    _djm_raw = str(ds.get("dual_judge_mode") or "").strip().lower()
+    if _djm_raw == "local" or str(djm or "").strip().lower() == "local":
+        djm_via, djm = "local-unsupported-fallback", "llm"
+        warnings.append("dual_judge 不支持 local 档（引擎仅 llm/cache/auto），已回退 llm")
     # history_fusion 的 auto 本来就是引擎默认（V2.2.2 已有 --history-fusion auto），
     # 记「engine-default」而不是假装 App 传了参数；显式 off/on 才走 CLI。
     hf = ds.get("history_fusion")

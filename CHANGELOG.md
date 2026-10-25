@@ -45,6 +45,10 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 58 增补（2026-10-26）】
+- dual_judge local 防护：预设写 local 时 App 确定性回退 llm（via 标记 + warning），
+  不再透传非法 flag 打挂引擎；scripts/app_dual_judge_guard_check.py 7/7 PASS。
+- v8（self_check mixed 变体）训练中。V2 51/51（804 checks）。
 【Round 57 增补（2026-10-26）】
 - 离线重放 124 packs：answered 81、gaps 清零 17、数值答案 34→38、官方源 119，
   **0 回归**（stored answered → new 非 answered）。
