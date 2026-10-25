@@ -1079,3 +1079,39 @@ answer 含 **1348066**（最终核实值），display 为「1348066亿元」量�
 ### 34.4 门禁
 
 全量 V2 **51/51（764 checks）**、fast_gate 12/12。
+
+
+## 35. App e2e 修订期/展示闭环 + 代码类事实成本档 + 矩阵 16 行（Round 29）
+
+### 35.1 App 端到端：修订期感知 + 展示分离真实生效
+
+`POST /api/tasks {mode: daosheng_fast, question: "2024年中国GDP总量是多少亿元？"}`：
+- plan：tier=fast / engine_mode=fast / web=on / thinking=off / scenario=fact
+  → web_on_fast2（场景规则+成本档生效）；任务墙钟 **463.5s**；
+- 产物：**aq=verified / ready=True / gaps=[]**；
+- answer：「经最终核实，2024年，GDP现价总量为1348066亿元，比初步核算数减少1018亿元」；
+- **display=1348066亿元**（App 前端可见的展示字段，修订期感知+展示分离闭环）。
+
+⇒ 事实题质量链路（官方源→修订期选值→数值紧凑展示→App 任务）端到端打通。
+
+### 35.2 代码类事实成本档（第 6 个领域）
+
+「Python中len函数的返回值是什么？」（fast+web）：**quality 0.99 / verified / ready**
+（tokens 637,852 / calls 98 / wall 228s），answer 正确（「返回对象长度或项数」）。
+事实成本档已验证覆盖：状态码 / 统计 / 地理 / 科学 / 代码 五类。
+
+### 35.3 事实矩阵 16 行
+
+新增 web_on_fast5（GDP 总量·最终核实）：0.9633 / 746,308 tok / 101 calls / 291.1s /
+verified。矩阵共 **16 行**（reasoning 5 / choice 3 / fact 8），场景判据 23 项通过；
+live 回灌对照 Δ ≤ 0.007。
+
+### 35.4 本地模型 v6 训练启动（后台）
+
+0.5B self_check_min，230 样本 × **2 epochs**，max_len 1900，fp32 GEMM，lr 8e-5，
+预计 ~2.5h；完成后与 v5（JSON 1.0 / 字段 0.378 / p50 6.73s）对比，
+只变好才切换默认（否则留档负结果）。
+
+### 35.5 门禁
+
+全量 V2 **51/51（764 checks）**、fast_gate 12/12。
