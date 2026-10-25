@@ -1935,3 +1935,18 @@ v8 训练在 backward 阶段报 `CUDA error: CUBLAS_STATUS_EXECUTION_FAILED`
 ### 69.3 门禁
 
 全量 V2 51/51（806 checks）、fast_gate 12/12。
+
+
+## 70. 本地模型评测对比脚本（Round 66）
+
+新增 `scripts/local_model/compare_eval.py`：并排比较任意两个
+`eval_dgtf_stage_*.json`，输出关键指标差值与**切换判定**：
+
+- 指标：JSON 合法率、字段 acc、escape acc、suspF1、ing acc、all3/set、p50/p95；
+- 噪声容差：suspF1/ing/escape ±0.02 内视为持平；延迟慢 >5% 视为变差；
+- 判定：无「变差」且至少一项「变好」⇒ `SWITCH_CANDIDATE`，否则 `KEEP_BASELINE`；
+- 支持两种 JSON 结构（旧版 adapter 字段 / 新版 stages 字典）。
+
+实测：v6 vs v5 → `SWITCH_CANDIDATE`（字段 +0.211、escape +0.60、p50 −454ms、
+p95 −1932ms；suspF1 −0.012 在噪声内）——与 Round 38 的历史决策一致，脚本可作为
+未来 v8b/v9 切换的统一判据。
