@@ -567,3 +567,27 @@ train_loss 0.2789 / **val_loss 0.2352**（v2 0.2238）。
 - 证据：`llm_sft/eval_dgtf_stage_05b_v{2,5}_limit30.json`、
   `llm_sft/eval_dgtf_stage_05b_v5.json`、`llm_sft/train_metrics_dgtf_selfcheck_05b_v5.json`、
   `llm_sft/service_probe_v5_health.json`。
+
+
+## 5.7 本地 v5 接管 self_check：端到端三跑次（Round 22）
+
+服务默认已切 v5（Round 21）；本轮用 `--self-check-mode local` 让引擎把 self_check
+阶段交给本地 8772 服务（v5），与云端 llm 模式对照（同题、web off/on 按题）：
+
+| 跑次 | 模式 | quality | aq/ready | total tokens | self_check tokens | wall |
+|---|---|---|---|---|---|---|
+| 推理·热岛 | llm（基线） | 0.9465 | verified | 723,064 | 75,023 | 586s |
+| 推理·热岛 | **local(v5)** | 0.9279 | verified | 690,443 | **49,656（−34%）** | 725s |
+| 推理·静电 | llm（基线） | 0.9400 | verified | 718,020 | — | 585s |
+| 推理·静电 | **local(v5)** | 0.9297 | verified | 649,563 | **47,827** | 777s |
+| 事实·HTTP404 | llm（v17） | 0.9062 | verified/ready | 992,929 | 101,929 | 958s |
+| 事实·HTTP404 | **local(v5)** | **0.9274** | verified/ready | 916,468 | **73,430（−28%）** | 1063s |
+
+判读：
+1. **能力已验证**：本地模式稳定接管（服务日志 27 次 generate 200，无超时/回退），
+   事实题与推理题均 verified；
+2. **省钱幅度有限**：self_check 占全量 ~10%，替换后 stage tokens −28~34%，
+   总成本约 −4~8%；墙钟 +11~33%（本地生成 ~4-5s/次叠加）；
+3. **质量在噪声内 ±2pp**（事实题本样本 +2.1pp、推理题 −1~2pp）；
+4. **决策：不设为默认**（墙钟与质量不确定性 > 成本收益），保留为 opt-in
+   （`--self-check-mode local`）；默认仍 llm 模式。

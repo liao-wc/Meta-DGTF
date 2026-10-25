@@ -45,6 +45,10 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 22 增补（2026-10-25 同日）】
+- 本地 v5 接管 self_check 端到端三跑次：推理×2 + 事实×1 全部 verified；
+  self_check stage tokens −28~34%（total −4~8%），墙钟 +11~33%，质量 ±2pp 噪声内。
+  决策：保留 opt-in（--self-check-mode local），默认 llm 不变。
 【Round 21 增补（2026-10-25 同日）】
 - 本地模型 v5（0.5B/230 样本/max_len1900/fp32）30 条 held-out A/B：JSON 0.967→1.000、
   字段 0.367→0.378、suspF1 0.161→0.165、ing 0.900→0.933、escape 持平；延迟 6.02→6.73s。

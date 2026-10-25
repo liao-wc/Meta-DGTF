@@ -855,3 +855,16 @@ display=5.0%；tokens 1,120,591 / calls 109 / wall 1218s。
 suspF1 0.161→0.165、ing 0.900→0.933、escape 持平**；p50 6.02→6.73s。
 按「只变好不变坏」切换服务默认适配器为 v5（v2 兜底，DGTF_LOCAL_ADAPTER 可覆盖），
 重启 8772 后 `/health.adapter_paths` 与 `/generate` 实测通过。
+
+
+## 28. 本地 v5 接管 self_check 端到端评测（Round 22）
+
+三跑次对照（详见 local_model_daosheng.md §5.7）：
+- 推理·热岛 local(v5) 0.9279/verified，self_check tokens **75,023→49,656（−34%）**，
+  total 723K→690K，墙钟 586→725s；
+- 推理·静电 local 0.9297/verified，total 718K→650K，墙钟 585→777s；
+- 事实·404 local **0.9274/verified/ready**（基线 v17 为 0.9062），
+  self_check tokens 101,929→73,430（−28%），total 993K→916K，墙钟 958→1063s。
+- 服务日志 27 次 /generate 全 200，无回退。
+结论：本地 self_check 模式**可用、省钱有限、墙钟上升、质量噪声内** ⇒ 保留 opt-in，
+默认 llm 模式不变（只变好不变坏的保守选择）。
