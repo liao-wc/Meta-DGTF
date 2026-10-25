@@ -14,7 +14,8 @@ sys.path.insert(0, str(HERE.parent))
 from dgtf_v2.evidence import (Evidence, _overall_quantity_bonus,  # noqa: E402
                               _short_answer, _term_covered,
                               answer_from_evidence, detect_gaps)
-from dgtf_v2.fact_flow import _compact_numeric_answer  # noqa: E402
+from dgtf_v2.fact_flow import (_compact_numeric_answer,  # noqa: E402
+                                     _numeric_claim_answer)
 
 P, F = [], []
 
@@ -72,6 +73,25 @@ def main():
        d1 != "9个" and ("5400" in d1 or "公里" in d1), d1)
     d2 = _compact_numeric_answer("长江的长度是多少千米", "长江总长6280千米。")
     ck("A12 展示取强单位「6280千米」", "6280千米" in d2, d2)
+
+    # ── A4：claim 级数值答案（Round 20）──────────────
+    _gdp = ev("E1", "这其中，国内生产总值超过134万亿元，"
+                     "按不变价格计算，比上年增长5.0%。")
+    _gdp2 = ev("E2", "居民人均可支配收入实际增长5.3%。")
+    ck("A13 GDP 增速取 5.0%（非人均收入 5.3%）",
+       "5.0" in _numeric_claim_answer("2024年中国GDP增速是多少？",
+                                     [_gdp, _gdp2]),
+       _numeric_claim_answer("2024年中国GDP增速是多少？", [_gdp, _gdp2]))
+    _hj = [ev("E3", "黄河上游河段长3472千米；中游1206千米；下游786千米。"),
+           ev("E4", "黄河全长约5464千米，流域面积约79.5万平方千米。")]
+    ck("A14 黄河长度取全长 5464（非分段 786/3472）",
+       "5464" in _numeric_claim_answer("黄河的长度是多少千米？", _hj),
+       _numeric_claim_answer("黄河的长度是多少千米？", _hj))
+    ck("A15 非数值题 → 空（回退原答案逻辑）",
+       _numeric_claim_answer("黄河发源于哪里？", _hj) == "")
+    d3 = _compact_numeric_answer("2024年中国GDP增速是多少",
+                                 "国内生产总值超过134万亿元，比上年增长5.0%")
+    ck("A16 展示层增速题优先 %（非 134万）", "5.0%" in d3, d3)
 
     # ── B：整体量语义加权 ────────────────────────
     ck("B1 问长度 + 全长标记 → 加分",

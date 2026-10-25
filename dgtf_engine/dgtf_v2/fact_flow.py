@@ -25,7 +25,8 @@ from dataclasses import dataclass, field
 
 from .consistency import ConsistencyReport, compare_retrieval_vs_reasoning
 from .evidence import (EvidenceBudget, EvidenceReport, answer_from_evidence,
-                       collect_evidence, detect_conflicts, detect_gaps)
+                       collect_evidence, detect_conflicts, detect_gaps,
+                       extract_numeric_claims, question_terms)
 
 # ── 四层（唯一来源；与引擎 _ENTRIES / dgtf_v2.contracts 的四层同名）──────────
 LAYER_ENTRIES: tuple[str, ...] = ("0", "1", "both", "all")
@@ -367,6 +368,15 @@ def _compact_numeric_answer(question: str, answer: str) -> str:
     q_units = [u for u in ("千米", "公里", "米", "厘米", "毫米", "%", "℃",
                            "年", "吨", "公斤", "kg", "小时", "分钟", "秒")
                if u in q or u.lower() in q.lower()]
+    # ★ [Round 20] 目标量纲线索：增速/增长→%；长度/海拔→长度单位；重量；面积
+    if any(k in q for k in ("增速", "增长", "率", "百分", "CPI", "PPI")):
+        q_units = ["%"] + q_units
+    if any(k in q for k in ("长度", "多长", "全长", "海拔", "多高", "多宽", "多深")):
+        q_units = ["千米", "公里", "米"] + q_units
+    if any(k in q for k in ("重量", "多重")):
+        q_units = ["吨", "公斤", "kg"] + q_units
+    if any(k in q for k in ("面积", "平方公里")):
+        q_units = ["平方公里", "万平方"] + q_units
 
     def rank(c):
         val, unit, raw = c
@@ -426,6 +436,86 @@ def _official_precedence_answer(question: str, evs: list,
     if len(ans) < 2 or len(ans) > 200:
         return None, list(conflicts)
     return ans, []
+
+
+def _numeric_claim_answer(question: str, evs: list) -> str:
+    """数值题：从数值主张里选最贴合题面的原文句子（严格守卫，否则返回 ""）。"""
+    q = str(question or "")
+    q_units = []
+    if any(k in q for k in ("增速", "增长", "率", "百分", "CPI", "PPI", "通胀")):
+        q_units.append("%")
+    if any(k in q for k in ("长度", "多长", "全长", "海拔", "高", "宽",
+                            "深", "距离", "多远")):
+        q_units.extend(["千米", "公里", "米"])
+    if any(k in q for k in ("重量", "多重", "吨", "公斤")):
+        q_units.extend(["吨", "公斤"])
+    if any(k in q for k in ("面积", "平方公里")):
+        q_units.extend(["平方公里", "万平方"])
+    if not any(k in q for k in ("多少", "几", "多长", "多高", "多重", "多远",
+                                "多深", "多宽", "多大", "多快", "增速", "增长",
+                                "率", "海拔", "速度", "面积", "重量", "温度")):
+        return ""
+    # 繁简归一（官方繁体页常见）
+    _T2S = str.maketrans({"國": "国", "長": "长", "內": "内", "產": "产",
+                          "總": "总", "億": "亿", "萬": "万", "個": "个",
+                          "數": "数", "據": "据", "區": "区", "門": "门",
+                          "報": "报", "經": "经", "濟": "济", "發": "发",
+                          "佈": "布", "網": "网", "點": "点"})
+
+    def _norm(s):
+        return str(s or "").translate(_T2S)
+    _raw_toks = re.findall(r"[A-Za-z]{2,}|[\u4e00-\u9fa5]{2,}", _norm(q))
+    tokens = []
+    for _x in _raw_toks:
+        if re.fullmatch(r"[A-Za-z]{2,}", _x):
+            tokens.append(_x)
+            continue
+        for _y in re.split(r"[年的了是与和在为多少]", _x):
+            _y = re.sub(r"(最新数据|数据|数值|是多少|多少|是什么|最新)$", "", _y)
+            if len(_y) >= 2 and not _y.isdigit():
+                tokens.append(_y)
+    _ALIAS = {"GDP": ("国内生产总值", "GDP"), "CPI": ("居民消费价格", "CPI"),
+              "增速": ("增长", "增速"), "增长": ("增长", "增速"),
+              "长度": ("全长", "长度"), "海拔": ("海拔", "高程")}
+    _PEN = ("上游", "中游", "下游", "河段", "分产业", "第一产业", "第二产业",
+            "第三产业", "人均", "居民", "占比", "比重", "研发", "投资",
+            "出口", "进口", "消费", "其中", "合计中")
+    _OV = ("全长", "总长", "总长度", "修正为", "现为", "调整为", "增长",
+           "增速", "总量为", "同比")
+    best = None
+    for e in evs:
+        snip = str(getattr(e, "snippet", "") or "")
+        if not snip:
+            continue
+        nsnip = _norm(snip)
+        concept = 0
+        for _tk in tokens:
+            if _tk in nsnip:
+                concept += 1
+            elif any(a in nsnip for a in _ALIAS.get(_tk, ())):
+                concept += 1
+        for c in extract_numeric_claims(snip):
+            unit = str(c.get("unit") or "")
+            raw = str(c.get("raw") or "").strip()
+            if not raw:
+                continue
+            u_hit = 1 if any(u in unit or unit in u for u in q_units) else 0
+            ctx = _norm(c.get("context") or "")
+            pen = 1 if any(k in ctx for k in _PEN) else 0
+            ov = 1 if any(k in ctx for k in _OV) else 0
+            score = (u_hit, concept, ov, -pen, -len(raw))
+            if best is None or score > best[0]:
+                best = (score, snip, raw)
+    if best is None:
+        return ""
+    score, snip, raw = best
+    # 严格门槛：单位类命中 + 题面概念命中 + 非分段语义，否则回退旧逻辑
+    if not (score[0] and score[1] and not score[3]):
+        return ""
+    for part in re.split(r"[。；;\n]", snip):
+        if raw and raw in part:
+            return part.strip()[:240]
+    return raw[:120]
 
 
 def build_fact_card(question: str, report: EvidenceReport,
@@ -494,6 +584,7 @@ def build_fact_card(question: str, report: EvidenceReport,
     independent = len(domains)
     # ★ [Round 19] 数值题：答案优先取自「含值+单位」的证据，避免答案落到
     #   只有总述、没有目标数值的长网页正文（GDP 真实反例）。
+    # ★ [Round 20] 再加「目标量纲」优先：增速/增长→%，长度/海拔→长度单位，…
     _cand_evs = evs
     if any(k in str(question or "") for k in _NUM_Q_HINTS):
         _vu = re.compile(r"\d+(?:\.\d+)?\s*(?:多|余|约|近)?\s*(?:千米|公里|"
@@ -501,9 +592,32 @@ def build_fact_card(question: str, report: EvidenceReport,
         _n = [e for e in evs
               if _vu.search(str(getattr(e, "snippet", "") or ""))]
         if _n:
+            _q = str(question or "")
+            _pct = any(k in _q for k in ("增速", "增长", "率", "百分", "CPI",
+                                         "PPI", "通胀"))
+            _len = any(k in _q for k in ("长度", "多长", "全长", "海拔", "高",
+                                         "宽", "深", "距离", "多远"))
+            _mass = any(k in _q for k in ("重量", "多重", "吨", "公斤"))
+            _area = any(k in _q for k in ("面积", "平方公里"))
+            _unit_re = None
+            if _pct:
+                _unit_re = re.compile(r"\d+(?:\.\d+)?\s*%")
+            elif _len:
+                _unit_re = re.compile(r"\d+(?:\.\d+)?\s*(?:多|余|约|近)?\s*"
+                                      r"(?:千米|公里|米|厘米|毫米)")
+            elif _mass:
+                _unit_re = re.compile(r"\d+(?:\.\d+)?\s*(?:吨|公斤|kg)")
+            elif _area:
+                _unit_re = re.compile(r"\d+(?:\.\d+)?\s*(?:平方公里|万平方)")
+            if _unit_re is not None:
+                _m = [e for e in _n
+                      if _unit_re.search(str(getattr(e, "snippet", "") or ""))]
+                if _m:
+                    _n = _m
             _cand_evs = _n
     answer = _clean_card_answer(
-        answer_from_evidence(_cand_evs, question, prefer_recent=True))
+        _numeric_claim_answer(question, _cand_evs)
+        or answer_from_evidence(_cand_evs, question, prefer_recent=True))
     if answer and (official_n >= int(min_official)
                    or independent >= int(min_independent)):
         return FactCard(status="answered", answer=answer,
