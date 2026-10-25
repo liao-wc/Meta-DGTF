@@ -12,6 +12,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
 
 from dgtf_v2.evidence import (Evidence, EvidenceReport,  # noqa: E402
+                              extract_numeric_claims,
                               is_official_source,
                               _overall_quantity_bonus,
                               _short_answer, _term_covered,
@@ -209,6 +210,29 @@ def main():
        _card_nev.status == "answered"
        and "conflict_resolved_official_authority" in _card_nev.gaps,
        (_card_nev.status, _card_nev.gaps))
+    # ── A14：周岁/现行性口径（Round 34）──────────────
+    _claims = extract_numeric_claims("民法典规定结婚年龄男不得早于22周岁，女不得早于20周岁")
+    ck("A38 周岁单位可被抽取",
+       any(c.get("unit") == "周岁" and float(c.get("value")) == 22
+           for c in _claims), _claims)
+    _legal_ans = _numeric_claim_answer("我国法定结婚年龄是多少岁？",
+        [ev("E1", "1931年施行的国民政府民法亲属编规定婚龄男18岁女16岁。",
+            official=False),
+         ev("E2", "现行民法典规定结婚年龄男不得早于22周岁，女不得早于20周岁。",
+            official=True)])
+    ck("A39 现行法优先（取 22/20 周岁，非 1931 旧规）",
+       "22" in _legal_ans and "1931" not in _legal_ans, _legal_ans)
+    # ── A15：历史旧规拒答（Round 34）──────────────
+    _rep_old = EvidenceReport(
+        question="我国法定结婚年龄是多少岁？", queries=["q"], searches=1,
+        items=[ev("E1", "1931年施行的国民政府民法亲属编规定婚龄男18岁女16岁。",
+                  official=True)], conflicts=[], gaps=["single_source"])
+    _card_old = build_fact_card("我国法定结婚年龄是多少岁？", _rep_old)
+    ck("A40 现行性问句遇历史旧规 → 拒答 (unknown/historical_answer_rejected)",
+       _card_old.status == "unknown"
+       and "historical_answer_rejected" in _card_old.gaps,
+       (_card_old.status, _card_old.gaps))
+
     # ── B：整体量语义加权 ────────────────────────
     ck("B1 问长度 + 全长标记 → 加分",
        _overall_quantity_bonus("黄河全长约5464公里", "黄河的长度是多少千米") > 0)

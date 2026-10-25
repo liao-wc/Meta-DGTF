@@ -364,7 +364,8 @@ def _compact_numeric_answer(question: str, answer: str) -> str:
     _WEAK_UNITS = ("个", "条", "处", "项", "次", "种", "位", "名",
                    "份", "家", "所", "岁")
     _STRONG_UNITS = ("千米", "公里", "米", "厘米", "毫米", "%", "℃",
-                     "吨", "公斤", "kg", "元", "万")
+                     "吨", "公斤", "kg", "元", "万", "周岁", "岁",
+                     "万人", "万辆", "亿美元")
     claims = []
     for c in extract_numeric_claims(ans):
         try:
@@ -522,6 +523,10 @@ def _numeric_claim_answer(question: str, evs: list) -> str:
     _year_q = re.findall(r"(?:19|20)\d{2}", q)
     _annual_q = bool(re.search(r"(?:19|20)\d{2}年", q)) and any(
         k in q for k in ("涨幅", "增速", "增长", "总量", "全年", "年度"))
+    _current_q = any(k in q for k in ("法定", "现行", "目前", "现在", "我国",
+                                      "最新", "有效"))
+    _CUR = ("现行", "民法典", "目前", "现在", "有效", "最新")
+    _OLD = ("民国", "废止", "旧", "1931", "1930", "之前", "旧法")
     _PEN = ("上游", "中游", "下游", "河段", "分产业", "第一产业", "第二产业",
             "核心CPI", "核心", "扣除食品", "扣除", "分项",
             "第三产业", "人均", "居民", "占比", "比重", "研发", "投资",
@@ -563,6 +568,10 @@ def _numeric_claim_answer(question: str, evs: list) -> str:
             _nctx = _norm(ctx)
             _gh = sum(1 for _g in _q_grams if _g in _nctx)
             _concept = max(concept, min(_gh, 5))
+            _curhit = 1 if (_current_q and any(
+                k in snip for k in _CUR)) else 0
+            _oldpen = 1 if (_current_q and any(
+                k in snip for k in _OLD)) else 0
             _ord_hit = 0
             if _ord_pref is not None and "分别" in snip:
                 if str(_ord_pref) in ctx:
@@ -579,15 +588,15 @@ def _numeric_claim_answer(question: str, evs: list) -> str:
                 k in snip for k in ("月份", "月度", "环比"))) else 0
             # 修订期感知：最终核实 > 初步核算（对统计类事实题的「最新/最终」问法）
             score = (u_hit, _concept, _year_hit, -_year_miss, _ord_hit,
-                     -_ord_miss, _final, _rec, _annual, -_month, ov,
-                     -_prelim, -pen, -len(raw))
+                     -_ord_miss, _curhit, -_oldpen, _final, _rec, _annual,
+                     -_month, ov, -_prelim, -pen, -len(raw))
             if best is None or score > best[0]:
                 best = (score, snip, raw)
     if best is None:
         return ""
     score, snip, raw = best
     # 严格门槛：单位类命中 + 题面概念命中 + 非分段语义，否则回退旧逻辑
-    if not (score[0] and score[1] and not score[12]):
+    if not (score[0] and score[1] and not score[14]):
         return ""
     for part in re.split(r"[。；;\n]", snip):
         if raw and raw in part:
@@ -732,6 +741,16 @@ def build_fact_card(question: str, report: EvidenceReport,
     answer = _clean_card_answer(
         _numeric_claim_answer(question, _cand_evs)
         or answer_from_evidence(_cand_evs, question, prefer_recent=True))
+    # ★ [Round 34] 现行性问句（法定/现行/我国/最新）若答案只有历史旧规 → 拒答
+    _curq = any(k in str(question or "") for k in (
+        "法定", "现行", "目前", "现在", "最新", "有效", "我国"))
+    _old_mark = ("民国", "废止", "旧法", "旧规", "1931", "1930", "1911")
+    if _curq and answer and any(k in str(answer) for k in _old_mark):
+        return FactCard(status="unknown",
+                        gaps=_dedup(gaps + ["historical_answer_rejected"]),
+                        reason=("现行性问句的答案只含历史旧规（%s），拒绝作为当前事实"
+                                % "/".join([k for k in _old_mark
+                                            if k in str(answer)][:2])), **base)
     # ★ [Round 32] 时间锚定问句：题面含明确年份、答案却只给「另一年份」时拒答
     #   （宁缺毋假；避免把 2023 的核心 CPI 当成 2024 的 CPI 涨幅 verified 出街）
     _yq = re.findall(r"(?:19|20)\d{2}", str(question or ""))

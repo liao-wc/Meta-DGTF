@@ -45,6 +45,13 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 34 增补（2026-10-25 同日）】
+- App e2e 人口统计题：385.8s / verified / ready，display=954万人（quality 0.9724、
+  567,594 tok、87 calls）；App 维度实测矩阵 3→4 行。
+- 法律类加固：周岁单位 + 现行性评分 + 历史旧规拒答（historical_answer_rejected）；
+  法定婚龄复跑仍只召回 1931 旧规 → 拒答（不假 verified），后续做检索查询扩展。
+- 经济类贸易顺差（0.4634/unverified：口径冲突+词项）留档。
+- 判据 evidence_coverage 46 项；V2 51/51（779 checks）。
 【Round 33 增补（2026-10-25 同日）】
 - 统计类口径深化：概念匹配改 claim 上下文 2-gram、「分别」序位（产量=ord0/销量=ord1）、
   官方权威冲突消解（三重防护：官方可答 + 非官方互冲 + 年份期间错配）、通用单位推断。

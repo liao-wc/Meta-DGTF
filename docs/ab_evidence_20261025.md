@@ -1283,3 +1283,35 @@ live 对照 fact fast+web n=15 质量 0.962，Δ≤0.028。
 ### 39.5 本地模型 v6
 
 v6（230×2 epochs）训练继续进行（step-180 checkpoint 已落盘），完成后评测对比 v5。
+
+
+## 40. App 事实任务扩容 + 法律/经济缺口与拒答加固（Round 34）
+
+### 40.1 App e2e：人口统计题
+
+`daosheng_fast` + 「2024年中国出生人口是多少万人？」：任务墙钟 **385.8s**，
+plan fast/web on/thinking off（scenario 推荐 fast10），产物 **aq=verified / ready=True**，
+answer「2024年，全国出生人口为954万人…」、**display=954万人**（quality 0.9724 /
+567,594 tok / 87 calls）。App 维度实测矩阵补入该行（App 跑次 3→**4**）。
+
+### 40.2 法律类：现行法 vs 历史旧规（发现并加固）
+
+「我国法定结婚年龄是多少岁？」fast+web：0.9462/verified/ready，但答案取到
+**1931 年旧民法**（男18/女16），属「verified 但语义错」，且复跑仍复现（检索池缺现行法条）。
+本轮：
+1. `周岁` 纳入数值单位（22/20 周岁可抽取）；claim 评分加「现行性」：
+   现行/民法典/目前 → +1，民国/废止/旧法/1931 → −1；
+2. **历史旧规拒答**：现行性问句（法定/现行/我国/最新）答案只含历史标记 →
+   `unknown + historical_answer_rejected`（不再 verified 出街）。判据 A38–A40。
+3. 后续（下一轮）：检索查询扩展（法定类问题强制追加「现行 民法典」查询），
+   从证据源头补现行法条。
+
+### 40.3 经济类：贸易顺差
+
+「2024年中国贸易顺差是多少亿美元？」fast+web：0.4634/unverified（conflict_unresolved +
+uncovered 词项）——顺差口径（海关 vs 外管局）与「亿美元」量纲待专门处理，留档。
+
+### 40.4 门禁
+
+fact_flow 15、official_precedence 19、evidence_coverage **46**、app_runs 10；
+全量 **V2 51/51（779 checks）**、fast_gate 12/12。
