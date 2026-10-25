@@ -239,6 +239,24 @@ def main():
        any(c.get("unit") == "亿美元" and float(c.get("value")) == 9922
            for c in _trade_claims), _trade_claims)
 
+    # ── A17：比较年份不误判（Round 38）──────────────
+    _rep_cmp = EvidenceReport(question="2024年中国贸易顺差是多少亿美元？", queries=["q"],
+        searches=1,
+        items=[ev("E1", "2024年我国国际收支口径货物贸易顺差7679亿美元，较2023年增长29%。", official=True)], conflicts=[], gaps=["single_source"])
+    _card_cmp = build_fact_card("2024年中国贸易顺差是多少亿美元？", _rep_cmp)
+    ck("A42 比较年份（较2023年）不算错配 → answered",
+       _card_cmp.status == "answered" and "7679" in _card_cmp.answer,
+       (_card_cmp.status, _card_cmp.answer))
+    _rep_bad = EvidenceReport(question="2024年中国贸易顺差是多少亿美元？", queries=["q"],
+        searches=1,
+        items=[ev("E1", "2023年，我国进出口顺差8221亿美元。", official=True),
+               ev("E2", "据海关统计，2023年我国贸易顺差8221亿美元，同比回落。",
+                  official=True)], conflicts=[], gaps=[])
+    _card_bad = build_fact_card("2024年中国贸易顺差是多少亿美元？", _rep_bad)
+    ck("A43 真错年份（只给2023）仍拒答 year_mismatch",
+       _card_bad.status == "unknown"
+       and "year_mismatch" in _card_bad.gaps,
+       (_card_bad.status, _card_bad.gaps))
     # ── B：整体量语义加权 ────────────────────────
     ck("B1 问长度 + 全长标记 → 加分",
        _overall_quantity_bonus("黄河全长约5464公里", "黄河的长度是多少千米") > 0)

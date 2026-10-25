@@ -763,8 +763,13 @@ def build_fact_card(question: str, report: EvidenceReport,
     # ★ [Round 32] 时间锚定问句：题面含明确年份、答案却只给「另一年份」时拒答
     #   （宁缺毋假；避免把 2023 的核心 CPI 当成 2024 的 CPI 涨幅 verified 出街）
     _yq = re.findall(r"(?:19|20)\d{2}", str(question or ""))
-    if _yq and answer and not any(y in answer for y in _yq):
-        if re.search(r"(?:19|20)\d{2}", answer):
+    # ★ [Round 38] 比较性年份（较2023年/比2023年/同比…）不算「答案年份」
+    _ans_cmp = re.sub(
+        r"(?:较|比|相比|同比|环比|相对于|高于|低于)[^。；;\n]{0,8}?"
+        r"(?:19|20)\d{2}年(?:同期|增长|下降|提高|回落|减少|增加)?",
+        "", str(answer or ""))
+    if _yq and answer and not any(y in _ans_cmp for y in _yq):
+        if re.search(r"(?:19|20)\d{2}", _ans_cmp):
             return FactCard(status="unknown",
                             gaps=_dedup(gaps + ["year_mismatch"]),
                             reason=("答案年份与题面不一致（题面 %s），拒绝输出"

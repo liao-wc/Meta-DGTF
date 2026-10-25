@@ -45,6 +45,11 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 38 增补（2026-10-26）】
+- 年份错配守卫去误伤：比较性年份（较/比/同比+YYYY年）不计入答案年份；判据 A42/A43。
+- 贸易顺差真实复验：0.4752/unverified → **0.9431/verified/ready**
+  （7679亿美元，display=7679亿美元，749,542 tok/101 calls/283s）。
+- 事实矩阵 25 行（fact 17），成本档覆盖 12 类；V2 51/51（785 checks）。
 【Round 37 增补（2026-10-26）】
 - App 全量自检复验（mock server）：**PASS 444 / FAIL 0**（含道生 busy 回退、
   事实 fast 档、display 分离、T3 端到端 mode/plan/resume），连续 14 轮引擎改造后无回归。
