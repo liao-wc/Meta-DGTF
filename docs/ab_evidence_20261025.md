@@ -2368,3 +2368,11 @@ held-out A/B（v9 vs v8b/v6），只变好才切换。
 1. v95-dual-local3 验证本地双判实际被调用（日志出现成功路径/无超时）；
 2. 通过后在 worktree 补离线判据（T1–T5）+ 合并窗口；
 3. v9 训练在 GPU 空闲后重启（本轮为双判验证暂停）。
+
+### 88.5 调参后真跑（v95-dual-local3）
+
+timeout 180s / max_new_tokens 500：**0.95 / verified / ready**（732,848 tok / 107 calls / 444s）。
+服务侧 /metrics：dual_judge stage 19 次请求、p95 47s，但引擎端仍 9 次超时回退
+（并发排队 + 长 prompt 生成）⇒ 答案质量无损（回退生效），**本地双判吞吐尚不足以接管默认**。
+结论：--dual-judge-mode local 功能与回退已实现并通过 T1–T6；性能层面保持 opt-in，
+待「prompt 收缩 / max_tokens 降档 / 专训 judge 适配器」优化后再评估默认化。
