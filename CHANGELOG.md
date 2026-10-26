@@ -45,6 +45,10 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 102 增补（2026-10-26）】
+- dual_judge local 补丁全量校验：HEAD 024ecd6 临时 worktree 依次 apply 0001–0003
+  全部成功、编译通过、T1–T8 **8/8 PASS**（校验后清理）；合并资产就绪。
+- 主引擎仍被并发会话占用（git status M）⇒ 继续等待合并窗口；v9 训练运行中。
 【Round 101 增补（2026-10-26）】
 - dual_judge local 性能调优：候选描述截 120 字/总长 ≤6000、timeout 120s、
   max_new_tokens 320、回退计数；T7/T8 判据通过（离线 8/8）；

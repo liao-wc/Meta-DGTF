@@ -17,7 +17,9 @@
 
 1. 确认主引擎干净：
    `git status --short -- dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.3.py`（应为空）；
-2. 校验补丁与当前引擎基线一致：
+2. **已全量校验（Round 102）**：在 HEAD 024ecd6 的临时 worktree 依次 apply
+   0001→0002→0003，全部成功、编译通过、T1–T8 **8/8 PASS**；校验后临时工作树已删除。
+3. 合并前复核基线：
    `git apply --check docs/patches/0001-*.patch`；
 3. 应用：
    `git apply docs/patches/0001-*.patch`（引擎）+ 复制
