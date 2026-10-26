@@ -1060,7 +1060,7 @@ function bindRlBarDrag() {
 function renderTasks() {
   const box = $('#runlog');
   if (!box) return;
-  if (dshCurrent) { renderDshView(); return; }
+  if (dshMode) { renderDshView(); return; }  // 模式隔离：DSH 模式不渲染普通任务视图
   const ids = Object.keys(taskData);
   /* 看归档会话时，taskData 可能是空的 —— 这时仍有内容要渲染（那次会话的日志） */
   const arch = (chatMode === 'archive' && archivedTask) ? archivedTask : null;
@@ -1728,8 +1728,7 @@ function toggleDshMode(on) {
   const q = document.querySelector('#question');
   if (p) p.classList.toggle('on', dshMode);
   document.body.classList.toggle('dsh-mode', dshMode);
-  dshAttachTaskId = dshMode ? currentTaskId() : null;
-  if (dshAttachTaskId) dshCurrent = null;
+  dshAttachTaskId = null;  // 模式隔离：不再把普通任务自动挂到 DSH 会话
   if (q) applyPlaceholder(dshMode
     ? 'DSH Agent：输入任务，读取项目文件 / outputs 产物 / app 导入文件…'
     : Q_PLACEHOLDER, false);
@@ -1742,15 +1741,18 @@ function toggleDshMode(on) {
     loadDshChats();
     /* 点击 DSH Agent 只切换模式，不自动进入/恢复会话；
        用户发送第一条消息时由 startDshCurrentRun() 进入当前 DSH 对话。 */
+    renderDshView();
   } else {
     stopDshHistoryPoll();
     stopDshViewPoll();
+    stopDshConvPoll();
     clearDshPasteFiles();
     setDshHistoryOpen(false);
     const hist = document.querySelector('#dsh-history-toggle');
     if (hist) hist.classList.add('hidden');
     const elapsed = document.querySelector('#dsh-elapsed');
     if (elapsed) elapsed.classList.add('hidden');
+    renderTasks();
   }
 }
 const DSH_CONV_KEY = 'dgtf_dsh_current_conv';
@@ -1951,6 +1953,7 @@ function scrollDshBottom() {
 }
 
 function renderDshConversationView() {
+  if (!dshMode) return;
   updateDshConvBar();
   const c = dshConversation || {};
   const box = document.querySelector('#runlog');
@@ -2129,6 +2132,7 @@ async function cancelDshCurrent() {
 }
 
 function renderDshView() {
+  if (!dshMode) return;  // 普通模式不得被异步 DSH 轮询覆盖
   updateDshConvBar();
   if (dshConversation) { renderDshConversationView(); return; }
   const c = dshCurrent || {};
@@ -2325,6 +2329,7 @@ function startDshConvPoll() {
   stopDshConvPoll();
   const cid = dshConversationId;
   dshConvTimer = setInterval(async function () {
+    if (!dshMode) { stopDshConvPoll(); return; }
     if (cid !== dshConversationId) { stopDshConvPoll(); return; }
     await loadDshConversation(cid);
     if (cid !== dshConversationId) return;
@@ -2407,7 +2412,7 @@ async function startDshRun(question) {
   logFollow = true;
   const _perm = dshPermission();
   if (!_perm) return;
-  const attach = dshMode ? (dshAttachTaskId || currentTaskId()) : null;
+  const attach = dshMode ? dshAttachTaskId : null;
   if (!attach) return startDshChat(question, _perm);
   let target = null;
   if (attach) {

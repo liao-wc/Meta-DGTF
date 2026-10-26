@@ -10,6 +10,21 @@
 > （`check_v72_changelog_hygiene`）；代码文件里**不得**再出现版本段
 > （`check_v1237_changelog_outside_code`）。
 
+App 2.0.31
+
+【主题】普通模式与 DSH 模式视图隔离，修复跳串。
+
+【改变】
+- renderTasks 在 DSH 模式下只渲染 DSH 视图；普通模式不再因 dshCurrent 残留而渲染 DSH。
+- renderDshView / renderDshConversationView 增加 dshMode 守卫，异步 DSH 轮询不能覆盖普通视图。
+- 退出 DSH 模式时停止 DSH 会话轮询，并立即重新渲染普通任务视图。
+- 进入 DSH 模式时不再自动把当前普通任务挂到 DSH 会话（移除 dshAttachTaskId=currentTaskId 自动附着），启动 DSH 时只使用显式 attach。
+- 模式切换保留各自状态：DSH 会话状态不被普通模式清空，普通任务状态不被 DSH 视图覆盖。
+
+【验证】
+- node --check app.js PASS。
+- App 全方位检查 PASS；App 版本一致性 PASS；App selftest 444/0；fast_gate 12/12。
+- 静态缓存串：2.0.31-modeiso。
 App 2.0.30
 
 【主题】移除 DSH 视图内的“历史对话”按钮与浮层。
