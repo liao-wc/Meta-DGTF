@@ -10,6 +10,19 @@
 > （`check_v72_changelog_hygiene`）；代码文件里**不得**再出现版本段
 > （`check_v1237_changelog_outside_code`）。
 
+App 2.0.33
+
+【主题】UI 自动化回归接入，修复热点接口 404。
+
+【改变】
+- 新增 scripts/ui_automation_check.py：Edge + Selenium headless 检查北斗七星、Agent 灯、DSH 历史按钮、DSH Agent 点击不自动进对话、模式退出、浏览器 SEVERE 错误。
+- UI 自动化首次运行发现 /api/dsh/hot-topics 404，已恢复 /api/dsh/hot-topics 别名。
+- app_full_check 新增 UI 自动化回归项（DGTF_UI_TEST=0 可关闭）。
+- 语音：无；App 2.0.33 静态缓存串 2.0.33-uismoke。
+
+【验证】
+- UI 自动化回归 PASS（12 项测试）。
+- App 全方位检查 PASS；App 版本一致性 PASS；App selftest 444/0；fast_gate 12/12。
 App 2.0.32
 
 【主题】点击 DSH Agent 只切换模式，不自动进入 DSH 对话。

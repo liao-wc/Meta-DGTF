@@ -1,0 +1,66 @@
+{
+ "ok": true,
+ "tests": [
+  {
+   "name": "页面标题",
+   "ok": true,
+   "detail": "Meta-DGTF · 个人工作台"
+  },
+  {
+   "name": "侧边栏北斗七星",
+   "ok": true,
+   "detail": "7"
+  },
+  {
+   "name": "Agent 就绪灯不为灰",
+   "ok": true,
+   "detail": "dot ok active"
+  },
+  {
+   "name": "DSH 历史按钮已移除",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "初始不是 DSH 对话",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "DSH 模式开关已打开",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "点击后不自动切进 DSH 对话",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "点击后仍停留在首屏",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "历史按钮仍不存在",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "退出 DSH 模式",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "退出后回到首屏",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "无浏览器 SEVERE 错误",
+   "ok": true,
+   "detail": "[]"
+  }
+ ],
+ "ts": 1793009538.571665
+}

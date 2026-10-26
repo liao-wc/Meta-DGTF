@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "2.0.32"
+APP_VERSION = "2.0.33"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -8770,7 +8770,7 @@ class Handler(BaseHTTPRequestHandler):
                                    "ts": __import__("time").time()})
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
-        if p == "/api/agent/hot-topics":
+        if p in ("/api/agent/hot-topics", "/api/dsh/hot-topics"):
             try:
                 import json as _hj
                 hp = Path(__file__).resolve().parent.parent / "dgtf_memory" / "hot_topics.json"

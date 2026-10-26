@@ -1,8 +1,8 @@
 {
  "ok": true,
  "app": "https://127.0.0.1:8765",
- "ts": 1793008964.6066892,
- "n": 55,
+ "ts": 1793009538.7040753,
+ "n": 56,
  "fails": [],
  "warnings": [
   "无 pending 提案: pending=7",
@@ -17,77 +17,77 @@
   {
    "name": "GET /api/health",
    "ok": true,
-   "detail": "code=200 803ms"
+   "detail": "code=200 1437ms"
   },
   {
    "name": "GET /api/config",
    "ok": true,
-   "detail": "code=200 103ms"
+   "detail": "code=200 4247ms"
   },
   {
    "name": "GET /api/dashboard",
    "ok": true,
-   "detail": "code=200 252ms"
+   "detail": "code=200 97ms"
   },
   {
    "name": "GET /api/tasks",
    "ok": true,
-   "detail": "code=200 5ms"
+   "detail": "code=200 14ms"
   },
   {
    "name": "GET /api/agent/knowledge",
    "ok": true,
-   "detail": "code=200 32ms"
+   "detail": "code=200 18ms"
   },
   {
    "name": "GET /api/agent/hot-topics",
    "ok": true,
-   "detail": "code=200 29ms"
+   "detail": "code=200 32ms"
   },
   {
    "name": "GET /api/status/activity",
    "ok": true,
-   "detail": "code=200 554ms"
+   "detail": "code=200 266ms"
   },
   {
    "name": "GET /api/status/sidebar",
    "ok": true,
-   "detail": "code=200 18ms"
+   "detail": "code=200 30ms"
   },
   {
    "name": "GET /api/schedule/v2",
    "ok": true,
-   "detail": "code=200 40ms"
+   "detail": "code=200 59ms"
   },
   {
    "name": "GET /api/schedule/v2/online",
    "ok": true,
-   "detail": "code=200 8ms"
+   "detail": "code=200 5ms"
   },
   {
    "name": "GET /api/schedule/v2/pareto",
    "ok": true,
-   "detail": "code=200 33ms"
+   "detail": "code=200 34ms"
   },
   {
    "name": "GET /api/schedule/policy",
    "ok": true,
-   "detail": "code=200 6ms"
+   "detail": "code=200 26ms"
   },
   {
    "name": "GET /api/dsh/guard",
    "ok": true,
-   "detail": "code=200 12ms"
+   "detail": "code=200 30ms"
   },
   {
    "name": "GET /api/dsh/proposals",
    "ok": true,
-   "detail": "code=200 463ms"
+   "detail": "code=200 272ms"
   },
   {
    "name": "静态缓存版本一致",
    "ok": true,
-   "detail": "2.0.32-dshclick"
+   "detail": "2.0.33-uismoke"
   },
   {
    "name": "GET /static/index.html",
@@ -262,12 +262,17 @@
   {
    "name": "关键文件完整性",
    "ok": true,
-   "detail": ",\n \"files\": [\n  {\n   \"file\": \"dgtf_app/server.py\",\n   \"ok\": true,\n   \"size\": 491775,\n   \"error\": \"\"\n  },\n  {\n   \"file\": \"dgtf_app/engine_runner.py\",\n   \"ok\": true,\n   \"size\": 52969,\n   \"error\": \"\"\n  },\n  {\n   \"file\": \"dgtf_app/static/app.js\",\n   \"ok\": true,\n   \"size\": 356635,\n   \"error\": \"\"\n  },\n  {"
+   "detail": ",\n \"files\": [\n  {\n   \"file\": \"dgtf_app/server.py\",\n   \"ok\": true,\n   \"size\": 491800,\n   \"error\": \"\"\n  },\n  {\n   \"file\": \"dgtf_app/engine_runner.py\",\n   \"ok\": true,\n   \"size\": 52969,\n   \"error\": \"\"\n  },\n  {\n   \"file\": \"dgtf_app/static/app.js\",\n   \"ok\": true,\n   \"size\": 356635,\n   \"error\": \"\"\n  },\n  {"
   },
   {
    "name": "App 版本一致性",
    "ok": true,
-   "detail": "态查询串同版本\",\n   \"ok\": true,\n   \"detail\": \"['2.0.32-dshclick']\"\n  },\n  {\n   \"name\": \"根 README 当前版本\",\n   \"ok\": true,\n   \"detail\": \"2.0.32\"\n  },\n  {\n   \"name\": \"App README 当前版本\",\n   \"ok\": true,\n   \"detail\": \"2.0.32\"\n  },\n  {\n   \"name\": \"PROJECT_LAYOUT 当前版本\",\n   \"ok\": true,\n   \"detail\": \"2.0.32\"\n  },\n  {\n "
+   "detail": "静态查询串同版本\",\n   \"ok\": true,\n   \"detail\": \"['2.0.33-uismoke']\"\n  },\n  {\n   \"name\": \"根 README 当前版本\",\n   \"ok\": true,\n   \"detail\": \"2.0.33\"\n  },\n  {\n   \"name\": \"App README 当前版本\",\n   \"ok\": true,\n   \"detail\": \"2.0.33\"\n  },\n  {\n   \"name\": \"PROJECT_LAYOUT 当前版本\",\n   \"ok\": true,\n   \"detail\": \"2.0.33\"\n  },\n  {\n "
+  },
+  {
+   "name": "UI 自动化回归",
+   "ok": true,
+   "detail": "\"detail\": \"Meta-DGTF · 个人工作台\"\n  },\n  {\n   \"name\": \"侧边栏北斗七星\",\n   \"ok\": true,\n   \"detail\": \"7\"\n  },\n  {\n   \"name\": \"Agent 就绪灯不为灰\",\n   \"ok\": true,\n   \"detail\": \"dot ok active\"\n  },\n  {\n   \"name\": \"DSH 历史按钮已移除\",\n   \"ok\": true,\n   \"detail\": \"\"\n  },\n  {\n   \"name\": \"初始不是 DSH 对话\",\n   \"ok\": true,\n   \"detail\""
   },
   {
    "name": "_app_err_8765.log 无 Traceback",

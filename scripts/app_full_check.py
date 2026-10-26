@@ -6,7 +6,7 @@
   python scripts/app_full_check.py --json-out docs/app_audit_latest.json
 """
 from __future__ import annotations
-import argparse, json, re, ssl, subprocess, sys, time
+import argparse, json, os, re, ssl, subprocess, sys, time
 from pathlib import Path
 from urllib import request, error
 
@@ -144,6 +144,15 @@ def main() -> int:
         ck("App 版本一致性", _vr.returncode == 0, (_vr.stderr or _vr.stdout or "")[-600:])
     except Exception as _exc:
         ck("App 版本一致性", False, "%s: %s" % (type(_exc).__name__, _exc))
+    if os.environ.get("DGTF_UI_TEST", "1").strip().lower() not in ("0", "false", "off", "no"):
+        try:
+            _ui = subprocess.run([sys.executable, str(ROOT / "scripts" / "ui_automation_check.py"),
+                                  "--json-out", "docs/ui_audit_latest.json"],
+                                 capture_output=True, text=True, encoding="utf-8",
+                                 errors="replace", timeout=120)
+            ck("UI 自动化回归", _ui.returncode == 0, (_ui.stderr or _ui.stdout or "")[-800:])
+        except Exception as _exc:
+            ck("UI 自动化回归", False, "%s: %s" % (type(_exc).__name__, _exc))
     # 8 logs
     for name in ("_app_err_8765.log", "_app_out_8765.log"):
         p = ROOT / name
