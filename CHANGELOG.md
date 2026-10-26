@@ -45,6 +45,9 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 104 增补（2026-10-26）】
+- 判据 A73：万亿元单位抽取（43.85万亿元 → unit=万亿元）；V2 823 checks。
+- 维护态：v9 训练 step 30/460；dual_judge local 补丁等待合并；余额 50.76 暂停真实跑次。
 【Round 103 增补（2026-10-26）】
 - 新增 scripts/start_local_services.ps1：训练结束后一键恢复 BGE(8771)+LLM(8772)
   本地服务并验证 health/metrics（语法校验通过）。

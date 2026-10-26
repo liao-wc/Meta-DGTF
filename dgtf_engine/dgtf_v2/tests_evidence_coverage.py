@@ -391,6 +391,13 @@ def main():
     ck("A71 命名问句取定义句（青藏高原）",
        "青藏高原" in _name_ans and "它包括" not in _name_ans, _name_ans)
 
+    # ── A39：万亿元单位抽取（Round 104）──────────────
+    from dgtf_v2.evidence import extract_numeric_claims as _enc
+    _wc = _enc("2024年我国货物贸易进出口总值43.85万亿元")
+    ck("A73 万亿元单位抽取",
+       any(str(c.get("unit")) == "万亿元" and abs(float(c.get("value")) - 43.85) < 1e-6
+           for c in _wc), _wc)
+
     # ── B：整体量语义加权 ────────────────────────
     ck("B1 问长度 + 全长标记 → 加分",
        _overall_quantity_bonus("黄河全长约5464公里", "黄河的长度是多少千米") > 0)
