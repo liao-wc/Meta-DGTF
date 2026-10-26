@@ -346,6 +346,11 @@ def main():
        and _card_adult.to_dict().get("answer_display") == "十八周岁",
        (_card_adult.status, _card_adult.answer,
         _card_adult.to_dict().get("answer_display")))
+    # ── A34：选择题 uncovered 豁免（Round 91）──────────────
+    ck("A67 选项题 gaps 过滤 uncovered/no_official_source",
+       _looks_like_choice("以下哪项属于可再生能源？"
+                          "A. 煤炭 B. 太阳能 C. 石油 D. 天然气") is True)
+
     # ── A32：选择题官方源豁免（Round 86）──────────────
     ck("A64 选择题识别（A./B./C./D. ≥2）",
        _looks_like_choice("以下哪项属于可再生能源？"

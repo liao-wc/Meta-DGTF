@@ -54,6 +54,12 @@ def main() -> int:
        p2.get("web"))
 
     p3 = _plan(q_choice)
+    # ★ [Round 91] 选项题（A./B./C./D. ≥2）→ choice 且 web on（引擎事实门需证据）
+    _q_opt = ("以下哪项属于可再生能源？A. 煤炭 B. 太阳能 C. 石油 D. 天然气")
+    _p_opt = _plan(_q_opt)
+    ck("⑦b 选项题 scenario=choice 且 web on",
+       _kind(_p_opt) == "choice" and str(_p_opt.get("web")) == "on",
+       (_kind(_p_opt), _p_opt.get("web")))
     ck("⑦ 选择题 scenario=choice", _kind(p3) == "choice",
        p3.get("scenario"))
 

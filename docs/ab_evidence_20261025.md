@@ -2229,3 +2229,34 @@ App 无回归。
 （「为什么」排除不变）；场景判据 4 条入 tests_scenario_matrix（27/27）。
 **复验**：App 地点 e2e **aq=verified/ready，display=纽约市**（0.9288 / 689,975 tok /
 96 calls / 443s）；App 矩阵 8→**9 行**。
+
+
+## 85. App 选项题/多值题 e2e 闭环（Round 91）
+
+### 85.1 选项题（choice）
+
+「以下哪项属于可再生能源？A. 煤炭 B. 太阳能 C. 石油 D. 天然气」daosheng_fast：
+首跑 plan=reasoning（引擎判 fact 但 App 未开 web）→ unverified；
+定位两处：
+1. `kind_of_question` 无「选项标记」规则 → 判 reasoning（App 不强制 web）；
+   修复：A./B./C./D. ≥2 ⇒ **choice**（判据入 tests_scenario_matrix，28/28）；
+2. App choice 档 web 非强制，而引擎事实门需要证据；
+   修复：`daosheng_mode` 对选项题**强制 web on**（plan 判据 ⑫b，19/19）；
+3. 复跑仍 needs_evidence（gaps `uncovered:以下哪项属于可再生能源`）——
+   选项题不需要选项词被证据覆盖：`build_fact_card` 对选项题同时豁免
+   `no_official_source` 与 `uncovered:*`（A67）。
+**终验**：**0.9516 / verified / ready，gaps=[]**（776,826 tok / 97 calls / 393s）。
+
+### 85.2 多值/单位题（出生人口）
+
+「2024年中国出生人口是多少万人？」daosheng_fast：**0.9842 / verified / ready**，
+**display=954万人**（552,847 tok / 88 calls / 393s）——单位「万人」与展示收窄端到端成立。
+
+### 85.3 App 矩阵
+
+App e2e 实测 9→**11 行**（新增 choice 选项题、birth 多值题）；fast 档覆盖
+reasoning/fact/**choice** 三场景。
+
+### 85.4 门禁
+
+全量 V2 51/51（**819 checks**）、fast_gate 12/12、App plan 19/19、场景 28/28。

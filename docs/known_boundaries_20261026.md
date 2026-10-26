@@ -33,3 +33,19 @@
 - `dgtf_memory/real_run.lock`（pid/tag/start/est/ttl=1800s）：活跃锁默认拒绝真跑
   （exit 3），`--force-concurrent` 显式覆盖；
 - 单日真跑 ≤3（本日已用尽，暂停）；余额保留 ≥50 CNY。
+
+## 5. Round 90 新增闭环/量化
+
+| 项 | 内容 |
+|---|---|
+| 地点/排序问句分类 | 已闭环：哪个/哪座/哪里/位于/设在/最大/最高/最长/最小 → fact；App 事实档强制 web on；App 地点 e2e 0.9288/verified/display=纽约市 |
+| probe_no_target_covered | 已量化：267 packs 30.3%；verified 中 30.7%（答案正确也扣分）；引擎侧待优化（冻结） |
+| App e2e 矩阵 | 9 行（新增 UNHQ 地点行） |
+
+## 6. Round 91 新增闭环
+
+| 项 | 内容 |
+|---|---|
+| 选项题 App 链路 | 已闭环：选项标记→choice + App 强制 web + uncovered 豁免；App e2e 0.9516/verified |
+| 多值/单位展示 | 已闭环：出生人口 App e2e 0.9842/verified，display=954万人 |
+| App e2e 矩阵 | 11 行；fast 覆盖 reasoning/fact/choice |

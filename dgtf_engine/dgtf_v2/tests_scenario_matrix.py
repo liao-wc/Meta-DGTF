@@ -107,6 +107,9 @@ def main():
        kind_of_question("中国最大的淡水湖是哪个？") == "fact")
     ck("场景分类：为什么仍 → reasoning",
        kind_of_question("为什么海水是咸的？") == "reasoning")
+    ck("场景分类：选项题 → choice",
+       kind_of_question("以下哪项属于可再生能源？"
+                        "A. 煤炭 B. 太阳能 C. 石油 D. 天然气") == "choice")
     ck("场景分类：选择问句仍 → choice",
        kind_of_question("企业建设数据中心，应该优先选择哪个方案？"
                         "A. 自建 B. 公有云") == "choice")

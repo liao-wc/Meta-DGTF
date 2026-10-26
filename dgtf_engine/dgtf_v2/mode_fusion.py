@@ -13,6 +13,7 @@ M4 auto-fused = 在三种模式间按质量/墙钟/tokens/联网约束自适应�
 from __future__ import annotations
 
 from pathlib import Path
+import re
 from typing import Dict, List, Optional
 
 MODES: Dict[str, dict] = {
@@ -473,6 +474,10 @@ def kind_of_question(question: str) -> str:
                     # ★ [Round 90] 地点/排序/选择型事实问句（App 事实档需 web on）
                     "哪个", "哪座", "哪条", "哪种", "哪里", "位于",
                     "设在", "最大", "最高", "最长", "最小")
+    # ★ [Round 91] 选项题（A./B./C./D. ≥2）优先判 choice（App choice 档）
+    _opt_marks = re.findall(r"(?:^|[\s（(])[A-DＡＢＣＤ]\s*[.、)）．]", q)
+    if len(_opt_marks) >= 2:
+        return "choice"
     choice_markers = ("还是", "或者", "应该", "如何取舍", "优先", "选择",
                       "方案")
     if any(k in q for k in choice_markers):
@@ -569,6 +574,16 @@ MEASURED_APP_RUNS: List[dict] = [
      "quality": 0.9288, "tokens": 689975, "calls": 96, "wall": 442.9,
      "verified": True, "ready": True,
      "plan": "fast/thinking off/web on（地点问句分类修复后）"},
+    {"id": "app-fast-choice-renew", "mode": "daosheng_fast", "tier": "fast",
+     "scenario": "choice", "question": "以下哪项属于可再生能源？"
+     "A. 煤炭 B. 太阳能 C. 石油 D. 天然气",
+     "quality": 0.9516, "tokens": 776826, "calls": 97, "wall": 392.8,
+     "verified": True, "ready": True,
+     "plan": "fast/thinking off/web on（选项题 web 强制+uncovered 豁免后）"},
+    {"id": "app-fast-fact-birth", "mode": "daosheng_fast", "tier": "fast",
+     "scenario": "fact", "question": "2024年中国出生人口是多少万人？",
+     "quality": 0.9842, "tokens": 552847, "calls": 88, "wall": 392.9,
+     "verified": True, "ready": True, "plan": "fast/thinking off/web on"},
     {"id": "app-quality-fact", "mode": "daosheng", "tier": "quality",
      "scenario": "fact", "question": "珠穆朗玛峰的海拔是多少米？",
      "quality": 0.9447, "tokens": 1182916, "calls": 112, "wall": None,

@@ -722,18 +722,21 @@ def predict_route_rounds(question: str, preset: dict | None = None, *,
                          ("source", "ok", "available", "latency_ms", "error")})
         if http.get("ok"):
             return {**http, "attempts": attempts}
-        cb = subprocess_predict or _default_subprocess_predict
-        try:
-            sub = cb(question)
-        except Exception as exc:  # noqa: BLE001
-            sub = {"ok": False, "error": "%s: %s" % (type(exc).__name__, exc)}
-        sub = dict(sub or {})
-        sub.setdefault("source", "subprocess")
-        attempts.append({k: sub.get(k) for k in ("source", "ok", "error")})
-        if sub.get("ok") and _norm_route(sub.get("route")):
-            sub["route"] = _norm_route(sub.get("route"))
-            sub["rounds"] = _norm_rounds(sub.get("rounds"))
-            return {**sub, "attempts": attempts}
+        # 旧子进程回退依赖根目录 llm_predict.py；文件缺失时不要制造虚假尝试/错误。
+        _sub_script = PROJECT_ROOT / "llm_predict.py"
+        if subprocess_predict is not None or _sub_script.is_file():
+            cb = subprocess_predict or _default_subprocess_predict
+            try:
+                sub = cb(question)
+            except Exception as exc:  # noqa: BLE001
+                sub = {"ok": False, "error": "%s: %s" % (type(exc).__name__, exc)}
+            sub = dict(sub or {})
+            sub.setdefault("source", "subprocess")
+            attempts.append({k: sub.get(k) for k in ("source", "ok", "error")})
+            if sub.get("ok") and _norm_route(sub.get("route")):
+                sub["route"] = _norm_route(sub.get("route"))
+                sub["rounds"] = _norm_rounds(sub.get("rounds"))
+                return {**sub, "attempts": attempts}
     rules = _rules_prediction(question, ds)
     attempts.append({"source": "rules", "ok": True})
     return {**rules, "attempts": attempts}
@@ -1212,6 +1215,13 @@ def build_plan(question: str, opts: dict | None = None, *,
         web = "on"
         warnings.append("场景规则：事实题强制联网（web on，实测 +0.51 质量）")
 
+    # [Round 91] 选项题（A./B./C./D. ≥2）引擎侧可能判 fact：强制 web on 取证据
+    _opt_n = len(re.findall(r"(?:^|[\s（(])[A-DＡＢＣＤ]\s*[.、)）．]",
+                            str(question or "")))
+    if _opt_n >= 2 and str(web) != "on":
+        web = "on"
+        warnings.append("选项题：A./B./C./D. ≥2 ⇒ 强制联网（引擎事实门需证据）")
+
     memory = memory_summary(question, ds, project_related=_prj, history=history)
     context_injected: list[str] = []
     if _prj:
@@ -1253,7 +1263,12 @@ def build_plan(question: str, opts: dict | None = None, *,
     if local_desc["available"]:
         reasons.append("本地模型 HTTP 可用→route=%s" % ",".join(local.get("route") or []))
     else:
-        reasons.append("本地服务不可达→规则回退（route=%s）" % route)
+        _lerr = " ".join(str((x or {}).get("error") or "")
+                          for x in (local.get("attempts") or [])).lower()
+        if "timed out" in _lerr or "timeout" in _lerr:
+            reasons.append("本地 route 超时（预算过紧）→规则回退（route=%s）" % route)
+        else:
+            reasons.append("本地服务不可达→规则回退（route=%s）" % route)
     _sc2 = _scenario_of(m4)
     if _sc2.get("kind"):
         reasons.append("场景=%s → 推荐 %s（%s）"

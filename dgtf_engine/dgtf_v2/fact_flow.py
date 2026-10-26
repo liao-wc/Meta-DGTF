@@ -757,9 +757,10 @@ def build_fact_card(question: str, report: EvidenceReport,
     gaps = list(getattr(report, "gaps", None) or [])
     if evs and not gaps:
         gaps = detect_gaps(question, evs, conflicts=conflicts)
-        # ★ [Round 86] 选择题不需要官方事实源（选项题是选择/推理，不是事实查找）
+        # ★ [Round 86/91] 选择题不需要官方事实源，也不要求选项词被证据覆盖
         if _looks_like_choice(question):
-            gaps = [g for g in gaps if str(g) != "no_official_source"]
+            gaps = [g for g in gaps if str(g) != "no_official_source"
+                    and not str(g).startswith("uncovered:")]
     evidence_ids = [str(getattr(e, "evidence_id", "")) for e in evs]
     official_ids = [str(getattr(e, "evidence_id", "")) for e in evs
                     if bool(getattr(e, "official", False))]

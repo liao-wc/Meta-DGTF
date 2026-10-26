@@ -20,7 +20,7 @@ def ck(n, ok, info=""):
 
 def main():
     rows = measured_app_runs()
-    ck("① 行数 = 9（App e2e 真跑）", len(rows) == 9, len(rows))
+    ck("① 行数 = 11（App e2e 真跑）", len(rows) == 11, len(rows))
     need = {"id", "mode", "tier", "scenario", "question", "quality",
             "tokens", "calls", "wall", "verified", "ready", "plan"}
     ck("② 必需字段齐全", all(need.issubset(set(r)) for r in rows),
@@ -30,12 +30,12 @@ def main():
     ck("④ quality ∈ (0,1]、tokens>0、calls>0",
        all(0 < float(r["quality"]) <= 1 and int(r["tokens"]) > 0
            and int(r["calls"]) > 0 for r in rows))
-    ck("⑤ fast 档存在 reasoning 与 fact 两场景",
+    ck("⑤ fast 档存在 reasoning/fact/choice 三场景",
        {r["scenario"] for r in rows if r["tier"] == "fast"} ==
-       {"reasoning", "fact"},
+       {"reasoning", "fact", "choice"},
        {r["scenario"] for r in rows if r["tier"] == "fast"})
     summ = app_runs_summary()
-    ck("⑥ 聚合按 (scenario,tier) 共 3 组", len(summ) == 3, summ)
+    ck("⑥ 聚合按 (scenario,tier) 共 4 组", len(summ) == 4, summ)
     fact_fast = [x for x in summ if x["scenario"] == "fact"
                  and x["tier"] == "fast"][0]
     fact_qual = [x for x in summ if x["scenario"] == "fact"
