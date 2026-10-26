@@ -524,6 +524,17 @@ def main():
        _inc_card.status == "answered"
        and "41314" in str(_inc_card.answer), (_inc_card.status, _inc_card.answer))
 
+    # ── A48：居民/人均 pen 不误伤（Round 112）──────────────
+    _inc2_ev = EvidenceReport(
+        question="2024年我国居民人均可支配收入是多少元？",
+        queries=["q"], searches=1,
+        items=[ev("E1", "2024年全国居民人均可支配收入41314元，同比名义增长5.3%。",
+                  official=True)], conflicts=[], gaps=[])
+    _inc2 = _numeric_claim_answer(
+        "2024年我国居民人均可支配收入是多少元？", list(_inc2_ev.items))
+    ck("A85 居民/人均题取 41314 元（pen 不误伤）",
+       "41314" in _inc2, _inc2)
+
     # ── B：整体量语义加权 ────────────────────────
     ck("B1 问长度 + 全长标记 → 加分",
        _overall_quantity_bonus("黄河全长约5464公里", "黄河的长度是多少千米") > 0)
