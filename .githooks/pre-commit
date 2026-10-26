@@ -1,0 +1,51 @@
+#!/bin/sh
+# App 发布硬门禁：App 运行时文件变更必须 bump 版本，并通过版本/完整性检查。
+set -u
+ROOT=$(git rev-parse --show-toplevel) || exit 1
+cd "$ROOT" || exit 1
+
+if command -v python >/dev/null 2>&1; then
+  PY=python
+elif command -v py >/dev/null 2>&1; then
+  PY=py
+else
+  echo "[release-gate] BLOCK: python not found" >&2
+  exit 1
+fi
+
+APP_CHANGED=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '^(dgtf_app/(server\.py|engine_runner\.py|daosheng_mode\.py|v2_online\.py|static/))' || true)
+if [ -n "$APP_CHANGED" ]; then
+  HEAD_VER=$(git show HEAD:dgtf_app/server.py 2>/dev/null | sed -n 's/^APP_VERSION = "\([^"]*\)".*/\1/p' | head -n 1)
+  IDX_VER=$(git show :dgtf_app/server.py 2>/dev/null | sed -n 's/^APP_VERSION = "\([^"]*\)".*/\1/p' | head -n 1)
+  if [ -z "$IDX_VER" ]; then
+    echo "[release-gate] BLOCK: cannot read staged APP_VERSION" >&2
+    exit 1
+  fi
+  if [ "$IDX_VER" = "$HEAD_VER" ]; then
+    echo "[release-gate] BLOCK: App runtime changed but APP_VERSION not bumped ($IDX_VER)" >&2
+    echo "[release-gate] run: python scripts/app_release.py --version <new> --cache-tag <tag>" >&2
+    exit 1
+  fi
+  if [ ! -f "docs/releases/app-V$IDX_VER.md" ]; then
+    echo "[release-gate] BLOCK: missing docs/releases/app-V$IDX_VER.md" >&2
+    exit 1
+  fi
+  if ! grep -q "App $IDX_VER" CHANGELOG.md 2>/dev/null; then
+    echo "[release-gate] BLOCK: CHANGELOG missing App $IDX_VER" >&2
+    exit 1
+  fi
+fi
+
+if ! "$PY" scripts/app_version_check.py >/tmp/dgtf_app_version_gate.log 2>&1; then
+  echo "[release-gate] BLOCK: app_version_check failed" >&2
+  tail -n 40 /tmp/dgtf_app_version_gate.log >&2
+  exit 1
+fi
+
+if ! "$PY" scripts/file_integrity_check.py >/tmp/dgtf_file_integrity_gate.log 2>&1; then
+  echo "[release-gate] BLOCK: file_integrity_check failed" >&2
+  tail -n 40 /tmp/dgtf_file_integrity_gate.log >&2
+  exit 1
+fi
+
+exit 0

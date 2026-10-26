@@ -1,7 +1,7 @@
 {
  "ok": true,
  "app": "https://127.0.0.1:8765",
- "ts": 1793008690.8790855,
+ "ts": 1793008964.6066892,
  "n": 55,
  "fails": [],
  "warnings": [
@@ -17,72 +17,72 @@
   {
    "name": "GET /api/health",
    "ok": true,
-   "detail": "code=200 484ms"
+   "detail": "code=200 803ms"
   },
   {
    "name": "GET /api/config",
    "ok": true,
-   "detail": "code=200 388ms"
+   "detail": "code=200 103ms"
   },
   {
    "name": "GET /api/dashboard",
    "ok": true,
-   "detail": "code=200 245ms"
+   "detail": "code=200 252ms"
   },
   {
    "name": "GET /api/tasks",
    "ok": true,
-   "detail": "code=200 20ms"
+   "detail": "code=200 5ms"
   },
   {
    "name": "GET /api/agent/knowledge",
    "ok": true,
-   "detail": "code=200 10ms"
+   "detail": "code=200 32ms"
   },
   {
    "name": "GET /api/agent/hot-topics",
    "ok": true,
-   "detail": "code=200 17ms"
+   "detail": "code=200 29ms"
   },
   {
    "name": "GET /api/status/activity",
    "ok": true,
-   "detail": "code=200 330ms"
+   "detail": "code=200 554ms"
   },
   {
    "name": "GET /api/status/sidebar",
    "ok": true,
-   "detail": "code=200 101ms"
+   "detail": "code=200 18ms"
   },
   {
    "name": "GET /api/schedule/v2",
    "ok": true,
-   "detail": "code=200 63ms"
+   "detail": "code=200 40ms"
   },
   {
    "name": "GET /api/schedule/v2/online",
    "ok": true,
-   "detail": "code=200 27ms"
+   "detail": "code=200 8ms"
   },
   {
    "name": "GET /api/schedule/v2/pareto",
    "ok": true,
-   "detail": "code=200 41ms"
+   "detail": "code=200 33ms"
   },
   {
    "name": "GET /api/schedule/policy",
    "ok": true,
-   "detail": "code=200 22ms"
+   "detail": "code=200 6ms"
   },
   {
    "name": "GET /api/dsh/guard",
    "ok": true,
-   "detail": "code=200 17ms"
+   "detail": "code=200 12ms"
   },
   {
    "name": "GET /api/dsh/proposals",
    "ok": true,
-   "detail": "code=200 326ms"
+   "detail": "code=200 463ms"
   },
   {
    "name": "静态缓存版本一致",
