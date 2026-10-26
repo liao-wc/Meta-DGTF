@@ -31,15 +31,20 @@ def main():
         "README.md": [("App " + old, "App " + new)],
         "dgtf_app/README.md": [("V" + old, "V" + new)],
         "PROJECT_LAYOUT.md": [("App：" + old, "App：" + new)],
-        "dgtf_engine/dgtf_v2/NAMING.md": [("2.0.24", new), ("app-V2.0.24", "app-V" + new)],
-        "docs/index.html": [("V2.0.23 (App)", "V" + new + " (App)")],
+        "dgtf_engine/dgtf_v2/NAMING.md": [("App | " + old, "App | " + new),
+                                             ("app-V" + old, "app-V" + new)],
+        "docs/index.html": [("__regex__", r"V\d+\.\d+\.\d+ \(App\)", "V" + new + " (App)")],
     }.items():
         p = ROOT / rel
         if not p.is_file():
             continue
         text = p.read_text(encoding="utf-8", errors="replace")
-        for x, y in pats:
-            text = text.replace(x, y)
+        for item in pats:
+            if len(item) == 3 and item[0] == "__regex__":
+                text = re.sub(item[1], item[2], text)
+            else:
+                x, y = item[0], item[1]
+                text = text.replace(x, y)
         atomic_write(p, text)
     print("bumped", old, "->", new, "cache", tag, "backup", snap)
     return 0
