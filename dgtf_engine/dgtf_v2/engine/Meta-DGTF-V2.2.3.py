@@ -27421,6 +27421,31 @@ def _has_decision_context(question: str) -> bool:
 #   把四层过程全达标的结果打成 answer_ready=False（真跑实测）。单独一类。
 _WHY_CUES = ("为什么", "为何", "原因", "成因", "机制", "原理",
              "怎么会", "凭什么", "为什么会")
+# ★ 2026-10-25 真跑发现：「AI Agent 会先取代哪类工作？」被判成 fact+short，
+#   触发事实预检/证据门 → needs_evidence。预测/趋势/取代类不是可核验事实题，
+#   单列 forecast；题型回执归 reasoning，避免事实卡硬缺口。
+_FORECAST_CUES = ("会先", "将会", "未来", "预测", "趋势", "多久", "何时",
+                  "哪类工作", "哪类职业", "哪类岗位", "哪类行业", "取代",
+                  "会不会", "会不会被", "会改变", "会影响", "会带来",
+                  "将改变", "将影响", "将带来", "怎样改变", "如何改变",
+                  "会怎样", "会如何")
+# ★ 2026-10-25 宇宙真跑发现：解释型问句也可能不含“为什么”，
+#   但带“说明了什么 / 意味着什么 / 揭示了什么”，不应被当成事实短题。
+_INTERPRET_CUES = ("说明了什么", "意味着什么", "揭示了什么", "表明了什么",
+                   "说明了", "意味着", "揭示了", "表明了", "有什么意义",
+                   "意义是什么")
+
+
+def _is_forecast_question(question: str) -> bool:
+    q = str(question or "")
+    return any(c in q for c in _FORECAST_CUES) and any(
+        k in q for k in ("会", "将", "未来", "预测", "趋势", "多久", "何时",
+                         "哪类", "取代"))
+
+
+def _is_interpret_question(question: str) -> bool:
+    q = str(question or "")
+    return any(c in q for c in _INTERPRET_CUES)
 
 
 def _is_why_question(question: str) -> bool:
@@ -27439,6 +27464,8 @@ def question_type_from_features(feat: dict) -> str:
     boundary：其余（无决策语境的边界题）。
     """
     feat = feat or {}
+    if feat.get("forecast") or feat.get("interpret"):
+        return "reasoning"
     if feat.get("fact") and feat.get("short"):
         return "fact"
     if feat.get("meta") or feat.get("choice") or feat.get("how"):
@@ -28608,11 +28635,16 @@ def _auto_features(question: str) -> dict:
     """
     q = str(question or "").strip()
     _why = _is_why_question(q)
+    _forecast = _is_forecast_question(q)
+    _interpret = _is_interpret_question(q)
     return {
         "len": len(q),
         "blank": not q,
         "why": _why,
-        "fact": (not q) or (not _has_decision_context(q) and not _why),
+        "forecast": _forecast,
+        "interpret": _interpret,
+        "fact": (not q) or (not _has_decision_context(q) and not _why
+                            and not _forecast and not _interpret),
         "meta": any(k in q for k in _AUTO_META_MARKS),
         "multi": (q.count("，") + q.count(",")) >= 3,
         "choice": ("或" in q) or ("还是" in q),
