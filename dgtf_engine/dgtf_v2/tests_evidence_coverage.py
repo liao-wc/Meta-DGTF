@@ -556,6 +556,22 @@ def main():
                    for g in _fx_card.gaps),
        (_fx_card.status, _fx_card.answer, _fx_card.gaps))
 
+    # ── A50：纯算术题确定性直答（Round 129）────────────
+    _meme = [ev("E1", "「2+2=5」是一个混合梗，来源于第20集。", official=True)]
+    _ar_card = build_fact_card(
+        "2+2等于几？",
+        EvidenceReport(question="2+2等于几？", queries=["q"], searches=1,
+                       items=_meme))
+    ck("A87 纯算术题直答（2+2=4，不采信梗答案）",
+       _ar_card.status == "answered" and "= 4" in str(_ar_card.answer)
+       and "2+2=5" not in str(_ar_card.answer),
+       (_ar_card.status, _ar_card.answer))
+    _plain = build_fact_card(
+        "2024年GDP是多少？",
+        EvidenceReport(question="2024年GDP是多少？", queries=[], searches=0,
+                       items=[]))
+    ck("A87b 非算术题不被直答截胡", not _plain.answer.startswith("2"), _plain.answer)
+
     # ── B：整体量语义加权 ────────────────────────
     ck("B1 问长度 + 全长标记 → 加分",
        _overall_quantity_bonus("黄河全长约5464公里", "黄河的长度是多少千米") > 0)

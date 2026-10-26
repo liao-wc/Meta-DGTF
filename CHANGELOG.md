@@ -1,3 +1,11 @@
+【Round 129 增补（2026-10-27，修复审计问题）】
+- P0 算术题：`fact_flow._arithmetic_answer` 纯算术直答（修复 2+2 被梗答案污染）；A87/A87b。
+- P0 一致性：新增 `outputs_quality_consistency.py`（历史矛盾不改写、新包禁止矛盾）+ acceptance。
+- P1 flags：`quality_predictor.normalize_flags` + 引擎 `flags_normalized`；tests_flags_schema F1–F3。
+- P0 外汇：`fx_anchor_replay_check.py` 离线回放护栏（answered/32024亿美元/gaps=[]）+ acceptance。
+- P2 文档：README/交付说明/综合报告/边界/本地模型/发布流程数字统一（V2 52/841、验收 15/15、
+  无服务 14/14）；审计报告新增「修复记录」；历史文档加归档头；新增 ab_results 字段说明。
+- P3 只读：`outputs_retention_audit.py`（2754 文件/321.4MB/重复题 66；不删数据）。
 【Round 128 增补（2026-10-27）】
 - 产物问题审计：docs/产物问题审计_20261027.md（359 packs：7 条 quality 矛盾、1 条 verified 梗答案、
   duty_short 76.6%、动态 flag 62 种、65 题重复、321MB 无保留策略；文档过期数字多处；台账编码损坏）；

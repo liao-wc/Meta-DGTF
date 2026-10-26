@@ -472,3 +472,20 @@ def save_model(model: dict, path: str) -> bool:
         return True
     except Exception:
         return False
+
+
+def normalize_flags(flags) -> list:
+    """[Round 129] 把动态 flag（如 `probe_link_dangling(3)`）归一为稳定 code。
+
+    规则：取第一个 `(` 前的部分并去空白；保留顺序与去重。
+    使 `duty_short`/`probe_link_dangling` 等可被聚合统计。
+    """
+    out: list = []
+    for f in (flags or []):
+        s = str(f or "").strip()
+        if not s:
+            continue
+        base = s.split("(", 1)[0].strip()
+        if base and base not in out:
+            out.append(base)
+    return out

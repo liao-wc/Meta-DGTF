@@ -65,6 +65,39 @@ BASE_ROUNDS = {"0": 4, "1": 4, "both": 5, "all": 6}
 #: 一次事实题默认最多发几条检索 query（多了浪费预算，少了覆盖不足）。
 MAX_QUERIES = 3
 
+#: ★ [Round 129] 纯算术题：题面就是「数 op 数（等于几）」时直接计算，不检索、不编。
+#:   修复真实反例：2+2 题曾被网页梗答案污染为 verified「2+2=5」。
+_ARITH_OPS = {"+": lambda a, b: a + b,
+              "-": lambda a, b: a - b, "−": lambda a, b: a - b,
+              "×": lambda a, b: a * b, "x": lambda a, b: a * b,
+              "X": lambda a, b: a * b, "*": lambda a, b: a * b,
+              "÷": lambda a, b: (a / b) if b else None,
+              "/": lambda a, b: (a / b) if b else None}
+_ARITH_TAIL_RE = re.compile(
+    r"^\s*(?:请)?(?:计算|算一下?|求(?:一下)?)?\s*"
+    r"(-?\d+(?:\.\d+)?)\s*([+\-−×xX*÷/])\s*(-?\d+(?:\.\d+)?)\s*"
+    r"(?:等于|是|=)?\s*(?:多少|几|什么)?\s*[？?。.!！]?\s*$")
+
+
+def _arithmetic_answer(question: str) -> str:
+    """纯算术题 → 确定性答案句（含公式）；不是算术题 → ""。"""
+    m = _ARITH_TAIL_RE.match(str(question or "").strip())
+    if not m:
+        return ""
+    try:
+        a = float(m.group(1))
+        b = float(m.group(3))
+        r = _ARITH_OPS.get(m.group(2), lambda x, y: None)(a, b)
+    except Exception:  # noqa: BLE001
+        return ""
+    if r is None:
+        return ""
+
+    def _fmt(x: float) -> str:
+        return str(int(x)) if abs(x - round(x)) < 1e-12 else ("%g" % x)
+
+    return "%s %s %s = %s" % (_fmt(a), m.group(2), _fmt(b), _fmt(r))
+
 
 # ============================================================ 分类
 @dataclass
@@ -949,6 +982,12 @@ def build_fact_card(question: str, report: EvidenceReport,
     """
     evs = list(getattr(report, "items", None) or [])
     queries = list(getattr(report, "queries", None) or [])
+    # ★ [Round 129] 纯算术题：不检索、不采信网页梗答案，直接给确定性结果
+    _arith = _arithmetic_answer(question)
+    if _arith:
+        return FactCard(question=str(question or "").strip(), status="answered",
+                        answer=_arith, queries=queries,
+                        reason="arithmetic_direct", gaps=[])
     errors = list(getattr(report, "errors", None) or [])
     # 引擎侧会**直接构造** EvidenceReport（不等价于 collect_evidence）：
     # 没给 gaps/conflicts 时在这里就地补算，保证卡片的判据不依赖调用方
