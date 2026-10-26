@@ -1,13 +1,13 @@
 {
- "n_packs": 284,
- "n_probe_flagged": 85,
- "probe_flag_ratio": 0.2993,
- "n_verified": 125,
- "n_verified_and_flagged": 38,
- "verified_flagged_ratio": 0.304,
+ "n_packs": 314,
+ "n_probe_flagged": 92,
+ "probe_flag_ratio": 0.293,
+ "n_verified": 144,
+ "n_verified_and_flagged": 41,
+ "verified_flagged_ratio": 0.2847,
  "flagged_by_qtype": {
   "?": 31,
-  "fact": 39,
+  "fact": 46,
   "reasoning": 13,
   "decision": 2
  },
@@ -3672,6 +3672,347 @@
   {
    "file": "20261026_104638_2024年中国出生人口是多少万人.packed.json",
    "question": "2024年中国出生人口是多少万人？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_110656_11等于几.packed.json",
+   "question": "1+1等于几？",
+   "qtype": "fact",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "probe_no_target_covered",
+    "unsaid_overused(4)",
+    "all_closure_unavailable",
+    "core_audit_gaps"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261026_111249_HTTP404状态码表示什么.packed.json",
+   "question": "HTTP 404状态码表示什么？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "ing_rephrased_direct(96%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_112157_HTTP404状态码表示什么.packed.json",
+   "question": "HTTP 404状态码表示什么？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261026_113102_HTTP404状态码表示什么.packed.json",
+   "question": "HTTP 404状态码表示什么？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261026_115654_首例确凿的黑洞重复潮汐瓦解恒星事件说明了.packed.json",
+   "question": "首例确凿的黑洞重复潮汐瓦解恒星事件说明了什么？",
+   "qtype": "reasoning",
+   "aq": "verified",
+   "ready": true,
+   "flags": [],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_120235_三峡大坝全长多少米.packed.json",
+   "question": "三峡大坝全长多少米？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "ing_rephrased_direct(89%)",
+    "unsaid_overused(4)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_120346_我国义务教育法规定小学入学年龄是多少岁.packed.json",
+   "question": "我国义务教育法规定小学入学年龄是多少岁？",
+   "qtype": "fact",
+   "aq": "needs_evidence",
+   "ready": false,
+   "flags": [
+    "candidates_backfilled(sc:8)",
+    "duty_short",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261026_120600_2024年我国粮食总产量是多少亿斤.packed.json",
+   "question": "2024年我国粮食总产量是多少亿斤？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "ing_rephrased_direct(50%)",
+    "too_many_amp_candidates(77%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_121928_我国义务教育法规定小学入学年龄是多少岁.packed.json",
+   "question": "我国义务教育法规定小学入学年龄是多少岁？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "too_many_amp_candidates(69%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_123116_我国成年人高血压的诊断标准是多少.packed.json",
+   "question": "我国成年人高血压的诊断标准是多少？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_123149_世界卫生组织总部设在哪个城市.packed.json",
+   "question": "世界卫生组织总部设在哪个城市？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_123404_我国现行法定节假日一年共有多少天.packed.json",
+   "question": "我国现行法定节假日一年共有多少天？",
+   "qtype": "fact",
+   "aq": "needs_evidence",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "ing_rephrased_direct(60%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_124247_我国现行法定节假日一年共有多少天.packed.json",
+   "question": "我国现行法定节假日一年共有多少天？",
+   "qtype": "fact",
+   "aq": "needs_evidence",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "ing_rephrased_direct(52%)",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261026_124248_世界卫生组织总部设在哪个城市.packed.json",
+   "question": "世界卫生组织总部设在哪个城市？",
+   "qtype": "fact",
+   "aq": "needs_evidence",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "ing_rephrased_direct(50%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_124459_我国成年人高血压的诊断标准是多少.packed.json",
+   "question": "我国成年人高血压的诊断标准是多少？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "ing_rephrased_direct(50%)",
+    "too_many_amp_candidates(68%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_130406_世界卫生组织总部设在哪个城市.packed.json",
+   "question": "世界卫生组织总部设在哪个城市？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "ing_rephrased_direct(53%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_130742_世界卫生组织总部设在哪个城市.packed.json",
+   "question": "世界卫生组织总部设在哪个城市？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_132141_我国现行法定节假日一年共有多少天.packed.json",
+   "question": "我国现行法定节假日一年共有多少天？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_133140_截至2024年底我国高速公路总里程是多少.packed.json",
+   "question": "截至2024年底我国高速公路总里程是多少万公里？",
+   "qtype": "fact",
+   "aq": "needs_evidence",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261026_133154_我国现行个人所得税起征点是多少元.packed.json",
+   "question": "我国现行个人所得税起征点是多少元？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261026_133200_中国空间站由几个舱段组成.packed.json",
+   "question": "中国空间站由几个舱段组成？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_134122_中国空间站由几个舱段组成.packed.json",
+   "question": "中国空间站由几个舱段组成？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_134352_截至2024年底我国高速公路总里程是多少.packed.json",
+   "question": "截至2024年底我国高速公路总里程是多少万公里？",
+   "qtype": "fact",
+   "aq": "needs_evidence",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "ing_rephrased_direct(54%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_135105_截至2024年底我国高速公路总里程是多少.packed.json",
+   "question": "截至2024年底我国高速公路总里程是多少万公里？",
+   "qtype": "fact",
+   "aq": "needs_evidence",
+   "ready": false,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_140007_截至2024年底我国高速公路总里程是多少.packed.json",
+   "question": "截至2024年底我国高速公路总里程是多少万公里？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "ing_rephrased_direct(51%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_140833_奥运会每隔几年举办一次.packed.json",
+   "question": "奥运会每隔几年举办一次？",
+   "qtype": "fact",
+   "aq": "needs_evidence",
+   "ready": false,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_141759_奥运会每隔几年举办一次.packed.json",
+   "question": "奥运会每隔几年举办一次？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_142914_2024年我国居民人均可支配收入是多少元.packed.json",
+   "question": "2024年我国居民人均可支配收入是多少元？",
+   "qtype": "fact",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_143628_新衰老时钟筛出关键基因动物实验中寿.packed.json",
+   "question": "新“衰老时钟”筛出关键基因，动物实验中寿命延长14%，意味着什么？",
+   "qtype": "reasoning",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_144153_2024年我国居民人均可支配收入是多少元.packed.json",
+   "question": "2024年我国居民人均可支配收入是多少元？",
    "qtype": "fact",
    "aq": "verified",
    "ready": true,
