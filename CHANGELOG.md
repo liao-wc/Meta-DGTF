@@ -1,3 +1,11 @@
+【Round 130 增补（2026-10-27，授权处理审计 1/2/3）】
+- 历史包修复：`scripts/repair_legacy_packs.py` —— 7 条矛盾包全部修复（2+2 确定性改为 4；
+  verified+!ready 有答案→ready、无答案→unverified；unverified+ready→False）；一致性护栏 legacy=0。
+- 资产清理：删除 unused merged 模型 2 个（4.35GB）、陈旧 worktree（154MB）、_audit_tmp（103MB），
+  共释放约 4.6GB；双判分支保留。
+- flags 分类：`quality_predictor.classify_flags` + 引擎 `flags_info`/`process_flags`
+  （duty_short 归 process；不改既有 flags 打分）；F4 判据。
+- configs 预设 local 注释同步（并发 WIP 经 stash 保护，仅提交注释）；V2 52/842。
 【Round 129 增补（2026-10-27，修复审计问题）】
 - P0 算术题：`fact_flow._arithmetic_answer` 纯算术直答（修复 2+2 被梗答案污染）；A87/A87b。
 - P0 一致性：新增 `outputs_quality_consistency.py`（历史矛盾不改写、新包禁止矛盾）+ acceptance。

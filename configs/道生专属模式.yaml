@@ -56,7 +56,8 @@ app_daosheng:
   # V2.2.3 机制键：auto = 确定性核 + 条件式 LLM（引擎支持时 App 才透传/写配置）。
   self_check_mode: auto
   dual_judge_mode: auto
-  # dual_judge 仅支持 llm/cache/auto；写 local 会被 App 回退为 llm（Round 58 防护）。
+  # [Round 122] 引擎已支持 llm/cache/auto/local；dual_judge local 合并后 App 自动透传，
+  #   引擎不支持/未合并时确定性回退 llm（Round 58 防护保留）。
   # 历史谱系融合：auto 交给引擎；引擎 V2.2.2+ 已有 --history-fusion auto/on/off。
   history_fusion: auto
 

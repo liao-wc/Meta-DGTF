@@ -5,7 +5,7 @@ F1 动态 flag 归一：`probe_link_dangling(3)` → `probe_link_dangling`
 F2 去重且保持首次出现顺序
 F3 普通 flag 原样保留；空输入 → []
 """
-from dgtf_v2.quality_predictor import normalize_flags
+from dgtf_v2.quality_predictor import classify_flags, normalize_flags
 
 P, F = [], []
 
@@ -25,6 +25,12 @@ def main() -> int:
     ck("F2 去重且保序",
        normalize_flags(["duty_short", "duty_short(2)", "duty_short"]) == ["duty_short"],
        normalize_flags(["duty_short", "duty_short(2)", "duty_short"]))
+    _cls = classify_flags(["duty_short", "probe_no_target_covered(2)",
+                           "polarity_all_same_structural(1)"])
+    ck("F4 flags 三分类（process/coverage/other）",
+       _cls["process"] == ["duty_short"]
+       and _cls["coverage"] == ["probe_no_target_covered"]
+       and _cls["other"] == ["polarity_all_same_structural"], _cls)
     ck("F3 普通/空输入",
        normalize_flags([]) == []
        and normalize_flags(["all_closure_unavailable"]) == ["all_closure_unavailable"]

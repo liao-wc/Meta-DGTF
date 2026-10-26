@@ -25990,8 +25990,13 @@ class MetaDGTF:
             packed["answer_summary"] = _asum0
             _q0 = packed.get("quality") or {}
             try:
-                from dgtf_v2.quality_predictor import normalize_flags as _nf
-                _q0["flags_normalized"] = _nf(_q0.get("flags") or [])
+                from dgtf_v2.quality_predictor import (
+                    classify_flags as _cf, normalize_flags as _nf)
+                _fl0 = list(_q0.get("flags") or [])
+                _q0["flags_normalized"] = _nf(_fl0)
+                _fi0 = _cf(_fl0)
+                _q0["flags_info"] = _fi0
+                _q0["process_flags"] = list(_fi0.get("process") or [])
             except Exception:  # noqa: BLE001
                 pass
             _q0.update({"answer_ready": bool(_dt0.get("answer_ready")),

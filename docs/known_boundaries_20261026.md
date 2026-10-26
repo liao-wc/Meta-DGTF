@@ -177,3 +177,13 @@
   budget_ledger 重写（编码修复）、gitignore 增加 !docs/probe_cover_audit_*.json、本报告与指针；
 - 未做（建议）：outputs 保留策略/清理、未使用 merged 模型（约 4.4GB）、陈旧 worktree、_audit_tmp 清理、
   ab_results cost 字段迁移、configs 预设过期注释（文件被并发会话持有）。
+
+## 22. Round 130 更新（授权处理审计项）
+
+| 项 | 内容 |
+|---|---|
+| 历史包一致性 | 7 条矛盾/错误包已修复（2+2→4；备份+修复说明）；一致性护栏 legacy=0 |
+| 资产清理 | 释放约 4.6GB（merged 模型 4.35GB、worktree 154MB、_audit_tmp 103MB）；双判分支保留 |
+| duty_short | 新增 `flags_info`/`process_flags` 分类（不改打分）；阈值调整需真跑验证 |
+| 配置注释 | `configs/道生专属模式.yaml` local 注释已同步（并发 WIP 已 stash 保护） |
+| 验收 | **15/15（有服务）/ 14/14（无服务）**；V2 52/842 |

@@ -489,3 +489,40 @@ def normalize_flags(flags) -> list:
         if base and base not in out:
             out.append(base)
     return out
+
+
+#: [Round 130] process 类 flag：过程合同/流程告警，不等于答案质量结论。
+_PROCESS_FLAG_CODES = frozenset({
+    "duty_short", "probe_failed", "probe_return_empty",
+    "candidates_overlap_pool", "ing_has_boilerplate",
+    "ing_empty_with_candidates", "probe_skipped",
+})
+
+
+def classify_flags(flags) -> dict:
+    """把 flags 分为 process / coverage / other 三组（只读分类，不改变原 flags）。
+
+    - process：duty_short 等过程合同告警（可与 verified 并存，消费方应区别看待）；
+    - coverage：probe_* / closure / uncovered 类覆盖告警；
+    - other：其余（如 polarity / core_audit_gaps / too_many_*）。
+    """
+    out = {"process": [], "coverage": [], "other": []}
+    for f in (flags or []):
+        s = str(f or "").strip()
+        if not s:
+            continue
+        code = s.split("(", 1)[0].strip()
+        if code in _PROCESS_FLAG_CODES:
+            out["process"].append(code)
+        elif ("probe" in code or "closure" in code or "uncovered" in code):
+            out["coverage"].append(code)
+        else:
+            out["other"].append(code)
+    for k in out:
+        seen, uniq = set(), []
+        for x in out[k]:
+            if x not in seen:
+                seen.add(x)
+                uniq.append(x)
+        out[k] = uniq
+    return out
