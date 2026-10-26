@@ -108,6 +108,7 @@ llm_sft/_train_*.log
 docs/abrun_*.log
 # A/B 探针 JSON（数值已汇总进 docs/ab_results.jsonl）
 docs/probe_*.json
+!docs/probe_cover_audit_*.json
 
 # ── 2026-10-25 第二轮：本地模型证据与用户上传文件 ─────────────────────
 # ① 第一轮失败适配器的留档（截断训练；权重按项目口径不入库，config/README 也不跟库）

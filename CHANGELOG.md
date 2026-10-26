@@ -1,3 +1,8 @@
+【Round 128 增补（2026-10-27）】
+- 产物问题审计：docs/产物问题审计_20261027.md（359 packs：7 条 quality 矛盾、1 条 verified 梗答案、
+  duty_short 76.6%、动态 flag 62 种、65 题重复、321MB 无保留策略；文档过期数字多处；台账编码损坏）；
+- 修复：当前面文档数字（13/13、60 行、836 checks、v9b/v8b 槽位、dual_judge 已合并）、
+  budget_ledger 重写、gitignore 例外、CHANGELOG/边界指针；零 API。
 【Round 127 增补（2026-10-26）】
 - 合并后引擎 dual_judge local 真跑 0.9857/verified（8 次回退；吞吐仍限 opt-in）；
 - 新域：嫦娥六号 0.9639、成人睡眠 0.9409；外汇时间锚定修复（A86，离线 answered/32024亿美元）；

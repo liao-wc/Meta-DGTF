@@ -240,5 +240,5 @@ local_model\envs\dgtf_llm_env\Scripts\python.exe -m pip check
 - **本地模型默认**：v8b（mixed 配方，质量持平 v6、p50/p95 更快；训练/评测/切换全链证据）
 - **事实成本档**：fast+web 20 类领域 verified，质量 0.92–0.99、tokens 570–750K、
   墙钟 190–290s；场景矩阵事实 **60 行** + App e2e **12 行**
-- **一键验收**：`python scripts/final_acceptance.py --with-service` → 9/9 PASS
+- **一键验收**：`python scripts/final_acceptance.py --with-service` → 13/13 PASS（无服务 12/12）
 - 已知边界：检索依赖、跨片段语义（成年年龄）、多值列举、dual_judge 无 local 档

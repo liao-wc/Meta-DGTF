@@ -48,7 +48,7 @@
 |---|---|
 | 选项题 App 链路 | 已闭环：选项标记→choice + App 强制 web + uncovered 豁免；App e2e 0.9516/verified |
 | 多值/单位展示 | 已闭环：出生人口 App e2e 0.9842/verified，display=954万人 |
-| App e2e 矩阵 | 11 行；fast 覆盖 reasoning/fact/choice |
+| App e2e 矩阵 | 12 行；fast 覆盖 reasoning/fact/choice |
 
 ## 7. Round 92 新增闭环
 
@@ -65,7 +65,7 @@
 |---|---|
 | 命名题数值劫持 | 已闭环：命名问句不走数值答案（A71/A72）；最高高原 0.9776/verified |
 | App 精确缓存 | 同题复跑会命中缓存（tok=0）⇒ App e2e 需新题；缓存不自动失效（已知限制） |
-| 本地 v8b self_check | A/B：出生人口 0.99/＋2.27pp/−5.3% tokens；光速 tokens +5% ⇒ 默认 llm、local opt-in；v9 训练中 |
+| 本地 v8b self_check | A/B：出生人口 0.99/＋2.27pp/−5.3% tokens；光速 tokens +5% ⇒ 默认 llm、local opt-in；v9b 已完成（Round 123；v9 已归档） |
 | App e2e 端口 | 自动空闲端口（8800+），并发会话安全 |
 
 ## 9. Round 95 更新
@@ -82,7 +82,7 @@
 | 本地服务 | 训练期间暂停（8772/8771），训练后重启；App 自检 444/0（fail-open 已验证） |
 | v9 训练 | ep1 step 20/460，ETA ~5.8h；完成即 held-out 对比 |
 | 真实跑次 | 暂停（余额 50.76 近保留线） |
-| dual_judge local | 补丁就绪（docs/patches），等待主引擎干净合并 |
+| dual_judge local | 补丁就绪（Round 85 历史）；已于 60b0e81 合并 |
 
 ## 11. Round 110–111 维护态
 
@@ -90,7 +90,7 @@
 |---|---|
 | 真实跑次 | **停止**（余额 ¥9.48 < 10；保留硬底线） |
 | v9 训练 | 运行中（step ~120/460，外部并发使 ETA 拉长；GPU 满载） |
-| dual_judge local | 补丁就绪（0001–0003，T1–T8 8/8），等主引擎合并窗口 |
+| dual_judge local | 补丁就绪（0001–0003，T1–T8 8/8），等主引擎合并窗口（Round 111 历史；已合并） |
 | 验收 | 无服务 **8/8 PASS**；探针复审 29.3% flagged |
 
 ## 12. Round 113 更新
@@ -104,7 +104,7 @@
 
 | 项 | 内容 |
 |---|---|
-| 本地服务 | 已恢复（8771/8772，v8b ready）；一键验收 --with-service **9/9 PASS** |
+| 本地服务 | 已恢复（8771/8772，v8b ready）；一键验收 --with-service **9/9 PASS**（Round 114 历史；最新 13/13） |
 | v9 | 归档不变：GPU 6GB 卡无法同时容纳训练(5.8GB)+服务(2GB)，需专用窗口 |
 
 ## 14. Round 116 更新
@@ -130,13 +130,13 @@
 | 真实跑次预算 | 余额 ¥6.26 < 真跑最低门槛（10；硬底线 4） | Round 110 起 |
 | dual_judge local 合并 | 主引擎工作树 M（并发会话未提交）；合并器与补丁已全量校验（T1–T8） | Round 49 起 |
 | v9b 重训 | GPU 6GB 卡：0.5B 训练 ~4.9GB + 本地服务 ~1.9GB（并发会话持有）超容 | Round 113 起 |
-| 剩余可做 | 仅零成本文档/验收维护；机制层已到可验证最优（矩阵 57、V2 835 checks、验收 10/10） | — |
+| 剩余可做 | 仅零成本文档/验收维护；（Round 121 历史）矩阵 57→60、V2 835→836、验收 10/10→13/13 | — |
 
 ## 17. Round 123 更新（合并完成 + v9b）
 
 | 项 | 内容 |
 |---|---|
-| dual_judge local | **已合并主引擎**（60b0e81）；App 自动透传；验收 10/10 PASS |
+| dual_judge local | **已合并主引擎**（60b0e81）；App 自动透传；（Round 123 历史）验收 10/10 PASS |
 | v9b 训练 | 0.5B base（正确命令），专用 GPU 窗口，~6s/步，ETA ~43min |
 | 本地服务 | 训练期间暂停；训练/评测后恢复 |
 
@@ -146,7 +146,7 @@
 |---|---|
 | dual_judge local | **已合并**（60b0e81）；App 自动透传；默认仍 opt-in（本地 judge 吞吐） |
 | 本地模型默认 | **v9b**（val 0.1989；held-out 质量=v8b、更快；v8b/v6/v5/v2 兜底） |
-| 验收 | **10/10 PASS**（有服务）/ 9/9（无服务） |
+| 验收 | **13/13（有服务）/ 12/12（无服务）**（Round 127 最新；本表为 Round 124 快照） |
 | 剩余边界 | probe_no_target_covered（引擎侧扣分，29.3% packs）；App 精确缓存；旧 pack 严格拒答；检索依赖 |
 
 ## 19. Round 126 更新
@@ -169,3 +169,11 @@
 | probe 覆盖 | R7 兜底已落地（9.8% flagged 翻正，语义样例相关）；其余仍如实报 |
 | 真实跑次 | 用户限定 ¥10；已用约 ¥4.8，**停止真实跑次**，进入收束维护 |
 | 版本 | App **2.0.35**（收束版） |
+
+## 21. Round 128：产物问题审计
+
+- 完整审计报告：docs/产物问题审计_20261027.md（359 packs / 145 A/B 行 / 文档全文一致性 / 仓库与运行态）；
+- 本次已修：当前面文档过期数字（README/交付说明/综合报告/known_boundaries/local_model/app_release_process）、
+  budget_ledger 重写（编码修复）、gitignore 增加 !docs/probe_cover_audit_*.json、本报告与指针；
+- 未做（建议）：outputs 保留策略/清理、未使用 merged 模型（约 4.4GB）、陈旧 worktree、_audit_tmp 清理、
+  ab_results cost 字段迁移、configs 预设过期注释（文件被并发会话持有）。
