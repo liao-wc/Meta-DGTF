@@ -84,6 +84,12 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 123 增补（2026-10-26）】（合并完成 + v9b 训练）
+- dual_judge local **已合并入主引擎**：commit 60b0e81（0001–0003，fast_gate/V2/T1–T8 通过）；
+  App 能力感知自动透传 dual_judge_mode=local（判据 19/19：local→local via=local）。
+- 一键验收 --with-service **10/10 PASS**；引擎 CLI 支持 {llm,cache,auto,local}。
+- 专用 GPU 窗口：暂停本地服务（8771/8772）→ **v9b 训练启动**
+  （0.5B base，min 230×2，lr 6e-5，seed 7；实测 ~6s/步，ETA ~43min）。
 【Round 122 增补（2026-10-26）】
 - App 侧 dual_judge local 能力感知：_engine_supports_dual_judge_local() 读取引擎源码；
   未合并 → 确定性回退 llm（原防护），合并后 → 自动透传 local；两条路径均有判据
