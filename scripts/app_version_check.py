@@ -28,6 +28,9 @@ def main():
     ck("PROJECT_LAYOUT 当前版本", ("App：" + version) in _read("PROJECT_LAYOUT.md"), version)
     ck("发布说明存在", (ROOT / "docs" / "releases" / ("app-V" + version + ".md")).is_file(), version)
     ck("CHANGELOG 含当前 App 版本", ("App " + version) in _read("CHANGELOG.md"), version)
+    _naming = _read("dgtf_engine/dgtf_v2/NAMING.md")
+    ck("NAMING 当前 App 版本", ("App | " + version) in _naming, version)
+    ck("NAMING App 发布标签", ("app-V" + version) in _naming, version)
     doc = {"ok": all(x["ok"] for x in checks), "version": version,
            "cache_tags": tags, "checks": checks}
     dst = ROOT / "docs" / "app_version_latest.json"

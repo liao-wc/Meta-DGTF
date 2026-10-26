@@ -1,7 +1,7 @@
 {
  "ok": true,
  "app": "https://127.0.0.1:8765",
- "ts": 1793008308.4348896,
+ "ts": 1793008690.8790855,
  "n": 55,
  "fails": [],
  "warnings": [
@@ -17,72 +17,72 @@
   {
    "name": "GET /api/health",
    "ok": true,
-   "detail": "code=200 523ms"
+   "detail": "code=200 484ms"
   },
   {
    "name": "GET /api/config",
    "ok": true,
-   "detail": "code=200 1600ms"
+   "detail": "code=200 388ms"
   },
   {
    "name": "GET /api/dashboard",
    "ok": true,
-   "detail": "code=200 3115ms"
+   "detail": "code=200 245ms"
   },
   {
    "name": "GET /api/tasks",
    "ok": true,
-   "detail": "code=200 5ms"
+   "detail": "code=200 20ms"
   },
   {
    "name": "GET /api/agent/knowledge",
    "ok": true,
-   "detail": "code=200 17ms"
+   "detail": "code=200 10ms"
   },
   {
    "name": "GET /api/agent/hot-topics",
    "ok": true,
-   "detail": "code=200 29ms"
+   "detail": "code=200 17ms"
   },
   {
    "name": "GET /api/status/activity",
    "ok": true,
-   "detail": "code=200 370ms"
+   "detail": "code=200 330ms"
   },
   {
    "name": "GET /api/status/sidebar",
    "ok": true,
-   "detail": "code=200 99ms"
+   "detail": "code=200 101ms"
   },
   {
    "name": "GET /api/schedule/v2",
    "ok": true,
-   "detail": "code=200 35ms"
+   "detail": "code=200 63ms"
   },
   {
    "name": "GET /api/schedule/v2/online",
    "ok": true,
-   "detail": "code=200 31ms"
+   "detail": "code=200 27ms"
   },
   {
    "name": "GET /api/schedule/v2/pareto",
    "ok": true,
-   "detail": "code=200 52ms"
+   "detail": "code=200 41ms"
   },
   {
    "name": "GET /api/schedule/policy",
    "ok": true,
-   "detail": "code=200 5ms"
+   "detail": "code=200 22ms"
   },
   {
    "name": "GET /api/dsh/guard",
    "ok": true,
-   "detail": "code=200 8ms"
+   "detail": "code=200 17ms"
   },
   {
    "name": "GET /api/dsh/proposals",
    "ok": true,
-   "detail": "code=200 348ms"
+   "detail": "code=200 326ms"
   },
   {
    "name": "静态缓存版本一致",
@@ -267,7 +267,7 @@
   {
    "name": "App 版本一致性",
    "ok": true,
-   "detail": "0.32\",\n \"cache_tags\": [\n  \"2.0.32-dshclick\"\n ],\n \"checks\": [\n  {\n   \"name\": \"APP_VERSION 可读\",\n   \"ok\": true,\n   \"detail\": \"2.0.32\"\n  },\n  {\n   \"name\": \"静态查询串同版本\",\n   \"ok\": true,\n   \"detail\": \"['2.0.32-dshclick']\"\n  },\n  {\n   \"name\": \"根 README 当前版本\",\n   \"ok\": true,\n   \"detail\": \"2.0.32\"\n  },\n  {\n   \""
+   "detail": "态查询串同版本\",\n   \"ok\": true,\n   \"detail\": \"['2.0.32-dshclick']\"\n  },\n  {\n   \"name\": \"根 README 当前版本\",\n   \"ok\": true,\n   \"detail\": \"2.0.32\"\n  },\n  {\n   \"name\": \"App README 当前版本\",\n   \"ok\": true,\n   \"detail\": \"2.0.32\"\n  },\n  {\n   \"name\": \"PROJECT_LAYOUT 当前版本\",\n   \"ok\": true,\n   \"detail\": \"2.0.32\"\n  },\n  {\n "
   },
   {
    "name": "_app_err_8765.log 无 Traceback",

@@ -39,6 +39,16 @@
    "name": "CHANGELOG 含当前 App 版本",
    "ok": true,
    "detail": "2.0.32"
+  },
+  {
+   "name": "NAMING 当前 App 版本",
+   "ok": true,
+   "detail": "2.0.32"
+  },
+  {
+   "name": "NAMING App 发布标签",
+   "ok": true,
+   "detail": "2.0.32"
   }
  ]
 }

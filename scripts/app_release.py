@@ -31,8 +31,9 @@ def main():
         "README.md": [("App " + old, "App " + new)],
         "dgtf_app/README.md": [("V" + old, "V" + new)],
         "PROJECT_LAYOUT.md": [("App：" + old, "App：" + new)],
-        "dgtf_engine/dgtf_v2/NAMING.md": [("App | " + old, "App | " + new),
-                                             ("app-V" + old, "app-V" + new)],
+        "dgtf_engine/dgtf_v2/NAMING.md": [
+            ("__regex__", r"App\s*\|\s*2\.0\.\d+", "App | " + new),
+            ("__regex__", r"app-V2\.0\.\d+", "app-V" + new)],
         "docs/index.html": [("__regex__", r"V\d+\.\d+\.\d+ \(App\)", "V" + new + " (App)")],
     }.items():
         p = ROOT / rel
