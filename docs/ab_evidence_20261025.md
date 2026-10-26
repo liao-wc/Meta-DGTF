@@ -2292,3 +2292,42 @@ display=20年 已在引擎层（离线重放 + A68）验证，且 App display �
 ### 86.4 门禁
 
 全量 V2 51/51（**820 checks**）、fast_gate 12/12。
+
+
+## 87. 命名题数值劫持修复 + 本地模型 v8b self_check A/B（Round 93）
+
+### 87.1 命名题数值劫持
+
+「世界上海拔最高的高原是什么？」App/新证据集下 answer 取到数值主张「2500千米」
+（题面含「海拔」触发数值路径），display 同样错误。
+修复：`_numeric_claim_answer` 对命名问句（是什么/哪个/哪座…）且无数值问法 ⇒ 直接返回 ""；
+`_compact_numeric_answer` 命名问句 display 取「X 是…」的 X；定义句证据加分（A71/A72）。
+**真实复验**：**0.9776 / verified / ready**（727,457 tok / 108 calls / 199s）；
+矩阵 46→**47 行**。
+
+### 87.2 App 自检（事故后回归）
+
+误杀 `rag_embed_service`（8771）后已重启；App 自检 **444/0 PASS**；
+`/api/health` engine 2.2.3、模块齐全（fact_flow/evidence/…）。
+
+### 87.3 本地模型 v8b self_check local A/B（fast+web 两题）
+
+| 题 | 默认 llm | v8b local | Δ |
+|---|---|---|---|
+| 光速（水中） | 0.9508 / 727,103 tok / 276s | 0.9509 / 763,743 tok / 236s | 质量≈，tokens **+5.0%**，墙钟 −14% |
+| 出生人口 | 0.9673 / 705,691 tok / 263s | **0.9900** / 668,424 tok / 248s | **质量 +2.27pp，tokens −5.3%，墙钟 −5.7%** |
+
+结论：v8b local 在两题上 **一好一混**（出生人口全维度更优，光速 tokens 略增）⇒
+保持 **默认 llm**、local 作为 opt-in（与之前 v6 结论一致但出生人口由 −4.2pp 转为 +2.27pp）。
+证据：`v93-sc-local-light / v93-sc-local-birth`。
+
+### 87.4 v9 训练（明确假设）
+
+假设：v6 配方（min 230×2, lr8e-5, max-len1900）**加第 3 epoch + 同 lr** 可把
+val_loss 从 0.2221 压到 <0.22（更强拟合 self_check 输出约束）。
+已启动 v9（min，230×3，lr 8e-5，val-subset 16，adapter v9）；完成后再 30 条
+held-out A/B（v9 vs v8b/v6），只变好才切换。
+
+### 87.5 门禁
+
+全量 V2 51/51（**822 checks**）、fast_gate 12/12。

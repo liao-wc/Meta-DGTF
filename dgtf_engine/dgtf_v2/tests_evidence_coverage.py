@@ -378,6 +378,19 @@ def main():
     ck("A70 进出口整体量取 43.85万亿元", "43.85" in _ans_tr and "万亿" in _ans_tr,
        _ans_tr)
 
+    # ── A38：命名问句不被数值主张劫持（Round 93）──────────
+    ck("A72 命名问句不走数值答案",
+       _numeric_claim_answer(
+           "世界上海拔最高的高原是什么？",
+           [ev("E1", "青藏高原平均海拔4000米以上。", official=True)]) == "")
+    # ── A37：命名问句定义句优先（Round 93）──────────────
+    _name_ans = answer_from_evidence([
+        ev("E1", "... 它包括中国藏自治区全部和青海省、新疆维吾尔自治区…总面积250万平方千米", official=True),
+        ev("E2", "青藏高原是世界上海拔最高的高原，平均海拔4000米以上。", official=True),
+    ], "世界上海拔最高的高原是什么？")
+    ck("A71 命名问句取定义句（青藏高原）",
+       "青藏高原" in _name_ans and "它包括" not in _name_ans, _name_ans)
+
     # ── B：整体量语义加权 ────────────────────────
     ck("B1 问长度 + 全长标记 → 加分",
        _overall_quantity_bonus("黄河全长约5464公里", "黄河的长度是多少千米") > 0)

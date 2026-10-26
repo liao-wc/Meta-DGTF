@@ -457,6 +457,14 @@ def _compact_numeric_answer(question: str, answer: str) -> str:
                           "国际", "中国") or _c in q:
                     continue
                 return _c
+    # ★ [Round 93] 命名问句 display：取「X 是…」的 X（如 青藏高原）
+    if (any(k in q for k in ("是什么", "哪个", "哪座", "哪条", "是谁",
+                             "叫什么", "名称"))
+            and not any(k in q for k in ("多少", "多长", "多高", "几",
+                                         "多大", "多远", "多深", "多宽"))):
+        _m = re.match(r"^\s*([^，,。；;]{2,28}?)(?:是|为|，|,|。|；|;|\.)", ans)
+        if _m:
+            return _m.group(1).strip()[:28]
     if not any(h in q for h in _NUM_Q_HINTS):
         return ans
     try:
@@ -605,6 +613,13 @@ def _numeric_claim_answer(question: str, evs: list) -> str:
         _ord_pref = 0
     elif any(k in q for k in ("销量", "销售")):
         _ord_pref = 1
+    # ★ [Round 93] 命名/识别问句（是什么/哪个…）且无数值问法 ⇒ 不走数值答案
+    _name_q = any(k in q for k in ("是什么", "哪个", "哪座", "哪条", "是谁",
+                                   "叫什么", "名称", "哪一座"))
+    _num_ask = any(k in q for k in ("多少", "多长", "多高", "几", "多大",
+                                    "多远", "多深", "多宽", "多快", "多重"))
+    if _name_q and not _num_ask:
+        return ""
     if _asks_date:
         q_units.append("年")
     if not _asks_date and not any(

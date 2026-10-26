@@ -1039,6 +1039,14 @@ def answer_from_evidence(items: Iterable, question: str = "",
         score = _answer_relevance(text, q)
         if bool(getattr(e, "official", False)):
             score += 0.15
+        # ★ [Round 93] 命名问句：定义句加分；「它/其中/包括…」描述句减分
+        if any(k in str(question or "") for k in ("是什么", "哪个", "哪座",
+                                                   "哪条", "是谁", "叫什么")):
+            if re.search(r"[\u4e00-\u9fa5]{2,10}(?:高原|平原|盆地|河|湖|山|峰|"
+                         r"器官|国家|城市|岛|海)是", text):
+                score += 0.4
+            if text.strip().startswith(("...", "…", "它", "其", "它包括")):
+                score -= 0.2
         # ★ [Round 88] 辟谣/流言证据降权（避免把「说法并不科学」当答案）
         if any(k in text for k in ("流言", "谣言", "辟谣", "并不科学", "不科学",
                                    "并非", "误传", "错误说法")):

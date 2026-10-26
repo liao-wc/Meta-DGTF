@@ -429,6 +429,11 @@ MEASURED_SCENARIOS: Dict[str, dict] = {
                               "question": "2024年我国货物贸易进出口总值是多少万亿元？"
                                           "（display=43.85万亿元）",
                               "config": "B parallel + thinking off + web on"},
+            "web_on_fast31": {"quality": 0.9776, "tokens": 727457, "calls": 108,
+                              "wall": 198.9, "verified": True,
+                              "question": "世界上海拔最高的高原是什么？"
+                                          "（命名题数值劫持修复后）",
+                              "config": "B parallel + thinking off + web on"},
             "web_off_auto": {"quality": 0.4440, "tokens": 1015910, "calls": 111,
                              "wall": 980.3, "verified": False,
                              "config": "B parallel + thinking auto + web off",
