@@ -606,6 +606,20 @@ def _is_aux_date_conflict(c: dict) -> bool:
     return len(vals) >= 2 and all(1000 <= v <= 2100 for v in vals)
 
 
+def _is_aux_growth_conflict(c: dict, question: str) -> bool:
+    """水平值问句中的「增长/价格因素」百分比冲突视为辅助（不阻断目标量）。"""
+    if not isinstance(c, dict):
+        return False
+    unit = str(c.get("unit") or "")
+    term = str(c.get("term") or "")
+    q = str(question or "")
+    if "%" in unit and any(k in term for k in ("增长", "增速", "涨幅",
+                                               "价格因素", "同比", "环比")):
+        if not any(k in q for k in ("增长", "增速", "涨幅", "%", "率")):
+            return True
+    return False
+
+
 def _official_precedence_answer(question: str, evs: list,
                                 conflicts: list, official_ids: list):
     """官方源优先消解：返回 (answer, remaining_conflicts) 或 (None, conflicts)。
@@ -802,6 +816,9 @@ def _numeric_claim_answer(question: str, evs: list) -> str:
             ctx = _norm(c.get("context") or "")
             # ★ [Round 92] 「进出口」整体不是「出口/进口」子项：先替换再判 pen
             _ctx_pen = ctx.replace("进出口", "贸易")
+            for _w in ("居民", "人均"):
+                if _w in q:
+                    _ctx_pen = _ctx_pen.replace(_w, "")
             pen = 1 if any(k in _ctx_pen for k in _PEN) else 0
             ov = 1 if any(k in ctx for k in _OV) else 0
             _rec = _tds(snip) if _recency else 0
@@ -912,6 +929,10 @@ def build_fact_card(question: str, report: EvidenceReport,
     conflicts = list(getattr(report, "conflicts", None) or [])
     if evs and not conflicts:
         conflicts = detect_conflicts(evs)
+    # ★ [Round 110] 辅助增长百分比冲突（目标单位非 %）不阻断
+    if conflicts:
+        conflicts = [c for c in conflicts
+                     if not _is_aux_growth_conflict(c, question)]
     gaps = list(getattr(report, "gaps", None) or [])
     if evs and not gaps:
         gaps = detect_gaps(question, evs, conflicts=conflicts)

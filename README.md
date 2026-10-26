@@ -142,7 +142,7 @@ python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.3.py -c configs/方案F-帕累�
 | 离线重放护栏（124 packs） | answered 81 / gaps 清零 17 / 数值 34→38 / **0 新答案变差** |
 | 过程门审计护栏（85 packs） | standard 83.5% / 审计已修复 27 / **未修复 0** |
 | App plan 不变量 / dual_judge 防护 | 18/18、7/7 |
-| 场景矩阵一致性 | 34 行 live 对照，max |Δ| 0.032 |
+| 场景矩阵一致性 | **56 行 live 对照**（fact 46/App 12），max |Δ| 0.046 |
 | 依赖 pip check | 0 broken |
 | DSH 全流程闭环检查 | PASS 6 / FAIL 0 |
 | 全流程帕累托基线 | scripts/pareto_flow.py（质量/tokens/calls 非支配前沿） |
@@ -175,7 +175,7 @@ local_model\envs\dgtf_llm_env\Scripts\python.exe -m pip check
 | 路径 | 是什么 |
 |---|---|
 | dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.3.py | 当前生产引擎 |
-| dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.3.py | 上一基线（保留回滚） |
+| dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.2.py | 上一基线（保留回滚） |
 | dgtf_engine/dgtf_v2/ | V2 核心：契约/EML/调度/四层/F2–F5/融合 |
 | dgtf_engine/dgtf_v1/ | V1 归档（引擎/报告/脚本/fixtures） |
 | dgtf_app/ | 本地 Web 工作台 |
@@ -239,6 +239,6 @@ local_model\envs\dgtf_llm_env\Scripts\python.exe -m pip check
   `docs/验收总览-20261026.md`、`docs/ab_evidence_20261025.md`（§1–§78）
 - **本地模型默认**：v8b（mixed 配方，质量持平 v6、p50/p95 更快；训练/评测/切换全链证据）
 - **事实成本档**：fast+web 20 类领域 verified，质量 0.92–0.99、tokens 570–750K、
-  墙钟 190–290s；场景矩阵事实 35 行 + App e2e 7 行
+  墙钟 190–290s；场景矩阵事实 **56 行** + App e2e **12 行**
 - **一键验收**：`python scripts/final_acceptance.py --with-service` → 9/9 PASS
 - 已知边界：检索依赖、跨片段语义（成年年龄）、多值列举、dual_judge 无 local 档

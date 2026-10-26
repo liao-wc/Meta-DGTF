@@ -478,6 +478,11 @@ MEASURED_SCENARIOS: Dict[str, dict] = {
                               "question": "奥运会每隔几年举办一次？"
                                           "（display=每4年）",
                               "config": "B parallel + thinking off + web on"},
+            "web_on_fast41": {"quality": 0.9782, "tokens": 790366, "calls": 109,
+                              "wall": 283.5, "verified": True,
+                              "question": "2024年我国居民人均可支配收入是多少元？"
+                                          "（display=41314元）",
+                              "config": "B parallel + thinking off + web on"},
             "web_off_auto": {"quality": 0.4440, "tokens": 1015910, "calls": 111,
                              "wall": 980.3, "verified": False,
                              "config": "B parallel + thinking auto + web off",

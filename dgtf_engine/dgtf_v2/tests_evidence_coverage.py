@@ -507,6 +507,23 @@ def main():
        _compact_numeric_answer("奥运会每隔几年举办一次？",
                                "夏季奥运会每四年举办一次"))
 
+    # ── A47：辅助增长冲突过滤（Round 110）──────────────
+    _inc_items = [ev("E1", "2024年全国居民人均可支配收入41314元，同比名义增长5.3%。",
+                     official=True),
+                  ev("E2", "2024年全国居民人均可支配收入41314元，实际增长5.1%。",
+                     official=True)]
+    _inc_rep = EvidenceReport(
+        question="2024年我国居民人均可支配收入是多少元？",
+        queries=["q"], searches=1, items=_inc_items,
+        conflicts=[{"term": "2024 扣除价格因素|实际增长", "unit": "%",
+                    "values": [4.4, 5.1, 6.3],
+                    "evidence_ids": ["E1", "E2"]}], gaps=[])
+    _inc_card = build_fact_card(
+        "2024年我国居民人均可支配收入是多少元？", _inc_rep)
+    ck("A84 辅助增长冲突不阻断水平值",
+       _inc_card.status == "answered"
+       and "41314" in str(_inc_card.answer), (_inc_card.status, _inc_card.answer))
+
     # ── B：整体量语义加权 ────────────────────────
     ck("B1 问长度 + 全长标记 → 加分",
        _overall_quantity_bonus("黄河全长约5464公里", "黄河的长度是多少千米") > 0)

@@ -91,9 +91,10 @@ def main():
        isinstance(cd.get("resolved_conflicts"), list))
 
     # ② 目标量冲突 + 官方 ⇒ 保持 conflict（term 含「年」字也不得误判辅助）
-    card2 = build_fact_card(Q, report(
+    _Q2 = "2023年中国GDP增长多少？"
+    card2 = build_fact_card(_Q2, report(
         [ev("E1", "2023年中国GDP增长5.2%"), ev("E2", "2023年中国GDP增长6.8%"),
-         off], [TARGET_CONFLICT]))
+         off], [TARGET_CONFLICT], question=_Q2))
     ck("负对照：目标量冲突 → 保持 conflict（含『年』字不误判）",
        card2.status == "conflict"
        and "conflict_unresolved" in card2.gaps, card2.status)
