@@ -1,3 +1,9 @@
+【Round 131 增补（2026-10-27）】
+- 新增 scripts/project_analysis.py + docs/项目问题分析_20261027.md / JSON（基于 359 packs 的项目级诊断）：
+  累计 2.40 亿 tokens、重复问题额外 64.2%、29 条截断、tri_alpha 不可靠 87.6%、fact_card ok 38.7%、
+  display 32.3%、duty_short 76.6%、0/359 版本指纹、A/B 97/145 缺 cost；
+- 结论：P0 为 erified 语义分叉（事实 vs 过程合同）+ 重复/截断成本；P1 为过程告警过载与 display 缺口；
+  P2 为溯源/合并缺口。零 API。
 【Round 130 增补（2026-10-27，授权处理审计 1/2/3）】
 - 历史包修复：`scripts/repair_legacy_packs.py` —— 7 条矛盾包全部修复（2+2 确定性改为 4；
   verified+!ready 有答案→ready、无答案→unverified；unverified+ready→False）；一致性护栏 legacy=0。

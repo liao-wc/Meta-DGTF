@@ -187,3 +187,12 @@
 | duty_short | 新增 `flags_info`/`process_flags` 分类（不改打分）；阈值调整需真跑验证 |
 | 配置注释 | `configs/道生专属模式.yaml` local 注释已同步（并发 WIP 已 stash 保护） |
 | 验收 | **15/15（有服务）/ 14/14（无服务）**；V2 52/842 |
+
+## 23. Round 131：基于产物的项目问题分析
+
+- 报告：docs/项目问题分析_20261027.md；脚本：scripts/project_analysis.py；数据：docs/project_analysis_20261027.json；
+- 关键读数：359 packs / 累计 2.40 亿 tokens（重复问题额外 64.2%）；verified 趋势 28.6%→73.3%；
+  coverage 均值 0.56；tri_alpha 不可靠 87.6%；fact_card ok 38.7%；display 32.3%；
+  duty_short 76.6%、probe_link_dangling 46.8%；0/359 版本指纹；A/B 97/145 缺 cost；
+- 结论（P0）：erified 语义分叉（事实 vs 过程合同）+ tri_alpha 不可靠；64.2% tokens 浪费在重复问题、
+  29 条截断跑次。Round 129–130 已修算术/一致性/flags 分类；**语义拆分与成本效率为下一步优先**。
