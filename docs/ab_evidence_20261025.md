@@ -2164,3 +2164,30 @@ App 无回归。
 ### 82.5 门禁
 
 全量 **V2 51/51（810 checks）**、fast_gate 12/12。
+
+
+## 83. 核心路径回归：推理 fast + 事实 auto（Round 89）
+
+### 83.1 推理 fast（海水题）
+
+--thinking off --web off：**0.9376 / verified / ready**（546,566 tok / 98 calls / 230s）；
+历史 fast 推理三域 0.9366–0.9687 ⇒ **区间内，无回归**；flags 仅 duty_short。
+矩阵 reasoning 5→6 行（fast4）。
+
+### 83.2 事实 auto（GDP 总量）
+
+--thinking auto --web on：**0.9153 / verified / ready**（973,543 tok / 101 calls / 966s），
+**answer=1348066亿**（正确），gaps=[]；flags duty_short + probe_no_target_covered。
+质量分被 probe 纪律压低（答案本身正确），与先前「海水 auto」同因。
+矩阵 fact 33→34 行（web_on_auto4）；总矩阵 42→**44 行**。
+
+### 83.3 probe 纪律量化（诚实留档）
+
+近轮 auto 跑次多次出现 probe_no_target_covered，即使 answer 正确（GDP/海水）；
+该 flag 由引擎探针覆盖判定产生（引擎文件被并发会话占用，无法安全修改）。
+影响：auto 质量分被压低约 3–6pp；fast 路径更少触发。
+处置：冻结为已知边界；待引擎可编辑时做「探针目标生成/覆盖判定」优化。
+
+### 83.4 门禁
+
+全量 V2 51/51（813 checks）、fast_gate 12/12。

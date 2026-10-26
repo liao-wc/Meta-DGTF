@@ -237,6 +237,10 @@ MEASURED_SCENARIOS: Dict[str, dict] = {
                              "wall": 212.0, "verified": True,
                              "question": "为什么飞机在起飞前要除冰？",
                              "config": "B parallel + thinking off + rounds auto"},
+            "fast4": {"quality": 0.9376, "tokens": 546566, "calls": 98,
+                      "wall": 230.3, "verified": True,
+                      "question": "为什么海水是咸的？（fast 回归）",
+                      "config": "B parallel + thinking off + rounds auto"},
         },
         "rules": {
             "quality_first": "auto",
@@ -288,6 +292,11 @@ MEASURED_SCENARIOS: Dict[str, dict] = {
             "web_on_auto3": {"quality": 0.9062, "tokens": 992929, "calls": 101,
                              "wall": 958.0, "verified": True,
                              "question": "HTTP 404状态码表示什么？",
+                             "config": "B parallel + thinking auto + web on"},
+            "web_on_auto4": {"quality": 0.9153, "tokens": 973543, "calls": 101,
+                             "wall": 965.9, "verified": True,
+                             "question": "2024年中国GDP总量是多少亿元？"
+                                         "（answer=1348066亿；probe flag 拉低质量分）",
                              "config": "B parallel + thinking auto + web on"},
             "web_on_fast_pre_fix": {"quality": 0.4741, "tokens": 836464,
                                     "calls": 108, "wall": 316.1,
