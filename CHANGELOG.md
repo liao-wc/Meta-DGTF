@@ -162,6 +162,13 @@ V2.2.3
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
 【Round 123 增补（2026-10-26）】（合并完成 + v9b 训练）
+【Round 124 增补（2026-10-26）】
+- v9b 训练完成：best_val_loss **0.1989**（v6 0.2221）；30 条 held-out 与 v8b 质量完全持平，
+  p50 4774ms / p95 5690ms（更快）⇒ SWITCH_CANDIDATE；
+- 服务默认切 **v9b**（v8b 兜底）；/health v9b、单发 3.66s、errors=0；
+  一键验收 --with-service **10/10 PASS**；metrics 归档 train_metrics_..._v9b.json。
+- dual_judge local 合并后 App 自动透传（local→local），本地服务恢复运行。
+
 - dual_judge local **已合并入主引擎**：commit 60b0e81（0001–0003，fast_gate/V2/T1–T8 通过）；
   App 能力感知自动透传 dual_judge_mode=local（判据 19/19：local→local via=local）。
 - 一键验收 --with-service **10/10 PASS**；引擎 CLI 支持 {llm,cache,auto,local}。

@@ -150,7 +150,7 @@ python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.3.py -c configs/方案F-帕累�
 | 行为融合 | 5 arms / auto 调度融合 / outcome UCB |
 | 细粒度自省回放 | 177 packs / 577 views；auto 跳过率上界 23.7%；auto_narr prompt -29.9% |
 | M4 保形下界 | OOF 覆盖率 0.800（n=90 有效样本）/ 留出 0.778（n=18）；下界 0.72~0.77；alpha=0.2 |
-| 本地模型 stage 服务 | 8772 /health、/metrics（含 latency p50/p95）；**v8b 默认**（30 条 held-out：字段 0.589 / escape 0.800 / JSON 1.0 / p50 5.86s，v6/v5/v2 兜底） |
+| 本地模型 stage 服务 | 8772 /health、/metrics（含 latency p50/p95）；**v9b 默认**（0.5B base，val_loss 0.1989；30 条 held-out 与 v8b 质量持平、p50 4.77s/p95 5.69s；v8b/v6/v5/v2 兜底） |
 | 道生专属模式 e2e | quality 0.9465 / verified / ready=True；723K tokens / 97 calls / 586s（rounds=auto 8 圈） |
 | 道生专属模式 | mode=daosheng mock 201；selftest ★T3 73 条全绿 |
 | 定向0层真跑 | 20 calls / 85,807 tokens / zero_contract ok / provenance 17/17 |

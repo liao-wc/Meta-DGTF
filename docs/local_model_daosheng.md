@@ -681,3 +681,12 @@ self_check(self_check_min)=v6；`scripts/check_local_service.py` 单发生成通
   suspF1 0.141 vs 0.153（噪声内）；**p50 5858 vs 6271ms、p95 6340 vs 7474ms（更快）**；
 - 判定：SWITCH_CANDIDATE；服务默认切 **v8b**（v6/v5/v2/v1 兜底，val_loss 偏高保留回退）；
 - 验收：`final_acceptance.py --with-service` **9/9 PASS**；`/metrics` latency p50 可读。
+
+## 5.12 v9b（0.5B 纠错重训）评测与切换（Round 123）
+
+- 根因纠错：v9 漏传 `--model` 误用 1.5B base（不兼容 0.5B 服务），已归档并加防错训守卫；
+- v9b：`--model Qwen2.5-0.5B-Instruct`，min 230×2、lr 6e-5、seed 7、max-len 1900；
+  最佳 **val_loss 0.1989**（v6 0.2221、v8b 0.9895）；peak 4.93GB、训练 3255s（专用 GPU 窗口）；
+- 30 条 held-out：JSON 1.0 / 字段 0.589 / escape 0.800 / suspF1 0.141 / all3 0.033，
+  **与 v8b 完全持平**；p50 **4774ms** / p95 **5690ms**（v8b 5858/6340）⇒ SWITCH_CANDIDATE；
+- 服务默认切 **v9b**（v8b→v6→v5→v2 兜底）；/metrics 单发 3.66s、errors=0；验收 10/10。

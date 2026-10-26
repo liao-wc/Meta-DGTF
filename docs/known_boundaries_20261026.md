@@ -139,3 +139,12 @@
 | dual_judge local | **已合并主引擎**（60b0e81）；App 自动透传；验收 10/10 PASS |
 | v9b 训练 | 0.5B base（正确命令），专用 GPU 窗口，~6s/步，ETA ~43min |
 | 本地服务 | 训练期间暂停；训练/评测后恢复 |
+
+## 18. Round 124 最终状态
+
+| 项 | 状态 |
+|---|---|
+| dual_judge local | **已合并**（60b0e81）；App 自动透传；默认仍 opt-in（本地 judge 吞吐） |
+| 本地模型默认 | **v9b**（val 0.1989；held-out 质量=v8b、更快；v8b/v6/v5/v2 兜底） |
+| 验收 | **10/10 PASS**（有服务）/ 9/9（无服务） |
+| 剩余边界 | probe_no_target_covered（引擎侧扣分，29.3% packs）；App 精确缓存；旧 pack 严格拒答；检索依赖 |
