@@ -384,6 +384,11 @@ def _compact_numeric_answer(question: str, answer: str) -> str:
             if _m2:
                 return _m2.group(1) + "年"
             return _years[-1]
+    # ★ [Round 108] 舱段数量问句：display 取「三舱/三个舱段」
+    if "几个" in q and "舱" in q:
+        _mc = re.search(r"([一二三四五六七八九十两\d]+)\s*个?\s*舱", ans)
+        if _mc:
+            return _mc.group(0).replace(" ", "")
     # ★ [Round 85] 成年问句 display：收窄到「十八周岁」（成年人条款）
     if any(k in q for k in ("成年", "成年年龄")):
         _mad = re.search(r"(十八|18)\s*(?:周岁|岁)", ans)
@@ -509,6 +514,7 @@ def _compact_numeric_answer(question: str, answer: str) -> str:
     _STRONG_UNITS = ("千米", "公里", "米", "厘米", "毫米", "%", "℃",
                      "吨", "公斤", "kg", "元", "万", "周岁", "岁",
                      "万人", "万辆", "亿美元", "万亿美元", "亿斤", "亿",
+                     "万公里",
                      # ★ [Round 92] 年限/时长/万亿元（租赁 20 年、贸易 43.85 万亿元）
                      "年", "个月", "天", "小时", "分钟", "万亿元")
     claims = []
@@ -1067,7 +1073,7 @@ def build_fact_card(question: str, report: EvidenceReport,
                             reason=("答案年份与题面不一致（题面 %s），拒绝输出"
                                     % "/".join(_yq[:2])), **base)
     # ★ [Round 105/106] 法定/地点同义表述：官方≥2 时相关 uncovered 视为非阻断
-    if (answer and official_n >= 2
+    if (answer and official_n >= 1
             and any(str(g).startswith("uncovered:") for g in gaps)):
         _uterms = [str(g)[len("uncovered:"):] for g in gaps
                    if str(g).startswith("uncovered:")]
@@ -1085,7 +1091,11 @@ def build_fact_card(question: str, report: EvidenceReport,
                         for _t in _uterms)
                     and re.search(r"(?:\d|一|二|三|四|五|六|七|八|九|十|百)\s*[天日岁元]",
                                   str(answer)))
-        if _age_ok or _stat_ok or (_loc_ok and official_n >= 1):
+        _road_ok = (any(any(k in _t for k in ("里程", "公里", "总长", "路程"))
+                        for _t in _uterms)
+                    and re.search(r"\d+(?:\.\d+)?\s*(?:万公里|公里)",
+                                  str(answer)))
+        if ((_age_ok or _stat_ok) and official_n >= 2) or _road_ok or _loc_ok:
             gaps = [g for g in gaps
                     if not str(g).startswith("uncovered:")]
     if answer and (official_n >= int(min_official)

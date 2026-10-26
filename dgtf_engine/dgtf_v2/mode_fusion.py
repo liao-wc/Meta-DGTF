@@ -458,6 +458,16 @@ MEASURED_SCENARIOS: Dict[str, dict] = {
                               "question": "我国现行法定节假日一年共有多少天？"
                                           "（逐项聚合法，display=13天）",
                               "config": "B parallel + thinking off + web on"},
+            "web_on_fast37": {"quality": 0.9800, "tokens": 759199, "calls": 110,
+                              "wall": 300.0, "verified": True,
+                              "question": "我国现行个人所得税起征点是多少元？"
+                                          "（display=5000元）",
+                              "config": "B parallel + thinking off + web on"},
+            "web_on_fast38": {"quality": 0.9671, "tokens": 705631, "calls": 98,
+                              "wall": 267.0, "verified": True,
+                              "question": "中国空间站由几个舱段组成？"
+                                          "（display=三舱）",
+                              "config": "B parallel + thinking off + web on"},
             "web_off_auto": {"quality": 0.4440, "tokens": 1015910, "calls": 111,
                              "wall": 980.3, "verified": False,
                              "config": "B parallel + thinking auto + web off",
