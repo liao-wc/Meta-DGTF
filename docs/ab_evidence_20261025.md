@@ -2376,3 +2376,16 @@ timeout 180s / max_new_tokens 500：**0.95 / verified / ready**（732,848 tok / 
 （并发排队 + 长 prompt 生成）⇒ 答案质量无损（回退生效），**本地双判吞吐尚不足以接管默认**。
 结论：--dual-judge-mode local 功能与回退已实现并通过 T1–T6；性能层面保持 opt-in，
 待「prompt 收缩 / max_tokens 降档 / 专训 judge 适配器」优化后再评估默认化。
+
+
+## 89. 工程/农业/教育真题（Round 104，预算放开后）
+
+| 领域 | 题 | 结果 |
+|---|---|---|
+| 工程 | 三峡大坝全长多少米？ | **0.9303 / verified / ready**（664,454 tok / 97 / 217s） |
+| 农业 | 2024粮食总产量（App e2e daosheng_fast） | **0.95 / verified / ready**（635,524 tok / 87 / 424s，display=14130亿斤） |
+| 教育 | 义务教育法小学入学年龄 | 0.47 / needs_evidence：card answered（官方 8/8）但
+  `uncovered:我国义务教育法规定小学入学年龄`（证据用「年满六周岁」等表述，无字面词）⇒ 记录边界
+  （下一轮：法定同义表述的 term 覆盖豁免/同义扩展） |
+
+矩阵：47→**48 行**（fact 38）；App 矩阵 11→**12 行**。

@@ -46,6 +46,12 @@ V2.2.3
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
 【Round 104 增补（2026-10-26）】
+【Round 104 增补（扩展，预算放开）】
+- 工程真题：三峡大坝 0.9303/verified；App 农业真题：粮食总产量 0.95/verified
+  （display=14130亿斤）；矩阵 48 行、App 12 行。
+- 教育真题暴露边界：card answered + 官方 8/8，但 uncovered term（字面词缺失）→
+  needs_evidence；下一轮做法定同义表述覆盖豁免/扩展。
+
 - 判据 A73：万亿元单位抽取（43.85万亿元 → unit=万亿元）；V2 823 checks。
 - 维护态：v9 训练 step 30/460；dual_judge local 补丁等待合并；余额 50.76 暂停真实跑次。
 【Round 103 增补（2026-10-26）】
