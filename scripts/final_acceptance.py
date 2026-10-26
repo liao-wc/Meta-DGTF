@@ -24,6 +24,7 @@ STEPS = [
     ("app_plan_matrix", ["scripts/app_plan_matrix_check.py"]),
     ("app_dual_judge_guard", ["scripts/app_dual_judge_guard_check.py"]),
     ("compare_eval_selftest", ["scripts/local_model/test_compare_eval.py"]),
+    ("train_guard", ["scripts/local_model/test_train_guard.py"]),
     ("scenario_matrix_guard", ["scripts/update_scenario_matrix.py"]),
 ]
 

@@ -17,6 +17,7 @@
 | `python scripts/app_dual_judge_guard_check.py` **[零成本]** | dual_judge local 防护 7 项 |
 | `python scripts/update_scenario_matrix.py` **[零成本]** | 场景矩阵 live 对照 + **一致性护栏**（\|Δ\|≤0.06） |
 | `python scripts/local_model/test_compare_eval.py` **[零成本]** | 模型评测对比脚本自检 5 项 |
+| `python scripts/local_model/test_train_guard.py` **[零成本]** | 训练防错训守卫（05b 必须 0.5B base；L1/L2 2 项） |
 
 ## 2. 真实跑次（消耗 API 余额）
 

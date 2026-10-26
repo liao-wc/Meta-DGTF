@@ -138,7 +138,7 @@ python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.3.py -c configs/方案F-帕累�
 | fast_gate | PASS 12 / FAIL 0 |
 | V2 tests_*.py | **51 / 51 PASS（806 项检查）** |
 | App selftest | PASS 444 / FAIL 0 |
-| 一键验收 `scripts/final_acceptance.py --with-service` | **9 / 9 PASS**（含四道护栏） |
+| 一键验收 `scripts/final_acceptance.py --with-service` | **10 / 10 PASS**（无服务 9/9）；含四道护栏 + 训练防错训判据 |
 | 离线重放护栏（124 packs） | answered 81 / gaps 清零 17 / 数值 34→38 / **0 新答案变差** |
 | 过程门审计护栏（85 packs） | standard 83.5% / 审计已修复 27 / **未修复 0** |
 | App plan 不变量 / dual_judge 防护 | 18/18、7/7 |

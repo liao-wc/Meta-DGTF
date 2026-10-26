@@ -69,6 +69,9 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 119 增补（2026-10-26）】
+- final_acceptance 新增 train_guard 步骤：无服务 **9/9**、有服务 **10/10 PASS**；
+  scripts/README 收录；README/验收总览/最终报告数字同步。
 【Round 118 增补（2026-10-26）】
 - 新增 scripts/local_model/test_train_guard.py（L1/L2，2/2 PASS）：05b 输出必须 0.5B base，
   防错训守卫自动化判据；scripts/README 收录。
