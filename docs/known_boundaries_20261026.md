@@ -49,3 +49,12 @@
 | 选项题 App 链路 | 已闭环：选项标记→choice + App 强制 web + uncovered 豁免；App e2e 0.9516/verified |
 | 多值/单位展示 | 已闭环：出生人口 App e2e 0.9842/verified，display=954万人 |
 | App e2e 矩阵 | 11 行；fast 覆盖 reasoning/fact/choice |
+
+## 7. Round 92 新增闭环
+
+| 项 | 内容 |
+|---|---|
+| 万亿元单位 | 已闭环：43.85万亿元 fast+web 0.97/verified，display=43.85万亿元 |
+| 年限展示 | 已闭环（引擎层）：租赁 20年 display（A68）；App 同题缓存命中，未复跑 |
+| 进出口整体量 | 已闭环：「进出口」不再被 pen 当子项（A70） |
+| App e2e 端口 | 已支持自动空闲端口（并发会话不冲突） |

@@ -366,6 +366,18 @@ def main():
         "人体最大的器官是什么？")
     ck("A66 辟谣证据降权（取皮肤而非流言文）",
        "皮肤" in _debunk_ans and "流言" not in _debunk_ans, _debunk_ans)
+    # ── A36：进出口整体量不被出口/进口子项误伤（Round 92）──────
+    _rep_tr = EvidenceReport(
+        question="2024年我国货物贸易进出口总值是多少万亿元？",
+        queries=["q"], searches=1,
+        items=[ev("E1", "2024年我国货物贸易进出口总值43.85万亿元，同比增长5%。", official=True)],
+        conflicts=[], gaps=[])
+    _ans_tr = _numeric_claim_answer(
+        "2024年我国货物贸易进出口总值是多少万亿元？",
+        list(_rep_tr.items))
+    ck("A70 进出口整体量取 43.85万亿元", "43.85" in _ans_tr and "万亿" in _ans_tr,
+       _ans_tr)
+
     # ── B：整体量语义加权 ────────────────────────
     ck("B1 问长度 + 全长标记 → 加分",
        _overall_quantity_bonus("黄河全长约5464公里", "黄河的长度是多少千米") > 0)

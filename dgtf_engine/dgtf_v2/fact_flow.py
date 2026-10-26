@@ -468,7 +468,9 @@ def _compact_numeric_answer(question: str, answer: str) -> str:
                    "份", "家", "所", "岁")
     _STRONG_UNITS = ("千米", "公里", "米", "厘米", "毫米", "%", "℃",
                      "吨", "公斤", "kg", "元", "万", "周岁", "岁",
-                     "万人", "万辆", "亿美元", "万亿美元", "亿斤", "亿")
+                     "万人", "万辆", "亿美元", "万亿美元", "亿斤", "亿",
+                     # ★ [Round 92] 年限/时长/万亿元（租赁 20 年、贸易 43.85 万亿元）
+                     "年", "个月", "天", "小时", "分钟", "万亿元")
     claims = []
     for c in extract_numeric_claims(ans):
         try:
@@ -680,7 +682,9 @@ def _numeric_claim_answer(question: str, evs: list) -> str:
                 continue
             u_hit = 1 if any(u in unit or unit in u for u in q_units) else 0
             ctx = _norm(c.get("context") or "")
-            pen = 1 if any(k in ctx for k in _PEN) else 0
+            # ★ [Round 92] 「进出口」整体不是「出口/进口」子项：先替换再判 pen
+            _ctx_pen = ctx.replace("进出口", "贸易")
+            pen = 1 if any(k in _ctx_pen for k in _PEN) else 0
             ov = 1 if any(k in ctx for k in _OV) else 0
             _rec = _tds(snip) if _recency else 0
             _nctx = _norm(ctx)
@@ -716,10 +720,15 @@ def _numeric_claim_answer(question: str, evs: list) -> str:
             _month = 1 if (_annual_q and any(
                 k in snip for k in ("月份", "月度", "环比"))) else 0
             # 修订期感知：最终核实 > 初步核算（对统计类事实题的「最新/最终」问法）
+            # ★ [Round 92] 模糊量词（大关/跨过/突破/约）降权；「总值」优先
+            _vague = 1 if any(k in snip for k in ("大关", "跨过", "突破",
+                                                  "超过", "约", "左右",
+                                                  "连续")) else 0
+            _total_hit = 1 if ("总值" in snip or "总额" in snip) else 0
             score = (u_hit, _adult, -_minor, _whole, _tot, _mag, _concept,
                      _year_hit, -_year_miss, _ord_hit, -_ord_miss, _curhit,
                      -_oldpen, _final, _rec, _annual, -_month, ov, -_prelim,
-                     -pen, -len(raw))
+                     -pen, _total_hit, -_vague, -len(raw))
             if best is None or score > best[0]:
                 best = (score, snip, raw)
     if best is None:

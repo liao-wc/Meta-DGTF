@@ -22,7 +22,23 @@ OUT = ROOT / "outputs" / "_lead_audit" / (
     "app_fact_e2e.json" if len(sys.argv) > 2 and sys.argv[2] == "daosheng"
     else "app_fast_e2e.json")
 TOKEN = "lead-e2e-token-7"
-BASE = "http://127.0.0.1:8768"
+def _pick_port(explicit: str = "") -> str:
+    import socket
+    if explicit:
+        return explicit
+    for _p in range(8800, 8860):
+        _s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            _s.bind(("127.0.0.1", _p))
+            _s.close()
+            return str(_p)
+        except OSError:
+            _s.close()
+    return "8768"
+
+
+PORT = _pick_port(os.environ.get("DGTF_E2E_PORT") or "")
+BASE = "http://127.0.0.1:" + PORT
 QUESTION = (sys.argv[1] if len(sys.argv) > 1
             else "为什么城市热岛效应在夜间比白天更明显？")
 
@@ -45,7 +61,7 @@ def main() -> int:
                "w", encoding="utf-8", errors="replace")
     srv = subprocess.Popen(
         [sys.executable, "-u", str(ROOT / "dgtf_app" / "server.py"),
-         "--port", "8768", "--http", "--token", TOKEN, "--no-agent-daemon"],
+         "--port", PORT, "--http", "--token", TOKEN, "--no-agent-daemon"],
         cwd=str(ROOT), stdout=log, stderr=subprocess.STDOUT, env=env)
     result = {"ok": False, "server_pid": srv.pid,
           "requested_mode": (sys.argv[2] if len(sys.argv) > 2

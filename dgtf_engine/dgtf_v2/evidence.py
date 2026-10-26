@@ -406,7 +406,7 @@ def apply_budget(items: Iterable, budget: EvidenceBudget | None = None
 _CLAUSE_RE = re.compile(r"[。；;！!？?，,、\n]+")
 _NUM_RE = re.compile(
     r"(?<![\d.])(-?\d+(?:\.\d+)?)\s*"
-    r"(%|％|万亿美元|亿美元|亿斤|亿|亿元|万美元|万元|万人|万辆|万|周岁|岁|年|个|倍|天|"
+    r"(%|％|万亿美元|亿美元|亿斤|亿|亿元|万亿元|万美元|万元|万人|万辆|万|周岁|岁|年|个|倍|天|"
     r"小时|公里|千米|米|元|"
     r"美元|人|条|项|分|秒|次|度)?")
 _STRIP_CTX = " \t\u3000，,：:是为达到了约共计有"
