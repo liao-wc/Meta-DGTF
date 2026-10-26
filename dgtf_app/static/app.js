@@ -3689,7 +3689,7 @@ function renderEnvInfo(c, h, l, g) {
   const localOk = !!(l && (l.watchdog_ok || nBack > 0));
   const dshOk = !!checks.dsh_headless;
   const guardOn = !!(g && g.thread_running);
-  const agentOk = dshOk && guardOn;
+  const agentOk = !!dshOk;  // Agent 就绪取决于 DSH 可用；守护开关只影响自治巡检
   const agentText = dshOk
     ? ('DSH 就绪' + (guardOn ? ' 守护运行' : ' 守护关闭'))
     : '未就绪';

@@ -10,6 +10,22 @@
 > （`check_v72_changelog_hygiene`）；代码文件里**不得**再出现版本段
 > （`check_v1237_changelog_outside_code`）。
 
+App 2.0.28
+
+【主题】Agent 就绪灯与守护开关解耦。
+
+【改变】
+- Agent 灯就绪条件改为 DSH 可执行文件可用（dsh_headless），不再要求 DSH 守护线程必须开启。
+- 守护关闭时 Agent 灯保持绿色，数值显示“DSH 就绪 守护关闭”；守护开启时显示“DSH 就绪 守护运行”。
+- 排查发现守卫状态文件被显式关闭（enabled=false，last_result=已关闭 DSH守护），Agent 灯因此变灰；已重新开启 120 分钟守卫。
+- 当前状态：guard.enabled=true、thread_running=true、next_due_at 约 54 分钟后。
+
+【验证】
+- Agent 就绪条件 node --check 通过。
+- 守护重新开启后 thread_running=true。
+- App 全方位检查 PASS；App 版本一致性 PASS；App selftest 444/0；fast_gate 12/12。
+- 静态缓存串：2.0.28-agentready。
+
 App 2.0.27
 
 【主题】演练模式侧边栏活动灯语义修正。
