@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "2.0.24"
+APP_VERSION = "2.0.25"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -86,6 +86,7 @@ import engine_runner as runner  # noqa: E402
 import library as lib  # noqa: E402
 import outputs_index as oi  # noqa: E402
 import params as prm  # noqa: E402
+import v2_online  # noqa: E402
 
 _FACETS = ("decidability", "orientation", "parallel", "stop", "kind", "layer")
 
@@ -1402,6 +1403,90 @@ def _save_dsh_run(task, sid, out, auto_repair=False):
     return sid
 
 
+_DSH_TITLE_GENERIC = {"新对话", "当前对话", "继续", "你好", "hi", "hello", "test", "测试", "未命名"}
+
+
+def _dsh_fallback_title(prefix: str, ts) -> str:
+    import datetime as _dt
+    try:
+        return "%s · %s" % (prefix, _dt.datetime.fromtimestamp(float(ts or 0)).strftime("%m/%d %H:%M"))
+    except Exception:
+        return prefix
+
+
+def _dsh_clean_title(text: str, limit: int = 60) -> str:
+    import re as _re
+    raw = str(text or "")
+    if raw.startswith("来自Meta-DGTF app 的“DSH 本对话”入口任务"):
+        for part in _re.split(chr(10) + r"\s*" + chr(10), raw)[1:]:
+            part = _re.split(r"【粘贴附件】", part)[0].strip()
+            part = _re.split(chr(10) + r"\s*-\s*image\.png", part)[0].strip()
+            if part:
+                return part[:limit]
+    t = _re.sub(r"\s+", " ", raw).strip()
+    if not t:
+        return ""
+    t = t.lstrip("#-* ").strip()
+    if t.startswith("[DSH守护自动巡检]"):
+        return "DSH守护自动巡检"
+    if any(t.startswith(x) for x in ("<goal_round>", "<path>", "<type>",
+                                     "background job", "pwsh:", "powerShell")):
+        return ""
+    for pref in ("继续，", "继续,", "继续:", "继续："):
+        if t.startswith(pref):
+            t = t[len(pref):].strip()
+            break
+    low = t.lower()
+    if low in _DSH_TITLE_GENERIC or low in {"ok", "okay", "好", "好的", "可以", "行", "嗯",
+                                            "收到", "继续", "你好", "hi", "hello", "测试", "test"}:
+        return ""
+    if any(low.startswith(x) for x in ("time sampled", "browser time", "系统提示", "system prompt")):
+        return ""
+    for sep in (chr(10), "。", "；", ";"):
+        if sep in t:
+            t = t.split(sep, 1)[0].strip()
+    return t[:limit]
+
+
+def _dsh_is_system_task(text) -> bool:
+    t = str(text or "").strip()
+    return any(t.startswith(x) for x in ("<goal_round>", "<path>", "<type>",
+                                        "background job", "pwsh:", "powerShell"))
+
+
+def _dsh_title_from_record(rec, fallback: str = "") -> str:
+    rec = rec or {}
+    cands = [rec.get("title"), rec.get("task")]
+    for t in (rec.get("turns") or []):
+        if isinstance(t, dict):
+            cands.append(t.get("task"))
+    cands.append(rec.get("text"))
+    for c in cands:
+        v = _dsh_clean_title(c)
+        if v:
+            return v
+    return fallback
+
+
+def _get_conv_record(cid: str) -> dict:
+    try:
+        f = _conv_dir() / (_safe_id(cid, "conv") + ".json")
+        if f.is_file():
+            import json as _j
+            return _j.loads(f.read_text(encoding="utf-8", errors="replace"))
+    except Exception:
+        pass
+    return {}
+
+
+def _dsh_artifact_count(cid: str) -> int:
+    try:
+        d = _dsh_artifact_dir(); sid = _safe_id(cid, "artifact")
+        return sum(1 for ext in (".json", ".md") if (d / (sid + ext)).is_file())
+    except Exception:
+        return 0
+
+
 def _list_dsh_sessions(limit=50):
     import json as _json
     rows = []
@@ -1409,7 +1494,8 @@ def _list_dsh_sessions(limit=50):
                     key=lambda x: x.stat().st_mtime, reverse=True)[:limit]:
         try:
             d = _json.loads(p.read_text(encoding="utf-8"))
-            rows.append({"id": d.get("id"), "task": d.get("task"),
+            _title = _dsh_title_from_record(d, fallback=_dsh_fallback_title("DSH 会话", d.get("ts")))
+            rows.append({"id": d.get("id"), "title": _title, "task": d.get("task") or _title,
                          "ts": d.get("ts"), "ok": d.get("ok"),
                          "auto_repair": d.get("auto_repair"),
                          "repair": d.get("repair"),
@@ -1920,30 +2006,52 @@ def _dsh_artifact_dir():
 def _list_dsh_artifacts(limit=50):
     import json as _json
     d = _dsh_artifact_dir()
-    paths = list(d.glob("*.md")) + list(d.glob("*.json"))
+    files = {}
+    for p in list(d.glob("*.md")) + list(d.glob("*.json")):
+        sid = p.stem
+        if sid and (sid not in files or p.suffix == ".json"):
+            files[sid] = p
     rows = []
-    for p in sorted(paths, key=lambda x: x.stat().st_mtime, reverse=True)[:limit]:
+    for p in sorted(files.values(), key=lambda x: x.stat().st_mtime, reverse=True)[:limit]:
         try:
+            sess = _get_dsh_session(p.stem) or {}
             if p.suffix == ".json":
                 rec = _json.loads(p.read_text(encoding="utf-8", errors="replace"))
-                rows.append({"id": rec.get("id") or p.stem,
-                             "size": p.stat().st_size,
-                             "task": rec.get("task") or p.stem,
+                title = _dsh_title_from_record(rec) or _dsh_title_from_record(sess)
+                title = title or _dsh_fallback_title("DSH 产物", rec.get("ts") or p.stat().st_mtime)
+                conv = _get_conv_record(p.stem) or _get_conv_record(str(rec.get("session_id") or ""))
+                stitle = _dsh_title_from_record(conv) if conv else ""
+                task_title = _dsh_title_from_record(conv) or _dsh_clean_title(rec.get("task")) or stitle
+                sid = str(rec.get("session_id") or conv.get("session_id") or "")
+                if not stitle and sid:
+                    stitle = "DSH 会话 · " + sid[-6:]
+                rows.append({"id": rec.get("id") or p.stem, "title": title,
+                             "session_id": sid, "session_title": stitle,
+                             "task_title": task_title,
+                             "session_turns": len(conv.get("turns") or []) if conv else 0,
+                             "size": p.stat().st_size, "task": title,
                              "ts": rec.get("ts") or p.stat().st_mtime,
-                             "ok": rec.get("ok"),
-                             "running": bool(rec.get("running")),
+                             "ok": rec.get("ok"), "running": bool(rec.get("running")),
                              "files": len(rec.get("files") or [])})
                 continue
-            txt = p.read_text(encoding="utf-8", errors="replace")[:2000]
-            task = p.stem
+            txt = p.read_text(encoding="utf-8", errors="replace")[:4000]
+            task = ""
             for ln in txt.splitlines():
                 if ln.startswith("- task:"):
-                    task = ln.split(":", 1)[1].strip()
-                    break
-            rec = _get_dsh_session(p.stem) or {}
-            rows.append({"id": p.stem, "size": p.stat().st_size,
-                         "task": task, "ts": rec.get("ts") or p.stat().st_mtime,
-                         "ok": rec.get("ok")})
+                    task = ln.split(":", 1)[1].strip(); break
+            title = _dsh_title_from_record({"task": task}) or _dsh_title_from_record(sess)
+            title = title or _dsh_fallback_title("DSH 产物", sess.get("ts") or p.stat().st_mtime)
+            conv = _get_conv_record(p.stem)
+            stitle = _dsh_title_from_record(conv) if conv else ""
+            task_title = _dsh_title_from_record(conv) or _dsh_clean_title(task) or stitle
+            sid = str(conv.get("session_id") or "")
+            if not stitle and sid:
+                stitle = "DSH 会话 · " + sid[-6:]
+            rows.append({"id": p.stem, "title": title, "session_id": sid,
+                         "session_title": stitle, "task_title": task_title,
+                         "session_turns": len(conv.get("turns") or []) if conv else 0,
+                         "size": p.stat().st_size, "task": title,
+                         "ts": sess.get("ts") or p.stat().st_mtime, "ok": sess.get("ok")})
         except Exception:
             pass
     return rows
@@ -2324,10 +2432,21 @@ def _dsh_current_messages(limit: int = 80) -> dict:
         return "\n".join(out).strip()
 
     msgs = []
+    internal_events = []
     for rec in records:
         ev = (rec or {}).get("event") or {}
         et = str(ev.get("type") or "")
         data = ev.get("data") or {}
+        if et and et not in ("user/message", "assistant/message"):
+            _txt = data.get("text") or ""
+            if not _txt:
+                try:
+                    _txt = (data.get("message") or {}).get("text") or ""
+                except Exception:
+                    _txt = ""
+            internal_events.append({"seq": int(ev.get("seq") or 0),
+                                    "type": et, "tool": data.get("tool") or "",
+                                    "text": str(_txt)[:600]})
         text = ""
         role = ""
         if et == "user/message":
@@ -2359,7 +2478,7 @@ def _dsh_current_messages(limit: int = 80) -> dict:
            "updated_at": cur.get("updatedAt") or 0,
            "messages": dedup[-limit:]}
     try:
-        _sync_current_dsh_archive(out, dedup[-200:])
+        _sync_current_dsh_archive(out, dedup[-200:], internal_events[-200:])
     except Exception:
         pass
     return out
@@ -2943,24 +3062,122 @@ def _dsh_guard_loop(stop_event):
         now = _t.time()
         rec["last_tick"] = now
         rec["last_session_id"] = _dsh_current_session_id() if not busy else rec.get("last_session_id", "")
-        if busy:
-            rec["last_result"] = "busy: 当前 DSH 会话运行中，跳过本轮巡检"
+        _interval = max(60, int(rec.get("interval") or 7200))
+        if not rec.get("last_dispatch_at"):
+            rec["last_dispatch_at"] = now
+            rec["next_due_at"] = now + _interval
+            rec["last_result"] = "守卫调度已建立：%d 分钟后进行下一轮" % max(1, _interval // 60)
+            try:
+                _dsh_guard_save(rec)
+            except Exception:
+                pass
+        _rc = _dsh_guard_receipt_load()
+        _pending = str(rec.get("pending_dispatch") or "")
+        if _pending and str(_rc.get("dispatch_id") or "") == _pending:
+            rec["last_completed_at"] = _rc.get("completed_at") or now
+            rec["completion_status"] = str(_rc.get("status") or "completed")
+            rec["completion_report"] = str(_rc.get("report") or "")
+            rec["last_result"] = "上一轮巡检已完成（回执 " + _pending + "）"
+            rec["pending_dispatch"] = ""
+            _pending = ""
+            try:
+                _dsh_guard_save(rec)
+            except Exception:
+                pass
+        if _pending and (now - float(rec.get("last_dispatch_at") or now)) > 14400:
+            rec["last_result"] = "上一轮回执超时，重新派发"
+            rec["last_error"] = "guard receipt timeout " + _pending
+            rec["pending_dispatch"] = ""
+            _pending = ""
+            try:
+                _dsh_guard_save(rec)
+            except Exception:
+                pass
+        if _pending:
+            rec["last_result"] = "等待上一轮完成回执 " + _pending + "（未完成不重复派发）"
+            try:
+                _dsh_guard_save(rec)
+            except Exception:
+                pass
+            delay = 60
+            continue
+        # DSH 会话运行中不丢巡检：不跳过，到点后仍派发为排队任务。
+        if False and busy:
+            rec["last_result"] = "busy: 当前 DSH 会话运行中"
             rec["last_error"] = ""
         else:
+            _due = float(rec.get("last_dispatch_at") or 0) + _interval
+            rec["next_due_at"] = _due
+            if now < _due:
+                _left = max(1, int(_due - now))
+                rec["last_result"] = "等待下一轮巡检：剩余 %d 分钟" % max(1, _left // 60)
+                try:
+                    _dsh_guard_save(rec)
+                except Exception:
+                    pass
+                delay = min(60, max(1, _left))
+                continue
+            # 先做关键文件完整性预检：源码被截断/语法损坏时绝不派发巡检。
+            try:
+                _ir = __import__("subprocess").run(
+                    [__import__("sys").executable, str(Path(__file__).resolve().parent.parent / "scripts" / "file_integrity_check.py")],
+                    capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=90)
+                if _ir.returncode != 0:
+                    rec["last_result"] = "跳过巡检：关键文件完整性检查失败"
+                    rec["last_error"] = ((_ir.stderr or _ir.stdout or "")[-1000:])
+                    _dsh_guard_save(rec)
+                    delay = 60
+                    continue
+                rec["last_integrity_ok"] = _t.time()
+                rec["last_error"] = ""
+            except Exception as _ie:
+                rec["last_result"] = "跳过巡检：完整性预检异常"
+                rec["last_error"] = str(_ie)
+                _dsh_guard_save(rec)
+                delay = 60
+                continue
+            dispatch_id = "guard-" + _t.strftime("%Y%m%d_%H%M%S")
             task = ("[DSH守护自动巡检] 请检查Meta-DGTF当前状态：最近日志、任务队列、提案、"
                     "依赖/门禁与工作区变更。当前为完全接管模式：允许在本项目内修改源码/文档/配置/测试、"
                     "git add/commit/revert、版本号与 CHANGELOG 迭代、验证并修复/关闭所有与Meta-DGTF相关的"
                     "pending 提案、自动修复并跑门禁。禁止 git push/force/reset --hard、删除项目数据、"
                     "读取或外发密钥、账户/ACL/系统级改动及不可逆外部操作；这些列入人工确认。"
                     "不要启动 headless，全程在当前 DSH 对话执行。"
-                    "完成后用简体中文给出：检查项、修复项、验证结果、待人工确认风险。")
+                    "完成后用简体中文给出：检查项、修复项、验证结果、待人工确认风险。"
+                    "【App 全方位检查】每轮必须运行 python scripts/app_full_check.py --json-out docs/app_audit_latest.json。"
+                    "【全产物库分析】每轮必须运行 python scripts/outputs_library_audit.py --json-out docs/outputs_audit_latest.json；"
+                    "需要人工确认的用 python scripts/propose_outputs_confirmations.py 写提案，"
+                    "再运行 python scripts/enrich_audit_proposals.py；每轮运行 python scripts/reassess_audit_proposals.py 复核。"
+                    "其他非产物库人工确认项用 python scripts/create_proposal.py 写入。"
+                    "【App 系统整体状态】每轮运行 python scripts/app_system_check.py --json-out docs/system_audit_latest.json --repair。"
+                    "【本轮热门话题实时抓取】每轮维护 dgtf_memory/hot_topics.json：按9个领域补足热点问题，"
+                    "官方/权威优先，必须联网核实来源与时效，保留 question/domain/source/url/fetched/confidence。"
+                    "【本轮技术知识学习】每轮运行 python scripts/triage_tech_knowledge.py --check；"
+                    "有可执行建议的写入技术知识库并提出集成/验证方案，已应用项不得重复提案。"
+                    "【本轮真跑轮换】读取 dgtf_memory/patrol_state.json 的下一领域，执行一次真实全链路运行，"
+                    "记录质量分、token、调用数、墙钟、成本窗口与产物，并更新轮换状态。"
+                    "【巡检报告留存】本轮结束前写入 docs/reports/patrol_<时间>_<领域>.md，"
+                    "必须包含检查项、修复项、验证结果、待人工确认风险，并运行 python scripts/check_patrol_report.py --check。"
+                    "【App 版本同步】任何 App 代码/界面改动后必须运行 python scripts/app_release.py 或手工同步 APP_VERSION，"
+                    "更新静态 ?v= 缓存串、README/PROJECT_LAYOUT、docs/releases/app-V<版本>.md 与 CHANGELOG；"
+                    "运行 python scripts/app_version_check.py，未通过不得提交或发布。"
+                    "【安全文件约束】关键源码修改前必须运行 python scripts/safe_file_ops.py snapshot --tag <轮次>；"
+                    "禁止直接 Path.write_text；修改后运行 python scripts/file_integrity_check.py，失败必须从备份恢复。"
+                    "【完成回执】最后一步必须运行 python scripts/guard_receipt.py --dispatch-id <DISPATCH_ID> "
+                    "--status completed --report <报告路径> --checks <检查项逗号分隔>；未写回执视为本轮未完成。")
+            task = task.replace("<DISPATCH_ID>", dispatch_id)
             try:
                 res = _dsh_current_prompt(task)
-                rec["last_result"] = str(res.get("text") or "已排队")
+                rec["last_result"] = "已派发 " + dispatch_id + ("（排队执行）" if busy else "") + "，等待完成回执"
+                rec["last_dispatch_at"] = now
+                rec["pending_dispatch"] = dispatch_id
+                rec["next_due_at"] = now + _interval
+                rec["last_dispatch_hash"] = __import__("hashlib").sha256(task.encode("utf-8")).hexdigest()
                 rec["last_error"] = ""
                 rec["checks"] = int(rec.get("checks") or 0) + 1
             except Exception as exc:
                 rec["last_result"] = "巡检任务提交失败"
+                rec["pending_dispatch"] = ""
                 rec["last_error"] = str(exc)
         try:
             _dsh_guard_save(rec)
@@ -2988,6 +3205,19 @@ def _dsh_guard_ensure():
             _DSH_GUARD_STOP.set()
 
 
+def _dsh_guard_receipt_path():
+    return Path(__file__).resolve().parent.parent / "dgtf_memory" / "guard_receipt.json"
+
+
+def _dsh_guard_receipt_load():
+    import json as _j
+    try:
+        p = _dsh_guard_receipt_path()
+        return _j.loads(p.read_text(encoding="utf-8", errors="replace")) if p.is_file() else {}
+    except Exception:
+        return {}
+
+
 def _dsh_guard_status():
     rec = _dsh_guard_load()
     try:
@@ -2996,6 +3226,24 @@ def _dsh_guard_status():
         pass
     rec["thread_running"] = bool(_DSH_GUARD_THREAD and _DSH_GUARD_THREAD.is_alive())
     rec["takeover"] = _dsh_takeover_load()
+    _rc = _dsh_guard_receipt_load()
+    rec["receipt"] = _rc
+    _disp = str(rec.get("pending_dispatch") or "")
+    if _disp and str(_rc.get("dispatch_id") or "") == _disp:
+        rec["pending_completion"] = False
+        rec["last_completed_at"] = _rc.get("completed_at") or rec.get("last_completed_at")
+        rec["completion_status"] = _rc.get("status") or ""
+        rec["completion_report"] = _rc.get("report") or ""
+    else:
+        rec["pending_completion"] = bool(_disp)
+    try:
+        _last = float(rec.get("last_dispatch_at") or 0)
+        _iv = max(60, int(rec.get("interval") or 7200))
+        rec["next_due_at"] = (_last + _iv) if _last else None
+        rec["seconds_to_next"] = max(0, int(rec["next_due_at"] - __import__("time").time())) if rec.get("next_due_at") else None
+    except Exception:
+        rec["next_due_at"] = None
+        rec["seconds_to_next"] = None
     return rec
 
 
@@ -3005,6 +3253,8 @@ def _dsh_guard_set(data):
     if "enabled" in data:
         rec["enabled"] = bool(data.get("enabled"))
         rec["started_at"] = _t.time() if rec["enabled"] else 0
+        if rec["enabled"] and not rec.get("last_dispatch_at"):
+            rec["last_dispatch_at"] = _t.time()
     if "interval" in data:
         try:
             rec["interval"] = max(60, min(86400, int(data.get("interval") or 600)))
@@ -4730,7 +4980,12 @@ def _conv_list(limit=50):
             running = (bool(c.get("running")) and _cid == _active_current) if _external == "dsh-current" else bool(_busy and _active)
             stale = False if _external == "dsh-current" else bool(_busy and not _active)
             last = turns[-1] if turns else {}
+            _title = _dsh_title_from_record(c, fallback=_dsh_fallback_title("DSH 会话", c.get("updated_at") or c.get("created_at")))
+            _system = bool(turns) and all(_dsh_is_system_task(t.get("task")) or not _dsh_clean_title(t.get("task")) for t in turns if isinstance(t, dict))
             rows.append({"id": c.get("id") or p.stem,
+                         "title": _title,
+                         "system": _system,
+                         "artifacts": _dsh_artifact_count(c.get("id") or p.stem),
                          "session_id": c.get("session_id") or "",
                          "external": _external,
                          "start_seq": int(c.get("start_seq") or 0),
@@ -4923,7 +5178,7 @@ def _resume_dsh_current_conversation(cid):
     return conv
 
 
-def _sync_current_dsh_archive(out, archive_msgs=None):
+def _sync_current_dsh_archive(out, archive_msgs=None, archive_events=None):
     """把当前 DSH 会话同步到 app 的 DSH 会话库与产物库（按 active 逻辑会话隔离）。"""
     import json as _json
     import time as _t
@@ -4956,6 +5211,7 @@ def _sync_current_dsh_archive(out, archive_msgs=None):
     except Exception:
         pass
     old = _conv_load(cid) or {}
+    _internal = list(archive_events if archive_events is not None else (old.get("internal_events") or []))[-200:]
     turns = []
     cur = None
     for m in filtered[-120:]:
@@ -4985,10 +5241,16 @@ def _sync_current_dsh_archive(out, archive_msgs=None):
         turns[-1]["status"] = "done"
     now = _t.time()
     conv = {"id": cid, "session_id": sid, "external": "dsh-current",
-            "start_seq": start_seq,
+            "start_seq": start_seq, "internal_events": _internal,
             "created_at": old.get("created_at") or (turns and msgs[0].get("time", 0) / 1000.0) or now,
             "updated_at": now, "running": running, "turns": turns}
     _conv_save(conv)
+    _has_content = any((str(t.get("task") or "") not in ("", "新对话", "当前对话")
+                        or t.get("events") or t.get("text"))
+                       for t in turns)
+    if not _has_content and not _internal:
+        _CURRENT_ARCHIVE_SIG = sig
+        return
     files = _workspace_changed_files(40)
     tail = []
     for t in turns[-12:]:
@@ -5513,6 +5775,150 @@ def _app_health_cached():
     val = _app_health()
     _HEALTH_CACHE["t"] = _t.time()
     _HEALTH_CACHE["val"] = val
+    return val
+
+
+_SIDEBAR_CACHE = {"t": 0.0, "val": None}
+_SIDEBAR_OUT = {"t": 0.0, "val": None}
+
+
+def _sidebar_outputs_cached():
+    import time as _t
+    now = _t.time()
+    if _SIDEBAR_OUT["val"] is not None and now - float(_SIDEBAR_OUT["t"] or 0) < 60:
+        return _SIDEBAR_OUT["val"]
+    try:
+        val = oi.stats()
+        _SIDEBAR_OUT["val"] = val
+        _SIDEBAR_OUT["t"] = now
+        return val
+    except Exception:
+        return _SIDEBAR_OUT["val"] or {"count": 0, "total_mb": 0, "loading": True}
+
+
+_LOCAL_WD = {"ok": False, "checked_at": 0.0, "failures": 0, "last_start": 0.0,
+             "status": "unknown", "last_error": ""}
+_LOCAL_WD_THREAD = None
+_LOCAL_WD_LOCK = None
+
+
+def _local_llm_probe_once():
+    import json as _j
+    import time as _t
+    import urllib.request as _u
+    now = _t.time()
+    ok = False
+    status = "offline"
+    err = ""
+    try:
+        with _u.urlopen("http://127.0.0.1:8772/health", timeout=1.2) as r:
+            d = _j.loads(r.read().decode("utf-8", errors="replace"))
+        status = str(d.get("status") or d.get("state") or "")
+        ok = status.lower() in ("ready", "ok", "healthy", "running") or bool(d.get("ok"))
+    except Exception as exc:
+        err = "%s: %s" % (type(exc).__name__, exc)
+    _LOCAL_WD.update({"ok": bool(ok), "checked_at": now, "status": status,
+                      "last_error": "" if ok else err})
+    return ok
+
+
+def _local_llm_start_once():
+    import subprocess as _sp
+    import time as _t
+    py = Path(__file__).resolve().parent.parent / "local_model" / "envs" / "dgtf_llm_env" / "Scripts" / "python.exe"
+    svc = Path(__file__).resolve().parent.parent / "dgtf_local_llm" / "service.py"
+    if not py.is_file() or not svc.is_file():
+        return False
+    log = Path(__file__).resolve().parent.parent / "outputs" / "_lead_audit" / "local_llm_watchdog.log"
+    log.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        flags = getattr(_sp, "CREATE_NO_WINDOW", 0)
+        with log.open("a", encoding="utf-8", errors="replace") as fh:
+            _sp.Popen([str(py), str(svc), "--port", "8772"],
+                      cwd=str(svc.parent.parent), stdout=fh, stderr=fh,
+                      creationflags=flags)
+        _LOCAL_WD["last_start"] = _t.time()
+        return True
+    except Exception as exc:
+        _LOCAL_WD["last_error"] = "start failed: %s: %s" % (type(exc).__name__, exc)
+        return False
+
+
+def _local_llm_watchdog_loop():
+    import time as _t
+    while True:
+        ok = _local_llm_probe_once()
+        if not ok:
+            _LOCAL_WD["failures"] = int(_LOCAL_WD.get("failures") or 0) + 1
+            if (_LOCAL_WD["failures"] >= 2
+                    and _t.time() - float(_LOCAL_WD.get("last_start") or 0) > 120):
+                _local_llm_start_once()
+        else:
+            _LOCAL_WD["failures"] = 0
+        _t.sleep(30)
+
+
+def _local_llm_watchdog_ensure():
+    global _LOCAL_WD_THREAD
+    if _LOCAL_WD_THREAD is not None and _LOCAL_WD_THREAD.is_alive():
+        return
+    import threading as _th
+    _LOCAL_WD_THREAD = _th.Thread(target=_local_llm_watchdog_loop,
+                                    daemon=True, name="local-llm-watchdog")
+    _LOCAL_WD_THREAD.start()
+
+
+_SIDEBAR_LLM = {"t": 0.0, "val": None}
+
+
+def _sidebar_llm_cached():
+    import time as _t
+    import json as _j
+    import urllib.request as _u
+    _local_llm_watchdog_ensure()
+    now = _t.time()
+    if _SIDEBAR_LLM["val"] is not None and now - float(_SIDEBAR_LLM["t"] or 0) < 10:
+        return _SIDEBAR_LLM["val"]
+    ok = False
+    status = "offline"
+    try:
+        with _u.urlopen("http://127.0.0.1:8772/health", timeout=1.2) as r:
+            d = _j.loads(r.read().decode("utf-8", errors="replace"))
+        status = str(d.get("status") or d.get("state") or "")
+        ok = status.lower() in ("ready", "ok", "healthy", "running") or bool(d.get("ok"))
+    except Exception:
+        ok = False
+    val = {"backends": ([{"ok": True, "name": "local-qwen05b"}] if ok else []),
+           "watchdog_ok": bool(_LOCAL_WD.get("ok") or ok),
+           "watchdog": {"ok": bool(_LOCAL_WD.get("ok") or ok),
+                        "failures": _LOCAL_WD.get("failures"),
+                        "last_start": _LOCAL_WD.get("last_start")},
+           "status": status, "checked_at": now}
+    _SIDEBAR_LLM["t"] = now; _SIDEBAR_LLM["val"] = val
+    return val
+
+
+def _sidebar_status_cached():
+    import time as _t
+    now = _t.time()
+    if _SIDEBAR_CACHE["val"] is not None and now - float(_SIDEBAR_CACHE["t"] or 0) < 2:
+        return _SIDEBAR_CACHE["val"]
+    eng = runner.find_engine()
+    dsh = Path(os.getenv("DSH_BIN") or str(Path(os.getenv("LOCALAPPDATA", "")) /
+              "Programs/DeepSeek Harness/resources/runtime/cli/bin/dsh.cmd"))
+    val = {
+        "config": {"engine": eng.name,
+                   "mock_default": os.environ.get("DGTF_APP_MOCK") == "1",
+                   "creds": runner.credential_status(),
+                   "outputs": _sidebar_outputs_cached(),
+                   "max_concurrent": runner.MAX_CONCURRENT},
+        "health": {"ok": True, "app": {"name": "Meta-DGTF", "version": APP_VERSION},
+                   "checks": {"engine_file": bool(eng.is_file()),
+                              "dsh_headless": bool(dsh.is_file())}},
+        "llm": _sidebar_llm_cached(),
+        "guard": _dsh_guard_status(), "fast": True,
+    }
+    _SIDEBAR_CACHE["t"] = now; _SIDEBAR_CACHE["val"] = val
     return val
 
 
@@ -7210,8 +7616,15 @@ def _v2_context_bandit(question="", prefer="balanced", c=0.5):
             "note": "按问题类型分桶 + 向全局均值收缩的 UCB"}
 
 
+_V2_LAYER_QUALITY_VALIDATED = False
+
+
 def _v2_auto_apply(prefer="balanced"):
     """自动评估 V2 候选策略并按挡位选最优写入；保留完整候选与选择审计。"""
+    if not _V2_LAYER_QUALITY_VALIDATED:
+        return {"ok": False, "frozen": True,
+                "error": "自动策略冻结：层局部质量 layer_signals_v1 尚未通过整跑校准",
+                "reason": "需人工确认校准门通过后再开启；禁止用同题/同跑模板直接写自动策略"}
     import json as _json
     import time as _t
     prefer = str(prefer or "balanced")
@@ -8274,6 +8687,52 @@ class Handler(BaseHTTPRequestHandler):
                     "default": "auto (M4 auto-fused)",
                 })
             except Exception as exc:  # noqa: BLE001
+                return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/status/sidebar":
+            try:
+                return self._json(_sidebar_status_cached())
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/status/activity":
+            try:
+                _ts = runner.list_tasks()
+                _run = [t for t in _ts if str(t.get("status")) in ("running", "queued", "starting", "pending")]
+                _web = any(("web" in str(t.get("opts") or {}).lower())
+                           for t in _run)
+                _dsh_run = False
+                try:
+                    _dsh_run = bool((_dsh_current_asof() or {}).get("running"))
+                except Exception:
+                    _dsh_run = False
+                return self._json({"ok": True, "running": len(_run),
+                                   "flags": {"app": False, "engine": bool(_run),
+                                             "model": any(not (t.get("opts") or {}).get("mock") for t in _run),
+                                             "web": bool(_web), "local_llm": False,
+                                             "agent": bool(_run) or bool(_dsh_run),
+                                             "products": False}, "ts": __import__("time").time()})
+            except Exception as exc:
+                return self._json({"ok": False, "error": str(exc)}, 500)
+        if p == "/api/agent/hot-topics":
+            try:
+                import json as _hj
+                hp = Path(__file__).resolve().parent.parent / "dgtf_memory" / "hot_topics.json"
+                d = _hj.loads(hp.read_text(encoding="utf-8", errors="replace")) if hp.is_file() else {}
+                qs = d.get("questions") or []
+                items = [{"domain": q.get("domain"), "kind": q.get("kind"), "q": q.get("q"),
+                          "source": q.get("source"), "url": q.get("url"),
+                          "fetched": q.get("fetched"), "confidence": q.get("confidence")}
+                         for q in qs if isinstance(q, dict)]
+                return self._json({"items": items, "count": len(items), "file": str(hp)})
+            except Exception as exc:
+                return self._json({"items": [], "count": 0, "error": str(exc)})
+        if p == "/api/schedule/v2/online":
+            try:
+                try:
+                    v2_online.reconcile(runner.list_tasks(), oi.OUTPUTS_DIR)
+                except Exception:
+                    pass
+                return self._json(v2_online.summary())
+            except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/config":
             try:
@@ -9905,6 +10364,22 @@ class Handler(BaseHTTPRequestHandler):
                         semantic=bool(opts.get("use_semantic_cache", True)))
                 except Exception:
                     _cached = None
+            _online = None
+            if not _cached and not _is_mock_task and not _quality_retry:
+                try:
+                    _oopts = {k: v for k, v in opts.items()
+                              if k not in ("route", "rounds", "profile")}
+                    _base_arm = None
+                    if opts.get("route") and opts.get("rounds"):
+                        _base_arm = {"route": opts.get("route"),
+                                     "rounds": opts.get("rounds")}
+                    _online = v2_online.choose(question, _oopts, base_arm=_base_arm)
+                    if _online:
+                        opts["route"] = list(_online.get("route") or [])
+                        opts["rounds"] = dict(_online.get("rounds") or {})
+                        opts["_v2_online"] = _online
+                except Exception:
+                    _online = None
             try:
                 if _cached:
                     tid = runner.start_cached_task(question, dict(opts), _cached,
@@ -9915,6 +10390,15 @@ class Handler(BaseHTTPRequestHandler):
                     tid = runner.start_task(question, opts, mode_info=_mode_info)
             except ValueError as e:
                 return self._json({"error": str(e)}, 400)
+            if _online:
+                try:
+                    v2_online.bind_task(str(_online.get("id") or ""), str(tid))
+                    import threading as _tho
+                    _tho.Thread(target=_watch_v2_online_outcome,
+                                args=(str(tid), str(_online.get("id") or "")),
+                                daemon=True, name="v2-online-outcome").start()
+                except Exception:
+                    pass
             if _cache_hit:
                 return self._json({"id": tid, "cache_hit": True,
                                    "dedup_hit": False,
@@ -9997,6 +10481,40 @@ def _find_running_duplicate(question: str, opts: dict, prefix: str):
     except Exception:
         return None
     return None
+
+
+def _watch_v2_online_outcome(tid: str, assignment_id: str):
+    """正常任务完成后把 quality/tokens 写入 V2 在线策略，形成 explore→exploit 闭环。"""
+    import json as _j
+    import time as _t
+    if not assignment_id:
+        return
+    deadline = _t.time() + 3600
+    while _t.time() < deadline:
+        try:
+            t = runner.get_task(str(tid))
+        except Exception:
+            t = None
+        if not t:
+            _t.sleep(10)
+            continue
+        st = str(t.get("status") or "")
+        if st in ("error", "failed", "canceled", "cancelled", "interrupted"):
+            return
+        if st == "done":
+            name = str(t.get("output_name") or "")
+            if name:
+                packed = oi.OUTPUTS_DIR / ((name[:-3] + ".packed.json")
+                                           if name.lower().endswith(".md")
+                                           else (name + ".packed.json"))
+                try:
+                    d = _j.loads(packed.read_text(encoding="utf-8", errors="replace"))
+                    q, tokens, verified = v2_online.quality_of_packed(d)
+                    v2_online.record_outcome(str(assignment_id), str(tid), q, tokens, verified)
+                except Exception:
+                    pass
+            return
+        _t.sleep(5)
 
 
 def _find_cached_pack(question: str, opts: dict, prefix: str = "",

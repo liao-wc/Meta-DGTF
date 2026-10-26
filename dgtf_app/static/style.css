@@ -37,7 +37,7 @@
   --f-body:"Inter","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
   --f-mono:"JetBrains Mono","Cascadia Code",Consolas,monospace;
   /* 抽屉宽度：自适应，且尽量不越过输入框左边界（首屏靠它「让位」，见 body.drawer-open） */
-  --drawer-w:min(400px, max(220px, calc((100vw - 960px) / 2)));
+  --drawer-w:min(406px, max(220px, calc((100vw - 960px) / 2)));
   /* ★ R37：让位量**封顶为视口的一半**——窄视口（<960px）下 --drawer-w 会退化成 220~400px，
      主区右移后右侧内容被顶出视口（用户报「展开右边看不见了」）。取 min(抽屉宽, 50vw)
      ⇒ 右侧恒留一半视口，画布右缘永远可见。宽视口下 50vw 远大于 400px，取值与旧行为一致。 */
@@ -116,7 +116,7 @@ body.panel-open #rl-bar{opacity:0 !important;pointer-events:none !important}
 h1,h2,h3,.task-q,.item .t,.md p{text-wrap:pretty}
 
 /* ── 品牌 / 四层 glyph（修行 研究 对撞 元）───────────────────── */
-.brand{display:flex;align-items:center;gap:10px;font-family:var(--f-display);
+.brand{display:flex;align-items:center;justify-content:center;gap:6px;margin:0 auto;font-family:var(--f-display);
   font-weight:600;font-size:15px;letter-spacing:-.01em;white-space:nowrap}
 /* ★ R20：内嵌图形（品牌/欢迎语的方块标）放大一点、更厚实 */
 .glyph{display:grid;grid-template-columns:repeat(2,1fr);gap:2.5px;width:18px;height:18px;flex:0 0 auto}
@@ -302,7 +302,7 @@ h1,h2,h3,.task-q,.item .t,.md p{text-wrap:pretty}
 .drawer-body{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;
   gap:clamp(9px,2.2vh,24px);padding:clamp(10px,2.2vh,20px) 14px 8px}
 /* ★ R25：底部落款（原来跟在品牌后面，现移到最底） */
-.drawer-foot{flex:0 0 auto;text-align:center;color:var(--t3);
+.drawer-foot{flex:0 0 auto;text-align:center;color:#fff;
   font-family:var(--f-display);font-size:12px;font-weight:500;letter-spacing:.16em;
   padding:clamp(8px,1.8vh,16px) 14px clamp(12px,2.4vh,24px);
   border-top:1px solid var(--hair)}
@@ -549,10 +549,10 @@ body.drawer-open main.stage{
    通过 `--home-shift` 同时平移欢迎语和输入框；横向仍由 flex 居中。
    这样不是拍脑袋的 padding，而是真正以空隙为基准。 */
 body.stage-empty main.stage{justify-content:center;align-items:center;
-  padding-bottom:20px}
+  gap:6px;padding-bottom:0}
 body.stage-empty #welcome{display:flex;position:relative;
   top:var(--home-shift,0px)}
-body.stage-empty .composer{width:100%;max-width:760px;position:relative;
+body.stage-empty .composer{width:100%;max-width:800px;position:relative;
   top:var(--home-shift,0px)}
 body.stage-run #welcome{display:none}
 /* ★ 运行态的主区宽度和空态**统一到 900px** —— 之前 1080 太宽（1600 视口下左右只剩 260px），
@@ -569,10 +569,10 @@ body.drawer-open.stage-run .composer{
   max-width:min(1080px, calc(100vw - var(--shift-w) - 36px))}
 @keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
-.welcome{display:none;align-items:center;gap:12px;
+.welcome{display:none;align-items:center;justify-content:center;gap:4px;margin-left:auto;margin-right:auto;
   font-family:var(--f-display);font-weight:600;font-size:22px;letter-spacing:-.02em;
   /* ★ R25：画布变浅 ⇒ 欢迎语改深色（原来是近白 --t1，在浅灰上会看不见） */
-  color:#1F2229;margin-bottom:16px;animation:rise .4s var(--ease) both}
+  color:#1F2229;margin-bottom:6px;animation:rise .4s var(--ease) both}
 
 .panel-head{display:flex;align-items:center;gap:10px;padding:9px 14px;
   border-bottom:1px solid var(--hair);flex:0 0 auto}
@@ -602,7 +602,7 @@ details.cand .lib-list{margin-top:6px}
      否则它会相对更外层（stage/body）跑掉。 */
   position:relative;
   background:var(--s1);border:1px solid var(--hair-2);border-radius:22px;
-  padding:14px 14px 10px;box-shadow:var(--shadow);
+  padding:12px 14px 8px;box-shadow:var(--shadow);
   transition:border-color var(--dur) var(--ease),box-shadow var(--dur) var(--ease);
 }
 .composer:focus-within{border-color:rgba(94,106,210,.55);
@@ -610,16 +610,18 @@ details.cand .lib-list{margin-top:6px}
 textarea#question{
   width:100%;background:transparent;color:var(--t1);border:0;outline:none;resize:none;
   /* ★ R44：输入框与占位文字**调小一档**（用户要求「字体改小一点」）：15 → 13.5px */
-  font-size:13.5px;line-height:1.55;padding:2px 4px 8px;min-height:26px;
+  font-size:13.5px;line-height:1.55;padding:6px 4px 8px;min-height:34px;
   max-height:180px;overflow:auto;
 }
-textarea#question::placeholder{color:var(--t3)}
+textarea#question::placeholder{color:var(--t3);text-align:left}
+textarea#question.ph-question{padding-left:28px}
+textarea#question.ph-question::placeholder{text-align:center}
 /* ★ R24：输入框**不出滚动条**（内容变高由 JS 撑高，不靠滚动） */
 textarea#question{scrollbar-width:none;-ms-overflow-style:none}
 textarea#question::-webkit-scrollbar{width:0;height:0;display:none}
-/* 输入内容与占位**左对齐**（用户要求：提示语与输入指针都靠左） */
+/* 基础提示左对齐；轮询问题居中并整体右移 12px；输入内容与光标保持左对齐 */
 textarea#question{text-align:left}
-.composer-row{display:flex;align-items:center;gap:8px;padding-top:4px}
+.composer-row{display:flex;align-items:center;gap:8px;padding-top:2px}
 /* 功能胶囊：点一下开 / 再点关（不点 = 交给引擎 auto 自决） */
 /* 胶囊与圆形按钮**统一尺寸**（同 34px 高、全圆角、同边框），文字统一白色 */
 .pill{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 11px;
@@ -644,7 +646,9 @@ textarea#question{text-align:left}
   background:rgba(94,106,210,.14)}
 /* ★ 发送键重新设计：**渐变底 + 投影 + 悬停微抬升**（圆钮更有分量感）。
    尺寸保持 32px —— 要和同一排的胶囊**等高**（有一条判据盯这个）。 */
-#run-btn.send{margin-left:auto;width:32px;height:32px;padding:0;border-radius:50%;flex:0 0 auto;
+#attach-btn{margin-left:auto}
+#attach-btn + .send{margin-left:0}
+#run-btn.send{width:32px;height:32px;padding:0;border-radius:50%;flex:0 0 auto;
   display:inline-flex;align-items:center;justify-content:center;
   /* ★ R30：整个按钮**高亮**（底色提亮一档 + 外圈微光 + 更亮的投影） */
   border:1px solid rgba(255,255,255,.22);color:#fff;
@@ -1061,7 +1065,8 @@ kbd{font-family:var(--f-mono);font-size:10.5px;line-height:1;color:var(--t2);
    用的是同一组值，两处不可能再不一致（用户要求「灯和字体颜色变化一致」）。 */
 .runlog-head .badge{color:#3A4048;border-color:rgba(0,0,0,.16)}
 .runlog-head .badge.done{color:var(--st-done-c);border-color:var(--st-done-bd);
-  background:var(--st-done-bg)}
+  background:var(--st-done-bg);cursor:pointer;transition:filter var(--dur) var(--ease)}
+.runlog-head .badge.done:hover{filter:brightness(1.06)}
 .runlog-head .badge.running{color:var(--st-running-c);border-color:var(--st-running-bd);
   background:var(--st-running-bg)}
 .runlog-head .badge.queued{color:var(--st-queued-c);border-color:var(--st-queued-bd);
@@ -1683,8 +1688,8 @@ body.stage-empty main.stage{padding-bottom:0}
 .drawer-nav{margin-top:0;margin-bottom:auto;transform:none}
 
 /* 状态信息水平居中并整体上移 10px，按钮同步上移 10px */
-.env{text-align:center;transform:translateY(-15px)}
-.drawer-nav{margin-top:-10px;margin-bottom:auto;transform:none}
+.env{text-align:center;transform:translateY(-30px)}
+.drawer-nav{margin-top:-95px;margin-bottom:auto;transform:none}
 
 /* 状态标签统一白色 */
 .env .env-k{color:#fff}
@@ -1772,3 +1777,70 @@ body.stage-empty main.stage{padding-bottom:0}
   border-radius:var(--r-sm);font-family:var(--f-mono);font-size:12px;
   line-height:1.6;color:var(--t2);white-space:pre-wrap;word-break:break-word}
 .diag-body:empty::before{content:"点「刷新」读取日志尾部";color:var(--t3)}
+
+
+/* DSH 粘贴附件预览：缩略图/文件卡（与 DSH GUI 的 compose 附件呈现一致） */
+.dsh-paste-preview{display:flex;flex-wrap:wrap;gap:8px;padding:4px 2px 8px}
+.dsh-paste-preview.hidden{display:none}
+.dsh-paste-card{position:relative;display:flex;align-items:center;gap:8px;cursor:pointer;
+  max-width:240px;min-height:44px;padding:6px 9px;border-radius:12px;
+  background:#fff;color:#111;box-shadow:0 1px 4px rgba(0,0,0,.18);
+  font-size:12px;line-height:1.35}
+.dsh-paste-card img{width:72px;height:54px;object-fit:cover;border-radius:8px;display:block;flex:0 0 auto}
+.dsh-paste-card .dsh-paste-ico{width:32px;height:32px;border-radius:8px;background:#eef0ff;
+  color:#4d5bd7;display:flex;align-items:center;justify-content:center;
+  font-size:16px;font-weight:700;flex:0 0 auto}
+.dsh-paste-card .dsh-paste-name{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dsh-paste-x{position:absolute;top:-7px;right:-7px;width:18px;height:18px;border-radius:50%;
+  border:1px solid #cfd2e6;background:#fff;color:#555;font-size:12px;line-height:1;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.dsh-paste-x:hover{background:#f2f3f8;color:#111}
+
+
+/* 侧栏状态：原貌行样式，按北斗七星斜向排列 */
+.env-beidou{position:relative;width:min(230px,100%);height:140px;margin:0 auto;transform:translateY(-7px) translateX(20px)}
+.env-beidou .bd-lines{position:absolute;left:0;top:0;width:100%;height:140px;
+  z-index:0;pointer-events:none;overflow:visible;opacity:1;
+  filter:drop-shadow(0 0 3px rgba(140,190,255,.95))}
+.env-beidou .bd-lines line{stroke:rgba(170,215,255,1);stroke-width:2.5;
+  stroke-linecap:round;vector-effect:non-scaling-stroke}
+.env-beidou .bd-row{position:absolute;display:flex;align-items:center;gap:0;
+  height:16px;line-height:16px;white-space:nowrap;z-index:1;width:auto}
+.env-beidou .bd-row .dot{flex:0 0 auto;width:9px;height:9px;margin-right:3px}
+.env-beidou .bd-row .env-k{color:#6EA8FE;font-size:10px;flex:0 0 auto;
+  min-width:0;text-align:left;padding-left:0;margin-left:0}
+.env-beidou .bd-row .env-v{color:#fff;font-size:10px;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;min-width:0;flex:0 1 auto;margin-left:6px}
+.env-beidou .bd-row.mirror-left{left:auto !important;flex-direction:row-reverse;justify-content:flex-start;text-align:right}
+.env-beidou .bd-row.mirror-left .dot{margin-right:0;margin-left:3px}
+.env-beidou .bd-row.mirror-left .env-v{margin-left:0;margin-right:6px}
+.sheet.panel>.lib-list,.sheet.panel>.stats-body,.sheet.panel>.hist-list,.sheet.panel>.adv-group-body{flex:1 1 auto;min-height:0;overflow:auto}
+.env-beidou .bd-row .env-v.val-down{position:relative;top:5px}
+.env-beidou .bd-row .env-k.val-down{position:relative;top:5px}
+
+/* 最终按钮上移 */
+.drawer-nav{margin-top:-16px !important;margin-bottom:auto !important;transform:none !important}
+
+/* 最终：容器与上部侧栏、按钮与容器两段等距（各 10px） */
+.drawer-body{gap:0 !important;padding-top:13px !important}
+.env{transform:none !important}
+.env-beidou{transform:translateX(20px) !important}
+.drawer-nav{margin-top:15px !important;margin-bottom:auto !important;transform:none !important}
+.env-beidou .bd-row .env-k.lab-left5{position:relative;left:-5px}
+.env-beidou .bd-row .env-k.lab-right2down2{position:relative;left:2px;top:2px}
+.env-beidou .bd-row .env-k.lab-right2{position:relative;left:2px}
+.env-beidou .bd-row .env-v.val-down2{position:relative;top:2px}
+/* 逐行微调：产物上2；Agent/本地再下2；联网右2；引擎标签右2 */
+.env-beidou .bd-row .mv-up2{position:relative;top:-2px}
+.env-beidou .bd-row .mv-down4{position:relative;top:4px}
+.env-beidou .bd-row .net-right2{position:relative;left:2px}
+.env-beidou .bd-row .eng-right2{position:relative;left:2px}
+
+/* 活动状态灯：有任务/请求在跑 → 蓝色；优先于绿色就绪态 */
+.dot.active{background:#3B82F6 !important;
+  box-shadow:0 0 0 3px rgba(59,130,246,.20),0 0 10px rgba(59,130,246,.95) !important}
+
+#v2-auto-status{max-width:320px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom}
+
+#prop-search{width:170px}
+#prop-filter{max-width:130px}

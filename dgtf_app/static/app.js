@@ -566,13 +566,8 @@ function collectOpts() {
   if ($('#mock').checked) opts.mock = true;
   /* M4 auto-fused 场景：默认 auto = 后端默认（真实任务启用、mock 关闭）。
      选具体场景时显式传参，后端按约束选 B/serial/fast/web。 */
-  /* 输入框里的两个功能胶囊（不点 = 不传 = 交给引擎 auto 自决）：
-       深度思考 → runtime.thinking    智能搜索 → runtime.web
-     ★ R38：CLM 组里显式填的 thinking/web **优先于**胶囊（胶囊是「快捷开关」，
-       参数面板是「精确指定」）—— 已有值时不覆盖。 */
-  const th = $('#pill-thinking'), wb = $('#pill-web');
-  if (th && th.classList.contains('on') && !opts.thinking) opts.thinking = 'on';
-  if (wb && wb.classList.contains('on') && !opts.web) opts.web = 'on';
+  /* 深度思考/智能搜索不再放首屏：默认不传，引擎 auto 自决；
+     需要强制开启用高级参数里的 thinking / web。 */
   return opts;
 }
 
@@ -1515,9 +1510,142 @@ async function retryTask() {
 /* ── 运行中的「输入框寄语」（R23）───────────────────────────────────
    发送后输入框清空，占位文字换成一句引领语，并**随运行进度**每隔一段时间换一句：
    进度取自「哪一层已经有内容」；用户一开始打字就让位（不动他自己的内容）。 */
-/* ★ R39：首屏输入框文案（用户指定原文，含中间两个空格）—— 与 index.html 的
-   `#question` placeholder **保持同一句**（跑完/新对话时 JS 会把它写回去）。 */
-const Q_PLACEHOLDER = '给Meta-DGTF发消息 我们一起探索吧 ....';
+/* ★ 首屏输入框文案（用户指定原文）—— 与 index.html 的 #question placeholder
+   保持同一句（跑完/新对话时 JS 会写回去）。 */
+const Q_PLACEHOLDER = '发给Meta-DGTF 一起去探索吧 ...';
+
+/* ★ 首屏热门问题轮询：按领域分组，每次随机选一个**不同领域**的问题；
+   只在首屏空闲、非 DSH 模式、非运行寄语时更新 placeholder。
+   基础提示左对齐，轮询问题居中（textarea 上的 .ph-question 类）。 */
+const KIND_WEIGHT = {hot: 4, interest: 3, mystery: 2, fantasy: 1};
+const HOT_QUESTIONS = [
+  {domain: 'AI / 科技', kind: 'hot', q: 'AI Agent 会先取代哪类工作？'},
+  {domain: 'AI / 科技', kind: 'hot', q: '下一个改变生活的科技是什么？'},
+  {domain: 'AI / 科技', kind: 'fantasy', q: '如果意识能上传，你还是你吗？'},
+  {domain: '宇宙', kind: 'hot', q: '韦伯望远镜接下来最想回答什么？'},
+  {domain: '宇宙', kind: 'mystery', q: '宇宙外面到底是什么？'},
+  {domain: '宇宙', kind: 'fantasy', q: '虫洞旅行真的可能吗？'},
+  {domain: '生命 / 健康', kind: 'hot', q: '为什么睡够 8 小时还是累？'},
+  {domain: '生命 / 健康', kind: 'hot', q: '人类能逆转衰老吗？'},
+  {domain: '生命 / 健康', kind: 'mystery', q: '记忆到底储存在大脑的哪里？'},
+  {domain: '心理', kind: 'hot', q: '为什么越刷手机越焦虑？'},
+  {domain: '心理', kind: 'mystery', q: '人为什么会做梦？'},
+  {domain: '心理', kind: 'interest', q: '人为什么会感到孤独？'},
+  {domain: '历史', kind: 'mystery', q: '三星堆到底还藏着什么？'},
+  {domain: '历史', kind: 'interest', q: '如果某个历史转折点没发生，今天会怎样？'},
+  {domain: '历史', kind: 'interest', q: '古代最被低估的发明是什么？'},
+  {domain: '经济', kind: 'hot', q: 'AI 会推高还是压低房价？'},
+  {domain: '经济', kind: 'hot', q: '全球降息周期结束了吗？'},
+  {domain: '经济', kind: 'interest', q: '为什么钱越来越不值钱？'},
+  {domain: '环境', kind: 'hot', q: '极端天气为什么越来越频繁？'},
+  {domain: '环境', kind: 'hot', q: '城市热岛为什么夜间更明显？'},
+  {domain: '环境', kind: 'mystery', q: '如果地球停止自转，会发生什么？'},
+  {domain: '哲学', kind: 'mystery', q: '自由意志真的存在吗？'},
+  {domain: '哲学', kind: 'interest', q: '人活着到底为了什么？'},
+  {domain: '哲学', kind: 'mystery', q: '怎样才算真正理解一件事？'},
+  {domain: '未来 / 社会', kind: 'hot', q: '人类真的能移民火星吗？'},
+  {domain: '未来 / 社会', kind: 'hot', q: '一百年后的人类会怎样工作？'},
+  {domain: '未来 / 社会', kind: 'fantasy', q: '如果人类可以永生，社会会变成什么样？'},
+  {domain: '未来 / 社会', kind: 'mystery', q: '外星文明为什么还没联系我们？'},
+  {domain: '未来 / 社会', kind: 'fantasy', q: '时间旅行在物理上可行吗？'}
+];
+let hotQuestionPool = HOT_QUESTIONS.slice();
+const PLACEHOLDER_ROTATE_MS = 10000;   // 基础提示 ↔ 热门问题，每 10 秒切换
+let placeholderTimer = null;
+let placeholderShowsQuestion = false;
+let lastHotDomain = '';
+let lastHotQuestion = '';
+let recentHotQuestions = [];
+const HOT_RECENT_LIMIT = 12;
+let domainStreak = 0;
+let hotDomains = [];
+
+async function refreshHotTopics() {
+  try {
+    const r = await api('/api/dsh/hot-topics');
+    if (r && Array.isArray(r.domains)) hotDomains = r.domains.slice(0, 6);
+    if (r && Array.isArray(r.questions) && r.questions.length) {
+      const valid = r.questions.filter(x => x && x.q && x.domain);
+      if (valid.length) hotQuestionPool = valid;
+    }
+  } catch (_) { /* 旧服务进程没有该接口时继续用静态问题池 */ }
+}
+
+function pickHotQuestion() {
+  let pool = hotQuestionPool.filter(x => recentHotQuestions.indexOf(x.q) < 0);
+  if (!pool.length) {
+    recentHotQuestions = [];
+    pool = hotQuestionPool.filter(x => x.q !== lastHotQuestion);
+    if (!pool.length) pool = hotQuestionPool.slice();
+  }
+  if (lastHotDomain && domainStreak >= 2) {
+    const diff = pool.filter(x => x.domain !== lastHotDomain);
+    if (diff.length) pool = diff;
+  }
+  const groups = {};
+  pool.forEach(x => { (groups[x.domain] = groups[x.domain] || []).push(x); });
+  const domains = Object.keys(groups);
+  const trend = new Set(hotDomains);
+  const dWeight = {};
+  let total = 0;
+  domains.forEach(d => {
+    const w = groups[d].reduce((n, x) => n + (KIND_WEIGHT[x.kind] || 1), 0)
+      * (trend.has(d) ? 3 : 1);
+    dWeight[d] = w;
+    total += w;
+  });
+  let r = Math.random() * total;
+  let d = domains[domains.length - 1];
+  for (const k of domains) {
+    r -= dWeight[k];
+    if (r <= 0) { d = k; break; }
+  }
+  const list = groups[d];
+  const item = list[Math.floor(Math.random() * list.length)];
+  domainStreak = (item.domain === lastHotDomain) ? domainStreak + 1 : 1;
+  lastHotDomain = item.domain;
+  lastHotQuestion = item.q;
+  recentHotQuestions.push(item.q);
+  if (recentHotQuestions.length > HOT_RECENT_LIMIT) recentHotQuestions.shift();
+  return item.q;
+}
+
+function applyPlaceholder(text, centered) {
+  const ta = $('#question');
+  if (!ta) return;
+  ta.placeholder = text;
+  ta.classList.toggle('ph-question', !!centered);
+}
+
+function schedulePlaceholderRotation() {
+  if (placeholderTimer) clearTimeout(placeholderTimer);
+  placeholderTimer = setTimeout(function () {
+    const ta = $('#question');
+    if (ta && !dshMode && !whisperTimer && !ta.value.trim()) {
+      if (placeholderShowsQuestion) {
+        applyPlaceholder(Q_PLACEHOLDER, false);
+        placeholderShowsQuestion = false;
+      } else {
+        applyPlaceholder(pickHotQuestion(), true);
+        placeholderShowsQuestion = true;
+      }
+    }
+    schedulePlaceholderRotation();
+  }, PLACEHOLDER_ROTATE_MS);
+}
+
+function startPlaceholderRotation() {
+  stopPlaceholderRotation();
+  placeholderShowsQuestion = false;
+  lastHotDomain = '';
+  applyPlaceholder(Q_PLACEHOLDER, false);
+  schedulePlaceholderRotation();
+}
+
+function stopPlaceholderRotation() {
+  if (placeholderTimer) { clearTimeout(placeholderTimer); placeholderTimer = null; }
+}
+
 const RUN_WHISPER = {
   boot: ['Meta-DGTF 引擎已启动 · 您愿意和我一起探寻吗？',
          '我先把这个问题钉牢，再动手…',
@@ -1539,24 +1667,25 @@ const RUN_WHISPER = {
    分档按**本地小时**；同一档内随机取一句 —— 只在页面初始化时写一次，
    所以不会随日志渲染抖动。`pickWelcome(hour)` 是纯函数，便于探针逐小时驱动。 */
 const WELCOME_SLOTS = [
-  [[0, 3], ['夜深了，还在想什么？', '这个点还醒着的人，问题往往最好']],
-  [[4, 6], ['天快亮了，聊聊吧', '凌晨的安静最适合想硬问题']],
-  [[7, 10], ['早上好，今天想弄清什么？', '早，先把手里的困惑说给我听']],
-  [[11, 13], ['上午好，随时开始吧', '快到中午了，来一个能想透的问题']],
-  [[14, 17], ['下午好，想到什么就问吧', '下午适合把问题往下推一层']],
-  [[18, 20], ['傍晚好，今天有什么想问的？', '忙完了，换个问题想想']],
-  [[21, 22], ['晚上好，随时开始吧', '晚上的问题往往更深，开始吧']],
-  [[23, 23], ['夜深了，最后一问？', '这个点的问题，通常不轻']],
+  [[0, 3], ['夜深了 还在想什么？', '这个点还醒着的人 问题往往最好']],
+  [[4, 6], ['天快亮了 聊聊吧', '凌晨的安静最适合想硬问题']],
+  [[7, 10], ['早上好 今天想弄清什么？', '早 先把手里的困惑说给我听']],
+  [[11, 13], ['上午好 随时开始吧', '快到中午了 来一个能想透的问题']],
+  [[14, 17], ['下午好 想到什么就问吧', '下午适合把问题往下推一层']],
+  [[18, 20], ['傍晚好 今天有什么想问的？', '忙完了 换个问题想想']],
+  [[21, 22], ['晚上好 随时开始吧', '晚上的问题往往更深 开始吧']],
+  [[23, 23], ['夜深了 最后一问？', '这个点的问题 通常不轻']],
 ];
 function pickWelcome(hour) {
   const h = Number.isFinite(hour) ? hour : new Date().getHours();
   const slot = WELCOME_SLOTS.find(s => h >= s[0][0] && h <= s[0][1]);
-  const pool = slot ? slot[1] : ['欢迎回来，随时开始吧'];
+  const pool = slot ? slot[1] : ['欢迎回来 随时开始吧'];
   return pool[Math.floor(Math.random() * pool.length)];
 }
+const WELCOME_TEXT = 'Meta-DGTF-道生三阶模型';
 function paintWelcome() {
   const el = $('#welcome-text');
-  if (el) el.textContent = pickWelcome(new Date().getHours());
+  if (el) el.textContent = WELCOME_TEXT;
 }
 
 let whisperTimer = null, whisperIdx = 0;
@@ -1574,7 +1703,7 @@ function paintWhisper() {
   if (!ta) return;
   if (ta.value.trim()) return;             // 用户正在打字：不抢他的内容
   const pool = whisperPool();
-  ta.placeholder = pool[whisperIdx % pool.length];
+  applyPlaceholder(pool[whisperIdx % pool.length], true);
   whisperIdx++;
 }
 
@@ -1588,7 +1717,8 @@ function startWhisper() {
 function stopWhisper() {
   if (whisperTimer) { clearInterval(whisperTimer); whisperTimer = null; }
   const ta = $('#question');
-  if (ta) ta.placeholder = Q_PLACEHOLDER;
+  if (ta) applyPlaceholder(Q_PLACEHOLDER, false);
+  placeholderShowsQuestion = false;
 }
 
 
@@ -1600,9 +1730,10 @@ function toggleDshMode(on) {
   document.body.classList.toggle('dsh-mode', dshMode);
   dshAttachTaskId = dshMode ? currentTaskId() : null;
   if (dshAttachTaskId) dshCurrent = null;
-  if (q) q.placeholder = dshMode
+  if (q) applyPlaceholder(dshMode
     ? 'DSH Agent：输入任务，读取项目文件 / outputs 产物 / app 导入文件…'
-    : '给Meta-DGTF发消息 我们一起探索吧 ....';
+    : Q_PLACEHOLDER, false);
+  if (!dshMode) placeholderShowsQuestion = false;
   if (dshMode) agentTaskMode = false;
   updateDshConvBar();
   if (dshMode) {
@@ -1614,6 +1745,7 @@ function toggleDshMode(on) {
   } else {
     stopDshHistoryPoll();
     stopDshViewPoll();
+    clearDshPasteFiles();
     setDshHistoryOpen(false);
     const hist = document.querySelector('#dsh-history-toggle');
     if (hist) hist.classList.add('hidden');
@@ -1857,13 +1989,26 @@ function renderDshConversationView() {
       inner += dshEventHtml(e, 'win-' + i);
     });
     if (!(c.events || []).length) {
-      inner += '<div class="rl-summary">' + (c.running
-        ? '正在载入本次会话内容…'
-        : '本次会话时段内没有可展示的对话内容（仅有内部事件）') + '</div>';
+      const _ie = c.internal_events || [];
+      if (_ie.length) {
+        inner += '<div class="rl-round">内部事件（只读留痕）· ' + esc(String(_ie.length)) + ' 条</div>';
+        _ie.forEach(function (e, i) {
+          inner += '<details class="rl-fold"><summary>seq ' + esc(String(e.seq || '—'))
+            + ' · ' + esc(String(e.type || 'event'))
+            + (e.tool ? (' · ' + esc(String(e.tool))) : '') + '</summary>'
+            + '<div class="rl-fold-body"><div class="rl-line"><span class="rl-txt muted">'
+            + esc(JSON.stringify(e).slice(0, 4000)) + '</span></div></div></details>';
+        });
+      } else {
+        inner += '<div class="rl-summary">' + (c.running
+          ? '正在载入本次会话内容…'
+          : '空占位会话：尚未产生用户或助手内容') + '</div>';
+      }
     }
     if (_meta) {
       _meta.textContent = (c.running ? '运行中' : '已结束') + ' · 本会话 ' + _range
-        + ' · ' + String((c.events || []).length) + ' 条事件';
+        + ' · ' + String((c.events || []).length) + ' 条事件'
+        + ((c.internal_events || []).length ? (' · 内部留痕 ' + String(c.internal_events.length) + ' 条') : '');
     }
   } else {
     turns.forEach(function (t, i) {
@@ -2246,6 +2391,7 @@ async function startDshChat(question, presetPerm) {
         permission: _perm,
         model: (document.querySelector('#dsh-model') || {}).value || 'deepseek-flash' }) });
     try { localStorage.setItem(DSH_CONV_KEY, dshConversationId); } catch (_) {}
+    clearDshPasteFiles();
     await loadDshConversation();
     startDshConvPoll();
     loadDshChats();
@@ -2345,10 +2491,11 @@ async function startRun() {
   const question = $('#question').value.trim();
   if (!question) { alert('请先输入问题'); return; }
   if (dshMode) {
+    const _dshTask = dshTaskWithAttachments(question);
     if (dshConversation && dshConversation.external !== 'dsh-current') {
-      return startDshChat(question, dshPermission());
+      return startDshChat(_dshTask, dshPermission());
     }
-    return startDshCurrentRun(question);
+    return startDshCurrentRun(_dshTask);
   }
   if (agentTaskMode) { const q = $('#question'); if (q) { q.value=''; q.style.height=''; } return submitAgentTaskFromComposer(question); }
   const opts = collectOpts();
@@ -2366,6 +2513,7 @@ async function startRun() {
        也带同一份 mode（resume/重试不丢），不会再被覆盖掉。 */
     taskData[id] = { id, question, status: 'queued', created_at: Date.now() / 1000,
                      opts, mock: !!opts.mock, mode: created.mode || null };
+    if (typeof clearDshPasteFiles === 'function') clearDshPasteFiles();
     activeChat = id; followLatest = false;      // 新会话立刻锁定为「当前会话」
     setRunBtn('stop');                  // 立刻切成终止键（不等日志露面）
     /* ★ R23：输入框清空、换上「引擎已启动」寄语（此后随运行进度轮换） */
@@ -2881,6 +3029,178 @@ function fileToB64(file) {
   });
 }
 
+let dshPasteFiles = [];
+
+function clearDshPasteFiles() {
+  dshPasteFiles = [];
+  renderDshPastePreview();
+}
+
+function renderDshPastePreview() {
+  const box = $('#dsh-paste-preview');
+  if (!box) return;
+  if (!dshPasteFiles.length) {
+    box.innerHTML = '';
+    box.classList.add('hidden');
+    return;
+  }
+  box.classList.remove('hidden');
+  box.innerHTML = dshPasteFiles.map(function (it, i) {
+    const inner = it.dataUrl
+      ? '<img src="' + esc(it.dataUrl) + '" alt="">'
+      : '<span class="dsh-paste-ico">' + (it.isImage ? '🖼' : '📄') + '</span>';
+    return '<div class="dsh-paste-card" title="' + esc(it.name)
+      + '" data-dsh-att-view="' + i + '">'
+      + inner + '<span class="dsh-paste-name">' + esc(it.name) + '</span>'
+      + '<button type="button" class="dsh-paste-x" data-dsh-att-remove="' + i + '" aria-label="移除附件">×</button>'
+      + '</div>';
+  }).join('');
+  box.querySelectorAll('[data-dsh-att-view]').forEach(function (card) {
+    card.addEventListener('click', function (e) {
+      if (e.target.closest('[data-dsh-att-remove]')) return;
+      const i = Number(card.dataset.dshAttView);
+      if (i >= 0 && i < dshPasteFiles.length) openPasteAttachment(i);
+    });
+  });
+  box.querySelectorAll('[data-dsh-att-remove]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      const i = Number(b.dataset.dshAttRemove);
+      if (i >= 0 && i < dshPasteFiles.length) {
+        dshPasteFiles.splice(i, 1);
+        renderDshPastePreview();
+      }
+    });
+  });
+}
+
+async function openPasteAttachment(i) {
+  const it = dshPasteFiles[i];
+  if (!it) return;
+  const det = $('#detail'), title = $('#detail-title'), body = $('#detail-body');
+  if (!det || !title || !body) return;
+  det.classList.remove('hidden');
+  title.textContent = it.name;
+  if (it.dataUrl) {
+    body.innerHTML = '<div style="display:flex;justify-content:center;padding:8px">'
+      + '<img src="' + esc(it.dataUrl) + '" alt="" style="max-width:100%;max-height:70vh;border-radius:10px"></div>';
+    return;
+  }
+  body.innerHTML = '<div class="muted">加载中…</div>';
+  try {
+    const r = await api('/api/attachments/view?path=' + encodeURIComponent(it.path || ''));
+    if (r && r.data_url) {
+      body.innerHTML = '<div style="display:flex;justify-content:center;padding:8px">'
+        + '<img src="' + esc(r.data_url) + '" alt="" style="max-width:100%;max-height:70vh;border-radius:10px"></div>';
+    } else {
+      body.innerHTML = '<pre>' + esc((r && r.body) || '') + '</pre>';
+    }
+  } catch (e) {
+    /* 旧服务进程没有 /api/attachments/view：退回资料库按 basename 读取 */
+    try {
+      const name = String(it.path || '').split('/').pop();
+      const r2 = await api('/api/library/local/' + encodeURIComponent(name));
+      body.innerHTML = '<pre>' + esc((r2 && r2.body) || '') + '</pre>';
+    } catch (e2) {
+      body.innerHTML = '<div class="muted">无法打开：' + esc(e2.message) + '</div>';
+    }
+  }
+}
+
+function dshTaskWithAttachments(task) {
+  if (!dshMode || !dshPasteFiles.length) return task;
+  const paths = dshPasteFiles.map(function (x) {
+    return '- ' + x.name + '：' + x.path;
+  }).join('\n');
+  return task + '\n\n【粘贴附件】\n' + paths;
+}
+
+async function attachAppPastedFiles(fileList) {
+  const list = [...fileList].slice(0, LIB_MAX_FILES);
+  if (!list.length) return;
+  const payload = [];
+  for (const f of list) {
+    try {
+      const b64 = await fileToB64(f);
+      payload.push({ name: f.name || 'pasted_file', size: f.size || 0, b64: b64,
+                     mime: f.type || '', isImage: !!(f.type && f.type.indexOf('image/') === 0) });
+    } catch (_) {}
+  }
+  if (!payload.length) return;
+  try {
+    const r = await api('/api/library/import', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ files: payload.map(x => ({ name: x.name, b64: x.b64 })) }),
+    });
+    const rows = (r && r.results || []);
+    rows.forEach(function (x) {
+      if (!x || !x.ok) return;
+      const src = payload.find(p => p.name === x.name) || {};
+      dshPasteFiles.push({
+        name: x.name, path: 'dgtf_app/anchors/' + (x.saved_as || x.name),
+        dataUrl: src.isImage && src.b64
+          ? ('data:' + (src.mime || 'image/png') + ';base64,' + src.b64) : '',
+        isImage: !!src.isImage,
+      });
+    });
+    renderDshPastePreview();
+    loadLocal().catch(function () {});
+    const ta = $('#question'); if (ta) ta.focus();
+  } catch (e) {
+    console.warn('App 导入粘贴文件失败', e);
+  }
+}
+
+async function attachDshPastedFiles(fileList) {
+  const list = [...fileList].slice(0, 10);
+  if (!list.length) return;
+  const payload = [];
+  for (const f of list) {
+    try {
+      const b64 = await fileToB64(f);
+      payload.push({ name: f.name || 'pasted_file', size: f.size || 0, b64: b64,
+                     mime: f.type || '', isImage: !!(f.type && f.type.indexOf('image/') === 0) });
+    } catch (_) {}
+  }
+  if (!payload.length) return;
+  let ok = [];
+  try {
+    const r = await api('/api/dsh/attach', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ files: payload.map(x => ({ name: x.name, size: x.size, b64: x.b64 })) }),
+    });
+    ok = (r && r.attachments || []).filter(x => x && x.ok).map((x, i) => ({
+      name: x.name, path: x.path,
+    }));
+  } catch (e1) {
+    /* 旧服务进程尚无 /api/dsh/attach 时，退回已有资料库导入；
+       文件落在 dgtf_app/anchors，DSH Agent 可直接 read 该路径。 */
+    try {
+      const r2 = await api('/api/library/import', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ files: payload.map(x => ({ name: x.name, b64: x.b64 })) }),
+      });
+      ok = (r2 && r2.results || []).filter(x => x && x.ok).map(x => ({
+        name: x.name, path: 'dgtf_app/anchors/' + (x.saved_as || x.name),
+      }));
+    } catch (e2) {
+      console.warn('粘贴附件失败', e2);
+      return;
+    }
+  }
+  for (const x of ok) {
+    const src = payload.find(p => p.name === x.name) || {};
+    dshPasteFiles.push({
+      name: x.name, path: x.path,
+      dataUrl: src.isImage && src.b64
+        ? ('data:' + (src.mime || 'image/png') + ';base64,' + src.b64) : '',
+      isImage: !!src.isImage,
+    });
+  }
+  renderDshPastePreview();
+  const ta = $('#question');
+  if (ta) ta.focus();
+}
+
 async function importFiles(fileList) {
   const all = [...fileList];
   const list = all.slice(0, LIB_MAX_FILES);
@@ -3347,43 +3667,153 @@ function renderMd(src) {
 }
 
 /* ── 配置与初始化 ───────────────────────────────────────────────── */
-async function loadConfig() {
+let lastEnv = {config: null, health: null, llm: null, guard: null};
+let lastActivity = {};
+
+function envKeyOf(label) {
+  const m = {'应用':'app', '引擎':'engine', '模型':'model', '联网':'web',
+             '本地 LLM':'local_llm', 'Agent':'agent', '产物':'products'};
+  return m[String(label || '')] || '';
+}
+
+let _envFastBusy = false;
+
+let _envLlmSeq = 0;
+
+function renderEnvInfo(c, h, l, g) {
+  if (!c) return;
+  const k = c.creds || {};
+  const checks = (h && h.checks) || {};
+  const backs = (l && l.backends) || [];
+  const nBack = backs.filter(b => b.ok).length;
+  const localOk = !!(l && (l.watchdog_ok || nBack > 0));
+  const dshOk = !!checks.dsh_headless;
+  const guardOn = !!(g && g.thread_running);
+  const agentOk = dshOk && guardOn;
+  const agentText = dshOk
+    ? ('DSH 就绪' + (guardOn ? ' 守护运行' : ' 守护关闭'))
+    : '未就绪';
+  const appVer = (h && h.app && h.app.version) ? String(h.app.version) : '';
+  const engineOk = !!(c.engine && (h.ok !== false) && checks.engine_file !== false);
+  const env = $('#env-info');
+  if (!env) return;
+  /* 原貌：灯 + 标签 + 数值；按北斗七星（天枢→摇光）排成一条斜向星链。 */
+  const ORDER = [
+    { star: '天枢', label: '应用', value: 'v' + esc(appVer || '—'), short: 'v' + (appVer || '—'), ok: !!appVer,
+      meaning: '斗口主星、指极星；应用是系统入口与核心' },
+    { star: '天璇', label: '引擎', value: esc(c.engine || '—'), short: 'V2.2.3', ok: engineOk,
+      meaning: '与天枢共同指北；引擎是驱动系统运转的枢纽' },
+    { star: '天玑', label: '模型', value: 'DeepSeek-Flash', short: 'Flash', ok: !!k.api_key,
+      meaning: '古“璇玑”用于观测推演；模型是智能核心' },
+    { star: '天权', label: '联网', value: 'DeepSeek官方', short: '官方', ok: !!(k.web_search || k.api_key),
+      meaning: '斗魁最暗，外部联网是可选能力' },
+    { star: '玉衡', label: '本地 LLM', value: '默认Qwen0.5B', short: 'Qwen0.5B', ok: localOk,
+      meaning: '斗柄最亮；代表本地可用的近端能力' },
+    { star: '开阳', label: 'Agent', value: esc(agentText.replace(/ /g, '')), short: dshOk ? (guardOn ? '守护中' : '就绪') : '未就绪', ok: agentOk,
+      meaning: '开阳为双星/辅星系统；对应 Agent 协作' },
+    { star: '摇光', label: '产物', value: esc((c.outputs ? c.outputs.count : '—') + '份'
+      + (c.outputs ? c.outputs.total_mb : '—') + 'MB'), short: (c.outputs ? String(c.outputs.count) : '—') + '/' + (c.outputs ? String(c.outputs.total_mb) : '—') + 'M', ok: !!(c.outputs && c.outputs.count > 0),
+      meaning: '斗柄末端；对应最终产物' }
+  ];
+  /* 上下压缩约 8%，连线仍连灯心 */
+  const layout = [
+    { left: -6, top: 93 },
+    { left: 26, top: 123 },
+    { left: 68, top: 108 },
+    { left: 75, top: 68 },
+    { left: 103, top: 42 },
+    { left: 122, top: 15 },
+    { left: 171, top: -10 }
+  ];
+  const pairs = [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6]];
+  const svg = '<svg class="bd-lines" viewBox="0 0 230 140" preserveAspectRatio="none" aria-hidden="true">'
+    + pairs.map(([a, b]) => '<line x1="' + (layout[a].left + 4.5) + '" y1="' + (layout[a].top + 8)
+        + '" x2="' + (layout[b].left + 4.5) + '" y2="' + (layout[b].top + 8) + '"></line>').join('')
+    + '</svg>';
+  const rows = ORDER.map((it, i) => {
+    const gy = layout[i];
+    const mirror = (i === 6);   // 产物镜像到灯左侧
+    const pos = mirror
+      ? ('right:' + (221 - gy.left) + 'px;top:' + gy.top + 'px')
+      : ('left:' + gy.left + 'px;top:' + gy.top + 'px');
+    const akey = envKeyOf(it.label);
+    return '<div class="bd-row' + (mirror ? ' mirror-left' : '') + '" data-env-key="' + akey + '" style="' + pos + '">'
+      + '<span class="dot ' + (it.ok ? 'ok' : 'no') + (lastActivity[akey] ? ' active' : '') + '" title="' + esc(it.star + ' ↔ ' + it.label + '：' + it.meaning + '｜当前 ' + it.value) + '"></span>'
+      + '<span class="env-k' + (i === 1 ? ' val-down lab-right2 eng-right2' : '') + (i === 6 ? ' lab-left5 mv-up2' : (i === 3 ? ' lab-right2down2 net-right2' : (i === 4 || i === 5 ? ' lab-right2down2 mv-down4' : (i === 2 ? ' lab-right2down2' : '')))) + '">' + esc(it.label) + '</span>'
+      + '<span class="env-v' + (i === 1 ? ' val-down' : (i === 6 ? ' mv-up2' : (i === 3 ? ' val-down2 net-right2' : ((i === 4 || i === 5) ? ' val-down2 mv-down4' : (i === 2 ? ' val-down2' : ''))))) + '">' + it.value + '</span></div>';
+  }).join('');
+  env.innerHTML = '<div class="env-beidou">' + svg + rows + '</div>';
+}
+
+function applyEnvActivity() {
+  document.querySelectorAll('#env-info .bd-row[data-env-key]').forEach(function (row) {
+    const k = row.getAttribute('data-env-key') || '';
+    const dot = row.querySelector('.dot');
+    if (dot) dot.classList.toggle('active', !!lastActivity[k]);
+  });
+}
+
+async function loadActivity() {
+  if (document.visibilityState === 'hidden') return;
   try {
-    const [c, h, l] = await Promise.all([
-      api('/api/config'),
-      api('/api/health').catch(() => ({})),
-      api('/api/schedule/llm/status').catch(() => ({})),
-    ]);
-    const k = c.creds;
-    const checks = (h && h.checks) || {};
-    const backs = (l && l.backends) || [];
-    const nBack = backs.filter(b => b.ok).length;
-    const dshOk = !!checks.dsh_headless;
-    const daemonOk = !!(checks.agent_daemon || (h.daemon || {}).running);
-    const agentOk = dshOk;
-    const agentText = dshOk
-      ? ('DSH 就绪' + (daemonOk ? ' · 守护运行' : ' · 守护关闭'))
-      : '未就绪';
-    const appVer = (h.app && h.app.version) ? String(h.app.version) : '';
-    const line = (label, value, ok) =>
-      '<span class="env-inline"><span class="dot ' + (ok ? 'ok' : 'no') + '"></span>' +
-      '<span class="env-k">' + esc(label) + '</span>' +
-      '<span class="env-v">' + value + '</span></span><br>';
-    const engineOk = !!(c.engine && (h.ok !== false) && checks.engine_file !== false);
-    $('#env-info').innerHTML =
-      line('应用', 'v' + esc(appVer || '—'), !!appVer) +
-      line('引擎', esc(c.engine), engineOk) +
-      line('模型', 'DeepSeek-Flash', !!k.api_key) +
-      line('联网', 'DeepSeek 官方', !!(k.web_search || k.api_key)) +
-      line('本地 LLM', nBack + ' 个底座 · 默认 Qwen0.5B', nBack > 0) +
-      line('Agent', agentText, agentOk) +
-      line('产物', c.outputs.count + ' 份 · ' + c.outputs.total_mb + ' MB', c.outputs.count > 0);
+    const r = await api('/api/status/activity');
+    lastActivity = (r && r.flags) || {};
+    applyEnvActivity();
+  } catch (_) {}
+}
+
+async function loadConfig() {
+  // 首屏先画骨架，不等慢接口。
+  if (!lastEnv.config) {
+    renderEnvInfo({engine: '读取中…', creds: {}, outputs: {}},
+                  {app: {version: ''}, checks: {}}, {}, {});
+  }
+  try {
+    // 单一轻量聚合接口；不再并发等 config/health/llm/guard。
+    const st = await api('/api/status/sidebar');
+    const c = (st && st.config) || {};
+    const h = (st && st.health) || {};
+    const g = (st && st.guard) || {};
+    lastEnv = {config: c, health: h, llm: (st && st.llm) || {}, guard: g};
+    renderEnvInfo(c, h, lastEnv.llm, g);
+    applyEnvActivity();
+    const k = c.creds || {};
     $('#mock').checked = !!c.mock_default;
-    syncMockPill();                    // checked 变了，胶囊高亮要跟着
+    syncMockPill();
     $('#cost-warn').textContent = k.api_key
       ? '' : '⚠ .env 里没有 DGTF_API_KEY，真实运行会失败；可先用演练模式验证界面。';
+    // 本地 LLM 适配器状态较慢，异步补齐，不阻塞首屏星链。
+    const _seq = (_envLlmSeq = (_envLlmSeq || 0) + 1);
+    api('/api/schedule/llm/status').then(function (l) {
+      if (_seq !== _envLlmSeq) return;
+      lastEnv.llm = Object.assign({}, lastEnv.llm || {}, l || {});
+      renderEnvInfo(lastEnv.config, lastEnv.health || {}, lastEnv.llm, lastEnv.guard || {});
+      applyEnvActivity();
+    }).catch(function () {});
   } catch (e) {
     $('#env-info').textContent = '无法读取配置：' + e.message;
+  }
+}
+
+/* 侧边栏环境信息：4s 轻量刷新（单一聚合接口，不重置演练开关）。 */
+async function refreshEnvInfoFast() {
+  if (_envFastBusy || document.visibilityState === 'hidden') return;
+  _envFastBusy = true;
+  try {
+    const st = await api('/api/status/sidebar');
+    const c = (st && st.config) || {};
+    const h = (st && st.health) || {};
+    const g = (st && st.guard) || {};
+    lastEnv.config = c;
+    lastEnv.health = h;
+    lastEnv.guard = g;
+    lastEnv.llm = (st && st.llm) || lastEnv.llm || {};
+    renderEnvInfo(c, h, lastEnv.llm, g);
+    applyEnvActivity();
+  } catch (_) {
+    /* 静默失败：保留上一轮读数，不把侧栏刷成错误 */
+  } finally {
+    _envFastBusy = false;
   }
 }
 
@@ -4027,19 +4457,27 @@ let sheetFromDrawer = false;
 let agentTasks = [];
 let agentResults = [];
 let agentKnowledge = [];
+let agentHotTopics = [];
 let agentDsh = [];
 let agentDshArt = [];
 let agentProps = [];
 let agentPropSummary = null;
+let propFilter = 'active';
+let propQuery = '';
+let propLimit = 20;
+let propExpanded = {};
 let agentAutopilot = null;
 let dshGuardOn = false;
 let dshGuardStatus = null;
 let agentLoadSig = '';
 let agentLastRun = null;
+try { const _lr = JSON.parse(localStorage.getItem('dgtf_agent_last_run') || 'null'); if (_lr && _lr.at) agentLastRun = _lr; } catch (_) {}
 let agentV2 = null;
 let agentPareto = null;
 let agentV2AB = null;
 let agentV2Pareto = null;
+let agentSchedulePolicy = null;
+let agentV2Online = null;
 let agentModel = null;
 let agentLLM = null;
 const AGENT_ACTION_KEY = 'dgtf_agent_action_log';
@@ -4084,6 +4522,7 @@ function updateAgentLibStamps(errs) {
   setLibStamp('task', agentTasks.length, suffix);
   setLibStamp('result', agentResults.length, suffix);
   setLibStamp('kn', agentKnowledge.length, suffix);
+  setLibStamp('hot', agentHotTopics.length, suffix);
   setLibStamp('dsh', agentDsh.length, suffix);
   setLibStamp('dsh-art', agentDshArt.length, suffix);
   const _liveProps = agentProps.filter(x => x.status !== 'expired').length;
@@ -4197,6 +4636,16 @@ function agentRenderResults() {
   box.innerHTML = rows.join('');
 }
 
+function confPct(v) {
+  if (v == null || v === '') return null;
+  const m = {high: 90, medium: 70, low: 40, verified: 95, unknown: 50};
+  let n = Number(v);
+  if (!Number.isFinite(n)) n = m[String(v).trim().toLowerCase()];
+  if (!Number.isFinite(n)) return null;
+  if (n <= 1) n = n * 100;
+  return Math.max(0, Math.min(100, Math.round(n)));
+}
+
 function agentRenderKnowledge() {
   const box = $('#agent-knowledge');
   if (!box) return;
@@ -4223,7 +4672,8 @@ function agentRenderKnowledge() {
     const batch = String(k.run || '');
     const srcMap = {official:'官方', paper:'论文', community:'社区', other:'其他'};
     const src = srcMap[String(k.source_type || '')] || '';
-    const conf = k.confidence ? ('置信 ' + Math.round(Number(k.confidence) * 100) + '%') : '';
+    const _cf = confPct(k.confidence);
+    const conf = (_cf != null) ? ('置信 ' + _cf + '%') : '';
     const pub = String(k.published || '').slice(0, 10);
     const pdfName = String(k.pdf_name || '');
     const pdfOk = /^[A-Za-z0-9_.-]+\.pdf$/.test(pdfName);
@@ -4232,10 +4682,14 @@ function agentRenderKnowledge() {
         + '" target="_blank" rel="noopener noreferrer">PDF 原文</a>'
       : (publicUrl(k.pdf_url) ? '<a class="chip" href="' + esc(publicUrl(k.pdf_url)) + '" target="_blank" rel="noopener noreferrer">PDF 链接</a>' : '');
     const zh = String(k.zh_note || '');
+    const triMap = {actionable:'可落地', already_applied:'已应用', evaluate:'待评估', observe:'观察'};
+    const tri = triMap[String(k.triage || '')] || '';
+    const action = String(k.action || '');
     return '<div class="agent-item">'
       + '<div class="agent-row"><span class="chip">' + esc(flag) + '</span>'
       + (src ? '<span class="chip">' + esc(src) + '</span>' : '')
       + (conf ? '<span class="chip">' + esc(conf) + '</span>' : '')
+      + (tri ? '<span class="chip">' + esc(tri) + '</span>' : '')
       + (pdfLink ? pdfLink : '')
       + '<span class="agent-t">' + t + '</span></div>'
       + '<div class="agent-meta"><span>查询 ' + esc(String(k.query || '—'))
@@ -4248,6 +4702,7 @@ function agentRenderKnowledge() {
       + (batch ? '<span>批次 ' + esc(batch) + '</span>' : '')
       + '</div>'
       + (claim ? '<div class="agent-q">' + esc(claim) + '</div>' : '')
+      + (action ? '<div class="agent-q"><b>落地动作</b>：' + esc(action) + '</div>' : '')
       + (zh ? '<div class="agent-q"><b>中文注释</b><br>' + esc(zh) + '</div>' : '')
       + agentDetailHtml(k.content)
       + '</div>';
@@ -4289,11 +4744,14 @@ function agentRenderDsh() {
         (st === 'error' ? '失败' : (st === 'queued' ? '排队' : '完成')));
     return '<div class="agent-item agent-dsh-item" data-dsh-chat="' + esc(x.id || '') + '">'
       + '<div class="agent-row"><span class="chip">' + (x.external === 'dsh-current' ? '当前对话' : 'DSH') + '</span>'
+      + (x.system ? '<span class="chip">系统</span>' : '')
       + '<span class="chip' + (x.running ? ' gh-bad' : '') + '">' + esc(label) + '</span>'
-      + '<span class="agent-t">' + esc(x.last_task || x.id) + '</span></div>'
+      + '<span class="agent-t">' + esc(x.title || x.last_task || x.id) + '</span></div>'
       + '<div class="agent-meta"><span>' + esc(x.id || '') + '</span>'
       + (when ? '<span>更新 ' + esc(when) + '</span>' : '<span>时间未知</span>')
+      + (x.start_seq ? '<span>入口 ' + esc(String(x.start_seq)) + '</span>' : '')
       + '<span>' + esc(String(x.turns || 0)) + ' 轮</span>'
+      + (x.artifacts ? '<span>产物 ' + esc(String(x.artifacts)) + '</span>' : '')
       + '</div>'
       + '<div class="agent-q">点此打开/续聊</div></div>';
   }).join('');
@@ -4311,45 +4769,70 @@ function agentRenderDshArt() {
     return '<div class="agent-item agent-dsh-art-item" data-dsh-art="' + esc(x.id || '') + '">'
       + '<div class="agent-row"><span class="chip">产物</span>'
       + '<span class="chip">' + esc(st) + '</span>'
-      + '<span class="agent-t">' + esc(x.task || x.id) + '</span></div>'
+      + '<span class="agent-t">' + esc(x.title || x.task || x.id) + '</span></div>'
       + '<div class="agent-meta"><span>' + esc(x.id || '') + '</span>'
       + (when ? '<span>生成 ' + esc(when) + '</span>' : '<span>生成时间未知</span>')
-      + '<span>' + esc(String(x.size || 0)) + ' B</span></div></div>';
+      + '<span>' + esc(String(x.size || 0)) + ' B</span>'
+      + ((x.task_title || x.session_title) ? '<span>任务 ' + esc(x.task_title || x.session_title) + '</span>' : '')
+      + '</div>'
+      + ((x.task_title || x.session_title) ? '<div class="prop-actions"><button class="ghost" data-art-session="' + esc(x.id || '') + '">打开关联任务</button></div>' : '')
+      + '</div>';
   }).join('');
 }
 
 function agentRenderProps() {
   const box = document.querySelector('#agent-proposals');
   const n = document.querySelector('#agent-prop-n');
-  if (n) n.textContent = String(agentProps.filter(x => x.status !== 'expired').length);
   if (!box) return;
-  if (!agentProps.length) { box.innerHTML = agentEmpty('还没有修复提案。点「DSH 全流程闭环」生成提案。'); return; }
-  let sumHtml = '';
-  if (agentPropSummary && agentPropSummary.counts) {
-    const c = agentPropSummary.counts || {};
-    const proj = agentPropSummary.project || {};
-    sumHtml = '<div class="agent-meta" style="padding:6px 2px 8px;gap:10px">'
-      + '<span>待处理 ' + esc(String((c.pending || 0) + (c.confirmed || 0))) + '</span>'
-      + '<span>已应用 ' + esc(String(c.applied || 0)) + '</span>'
-      + '<span>失败/可重试 ' + esc(String((c.failed || 0) + (c.rolled_back || 0))) + '</span>'
-      + '<span>已关闭 ' + esc(String((c.rejected || 0) + (c.superseded || 0))) + '</span>'
-      + '<span>已过期/去重 ' + esc(String(c.expired || 0)) + '</span>'
-      + '<span>项目 ' + esc(String(proj.head || '—')) + '</span>'
-      + '</div>';
-  }
-  const ST = {pending: '待确认', confirmed: '已确认待修复', applied: '已应用', failed: '失败', rolled_back: '已回退', rejected: '已拒绝不修', superseded: '已另行处理', expired: '已过期'};
-  const PR = {P0: 0, P1: 1, P2: 2, P3: 3};
-  const live = _activeFirst(agentProps.filter(x => x.status !== 'expired'),
-    x => (x.status === 'pending' || x.status === 'confirmed'), _agentTs);
-  const nExp = agentProps.length - live.length;
-  if (!live.length) {
-    box.innerHTML = agentEmpty('当前没有待处理提案；已过期/去重 ' + nExp + ' 条（无需修复）。');
+  if (!agentProps.length) {
+    box.innerHTML = agentEmpty('还没有修复提案。点「DSH 全流程闭环」生成提案。');
     return;
   }
-  const nConf = live.filter(x => x.status === 'confirmed').length;
-  box.innerHTML = sumHtml + live.slice(0, 30).map(function (x) {
-    const when = fmtTs(x.ts);
-    const st = String(x.status || 'pending');
+  const ST = {pending: '待确认', confirmed: '已确认待修复', applied: '已应用', failed: '失败', rolled_back: '已回退', rejected: '已拒绝不修', superseded: '已另行处理', expired: '已过期'};
+  const counts = {pending: 0, confirmed: 0, applied: 0, failed: 0, rolled_back: 0,
+                  rejected: 0, superseded: 0, expired: 0};
+  agentProps.forEach(function (x) { const k = String(x.status || 'pending'); counts[k] = (counts[k] || 0) + 1; });
+  const _st = function (x) { return String((x || {}).status || 'pending'); };
+  const pendingN = (counts.pending || 0) + (counts.confirmed || 0);
+  const failedN = (counts.failed || 0) + (counts.rolled_back || 0);
+  const closedN = (counts.rejected || 0) + (counts.superseded || 0);
+  const expiredN = counts.expired || 0;
+  if (n) n.textContent = String(agentProps.length - expiredN);
+  let sumHtml = '<div class="agent-meta" style="padding:6px 2px 8px;gap:10px">'
+    + '<span>待处理 ' + esc(String(pendingN)) + '</span>'
+    + '<span>失败/可重试 ' + esc(String(failedN)) + '</span>'
+    + '<span>已应用 ' + esc(String(counts.applied || 0)) + '</span>'
+    + '<span>已关闭 ' + esc(String(closedN)) + '</span>'
+    + '<span>过期/去重 ' + esc(String(expiredN)) + '</span>'
+    + '<span>总计 ' + esc(String(agentProps.length)) + '</span></div>';
+  let rows = agentProps.slice();
+  if (propFilter === 'active') rows = rows.filter(function (x) { const st = _st(x); return st === 'pending' || st === 'confirmed' || st === 'failed' || st === 'rolled_back'; });
+  else if (propFilter === 'pending') rows = rows.filter(function (x) { const st = _st(x); return st === 'pending' || st === 'confirmed'; });
+  else if (propFilter === 'failed') rows = rows.filter(function (x) { const st = _st(x); return st === 'failed' || st === 'rolled_back'; });
+  else if (propFilter === 'applied') rows = rows.filter(function (x) { return _st(x) === 'applied'; });
+  else if (propFilter === 'closed') rows = rows.filter(function (x) { const st = _st(x); return st === 'rejected' || st === 'superseded'; });
+  else if (propFilter === 'expired') rows = rows.filter(function (x) { return _st(x) === 'expired'; });
+  const q = String(propQuery || '').trim().toLowerCase();
+  if (q) rows = rows.filter(function (x) {
+    const t = x.task || {};
+    const hit = [x.id, t.title, t.detail, x.plan, x.resolution_reason,
+                 (x.triage || {}).category, (x.triage || {}).reason]
+      .map(function (v) { return String(v || '').toLowerCase(); }).join(' ');
+    return hit.indexOf(q) >= 0;
+  });
+  const PR = {P0: 0, P1: 1, P2: 2, P3: 3};
+  rows.sort(function (a, b) {
+    const pa = (PR[(a.triage || {}).priority] == null ? 9 : PR[(a.triage || {}).priority]);
+    const pb = (PR[(b.triage || {}).priority] == null ? 9 : PR[(b.triage || {}).priority]);
+    const aa = (_st(a) === 'pending' || _st(a) === 'confirmed') ? 0 : 1;
+    const bb = (_st(b) === 'pending' || _st(b) === 'confirmed') ? 0 : 1;
+    if (aa !== bb) return aa - bb;
+    if (pa !== pb) return pa - pb;
+    return Number(b.ts || 0) - Number(a.ts || 0);
+  });
+  let html = sumHtml + (rows.length ? '' : agentEmpty('当前筛选条件下没有提案。'));
+  rows.slice(0, propLimit).forEach(function (x) {
+    const when = fmtTs(x.ts); const st = _st(x);
     let acts = '';
     if (st === 'pending') {
       acts = (x.plan_gap
@@ -4381,7 +4864,11 @@ function agentRenderProps() {
     const _sec = (x.security || (x.last_failure || {}).security || {});
     const _failWhy = String((_res.repair || {}).why || (_res.security || {}).why ||
       (((_sec.findings || []).length) ? ('安全审查命中 ' + _sec.findings.length + ' 项') : ''));
-    return '<div class="agent-item" data-prop-open="' + esc(x.id) + '">'
+    const _plan = String(x.plan || '');
+    const _expanded = !!propExpanded[x.id];
+    const _short = _plan.length > 420 ? (_plan.slice(0, 420) + '…') : _plan;
+    const _detail = _expanded ? _plan : _short;
+    html += '<div class="agent-item" data-prop-open="' + esc(x.id) + '">'
       + '<div class="agent-row"><span class="chip">' + esc(tri.priority || 'P2') + '</span>'
       + '<span class="chip">' + esc(tri.category || 'other') + '</span>'
       + '<span class="chip st-' + esc(st) + '">' + esc(ST[st] || st) + '</span>'
@@ -4391,27 +4878,29 @@ function agentRenderProps() {
       + '<div class="agent-meta"><span>' + esc(x.id || '') + '</span>'
       + (when ? '<span>创建 ' + esc(when) + '</span>' : '<span>创建时间未知</span>')
       + (x.version ? '<span>版本 ' + esc(x.version) + '</span>' : '')
-      + (x.artifact ? '<span>产物 ' + esc(String(x.artifact).split('\\').pop()) + '</span>' : '')
+      + (x.artifact ? '<span>产物 ' + esc(String(x.artifact).split(String.fromCharCode(92)).pop()) + '</span>' : '')
       + (x.expired_reason ? '<span>过期：' + esc(x.expired_reason) + '</span>' : '')
       + (tri.reason ? '<span>分诊：' + esc(tri.reason) + '</span>' : '')
       + (tri.auto_decision ? '<span>路由：' + esc(tri.auto_decision === 'auto' ? '自动修复' : '人工确认') + '</span>' : '')
-      + (x.resolution_reason ? '<span>关闭原因：' + esc(String(x.resolution_reason).slice(0, 120)) + '</span>' : '')
-      + (_failWhy ? '<span>失败原因：' + esc(_failWhy.slice(0, 160)) + '</span>' : '')
+      + (x.resolution_reason ? '<span>关闭原因：' + esc(String(x.resolution_reason).slice(0, 160)) + '</span>' : '')
+      + (_failWhy ? '<span>失败原因：' + esc(_failWhy.slice(0, 200)) + '</span>' : '')
       + (x.conversation_id ? '<span>对话 ' + esc(x.conversation_id) + '</span>' : '')
+      + (function () {
+          const ra = (x.reassessments || []).slice(-1)[0];
+          if (!ra) return '';
+          const v = ra.verdict === 'resolved' ? '已消解' : ra.verdict === 'improved' ? '有改善' : '未变化';
+          return '<span>复核 ' + esc(v) + ' · ' + esc(String(ra.current == null ? '—' : ra.current)) + '</span>';
+        })()
       + '</div>'
-      + '<div class="agent-q">' + esc(String(x.plan || '').slice(0, 300)) + '</div>'
+      + '<div class="agent-q">' + esc(_detail) + '</div>'
+      + (_plan.length > 420 ? '<div class="prop-actions"><button class="ghost" data-prop-expand="' + esc(x.id) + '">' + (_expanded ? '收起详情' : '展开详情') + '</button></div>' : '')
       + '<div class="prop-actions">' + acts + '</div></div>';
-  }).join('') + (nExp ? (function () {
-    const rc = {};
-    agentProps.forEach(function (x) {
-      if (x.status !== 'expired') return;
-      const r = (x.triage || {}).reason || x.expired_reason || 'expired';
-      rc[r] = (rc[r] || 0) + 1;
-    });
-    return '<div class="agent-meta" style="padding:8px 2px;gap:10px"><span>另有 ' + nExp + ' 条已过期/去重，无需修复</span>'
-      + Object.keys(rc).map(function (r) { return '<span>' + esc(r) + ' ×' + rc[r] + '</span>'; }).join('')
-      + '</div>';
-  })() : '');
+  });
+  if (rows.length > propLimit) html += '<div class="prop-actions"><button class="ghost" data-prop-more="1">加载更多（剩余 ' + esc(String(rows.length - propLimit)) + '）</button></div>';
+  if (propFilter !== 'expired' && propFilter !== 'all' && expiredN > 0) {
+    html += '<div class="agent-meta" style="padding:8px 2px;gap:10px"><span>已过期/去重 ' + esc(String(expiredN)) + ' 条默认隐藏，可在筛选器切换</span></div>';
+  }
+  box.innerHTML = html;
 }
 
 function agentV2ParetoSvg(d) {
@@ -4429,7 +4918,7 @@ function agentV2ParetoSvg(d) {
   const fr = (d.frontier || []).slice().sort(function (a, b) { return (a.tokens || 0) - (b.tokens || 0); });
   const over = pts.filter(function (p) { return (Number(p.tokens) || 0) > XMAX; }).length;
   const under = pts.filter(function (p) { return (Number(p.tokens) || 0) < XMIN; }).length;
-  let s = '<svg class="agent-pareto-svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="V2 质量-成本帕累托图">';
+  let s = '<svg class="agent-pareto-svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="V2 观测质量-成本图（未独立A/B）">';
   for (let i = 0; i <= 4; i++) {
     const tx = x0 + (x1 - x0) * i / 4;
     s += '<line x1="' + tx.toFixed(1) + '" y1="' + y1 + '" x2="' + tx.toFixed(1) + '" y2="' + y0 + '" stroke="currentColor" opacity=".08"/>';
@@ -4443,7 +4932,7 @@ function agentV2ParetoSvg(d) {
   s += '<text x="' + ((x0 + x1) / 2) + '" y="' + (H - 24) + '" text-anchor="middle" font-size="9.5" fill="currentColor" opacity=".85">成本（tokens，0–200k）</text>';
   s += '<text x="14" y="' + ((y0 + y1) / 2) + '" transform="rotate(-90 18 ' + ((y0 + y1) / 2) + ')" text-anchor="middle" font-size="9.5" fill="currentColor" opacity=".85">质量下界（0–1）</text>';
   s += '<g font-size="9.5" fill="currentColor" opacity=".85">'
-    + '<circle cx="' + (W - 280) + '" cy="14" r="3.5" fill="var(--accent)"/><text x="' + (W - 272) + '" y="18">推荐</text>'
+    + '<circle cx="' + (W - 280) + '" cy="14" r="3.5" fill="var(--accent)"/><text x="' + (W - 272) + '" y="18">观测推荐</text>'
     + '<circle cx="' + (W - 220) + '" cy="14" r="3.5" fill="var(--accent-hi)"/><text x="' + (W - 212) + '" y="18">前沿</text>'
     + '<circle cx="' + (W - 160) + '" cy="14" r="3" fill="currentColor" opacity=".45"/><text x="' + (W - 152) + '" y="18">其他</text>'
     + '<line x1="' + (W - 95) + '" y1="14" x2="' + (W - 78) + '" y2="14" stroke="currentColor" opacity=".35" stroke-dasharray="3 3"/><text x="' + (W - 72) + '" y="18">趋势</text>'
@@ -4519,13 +5008,34 @@ function agentRenderV2() {
         return '<span>' + esc(k) + ' · ' + esc(String(layers[k])) + '</span>';
       }).join('')
     + '</div></div>';
+  if (agentSchedulePolicy && agentSchedulePolicy.template_identifiable === false) {
+    html += '<div class="agent-item"><div class="agent-row"><span class="chip">模板胜者不可识别</span>'
+      + '<span class="agent-t">同一 run 内各模板共享整跑 quality；V2 仅作影子参考，自动写入已冻结</span></div></div>';
+  }
+  if (agentV2Online && agentV2Online.ok) {
+    html += '<div class="agent-item"><div class="agent-row"><span class="chip">在线自动策略</span>'
+      + '<span class="agent-t">assign ' + esc(String(agentV2Online.assignments || 0))
+      + ' / outcome ' + esc(String(agentV2Online.outcomes || 0))
+      + ' / pending ' + esc(String(agentV2Online.pending || 0))
+      + ' · 探索 ' + esc(String(Math.round((agentV2Online.exploration_rate || 0) * 100))) + '%</span></div>';
+    const _arms = agentV2Online.arms || {};
+    Object.keys(_arms).sort().forEach(function (k) {
+      const v = _arms[k] || {};
+      html += '<div class="agent-meta"><span>' + esc(k)
+        + '</span><span>n=' + esc(String(v.n || 0))
+        + '</span><span>quality ' + esc(String(v.quality || 0))
+        + '</span><span>low ' + esc(String(v.low == null ? '—' : v.low))
+        + '</span><span>tokens ' + esc(String(v.tokens || 0)) + '</span></div>';
+    });
+    html += '</div>';
+  }
   const _pa = agentPareto || {};
   const _fr = (_pa.frontier || []);
   if (_fr.length) {
-    html += '<div class="agent-item"><div class="agent-row"><span class="chip">帕累托前沿 '
-      + esc(String(_fr.length)) + ' 点</span><span class="chip">推荐 '
+    html += '<div class="agent-item"><div class="agent-row"><span class="chip">路由级帕累托 '
+      + esc(String(_fr.length)) + ' 点</span><span class="chip">推荐 coverage '
       + esc(String(((_pa.recommended || {}).coverage == null) ? '—' : ((_pa.recommended || {}).coverage)))
-      + '</span></div>';
+      + '</span><span class="agent-t">coverage=四层覆盖数/4，不等于 V2 模板质量</span></div>';
     _fr.forEach(function (p) {
       html += '<div class="agent-meta"><span>' + esc(String(p.route || ''))
         + '</span><span>tokens ' + esc(String(p.tokens))
@@ -4559,13 +5069,13 @@ function agentRenderV2() {
   const _tkeys = Object.keys(_ts);
   if (_tkeys.length) {
     html += '<div class="agent-item"><div class="agent-row"><span class="chip">V2 模板 A/B</span>'
-      + '<span class="agent-t">按 quality 降序</span></div>';
-    _tkeys.sort(function (a, b) { return (_ts[b].quality || 0) - (_ts[a].quality || 0); })
+      + '<span class="agent-t">按质量下界排序；n<5 单列小样本；quality=层局部信号（锚定整跑）</span></div>';
+    _tkeys.sort(function (a, b) { return ((_ts[b].low == null ? _ts[b].quality : _ts[b].low) || 0) - ((_ts[a].low == null ? _ts[a].quality : _ts[a].low) || 0); })
       .forEach(function (k) {
         const v = _ts[k] || {};
         html += '<div class="agent-meta"><span>' + esc(k)
           + '</span><span>n=' + esc(String(v.n || 0))
-          + '</span><span>quality ' + esc(String(v.quality || 0))
+          + '</span><span>' + ((v.n || 0) < 5 ? '小样本 ' : '') + 'quality ' + esc(String(v.quality || 0))
           + ' ± ' + esc(String(v.ci95 || 0))
           + '</span><span>tokens ' + esc(String(v.tokens || 0))
           + '</span><span>calls ' + esc(String(v.calls || 0)) + '</span></div>';
@@ -4573,7 +5083,7 @@ function agentRenderV2() {
     html += '</div>';
   }
   if (agentV2Pareto && agentV2Pareto.points && agentV2Pareto.points.length) {
-    html += '<div class="agent-item"><div class="agent-row"><span class="chip">质量-成本帕累托</span>'
+    html += '<div class="agent-item"><div class="agent-row"><span class="chip">质量-成本观测前沿</span>'
       + '<span class="agent-t">' + esc(String(agentV2Pareto.metric_note || '质量下界 (low) 越高越好，tokens 越低越好'))
       + ' · ' + esc(String((agentV2Pareto.points || []).length)) + ' 个模板点 · 虚线=分箱中位数趋势</span></div>'
       + agentV2ParetoSvg(agentV2Pareto) + '</div>';
@@ -4771,11 +5281,51 @@ async function refreshAgentDshLive() {
   } catch (_) {}
 }
 
+function agentRenderHotTopics() {
+  const box = $('#agent-hot-topics');
+  if (!box) return;
+  const n = $('#agent-hot-n');
+  if (n) n.textContent = String(agentHotTopics.length);
+  if (!agentHotTopics.length) {
+    box.innerHTML = agentEmpty('热门话题库为空。DSH 守护抓取热点后会自动入库。');
+    return;
+  }
+  const rows = agentHotTopics.slice(0, 120).map(function (k) {
+    const title = String(k.q || k.title || '(无问题)');
+    const url = String(k.url || '');
+    const safeUrl = publicUrl(url);
+    const link = safeUrl
+      ? '<a href="' + esc(safeUrl) + '" target="_blank" rel="noopener noreferrer">' + esc(title) + '</a>'
+      : esc(title);
+    const dom = String(k.domain || '—');
+    const kind = String(k.kind || 'hot');
+    const src = String(k.source || k.run || '');
+    const ts = fmtTs(k.ts);
+    const query = String(k.query || '');
+    const content = String(k.content || k.claim || '');
+    return '<div class="agent-item"><div class="agent-row">'
+      + '<span class="chip">' + esc(dom) + '</span>'
+      + '<span class="chip">' + esc(kind) + '</span>'
+      + '<span class="agent-t">' + link + '</span></div>'
+      + '<div class="agent-meta">'
+      + (query ? '<span>检索 ' + esc(query) + '</span>' : '')
+      + (src ? '<span>来源 ' + esc(src) + '</span>' : '')
+      + (ts ? '<span>抓取 ' + esc(ts) + '</span>' : '')
+      + (k.fetched ? '<span>已爬取正文</span>' : '<span>仅检索</span>')
+      + (safeUrl ? '<span><a href="' + esc(safeUrl) + '" target="_blank" rel="noopener noreferrer">原文链接</a></span>' : '')
+      + '</div>'
+      + (content ? '<div class="agent-q">' + esc(content) + '</div>' : '')
+      + '</div>';
+  });
+  box.innerHTML = rows.join('');
+}
+
 function agentRenderAll() {
   agentRenderAutopilot();
   agentRenderTasks();
   agentRenderResults();
   agentRenderKnowledge();
+  agentRenderHotTopics();
   agentRenderDsh();
   agentRenderDshArt();
   agentRenderProps();
@@ -4797,6 +5347,24 @@ async function autopilotAction(action) {
   catch (e) { const m = document.querySelector('#agent-msg'); if (m) m.textContent = label + '失败：' + e.message; }
 }
 
+async function refreshV2Panel() {
+  // 只在 Agent 面板的 V2 标签页可见时刷新；真跑写入 v2_events 后最多 10s 可见。
+  if (document.visibilityState === 'hidden') return;
+  const active = document.querySelector('[data-agent-tab].on');
+  if (!active || String(active.dataset.agentTab) !== '7') return;
+  try {
+    const [v2, vab, vpar] = await Promise.all([
+      api('/api/schedule/v2').catch(function () { return agentV2 || {}; }),
+      api('/api/schedule/v2/ab?all=1').catch(function () { return agentV2AB || {}; }),
+      api('/api/schedule/v2/pareto').catch(function () { return agentV2Pareto || {}; }),
+    ]);
+    agentV2 = v2 || agentV2;
+    agentV2AB = vab || agentV2AB;
+    agentV2Pareto = vpar || agentV2Pareto;
+    agentRenderV2();
+  } catch (_) {}
+}
+
 async function refreshAgentAll() {
   const msg = $('#agent-msg');
   if (msg) msg.textContent = '正在刷新 Agent 面板全部库…';
@@ -4806,7 +5374,7 @@ async function refreshAgentAll() {
       loadWeb(), loadChats(), loadExistingTasks()
     ];
     await Promise.allSettled(jobs);
-    if (msg) msg.textContent = '已刷新 Agent 面板全部库：队列/结果/知识/DSH会话/DSH产物/提案/运行/V2/审计/资料库/联网库/最近跑过';
+    if (msg) msg.textContent = '已刷新 Agent 面板全部库：队列/结果/知识/热点/DSH会话/DSH产物/提案/运行/V2/审计/资料库/联网库/最近跑过';
     updateAgentLibStamps(false);
     agentLogAction('刷新全部库', '队列/结果/知识/DSH会话/产物/提案/资料库/联网库', true);
   } catch (e) {
@@ -4818,7 +5386,7 @@ async function refreshAgentAll() {
 async function loadAgent() {
   const box = $('#agent-tasks');
   if (!box) return;
-  ['agent-tasks','agent-results','agent-knowledge','agent-dsh','agent-dsh-art',
+  ['agent-tasks','agent-results','agent-knowledge','agent-hot-topics','agent-dsh','agent-dsh-art',
    'agent-proposals','agent-runbox','agent-v2','agent-consistency'].forEach(function (id) {
     const el = $('#' + id);
     if (el) el.innerHTML = agentEmpty('读取中…');
@@ -4840,7 +5408,7 @@ async function loadAgent() {
     }
     return Object.assign({}, fallback || {}, { error: label + '：未知错误' });
   }
-  const [t, r, k, ds, da, pr, ap, v2, pa, vab, vpar, con, mdl, llm] = await Promise.all([
+  const [t, r, k, ds, da, pr, ap, v2, pa, vab, vpar, von, con, mdl, llm] = await Promise.all([
     _lib('/api/agent/tasks', '任务队列', { tasks: [] }),
     _lib('/api/agent/results', '消费者结果', { results: [] }),
     _lib('/api/agent/knowledge', '知识库', { items: [] }),
@@ -4852,6 +5420,7 @@ async function loadAgent() {
     api('/api/schedule/pareto?prefer=' + encodeURIComponent((document.querySelector('#pareto-prefer') || {}).value || 'balanced')).catch(e => ({ ok: false, error: e.message })),
     api('/api/schedule/v2/ab?all=1').catch(e => ({ ok: false, error: e.message })),
     api('/api/schedule/v2/pareto').catch(e => ({ ok: false, error: e.message })),
+    api('/api/schedule/v2/online').catch(e => ({ ok: false, error: e.message })),
     api('/api/consistency').catch(e => ({ ok: false, error: e.message })),
     api('/api/schedule/model').catch(e => ({ ok: false, error: e.message })),
     api('/api/schedule/llm/status').catch(e => ({ ok: false, error: e.message })),
@@ -4868,18 +5437,41 @@ async function loadAgent() {
   agentPareto = pa || null;
   agentV2AB = vab || null;
   agentV2Pareto = vpar || null;
+  agentV2Online = von || null;
   agentConsistency = con || null;
   agentModel = mdl || null;
   agentLLM = llm || null;
+  const hot = await _lib('/api/agent/hot-topics', '热门话题库', { items: [] });
+  agentHotTopics = (hot && hot.items) || [];
+  const sp = await _lib('/api/schedule/policy', 'V2 策略', {});
+  const _pol = (sp && sp.policy) || {};
+  agentSchedulePolicy = _pol || null;
+  const _v2st = document.querySelector('#v2-auto-status');
+  const _v2btn = document.querySelector('#v2-auto-apply');
+  if (_v2st) {
+    const _frozen = !!_pol.auto_frozen_reason;
+    _v2st.textContent = _frozen
+      ? '已冻结：待校准'
+      : (_pol.auto_strategy
+        ? ('当前：' + String(_pol.auto_strategy) + ' / ' + String(_pol.auto_template || ''))
+        : '未自动应用');
+    _v2st.title = _frozen ? String(_pol.auto_frozen_reason || '') : '';
+    if (_v2btn) {
+      _v2btn.disabled = _frozen;
+      _v2btn.dataset.tip = _frozen
+        ? 'V2 模板不可识别，自动写入已冻结；需人工确认'
+        : '显式应用 V2 最优策略；打开面板不会自动改写';
+    }
+  }
   agentRenderAll();
-  const errs = [t && t.error, r && r.error, k && k.error, ds && ds.error, da && da.error, pr && pr.error].filter(Boolean);
+  const errs = [t && t.error, r && r.error, k && k.error, hot && hot.error, sp && sp.error, ds && ds.error, da && da.error, pr && pr.error].filter(Boolean);
   updateAgentLibStamps(errs.length);
   const msg = $('#agent-msg');
   if (msg) msg.textContent = errs.length ? ('部分读数不可用：' + errs.join('；')) : '';
   const asof = $('#agent-asof');
   if (asof) asof.textContent = '更新于 ' + new Date().toLocaleTimeString();
   const _detail = errs.length ? ('部分失败：' + errs.join('；').slice(0,120)) :
-    ('任务 ' + agentTasks.length + ' · 结果 ' + agentResults.length + ' · 知识 ' + agentKnowledge.length
+    ('任务 ' + agentTasks.length + ' · 结果 ' + agentResults.length + ' · 知识 ' + agentKnowledge.length + ' · 热点 ' + agentHotTopics.length
       + ' · 会话 ' + agentDsh.length + ' · 提案 ' + agentProps.filter(x => x.status !== 'expired').length);
   const _sig = errs.join('|') + '#' + _detail;
   if (_sig !== agentLoadSig) {
@@ -5263,6 +5855,7 @@ async function runAgentConsumer() {
       run: (r && r.run) || {},
       proposals: (r && r.proposals) || {},
     };
+    try { localStorage.setItem('dgtf_agent_last_run', JSON.stringify(agentLastRun)); } catch (_) {}
     if (msg) msg.textContent = '消费者已运行：triaged '
       + String((r && r.run && r.run.triaged) || 0);
     await loadAgent();
@@ -5702,6 +6295,7 @@ async function startDshCurrentRun(question) {
     dshCurrent.events.push({ type: 'text', text: r.text || '已进入当前 DSH 对话队列' });
     renderDshView();
     startDshViewPoll();
+    clearDshPasteFiles();
     if (typeof agentLogAction === 'function') agentLogAction('首屏→DSH本对话', question.slice(0, 80), true);
   } catch (e) {
     dshCurrent.status = 'error';
@@ -5761,10 +6355,8 @@ async function commitGithub() {
   } catch (e) { if (s) s.textContent = '提交失败：' + e.message; agentLogAction('Git提交', '失败：' + e.message, false); }
 }
 function centerHomeHero() {
-  // 输入框+欢迎语以输入框为基准居中；再整体下移约 30px（固定值，避免反复测量漂移）。
-  const root = document.documentElement;
-  const empty = document.body.classList.contains('stage-empty');
-  root.style.setProperty('--home-shift', empty ? '-20px' : '0px');
+  // 欢迎语 + 输入框作为整体，由 flex 在四个方向居中；再整体上移 22px。
+  document.documentElement.style.setProperty('--home-shift', '-22px');
 }
 
 /* ── 运行日志诊断面板（只读尾部：app / err / daemon）────────────────────
@@ -5913,12 +6505,18 @@ function init() {
       _logScrollTimer = setTimeout(function () { if (near) logFollow = true; }, 500);
     }, { passive: true });
   }
+  renderEnvInfo({engine: '读取中…', creds: {}, outputs: {}},
+                {app: {version: ''}, checks: {}}, {}, {});
   buildAdv();
   pollLanes();
   setInterval(pollLanes, 1500);
   loadConfig();
   setInterval(refreshAgentDshLive, 3000);
-  // 侧栏状态实时刷新（30s；页面隐藏时不跑）
+  // 侧栏环境信息：4s 轻量刷新；完整配置/演练开关仍 30s 一轮
+  setInterval(refreshEnvInfoFast, 4000);
+  setInterval(loadActivity, 2000);
+  setInterval(refreshV2Panel, 10000);
+  loadActivity();
   setInterval(() => { if (document.visibilityState !== 'hidden') loadConfig(); }, 30000);
   loadFacets();
   loadExistingTasks();
@@ -5935,7 +6533,15 @@ function init() {
   loadWeb();
 
   paintWelcome();                    // ★ R40：首屏欢迎语按时段写一次
+  refreshHotTopics();                // ★ DSH Agent 追踪分析热门领域
+  setInterval(refreshHotTopics, 30000);
+  startPlaceholderRotation();        // ★ 首屏提示语/热门问题每 10s 交替
   $('#run-btn').addEventListener('click', onRunBtn);
+  /* 任务完成徽章 → 回到首屏（只处理 done；运行中/失败不响应）。 */
+  const _rlBadge = $('#rl-badge');
+  if (_rlBadge) _rlBadge.addEventListener('click', () => {
+    if (_rlBadge.classList.contains('done')) newChat();
+  });
   /* 失败/已终止任务的「重试」按钮（静态节点，事件用 addEventListener：CSP 禁止内联） */
   const _rlRetryBtn = $('#rl-retry');
   if (_rlRetryBtn) _rlRetryBtn.addEventListener('click', retryTask);
@@ -6074,8 +6680,8 @@ function init() {
      ★ 这个分派必须**两边都测**（有文件 / 无文件），否则很容易做成
        「有文件时永远点不出选择框」这种死角。 */
   const _at = $('#attach-btn');
+  /* 回形针 = 统一文件选择入口；选完文件走 composer 缩略图/文件卡预览。 */
   if (_at) _at.addEventListener('click', () => {
-    if (localItems.length) { toggleAttachPanel(); return; }
     const f = $('#anchor-file');
     if (f) f.click();
   });
@@ -6097,15 +6703,10 @@ function init() {
     toggleAttachPanel(false);
   });
 
-  // 输入框里的功能胶囊：点一下开、再点关
-  ['#pill-thinking', '#pill-web'].forEach(sel => {
-    const el = $(sel);
-    if (el) el.addEventListener('click', () => el.classList.toggle('on'));
-  });
-
   // 输入框随内容增高（封顶 180px，再多就内部滚）
   const ta = $('#question');
   if (ta) ta.addEventListener('input', () => {
+    ta.classList.remove('ph-question');
     ta.style.height = 'auto';
     ta.style.height = Math.min(ta.scrollHeight, 180) + 'px';
   });
@@ -6115,6 +6716,16 @@ function init() {
     if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
     e.preventDefault();
     startRun();
+  });
+  /* 粘贴图片/文件：普通模式走 App 导入；DSH 模式走 /api/dsh/attach，
+     并把本地路径回填输入框，DSH Agent 可直接 read 这些路径。 */
+  if (ta) ta.addEventListener('paste', e => {
+    const dt = e.clipboardData || window.clipboardData;
+    const files = dt && dt.files ? [...dt.files] : [];
+    if (!files.length) return;
+    e.preventDefault();
+    if (dshMode) attachDshPastedFiles(files);
+    else attachAppPastedFiles(files);
   });
   /* ★ R44：「选择文件导入」改成**真按钮**去点隐藏的 input —— 原来靠 `<label>` 包着
      `display:none` 的 input，用户报「点了没反应」；按钮这条路最直、最不容易被样式影响。
@@ -6130,7 +6741,10 @@ function init() {
        修法：**先拷成真数组（快照）**，再清 value。清不清都不影响已拷出的这份。 */
     const fs = e.target.files ? [...e.target.files] : [];
     e.target.value = '';
-    if (fs.length) importFiles(fs);
+    if (fs.length) {
+      if (dshMode) attachDshPastedFiles(fs);
+      else attachAppPastedFiles(fs);
+    }
   });
   $('#lib-search').addEventListener('click', loadLib);
   $('#lib-q').addEventListener('keydown', e => { if (e.key === 'Enter') loadLib(); });
@@ -6261,7 +6875,6 @@ function init() {
   if (_agentBtn) _agentBtn.addEventListener('click', () => {
     openSheet('view-agent');
     loadAgent();
-    bootV2Auto();
   });
   const _agentRefresh = $('#agent-refresh');
   if (_agentRefresh) _agentRefresh.addEventListener('click', refreshAgentAll);
@@ -6300,26 +6913,44 @@ function init() {
   const _v2Prefer = $('#pareto-prefer');
   if (_v2Prefer) _v2Prefer.addEventListener('change', async function () {
     const st = document.querySelector('#v2-auto-status');
+    if (st) st.textContent = '偏好已切换；正在刷新预览…';
+    try {
+      const pa = await api('/api/schedule/pareto?prefer=' + encodeURIComponent(_v2Prefer.value || 'balanced'));
+      agentPareto = pa || agentPareto;
+      agentRenderV2();
+      if (st) st.textContent = '偏好已切换；点“应用最优”才会写入';
+    } catch (e) {
+      if (st) st.textContent = '偏好已切换；预览刷新失败';
+    }
+  });
+  const _v2Apply = document.querySelector('#v2-auto-apply');
+  if (_v2Apply) _v2Apply.addEventListener('click', async function () {
+    const st = document.querySelector('#v2-auto-status');
     const m = document.querySelector('#agent-msg');
-    if (st) st.textContent = '自动选优中…';
-    if (m) m.textContent = '正在自动评估 V2 策略…';
+    const prefer = (_v2Prefer && _v2Prefer.value) || 'balanced';
+    _v2Apply.disabled = true;
+    if (st) st.textContent = '评估中…';
+    if (m) m.textContent = '正在评估 V2 策略（仅点击后执行）…';
     try {
       const r = await api('/api/schedule/v2/auto-apply', {method:'POST',
         headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({prefer: _v2Prefer.value || 'balanced'})});
+        body: JSON.stringify({prefer: prefer})});
       if (r.ok) {
         const c = r.chosen || {};
-        if (st) st.textContent = '自动：' + (c.name || '') + ' / ' + (c.template || '');
-        if (m) m.textContent = '已自动写入最优策略：' + (c.name || '') +
-          '（score ' + String(c.auto_score || 0) + '）';
+        if (st) st.textContent = '已应用：' + (c.name || '') + ' / ' + (c.template || '');
+        if (m) m.textContent = '已写入 V2 策略：' + (c.name || '') +
+          '（score ' + String(c.auto_score || 0) + '）' +
+          (r.note ? ' · ' + r.note : '');
       } else {
-        if (st) st.textContent = '自动选优失败';
-        if (m) m.textContent = '自动选优失败：' + (r.error || '');
+        if (st) st.textContent = '应用失败';
+        if (m) m.textContent = '应用失败：' + (r.error || '');
       }
       await loadAgent();
     } catch (e) {
-      if (st) st.textContent = '自动选优失败';
-      if (m) m.textContent = '自动选优失败：' + e.message;
+      if (st) st.textContent = '应用失败';
+      if (m) m.textContent = '应用失败：' + e.message;
+    } finally {
+      _v2Apply.disabled = false;
     }
   });
   function bootV2Auto() {
@@ -6356,14 +6987,48 @@ function init() {
       document.querySelectorAll('[data-agent-tab]').forEach(function (x) { x.classList.toggle('on', x === b); });
       const secs = document.querySelectorAll('#view-agent .agent-sec');
       secs.forEach(function (s, i) { s.classList.toggle('agent-tab-hidden', i !== idx); });
+      if (idx === 7) refreshV2Panel();
     });
   });
   (function () {
     const secs = document.querySelectorAll('#view-agent .agent-sec');
     secs.forEach(function (s, i) { s.classList.toggle('agent-tab-hidden', i !== 0); });
   })();
+  const _propFilter = $('#prop-filter');
+  if (_propFilter) _propFilter.addEventListener('change', function () {
+    propFilter = String(_propFilter.value || 'active');
+    propLimit = 20;
+    agentRenderProps();
+  });
+  const _propSearch = $('#prop-search');
+  if (_propSearch) {
+    let _pt = null;
+    _propSearch.addEventListener('input', function () {
+      clearTimeout(_pt);
+      _pt = setTimeout(function () {
+        propQuery = String(_propSearch.value || '');
+        propLimit = 20;
+        agentRenderProps();
+      }, 180);
+    });
+  }
   const _propBox = $('#agent-proposals');
   if (_propBox) _propBox.addEventListener('click', async (e) => {
+    const expand = e.target.closest('[data-prop-expand]');
+    if (expand) {
+      const id = String(expand.dataset.propExpand || '');
+      if (id) {
+        propExpanded[id] = !propExpanded[id];
+        agentRenderProps();
+      }
+      return;
+    }
+    const more = e.target.closest('[data-prop-more]');
+    if (more) {
+      propLimit += 20;
+      agentRenderProps();
+      return;
+    }
     const openItem = e.target.closest('[data-prop-open]');
     if (openItem && !e.target.closest('button')) {
       const p = (agentProps || []).find(x => x.id === openItem.dataset.propOpen);
@@ -6510,6 +7175,12 @@ function init() {
   if (_ghAuto) _ghAuto.addEventListener('click', () => autoAgent('proposal'));
   const _dshArtList = $('#agent-dsh-art');
   if (_dshArtList) _dshArtList.addEventListener('click', async (e) => {
+    const _as = e.target.closest('[data-art-session]');
+    if (_as) {
+      e.stopPropagation();
+      try { await resumeDshChat(_as.dataset.artSession); } catch (err) { const m = document.querySelector('#agent-msg'); if (m) m.textContent = '打开关联会话失败：' + err.message; }
+      return;
+    }
     const it = e.target.closest('[data-dsh-art]');
     if (!it) return;
     try { await openDshArtifact(it.dataset.dshArt); }
@@ -6574,7 +7245,7 @@ function init() {
   // ★ 深链：?panel=view-agent 可直接打开面板（便于截图/联调）。
   try {
     const _panel = new URLSearchParams(location.search).get('panel');
-    if (_panel) { openSheet(_panel); if (_panel === 'view-agent') { loadAgent(); bootV2Auto(); } }
+    if (_panel) { openSheet(_panel); if (_panel === 'view-agent') { loadAgent(); } }
     const _advg = new URLSearchParams(location.search).get('advgroup');
     if (_advg) setTimeout(function () { try { openAdvGroup(_advg); } catch (_) {} }, 900);
     const _tab = new URLSearchParams(location.search).get('tab');

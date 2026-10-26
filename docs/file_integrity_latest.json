@@ -1,0 +1,42 @@
+{
+ "ok": true,
+ "files": [
+  {
+   "file": "dgtf_app/server.py",
+   "ok": true,
+   "size": 489211,
+   "error": ""
+  },
+  {
+   "file": "dgtf_app/engine_runner.py",
+   "ok": true,
+   "size": 52969,
+   "error": ""
+  },
+  {
+   "file": "dgtf_app/static/app.js",
+   "ok": true,
+   "size": 356627,
+   "error": ""
+  },
+  {
+   "file": "dgtf_app/static/style.css",
+   "ok": true,
+   "size": 127000,
+   "error": ""
+  },
+  {
+   "file": "dgtf_app/static/index.html",
+   "ok": true,
+   "size": 35490,
+   "error": ""
+  },
+  {
+   "file": "dgtf_app/v2_online.py",
+   "ok": true,
+   "size": 9545,
+   "error": ""
+  }
+ ],
+ "bad": 0
+}

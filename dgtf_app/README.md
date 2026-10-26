@@ -5,7 +5,7 @@
 
 零额外依赖（Python 标准库 + 原生前端），**不改动引擎主文件**。
 
-**当前 app 版本：V2.0.23**（DSH 本对话实时视图对齐 DSH GUI 当前会话；引擎生产入口 V2.2.2 / `Meta-DGTF-V2.2.2.py`，引擎发布说明见 docs/releases/V2.2.2.md）。
+**当前 app 版本：V2.0.25**（DSH 本对话实时视图对齐 DSH GUI 当前会话；引擎生产入口 V2.2.3 / `dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.3.py`，引擎发布说明见 docs/releases/V2.2.3.md）。
 
 ### 新增能力
 
@@ -15,6 +15,7 @@
 - **EML + DSH 全流程闭环**：知识刷新 → 引擎跑次 → 消费者/任务 → 自审提案；Agent 面板只保留“DSH 全流程闭环”一个按钮。
 - **产物时间标注**：技术知识分别标检索/爬取时间；产物库、资料库、检索库、DSH 产物、修复提案、审计与 V2 事件均带对应时间。
 - **本地 LLM LoRA 调度建议**：Qwen2.5-0.5B-Instruct，问题→route/rounds；接口 /api/schedule/llm/*，任务 opts.auto_llm。
+  链路走常驻推理服务 127.0.0.1:8772（`dgtf_local_llm/service.py`，stage=route）；旧根目录 `llm_predict.py` 已归档，不再作为首选回退。
 - **V2 自动选优**：Agent 面板只保留挡位选择；切换挡位自动评估帕累托/最佳模板/UCB 并写入最优策略。
 - **神经 RAG v2**：本地 BGE 语义检索 + BM25 + 引用 + 分层索引 + 上下文追溯；
 - **本地资料库**：导入文件解析/分块为 anchors 证据，参与 RAG；原文留档，不训练、不外发，可删除。

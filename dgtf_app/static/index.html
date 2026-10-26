@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
 <title>Meta-DGTF · 个人工作台</title>
-<link rel="icon" type="image/x-icon" href="/static/dgtf.ico?v=2.0.23-dshlive">
-<link rel="shortcut icon" type="image/x-icon" href="/static/dgtf.ico?v=2.0.23-dshlive">
-<link rel="stylesheet" href="/static/style.css?v=2.0.23-dshlive">
+<link rel="icon" type="image/x-icon" href="/static/dgtf.ico?v=2.0.25-dshguard">
+<link rel="shortcut icon" type="image/x-icon" href="/static/dgtf.ico?v=2.0.25-dshguard">
+<link rel="stylesheet" href="/static/style.css?v=2.0.25-dshguard">
 </head>
 <body class="stage-empty">
 
@@ -306,6 +306,7 @@
         <button class="pill" data-agent-tab="6">最近运行</button>
         <button class="pill" data-agent-tab="7">V2 调度</button>
         <button class="pill" data-agent-tab="8">自洽审计</button>
+        <button class="pill" data-agent-tab="9">热门话题库</button>
         <span class="gh-inline">
           <button id="gh-open" class="ghost" data-tip="用 GitHub Desktop 打开当前仓库">GitHub Desktop</button>
           <button id="gh-commit" class="ghost" data-tip="提交当前工作区全部变更（显式确认）">提交当前变更…</button>
@@ -334,11 +335,22 @@
           <div id="agent-dsh-art" class="agent-list"></div>
         </div>
         <div class="agent-sec">
-          <div class="agent-sec-h">修复提案库 <span class="chip" id="agent-prop-n">0</span><span class="muted lib-stamp" id="agent-prop-stamp">未刷新</span></div>
+          <div class="agent-sec-h">修复提案库 <span class="chip" id="agent-prop-n">0</span><span class="muted lib-stamp" id="agent-prop-stamp">未刷新</span>
+            <select class="pill" id="prop-filter" data-tip="按状态筛选提案">
+              <option value="active">活跃</option>
+              <option value="pending">待处理</option>
+              <option value="failed">失败/可重试</option>
+              <option value="applied">已应用</option>
+              <option value="closed">已关闭</option>
+              <option value="expired">过期/去重</option>
+              <option value="all">全部</option>
+            </select>
+            <input class="pill" id="prop-search" placeholder="搜索提案/任务/文件" data-tip="按 ID、标题、方案、文件过滤">
+          </div>
           <div id="agent-proposals" class="agent-list"></div>
         </div>
         <div class="agent-sec">
-          <div class="agent-sec-h">最近一次消费者运行<span class="muted lib-stamp" id="agent-runbox-stamp">未刷新</span></div>
+          <div class="agent-sec-h">最近一次消费者运行（本机）<span class="muted lib-stamp" id="agent-runbox-stamp">未刷新</span></div>
           <div id="agent-runbox" class="agent-list"></div>
         </div>
         <div class="agent-sec">
@@ -348,12 +360,17 @@
               <option value="cost">省成本</option>
               <option value="quality">质量优先</option>
             </select>
-            <span class="muted" id="v2-auto-status" data-tip="切换挡位后自动评估 V2 模板策略并写入最优">自动选优</span></div>
+            <button id="v2-auto-apply" class="ghost" data-tip="显式应用 V2 最优策略；打开面板不会自动改写">应用最优</button>
+            <span class="muted" id="v2-auto-status" data-tip="当前 V2 策略状态；只在点击应用最优后写入">未自动应用</span></div>
           <div id="agent-v2" class="agent-list"></div>
         </div>
         <div class="agent-sec">
           <div class="agent-sec-h">自洽审计 <span class="chip" id="agent-consistency-n">0</span><span class="muted lib-stamp" id="agent-consistency-stamp">未刷新</span></div>
           <div id="agent-consistency" class="agent-list"></div>
+        </div>
+        <div class="agent-sec">
+          <div class="agent-sec-h">热门话题库 <span class="chip" id="agent-hot-n">0</span><span class="muted lib-stamp" id="agent-hot-stamp">未刷新</span><span class="muted agent-kn-desc">DSH 守护抓取的热点问题、来源与链接</span></div>
+          <div id="agent-hot-topics" class="agent-list"></div>
         </div>
       </div>
     </section>
@@ -388,7 +405,7 @@
   <!-- 首屏：只有欢迎语 + 输入框，其余留白 -->
   <div id="welcome" class="welcome">
     <img class="app-logo big" src="/static/desktop-icon-128.png" alt="" aria-hidden="true">
-    <span id="welcome-text">欢迎回来，随时开始吧</span>
+    <span id="welcome-text">Meta-DGTF-道生三阶模型</span>
   </div>
 
   <!-- 运行日志：默认隐藏，点了「开始深究」才出现（四层日志合成一条流） -->
@@ -416,23 +433,9 @@
 
   <div class="composer">
     <textarea id="question" rows="1" spellcheck="false"
-      placeholder="给Meta-DGTF发消息 我们一起探索吧 ...."></textarea>
+      placeholder="发给Meta-DGTF 一起去探索吧 ..."></textarea>
+    <div id="dsh-paste-preview" class="dsh-paste-preview hidden"></div>
     <div class="composer-row">
-      <button type="button" class="pill" id="pill-thinking" data-tip="提高推理强度：runtime.thinking = on">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M12 3l2.1 5.6L20 10l-5.9 1.4L12 17l-2.1-5.6L4 10l5.9-1.4L12 3z"
-                stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
-        </svg>
-        <span class="p-name">深度思考</span>
-      </button>
-      <button type="button" class="pill" id="pill-web" data-tip="启用联网检索：runtime.web = on">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <circle cx="12" cy="12" r="8.2" stroke="currentColor" stroke-width="1.6"/>
-          <path d="M3.8 12h16.4M12 3.8c2.4 2.4 2.4 13.9 0 16.4M12 3.8c-2.4 2.4-2.4 13.9 0 16.4"
-                stroke="currentColor" stroke-width="1.6"/>
-        </svg>
-        <span class="p-name">智能搜索</span>
-      </button>
       <label class="pill mock-pill" id="mock-row" data-tip="不花钱、几秒出结果，只验证链路">
         <input type="checkbox" id="mock">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -554,6 +557,6 @@
 
 
 
-<script src="/static/app.js?v=2.0.23-dshlive"></script>
+<script src="/static/app.js?v=2.0.25-dshguard"></script>
 </body>
 </html>
