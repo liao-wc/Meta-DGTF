@@ -9,7 +9,8 @@
 |---|---|
 | 引擎补丁（含 local 档） | 分支 `dual-judge-local` 提交 `430763e` |
 | 离线判据 T1–T6 | 同分支 `2b76fad` → `scripts/local_model/test_dual_judge_local.py` |
-| 导出补丁 | `docs/patches/0001-*.patch`、`0002-*.patch`（本目录） |
+| 导出补丁 | `docs/patches/0001-*.patch`（引擎）、`0002-*.patch`（判据）、`0003-*.patch`（性能调优；Round 101） |
+| 性能调优 | prompt 收缩（描述截 120 字、总长 ≤6000）、timeout 120s、max_new_tokens 320、回退计数 |
 | 真跑证据 | v95-dual-local / local2 / local3（见 ab_evidence §88） |
 
 ## 2. 合并步骤（可控）

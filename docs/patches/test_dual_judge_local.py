@@ -122,6 +122,26 @@ def main() -> int:
            and "timeout" in _Stub.last,
            {k: _Stub.last.get(k) for k in ("stage", "timeout")})
 
+        # T7：长候选被截断（单条描述 >120 字不进 prompt）
+        long_c = types.SimpleNamespace(kind="c", desc="长" * 3000)
+        eng._dual_judge_local([long_c], inp, "anchor")
+        ck("T7 长候选描述被截断（≤120字/条）",
+           "长" * 200 not in str(_Stub.last.get("text") or ""))
+
+        # T8：失败计数（ok=false ⇒ 回退并 +1）
+        eng.dual_judge_local_fallbacks = 0
+        _Stub.body = {"ok": False, "text": ""}
+        got_fail = eng._dual_judge_local(cands, inp, "anchor")
+        ck("T8 失败回退计数 +1",
+           got_fail is None
+           and int(getattr(eng, "dual_judge_local_fallbacks", 0)) == 1,
+           (got_fail, getattr(eng, "dual_judge_local_fallbacks", None)))
+        _Stub.body = {"ok": True, "confidence": 0.9,
+                      "text": json.dumps({"judgments": [
+                          {"idx": 1, "position": "1", "why_position": "stub"},
+                          {"idx": 2, "position": "0",
+                           "why_position": "stub"}]})}
+
         # T5：分发器 local 成功用本地；local 失败回退 llm
         eng.dual_judge_mode = "local"
         ck("T5 分发器 local ⇒ 本地结果", eng._dual_judge(cands, inp, "anchor") == "APPLIED")
