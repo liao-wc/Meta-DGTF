@@ -39,3 +39,10 @@
 - 优化方向：判官 prompt 收缩（候选列表截断/摘要）、max_new_tokens 降档、
   专训更小 judge 适配器、单飞队列（service busy 快速失败 → 回退 llm）；
 - 在吞吐达标前 **不改变默认**（llm），local 保持 opt-in。
+
+## 4. 一键合并（Round 120）
+
+`powershell
+python scripts/merge_dual_judge_local.py --check-only   # 临时 worktree 全量校验（当前 PASS）
+python scripts/merge_dual_judge_local.py --commit       # 主引擎干净时 apply+Gates+提交
+`
