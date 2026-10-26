@@ -2220,3 +2220,12 @@ App 无回归。
 ### 84.4 门禁
 
 全量 V2 51/51（813 checks）、fast_gate 12/12。
+
+### 84.5 App 地点 e2e 根因与修复（闭环）
+
+两次 unverified 可复现 ⇒ 根因：kind_of_question("联合国的总部设在哪个城市？") 判为
+**reasoning**（地点/排序问句缺 fact 标记），App 事实档未强制 web on ⇒ 无官方证据。
+修复：act_markers 增补 哪个/哪座/哪条/哪种/哪里/位于/设在/最大/最高/最长/最小
+（「为什么」排除不变）；场景判据 4 条入 tests_scenario_matrix（27/27）。
+**复验**：App 地点 e2e **aq=verified/ready，display=纽约市**（0.9288 / 689,975 tok /
+96 calls / 443s）；App 矩阵 8→**9 行**。

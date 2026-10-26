@@ -1,0 +1,3487 @@
+{
+ "n_packs": 267,
+ "n_probe_flagged": 81,
+ "probe_flag_ratio": 0.3034,
+ "n_verified": 114,
+ "n_verified_and_flagged": 35,
+ "verified_flagged_ratio": 0.307,
+ "flagged_by_qtype": {
+  "?": 31,
+  "fact": 35,
+  "reasoning": 13,
+  "decision": 2
+ },
+ "note": "probe_no_target_covered 由引擎探针覆盖判定产生；verified 答案也可能被打上该 flag 并压低 quality 分（引擎文件当前被并发会话占用，按约定不编辑；此处仅量化影响面）。",
+ "rows": [
+  {
+   "file": "20261019_050622_一个远程办公团队如何在三个月内建立可验证.packed.json",
+   "question": "一个远程办公团队如何在三个月内建立可验证的信任机制？",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:6)",
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261019_053500_一个远程办公团队如何在三个月内建立可验证.packed.json",
+   "question": "一个远程办公团队如何在三个月内建立可验证的信任机制？",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "too_many_amp_candidates(70%)",
+    "unsaid_overused(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261019_055939_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:5)",
+    "candidates_backfilled(sc:6)",
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261019_062521_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:5)",
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261019_064604_一个开源项目如何在不增加维护者负担的情况.packed.json",
+   "question": "一个开源项目如何在不增加维护者负担的情况下扩大贡献者？",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:5)",
+    "candidates_backfilled(sc:6)",
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "unsaid_overused(4)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261019_064752_如何判断一份关于气候变化的政策报告是否可.packed.json",
+   "question": "如何判断一份关于气候变化的政策报告是否可信？",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:5)",
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "polarity_all_same_structural(both)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261019_071245_如何判断一份关于气候变化的政策报告是否可.packed.json",
+   "question": "如何判断一份关于气候变化的政策报告是否可信？",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "unsaid_overused(6)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261019_071413_一个开源项目如何在不增加维护者负担的情况.packed.json",
+   "question": "一个开源项目如何在不增加维护者负担的情况下扩大贡献者？",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered",
+    "unsaid_overused(3)"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261019_073827_一个团队如何在信息不完整时做出可回退的技.packed.json",
+   "question": "一个团队如何在信息不完整时做出可回退的技术选型？",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:6)",
+    "duty_short",
+    "probe_link_dangling(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261019_074251_一个团队如何在信息不完整时做出可回退的技.packed.json",
+   "question": "一个团队如何在信息不完整时做出可回退的技术选型？",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(3)",
+    "unsaid_overused(4)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261019_080835_一个远程办公团队如何在三个月内建立可验证.packed.json",
+   "question": "一个远程办公团队如何在三个月内建立可验证的信任机制？",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:7)",
+    "duty_short",
+    "polarity_all_same_structural(both)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261019_085657_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:6)",
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "too_many_amp_candidates(67%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261019_085804_一个远程办公团队如何在三个月内建立可验证.packed.json",
+   "question": "一个远程办公团队如何在三个月内建立可验证的信任机制？",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "expand_imbalanced_benign",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261019_094658_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:6)",
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261019_101117_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:6)",
+    "candidates_backfilled(sc:7)",
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261019_110457_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:5)",
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "polarity_all_same_structural(1)",
+    "polarity_all_same_structural(both)",
+    "probe_link_dangling(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261019_114408_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:5)",
+    "candidates_backfilled(sc:8)",
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261019_121648_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:11)",
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "all_closure_gaps"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261019_124316_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:5)",
+    "candidates_backfilled(sc:6)",
+    "duty_short",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261019_132943_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:5)",
+    "candidates_backfilled(sc:6)",
+    "candidates_backfilled(sc:8)",
+    "duty_short",
+    "polarity_all_same_structural(both)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered",
+    "all_closure_gaps"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261019_140654_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:7)",
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "polarity_all_same_structural(both)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261019_145949_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:7)",
+    "candidates_backfilled(sc:8)",
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261019_151018_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261019_151716_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261019_152307_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(2)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261019_160157_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "too_many_amp_candidates(68%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261019_161136_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261019_162801_一家现金流紧张的中小制造企业该先裁员还.packed.json",
+   "question": "一家现金流紧张的中小制造企业，该先裁员还是先砍产线",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:8)",
+    "duty_short",
+    "probe_link_dangling(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261019_162926_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261019_163040_集团内部各子公司数据共享的合法边界在哪里.packed.json",
+   "question": "集团内部各子公司数据共享的合法边界在哪里",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261019_163121_产品要出海定价按成本加成还是按当地竞品.packed.json",
+   "question": "产品要出海，定价按成本加成还是按当地竞品锚定",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261019_163612_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:13)",
+    "duty_short",
+    "probe_link_dangling(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261019_164458_订单系统该选一致性还是可用性CAP怎.packed.json",
+   "question": "订单系统该选一致性还是可用性，CAP 怎么取舍",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261019_164640_早高峰地铁站台拥挤越来越严重运营效率该.packed.json",
+   "question": "早高峰地铁站台拥挤越来越严重，运营效率该怎么提升",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:5)",
+    "duty_short",
+    "probe_link_dangling(2)",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261019_164848_集团内部各子公司数据共享的合法边界在哪里.packed.json",
+   "question": "集团内部各子公司数据共享的合法边界在哪里",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:6)",
+    "duty_short",
+    "polarity_all_same_structural(both)",
+    "probe_link_dangling(2)",
+    "unsaid_overused(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261019_165201_订单系统该选一致性还是可用性CAP怎.packed.json",
+   "question": "订单系统该选一致性还是可用性，CAP 怎么取舍",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261019_165457_多部门共享数据权限与责任怎么划.packed.json",
+   "question": "多部门共享数据，权限与责任怎么划",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:7)",
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "probe_link_dangling(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261019_165958_社区医院远程监测先做哪类慢病.packed.json",
+   "question": "社区医院远程监测，先做哪类慢病",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:6)",
+    "duty_short",
+    "probe_link_dangling(2)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261019_172638_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261019_172713_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261019_175236_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261019_181557_一家现金流紧张的中小制造企业该先裁员还.packed.json",
+   "question": "一家现金流紧张的中小制造企业，该先裁员还是先砍产线",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered",
+    "too_many_amp_candidates(73%)"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261019_181819_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261019_181851_集团内部各子公司数据共享的合法边界在哪里.packed.json",
+   "question": "集团内部各子公司数据共享的合法边界在哪里",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:5)",
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "all_closure_gaps",
+    "core_audit_gaps"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261019_183419_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261019_184834_集团内部各子公司数据共享的合法边界在哪里.packed.json",
+   "question": "集团内部各子公司数据共享的合法边界在哪里",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:7)",
+    "candidates_backfilled(sc:8)",
+    "duty_short",
+    "polarity_all_same_structural(both)",
+    "probe_link_dangling(3)",
+    "unsaid_overused(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261019_184904_老城区暴雨内涝频发排水系统要不要整体翻.packed.json",
+   "question": "老城区暴雨内涝频发，排水系统要不要整体翻新，怎么定优先级",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "unsaid_overused(3)",
+    "unsaid_overused(4)",
+    "unsaid_overused(5)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261019_194142_产品要出海定价按成本加成还是按当地竞品.packed.json",
+   "question": "产品要出海，定价按成本加成还是按当地竞品锚定",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:5)",
+    "duty_short",
+    "probe_link_dangling(3)",
+    "unsaid_overused(4)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261019_204700_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:5)",
+    "candidates_backfilled(sc:6)",
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261019_204724_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:5)",
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261019_223904_deepseek-V41-Flash.packed.json",
+   "question": "deepseek-V4.1-Flash 1017什么时候发布的",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261020_014441_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(1)",
+    "probe_link_dangling(2)",
+    "all_closure_unavailable",
+    "core_audit_gaps"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261020_015222_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(both)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered",
+    "all_closure_unavailable",
+    "core_audit_gaps"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261020_015933_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:6)",
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261020_022537_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:6)",
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261020_023407_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:11)",
+    "candidates_backfilled(sc:8)",
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261020_055412_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(both)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered",
+    "all_closure_unavailable",
+    "core_audit_gaps"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261020_060016_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:8)",
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261020_065509_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:5)",
+    "candidates_backfilled(sc:6)",
+    "candidates_backfilled(sc:7)",
+    "duty_short",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261020_071351_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:6)",
+    "duty_short",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "too_many_amp_candidates(92%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261020_072240_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:6)",
+    "duty_short",
+    "polarity_all_same_structural(both)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "unsaid_overused(4)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261020_073134_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:5)",
+    "duty_short",
+    "position_all_same_structural",
+    "probe_link_dangling(2)",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261020_073959_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:5)",
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "polarity_all_same_structural(both)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered",
+    "unsaid_overused(4)"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261020_081008_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(both)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "too_many_amp_candidates(86%)",
+    "unsaid_overused(6)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261020_083208_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered",
+    "too_many_amp_candidates(69%)",
+    "unsaid_overused(3)"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261020_090210_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(both)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "too_many_amp_candidates(77%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261020_092123_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "too_many_amp_candidates(100%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261020_094536_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "position_all_same_structural",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261020_100816_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:6)",
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered",
+    "too_many_amp_candidates(85%)",
+    "unsaid_overused(4)"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261020_102957_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "position_all_same_structural",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered",
+    "too_many_amp_candidates(67%)",
+    "unsaid_overused(3)"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261020_105722_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "position_all_same_structural",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered",
+    "too_many_amp_candidates(87%)"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261020_111220_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261020_113141_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered",
+    "too_many_amp_candidates(80%)"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261020_113213_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "unsaid_overused(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261020_121030_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "candidates_backfilled(sc:5)",
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "polarity_all_same_structural(both)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261020_122958_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261020_131656_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "too_many_amp_candidates(85%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261020_132800_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "position_all_same_structural",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered",
+    "too_many_amp_candidates(69%)"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261020_135317_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(2)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261020_144637_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "unsaid_overused(5)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261020_150402_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "polarity_all_same_structural(1)",
+    "position_all_same_structural",
+    "probe_link_dangling(1)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261020_152037_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered",
+    "all_closure_unavailable",
+    "core_audit_gaps"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261020_152217_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(3)",
+    "all_closure_unavailable",
+    "core_audit_gaps"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261020_154010_DeepSeek-V41-Flash-.packed.json",
+   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "unsaid_overused(7)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261021_123939_EML事件记忆如何提升元DGTF多模调.packed.json",
+   "question": "EML 事件记忆如何提升元DGTF多模调度的细度、准确性和动态调节精度？请给出可",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(2)",
+    "all_closure_unavailable",
+    "core_audit_gaps"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261021_125449_EML事件记忆如何提升元DGTF多模调.packed.json",
+   "question": "EML 事件记忆如何提升元DGTF多模调度的细度、准确性和动态调节精度？请给出可",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered",
+    "all_closure_unavailable",
+    "core_audit_gaps"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261021_151144_本地LLM微调与EML事件记忆如何协同改.packed.json",
+   "question": "本地LLM微调与EML事件记忆如何协同改进元DGTF的四层调度、自我修复与知识更",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "expand_imbalanced_benign",
+    "no_amp_at_all",
+    "position_all_same_structural",
+    "probe_link_dangling(1)",
+    "probe_link_dangling(2)",
+    "probe_link_dangling(3)",
+    "probe_no_target_covered",
+    "unsaid_overused(4)",
+    "all_closure_gaps",
+    "core_audit_gaps"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261021_162051_元DGTF项目权威背景内置本地文.packed.json",
+   "question": "【元DGTF 项目权威背景（内置，本地文档+资料库注入）】\n元DGTF 是一个本",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261021_183125_RAG、本地DeepSeek血统基座与D.packed.json",
+   "question": "【元DGTF 项目权威背景（内置，本地文档+资料库注入）】\n元DGTF 是一个本",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "action_incomplete",
+    "duty_short",
+    "not_do_missing",
+    "probe_link_dangling(3)",
+    "all_closure_gaps",
+    "core_audit_gaps"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261022_091935_用一句话说明元DGTF的修行层作用.packed.json",
+   "question": "用一句话说明元DGTF的修行层作用。",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "all_closure_unavailable",
+    "core_audit_gaps"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261022_113206_元DGTF是什么？.packed.json",
+   "question": "【元DGTF 项目权威背景（内置，本地文档+资料库注入）】\n元DGTF 是一个本",
+   "qtype": null,
+   "aq": null,
+   "ready": null,
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "probe_link_dangling(1)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261022_183329_用一句话说明元DGTF的修行层作用.packed.json",
+   "question": "用一句话说明元DGTF的修行层作用。",
+   "qtype": "fact",
+   "aq": "needs_evidence",
+   "ready": false,
+   "flags": [
+    "candidates_backfilled(sc:5)",
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261022_185552_DeepSeekAPI的base.packed.json",
+   "question": "DeepSeek API 的 base URL 是什么？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(1)",
+    "probe_no_target_covered",
+    "unsaid_overused(4)"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261022_192541_HTTP404状态码表示什么.packed.json",
+   "question": "HTTP 404 状态码表示什么？",
+   "qtype": "fact",
+   "aq": "needs_evidence",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261022_195840_Python中len函数的作用.packed.json",
+   "question": "Python 中 len() 函数的作用是什么？",
+   "qtype": "fact",
+   "aq": "needs_evidence",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(3)",
+    "unsaid_overused(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261022_202654_Python中len函数的作用.packed.json",
+   "question": "Python 中 len() 函数的作用是什么？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "probe_link_dangling(1)",
+    "probe_link_dangling(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261023_082429_Python中len函数的作用.packed.json",
+   "question": "Python 中 len() 函数的作用是什么？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "candidates_backfilled(sc:6)",
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "unsaid_overused(3)",
+    "unsaid_overused(4)",
+    "unsaid_overused(6)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261023_211218_用一句话说明四层推理系统的最小可行闭环是.packed.json",
+   "question": "用一句话说明四层推理系统的最小可行闭环是什么？",
+   "qtype": "boundary",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "all_closure_unavailable",
+    "core_audit_gaps"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261023_230954_Python中len函数的作用是什.packed.json",
+   "question": "Python 中 len 函数的作用是什么？",
+   "qtype": "fact",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "candidates_backfilled(sc:5)",
+    "duty_short",
+    "probe_link_dangling(2)",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261023_231902_Python中len函数的作用是什.packed.json",
+   "question": "Python 中 len 函数的作用是什么？",
+   "qtype": "fact",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(2)",
+    "too_many_amp_candidates(75%)",
+    "unsaid_overused(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261023_V2.2.0_full_baseline_replay.packed.json",
+   "question": "Python 中 len() 函数的作用是什么？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "candidates_backfilled(sc:6)",
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "unsaid_overused(3)",
+    "unsaid_overused(4)",
+    "unsaid_overused(6)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261024_071023_如何决定一个四层推理系统先优化哪一层.packed.json",
+   "question": "如何决定一个四层推理系统先优化哪一层？",
+   "qtype": "decision",
+   "aq": "unverified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(1)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261024_071938_Python中len函数的作用是什.packed.json",
+   "question": "Python 中 len 函数的作用是什么？",
+   "qtype": "fact",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "candidates_backfilled(sc:6)",
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(1)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261024_072943_Python中len函数返回什么.packed.json",
+   "question": "Python 中 len 函数返回什么？",
+   "qtype": "fact",
+   "aq": "needs_evidence",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "probe_link_dangling(2)",
+    "unsaid_overused(5)",
+    "unsaid_overused(6)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261024_073909_Python中len函数的返回值是.packed.json",
+   "question": "Python 中 len 函数的返回值是什么类型？",
+   "qtype": "fact",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "candidates_backfilled(sc:6)",
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "probe_link_dangling(1)",
+    "unsaid_overused(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261024_074852_如何决定一个四层推理系统先优化哪一层.packed.json",
+   "question": "如何决定一个四层推理系统先优化哪一层？",
+   "qtype": "decision",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(3)",
+    "unsaid_overused(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261024_075807_如何决定一个四层推理系统先优化哪一层.packed.json",
+   "question": "如何决定一个四层推理系统先优化哪一层？",
+   "qtype": "decision",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "candidates_backfilled(sc:5)",
+    "duty_short",
+    "probe_link_dangling(1)",
+    "too_many_amp_candidates(71%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261024_082341_Python中len函数的作用是什.packed.json",
+   "question": "Python 中 len 函数的作用是什么？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(0)",
+    "probe_link_dangling(2)",
+    "probe_no_target_covered",
+    "unsaid_overused(7)"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261024_083648_Python中len函数的作用是什.packed.json",
+   "question": "Python 中 len 函数的作用是什么？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "probe_link_dangling(2)",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261024_113505_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "fact",
+   "aq": "needs_evidence",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261024_122709_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "all_closure_gaps"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261024_130547_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "candidates_backfilled(sc:5)",
+    "candidates_backfilled(sc:6)",
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261024_134620_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "candidates_backfilled(sc:5)",
+    "duty_short",
+    "polarity_all_same_structural(1)",
+    "probe_link_dangling(1)",
+    "probe_link_dangling(2)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261024_152709_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "unsaid_overused(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261024_163141_DeepSeekV41Flash.packed.json",
+   "question": "DeepSeek V4.1 Flash 是哪一天发布的？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261024_170648_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "verified",
+   "ready": true,
+   "flags": [],
+   "probe_flag": false
+  },
+  {
+   "file": "20261024_174607_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "verified",
+   "ready": true,
+   "flags": [],
+   "probe_flag": false
+  },
+  {
+   "file": "20261024_184338_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261024_194746_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "ing_rephrased_direct(72%)",
+    "ing_rephrased_direct(73%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261024_202740_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261024_204953_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "probe_no_target_covered",
+    "unsaid_overused(5)"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261024_210755_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "verified",
+   "ready": true,
+   "flags": [],
+   "probe_flag": false
+  },
+  {
+   "file": "20261024_215521_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "unsaid_overused(4)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261024_221331_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261024_223333_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261024_225407_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261024_232645_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261024_235003_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "verified",
+   "ready": true,
+   "flags": [],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_001532_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_014509_11等于几.packed.json",
+   "question": "1+1等于几？",
+   "qtype": "fact",
+   "aq": "unverified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_020840_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_022430_11等于几.packed.json",
+   "question": "1+1等于几？",
+   "qtype": "fact",
+   "aq": "needs_evidence",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "probe_failed",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261025_041804_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261025_050504_11等于几.packed.json",
+   "question": "1+1等于几？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_051032_11等于几.packed.json",
+   "question": "1+1等于几？",
+   "qtype": "fact",
+   "aq": "needs_evidence",
+   "ready": false,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_051705_11等于几.packed.json",
+   "question": "1+1等于几？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "too_many_amp_candidates(65%)",
+    "unsaid_overused(3)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_055506_11等于几.packed.json",
+   "question": "1+1等于几？",
+   "qtype": "fact",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_060033_22等于几.packed.json",
+   "question": "2+2等于几？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261025_062041_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261025_064705_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_072624_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "all_closure_unavailable",
+    "core_audit_gaps"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_075235_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "all_closure_unavailable",
+    "core_audit_gaps"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_080109_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "all_closure_unavailable",
+    "core_audit_gaps"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_082655_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "lazy_empty"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_084402_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_084955_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "ing_rephrased_direct(57%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_091143_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_092333_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "all_closure_unavailable",
+    "core_audit_gaps"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_101509_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "all_closure_unavailable",
+    "core_audit_gaps"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_102327_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "all_closure_unavailable",
+    "core_audit_gaps"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_103702_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "all_closure_unavailable",
+    "core_audit_gaps"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_104739_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "all_closure_unavailable",
+    "core_audit_gaps"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_105212_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "candidates_backfilled(sc:8)",
+    "all_closure_unavailable"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_105951_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_110059_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "candidates_backfilled(sc:8)",
+    "duty_short",
+    "all_closure_unavailable"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_111531_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_122549_为什么冬天的静电现象比夏天更常见.packed.json",
+   "question": "为什么冬天的静电现象比夏天更常见？",
+   "qtype": "reasoning",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_123225_光在水中传播的速度是多少.packed.json",
+   "question": "光在水中传播的速度是多少？",
+   "qtype": "fact",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261025_124928_在城市热岛研究中应该优先补观测还是优先.packed.json",
+   "question": "在城市热岛研究中，应该优先补观测还是优先统一定义？",
+   "qtype": "decision",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261025_125104_光在水中传播的速度是多少.packed.json",
+   "question": "光在水中传播的速度是多少？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_125712_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "ing_rephrased_direct(52%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_125920_光在水中传播的速度是多少.packed.json",
+   "question": "光在水中传播的速度是多少？",
+   "qtype": "fact",
+   "aq": "needs_evidence",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "ing_rephrased_direct(66%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_131103_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_135045_在城市热岛研究中应该优先补观测还是优先.packed.json",
+   "question": "在城市热岛研究中，应该优先补观测还是优先统一定义？",
+   "qtype": "decision",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261025_135055_为什么冬天的静电现象比夏天更常见.packed.json",
+   "question": "为什么冬天的静电现象比夏天更常见？",
+   "qtype": "reasoning",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261025_141307_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "all_closure_unavailable",
+    "core_audit_gaps"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_141333_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "all_closure_unavailable",
+    "core_audit_gaps"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_143654_为什么在高原上煮饭更容易夹生.packed.json",
+   "question": "为什么在高原上煮饭更容易夹生？",
+   "qtype": "reasoning",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_150956_为什么飞机在起飞前要除冰.packed.json",
+   "question": "为什么飞机在起飞前要除冰？",
+   "qtype": "reasoning",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_151003_在选择保温材料时应该优先考虑导热系数还是.packed.json",
+   "question": "在选择保温材料时应该优先考虑导热系数还是防火等级？",
+   "qtype": "decision",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "too_many_amp_candidates(78%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_152215_珠穆朗玛峰的海拔是多少米.packed.json",
+   "question": "珠穆朗玛峰的海拔是多少米？",
+   "qtype": "fact",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "all_closure_unavailable"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_154501_珠穆朗玛峰的海拔是多少米.packed.json",
+   "question": "珠穆朗玛峰的海拔是多少米？",
+   "qtype": "fact",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261025_160200_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "all_closure_unavailable",
+    "core_audit_gaps"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_160257_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "all_closure_unavailable",
+    "core_audit_gaps"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_161052_长江的长度是多少千米.packed.json",
+   "question": "长江的长度是多少千米？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261025_161055_珠穆朗玛峰的海拔是多少米.packed.json",
+   "question": "珠穆朗玛峰的海拔是多少米？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261025_165802_黄河的长度是多少千米.packed.json",
+   "question": "黄河的长度是多少千米？",
+   "qtype": "fact",
+   "aq": "needs_evidence",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "probe_no_target_covered",
+    "unsaid_overused(4)",
+    "unsaid_overused(5)"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261025_165943_AIAgent会先取代哪类工作.packed.json",
+   "question": "AI Agent 会先取代哪类工作？",
+   "qtype": "fact",
+   "aq": "needs_evidence",
+   "ready": false,
+   "flags": [
+    "candidates_backfilled(sc:9)",
+    "duty_short",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261025_170132_HTTP404状态码表示什么.packed.json",
+   "question": "HTTP 404状态码表示什么？",
+   "qtype": "fact",
+   "aq": "needs_evidence",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261025_174443_黄河的长度是多少千米.packed.json",
+   "question": "黄河的长度是多少千米？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261025_174637_HTTP404状态码表示什么.packed.json",
+   "question": "HTTP 404状态码表示什么？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261025_180653_HTTP404状态码表示什么.packed.json",
+   "question": "HTTP 404状态码表示什么？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261025_182318_珠穆朗玛峰的海拔是多少米.packed.json",
+   "question": "珠穆朗玛峰的海拔是多少米？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_182433_HTTP500状态码表示什么.packed.json",
+   "question": "HTTP 500状态码表示什么？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261025_182547_2024年中国GDP增速最新数据是多少.packed.json",
+   "question": "2024年中国GDP增速最新数据是多少？",
+   "qtype": "fact",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_183900_首例确凿的黑洞重复潮汐瓦解恒星事件说明了.packed.json",
+   "question": "首例确凿的黑洞重复潮汐瓦解恒星事件说明了什么？",
+   "qtype": "fact",
+   "aq": "needs_evidence",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "probe_no_target_covered",
+    "unsaid_overused(5)"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261025_184823_2024年中国GDP增速最新数据是多少.packed.json",
+   "question": "2024年中国GDP增速最新数据是多少？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_190907_2024年中国GDP增速最新数据是多少.packed.json",
+   "question": "2024年中国GDP增速最新数据是多少？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261025_194121_2024年中国GDP增速最新数据是多少.packed.json",
+   "question": "2024年中国GDP增速最新数据是多少？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_201440_绿藻感光研究为什么能拿诺贝尔生理学或医学.packed.json",
+   "question": "绿藻感光研究为什么能拿诺贝尔生理学或医学奖？",
+   "qtype": "decision",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_202718_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "qtype": "reasoning",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "candidates_backfilled(sc:8)",
+    "duty_short",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261025_202810_为什么冬天的静电现象比夏天更常见.packed.json",
+   "question": "为什么冬天的静电现象比夏天更常见？",
+   "qtype": "reasoning",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_205120_HTTP404状态码表示什么.packed.json",
+   "question": "HTTP 404状态码表示什么？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261025_205544_HTTP404状态码表示什么.packed.json",
+   "question": "HTTP 404状态码表示什么？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "unsaid_overused(4)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_205612_2024年中国GDP增速最新数据是多少.packed.json",
+   "question": "2024年中国GDP增速最新数据是多少？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_211219_HTTP500状态码表示什么.packed.json",
+   "question": "HTTP 500状态码表示什么？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "ing_rephrased_direct(71%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_211926_长江的长度是多少千米.packed.json",
+   "question": "长江的长度是多少千米？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "ing_rephrased_direct(55%)",
+    "ing_rephrased_direct(66%)",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261025_212011_光在水中传播的速度是多少.packed.json",
+   "question": "光在水中传播的速度是多少？",
+   "qtype": "fact",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "ing_rephrased_direct(53%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_213215_光在水中传播的速度是多少.packed.json",
+   "question": "光在水中传播的速度是多少？",
+   "qtype": "fact",
+   "aq": "needs_evidence",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "ing_rephrased_direct(77%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_213606_为什么越刷手机越焦虑.packed.json",
+   "question": "为什么越刷手机越焦虑？",
+   "qtype": "reasoning",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261025_213935_光在水中传播的速度是多少.packed.json",
+   "question": "光在水中传播的速度是多少？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261025_220230_2024年中国GDP总量是多少亿元.packed.json",
+   "question": "2024年中国GDP总量是多少亿元？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_221103_Python中len函数的返回值是什么.packed.json",
+   "question": "Python中len函数的返回值是什么？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_221456_2024年中国GDP总量是多少亿元.packed.json",
+   "question": "2024年中国GDP总量是多少亿元？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "ing_rephrased_direct(50%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_222130_中国现行宪法是哪一年颁布的.packed.json",
+   "question": "中国现行宪法是哪一年颁布的？",
+   "qtype": "fact",
+   "aq": "needs_evidence",
+   "ready": false,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_223531_中国现行宪法是哪一年颁布的.packed.json",
+   "question": "中国现行宪法是哪一年颁布的？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_224334_人体的正常体温是多少摄氏度.packed.json",
+   "question": "人体的正常体温是多少摄氏度？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261025_224417_2024年中国CPI涨幅是多少.packed.json",
+   "question": "2024年中国CPI涨幅是多少？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "ing_rephrased_direct(56%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_225432_2024年中国CPI涨幅是多少.packed.json",
+   "question": "2024年中国CPI涨幅是多少？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_230757_这座中字形汉墓藏着什么.packed.json",
+   "question": "这座中字形汉墓藏着什么？",
+   "qtype": "fact",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261025_230918_2024年中国新能源汽车产量是多少万辆.packed.json",
+   "question": "2024年中国新能源汽车产量是多少万辆？",
+   "qtype": "fact",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_230938_2024年中国出生人口是多少万人.packed.json",
+   "question": "2024年中国出生人口是多少万人？",
+   "qtype": "fact",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "too_many_amp_candidates(65%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_231648_2024年中国出生人口是多少万人.packed.json",
+   "question": "2024年中国出生人口是多少万人？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "all_candidate_selfref(43%)",
+    "duty_short",
+    "unsaid_overused(4)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_231658_2024年中国新能源汽车产量是多少万辆.packed.json",
+   "question": "2024年中国新能源汽车产量是多少万辆？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_232453_我国法定结婚年龄是多少岁.packed.json",
+   "question": "我国法定结婚年龄是多少岁？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "ing_rephrased_direct(59%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_232539_2024年中国贸易顺差是多少亿美元.packed.json",
+   "question": "2024年中国贸易顺差是多少亿美元？",
+   "qtype": "fact",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "ing_rephrased_direct(71%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_232704_2024年中国出生人口是多少万人.packed.json",
+   "question": "2024年中国出生人口是多少万人？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "ing_rephrased_direct(50%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_233339_我国法定结婚年龄是多少岁.packed.json",
+   "question": "我国法定结婚年龄是多少岁？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_234802_2024年中国贸易顺差是多少亿美元.packed.json",
+   "question": "2024年中国贸易顺差是多少亿美元？",
+   "qtype": "fact",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "ing_rephrased_direct(50%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_234818_我国法定结婚年龄是多少岁.packed.json",
+   "question": "我国法定结婚年龄是多少岁？",
+   "qtype": "fact",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261025_235138_中字形西汉大墓的墓主是谁.packed.json",
+   "question": "中字形西汉大墓的墓主是谁？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261025_235734_我国法定结婚年龄是多少岁.packed.json",
+   "question": "我国法定结婚年龄是多少岁？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "ing_rephrased_direct(91%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_000641_我国法定结婚年龄是多少岁.packed.json",
+   "question": "我国法定结婚年龄是多少岁？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "ing_rephrased_direct(50%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_002019_2024年中国贸易顺差是多少亿美元.packed.json",
+   "question": "2024年中国贸易顺差是多少亿美元？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_003642_扩内需与新质生产力会改变哪些行业.packed.json",
+   "question": "扩内需与新质生产力会改变哪些行业？",
+   "qtype": "fact",
+   "aq": "needs_evidence",
+   "ready": false,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_004033_光在水中传播的速度是多少.packed.json",
+   "question": "光在水中传播的速度是多少？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_004124_2024年中国出生人口是多少万人.packed.json",
+   "question": "2024年中国出生人口是多少万人？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261026_004909_中国恢复高考是哪一年.packed.json",
+   "question": "中国恢复高考是哪一年？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "ing_rephrased_direct(53%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_005109_奥林匹克五环的颜色有哪几种.packed.json",
+   "question": "奥林匹克五环的颜色有哪几种？",
+   "qtype": "fact",
+   "aq": "needs_evidence",
+   "ready": false,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_005148_扩内需与新质生产力会改变哪些行业.packed.json",
+   "question": "扩内需与新质生产力会改变哪些行业？",
+   "qtype": "reasoning",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_010332_奥林匹克五环的颜色有哪几种.packed.json",
+   "question": "奥林匹克五环的颜色有哪几种？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "too_many_amp_candidates(79%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_011034_地球到月球的平均距离是多少千米.packed.json",
+   "question": "地球到月球的平均距离是多少千米？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "ing_rephrased_direct(63%)",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261026_011047_联合国的总部设在哪个城市.packed.json",
+   "question": "联合国的总部设在哪个城市？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_012602_联合国的总部设在哪个城市.packed.json",
+   "question": "联合国的总部设在哪个城市？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "ing_rephrased_direct(53%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_014836_联合国的总部设在哪个城市.packed.json",
+   "question": "联合国的总部设在哪个城市？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_015800_成年人正常心率是多少次每分钟.packed.json",
+   "question": "成年人正常心率是多少次每分钟？",
+   "qtype": "fact",
+   "aq": "needs_evidence",
+   "ready": false,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_015819_2024年末中国外汇储备是多少亿美元.packed.json",
+   "question": "2024年末中国外汇储备是多少亿美元？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "candidates_backfilled(sc:8)",
+    "too_many_amp_candidates(71%)",
+    "unsaid_overused(5)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_020417_厄尔尼诺强度可能史无前例意味着什么.packed.json",
+   "question": "厄尔尼诺强度可能史无前例，意味着什么？",
+   "qtype": "reasoning",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261026_021815_2024年末中国外汇储备是多少亿美元.packed.json",
+   "question": "2024年末中国外汇储备是多少亿美元？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_021829_成年人正常心率是多少次每分钟.packed.json",
+   "question": "成年人正常心率是多少次每分钟？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_023011_成年人正常心率是多少次每分钟.packed.json",
+   "question": "成年人正常心率是多少次每分钟？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "ing_rephrased_direct(50%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_024035_中国空间站的名字是什么.packed.json",
+   "question": "中国空间站的名字是什么？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_024056_港珠澳大桥全长多少公里.packed.json",
+   "question": "港珠澳大桥全长多少公里？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "ing_rephrased_direct(56%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_024916_中国空间站的名字是什么.packed.json",
+   "question": "中国空间站的名字是什么？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_030442_港珠澳大桥全长多少公里.packed.json",
+   "question": "港珠澳大桥全长多少公里？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "ing_rephrased_direct(60%)",
+    "all_closure_gaps"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_031517_港珠澳大桥全长多少公里.packed.json",
+   "question": "港珠澳大桥全长多少公里？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "unsaid_overused(4)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_032916_民法典规定多少岁成年.packed.json",
+   "question": "民法典规定多少岁成年？",
+   "qtype": "fact",
+   "aq": "needs_evidence",
+   "ready": false,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_032930_2024年我国粮食总产量是多少亿斤.packed.json",
+   "question": "2024年我国粮食总产量是多少亿斤？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "ing_rephrased_direct(51%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_033229_如何为人工智能校准价值坐标.packed.json",
+   "question": "如何为人工智能校准价值坐标？",
+   "qtype": "decision",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "action_incomplete",
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_063611_民法典规定多少岁成年.packed.json",
+   "question": "民法典规定多少岁成年？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_063628_HTTP404状态码表示什么.packed.json",
+   "question": "HTTP 404状态码表示什么？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261026_064741_民法典规定多少岁成年.packed.json",
+   "question": "民法典规定多少岁成年？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261026_065456_中国最长的河流是哪条.packed.json",
+   "question": "中国最长的河流是哪条？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "too_many_amp_candidates(75%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_065523_水的沸点是多少摄氏度.packed.json",
+   "question": "水的沸点是多少摄氏度？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "unsaid_overused(4)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_065958_为什么海水是咸的.packed.json",
+   "question": "为什么海水是咸的？",
+   "qtype": "reasoning",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261026_070734_以下哪项属于可再生能源A煤炭B.packed.json",
+   "question": "以下哪项属于可再生能源？A. 煤炭 B. 太阳能 C. 石油 D. 天然气",
+   "qtype": "fact",
+   "aq": "needs_evidence",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261026_071039_为什么在高原上煮饭更容易夹生.packed.json",
+   "question": "为什么在高原上煮饭更容易夹生？",
+   "qtype": "reasoning",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261026_072909_以下哪项属于可再生能源A煤炭B.packed.json",
+   "question": "以下哪项属于可再生能源？A. 煤炭 B. 太阳能 C. 石油 D. 天然气",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_074307_人体最大的器官是什么.packed.json",
+   "question": "人体最大的器官是什么？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "ing_rephrased_direct(50%)",
+    "unsaid_overused(4)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_074650_民法典规定多少岁成年.packed.json",
+   "question": "民法典规定多少岁成年？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261026_075128_联合国安理会常任理事国共有几个.packed.json",
+   "question": "联合国安理会常任理事国共有几个？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "ing_rephrased_direct(92%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_075144_中国最大的淡水湖是哪个.packed.json",
+   "question": "中国最大的淡水湖是哪个？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_075146_人体最大的器官是什么.packed.json",
+   "question": "人体最大的器官是什么？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "ing_rephrased_direct(94%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_075640_智能体终端会怎样改变工作.packed.json",
+   "question": "智能体终端会怎样改变工作？",
+   "qtype": "fact",
+   "aq": "needs_evidence",
+   "ready": false,
+   "flags": [
+    "candidates_backfilled(sc:11)",
+    "duty_short",
+    "ing_rephrased_direct(74%)",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261026_080125_为什么海水是咸的.packed.json",
+   "question": "为什么海水是咸的？",
+   "qtype": "reasoning",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_080206_智能体终端会怎样改变工作.packed.json",
+   "question": "智能体终端会怎样改变工作？",
+   "qtype": "reasoning",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261026_081340_2024年中国GDP总量是多少亿元.packed.json",
+   "question": "2024年中国GDP总量是多少亿元？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  }
+ ]
+}
