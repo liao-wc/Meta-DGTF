@@ -2426,3 +2426,15 @@ timeout 180s / max_new_tokens 500：**0.95 / verified / ready**（732,848 tok / 
 
 修复：万公里单位、舱段数量展示（几个+舱 → 三舱）、里程 uncovered 豁免尝试（未闭环）。
 加判据 A80/A81；矩阵 52→**54 行**（fact 44）。
+
+
+## 94. 交通/体育真题闭环（Round 109）
+
+| 题 | 修复前 | 修复后 |
+|---|---|---|
+| 2024 高速总里程 | needs_evidence（uncovered 阻断） | **0.98/verified，display=19.07万公里，gaps=[]**（里程类豁免生效） |
+| 奥运会每隔几年 | 0.4638/needs_evidence（取古代史段落） | **0.9771/verified，display=每4年，gaps=[]** |
+
+新机制：间隔类问句（每隔几年/每几年/多久一次）直接取「每X年」句 + display 归一为
+「每4年」+ 间隔类 uncovered 豁免；判据 A82/A83。
+矩阵 54→**56 行**（fact 46）。

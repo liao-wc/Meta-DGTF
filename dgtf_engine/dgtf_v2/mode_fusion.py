@@ -468,6 +468,16 @@ MEASURED_SCENARIOS: Dict[str, dict] = {
                               "question": "中国空间站由几个舱段组成？"
                                           "（display=三舱）",
                               "config": "B parallel + thinking off + web on"},
+            "web_on_fast39": {"quality": 0.9800, "tokens": 623031, "calls": 99,
+                              "wall": 208.6, "verified": True,
+                              "question": "截至2024年底我国高速公路总里程是多少万公里？"
+                                          "（display=19.07万公里）",
+                              "config": "B parallel + thinking off + web on"},
+            "web_on_fast40": {"quality": 0.9771, "tokens": 647386, "calls": 98,
+                              "wall": 267.4, "verified": True,
+                              "question": "奥运会每隔几年举办一次？"
+                                          "（display=每4年）",
+                              "config": "B parallel + thinking off + web on"},
             "web_off_auto": {"quality": 0.4440, "tokens": 1015910, "calls": 111,
                              "wall": 980.3, "verified": False,
                              "config": "B parallel + thinking auto + web off",

@@ -487,6 +487,26 @@ def main():
            "中国空间站由几个舱段组成？",
            "三舱组合体质量约66吨，设计寿命不小于10年"))
 
+    # ── A46：间隔类问句（Round 109）──────────────
+    _ol_ev = EvidenceReport(
+        question="奥运会每隔几年举办一次？",
+        queries=["q"], searches=1,
+        items=[ev("E1", "夏季奥运会每四年举办一次，冬季奥运会同样每四年举办一次。",
+                  official=True),
+               ev("E2", "现代奥林匹克运动会每四年举行一届。", official=True)],
+        conflicts=[], gaps=["uncovered:奥运会每隔几年举办一次"])
+    _ol_card = build_fact_card("奥运会每隔几年举办一次？", _ol_ev)
+    ck("A82 间隔题取每四年句",
+       _ol_card.status == "answered" and "每四年" in str(_ol_card.answer)
+       and not any(str(g).startswith("uncovered:") for g in _ol_card.gaps),
+       (_ol_card.status, _ol_card.answer, _ol_card.gaps))
+    ck("A83 间隔题 display=每4年",
+       _compact_numeric_answer(
+           "奥运会每隔几年举办一次？",
+           "夏季奥运会每四年举办一次") == "每4年",
+       _compact_numeric_answer("奥运会每隔几年举办一次？",
+                               "夏季奥运会每四年举办一次"))
+
     # ── B：整体量语义加权 ────────────────────────
     ck("B1 问长度 + 全长标记 → 加分",
        _overall_quantity_bonus("黄河全长约5464公里", "黄河的长度是多少千米") > 0)

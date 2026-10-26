@@ -384,6 +384,19 @@ def _compact_numeric_answer(question: str, answer: str) -> str:
             if _m2:
                 return _m2.group(1) + "年"
             return _years[-1]
+    # ★ [Round 109] 间隔问句 display：每X年（如 每4年）
+    if any(k in q for k in ("每隔", "每几年", "多久一次")):
+        _mi2 = re.search(r"每\s*([一二三四五六七八九十两\d]+)\s*年", ans)
+        if _mi2:
+            _raw = _mi2.group(1)
+            try:
+                from .evidence import cn_num_to_int as _cn2i
+                _n2 = _cn2i(_raw)
+                if _n2 is not None:
+                    _raw = str(_n2)
+            except Exception:
+                pass
+            return "每" + _raw + "年"
     # ★ [Round 108] 舱段数量问句：display 取「三舱/三个舱段」
     if "几个" in q and "舱" in q:
         _mc = re.search(r"([一二三四五六七八九十两\d]+)\s*个?\s*舱", ans)
@@ -664,6 +677,16 @@ def _aggregate_holiday_days(evs: list) -> str:
 def _numeric_claim_answer(question: str, evs: list) -> str:
     """数值题：从数值主张里选最贴合题面的原文句子（严格守卫，否则返回 ""）。"""
     q = str(question or "")
+    # ★ [Round 109] 间隔类问句（每隔几年/每几年/多久一次）：直接取「每X年…」句
+    if any(k in q for k in ("每隔", "每几年", "多久一次", "间隔")):
+        for e in evs:
+            sn = str(getattr(e, "snippet", "") or "")
+            _mi = re.search(r"每\s*([一二三四五六七八九十两\d]+)\s*年", sn)
+            if not _mi:
+                continue
+            for part in re.split(r"[。；;\n]", sn):
+                if re.search(r"每\s*[一二三四五六七八九十两\d]+\s*年", part):
+                    return part.strip()[:240]
     q_units = []
     if any(k in q for k in ("增速", "增长", "率", "百分", "CPI", "PPI", "通胀")):
         q_units.append("%")
@@ -1095,7 +1118,12 @@ def build_fact_card(question: str, report: EvidenceReport,
                         for _t in _uterms)
                     and re.search(r"\d+(?:\.\d+)?\s*(?:万公里|公里)",
                                   str(answer)))
-        if ((_age_ok or _stat_ok) and official_n >= 2) or _road_ok or _loc_ok:
+        _interval_ok = (any(any(k in _t for k in ("每隔", "间隔", "几年", "多久"))
+                            for _t in _uterms)
+                        and re.search(r"每\s*[一二三四五六七八九十两\d]+\s*年",
+                                      str(answer)))
+        if (((_age_ok or _stat_ok) and official_n >= 2) or _road_ok
+                or _loc_ok or _interval_ok):
             gaps = [g for g in gaps
                     if not str(g).startswith("uncovered:")]
     if answer and (official_n >= int(min_official)
