@@ -458,6 +458,19 @@ def main():
                    for g in _who_card.gaps),
        (_who_card.status, _who_card.gaps))
 
+    # ── A44：节假日逐项聚合（Round 107）──────────────
+    _fest_ev = EvidenceReport(
+        question="我国现行法定节假日一年共有多少天？",
+        queries=["q"], searches=1,
+        items=[
+            ev("E1", "2025年起施行的放假办法：元旦，放假1天；春节，放假4天。", official=True),
+            ev("E2", "清明节，放假1天；劳动节，放假2天；端午节，放假1天。", official=True),
+            ev("E3", "中秋节，放假1天；国庆节，放假3天。", official=True),
+        ], conflicts=[], gaps=[])
+    _fest = _numeric_claim_answer(
+        "我国现行法定节假日一年共有多少天？", list(_fest_ev.items))
+    ck("A79 节假日逐项聚合=13天", "13天" in _fest, _fest)
+
     # ── B：整体量语义加权 ────────────────────────
     ck("B1 问长度 + 全长标记 → 加分",
        _overall_quantity_bonus("黄河全长约5464公里", "黄河的长度是多少千米") > 0)

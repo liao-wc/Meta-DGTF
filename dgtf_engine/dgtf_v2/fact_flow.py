@@ -616,6 +616,45 @@ def _official_precedence_answer(question: str, evs: list,
     return ans, []
 
 
+_FESTIVALS = ("元旦", "春节", "清明节", "劳动节", "端午节", "中秋节",
+              "国庆节", "国庆")
+
+
+def _aggregate_holiday_days(evs: list) -> str:
+    """合计类节假日问句：逐节日聚合放假天数（优先「2025/修改后」证据）。"""
+    import re as _re
+
+    def _maps(evs_sub):
+        mp = {}
+        for e in evs_sub:
+            sn = str(getattr(e, "snippet", "") or "")
+            if not any(k in sn for k in ("放假", "假期", "假日")):
+                continue
+            for part in _re.split(r"[。；;\n]", sn):
+                if "放假" not in part and "假期" not in part:
+                    continue
+                fest = next((f for f in _FESTIVALS if f in part), None)
+                if not fest:
+                    continue
+                m = _re.search(r"(\d{1,2})\s*天", part)
+                if m:
+                    mp.setdefault(fest, int(m.group(1)))
+        return mp
+
+    new_evs = [e for e in evs if any(
+        k in str(getattr(e, "snippet", "") or "")
+        for k in ("2025", "修改后", "此次修改", "现行"))]
+    mp = _maps(new_evs)
+    if len(mp) < 4:
+        mp = _maps(evs)
+    if len(mp) < 4:
+        return ""
+    total = sum(mp.values())
+    if total <= 0:
+        return ""
+    return "现行全体公民放假的法定节假日共%d天" % total
+
+
 def _numeric_claim_answer(question: str, evs: list) -> str:
     """数值题：从数值主张里选最贴合题面的原文句子（严格守卫，否则返回 ""）。"""
     q = str(question or "")
@@ -800,6 +839,11 @@ def _numeric_claim_answer(question: str, evs: list) -> str:
     if best is None:
         return ""
     score, snip, raw = best
+    # ★ [Round 107] 节假日合计：逐项聚合（元旦1+春节4+…=13天）
+    if _sum_ask and any(k in q for k in ("节假日", "假日", "放假")):
+        _hol = _aggregate_holiday_days(evs)
+        if _hol:
+            return _hol
     # 严格门槛：单位类命中 + 题面概念命中 + 非分段语义，否则回退旧逻辑
     if not (score[0] and score[7] and not score[20]):
         return ""

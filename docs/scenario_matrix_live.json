@@ -1,5 +1,5 @@
 {
- "n_valid_runs": 125,
+ "n_valid_runs": 126,
  "since": "",
  "matrix": {
   "reasoning": {
@@ -936,6 +936,15 @@
    "human_quality": 0.9973,
    "live_quality": 0.958,
    "delta": -0.039,
+   "n_runs": 35,
+   "verified_ratio": 0.686
+  },
+  {
+   "scenario": "fact",
+   "mode": "web_on_fast36",
+   "human_quality": 0.9809,
+   "live_quality": 0.958,
+   "delta": -0.023,
    "n_runs": 35,
    "verified_ratio": 0.686
   },

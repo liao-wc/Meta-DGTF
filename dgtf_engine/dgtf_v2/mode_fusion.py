@@ -453,6 +453,11 @@ MEASURED_SCENARIOS: Dict[str, dict] = {
                               "question": "世界卫生组织总部设在哪个城市？"
                                           "（display=日内瓦）",
                               "config": "B parallel + thinking off + web on"},
+            "web_on_fast36": {"quality": 0.9809, "tokens": 764986, "calls": 107,
+                              "wall": 238.1, "verified": True,
+                              "question": "我国现行法定节假日一年共有多少天？"
+                                          "（逐项聚合法，display=13天）",
+                              "config": "B parallel + thinking off + web on"},
             "web_off_auto": {"quality": 0.4440, "tokens": 1015910, "calls": 111,
                              "wall": 980.3, "verified": False,
                              "config": "B parallel + thinking auto + web off",
