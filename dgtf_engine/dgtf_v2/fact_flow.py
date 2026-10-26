@@ -688,6 +688,33 @@ def _aggregate_holiday_days(evs: list) -> str:
     return "现行全体公民放假的法定节假日共%d天" % total
 
 
+def _anchor_resolve_answer(question: str, evs: list) -> str:
+    """[Round 127] 题面年份 + 年末/12月/全年 的时间锚定答案句（无则 ""）。"""
+    import re as _re
+    q = str(question or "")
+    years = _re.findall(r"(?:19|20)\d{2}", q)
+    if not years:
+        return ""
+    want = years[-1]
+    markers = ("年末", "12月", "12 月", "全年", "年底")
+    for e in evs:
+        sn = str(getattr(e, "snippet", "") or "")
+        if want not in sn or not any(k in sn for k in markers):
+            continue
+        try:
+            from .evidence import extract_numeric_claims
+            claims = extract_numeric_claims(sn)
+        except Exception:  # noqa: BLE001
+            continue
+        for c in claims:
+            unit = str(c.get("unit") or "")
+            raw = str(c.get("raw") or "").strip()
+            if not raw or unit not in ("亿美元", "万亿美元", "万亿元", "亿元"):
+                continue
+            return sn[:240]
+    return ""
+
+
 def _numeric_claim_answer(question: str, evs: list) -> str:
     """数值题：从数值主张里选最贴合题面的原文句子（严格守卫，否则返回 ""）。"""
     q = str(question or "")
@@ -933,6 +960,19 @@ def build_fact_card(question: str, report: EvidenceReport,
     if conflicts:
         conflicts = [c for c in conflicts
                      if not _is_aux_growth_conflict(c, question)]
+    # ★ [Round 127] 题面年份+年末/12月 时间锚定：消解同一年不同时点的数值冲突
+    _anchor_ans = _anchor_resolve_answer(question, evs)
+    if _anchor_ans and conflicts:
+        _nums = re.findall(r"\d+(?:\.\d+)?", _anchor_ans)
+        _keep = []
+        for _c in conflicts:
+            _vals = [str(round(float(v), 4)) for v in (_c.get("values") or [])
+                     if str(v).strip() not in ("", "None")]
+            if any(any(_n == _v or _n.startswith(_v) or _v.startswith(_n)
+                       for _v in _vals) for _n in _nums):
+                continue
+            _keep.append(_c)
+        conflicts = _keep
     gaps = list(getattr(report, "gaps", None) or [])
     if evs and not gaps:
         gaps = detect_gaps(question, evs, conflicts=conflicts)
@@ -1052,7 +1092,8 @@ def build_fact_card(question: str, report: EvidenceReport,
                     _n = _m
             _cand_evs = _n
     answer = _clean_card_answer(
-        _numeric_claim_answer(question, _cand_evs)
+        _anchor_ans
+        or _numeric_claim_answer(question, _cand_evs)
         or answer_from_evidence(_cand_evs, question, prefer_recent=True))
     # ★ [Round 85] 成年年龄 sanity：答案 <18 周岁 ⇒ 优先成年人条款，否则拒答
     _qadult = any(k in str(question or "") for k in ("成年", "成年年龄"))
@@ -1143,8 +1184,12 @@ def build_fact_card(question: str, report: EvidenceReport,
                             for _t in _uterms)
                         and re.search(r"每\s*[一二三四五六七八九十两\d]+\s*年",
                                       str(answer)))
+        _bal_ok = (any(any(k in _t for k in ("余额", "储备", "规模"))
+                       for _t in _uterms)
+                   and re.search(r"\d+(?:\.\d+)?\s*(?:亿|万亿)",
+                                 str(answer)))
         if (((_age_ok or _stat_ok) and official_n >= 2) or _road_ok
-                or _loc_ok or _interval_ok):
+                or _loc_ok or _interval_ok or _bal_ok):
             gaps = [g for g in gaps
                     if not str(g).startswith("uncovered:")]
     if answer and (official_n >= int(min_official)

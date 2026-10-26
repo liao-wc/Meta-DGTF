@@ -535,6 +535,27 @@ def main():
     ck("A85 居民/人均题取 41314 元（pen 不误伤）",
        "41314" in _inc2, _inc2)
 
+    # ── A49：时间锚定冲突消解（Round 127）──────────────
+    _fx_items = [
+        ev("E1", "截至2024年12月末，我国外汇储备规模为32024亿美元。", official=True),
+        ev("E2", "2024年11月末我国外汇储备规模为32659亿美元。", official=True),
+    ]
+    _fx_card = build_fact_card(
+        "2024年末我国外汇储备余额是多少亿美元？",
+        EvidenceReport(question="2024年末我国外汇储备余额是多少亿美元？",
+                       queries=["q"], searches=1, items=_fx_items,
+                       conflicts=[{"term": "2024 我国外汇储备规模",
+                                   "unit": "亿美元",
+                                   "values": [32024.0, 32659.0],
+                                   "evidence_ids": ["E1", "E2"]}],
+                       gaps=["uncovered:2024年末我国外汇储备余额"]))
+    ck("A86 年末锚定消解冲突（32024 而非 32659）",
+       _fx_card.status == "answered" and "32024" in str(_fx_card.answer)
+       and "32659" not in str(_fx_card.answer)
+       and not any(str(g) in ("conflict_unresolved",) or str(g).startswith("uncovered:")
+                   for g in _fx_card.gaps),
+       (_fx_card.status, _fx_card.answer, _fx_card.gaps))
+
     # ── B：整体量语义加权 ────────────────────────
     ck("B1 问长度 + 全长标记 → 加分",
        _overall_quantity_bonus("黄河全长约5464公里", "黄河的长度是多少千米") > 0)

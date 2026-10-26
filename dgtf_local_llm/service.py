@@ -103,8 +103,10 @@ ADAPTER_CANDIDATES = {
     #   JSON 1.000 vs 0.967、字段 0.378 vs 0.367、suspF1 0.165 vs 0.161、
     #   ing 0.933 vs 0.900、escape 持平 0.200；p50 6.73s vs 6.02s（可接受）。
     #   默认 v5，v2 兜底；DGTF_LOCAL_ADAPTER 可覆盖。
-    "self_check": ["llm_sft/adapter_dgtf_selfcheck_05b_v9b",
-                   "llm_sft/adapter_dgtf_selfcheck_05b_v8b",
+    # ★ [Round 127] self_check 槽位回 v8b：v9b 的 local A/B（出生人口 0.9525、光速 0.9417）
+    #   两题均低于 v8b（此前 0.99 / 0.9509）；v9b 保留在 self_check_min 槽位（其 held-out 验证位）。
+    "self_check": ["llm_sft/adapter_dgtf_selfcheck_05b_v8b",
+                   "llm_sft/adapter_dgtf_selfcheck_05b_v9b",
                    "llm_sft/adapter_dgtf_selfcheck_05b_v6",
                    "llm_sft/adapter_dgtf_selfcheck_05b_v5",
                    "llm_sft/adapter_dgtf_selfcheck_05b_v2",

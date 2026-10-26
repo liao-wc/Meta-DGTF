@@ -2487,3 +2487,42 @@ timeout 180s / max_new_tokens 500：**0.95 / verified / ready**（732,848 tok / 
 
 余额 **¥0.74**（< 硬底线 4）：真实跑次无法进行；待充值后按清单执行（主引擎 local 真跑、
 新域真题 2–3 条、local self_check 2 题 A/B）。
+
+
+## 97. Round 127：合并后 local 真跑 / 新域扩展 / 外汇时间锚定 / self_check 槽位回滚
+
+### 97.1 合并后引擎 `--dual-judge-mode local` 真跑（主引擎）
+
+HTTP404 fast+web：**0.9857 / verified / ready**（635,713 tok / 98 calls / 334.5s）；
+日志 8 次「本地双判失败→回退 llm」、service `dual_judge_fastfail` 计数生效
+（本地 judge 吞吐仍不足，但回退链路毫秒级、答案质量无损）。
+结论：dual_judge local 合并后主引擎端到端可用，默认仍 opt-in。
+
+### 97.2 新域真题
+
+| 题 | 结果 |
+|---|---|
+| 嫦娥六号哪一年发射 | **0.9639 / verified** |
+| 成人建议睡眠时长 | **0.9409 / verified** |
+| 2024年末外汇储备 | 首跑 0.49/unverified（conflict 32024 vs 32659 + uncovered） |
+
+**外汇冲突修复（离线，未复跑）**：新增 `_anchor_resolve_answer`——题面年份+年末/12月
+时间锚定优先，冲突值若匹配锚定值 ⇒ 视为已消解；uncovered 增「余额/储备/规模」豁免；
+A86 判据；离线重放：**answered / gaps=[] / display=32024亿美元**。
+
+### 97.3 v9b self_check local A/B（2 题）与槽位回滚
+
+| 题 | 默认 llm | v9b local | v8b local（此前） |
+|---|---|---|---|
+| 出生人口 | 0.9673 | 0.9525 | **0.99** |
+| 光速 | 0.9508 | 0.9417 | 0.9509 |
+
+v9b 在 self_check 阶段两题均低于 v8b ⇒ **self_check 槽位回 v8b**；v9b 保留
+`self_check_min` 槽位（其 held-out 验证位）。服务重启后 `/health`：
+self_check=v8b、self_check_min=v9b。
+
+### 97.4 数字与收束
+
+- 矩阵事实 57→**60 行**（fact 50）；V2 **836 checks**；fast_gate 12/12；
+- 一键验收 `--with-service` **13/13 PASS**；App 版本 **2.0.35**（收束说明见 releases）；
+- 预算：用户限定 ¥10；本轮 6 条真跑窗口差合计约 ¥4.8，之后停止真实跑次。

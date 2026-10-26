@@ -1,3 +1,12 @@
+【Round 127 增补（2026-10-26）】
+- 合并后引擎 dual_judge local 真跑 0.9857/verified（8 次回退；吞吐仍限 opt-in）；
+- 新域：嫦娥六号 0.9639、成人睡眠 0.9409；外汇时间锚定修复（A86，离线 answered/32024亿美元）；
+- v9b self_check local A/B（0.9525/0.9417）低于 v8b（0.99/0.9509）⇒ self_check 槽位回 v8b，
+  self_check_min 仍 v9b；矩阵 60 行（fact 50）；V2 836 checks；验收 13/13。
+【App 2.0.35（2026-10-26，收束版）】
+- Round 125–127 收束：judge 503 快失败、App 缓存绕过、probe R7 兜底、merged 引擎 local
+  真跑 0.9857、新域真题 0.9639/0.9409、外汇时间锚定 A86、self_check 槽位回 v8b；
+  验收 13/13。详见 docs/releases/app-V2.0.35.md。
 # 元 DGTF · 变更记录（CHANGELOG）
 
 > 本文件是单文件引擎 `Meta-DGTF-V1.23.x.py` 的**变更记录**。
