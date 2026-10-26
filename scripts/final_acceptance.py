@@ -25,6 +25,9 @@ STEPS = [
     ("app_dual_judge_guard", ["scripts/app_dual_judge_guard_check.py"]),
     ("compare_eval_selftest", ["scripts/local_model/test_compare_eval.py"]),
     ("train_guard", ["scripts/local_model/test_train_guard.py"]),
+    ("app_cache_bypass", ["scripts/local_model/test_app_cache_bypass.py"]),
+    ("judge_fastfail", ["scripts/local_model/test_judge_fastfail.py"]),
+    ("probe_cover_wide", ["scripts/local_model/test_probe_cover_wide.py"]),
     ("scenario_matrix_guard", ["scripts/update_scenario_matrix.py"]),
 ]
 

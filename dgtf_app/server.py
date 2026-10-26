@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "2.0.33"
+APP_VERSION = "2.0.34"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -10092,6 +10092,11 @@ class Handler(BaseHTTPRequestHandler):
             opts = data.get("opts") or {}
             if not isinstance(opts, dict):
                 opts = {}
+            # ★ [Round 125] no_cache / force_rerun 别名：显式要求跑新任务（e2e 复跑）
+            if _no_cache_requested(opts):
+                opts["use_cache"] = False
+                opts["use_semantic_cache"] = False
+                opts["_no_cache"] = True
             _is_mock_task = (bool(opts.get("mock"))
                              or os.environ.get("DGTF_APP_MOCK") == "1")
 
@@ -10507,6 +10512,12 @@ class Handler(BaseHTTPRequestHandler):
 _CACHE_TTL_S = 6 * 3600
 
 
+def _no_cache_requested(opts: dict) -> bool:
+    """显式要求跳过产物缓存/去重（no_cache / force_rerun 别名）。"""
+    o = opts or {}
+    return bool(o.get("no_cache") or o.get("force_rerun"))
+
+
 def _task_sig(opts: dict, prefix: str):
     _cfg = str(opts.get("_config") or "")
     if not _cfg and opts.get("profile"):
@@ -10525,6 +10536,8 @@ def _task_sig(opts: dict, prefix: str):
 
 def _find_running_duplicate(question: str, opts: dict, prefix: str):
     """同题、同关键参数的任务已在跑时，直接复用它，避免重复计费。"""
+    if _no_cache_requested(opts):
+        return None
     try:
         want = _task_sig(opts, prefix)
         for t in runner.list_tasks():
@@ -10578,6 +10591,8 @@ def _watch_v2_online_outcome(tid: str, assignment_id: str):
 def _find_cached_pack(question: str, opts: dict, prefix: str = "",
                       semantic: bool = False):
     """查找同题、同 web/parallel 的已验证 packed，复用其产物。"""
+    if _no_cache_requested(opts):
+        return None
     import json as _json
     import time as _time
     want_web = str(opts.get("web") or "") == "on"

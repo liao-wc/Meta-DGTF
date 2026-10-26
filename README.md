@@ -3,10 +3,10 @@
 一个**单文件四层螺旋推理引擎** + **V2 三平面核心** + **本地 Web 工作台**：
 修行 / 研究 / 对撞 / 元，跑出可审计、可回放、可融合的产物。
 
-- **当前版本**：V2.2.3（细粒度自省三档 + 环节思考预算 + 本地自省端点；默认零行为差） / App 2.0.33（道生专属模式 + 三体动态计划 + 预算守卫）
+- **当前版本**：V2.2.3（细粒度自省三档 + 环节思考预算 + 本地自省端点；默认零行为差） / App 2.0.34（道生专属模式 + 三体动态计划 + 预算守卫）
 - **生产引擎**：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.3.py
 - **V2 核心**：dgtf_engine/dgtf_v2/
-- **人用界面**：dgtf_app/（App 2.0.33，道生专属模式 + DSH 本对话实时镜像 + 会话列表实时打开 + 健康读数缓存）
+- **人用界面**：dgtf_app/（App 2.0.34，道生专属模式 + DSH 本对话实时镜像 + 会话列表实时打开 + 健康读数缓存）
 - **融合实现**：单引擎内联（Meta-DGTF-V2.2.3.py）；V2.1 外部模块仅作回滚参考
 - **历史清单**：dgtf_engine/dgtf_v2/history_manifest.json
 - **版本规范**：dgtf_engine/dgtf_v2/NAMING.md
@@ -138,7 +138,7 @@ python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.3.py -c configs/方案F-帕累�
 | fast_gate | PASS 12 / FAIL 0 |
 | V2 tests_*.py | **51 / 51 PASS（806 项检查）** |
 | App selftest | PASS 444 / FAIL 0 |
-| 一键验收 `scripts/final_acceptance.py --with-service` | **10 / 10 PASS**（无服务 9/9）；含四道护栏 + 训练防错训判据 |
+| 一键验收 `scripts/final_acceptance.py --with-service` | **13 / 13 PASS**（无服务 12/12）；含四道护栏 + 防错训/probe/缓存/快失败判据 |
 | 离线重放护栏（124 packs） | answered 81 / gaps 清零 17 / 数值 34→38 / **0 新答案变差** |
 | 过程门审计护栏（85 packs） | standard 83.5% / 审计已修复 27 / **未修复 0** |
 | App plan 不变量 / dual_judge 防护 | 18/18、7/7 |
@@ -229,7 +229,7 @@ local_model\envs\dgtf_llm_env\Scripts\python.exe -m pip check
 
 ## 九、当前收束
 
-- 版本：V2.2.3（App 2.0.33）
+- 版本：V2.2.3（App 2.0.34）
 - 历史版本：178 个快照（V1.0 → V2.0.0）
 - 能力轴：17 条，readiness=1.00
 - 行为臂：5 个（v1_spiral / v1_frontier / v2_contract / v2_pareto / fusion_full）

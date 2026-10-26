@@ -8896,6 +8896,11 @@ _GAIN_ASSIGN_MIN = 0.15
 #:   与 `_COV_OVERLAP_MIN`（0.50，语言判据）分开：那是给「无 id」
 #:   场景兜底的宽尺子，这是给「有 id」场景的**严尺子**。
 _COVERS_SIM_MIN = 0.30
+#: ★ [Round 126] 严尺子漏掉的「词面近义」兜底（**AND** 门，低误报）：
+#:   `_sim3 >= 0.25 且 _overlap_coef >= 0.30` 才追加视为覆盖。
+#:   依据：offline 审计 R7 翻正 9/92（9.8%），样例语义均明显相关。
+_COVERS_SIM_WIDE = 0.25
+_COV_OVERLAP_WIDE = 0.30
 #: [E5] `no_probe_reason` 的最小字数；短于它 = 空洞理由 ⇒ lazy_empty。
 _NO_PROBE_REASON_MIN = 8
 #: 子模批选的**边际下限**（E2）：`G(p*|S) < floor` ⇒ 停手。
@@ -8908,6 +8913,23 @@ _GAIN_MARGINAL_FLOOR = 0.02   # G ∈ [0,1]；默认须 > 0，否则 below_floor
 #:   做」，这是「还能不能推得动」。默认 0.02 取「比噪声高一点点」——
 #:   刻意压低：停止是强动作，宁可多跑一圈也别误停。
 _GAIN_STOP_FLOOR = 0.02
+
+
+def _probe_covers_target(probe_q: str, target: str) -> bool:
+    """[E3 + Round 126] 探针问题是否确实打到靶子。
+
+    严尺子（原三判据）优先；不中时用「sim3 AND overlap」词面近义兜底，
+    只救回语义明显相关、被字面差异漏掉的样本（低误报，实证见 docs/probe_cover_audit_v2_*.json）。
+    """
+    try:
+        if (_similar(probe_q, target, _QC_DUP_SIM)
+                or _sim3(probe_q, target) >= _COVERS_SIM_MIN
+                or _overlap_coef(probe_q, target) >= _COV_OVERLAP_MIN):
+            return True
+        return (_sim3(probe_q, target) >= _COVERS_SIM_WIDE
+                and _overlap_coef(probe_q, target) >= _COV_OVERLAP_WIDE)
+    except Exception:  # noqa: BLE001
+        return False
 
 
 def e6_stop_verdict(seen, max_gain, min_gain, stop_floor):
@@ -15424,10 +15446,8 @@ class DGTF:
                         bad_ref = True
                         continue
                     # [E3] 编号对只是**必要条件**：还要**语义对得上**。
-                    if (_similar(_pq, _tgt, _QC_DUP_SIM)
-                            or _sim3(_pq, _tgt) >= _COVERS_SIM_MIN
-                            or _overlap_coef(_pq, _tgt)
-                            >= _COV_OVERLAP_MIN):
+                    # ★ [Round 126] 改用统一纯函数（含词面近义 AND 兜底）
+                    if _probe_covers_target(_pq, _tgt):
                         has_touch = True
                         break
                 if has_touch:

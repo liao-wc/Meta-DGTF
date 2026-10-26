@@ -2448,3 +2448,42 @@ timeout 180s / max_new_tokens 500：**0.95 / verified / ready**（732,848 tok / 
   ② 题面含 居民/人均 时，pen 不把同词当子项语义；
 - **真实验证**：**0.9782 / verified / ready**（790,366 tok / 109 calls / 284s），
   display=**41314元**，gaps=[]；矩阵 56→**57 行**（fact 47）。
+
+
+## 96. Round 125–126：probe 兜底 / 本地 judge 快失败 / App 缓存绕过
+
+### 96.1 probe 覆盖判据：词面近义 AND 兜底（引擎已改）
+
+- 离线审计（`scripts/probe_cover_audit2.py`，复用引擎函数）：92 个带
+  `probe_no_target_covered` 的 pack **strict 复算 92/92 可复现**（判据一致性 OK）；
+- 放宽规则评估：R1(sim3≥0.20) 翻正 30/92、R2(overlap≥0.40) 24、R3(similar≥0.55) 0、
+  **R7（sim3≥0.25 AND overlap≥0.30）9/92（9.8%）**——R7 样例语义均明显相关
+  （待岗轮岗现金表 / RFC 9110 501-500 / kepuah 第4条答案断点），精度高、改动最小；
+- 落地：引擎新增纯函数 `_probe_covers_target`（严尺子 + R7 兜底）+
+  `_COVERS_SIM_WIDE=0.25` / `_COV_OVERLAP_WIDE=0.30`；判据 W1–W4（5/5 PASS）。
+- 效果边界：只救回被字面差异漏掉的 9.8% 样本；其余仍按原 flag 报（不掩盖真实缺口）。
+
+### 96.2 本地 judge 吞吐：忙时快失败（服务已改）
+
+- `dual_judge` 请求在服务繁忙/排队时立即 **503 BUSY**（不再排队等 120s）；
+  引擎 `_dual_judge_local` 收到非 200 立即回退 llm；
+- `/metrics` 新增 `dual_judge_fastfail` 计数；判据 L1/L2/L3（3/3 PASS）：
+  并发时至少一个 503 BUSY <3s、计数>0、空闲单发仍 200；
+- 实测并发：一个 200（~1.96s）、另一个 **503 BUSY（17.7ms）**。
+
+### 96.3 App 缓存/去重显式绕过（App 已改）
+
+- `opts.no_cache` / `opts.force_rerun` 别名 ⇒ `use_cache=False`、`use_semantic_cache=False`；
+- `_find_cached_pack` / `_find_running_duplicate` **内部自守卫**（不依赖调用方）；
+- `app_fast_e2e.py` 支持 `DGTF_E2E_NO_CACHE=1` 并回显 `cache_hit`；
+- 判据 L1–L4（7/7 PASS，含真实临时 packed 的命中/绕过对照）。
+
+### 96.4 一键验收扩至 13 项
+
+新增 `app_cache_bypass`、`judge_fastfail`、`probe_cover_wide` 三步：
+**有服务 13/13 PASS、无服务 12/12 PASS**。
+
+### 96.5 预算覆盖面（未完成）
+
+余额 **¥0.74**（< 硬底线 4）：真实跑次无法进行；待充值后按清单执行（主引擎 local 真跑、
+新域真题 2–3 条、local self_check 2 题 A/B）。

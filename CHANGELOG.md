@@ -190,6 +190,18 @@ V2.2.3
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
 【Round 123 增补（2026-10-26）】（合并完成 + v9b 训练）
+【App 2.0.34（2026-10-26）】
+- 本地 judge 忙时 503 BUSY 快失败 + 引擎毫秒级回退；App 缓存/去重 no_cache/force_rerun；
+  引擎 probe 覆盖 R7 兜底；验收 13/13（有服务）。详见 docs/releases/app-V2.0.34.md。
+【Round 125–126 增补（2026-10-26）】
+- 本地 judge 吞吐：service 忙时 **503 BUSY 快失败**（并发实测 17.7ms）+ 引擎毫秒级回退 llm；
+  /metrics 增 dual_judge_fastfail；判据 3/3。
+- App 缓存/去重：**no_cache / force_rerun 显式绕过**（函数内自守卫），e2e 支持
+  DGTF_E2E_NO_CACHE=1 并回显 cache_hit；判据 7/7。
+- 引擎 probe 覆盖：离线审计 92 flagged 全复现，R7（sim3≥.25 AND overlap≥.30）
+  翻正 9.8% 且样例语义相关 ⇒ 落 `_probe_covers_target` 兜底 + W1–W4 判据 5/5。
+- 一键验收扩至 **13 项**：有服务 13/13、无服务 12/12 PASS。
+- 预算覆盖面仍阻塞（余额 ¥0.74，<硬底线 4）。
 【Round 124 增补（2026-10-26）】
 - v9b 训练完成：best_val_loss **0.1989**（v6 0.2221）；30 条 held-out 与 v8b 质量完全持平，
   p50 4774ms / p95 5690ms（更快）⇒ SWITCH_CANDIDATE；

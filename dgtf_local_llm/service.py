@@ -239,6 +239,7 @@ class LocalEngine:
         self._stats_lock = threading.Lock()
         self.stats = {"requests_total": 0, "by_stage": {}, "errors": 0,
                       "total_ms": 0.0, "max_ms": 0.0, "busy_now": False,
+                  "dual_judge_fastfail": 0,
                       "last_ms": 0.0, "last_stage": "", "last_adapter": ""}
         # ★ [Round 65] 延迟分位数滑动窗口（最近 50 次真实生成耗时）
         import collections as _collections
@@ -725,6 +726,25 @@ class Handler(BaseHTTPRequestHandler):
         import time as _time
         _t0 = _time.perf_counter()
         _stage = str(req.get("stage") or "")
+        # ★ [Round 125] dual_judge 快失败：本地 judge 吞吐低，忙/排队时直接 503 BUSY，
+        #   引擎侧立即回退 llm（避免等满 120s timeout）。
+        if _stage == "dual_judge":
+            try:
+                _busy = (int(getattr(self.engine, "queue_depth", 0) or 0) > 0
+                         or bool(self.engine.stats.get("busy_now")))
+            except Exception:  # noqa: BLE001
+                _busy = False
+            if _busy:
+                try:
+                    with self.engine._stats_lock:
+                        self.engine.stats["dual_judge_fastfail"] = int(
+                            self.engine.stats.get("dual_judge_fastfail", 0)) + 1
+                except Exception:  # noqa: BLE001
+                    pass
+                self._send(503, {"ok": False, "error": {
+                    "code": "BUSY",
+                    "message": "dual_judge busy：本地 judge 吞吐不足，快速回退 llm"}})
+                return
         _adapter = ""
         _ok = False
         self.engine.stat_begin(_stage)

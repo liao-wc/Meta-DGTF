@@ -81,8 +81,12 @@ def main() -> int:
             return 1
         t0 = time.time()
         _mode = (sys.argv[2] if len(sys.argv) > 2 else "daosheng_fast")
+        _opts = {}
+        if str(os.environ.get("DGTF_E2E_NO_CACHE") or "") == "1":
+            _opts["no_cache"] = True
         r = req("/api/tasks", {"question": QUESTION,
-                               "mode": _mode, "opts": {}}, timeout=60)
+                               "mode": _mode, "opts": _opts}, timeout=60)
+        result["cache_hit"] = bool(r.get("cache_hit"))
         result["task_post_status"] = 201
         result["task_id"] = r.get("id") or r.get("task", {}).get("id")
         mode = r.get("mode") or (r.get("task") or {}).get("mode") or {}

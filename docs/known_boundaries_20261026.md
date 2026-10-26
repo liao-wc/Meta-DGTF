@@ -148,3 +148,13 @@
 | 本地模型默认 | **v9b**（val 0.1989；held-out 质量=v8b、更快；v8b/v6/v5/v2 兜底） |
 | 验收 | **10/10 PASS**（有服务）/ 9/9（无服务） |
 | 剩余边界 | probe_no_target_covered（引擎侧扣分，29.3% packs）；App 精确缓存；旧 pack 严格拒答；检索依赖 |
+
+## 19. Round 126 更新
+
+| 项 | 内容 |
+|---|---|
+| probe_no_target_covered | **已加词面近义 AND 兜底**（R7：sim3≥.25 且 overlap≥.30），救回约 9.8% flagged；其余仍如实报 |
+| dual_judge 吞吐 | **忙时 503 BUSY 快失败**（17.7ms 回退信号）；引擎毫秒级回退 llm；计数可审计 |
+| App 缓存 | **no_cache/force_rerun 显式绕过**（缓存+去重），e2e 可用 `DGTF_E2E_NO_CACHE=1` |
+| 预算覆盖面 | 仍阻塞：余额 ¥0.74（<4）；充值后可恢复真跑清单 |
+| 验收 | **13/13（有服务）/ 12/12（无服务）** |
