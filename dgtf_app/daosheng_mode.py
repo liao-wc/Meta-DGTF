@@ -44,6 +44,18 @@ PRESET_NAME = "道生专属模式.yaml"
 PRESET_PATH = CONFIG_DIR / PRESET_NAME
 
 POLICY = "daosheng.v1"
+
+
+def _engine_supports_dual_judge_local() -> bool:
+    """引擎源码是否已支持 --dual-judge-mode local（dual_judge local 合并后自动 True）。"""
+    try:
+        engine = (PROJECT_ROOT / "dgtf_engine" / "dgtf_v2" / "engine"
+                  / "Meta-DGTF-V2.2.3.py")
+        text = engine.read_text(encoding="utf-8", errors="replace")
+        return ('"llm", "cache", "auto", "local"' in text
+                or "llm,cache,auto,local" in text)
+    except Exception:  # noqa: BLE001
+        return False
 VALID_MODES = ("auto", "daosheng", "daosheng_fast", "standard")
 VALID_ROUTE = ("0", "1", "both", "all")
 
@@ -1168,8 +1180,12 @@ def build_plan(question: str, opts: dict | None = None, *,
     #   预设若写了 local，这里确定性回退 llm，避免透传非法 flag 直接把引擎打挂。
     _djm_raw = str(ds.get("dual_judge_mode") or "").strip().lower()
     if _djm_raw == "local" or str(djm or "").strip().lower() == "local":
-        djm_via, djm = "local-unsupported-fallback", "llm"
-        warnings.append("dual_judge 不支持 local 档（引擎仅 llm/cache/auto），已回退 llm")
+        if _engine_supports_dual_judge_local():
+            # 引擎已支持 local 档（dual_judge local 补丁已合并）⇒ 显式透传
+            djm_via, djm = "local", "local"
+        else:
+            djm_via, djm = "local-unsupported-fallback", "llm"
+            warnings.append("dual_judge 不支持 local 档（引擎仅 llm/cache/auto），已回退 llm")
     # history_fusion 的 auto 本来就是引擎默认（V2.2.2 已有 --history-fusion auto），
     # 记「engine-default」而不是假装 App 传了参数；显式 off/on 才走 CLI。
     hf = ds.get("history_fusion")

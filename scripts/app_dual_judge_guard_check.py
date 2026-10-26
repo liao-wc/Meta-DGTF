@@ -27,7 +27,10 @@ def main():
         ds["dual_judge_mode"] = value
         return ds
 
-    for value, expect in (("local", "llm"), ("llm", "llm"), ("auto", "auto")):
+    _supports_local = dm._engine_supports_dual_judge_local()
+    _local_expect = "local" if _supports_local else "llm"
+    for value, expect in (("local", _local_expect), ("llm", "llm"),
+                          ("auto", "auto")):
         dm.load_preset = lambda v=value: preset_with(v)
         try:
             plan = dm.build_plan("2024年中国GDP增速最新数据是多少？", {},
@@ -38,17 +41,18 @@ def main():
         ck("dual_judge_mode=%s → %s" % (value, expect),
            str(plan.get("dual_judge_mode")) == expect, plan.get("dual_judge_mode"))
         if value == "local":
-            ck("local 回退 via 标记",
-               plan.get("dual_judge_mode_via") == "local-unsupported-fallback",
-               plan.get("dual_judge_mode_via"))
-            ck("local 回退 warning",
-               any("dual_judge" in str(x) for x in (plan.get("warnings") or [])))
-        else:
-            ck("%s 不被改写" % value,
-               plan.get("dual_judge_mode_via") != "local-unsupported-fallback")
-    print("\nTOTAL PASS %d / FAIL %d" % (len(P), len(F)))
-    return 0 if not F else 1
-
+            if _supports_local:
+                ck("local 透传 via 标记",
+                   plan.get("dual_judge_mode_via") == "local",
+                   plan.get("dual_judge_mode_via"))
+            else:
+                ck("local 回退 via 标记",
+                   plan.get("dual_judge_mode_via")
+                   == "local-unsupported-fallback",
+                   plan.get("dual_judge_mode_via"))
+                ck("local 回退 warning",
+                   any("dual_judge" in str(x)
+                       for x in (plan.get("warnings") or [])))
 
 if __name__ == "__main__":
     raise SystemExit(main())

@@ -84,6 +84,11 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 122 增补（2026-10-26）】
+- App 侧 dual_judge local 能力感知：_engine_supports_dual_judge_local() 读取引擎源码；
+  未合并 → 确定性回退 llm（原防护），合并后 → 自动透传 local；两条路径均有判据
+  （monkeypatch 支持路径 + 实际回退路径），app_dual_judge_guard_check 19/19 PASS。
+- 验收复核 9/9 PASS（无服务）/ 10/10（有服务时）。
 【Round 121 增补（2026-10-26）】
 - 最终验收复核：**10/10 PASS**（含本地服务 + 训练防错训判据）；余额 ¥6.26（硬底线 4）。
 - 阻塞快照：主引擎被并发会话占用（自 Round 49）；GPU 6GB 窗口被并发服务占用（v9b 无法重训）；

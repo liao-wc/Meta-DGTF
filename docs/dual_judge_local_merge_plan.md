@@ -46,3 +46,10 @@
 python scripts/merge_dual_judge_local.py --check-only   # 临时 worktree 全量校验（当前 PASS）
 python scripts/merge_dual_judge_local.py --commit       # 主引擎干净时 apply+Gates+提交
 `
+
+## 5. App 自动透传（Round 122）
+
+daosheng_mode._engine_supports_dual_judge_local() 读取引擎源码：
+- 合并前：预设写 local ⇒ 确定性回退 llm（local-unsupported-fallback + warning）；
+- 合并后：预设写 local ⇒ 自动透传 dual_judge_mode=local（via=local），无需改 App。
+判据：scripts/app_dual_judge_guard_check.py（19 项，含 monkeypatch 支持路径）。
