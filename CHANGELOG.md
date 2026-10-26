@@ -10,6 +10,21 @@
 > （`check_v72_changelog_hygiene`）；代码文件里**不得**再出现版本段
 > （`check_v1237_changelog_outside_code`）。
 
+App 2.0.32
+
+【主题】点击 DSH Agent 只切换模式，不自动进入 DSH 对话。
+
+【改变】
+- 新增 dshViewActive 状态：只有显式发起 DSH 任务或打开 DSH 会话后才切换到 DSH 视图。
+- toggleDshMode(true) 不再调用 renderDshView()，不再自动启动 DSH 视图轮询。
+- 进入 DSH 模式后停留在当前页面/当前普通任务视图，等待用户发送第一条 DSH 消息或显式打开会话。
+- 退出 DSH 模式时关闭 DSH 轮询并渲染普通任务视图。
+- 保留 2.0.31 的普通模式/DSH 模式隔离逻辑。
+
+【验证】
+- node --check app.js PASS。
+- App 全方位检查 PASS；App 版本一致性 PASS；App selftest 444/0；fast_gate 12/12。
+- 静态缓存串：2.0.32-dshclick。
 App 2.0.31
 
 【主题】普通模式与 DSH 模式视图隔离，修复跳串。

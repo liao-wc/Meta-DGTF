@@ -5,6 +5,7 @@ const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 let dshMode = false;
+let dshViewActive = false;  // 只有显式发起/打开 DSH 会话后才切进 DSH 视图
 let dshSession = "";
 let dshCurrent = null;
 let dshAttachTaskId = null;
@@ -1060,7 +1061,7 @@ function bindRlBarDrag() {
 function renderTasks() {
   const box = $('#runlog');
   if (!box) return;
-  if (dshMode) { renderDshView(); return; }  // 模式隔离：DSH 模式不渲染普通任务视图
+  if (dshMode && dshViewActive) { renderDshView(); return; }  // 仅已打开 DSH 视图时隔离普通模式
   const ids = Object.keys(taskData);
   /* 看归档会话时，taskData 可能是空的 —— 这时仍有内容要渲染（那次会话的日志） */
   const arch = (chatMode === 'archive' && archivedTask) ? archivedTask : null;
@@ -1737,12 +1738,11 @@ function toggleDshMode(on) {
   updateDshConvBar();
   if (dshMode) {
     startDshHistoryPoll();
-    if (dshCurrent && dshCurrent.live) startDshViewPoll();
     loadDshChats();
     /* 点击 DSH Agent 只切换模式，不自动进入/恢复会话；
        用户发送第一条消息时由 startDshCurrentRun() 进入当前 DSH 对话。 */
-    renderDshView();
   } else {
+    dshViewActive = false;
     stopDshHistoryPoll();
     stopDshViewPoll();
     stopDshConvPoll();
@@ -1752,6 +1752,7 @@ function toggleDshMode(on) {
     if (hist) hist.classList.add('hidden');
     const elapsed = document.querySelector('#dsh-elapsed');
     if (elapsed) elapsed.classList.add('hidden');
+    dshViewActive = false;
     renderTasks();
   }
 }
@@ -2133,6 +2134,7 @@ async function cancelDshCurrent() {
 
 function renderDshView() {
   if (!dshMode) return;  // 普通模式不得被异步 DSH 轮询覆盖
+  dshViewActive = true;   // 显式进入 DSH 视图
   updateDshConvBar();
   if (dshConversation) { renderDshConversationView(); return; }
   const c = dshCurrent || {};
