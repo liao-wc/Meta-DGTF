@@ -10,6 +10,30 @@
 > （`check_v72_changelog_hygiene`）；代码文件里**不得**再出现版本段
 > （`check_v1237_changelog_outside_code`）。
 
+App 2.0.25
+
+【主题】DSH 会话-产物依赖、内部事件留痕、守卫调度与完成回执、文件安全回退、版本发布自动化。
+
+【改变】
+- DSH 会话按任务入口拆分：同一 session_id 下不同任务独立历史；产物通过 task_id/task_title 关联具体任务，而非只关联父会话。
+- DSH 内部事件（thinking/tool_call/tool_result/status）写入 conversation.internal_events 与产物 internal_events，并在会话/产物中提供只读留痕；空占位会话不再生成新空产物。
+- DSH 守卫恢复完整九领域任务模板（热点抓取、技术知识、真跑轮换、报告留存）；派发增加唯一 dispatch_id、完成回执、pending 回执保护和关键文件完整性预检。
+- 守卫调度改为 last_dispatch_at + interval（120 分钟）；DSH 会话运行中不跳过，到点派发为排队任务；未收到回执不重复派发，4 小时超时才重新派发。
+- 本地 LLM watchdog 恢复：8772 每 30 秒探测，连续失败自动启动；sidebar/系统检查恢复 watchdog_ok。
+- V2 在线策略恢复任务接入：choose → route/rounds 注入 → bind_task → 完成 watcher → record_outcome；online 查询接口补 reconcile。
+- 恢复 V2 自动策略校准门禁：层局部质量未通过整跑校准时冻结，禁止启动/接口覆盖策略；调度策略恢复 route=0,1,both,all / rounds=2 / template 空。
+- 新增 safe_file_ops：修改前 snapshot、原子写前语法校验、失败自动回滚、恢复前全量预检；file_integrity_check 接入 App 检查与守卫派发前预检。
+- 新增 app_version_check 与 app_release：APP_VERSION、静态缓存串、README、PROJECT_LAYOUT、NAMING、发布说明、CHANGELOG 一致性检查；App 检查纳入版本一致性门禁。
+- 侧边栏北斗星链恢复原布局，窄侧栏保留星链视觉并压缩长值；本地 LLM/Agent 活动灯改为真实 ready/运行语义。
+
+【验证】
+- App 全方位检查 PASS；关键文件完整性 PASS（bad=0）；App 版本一致性 PASS。
+- fast_gate 12/12；V2 tests 51/51（835 checks）；App selftest 444/0；guard_policy_check PASS。
+- 安全写入：合法/非法 Python/JSON 测试通过，非法写入回滚；损坏备份恢复前拦截。
+- 本地 LLM：status=ready / watchdog_ok=true；系统检查仅剩 _audit_tmp 体积警告。
+- 调度策略：route=0,1,both,all、rounds=2、template 空、auto_frozen_reason 存在；自动策略接口返回 frozen。
+- 软缓存串：2.0.25-dshguard。
+
 V2.2.3
 
 【主题】细粒度自省三档 + 环节 thinking 预算 + 本地自省端点 + 道生专属模式（App 2.0.24）。
@@ -45,6 +69,11 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 116 增补（2026-10-26）】
+- v9 根因定位：训练命令漏传 --model，脚本 DEFAULT_MODEL 为 Qwen2.5-1.5B →
+  adapter 是 1.5B（与 0.5B 服务不兼容，eval size mismatch）；已归档 ABORTED.md。
+- 新增防错训守卫：out 名含 05b 但模型非 0.5B ⇒ 训练脚本拒绝（--allow-model-mismatch 例外）；
+  metrics 增加 base_model 字段；已验证 reject/allow 两条路径。
 【Round 114–115 增补（2026-10-26）】
 - 本地服务恢复确认（8771/8772，v8b ready），一键验收 --with-service 9/9 PASS；
   App mock 自检 444/0（零成本）。

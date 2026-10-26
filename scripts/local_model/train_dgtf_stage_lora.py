@@ -230,6 +230,8 @@ def main() -> int:
     ap.add_argument("--variant", default="mixed",
                     choices=("full", "min", "mixed"))
     ap.add_argument("--model", default=str(DEFAULT_MODEL))
+    ap.add_argument("--allow-model-mismatch", action="store_true",
+                    help="允许 out 名含 05b 但模型非 0.5B（默认拒绝，防错训）")
     ap.add_argument("--data-dir", default=str(DEFAULT_DATA))
     ap.add_argument("--out", default="")
     ap.add_argument("--epochs", type=int, default=1)
@@ -257,6 +259,13 @@ def main() -> int:
     ap.add_argument("--smoke", type=int, default=0,
                     help=">0 只跑 N 步做冒烟，不保存最终产物")
     args = ap.parse_args()
+    # ★ [Round 116] 防错训：输出名含 05b 但 base 模型非 0.5B ⇒ 拒绝
+    _model_l = str(args.model).lower()
+    _out_l = str(args.out or '').lower()
+    if ("05b" in _out_l and "0.5b" not in _model_l
+            and not getattr(args, "allow_model_mismatch", False)):
+        print("拒绝训练：out 名含 05b 但 base 模型不是 0.5B（%s）；请显式 --model" % args.model, flush=True)
+        return 2
     set_seed(args.seed)
 
     out = Path(args.out) if args.out else (
@@ -477,6 +486,7 @@ def main() -> int:
     tok_seen = n_samples_seen * (sum(plens) / max(1, len(plens))
                                  + sum(tlens) / max(1, len(tlens)))
     metrics = {
+        "base_model": str(args.model),
         "stage": args.stage, "variant": args.variant,
         "model": args.model, "adapter": str(out.relative_to(ROOT)),
         "train_n": len(train), "val_n": len(val),

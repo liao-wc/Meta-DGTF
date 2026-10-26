@@ -106,3 +106,11 @@
 |---|---|
 | 本地服务 | 已恢复（8771/8772，v8b ready）；一键验收 --with-service **9/9 PASS** |
 | v9 | 归档不变：GPU 6GB 卡无法同时容纳训练(5.8GB)+服务(2GB)，需专用窗口 |
+
+## 14. Round 116 更新
+
+| 项 | 内容 |
+|---|---|
+| v9 归档原因（更正） | 命令漏传 --model → 用了默认 1.5B base；adapter 不可用于 0.5B 服务 |
+| 防错训守卫 | out 名含 05b 但模型非 0.5B ⇒ 拒绝训练（已实测 reject/allow） |
+| 正确重训命令 | 见 `llm_sft/adapter_dgtf_selfcheck_05b_v9_aborted_ep1step120/ABORTED.md` |
