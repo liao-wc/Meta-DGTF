@@ -740,10 +740,15 @@ def _numeric_claim_answer(question: str, evs: list) -> str:
                                                   "超过", "约", "左右",
                                                   "连续")) else 0
             _total_hit = 1 if ("总值" in snip or "总额" in snip) else 0
+            # ★ [Round 105] 例外/弹性条款降权；「年满/应当/凡」加分（看主张上下文 ctx）
+            _soft = 1 if any(k in _nctx for k in (
+                "可以推迟", "推迟到", "不具备", "例外", "个别地区",
+                "部分地区", "延缓")) else 0
+            _oblig = 1 if any(k in _nctx for k in ("年满", "应当", "凡")) else 0
             score = (u_hit, _adult, -_minor, _whole, _tot, _mag, _concept,
                      _year_hit, -_year_miss, _ord_hit, -_ord_miss, _curhit,
                      -_oldpen, _final, _rec, _annual, -_month, ov, -_prelim,
-                     -pen, _total_hit, -_vague, -len(raw))
+                     -pen, _total_hit, -_vague, _oblig, -_soft, -len(raw))
             if best is None or score > best[0]:
                 best = (score, snip, raw)
     if best is None:
@@ -961,6 +966,15 @@ def build_fact_card(question: str, report: EvidenceReport,
                             gaps=_dedup(gaps + ["year_mismatch"]),
                             reason=("答案年份与题面不一致（题面 %s），拒绝输出"
                                     % "/".join(_yq[:2])), **base)
+    # ★ [Round 105] 法定同义表述：官方≥2 时，年龄/入学类 uncovered 视为非阻断
+    if (answer and official_n >= 2
+            and any(str(g).startswith("uncovered:") for g in gaps)):
+        _uterms = [str(g)[len("uncovered:"):] for g in gaps
+                   if str(g).startswith("uncovered:")]
+        if (any(any(k in _t for k in ("年龄", "岁", "入学")) for _t in _uterms)
+                and re.search(r"(?:周)?岁", str(answer))):
+            gaps = [g for g in gaps
+                    if not str(g).startswith("uncovered:")]
     if answer and (official_n >= int(min_official)
                    or independent >= int(min_independent)):
         return FactCard(status="answered", answer=answer,

@@ -438,6 +438,11 @@ MEASURED_SCENARIOS: Dict[str, dict] = {
                               "wall": 217.3, "verified": True,
                               "question": "三峡大坝全长多少米？",
                               "config": "B parallel + thinking off + web on"},
+            "web_on_fast33": {"quality": 0.9800, "tokens": 728616, "calls": 108,
+                              "wall": 258.6, "verified": True,
+                              "question": "我国义务教育法规定小学入学年龄是多少岁？"
+                                          "（法定例外条款修复后，display=六周岁）",
+                              "config": "B parallel + thinking off + web on"},
             "web_off_auto": {"quality": 0.4440, "tokens": 1015910, "calls": 111,
                              "wall": 980.3, "verified": False,
                              "config": "B parallel + thinking auto + web off",

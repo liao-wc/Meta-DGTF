@@ -398,6 +398,24 @@ def main():
        any(str(c.get("unit")) == "万亿元" and abs(float(c.get("value")) - 43.85) < 1e-6
            for c in _wc), _wc)
 
+    # ── A40：法定例外条款（Round 105）──────────────
+    _edu_ev = EvidenceReport(
+        question="我国义务教育法规定小学入学年龄是多少岁？",
+        queries=["q"], searches=1,
+        items=[ev("E1", "义务教育法第五条规定，凡年满六周岁的儿童，应当入学接受义务教育；"
+                            "条件不具备的地区，可以推迟到七周岁入学。", official=True),
+               ev("E2", "义务教育法第十一条规定，凡年满六周岁的儿童，其父母或者其他法定"
+                            "监护人应当送其入学接受并完成义务教育。", official=True)],
+        conflicts=[],
+        gaps=["uncovered:我国义务教育法规定小学入学年龄"])
+    _edu_card = build_fact_card(
+        "我国义务教育法规定小学入学年龄是多少岁？", _edu_ev)
+    ck("A74 法定例外条款取六周岁（年满/应当优先）",
+       _edu_card.status == "answered" and "六周岁" in str(_edu_card.answer)
+       and "七周岁" not in str(_edu_card.answer)
+       and not any(str(g).startswith("uncovered:") for g in _edu_card.gaps),
+       (_edu_card.status, _edu_card.answer, _edu_card.gaps))
+
     # ── B：整体量语义加权 ────────────────────────
     ck("B1 问长度 + 全长标记 → 加分",
        _overall_quantity_bonus("黄河全长约5464公里", "黄河的长度是多少千米") > 0)
