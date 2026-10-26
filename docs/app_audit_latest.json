@@ -1,7 +1,7 @@
 {
  "ok": true,
  "app": "https://127.0.0.1:8765",
- "ts": 1792998496.5710504,
+ "ts": 1792999101.040863,
  "n": 55,
  "fails": [],
  "warnings": [
@@ -17,77 +17,77 @@
   {
    "name": "GET /api/health",
    "ok": true,
-   "detail": "code=200 1916ms"
+   "detail": "code=200 650ms"
   },
   {
    "name": "GET /api/config",
    "ok": true,
-   "detail": "code=200 8572ms"
+   "detail": "code=200 2060ms"
   },
   {
    "name": "GET /api/dashboard",
    "ok": true,
-   "detail": "code=200 166ms"
+   "detail": "code=200 3705ms"
   },
   {
    "name": "GET /api/tasks",
    "ok": true,
-   "detail": "code=200 6ms"
+   "detail": "code=200 5ms"
   },
   {
    "name": "GET /api/agent/knowledge",
    "ok": true,
-   "detail": "code=200 11ms"
+   "detail": "code=200 26ms"
   },
   {
    "name": "GET /api/agent/hot-topics",
    "ok": true,
-   "detail": "code=200 26ms"
+   "detail": "code=200 28ms"
   },
   {
    "name": "GET /api/status/activity",
    "ok": true,
-   "detail": "code=200 393ms"
+   "detail": "code=200 321ms"
   },
   {
    "name": "GET /api/status/sidebar",
    "ok": true,
-   "detail": "code=200 15ms"
+   "detail": "code=200 103ms"
   },
   {
    "name": "GET /api/schedule/v2",
    "ok": true,
-   "detail": "code=200 72ms"
+   "detail": "code=200 47ms"
   },
   {
    "name": "GET /api/schedule/v2/online",
    "ok": true,
-   "detail": "code=200 24ms"
+   "detail": "code=200 18ms"
   },
   {
    "name": "GET /api/schedule/v2/pareto",
    "ok": true,
-   "detail": "code=200 57ms"
+   "detail": "code=200 39ms"
   },
   {
    "name": "GET /api/schedule/policy",
    "ok": true,
-   "detail": "code=200 20ms"
+   "detail": "code=200 24ms"
   },
   {
    "name": "GET /api/dsh/guard",
    "ok": true,
-   "detail": "code=200 9ms"
+   "detail": "code=200 7ms"
   },
   {
    "name": "GET /api/dsh/proposals",
    "ok": true,
-   "detail": "code=200 356ms"
+   "detail": "code=200 320ms"
   },
   {
    "name": "静态缓存版本一致",
    "ok": true,
-   "detail": "2.0.25-dshguard"
+   "detail": "2.0.26-takeover"
   },
   {
    "name": "GET /static/index.html",
@@ -267,7 +267,7 @@
   {
    "name": "App 版本一致性",
    "ok": true,
-   "detail": "0.25\",\n \"cache_tags\": [\n  \"2.0.25-dshguard\"\n ],\n \"checks\": [\n  {\n   \"name\": \"APP_VERSION 可读\",\n   \"ok\": true,\n   \"detail\": \"2.0.25\"\n  },\n  {\n   \"name\": \"静态查询串同版本\",\n   \"ok\": true,\n   \"detail\": \"['2.0.25-dshguard']\"\n  },\n  {\n   \"name\": \"根 README 当前版本\",\n   \"ok\": true,\n   \"detail\": \"2.0.25\"\n  },\n  {\n   \""
+   "detail": "0.26\",\n \"cache_tags\": [\n  \"2.0.26-takeover\"\n ],\n \"checks\": [\n  {\n   \"name\": \"APP_VERSION 可读\",\n   \"ok\": true,\n   \"detail\": \"2.0.26\"\n  },\n  {\n   \"name\": \"静态查询串同版本\",\n   \"ok\": true,\n   \"detail\": \"['2.0.26-takeover']\"\n  },\n  {\n   \"name\": \"根 README 当前版本\",\n   \"ok\": true,\n   \"detail\": \"2.0.26\"\n  },\n  {\n   \""
   },
   {
    "name": "_app_err_8765.log 无 Traceback",

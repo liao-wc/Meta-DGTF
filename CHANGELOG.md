@@ -10,6 +10,21 @@
 > （`check_v72_changelog_hygiene`）；代码文件里**不得**再出现版本段
 > （`check_v1237_changelog_outside_code`）。
 
+App 2.0.26
+
+【主题】DSH 全接管闭环加固：守卫版本同步约束、安全回退与提案指标实时化。
+
+【改变】
+- 守卫任务新增【App 版本同步】要求：任何 App 代码/界面改动必须更新 APP_VERSION、静态缓存串、README/PROJECT_LAYOUT、发布说明、CHANGELOG，并运行 app_version_check.py。
+- app_release 支持任意旧版本升级；app_version_check 纳入 App 全方位检查。
+- 提案复评脚本更新 pending audit 提案标题中的实时指标（needs_evidence/unverified/answer_ready_false/missing_quality、配对缺口、重复题目、异常 run），避免提案显示旧数字。
+- 保留 2.0.25 的 DSH 会话-产物依赖、内部事件留痕、守卫回执、120 分钟调度、本地 LLM watchdog、V2 在线策略和安全文件回退能力。
+
+【验证】
+- app_full_check PASS；app_version_check PASS。
+- 依赖审计 RESULT PASS；fast_gate 12/12；V2 tests 51/51（835 checks）；App selftest 444/0；guard_policy_check PASS。
+- 静态缓存串：2.0.26-takeover。
+
 App 2.0.25
 
 【主题】DSH 会话-产物依赖、内部事件留痕、守卫调度与完成回执、文件安全回退、版本发布自动化。
