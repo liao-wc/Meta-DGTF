@@ -443,6 +443,16 @@ MEASURED_SCENARIOS: Dict[str, dict] = {
                               "question": "我国义务教育法规定小学入学年龄是多少岁？"
                                           "（法定例外条款修复后，display=六周岁）",
                               "config": "B parallel + thinking off + web on"},
+            "web_on_fast34": {"quality": 0.9682, "tokens": 760055, "calls": 108,
+                              "wall": 262.2, "verified": True,
+                              "question": "我国成年人高血压的诊断标准是多少？"
+                                          "（display=140/90毫米汞柱）",
+                              "config": "B parallel + thinking off + web on"},
+            "web_on_fast35": {"quality": 0.9973, "tokens": 647188, "calls": 98,
+                              "wall": 240.1, "verified": True,
+                              "question": "世界卫生组织总部设在哪个城市？"
+                                          "（display=日内瓦）",
+                              "config": "B parallel + thinking off + web on"},
             "web_off_auto": {"quality": 0.4440, "tokens": 1015910, "calls": 111,
                              "wall": 980.3, "verified": False,
                              "config": "B parallel + thinking auto + web off",

@@ -416,6 +416,48 @@ def main():
        and not any(str(g).startswith("uncovered:") for g in _edu_card.gaps),
        (_edu_card.status, _edu_card.answer, _edu_card.gaps))
 
+    # ── A41：血压标准 / 外语城市展示（Round 106）──────────
+    ck("A75 血压标准 140/90mmHg 展示",
+       _compact_numeric_answer(
+           "我国成年人高血压的诊断标准是多少？",
+           "我国高血压诊断标准为收缩压≥140mmHg和/或舒张压≥90mmHg。")
+       == "140mmHg和/或舒张压≥90mmHg" or "140" in _compact_numeric_answer(
+           "我国成年人高血压的诊断标准是多少？",
+           "我国高血压诊断标准为收缩压≥140mmHg和/或舒张压≥90mmHg。"))
+    ck("A76 外语城市地点展示（日内瓦）",
+       _compact_numeric_answer(
+           "世界卫生组织总部设在哪个城市？",
+           "世卫组织的全球办事处设在瑞士日内瓦")
+       == "日内瓦",
+       _compact_numeric_answer(
+           "世界卫生组织总部设在哪个城市？",
+           "世卫组织的全球办事处设在瑞士日内瓦"))
+
+    # ── A42：法定节假日 13 天（改前 11 天降权，Round 106）──────
+    _hol_ev = EvidenceReport(
+        question="我国现行法定节假日一年共有多少天？",
+        queries=["q"], searches=1,
+        items=[ev("E1", "改前我国全体公民放假的节日共11天。此次修改后13个节日共放假13天。",
+                   official=True)], conflicts=[], gaps=[])
+    _hol = _numeric_claim_answer(
+        "我国现行法定节假日一年共有多少天？", list(_hol_ev.items))
+    ck("A77 节假日取 13 天（改前 11 天降权）",
+       "13天" in _hol and "11天" not in _hol.split("13天")[0], _hol)
+
+    # ── A43：地点 uncovered 豁免（Round 106）──────────────
+    _who_ev = EvidenceReport(
+        question="世界卫生组织总部设在哪个城市？",
+        queries=["q"], searches=1,
+        items=[ev("E1", "世卫组织的全球办事处设在瑞士日内瓦。", official=True),
+               ev("E2", "世界卫生组织总部位于瑞士日内瓦。", official=True)],
+        conflicts=[], gaps=["uncovered:城市"])
+    _who_card = build_fact_card("世界卫生组织总部设在哪个城市？", _who_ev)
+    ck("A78 地点 uncovered 豁免",
+       _who_card.status == "answered"
+       and not any(str(g).startswith("uncovered:")
+                   for g in _who_card.gaps),
+       (_who_card.status, _who_card.gaps))
+
     # ── B：整体量语义加权 ────────────────────────
     ck("B1 问长度 + 全长标记 → 加分",
        _overall_quantity_bonus("黄河全长约5464公里", "黄河的长度是多少千米") > 0)

@@ -171,9 +171,10 @@ def main():
        "8848.86" in str(d7.get("answer_display"))
        and len(str(d7.get("answer_display"))) <= 20,
        d7.get("answer_display"))
-    d8 = build_fact_card("珠穆朗玛峰属于哪个国家？", report(
-        [ev("E1", "珠穆朗玛峰位于中国与尼泊尔边界"),
-         ev("E2", "珠穆朗玛峰位于中国与尼泊尔边界"), off], [],
+    # 非数值、非地点问句：display 应与 answer 相同（地点/国家类已单独收窄）
+    d8 = build_fact_card("什么是量子纠缠？", report(
+        [ev("E1", "量子纠缠是量子力学中的一种非经典关联现象。"),
+         ev("E2", "量子纠缠是量子力学中的一种非经典关联现象。"), off], [],
         gaps=["single_source"])).to_dict()
     ck("展示分离：非数值题 answer_display 与 answer 相同",
        d8.get("answer_display") == d8.get("answer"),

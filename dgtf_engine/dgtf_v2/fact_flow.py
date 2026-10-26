@@ -422,15 +422,38 @@ def _compact_numeric_answer(question: str, answer: str) -> str:
                         _s = _s[len(_w):]
                         _changed = True
             return _s
+    # ★ [Round 106] 血压双值（140/90mmHg）优先展示
+    _bp = re.search(r"\d{2,3}\s*/\s*\d{2,3}\s*(?:mmHg|毫米汞柱)", ans)
+    if _bp and any(k in q for k in ("血压", "标准", "诊断")):
+        return _bp.group(0).replace(" ", "")
     # ★ [Round 44] 范围型答案：display 收窄为「区间+单位」（如 60-100次/分）
     _rng = re.search(
         r"\d+(?:\.\d+)?\s*[-—~～至到]\s*\d+(?:\.\d+)?\s*"
-        r"(?:%|次/分|次每分钟|次|岁|米|公里|千米|千克|公斤|小时|分钟|秒)", ans)
+        r"(?:%|mmHg|毫米汞柱|次/分|次每分钟|次|岁|米|公里|千米|千克|公斤|小时|分钟|秒)", ans)
     if _rng:
         return _rng.group(0).replace(" ", "")
-    # ★ [Round 43] 地点问句：display 收窄到城市名（纽约市）
-    if any(k in q for k in ("哪个城市", "哪座城市", "哪个国家", "何地",
-                            "哪里", "在什么地方")):
+    # ★ [Round 43/106] 地点问句：城市类收窄城市；国家类只做国家名收窄
+    _ask_city = any(k in q for k in ("哪个城市", "哪座城市", "何地", "哪里",
+                                     "在什么地方", "总部", "设在"))
+    _ask_country = any(k in q for k in ("哪个国家", "哪国", "属于哪个国家"))
+    if _ask_country and not _ask_city:
+        # 国家问句：只尝试国家名（「X 国」白名单式扫描），失败保持原样
+        _stop_c = set("的是在于和大的我全各两该本出回进以及与中要这那有为对从到")
+        for _m in re.finditer("国", ans):
+            _i = _m.start()
+            for _ln in (2, 3):
+                _s = _i - _ln + 1
+                if _s < 0:
+                    continue
+                _c = ans[_s:_i + 1]
+                if any(ch in _stop_c for ch in _c) or _c in q:
+                    continue
+                _prev = ans[_s - 1] if _s > 0 else ""
+                if _prev and _prev not in "在于是设位，。、 ":
+                    continue
+                return _c
+        return ans
+    if _ask_city:
         _tail = ans
         for _mk in ("地址", "设在", "位于", "地处", "总部", "：", ":"):
             _pos = _tail.find(_mk)
@@ -439,6 +462,15 @@ def _compact_numeric_answer(question: str, answer: str) -> str:
         _parts = re.findall(r"[\u4e00-\u9fa5]{2,4}市", _tail)
         if _parts:
             return _parts[0]
+        # ★ [Round 106] 外语城市兜底（设在瑞士日内瓦 → 日内瓦）
+        _tail2 = _tail
+        for _mk in ("瑞士", "法国", "美国", "英国", "日本", "德国", "意大利",
+                    "比利时", "奥地利", "荷兰", "瑞典", "加拿大", "澳大利亚"):
+            _tail2 = _tail2.replace(_mk, "")
+        _seg = re.split(r"[、，。；; \n]", _tail2.strip())[-1].strip()
+        _seg = re.sub(r"^[的地得于在]+", "", _seg).strip()
+        if 2 <= len(_seg) <= 8 and not _seg.isdigit():
+            return _seg
         # ★ [Round 59] 国家名兜底（哪个国家 → 美国/法国…）
         _stop = set("的是在于和大的我全各两该本出回进以及与中要这那有为对从到")
         for _m in re.finditer("国", ans):
@@ -602,10 +634,13 @@ def _numeric_claim_answer(question: str, evs: list) -> str:
     # ★ [Round 33] 通用单位提及：题面出现「万人/万辆/亿…」等直接纳入单位类
     q_units.extend([u for u in ("万人", "万辆", "万", "亿", "吨", "公斤",
                                 "千米", "公里", "米", "%", "℃", "岁",
-                                "度", "小时", "分钟", "秒") if u in q])
+                                "度", "小时", "分钟", "秒", "天") if u in q])
     _asks_date = any(k in q for k in ("哪一年", "哪年", "何时", "什么时候",
                                       "年份", "哪一天"))
     _asks_whole = any(k in q for k in ("全长", "总长", "总长度", "全程"))
+    _sum_ask = any(k in q for k in ("共", "总共", "合计", "一共", "总计",
+                                    "共计", "合计")) and any(
+        k in q for k in ("多少", "几"))
     _asks_adult = any(k in q for k in ("成年", "成人年龄", "成年年龄"))
     # ★ [Round 33] 「分别」句序位：产量/生产→第1个数，销量/销售→第2个数
     _ord_pref = None
@@ -744,19 +779,40 @@ def _numeric_claim_answer(question: str, evs: list) -> str:
             _soft = 1 if any(k in _nctx for k in (
                 "可以推迟", "推迟到", "不具备", "例外", "个别地区",
                 "部分地区", "延缓")) else 0
+            _oldctx = 1 if any(k in _nctx for k in (
+                "改前", "此前", "原来", "原为", "之前", "调整前",
+                "原先")) else 0
             _oblig = 1 if any(k in _nctx for k in ("年满", "应当", "凡")) else 0
-            score = (u_hit, _adult, -_minor, _whole, _tot, _mag, _concept,
+            _sumctx = 1 if any(k in _nctx for k in (
+                "共", "合计", "一共", "总共", "总计", "共计")) else 0
+            _cnum = 1 if (_sum_ask and re.search(
+                r"\d+", raw)) else 0
+            _magcount = (round(log10(max(float(c.get("value") or 1.0), 1.0)), 3)
+                         * 0.1 if _sum_ask else 0.0)
+            score = (u_hit, _magcount, _adult, -_minor, _whole, _tot, _mag,
+                     _concept,
                      _year_hit, -_year_miss, _ord_hit, -_ord_miss, _curhit,
                      -_oldpen, _final, _rec, _annual, -_month, ov, -_prelim,
-                     -pen, _total_hit, -_vague, _oblig, -_soft, -len(raw))
+                     -pen, _total_hit, -_vague, _oblig, -_soft, -_oldctx,
+                     _sumctx, _cnum, -len(raw))
             if best is None or score > best[0]:
                 best = (score, snip, raw)
     if best is None:
         return ""
     score, snip, raw = best
     # 严格门槛：单位类命中 + 题面概念命中 + 非分段语义，否则回退旧逻辑
-    if not (score[0] and score[6] and not score[19]):
+    if not (score[0] and score[7] and not score[20]):
         return ""
+    # ★ [Round 106] 合计类问句：若最优只是「（一）元旦，放假1天」这类分项，
+    #   不把分项当合计（宁缺毋假；聚合机制后续实现）
+    if _sum_ask:
+        _best_ctx = str(best[0]) if False else ""
+        _ok_sum = any(k in snip for k in ("共", "合计", "总共", "总计",
+                                          "共计", "一共"))
+        _itemized = any(k in snip for k in ("（一）", "（二）", "分别",
+                                            "一是", "二是"))
+        if not _ok_sum and _itemized:
+            return ""
     for part in re.split(r"[。；;\n]", snip):
         if raw and raw in part:
             return part.strip()[:240]
@@ -966,13 +1022,26 @@ def build_fact_card(question: str, report: EvidenceReport,
                             gaps=_dedup(gaps + ["year_mismatch"]),
                             reason=("答案年份与题面不一致（题面 %s），拒绝输出"
                                     % "/".join(_yq[:2])), **base)
-    # ★ [Round 105] 法定同义表述：官方≥2 时，年龄/入学类 uncovered 视为非阻断
+    # ★ [Round 105/106] 法定/地点同义表述：官方≥2 时相关 uncovered 视为非阻断
     if (answer and official_n >= 2
             and any(str(g).startswith("uncovered:") for g in gaps)):
         _uterms = [str(g)[len("uncovered:"):] for g in gaps
                    if str(g).startswith("uncovered:")]
-        if (any(any(k in _t for k in ("年龄", "岁", "入学")) for _t in _uterms)
-                and re.search(r"(?:周)?岁", str(answer))):
+        _q = str(question or "")
+        _ask_loc = any(k in _q for k in (
+            "哪个城市", "哪座城市", "哪里", "何地", "设在", "总部",
+            "哪个国家", "在什么地方"))
+        _age_ok = (any(any(k in _t for k in ("年龄", "岁", "入学"))
+                       for _t in _uterms)
+                   and re.search(r"(?:周)?岁", str(answer)))
+        _loc_ok = (_ask_loc and any(
+            any(k in _t for k in ("城市", "国家", "地点", "哪里", "总部"))
+            for _t in _uterms))
+        _stat_ok = (any(any(k in _t for k in ("法定", "规定", "节假", "标准"))
+                        for _t in _uterms)
+                    and re.search(r"(?:\d|一|二|三|四|五|六|七|八|九|十|百)\s*[天日岁元]",
+                                  str(answer)))
+        if _age_ok or _stat_ok or (_loc_ok and official_n >= 1):
             gaps = [g for g in gaps
                     if not str(g).startswith("uncovered:")]
     if answer and (official_n >= int(min_official)
