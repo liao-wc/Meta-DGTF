@@ -2331,3 +2331,40 @@ held-out A/B（v9 vs v8b/v6），只变好才切换。
 ### 87.5 门禁
 
 全量 V2 51/51（**822 checks**）、fast_gate 12/12。
+
+
+## 88. dual_judge local：可控解冻与首次真跑（Round 95）
+
+### 88.1 可控实现方式
+
+主工作树引擎仍被并发会话占用 ⇒ 采用 **git worktree** 隔离实现（不改主工作树字节）：
+
+- 工作树：`D:\Meta-DGTF-双判本地工作树`，分支 `dual-judge-local`（从 HEAD 79f2bc0）；
+- 引擎补丁（3 处）：
+  1. `_DJM_OK` 增 `local`；
+  2. CLI `--dual-judge-mode` choices 增 `local`（help 同步）；
+  3. `_dual_judge` 分发：local ⇒ `_dual_judge_local`（本地 HTTP `stage=dual_judge`），
+     **任何失败（url 缺失/HTTP 非 200/超时/ok=false/低置信/解析空/0 命中）⇒ 返回 None
+     并确定性回退 `_dual_judge_llm`**，不留半判；
+- 本地协议与 self_check local 一致（POST {url}，messages/text/max_new_tokens/timeout）。
+
+### 88.2 首次真跑（worktree 引擎，HTTP404 fast+web）
+
+| 跑次 | 质量 | tokens | calls | wall | 说明 |
+|---|---|---|---|---|---|
+| v95-dual-local | **0.99/verified** | 733,405 | 108 | 227s | URL 缺 `/generate` → 404，全部回退 llm |
+| v95-dual-local2 | 0.9579/verified | 648,440 | 97 | 460s | `/generate` 正确，但 judge 生成超 60s → 8 次超时回退 llm |
+
+结论：**回退链路确定可用**（local 失败不影响答案质量）；本地双判超时需调参
+（timeout 60→180s、max_new_tokens 700→500），调参后跑次进行中（v95-dual-local3）。
+
+### 88.3 门禁与提交
+
+- worktree 分支提交：`feat(engine): --dual-judge-mode local`（独立分支，未触碰主引擎）；
+- 主工作树引擎字节未改（并发会话不受影响）；合并待主引擎工作树干净时执行。
+
+### 88.4 下一步
+
+1. v95-dual-local3 验证本地双判实际被调用（日志出现成功路径/无超时）；
+2. 通过后在 worktree 补离线判据（T1–T5）+ 合并窗口；
+3. v9 训练在 GPU 空闲后重启（本轮为双判验证暂停）。

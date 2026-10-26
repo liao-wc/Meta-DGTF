@@ -67,3 +67,10 @@
 | App 精确缓存 | 同题复跑会命中缓存（tok=0）⇒ App e2e 需新题；缓存不自动失效（已知限制） |
 | 本地 v8b self_check | A/B：出生人口 0.99/＋2.27pp/−5.3% tokens；光速 tokens +5% ⇒ 默认 llm、local opt-in；v9 训练中 |
 | App e2e 端口 | 自动空闲端口（8800+），并发会话安全 |
+
+## 9. Round 95 更新
+
+| 项 | 内容 |
+|---|---|
+| dual_judge local | **已实现（worktree 分支，可控）**：失败回退 llm 真跑 verified；超时调参中；主引擎待合并 |
+| v9 训练 | 暂停（为双判本地验证让位 GPU）；之后重启 |
