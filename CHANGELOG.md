@@ -10,6 +10,21 @@
 > （`check_v72_changelog_hygiene`）；代码文件里**不得**再出现版本段
 > （`check_v1237_changelog_outside_code`）。
 
+App 2.0.30
+
+【主题】移除 DSH 视图内的“历史对话”按钮与浮层。
+
+【改变】
+- 删除 DSH 会话视图头部“历史对话”按钮。
+- 删除对应 DSH 会话历史浮层、关闭按钮和 URL dsh_history=1 入口。
+- 侧边栏“历史对话”库保留，避免移除全部历史访问能力。
+- 历史数据与 API 不删除，只移除 DSH 视图内重复入口。
+
+【验证】
+- index.html 不再包含 dsh-history-toggle / dsh-history 浮层。
+- node --check app.js PASS。
+- App 全方位检查 PASS；App 版本一致性 PASS；App selftest 444/0；fast_gate 12/12。
+- 静态缓存串：2.0.30-nohist。
 App 2.0.29
 
 【主题】产物活动灯改为真实落盘/生成触发。

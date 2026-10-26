@@ -6797,10 +6797,6 @@ function init() {
                 && e.target.closest('main.stage')))) {
       closeDrawer();
     }
-    const _dh = e.target.closest('#dsh-history-toggle');
-    if (_dh) { e.preventDefault(); setDshHistoryOpen(!dshHistoryOpen); return; }
-    const _dhc = e.target.closest('#dsh-history-close');
-    if (_dhc) { e.preventDefault(); setDshHistoryOpen(false); return; }
     const _dchat = e.target.closest('[data-dsh-chat]');
     if (_dchat) { e.preventDefault(); resumeDshChat(_dchat.dataset.dshChat).catch(function(){}); return; }
     const open = e.target.closest('[data-open]');
@@ -7258,9 +7254,6 @@ function init() {
       try { localStorage.setItem(DSH_CONV_KEY, _dc); } catch (_) {}
       loadDshConversation();
       startDshConvPoll();
-      if (new URLSearchParams(location.search).get('dsh_history') === '1') {
-        setTimeout(function () { setDshHistoryOpen(true); }, 800);
-      }
     }
     if (new URLSearchParams(location.search).get('drawer') === '1') openDrawer();
     const _dt = new URLSearchParams(location.search).get('dsh_task');

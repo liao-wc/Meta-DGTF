@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
 <title>Meta-DGTF · 个人工作台</title>
-<link rel="icon" type="image/x-icon" href="/static/dgtf.ico?v=2.0.29-productlight">
-<link rel="shortcut icon" type="image/x-icon" href="/static/dgtf.ico?v=2.0.29-productlight">
-<link rel="stylesheet" href="/static/style.css?v=2.0.29-productlight">
+<link rel="icon" type="image/x-icon" href="/static/dgtf.ico?v=2.0.30-nohist">
+<link rel="shortcut icon" type="image/x-icon" href="/static/dgtf.ico?v=2.0.30-nohist">
+<link rel="stylesheet" href="/static/style.css?v=2.0.30-nohist">
 </head>
 <body class="stage-empty">
 
@@ -414,21 +414,13 @@
     <div class="runlog-head">
       <span class="rl-head-l"><span id="rl-badge" class="badge"></span><button type="button" id="rl-retry" class="rl-retry hidden" data-tip="用同一个问题新开一次跑次（新任务，不改旧任务）">重试</button><button type="button" id="rl-earlier" class="rl-retry hidden" style="color:var(--t2);background:transparent;border-color:var(--log-hair)" data-tip="向上载入「DSH 本对话」本会话更早的事件（与 DSH GUI 同一条会话）">载入更早</button></span>
       <span class="rl-head-c"><span id="rl-question"></span><span id="rl-meta" class="rl-meta"></span></span>
-      <span class="rl-head-r"><span id="dsh-elapsed" class="dsh-elapsed hidden"></span><button type="button" id="dsh-history-toggle" class="ghost dsh-history-toggle hidden">历史对话</button><span id="rl-files" class="rl-files"></span></span>
+      <span class="rl-head-r"><span id="dsh-elapsed" class="dsh-elapsed hidden"></span><span id="rl-files" class="rl-files"></span></span>
     </div>
     <div id="dsh-conv-bar" class="dsh-conv-bar hidden">
       <span id="dsh-conv-current" class="dsh-conv-current"></span>
       <span id="dsh-conv-running" class="dsh-conv-running"></span>
     </div>
     <div id="runlog-body" class="runlog-body scroll"></div>
-  </div>
-
-  <div id="dsh-history" class="dsh-history hidden">
-    <div class="dsh-history-head">
-      <strong>DSH 会话历史</strong>
-      <button type="button" id="dsh-history-close" class="ghost">关闭</button>
-    </div>
-    <div id="dsh-history-list" class="dsh-history-list scroll"></div>
   </div>
 
   <div class="composer">
@@ -557,6 +549,6 @@
 
 
 
-<script src="/static/app.js?v=2.0.29-productlight"></script>
+<script src="/static/app.js?v=2.0.30-nohist"></script>
 </body>
 </html>
