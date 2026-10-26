@@ -1,3 +1,12 @@
+【Round 134 增补（补）】
+- dual_judge token 评测（零 API，GPU）：`docs/dual_judge_tokens_eval.json`；
+  320 token 下 json 0.75 / position_acc 0.279 / p95 58.7s；缩 token 只降延迟不救质量
+  ⇒ 不改服务默认；下一步重训 judge_v3（数据扩充 + held-out 选型）。
+【Round 134 增补（2026-10-27，保留策略定稿）】
+- `outputs_archive.py` 增加 `--fact-keep`：按 replay 阈值实测三档（fact-keep=2/4/6），
+  定稿 **非 fact 留 2 + fact 留 6** ⇒ packs **360→230**，重放 guard PASS，验收 16/16。
+- 归档 `outputs/_archive_20261027/`（可 --restore）；分析 JSON 刷新（truncated_ready=0、
+  fact verified_no_display=0）。
 【Round 133 增补（2026-10-27，遗留项清零）】
 - legacy 修复：31 条（19 truncated_ready + 12 fact verified_no_display）→ ready=False；
   矛盾判定收窄（verified+!ready 有理由合法）⇒ legacy=0；repair 幂等。

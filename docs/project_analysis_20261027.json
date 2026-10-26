@@ -1,8 +1,8 @@
 {
- "packs": 243,
+ "packs": 230,
  "question_types": {
   "unknown": 55,
-  "fact": 162,
+  "fact": 149,
   "boundary": 2,
   "reasoning": 17,
   "decision": 7
@@ -12,9 +12,9 @@
    "None": 55
   },
   "fact": {
-   "needs_evidence": 31,
-   "unverified": 25,
-   "verified": 106
+   "needs_evidence": 26,
+   "unverified": 20,
+   "verified": 103
   },
   "boundary": {
    "unverified": 1,
@@ -30,65 +30,65 @@
   }
  },
  "display": {
-  "no_display": 126,
-  "display": 117
+  "no_display": 117,
+  "display": 113
  },
  "fact_card_ok": {
-  "not_ok": 129,
-  "ok": 114
+  "not_ok": 122,
+  "ok": 108
  },
  "flags_top": {
-  "duty_short": 191,
-  "probe_no_target_covered": 66,
-  "probe_link_dangling": 62,
-  "ing_rephrased_direct": 43,
-  "unsaid_overused": 38,
-  "polarity_all_same_structural": 31,
-  "candidates_backfilled": 28,
-  "too_many_amp_candidates": 12,
+  "duty_short": 180,
+  "probe_no_target_covered": 60,
+  "probe_link_dangling": 58,
+  "ing_rephrased_direct": 41,
+  "unsaid_overused": 35,
+  "polarity_all_same_structural": 29,
+  "candidates_backfilled": 27,
+  "too_many_amp_candidates": 10,
   "core_audit_gaps": 9,
   "all_closure_unavailable": 7,
   "all_closure_gaps": 4,
   "expand_imbalanced_benign": 3
  },
  "gaps_top": {
-  "uncovered": 33,
-  "no_official_source": 10,
+  "uncovered": 31,
   "conflict_unresolved": 9,
-  "insufficient_evidence": 4,
+  "no_official_source": 5,
   "conflict_resolved_official": 2,
+  "insufficient_evidence": 2,
   "conflict_resolved_official_authority": 1,
   "year_mismatch": 1,
   "historical_answer_rejected": 1
  },
  "stop_reasons": {
-  "question_answered_four_layers": 150,
+  "question_answered_four_layers": 142,
   "": 58,
-  "体力耗尽（3 圈走满，未触发任何停止判据，是被截断不是自然停止）\n  近阈读数：末圈：无新& 0 / 无线头 0 / 停滞 0": 14,
+  "体力耗尽（3 圈走满，未触发任何停止判据，是被截断不是自然停止）\n  近阈读数：末圈：无新& 0 / 无线头 0 / 停滞 0": 12,
   "自省连续 2 圈点名同一批问题未消化（层内空转）": 8,
-  "体力耗尽（2 圈走满，未触发任何停止判据，是被截断不是自然停止）\n  近阈读数：末圈：无新& 0 / 无线头 0 / 停滞 0": 3,
+  "体力耗尽（2 圈走满，未触发任何停止判据，是被截断不是自然停止）\n  近阈读数：末圈：无新& 0 / 无线头 0 / 停滞 0": 2,
   "结构饱和度判定连续无新维度": 2,
-  "悬置决定稳定，自然安住": 2,
   "体力耗尽（3 圈走满；1 次停止判据被「未深入方向」推迟（结构饱和度判定连续无新维度 + 连续 2 轮无新结构维度（结构饱和度判定，不是新增停滞）），是被截断不是自然停止）": 2,
   "体力耗尽（4 圈走满，未触发任何停止判据，是被截断不是自然停止）\n  近阈读数：末圈：无新& 0 / 无线头 0 / 停滞 1": 2,
-  "体力耗尽（1 圈走满，未触发任何停止判据，是被截断不是自然停止）\n  近阈读数：末圈：无新& 0 / 无线头 0 / 停滞 0": 1
+  "悬置决定稳定，自然安住": 1,
+  "体力耗尽（7 圈走满；1 次停止判据被「未深入方向」推迟（结构饱和度判定连续无新维度 + 悬置决定稳定，自然安住 + 连续 2 轮无新结构维度（结构饱和度判定，不是新增停滞）），是被截断不是自然停止）": 1
  },
  "coverage": {
-  "mean": 0.6291,
-  "lt_0_8": 157,
-  "lt_0_5": 64
+  "mean": 0.6318,
+  "lt_0_8": 147,
+  "lt_0_5": 59
  },
  "tri_alpha": {
-  "n": 207,
-  "mean": 0.055,
-  "unreliable_lt_0667": 186
+  "n": 194,
+  "mean": 0.0529,
+  "unreliable_lt_0667": 174
  },
  "tokens": {
-  "n": 243,
-  "mean": 719002,
-  "p50": 683419,
+  "n": 230,
+  "mean": 716263,
+  "p50": 678957,
   "max": 2938969,
-  "calls_mean": 94.3
+  "calls_mean": 94.5
  },
  "provenance": {
   "packs_with_provenance": 1,
@@ -99,7 +99,7 @@
  },
  "artifact_integrity": {
   "missing_md": 1,
-  "md_mean_bytes": 120561,
+  "md_mean_bytes": 120161,
   "dispatch_incomplete": 6
  },
  "trend_by_date": {
@@ -194,22 +194,22 @@
    "tokens_mean": 682278
   },
   "20261022": {
-   "n": 7,
-   "verified_pct": 28.6,
-   "ready_pct": 0.0,
-   "display_pct": 0.0,
-   "coverage_mean": 0.5734,
-   "tri_alpha_mean": -0.066,
-   "tokens_mean": 782666
-  },
-  "20261023": {
    "n": 5,
    "verified_pct": 40.0,
    "ready_pct": 0.0,
    "display_pct": 0.0,
-   "coverage_mean": 0.4391,
-   "tri_alpha_mean": -0.353,
-   "tokens_mean": 527036
+   "coverage_mean": 0.5833,
+   "tri_alpha_mean": 0.041,
+   "tokens_mean": 788874
+  },
+  "20261023": {
+   "n": 3,
+   "verified_pct": 66.7,
+   "ready_pct": 0.0,
+   "display_pct": 0.0,
+   "coverage_mean": 0.3333,
+   "tri_alpha_mean": -0.274,
+   "tokens_mean": 616178
   },
   "20261024": {
    "n": 9,
@@ -221,13 +221,13 @@
    "tokens_mean": 709385
   },
   "20261025": {
-   "n": 67,
-   "verified_pct": 67.2,
-   "ready_pct": 47.8,
-   "display_pct": 52.2,
-   "coverage_mean": 0.7108,
-   "tri_alpha_mean": 0.09,
-   "tokens_mean": 841457
+   "n": 58,
+   "verified_pct": 72.4,
+   "ready_pct": 50.0,
+   "display_pct": 53.4,
+   "coverage_mean": 0.7304,
+   "tri_alpha_mean": 0.06,
+   "tokens_mean": 840028
   },
   "20261026": {
    "n": 101,

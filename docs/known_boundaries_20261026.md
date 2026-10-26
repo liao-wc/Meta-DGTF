@@ -221,3 +221,19 @@
 | 文档索引 | `docs/README.md` 当前必读/历史归档/维护约定 |
 | 验收 | **16/16（有服务）/ 15/15（无服务）**；V2 54/854；真跑验证 0.975 |
 | 遗留 | duty_short/probe 校准、local self_check 质量增量、dual_judge 吞吐、fact 保留策略、tri_alpha 测量学 |
+
+## 26. Round 134 更新（保留策略定稿）
+
+| 项 | 内容 |
+|---|---|
+| 输出保留 | 非 fact 每问题 2 份 + fact 每问题最新 6 份；**360→230 packs**；重放基线 PASS（120/22/124 试算，135/27/137 定稿） |
+| 归档 | `outputs/_archive_20261027/`（可 `--restore`）；fact-keep=2/4/6 三档已实测 |
+| 分析刷新 | 230 packs：truncated_but_ready=0、fact verified_no_display=0；非 fact 34（设计内） |
+| 验收 | 16/16（有服务）/ 15/15（无服务）；V2 54/854 |
+
+## 27. Round 134：dual_judge 本地吞吐评测（证据）
+
+- `docs/dual_judge_tokens_eval.json`：12 条 val × 5 档 token（320/224/160/96/64）；
+- 320：json 0.75 / position_acc 0.279 / p50 25.5s / p95 58.7s；
+- 缩 token 只降延迟不救质量（64：json 0.083 / pos 0.033）；
+- 决策：**不改服务默认**（质量优先 + 503 快失败）；下一步重训 judge 适配器 v3（数据扩充 + held-out 选型）。

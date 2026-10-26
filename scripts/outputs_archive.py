@@ -46,6 +46,8 @@ def main() -> int:
     ap.add_argument("--apply", action="store_true")
     ap.add_argument("--restore", action="store_true")
     ap.add_argument("--keep", type=int, default=2)
+    ap.add_argument("--fact-keep", type=int, default=-1,
+                    help="fact 包每问题保留最新 N 份；-1=全保留（默认，保护重放基线）")
     args = ap.parse_args()
     if args.restore:
         moved = 0
@@ -74,8 +76,12 @@ def main() -> int:
         # 保留策略：fact 包全部保留（离线重放/质量护栏基线依赖）；
         # 非 fact 包每问题只留最新 keep 份，其余归档。
         nonfact = [p for p, qt in items if qt != "fact"]
+        facts = [p for p, qt in items if qt == "fact"]
         for p in nonfact[args.keep:]:
             to_move.append(p)
+        if args.fact_keep >= 0:
+            for p in facts[args.fact_keep:]:
+                to_move.append(p)
     print("packs=%d groups=%d keep=%d to_archive=%d"
           % (len(packs), len(groups), args.keep, len(to_move)))
     for p in to_move[:8]:
