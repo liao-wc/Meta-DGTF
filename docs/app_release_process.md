@@ -129,3 +129,30 @@ CI 失败禁止合并。
 - 修改前后对照截图/记录。
 
 这是目前“功能不回归”保证里最薄的一层，后续应补 Playwright/jsdom 级别 UI 回归。
+
+### UI 自动化（已接入）
+
+scripts/ui_automation_check.py 使用 Edge + Selenium headless 覆盖：
+
+- 北斗七星存在；
+- Agent 就绪灯不为灰；
+- DSH 历史按钮已移除；
+- 点击 DSH Agent 只切模式、不自动进对话；
+- 退出 DSH 模式回到首屏；
+- 浏览器 SEVERE 控制台错误。
+
+执行：
+
+```bash
+python -m pip install -r requirements-ui.txt
+python scripts/ui_automation_check.py
+```
+
+该检查已接入 app_full_check.py（DGTF_UI_TEST=0 可关闭）和守卫证据链。
+
+### 剩余缺口
+
+- UI 自动化目前只覆盖 Edge/Chromium，无跨浏览器；
+- 不覆盖全部长流程（真实任务提交、历史打开、产物灯时序）；
+- CI 未配置浏览器矩阵。
+
