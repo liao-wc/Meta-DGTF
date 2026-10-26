@@ -69,6 +69,9 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 117 增补（2026-10-26）】
+- v9b 重训条件记录：0.5B 峰值 4.9GB + 服务 1.9GB 超 6GB 卡；服务由并发会话持有，
+  待专用 GPU 窗口；当前 v8b 为本地可验证最优；零成本维护。
 【Round 116 增补（2026-10-26）】
 - v9 根因定位：训练命令漏传 --model，脚本 DEFAULT_MODEL 为 Qwen2.5-1.5B →
   adapter 是 1.5B（与 0.5B 服务不兼容，eval size mismatch）；已归档 ABORTED.md。

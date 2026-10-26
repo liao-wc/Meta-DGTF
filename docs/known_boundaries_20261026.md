@@ -114,3 +114,11 @@
 | v9 归档原因（更正） | 命令漏传 --model → 用了默认 1.5B base；adapter 不可用于 0.5B 服务 |
 | 防错训守卫 | out 名含 05b 但模型非 0.5B ⇒ 拒绝训练（已实测 reject/allow） |
 | 正确重训命令 | 见 `llm_sft/adapter_dgtf_selfcheck_05b_v9_aborted_ep1step120/ABORTED.md` |
+
+## 15. Round 117 更新
+
+| 项 | 内容 |
+|---|---|
+| v9b 重训 | 条件：专用 GPU 窗口（0.5B 训练峰值 ~4.9GB + 本地服务 ~1.9GB > 6GB 卡）；当前 8771/8772 服务由并发会话持有，不宜强停 → 等待窗口 |
+| 防错训守卫 | 已验证（reject/allow 两路径）；正确命令见 ABORTED.md |
+| 本地模型结论 | 当前 **v8b 为可验证最优**（质量=v6、p50/p95 更快；self_check local opt-in 收益 0.99/+2.27pp 于出生人口题） |
