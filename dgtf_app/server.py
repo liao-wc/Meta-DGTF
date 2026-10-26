@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "2.0.26"
+APP_VERSION = "2.0.27"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -8697,19 +8697,28 @@ class Handler(BaseHTTPRequestHandler):
             try:
                 _ts = runner.list_tasks()
                 _run = [t for t in _ts if str(t.get("status")) in ("running", "queued", "starting", "pending")]
-                _web = any(("web" in str(t.get("opts") or {}).lower())
-                           for t in _run)
+                _web = False
+                for _t in _run:
+                    _o = _t.get("opts") or {}
+                    if bool(_o.get("mock")):
+                        continue
+                    _w = _o.get("web")
+                    if isinstance(_w, bool):
+                        _web = _web or _w
+                    else:
+                        _web = _web or str(_w or "").strip().lower() in (
+                            "1", "true", "on", "yes", "auto", "web", "--web")
                 _dsh_run = False
                 try:
                     _dsh_run = bool((_dsh_current_asof() or {}).get("running"))
                 except Exception:
                     _dsh_run = False
                 return self._json({"ok": True, "running": len(_run),
-                                   "flags": {"app": False, "engine": bool(_run),
+                                   "flags": {"app": bool(_run), "engine": bool(_run),
                                              "model": any(not (t.get("opts") or {}).get("mock") for t in _run),
                                              "web": bool(_web), "local_llm": False,
                                              "agent": bool(_run) or bool(_dsh_run),
-                                             "products": False}, "ts": __import__("time").time()})
+                                             "products": bool(_run)}, "ts": __import__("time").time()})
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/agent/hot-topics":

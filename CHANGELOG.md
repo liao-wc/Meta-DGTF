@@ -10,6 +10,22 @@
 > （`check_v72_changelog_hygiene`）；代码文件里**不得**再出现版本段
 > （`check_v1237_changelog_outside_code`）。
 
+App 2.0.27
+
+【主题】演练模式侧边栏活动灯语义修正。
+
+【改变】
+- App 灯：活动任务运行中亮蓝（此前硬编码 False）。
+- 产物灯：活动任务运行中亮蓝（此前硬编码 False）。
+- 联网灯：只有非演练任务显式开启 web 时才亮蓝；不再因为 opts 中出现 fused_ground_web 字段误亮。
+- 引擎/模型/Agent 灯维持原有语义；演练模式模型灯不亮。
+- 演练模式实测活动 flags：app=true，engine=true，web=false，products=true。
+
+【验证】
+- 演练任务 20261026_154508_a4d110 运行期间活动灯采样通过。
+- App 全方位检查 PASS；App selftest 444/0；fast_gate 12/12；V2 tests 51/51（835 checks）。
+- 静态缓存串：2.0.27-activityfix。
+
 App 2.0.26
 
 【主题】DSH 全接管闭环加固：守卫版本同步约束、安全回退与提案指标实时化。

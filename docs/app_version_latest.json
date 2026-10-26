@@ -1,44 +1,44 @@
 {
  "ok": true,
- "version": "2.0.26",
+ "version": "2.0.27",
  "cache_tags": [
-  "2.0.26-takeover"
+  "2.0.27-activityfix"
  ],
  "checks": [
   {
    "name": "APP_VERSION 可读",
    "ok": true,
-   "detail": "2.0.26"
+   "detail": "2.0.27"
   },
   {
    "name": "静态查询串同版本",
    "ok": true,
-   "detail": "['2.0.26-takeover']"
+   "detail": "['2.0.27-activityfix']"
   },
   {
    "name": "根 README 当前版本",
    "ok": true,
-   "detail": "2.0.26"
+   "detail": "2.0.27"
   },
   {
    "name": "App README 当前版本",
    "ok": true,
-   "detail": "2.0.26"
+   "detail": "2.0.27"
   },
   {
    "name": "PROJECT_LAYOUT 当前版本",
    "ok": true,
-   "detail": "2.0.26"
+   "detail": "2.0.27"
   },
   {
    "name": "发布说明存在",
    "ok": true,
-   "detail": "2.0.26"
+   "detail": "2.0.27"
   },
   {
    "name": "CHANGELOG 含当前 App 版本",
    "ok": true,
-   "detail": "2.0.26"
+   "detail": "2.0.27"
   }
  ]
 }
