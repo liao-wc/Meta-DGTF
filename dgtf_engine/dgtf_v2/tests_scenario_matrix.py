@@ -26,7 +26,7 @@ def ck(n, ok, info=""):
 
 def main():
     rows = measured_matrix()
-    ck("矩阵行数 = 44（reasoning 6 / choice 4 / fact 34）", len(rows) == 44, len(rows))
+    ck("矩阵行数 = 45（reasoning 6 / choice 4 / fact 35）", len(rows) == 45, len(rows))
     ck("三个场景桶齐全",
        set(MEASURED_SCENARIOS) == {"reasoning", "choice", "fact"},
        list(MEASURED_SCENARIOS))
@@ -93,14 +93,26 @@ def main():
        and _ch["fast"]["tokens"] < _ch["auto"]["tokens"]
        and _ch["fast"]["wall"] < _ch["auto"]["wall"], _ch)
     r4 = recommend_scenario("fact", prefer="wall")
-    ck("推荐：fact 墙钟优先 → web_on_fast（已验证成本档）",
-       r4["mode"] in ("web_on_fast", "web_on_fast2") and
+    ck("推荐：fact 墙钟优先 → 最低墙钟已验证档（fast 系）",
+       str(r4["mode"]).startswith("web_on_fast") and
        r4["require_web"] is True and r4["forbid"], r4)
     r5 = recommend_scenario("fact", min_quality=0.999)
     ck("推荐：约束不可满足 → 回退且 reason 可审计",
        "回退" in str(r5.get("reason")), r5.get("reason"))
     r6 = recommend_scenario("unknown-kind")
+    # ★ [Round 90] 场景分类：地点/排序型问句 → fact（App 事实档强制 web on）
+    ck("场景分类：地点问句 → fact",
+       kind_of_question("联合国的总部设在哪个城市？") == "fact")
+    ck("场景分类：最大问句 → fact",
+       kind_of_question("中国最大的淡水湖是哪个？") == "fact")
+    ck("场景分类：为什么仍 → reasoning",
+       kind_of_question("为什么海水是咸的？") == "reasoning")
+    ck("场景分类：选择问句仍 → choice",
+       kind_of_question("企业建设数据中心，应该优先选择哪个方案？"
+                        "A. 自建 B. 公有云") == "choice")
+
     ck("推荐：未知场景 → 兜底 reasoning",
+
        r6["scenario"] == "reasoning" and r6["mode"] in rea["runs"],
        r6.get("scenario"))
 

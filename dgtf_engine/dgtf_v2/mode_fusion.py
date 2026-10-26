@@ -419,6 +419,10 @@ MEASURED_SCENARIOS: Dict[str, dict] = {
                               "wall": 182.4, "verified": True,
                               "question": "联合国安理会常任理事国共有几个？",
                               "config": "B parallel + thinking off + web on"},
+            "web_on_fast29": {"quality": 0.9476, "tokens": 543416, "calls": 88,
+                              "wall": 154.1, "verified": True,
+                              "question": "世界上海拔最高的高原是什么？",
+                              "config": "B parallel + thinking off + web on"},
             "web_off_auto": {"quality": 0.4440, "tokens": 1015910, "calls": 111,
                              "wall": 980.3, "verified": False,
                              "config": "B parallel + thinking auto + web off",
@@ -465,7 +469,10 @@ def kind_of_question(question: str) -> str:
         return "reasoning"
     fact_markers = ("多少", "是什么", "表示什么", "什么意思", "什么含义",
                     "指什么", "哪一年", "是谁", "等于几", "速度",
-                    "多少度", "几岁", "多远", "定义")
+                    "多少度", "几岁", "多远", "定义",
+                    # ★ [Round 90] 地点/排序/选择型事实问句（App 事实档需 web on）
+                    "哪个", "哪座", "哪条", "哪种", "哪里", "位于",
+                    "设在", "最大", "最高", "最长", "最小")
     choice_markers = ("还是", "或者", "应该", "如何取舍", "优先", "选择",
                       "方案")
     if any(k in q for k in choice_markers):

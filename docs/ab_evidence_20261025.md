@@ -2191,3 +2191,32 @@ App 无回归。
 ### 83.4 门禁
 
 全量 V2 51/51（813 checks）、fast_gate 12/12。
+
+
+## 84. probe 纪律审计 + 地理真题 + App 地点 e2e（Round 90）
+
+### 84.1 probe_no_target_covered 影响面量化（零成本）
+
+`scripts/probe_flag_audit.py`（267 个有质量读数的 pack）：
+- **30.3%（81/267）** 带 `probe_no_target_covered`；
+- **verified 答案中 30.7%（35/114）** 也带该 flag；
+- 分布：fact 35 / reasoning 13 / decision 2 / 未知 31；
+- 结论：这是**引擎探针覆盖判定**的系统性扣分源（答案可正确但仍被压 quality），
+  与 fast/auto 差异叠加造成 auto 质量分低 3–6pp。
+  引擎文件被并发会话占用 ⇒ 仅量化冻结；待可编辑时优化探针目标生成/覆盖判定。
+
+### 84.2 fast+web 地理真题
+
+「世界上海拔最高的高原是什么？」：**0.9476 / verified / ready**
+（543,416 tok / 88 calls / 154s），answer「青藏高原…世界屋脊」；矩阵 44→**45 行**。
+
+### 84.3 App 地点 e2e（首跑 unverified，复验中）
+
+「联合国的总部设在哪个城市？」daosheng_fast 首跑：任务完成 ok=True（393s），
+但产物 aq=unverified/ready=False、flags 仅 duty_short、fact_card 缺失——
+与 CLI 同题（v43-intl3 0.9507/verified/display=纽约市）不一致，疑似一次性管线波动
+（App 侧 plan 注入/网络/答案装配）；已复验一条以判定是否可复现。
+
+### 84.4 门禁
+
+全量 V2 51/51（813 checks）、fast_gate 12/12。
