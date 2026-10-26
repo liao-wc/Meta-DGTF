@@ -95,3 +95,37 @@ CI 失败禁止合并。
 - 受保护分支 + CI required checks；
 - 只允许通过 PR 合并；
 - 守卫回执独立复核。
+
+
+## 8. 回归保障矩阵
+
+| 改动区域 | 必须运行的回归 |
+|---|---|
+| dgtf_app/server.py / API | app_full_check、App selftest、对应接口 smoke |
+| dgtf_app/static/app.js、index.html、style.css | node --check、App 页面手动 smoke、模式切换/灯状态检查 |
+| dgtf_engine/ | fast_gate、V2 全量 tests、必要真跑 |
+| 版本/README/NAMING/发布说明 | app_version_check |
+| 文件写入/回退工具 | safe_file_ops 回滚测试、file_integrity_check |
+| 守卫/回执 | guard_policy_check、guard_receipt 门禁测试 |
+
+### 自动门禁
+
+- fast_gate：12 项机制门禁；
+- V2 tests：51 文件、835 checks；
+- App selftest：444 项；
+- app_full_check：API/安全/静态/版本/完整性；
+- dependency audit：路径与依赖；
+- pre-commit：App/engine 改动自动跑 fast_gate；
+- CI：fast_gate + V2 tests + 版本/完整性。
+
+### 当前缺口
+
+浏览器 UI 行为（模式切换、灯状态、抽屉/按钮）没有自动化浏览器测试。
+当前只能依靠：
+
+- node --check；
+- 静态结构与 ID 检查；
+- 发布前手动 UI smoke；
+- 修改前后对照截图/记录。
+
+这是目前“功能不回归”保证里最薄的一层，后续应补 Playwright/jsdom 级别 UI 回归。

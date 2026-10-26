@@ -14,6 +14,7 @@ else
 fi
 
 APP_CHANGED=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '^(dgtf_app/(server\.py|engine_runner\.py|daosheng_mode\.py|v2_online\.py|static/))' || true)
+GATE_CHANGED=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '^(dgtf_app/|dgtf_engine/)' || true)
 if [ -n "$APP_CHANGED" ]; then
   HEAD_VER=$(git show HEAD:dgtf_app/server.py 2>/dev/null | sed -n 's/^APP_VERSION = "\([^"]*\)".*/\1/p' | head -n 1)
   IDX_VER=$(git show :dgtf_app/server.py 2>/dev/null | sed -n 's/^APP_VERSION = "\([^"]*\)".*/\1/p' | head -n 1)
@@ -46,6 +47,14 @@ if ! "$PY" scripts/file_integrity_check.py >/tmp/dgtf_file_integrity_gate.log 2>
   echo "[release-gate] BLOCK: file_integrity_check failed" >&2
   tail -n 40 /tmp/dgtf_file_integrity_gate.log >&2
   exit 1
+fi
+
+if [ -n "$GATE_CHANGED" ]; then
+  if ! "$PY" fast_gate.py >/tmp/dgtf_fast_gate.log 2>&1; then
+    echo "[release-gate] BLOCK: fast_gate failed" >&2
+    tail -n 60 /tmp/dgtf_fast_gate.log >&2
+    exit 1
+  fi
 fi
 
 exit 0
