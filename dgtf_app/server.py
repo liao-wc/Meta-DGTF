@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "2.0.28"
+APP_VERSION = "2.0.29"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -5898,6 +5898,51 @@ def _sidebar_llm_cached():
     return val
 
 
+_PRODUCT_ACTIVITY = {"initialized": False, "last_mtime": 0.0,
+                      "last_count": 0, "until": 0.0, "last_file": ""}
+
+
+def _product_activity_probe():
+    """实时产物活动：只有 outputs 下 .md/.json 真正新增或更新才亮，持续 5 秒。"""
+    import os as _os
+    import time as _t
+    now = _t.time()
+    newest = 0.0
+    last_file = ""
+    count = 0
+    try:
+        with _os.scandir(str(oi.OUTPUTS_DIR)) as it:
+            for ent in it:
+                try:
+                    if not ent.is_file():
+                        continue
+                    name = ent.name
+                    low = name.lower()
+                    if not (low.endswith(".md") or low.endswith(".json")):
+                        continue
+                    if (low.endswith(".run.log") or low.endswith(".log")
+                            or low.endswith(".run.json")):
+                        continue
+                    st = ent.stat()
+                    count += 1
+                    if float(st.st_mtime) > newest:
+                        newest = float(st.st_mtime)
+                        last_file = name
+                except Exception:
+                    continue
+    except Exception:
+        pass
+    if not _PRODUCT_ACTIVITY["initialized"]:
+        _PRODUCT_ACTIVITY.update({"initialized": True, "last_mtime": newest,
+                                  "last_count": count, "until": 0.0})
+        return False
+    if newest > float(_PRODUCT_ACTIVITY.get("last_mtime") or 0):
+        _PRODUCT_ACTIVITY.update({"last_mtime": newest, "last_count": count,
+                                  "until": now + 5.0, "last_file": last_file})
+    active = now <= float(_PRODUCT_ACTIVITY.get("until") or 0)
+    return bool(active)
+
+
 def _sidebar_status_cached():
     import time as _t
     now = _t.time()
@@ -8718,7 +8763,11 @@ class Handler(BaseHTTPRequestHandler):
                                              "model": any(not (t.get("opts") or {}).get("mock") for t in _run),
                                              "web": bool(_web), "local_llm": False,
                                              "agent": bool(_run) or bool(_dsh_run),
-                                             "products": bool(_run)}, "ts": __import__("time").time()})
+                                             "products": _product_activity_probe()},
+                                   "product_activity": {"last_mtime": _PRODUCT_ACTIVITY.get("last_mtime"),
+                                                        "last_file": _PRODUCT_ACTIVITY.get("last_file"),
+                                                        "last_count": _PRODUCT_ACTIVITY.get("last_count")},
+                                   "ts": __import__("time").time()})
             except Exception as exc:
                 return self._json({"ok": False, "error": str(exc)}, 500)
         if p == "/api/agent/hot-topics":

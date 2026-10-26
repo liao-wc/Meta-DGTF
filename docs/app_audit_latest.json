@@ -1,7 +1,7 @@
 {
  "ok": true,
  "app": "https://127.0.0.1:8765",
- "ts": 1793001223.3208482,
+ "ts": 1793001775.817558,
  "n": 55,
  "fails": [],
  "warnings": [
@@ -17,17 +17,17 @@
   {
    "name": "GET /api/health",
    "ok": true,
-   "detail": "code=200 786ms"
+   "detail": "code=200 1703ms"
   },
   {
    "name": "GET /api/config",
    "ok": true,
-   "detail": "code=200 2425ms"
+   "detail": "code=200 4664ms"
   },
   {
    "name": "GET /api/dashboard",
    "ok": true,
-   "detail": "code=200 5580ms"
+   "detail": "code=200 116ms"
   },
   {
    "name": "GET /api/tasks",
@@ -37,57 +37,57 @@
   {
    "name": "GET /api/agent/knowledge",
    "ok": true,
-   "detail": "code=200 10ms"
+   "detail": "code=200 9ms"
   },
   {
    "name": "GET /api/agent/hot-topics",
    "ok": true,
-   "detail": "code=200 7ms"
+   "detail": "code=200 19ms"
   },
   {
    "name": "GET /api/status/activity",
    "ok": true,
-   "detail": "code=200 374ms"
+   "detail": "code=200 325ms"
   },
   {
    "name": "GET /api/status/sidebar",
    "ok": true,
-   "detail": "code=200 110ms"
+   "detail": "code=200 26ms"
   },
   {
    "name": "GET /api/schedule/v2",
    "ok": true,
-   "detail": "code=200 54ms"
+   "detail": "code=200 66ms"
   },
   {
    "name": "GET /api/schedule/v2/online",
    "ok": true,
-   "detail": "code=200 8ms"
+   "detail": "code=200 7ms"
   },
   {
    "name": "GET /api/schedule/v2/pareto",
    "ok": true,
-   "detail": "code=200 49ms"
+   "detail": "code=200 64ms"
   },
   {
    "name": "GET /api/schedule/policy",
    "ok": true,
-   "detail": "code=200 8ms"
+   "detail": "code=200 7ms"
   },
   {
    "name": "GET /api/dsh/guard",
    "ok": true,
-   "detail": "code=200 33ms"
+   "detail": "code=200 9ms"
   },
   {
    "name": "GET /api/dsh/proposals",
    "ok": true,
-   "detail": "code=200 418ms"
+   "detail": "code=200 330ms"
   },
   {
    "name": "静态缓存版本一致",
    "ok": true,
-   "detail": "2.0.28-agentready"
+   "detail": "2.0.29-productlight"
   },
   {
    "name": "GET /static/index.html",
@@ -262,12 +262,12 @@
   {
    "name": "关键文件完整性",
    "ok": true,
-   "detail": ",\n \"files\": [\n  {\n   \"file\": \"dgtf_app/server.py\",\n   \"ok\": true,\n   \"size\": 489606,\n   \"error\": \"\"\n  },\n  {\n   \"file\": \"dgtf_app/engine_runner.py\",\n   \"ok\": true,\n   \"size\": 52969,\n   \"error\": \"\"\n  },\n  {\n   \"file\": \"dgtf_app/static/app.js\",\n   \"ok\": true,\n   \"size\": 356691,\n   \"error\": \"\"\n  },\n  {"
+   "detail": ",\n \"files\": [\n  {\n   \"file\": \"dgtf_app/server.py\",\n   \"ok\": true,\n   \"size\": 491775,\n   \"error\": \"\"\n  },\n  {\n   \"file\": \"dgtf_app/engine_runner.py\",\n   \"ok\": true,\n   \"size\": 52969,\n   \"error\": \"\"\n  },\n  {\n   \"file\": \"dgtf_app/static/app.js\",\n   \"ok\": true,\n   \"size\": 356691,\n   \"error\": \"\"\n  },\n  {"
   },
   {
    "name": "App 版本一致性",
    "ok": true,
-   "detail": "\",\n \"cache_tags\": [\n  \"2.0.28-agentready\"\n ],\n \"checks\": [\n  {\n   \"name\": \"APP_VERSION 可读\",\n   \"ok\": true,\n   \"detail\": \"2.0.28\"\n  },\n  {\n   \"name\": \"静态查询串同版本\",\n   \"ok\": true,\n   \"detail\": \"['2.0.28-agentready']\"\n  },\n  {\n   \"name\": \"根 README 当前版本\",\n   \"ok\": true,\n   \"detail\": \"2.0.28\"\n  },\n  {\n   \""
+   "detail": "\"cache_tags\": [\n  \"2.0.29-productlight\"\n ],\n \"checks\": [\n  {\n   \"name\": \"APP_VERSION 可读\",\n   \"ok\": true,\n   \"detail\": \"2.0.29\"\n  },\n  {\n   \"name\": \"静态查询串同版本\",\n   \"ok\": true,\n   \"detail\": \"['2.0.29-productlight']\"\n  },\n  {\n   \"name\": \"根 README 当前版本\",\n   \"ok\": true,\n   \"detail\": \"2.0.29\"\n  },\n  {\n   \""
   },
   {
    "name": "_app_err_8765.log 无 Traceback",

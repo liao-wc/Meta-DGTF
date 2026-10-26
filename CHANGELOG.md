@@ -10,6 +10,21 @@
 > （`check_v72_changelog_hygiene`）；代码文件里**不得**再出现版本段
 > （`check_v1237_changelog_outside_code`）。
 
+App 2.0.29
+
+【主题】产物活动灯改为真实落盘/生成触发。
+
+【改变】
+- 产物灯不再跟随任务运行状态；仅当 outputs 下可交付产物（.md、层级 .json、.packed.json 等）新增或更新时亮蓝。
+- 排除 .run.json/.run.log 运行元数据，避免任务启动时误亮。
+- 产物写入后蓝灯保持 5 秒，然后自动熄灭；活动轮询 2 秒刷新。
+- 实测演练任务：启动阶段 products=false；产物生成阶段 products=true；完成后 5 秒内保持蓝灯，随后熄灭。
+- 应用/引擎灯在任务运行期间为蓝；联网灯仅真实非演练 web 时蓝；Agent 就绪灯独立于守护开关。
+
+【验证】
+- 演练任务 20261026_160054_355254：T0 products=false，产物落盘时 products=true，完成后约 2 秒采样仍真、随后 false。
+- App 全方位检查 PASS；App 版本一致性 PASS；App selftest 444/0；fast_gate 12/12。
+- 静态缓存串：2.0.29-productlight。
 App 2.0.28
 
 【主题】Agent 就绪灯与守护开关解耦。
