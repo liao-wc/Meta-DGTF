@@ -1,13 +1,13 @@
 {
- "n_packs": 267,
- "n_probe_flagged": 81,
- "probe_flag_ratio": 0.3034,
- "n_verified": 114,
- "n_verified_and_flagged": 35,
- "verified_flagged_ratio": 0.307,
+ "n_packs": 284,
+ "n_probe_flagged": 85,
+ "probe_flag_ratio": 0.2993,
+ "n_verified": 125,
+ "n_verified_and_flagged": 38,
+ "verified_flagged_ratio": 0.304,
  "flagged_by_qtype": {
   "?": 31,
-  "fact": 35,
+  "fact": 39,
   "reasoning": 13,
   "decision": 2
  },
@@ -3482,6 +3482,203 @@
     "probe_no_target_covered"
    ],
    "probe_flag": true
+  },
+  {
+   "file": "20261026_082438_世界上海拔最高的高原是什么.packed.json",
+   "question": "世界上海拔最高的高原是什么？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_082829_联合国的总部设在哪个城市.packed.json",
+   "question": "联合国的总部设在哪个城市？",
+   "qtype": "fact",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_083812_联合国的总部设在哪个城市.packed.json",
+   "question": "联合国的总部设在哪个城市？",
+   "qtype": "fact",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "unsaid_overused(5)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_085557_联合国的总部设在哪个城市.packed.json",
+   "question": "联合国的总部设在哪个城市？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_091033_以下哪项属于可再生能源A煤炭B.packed.json",
+   "question": "以下哪项属于可再生能源？A. 煤炭 B. 太阳能 C. 石油 D. 天然气",
+   "qtype": "fact",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "ing_rephrased_direct(64%)",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261026_091917_以下哪项属于可再生能源A煤炭B.packed.json",
+   "question": "以下哪项属于可再生能源？A. 煤炭 B. 太阳能 C. 石油 D. 天然气",
+   "qtype": "fact",
+   "aq": "unverified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_092841_以下哪项属于可再生能源A煤炭B.packed.json",
+   "question": "以下哪项属于可再生能源？A. 煤炭 B. 太阳能 C. 石油 D. 天然气",
+   "qtype": "fact",
+   "aq": "needs_evidence",
+   "ready": false,
+   "flags": [
+    "duty_short",
+    "ing_rephrased_direct(59%)",
+    "ing_rephrased_direct(80%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_093705_以下哪项属于可再生能源A煤炭B.packed.json",
+   "question": "以下哪项属于可再生能源？A. 煤炭 B. 太阳能 C. 石油 D. 天然气",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "ing_rephrased_direct(59%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_094411_2024年中国出生人口是多少万人.packed.json",
+   "question": "2024年中国出生人口是多少万人？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_095401_2024年我国货物贸易进出口总值是多少万.packed.json",
+   "question": "2024年我国货物贸易进出口总值是多少万亿元？",
+   "qtype": "fact",
+   "aq": "unverified",
+   "ready": false,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_095637_民法典规定租赁合同期限最长不得超过多少年.packed.json",
+   "question": "民法典规定租赁合同期限最长不得超过多少年？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "candidates_backfilled(sc:10)",
+    "duty_short",
+    "ing_rephrased_direct(57%)",
+    "ing_rephrased_direct(64%)"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_100307_AIAgent会先取代哪类工作.packed.json",
+   "question": "AI Agent 会先取代哪类工作？",
+   "qtype": "reasoning",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_100831_2024年我国货物贸易进出口总值是多少万.packed.json",
+   "question": "2024年我国货物贸易进出口总值是多少万亿元？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "ing_rephrased_direct(72%)",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261026_103251_世界上海拔最高的高原是什么.packed.json",
+   "question": "世界上海拔最高的高原是什么？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [],
+   "probe_flag": false
+  },
+  {
+   "file": "20261026_104220_世界上海拔最高的高原是什么.packed.json",
+   "question": "世界上海拔最高的高原是什么？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "ing_rephrased_direct(82%)",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261026_104626_光在水中传播的速度是多少.packed.json",
+   "question": "光在水中传播的速度是多少？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short",
+    "expand_imbalanced_benign",
+    "probe_no_target_covered"
+   ],
+   "probe_flag": true
+  },
+  {
+   "file": "20261026_104638_2024年中国出生人口是多少万人.packed.json",
+   "question": "2024年中国出生人口是多少万人？",
+   "qtype": "fact",
+   "aq": "verified",
+   "ready": true,
+   "flags": [
+    "duty_short"
+   ],
+   "probe_flag": false
   }
  ]
 }
