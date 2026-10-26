@@ -45,6 +45,21 @@ V2.2.3
 - 机制 C（Round 13）：数值型问句短答优先取含数值+单位的句子（早于日期句分支）；
   黄河 pack 离线重放：uncovered 误报清零、官方源保留，answer 句选择仍待
   claim 级抽取（已记录为下一轮）。
+【Round 99–100 增补（2026-10-26）】
+- GPU 治理：训练期间暂停本地 LLM/BGE 服务释放显存，v9 步速 72s→33–38s；
+  App 自检在本地服务全停时仍 444/0 PASS（fail-open 验证）。
+- v9 训练 ep1 step 20/460（ETA ~5.8h）；余额 50.76 真实跑次暂停。
+【Round 96–98 增补（2026-10-26）】
+- dual_judge local：worktree 实现 + T1–T6 离线判据全 PASS；真跑 0.95/0.99 verified，
+  local judge 19 请求/9 超时回退 ⇒ opt-in；合并补丁已导出并校验（docs/patches）。
+- 三方验收 final_acceptance --with-service 9/9 PASS（Round 98 复核）。
+【Round 89–95 增补（2026-10-26）】
+- P0 治理：ab_bench 成本口径（cost_window_cny/attribution/note）+ real_run.lock 并发锁；
+  选择题真题 0.9387 verified；核心路径回归（推理 fast 0.9376、事实 auto GDP 0.9153 verified）。
+- 事实子系统：成年/地点/选项/万亿元/年限/进出口/命名题/辟谣等边界闭环；
+  矩阵 35→47 行、App e2e 7→11 行；probe 纪律量化（284 packs 29.9%）。
+- 本地模型：v8b 默认（质量=v6、p50/p95 更快）；v8b self_check local A/B
+  （出生人口 0.99/+2.27pp/−5.3% tokens；光速持平）⇒ local opt-in。
 【Round 88 增补（扩展）】
 - 辟谣降权：answer_from_evidence 对 流言/谣言/辟谣/并不科学/并非 等 −0.7
   （A66）；人体最大器官 0.9523/verified（answer=皮肤）。
