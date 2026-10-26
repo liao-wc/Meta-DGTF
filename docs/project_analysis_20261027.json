@@ -1,8 +1,8 @@
 {
- "packs": 359,
+ "packs": 360,
  "question_types": {
   "unknown": 127,
-  "fact": 161,
+  "fact": 162,
   "boundary": 2,
   "decision": 8,
   "reasoning": 61
@@ -13,7 +13,7 @@
   },
   "fact": {
    "needs_evidence": 31,
-   "verified": 105,
+   "verified": 106,
    "unverified": 25
   },
   "boundary": {
@@ -31,11 +31,11 @@
  },
  "display": {
   "no_display": 243,
-  "display": 116
+  "display": 117
  },
  "fact_card_ok": {
   "not_ok": 220,
-  "ok": 139
+  "ok": 140
  },
  "flags_top": {
   "duty_short": 275,
@@ -63,7 +63,7 @@
   "historical_answer_rejected": 1
  },
  "stop_reasons": {
-  "question_answered_four_layers": 153,
+  "question_answered_four_layers": 154,
   "": 144,
   "体力耗尽（3 圈走满，未触发任何停止判据，是被截断不是自然停止）\n  近阈读数：末圈：无新& 0 / 无线头 0 / 停滞 0": 15,
   "自省连续 2 圈点名同一批问题未消化（层内空转）": 13,
@@ -75,25 +75,32 @@
   "体力耗尽（4 圈走满，未触发任何停止判据，是被截断不是自然停止）\n  近阈读数：末圈：无新& 0 / 无线头 0 / 停滞 1": 2
  },
  "coverage": {
-  "mean": 0.5609,
-  "lt_0_8": 257,
+  "mean": 0.5614,
+  "lt_0_8": 258,
   "lt_0_5": 124
  },
  "tri_alpha": {
-  "n": 283,
-  "mean": 0.0565,
-  "unreliable_lt_0667": 248
+  "n": 284,
+  "mean": 0.0563,
+  "unreliable_lt_0667": 249
  },
  "tokens": {
-  "n": 359,
-  "mean": 669658,
-  "p50": 652846,
+  "n": 360,
+  "mean": 669486,
+  "p50": 652476,
   "max": 2938969,
   "calls_mean": 87.9
  },
+ "provenance": {
+  "packs_with_provenance": 1,
+  "packs_with_question_hash": 1,
+  "packs_with_verification": 1,
+  "truncated_but_ready": 19,
+  "verified_without_display": 57
+ },
  "artifact_integrity": {
   "missing_md": 1,
-  "md_mean_bytes": 114774,
+  "md_mean_bytes": 114782,
   "dispatch_incomplete": 11
  },
  "trend_by_date": {
@@ -231,6 +238,15 @@
    "coverage_mean": 0.7739,
    "tri_alpha_mean": 0.005,
    "tokens_mean": 720000
+  },
+  "20261027": {
+   "n": 1,
+   "verified_pct": 100.0,
+   "ready_pct": 100.0,
+   "display_pct": 100.0,
+   "coverage_mean": 0.75,
+   "tri_alpha_mean": 0.007,
+   "tokens_mean": 607783
   }
  },
  "ab_trend_by_prefix": {
@@ -347,6 +363,12 @@
    "quality_mean": 0.8791,
    "verified_pct": 83.3,
    "tokens_mean": 706980
+  },
+  "v132": {
+   "n": 1,
+   "quality_mean": 0.975,
+   "verified_pct": 100.0,
+   "tokens_mean": 607783
   },
   "v15": {
    "n": 1,
@@ -571,6 +593,6 @@
    "tokens_mean": 528673
   }
  },
- "ab_rows": 145,
- "ab_missing_cost": 97
+ "ab_rows": 146,
+ "ab_missing_cost": 0
 }

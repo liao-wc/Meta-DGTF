@@ -104,7 +104,7 @@
 
 | 项 | 内容 |
 |---|---|
-| 本地服务 | 已恢复（8771/8772，v8b ready）；一键验收 --with-service **9/9 PASS**（Round 114 历史；最新 15/15） |
+| 本地服务 | 已恢复（8771/8772，v8b ready）；一键验收 --with-service **9/9 PASS**（Round 114 历史；最新 16/16） |
 | v9 | 归档不变：GPU 6GB 卡无法同时容纳训练(5.8GB)+服务(2GB)，需专用窗口 |
 
 ## 14. Round 116 更新
@@ -146,7 +146,7 @@
 |---|---|
 | dual_judge local | **已合并**（60b0e81）；App 自动透传；默认仍 opt-in（本地 judge 吞吐） |
 | 本地模型默认 | **v9b**（val 0.1989；held-out 质量=v8b、更快；v8b/v6/v5/v2 兜底） |
-| 验收 | **15/15（有服务）/ 14/14（无服务）**（Round 129 最新；本表为 Round 124 快照） |
+| 验收 | **16/16（有服务）/ 15/15（无服务）**（Round 132 最新；本表为 Round 124 快照） |
 | 剩余边界 | probe_no_target_covered（引擎侧扣分，29.3% packs）；App 精确缓存；旧 pack 严格拒答；检索依赖 |
 
 ## 19. Round 126 更新
@@ -157,7 +157,7 @@
 | dual_judge 吞吐 | **忙时 503 BUSY 快失败**（17.7ms 回退信号）；引擎毫秒级回退 llm；计数可审计 |
 | App 缓存 | **no_cache/force_rerun 显式绕过**（缓存+去重），e2e 可用 `DGTF_E2E_NO_CACHE=1` |
 | 预算覆盖面 | 仍阻塞：余额 ¥0.74（<4）；充值后可恢复真跑清单 |
-| 验收 | **15/15（有服务）/ 14/14（无服务）**（Round 129） |
+| 验收 | **16/16（有服务）/ 15/15（无服务）**（Round 132） |
 
 ## 20. Round 127 收束
 
@@ -196,3 +196,16 @@
   duty_short 76.6%、probe_link_dangling 46.8%；0/359 版本指纹；A/B 97/145 缺 cost；
 - 结论（P0）：erified 语义分叉（事实 vs 过程合同）+ tri_alpha 不可靠；64.2% tokens 浪费在重复问题、
   29 条截断跑次。Round 129–130 已修算术/一致性/flags 分类；**语义拆分与成本效率为下一步优先**。
+
+## 24. Round 132 更新（按项目问题改进）
+
+| 项 | 内容 |
+|---|---|
+| 验证语义 | 新增 `quality.verification`（事实正确性 vs 过程合同分离）；tri_alpha 不再冒充事实正确性 |
+| 展示/截断门 | 事实 verified 无 display ⇒ ready=False；体力耗尽截断 ⇒ ready=False |
+| 重复成本 | `ab_bench` 同题 verified 默认拒绝（`--allow-repeat` 覆盖）；历史重复 tokens 64.2% 可止 |
+| 溯源 | 新产物带 `provenance`（git SHA/config hash/app version）+ `question_hash` |
+| 告警分级 | `quality.alert`：process→info / coverage→warn / core_audit_gaps→block |
+| A/B schema | 97 条旧行回填 cost 字段（不可归因标注）；新行成本+provenance 关联 |
+| 验收 | **16/16（有服务）/ 15/15（无服务）**；V2 54/854；真跑验证 0.975 verified |
+| 遗留 | duty_short/probe 校准、legacy 19+57、输出保留策略、矩阵 2 行 pending live、本地模型质量增量 |

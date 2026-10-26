@@ -138,7 +138,7 @@ python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.3.py -c configs/方案F-帕累�
 | fast_gate | PASS 12 / FAIL 0 |
 | V2 tests_*.py | **51 / 51 PASS（806 项检查）** |
 | App selftest | PASS 444 / FAIL 0 |
-| 一键验收 `scripts/final_acceptance.py --with-service` | **15 / 15 PASS**（无服务 14/14）；含四道护栏 + 防错训/probe/缓存/快失败/一致性/fx 判据 |
+| 一键验收 `scripts/final_acceptance.py --with-service` | **16 / 16 PASS**（无服务 15/15）；含四道护栏 + 防错训/probe/缓存/快失败/一致性/fx 判据 |
 | 离线重放护栏（124 packs） | answered 81 / gaps 清零 17 / 数值 34→38 / **0 新答案变差** |
 | 过程门审计护栏（85 packs） | standard 83.5% / 审计已修复 27 / **未修复 0** |
 | App plan 不变量 / dual_judge 防护 | 18/18、7/7 |
@@ -240,5 +240,5 @@ local_model\envs\dgtf_llm_env\Scripts\python.exe -m pip check
 - **本地模型默认**：v8b（mixed 配方，质量持平 v6、p50/p95 更快；训练/评测/切换全链证据）
 - **事实成本档**：fast+web 20 类领域 verified，质量 0.92–0.99、tokens 570–750K、
   墙钟 190–290s；场景矩阵事实 **60 行** + App e2e **12 行**
-- **一键验收**：`python scripts/final_acceptance.py --with-service` → 15/15 PASS（无服务 14/14）
+- **一键验收**：`python scripts/final_acceptance.py --with-service` → 16/16 PASS（无服务 15/15）
 - 已知边界：检索依赖、跨片段语义（成年年龄）、多值列举、dual_judge 无 local 档

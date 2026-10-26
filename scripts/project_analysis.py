@@ -40,6 +40,11 @@ def main() -> int:
     md_missing = 0
     md_lens = []
     fact_ok = Counter()
+    provenance_n = 0
+    qhash_n = 0
+    verification_n = 0
+    truncated_ready = 0
+    verified_no_display = 0
     for f in packs:
         try:
             d = json.loads(Path(f).read_text(encoding="utf-8"))
@@ -64,6 +69,17 @@ def main() -> int:
         card = (d.get("decision_trace") or {}).get("fact_card") or {}
         disp["display" if card.get("answer_display") else "no_display"] += 1
         fact_ok["ok" if card.get("ok") else "not_ok"] += 1
+        if d.get("provenance"):
+            provenance_n += 1
+        if d.get("question_hash"):
+            qhash_n += 1
+        if isinstance(q.get("verification"), dict):
+            verification_n += 1
+        if ("体力耗尽" in str(asum.get("stop_reason") or "")
+                and q.get("answer_ready") is True):
+            truncated_ready += 1
+        if q.get("answer_quality") == "verified" and not card.get("answer_display"):
+            verified_no_display += 1
         for fl in (q.get("flags") or []):
             flags[str(fl).split("(")[0]] += 1
         for g in (card.get("gaps") or q.get("gaps") or []):
@@ -123,6 +139,13 @@ def main() -> int:
             "p50": int(statistics.median(tok)) if tok else 0,
             "max": max(tok) if tok else 0,
             "calls_mean": round(statistics.mean(calls), 1) if calls else 0,
+        },
+        "provenance": {
+            "packs_with_provenance": provenance_n,
+            "packs_with_question_hash": qhash_n,
+            "packs_with_verification": verification_n,
+            "truncated_but_ready": truncated_ready,
+            "verified_without_display": verified_no_display,
         },
         "artifact_integrity": {
             "missing_md": md_missing,

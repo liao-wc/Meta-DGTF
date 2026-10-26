@@ -1,3 +1,14 @@
+【Round 132 增补（2026-10-27，按项目问题改进）】
+- P0 语义：`verification_semantics` → `quality.verification`（事实正确性 vs 过程合同分离）；
+  display_gate（事实 verified 无展示 ⇒ ready=False）；截断门（体力耗尽 ⇒ ready=False）。
+- P0 成本：`ab_bench` 同题 verified 默认拒绝（`--allow-repeat`）；ab_results 97 条旧行回填 cost 字段。
+- P2 溯源：`provenance.py`（engine/app/git SHA/config hash）+ 产物 `question_hash`；
+  `alert_levels` 告警分级写 `quality.alert`。
+- 真实验证：HTTP201 fast+web → **0.975 verified/ready/display**，202.8s、607K tok、窗口差 ¥0.27，
+  provenance(git e4d12ba)/verification/alert/question_hash 全部落盘。
+- 验收 **16/16（有服务）/ 15/15（无服务）**；V2 **54/54（854 checks）**。
+- 遗留：duty_short/probe 校准、legacy 19 truncated_ready + 57 verified_no_display、输出保留策略、
+  矩阵 2 行 pending live、本地模型质量增量。
 【Round 131 增补（2026-10-27）】
 - 新增 scripts/project_analysis.py + docs/项目问题分析_20261027.md / JSON（基于 359 packs 的项目级诊断）：
   累计 2.40 亿 tokens、重复问题额外 64.2%、29 条截断、tri_alpha 不可靠 87.6%、fact_card ok 38.7%、

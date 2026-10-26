@@ -28,6 +28,7 @@ STEPS = [
     ("app_cache_bypass", ["scripts/local_model/test_app_cache_bypass.py"]),
     ("judge_fastfail", ["scripts/local_model/test_judge_fastfail.py"]),
     ("probe_cover_wide", ["scripts/local_model/test_probe_cover_wide.py"]),
+    ("ab_repeat_guard", ["scripts/local_model/test_ab_repeat_guard.py"]),
     ("outputs_consistency", ["scripts/outputs_quality_consistency.py"]),
     ("fx_anchor_replay", ["scripts/fx_anchor_replay_check.py"]),
     ("scenario_matrix_guard", ["scripts/update_scenario_matrix.py"]),

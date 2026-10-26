@@ -526,3 +526,59 @@ def classify_flags(flags) -> dict:
                 uniq.append(x)
         out[k] = uniq
     return out
+
+
+def verification_semantics(question_type: str, answer_quality: str,
+                           process_ready: bool, has_official_evidence: bool,
+                           has_answer_text: bool) -> dict:
+    """[Round 132] 拆分 verified 语义（事实正确性 vs 过程合同），避免同名误解。"""
+    aq = str(answer_quality or "")
+    qt = str(question_type or "")
+    is_fact = (qt == "fact")
+    correctness = bool(is_fact and aq == "verified" and has_official_evidence
+                       and has_answer_text)
+    process = bool((not is_fact) and aq == "verified" and process_ready
+                   and has_answer_text)
+    if correctness:
+        basis = "official_evidence"
+    elif process:
+        basis = "process_contract"
+    elif aq == "verified":
+        basis = "unclassified_verified"
+    else:
+        basis = "none"
+    return {
+        "answer_correctness_verified": correctness,
+        "process_contract_verified": process,
+        "evidence_basis": basis,
+        "note": ("事实题 verified=官方证据+答案文本；非事实题 verified=四层过程合同"
+                 "（不代表事实正确性）"),
+    }
+
+
+def display_gate(question_type: str, answer_quality: str,
+                 display_text: str):
+    """[Round 132] 事实题 verified 但无可展示答案 ⇒ (False, reason)；否则 (None, "")。"""
+    if (str(question_type or "") == "fact"
+            and str(answer_quality or "") == "verified"
+            and not str(display_text or "").strip()):
+        return False, "事实题 verified 但无可展示答案（display/answer 为空）"
+    return None, ""
+
+
+def alert_levels(flags) -> dict:
+    """[Round 132] 告警分级：process→info、coverage/other→warn、block 集合→block。"""
+    info = classify_flags(flags)
+    block_codes = {"core_audit_gaps"}
+    out = {"block": [], "warn": [], "info": []}
+    for code in info.get("process") or []:
+        out["info"].append(code)
+    for code in (info.get("coverage") or []) + (info.get("other") or []):
+        (out["block"] if code in block_codes else out["warn"]).append(code)
+    rank = {"none": 0, "info": 1, "warn": 2, "block": 3}
+    max_level = "none"
+    for lvl in ("info", "warn", "block"):
+        if out[lvl]:
+            max_level = lvl if rank[lvl] > rank[max_level] else max_level
+    out["max_level"] = max_level
+    return out

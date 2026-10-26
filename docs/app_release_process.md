@@ -111,7 +111,7 @@ CI 失败禁止合并。
 ### 自动门禁
 
 - fast_gate：12 项机制门禁；
-- V2 tests：52 文件、842 checks；
+- V2 tests：54 文件、854 checks；
 - App selftest：444 项；
 - app_full_check：API/安全/静态/版本/完整性；
 - dependency audit：路径与依赖；

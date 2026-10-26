@@ -25972,6 +25972,21 @@ class MetaDGTF:
                          and _dt0.get("answer_quality") == "verified"
                          else ("" if _dt0.get("question_type") == "fact"
                                else ((_dt0.get("reasoning") or {}).get("answer")))) or "")
+            # ★ [Round 132] 展示门 + 截断门：ready 语义收紧
+            try:
+                from dgtf_v2.quality_predictor import display_gate as _dg0
+                _gv0, _gr0 = _dg0(str(_dt0.get("question_type")),
+                                  str(_dt0.get("answer_quality")), _ans0)
+                if _gv0 is False:
+                    _dt0["answer_ready"] = False
+                    _dt0["answer_ready_reason"] = _gr0
+                if ("体力耗尽" in str(_dt0.get("stop_reason") or "")
+                        and _dt0.get("answer_ready")):
+                    _dt0["answer_ready"] = False
+                    _dt0["answer_ready_reason"] = (
+                        "体力耗尽（预算截断），不视为 ready")
+            except Exception:  # noqa: BLE001
+                pass
             _asum0 = {
                 "question_type": _dt0.get("question_type"),
                 "answer": _ans0[:2000],
@@ -26005,6 +26020,29 @@ class MetaDGTF:
                         "answer_quality": _dt0.get("answer_quality"),
                         "answer_summary": _asum0,
                         "depth": _depth0})
+            # ★ [Round 132] 验证语义拆分 + 告警分级 + 溯源指纹
+            try:
+                from dgtf_v2.quality_predictor import (
+                    alert_levels as _al0, verification_semantics as _vs0)
+                _vq0 = _vs0(str(_dt0.get("question_type")),
+                            str(_dt0.get("answer_quality")),
+                            bool(_dt0.get("process_ready")),
+                            bool(_card0.get("official_evidence_ids")),
+                            bool(str(_ans0 or "").strip()))
+                _dt0["verification"] = _vq0
+                _asum0["verification"] = _vq0
+                _q0["verification"] = _vq0
+                _q0["alert"] = _al0(_q0.get("flags") or [])
+            except Exception:  # noqa: BLE001
+                pass
+            try:
+                from dgtf_v2.provenance import (artifact_provenance as _ap0,
+                                                question_fingerprint as _qfp0)
+                packed["provenance"] = _ap0(getattr(self, "config", {}) or {})
+                packed["question_hash"] = _qfp0(
+                    str(packed.get("question") or ""))
+            except Exception:  # noqa: BLE001
+                pass
             packed["quality"] = _q0
         except Exception as _ple:
             logger.warning("过程账本生成失败（不阻断）：%s", _ple)

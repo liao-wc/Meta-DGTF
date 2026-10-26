@@ -307,6 +307,60 @@ def _pack_from_log(logp: Path) -> Path | None:
     return None
 
 
+def _norm_question(q: str) -> str:
+    import re as _re
+    return _re.sub(r"[\s？?。.!！,，、;；:：]+", "", str(q or ""))
+
+
+def _find_verified_duplicate(question: str, web=None) -> dict | None:
+    """[Round 132] 同题 verified 结果（valid & quality>=0.9）→ 拒绝重复真跑省钱。
+
+    历史产物里 64.2% tokens 花在重复问题；该守卫默认拒绝同题重跑，
+    确需对照/复跑时显式 `--allow-repeat`。
+    """
+    if not AB_RESULTS.exists():
+        return None
+    qn = _norm_question(question)
+    if not qn:
+        return None
+    rows = []
+    for ln in AB_RESULTS.read_text(encoding="utf-8").splitlines():
+        ln = ln.strip()
+        if not ln:
+            continue
+        try:
+            rows.append(json.loads(ln))
+        except Exception:  # noqa: BLE001
+            continue
+    for r in reversed(rows):
+        if _norm_question(r.get("question")) != qn:
+            continue
+        if not r.get("valid"):
+            continue
+        try:
+            q = float(r.get("quality") or 0)
+        except (TypeError, ValueError):
+            q = 0.0
+        if q < 0.90:
+            continue
+        if web is not None:
+            ea = [str(x) for x in (r.get("engine_args") or [])]
+            have = ""
+            for i2, x2 in enumerate(ea):
+                if x2 == "--web" and i2 + 1 < len(ea):
+                    have = ea[i2 + 1].lower()
+                    break
+                if x2.startswith("--web="):
+                    have = x2.split("=", 1)[1].lower()
+                    break
+            want_on = str(web).lower() in ("on", "1", "true")
+            have_on = have in ("on", "1", "true")
+            if have and have_on != want_on:
+                continue
+        return r
+    return None
+
+
 def cmd_run(args) -> int:
     engine = Path(args.engine).resolve() if args.engine else find_engine()
     bal0 = get_balance()
@@ -316,6 +370,13 @@ def cmd_run(args) -> int:
         print("拒绝真跑：余额 %.2f < 门槛 %.2f（可用 --min-balance 覆盖，但请先想清楚）"
               % (bal0, args.min_balance))
         return 2
+    if not getattr(args, "allow_repeat", False):
+        _hit = _find_verified_duplicate(args.question, web=getattr(args, "web", None))
+        if _hit:
+            print("拒绝重复真跑：该问题已有 verified 结果 tag=%s quality=%s ts=%s；"
+                  "重复问题历史消耗 64.2%% tokens。确需复跑请加 --allow-repeat"
+                  % (_hit.get("tag"), _hit.get("quality"), _hit.get("ts")))
+            return 4
     eng_args = _build_engine_args(args)
     probe = ROOT / "docs" / ("probe_%s.json" % (args.tag or time.strftime("%H%M%S")))
     instr = ROOT / "scripts" / "run_engine_instrumented.py"
@@ -505,6 +566,8 @@ def main() -> int:
     p.add_argument("--tag", default="")
     p.add_argument("--est-cost", type=float, default=0.0,
                    help="预估成本（写入 real_run.lock，便于并发审计）")
+    p.add_argument("--allow-repeat", action="store_true",
+                   help="显式允许同题重复真跑（默认同题 verified 结果会拒绝）")
     p.add_argument("--force-concurrent", action="store_true",
                    help="显式覆盖 real_run.lock（默认拒绝并发展开）")
     p.add_argument("--note", default="")

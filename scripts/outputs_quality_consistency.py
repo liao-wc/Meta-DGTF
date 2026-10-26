@@ -27,6 +27,7 @@ def main() -> int:
     args = ap.parse_args()
     packs = sorted(glob.glob(str(ROOT / "outputs" / "*.packed.json")))
     legacy_bad, new_bad, no_norm = [], [], []
+    legacy_trunc, legacy_nodisp = [], []
     new_total = 0
     for f in packs:
         stem = os.path.basename(f)
@@ -38,17 +39,34 @@ def main() -> int:
         aq = q.get("answer_quality")
         ready = q.get("answer_ready")
         is_new = stem[:8] >= CUTOFF
+        asum = q.get("answer_summary") or d.get("answer_summary") or {}
+        card = (d.get("decision_trace") or {}).get("fact_card") or {}
+        truncated = "体力耗尽" in str(asum.get("stop_reason") or "")
+        no_display = bool(str(card.get("answer_display") or "").strip()) is False
         if is_new:
             new_total += 1
             if (aq == "verified" and ready is False) or (aq == "unverified" and ready is True):
                 new_bad.append(stem)
             if "flags_normalized" not in q:
                 no_norm.append(stem)
-        elif (aq == "verified" and ready is False) or (aq == "unverified" and ready is True):
-            legacy_bad.append(stem)
+            if truncated and ready is True:
+                new_bad.append(stem + "::truncated_ready")
+            if aq == "verified" and no_display:
+                new_bad.append(stem + "::verified_no_display")
+            if "provenance" not in d or "question_hash" not in d:
+                new_bad.append(stem + "::missing_provenance")
+        else:
+            if (aq == "verified" and ready is False) or (aq == "unverified" and ready is True):
+                legacy_bad.append(stem)
+            if truncated and ready is True:
+                legacy_trunc.append(stem)
+            if aq == "verified" and no_display:
+                legacy_nodisp.append(stem)
     doc = {
         "packs": len(packs), "cutoff": CUTOFF, "new_packs": new_total,
         "legacy_contradictions": legacy_bad,
+        "legacy_truncated_ready": legacy_trunc,
+        "legacy_verified_no_display": legacy_nodisp,
         "new_contradictions": new_bad,
         "new_missing_flags_normalized": no_norm,
         "pass": not new_bad and not no_norm,
@@ -57,8 +75,10 @@ def main() -> int:
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(doc, ensure_ascii=False, indent=1), encoding="utf-8")
-    print("packs=%d | new=%d | legacy contradictions=%d | new contradictions=%d | missing flags_normalized=%d"
-          % (len(packs), new_total, len(legacy_bad), len(new_bad), len(no_norm)))
+    print("packs=%d | new=%d | legacy contradictions=%d | new contradictions=%d"
+          " | missing flags_normalized=%d | legacy truncated_ready=%d | legacy verified_no_display=%d"
+          % (len(packs), new_total, len(legacy_bad), len(new_bad), len(no_norm),
+             len(legacy_trunc), len(legacy_nodisp)))
     if legacy_bad:
         print("WARN legacy（仅记录，不改写）：", legacy_bad[:5])
     print("CONSISTENCY %s" % ("PASS" if doc["pass"] else "FAIL"))
