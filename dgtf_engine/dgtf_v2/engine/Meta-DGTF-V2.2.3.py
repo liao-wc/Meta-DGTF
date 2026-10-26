@@ -10809,7 +10809,7 @@ class DGTF:
             _scm = "llm"
         self.self_check_mode = _scm
         _djm = str(_out_cfg.get("dual_judge_mode") or "llm").strip().lower()
-        _DJM_OK = ("llm", "cache", "auto")
+        _DJM_OK = ("llm", "cache", "auto", "local")
         if _djm not in _DJM_OK:
             logger.warning("output.dual_judge_mode=%r 非法（可选 %s）⇒ 回落 llm",
                            _out_cfg.get("dual_judge_mode"), "/".join(_DJM_OK))
@@ -12616,6 +12616,12 @@ class DGTF:
             不可复核。全覆盖才省一次调用。
         """
         mode = getattr(self, "dual_judge_mode", "llm")
+        if (mode == "local" and candidates and not diversity_hint):
+            _local_out = self._dual_judge_local(
+                candidates, inp, anchor, view=view,
+                diversity_hint=diversity_hint, allow_retry=allow_retry)
+            if _local_out is not None:
+                return _local_out
         if (mode == "llm" or not candidates or diversity_hint):
             out = self._dual_judge_llm(
                 candidates, inp, anchor, view=view,
@@ -12652,6 +12658,125 @@ class DGTF:
         except Exception as e:
             logger.warning("双判缓存回填失败（不阻断）：%s", e)
         return out
+
+    def _dual_judge_local(self, candidates, inp, anchor,
+                          view: Optional[View] = None,
+                          diversity_hint: str = "",
+                          allow_retry: bool = True):
+        """[Round 95] 本地双判：本地服务 stage=dual_judge。
+
+        协议与 self_check local 相同：POST {url}
+          {"stage":"dual_judge","messages":[{system},{user}],"text":...,
+           "max_new_tokens":700,"temperature":0.3,"timeout":<s>}
+        响应 200 `{"ok": true, "text": "<JSON>", "confidence": 0..1}`；
+        失败（超时/非 200/ok=false/置信度低/解析空）⇒ 返回 None，由调用方回退 llm。
+        """
+        import urllib.request as _ur
+        if not candidates:
+            return None
+        cfg = getattr(self, "local_llm_cfg", {}) or {}
+        url = str(cfg.get("url") or "")
+        if not url:
+            self._local_llm_fail("local_llm.url 为空（dual_judge local）")
+            return None
+        try:
+            # ★ [Round 101] prompt 收缩：描述截 120 字、总长 ≤6000 字
+            cand_text = "\n".join(
+                f"{i+1}. [{c.kind}] {str(c.desc)[:120]}"
+                for i, c in enumerate(candidates))[:6000]
+            schema = ('{"judgments":[{"idx":1,"position":"0|1|both",'
+                      '"why_position":"≤30字",'
+                      '"why_0":"≤30字（仅当 position=both）",'
+                      '"why_1":"≤30字（仅当 position=both）"}]}')
+            how = ("本层【属性】已由这条候选是从哪一面被看出来而确定，你不用判、也别猜。\n"
+                   "你只判【位置】这一维。\n")
+            _carry_txt = self._carry_block_text(
+                getattr(inp, "carry_constraints", None) or [], "candidate")
+            _selfb_txt = self._self_block()
+            _static_sys = ("你是【对偶判断者】。\n"
+                           + self._dual_judge_spec() + how
+                           + "both 只在真的看不出偏向时才用；\n"
+                             "不要为了省事把两端都填 both，那是逃避判断。\n"
+                           + NO_FILL_JUDGE_RULE
+                           + "严格 JSON：\n" + schema)
+            dec_block = self._decidability_block(inp)
+            user = (f"【处境】\n{self._judge_context(inp, anchor)}"
+                    f"\n{dec_block}\n"
+                    f"\n【候选列表】\n{cand_text}")
+            if self._stable_first():
+                system, user = self._move_var_to_user(
+                    _static_sys, [_carry_txt, _selfb_txt], user)
+            else:
+                system = _static_sys + _carry_txt + _selfb_txt
+            timeout = float(cfg.get("judge_timeout")
+                            or cfg.get("timeout") or 120.0)
+            _max_tok = int(cfg.get("judge_max_new_tokens") or 320)
+            body = json.dumps({
+                "stage": "dual_judge",
+                "messages": [{"role": "system", "content": system},
+                             {"role": "user", "content": user}],
+                "text": system + "\n\n" + user,
+                "max_new_tokens": _max_tok,
+                "temperature": 0.3,
+                "timeout": timeout,
+            }, ensure_ascii=False).encode("utf-8")
+            req = _ur.Request(url, data=body,
+                              headers={"Content-Type": "application/json"})
+            with _ur.urlopen(req, timeout=timeout) as resp:
+                code = int(getattr(resp, "status", 200) or 200)
+                raw = resp.read().decode("utf-8", "replace")
+            if code != 200:
+                raise RuntimeError("HTTP %d" % code)
+            payload = json.loads(raw)
+            if not isinstance(payload, dict) or payload.get("ok") is False:
+                raise RuntimeError("响应非法/ok=false")
+            conf = payload.get("confidence")
+            if conf is not None:
+                _min_conf = float(cfg.get("min_confidence") or 0.6)
+                if float(conf) < _min_conf:
+                    raise RuntimeError("置信度 %.2f < %.2f"
+                                       % (float(conf), _min_conf))
+            text = str(payload.get("text") or "")
+            data = self.llm.parse_json(text) or {}
+            if not isinstance(data, dict) or not data:
+                m = re.search(r"\{.*\}", text, re.S)
+                data = json.loads(m.group(0)) if m else {}
+            if not isinstance(data, dict) or not data:
+                raise RuntimeError("text 解析不出 JSON")
+            jmap = self._extract_judgments(data)
+            hit = sum(1 for i in range(1, len(candidates) + 1) if i in jmap)
+            if hit == 0:
+                raise RuntimeError("本地判定为空")
+            out = self._dual_apply_judgments(candidates, jmap, view, inp)
+            try:
+                self._last_dual_jmap = dict(jmap)
+            except Exception:
+                pass
+            try:
+                self.dual_judge_local_calls = int(
+                    getattr(self, "dual_judge_local_calls", 0) or 0) + 1
+            except Exception:
+                pass
+            if view is not None:
+                try:
+                    view.meta.append(
+                        "[DJ-local] 本地双判 %d/%d 条（conf=%s）"
+                        % (hit, len(candidates), conf))
+                except Exception:
+                    pass
+            return out
+        except Exception as e:
+            logger.warning("本地双判失败（回退 llm）：%s", e)
+            try:
+                self.dual_judge_local_fallbacks = int(
+                    getattr(self, "dual_judge_local_fallbacks", 0) or 0) + 1
+            except Exception:
+                pass
+            try:
+                self._local_llm_fail(e)
+            except Exception:
+                pass
+            return None
 
     def _dual_judge_llm(self, candidates, inp, anchor,
                         view: Optional[View] = None,
@@ -32251,9 +32376,9 @@ def main():
                              "/ auto=运行时 provenance 判定可跳则跳 "
                              "/ local=本地模型出语义字段 / off=关闭")
     parser.add_argument("--dual-judge-mode", default=None,
-                        choices=["llm", "cache", "auto"],
+                        choices=["llm", "cache", "auto", "local"],
                         help="双判档位（覆盖 output.dual_judge_mode）："
-                             "llm=原样 / cache=判定缓存 / auto=缓存+结构先验")
+                             "llm=原样 / cache=判定缓存 / auto=缓存+结构先验 / local=本地服务（失败回退 llm）")
     parser.add_argument("--stage-thinking", default="",
                         help='环节级 thinking 覆盖，如 '
                              '"dual_judge=disabled,self_check=disabled"'
