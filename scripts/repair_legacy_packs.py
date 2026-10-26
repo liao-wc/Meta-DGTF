@@ -54,6 +54,24 @@ def repair(pack: dict) -> tuple[bool, str]:
     q = pack.setdefault("quality", {})
     aq = q.get("answer_quality")
     ready = q.get("answer_ready")
+    # 已带人工理由的 verified+!ready 属合法状态（展示/截断门），不重复修复
+    if (_is_contradiction(aq, ready)
+            and str(q.get("answer_ready_reason") or q.get("repair_note") or "").strip()):
+        return False, ""
+    asum = q.get("answer_summary") or pack.get("answer_summary") or {}
+    qt = str(asum.get("question_type") or "unknown")
+    card = (pack.get("decision_trace") or {}).get("fact_card") or {}
+    # ★ [Round 133] 截断门：体力耗尽不应 ready
+    if "体力耗尽" in str(asum.get("stop_reason") or "") and ready is True:
+        _set_ready(pack, False)
+        q["repair_note"] = NOTE + "体力耗尽（预算截断）⇒ ready=False"
+        return True, "truncated_ready_false"
+    # ★ [Round 133] 展示门：事实题 verified 但无展示答案 ⇒ ready=False
+    if (qt == "fact" and aq == "verified"
+            and not str(card.get("answer_display") or "").strip()):
+        _set_ready(pack, False)
+        q["repair_note"] = NOTE + "事实 verified 但无展示答案 ⇒ ready=False"
+        return True, "fact_verified_no_display_ready_false"
     if not _is_contradiction(aq, ready):
         return False, ""
     question = str(pack.get("question") or "")

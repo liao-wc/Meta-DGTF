@@ -1,107 +1,106 @@
 {
- "packs": 360,
+ "packs": 243,
  "question_types": {
-  "unknown": 127,
+  "unknown": 55,
   "fact": 162,
   "boundary": 2,
-  "decision": 8,
-  "reasoning": 61
+  "reasoning": 17,
+  "decision": 7
  },
  "aq_by_type": {
   "unknown": {
-   "None": 127
+   "None": 55
   },
   "fact": {
    "needs_evidence": 31,
-   "verified": 106,
-   "unverified": 25
+   "unverified": 25,
+   "verified": 106
   },
   "boundary": {
    "unverified": 1,
    "verified": 1
   },
-  "decision": {
-   "unverified": 2,
-   "verified": 6
-  },
   "reasoning": {
-   "unverified": 23,
-   "verified": 38
+   "verified": 15,
+   "unverified": 2
+  },
+  "decision": {
+   "verified": 6,
+   "unverified": 1
   }
  },
  "display": {
-  "no_display": 243,
+  "no_display": 126,
   "display": 117
  },
  "fact_card_ok": {
-  "not_ok": 220,
-  "ok": 140
+  "not_ok": 129,
+  "ok": 114
  },
  "flags_top": {
-  "duty_short": 275,
-  "probe_link_dangling": 168,
-  "probe_no_target_covered": 95,
-  "polarity_all_same_structural": 84,
-  "candidates_backfilled": 70,
-  "unsaid_overused": 52,
-  "ing_rephrased_direct": 47,
-  "too_many_amp_candidates": 26,
-  "core_audit_gaps": 25,
-  "all_closure_unavailable": 25,
-  "all_closure_gaps": 7,
-  "position_all_same_structural": 7
+  "duty_short": 191,
+  "probe_no_target_covered": 66,
+  "probe_link_dangling": 62,
+  "ing_rephrased_direct": 43,
+  "unsaid_overused": 38,
+  "polarity_all_same_structural": 31,
+  "candidates_backfilled": 28,
+  "too_many_amp_candidates": 12,
+  "core_audit_gaps": 9,
+  "all_closure_unavailable": 7,
+  "all_closure_gaps": 4,
+  "expand_imbalanced_benign": 3
  },
  "gaps_top": {
   "uncovered": 33,
-  "conflict_unresolved": 13,
-  "no_official_source": 12,
+  "no_official_source": 10,
+  "conflict_unresolved": 9,
   "insufficient_evidence": 4,
   "conflict_resolved_official": 2,
-  "single_source": 1,
   "conflict_resolved_official_authority": 1,
   "year_mismatch": 1,
   "historical_answer_rejected": 1
  },
  "stop_reasons": {
-  "question_answered_four_layers": 154,
-  "": 144,
-  "体力耗尽（3 圈走满，未触发任何停止判据，是被截断不是自然停止）\n  近阈读数：末圈：无新& 0 / 无线头 0 / 停滞 0": 15,
-  "自省连续 2 圈点名同一批问题未消化（层内空转）": 13,
-  "结构饱和度判定连续无新维度": 9,
-  "悬置决定稳定，自然安住": 9,
+  "question_answered_four_layers": 150,
+  "": 58,
+  "体力耗尽（3 圈走满，未触发任何停止判据，是被截断不是自然停止）\n  近阈读数：末圈：无新& 0 / 无线头 0 / 停滞 0": 14,
+  "自省连续 2 圈点名同一批问题未消化（层内空转）": 8,
   "体力耗尽（2 圈走满，未触发任何停止判据，是被截断不是自然停止）\n  近阈读数：末圈：无新& 0 / 无线头 0 / 停滞 0": 3,
-  "体力耗尽（4 圈走满；1 次停止判据被「未深入方向」推迟（结构饱和度判定连续无新维度 + 连续 2 轮无新结构维度（结构饱和度判定，不是新增停滞）），是被截断不是自然停止）": 2,
+  "结构饱和度判定连续无新维度": 2,
+  "悬置决定稳定，自然安住": 2,
   "体力耗尽（3 圈走满；1 次停止判据被「未深入方向」推迟（结构饱和度判定连续无新维度 + 连续 2 轮无新结构维度（结构饱和度判定，不是新增停滞）），是被截断不是自然停止）": 2,
-  "体力耗尽（4 圈走满，未触发任何停止判据，是被截断不是自然停止）\n  近阈读数：末圈：无新& 0 / 无线头 0 / 停滞 1": 2
+  "体力耗尽（4 圈走满，未触发任何停止判据，是被截断不是自然停止）\n  近阈读数：末圈：无新& 0 / 无线头 0 / 停滞 1": 2,
+  "体力耗尽（1 圈走满，未触发任何停止判据，是被截断不是自然停止）\n  近阈读数：末圈：无新& 0 / 无线头 0 / 停滞 0": 1
  },
  "coverage": {
-  "mean": 0.5614,
-  "lt_0_8": 258,
-  "lt_0_5": 124
+  "mean": 0.6291,
+  "lt_0_8": 157,
+  "lt_0_5": 64
  },
  "tri_alpha": {
-  "n": 284,
-  "mean": 0.0563,
-  "unreliable_lt_0667": 249
+  "n": 207,
+  "mean": 0.055,
+  "unreliable_lt_0667": 186
  },
  "tokens": {
-  "n": 360,
-  "mean": 669486,
-  "p50": 652476,
+  "n": 243,
+  "mean": 719002,
+  "p50": 683419,
   "max": 2938969,
-  "calls_mean": 87.9
+  "calls_mean": 94.3
  },
  "provenance": {
   "packs_with_provenance": 1,
   "packs_with_question_hash": 1,
   "packs_with_verification": 1,
-  "truncated_but_ready": 19,
-  "verified_without_display": 57
+  "truncated_but_ready": 0,
+  "verified_without_display": 34
  },
  "artifact_integrity": {
   "missing_md": 1,
-  "md_mean_bytes": 114782,
-  "dispatch_incomplete": 11
+  "md_mean_bytes": 120561,
+  "dispatch_incomplete": 6
  },
  "trend_by_date": {
   "20261009": {
@@ -141,49 +140,49 @@
    "tokens_mean": 344737
   },
   "20261013": {
+   "n": 5,
+   "verified_pct": 0.0,
+   "ready_pct": 0.0,
+   "display_pct": 0.0,
+   "coverage_mean": 0.0,
+   "tri_alpha_mean": null,
+   "tokens_mean": 878568
+  },
+  "20261014": {
    "n": 9,
    "verified_pct": 0.0,
    "ready_pct": 0.0,
    "display_pct": 0.0,
    "coverage_mean": 0.0,
    "tri_alpha_mean": null,
-   "tokens_mean": 760188
-  },
-  "20261014": {
-   "n": 17,
-   "verified_pct": 0.0,
-   "ready_pct": 0.0,
-   "display_pct": 0.0,
-   "coverage_mean": 0.0,
-   "tri_alpha_mean": null,
-   "tokens_mean": 609170
+   "tokens_mean": 890953
   },
   "20261015": {
-   "n": 4,
+   "n": 3,
    "verified_pct": 0.0,
    "ready_pct": 0.0,
    "display_pct": 0.0,
    "coverage_mean": 0.0,
    "tri_alpha_mean": null,
-   "tokens_mean": 518356
+   "tokens_mean": 605613
   },
   "20261019": {
-   "n": 51,
+   "n": 23,
    "verified_pct": 0.0,
    "ready_pct": 0.0,
    "display_pct": 0.0,
-   "coverage_mean": 0.5707,
-   "tri_alpha_mean": 0.053,
-   "tokens_mean": 404100
+   "coverage_mean": 0.5638,
+   "tri_alpha_mean": 0.156,
+   "tokens_mean": 414492
   },
   "20261020": {
-   "n": 33,
+   "n": 2,
    "verified_pct": 0.0,
    "ready_pct": 0.0,
    "display_pct": 0.0,
-   "coverage_mean": 0.4384,
-   "tri_alpha_mean": 0.109,
-   "tokens_mean": 352027
+   "coverage_mean": 0.0,
+   "tri_alpha_mean": 1.0,
+   "tokens_mean": 244465
   },
   "20261021": {
    "n": 5,
@@ -197,7 +196,7 @@
   "20261022": {
    "n": 7,
    "verified_pct": 28.6,
-   "ready_pct": 28.6,
+   "ready_pct": 0.0,
    "display_pct": 0.0,
    "coverage_mean": 0.5734,
    "tri_alpha_mean": -0.066,
@@ -206,34 +205,34 @@
   "20261023": {
    "n": 5,
    "verified_pct": 40.0,
-   "ready_pct": 40.0,
+   "ready_pct": 0.0,
    "display_pct": 0.0,
    "coverage_mean": 0.4391,
    "tri_alpha_mean": -0.353,
    "tokens_mean": 527036
   },
   "20261024": {
-   "n": 27,
-   "verified_pct": 66.7,
-   "ready_pct": 66.7,
+   "n": 9,
+   "verified_pct": 44.4,
+   "ready_pct": 0.0,
    "display_pct": 0.0,
-   "coverage_mean": 0.554,
-   "tri_alpha_mean": 0.153,
-   "tokens_mean": 1004812
+   "coverage_mean": 0.5408,
+   "tri_alpha_mean": 0.206,
+   "tokens_mean": 709385
   },
   "20261025": {
-   "n": 94,
-   "verified_pct": 57.4,
-   "ready_pct": 57.4,
-   "display_pct": 37.2,
-   "coverage_mean": 0.5976,
-   "tri_alpha_mean": 0.083,
-   "tokens_mean": 794503
+   "n": 67,
+   "verified_pct": 67.2,
+   "ready_pct": 47.8,
+   "display_pct": 52.2,
+   "coverage_mean": 0.7108,
+   "tri_alpha_mean": 0.09,
+   "tokens_mean": 841457
   },
   "20261026": {
    "n": 101,
    "verified_pct": 73.3,
-   "ready_pct": 73.3,
+   "ready_pct": 68.3,
    "display_pct": 80.2,
    "coverage_mean": 0.7739,
    "tri_alpha_mean": 0.005,

@@ -1,3 +1,12 @@
+【Round 133 增补（2026-10-27，遗留项清零）】
+- legacy 修复：31 条（19 truncated_ready + 12 fact verified_no_display）→ ready=False；
+  矛盾判定收窄（verified+!ready 有理由合法）⇒ legacy=0；repair 幂等。
+- 输出归档：`outputs_archive.py`（fact 全保留/非 fact 每问题 2 份）；packs 360→243，
+  移出 117 包/235 文件到 `outputs/_archive_20261027/`；验收 16/16 仍 PASS。
+- A/B 口径：146 行加 `quality_band`（high 103/low 43）、`baseline_role`；新增
+  `ab_summary.py` → `docs/ab_summary_20261027.md`（问题级最佳结果）。
+- 矩阵：2 行无 live 锚点显式 `anchor_status=pending_live`（guard 打印）。
+- 文档：新增 `docs/README.md` 索引；项目问题分析/known_boundaries/CHANGELOG 同步。
 【Round 132 增补（2026-10-27，按项目问题改进）】
 - P0 语义：`verification_semantics` → `quality.verification`（事实正确性 vs 过程合同分离）；
   display_gate（事实 verified 无展示 ⇒ ready=False）；截断门（体力耗尽 ⇒ ready=False）。

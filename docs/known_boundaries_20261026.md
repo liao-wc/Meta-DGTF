@@ -209,3 +209,15 @@
 | A/B schema | 97 条旧行回填 cost 字段（不可归因标注）；新行成本+provenance 关联 |
 | 验收 | **16/16（有服务）/ 15/15（无服务）**；V2 54/854；真跑验证 0.975 verified |
 | 遗留 | duty_short/probe 校准、legacy 19+57、输出保留策略、矩阵 2 行 pending live、本地模型质量增量 |
+
+## 25. Round 133 更新（遗留项清零）
+
+| 项 | 内容 |
+|---|---|
+| legacy 修复 | 31 条（19 truncated_ready + 12 fact verified_no_display）→ ready=False（含理由）；矛盾判定收窄后 legacy=0 |
+| 输出归档 | fact 包全保留；非 fact 每问题留 2 份；117 包/235 文件 → `outputs/_archive_20261027/`；packs 360→243 |
+| A/B 口径 | 146 行加 `quality_band`（high 103/low 43）+ `baseline_role`；`docs/ab_summary_20261027.md` |
+| 矩阵锚点 | 2 行显式 `anchor_status=pending_live`（guard 打印，不伪造） |
+| 文档索引 | `docs/README.md` 当前必读/历史归档/维护约定 |
+| 验收 | **16/16（有服务）/ 15/15（无服务）**；V2 54/854；真跑验证 0.975 |
+| 遗留 | duty_short/probe 校准、local self_check 质量增量、dual_judge 吞吐、fact 保留策略、tri_alpha 测量学 |

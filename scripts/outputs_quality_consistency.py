@@ -42,25 +42,31 @@ def main() -> int:
         asum = q.get("answer_summary") or d.get("answer_summary") or {}
         card = (d.get("decision_trace") or {}).get("fact_card") or {}
         truncated = "体力耗尽" in str(asum.get("stop_reason") or "")
-        no_display = bool(str(card.get("answer_display") or "").strip()) is False
+        _reason = str(q.get("answer_ready_reason")
+                      or q.get("repair_note") or "").strip()
+        contradict = ((aq == "unverified" and ready is True)
+                      or (aq == "verified" and ready is False
+                          and not _reason))
+        no_display = (str(asum.get("question_type") or "") == "fact"
+                      and not str(card.get("answer_display") or "").strip())
         if is_new:
             new_total += 1
-            if (aq == "verified" and ready is False) or (aq == "unverified" and ready is True):
+            if contradict:
                 new_bad.append(stem)
             if "flags_normalized" not in q:
                 no_norm.append(stem)
             if truncated and ready is True:
                 new_bad.append(stem + "::truncated_ready")
-            if aq == "verified" and no_display:
+            if aq == "verified" and no_display and ready is True:
                 new_bad.append(stem + "::verified_no_display")
             if "provenance" not in d or "question_hash" not in d:
                 new_bad.append(stem + "::missing_provenance")
         else:
-            if (aq == "verified" and ready is False) or (aq == "unverified" and ready is True):
+            if contradict:
                 legacy_bad.append(stem)
             if truncated and ready is True:
                 legacy_trunc.append(stem)
-            if aq == "verified" and no_display:
+            if aq == "verified" and no_display and ready is True:
                 legacy_nodisp.append(stem)
     doc = {
         "packs": len(packs), "cutoff": CUTOFF, "new_packs": new_total,

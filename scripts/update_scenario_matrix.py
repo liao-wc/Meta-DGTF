@@ -206,7 +206,12 @@ def main() -> int:
     _bad = [d for d in diffs if d.get("live_quality") is not None
             and abs(float(d.get("delta") or 0.0)) > 0.06]
     _matched = sum(1 for d in diffs if d.get("live_quality") is not None)
-    print("\nPASS guard: matrix live 对照行数 = %d" % _matched)
+    _pending = [d for d in diffs if d.get("live_quality") is None]
+    print("\nPASS guard: matrix live 对照行数 = %d（pending_live=%d）"
+          % (_matched, len(_pending)))
+    for _d in _pending[:5]:
+        print("  pending:", _d.get("scenario"), _d.get("mode"),
+              _d.get("note") or "")
     if _bad:
         print("FAIL guard: live 与人工锚点偏差 > 0.06：")
         for d in _bad:

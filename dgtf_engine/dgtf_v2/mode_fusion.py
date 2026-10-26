@@ -268,6 +268,7 @@ MEASURED_SCENARIOS: Dict[str, dict] = {
                       "question": "在选择保温材料时应该优先考虑导热系数还是防火等级？",
                       "config": "B parallel + thinking off + rounds auto"},
             "auto3": {"quality": 0.9387, "tokens": 976311, "calls": 98,
+                      "anchor_status": "pending_live",
                       "wall": 905.5, "verified": True,
                       "question": "以下哪项属于可再生能源？"
                                   "A. 煤炭 B. 太阳能 C. 石油 D. 天然气",
@@ -300,6 +301,7 @@ MEASURED_SCENARIOS: Dict[str, dict] = {
                                          "（answer=1348066亿；probe flag 拉低质量分）",
                              "config": "B parallel + thinking auto + web on"},
             "web_on_fast_pre_fix": {"quality": 0.4741, "tokens": 836464,
+                                    "anchor_status": "pending_live",
                                     "calls": 108, "wall": 316.1,
                                     "verified": False,
                                     "config": "B parallel + thinking off + web on",
