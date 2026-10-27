@@ -733,8 +733,8 @@ class LocalEngine:
                         pass
 
     # ---------- [Round 150] CUDA graph 解码（单序列，StaticCache） ----------
-    _GRAPH_TOTAL = 2048
-    _GRAPH_TOTAL_BATCH = 2560  # [Round 159b] 批量 graph 用更大 cache，覆盖长 prompt+max_new
+    _GRAPH_TOTAL = 3072  # [Round 160] 单序列 graph cache 扩到 3072，覆盖 2048 截断 prompt+max_new
+    _GRAPH_TOTAL_BATCH = 3072  # [Round 160] 批量 graph 同步扩到 3072，避免长 prompt fallback
 
     def _graph_capture(self, stage: str) -> dict:
         """为指定 stage 捕获一个 decode 步的 CUDA graph（惰性，每 stage 一次）。"""

@@ -2,6 +2,12 @@
 - dual_judge token 评测（零 API，GPU）：`docs/dual_judge_tokens_eval.json`；
   320 token 下 json 0.75 / position_acc 0.279 / p95 58.7s；缩 token 只降延迟不救质量
   ⇒ 不改服务默认；下一步重训 judge_v3（数据扩充 + held-out 选型）。
+【Round 160 增补（2026-10-27，graph cache 3072）】
+- 单/批 graph cache 3072：覆盖 2048 截断 prompt+max_new，消除长 prompt fallback；
+- 基准：单 long 9.93s、批 long 14.25s（均 JSON、无 fallback）；
+- 真跑 HTTP421：wall 294.5s/quality .9348/calls 93/batch graph 4 次/¥0.51；
+  batch graph 三跑 252.8–294.5s（本地逐块 326.1s，−10~22%），LLM 235.8s 仍更快 ⇒ local opt-in。
+- 预算约 ¥18.8/¥20；验收 18/18。
 【Round 159 增补（2026-10-27，批量 CUDA graph）】
 - 服务新增 B=2..4 批量 CUDA graph（StaticCache 2560）；2 长 prompt 12.97s、均 JSON；无 fallback。
 - 引擎 judge_batch_enabled 默认 True（dual_judge 本地 2 chunk 合批，失败逐块回退）。

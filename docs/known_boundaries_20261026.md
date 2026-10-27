@@ -448,3 +448,13 @@
 | 真跑 | HTTP418 wall 252.8s/quality .9675/4 接管；HTTP422 287.6s/.9508/4 接管 |
 | 对比 | 本地逐块 326.1s（−13~22%）；LLM 235.8s（local 仍慢 7–22%，保持 opt-in） |
 | 预算 | 本阶段约 ¥18.3/¥20，剩余 ~¥1.7；验收 18/18 |
+
+## 50. Round 160：graph cache 3072（长 prompt fallback 消除）
+
+| 项 | 内容 |
+|---|---|
+| 改动 | 单/批 graph cache 均 3072（覆盖 prompt 2048+max_new） |
+| 基准 | 单 long 9.93s、批 long 14.25s，无 fallback |
+| 真跑 | HTTP421 wall 294.5s / quality .9348 / calls 93 / batch graph 4 次 / ¥0.51 |
+| 汇总 | batch graph 三跑 252.8–294.5s（local 逐块 326.1s，−10~22%）；LLM 235.8s 仍更快 |
+| 预算 | 本阶段 ¥18.8/¥20，剩余 ~¥1.2；验收 18/18 |
