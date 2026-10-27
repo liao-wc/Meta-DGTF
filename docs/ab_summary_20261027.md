@@ -1,6 +1,6 @@
 # A/B 结果摘要（2026-10-27）
 
-- 总行数：166；问题数：83；mainline=123 / low_quality=43；band={"low": 43, "high": 103, "unknown": 20}；verified=125
+- 总行数：167；问题数：84；mainline=124 / low_quality=43；band={"low": 43, "high": 103, "unknown": 21}；verified=125
 - 口径：`quality_band=low/mid/high` 按结果分带（low=负结果/失败基线，不参与主线对照）；`cost_window_cny` 为窗口差、不可归因。
 
 ## 最佳结果 Top10
@@ -22,7 +22,6 @@
 
 | 问题 | best | tag | verified | 行数 |
 |---|---|---|---|---|
-| 港珠澳大桥全长多少公里？ | 0.9393 | v47-fast-fact-eng | ✓ | 2 |
 | 以下哪项属于可再生能源？A. 煤炭 B. 太阳能 C. 石油 D. 天然气 | 0.9387 | v86-choice2 | ✓ | 2 |
 | 为什么海水是咸的？ | 0.9376 | v89-reason-fast-sea | ✓ | 2 |
 | 2024年末中国外汇储备是多少亿美元？ | 0.9374 | v45-fx2 | ✓ | 2 |
@@ -31,4 +30,5 @@
 | HTTP 401状态码表示什么？ | 0.9300 | v141-dj-chunked | ✓ | 1 |
 | HTTP 507状态码表示什么？ | 0.9300 | v150d-graph-dj | ✓ | 1 |
 | 2024年末我国外汇储备余额是多少亿美元？ | 0.4900 | v126-fast-fx | ✗ | 1 |
+| HTTP 426状态码表示什么？ | 0.4445 | v164-realapi-smoke | ✗ | 1 |
 | 这座中字形汉墓藏着什么？ | 0.2180 | patrol-history-20261025 | ✗ | 1 |

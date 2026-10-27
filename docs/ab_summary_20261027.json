@@ -1,12 +1,12 @@
 {
- "rows": 166,
- "questions": 83,
- "mainline_rows": 123,
+ "rows": 167,
+ "questions": 84,
+ "mainline_rows": 124,
  "low_quality_rows": 43,
  "band_counts": {
   "low": 43,
   "high": 103,
-  "unknown": 20
+  "unknown": 21
  },
  "verified_rows": 125,
  "top10": [
@@ -186,22 +186,6 @@
  ],
  "bottom10": [
   {
-   "question": "港珠澳大桥全长多少公里？",
-   "n_rows": 2,
-   "scale": {
-    "high": 2
-   },
-   "best_quality": 0.9393,
-   "best_tag": "v47-fast-fact-eng",
-   "best_ts": "2026-10-26 02:40:57",
-   "best_verified": true,
-   "best_cost_window": null,
-   "tags": [
-    "v47-fast-fact-eng",
-    "v48-eng2"
-   ]
-  },
-  {
    "question": "以下哪项属于可再生能源？A. 煤炭 B. 太阳能 C. 石油 D. 天然气",
    "n_rows": 2,
    "scale": {
@@ -324,6 +308,21 @@
    "best_cost_window": 1.32,
    "tags": [
     "v126-fast-fx"
+   ]
+  },
+  {
+   "question": "HTTP 426状态码表示什么？",
+   "n_rows": 1,
+   "scale": {
+    "unknown": 1
+   },
+   "best_quality": 0.4445,
+   "best_tag": "v164-realapi-smoke",
+   "best_ts": "2026-10-27 20:37:45",
+   "best_verified": false,
+   "best_cost_window": 0.86,
+   "tags": [
+    "v164-realapi-smoke"
    ]
   },
   {
@@ -1665,6 +1664,21 @@
    "best_cost_window": 1.32,
    "tags": [
     "v126-fast-fx"
+   ]
+  },
+  {
+   "question": "HTTP 426状态码表示什么？",
+   "n_rows": 1,
+   "scale": {
+    "unknown": 1
+   },
+   "best_quality": 0.4445,
+   "best_tag": "v164-realapi-smoke",
+   "best_ts": "2026-10-27 20:37:45",
+   "best_verified": false,
+   "best_cost_window": 0.86,
+   "tags": [
+    "v164-realapi-smoke"
    ]
   },
   {

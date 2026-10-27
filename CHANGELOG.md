@@ -1,3 +1,12 @@
+【Round 164 增补（2026-10-27，链路追加：真实 API 冒烟 + 并发工作树盘点）】
+- 授权 1：真实 API 冒烟 v164（HTTP426，web off）exit0、wall 230s、cost_window ¥0.86、
+  provenance 完整（engine V2.2.3/git_sha 8fef374/app 2.0.35/config_hash）；quality 0.4445 unverified
+  （web off 无官方证据，属预期）；llm_calls=98/tokens=580,481。
+- 授权 2：并发工作树盘点 69 项（23 tracked + 46 untracked）：本会话提交 ab_results/ab_summary/文档；
+  共享快照（file_integrity/fact_replay/process_gate/scenario/app_audit/ui_audit）由门禁刷新但不单独提交；
+  并发会话源码 WIP 未修改、未提交。全链路门禁在当前工作树上仍 18/18。
+- 新 run 后：CONSISTENCY PASS（packs=199/new=22/0 矛盾）、ab_summary rows=167/verified=125、
+  验收 18/18；预算累计 ≈¥20.4/¥20（超 ≈¥0.4，按授权执行）。
 【Round 163 增补（2026-10-27，全链路检查）】
 - 新增 docs/全链路检查_20261027.md：静态/路径/配置 → 门禁 → 引擎/本地服务 → App(mock/契约) → 产物/文档。
 - 结果：compileall 0、路径 12/12、file_integrity bad=0、当前文档引用 67/0 断链；fast_gate 12/12、
