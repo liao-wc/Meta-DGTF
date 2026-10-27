@@ -340,3 +340,12 @@
 | 回退 | 恢复请求级合批（2 并发 16.9s 冷/12.2s 预热，均 200/JSON）；修复 `_handle` 等方法回归 |
 | 判定 | 真正 continuous batching 需 KV cache 级拼接/位置管理；当前合批已是 6GB 下的合理上限 |
 | 验证 | L1–L3 3/3、B1–B3 3/3、T1–T8 8/8、验收 **17/17** |
+
+## 39. Round 149：KV 级 continuous batching 负结果
+
+| 项 | 内容 |
+|---|---|
+| 实现 | DynamicCache 左填零拼接 + 逐序列 position_ids + 完成即切除 + 新请求 slice 前接纳 |
+| 实测 | 单 20.8s / 2 并发 31.1s / 错峰 39.6s（均 200/JSON）vs 合批 12.2–17.9s ⇒ 负结果 |
+| 回退 | `git checkout b3459d1 -- service.py`（coalescing）；L1–L3、B1–B3、T1–T8、验收 17/17 全绿 |
+| 判定 | Python/HF cache 级实现调度开销 > 收益；需 C++/CUDA slot manager 级别才可能提速 |
