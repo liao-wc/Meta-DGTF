@@ -34,10 +34,11 @@ def main() -> int:
        display_gate("reasoning", "verified", "")[0] is None)
 
     al = alert_levels(["duty_short", "probe_no_target_covered(2)", "core_audit_gaps"])
-    ck("A1 告警分级 block/warn/info",
+    ck("A1 告警分级 block/warn/info（Round 142 校准）",
        al["block"] == ["core_audit_gaps"]
-       and al["warn"] == ["probe_no_target_covered"]
-       and al["info"] == ["duty_short"] and al["max_level"] == "block", al)
+       and al["warn"] == []
+       and set(al["info"]) == {"duty_short", "probe_no_target_covered"}
+       and al["max_level"] == "block", al)
     ck("A2 无告警 max_level=none", alert_levels([])["max_level"] == "none")
     print("\nTOTAL PASS %d / FAIL %d" % (len(P), len(F)))
     return 0 if not F else 1

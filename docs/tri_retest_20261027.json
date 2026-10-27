@@ -1,0 +1,16 @@
+{
+ "scanned_packs": 419,
+ "questions_with_duplicates": 68,
+ "repeat_runs": 322,
+ "ready_unanimous_groups": 41,
+ "verified_unanimous_groups": 36,
+ "groups_with_disagreement": 34,
+ "ready_unanimous_ratio": 0.603,
+ "coverage_mean": 0.6024,
+ "coverage_icc1_testretest": 0.2173,
+ "flag_icc1_testretest": 0.7286,
+ "tri_alpha_n": 309,
+ "tri_alpha_mean": 0.0735,
+ "tri_alpha_unreliable_lt0667": 269,
+ "note": "tri_alpha=跨视角一致性（inter-perspective），不是重测信度；本脚本用同题重复产物估计 test-retest：ready/verified 一致率、coverage/flag 的 ICC(1)。"
+}

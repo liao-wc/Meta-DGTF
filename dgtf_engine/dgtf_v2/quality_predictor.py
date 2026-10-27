@@ -570,11 +570,26 @@ def alert_levels(flags) -> dict:
     """[Round 132] 告警分级：process→info、coverage/other→warn、block 集合→block。"""
     info = classify_flags(flags)
     block_codes = {"core_audit_gaps"}
+    #: [Round 142] 实测无区分度的 flag 降级为 info（verified 41.3% vs 44.5%）；
+    #   probe_link_dangling（4.4% vs 67.4%）与 core_audit_gaps（0% vs 47.7%）保持强告警。
+    _info_codes = {"probe_no_target_covered"}
     out = {"block": [], "warn": [], "info": []}
     for code in info.get("process") or []:
         out["info"].append(code)
-    for code in (info.get("coverage") or []) + (info.get("other") or []):
+    for code in list(info.get("coverage") or []):
+        if code in _info_codes:
+            out["info"].append(code)
+    for code in ((info.get("coverage") or []) + (info.get("other") or [])):
+        if code in _info_codes:
+            continue
         (out["block"] if code in block_codes else out["warn"]).append(code)
+    for _k in ("block", "warn", "info"):
+        _seen, _uniq = set(), []
+        for _x in out[_k]:
+            if _x not in _seen:
+                _seen.add(_x)
+                _uniq.append(_x)
+        out[_k] = _uniq
     rank = {"none": 0, "info": 1, "warn": 2, "block": 3}
     max_level = "none"
     for lvl in ("info", "warn", "block"):

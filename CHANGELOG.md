@@ -2,6 +2,13 @@
 - dual_judge token 评测（零 API，GPU）：`docs/dual_judge_tokens_eval.json`；
   320 token 下 json 0.75 / position_acc 0.279 / p95 58.7s；缩 token 只降延迟不救质量
   ⇒ 不改服务默认；下一步重训 judge_v3（数据扩充 + held-out 选型）。
+【Round 142 增补（2026-10-27，tri_alpha 语义 + 告警校准）】
+- 新增 `tri_retest_analysis.py`：68 重复题/322 次重跑，ready 全一致 60.3%、verified 52.9%、
+  34 组不一致；coverage ICC 0.217、flag ICC 0.729 ⇒ tri_alpha 是跨视角一致性、非重测信度；
+  单次 ready/verified 应视为随机变量（缓存/重复守卫已部分缓解）。
+- 告警校准：`probe_no_target_covered`（verified 41.3% vs 44.5%，无区分）从 warn 降为 info；
+  probe_link_dangling/core_audit_gaps 保持强告警；判据 A1 同步。
+- 恢复 1 个 replay 样本包使 tests_l0 回放检查不 SKIP；V2 54/54（855 checks，SKIP 0）；验收 16/16。
 【Round 140–141 增补（2026-10-27，dual_judge 有界排队/分块）】
 - 服务 dual_judge 有界排队（25s；超时 503）+ metrics dual_judge_waited；判据 L1–L3 3/3。
 - 引擎本地双判分块（12 候选 → 6×2 块，每块 160 tok，覆盖≥70%）；HTTP401 wall 228.7s（−38% vs 371s）。
