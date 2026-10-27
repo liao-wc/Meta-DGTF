@@ -265,3 +265,12 @@
 | self_check v10 | mixed 变体 prompt_p50 1650、VRAM 95%、0.04 step/s（ETA 213min）⇒ 中止；未产出，服务不变 |
 | legacy unknown | 53 包/115 文件归档 outputs/_archive_unknown_20261027/；packs 233→180；验收 16/16 |
 | 遗留 | self_check 质量增量需小样本/min 变体或更大显存；judge 接管率；tri_alpha |
+
+## 31. Round 139：self_check v10min 负结果
+
+| 项 | 内容 |
+|---|---|
+| v10min | min 200×2 / len1400 / r6e-5：峰值 3.92GB、28min 可训；val 0.2362（v9b 0.1989） |
+| held-out | 字段 0.556<0.589、JSON 0.967<1.0、all3 0<0.033、ing/escape 降、p50 7.31s>4.77s（仅 suspF1 升） |
+| 判定 | **负结果不切换**；0.5B 该配方 field-acc 平台 0.589；质量增量需更大底座/数据/蒸馏 |
+| 服务 | self_check_min=v9b、self_check=v8b、dual_judge=v3；验收 16/16 |

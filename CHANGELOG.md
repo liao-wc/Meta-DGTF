@@ -2,6 +2,12 @@
 - dual_judge token 评测（零 API，GPU）：`docs/dual_judge_tokens_eval.json`；
   320 token 下 json 0.75 / position_acc 0.279 / p95 58.7s；缩 token 只降延迟不救质量
   ⇒ 不改服务默认；下一步重训 judge_v3（数据扩充 + held-out 选型）。
+【Round 139 增补（2026-10-27，self_check v10min 负结果）】
+- min 200×2/len1400（峰值 3.92GB、28min）训练完成，val 0.2362；
+- held-out 对比 v9b：字段 0.556<0.589、JSON 0.967<1.0、all3 0<0.033、ing/escape 降、
+  p50 7.31s>4.77s（仅 suspF1 0.254>0.141）⇒ **负结果不切换**；
+- 结论：0.5B 该配方 field-acc 平台 0.589，质量增量需更大底座/数据/蒸馏；
+  服务默认不变（min=v9b、self=v8b、dual=v3）；验收 16/16。
 【Round 138 增补（2026-10-27）】
 - self_check v10 尝试：mixed 260×2 在 6GB 卡上 prompt_p50 1650/VRAM 95%/0.04 step/s（ETA 213min）
   ⇒ 主动中止；未产出，服务保持 dual=v3/self=v8b/min=v9b；作为 GPU 边界证据。
