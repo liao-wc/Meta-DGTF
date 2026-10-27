@@ -1,3 +1,11 @@
+【Round 165 增补（2026-10-27，App 真实 API 端到端）】
+- 发现并记录启动前提：真实 App 必须用 engine-capable Python（系统 Python）；local_model env 缺 openai →
+  引擎 ModuleNotFoundError（mock 不受影响；scripts/start_app.ps1 默认系统 Python，正确）。
+- 真实 App 质量任务（parallel B/web on/900s）：cancelled/901.8s 超时（tokens 被 kill 未记）；窗口差 ¥1.70。
+- 真实 App 快速任务（parallel A/web off/low/1200s）：done/exit0/300.6s、窗口差 ¥0.59；生成 packed（HTTP428），
+  provenance engine V2.2.3/app 2.0.35/git_sha a85fd02、tokens 497,452/calls 102；web off 下 unverified 属预期。
+- 新 run 后 packs=201、CONSISTENCY PASS（new=24/0 矛盾）、ab_summary rows=167、验收 18/18；
+  本轮 App e2e 窗口差合计 ≈¥2.68，本阶段累计 ≈¥23.1/¥20（超 ≈¥3.1，按继续完成执行）。
 【Round 164 增补（2026-10-27，链路追加：真实 API 冒烟 + 并发工作树盘点）】
 - 授权 1：真实 API 冒烟 v164（HTTP426，web off）exit0、wall 230s、cost_window ¥0.86、
   provenance 完整（engine V2.2.3/git_sha 8fef374/app 2.0.35/config_hash）；quality 0.4445 unverified
