@@ -2,6 +2,12 @@
 - dual_judge token 评测（零 API，GPU）：`docs/dual_judge_tokens_eval.json`；
   320 token 下 json 0.75 / position_acc 0.279 / p95 58.7s；缩 token 只降延迟不救质量
   ⇒ 不改服务默认；下一步重训 judge_v3（数据扩充 + held-out 选型）。
+【Round 148 增补（2026-10-27，continuous batching 负结果）】
+- 实现 slice=32 重预填式连续批处理并实测：单条 51.3s、2 并发 108.3s、错峰 120.4s，
+  远差于请求级合批（12.2–16.9s）⇒ 负结果，已回退合批。
+- 修复区域重写导致的 `_handle`/`_batch_cache_key`/`_parse_local_result` 方法丢失回归；
+  L1–L3 3/3、B1–B3 3/3、T1–T8 8/8、验收 17/17 全部恢复。
+- 结论：真正 continuous batching 需 KV cache 级拼接/位置管理；6GB 下当前合批为合理上限。
 【Round 147 增补（2026-10-27，请求级合批）】
 - 服务 worker 合批：dual_judge 请求 0.25s 窗口内合并（≤4）为一次 generate_batch；
   移除 HTTP 层 25s 等待（改直接入队，队列>8 才 503）；metrics 增 batch_coalesced。

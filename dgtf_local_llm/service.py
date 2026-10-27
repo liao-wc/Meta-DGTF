@@ -660,8 +660,8 @@ class LocalEngine:
             with self._lock:
                 self.queue_depth = max(0, self.queue_depth - 1)
             job["dequeued_at"] = time.time()
-            # ★ [Round 147] 请求级合批：drain 队列里同 stage 的普通请求，
-            #   合并为一次 generate_batch（减少单卡串行等待与总延迟）。
+            # ★ [Round 148d] 回退到请求级合批：连续批处理（重预填）实测单条 51s、
+            #   并发 108s，远差于合批 12.2s；真正的 KV 级 continuous batching 不在本轮范围。
             jobs = [job]
             held = []
             try:
@@ -670,8 +670,6 @@ class LocalEngine:
                     _stage = str(job["req"].get("stage") or "")
                 if _stage in ("dual_judge",):
                     import queue as _queue
-                    # ★ [Round 147b] 给并发请求一个 0.25s 合批窗口：
-                    #   单请求最多多等 0.25s，并发时两条合并为一次批量 decode。
                     while len(jobs) < 4:
                         try:
                             _wait = 0.25 if len(jobs) == 1 else 0.05
@@ -749,7 +747,7 @@ class LocalEngine:
                     "stage", "entry", "variant", "max_new_tokens",
                     "temperature", "text", "messages")},
                 sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()
-        except Exception:
+        except Exception:  # noqa: BLE001
             key = None
         if key and key in self.cache:
             self.cache.move_to_end(key)
@@ -786,7 +784,7 @@ class LocalEngine:
                 self.cache.popitem(last=False)
         return res
 
-    def _batch_cache_key(self, req: dict) -> str | None:
+    def _batch_cache_key(self, req: dict):
         try:
             return hashlib.md5(json.dumps(
                 {k: req.get(k) for k in (
@@ -811,6 +809,160 @@ class LocalEngine:
                 "gen_tokens": out.get("gen_tokens"),
                 "prompt_tokens": out.get("prompt_tokens"),
                 "cached": False}
+
+    def _handle_stream(self, jobs: list, drain_fn) -> None:
+        """[Round 148] 连续批处理：slice 重预填 + slice 间接纳新请求。
+
+        jobs: [submit job dict]；drain_fn() → 新的 eligible jobs（同 stage）。
+        """
+        import time as _ts
+        t0 = _ts.time()
+        max_slice = 32
+        entries = []  # {job, ids, gen, done, max_new, logprobs, key, req}
+        held = []
+
+        def _new_entry(job):
+            req = job.get("req") or {}
+            try:
+                msgs = self.build_messages(req)
+                prompt = self.tok.apply_chat_template(
+                    msgs, tokenize=False, add_generation_prompt=True)
+                ids = self.tok(prompt, return_tensors="pt", truncation=True,
+                               max_length=2048)["input_ids"][0]
+            except Exception:  # noqa: BLE001
+                job["err"] = RuntimeError("prompt 构建失败")
+                job["ev"].set()
+                return None
+            mx = int(req.get("max_new_tokens") or DEFAULT_MAX_NEW[req["stage"]])
+            return {"job": job, "ids": ids, "gen": [], "done": False,
+                    "max_new": max(1, min(1024, mx)),
+                    "logprobs": [], "key": self._batch_cache_key(req),
+                    "req": req, "out": None}
+
+        for j in jobs:
+            e = _new_entry(j)
+            if e:
+                entries.append(e)
+        if not entries:
+            return
+        stage = str(entries[0]["req"].get("stage"))
+        if self.adapter_names and stage in self.adapter_names:
+            self.model.set_adapter(self.adapter_names[stage])
+        _max_total = max(e["max_new"] for e in entries)
+        _tmax = max(float((e["req"].get("timeout") or 60)) for e in entries)
+        deadline = t0 + _tmax
+        pad_id = self.tok.pad_token_id
+        if pad_id is None:
+            pad_id = self.tok.eos_token_id or 0
+        eos = self.tok.eos_token_id
+        try:
+            while True:
+                active = [e for e in entries if not e["done"]]
+                if not active:
+                    break
+                if _ts.time() > deadline:
+                    break
+                # —— slice 内：用完整序列重预填 + 最多 max_slice 步 decode ——
+                seqs = [torch.cat([e["ids"], torch.tensor(e["gen"],
+                                                          dtype=torch.long)]) if e["gen"]
+                        else e["ids"] for e in active]
+                maxL = max(int(x.shape[0]) for x in seqs)
+                B = len(seqs)
+                ids = torch.full((B, maxL), int(pad_id), dtype=torch.long)
+                attn = torch.zeros((B, maxL), dtype=torch.long)
+                for i, x in enumerate(seqs):
+                    L = int(x.shape[0])
+                    ids[i, maxL - L:] = x
+                    attn[i, maxL - L:] = 1
+                ids = ids.to("cuda"); attn = attn.to("cuda")
+                self._set_fp32(True)
+                o = self.model(input_ids=ids, attention_mask=attn, use_cache=True)
+                past = o.past_key_values
+                logits = o.logits[:, -1, :].float()
+                self._set_fp32(False)
+                done_mask = [False] * B
+                try:
+                    for _step in range(max_slice):
+                        if _ts.time() > deadline:
+                            break
+                        if all(done_mask):
+                            break
+                        nxt = logits.argmax(-1, keepdim=True)
+                        for i in range(B):
+                            if done_mask[i]:
+                                continue
+                            tok = int(nxt[i, 0])
+                            lp = torch.log_softmax(logits, dim=-1)[i, tok]
+                            e = active[i]
+                            e["gen"].append(tok); e["logprobs"].append(float(lp))
+                            if (eos is not None and tok == eos) or len(e["gen"]) >= e["max_new"]:
+                                e["done"] = True; done_mask[i] = True
+                        if all(done_mask):
+                            break
+                        attn = torch.cat([attn, torch.ones((B, 1), dtype=torch.long,
+                                                           device="cuda")], dim=1)
+                        o = self.model(input_ids=nxt, attention_mask=attn,
+                                       past_key_values=past, use_cache=True)
+                        past = o.past_key_values
+                        logits = o.logits[:, -1, :].float()
+                finally:
+                    self._set_fp32(True)
+                # 回包已完成条目
+                for e in list(active):
+                    if not e["done"]:
+                        continue
+                    text = self.tok.decode(e["gen"], skip_special_tokens=True)
+                    conf = None
+                    if e["logprobs"]:
+                        conf = round(float(torch.tensor(e["logprobs"]).mean().exp()), 4)
+                    out = {"text": text, "confidence": conf,
+                           "gen_tokens": len(e["gen"]),
+                           "prompt_tokens": int(e["ids"].shape[0])}
+                    res = self._parse_local_result(stage, out, t0)
+                    if e["key"]:
+                        self.cache[e["key"]] = dict(res)
+                    e["job"]["result"] = res
+                    try:
+                        e["job"]["ev"].set()
+                    except Exception:  # noqa: BLE001
+                        pass
+                    entries.remove(e)
+                # —— slice 间接纳新请求 ——
+                try:
+                    new_jobs = drain_fn()
+                except Exception:  # noqa: BLE001
+                    new_jobs = []
+                for j in new_jobs:
+                    e = _new_entry(j)
+                    if e:
+                        entries.append(e)
+                if not entries:
+                    break
+            # 超时未完成：回包失败
+            for e in entries:
+                if e["job"]["result"] is None:
+                    e["job"]["result"] = {"ok": False, "error": {
+                        "code": "TIMEOUT", "message": "连续批处理超时"}}
+                    try:
+                        e["job"]["ev"].set()
+                    except Exception:  # noqa: BLE001
+                        pass
+        except Exception as exc:  # noqa: BLE001
+            for e in entries:
+                try:
+                    e["job"]["err"] = exc
+                    e["job"]["ev"].set()
+                except Exception:  # noqa: BLE001
+                    pass
+        for h in held:
+            try:
+                h["result"] = self._handle(h["req"])
+            except Exception as e:  # noqa: BLE001
+                h["err"] = e
+            try:
+                h["ev"].set()
+            except Exception:  # noqa: BLE001
+                pass
 
     def _handle_batch(self, reqs: list) -> dict:
         """[Round 145] 批量：缓存命中直接复用；未命中合并为一次 generate_batch。"""
