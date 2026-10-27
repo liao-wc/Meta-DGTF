@@ -2,6 +2,11 @@
 - dual_judge token 评测（零 API，GPU）：`docs/dual_judge_tokens_eval.json`；
   320 token 下 json 0.75 / position_acc 0.279 / p95 58.7s；缩 token 只降延迟不救质量
   ⇒ 不改服务默认；下一步重训 judge_v3（数据扩充 + held-out 选型）。
+【Round 151 增补（2026-10-27，本地双判首次真实接管）】
+- 本地双判贪心 temp0 + judge_timeout 90s + MAX_CALLS 2→4；真跑 HTTP511：
+  wall 326.1s（近期最佳）、quality 0.9708、LLM calls 91（最低）、¥0.55；本地双判 4 次成功、0 熔断。
+- 服务 graph_generations 12→15；p50 仍 ~32.8s（并发共享）；正式 takeover A/B 需独占窗口。
+- 预算累计约 ¥12.97/¥15，剩余 ~¥2.0。
 【Round 150 增补（2026-10-27，CUDA graph 解码）】
 - 实现 PyTorch CUDAGraph + StaticCache 单序列贪心解码（无需 nvcc/C++）：原型 token 全一致、2.49x；
   服务端单请求 17.4s→7.6–8.8s（约 2.1x）；异常自动回退原 generate。

@@ -8898,7 +8898,7 @@ _GAIN_ASSIGN_MIN = 0.15
 _COVERS_SIM_MIN = 0.30
 # ★ [Round 137] 本地双判健康熔断 + 每 run 调用预算（跨层副本共享）
 _DJ_LOCAL_BREAKER = {"fail": 0, "until": 0.0, "calls": 0, "logged": False}
-_DJ_LOCAL_MAX_CALLS = 2      # 每进程/每 run 最多成功的本地双判调用数
+_DJ_LOCAL_MAX_CALLS = 4      # [Round 151] CUDA graph 后单块 ~5-10s，放宽到 4 次提高接管
 _DJ_LOCAL_COOLDOWN = 300.0   # 连续 2 次失败 ⇒ 冷却 300s
 #: [Round 144] 串行锁实验（已回退）：wall 331.8s、2×30s 锁等待、接管仍 0，
 #: 说明瓶颈不是服务并发而是"单卡生成速度 + 置信度门槛"；保留注释避免重复踩坑。
