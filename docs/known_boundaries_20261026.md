@@ -438,3 +438,13 @@
 | top2+ / union / adaptive | exact set 归零或 field_mean ≤0.589 |
 | 判定 | 30 条 +1.1pp 为小样本噪声；分类器/集合级解码不部署；默认 v8b/v9b 不变 |
 | 预算 | ¥17.6/¥20，剩余 ~¥2.4；验收 18/18 |
+
+## 49. Round 159：批量 CUDA graph（dual_judge）
+
+| 项 | 内容 |
+|---|---|
+| 服务 | B=2..4 批量 graph（StaticCache 2560）；2 长 prompt 12.97s、均 JSON；metrics batch_graph_generations |
+| 引擎 | judge_batch_enabled 默认 True（2 chunk 合批；失败逐块回退） |
+| 真跑 | HTTP418 wall 252.8s/quality .9675/4 接管；HTTP422 287.6s/.9508/4 接管 |
+| 对比 | 本地逐块 326.1s（−13~22%）；LLM 235.8s（local 仍慢 7–22%，保持 opt-in） |
+| 预算 | 本阶段约 ¥18.3/¥20，剩余 ~¥1.7；验收 18/18 |

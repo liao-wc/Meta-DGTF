@@ -10860,6 +10860,10 @@ class DGTF:
             "judge_timeout": float(_llm_loc.get("judge_timeout") or 90.0),
             "judge_max_new_tokens": int(
                 _llm_loc.get("judge_max_new_tokens") or 160),
+            # ★ [Round 159] 批量 CUDA graph 已在 service 验证（2 长 prompt 11.9s，均 JSON），
+            #   默认启用两 chunk 合批；服务不支持/异常时自动逐块回退。
+            "judge_batch_enabled": bool(
+                _llm_loc.get("judge_batch_enabled", True)),
             "max_new_tokens": int(_llm_loc.get("max_new_tokens") or 160),
             "enabled": bool(_llm_loc.get("enabled", True)),
             "fallback": str(_llm_loc.get("fallback") or "llm"),

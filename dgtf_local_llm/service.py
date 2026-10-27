@@ -251,6 +251,7 @@ class LocalEngine:
                   "dual_judge_waited": 0,
                   "batch_coalesced": 0,
                   "graph_generations": 0,
+                  "batch_graph_generations": 0,
                       "last_ms": 0.0, "last_stage": "", "last_adapter": ""}
         # ★ [Round 65] 延迟分位数滑动窗口（最近 50 次真实生成耗时）
         import collections as _collections
@@ -733,6 +734,7 @@ class LocalEngine:
 
     # ---------- [Round 150] CUDA graph 解码（单序列，StaticCache） ----------
     _GRAPH_TOTAL = 2048
+    _GRAPH_TOTAL_BATCH = 2560  # [Round 159b] 批量 graph 用更大 cache，覆盖长 prompt+max_new
 
     def _graph_capture(self, stage: str) -> dict:
         """为指定 stage 捕获一个 decode 步的 CUDA graph（惰性，每 stage 一次）。"""
@@ -896,6 +898,138 @@ class LocalEngine:
             while len(self.cache) > self.cache_max:
                 self.cache.popitem(last=False)
         return res
+
+    # ---------- [Round 159] 批量 CUDA graph（B 路） ----------
+    def _graph_capture_batch(self, stage: str, B: int) -> dict:
+        import torch as _t
+        key = (stage, B)
+        ctx = self._graph_ctx.get(key)
+        if ctx is not None:
+            return ctx
+        total = self._GRAPH_TOTAL_BATCH
+        cache = StaticCache(self.model.config, max_cache_len=total)
+        in_tok = _t.zeros((B, 1), dtype=_t.long, device="cuda")
+        mask = _t.zeros((B, total), dtype=_t.long, device="cuda")
+        pos = _t.zeros((B, 1), dtype=_t.long, device="cuda")
+        cp = _t.zeros((B,), dtype=_t.long, device="cuda")
+        out_tok = _t.zeros((B, 1), dtype=_t.long, device="cuda")
+        out_lp = _t.zeros((B,), dtype=_t.float32, device="cuda")
+        if self.adapter_names and stage in self.adapter_names:
+            self.model.set_adapter(self.adapter_names[stage])
+
+        def step():
+            o = self.model(input_ids=in_tok, attention_mask=mask,
+                           position_ids=pos, past_key_values=cache,
+                           cache_position=cp, use_cache=True)
+            lg = o.logits[:, -1, :].float()
+            out_tok.copy_(lg.argmax(-1, keepdim=True))
+            out_lp.copy_(_t.log_softmax(lg, dim=-1).gather(1, out_tok).squeeze(1))
+
+        with _t.inference_mode():
+            mask[:, :1] = 1
+            for _ in range(3):
+                step()
+            g = _t.cuda.CUDAGraph()
+            with _t.cuda.graph(g):
+                step()
+            try:
+                cache.reset()
+            except Exception:  # noqa: BLE001
+                for lay in cache.layers:
+                    if getattr(lay, "keys", None) is not None:
+                        lay.keys.zero_(); lay.values.zero_()
+        ctx = {"cache": cache, "in_tok": in_tok, "mask": mask, "pos": pos,
+               "cp": cp, "out_tok": out_tok, "out_lp": out_lp, "graph": g,
+               "stage": stage, "B": B}
+        self._graph_ctx[key] = ctx
+        return ctx
+
+    def generate_batch_graph(self, stage: str, ids_list: list,
+                             max_new_tokens: int, deadline: float) -> list:
+        import torch as _t
+        B = len(ids_list)
+        if B < 2 or B > 4:
+            raise RuntimeError("batch graph 只支持 2..4")
+        total = self._GRAPH_TOTAL_BATCH
+        Lmax = max(int(x.shape[0]) for x in ids_list)
+        if Lmax + max_new_tokens + 2 > total:
+            raise RuntimeError("prompt+max_new 超出 graph cache")
+        ctx = self._graph_capture_batch(stage, B)
+        cache = ctx["cache"]
+        in_tok, mask, pos, cp = ctx["in_tok"], ctx["mask"], ctx["pos"], ctx["cp"]
+        out_tok, out_lp, g = ctx["out_tok"], ctx["out_lp"], ctx["graph"]
+        if self.adapter_names and stage in self.adapter_names:
+            self.model.set_adapter(self.adapter_names[stage])
+        pad_id = self.tok.pad_token_id
+        if pad_id is None:
+            pad_id = self.tok.eos_token_id or 0
+        with _t.inference_mode():
+            cache.reset()
+            mask.zero_()
+            ids = _t.full((B, Lmax), int(pad_id), dtype=_t.long)
+            real = [int(x.shape[0]) for x in ids_list]
+            for i, x in enumerate(ids_list):
+                ids[i, Lmax - real[i]:] = x
+                mask[i, Lmax - real[i]:] = 1
+            ids = ids.to("cuda")
+            o = self.model(input_ids=ids, attention_mask=mask,
+                           past_key_values=cache,
+                           cache_position=_t.arange(Lmax, device="cuda"),
+                           use_cache=True)
+            logits = o.logits[:, -1, :].float()
+            cur = [int(logits[i].argmax()) for i in range(B)]
+            lp = [float(_t.log_softmax(logits, dim=-1)[i, cur[i]]) for i in range(B)]
+            gens = [[] for _ in range(B)]
+            lps = [[] for _ in range(B)]
+            eos = self.tok.eos_token_id
+            for step in range(max_new_tokens):
+                if time.time() > deadline:
+                    raise TimeoutError("graph 批量生成超时")
+                all_done = True
+                for i in range(B):
+                    if eos is not None and cur[i] == eos:
+                        continue
+                    if len(gens[i]) >= max_new_tokens:
+                        continue
+                    all_done = False
+                    break
+                for i in range(B):
+                    if eos is not None and cur[i] == eos:
+                        continue
+                    gens[i].append(cur[i]); lps[i].append(lp[i])
+                if all_done:
+                    break
+                # 下一 token 位置
+                pos.fill_(Lmax + step)
+                cp.fill_(Lmax + step)
+                for i in range(B):
+                    if len(gens[i]) < max_new_tokens and (eos is None or cur[i] != eos):
+                        in_tok[i, 0] = cur[i]
+                    else:
+                        in_tok[i, 0] = int(eos if eos is not None else pad_id)
+                # mask 统一推进（done 序列不影响，后续用 eos 填充）
+                if Lmax + step < total:
+                    mask[:, Lmax + step] = 1
+                g.replay()
+                for i in range(B):
+                    if len(gens[i]) < max_new_tokens and (eos is None or cur[i] != eos):
+                        cur[i] = int(out_tok[i, 0]); lp[i] = float(out_lp[i])
+            results = []
+            for i in range(B):
+                text = self.tok.decode(gens[i], skip_special_tokens=True)
+                conf = None
+                if lps[i]:
+                    conf = round(float(_t.tensor(lps[i]).mean().exp()), 4)
+                results.append({"text": text, "confidence": conf,
+                                "gen_tokens": len(gens[i]),
+                                "prompt_tokens": real[i]})
+        try:
+            with self._stats_lock:
+                self.stats["batch_graph_generations"] = int(
+                    self.stats.get("batch_graph_generations", 0)) + 1
+        except Exception:  # noqa: BLE001
+            pass
+        return results
 
     def _batch_cache_key(self, req: dict):
         try:
@@ -1120,9 +1254,21 @@ class LocalEngine:
                                         temp, time.time() + max_timeout)
                     results.append((i, key, out, st))
             else:
-                out_list = self.generate_batch(
-                    stage, [x[2] for x in pending], max_new_all,
-                    float(pending[0][4]), time.time() + max_timeout)
+                out_list = None
+                if (2 <= len(pending) <= 4
+                        and all(abs(float(x[4])) < 1e-9 for x in pending)):
+                    try:
+                        out_list = self.generate_batch_graph(
+                            stage, [x[2] for x in pending], max_new_all,
+                            time.time() + max_timeout)
+                    except Exception as _bge:  # noqa: BLE001
+                        print("[batch-graph] fallback:", type(_bge).__name__,
+                              _bge, flush=True)
+                        out_list = None
+                if out_list is None:
+                    out_list = self.generate_batch(
+                        stage, [x[2] for x in pending], max_new_all,
+                        float(pending[0][4]), time.time() + max_timeout)
                 results = [(pending[j][0], pending[j][1], out_list[j],
                             stage) for j in range(len(pending))]
             for i, key, out, st in results:
