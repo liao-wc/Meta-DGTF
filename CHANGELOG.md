@@ -2,6 +2,11 @@
 - dual_judge token 评测（零 API，GPU）：`docs/dual_judge_tokens_eval.json`；
   320 token 下 json 0.75 / position_acc 0.279 / p95 58.7s；缩 token 只降延迟不救质量
   ⇒ 不改服务默认；下一步重训 judge_v3（数据扩充 + held-out 选型）。
+【Round 152 增补（2026-10-27，服务独占窗口 A/B）】
+- 独占窗口 13:57:20–14:08:13（干净服务、A 0→9/B 9→9 无并发）同题 A/B：
+  local wall 341.1s/quality 0.9930/4 次接管/¥0.28；llm wall 235.8s/quality 0.9283/¥1.63。
+- 结论：local 质量 +6.5pp 但 wall +44.7%；默认保持 llm/auto，local 为质量优先 opt-in。
+- 预算累计约 ¥14.88/¥15，剩余约 ¥0.1，停止真跑；验收 18/18、ab_summary rows=162。
 【Round 151 增补（2026-10-27，本地双判首次真实接管）】
 - 本地双判贪心 temp0 + judge_timeout 90s + MAX_CALLS 2→4；真跑 HTTP511：
   wall 326.1s（近期最佳）、quality 0.9708、LLM calls 91（最低）、¥0.55；本地双判 4 次成功、0 熔断。

@@ -368,3 +368,13 @@
 | 真跑 HTTP511 | wall **326.1s（近期最佳）**、quality 0.9708、LLM calls **91（最低）**、¥0.55 |
 | 本地双判 | **4 次成功接管**、0 熔断；graph_generations 12→15 |
 | 剩余 | 独占服务窗口做正式 takeover A/B；预算剩余 ~¥2.0；GPU 6GB self_check |
+
+## 42. Round 152：独占窗口 A/B 结果
+
+| 项 | 内容 |
+|---|---|
+| 窗口 | 13:57:20–14:08:13，重启干净服务，A 0→9 / B 9→9（无并发服务请求） |
+| A local | wall 341.1s、quality 0.9930、4 次接管/0 熔断、graph 3 次、¥0.28 |
+| B llm | wall 235.8s、quality 0.9283、¥1.63 |
+| 结论 | local 质量 +6.5pp、wall +44.7%；默认保持 llm/auto，local 为质量优先 opt-in |
+| 预算 | 累计约 ¥14.88/¥15，剩余约 ¥0.1，停止真跑 |

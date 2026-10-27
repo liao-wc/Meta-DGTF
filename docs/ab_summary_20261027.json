@@ -1,13 +1,14 @@
 {
- "rows": 146,
- "questions": 64,
- "mainline_rows": 103,
+ "rows": 162,
+ "questions": 79,
+ "mainline_rows": 119,
  "low_quality_rows": 43,
  "band_counts": {
   "low": 43,
-  "high": 103
+  "high": 103,
+  "unknown": 16
  },
- "verified_rows": 105,
+ "verified_rows": 121,
  "top10": [
   {
    "question": "世界卫生组织总部设在哪个城市？",
@@ -26,6 +27,22 @@
     "v106-who2",
     "v106-who3",
     "v106-who4"
+   ]
+  },
+  {
+   "question": "HTTP 451状态码表示什么？",
+   "n_rows": 2,
+   "scale": {
+    "unknown": 2
+   },
+   "best_quality": 0.993,
+   "best_tag": "v152-ab-local",
+   "best_ts": "2026-10-27 14:04:10",
+   "best_verified": true,
+   "best_cost_window": 0.28,
+   "tags": [
+    "v152-ab-llm",
+    "v152-ab-local"
    ]
   },
   {
@@ -152,73 +169,22 @@
    ]
   },
   {
-   "question": "为什么城市热岛效应在夜间比白天更明显？",
-   "n_rows": 13,
-   "scale": {
-    "low": 7,
-    "high": 6
-   },
-   "best_quality": 0.986,
-   "best_tag": "b2-presetB-thinkoff-only",
-   "best_ts": "2026-10-25 09:11:44",
-   "best_verified": true,
-   "best_cost_window": null,
-   "tags": [
-    "b0-presetB-baseline",
-    "b1-presetB-auto-narr-thinkoff",
-    "b2-presetB-thinkoff-only",
-    "cache-base-partial",
-    "cache-stable-partial",
-    "d1-presetB-dj-thinkoff"
-   ]
-  },
-  {
-   "question": "中国最大的淡水湖是哪个？",
+   "question": "HTTP 503状态码表示什么？",
    "n_rows": 1,
    "scale": {
-    "high": 1
+    "unknown": 1
    },
-   "best_quality": 0.986,
-   "best_tag": "v88-lake2",
-   "best_ts": "2026-10-26 07:51:45",
+   "best_quality": 0.99,
+   "best_tag": "v150b-graph-dj",
+   "best_ts": "2026-10-27 13:06:24",
    "best_verified": true,
-   "best_cost_window": 0.34,
+   "best_cost_window": 0.56,
    "tags": [
-    "v88-lake2"
+    "v150b-graph-dj"
    ]
   }
  ],
  "bottom10": [
-  {
-   "question": "HTTP 500状态码表示什么？",
-   "n_rows": 1,
-   "scale": {
-    "high": 1
-   },
-   "best_quality": 0.9415,
-   "best_tag": "v18-http500",
-   "best_ts": "2026-10-25 18:24:34",
-   "best_verified": true,
-   "best_cost_window": null,
-   "tags": [
-    "v18-http500"
-   ]
-  },
-  {
-   "question": "成年人每天建议的睡眠时间是多少小时？",
-   "n_rows": 1,
-   "scale": {
-    "high": 1
-   },
-   "best_quality": 0.9409,
-   "best_tag": "v126-fast-sleep",
-   "best_ts": "2026-10-26 18:38:12",
-   "best_verified": true,
-   "best_cost_window": 1.32,
-   "tags": [
-    "v126-fast-sleep"
-   ]
-  },
   {
    "question": "中国最长的河流是哪条？",
    "n_rows": 1,
@@ -316,6 +282,36 @@
    ]
   },
   {
+   "question": "HTTP 401状态码表示什么？",
+   "n_rows": 1,
+   "scale": {
+    "unknown": 1
+   },
+   "best_quality": 0.93,
+   "best_tag": "v141-dj-chunked",
+   "best_ts": "2026-10-27 09:55:20",
+   "best_verified": true,
+   "best_cost_window": 0.53,
+   "tags": [
+    "v141-dj-chunked"
+   ]
+  },
+  {
+   "question": "HTTP 507状态码表示什么？",
+   "n_rows": 1,
+   "scale": {
+    "unknown": 1
+   },
+   "best_quality": 0.93,
+   "best_tag": "v150d-graph-dj",
+   "best_ts": "2026-10-27 13:23:17",
+   "best_verified": true,
+   "best_cost_window": 0.49,
+   "tags": [
+    "v150d-graph-dj"
+   ]
+  },
+  {
    "question": "2024年末我国外汇储备余额是多少亿美元？",
    "n_rows": 1,
    "scale": {
@@ -364,6 +360,22 @@
     "v106-who2",
     "v106-who3",
     "v106-who4"
+   ]
+  },
+  {
+   "question": "HTTP 451状态码表示什么？",
+   "n_rows": 2,
+   "scale": {
+    "unknown": 2
+   },
+   "best_quality": 0.993,
+   "best_tag": "v152-ab-local",
+   "best_ts": "2026-10-27 14:04:10",
+   "best_verified": true,
+   "best_cost_window": 0.28,
+   "tags": [
+    "v152-ab-llm",
+    "v152-ab-local"
    ]
   },
   {
@@ -487,6 +499,21 @@
    "tags": [
     "v47-fast-fact-tech",
     "v47-tech2"
+   ]
+  },
+  {
+   "question": "HTTP 503状态码表示什么？",
+   "n_rows": 1,
+   "scale": {
+    "unknown": 1
+   },
+   "best_quality": 0.99,
+   "best_tag": "v150b-graph-dj",
+   "best_ts": "2026-10-27 13:06:24",
+   "best_verified": true,
+   "best_cost_window": 0.56,
+   "tags": [
+    "v150b-graph-dj"
    ]
   },
   {
@@ -710,6 +737,21 @@
    ]
   },
   {
+   "question": "HTTP 409状态码表示什么？",
+   "n_rows": 1,
+   "scale": {
+    "unknown": 1
+   },
+   "best_quality": 0.98,
+   "best_tag": "v146-dj-batch",
+   "best_ts": "2026-10-27 10:55:39",
+   "best_verified": true,
+   "best_cost_window": 0.76,
+   "tags": [
+    "v146-dj-batch"
+   ]
+  },
+  {
    "question": "首例确凿的黑洞重复潮汐瓦解恒星事件说明了什么？",
    "n_rows": 2,
    "scale": {
@@ -844,6 +886,21 @@
    ]
   },
   {
+   "question": "HTTP 402状态码表示什么？",
+   "n_rows": 1,
+   "scale": {
+    "unknown": 1
+   },
+   "best_quality": 0.9748,
+   "best_tag": "v141b-dj-takeover",
+   "best_ts": "2026-10-27 10:01:22",
+   "best_verified": true,
+   "best_cost_window": 1.21,
+   "tags": [
+    "v141b-dj-takeover"
+   ]
+  },
+  {
    "question": "长江的长度是多少千米？",
    "n_rows": 2,
    "scale": {
@@ -874,6 +931,21 @@
    "tags": [
     "patrol-econ-20261026",
     "patrol-econ-rerun-20261026"
+   ]
+  },
+  {
+   "question": "HTTP 304状态码表示什么？",
+   "n_rows": 1,
+   "scale": {
+    "unknown": 1
+   },
+   "best_quality": 0.9732,
+   "best_tag": "v135-judge-v3-local",
+   "best_ts": "2026-10-27 08:27:58",
+   "best_verified": true,
+   "best_cost_window": 0.49,
+   "tags": [
+    "v135-judge-v3-local"
    ]
   },
   {
@@ -909,6 +981,21 @@
    ]
   },
   {
+   "question": "HTTP 511状态码表示什么？",
+   "n_rows": 1,
+   "scale": {
+    "unknown": 1
+   },
+   "best_quality": 0.9708,
+   "best_tag": "v151-graph4-dj",
+   "best_ts": "2026-10-27 13:38:45",
+   "best_verified": true,
+   "best_cost_window": 0.55,
+   "tags": [
+    "v151-graph4-dj"
+   ]
+  },
+  {
    "question": "2024年我国货物贸易进出口总值是多少万亿元？",
    "n_rows": 2,
    "scale": {
@@ -923,6 +1010,21 @@
    "tags": [
     "v92-fast-trade",
     "v92-trade2"
+   ]
+  },
+  {
+   "question": "HTTP 302状态码表示什么？",
+   "n_rows": 1,
+   "scale": {
+    "unknown": 1
+   },
+   "best_quality": 0.9693,
+   "best_tag": "v137-dj-salvage",
+   "best_ts": "2026-10-27 08:49:04",
+   "best_verified": true,
+   "best_cost_window": 0.26,
+   "tags": [
+    "v137-dj-salvage"
    ]
   },
   {
@@ -1070,6 +1172,66 @@
    ]
   },
   {
+   "question": "HTTP 206状态码表示什么？",
+   "n_rows": 1,
+   "scale": {
+    "unknown": 1
+   },
+   "best_quality": 0.9603,
+   "best_tag": "v144-dj-serial-lock",
+   "best_ts": "2026-10-27 10:33:49",
+   "best_verified": true,
+   "best_cost_window": 0.5,
+   "tags": [
+    "v144-dj-serial-lock"
+   ]
+  },
+  {
+   "question": "HTTP 504状态码表示什么？",
+   "n_rows": 1,
+   "scale": {
+    "unknown": 1
+   },
+   "best_quality": 0.9597,
+   "best_tag": "v150c-graph-dj",
+   "best_ts": "2026-10-27 13:15:11",
+   "best_verified": true,
+   "best_cost_window": 0.62,
+   "tags": [
+    "v150c-graph-dj"
+   ]
+  },
+  {
+   "question": "HTTP 429状态码表示什么？",
+   "n_rows": 1,
+   "scale": {
+    "unknown": 1
+   },
+   "best_quality": 0.9556,
+   "best_tag": "v150-graph-dj",
+   "best_ts": "2026-10-27 12:49:14",
+   "best_verified": true,
+   "best_cost_window": 0.72,
+   "tags": [
+    "v150-graph-dj"
+   ]
+  },
+  {
+   "question": "HTTP 403状态码表示什么？",
+   "n_rows": 1,
+   "scale": {
+    "unknown": 1
+   },
+   "best_quality": 0.9552,
+   "best_tag": "v140-dj-bounded-wait",
+   "best_ts": "2026-10-27 09:49:52",
+   "best_verified": true,
+   "best_cost_window": 0.5,
+   "tags": [
+    "v140-dj-bounded-wait"
+   ]
+  },
+  {
    "question": "为什么在高原上煮饭更容易夹生？",
    "n_rows": 1,
    "scale": {
@@ -1132,6 +1294,21 @@
    ]
   },
   {
+   "question": "HTTP 508状态码表示什么？",
+   "n_rows": 1,
+   "scale": {
+    "unknown": 1
+   },
+   "best_quality": 0.9522,
+   "best_tag": "v150e-graph-dj-quiet",
+   "best_ts": "2026-10-27 13:31:43",
+   "best_verified": true,
+   "best_cost_window": 0.33,
+   "tags": [
+    "v150e-graph-dj-quiet"
+   ]
+  },
+  {
    "question": "在选择保温材料时应该优先考虑导热系数还是防火等级？",
    "n_rows": 1,
    "scale": {
@@ -1144,6 +1321,21 @@
    "best_cost_window": null,
    "tags": [
     "mode-fast-choice2"
+   ]
+  },
+  {
+   "question": "HTTP 301状态码表示什么？",
+   "n_rows": 1,
+   "scale": {
+    "unknown": 1
+   },
+   "best_quality": 0.9497,
+   "best_tag": "v136-dj-adapt",
+   "best_ts": "2026-10-27 08:42:38",
+   "best_verified": true,
+   "best_cost_window": 0.53,
+   "tags": [
+    "v136-dj-adapt"
    ]
   },
   {
@@ -1368,6 +1560,36 @@
    "best_cost_window": 1.54,
    "tags": [
     "v104-fast-dam"
+   ]
+  },
+  {
+   "question": "HTTP 401状态码表示什么？",
+   "n_rows": 1,
+   "scale": {
+    "unknown": 1
+   },
+   "best_quality": 0.93,
+   "best_tag": "v141-dj-chunked",
+   "best_ts": "2026-10-27 09:55:20",
+   "best_verified": true,
+   "best_cost_window": 0.53,
+   "tags": [
+    "v141-dj-chunked"
+   ]
+  },
+  {
+   "question": "HTTP 507状态码表示什么？",
+   "n_rows": 1,
+   "scale": {
+    "unknown": 1
+   },
+   "best_quality": 0.93,
+   "best_tag": "v150d-graph-dj",
+   "best_ts": "2026-10-27 13:23:17",
+   "best_verified": true,
+   "best_cost_window": 0.49,
+   "tags": [
+    "v150d-graph-dj"
    ]
   },
   {
