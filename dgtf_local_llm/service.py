@@ -422,6 +422,88 @@ class LocalEngine:
                 "gen_tokens": len(generated),
                 "prompt_tokens": int(L)}
 
+    # ---------- 批量生成（同一请求内多 prompt 并行 decode） ----------
+    @torch.inference_mode()
+    def generate_batch(self, stage: str, input_ids_list, max_new_tokens: int,
+                       temperature: float, deadline: float,
+                       use_adapter: bool = True) -> list:
+        """[Round 145] 批量贪心/采样解码：B 条 prompt 一次前向 + 并行 decode。
+
+        训练/服务仍用同一模型与适配器；返回与 `generate` 同构的 list[dict]。
+        """
+        B = len(input_ids_list)
+        if B == 0:
+            return []
+        pad_id = self.tok.pad_token_id
+        if pad_id is None:
+            pad_id = self.tok.eos_token_id or 0
+        lens = [int(x.shape[0]) for x in input_ids_list]
+        maxL = max(lens)
+        dev = "cuda"
+        ids = torch.full((B, maxL), int(pad_id), dtype=torch.long)
+        attn = torch.zeros((B, maxL), dtype=torch.long)
+        for i, x in enumerate(input_ids_list):
+            L = lens[i]
+            ids[i, maxL - L:] = x
+            attn[i, maxL - L:] = 1
+        ids = ids.to(dev)
+        attn = attn.to(dev)
+        if use_adapter and self.adapter_names and stage in self.adapter_names:
+            self.model.set_adapter(self.adapter_names[stage])
+        self._set_fp32(True)
+        outs = self.model(input_ids=ids, attention_mask=attn, use_cache=True)
+        past = outs.past_key_values
+        logits = outs.logits[:, -1, :].float()
+        self._set_fp32(False)
+        eos = self.tok.eos_token_id
+        generated = [[] for _ in range(B)]
+        logprobs = [[] for _ in range(B)]
+        done = [False] * B
+        try:
+            for step in range(max_new_tokens):
+                if time.time() > deadline:
+                    break
+                if temperature and temperature > 0:
+                    probs = torch.softmax(logits / temperature, dim=-1)
+                    nxt = torch.multinomial(probs, 1)
+                else:
+                    nxt = logits.argmax(-1, keepdim=True)
+                nxt_list = [int(nxt[i, 0]) for i in range(B)]
+                for i in range(B):
+                    if done[i]:
+                        continue
+                    tok = nxt_list[i]
+                    lp = torch.log_softmax(logits, dim=-1)[i, tok]
+                    logprobs[i].append(float(lp))
+                    generated[i].append(tok)
+                    if eos is not None and tok == eos:
+                        done[i] = True
+                if all(done) or step + 1 >= max_new_tokens:
+                    break
+                step_ids = torch.tensor(
+                    [[nxt_list[i] if not done[i] else int(pad_id)] for i in range(B)],
+                    dtype=torch.long, device=dev)
+                attn = torch.cat(
+                    [attn, torch.ones((B, 1), dtype=torch.long, device=dev)],
+                    dim=1)
+                o = self.model(input_ids=step_ids, attention_mask=attn,
+                               past_key_values=past, use_cache=True)
+                past = o.past_key_values
+                logits = o.logits[:, -1, :].float()
+        finally:
+            self._set_fp32(True)
+        results = []
+        for i in range(B):
+            text = self.tok.decode(generated[i], skip_special_tokens=True)
+            conf = None
+            if logprobs[i]:
+                conf = round(float(torch.tensor(logprobs[i]).mean().exp()), 4)
+            results.append({"text": text, "confidence": conf,
+                            "gen_tokens": len(generated[i]),
+                            "prompt_tokens": int(lens[i])})
+        del past, outs, logits, attn, ids
+        return results
+
     # ---------- prompt 拼装 ----------
     def _stage_system(self, stage: str, entry: str, variant: str) -> str:
         phase = self.tpl["phases"][entry]
@@ -557,6 +639,20 @@ class LocalEngine:
         res["queue_ms"] = round((job["dequeued_at"] - job["queued_at"]) * 1000, 1)
         return res
 
+    def submit_batch(self, reqs: list, timeout: float) -> list:
+        """[Round 145] 一次调用处理多请求：同一 worker + 批量 decode。"""
+        job = {"requests": list(reqs), "batch": True, "ev": threading.Event(),
+               "result": None, "err": None, "done_at": None, "queued_at": time.time()}
+        with self._lock:
+            self.queue_depth += 1
+        self.q.put(job)
+        got = job["ev"].wait(timeout)
+        if not got:
+            raise TimeoutError("批量排队/生成超时")
+        if job["err"]:
+            raise job["err"]
+        return job["result"] or {"ok": True, "batch": True, "results": []}
+
     def _worker(self) -> None:
         while True:
             job = self.q.get()
@@ -564,7 +660,10 @@ class LocalEngine:
                 self.queue_depth = max(0, self.queue_depth - 1)
             job["dequeued_at"] = time.time()
             try:
-                job["result"] = self._handle(job["req"])
+                if job.get("batch"):
+                    job["result"] = self._handle_batch(job["requests"])
+                else:
+                    job["result"] = self._handle(job["req"])
             except Exception as e:
                 job["err"] = e
             finally:
@@ -624,6 +723,90 @@ class LocalEngine:
             while len(self.cache) > self.cache_max:
                 self.cache.popitem(last=False)
         return res
+
+    def _batch_cache_key(self, req: dict) -> str | None:
+        try:
+            return hashlib.md5(json.dumps(
+                {k: req.get(k) for k in (
+                    "stage", "entry", "variant", "max_new_tokens",
+                    "temperature", "text", "messages")},
+                sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()
+        except Exception:  # noqa: BLE001
+            return None
+
+    def _parse_local_result(self, stage: str, out: dict, t0: float) -> dict:
+        text = out.get("text") or ""
+        parsed = try_parse_json(text)
+        salvaged = False
+        if parsed is None:
+            parsed = salvage_stage_json(stage, text)
+            salvaged = parsed is not None
+        return {"ok": True, "stage": stage, "salvaged": salvaged,
+                "text": text, "json": parsed,
+                "ms": round((time.time() - t0) * 1000, 1),
+                "adapter": self.adapter_paths.get(stage),
+                "confidence": out.get("confidence"),
+                "gen_tokens": out.get("gen_tokens"),
+                "prompt_tokens": out.get("prompt_tokens"),
+                "cached": False}
+
+    def _handle_batch(self, reqs: list) -> dict:
+        """[Round 145] 批量：缓存命中直接复用；未命中合并为一次 generate_batch。"""
+        t0 = time.time()
+        outs: list = [None] * len(reqs)
+        pending = []  # (idx, key, ids, max_new, temp)
+        max_timeout = 60.0
+        max_new_all = 1
+        for i, req in enumerate(reqs):
+            if not isinstance(req, dict) or req.get("stage") not in STAGES:
+                outs[i] = {"ok": False, "error": {"code": "BAD_REQUEST",
+                                                   "message": "stage 非法"}}
+                continue
+            timeout = float(req.get("timeout") or 60)
+            max_timeout = max(max_timeout, timeout)
+            max_new = int(req.get("max_new_tokens")
+                          or DEFAULT_MAX_NEW[req["stage"]])
+            max_new = max(1, min(1024, max_new))
+            max_new_all = max(max_new_all, max_new)
+            temp = float(req.get("temperature") or 0.0)
+            key = self._batch_cache_key(req)
+            if key and key in self.cache:
+                self.cache.move_to_end(key)
+                res = dict(self.cache[key])
+                res["cached"] = True
+                res["ms"] = round((time.time() - t0) * 1000, 1)
+                outs[i] = res
+                continue
+            msgs = self.build_messages(req)
+            prompt = self.tok.apply_chat_template(
+                msgs, tokenize=False, add_generation_prompt=True)
+            ids = self.tok(prompt, return_tensors="pt", truncation=True,
+                           max_length=2048)["input_ids"][0]
+            pending.append((i, key, ids, req["stage"], temp))
+        if pending:
+            stage = str(pending[0][3])
+            if any(str(x[3]) != stage for x in pending):
+                # 不同 stage 的批不支持（避免适配器串台）；逐条串行
+                results = []
+                for (i, key, ids, st, temp) in pending:
+                    out = self.generate(st, ids.unsqueeze(0), max_new_all,
+                                        temp, time.time() + max_timeout)
+                    results.append((i, key, out, st))
+            else:
+                out_list = self.generate_batch(
+                    stage, [x[2] for x in pending], max_new_all,
+                    float(pending[0][4]), time.time() + max_timeout)
+                results = [(pending[j][0], pending[j][1], out_list[j],
+                            stage) for j in range(len(pending))]
+            for i, key, out, st in results:
+                res = self._parse_local_result(st, out, t0)
+                outs[i] = res
+                if key:
+                    self.cache[key] = dict(res)
+                    while len(self.cache) > self.cache_max:
+                        self.cache.popitem(last=False)
+        return {"ok": True, "batch": True, "results": outs,
+                "ms": round((time.time() - t0) * 1000, 1)}
 
     def gpu_mem_mb(self) -> int:
         try:
@@ -690,17 +873,19 @@ class Handler(BaseHTTPRequestHandler):
             }
             self._send(200, payload)
             return
-        if self.path.split("?")[0] in ("/health", "/healthz", "/"):
+        if self.path.split("?")[0] in ("/health", "/healthz"):
             self._send(200, self.engine.health())
         elif self.path.split("?")[0] == "/":
             self._send(200, {"ok": True, "service": "dgtf_local_llm",
-                             "endpoints": ["/health", "/generate", "/metrics"]})
+                             "endpoints": ["/health", "/generate",
+                                           "/generate_batch", "/metrics"]})
         else:
             self._send(404, {"ok": False, "error": {"code": "NOT_FOUND",
                                                     "message": self.path}})
 
     def do_POST(self):
-        if self.path.split("?")[0] != "/generate":
+        _path = self.path.split("?")[0]
+        if _path not in ("/generate", "/generate_batch"):
             self._send(404, {"ok": False, "error": {"code": "NOT_FOUND",
                                                     "message": self.path}})
             return
@@ -711,6 +896,39 @@ class Handler(BaseHTTPRequestHandler):
         except Exception as e:
             self._send(400, {"ok": False, "error": {
                 "code": "BAD_REQUEST", "message": f"JSON 解析失败: {e}"}})
+            return
+        if _path == "/generate_batch":
+            reqs = req.get("requests") if isinstance(req, dict) else None
+            if not isinstance(reqs, list) or not reqs:
+                self._send(400, {"ok": False, "error": {
+                    "code": "BAD_REQUEST", "message": "requests 必须是非空数组"}})
+                return
+            if self.engine.state != "ready":
+                self._send(503, {"ok": False, "error": {
+                    "code": "UNAVAILABLE", "message": "模型不可用"}})
+                return
+            import time as _tb
+            _tb0 = _tb.perf_counter()
+            _timeout = float(req.get("timeout") or 90)
+            _timeout = max(1.0, min(180.0, _timeout))
+            try:
+                self.engine.stat_begin("batch")
+            except Exception:  # noqa: BLE001
+                pass
+            try:
+                res = self.engine.submit_batch(reqs, _timeout + 5.0)
+                self._send(200, res)
+            except TimeoutError:
+                self._send(503, {"ok": False, "error": {
+                    "code": "TIMEOUT", "message": "批量生成超时"}})
+            except Exception as e:  # noqa: BLE001
+                self._send(503, {"ok": False, "error": {
+                    "code": "INTERNAL", "message": f"{type(e).__name__}: {e}"}})
+            finally:
+                try:
+                    self.engine.stat_end("batch", _tb0, adapter="", ok=True)
+                except Exception:  # noqa: BLE001
+                    pass
             return
         if not isinstance(req, dict) or req.get("stage") not in STAGES:
             self._send(400, {"ok": False, "error": {

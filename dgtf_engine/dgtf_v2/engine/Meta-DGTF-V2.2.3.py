@@ -12706,13 +12706,14 @@ class DGTF:
                           view: Optional[View] = None,
                           diversity_hint: str = "",
                           allow_retry: bool = True):
-        """[Round 95/141] 本地双判：本地服务 stage=dual_judge。
+        """[Round 95–146] 本地双判：本地服务 stage=dual_judge。
 
-        适配层（Round 141）：只判前 12 条候选，**按 6 条分块**（每块 max_new=160，
-        压缩 schema，不含 why）；每块覆盖 ≥70% 才接受；任一块失败 ⇒ 整体回退 llm。
-        失败（超时/非 200/ok=false/置信度低/覆盖不足）返回 None，由调用方回退 llm。
+        适配层：只判前 12 条候选，按 6 条分块；2 块时优先调用服务端
+        `/generate_batch`（一次请求内并行 decode），失败则逐块回退 `/generate`。
+        每块覆盖 ≥70% 才接受；任一失败 ⇒ 整体回退 llm。
         """
         import urllib.request as _ur
+
         if not candidates:
             return None
         cfg = getattr(self, "local_llm_cfg", {}) or {}
@@ -12728,25 +12729,24 @@ class DGTF:
             _max_tok = int(cfg.get("judge_max_new_tokens") or 160)
             _chunks = [_judge_cands[i:i + 6]
                        for i in range(0, len(_judge_cands), 6)]
-            jmap: Dict[int, dict] = {}
-            _last_conf = None
-            for _ci, _chunk in enumerate(_chunks):
+            schema = ('{"judgments":[{"idx":1,"position":"0|1|both"}]}')
+            how = ("本层【属性】已由这条候选是从哪一面被看出来而确定，你不用判、也别猜。\n"
+                   "你只判【位置】这一维，不要输出理由。\n")
+            _carry_txt = self._carry_block_text(
+                getattr(inp, "carry_constraints", None) or [], "candidate")
+            _selfb_txt = self._self_block()
+            _static_sys = ("你是【对偶判断者】。\n"
+                           + self._dual_judge_spec() + how
+                           + "both 只在真的看不出偏向时才用；\n"
+                             "不要为了省事把两端都填 both，那是逃避判断。\n"
+                           + NO_FILL_JUDGE_RULE
+                           + "严格 JSON：\n" + schema)
+            dec_block = self._decidability_block(inp)
+            payloads = []
+            for _chunk in _chunks:
                 cand_text = "\n".join(
                     f"{j+1}. [{c.kind}] {str(c.desc)[:120]}"
                     for j, c in enumerate(_chunk))[:2400]
-                schema = ('{"judgments":[{"idx":1,"position":"0|1|both"}]}')
-                how = ("本层【属性】已由这条候选是从哪一面被看出来而确定，你不用判、也别猜。\n"
-                       "你只判【位置】这一维，不要输出理由。\n")
-                _carry_txt = self._carry_block_text(
-                    getattr(inp, "carry_constraints", None) or [], "candidate")
-                _selfb_txt = self._self_block()
-                _static_sys = ("你是【对偶判断者】。\n"
-                               + self._dual_judge_spec() + how
-                               + "both 只在真的看不出偏向时才用；\n"
-                                 "不要为了省事把两端都填 both，那是逃避判断。\n"
-                               + NO_FILL_JUDGE_RULE
-                               + "严格 JSON：\n" + schema)
-                dec_block = self._decidability_block(inp)
                 user = (f"【处境】\n{self._judge_context(inp, anchor)}"
                         f"\n{dec_block}\n"
                         f"\n【候选列表】\n{cand_text}")
@@ -12755,7 +12755,7 @@ class DGTF:
                         _static_sys, [_carry_txt, _selfb_txt], user)
                 else:
                     system = _static_sys + _carry_txt + _selfb_txt
-                body = json.dumps({
+                payloads.append(json.dumps({
                     "stage": "dual_judge",
                     "messages": [{"role": "system", "content": system},
                                  {"role": "user", "content": user}],
@@ -12763,28 +12763,62 @@ class DGTF:
                     "max_new_tokens": _max_tok,
                     "temperature": 0.3,
                     "timeout": timeout,
-                }, ensure_ascii=False).encode("utf-8")
-                req = _ur.Request(url, data=body,
-                                  headers={"Content-Type": "application/json"})
-                with _ur.urlopen(req, timeout=timeout) as resp:
-                    code = int(getattr(resp, "status", 200) or 200)
-                    raw = resp.read().decode("utf-8", "replace")
-                if code != 200:
-                    raise RuntimeError("HTTP %d" % code)
-                payload = json.loads(raw)
-                if not isinstance(payload, dict) or payload.get("ok") is False:
+                }, ensure_ascii=False))
+
+            def _post_one(_payload: str, _url: str) -> dict:
+                _req = _ur.Request(_url, data=_payload.encode("utf-8"),
+                                   headers={"Content-Type": "application/json"})
+                with _ur.urlopen(_req, timeout=timeout) as _resp:
+                    _code = int(getattr(_resp, "status", 200) or 200)
+                    _raw = _resp.read().decode("utf-8", "replace")
+                if _code != 200:
+                    raise RuntimeError("HTTP %d" % _code)
+                _d = json.loads(_raw)
+                if not isinstance(_d, dict) or _d.get("ok") is False:
                     raise RuntimeError("响应非法/ok=false")
-                conf = payload.get("confidence")
+                return _d
+
+            raw_results = None
+            # ★ [Round 146] 批量生成默认关闭：真跑 HTTP409 实测批量长 prompt 超时/回退，
+            #   wall 338.6s 差于逐块 228.7s；保留能力，需 cfg.judge_batch_enabled=True 才启用。
+            if (len(payloads) > 1 and url.rstrip().endswith("/generate")
+                    and bool(cfg.get("judge_batch_enabled", False))):
+                _batch_url = url.rstrip()[:-len("/generate")] + "/generate_batch"
+                try:
+                    _body = json.dumps({"requests": [
+                        json.loads(x) for x in payloads],
+                        "timeout": timeout}, ensure_ascii=False)
+                    _d = _post_one(_body, _batch_url)
+                    _rs = _d.get("results")
+                    if isinstance(_rs, list) and len(_rs) == len(payloads):
+                        raw_results = _rs
+                    else:
+                        raise RuntimeError("批量响应形状非法")
+                except Exception as _be:  # noqa: BLE001
+                    logger.info("批量双判不可用（回退逐块）：%s", _be)
+                    raw_results = None
+            if raw_results is None:
+                raw_results = []
+                for _payload in payloads:
+                    _d = _post_one(_payload, url)
+                    raw_results.append({"ok": True,
+                                        "text": str(_d.get("text") or ""),
+                                        "json": _d.get("json"),
+                                        "confidence": _d.get("confidence")})
+            jmap: Dict[int, dict] = {}
+            _last_conf = None
+            for _ci, (_chunk, _res) in enumerate(zip(_chunks, raw_results)):
+                if not isinstance(_res, dict) or _res.get("ok") is False:
+                    raise RuntimeError("批量响应 chunk%d 非法" % (_ci + 1))
+                conf = _res.get("confidence")
                 _last_conf = conf
                 if conf is not None:
-                    # ★ [Round 141c] 回退到 0.6：141b（0.5）实测 wall 299s/无接管、
-                    #   成本翻倍，收益不成立；保留分块适配即可。
                     _min_conf = float(cfg.get("min_confidence") or 0.6)
                     if float(conf) < _min_conf:
                         raise RuntimeError("置信度 %.2f < %.2f"
                                            % (float(conf), _min_conf))
-                text = str(payload.get("text") or "")
-                data = payload.get("json")
+                text = str(_res.get("text") or "")
+                data = _res.get("json")
                 if not isinstance(data, dict) or not data:
                     data = self.llm.parse_json(text) or {}
                 if not isinstance(data, dict) or not data:

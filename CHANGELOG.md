@@ -2,6 +2,11 @@
 - dual_judge token 评测（零 API，GPU）：`docs/dual_judge_tokens_eval.json`；
   320 token 下 json 0.75 / position_acc 0.279 / p95 58.7s；缩 token 只降延迟不救质量
   ⇒ 不改服务默认；下一步重训 judge_v3（数据扩充 + held-out 选型）。
+【Round 145–146 增补（2026-10-27，服务端批量生成）】
+- 服务新增 `/generate_batch`（批量 decode）；短 prompt 2×→9.42s、均 JSON 合法；判据 B1–B3 3/3。
+- 引擎批量接入默认关闭（judge_batch_enabled=False）：HTTP409 真跑批量长 prompt 超时/回退，
+  wall 338.6s 差于逐块 228.7s ⇒ 保持逐块默认；批量端点作为 opt-in 能力保留。
+- 验收扩至 **17/17（有服务）/ 16/16（无服务）**；预算 ~¥9.7/¥10，停止真跑。
 【Round 144 增补（2026-10-27，串行锁负结果）】
 - 引擎跨副本串行锁实验（HTTP206）：wall 331.8s、2×30s 锁超时、503=0、接管仍 0、
   质量 0.9603 verified、窗口差 ¥0.50 ⇒ 瓶颈是单卡生成速度+置信度门槛，非服务并发；

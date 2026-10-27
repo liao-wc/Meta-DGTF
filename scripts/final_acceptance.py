@@ -27,6 +27,7 @@ STEPS = [
     ("train_guard", ["scripts/local_model/test_train_guard.py"]),
     ("app_cache_bypass", ["scripts/local_model/test_app_cache_bypass.py"]),
     ("judge_fastfail", ["scripts/local_model/test_judge_fastfail.py"]),
+    ("generate_batch", ["scripts/local_model/test_generate_batch.py"]),
     ("probe_cover_wide", ["scripts/local_model/test_probe_cover_wide.py"]),
     ("ab_repeat_guard", ["scripts/local_model/test_ab_repeat_guard.py"]),
     ("outputs_consistency", ["scripts/outputs_quality_consistency.py"]),

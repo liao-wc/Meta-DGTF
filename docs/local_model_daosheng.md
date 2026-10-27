@@ -688,4 +688,4 @@ self_check(self_check_min)=v6；`scripts/check_local_service.py` 单发生成通
   最佳 **val_loss 0.1989**（v6 0.2221、v8b 0.9895）；peak 4.93GB、训练 3255s（专用 GPU 窗口）；
 - 30 条 held-out：JSON 1.0 / 字段 0.589 / escape 0.800 / suspF1 0.141 / all3 0.033，
   **与 v8b 完全持平**；p50 **4774ms** / p95 **5690ms**（v8b 5858/6340）⇒ SWITCH_CANDIDATE；
-- 服务默认切 **v9b**（self_check_min；self_check 槽位 v8b；v8b→v6→v5→v2 兜底）；/metrics 单发 3.66s、errors=0；验收 **16/16**（最新）。
+- 服务默认切 **v9b**（self_check_min；self_check 槽位 v8b；v8b→v6→v5→v2 兜底）；/metrics 单发 3.66s、errors=0；验收 **17/17**（最新）。
