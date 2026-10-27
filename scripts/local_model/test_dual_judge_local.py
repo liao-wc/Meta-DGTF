@@ -143,6 +143,12 @@ def main() -> int:
                            "why_position": "stub"}]})}
 
         # T5：分发器 local 成功用本地；local 失败回退 llm
+        # ★ [Round 137] 模块级调用预算/熔断需在测试间复位（每 run 一进程语义）
+        try:
+            mod._DJ_LOCAL_BREAKER.update({"fail": 0, "until": 0.0,
+                                         "calls": 0, "logged": False})
+        except Exception:  # noqa: BLE001
+            pass
         eng.dual_judge_mode = "local"
         ck("T5 分发器 local ⇒ 本地结果", eng._dual_judge(cands, inp, "anchor") == "APPLIED")
         eng._dual_judge_local = lambda *a, **k: None

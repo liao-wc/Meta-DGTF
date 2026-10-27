@@ -2,6 +2,12 @@
 - dual_judge token 评测（零 API，GPU）：`docs/dual_judge_tokens_eval.json`；
   320 token 下 json 0.75 / position_acc 0.279 / p95 58.7s；缩 token 只降延迟不救质量
   ⇒ 不改服务默认；下一步重训 judge_v3（数据扩充 + held-out 选型）。
+【Round 136–137 增补（2026-10-27，dual_judge local 适配层）】
+- 引擎本地双判适配：候选≤12、压缩 schema（不含 why）、max_new 192、优先服务端 salvage JSON、
+  覆盖率≥70%、模块级熔断（连续 2 失败 300s 冷却）+ 每 run ≤2 成功调用预算。
+- 验证：HTTP301 341.7s/9 次失败 → HTTP302 **242.9s / 3 次尝试（2×503 熔断+1 跳过）**，
+  wall −35% vs 旧 371s，质量 0.9693 verified，窗口差 ¥0.26；本地接管仍 0（503 判忙）。
+- 测试：T1–T8 8/8（含熔断复位）；验收 16/16。
 【Round 135 增补（2026-10-27，judge_v3 + pareto）】
 - judge_v3 训练（400×1，peak 4.91GB/2528s，val 1.3649）与 12 条 held-out：
   json 0.833/0.750、pos_acc 0.475/0.279、macro_f1 0.273/0.127、p95 35.3s/58.7s

@@ -8896,6 +8896,10 @@ _GAIN_ASSIGN_MIN = 0.15
 #:   与 `_COV_OVERLAP_MIN`（0.50，语言判据）分开：那是给「无 id」
 #:   场景兜底的宽尺子，这是给「有 id」场景的**严尺子**。
 _COVERS_SIM_MIN = 0.30
+# ★ [Round 137] 本地双判健康熔断 + 每 run 调用预算（跨层副本共享）
+_DJ_LOCAL_BREAKER = {"fail": 0, "until": 0.0, "calls": 0, "logged": False}
+_DJ_LOCAL_MAX_CALLS = 2      # 每进程/每 run 最多成功的本地双判调用数
+_DJ_LOCAL_COOLDOWN = 300.0   # 连续 2 次失败 ⇒ 冷却 300s
 #: ★ [Round 126] 严尺子漏掉的「词面近义」兜底（**AND** 门，低误报）：
 #:   `_sim3 >= 0.25 且 _overlap_coef >= 0.30` 才追加视为覆盖。
 #:   依据：offline 审计 R7 翻正 9/92（9.8%），样例语义均明显相关。
@@ -12639,11 +12643,26 @@ class DGTF:
         """
         mode = getattr(self, "dual_judge_mode", "llm")
         if (mode == "local" and candidates and not diversity_hint):
-            _local_out = self._dual_judge_local(
-                candidates, inp, anchor, view=view,
-                diversity_hint=diversity_hint, allow_retry=allow_retry)
-            if _local_out is not None:
-                return _local_out
+            # ★ [Round 136] 熔断：同一 run 连续 2 次本地双判失败 ⇒ 后续直接回退 llm，
+            #   避免 8 次动作反复等本地服务（吞吐不足时的确定性止损）。
+            import time as _t_br
+            _br = _DJ_LOCAL_BREAKER
+            _now = _t_br.time()
+            _skip_why = ""
+            if _now < float(_br.get("until") or 0.0):
+                _skip_why = "冷却中"
+            elif int(_br.get("calls") or 0) >= _DJ_LOCAL_MAX_CALLS:
+                _skip_why = "本次预算用尽"
+            if _skip_why:
+                if not _br.get("logged"):
+                    _br["logged"] = True
+                    logger.warning("本地双判跳过（%s），回退 llm", _skip_why)
+            else:
+                _local_out = self._dual_judge_local(
+                    candidates, inp, anchor, view=view,
+                    diversity_hint=diversity_hint, allow_retry=allow_retry)
+                if _local_out is not None:
+                    return _local_out
         if (mode == "llm" or not candidates or diversity_hint):
             out = self._dual_judge_llm(
                 candidates, inp, anchor, view=view,
@@ -12702,14 +12721,14 @@ class DGTF:
             self._local_llm_fail("local_llm.url 为空（dual_judge local）")
             return None
         try:
-            # ★ [Round 101] prompt 收缩：描述截 120 字、总长 ≤6000 字
+            # ★ [Round 136] 本地适配层：只判前 12 条（覆盖率门槛防部分落值）、
+            #   schema 压缩（不要求 why）、max_new=192（约 24s vs 46s）。
+            _judge_cands = (list(candidates[:12]) if len(candidates) > 12
+                            else candidates)
             cand_text = "\n".join(
                 f"{i+1}. [{c.kind}] {str(c.desc)[:120]}"
-                for i, c in enumerate(candidates))[:6000]
-            schema = ('{"judgments":[{"idx":1,"position":"0|1|both",'
-                      '"why_position":"≤30字",'
-                      '"why_0":"≤30字（仅当 position=both）",'
-                      '"why_1":"≤30字（仅当 position=both）"}]}')
+                for i, c in enumerate(_judge_cands))[:4000]
+            schema = ('{"judgments":[{"idx":1,"position":"0|1|both"}]}')
             how = ("本层【属性】已由这条候选是从哪一面被看出来而确定，你不用判、也别猜。\n"
                    "你只判【位置】这一维。\n")
             _carry_txt = self._carry_block_text(
@@ -12732,7 +12751,7 @@ class DGTF:
                 system = _static_sys + _carry_txt + _selfb_txt
             timeout = float(cfg.get("judge_timeout")
                             or cfg.get("timeout") or 120.0)
-            _max_tok = int(cfg.get("judge_max_new_tokens") or 320)
+            _max_tok = int(cfg.get("judge_max_new_tokens") or 192)
             body = json.dumps({
                 "stage": "dual_judge",
                 "messages": [{"role": "system", "content": system},
@@ -12759,17 +12778,26 @@ class DGTF:
                     raise RuntimeError("置信度 %.2f < %.2f"
                                        % (float(conf), _min_conf))
             text = str(payload.get("text") or "")
-            data = self.llm.parse_json(text) or {}
+            # ★ [Round 137] 服务端已做 salvage（截断 JSON 抢救）；优先用它，
+            #   否则回退到正文解析。192 token 预算下这是能否成功的关键。
+            data = payload.get("json")
+            if not isinstance(data, dict) or not data:
+                data = self.llm.parse_json(text) or {}
             if not isinstance(data, dict) or not data:
                 m = re.search(r"\{.*\}", text, re.S)
                 data = json.loads(m.group(0)) if m else {}
             if not isinstance(data, dict) or not data:
                 raise RuntimeError("text 解析不出 JSON")
             jmap = self._extract_judgments(data)
-            hit = sum(1 for i in range(1, len(candidates) + 1) if i in jmap)
-            if hit == 0:
-                raise RuntimeError("本地判定为空")
-            out = self._dual_apply_judgments(candidates, jmap, view, inp)
+            _want = len(_judge_cands)
+            hit = sum(1 for i in range(1, _want + 1) if i in jmap)
+            _need = max(1, int(round(_want * 0.7)))
+            if hit < _need:
+                raise RuntimeError("本地覆盖不足 %d/%d（门槛 %d）"
+                                   % (hit, _want, _need))
+            out = self._dual_apply_judgments(_judge_cands, jmap, view, inp)
+            if _judge_cands is not candidates:
+                out = list(out) + list(candidates[len(_judge_cands):])
             try:
                 self._last_dual_jmap = dict(jmap)
             except Exception:
@@ -12777,6 +12805,15 @@ class DGTF:
             try:
                 self.dual_judge_local_calls = int(
                     getattr(self, "dual_judge_local_calls", 0) or 0) + 1
+                self._dj_local_fail_streak = 0
+                _br2 = _DJ_LOCAL_BREAKER
+                _br2["fail"] = 0
+                _br2["until"] = 0.0
+                _br2["calls"] = int(_br2.get("calls") or 0) + 1
+                if int(_br2["calls"]) >= _DJ_LOCAL_MAX_CALLS and not _br2.get("logged"):
+                    _br2["logged"] = True
+                    logger.info("本地双判调用预算用尽（%d 次），后续动作回退 llm",
+                                _DJ_LOCAL_MAX_CALLS)
             except Exception:
                 pass
             if view is not None:
@@ -12792,6 +12829,15 @@ class DGTF:
             try:
                 self.dual_judge_local_fallbacks = int(
                     getattr(self, "dual_judge_local_fallbacks", 0) or 0) + 1
+                self._dj_local_fail_streak = int(
+                    getattr(self, "_dj_local_fail_streak", 0) or 0) + 1
+                import time as _t_br2
+                _br3 = _DJ_LOCAL_BREAKER
+                _br3["fail"] = int(_br3.get("fail") or 0) + 1
+                if int(_br3["fail"]) >= 2:
+                    _br3["until"] = _t_br2.time() + _DJ_LOCAL_COOLDOWN
+                    logger.warning("本地双判连续失败 %d 次 ⇒ 熔断 %.0fs",
+                                   int(_br3["fail"]), _DJ_LOCAL_COOLDOWN)
             except Exception:
                 pass
             try:

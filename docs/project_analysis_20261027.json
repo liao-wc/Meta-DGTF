@@ -1,8 +1,8 @@
 {
- "packs": 230,
+ "packs": 233,
  "question_types": {
   "unknown": 55,
-  "fact": 149,
+  "fact": 152,
   "boundary": 2,
   "reasoning": 17,
   "decision": 7
@@ -14,7 +14,7 @@
   "fact": {
    "needs_evidence": 26,
    "unverified": 20,
-   "verified": 103
+   "verified": 106
   },
   "boundary": {
    "unverified": 1,
@@ -31,21 +31,21 @@
  },
  "display": {
   "no_display": 117,
-  "display": 113
+  "display": 116
  },
  "fact_card_ok": {
   "not_ok": 122,
-  "ok": 108
+  "ok": 111
  },
  "flags_top": {
-  "duty_short": 180,
+  "duty_short": 181,
   "probe_no_target_covered": 60,
   "probe_link_dangling": 58,
-  "ing_rephrased_direct": 41,
+  "ing_rephrased_direct": 42,
   "unsaid_overused": 35,
   "polarity_all_same_structural": 29,
   "candidates_backfilled": 27,
-  "too_many_amp_candidates": 10,
+  "too_many_amp_candidates": 11,
   "core_audit_gaps": 9,
   "all_closure_unavailable": 7,
   "all_closure_gaps": 4,
@@ -62,7 +62,7 @@
   "historical_answer_rejected": 1
  },
  "stop_reasons": {
-  "question_answered_four_layers": 142,
+  "question_answered_four_layers": 145,
   "": 58,
   "体力耗尽（3 圈走满，未触发任何停止判据，是被截断不是自然停止）\n  近阈读数：末圈：无新& 0 / 无线头 0 / 停滞 0": 12,
   "自省连续 2 圈点名同一批问题未消化（层内空转）": 8,
@@ -74,32 +74,32 @@
   "体力耗尽（7 圈走满；1 次停止判据被「未深入方向」推迟（结构饱和度判定连续无新维度 + 悬置决定稳定，自然安住 + 连续 2 轮无新结构维度（结构饱和度判定，不是新增停滞）），是被截断不是自然停止）": 1
  },
  "coverage": {
-  "mean": 0.6318,
-  "lt_0_8": 147,
-  "lt_0_5": 59
+  "mean": 0.6327,
+  "lt_0_8": 149,
+  "lt_0_5": 60
  },
  "tri_alpha": {
-  "n": 194,
-  "mean": 0.0529,
-  "unreliable_lt_0667": 174
+  "n": 197,
+  "mean": 0.0539,
+  "unreliable_lt_0667": 177
  },
  "tokens": {
-  "n": 230,
-  "mean": 716263,
-  "p50": 678957,
+  "n": 233,
+  "mean": 715513,
+  "p50": 678272,
   "max": 2938969,
-  "calls_mean": 94.5
+  "calls_mean": 94.6
  },
  "provenance": {
-  "packs_with_provenance": 1,
-  "packs_with_question_hash": 1,
-  "packs_with_verification": 1,
+  "packs_with_provenance": 4,
+  "packs_with_question_hash": 4,
+  "packs_with_verification": 4,
   "truncated_but_ready": 0,
   "verified_without_display": 34
  },
  "artifact_integrity": {
   "missing_md": 1,
-  "md_mean_bytes": 120161,
+  "md_mean_bytes": 120340,
   "dispatch_incomplete": 6
  },
  "trend_by_date": {
@@ -239,13 +239,13 @@
    "tokens_mean": 720000
   },
   "20261027": {
-   "n": 1,
+   "n": 4,
    "verified_pct": 100.0,
    "ready_pct": 100.0,
    "display_pct": 100.0,
-   "coverage_mean": 0.75,
-   "tri_alpha_mean": 0.007,
-   "tokens_mean": 607783
+   "coverage_mean": 0.7177,
+   "tri_alpha_mean": 0.093,
+   "tokens_mean": 645428
   }
  },
  "ab_trend_by_prefix": {
@@ -368,6 +368,24 @@
    "quality_mean": 0.975,
    "verified_pct": 100.0,
    "tokens_mean": 607783
+  },
+  "v135": {
+   "n": 1,
+   "quality_mean": 0.9732,
+   "verified_pct": 100.0,
+   "tokens_mean": 667199
+  },
+  "v136": {
+   "n": 1,
+   "quality_mean": 0.9497,
+   "verified_pct": 100.0,
+   "tokens_mean": 641474
+  },
+  "v137": {
+   "n": 1,
+   "quality_mean": 0.9693,
+   "verified_pct": 100.0,
+   "tokens_mean": 665256
   },
   "v15": {
    "n": 1,
@@ -592,6 +610,6 @@
    "tokens_mean": 528673
   }
  },
- "ab_rows": 146,
+ "ab_rows": 149,
  "ab_missing_cost": 0
 }
