@@ -1,4 +1,6 @@
 【V2.2.4 发布（2026-10-27，PATCH）】
+- 远端：origin/release/V2.2.4 与标签 V2.2.4/engine-V2.2.4 已推送（均指向 b59d823）；
+  origin/main 为并发提交 cbc5a22，本地 main 分叉（领先205/落后1），未 force push，需 PR/合并。
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.4.py（__version__=2.2.4）；V2.2.3 只读保留。
 - 变更（opt-in/本地档）：dual_judge local 贪心 temp0 + judge_timeout90 + 预算4 + 2chunk 合批；
   CUDA graph 单/批解码对接；self_check local 贪心；默认 llm/auto 行为不变。
