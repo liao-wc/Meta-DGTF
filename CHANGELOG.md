@@ -1,3 +1,8 @@
+【Round 162 增补（2026-10-27，全项目收束同步）】
+- 新增 `docs/项目状态快照_20261027.md`（一页看全：18/18、V2 54/855、服务适配器、CUDA graph、预算≈19.5/20）。
+- 同步 `docs/README.md`、`docs/验收总览`、`docs/最终综合报告`、`docs/最终交付说明`、`docs/known_boundaries` §0、
+  `docs/local_model_daosheng` 顶部、`docs/产物问题审计` 历史标注、根 README 同步段；`docs/ab_summary` 刷新为 rows=166。
+- 审计结论：门禁全绿（18/18、54/855、12/12），packs=198，预算剩余≈¥0.5；self_check 边界已接受，dual_judge local 为质量优先 opt-in。
 【Round 134 增补（补）】
 - dual_judge token 评测（零 API，GPU）：`docs/dual_judge_tokens_eval.json`；
   320 token 下 json 0.75 / position_acc 0.279 / p95 58.7s；缩 token 只降延迟不救质量

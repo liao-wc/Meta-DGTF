@@ -7,6 +7,11 @@
 > 底座：**Qwen2.5-0.5B-Instruct**（1.5B 在本机 6GB/持续训练降频条件下不可行，
 > 原因与实测见 §4.2；1.5B 路径保留）。
 
+> **2026-10-27 收束同步**：当前默认适配器 `self_check_min=v9b`、`self_check=v8b`、
+> `dual_judge=judge_v3`、`route=qwen05b_v1`（`v11min`/`v11min2` 为教师蒸馏负结果留档，未启用）；
+> 服务已合并单/批 CUDA graph（cache 3072）与 `/generate_batch`；一键验收 18/18。
+> 本节以下为历史轮次记录，数字以 `docs/项目状态快照_20261027.md` 与 CHANGELOG 为准。
+
 ## 0. TL;DR
 
 | 项 | 状态 |

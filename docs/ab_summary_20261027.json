@@ -1,14 +1,14 @@
 {
- "rows": 162,
- "questions": 79,
- "mainline_rows": 119,
+ "rows": 166,
+ "questions": 83,
+ "mainline_rows": 123,
  "low_quality_rows": 43,
  "band_counts": {
   "low": 43,
   "high": 103,
-  "unknown": 16
+  "unknown": 20
  },
- "verified_rows": 121,
+ "verified_rows": 125,
  "top10": [
   {
    "question": "世界卫生组织总部设在哪个城市？",
@@ -27,6 +27,21 @@
     "v106-who2",
     "v106-who3",
     "v106-who4"
+   ]
+  },
+  {
+   "question": "HTTP 425状态码表示什么？",
+   "n_rows": 1,
+   "scale": {
+    "unknown": 1
+   },
+   "best_quality": 0.9936,
+   "best_tag": "v161-sc-local-graph",
+   "best_ts": "2026-10-27 19:46:15",
+   "best_verified": true,
+   "best_cost_window": 0.67,
+   "tags": [
+    "v161-sc-local-graph"
    ]
   },
   {
@@ -167,39 +182,9 @@
     "v47-fast-fact-tech",
     "v47-tech2"
    ]
-  },
-  {
-   "question": "HTTP 503状态码表示什么？",
-   "n_rows": 1,
-   "scale": {
-    "unknown": 1
-   },
-   "best_quality": 0.99,
-   "best_tag": "v150b-graph-dj",
-   "best_ts": "2026-10-27 13:06:24",
-   "best_verified": true,
-   "best_cost_window": 0.56,
-   "tags": [
-    "v150b-graph-dj"
-   ]
   }
  ],
  "bottom10": [
-  {
-   "question": "中国最长的河流是哪条？",
-   "n_rows": 1,
-   "scale": {
-    "high": 1
-   },
-   "best_quality": 0.94,
-   "best_tag": "v86-fast-fact-river",
-   "best_ts": "2026-10-26 06:54:57",
-   "best_verified": true,
-   "best_cost_window": null,
-   "tags": [
-    "v86-fast-fact-river"
-   ]
-  },
   {
    "question": "港珠澳大桥全长多少公里？",
    "n_rows": 2,
@@ -264,6 +249,21 @@
    "tags": [
     "v44-fast-fact-fx",
     "v45-fx2"
+   ]
+  },
+  {
+   "question": "HTTP 421状态码表示什么？",
+   "n_rows": 1,
+   "scale": {
+    "unknown": 1
+   },
+   "best_quality": 0.9348,
+   "best_tag": "v160-graph3072-dj",
+   "best_ts": "2026-10-27 19:13:29",
+   "best_verified": true,
+   "best_cost_window": 0.51,
+   "tags": [
+    "v160-graph3072-dj"
    ]
   },
   {
@@ -360,6 +360,21 @@
     "v106-who2",
     "v106-who3",
     "v106-who4"
+   ]
+  },
+  {
+   "question": "HTTP 425状态码表示什么？",
+   "n_rows": 1,
+   "scale": {
+    "unknown": 1
+   },
+   "best_quality": 0.9936,
+   "best_tag": "v161-sc-local-graph",
+   "best_ts": "2026-10-27 19:46:15",
+   "best_verified": true,
+   "best_cost_window": 0.67,
+   "tags": [
+    "v161-sc-local-graph"
    ]
   },
   {
@@ -1043,6 +1058,21 @@
    ]
   },
   {
+   "question": "HTTP 418状态码表示什么？",
+   "n_rows": 1,
+   "scale": {
+    "unknown": 1
+   },
+   "best_quality": 0.9675,
+   "best_tag": "v159-batch-graph-dj",
+   "best_ts": "2026-10-27 18:55:54",
+   "best_verified": true,
+   "best_cost_window": 0.23,
+   "tags": [
+    "v159-batch-graph-dj"
+   ]
+  },
+  {
    "question": "中国空间站由几个舱段组成？",
    "n_rows": 2,
    "scale": {
@@ -1309,6 +1339,21 @@
    ]
   },
   {
+   "question": "HTTP 422状态码表示什么？",
+   "n_rows": 1,
+   "scale": {
+    "unknown": 1
+   },
+   "best_quality": 0.9508,
+   "best_tag": "v159b-batch-graph-dj",
+   "best_ts": "2026-10-27 19:02:19",
+   "best_verified": true,
+   "best_cost_window": 0.48,
+   "tags": [
+    "v159b-batch-graph-dj"
+   ]
+  },
+  {
    "question": "在选择保温材料时应该优先考虑导热系数还是防火等级？",
    "n_rows": 1,
    "scale": {
@@ -1545,6 +1590,21 @@
    "tags": [
     "v44-fast-fact-fx",
     "v45-fx2"
+   ]
+  },
+  {
+   "question": "HTTP 421状态码表示什么？",
+   "n_rows": 1,
+   "scale": {
+    "unknown": 1
+   },
+   "best_quality": 0.9348,
+   "best_tag": "v160-graph3072-dj",
+   "best_ts": "2026-10-27 19:13:29",
+   "best_verified": true,
+   "best_cost_window": 0.51,
+   "tags": [
+    "v160-graph3072-dj"
    ]
   },
   {

@@ -13,6 +13,10 @@
 - **历史归档**：元DGTF-V1历史归档-20261023.zip（V1.0 → V1.30.4）
 
 > 这份 README 只写能被验证的事；详细来源、能力、版本演化见 docs/history/。
+> **2026-10-27 收束同步**：验收 **18/18（有服务）/17/17（无服务）**；V2 **54/54（855 checks）**；
+> fast_gate 12/12；packs **198**；服务适配器 self_check=v8b / self_check_min=v9b / dual_judge=judge_v3；
+> CUDA graph（单/批，cache 3072）与 dual_judge local（质量优先 opt-in）已合并。
+> 完整现状见 `docs/项目状态快照_20261027.md`。
 
 ## 一、它是什么
 
