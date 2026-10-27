@@ -15,7 +15,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 HERE = Path(__file__).resolve().parent
-ENGINE = HERE / "engine" / "Meta-DGTF-V2.2.3.py"
+ENGINE = HERE / "engine" / "Meta-DGTF-V2.2.4.py"
 ENGINE_OLD = HERE / "engine" / "Meta-DGTF-V2.2.2.py"
 
 sys.path.insert(0, str(HERE.parent))    # 让 `dgtf_v2.fine_check` 可导入
@@ -256,7 +256,7 @@ def group_a():
 # B. 默认零行为差
 # ============================================================
 def group_b():
-    ck("版本号 2.2.3", ENG.__version__ == "2.2.3", ENG.__version__)
+    ck("版本号 2.2.4", ENG.__version__ == "2.2.4", ENG.__version__)
     out = ENG.DEFAULT_CONFIG.get("output") or {}
     ck("默认 self_check_mode=llm", out.get("self_check_mode") == "llm", out.get("self_check_mode"))
     ck("默认 dual_judge_mode=llm", out.get("dual_judge_mode") == "llm", out.get("dual_judge_mode"))

@@ -1,6 +1,6 @@
 # Meta-DGTF-道生三阶模型 · 版本命名与迭代规范
 
-当前版本：**V2.2.3**（细粒度自省三档 + 环节 thinking 预算 + 本地自省端点 + App 2.0.32）
+当前版本：**V2.2.4**（V2.2.3 机制基线 + 本地档 CUDA graph/合批/贪心/timeout 补丁；默认行为不变；App 2.0.35）
 上一基线：V2.1.0（历史谱系融合）
 历史归档：V1.x（dgtf_engine/dgtf_v1/ 与 V1 历史归档）
 
@@ -14,21 +14,21 @@
 
 版本号只增不减；旧版本文件与标签保留，不覆盖历史。
 
-## 2. 当前映射（V2.2.3）
+## 2. 当前映射（V2.2.4）
 
 | 对象 | 命名 |
 |---|---|
-| 生产引擎 | dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.3.py |
+| 生产引擎 | dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.4.py |
 | App | 2.0.35（DSH 视图隔离 + 版本同步门禁 + 安全文件回退 + 产物活动灯） |
 | V2 核心 | dgtf_engine/dgtf_v2/ |
-| 融合实现 | Meta-DGTF-V2.2.3.py 内联（history + behavior；融合目标版本仍为 2.2.0 谱系） |
+| 融合实现 | Meta-DGTF-V2.2.4.py 内联（history + behavior；融合目标版本仍为 2.2.0 谱系） |
 | 历史清单 | dgtf_engine/dgtf_v2/history_manifest.json（数据） |
 | 单引擎融合判据 | dgtf_engine/dgtf_v2/tests_inline_fusion.py |
-| 主版本标签 | V2.2.3 |
+| 主版本标签 | V2.2.4 |
 | App 发布标签 | app-V2.0.35 |
-| Engine 发布标签 | engine-V2.2.3 |
-| 发布说明 | docs/releases/V2.2.3.md |
-| 收束报告 | V2.2.3-收束报告.md |
+| Engine 发布标签 | engine-V2.2.4 |
+| 发布说明 | docs/releases/V2.2.4.md |
+| 收束报告 | V2.2.4-收束报告.md |
 
 ## 3. 迭代流程
 

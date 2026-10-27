@@ -3,11 +3,11 @@
 一个**单文件四层螺旋推理引擎** + **V2 三平面核心** + **本地 Web 工作台**：
 修行 / 研究 / 对撞 / 元，跑出可审计、可回放、可融合的产物。
 
-- **当前版本**：V2.2.3（细粒度自省三档 + 环节思考预算 + 本地自省端点；默认零行为差） / App 2.0.35（道生专属模式 + 三体动态计划 + 预算守卫）
-- **生产引擎**：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.3.py
+- **当前版本**：V2.2.4（V2.2.3 机制基线 + 本地档 CUDA graph/合批/贪心/超时补丁；默认零行为差） / App 2.0.35（道生专属模式 + 三体动态计划 + 预算守卫）
+- **生产引擎**：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.4.py
 - **V2 核心**：dgtf_engine/dgtf_v2/
 - **人用界面**：dgtf_app/（App 2.0.35，道生专属模式 + DSH 本对话实时镜像 + 会话列表实时打开 + 健康读数缓存）
-- **融合实现**：单引擎内联（Meta-DGTF-V2.2.3.py）；V2.1 外部模块仅作回滚参考
+- **融合实现**：单引擎内联（Meta-DGTF-V2.2.4.py）；V2.1 外部模块仅作回滚参考
 - **历史清单**：dgtf_engine/dgtf_v2/history_manifest.json
 - **版本规范**：dgtf_engine/dgtf_v2/NAMING.md
 - **历史归档**：元DGTF-V1历史归档-20261023.zip（V1.0 → V1.30.4）
@@ -36,7 +36,7 @@ Meta-DGTF-道生三阶模型源于用户与 DGTF 的长对话（分享 ID: 44iyn
 
 详细定义、边界、不是什么：docs/history/Meta-DGTF-道生三阶模型-来源与定义.md。
 
-## 二、V2.2.x 的核心能力（V2.2.0 行为融合 + V2.2.1/V2.2.2 补丁 + V2.2.3 细粒度自省）
+## 二、V2.2.x 的核心能力（V2.2.0 行为融合 + V2.2.1/V2.2.2 补丁 + V2.2.3 细粒度自省 + V2.2.4 本地档加速补丁）
 
 ### 四层螺旋
 
@@ -112,13 +112,13 @@ DGTF_BASE_URL=https://api.deepseek.com
 ### 跑一次
 
 ~~~bash
-python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.3.py "你的问题"
+python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.4.py "你的问题"
 
 # 四层各一圈
-python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.3.py --route 0,1,both,all --rounds 1 "你的问题"
+python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.4.py --route 0,1,both,all --rounds 1 "你的问题"
 
 # 质量/成本预设
-python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.3.py -c configs/方案F-帕累托最优.yaml "你的问题"
+python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.4.py -c configs/方案F-帕累托最优.yaml "你的问题"
 ~~~
 
 常用参数：
@@ -178,7 +178,7 @@ local_model\envs\dgtf_llm_env\Scripts\python.exe -m pip check
 
 | 路径 | 是什么 |
 |---|---|
-| dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.3.py | 当前生产引擎 |
+| dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.4.py | 当前生产引擎 |
 | dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.2.py | 上一基线（保留回滚） |
 | dgtf_engine/dgtf_v2/ | V2 核心：契约/EML/调度/四层/F2–F5/融合 |
 | dgtf_engine/dgtf_v1/ | V1 归档（引擎/报告/脚本/fixtures） |
@@ -233,12 +233,12 @@ local_model\envs\dgtf_llm_env\Scripts\python.exe -m pip check
 
 ## 九、当前收束
 
-- 版本：V2.2.3（App 2.0.35）
+- 版本：V2.2.4（App 2.0.35）
 - 历史版本：178 个快照（V1.0 → V2.0.0）
 - 能力轴：17 条，readiness=1.00
 - 行为臂：5 个（v1_spiral / v1_frontier / v2_contract / v2_pareto / fusion_full）
 - 收束报告：V2.2.2-收束报告.md
-- 发布说明：docs/releases/V2.2.3.md / docs/releases/app-V2.0.33.md
+- 发布说明：docs/releases/V2.2.4.md / docs/releases/V2.2.3.md / docs/releases/app-V2.0.33.md
 - **优化交付（Round 1–83）**：`docs/最终交付说明-20261026.md`、
   `docs/验收总览-20261026.md`、`docs/ab_evidence_20261025.md`（§1–§78）
 - **本地模型默认**：v8b（mixed 配方，质量持平 v6、p50/p95 更快；训练/评测/切换全链证据）

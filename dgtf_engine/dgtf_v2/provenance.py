@@ -16,7 +16,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-ENGINE_FILE = "dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.3.py"
+ENGINE_FILE = "dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.4.py"
 _CACHE: dict = {}
 
 

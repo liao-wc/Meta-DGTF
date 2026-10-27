@@ -27,7 +27,7 @@ def load_engine():
     sys.path.insert(0, str(ROOT))
     sys.path.insert(0, str(ROOT / "dgtf_engine"))
     eng = (ROOT / "dgtf_engine" / "dgtf_v2" / "engine"
-           / "Meta-DGTF-V2.2.3.py")
+           / "Meta-DGTF-V2.2.4.py")
     spec = importlib.util.spec_from_file_location("engine_probe_audit", str(eng))
     m = importlib.util.module_from_spec(spec)
     sys.modules["engine_probe_audit"] = m

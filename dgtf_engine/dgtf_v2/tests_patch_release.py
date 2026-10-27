@@ -13,7 +13,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 HERE = Path(__file__).resolve().parent
-ENGINE = HERE / "engine" / "Meta-DGTF-V2.2.3.py"
+ENGINE = HERE / "engine" / "Meta-DGTF-V2.2.4.py"
 
 
 def _load():
@@ -43,7 +43,7 @@ def _fake_engine(entry_view, question):
 
 
 def main():
-    ck("版本号按补丁位递增", ENG.__version__ == "2.2.3", ENG.__version__)
+    ck("版本号按补丁位递增", ENG.__version__ == "2.2.4", ENG.__version__)
     # 融合 provenance 目标版本保持 2.2.0 谱系（补丁不改变融合事实）
     ck("历史融合目标保持 2.2.0", ENG._HF_TARGET == "2.2.0", ENG._HF_TARGET)
     ck("行为融合目标保持 2.2.0", ENG._BEHAVIOR_TARGET == "2.2.0", ENG._BEHAVIOR_TARGET)

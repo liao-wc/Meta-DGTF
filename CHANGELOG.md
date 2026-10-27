@@ -1,3 +1,10 @@
+【V2.2.4 发布（2026-10-27，PATCH）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.4.py（__version__=2.2.4）；V2.2.3 只读保留。
+- 变更（opt-in/本地档）：dual_judge local 贪心 temp0 + judge_timeout90 + 预算4 + 2chunk 合批；
+  CUDA graph 单/批解码对接；self_check local 贪心；默认 llm/auto 行为不变。
+- 验收：fast_gate 12/12、V2 54/54（855 checks）、final_acceptance 18/18、App mock 444/0、
+  app_version_check ok、verify_project_paths PASS；真实 App quality e2e HTTP431 verified。
+- 标签：V2.2.4、engine-V2.2.4（App 保持 2.0.35）。
 【Round 166 增补（2026-10-27，App 质量参数 e2e PASS）】
 - App quality 任务（parallel B/web on/thinking auto/effort auto/rounds 1，timeout 1800s）：done/exit0/350.7s；
   HTTP431 packed：answer_ready=True、coverage 1.0、**answer_correctness_verified=True、official_evidence**；
