@@ -2,6 +2,12 @@
 - dual_judge token 评测（零 API，GPU）：`docs/dual_judge_tokens_eval.json`；
   320 token 下 json 0.75 / position_acc 0.279 / p95 58.7s；缩 token 只降延迟不救质量
   ⇒ 不改服务默认；下一步重训 judge_v3（数据扩充 + held-out 选型）。
+【Round 150 增补（2026-10-27，CUDA graph 解码）】
+- 实现 PyTorch CUDAGraph + StaticCache 单序列贪心解码（无需 nvcc/C++）：原型 token 全一致、2.49x；
+  服务端单请求 17.4s→7.6–8.8s（约 2.1x）；异常自动回退原 generate。
+- 引擎本地双判改贪心 temperature 0.0；judge_timeout 45s→90s（并发下 45s 过紧）。
+- 判据 G1–G3 3/3；L1–L3、B1–B3、T1–T8 全 PASS；验收 18/18（无服务 17/17）。
+- 真跑 3 次受并发服务共享干扰（p50 29s），需独占窗口验证接管率；预算上限追加后 ¥15、已用约 ¥12.2。
 【Round 149 增补（2026-10-27，KV 级 continuous batching 负结果）】
 - 实现 DynamicCache 左填零拼接 + 逐序列 position_ids + 完成即切除的 KV 级连续批处理；
   实测单条 20.8s、2 并发 31.1s、错峰 39.6s（均 200/JSON），慢于请求级合批 12.2–17.9s ⇒ 负结果。

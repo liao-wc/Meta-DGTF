@@ -146,7 +146,7 @@
 |---|---|
 | dual_judge local | **已合并**（60b0e81）；App 自动透传；默认仍 opt-in（本地 judge 吞吐） |
 | 本地模型默认 | **v9b**（val 0.1989；held-out 质量=v8b、更快；v8b/v6/v5/v2 兜底） |
-| 验收 | **17/17（有服务）/ 16/16（无服务）**（Round 146 最新；本表为 Round 124 快照） |
+| 验收 | **18/18（有服务）/ 17/17（无服务）**（Round 150 最新；本表为 Round 124 快照） |
 | 剩余边界 | probe_no_target_covered（引擎侧扣分，29.3% packs）；App 精确缓存；旧 pack 严格拒答；检索依赖 |
 
 ## 19. Round 126 更新
@@ -349,3 +349,13 @@
 | 实测 | 单 20.8s / 2 并发 31.1s / 错峰 39.6s（均 200/JSON）vs 合批 12.2–17.9s ⇒ 负结果 |
 | 回退 | `git checkout b3459d1 -- service.py`（coalescing）；L1–L3、B1–B3、T1–T8、验收 17/17 全绿 |
 | 判定 | Python/HF cache 级实现调度开销 > 收益；需 C++/CUDA slot manager 级别才可能提速 |
+
+## 40. Round 150：CUDA graph 解码（正结果）
+
+| 项 | 内容 |
+|---|---|
+| 实现 | PyTorch CUDAGraph + StaticCache(2048) 单序列贪心解码；每 stage 惰性捕获；异常回退 |
+| 效果 | 原型 2.49x（token 全一致）；服务端单请求 17.4s→7.6–8.8s（约 2.1x） |
+| 判据 | G1–G3 3/3、L1–L3、B1–B3、T1–T8、验收 **18/18** |
+| 真跑 | 服务被并发共享（p50 29s/p95 66s），local 2 次成功但无干净接管 A/B；需独占窗口 |
+| 预算 | 追加后上限 ¥15，已用约 ¥12.2 |

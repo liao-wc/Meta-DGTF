@@ -75,7 +75,7 @@ import torch  # noqa: E402
 import torch.nn as nn  # noqa: E402
 import torch.nn.functional as F  # noqa: E402
 from peft import PeftModel  # noqa: E402
-from transformers import AutoModelForCausalLM, AutoTokenizer  # noqa: E402
+from transformers import AutoModelForCausalLM, AutoTokenizer, StaticCache  # noqa: E402
 
 import build_dgtf_stage_dataset as bds  # noqa: E402
 
@@ -250,10 +250,12 @@ class LocalEngine:
                   "dual_judge_fastfail": 0,
                   "dual_judge_waited": 0,
                   "batch_coalesced": 0,
+                  "graph_generations": 0,
                       "last_ms": 0.0, "last_stage": "", "last_adapter": ""}
         # ★ [Round 65] 延迟分位数滑动窗口（最近 50 次真实生成耗时）
         import collections as _collections
         self._lat_window = _collections.deque(maxlen=50)
+        self._graph_ctx: dict = {}
         if autostart:
             threading.Thread(target=self._load, daemon=True).start()
             threading.Thread(target=self._worker, daemon=True).start()
@@ -729,6 +731,109 @@ class LocalEngine:
                     except Exception:  # noqa: BLE001
                         pass
 
+    # ---------- [Round 150] CUDA graph 解码（单序列，StaticCache） ----------
+    _GRAPH_TOTAL = 2048
+
+    def _graph_capture(self, stage: str) -> dict:
+        """为指定 stage 捕获一个 decode 步的 CUDA graph（惰性，每 stage 一次）。"""
+        import torch as _t
+        ctx = self._graph_ctx.get(stage)
+        if ctx is not None:
+            return ctx
+        cache = StaticCache(self.model.config, max_cache_len=self._GRAPH_TOTAL)
+        in_tok = _t.zeros((1, 1), dtype=_t.long, device="cuda")
+        mask = _t.zeros((1, self._GRAPH_TOTAL), dtype=_t.long, device="cuda")
+        pos = _t.zeros((1,), dtype=_t.long, device="cuda")
+        cp = _t.zeros((1,), dtype=_t.long, device="cuda")
+        out_tok = _t.zeros((1, 1), dtype=_t.long, device="cuda")
+        out_lp = _t.zeros((1,), dtype=_t.float32, device="cuda")
+        if self.adapter_names and stage in self.adapter_names:
+            self.model.set_adapter(self.adapter_names[stage])
+
+        def step():
+            o = self.model(input_ids=in_tok, attention_mask=mask,
+                           position_ids=pos, past_key_values=cache,
+                           cache_position=cp, use_cache=True)
+            lg = o.logits[:, -1, :].float()
+            out_tok.copy_(lg.argmax(-1, keepdim=True))
+            out_lp.copy_(_t.log_softmax(lg, dim=-1).gather(1, out_tok).squeeze(1))
+
+        with _t.inference_mode():
+            mask[0, :1] = 1
+            for _ in range(3):
+                step()
+            g = _t.cuda.CUDAGraph()
+            with _t.cuda.graph(g):
+                step()
+            try:
+                cache.reset()
+            except Exception:  # noqa: BLE001
+                for lay in cache.layers:
+                    if getattr(lay, "keys", None) is not None:
+                        lay.keys.zero_(); lay.values.zero_()
+        ctx = {"cache": cache, "in_tok": in_tok, "mask": mask, "pos": pos,
+               "cp": cp, "out_tok": out_tok, "out_lp": out_lp, "graph": g,
+               "stage": stage}
+        self._graph_ctx[stage] = ctx
+        return ctx
+
+    def generate_graph(self, stage: str, input_ids, max_new_tokens: int,
+                       deadline: float) -> dict:
+        """单序列（B=1）CUDA graph 贪心解码；返回与 generate 同构 dict。"""
+        import torch as _t
+        ids = input_ids.to("cuda")
+        L = int(ids.shape[1])
+        total = self._GRAPH_TOTAL
+        if L + max_new_tokens + 2 > total:
+            raise RuntimeError("prompt+max_new 超出 graph cache")
+        ctx = self._graph_capture(stage)
+        cache = ctx["cache"]
+        in_tok, mask, pos, cp = ctx["in_tok"], ctx["mask"], ctx["pos"], ctx["cp"]
+        out_tok, out_lp, g = ctx["out_tok"], ctx["out_lp"], ctx["graph"]
+        if self.adapter_names and stage in self.adapter_names:
+            self.model.set_adapter(self.adapter_names[stage])
+        with _t.inference_mode():
+            cache.reset()
+            mask.zero_()
+            o = self.model(input_ids=ids,
+                           attention_mask=_t.ones((1, L), dtype=_t.long, device="cuda"),
+                           past_key_values=cache,
+                           cache_position=_t.arange(L, device="cuda"),
+                           use_cache=True)
+            logits = o.logits[:, -1, :].float()
+            cur = int(logits.argmax(-1, keepdim=True)[0, 0])
+            lp0 = float(_t.log_softmax(logits, dim=-1)[0, cur])
+            mask[0, :L] = 1
+            generated, logprobs = [], []
+            eos = self.tok.eos_token_id
+            for i in range(max_new_tokens):
+                if time.time() > deadline:
+                    raise TimeoutError("graph 生成超时")
+                if eos is not None and cur == eos:
+                    break
+                generated.append(cur)
+                logprobs.append(lp0)
+                in_tok.fill_(cur)
+                pos.fill_(L + i); cp.fill_(L + i)
+                if L + i + 1 <= total:
+                    mask[0, L + i] = 1
+                g.replay()
+                cur = int(out_tok[0, 0])
+                lp0 = float(out_lp[0])
+        try:
+            with self._stats_lock:
+                self.stats["graph_generations"] = int(
+                    self.stats.get("graph_generations", 0)) + 1
+        except Exception:  # noqa: BLE001
+            pass
+        self._set_fp32(True)
+        text = self.tok.decode(generated, skip_special_tokens=True)
+        conf = None
+        if logprobs:
+            conf = round(float(_t.tensor(logprobs).mean().exp()), 4)
+        return {"text": text, "confidence": conf,
+                "gen_tokens": len(generated), "prompt_tokens": L}
+
     def _handle(self, req: dict) -> dict:
         t0 = time.time()
         stage = req["stage"]
@@ -762,7 +867,15 @@ class LocalEngine:
         ids = self.tok(prompt, return_tensors="pt",
                        truncation=True, max_length=2048)["input_ids"]
         deadline = time.time() + timeout
-        out = self.generate(stage, ids, max_new, temp, deadline)
+        out = None
+        if temp == 0 and int(ids.shape[0]) == 1:
+            try:
+                out = self.generate_graph(stage, ids, max_new, deadline)
+            except Exception as _ge:  # noqa: BLE001
+                print("[graph] fallback:", type(_ge).__name__, _ge, flush=True)
+                out = None
+        if out is None:
+            out = self.generate(stage, ids, max_new, temp, deadline)
         text = out["text"]
         parsed = try_parse_json(text)
         salvaged = False

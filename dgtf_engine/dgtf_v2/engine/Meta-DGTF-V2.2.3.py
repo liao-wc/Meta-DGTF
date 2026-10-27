@@ -10855,6 +10855,11 @@ class DGTF:
             "url": str(_llm_loc.get("url")
                        or "http://127.0.0.1:8772/generate"),
             "timeout": float(_llm_loc.get("timeout") or 45.0),
+            # ★ [Round 150] dual_judge 本地单块在 CUDA graph 下 ~5-10s；并发/首次捕获
+            #   可能到 30-45s，45s 总超时过紧（实测超时回退）。judge_timeout 独立放宽到 90s。
+            "judge_timeout": float(_llm_loc.get("judge_timeout") or 90.0),
+            "judge_max_new_tokens": int(
+                _llm_loc.get("judge_max_new_tokens") or 160),
             "max_new_tokens": int(_llm_loc.get("max_new_tokens") or 160),
             "enabled": bool(_llm_loc.get("enabled", True)),
             "fallback": str(_llm_loc.get("fallback") or "llm"),
@@ -12761,7 +12766,9 @@ class DGTF:
                                  {"role": "user", "content": user}],
                     "text": system + "\n\n" + user,
                     "max_new_tokens": _max_tok,
-                    "temperature": 0.3,
+                    # ★ [Round 150] 改贪心 0.0：服务端 CUDA graph 解码只支持贪心；
+                    #   本地双判改为确定性贪心（有 gating/覆盖/置信度保护，回退 llm 兜底）。
+                    "temperature": 0.0,
                     "timeout": timeout,
                 }, ensure_ascii=False))
 
