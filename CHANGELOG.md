@@ -2,6 +2,11 @@
 - dual_judge token 评测（零 API，GPU）：`docs/dual_judge_tokens_eval.json`；
   320 token 下 json 0.75 / position_acc 0.279 / p95 58.7s；缩 token 只降延迟不救质量
   ⇒ 不改服务默认；下一步重训 judge_v3（数据扩充 + held-out 选型）。
+【Round 157 增补（2026-10-27，跨适配器不确定性/分类器融合）】
+- 跨适配器（v8b vs v9b）分歧率 susp 3%、ing/esc 0% ⇒ 无外部不确定性信号，hybrid 无增益。
+- 分类器与 v9b 融合：top1 覆盖 set_acc 0.067、field_mean 0.600（+1.1pp，30 条小样本）；
+  top2+ exact 归零 ⇒ 仅保留为候选兜底规则，需 90-val 复核与引擎接入，暂不切换。
+- 默认 v8b/v9b；验收 18/18；预算约 ¥17.6/¥20。
 【Round 156 增补（2026-10-27，packed 分类器/多采样）】
 - packed 候选重建成功（train 476/478、val 90/90，候选 14243/2769）；候选级分类器
   val90 set_F1 0.146（VAL30 0.171，生成式 0.141），但 exact set 0、field_mean 0.578 < 0.589 ⇒ 不替换。

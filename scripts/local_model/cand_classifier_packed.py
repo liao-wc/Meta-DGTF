@@ -176,6 +176,16 @@ def main() -> int:
     res30 = eval_examples(va30, w, b, best[0])
     print("VAL90", res90)
     print("VAL30", res30)
+    # 保存 val 每行候选概率（供融合评估）
+    by_row = {}
+    for ri, fs, y in va_ex:
+        by_row.setdefault(ri, []).append({"i": len(by_row.get(ri, [])) + 1,
+                                          "p": round(score(w, b, fs), 5), "y": int(y)})
+    val_dump = []
+    for ri in sorted(by_row):
+        val_dump.append({"row": ri, "cands": by_row[ri]})
+    (ROOT / "_audit_tmp" / "cand_classifier_val_probs.json").write_text(
+        json.dumps(val_dump, ensure_ascii=False), encoding="utf-8")
     out = {"tau": best[0], "tune": best[1], "val90": res90, "val30": res30,
            "train_stats": tr_stats, "val_stats": va_stats}
     (ROOT / "_audit_tmp" / "cand_classifier_v2_result.json").write_text(
