@@ -237,3 +237,13 @@
 - 320：json 0.75 / position_acc 0.279 / p50 25.5s / p95 58.7s；
 - 缩 token 只降延迟不救质量（64：json 0.083 / pos 0.033）；
 - 决策：**不改服务默认**（质量优先 + 503 快失败）；下一步重训 judge 适配器 v3（数据扩充 + held-out 选型）。
+
+## 28. Round 135：judge_v3 + pareto 修复
+
+| 项 | 内容 |
+|---|---|
+| judge_v3 | val 1.3649（v2 1.4836）；held-out json 0.833/0.750、pos 0.475/0.279、macroF1 0.273/0.127、p95 35.3s/58.7s ⇒ 默认 v3，v2 兜底 |
+| 端到端 | HTTP304 dual local：0.9732 verified；本地双判 8/8 回退（1 timeout + 6 503 + 1 非 JSON）⇒ 吞吐仍是瓶颈 |
+| pareto | process flag（duty_short）不再扣质量分；230 packs 179 上调 / 0 下调（F5） |
+| 验收 | 16/16（有服务）/ 15/15（无服务）；V2 54/855 |
+| 遗留 | judge 本地吞吐适配层、self_check 质量增量、tri_alpha、legacy unknown 55 包 |

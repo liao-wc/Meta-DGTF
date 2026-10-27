@@ -1,0 +1,30 @@
+{
+ "stage": "dual_judge",
+ "limit": 12,
+ "vals": "320",
+ "adapter": "llm_sft/adapter_dgtf_judge_05b_v3",
+ "adapter_paths": {
+  "self_check": "llm_sft/adapter_dgtf_judge_05b_v3",
+  "self_check_min": "llm_sft/adapter_dgtf_judge_05b_v3",
+  "dual_judge": "llm_sft/adapter_dgtf_judge_05b_v3",
+  "route": "llm_sft/adapter_dgtf_judge_05b_v3"
+ },
+ "val_rows": 476,
+ "variants": {
+  "320": {
+   "n": 12,
+   "json_valid_rate": 0.833,
+   "latency_ms": {
+    "p50": 22581.1,
+    "p95": 35276.4,
+    "mean": 20700.2
+   },
+   "gen_tokens_per_sec": 7.64,
+   "position_acc": 0.475,
+   "position_coverage": 0.803,
+   "macro_f1": 0.273,
+   "wall_sec": 248.5,
+   "errors": 0
+  }
+ }
+}

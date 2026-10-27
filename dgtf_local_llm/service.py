@@ -117,7 +117,11 @@ ADAPTER_CANDIDATES = {
                        "llm_sft/adapter_dgtf_selfcheck_05b_v5",
                        "llm_sft/adapter_dgtf_selfcheck_05b_v2",
                        "llm_sft/adapter_dgtf_selfcheck_05b_v1"],
-    "dual_judge": ["llm_sft/adapter_dgtf_judge_05b_v2",
+    # ★ [Round 135] judge_v3（400 样本，val 1.365 vs v2 1.484）：held-out 12 条
+    #   json 0.833/0.750、pos_acc 0.475/0.279、macro_f1 0.273/0.127、p95 35.3s/58.7s
+    #   ⇒ 默认 v3，v2/v1 兜底。
+    "dual_judge": ["llm_sft/adapter_dgtf_judge_05b_v3",
+                   "llm_sft/adapter_dgtf_judge_05b_v2",
                    "llm_sft/adapter_dgtf_judge_05b_v1"],
     "route": ["llm_sft/adapter_qwen05b_v1"],
 }

@@ -2,6 +2,13 @@
 - dual_judge token 评测（零 API，GPU）：`docs/dual_judge_tokens_eval.json`；
   320 token 下 json 0.75 / position_acc 0.279 / p95 58.7s；缩 token 只降延迟不救质量
   ⇒ 不改服务默认；下一步重训 judge_v3（数据扩充 + held-out 选型）。
+【Round 135 增补（2026-10-27，judge_v3 + pareto）】
+- judge_v3 训练（400×1，peak 4.91GB/2528s，val 1.3649）与 12 条 held-out：
+  json 0.833/0.750、pos_acc 0.475/0.279、macro_f1 0.273/0.127、p95 35.3s/58.7s
+  ⇒ service dual_judge 默认切 v3（v2/v1 兜底）；证据 docs/dual_judge_v3_eval.json。
+- 端到端 HTTP304 dual local 真跑：0.9732 verified/ready（窗口差 ¥0.49）；本地双判 8/8 回退
+  （1 timeout + 6×503 + 1 非 JSON）⇒ 吞吐仍需适配层设计。
+- pareto 质量分过滤 process flag：230 packs 179 上调 / 0 下调（判据 F5）；V2 54/855。
 【Round 134 增补（2026-10-27，保留策略定稿）】
 - `outputs_archive.py` 增加 `--fact-keep`：按 replay 阈值实测三档（fact-keep=2/4/6），
   定稿 **非 fact 留 2 + fact 留 6** ⇒ packs **360→230**，重放 guard PASS，验收 16/16。

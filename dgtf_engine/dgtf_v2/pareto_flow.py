@@ -5,7 +5,7 @@
 数据源：outputs/*.packed.json（引擎真跑）+ 本机 App/BGE 端点读数（组件快照）。
 
 指标口径（产物直读，不猜）：
-  quality     0..1 综合（answer_ready / verified / standard_all / coverage / flags）
+  quality     0..1 综合（answer_ready / verified / standard_all / coverage / flags；process flag 不计惩罚）
   tokens      llm_tokens（成本代理）；calls llm_calls（时延/成本代理）
   elapsed     产物有 elapsed_seconds 才用，否则 None。
 
@@ -39,6 +39,14 @@ def _quality_score(packed: dict, metrics: dict) -> float:
     standard_all = bool(metrics.get("standard_all"))
     coverage = metrics.get("coverage")
     flags = metrics.get("flags") or []
+    # ★ [Round 135] process flag（duty_short 等）是过程告警，不参与答案质量扣分；
+    #   否则 76.6% 的旗舰产物会被同一过程信号无差别压低。
+    try:
+        from .quality_predictor import classify_flags as _cf
+        _proc = set((_cf(flags).get("process") or []))
+        flags = [f for f in flags if str(f).split("(", 1)[0].strip() not in _proc]
+    except Exception:  # noqa: BLE001
+        pass
     score = 0.0
     score += 0.35 if answer_ready else 0.0
     score += 0.25 if quality == "verified" else (0.10 if quality else 0.0)

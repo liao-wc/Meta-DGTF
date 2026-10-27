@@ -15,6 +15,19 @@ def ck(n, ok, info=""):
     print(("PASS " if ok else "FAIL ") + n + (" :: " + str(info) if not ok else ""))
 
 
+
+
+
+def _pareto_quality(flags):
+    from dgtf_v2.pareto_flow import extract_flow_metrics
+    pack = {"quality": {"answer_ready": True, "answer_quality": "verified",
+                        "coverage": 1.0, "flags": flags},
+            "decision_trace": {"answer_ready": True,
+                               "answer_quality": "verified"},
+            "process_ledger": {"standard_all": True},
+            "llm_tokens": 100, "llm_calls": 10}
+    return extract_flow_metrics(pack)["quality"]
+
 def main() -> int:
     ck("F1 动态 flag 归一",
        normalize_flags(["probe_link_dangling(3)", "too_many_amp_candidates(70%)",
@@ -31,6 +44,12 @@ def main() -> int:
        _cls["process"] == ["duty_short"]
        and _cls["coverage"] == ["probe_no_target_covered"]
        and _cls["other"] == ["polarity_all_same_structural"], _cls)
+    _q_proc = _pareto_quality(["duty_short"])
+    _q_none = _pareto_quality([])
+    _q_cov = _pareto_quality(["probe_no_target_covered"])
+    ck("F5 pareto：process flag 不扣质量分",
+       abs(_q_proc - _q_none) < 1e-9 and _q_cov < _q_none,
+       (_q_proc, _q_none, _q_cov))
     ck("F3 普通/空输入",
        normalize_flags([]) == []
        and normalize_flags(["all_closure_unavailable"]) == ["all_closure_unavailable"]
