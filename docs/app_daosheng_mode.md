@@ -150,8 +150,10 @@ docs/ab_evidence_20261025.md §9）：
 - 
 easoning（推理/机制）→ uto（B 并行 + thinking auto + rounds auto）；
 - choice（选择/决策）→ uto；
-- act（事实/数值）→ web_on_auto，且 
-equire_web=true、orbid 含
+- 
+act（事实/数值）→ web_on_auto，且 
+equire_web=true、
+orbid 含
   web_off_auto/web_on_fast（事实题必须联网 + 保留 thinking，否则质量 0.44~0.47）。
 
 该字段只进 plan 审计与展示，不改变既有 opts 决策路径（失败即忽略）；
