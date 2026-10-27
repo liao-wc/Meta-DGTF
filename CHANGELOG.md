@@ -2,6 +2,12 @@
 - dual_judge token 评测（零 API，GPU）：`docs/dual_judge_tokens_eval.json`；
   320 token 下 json 0.75 / position_acc 0.279 / p95 58.7s；缩 token 只降延迟不救质量
   ⇒ 不改服务默认；下一步重训 judge_v3（数据扩充 + held-out 选型）。
+【Round 147 增补（2026-10-27，请求级合批）】
+- 服务 worker 合批：dual_judge 请求 0.25s 窗口内合并（≤4）为一次 generate_batch；
+  移除 HTTP 层 25s 等待（改直接入队，队列>8 才 503）；metrics 增 batch_coalesced。
+- 离线基准：2 并发长 prompt 12.23s（合批前 25.08s，−51%），均 JSON/coalesced=True；
+  顺序 24.48s；判据 L1–L3 3/3、B1–B3 3/3、T1–T8 8/8；验收 17/17。
+- 边界：仅同刻排队生效；引擎动作内 chunk 顺序发送不受益；长 prompt 需 continuous batching。
 【Round 145–146 增补（2026-10-27，服务端批量生成）】
 - 服务新增 `/generate_batch`（批量 decode）；短 prompt 2×→9.42s、均 JSON 合法；判据 B1–B3 3/3。
 - 引擎批量接入默认关闭（judge_batch_enabled=False）：HTTP409 真跑批量长 prompt 超时/回退，

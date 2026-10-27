@@ -85,9 +85,10 @@ def main() -> int:
     th.join(timeout=240)
     m = json.loads(urllib.request.urlopen(BASE + "/metrics", timeout=5).read().decode())
     st = m.get("stats") or {}
-    ck("L2 有界排队生效（waited>0 且排队请求 200）",
-       int(st.get("dual_judge_waited") or 0) > 0 and code2 == 200,
-       (st.get("dual_judge_waited"), code2, round(ms2)))
+    ck("L2 队列化/合批生效（排队请求 200、无立即 fastfail、有合批）",
+       code2 == 200 and int(st.get("dual_judge_fastfail") or 0) == 0
+       and int(st.get("batch_coalesced") or 0) >= 2,
+       (code2, st.get("dual_judge_fastfail"), st.get("batch_coalesced")))
 
     time.sleep(1.0)
     code3, txt3, ms3 = _post("dual_judge", _judge_text("空闲%s" % _uniq, n=1),

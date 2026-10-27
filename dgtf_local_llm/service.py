@@ -249,6 +249,7 @@ class LocalEngine:
                       "total_ms": 0.0, "max_ms": 0.0, "busy_now": False,
                   "dual_judge_fastfail": 0,
                   "dual_judge_waited": 0,
+                  "batch_coalesced": 0,
                       "last_ms": 0.0, "last_stage": "", "last_adapter": ""}
         # ★ [Round 65] 延迟分位数滑动窗口（最近 50 次真实生成耗时）
         import collections as _collections
@@ -659,15 +660,76 @@ class LocalEngine:
             with self._lock:
                 self.queue_depth = max(0, self.queue_depth - 1)
             job["dequeued_at"] = time.time()
+            # ★ [Round 147] 请求级合批：drain 队列里同 stage 的普通请求，
+            #   合并为一次 generate_batch（减少单卡串行等待与总延迟）。
+            jobs = [job]
+            held = []
             try:
-                if job.get("batch"):
-                    job["result"] = self._handle_batch(job["requests"])
+                _stage = None
+                if not job.get("batch"):
+                    _stage = str(job["req"].get("stage") or "")
+                if _stage in ("dual_judge",):
+                    import queue as _queue
+                    # ★ [Round 147b] 给并发请求一个 0.25s 合批窗口：
+                    #   单请求最多多等 0.25s，并发时两条合并为一次批量 decode。
+                    while len(jobs) < 4:
+                        try:
+                            _wait = 0.25 if len(jobs) == 1 else 0.05
+                            nxt = self.q.get(timeout=_wait)
+                        except _queue.Empty:
+                            break
+                        with self._lock:
+                            self.queue_depth = max(0, self.queue_depth - 1)
+                        nxt["dequeued_at"] = time.time()
+                        if (not nxt.get("batch")
+                                and str(nxt["req"].get("stage") or "") == _stage):
+                            jobs.append(nxt)
+                        else:
+                            held.append(nxt)
+                            break
+                if len(jobs) > 1:
+                    try:
+                        with self._lock:
+                            self.stats["batch_coalesced"] = int(
+                                self.stats.get("batch_coalesced", 0)) + len(jobs)
+                    except Exception:  # noqa: BLE001
+                        pass
+                    _res = self._handle_batch([j["req"] for j in jobs])
+                    _outs = _res.get("results") or []
+                    for idx, j in enumerate(jobs):
+                        if idx < len(_outs) and isinstance(_outs[idx], dict):
+                            j["result"] = _outs[idx]
+                            j["result"]["coalesced"] = True
+                        else:
+                            j["result"] = {"ok": False,
+                                           "error": {"code": "INTERNAL",
+                                                     "message": "合批结果缺失"}}
                 else:
-                    job["result"] = self._handle(job["req"])
+                    if job.get("batch"):
+                        job["result"] = self._handle_batch(job["requests"])
+                    else:
+                        job["result"] = self._handle(job["req"])
             except Exception as e:
                 job["err"] = e
             finally:
-                job["ev"].set()
+                for j in jobs:
+                    try:
+                        j["ev"].set()
+                    except Exception:  # noqa: BLE001
+                        pass
+            for h in held:
+                try:
+                    if h.get("batch"):
+                        h["result"] = self._handle_batch(h["requests"])
+                    else:
+                        h["result"] = self._handle(h["req"])
+                except Exception as e:  # noqa: BLE001
+                    h["err"] = e
+                finally:
+                    try:
+                        h["ev"].set()
+                    except Exception:  # noqa: BLE001
+                        pass
 
     def _handle(self, req: dict) -> dict:
         t0 = time.time()
@@ -953,41 +1015,24 @@ class Handler(BaseHTTPRequestHandler):
         import time as _time
         _t0 = _time.perf_counter()
         _stage = str(req.get("stage") or "")
-        # ★ [Round 140] dual_judge 有界排队：忙时最多等 25s（空出即处理），
-        #   仍忙才 503 BUSY；取代 Round 125 的"立即 503"（接管率 0）。
+        # ★ [Round 147c] dual_judge：直接入队（worker 会合批/串行），
+        #   仅当队列深度 > 8 时快速 503，避免无限堆积。
         if _stage == "dual_judge":
-            import time as _tw
-            _wait_until = _tw.time() + DUAL_JUDGE_BUSY_WAIT_S
-            _waited = False
-            while True:
+            try:
+                _qd = int(getattr(self.engine, "queue_depth", 0) or 0)
+            except Exception:  # noqa: BLE001
+                _qd = 0
+            if _qd > 8:
                 try:
-                    _busy = (int(getattr(self.engine, "queue_depth", 0) or 0) > 0
-                             or bool(self.engine.stats.get("busy_now")))
+                    with self.engine._stats_lock:
+                        self.engine.stats["dual_judge_fastfail"] = int(
+                            self.engine.stats.get("dual_judge_fastfail", 0)) + 1
                 except Exception:  # noqa: BLE001
-                    _busy = False
-                if not _busy:
-                    break
-                if _tw.time() >= _wait_until:
-                    try:
-                        with self.engine._stats_lock:
-                            self.engine.stats["dual_judge_fastfail"] = int(
-                                self.engine.stats.get("dual_judge_fastfail", 0)) + 1
-                    except Exception:  # noqa: BLE001
-                        pass
-                    self._send(503, {"ok": False, "error": {
-                        "code": "BUSY",
-                        "message": "dual_judge busy>%.0fs：回退 llm"
-                                   % DUAL_JUDGE_BUSY_WAIT_S}})
-                    return
-                if not _waited:
-                    _waited = True
-                    try:
-                        with self.engine._stats_lock:
-                            self.engine.stats["dual_judge_waited"] = int(
-                                self.engine.stats.get("dual_judge_waited", 0)) + 1
-                    except Exception:  # noqa: BLE001
-                        pass
-                _tw.sleep(0.5)
+                    pass
+                self._send(503, {"ok": False, "error": {
+                    "code": "BUSY",
+                    "message": "dual_judge 队列过深（>8）：回退 llm"}})
+                return
         _adapter = ""
         _ok = False
         self.engine.stat_begin(_stage)

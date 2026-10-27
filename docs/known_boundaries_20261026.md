@@ -320,3 +320,13 @@
 | 结论 | 长 prompt 批量受显存/单 worker 限制；接管需 continuous batching；默认保持逐块 |
 | 验收 | **17/17（有服务）/ 16/16（无服务）**；V2 54/855 |
 | 预算 | ~¥9.7/¥10，停止真跑 |
+
+## 37. Round 147：服务端请求级合批
+
+| 项 | 内容 |
+|---|---|
+| 合批 | worker 0.25s 窗口收集同 stage 请求（≤4）合并 generate_batch；dual_judge 直接入队；队列>8 才 503 |
+| 基准 | 2 并发长 prompt：12.23s（合批前 25.08s，−51%），均 JSON、coalesced=True；顺序 24.48s |
+| 判据 | L1–L3 3/3；batch 端点 B1–B3；T1–T8 8/8 |
+| 边界 | 仅同刻排队生效；引擎动作内 chunk 顺序发送不受益；长 prompt 需 continuous batching |
+| 预算 | ~¥9.7/¥10；真实跑次停止 |
