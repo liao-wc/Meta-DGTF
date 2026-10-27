@@ -389,3 +389,13 @@
 | 判定 | 6GB 是可行但非瓶颈；self_check 质量受数据/容量限制；默认 v8b/v9b 不变 |
 | 产物 | `llm_sft/adapter_dgtf_selfcheck_05b_v11min`（实验，未启用） |
 | 预算 | 教师 ¥2.30；本阶段 ¥17.2/¥20，剩余约 ¥2.8 |
+
+## 44. Round 154：教师蒸馏扩量（200 行）仍负结果
+
+| 项 | 内容 |
+|---|---|
+| 训练 | max_len1536、200 行、1 epoch/200 步/41min，peak 4.13GB |
+| held-out | v11min2 field_mean **0.578** vs v9b **0.589**（−1.1pp）、susp_F1 0.118 |
+| 判定 | 扩量无增益；教师蒸馏路线在 0.5B/该数据规模下不可行，默认 v8b/v9b 不变 |
+| 产物 | `llm_sft/adapter_dgtf_selfcheck_05b_v11min2`（实验，未启用） |
+| 剩余 | 候选级分类头 / hybrid / 更大 GPU；预算约 ¥17.2/¥20 |

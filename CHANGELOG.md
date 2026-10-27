@@ -2,6 +2,10 @@
 - dual_judge token 评测（零 API，GPU）：`docs/dual_judge_tokens_eval.json`；
   320 token 下 json 0.75 / position_acc 0.279 / p95 58.7s；缩 token 只降延迟不救质量
   ⇒ 不改服务默认；下一步重训 judge_v3（数据扩充 + held-out 选型）。
+【Round 154 增补（2026-10-27，教师蒸馏扩量仍负）】
+- 教师蒸馏扩到 200 行（min schema），6GB 内训练（peak 4.13GB，200 步/41min）；
+- held-out 30：v11min2 field_mean 0.578 vs v9b 0.589（−1.1pp）、susp_F1 0.118 ⇒ 不切换，默认 v8b/v9b；
+- 结论：教师蒸馏扩量无增益；剩余路径=候选级分类头 / hybrid / 更大 GPU。验收 18/18。
 【Round 153 增补（2026-10-27，6GB 替代方案：教师蒸馏负结果）】
 - 教师 pilot：DeepSeek field_mean 0.622 vs v9b 0.589（+3.3pp）→ 生成 400 条教师标签（¥2.30）。
 - 零成本投影 min schema（400/400 匹配）；6GB 内训练 v11min（max_len1900+grad ckpt，
