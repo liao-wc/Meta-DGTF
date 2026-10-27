@@ -458,3 +458,13 @@
 | 真跑 | HTTP421 wall 294.5s / quality .9348 / calls 93 / batch graph 4 次 / ¥0.51 |
 | 汇总 | batch graph 三跑 252.8–294.5s（local 逐块 326.1s，−10~22%）；LLM 235.8s 仍更快 |
 | 预算 | 本阶段 ¥18.8/¥20，剩余 ~¥1.2；验收 18/18 |
+
+## 51. Round 161：self_check local 贪心 graph
+
+| 项 | 内容 |
+|---|---|
+| 改动 | `_self_check_local` temperature 0.3→0.0（graph 生效，失败仍回退 llm） |
+| 单次 | self_check_min 长 prompt 2.25s→**1.08s（2.1x）**，JSON 合法 |
+| 真跑 | HTTP425 self_check local：wall 333.9s、quality **0.9936**、graph +9、¥0.67 |
+| 观察 | 9 次本地失败回退 LLM（置信度 0.47–0.59 / JSON 解析），端到端被拖慢 ⇒ local 继续 opt-in |
+| 预算 | 本阶段约 ¥19.5/¥20，剩余 ~¥0.5；验收 18/18 |

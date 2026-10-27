@@ -15977,7 +15977,7 @@ class DGTF:
           {"stage": "self_check",
            "messages": [{"role":"system",...},{"role":"user",...}],
            "text": "<system+user 拼串（兼容 text-only 服务）>",
-           "max_new_tokens": 600, "temperature": 0.3, "timeout": <s>}
+           "max_new_tokens": 600, "temperature": 0.0, "timeout": <s>}
         响应：200 `{"ok": true, "text": "<JSON 字符串>", "confidence": 0.0~1.0}`
         失败（超时 / 非 200 / ok=false / 置信度低 / 解析不出 JSON）
         → 返回 None + 错误计数 + meta 留痕，由调用方**回退 llm**。
@@ -16000,7 +16000,9 @@ class DGTF:
                          {"role": "user", "content": user}],
             "text": system + "\n\n" + user,
             "max_new_tokens": int(cfg.get("max_new_tokens") or 160),
-            "temperature": 0.3,
+            # ★ [Round 161] 改贪心 0.0：服务端 CUDA graph 解码只支持贪心；
+            #   自省判定本就要求确定性，失败自动回退 llm，语义不变。
+            "temperature": 0.0,
             "timeout": timeout,
         }, ensure_ascii=False).encode("utf-8")
         try:

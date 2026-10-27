@@ -2,6 +2,11 @@
 - dual_judge token 评测（零 API，GPU）：`docs/dual_judge_tokens_eval.json`；
   320 token 下 json 0.75 / position_acc 0.279 / p95 58.7s；缩 token 只降延迟不救质量
   ⇒ 不改服务默认；下一步重训 judge_v3（数据扩充 + held-out 选型）。
+【Round 161 增补（2026-10-27，self_check local 贪心 graph）】
+- `_self_check_local` temperature 0.3→0.0（graph 生效）：单次 2.25s→1.08s（2.1x），JSON 合法。
+- 端到端 HTTP425（self_check local）：wall 333.9s、quality .9936、graph +9、¥0.67；
+  9 次本地失败回退 LLM（阈值/解析），端到端被拖慢 ⇒ local 继续 opt-in，默认 llm 不变。
+- 预算约 ¥19.5/¥20；验收 18/18。
 【Round 160 增补（2026-10-27，graph cache 3072）】
 - 单/批 graph cache 3072：覆盖 2048 截断 prompt+max_new，消除长 prompt fallback；
 - 基准：单 long 9.93s、批 long 14.25s（均 JSON、无 fallback）；
