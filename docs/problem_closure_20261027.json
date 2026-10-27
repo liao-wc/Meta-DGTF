@@ -1,0 +1,123 @@
+{
+ "packs_current": 184,
+ "packs_scanned": 419,
+ "archives": {
+  "_archive_20261027": 262,
+  "_archive_unknown_20261027": 115
+ },
+ "rows": [
+  {
+   "id": "P0-verified-semantics",
+   "问题": "verified 语义分叉（事实 vs 过程合同）",
+   "状态": "已修复",
+   "证据": "quality.verification=7 包含该字段；verification_semantics 判据 S1–S3"
+  },
+  {
+   "id": "P0-arith-wrong-answer",
+   "问题": "2+2 梗答案被标 verified",
+   "状态": "已修复",
+   "证据": "A87/A87b；历史包已修复为 2+2=4"
+  },
+  {
+   "id": "P0-contradictions",
+   "问题": "verified/ready 矛盾包",
+   "状态": "已修复",
+   "证据": "consistency legacy_contradictions=[]"
+  },
+  {
+   "id": "P0-truncated-ready",
+   "问题": "体力耗尽仍 ready",
+   "状态": "已修复",
+   "证据": "truncated_but_ready=0（应为 0）"
+  },
+  {
+   "id": "P1-display-gate",
+   "问题": "事实 verified 无展示",
+   "状态": "已修复",
+   "证据": "fact verified_no_display=12（应为 0）"
+  },
+  {
+   "id": "P0-duplicate-cost",
+   "问题": "重复真跑（历史 64.2% tokens）",
+   "状态": "已修复（护栏）",
+   "证据": "ab_bench 同题 verified 默认拒绝（G1–G3）"
+  },
+  {
+   "id": "P2-provenance",
+   "问题": "0/359 版本指纹",
+   "状态": "已修复（新包）",
+   "证据": "带 provenance 的包=7 / 419"
+  },
+  {
+   "id": "P1-alert-overload",
+   "问题": "duty/probe 告警过载",
+   "状态": "已缓解",
+   "证据": "flags_info+alert 分级；probe_no_target 降级 info（41.3%% vs 44.5%% 无区分）"
+  },
+  {
+   "id": "P1-tri-alpha",
+   "问题": "tri_alpha 87.6% 不可靠被当质量",
+   "状态": "已澄清/硬边界",
+   "证据": "重测代理 ICC coverage=0.217；tri_alpha 均值 0.0735（跨视角一致性，非重测）"
+  },
+  {
+   "id": "P1-quality-stability",
+   "问题": "同题重复 run ready/verified 不稳定",
+   "状态": "已量化/缓解",
+   "证据": "ready 全一致 60.3%、verified 52.9%；缓存+重复守卫已部署"
+  },
+  {
+   "id": "P3-output-bloat",
+   "问题": "输出无保留策略/膨胀",
+   "状态": "已修复",
+   "证据": "当前 184 packs；归档目录 {'_archive_20261027': 262, '_archive_unknown_20261027': 115}"
+  },
+  {
+   "id": "P3-unknown-legacy",
+   "问题": "127 个老 schema 包",
+   "状态": "已归档",
+   "证据": "legacy unknown 53 包归档 _archive_unknown_20261027"
+  },
+  {
+   "id": "P3-ab-schema",
+   "问题": "ab_results 旧行缺 cost",
+   "状态": "已修复",
+   "证据": "152/152 行含 cost_window_cny"
+  },
+  {
+   "id": "P2-docs",
+   "问题": "文档过期数字/碎片化",
+   "状态": "已修复",
+   "证据": "docs/README.md 索引；当前面文档同步；历史归档头"
+  },
+  {
+   "id": "P1-judge-quality",
+   "问题": "judge_v2 质量/吞吐双弱",
+   "状态": "已修复",
+   "证据": "judge_v3 json 0.833、pos_acc 0.475、macroF1 0.273（v2: 0.750/0.279/0.127）"
+  },
+  {
+   "id": "OUT-judge-takeover",
+   "问题": "judge 本地接管率 0",
+   "状态": "硬边界",
+   "证据": "单卡并发+503 判忙；分块/有界排队后 wall 228.7s 但接管仍 0"
+  },
+  {
+   "id": "OUT-selfcheck-quality",
+   "问题": "self_check 质量增量",
+   "状态": "硬边界",
+   "证据": "mixed 6GB 不可训、min 负结果（field .556<.589）；0.5B 平台"
+  },
+  {
+   "id": "OUT-budget",
+   "问题": "真跑预算",
+   "状态": "硬约束",
+   "证据": "本阶段约 ¥8.6/¥10，剩余 ~¥1.4；停止真实跑次"
+  }
+ ],
+ "summary": {
+  "fixed": 11,
+  "mitigated": 1,
+  "bounded": 3
+ }
+}

@@ -2,6 +2,10 @@
 - dual_judge token 评测（零 API，GPU）：`docs/dual_judge_tokens_eval.json`；
   320 token 下 json 0.75 / position_acc 0.279 / p95 58.7s；缩 token 只降延迟不救质量
   ⇒ 不改服务默认；下一步重训 judge_v3（数据扩充 + held-out 选型）。
+【Round 143 增补（2026-10-27，问题闭环审计）】
+- 新增 problem_closure_audit.py + docs/项目问题闭环审计_20261027.md：
+  18 项问题闭环（11 已修复 / 1 已缓解 / 2 已澄清量化 / 3 硬边界），自动证据 JSON 可复跑。
+- 硬边界：真跑预算 ¥8.6/10、6GB GPU（self_check 质量增量）、judge 本地接管（单卡并发架构）。
 【Round 142 增补（2026-10-27，tri_alpha 语义 + 告警校准）】
 - 新增 `tri_retest_analysis.py`：68 重复题/322 次重跑，ready 全一致 60.3%、verified 52.9%、
   34 组不一致；coverage ICC 0.217、flag ICC 0.729 ⇒ tri_alpha 是跨视角一致性、非重测信度；
