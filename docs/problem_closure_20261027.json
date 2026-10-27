@@ -1,6 +1,6 @@
 {
- "packs_current": 184,
- "packs_scanned": 419,
+ "packs_current": 185,
+ "packs_scanned": 420,
  "archives": {
   "_archive_20261027": 262,
   "_archive_unknown_20261027": 115
@@ -10,7 +10,7 @@
    "id": "P0-verified-semantics",
    "问题": "verified 语义分叉（事实 vs 过程合同）",
    "状态": "已修复",
-   "证据": "quality.verification=7 包含该字段；verification_semantics 判据 S1–S3"
+   "证据": "quality.verification=8 包含该字段；verification_semantics 判据 S1–S3"
   },
   {
    "id": "P0-arith-wrong-answer",
@@ -46,7 +46,7 @@
    "id": "P2-provenance",
    "问题": "0/359 版本指纹",
    "状态": "已修复（新包）",
-   "证据": "带 provenance 的包=7 / 419"
+   "证据": "带 provenance 的包=8 / 420"
   },
   {
    "id": "P1-alert-overload",
@@ -70,7 +70,7 @@
    "id": "P3-output-bloat",
    "问题": "输出无保留策略/膨胀",
    "状态": "已修复",
-   "证据": "当前 184 packs；归档目录 {'_archive_20261027': 262, '_archive_unknown_20261027': 115}"
+   "证据": "当前 185 packs；归档目录 {'_archive_20261027': 262, '_archive_unknown_20261027': 115}"
   },
   {
    "id": "P3-unknown-legacy",
@@ -82,7 +82,7 @@
    "id": "P3-ab-schema",
    "问题": "ab_results 旧行缺 cost",
    "状态": "已修复",
-   "证据": "152/152 行含 cost_window_cny"
+   "证据": "153/153 行含 cost_window_cny"
   },
   {
    "id": "P2-docs",

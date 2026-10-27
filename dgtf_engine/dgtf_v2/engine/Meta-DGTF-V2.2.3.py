@@ -8900,6 +8900,8 @@ _COVERS_SIM_MIN = 0.30
 _DJ_LOCAL_BREAKER = {"fail": 0, "until": 0.0, "calls": 0, "logged": False}
 _DJ_LOCAL_MAX_CALLS = 2      # 每进程/每 run 最多成功的本地双判调用数
 _DJ_LOCAL_COOLDOWN = 300.0   # 连续 2 次失败 ⇒ 冷却 300s
+#: [Round 144] 串行锁实验（已回退）：wall 331.8s、2×30s 锁等待、接管仍 0，
+#: 说明瓶颈不是服务并发而是"单卡生成速度 + 置信度门槛"；保留注释避免重复踩坑。
 #: ★ [Round 126] 严尺子漏掉的「词面近义」兜底（**AND** 门，低误报）：
 #:   `_sim3 >= 0.25 且 _overlap_coef >= 0.30` 才追加视为覆盖。
 #:   依据：offline 审计 R7 翻正 9/92（9.8%），样例语义均明显相关。
