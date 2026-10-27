@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-ENGINE = HERE / "engine" / "Meta-DGTF-V2.2.3.py"
+ENGINE = HERE / "engine" / "Meta-DGTF-V2.2.4.py"
 
 
 def _load():
@@ -49,6 +49,34 @@ def main():
     ck("事实短题仍判 fact",
        ff.get("fact") is True and ENG.question_type_from_features(ff) == "fact",
        ff)
+
+    fq = "AI Agent 会先取代哪类工作？"
+    ff = ENG._auto_features(fq)
+    ck("forecast 题标记 forecast=True", ff.get("forecast") is True, ff)
+    ck("forecast 题不算 fact 短题", ff.get("fact") is False, ff)
+    ck("forecast 题决策回执=reasoning",
+       ENG.question_type_from_features(ff) == "reasoning", ff)
+
+    iq = "首例确凿的黑洞重复潮汐瓦解恒星事件说明了什么？"
+    iff = ENG._auto_features(iq)
+    ck("interpret 题标记 interpret=True", iff.get("interpret") is True, iff)
+    ck("interpret 题不算 fact 短题", iff.get("fact") is False, iff)
+    ck("interpret 题决策回执=reasoning",
+       ENG.question_type_from_features(iff) == "reasoning", iff)
+
+    eq = "扩内需与新质生产力会改变哪些行业？"
+    ef = ENG._auto_features(eq)
+    ck("经济预测题标记 forecast=True", ef.get("forecast") is True, ef)
+    ck("经济预测题不算 fact 短题", ef.get("fact") is False, ef)
+    ck("经济预测题决策回执=reasoning",
+       ENG.question_type_from_features(ef) == "reasoning", ef)
+
+    fq2 = "智能体终端会怎样改变工作？"
+    ff2 = ENG._auto_features(fq2)
+    ck("未来题标记 forecast=True", ff2.get("forecast") is True, ff2)
+    ck("未来题不算 fact 短题", ff2.get("fact") is False, ff2)
+    ck("未来题决策回执=reasoning",
+       ENG.question_type_from_features(ff2) == "reasoning", ff2)
 
     dq = "如何在社区推广垃圾分类才能长期见效？"
     df = ENG._auto_features(dq)
