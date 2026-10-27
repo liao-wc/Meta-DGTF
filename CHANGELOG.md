@@ -2,6 +2,12 @@
 - dual_judge token 评测（零 API，GPU）：`docs/dual_judge_tokens_eval.json`；
   320 token 下 json 0.75 / position_acc 0.279 / p95 58.7s；缩 token 只降延迟不救质量
   ⇒ 不改服务默认；下一步重训 judge_v3（数据扩充 + held-out 选型）。
+【Round 153 增补（2026-10-27，6GB 替代方案：教师蒸馏负结果）】
+- 教师 pilot：DeepSeek field_mean 0.622 vs v9b 0.589（+3.3pp）→ 生成 400 条教师标签（¥2.30）。
+- 零成本投影 min schema（400/400 匹配）；6GB 内训练 v11min（max_len1900+grad ckpt，
+  120 步/33min，peak 4.86GB）；held-out 30：v11min 0.578 vs v9b 0.589 ⇒ **不切换**。
+- 结论：6GB 软件 workaround 可行但非质量瓶颈；self_check 受数据/容量限制，默认 v8b/v9b 不变。
+- 预算：本阶段约 ¥17.2/¥20，剩余 ~¥2.8；验收 18/18。
 【Round 152 增补（2026-10-27，服务独占窗口 A/B）】
 - 独占窗口 13:57:20–14:08:13（干净服务、A 0→9/B 9→9 无并发）同题 A/B：
   local wall 341.1s/quality 0.9930/4 次接管/¥0.28；llm wall 235.8s/quality 0.9283/¥1.63。

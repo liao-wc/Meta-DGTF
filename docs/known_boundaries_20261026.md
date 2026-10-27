@@ -378,3 +378,14 @@
 | B llm | wall 235.8s、quality 0.9283、¥1.63 |
 | 结论 | local 质量 +6.5pp、wall +44.7%；默认保持 llm/auto，local 为质量优先 opt-in |
 | 预算 | 累计约 ¥14.88/¥15，剩余约 ¥0.1，停止真跑 |
+
+## 43. Round 153：6GB 替代方案（教师蒸馏 v11min 负结果）
+
+| 项 | 内容 |
+|---|---|
+| pilot | 教师 0.622 vs v9b 0.589（+3.3pp）；suspF1 0.211 vs 0.141 |
+| 可行性 | max_len1900+grad ckpt+120 子集：120 步/33min，peak **4.86GB**（6GB 内完成） |
+| held-out | v11min 0.578 vs v9b **0.589**（−1.1pp；suspF1 +0.047、exact set 更差）⇒ 不切换 |
+| 判定 | 6GB 是可行但非瓶颈；self_check 质量受数据/容量限制；默认 v8b/v9b 不变 |
+| 产物 | `llm_sft/adapter_dgtf_selfcheck_05b_v11min`（实验，未启用） |
+| 预算 | 教师 ¥2.30；本阶段 ¥17.2/¥20，剩余约 ¥2.8 |
