@@ -1,3 +1,9 @@
+【Round 163 增补（2026-10-27，全链路检查）】
+- 新增 docs/全链路检查_20261027.md：静态/路径/配置 → 门禁 → 引擎/本地服务 → App(mock/契约) → 产物/文档。
+- 结果：compileall 0、路径 12/12、file_integrity bad=0、当前文档引用 67/0 断链；fast_gate 12/12、
+  V2 54/855、验收 18/18；服务 4/4 stage + batch、本地判据 43/43；App selftest 444/0、契约 10/10、
+  计划矩阵 19/19；产物 CONSISTENCY PASS（198 packs，0 矛盾）。
+- 未覆盖：真实 API 端到端（预算剩余≈¥0.5）与 pp_contract_check.py（需真实 App/API）；并发会话 dirty 文件未触碰。
 【Round 162 增补（2026-10-27，全项目收束同步）】
 - 新增 `docs/项目状态快照_20261027.md`（一页看全：18/18、V2 54/855、服务适配器、CUDA graph、预算≈19.5/20）。
 - 同步 `docs/README.md`、`docs/验收总览`、`docs/最终综合报告`、`docs/最终交付说明`、`docs/known_boundaries` §0、
