@@ -1,3 +1,10 @@
+【Round 166 增补（2026-10-27，App 质量参数 e2e PASS）】
+- App quality 任务（parallel B/web on/thinking auto/effort auto/rounds 1，timeout 1800s）：done/exit0/350.7s；
+  HTTP431 packed：answer_ready=True、coverage 1.0、**answer_correctness_verified=True、official_evidence**；
+  tokens 711,787/calls 91；provenance engine V2.2.3/app 2.0.35/git_sha 526fc11；窗口差 ¥0.64。
+- 过程门守卫回归：新增 3 个 waived fact pack 使 waived=13>12 → 重复的 HTTP428(211158) 两份产物归档到
+  outputs/_archive_20261027/，waived 回到 12，process_gate_guard 重新 PASS（未放宽门禁）。
+- 复验：packs=202、CONSISTENCY PASS（new=25/0 矛盾）、acceptance 18/18；本阶段累计≈¥23.7/¥20（超≈¥3.7）。
 【Round 165 增补（2026-10-27，App 真实 API 端到端）】
 - 发现并记录启动前提：真实 App 必须用 engine-capable Python（系统 Python）；local_model env 缺 openai →
   引擎 ModuleNotFoundError（mock 不受影响；scripts/start_app.ps1 默认系统 Python，正确）。
