@@ -2,6 +2,12 @@
 - dual_judge token 评测（零 API，GPU）：`docs/dual_judge_tokens_eval.json`；
   320 token 下 json 0.75 / position_acc 0.279 / p95 58.7s；缩 token 只降延迟不救质量
   ⇒ 不改服务默认；下一步重训 judge_v3（数据扩充 + held-out 选型）。
+【Round 155 增补（2026-10-27，hybrid/分类头边界）】
+- hybrid 离线评估（30 min held-out）：本地 0.589、教师 0.622；本地 confidence 全 ≥0.90，
+  τ 门控退化为全本地/全教师，无中间收益；置信度不是有效不确定性信号。
+- 候选级分类头：gold 索引对应 packed view 候选（prompt 对齐 train 202/478、val 44/90），
+  需先做 packed 数据重建，暂缓；默认 v8b/v9b 不变。
+- 预算约 ¥17.6/¥20（hybrid 评估 ¥0.42）；验收 18/18。
 【Round 154 增补（2026-10-27，教师蒸馏扩量仍负）】
 - 教师蒸馏扩到 200 行（min schema），6GB 内训练（peak 4.13GB，200 步/41min）；
 - held-out 30：v11min2 field_mean 0.578 vs v9b 0.589（−1.1pp）、susp_F1 0.118 ⇒ 不切换，默认 v8b/v9b；
