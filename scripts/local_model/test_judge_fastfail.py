@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
-"""本地 judge 快失败判据（Round 125，零 API，需要 8772 服务在线）。
+"""dual_judge 有界排队判据（Round 140，零 API，需要 8772 在线）。
 
-L1：并发两个 dual_judge 请求时，至少一个在 ~3s 内收到 503 BUSY（快速回退信号）。
-L2：/metrics 的 stats.dual_judge_fastfail 计数 > 0。
-L3：空闲时单发 dual_judge 仍返回 200（不误伤正常请求）。
+L1（并发）：两个并发 dual_judge 请求都应完成；至少一个 200（排队后接管）。
+L2（确定性 busy）：长请求占住单卡，第二个请求有界等待后仍 200（waited>0）。
+L3：空闲单发仍 200。
 """
 from __future__ import annotations
 
 import json
 import threading
-import uuid
 import time
+import urllib.error
 import urllib.request
-from pathlib import Path
+import uuid
 
 BASE = "http://127.0.0.1:8772"
 P, F = [], []
@@ -31,12 +31,17 @@ def _post(stage: str, text: str, max_new: int = 24, timeout: float = 120):
                                  headers={"Content-Type": "application/json"})
     t0 = time.perf_counter()
     try:
-        with urllib.request.urlopen(req, timeout=timeout + 5) as f:
+        with urllib.request.urlopen(req, timeout=timeout + 10) as f:
             return f.status, f.read().decode("utf-8", "replace"), (time.perf_counter() - t0) * 1000
     except urllib.error.HTTPError as e:
         return e.code, e.read().decode("utf-8", "replace"), (time.perf_counter() - t0) * 1000
     except Exception as e:  # noqa: BLE001
         return 0, "%s: %s" % (type(e).__name__, e), (time.perf_counter() - t0) * 1000
+
+
+def _judge_text(anchor: str, n: int = 2) -> str:
+    cands = ",".join('{"desc":"%s"}' % ("甲乙丙丁"[i % 4]) for i in range(n))
+    return ('{"anchor":"%s","candidates":[%s]}' % (anchor, cands))
 
 
 def main() -> int:
@@ -49,36 +54,45 @@ def main() -> int:
         print("SKIP: 服务状态 %s" % h.get("status"))
         return 0
 
-    results = {}
     _uniq = uuid.uuid4().hex[:8]
+    results = {}
 
     def one(k):
-        # 唯一 anchor：避免 LRU 缓存命中（否则并发两个请求都会毫秒级 200）
-        _txt = ("判断以下候选位置：{\"anchor\":\"测试%s%s\","
-                "\"candidates\":[{\"desc\":\"甲\"},{\"desc\":\"乙\"}]}"
-                % (_uniq, k))
-        results[k] = _post("dual_judge", _txt, max_new=24, timeout=60)
+        results[k] = _post("dual_judge", _judge_text("排队%s%s" % (_uniq, k)),
+                           max_new=24, timeout=110)
 
     t1 = threading.Thread(target=one, args=("a",), daemon=True)
     t2 = threading.Thread(target=one, args=("b",), daemon=True)
-    t1.start(); time.sleep(0.05); t2.start()
-    t1.join(timeout=180); t2.join(timeout=180)
-    codes = {k: v[0] for k, v in results.items()}
-    fast_busy = [k for k, v in results.items()
-                 if v[0] == 503 and "BUSY" in v[1] and v[2] < 3000]
-    ck("L1 并发 dual_judge 至少一个 503 BUSY 且 <3s",
-       bool(fast_busy), (codes, {k: round(v[2]) for k, v in results.items()}))
+    t1.start(); time.sleep(0.1); t2.start()
+    t1.join(timeout=200); t2.join(timeout=200)
+    oks = [k for k, v in results.items() if v[0] == 200]
+    ck("L1 并发 dual_judge 至少一个 200（排队接管）", len(oks) >= 1,
+       ({k: v[0] for k, v in results.items()},
+        {k: round(v[2]) for k, v in results.items()}))
 
-    m = json.loads(urllib.request.urlopen(BASE + "/metrics", timeout=5).read().decode())
-    ff = int((m.get("stats") or {}).get("dual_judge_fastfail", 0) or 0)
-    ck("L2 metrics.dual_judge_fastfail > 0", ff > 0, ff)
+    # L2：确定性 busy —— 长请求先占住单卡，第二个请求应有界等待后 200。
+    _slow = {}
 
+    def _slow_one():
+        _slow["r"] = _post("dual_judge", _judge_text("慢%s" % _uniq, n=3),
+                           max_new=160, timeout=120)
+
+    th = threading.Thread(target=_slow_one, daemon=True)
+    th.start()
     time.sleep(2.0)
-    code, txt, ms = _post("dual_judge",
-                          "判断以下候选位置：{\"anchor\":\"测试\",\"candidates\":[{\"desc\":\"甲\"}]}",
-                          max_new=16, timeout=120)
-    ck("L3 空闲单发 dual_judge 仍 200", code == 200, (code, round(ms), txt[:120]))
+    code2, txt2, ms2 = _post("dual_judge", _judge_text("等%s" % _uniq, n=1),
+                             max_new=16, timeout=120)
+    th.join(timeout=240)
+    m = json.loads(urllib.request.urlopen(BASE + "/metrics", timeout=5).read().decode())
+    st = m.get("stats") or {}
+    ck("L2 有界排队生效（waited>0 且排队请求 200）",
+       int(st.get("dual_judge_waited") or 0) > 0 and code2 == 200,
+       (st.get("dual_judge_waited"), code2, round(ms2)))
 
+    time.sleep(1.0)
+    code3, txt3, ms3 = _post("dual_judge", _judge_text("空闲%s" % _uniq, n=1),
+                             max_new=16, timeout=120)
+    ck("L3 空闲单发仍 200", code3 == 200, (code3, round(ms3), txt3[:100]))
     print("\nTOTAL PASS %d / FAIL %d" % (len(P), len(F)))
     return 0 if not F else 1
 

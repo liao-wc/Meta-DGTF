@@ -147,6 +147,8 @@ def resolve_adapter(stage: str, root: Path | None = None):
         if (p / "adapter_config.json").exists():
             return rel, p
     return None, None
+#: [Round 140] dual_judge 忙时最大排队等待（秒）；超时后 503 让引擎回退。
+DUAL_JUDGE_BUSY_WAIT_S = 25.0
 DEFAULT_MAX_NEW = {"self_check": 64, "self_check_min": 64,
                    "dual_judge": 224, "route": 96}
 ROUTE_SYSTEM = (
@@ -246,6 +248,7 @@ class LocalEngine:
         self.stats = {"requests_total": 0, "by_stage": {}, "errors": 0,
                       "total_ms": 0.0, "max_ms": 0.0, "busy_now": False,
                   "dual_judge_fastfail": 0,
+                  "dual_judge_waited": 0,
                       "last_ms": 0.0, "last_stage": "", "last_adapter": ""}
         # ★ [Round 65] 延迟分位数滑动窗口（最近 50 次真实生成耗时）
         import collections as _collections
@@ -732,25 +735,41 @@ class Handler(BaseHTTPRequestHandler):
         import time as _time
         _t0 = _time.perf_counter()
         _stage = str(req.get("stage") or "")
-        # ★ [Round 125] dual_judge 快失败：本地 judge 吞吐低，忙/排队时直接 503 BUSY，
-        #   引擎侧立即回退 llm（避免等满 120s timeout）。
+        # ★ [Round 140] dual_judge 有界排队：忙时最多等 25s（空出即处理），
+        #   仍忙才 503 BUSY；取代 Round 125 的"立即 503"（接管率 0）。
         if _stage == "dual_judge":
-            try:
-                _busy = (int(getattr(self.engine, "queue_depth", 0) or 0) > 0
-                         or bool(self.engine.stats.get("busy_now")))
-            except Exception:  # noqa: BLE001
-                _busy = False
-            if _busy:
+            import time as _tw
+            _wait_until = _tw.time() + DUAL_JUDGE_BUSY_WAIT_S
+            _waited = False
+            while True:
                 try:
-                    with self.engine._stats_lock:
-                        self.engine.stats["dual_judge_fastfail"] = int(
-                            self.engine.stats.get("dual_judge_fastfail", 0)) + 1
+                    _busy = (int(getattr(self.engine, "queue_depth", 0) or 0) > 0
+                             or bool(self.engine.stats.get("busy_now")))
                 except Exception:  # noqa: BLE001
-                    pass
-                self._send(503, {"ok": False, "error": {
-                    "code": "BUSY",
-                    "message": "dual_judge busy：本地 judge 吞吐不足，快速回退 llm"}})
-                return
+                    _busy = False
+                if not _busy:
+                    break
+                if _tw.time() >= _wait_until:
+                    try:
+                        with self.engine._stats_lock:
+                            self.engine.stats["dual_judge_fastfail"] = int(
+                                self.engine.stats.get("dual_judge_fastfail", 0)) + 1
+                    except Exception:  # noqa: BLE001
+                        pass
+                    self._send(503, {"ok": False, "error": {
+                        "code": "BUSY",
+                        "message": "dual_judge busy>%.0fs：回退 llm"
+                                   % DUAL_JUDGE_BUSY_WAIT_S}})
+                    return
+                if not _waited:
+                    _waited = True
+                    try:
+                        with self.engine._stats_lock:
+                            self.engine.stats["dual_judge_waited"] = int(
+                                self.engine.stats.get("dual_judge_waited", 0)) + 1
+                    except Exception:  # noqa: BLE001
+                        pass
+                _tw.sleep(0.5)
         _adapter = ""
         _ok = False
         self.engine.stat_begin(_stage)

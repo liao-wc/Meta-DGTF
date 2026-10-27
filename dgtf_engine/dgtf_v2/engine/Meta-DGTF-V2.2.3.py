@@ -12704,13 +12704,11 @@ class DGTF:
                           view: Optional[View] = None,
                           diversity_hint: str = "",
                           allow_retry: bool = True):
-        """[Round 95] 本地双判：本地服务 stage=dual_judge。
+        """[Round 95/141] 本地双判：本地服务 stage=dual_judge。
 
-        协议与 self_check local 相同：POST {url}
-          {"stage":"dual_judge","messages":[{system},{user}],"text":...,
-           "max_new_tokens":700,"temperature":0.3,"timeout":<s>}
-        响应 200 `{"ok": true, "text": "<JSON>", "confidence": 0..1}`；
-        失败（超时/非 200/ok=false/置信度低/解析空）⇒ 返回 None，由调用方回退 llm。
+        适配层（Round 141）：只判前 12 条候选，**按 6 条分块**（每块 max_new=160，
+        压缩 schema，不含 why）；每块覆盖 ≥70% 才接受；任一块失败 ⇒ 整体回退 llm。
+        失败（超时/非 200/ok=false/置信度低/覆盖不足）返回 None，由调用方回退 llm。
         """
         import urllib.request as _ur
         if not candidates:
@@ -12721,86 +12719,97 @@ class DGTF:
             self._local_llm_fail("local_llm.url 为空（dual_judge local）")
             return None
         try:
-            # ★ [Round 136] 本地适配层：只判前 12 条（覆盖率门槛防部分落值）、
-            #   schema 压缩（不要求 why）、max_new=192（约 24s vs 46s）。
             _judge_cands = (list(candidates[:12]) if len(candidates) > 12
                             else candidates)
-            cand_text = "\n".join(
-                f"{i+1}. [{c.kind}] {str(c.desc)[:120]}"
-                for i, c in enumerate(_judge_cands))[:4000]
-            schema = ('{"judgments":[{"idx":1,"position":"0|1|both"}]}')
-            how = ("本层【属性】已由这条候选是从哪一面被看出来而确定，你不用判、也别猜。\n"
-                   "你只判【位置】这一维。\n")
-            _carry_txt = self._carry_block_text(
-                getattr(inp, "carry_constraints", None) or [], "candidate")
-            _selfb_txt = self._self_block()
-            _static_sys = ("你是【对偶判断者】。\n"
-                           + self._dual_judge_spec() + how
-                           + "both 只在真的看不出偏向时才用；\n"
-                             "不要为了省事把两端都填 both，那是逃避判断。\n"
-                           + NO_FILL_JUDGE_RULE
-                           + "严格 JSON：\n" + schema)
-            dec_block = self._decidability_block(inp)
-            user = (f"【处境】\n{self._judge_context(inp, anchor)}"
-                    f"\n{dec_block}\n"
-                    f"\n【候选列表】\n{cand_text}")
-            if self._stable_first():
-                system, user = self._move_var_to_user(
-                    _static_sys, [_carry_txt, _selfb_txt], user)
-            else:
-                system = _static_sys + _carry_txt + _selfb_txt
             timeout = float(cfg.get("judge_timeout")
                             or cfg.get("timeout") or 120.0)
-            _max_tok = int(cfg.get("judge_max_new_tokens") or 192)
-            body = json.dumps({
-                "stage": "dual_judge",
-                "messages": [{"role": "system", "content": system},
-                             {"role": "user", "content": user}],
-                "text": system + "\n\n" + user,
-                "max_new_tokens": _max_tok,
-                "temperature": 0.3,
-                "timeout": timeout,
-            }, ensure_ascii=False).encode("utf-8")
-            req = _ur.Request(url, data=body,
-                              headers={"Content-Type": "application/json"})
-            with _ur.urlopen(req, timeout=timeout) as resp:
-                code = int(getattr(resp, "status", 200) or 200)
-                raw = resp.read().decode("utf-8", "replace")
-            if code != 200:
-                raise RuntimeError("HTTP %d" % code)
-            payload = json.loads(raw)
-            if not isinstance(payload, dict) or payload.get("ok") is False:
-                raise RuntimeError("响应非法/ok=false")
-            conf = payload.get("confidence")
-            if conf is not None:
-                _min_conf = float(cfg.get("min_confidence") or 0.6)
-                if float(conf) < _min_conf:
-                    raise RuntimeError("置信度 %.2f < %.2f"
-                                       % (float(conf), _min_conf))
-            text = str(payload.get("text") or "")
-            # ★ [Round 137] 服务端已做 salvage（截断 JSON 抢救）；优先用它，
-            #   否则回退到正文解析。192 token 预算下这是能否成功的关键。
-            data = payload.get("json")
-            if not isinstance(data, dict) or not data:
-                data = self.llm.parse_json(text) or {}
-            if not isinstance(data, dict) or not data:
-                m = re.search(r"\{.*\}", text, re.S)
-                data = json.loads(m.group(0)) if m else {}
-            if not isinstance(data, dict) or not data:
-                raise RuntimeError("text 解析不出 JSON")
-            jmap = self._extract_judgments(data)
-            _want = len(_judge_cands)
-            hit = sum(1 for i in range(1, _want + 1) if i in jmap)
-            _need = max(1, int(round(_want * 0.7)))
-            if hit < _need:
-                raise RuntimeError("本地覆盖不足 %d/%d（门槛 %d）"
-                                   % (hit, _want, _need))
+            _max_tok = int(cfg.get("judge_max_new_tokens") or 160)
+            _chunks = [_judge_cands[i:i + 6]
+                       for i in range(0, len(_judge_cands), 6)]
+            jmap: Dict[int, dict] = {}
+            _last_conf = None
+            for _ci, _chunk in enumerate(_chunks):
+                cand_text = "\n".join(
+                    f"{j+1}. [{c.kind}] {str(c.desc)[:120]}"
+                    for j, c in enumerate(_chunk))[:2400]
+                schema = ('{"judgments":[{"idx":1,"position":"0|1|both"}]}')
+                how = ("本层【属性】已由这条候选是从哪一面被看出来而确定，你不用判、也别猜。\n"
+                       "你只判【位置】这一维，不要输出理由。\n")
+                _carry_txt = self._carry_block_text(
+                    getattr(inp, "carry_constraints", None) or [], "candidate")
+                _selfb_txt = self._self_block()
+                _static_sys = ("你是【对偶判断者】。\n"
+                               + self._dual_judge_spec() + how
+                               + "both 只在真的看不出偏向时才用；\n"
+                                 "不要为了省事把两端都填 both，那是逃避判断。\n"
+                               + NO_FILL_JUDGE_RULE
+                               + "严格 JSON：\n" + schema)
+                dec_block = self._decidability_block(inp)
+                user = (f"【处境】\n{self._judge_context(inp, anchor)}"
+                        f"\n{dec_block}\n"
+                        f"\n【候选列表】\n{cand_text}")
+                if self._stable_first():
+                    system, user = self._move_var_to_user(
+                        _static_sys, [_carry_txt, _selfb_txt], user)
+                else:
+                    system = _static_sys + _carry_txt + _selfb_txt
+                body = json.dumps({
+                    "stage": "dual_judge",
+                    "messages": [{"role": "system", "content": system},
+                                 {"role": "user", "content": user}],
+                    "text": system + "\n\n" + user,
+                    "max_new_tokens": _max_tok,
+                    "temperature": 0.3,
+                    "timeout": timeout,
+                }, ensure_ascii=False).encode("utf-8")
+                req = _ur.Request(url, data=body,
+                                  headers={"Content-Type": "application/json"})
+                with _ur.urlopen(req, timeout=timeout) as resp:
+                    code = int(getattr(resp, "status", 200) or 200)
+                    raw = resp.read().decode("utf-8", "replace")
+                if code != 200:
+                    raise RuntimeError("HTTP %d" % code)
+                payload = json.loads(raw)
+                if not isinstance(payload, dict) or payload.get("ok") is False:
+                    raise RuntimeError("响应非法/ok=false")
+                conf = payload.get("confidence")
+                _last_conf = conf
+                if conf is not None:
+                    # ★ [Round 141c] 回退到 0.6：141b（0.5）实测 wall 299s/无接管、
+                    #   成本翻倍，收益不成立；保留分块适配即可。
+                    _min_conf = float(cfg.get("min_confidence") or 0.6)
+                    if float(conf) < _min_conf:
+                        raise RuntimeError("置信度 %.2f < %.2f"
+                                           % (float(conf), _min_conf))
+                text = str(payload.get("text") or "")
+                data = payload.get("json")
+                if not isinstance(data, dict) or not data:
+                    data = self.llm.parse_json(text) or {}
+                if not isinstance(data, dict) or not data:
+                    m = re.search(r"\{.*\}", text, re.S)
+                    data = json.loads(m.group(0)) if m else {}
+                if not isinstance(data, dict) or not data:
+                    raise RuntimeError("text 解析不出 JSON")
+                _jm = self._extract_judgments(data)
+                _need = max(1, int(round(len(_chunk) * 0.7)))
+                _hitc = sum(1 for j in range(1, len(_chunk) + 1) if j in _jm)
+                if _hitc < _need:
+                    raise RuntimeError("本地覆盖不足 %d/%d（块%d，门槛%d）"
+                                       % (_hitc, len(_chunk), _ci + 1, _need))
+                for _j, _v in _jm.items():
+                    try:
+                        jmap[int(_j) + _ci * 6] = _v
+                    except (TypeError, ValueError):
+                        continue
+            hit = sum(1 for i in range(1, len(_judge_cands) + 1) if i in jmap)
+            if hit <= 0:
+                raise RuntimeError("本地判定为空")
             out = self._dual_apply_judgments(_judge_cands, jmap, view, inp)
             if _judge_cands is not candidates:
                 out = list(out) + list(candidates[len(_judge_cands):])
             try:
                 self._last_dual_jmap = dict(jmap)
-            except Exception:
+            except Exception:  # noqa: BLE001
                 pass
             try:
                 self.dual_judge_local_calls = int(
@@ -12814,17 +12823,17 @@ class DGTF:
                     _br2["logged"] = True
                     logger.info("本地双判调用预算用尽（%d 次），后续动作回退 llm",
                                 _DJ_LOCAL_MAX_CALLS)
-            except Exception:
+            except Exception:  # noqa: BLE001
                 pass
             if view is not None:
                 try:
                     view.meta.append(
-                        "[DJ-local] 本地双判 %d/%d 条（conf=%s）"
-                        % (hit, len(candidates), conf))
-                except Exception:
+                        "[DJ-local] 本地双判 %d/%d 条（%d 块，conf=%s）"
+                        % (hit, len(_judge_cands), len(_chunks), _last_conf))
+                except Exception:  # noqa: BLE001
                     pass
             return out
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.warning("本地双判失败（回退 llm）：%s", e)
             try:
                 self.dual_judge_local_fallbacks = int(
@@ -12838,11 +12847,11 @@ class DGTF:
                     _br3["until"] = _t_br2.time() + _DJ_LOCAL_COOLDOWN
                     logger.warning("本地双判连续失败 %d 次 ⇒ 熔断 %.0fs",
                                    int(_br3["fail"]), _DJ_LOCAL_COOLDOWN)
-            except Exception:
+            except Exception:  # noqa: BLE001
                 pass
             try:
                 self._local_llm_fail(e)
-            except Exception:
+            except Exception:  # noqa: BLE001
                 pass
             return None
 

@@ -2,6 +2,12 @@
 - dual_judge token 评测（零 API，GPU）：`docs/dual_judge_tokens_eval.json`；
   320 token 下 json 0.75 / position_acc 0.279 / p95 58.7s；缩 token 只降延迟不救质量
   ⇒ 不改服务默认；下一步重训 judge_v3（数据扩充 + held-out 选型）。
+【Round 140–141 增补（2026-10-27，dual_judge 有界排队/分块）】
+- 服务 dual_judge 有界排队（25s；超时 503）+ metrics dual_judge_waited；判据 L1–L3 3/3。
+- 引擎本地双判分块（12 候选 → 6×2 块，每块 160 tok，覆盖≥70%）；HTTP401 wall 228.7s（−38% vs 371s）。
+- 141b（40s 排队 + 置信度 0.5）实验：HTTP402 wall 299s/成本 ¥1.21/无接管 ⇒ 回退；保持 25s/0.6。
+- 本地接管仍 0（并行层判忙 + conf 0.54<0.6）；dual_judge local 定为 opt-in 有界开销模式。
+- 预算 ~¥8.6/¥10，停止真跑。
 【Round 139 增补（2026-10-27，self_check v10min 负结果）】
 - min 200×2/len1400（峰值 3.92GB、28min）训练完成，val 0.2362；
 - held-out 对比 v9b：字段 0.556<0.589、JSON 0.967<1.0、all3 0<0.033、ing/escape 降、
