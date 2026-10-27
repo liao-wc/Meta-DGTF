@@ -2,6 +2,11 @@
 - dual_judge token 评测（零 API，GPU）：`docs/dual_judge_tokens_eval.json`；
   320 token 下 json 0.75 / position_acc 0.279 / p95 58.7s；缩 token 只降延迟不救质量
   ⇒ 不改服务默认；下一步重训 judge_v3（数据扩充 + held-out 选型）。
+【Round 156 增补（2026-10-27，packed 分类器/多采样）】
+- packed 候选重建成功（train 476/478、val 90/90，候选 14243/2769）；候选级分类器
+  val90 set_F1 0.146（VAL30 0.171，生成式 0.141），但 exact set 0、field_mean 0.578 < 0.589 ⇒ 不替换。
+- 多采样 3×temp0.3 字段一致率全 1.0 ⇒ 无不确定性信号；纯本地 hybrid 路线关闭。
+- 默认 v8b/v9b 不变；验收 18/18；预算约 ¥17.6/¥20。
 【Round 155 增补（2026-10-27，hybrid/分类头边界）】
 - hybrid 离线评估（30 min held-out）：本地 0.589、教师 0.622；本地 confidence 全 ≥0.90，
   τ 门控退化为全本地/全教师，无中间收益；置信度不是有效不确定性信号。
