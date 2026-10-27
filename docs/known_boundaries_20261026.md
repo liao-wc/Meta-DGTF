@@ -257,3 +257,11 @@
 | 验证 | HTTP302：0.9693 verified、wall **242.9s**（旧 371s，−35%）、窗口差 ¥0.26；尝试 9→3 |
 | 现状 | 本地接管仍 0（503 判忙）；opt-in 有界开销可用；接管需服务并发/批量设计 |
 | 验收 | 16/16（有服务）/ 15/15（无服务）；T1–T8 8/8；V2 54/855 |
+
+## 30. Round 138：v10 GPU 边界 + legacy unknown 归档
+
+| 项 | 内容 |
+|---|---|
+| self_check v10 | mixed 变体 prompt_p50 1650、VRAM 95%、0.04 step/s（ETA 213min）⇒ 中止；未产出，服务不变 |
+| legacy unknown | 53 包/115 文件归档 outputs/_archive_unknown_20261027/；packs 233→180；验收 16/16 |
+| 遗留 | self_check 质量增量需小样本/min 变体或更大显存；judge 接管率；tri_alpha |

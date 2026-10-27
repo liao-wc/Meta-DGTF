@@ -2,6 +2,11 @@
 - dual_judge token 评测（零 API，GPU）：`docs/dual_judge_tokens_eval.json`；
   320 token 下 json 0.75 / position_acc 0.279 / p95 58.7s；缩 token 只降延迟不救质量
   ⇒ 不改服务默认；下一步重训 judge_v3（数据扩充 + held-out 选型）。
+【Round 138 增补（2026-10-27）】
+- self_check v10 尝试：mixed 260×2 在 6GB 卡上 prompt_p50 1650/VRAM 95%/0.04 step/s（ETA 213min）
+  ⇒ 主动中止；未产出，服务保持 dual=v3/self=v8b/min=v9b；作为 GPU 边界证据。
+- legacy unknown 归档：53 包/115 文件 → outputs/_archive_unknown_20261027/；packs 233→180；
+  验收 16/16 PASS。
 【Round 136–137 增补（2026-10-27，dual_judge local 适配层）】
 - 引擎本地双判适配：候选≤12、压缩 schema（不含 why）、max_new 192、优先服务端 salvage JSON、
   覆盖率≥70%、模块级熔断（连续 2 失败 300s 冷却）+ 每 run ≤2 成功调用预算。

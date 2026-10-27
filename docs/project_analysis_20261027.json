@@ -1,7 +1,7 @@
 {
- "packs": 233,
+ "packs": 180,
  "question_types": {
-  "unknown": 55,
+  "unknown": 2,
   "fact": 152,
   "boundary": 2,
   "reasoning": 17,
@@ -9,7 +9,7 @@
  },
  "aq_by_type": {
   "unknown": {
-   "None": 55
+   "None": 2
   },
   "fact": {
    "needs_evidence": 26,
@@ -30,26 +30,26 @@
   }
  },
  "display": {
-  "no_display": 117,
+  "no_display": 64,
   "display": 116
  },
  "fact_card_ok": {
-  "not_ok": 122,
-  "ok": 111
+  "ok": 109,
+  "not_ok": 71
  },
  "flags_top": {
-  "duty_short": 181,
-  "probe_no_target_covered": 60,
-  "probe_link_dangling": 58,
+  "duty_short": 151,
+  "probe_no_target_covered": 52,
   "ing_rephrased_direct": 42,
-  "unsaid_overused": 35,
-  "polarity_all_same_structural": 29,
-  "candidates_backfilled": 27,
-  "too_many_amp_candidates": 11,
-  "core_audit_gaps": 9,
-  "all_closure_unavailable": 7,
-  "all_closure_gaps": 4,
-  "expand_imbalanced_benign": 3
+  "unsaid_overused": 24,
+  "polarity_all_same_structural": 13,
+  "probe_link_dangling": 12,
+  "candidates_backfilled": 11,
+  "too_many_amp_candidates": 10,
+  "all_closure_unavailable": 4,
+  "core_audit_gaps": 3,
+  "all_candidate_selfref": 1,
+  "all_closure_gaps": 1
  },
  "gaps_top": {
   "uncovered": 31,
@@ -63,9 +63,9 @@
  },
  "stop_reasons": {
   "question_answered_four_layers": 145,
-  "": 58,
   "体力耗尽（3 圈走满，未触发任何停止判据，是被截断不是自然停止）\n  近阈读数：末圈：无新& 0 / 无线头 0 / 停滞 0": 12,
   "自省连续 2 圈点名同一批问题未消化（层内空转）": 8,
+  "": 5,
   "体力耗尽（2 圈走满，未触发任何停止判据，是被截断不是自然停止）\n  近阈读数：末圈：无新& 0 / 无线头 0 / 停滞 0": 2,
   "结构饱和度判定连续无新维度": 2,
   "体力耗尽（3 圈走满；1 次停止判据被「未深入方向」推迟（结构饱和度判定连续无新维度 + 连续 2 轮无新结构维度（结构饱和度判定，不是新增停滞）），是被截断不是自然停止）": 2,
@@ -74,21 +74,21 @@
   "体力耗尽（7 圈走满；1 次停止判据被「未深入方向」推迟（结构饱和度判定连续无新维度 + 悬置决定稳定，自然安住 + 连续 2 轮无新结构维度（结构饱和度判定，不是新增停滞）），是被截断不是自然停止）": 1
  },
  "coverage": {
-  "mean": 0.6327,
-  "lt_0_8": 149,
-  "lt_0_5": 60
+  "mean": 0.7343,
+  "lt_0_8": 103,
+  "lt_0_5": 24
  },
  "tri_alpha": {
-  "n": 197,
-  "mean": 0.0539,
-  "unreliable_lt_0667": 177
+  "n": 178,
+  "mean": 0.0326,
+  "unreliable_lt_0667": 162
  },
  "tokens": {
-  "n": 233,
-  "mean": 715513,
-  "p50": 678272,
-  "max": 2938969,
-  "calls_mean": 94.6
+  "n": 180,
+  "mean": 756670,
+  "p50": 702718,
+  "max": 1933197,
+  "calls_mean": 98.8
  },
  "provenance": {
   "packs_with_provenance": 4,
@@ -99,100 +99,10 @@
  },
  "artifact_integrity": {
   "missing_md": 1,
-  "md_mean_bytes": 120340,
-  "dispatch_incomplete": 6
+  "md_mean_bytes": 128399,
+  "dispatch_incomplete": 0
  },
  "trend_by_date": {
-  "20261009": {
-   "n": 1,
-   "verified_pct": 0.0,
-   "ready_pct": 0.0,
-   "display_pct": 0.0,
-   "coverage_mean": 0.0,
-   "tri_alpha_mean": null,
-   "tokens_mean": 34479
-  },
-  "20261010": {
-   "n": 2,
-   "verified_pct": 0.0,
-   "ready_pct": 0.0,
-   "display_pct": 0.0,
-   "coverage_mean": 0.0,
-   "tri_alpha_mean": null,
-   "tokens_mean": 242780
-  },
-  "20261011": {
-   "n": 2,
-   "verified_pct": 0.0,
-   "ready_pct": 0.0,
-   "display_pct": 0.0,
-   "coverage_mean": 0.0,
-   "tri_alpha_mean": null,
-   "tokens_mean": 993554
-  },
-  "20261012": {
-   "n": 1,
-   "verified_pct": 0.0,
-   "ready_pct": 0.0,
-   "display_pct": 0.0,
-   "coverage_mean": 0.0,
-   "tri_alpha_mean": null,
-   "tokens_mean": 344737
-  },
-  "20261013": {
-   "n": 5,
-   "verified_pct": 0.0,
-   "ready_pct": 0.0,
-   "display_pct": 0.0,
-   "coverage_mean": 0.0,
-   "tri_alpha_mean": null,
-   "tokens_mean": 878568
-  },
-  "20261014": {
-   "n": 9,
-   "verified_pct": 0.0,
-   "ready_pct": 0.0,
-   "display_pct": 0.0,
-   "coverage_mean": 0.0,
-   "tri_alpha_mean": null,
-   "tokens_mean": 890953
-  },
-  "20261015": {
-   "n": 3,
-   "verified_pct": 0.0,
-   "ready_pct": 0.0,
-   "display_pct": 0.0,
-   "coverage_mean": 0.0,
-   "tri_alpha_mean": null,
-   "tokens_mean": 605613
-  },
-  "20261019": {
-   "n": 23,
-   "verified_pct": 0.0,
-   "ready_pct": 0.0,
-   "display_pct": 0.0,
-   "coverage_mean": 0.5638,
-   "tri_alpha_mean": 0.156,
-   "tokens_mean": 414492
-  },
-  "20261020": {
-   "n": 2,
-   "verified_pct": 0.0,
-   "ready_pct": 0.0,
-   "display_pct": 0.0,
-   "coverage_mean": 0.0,
-   "tri_alpha_mean": 1.0,
-   "tokens_mean": 244465
-  },
-  "20261021": {
-   "n": 5,
-   "verified_pct": 0.0,
-   "ready_pct": 0.0,
-   "display_pct": 0.0,
-   "coverage_mean": 0.4558,
-   "tri_alpha_mean": 0.494,
-   "tokens_mean": 682278
-  },
   "20261022": {
    "n": 5,
    "verified_pct": 40.0,
