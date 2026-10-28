@@ -4,7 +4,7 @@
   {
    "file": "dgtf_app/server.py",
    "ok": true,
-   "size": 489211,
+   "size": 492413,
    "error": ""
   },
   {
@@ -16,7 +16,7 @@
   {
    "file": "dgtf_app/static/app.js",
    "ok": true,
-   "size": 356627,
+   "size": 356635,
    "error": ""
   },
   {
@@ -28,7 +28,7 @@
   {
    "file": "dgtf_app/static/index.html",
    "ok": true,
-   "size": 35490,
+   "size": 35064,
    "error": ""
   },
   {

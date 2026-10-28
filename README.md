@@ -3,10 +3,10 @@
 一个**单文件四层螺旋推理引擎** + **V2 三平面核心** + **本地 Web 工作台**：
 修行 / 研究 / 对撞 / 元，跑出可审计、可回放、可融合的产物。
 
-- **当前版本**：V2.2.4（V2.2.3 机制基线 + 本地档 CUDA graph/合批/贪心/超时补丁；默认零行为差） / App 2.0.35（道生专属模式 + 三体动态计划 + 预算守卫）
+- **当前版本**：V2.2.4（V2.2.3 机制基线 + 本地档 CUDA graph/合批/贪心/超时补丁；默认零行为差） / App 2.0.36（道生专属模式 + 三体动态计划 + 预算守卫）
 - **生产引擎**：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.4.py
 - **V2 核心**：dgtf_engine/dgtf_v2/
-- **人用界面**：dgtf_app/（App 2.0.35，道生专属模式 + DSH 本对话实时镜像 + 会话列表实时打开 + 健康读数缓存）
+- **人用界面**：dgtf_app/（App 2.0.36，道生专属模式 + DSH 本对话实时镜像 + 会话列表实时打开 + 健康读数缓存）
 - **融合实现**：单引擎内联（Meta-DGTF-V2.2.4.py）；V2.1 外部模块仅作回滚参考
 - **历史清单**：dgtf_engine/dgtf_v2/history_manifest.json
 - **版本规范**：dgtf_engine/dgtf_v2/NAMING.md
@@ -233,7 +233,7 @@ local_model\envs\dgtf_llm_env\Scripts\python.exe -m pip check
 
 ## 九、当前收束
 
-- 版本：V2.2.4（App 2.0.35）
+- 版本：V2.2.4（App 2.0.36）
 - 历史版本：178 个快照（V1.0 → V2.0.0）
 - 能力轴：17 条，readiness=1.00
 - 行为臂：5 个（v1_spiral / v1_frontier / v2_contract / v2_pareto / fusion_full）

@@ -1,3 +1,240 @@
+【V2.2.11（2026-10-28，PATCH · 就绪原因只有一个出口）】
+- 生产引擎：`dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.11.py`；V2.2.10 及更早只读保留。
+- 问题（实测 208 个产物包）：`answer_ready` 有 **3 个出口**（`decision_trace` /
+  `quality` / `answer_summary`），而 `answer_ready_reason` **只写进第一个**。
+      answer_ready=False 的包 85 个
+        └ 73 个：原因只在 decision_trace，quality 里是空字符串
+        └ 12 个：两处都空
+- ★ 这不是「引擎没写原因」，是**出口不齐**：73 个里引擎其实都写了，只是
+  `_q0.update({...})` 的键列表漏了 `answer_ready_reason`。读 `quality` 的消费者
+  （一致性护栏 / App 产物索引 / bench）永远看不到「为什么没就绪」。
+  ⇒ 护栏把 `verified + !ready(无原因)` 判成矛盾（本轮 6 条），实际是读错了出口。
+- 改动（在**答案门之后**统一，答案门是最后一个能把 `answer_ready` 打成 False 的地方）：
+  · 三出口同源：dt / quality / answer_summary 赋同一个 `_rr0`；
+  · 兜底：未就绪且原因仍空时，用「过程合同 / 原始就绪 / 答案质量 / 题型」拼出
+    **可指认**的原因（不留空、不写「未知原因」这种空话）。
+- 判据 `dgtf_engine/dgtf_v2/tests_ready_reason.py`：三出口点名登记 + 同块（AST）
+  + **位置在答案门之后**（位置也是判据的一部分）+ 变异体（删 quality 那行 ⇒ 判红）
+  + ★ 真实产物回验（必须有 V2.2.11+ 的包，否则恒绿 = 没判据）。
+- 配套：e2e 产物改落 `outputs/_e2e_local/`（链路验证样本是本地 0.5B，不代表生产
+  质量，不该混进 `outputs/*.packed.json` 的生产统计）；新增 E7b / E10b / E10c 三条
+  （独立目录 + 真跑产物 `quality.answer_ready_reason` 非空 + 三出口同源）。
+- ★ 连带发现的第二个缺陷（溯源指纹硬编码且自相矛盾）：V2.2.11 真跑产物里
+  `provenance.engine_file` 与 `engine_version` 是 `provenance.py` 里两处**字面量**，
+  实测 file 指着一个旧版、version 又写着更旧的一个 ⇒ 两者对不上、且都落后于实际。
+  这个模块存在的理由就是「质量能归因到版本」，指纹错 = 归因失效。
+  修法（模块 `dgtf_engine/dgtf_v2/provenance.py`，动态推导、两字段同源）：
+  · 优先 `__main__.__file__`（本模块由引擎 import，主程序就是那个引擎脚本）；
+  · 取不到 ⇒ 引擎目录最高版本；
+  · `engine_version` 从**同一个文件名**推导 ⇒ 结构上不可能再对不上。
+  判据 `tests_provenance.py` P5~P9：两字段一致 / 文件真实存在 / 源码无版本字面量
+  （注释也不许写，注释是污染源）/ ★ 构造性证明（换主程序文件 ⇒ 版本跟着变）/
+  恢复后回真实最高版本。
+- 归档（用户批准）：今早 6 个旧 e2e 产物包（旧引擎 V2.2.3 产出，触发护栏
+  「verified+未就绪+无原因」，历史不改写）+ 2 个撞上 V2.2.8 落盘 bug 的失败跑次
+  md，共 14 个文件 `outputs/` → `outputs/_e2e_local/`。回退：
+  `mv outputs/_e2e_local/20261028_08*.{md,packed.json} outputs/` 等。
+
+【V2.2.10（2026-10-28，PATCH · 成本归因第三批盲区）】
+- 生产引擎：`dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.10.py`；V2.2.9 及更早只读保留。
+- 为什么 V2.2.9 之后**仍有** `unknown` 桶：打点抓调用栈抓到 7 处**根本没传**环节名：
+      UNKNOWN-STAGE 调用栈: run:11711 <- _manifest:16610 <- _call_long:11268
+      UNKNOWN-STAGE 调用栈: main:33011 <- run:26353 <- propose:71
+- ★★ 根因是**判据范围不够**，不是代码没改：原来的 AST 审计
+  · 只扫**主文件**，不扫 `dgtf_v2/*.py` 模块 ⇒ 漏 4 处（`llm_feedback` / `multi_turn` ×2 / `vision_input`）
+  · 只扫 `*.call(`，不扫 **`_call_long(`**（包装器）⇒ 漏 3 处（`_ing` ×2 / `_manifest`）
+  ⇒ 它报「0 处缺失」，而产物里照样有盲区。**范围不够的判据比没判据更危险**：
+    它给出「已经查过了」的错觉。
+- 改动：7 处补 stage（`ing` / `manifest` / `playbook_llm_feedback` / `multi_turn` /
+  `multi_turn_tool` / `vision_input`）。★ 用 `stage=` 而不是 `cost_stage=`：
+  这些模块**跨版本共用**，旧引擎的 `LLM.call` 没有 `cost_stage` 参数，传进去会
+  TypeError；`stage=` 所有版本都认，且 V2.2.9+ 的 `cost_stage or stage` 会兜底。
+- 安全性核对（查过两个配置，不是拍脑袋）：`ing` / `manifest` / 其余新名字在
+  `dgtf_config.yaml` 与 `configs/道生专属模式.yaml` 的 `api.thinking.stages` 里都
+  **未声明** ⇒ `thinking_stages.get(name)` 返回 None ⇒ 仍掉回 `default`，与现状逐字等价。
+- `multi_turn.py` 用 `kw.pop("stage", …)` 而不是 `kw.setdefault`：塞进 `**kw` 的话
+  AST 判据**看不见** stage ⇒ 又变回「判据说 0 处、产物有盲区」。
+- 判据扩到「主文件 + 全部模块」×「`call` + `_call_long`」（`tests_cost_stage.py` A4），
+  并加 A5/A6 两条「有牙」自检：必须扫到那 3 个模块、必须扫到 ≥3 处 `_call_long`
+  （否则 A4 会因为只扫了几处而恒绿 —— 恒绿的判据等于没有）。
+- 实测收口：V2.2.10 跑次 `llm_by_stage` **无 `unknown` 桶**；端到端 15/15。
+
+【V2.2.9（2026-10-28，PATCH · 成本归因第二个盲区）】
+- 生产引擎：`Meta-DGTF-V2.2.9.py`；V2.2.8 只读保留。
+- 问题（实测）：V2.2.5 用 AST 补了 4 处 stage、判据全绿，但第一次真跑完的本地跑次里
+  `llm_by_stage` 仍有 `{"stage":"unknown","calls":2,"tokens":4224}`
+  —— 占该跑 13 次调用里的 2 次、21323 tokens 里的 4224。
+- ★ 根因：`stage` 一个参数承担**三种**语义 —— thinking 档位 / 联网授权环节名 /
+  **成本归因标签**。18 个调用点写 `stage=_thinking_stage(cfg,'X')`，而该函数
+  **只在环节已声明时返回名字** ⇒ thinking 关 ⇒ `stage=None` ⇒ 成本标签掉进 `unknown`。
+  ⇒ 原判据**测错了东西**：它只查「有没有 `stage=` 这个 kwarg」，查不出「传了变量但值是 None」。
+- 改动：给 `LLM.call()` 新增**独立**的 `cost_stage` 参数，只服务归因；18 个调用点补
+  `cost_stage='X'`；归因与 eval/ops 归桶都改用 `cost_stage or stage`。`stage` 一字不动。
+- ★ 为什么不去改 `_thinking_stage()` 恒返回名字：那会让 3 个调用点（`self_check`）在
+  联网增强里从栈推断名 `self_check_llm` / `self_check_decide_narrow` 变成 `self_check`，
+  属于**非默认配置下的行为变化**。本补丁不冒这个险（实测比对过 18 处字面量与栈推断名，
+  15 处一致、3 处不一致）。
+- 副作用（不是新行为，是修正）：这些调用原先被记成 ops，现在按真实环节归桶；
+  `self_check` 等在设计上属 eval（`_LLM_EVAL_STAGES`）⇒ eval 读数会上升。
+- 新增判据 `tests_cost_stage.py`：静态配对 + 字面量 + ★ 构造性证明（真调
+  `LLM.call(stage=None, cost_stage='X')` ⇒ 计数落 'X'）+ ★ 变异体（不给 cost_stage ⇒
+  必须落 'unknown'，否则前一条是假绿）+ 真实产物无 `unknown`。
+
+【V2.2.8（2026-10-28，PATCH · 产物落盘不再被单层渲染拖死）】
+- 生产引擎：`Meta-DGTF-V2.2.8.py`；V2.2.7 只读保留。
+- 问题（实测，严重）：把本地链路生成长度压到 stage 训练长度后，整跑第一次能跑完
+  （70s / 13 次调用），结果**产物没落盘**：
+      ⚠️  保存失败：KeyError: 'anchor'
+         本次结果**没有落盘**，上面的终端输出是唯一记录。
+- 根因：修行层（`views["0"]`）的 view 由 `zero_generation` 产出，是**另一套结构**
+  （`aspect_map / claim_gaps / duty / fact_contract / manifest / zero_generation …`），
+  **没有 `anchor` / `candidates` / `collision` / `amps` / `threads`**；而 `save_result()`
+  的逐层明细循环**假设四层同构**，直接 `v['anchor']` ⇒ KeyError ⇒ 整份产物丢失。
+- ★ 这 bug 一直被「本地跑根本跑不完」盖着（单次调用 110s 超时）：
+  **修好一个锁会让被它挡住的 bug 显形**。
+- 改动（只做降级与留痕，不改判定）：
+  · 5 个必填下标改 `.get()` 兜底（anchor / candidates / collision / amps / threads）；
+  · 逐层明细**整块包 try/except**：一层崩了只降级该层 → 写明 `❌ 本层明细渲染失败：<原因>`
+    + 列出原始字段留痕，其他层照常、落盘照常（与上方「落地层/显化层」同一条纪律）；
+  · 落盘失败时打印 **traceback**（原来只有一行 `KeyError: 'anchor'`，根本没法定位，
+    这次是靠外部 monkeypatch 才拿到堆栈）+ **应急落盘**原始 result 到 `outputs/_crash/`
+    （一整跑几十次调用、十几分钟墙钟的读数不许因为渲染崩在最后一步而全丢）。
+- 新增判据 `tests_save_robust.py`（17 项）：静态（不再裸读 `v['anchor']`、有留痕、
+  有 traceback、有应急落盘）+ ★ 构造性证明（真喂一份「0 层非标准结构」的 result 给
+  `save_result()` ⇒ 必须落盘，且 1 层照常渲染、0 层有兜底/留痕）+ ★ 变异体（让 0 层
+  渲染必崩 ⇒ 仍落盘且写明原因）+ 应急落盘真能写出（含不可序列化字段）。
+
+【本地链路增补（2026-10-28，零 API 成本打通 APP→引擎→本地模型）】
+- ★★ `scripts/local_model/e2e_app_local.py`（15 项，已接入 `final_acceptance`）：
+  三段链路此前**从未连起来跑通过**（引擎单测打桩 LLM、本地服务判据不经过引擎、
+  App 判据是静态源码扫描）。本脚本走 **App 真实入口** —— `params.build_temp_config()`
+  + `engine_runner.build_cmd()` → 子进程跑引擎 → 经 shim 调本地 0.5B → 产物落盘。
+  ⇒ 补上了长期缺口：**`answer_gates` 的真实出口验证**（此前只有静态接线判据）。
+  实测产物里 `quality.answer_gates = {"verdict":"caveat","relevance":{"verdict":"ok",
+  "reason":"数值题：答案已给出数值",…},"agreement":{…},"qtype":"fact"}`。
+- ★ `scripts/local_model/test_max_new_cap.py`（21 项）：适配层把 `max_new` 从「无脑 2048」
+  改成**按 stage 压到训练长度**（`gates.py` 唯一定义处，服务与适配层共用同一张表）。
+  实测同一条 2048-token prompt：要 2048 ⇒ **110s 撞超时**（引擎再按 max_retries 重试 3 次，
+  整跑被拖死）；要 256 ⇒ 40s；要 64 ⇒ **11s**。而模型在该 stage 只吐 22~27 个 token 就 EOS
+  ⇒ 多要的 2000 个 token 是纯成本。判据含纯函数两向 + 单一定义 + ★ 构造性证明
+  （假上游记录真收到的 `max_new_tokens`）+ 变异体（全局硬上限生效）。
+- `dgtf_local_llm/service.py`：端口冲突 **fail-fast**（加载模型之前先试占端口，冲突就
+  一句话说清 + exit 2）。实测踩过：机器上留着「起来了但没抢到端口」的 service.py
+  僵尸进程（内存 4MB、不持有 8772），既不能服务也不退出，把「服务到底起来了没有」
+  变成悬案。
+- `dgtf_local_llm/service.py` + `openai_shim.py`：超时与排队**分开报**。实测出现过
+  「客户端等 15.9s、服务端只报 4.0s 生成」⇒ 12s 在排队；旧版 503 只说「生成超过 timeout」，
+  会误导人去压生成长度。现在 503 带 `queue_depth` + hint，且 `queue_ms` 透传过 shim。
+- 踩坑记录：① 服务停掉后我误杀了监听进程（Stop-Process 连带），重启即可；
+  ② kill 后台任务只杀 shell、引擎子进程会成孤儿，它继续占着 GPU 队列 ⇒ 后续测量被污染
+  （表现为「同样的请求一会儿 4s 一会儿 112s」）。测之前先确认没有孤儿进程。
+
+【V2.2.7 增补（2026-10-28，本地服务显存碎片回收）】
+- 问题（实测）：本地服务连跑 7 小时后 `memory_reserved` 涨到 **5818MB**（冷启基线
+  1075MB），推理慢约 10 倍 —— 把 `test_judge_fastfail` 从 **15.5s 拖到 307s 并判红**
+  （**假红**）。重启服务后显存回到 1561MB、判据立刻恢复 15.5s PASS。
+  ⇒ 这不是「慢一点」，是**会让门禁随机假红**的缺陷；查 `nvidia-smi` 时 CPU 侧只看到
+  服务占 ~2GB，碎片全在缓存分配器里，不看 `memory_reserved` 发现不了。
+- 改动：`dgtf_local_llm/service.py` 加 `_maybe_empty_cache()`，worker 在**队列已空**时
+  调用；判定走新增的 `dgtf_local_llm/gates.py::should_reclaim`（纯函数，**不依赖 torch**，
+  系统 python 即可测）。回收计数进 `/metrics` 的 `stats.mem_reclaims` /
+  `mem_last_reclaim_mb`。
+- 为什么不是每请求都回收：`empty_cache()` 让下次分配重新向驱动申请，有真实开销；
+  只在 `reserved > allocated × 1.5 + 512MB` 时回收（阈值照着实测形态定）。
+- 踩坑：第一版写了 `logger.info(...)`，而**本模块没有 logger**（全服务用 `print+flush`）
+  ⇒ `NameError` 被 `except` 吞掉 ⇒ 回收发生了但记账丢了。构造性判据 E2 抓到。
+- 新增判据 `scripts/local_model/test_mem_reclaim.py`（16 项，已接入 `final_acceptance`）：
+  该回收/不该回收**两个方向**都测（只测前者会放过过度回收）、接线与队列门控、
+  ★ **构造性验证**（打桩 `torch.cuda.empty_cache` 本身，证明「判定为真 ⇒ 真调了 + 真记账」）。
+  短压测 12 个请求不产生足够碎片，所以「会回收」必须构造态证明，不能等出事再说。
+
+【V2.2.7（2026-10-28，PATCH · 答案门）】
+- 生产引擎：`dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.7.py`（__version__=2.2.7）；V2.2.6 只读保留。
+- 问题（见 `docs/产物质量分析_20261028.md`）：就绪门拦得住「空」，拦不住「偏」。
+  实测三个反例都 `answer_ready=True`：
+  · 「成年人正常心率是多少次每分钟」→ 答案给的是**定义**，coverage **1.00**
+  · 「HTTP 503 表示什么」→ 答成 `Retry-After` 响应头，coverage 0.90
+  · 「HTTP 301 表示什么」→ 答「指定网址的方式」，coverage 0.50
+  ⇒ `coverage` 是研究层子问题的加权作答率，**不是**「答案回答了问题」；
+    `answer_quality=verified` 也只证「事实卡 answered + 有官方证据 id」。
+- 新增 `dgtf_engine/dgtf_v2/answer_gates.py`（纯函数、零依赖、可离线复算）：
+  · `relevance` 按题型分叉（数值题看是否给数 / 实体题看是否提到题目实体）；
+  · `agreement` 把跨视角 α 分档（≥0.8 可靠 / ≥0.667 暂定 / 其余低）；
+  · ★ **阻断权只有 relevance 有**，`agreement` 永不阻断 —— 实测拿 α 低当阻断依据
+    会**误杀 108 个正确答案**（黄河 5464 千米、HTTP 404 Not Found 全被判死）。
+    α 低是三层真实认知分歧，不是答案错的证据。
+- 引擎接线（默认零行为差）：`output.answer_gates = {enabled: True, block: False}`。
+  enabled 只写 `quality.answer_gates` 读数（纯增量键）；`block=False` 默认不降级，
+  打开后才把 relevance 不过的跑次置 `answer_ready=False` 并写原因。
+- 新增判据 `dgtf_engine/dgtf_v2/tests_answer_gates.py`（27 项）：
+  3 个正例必抓、**8 个真实正确答案必不误杀**（上一版翻车点）、α 永不阻断、
+  年份不作答案锚、中文数字、混合问法走实体判据、
+  ★ 真实产物回归（全量 201 个：被拦且原本就绪的 ≤5 且 ≥1 ⇒ 既防误杀也防空转）。
+- 护栏补缺口：`outputs_quality_consistency.py` 原先只查 `verified+!ready` 类矛盾，
+  没查「同一个 `answer_ready` 在 `quality` 与 `decision_trace` 两处取值不同」。
+  现加 `legacy_cross_position` / 新包 `::answer_ready_cross_position`。
+  ★ 历史包**仍不改写**（遵守既有决策与证据保留），只是不再隐藏：实测 31 个。
+- 验收：fast_gate 12/12、V2 **58/58 · 924 checks · SKIP 0**、final_acceptance 18/18。
+
+【V2.2.6（2026-10-28，PATCH · 失败熔断，opt-in）】
+- 生产引擎：`dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.6.py`（__version__=2.2.6）；V2.2.5 只读保留。
+- 问题（实测，见 V2.2.5 增补）：端点持续不可用时 `LLM.call` 仍按 `max_retries=3`
+  逐次重试、**每次吃满单次超时** —— 本地档三次 503 各 111s，一次失败白耗 ~333s；
+  云侧 API 熔断/限流同样会踩。
+- 改动（**默认关 ⇒ 不打开时逐字行为不变**）：`api.circuit_breaker = {enabled,
+  fail_threshold, cooldown_sec}`。连续 `fail_threshold` 次**尝试**失败（按尝试计不按
+  call 计 —— 一次 call 内重试 3 次就是 3 份真实墙钟）⇒ 冷却期内不再发起 HTTP，
+  直接快速失败；冷却结束放行一次试探，成功即复位并关闭窗口。刚熔断时**本次 call
+  不再继续重试剩余 attempt**。
+- 产物出口（纯增量）：`llm_cb_opened` / `llm_cb_skipped`，默认关时恒 0。
+- 新增判据 `dgtf_engine/dgtf_v2/tests_circuit_breaker.py`（19 项）：
+  · 默认关零行为差（尝试次数/状态/返回值都不变）；
+  · 熔断中**底层 client 调用计数停在原地**（不是「日志写了熔断」）；
+  · ★ **成本判据**：同一慢桩下 off=**1.50s/18 次 HTTP** vs on=**0.25s/3 次** ⇒ 省时间真发生；
+  · 冷却后放行试探（不永久锁死）、试探成功复位（熔断会退出）；
+  · 默认配置登记了该键（不是只读不声明）。
+- 顺带修两处**判据过时**（不是代码回归）：`tests_cost_attribution*` 原把「上一版」
+  当改造前基线，改版滚动后基线也变成修好的版本 ⇒ 负对照假红。改为锚定固定的
+  改造前版本 `Meta-DGTF-V2.2.4.py`（旧版按约定只读保留；基座消失则判 FAIL 要人确认）。
+- `_mk_local_config.py`：全本地档默认打开熔断（本地 0.5B 大 prompt 超时是已知边界）。
+- 验收：fast_gate 12/12、V2 **57/57 · 897 checks · SKIP 0**、final_acceptance 18/18。
+
+【V2.2.5（2026-10-28，PATCH · 成本归因收敛）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.5.py（__version__=2.2.5）；V2.2.4 只读保留。
+- 问题（实测读数）：最近一跑 HTTP431 的 `llm_by_stage` 里 `unknown` 占 **36 calls /
+  395,942 tokens / 243,112 ms**，为该跑 **55% tokens、57% calls、绝大多数墙钟**，
+  却无法指认环节 ⇒ 成本不可归因，任何「省钱」结论只能靠猜。
+- 根因：对撞层展开与 & 生成共 4 处 `llm.call(...)` 未传 `stage=`，引擎按 `stage or "unknown"`
+  归桶。`_audit_stage_tags.py`（AST 扫描）定位到 L11882 / L11954 / L11977 / L13506。
+- 改动（**只加标签，不改调用**）：补具名 stage
+  `expand_pair` / `expand_pair_merged` / `expand_pair_merged_fixup` / `he_amps`；
+  调用位置参数、次数、max_tokens、temperature、返回处理**一个字不动**。
+- 新增判据 `dgtf_engine/dgtf_v2/tests_cost_attribution.py`（14 项）：
+  · 一类判据：AST 扫最新引擎，**所有** `*.llm.call` 必须带 stage（未来新增漏标即判红）；
+  · 构造性证明：与上一版逐调用比对，**除 stage 外参数逐字相同**、调用点数相同（37 vs 37）；
+  · 落桶正确：四个新 stage 必须归 `ops`（归 eval 会把自测量虚高、把任务成本说小）；
+  · 双负对照：人造漏标样本判红 + **上一版真代码判红（缺 4 处）** ⇒ 判据有牙。
+- 验收：fast_gate 12/12、V2 **56/56 · 878 checks · SKIP 0**（+2 文件 +23 checks）、
+  final_acceptance **18/18 PASS / ALL GUARDS PASS**（本地服务在线，judge_fastfail /
+  generate_batch / graph_decode 由 SKIP 变为真跑 3/3）。
+- 收益性质：**零行为变化**，只把「看不见的 55% 成本」变成可指认。省钱的后续动作依赖此归因。
+
+【V2.2.5 增补（2026-10-28，零预算全链路：OpenAI 兼容适配层）】
+- 背景：预算已超上限（≈¥23.7/¥20），真跑停止 ⇒ 引擎改动失去端到端回归能力。
+- 新增 `scripts/local_model/openai_shim.py`：把 `/v1/chat/completions` 转发到本地
+  `/generate`（stage 分流：`local:<stage>` 后缀优先 → prompt 特征 → 兜底 self_check），
+  上游失败回 **503+原因**（不是 200 空内容，否则引擎会把「端点坏了」当成「模型没话说」）。
+- 实测：服务 ready（load 9.3s / warmup 1022ms / GPU 1075MB / 4 适配器）；
+  route 单次 **3.9s**（41 tok，conf 0.9364）；**引擎端到端 12 calls / 22,844 tokens**，
+  研究层 2 圈后按「产物相似度高 + 连续 2 轮无新 &/线头」正常收敛停止。
+- ★ 同时暴露真缺陷（下一轮修）：端点持续不可用时引擎仍按 `max_retries=3` 逐次重试
+  并吃满单次超时 ⇒ 一次失败白耗 **~333s**（日志三次 503 实测）。生产里 API 熔断/限流同样踩。
+- 判据 `scripts/local_model/test_openai_shim.py`（18 项，零 API/零 GPU/不占固定端口），
+  已接入 `final_acceptance.py` STEPS 末尾；另加 `_mk_local_config.py`（全本地档配置生成）。
+- 文档：`docs/local_model_daosheng.md` §5.13。
+- 定位：适配层是**回归工具**，0.5B 输出质量远低于云模型，读数只能看链路/归因/结构，
+  **不能当质量指标**。
+
 【V2.2.4 发布（2026-10-27，PATCH）】
 - 远端：origin/release/V2.2.4 与标签 V2.2.4/engine-V2.2.4 已推送（均指向 b59d823）；
   origin/main 为并发提交 cbc5a22，本地 main 分叉（领先205/落后1），未 force push，需 PR/合并。
@@ -233,6 +470,13 @@
 - 新域：嫦娥六号 0.9639、成人睡眠 0.9409；外汇时间锚定修复（A86，离线 answered/32024亿美元）；
 - v9b self_check local A/B（0.9525/0.9417）低于 v8b（0.99/0.9509）⇒ self_check 槽位回 v8b，
   self_check_min 仍 v9b；矩阵 60 行（fact 50）；V2 836 checks；验收 13/13。
+【App 2.0.36（2026-10-28，就绪原因出口 + 溯源指纹）】
+- V2.2.8~V2.2.11 收束：产物落盘崩溃修复、成本归因 unknown 桶清零、
+  `answer_ready_reason` 三出口同源（85 个未就绪包里 73 个 quality 无原因）、
+  provenance 版本指纹动态推导（此前 file 与 version 硬编码且互相矛盾）、
+  e2e 产物隔离 `outputs/_e2e_local/`、本地链路 900s+ → 16~70s；
+  验收 final_acceptance 21/21。详见 docs/releases/app-V2.0.36.md。
+
 【App 2.0.35（2026-10-26，收束版）】
 - Round 125–127 收束：judge 503 快失败、App 缓存绕过、probe R7 兜底、merged 引擎 local
   真跑 0.9857、新域真题 0.9639/0.9409、外汇时间锚定 A86、self_check 槽位回 v8b；

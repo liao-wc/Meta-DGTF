@@ -1,3 +1,14 @@
 {
-  "anchors": []
+  "anchors": [
+    {
+      "id": "L4",
+      "claim": "［图片 image.png］尺寸 1920x882，104768 字节。\n（本机没装 OCR：正文未抽取；如需识别，在 .env 里配 DGTF_OCR_CMD 指定一个命令行 OCR）",
+      "content": "［图片 image.png］尺寸 1920x882，104768 字节。\n（本机没装 OCR：正文未抽取；如需识别，在 .env 里配 DGTF_OCR_CMD 指定一个命令行 OCR）",
+      "source": "image.png.txt",
+      "part": 1,
+      "parts": 1,
+      "kind": "local",
+      "tier": 2
+    }
+  ]
 }

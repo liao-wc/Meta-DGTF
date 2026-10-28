@@ -89,8 +89,9 @@ def find_engine() -> Path:
         return tuple(int(x) for x in m.groups()) if m else (0, 0, 0)
 
     cands.sort(key=ver)
+    #: 兜底仅在候选 glob 全空时生效（正常路径永远取 engines 目录里最高版本）。
     return cands[-1] if cands else (PROJECT_ROOT / "dgtf_engine" / "dgtf_v2" /
-                                     "engine" / "Meta-DGTF-V2.2.2.py")
+                                     "engine" / "Meta-DGTF-V2.2.3.py")
 
 
 # ── 引擎能力探测（新机制 CLI 能力门控）────────────────────────────

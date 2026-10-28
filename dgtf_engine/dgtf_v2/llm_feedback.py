@@ -68,7 +68,8 @@ def propose(llm, packed: dict, *, max_n: int = 3) -> dict:
     digest = build_digest(packed)
     user = "运行摘要：\n" + json.dumps(digest, ensure_ascii=False)[:4000]
     try:
-        raw = llm.call(SYSTEM, user, 0.2, 1200, json_mode=True)
+        raw = llm.call(SYSTEM, user, 0.2, 1200, json_mode=True,
+                       stage="playbook_llm_feedback")
     except Exception as e:
         return {"enabled": True, "candidates": [], "error": "%s: %s" % (type(e).__name__, e)}
     cs = parse_candidates(raw, max_n=max_n)

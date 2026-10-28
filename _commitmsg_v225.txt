@@ -1,0 +1,37 @@
+release(engine): V2.2.5 成本归因收敛 + 零预算全链路（OpenAI 适配层）
+
+问题（实测）：最近一跑 HTTP431 的 llm_by_stage 里 unknown 占
+36 calls / 395,942 tokens / 243,112 ms —— 该跑 55% tokens、57% calls、
+绝大多数墙钟，却无法指认环节 ⇒ 成本不可归因，「省钱」结论只能靠猜。
+根因：对撞层展开与 & 生成共 4 处 llm.call 未传 stage。
+
+引擎（V2.2.4 → V2.2.5，只加标签不改调用）
+- 补具名 stage：expand_pair / expand_pair_merged /
+  expand_pair_merged_fixup / he_amps
+- 调用位置参数、次数、max_tokens、temperature、返回处理一个字不动
+
+判据（新增 2 个文件，共 23 项）
+- tests_cost_attribution.py：AST 一类判据（所有 llm.call 必须带 stage）+
+  与上一版逐调用比对（除 stage 外参数逐字相同、调用点数相同）+
+  落桶正确（新 stage 归 ops）+ 双负对照（人造样本 + 上一版真代码都判红）
+- tests_cost_attribution_live.py：驱动真实 _expand_pair 本体，
+  打桩最底层 openai client。两臂对照：旧臂 unknown=2、新臂 expand_pair=2、
+  unknown=0、两臂候选内容逐字相同
+
+零预算全链路（新增）
+- scripts/local_model/openai_shim.py：OpenAI 兼容层，转发到本地 /generate
+  stage 分流 + 上游失败回 503+原因（不是 200 空内容）
+- scripts/local_model/test_openai_shim.py：18 项（纯函数 + 进程内真转发 + 负对照）
+- _mk_local_config.py：全本地档配置生成
+- 实测：route 单次 3.9s；引擎端到端 12 calls / 22,844 tokens，
+  研究层 2 圈正常收敛停止
+- 暴露待修缺陷：端点持续不可用时引擎按 max_retries=3 逐次重试吃满超时，
+  一次失败白耗 ~333s（下一轮做 opt-in 熔断）
+
+验收
+- fast_gate 12/12
+- V2 56/56 · 878 checks · SKIP 0
+- final_acceptance 18/18 PASS / ALL GUARDS PASS
+  （本地服务在线，judge_fastfail / generate_batch / graph_decode 由 SKIP 转真跑 3/3）
+
+注：本次只提交上述文件；工作树里其余 dirty 文件属并发会话/门禁刷新产物，未触碰。

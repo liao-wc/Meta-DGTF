@@ -149,8 +149,11 @@ def resolve_adapter(stage: str, root: Path | None = None):
     return None, None
 #: [Round 140] dual_judge 忙时最大排队等待（秒）；超时后 503 让引擎回退。
 DUAL_JUDGE_BUSY_WAIT_S = 25.0
-DEFAULT_MAX_NEW = {"self_check": 64, "self_check_min": 64,
-                   "dual_judge": 224, "route": 96}
+#: ★ 唯一定义处迁到 `dgtf_local_llm/gates.py`（纯函数模块，零 torch 可测）。
+#:   这里只做转出 —— `openai_shim.py` 也从那里取，避免「同一张表两处维护」，
+#:   否则适配层压的长度和服务实际用的长度会各改各的。
+from dgtf_local_llm.gates import (  # noqa: E402
+    DEFAULT_MAX_NEW, DEFAULT_MAX_NEW_FALLBACK as _FALLBACK_MAX_NEW)
 ROUTE_SYSTEM = (
     "你是元DGTF的调度规划器。阅读用户问题，输出严格 JSON："
     '{"route": ["0","1","both","all"] 的子集, '
@@ -731,6 +734,9 @@ class LocalEngine:
                         h["ev"].set()
                     except Exception:  # noqa: BLE001
                         pass
+            # ★ 队列空了才做碎片回收（有任务排队时回收只会拖慢吞吐）
+            if self.queue_depth <= 0:
+                self._maybe_empty_cache()
 
     # ---------- [Round 150] CUDA graph 解码（单序列，StaticCache） ----------
     _GRAPH_TOTAL = 3072  # [Round 160] 单序列 graph cache 扩到 3072，覆盖 2048 截断 prompt+max_new
@@ -840,7 +846,7 @@ class LocalEngine:
         t0 = time.time()
         stage = req["stage"]
         timeout = float(req.get("timeout") or 60)
-        max_new = int(req.get("max_new_tokens") or DEFAULT_MAX_NEW[stage])
+        max_new = int(req.get("max_new_tokens") or DEFAULT_MAX_NEW.get(stage, _FALLBACK_MAX_NEW))
         max_new = max(1, min(1024, max_new))
         temp = req.get("temperature", 0.0)
         try:
@@ -1080,7 +1086,7 @@ class LocalEngine:
                 job["err"] = RuntimeError("prompt 构建失败")
                 job["ev"].set()
                 return None
-            mx = int(req.get("max_new_tokens") or DEFAULT_MAX_NEW[req["stage"]])
+            mx = int(req.get("max_new_tokens") or DEFAULT_MAX_NEW.get(req["stage"], _FALLBACK_MAX_NEW))
             return {"job": job, "ids": ids, "gen": [], "done": False,
                     "max_new": max(1, min(1024, mx)),
                     "logprobs": [], "key": self._batch_cache_key(req),
@@ -1226,7 +1232,7 @@ class LocalEngine:
             timeout = float(req.get("timeout") or 60)
             max_timeout = max(max_timeout, timeout)
             max_new = int(req.get("max_new_tokens")
-                          or DEFAULT_MAX_NEW[req["stage"]])
+                          or DEFAULT_MAX_NEW.get(req["stage"], _FALLBACK_MAX_NEW))
             max_new = max(1, min(1024, max_new))
             max_new_all = max(max_new_all, max_new)
             temp = float(req.get("temperature") or 0.0)
@@ -1286,6 +1292,46 @@ class LocalEngine:
             return int(torch.cuda.memory_allocated() / 1024 / 1024)
         except Exception:
             return -1
+
+    def _maybe_empty_cache(self) -> None:
+        """显存碎片回收：仅在**不忙**且**碎片率高**时释放缓存分配器的空块。
+
+        ★ 为什么需要（实测 2026-10-28）：服务连续跑 7 小时后
+          `memory_reserved` 涨到 5818MB（冷启基线 1075MB），推理慢约 10 倍，
+          连带把 `test_judge_fastfail` 从 15.5s 拖到 307s 并**判红（假红）**；
+          重启服务后显存回到 1561MB、判据立刻恢复 15.5s PASS。
+          ⇒ 这不是「跑得慢一点」，是**会让门禁随机假红**的缺陷。
+
+        ★ 为什么不在每个请求后调用：`empty_cache()` 会把缓存块还给驱动，
+          下次分配要重新申请，有真实开销。只在碎片超过阈值时回收。
+
+        ★ 为什么只在队列空时调用：有任务排队时回收只会拖慢吞吐，
+          而且高负载期间本来就没有「安全空窗」可回收。
+        """
+        try:
+            if not torch.cuda.is_available():
+                return
+            allocated = int(torch.cuda.memory_allocated())
+            reserved = int(torch.cuda.memory_reserved())
+            # 碎片判定走 gates.py 的唯一实现（纯函数，可脱 torch 离线测）
+            from dgtf_local_llm.gates import should_reclaim as _sr
+            if not _sr(allocated, reserved):
+                return
+            before = reserved // (1024 * 1024)
+            torch.cuda.empty_cache()
+            after = int(torch.cuda.memory_reserved()) // (1024 * 1024)
+            # ★ 本模块没有 logger（全服务用 print+flush）——写 logger.info
+            #   会抛 NameError 并被下面的 except 吞掉，结果是「回收发生了但
+            #   记账丢了」，静默失明。判据 E2 就是这么抓到的。
+            print("[mem] 碎片回收 %dMB → %dMB（allocated=%dMB）"
+                  % (before, after, allocated // (1024 * 1024)), flush=True)
+            with self._lock:
+                self.stats["mem_reclaims"] = int(
+                    self.stats.get("mem_reclaims", 0)) + 1
+                self.stats["mem_last_reclaim_mb"] = int(before - after)
+        except Exception:  # noqa: BLE001
+            # 回收失败不影响服务（下次还有机会）
+            pass
 
     def health(self) -> dict:
         return {"ok": self.state == "ready", "status": self.state,
@@ -1453,9 +1499,20 @@ class Handler(BaseHTTPRequestHandler):
             _ok = True
             self._send(200, res)
         except TimeoutError:
+            # ★ 超时必须能**区分「排队等死」与「生成太慢」**：两者下一步动作
+            #   完全相反（前者要限并发/扩容，后者要压 max_new/走 graph）。
+            #   实测出现过「客户端等 15.9s、服务端只报 4.0s 生成」⇒ 12s 在排队，
+            #   而旧版 503 只说"生成超过 timeout"，会误导人去压生成长度。
+            try:
+                _qd = int(getattr(self.engine, "queue_depth", 0) or 0)
+            except Exception:  # noqa: BLE001
+                _qd = -1
             self._send(503, {"ok": False, "error": {
                 "code": "TIMEOUT",
-                "message": f"生成超过 timeout={timeout}s"}})
+                "message": f"生成超过 timeout={timeout}s",
+                "queue_depth": _qd,
+                "hint": ("队列非空 ⇒ 时间在排队，不是生成慢" if _qd > 0
+                         else "队列为空 ⇒ 时间在生成（压 max_new 或走 graph）")}})
         except Exception as e:
             self._send(503, {"ok": False, "error": {
                 "code": "INTERNAL", "message": f"{type(e).__name__}: {e}"}})
@@ -1472,11 +1529,28 @@ def main() -> int:
     ap.add_argument("--port", type=int, default=8772)
     ap.add_argument("--model", default=str(DEFAULT_MODEL))
     args = ap.parse_args()
+    # ★ 先在**加载模型之前**确认端口能占住。
+    #   实测踩过：一台机器上留着「起来了但没抢到端口 / 模型没加载起来」的
+    #   service.py 僵尸进程（内存只有 4MB、不持有 8772），它既不能服务、
+    #   也不退出，把「服务到底起来了没有」变成悬案。把端口检查提到最前面，
+    #   冲突就是当场一句话说清 + exit 2，而不是留一个半死不活的进程。
+    try:
+        import socket as _sock
+        _probe = _sock.socket(_sock.AF_INET, _sock.SOCK_STREAM)
+        _probe.setsockopt(_sock.SOL_SOCKET, _sock.SO_REUSEADDR, 0)
+        try:
+            _probe.bind((args.host, int(args.port)))
+        finally:
+            _probe.close()
+    except OSError as _e:
+        print(f"[serve] 端口 {args.host}:{args.port} 已被占用（{_e}）："
+              f"已有实例在服务，或上一份没退干净 —— 本进程不启动。", flush=True)
+        return 2
     eng = LocalEngine(args)
     Handler.engine = eng
     srv = ThreadingHTTPServer((args.host, args.port), Handler)
     srv.daemon_threads = True
-    print(f"[serve] http://{args.host}:{args.port}  "
+    print(f"[serve] pid={os.getpid()} http://{args.host}:{args.port}  "
           f"model={args.model}", flush=True)
     try:
         srv.serve_forever()

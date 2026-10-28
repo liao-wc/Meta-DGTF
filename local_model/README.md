@@ -7,9 +7,9 @@
 
 迁移日期：2026-10-23。
 
-## 当前项目版本（V2.2.0）
+## 当前项目版本（V2.2.3）
 
-- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.0.py
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.3.py
 - App：V2.0.0（本次未改动）
 - 本地模型运行时通过项目相对路径和 DGTF_LLM_* 环境变量引用
 - 训练/评估/合并脚本：scripts/local_model/

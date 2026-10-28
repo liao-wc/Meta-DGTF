@@ -46,6 +46,51 @@ def _quality(packed: dict) -> tuple[float, float, int, int]:
     return cov, tri, ans, tot
 
 
+def _layer_quality(packed: dict, entry: str, q_overall: float) -> tuple[float, dict]:
+    """层局部质量读数。
+
+    整跑 quality 不能直接复制给每个模板；这里只用该层 view 的结构信号：
+    decidable/undecidable 产物、covered/uncovered 方面、untouched 数、quality_flags。
+    这是确定性启发式，不代表整跑质量；调用方必须同时保留 quality_overall。
+    """
+    v = _view(packed, entry)
+    q = packed.get("quality") or {}
+    meta = {}
+    for row in (q.get("layers") or []):
+        if str(row.get("entry") or "") == entry:
+            meta = row
+            break
+    flags = [str(x) for x in (meta.get("flags") or [])]
+    covered = len(v.get("covered_aspects") or [])
+    uncovered = len(v.get("uncovered_aspects") or [])
+    untouched = len(v.get("untouched") or [])
+    decidable = 1 if v.get("decidable_product") else 0
+    undecidable = 1 if v.get("undecidable_product") else 0
+    # signal 0..1 表示该层结构证据强弱；以整跑 quality 为锚，只做 ±0.2 偏移。
+    signal = 0.5
+    signal += 0.20 if decidable else 0.0
+    signal -= 0.15 if undecidable else 0.0
+    signal += min(0.15, 0.05 * covered)
+    signal -= min(0.15, 0.05 * uncovered)
+    signal -= min(0.10, 0.02 * untouched)
+    signal -= min(0.30, 0.10 * len(flags))
+    signal = max(0.0, min(1.0, signal))
+    score = float(q_overall) + (signal - 0.5) * 0.40
+    score = max(0.0, min(1.0, score))
+    detail = {
+        "quality_overall": round(float(q_overall), 4),
+        "quality_source": "layer_signals_v1",
+        "layer_flags": flags[:8],
+        "layer_quality_verdict": str(meta.get("quality") or "")[:80],
+        "covered_aspects": covered,
+        "uncovered_aspects": uncovered,
+        "untouched": untouched,
+        "decidable": decidable,
+        "undecidable": undecidable,
+    }
+    return round(score, 4), detail
+
+
 class V2MemoryBridge:
     def __init__(self, path: str | Path | None = DEFAULT_EML_PATH,
                  enabled: bool = True, allow_anon: bool = False):
@@ -91,12 +136,13 @@ class V2MemoryBridge:
                 r = int(rounds.get(entry, 1) or 1)
             except (TypeError, ValueError):
                 r = 1
+            q_local, q_extra = _layer_quality(packed, entry, q)
             self.memory.record_outcome(
                 run_id=rid, template="%s:r%d" % (entry, r),
-                quality=q, calls=1,
+                quality=q_local, calls=1,
                 tokens=max(1, int(packed.get("llm_tokens") or 1)
                            // max(1, len(packed.get("route") or ["0", "1", "both", "all"]))),
-                success=True)
+                success=True, extra=q_extra)
             n += 1
         return {"enabled": True, "events": n, "path": self.path,
                 "coverage": round(cov, 4), "tri_ratio": round(tri, 4),

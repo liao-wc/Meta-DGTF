@@ -58,7 +58,8 @@ def describe(llm, images, question: str, *, model=None, max_tokens=1200) -> str:
             % str(question or ""))
     try:
         return str(llm.call(system, user, 0.2, max_tokens,
-                            model=model, images=bs) or "")
+                            model=model, images=bs,
+                            stage="vision_input") or "")
     except Exception:
         return ""
 

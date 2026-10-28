@@ -1,0 +1,139 @@
+{
+ "ok": false,
+ "generated_at": 1793047690.7697303,
+ "counts": {
+  "packed": 359,
+  "md": 861,
+  "run_json": 97,
+  "verified": 150,
+  "needs_evidence": 31,
+  "unverified": 51,
+  "answer_ready_false": 83,
+  "missing_quality": 36,
+  "stale_30d": 0
+ },
+ "qualities": {
+  "(missing)": 127,
+  "needs_evidence": 31,
+  "verified": 150,
+  "unverified": 51
+ },
+ "top_flags": [
+  [
+   "duty_short",
+   275
+  ],
+  [
+   "probe_no_target_covered",
+   95
+  ],
+  [
+   "probe_link_dangling(3)",
+   84
+  ],
+  [
+   "probe_link_dangling(2)",
+   71
+  ],
+  [
+   "polarity_all_same_structural(1)",
+   44
+  ],
+  [
+   "polarity_all_same_structural(0)",
+   26
+  ],
+  [
+   "core_audit_gaps",
+   25
+  ],
+  [
+   "all_closure_unavailable",
+   25
+  ],
+  [
+   "candidates_backfilled(sc:6)",
+   23
+  ],
+  [
+   "candidates_backfilled(sc:5)",
+   22
+  ],
+  [
+   "unsaid_overused(4)",
+   20
+  ],
+  [
+   "unsaid_overused(3)",
+   17
+  ],
+  [
+   "polarity_all_same_structural(both)",
+   14
+  ],
+  [
+   "probe_link_dangling(1)",
+   13
+  ],
+  [
+   "candidates_backfilled(sc:8)",
+   12
+  ],
+  [
+   "ing_rephrased_direct(50%)",
+   9
+  ],
+  [
+   "unsaid_overused(5)",
+   8
+  ],
+  [
+   "candidates_backfilled(sc:7)",
+   7
+  ],
+  [
+   "all_closure_gaps",
+   7
+  ],
+  [
+   "position_all_same_structural",
+   7
+  ]
+ ],
+ "top_stops": [],
+ "routes": {
+  "1": 9,
+  "0,1,both,all": 293,
+  "0,1": 22,
+  "0,1,both": 6,
+  "1,both,all": 1,
+  "0": 21,
+  "1,both": 7
+ },
+ "run_status": {
+  "error": 4,
+  "done": 52,
+  "cancelled": 36,
+  "interrupted": 5
+ },
+ "duplicate_questions": 65,
+ "missing_md_n": 1,
+ "missing_pack_n": 503,
+ "issues": [
+  "缺少 quality 段：36"
+ ],
+ "warnings": [
+  "packed 无 md：1 条",
+  "md 无 packed：503 条",
+  "异常 run 状态：error=4, interrupted=5",
+  "重复题目：65 组",
+  "needs_evidence：31",
+  "answer_ready=false：83"
+ ],
+ "recommendations": [
+  "优先复核 needs_evidence：按官方源/联网策略补证，不要只改分类",
+  "重复题可走缓存/语义去重，减少无效真跑",
+  "为 packed 生成/恢复对应 md，保证产物可读",
+  "排查异常 run 日志与中断原因，避免重复失败"
+ ]
+}

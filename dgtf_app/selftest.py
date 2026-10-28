@@ -203,7 +203,7 @@ def check_r39_frontend(css: str, js: str, html: str) -> None:
     # ── 需求 9b：首屏对话框文案（两处必须同步）──────────────────────────────
     # ★ R44 改口径：文案本身换了（用户给定新文案），判据的**意图不变**
     #   —— 仍然是「两处必须同步」，只是字面跟着新版走。
-    _ph = "给Meta-DGTF发消息 我们一起探索吧 ...."
+    _ph = "发给Meta-DGTF 一起去探索吧 ..."
     check("★R39 首屏提示语**两处同步**（index.html 的 placeholder + app.js 的 Q_PLACEHOLDER）",
           _ph in html and _ph in js, "html=" + str(_ph in html) + " js=" + str(_ph in js))
 
@@ -365,7 +365,7 @@ def check_r44_frontend(css: str, js: str, html: str, srv_src: str,
           "stage-empty" in js and "e.target.closest('main.stage')" in js, "")
 
     # ── ③ 首屏文案 + 字号 ───────────────────────────────────────────────────
-    _ph = "给Meta-DGTF发消息 我们一起探索吧 ...."
+    _ph = "发给Meta-DGTF 一起去探索吧 ..."
     check("★R44 首屏文案两处同步（index.html 的 placeholder + app.js 的 Q_PLACEHOLDER）",
           _ph in html and _ph in js, "")
     check("★R44 输入框字号**调小一档**（≤14px）",
@@ -383,7 +383,7 @@ def check_r44_frontend(css: str, js: str, html: str, srv_src: str,
     check("★R44 首屏以**欢迎语/输入框空隙中心**为基准上下左右居中",
           "centerHomeHero" in js and "--home-shift" in js
           and "top:var(--home-shift,0px)" in css
-          and "padding-bottom:20px" in css, "")
+          and "padding-bottom:0" in css, "")
 
     # ── ⑤ 导入：前端管线 ────────────────────────────────────────────────────
     check("★R44 导入控件是**真按钮**点隐藏 input（不再靠 label 转发）",
@@ -453,12 +453,14 @@ def check_r45_frontend(css: str, js: str, html: str, srv_src: str,
     # ★★ R48-3：原来这条判「点**徽章**展开清单」—— 徽章已移除，
     #   点击分派改成「点**回形针本身**」：有已导入文件 ⇒ 开关小窗；没有 ⇒ 开选择框。
     #   ★ 判据守的**行为**没变（「看一眼清单」仍然只点一下），换的是那个可点的目标。
-    check("★R45/R48-3 点**回形针本身**即可展开清单（不再依赖那个已移除的角标）",
-          "if (localItems.length) { toggleAttachPanel(); return; }" in js
-          and "toggleAttachPanel();" in js, "")
+    check("★R49 点**回形针**统一开文件选择框（不再按是否有导入分派小窗）",
+          "_at.addEventListener('click', () => {" in js
+          and "const f = $('#anchor-file');" in js
+          and "if (f) f.click();" in js, "")
 
-    check("★R45 导入成功后**自动展开清单**（结果送到眼前，不用去抽屉翻）",
-          "if (okN) toggleAttachPanel(true);" in js, "")
+    check("★R49 文件选择/粘贴统一显示 composer 缩略图",
+          "attachAppPastedFiles" in js and "attachDshPastedFiles" in js
+          and "dsh-paste-preview" in js, "")
     check("★R45 删除走真实接口 `/api/library/delete`",
           "async function removeImported" in js
           and "/api/library/delete" in js, "")
@@ -782,9 +784,9 @@ def check_r47_frontend(css: str, js: str, html: str, srv_src: str,
           and "document.body.classList.add('stage-empty')" in _jsnc
           and "localStorage.getItem('dgtf_task_dsh')" in _jsnc, "")
 
-    check("★R48-1 导入结果改由**小窗/抽屉**承载（`#import-detail` 逐文件列结果）",
-          "importPaint(" in _jsnc and "$('#import-detail')" in _jsnc
-          and "if (okN) toggleAttachPanel(true);" in _jsnc, "")
+    check("★R49 回形针/粘贴结果改由 **composer 缩略图**承载",
+          "dsh-paste-preview" in _jsnc and "attachAppPastedFiles" in _jsnc
+          and "attachDshPastedFiles" in _jsnc, "")
     # ★ 那行元素**保留**（CSS 用 `:empty` 让它空着就不占位），这比删元素安全：
     #   既有结构引用不断，且「导入中」等其它瞬时文案未来还能复用。
     check("★R48-1 那行元素本身保留、且**空着不占位**（`.attach-msg:empty{display:none}`）",
@@ -802,9 +804,9 @@ def check_r47_frontend(css: str, js: str, html: str, srv_src: str,
     # ★ 判据的**行为**没变：数量仍要能被看到 ⇒ 挪到小窗标题 + 悬停提示。
     check("★R48-3 数量改由**小窗标题 + 回形针悬停提示**表达（角标没了但数量没丢）",
           'id="ap-count"' in html and "已导入 ${n} 个" in _jsnc, "")
-    # ★ 点回形针 = 有文件则开关小窗 / 没文件则开选择框（原来只有角标能点开）
-    check("★R48-3 点**回形针本身**分派：有已导入文件 ⇒ 开关小窗；没有 ⇒ 开文件选择框",
-          "if (localItems.length) { toggleAttachPanel(); return; }" in _jsnc, "")
+    # ★ 点回形针 = 统一开文件选择框
+    check("★R49 点**回形针本身**统一开文件选择框",
+          "if (f) f.click();" in _jsnc, "")
 
 
 
@@ -1155,9 +1157,12 @@ def check_t3_daosheng(base: str, srv_src: str, runner_src: str,
         check("★T3 本地模型不可达 → 规则回退（fail-open，总耗时 <3s）",
               fb.get("ok") and fb.get("source") == "rules" and fb_dt < 3.0,
               "%.2fs · route=%s" % (fb_dt, fb.get("route")))
-        check("★T3 回退链留痕：http 失败 → subprocess 缺失 → rules",
+        _sub_exists = (Path(dm.PROJECT_ROOT) / "llm_predict.py").is_file()
+        _expect_chain = (["http", "subprocess", "rules"] if _sub_exists
+                         else ["http", "rules"])
+        check("★T3 回退链留痕：http 失败 →（子进程缺失则跳过）→ rules",
               [a.get("source") for a in (fb.get("attempts") or [])]
-              == ["http", "subprocess", "rules"],
+              == _expect_chain,
               str([a.get("source") for a in (fb.get("attempts") or [])]))
         t_nc = time.time()
         fb2 = dm.predict_route_rounds("Meta-DGTF 项目下一步怎么优化？",
@@ -1513,8 +1518,8 @@ def main() -> int:
           and "body.stage-run .runlog{flex:1 1 auto" in css
           and 'class="stage-empty"' in html,
           "")
-    check("输入框为对话式（功能胶囊 + 圆形发送键；旧的 composer-actions 已移除）",
-          'id="pill-thinking"' in html and 'id="pill-web"' in html
+    check("输入框为对话式（DSH/附件/演练模式 + 圆形发送键；首屏不再放深度思考/智能搜索）",
+          'id="pill-thinking"' not in html and 'id="pill-web"' not in html
           and 'id="run-btn"' in html and "composer-actions" not in html)
     check("首屏三个入口都在（抽屉 / 搜索对话产物 / 开启新对话），描述走**悬停气泡**",
           all(k in html for k in ('id="drawer-btn"', 'id="search-btn"', 'id="newchat-btn"'))
@@ -1781,8 +1786,11 @@ def main() -> int:
           "text-align:center" in _rule(css, ".grid label,.grid .field")
           and "height:38px" in _rule(css, ".sheet-actions button.ghost"),
           "")
-    check("输入框：内容与占位**左对齐**，发送时问题先在框内散成星光再飞走（三段动画）",
-          "textarea#question{text-align:left}" in css.replace(" ", "")
+    check("输入框：基础提示左对齐、轮询问题居中并右移 12px，用户输入内容左对齐",
+          "textarea#question::placeholder{color:var(--t3);text-align:left}" in css.replace(" ", "")
+          and "textarea#question.ph-question{padding-left:28px}" in css.replace(" ", "")
+          and "textarea#question.ph-question::placeholder{text-align:center}" in css.replace(" ", "")
+          and "textarea#question{text-align:left}" in css.replace(" ", "")
           and "--mx" in css and "var(--mx)" in css
           and "34%" in css and "'--mx'" in js,
           "")
@@ -2038,7 +2046,7 @@ def main() -> int:
           and "color:var(--t1)" in _rule(css, ".sheet"),
           "")
     _cmp = html.split('class="composer-row"', 1)
-    check("演练模式已挪到输入框那一排（胶囊，与深度思考/智能搜索同排）",
+    check("演练模式已挪到输入框那一排（胶囊，与 DSH/附件同排）",
           len(_cmp) == 2 and 'id="mock-row"' in _cmp[1].split("</div>", 1)[0]
           and 'class="pill mock-pill"' in html,
           "")

@@ -1,0 +1,30 @@
+V2.2.11：就绪原因出口补齐 + 溯源指纹动态推导 + 判据锚修正
+
+引擎（Meta-DGTF-V2.2.11.py，纯 CRLF 33078 行）
+- answer_ready_reason 此前只写 decision_trace 一个出口，而 answer_ready 有
+  三个出口（dt/quality/answer_summary）。实测 208 包：ready=False 85 个里
+  73 个 reason 只在 dt、quality 为空 ⇒ 一致性护栏把 verified+!ready(无原因)
+  判成矛盾（6 条）。修法：答案门之后统一三出口同源；未就绪且仍空时由
+  过程合同/原始就绪/答案质量/题型拼可指认兜底原因。
+- 连带修复 dgtf_v2/provenance.py：engine_file 与 engine_version 两处硬编码
+  字面量且自相矛盾（file=V2.2.4 / version=V2.2.3，均过期）。改为
+  __main__.__file__ 优先、否则引擎目录最高版本；version 从同一文件名推导，
+  两字段结构上不可能再对不上。
+
+判据
+- 新增 tests_ready_reason.py（14 项）：三出口点名登记 + AST 同块 + 位置在
+  答案门之后 + 变异体 + 真实产物回验（必须有 V2.2.11+ 的包，否则恒绿）。
+- tests_provenance.py 增 P5~P9：两字段一致 / 文件存在 / 源码无版本字面量
+  （注释也不许写）/ 构造性（换主程序文件 ⇒ 版本跟着变）/ 恢复回真实版。
+- tests_cost_stage.py E1 锚修正：原「outputs 最新包」在 e2e 产物挪走后漂移
+  到旧引擎历史包 ⇒ 假红。改为只认当前引擎及之后产出的包（provenance 判版），
+  旧包 unknown 调用数（8971）显式记录不判红；新增 E1b 有牙自检。
+
+e2e 隔离与归档（用户批准）
+- e2e_app_local.py 的 output.save_dir 改 outputs/_e2e_local/，新增 E7b/E10b/E10c。
+- 归档今早 14 个 e2e 文件（6 packed + 8 md）outputs/ → outputs/_e2e_local/，
+  回退 mv outputs/_e2e_local/20261028_08* outputs/。
+
+验收
+- final_acceptance 21/21 PASS（此前 19/21）；v2_tests 61/61；
+  e2e 18/18（16~53s）；真跑产物 provenance=V2.2.11、reason 非空、无 unknown 桶。

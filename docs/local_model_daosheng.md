@@ -694,3 +694,53 @@ self_check(self_check_min)=v6；`scripts/check_local_service.py` 单发生成通
 - 30 条 held-out：JSON 1.0 / 字段 0.589 / escape 0.800 / suspF1 0.141 / all3 0.033，
   **与 v8b 完全持平**；p50 **4774ms** / p95 **5690ms**（v8b 5858/6340）⇒ SWITCH_CANDIDATE；
 - 服务默认切 **v9b**（self_check_min；self_check 槽位 v8b；v8b→v6→v5→v2 兜底）；/metrics 单发 3.66s、errors=0；验收 **18/18**（最新）。
+
+## 5.13 零预算全链路验证：OpenAI 兼容适配层（2026-10-28）
+
+**问题**：引擎通过 openai SDK 说话（`base_url` + `chat.completions.create`），
+本地服务只提供 stage 化的 `/generate`。两者协议不通 ⇒「引擎 + 本地模型」这条链路
+**从未被端到端跑通过**，只能在有 API 预算时用云模型验证。预算耗尽后即失去回归能力。
+
+**做法**：新增 `scripts/local_model/openai_shim.py`（单文件、纯标准库）。
+`POST /v1/chat/completions` → 摊平 messages → 按 stage 转发 `/generate` → 回 OpenAI 形状。
+stage 分流：`model` 冒号后缀优先（`local:route`），否则按 prompt 特征推断，兜底 `self_check`。
+上游失败回 **503 + 原因**（不是 200 空内容 —— 那会让引擎把「端点坏了」当成「模型没话说」）。
+
+**实测（2026-10-28 00:12–00:32，本机 1660 Ti 6GB）**
+
+| 项 | 读数 |
+|---|---|
+| 服务启动 | `load_sec=9.3`、`warmup_ms=1022`、`gpu_mem_mb=1075`、4 个适配器全 ready |
+| 单次 `/generate`（route，41 tok） | **3.9s**，JSON 合法，`confidence=0.9364` |
+| 经 shim 走引擎 `LLM.call` | 成功；`stage_calls={'route':1}`、`stage_tokens={'route':171}` |
+| 引擎端到端（`--route 1 --rounds 1`，全本地档） | **12 calls / 22,844 tokens**，研究层跑满 2 圈后按「产物相似度高 + 连续 2 轮无新 &/线头」**正常收敛停止** |
+
+**暴露的边界（如实记录）**
+
+1. **大 prompt 超时**：研究层之后的环节（prompt 明显更长）由上游返回
+   `503 TIMEOUT`，每次耗时 ~110s。0.5B 在本机处理长 prompt 的时间边界就到这里，
+   这不是适配层的缺陷。
+2. ★ **引擎侧的浪费**：端点持续不可用时，引擎仍按 `max_retries=3` **逐次重试并吃满
+   单次超时** ⇒ 一次失败白耗 ~333s（日志实测 00:24:23 / 00:26:14 / 00:28:05 三次 503）。
+   生产里 API 熔断/限流时同样会踩。**这是下一轮要修的：失败熔断（opt-in，默认关）。**
+
+**定位**：本适配层是**回归工具**，不是质量替代品。0.5B 的输出质量远低于云模型，
+跑出来的读数只能看「链路是否通、归因是否非空、结构是否完整」，**不能当质量指标**。
+
+**用法**
+
+```bash
+# 1) 起本地服务（8772）与适配层（8773）
+local_model/envs/dgtf_llm_env/Scripts/python.exe dgtf_local_llm/service.py --port 8772 &
+python scripts/local_model/openai_shim.py --port 8773 &
+
+# 2) 生成全本地档配置（关联网、关 thinking、限 max_tokens）
+python _mk_local_config.py          # → _local_run.yaml
+
+# 3) 跑引擎（零 API 成本）
+DGTF_API_KEY=local-shim python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.5.py \
+  "HTTP 431 状态码表示什么？" -c _local_run.yaml --route 1 --rounds 1
+```
+
+判据：`scripts/local_model/test_openai_shim.py`（18 项，零 API / 零 GPU / 不占固定端口），
+已接入 `scripts/final_acceptance.py` 的 STEPS 末尾。

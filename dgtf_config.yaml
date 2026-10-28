@@ -1416,6 +1416,18 @@ output:
   verbose: true
   dump_rounds: false
 
+  # 【答案门】答案是否**针对本题**（另带跨视角一致性警示）。
+  # 【为什么】就绪门拦得住「空」，拦不住「偏」—— 实测三个反例都 answer_ready=True：
+  #   心率题答了定义（coverage 却 1.00）、HTTP 503 答成 Retry-After 头（0.90）、
+  #   HTTP 301 答「指定网址的方式」（0.50）。coverage 是子问题作答率，不是正确性。
+  # 【本机选择】block: true —— 相关性不过的跑次直接判未就绪。
+  # 【回退】block: false ⇒ 只写 quality.answer_gates 读数，判定一字不改。
+  # 【注意】agreement（α 低）**只警示不阻断**：α 低是三层真实分歧，不是答案错的
+  #   证据；实测拿它阻断会误杀 108 个正确答案。
+  answer_gates:
+    enabled: true
+    block: true
+
   # 【用途】是否打印对偶判断的每条候选细节。
   # 【建议】
   #   调对偶判断时：true

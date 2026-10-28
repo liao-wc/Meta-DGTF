@@ -1,0 +1,455 @@
+{
+ "n": 201,
+ "suspect": 56,
+ "suspect_but_ready": 3,
+ "details": [
+  {
+   "file": "20261019_085657_AI能否独立完成数字IC设计边界.packed.json",
+   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.3578
+  },
+  {
+   "file": "20261022_091935_用一句话说明元DGTF的修行层作用.packed.json",
+   "question": "用一句话说明元DGTF的修行层作用。",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": null
+  },
+  {
+   "file": "20261022_113206_元DGTF是什么？.packed.json",
+   "question": "【元DGTF 项目权威背景（内置，本地文档+资料库注入）】\n元DGTF 是一个本地四层螺旋推理引擎，版本 元DGTF-V1.30.0.py / 1.30.0。四层固定为：0 修行（展开/候选/锚点）、1 研究（证据/子问题/收敛）、both 对撞（裁决/冲突/线头）、all 元（闭环/决策/停止）。EML 是事件溯源记忆与自学习反馈层，含 V1 playbook 与 V2 schedule_outcome；DSH 是本机 DeepSeek Harness headless Agent，用于自动闭环、提案与源码修复。app 通过 dgtf_app/server.py 调用引擎子进程，提供任务、分层日志、调度策略、V2/EML/自洽审计、LLM LoRA 调度建议等接口。当前边界：本地 LLM 仅做 route/rounds 调度建议；四层深度推理仍走 DeepSeek API；项目知识需要显式注入，模型参数本身不含元DGTF事实。\n[S1] README.md: | 路径 | 是什么 | 能不能动 |\n|---|---|---|\n| `元DGTF-V1.23.*.py` | **主文件各版本**（99 个） | 只增不改；新版复制上一版再改 |\n| `smoke_test.py` | 冒烟判据（含 `SRC` 指向当前版） | 每版随之更新 |\n| `_mut_v12332.py` | 变异体清单（113 条） | 每版追加 |\n| `_v122_verify.py` / `_probe_v1232_audit.py` | 跨档验收 / 工程审计 | 同上 |\n| `_run_gate.py` / `_git_save.py` | 门禁包装 / 存档（四项防呆） | 同上 |\n| `dgtf_app/` | 本地 Web 工作台（标准库 + 原生前端） | 可改，须跑 selftest |\n| `dgtf_v2/` | V2 三平面参考内核（EML / 调度 / 四层契约） | **设计验证器，不接管生产**；不改 V1 引擎 |\n| `docs/` | 设计文档与**决策记录** | 只增；`docs/不做什么-v1221.md` 请先读；V2 见 `docs/元DGTF-V2-三平面架构.md` |\n| `docs/架构图/` | 整体架构图（PNG / SVG / Mermaid + 读图说明） | 只增；升版后同步重生成 |\n| `dgtf_memory/` | EML 记忆库（episodes / playbook / nogoods） | **运行数据，改动前先问** |\n| `outputs/` | 产物 | 永不删 |\n| `_mk_v1*.py` / `_chk_*.py` / `_bak_*` | 补丁 / 判据 / 备份**脚本**（约 1000 个） | **是证据链，不许删** |\n| `_archive/` | 归档备份（git 忽略） | 只增 |\n[S2] README.md: - **当前版本**：`元DGTF-V1.30.0.py`（单文件引擎）\n- **人用界面**：`dgtf_app/`（app V1.4.1；本地 Web 工作台，见 `dgtf_app/README.md`）\n- **版本历史**：`CHANGELOG.md`；app 发布说明见 `docs/releases/`\n[S3] docs/app_engine_mapping.md: 生成时间：2026-10-20（goal round 1）\n引擎：`元DGTF-V1.30.0.py`（__version__ = 1.30.0）\napp：`dgtf_app/`，入口 `server.py --port 8765`\n[S4] docs/app_engine_mapping.md: ```text\nengine 元DGTF-V1.30.0.py\n  → dgtf_v2.layers_*/orchestrator\n  → self_feedback / llm_feedback / online_adapt\n  → packed 产物\n  → dgtf_app.engine_runner / outputs_index / layers\n  → server.py /api/*\n  → static app.js UI\n```\n[S5] README.md: # 5) 应用端自检（371 项，需先起服务，mock 零花费）\nCODEBUDDY_SAFE_DELETE_ENABLED=0 python dgtf_app/server.py &\npython dgtf_app/selftest.py\n```\n[S6] README.md: - `dgtf_config.yaml` —— **出厂配置**（只读，201 个叶子键）\n- `dgtf_config.user.yaml` —— 用户改动（只存改过的键）\n- 加载优先级：`load_config()` 合并两者，`effective_flat()` 给 app 展示用\n【语义检索（BGE 本地）】\n[E1] dgtf_app/README.md: 给元DGTF 引擎套的一层人用界面：**提问 → 后台跑 → 实时进度 → 读产物**，\n外加一个可检索的**历史产物库**。\n[E2] README.md: ```bash\npython 元DGTF-V1.30.0.py \"一个领域里那些被当作常识的东西是怎么来的，它靠不靠得住\"\n[E3] docs/app_engine_mapping.md: - `layers`：中文层名（修行/研究/对撞/元），保持前端兼容；\n- `layers_by_id` / `layer_ids` / `stats_by_id`：规范 id `0/1/both/all`，供外部 API 与健康检查使用。\n[E4] README.md: - **当前版本**：`元DGTF-V1.30.0.py`（单文件引擎）\n- **人用界面**：`dgtf_app/`（app V1.3.0；本地 Web 工作台，见 `dgtf_app/README.md`）\n- **版本历史**：`CHANGELOG.md`；app 发布说明见 `docs/releases/`\n【回答约束】涉及元DGTF时必须依据以上背景；引用时标注 [S#]/[K#]/[I#]；背景没有的，明确说不知道，不得编造。\n\n【用户问题】\n元DGTF是什么？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.9333
+  },
+  {
+   "file": "20261022_183329_用一句话说明元DGTF的修行层作用.packed.json",
+   "question": "用一句话说明元DGTF的修行层作用。",
+   "verdict": "suspect",
+   "why": "缩写锚 'DGTF'",
+   "ready": false,
+   "cov": 0.9385
+  },
+  {
+   "file": "20261023_211218_用一句话说明四层推理系统的最小可行闭环是.packed.json",
+   "question": "用一句话说明四层推理系统的最小可行闭环是什么？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": null
+  },
+  {
+   "file": "20261024_071938_Python中len函数的作用是什.packed.json",
+   "question": "Python 中 len 函数的作用是什么？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.6865
+  },
+  {
+   "file": "20261024_072943_Python中len函数返回什么.packed.json",
+   "question": "Python 中 len 函数返回什么？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.5154
+  },
+  {
+   "file": "20261024_073909_Python中len函数的返回值是.packed.json",
+   "question": "Python 中 len 函数的返回值是什么类型？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.4964
+  },
+  {
+   "file": "20261024_113505_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.8098
+  },
+  {
+   "file": "20261025_014509_11等于几.packed.json",
+   "question": "1+1等于几？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.9739
+  },
+  {
+   "file": "20261025_051032_11等于几.packed.json",
+   "question": "1+1等于几？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 1.0
+  },
+  {
+   "file": "20261025_055506_11等于几.packed.json",
+   "question": "1+1等于几？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.8182
+  },
+  {
+   "file": "20261025_152215_珠穆朗玛峰的海拔是多少米.packed.json",
+   "question": "珠穆朗玛峰的海拔是多少米？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.4529
+  },
+  {
+   "file": "20261025_154501_珠穆朗玛峰的海拔是多少米.packed.json",
+   "question": "珠穆朗玛峰的海拔是多少米？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.4729
+  },
+  {
+   "file": "20261025_165802_黄河的长度是多少千米.packed.json",
+   "question": "黄河的长度是多少千米？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.725
+  },
+  {
+   "file": "20261025_165943_AIAgent会先取代哪类工作.packed.json",
+   "question": "AI Agent 会先取代哪类工作？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.4724
+  },
+  {
+   "file": "20261025_182547_2024年中国GDP增速最新数据是多少.packed.json",
+   "question": "2024年中国GDP增速最新数据是多少？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.48
+  },
+  {
+   "file": "20261025_183900_首例确凿的黑洞重复潮汐瓦解恒星事件说明了.packed.json",
+   "question": "首例确凿的黑洞重复潮汐瓦解恒星事件说明了什么？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.7015
+  },
+  {
+   "file": "20261025_213215_光在水中传播的速度是多少.packed.json",
+   "question": "光在水中传播的速度是多少？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.6037
+  },
+  {
+   "file": "20261025_222130_中国现行宪法是哪一年颁布的.packed.json",
+   "question": "中国现行宪法是哪一年颁布的？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.763
+  },
+  {
+   "file": "20261025_230757_这座中字形汉墓藏着什么.packed.json",
+   "question": "这座中字形汉墓藏着什么？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.3803
+  },
+  {
+   "file": "20261025_230918_2024年中国新能源汽车产量是多少万辆.packed.json",
+   "question": "2024年中国新能源汽车产量是多少万辆？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.5586
+  },
+  {
+   "file": "20261025_232539_2024年中国贸易顺差是多少亿美元.packed.json",
+   "question": "2024年中国贸易顺差是多少亿美元？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.8343
+  },
+  {
+   "file": "20261025_234802_2024年中国贸易顺差是多少亿美元.packed.json",
+   "question": "2024年中国贸易顺差是多少亿美元？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.9517
+  },
+  {
+   "file": "20261025_234818_我国法定结婚年龄是多少岁.packed.json",
+   "question": "我国法定结婚年龄是多少岁？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.9171
+  },
+  {
+   "file": "20261026_003642_扩内需与新质生产力会改变哪些行业.packed.json",
+   "question": "扩内需与新质生产力会改变哪些行业？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.3898
+  },
+  {
+   "file": "20261026_005109_奥林匹克五环的颜色有哪几种.packed.json",
+   "question": "奥林匹克五环的颜色有哪几种？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.7967
+  },
+  {
+   "file": "20261026_015800_成年人正常心率是多少次每分钟.packed.json",
+   "question": "成年人正常心率是多少次每分钟？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.7643
+  },
+  {
+   "file": "20261026_021829_成年人正常心率是多少次每分钟.packed.json",
+   "question": "成年人正常心率是多少次每分钟？",
+   "verdict": "suspect",
+   "why": "数值题·看是否给数",
+   "ready": true,
+   "cov": 1.0
+  },
+  {
+   "file": "20261026_032916_民法典规定多少岁成年.packed.json",
+   "question": "民法典规定多少岁成年？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.7357
+  },
+  {
+   "file": "20261026_070734_以下哪项属于可再生能源A煤炭B.packed.json",
+   "question": "以下哪项属于可再生能源？A. 煤炭 B. 太阳能 C. 石油 D. 天然气",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.8864
+  },
+  {
+   "file": "20261026_075640_智能体终端会怎样改变工作.packed.json",
+   "question": "智能体终端会怎样改变工作？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.5312
+  },
+  {
+   "file": "20261026_082829_联合国的总部设在哪个城市.packed.json",
+   "question": "联合国的总部设在哪个城市？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.7778
+  },
+  {
+   "file": "20261026_083812_联合国的总部设在哪个城市.packed.json",
+   "question": "联合国的总部设在哪个城市？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.74
+  },
+  {
+   "file": "20261026_091033_以下哪项属于可再生能源A煤炭B.packed.json",
+   "question": "以下哪项属于可再生能源？A. 煤炭 B. 太阳能 C. 石油 D. 天然气",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.5409
+  },
+  {
+   "file": "20261026_091917_以下哪项属于可再生能源A煤炭B.packed.json",
+   "question": "以下哪项属于可再生能源？A. 煤炭 B. 太阳能 C. 石油 D. 天然气",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.9708
+  },
+  {
+   "file": "20261026_092841_以下哪项属于可再生能源A煤炭B.packed.json",
+   "question": "以下哪项属于可再生能源？A. 煤炭 B. 太阳能 C. 石油 D. 天然气",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 1.0
+  },
+  {
+   "file": "20261026_095401_2024年我国货物贸易进出口总值是多少万.packed.json",
+   "question": "2024年我国货物贸易进出口总值是多少万亿元？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 1.0
+  },
+  {
+   "file": "20261026_110656_11等于几.packed.json",
+   "question": "1+1等于几？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.8143
+  },
+  {
+   "file": "20261026_120346_我国义务教育法规定小学入学年龄是多少岁.packed.json",
+   "question": "我国义务教育法规定小学入学年龄是多少岁？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 1.0
+  },
+  {
+   "file": "20261026_123404_我国现行法定节假日一年共有多少天.packed.json",
+   "question": "我国现行法定节假日一年共有多少天？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.7937
+  },
+  {
+   "file": "20261026_124247_我国现行法定节假日一年共有多少天.packed.json",
+   "question": "我国现行法定节假日一年共有多少天？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.4259
+  },
+  {
+   "file": "20261026_124248_世界卫生组织总部设在哪个城市.packed.json",
+   "question": "世界卫生组织总部设在哪个城市？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.9091
+  },
+  {
+   "file": "20261026_133140_截至2024年底我国高速公路总里程是多少.packed.json",
+   "question": "截至2024年底我国高速公路总里程是多少万公里？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 1.0
+  },
+  {
+   "file": "20261026_134352_截至2024年底我国高速公路总里程是多少.packed.json",
+   "question": "截至2024年底我国高速公路总里程是多少万公里？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.8737
+  },
+  {
+   "file": "20261026_135105_截至2024年底我国高速公路总里程是多少.packed.json",
+   "question": "截至2024年底我国高速公路总里程是多少万公里？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.8364
+  },
+  {
+   "file": "20261026_140833_奥运会每隔几年举办一次.packed.json",
+   "question": "奥运会每隔几年举办一次？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.7375
+  },
+  {
+   "file": "20261026_142914_2024年我国居民人均可支配收入是多少元.packed.json",
+   "question": "2024年我国居民人均可支配收入是多少元？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.9556
+  },
+  {
+   "file": "20261026_170458_部分血液蛋白水平与前列腺癌风险相关，这项.packed.json",
+   "question": "【Meta-DGTF-道生三阶模型 项目权威背景（内置，本地文档+资料库注入）】\nMeta-DGTF 是一个本地四层螺旋推理引擎，版本 dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.2.py / 2.2.2。四层固定为：0 修行（展开/候选/锚点）、1 研究（证据/子问题/收敛）、both 对撞（裁决/冲突/线头）、all 元（闭环/决策/停止）。EML 是事件溯源记忆与自学习反馈层，含 V1 playbook 与 V2 schedule_outcome；DSH 是本机 DeepSeek Harness headless Agent，用于自动闭环、提案与源码修复。app 通过 dgtf_app/server.py 调用引擎子进程，提供任务、分层日志、调度策略、V2/EML/自洽审计、LLM LoRA 调度建议等接口。当前边界：本地 LLM 仅做 route/rounds 调度建议；四层深度推理仍走 DeepSeek API；项目知识需要显式注入，模型参数本身不含Meta-DGTF事实。\n[S1] README.md: 一个**单文件四层螺旋推理引擎** + **V2 三平面核心** + **本地 Web 工作台**：\n修行 / 研究 / 对撞 / 元，跑出可审计、可回放、可融合的产物。\n[S2] docs/app_engine_mapping.md: - `layers`：中文层名（修行/研究/对撞/元），保持前端兼容；\n- `layers_by_id` / `layer_ids` / `stats_by_id`：规范 id `0/1/both/all`，供外部 API 与健康检查使用。\n[S3] README.md: | 层 | 目标 | 收敛形态 |\n|---|---|---|\n| 0 修行 | 用最少圈数把各层面挖尽 | 趋近无穷收敛（Heaps 饱和） |\n| 1 研究 | 用最少圈数给出确定答案 | 趋近有限收敛 |\n| both 对撞 | 无穷发散 ∩ 有限确定 ⇒ 融合生成新层面 | 产出率 ×(1−语义停滞罚) |\n| all 元 | 对前三层产物做记忆结晶 / 决策 / 行动 + 回看全程 | 四件事留痕完整度 |\n[S4] docs/app_engine_mapping.md: | 引擎层 | 引擎入口 | app 接口 | app UI |\n|---|---|---|---|\n| 0 修行 | layers_zero | `/api/tasks`、`/api/tasks/<id>/layers`、`/api/tasks/<id>/log` | 对话运行页、分层日志、四层折叠 |\n| 1 研究 | layers_one | 同上 | `#runlog-body` 的 rl-lane |\n| both 对撞 | layers_both | 同上 + `/api/outputs` | 对撞段、候选/悬置读数 |\n| all 元 | layers_all | 同上 + `/api/chats` | 元层、决策/停止读数 |\n| 四层汇总 | `layers.py` | `/api/tasks/<id>/layers`、`/api/outputs/facets` | 读数条、产物库 |\n[S5] README.md: - **当前版本**：V2.2.3（细粒度自省三档 + 环节思考预算 + 本地自省端点；默认零行为差） / App 2.0.31（道生专属模式 + 三体动态计划 + 预算守卫）\n- **生产引擎**：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.3.py\n- **V2 核心**：dgtf_engine/dgtf_v2/\n- **人用界面**：dgtf_app/（App 2.0.31，道生专属模式 + DSH 本对话实时镜像 + 会话列表实时打开 + 健康读数缓存）\n- **融合实现**：单引擎内联（Meta-DGTF-V2.2.3.py）；V2.1 外部模块仅作回滚参考\n- **历史清单**：dgtf_engine/dgtf_v2/history_manifest.json\n- **版本规范**：dgtf_engine/dgtf_v2/NAMING.md\n- **历史归档**：元DGTF-V1历史归档-20261023.zip（V1.0 → V1.30.4）\n[S6] README.md: Meta-DGTF-道生三阶模型源于用户与 DGTF 的长对话（分享 ID: 44iynplni6iqr4am3f），\n从 V1.0 的单文件四层螺旋引擎演化而来。\n【本地资料库（导入/检索）】\n- [K1] DeepSeek开源DeepInfer推理框架，支撑其生产级服务 | # DeepSeek开源DeepInfer推理框架，支撑其生产级服务\n\nDeepSeek开源其生产服务所用推理框架DeepInfer，目前支持DeepSeek-V4.1-Flash模型，兼容英伟达Blackwell及华为昇腾950 NPU。单集群日处理155万亿tokens，非高峰定价下每GPU每小时收入达38美元。KV缓存管理与负载均衡代码因与内部基础设施耦合暂未开放。\n\n中国人工智能创业公司杭州深度求索人工智能基础技术研究有限公司今日开源了DeepInfer，这是支撑其自身生产服务的推理框架。\n\n此次发布直面向公众提供大模型服务的成本问题。DeepSeek在随代码一同发布的部署问答文档中表示，以合理价格触达海量用户是\"推理框架必须解决的核心问题\"。据同一文档披露，目前一个集群每天处理155万亿个Token，按非高峰时段定价计算，每个图形处理器每小时能带来38美元的收入。\n\n目前DeepInfer仅支持一款模型，即DeepSeek-V4.1-Flash，默认加载的是DeepSeek上周末发布的更新版本1017。英伟达公司的SM100 Blackwell图形处理器可以运行该框架，华为技 | https://www.zhiding.cn/models/2026/1022/3203200.shtml\n【回答约束】涉及Meta-DGTF时必须依据以上背景；引用时标注 [S#]/[K#]/[I#]；背景没有的，明确说不知道，不得编造。\n\n【项目自进化记忆（EML · 相关性摘要）】\n- 经验索引：active 33 条（guard×5/probe×20/schedule×8）；最高证据 L0003 [schedule] {\"issue\": \"cut\", \"layer\": \"0\"} ⇒ `{\"key\": \"rounds_delta\", \"layer\": \"0\", \"delta\": 1}`（证据 223，反向 53）\n- 玩法库：80 条（active 4 / shadow 76；本题未命中词面相关条目）\n- 近 80 次跑次：模式 B×65/serial×15；tokens 中位 678k；被砍层比例 91%；web 比例 90%；圈数上限中位 {\"0\": 2.0, \"1\": 2.0, \"both\": 2.0, \"all\": 2.0}\n- 最近跑次 20261026_143720（B，790k tokens）\n\n【用户问题】\n部分血液蛋白水平与前列腺癌风险相关，这项研究说明了什么？",
+   "verdict": "suspect",
+   "why": "数字锚 '20261'",
+   "ready": false,
+   "cov": 0.8475
+  },
+  {
+   "file": "20261026_183807_2024年末我国外汇储备余额是多少亿美元.packed.json",
+   "question": "2024年末我国外汇储备余额是多少亿美元？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 1.0
+  },
+  {
+   "file": "20261026_185454_缓解社交焦虑AI效果接近人类治疗师这.packed.json",
+   "question": "缓解社交焦虑，AI效果接近人类治疗师，这说明什么？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.9579
+  },
+  {
+   "file": "20261026_185946_缓解社交焦虑AI效果接近人类治疗师这.packed.json",
+   "question": "缓解社交焦虑，AI效果接近人类治疗师，这说明什么？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.72
+  },
+  {
+   "file": "20261027_084237_HTTP301状态码表示什么.packed.json",
+   "question": "HTTP 301状态码表示什么？",
+   "verdict": "suspect",
+   "why": "数字锚 '301'",
+   "ready": true,
+   "cov": 0.4967
+  },
+  {
+   "file": "20261027_130623_HTTP503状态码表示什么.packed.json",
+   "question": "HTTP 503状态码表示什么？",
+   "verdict": "suspect",
+   "why": "数字锚 '503'",
+   "ready": true,
+   "cov": 0.9
+  },
+  {
+   "file": "20261027_203744_HTTP426状态码表示什么.packed.json",
+   "question": "HTTP 426状态码表示什么？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.5447
+  },
+  {
+   "file": "20261027_210635_HTTP428状态码表示什么.packed.json",
+   "question": "HTTP 428状态码表示什么？",
+   "verdict": "empty",
+   "why": "答案为空",
+   "ready": false,
+   "cov": 0.6833
+  }
+ ]
+}

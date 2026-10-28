@@ -132,3 +132,9 @@ output:
   #    实验档（auto_narr/auto/local）只允许在显式 opt-in 的预算实验中使用。
   self_check_mode: llm
   dual_judge_mode: llm
+
+# ---- V2 影子调度：只观察、不改变执行；让 V2 面板持续有真实事件 ----
+scheduler:
+  v2:
+    shadow: true
+    eml_path: dgtf_memory/v2_events.jsonl

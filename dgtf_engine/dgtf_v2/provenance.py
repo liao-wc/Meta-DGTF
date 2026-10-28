@@ -16,7 +16,58 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-ENGINE_FILE = "dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.4.py"
+def _engine_path():
+    """真正在跑的引擎文件路径（缓存）。
+
+    本模块由引擎 import ⇒ `__main__.__file__` 就是那个引擎脚本（最准）；
+    取不到（pytest / 被别的主程序 import）⇒ 退回「引擎目录里的最高版本」。
+    ★ 绝不写死版本号：写死会立刻过期，而且 `engine_file` 与 `engine_version`
+      会各写各的 —— 实测出现过两个字段相差一个版本的自相矛盾，
+      而这个模块存在的理由就是「质量能归因到版本」。
+    """
+    if "engine_path" in _CACHE:
+        return _CACHE["engine_path"]
+    p = None
+    try:
+        import __main__
+        _mf = str(getattr(__main__, "__file__", "") or "")
+        if "Meta-DGTF-V" in _mf:
+            p = Path(_mf)
+    except Exception:  # noqa: BLE001
+        p = None
+    if p is None:
+        best = None
+        for f in (ROOT / "dgtf_engine" / "dgtf_v2" / "engine").glob(
+                "Meta-DGTF-V*.py"):
+            m = re.search(r"V(\d+)\.(\d+)\.(\d+)", f.name)
+            if not m:
+                continue
+            key = tuple(int(x) for x in m.groups())
+            if best is None or key > best[0]:
+                best = (key, f)
+        p = best[1] if best else None
+    _CACHE["engine_path"] = p
+    return p
+
+
+def engine_file() -> str:
+    """当前引擎相对仓库根的路径；取不到时明确写 unknown（不编造）。"""
+    p = _engine_path()
+    if p is None:
+        return "unknown"
+    try:
+        return p.resolve().relative_to(ROOT.resolve()).as_posix()
+    except Exception:  # noqa: BLE001
+        return p.as_posix()
+
+
+def engine_version() -> str:
+    """引擎版本 —— 从**与 engine_file 同一个文件名**推导，不可能对不上。"""
+    p = _engine_path()
+    if p is None:
+        return "unknown"
+    m = re.search(r"V(\d+\.\d+\.\d+)", p.name)
+    return ("V" + m.group(1)) if m else "unknown"
 _CACHE: dict = {}
 
 
@@ -73,8 +124,8 @@ def artifact_provenance(config=None) -> dict:
     """一次产物该带的版本指纹（轻量、可缓存）。"""
     return {
         "schema": 1,
-        "engine_file": ENGINE_FILE,
-        "engine_version": "V2.2.3",
+        "engine_file": engine_file(),
+        "engine_version": engine_version(),
         "git_sha": git_short_sha(),
         "app_version": app_version(),
         "python": sys.version.split()[0],

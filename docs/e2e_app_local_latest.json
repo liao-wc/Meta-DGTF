@@ -1,0 +1,117 @@
+{
+  "ok": true,
+  "question": "成年人正常心率是多少次每分钟",
+  "wall_sec": 14.6,
+  "exit": 0,
+  "packed": "D:\\Meta-DGTF-道生三阶模型\\outputs\\_e2e_local\\20261028_094404_成年人正常心率是多少次每分钟.packed.json",
+  "quality_keys": [
+    "alert",
+    "answer_gates",
+    "answer_quality",
+    "answer_ready",
+    "answer_ready_reason",
+    "answer_summary",
+    "answerable_total",
+    "answered",
+    "coverage",
+    "coverage_basis",
+    "decision_actions",
+    "depth",
+    "flags",
+    "flags_info",
+    "flags_normalized",
+    "layers",
+    "not_do",
+    "process_flags",
+    "process_ready",
+    "raw_answer_ready",
+    "tri_agreement",
+    "tri_agreement_raw",
+    "tri_alpha",
+    "tri_alpha_kind",
+    "tri_alpha_units",
+    "tri_alpha_verdict",
+    "tri_consistency",
+    "tri_distribution",
+    "tri_kappa",
+    "tri_quality",
+    "tri_ratio",
+    "tri_ratio_kind",
+    "tri_ratio_note",
+    "tri_reliable",
+    "tri_state",
+    "tri_test_retest_alpha",
+    "tri_test_retest_units",
+    "tri_unreliable",
+    "verification"
+  ],
+  "answer_gates": {
+    "schema": "dgtf.answer_gates.v1",
+    "verdict": "caveat",
+    "relevance": {
+      "verdict": "ok",
+      "reason": "数值题：答案已给出数值",
+      "anchor": "digit",
+      "kind": "numeric"
+    },
+    "agreement": {
+      "verdict": "unknown",
+      "reason": "无 α 读数",
+      "alpha": null
+    },
+    "qtype": "fact"
+  },
+  "llm_by_stage": [
+    {
+      "stage": "expand_pair_merged",
+      "calls": 2,
+      "tokens": 4224,
+      "ms": 21
+    },
+    {
+      "stage": "expand_pair_merged_fixup",
+      "calls": 2,
+      "tokens": 4224,
+      "ms": 38
+    },
+    {
+      "stage": "manifest",
+      "calls": 2,
+      "tokens": 4224,
+      "ms": 29
+    },
+    {
+      "stage": "re_anchor",
+      "calls": 2,
+      "tokens": 4224,
+      "ms": 33
+    },
+    {
+      "stage": "decompose_normal",
+      "calls": 1,
+      "tokens": 1191,
+      "ms": 24
+    },
+    {
+      "stage": "json_repair",
+      "calls": 2,
+      "tokens": 1164,
+      "ms": 0
+    },
+    {
+      "stage": "check_input_sanity",
+      "calls": 1,
+      "tokens": 1077,
+      "ms": 1152
+    },
+    {
+      "stage": "assess_decidability",
+      "calls": 1,
+      "tokens": 995,
+      "ms": 6
+    }
+  ],
+  "llm_calls": 13,
+  "checks": 18,
+  "fails": []
+}

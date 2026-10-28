@@ -1,5 +1,5 @@
 {
- "n_valid_runs": 143,
+ "n_valid_runs": 165,
  "since": "",
  "matrix": {
   "reasoning": {
@@ -491,6 +491,26 @@
       "quality": 0.9409,
       "tokens": 711596,
       "wall": 276.8,
+      "verified": true
+     }
+    ]
+   },
+   "serial+web": {
+    "n_runs": 1,
+    "n_verified": 1,
+    "quality_mean": 0.96,
+    "quality_mean_all": 0.96,
+    "tokens_mean": 648536,
+    "wall_mean": 331.8,
+    "verified_ratio": 1.0,
+    "latest_tag": "v144-dj-serial-lock",
+    "latest_quality": 0.9603,
+    "samples": [
+     {
+      "tag": "v144-dj-serial-lock",
+      "quality": 0.9603,
+      "tokens": 648536,
+      "wall": 331.8,
       "verified": true
      }
     ]

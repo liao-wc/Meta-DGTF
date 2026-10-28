@@ -1,908 +1,17 @@
 {
- "n_today": 53,
- "today_answered": 44,
- "today_gaps_cleared": 9,
+ "n_today": 45,
+ "today_answered": 39,
+ "today_gaps_cleared": 8,
  "today_numeric_before": 22,
- "today_numeric_after": 27,
- "n_fact_replayed": 124,
- "n_numeric": 56,
- "answered_now": 81,
- "gaps_cleared": 17,
- "numeric_answer_before": 34,
- "numeric_answer_after": 38,
- "official_now": 119,
+ "today_numeric_after": 22,
+ "n_fact_replayed": 164,
+ "n_numeric": 90,
+ "answered_now": 156,
+ "gaps_cleared": 27,
+ "numeric_answer_before": 58,
+ "numeric_answer_after": 59,
+ "official_now": 156,
  "rows": [
-  {
-   "file": "20261020_015222_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "sparse": false,
-   "stored_status": "conflict",
-   "stored_gaps": [
-    "no_official_source",
-    "conflict_unresolved"
-   ],
-   "stored_official": [],
-   "stored_answer": "",
-   "new_status": "unknown",
-   "new_gaps": [
-    "insufficient_evidence"
-   ],
-   "new_official": [
-    "E4",
-    "E7",
-    "E8"
-   ],
-   "new_answer": "",
-   "new_display": "",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261020_015933_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "sparse": false,
-   "stored_status": "conflict",
-   "stored_gaps": [
-    "no_official_source",
-    "conflict_unresolved"
-   ],
-   "stored_official": [],
-   "stored_answer": "",
-   "new_status": "unknown",
-   "new_gaps": [
-    "insufficient_evidence"
-   ],
-   "new_official": [
-    "E4",
-    "E10",
-    "E13"
-   ],
-   "new_answer": "",
-   "new_display": "",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261020_022537_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E1",
-    "E2",
-    "E3",
-    "E46"
-   ],
-   "stored_answer": "# DeepSeek V4.1 Flash 新版本：许愿式编程一键成真\n\nDeepSeek V4.1 Flash 现已更新至 V4.1-Flash-1017 版本，官方网页端、AP",
-   "new_status": "unknown",
-   "new_gaps": [
-    "insufficient_evidence"
-   ],
-   "new_official": [
-    "E1",
-    "E2",
-    "E3",
-    "E46"
-   ],
-   "new_answer": "",
-   "new_display": "",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261020_023407_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E1",
-    "E2",
-    "E3"
-   ],
-   "stored_answer": "[2026-10-16T16:00:00+00:00] # DeepSeek V4.1 Flash 新版本：许愿式编程一键成真 DeepSeek V4.1 Flash 现已更新至 ",
-   "new_status": "unknown",
-   "new_gaps": [
-    "insufficient_evidence"
-   ],
-   "new_official": [
-    "E1",
-    "E2",
-    "E3"
-   ],
-   "new_answer": "",
-   "new_display": "",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261020_055412_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "sparse": false,
-   "stored_status": "conflict",
-   "stored_gaps": [
-    "conflict_unresolved"
-   ],
-   "stored_official": [
-    "E1",
-    "E2",
-    "E3",
-    "E10"
-   ],
-   "stored_answer": "",
-   "new_status": "unknown",
-   "new_gaps": [
-    "insufficient_evidence"
-   ],
-   "new_official": [
-    "E1",
-    "E2",
-    "E3",
-    "E10"
-   ],
-   "new_answer": "",
-   "new_display": "",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261020_060016_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E1"
-   ],
-   "stored_answer": "2026-10-16",
-   "new_status": "unknown",
-   "new_gaps": [
-    "insufficient_evidence"
-   ],
-   "new_official": [
-    "E1",
-    "E2",
-    "E3",
-    "E15"
-   ],
-   "new_answer": "",
-   "new_display": "",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261020_065509_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E1"
-   ],
-   "stored_answer": "2026-10-17",
-   "new_status": "unknown",
-   "new_gaps": [
-    "insufficient_evidence"
-   ],
-   "new_official": [
-    "E1",
-    "E2",
-    "E3"
-   ],
-   "new_answer": "",
-   "new_display": "",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261020_071351_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E1"
-   ],
-   "stored_answer": "2026-10-17",
-   "new_status": "unknown",
-   "new_gaps": [
-    "insufficient_evidence"
-   ],
-   "new_official": [
-    "E1",
-    "E2",
-    "E3",
-    "E44"
-   ],
-   "new_answer": "",
-   "new_display": "",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261020_072240_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E1"
-   ],
-   "stored_answer": "2026-10-17",
-   "new_status": "unknown",
-   "new_gaps": [
-    "insufficient_evidence"
-   ],
-   "new_official": [
-    "E1",
-    "E2",
-    "E3"
-   ],
-   "new_answer": "",
-   "new_display": "",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261020_073134_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E1"
-   ],
-   "stored_answer": "2026-10-17",
-   "new_status": "unknown",
-   "new_gaps": [
-    "insufficient_evidence"
-   ],
-   "new_official": [
-    "E1",
-    "E2",
-    "E3"
-   ],
-   "new_answer": "",
-   "new_display": "",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261020_073959_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E1"
-   ],
-   "stored_answer": "2026-10-17",
-   "new_status": "unknown",
-   "new_gaps": [
-    "insufficient_evidence"
-   ],
-   "new_official": [
-    "E1",
-    "E2",
-    "E3",
-    "E11",
-    "E24"
-   ],
-   "new_answer": "",
-   "new_display": "",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261020_081008_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E1",
-    "E49"
-   ],
-   "stored_answer": "2026-10-17",
-   "new_status": "unknown",
-   "new_gaps": [
-    "insufficient_evidence"
-   ],
-   "new_official": [
-    "E1",
-    "E2",
-    "E3",
-    "E42",
-    "E49"
-   ],
-   "new_answer": "",
-   "new_display": "",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261020_083208_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E1"
-   ],
-   "stored_answer": "2026-10-17",
-   "new_status": "unknown",
-   "new_gaps": [
-    "insufficient_evidence"
-   ],
-   "new_official": [
-    "E1",
-    "E2",
-    "E3",
-    "E29"
-   ],
-   "new_answer": "",
-   "new_display": "",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261020_090210_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E1"
-   ],
-   "stored_answer": "2026-10-17",
-   "new_status": "unknown",
-   "new_gaps": [
-    "insufficient_evidence"
-   ],
-   "new_official": [
-    "E1",
-    "E2",
-    "E3",
-    "E31"
-   ],
-   "new_answer": "",
-   "new_display": "",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261020_092123_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E1"
-   ],
-   "stored_answer": "2026-10-17",
-   "new_status": "unknown",
-   "new_gaps": [
-    "insufficient_evidence"
-   ],
-   "new_official": [
-    "E1",
-    "E2",
-    "E3",
-    "E17"
-   ],
-   "new_answer": "",
-   "new_display": "",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261020_094536_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E1",
-    "E29",
-    "E54"
-   ],
-   "stored_answer": "2026-10-17",
-   "new_status": "unknown",
-   "new_gaps": [
-    "insufficient_evidence"
-   ],
-   "new_official": [
-    "E1",
-    "E2",
-    "E3",
-    "E29",
-    "E46",
-    "E54"
-   ],
-   "new_answer": "",
-   "new_display": "",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261020_100816_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E1"
-   ],
-   "stored_answer": "2026-10-17",
-   "new_status": "unknown",
-   "new_gaps": [
-    "insufficient_evidence"
-   ],
-   "new_official": [
-    "E1",
-    "E2",
-    "E3",
-    "E36"
-   ],
-   "new_answer": "",
-   "new_display": "",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261020_102957_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E1",
-    "E55"
-   ],
-   "stored_answer": "2026-10-17",
-   "new_status": "unknown",
-   "new_gaps": [
-    "insufficient_evidence"
-   ],
-   "new_official": [
-    "E1",
-    "E2",
-    "E3",
-    "E49",
-    "E55"
-   ],
-   "new_answer": "",
-   "new_display": "",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261020_105722_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E1"
-   ],
-   "stored_answer": "2026-10-17",
-   "new_status": "unknown",
-   "new_gaps": [
-    "insufficient_evidence"
-   ],
-   "new_official": [
-    "E1",
-    "E2",
-    "E3",
-    "E41",
-    "E42"
-   ],
-   "new_answer": "",
-   "new_display": "",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261020_111220_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E1"
-   ],
-   "stored_answer": "2026-10-17",
-   "new_status": "unknown",
-   "new_gaps": [
-    "insufficient_evidence"
-   ],
-   "new_official": [
-    "E1",
-    "E2",
-    "E3",
-    "E41",
-    "E42",
-    "E48"
-   ],
-   "new_answer": "",
-   "new_display": "",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261020_113141_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E1"
-   ],
-   "stored_answer": "2026-10-17",
-   "new_status": "unknown",
-   "new_gaps": [
-    "insufficient_evidence"
-   ],
-   "new_official": [
-    "E1",
-    "E2",
-    "E3",
-    "E38",
-    "E39"
-   ],
-   "new_answer": "",
-   "new_display": "",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261020_113213_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "sparse": false,
-   "stored_status": "conflict",
-   "stored_gaps": [
-    "conflict_unresolved"
-   ],
-   "stored_official": [
-    "E1"
-   ],
-   "stored_answer": "",
-   "new_status": "unknown",
-   "new_gaps": [
-    "insufficient_evidence"
-   ],
-   "new_official": [
-    "E1",
-    "E2",
-    "E3"
-   ],
-   "new_answer": "",
-   "new_display": "",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261020_121030_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E1"
-   ],
-   "stored_answer": "2026-10-17",
-   "new_status": "unknown",
-   "new_gaps": [
-    "insufficient_evidence"
-   ],
-   "new_official": [
-    "E1",
-    "E2",
-    "E3",
-    "E41"
-   ],
-   "new_answer": "",
-   "new_display": "",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261020_122958_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E1"
-   ],
-   "stored_answer": "2026-10-17",
-   "new_status": "unknown",
-   "new_gaps": [
-    "insufficient_evidence"
-   ],
-   "new_official": [
-    "E1",
-    "E2",
-    "E3"
-   ],
-   "new_answer": "",
-   "new_display": "",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261020_131656_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [
-    "single_source"
-   ],
-   "stored_official": [
-    "E1"
-   ],
-   "stored_answer": "2026-10-17",
-   "new_status": "unknown",
-   "new_gaps": [
-    "insufficient_evidence"
-   ],
-   "new_official": [
-    "E1",
-    "E2",
-    "E3",
-    "E29",
-    "E30",
-    "E31",
-    "E44",
-    "E45"
-   ],
-   "new_answer": "",
-   "new_display": "",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261020_132800_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E1"
-   ],
-   "stored_answer": "2026-10-17",
-   "new_status": "unknown",
-   "new_gaps": [
-    "insufficient_evidence"
-   ],
-   "new_official": [
-    "E1",
-    "E2",
-    "E3"
-   ],
-   "new_answer": "",
-   "new_display": "",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261020_135317_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E1"
-   ],
-   "stored_answer": "2026-10-17",
-   "new_status": "answered",
-   "new_gaps": [],
-   "new_official": [
-    "E1",
-    "E2",
-    "E3"
-   ],
-   "new_answer": "工具 search_web({'query': 'DeepSeek-V4.1-Flash-1017 发布'}) 返回：- 딥시크, AI모델 업그레이드…\"더 빠르고 값싸게 임무",
-   "new_display": "工具 search_web({'query': 'DeepSeek-V4.1-Flash-1017 发布'}) 返回：- 딥시크, AI모델 업그레이드…\"더 빠르고 값싸게 임무",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261020_144637_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E1"
-   ],
-   "stored_answer": "2026-10-17",
-   "new_status": "unknown",
-   "new_gaps": [
-    "insufficient_evidence"
-   ],
-   "new_official": [
-    "E1",
-    "E2",
-    "E3",
-    "E29",
-    "E31",
-    "E52"
-   ],
-   "new_answer": "",
-   "new_display": "",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261020_150402_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E1"
-   ],
-   "stored_answer": "2026-10-17",
-   "new_status": "unknown",
-   "new_gaps": [
-    "insufficient_evidence"
-   ],
-   "new_official": [
-    "E1",
-    "E2",
-    "E3",
-    "E54"
-   ],
-   "new_answer": "",
-   "new_display": "",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261020_152037_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E1"
-   ],
-   "stored_answer": "2026-10-17",
-   "new_status": "unknown",
-   "new_gaps": [
-    "insufficient_evidence"
-   ],
-   "new_official": [
-    "E1",
-    "E2",
-    "E3",
-    "E26",
-    "E27",
-    "E28"
-   ],
-   "new_answer": "",
-   "new_display": "",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261020_152217_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E1"
-   ],
-   "stored_answer": "2026-10-17",
-   "new_status": "unknown",
-   "new_gaps": [
-    "insufficient_evidence"
-   ],
-   "new_official": [
-    "E1",
-    "E2",
-    "E3"
-   ],
-   "new_answer": "",
-   "new_display": "",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261020_154010_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E1"
-   ],
-   "stored_answer": "2026-10-17",
-   "new_status": "unknown",
-   "new_gaps": [
-    "insufficient_evidence"
-   ],
-   "new_official": [
-    "E1",
-    "E2",
-    "E3",
-    "E27",
-    "E28",
-    "E45",
-    "E46"
-   ],
-   "new_answer": "",
-   "new_display": "",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
   {
    "file": "20261022_091935_用一句话说明元DGTF的修行层作用.packed.json",
    "question": "用一句话说明元DGTF的修行层作用。",
@@ -955,165 +64,6 @@
    "gaps_cleared": false
   },
   {
-   "file": "20261022_185552_DeepSeekAPI的base.packed.json",
-   "question": "DeepSeek API 的 base URL 是什么？",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E5",
-    "E8",
-    "E10",
-    "E43",
-    "E45"
-   ],
-   "stored_answer": "import OpenAI from \"openai\"; const openai = new OpenAI({ baseURL: ' apiKey: process.env.DE",
-   "new_status": "unknown",
-   "new_gaps": [
-    "insufficient_evidence"
-   ],
-   "new_official": [
-    "E5",
-    "E8",
-    "E10",
-    "E43",
-    "E45"
-   ],
-   "new_answer": "",
-   "new_display": "",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261022_192541_HTTP404状态码表示什么.packed.json",
-   "question": "HTTP 404 状态码表示什么？",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [
-    "no_official_source",
-    "uncovered:状态码表示什么"
-   ],
-   "stored_official": [],
-   "stored_answer": "CTFshow-CRYPTO（持续更新） 密 _码_ 学签到 }wohs.ftc{galf 将字符串逆序即可 letters = '}wohs.ftc{galf' a = list",
-   "new_status": "answered",
-   "new_gaps": [],
-   "new_official": [
-    "E2",
-    "E28",
-    "E34",
-    "E35",
-    "E46"
-   ],
-   "new_answer": "跳转到主要内容 跳转到搜索 切换侧边栏 1. 面向开发者的 Web 技术 2. HTTP 3. 参考 4. HTTP 响应状态码 5. 404 Not Found 记住语言 了解更",
-   "new_display": "跳转到主要内容 跳转到搜索 切换侧边栏 1. 面向开发者的 Web 技术 2. HTTP 3. 参考 4. HTTP 响应状态码 5. 404 Not Found 记住语言 了解更",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": true
-  },
-  {
-   "file": "20261022_195840_Python中len函数的作用.packed.json",
-   "question": "Python 中 len() 函数的作用是什么？",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [
-    "uncovered:函数的作用"
-   ],
-   "stored_official": [
-    "E13",
-    "E26",
-    "E31"
-   ],
-   "stored_answer": "类型构造器 `list(seq)` 可将任意序列或可迭代对象转换为数据项和顺序均不变的列表。例如，`list((1,2,3))` 会生成 `[1,2,3]` 而 `list('ab",
-   "new_status": "answered",
-   "new_gaps": [],
-   "new_official": [
-    "E13",
-    "E26",
-    "E31"
-   ],
-   "new_answer": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
-   "new_display": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": true
-  },
-  {
-   "file": "20261022_202654_Python中len函数的作用.packed.json",
-   "question": "Python 中 len() 函数的作用是什么？",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E12",
-    "E30",
-    "E46",
-    "E51"
-   ],
-   "stored_answer": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
-   "new_status": "answered",
-   "new_gaps": [],
-   "new_official": [
-    "E12",
-    "E30",
-    "E46",
-    "E51"
-   ],
-   "new_answer": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
-   "new_display": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261023_082429_Python中len函数的作用.packed.json",
-   "question": "Python 中 len() 函数的作用是什么？",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E12"
-   ],
-   "stored_answer": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
-   "new_status": "answered",
-   "new_gaps": [],
-   "new_official": [
-    "E12"
-   ],
-   "new_answer": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
-   "new_display": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261023_V2.2.0_full_baseline_replay.packed.json",
-   "question": "Python 中 len() 函数的作用是什么？",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E12"
-   ],
-   "stored_answer": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
-   "new_status": "answered",
-   "new_gaps": [],
-   "new_official": [
-    "E12"
-   ],
-   "new_answer": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
-   "new_display": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
    "file": "20261024_071938_Python中len函数的作用是什.packed.json",
    "question": "Python 中 len 函数的作用是什么？",
    "sparse": false,
@@ -1137,7 +87,7 @@
     "E48"
    ],
    "new_answer": "在Python中，len()函数用来确定给定对象中的元素的数量。它可以作用于各种数据类型，如列表、字符串、元组和字典等。 使用len()函数 len()函数的语法非常简单： len",
-   "new_display": "在Python中，len()函数用来确定给定对象中的元素的数量。它可以作用于各种数据类型，如列表、字符串、元组和字典等。 使用len()函数 len()函数的语法非常简单： len",
+   "new_display": "在Python中",
    "numeric_q": false,
    "stored_answer_numeric": false,
    "new_answer_numeric": false,
@@ -1211,66 +161,6 @@
    "gaps_cleared": false
   },
   {
-   "file": "20261024_082341_Python中len函数的作用是什.packed.json",
-   "question": "Python 中 len 函数的作用是什么？",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E19",
-    "E20",
-    "E21",
-    "E22",
-    "E38",
-    "E57",
-    "E66"
-   ],
-   "stored_answer": "在Python中，len()函数用来确定给定对象中的元素的数量。它可以作用于各种数据类型，如列表、字符串、元组和字典等。 使用len()函数 len()函数的语法非常简单： len",
-   "new_status": "answered",
-   "new_gaps": [],
-   "new_official": [
-    "E19",
-    "E20",
-    "E21",
-    "E22",
-    "E38",
-    "E57",
-    "E66"
-   ],
-   "new_answer": "在Python中，len()函数用来确定给定对象中的元素的数量。它可以作用于各种数据类型，如列表、字符串、元组和字典等。 使用len()函数 len()函数的语法非常简单： len",
-   "new_display": "在Python中，len()函数用来确定给定对象中的元素的数量。它可以作用于各种数据类型，如列表、字符串、元组和字典等。 使用len()函数 len()函数的语法非常简单： len",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261024_083648_Python中len函数的作用是什.packed.json",
-   "question": "Python 中 len 函数的作用是什么？",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E30",
-    "E40",
-    "E44"
-   ],
-   "stored_answer": "在Python中，len()函数用来确定给定对象中的元素的数量。它可以作用于各种数据类型，如列表、字符串、元组和字典等。 使用len()函数 len()函数的语法非常简单： len",
-   "new_status": "answered",
-   "new_gaps": [],
-   "new_official": [
-    "E30",
-    "E40",
-    "E44"
-   ],
-   "new_answer": "在Python中，len()函数用来确定给定对象中的元素的数量。它可以作用于各种数据类型，如列表、字符串、元组和字典等。 使用len()函数 len()函数的语法非常简单： len",
-   "new_display": "在Python中，len()函数用来确定给定对象中的元素的数量。它可以作用于各种数据类型，如列表、字符串、元组和字典等。 使用len()函数 len()函数的语法非常简单： len",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
    "file": "20261024_113505_为什么城市热岛效应在夜间比白天更明显.packed.json",
    "question": "为什么城市热岛效应在夜间比白天更明显？",
    "sparse": false,
@@ -1305,84 +195,6 @@
    "gaps_cleared": false
   },
   {
-   "file": "20261024_163141_DeepSeekV41Flash.packed.json",
-   "question": "DeepSeek V4.1 Flash 是哪一天发布的？",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E1",
-    "E5",
-    "E13",
-    "E14",
-    "E44"
-   ],
-   "stored_answer": "[2026-09-10] ## Date: ... ### DeepSeek-V4-Flash Update The official release of the DeepSee",
-   "new_status": "answered",
-   "new_gaps": [],
-   "new_official": [
-    "E1",
-    "E5",
-    "E13",
-    "E14",
-    "E44"
-   ],
-   "new_answer": "Date: ... DeepSeek-V4-Flash Update The official release of the DeepSeek-V4-Flash API is no",
-   "new_display": "Date: ... DeepSeek-V4-Flash Update The official release of the DeepSeek-V4-Flash API is no",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261025_022430_11等于几.packed.json",
-   "question": "1+1等于几？",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [
-    "no_official_source"
-   ],
-   "stored_official": [],
-   "stored_answer": "[2022-09-29] # 1+1等于几？ ... 1+1可以等于2，也可以等于3，也可以等于4，这要根据具体的情况具体分析",
-   "new_status": "answered",
-   "new_gaps": [
-    "no_official_source"
-   ],
-   "new_official": [],
-   "new_answer": "1+1等于几 脑筋急转弯 10种 ... 咱们分情况说 第一种情况，你所说的 1 + 1 如果是单纯的小学算术式，还得分以下几种情况 ① 如果两个“1”的单位相同，则结果是2.比如",
-   "new_display": "1米",
-   "numeric_q": true,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": true,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261025_050504_11等于几.packed.json",
-   "question": "1+1等于几？",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E19",
-    "E26",
-    "E29"
-   ],
-   "stored_answer": "[2022-09-29] # 1+1等于几？ ... 1+1可以等于2，也可以等于3，也可以等于4，这要根据具体的情况具体分析",
-   "new_status": "answered",
-   "new_gaps": [],
-   "new_official": [
-    "E19",
-    "E26",
-    "E29"
-   ],
-   "new_answer": "1+1等于几 脑筋急转弯 10种 ... 咱们分情况说 第一种情况，你所说的 1 + 1 如果是单纯的小学算术式，还得分以下几种情况 ① 如果两个“1”的单位相同，则结果是2.比如",
-   "new_display": "1米",
-   "numeric_q": true,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": true,
-   "gaps_cleared": false
-  },
-  {
    "file": "20261025_051032_11等于几.packed.json",
    "question": "1+1等于几？",
    "sparse": false,
@@ -1393,110 +205,13 @@
    "stored_official": [],
    "stored_answer": "[2022-09-29] # 1+1等于几？ ... 1+1可以等于2，也可以等于3，也可以等于4，这要根据具体的情况具体分析",
    "new_status": "answered",
-   "new_gaps": [
-    "no_official_source"
-   ],
-   "new_official": [],
-   "new_answer": "1+1等于几 脑筋急转弯 10种 ... 咱们分情况说 第一种情况，你所说的 1 + 1 如果是单纯的小学算术式，还得分以下几种情况 ① 如果两个“1”的单位相同，则结果是2.比如",
-   "new_display": "1米",
-   "numeric_q": true,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": true,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261025_051705_11等于几.packed.json",
-   "question": "1+1等于几？",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E32"
-   ],
-   "stored_answer": "[2022-09-29] # 1+1等于几？ ... 1+1可以等于2，也可以等于3，也可以等于4，这要根据具体的情况具体分析",
-   "new_status": "answered",
    "new_gaps": [],
-   "new_official": [
-    "E32"
-   ],
-   "new_answer": "1+1等于几 脑筋急转弯 10种 ... 咱们分情况说 第一种情况，你所说的 1 + 1 如果是单纯的小学算术式，还得分以下几种情况 ① 如果两个“1”的单位相同，则结果是2.比如",
-   "new_display": "1米",
-   "numeric_q": true,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": true,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261025_060033_22等于几.packed.json",
-   "question": "2+2等于几？",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E24"
-   ],
-   "stored_answer": "2+2等于几？ 「2+2=5」是一个混合梗，来源于第20集第二部分《罢工的胃》。[] 在《罢工的胃》中，昂崔的三个器官（胃、大脑、心脏）罢工后从昂崔的身体里逃出。其中，昂崔的大脑获",
-   "new_status": "unknown",
-   "new_gaps": [
-    "insufficient_evidence"
-   ],
-   "new_official": [
-    "E24"
-   ],
-   "new_answer": "",
-   "new_display": "",
+   "new_official": [],
+   "new_answer": "1 + 1 = 2",
+   "new_display": "1 + 1 = 2",
    "numeric_q": true,
    "stored_answer_numeric": false,
    "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261025_125104_光在水中传播的速度是多少.packed.json",
-   "question": "光在水中传播的速度是多少？",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E23"
-   ],
-   "stored_answer": "[2024-07-14] 光在水中传播的速度比空气中 小小（选填“大”或“小”）",
-   "new_status": "answered",
-   "new_gaps": [],
-   "new_official": [
-    "E2",
-    "E3",
-    "E4",
-    "E23"
-   ],
-   "new_answer": "在水中，光速降至约22.4万公里/秒",
-   "new_display": "22.4万",
-   "numeric_q": true,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": true,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261025_125920_光在水中传播的速度是多少.packed.json",
-   "question": "光在水中传播的速度是多少？",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [
-    "no_official_source"
-   ],
-   "stored_official": [],
-   "stored_answer": "[2024-07-14] 光在水中传播的速度比空气中 小小（选填“大”或“小”）",
-   "new_status": "answered",
-   "new_gaps": [],
-   "new_official": [
-    "E2",
-    "E3",
-    "E4"
-   ],
-   "new_answer": "在水中，光速降至约22.4万公里/秒",
-   "new_display": "22.4万",
-   "numeric_q": true,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": true,
    "gaps_cleared": true
   },
   {
@@ -1558,63 +273,6 @@
    "gaps_cleared": false
   },
   {
-   "file": "20261025_161052_长江的长度是多少千米.packed.json",
-   "question": "长江的长度是多少千米？",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E1",
-    "E3",
-    "E4",
-    "E29"
-   ],
-   "stored_answer": "[2020-12-28] 6280千米与0.88千米的对话——记长江局与四唯街道六合社区联合开展十九届五中全会精神学习 ... 6280千米是长江的长度，0.88千米是湖北省武汉市",
-   "new_status": "answered",
-   "new_gaps": [],
-   "new_official": [
-    "E1",
-    "E3",
-    "E4",
-    "E29"
-   ],
-   "new_answer": "长江日报讯（记者朱建华 通讯员陈松平）45年前的今天——1976年7月21日，我国对长江源头启动首次综合性考察，长江长度由5800千米修正为6300千米",
-   "new_display": "5800千米",
-   "numeric_q": true,
-   "stored_answer_numeric": true,
-   "new_answer_numeric": true,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261025_161055_珠穆朗玛峰的海拔是多少米.packed.json",
-   "question": "珠穆朗玛峰的海拔是多少米？",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [
-    "conflict_resolved_official:official_precedence"
-   ],
-   "stored_official": [
-    "E8"
-   ],
-   "stored_answer": "[2018-09-20] ### 关于珠峰高度 ... 我看2005年公布的高程是8844.43米",
-   "new_status": "conflict",
-   "new_gaps": [
-    "conflict_unresolved"
-   ],
-   "new_official": [
-    "E1",
-    "E3",
-    "E4",
-    "E8"
-   ],
-   "new_answer": "",
-   "new_display": "",
-   "numeric_q": true,
-   "stored_answer_numeric": true,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
    "file": "20261025_165802_黄河的长度是多少千米.packed.json",
    "question": "黄河的长度是多少千米？",
    "sparse": false,
@@ -1667,28 +325,6 @@
    "gaps_cleared": false
   },
   {
-   "file": "20261025_170132_HTTP404状态码表示什么.packed.json",
-   "question": "HTTP 404状态码表示什么？",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [
-    "no_official_source"
-   ],
-   "stored_official": [],
-   "stored_answer": "工具 search_web({'query': 'RFC 9110 404 Not Found definition'}) 返回：- HTTP_NOT_FOUND constant",
-   "new_status": "answered",
-   "new_gaps": [
-    "no_official_source"
-   ],
-   "new_official": [],
-   "new_answer": "工具 search_web({'query': 'RFC 9110 404 Not Found definition'}) 返回：- HTTP_NOT_FOUND constant",
-   "new_display": "工具 search_web({'query': 'RFC 9110 404 Not Found definition'}) 返回：- HTTP_NOT_FOUND constant",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
    "file": "20261025_174443_黄河的长度是多少千米.packed.json",
    "question": "黄河的长度是多少千米？",
    "sparse": false,
@@ -1708,58 +344,6 @@
    "numeric_q": true,
    "stored_answer_numeric": true,
    "new_answer_numeric": true,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261025_174637_HTTP404状态码表示什么.packed.json",
-   "question": "HTTP 404状态码表示什么？",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E1",
-    "E2",
-    "E3"
-   ],
-   "stored_answer": "404 Not Found HTTP 响应状态码404 Not Found 指的是服务器无法找到所请求的资源",
-   "new_status": "answered",
-   "new_gaps": [],
-   "new_official": [
-    "E1",
-    "E2",
-    "E3"
-   ],
-   "new_answer": "404 Not Found HTTP 响应状态码404 Not Found 指的是服务器无法找到所请求的资源",
-   "new_display": "404 Not Found HTTP 响应状态码404 Not Found 指的是服务器无法找到所请求的资源",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261025_180653_HTTP404状态码表示什么.packed.json",
-   "question": "HTTP 404状态码表示什么？",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E1",
-    "E2",
-    "E3"
-   ],
-   "stored_answer": "404 Not Found HTTP 响应状态码404 Not Found 指的是服务器无法找到所请求的资源",
-   "new_status": "answered",
-   "new_gaps": [],
-   "new_official": [
-    "E1",
-    "E2",
-    "E3"
-   ],
-   "new_answer": "404 Not Found HTTP 响应状态码404 Not Found 指的是服务器无法找到所请求的资源",
-   "new_display": "404 Not Found HTTP 响应状态码404 Not Found 指的是服务器无法找到所请求的资源",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
    "gaps_cleared": false
   },
   {
@@ -1854,7 +438,7 @@
     "E16",
     "E17"
    ],
-   "new_answer": "按不变价格计算，比上年增长5.0%，与初步核算数持平",
+   "new_answer": "近期，国家统计局发布了2024年国民经济运行主要数据。这其中，国内生产总值，也就是大家常说的GDP超过134万亿元，按不变价格计算，比上年增长5.0%，经济社会发展主要目标任务顺利",
    "new_display": "5.0%",
    "numeric_q": true,
    "stored_answer_numeric": false,
@@ -1920,42 +504,7 @@
     "E16",
     "E17"
    ],
-   "new_answer": "这其中，国内生产总值，也就是大家常说的GDP超过134万亿元，按不变价格计算，比上年增长5.0%，经济社会发展主要目标任务顺利完成",
-   "new_display": "5.0%",
-   "numeric_q": true,
-   "stored_answer_numeric": true,
-   "new_answer_numeric": true,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261025_190907_2024年中国GDP增速最新数据是多少.packed.json",
-   "question": "2024年中国GDP增速最新数据是多少？",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E1",
-    "E2",
-    "E5",
-    "E6",
-    "E14",
-    "E15",
-    "E16"
-   ],
-   "stored_answer": "这其中，国内生产总值，也就是大家常说的GDP超过134万亿元，按不变价格计算，比上年增长5.0%，经济社会发展主要目标任务顺利完成",
-   "new_status": "answered",
-   "new_gaps": [],
-   "new_official": [
-    "E1",
-    "E2",
-    "E5",
-    "E6",
-    "E13",
-    "E14",
-    "E15",
-    "E16"
-   ],
-   "new_answer": "这其中，国内生产总值，也就是大家常说的GDP超过134万亿元，按不变价格计算，比上年增长5.0%，经济社会发展主要目标任务顺利完成",
+   "new_answer": "近期，国家统计局发布了2024年国民经济运行主要数据。这其中，国内生产总值，也就是大家常说的GDP超过134万亿元，按不变价格计算，比上年增长5.0%，经济社会发展主要目标任务顺利",
    "new_display": "5.0%",
    "numeric_q": true,
    "stored_answer_numeric": true,
@@ -1990,67 +539,11 @@
     "E15",
     "E16"
    ],
-   "new_answer": "这其中，国内生产总值，也就是大家常说的GDP超过134万亿元，按不变价格计算，比上年增长5.0%，经济社会发展主要目标任务顺利完成",
+   "new_answer": "近期，国家统计局发布了2024年国民经济运行主要数据。这其中，国内生产总值，也就是大家常说的GDP超过134万亿元，按不变价格计算，比上年增长5.0%，经济社会发展主要目标任务顺利",
    "new_display": "5.0%",
    "numeric_q": true,
    "stored_answer_numeric": true,
    "new_answer_numeric": true,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261025_205120_HTTP404状态码表示什么.packed.json",
-   "question": "HTTP 404状态码表示什么？",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E1",
-    "E2",
-    "E3",
-    "E19",
-    "E20"
-   ],
-   "stored_answer": "404 Not Found HTTP 响应状态码404 Not Found 指的是服务器无法找到所请求的资源",
-   "new_status": "answered",
-   "new_gaps": [],
-   "new_official": [
-    "E1",
-    "E2",
-    "E3",
-    "E19",
-    "E20"
-   ],
-   "new_answer": "404 Not Found HTTP 响应状态码404 Not Found 指的是服务器无法找到所请求的资源",
-   "new_display": "404 Not Found HTTP 响应状态码404 Not Found 指的是服务器无法找到所请求的资源",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
-  },
-  {
-   "file": "20261025_205544_HTTP404状态码表示什么.packed.json",
-   "question": "HTTP 404状态码表示什么？",
-   "sparse": false,
-   "stored_status": "answered",
-   "stored_gaps": [],
-   "stored_official": [
-    "E1",
-    "E2",
-    "E3"
-   ],
-   "stored_answer": "404 Not Found HTTP 响应状态码404 Not Found 指的是服务器无法找到所请求的资源",
-   "new_status": "answered",
-   "new_gaps": [],
-   "new_official": [
-    "E1",
-    "E2",
-    "E3"
-   ],
-   "new_answer": "404 Not Found HTTP 响应状态码404 Not Found 指的是服务器无法找到所请求的资源",
-   "new_display": "404 Not Found HTTP 响应状态码404 Not Found 指的是服务器无法找到所请求的资源",
-   "numeric_q": false,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": false,
    "gaps_cleared": false
   },
   {
@@ -2081,7 +574,7 @@
     "E15",
     "E17"
    ],
-   "new_answer": "这其中，国内生产总值，也就是大家常说的GDP超过134万亿元，按不变价格计算，比上年增长5.0%，经济社会发展主要目标任务顺利完成",
+   "new_answer": "近期，国家统计局发布了2024年国民经济运行主要数据。这其中，国内生产总值，也就是大家常说的GDP超过134万亿元，按不变价格计算，比上年增长5.0%，经济社会发展主要目标任务顺利",
    "new_display": "5.0%",
    "numeric_q": true,
    "stored_answer_numeric": true,
@@ -2151,31 +644,6 @@
    "gaps_cleared": false
   },
   {
-   "file": "20261025_212011_光在水中传播的速度是多少.packed.json",
-   "question": "光在水中传播的速度是多少？",
-   "sparse": false,
-   "stored_status": "unknown",
-   "stored_gaps": [
-    "no_official_source",
-    "insufficient_evidence"
-   ],
-   "stored_official": [],
-   "stored_answer": "",
-   "new_status": "answered",
-   "new_gaps": [],
-   "new_official": [
-    "E2",
-    "E3",
-    "E4"
-   ],
-   "new_answer": "在水中，光速降至约22.4万公里/秒",
-   "new_display": "22.4万",
-   "numeric_q": true,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": true,
-   "gaps_cleared": true
-  },
-  {
    "file": "20261025_213215_光在水中传播的速度是多少.packed.json",
    "question": "光在水中传播的速度是多少？",
    "sparse": false,
@@ -2203,7 +671,7 @@
     "E34"
    ],
    "new_answer": "在水中，光速降至约22.4万公里/秒",
-   "new_display": "22.4万",
+   "new_display": "22.4万公里",
    "numeric_q": true,
    "stored_answer_numeric": true,
    "new_answer_numeric": true,
@@ -2231,7 +699,7 @@
     "E20"
    ],
    "new_answer": "在水中，光速降至约22.4万公里/秒",
-   "new_display": "22.4万",
+   "new_display": "22.4万公里",
    "numeric_q": true,
    "stored_answer_numeric": true,
    "new_answer_numeric": true,
@@ -2291,7 +759,7 @@
     "E11"
    ],
    "new_answer": "Python中len函数的用法是什么 ... len函数是Python内置函数之一，主要用于返回对象（字符串、列表、元组等）的长度或者项数",
-   "new_display": "Python中len函数的用法是什么 ... len函数是Python内置函数之一，主要用于返回对象（字符串、列表、元组等）的长度或者项数",
+   "new_display": "Python中len函数的用法",
    "numeric_q": false,
    "stored_answer_numeric": false,
    "new_answer_numeric": false,
@@ -2429,7 +897,7 @@
     "E21"
    ],
    "new_answer": "150年來，攝氏37度一直被認為是健康人類的平均體溫",
-   "new_display": "150年來，攝氏37度一直被認為是健康人類的平均體溫",
+   "new_display": "150年",
    "numeric_q": true,
    "stored_answer_numeric": true,
    "new_answer_numeric": true,
@@ -2554,38 +1022,6 @@
    "gaps_cleared": false
   },
   {
-   "file": "20261025_230938_2024年中国出生人口是多少万人.packed.json",
-   "question": "2024年中国出生人口是多少万人？",
-   "sparse": false,
-   "stored_status": "unknown",
-   "stored_gaps": [
-    "insufficient_evidence"
-   ],
-   "stored_official": [
-    "E1",
-    "E2",
-    "E3",
-    "E19"
-   ],
-   "stored_answer": "",
-   "new_status": "answered",
-   "new_gaps": [],
-   "new_official": [
-    "E1",
-    "E2",
-    "E3",
-    "E19",
-    "E29",
-    "E31"
-   ],
-   "new_answer": "2024年，全国出生人口为954万人，比2023年增加52万人，自2017年以来首次回升，主要受近几年生育意愿累积、各地生育支持政策逐渐落实以及龙年生肖偏好等因素影响，但也要看到育",
-   "new_display": "954万人",
-   "numeric_q": true,
-   "stored_answer_numeric": false,
-   "new_answer_numeric": true,
-   "gaps_cleared": true
-  },
-  {
    "file": "20261025_231648_2024年中国出生人口是多少万人.packed.json",
    "question": "2024年中国出生人口是多少万人？",
    "sparse": false,
@@ -2692,9 +1128,8 @@
     "E22"
    ],
    "stored_answer": "",
-   "new_status": "conflict",
+   "new_status": "answered",
    "new_gaps": [
-    "conflict_unresolved",
     "uncovered:2024年中国贸易顺差"
    ],
    "new_official": [
@@ -2706,11 +1141,11 @@
     "E30",
     "E34"
    ],
-   "new_answer": "",
-   "new_display": "",
+   "new_answer": "国家外汇管理局公布2024年四季度及全年我国国际收支平衡表\n...\n按美元计值，2024年四季度，我国经常账户顺差1638亿美元，其中，货物贸易顺差2498亿美元，服务贸易逆差47",
+   "new_display": "1638亿美元",
    "numeric_q": true,
    "stored_answer_numeric": false,
-   "new_answer_numeric": false,
+   "new_answer_numeric": true,
    "gaps_cleared": false
   },
   {
@@ -2799,22 +1234,20 @@
     "E19"
    ],
    "stored_answer": "",
-   "new_status": "unknown",
-   "new_gaps": [
-    "insufficient_evidence"
-   ],
+   "new_status": "answered",
+   "new_gaps": [],
    "new_official": [
     "E4",
     "E11",
     "E17",
     "E19"
    ],
-   "new_answer": "",
-   "new_display": "",
+   "new_answer": "2024年我国国际收支保持基本平衡\n\n本报北京2月14日讯（记者勾明扬）国家外汇管理局日前公布2024年四季度及全年国际收支平衡表初步数据显示，2024年，我国国际收支继续保持基本",
+   "new_display": "7679亿美元",
    "numeric_q": true,
    "stored_answer_numeric": false,
-   "new_answer_numeric": false,
-   "gaps_cleared": false
+   "new_answer_numeric": true,
+   "gaps_cleared": true
   },
   {
    "file": "20261025_234818_我国法定结婚年龄是多少岁.packed.json",
@@ -2870,7 +1303,7 @@
     "E5"
    ],
    "new_answer": "1974年在北京丰台区郭公庄发掘的大葆台汉墓，为东西并列的两座大型木椁墓，早年被盗，位于西侧的2号墓（王后墓）墓室被烧毁。1号墓的墓主据考证为燕刺王刘旦或其子广阳 顷王刘建。刘旦为",
-   "new_display": "1974年在北京丰台区郭公庄发掘的大葆台汉墓，为东西并列的两座大型木椁墓，早年被盗，位于西侧的2号墓（王后墓）墓室被烧毁。1号墓的墓主据考证为燕刺王刘旦或其子广阳 顷王刘建。刘旦为",
+   "new_display": "1974年在北京丰台区郭公庄发掘的大葆台汉墓",
    "numeric_q": false,
    "stored_answer_numeric": true,
    "new_answer_numeric": true,
@@ -2958,19 +1391,17 @@
     "E4"
    ],
    "stored_answer": "我国国际收支口径的货物贸易顺差7679亿美元，较2023年增长29%",
-   "new_status": "unknown",
-   "new_gaps": [
-    "insufficient_evidence"
-   ],
+   "new_status": "answered",
+   "new_gaps": [],
    "new_official": [
     "E4",
     "E11"
    ],
-   "new_answer": "",
-   "new_display": "",
+   "new_answer": "2024年我国国际收支保持基本平衡\n\n本报北京2月14日讯（记者勾明扬）国家外汇管理局日前公布2024年四季度及全年国际收支平衡表初步数据显示，2024年，我国国际收支继续保持基本",
+   "new_display": "7679亿美元",
    "numeric_q": true,
    "stored_answer_numeric": true,
-   "new_answer_numeric": false,
+   "new_answer_numeric": true,
    "gaps_cleared": false
   },
   {
@@ -3017,7 +1448,7 @@
     "E4"
    ],
    "new_answer": "在水中，光速降至约22.4万公里/秒",
-   "new_display": "22.4万",
+   "new_display": "22.4万公里",
    "numeric_q": true,
    "stored_answer_numeric": true,
    "new_answer_numeric": true,
@@ -3301,7 +1732,7 @@
     "E14",
     "E16"
    ],
-   "new_answer": "国家外汇管理局统计数据显示，截至2024年12月末，我国外汇储备规模为32024亿美元，较11月末下降635亿美元，降幅为1.94%",
+   "new_answer": "国家外汇管理局公布2024年12月末外汇储备规模数据\n 国家外汇管理局统计数据显示，截至2024年12月末，我国外汇储备规模为32024亿美元，较11月末下降635亿美元，降幅为1",
    "new_display": "32024亿美元",
    "numeric_q": true,
    "stored_answer_numeric": true,
@@ -3330,7 +1761,7 @@
     "E14",
     "E24"
    ],
-   "new_answer": "国家外汇管理局统计数据显示，截至2024年12月末，我国外汇储备规模为32024亿美元，较11月末下降635亿美元，降幅为1.94%",
+   "new_answer": "国家外汇管理局公布2024年12月末外汇储备规模数据\n 国家外汇管理局统计数据显示，截至2024年12月末，我国外汇储备规模为32024亿美元，较11月末下降635亿美元，降幅为1",
    "new_display": "32024亿美元",
    "numeric_q": true,
    "stored_answer_numeric": true,
@@ -3575,8 +2006,8 @@
     "E14",
     "E15"
    ],
-   "new_answer": "八周岁",
-   "new_display": "八周岁",
+   "new_answer": "十八周岁以上的自然人为成年人",
+   "new_display": "十八周岁",
    "numeric_q": true,
    "stored_answer_numeric": false,
    "new_answer_numeric": false,
@@ -3610,11 +2041,2967 @@
     "E15",
     "E23"
    ],
-   "new_answer": "全国粮食总产量14130亿斤，比上年增加221.8亿斤，增长1.6%，在连续9年稳定在1.3万亿斤以上的基础上，首次迈上1.4万亿斤新台阶",
+   "new_answer": "12月13日，国家统计局发布数据，2024年全国粮食总产量14130亿斤，比上年增加221.8亿斤，增长1.6%",
    "new_display": "14130亿斤",
    "numeric_q": true,
    "stored_answer_numeric": true,
    "new_answer_numeric": true,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_063611_民法典规定多少岁成年.packed.json",
+   "question": "民法典规定多少岁成年？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E4",
+    "E5",
+    "E11",
+    "E12",
+    "E13",
+    "E14"
+   ],
+   "stored_answer": "八周岁",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E4",
+    "E5",
+    "E11",
+    "E12",
+    "E13",
+    "E14"
+   ],
+   "new_answer": "十八周岁以上的自然人为成年人",
+   "new_display": "十八周岁",
+   "numeric_q": true,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_063628_HTTP404状态码表示什么.packed.json",
+   "question": "HTTP 404状态码表示什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E22",
+    "E23",
+    "E25"
+   ],
+   "stored_answer": "404 Not Found HTTP 响应状态码404 Not Found 指的是服务器无法找到所请求的资源",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E22",
+    "E23",
+    "E25"
+   ],
+   "new_answer": "404 Not Found HTTP 响应状态码404 Not Found 指的是服务器无法找到所请求的资源",
+   "new_display": "404 Not Found HTTP 响应状态码404 Not Found 指的是服务器无法找到所请求的资源",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_064741_民法典规定多少岁成年.packed.json",
+   "question": "民法典规定多少岁成年？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E4",
+    "E5",
+    "E11",
+    "E12",
+    "E13",
+    "E14"
+   ],
+   "stored_answer": "十八周岁以上的自然人为成年人",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E4",
+    "E5",
+    "E11",
+    "E12",
+    "E13",
+    "E14"
+   ],
+   "new_answer": "十八周岁以上的自然人为成年人",
+   "new_display": "十八周岁",
+   "numeric_q": true,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_065456_中国最长的河流是哪条.packed.json",
+   "question": "中国最长的河流是哪条？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E2",
+    "E22"
+   ],
+   "stored_answer": "新疆南部的塔里木河是中国最长的内流河，全长2 179千米",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E2",
+    "E22"
+   ],
+   "new_answer": "新疆南部的塔里木河是中国最长的内流河，全长2 179千米",
+   "new_display": "新疆南部的塔里木河",
+   "numeric_q": false,
+   "stored_answer_numeric": true,
+   "new_answer_numeric": true,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_065523_水的沸点是多少摄氏度.packed.json",
+   "question": "水的沸点是多少摄氏度？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E3",
+    "E10",
+    "E12",
+    "E18"
+   ],
+   "stored_answer": "水的沸点并不一定就是100度，人的体液也会沸腾，你相信吗？",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E3",
+    "E10",
+    "E12",
+    "E18"
+   ],
+   "new_answer": "水的沸点并不一定就是100度，人的体液也会沸腾，你相信吗？",
+   "new_display": "水的沸点并不一定就是100度，人的体液也会沸腾，你相信吗？",
+   "numeric_q": true,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_070734_以下哪项属于可再生能源A煤炭B.packed.json",
+   "question": "以下哪项属于可再生能源？A. 煤炭 B. 太阳能 C. 石油 D. 天然气",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [
+    "no_official_source"
+   ],
+   "stored_official": [],
+   "stored_answer": "下列属于可再生能源的是（ ）。 A.生物质能 B.煤炭 C.石油 D.天然气 ... 本题考查的是能源常识。A项正确，可再生能源包括太阳能、水能、风能、生物质能、波浪能、潮汐能、海",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [],
+   "new_answer": "下列属于可再生能源的是（ ）。 A.生物质能 B.煤炭 C.石油 D.天然气 ... 本题考查的是能源常识。A项正确，可再生能源包括太阳能、水能、风能、生物质能、波浪能、潮汐能、海",
+   "new_display": "下列属于可再生能源的是（ ）。 A.生物质能 B.煤炭 C.石油 D.天然气 ... 本题考查的是能源常识。A项正确，可再生能源包括太阳能、水能、风能、生物质能、波浪能、潮汐能、海",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": true
+  },
+  {
+   "file": "20261026_072909_以下哪项属于可再生能源A煤炭B.packed.json",
+   "question": "以下哪项属于可再生能源？A. 煤炭 B. 太阳能 C. 石油 D. 天然气",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E28"
+   ],
+   "stored_answer": "称它什么都行，佣金、抽头、提成、抽水等等，它令每一位百家乐玩家皱眉。要是能避免每次押庄赢时支付的5%佣金该多好？ ... 另一种意义上，百家乐又是一个很简单的游戏，庄赢或闲赢。它与",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E28"
+   ],
+   "new_answer": "称它什么都行，佣金、抽头、提成、抽水等等，它令每一位百家乐玩家皱眉。要是能避免每次押庄赢时支付的5%佣金该多好？ ... 另一种意义上，百家乐又是一个很简单的游戏，庄赢或闲赢。它与",
+   "new_display": "5%",
+   "numeric_q": false,
+   "stored_answer_numeric": true,
+   "new_answer_numeric": true,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_074307_人体最大的器官是什么.packed.json",
+   "question": "人体最大的器官是什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E14"
+   ],
+   "stored_answer": "间质是人体最大的器官？专家：说法并不科学 来源：科普中国-科学为你解疑释惑 此前，《人民日报》发布了“2018年十大‘科学’流言求真榜”，其中有一条流言称，“科学家发现，间质是人体",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E14"
+   ],
+   "new_answer": "人体最大的器官是皮肤，人体最大的淋巴器官是脾，人体最大的外分泌腺是肝脏…… ... 这是人体最大的感官 皮肤是人体最大的感官,其感觉异常丰富,能感受触觉 、压觉、疼痛和温度觉",
+   "new_display": "人体最大的器官",
+   "numeric_q": false,
+   "stored_answer_numeric": true,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_074650_民法典规定多少岁成年.packed.json",
+   "question": "民法典规定多少岁成年？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E4",
+    "E5",
+    "E11",
+    "E12",
+    "E13",
+    "E14"
+   ],
+   "stored_answer": "十八周岁以上的自然人为成年人",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E4",
+    "E5",
+    "E11",
+    "E12",
+    "E13",
+    "E14"
+   ],
+   "new_answer": "十八周岁以上的自然人为成年人",
+   "new_display": "十八周岁",
+   "numeric_q": true,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_075128_联合国安理会常任理事国共有几个.packed.json",
+   "question": "联合国安理会常任理事国共有几个？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E5",
+    "E6",
+    "E11",
+    "E17",
+    "E19"
+   ],
+   "stored_answer": "安全理事会由15个理事国组成，包括5个常任理事国（美国、法国、俄罗斯、联合王国和中国）和10个非常任理事国。",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E5",
+    "E6",
+    "E11",
+    "E17",
+    "E19"
+   ],
+   "new_answer": "安全理事会由15个理事国组成，包括5个常任理事国（美国、法国、俄罗斯、联合王国和中国）和10个非常任理事国。",
+   "new_display": "安全理事会由15个理事国组成，包括5个常任理事国（美国、法国、俄罗斯、联合王国和中国）和10个非常任理事国。",
+   "numeric_q": true,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_075144_中国最大的淡水湖是哪个.packed.json",
+   "question": "中国最大的淡水湖是哪个？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E2"
+   ],
+   "stored_answer": "(1/3) 中国最大的淡水湖泊为？ ... **解析：** 中国最大淡水湖泊为鄱阳湖，最大咸水湖是青海湖，最大盐湖是察尔汗盐湖",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E2"
+   ],
+   "new_answer": "(1/3) 中国最大的淡水湖泊为？ ... **解析：** 中国最大淡水湖泊为鄱阳湖，最大咸水湖是青海湖，最大盐湖是察尔汗盐湖",
+   "new_display": "(1/3) 中国最大的淡水湖泊",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_075146_人体最大的器官是什么.packed.json",
+   "question": "人体最大的器官是什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E14"
+   ],
+   "stored_answer": "人体最大的器官是皮肤，人体最大的淋巴器官是脾，人体最大的外分泌腺是肝脏…… ... 这是人体最大的感官 皮肤是人体最大的感官,其感觉异常丰富,能感受触觉 、压觉、疼痛和温度觉",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E14"
+   ],
+   "new_answer": "人体最大的器官是皮肤，人体最大的淋巴器官是脾，人体最大的外分泌腺是肝脏…… ... 这是人体最大的感官 皮肤是人体最大的感官,其感觉异常丰富,能感受触觉 、压觉、疼痛和温度觉",
+   "new_display": "人体最大的器官",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_075640_智能体终端会怎样改变工作.packed.json",
+   "question": "智能体终端会怎样改变工作？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [
+    "uncovered:智能体终端会怎样改变工作"
+   ],
+   "stored_official": [
+    "E27"
+   ],
+   "stored_answer": "近日国务院印发的《关于深入实施“人工智能+”行动的意见》（以下简称《意见》），为推动人工智能在经济社会各领域广泛深度融合提供了政策支撑和行动指南，对促进人工智能赋能高质量充分就业具",
+   "new_status": "answered",
+   "new_gaps": [
+    "uncovered:智能体终端会怎样改变工作"
+   ],
+   "new_official": [
+    "E27"
+   ],
+   "new_answer": "近日国务院印发的《关于深入实施“人工智能+”行动的意见》（以下简称《意见》），为推动人工智能在经济社会各领域广泛深度融合提供了政策支撑和行动指南，对促进人工智能赋能高质量充分就业具",
+   "new_display": "近日国务院印发的《关于深入实施“人工智能+”行动的意见》（以下简称《意见》），为推动人工智能在经济社会各领域广泛深度融合提供了政策支撑和行动指南，对促进人工智能赋能高质量充分就业具",
+   "numeric_q": false,
+   "stored_answer_numeric": true,
+   "new_answer_numeric": true,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_081340_2024年中国GDP总量是多少亿元.packed.json",
+   "question": "2024年中国GDP总量是多少亿元？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E8",
+    "E10",
+    "E11",
+    "E14",
+    "E15",
+    "E20",
+    "E21",
+    "E22"
+   ],
+   "stored_answer": "经最终核实，2024年，GDP现价总量为1348066亿元，比初步核算数减少1018亿元",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E8",
+    "E10",
+    "E11",
+    "E14",
+    "E15",
+    "E20",
+    "E21",
+    "E22"
+   ],
+   "new_answer": "经最终核实，2024年，GDP现价总量为1348066亿元，比初步核算数减少1018亿元",
+   "new_display": "1348066亿",
+   "numeric_q": true,
+   "stored_answer_numeric": true,
+   "new_answer_numeric": true,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_082438_世界上海拔最高的高原是什么.packed.json",
+   "question": "世界上海拔最高的高原是什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E5",
+    "E6",
+    "E17"
+   ],
+   "stored_answer": "青藏高原是世界上地势最高的大高原，平均海拔达45O0米，号称“世界屋脊”",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E5",
+    "E6",
+    "E17"
+   ],
+   "new_answer": "... 它包括中国藏自治区全部和青海省、新疆维吾尔自治区、甘肃省、四川省、云南省的部分，不丹、锡金、尼泊尔、印度、巴基斯坦、阿富汗、塔吉克斯坦、吉尔吉斯斯坦的部分或全部，总面积25",
+   "new_display": "..",
+   "numeric_q": true,
+   "stored_answer_numeric": true,
+   "new_answer_numeric": true,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_085557_联合国的总部设在哪个城市.packed.json",
+   "question": "联合国的总部设在哪个城市？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E4",
+    "E10",
+    "E17",
+    "E19",
+    "E20"
+   ],
+   "stored_answer": "此次会议决定将联合国总部的地址设在纽约市附近",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E4",
+    "E10",
+    "E17",
+    "E19",
+    "E20"
+   ],
+   "new_answer": "此次会议决定将联合国总部的地址设在纽约市附近",
+   "new_display": "纽约市",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_092841_以下哪项属于可再生能源A煤炭B.packed.json",
+   "question": "以下哪项属于可再生能源？A. 煤炭 B. 太阳能 C. 石油 D. 天然气",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [
+    "uncovered:以下哪项属于可再生能源"
+   ],
+   "stored_official": [
+    "E23",
+    "E24",
+    "E28",
+    "E30",
+    "E33",
+    "E38",
+    "E41",
+    "E42"
+   ],
+   "stored_answer": "单一来源唯一性说明 一是唯一性： 漳州新闻网是由中共漳州市委主办、中共漳州市委宣传部主管、闽南日报社承办，是漳州地区唯一具有新闻采编权、发布权的国家一类新闻网站，同时拥有国家广电总",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E23",
+    "E24",
+    "E28",
+    "E30",
+    "E33",
+    "E38",
+    "E41",
+    "E42"
+   ],
+   "new_answer": "单一来源唯一性说明 一是唯一性： 漳州新闻网是由中共漳州市委主办、中共漳州市委宣传部主管、闽南日报社承办，是漳州地区唯一具有新闻采编权、发布权的国家一类新闻网站，同时拥有国家广电总",
+   "new_display": "单一来源唯一性说明 一是唯一性： 漳州新闻网是由中共漳州市委主办、中共漳州市委宣传部主管、闽南日报社承办，是漳州地区唯一具有新闻采编权、发布权的国家一类新闻网站，同时拥有国家广电总",
+   "numeric_q": false,
+   "stored_answer_numeric": true,
+   "new_answer_numeric": true,
+   "gaps_cleared": true
+  },
+  {
+   "file": "20261026_093705_以下哪项属于可再生能源A煤炭B.packed.json",
+   "question": "以下哪项属于可再生能源？A. 煤炭 B. 太阳能 C. 石油 D. 天然气",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E29",
+    "E39",
+    "E40",
+    "E41",
+    "E42"
+   ],
+   "stored_answer": "下列属于可再生能源的是（ ）。 A.生物质能 B.煤炭 C.石油 D.天然气 ... 本题考查的是能源常识。A项正确，可再生能源包括太阳能、水能、风能、生物质能、波浪能、潮汐能、海",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E29",
+    "E39",
+    "E40",
+    "E41",
+    "E42"
+   ],
+   "new_answer": "下列属于可再生能源的是（ ）。 A.生物质能 B.煤炭 C.石油 D.天然气 ... 本题考查的是能源常识。A项正确，可再生能源包括太阳能、水能、风能、生物质能、波浪能、潮汐能、海",
+   "new_display": "下列属于可再生能源的是（ ）。 A.生物质能 B.煤炭 C.石油 D.天然气 ... 本题考查的是能源常识。A项正确，可再生能源包括太阳能、水能、风能、生物质能、波浪能、潮汐能、海",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_094411_2024年中国出生人口是多少万人.packed.json",
+   "question": "2024年中国出生人口是多少万人？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E25",
+    "E27"
+   ],
+   "stored_answer": "2024年，全国出生人口为954万人，比2023年增加52万人，自2017年以来首次回升，主要受近几年生育意愿累积、各地生育支持政策逐渐落实以及龙年生肖偏好等因素影响，但也要看到育",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E25",
+    "E27",
+    "E46",
+    "E47",
+    "E52"
+   ],
+   "new_answer": "2024年，全国出生人口为954万人，比2023年增加52万人，自2017年以来首次回升，主要受近几年生育意愿累积、各地生育支持政策逐渐落实以及龙年生肖偏好等因素影响，但也要看到育",
+   "new_display": "954万人",
+   "numeric_q": true,
+   "stored_answer_numeric": true,
+   "new_answer_numeric": true,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_095401_2024年我国货物贸易进出口总值是多少万.packed.json",
+   "question": "2024年我国货物贸易进出口总值是多少万亿元？",
+   "sparse": false,
+   "stored_status": "unknown",
+   "stored_gaps": [
+    "insufficient_evidence"
+   ],
+   "stored_official": [
+    "E1",
+    "E10",
+    "E12",
+    "E15",
+    "E16"
+   ],
+   "stored_answer": "",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E10",
+    "E12",
+    "E15",
+    "E16"
+   ],
+   "new_answer": "2024年我国货物贸易进出口增长5% 全年外贸圆满收官\n\n时间： 2025-01-13 来源： 央视网\n\n今天（1月13日），国务院新闻办公室举行“中国经济高质量发展成效”系列新闻",
+   "new_display": "43.85万亿元",
+   "numeric_q": true,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": true,
+   "gaps_cleared": true
+  },
+  {
+   "file": "20261026_095637_民法典规定租赁合同期限最长不得超过多少年.packed.json",
+   "question": "民法典规定租赁合同期限最长不得超过多少年？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E5",
+    "E15",
+    "E22",
+    "E29",
+    "E35",
+    "E42"
+   ],
+   "stored_answer": "租房有最长期限吗？ 时间：2020-10-03 作者： 来源：最高人民检察院微信公众号 ... 最长不得超过20年",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E5",
+    "E15",
+    "E22",
+    "E29",
+    "E35",
+    "E42"
+   ],
+   "new_answer": "租房有最长期限吗？ 时间：2020-10-03 作者： 来源：最高人民检察院微信公众号 ... 最长不得超过20年",
+   "new_display": "20年",
+   "numeric_q": true,
+   "stored_answer_numeric": true,
+   "new_answer_numeric": true,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_100831_2024年我国货物贸易进出口总值是多少万.packed.json",
+   "question": "2024年我国货物贸易进出口总值是多少万亿元？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E9",
+    "E11",
+    "E14",
+    "E15",
+    "E22",
+    "E24"
+   ],
+   "stored_answer": "据海关统计，2024年，我国货物贸易进出口总值43.85万亿元，同比增长5%",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E9",
+    "E11",
+    "E14",
+    "E15",
+    "E22",
+    "E24",
+    "E26"
+   ],
+   "new_answer": "2024年我国货物贸易进出口增长5% 全年外贸圆满收官\n\n时间： 2025-01-13 来源： 央视网\n\n今天（1月13日），国务院新闻办公室举行“中国经济高质量发展成效”系列新闻",
+   "new_display": "43.85万亿元",
+   "numeric_q": true,
+   "stored_answer_numeric": true,
+   "new_answer_numeric": true,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_103251_世界上海拔最高的高原是什么.packed.json",
+   "question": "世界上海拔最高的高原是什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E5",
+    "E6",
+    "E16",
+    "E21",
+    "E23",
+    "E28",
+    "E29"
+   ],
+   "stored_answer": "2500千米",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E5",
+    "E6",
+    "E16",
+    "E21",
+    "E23",
+    "E28",
+    "E29"
+   ],
+   "new_answer": "... 它包括中国藏自治区全部和青海省、新疆维吾尔自治区、甘肃省、四川省、云南省的部分，不丹、锡金、尼泊尔、印度、巴基斯坦、阿富汗、塔吉克斯坦、吉尔吉斯斯坦的部分或全部，总面积25",
+   "new_display": "..",
+   "numeric_q": true,
+   "stored_answer_numeric": true,
+   "new_answer_numeric": true,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_104220_世界上海拔最高的高原是什么.packed.json",
+   "question": "世界上海拔最高的高原是什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E5",
+    "E6",
+    "E17",
+    "E25",
+    "E26",
+    "E27"
+   ],
+   "stored_answer": "... 它包括中国藏自治区全部和青海省、新疆维吾尔自治区、甘肃省、四川省、云南省的部分，不丹、锡金、尼泊尔、印度、巴基斯坦、阿富汗、塔吉克斯坦、吉尔吉斯斯坦的部分或全部，总面积25",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E5",
+    "E6",
+    "E17",
+    "E25",
+    "E26",
+    "E27"
+   ],
+   "new_answer": "... 它包括中国藏自治区全部和青海省、新疆维吾尔自治区、甘肃省、四川省、云南省的部分，不丹、锡金、尼泊尔、印度、巴基斯坦、阿富汗、塔吉克斯坦、吉尔吉斯斯坦的部分或全部，总面积25",
+   "new_display": "..",
+   "numeric_q": true,
+   "stored_answer_numeric": true,
+   "new_answer_numeric": true,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_104626_光在水中传播的速度是多少.packed.json",
+   "question": "光在水中传播的速度是多少？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E2",
+    "E3",
+    "E4",
+    "E22",
+    "E25"
+   ],
+   "stored_answer": "可信度量按可信保障的五个维度进行（见表2）：各维度的度量结果共同支撑可信保障等级的判定。 ... 5.4.3 度量结论与等级判定汇总各维度度量结果，对照自主与可信的可信保障等级判据",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E2",
+    "E3",
+    "E4",
+    "E22",
+    "E25"
+   ],
+   "new_answer": "可信度量按可信保障的五个维度进行（见表2）：各维度的度量结果共同支撑可信保障等级的判定。 ... 5.4.3 度量结论与等级判定汇总各维度度量结果，对照自主与可信的可信保障等级判据",
+   "new_display": "可信度量按可信保障的五个维度进行（见表2）：各维度的度量结果共同支撑可信保障等级的判定。 ... 5.4.3 度量结论与等级判定汇总各维度度量结果，对照自主与可信的可信保障等级判据",
+   "numeric_q": true,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_104638_2024年中国出生人口是多少万人.packed.json",
+   "question": "2024年中国出生人口是多少万人？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "stored_answer": "2024年，全国出生人口为954万人，比2023年增加52万人，自2017年以来首次回升，主要受近几年生育意愿累积、各地生育支持政策逐渐落实以及龙年生肖偏好等因素影响，但也要看到育",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E24",
+    "E26"
+   ],
+   "new_answer": "2024年，全国出生人口为954万人，比2023年增加52万人，自2017年以来首次回升，主要受近几年生育意愿累积、各地生育支持政策逐渐落实以及龙年生肖偏好等因素影响，但也要看到育",
+   "new_display": "954万人",
+   "numeric_q": true,
+   "stored_answer_numeric": true,
+   "new_answer_numeric": true,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_111249_HTTP404状态码表示什么.packed.json",
+   "question": "HTTP 404状态码表示什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "stored_answer": "404 Not Found HTTP 响应状态码404 Not Found 指的是服务器无法找到所请求的资源",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "new_answer": "404 Not Found HTTP 响应状态码404 Not Found 指的是服务器无法找到所请求的资源",
+   "new_display": "404 Not Found HTTP 响应状态码404 Not Found 指的是服务器无法找到所请求的资源",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_112157_HTTP404状态码表示什么.packed.json",
+   "question": "HTTP 404状态码表示什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E16",
+    "E17",
+    "E19",
+    "E27",
+    "E35"
+   ],
+   "stored_answer": "404 Not Found HTTP 响应状态码404 Not Found 指的是服务器无法找到所请求的资源",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E16",
+    "E17",
+    "E19",
+    "E27",
+    "E35"
+   ],
+   "new_answer": "404 Not Found HTTP 响应状态码404 Not Found 指的是服务器无法找到所请求的资源",
+   "new_display": "404 Not Found HTTP 响应状态码404 Not Found 指的是服务器无法找到所请求的资源",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_113102_HTTP404状态码表示什么.packed.json",
+   "question": "HTTP 404状态码表示什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E19",
+    "E20",
+    "E21"
+   ],
+   "stored_answer": "404 Not Found HTTP 响应状态码404 Not Found 指的是服务器无法找到所请求的资源",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E19",
+    "E20",
+    "E21"
+   ],
+   "new_answer": "404 Not Found HTTP 响应状态码404 Not Found 指的是服务器无法找到所请求的资源",
+   "new_display": "404 Not Found HTTP 响应状态码404 Not Found 指的是服务器无法找到所请求的资源",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_120235_三峡大坝全长多少米.packed.json",
+   "question": "三峡大坝全长多少米？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E26"
+   ],
+   "stored_answer": "三峡水利枢纽工程，简称三峡工程 [84]，也称“三峡大坝” [87]，是当今世界规模最大的水利枢纽工程，位于中国湖北省宜昌市三斗坪镇，距下游葛洲坝水利枢纽工程38公里 [86]，主",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E26"
+   ],
+   "new_answer": "三峡水利枢纽工程，简称三峡工程 [84]，也称“三峡大坝” [87]，是当今世界规模最大的水利枢纽工程，位于中国湖北省宜昌市三斗坪镇，距下游葛洲坝水利枢纽工程38公里 [86]，主",
+   "new_display": "2335米",
+   "numeric_q": true,
+   "stored_answer_numeric": true,
+   "new_answer_numeric": true,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_120346_我国义务教育法规定小学入学年龄是多少岁.packed.json",
+   "question": "我国义务教育法规定小学入学年龄是多少岁？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [
+    "uncovered:我国义务教育法规定小学入学年龄"
+   ],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E4",
+    "E5",
+    "E9",
+    "E14",
+    "E16"
+   ],
+   "stored_answer": "条件不具备的地区，可以推迟到七周岁入学",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E4",
+    "E5",
+    "E9",
+    "E14",
+    "E16"
+   ],
+   "new_answer": "第五条 凡年满六周岁的儿童，不分性别、民族、种族，应当入学接受规定年限的义务教育",
+   "new_display": "六周岁",
+   "numeric_q": true,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": true
+  },
+  {
+   "file": "20261026_120600_2024年我国粮食总产量是多少亿斤.packed.json",
+   "question": "2024年我国粮食总产量是多少亿斤？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E4",
+    "E6",
+    "E12",
+    "E15",
+    "E19"
+   ],
+   "stored_answer": "12月13日，国家统计局发布数据，2024年全国粮食总产量14130亿斤，比上年增加221.8亿斤，增长1.6%",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E4",
+    "E6",
+    "E12",
+    "E15",
+    "E19"
+   ],
+   "new_answer": "12月13日，国家统计局发布数据，2024年全国粮食总产量14130亿斤，比上年增加221.8亿斤，增长1.6%",
+   "new_display": "14130亿斤",
+   "numeric_q": true,
+   "stored_answer_numeric": true,
+   "new_answer_numeric": true,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_121928_我国义务教育法规定小学入学年龄是多少岁.packed.json",
+   "question": "我国义务教育法规定小学入学年龄是多少岁？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E4",
+    "E5",
+    "E8",
+    "E13",
+    "E15"
+   ],
+   "stored_answer": "第五条 凡年满六周岁的儿童，不分性别、民族、种族，应当入学接受规定年限的义务教育",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E4",
+    "E5",
+    "E8",
+    "E13",
+    "E15"
+   ],
+   "new_answer": "第五条 凡年满六周岁的儿童，不分性别、民族、种族，应当入学接受规定年限的义务教育",
+   "new_display": "六周岁",
+   "numeric_q": true,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_123116_我国成年人高血压的诊断标准是多少.packed.json",
+   "question": "我国成年人高血压的诊断标准是多少？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E4",
+    "E7",
+    "E22"
+   ],
+   "stored_answer": "高血压诊断标准未调整 11月15日，国家卫生健康委发布消息明确，关于高血压诊断标准，2005年、2010年、2017年国家卫生行政部门发布的宣传教育要点、防治指南、临床路径等均明确",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E4",
+    "E7",
+    "E22"
+   ],
+   "new_answer": "11月15日，国家卫生健康委发布消息明确，关于高血压诊断标准，2005年、2010年、2017年国家卫生行政部门发布的宣传教育要点、防治指南、临床路径等均明确：成人高血压的诊断标准",
+   "new_display": "140/90毫米汞柱",
+   "numeric_q": true,
+   "stored_answer_numeric": true,
+   "new_answer_numeric": true,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_123149_世界卫生组织总部设在哪个城市.packed.json",
+   "question": "世界卫生组织总部设在哪个城市？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E9",
+    "E13",
+    "E21",
+    "E22",
+    "E29"
+   ],
+   "stored_answer": "世卫组织的全球办事处设在瑞士日内瓦",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E9",
+    "E13",
+    "E21",
+    "E22",
+    "E29"
+   ],
+   "new_answer": "世卫组织的全球办事处设在瑞士日内瓦",
+   "new_display": "日内瓦",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_123404_我国现行法定节假日一年共有多少天.packed.json",
+   "question": "我国现行法定节假日一年共有多少天？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [
+    "uncovered:我国现行法定节假日一年共"
+   ],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E4",
+    "E5",
+    "E6",
+    "E17",
+    "E21"
+   ],
+   "stored_answer": "国务院关于修改《全国年节及纪念日放假办法》的决定 中国政府网 2024-11-12 ... 《国务院关于修改〈全国年节及纪念日放假办法〉的决定》已经2024年11月8日国务院第45",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E4",
+    "E5",
+    "E6",
+    "E17",
+    "E21"
+   ],
+   "new_answer": "现行全体公民放假的法定节假日共13天",
+   "new_display": "13天",
+   "numeric_q": true,
+   "stored_answer_numeric": true,
+   "new_answer_numeric": false,
+   "gaps_cleared": true
+  },
+  {
+   "file": "20261026_124247_我国现行法定节假日一年共有多少天.packed.json",
+   "question": "我国现行法定节假日一年共有多少天？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [
+    "uncovered:我国现行法定节假日一年共"
+   ],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E4",
+    "E5",
+    "E6",
+    "E19",
+    "E21"
+   ],
+   "stored_answer": "（一）元旦，放假1天（1月1日）",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E4",
+    "E5",
+    "E6",
+    "E19",
+    "E21"
+   ],
+   "new_answer": "现行全体公民放假的法定节假日共13天",
+   "new_display": "13天",
+   "numeric_q": true,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": true
+  },
+  {
+   "file": "20261026_124248_世界卫生组织总部设在哪个城市.packed.json",
+   "question": "世界卫生组织总部设在哪个城市？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [
+    "uncovered:城市"
+   ],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E9",
+    "E13"
+   ],
+   "stored_answer": "世卫组织的全球办事处设在瑞士日内瓦",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E9",
+    "E13"
+   ],
+   "new_answer": "世卫组织的全球办事处设在瑞士日内瓦",
+   "new_display": "日内瓦",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": true
+  },
+  {
+   "file": "20261026_124459_我国成年人高血压的诊断标准是多少.packed.json",
+   "question": "我国成年人高血压的诊断标准是多少？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E4",
+    "E7",
+    "E24",
+    "E25",
+    "E26"
+   ],
+   "stored_answer": "11月15日，国家卫生健康委发布消息明确，关于高血压诊断标准，2005年、2010年、2017年国家卫生行政部门发布的宣传教育要点、防治指南、临床路径等均明确：成人高血压的诊断标准",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E4",
+    "E7",
+    "E24",
+    "E25",
+    "E26"
+   ],
+   "new_answer": "11月15日，国家卫生健康委发布消息明确，关于高血压诊断标准，2005年、2010年、2017年国家卫生行政部门发布的宣传教育要点、防治指南、临床路径等均明确：成人高血压的诊断标准",
+   "new_display": "140/90毫米汞柱",
+   "numeric_q": true,
+   "stored_answer_numeric": true,
+   "new_answer_numeric": true,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_130406_世界卫生组织总部设在哪个城市.packed.json",
+   "question": "世界卫生组织总部设在哪个城市？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E8",
+    "E12"
+   ],
+   "stored_answer": "世卫组织的全球办事处设在瑞士日内瓦",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E8",
+    "E12"
+   ],
+   "new_answer": "世卫组织的全球办事处设在瑞士日内瓦",
+   "new_display": "日内瓦",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_130742_世界卫生组织总部设在哪个城市.packed.json",
+   "question": "世界卫生组织总部设在哪个城市？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E8",
+    "E12"
+   ],
+   "stored_answer": "世卫组织的全球办事处设在瑞士日内瓦",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E8",
+    "E12"
+   ],
+   "new_answer": "世卫组织的全球办事处设在瑞士日内瓦",
+   "new_display": "日内瓦",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_132141_我国现行法定节假日一年共有多少天.packed.json",
+   "question": "我国现行法定节假日一年共有多少天？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E4",
+    "E5",
+    "E6",
+    "E27"
+   ],
+   "stored_answer": "现行全体公民放假的法定节假日共13天",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E4",
+    "E5",
+    "E6",
+    "E27"
+   ],
+   "new_answer": "现行全体公民放假的法定节假日共13天",
+   "new_display": "13天",
+   "numeric_q": true,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_133140_截至2024年底我国高速公路总里程是多少.packed.json",
+   "question": "截至2024年底我国高速公路总里程是多少万公里？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [
+    "uncovered:截至2024年底我国高速公路总里程"
+   ],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E5",
+    "E15"
+   ],
+   "stored_answer": "高速公路里程19.07万公里、增加0.70万公里，国家高速公路里程12.41万公里、增加0.18万公里",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E5",
+    "E15"
+   ],
+   "new_answer": "高速公路里程19.07万公里、增加0.70万公里，国家高速公路里程12.41万公里、增加0.18万公里",
+   "new_display": "19.07万公里",
+   "numeric_q": true,
+   "stored_answer_numeric": true,
+   "new_answer_numeric": true,
+   "gaps_cleared": true
+  },
+  {
+   "file": "20261026_133154_我国现行个人所得税起征点是多少元.packed.json",
+   "question": "我国现行个人所得税起征点是多少元？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E2",
+    "E3",
+    "E8",
+    "E9",
+    "E11"
+   ],
+   "stored_answer": "扣除标准：根据现行税法规定，个人所得税的起征点为每月5000元",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E2",
+    "E3",
+    "E8",
+    "E9",
+    "E11"
+   ],
+   "new_answer": "扣除标准：根据现行税法规定，个人所得税的起征点为每月5000元",
+   "new_display": "5000元",
+   "numeric_q": true,
+   "stored_answer_numeric": true,
+   "new_answer_numeric": true,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_133200_中国空间站由几个舱段组成.packed.json",
+   "question": "中国空间站由几个舱段组成？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E2",
+    "E8",
+    "E14"
+   ],
+   "stored_answer": "三舱组合体质量约66吨，额定乘员3人，乘员轮换期间短期可达6人，具备10多吨载荷设备的安装和支持能力，设计寿命不小于10年，具备通过维修延长使用寿命的能力，具备一定扩展能力",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E2",
+    "E8",
+    "E14"
+   ],
+   "new_answer": "三舱组合体质量约66吨，额定乘员3人，乘员轮换期间短期可达6人，具备10多吨载荷设备的安装和支持能力，设计寿命不小于10年，具备通过维修延长使用寿命的能力，具备一定扩展能力",
+   "new_display": "三舱",
+   "numeric_q": true,
+   "stored_answer_numeric": true,
+   "new_answer_numeric": true,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_134122_中国空间站由几个舱段组成.packed.json",
+   "question": "中国空间站由几个舱段组成？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E2",
+    "E8",
+    "E14"
+   ],
+   "stored_answer": "三舱组合体质量约66吨，额定乘员3人，乘员轮换期间短期可达6人，具备10多吨载荷设备的安装和支持能力，设计寿命不小于10年，具备通过维修延长使用寿命的能力，具备一定扩展能力",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E2",
+    "E8",
+    "E14"
+   ],
+   "new_answer": "三舱组合体质量约66吨，额定乘员3人，乘员轮换期间短期可达6人，具备10多吨载荷设备的安装和支持能力，设计寿命不小于10年，具备通过维修延长使用寿命的能力，具备一定扩展能力",
+   "new_display": "三舱",
+   "numeric_q": true,
+   "stored_answer_numeric": true,
+   "new_answer_numeric": true,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_134352_截至2024年底我国高速公路总里程是多少.packed.json",
+   "question": "截至2024年底我国高速公路总里程是多少万公里？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [
+    "uncovered:截至2024年底我国高速公路总里程"
+   ],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E5",
+    "E15"
+   ],
+   "stored_answer": "高速公路里程19.07万公里、增加0.70万公里，国家高速公路里程12.41万公里、增加0.18万公里",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E5",
+    "E15"
+   ],
+   "new_answer": "高速公路里程19.07万公里、增加0.70万公里，国家高速公路里程12.41万公里、增加0.18万公里",
+   "new_display": "19.07万公里",
+   "numeric_q": true,
+   "stored_answer_numeric": true,
+   "new_answer_numeric": true,
+   "gaps_cleared": true
+  },
+  {
+   "file": "20261026_135105_截至2024年底我国高速公路总里程是多少.packed.json",
+   "question": "截至2024年底我国高速公路总里程是多少万公里？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [
+    "uncovered:截至2024年底我国高速公路总里程"
+   ],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E5",
+    "E15"
+   ],
+   "stored_answer": "高速公路里程19.07万公里、增加0.70万公里，国家高速公路里程12.41万公里、增加0.18万公里",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E5",
+    "E15",
+    "E25"
+   ],
+   "new_answer": "高速公路里程19.07万公里、增加0.70万公里，国家高速公路里程12.41万公里、增加0.18万公里",
+   "new_display": "19.07万公里",
+   "numeric_q": true,
+   "stored_answer_numeric": true,
+   "new_answer_numeric": true,
+   "gaps_cleared": true
+  },
+  {
+   "file": "20261026_140007_截至2024年底我国高速公路总里程是多少.packed.json",
+   "question": "截至2024年底我国高速公路总里程是多少万公里？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E5",
+    "E14"
+   ],
+   "stored_answer": "高速公路里程19.07万公里、增加0.70万公里，国家高速公路里程12.41万公里、增加0.18万公里",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E5",
+    "E14",
+    "E25",
+    "E27"
+   ],
+   "new_answer": "高速公路里程19.07万公里、增加0.70万公里，国家高速公路里程12.41万公里、增加0.18万公里",
+   "new_display": "19.07万公里",
+   "numeric_q": true,
+   "stored_answer_numeric": true,
+   "new_answer_numeric": true,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_140833_奥运会每隔几年举办一次.packed.json",
+   "question": "奥运会每隔几年举办一次？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [
+    "uncovered:奥运会每隔几年举办一次"
+   ],
+   "stored_official": [
+    "E1",
+    "E15",
+    "E22",
+    "E25",
+    "E26"
+   ],
+   "stored_answer": "... 古希腊举行的奥林匹克运动会，在1000多年的时间里面，时兴时衰，到罗马皇帝时废止，一共经历了293届，是相当长的时间",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E15",
+    "E22",
+    "E25",
+    "E26"
+   ],
+   "new_answer": "奥林匹克运动，追溯其起源，在奥林匹亚每四年举行一次的体育竞赛和文化的盛会",
+   "new_display": "每4年",
+   "numeric_q": true,
+   "stored_answer_numeric": true,
+   "new_answer_numeric": false,
+   "gaps_cleared": true
+  },
+  {
+   "file": "20261026_141759_奥运会每隔几年举办一次.packed.json",
+   "question": "奥运会每隔几年举办一次？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E15"
+   ],
+   "stored_answer": "奥林匹克运动，追溯其起源，在奥林匹亚每四年举行一次的体育竞赛和文化的盛会",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E15"
+   ],
+   "new_answer": "奥林匹克运动，追溯其起源，在奥林匹亚每四年举行一次的体育竞赛和文化的盛会",
+   "new_display": "每4年",
+   "numeric_q": true,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_142914_2024年我国居民人均可支配收入是多少元.packed.json",
+   "question": "2024年我国居民人均可支配收入是多少元？",
+   "sparse": false,
+   "stored_status": "conflict",
+   "stored_gaps": [
+    "conflict_unresolved"
+   ],
+   "stored_official": [
+    "E5",
+    "E10",
+    "E14"
+   ],
+   "stored_answer": "",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E5",
+    "E10",
+    "E14"
+   ],
+   "new_answer": "2024年全国居民人均可支配收入41314元 增长5.1%",
+   "new_display": "41314元",
+   "numeric_q": true,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": true,
+   "gaps_cleared": true
+  },
+  {
+   "file": "20261026_144153_2024年我国居民人均可支配收入是多少元.packed.json",
+   "question": "2024年我国居民人均可支配收入是多少元？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E5",
+    "E9",
+    "E13",
+    "E17",
+    "E20"
+   ],
+   "stored_answer": "2024年，全国居民人均可支配收入41314元，比上年名义增长5.3%，扣除价格因素，实际增长5.1%",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E5",
+    "E9",
+    "E13",
+    "E17",
+    "E20"
+   ],
+   "new_answer": "2024年，全国居民人均可支配收入41314元，比上年名义增长5.3%，扣除价格因素，实际增长5.1%",
+   "new_display": "41314元",
+   "numeric_q": true,
+   "stored_answer_numeric": true,
+   "new_answer_numeric": true,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_183755_嫦娥六号是哪一年发射的.packed.json",
+   "question": "嫦娥六号是哪一年发射的？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E8",
+    "E10",
+    "E11"
+   ],
+   "stored_answer": "嫦娥六号踏上奔月之路，将到月背采集“土特产” 时间： 2024-05-03 来源:北京日报客户端 5月3日，我国在中国文昌航天发射场，使用长征五号遥八运载火箭成功将探月工程四期嫦娥",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E8",
+    "E10",
+    "E11"
+   ],
+   "new_answer": "嫦娥六号踏上奔月之路，将到月背采集“土特产” 时间： 2024-05-03 来源:北京日报客户端 5月3日，我国在中国文昌航天发射场，使用长征五号遥八运载火箭成功将探月工程四期嫦娥",
+   "new_display": "嫦娥六号踏上奔月之路，将到月背采集“土特产” 时间： 2024-05-03 来源:北京日报客户端 5月3日，我国在中国文昌航天发射场，使用长征五号遥八运载火箭成功将探月工程四期嫦娥",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_183807_2024年末我国外汇储备余额是多少亿美元.packed.json",
+   "question": "2024年末我国外汇储备余额是多少亿美元？",
+   "sparse": false,
+   "stored_status": "conflict",
+   "stored_gaps": [
+    "conflict_unresolved",
+    "uncovered:2024年末我国外汇储备余额"
+   ],
+   "stored_official": [
+    "E1",
+    "E4",
+    "E5",
+    "E8",
+    "E15"
+   ],
+   "stored_answer": "",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E4",
+    "E5",
+    "E8",
+    "E15"
+   ],
+   "new_answer": "截至2024年12月末我国外汇储备规模为32024亿美元\n\n2025-01-07 20:10 来源： 新华社\n...\n新华社北京1月7日电（记者 刘开雄）国家外汇管理局7日发布数据",
+   "new_display": "32024亿美元",
+   "numeric_q": true,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": true,
+   "gaps_cleared": true
+  },
+  {
+   "file": "20261026_183909_HTTP404状态码表示什么.packed.json",
+   "question": "HTTP 404状态码表示什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E17"
+   ],
+   "stored_answer": "404 Not Found HTTP 响应状态码404 Not Found 指的是服务器无法找到所请求的资源",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E17"
+   ],
+   "new_answer": "404 Not Found HTTP 响应状态码404 Not Found 指的是服务器无法找到所请求的资源",
+   "new_display": "404 Not Found HTTP 响应状态码404 Not Found 指的是服务器无法找到所请求的资源",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_184055_2024年中国出生人口是多少万人.packed.json",
+   "question": "2024年中国出生人口是多少万人？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "stored_answer": "2024年，全国出生人口为954万人，比2023年增加52万人，自2017年以来首次回升，主要受近几年生育意愿累积、各地生育支持政策逐渐落实以及龙年生肖偏好等因素影响，但也要看到育",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E23"
+   ],
+   "new_answer": "2024年，全国出生人口为954万人，比2023年增加52万人，自2017年以来首次回升，主要受近几年生育意愿累积、各地生育支持政策逐渐落实以及龙年生肖偏好等因素影响，但也要看到育",
+   "new_display": "954万人",
+   "numeric_q": true,
+   "stored_answer_numeric": true,
+   "new_answer_numeric": true,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_184105_光在水中传播的速度是多少.packed.json",
+   "question": "光在水中传播的速度是多少？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E4",
+    "E25"
+   ],
+   "stored_answer": "严格说来光速每秒约30万千米是指真空光速，在不同的介质中光速是不一样的",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E4",
+    "E25"
+   ],
+   "new_answer": "严格说来光速每秒约30万千米是指真空光速，在不同的介质中光速是不一样的",
+   "new_display": "30万",
+   "numeric_q": true,
+   "stored_answer_numeric": true,
+   "new_answer_numeric": true,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_185454_缓解社交焦虑AI效果接近人类治疗师这.packed.json",
+   "question": "缓解社交焦虑，AI效果接近人类治疗师，这说明什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [
+    "uncovered:这说明什么"
+   ],
+   "stored_official": [
+    "E20",
+    "E23",
+    "E25",
+    "E33"
+   ],
+   "stored_answer": "2026 10/26 09:35:49 ... 缓解社交焦虑 AI效果接近人类治疗师 ... 新华社赫尔辛基10月25日电（记者朱昊晨 徐谦）斯德哥尔摩消息：瑞典斯德哥尔摩大学参与",
+   "new_status": "answered",
+   "new_gaps": [
+    "uncovered:这说明什么"
+   ],
+   "new_official": [
+    "E20",
+    "E23",
+    "E25",
+    "E33"
+   ],
+   "new_answer": "2026 10/26 09:35:49 ... 缓解社交焦虑 AI效果接近人类治疗师 ... 新华社赫尔辛基10月25日电（记者朱昊晨 徐谦）斯德哥尔摩消息：瑞典斯德哥尔摩大学参与",
+   "new_display": "2026 10/26 09:35:49 ... 缓解社交焦虑 AI效果接近人类治疗师 ... 新华社赫尔辛基10月25日电（记者朱昊晨 徐谦）斯德哥尔摩消息：瑞典斯德哥尔摩大学参与",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261026_185946_缓解社交焦虑AI效果接近人类治疗师这.packed.json",
+   "question": "缓解社交焦虑，AI效果接近人类治疗师，这说明什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [
+    "no_official_source",
+    "uncovered:这说明什么"
+   ],
+   "stored_official": [],
+   "stored_answer": "2026 10/26 09:35:49 ... 缓解社交焦虑 AI效果接近人类治疗师 ... 新华社赫尔辛基10月25日电（记者朱昊晨 徐谦）斯德哥尔摩消息：瑞典斯德哥尔摩大学参与",
+   "new_status": "answered",
+   "new_gaps": [
+    "no_official_source",
+    "uncovered:这说明什么"
+   ],
+   "new_official": [],
+   "new_answer": "2026 10/26 09:35:49 ... 缓解社交焦虑 AI效果接近人类治疗师 ... 新华社赫尔辛基10月25日电（记者朱昊晨 徐谦）斯德哥尔摩消息：瑞典斯德哥尔摩大学参与",
+   "new_display": "2026 10/26 09:35:49 ... 缓解社交焦虑 AI效果接近人类治疗师 ... 新华社赫尔辛基10月25日电（记者朱昊晨 徐谦）斯德哥尔摩消息：瑞典斯德哥尔摩大学参与",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261025_060033_22等于几.packed.json",
+   "question": "2+2等于几？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [],
+   "stored_answer": "2 + 2 = 4",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [],
+   "new_answer": "2 + 2 = 4",
+   "new_display": "2 + 2 = 4",
+   "numeric_q": true,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261025_174637_HTTP404状态码表示什么.packed.json",
+   "question": "HTTP 404状态码表示什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "stored_answer": "404 Not Found HTTP 响应状态码404 Not Found 指的是服务器无法找到所请求的资源",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "new_answer": "404 Not Found HTTP 响应状态码404 Not Found 指的是服务器无法找到所请求的资源",
+   "new_display": "404 Not Found HTTP 响应状态码404 Not Found 指的是服务器无法找到所请求的资源",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261025_190907_2024年中国GDP增速最新数据是多少.packed.json",
+   "question": "2024年中国GDP增速最新数据是多少？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E5",
+    "E6",
+    "E14",
+    "E15",
+    "E16"
+   ],
+   "stored_answer": "这其中，国内生产总值，也就是大家常说的GDP超过134万亿元，按不变价格计算，比上年增长5.0%，经济社会发展主要目标任务顺利完成",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E5",
+    "E6",
+    "E13",
+    "E14",
+    "E15",
+    "E16"
+   ],
+   "new_answer": "近期，国家统计局发布了2024年国民经济运行主要数据。这其中，国内生产总值，也就是大家常说的GDP超过134万亿元，按不变价格计算，比上年增长5.0%，经济社会发展主要目标任务顺利",
+   "new_display": "5.0%",
+   "numeric_q": true,
+   "stored_answer_numeric": true,
+   "new_answer_numeric": true,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261027_061718_HTTP201状态码表示什么.packed.json",
+   "question": "HTTP 201状态码表示什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "stored_answer": "201 Created HTTP201 Created 成功回應狀態碼表示 HTTP 請求成功並導致資源的建立",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "new_answer": "201 Created HTTP201 Created 成功回應狀態碼表示 HTTP 請求成功並導致資源的建立",
+   "new_display": "201 Created HTTP201 Created 成功回應狀態碼表示 HTTP 請求成功並導致資源的建立",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261022_185552_DeepSeekAPI的base.packed.json",
+   "question": "DeepSeek API 的 base URL 是什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E5",
+    "E8",
+    "E10",
+    "E43",
+    "E45"
+   ],
+   "stored_answer": "import OpenAI from \"openai\"; const openai = new OpenAI({ baseURL: ' apiKey: process.env.DE",
+   "new_status": "unknown",
+   "new_gaps": [
+    "insufficient_evidence"
+   ],
+   "new_official": [
+    "E5",
+    "E8",
+    "E10",
+    "E43",
+    "E45"
+   ],
+   "new_answer": "",
+   "new_display": "",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261022_202654_Python中len函数的作用.packed.json",
+   "question": "Python 中 len() 函数的作用是什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E12",
+    "E30",
+    "E46",
+    "E51"
+   ],
+   "stored_answer": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E12",
+    "E30",
+    "E46",
+    "E51"
+   ],
+   "new_answer": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
+   "new_display": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261023_082429_Python中len函数的作用.packed.json",
+   "question": "Python 中 len() 函数的作用是什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E12"
+   ],
+   "stored_answer": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E12"
+   ],
+   "new_answer": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
+   "new_display": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261023_V2.2.0_full_baseline_replay.packed.json",
+   "question": "Python 中 len() 函数的作用是什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E12"
+   ],
+   "stored_answer": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E12"
+   ],
+   "new_answer": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
+   "new_display": "The `len()` function returns the number of items in an object. It is one of Python’s most ",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261024_082341_Python中len函数的作用是什.packed.json",
+   "question": "Python 中 len 函数的作用是什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E19",
+    "E20",
+    "E21",
+    "E22",
+    "E38",
+    "E57",
+    "E66"
+   ],
+   "stored_answer": "在Python中，len()函数用来确定给定对象中的元素的数量。它可以作用于各种数据类型，如列表、字符串、元组和字典等。 使用len()函数 len()函数的语法非常简单： len",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E19",
+    "E20",
+    "E21",
+    "E22",
+    "E38",
+    "E57",
+    "E66"
+   ],
+   "new_answer": "在Python中，len()函数用来确定给定对象中的元素的数量。它可以作用于各种数据类型，如列表、字符串、元组和字典等。 使用len()函数 len()函数的语法非常简单： len",
+   "new_display": "在Python中",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261024_083648_Python中len函数的作用是什.packed.json",
+   "question": "Python 中 len 函数的作用是什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E30",
+    "E40",
+    "E44"
+   ],
+   "stored_answer": "在Python中，len()函数用来确定给定对象中的元素的数量。它可以作用于各种数据类型，如列表、字符串、元组和字典等。 使用len()函数 len()函数的语法非常简单： len",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E30",
+    "E40",
+    "E44"
+   ],
+   "new_answer": "在Python中，len()函数用来确定给定对象中的元素的数量。它可以作用于各种数据类型，如列表、字符串、元组和字典等。 使用len()函数 len()函数的语法非常简单： len",
+   "new_display": "在Python中",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261024_163141_DeepSeekV41Flash.packed.json",
+   "question": "DeepSeek V4.1 Flash 是哪一天发布的？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E5",
+    "E13",
+    "E14",
+    "E44"
+   ],
+   "stored_answer": "[2026-09-10] ## Date: ... ### DeepSeek-V4-Flash Update The official release of the DeepSee",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E5",
+    "E13",
+    "E14",
+    "E44"
+   ],
+   "new_answer": "Date: ... DeepSeek-V4-Flash Update The official release of the DeepSeek-V4-Flash API is no",
+   "new_display": "Date: ... DeepSeek-V4-Flash Update The official release of the DeepSeek-V4-Flash API is no",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261025_050504_11等于几.packed.json",
+   "question": "1+1等于几？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E19",
+    "E26",
+    "E29"
+   ],
+   "stored_answer": "[2022-09-29] # 1+1等于几？ ... 1+1可以等于2，也可以等于3，也可以等于4，这要根据具体的情况具体分析",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [],
+   "new_answer": "1 + 1 = 2",
+   "new_display": "1 + 1 = 2",
+   "numeric_q": true,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261025_051705_11等于几.packed.json",
+   "question": "1+1等于几？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E32"
+   ],
+   "stored_answer": "[2022-09-29] # 1+1等于几？ ... 1+1可以等于2，也可以等于3，也可以等于4，这要根据具体的情况具体分析",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [],
+   "new_answer": "1 + 1 = 2",
+   "new_display": "1 + 1 = 2",
+   "numeric_q": true,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261025_125104_光在水中传播的速度是多少.packed.json",
+   "question": "光在水中传播的速度是多少？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E23"
+   ],
+   "stored_answer": "[2024-07-14] 光在水中传播的速度比空气中 小小（选填“大”或“小”）",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E2",
+    "E3",
+    "E4",
+    "E23"
+   ],
+   "new_answer": "在水中，光速降至约22.4万公里/秒",
+   "new_display": "22.4万公里",
+   "numeric_q": true,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": true,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261025_161052_长江的长度是多少千米.packed.json",
+   "question": "长江的长度是多少千米？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E3",
+    "E4",
+    "E29"
+   ],
+   "stored_answer": "[2020-12-28] 6280千米与0.88千米的对话——记长江局与四唯街道六合社区联合开展十九届五中全会精神学习 ... 6280千米是长江的长度，0.88千米是湖北省武汉市",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E3",
+    "E4",
+    "E29"
+   ],
+   "new_answer": "长江日报讯（记者朱建华 通讯员陈松平）45年前的今天——1976年7月21日，我国对长江源头启动首次综合性考察，长江长度由5800千米修正为6300千米",
+   "new_display": "5800千米",
+   "numeric_q": true,
+   "stored_answer_numeric": true,
+   "new_answer_numeric": true,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261025_161055_珠穆朗玛峰的海拔是多少米.packed.json",
+   "question": "珠穆朗玛峰的海拔是多少米？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [
+    "conflict_resolved_official:official_precedence"
+   ],
+   "stored_official": [
+    "E8"
+   ],
+   "stored_answer": "[2018-09-20] ### 关于珠峰高度 ... 我看2005年公布的高程是8844.43米",
+   "new_status": "conflict",
+   "new_gaps": [
+    "conflict_unresolved"
+   ],
+   "new_official": [
+    "E1",
+    "E3",
+    "E4",
+    "E8"
+   ],
+   "new_answer": "",
+   "new_display": "",
+   "numeric_q": true,
+   "stored_answer_numeric": true,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261027_082757_HTTP304状态码表示什么.packed.json",
+   "question": "HTTP 304状态码表示什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E7",
+    "E10",
+    "E11",
+    "E14",
+    "E16"
+   ],
+   "stored_answer": "304 Not Modified HTTP304 Not Modified 重新導向回應狀態碼表示不需要重新傳送請求的資源",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E7",
+    "E10",
+    "E11",
+    "E14",
+    "E16"
+   ],
+   "new_answer": "304 Not Modified HTTP304 Not Modified 重新導向回應狀態碼表示不需要重新傳送請求的資源",
+   "new_display": "304 Not Modified HTTP304 Not Modified 重新導向回應狀態碼表示不需要重新傳送請求的資源",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261027_084237_HTTP301状态码表示什么.packed.json",
+   "question": "HTTP 301状态码表示什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E16",
+    "E17",
+    "E18",
+    "E28"
+   ],
+   "stored_answer": "下面有不同的方式来指定哪个网址是规范的",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E16",
+    "E17",
+    "E18",
+    "E28"
+   ],
+   "new_answer": "下面有不同的方式来指定哪个网址是规范的",
+   "new_display": "下面有不同的方式来指定哪个网址是规范的",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261027_084903_HTTP302状态码表示什么.packed.json",
+   "question": "HTTP 302状态码表示什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E7",
+    "E18"
+   ],
+   "stored_answer": "302 Found 302 Found HTTP 响应状态码表示请求的资源已临时移动到 Location 标头中的 URL",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E7",
+    "E18"
+   ],
+   "new_answer": "302 Found 302 Found HTTP 响应状态码表示请求的资源已临时移动到 Location 标头中的 URL",
+   "new_display": "302 Found 302 Found HTTP 响应状态码表示请求的资源已临时移动到 Location 标头中的 URL",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261027_094951_HTTP403状态码表示什么.packed.json",
+   "question": "HTTP 403状态码表示什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E12"
+   ],
+   "stored_answer": "403 Forbidden HTTP403 Forbidden 用戶端錯誤回應狀態碼表示伺服器理解請求，但拒絕處理",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E12"
+   ],
+   "new_answer": "403 Forbidden HTTP403 Forbidden 用戶端錯誤回應狀態碼表示伺服器理解請求，但拒絕處理",
+   "new_display": "403 Forbidden HTTP403 Forbidden 用戶端錯誤回應狀態碼表示伺服器理解請求，但拒絕處理",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261027_095519_HTTP401状态码表示什么.packed.json",
+   "question": "HTTP 401状态码表示什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E9"
+   ],
+   "stored_answer": "**100Status** HTTP/1.1加入了一个新的状态码100。 客户端事先发送一个只带头域的请求，如果服务器因为权限拒绝了请求，就回送响应码401（Unauthorize",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E9"
+   ],
+   "new_answer": "**100Status** HTTP/1.1加入了一个新的状态码100。 客户端事先发送一个只带头域的请求，如果服务器因为权限拒绝了请求，就回送响应码401（Unauthorize",
+   "new_display": "**100Status** HTTP/1.1加入了一个新的状态码100。 客户端事先发送一个只带头域的请求，如果服务器因为权限拒绝了请求，就回送响应码401（Unauthorize",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261027_100121_HTTP402状态码表示什么.packed.json",
+   "question": "HTTP 402状态码表示什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E7",
+    "E9",
+    "E17",
+    "E18"
+   ],
+   "stored_answer": "402 Payment Required The HTTP402 Payment Required client error response status code is a n",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E7",
+    "E9",
+    "E17",
+    "E18"
+   ],
+   "new_answer": "402 Payment Required The HTTP402 Payment Required client error response status code is a n",
+   "new_display": "402 Payment Required The HTTP402 Payment Required client error response status code is a n",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261027_103347_HTTP206状态码表示什么.packed.json",
+   "question": "HTTP 206状态码表示什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E11",
+    "E17",
+    "E21",
+    "E22",
+    "E29"
+   ],
+   "stored_answer": "206 Partial Content HTTP206 Partial Content 成功回應狀態碼是為了回應範圍請求而發送的",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E11",
+    "E17",
+    "E21",
+    "E22",
+    "E29"
+   ],
+   "new_answer": "206 Partial Content HTTP206 Partial Content 成功回應狀態碼是為了回應範圍請求而發送的",
+   "new_display": "206 Partial Content HTTP206 Partial Content 成功回應狀態碼是為了回應範圍請求而發送的",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261027_105538_HTTP409状态码表示什么.packed.json",
+   "question": "HTTP 409状态码表示什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E19",
+    "E23",
+    "E24"
+   ],
+   "stored_answer": "409 Conflict HTTP409 Conflict 用戶端錯誤回應狀態碼表示請求與目標資源的當前狀態存在衝突",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E19",
+    "E23",
+    "E24"
+   ],
+   "new_answer": "409 Conflict HTTP409 Conflict 用戶端錯誤回應狀態碼表示請求與目標資源的當前狀態存在衝突",
+   "new_display": "409 Conflict HTTP409 Conflict 用戶端錯誤回應狀態碼表示請求與目標資源的當前狀態存在衝突",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261027_124913_HTTP429状态码表示什么.packed.json",
+   "question": "HTTP 429状态码表示什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E14",
+    "E15",
+    "E32"
+   ],
+   "stored_answer": "429 Too Many Requests The HTTP429 Too Many Requests client error response status code indi",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E14",
+    "E15",
+    "E32"
+   ],
+   "new_answer": "429 Too Many Requests The HTTP429 Too Many Requests client error response status code indi",
+   "new_display": "429 Too Many Requests The HTTP429 Too Many Requests client error response status code indi",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261027_130623_HTTP503状态码表示什么.packed.json",
+   "question": "HTTP 503状态码表示什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E17",
+    "E22"
+   ],
+   "stored_answer": "Retry-After 在 HTTP 协议中，响应首部Retry-After 表示用户代理需要等待多长时间之后才能继续发送请求",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E17",
+    "E22"
+   ],
+   "new_answer": "Retry-After 在 HTTP 协议中，响应首部Retry-After 表示用户代理需要等待多长时间之后才能继续发送请求",
+   "new_display": "Retry-After 在 HTTP 协议中，响应首部Retry-After 表示用户代理需要等待多长时间之后才能继续发送请求",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261027_131511_HTTP504状态码表示什么.packed.json",
+   "question": "HTTP 504状态码表示什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "stored_answer": "504 Gateway Timeout HTTP504 Gateway Timeout 伺服器錯誤回應狀態碼表示當伺服器充當閘道器或代理時，未能及時從上游伺服器獲得回應，以完成請求",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "new_answer": "504 Gateway Timeout HTTP504 Gateway Timeout 伺服器錯誤回應狀態碼表示當伺服器充當閘道器或代理時，未能及時從上游伺服器獲得回應，以完成請求",
+   "new_display": "504 Gateway Timeout HTTP504 Gateway Timeout 伺服器錯誤回應狀態碼表示當伺服器充當閘道器或代理時，未能及時從上游伺服器獲得回應，以完成請求",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261027_132316_HTTP507状态码表示什么.packed.json",
+   "question": "HTTP 507状态码表示什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E18",
+    "E23"
+   ],
+   "stored_answer": "507 Insufficient Storage HTTP507 Insufficient Storage 伺服器錯誤回應狀態碼表示伺服器無法執行某個動作，因為它沒有足夠的可用儲存",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E18",
+    "E23"
+   ],
+   "new_answer": "507 Insufficient Storage HTTP507 Insufficient Storage 伺服器錯誤回應狀態碼表示伺服器無法執行某個動作，因為它沒有足夠的可用儲存",
+   "new_display": "507 Insufficient Storage HTTP507 Insufficient Storage 伺服器錯誤回應狀態碼表示伺服器無法執行某個動作，因為它沒有足夠的可用儲存",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261027_133142_HTTP508状态码表示什么.packed.json",
+   "question": "HTTP 508状态码表示什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E20"
+   ],
+   "stored_answer": "508 Loop Detected The HTTP508 Loop Detected server error response status code indicates th",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E20"
+   ],
+   "new_answer": "508 Loop Detected The HTTP508 Loop Detected server error response status code indicates th",
+   "new_display": "508 Loop Detected The HTTP508 Loop Detected server error response status code indicates th",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261027_133844_HTTP511状态码表示什么.packed.json",
+   "question": "HTTP 511状态码表示什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E7",
+    "E9"
+   ],
+   "stored_answer": "511 Network Authentication Required HTTP の511 Network Authentication Required はサーバーエラーレスポン",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E7",
+    "E9"
+   ],
+   "new_answer": "511 Network Authentication Required HTTP の511 Network Authentication Required はサーバーエラーレスポン",
+   "new_display": "511 Network Authentication Required HTTP の511 Network Authentication Required はサーバーエラーレスポン",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261027_140410_HTTP451状态码表示什么.packed.json",
+   "question": "HTTP 451状态码表示什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E10",
+    "E11",
+    "E13",
+    "E14",
+    "E18"
+   ],
+   "stored_answer": "451 Unavailable For Legal Reasons 451 Unavailable For Legal Reasons（因法律原因不可用）是一种 HTTP 协议的错",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E10",
+    "E11",
+    "E13",
+    "E14",
+    "E18"
+   ],
+   "new_answer": "451 Unavailable For Legal Reasons 451 Unavailable For Legal Reasons（因法律原因不可用）是一种 HTTP 协议的错",
+   "new_display": "451 Unavailable For Legal Reasons 451 Unavailable For Legal Reasons（因法律原因不可用）是一种 HTTP 协议的错",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261027_140812_HTTP451状态码表示什么.packed.json",
+   "question": "HTTP 451状态码表示什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E10",
+    "E11",
+    "E13",
+    "E14",
+    "E16"
+   ],
+   "stored_answer": "451 Unavailable For Legal Reasons 451 Unavailable For Legal Reasons（因法律原因不可用）是一种 HTTP 协议的错",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E10",
+    "E11",
+    "E13",
+    "E14",
+    "E16"
+   ],
+   "new_answer": "451 Unavailable For Legal Reasons 451 Unavailable For Legal Reasons（因法律原因不可用）是一种 HTTP 协议的错",
+   "new_display": "451 Unavailable For Legal Reasons 451 Unavailable For Legal Reasons（因法律原因不可用）是一种 HTTP 协议的错",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261027_185553_HTTP418状态码表示什么.packed.json",
+   "question": "HTTP 418状态码表示什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E8",
+    "E10",
+    "E11",
+    "E12"
+   ],
+   "stored_answer": "418 I'm a teapot The HTTP418 I'm a teapot status response code indicates that the server r",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E8",
+    "E10",
+    "E11",
+    "E12"
+   ],
+   "new_answer": "418 I'm a teapot The HTTP418 I'm a teapot status response code indicates that the server r",
+   "new_display": "418 I'm a teapot The HTTP418 I'm a teapot status response code indicates that the server r",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261027_190218_HTTP422状态码表示什么.packed.json",
+   "question": "HTTP 422状态码表示什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E27",
+    "E35"
+   ],
+   "stored_answer": "422 Unprocessable Content HTTP422 Unprocessable Content 用戶端錯誤回應狀態碼表示伺服器理解請求內容的內容類型，且請求內容的語",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E27",
+    "E35"
+   ],
+   "new_answer": "422 Unprocessable Content HTTP422 Unprocessable Content 用戶端錯誤回應狀態碼表示伺服器理解請求內容的內容類型，且請求內容的語",
+   "new_display": "422 Unprocessable Content HTTP422 Unprocessable Content 用戶端錯誤回應狀態碼表示伺服器理解請求內容的內容類型，且請求內容的語",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261027_191328_HTTP421状态码表示什么.packed.json",
+   "question": "HTTP 421状态码表示什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E9",
+    "E17",
+    "E19",
+    "E20",
+    "E23"
+   ],
+   "stored_answer": "421 Misdirected Request HTTP421 Misdirected Request 用戶端錯誤回應狀態碼表示該請求被導向到一個無法產生回應的伺服器",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E9",
+    "E17",
+    "E19",
+    "E20",
+    "E23"
+   ],
+   "new_answer": "421 Misdirected Request HTTP421 Misdirected Request 用戶端錯誤回應狀態碼表示該請求被導向到一個無法產生回應的伺服器",
+   "new_display": "421 Misdirected Request HTTP421 Misdirected Request 用戶端錯誤回應狀態碼表示該請求被導向到一個無法產生回應的伺服器",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261027_194614_HTTP425状态码表示什么.packed.json",
+   "question": "HTTP 425状态码表示什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E9",
+    "E14",
+    "E15"
+   ],
+   "stored_answer": "425 Too Early Limited availability This feature is not Baseline because it does not work i",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E3",
+    "E9",
+    "E14",
+    "E15"
+   ],
+   "new_answer": "425 Too Early Limited availability This feature is not Baseline because it does not work i",
+   "new_display": "425 Too Early Limited availability This feature is not Baseline because it does not work i",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
+   "gaps_cleared": false
+  },
+  {
+   "file": "20261027_212315_HTTP431状态码表示什么.packed.json",
+   "question": "HTTP 431状态码表示什么？",
+   "sparse": false,
+   "stored_status": "answered",
+   "stored_gaps": [],
+   "stored_official": [
+    "E1",
+    "E2",
+    "E4",
+    "E13",
+    "E24",
+    "E33"
+   ],
+   "stored_answer": "431 Request Header Fields Too Large Le code de statut de réponse d'erreur client HTTP431 R",
+   "new_status": "answered",
+   "new_gaps": [],
+   "new_official": [
+    "E1",
+    "E2",
+    "E4",
+    "E13",
+    "E24",
+    "E33"
+   ],
+   "new_answer": "431 Request Header Fields Too Large Le code de statut de réponse d'erreur client HTTP431 R",
+   "new_display": "431 Request Header Fields Too Large Le code de statut de réponse d'erreur client HTTP431 R",
+   "numeric_q": false,
+   "stored_answer_numeric": false,
+   "new_answer_numeric": false,
    "gaps_cleared": false
   }
  ]

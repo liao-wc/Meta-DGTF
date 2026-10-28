@@ -1,0 +1,121 @@
+{
+ "ok": true,
+ "ts": 1793047694.782052,
+ "root": "D:\\Meta-DGTF-道生三阶模型",
+ "checks": [
+  {
+   "name": "App 8765 /api/health",
+   "ok": true,
+   "detail": "code=200 "
+  },
+  {
+   "name": "App /api/status/sidebar",
+   "ok": true,
+   "detail": "code=200 "
+  },
+  {
+   "name": "DSH guard",
+   "ok": true,
+   "detail": "code=200 enabled=True"
+  },
+  {
+   "name": "本地 LLM 8772 /health",
+   "ok": true,
+   "detail": "code=200 "
+  },
+  {
+   "name": "本地 LLM ready",
+   "ok": true,
+   "detail": "status=unknown"
+  },
+  {
+   "name": "本地 LLM watchdog 状态",
+   "ok": true,
+   "detail": "watchdog_ok=True"
+  },
+  {
+   "name": "BGE 8771 /health",
+   "ok": false,
+   "detail": "code=None URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>"
+  },
+  {
+   "name": "App 8765 监听",
+   "ok": true,
+   "detail": "port closed"
+  },
+  {
+   "name": "本地 LLM 8772 监听",
+   "ok": true,
+   "detail": "port closed"
+  },
+  {
+   "name": "磁盘剩余 >= 2GB",
+   "ok": true,
+   "detail": "free=121.6GB"
+  },
+  {
+   "name": "outputs 可写",
+   "ok": true,
+   "detail": "D:\\Meta-DGTF-道生三阶模型\\outputs"
+  },
+  {
+   "name": "dgtf_memory 可写",
+   "ok": true,
+   "detail": "D:\\Meta-DGTF-道生三阶模型\\dgtf_memory"
+  },
+  {
+   "name": "无 running/queued 任务",
+   "ok": true,
+   "detail": "running=0"
+  },
+  {
+   "name": "提案 pending <= 20",
+   "ok": true,
+   "detail": "pending=8"
+  },
+  {
+   "name": "_app_out_8765.log < 10MB",
+   "ok": true,
+   "detail": "size=4711B"
+  },
+  {
+   "name": "_app_err_8765.log < 10MB",
+   "ok": true,
+   "detail": "size=0B"
+  },
+  {
+   "name": "_audit_tmp 大小 < 100MB",
+   "ok": false,
+   "detail": "size=108375225B"
+  },
+  {
+   "name": "docs/app_audit_latest.json 新鲜(<2h)",
+   "ok": true,
+   "detail": "age=6s"
+  },
+  {
+   "name": "docs/outputs_audit_latest.json 新鲜(<2h)",
+   "ok": true,
+   "detail": "age=4s"
+  },
+  {
+   "name": "docs/proposals_reassess_latest.json 新鲜(<2h)",
+   "ok": true,
+   "detail": "age=4s"
+  },
+  {
+   "name": "静态缓存版本一致",
+   "ok": true,
+   "detail": "2.0.35"
+  }
+ ],
+ "fails": [],
+ "warnings": [
+  "BGE 8771 /health: code=None URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>",
+  "_audit_tmp 大小 < 100MB: size=108375225B"
+ ],
+ "repairs": [],
+ "free_gb": 121.6,
+ "outputs_size_mb": 512.8,
+ "memory_size_mb": 49.5
+}

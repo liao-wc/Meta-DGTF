@@ -8,8 +8,12 @@ def run_turns(llm, system, turns, *, history=None, **kw):
     """顺序多轮：每轮的 assistant 输出进入下一轮 history。"""
     hist = list(history or [])
     out = []
+    # ★ 环节名**显式**传（不是塞进 `**kw`）：AST 判据扫的是 `stage=` 关键字，
+    #   藏在 kw 里就查不到 ⇒ 又变回「判据说 0 处缺失、产物里仍有盲区」。
+    #   调用方显式给了 stage 时尊重调用方（`pop` 后再传，不会撞关键字）。
+    _st = kw.pop("stage", "multi_turn")
     for user in (turns or []):
-        text = llm.call(system, str(user), history=hist, **kw)
+        text = llm.call(system, str(user), history=hist, stage=_st, **kw)
         out.append(text)
         hist.append({"role": "assistant", "content": str(text)})
     return {"turns": out, "last": out[-1] if out else "", "history": hist}
@@ -20,9 +24,10 @@ def run_tool_loop(llm, system, user, tools, executor, *,
     """OpenAI 风格 tool_calls 循环；executor(name,args)->str。"""
     hist = list(history or [])
     trace = []
+    _st = kw.pop("stage", "multi_turn_tool")
     for _ in range(max(1, int(max_rounds))):
         msg = llm.call(system, str(user), history=hist, tools=tools,
-                       return_message=True, **kw)
+                       return_message=True, stage=_st, **kw)
         calls = list(getattr(msg, "tool_calls", None) or [])
         if not calls:
             return {"text": str(getattr(msg, "content", "") or ""),

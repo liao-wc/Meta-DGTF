@@ -28,6 +28,7 @@ def main() -> int:
     packs = sorted(glob.glob(str(ROOT / "outputs" / "*.packed.json")))
     legacy_bad, new_bad, no_norm = [], [], []
     legacy_trunc, legacy_nodisp = [], []
+    legacy_xpos = []
     new_total = 0
     for f in packs:
         stem = os.path.basename(f)
@@ -47,12 +48,22 @@ def main() -> int:
         contradict = ((aq == "unverified" and ready is True)
                       or (aq == "verified" and ready is False
                           and not _reason))
+        # ★ [跨位置一致性] 同一个 answer_ready 在 quality 与 decision_trace
+        #   两处必须是同一个结论。读产物的人（App 产物索引 / ab_summary / bench）
+        #   可能取任一处，两处不一致时「这跑到底就绪没有」没有唯一答案。
+        #   实测历史上有 30 个这样的包（全部 < CUTOFF，provenance 为空），
+        #   CUTOFF 之后为 0 —— 但那是因为没人查过，不是因为它不会发生。
+        _dt_ready = (d.get("decision_trace") or {}).get("answer_ready")
+        xpos = (ready is not None and _dt_ready is not None
+                and bool(ready) != bool(_dt_ready))
         no_display = (str(asum.get("question_type") or "") == "fact"
                       and not str(card.get("answer_display") or "").strip())
         if is_new:
             new_total += 1
             if contradict:
                 new_bad.append(stem)
+            if xpos:
+                new_bad.append(stem + "::answer_ready_cross_position")
             if "flags_normalized" not in q:
                 no_norm.append(stem)
             if truncated and ready is True:
@@ -64,6 +75,8 @@ def main() -> int:
         else:
             if contradict:
                 legacy_bad.append(stem)
+            if xpos:
+                legacy_xpos.append(stem)
             if truncated and ready is True:
                 legacy_trunc.append(stem)
             if aq == "verified" and no_display and ready is True:
@@ -71,22 +84,27 @@ def main() -> int:
     doc = {
         "packs": len(packs), "cutoff": CUTOFF, "new_packs": new_total,
         "legacy_contradictions": legacy_bad,
+        "legacy_cross_position": legacy_xpos,
         "legacy_truncated_ready": legacy_trunc,
         "legacy_verified_no_display": legacy_nodisp,
         "new_contradictions": new_bad,
         "new_missing_flags_normalized": no_norm,
         "pass": not new_bad and not no_norm,
-        "note": "历史包保留不改写；新包必须无矛盾且带 flags_normalized（Round 129）。",
+        "note": "历史包保留不改写；新包必须无矛盾、无跨位置 answer_ready 不一致、"
+                "且带 flags_normalized（Round 129 + 跨位置一致性）。",
     }
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(doc, ensure_ascii=False, indent=1), encoding="utf-8")
     print("packs=%d | new=%d | legacy contradictions=%d | new contradictions=%d"
           " | missing flags_normalized=%d | legacy truncated_ready=%d | legacy verified_no_display=%d"
+          " | legacy cross_position=%d"
           % (len(packs), new_total, len(legacy_bad), len(new_bad), len(no_norm),
-             len(legacy_trunc), len(legacy_nodisp)))
+             len(legacy_trunc), len(legacy_nodisp), len(legacy_xpos)))
     if legacy_bad:
         print("WARN legacy（仅记录，不改写）：", legacy_bad[:5])
+    if legacy_xpos:
+        print("WARN legacy 跨位置不一致（仅记录，不改写）：", legacy_xpos[:5])
     print("CONSISTENCY %s" % ("PASS" if doc["pass"] else "FAIL"))
     return 0 if doc["pass"] else 1
 

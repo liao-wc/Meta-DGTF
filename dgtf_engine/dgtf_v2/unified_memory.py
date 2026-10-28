@@ -247,12 +247,18 @@ class UnifiedMemory:
                     "why": "同一 (run_id, template) 已在记忆库中",
                     "contains_content": False}
 
+        payload = {"template": tmpl, "quality": round(q, 4),
+                   "calls": int(round(c)), "tokens": int(round(t)),
+                   "success": bool(success)}
+        if extra:
+            # 只追加已校验的结构读数；不覆盖 quality/template 等核心字段。
+            for _k, _v in extra.items():
+                if _k not in payload:
+                    payload[_k] = _v
         ev = self._lake.append(
             run_id=run_id, plane="procedural", layer="scheduler",
             kind="schedule_outcome", key="schedule:" + tmpl,
-            payload={"template": tmpl, "quality": round(q, 4),
-                     "calls": int(round(c)), "tokens": int(round(t)),
-                     "success": bool(success)},
+            payload=payload,
             provenance=["unified_memory"], confidence=0.6)
         written = ["v2_events"]
         self._guard_write(self.v2_events_path)

@@ -34,6 +34,14 @@ STEPS = [
     ("outputs_consistency", ["scripts/outputs_quality_consistency.py"]),
     ("fx_anchor_replay", ["scripts/fx_anchor_replay_check.py"]),
     ("scenario_matrix_guard", ["scripts/update_scenario_matrix.py"]),
+    # 零 API / 零 GPU / 不占端口：适配层协议判据（引擎 ↔ 本地服务互通）
+    ("openai_shim", ["scripts/local_model/test_openai_shim.py"]),
+    # 显存碎片回收判据（纯函数 + 构造性验证；服务离线时相关项自动 SKIP）
+    ("mem_reclaim", ["scripts/local_model/test_mem_reclaim.py"]),
+    # 生成长度按 stage 压缩判据（纯函数 + 构造性证明打真 Handler）
+    ("max_new_cap", ["scripts/local_model/test_max_new_cap.py"]),
+    # ★ APP → 引擎 → 本地模型 端到端（零 API 成本；服务未起时退出码 2 = 没跑）
+    ("e2e_app_local", ["scripts/local_model/e2e_app_local.py"]),
 ]
 
 

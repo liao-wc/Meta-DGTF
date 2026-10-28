@@ -3,10 +3,14 @@
 import hashlib, json, os, sys, threading
 from collections import OrderedDict
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
 import torch
 from transformers import AutoTokenizer, AutoModel
 
-MODEL = os.environ.get('DGTF_EMBED_MODEL', 'D:/Meta-DGTF-道生三阶模型/local_model/models/bge-small-zh-v1.5')
+#: 默认按本文件定位模型，避免写死盘符/仓库绝对路径（迁移或换盘即失效）。
+_ROOT = Path(__file__).resolve().parent.parent
+MODEL = os.environ.get('DGTF_EMBED_MODEL',
+                       str(_ROOT / 'local_model' / 'models' / 'bge-small-zh-v1.5'))
 PORT = int(os.environ.get('DGTF_EMBED_PORT', '8771'))
 _tok = None
 _model = None

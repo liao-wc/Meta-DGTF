@@ -5,6 +5,7 @@
   [switch]$Stop,
   [switch]$Restart,
   [switch]$NewToken,
+  [switch]$KeepToken,
   [switch]$DryRun,
   [switch]$NoAgentDaemon,
   [int]$HealthTimeoutSec = 120
@@ -12,8 +13,9 @@
 
 # 元DGTF 一键启动器。
 # 关键约定：
-#   · 稳定访问口令默认复用 dgtf_memory/.access_token，重启/再启动不失效；
-#   · -NewToken 生成新口令（配合 -Restart 才对运行中实例生效）；
+#   · 默认每次启动都自动轮换口令：新 token 写入 dgtf_memory/.access_token；
+#   · -KeepToken 显式要求复用现有口令（调试/恢复旧链接时用）；
+#   · 已在运行且未 -KeepToken 时，启动器会先停止再以新口令启动；
 #   · 启动后必须通过 HTTPS /api/health 健康检查才算成功；
 #   · -DryRun 只打印计划，不启动、不停止、不写 token、不写日志；
 #   · 本文件必须保存为 UTF-8 with BOM：Windows PowerShell 5 读无 BOM 中文脚本会解析失败。
@@ -278,7 +280,7 @@ $runningDgtf = @($portState | Where-Object { $_.IsDgtf })
 $runningOther = @($portState | Where-Object { -not $_.IsDgtf })
 $fileToken = Read-AppToken
 $fileTokenOk = Test-TokenFormat $fileToken
-$willRotate = ($NewToken -or (-not $fileTokenOk))
+$willRotate = ((-not $KeepToken) -or $NewToken -or (-not $fileTokenOk))
 
 # ---------- DryRun：只打印计划，不产生副作用 ----------
 if ($DryRun) {
@@ -299,7 +301,7 @@ if ($DryRun) {
     Write-Host "动作: 启动新实例"
   }
   if ($willRotate) {
-    Write-Host ("访问口令: " + $(if ($fileTokenOk) { "将轮换（-NewToken）" } else { "token 文件缺失/格式不对，将生成" }))
+    Write-Host ("访问口令: 每次启动自动轮换" + $(if ($fileTokenOk) { "" } else { "（token 文件缺失/格式不对）" }))
   } else {
     Write-Host ("访问口令: 复用 token 文件（" + (Format-TokenBrief $fileToken) + "）")
   }
@@ -337,6 +339,13 @@ $runningDgtf = @($portState | Where-Object { $_.IsDgtf })
 $runningOther = @($portState | Where-Object { -not $_.IsDgtf })
 if ($runningOther.Count -gt 0) {
   Fail ("端口 " + $Port + " 被非 DGTF 进程占用（pid=" + ((@($runningOther | ForEach-Object { $_.Pid })) -join ",") + "）；请换端口或先处理该进程")
+}
+if ($runningDgtf.Count -gt 0 -and -not $KeepToken) {
+  Write-Host "默认每次启动轮换口令：先停止现有 DGTF app 实例..." -ForegroundColor Yellow
+  Stop-AppProcesses
+  $portState = @(Get-PortState)
+  $runningDgtf = @($portState | Where-Object { $_.IsDgtf })
+  $runningOther = @($portState | Where-Object { -not $_.IsDgtf })
 }
 if ($runningDgtf.Count -gt 0) {
   if ($NewToken) {
@@ -383,7 +392,7 @@ if (-not $py) {
 }
 
 $token = Read-AppToken
-if ($NewToken -or (-not (Test-TokenFormat $token))) {
+if ($NewToken -or (-not $KeepToken) -or (-not (Test-TokenFormat $token))) {
   $token = New-AppToken
   Save-AppToken $token
   Write-Host ("已生成稳定访问口令: " + $TokenFile + "（后续启动复用；-NewToken 才会轮换）")

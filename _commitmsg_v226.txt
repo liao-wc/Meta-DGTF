@@ -1,0 +1,44 @@
+release(engine): V2.2.5 成本归因收敛 + V2.2.6 失败熔断 + 零预算全链路适配层
+
+═══ V2.2.5 · 成本归因收敛（零行为差）═══
+问题（实测）：最近一跑 HTTP431 的 llm_by_stage 里 unknown 占
+36 calls / 395,942 tokens / 243,112 ms —— 该跑 55% tokens、57% calls、
+绝大多数墙钟，却无法指认环节。根因：对撞层展开与 & 生成共 4 处
+llm.call 未传 stage。
+- 补具名 stage：expand_pair / expand_pair_merged /
+  expand_pair_merged_fixup / he_amps；参数、次数、返回值一个字不动
+- tests_cost_attribution.py：AST 一类判据 + 与上版逐调用比对
+  （除 stage 外参数逐字相同、37 vs 37）+ 落桶 ops + 双负对照
+- tests_cost_attribution_live.py：驱动真实 _expand_pair 本体，
+  打桩最底层 openai client。旧臂 unknown=2、新臂 expand_pair=2、
+  unknown=0、两臂候选内容逐字相同
+
+═══ V2.2.6 · 失败熔断（opt-in，默认关）═══
+问题（实测）：端点持续不可用时按 max_retries=3 逐次重试并吃满每次超时
+—— 本地档三次 503 各 111s，一次失败白耗 ~333s。
+- api.circuit_breaker = {enabled, fail_threshold, cooldown_sec}
+- 按「尝试次数」计阈值；熔断触发即 break，本次 call 不再重试剩余 attempt
+- 冷却后半开试探，成功即复位并关闭窗口
+- 产物出口 llm_cb_opened / llm_cb_skipped（默认关恒 0）
+- tests_circuit_breaker.py（19 项）：默认关零行为差、熔断中底层 client
+  调用计数停住、★ 成本判据 off=1.50s/18 次 vs on=0.25s/3 次、
+  冷却后放行试探、试探成功复位
+
+═══ 零预算全链路（新增）═══
+- scripts/local_model/openai_shim.py：OpenAI 兼容层 → 本地 /generate
+  stage 分流 + 上游失败回 503+原因（不是 200 空内容）
+- scripts/local_model/test_openai_shim.py：18 项，接入 final_acceptance
+- _mk_local_config.py / _local_run.yaml：全本地档（默认开熔断）
+- 实测：route 单次 3.9s；引擎端到端 12 calls / 22,844 tokens，
+  研究层 2 圈正常收敛停止
+
+═══ 顺便修两处判据过时（非代码回归）═══
+tests_cost_attribution* 原把「上一版」当改造前基线，改版滚动后基线
+也变成修好的版本 ⇒ 负对照假红。改为锚定固定的 Meta-DGTF-V2.2.4.py
+（旧版只读保留；基座消失则判 FAIL 要人确认）。
+
+═══ 验收 ═══
+fast_gate 12/12 · V2 57/57 · 897 checks · SKIP 0 ·
+final_acceptance 18/18 PASS / ALL GUARDS PASS
+
+注：仅提交上述文件；工作树其余 dirty 文件属并发会话/门禁刷新产物，未触碰。

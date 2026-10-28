@@ -1,0 +1,120 @@
+[
+ {
+  "file": "20261025_152215_珠穆朗玛峰的海拔是多少米.packed.json",
+  "id": "20261025_150634",
+  "quality": 0.2253,
+  "answer_quality": "unverified",
+  "answer_ready": false,
+  "tokens": 562586,
+  "calls": 61,
+  "rounds": {
+   "0": 2,
+   "1": 3,
+   "both": 2,
+   "all": 2
+  },
+  "route": [
+   "0",
+   "1"
+  ]
+ },
+ {
+  "file": "20261025_151003_在选择保温材料时应该优先考虑导热系数还是.packed.json",
+  "id": "20261025_150633",
+  "quality": 0.9497,
+  "answer_quality": "verified",
+  "answer_ready": true,
+  "tokens": 672011,
+  "calls": 109,
+  "rounds": {
+   "0": 2,
+   "1": 3,
+   "both": 2,
+   "all": 2
+  },
+  "route": [
+   "0",
+   "1",
+   "both",
+   "all"
+  ]
+ },
+ {
+  "file": "20261025_150956_为什么飞机在起飞前要除冰.packed.json",
+  "id": "20261025_150633",
+  "quality": 0.9687,
+  "answer_quality": "verified",
+  "answer_ready": true,
+  "tokens": 588198,
+  "calls": 98,
+  "rounds": {
+   "0": 2,
+   "1": 2,
+   "both": 2,
+   "all": 2
+  },
+  "route": [
+   "0",
+   "1",
+   "both",
+   "all"
+  ]
+ },
+ {
+  "file": "20261025_143654_为什么在高原上煮饭更容易夹生.packed.json",
+  "id": "20261025_142736",
+  "quality": 0.9588,
+  "answer_quality": "verified",
+  "answer_ready": true,
+  "tokens": 698602,
+  "calls": 107,
+  "rounds": {
+   "0": 2,
+   "1": 3,
+   "both": 2,
+   "all": 2
+  },
+  "route": [
+   "0",
+   "1",
+   "both",
+   "all"
+  ]
+ },
+ {
+  "file": "20261025_141333_为什么城市热岛效应在夜间比白天更明显.packed.json",
+  "id": "20261025_140533",
+  "quality": 0.18,
+  "answer_quality": "unverified",
+  "answer_ready": false,
+  "tokens": 168633,
+  "calls": 29,
+  "rounds": {
+   "0": 3,
+   "1": 5,
+   "both": 4,
+   "all": 5
+  },
+  "route": [
+   "0"
+  ]
+ },
+ {
+  "file": "20261025_141307_为什么城市热岛效应在夜间比白天更明显.packed.json",
+  "id": "20261025_140533",
+  "quality": 0.18,
+  "answer_quality": "unverified",
+  "answer_ready": false,
+  "tokens": 159740,
+  "calls": 29,
+  "rounds": {
+   "0": 3,
+   "1": 5,
+   "both": 4,
+   "all": 5
+  },
+  "route": [
+   "0"
+  ]
+ }
+]

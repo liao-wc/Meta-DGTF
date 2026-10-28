@@ -1,0 +1,35 @@
+{
+ "n": 202,
+ "coverage": {
+  "mean": 0.7423668341708543,
+  "p50": 0.75,
+  "n": 199,
+  "below_1": 172
+ },
+ "answer_quality": {
+  "mean": null,
+  "n": 0
+ },
+ "depth": {
+  "mean": null,
+  "n": 0
+ },
+ "alpha": {
+  "mean": 0.05106757024076636,
+  "n": 199,
+  "neg": 118
+ },
+ "ready": 120,
+ "pready": 180,
+ "flags": {
+  "too_many_amp_candidates": 2,
+  "ing_rephrased_direct": 6,
+  "duty_short": 2,
+  "position_all_same_structural": 1,
+  "unsaid_overused": 4,
+  "probe_no_target_covered": 8,
+  "candidates_backfilled": 1,
+  "lazy_empty": 1
+ },
+ "no_flag": 185
+}

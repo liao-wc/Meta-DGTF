@@ -333,13 +333,20 @@ class MemoryLake:
                 "source": "eml", "contains_content": False}
 
     def record_outcome(self, *, run_id: str, template: str, quality: float,
-                       calls: int, tokens: int, success: bool) -> Event:
+                       calls: int, tokens: int, success: bool,
+                       extra: Optional[dict] = None) -> Event:
+        payload = {"template": template, "quality": float(quality),
+                   "calls": int(calls), "tokens": int(tokens),
+                   "success": bool(success)}
+        if extra:
+            # 只追加结构读数（bridge 已做无正文校验）；不覆盖核心字段。
+            for _k, _v in extra.items():
+                if _k not in payload:
+                    payload[_k] = _v
         return self.append(
             run_id=run_id, plane="procedural", layer="scheduler",
             kind="schedule_outcome", key="schedule:" + template,
-            payload={"template": template, "quality": float(quality),
-                     "calls": int(calls), "tokens": int(tokens),
-                     "success": bool(success)},
+            payload=payload,
             confidence=0.6,
         )
 
