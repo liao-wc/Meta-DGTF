@@ -1,3 +1,56 @@
+【V2.2.13（2026-10-28，PATCH · stage 显式通道打通 + 本地服务白名单放开）】
+- 生产引擎：`dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.13.py`；V2.2.12 及更早只读保留。
+- 问题（Arm A/B/C 两臂实测定位）：引擎 → 本地模型的 stage 路由**整链猜错**。
+  · shim 的 `pick_stage` 按文本关键词猜、兜底 self_check ⇒ 主生成 / 清单 /
+    重锚定全被路由到**自省 LoRA** + 64 token（题不对文，JSON 截断靠修复硬扛）。
+  · 引擎请求里其实带着语义（cost_stage），但 shim 不读 ⇒ `metadata.stage` 被无视。
+  · 修通道（引擎经 OpenAI SDK `extra_body.stage` 摊到请求体顶层 → shim 显式
+    优先）后暴露**最后一环**：service 端另有 stage 白名单校验，未登记 stage
+    （expand_pair_merged 等）直接 400 ⇒ 引擎全部调用 503 重试风暴、产物走零
+    LLM 兜底、`llm_by_stage=[]`、`llm_calls=None`（e2e E12/E14 判红）。
+- 改动（引擎 + shim + service + gates 四处，同轮落地）：
+  · 引擎 `LLM.call()`：`cost_stage or stage` 经 `extra_body` 摊到请求体顶层；
+    json_repair 独立调用点显式 `stage="json_repair"`。
+  · `dgtf_local_llm/service.py`：两处 stage 白名单（/generate 主端点 +
+    /generate_batch）放开 —— 未知 stage（清洗后非空）回退 **base model**
+    （`resolve_adapter` 查不到适配器走底座，本就是设计意图）；只拦清洗后为空。
+    `build_messages` 对未知 stage **不注入** stage system 模板（模板是给 LoRA
+    的；底座拿引擎原 prompt 才是题对文，此前会顶一个 ROUTE_SYSTEM）。
+  · `dgtf_local_llm/gates.py`（唯一定义处，零 torch 可测）：
+    `sanitize_stage` 从 shim 迁入（shim/service 都从这里取 —— 消掉「shim 放行、
+    service 400」的两处解析）；`LORA_STAGES` 定义迁入（service 的 STAGES 引用之）；
+    `finish_reason_for` 新纯函数；`DEFAULT_MAX_NEW` 登记引擎全部 33 个 stage
+    字面量（新条目初始 224，与 dual_judge 同档；兜底 64 保留为**防御值**——
+    新 stage 不登记就短，逼着去登记）。
+  · `scripts/local_model/openai_shim.py`：`_sanitize_stage` 改为 gates 单一定义
+    的别名；`finish_reason` 从硬编码 "stop" 改为诚实上报（`gen_tokens ≥ max_new`
+    ⇒ "length"）—— 此前本地被掐断也报「正常结束」，引擎的续跑机制
+    （`last_finish=="length"`）在本地链路是**死的**；`dgtf_local` 留痕加
+    `truncated`。
+- 判据（全部零 API / 零 GPU）：
+  · `dgtf_engine/dgtf_v2/tests_stage_coverage.py`（11 项，自动进 run_v2_tests）：
+    引擎源码全部 stage 字面量 ⊆ gates 登记表 —— 引擎文件**动态发现**（最高版，
+    不钉字面量）、≥25 个字面量的**有牙**计数（抽取器坏了就红）、自带变异体
+    （未登记 stage 喂给同一套核对逻辑必须报缺失）。
+  · `test_openai_shim.py` 26→34 项：S1g~S1g4 finish_reason 纯函数四形态、
+    S3i~S3i3 端到端（假上游报 gen_tokens ⇒ length/stop + truncated 留痕）、
+    S1i sanitize_stage 与 gates **同一函数对象**（真单一定义，不是文本对得上）。
+  · `test_max_new_cap.py` 21→23 项：A4 语义更新（兜底=防御值，补 A4b 已登记
+    对照）、B3 容忍多行 import、新增 B5 模块同一性判据。
+- 真实入口验证（本地 0.5B，零 API 成本）：
+  · 当时 400 的调用场景（显式 stage=expand_pair_merged 经 OpenAI SDK）复现 →
+    正常返回（base model，15 token 自然结束）。
+  · `e2e_app_local.py` **18/18**（此前 16/18：E12/E14 红）：`llm_by_stage` 9 个
+    桶全带 stage（manifest 6 / expand_pair_merged 2 / probe_research 2 /
+    json_repair 3 …，无 unknown），27 次调用，墙钟 307s 在预算内。
+  · `probe_layer0_goal.py` **12/12**：stage 通道对账 `explicit_stage=55 /
+    mismatch_avoided=55`（55 个请求全部走了显式通道且全部避免了错路由）；
+    修行层 verdict 诚实报告「零存量 → 未测出（不冒充挖尽）」。
+- 已知边界（记录在案，非本轮范围）：本地 0.5B base model 在修行层 prompt 下
+  amps 抽出量为 0（模型能力/输出 schema 匹配问题；通道已验证正确——stage 对、
+  长度对、JSON 完整度对）。后续候选：底座输出 schema 兼容性、按 e2e 实测
+  gen_tokens 分布校准各 stage 上限。
+
 【V2.2.12（2026-10-28，PATCH · 四层目标读数的「结构性读不出」）】
 - 生产引擎：`dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.12.py`；V2.2.11 及更早只读保留。
 - 问题（实测 213 个产物包普查）：

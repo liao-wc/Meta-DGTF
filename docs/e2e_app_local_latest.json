@@ -1,9 +1,9 @@
 {
   "ok": true,
   "question": "成年人正常心率是多少次每分钟",
-  "wall_sec": 67.0,
+  "wall_sec": 25.0,
   "exit": 0,
-  "packed": "D:\\Meta-DGTF-道生三阶模型\\outputs\\_e2e_local\\20261028_102924_成年人正常心率是多少次每分钟.packed.json",
+  "packed": "D:\\Meta-DGTF-道生三阶模型\\outputs\\_e2e_local\\20261028_112619_成年人正常心率是多少次每分钟.packed.json",
   "quality_keys": [
     "alert",
     "answer_gates",
@@ -63,55 +63,67 @@
   },
   "llm_by_stage": [
     {
+      "stage": "manifest",
+      "calls": 6,
+      "tokens": 13632,
+      "ms": 105
+    },
+    {
       "stage": "expand_pair_merged",
       "calls": 2,
-      "tokens": 4224,
-      "ms": 12714
+      "tokens": 4544,
+      "ms": 46
     },
     {
       "stage": "expand_pair_merged_fixup",
       "calls": 2,
-      "tokens": 4224,
-      "ms": 12556
+      "tokens": 4544,
+      "ms": 35
     },
     {
-      "stage": "manifest",
+      "stage": "probe_research",
       "calls": 2,
-      "tokens": 4224,
-      "ms": 6367
+      "tokens": 4544,
+      "ms": 50
     },
     {
       "stage": "re_anchor",
       "calls": 2,
-      "tokens": 4224,
-      "ms": 6312
+      "tokens": 4544,
+      "ms": 26
     },
     {
-      "stage": "decompose_normal",
-      "calls": 1,
-      "tokens": 1191,
-      "ms": 2947
+      "stage": "adjudicate_sub_tristate_multi",
+      "calls": 3,
+      "tokens": 1977,
+      "ms": 62
     },
     {
       "stage": "json_repair",
-      "calls": 2,
-      "tokens": 1164,
+      "calls": 3,
+      "tokens": 1308,
       "ms": 0
     },
     {
-      "stage": "check_input_sanity",
+      "stage": "decompose_hybrid",
       "calls": 1,
-      "tokens": 1077,
-      "ms": 3818
+      "tokens": 839,
+      "ms": 25
     },
     {
       "stage": "assess_decidability",
       "calls": 1,
-      "tokens": 995,
-      "ms": 2442
+      "tokens": 724,
+      "ms": 29
+    },
+    {
+      "stage": "check_input_sanity",
+      "calls": 1,
+      "tokens": 668,
+      "ms": 1133
     }
   ],
-  "llm_calls": 13,
+  "llm_calls": 23,
   "checks": 18,
   "fails": []
 }

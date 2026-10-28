@@ -93,6 +93,45 @@ def main() -> int:
     ck("S1e 冒号后为空 ⇒ 不算指定", S.pick_stage("local:", "自省", "") == "self_check",
        S.pick_stage("local:", "自省", ""))
 
+    # ── S1f [V2.2.13] 显式 stage 通道（引擎经 extra_body 摊到请求顶层）──
+    #   背景：此前引擎请求不带 stage、文本也不含关键词 ⇒ 兜底 self_check
+    #   ⇒ 主生成/清单/重锚定全被路由到**自省 LoRA** + 64 token（题不对文）。
+    ck("S1f 显式 stage 优先于一切（expand_pair_merged 原样通过）",
+       S.pick_stage("local", "随便一段话", "x", explicit="expand_pair_merged")
+       == "expand_pair_merged")
+    ck("S1f2 显式 stage 覆盖 model 冒号后缀",
+       S.pick_stage("local:dual_judge", "x", "y", explicit="route") == "route")
+    ck("S1f3 显式 stage 覆盖文本关键词",
+       S.pick_stage("local", "请做自省", "", explicit="manifest") == "manifest")
+    ck("S1f4 清洗：大小写归一、非法字符剔除（防注入）",
+       S.pick_stage("local", "x", "y", explicit="Expand-Pair MERGED!")
+       == "expandpairmerged")
+    ck("S1f5 全非法/空白 explicit ⇒ 不采用（回落老规则）",
+       S.pick_stage("local", "请做自省", "", explicit="  ") == "self_check")
+    ck("S1f6 空 explicit ⇒ 老行为不变（回归保护）",
+       S.pick_stage("local:dual_judge", "自省", "") == "dual_judge")
+    ck("S1f7 恶意串清洗后只留安全字符",
+       S.pick_stage("local", "x", "y", explicit="bad/stage;rm -rf")
+       == "badstagermrf")
+
+    # ── S1g [V2.2.13b] 诚实的 finish_reason（纯函数）─────────
+    #   此前硬编码 "stop"：本地被 max_new 掐断也报「正常结束」⇒
+    #   引擎续跑机制（last_finish=="length"）在本地链路是死的。
+    ck("S1g 撞到上限 ⇒ length",
+       S.finish_reason_for(224, 224) == "length")
+    ck("S1g2 未到上限 ⇒ stop（自然 EOS 不装截断）",
+       S.finish_reason_for(27, 224) == "stop")
+    ck("S1g3 解析失败 ⇒ stop（不假装截断）",
+       S.finish_reason_for("x", 224) == "stop")
+    ck("S1g4 上限 ≤ 0 ⇒ stop（不假装截断）",
+       S.finish_reason_for(10, 0) == "stop")
+
+    # ── S1i [V2.2.13b] sanitize_stage 单一定义（防两处分叉）──
+    #   shim 与 service 各自维护合法字符集 ⇒ 「shim 放行、service 400」。
+    import dgtf_local_llm.gates as _gates  # noqa: E402
+    ck("S1i sanitize_stage 与 gates 同一函数（不是复制）",
+       S._sanitize_stage is _gates.sanitize_stage)
+
     # ── S2 messages 摊平 ────────────────────────────────
     sp, us = S.flatten_messages([
         {"role": "system", "content": "SYS"},
@@ -155,6 +194,31 @@ def main() -> int:
                       "max_tokens": 32000})
         ck("S3h 换 stage 后上限随之变化（不是写死一个全局常数）",
            _Up.seen_max_new == [224], _Up.seen_max_new)
+
+        # ── S3i [V2.2.13b] finish_reason 端到端（假上游报 gen_tokens）──
+        _saved_reply = dict(_Up.reply)
+        try:
+            # route 上限 96：上游报 gen_tokens=96（撞顶）⇒ length + truncated
+            _Up.reply = {**_saved_reply, "gen_tokens": 96}
+            code3, obj3 = _post(18773, {
+                "model": "local:route", "max_tokens": 600,
+                "messages": [{"role": "user", "content": "u"}]})
+            ck("S3i 撞上限 ⇒ finish_reason=length（端到端）",
+               obj3["choices"][0]["finish_reason"] == "length",
+               obj3["choices"][0].get("finish_reason"))
+            ck("S3i2 留痕字段 truncated=true",
+               obj3.get("dgtf_local", {}).get("truncated") is True,
+               obj3.get("dgtf_local"))
+            # 上游报 gen_tokens=27（自然 EOS）⇒ stop
+            _Up.reply = {**_saved_reply, "gen_tokens": 27}
+            code4, obj4 = _post(18773, {
+                "model": "local:route", "max_tokens": 600,
+                "messages": [{"role": "user", "content": "u"}]})
+            ck("S3i3 自然结束 ⇒ finish_reason=stop（不装截断）",
+               obj4["choices"][0]["finish_reason"] == "stop",
+               obj4["choices"][0].get("finish_reason"))
+        finally:
+            _Up.reply = _saved_reply
 
         # ── S4 上游坏掉 ⇒ 必须显式失败，不能 200 空内容 ──
         _Up.fail = True

@@ -12,12 +12,73 @@ from __future__ import annotations
 
 _MB = 1024 * 1024
 
+#: 有 LoRA 适配器的 stage（唯一定义处；`service.py` 的 STAGES 从这里取）。
+#: 其余 stage 一律走 base model —— V2.2.13 起 service 不再按白名单拒绝。
+LORA_STAGES = ("self_check", "self_check_min", "dual_judge", "route")
+
 #: 各 stage 适配器的**训练长度**（= 该 stage 一条输出该有多少 token）。
 #: 这是唯一定义处：`service.py` 与 `openai_shim.py` 都从这里取，避免两处漂移。
+#:
+#: ★★ [V2.2.13] 表项分两档：
+#:   1. LoRA 四件套（self_check / dual_judge / route）——按适配器训练长度；
+#:   2. 引擎经 extra_body 发来的其余 stage（expand_pair_merged / decompose_*
+#:      / probe_* 等）——走 **base model**（无适配器）。这些此前不在表里
+#:      ⇒ 落兜底 64 ⇒ 主生成 JSON 截断。初始统一 224（与 dual_judge 同档：
+#:      prompt~2k + 224 + 2 < 3072 仍在 CUDA graph 快路径内），后续按 e2e
+#:      实测的各 stage gen_tokens 分布校准 —— 表项**只压不抬**，模型自然
+#:      EOS 时多要的 token 不生成、不付费。
+#:   ★ 有牙判据 `tests_stage_coverage.py` 扫引擎源码的全部 stage 字面量，
+#:     新增 stage 不登记就判红（否则又静默落 64 兜底）。
 DEFAULT_MAX_NEW = {"self_check": 64, "self_check_min": 64,
-                   "dual_judge": 224, "route": 96}
-#: 未登记 stage 的上限（引擎绝大多数调用会落到兜底 stage）。
+                   "dual_judge": 224, "route": 96,
+                   "expand_pair_merged": 224, "expand_pair_merged_fixup": 224,
+                   # ---- 以下为 V2.2.13 登记（base model 通路，初始 224）----
+                   "expand_pair": 224, "json_repair": 224, "ing": 224,
+                   "assess_decidability": 224,
+                   "assess_decidability_from_pool_view": 224,
+                   "anchor_crosscheck": 224, "adjudicate_sub_tristate": 224,
+                   "adjudicate_sub_tristate_multi": 224, "auto_plan": 224,
+                   "he_amps": 224, "manifest": 224, "re_evaluate_pool": 224,
+                   "re_anchor": 224, "ask_missing_polarity": 224,
+                   "check_input_sanity": 224,
+                   "check_structure_saturation": 224,
+                   "decompose_normal": 224, "decompose_hybrid": 224,
+                   "decompose_koan": 224, "decompose_from_pool": 224,
+                   "decide_parallel_mode": 224, "probe_research": 224,
+                   "probe_duel": 224, "probe_meta": 224, "phase_probe": 224,
+                   "settle_research": 224, "plan_orientation": 224,
+                   "plan_resources": 224, "tool_preflight": 224,
+                   "tri_test_retest": 224}
+#: 未登记 stage 的上限（防御值：只够小 JSON 决策，逼着新 stage 去登记）。
 DEFAULT_MAX_NEW_FALLBACK = 64
+
+
+def sanitize_stage(raw) -> str:
+    """清洗 stage 字符串：只留 [a-z0-9_]，限长 48。空/全非法 ⇒ 空串。
+
+    ★ 唯一定义处（V2.2.13 起从 openai_shim 迁来）：shim 与 service 都从
+      这里 import —— stage 的合法字符集若两处各说各话，就会出现
+      「shim 放行的 stage 到 service 被 400」的对不上。
+    """
+    s = "".join(ch for ch in str(raw or "").strip().lower()
+                if ch in "abcdefghijklmnopqrstuvwxyz0123456789_")
+    return s[:48]
+
+
+def finish_reason_for(gen_tokens, max_new) -> str:
+    """按「是否撞到长度上限」给出诚实的 finish_reason。
+
+    ★ 适配层此前**硬编码 "stop"** —— 本地侧被 max_new 掐断的输出也报
+      「正常结束」，引擎的续跑机制（last_finish == "length" ⇒ 续写）
+      在本地链路上是死的：截断 JSON 全靠 json_repair 硬修。
+    ★ 判据：生成 token 数 ≥ 上限 ⇒ "length"；否则 "stop"。
+      解析失败/上限 ≤ 0 ⇒ "stop"（不假装截断）。
+    """
+    try:
+        ct, mx = int(gen_tokens), int(max_new)
+    except (TypeError, ValueError):
+        return "stop"
+    return "length" if (mx > 0 and ct >= mx) else "stop"
 
 
 def cap_max_new(stage: str, requested) -> int:

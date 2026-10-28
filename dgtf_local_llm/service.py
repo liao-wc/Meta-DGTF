@@ -4,7 +4,9 @@
 定位
 ----
 engine / app 通过本服务调用本地 Qwen2.5-1.5B-Instruct + 4 个 stage LoRA 适配器：
-  stage ∈ {self_check, self_check_min, dual_judge, route}
+  stage ∈ {self_check, self_check_min, dual_judge, route}（有适配器）
+  其他 stage（清洗后非空）一律回退 base model —— V2.2.13 起
+  引擎经 extra_body 显式传 stage，未登记 stage 不是错误
 本服务只做「本地草稿 / QC 建议」，不做真实 API 调用，不外联。
 
 接口契约（与 Lead 约定）
@@ -86,7 +88,6 @@ import build_dgtf_stage_dataset as bds  # noqa: E402
 #   （self_check_min 单次 ~1-2s，1.5B 是 ~6s）。1.5B 版本适配器路径保留在
 #   llm_sft/adapter_dgtf_*_15b_v1（实验性，未纳入默认服务）。
 DEFAULT_MODEL = ROOT / "local_model" / "models" / "Qwen2.5-0.5B-Instruct"
-STAGES = ("self_check", "self_check_min", "dual_judge", "route")
 # stage -> 适配器目录（self_check 与 self_check_min 共用同一个混训适配器）
 # 每个 stage 的适配器候选（按优先级）：重训版 _v2 优先，第一轮 _v1 兜底
 ADAPTER_CANDIDATES = {
@@ -153,7 +154,10 @@ DUAL_JUDGE_BUSY_WAIT_S = 25.0
 #:   这里只做转出 —— `openai_shim.py` 也从那里取，避免「同一张表两处维护」，
 #:   否则适配层压的长度和服务实际用的长度会各改各的。
 from dgtf_local_llm.gates import (  # noqa: E402
-    DEFAULT_MAX_NEW, DEFAULT_MAX_NEW_FALLBACK as _FALLBACK_MAX_NEW)
+    DEFAULT_MAX_NEW, DEFAULT_MAX_NEW_FALLBACK as _FALLBACK_MAX_NEW,
+    sanitize_stage, LORA_STAGES)
+# ★ [V2.2.13] 唯一定义处迁到 gates.LORA_STAGES（判据可零 torch 引用）。
+STAGES = LORA_STAGES
 ROUTE_SYSTEM = (
     "你是元DGTF的调度规划器。阅读用户问题，输出严格 JSON："
     '{"route": ["0","1","both","all"] 的子集, '
@@ -593,6 +597,15 @@ class LocalEngine:
         #   60s 超时内返回；要 11 字段全量请显式传 variant="full"。
         variant = str(req.get("variant") or
                       ("min" if stage == "self_check" else "full"))
+        # ★ [V2.2.13] 未知 stage（base model 通路）：**不注入** stage system
+        #   模板。模板是给 LoRA 适配器准备的（适配器只认训练过的口吻）；
+        #   base model 该拿引擎自己的 prompt 才是「题对文」。此前未知 stage
+        #   会顶一个 ROUTE_SYSTEM（调度器口吻）再拼引擎全文 —— 语义混杂。
+        if stage not in STAGES:
+            if req.get("messages"):
+                return [m for m in req["messages"] if isinstance(m, dict)]
+            return [{"role": "user",
+                     "content": str(req.get("text") or "")}]
         if req.get("messages"):
             msgs = [m for m in req["messages"] if isinstance(m, dict)]
             # ★ 默认由服务提供 stage system prompt（本地适配器只认自己训练过的
@@ -1225,10 +1238,18 @@ class LocalEngine:
         max_timeout = 60.0
         max_new_all = 1
         for i, req in enumerate(reqs):
-            if not isinstance(req, dict) or req.get("stage") not in STAGES:
+            if not isinstance(req, dict):
+                outs[i] = {"ok": False, "error": {"code": "BAD_REQUEST",
+                                                   "message": "请求必须是 JSON 对象"}}
+                continue
+            # ★ [V2.2.13] 同 /generate：未知 stage 走 base model，不再按
+            #   STAGES 白名单拒绝（清洗后为空才算非法）。
+            _s_stage = sanitize_stage(req.get("stage"))
+            if not _s_stage:
                 outs[i] = {"ok": False, "error": {"code": "BAD_REQUEST",
                                                    "message": "stage 非法"}}
                 continue
+            req["stage"] = _s_stage
             timeout = float(req.get("timeout") or 60)
             max_timeout = max(max_timeout, timeout)
             max_new = int(req.get("max_new_tokens")
@@ -1449,11 +1470,23 @@ class Handler(BaseHTTPRequestHandler):
                 except Exception:  # noqa: BLE001
                     pass
             return
-        if not isinstance(req, dict) or req.get("stage") not in STAGES:
+        # ★ [V2.2.13] stage 白名单放开：引擎经 extra_body 发来的 stage 远多于
+        #   LoRA 四件套（decompose_* / probe_* / expand_pair* …）。未知 stage
+        #   不是错误 —— resolve_adapter 查不到适配器就回退 base model（本就是
+        #   设计意图）。这里只拦「清洗后为空」的非法值。
+        #   此前按 STAGES 白名单 400 ⇒ 引擎全部调用 503 重试风暴、
+        #   产物走零 LLM 兜底、llm_by_stage 为空。
+        if not isinstance(req, dict):
+            self._send(400, {"ok": False, "error": {
+                "code": "BAD_REQUEST", "message": "请求必须是 JSON 对象"}})
+            return
+        _stage_s = sanitize_stage(req.get("stage"))
+        if not _stage_s:
             self._send(400, {"ok": False, "error": {
                 "code": "BAD_REQUEST",
-                "message": f"stage 必须是 {STAGES}"}})
+                "message": f"stage 非法（清洗后为空）: {req.get('stage')!r}"}})
             return
+        req["stage"] = _stage_s
         if not (req.get("text") or req.get("messages")):
             self._send(400, {"ok": False, "error": {
                 "code": "BAD_REQUEST", "message": "需要 text 或 messages"}})

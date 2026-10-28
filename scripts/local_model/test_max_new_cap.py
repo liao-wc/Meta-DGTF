@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -50,8 +51,16 @@ check("A2 dual_judge 请求 600 被压到 224",
       cap_max_new("dual_judge", 600) == 224)
 check("A3 route 请求 4096 被压到 96",
       cap_max_new("route", 4096) == 96)
-check("A4 未登记 stage 落兜底上限（引擎多数调用走这条路）",
-      cap_max_new("expand_pair", 1500) == DEFAULT_MAX_NEW_FALLBACK)
+# ★ [V2.2.13b] 语义更新：引擎的全部 stage 字面量已登记进 gates 表
+#   （tests_stage_coverage.py 强制），兜底 64 现在是**防御值**——
+#   新 stage 不登记就短，逼着去登记。此前用 expand_pair 当「未登记」
+#   示例，它已被登记为 224。
+check("A4 未登记 stage 落兜底上限（防御值：新 stage 不登记就短）",
+      cap_max_new("brand_new_unregistered", 1500) == DEFAULT_MAX_NEW_FALLBACK,
+      str(cap_max_new("brand_new_unregistered", 1500)))
+check("A4b 已登记 stage 不落兜底（expand_pair=224，V2.2.13 登记）",
+      cap_max_new("expand_pair", 1500) == 224,
+      str(cap_max_new("expand_pair", 1500)))
 check("A5 ★ 只压不抬：调用方要得更少时原样返回",
       cap_max_new("self_check", 12) == 12)
 check("A6 ★ 只压不抬：等于上限时原样返回",
@@ -82,8 +91,9 @@ check("B1 服务侧不再自带 DEFAULT_MAX_NEW 字面定义（改为从 gates �
 check("B2 服务侧从 gates 导入该表",
       "from dgtf_local_llm.gates import" in svc_src
       and "DEFAULT_MAX_NEW" in svc_src)
-check("B3 适配层也从 gates 导入（不是自己抄一份）",
-      "from dgtf_local_llm.gates import cap_max_new" in shim_src)
+check("B3 适配层也从 gates 导入（不是自己抄一份；容忍多行括号形式）",
+      re.search(r"from dgtf_local_llm\.gates import \(?\s*[^)]*\bcap_max_new\b",
+                shim_src) is not None)
 check("B4 适配层不再写死 2048 上限",
       "min(int(payload.get(\"max_tokens\") or 600), 2048)" not in shim_src)
 
@@ -93,6 +103,10 @@ import importlib.util as _ilu  # noqa: E402
 _spec = _ilu.spec_from_file_location("_shim_under_test", shim)
 _mod = _ilu.module_from_spec(_spec)
 _spec.loader.exec_module(_mod)
+# ★ 模块同一性（比文本匹配更有牙）：shim 里的 cap_max_new 就是 gates 的
+#   那个函数对象 —— 抄一份文本对得上、对象对不上，这里会红。
+check("B5 shim.cap_max_new 与 gates 是同一函数对象（真单一定义）",
+      _mod.cap_max_new is cap_max_new)
 
 _seen: list[dict] = []
 

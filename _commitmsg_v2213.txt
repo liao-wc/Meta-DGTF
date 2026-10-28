@@ -1,0 +1,42 @@
+V2.2.13：stage 显式通道打通 + 本地服务白名单放开（400 断点修复）
+
+问题（Arm A/B/C 两臂实测定位）
+- 引擎 → 本地模型的 stage 路由整链猜错：shim pick_stage 按文本关键词猜、
+  兜底 self_check => 主生成/清单/重锚定全被路由到自省 LoRA + 64 token
+  （题不对文，JSON 截断靠修复硬扛；metadata.stage 被无视）。
+- 修通道（引擎 extra_body.stage -> shim 显式优先）后暴露最后一环：
+  service 两处 stage 白名单校验对未登记 stage（expand_pair_merged 等）
+  直接 400 => 引擎全部调用 503 重试风暴、产物走零 LLM 兜底、
+  llm_by_stage=[] / llm_calls=None（e2e E12/E14 判红）。
+
+改动（引擎 + shim + service + gates 四处同轮落地）
+- 引擎 Meta-DGTF-V2.2.13.py：LLM.call() 把 cost_stage or stage 经
+  extra_body 摊到请求体顶层；json_repair 独立调用点显式 stage。
+- service.py：两处白名单（/generate + /generate_batch）放开 —— 未知
+  stage（清洗后非空）回退 base model（resolve_adapter 本就如此设计）；
+  build_messages 对未知 stage 不注入 stage system 模板（底座拿引擎
+  原 prompt 才是题对文）。
+- gates.py（唯一定义处，零 torch 可测）：sanitize_stage 迁入（shim/
+  service 共用，消掉两处解析）；LORA_STAGES 迁入；finish_reason_for
+  新纯函数；DEFAULT_MAX_NEW 登记引擎全部 33 个 stage 字面量（新条目
+  初始 224，兜底 64 保留为防御值）。
+- openai_shim.py：finish_reason 从硬编码 "stop" 改为诚实上报
+  （gen_tokens >= max_new => "length"），激活引擎续跑机制；留痕加
+  truncated。
+
+判据（全部零 API / 零 GPU）
+- 新增 tests_stage_coverage.py（11 项，run_v2_tests 自动发现）：
+  引擎全部 stage 字面量 <= gates 登记表；引擎文件动态发现、>=25 个
+  字面量的有牙计数、自带变异体。
+- test_openai_shim.py 26 -> 34 项；test_max_new_cap.py 21 -> 23 项
+  （判据过时更新 + 模块同一性 B5）。
+
+验证（本地 0.5B，零 API 成本）
+- 当时 400 的调用场景复现 => 正常返回（base model，15 token EOS）。
+- e2e 18/18（此前 16/18）：llm_by_stage 9 桶无 unknown、27 调用、
+  墙钟 307s。
+- probe_layer0_goal 12/12：explicit_stage=55 / mismatch_avoided=55；
+  修行层 verdict「零存量 -> 未测出（不冒充挖尽）」。
+- final_acceptance 21/21 PASS；v2_tests 63/63（含新判据）。
+- 已知边界（记录在案）：本地 0.5B 底座在修行层 prompt 下 amps=0
+  （模型能力/输出 schema 问题；通道已验证正确）。

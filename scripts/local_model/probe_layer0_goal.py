@@ -121,8 +121,30 @@ else:
        f"hist={hist} units={units} basis={basis} gv={gv[:50]!r}")
 
 pv = str(((d.get("provenance") or {}).get("engine_version")) or "")
-ck("P5 产物 provenance 是 V2.2.12（溯源指纹连带验证）",
-   pv == "V2.2.12", pv)
+# ★ 版本号从引擎目录动态推导（不钉字面量 —— 钉死会随版本推进假红，
+#   本轮 V2.2.12->V2.2.13 就红了一次）。
+import re as _re
+_vers = sorted(tuple(int(x) for x in _re.search(r"V(\d+)\.(\d+)\.(\d+)", p.name).groups())
+               for p in (ROOT / "dgtf_engine" / "dgtf_v2" / "engine").glob("Meta-DGTF-V*.py"))
+_want = "V%d.%d.%d" % _vers[-1]
+ck("P5 产物 provenance 是当前最高版引擎（%s，溯源指纹动态推导的连带验证）" % _want,
+   pv == _want, pv)
+
+# ★ [V2.2.13 · stage 通道对账] 引擎记账的 stage 与服务实际执行的 stage
+#   此前从未同源（shim 按文本猜、兜底 self_check ⇒ 主生成全走自省 LoRA）。
+#   现在引擎经 extra_body 显式带 stage；shim 的 /health 记录通道命中数。
+#   这两条不成立 ⇒ 通道断了，没人会发现（回归守卫）。
+try:
+    _h = json.loads(urllib.request.urlopen(
+        "http://127.0.0.1:8773/health", timeout=5).read())
+    _sc = _h.get("stage_channel") or {}
+    ck("P6 ★ shim 的 stage 显式通道被真实使用（explicit_stage >= 1）",
+       int(_sc.get("explicit_stage") or 0) >= 1, str(_sc))
+    ck("P6b ★ 其中至少 1 个避免了错路由（mismatch_avoided >= 1，"
+       "即此前会被猜成 self_check 的请求）",
+       int(_sc.get("mismatch_avoided") or 0) >= 1, str(_sc))
+except Exception as e:  # noqa: BLE001
+    ck("P6 ★ shim 的 stage 显式通道被真实使用", False, "health 读取失败：%s" % e)
 
 print("─" * 60)
 print(f"{len(P)}/{len(P) + len(F)} 通过" + (f"，{len(F)} 项判红" if F else ""))

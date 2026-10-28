@@ -45,7 +45,8 @@ if _ROOT not in sys.path:
 #: ★ stage 长度上限只有**一处**定义（`dgtf_local_llm/gates.py`），本地服务也用同一份。
 #:   适配层自己再抄一份必然漂移：服务按 64 训练、适配层按 2048 请求，
 #:   于是每次调用都要多付 ~2000 个 token 的慢路径解码钱。
-from dgtf_local_llm.gates import cap_max_new  # noqa: E402
+from dgtf_local_llm.gates import (  # noqa: E402
+    cap_max_new, sanitize_stage, finish_reason_for)
 #: prompt 特征 → 本地 stage。顺序即优先级。
 _STAGE_HINTS: List[Tuple[str, str]] = [
     ("双判", "dual_judge"),
@@ -58,21 +59,44 @@ _STAGE_HINTS: List[Tuple[str, str]] = [
 #: 全局长度硬上限（0 = 不额外限制，只按 stage 压）。做对照实验时用。
 MAX_NEW_CAP = int(os.environ.get("DGTF_SHIM_MAX_NEW_CAP") or 0)
 
+#: ★ [V2.2.13] stage 通道对账计数（/health 暴露；线程安全）。
+import threading as _threading  # noqa: E402
+_STATS_LOCK = _threading.Lock()
+_STATS: dict = {}
+
 _DEFAULT_STAGE = "self_check"
 
 
-def pick_stage(model: str, system: str, user: str) -> str:
-    """决定转发给本地服务的 stage。可被单测直接调用（纯函数）。"""
+def pick_stage(model: str, system: str, user: str, explicit: str = "") -> str:
+    """决定转发给本地服务的 stage。可被单测直接调用（纯函数）。
+
+    优先级（V2.2.13 起）：
+      1. **显式 stage**（引擎经 extra_body 摊到请求体顶层的 `stage` 字段）——
+         清洗后直接采用。★ 此前没有这条通道：引擎请求既不带 stage、文本也
+         不含关键词 ⇒ 兜底 self_check ⇒ 主生成/清单/重锚定全被路由到
+         **自省 LoRA** + 64 token（题不对文，JSON 截断靠修复硬扛）。
+      2. `model` 写成 `local:<stage>`。
+      3. 文本特征关键词。
+      4. 兜底 `self_check`。
+    """
+    _ex = _sanitize_stage(explicit)
+    if _ex:
+        return _ex
     m = str(model or "")
     if ":" in m:
         tail = m.rsplit(":", 1)[-1].strip()
         if tail:
-            return tail
+            return _sanitize_stage(tail) or _DEFAULT_STAGE
     blob = (system or "") + "\n" + (user or "")
     for needle, stage in _STAGE_HINTS:
         if needle in blob:
             return stage
     return _DEFAULT_STAGE
+
+
+#: ★ [V2.2.13] 单一定义迁到 `dgtf_local_llm/gates.py`（service 也从那里取）。
+#:   此处留别名兼容旧引用（单测直接调 `_sanitize_stage`）。
+_sanitize_stage = sanitize_stage
 
 
 def flatten_messages(messages: Any) -> Tuple[str, str]:
@@ -146,7 +170,15 @@ class Handler(BaseHTTPRequestHandler):
                 "id": "local", "object": "model", "owned_by": "dgtf"}]})
             return
         if self.path.rstrip("/") in ("/health", ""):
-            self._send(200, {"ok": True, "shim": "up", "upstream": UPSTREAM})
+            with _STATS_LOCK:
+                stats = dict(_STATS)
+            self._send(200, {"ok": True, "shim": "up", "upstream": UPSTREAM,
+                             # ★ [V2.2.13] stage 通道对账读数：
+                             #   explicit_stage = 显式 stage 被采用的请求数；
+                             #   mismatch_avoided = 其中若无此通道会被错路由
+                             #   （文本猜出别的 stage）的请求数。两者为 0
+                             #   说明通道断了（引擎没带 stage 字段）。
+                             "stage_channel": stats})
             return
         self._send(404, {"error": {"message": "not found"}})
 
@@ -164,7 +196,18 @@ class Handler(BaseHTTPRequestHandler):
 
         model = str(payload.get("model") or "local")
         system, user = flatten_messages(payload.get("messages"))
-        stage = pick_stage(model, system, user)
+        # ★ [V2.2.13] 显式 stage 通道：引擎经 extra_body 摊到顶层。
+        #   同时对账「若无此通道会路由到哪」—— 错路由避免数进 /health，
+        #   不然这条通道哪天断了也没人知道（通道断了 ≠ 行为变了）。
+        _explicit = str(payload.get("stage") or "")
+        _guess = pick_stage(model, system, user)
+        stage = pick_stage(model, system, user, _explicit)
+        if _sanitize_stage(_explicit):
+            with _STATS_LOCK:
+                _STATS["explicit_stage"] = _STATS.get("explicit_stage", 0) + 1
+                if stage != _guess:
+                    _STATS["mismatch_avoided"] = \
+                        _STATS.get("mismatch_avoided", 0) + 1
         # ★★ 长度不是「越大越好」，是**纯成本**：
         #   本地服务在 `prompt + max_new + 2 > 3072` 时会丢掉 CUDA graph 快路径，
         #   而引擎调用普遍 temp>0（graph 本来就不可用）⇒ 慢路径约 150ms/token。
@@ -222,7 +265,10 @@ class Handler(BaseHTTPRequestHandler):
             "choices": [{
                 "index": 0,
                 "message": {"role": "assistant", "content": text},
-                "finish_reason": "stop",
+                # ★ 诚实的 finish_reason：被 max_new 掐断要报 "length"，
+            #   否则引擎的续跑机制（last_finish=="length"）在本地是死的，
+            #   截断 JSON 全靠修复硬扛。此前这里硬编码 "stop"。
+            "finish_reason": finish_reason_for(ct, max_new),
             }],
             "usage": {"prompt_tokens": pt, "completion_tokens": ct,
                       "total_tokens": pt + ct},
@@ -231,7 +277,11 @@ class Handler(BaseHTTPRequestHandler):
                            "cached": up.get("cached"), "ms": up.get("ms"),
                            # ★ 排队与生成分开报：「慢」是哪一种，下一步动作完全不同
                            "queue_ms": up.get("queue_ms"),
-                           "max_new": max_new},
+                           "max_new": max_new,
+                           "truncated": finish_reason_for(ct, max_new) == "length",
+                           # ★ [V2.2.13] 请求的 stage（清洗前）与是否走了显式通道
+                           "requested_stage": _explicit or None,
+                           "explicit": bool(_sanitize_stage(_explicit))},
         })
 
 
