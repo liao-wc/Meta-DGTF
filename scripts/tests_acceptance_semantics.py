@@ -403,9 +403,19 @@ def test_probe_ast_reuse():
 
 # ══════════════════════════ C 组：final_acceptance 三态 ══════════════════════════
 def _run_main(mod, argv):
+    """调用主函数但**禁止写生产证据**（假 STEPS 会污染 docs/acceptance_latest.json）。"""
+    import os
     buf = io.StringIO()
-    with contextlib.redirect_stdout(buf):
-        rc = mod.main(list(argv))
+    old = os.environ.get("DGTF_ACCEPTANCE_NO_EVIDENCE")
+    os.environ["DGTF_ACCEPTANCE_NO_EVIDENCE"] = "1"
+    try:
+        with contextlib.redirect_stdout(buf):
+            rc = mod.main(list(argv))
+    finally:
+        if old is None:
+            os.environ.pop("DGTF_ACCEPTANCE_NO_EVIDENCE", None)
+        else:
+            os.environ["DGTF_ACCEPTANCE_NO_EVIDENCE"] = old
     return rc, buf.getvalue()
 
 

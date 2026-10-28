@@ -182,7 +182,15 @@ def run_step(name: str, argv: list, policy: str, with_service: bool,
 
 
 def _write_evidence(results, args, npass: int, nskip: int, nfail: int) -> None:
-    """把本次验收结果写 docs/acceptance_latest.json（失败不阻断验收）。"""
+    """把本次验收结果写 docs/acceptance_latest.json（失败不阻断验收）。
+
+    ★ DGTF_ACCEPTANCE_NO_EVIDENCE=1 时不写：tests_acceptance_semantics 会用打补丁的
+      STEPS 直接调 main() 做三态判据，若允许写证据会把生产 evidence 覆盖成
+      「PASS 2」的假读数（本轮真实事故：pre-commit 钩子跑 fast_gate → 语义测试 →
+      docs/acceptance_latest.json 被污染成 PASS 2，发布流程门当场判红）。
+    """
+    if os.environ.get("DGTF_ACCEPTANCE_NO_EVIDENCE") == "1":
+        return
     try:
         now = time.time()
         ev = {

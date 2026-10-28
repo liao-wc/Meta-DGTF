@@ -36,7 +36,7 @@ README §六 与 docs/README 维护约定列出的发版动作此前只有部分
 | 一键验收 --with-service | PASS 25 / SKIP 0 / FAIL 0（25 steps） | docs/acceptance_latest.json |
 | 四层目标探针 | 81/81（四 case 共 182 calls，冷缓存 585.3s；四层结论不变） | outputs/_e2e_local/_layer_goals_probe_latest.json |
 | 发布流程门 pre-tag | **PASS 30 / FAIL 0 / N/A 5**（N/A：V2.2.18/engine-V2.2.18 待打标签 2 项 + DSH 证据陈旧/用户实例不可达/退出码 3 项，原因均显式） | docs/release_process_latest.json |
-| 发布流程门 post-tag | 打标签后复核（本轮结果见收束报告与 outputs/_lead_audit/release_process_posttag.json） | 不入库 |
+| 发布流程门 post-tag | **PASS 32 / FAIL 0 / N/A 3**（N/A：DSH 证据陈旧/用户实例不可达/退出码；标签与 README 数字全过） | outputs/_lead_audit/release_process_posttag.json |
 
 ### 3.2 可复跑的过程检查
 
@@ -53,6 +53,15 @@ README §六 与 docs/README 维护约定列出的发版动作此前只有部分
 
 - V2.2.18 / engine-V2.2.18（本轮）；
 - App 2.0.37 未变：app-V2.0.37 沿用 V2.2.15 发布提交的标签，**不移动已发布标签**。
+
+### 3.4 流程门当天抓到并修掉的真实遗漏（有牙证据）
+
+| # | 问题 | 谁抓到 |
+|---|---|---|
+| 1 | README 仍写「一键验收 23/23」「fast_gate 15/15」（实际 25/25、16/16） | 发布流程门 P4 数字一致 |
+| 2 | docs/README 索引只写了 releases 目录，没有本版发布说明行 | 发布流程门 P2 |
+| 3 | tests_acceptance_semantics 用假 STEPS 调 main()，把验收证据覆盖成「PASS 2」 | 发布流程门 P4（当场判红）；已修：DGTF_ACCEPTANCE_NO_EVIDENCE 守卫 |
+| 4 | pre-commit 钩子会在提交瞬间重跑 fast_gate（证据时间戳变化） | 提交后工作树出现 M，已明确归因（钩子行为，内容一致） |
 
 ## 4. 语义边界
 
