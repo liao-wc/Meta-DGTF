@@ -1,134 +1,128 @@
 {
- "ok": false,
- "generated_at": 1793047690.7697303,
+ "ok": true,
+ "generated_at": 1793181706.4935813,
  "counts": {
-  "packed": 359,
-  "md": 861,
-  "run_json": 97,
-  "verified": 150,
-  "needs_evidence": 31,
-  "unverified": 51,
-  "answer_ready_false": 83,
-  "missing_quality": 36,
+  "packed": 202,
+  "md": 716,
+  "run_json": 107,
+  "verified": 146,
+  "needs_evidence": 26,
+  "unverified": 27,
+  "answer_ready_false": 79,
+  "missing_quality": 0,
   "stale_30d": 0
  },
  "qualities": {
-  "(missing)": 127,
-  "needs_evidence": 31,
-  "verified": 150,
-  "unverified": 51
+  "(missing)": 3,
+  "needs_evidence": 26,
+  "verified": 146,
+  "unverified": 27
  },
  "top_flags": [
   [
    "duty_short",
-   275
+   153
   ],
   [
    "probe_no_target_covered",
-   95
-  ],
-  [
-   "probe_link_dangling(3)",
-   84
-  ],
-  [
-   "probe_link_dangling(2)",
-   71
-  ],
-  [
-   "polarity_all_same_structural(1)",
-   44
+   60
   ],
   [
    "polarity_all_same_structural(0)",
-   26
-  ],
-  [
-   "core_audit_gaps",
-   25
-  ],
-  [
-   "all_closure_unavailable",
-   25
-  ],
-  [
-   "candidates_backfilled(sc:6)",
-   23
-  ],
-  [
-   "candidates_backfilled(sc:5)",
-   22
+   10
   ],
   [
    "unsaid_overused(4)",
-   20
-  ],
-  [
-   "unsaid_overused(3)",
-   17
-  ],
-  [
-   "polarity_all_same_structural(both)",
-   14
-  ],
-  [
-   "probe_link_dangling(1)",
-   13
-  ],
-  [
-   "candidates_backfilled(sc:8)",
-   12
+   10
   ],
   [
    "ing_rephrased_direct(50%)",
-   9
+   10
+  ],
+  [
+   "probe_link_dangling(1)",
+   7
   ],
   [
    "unsaid_overused(5)",
-   8
-  ],
-  [
-   "candidates_backfilled(sc:7)",
    7
   ],
   [
-   "all_closure_gaps",
-   7
+   "unsaid_overused(3)",
+   6
   ],
   [
-   "position_all_same_structural",
-   7
+   "candidates_backfilled(sc:6)",
+   5
+  ],
+  [
+   "polarity_all_same_structural(1)",
+   5
+  ],
+  [
+   "probe_link_dangling(2)",
+   5
+  ],
+  [
+   "all_closure_unavailable",
+   4
+  ],
+  [
+   "core_audit_gaps",
+   3
+  ],
+  [
+   "unsaid_overused(6)",
+   3
+  ],
+  [
+   "ing_rephrased_direct(59%)",
+   3
+  ],
+  [
+   "ing_rephrased_direct(53%)",
+   3
+  ],
+  [
+   "ing_rephrased_direct(52%)",
+   3
+  ],
+  [
+   "probe_link_dangling(3)",
+   2
+  ],
+  [
+   "too_many_amp_candidates(67%)",
+   2
+  ],
+  [
+   "candidates_backfilled(sc:5)",
+   2
   ]
  ],
  "top_stops": [],
  "routes": {
-  "1": 9,
-  "0,1,both,all": 293,
-  "0,1": 22,
-  "0,1,both": 6,
-  "1,both,all": 1,
-  "0": 21,
-  "1,both": 7
+  "0,1,both,all": 198,
+  "0": 2,
+  "0,1": 2
  },
  "run_status": {
-  "error": 4,
-  "done": 52,
-  "cancelled": 36,
-  "interrupted": 5
+  "error": 6,
+  "done": 54,
+  "cancelled": 40,
+  "interrupted": 7
  },
- "duplicate_questions": 65,
- "missing_md_n": 1,
- "missing_pack_n": 503,
- "issues": [
-  "缺少 quality 段：36"
- ],
+ "duplicate_questions": 50,
+ "missing_md_n": 2,
+ "missing_pack_n": 516,
+ "issues": [],
  "warnings": [
-  "packed 无 md：1 条",
-  "md 无 packed：503 条",
-  "异常 run 状态：error=4, interrupted=5",
-  "重复题目：65 组",
-  "needs_evidence：31",
-  "answer_ready=false：83"
+  "packed 无 md：2 条",
+  "md 无 packed：516 条",
+  "异常 run 状态：error=6, interrupted=7",
+  "重复题目：50 组",
+  "needs_evidence：26",
+  "answer_ready=false：79"
  ],
  "recommendations": [
   "优先复核 needs_evidence：按官方源/联网策略补证，不要只改分类",
