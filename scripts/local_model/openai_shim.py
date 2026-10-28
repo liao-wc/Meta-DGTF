@@ -136,7 +136,8 @@ def flatten_messages(messages: Any) -> Tuple[str, str]:
 
 def call_upstream(stage: str, text: str, max_new_tokens: int,
                   temperature: float, timeout: float,
-                  rep_pen: float = 0.0) -> Dict[str, Any]:
+                  rep_pen: float = 0.0,
+                  json_mode: bool = False) -> Dict[str, Any]:
     body = json.dumps({
         "stage": stage,
         "text": text,
@@ -145,6 +146,9 @@ def call_upstream(stage: str, text: str, max_new_tokens: int,
         "timeout": float(timeout),
         # ★ [V2.2.14] 重复惩罚透传（0 = 关，服务端默认也是关）。
         "repetition_penalty": float(rep_pen),
+        # ★ [V2.2.16] JSON 期望透传：引擎侧 json_mode=True 的调用，服务端做
+        #   首 token 约束 + 闭合即停（0.5B 在长 prompt 下 0% 主动以 { 开头）。
+        "json_mode": bool(json_mode),
     }, ensure_ascii=False).encode("utf-8")
     req = urllib.request.Request(
         UPSTREAM.rstrip("/") + "/generate", data=body,
@@ -226,6 +230,14 @@ class Handler(BaseHTTPRequestHandler):
         # 本地服务 timeout 上限 120；留出余量防引擎侧先超时
         timeout = 110.0
 
+        # ★ [V2.2.16] JSON 期望：引擎经 extra_body 显式摊到顶层 json_mode；
+        #   兼容 OpenAI 语义的 response_format={"type":"json_object"}。
+        _json_mode = bool(payload.get("json_mode"))
+        if not _json_mode:
+            _rf = payload.get("response_format")
+            if isinstance(_rf, dict) and str(_rf.get("type") or "") == "json_object":
+                _json_mode = True
+
         # ★ [V2.2.14] base-model stage 默认带重复惩罚：0.5B 底座在结构化
         #   JSON 任务上确定性复读（同一短语 ×N 撞上限 ⇒ JSON 必截断），
         #   实测见 gates.BASE_STAGE_REP_PEN 注释。LoRA stage 不带
@@ -234,7 +246,8 @@ class Handler(BaseHTTPRequestHandler):
         t0 = time.monotonic()
         try:
             up = call_upstream(stage, system + "\n\n" + user, max_new, temp,
-                               timeout, rep_pen=_rep_pen)
+                               timeout, rep_pen=_rep_pen,
+                               json_mode=_json_mode)
             # ★ [诊断 · env 门控] DGTF_SHIM_DUMP=<path> 时把每条请求+上游
             #   原文落盘（JSONL 追加）。默认完全不写。用于「引擎实际发的
             #   prompt 长什么样」这类只能看真流量的诊断。
@@ -246,6 +259,7 @@ class Handler(BaseHTTPRequestHandler):
                             "ts": time.time(), "stage": stage,
                             "temp": temp, "max_new": max_new,
                             "rep_pen": _rep_pen,
+                            "json_mode": _json_mode,
                             "system": (system or "")[:4000],
                             "user": (user or "")[:6000],
                             "upstream_text": str(up.get("text") or "")[:3000],
@@ -301,7 +315,8 @@ class Handler(BaseHTTPRequestHandler):
             "usage": {"prompt_tokens": pt, "completion_tokens": ct,
                       "total_tokens": pt + ct},
             # 非标准字段：留痕用，openai SDK 会忽略未知键
-            "dgtf_local": {"stage": stage, "confidence": up.get("confidence"),
+            "dgtf_local": {"stage": stage, "json_mode": _json_mode,
+                           "confidence": up.get("confidence"),
                            "cached": up.get("cached"), "ms": up.get("ms"),
                            # ★ 排队与生成分开报：「慢」是哪一种，下一步动作完全不同
                            "queue_ms": up.get("queue_ms"),

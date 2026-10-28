@@ -274,10 +274,31 @@ def check_target_layer(case: str, L: str, d: dict, pack_path: Path,
                    "unmeasured"),
         str(why)[:160])
 
-    # P6 该 run 的 rounds 与请求一致（不许「少跑一圈」蒙混）
-    add("P2g 目标层 rounds_run = 请求圈数（%d）" % want_rounds,
-        int(view.get("rounds_run") or 0) == int(want_rounds),
-        "rounds_run=%s" % view.get("rounds_run"))
+    # P2g 该 run 的 rounds 与请求一致（不许「少跑一圈」蒙混）。
+    # ★ 元层允许 +spiral.all_extra_rounds：引擎对 all 层默认多跑 all_extra_rounds
+    #   圈（设计如此；V2.2.16 局部读数变化使 all 层不再提前停 ⇒ 实跑 3 圈）。
+    #   允许集合从产物 _config 里读，不钉死数字。
+    _extra = 0
+    try:
+        # 优先取产物快照里的有效配置；快照没有就取引擎 DEFAULT_CONFIG。
+        _sp = ((d.get("_config") or {}).get("spiral") or {})
+        _extra = int(_sp.get("all_extra_rounds") or 0)
+    except (TypeError, ValueError, AttributeError):
+        _extra = 0
+    if not _extra:
+        try:
+            _dc = getattr(eng, "DEFAULT_CONFIG", None) or {}
+            _extra = int(((_dc.get("spiral") or {})
+                          .get("all_extra_rounds")) or 0)
+        except (TypeError, ValueError, AttributeError):
+            _extra = 0
+    _allow = {int(want_rounds)}
+    if L == "all":
+        _allow |= {int(want_rounds) + i for i in range(0, max(0, _extra) + 1)}
+    add("P2g 目标层 rounds_run 在允许集合（请求 %d；all 允许多 %d 圈）"
+        % (want_rounds, _extra if L == "all" else 0),
+        int(view.get("rounds_run") or 0) in _allow,
+        "rounds_run=%s allow=%s" % (view.get("rounds_run"), sorted(_allow)))
     return info
 
 

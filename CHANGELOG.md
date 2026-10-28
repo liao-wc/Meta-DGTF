@@ -1,3 +1,34 @@
+【V2.2.16（2026-10-28，PATCH 引擎 · JSON 结构门 + 本地档自动切 + 归因无暗路）】
+- 生产引擎：`dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.16.py`（__version__=2.2.16）；V2.2.15 及更早只读保留。
+- ★ JSON 期望显式声明通道（引擎 → shim → 服务约束解码）：
+  json_mode=True 的调用（dual_judge / he_amps / probe_* / phase_probe / self_check / decompose_* /
+  assess_* 等 12+ 处）此前只有 response_format / system 提示；本地 shim 不看、服务无解码约束
+  ⇒ 0.5B 在长 prompt 下 0% 以 { 开头、全部撞 max_new（224）。现在：LLM.call 把 json_mode 经
+  extra_body 显式摊到请求顶层（与 stage 同一条通道）→ shim 透传（兼容 response_format=json_object）
+  → 服务端「首 token 只允许 { 开头 + JSON 一闭合即停」。纯函数在 gates.py（json_done /
+  json_first_token_ids）；服务开关 DGTF_JSON_CONSTRAIN=0 可关。
+  受控 A/B（17 条固定真实 prompt、服务每轮重启清缓存）：JSON 解析率 35%→59%，{ 开头率 35%→100%，
+  撞上限率 41%→6%，gen 中位 93→23，单次 ms 中位 3842→1651，总墙钟 −55%。
+- ★ 本地端点自动切 self_check/dual_judge = local：默认 "llm" 档会把**自然语言 prompt** 经 shim
+  发给 LoRA 适配器（契约是结构化 payload；实测 dual_judge 经 shim 74/74 条非 JSON）。main() 对
+  「本地端点 + 默认 llm + 无显式 CLI」的两项自动切 local（直连服务、按契约发结构化 payload，
+  带置信度门控与回退）；纯函数 _auto_local_modes(cfg, explicit) 可单测；显式 CLI / 配置非 llm 值
+  一律尊重；云端端点零改动。顺带修 _is_local_llm_endpoint 的 IPv6 方括号解析（http://[::1]:…）。
+- ★ 本地直连调用成本归因无暗路：新增 LLM.record_local_call（同 cost_bucket 分桶口径），
+  _self_check_local / _dual_judge_local 成功路径记账；dual_judge 回退路径保留 prompt_tokens /
+  gen_tokens / ms 读数（否则 llm_calls / llm_by_stage 会把整段本地调用漏掉）。
+- 判据：scripts/local_model/test_json_force.py（34；纯函数+三处接线+4 变异体）、
+  tests_local_auto_modes.py（16）、tests_local_attribution.py（15）、
+  test_graph_decode.py 扩到 G1–G13（json_mode 首 token 约束 / 回包可解析 / metrics 计数）、
+  final_acceptance 新增 json_force 步骤。
+- 实测：e2e_app_local 18/18，冷缓存真跑 **59.0 / 106.7s**（V2.2.15 124.9~157.9s）；四层 probe 81/81（冷 649s / 热 81.7s）；
+  四层目标结论不变（层0 达成 / 层1 未测出 / both 判据样本不足 / all 未达成，all 层按设计
+  多跑 all_extra_rounds，探针已按允许集合判定）。
+- 验收：fast_gate 全 PASS（audit70 71/0）；V2 69/69（1138 checks）；App selftest 455/0；
+  final_acceptance --with-service PASS 24 / SKIP 0 / FAIL 0。
+- 边界：结构有效 ≠ 语义正确（0.5B 语义能力仍是层 1/both/all 达成的主瓶颈）；本地档仍是零成本
+  链路验证档。
+
 【V2.2.15（2026-10-28，PATCH 引擎 + App 2.0.37 MINOR · stage 登记闭环 + APP→引擎→本地模型全链路打通/提速）】
 - 生产引擎：`dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.15.py`（__version__=2.2.15）；V2.2.14 及更早只读保留。
   ★ V2.2.14（re_anchor few-shot + 本地端点 auto 降档）此前只落了文件、未单独发版，本轮并入本版谱系；

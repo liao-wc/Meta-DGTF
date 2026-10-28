@@ -155,9 +155,13 @@ DUAL_JUDGE_BUSY_WAIT_S = 25.0
 #:   否则适配层压的长度和服务实际用的长度会各改各的。
 from dgtf_local_llm.gates import (  # noqa: E402
     DEFAULT_MAX_NEW, DEFAULT_MAX_NEW_FALLBACK as _FALLBACK_MAX_NEW,
-    sanitize_stage, LORA_STAGES, graph_cache_key)
+    sanitize_stage, LORA_STAGES, graph_cache_key,
+    json_done, json_first_token_ids)
 # ★ [V2.2.13] 唯一定义处迁到 gates.LORA_STAGES（判据可零 torch 引用）。
 STAGES = LORA_STAGES
+#: ★ [V2.2.16] JSON 约束解码总开关（默认开；A/B 可 DGTF_JSON_CONSTRAIN=0 关闭）。
+_JSON_CONSTRAIN_ON = (os.environ.get("DGTF_JSON_CONSTRAIN", "1")
+                      .strip().lower() not in ("0", "off", "false", "no"))
 ROUTE_SYSTEM = (
     "你是元DGTF的调度规划器。阅读用户问题，输出严格 JSON："
     '{"route": ["0","1","both","all"] 的子集, '
@@ -262,6 +266,7 @@ class LocalEngine:
                   "graph_rep_pen_generations": 0,
                   "batch_graph_generations": 0,
                   "graph_capture_keys": [],
+                  "json_forced_generations": 0,
                       "last_ms": 0.0, "last_stage": "", "last_adapter": ""}
         # ★ [Round 65] 延迟分位数滑动窗口（最近 50 次真实生成耗时）
         import collections as _collections
@@ -313,6 +318,39 @@ class LocalEngine:
     def _graph_key(self, stage: str) -> str:
         """graph 复用 key（**唯一定义在 gates.graph_cache_key**，此处只传当前适配器表）。"""
         return graph_cache_key(stage, tuple(self.adapter_names or ()))
+
+    def _json_lead_mask(self):
+        """json_mode 首 token 约束的 vocab bool mask（惰性构建，失败返回 None）。
+
+        ★ 只允许「解码后以 { 开头」的 token；集合来自 tokenizer 词表扫描，
+          不同 tokenizer 的 ' {' / '\n{' 变体都能覆盖（纯函数判）。
+          构建失败/集合为空 ⇒ None ⇒ **不加约束**（宁可退化为原行为，
+          也不能让约束把生成卡死）。
+        """
+        cached = getattr(self, "_json_lead_mask_cache", "__unset__")
+        if cached != "__unset__":
+            return cached
+        mask = None
+        try:
+            import torch as _t
+            vocab = dict(self.tok.get_vocab() or {})
+            ids = json_first_token_ids((i, s) for s, i in vocab.items())
+            n = int(getattr(self.model.config, "vocab_size", 0) or 0)
+            if ids and n > 0:
+                mask = _t.zeros((n,), dtype=_t.bool, device="cuda")
+                for i in ids:
+                    if 0 <= int(i) < n:
+                        mask[int(i)] = True
+                if int(mask.sum().item()) <= 0:
+                    mask = None
+            if mask is not None and int(mask.sum().item()) > 0:
+                print("[json] 首 token 约束集合 %d 个 token"
+                      % int(mask.sum().item()), flush=True)
+        except Exception as _e:  # noqa: BLE001
+            print("[json] 首 token 约束不可用（退化为不约束）：", _e, flush=True)
+            mask = None
+        self._json_lead_mask_cache = mask
+        return mask
 
     # ---------- 加载 ----------
     def _load(self) -> None:
@@ -412,7 +450,7 @@ class LocalEngine:
     def generate(self, stage: str, input_ids, max_new_tokens: int,
                  temperature: float, deadline: float,
                  do_warmup: bool = False, use_adapter: bool = True,
-                 rep_pen: float = 0.0) -> dict:
+                 rep_pen: float = 0.0, json_mode: bool = False) -> dict:
         """串行生成（慢路径；temp>0 的请求都走这里）。
 
         ★ [V2.2.14] `rep_pen`：重复惩罚（HF 口径，>1 生效，0/1 = 关）。
@@ -436,10 +474,14 @@ class LocalEngine:
         logprobs: list[float] = []
         eos = self.tok.eos_token_id
         _pen_on = bool(rep_pen and rep_pen > 1.0)
+        _lead_mask = self._json_lead_mask() if json_mode else None
         try:
             for step in range(max_new_tokens):
                 if time.time() > deadline:
                     raise TimeoutError("生成超时")
+                if _lead_mask is not None and not generated:
+                    logits = logits.masked_fill(~_lead_mask.unsqueeze(0),
+                                                float("-inf"))
                 if _pen_on and generated:
                     # HF repetition_penalty 口径：已生成 token 的分数，
                     # 正数除以惩罚、负数乘以惩罚（保序、不越界）。
@@ -459,6 +501,14 @@ class LocalEngine:
                 generated.append(int(nxt[0, 0]))
                 if eos is not None and int(nxt[0, 0]) == eos:
                     break
+                if json_mode:
+                    try:
+                        _jt = self.tok.decode(generated,
+                                             skip_special_tokens=True)
+                    except Exception:  # noqa: BLE001
+                        _jt = ""
+                    if json_done(_jt):
+                        break
                 if step + 1 >= max_new_tokens:
                     break
                 attn = torch.cat(
@@ -873,7 +923,8 @@ class LocalEngine:
 
     def generate_graph(self, stage: str, input_ids, max_new_tokens: int,
                        deadline: float, temperature: float = 0.0,
-                       rep_pen: float = 0.0) -> dict:
+                       rep_pen: float = 0.0,
+                       json_mode: bool = False) -> dict:
         """单序列（B=1）CUDA graph 解码；返回与 generate 同构 dict。
 
         ★ [V2.2.15] temp>0 与重复惩罚都走 graph 快路径（采样在 graph 外）：
@@ -881,6 +932,7 @@ class LocalEngine:
           · temp>0  ⇒ softmax(scores/temp) + multinomial（语义同慢路径）；
           · rep_pen>1 ⇒ HF 口径（正分除、负分乘；只罚已生成 token）；
           · confidence 仍按「所选 token 的 logprob 均值取 exp」，口径不变。
+          · [V2.2.16] json_mode：首 token 只允许 { 开头；JSON 一闭合即停。
         返回 dict 增加 graph / sampled / temp 三个留痕字段。
         """
         import torch as _t
@@ -895,6 +947,7 @@ class LocalEngine:
         out_logits, g = ctx["out_logits"], ctx["graph"]
         temp = float(temperature or 0.0)
         _pen_on = bool(rep_pen and rep_pen > 1.0)
+        _lead_mask = self._json_lead_mask() if json_mode else None
         _vocab = int(out_logits.shape[-1])
         eos = self.tok.eos_token_id
         try:
@@ -924,6 +977,9 @@ class LocalEngine:
                     if time.time() > deadline:
                         raise TimeoutError("graph 生成超时")
                     scores = cur_logits[0]
+                    if _lead_mask is not None and n == 0:
+                        scores = scores.masked_fill(~_lead_mask,
+                                                    float("-inf"))
                     if _pen_on and n > 0:
                         scores = _t.where(scores > 0, scores / pen_vec,
                                           scores * pen_vec)
@@ -938,6 +994,14 @@ class LocalEngine:
                     n += 1
                     if eos is not None and cur == eos:
                         break
+                    if json_mode:
+                        try:
+                            _jt = self.tok.decode(gen[:n].tolist(),
+                                                 skip_special_tokens=True)
+                        except Exception:  # noqa: BLE001
+                            _jt = ""
+                        if json_done(_jt):
+                            break
                     if n >= max_new_tokens:
                         break
                     if _pen_on:
@@ -969,12 +1033,16 @@ class LocalEngine:
                 if _pen_on:
                     self.stats["graph_rep_pen_generations"] = int(
                         self.stats.get("graph_rep_pen_generations", 0)) + 1
+                if json_mode:
+                    self.stats["json_forced_generations"] = int(
+                        self.stats.get("json_forced_generations", 0)) + 1
         except Exception:  # noqa: BLE001
             pass
         return {"text": text, "confidence": conf,
                 "gen_tokens": int(n), "prompt_tokens": L,
                 "graph": True, "sampled": bool(temp > 0),
                 "graph_key": self._graph_key(stage),
+                "json_mode": bool(json_mode),
                 "temp": round(temp, 3)}
 
     def _handle(self, req: dict) -> dict:
@@ -995,12 +1063,17 @@ class LocalEngine:
         except (TypeError, ValueError):
             rep_pen = 0.0
         rep_pen = max(0.0, min(2.0, rep_pen))
+        # ★ [V2.2.16] 约束解码总开关：默认开；DGTF_JSON_CONSTRAIN=0 可关
+        #   （A/B 隔离用；关掉时行为退回 V2.2.15）。
+        json_mode = (bool(req.get("json_mode"))
+                     and _JSON_CONSTRAIN_ON)
         # ---------- LRU 缓存（重复请求 0 GPU 开销） ----------
         try:
             key = hashlib.md5(json.dumps(
                 {k: req.get(k) for k in (
                     "stage", "entry", "variant", "max_new_tokens",
-                    "temperature", "repetition_penalty", "text", "messages")},
+                    "temperature", "repetition_penalty", "json_mode",
+                    "text", "messages")},
                 sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()
         except Exception:  # noqa: BLE001
             key = None
@@ -1023,7 +1096,8 @@ class LocalEngine:
         if int(ids.shape[0]) == 1:
             try:
                 out = self.generate_graph(stage, ids, max_new, deadline,
-                                          temperature=temp, rep_pen=rep_pen)
+                                          temperature=temp, rep_pen=rep_pen,
+                                          json_mode=json_mode)
             except TimeoutError:
                 # graph 内超时=真超时：再走一遍慢路径只会白付一次 prefill。
                 raise
@@ -1032,7 +1106,7 @@ class LocalEngine:
                 out = None
         if out is None:
             out = self.generate(stage, ids, max_new, temp, deadline,
-                                rep_pen=rep_pen)
+                                rep_pen=rep_pen, json_mode=json_mode)
         text = out["text"]
         parsed = try_parse_json(text)
         salvaged = False
@@ -1046,6 +1120,7 @@ class LocalEngine:
                "graph": bool(out.get("graph")),
                "sampled": bool(out.get("sampled")),
                "graph_key": out.get("graph_key"),
+               "json_mode": bool(json_mode),
                "adapter": self.adapter_paths.get(stage),
                "confidence": out["confidence"],
                "gen_tokens": out["gen_tokens"],

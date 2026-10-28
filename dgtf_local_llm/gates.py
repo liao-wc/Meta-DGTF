@@ -148,3 +148,80 @@ def should_reclaim(allocated: int, reserved: int,
                 > int(allocated) * float(ratio) + int(slack_mb) * _MB)
     except (TypeError, ValueError):
         return False
+
+
+# -*- coding: utf-8 -*-
+"""[V2.2.16] gates：JSON 约束解码的**纯函数**（零 torch：json_done / json_first_token_ids）。
+
+为什么需要它
+------------
+本地 0.5B 底座在长 prompt / 结构化任务上大量「不按 JSON 开头」直接自由发挥
+（实测 dual_judge/he_amps/probe_*/self_check 等 json_mode 调用 0% 以 { 开头，
+全部撞 max_new）。服务端拿到引擎显式声明的 json_mode 后：
+  1) **首 token 约束**：只允许「解码后以 { 开头」的 token（mask 掉其余）；
+  2) **闭合即停**：输出一旦形成完整 JSON 对象就停止（不再继续喷到上限）。
+这两个判定都在本模块（纯函数，零 torch），服务只做张量侧接线 —— 保证可离线测。
+"""
+import re
+
+_JSON_LEAD_RE = re.compile(r"^\s*\{")
+
+
+def json_first_token_ids(items) -> list:
+    """从 (id, token_str) 可迭代里挑出「解码后以 { 开头」的 token id。
+
+    ★ 为什么不用 token_str == "{": 不同 tokenizer 会产出 "{"/" {"/"\\n{" 等;
+      只按字面量 "{" 判会漏（漏了等于约束失效）。这里按 strip 后首字符判。
+    ★ 输入用 (id, str) 对而不是 tokenizer 对象：纯函数、零依赖、可构造性测试。
+    """
+    out = []
+    for tid, tokstr in (items or ()):
+        try:
+            if _JSON_LEAD_RE.match(str(tokstr or "")):
+                out.append(int(tid))
+        except (TypeError, ValueError):
+            continue
+    return sorted(set(out))
+
+
+def json_done(text: str) -> bool:
+    """从生成文本里判断「第一个 JSON 对象已闭合」（早停用）。
+
+    规则（保守，宁可不停）：
+      · 允许 markdown 代码块：从第一个 { 开始跟踪；
+      · 文本不以 { 开头（含代码块情形）⇒ False（不在 JSON 轨道，不做早停）；
+      · 跟踪字符串态/转义态，避免把字符串里的 } 当闭合；
+      · 深度回到 0 且至少出现过一次 { ⇒ True。
+    """
+    if not text:
+        return False
+    s = str(text).lstrip()
+    fence = chr(96) * 3
+    if s.startswith(fence):
+        i = s.find("{")
+        if i < 0:
+            return False
+        s = s[i:]
+    elif not s.startswith("{"):
+        return False
+    depth = 0
+    in_str = False
+    esc = False
+    for ch in s:
+        if in_str:
+            if esc:
+                esc = False
+            elif ch == "\\":
+                esc = True
+            elif ch == '"':
+                in_str = False
+            continue
+        if ch == '"':
+            in_str = True
+        elif ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                return True
+    return False

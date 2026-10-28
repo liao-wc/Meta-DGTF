@@ -85,6 +85,30 @@ def main() -> int:
     base_keys = [k for k in keys if k == "base"]
     ck("G10 ★ base stage 只捕获一张 graph（复用生效；18 张→5 张的显存前提）",
        len(base_keys) == 1, keys)
+
+    # ── [V2.2.16] JSON 约束解码（首 token 只允许 { / 闭合即停）──────────
+    u3 = uuid.uuid4().hex[:8]
+    d7 = _post({"stage": "re_anchor",
+                "text": "把这句话重述成 JSON：水的三态变化 [%s]" % u3,
+                "max_new_tokens": 96, "temperature": 0.0,
+                "timeout": 90, "json_mode": True})
+    ck("G11 ★ json_mode 首 token 约束生效（此前同 stage 0% 以 { 开头）",
+       d7.get("json_mode") is True
+       and str(d7.get("text") or "").lstrip().startswith("{"),
+       {k: d7.get(k) for k in ("json_mode", "text")})
+    # ★ 非 flaky 口径：可解析 **或** 是「以 { 开头且撞上限」的截断 JSON。
+    #   后者仍证明结构门生效（首 token 被约束住了），只是 0.5B 内容长度不够；
+    #   若要求「必须可解析」，同一判据会随 uuid 随机文案偶发假红（已实测踩到）。
+    ck("G12 ★ json_mode 结构门生效（可解析，或 { 开头且被长度掐断）",
+       d7.get("json") is not None
+       or (str(d7.get("text") or "").lstrip().startswith("{")
+           and int(d7.get("gen_tokens") or 0) >= 96),
+       {k: d7.get(k) for k in ("json", "gen_tokens", "text")})
+    m3 = json.loads(urllib.request.urlopen(BASE + "/metrics", timeout=5).read().decode())
+    st3 = m3.get("stats") or {}
+    ck("G13 ★ metrics.json_forced_generations >= 1（约束真的走到了）",
+       int(st3.get("json_forced_generations") or 0) >= 1,
+       st3.get("json_forced_generations"))
     print("\nTOTAL PASS %d / FAIL %d" % (len(P), len(F)))
     return 0 if not F else 1
 

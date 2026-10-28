@@ -246,3 +246,18 @@ python scripts/final_acceptance.py --list-steps     # 只看步骤清单与策�
 - 同版本双文件（tie-break）未构造：当前引擎目录无同版本重复文件；若出现，由 `engine_alignment`
   判红兜底，而不是静默选错。
 - `fast_gate` 仍是「并行 15 项」的快速反馈门，不替代 `final_acceptance` / App selftest / 真跑。
+
+
+## 8. V2.2.16 增补（2026-10-28）
+
+- **步骤数 22 → 23**：新增 json_force（零 GPU/零 HTTP，strict），
+  --with-service 时 23 + local_service = **24 步**。
+- **V2 测试 67 → 69 文件**：新增 tests_local_auto_modes.py（本地端点自动切档，16 项）、
+  tests_local_attribution.py（本地直连成本归因，15 项）；run_v2_tests 现 69/69（1138 checks）。
+- 一键验收实测：**PASS 24 / SKIP 0 / FAIL 0（24 steps）· ALL GUARDS PASS**
+  （8772/8773 在线；e2e 真跑在内）。
+- 无服务口径：--skip-service = **PASS 19 / SKIP 4 / FAIL 0（23 steps）**
+  （4 个 SKIP 全是服务型步骤，原因显式）。
+- 三态语义未变；fast_gate 仍 15 项（json_force 走 final_acceptance 而不是 fast_gate，
+  保持快速门 <=30s 的定位）。
+

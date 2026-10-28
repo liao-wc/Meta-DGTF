@@ -73,6 +73,8 @@ STEPS = [
     ("openai_shim", ["scripts/local_model/test_openai_shim.py"], POLICY_STRICT),
     # [V2.2.15] 本地服务 graph 采样/复用：零 GPU/零 HTTP（纯函数 + 源码结构 + 变异体自检）
     ("graph_sampling", ["scripts/local_model/test_graph_sampling.py"], POLICY_STRICT),
+    # [V2.2.16] JSON 约束解码通道：零 GPU（纯函数 json_done/首token集合 + 三处接线 + 变异体）
+    ("json_force", ["scripts/local_model/test_json_force.py"], POLICY_STRICT),
     # 显存碎片回收判据（纯函数 + 构造性验证；服务在线时只读 /metrics）
     ("mem_reclaim", ["scripts/local_model/test_mem_reclaim.py"], POLICY_STRICT),
     # 生成长度按 stage 压缩判据（纯函数 + 构造性证明打真 Handler）
