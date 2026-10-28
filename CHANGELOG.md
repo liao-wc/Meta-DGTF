@@ -24,7 +24,20 @@
   一键验收 --with-service PASS 25 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 81/81；
   file_integrity bad=0；verify_project_paths PASS；DSH 闭环 2 项 FAIL 归类 N/A（证据陈旧/
   用户实例不可达，原因显式）；历史融合 readiness 1.00；pareto_flow 基线可复跑。
-- 标签：V2.2.18 / engine-V2.2.18；App 2.0.39
+- 标签：V2.2.18 / engine-V2.2.18；App 2.0.40
+
+【主题】App 任务默认超时收紧，遏制真跑无限长跑。
+
+【改变】
+- DGTF_TASK_TIMEOUT_S 默认从 3600 秒改为 1200 秒；未显式传 timeout_s 的 App 任务最长 20 分钟。
+- 已有显式 timeout_s 的任务保持不变，可用环境变量覆盖。
+- 对应真跑连续超时提案：默认超时治理已落地，阶段心跳/停滞定位仍需后续。
+- 历史 verified 真跑最大约 1125s，1200s 上限不影响已验证跑次。
+
+【验证】
+- App 全方位检查；版本一致性；selftest；fast_gate。
+- 静态缓存串：2.0.40-timeoutcap。
+App 2.0.39
 
 【主题】人工确认提案不再自动过期，恢复已确认待执行项。
 
