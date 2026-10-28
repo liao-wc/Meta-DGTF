@@ -1,11 +1,10 @@
 {
  "ok": true,
  "app": "https://127.0.0.1:8765",
- "ts": 1793181615.9779315,
+ "ts": 1793183345.013153,
  "n": 56,
  "fails": [],
  "warnings": [
-  "无 pending 提案: pending=7",
   "V2 自动策略按设计冻结：自动策略冻结：层局部质量 layer_signals_v1 尚未通过整跑校准"
  ],
  "checks": [
@@ -17,72 +16,72 @@
   {
    "name": "GET /api/health",
    "ok": true,
-   "detail": "code=200 745ms"
+   "detail": "code=200 643ms"
   },
   {
    "name": "GET /api/config",
    "ok": true,
-   "detail": "code=200 1865ms"
+   "detail": "code=200 299ms"
   },
   {
    "name": "GET /api/dashboard",
    "ok": true,
-   "detail": "code=200 2323ms"
+   "detail": "code=200 228ms"
   },
   {
    "name": "GET /api/tasks",
    "ok": true,
-   "detail": "code=200 7ms"
+   "detail": "code=200 27ms"
   },
   {
    "name": "GET /api/agent/knowledge",
    "ok": true,
-   "detail": "code=200 10ms"
+   "detail": "code=200 34ms"
   },
   {
    "name": "GET /api/agent/hot-topics",
    "ok": true,
-   "detail": "code=200 7ms"
+   "detail": "code=200 28ms"
   },
   {
    "name": "GET /api/status/activity",
    "ok": true,
-   "detail": "code=200 270ms"
+   "detail": "code=200 492ms"
   },
   {
    "name": "GET /api/status/sidebar",
    "ok": true,
-   "detail": "code=200 163ms"
+   "detail": "code=200 25ms"
   },
   {
    "name": "GET /api/schedule/v2",
    "ok": true,
-   "detail": "code=200 62ms"
+   "detail": "code=200 68ms"
   },
   {
    "name": "GET /api/schedule/v2/online",
    "ok": true,
-   "detail": "code=200 30ms"
+   "detail": "code=200 7ms"
   },
   {
    "name": "GET /api/schedule/v2/pareto",
    "ok": true,
-   "detail": "code=200 44ms"
+   "detail": "code=200 57ms"
   },
   {
    "name": "GET /api/schedule/policy",
    "ok": true,
-   "detail": "code=200 16ms"
+   "detail": "code=200 24ms"
   },
   {
    "name": "GET /api/dsh/guard",
    "ok": true,
-   "detail": "code=200 20ms"
+   "detail": "code=200 12ms"
   },
   {
    "name": "GET /api/dsh/proposals",
    "ok": true,
-   "detail": "code=200 285ms"
+   "detail": "code=200 307ms"
   },
   {
    "name": "静态缓存版本一致",
@@ -131,8 +130,8 @@
   },
   {
    "name": "无 pending 提案",
-   "ok": false,
-   "detail": "pending=7"
+   "ok": true,
+   "detail": "pending=0"
   },
   {
    "name": "本地模型服务 /health",

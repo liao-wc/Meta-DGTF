@@ -1,6 +1,6 @@
 {
  "ok": true,
- "ts": 1793047694.782052,
+ "ts": 1793183284.188672,
  "root": "D:\\Meta-DGTF-道生三阶模型",
  "checks": [
   {
@@ -35,8 +35,8 @@
   },
   {
    "name": "BGE 8771 /health",
-   "ok": false,
-   "detail": "code=None URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>"
+   "ok": true,
+   "detail": "code=200 "
   },
   {
    "name": "App 8765 监听",
@@ -51,7 +51,7 @@
   {
    "name": "磁盘剩余 >= 2GB",
    "ok": true,
-   "detail": "free=121.6GB"
+   "detail": "free=207.8GB"
   },
   {
    "name": "outputs 可写",
@@ -71,12 +71,12 @@
   {
    "name": "提案 pending <= 20",
    "ok": true,
-   "detail": "pending=8"
+   "detail": "pending=0"
   },
   {
    "name": "_app_out_8765.log < 10MB",
    "ok": true,
-   "detail": "size=4711B"
+   "detail": "size=1624B"
   },
   {
    "name": "_app_err_8765.log < 10MB",
@@ -85,37 +85,34 @@
   },
   {
    "name": "_audit_tmp 大小 < 100MB",
-   "ok": false,
-   "detail": "size=108375225B"
+   "ok": true,
+   "detail": "size=30264968B"
   },
   {
    "name": "docs/app_audit_latest.json 新鲜(<2h)",
    "ok": true,
-   "detail": "age=6s"
+   "detail": "age=4s"
   },
   {
    "name": "docs/outputs_audit_latest.json 新鲜(<2h)",
    "ok": true,
-   "detail": "age=4s"
+   "detail": "age=2s"
   },
   {
    "name": "docs/proposals_reassess_latest.json 新鲜(<2h)",
    "ok": true,
-   "detail": "age=4s"
+   "detail": "age=3201s"
   },
   {
    "name": "静态缓存版本一致",
    "ok": true,
-   "detail": "2.0.35"
+   "detail": "2.0.41-stallwatch"
   }
  ],
  "fails": [],
- "warnings": [
-  "BGE 8771 /health: code=None URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>",
-  "_audit_tmp 大小 < 100MB: size=108375225B"
- ],
+ "warnings": [],
  "repairs": [],
- "free_gb": 121.6,
- "outputs_size_mb": 512.8,
- "memory_size_mb": 49.5
+ "free_gb": 207.8,
+ "outputs_size_mb": 582.8,
+ "memory_size_mb": 59.0
 }
