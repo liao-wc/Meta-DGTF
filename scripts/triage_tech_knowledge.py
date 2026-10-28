@@ -9,6 +9,23 @@ from pathlib import Path
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 root=Path(__file__).resolve().parent.parent
 p=root/"dgtf_memory/agent_knowledge.jsonl"
+
+def _search_fetch_landed():
+    """确认官方 Search/Fetch 双端点已在实际引擎与配置中落地。"""
+    try:
+        engs = sorted((root / "dgtf_engine/dgtf_v2/engine").glob("Meta-DGTF-V*.py"),
+                      key=lambda x: x.stat().st_mtime)
+        txt = engs[-1].read_text(encoding="utf-8", errors="replace") if engs else ""
+        cfg = (root / "dgtf_config.yaml").read_text(encoding="utf-8", errors="replace")
+        bridge = (root / "dgtf_engine/dgtf_v2/agent_bridge.py").read_text(
+            encoding="utf-8", errors="replace")
+        return ("/v1/tools/search" in txt and "/v1/tools/fetch" in txt
+                and (("backend: deepseek" in cfg) or ("backend: \"deepseek\"" in cfg))
+                and "/v1/tools/search" in bridge and "/v1/tools/fetch" in bridge)
+    except Exception:
+        return False
+
+_SF_LANDED = _search_fetch_landed()
 rows=[]
 for ln in p.read_text(encoding="utf-8",errors="replace").splitlines():
     if not ln.strip(): continue
@@ -17,7 +34,14 @@ for ln in p.read_text(encoding="utf-8",errors="replace").splitlines():
     t=(str(r.get("title") or "")+" "+str(r.get("query") or "")+" "+str(r.get("claim") or "")).lower()
     applies, action, applied, triage = "low", "", False, "observe"
     if "search / fetch" in t or "search/fetch" in t or "搜索" in t and "fetch" in t:
-        applies="high"; action="对比官方 Search/Fetch 与现有检索链路的成本、时延和证据格式，先离线兼容性验证"; triage="actionable"
+        applies="high"
+        if _SF_LANDED:
+            applied=True
+            action="已落地：引擎/agent_bridge 双端点 /v1/tools/search + /v1/tools/fetch，dgtf_config.yaml backend=deepseek；保留离线失败分类与缓存"
+            triage="already_applied"
+        else:
+            action="对比官方 Search/Fetch 与现有检索链路的成本、时延和证据格式，先离线兼容性验证"
+            triage="actionable"
     elif "cadf" in t or "context-aware data fabric" in t or "context pruning" in t:
         applies="medium"; action="在上下文压缩处做 A/B，观察 token 降幅与答案质量"; triage="actionable"
     elif "pearl" in t or "learned orchestration" in t:
