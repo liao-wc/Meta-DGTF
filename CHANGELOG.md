@@ -24,7 +24,20 @@
   一键验收 --with-service PASS 25 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 81/81；
   file_integrity bad=0；verify_project_paths PASS；DSH 闭环 2 项 FAIL 归类 N/A（证据陈旧/
   用户实例不可达，原因显式）；历史融合 readiness 1.00；pareto_flow 基线可复跑。
-- 标签：V2.2.18 / engine-V2.2.18；App 2.0.40
+- 标签：V2.2.18 / engine-V2.2.18；App 2.0.41
+
+【主题】任务停滞看门狗，配合 20 分钟总超时治理真跑卡死。
+
+【改变】
+- engine_runner 新增 DGTF_TASK_STALL_S，默认 600 秒。
+- 任务日志超过阈值无增长，判定停滞，自动终止并记录 stalled/timeout/error。
+- 与 2.0.40 的 DGTF_TASK_TIMEOUT_S=1200 默认总超时形成双层保护。
+- 显式 timeout_s 仍可覆盖总超时。
+
+【验证】
+- App 全方位检查；版本一致性；selftest；fast_gate。
+- 静态缓存串：2.0.41-stallwatch。
+App 2.0.40
 
 【主题】App 任务默认超时收紧，遏制真跑无限长跑。
 

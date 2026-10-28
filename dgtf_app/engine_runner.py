@@ -864,13 +864,36 @@ def _run(tid: str) -> None:
             #   （`proc.wait()` 期间不同步的话，崩溃那一刻日志就全丢了）。
             _deadline = (time.time() + float(task.get("timeout_s") or 0)
                          if float(task.get("timeout_s") or 0) > 0 else 0)
+            _stall_s = float(os.getenv("DGTF_TASK_STALL_S", "600") or 0)
+            _last_size = -1
+            _last_growth = time.time()
             while True:
                 try:
                     code = proc.wait(timeout=2.0)
                     break
                 except subprocess.TimeoutExpired:
                     sync_live_log(task)
-                    if _deadline and time.time() >= _deadline:
+                    try:
+                        _size = log_path.stat().st_size
+                    except OSError:
+                        _size = 0
+                    _now = time.time()
+                    if _size > _last_size:
+                        _last_size = _size
+                        _last_growth = _now
+                    if _stall_s > 0 and _now - _last_growth > _stall_s:
+                        task["timeout"] = True
+                        task["stalled"] = True
+                        task["cancelled"] = True
+                        task["error"] = ("任务日志超过 %.0f 秒无增长，判定停滞并终止"
+                                         % _stall_s)
+                        try:
+                            proc.kill()
+                        except Exception:
+                            pass
+                        code = proc.wait(timeout=10)
+                        break
+                    if _deadline and _now >= _deadline:
                         task["timeout"] = True
                         task["cancelled"] = True
                         task["error"] = "任务超过 timeout_s=%s 秒，已自动终止" % task.get("timeout_s")
@@ -879,6 +902,7 @@ def _run(tid: str) -> None:
                         except Exception:
                             pass
                         code = proc.wait(timeout=10)
+                        break
         task["exit_code"] = code
     except Exception as e:  # noqa: BLE001
         # ★★ 异常路径也必须留痕：原来这里置 error 后**直接 return，不归档**
