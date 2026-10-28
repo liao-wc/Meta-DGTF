@@ -24,7 +24,21 @@
   一键验收 --with-service PASS 25 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 81/81；
   file_integrity bad=0；verify_project_paths PASS；DSH 闭环 2 项 FAIL 归类 N/A（证据陈旧/
   用户实例不可达，原因显式）；历史融合 readiness 1.00；pareto_flow 基线可复跑。
-- 标签：V2.2.18 / engine-V2.2.18；App 2.0.38
+- 标签：V2.2.18 / engine-V2.2.18；App 2.0.39
+
+【主题】人工确认提案不再自动过期，恢复已确认待执行项。
+
+【改变】
+- 移除 pending 24h / confirmed 72h 自动过期规则：人工确认项必须由用户显式 reject/superseded，不再静默变 expired。
+- 用户“确认全部执行”后，将此前已过期的人工项恢复为 confirmed：7 条确认，1 条 G5 已由 precheck PASS 关闭。
+- G5 义务教育法小学入学年龄：当前 precheck G5 ready=True/process=True/quality=verified，状态置 superseded，当前新缺口为 G4 判定审计。
+- 其余 7 条保持 confirmed，等待实际修复执行；不伪造 applied。
+
+【验证】
+- proposals 接口：pending=0，confirmed=7，G5 superseded。
+- App 全方位检查；版本一致性；selftest；fast_gate。
+- 静态缓存串：2.0.39-proposalttl。
+App 2.0.38
 
 【主题】修复 App 无法连接当前 DSH Web，恢复 DSH 本对话。
 

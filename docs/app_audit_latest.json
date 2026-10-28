@@ -1,10 +1,11 @@
 {
  "ok": true,
  "app": "https://127.0.0.1:8765",
- "ts": 1793179963.132267,
+ "ts": 1793180877.9805348,
  "n": 56,
  "fails": [],
  "warnings": [
+  "无 pending 提案: pending=7",
   "V2 自动策略按设计冻结：自动策略冻结：层局部质量 layer_signals_v1 尚未通过整跑校准"
  ],
  "checks": [
@@ -16,47 +17,47 @@
   {
    "name": "GET /api/health",
    "ok": true,
-   "detail": "code=200 5ms"
+   "detail": "code=200 15ms"
   },
   {
    "name": "GET /api/config",
    "ok": true,
-   "detail": "code=200 358ms"
+   "detail": "code=200 1603ms"
   },
   {
    "name": "GET /api/dashboard",
    "ok": true,
-   "detail": "code=200 2382ms"
+   "detail": "code=200 2081ms"
   },
   {
    "name": "GET /api/tasks",
    "ok": true,
-   "detail": "code=200 26ms"
+   "detail": "code=200 4ms"
   },
   {
    "name": "GET /api/agent/knowledge",
    "ok": true,
-   "detail": "code=200 17ms"
+   "detail": "code=200 30ms"
   },
   {
    "name": "GET /api/agent/hot-topics",
    "ok": true,
-   "detail": "code=200 29ms"
+   "detail": "code=200 32ms"
   },
   {
    "name": "GET /api/status/activity",
    "ok": true,
-   "detail": "code=200 278ms"
+   "detail": "code=200 286ms"
   },
   {
    "name": "GET /api/status/sidebar",
    "ok": true,
-   "detail": "code=200 22ms"
+   "detail": "code=200 170ms"
   },
   {
    "name": "GET /api/schedule/v2",
    "ok": true,
-   "detail": "code=200 63ms"
+   "detail": "code=200 62ms"
   },
   {
    "name": "GET /api/schedule/v2/online",
@@ -66,27 +67,27 @@
   {
    "name": "GET /api/schedule/v2/pareto",
    "ok": true,
-   "detail": "code=200 46ms"
+   "detail": "code=200 62ms"
   },
   {
    "name": "GET /api/schedule/policy",
    "ok": true,
-   "detail": "code=200 16ms"
+   "detail": "code=200 4ms"
   },
   {
    "name": "GET /api/dsh/guard",
    "ok": true,
-   "detail": "code=200 16ms"
+   "detail": "code=200 30ms"
   },
   {
    "name": "GET /api/dsh/proposals",
    "ok": true,
-   "detail": "code=200 305ms"
+   "detail": "code=200 280ms"
   },
   {
    "name": "静态缓存版本一致",
    "ok": true,
-   "detail": "2.0.38-dshweb"
+   "detail": "2.0.39-proposalttl"
   },
   {
    "name": "GET /static/index.html",
@@ -130,8 +131,8 @@
   },
   {
    "name": "无 pending 提案",
-   "ok": true,
-   "detail": "pending=0"
+   "ok": false,
+   "detail": "pending=7"
   },
   {
    "name": "本地模型服务 /health",
@@ -261,17 +262,17 @@
   {
    "name": "关键文件完整性",
    "ok": true,
-   "detail": ",\n \"files\": [\n  {\n   \"file\": \"dgtf_app/server.py\",\n   \"ok\": true,\n   \"size\": 493647,\n   \"error\": \"\"\n  },\n  {\n   \"file\": \"dgtf_app/engine_runner.py\",\n   \"ok\": true,\n   \"size\": 52969,\n   \"error\": \"\"\n  },\n  {\n   \"file\": \"dgtf_app/static/app.js\",\n   \"ok\": true,\n   \"size\": 356635,\n   \"error\": \"\"\n  },\n  {"
+   "detail": ",\n \"files\": [\n  {\n   \"file\": \"dgtf_app/server.py\",\n   \"ok\": true,\n   \"size\": 493622,\n   \"error\": \"\"\n  },\n  {\n   \"file\": \"dgtf_app/engine_runner.py\",\n   \"ok\": true,\n   \"size\": 52969,\n   \"error\": \"\"\n  },\n  {\n   \"file\": \"dgtf_app/static/app.js\",\n   \"ok\": true,\n   \"size\": 356635,\n   \"error\": \"\"\n  },\n  {"
   },
   {
    "name": "App 版本一致性",
    "ok": true,
-   "detail": "\"静态查询串同版本\",\n   \"ok\": true,\n   \"detail\": \"['2.0.38-dshweb']\"\n  },\n  {\n   \"name\": \"根 README 当前版本\",\n   \"ok\": true,\n   \"detail\": \"2.0.38\"\n  },\n  {\n   \"name\": \"App README 当前版本\",\n   \"ok\": true,\n   \"detail\": \"2.0.38\"\n  },\n  {\n   \"name\": \"PROJECT_LAYOUT 当前版本\",\n   \"ok\": true,\n   \"detail\": \"2.0.38\"\n  },\n  {\n "
+   "detail": "串同版本\",\n   \"ok\": true,\n   \"detail\": \"['2.0.39-proposalttl']\"\n  },\n  {\n   \"name\": \"根 README 当前版本\",\n   \"ok\": true,\n   \"detail\": \"2.0.39\"\n  },\n  {\n   \"name\": \"App README 当前版本\",\n   \"ok\": true,\n   \"detail\": \"2.0.39\"\n  },\n  {\n   \"name\": \"PROJECT_LAYOUT 当前版本\",\n   \"ok\": true,\n   \"detail\": \"2.0.39\"\n  },\n  {\n "
   },
   {
    "name": "UI 自动化回归",
    "ok": true,
-   "detail": "detail\": \"Meta-DGTF · 个人工作台\"\n  },\n  {\n   \"name\": \"侧边栏北斗七星\",\n   \"ok\": true,\n   \"detail\": \"7\"\n  },\n  {\n   \"name\": \"Agent 就绪灯不为灰\",\n   \"ok\": true,\n   \"detail\": \"dot ok active\"\n  },\n  {\n   \"name\": \"DSH 历史按钮已移除\",\n   \"ok\": true,\n   \"detail\": \"\"\n  },\n  {\n   \"name\": \"初始不是 DSH 对话\",\n   \"ok\": true,\n   \"detail\":"
+   "detail": "\"detail\": \"Meta-DGTF · 个人工作台\"\n  },\n  {\n   \"name\": \"侧边栏北斗七星\",\n   \"ok\": true,\n   \"detail\": \"7\"\n  },\n  {\n   \"name\": \"Agent 就绪灯不为灰\",\n   \"ok\": true,\n   \"detail\": \"dot ok active\"\n  },\n  {\n   \"name\": \"DSH 历史按钮已移除\",\n   \"ok\": true,\n   \"detail\": \"\"\n  },\n  {\n   \"name\": \"初始不是 DSH 对话\",\n   \"ok\": true,\n   \"detail\""
   },
   {
    "name": "_app_err_8765.log 无 Traceback",

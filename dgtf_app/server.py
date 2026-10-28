@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "2.0.38"
+APP_VERSION = "2.0.39"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -1701,10 +1701,8 @@ def _proposal_triage():
                 fixed_reason = "fixed_input_sanity_in_current_project"
             elif cat == "agent_runtime" and ctx["fixed"]["queue_gate"] and ctx["mtimes"].get("dgtf_v2/agent_bridge.py", 0) > float(rec.get("ts") or 0):
                 fixed_reason = "fixed_queue_gate_in_current_project"
-            elif st == "pending" and age > 86400:
-                fixed_reason = "pending_ttl_24h"
-            elif st == "confirmed" and age > 3 * 86400:
-                fixed_reason = "confirmed_ttl_72h"
+            # 人工确认项不自动过期：pending/confirmed 必须由用户显式 reject/superseded，
+            # 否则 24h/72h TTL 会把待执行项静默丢成 expired。
             elif sev == "low" and age > 86400:
                 fixed_reason = "low_stale_quality"
         if fixed_reason:
