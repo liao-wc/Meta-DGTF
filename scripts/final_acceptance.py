@@ -27,6 +27,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import re
 import subprocess
@@ -79,6 +80,8 @@ STEPS = [
     ("mem_reclaim", ["scripts/local_model/test_mem_reclaim.py"], POLICY_STRICT),
     # 生成长度按 stage 压缩判据（纯函数 + 构造性证明打真 Handler）
     ("max_new_cap", ["scripts/local_model/test_max_new_cap.py"], POLICY_STRICT),
+    # [V2.2.18] App selftest 自动门（自起临时 server；起不来 exit=2 = 没跑）
+    ("app_selftest", ["scripts/app_selftest_gate.py"], POLICY_SERVICE),
     # ★ APP → 引擎 → 本地模型 端到端（零 API 成本；服务未起时退出码 2 = 没跑）
     ("e2e_app_local", ["scripts/local_model/e2e_app_local.py"], POLICY_SERVICE),
 ]
@@ -178,6 +181,33 @@ def run_step(name: str, argv: list, policy: str, with_service: bool,
     return status, reason, round(time.time() - t0, 1)
 
 
+def _write_evidence(results, args, npass: int, nskip: int, nfail: int) -> None:
+    """把本次验收结果写 docs/acceptance_latest.json（失败不阻断验收）。"""
+    try:
+        now = time.time()
+        ev = {
+            "schema": "dgtf.acceptance.v1",
+            "ts": now,
+            "iso": time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(now)),
+            "with_service": bool(getattr(args, "with_service", False)),
+            "skip_service": bool(getattr(args, "skip_service", False)),
+            "require_all": bool(getattr(args, "require_all", False)),
+            "passed": int(npass),
+            "skipped": int(nskip),
+            "failed": int(nfail),
+            "steps": [{"name": n, "status": s, "sec": c, "reason": r}
+                      for n, s, c, r in results],
+            "ok": bool(nfail == 0 and not (
+                getattr(args, "require_all", False) and nskip)),
+        }
+        p = ROOT / "docs" / "acceptance_latest.json"
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(json.dumps(ev, ensure_ascii=False, indent=1),
+                     encoding="utf-8")
+    except Exception:  # noqa: BLE001
+        pass
+
+
 def _print_steps(steps: list) -> None:
     for i, (name, argv, policy) in enumerate(steps, 1):
         print("%2d  %-24s %-8s %-6s  %s"
@@ -219,6 +249,9 @@ def main(argv=None) -> int:
     npass = sum(1 for _, st, _, _ in results if st == PASS)
     nskip = sum(1 for _, st, _, _ in results if st == SKIP)
     nfail = sum(1 for _, st, _, _ in results if st == FAIL)
+    # ★ [V2.2.18] 证据出口：release_process_check 用它校验「验收新鲜度 + 三态计数」，
+    #   同时让 README 的「一键验收 PASS/SKIP/FAIL」数字可被机器核对（防文档漂移）。
+    _write_evidence(results, args, npass, nskip, nfail)
     print("\nFINAL ACCEPTANCE: PASS %d / SKIP %d / FAIL %d  (%d steps)"
           % (npass, nskip, nfail, len(results)))
     if nskip:

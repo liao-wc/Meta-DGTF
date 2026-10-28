@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import re
 import subprocess
@@ -130,6 +131,27 @@ def main(argv=None) -> int:
         print("\n===== FAIL %s（%s） =====" % (name, reason))
         tail = "\n".join(out.strip().splitlines()[-25:])
         print(tail)
+    # ★ [V2.2.18] 证据出口：release_process_check 校验新鲜度 + README 数字一致性
+    try:
+        _ev = {
+            "schema": "dgtf.v2_tests.v1",
+            "ts": time.time(),
+            "iso": time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime()),
+            "files": len(files),
+            "passed": len(files) - len(bad),
+            "failed": len(bad),
+            "skips": total_skips,
+            "checks": total_checks,
+            "elapsed_sec": round(elapsed, 1),
+            "failed_names": [b[0] for b in bad],
+            "ok": not bad,
+        }
+        _p = ROOT / "docs" / "v2_tests_latest.json"
+        _p.parent.mkdir(parents=True, exist_ok=True)
+        _p.write_text(json.dumps(_ev, ensure_ascii=False, indent=1),
+                      encoding="utf-8")
+    except Exception:  # noqa: BLE001
+        pass
     if bad:
         print("\nV2 TESTS FAILED: %d / %d" % (len(bad), len(files)))
         return 1

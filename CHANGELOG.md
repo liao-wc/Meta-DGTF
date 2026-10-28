@@ -1,3 +1,31 @@
+【V2.2.18（2026-10-28，PATCH 引擎侧零行为差 · 项目流程门 + 证据出口 + App selftest 自动门）】
+- 生产引擎：`dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.18.py`（__version__=2.2.18）；
+  V2.2.17 及更早只读保留。引擎源码除 __version__/docstring 外与 V2.2.17 逐字相同。
+- ★ 问题：「项目流程不能漏」此前只靠人记 —— README §六 的固定动作（升版本/五道门/
+  CHANGELOG/发布说明/收束报告/README/PROJECT_MAP/Pages 同步/三标签）只有部分被机器执行：
+  App selftest 不在 acceptance 里；fast_gate/V2/acceptance 不写证据（无法证明「这次跑过」、
+  无法核对 README 数字是否漂移）；8 处版本声明任一处漏改无人发现。
+- ★ 修法：新增 `scripts/release_process_check.py`（三态 PASS/FAIL/N/A，N/A 必须带原因）：
+  P1 引擎版本 8 处一致（最高版 == App find_engine == 配置头 == NAMING == README ==
+  PROJECT_MAP == PROJECT_LAYOUT == Pages）；P2 发布产物存在 + CHANGELOG 首段 + docs 索引 +
+  当日状态快照；P3 App 版本；P4 **证据新鲜度（<24h） + README 数字与证据逐项相等** +
+  四层 probe 全绿且 provenance=当前引擎；P5 三标签策略（V/engine-V 按 pre/post-tag；
+  app-V 未变版沿用已发布标签、不移动）；P6 file_integrity + verify_project_paths；
+  P7 DSH 闭环（「生产包早于引擎修复」「用户 App 实例不可达」归类 N/A+原因，其余照旧判红）。
+- ★ 证据出口（各门新增）：`fast_gate.py` → docs/fast_gate_latest.json；
+  `scripts/run_v2_tests.py` → docs/v2_tests_latest.json；`scripts/final_acceptance.py` →
+  docs/acceptance_latest.json（三态计数 + 每步）；新增 `scripts/app_selftest_gate.py`
+  （自起临时 App server，**绝不碰用户 8765 实例**；起不来 exit=2=没跑）→
+  docs/app_selftest_latest.json；`release_process_check.py` → docs/release_process_latest.json。
+- final_acceptance 新增 `app_selftest` 步骤（服务型三态）：STEPS 23→24，--with-service 24→25。
+- 判据：`scripts/tests_release_process.py`（21 项：完备假仓库全绿 + 12 变异体 +
+  dsh FAIL 行分类纯函数），已进 fast_gate（15→16 项）。
+- 本轮完整流程执行：fast_gate 16/16；V2 70/70（1163 checks）；App selftest 455/0（自动门）；
+  一键验收 --with-service PASS 25 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 81/81；
+  file_integrity bad=0；verify_project_paths PASS；DSH 闭环 2 项 FAIL 归类 N/A（证据陈旧/
+  用户实例不可达，原因显式）；历史融合 readiness 1.00；pareto_flow 基线可复跑。
+- 标签：V2.2.18 / engine-V2.2.18；App 2.0.37 未变，app-V2.0.37 沿用已发布标签（不移动）。
+
 【V2.2.17（2026-10-28，PATCH 引擎 · 本地端点 prompt 瘦身：行去重 + 噪声块截断 + 尾部保护）】
 - 生产引擎：`dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.17.py`（__version__=2.2.17）；V2.2.16 及更早只读保留。
 - ★ 问题（真实 584 条引擎 prompt 统计）：token p50=2042 / max=6170，**50% 超服务端 2048 上限**，

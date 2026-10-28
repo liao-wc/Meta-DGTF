@@ -1,0 +1,14 @@
+{
+ "schema": "dgtf.app_selftest.v1",
+ "ts": 1793178487.0845258,
+ "iso": "2026-10-28T17:08:07",
+ "base": "http://127.0.0.1:8799",
+ "port": 8799,
+ "ok": true,
+ "pass": 455,
+ "fail": 0,
+ "status": "pass",
+ "reason": "",
+ "rc": 0,
+ "tail": "  ✓ ★本地链路 D2 守护状态机在两段上都可重启（8772 服务 + 8773 适配层）  — 见 local_chain.py default_targets/service_start_cmd/shim_start_cmd\n\n结果：PASS 455 / FAIL 0"
+}

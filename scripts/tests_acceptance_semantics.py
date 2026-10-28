@@ -156,9 +156,10 @@ def test_discovery():
                     "audit70", "input_sanity", "facet", "structural_diversity",
                     "self_feedback", "api_policy", "vision", "agent_bridge",
                     "agent_worker", "agent_repair", "agent_daemon",
-                    "acceptance_semantics"}
+                    "acceptance_semantics", "release_process_selftest"}
         got_names = {n for n, _ in FG.build_checks(real)}
-        ck("A5f 检查清单完整（15 项；防重构时静默丢检查项，如 agent_daemon）",
+        ck("A5f 检查清单完整（16 项；防重构时静默丢检查项，如 agent_daemon/"
+           "release_process_selftest）",
            got_names == expected, sorted(expected - got_names) or sorted(got_names - expected))
         none_checks = dict(FG.build_checks(None))
         rc = subprocess.run(none_checks["compile"], capture_output=True, text=True,

@@ -23,9 +23,11 @@
 """
 from __future__ import annotations
 import argparse
+import json
 import os
 import subprocess
 import sys
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
@@ -229,6 +231,9 @@ def build_checks(engine=None) -> list:
         # task-3 判据：快速门禁自身的语义（动态发现 + 对齐 + acceptance 三态）
         ("acceptance_semantics", [sys.executable,
          str(ROOT / "scripts" / "tests_acceptance_semantics.py")]),
+        # [V2.2.18] 发布流程门自检：版本/文档/证据/标签/N-A 分类的构造性判据
+        ("release_process_selftest", [sys.executable,
+         str(ROOT / "scripts" / "tests_release_process.py")]),
     ]
     return checks
 
@@ -275,6 +280,30 @@ def main(argv=None) -> int:
                 if r is not None:
                     print((r.stdout or r.stderr or "")[-800:])
     print("\nFAST GATE PASS %d / FAIL %d" % (len(checks) - len(bad), len(bad)))
+    # ★ [V2.2.18] 证据出口：release_process_check 用它校验「门有没有新鲜跑过」
+    #   以及 README 的「当前版本实测」数字是否与真实结果一致（防文档漂移）。
+    try:
+        _now = time.time()
+        _ev = {
+            "schema": "dgtf.fast_gate.v1",
+            "ts": _now,
+            "iso": time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(_now)),
+            "engine": str(engine) if engine else "",
+            "engine_name": Path(engine).name if engine else "",
+            "engine_version": engine_version_str() if engine else "",
+            "engine_source": source,
+            "total": len(checks),
+            "passed": len(checks) - len(bad),
+            "failed": len(bad),
+            "failed_names": list(bad),
+            "ok": not bad,
+        }
+        _p = ROOT / "docs" / "fast_gate_latest.json"
+        _p.parent.mkdir(parents=True, exist_ok=True)
+        _p.write_text(json.dumps(_ev, ensure_ascii=False, indent=1),
+                      encoding="utf-8")
+    except Exception:  # noqa: BLE001
+        pass
     return 0 if not bad else 1
 
 
