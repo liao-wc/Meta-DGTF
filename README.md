@@ -3,10 +3,10 @@
 一个**单文件四层螺旋推理引擎** + **V2 三平面核心** + **本地 Web 工作台**：
 修行 / 研究 / 对撞 / 元，跑出可审计、可回放、可融合的产物。
 
-- **当前版本**：V2.2.18（引擎侧零行为差：发布流程门 + 四处证据出口 + App selftest 自动门；V2.2.17 的 prompt 瘦身 / V2.2.16 的 JSON 结构门等能力不变） / App 2.0.37（本地链路全生命周期守护 + health 读数 + 本地档预设；道生专属模式 + 三体动态计划 + 预算守卫）
+- **当前版本**：V2.2.18（引擎侧零行为差：发布流程门 + 四处证据出口 + App selftest 自动门；V2.2.17 的 prompt 瘦身 / V2.2.16 的 JSON 结构门等能力不变） / App 2.0.38（本地链路全生命周期守护 + health 读数 + 本地档预设；道生专属模式 + 三体动态计划 + 预算守卫）
 - **生产引擎**：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.18.py
 - **V2 核心**：dgtf_engine/dgtf_v2/
-- **人用界面**：dgtf_app/（App 2.0.37，本地链路两段守护 + 道生专属模式 + DSH 本对话实时镜像 + 会话列表实时打开 + 健康读数缓存）
+- **人用界面**：dgtf_app/（App 2.0.38，本地链路两段守护 + 道生专属模式 + DSH 本对话实时镜像 + 会话列表实时打开 + 健康读数缓存）
 - **本地链路**：dgtf_local_llm/（8772 推理服务，fp32 底座 + CUDA graph 采样/复用）+ scripts/local_model/openai_shim.py（8773 OpenAI 适配层）
 - **融合实现**：单引擎内联（Meta-DGTF-V2.2.18.py）；V2.1 外部模块仅作回滚参考
 - **历史清单**：dgtf_engine/dgtf_v2/history_manifest.json
@@ -255,12 +255,12 @@ local_model\envs\dgtf_llm_env\Scripts\python.exe -m pip check
 
 ## 九、当前收束
 
-- 版本：V2.2.18（App 2.0.37）
+- 版本：V2.2.18（App 2.0.38）
 - 历史版本：178 个快照（V1.0 → V2.0.0）
 - 能力轴：17 条，readiness=1.00
 - 行为臂：5 个（v1_spiral / v1_frontier / v2_contract / v2_pareto / fusion_full）
 - 收束报告：V2.2.18-收束报告.md
-- 发布说明：docs/releases/V2.2.18.md / docs/releases/V2.2.17.md / docs/releases/app-V2.0.37.md
+- 发布说明：docs/releases/V2.2.18.md / docs/releases/V2.2.17.md / docs/releases/app-V2.0.38.md
 - **优化交付（Round 1–83）**：`docs/最终交付说明-20261026.md`、
   `docs/验收总览-20261026.md`、`docs/ab_evidence_20261025.md`（§1–§78）
 - **本地模型默认**：v8b（mixed 配方，质量持平 v6、p50/p95 更快；训练/评测/切换全链证据）

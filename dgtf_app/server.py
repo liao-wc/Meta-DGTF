@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "2.0.37"
+APP_VERSION = "2.0.38"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -2212,9 +2212,13 @@ def _dsh_current_web_base() -> str:
             base = "https://" + base[6:]
         return base
 
-    # 本地写入的当前 URL 优先：App 进程可能继承旧 DSH_WEB_URL，
-    # 旧端口仍活着时会把请求送到错误会话；dsh_web_url.txt 由 App 启动/维护。
+    # 先试当前进程环境（DSH GUI 重启后会更新），再试本地覆盖；两者都失败才试旧端口。
+    # 历史问题：持久化文件曾停留旧端口，而 App 继承了正确环境变量，却被文件优先覆盖。
     candidates = []
+    for key in ("DSH_WEB_URL", "DGTF_DSH_WEB_URL"):
+        val = os.getenv(key)
+        if val:
+            candidates.append(_norm(val))
     try:
         p = APP_DIR.parent / "dgtf_memory" / "dsh_web_url.txt"
         if p.is_file():
@@ -2223,10 +2227,6 @@ def _dsh_current_web_base() -> str:
                 candidates.append(_norm(val))
     except Exception:
         pass
-    for key in ("DSH_WEB_URL", "DGTF_DSH_WEB_URL"):
-        val = os.getenv(key)
-        if val:
-            candidates.append(_norm(val))
     candidates.extend([
         "http://127.0.0.1:61044",
         "http://127.0.0.1:61045",

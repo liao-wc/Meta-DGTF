@@ -24,7 +24,21 @@
   一键验收 --with-service PASS 25 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 81/81；
   file_integrity bad=0；verify_project_paths PASS；DSH 闭环 2 项 FAIL 归类 N/A（证据陈旧/
   用户实例不可达，原因显式）；历史融合 readiness 1.00；pareto_flow 基线可复跑。
-- 标签：V2.2.18 / engine-V2.2.18；App 2.0.37 未变，app-V2.0.37 沿用已发布标签（不移动）。
+- 标签：V2.2.18 / engine-V2.2.18；App 2.0.38
+
+【主题】修复 App 无法连接当前 DSH Web，恢复 DSH 本对话。
+
+【改变】
+- 根因：dgtf_memory/dsh_web_url.txt 仍指向旧端口 53962，而当前 DSH Web 在 53143；旧探测逻辑优先读本地文件、后读 DSH_WEB_URL，导致所有 _dsh_current_rpc 请求 WinError 10061。
+- 调整候选顺序：先试 DSH_WEB_URL/DGTF_DSH_WEB_URL，再试本地 dsh_web_url.txt，最后才试旧端口。
+- 成功探测后继续持久化当前 URL 到 dsh_web_url.txt。
+- 实测 /api/dsh/current/messages 恢复 200。
+
+【验证】
+- /api/dsh/current/messages 200，session_id 与当前 DSH 会话一致。
+- App 全方位检查；App 版本一致性；App selftest；fast_gate。
+- 静态缓存串：2.0.38-dshweb。
+App 2.0.37 未变，app-V2.0.37 沿用已发布标签（不移动）。
 
 【V2.2.17（2026-10-28，PATCH 引擎 · 本地端点 prompt 瘦身：行去重 + 噪声块截断 + 尾部保护）】
 - 生产引擎：`dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.17.py`（__version__=2.2.17）；V2.2.16 及更早只读保留。
