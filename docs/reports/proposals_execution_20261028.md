@@ -82,7 +82,16 @@ outputs_library_audit：完成
 
 ## 六、剩余风险
 
-- precheck 当前 G4 判定审计仍 FAIL（存证 mixed vs 重算 verified）；这是 G5 之外的新缺口，需另行修复。
+- precheck G4 已修复：HTTP 431 packed 的存证判定审计由 mixed 重算为 verified(n=6,bad=0)，precheck 5/5 PASS。
 - 旧产物 516 条 md 无 packed 属历史格式，保留可读性，不自动重建。
 - 50 组重复题保留，避免错题复用。
 - 异常 run 不自动重跑。
+
+## 七、G4 修复
+
+- 目标产物：outputs/20261027_212315_HTTP431状态码表示什么.packed.json
+- 旧存证：decidability_audit status=mixed n=6 bad=1
+- 修复：按当前引擎 audit_view 重算，写回 views.1.decidability_audit 与顶层字段
+- 新存证：status=verified n=6 bad=0
+- 验证：python scripts/precheck_quality.py → RESULT PASS（PASS 5 / FAIL 0）
+- 备份：dgtf_memory/edit_backups/pre_g4_audit_repair_20261028_180752_322200
