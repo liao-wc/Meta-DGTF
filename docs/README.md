@@ -1,6 +1,6 @@
 # docs 索引（2026-10-27，Round 162 收束同步）
 
-> 本文件是 docs/ 的**当前入口**；历史轮次文档保留原样，数字以本索引、`docs/项目状态快照_20261027.md`、
+> 本文件是 docs/ 的**当前入口**；历史轮次文档保留原样，数字以本索引、`docs/项目状态快照_20261028.md`、
 > `CHANGELOG.md` 与 `docs/known_boundaries_20261026.md` §0 为准。
 
 ## 当前必读
@@ -21,7 +21,7 @@
 | `docs/ab_summary_20261027.md` | A/B 结果摘要（最新 rows=166 / questions=83 / verified=125） |
 | `docs/local_model_daosheng.md` | 本地模型文档（顶部 2026-10-27 同步段；历史轮次保留） |
 | `docs/产物问题审计_20261027.md` | 产物逐项审计（Round 128 历史快照，数字以最新快照为准） |
-| `docs/releases/` | 引擎发布说明（V2.2.15 … V2.2.3）+ App 版本发布说明（app-V2.0.2 … V2.0.37） |
+| `docs/releases/` | 引擎发布说明（V2.2.17 … V2.2.3）+ App 版本发布说明（app-V2.0.2 … V2.0.37） |
 | `docs/patches/` | dual_judge local 补丁（已合并，历史证据） |
 
 ## 历史归档（勿引数字）

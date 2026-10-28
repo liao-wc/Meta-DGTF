@@ -1,3 +1,28 @@
+【V2.2.17（2026-10-28，PATCH 引擎 · 本地端点 prompt 瘦身：行去重 + 噪声块截断 + 尾部保护）】
+- 生产引擎：`dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.17.py`（__version__=2.2.17）；V2.2.16 及更早只读保留。
+- ★ 问题（真实 584 条引擎 prompt 统计）：token p50=2042 / max=6170，**50% 超服务端 2048 上限**，
+  而服务端是**右截断**（丢尾部 = 丢最终 JSON 指令/schema）；prompt 里结构性重复极多
+  （【0层侧面清单】1594 次、【Agent知识回声】1388 次、参考记忆哈希每 prompt 2~3 份）。
+  行级完全去重即可省 **45.3% token**（106.6 万 → 58.3 万），schema 行零丢失。
+- ★ 修法：`LLM.call` 出货前唯一咽喉处，对**本机端点**执行纯函数 `diet_local_prompt`：
+  R1 行级完全去重（顺序不变）/ R2 已知噪声块只留第一份并截到 240 字符 /
+  R3 尾部约 320 字符按整行对齐原样保护（JSON schema / 最终指令优先）；
+  空文本/瘦身后为空/变长 ⇒ 原样返回。云端点（base_url 非本机）直接返回原值 ⇒ 零行为差。
+  开关 `api.local_prompt_diet`（默认 true）+ CLI `--local-prompt-diet on|off`；
+  packed 新增 `llm_prompt_diet` 读数（applied / chars_before / chars_after / lines_removed /
+  blocks_truncated）。
+- 证据：离线 584 条真实 prompt −45.3% token / schema 零丢失；机制级 A/B（16 条固定 prompt、
+  同引擎 LLM.call、服务每轮重启）：prompt 字符 78,561→48,110（−38.7%）、token 32,669→27,622
+  （−15.4%，受服务端 2048 截断上限所限）、删重复行 267 / 截噪声块 21；单次墙钟被生成长度
+  方差主导，不作性能结论。端到端单次 A/B（OFF 101.2s/21 calls vs ON 121.9s/27 calls）同样
+  如实记录「不可归因」——本轮收益口径是**上下文占用与尾部指令保全**，不声称端到端提速。
+- 判据：`tests_local_prompt_diet.py`（25 项：纯函数 11 + LLM 门控 4 + 静态接线 7 + 变异体 3；
+  独立造长文本验证「尾部重复 schema 不被删」「真实形态缩减 ≥30%」）。
+- 验收：fast_gate 全 PASS（audit70 71/0）；V2 70/70（1163 checks）；一键验收 --with-service
+  PASS 24 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 81/81（四层结论不变）。
+- 边界：瘦身只删完全重复行 + 已知噪声块（截断有信息损失），可 --local-prompt-diet off 一键回滚；
+  端到端墙钟收益未证明；0.5B 语义能力仍是层 1/both/all 达成的主瓶颈。
+
 【V2.2.16（2026-10-28，PATCH 引擎 · JSON 结构门 + 本地档自动切 + 归因无暗路）】
 - 生产引擎：`dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.16.py`（__version__=2.2.16）；V2.2.15 及更早只读保留。
 - ★ JSON 期望显式声明通道（引擎 → shim → 服务约束解码）：
