@@ -4,11 +4,11 @@
 
 | 类别 | 物理位置 | 说明 |
 |---|---|---|
-| V2 生产入口 | dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.4.py | 单文件生产引擎（V2.2.3 只读保留），App 自动选用最高版本 |
+| V2 生产入口 | dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.15.py | 单文件生产引擎（V2.2.14 及更早只读保留），App 自动选用最高版本 |
 | 引擎总目录 | dgtf_engine/ | 统一存放 dgtf_v1/ 与 dgtf_v2/ |
 | V2 核心 | dgtf_engine/dgtf_v2/ | EML / Scheduler / 四层契约 / 证据与决策 |
-| V2 发布说明 | V2.2.4-发布报告.md、V2.2.4-收束报告.md、docs/releases/V2.2.4.md（历史 V2.2.3 保留） | 发布、验证、边界 |
-| 融合实现 | Meta-DGTF-V2.2.4.py 内联（history + behavior + self_check/dual_judge） | 单引擎文件：历史谱系、5 个 arm、auto 调度融合、outcome UCB |
+| V2 发布说明 | V2.2.15-发布报告.md、V2.2.15-收束报告.md、docs/releases/V2.2.15.md（历史 V2.2.4 保留） | 发布、验证、边界 |
+| 融合实现 | Meta-DGTF-V2.2.15.py 内联（history + behavior + self_check/dual_judge） | 单引擎文件：历史谱系、5 个 arm、auto 调度融合、outcome UCB |
 | 历史清单 | dgtf_engine/dgtf_v2/history_manifest.json | 178 个历史快照数据；仅文档/审计参考 |
 | 历史文档 | docs/history/ | 来源、定义、版本演化、能力矩阵 |
 | V2 门户 | docs/index.html | GitHub Pages 静态入口 |
@@ -26,8 +26,10 @@
 
 | 类别 | 物理位置 | 说明 |
 |---|---|---|
-| App | dgtf_app/ | 本地 Web 工作台 |
+| App | dgtf_app/ | 本地 Web 工作台（2.0.37；local_chain.py 两段本地链路守护 + /api/health 动态读数） |
 | 启动/运维 | scripts/、scripts/local_model/ | 启动、同步、部署、安全与本地模型脚本 |
+| 本地链路 | dgtf_local_llm/、scripts/local_model/openai_shim.py、configs/本地模型-全链路.yaml | 8772 推理服务（fp32+CUDA graph）/ 8773 OpenAI 适配层 / App 本地档预设 |
+| 全链路判据 | scripts/local_model/e2e_app_local.py、scripts/local_model/probe_layer_goals.py | App 真入口 e2e（18/18）/ 四层目标探针（81/81） |
 | 帕累托基线 | scripts/pareto_flow.py | 全流程质量/成本非支配前沿（第一版） |
 | 联动报告 | scripts/pareto_report.py | 三组件联动质量/成本/墙钟报告（MD/JSON） |
 | 模式融合 | scripts/mode_fusion.py | 保留 B/serial/fast，M4 auto-fused 场景选档 |

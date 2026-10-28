@@ -1,3 +1,59 @@
+【V2.2.15（2026-10-28，PATCH 引擎 + App 2.0.37 MINOR · stage 登记闭环 + APP→引擎→本地模型全链路打通/提速）】
+- 生产引擎：`dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.15.py`（__version__=2.2.15）；V2.2.14 及更早只读保留。
+  ★ V2.2.14（re_anchor few-shot + 本地端点 auto 降档）此前只落了文件、未单独发版，本轮并入本版谱系；
+  V2.2.14 文件保留为中间快照（它的两项机制在 V2.2.15 里逐字相同）。
+- 引擎改动（零行为差）：审计 K4 闭环 —— expand_pair / expand_pair_merged / expand_pair_merged_fixup /
+  ing / he_amps / manifest 六个 stage 补登记进 DEFAULT_CONFIG.api.thinking.stages，值 == thinking.default
+  ("disabled") ⇒ 与「未声明时掉回 default」逐字等价。此前自 V2.2.4 起 audit70 K4 一直是红的
+  （8 个调用点、6 个名字）：调用了 stage 却从未登记，用户改 thinking 档位对这些环节无效。
+- 本地服务结构性优化（`dgtf_local_llm/`，全部实测驱动；零 API 成本）：
+  · 底座 fp16→**fp32**：本机 1660Ti(TU116) 无 tensor core，fp16 Linear 命中 cutlass wmma 仿真核
+    （实测 0.5ms/次），fp32 走 gemv ⇒ 单 token graph replay **59ms→28ms（2.1x）**；底座 1.9GB 可容。
+  · CUDA graph 支持 **temp>0 采样 + 重复惩罚**（graph 只捕获「一步前向 + logits 落静态 buffer」，
+    采样在 graph 外做）：此前只有 temp==0 能走 graph，而引擎绝大多数调用 temp 0.2~0.9 ⇒ 全落慢路径
+    （实测单次 20~37s）。这是本地链墙钟的大头。
+  · **base stage 显式禁用适配器**：PeftModel 会沿用上一次 set_adapter 的适配器 ⇒ 底座输出被别的 LoRA
+    污染（实测 re_anchor 在 self_check 适配器激活时多吐 "anchorText" 幻觉键）。base stage 现在走
+    disable_adapter 才是真底座。
+  · **graph 按 key 复用**（LoRA stage 各自一张 / base 共用一张；单一定义在 `gates.graph_cache_key`）：
+    graph 数 ~18→5、StaticCache 显存 −70%（fp32 下每张 3072 ≈75MB）；回包/指标新增
+    graph / sampled / graph_key / graph_capture_keys / graph_sampled_generations / graph_rep_pen_generations 留痕。
+- App 2.0.37（`dgtf_app/local_chain.py`）：**本地链路两段生命周期**（8772 推理服务 + 8773 OpenAI 适配层）
+  纳入同一守护（硬掉线失败 2 次后 120/300/600/900/1800s 指数退避重启；loading 不重启；日志节流）；
+  /api/health 增 local_chain 动态读数（service_ok/shim_ok/endpoint_kind/engine 版本/queue/gpu_mem/
+  watchdog/preset，读不到给 null+原因，False 与 None 两向可分）；--local-chain-watchdog auto|on|off；
+  新增 `configs/本地模型-全链路.yaml` 预设。★ 顺带修掉旧 watchdog 隐性 bug：重启命令直跑 service.py
+  会 ModuleNotFoundError（从未成功过）⇒ 改 venv python -m dgtf_local_llm.service。
+- 门禁动态化（三项，均配判据）：
+  · `fast_gate.py`：不再钉死 V2.2.3（历史缺陷：从 V2.2.4 起 12/12 全绿其实是「旧引擎在绿灯」）⇒ 直接
+    import App 的 `engine_runner.find_engine()` 作为唯一选版真相源 + engine_discovery/engine_alignment 两条判据。
+  · `scripts/final_acceptance.py`：三态语义 PASS/SKIP/FAIL（「没跑」不再当 PASS 假绿、也不再当 FAIL）；
+    --skip-service / --require-all / --list-steps 显式化。
+  · `_probe_v1232_audit.py`：AST **一次解析多处复用**（原 body_of 每次调用都 ast.parse 全文 = O(n²)）
+    ⇒ V2.2.15：Lead 窗口 **181.1s→20.1s**；同机同负载成对 77.00s→18.77s（≈4x）；
+    72 条逐项 ✓/✗ 明细 DETAIL IDENTICAL，判定逐条不变（PASS 71 / FAIL 0）。
+- 新增判据：tests_stage_thinking_registry.py（10 项，K4 单测版 + 4 变异体）、tests_layer_goal_all.py（58 项，
+  四层读数契约 + 6 变异体/真实产物回验）、scripts/local_model/test_graph_sampling.py（25 项，零 GPU：
+  graph_cache_key 纯函数 + service 源码结构 + 6 变异体）、test_graph_decode.py 扩到 G1–G10（GPU：
+  temp>0 走 graph / base 图复用 / 适配器为空 / rep_pen / 采样计数）、dgtf_app/test_local_chain.py
+  （43 项 + 8 变异体）、App selftest +11 项（444→455）。
+- ★ 全链路实测（APP 真入口 → 引擎 → shim → 本地 0.5B → 落盘）：
+  · e2e_app_local **18/18**，墙钟 **157.9s**（同一判据优化前 518.9s ⇒ **3.3x**），24 calls；
+  · 服务单次调用 p50 **3.0–3.5s**（旧 11.8s）、p95 **8–9s**（旧 37.2s）；
+  · 四层全跑（V2.2.14 快照）136 calls / 818.4s；四层目标探针（V2.2.15，4 case）**81/81 PASS / 431.2s**。
+- ★ 四层「各自目标」逐层结论（两条独立证据一致：132320 全跑 + probe 四 case）：
+  · 0 修行：excavate=0.000（2pt，hist [9,9]，n_aspects=5）⇒ **达成**（停因真命中 Heaps 饱和）；
+  · 1 研究：**未测出（可指认）** —— settlement.total=0，确定率分母为 0（0.5B 未产出可判定子问题），不是判红；
+  · both 对撞：fuse=0.000（n_new=0 / n_upstream=2 / sem_stag=0.0968）⇒ **判据样本不足**（flat 需 3 个逐圈点，
+    默认 rounds=2 只有 2 点，结构边界非失败）；
+  · all 元：crystallize=0.500（n_hits=2/4；lookback/engagements/suspensions 全 0）⇒ **未达成**。
+- 验收：fast_gate 15/15（audit70 71/0, 20.1s）；V2 **67/67（1107 checks, SKIP 0）**；App selftest **455/0**；
+  final_acceptance --with-service 全 PASS；pip check 0 broken；provenance=V2.2.15。
+- 已知边界（冻结）：0.5B 结构化输出能力（json_repair 多但多为缓存命中、ing/view 撞 224 上限）⇒ 层1/both/all
+  的「达成」要更强模型或更长本地适配训练；本地档定位仍是零成本链路验证/离线可用；引擎两处圈内判据结构
+  边界（元层 crystallize 停止判据不可达、层1/both 圈内尺子≠收尾读数）已在
+  `docs/四层目标读数审计_20261028.md` 量化记录，本版不改行为（需云端 A/B 预算）。
+
 【V2.2.13（2026-10-28，PATCH · stage 显式通道打通 + 本地服务白名单放开）】
 - 生产引擎：`dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.13.py`；V2.2.12 及更早只读保留。
 - 问题（Arm A/B/C 两臂实测定位）：引擎 → 本地模型的 stage 路由**整链猜错**。

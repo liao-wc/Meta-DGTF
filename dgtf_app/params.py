@@ -273,6 +273,11 @@ _KEY_CN: dict[str, str] = {
     "output.show_manifest": "打印 view 显形全文",
     "output.show_ing": "打印 ing 输出全文",
     "output.show_probe_diag": "探针 covers 字段诊断",
+    # ★ [2026-10-28 补标签] 答案门两个键此前没有中文标签 ⇒ selftest 的
+    #   「参数标签统一成 键（中文说明）」判据在 HEAD 上就是红的（与本地链路
+    #   改动无关）。补标签是让验收全绿的最小修复；**不改默认值、不改行为**。
+    "output.answer_gates.enabled": "答案门读数（是否计算答案门）",
+    "output.answer_gates.block": "答案门阻断（相关性不过即判未就绪）",
     # ── probe 探针 ──
     "probe.select_n": "每圈筛几条新探针进下一轮",
     "probe.min_gain": "探针最低 expected_gain",

@@ -42,6 +42,7 @@ import engine_runner as runner  # noqa: E402
 import library  # noqa: E402
 import outputs_index as oi  # noqa: E402
 import params as prm  # noqa: E402
+import local_chain as lchain  # noqa: E402  ★ 本地链路判据（8772 推理 + 8773 适配）
 
 PASS: list[str] = []
 FAIL: list[str] = []
@@ -1454,6 +1455,134 @@ def check_t3_daosheng(base: str, srv_src: str, runner_src: str,
         _left += _cleanup_tid(_tid)
     print("  · 已清理 T3 端到端自检任务 %d 条%s"
           % (len(set(_tids)), ("（%d 个未删净）" % _left) if _left else ""))
+
+
+def check_local_chain(base: str, srv_src: str, runner_src: str) -> None:
+    """★ 本地链路（8772 推理服务 + 8773 OpenAI 适配层）判据。
+
+    根因：旧 App 只 watch 8772；8773 死掉后整条本地链断路（引擎 CB 全开、
+    llm_calls=0），而 /api/health 与侧栏都还显示正常。本段判三件事：
+      A. /api/health 里真有 local_chain 动态读数（字段齐全，null 必带原因）；
+      B. 读数与**直接探针**不矛盾（掉线不许报绿、假读数会当场红）；
+      C. 「本地模型-全链路」预设能通过 App **既有** preview/profile 通道被选中。
+    """
+    try:
+        _, health = _get(base, "/api/health")
+    except Exception as exc:  # noqa: BLE001
+        check("★本地链路 /api/health 可读", False, str(exc))
+        return
+    snap = (health or {}).get("local_chain") or {}
+    req = ("endpoint_kind", "ok", "service_ok", "shim_ok", "service_status",
+           "service_queue_depth", "service_gpu_mem_mb", "shim_stage_channel",
+           "engine_path", "engine_version", "checked_at", "reasons",
+           "watchdog", "preset")
+    miss = [k for k in req if k not in snap]
+    check("★本地链路 A1 /api/health 带 local_chain 动态读数（字段齐全）",
+          bool(snap) and not miss, "missing=%r" % (miss,))
+    wd = snap.get("watchdog") or {}
+    check("★本地链路 A2 读数含守护状态（mode/失败计数/重启次数/指数退避/日志路径）",
+          wd.get("mode") in ("auto", "on", "off")
+          and isinstance(wd.get("failures"), dict)
+          and isinstance(wd.get("restarts"), dict)
+          and isinstance(wd.get("backoff_seconds"), list)
+          and bool(wd.get("log")),
+          json.dumps({k: wd.get(k) for k in ("mode", "failures", "restarts",
+                                             "backoff_seconds")},
+                     ensure_ascii=False)[:240])
+    check("★本地链路 A3 引擎读数透传（engine_path 指向 runner.find_engine()）",
+          bool(snap.get("engine_path"))
+          and str(snap.get("engine_path")).endswith(runner.find_engine().name)
+          and bool(snap.get("engine_version")),
+          "path=%r version=%r" % (snap.get("engine_path"),
+                                  snap.get("engine_version")))
+    reasons = snap.get("reasons") or {}
+    no_reason = [name for name, key in (("service", "service_ok"),
+                                        ("shim", "shim_ok"))
+                 if snap.get(key) is not True
+                 and not str(reasons.get(name) or "").strip()]
+    check("★本地链路 A4 非就绪段都点名原因（「没有读数就不假装有」）",
+          not no_reason, "缺原因=%r · reasons=%r"
+          % (no_reason, json.dumps(reasons, ensure_ascii=False)[:200]))
+    # ── B. 与直接探针一致性（只判「不矛盾」：读数允许滞后，但不许反向）──
+    p_svc = lchain.probe(lchain.service_url(), "/health", 1.2)
+    p_shim = lchain.probe(lchain.shim_url(), "/health", 1.2)
+    problems = []
+    if not p_svc.get("ok") and not p_svc.get("reachable"):
+        if snap.get("service_ok") is True:
+            problems.append("8772 直探硬掉线，读数却报 service_ok=True")
+    elif snap.get("service_ok") not in (True, False):
+        problems.append("8772 直探可达，读数却是 null（未测出）")
+    if not p_shim.get("ok") and not p_shim.get("reachable"):
+        if snap.get("shim_ok") is True:
+            problems.append("8773 直探硬掉线，读数却报 shim_ok=True")
+    elif snap.get("shim_ok") not in (True, False):
+        problems.append("8773 直探可达，读数却是 null（未测出）")
+    check("★本地链路 B1 读数与直接探针不矛盾（掉线不许报绿 / 可达不许报未测）",
+          not problems,
+          "；".join(problems) or "直探 svc_ok=%r/%r shim_ok=%r/%r 读数 svc=%r shim=%r"
+          % (p_svc.get("ok"), p_svc.get("reachable"),
+             p_shim.get("ok"), p_shim.get("reachable"),
+             snap.get("service_ok"), snap.get("shim_ok")))
+    # ── C. 「本地模型-全链路」预设：既有 profile/preview 通道 ──
+    pfile = lchain.PRESET_PATH
+    pflat = lchain.read_preset_flat()
+    bad = [k for k in lchain.PRESET_REQUIRED
+           if pflat.get(k) != lchain.LOCAL_PRESET_OVERRIDES[k]]
+    check("★本地链路 C1 「本地模型-全链路」预设文件存在且覆盖值正确",
+          pfile.is_file() and not bad,
+          "path=%r bad=%r" % (str(pfile), bad))
+    try:
+        _, prev = _post(base, "/api/schedule/preview",
+                        {"question": "本地链路预设判据",
+                         "profile": lchain.PRESET_NAME})
+    except Exception as exc:  # noqa: BLE001
+        prev = {"ok": False, "error": "%s: %s" % (type(exc).__name__, exc)}
+    _cli = prev.get("cli") or []
+    _hit_cfg = "--config" in _cli and any(
+        str(lchain.PRESET_NAME) in str(x) for x in _cli)
+    check("★本地链路 C2 App 既有 profile→_config 通道能选中本地全链路档"
+          "（/api/schedule/preview 拼出 --config <预设>）",
+          bool(prev.get("ok")) and _hit_cfg,
+          "ok=%r cli=%r err=%r" % (prev.get("ok"), _cli[:6], prev.get("error")))
+    check("★本地链路 C3 预设经 preview 通道解析后仍是本地端点（没被云档覆盖）",
+          bool(prev.get("ok"))
+          and "127.0.0.1:8773" in pfile.read_text(encoding="utf-8",
+                                                  errors="replace")
+          and "local-shim" in pfile.read_text(encoding="utf-8",
+                                              errors="replace"),
+          "profile=%r" % (prev.get("profile"),))
+    try:
+        _, side = _get(base, "/api/status/sidebar")
+        llm = (side or {}).get("llm") or {}
+        chain = llm.get("chain") or {}
+        check("★本地链路 C4 侧栏 llm 读数升级为两段链路（保留旧键 watchdog_ok）",
+              isinstance(chain, dict)
+              and "service_ok" in chain and "shim_ok" in chain
+              and isinstance(llm.get("watchdog_ok"), bool),
+              "chain_keys=%r" % (sorted(chain.keys())[:8],))
+    except Exception as exc:  # noqa: BLE001
+        check("★本地链路 C4 侧栏 llm 读数升级为两段链路", False, str(exc))
+    # ── D. 接线静态对账（server.py 真接到 local_chain，而不是只有新文件）──
+    lc_src = ""
+    try:
+        lc_src = (Path(__file__).resolve().parent / "local_chain.py").read_text(
+            encoding="utf-8", errors="replace")
+    except OSError:
+        lc_src = ""
+    check("★本地链路 D1 server.py 真接线（import local_chain + health/守护调用 + 显式开关）",
+          "local_chain as lchain" in srv_src
+          and "lchain.health_snapshot" in srv_src
+          and "lchain.ensure_watchdog" in srv_src
+          and "--local-chain-watchdog" in srv_src
+          and "DGTF_APP_LOCAL_CHAIN_WATCHDOG" in lc_src,
+          "srv 命中=%r" % ([x in srv_src for x in
+                            ("local_chain as lchain", "lchain.health_snapshot",
+                             "lchain.ensure_watchdog", "--local-chain-watchdog")],))
+    check("★本地链路 D2 守护状态机在两段上都可重启（8772 服务 + 8773 适配层）",
+          "dgtf_local_llm.service" in lc_src
+          and "openai_shim.py" in lc_src
+          and "def default_targets" in lc_src,
+          "见 local_chain.py default_targets/service_start_cmd/shim_start_cmd")
 
 
 def main() -> int:
@@ -3136,6 +3265,13 @@ def main() -> int:
     except Exception as _t3_exc:  # noqa: BLE001  T3 段异常必须显式翻红
         check("★T3 自检段执行未抛异常", False,
               "%s: %s" % (type(_t3_exc).__name__, _t3_exc))
+
+    # ★ 本地链路（8772 推理服务 + 8773 OpenAI 适配层）：动态读数 + 预设通道判据
+    try:
+        check_local_chain(base, srv_src, runner_src)
+    except Exception as _lc_exc:  # noqa: BLE001  本段异常必须显式翻红
+        check("★本地链路自检段执行未抛异常", False,
+              "%s: %s" % (type(_lc_exc).__name__, _lc_exc))
 
     print(f"\n结果：PASS {len(PASS)} / FAIL {len(FAIL)}")
     if FAIL:

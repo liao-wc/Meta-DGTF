@@ -51,6 +51,40 @@ def main() -> int:
     m = json.loads(urllib.request.urlopen(BASE + "/metrics", timeout=5).read().decode())
     g = int((m.get("stats") or {}).get("graph_generations") or 0)
     ck("G3 metrics.graph_generations >= 2", g >= 2, g)
+
+    # ── [V2.2.15] graph 采样 / 重复惩罚 / 复用 / base stage 适配器隔离 ──
+    # ★ 这些判据只在「新版服务」上成立；旧服务没有 graph_key 字段 ⇒ 判红而不是假绿。
+    u2 = uuid.uuid4().hex[:8]
+    base_req = {"stage": "re_anchor",
+                "text": "把这句话重述成 JSON：水的三态变化有哪些驱动因素 [%s]" % u2,
+                "max_new_tokens": 32, "timeout": 90}
+    d4 = _post({**base_req, "temperature": 0.3, "repetition_penalty": 1.2})
+    ck("G4 ★ temp>0 走 CUDA graph（此前只有 temp==0 能走）",
+       d4.get("graph") is True and d4.get("sampled") is True,
+       {k: d4.get(k) for k in ("graph", "sampled", "ms")})
+    ck("G5 ★ base stage 的 graph 是共用 base 图 + 适配器为空（未被别的 LoRA 污染）",
+       d4.get("graph_key") == "base" and not d4.get("adapter"),
+       {k: d4.get(k) for k in ("graph_key", "adapter")})
+    ck("G6 ★ repetition_penalty 透传到服务并回显（0.5B 复读治理）",
+       abs(float(d4.get("rep_pen") or 0) - 1.2) < 1e-6, d4.get("rep_pen"))
+    d5 = _post({"stage": "dual_judge",
+                "text": '{"anchor":"gs%s","candidates":[{"desc":"甲"},{"desc":"乙"}]}' % u2,
+                "max_new_tokens": 32, "temperature": 0.3, "timeout": 90})
+    ck("G7 ★ LoRA stage 用专属 graph（adapter::dual_judge）",
+       d5.get("graph_key") == "adapter::dual_judge", d5.get("graph_key"))
+    d6 = _post({**base_req, "temperature": 0.0, "text": base_req["text"] + " zero"})
+    ck("G8 temp==0 仍走 graph 且 sampled=False（贪心路径没被改坏）",
+       d6.get("graph") is True and d6.get("sampled") is False,
+       {k: d6.get(k) for k in ("graph", "sampled")})
+    m2 = json.loads(urllib.request.urlopen(BASE + "/metrics", timeout=5).read().decode())
+    st2 = m2.get("stats") or {}
+    ck("G9 ★ metrics 有 graph_sampled_generations（采样也走 graph 的证据）",
+       int(st2.get("graph_sampled_generations") or 0) >= 1,
+       st2.get("graph_sampled_generations"))
+    keys = st2.get("graph_capture_keys") or []
+    base_keys = [k for k in keys if k == "base"]
+    ck("G10 ★ base stage 只捕获一张 graph（复用生效；18 张→5 张的显存前提）",
+       len(base_keys) == 1, keys)
     print("\nTOTAL PASS %d / FAIL %d" % (len(P), len(F)))
     return 0 if not F else 1
 

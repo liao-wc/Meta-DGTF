@@ -1,54 +1,54 @@
 {
  "ok": true,
- "version": "2.0.36",
+ "version": "2.0.37",
  "cache_tags": [
-  "2.0.36-v2211"
+  "2.0.37-release"
  ],
  "checks": [
   {
    "name": "APP_VERSION 可读",
    "ok": true,
-   "detail": "2.0.36"
+   "detail": "2.0.37"
   },
   {
    "name": "静态查询串同版本",
    "ok": true,
-   "detail": "['2.0.36-v2211']"
+   "detail": "['2.0.37-release']"
   },
   {
    "name": "根 README 当前版本",
    "ok": true,
-   "detail": "2.0.36"
+   "detail": "2.0.37"
   },
   {
    "name": "App README 当前版本",
    "ok": true,
-   "detail": "2.0.36"
+   "detail": "2.0.37"
   },
   {
    "name": "PROJECT_LAYOUT 当前版本",
    "ok": true,
-   "detail": "2.0.36"
+   "detail": "2.0.37"
   },
   {
    "name": "发布说明存在",
    "ok": true,
-   "detail": "2.0.36"
+   "detail": "2.0.37"
   },
   {
    "name": "CHANGELOG 含当前 App 版本",
    "ok": true,
-   "detail": "2.0.36"
+   "detail": "2.0.37"
   },
   {
    "name": "NAMING 当前 App 版本",
    "ok": true,
-   "detail": "2.0.36"
+   "detail": "2.0.37"
   },
   {
    "name": "NAMING App 发布标签",
    "ok": true,
-   "detail": "2.0.36"
+   "detail": "2.0.37"
   }
  ]
 }

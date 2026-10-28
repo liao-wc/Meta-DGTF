@@ -5,7 +5,7 @@
 
 零额外依赖（Python 标准库 + 原生前端），**不改动引擎主文件**。
 
-**当前 app 版本：V2.0.36**（DSH 本对话实时视图对齐 DSH GUI 当前会话；引擎生产入口 V2.2.3 / `dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.3.py`，引擎发布说明见 docs/releases/V2.2.3.md）。
+**当前 app 版本：V2.0.37**（DSH 本对话实时视图对齐 DSH GUI 当前会话；引擎生产入口 V2.2.3 / `dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.3.py`，引擎发布说明见 docs/releases/V2.2.3.md）。
 
 ### 新增能力
 
@@ -142,11 +142,41 @@ dgtf_app/
 
 ---
 
+## 本地全链路（两段：8772 推理服务 + 8773 OpenAI 适配层）
+
+本地链路是**两段**服务：127.0.0.1:8772（dgtf_local_llm/service.py，Qwen2.5-0.5B + LoRA）
+与 127.0.0.1:8773（scripts/local_model/openai_shim.py，把引擎 /v1/chat/completions
+映射到 8772 /generate 的 OpenAI 协议适配层）。**8773 死掉 = 整条链断路**
+（引擎熔断、llm_calls=0），所以 App 现在把两段纳入同一守护：
+
+- **守护**：失败 2 次后按指数退避（120/300/600/900/1800s）重启；loading（模型加载中）
+  不重启（进程活着，重启只会多抢一份显存）；日志节流，写
+  outputs/_lead_audit/local_chain_watchdog.log。
+- **开关**：--local-chain-watchdog auto|on|off（默认 auto = 首次读数后按需守护，
+  与旧 8772-only 的懒启动同节奏）；env DGTF_APP_LOCAL_CHAIN_WATCHDOG 同义。
+  off = 关闭守护，**读数仍可用**（只探不重启）。
+- **读数**：GET /api/health 新增 local_chain 字段（service_ok / shim_ok /
+  service_status / service_queue_depth / service_gpu_mem_mb / shim_stage_channel /
+  engine_path / engine_version / endpoint_kind；读不到给 null + reasons，
+  不写 0 冒充读数）。侧栏 /api/status/sidebar 的 llm.chain 同源（旧键保留）。
+- **本地全链路档预设**：configs/本地模型-全链路.yaml（生成源 = dgtf_app/local_chain.py
+  的 LOCAL_PRESET_OVERRIDES，生成命令见文件头；勿手改）。选档走**既有**
+  profile/_config 通道：POST /api/tasks {"question":"…","opts":{"profile":
+  "本地模型-全链路.yaml","route":"1","rounds":"1"}}；/api/schedule/preview 可先看命令行。
+- **判据**：python dgtf_app/test_local_chain.py（43 项 + 8 变异体，不需起 server，
+  不碰真实 8772/8773）。
+- 起停脚本：scripts/local_model/start_local_llm.ps1 -Shim / stop_local_llm.ps1 -Shim
+  （默认行为不变，只有加 -Shim 才管 8773）。
+
+★ 云档默认行为不变：不改 dgtf_config.yaml、不改云端点；守护只探活/重启进程、不碰配置。
+
+---
+
 ## 自检
 
 ```bash
 python dgtf_app/server.py &        # 先起服务
-python dgtf_app/selftest.py        # 371 项端到端断言（mock 全链路）
+python dgtf_app/selftest.py        # 全量端到端断言（当前 455 项；mock 全链路）
 ```
 
 ---

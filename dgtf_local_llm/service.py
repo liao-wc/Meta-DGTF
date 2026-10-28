@@ -155,7 +155,7 @@ DUAL_JUDGE_BUSY_WAIT_S = 25.0
 #:   否则适配层压的长度和服务实际用的长度会各改各的。
 from dgtf_local_llm.gates import (  # noqa: E402
     DEFAULT_MAX_NEW, DEFAULT_MAX_NEW_FALLBACK as _FALLBACK_MAX_NEW,
-    sanitize_stage, LORA_STAGES)
+    sanitize_stage, LORA_STAGES, graph_cache_key)
 # ★ [V2.2.13] 唯一定义处迁到 gates.LORA_STAGES（判据可零 torch 引用）。
 STAGES = LORA_STAGES
 ROUTE_SYSTEM = (
@@ -258,7 +258,10 @@ class LocalEngine:
                   "dual_judge_waited": 0,
                   "batch_coalesced": 0,
                   "graph_generations": 0,
+                  "graph_sampled_generations": 0,
+                  "graph_rep_pen_generations": 0,
                   "batch_graph_generations": 0,
+                  "graph_capture_keys": [],
                       "last_ms": 0.0, "last_stage": "", "last_adapter": ""}
         # ★ [Round 65] 延迟分位数滑动窗口（最近 50 次真实生成耗时）
         import collections as _collections
@@ -291,6 +294,26 @@ class LocalEngine:
         for m, orig, fast in self.patches:
             m.forward = fast if on else orig
 
+    def _adapter_ctx(self, stage: str):
+        """该 stage 的适配器上下文：LoRA stage 切过去，base stage **明确禁用**。
+
+        ★ [V2.2.15] 此前 base stage 从不 set_adapter，PeftModel 会沿用上一次
+          激活的适配器 ⇒ 底座输出被别的 LoRA 污染（实测 re_anchor 在
+          self_check 适配器激活时多吐 "anchorText" 之类幻觉键）。base stage
+          必须显式 disable_adapter 才是真底座。
+        """
+        import contextlib as _cl
+        if self.adapter_names and stage in self.adapter_names:
+            self.model.set_adapter(self.adapter_names[stage])
+            return _cl.nullcontext()
+        if hasattr(self.model, "disable_adapter"):
+            return self.model.disable_adapter()
+        return _cl.nullcontext()
+
+    def _graph_key(self, stage: str) -> str:
+        """graph 复用 key（**唯一定义在 gates.graph_cache_key**，此处只传当前适配器表）。"""
+        return graph_cache_key(stage, tuple(self.adapter_names or ()))
+
     # ---------- 加载 ----------
     def _load(self) -> None:
         t0 = time.time()
@@ -301,8 +324,12 @@ class LocalEngine:
                 local_files_only=True)
             if self.tok.pad_token is None:
                 self.tok.pad_token = self.tok.eos_token
+            # ★ [V2.2.15] fp16 → fp32：本机 1660 Ti(TU116) 无 tensor core，
+            #   fp16 的 Linear 命中 cutlass wmma_tensorop 仿真核（实测
+            #   0.5ms/次），fp32 走 gemv（0.05ms/次）。实测单 token graph
+            #   replay 59ms→28ms（2.1x）；底座 1.9GB，6GB 卡可容。
             base = AutoModelForCausalLM.from_pretrained(
-                self.model_path, dtype=torch.float16, trust_remote_code=True,
+                self.model_path, dtype=torch.float32, trust_remote_code=True,
                 local_files_only=True, attn_implementation="sdpa")
             base.to("cuda")
             base.eval()
@@ -384,25 +411,44 @@ class LocalEngine:
     @torch.inference_mode()
     def generate(self, stage: str, input_ids, max_new_tokens: int,
                  temperature: float, deadline: float,
-                 do_warmup: bool = False, use_adapter: bool = True) -> dict:
+                 do_warmup: bool = False, use_adapter: bool = True,
+                 rep_pen: float = 0.0) -> dict:
+        """串行生成（慢路径；temp>0 的请求都走这里）。
+
+        ★ [V2.2.14] `rep_pen`：重复惩罚（HF 口径，>1 生效，0/1 = 关）。
+          实测 0.5B 底座在结构化 JSON 输出任务上确定性复读（同一短语 ×N
+          直到撞 max_new 截断 ⇒ JSON 必然非法）。只影响本慢路径；
+          temp=0 的 CUDA graph 快路径不适用（graph 捕获的是固定算子）。
+        """
         ids = input_ids.to("cuda")
         L = ids.shape[1]
         attn = torch.ones((1, L), dtype=torch.long, device="cuda")
-        if use_adapter and self.adapter_names and stage in self.adapter_names:
-            self.model.set_adapter(self.adapter_names[stage])
+        import contextlib as _cl
+        _actx = self._adapter_ctx(stage) if use_adapter else _cl.nullcontext()
         self._set_fp32(True)
-        outs = self.model(input_ids=ids, attention_mask=attn,
-                          use_cache=True)
+        with _actx:
+            outs = self.model(input_ids=ids, attention_mask=attn,
+                              use_cache=True)
         past = outs.past_key_values
         logits = outs.logits[:, -1, :].float()
         self._set_fp32(False)
         generated: list[int] = []
         logprobs: list[float] = []
         eos = self.tok.eos_token_id
+        _pen_on = bool(rep_pen and rep_pen > 1.0)
         try:
             for step in range(max_new_tokens):
                 if time.time() > deadline:
                     raise TimeoutError("生成超时")
+                if _pen_on and generated:
+                    # HF repetition_penalty 口径：已生成 token 的分数，
+                    # 正数除以惩罚、负数乘以惩罚（保序、不越界）。
+                    _seen = torch.tensor(sorted(set(generated)),
+                                         dtype=torch.long, device=logits.device)
+                    _sc = logits[0, _seen].clone()
+                    _sc = torch.where(_sc > 0, _sc / rep_pen,
+                                      _sc * rep_pen)
+                    logits[0, _seen] = _sc
                 if temperature and temperature > 0:
                     probs = torch.softmax(logits / temperature, dim=-1)
                     nxt = torch.multinomial(probs, 1)
@@ -418,8 +464,9 @@ class LocalEngine:
                 attn = torch.cat(
                     [attn, torch.ones((1, 1), dtype=torch.long,
                                       device="cuda")], dim=1)
-                o = self.model(input_ids=nxt, attention_mask=attn,
-                               past_key_values=past, use_cache=True)
+                with _actx:
+                    o = self.model(input_ids=nxt, attention_mask=attn,
+                                   past_key_values=past, use_cache=True)
                 past = o.past_key_values
                 logits = o.logits[:, -1, :].float()
         finally:
@@ -756,30 +803,46 @@ class LocalEngine:
     _GRAPH_TOTAL_BATCH = 3072  # [Round 160] 批量 graph 同步扩到 3072，避免长 prompt fallback
 
     def _graph_capture(self, stage: str) -> dict:
-        """为指定 stage 捕获一个 decode 步的 CUDA graph（惰性，每 stage 一次）。"""
+        """为指定 stage 捕获一个 decode 步的 CUDA graph（惰性，每 stage 一次）。
+
+        ★ [V2.2.15] graph 只捕获「一步前向 + logits 落静态 buffer」，采样
+          （贪心 / 温度 / 重复惩罚）全部搬到 graph 外面：
+            · 旧版把 argmax + log_softmax 捕获进 graph ⇒ 只有 temp==0 能走
+              graph；而引擎绝大多数调用 temp 0.2~0.9 ⇒ 全落慢路径
+              （实测单次 20~37s，是本地链墙钟的大头）；
+            · 新版 temp>0 也走 graph，log_softmax 也从 graph 里挪走
+              （confidence 才需要，放外面按需算）。
+        """
         import torch as _t
-        ctx = self._graph_ctx.get(stage)
+        _gkey = self._graph_key(stage)
+        ctx = self._graph_ctx.get(_gkey)
         if ctx is not None:
             return ctx
+        # ★ [V2.2.15] 捕获前必须关掉 fp32 patch：patch 会把每个 Linear 的
+        #   权重每 step 转一次 fp32（0.5B 权重 ≈1GB 搬运/token，实测
+        #   ~85ms/token）。graph 捕获的是算子图，捕获时的 patch 状态会被
+        #   固化进 replay ⇒ 必须在 fp16 状态下捕获。
+        self._set_fp32(False)
         cache = StaticCache(self.model.config, max_cache_len=self._GRAPH_TOTAL)
         in_tok = _t.zeros((1, 1), dtype=_t.long, device="cuda")
         mask = _t.zeros((1, self._GRAPH_TOTAL), dtype=_t.long, device="cuda")
         pos = _t.zeros((1,), dtype=_t.long, device="cuda")
         cp = _t.zeros((1,), dtype=_t.long, device="cuda")
-        out_tok = _t.zeros((1, 1), dtype=_t.long, device="cuda")
-        out_lp = _t.zeros((1,), dtype=_t.float32, device="cuda")
-        if self.adapter_names and stage in self.adapter_names:
-            self.model.set_adapter(self.adapter_names[stage])
+        vocab = int(getattr(self.model.config, "vocab_size", 0) or 0)
+        if vocab <= 0:
+            raise RuntimeError("model.config.vocab_size 不可用，graph 无法捕获")
+        out_logits = _t.zeros((1, vocab), dtype=_t.float32, device="cuda")
 
         def step():
             o = self.model(input_ids=in_tok, attention_mask=mask,
                            position_ids=pos, past_key_values=cache,
                            cache_position=cp, use_cache=True)
-            lg = o.logits[:, -1, :].float()
-            out_tok.copy_(lg.argmax(-1, keepdim=True))
-            out_lp.copy_(_t.log_softmax(lg, dim=-1).gather(1, out_tok).squeeze(1))
+            # 只做「拷到静态 buffer」：cast fp16→fp32 与采样都在 graph 外。
+            out_logits.copy_(o.logits[:, -1, :])
 
-        with _t.inference_mode():
+        # ★ 在目标适配器上下文里捕获：LoRA stage 捕获该适配器的算子图；
+        #   base stage 在 disable_adapter 下捕获，replay 永远是底座。
+        with _t.inference_mode(), self._adapter_ctx(stage):
             mask[0, :1] = 1
             for _ in range(3):
                 step()
@@ -793,14 +856,33 @@ class LocalEngine:
                     if getattr(lay, "keys", None) is not None:
                         lay.keys.zero_(); lay.values.zero_()
         ctx = {"cache": cache, "in_tok": in_tok, "mask": mask, "pos": pos,
-               "cp": cp, "out_tok": out_tok, "out_lp": out_lp, "graph": g,
+               "cp": cp, "out_logits": out_logits, "graph": g,
                "stage": stage}
-        self._graph_ctx[stage] = ctx
+        self._graph_ctx[_gkey] = ctx
+        try:
+            with self._stats_lock:
+                _keylist = self.stats.get("graph_capture_keys")
+                if not isinstance(_keylist, list):
+                    _keylist = []
+                if _gkey not in _keylist:
+                    _keylist.append(_gkey)
+                self.stats["graph_capture_keys"] = _keylist
+        except Exception:  # noqa: BLE001
+            pass
         return ctx
 
     def generate_graph(self, stage: str, input_ids, max_new_tokens: int,
-                       deadline: float) -> dict:
-        """单序列（B=1）CUDA graph 贪心解码；返回与 generate 同构 dict。"""
+                       deadline: float, temperature: float = 0.0,
+                       rep_pen: float = 0.0) -> dict:
+        """单序列（B=1）CUDA graph 解码；返回与 generate 同构 dict。
+
+        ★ [V2.2.15] temp>0 与重复惩罚都走 graph 快路径（采样在 graph 外）：
+          · temp==0 ⇒ argmax（与旧版逐 token 一致）；
+          · temp>0  ⇒ softmax(scores/temp) + multinomial（语义同慢路径）；
+          · rep_pen>1 ⇒ HF 口径（正分除、负分乘；只罚已生成 token）；
+          · confidence 仍按「所选 token 的 logprob 均值取 exp」，口径不变。
+        返回 dict 增加 graph / sampled / temp 三个留痕字段。
+        """
         import torch as _t
         ids = input_ids.to("cuda")
         L = int(ids.shape[1])
@@ -810,50 +892,90 @@ class LocalEngine:
         ctx = self._graph_capture(stage)
         cache = ctx["cache"]
         in_tok, mask, pos, cp = ctx["in_tok"], ctx["mask"], ctx["pos"], ctx["cp"]
-        out_tok, out_lp, g = ctx["out_tok"], ctx["out_lp"], ctx["graph"]
-        if self.adapter_names and stage in self.adapter_names:
-            self.model.set_adapter(self.adapter_names[stage])
-        with _t.inference_mode():
-            cache.reset()
-            mask.zero_()
-            o = self.model(input_ids=ids,
-                           attention_mask=_t.ones((1, L), dtype=_t.long, device="cuda"),
-                           past_key_values=cache,
-                           cache_position=_t.arange(L, device="cuda"),
-                           use_cache=True)
-            logits = o.logits[:, -1, :].float()
-            cur = int(logits.argmax(-1, keepdim=True)[0, 0])
-            lp0 = float(_t.log_softmax(logits, dim=-1)[0, cur])
-            mask[0, :L] = 1
-            generated, logprobs = [], []
-            eos = self.tok.eos_token_id
-            for i in range(max_new_tokens):
-                if time.time() > deadline:
-                    raise TimeoutError("graph 生成超时")
-                if eos is not None and cur == eos:
-                    break
-                generated.append(cur)
-                logprobs.append(lp0)
-                in_tok.fill_(cur)
-                pos.fill_(L + i); cp.fill_(L + i)
-                if L + i + 1 <= total:
-                    mask[0, L + i] = 1
-                g.replay()
-                cur = int(out_tok[0, 0])
-                lp0 = float(out_lp[0])
+        out_logits, g = ctx["out_logits"], ctx["graph"]
+        temp = float(temperature or 0.0)
+        _pen_on = bool(rep_pen and rep_pen > 1.0)
+        _vocab = int(out_logits.shape[-1])
+        eos = self.tok.eos_token_id
+        try:
+            with _t.inference_mode():
+                # prefill 走 fp32 patch（该卡 fp32 GEMM 更快）；decode 走
+                # fp16（graph 捕获的就是 fp16 算子图）。
+                self._set_fp32(True)
+                cache.reset()
+                mask.zero_()
+                with self._adapter_ctx(stage):
+                    o = self.model(input_ids=ids,
+                                   attention_mask=_t.ones(
+                                       (1, L), dtype=_t.long, device="cuda"),
+                                   past_key_values=cache,
+                                   cache_position=_t.arange(L, device="cuda"),
+                                   use_cache=True)
+                cur_logits = o.logits[:, -1, :].float()
+                self._set_fp32(False)
+                mask[0, :L] = 1
+                # 采样状态全放 GPU：逐 token 只同步一次（取 token id 判 EOS）。
+                pen_vec = _t.ones(_vocab, dtype=_t.float32, device="cuda")
+                gen = _t.empty((max_new_tokens,), dtype=_t.long, device="cuda")
+                lps = _t.empty((max_new_tokens,), dtype=_t.float32,
+                               device="cuda")
+                n = 0
+                while n < max_new_tokens:
+                    if time.time() > deadline:
+                        raise TimeoutError("graph 生成超时")
+                    scores = cur_logits[0]
+                    if _pen_on and n > 0:
+                        scores = _t.where(scores > 0, scores / pen_vec,
+                                          scores * pen_vec)
+                    if temp > 0:
+                        nxt = _t.multinomial(
+                            _t.softmax(scores / temp, dim=-1), 1)
+                    else:
+                        nxt = scores.argmax(-1).reshape(1)
+                    cur = int(nxt[0])
+                    gen[n] = cur
+                    lps[n] = _t.log_softmax(scores, dim=-1)[cur]
+                    n += 1
+                    if eos is not None and cur == eos:
+                        break
+                    if n >= max_new_tokens:
+                        break
+                    if _pen_on:
+                        # O(1)：已生成 token 的分数下一步按同一 rep_pen 罚
+                        pen_vec[cur] = float(rep_pen)
+                    in_tok.fill_(cur)
+                    pos.fill_(L + n - 1)
+                    cp.fill_(L + n - 1)
+                    if L + n - 1 < total:
+                        mask[0, L + n - 1] = 1
+                    g.replay()
+                    cur_logits = out_logits
+        except TimeoutError:
+            self._set_fp32(True)
+            raise
+        except Exception:
+            self._set_fp32(True)
+            raise
+        text = self.tok.decode(gen[:n].tolist(), skip_special_tokens=True)
+        conf = (round(float(_t.exp(lps[:n].mean())), 4) if n > 0 else None)
+        self._set_fp32(True)
         try:
             with self._stats_lock:
                 self.stats["graph_generations"] = int(
                     self.stats.get("graph_generations", 0)) + 1
+                if temp > 0:
+                    self.stats["graph_sampled_generations"] = int(
+                        self.stats.get("graph_sampled_generations", 0)) + 1
+                if _pen_on:
+                    self.stats["graph_rep_pen_generations"] = int(
+                        self.stats.get("graph_rep_pen_generations", 0)) + 1
         except Exception:  # noqa: BLE001
             pass
-        self._set_fp32(True)
-        text = self.tok.decode(generated, skip_special_tokens=True)
-        conf = None
-        if logprobs:
-            conf = round(float(_t.tensor(logprobs).mean().exp()), 4)
         return {"text": text, "confidence": conf,
-                "gen_tokens": len(generated), "prompt_tokens": L}
+                "gen_tokens": int(n), "prompt_tokens": L,
+                "graph": True, "sampled": bool(temp > 0),
+                "graph_key": self._graph_key(stage),
+                "temp": round(temp, 3)}
 
     def _handle(self, req: dict) -> dict:
         t0 = time.time()
@@ -866,12 +988,19 @@ class LocalEngine:
             temp = float(temp)
         except (TypeError, ValueError):
             temp = 0.0
+        # ★ [V2.2.14] 可选重复惩罚（默认 0 = 关；>1 生效）。
+        rep_pen = req.get("repetition_penalty", 0.0)
+        try:
+            rep_pen = float(rep_pen)
+        except (TypeError, ValueError):
+            rep_pen = 0.0
+        rep_pen = max(0.0, min(2.0, rep_pen))
         # ---------- LRU 缓存（重复请求 0 GPU 开销） ----------
         try:
             key = hashlib.md5(json.dumps(
                 {k: req.get(k) for k in (
                     "stage", "entry", "variant", "max_new_tokens",
-                    "temperature", "text", "messages")},
+                    "temperature", "repetition_penalty", "text", "messages")},
                 sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()
         except Exception:  # noqa: BLE001
             key = None
@@ -889,14 +1018,21 @@ class LocalEngine:
                        truncation=True, max_length=2048)["input_ids"]
         deadline = time.time() + timeout
         out = None
-        if temp == 0 and int(ids.shape[0]) == 1:
+        # ★ [V2.2.15] graph 快路径不再限 temp==0：采样在 graph 外做，
+        #   temp>0 与 rep_pen 都支持（这是本地链墙钟的大头）。
+        if int(ids.shape[0]) == 1:
             try:
-                out = self.generate_graph(stage, ids, max_new, deadline)
+                out = self.generate_graph(stage, ids, max_new, deadline,
+                                          temperature=temp, rep_pen=rep_pen)
+            except TimeoutError:
+                # graph 内超时=真超时：再走一遍慢路径只会白付一次 prefill。
+                raise
             except Exception as _ge:  # noqa: BLE001
                 print("[graph] fallback:", type(_ge).__name__, _ge, flush=True)
                 out = None
         if out is None:
-            out = self.generate(stage, ids, max_new, temp, deadline)
+            out = self.generate(stage, ids, max_new, temp, deadline,
+                                rep_pen=rep_pen)
         text = out["text"]
         parsed = try_parse_json(text)
         salvaged = False
@@ -906,6 +1042,10 @@ class LocalEngine:
         res = {"ok": True, "stage": stage, "salvaged": salvaged,
                "text": text, "json": parsed,
                "ms": round((time.time() - t0) * 1000, 1),
+               "rep_pen": round(rep_pen, 3),
+               "graph": bool(out.get("graph")),
+               "sampled": bool(out.get("sampled")),
+               "graph_key": out.get("graph_key"),
                "adapter": self.adapter_paths.get(stage),
                "confidence": out["confidence"],
                "gen_tokens": out["gen_tokens"],

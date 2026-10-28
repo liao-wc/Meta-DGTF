@@ -38,6 +38,7 @@ class _Up(BaseHTTPRequestHandler):
              "gen_tokens": 7, "confidence": 0.8, "cached": False, "ms": 1.0}
     seen_stage = []
     seen_max_new = []
+    seen_reppen = []
     fail = False
 
     def log_message(self, *a):
@@ -48,6 +49,7 @@ class _Up(BaseHTTPRequestHandler):
         body = json.loads(self.rfile.read(n).decode("utf-8"))
         type(self).seen_stage.append(body.get("stage"))
         type(self).seen_max_new.append(body.get("max_new_tokens"))
+        type(self).seen_reppen.append(body.get("repetition_penalty"))
         if type(self).fail:
             self.send_response(500)
             self.send_header("Content-Length", "0")
@@ -219,6 +221,22 @@ def main() -> int:
                obj4["choices"][0].get("finish_reason"))
         finally:
             _Up.reply = _saved_reply
+
+        # ── S5 [V2.2.14] base-model stage 自动带重复惩罚 ──
+        #   0.5B 底座在结构化 JSON 任务上确定性复读 ⇒ 撞上限 ⇒ JSON 截断。
+        #   LoRA stage 不带（训练分布内不复读；多走 temp=0 graph 快路径）。
+        from dgtf_local_llm.gates import BASE_STAGE_REP_PEN  # noqa: E402
+        _Up.seen_reppen.clear()
+        _post(18773, {"model": "local",
+                      "messages": [{"role": "user", "content": "u"}],
+                      "stage": "re_anchor", "max_tokens": 500})
+        _post(18773, {"model": "local",
+                      "messages": [{"role": "user", "content": "u"}],
+                      "stage": "self_check", "max_tokens": 500})
+        ck("S5a base-model stage 带默认重复惩罚（治复读）",
+           _Up.seen_reppen[0] == BASE_STAGE_REP_PEN, _Up.seen_reppen)
+        ck("S5b LoRA stage 不带惩罚（不改适配器行为）",
+           _Up.seen_reppen[1] == 0.0, _Up.seen_reppen)
 
         # ── S4 上游坏掉 ⇒ 必须显式失败，不能 200 空内容 ──
         _Up.fail = True

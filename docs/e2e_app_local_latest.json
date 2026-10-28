@@ -1,9 +1,9 @@
 {
   "ok": true,
   "question": "成年人正常心率是多少次每分钟",
-  "wall_sec": 25.0,
+  "wall_sec": 124.9,
   "exit": 0,
-  "packed": "D:\\Meta-DGTF-道生三阶模型\\outputs\\_e2e_local\\20261028_112619_成年人正常心率是多少次每分钟.packed.json",
+  "packed": "D:\\Meta-DGTF-道生三阶模型\\outputs\\_e2e_local\\20261028_135932_成年人正常心率是多少次每分钟.packed.json",
   "quality_keys": [
     "alert",
     "answer_gates",
@@ -47,11 +47,11 @@
   ],
   "answer_gates": {
     "schema": "dgtf.answer_gates.v1",
-    "verdict": "caveat",
+    "verdict": "blocked",
     "relevance": {
-      "verdict": "ok",
-      "reason": "数值题：答案已给出数值",
-      "anchor": "digit",
+      "verdict": "empty",
+      "reason": "答案为空",
+      "anchor": "",
       "kind": "numeric"
     },
     "agreement": {
@@ -63,67 +63,85 @@
   },
   "llm_by_stage": [
     {
-      "stage": "manifest",
-      "calls": 6,
-      "tokens": 13632,
-      "ms": 105
+      "stage": "dual_judge",
+      "calls": 3,
+      "tokens": 6734,
+      "ms": 24776
     },
     {
       "stage": "expand_pair_merged",
       "calls": 2,
       "tokens": 4544,
-      "ms": 46
+      "ms": 16719
+    },
+    {
+      "stage": "ing",
+      "calls": 2,
+      "tokens": 4395,
+      "ms": 11851
     },
     {
       "stage": "expand_pair_merged_fixup",
       "calls": 2,
-      "tokens": 4544,
-      "ms": 35
+      "tokens": 4365,
+      "ms": 10988
     },
     {
-      "stage": "probe_research",
+      "stage": "manifest",
       "calls": 2,
-      "tokens": 4544,
-      "ms": 50
+      "tokens": 3900,
+      "ms": 6855
     },
     {
       "stage": "re_anchor",
       "calls": 2,
-      "tokens": 4544,
-      "ms": 26
+      "tokens": 3764,
+      "ms": 1801
+    },
+    {
+      "stage": "he_amps",
+      "calls": 1,
+      "tokens": 2238,
+      "ms": 7263
+    },
+    {
+      "stage": "self_check",
+      "calls": 1,
+      "tokens": 2112,
+      "ms": 3766
     },
     {
       "stage": "adjudicate_sub_tristate_multi",
       "calls": 3,
-      "tokens": 1977,
-      "ms": 62
+      "tokens": 1490,
+      "ms": 6402
     },
     {
       "stage": "json_repair",
       "calls": 3,
-      "tokens": 1308,
+      "tokens": 718,
       "ms": 0
-    },
-    {
-      "stage": "decompose_hybrid",
-      "calls": 1,
-      "tokens": 839,
-      "ms": 25
-    },
-    {
-      "stage": "assess_decidability",
-      "calls": 1,
-      "tokens": 724,
-      "ms": 29
     },
     {
       "stage": "check_input_sanity",
       "calls": 1,
-      "tokens": 668,
-      "ms": 1133
+      "tokens": 672,
+      "ms": 3107
+    },
+    {
+      "stage": "assess_decidability",
+      "calls": 1,
+      "tokens": 588,
+      "ms": 1615
+    },
+    {
+      "stage": "decompose_koan",
+      "calls": 1,
+      "tokens": 339,
+      "ms": 1375
     }
   ],
-  "llm_calls": 23,
+  "llm_calls": 24,
   "checks": 18,
   "fails": []
 }

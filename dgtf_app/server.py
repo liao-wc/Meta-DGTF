@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "2.0.36"
+APP_VERSION = "2.0.37"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -84,6 +84,7 @@ import dashboard as dash  # noqa: E402
 import daosheng_mode  # noqa: E402  ★ T3 道生专属模式（三体动态最优计划）
 import engine_runner as runner  # noqa: E402
 import library as lib  # noqa: E402
+import local_chain as lchain  # noqa: E402  ★ 本地链路守护（8772 推理 + 8773 适配）
 import outputs_index as oi  # noqa: E402
 import params as prm  # noqa: E402
 import v2_online  # noqa: E402
@@ -5772,6 +5773,12 @@ def _app_health_cached():
     if _HEALTH_CACHE["val"] is not None and (
             _t.time() - float(_HEALTH_CACHE["t"] or 0.0) < _HEALTH_CACHE_TTL):
         return _HEALTH_CACHE["val"]
+    # ★ auto 模式：首次读数时才拉起守护线程（与旧 8772-only watchdog 同节奏，
+    #   不给「只跑云档的实例」强加后台进程）。off 模式下这里显式不启动。
+    try:
+        _local_llm_watchdog_ensure()
+    except Exception:  # noqa: BLE001  守护起不来不该拖垮 health
+        pass
     val = _app_health()
     _HEALTH_CACHE["t"] = _t.time()
     _HEALTH_CACHE["val"] = val
@@ -5796,104 +5803,68 @@ def _sidebar_outputs_cached():
         return _SIDEBAR_OUT["val"] or {"count": 0, "total_mb": 0, "loading": True}
 
 
-_LOCAL_WD = {"ok": False, "checked_at": 0.0, "failures": 0, "last_start": 0.0,
-             "status": "unknown", "last_error": ""}
-_LOCAL_WD_THREAD = None
-_LOCAL_WD_LOCK = None
+# ══ 本地链路守护（8772 推理服务 + 8773 OpenAI 适配层）═════════════════════
+# ★ 为什么扩成两段：旧版只 watch 8772。实测 8773（OpenAI 适配层）死掉后整条
+#   本地链断路（引擎 circuit breaker 全开、llm_calls=0），而 App 完全不知情。
+#   watchdog 状态机 + 健康读数在 dgtf_app/local_chain.py（纯标准库、可独立单测），
+#   这里只做接线 —— 本段可整块回滚（换回旧实现即可）。
+_LOCAL_CHAIN_MODE = {"mode": lchain.resolve_mode()}
 
 
-def _local_llm_probe_once():
-    import json as _j
-    import time as _t
-    import urllib.request as _u
-    now = _t.time()
-    ok = False
-    status = "offline"
-    err = ""
+def _local_chain_mode() -> str:
+    """本地链路守护模式：off / auto / on（main() 里按 CLI/env 落定）。"""
+    return lchain.resolve_mode(_LOCAL_CHAIN_MODE.get("mode"))
+
+
+def _local_chain_snapshot(engine=None, version=""):
+    """本地链路动态读数（/api/health 用）；读数失败绝不拖垮 health。"""
     try:
-        with _u.urlopen("http://127.0.0.1:8772/health", timeout=1.2) as r:
-            d = _j.loads(r.read().decode("utf-8", errors="replace"))
-        status = str(d.get("status") or d.get("state") or "")
-        ok = status.lower() in ("ready", "ok", "healthy", "running") or bool(d.get("ok"))
-    except Exception as exc:
-        err = "%s: %s" % (type(exc).__name__, exc)
-    _LOCAL_WD.update({"ok": bool(ok), "checked_at": now, "status": status,
-                      "last_error": "" if ok else err})
-    return ok
+        base = ""
+        try:
+            base = str(prm.effective_flat().get("api.base_url") or "")
+        except Exception:  # noqa: BLE001
+            base = ""
+        base = base or os.environ.get("DGTF_BASE_URL", "")
+        return lchain.health_snapshot(
+            engine_path=str(engine or ""), engine_version=str(version or ""),
+            endpoint_kind=lchain.classify_endpoint(base))
+    except Exception as exc:  # noqa: BLE001
+        return {"ok": None, "endpoint_kind": "unknown",
+                "error": "%s: %s" % (type(exc).__name__, exc),
+                "reasons": {"local_chain": "读数失败"}}
 
 
-def _local_llm_start_once():
-    import subprocess as _sp
-    import time as _t
-    py = Path(__file__).resolve().parent.parent / "local_model" / "envs" / "dgtf_llm_env" / "Scripts" / "python.exe"
-    svc = Path(__file__).resolve().parent.parent / "dgtf_local_llm" / "service.py"
-    if not py.is_file() or not svc.is_file():
-        return False
-    log = Path(__file__).resolve().parent.parent / "outputs" / "_lead_audit" / "local_llm_watchdog.log"
-    log.parent.mkdir(parents=True, exist_ok=True)
-    try:
-        flags = getattr(_sp, "CREATE_NO_WINDOW", 0)
-        with log.open("a", encoding="utf-8", errors="replace") as fh:
-            _sp.Popen([str(py), str(svc), "--port", "8772"],
-                      cwd=str(svc.parent.parent), stdout=fh, stderr=fh,
-                      creationflags=flags)
-        _LOCAL_WD["last_start"] = _t.time()
-        return True
-    except Exception as exc:
-        _LOCAL_WD["last_error"] = "start failed: %s: %s" % (type(exc).__name__, exc)
-        return False
+def _local_llm_watchdog_ensure() -> bool:
+    """确保**两段**本地服务的守护线程在跑（auto/on；off 时显式不启动）。
 
-
-def _local_llm_watchdog_loop():
-    import time as _t
-    while True:
-        ok = _local_llm_probe_once()
-        if not ok:
-            _LOCAL_WD["failures"] = int(_LOCAL_WD.get("failures") or 0) + 1
-            if (_LOCAL_WD["failures"] >= 2
-                    and _t.time() - float(_LOCAL_WD.get("last_start") or 0) > 120):
-                _local_llm_start_once()
-        else:
-            _LOCAL_WD["failures"] = 0
-        _t.sleep(30)
-
-
-def _local_llm_watchdog_ensure():
-    global _LOCAL_WD_THREAD
-    if _LOCAL_WD_THREAD is not None and _LOCAL_WD_THREAD.is_alive():
-        return
-    import threading as _th
-    _LOCAL_WD_THREAD = _th.Thread(target=_local_llm_watchdog_loop,
-                                    daemon=True, name="local-llm-watchdog")
-    _LOCAL_WD_THREAD.start()
+    ★ 保留旧函数名：侧栏/健康读数的调用点不动，行为从「只 watch 8772」
+      升级为「8772 + 8773 同一守护」。
+    """
+    return lchain.ensure_watchdog(_local_chain_mode())
 
 
 _SIDEBAR_LLM = {"t": 0.0, "val": None}
 
 
 def _sidebar_llm_cached():
+    """侧栏「本地 LLM」灯：读两段链路状态（10s 缓存；保留旧响应键不破前端）。"""
     import time as _t
-    import json as _j
-    import urllib.request as _u
     _local_llm_watchdog_ensure()
     now = _t.time()
     if _SIDEBAR_LLM["val"] is not None and now - float(_SIDEBAR_LLM["t"] or 0) < 10:
         return _SIDEBAR_LLM["val"]
-    ok = False
-    status = "offline"
-    try:
-        with _u.urlopen("http://127.0.0.1:8772/health", timeout=1.2) as r:
-            d = _j.loads(r.read().decode("utf-8", errors="replace"))
-        status = str(d.get("status") or d.get("state") or "")
-        ok = status.lower() in ("ready", "ok", "healthy", "running") or bool(d.get("ok"))
-    except Exception:
-        ok = False
+    snap = _local_chain_snapshot()
+    ok = bool(snap.get("service_ok"))
+    wd = snap.get("watchdog") or {}
     val = {"backends": ([{"ok": True, "name": "local-qwen05b"}] if ok else []),
-           "watchdog_ok": bool(_LOCAL_WD.get("ok") or ok),
-           "watchdog": {"ok": bool(_LOCAL_WD.get("ok") or ok),
-                        "failures": _LOCAL_WD.get("failures"),
-                        "last_start": _LOCAL_WD.get("last_start")},
-           "status": status, "checked_at": now}
+           # ★ 旧键 watchdog_ok 语义没变（本地推理服务可用），新增 chain = 两段读数
+           "watchdog_ok": ok,
+           "watchdog": {"ok": ok, "mode": wd.get("mode"),
+                        "failures": wd.get("failures"),
+                        "restarts": wd.get("restarts")},
+           "status": snap.get("service_status") or ("offline" if not ok else "ready"),
+           "checked_at": now,
+           "chain": snap}
     _SIDEBAR_LLM["t"] = now; _SIDEBAR_LLM["val"] = val
     return val
 
@@ -6028,6 +5999,10 @@ def _app_health():
                    "max_tokens": flat.get("max_tokens")},
         "daemon": {"running": bool(daemon.get("running")), "pid": daemon.get("pid"),
                    "last_log": daemon.get("last_log")},
+        # ★ 本地链路动态读数（8772 推理服务 + 8773 OpenAI 适配层）：
+        #   endpoint_kind=local 时引擎的 api.base_url 指向本地链路；read 不到
+        #   的字段给 null + reasons，不写 0、不假装有（见 local_chain.health()）。
+        "local_chain": _local_chain_snapshot(eng, ver),
         "eml": _eml_status(),
         "mapping": {
             "engine_layers": "→ /api/chats /api/tasks /api/outputs/layers",
@@ -10741,6 +10716,11 @@ def main() -> int:
                     help="Agent 守护轮询间隔秒（默认 %(default)s）")
     ap.add_argument("--agent-knowledge-every", type=int, default=0,
                     help="每 N 轮刷新技术知识；0=关（默认 0，避免自动联网）")
+    ap.add_argument("--local-chain-watchdog", choices=("auto", "on", "off"),
+                    default=None,
+                    help="本地链路守护（8772 推理服务 + 8773 OpenAI 适配层）："
+                         "auto=首次读数后按需守护（默认）、on=启动即守护、"
+                         "off=显式关闭（读数仍可用，只不重启进程）")
     args = ap.parse_args()
     global _APP_HTTPS, _APP_PORT
     _APP_HTTPS = bool(args.https)
@@ -10841,6 +10821,20 @@ def main() -> int:
         print("  访问口令已启用：网址要带 ?t=<口令>（首次打开会自动记进 cookie）")
     print(f"  引擎：{runner.find_engine().name}")
     print(f"  mock：{mock}    并发上限：{runner.MAX_CONCURRENT}")
+    # ★ 本地链路守护模式：CLI 优先，其次 env DGTF_APP_LOCAL_CHAIN_WATCHDOG。
+    #   默认 auto = 首次读数后按需守护（旧 8772-only watchdog 也是懒启动）；
+    #   on = 启动即守护两段；off = 显式关闭守护（/api/health 读数照旧可用）。
+    try:
+        _lc_mode = lchain.set_mode(
+            args.local_chain_watchdog if args.local_chain_watchdog is not None
+            else os.environ.get(lchain.ENV_MODE))
+        _LOCAL_CHAIN_MODE["mode"] = _lc_mode
+        if _lc_mode == "on":
+            _local_llm_watchdog_ensure()
+        print("  本地链路守护：%s（8772 推理服务 + 8773 OpenAI 适配层）%s"
+              % (_lc_mode, "" if _lc_mode != "off" else " · 只读数不重启"))
+    except Exception as _e:  # noqa: BLE001
+        print("  本地链路守护初始化失败（忽略）：%s" % _e)
 
     try:
         _pol0 = _schedule_policy_load()

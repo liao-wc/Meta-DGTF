@@ -46,7 +46,8 @@ if _ROOT not in sys.path:
 #:   适配层自己再抄一份必然漂移：服务按 64 训练、适配层按 2048 请求，
 #:   于是每次调用都要多付 ~2000 个 token 的慢路径解码钱。
 from dgtf_local_llm.gates import (  # noqa: E402
-    cap_max_new, sanitize_stage, finish_reason_for)
+    cap_max_new, sanitize_stage, finish_reason_for,
+    LORA_STAGES, BASE_STAGE_REP_PEN)
 #: prompt 特征 → 本地 stage。顺序即优先级。
 _STAGE_HINTS: List[Tuple[str, str]] = [
     ("双判", "dual_judge"),
@@ -134,13 +135,16 @@ def flatten_messages(messages: Any) -> Tuple[str, str]:
 
 
 def call_upstream(stage: str, text: str, max_new_tokens: int,
-                  temperature: float, timeout: float) -> Dict[str, Any]:
+                  temperature: float, timeout: float,
+                  rep_pen: float = 0.0) -> Dict[str, Any]:
     body = json.dumps({
         "stage": stage,
         "text": text,
         "max_new_tokens": max(1, int(max_new_tokens)),
         "temperature": float(temperature),
         "timeout": float(timeout),
+        # ★ [V2.2.14] 重复惩罚透传（0 = 关，服务端默认也是关）。
+        "repetition_penalty": float(rep_pen),
     }, ensure_ascii=False).encode("utf-8")
     req = urllib.request.Request(
         UPSTREAM.rstrip("/") + "/generate", data=body,
@@ -222,9 +226,33 @@ class Handler(BaseHTTPRequestHandler):
         # 本地服务 timeout 上限 120；留出余量防引擎侧先超时
         timeout = 110.0
 
+        # ★ [V2.2.14] base-model stage 默认带重复惩罚：0.5B 底座在结构化
+        #   JSON 任务上确定性复读（同一短语 ×N 撞上限 ⇒ JSON 必截断），
+        #   实测见 gates.BASE_STAGE_REP_PEN 注释。LoRA stage 不带
+        #   （训练分布内不复读；且多走 temp=0 graph 快路径，惩罚不适用）。
+        _rep_pen = 0.0 if stage in LORA_STAGES else BASE_STAGE_REP_PEN
         t0 = time.monotonic()
         try:
-            up = call_upstream(stage, system + "\n\n" + user, max_new, temp, timeout)
+            up = call_upstream(stage, system + "\n\n" + user, max_new, temp,
+                               timeout, rep_pen=_rep_pen)
+            # ★ [诊断 · env 门控] DGTF_SHIM_DUMP=<path> 时把每条请求+上游
+            #   原文落盘（JSONL 追加）。默认完全不写。用于「引擎实际发的
+            #   prompt 长什么样」这类只能看真流量的诊断。
+            _dump = os.environ.get("DGTF_SHIM_DUMP") or ""
+            if _dump:
+                try:
+                    with open(_dump, "a", encoding="utf-8") as _f:
+                        _f.write(json.dumps({
+                            "ts": time.time(), "stage": stage,
+                            "temp": temp, "max_new": max_new,
+                            "rep_pen": _rep_pen,
+                            "system": (system or "")[:4000],
+                            "user": (user or "")[:6000],
+                            "upstream_text": str(up.get("text") or "")[:3000],
+                            "gen_tokens": up.get("gen_tokens"),
+                        }, ensure_ascii=False) + "\n")
+                except Exception:  # noqa: BLE001
+                    pass
         except urllib.error.HTTPError as e:
             # ★ 上游的 503 body 里带着「队列超时 vs 生成超时」的区分，
             #   必须透传 —— 丢掉它，引擎侧就只剩一个「503」，没法判断该压

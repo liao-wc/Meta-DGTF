@@ -1,0 +1,339 @@
+# ============================================================
+# Meta-DGTF · 本地模型全链路档（App 可选预设）
+# ============================================================
+# 链路：App/引擎 → 127.0.0.1:8773（OpenAI 适配层）→ 127.0.0.1:8772（本地推理）
+# 用途：零 API 成本跑通 App→引擎→本地模型全链路；读数结构/成本归因回归。
+#       ★ 本地 0.5B 的答案质量不能当生产质量看（判的是链路，不是质量）。
+#
+# ★ 本文件是**生成产物**，不要手改：
+#   生成源 = dgtf_app/local_chain.py 的 LOCAL_PRESET_OVERRIDES
+#   起点   = 出厂 dgtf_config.yaml（不吸收用户配置）
+#   复跑   = python -c "import sys; sys.path.insert(0,'dgtf_app'); import local_chain; local_chain.write_local_preset()"
+#   判据   = python dgtf_app/test_local_chain.py（含「生成结果与文件逐字相同」）
+#
+# App 选档方式（既有 preset/config 通道，不新增机制）：
+#   POST /api/tasks {"question": "…", "opts": {"profile": "本地模型-全链路.yaml",
+#                    "route": "1", "rounds": "1"}}
+#   或 POST /api/schedule/preview {"question": "…", "profile": "本地模型-全链路.yaml"}
+all_on: false
+max_tokens: 2000000
+scheduler:
+  v2:
+    enabled: true
+    shadow: true
+    mode: joint
+    eml_path: dgtf_memory/v2_events.jsonl
+    contract_gate: warn
+    allow_anon: false
+    takeover: true
+    core_gate: warn
+auto:
+  enabled: true
+  allow_route_trim: false
+  fact_flow:
+    rounds_max: 2
+  history_limit: 200
+  history_md: true
+  history_batch: true
+  history_halflife_days: 14
+  bandit:
+    enabled: false
+    cost_w: 0.3
+    c: 1.0
+runtime:
+  live_checkpoint: true
+  ckpt_interval: 30.0
+  web: auto
+  thinking: auto
+  effort: auto
+external_input:
+  enabled: true
+  file_paths: []
+  fallback_web: true
+claim_gap:
+  enabled: true
+api:
+  key: local-shim
+  base_url: http://127.0.0.1:8773/v1
+  default_model: local
+  reasoner_model: local
+  thinking:
+    default: enabled
+    reasoner: enabled
+    effort: low
+    stages:
+      auto_plan: enabled
+      plan_orientation: enabled
+      plan_resources: enabled
+      adjudicate_sub_tristate: enabled
+      dual_judge: enabled
+      assess_decidability: disabled
+      assess_decidability_from_pool_view: disabled
+      re_evaluate_pool: disabled
+      decide_parallel_mode: disabled
+      check_input_sanity: disabled
+      check_structure_saturation: disabled
+      re_anchor: disabled
+      ask_missing_polarity: disabled
+      decompose_normal: enabled
+      decompose_hybrid: disabled
+      decompose_koan: disabled
+      decompose_from_pool: disabled
+      probe_research: disabled
+      probe_duel: disabled
+      probe_meta: disabled
+      phase_probe: disabled
+      self_check: disabled
+      settle_research: disabled
+      tool_preflight: disabled
+      adjudicate_sub_tristate_multi: disabled
+      tri_test_retest: disabled
+      anchor_crosscheck: disabled
+  timeout: 240
+  max_retries: 3
+  retry_backoff: 1.8
+  json_repair: true
+output:
+  save_dir: outputs/_e2e_local
+  verbose: true
+  dump_rounds: false
+  answer_gates:
+    enabled: true
+    block: false
+  show_dual_judge: true
+  show_ing: false
+  show_manifest: false
+  self_check: true
+  show_probe_diag: true
+actions:
+  input_sanity: true
+  assess_decidability: true
+  decompose_question: true
+  decidability_source: pool
+  decompose_source: pool
+  tri_multi_vote: true
+  tri_vote_retry_empty: 1
+  parallel_mode: auto
+  parallel_expand: true
+  merge_expand: true
+  l0_v2_curate: true
+  l0_v2_mode: archive
+  all_v2: true
+  one_v2: true
+  both_v2: true
+  zero_v2: true
+  tri_test_retest: false
+  parallel_warmup_rounds: 3
+  pipeline_gate_timeout: 900
+  re_anchor: true
+  expand_yin: true
+  expand_yang: true
+  dual_judge: true
+  ing: true
+  he: true
+  phase_probe: true
+  manifest: true
+  landing_decision: true
+  self_check: true
+  re_evaluate_pool: true
+  settle_research: true
+sim:
+  dedup: 0.9
+  dedup_susp: 0.85
+  cluster: 0.7
+probe:
+  min_gain: 0.5
+  select_n: 5
+  submodular: true
+  stop_floor: 0.02
+  marginal_floor: 0.02
+belief:
+  revoke_sources: 2
+  sem_entropy_thr: rel
+  merge_semantic: true
+  merge_sim: 0.85
+duty:
+  span_tolerant: true
+  floor: 0.15
+  tau: 0.02
+  patience: 2
+  remedy_rounds: 1
+stop:
+  gain_floor: 0.0
+  anytime_alpha: 0.05
+  anytime_mode: hoeffding
+playbook:
+  llm_feedback:
+    enabled: true
+    max_candidates: 3
+  mode: 'on'
+  dir: ''
+  top_k: 3
+  promote_n: 3
+  halflife_days: 14.0
+  learn_from_anon: false
+  argumentation:
+    enabled: true
+    semantics: grounded
+autotune:
+  min_n: 2
+  quality_tau: 0.05
+  out: ''
+memory:
+  eml_semantic_merge: false
+  eml_adaptive: false
+  channels:
+  - content
+  - context
+  - self
+  self_layers: 4
+  self_layers_per_entry: 2
+  shape_items: 10
+  shape_chars: 1200
+  carry_feedback: true
+external_anchor:
+  enabled: true
+  path: ''
+  max_items: 12
+  retriever: snapshot
+  api_key_env: TAVILY_API_KEY
+  cache_ttl_hours: 24
+  per_round: 2
+  tier_floor: 2
+  crosscheck: true
+  answers_min_len: 6
+  answers_max_n: 5
+  as_evidence: gate
+  triage: false
+web_search:
+  enabled: false
+  backend: deepseek
+  api_key_env: DGTF_API_KEY
+  timeout_seconds: 30
+  max_retries: 2
+  backoff_seconds: 1.8
+  cache_ttl_hours: 24
+  quota:
+    per_stage_round: 2
+    per_stage_total: 8
+    per_run_total: 30
+  stages:
+    practice_term_calibration: false
+    research_decompose: true
+    research_evidence: true
+    research_precedent: true
+    duel_arbitration: true
+    meta_clean_check: true
+    stop_criteria: false
+    plan_orientation: false
+    plan_resources: false
+    auto_plan: false
+    assess_decidability: false
+    re_anchor: false
+    expand_pair: false
+    expand_pair_merged_once: false
+    dual_judge: false
+    ing: false
+    he: false
+    decompose_normal: false
+    decompose_hybrid: false
+    decompose_koan: false
+    decompose_from_pool: false
+    probe_research: false
+    probe_duel: false
+    probe_meta: false
+    phase_probe: false
+    ask_missing_polarity: false
+    self_check: false
+    manifest: false
+    assess_decidability_from_pool_view: false
+    check_structure_saturation: false
+    re_evaluate_pool: false
+    settle_research: false
+    decide_parallel_mode: false
+    adjudicate_sub_tristate_multi: false
+    tri_test_retest: false
+    adjudicate_sub_tristate: false
+    anchor_crosscheck: false
+    check_input_sanity: false
+  as_evidence: crosscheck
+  tier_floor: 3
+  auto_disable_after_failures: 3
+  relax_force: false
+  tier_confirmed: {}
+  tier_proposal: false
+  domain_tier_rules:
+  - - .gov.cn
+    - 1
+  - - .gov
+    - 1
+  - - .edu
+    - 2
+  - - iso.org
+    - 1
+  - - standard
+    - 1
+  - - wikipedia.org
+    - 3
+  - - blog
+    - 4
+  - - forum
+    - 4
+spiral:
+  shape_limit: 8
+  soft_max: 2
+  hard_max: 12
+  all_extra_rounds: 1
+  stop_similarity: 0.7
+  stable_need: 3
+  stable_layers: 2
+  batch_similarity: 0.7
+  meta_cover_similarity: 0.7
+  idle_limit: 2
+  round_idle_limit: 2
+  new_item_similarity: 0.7
+  new_item_overlap: 0.7
+  thread_new_similarity: 0.7
+  thread_new_overlap: 0.7
+  structure_saturation_enabled: true
+  structure_saturation_every_n: 2
+  round_stall_limit: 2
+  escalate_starve_rounds: 3
+  no_push_when_idle: 2
+  budget_per_round_floor: 10
+  budget_per_round_cap: 12
+  rehash_similarity: 0.7
+  stall_streak_limit: 2
+  min_distance_improvement: 0.03
+  convergence_window: 2
+  unsaid_escape_limit: 2
+  both_tighten_ratio: 0.5
+  both_quota:
+    enabled: true
+    max_ratio: 0.7
+    min_items: 2
+  amp_ratio_max: 0.75
+  amp_ratio_max_by_entry:
+    '0': 0.75
+    '1': 0.75
+    both: 0.65
+    all: 0.75
+  alignment_similarity: 0.7
+  alignment_containment: 0.7
+  dedup_candidate_overlap: 0.7
+  dedup_candidate_similarity: 0.7
+  dedup_amp_overlap: 0.7
+  dedup_amp_similarity: 0.7
+  qc_rephrase_ratio: 0.7
+  qc_both_ratio: 0.7
+  structural_resample: true
+  structural_resample_max: 1
+  all_drift_threshold: 0.7
+  all_selfref_threshold: 0.7
+  re_eval_every_n: 1
+  re_eval_recent_k: 10
+  min_rounds:
+    '0': 0
+    '1': 0
+    both: 0
+    all: 0

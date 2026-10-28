@@ -17,7 +17,12 @@ param(
   [int]$Port = 8772,
   [string]$Model = "",
   [int]$WaitSeconds = 180,
-  [switch]$Foreground
+  [switch]$Foreground,
+  # ★ 本地全链路是**两段**服务：默认只起 8772 推理服务（与旧行为一致，
+  #   云端档用户完全不受影响）；加 -Shim 才同时起 8773 OpenAI 适配层。
+  #   App 的 /api/health 会同时读两段（见 dgtf_app/local_chain.py）。
+  [switch]$Shim,
+  [int]$ShimPort = 8773
 )
 
 $ErrorActionPreference = "Stop"
@@ -79,3 +84,43 @@ if (-not $ready) {
 Write-Host "[start] PID=$($p.Id) URL=http://127.0.0.1:$Port"
 Write-Host "[start] health : Invoke-RestMethod http://127.0.0.1:$Port/health"
 Write-Host "[start] generate: Invoke-RestMethod -Method Post http://127.0.0.1:$Port/generate -ContentType 'application/json; charset=utf-8' -Body (@{stage='self_check_min';text='...';timeout=60} | ConvertTo-Json -Depth 6)"
+
+# ── 可选第二段：OpenAI 适配层（8773）—— 本地全链路 ───────────────────
+# 为什么默认不起：云端档不需要它；引擎只有在 api.base_url 指向
+# http://127.0.0.1:8773/v1 时才走这条链（App 预设「本地模型-全链路.yaml」）。
+# 起来之后 App 的 watchdog 会一并守护两段（失败按指数退避重启，见 local_chain.py）。
+if ($Shim -and -not $Foreground) {
+  $ShimPy = (Get-Command python -ErrorAction SilentlyContinue).Source
+  if (-not $ShimPy) { $ShimPy = $Py }
+  $ShimScript = Join-Path $Root "scripts\local_model\openai_shim.py"
+  $ShimOut = Join-Path $LogDir "shim.out.log"
+  $ShimErr = Join-Path $LogDir "shim.err.log"
+  $Listening = Get-NetTCPConnection -LocalPort $ShimPort -State Listen -ErrorAction SilentlyContinue
+  if ($Listening) {
+    Write-Host "[shim] 端口 $ShimPort 已有监听进程，复用（不重复启动）"
+  } elseif (-not (Test-Path $ShimScript)) {
+    Write-Host "[shim] 找不到适配层脚本：$ShimScript"
+  } else {
+    $sp = Start-Process -FilePath $ShimPy -ArgumentList @($ShimScript, "--port", "$ShimPort", "--upstream", "http://127.0.0.1:$Port") -WorkingDirectory $Root -RedirectStandardOutput $ShimOut -RedirectStandardError $ShimErr -PassThru -WindowStyle Hidden
+    Write-Host "[shim] PID=$($sp.Id) port=$ShimPort -> http://127.0.0.1:$Port logs=$LogDir"
+    $ShimDeadline = (Get-Date).AddSeconds(25)
+    $ShimReady = $false
+    while ((Get-Date) -lt $ShimDeadline) {
+      Start-Sleep -Milliseconds 800
+      if ($sp.HasExited) {
+        Write-Host "[shim] 进程已退出 code=$($sp.ExitCode)"
+        if (Test-Path $ShimErr) { Get-Content $ShimErr -Tail 30 }
+        break
+      }
+      try {
+        $m = Invoke-RestMethod -Uri "http://127.0.0.1:$ShimPort/v1/models" -TimeoutSec 3
+        if ($m.data) { $ShimReady = $true; break }
+      } catch { }
+    }
+    if ($ShimReady) {
+      Write-Host "[shim] READY http://127.0.0.1:$ShimPort/v1 （本地档 api.base_url 用这个）"
+    } else {
+      Write-Host "[shim] 25s 内未就绪（进程仍在跑，可稍后查 /v1/models）"
+    }
+  }
+}

@@ -39,6 +39,64 @@ raw = SRC.read_bytes().decode("utf-8")
 txt = raw.replace("\r\n", "\n")
 LINES = txt.split("\n")
 
+# ── [perf 2026-10-28] AST **一次解析、多处复用** ——
+# 原实现 body_of() 每次调用都 ast.parse(全文)；V2.2.15（33k 行）上 audit 实测 181.1s，
+# 根因是 O(n²) 反复解析。这里把「目标引擎全文」解析恰好一次：
+#   · _AST          = 目标引擎全文 AST（唯一一次全文解析）
+#   · _FUNCS        = {函数名: 函数节点}，body_of 直接查表（与 ast.walk 首命中同序）
+#   · _parse_cached = 目标文本返回 _AST；别的文本（合成/变异体）才真正解析
+# 判据（scripts/tests_acceptance_semantics.py E 组）：monkeypatch ast.parse 计数，
+# 目标全文解析次数必须 == 1；变异体（body_of 恢复逐次解析）必须被判红。
+_AST = ast.parse(txt)
+
+
+def _parse_cached(src):
+    """同一文本只解析一次：目标引擎全文直接复用 _AST（其余文本按需解析）。"""
+    return _AST if src is txt else ast.parse(src)
+
+
+def _index_ast(tree):
+    """**一次** O(n) 遍历建好后续各判据要用的索引（原先每条判据各自 ast.walk 全文）。
+
+    - funcs: {函数名: 节点}（setdefault 保留 ast.walk 首命中，与 body_of 原语义同序）
+    - classes: 类定义节点列表（ast.walk 顺序）
+    - name_counts: {裸 ast.Name id: 次数}（死类判据 A2/A3 用）
+    - stages: 代码里所有字面 stage= 取值（K4 用）
+    - wired: {_thinking_stage 第 2 实参: 行号}（K1–K3 用，后写覆盖 = 原语义）
+    - web_calls: [(Call 节点, 第 3 实参源码, 是否缺参)]（E1 用）
+    """
+    funcs, classes, name_counts = {}, [], {}
+    stages, wired, web_calls = set(), {}, []
+    for n in ast.walk(tree):
+        if isinstance(n, ast.FunctionDef):
+            funcs.setdefault(n.name, n)
+        elif isinstance(n, ast.ClassDef):
+            classes.append(n)
+        elif isinstance(n, ast.Name):
+            name_counts[n.id] = name_counts.get(n.id, 0) + 1
+        elif isinstance(n, ast.Call):
+            for _kw in n.keywords:
+                if (_kw.arg == "stage" and isinstance(_kw.value, ast.Constant)
+                        and isinstance(_kw.value.value, str)):
+                    stages.add(_kw.value.value)
+            _fn = n.func
+            if (isinstance(_fn, ast.Name) and _fn.id == "_thinking_stage"
+                    and len(n.args) >= 2 and isinstance(n.args[1], ast.Constant)):
+                wired[n.args[1].value] = n.lineno
+            elif (isinstance(_fn, ast.Attribute)
+                    and _fn.attr == "_web_search"):
+                _a = n.args[2] if len(n.args) > 2 else None
+                web_calls.append((n,
+                                  ast.get_source_segment(txt, _a)
+                                  if _a is not None else None,
+                                  _a is None))
+    return {"funcs": funcs, "classes": classes, "name_counts": name_counts,
+            "stages": stages, "wired": wired, "web_calls": web_calls}
+
+
+_IDX = _index_ast(_AST)
+_FUNCS = _IDX["funcs"]
+
 R = []
 
 
@@ -53,10 +111,11 @@ spec.loader.exec_module(mod)
 
 
 def body_of(name):
-    for n in ast.walk(ast.parse(txt)):
-        if isinstance(n, ast.FunctionDef) and n.name == name:
-            return "\n".join(LINES[n.lineno - 1:n.end_lineno]), n
-    return "", None
+    """函数体源码 + 节点。★ 查表复用唯一一次全文 AST（原先每次调用都全文解析）。"""
+    n = _FUNCS.get(name)
+    if n is None:
+        return "", None
+    return "\n".join(LINES[n.lineno - 1:n.end_lineno]), n
 
 
 # ============================================================ A 出口 / 死类
@@ -137,19 +196,22 @@ for _cn in _EXPORT_CLASSES:
 #        全局类被使用时的代码形态必然是裸名（`Thread(...)` / `x: Thread`），
 #        所以裸名计数既是正确语义、又能避开模块属性碰撞。
 _DEAD_REG = set(getattr(mod, "_AUDIT_DEAD_CLASSES", ()) or ())
-_TREEA = ast.parse(txt)
+_TREEA = _AST   # ★ 复用唯一一次全文解析（perf 2026-10-28）
+
+
+#: ★ [perf 2026-10-28] 原实现每个类都 ast.walk(全文) 数裸名引用（22 个类 × 33k 行
+#:   AST = 实测 36.8s，仅次于 AST 重复解析的第二大热点）。_IDX 已一次遍历建好
+#:   name_counts，这里 O(1) 查表。语义逐字不变：仍只数裸 ast.Name（理由见 A2 注释）。
+_NAME_COUNTS = _IDX["name_counts"]
 
 
 def _code_refs(name):
-    # 只数裸名引用（见上方说明）。
-    return sum(1 for x in ast.walk(_TREEA)
-               if isinstance(x, ast.Name) and x.id == name)
+    # 只数裸名引用（见上方说明）。★ 查表 O(1)。
+    return _NAME_COUNTS.get(name, 0)
 
 
 _DEAD_FOUND = set()
-for _n in ast.walk(_TREEA):
-    if not isinstance(_n, ast.ClassDef):
-        continue
+for _n in _IDX["classes"]:       # ★ 复用一次遍历的类列表（原先再 ast.walk 全文）
     _nm = _n.name
     if _code_refs(_nm) == 0:
         _DEAD_FOUND.add(_nm)
@@ -321,7 +383,7 @@ _ROUND_OK = re.compile(r"^(0|_rn|self\._research_round_no\(\)|"
 def _round_args(txtx):
     """返回 (所有调用点的第 3 实参源码, 不合规清单)。抽成函数供变异体复算。"""
     bad, seen = [], []
-    for _n in ast.walk(ast.parse(txtx)):
+    for _n in ast.walk(_parse_cached(txtx)):
         if (isinstance(_n, ast.Call) and isinstance(_n.func, ast.Attribute)
                 and _n.func.attr == "_web_search"):
             _a = _n.args[2] if len(_n.args) > 2 else None
@@ -335,7 +397,15 @@ def _round_args(txtx):
     return seen, bad
 
 
-_seen, _bad = _round_args(txt)
+# ★ [perf 2026-10-28] 复用 _IDX 里的 _web_search 调用索引（原先再 ast.walk 全文一遍）
+_seen, _bad = [], []
+for _n, _s, _miss in _IDX["web_calls"]:
+    if _miss:
+        _bad.append("缺第 3 实参 @%d" % _n.lineno)
+        continue
+    _seen.append(_s or "")
+    if not _ROUND_OK.match((_s or "").strip()):
+        _bad.append("line %d: %s" % (_n.lineno, (_s or "").strip()))
 ck("E1 每个 `_web_search` 调用点都传真圈号（或前置 0）", not _bad,
    repr(_bad))
 ck("E2 调用点数 ≥ 6（非空，防空过）", len(_seen) >= 6, repr(sorted(set(_seen))))
@@ -398,7 +468,7 @@ else:
 #   **DEFAULT_CONFIG 块之外**的源码里至少出现一次（作为字符串字面量）。
 #   留一张豁免表（确实要预留的键），两向对账。
 print("── J 配置键可达性 ──")
-_dccfg = ast.parse(txt)
+_dccfg = _AST   # ★ 复用（perf 2026-10-28）
 _dc_node = None
 for _n in ast.walk(_dccfg):
     if isinstance(_n, ast.Assign) and any(
@@ -424,14 +494,19 @@ ck("J1 ★ DEFAULT_CONFIG 抠到键（非空）", len(_KEYS) > 5, "抠到 %d 个
 _dc_lo = min(l for _, l in _KEYS) if _KEYS else 0
 _dc_hi = (max(l for _, l in _KEYS) if _KEYS else 0) + 2
 _CFG_EXEMPT = set(getattr(mod, "_AUDIT_CONFIG_EXEMPT", ()) or ())
+# ★ [perf 2026-10-28] 原实现每个配置键都扫一遍 33k 行 LINES（≈700 键 × 33k 行
+#   = O(键数×行数)，实测是第三大热点）。改为**一次**扫描 DEFAULT_CONFIG 块之外的
+#   引号字面量集合，逐键 O(1) 查表 —— 判据语义不变（"key" / 'key' / ['key'] 都覆盖）。
+_QUOTED_OUTSIDE = set()
+for _i, _l in enumerate(LINES, 1):
+    if _dc_lo <= _i <= _dc_hi:
+        continue
+    _QUOTED_OUTSIDE.update(re.findall(r'"([^"]*)"', _l))
+    _QUOTED_OUTSIDE.update(re.findall(r"'([^']*)'", _l))
 _unread = []
 for _path, _ln in _KEYS:
     _leaf = _path.split(".")[-1]
-    _outside = [i for i, l in enumerate(LINES, 1)
-                if (('"%s"' % _leaf) in l or ("'%s'" % _leaf) in l
-                    or ('[%r]' % _leaf) in l)
-                and not (_dc_lo <= i <= _dc_hi)]
-    if not _outside and _path not in _CFG_EXEMPT:
+    if _leaf not in _QUOTED_OUTSIDE and _path not in _CFG_EXEMPT:
         _unread.append(_path)
 ck("J2 ★ 每个配置键都有人读（否则是装饰品）", not _unread,
    "没人读：" + repr(_unread))
@@ -448,16 +523,9 @@ print("── K thinking stage 接线 ──")
 _TH_CFG = (mod.DEFAULT_CONFIG.get("api") or {}).get("thinking") or {}
 _TH_STAGES = dict(_TH_CFG.get("stages") or {})
 _TH_DEF = _TH_CFG.get("default")
-_lit_stages, _wired = set(), {}
-for _n in ast.walk(ast.parse(txt)):
-    if isinstance(_n, ast.Call):
-        for _kw in _n.keywords:
-            if _kw.arg == "stage" and isinstance(_kw.value, ast.Constant) \
-                    and isinstance(_kw.value.value, str):
-                _lit_stages.add(_kw.value.value)
-        if (isinstance(_n.func, ast.Name) and _n.func.id == "_thinking_stage"
-                and len(_n.args) >= 2 and isinstance(_n.args[1], ast.Constant)):
-            _wired[_n.args[1].value] = _n.lineno
+# ★ [perf 2026-10-28] 复用 _IDX 一次遍历建好的 stage 索引（原先再 ast.walk 全文）
+_lit_stages = set(_IDX["stages"])
+_wired = dict(_IDX["wired"])
 ck("K1 ★ 声明过的 thinking stage 都能被选中（不被静默忽略）",
    set(_TH_STAGES) <= (_lit_stages | set(_wired)),
    "永远选不中：" + repr(sorted(set(_TH_STAGES) - _lit_stages - set(_wired))))
@@ -484,7 +552,7 @@ print("── L 模型返回的 id 归一化 ──")
 def _unnormalized_id_sites(txtx):
     """返回 [(函数名, 行号)]：读了模型返回的 id 但**没有**归一化的位置。"""
     _bad = []
-    _tr = ast.parse(txtx)
+    _tr = _parse_cached(txtx)
     _L = txtx.split(chr(10))
     for _fn in ast.walk(_tr):
         if not isinstance(_fn, (ast.FunctionDef, ast.AsyncFunctionDef)):
@@ -554,26 +622,28 @@ _TDI = HERE / "_audit_tmp"
 _TDI.mkdir(exist_ok=True)
 for _nm, _o, _n, _kind in _MUT_I:
     if _kind == "A3":
-        # 造一个「活的类被登记成死类」的文本，看 A3 是否判红
-        _mt = txt.replace('_AUDIT_DEAD_CLASSES = ("Amp", "Probe", "Thread")',
-                          '_AUDIT_DEAD_CLASSES = ("Amp", "Probe", "Thread", "View")')
-        _found = set()
-        _tr = ast.parse(_mt)
-        _r1 = {x.id for x in ast.walk(_tr) if isinstance(x, ast.Name)}
-        for _c in ast.walk(_tr):
-            if isinstance(_c, ast.ClassDef):
-                _ref = len([x for x in ast.walk(_tr)
-                            if (isinstance(x, ast.Name) and x.id == _c.name)
-                            or (isinstance(x, ast.Attribute)
-                                and x.attr == _c.name)])
-                if _ref == 0:
-                    _found.add(_c.name)
-        _red = "View" in {"Amp", "Probe", "Thread", "View"} and "View" not in _found
+        # ★ [perf 2026-10-28] 不再为变异体重解析/重走全文 AST（原实现 ~2-3s）。
+        #   变异点只是「把活类 View 也登记成死类」；A3 判据读的是
+        #   「_d in _DEAD_FOUND」—— 用真实 _DEAD_FOUND + 注入登记表直接复算，
+        #   与「文本替换后重跑 A3」等价（A2 已把真实死类集合算好）。
+        _reg = set(_DEAD_REG) | {"View"}
+        _red = ("View" in _reg) and ("View" not in _DEAD_FOUND)
         ck(_nm, _red, "" if _red else "过期登记没被判红")
         continue
     if txt.count(_o) != 1:
         ck(_nm[:3] + " 变异体可构造", False,
            "锚点命中 %d 次（应 1）：%r" % (txt.count(_o), _o[:40]))
+        continue
+    if _kind == "I3":
+        # ★ [perf 2026-10-28] 变异体只需判 E1 对「第 3 实参=self._web_prep_seq」
+        #   的反应；用最小合成片段打 _round_args 即可（原实现重解析 1.6MB 全文）。
+        _syn = ('class X:' + _NL
+                + '    def f(self, _qs):' + _NL
+                + '        return self._web_search("research_evidence", _qs,'
+                + ' self._web_prep_seq, 1)' + _NL)
+        _, _bd = _round_args(_syn)
+        ck(_nm, bool(_bd), "变异体下判据**没判红**（审计无判别力）"
+           if not _bd else "")
         continue
     _mt = txt.replace(_o, _n)
     _mp = _TDI / ("mut_%s.py" % _kind)

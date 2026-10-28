@@ -16,6 +16,25 @@ _MB = 1024 * 1024
 #: 其余 stage 一律走 base model —— V2.2.13 起 service 不再按白名单拒绝。
 LORA_STAGES = ("self_check", "self_check_min", "dual_judge", "route")
 
+#: ★ [V2.2.15] CUDA graph 复用 key 的**唯一定义处**（service.py 引用它）。
+#:   为什么按 key 复用：graph 捕获时会把「当时激活的适配器算子」固化进图
+#:   （LoRA 的两条 matmul 在 Python 侧选权重），所以 LoRA stage 必须各自
+#:   一张；而 base stage 的算子图完全相同 ⇒ 共用一张。实测 graph 数
+#:   ~18 → 5、StaticCache 显存 −70%（fp32 底座下每张 3072 cache ≈75MB）。
+def graph_cache_key(stage, lora_stages=LORA_STAGES) -> str:
+    """该 stage 复用哪张 CUDA graph：LoRA stage ⇒ 专属图；其余 ⇒ 共用 base 图。"""
+    s = str(stage or "")
+    if s and s in tuple(lora_stages or ()):
+        return "adapter::" + s
+    return "base"
+
+#: ★ [V2.2.14] base-model stage 的默认重复惩罚（HF 口径，>1 生效）。
+#:   实测（re_anchor few-shot 探针）：0.5B 底座 temp 0.3 下确定性复读
+#:   （「按问题结构选择学习材料」×N），3/3 次撞 224 上限 ⇒ JSON 必然截断。
+#:   LoRA stage 不加（适配器训练分布内不复读，且多走 temp=0 graph 快路径，
+#:   该路径不适用惩罚）。
+BASE_STAGE_REP_PEN = 1.2
+
 #: 各 stage 适配器的**训练长度**（= 该 stage 一条输出该有多少 token）。
 #: 这是唯一定义处：`service.py` 与 `openai_shim.py` 都从这里取，避免两处漂移。
 #:
