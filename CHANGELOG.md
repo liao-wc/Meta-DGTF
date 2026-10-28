@@ -1,3 +1,40 @@
+【V2.2.12（2026-10-28，PATCH · 四层目标读数的「结构性读不出」）】
+- 生产引擎：`dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.12.py`；V2.2.11 及更早只读保留。
+- 问题（实测 213 个产物包普查）：
+      层          跑了     verdict空   值分布
+      修行(0)     213      211        0.000/0.000/0.000, n=2
+      研究(1)     211      19         0.333/1.000/1.000, n=192
+      对撞(both)  198      2          0.036/0.622/0.940, n=196
+      元(all)     198      0          0.500/1.000/1.000 → 195 个 1.000
+- ★ 修行层读数通道**结构性断路**：`_lg_aspect_margin` 要求 ≥3 个逐圈点，而默认
+  soft_max=2 圈只给 2 点 ⇒ 永远 None ⇒ verdict 空。且 docstring 承诺的
+  `1/(1+total)` 单点估计从未实现（`total` 参数被完全忽略、basis 从未设置）——
+  承诺与代码不符，且单点估计本身是**编造读数**。
+- ★ verdict 空时无法区分「算不出」与「没算」：`goal_now`（读数明细，含 None）
+  只进内存不落盘——又一个**单出口**问题（与 V2.2.11 的 answer_ready_reason 同族）。
+- ★ 元层 crystallize 天花板效应：「四件事非空即满分」⇒ 195/198=1.000，零区分度。
+- 改动（全部加性，历史读数语义不变）：
+  · `_lg_aspect_margin`：恰 2 点 ⇒ (V2−V1)/V1（**2pt 口径**，带
+    `excavate_basis="2pt"` 标注，不与 halves 混口径）；V1<=0 ⇒ None
+    （[0,0] 是「没东西可挖」≠「挖尽了」—— 不冒充）；≤1 点 ⇒ None；docstring 改诚实。
+  · 修行层读数加 `excavate_basis` / `n_hist`。
+  · 新纯函数 `_lg_unmeasured_why`：读数算不出时按层给**可指认原因**
+    （逐圈点数 / 存量为 0 / 分母为 0 / 四件事缺几件）。
+  · 收尾 verdict：**跑了就必有说法** —— 有值给值，没值给「未测出（具体原因）」。
+  · View 新增 `goal_now` 字段 + to_dict 落盘出口（空 dict 不出键）。
+  · 元层加 `crystallize_detail`（closure/lookback_items/engagements/suspensions
+    的**量**；crystallize 主读数语义不变）。
+- 行为变化（有意、有据）：修行层停因「Heaps 挖尽」此前结构性不可达（excavate
+  恒 None），2pt 口径下第 2 圈即可判停（阈值仍 `_LG_STOP_MARGIN=0.1` +
+  `n_aspects>0` 双守卫）。
+- 判据 `dgtf_engine/dgtf_v2/tests_layer_goal.py`（31 项）：纯函数 8 形态
+  （含 ★[0,0]⇒None 不冒充、★[10,10]⇒0.0 此前不可达）+ basis 带量 + 未测出原因
+  逐层可指认 + 静态点名与变异体 + ★ 真实产物回验（E1 有牙自检：必须有
+  V2.2.12+ 的包，否则恒绿）。
+- 真实入口验证 `scripts/local_model/probe_layer0_goal.py`（10 项）：route=0 /
+  2 圈 / 本地 0.5B —— verdict 非空（零存量时**不冒充挖尽**）、`goal_now`
+  落盘、provenance=V2.2.12。
+
 【V2.2.11（2026-10-28，PATCH · 就绪原因只有一个出口）】
 - 生产引擎：`dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.11.py`；V2.2.10 及更早只读保留。
 - 问题（实测 208 个产物包）：`answer_ready` 有 **3 个出口**（`decision_trace` /
