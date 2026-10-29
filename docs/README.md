@@ -22,8 +22,8 @@
 | `docs/ab_summary_20261027.md` | A/B 结果摘要（最新 rows=166 / questions=83 / verified=125） |
 | `docs/local_model_daosheng.md` | 本地模型文档（顶部 2026-10-27 同步段；历史轮次保留） |
 | `docs/产物问题审计_20261027.md` | 产物逐项审计（Round 128 历史快照，数字以最新快照为准） |
-| `docs/releases/` | 引擎发布说明（V2.2.63 … V2.2.3）+ App 版本发布说明（app-V2.0.2 … V2.0.44） |
-| `docs/releases/V2.2.63.md` | 本版发布说明（历史/归档 quality 护栏）+ app-V2.0.81 |
+| `docs/releases/` | 引擎发布说明（V2.2.64 … V2.2.3）+ App 版本发布说明（app-V2.0.2 … V2.0.44） |
+| `docs/releases/V2.2.64.md` | 本版发布说明（稳定性文档护栏）+ App 2.0.81 不变 |
 | `docs/patches/` | dual_judge local 补丁（已合并，历史证据） |
 
 ## 历史归档（勿引数字）

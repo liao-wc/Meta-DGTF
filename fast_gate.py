@@ -210,7 +210,14 @@ for rel in heavy:
          if "/" not in rel else root / rel)
     s = q.read_text(encoding="utf-8")
     assert "acquire_serial_lock" in s, "未接串行锁: " + rel
-print("stability_guard ok (%d scripts)" % len(heavy))
+doc = root / "docs" / "判据稳定性根因与修复_20261030.md"
+assert doc.is_file(), "缺少判据稳定性根因文档"
+dtxt = doc.read_text(encoding="utf-8")
+for term in ("串行锁", "ffc", "未测出", "DGTF_SERIAL_LOCK_HELD"):
+    assert term in dtxt, "稳定性文档缺关键词: " + term
+readme = (root / "README.md").read_text(encoding="utf-8")
+assert "判据稳定性根因" in readme, "README 未链接稳定性文档"
+print("stability_guard ok (%d scripts + doc)" % len(heavy))
 """
 
 

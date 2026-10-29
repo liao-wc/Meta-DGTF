@@ -1,3 +1,13 @@
+【V2.2.64（2026-10-30，PATCH · stability_guard 扩展文档/README 断言；App 2.0.81 不变）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.64.py（__version__=2.2.64；引擎侧零行为差）；
+  App 2.0.81 不变。
+- ★ fast_gate stability_guard 扩展：稳定性根因文档必须存在且含关键词
+  （串行锁/ffc/未测出/DGTF_SERIAL_LOCK_HELD），README 必须链接该文档。
+- 验收：fast_gate 18/18；V2 71/71（1208 checks）；App selftest 459/0；一键验收 PASS 30 /
+  SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；发布流程门 pre/post-tag 全 PASS。零 API。
+- 兼容性：只改测试/验证工具；引擎零行为差；App 不变。
+- 标签：V2.2.64 / engine-V2.2.64（app-V2.0.81 不变，不移动）。
+
 【V2.2.63（2026-10-30，PATCH · 历史/归档 quality 联动护栏；同发 App 2.0.81）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.63.py（__version__=2.2.63；引擎侧零行为差）；
   App 2.0.81。
@@ -646,11 +656,3 @@
 【V2.2.23（2026-10-29，PATCH 修复 · route 安全门；同发 App 2.0.48）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.23.py（__version__=2.2.23；引擎侧零行为差）；
   App 2.0.48。
-- ★ 真实运行复盘：任务 20261029_113643_e25f29（「极端天气为什么越来越频繁」，mode=auto→daosheng）
-  只调度了研究层。根因链：本地 0.5B route 适配器预测 route=["1"]（source=http，无置信度）→
-  build_plan 直接采用 → plan.route="1" → apply_plan 落 opts.route="1" → 引擎显式 --route 1
-  → dispatch ran=["1"]，其余层只有占位产物。旧 standard 默认四层。
-- ★ 修法：route 安全门。configs/道生专属模式.yaml + _BUILTIN_DS 新增 route_policy：
-  union（默认；预设 ∪ 预测，预设四层时结果恒四层，预测只作审计/补充，不砍层）、
-  preset（忽略预测）、predict（旧砍层行为，显式实验用）；非法值回落 union；
-  plan 新增 route_policy/route_source/route_prediction 读数，拦下时写 warnings。
