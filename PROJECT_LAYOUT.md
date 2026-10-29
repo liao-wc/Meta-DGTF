@@ -41,7 +41,7 @@
 ## 状态
 
 - V2 生产入口：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.18.py
-- App：2.0.41（本地链路两段守护 + /api/health local_chain 读数 + 本地档预设 + 道生专属模式 + 三体动态计划 + 预算守卫 + DSH 实时视图 + 读数缓存 + V2 帕累托图 + BGE 缓存）
+- App：2.0.42（本地链路两段守护 + /api/health local_chain 读数 + 本地档预设 + 道生专属模式 + 三体动态计划 + 预算守卫 + DSH 实时视图 + 读数缓存 + V2 帕累托图 + BGE 缓存）
 - Engine：2.2.18（发布流程门 + 四处证据出口 + App selftest 自动门；引擎侧零行为差）
 - V2 tests：70 / 70 文件 PASS（1163 项检查；含 stage 登记 10 / 四层目标契约 58 / 题型判定 / 元层清算 / 判定审计 / 帕累托判据）
 - F5：生成机制完成

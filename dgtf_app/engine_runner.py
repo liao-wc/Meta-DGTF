@@ -651,6 +651,9 @@ def _archive(task: dict, status: str | None = None) -> None:
                              if task["started_at"] and task["ended_at"] else None),
             "output_name": task.get("output_name"),
             "error": task.get("error", ""), "cmd": task["cmd"],
+            "timeout": bool(task.get("timeout")),
+            "stalled": bool(task.get("stalled")),
+            "cancelled": bool(task.get("cancelled")),
             "live": False,          # ★ 终态归档：`recover_orphans()` 不再认它
         }
         dstj = oi.OUTPUTS_DIR / f"{stamp}.run.json"

@@ -24,7 +24,20 @@
   一键验收 --with-service PASS 25 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 81/81；
   file_integrity bad=0；verify_project_paths PASS；DSH 闭环 2 项 FAIL 归类 N/A（证据陈旧/
   用户实例不可达，原因显式）；历史融合 readiness 1.00；pareto_flow 基线可复跑。
-- 标签：V2.2.18 / engine-V2.2.18；App 2.0.41
+- 标签：V2.2.18 / engine-V2.2.18；App 2.0.42
+
+【主题】任务归档保留超时/停滞标志，修复超时不可诊断。
+
+【改变】
+- engine_runner._archive 的 run.json 新增 timeout/stalled/cancelled。
+- 此前 1200s 超时任务归档只写 error，丢失 timeout=true，后续无法区分用户取消与自动超时。
+- 配合 2.0.40 总超时、2.0.41 停滞看门狗，形成可观测闭环。
+- 不改变任务执行逻辑，仅补归档字段。
+
+【验证】
+- App 全方位检查；版本一致性；selftest；fast_gate。
+- 静态缓存串：2.0.42-timeoutmeta。
+App 2.0.41
 
 【主题】任务停滞看门狗，配合 20 分钟总超时治理真跑卡死。
 
