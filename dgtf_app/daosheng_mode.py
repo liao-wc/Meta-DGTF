@@ -59,6 +59,28 @@ def _engine_supports_dual_judge_local() -> bool:
 VALID_MODES = ("auto", "daosheng", "daosheng_fast", "standard")
 VALID_ROUTE = ("0", "1", "both", "all")
 
+# ★ [V2.2.24] 层依赖闭包：both 需要 0/1 的上游产物；all 需要 both/0/1。
+#   动态预测/预算裁剪后若留下 both/all，则补齐依赖，避免"调度了 all 却没有 upstream"。
+_ROUTE_ORDER = ("0", "1", "both", "all")
+_ROUTE_DEPS = {"both": ("0", "1"), "all": ("both", "0", "1")}
+
+
+def route_with_deps(route_list) -> tuple[list, list]:
+    """返回 (按顺序补全依赖后的 route, 新增条目)。纯函数，可单测。"""
+    have = set(str(x) for x in (route_list or []) if str(x))
+    added: list[str] = []
+    changed = True
+    while changed:
+        changed = False
+        for entry in list(have):
+            for dep in _ROUTE_DEPS.get(entry, ()):
+                if dep not in have:
+                    have.add(dep)
+                    added.append(dep)
+                    changed = True
+    ordered = [e for e in _ROUTE_ORDER if e in have]
+    return ordered, added
+
 #: 与 server._PROJECT_CTX_MARKS 同口径的兜底判据（server 会显式传入 project_related，
 #: 这里是给独立 CLI / selftest 用的；两处不一致时以 server 传入值为准）。
 _PROJECT_MARKS = ("meta-dgtf", "dgtf", "道生三阶", "四层", "修行", "研究",
@@ -91,7 +113,11 @@ _BUILTIN_DS = {
                        "other": "auto:stable"},
     "budget": {"cny_per_million_tokens": 2.0, "degrade_below_cny": 8.0,
                "warn_below_cny": 4.0, "est_tokens_default": 1300000,
-               "raw_max_tokens_fallback": 2000000},
+               "raw_max_tokens_fallback": 2000000,
+               # ★ [V2.2.24] 动态配置：预留比例/临界倍数/降档圈数模板
+               "reserve_ratio": 0.5, "critical_est_mult": 1.2,
+               "rounds_economy": "0:1,1:2,both:1,all:1",
+               "rounds_critical": "0:1,1:1,both:1,all:1"},
     "history": {"episodes_limit": 80, "min_samples": 5},
     "memory": {"max_chars": 1600, "max_lessons": 2, "max_playbook": 2,
                "episodes_recent": 80, "cache_entries": 64},
@@ -1021,9 +1047,23 @@ def budget_guard(history: dict, preset: dict | None = None, *,
            "fail_open": False, "decision": "ok", "reason": ""}
     if not isinstance(balance, (int, float)):
         out["fail_open"] = True
+        out["budget_level"] = "unknown"
         out["reason"] = ("余额未知（%s）→ fail-open：不拒绝任务，按质量档继续"
                          % ("mock 跳过查询" if src == "mock-skip" else "查询失败"))
         return out
+    # ★ [V2.2.24] 预算层级（动态配置用；decision 旧语义保持不变）
+    _est_mult = float(cfg.get("critical_est_mult") or 1.2)
+    _reserve = float(cfg.get("reserve_ratio") or 0.5)
+    out["reserve_ratio"] = _reserve
+    out["est_affordable"] = bool(balance >= est_cost / max(1e-6, _reserve))
+    if balance < max(1.0, est_cost * _est_mult):
+        out["budget_level"] = "critical"
+    elif balance < warn_b:
+        out["budget_level"] = "warn"
+    elif balance < degrade_b:
+        out["budget_level"] = "degrade"
+    else:
+        out["budget_level"] = "ok"
     if balance < warn_b:
         out["decision"] = "warn"
         out["reason"] = ("余额 ¥%.2f < ¥%.0f：任务仍可创建，但请立即确认额度"
@@ -1037,6 +1077,120 @@ def budget_guard(history: dict, preset: dict | None = None, *,
         out["reason"] = "余额 ¥%.2f ≥ ¥%.0f：允许质量档（估算 %.2fM tokens / ¥%.2f）" % (
             balance, degrade_b, est_tokens / 1e6, est_cost)
     return out
+
+
+# ── 动态配置优化（预算/质量/时延多目标；纯函数）──────────────────
+_DYN_TIER_FLOOR = {"project": 0.95, "quality_first": 0.95, "default": 0.90}
+_WEB_TOKENS_EXTRA = 0.10   # 事实题 web on 的 token 增量（实测 ~+13.6 万 / 1.15M）
+
+
+def _rounds_count(rounds) -> int:
+    """解析 rounds 字符串里的总圈数（auto/空 => 0，表示交给引擎）。"""
+    n = 0
+    for part in str(rounds or "").split(","):
+        part = part.strip()
+        if ":" in part:
+            try:
+                n += int(part.rsplit(":", 1)[1])
+            except (TypeError, ValueError):
+                continue
+    return n
+
+
+def dynamic_config(*, ds: dict | None = None, tier: str = "quality",
+                   engine_mode: str = "B", parallel: str = "B",
+                   thinking: str = "auto", effort: str = "auto",
+                   web: str = "auto", rounds="auto",
+                   budget_guard: dict | None = None,
+                   scenario: dict | None = None, quality_first: bool = False,
+                   require_web: bool = False, opts: dict | None = None,
+                   project_related: bool = False) -> dict:
+    """在现有资源（余额/历史/场景）上枚举可行配置，选质量最高且成本可控者。
+
+    返回可审计 dict；applied 只含安全可覆盖项（rounds/web），显式 opts 永远优先。
+    """
+    ds = ds or load_preset()
+    bg = dict(budget_guard or {})
+    opts = dict(opts or {})
+    cfg = dict(_BUILTIN_DS["budget"])
+    cfg.update(ds.get("budget") or {})
+    cny_m = float(cfg.get("cny_per_million_tokens") or 2.0)
+    reserve = float(cfg.get("reserve_ratio") or 0.5)
+    balance = bg.get("balance_cny")
+    level = str(bg.get("budget_level") or "ok")
+    kind = str((scenario or {}).get("kind") or "")
+    try:
+        from dgtf_v2.mode_fusion import MODES as _MODES
+    except Exception:  # noqa: BLE001
+        _MODES = {}
+    base = dict(_MODES.get(engine_mode) or {})
+    base_q = float(base.get("quality") or (0.93 if engine_mode == "fast" else 1.0))
+    base_tok = float(base.get("tokens") or (816983 if engine_mode == "fast" else 1269082))
+    floor = float(opts.get("min_quality") or 0.0) or (
+        _DYN_TIER_FLOOR["project"] if (project_related or kind == "project") else
+        (_DYN_TIER_FLOOR["quality_first"] if quality_first
+         else _DYN_TIER_FLOOR["default"]))
+    # 候选 rounds：degrade 仍用实测 fast 档（质量已验证、成本可接受）；
+    # warn 用 economy，critical 用最低圈；ok 保持传入值/quality_first。
+    if level == "critical":
+        _rounds_opts = [cfg.get("rounds_critical")]
+    elif level == "warn":
+        _rounds_opts = [cfg.get("rounds_economy")]
+    elif level == "degrade" or tier == "fast":
+        _rounds_opts = [ds.get("rounds_fast")]
+    elif tier == "quality" and quality_first:
+        _rounds_opts = [ds.get("rounds_quality") or "0:3,1:3,both:4,all:4"]
+    else:
+        _rounds_opts = [str(rounds or "auto")]
+    _rounds_opts = [str(x) for x in _rounds_opts if x]
+    _web_opts = ["on"] if require_web else ([str(web)] if web not in ("", "auto") else ["off"])
+    ref_count = max(1, _rounds_count("0:2,1:3,both:2,all:2"))
+    candidates = []
+    for rd in _rounds_opts:
+        cnt = _rounds_count(rd)
+        factor = 1.0 if cnt <= 0 else max(0.3, min(1.3, cnt / float(ref_count)))
+        for wb in _web_opts:
+            tok = base_tok * factor
+            q = base_q
+            if wb == "on" and kind == "fact":
+                tok *= (1.0 + _WEB_TOKENS_EXTRA)
+                q = max(q, 0.955)          # 事实 web on 实测 0.958（fast）
+            if factor < 0.7:
+                q -= 0.01                  # 低圈成本档的保守质量折扣
+            cost = round(tok / 1e6 * cny_m, 2)
+            feasible = True
+            if isinstance(balance, (int, float)):
+                feasible = cost <= max(0.01, float(balance) * reserve)
+            candidates.append({"engine_mode": engine_mode, "parallel": parallel,
+                               "thinking": thinking, "effort": effort, "web": wb,
+                               "rounds": rd, "est_quality": round(q, 4),
+                               "est_tokens": int(tok), "est_cost_cny": cost,
+                               "budget_level": level, "feasible": bool(feasible)})
+    feasible_cs = [c for c in candidates
+                   if c["feasible"] and c["est_quality"] >= floor - 1e-9]
+    fallback = not feasible_cs
+    if feasible_cs:
+        chosen = max(feasible_cs, key=lambda c: (c["est_quality"], -c["est_cost_cny"]))
+    else:
+        chosen = min(candidates, key=lambda c: (c["est_cost_cny"], -c["est_quality"]))
+    applied = {}
+    if not opts.get("rounds") and str(chosen["rounds"]) != str(rounds or "auto"):
+        applied["rounds"] = chosen["rounds"]
+    # web=auto 表示"交给引擎自决"：动态配置只记录 chosen，不写 opts
+    # （否则会把 auto 落成具体值，改变 apply_plan 的既有语义）。
+    if (not opts.get("web") and str(web) not in ("", "auto")
+            and str(chosen["web"]) != str(web)):
+        applied["web"] = chosen["web"]
+    why = ("预算层级=%s 余额=%s 预留=%.0f%% → 选 quality=%.3f/tokens=%d/¥%.2f"
+           % (level, ("¥%.2f" % float(balance)) if isinstance(balance, (int, float)) else "未知",
+              reserve * 100, chosen["est_quality"], chosen["est_tokens"],
+              chosen["est_cost_cny"]))
+    return {"schema": "metadgtf.dynamic_config.v1", "budget_level": level,
+            "balance_cny": balance, "reserve_ratio": reserve,
+            "quality_floor": round(floor, 4), "require_web": bool(require_web),
+            "scenario": kind, "candidates": candidates, "chosen": chosen,
+            "applied": applied, "fallback": fallback, "why": why,
+            "regret": 0.0 if not fallback else None}
 
 
 # ── 缓存命中预判 ───────────────────────────────────────────────
@@ -1226,7 +1380,13 @@ def build_plan(question: str, opts: dict | None = None, *,
                 _route_list.append(_e)
         _route_source = ("union" if _route_pred and _route_pred != _route_preset
                          else "preset")
+    # ★ [V2.2.24] 动态依赖调整：补全层依赖（both ⇒ 0/1；all ⇒ both/0/1）
+    _route_ordered, _route_added = route_with_deps(_route_list)
+    _route_list = _route_ordered
     route = ",".join(_route_list)
+    if _route_added:
+        warnings.append("层依赖闭包：补 %s（both 需 0/1，all 需 both/0/1）"
+                        % ",".join(_route_added))
     if _route_policy != "predict" and _route_pred and _route_pred != _route_preset:
         warnings.append("route 安全门（%s）：预测=%s 未砍层，实际=%s"
                         % (_route_policy, ",".join(_route_pred), route))
@@ -1298,6 +1458,29 @@ def build_plan(question: str, opts: dict | None = None, *,
         web = "on"
         warnings.append("选项题：A./B./C./D. ≥2 ⇒ 强制联网（引擎事实门需证据）")
 
+    # ★ [V2.2.24] 全链路动态配置：预算（余额/预留/层级）× 质量（场景下限）×
+    #   成本（token 估算）多目标枚举，选可行解中质量最高、成本最低者。
+    _require_web = bool(_sc1.get("require_web")
+                        or str(_sc1.get("kind") or "") == "fact"
+                        or _opt_n >= 2)
+    dyn = dynamic_config(ds=ds, tier=tier, engine_mode=engine_mode,
+                         parallel=parallel, thinking=thinking, effort=effort,
+                         web=web, rounds=rounds, budget_guard=bg,
+                         scenario=_sc1, quality_first=quality_first,
+                         require_web=_require_web, opts=opts,
+                         project_related=_prj)
+    _dyn_applied = dyn.get("applied") or {}
+    if _dyn_applied.get("rounds"):
+        rounds = str(_dyn_applied["rounds"])
+        rounds_locked = True
+        warnings.append("动态配置：预算层级=%s→圈数降为 %s"
+                        % (dyn.get("budget_level"), rounds))
+    if _dyn_applied.get("web"):
+        web = str(_dyn_applied["web"])
+    if dyn.get("fallback"):
+        warnings.append("动态配置：无满足质量下限的可行解 → 取最低成本兜底"
+                        "（质量下限 %.2f，余额 %s）"
+                        % (dyn.get("quality_floor"), dyn.get("balance_cny")))
     memory = memory_summary(question, ds, project_related=_prj, history=history)
     context_injected: list[str] = []
     if _prj:
@@ -1385,6 +1568,9 @@ def build_plan(question: str, opts: dict | None = None, *,
         "route_policy": _route_policy,
         "route_source": _route_source,
         "route_prediction": list(_route_pred),
+        # [V2.2.24] 动态依赖调整 + 动态配置优化
+        "route_dependency_added": list(_route_added),
+        "dynamic_opt": dyn,
         "rounds": rounds,
         "parallel": parallel,
         "web": web,
@@ -1470,6 +1656,11 @@ def mode_summary(plan: dict | None) -> dict:
             "scenario": _sc.get("kind") or "",
             "quality_policy": plan.get("quality_policy") or "",
             "budget_decision": bg.get("decision") or "",
+            "budget_level": bg.get("budget_level") or "",
+            "dynamic": {k: v for k, v in
+                        ((plan.get("dynamic_opt") or {}).get("chosen") or {}).items()
+                        if k in ("engine_mode", "web", "rounds",
+                                 "est_quality", "est_cost_cny")},
             "reason": str(plan.get("reason") or "")[:300]}
 
 

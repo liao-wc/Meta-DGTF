@@ -1,3 +1,23 @@
+【V2.2.24（2026-10-29，PATCH · 全链路动态配置优化 + 动态依赖调整；同发 App 2.0.49）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.24.py（__version__=2.2.24；引擎侧零行为差）；
+  App 2.0.49。
+- ★ 动态依赖调整：route 依赖闭包（both 补 0/1，all 补 both/0/1；单层不强加依赖）；
+  plan 新增 route_dependency_added，补依赖写 warnings。
+- ★ 全链路动态配置：dynamic_config 在每次规划时按 余额/预留/预算层级（ok/degrade/warn/critical）
+  × 质量下限（项目/quality_first 0.95，其它 0.90）× 成本（MODES 实测 + web 增量 + 圈数缩放）
+  枚举候选，选可行解中质量最高、成本最低者；plan 落 dynamic_opt（candidates/chosen/applied/why）；
+  budget_level 降档：ok 质量档、degrade 实测 fast 档、warn economy、critical 全 1 圈；
+  applied 只覆盖 rounds（显式 opts 优先），web=auto 不落 opts。
+- 判据：新增 scripts/local_model/test_dynamic_opt.py（28 项，进一键验收 strict）：
+  route 闭包、多目标可行域/预留比例/层级降档/单调降本/fail-open、plan 接线、
+  apply_plan→build_cmd、变异体。
+- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
+  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；fused_optimal 30/30；
+  fused_full_chain 16/16；daosheng_unified 27/27；e2e 18/18；四层 probe 81/81；
+  发布流程门 pre/post-tag 全 PASS。
+- 兼容性：显式 opts 永远优先；余额未知 fail-open；预算只降圈/降档不砍层。
+- 标签：V2.2.24 / engine-V2.2.24 / app-V2.0.49。
+
 【V2.2.23（2026-10-29，PATCH 修复 · route 安全门；同发 App 2.0.48）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.23.py（__version__=2.2.23；引擎侧零行为差）；
   App 2.0.48。

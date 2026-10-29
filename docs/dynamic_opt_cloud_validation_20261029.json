@@ -1,0 +1,13 @@
+{
+ "schema": "metadgtf.cloud_validation.v1",
+ "ts": "2026-10-29 12:26",
+ "purpose": "动态配置成本估算校准（预算有界单跑）",
+ "engine": "V2.2.24",
+ "config": "route=0, rounds=0:1, parallel=B, thinking=off, mode=fast, web=off, max_tokens=150000",
+ "llm_calls": 10,
+ "tokens": 38219,
+ "est_cost_cny": 0.08,
+ "answer_quality": "unverified",
+ "answer_ready": false,
+ "note": "full-fast 四层估算 816,983 tokens；本单层 38,219 tokens ≈ 4.7%——动态配置按整单估算，属保守上界"
+}

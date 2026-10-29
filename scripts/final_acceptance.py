@@ -82,6 +82,9 @@ STEPS = [
     ("max_new_cap", ["scripts/local_model/test_max_new_cap.py"], POLICY_STRICT),
     # [V2.2.18] App selftest 自动门（自起临时 server；起不来 exit=2 = 没跑）
     ("app_selftest", ["scripts/app_selftest_gate.py"], POLICY_SERVICE),
+    # [V2.2.24] 全链路动态配置优化 + 动态依赖调整（route 闭包/预算多目标）
+    ("dynamic_opt", ["scripts/local_model/test_dynamic_opt.py"],
+     POLICY_STRICT),
     # [V2.2.22] 融合"更优"与动态最优配置：能力对等 + 实测矩阵对比 + 引擎 tick
     ("fused_optimal", ["scripts/local_model/test_fused_optimal.py"],
      POLICY_STRICT),
