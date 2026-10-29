@@ -1096,6 +1096,18 @@ _CALIB = {
     "app_overhead": 1.10,
     "fast_default_rounds": {"0": 2, "1": 3, "both": 2, "all": 2},
 }
+# ★ [V2.2.32] 题型级实测省层收益（route0 vs full，rounds=1）：
+#   fact：6 跑 tokens 61-67k 无显著差异（收益≈0）；reasoning：route0 39.6-46k vs
+#   full 70.7-74.9k（约省 39%）。证据见 docs/route_subset_*_ab_20261029.json
+_ROUTE_SAVINGS_EVIDENCE = {
+    "fact": {"saved_pct": 0.0, "n": 6,
+             "evidence": "docs/route_subset_multisample_20261029.json",
+             "note": "6 跑 route0/0,1/full tokens 61-67k 无显著差异"},
+    "reasoning": {"saved_pct": 0.39, "n": 4,
+                  "evidence": "docs/route_subset_reasoning_ab_20261029.json",
+                  "note": "reasoning route0 39.6-46k vs full 70.7-74.9k（约省 39%）"},
+}
+
 _un0, _un1 = _CALIB["u0"], _CALIB["u1"]
 _avg = (_un0 + _un1) / 2.0
 _base01 = 2 * _un0 + 3 * _un1
@@ -1632,11 +1644,16 @@ def build_plan(question: str, opts: dict | None = None, *,
             "level": "high" if (_prj or str(quality_policy or "").startswith("auto:verified"))
                      else "info",
             "missing": _missing_layers,
-            "evidence": "docs/route_subset_multisample_20261029.json",
+            "evidence": ("docs/route_subset_reasoning_ab_20261029.json"
+                         if str(_sc1.get("kind") or "") == "reasoning"
+                         else "docs/route_subset_multisample_20261029.json"),
             "evidence_prev": "docs/route_subset_quality_ab_20261029.json",
-            "note": "层子集质量未被证实：6 跑 A/B 中 route0/route0,1 各 2/2 verified 但 "
-                    "ready=0，full 1/2 verified+1/2 ready（方差主导）；显式省层保留但风险已记录，"
-                    "默认 route_policy=union 不砍层",
+            "note": ("层子集质量未被证实：reasoning 4 跑 route0/full 均 unverified（ready=0），"
+                     "省层省 tokens 但质量未证明；显式省层保留但风险已记录，默认 union 不砍层"
+                     if str(_sc1.get("kind") or "") == "reasoning" else
+                     "层子集质量未被证实：6 跑 A/B 中 route0/route0,1 各 2/2 verified 但 "
+                     "ready=0，full 1/2 verified+1/2 ready（方差主导）；显式省层保留但风险已记录，"
+                     "默认 route_policy=union 不砍层"),
         }
         warnings.append("层子集质量风险：缺 %s（证据 route_subset_quality_ab；"
                         "默认 union 四层更稳）" % ",".join(_missing_layers))
@@ -1662,20 +1679,43 @@ def build_plan(question: str, opts: dict | None = None, *,
             _saved, _pct = 0.0, 0.0
         _short_fact = (_require_web
                        and _rounds_count(_est_rounds) <= 6)
+        _dyn_kind_key = str(_sc1.get("kind") or "")
+        _meas = _ROUTE_SAVINGS_EVIDENCE.get(_dyn_kind_key)
         if _short_fact:
             _advice = "keep_four_layers"
             _why = ("6 跑 A/B 显示短程事实题 route0/0,1/full 实际 tokens 61-67k 无显著差异"
                     "（省层收益≈0），质量方差主导 ⇒ 不值得为省层承担质量风险")
+            _ev = "docs/route_subset_multisample_20261029.json"
+            _pct = 0.0
+            _saved = 0.0
+        elif _meas and float(_meas.get("saved_pct") or 0) >= 0.10:
+            _advice = "subset_may_save"
+            _why = ("%s 题型实测省层约 %.0f%% tokens（n=%d：%s）；仍需质量证据才能自动砍层"
+                    % (_dyn_kind_key, float(_meas.get("saved_pct") or 0) * 100,
+                       int(_meas.get("n") or 0), _meas.get("note")))
+            _ev = str(_meas.get("evidence") or "")
+            _pct = float(_meas.get("saved_pct") or _pct)
+            _saved = max(_saved, _base * _pct)
+        elif _meas and float(_meas.get("saved_pct") or 0) < 0.05:
+            _advice = "keep_four_layers"
+            _why = ("%s 题型实测省层收益≈0（n=%d：%s）⇒ 不值得承担质量风险"
+                    % (_dyn_kind_key, int(_meas.get("n") or 0), _meas.get("note")))
+            _ev = str(_meas.get("evidence") or "")
+            _pct = float(_meas.get("saved_pct") or 0.0)
+            _saved = _base * _pct
         elif _pct >= 0.10:
             _advice = "subset_may_save"
             _why = "模型估算省层可省 %.1f%% tokens（仍需质量证据）" % (_pct * 100)
+            _ev = "docs/route_subset_multisample_20261029.json"
         else:
             _advice = "keep_four_layers"
             _why = "模型估算省层收益仅 %.1f%%，低于 10%% 阈值" % (_pct * 100)
+            _ev = "docs/route_subset_multisample_20261029.json"
         _route_pruning = {"advice": _advice,
                           "saved_tokens_estimate": int(_saved),
                           "saved_pct_estimate": _pct,
-                          "evidence": "docs/route_subset_multisample_20261029.json",
+                          "kind": _dyn_kind_key,
+                          "evidence": _ev,
                           "note": _why}
         dyn["route_pruning"] = _route_pruning
         warnings.append("省层收益判定：%s（估算省 %d tokens/%.1f%%）"

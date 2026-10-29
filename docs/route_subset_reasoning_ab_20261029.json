@@ -1,0 +1,94 @@
+{
+ "schema": "metadgtf.route_subset_reasoning_ab.v1",
+ "ts": "2026-10-29 16:04:27",
+ "question": "为什么城市热岛效应在夜间比白天更明显？",
+ "kind": "reasoning",
+ "fixed": {
+  "rounds": "1",
+  "web": "auto(off)",
+  "balance_assumed": 50.0,
+  "max_tokens": 150000,
+  "reps": 2
+ },
+ "rows": [
+  {
+   "arm": "A-route0",
+   "rep": 1,
+   "route": "0",
+   "rounds": "0:1",
+   "status": "done",
+   "wall_s": 125.1,
+   "calls": 10,
+   "tokens": 39564,
+   "cost_cny": 0.079,
+   "answer_quality": "unverified",
+   "answer_ready": false,
+   "packed": "20261029_155720_为什么城市热岛效应在夜间比白天更明显.packed.json"
+  },
+  {
+   "arm": "B-full",
+   "rep": 1,
+   "route": "0,1,both,all",
+   "rounds": "0:1,1:1,both:1,all:1",
+   "status": "done",
+   "wall_s": 150.6,
+   "calls": 17,
+   "tokens": 74922,
+   "cost_cny": 0.15,
+   "answer_quality": "unverified",
+   "answer_ready": false,
+   "packed": "20261029_155949_为什么城市热岛效应在夜间比白天更明显.packed.json"
+  },
+  {
+   "arm": "A-route0",
+   "rep": 2,
+   "route": "0",
+   "rounds": "0:1",
+   "status": "done",
+   "wall_s": 139.8,
+   "calls": 11,
+   "tokens": 46031,
+   "cost_cny": 0.092,
+   "answer_quality": "unverified",
+   "answer_ready": false,
+   "packed": "20261029_160211_为什么城市热岛效应在夜间比白天更明显.packed.json"
+  },
+  {
+   "arm": "B-full",
+   "rep": 2,
+   "route": "0,1,both,all",
+   "rounds": "0:1,1:1,both:1,all:1",
+   "status": "done",
+   "wall_s": 135.7,
+   "calls": 17,
+   "tokens": 70676,
+   "cost_cny": 0.141,
+   "answer_quality": "unverified",
+   "answer_ready": false,
+   "packed": "20261029_160425_为什么城市热岛效应在夜间比白天更明显.packed.json"
+  }
+ ],
+ "summary": {
+  "A-route0": {
+   "n": 2,
+   "verified": 0,
+   "ready": 0,
+   "tokens": [
+    39564,
+    46031
+   ],
+   "cost_total": 0.171
+  },
+  "B-full": {
+   "n": 2,
+   "verified": 0,
+   "ready": 0,
+   "tokens": [
+    74922,
+    70676
+   ],
+   "cost_total": 0.291
+  }
+ },
+ "note": "reasoning 题型省层（route0 vs full）tokens 差异；与 fact 的≈0 对比"
+}

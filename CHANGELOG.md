@@ -1,3 +1,21 @@
+【V2.2.32（2026-10-29，PATCH · kind-aware 省层收益；同发 App 2.0.57）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.32.py（__version__=2.2.32；引擎侧零行为差）；
+  App 2.0.57。
+- ★ reasoning 省层 A/B（4 跑约 ¥0.46）：route0 39,564/46,031 tokens vs full 74,922/70,676
+  （省约 39%），两臂均 unverified/ready=false；结合 fact 6 跑（61-67k 无差异）得到
+  kind-aware 收益表：fact≈0（n=6）、reasoning≈0.39（n=4）。
+- ★ route_pruning 改为题型实测优先：短程事实/fact 任意长度 keep_four_layers（覆盖模型高估）；
+  reasoning subset_may_save（仍需质量证据才能自动砍层）；无题型证据退回模型估算。
+  route_quality_risk 的 evidence/note 按题型指向对应证据文件。
+- 判据：test_dynamic_opt 69→75（I9 reasoning 证据、I10 reasoning may_save≥30%、I11 fact 长程
+  实测≈0 覆盖模型 keep）；回归 fused_optimal 30 / fused_full_chain 16 / daosheng_unified 27 /
+  auto_mode_local 12。
+- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
+  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
+  发布流程门 pre/post-tag 全 PASS。
+- 兼容性：默认四层不变；省层判定只记录/提示，不改变实际 route。
+- 标签：V2.2.32 / engine-V2.2.32 / app-V2.0.57。
+
 【V2.2.31（2026-10-29，PATCH · 省层收益判定；同发 App 2.0.56）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.31.py（__version__=2.2.31；引擎侧零行为差）；
   App 2.0.56。

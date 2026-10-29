@@ -321,7 +321,7 @@ _p_rq = DS.build_plan(PROJ_Q, {"route": "0"}, requested="daosheng",
 _rq = (_p_rq.get("dynamic_opt") or {}).get("route_quality_risk") or {}
 ck("I2 项目题显式省层 ⇒ high 风险 + 证据路径",
    _rq.get("level") == "high"
-   and str(_rq.get("evidence") or "").endswith("route_subset_multisample_20261029.json"),
+   and "route_subset_" in str(_rq.get("evidence") or ""),
    _rq)
 _p_rq2 = DS.build_plan(FACT_Q, {"route": "0"}, requested="daosheng",
                        is_mock=True, balance_cny=50.0)
@@ -346,13 +346,26 @@ _p_full = DS.build_plan(FACT_Q, {"route": "0,1,both,all", "rounds": "1"},
                         requested="daosheng", is_mock=True, balance_cny=50.0)
 ck("I8 四层 route ⇒ 无省层收益判定",
    not ((_p_full.get("dynamic_opt") or {}).get("route_pruning")))
-_p_long = DS.build_plan(FACT_Q, {"route": "0",
-                                 "rounds": "0:3,1:3,both:3,all:3"},
+_rs = json.loads((ROOT / "docs" / "route_subset_reasoning_ab_20261029.json")
+                 .read_text(encoding="utf-8"))
+ck("I9 reasoning 实测证据存在（route0 vs full，2 reps）",
+   len(_rs.get("rows") or []) == 4 and "summary" in _rs)
+_p_long = DS.build_plan(REASON_Q, {"route": "0",
+                                   "rounds": "0:2,1:2,both:2,all:2"},
                         requested="daosheng", is_mock=True, balance_cny=50.0)
 _pl = (_p_long.get("dynamic_opt") or {}).get("route_pruning") or {}
-ck("I9 长程省层：模型估算收益大 ⇒ advice=subset_may_save（仍需质量证据）",
+ck("I10 reasoning 长程：题型实测收益≈39% ⇒ advice=subset_may_save",
    _pl.get("advice") == "subset_may_save"
-   and float(_pl.get("saved_pct_estimate") or 0) >= 0.10, _pl)
+   and float(_pl.get("saved_pct_estimate") or 0) >= 0.30
+   and str(_pl.get("evidence") or "").endswith("route_subset_reasoning_ab_20261029.json"),
+   _pl)
+_p_fact_long = DS.build_plan(FACT_Q, {"route": "0",
+                                      "rounds": "0:3,1:3,both:3,all:3"},
+                             requested="daosheng", is_mock=True, balance_cny=50.0)
+_pf = (_p_fact_long.get("dynamic_opt") or {}).get("route_pruning") or {}
+ck("I11 fact 长程：题型实测≈0 覆盖模型估算 ⇒ keep_four_layers",
+   _pf.get("advice") == "keep_four_layers"
+   and float(_pf.get("saved_pct_estimate") or 0) < 0.05, _pf)
 
 print("── C build_plan 接线 ──")
 _p6 = DS.build_plan(FACT_Q, {}, requested="daosheng", is_mock=True, balance_cny=6.0)

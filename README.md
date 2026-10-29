@@ -3,21 +3,21 @@
 一个**单文件四层螺旋推理引擎** + **V2 三平面核心** + **本地 Web 工作台**：
 修行 / 研究 / 对撞 / 元，跑出可审计、可回放、可融合的产物。
 
-- **当前版本**：V2.2.31（省层收益判定：6 跑多样本 A/B；短程事实省层≈0 → keep_four_layers） / App 2.0.56（本地链路全生命周期守护 + health 读数 + 本地档预设；道生专属模式 + 三体动态计划 + 预算守卫）
-- **生产引擎**：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.31.py
+- **当前版本**：V2.2.32（kind-aware 省层收益：reasoning 实测省 ~39%，fact ≈0） / App 2.0.57（本地链路全生命周期守护 + health 读数 + 本地档预设；道生专属模式 + 三体动态计划 + 预算守卫）
+- **生产引擎**：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.32.py
 - **V2 核心**：dgtf_engine/dgtf_v2/
-- **人用界面**：dgtf_app/（App 2.0.56，本地链路两段守护 + 道生专属模式 + DSH 本对话实时镜像 + 会话列表实时打开 + 健康读数缓存）
+- **人用界面**：dgtf_app/（App 2.0.57，本地链路两段守护 + 道生专属模式 + DSH 本对话实时镜像 + 会话列表实时打开 + 健康读数缓存）
 - **本地链路**：dgtf_local_llm/（8772 推理服务，fp32 底座 + CUDA graph 采样/复用）+ scripts/local_model/openai_shim.py（8773 OpenAI 适配层）
-- **融合实现**：单引擎内联（Meta-DGTF-V2.2.31.py）；V2.1 外部模块仅作回滚参考
+- **融合实现**：单引擎内联（Meta-DGTF-V2.2.32.py）；V2.1 外部模块仅作回滚参考
 - **历史清单**：dgtf_engine/dgtf_v2/history_manifest.json
 - **版本规范**：dgtf_engine/dgtf_v2/NAMING.md
 - **历史归档**：元DGTF-V1历史归档-20261023.zip（V1.0 → V1.30.4）
 
 > 这份 README 只写能被验证的事；详细来源、能力、版本演化见 docs/history/。
-> **2026-10-29 收束同步（V2.2.31 / App 2.0.56）**：V2 **71/71（1208 checks，SKIP 0）**；fast_gate **16/16**（动态选最高版引擎；含发布流程门自检；audit70 71/0）；
-> App selftest **455/0**（自动门）；一键验收 **PASS 30 / SKIP 0 / FAIL 0**；发布流程门 **PASS（N/A 项带原因）**；动态配置/省层判定 **73/73**、更优/route 安全门 **30/30**、全链路真跑 **16/16**、道生统一模式 **27/27**、自动模式真跑 **12/12**；服务适配器 self_check=v8b / self_check_min=v9b / dual_judge=judge_v3 / route=qwen05b_v1。
+> **2026-10-29 收束同步（V2.2.32 / App 2.0.57）**：V2 **71/71（1208 checks，SKIP 0）**；fast_gate **16/16**（动态选最高版引擎；含发布流程门自检；audit70 71/0）；
+> App selftest **455/0**（自动门）；一键验收 **PASS 30 / SKIP 0 / FAIL 0**；发布流程门 **PASS（N/A 项带原因）**；动态配置/kind 收益 **75/75**、更优/route 安全门 **30/30**、全链路真跑 **16/16**、道生统一模式 **27/27**、自动模式真跑 **12/12**；服务适配器 self_check=v8b / self_check_min=v9b / dual_judge=judge_v3 / route=qwen05b_v1。
 > **APP→引擎→本地模型全链路**：e2e 18/18（本地链路验证档，热缓存 14.7s；冷缓存 55.7～106.7s 见快照）；四层目标探针 81/81；JSON 结构门 A/B 总墙钟 −55%；
-> 四层目标逐层结论（V2.2.31 复跑）：层0 达成（excavate=0，读数在 0/0.25/0.5/1 间波动的单次方差已多轮记录）/ 层1 未测出（settlement.total=0）/ both 判据样本不足（flat 需 3 点）/ all 未达成（0.5）。
+> 四层目标逐层结论（V2.2.32 复跑）：层0 未达成（excavate=1.0，读数在 0/0.25/0.5/1 间波动的单次方差已多轮记录）/ 层1 未测出（settlement.total=0）/ both 判据样本不足（flat 需 3 点）/ all 未达成（0.5）。
 > 完整现状见 `docs/项目状态快照_20261029.md`。
 
 ## 一、它是什么
@@ -38,7 +38,7 @@ Meta-DGTF-道生三阶模型源于用户与 DGTF 的长对话（分享 ID: 44iyn
 
 详细定义、边界、不是什么：docs/history/Meta-DGTF-道生三阶模型-来源与定义.md。
 
-## 二、V2.2.x 的核心能力（V2.2.0 行为融合 + V2.2.1–V2.2.13 补丁谱系 + V2.2.14 本地档 few-shot/降档 + V2.2.15 stage 登记闭环与本地链路提速 + V2.2.16 JSON 结构门与本地档自动切 + V2.2.17 本地 prompt 瘦身 + V2.2.18 发布流程门与证据出口 + V2.2.19 输入驱动自动模式/每模式专属配置/动态调整 + V2.2.20 道生支路接入统一模式体系 + V2.2.21 道生=标准模式融合 + V2.2.22 动态最优配置全流程可达与更优判据 + V2.2.23 route 安全门修复 + V2.2.24 动态配置/依赖优化 + V2.2.25 多圈档/缓存感知 + V2.2.26 route 子集成本模型 + V2.2.27 App 开销/阶段路由/引擎依赖闭包 + V2.2.28 预算 token 硬上限 + V2.2.29 预算墙钟硬上限 + V2.2.30 层子集质量风险 + V2.2.31 省层收益判定）
+## 二、V2.2.x 的核心能力（V2.2.0 行为融合 + V2.2.1–V2.2.13 补丁谱系 + V2.2.14 本地档 few-shot/降档 + V2.2.15 stage 登记闭环与本地链路提速 + V2.2.16 JSON 结构门与本地档自动切 + V2.2.17 本地 prompt 瘦身 + V2.2.18 发布流程门与证据出口 + V2.2.19 输入驱动自动模式/每模式专属配置/动态调整 + V2.2.20 道生支路接入统一模式体系 + V2.2.21 道生=标准模式融合 + V2.2.22 动态最优配置全流程可达与更优判据 + V2.2.23 route 安全门修复 + V2.2.24 动态配置/依赖优化 + V2.2.25 多圈档/缓存感知 + V2.2.26 route 子集成本模型 + V2.2.27 App 开销/阶段路由/引擎依赖闭包 + V2.2.28 预算 token 硬上限 + V2.2.29 预算墙钟硬上限 + V2.2.30 层子集质量风险 + V2.2.31 省层收益判定 + V2.2.32 kind-aware 收益）
 
 ### 四层螺旋
 
@@ -114,13 +114,13 @@ DGTF_BASE_URL=https://api.deepseek.com
 ### 跑一次
 
 ~~~bash
-python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.31.py "你的问题"
+python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.32.py "你的问题"
 
 # 四层各一圈
-python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.31.py --route 0,1,both,all --rounds 1 "你的问题"
+python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.32.py --route 0,1,both,all --rounds 1 "你的问题"
 
 # 质量/成本预设
-python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.31.py -c configs/方案F-帕累托最优.yaml "你的问题"
+python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.32.py -c configs/方案F-帕累托最优.yaml "你的问题"
 ~~~
 
 常用参数：
@@ -148,10 +148,11 @@ python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.31.py -c configs/方案F-帕累
 | **APP→引擎→本地模型 e2e** | **18 / 18 PASS**，冷缓存真跑 **14.7～106.7s**（本地链路验证档；V2.2.15 同判据 124.9～157.9s；热缓存不计），零 API 成本 |
 | **JSON 结构门受控 A/B**（17 条固定真实 prompt） | JSON 解析率 35%→**59%**、撞上限率 41%→**6%**、总墙钟 −**55%**（详见 docs/releases/V2.2.16.md） |
 | **本地 prompt 瘦身**（584 条真实 prompt 离线 + 16 条机制级 A/B） | 可省 **45.3%** token（schema 零丢失）；机制级 prompt 字符 −38.7%、token −15.4%（受 2048 截断上限所限）；尾部指令不再被右截断（详见 docs/releases/V2.2.17.md） |
-| **四层目标探针**（route 0/1/0,1,both/0,1,all） | **82 / 82 PASS**（V2.2.31 复跑：4 case 共 248 calls，墙钟 505.4s）；层0 达成（excavate=0.0）/ 层1 未测出 / both 判据样本不足（fuse=0.0）/ all 未达成（0.5） |
+| **四层目标探针**（route 0/1/0,1,both/0,1,all） | **82 / 82 PASS**（V2.2.32 复跑：4 case 共 214 calls，墙钟 507.2s）；层0 未达成（excavate=1.0，单次方差）/ 层1 未测出 / both 判据样本不足（fuse=0.0）/ all 未达成（0.5） |
 | 本地服务延迟 | p50 3.0–3.5s、p95 8–9s（单 token graph replay 59→28ms）；JSON 约束后单次中位 3842→1651ms |
 | 四层全跑 | 136 calls / 818.4s（V2.2.14 快照；四层读数全出） |
-| **省层收益判定（V2.2.31）** | 6 跑多样本 A/B：三臂 tokens 61-67k 无显著差异（省层收益≈0），verified/ready 方差主导；短程事实 keep_four_layers，长程高圈 subset_may_save（仅提示）；判据 73 项 |
+| **kind-aware 省层收益（V2.2.32）** | reasoning 4 跑：route0 39.6-46k vs full 70.7-74.9k tokens（省 ~39%）；fact 6 跑 61-67k 无差异（≈0）；route_pruning 题型实测优先（fact 任意长度 keep，reasoning may_save 仅提示）；判据 75 项 |
+| 省层收益判定（V2.2.31） | 6 跑多样本 A/B：短程事实 keep_four_layers；长程模型估算 may_save |
 | 层子集质量风险（V2.2.30） | 3 臂 A/B；默认 union 四层；显式省层标 high/info + 证据 |
 | 预算墙钟硬上限（V2.2.29） | max_minutes=估算 tokens/600×1.5（最低 1 分钟）→ --max-minutes；显式优先、ok 档不限 |
 | 预算 token 硬上限（V2.2.28） | plan.max_tokens=估算×1.5（最低 20k）→ --max-tokens；显式优先；budget_cap 可审计 |
@@ -208,7 +209,7 @@ local_model\envs\dgtf_llm_env\Scripts\python.exe -m pip check
 
 | 路径 | 是什么 |
 |---|---|
-| dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.31.py | 当前生产引擎 |
+| dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.32.py | 当前生产引擎 |
 | dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.19.py | 上一基线（输入驱动自动模式 + 动态调整） |
 | dgtf_local_llm/ + scripts/local_model/openai_shim.py | 本地链路：8772 推理服务 / 8773 OpenAI 适配层 |
 | configs/本地模型-全链路.yaml | App 本地档预设（零 API 成本链路） |
@@ -267,12 +268,12 @@ local_model\envs\dgtf_llm_env\Scripts\python.exe -m pip check
 
 ## 九、当前收束
 
-- 版本：V2.2.31（App 2.0.56）
+- 版本：V2.2.32（App 2.0.57）
 - 历史版本：178 个快照（V1.0 → V2.0.0）
 - 能力轴：17 条，readiness=1.00
 - 行为臂：5 个（v1_spiral / v1_frontier / v2_contract / v2_pareto / fusion_full）
-- 收束报告：V2.2.31-收束报告.md
-- 发布说明：docs/releases/V2.2.31.md / docs/releases/V2.2.30.md / docs/releases/app-V2.0.56.md
+- 收束报告：V2.2.32-收束报告.md
+- 发布说明：docs/releases/V2.2.32.md / docs/releases/V2.2.31.md / docs/releases/app-V2.0.57.md
 - **优化交付（Round 1–83）**：`docs/最终交付说明-20261026.md`、
   `docs/验收总览-20261026.md`、`docs/ab_evidence_20261025.md`（§1–§78）
 - **本地模型默认**：v8b（mixed 配方，质量持平 v6、p50/p95 更快；训练/评测/切换全链证据）
