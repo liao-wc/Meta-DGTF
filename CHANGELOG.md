@@ -1,3 +1,25 @@
+【V2.2.21（2026-10-29，PATCH · 道生模式与标准模式融合；同发 App 2.0.46）】
+- 生产引擎：`dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.21.py`（__version__=2.2.21；引擎侧零行为差，
+  参数通道沿用 V2.2.20）；App 2.0.46。
+- ★ 融合：道生模式 = 标准模式。resolve_mode：auto → daosheng（auto-fused；project_related
+  只决定背景注入，不改链路）；standard → daosheng（fused-standard，requested 保留）；
+  全项目单一链路 = 道生 plan（preset + M4 + 预算守卫 + MODE_CONFIGS）→ --mode 透传 →
+  运行期 dynamic_adjust（rounds 锁定语义）→ 产物/回显。旧 standard 链路仅作计划生成
+  失败时的 fail-open 回退保留。
+- ★ 回显：mode 新增 fused / fused_from；前端标签"标准·道生"；App selftest 三处判据更新为
+  融合语义（总数不变）。
+- ★ 全链路打通：新增 `scripts/local_model/test_fused_full_chain.py`（服务型零 API）：
+  自起临时 App server → POST /api/tasks（auto 默认）→ 引擎真跑本地 0.5B →
+  校验 mode.id=daosheng/fused、plan.policy=daosheng.v1、engine_mode∈{B,fast}、
+  packed.provenance=V2.2.21、auto_mode.plan/adjustments、answer_gates/calls；
+  一键验收新增 fused_full_chain 步骤。
+- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
+  一键验收 --with-service PASS 28 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 81/81；
+  发布流程门 pre/post-tag 全 PASS（N/A 带原因）。
+- 兼容性：显式 mode=standard 调用方无感（201；id=daosheng/requested=standard）；
+  旧引擎 --mode 能力门控自动不透传。
+- 标签：V2.2.21 / engine-V2.2.21 / app-V2.0.46。
+
 【V2.2.20（2026-10-29，PATCH · 道生支路接入统一模式体系，方案 A；同发 App 2.0.45）】
 - 生产引擎：`dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.20.py`（__version__=2.2.20）；
   App 2.0.45（daosheng_mode/server 联动）。不给 --mode 时引擎行为与 V2.2.19 一致。

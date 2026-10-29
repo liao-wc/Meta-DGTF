@@ -946,14 +946,24 @@ def check_t3_daosheng(base: str, srv_src: str, runner_src: str,
     # ── ② mode 解析 ─────────────────────────────────────────
     m_auto_prj = dm.resolve_mode("auto", q_prj)
     m_auto_gen = dm.resolve_mode("auto", "1+1等于几？")
-    check("★T3 mode=auto：项目相关题 → daosheng（auto-rule）",
-          m_auto_prj["id"] == "daosheng" and m_auto_prj["source"] == "auto-rule",
-          m_auto_prj.get("reason"))
-    check("★T3 mode=auto：非项目题 → standard（既有 quality_policy 链路不变）",
-          m_auto_gen["id"] == "standard", m_auto_gen.get("reason"))
-    check("★T3 显式 mode=daosheng / daosheng_fast / standard 都能解析",
-          all(dm.resolve_mode(x, q_prj)["id"] == x
-              for x in ("daosheng", "daosheng_fast", "standard")), "")
+    # ★ [V2.2.21 融合] 道生模式 = 标准模式：auto 一律解析为 daosheng
+    check("★T3 mode=auto：统一解析为 daosheng（融合后道生=标准模式）",
+          m_auto_prj["id"] == "daosheng" and m_auto_prj["source"] == "auto-fused"
+          and m_auto_gen["id"] == "daosheng"
+          and m_auto_gen.get("fused") is True,
+          m_auto_gen.get("reason"))
+    check("★T3 mode=auto：project_related 只决定背景注入，不改链路",
+          m_auto_prj.get("project_related") is True
+          and m_auto_gen.get("project_related") is False
+          and "非项目题不注入" in str(m_auto_gen.get("reason")),
+          m_auto_gen.get("reason"))
+    check("★T3 显式 mode：daosheng/daosheng_fast 保持，standard 融合为 daosheng",
+          dm.resolve_mode("daosheng", q_prj)["id"] == "daosheng"
+          and dm.resolve_mode("daosheng_fast", q_prj)["id"] == "daosheng_fast"
+          and (lambda r: r["id"] == "daosheng"
+               and r.get("requested") == "standard"
+               and r.get("fused") is True)(dm.resolve_mode("standard", q_prj)),
+          "")
     check("★T3 mode 白名单准确（auto/daosheng/daosheng_fast/standard）",
           set(dm.VALID_MODES) == {"auto", "daosheng", "daosheng_fast",
                                   "standard"}, str(dm.VALID_MODES))
@@ -1411,18 +1421,23 @@ def check_t3_daosheng(base: str, srv_src: str, runner_src: str,
     s_gen, r_gen = _post_status("/api/tasks", {
         "question": "1+1等于几？", "mode": "auto", "opts": {"mock": True}})
     _mg = r_gen.get("mode") or {}
-    check("★T3 mode=auto 非项目题 → standard（既有链路/质量策略不变）",
-          s_gen == 201 and _mg.get("id") == "standard"
-          and str(r_gen.get("quality_policy") or "").startswith("auto:"),
-          "id=%s qp=%s" % (_mg.get("id"), r_gen.get("quality_policy")))
+    check("★T3 mode=auto 非项目题 → 也走道生模式（融合后单一链路）",
+          s_gen == 201 and _mg.get("id") == "daosheng"
+          and (_mg.get("plan") or {}).get("policy") == "daosheng.v1"
+          and _mg.get("fused") is True,
+          "id=%s fused=%s" % (_mg.get("id"), _mg.get("fused")))
     if r_gen.get("id"):
         _tids.append(str(r_gen["id"]))
         _cancel_wait(str(r_gen["id"]))
 
     s_sd, r_sd = _post_status("/api/tasks", {
         "question": q_prj, "mode": "standard", "opts": {"mock": True}})
-    check("★T3 显式 mode=standard：不改用道生 plan（mode.id=standard）",
-          s_sd == 201 and ((r_sd.get("mode") or {}).get("id") == "standard"), "")
+    _m_sd = r_sd.get("mode") or {}
+    check("★T3 显式 mode=standard：融合为道生 plan（id=daosheng/fused=True）",
+          s_sd == 201 and _m_sd.get("id") == "daosheng"
+          and _m_sd.get("fused") is True
+          and ((_m_sd.get("plan") or {}).get("policy") == "daosheng.v1"),
+          "id=%s requested=%s" % (_m_sd.get("id"), _m_sd.get("requested")))
     if r_sd.get("id"):
         _tids.append(str(r_sd["id"]))
         _cancel_wait(str(r_sd["id"]))

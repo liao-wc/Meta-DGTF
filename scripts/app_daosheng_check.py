@@ -135,9 +135,10 @@ def main() -> int:
     s3, r3 = req(base, "/api/tasks", {
         "question": "1+1等于几？", "mode": "auto", "opts": {"mock": True}})
     m3 = r3.get("mode") or {}
-    check("mode=auto 非项目题 → standard（既有链路）",
-          s3 == 201 and m3.get("id") == "standard"
-          and str(r3.get("quality_policy") or "").startswith("auto:"),
+    check("mode=auto 非项目题 → daosheng（融合后道生=标准模式）",
+          s3 == 201 and m3.get("id") == "daosheng"
+          and m3.get("fused") is True
+          and str(m3.get("plan", {}).get("policy") or "") == "daosheng.v1",
           "id=%s qp=%s" % (m3.get("id"), r3.get("quality_policy")))
     s4, r4 = req(base, "/api/tasks", {
         "question": "Meta-DGTF 项目背景注入是否重复？", "mode": "auto",

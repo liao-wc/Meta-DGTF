@@ -262,18 +262,19 @@ def resolve_mode(requested: str, question: str,
     if project_related is None:
         project_related = project_relevant(question)
     _prj = bool(project_related)
+    # ★ [V2.2.21 融合] 道生模式 = 标准模式：auto/standard 统一解析为 daosheng，
+    #   全项目只有一条调度链路（道生 plan：预设 + M4 + 预算守卫 + MODE_CONFIGS +
+    #   运行期动态调整）。project_related 只决定是否注入项目背景，不改链路。
     if req == "auto":
-        if _prj:
-            return {"id": "daosheng", "requested": req, "source": "auto-rule",
-                    "project_related": _prj,
-                    "reason": "auto 分流：项目相关题 → 道生专属模式（质量优先）"}
-        return {"id": "standard", "requested": req, "source": "auto-rule",
-                "project_related": _prj,
-                "reason": "auto 分流：非项目题 → 既有 quality_policy 全自动链路"}
+        return {"id": "daosheng", "requested": req, "source": "auto-fused",
+                "project_related": _prj, "fused": True,
+                "reason": ("auto → 道生模式（已融合为标准模式；项目相关题注入项目背景）"
+                           if _prj else
+                           "auto → 道生模式（已融合为标准模式；非项目题不注入项目背景）")}
     if req == "standard":
-        return {"id": "standard", "requested": req, "source": "explicit",
-                "project_related": _prj,
-                "reason": "显式 standard：保持既有 quality_policy 全自动链路"}
+        return {"id": "daosheng", "requested": req, "source": "fused-standard",
+                "project_related": _prj, "fused": True,
+                "reason": "standard 已并入道生模式（融合为标准模式，单一链路）"}
     if req == "daosheng_fast":
         return {"id": "daosheng_fast", "requested": req, "source": "explicit",
                 "project_related": _prj,
@@ -1340,6 +1341,9 @@ def build_plan(question: str, opts: dict | None = None, *,
         "mode_source": resolved.get("source"),
         "tier": tier,
         "engine_mode": engine_mode,
+        # ★ [V2.2.21] 融合标记：道生模式即标准模式；requested 保留原始入口
+        "fused": True,
+        "fused_from": str(resolved.get("requested") or ""),
         # [V2.2.20 方案 A] 统一模式体系：引擎据此启用 MODE_CONFIGS + dynamic_adjust
         "mode": engine_mode,
         "unified_config": dict(_unified_cfg or {}),

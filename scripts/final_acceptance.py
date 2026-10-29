@@ -82,6 +82,9 @@ STEPS = [
     ("max_new_cap", ["scripts/local_model/test_max_new_cap.py"], POLICY_STRICT),
     # [V2.2.18] App selftest 自动门（自起临时 server；起不来 exit=2 = 没跑）
     ("app_selftest", ["scripts/app_selftest_gate.py"], POLICY_SERVICE),
+    # [V2.2.21] 融合后全链路真跑：App(auto→daosheng) → 引擎 → 本地模型 → 产物 → 读数
+    ("fused_full_chain", ["scripts/local_model/test_fused_full_chain.py"],
+     POLICY_SERVICE),
     # [V2.2.20] 道生支路接入统一模式体系（方案 A）：统一配置/rounds_locked/mode 透传
     ("daosheng_unified", ["scripts/local_model/test_daosheng_unified.py"],
      POLICY_STRICT),

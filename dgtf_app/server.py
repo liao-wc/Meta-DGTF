@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "2.0.45"
+APP_VERSION = "2.0.46"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -10078,7 +10078,8 @@ class Handler(BaseHTTPRequestHandler):
             #   Lead 决策 2：daosheng 分支自己注入「项目背景 + EML 记忆」，
             #   判定落在 quality_policy 注入之前 ⇒ 不会出现双份背景；
             #   plan.context_injected 记录实际注入了什么（可审计）。
-            #   mode 默认 auto：项目相关题 → daosheng；其它 → 既有 quality_policy 全自动链路。
+            #   [V2.2.21 融合] mode 默认 auto 一律走道生模式（道生=标准模式，单一链路）；
+            #   standard 入口作为别名解析到 daosheng；仅 plan 生成失败时 fail-open 回旧链路。
             _mode_req = data.get("mode")
             if _mode_req is None:
                 _mode_req = opts.pop("mode", None)
@@ -10314,6 +10315,9 @@ class Handler(BaseHTTPRequestHandler):
                 _mode_info = {
                     "id": _ds_plan.get("mode_id") or _mode_resolved.get("id"),
                     "requested": _mode_req,
+                    # ★ [V2.2.21] 融合标记：id=daosheng 即标准模式
+                    "fused": True,
+                    "fused_from": _ds_plan.get("fused_from") or _mode_req,
                     "tier": _ds_plan.get("tier"),
                     "policy": _ds_plan.get("policy"),
                     "engine_mode": _ds_plan.get("engine_mode"),

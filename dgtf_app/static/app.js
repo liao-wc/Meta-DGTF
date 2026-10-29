@@ -1240,7 +1240,8 @@ function renderMeta() {
   const _mode = (t.mode && typeof t.mode === 'object' && t.mode.id) ? t.mode : null;
   if (_mode) {
     const _plan = (_mode.plan && typeof _mode.plan === 'object') ? _mode.plan : {};
-    const _label = { daosheng: '道生专属', daosheng_fast: '道生专属·省档',
+    const _label = { daosheng: (_mode.fused ? '标准·道生' : '道生专属'),
+                     daosheng_fast: '道生专属·省档',
                      standard: '标准模式' }[_mode.id] || _mode.id;
     const _eng = _mode.engine_mode || _plan.engine_mode || '';
     const _budget = (_mode.budget_guard || _plan.budget_guard || {}).decision || '';

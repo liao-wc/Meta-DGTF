@@ -1,54 +1,54 @@
 {
  "ok": true,
- "version": "2.0.45",
+ "version": "2.0.46",
  "cache_tags": [
-  "2.0.45-daosheng-unified"
+  "2.0.46-fused-standard"
  ],
  "checks": [
   {
    "name": "APP_VERSION 可读",
    "ok": true,
-   "detail": "2.0.45"
+   "detail": "2.0.46"
   },
   {
    "name": "静态查询串同版本",
    "ok": true,
-   "detail": "['2.0.45-daosheng-unified']"
+   "detail": "['2.0.46-fused-standard']"
   },
   {
    "name": "根 README 当前版本",
    "ok": true,
-   "detail": "2.0.45"
+   "detail": "2.0.46"
   },
   {
    "name": "App README 当前版本",
    "ok": true,
-   "detail": "2.0.45"
+   "detail": "2.0.46"
   },
   {
    "name": "PROJECT_LAYOUT 当前版本",
    "ok": true,
-   "detail": "2.0.45"
+   "detail": "2.0.46"
   },
   {
    "name": "发布说明存在",
    "ok": true,
-   "detail": "2.0.45"
+   "detail": "2.0.46"
   },
   {
    "name": "CHANGELOG 含当前 App 版本",
    "ok": true,
-   "detail": "2.0.45"
+   "detail": "2.0.46"
   },
   {
    "name": "NAMING 当前 App 版本",
    "ok": true,
-   "detail": "2.0.45"
+   "detail": "2.0.46"
   },
   {
    "name": "NAMING App 发布标签",
    "ok": true,
-   "detail": "2.0.45"
+   "detail": "2.0.46"
   }
  ]
 }
