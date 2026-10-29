@@ -24,7 +24,24 @@
   一键验收 --with-service PASS 25 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 81/81；
   file_integrity bad=0；verify_project_paths PASS；DSH 闭环 2 项 FAIL 归类 N/A（证据陈旧/
   用户实例不可达，原因显式）；历史融合 readiness 1.00；pareto_flow 基线可复跑。
-- 标签：V2.2.18 / engine-V2.2.18；App 2.0.42
+- 标签：V2.2.18 / engine-V2.2.18；App 2.0.43
+
+【主题】修正默认总超时为 1800s，解决“跑得完却被 1200s 截断”的根因。
+
+【根因证据】
+- 最新超时跑 20261028_193212_a7a5e1 在 1200s 终止时仍在 B 第 8/9 波推进，日志到 19:51:23 仍有调用。
+- 历史 verified 真跑最大墙钟 1427.3s，1200s 上限低于已验证上限。
+- 因此 1200s 会截断本可完成的真跑，而不是抓住无限卡死。
+
+【改变】
+- DGTF_TASK_TIMEOUT_S 默认 1200 → 1800 秒。
+- 保留 DGTF_TASK_STALL_S=600 停滞看门狗：无日志增长仍会提前终止。
+- 显式 timeout_s 优先；环境变量可覆盖。
+
+【验证】
+- App 全方位检查；版本一致性；selftest；fast_gate。
+- 静态缓存串：2.0.43-timeout30。
+App 2.0.42
 
 【主题】任务归档保留超时/停滞标志，修复超时不可诊断。
 

@@ -1,7 +1,7 @@
 {
  "ok": true,
  "app": "https://127.0.0.1:8765",
- "ts": 1793232384.1278281,
+ "ts": 1793232864.3397672,
  "n": 56,
  "fails": [],
  "warnings": [
@@ -16,77 +16,77 @@
   {
    "name": "GET /api/health",
    "ok": true,
-   "detail": "code=200 965ms"
+   "detail": "code=200 715ms"
   },
   {
    "name": "GET /api/config",
    "ok": true,
-   "detail": "code=200 4964ms"
+   "detail": "code=200 2334ms"
   },
   {
    "name": "GET /api/dashboard",
    "ok": true,
-   "detail": "code=200 1967ms"
+   "detail": "code=200 2683ms"
   },
   {
    "name": "GET /api/tasks",
    "ok": true,
-   "detail": "code=200 27ms"
+   "detail": "code=200 18ms"
   },
   {
    "name": "GET /api/agent/knowledge",
    "ok": true,
-   "detail": "code=200 18ms"
+   "detail": "code=200 8ms"
   },
   {
    "name": "GET /api/agent/hot-topics",
    "ok": true,
-   "detail": "code=200 29ms"
+   "detail": "code=200 6ms"
   },
   {
    "name": "GET /api/status/activity",
    "ok": true,
-   "detail": "code=200 378ms"
+   "detail": "code=200 373ms"
   },
   {
    "name": "GET /api/status/sidebar",
    "ok": true,
-   "detail": "code=200 215ms"
+   "detail": "code=200 266ms"
   },
   {
    "name": "GET /api/schedule/v2",
    "ok": true,
-   "detail": "code=200 64ms"
+   "detail": "code=200 46ms"
   },
   {
    "name": "GET /api/schedule/v2/online",
    "ok": true,
-   "detail": "code=200 5ms"
+   "detail": "code=200 28ms"
   },
   {
    "name": "GET /api/schedule/v2/pareto",
    "ok": true,
-   "detail": "code=200 41ms"
+   "detail": "code=200 40ms"
   },
   {
    "name": "GET /api/schedule/policy",
    "ok": true,
-   "detail": "code=200 23ms"
+   "detail": "code=200 5ms"
   },
   {
    "name": "GET /api/dsh/guard",
    "ok": true,
-   "detail": "code=200 19ms"
+   "detail": "code=200 17ms"
   },
   {
    "name": "GET /api/dsh/proposals",
    "ok": true,
-   "detail": "code=200 259ms"
+   "detail": "code=200 312ms"
   },
   {
    "name": "静态缓存版本一致",
    "ok": true,
-   "detail": "2.0.42-timeoutmeta"
+   "detail": "2.0.43-timeout30"
   },
   {
    "name": "GET /static/index.html",
@@ -266,7 +266,7 @@
   {
    "name": "App 版本一致性",
    "ok": true,
-   "detail": "串同版本\",\n   \"ok\": true,\n   \"detail\": \"['2.0.42-timeoutmeta']\"\n  },\n  {\n   \"name\": \"根 README 当前版本\",\n   \"ok\": true,\n   \"detail\": \"2.0.42\"\n  },\n  {\n   \"name\": \"App README 当前版本\",\n   \"ok\": true,\n   \"detail\": \"2.0.42\"\n  },\n  {\n   \"name\": \"PROJECT_LAYOUT 当前版本\",\n   \"ok\": true,\n   \"detail\": \"2.0.42\"\n  },\n  {\n "
+   "detail": "查询串同版本\",\n   \"ok\": true,\n   \"detail\": \"['2.0.43-timeout30']\"\n  },\n  {\n   \"name\": \"根 README 当前版本\",\n   \"ok\": true,\n   \"detail\": \"2.0.43\"\n  },\n  {\n   \"name\": \"App README 当前版本\",\n   \"ok\": true,\n   \"detail\": \"2.0.43\"\n  },\n  {\n   \"name\": \"PROJECT_LAYOUT 当前版本\",\n   \"ok\": true,\n   \"detail\": \"2.0.43\"\n  },\n  {\n "
   },
   {
    "name": "UI 自动化回归",

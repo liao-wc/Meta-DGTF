@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "2.0.42"
+APP_VERSION = "2.0.43"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -10130,7 +10130,7 @@ class Handler(BaseHTTPRequestHandler):
             # 生产默认任务上限：防止真实跑失控；可通过环境变量调整。
             if not _is_mock_task and not opts.get("timeout_s") and not opts.get("max_seconds"):
                 try:
-                    opts["timeout_s"] = max(60, int(os.getenv("DGTF_TASK_TIMEOUT_S", "1200")))
+                    opts["timeout_s"] = max(60, int(os.getenv("DGTF_TASK_TIMEOUT_S", "1800")))
                 except (TypeError, ValueError):
                     opts["timeout_s"] = 3600
             if _pctx_opt is None:
