@@ -1198,6 +1198,11 @@ def _short_run_anchor(kind, web, route, rounds, engine_mode):
         return float(_a.get("0") or _a["full"])
     return float(_a["full"])
 
+# ★ [V2.2.36] 项目背景注入成本（A/B：默认注入 48,173 vs 关闭 42,511，+5,662 tokens）
+_CONTEXT_COST = {"project": {"tokens": 5662, "n": 2,
+                             "evidence": "docs/project_context_ab_20261029.json",
+                             "note": "项目题 RAG+EML 注入实测 +5,662 tokens（约 ¥0.011）"}}
+
 _un0, _un1 = _CALIB["u0"], _CALIB["u1"]
 _avg = (_un0 + _un1) / 2.0
 _base01 = 2 * _un0 + 3 * _un1
@@ -1274,7 +1279,8 @@ def dynamic_config(*, ds: dict | None = None, tier: str = "quality",
                    scenario: dict | None = None, quality_first: bool = False,
                    require_web: bool = False, opts: dict | None = None,
                    project_related: bool = False, route=None,
-                   cache: dict | None = None) -> dict:
+                   cache: dict | None = None,
+                   context_injected: bool = False) -> dict:
     """在现有资源（余额/历史/场景）上枚举可行配置，选质量最高且成本可控者。
 
     返回可审计 dict；applied 只含安全可覆盖项（rounds/web），显式 opts 永远优先。
@@ -1347,6 +1353,10 @@ def dynamic_config(*, ds: dict | None = None, tier: str = "quality",
                     tok = base_tok * factor
                 tok = tok * float(_CALIB.get("app_overhead") or 1.0)
                 _cost_source = "route_subset_rounds.v1+app_overhead"
+            _ctx_cost = 0.0
+            if context_injected:
+                _ctx_cost = float((_CONTEXT_COST.get("project") or {}).get("tokens") or 0)
+                tok += _ctx_cost
             q = base_q
             if wb == "on" and kind == "fact":
                 # token 增量已在 _route_round_tokens 内计入，这里只抬质量
@@ -1368,7 +1378,8 @@ def dynamic_config(*, ds: dict | None = None, tier: str = "quality",
                                "est_cost_effective_cny": cost_eff,
                                "cache_hit": _cache_hit,
                                "budget_level": level, "feasible": bool(feasible),
-                               "cost_source": _cost_source})
+                               "cost_source": _cost_source,
+                               "context_tokens": int(_ctx_cost)})
     feasible_cs = [c for c in candidates
                    if c["feasible"] and c["est_quality"] >= floor - 1e-9]
     fallback = not feasible_cs
@@ -1414,6 +1425,8 @@ def dynamic_config(*, ds: dict | None = None, tier: str = "quality",
             "app_overhead": float(_CALIB.get("app_overhead") or 1.0),
             "candidates": candidates, "chosen": chosen,
             "applied": applied, "fallback": fallback, "why": why,
+            "context_cost": (dict(_CONTEXT_COST.get("project") or {})
+                             if context_injected else {}),
             "regret": 0.0 if not fallback else None}
 
 
@@ -1696,7 +1709,9 @@ def build_plan(question: str, opts: dict | None = None, *,
                          web=web, rounds=rounds, budget_guard=bg,
                          scenario=_sc1, quality_first=quality_first,
                          require_web=_require_web, opts=opts,
-                         project_related=_prj, route=_dyn_route, cache=cache)
+                         project_related=_prj, route=_dyn_route, cache=cache,
+                         context_injected=bool(
+                             _prj and opts.get("project_context") is not False))
     _dyn_applied = dyn.get("applied") or {}
     if _dyn_applied.get("rounds"):
         rounds = str(_dyn_applied["rounds"])

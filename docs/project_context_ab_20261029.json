@@ -1,0 +1,57 @@
+{
+ "schema": "metadgtf.project_context_ab.v1",
+ "ts": "2026-10-29 17:47:14",
+ "question": "Meta-DGTF 道生三阶模型的项目当前状态如何？",
+ "kind": "project",
+ "fixed": {
+  "route": "0",
+  "rounds": "0:1",
+  "web": "off",
+  "balance_assumed": 50.0,
+  "max_tokens": 120000
+ },
+ "rows": [
+  {
+   "arm": "A-ctx-on",
+   "opts_extra": {},
+   "status": "done",
+   "wall_s": 141.4,
+   "calls": 8,
+   "tokens": 48173,
+   "cost_cny": 0.096,
+   "answer_quality": "unverified",
+   "answer_ready": false,
+   "context_injected": [
+    "project_context:RAG",
+    "memory:EML(386字)"
+   ],
+   "quality_policy": "auto:verified",
+   "packed": "20261029_174520_Meta-DGTF-道生三阶模型项目.packed.json"
+  },
+  {
+   "arm": "B-ctx-off",
+   "opts_extra": {
+    "project_context": false
+   },
+   "status": "done",
+   "wall_s": 113.1,
+   "calls": 10,
+   "tokens": 42511,
+   "cost_cny": 0.085,
+   "answer_quality": "unverified",
+   "answer_ready": false,
+   "context_injected": [
+    "project_context:RAG",
+    "memory:EML(380字)"
+   ],
+   "quality_policy": "auto:verified",
+   "packed": "20261029_174714_项目自进化记忆EML相关性摘要.packed.json"
+  }
+ ],
+ "delta": {
+  "tokens": 5662,
+  "cost_cny": 0.011,
+  "note": "正值=默认注入比关闭多花的 tokens"
+ },
+ "note": "项目背景/RAG 注入成本；单次采样"
+}

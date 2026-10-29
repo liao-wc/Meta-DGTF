@@ -396,6 +396,29 @@ ck("K7 reasoning 高圈 full：chosen≈62,317（高圈锚点）",
    _cr2f.get("est_tokens"))
 
 
+print("── L 项目背景注入成本（V2.2.36，实测 +5,662 tokens）──")
+_ctx_ev = json.loads((ROOT / "docs" / "project_context_ab_20261029.json")
+                     .read_text(encoding="utf-8"))
+ck("L1 项目上下文 A/B 证据存在（on/off 两臂）",
+   len(_ctx_ev.get("rows") or []) == 2
+   and int((_ctx_ev.get("delta") or {}).get("tokens") or 0) > 0)
+_p_ctx = DS.build_plan(PROJ_Q, {"route": "0", "rounds": "0:1"},
+                       requested="daosheng", is_mock=True, balance_cny=50.0)
+_dctx = (_p_ctx.get("dynamic_opt") or {})
+ck("L2 项目题默认：context_cost=5,662 且计入 chosen",
+   int((_dctx.get("context_cost") or {}).get("tokens") or 0) == 5662
+   and int(((_dctx.get("chosen") or {}).get("context_tokens")) or 0) == 5662,
+   _dctx.get("context_cost"))
+_p_ctx_off = DS.build_plan(PROJ_Q, {"route": "0", "rounds": "0:1",
+                                    "project_context": False},
+                           requested="daosheng", is_mock=True, balance_cny=50.0)
+_doff = (_p_ctx_off.get("dynamic_opt") or {})
+ck("L3 显式 project_context=false：不计上下文成本（chosen 42,798）",
+   not _doff.get("context_cost")
+   and abs(int((_doff.get("chosen") or {}).get("est_tokens") or 0) - 42798) / 42798 < 0.15,
+   (_doff.get("context_cost"), (_doff.get("chosen") or {}).get("est_tokens")))
+
+
 print("── J 短程实测锚点（V2.2.33，B 模式每层 1 圈）──")
 _p_j = DS.build_plan(FACT_Q, {"route": "0,1,both,all",
                               "rounds": "0:1,1:1,both:1,all:1"},

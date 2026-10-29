@@ -1,3 +1,19 @@
+【V2.2.36（2026-10-29，PATCH · 项目背景注入成本；同发 App 2.0.61）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.36.py（__version__=2.2.36；引擎侧零行为差）；
+  App 2.0.61。
+- ★ 项目背景 A/B（2 跑约 ¥0.18，route=0/rounds=0:1/web off）：默认注入 48,173 tokens vs
+  project_context=false 42,511（+5,662 tokens 约 ¥0.011）；两臂均 unverified。
+- ★ 动态 context_cost：_CONTEXT_COST（project 5,662/n=2）；dynamic_config 项目题且未显式
+  关闭时候选 token += context 成本，记录 context_tokens；dynamic_opt.context_cost 可审计；
+  显式 project_context=false 不计成本（回到 42,798 基础锚点）。
+- 判据：test_dynamic_opt 87→90（上下文 A/B 证据、默认 context_cost=5,662、显式关闭不计）；
+  回归 fused_optimal 30 / fused_full_chain 16 / daosheng_unified 27 / auto_mode_local 12。
+- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
+  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
+  发布流程门 pre/post-tag 全 PASS。
+- 兼容性：显式 project_context=false 仍可关闭；默认四层/省层判定不变；仅成本估算变化。
+- 标签：V2.2.36 / engine-V2.2.36 / app-V2.0.61。
+
 【V2.2.35（2026-10-29，PATCH · rounds 依赖省层收益；同发 App 2.0.60）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.35.py（__version__=2.2.35；引擎侧零行为差）；
   App 2.0.60。
