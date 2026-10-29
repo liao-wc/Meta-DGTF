@@ -142,6 +142,63 @@ def _to_ts(v, default: float = 0.0) -> float:
             return float(default)
 
 
+def _expected_quality(meta: dict):
+    """从 run.json 的 mode.plan 取该次会话的预期 verified 率（无则 None）。"""
+    try:
+        plan = ((meta or {}).get("mode") or {}).get("plan") or {}
+        qr = plan.get("quality_retry") or {}
+        v = qr.get("expected_verified_pct")
+        return (None if v is None else float(v))
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def _actual_quality(out_name: str) -> dict:
+    """从 packed 取实测质量（无 packed 返回 {}）。"""
+    try:
+        import json as _j
+        name = str(out_name or "")
+        if not name:
+            return {}
+        base = name[:-3] if name.lower().endswith(".md") else name
+        p = OUTPUTS_DIR / (base + ".packed.json")
+        if not p.is_file():
+            return {}
+        d = _j.loads(p.read_text(encoding="utf-8", errors="replace"))
+        q = d.get("quality") or {}
+        aq = str(q.get("answer_quality") or "")
+        return {"answer_quality": aq,
+                "answer_ready": bool(q.get("answer_ready")),
+                "verified": bool(aq == "verified" and q.get("answer_ready"))}
+    except Exception:  # noqa: BLE001
+        return {}
+
+
+def _quality_index() -> dict:
+    """问题文本 → 最新 packed 的实测质量（archive 无 output_name 时回退用）。"""
+    idx: dict = {}
+    try:
+        import json as _j
+        for p in OUTPUTS_DIR.rglob("*.packed.json"):
+            try:
+                d = _j.loads(p.read_text(encoding="utf-8", errors="replace"))
+                q = d.get("question")
+                if not q:
+                    continue
+                qq = d.get("quality") or {}
+                aq = str(qq.get("answer_quality") or "")
+                idx[str(q)] = {"answer_quality": aq,
+                               "answer_ready": bool(qq.get("answer_ready")),
+                               "verified": bool(aq == "verified"
+                                               and qq.get("answer_ready")),
+                               "mtime": p.stat().st_mtime}
+            except Exception:  # noqa: BLE001
+                continue
+    except Exception:  # noqa: BLE001
+        pass
+    return idx
+
+
 def list_chats(limit: int = 80) -> list[dict]:
     """历次「会话」= 一次提交，按时间倒序；给「历史对话」用（只读）。
 
@@ -151,6 +208,26 @@ def list_chats(limit: int = 80) -> list[dict]:
         同一条会**覆盖**归档那份并把 `live` 置 True。
     """
     chats: dict[str, dict] = {}
+    _qidx = {}
+
+    def _archive_quality(meta, ref):
+        qa = _actual_quality(str(meta.get("output_name") or ""))
+        if qa:
+            return qa
+        if not ref:
+            ref.update(_quality_index())
+        hit = ref.get(str(meta.get("question") or ""))
+        if not hit:
+            return {}
+        # ★ 时间窗：packed 与 run 创建时间相差 <=120s，防同名题串档
+        try:
+            created = _to_ts(meta.get("created_at"))
+            if created and abs(float(hit.get("mtime") or 0) - created) > 120:
+                return {}
+        except Exception:  # noqa: BLE001
+            pass
+        return {k: hit[k] for k in ("answer_quality", "answer_ready",
+                                    "verified")}
 
     # ① 归档（先铺底）
     for jp in OUTPUTS_DIR.glob("*.run.json"):
@@ -175,6 +252,10 @@ def list_chats(limit: int = 80) -> list[dict]:
             "archive_log": f"{stamp}.run.log",
             "archive_json": jp.name,
             "live": False,
+            # ★ [V2.2.56] 预期 vs 实测（历史卡片可直接展示）
+            "quality_expected": _expected_quality(meta),
+            "quality_actual": (_actual_quality(out)
+                               or _archive_quality(meta, _qidx)),
         }
 
     # ② 内存里的任务（活的那份覆盖归档）
@@ -200,6 +281,11 @@ def list_chats(limit: int = 80) -> list[dict]:
                 "duration_sec": (round(t["ended_at"] - t["started_at"], 1)
                                  if t.get("started_at") and t.get("ended_at") else None),
                 "live": True,
+                "quality_expected": (_expected_quality(t.get("mode") or {})
+                                     if not row.get("quality_expected")
+                                     else row.get("quality_expected")),
+                "quality_actual": (_actual_quality(out)
+                                   or row.get("quality_actual") or {}),
             })
             chats[key] = row
     except Exception:  # noqa: BLE001   读不到内存任务不影响归档那部分

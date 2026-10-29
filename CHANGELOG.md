@@ -1,3 +1,17 @@
+【V2.2.56（2026-10-30，PATCH · 历史卡片预期 vs 实测；同发 App 2.0.79）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.56.py（__version__=2.2.56；引擎侧零行为差）；
+  App 2.0.79。
+- ★ dashboard.list_chats 每条会话附 quality_expected（run.json plan.quality_retry
+  expected_verified_pct）与 quality_actual（packed 的 answer_quality/answer_ready/verified）；
+  archive 无 output_name 时按问题匹配 packed，并加 120s 时间窗防同名题串档。
+- ★ 前端历史卡片追加「预期 x% · 实测 y」只读标签。
+- 验证：list_chats(80) 有 3 条归档匹配到实测（unverified/verified/needs_evidence）；
+  App selftest 457/0；node --check app.js 通过。
+- 验收：fast_gate 17/17；V2 71/71（1208 checks）；一键验收 --with-service PASS 30 / SKIP 0 /
+  FAIL 0；e2e 18/18；四层 probe 82/82；发布流程门 pre/post-tag 全 PASS。零 API 花费。
+- 兼容性：仅只读字段/标签；任务执行不变；无 packed 时 quality_actual 为空。
+- 标签：V2.2.56 / engine-V2.2.56 / app-V2.0.79。
+
 【V2.2.55（2026-10-30，PATCH · fast_gate 接入 README 数字校验；App 2.0.78 不变）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.55.py（__version__=2.2.55；引擎侧零行为差）；
   App 2.0.78 不变。

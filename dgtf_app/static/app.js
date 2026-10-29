@@ -2671,7 +2671,7 @@ function renderHistory(tasks, hist) {
         ${h.mock ? '<span class="tag">mock</span>' : ''}
         ${dur ? `<span>${esc(dur)}</span>` : ''}
         ${h.output ? '<span>产物</span>' : ''}
-        ${why}
+        ${_qt}${why}
       </div></div>`;
   }).join('') + dsh.map(x => {
     const when = x.ts ? new Date(x.ts * 1000).toLocaleString('zh-CN',
@@ -3965,6 +3965,17 @@ function renderChats(items) {
     const cls = st === 'running' || st === 'queued' ? 'running'
               : (st === 'interrupted' ? 'interrupted'
               : (st === 'error' ? 'error' : (st === 'cancelled' ? 'cancelled' : 'done')));
+    /* ★ [V2.2.56] 历史卡片：预期 vs 实测（只读标签，无新按钮） */
+    const _qe = (it.quality_expected != null)
+      ? Math.round(Number(it.quality_expected) * 100) : null;
+    const _qac = (it.quality_actual && typeof it.quality_actual === 'object')
+      ? it.quality_actual : {};
+    const _qp = [];
+    if (_qe != null) _qp.push('预期 ' + _qe + '%');
+    if (_qac.answer_quality) _qp.push('实测 ' + _qac.answer_quality);
+    const _qt = _qp.length
+      ? '<span class="tag" title="' + esc(_qp.join(' · ')) + '">'
+        + esc(_qp.join(' · ')) + '</span>' : '';
     const why = (it.error && (st === 'interrupted' || st === 'error'))
       ? `<span class="why" title="${esc(it.error)}">${esc(it.error)}</span>` : '';
     /* ★ R34：日期并到**标题行右侧**，整条更矮 */
@@ -3976,7 +3987,7 @@ function renderChats(items) {
         ${it.live ? '' : '<span class="tag">归档</span>'}
         ${it.partial ? '<span class="tag">部分</span>' : ''}
         ${it.mock ? '<span class="tag">演练</span>' : ''}
-        ${why}
+        ${_qt}${why}
       </div>
     </div>`;
   }).join('');

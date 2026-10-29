@@ -1287,7 +1287,8 @@ def check_t3_daosheng(base: str, srv_src: str, runner_src: str,
           and "tier_advice" in js,
           "rl-qf=%d" % js.count("rl-qf"))
     check("★V2.2.53 预期 vs 实测：任务 GET 带 quality_actual 且前端展示",
-          "quality_actual" in js and "quality_actual" in srv_src,
+          "quality_actual" in js and "quality_actual" in srv_src
+          and "quality_expected" in js,
           "quality_actual js=%s srv=%s" % ("quality_actual" in js,
                                            "quality_actual" in srv_src))
 
