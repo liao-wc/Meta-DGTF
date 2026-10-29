@@ -82,6 +82,9 @@ STEPS = [
     ("max_new_cap", ["scripts/local_model/test_max_new_cap.py"], POLICY_STRICT),
     # [V2.2.18] App selftest 自动门（自起临时 server；起不来 exit=2 = 没跑）
     ("app_selftest", ["scripts/app_selftest_gate.py"], POLICY_SERVICE),
+    # [V2.2.20] 道生支路接入统一模式体系（方案 A）：统一配置/rounds_locked/mode 透传
+    ("daosheng_unified", ["scripts/local_model/test_daosheng_unified.py"],
+     POLICY_STRICT),
     # [V2.2.19] 自动模式真跑：--mode auto 由题面选 fast / 专属配置落参 / 最优性可审计
     ("auto_mode_local", ["scripts/local_model/test_auto_mode_local.py"],
      POLICY_SERVICE),

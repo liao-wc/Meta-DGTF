@@ -1040,11 +1040,15 @@ def check_t3_daosheng(base: str, srv_src: str, runner_src: str,
           p_deg["budget_guard"]["decision"] == "degrade"
           and p_deg["tier"] == "fast" and p_deg["engine_mode"] == "fast",
           p_deg["mode_reason"])
-    check("★T3 预算守卫：降级后落低圈/串行/thinking off（可执行参数一致）",
-          p_deg["parallel"] == "serial" and p_deg["thinking"] == "off"
+    # [V2.2.20 方案 A] 道生降级档接入统一模式配置：parallel 取 MODE_CONFIGS[fast]
+    # （实测 fast = B 并行 + thinking off）；低圈/thinking off 的语义保持不变。
+    check("★T3 预算守卫：降级后落统一模式配置（parallel=MODE_CONFIGS/thinking off/低圈）",
+          p_deg["parallel"] == (p_deg.get("unified_config") or {}).get("parallel")
+          and p_deg["thinking"] == "off"
           and dm._norm_rounds(p_deg["rounds"]) == dm._norm_rounds(ds["rounds_fast"]),
-          "parallel=%s thinking=%s rounds=%s"
-          % (p_deg["parallel"], p_deg["thinking"], p_deg["rounds"]))
+          "parallel=%s thinking=%s rounds=%s unified=%s"
+          % (p_deg["parallel"], p_deg["thinking"], p_deg["rounds"],
+             (p_deg.get("unified_config") or {}).get("parallel")))
     check("★T3 预算守卫：余额 ¥3 <4 → warn，但任务仍可创建（不拒绝）",
           p_warn["budget_guard"]["decision"] == "warn"
           and p_warn["tier"] == "fast"

@@ -1,3 +1,28 @@
+【V2.2.20（2026-10-29，PATCH · 道生支路接入统一模式体系，方案 A；同发 App 2.0.45）】
+- 生产引擎：`dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.20.py`（__version__=2.2.20）；
+  App 2.0.45（daosheng_mode/server 联动）。不给 --mode 时引擎行为与 V2.2.19 一致。
+- ★ 道生支路（daosheng / daosheng_fast）接入统一模式体系：
+  · `build_plan`：engine_mode（B/fast/serial）对应 `MODE_CONFIGS` 作为默认参数
+    （parallel/thinking/effort）；道生预设显式值（rounds/rounds_quality/
+    rounds_fast/parallel）与场景规则（事实/选项题强制 web）仍然优先；
+  · plan 新增 `mode` / `unified_config` / `rounds_locked`；`apply_plan` 透传
+    `--mode` ⇒ 引擎启用 MODE_CONFIGS 与运行期 `dynamic_adjust`（此前道生支路
+    不传 --mode，动态调整不生效）；
+  · 显式 rounds（质量档/快档）⇒ `rounds_locked=true`：动态调整只调 thinking/web，
+    不改圈（与「显式圈数优先」补丁口径一致）；引擎 tick 只在 patch 带
+    cap_rounds/rounds_extra 时才动圈数。
+- server 道生分支回显：mode_fusion.unified=true / config / rounds_locked / dynamic=true；
+  M4 预测回显 first_config / optimality / policy，选档最优性可审计。
+- 判据：新增 `scripts/local_model/test_daosheng_unified.py`（零成本：统一配置/
+  rounds_locked/mode 透传/场景规则优先/变异体）；一键验收新增 daosheng_unified 步骤；
+  mode_fusion.dynamic_adjust 增加 rounds_locked 分支（升级不补圈、降档不压圈）。
+- 验收：fast_gate 全 PASS；V2 71/71（1208 checks）；App selftest 455/0；
+  一键验收 --with-service PASS 27 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 81/81；
+  发布流程门 pre/post-tag 全 PASS（N/A 带原因）。
+- 兼容性：道生默认行为不变（quality-first、事实题强制 web、预算降级保留）；
+  standard 输入驱动自动选档不受影响；旧引擎下 --mode 能力门控自动不透传。
+- 标签：V2.2.20 / engine-V2.2.20 / app-V2.0.45。
+
 【V2.2.19（2026-10-29，MINOR · 输入驱动自动模式 + 每模式专属配置 + 运行期动态调整 + 模式集裁剪）】
 - 生产引擎：`dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.19.py`（__version__=2.2.19）；
   V2.2.18 及更早只读保留。不给 --mode 时逐字保持 V2.2.18 行为（历史回归/探针走旧路径）。

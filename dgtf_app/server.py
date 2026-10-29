@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "2.0.44"
+APP_VERSION = "2.0.45"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -10237,8 +10237,15 @@ class Handler(BaseHTTPRequestHandler):
             _fused_info = {"enabled": bool(_auto_fused)}
             if _ds_plan is not None:
                 # ★ 道生分支：M4 选档由 plan.mode_reason 记录，App 的 auto-fused 不参与
+                # [V2.2.20 方案 A] 道生支路已接入统一模式体系：回显
+                # MODE_CONFIGS 与 dynamic_adjust 是否启用（引擎侧 --mode 已透传）。
                 _fused_info = {"enabled": False, "skipped": "daosheng_plan",
+                               "unified": True,
                                "mode": _ds_plan.get("engine_mode"),
+                               "config": _ds_plan.get("unified_config") or {},
+                               "rounds_locked": bool(
+                                   _ds_plan.get("rounds_locked")),
+                               "dynamic": True,
                                "reason": _ds_plan.get("mode_reason")}
                 print("[daosheng] mode=%s tier=%s engine_mode=%s：%s"
                       % (_ds_plan.get("mode_id"), _ds_plan.get("tier"),

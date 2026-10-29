@@ -3,21 +3,21 @@
 一个**单文件四层螺旋推理引擎** + **V2 三平面核心** + **本地 Web 工作台**：
 修行 / 研究 / 对撞 / 元，跑出可审计、可回放、可融合的产物。
 
-- **当前版本**：V2.2.19（输入驱动的自动模式选择 + 每模式专属配置 + 运行期动态调整；只保留 B/serial/fast，web 降为标志位、A–H 用户面移除） / App 2.0.44（本地链路全生命周期守护 + health 读数 + 本地档预设；道生专属模式 + 三体动态计划 + 预算守卫）
-- **生产引擎**：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.19.py
+- **当前版本**：V2.2.20（道生支路接入统一模式体系：MODE_CONFIGS + --mode 透传启用动态调整 + 显式圈数锁定；V2.2.19 的输入驱动自动选档不变） / App 2.0.45（本地链路全生命周期守护 + health 读数 + 本地档预设；道生专属模式 + 三体动态计划 + 预算守卫）
+- **生产引擎**：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.20.py
 - **V2 核心**：dgtf_engine/dgtf_v2/
-- **人用界面**：dgtf_app/（App 2.0.44，本地链路两段守护 + 道生专属模式 + DSH 本对话实时镜像 + 会话列表实时打开 + 健康读数缓存）
+- **人用界面**：dgtf_app/（App 2.0.45，本地链路两段守护 + 道生专属模式 + DSH 本对话实时镜像 + 会话列表实时打开 + 健康读数缓存）
 - **本地链路**：dgtf_local_llm/（8772 推理服务，fp32 底座 + CUDA graph 采样/复用）+ scripts/local_model/openai_shim.py（8773 OpenAI 适配层）
-- **融合实现**：单引擎内联（Meta-DGTF-V2.2.19.py）；V2.1 外部模块仅作回滚参考
+- **融合实现**：单引擎内联（Meta-DGTF-V2.2.20.py）；V2.1 外部模块仅作回滚参考
 - **历史清单**：dgtf_engine/dgtf_v2/history_manifest.json
 - **版本规范**：dgtf_engine/dgtf_v2/NAMING.md
 - **历史归档**：元DGTF-V1历史归档-20261023.zip（V1.0 → V1.30.4）
 
 > 这份 README 只写能被验证的事；详细来源、能力、版本演化见 docs/history/。
-> **2026-10-29 收束同步**：V2 **71/71（1208 checks，SKIP 0）**；fast_gate **16/16**（动态选最高版引擎；含发布流程门自检；audit70 71/0）；
-> App selftest **455/0**（自动门）；一键验收 **PASS 26 / SKIP 0 / FAIL 0**；发布流程门 **PASS（N/A 项带原因）**；自动模式真跑 **12/12**；服务适配器 self_check=v8b / self_check_min=v9b / dual_judge=judge_v3 / route=qwen05b_v1。
+> **2026-10-29 收束同步（V2.2.20 / App 2.0.45）**：V2 **71/71（1208 checks，SKIP 0）**；fast_gate **16/16**（动态选最高版引擎；含发布流程门自检；audit70 71/0）；
+> App selftest **455/0**（自动门）；一键验收 **PASS 27 / SKIP 0 / FAIL 0**；发布流程门 **PASS（N/A 项带原因）**；自动模式真跑 **12/12**、道生统一模式判据 **27/27**；服务适配器 self_check=v8b / self_check_min=v9b / dual_judge=judge_v3 / route=qwen05b_v1。
 > **APP→引擎→本地模型全链路**：e2e 18/18（本地链路验证档，热缓存 14.7s；冷缓存 55.7～106.7s 见快照）；四层目标探针 81/81；JSON 结构门 A/B 总墙钟 −55%；
-> 四层目标逐层结论（V2.2.19 复跑）：层0 未达成（excavate=1.0；同 cmd 换上一版引擎同读数 ⇒ 非本版机制）/ 层1 未测出（settlement.total=0）/ both 判据样本不足 / all 未达成（0.5）。
+> 四层目标逐层结论（V2.2.20 复跑）：层0 达成（excavate=0）/ 层1 未测出（settlement.total=0）/ both 判据样本不足 / all 未达成（0.75）。层0 在 V2.2.19 曾单次为 1.0（同 cmd 换引擎同读数 ⇒ 读数方差，非机制差异），本轮回到 0.0，按单次方差记录。
 > 完整现状见 `docs/项目状态快照_20261029.md`。
 
 ## 一、它是什么
@@ -38,7 +38,7 @@ Meta-DGTF-道生三阶模型源于用户与 DGTF 的长对话（分享 ID: 44iyn
 
 详细定义、边界、不是什么：docs/history/Meta-DGTF-道生三阶模型-来源与定义.md。
 
-## 二、V2.2.x 的核心能力（V2.2.0 行为融合 + V2.2.1–V2.2.13 补丁谱系 + V2.2.14 本地档 few-shot/降档 + V2.2.15 stage 登记闭环与本地链路提速 + V2.2.16 JSON 结构门与本地档自动切 + V2.2.17 本地 prompt 瘦身 + V2.2.18 发布流程门与证据出口 + V2.2.19 输入驱动自动模式/每模式专属配置/动态调整）
+## 二、V2.2.x 的核心能力（V2.2.0 行为融合 + V2.2.1–V2.2.13 补丁谱系 + V2.2.14 本地档 few-shot/降档 + V2.2.15 stage 登记闭环与本地链路提速 + V2.2.16 JSON 结构门与本地档自动切 + V2.2.17 本地 prompt 瘦身 + V2.2.18 发布流程门与证据出口 + V2.2.19 输入驱动自动模式/每模式专属配置/动态调整 + V2.2.20 道生支路接入统一模式体系）
 
 ### 四层螺旋
 
@@ -144,13 +144,14 @@ python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.18.py -c configs/方案F-帕累
 | fast_gate | **16 / 16 PASS**（动态选最高版引擎 + engine_alignment + release_process_selftest；audit70 71/0） |
 | V2 tests_*.py | **71 / 71 PASS（1208 项检查，SKIP 0）** |
 | App selftest | **PASS 455 / FAIL 0**（含本地链路 11 项） |
-| 一键验收 `scripts/final_acceptance.py --with-service` | **PASS 26 / SKIP 0 / FAIL 0**（25+1 步；含 app_selftest、auto_mode_local 与 release 证据出口） |
+| 一键验收 `scripts/final_acceptance.py --with-service` | **PASS 27 / SKIP 0 / FAIL 0**（26+1 步；含 app_selftest、daosheng_unified、auto_mode_local 与 release 证据出口） |
 | **APP→引擎→本地模型 e2e** | **18 / 18 PASS**，冷缓存真跑 **14.7～106.7s**（本地链路验证档；V2.2.15 同判据 124.9～157.9s；热缓存不计），零 API 成本 |
 | **JSON 结构门受控 A/B**（17 条固定真实 prompt） | JSON 解析率 35%→**59%**、撞上限率 41%→**6%**、总墙钟 −**55%**（详见 docs/releases/V2.2.16.md） |
 | **本地 prompt 瘦身**（584 条真实 prompt 离线 + 16 条机制级 A/B） | 可省 **45.3%** token（schema 零丢失）；机制级 prompt 字符 −38.7%、token −15.4%（受 2048 截断上限所限）；尾部指令不再被右截断（详见 docs/releases/V2.2.17.md） |
-| **四层目标探针**（route 0/1/0,1,both/0,1,all） | **81 / 81 PASS**（V2.2.19 复跑，证据 outputs/_e2e_local/_layer_goals_probe_latest.json）：层0 本轮未达成（excavate=1.0，见归因）/ 层1 未测出 / both 判据样本不足 / all 未达成 |
+| **四层目标探针**（route 0/1/0,1,both/0,1,all） | **81 / 81 PASS**（V2.2.20 复跑：4 case 共 221 calls，墙钟 719.5s）；层0 达成（excavate=0；V2.2.19 单次 1.0 已归因为读数方差）/ 层1 未测出 / both 判据样本不足 / all 未达成（crystallize=0.75） |
 | 本地服务延迟 | p50 3.0–3.5s、p95 8–9s（单 token graph replay 59→28ms）；JSON 约束后单次中位 3842→1651ms |
 | 四层全跑 | 136 calls / 818.4s（V2.2.14 快照；四层读数全出） |
+| **道生支路统一模式** | daosheng/daosheng_fast 采用 MODE_CONFIGS 默认参数 + 透传 --mode（动态调整生效）；显式 rounds 锁定不改圈；server 回显 unified/config/rounds_locked；判据 27 项 |
 | 发布流程门（scripts/release_process_check.py --pre-tag/--post-tag） | **PASS（N/A 项均带原因）**：版本 8 处一致 / 发布产物 / 证据新鲜度 / README 数字逐项对齐 / 三标签 / 完整性路径 / DSH 闭环 |
 | App plan 不变量 / dual_judge 防护 | 18/18、7/7（进一键验收） |
 | 场景矩阵一致性护栏 | 进一键验收（scripts/update_scenario_matrix.py） |
@@ -196,8 +197,8 @@ local_model\envs\dgtf_llm_env\Scripts\python.exe -m pip check
 
 | 路径 | 是什么 |
 |---|---|
-| dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.19.py | 当前生产引擎 |
-| dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.18.py | 上一基线（发布流程门 + 证据出口） |
+| dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.20.py | 当前生产引擎 |
+| dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.19.py | 上一基线（输入驱动自动模式 + 动态调整） |
 | dgtf_local_llm/ + scripts/local_model/openai_shim.py | 本地链路：8772 推理服务 / 8773 OpenAI 适配层 |
 | configs/本地模型-全链路.yaml | App 本地档预设（零 API 成本链路） |
 | dgtf_engine/dgtf_v2/ | V2 核心：契约/EML/调度/四层/F2–F5/融合 |
@@ -255,18 +256,18 @@ local_model\envs\dgtf_llm_env\Scripts\python.exe -m pip check
 
 ## 九、当前收束
 
-- 版本：V2.2.19（App 2.0.44）
+- 版本：V2.2.20（App 2.0.45）
 - 历史版本：178 个快照（V1.0 → V2.0.0）
 - 能力轴：17 条，readiness=1.00
 - 行为臂：5 个（v1_spiral / v1_frontier / v2_contract / v2_pareto / fusion_full）
-- 收束报告：V2.2.19-收束报告.md
-- 发布说明：docs/releases/V2.2.19.md / docs/releases/V2.2.18.md / docs/releases/app-V2.0.44.md
+- 收束报告：V2.2.20-收束报告.md
+- 发布说明：docs/releases/V2.2.20.md / docs/releases/V2.2.19.md / docs/releases/app-V2.0.45.md
 - **优化交付（Round 1–83）**：`docs/最终交付说明-20261026.md`、
   `docs/验收总览-20261026.md`、`docs/ab_evidence_20261025.md`（§1–§78）
 - **本地模型默认**：v8b（mixed 配方，质量持平 v6、p50/p95 更快；训练/评测/切换全链证据）
 - **事实成本档**：fast+web 20 类领域 verified，质量 0.92–0.99、tokens 570–750K、
   墙钟 190–290s；场景矩阵事实 **60 行** + App e2e **12 行**
-- **一键验收**：`python scripts/final_acceptance.py --with-service` → PASS 26 / SKIP 0 / FAIL 0（三态语义，SKIP 单列）
+- **一键验收**：`python scripts/final_acceptance.py --with-service` → PASS 27 / SKIP 0 / FAIL 0（三态语义，SKIP 单列）
 - **发布流程门**：`python scripts/release_process_check.py --pre-tag`（提交前）/ `--post-tag`（打标签后）→ 版本/文档/证据/标签/N-A 逐项核对
 - **本地全链路**：`python scripts/local_model/e2e_app_local.py`（18/18）与 `python scripts/local_model/probe_layer_goals.py`（四层目标，81/81）
 - 已知边界：检索依赖、跨片段语义（成年年龄）、多值列举；0.5B 本地底座结构化输出能力（层1/both/all 的「达成」需更强模型）；本地档非生产质量档

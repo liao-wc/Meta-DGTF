@@ -930,6 +930,10 @@ def m4_prediction(question: str, history: dict, preset: dict | None = None) -> d
         return {"enabled": True, "ok": True, "features": feats,
                 "first_mode": str(first.get("mode") or ""),
                 "first_reason": str(first.get("reason") or ""),
+                # [V2.2.20] 统一模式体系回显：模式专属配置与最优性证据
+                "first_config": dict(first.get("config") or {}),
+                "optimality": plan.get("optimality") or {},
+                "policy": plan.get("policy") or "",
                 "quality_prediction": plan.get("quality_prediction") or {},
                 "quality_prediction_lower": plan.get("quality_prediction_lower") or {},
                 "conformal": plan.get("conformal") or {},
@@ -1197,21 +1201,48 @@ def build_plan(question: str, opts: dict | None = None, *,
         hf, hf_via = None, None
 
     route = ",".join((local.get("route") or _norm_route(ds.get("route"))))
+    # ★ [V2.2.20 / 方案 A] 道生支路接入统一模式体系：
+    #   engine_mode（B/fast/serial）对应 MODE_CONFIGS 的专门配置作为默认值；
+    #   道生预设显式值（rounds/rounds_quality/rounds_fast/parallel）与场景规则
+    #   （事实/选项题强制 web）仍然优先 ⇒ 默认行为不变，配置来源统一 +
+    #   引擎可据此启用运行期 dynamic_adjust。
+    try:
+        from dgtf_v2.mode_fusion import MODE_CONFIGS as _MODE_CONFIGS
+        _unified_cfg = dict(_MODE_CONFIGS.get(engine_mode) or {})
+    except Exception:  # noqa: BLE001
+        _unified_cfg = {}
     if tier == "fast":
         rounds = ds.get("rounds_fast") or "0:2,1:3,both:2,all:2"
-        parallel, web, thinking, effort = "serial", "off", "off", "auto"
-        # [Round 23] 修复后重测：fast+web on 事实题 thinking off 亦 verified
-        #（0.9472/0.9726）⇒ 不再强制 thinking=auto；web 仍由场景规则强制 on。
+        # 统一模式配置：fast => parallel=B / thinking=off（实测 782s/817k 档）
+        parallel = _unified_cfg.get("parallel") or "serial"
+        thinking = _unified_cfg.get("thinking") or "off"
+        effort = _unified_cfg.get("effort") or "auto"
+        web = "off"
         _scf = _scenario_of(m4)
         if _scf.get("require_web") or str(_scf.get("kind") or "") == "fact":
             web = "on"
     else:
         rounds = (ds.get("rounds_quality") or "0:3,1:3,both:4,all:4") if (
             quality_first and bg.get("decision") == "ok") else (ds.get("rounds") or "auto")
-        parallel = ds.get("parallel") or "B"
+        parallel = ds.get("parallel") or _unified_cfg.get("parallel") or "B"
         if engine_mode == "serial":
-            parallel = "serial"
-        web, thinking, effort = ds.get("web") or "auto", ds.get("thinking") or "auto", ds.get("effort") or "auto"
+            parallel = _unified_cfg.get("parallel") or "serial"
+        _think = str(ds.get("thinking") or "auto")
+        _eff = str(ds.get("effort") or "auto")
+        thinking = _unified_cfg.get("thinking") if _think in ("", "auto") \
+            else _think
+        effort = _unified_cfg.get("effort") if _eff in ("", "auto") else _eff
+        thinking = thinking or "auto"
+        effort = effort or "auto"
+        web = ds.get("web") or "auto"
+    #: 显式 rounds（道生质量档/快档）已锁定圈数 ⇒ 运行期动态调整不改圈。
+    rounds_locked = str(rounds) not in ("", "auto", "None")
+    if _unified_cfg:
+        warnings.append(
+            "统一模式配置：engine_mode=%s → parallel=%s/thinking=%s/effort=%s"
+            "（rounds=%s%s）"
+            % (engine_mode, parallel, thinking, effort, rounds,
+               "，锁定" if rounds_locked else ""))
 
     qp_cfg = ds.get("quality_policy") or {}
     feats = (m4.get("features") if m4.get("ok") else None) or (
@@ -1271,7 +1302,9 @@ def build_plan(question: str, opts: dict | None = None, *,
     m4_desc = {k: m4.get(k) for k in
                ("enabled", "ok", "first_mode", "first_reason",
                 "quality_prediction", "quality_prediction_lower",
-                "conformal", "scenario", "quality_guard", "error")}
+                "conformal", "scenario", "quality_guard", "error",
+                # [V2.2.20] 统一模式体系：模式专属配置 + 最优性证据
+                "first_config", "optimality", "policy")}
     hist_desc = {k: (history.get("episodes") or {}).get(k) for k in
                  ("n", "mode_counts", "tokens_med", "calls_med", "cut_rate",
                   "web_ratio", "tri_rate", "latest_run_id")}
@@ -1307,6 +1340,10 @@ def build_plan(question: str, opts: dict | None = None, *,
         "mode_source": resolved.get("source"),
         "tier": tier,
         "engine_mode": engine_mode,
+        # [V2.2.20 方案 A] 统一模式体系：引擎据此启用 MODE_CONFIGS + dynamic_adjust
+        "mode": engine_mode,
+        "unified_config": dict(_unified_cfg or {}),
+        "rounds_locked": bool(rounds_locked),
         "mode_reason": mode_reason,
         "quality_first": bool(quality_first),
         "preset": str(preset_path()),
@@ -1353,8 +1390,9 @@ def apply_plan(plan: dict, opts: dict) -> dict:
     applied: dict = {}
     if not isinstance(opts, dict):
         return applied
-    for k in ("route", "rounds", "parallel", "web", "thinking", "effort",
-              "self_check_mode", "dual_judge_mode", "history_fusion"):
+    for k in ("mode", "route", "rounds", "parallel", "web", "thinking",
+              "effort", "self_check_mode", "dual_judge_mode",
+              "history_fusion"):
         v = plan.get(k)
         if v in (None, "", "auto"):
             continue

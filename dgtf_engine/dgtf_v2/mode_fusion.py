@@ -330,12 +330,17 @@ def dynamic_adjust(plan: Optional[dict], progress: Optional[dict]) -> dict:
     mode = str(plan.get("mode") or "")
     target = (plan.get("cascade") or {}).get("on_quality_below")
     qprox = pg.get("quality_proxy")
+    _locked = bool(plan.get("rounds_locked"))
     if (mode == "fast" and target is not None and qprox is not None
             and float(qprox) < float(target)):
+        _patch = {"thinking": "auto"}
+        if not _locked:
+            _patch["rounds_extra"] = 1
         return {"action": "upgrade", "from": mode, "to": "B",
-                "patch": {"thinking": "auto", "rounds_extra": 1},
-                "reason": "运行期质量代理 %.2f < 目标 %.2f => 升档 B（时间换质量）"
-                          % (float(qprox), float(target)),
+                "patch": _patch,
+                "reason": "运行期质量代理 %.2f < 目标 %.2f => 升档 B（时间换质量；%s）"
+                          % (float(qprox), float(target),
+                             "rounds 锁定，不改圈" if _locked else "补 1 圈"),
                 "alternatives": ["keep fast（质量不达标，拒绝）", "downgrade（无更低档）"],
                 "optimality": {"method": "policy_check", "regret": None,
                                "note": "质量优先约束下的必需动作"}}
@@ -354,10 +359,14 @@ def dynamic_adjust(plan: Optional[dict], progress: Optional[dict]) -> dict:
         floor = float((plan.get("preferences") or {}).get("min_quality") or 0.0)
         if floor <= float(MODES["fast"]["quality"]):
             why = ("墙钟预算过半而进度不足半" if wall_over else "tokens 已用 70%")
+            _patch = {"thinking": "off", "web": False}
+            if not _locked:
+                _patch["cap_rounds"] = 1
             return {"action": "downgrade", "from": mode, "to": "fast",
-                    "patch": {"thinking": "off", "web": False, "cap_rounds": 1},
-                    "reason": "%s => 降档 fast（质量下限 %.2f <= fast 0.93，仍满足）"
-                              % (why, floor),
+                    "patch": _patch,
+                    "reason": "%s => 降档 fast（质量下限 %.2f <= fast 0.93，仍满足；%s）"
+                              % (why, floor,
+                                 "rounds 锁定，不改圈" if _locked else "剩余圈数压到 +1"),
                     "alternatives": ["keep %s（预算会超支）" % mode],
                     "optimality": {"method": "policy_check", "regret": None,
                                    "note": "预算约束下的可行最优（keep 不可行）"}}
