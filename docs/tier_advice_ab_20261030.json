@@ -1,0 +1,46 @@
+{
+ "schema": "metadgtf.tier_advice_ab.v1",
+ "ts": "2026-10-30 00:29:05",
+ "question": "为什么城市热岛效应在夜间比白天更明显？",
+ "kind": "reasoning",
+ "fixed": {
+  "route": "full",
+  "rounds": "1/层",
+  "web": "off",
+  "balance_assumed": 50.0,
+  "max_tokens": 150000
+ },
+ "rows": [
+  {
+   "arm": "A-quality",
+   "mode": "daosheng",
+   "status": "done",
+   "tier": "quality",
+   "engine_mode": "B",
+   "wall_s": 124.6,
+   "calls": 17,
+   "tokens": 69359,
+   "cost_cny": 0.139,
+   "answer_quality": "unverified",
+   "answer_ready": false,
+   "tier_advice": "fast",
+   "packed": "20261030_002756_为什么城市热岛效应在夜间比白天更明显.packed.json"
+  },
+  {
+   "arm": "B-fast",
+   "mode": "daosheng_fast",
+   "status": "done",
+   "tier": "fast",
+   "engine_mode": "fast",
+   "wall_s": 67.4,
+   "calls": 19,
+   "tokens": 66869,
+   "cost_cny": 0.134,
+   "answer_quality": "unverified",
+   "answer_ready": false,
+   "tier_advice": "current",
+   "packed": "20261030_002904_为什么城市热岛效应在夜间比白天更明显.packed.json"
+  }
+ ],
+ "note": "tier_advice=fast 的有界验证：quality vs fast（同题/同参数）"
+}

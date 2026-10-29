@@ -1219,6 +1219,17 @@ _QUALITY_EXPECTATION = {
                              "docs/project_context_rounds2_ab_20261029.json"]},
 }
 
+# ★ [V2.2.50] tier_advice 有界 A/B 证据（reasoning：quality vs fast）
+_TIER_ADVICE_EVIDENCE = {
+    "reasoning": {
+        "evidence": "docs/tier_advice_ab_20261030.json",
+        "quality": {"tokens": 69359, "wall_s": 124.6, "verified": False},
+        "fast": {"tokens": 66869, "wall_s": 67.4, "verified": False},
+        "note": "reasoning：quality 69.4k/124.6s vs fast 66.9k/67.4s，均 unverified；"
+                "fast 省 ~3.6% tokens、墙钟约减半",
+    },
+}
+
 _QUALITY_RETRY_EVIDENCE = {
     "fact_web_on": {"verified": 2, "n": 2,
                     "tokens": [85362, 67753],
@@ -2178,9 +2189,12 @@ def build_plan(question: str, opts: dict | None = None, *,
         if (tier == "quality" and dyn.get("budget_level") == "ok"
                 and _pct_adv is not None and float(_pct_adv) <= 0.0):
             _qr["tier_advice"] = "fast"
+            _te = _TIER_ADVICE_EVIDENCE.get(_kind_qr) or {}
+            _qr["tier_evidence"] = _te.get("evidence")
             _qr["tier_advice_why"] = (
-                "%s 实测 verified 0 次；质量档未带来验证收益，fast 可省 tokens"
-                % _kind_qr if _kind_qr else "该题型实测 verified 0 次")
+                ("%s 实测 verified 0 次；质量档未带来验证收益，fast 可省 tokens"
+                 % _kind_qr if _kind_qr else "该题型实测 verified 0 次")
+                + (("（%s）" % _te.get("note")) if _te.get("note") else ""))
         else:
             _qr["tier_advice"] = "current"
             _qr["tier_advice_why"] = ""

@@ -1,3 +1,19 @@
+【V2.2.50（2026-10-30，PATCH · tier_advice A/B 证据；同发 App 2.0.75）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.50.py（__version__=2.2.50；引擎侧零行为差）；
+  App 2.0.75。
+- ★ tier_advice 有界 A/B（真 API 约 ¥0.27）：reasoning 同题 full rounds=1/层 web off——
+  quality/B 69,359 tokens/124.6s vs fast 66,869/67.4s，两臂均 unverified；fast 省 ~3.6% tokens、
+  墙钟约减半、质量未劣化。
+- ★ _TIER_ADVICE_EVIDENCE 接入：plan.quality_retry.tier_evidence 指向
+  docs/tier_advice_ab_20261030.json，tier_advice_why 附实测 note；fact（current）不携带。
+- 判据：test_dynamic_opt 126→129（W1 A/B 数据、W2 evidence/note、W3 fact 不携带）；
+  回归 fused_optimal 30 / fused_full_chain 24 / daosheng_unified 27 / auto_mode_local 12。
+- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 456/0；
+  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
+  发布流程门 pre/post-tag 全 PASS。本轮 A/B 花费约 ¥0.27。
+- 兼容性：仍为 advisory，不改变实际 tier；证据字段仅审计/展示。
+- 标签：V2.2.50 / engine-V2.2.50 / app-V2.0.75。
+
 【V2.2.49（2026-10-30，PATCH · 语义阈值标定 + 选档建议；同发 App 2.0.74）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.49.py（__version__=2.2.49；引擎侧零行为差）；
   App 2.0.74。

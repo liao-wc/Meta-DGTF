@@ -655,6 +655,24 @@ ck("V4 reasoning + 预算 warn（已降 fast）：tier_advice=current",
    (_p_v4.get("quality_retry") or {}).get("tier_advice") == "current")
 
 
+print("── W tier_advice 有界 A/B 证据（V2.2.50）──")
+_ta = json.loads((ROOT / "docs" / "tier_advice_ab_20261030.json")
+                 .read_text(encoding="utf-8"))
+_trows = {r.get("arm"): r for r in (_ta.get("rows") or [])}
+ck("W1 tier A/B：quality/fast 均 unverified 且 fast tokens 更少",
+   _trows.get("A-quality", {}).get("answer_quality") == "unverified"
+   and _trows.get("B-fast", {}).get("answer_quality") == "unverified"
+   and int(_trows.get("B-fast", {}).get("tokens") or 0)
+   < int(_trows.get("A-quality", {}).get("tokens") or 0),
+   {k: (v.get("tokens"), v.get("answer_quality"))
+    for k, v in _trows.items()})
+ck("W2 reasoning 建议带 tier_evidence 与实测 note",
+   str(_v1.get("tier_evidence") or "").endswith("tier_advice_ab_20261030.json")
+   and "66.9k" in str(_v1.get("tier_advice_why") or ""), _v1.get("tier_evidence"))
+ck("W3 fact（current）不携带 tier_evidence（不误导）",
+   not (_p_v2.get("quality_retry") or {}).get("tier_evidence"))
+
+
 print("── T fact+web on 质量证据 + fact 高圈锚点（V2.2.43）──")
 _qev2 = json.loads((ROOT / "docs" / "quality_retry_ab_20261029.json")
                    .read_text(encoding="utf-8"))
