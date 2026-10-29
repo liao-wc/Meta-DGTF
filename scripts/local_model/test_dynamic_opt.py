@@ -33,6 +33,7 @@ def ck(name, cond, info=""):
 
 
 FACT_Q = "HTTP 404 状态码表示什么？"
+CHOICE_Q = "以下哪项属于可再生能源？A. 煤炭 B. 太阳能 C. 石油 D. 天然气"
 REASON_Q = "为什么城市热岛效应在夜间比白天更明显？"
 PROJ_Q = "Meta-DGTF 项目当前状态如何"
 
@@ -405,6 +406,28 @@ _cj5 = (_p_j5.get("dynamic_opt") or {}).get("chosen") or {}
 ck("J5 长程（总圈数 8）不用短程锚点，回退可加模型",
    _cj5.get("cost_source") == "route_subset_rounds.v1+app_overhead",
    _cj5.get("cost_source"))
+
+
+print("── K choice 题型省层收益/锚点（V2.2.34）──")
+_p_k = DS.build_plan(CHOICE_Q, {"route": "0,1,both,all",
+                                "rounds": "0:1,1:1,both:1,all:1"},
+                     requested="daosheng", is_mock=True, balance_cny=50.0)
+_ck = (_p_k.get("dynamic_opt") or {}).get("chosen") or {}
+ck("K1 choice 短程四层：chosen≈85,342（实测锚点）",
+   abs(int(_ck.get("est_tokens") or 0) - 85342) / 85342 < 0.15
+   and _ck.get("cost_source") == "measured_short_anchor",
+   (_ck.get("est_tokens"), _ck.get("cost_source")))
+_p_k2 = DS.build_plan(CHOICE_Q, {"route": "0", "rounds": "0:1"},
+                      requested="daosheng", is_mock=True, balance_cny=50.0)
+_k2 = (_p_k2.get("dynamic_opt") or {}).get("route_pruning") or {}
+ck("K2 choice 省层：实测收益≈40% ⇒ subset_may_save（证据 choice JSON）",
+   _k2.get("advice") == "subset_may_save"
+   and float(_k2.get("saved_pct_estimate") or 0) >= 0.30
+   and str(_k2.get("evidence") or "").endswith("route_subset_choice_ab_20261029.json"),
+   _k2)
+ck("K3 choice 省层风险：evidence 指向 choice JSON",
+   str(((_p_k2.get("dynamic_opt") or {}).get("route_quality_risk") or {})
+       .get("evidence") or "").endswith("route_subset_choice_ab_20261029.json"))
 
 print("── C build_plan 接线 ──")
 _p6 = DS.build_plan(FACT_Q, {}, requested="daosheng", is_mock=True, balance_cny=6.0)

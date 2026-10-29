@@ -1,3 +1,19 @@
+【V2.2.34（2026-10-29，PATCH · choice 题型省层收益；同发 App 2.0.59）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.34.py（__version__=2.2.34；引擎侧零行为差）；
+  App 2.0.59。
+- ★ choice 省层 A/B（4 跑约 ¥0.55）：route0 50,582/50,922 tokens vs full 85,320/85,364
+  （省约 40%），两臂均 needs_evidence/ready=false；kind-aware 表补全：
+  fact≈0（n=6）、reasoning≈0.39（n=4）、choice≈0.40（n=4）。
+- ★ 短程锚点补 choice（full 85,342 / route0 50,752）；route_quality_risk.evidence 按题型
+  指向对应 A/B JSON；短程事实分支限定 kind=fact（修复 choice 被覆盖）。
+- 判据：test_dynamic_opt 80→83（choice 锚点≈85,342、choice may_save≈40%、choice 风险证据）；
+  回归 fused_optimal 30 / fused_full_chain 16 / daosheng_unified 27 / auto_mode_local 12。
+- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
+  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
+  发布流程门 pre/post-tag 全 PASS。
+- 兼容性：默认四层不变；判定只记录/提示，不改变实际 route。
+- 标签：V2.2.34 / engine-V2.2.34 / app-V2.0.59。
+
 【V2.2.33（2026-10-29，PATCH · 短程实测成本锚点；同发 App 2.0.58）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.33.py（__version__=2.2.33；引擎侧零行为差）；
   App 2.0.58。

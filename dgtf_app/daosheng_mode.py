@@ -1106,6 +1106,9 @@ _ROUTE_SAVINGS_EVIDENCE = {
     "reasoning": {"saved_pct": 0.39, "n": 4,
                   "evidence": "docs/route_subset_reasoning_ab_20261029.json",
                   "note": "reasoning route0 39.6-46k vs full 70.7-74.9k（约省 39%）"},
+    "choice": {"saved_pct": 0.40, "n": 4,
+               "evidence": "docs/route_subset_choice_ab_20261029.json",
+               "note": "choice route0 50.6-50.9k vs full 85.3k（约省 40%）"},
 }
 
 # ★ [V2.2.33] 短程实测锚点（App 路径实际 tokens，B 模式，每层 1 圈口径）：
@@ -1119,6 +1122,9 @@ _SHORT_RUN_ANCHORS = {
     "reasoning": {"web": "off", "mode": "B",
                   "full": 72799.0, "0": 42798.0, "n": 4,
                   "evidence": "docs/route_subset_reasoning_ab_20261029.json"},
+    "choice": {"web": "on", "mode": "B",
+               "full": 85342.0, "0": 50752.0, "n": 4,
+               "evidence": "docs/route_subset_choice_ab_20261029.json"},
 }
 
 
@@ -1698,11 +1704,15 @@ def build_plan(question: str, opts: dict | None = None, *,
             "level": "high" if (_prj or str(quality_policy or "").startswith("auto:verified"))
                      else "info",
             "missing": _missing_layers,
-            "evidence": ("docs/route_subset_reasoning_ab_20261029.json"
-                         if str(_sc1.get("kind") or "") == "reasoning"
-                         else "docs/route_subset_multisample_20261029.json"),
+            "evidence": {"reasoning": "docs/route_subset_reasoning_ab_20261029.json",
+                         "choice": "docs/route_subset_choice_ab_20261029.json"}.get(
+                             str(_sc1.get("kind") or ""),
+                             "docs/route_subset_multisample_20261029.json"),
             "evidence_prev": "docs/route_subset_quality_ab_20261029.json",
-            "note": ("层子集质量未被证实：reasoning 4 跑 route0/full 均 unverified（ready=0），"
+            "note": ("层子集质量未被证实：choice 4 跑 route0/full 均 needs_evidence（ready=0），"
+                     "省层省 tokens 但质量未证明；显式省层保留但风险已记录，默认 union 不砍层"
+                     if str(_sc1.get("kind") or "") == "choice" else
+                     "层子集质量未被证实：reasoning 4 跑 route0/full 均 unverified（ready=0），"
                      "省层省 tokens 但质量未证明；显式省层保留但风险已记录，默认 union 不砍层"
                      if str(_sc1.get("kind") or "") == "reasoning" else
                      "层子集质量未被证实：6 跑 A/B 中 route0/route0,1 各 2/2 verified 但 "
@@ -1731,7 +1741,8 @@ def build_plan(question: str, opts: dict | None = None, *,
             _pct = round(_saved / _base, 3)
         except Exception:  # noqa: BLE001
             _saved, _pct = 0.0, 0.0
-        _short_fact = (_require_web
+        _short_fact = (str(_sc1.get("kind") or "") == "fact"
+                       and _require_web
                        and _rounds_count(_est_rounds) <= 6)
         _dyn_kind_key = str(_sc1.get("kind") or "")
         _meas = _ROUTE_SAVINGS_EVIDENCE.get(_dyn_kind_key)

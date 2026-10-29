@@ -1,0 +1,90 @@
+{
+ "schema": "metadgtf.route_subset_choice_ab.v1",
+ "ts": "2026-10-29 16:53",
+ "question": "以下哪项属于可再生能源？A. 煤炭 B. 太阳能 C. 石油 D. 天然气",
+ "kind": "choice",
+ "fixed": {
+  "rounds": "1",
+  "web": "on(选项题强制)",
+  "balance_assumed": 50.0,
+  "max_tokens": 150000,
+  "reps": 2
+ },
+ "rows": [
+  {
+   "arm": "A-route0",
+   "rep": 1,
+   "route": "0",
+   "rounds": "0:1",
+   "status": "done",
+   "tokens": 50582,
+   "calls": 10,
+   "cost_cny": 0.101,
+   "answer_quality": "needs_evidence",
+   "answer_ready": false,
+   "packed": "20261029_165023_以下哪项属于可再生能源A煤炭B.packed.json"
+  },
+  {
+   "arm": "B-full",
+   "rep": 1,
+   "route": "0,1,both,all",
+   "rounds": "0:1,1:1,both:1,all:1",
+   "status": "done",
+   "tokens": 85320,
+   "calls": 16,
+   "cost_cny": 0.171,
+   "answer_quality": "needs_evidence",
+   "answer_ready": false,
+   "packed": "20261029_165118_以下哪项属于可再生能源A煤炭B.packed.json"
+  },
+  {
+   "arm": "A-route0",
+   "rep": 2,
+   "route": "0",
+   "rounds": "0:1",
+   "status": "done",
+   "tokens": 50922,
+   "calls": 10,
+   "cost_cny": 0.102,
+   "answer_quality": "needs_evidence",
+   "answer_ready": false,
+   "packed": "20261029_165221_以下哪项属于可再生能源A煤炭B.packed.json"
+  },
+  {
+   "arm": "B-full",
+   "rep": 2,
+   "route": "0,1,both,all",
+   "rounds": "0:1,1:1,both:1,all:1",
+   "status": "done",
+   "tokens": 85364,
+   "calls": 16,
+   "cost_cny": 0.171,
+   "answer_quality": "needs_evidence",
+   "answer_ready": false,
+   "packed": "20261029_165324_以下哪项属于可再生能源A煤炭B.packed.json"
+  }
+ ],
+ "summary": {
+  "A-route0": {
+   "n": 2,
+   "verified": 0,
+   "ready": 0,
+   "tokens": [
+    50582,
+    50922
+   ],
+   "cost_total": 0.203
+  },
+  "B-full": {
+   "n": 2,
+   "verified": 0,
+   "ready": 0,
+   "tokens": [
+    85320,
+    85364
+   ],
+   "cost_total": 0.342
+  }
+ },
+ "note": "choice 省层（route0 vs full）：route0 50.6-50.9k vs full 85.3k（约省 40%）；均 needs_evidence"
+}
