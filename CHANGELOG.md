@@ -1,3 +1,21 @@
+【V2.2.43（2026-10-29，PATCH · fact+web on 质量证据；同发 App 2.0.68）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.43.py（__version__=2.2.43；引擎侧零行为差）；
+  App 2.0.68。
+- ★ 质量重试 A/B（真 API 约 ¥0.31）：fact 题 full route web on——rounds1 85,362 tokens/15 calls、
+  rounds2 67,753/12 calls，两臂均 verified；加圈未提升质量且 rounds2 更省 ⇒ 对 fact+web on
+  不实现质量 retry/加圈。
+- ★ plan.quality_retry 增加 expected_verified_pct=1.0/evidence/evidence_note（advisory）；
+  证据 docs/quality_retry_ab_20261029.json。
+- ★ fact 高圈锚点：_LONG_RUN_ANCHORS 增加 fact（web on、总圈数 5-10）full 67,753（n=2），
+  dynamic_config 对 fact 高圈 full 使用实测锚点。
+- 判据：test_dynamic_opt 111→114（T1 2/2 verified、T2 高圈锚点≈67,753、T3 rounds2 更省）；
+  回归 fused_optimal 30 / fused_full_chain 23 / daosheng_unified 27 / auto_mode_local 12。
+- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
+  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
+  发布流程门 pre/post-tag 全 PASS。
+- 兼容性：quality_retry 仍 advisory；高圈锚点仅成本估算；默认四层不变。
+- 标签：V2.2.43 / engine-V2.2.43 / app-V2.0.68。
+
 【V2.2.42（2026-10-29，PATCH · 语义预判双层缓存；同发 App 2.0.67）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.42.py（__version__=2.2.42；引擎侧零行为差）；
   App 2.0.67。

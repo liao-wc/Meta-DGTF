@@ -1135,6 +1135,9 @@ _SHORT_RUN_ANCHORS = {
 
 # ★ [V2.2.35] 高圈锚点（reasoning rounds=2/层，总 8 圈）：route0 65,608 / full 62,317
 _LONG_RUN_ANCHORS = {
+    "fact": {"web": "on", "mode": "B", "min_total": 5, "max_total": 10,
+             "full": 67753.0, "n": 2,
+             "evidence": "docs/quality_retry_ab_20261029.json"},
     "reasoning": {"web": "off", "mode": "B", "min_total": 5, "max_total": 10,
                   "full": 62317.0, "0": 65608.0, "n": 2,
                   "evidence": "docs/route_reasoning_rounds2_ab_20261029.json"},
@@ -1200,6 +1203,14 @@ def _short_run_anchor(kind, web, route, rounds, engine_mode):
     return float(_a["full"])
 
 # ★ [V2.2.36] 项目背景注入成本（A/B：默认注入 48,173 vs 关闭 42,511，+5,662 tokens）
+# ★ [V2.2.43] fact+web on 质量证据（2 跑均 verified；加圈未提升质量且 rounds2 更省）
+_QUALITY_RETRY_EVIDENCE = {
+    "fact_web_on": {"verified": 2, "n": 2,
+                    "tokens": [85362, 67753],
+                    "evidence": "docs/quality_retry_ab_20261029.json",
+                    "note": "fact+web on 两臂均 verified；rounds2 更省（67.8k vs 85.4k）"},
+}
+
 _CONTEXT_COST = {"project": {"tokens": 5662, "n": 2,
                              "evidence": "docs/project_context_ab_20261029.json",
                              "note": "项目题 RAG+EML 注入实测 +5,662 tokens（约 ¥0.011）"}}
@@ -2029,9 +2040,16 @@ def build_plan(question: str, opts: dict | None = None, *,
         _qr.update({"policy": "verified", "retry": False,
                     "why": "项目/verified 依赖背景证据，不建议关闭验证"})
     elif _kind_qr == "fact" or _require_web:
+        _qe = _QUALITY_RETRY_EVIDENCE.get("fact_web_on") or {}
+        _qr.update({"expected_verified_pct": (
+            round(float(_qe.get("verified") or 0) / max(1, int(_qe.get("n") or 1)), 2)
+            if _qe else None),
+            "evidence": _qe.get("evidence"),
+            "evidence_note": _qe.get("note")})
         if dyn.get("budget_level") == "ok":
             _qr.update({"policy": "auto:web-retry", "retry": True,
-                        "why": "事实题且预算 ok ⇒ 建议保留 web-retry"})
+                        "why": "事实题且预算 ok ⇒ 建议保留 web-retry"
+                               "（实测 2/2 verified，加圈未提升质量）"})
         else:
             _qr.update({"policy": "auto:stable", "retry": False,
                         "why": "预算 %s ⇒ 建议关闭 web-retry 省成本"
@@ -2194,6 +2212,8 @@ def build_plan(question: str, opts: dict | None = None, *,
         "max_minutes": budget_max_minutes,
         # ★ [V2.2.37] quality-retry 决策（advisory）
         "quality_retry": _qr,
+        # ★ [V2.2.43] fact+web on 质量证据（2/2 verified；加圈无效）
+        "quality_evidence": _qr.get("evidence"),
         # ★ [V2.2.39] 预算紧张时允许复用"未验证"产物缓存（同题精确匹配，省整单）
         "allow_unverified_cache": bool(
             dyn.get("budget_level") in ("warn", "critical")),

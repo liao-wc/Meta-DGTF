@@ -583,6 +583,30 @@ finally:
 ck("S2 同一问题二次预判走结果缓存（embed 仅 1 次）", _calls["n"] == 1, _calls)
 
 
+print("── T fact+web on 质量证据 + fact 高圈锚点（V2.2.43）──")
+_qev2 = json.loads((ROOT / "docs" / "quality_retry_ab_20261029.json")
+                   .read_text(encoding="utf-8"))
+_qrows = _qev2.get("rows") or []
+_p_t1 = DS.build_plan(FACT_Q, {}, requested="daosheng", is_mock=True, balance_cny=50.0)
+_qr1 = _p_t1.get("quality_retry") or {}
+ck("T1 fact+web on 质量证据：2/2 verified、expected_verified_pct=1.0",
+   int(_qr1.get("expected_verified_pct") or 0) == 1
+   and str(_qr1.get("evidence") or "").endswith("quality_retry_ab_20261029.json")
+   and len(_qrows) == 2
+   and all(r.get("answer_quality") == "verified" for r in _qrows), _qr1)
+_p_t2 = DS.build_plan(FACT_Q, {"route": "0,1,both,all",
+                               "rounds": "0:2,1:2,both:2,all:2"},
+                      requested="daosheng", is_mock=True, balance_cny=50.0)
+_c2t = (_p_t2.get("dynamic_opt") or {}).get("chosen") or {}
+ck("T2 fact 高圈 full：chosen≈67,753（fact 高圈锚点）",
+   abs(int(_c2t.get("est_tokens") or 0) - 67753) / 67753 < 0.15
+   and _c2t.get("cost_source") == "measured_long_anchor",
+   (_c2t.get("est_tokens"), _c2t.get("cost_source")))
+_tok = {r.get("arm"): int(r.get("tokens") or 0) for r in _qrows}
+ck("T3 加圈未提升质量且 rounds2 更省（67.8k < 85.4k）",
+   _tok.get("B-rounds2", 0) < _tok.get("A-rounds1", 0), _tok)
+
+
 print("── J 短程实测锚点（V2.2.33，B 模式每层 1 圈）──")
 _p_j = DS.build_plan(FACT_Q, {"route": "0,1,both,all",
                               "rounds": "0:1,1:1,both:1,all:1"},
@@ -613,9 +637,9 @@ ck("J4 余额 ¥10：短程实测锚点使配置可行（不再按整单模型�
    _cj4.get("fallback") is False
    and (_cj4.get("chosen") or {}).get("feasible") is True,
    (_cj4.get("fallback"), (_cj4.get("chosen") or {}).get("feasible")))
-_p_j5 = DS.build_plan(FACT_Q, {"route": "0,1,both,all",
-                               "rounds": "0:2,1:2,both:2,all:2"},
-                      requested="daosheng", is_mock=True, balance_cny=50.0)
+_p_j5 = DS.build_plan(CHOICE_Q, {"route": "0,1,both,all",
+                                "rounds": "0:2,1:2,both:2,all:2"},
+                       requested="daosheng", is_mock=True, balance_cny=50.0)
 _cj5 = (_p_j5.get("dynamic_opt") or {}).get("chosen") or {}
 ck("J5 长程（总圈数 8）不用短程锚点，回退可加模型",
    _cj5.get("cost_source") == "route_subset_rounds.v1+app_overhead",

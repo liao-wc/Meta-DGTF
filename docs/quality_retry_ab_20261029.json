@@ -1,0 +1,41 @@
+{
+ "schema": "metadgtf.quality_retry_ab.v1",
+ "ts": "2026-10-29 21:09:59",
+ "question": "HTTP 404 状态码表示什么？",
+ "kind": "fact",
+ "fixed": {
+  "route": "full",
+  "web": "on",
+  "balance_assumed": 50.0,
+  "max_tokens": 150000
+ },
+ "rows": [
+  {
+   "arm": "A-rounds1",
+   "rounds": "0:1,1:1,both:1,all:1",
+   "status": "done",
+   "wall_s": 101.5,
+   "calls": 15,
+   "tokens": 85362,
+   "cost_cny": 0.171,
+   "answer_quality": "verified",
+   "answer_ready": true,
+   "coverage": null,
+   "packed": "20261029_210850_HTTP404状态码表示什么.packed.json"
+  },
+  {
+   "arm": "B-rounds2",
+   "rounds": "0:2,1:2,both:2,all:2",
+   "status": "done",
+   "wall_s": 67.7,
+   "calls": 12,
+   "tokens": 67753,
+   "cost_cny": 0.136,
+   "answer_quality": "verified",
+   "answer_ready": true,
+   "coverage": null,
+   "packed": "20261029_210957_HTTP404状态码表示什么.packed.json"
+  }
+ ],
+ "note": "验证 unverified 是否能靠加圈/重试改善；决定是否实现动态 quality retry"
+}

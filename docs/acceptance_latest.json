@@ -1,7 +1,7 @@
 {
  "schema": "dgtf.acceptance.v1",
- "ts": 1793278670.4385087,
- "iso": "2026-10-29T20:57:50",
+ "ts": 1793281131.7508795,
+ "iso": "2026-10-29T21:38:51",
  "with_service": true,
  "skip_service": false,
  "require_all": false,
@@ -12,13 +12,13 @@
   {
    "name": "fast_gate",
    "status": "PASS",
-   "sec": 21.9,
+   "sec": 24.6,
    "reason": ""
   },
   {
    "name": "v2_tests",
    "status": "PASS",
-   "sec": 179.4,
+   "sec": 184.6,
    "reason": ""
   },
   {
@@ -30,7 +30,7 @@
   {
    "name": "process_gate_guard",
    "status": "PASS",
-   "sec": 2.0,
+   "sec": 2.1,
    "reason": ""
   },
   {
@@ -42,7 +42,7 @@
   {
    "name": "app_dual_judge_guard",
    "status": "PASS",
-   "sec": 4.6,
+   "sec": 4.5,
    "reason": ""
   },
   {
@@ -54,19 +54,19 @@
   {
    "name": "train_guard",
    "status": "PASS",
-   "sec": 32.7,
+   "sec": 32.6,
    "reason": ""
   },
   {
    "name": "app_cache_bypass",
    "status": "PASS",
-   "sec": 0.6,
+   "sec": 0.4,
    "reason": ""
   },
   {
    "name": "judge_fastfail",
    "status": "PASS",
-   "sec": 8.6,
+   "sec": 7.8,
    "reason": ""
   },
   {
@@ -78,13 +78,13 @@
   {
    "name": "graph_decode",
    "status": "PASS",
-   "sec": 8.1,
+   "sec": 6.9,
    "reason": ""
   },
   {
    "name": "probe_cover_wide",
    "status": "PASS",
-   "sec": 4.5,
+   "sec": 3.7,
    "reason": ""
   },
   {
@@ -96,7 +96,7 @@
   {
    "name": "outputs_consistency",
    "status": "PASS",
-   "sec": 2.4,
+   "sec": 2.2,
    "reason": ""
   },
   {
@@ -114,7 +114,7 @@
   {
    "name": "openai_shim",
    "status": "PASS",
-   "sec": 1.6,
+   "sec": 1.5,
    "reason": ""
   },
   {
@@ -132,61 +132,61 @@
   {
    "name": "mem_reclaim",
    "status": "PASS",
-   "sec": 16.1,
+   "sec": 15.5,
    "reason": ""
   },
   {
    "name": "max_new_cap",
    "status": "PASS",
-   "sec": 1.8,
+   "sec": 1.6,
    "reason": ""
   },
   {
    "name": "app_selftest",
    "status": "PASS",
-   "sec": 62.7,
+   "sec": 52.3,
    "reason": ""
   },
   {
    "name": "dynamic_opt",
    "status": "PASS",
-   "sec": 19.5,
+   "sec": 19.9,
    "reason": ""
   },
   {
    "name": "fused_optimal",
    "status": "PASS",
-   "sec": 15.2,
+   "sec": 15.6,
    "reason": ""
   },
   {
    "name": "fused_full_chain",
    "status": "PASS",
-   "sec": 99.7,
+   "sec": 129.1,
    "reason": ""
   },
   {
    "name": "daosheng_unified",
    "status": "PASS",
-   "sec": 7.2,
+   "sec": 6.8,
    "reason": ""
   },
   {
    "name": "auto_mode_local",
    "status": "PASS",
-   "sec": 11.8,
+   "sec": 11.4,
    "reason": ""
   },
   {
    "name": "e2e_app_local",
    "status": "PASS",
-   "sec": 16.5,
+   "sec": 17.2,
    "reason": ""
   },
   {
    "name": "local_service",
    "status": "PASS",
-   "sec": 1.7,
+   "sec": 0.6,
    "reason": ""
   }
  ],
