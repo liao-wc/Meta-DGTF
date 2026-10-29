@@ -143,7 +143,7 @@ python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.53.py -c configs/方案F-帕累
 |---|---|
 | fast_gate | **16 / 16 PASS**（动态选最高版引擎 + engine_alignment + release_process_selftest；audit70 71/0） |
 | V2 tests_*.py | **71 / 71 PASS（1208 项检查，SKIP 0）** |
-| App selftest | **PASS 456 / FAIL 0**（含本地链路 11 项） |
+| App selftest | **PASS 457 / FAIL 0**（含本地链路 11 项） |
 | 一键验收 `scripts/final_acceptance.py --with-service` | **PASS 30 / SKIP 0 / FAIL 0**（29+1 步；含 dynamic_opt、fused_optimal、fused_full_chain、daosheng_unified、auto_mode_local） |
 | **APP→引擎→本地模型 e2e** | **18 / 18 PASS**，冷缓存真跑 **14.7～106.7s**（本地链路验证档；V2.2.15 同判据 124.9～157.9s；热缓存不计），零 API 成本 |
 | **JSON 结构门受控 A/B**（17 条固定真实 prompt） | JSON 解析率 35%→**59%**、撞上限率 41%→**6%**、总墙钟 −**55%**（详见 docs/releases/V2.2.16.md） |
