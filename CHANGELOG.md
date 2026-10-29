@@ -1,3 +1,33 @@
+【V2.2.19（2026-10-29，MINOR · 输入驱动自动模式 + 每模式专属配置 + 运行期动态调整 + 模式集裁剪）】
+- 生产引擎：`dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.19.py`（__version__=2.2.19）；
+  V2.2.18 及更早只读保留。不给 --mode 时逐字保持 V2.2.18 行为（历史回归/探针走旧路径）。
+- ★ 用户目标：由用户输入出发自动选模式；每个模式有专门配置参数；整个运行自动动态调整；
+  只保留保留模式（B/serial/fast），其他模式去除；并保证所有选择最优。
+- ★ 输入驱动：`plan_for_input(question)` 由题面（事实/推理/选择/长度）+ 显式预算推出
+  偏好与约束（事实题 prefer=wall/floor 0.90 ⇒ fast；推理/选择/长题 prefer=quality/floor
+  0.95 ⇒ B；显式 min_quality/max_wall/max_tokens/require_web 优先），再对保留集枚举最优。
+- ★ 可证最优：候选 ≤3 ⇒ 枚举即精确最优（regret=0）；900 组约束网格 oracle 对账全命中；
+  显式约束下不可行 ⇒ fallback=True/regret=None（不假装最优）；推断下限在显式预算无解时
+  让位并记录 optimality.relaxed（显式约束永不让位）。
+- ★ 每模式专属配置：新增 `MODE_CONFIGS`（唯一事实源，App 与引擎共用）——
+  B: parallel=B/thinking=auto；serial: serial/auto；fast: B/thinking=off；
+  web 降为标志位（唯一实测联网档 = B+web），不再是一个模式。
+- ★ 运行期动态调整：新增 `dynamic_adjust(plan, progress)` + 引擎层/波边界 tick：
+  墙钟过半而进度不足半 / tokens 用 70% ⇒ 降档 fast（质量下限 ≤0.93 时）；
+  fast 质量代理低于 cascade 目标 ⇒ 升档 B；每次调整带 reason/alternatives/optimality，
+  全部落 `packed.auto_mode = {plan, adjustments}`（App 回显 task.mode_fusion）。
+- ★ 模式集裁剪：MODES 只剩 B/serial/fast；引擎 `--parallel` 用户面 choices=serial/B/auto；
+  配置/历史里的 A、C–H 回落 B 并打印留痕；App 去掉 web 模式分支；场景表"必须联网"改为 B+web。
+- 集成：App 真实任务默认启用输入驱动自动选档（mock/自检关闭，DGTF_AUTO_MODE=0 可关）；
+  引擎新增 `--mode auto|B|serial|fast`（能力门控透传）；一键验收新增 auto_mode_local 步骤。
+- 判据：`tests_auto_mode_optimal.py`（45 项：保留集/最优性 oracle/输入驱动/专属配置/
+  动态调整/静态接线/变异体）、`scripts/local_model/test_auto_mode_local.py`（12 项真跑）。
+- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
+  一键验收 --with-service PASS 26 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 81/81；
+  auto_mode_local 12/12。
+- 边界：模式读数来自云端真跑（V2.2.3 同题），本地 0.5B 只验证链路与协议；
+  运行期质量代理是粗代理（errors/候选数）；单次读数方差存在；不可行时显式 fallback。
+
 【V2.2.18（2026-10-28，PATCH 引擎侧零行为差 · 项目流程门 + 证据出口 + App selftest 自动门）】
 - 生产引擎：`dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.18.py`（__version__=2.2.18）；
   V2.2.17 及更早只读保留。引擎源码除 __version__/docstring 外与 V2.2.17 逐字相同。

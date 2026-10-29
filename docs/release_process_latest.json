@@ -1,68 +1,68 @@
 {
  "schema": "dgtf.release_process.v1",
- "ts": 1793179210.4012027,
- "iso": "2026-10-28T17:20:10",
- "engine": "dgtf_engine\\dgtf_v2\\engine\\Meta-DGTF-V2.2.18.py",
- "engine_version": "2.2.18",
- "app_version": "2.0.37",
+ "ts": 1793236318.0441504,
+ "iso": "2026-10-29T09:11:58",
+ "engine": "dgtf_engine\\dgtf_v2\\engine\\Meta-DGTF-V2.2.19.py",
+ "engine_version": "2.2.19",
+ "app_version": "2.0.44",
  "pre_tag": true,
  "post_tag": false,
  "passed": 30,
  "failed": 0,
- "na": 5,
+ "na": 2,
  "checks": [
   {
    "name": "引擎动态发现",
    "status": "PASS",
-   "detail": "Meta-DGTF-V2.2.18.py（V2.2.18）"
+   "detail": "Meta-DGTF-V2.2.19.py（V2.2.19）"
   },
   {
    "name": "App find_engine 对齐",
    "status": "PASS",
-   "detail": "Meta-DGTF-V2.2.18.py"
+   "detail": "Meta-DGTF-V2.2.19.py"
   },
   {
    "name": "dgtf_config.yaml 头",
    "status": "PASS",
-   "detail": "2.2.18"
+   "detail": "2.2.19"
   },
   {
    "name": "NAMING 当前版本",
    "status": "PASS",
-   "detail": "2.2.18"
+   "detail": "2.2.19"
   },
   {
    "name": "README 当前版本",
    "status": "PASS",
-   "detail": "2.2.18"
+   "detail": "2.2.19"
   },
   {
    "name": "PROJECT_MAP 生产入口",
    "status": "PASS",
-   "detail": "2.2.18"
+   "detail": "2.2.19"
   },
   {
    "name": "PROJECT_LAYOUT 生产入口",
    "status": "PASS",
-   "detail": "2.2.18"
+   "detail": "2.2.19"
   },
   {
    "name": "Pages 引擎版本",
    "status": "PASS",
-   "detail": "2.2.18"
+   "detail": "2.2.19"
   },
   {
-   "name": "发布产物存在：V2.2.18-发布报告.md",
+   "name": "发布产物存在：V2.2.19-发布报告.md",
    "status": "PASS",
    "detail": ""
   },
   {
-   "name": "发布产物存在：V2.2.18-收束报告.md",
+   "name": "发布产物存在：V2.2.19-收束报告.md",
    "status": "PASS",
    "detail": ""
   },
   {
-   "name": "发布产物存在：V2.2.18.md",
+   "name": "发布产物存在：V2.2.19.md",
    "status": "PASS",
    "detail": ""
   },
@@ -79,37 +79,37 @@
   {
    "name": "状态快照含本版",
    "status": "PASS",
-   "detail": "项目状态快照_20261028.md"
+   "detail": "项目状态快照_20261029.md"
   },
   {
    "name": "App 版本一致性",
    "status": "PASS",
-   "detail": "App 2.0.37"
+   "detail": "App 2.0.44"
   },
   {
    "name": "fast_gate 证据新鲜且全绿",
    "status": "PASS",
-   "detail": "2026-10-28T17:03:59"
+   "detail": "2026-10-29T08:57:26"
   },
   {
    "name": "v2_tests 证据新鲜且全绿",
    "status": "PASS",
-   "detail": "2026-10-28T17:06:47"
+   "detail": "2026-10-29T09:00:28"
   },
   {
    "name": "app_selftest 证据新鲜且全绿",
    "status": "PASS",
-   "detail": "2026-10-28T17:08:07"
+   "detail": "2026-10-29T09:02:32"
   },
   {
    "name": "acceptance 证据新鲜且全绿",
    "status": "PASS",
-   "detail": "2026-10-28T17:08:59"
+   "detail": "2026-10-29T09:03:49"
   },
   {
    "name": "fast_gate 引擎版本",
    "status": "PASS",
-   "detail": "2.2.18"
+   "detail": "2.2.19"
   },
   {
    "name": "README ↔ v2_tests 数字",
@@ -134,25 +134,25 @@
   {
    "name": "四层 probe 全绿且版本对齐",
    "status": "PASS",
-   "detail": "pass=81 fail=0 engine=V2.2.18"
+   "detail": "pass=81 fail=0 engine=V2.2.19"
   },
   {
    "name": "git 标签可读",
    "status": "PASS",
-   "detail": "34 个标签"
+   "detail": "37 个标签"
   },
   {
-   "name": "V2.2.18",
+   "name": "V2.2.19",
    "status": "N/A",
    "detail": "pre-tag 模式：尚未打（commit 后 --post-tag 复核）"
   },
   {
-   "name": "engine-V2.2.18",
+   "name": "engine-V2.2.19",
    "status": "N/A",
    "detail": "pre-tag 模式：尚未打（commit 后 --post-tag 复核）"
   },
   {
-   "name": "app-V2.0.37",
+   "name": "app-V2.0.44",
    "status": "PASS",
    "detail": "App 未变版时标签指向其发布提交，不移动"
   },
@@ -169,22 +169,7 @@
   {
    "name": "dsh_loop_check PASS 项",
    "status": "PASS",
-   "detail": "4 项"
-  },
-  {
-   "name": "dsh_loop_check B.  最新真跑离线质量门预检  20261027_212315_",
-   "status": "N/A",
-   "detail": "证据陈旧：最新生产包早于当前引擎修复（本阶段零 API 预算，未复跑生产档）"
-  },
-  {
-   "name": "dsh_loop_check C.  App 运行态 + DSH 本对话 full=1 视图  ",
-   "status": "N/A",
-   "detail": "用户 App 实例不可达/超时（8765 为人工实例，非发版门）"
-  },
-  {
-   "name": "dsh_loop_check 退出码",
-   "status": "N/A",
-   "detail": "FAIL 项全部归为证据/环境边界（见上），退出码 1"
+   "detail": "6 项"
   }
  ],
  "ok": true

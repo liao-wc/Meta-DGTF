@@ -60,13 +60,16 @@ _ARG_SPEC = {
     "history_fusion": "--history-fusion",
     "self_check_mode": "--self-check-mode",
     "dual_judge_mode": "--dual-judge-mode",
+    # ★ [V2.2.19] 输入驱动自动模式（引擎 V2.2.19+ 才有；能力门控见 _GATED_FLAGS）
+    "mode": "--mode",
 }
 _BOOL_FLAGS = {"no-self-check": "--no-self-check", "quiet": "--quiet", "debug": "--debug"}
 
 #: ★ 能力门控 flag：引擎源码里**没出现**该长 flag 就不透传（= 缺省，交给引擎默认）。
 #: 对应新机制：self_check_mode/dual_judge_mode 由 engine-mech 在 V2.2.3 增加；
 #: history_fusion 在 V2.2.2 已有（探测通过后照常透传）。
-_GATED_FLAGS = {"--history-fusion", "--self-check-mode", "--dual-judge-mode"}
+_GATED_FLAGS = {"--history-fusion", "--self-check-mode", "--dual-judge-mode",
+                "--mode"}
 
 _tasks: dict[str, dict] = {}
 _tasks_lock = threading.Lock()
@@ -100,6 +103,8 @@ _CAPABILITY_FLAGS = {
     "self_check_mode": "--self-check-mode",
     "dual_judge_mode": "--dual-judge-mode",
     "history_fusion": "--history-fusion",
+    # ★ [V2.2.19] 自动模式选择（旧引擎无此 flag => 门控自动不透传）
+    "auto_mode": "--mode",
 }
 #: 能力名 → 引擎 **config 键**（DEFAULT_CONFIG 里的字面 key）。
 #: V2.2.3 先落 config 键、CLI 参数稍后；App 预设走 `--config` 时以 config 键为准，

@@ -140,7 +140,11 @@ def main():
     m3 = select_mode(min_quality=0.95, max_tokens=1000000)
     ck("tokens 约束选 serial", m3.get("mode") == "serial", m3)
     m4 = select_mode(min_quality=0.9, require_web=True)
-    ck("必须联网选 web", m4.get("mode") == "web", m4)
+    # ★ [V2.2.19] web 不再是一个"模式"：它是选中模式上的标志位，
+    #   唯一有实测的联网档 = B + 官方联网（mode=B, web=True）。
+    ck("必须联网 => B(+web) 标志位（web 不再是模式）",
+       m4.get("mode") == "B" and m4.get("web") is True
+       and "联网" in str((m4.get("info") or {}).get("name") or ""), m4)
     m5 = select_mode(min_quality=0.999)
     ck("质量不可行退最高质量", m5.get("mode") == "B", m5)
     fp = fused_plan(min_quality=0.9, max_wall=900, cascade=True)

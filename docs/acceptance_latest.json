@@ -1,24 +1,24 @@
 {
  "schema": "dgtf.acceptance.v1",
- "ts": 1793178539.1797411,
- "iso": "2026-10-28T17:08:59",
+ "ts": 1793235829.8632667,
+ "iso": "2026-10-29T09:03:49",
  "with_service": true,
  "skip_service": false,
  "require_all": false,
- "passed": 25,
+ "passed": 26,
  "skipped": 0,
  "failed": 0,
  "steps": [
   {
    "name": "fast_gate",
    "status": "PASS",
-   "sec": 21.4,
+   "sec": 21.5,
    "reason": ""
   },
   {
    "name": "v2_tests",
    "status": "PASS",
-   "sec": 168.2,
+   "sec": 181.2,
    "reason": ""
   },
   {
@@ -30,7 +30,7 @@
   {
    "name": "process_gate_guard",
    "status": "PASS",
-   "sec": 2.1,
+   "sec": 2.0,
    "reason": ""
   },
   {
@@ -48,31 +48,31 @@
   {
    "name": "compare_eval_selftest",
    "status": "PASS",
-   "sec": 0.6,
+   "sec": 0.7,
    "reason": ""
   },
   {
    "name": "train_guard",
    "status": "PASS",
-   "sec": 29.7,
+   "sec": 70.9,
    "reason": ""
   },
   {
    "name": "app_cache_bypass",
    "status": "PASS",
-   "sec": 0.3,
+   "sec": 0.4,
    "reason": ""
   },
   {
    "name": "judge_fastfail",
    "status": "PASS",
-   "sec": 8.0,
+   "sec": 8.5,
    "reason": ""
   },
   {
    "name": "generate_batch",
    "status": "PASS",
-   "sec": 3.3,
+   "sec": 2.9,
    "reason": ""
   },
   {
@@ -84,19 +84,19 @@
   {
    "name": "probe_cover_wide",
    "status": "PASS",
-   "sec": 3.7,
+   "sec": 4.6,
    "reason": ""
   },
   {
    "name": "ab_repeat_guard",
    "status": "PASS",
-   "sec": 0.1,
+   "sec": 0.2,
    "reason": ""
   },
   {
    "name": "outputs_consistency",
    "status": "PASS",
-   "sec": 2.1,
+   "sec": 2.3,
    "reason": ""
   },
   {
@@ -132,31 +132,37 @@
   {
    "name": "mem_reclaim",
    "status": "PASS",
-   "sec": 13.3,
+   "sec": 16.0,
    "reason": ""
   },
   {
    "name": "max_new_cap",
    "status": "PASS",
-   "sec": 1.5,
+   "sec": 1.6,
    "reason": ""
   },
   {
    "name": "app_selftest",
    "status": "PASS",
-   "sec": 36.4,
+   "sec": 46.8,
+   "reason": ""
+  },
+  {
+   "name": "auto_mode_local",
+   "status": "PASS",
+   "sec": 13.4,
    "reason": ""
   },
   {
    "name": "e2e_app_local",
    "status": "PASS",
-   "sec": 15.3,
+   "sec": 15.5,
    "reason": ""
   },
   {
    "name": "local_service",
    "status": "PASS",
-   "sec": 0.5,
+   "sec": 1.5,
    "reason": ""
   }
  ],
