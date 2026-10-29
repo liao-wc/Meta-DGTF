@@ -1,3 +1,14 @@
+【V2.2.65（2026-10-30，PATCH · probe 研究层未测出结构化归因；App 2.0.81 不变）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.65.py（__version__=2.2.65；引擎侧零行为差）；
+  App 2.0.81 不变。
+- ★ probe 新增 P2g（82→83）：研究层未测出时落盘 settlement.total/answered/decidability/reason，
+  并断言 total=0 且原因指向「分母为 0」。
+- 修复记录：首版要求 decidability=undecidable，本轮 packed 无该字段（空），改为验证可指认原因。
+- 验收：fast_gate 18/18；V2 71/71（1208 checks）；App selftest 459/0；一键验收 PASS 30 /
+  SKIP 0 / FAIL 0；e2e 18/18；四层 probe 83/83；发布流程门 pre/post-tag 全 PASS。零 API。
+- 兼容性：只改进证据可诊断性；引擎零行为差；App 不变。
+- 标签：V2.2.65 / engine-V2.2.65（app-V2.0.81 不变，不移动）。
+
 【V2.2.64（2026-10-30，PATCH · stability_guard 扩展文档/README 断言；App 2.0.81 不变）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.64.py（__version__=2.2.64；引擎侧零行为差）；
   App 2.0.81 不变。
@@ -645,14 +656,3 @@
   applied 只覆盖 rounds（显式 opts 优先），web=auto 不落 opts。
 - 判据：新增 scripts/local_model/test_dynamic_opt.py（28 项，进一键验收 strict）：
   route 闭包、多目标可行域/预留比例/层级降档/单调降本/fail-open、plan 接线、
-  apply_plan→build_cmd、变异体。
-- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
-  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；fused_optimal 30/30；
-  fused_full_chain 16/16；daosheng_unified 27/27；e2e 18/18；四层 probe 81/81；
-  发布流程门 pre/post-tag 全 PASS。
-- 兼容性：显式 opts 永远优先；余额未知 fail-open；预算只降圈/降档不砍层。
-- 标签：V2.2.24 / engine-V2.2.24 / app-V2.0.49。
-
-【V2.2.23（2026-10-29，PATCH 修复 · route 安全门；同发 App 2.0.48）】
-- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.23.py（__version__=2.2.23；引擎侧零行为差）；
-  App 2.0.48。

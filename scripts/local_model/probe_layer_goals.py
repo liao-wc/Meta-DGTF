@@ -231,6 +231,29 @@ def check_target_layer(case: str, L: str, d: dict, pack_path: Path,
             bool(pv.get("why")) and "未知" not in pv.get("why", ""),
             repr(pv.get("why"))[:120])
 
+    # ★ [V2.2.65] 研究层未测出：结构化归因（settlement.total=0 ⇒ decidability 不可判定）
+    if pv["state"] == "unmeasured" and L == "1":
+        try:
+            _pm = json.loads(pack_path.read_text(encoding="utf-8",
+                                                errors="replace"))
+        except Exception:  # noqa: BLE001
+            _pm = {}
+        _co = view.get("settlement") or {}
+        _total = int(_co.get("total") or 0)
+        _det = {
+            "settlement_total": _total,
+            "settlement_answered": int(_co.get("answered") or 0),
+            "decidability": str((_pm.get("decidability") or {}).get("status")
+                                or ""),
+            "reason": str(pv.get("why") or ""),
+        }
+        info["unmeasured_detail"] = _det
+        _why_ok = ("settlement.total=0" in _det["reason"]
+                   or "settlement.total=0" in str(pv.get("why") or ""))
+        add("P2g 未测出归因结构化（settlement.total=0 且原因指向分母为 0）",
+            _total == 0 and _why_ok,
+            json.dumps(_det, ensure_ascii=False)[:150])
+
     # P5 verdict 与 goal_now 同源
     main = lga._num(gn.get(main_key))
     info["main_value"] = main
