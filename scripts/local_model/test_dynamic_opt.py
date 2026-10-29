@@ -449,6 +449,39 @@ ck("M5 cache_roi 读数齐（exact/semantic/expected_saving/note）",
        ) <= set(_roi), _roi)
 
 
+print("── N 余额续航预测（V2.2.38）──")
+_p_n1 = DS.build_plan(FACT_Q, {"route": "0,1,both,all",
+                               "rounds": "0:1,1:1,both:1,all:1"},
+                      requested="daosheng", is_mock=True, balance_cny=10.0)
+_fc = ((_p_n1.get("dynamic_opt") or {}).get("budget_forecast") or {})
+ck("N1 续航预测字段齐且 safe_runs 合理（余额 10/估 0.13 ≈ 76 次）",
+   _fc.get("advice") == "ok" and int(_fc.get("safe_runs") or 0) >= 70
+   and abs(float(_fc.get("balance_after_cny") or 0)
+           - (10.0 - float(_fc.get("est_cost_cny") or 0))) < 0.02,
+   _fc)
+_pres_n = DS.load_preset()
+_pres_n2 = dict(_pres_n)
+_pres_n2["budget"] = dict(_pres_n.get("budget") or {}, reserve_runs=500)
+_orig_load_n = DS.load_preset
+try:
+    DS.load_preset = lambda force=False: _pres_n2
+    _p_n2 = DS.build_plan(FACT_Q, {"route": "0,1,both,all",
+                                   "rounds": "0:1,1:1,both:1,all:1"},
+                          requested="daosheng", is_mock=True, balance_cny=10.0)
+finally:
+    DS.load_preset = _orig_load_n
+ck("N2 续航不足（reserve_runs=500）⇒ 质量档自动降 fast",
+   _p_n2.get("tier") == "fast" and _p_n2.get("engine_mode") == "fast"
+   and "续航" in str(_p_n2.get("mode_reason")),
+   (_p_n2.get("tier"), _p_n2.get("mode_reason")))
+ck("N3 默认 reserve_runs=2 ⇒ 余额 10 不降级（tier=quality）",
+   _p_n1.get("tier") == "quality")
+_p_n4 = DS.build_plan(FACT_Q, {"route": "0", "rounds": "0:1"},
+                      requested="daosheng", is_mock=True)
+ck("N4 余额未知 ⇒ budget_forecast=None（fail-open 不预测）",
+   (_p_n4.get("dynamic_opt") or {}).get("budget_forecast") is None)
+
+
 print("── J 短程实测锚点（V2.2.33，B 模式每层 1 圈）──")
 _p_j = DS.build_plan(FACT_Q, {"route": "0,1,both,all",
                               "rounds": "0:1,1:1,both:1,all:1"},

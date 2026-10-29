@@ -116,6 +116,7 @@ _BUILTIN_DS = {
                "raw_max_tokens_fallback": 2000000,
                # ★ [V2.2.24] 动态配置：预留比例/临界倍数/降档圈数模板
                "reserve_ratio": 0.5, "critical_est_mult": 1.2,
+               "reserve_runs": 2,
                "rounds_economy": "0:1,1:2,both:1,all:1",
                "rounds_critical": "0:1,1:1,both:1,all:1"},
     "history": {"episodes_limit": 80, "min_samples": 5},
@@ -1556,6 +1557,26 @@ def build_plan(question: str, opts: dict | None = None, *,
     if tier == "quality" and bg.get("fail_open"):
         warnings.append("余额未知：fail-open 继续质量档（未因余额查询失败拒任务）")
 
+    # ★ [V2.2.38] 余额续航预测：质量档前按估算成本检查"还能跑几次"
+    _bud_cfg = dict(_BUILTIN_DS["budget"])
+    _bud_cfg.update(ds.get("budget") or {})
+    try:
+        _reserve_runs = float(_bud_cfg.get("reserve_runs") or 2)
+    except (TypeError, ValueError):
+        _reserve_runs = 2.0
+    _bal0 = bg.get("balance_cny")
+    _est0 = float(bg.get("est_cost_cny") or 0)
+    if (tier == "quality" and bg.get("decision") == "ok"
+            and isinstance(_bal0, (int, float)) and _est0 > 0):
+        _safe0 = float(_bal0) / _est0
+        if _safe0 < _reserve_runs:
+            tier = "fast"
+            engine_mode = "fast"
+            mode_reason = ("余额续航不足（¥%.2f/估¥%.2f≈%.1f 次 < reserve %.1f 次）"
+                           "→ 降级 fast 保续航" % (float(_bal0), _est0, _safe0,
+                                                    _reserve_runs))
+            warnings.append("预算续航：估算只剩 %.1f 次 < reserve %.1f 次 → 降 fast"
+                            % (_safe0, _reserve_runs))
     caps = engine_capabilities()
     supports = (caps.get("supports") or {}) if isinstance(caps, dict) else {}
     supports_cfg = (caps.get("supports_config") or {}) if isinstance(caps, dict) else {}
@@ -1895,6 +1916,23 @@ def build_plan(question: str, opts: dict | None = None, *,
         _qr.update({"policy": "auto:stable", "retry": False,
                     "why": "非事实题不需要 retry"})
     dyn["quality_retry"] = _qr
+    # ★ [V2.2.38] 续航预测（用最终 chosen 成本；余额未知 => None）
+    _ch_cost = float((dyn.get("chosen") or {}).get(
+        "est_cost_effective_cny")
+        or (dyn.get("chosen") or {}).get("est_cost_cny") or 0)
+    if isinstance(bg.get("balance_cny"), (int, float)) and _ch_cost > 0:
+        _bal = float(bg.get("balance_cny"))
+        _safe = int(_bal // _ch_cost)
+        dyn["budget_forecast"] = {
+            "balance_cny": round(_bal, 2),
+            "est_cost_cny": round(_ch_cost, 3),
+            "balance_after_cny": round(max(0.0, _bal - _ch_cost), 2),
+            "safe_runs": _safe,
+            "reserve_runs": _reserve_runs,
+            "advice": ("ok" if _safe >= _reserve_runs else "low_reserve"),
+        }
+    else:
+        dyn["budget_forecast"] = None
     # ★ [V2.2.37] 缓存 ROI 读数（exact 已按 10%% 成本计；语义命中率未知→只报能力）
     dyn["cache_roi"] = {
         "exact": bool((cache or {}).get("exact")),

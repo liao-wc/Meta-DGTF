@@ -89,6 +89,8 @@ app_daosheng:
     # ★ [V2.2.24] 动态配置优化（余额 × 质量 × 成本多目标）
     #   预留比例：单次估算成本 ≤ 余额 × reserve_ratio（默认只花一半，留安全垫）。
     reserve_ratio: 0.5
+    # ★ [V2.2.38] 余额续航：按估算成本至少还能跑 N 次；不足则质量档降 fast
+    reserve_runs: 2
     #   临界倍数：余额 < 估算成本 × critical_est_mult ⇒ budget_level=critical（压到最低圈）。
     critical_est_mult: 1.2
     #   预算紧张档/临界档的圈数模板（动态配置据此降圈，显式 opts.rounds 永远优先）。

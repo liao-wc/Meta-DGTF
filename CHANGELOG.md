@@ -1,3 +1,20 @@
+【V2.2.38（2026-10-29，PATCH · 余额续航预测；同发 App 2.0.63）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.38.py（__version__=2.2.38；引擎侧零行为差）；
+  App 2.0.63。
+- ★ dynamic_opt.budget_forecast：{balance_cny, est_cost_cny, balance_after_cny, safe_runs,
+  reserve_runs, advice}；safe_runs=floor(balance/chosen 成本)，用最终动态选择成本
+  （含上下文/缓存折算）；余额未知 ⇒ None。
+- ★ budget.reserve_runs 默认 2：quality 档在安全续航 < reserve_runs 时自动降 fast
+  并写明 mode_reason（默认余额 10/估 0.13 → safe_runs≈76，不降级）。
+- 判据：test_dynamic_opt 95→99（续航字段/safe_runs/balance_after、reserve=500 触发 fast、
+  默认不降级、余额未知 None）；回归 fused_optimal 30 / fused_full_chain 16 /
+  daosheng_unified 27 / auto_mode_local 12。
+- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
+  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
+  发布流程门 pre/post-tag 全 PASS。本轮零新增 API 花费。
+- 兼容性：默认 reserve_runs=2 对正常余额几乎无影响；余额未知 fail-open。
+- 标签：V2.2.38 / engine-V2.2.38 / app-V2.0.63。
+
 【V2.2.37（2026-10-29，PATCH · quality-retry 决策显式化；同发 App 2.0.62）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.37.py（__version__=2.2.37；引擎侧零行为差）；
   App 2.0.62。
