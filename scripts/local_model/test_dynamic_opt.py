@@ -321,7 +321,7 @@ _p_rq = DS.build_plan(PROJ_Q, {"route": "0"}, requested="daosheng",
 _rq = (_p_rq.get("dynamic_opt") or {}).get("route_quality_risk") or {}
 ck("I2 项目题显式省层 ⇒ high 风险 + 证据路径",
    _rq.get("level") == "high"
-   and str(_rq.get("evidence") or "").endswith("route_subset_quality_ab_20261029.json"),
+   and str(_rq.get("evidence") or "").endswith("route_subset_multisample_20261029.json"),
    _rq)
 _p_rq2 = DS.build_plan(FACT_Q, {"route": "0"}, requested="daosheng",
                        is_mock=True, balance_cny=50.0)
@@ -333,6 +333,26 @@ ck("I4 四层 route ⇒ 无风险标注",
    not ((_p_rq3.get("dynamic_opt") or {}).get("route_quality_risk")))
 ck("I5 风险写入 warnings（可审计）",
    any("层子集质量风险" in str(w) for w in (_p_rq.get("warnings") or [])))
+
+_p_pr = DS.build_plan(FACT_Q, {"route": "0", "rounds": "0:1"},
+                      requested="daosheng", is_mock=True, balance_cny=50.0)
+_prune = (_p_pr.get("dynamic_opt") or {}).get("route_pruning") or {}
+ck("I6 短程事实题省层：advice=keep_four_layers（6 跑 A/B 收益≈0）",
+   _prune.get("advice") == "keep_four_layers"
+   and _prune.get("saved_pct_estimate") is not None, _prune)
+ck("I7 省层证据指向 multi-sample JSON",
+   str(_prune.get("evidence") or "").endswith("route_subset_multisample_20261029.json"))
+_p_full = DS.build_plan(FACT_Q, {"route": "0,1,both,all", "rounds": "1"},
+                        requested="daosheng", is_mock=True, balance_cny=50.0)
+ck("I8 四层 route ⇒ 无省层收益判定",
+   not ((_p_full.get("dynamic_opt") or {}).get("route_pruning")))
+_p_long = DS.build_plan(FACT_Q, {"route": "0",
+                                 "rounds": "0:3,1:3,both:3,all:3"},
+                        requested="daosheng", is_mock=True, balance_cny=50.0)
+_pl = (_p_long.get("dynamic_opt") or {}).get("route_pruning") or {}
+ck("I9 长程省层：模型估算收益大 ⇒ advice=subset_may_save（仍需质量证据）",
+   _pl.get("advice") == "subset_may_save"
+   and float(_pl.get("saved_pct_estimate") or 0) >= 0.10, _pl)
 
 print("── C build_plan 接线 ──")
 _p6 = DS.build_plan(FACT_Q, {}, requested="daosheng", is_mock=True, balance_cny=6.0)

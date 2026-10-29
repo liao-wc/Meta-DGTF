@@ -1632,12 +1632,54 @@ def build_plan(question: str, opts: dict | None = None, *,
             "level": "high" if (_prj or str(quality_policy or "").startswith("auto:verified"))
                      else "info",
             "missing": _missing_layers,
-            "evidence": "docs/route_subset_quality_ab_20261029.json",
-            "note": "层子集质量未被单题 A/B 证实（route0 verified / route0,1 needs_evidence / "
-                    "full verified+ready）；显式省层保留但风险已记录，默认 route_policy=union 不砍层",
+            "evidence": "docs/route_subset_multisample_20261029.json",
+            "evidence_prev": "docs/route_subset_quality_ab_20261029.json",
+            "note": "层子集质量未被证实：6 跑 A/B 中 route0/route0,1 各 2/2 verified 但 "
+                    "ready=0，full 1/2 verified+1/2 ready（方差主导）；显式省层保留但风险已记录，"
+                    "默认 route_policy=union 不砍层",
         }
         warnings.append("层子集质量风险：缺 %s（证据 route_subset_quality_ab；"
                         "默认 union 四层更稳）" % ",".join(_missing_layers))
+    # ★ [V2.2.31] 省层收益判定：6 跑 A/B（route0/0,1/full ×2）实际 tokens 61-67k 无显著差异
+    #   ⇒ 短程事实题的省层收益≈0，质量方差反而更大；这里把判定写入 plan 供审计/提示。
+    _route_pruning = None
+    if _missing_layers:
+        _full_ref = "0,1,both,all"
+        _est_rounds = str(opts.get("rounds") or rounds or "auto")
+        try:
+            _dyn_kind = str(_sc1.get("kind") or "")
+            _full_tok = _route_round_tokens(
+                _full_ref, _est_rounds, engine_mode=engine_mode, web=web,
+                kind=_dyn_kind)
+            _cur_tok = _route_round_tokens(
+                _dyn_route, _est_rounds, engine_mode=engine_mode, web=web,
+                kind=_dyn_kind)
+            _overhead = float(_CALIB.get("app_overhead") or 1.0)
+            _saved = max(0.0, (_full_tok - _cur_tok) * _overhead)
+            _base = max(1.0, _full_tok * _overhead)
+            _pct = round(_saved / _base, 3)
+        except Exception:  # noqa: BLE001
+            _saved, _pct = 0.0, 0.0
+        _short_fact = (_require_web
+                       and _rounds_count(_est_rounds) <= 6)
+        if _short_fact:
+            _advice = "keep_four_layers"
+            _why = ("6 跑 A/B 显示短程事实题 route0/0,1/full 实际 tokens 61-67k 无显著差异"
+                    "（省层收益≈0），质量方差主导 ⇒ 不值得为省层承担质量风险")
+        elif _pct >= 0.10:
+            _advice = "subset_may_save"
+            _why = "模型估算省层可省 %.1f%% tokens（仍需质量证据）" % (_pct * 100)
+        else:
+            _advice = "keep_four_layers"
+            _why = "模型估算省层收益仅 %.1f%%，低于 10%% 阈值" % (_pct * 100)
+        _route_pruning = {"advice": _advice,
+                          "saved_tokens_estimate": int(_saved),
+                          "saved_pct_estimate": _pct,
+                          "evidence": "docs/route_subset_multisample_20261029.json",
+                          "note": _why}
+        dyn["route_pruning"] = _route_pruning
+        warnings.append("省层收益判定：%s（估算省 %d tokens/%.1f%%）"
+                        % (_advice, int(_saved), _pct * 100))
     # ★ [V2.2.27] 阶段动态路由：预算紧张时 dual_judge 走 cache（不牺牲项目/quality_first）
     plan_extra_djm = ""
     if (dyn.get("budget_level") in ("warn", "critical")

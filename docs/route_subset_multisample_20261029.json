@@ -1,0 +1,122 @@
+{
+ "schema": "metadgtf.route_subset_multisample.v1",
+ "ts": "2026-10-29 15:31:25",
+ "question": "成年人正常心率是多少次每分钟？",
+ "fixed": {
+  "rounds": "1",
+  "web": "on(事实题强制)",
+  "balance_assumed": 50.0,
+  "max_tokens": 150000,
+  "reps": 2
+ },
+ "rows": [
+  {
+   "arm": "A-route0",
+   "rep": 1,
+   "route": "0",
+   "rounds": "0:1",
+   "status": "done",
+   "wall_s": 58.5,
+   "calls": 11,
+   "tokens": 65360,
+   "cost_cny": 0.131,
+   "answer_quality": "verified",
+   "answer_ready": false,
+   "packed": "20261029_152434_成年人正常心率是多少次每分钟.packed.json"
+  },
+  {
+   "arm": "B-route01",
+   "rep": 1,
+   "route": "0,1",
+   "rounds": "0:1,1:1",
+   "status": "done",
+   "wall_s": 52.3,
+   "calls": 11,
+   "tokens": 65823,
+   "cost_cny": 0.132,
+   "answer_quality": "verified",
+   "answer_ready": false,
+   "packed": "20261029_152527_成年人正常心率是多少次每分钟.packed.json"
+  },
+  {
+   "arm": "C-full",
+   "rep": 1,
+   "route": "0,1,both,all",
+   "rounds": "0:1,1:1,both:1,all:1",
+   "status": "done",
+   "wall_s": 75.1,
+   "calls": 11,
+   "tokens": 65427,
+   "cost_cny": 0.131,
+   "answer_quality": "verified",
+   "answer_ready": true,
+   "packed": "20261029_152642_成年人正常心率是多少次每分钟.packed.json"
+  },
+  {
+   "arm": "A-route0",
+   "rep": 2,
+   "route": "0",
+   "rounds": "0:1",
+   "status": "done",
+   "wall_s": 79.0,
+   "calls": 11,
+   "tokens": 61671,
+   "cost_cny": 0.123,
+   "answer_quality": "verified",
+   "answer_ready": false,
+   "packed": "20261029_152801_成年人正常心率是多少次每分钟.packed.json"
+  },
+  {
+   "arm": "B-route01",
+   "rep": 2,
+   "route": "0,1",
+   "rounds": "0:1,1:1",
+   "status": "done",
+   "wall_s": 77.1,
+   "calls": 11,
+   "tokens": 66856,
+   "cost_cny": 0.134,
+   "answer_quality": "verified",
+   "answer_ready": false,
+   "packed": "20261029_152918_成年人正常心率是多少次每分钟.packed.json"
+  },
+  {
+   "arm": "C-full",
+   "rep": 2,
+   "route": "0,1,both,all",
+   "rounds": "0:1,1:1,both:1,all:1",
+   "status": "done",
+   "wall_s": 125.8,
+   "calls": 12,
+   "tokens": 61165,
+   "cost_cny": 0.122,
+   "answer_quality": "needs_evidence",
+   "answer_ready": false,
+   "packed": "20261029_153123_成年人正常心率是多少次每分钟.packed.json"
+  }
+ ],
+ "summary": {
+  "A-route0": {
+   "n": 2,
+   "verified": 2,
+   "ready": 0,
+   "tokens_med": 65360,
+   "cost_total": 0.254
+  },
+  "B-route01": {
+   "n": 2,
+   "verified": 2,
+   "ready": 0,
+   "tokens_med": 66856,
+   "cost_total": 0.266
+  },
+  "C-full": {
+   "n": 2,
+   "verified": 1,
+   "ready": 1,
+   "tokens_med": 65427,
+   "cost_total": 0.253
+  }
+ },
+ "note": "同一问题重复采样；verified/ready 计数 + tokens 中位；成本约 ¥0.8"
+}
