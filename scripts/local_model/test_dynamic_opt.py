@@ -310,6 +310,30 @@ ck("H10 apply_plan/build_cmd 透传 --max-minutes",
    _o_cap2.get("max_minutes") == _p_w2.get("max_minutes")
    and "--max-minutes" in ER.build_cmd("问题", _o_cap2))
 
+
+print("── I 层子集质量风险标注（V2.2.30，3 臂 A/B 证据）──")
+_ab_ev = json.loads((ROOT / "docs" / "route_subset_quality_ab_20261029.json")
+                    .read_text(encoding="utf-8"))
+ck("I1 A/B 证据存在（route0/route0,1/full 三臂）",
+   len(_ab_ev.get("arms") or []) == 3)
+_p_rq = DS.build_plan(PROJ_Q, {"route": "0"}, requested="daosheng",
+                      is_mock=True, balance_cny=50.0)
+_rq = (_p_rq.get("dynamic_opt") or {}).get("route_quality_risk") or {}
+ck("I2 项目题显式省层 ⇒ high 风险 + 证据路径",
+   _rq.get("level") == "high"
+   and str(_rq.get("evidence") or "").endswith("route_subset_quality_ab_20261029.json"),
+   _rq)
+_p_rq2 = DS.build_plan(FACT_Q, {"route": "0"}, requested="daosheng",
+                       is_mock=True, balance_cny=50.0)
+_rq2 = (_p_rq2.get("dynamic_opt") or {}).get("route_quality_risk") or {}
+ck("I3 事实题显式省层 ⇒ info 风险（提示但保留）", _rq2.get("level") == "info")
+_p_rq3 = DS.build_plan(FACT_Q, {"route": "0,1,both,all"}, requested="daosheng",
+                       is_mock=True, balance_cny=50.0)
+ck("I4 四层 route ⇒ 无风险标注",
+   not ((_p_rq3.get("dynamic_opt") or {}).get("route_quality_risk")))
+ck("I5 风险写入 warnings（可审计）",
+   any("层子集质量风险" in str(w) for w in (_p_rq.get("warnings") or [])))
+
 print("── C build_plan 接线 ──")
 _p6 = DS.build_plan(FACT_Q, {}, requested="daosheng", is_mock=True, balance_cny=6.0)
 _d6 = _p6.get("dynamic_opt") or {}

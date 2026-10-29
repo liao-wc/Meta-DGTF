@@ -1,3 +1,20 @@
+【V2.2.30（2026-10-29，PATCH · 层子集质量风险标注；同发 App 2.0.55）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.30.py（__version__=2.2.30；引擎侧零行为差）；
+  App 2.0.55。
+- ★ 3 臂有界 A/B（约 ¥0.42，事实题/rounds=1/web on/预算 50）：route0=verified（12 calls/
+  67,087 tokens/¥0.134）；route0,1=needs_evidence（11 calls/60,962 tokens/¥0.122）；
+  full=verified+answer_ready（12 calls/79,534 tokens/¥0.159）。层子集质量不单调，
+  full 是唯一 verified+ready ⇒ 默认 route_policy=union（四层）继续成立；省层保留但风险标注。
+- ★ 风险标注：有效 route 缺层且事实/项目/verified 策略时，plan.dynamic_opt.route_quality_risk
+  = {level(high/info), missing, evidence, note}，warnings 提示；默认四层不触发，显式省层可审计。
+- 判据：test_dynamic_opt 64→69（A/B 证据、项目 high、事实 info、四层无风险、warnings）。
+  回归 fused_optimal 30 / fused_full_chain 16 / daosheng_unified 27 / auto_mode_local 12。
+- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
+  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
+  发布流程门 pre/post-tag 全 PASS。
+- 兼容性：默认行为不变（四层）；成本模型/预算上限/阶段路由沿用前版。
+- 标签：V2.2.30 / engine-V2.2.30 / app-V2.0.55。
+
 【V2.2.29（2026-10-29，PATCH · 预算层级→运行期墙钟硬上限；同发 App 2.0.54）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.29.py（__version__=2.2.29；引擎侧零行为差）；
   App 2.0.54。

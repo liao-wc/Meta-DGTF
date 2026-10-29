@@ -1,0 +1,86 @@
+{
+ "schema": "metadgtf.route_subset_quality_ab.v1",
+ "ts": "2026-10-29 14:58:09",
+ "question": "成年人正常心率是多少次每分钟？",
+ "fixed": {
+  "rounds": "1",
+  "web": "on(事实题强制)",
+  "balance_assumed": 50.0,
+  "max_tokens": 150000
+ },
+ "arms": [
+  {
+   "arm": "A-route0",
+   "route": "0",
+   "rounds": "0:1",
+   "status": "done",
+   "wall_s": 92.9,
+   "actual": {
+    "calls": 12,
+    "tokens": 67087,
+    "cost_cny": 0.134,
+    "answer_quality": "verified",
+    "quality": null,
+    "quality_flags": null,
+    "answer_ready": false
+   },
+   "plan": {
+    "engine_mode": "B",
+    "route": "0,1,both,all",
+    "web": "on",
+    "djm": "auto",
+    "dynamic_route": "0"
+   },
+   "packed": "20261029_145631_成年人正常心率是多少次每分钟.packed.json"
+  },
+  {
+   "arm": "B-route01",
+   "route": "0,1",
+   "rounds": "0:1,1:1",
+   "status": "done",
+   "wall_s": 94.3,
+   "actual": {
+    "calls": 11,
+    "tokens": 60962,
+    "cost_cny": 0.122,
+    "answer_quality": "needs_evidence",
+    "quality": null,
+    "quality_flags": null,
+    "answer_ready": false
+   },
+   "plan": {
+    "engine_mode": "B",
+    "route": "0,1,both,all",
+    "web": "on",
+    "djm": "auto",
+    "dynamic_route": "0,1"
+   },
+   "packed": "20261029_145807_成年人正常心率是多少次每分钟.packed.json"
+  },
+  {
+   "arm": "C-full",
+   "route": "0,1,both,all",
+   "rounds": "0:1,1:1,both:1,all:1",
+   "status": "done",
+   "wall_s": 129.6,
+   "actual": {
+    "calls": 12,
+    "tokens": 79534,
+    "cost_cny": 0.159,
+    "answer_quality": "verified",
+    "quality": null,
+    "quality_flags": null,
+    "answer_ready": true
+   },
+   "plan": {
+    "engine_mode": "B",
+    "route": "0,1,both,all",
+    "web": "on",
+    "djm": "auto",
+    "dynamic_route": "0,1,both,all"
+   },
+   "packed": "20261029_150038_成年人正常心率是多少次每分钟.packed.json"
+  }
+ ],
+ "note": "比较省层（route=0）/多一层（0,1）/四层（full）对 verified/质量/tokens 的影响；单题单次，受生成方差影响，不作为自动砍层依据"
+}

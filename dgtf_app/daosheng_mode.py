@@ -1620,6 +1620,24 @@ def build_plan(question: str, opts: dict | None = None, *,
                             % (dyn.get("budget_level"), budget_max_minutes, _est2))
             dyn.setdefault("applied", {})["max_minutes"] = budget_max_minutes
             dyn.setdefault("budget_cap", {})["max_minutes"] = budget_max_minutes
+    # ★ [V2.2.30] 层子集质量风险标注：显式/预测省层未被单题 A/B 证实
+    #   证据 docs/route_subset_quality_ab_20261029.json：
+    #   route0=verified / route0,1=needs_evidence / full=verified+ready（单题单次，方差内）
+    _route_entries = [e.strip() for e in str(_dyn_route or "").split(",") if e.strip()]
+    _missing_layers = [e for e in ("0", "1", "both", "all")
+                       if e not in _route_entries]
+    if _missing_layers and (_require_web or _prj
+                            or str(quality_policy or "").startswith("auto:verified")):
+        dyn["route_quality_risk"] = {
+            "level": "high" if (_prj or str(quality_policy or "").startswith("auto:verified"))
+                     else "info",
+            "missing": _missing_layers,
+            "evidence": "docs/route_subset_quality_ab_20261029.json",
+            "note": "层子集质量未被单题 A/B 证实（route0 verified / route0,1 needs_evidence / "
+                    "full verified+ready）；显式省层保留但风险已记录，默认 route_policy=union 不砍层",
+        }
+        warnings.append("层子集质量风险：缺 %s（证据 route_subset_quality_ab；"
+                        "默认 union 四层更稳）" % ",".join(_missing_layers))
     # ★ [V2.2.27] 阶段动态路由：预算紧张时 dual_judge 走 cache（不牺牲项目/quality_first）
     plan_extra_djm = ""
     if (dyn.get("budget_level") in ("warn", "critical")
