@@ -1283,6 +1283,17 @@ function renderMeta() {
         bits.push('<span class="rl-qf" data-qf="' + esc(_qtext) + '" title="' + esc(_qtext) + '" style="margin-left:6px;padding:1px 6px;border-radius:8px;background:rgba(80,140,200,.12);color:#356;font-size:11px">' + esc(_qtext) + '</span>');
       }
     }
+    /* ★ [V2.2.57] 归档视图（无 mode）：也展示任务自身实测/预期质量 */
+    const _qa0 = (!_mode && t.quality_actual && typeof t.quality_actual === "object")
+      ? t.quality_actual : null;
+    if (_qa0 && _qa0.answer_quality) {
+      let _qt0 = "实测 " + _qa0.answer_quality;
+      if (t.quality_expected != null) {
+        _qt0 = "预期 " + Math.round(Number(t.quality_expected) * 100) + "% · " + _qt0;
+      }
+      _hint = (_hint ? _hint + "；" : "") + _qt0;
+      bits.push('<span class="rl-qf" data-qf="' + esc(_qt0) + '" title="' + esc(_qt0) + '">' + esc(_qt0) + '</span>');
+    }
     bits.push(`<span class="rl-mode" data-mode="${esc(_mode.id)}" title="${esc(_hint)}">`
       + `模式 · ${esc(_label)}${_eng ? ' / ' + esc(_eng) : ''}</span>`);
   }
@@ -4010,6 +4021,8 @@ async function openChat(c) {
     } catch (_) { raw = ''; }
     chatMode = 'archive'; activeChat = null; followLatest = false;
     archivedTask = { id: c.id, question: c.question, status: c.status,
+                     quality_expected: c.quality_expected,
+                     quality_actual: c.quality_actual,
                      created_at: c.created_at, started_at: c.started_at,
                      ended_at: c.ended_at,
                      output_name: c.output_name, mock: c.mock,
