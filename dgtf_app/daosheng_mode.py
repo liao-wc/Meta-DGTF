@@ -1108,6 +1108,50 @@ _ROUTE_SAVINGS_EVIDENCE = {
                   "note": "reasoning route0 39.6-46k vs full 70.7-74.9k（约省 39%）"},
 }
 
+# ★ [V2.2.33] 短程实测锚点（App 路径实际 tokens，B 模式，每层 1 圈口径）：
+#   事实题（web on）6 跑：full≈65,427 / route0≈65,360 / route0,1≈60,962；
+#   reasoning（web off）4 跑：full≈72,799 / route0≈42,798。
+#   动态配置对短跑直接用实测锚点（不再用四层可加模型，后者高估 10 倍以上）。
+_SHORT_RUN_ANCHORS = {
+    "fact": {"web": "on", "mode": "B",
+             "full": 65427.0, "0": 65360.0, "0,1": 60962.0, "n": 6,
+             "evidence": "docs/route_subset_multisample_20261029.json"},
+    "reasoning": {"web": "off", "mode": "B",
+                  "full": 72799.0, "0": 42798.0, "n": 4,
+                  "evidence": "docs/route_subset_reasoning_ab_20261029.json"},
+}
+
+
+def _short_run_anchor(kind, web, route, rounds, engine_mode):
+    """短跑（总圈数<=4）的实测 token 锚点；无匹配返回 None。"""
+    _a = _SHORT_RUN_ANCHORS.get(str(kind or ""))
+    if not _a or engine_mode != _a.get("mode"):
+        return None
+    if str(web or "") != _a.get("web"):
+        return None
+    entries = [e.strip() for e in str(route or "").split(",") if e.strip()]
+    total = 0
+    for part in str(rounds or "").split(","):
+        part = part.strip()
+        if ":" in part:
+            try:
+                total += int(part.rsplit(":", 1)[1])
+            except (TypeError, ValueError):
+                total += 1
+        elif part.isdigit():
+            total += int(part) * max(1, len(entries))
+    if total <= 0 or total > 4:
+        return None
+    key = ",".join(entries)
+    if key in _a:
+        return float(_a[key])
+    if len(entries) == 4:
+        return float(_a["full"])
+    # 其他子集：按 route0 与 full 的中间值保守取
+    if "0" in entries:
+        return float(_a.get("0") or _a["full"])
+    return float(_a["full"])
+
 _un0, _un1 = _CALIB["u0"], _CALIB["u1"]
 _avg = (_un0 + _un1) / 2.0
 _base01 = 2 * _un0 + 3 * _un1
@@ -1217,7 +1261,10 @@ def dynamic_config(*, ds: dict | None = None, tier: str = "quality",
     # ★ [V2.2.25] 候选 rounds：按 tier 枚举（quality 保持 auto/quality 档；
     #   fast 才做 fast/economy/critical 多目标，由成本约束 + 质量排序选择）。
     _rounds_opts: list[str] = []
-    if tier == "fast":
+    if opts.get("rounds"):
+        # 显式轮数：只评估这一档（锁定语义；成本才能用短程实测锚点）
+        _pool = (str(opts.get("rounds")),)
+    elif tier == "fast":
         _pool = (ds.get("rounds_fast"), cfg.get("rounds_economy"),
                  cfg.get("rounds_critical"))
     else:
@@ -1237,12 +1284,18 @@ def dynamic_config(*, ds: dict | None = None, tier: str = "quality",
         cnt = _rounds_count(rd)
         factor = 1.0 if cnt <= 0 else max(0.3, min(1.3, cnt / float(ref_count)))
         for wb in _web_opts:
-            try:
-                tok = _route_round_tokens(route, rd, engine_mode=engine_mode,
-                                          web=wb, kind=kind)
-            except Exception:  # noqa: BLE001
-                tok = base_tok * factor
-            tok = tok * float(_CALIB.get("app_overhead") or 1.0)
+            _anchor = _short_run_anchor(kind, wb, route, rd, engine_mode)
+            if _anchor is not None:
+                tok = _anchor
+                _cost_source = "measured_short_anchor"
+            else:
+                try:
+                    tok = _route_round_tokens(route, rd, engine_mode=engine_mode,
+                                              web=wb, kind=kind)
+                except Exception:  # noqa: BLE001
+                    tok = base_tok * factor
+                tok = tok * float(_CALIB.get("app_overhead") or 1.0)
+                _cost_source = "route_subset_rounds.v1+app_overhead"
             q = base_q
             if wb == "on" and kind == "fact":
                 # token 增量已在 _route_round_tokens 内计入，这里只抬质量
@@ -1263,7 +1316,8 @@ def dynamic_config(*, ds: dict | None = None, tier: str = "quality",
                                "est_tokens": int(tok), "est_cost_cny": cost,
                                "est_cost_effective_cny": cost_eff,
                                "cache_hit": _cache_hit,
-                               "budget_level": level, "feasible": bool(feasible)})
+                               "budget_level": level, "feasible": bool(feasible),
+                               "cost_source": _cost_source})
     feasible_cs = [c for c in candidates
                    if c["feasible"] and c["est_quality"] >= floor - 1e-9]
     fallback = not feasible_cs

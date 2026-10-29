@@ -367,6 +367,45 @@ ck("I11 fact 长程：题型实测≈0 覆盖模型估算 ⇒ keep_four_layers",
    _pf.get("advice") == "keep_four_layers"
    and float(_pf.get("saved_pct_estimate") or 0) < 0.05, _pf)
 
+
+print("── J 短程实测锚点（V2.2.33，B 模式每层 1 圈）──")
+_p_j = DS.build_plan(FACT_Q, {"route": "0,1,both,all",
+                              "rounds": "0:1,1:1,both:1,all:1"},
+                     requested="daosheng", is_mock=True, balance_cny=50.0)
+_cj = (_p_j.get("dynamic_opt") or {}).get("chosen") or {}
+ck("J1 fact 短程四层：chosen≈65,427（实测锚点）",
+   abs(int(_cj.get("est_tokens") or 0) - 65427) / 65427 < 0.15
+   and _cj.get("cost_source") == "measured_short_anchor",
+   (_cj.get("est_tokens"), _cj.get("cost_source")))
+_p_j2 = DS.build_plan(FACT_Q, {"route": "0", "rounds": "0:1"},
+                      requested="daosheng", is_mock=True, balance_cny=50.0)
+_cj2 = (_p_j2.get("dynamic_opt") or {}).get("chosen") or {}
+ck("J2 fact 短程 route0：chosen≈65,360（实测锚点）",
+   abs(int(_cj2.get("est_tokens") or 0) - 65360) / 65360 < 0.15,
+   _cj2.get("est_tokens"))
+_p_j3 = DS.build_plan(REASON_Q, {"route": "0,1,both,all",
+                                 "rounds": "0:1,1:1,both:1,all:1"},
+                      requested="daosheng", is_mock=True, balance_cny=50.0)
+_cj3 = (_p_j3.get("dynamic_opt") or {}).get("chosen") or {}
+ck("J3 reasoning 短程四层：chosen≈72,799（实测锚点）",
+   abs(int(_cj3.get("est_tokens") or 0) - 72799) / 72799 < 0.15,
+   _cj3.get("est_tokens"))
+_p_j4 = DS.build_plan(FACT_Q, {"route": "0,1,both,all",
+                               "rounds": "0:1,1:1,both:1,all:1"},
+                      requested="daosheng", is_mock=True, balance_cny=10.0)
+_cj4 = (_p_j4.get("dynamic_opt") or {})
+ck("J4 余额 ¥10：短程实测锚点使配置可行（不再按整单模型判 fallback）",
+   _cj4.get("fallback") is False
+   and (_cj4.get("chosen") or {}).get("feasible") is True,
+   (_cj4.get("fallback"), (_cj4.get("chosen") or {}).get("feasible")))
+_p_j5 = DS.build_plan(FACT_Q, {"route": "0,1,both,all",
+                               "rounds": "0:2,1:2,both:2,all:2"},
+                      requested="daosheng", is_mock=True, balance_cny=50.0)
+_cj5 = (_p_j5.get("dynamic_opt") or {}).get("chosen") or {}
+ck("J5 长程（总圈数 8）不用短程锚点，回退可加模型",
+   _cj5.get("cost_source") == "route_subset_rounds.v1+app_overhead",
+   _cj5.get("cost_source"))
+
 print("── C build_plan 接线 ──")
 _p6 = DS.build_plan(FACT_Q, {}, requested="daosheng", is_mock=True, balance_cny=6.0)
 _d6 = _p6.get("dynamic_opt") or {}
