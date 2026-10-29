@@ -1,3 +1,15 @@
+【V2.2.60（2026-10-30，PATCH · 串行锁可重入 + 扩展到验收/V2/App selftest；App 2.0.80 不变）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.60.py（__version__=2.2.60；引擎侧零行为差）；
+  App 2.0.80 不变。
+- ★ acquire_serial_lock 可重入：父进程持锁（DGTF_SERIAL_LOCK_HELD）⇒ 子进程跳过，避免死锁。
+- ★ final_acceptance / run_v2_tests / app_selftest_gate 启动取同一把 local_chain 锁，
+  与手动 fused_full_chain、probe 等互斥。
+- 验证：验收加锁 30/30 无死锁；并发验收+ffc ⇒ 验收 30/30、ffc 25/25（ffc wall 543.6s）。
+- 验收：fast_gate 17/17；V2 71/71（1208 checks）；App selftest 457/0；一键验收 PASS 30 / SKIP 0 /
+  FAIL 0；e2e 18/18；四层 probe 82/82；发布流程门 pre/post-tag 全 PASS。零 API 花费。
+- 兼容性：只改测试/验证工具；引擎零行为差；App 不变。
+- 标签：V2.2.60 / engine-V2.2.60（app-V2.0.80 不变，不移动）。
+
 【V2.2.59（2026-10-30，PATCH · 判据串行锁 + ffc 缓存稳健性；App 2.0.80 不变）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.59.py（__version__=2.2.59；引擎侧零行为差）；
   App 2.0.80 不变。
@@ -640,17 +652,3 @@
   参数通道沿用 V2.2.20）；App 2.0.46。
 - ★ 融合：道生模式 = 标准模式。resolve_mode：auto → daosheng（auto-fused；project_related
   只决定背景注入，不改链路）；standard → daosheng（fused-standard，requested 保留）；
-  全项目单一链路 = 道生 plan（preset + M4 + 预算守卫 + MODE_CONFIGS）→ --mode 透传 →
-  运行期 dynamic_adjust（rounds 锁定语义）→ 产物/回显。旧 standard 链路仅作计划生成
-  失败时的 fail-open 回退保留。
-- ★ 回显：mode 新增 fused / fused_from；前端标签"标准·道生"；App selftest 三处判据更新为
-  融合语义（总数不变）。
-- ★ 全链路打通：新增 `scripts/local_model/test_fused_full_chain.py`（服务型零 API）：
-  自起临时 App server → POST /api/tasks（auto 默认）→ 引擎真跑本地 0.5B →
-  校验 mode.id=daosheng/fused、plan.policy=daosheng.v1、engine_mode∈{B,fast}、
-  packed.provenance=V2.2.21、auto_mode.plan/adjustments、answer_gates/calls；
-  一键验收新增 fused_full_chain 步骤。
-- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
-  一键验收 --with-service PASS 28 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 81/81；
-  发布流程门 pre/post-tag 全 PASS（N/A 带原因）。
-- 兼容性：显式 mode=standard 调用方无感（201；id=daosheng/requested=standard）；

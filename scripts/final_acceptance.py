@@ -37,6 +37,15 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 
+# [V2.2.60] 重资源判据串行锁（验收/V2/App selftest 与手动测试并发时互斥）
+try:
+    import sys as _s
+    _s.path.insert(0, str(ROOT / "scripts" / "local_model"))
+    from _serial_lock import acquire_serial_lock as _asl
+    _LOCK = _asl("local_chain")
+except Exception:  # noqa: BLE001
+    _LOCK = -1
+
 PASS, SKIP, FAIL = "PASS", "SKIP", "FAIL"
 
 #: 步骤三态策略
