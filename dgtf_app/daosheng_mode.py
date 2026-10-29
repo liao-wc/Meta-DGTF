@@ -1091,6 +1091,9 @@ _CALIB = {
     "multi_overlap": 0.905, # 两层可加性的重叠系数（R2 实测/可加预测）
     "full_default_tokens": 816983.0,   # fast 四层默认圈数（2,3,2,2）整单实测
     "web_fact_factor": 1.12, # 事实题 web on 的 token 增量（实测约 +12%）
+    # App 全流程开销（自省/质量门/归档；1 臂云实测 34,727/31,620=1.098；
+    # docs/app_path_cost_calibration_20261029.json）
+    "app_overhead": 1.10,
     "fast_default_rounds": {"0": 2, "1": 3, "both": 2, "all": 2},
 }
 _un0, _un1 = _CALIB["u0"], _CALIB["u1"]
@@ -1227,9 +1230,10 @@ def dynamic_config(*, ds: dict | None = None, tier: str = "quality",
                                           web=wb, kind=kind)
             except Exception:  # noqa: BLE001
                 tok = base_tok * factor
+            tok = tok * float(_CALIB.get("app_overhead") or 1.0)
             q = base_q
             if wb == "on" and kind == "fact":
-                tok *= (1.0 + _WEB_TOKENS_EXTRA)
+                # token 增量已在 _route_round_tokens 内计入，这里只抬质量
                 q = max(q, 0.955)          # 事实 web on 实测 0.958（fast）
             if factor < 1.0:
                 q -= (1.0 - factor) * 0.03  # 圈数减少的保守质量折扣（线性）
@@ -1239,8 +1243,8 @@ def dynamic_config(*, ds: dict | None = None, tier: str = "quality",
             cost_eff = round(cost * 0.1, 2) if _cache_hit else cost
             feasible = True
             if isinstance(balance, (int, float)):
-                # 估算误差容差 ±10%：预算线附近优先保留质量更高的可行档
-                feasible = cost_eff <= max(0.01, float(balance) * reserve) * 1.10
+                # 估算误差容差 ±20%（模型误差 + App 开销）：预算线附近保留更优档
+                feasible = cost_eff <= max(0.01, float(balance) * reserve) * 1.20
             candidates.append({"engine_mode": engine_mode, "parallel": parallel,
                                "thinking": thinking, "effort": effort, "web": wb,
                                "rounds": rd, "est_quality": round(q, 4),
@@ -1290,6 +1294,7 @@ def dynamic_config(*, ds: dict | None = None, tier: str = "quality",
             "quality_floor": round(floor, 4), "require_web": bool(require_web),
             "scenario": kind, "route": route, "cache_hit": _cache_hit0,
             "cost_model": "route_subset_rounds.v1",
+            "app_overhead": float(_CALIB.get("app_overhead") or 1.0),
             "candidates": candidates, "chosen": chosen,
             "applied": applied, "fallback": fallback, "why": why,
             "regret": 0.0 if not fallback else None}
@@ -1567,12 +1572,14 @@ def build_plan(question: str, opts: dict | None = None, *,
     _require_web = bool(_sc1.get("require_web")
                         or str(_sc1.get("kind") or "") == "fact"
                         or _opt_n >= 2)
+    # ★ [V2.2.27] 成本模型用"有效 route"：显式 opts.route 优先（否则会高估省层任务）
+    _dyn_route = str(opts.get("route") or route)
     dyn = dynamic_config(ds=ds, tier=tier, engine_mode=engine_mode,
                          parallel=parallel, thinking=thinking, effort=effort,
                          web=web, rounds=rounds, budget_guard=bg,
                          scenario=_sc1, quality_first=quality_first,
                          require_web=_require_web, opts=opts,
-                         project_related=_prj, route=route, cache=cache)
+                         project_related=_prj, route=_dyn_route, cache=cache)
     _dyn_applied = dyn.get("applied") or {}
     if _dyn_applied.get("rounds"):
         rounds = str(_dyn_applied["rounds"])
@@ -1585,6 +1592,20 @@ def build_plan(question: str, opts: dict | None = None, *,
         warnings.append("动态配置：无满足质量下限的可行解 → 取最低成本兜底"
                         "（质量下限 %.2f，余额 %s）"
                         % (dyn.get("quality_floor"), dyn.get("balance_cny")))
+    # ★ [V2.2.27] 阶段动态路由：预算紧张时 dual_judge 走 cache（不牺牲项目/quality_first）
+    plan_extra_djm = ""
+    if (dyn.get("budget_level") in ("warn", "critical")
+            and not _prj and not quality_first
+            and opts.get("dual_judge_mode") in (None, "")):
+        _dj_sup = bool((caps.get("supports") or {}).get("dual_judge_mode"))
+        if _dj_sup:
+            plan_extra_djm = "cache"
+            dyn.setdefault("applied", {})["dual_judge_mode"] = "cache"
+            dyn["stage_routing"] = {"dual_judge_mode": "cache",
+                                    "why": "预算层级=%s ⇒ 评审走 cache 降本"
+                                           % dyn.get("budget_level")}
+            warnings.append("阶段动态路由：预算%s ⇒ dual_judge=cache"
+                            % dyn.get("budget_level"))
     memory = memory_summary(question, ds, project_related=_prj, history=history)
     context_injected: list[str] = []
     if _prj:
@@ -1681,7 +1702,7 @@ def build_plan(question: str, opts: dict | None = None, *,
         "effort": effort,
         "self_check_mode": scm,
         "self_check_mode_via": scm_via,
-        "dual_judge_mode": djm,
+        "dual_judge_mode": (plan_extra_djm or djm),
         "dual_judge_mode_via": djm_via,
         "history_fusion": hf,
         "history_fusion_via": hf_via,

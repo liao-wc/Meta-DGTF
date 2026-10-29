@@ -1,0 +1,109 @@
+{
+ "schema": "metadgtf.app_path_cost_calibration.v1",
+ "ts": "2026-10-29 13:38:37",
+ "question": "成年人正常心率是多少次每分钟？",
+ "fixed": {
+  "route": "0",
+  "rounds": "0:1",
+  "web": "off",
+  "mode": "auto",
+  "balance_assumed": 3.0,
+  "max_tokens": 150000
+ },
+ "status": "done",
+ "wall_s": 62.9,
+ "mode": {
+  "id": "daosheng",
+  "tier": "fast",
+  "engine_mode": "fast",
+  "rounds": null,
+  "rounds_locked": null
+ },
+ "dynamic_opt": {
+  "schema": "metadgtf.dynamic_config.v1",
+  "budget_level": "warn",
+  "balance_cny": 3.0,
+  "reserve_ratio": 0.5,
+  "quality_floor": 0.9,
+  "require_web": true,
+  "scenario": "fact",
+  "route": "0,1,both,all",
+  "cache_hit": false,
+  "cost_model": "route_subset_rounds.v1",
+  "candidates": [
+   {
+    "engine_mode": "fast",
+    "parallel": "B",
+    "thinking": "off",
+    "effort": "auto",
+    "web": "on",
+    "rounds": "0:2,1:3,both:2,all:2",
+    "est_quality": 0.955,
+    "est_tokens": 1006523,
+    "est_cost_cny": 2.01,
+    "est_cost_effective_cny": 2.01,
+    "cache_hit": false,
+    "budget_level": "warn",
+    "feasible": false
+   },
+   {
+    "engine_mode": "fast",
+    "parallel": "B",
+    "thinking": "off",
+    "effort": "auto",
+    "web": "on",
+    "rounds": "0:1,1:2,both:1,all:1",
+    "est_quality": 0.9417,
+    "est_tokens": 526126,
+    "est_cost_cny": 1.05,
+    "est_cost_effective_cny": 1.05,
+    "cache_hit": false,
+    "budget_level": "warn",
+    "feasible": true
+   },
+   {
+    "engine_mode": "fast",
+    "parallel": "B",
+    "thinking": "off",
+    "effort": "auto",
+    "web": "on",
+    "rounds": "0:1,1:1,both:1,all:1",
+    "est_quality": 0.9383,
+    "est_tokens": 480396,
+    "est_cost_cny": 0.96,
+    "est_cost_effective_cny": 0.96,
+    "cache_hit": false,
+    "budget_level": "warn",
+    "feasible": true
+   }
+  ],
+  "chosen": {
+   "engine_mode": "fast",
+   "parallel": "B",
+   "thinking": "off",
+   "effort": "auto",
+   "web": "on",
+   "rounds": "0:1,1:2,both:1,all:1",
+   "est_quality": 0.9417,
+   "est_tokens": 526126,
+   "est_cost_cny": 1.05,
+   "est_cost_effective_cny": 1.05,
+   "cache_hit": false,
+   "budget_level": "warn",
+   "feasible": true
+  },
+  "applied": {},
+  "fallback": false,
+  "why": "预算层级=warn 余额=¥3.00 预留=50% → 选 quality=0.942/tokens=526126/¥1.05",
+  "regret": 0.0
+ },
+ "engine_model_tokens": 31620.0,
+ "actual": {
+  "llm_calls": 11,
+  "tokens": 34727,
+  "est_cost_cny": 0.069,
+  "answer_quality": "unverified"
+ },
+ "app_path_overhead": 1.098,
+ "packed": "20261029_133835_成年人正常心率是多少次每分钟.packed.json"
+}

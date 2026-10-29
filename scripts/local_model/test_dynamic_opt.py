@@ -9,7 +9,9 @@ D 变异体：去掉依赖闭包 / 去掉预算预留 / 事实题不强制 web �
 """
 from __future__ import annotations
 
+import importlib.util
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -207,6 +209,58 @@ ck("F9 route=0 任务候选成本按子集估算（≤ 余额×预留，不再�
 ck("F10 dynamic_opt 标注成本模型口径", _dyn_route0.get("cost_model")
    == "route_subset_rounds.v1")
 
+
+print("── G App 全流程开销 + 有效 route + 阶段路由 + 引擎依赖（V2.2.27）──")
+_appcal = json.loads((ROOT / "docs" / "app_path_cost_calibration_20261029.json")
+                     .read_text(encoding="utf-8"))
+ck("G1 App 路径开销实测系数在 1.05~1.20（1 臂云校准）",
+   1.05 <= float(_appcal.get("app_path_overhead") or 0) <= 1.20,
+   _appcal.get("app_path_overhead"))
+_chg = DS.dynamic_config(ds=_pres, tier="fast", engine_mode="fast",
+                         rounds="0:2", web="off", budget_guard=_bg(50.0, "ok"),
+                         scenario={"kind": "fact"}, require_web=True,
+                         opts={}, route="0")
+_ch = _chg["chosen"]
+_rt_ch = DS._route_round_tokens("0", _ch["rounds"], "fast", _ch["web"], "fact")
+_exp_tok = _rt_ch * 1.10
+ck("G2 App 开销已计入候选 token（≈模型×1.10）",
+   abs(_ch["est_tokens"] / max(1.0, _exp_tok) - 1.0) < 0.05,
+   (_ch["est_tokens"], _rt_ch, _chg.get("app_overhead")))
+_p_opt_route = DS.build_plan(FACT_Q, {"route": "0"}, requested="daosheng",
+                             is_mock=True, balance_cny=3.0)
+ck("G3 显式 opts.route=0：dynamic_opt.route 记录有效 route",
+   (_p_opt_route.get("dynamic_opt") or {}).get("route") == "0")
+_p_warn_low = DS.build_plan(FACT_Q, {}, requested="daosheng", is_mock=True,
+                            balance_cny=3.0)
+ck("G4 warn 档非项目题：阶段动态路由 dual_judge=cache",
+   _p_warn_low.get("dual_judge_mode") == "cache"
+   and ((_p_warn_low.get("dynamic_opt") or {}).get("applied") or {}).get(
+       "dual_judge_mode") == "cache")
+_p_warn_prj = DS.build_plan(PROJ_Q, {}, requested="daosheng", is_mock=True,
+                            balance_cny=3.0)
+ck("G5 项目题/quality_first 不降级评审（dual_judge != cache）",
+   _p_warn_prj.get("dual_judge_mode") != "cache")
+_p_ok = DS.build_plan(FACT_Q, {}, requested="daosheng", is_mock=True,
+                      balance_cny=50.0)
+ck("G6 ok 档不走 cache 评审（预算充足时保留双评审）",
+   _p_ok.get("dual_judge_mode") != "cache")
+_engs = sorted((ROOT / "dgtf_engine" / "dgtf_v2" / "engine").glob("Meta-DGTF-V*.py"),
+               key=lambda p: tuple(int(x) for x in
+                                   re.search(r"V(\d+)\.(\d+)\.(\d+)", p.name).groups()))
+_esrc = _engs[-1].read_text(encoding="utf-8-sig")
+ck("G7 引擎最高版含 route 依赖闭包与 main 接线",
+   "_close_route_deps" in _esrc and "层依赖闭包" in _esrc
+   and "★ [V2.2.27]" in _esrc, _engs[-1].name)
+_spec2 = importlib.util.spec_from_file_location("eng_v2227", _engs[-1])
+_M2 = importlib.util.module_from_spec(_spec2)
+sys.modules["eng_v2227"] = _M2
+_spec2.loader.exec_module(_M2)
+ck("G8 引擎闭包：both⇒0/1、all⇒both/0/1、单层不变",
+   _M2._close_route_deps(["both"]) == (["0", "1", "both"], ["0", "1"])
+   and _M2._close_route_deps(["all"]) == (["0", "1", "both", "all"],
+                                          ["both", "0", "1"])
+   and _M2._close_route_deps(["1"]) == (["1"], []))
+
 print("── C build_plan 接线 ──")
 _p6 = DS.build_plan(FACT_Q, {}, requested="daosheng", is_mock=True, balance_cny=6.0)
 _d6 = _p6.get("dynamic_opt") or {}
@@ -223,8 +277,10 @@ ck("C4 余额 <4：plan.rounds 降为 economy",
    _p2.get("rounds") == _pres["budget"]["rounds_economy"], _p2.get("rounds"))
 _px = DS.build_plan(FACT_Q, {"rounds": "0:3"}, requested="daosheng",
                     is_mock=True, balance_cny=2.0)
-ck("C5 显式 opts.rounds 时动态配置不覆盖（applied 为空）",
-   (_px.get("dynamic_opt") or {}).get("applied") == {})
+_px_applied = (_px.get("dynamic_opt") or {}).get("applied") or {}
+ck("C5 显式 opts.rounds 时动态配置不覆盖 rounds",
+   "rounds" not in _px_applied and _px.get("rounds") != "0:3"
+   or "rounds" not in _px_applied)
 _ms = DS.mode_summary(_p6)
 ck("C6 mode_summary 带 budget_level + dynamic 摘要",
    "budget_level" in _ms and "dynamic" in _ms

@@ -1,3 +1,22 @@
+【V2.2.27（2026-10-29，PATCH · App 全流程开销校准 + 有效 route 成本 + 阶段动态路由；同发 App 2.0.52）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.27.py（__version__=2.2.27）；
+  App 2.0.52。
+- ★ App 全流程开销：1 臂有界云校准（约 ¥0.07）：App 实际 34,727 tokens vs 引擎模型
+  31,620 → app_overhead≈1.10，已计入 dynamic_config 候选 token/成本。
+- ★ 有效 route 成本：成本估算改用显式 opts.route（优先）而非预设 route；省层任务不再被
+  四层口径高估；plan.dynamic_opt.route 记录实际生效 route。
+- ★ 阶段动态路由：预算 warn/critical 且非项目/非 quality_first 时 dual_judge=cache，
+  plan.dynamic_opt.applied/stage_routing 可审计；ok 档/项目题/quality_first 保持原评审档。
+- ★ 引擎 V2.2.27 实际变更：显式 --route 出现 both 缺 0/1、all 缺 both/0/1 时自动补全
+  并打印"层依赖闭包"；单层/无 both/all 的省层 route 不受影响。
+- 判据：test_dynamic_opt 46→54（App 开销证据、有效 route、阶段路由、引擎闭包 helper/main）；
+  回归 fused_optimal 30 / fused_full_chain 16 / daosheng_unified 27 / auto_mode_local 12。
+- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
+  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 81/81；
+  发布流程门 pre/post-tag 全 PASS。
+- 兼容性：显式 opts 优先；余额未知 fail-open；项目/quality_first 不降评审。
+- 标签：V2.2.27 / engine-V2.2.27 / app-V2.0.52。
+
 【V2.2.26（2026-10-29，PATCH · route 子集感知动态成本模型；同发 App 2.0.51）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.26.py（__version__=2.2.26；引擎侧零行为差）；
   App 2.0.51。
