@@ -97,13 +97,16 @@ ck("B6 余额越低圈数/token 不增（单调降本）",
    >= DS._rounds_count(_d_crit["chosen"]["rounds"]))
 ck("B7 事实题 web 强制 on（off 实测不 verified）",
    all(c["web"] == "on" for c in _d_ok["candidates"]))
-ck("B8 质量下限：项目题 0.95（低质量候选被过滤）",
-   DS.dynamic_config(ds=_pres, tier="fast", engine_mode="fast",
-                     rounds=_pres.get("rounds_fast"), web="off",
-                     budget_guard=_bg(50.0, "ok"),
-                     scenario={"kind": "reasoning"},
-                     require_web=False, opts={},
-                     project_related=True)["quality_floor"] == 0.95)
+_proj_cfg = dict(ds=_pres, tier="quality", engine_mode="B", parallel="B",
+                  thinking="auto", web="off", rounds="auto",
+                  budget_guard=_bg(50.0, "ok"),
+                  scenario={"kind": "reasoning"}, require_web=False, opts={},
+                  project_related=True)
+ck("B8 质量下限：项目题 quality 档 0.95",
+   DS.dynamic_config(**_proj_cfg)["quality_floor"] == 0.95)
+ck("B8b fast 档下限对齐实测（0.90），避免项目 0.95 造成假 fallback",
+   DS.dynamic_config(**dict(_proj_cfg, tier="fast", engine_mode="fast",
+                            rounds=_pres.get("rounds_fast")))["quality_floor"] == 0.90)
 ck("B9 显式 opts.rounds 时不覆盖（applied 为空）",
    DS.dynamic_config(ds=_pres, tier="fast", engine_mode="fast",
                      rounds=_pres.get("rounds_fast"), web="on",
@@ -112,6 +115,57 @@ ck("B9 显式 opts.rounds 时不覆盖（applied 为空）",
                      opts={"rounds": "0:3"})["applied"] == {})
 ck("B10 无余额（fail-open）时全部候选可行",
    all(c["feasible"] for c in _dyn(None, "unknown")["candidates"]))
+
+
+print("── B2 多圈档候选 + 缓存命中感知（V2.2.25）──")
+_deg2 = _dyn(6.0, "degrade")
+ck("B11 多圈档候选全部枚举（≥3 档，由成本约束筛选）",
+   len(_deg2["candidates"]) >= 3
+   and len({c["rounds"] for c in _deg2["candidates"]}) >= 3,
+   [c["rounds"] for c in _deg2["candidates"]])
+_cheap = _dyn(2.0, "warn")
+ck("B12 预算收紧时自动选更低圈（质量仍≥下限）",
+   DS._rounds_count(_cheap["chosen"]["rounds"])
+   <= DS._rounds_count(_deg2["chosen"]["rounds"])
+   and _cheap["chosen"]["est_quality"] >= _cheap["quality_floor"])
+_cache_cfg = DS.dynamic_config(ds=_pres, tier="fast", engine_mode="fast",
+                               rounds=_pres.get("rounds_fast"), web="on",
+                               budget_guard=_bg(1.0, "warn"),
+                               scenario={"kind": "fact"}, require_web=True,
+                               cache={"exact": True}, opts={})
+ck("B13 缓存精确命中：标记 cache_hit 且按 10% 成本放宽可行域",
+   _cache_cfg["cache_hit"] is True
+   and any(c["feasible"] for c in _cache_cfg["candidates"])
+   and _cache_cfg["chosen"]["est_cost_effective_cny"]
+   <= 1.0 * _cache_cfg["reserve_ratio"] + 1e-9)
+_nocache_cfg = DS.dynamic_config(ds=_pres, tier="fast", engine_mode="fast",
+                                 rounds=_pres.get("rounds_fast"), web="on",
+                                 budget_guard=_bg(1.0, "warn"),
+                                 scenario={"kind": "fact"}, require_web=True,
+                                 cache={"exact": False}, opts={})
+ck("B14 未命中缓存时不放宽预算约束（对照）",
+   _cache_cfg["chosen"]["est_quality"] >= _nocache_cfg["chosen"]["est_quality"])
+ck("B15 route 进入 dynamic_opt 审计（为下一版 route 子集成本模型留接口）",
+   DS.dynamic_config(ds=_pres, tier="fast", engine_mode="fast",
+                     rounds=_pres.get("rounds_fast"), web="on",
+                     budget_guard=_bg(50.0, "ok"),
+                     scenario={"kind": "fact"}, require_web=True,
+                     route="0", opts={})["route"] == "0")
+
+# build_plan 缓存命中接线（monkeypatch 缓存预判）
+_orig_cache = DS.cache_prediction
+try:
+    DS.cache_prediction = lambda q, o=None: {"exact": True, "exact_from": "stub"}
+    _pc = DS.build_plan(FACT_Q, {}, requested="daosheng", is_mock=True,
+                        balance_cny=1.0)
+    _dc = _pc.get("dynamic_opt") or {}
+    ck("C7 build_plan 注入缓存命中：dynamic_opt.cache_hit=True 且有可行解",
+       _dc.get("cache_hit") is True and not _dc.get("fallback"),
+       (_dc.get("cache_hit"), _dc.get("fallback")))
+finally:
+    DS.cache_prediction = _orig_cache
+ck("E4 变异体：若忽略缓存（按原价），余额 1 元下可行域会收缩（判据有牙）",
+   _cache_cfg["chosen"]["est_cost_effective_cny"] < _cache_cfg["chosen"]["est_cost_cny"])
 
 print("── C build_plan 接线 ──")
 _p6 = DS.build_plan(FACT_Q, {}, requested="daosheng", is_mock=True, balance_cny=6.0)

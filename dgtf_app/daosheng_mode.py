@@ -1104,7 +1104,8 @@ def dynamic_config(*, ds: dict | None = None, tier: str = "quality",
                    budget_guard: dict | None = None,
                    scenario: dict | None = None, quality_first: bool = False,
                    require_web: bool = False, opts: dict | None = None,
-                   project_related: bool = False) -> dict:
+                   project_related: bool = False, route=None,
+                   cache: dict | None = None) -> dict:
     """在现有资源（余额/历史/场景）上枚举可行配置，选质量最高且成本可控者。
 
     返回可审计 dict；applied 只含安全可覆盖项（rounds/web），显式 opts 永远优先。
@@ -1130,19 +1131,26 @@ def dynamic_config(*, ds: dict | None = None, tier: str = "quality",
         _DYN_TIER_FLOOR["project"] if (project_related or kind == "project") else
         (_DYN_TIER_FLOOR["quality_first"] if quality_first
          else _DYN_TIER_FLOOR["default"]))
-    # 候选 rounds：degrade 仍用实测 fast 档（质量已验证、成本可接受）；
-    # warn 用 economy，critical 用最低圈；ok 保持传入值/quality_first。
-    if level == "critical":
-        _rounds_opts = [cfg.get("rounds_critical")]
-    elif level == "warn":
-        _rounds_opts = [cfg.get("rounds_economy")]
-    elif level == "degrade" or tier == "fast":
-        _rounds_opts = [ds.get("rounds_fast")]
-    elif tier == "quality" and quality_first:
-        _rounds_opts = [ds.get("rounds_quality") or "0:3,1:3,both:4,all:4"]
+    # ★ fast 档的实测质量上限≈0.93：降级到 fast 后若仍卡 0.95 会假 fallback，
+    #   把下限对齐到 fast 可满足档（0.90）；quality 档仍用项目/quality_first 0.95。
+    if tier == "fast":
+        floor = min(floor, _DYN_TIER_FLOOR["default"])
+    # ★ [V2.2.25] 候选 rounds：按 tier 枚举（quality 保持 auto/quality 档；
+    #   fast 才做 fast/economy/critical 多目标，由成本约束 + 质量排序选择）。
+    _rounds_opts: list[str] = []
+    if tier == "fast":
+        _pool = (ds.get("rounds_fast"), cfg.get("rounds_economy"),
+                 cfg.get("rounds_critical"))
     else:
-        _rounds_opts = [str(rounds or "auto")]
-    _rounds_opts = [str(x) for x in _rounds_opts if x]
+        _pool = ((str(rounds) if str(rounds or "") not in ("", "auto")
+                  else "auto"),
+                 ((ds.get("rounds_quality") or "0:3,1:3,both:4,all:4")
+                  if quality_first else None))
+    for _rc in _pool:
+        if _rc and str(_rc) not in _rounds_opts:
+            _rounds_opts.append(str(_rc))
+    if not _rounds_opts:
+        _rounds_opts = ["auto"]
     _web_opts = ["on"] if require_web else ([str(web)] if web not in ("", "auto") else ["off"])
     ref_count = max(1, _rounds_count("0:2,1:3,both:2,all:2"))
     candidates = []
@@ -1155,16 +1163,21 @@ def dynamic_config(*, ds: dict | None = None, tier: str = "quality",
             if wb == "on" and kind == "fact":
                 tok *= (1.0 + _WEB_TOKENS_EXTRA)
                 q = max(q, 0.955)          # 事实 web on 实测 0.958（fast）
-            if factor < 0.7:
-                q -= 0.01                  # 低圈成本档的保守质量折扣
+            if factor < 1.0:
+                q -= (1.0 - factor) * 0.03  # 圈数减少的保守质量折扣（线性）
             cost = round(tok / 1e6 * cny_m, 2)
+            # ★ [V2.2.25] 缓存命中感知：精确命中 ⇒ 实际成本按 10% 计（近似零成本）
+            _cache_hit = bool((cache or {}).get("exact"))
+            cost_eff = round(cost * 0.1, 2) if _cache_hit else cost
             feasible = True
             if isinstance(balance, (int, float)):
-                feasible = cost <= max(0.01, float(balance) * reserve)
+                feasible = cost_eff <= max(0.01, float(balance) * reserve)
             candidates.append({"engine_mode": engine_mode, "parallel": parallel,
                                "thinking": thinking, "effort": effort, "web": wb,
                                "rounds": rd, "est_quality": round(q, 4),
                                "est_tokens": int(tok), "est_cost_cny": cost,
+                               "est_cost_effective_cny": cost_eff,
+                               "cache_hit": _cache_hit,
                                "budget_level": level, "feasible": bool(feasible)})
     feasible_cs = [c for c in candidates
                    if c["feasible"] and c["est_quality"] >= floor - 1e-9]
@@ -1174,6 +1187,22 @@ def dynamic_config(*, ds: dict | None = None, tier: str = "quality",
     else:
         chosen = min(candidates, key=lambda c: (c["est_cost_cny"], -c["est_quality"]))
     applied = {}
+    if not isinstance(balance, (int, float)):
+        # ★ 余额未知（fail-open）：只审计候选，保持原配置（不改 rounds/web）
+        _same = next((c for c in candidates
+                      if str(c["rounds"]) == str(rounds or "auto")), None)             or candidates[0]
+        chosen = _same
+        applied = {}
+        fallback = False
+        why = "余额未知 → fail-open：保持原配置（候选仅供审计）"
+        return {"schema": "metadgtf.dynamic_config.v1", "budget_level": level,
+                "balance_cny": balance, "reserve_ratio": reserve,
+                "quality_floor": round(floor, 4),
+                "require_web": bool(require_web), "scenario": kind,
+                "route": route, "cache_hit": bool((cache or {}).get("exact")),
+                "candidates": candidates, "chosen": chosen,
+                "applied": applied, "fallback": fallback, "why": why,
+                "regret": 0.0}
     if not opts.get("rounds") and str(chosen["rounds"]) != str(rounds or "auto"):
         applied["rounds"] = chosen["rounds"]
     # web=auto 表示"交给引擎自决"：动态配置只记录 chosen，不写 opts
@@ -1181,14 +1210,17 @@ def dynamic_config(*, ds: dict | None = None, tier: str = "quality",
     if (not opts.get("web") and str(web) not in ("", "auto")
             and str(chosen["web"]) != str(web)):
         applied["web"] = chosen["web"]
-    why = ("预算层级=%s 余额=%s 预留=%.0f%% → 选 quality=%.3f/tokens=%d/¥%.2f"
+    _cache_hit0 = bool((cache or {}).get("exact"))
+    why = ("预算层级=%s 余额=%s 预留=%.0f%%%s → 选 quality=%.3f/tokens=%d/¥%.2f"
            % (level, ("¥%.2f" % float(balance)) if isinstance(balance, (int, float)) else "未知",
-              reserve * 100, chosen["est_quality"], chosen["est_tokens"],
+              reserve * 100, ("（缓存命中，按 10% 成本计）" if _cache_hit0 else ""),
+              chosen["est_quality"], chosen["est_tokens"],
               chosen["est_cost_cny"]))
     return {"schema": "metadgtf.dynamic_config.v1", "budget_level": level,
             "balance_cny": balance, "reserve_ratio": reserve,
             "quality_floor": round(floor, 4), "require_web": bool(require_web),
-            "scenario": kind, "candidates": candidates, "chosen": chosen,
+            "scenario": kind, "route": route, "cache_hit": _cache_hit0,
+            "candidates": candidates, "chosen": chosen,
             "applied": applied, "fallback": fallback, "why": why,
             "regret": 0.0 if not fallback else None}
 
@@ -1458,6 +1490,8 @@ def build_plan(question: str, opts: dict | None = None, *,
         web = "on"
         warnings.append("选项题：A./B./C./D. ≥2 ⇒ 强制联网（引擎事实门需证据）")
 
+    # ★ [V2.2.25] 缓存预判提前：动态配置需要知道"这次是否近似零成本"
+    cache = cache_prediction(question, opts)
     # ★ [V2.2.24] 全链路动态配置：预算（余额/预留/层级）× 质量（场景下限）×
     #   成本（token 估算）多目标枚举，选可行解中质量最高、成本最低者。
     _require_web = bool(_sc1.get("require_web")
@@ -1468,7 +1502,7 @@ def build_plan(question: str, opts: dict | None = None, *,
                          web=web, rounds=rounds, budget_guard=bg,
                          scenario=_sc1, quality_first=quality_first,
                          require_web=_require_web, opts=opts,
-                         project_related=_prj)
+                         project_related=_prj, route=route, cache=cache)
     _dyn_applied = dyn.get("applied") or {}
     if _dyn_applied.get("rounds"):
         rounds = str(_dyn_applied["rounds"])
@@ -1488,7 +1522,6 @@ def build_plan(question: str, opts: dict | None = None, *,
     if memory.get("injected"):
         context_injected.append("memory:EML(%d字)" % int(memory.get("chars") or 0))
 
-    cache = cache_prediction(question, opts)
     engine_desc = {"ok": bool(caps.get("ok")), "path": caps.get("path") or "",
                    "version": caps.get("version") or "",
                    "supports": supports, "supports_config": supports_cfg}
