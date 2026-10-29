@@ -62,6 +62,9 @@ _ARG_SPEC = {
     "dual_judge_mode": "--dual-judge-mode",
     # ★ [V2.2.19] 输入驱动自动模式（引擎 V2.2.19+ 才有；能力门控见 _GATED_FLAGS）
     "mode": "--mode",
+    # ★ [V2.2.22] 预算配置全流程：墙钟/令牌预算从 App 任务 opts 直达引擎 run()
+    "max_minutes": "--max-minutes",
+    "max_tokens": "--max-tokens",
 }
 _BOOL_FLAGS = {"no-self-check": "--no-self-check", "quiet": "--quiet", "debug": "--debug"}
 
@@ -69,7 +72,7 @@ _BOOL_FLAGS = {"no-self-check": "--no-self-check", "quiet": "--quiet", "debug": 
 #: 对应新机制：self_check_mode/dual_judge_mode 由 engine-mech 在 V2.2.3 增加；
 #: history_fusion 在 V2.2.2 已有（探测通过后照常透传）。
 _GATED_FLAGS = {"--history-fusion", "--self-check-mode", "--dual-judge-mode",
-                "--mode"}
+                "--mode", "--max-minutes", "--max-tokens"}
 
 _tasks: dict[str, dict] = {}
 _tasks_lock = threading.Lock()
@@ -105,6 +108,8 @@ _CAPABILITY_FLAGS = {
     "history_fusion": "--history-fusion",
     # ★ [V2.2.19] 自动模式选择（旧引擎无此 flag => 门控自动不透传）
     "auto_mode": "--mode",
+    # ★ [V2.2.22] 预算 CLI（旧引擎无此 flag => 门控自动不透传）
+    "budget_cli": "--max-minutes",
 }
 #: 能力名 → 引擎 **config 键**（DEFAULT_CONFIG 里的字面 key）。
 #: V2.2.3 先落 config 键、CLI 参数稍后；App 预设走 `--config` 时以 config 键为准，

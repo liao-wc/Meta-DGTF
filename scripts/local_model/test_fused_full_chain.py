@@ -9,6 +9,7 @@ from __future__ import annotations
 import glob
 import json
 import os
+import re
 import socket
 import subprocess
 import sys
@@ -181,8 +182,15 @@ try:
         packed = json.loads(Path(after[0]).read_text(encoding="utf-8",
                                                      errors="replace"))
     prov = packed.get("provenance") or {}
-    ck("C4 packed.provenance.engine_version 与生产引擎一致（V2.2.21）",
-       str(prov.get("engine_version") or "").endswith("2.2.21"),
+    # 动态取生产引擎版本（glob 最高版，不写死版本号）
+    _engs = sorted(
+        (ROOT / "dgtf_engine" / "dgtf_v2" / "engine").glob("Meta-DGTF-V*.py"),
+        key=lambda p: tuple(int(x) for x in
+                            re.search(r"V(\d+)\.(\d+)\.(\d+)", p.name).groups()))
+    _m = re.search(r"V(\d+)\.(\d+)\.(\d+)", _engs[-1].name) if _engs else None
+    _want = ".".join(_m.groups()) if _m else ""
+    ck("C4 packed.provenance.engine_version 与生产引擎一致（%s）" % (_want or "?"),
+       bool(_want) and str(prov.get("engine_version") or "").endswith(_want),
        prov.get("engine_version"))
     am = (packed.get("auto_mode") or {})
     ck("C5 引擎侧 auto_mode 计划与 App 选择一致",

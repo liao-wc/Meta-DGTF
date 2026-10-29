@@ -82,6 +82,9 @@ STEPS = [
     ("max_new_cap", ["scripts/local_model/test_max_new_cap.py"], POLICY_STRICT),
     # [V2.2.18] App selftest 自动门（自起临时 server；起不来 exit=2 = 没跑）
     ("app_selftest", ["scripts/app_selftest_gate.py"], POLICY_SERVICE),
+    # [V2.2.22] 融合"更优"与动态最优配置：能力对等 + 实测矩阵对比 + 引擎 tick
+    ("fused_optimal", ["scripts/local_model/test_fused_optimal.py"],
+     POLICY_STRICT),
     # [V2.2.21] 融合后全链路真跑：App(auto→daosheng) → 引擎 → 本地模型 → 产物 → 读数
     ("fused_full_chain", ["scripts/local_model/test_fused_full_chain.py"],
      POLICY_SERVICE),
