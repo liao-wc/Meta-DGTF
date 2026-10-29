@@ -1,3 +1,17 @@
+【V2.2.52（2026-10-30，PATCH · rl-qf 修复 + tier_advice 提示；同发 App 2.0.77）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.52.py（__version__=2.2.52；引擎侧零行为差）；
+  App 2.0.77。
+- ★ 修复 V2.2.48 rl-qf 标签 bug：模板字符串拼接把 单引号+esc(_qtext)+单引号 当字面量写进
+  data-qf/title 属性；改为纯字符串拼接并正确转义。
+- ★ quality_forecast.tier_advice=fast 时追加「建议 fast」；App selftest 前端判据要求
+  tier_advice 渲染（456/0）。
+- 判据：App selftest 456/0；node --check app.js 通过；回归 fused_optimal 30 /
+  fused_full_chain 24 / daosheng_unified 27 / auto_mode_local 12 / dynamic_opt 132。
+- 验收：fast_gate 16/16；V2 71/71（1208 checks）；一键验收 --with-service PASS 30 / SKIP 0 /
+  FAIL 0；e2e 18/18；四层 probe 82/82；发布流程门 pre/post-tag 全 PASS。零 API 花费。
+- 兼容性：纯前端修复/展示；任务执行不变。
+- 标签：V2.2.52 / engine-V2.2.52 / app-V2.0.77。
+
 【V2.2.51（2026-10-30，PATCH · opt-in 优先成本降档；同发 App 2.0.76）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.51.py（__version__=2.2.51；引擎侧零行为差）；
   App 2.0.76。

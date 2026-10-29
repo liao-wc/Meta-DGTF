@@ -1272,10 +1272,11 @@ function renderMeta() {
         _qparts.push("缓存省 "
           + Math.round(Number(_roi.expected_saving_pct) * 100) + "%");
       }
+      if (_qf.tier_advice === "fast") _qparts.push("建议 fast");
       if (_qparts.length) {
         const _qtext = _qparts.join(" · ");
         _hint = (_hint ? _hint + "；" : "") + _qtext;
-        bits.push(`<span class="rl-qf" data-qf="' + esc(_qtext) + '" title="' + esc(_qtext) + '" style="margin-left:6px;padding:1px 6px;border-radius:8px;background:rgba(80,140,200,.12);color:#356;font-size:11px">'` + esc(_qtext) + `</span>`);
+        bits.push('<span class="rl-qf" data-qf="' + esc(_qtext) + '" title="' + esc(_qtext) + '" style="margin-left:6px;padding:1px 6px;border-radius:8px;background:rgba(80,140,200,.12);color:#356;font-size:11px">' + esc(_qtext) + '</span>');
       }
     }
     bits.push(`<span class="rl-mode" data-mode="${esc(_mode.id)}" title="${esc(_hint)}">`
