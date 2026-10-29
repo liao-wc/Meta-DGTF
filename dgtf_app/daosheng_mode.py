@@ -1607,6 +1607,19 @@ def build_plan(question: str, opts: dict | None = None, *,
                                  "based_on_est_tokens": _est,
                                  "why": "预算 %s 档的硬边界，防止估算偏差导致超支"
                                         % dyn.get("budget_level")}
+    # ★ [V2.2.29] 墙钟硬上限：按估算 tokens / 保守速率折算分钟数（×1.5 安全边界）
+    budget_max_minutes = 0
+    if (dyn.get("budget_level") in ("warn", "critical")
+            and opts.get("max_minutes") in (None, "")):
+        _est2 = int((dyn.get("chosen") or {}).get("est_tokens") or 0)
+        if _est2 > 0:
+            _tps = 600.0  # 保守：500-1000 tokens/s 区间取下沿
+            _sec = _est2 / _tps * 1.5
+            budget_max_minutes = max(1, int((_sec + 59) // 60))
+            warnings.append("预算依赖：%s 档 ⇒ 运行期 max_minutes=%d（估算 %d tokens）"
+                            % (dyn.get("budget_level"), budget_max_minutes, _est2))
+            dyn.setdefault("applied", {})["max_minutes"] = budget_max_minutes
+            dyn.setdefault("budget_cap", {})["max_minutes"] = budget_max_minutes
     # ★ [V2.2.27] 阶段动态路由：预算紧张时 dual_judge 走 cache（不牺牲项目/quality_first）
     plan_extra_djm = ""
     if (dyn.get("budget_level") in ("warn", "critical")
@@ -1720,6 +1733,8 @@ def build_plan(question: str, opts: dict | None = None, *,
         "dual_judge_mode": (plan_extra_djm or djm),
         # ★ [V2.2.28] 预算 warn/critical 时的运行期 token 硬上限（0=不限）
         "max_tokens": budget_max_tokens,
+        # ★ [V2.2.29] 同期墙钟硬上限（分钟；0=不限）
+        "max_minutes": budget_max_minutes,
         "dual_judge_mode_via": djm_via,
         "history_fusion": hf,
         "history_fusion_via": hf_via,
@@ -1755,7 +1770,7 @@ def apply_plan(plan: dict, opts: dict) -> dict:
         return applied
     for k in ("mode", "route", "rounds", "parallel", "web", "thinking",
               "effort", "self_check_mode", "dual_judge_mode",
-              "history_fusion", "max_tokens"):
+              "history_fusion", "max_tokens", "max_minutes"):
         v = plan.get(k)
         if v in (None, "", "auto"):
             continue

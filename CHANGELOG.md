@@ -1,3 +1,20 @@
+【V2.2.29（2026-10-29，PATCH · 预算层级→运行期墙钟硬上限；同发 App 2.0.54）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.29.py（__version__=2.2.29；引擎侧零行为差）；
+  App 2.0.54。
+- ★ 墙钟硬上限：warn/critical 档 plan.max_minutes = ceil(估算 tokens/600×1.5/60)（最低 1），
+  apply_plan 透传 --max-minutes；显式 opts.max_minutes 优先，ok 档不设限；
+  plan.dynamic_opt.budget_cap 同时记录 max_tokens/max_minutes（与 V2.2.28 成对）。
+- ★ dual_judge 热缓存验证（约 ¥0.14）：同配置连续两跑 run1 冷 29,848 tokens / run2 热
+  30,436 tokens（+588、calls 相同）——该题型下单题 token 收益不显著，如实记录；
+  保留 cache 为可选档，不再默认期待单题收益。
+- 判据：test_dynamic_opt 60→64（warn 墙钟上限/ok 不设限/显式优先/apply_plan+build_cmd）；
+  回归 fused_optimal 30 / fused_full_chain 16 / daosheng_unified 27 / auto_mode_local 12。
+- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
+  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
+  发布流程门 pre/post-tag 全 PASS。
+- 兼容性：显式参数优先；ok 档不设时间/token 上限；项目/quality_first 不降评审。
+- 标签：V2.2.29 / engine-V2.2.29 / app-V2.0.54。
+
 【V2.2.28（2026-10-29，PATCH · 预算层级→运行期 token 硬上限；同发 App 2.0.53）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.28.py（__version__=2.2.28；引擎侧零行为差）；
   App 2.0.53。

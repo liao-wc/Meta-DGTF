@@ -289,6 +289,27 @@ ck("H5 build_cmd 带 --max-tokens（运行期硬边界可达）",
 ck("H6 dynamic_opt 记录 budget_cap（可审计）",
    bool(((_p_w.get("dynamic_opt") or {}).get("budget_cap") or {}).get("max_tokens")))
 
+_p_w2 = DS.build_plan(FACT_Q, {}, requested="daosheng", is_mock=True,
+                      balance_cny=3.0)
+_p_o2 = DS.build_plan(FACT_Q, {}, requested="daosheng", is_mock=True,
+                      balance_cny=50.0)
+ck("H7 warn 档：plan.max_minutes 为估算墙钟硬上限（>0）",
+   int(_p_w2.get("max_minutes") or 0) > 0
+   and int(_p_w2.get("max_minutes") or 0)
+   == int((((_p_w2.get("dynamic_opt") or {}).get("budget_cap") or {})
+           .get("max_minutes")) or -1))
+ck("H8 ok 档不设墙钟上限（max_minutes=0）",
+   int(_p_o2.get("max_minutes") or 0) == 0)
+_p_expm = DS.build_plan(FACT_Q, {"max_minutes": 7}, requested="daosheng",
+                        is_mock=True, balance_cny=2.0)
+ck("H9 显式 opts.max_minutes 永远优先（plan 不覆盖）",
+   int(_p_expm.get("max_minutes") or 0) == 0)
+_o_cap2 = {}
+DS.apply_plan(dict(_p_w2), _o_cap2)
+ck("H10 apply_plan/build_cmd 透传 --max-minutes",
+   _o_cap2.get("max_minutes") == _p_w2.get("max_minutes")
+   and "--max-minutes" in ER.build_cmd("问题", _o_cap2))
+
 print("── C build_plan 接线 ──")
 _p6 = DS.build_plan(FACT_Q, {}, requested="daosheng", is_mock=True, balance_cny=6.0)
 _d6 = _p6.get("dynamic_opt") or {}

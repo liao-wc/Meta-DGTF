@@ -1,0 +1,41 @@
+{
+ "schema": "metadgtf.dual_judge_warmcache.v1",
+ "ts": "2026-10-29 14:31:06",
+ "question": "成年人正常心率是多少次每分钟？",
+ "engine": "Meta-DGTF-V2.2.28.py",
+ "fixed": {
+  "route": "0",
+  "rounds": "0:1",
+  "fast": true,
+  "web": "off",
+  "dual_judge_mode": "cache",
+  "max_tokens": 150000
+ },
+ "runs": [
+  {
+   "tag": "run1-cold",
+   "rc": 0,
+   "wall_s": 59.7,
+   "calls": 10,
+   "tokens": 29848,
+   "quality": "unverified",
+   "cache_entries": 81,
+   "packed": "20261029_143003_成年人正常心率是多少次每分钟.packed.json"
+  },
+  {
+   "tag": "run2-warm",
+   "rc": 0,
+   "wall_s": 62.5,
+   "calls": 10,
+   "tokens": 30436,
+   "quality": "unverified",
+   "cache_entries": 94,
+   "packed": "20261029_143105_成年人正常心率是多少次每分钟.packed.json"
+  }
+ ],
+ "delta": {
+  "tokens": 588,
+  "calls": 0
+ },
+ "note": "负值=第二跑（热缓存）更省；单题单次，受 judge cache 命中影响"
+}
