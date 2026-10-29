@@ -57,6 +57,7 @@ def _facts() -> dict:
         "v2_pass": int(v2.get("passed") or 0),
         "v2_total": int(v2.get("files") or 0),
         "fg_pass": int(fg.get("passed") or 0),
+        "fg_total": int(fg.get("total") or 0),
         "acc_pass": int(acc.get("passed") or 0),
         "acc_skip": int(acc.get("skipped") or 0),
         "acc_fail": int(acc.get("failed") or 0),
@@ -104,15 +105,32 @@ def _patched(text: str, f: dict) -> tuple[str, list[str]]:
         return "%s%d%s" % (m.group(1), f["selftest_pass"], m.group(3))
 
     text2 = re.sub(pat3, _r3, text2, count=1)
-    # fast_gate 数字（顶部/摘要行）
-    pat4 = r"(fast_gate \*\*)(\d+)(/\d+\*\*)"
+    # fast_gate 数字（顶部/摘要行：fast_gate **N/M**）
+    pat4 = r"(fast_gate \*\*)(\d+)(/)(\d+)(\*\*)"
 
     def _r4(m):
-        if int(m.group(2)) != f["fg_pass"]:
-            notes.append("fast_gate %s -> %s" % (m.group(2), f["fg_pass"]))
-        return "%s%d%s" % (m.group(1), f["fg_pass"], m.group(3))
+        if (int(m.group(2)) != f["fg_pass"]
+                or int(m.group(4)) != f["fg_total"]):
+            notes.append("fast_gate %s/%s -> %s/%s"
+                         % (m.group(2), m.group(4), f["fg_pass"],
+                            f["fg_total"]))
+        return "%s%d%s%d%s" % (m.group(1), f["fg_pass"], m.group(3),
+                               f["fg_total"], m.group(5))
 
     text2 = re.sub(pat4, _r4, text2, count=1)
+    # 表格行：| fast_gate | **N / M PASS**
+    pat5 = r"(\| fast_gate \| \*\*)(\d+)( / )(\d+)( PASS\*\*)"
+
+    def _r5(m):
+        if (int(m.group(2)) != f["fg_pass"]
+                or int(m.group(4)) != f["fg_total"]):
+            notes.append("fast_gate 表格 %s/%s -> %s/%s"
+                         % (m.group(2), m.group(4), f["fg_pass"],
+                            f["fg_total"]))
+        return "%s%d%s%d%s" % (m.group(1), f["fg_pass"], m.group(3),
+                               f["fg_total"], m.group(5))
+
+    text2 = re.sub(pat5, _r5, text2, count=1)
     return text2, notes
 
 
