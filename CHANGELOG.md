@@ -1,3 +1,17 @@
+【V2.2.53（2026-10-30，PATCH · 预期 vs 实测 quality_actual；同发 App 2.0.78）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.53.py（__version__=2.2.53；引擎侧零行为差）；
+  App 2.0.78。
+- ★ 任务 GET（done 时）附加 quality_actual（answer_quality/answer_ready/verified/packed）：
+  从 packed 读取实测质量；解析 output_name → save_dir → log 推导 → outputs 递归按问题+时间匹配；
+  失败 fail-open（source=none）。
+- ★ 前端 rl-qf 标签追加「实测 unverified / 实测 verified」，与预期验证率并列展示。
+- 判据：App selftest 456→457（+1 server/前端判据）；fused_full_chain 24→25（C10 与 packed 一致）；
+  test_dynamic_opt 132 不变；回归 fused_optimal 30 / daosheng_unified 27 / auto_mode_local 12。
+- 验收：fast_gate 16/16；V2 71/71（1208 checks）；一键验收 --with-service PASS 30 / SKIP 0 /
+  FAIL 0；e2e 18/18；四层 probe 81/81；发布流程门 pre/post-tag 全 PASS。零 API 花费。
+- 兼容性：仅新增查询字段；任务执行不变。
+- 标签：V2.2.53 / engine-V2.2.53 / app-V2.0.78。
+
 【V2.2.52（2026-10-30，PATCH · rl-qf 修复 + tier_advice 提示；同发 App 2.0.77）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.52.py（__version__=2.2.52；引擎侧零行为差）；
   App 2.0.77。

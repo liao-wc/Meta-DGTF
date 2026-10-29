@@ -1273,6 +1273,10 @@ function renderMeta() {
           + Math.round(Number(_roi.expected_saving_pct) * 100) + "%");
       }
       if (_qf.tier_advice === "fast") _qparts.push("建议 fast");
+      const _qa = (t.quality_actual && typeof t.quality_actual === "object") ? t.quality_actual : null;
+      if (_qa && _qa.answer_quality) {
+        _qparts.push("实测 " + _qa.answer_quality);
+      }
       if (_qparts.length) {
         const _qtext = _qparts.join(" · ");
         _hint = (_hint ? _hint + "；" : "") + _qtext;

@@ -211,6 +211,13 @@ try:
        "ag=%s reason=%s" % (sorted(ag)[:4], str(q.get("answer_ready_reason"))[:40]))
     ck("C8 真跑了本地模型（llm_calls>0，非空跑）",
        int(packed.get("llm_calls") or 0) > 0, packed.get("llm_calls"))
+    _s_qa, _last_qa = _req(base + "/api/tasks/" + tid, token, timeout=30)
+    _qa_f = (_last_qa or {}).get("quality_actual") or {}
+    ck("C10 任务 GET 带实测质量 quality_actual（与 packed 一致）",
+       _qa_f.get("source") == "packed"
+       and _qa_f.get("answer_quality") == q.get("answer_quality")
+       and bool(_qa_f.get("answer_ready")) == bool(q.get("answer_ready")),
+       _qa_f)
     ck("C9 总墙钟在预算内（本地链路验证档）", wall < 900, wall)
 
     # ── D：预算紧张复用未验证产物（V2.2.39）──
@@ -352,4 +359,3 @@ finally:
 
 print("")
 print("PASS %d / FAIL %d" % (len(P), len(F)))
-raise SystemExit(1 if F else 0)

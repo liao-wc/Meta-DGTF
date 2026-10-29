@@ -1286,6 +1286,10 @@ def check_t3_daosheng(base: str, srv_src: str, runner_src: str,
           and "expected_verified_pct" in js and "safe_runs" in js
           and "tier_advice" in js,
           "rl-qf=%d" % js.count("rl-qf"))
+    check("★V2.2.53 预期 vs 实测：任务 GET 带 quality_actual 且前端展示",
+          "quality_actual" in js and "quality_actual" in srv_src,
+          "quality_actual js=%s srv=%s" % ("quality_actual" in js,
+                                           "quality_actual" in srv_src))
 
     # ── ⑩ mock HTTP 端到端（201 + plan + 可审计 + resume）─────
     def _post_status(path, obj):

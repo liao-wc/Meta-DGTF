@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "2.0.77"
+APP_VERSION = "2.0.78"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -8992,6 +8992,12 @@ class Handler(BaseHTTPRequestHandler):
         m = re.match(r"^/api/tasks/([^/]+)$", p)
         if m:
             t = runner.get_task(m.group(1))
+            if t:
+                t = dict(t)
+                try:
+                    t["quality_actual"] = _task_quality_actual(t)
+                except Exception:  # noqa: BLE001
+                    t["quality_actual"] = {"source": "none"}
             return self._json(t) if t else self._json({"error": "not found"}, 404)
 
         if p == "/api/outputs":
@@ -10579,6 +10585,69 @@ def _watch_v2_online_outcome(tid: str, assignment_id: str):
                     pass
             return
         _t.sleep(5)
+
+
+def _task_quality_actual(t: dict) -> dict:
+    """任务完成后读取 packed 的实测质量（供 UI 做「预期 vs 实测」对比）。"""
+    try:
+        import json as _j
+        t = t or {}
+        if str(t.get("status") or "") != "done":
+            return {"source": "none", "pending": True}
+        root = Path(__file__).resolve().parent.parent
+        name = str(t.get("output_name") or "")
+        started = float(t.get("started_at") or 0)
+        dirs = [oi.OUTPUTS_DIR]
+        sd = str(((t.get("opts") or {}).get("overrides") or {}).get(
+            "output.save_dir") or "")
+        if sd:
+            pp = Path(sd)
+            dirs.append(pp if pp.is_absolute() else (root / pp))
+        cands = []
+        if name:
+            base = name[:-3] if name.lower().endswith(".md") else name
+            for d in dirs:
+                cands.append(d / (base + ".packed.json"))
+        _log = str(t.get("log") or "")
+        if _log:
+            _lp = Path(_log)
+            _lb = (_lp.name[:-len(".run.log")]
+                   if _lp.name.endswith(".run.log") else _lp.stem)
+            cands.append(_lp.parent / (_lb + ".packed.json"))
+        found = [p for p in cands if p.is_file()]
+        if not found:
+            # 回退：save_dir/outputs 下按问题文本 + 起始时间匹配（output_name 缺失时）
+            qtext = str(t.get("question") or "")
+            for d in dirs:
+                if not d.is_dir():
+                    continue
+                for p in sorted(d.rglob("*.packed.json"),
+                                key=lambda x: x.stat().st_mtime, reverse=True):
+                    try:
+                        if started and p.stat().st_mtime < started - 10:
+                            continue
+                        dd = _j.loads(p.read_text(encoding="utf-8",
+                                                  errors="replace"))
+                        if qtext and str(dd.get("question") or "") != qtext:
+                            continue
+                        found = [p]
+                        break
+                    except Exception:  # noqa: BLE001
+                        continue
+                if found:
+                    break
+        for p in found:
+            d = _j.loads(p.read_text(encoding="utf-8", errors="replace"))
+            q = d.get("quality") or {}
+            aq = str(q.get("answer_quality") or "")
+            return {"answer_quality": aq,
+                    "answer_ready": bool(q.get("answer_ready")),
+                    "verified": bool(aq == "verified"
+                                    and q.get("answer_ready")),
+                    "packed": p.name, "source": "packed"}
+    except Exception:  # noqa: BLE001
+        pass
+    return {"source": "none"}
 
 
 def _find_cached_pack(question: str, opts: dict, prefix: str = "",

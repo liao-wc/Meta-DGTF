@@ -1,7 +1,7 @@
 {
  "schema": "dgtf.acceptance.v1",
- "ts": 1793295805.5671027,
- "iso": "2026-10-30T01:43:25",
+ "ts": 1793298208.0989904,
+ "iso": "2026-10-30T02:23:28",
  "with_service": true,
  "skip_service": false,
  "require_all": false,
@@ -12,13 +12,13 @@
   {
    "name": "fast_gate",
    "status": "PASS",
-   "sec": 27.5,
+   "sec": 20.2,
    "reason": ""
   },
   {
    "name": "v2_tests",
    "status": "PASS",
-   "sec": 181.2,
+   "sec": 171.4,
    "reason": ""
   },
   {
@@ -30,13 +30,13 @@
   {
    "name": "process_gate_guard",
    "status": "PASS",
-   "sec": 2.0,
+   "sec": 2.1,
    "reason": ""
   },
   {
    "name": "app_plan_matrix",
    "status": "PASS",
-   "sec": 10.7,
+   "sec": 10.5,
    "reason": ""
   },
   {
@@ -54,7 +54,7 @@
   {
    "name": "train_guard",
    "status": "PASS",
-   "sec": 31.4,
+   "sec": 31.3,
    "reason": ""
   },
   {
@@ -78,13 +78,13 @@
   {
    "name": "graph_decode",
    "status": "PASS",
-   "sec": 6.9,
+   "sec": 6.8,
    "reason": ""
   },
   {
    "name": "probe_cover_wide",
    "status": "PASS",
-   "sec": 3.7,
+   "sec": 3.6,
    "reason": ""
   },
   {
@@ -96,7 +96,7 @@
   {
    "name": "outputs_consistency",
    "status": "PASS",
-   "sec": 2.2,
+   "sec": 2.1,
    "reason": ""
   },
   {
@@ -144,7 +144,7 @@
   {
    "name": "app_selftest",
    "status": "PASS",
-   "sec": 48.9,
+   "sec": 48.3,
    "reason": ""
   },
   {
@@ -156,13 +156,13 @@
   {
    "name": "fused_optimal",
    "status": "PASS",
-   "sec": 14.1,
+   "sec": 13.0,
    "reason": ""
   },
   {
    "name": "fused_full_chain",
    "status": "PASS",
-   "sec": 105.7,
+   "sec": 106.5,
    "reason": ""
   },
   {
@@ -174,19 +174,19 @@
   {
    "name": "auto_mode_local",
    "status": "PASS",
-   "sec": 11.4,
+   "sec": 11.3,
    "reason": ""
   },
   {
    "name": "e2e_app_local",
    "status": "PASS",
-   "sec": 67.5,
+   "sec": 13.7,
    "reason": ""
   },
   {
    "name": "local_service",
    "status": "PASS",
-   "sec": 1.7,
+   "sec": 1.5,
    "reason": ""
   }
  ],
