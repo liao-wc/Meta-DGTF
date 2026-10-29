@@ -1,3 +1,15 @@
+【V2.2.66（2026-10-30，PATCH · 发布门证据时序检查；App 2.0.81 不变）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.66.py（__version__=2.2.66；引擎侧零行为差）；
+  App 2.0.81 不变。
+- ★ release_process_check 新增「证据时序（不早于当前引擎构件）」：V2/fast_gate/acceptance/
+  app_selftest 的 ts 与 probe 证据 mtime 均不得早于引擎 mtime-120s，违反即 FAIL 并列出落后秒数。
+- 实现后立刻抓到旧证据落后（V2 早 464s / acceptance 早 1285s / app_selftest 早 1540s），
+  随后按发布顺序重跑使证据变新。
+- 验收：fast_gate 18/18；V2 71/71（1208 checks）；App selftest 459/0；一键验收 PASS 30 /
+  SKIP 0 / FAIL 0；e2e 18/18；四层 probe 83/83；发布流程门 pre/post-tag 全 PASS。零 API。
+- 兼容性：只改发布工具；引擎零行为差；App 不变。
+- 标签：V2.2.66 / engine-V2.2.66（app-V2.0.81 不变，不移动）。
+
 【V2.2.65（2026-10-30，PATCH · probe 研究层未测出结构化归因；App 2.0.81 不变）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.65.py（__version__=2.2.65；引擎侧零行为差）；
   App 2.0.81 不变。
@@ -647,12 +659,3 @@
 【V2.2.24（2026-10-29，PATCH · 全链路动态配置优化 + 动态依赖调整；同发 App 2.0.49）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.24.py（__version__=2.2.24；引擎侧零行为差）；
   App 2.0.49。
-- ★ 动态依赖调整：route 依赖闭包（both 补 0/1，all 补 both/0/1；单层不强加依赖）；
-  plan 新增 route_dependency_added，补依赖写 warnings。
-- ★ 全链路动态配置：dynamic_config 在每次规划时按 余额/预留/预算层级（ok/degrade/warn/critical）
-  × 质量下限（项目/quality_first 0.95，其它 0.90）× 成本（MODES 实测 + web 增量 + 圈数缩放）
-  枚举候选，选可行解中质量最高、成本最低者；plan 落 dynamic_opt（candidates/chosen/applied/why）；
-  budget_level 降档：ok 质量档、degrade 实测 fast 档、warn economy、critical 全 1 圈；
-  applied 只覆盖 rounds（显式 opts 优先），web=auto 不落 opts。
-- 判据：新增 scripts/local_model/test_dynamic_opt.py（28 项，进一键验收 strict）：
-  route 闭包、多目标可行域/预留比例/层级降档/单调降本/fail-open、plan 接线、

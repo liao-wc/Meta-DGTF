@@ -424,6 +424,41 @@ def _dsh_loop(root: Path, run_scripts: bool) -> list:
     return res
 
 
+def _evidence_order(root: Path, evs: dict, engine: Path,
+                    version: str) -> list:
+    """证据时序：V2/fg/acceptance/app_selftest/probe 不得早于当前引擎构件。"""
+    try:
+        em = Path(engine).stat().st_mtime
+    except Exception:  # noqa: BLE001
+        return [("证据时序（不早于当前引擎构件）", NA, "无引擎 mtime")]
+    bad = []
+    for key, label in (("v2_tests", "V2"), ("fast_gate", "fast_gate"),
+                       ("acceptance", "acceptance"),
+                       ("app_selftest", "app_selftest")):
+        d = evs.get(key) or {}
+        try:
+            ts = float(d.get("ts") or 0)
+        except Exception:  # noqa: BLE001
+            ts = 0.0
+        if not d:
+            bad.append(label + ":证据缺失")
+        elif ts and ts < em - 120:
+            bad.append("%s:早 %.0fs" % (label, em - ts))
+    probe = _load_json(root, "outputs/_e2e_local/_layer_goals_probe_latest.json")
+    try:
+        pm = (root / "outputs" / "_e2e_local" / "_layer_goals_probe_latest.json"
+              ).stat().st_mtime
+    except Exception:  # noqa: BLE001
+        pm = 0.0
+    if not isinstance(probe, dict):
+        bad.append("probe:证据缺失")
+    elif pm and pm < em - 120:
+        bad.append("probe:早 %.0fs" % (em - pm))
+    if bad:
+        return [("证据时序（不早于当前引擎构件）", FAIL, "；".join(bad))]
+    return [("证据时序（不早于当前引擎构件）", PASS, "")]
+
+
 def run_checks(root: Path, pre_tag: bool = False, post_tag: bool = False,
                run_scripts: bool = True, max_age_h: float = MAX_AGE_H,
                today: str | None = None, evidence: str = EVID_OUT) -> dict:
@@ -454,6 +489,7 @@ def run_checks(root: Path, pre_tag: bool = False, post_tag: bool = False,
     checks += _app_version(root, run_scripts)
     ev_checks, evs = _evidence(root, version, max_age_h)
     checks += ev_checks
+    checks += _evidence_order(root, evs, engine, version)
     checks += _readme_sync(root, evs, version)
     appver = ""
     try:
