@@ -1,3 +1,16 @@
+【V2.2.58（2026-10-30，PATCH · 四层 probe 读数方差统计；App 2.0.80 不变）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.58.py（__version__=2.2.58；引擎侧零行为差）；
+  App 2.0.80 不变。
+- ★ 新增 scripts/probe_variance_stats.py：从审计历史复跑表格抽取 case0/1/both/all 读数，
+  统计 n/均值/极差并落盘 docs/probe_variance_20261030.json。
+- ★ 结果（40 次历史）：case0 均值 0.415（0.0–1.0）/ both 0.017（0–0.37）/
+  all 0.594（0.5–0.75，从未到 1.0）。README 增「四层读数方差」行。
+- 验收：fast_gate 17/17；V2 71/71（1208 checks）；App selftest 457/0；
+  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
+  发布流程门 pre/post-tag 全 PASS。零 API 花费。
+- 兼容性：只读证据工具；引擎零行为差；App 不变。
+- 标签：V2.2.58 / engine-V2.2.58（app-V2.0.80 不变，不移动）。
+
 【V2.2.57（2026-10-30，PATCH · 归档视图实测/预期质量；同发 App 2.0.80）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.57.py（__version__=2.2.57；引擎侧零行为差）；
   App 2.0.80。
