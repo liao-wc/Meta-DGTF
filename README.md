@@ -18,7 +18,7 @@
 > App selftest **456/0**（自动门）；一键验收 **PASS 30 / SKIP 0 / FAIL 0**；发布流程门 **PASS（N/A 项带原因）**；动态配置/预判落盘 **122/122**、更优/route 安全门 **30/30**、全链路真跑 **24/24**、道生统一模式 **27/27**、自动模式真跑 **12/12**；服务适配器 self_check=v8b / self_check_min=v9b / dual_judge=judge_v3 / route=qwen05b_v1。
 > **APP→引擎→本地模型全链路**：e2e 18/18（本地链路验证档，热缓存 14.7s；冷缓存 55.7～106.7s 见快照）；四层目标探针 81/81；JSON 结构门 A/B 总墙钟 −55%；
 > 四层目标逐层结论（V2.2.48 复跑）：层0 达成（excavate=0，读数在 0/0.25/0.5/1 间波动的单次方差已多轮记录）/ 层1 未测出（settlement.total=0）/ both 判据样本不足（flat 需 3 点）/ all 未达成（0.5）。
-> 完整现状见 `docs/项目状态快照_20261029.md`。
+> 完整现状见 `docs/项目状态快照_20261030.md`。
 
 ## 一、它是什么
 
@@ -143,7 +143,7 @@ python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.48.py -c configs/方案F-帕累
 |---|---|
 | fast_gate | **16 / 16 PASS**（动态选最高版引擎 + engine_alignment + release_process_selftest；audit70 71/0） |
 | V2 tests_*.py | **71 / 71 PASS（1208 项检查，SKIP 0）** |
-| App selftest | **PASS 455 / FAIL 0**（含本地链路 11 项） |
+| App selftest | **PASS 456 / FAIL 0**（含本地链路 11 项） |
 | 一键验收 `scripts/final_acceptance.py --with-service` | **PASS 30 / SKIP 0 / FAIL 0**（29+1 步；含 dynamic_opt、fused_optimal、fused_full_chain、daosheng_unified、auto_mode_local） |
 | **APP→引擎→本地模型 e2e** | **18 / 18 PASS**，冷缓存真跑 **14.7～106.7s**（本地链路验证档；V2.2.15 同判据 124.9～157.9s；热缓存不计），零 API 成本 |
 | **JSON 结构门受控 A/B**（17 条固定真实 prompt） | JSON 解析率 35%→**59%**、撞上限率 41%→**6%**、总墙钟 −**55%**（详见 docs/releases/V2.2.16.md） |
