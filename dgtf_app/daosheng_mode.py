@@ -117,6 +117,7 @@ _BUILTIN_DS = {
                # ★ [V2.2.24] 动态配置：预留比例/临界倍数/降档圈数模板
                "reserve_ratio": 0.5, "critical_est_mult": 1.2,
                "reserve_runs": 2,
+               "prefer_cost_when_unverified": False,
                "rounds_economy": "0:1,1:2,both:1,all:1",
                "rounds_critical": "0:1,1:1,both:1,all:1"},
     "history": {"episodes_limit": 80, "min_samples": 5},
@@ -1900,6 +1901,22 @@ def build_plan(question: str, opts: dict | None = None, *,
         _unified_cfg = dict(_MODE_CONFIGS.get(engine_mode) or {})
     except Exception:  # noqa: BLE001
         _unified_cfg = {}
+    # ★ [V2.2.51] opt-in：该题型实测 verified=0 且预算 ok 时，可优先成本降 fast
+    #   （默认关；由 budget.prefer_cost_when_unverified 显式开启，不改变默认行为）
+    _prefer_cost = bool(_bud_cfg.get("prefer_cost_when_unverified"))
+    _tier_down_by = ""
+    _scf_early = _scenario_of(m4)
+    _kind_early = str(_scf_early.get("kind") or "")
+    if (tier == "quality" and _prefer_cost and bg.get("decision") == "ok"):
+        _pct_early = 1.0 if (_kind_early == "fact"
+                             or _scf_early.get("require_web")) else 0.0
+        if _pct_early <= 0.0:
+            tier = "fast"
+            engine_mode = "fast"
+            _tier_down_by = "prefer_cost"
+            warnings.append(
+                "opt-in prefer_cost_when_unverified：%s 实测 verified=0 ⇒ 质量档降 fast"
+                "（省 tokens/墙钟，质量同为未验证）" % (_kind_early or "该题型"))
     if tier == "fast":
         rounds = ds.get("rounds_fast") or "0:2,1:3,both:2,all:2"
         # 统一模式配置：fast => parallel=B / thinking=off（实测 782s/817k 档）
@@ -2359,7 +2376,10 @@ def build_plan(question: str, opts: dict | None = None, *,
         "tier_advice": _qr.get("tier_advice"),
         # ★ [V2.2.43] fact+web on 质量证据（2/2 verified；加圈无效）
         "quality_evidence": _qr.get("evidence"),
-        # ★ [V2.2.44] 题型 verified 期望矩阵（真跑证据，加圈均未提升）
+        # ★ [V2.2.51] opt-in 优先成本（默认关）与本次是否因此降档
+        "prefer_cost_when_unverified": bool(_prefer_cost),
+        "tier_downgraded_by": _tier_down_by,
+        # ★ [V2.2.49] 题型 verified 期望矩阵（真跑证据，加圈均未提升）
         "quality_expectation": {
             "kind": _kind_qr,
             "expected_verified_pct": _qr.get("expected_verified_pct"),

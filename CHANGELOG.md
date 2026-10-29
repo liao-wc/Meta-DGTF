@@ -1,3 +1,18 @@
+【V2.2.51（2026-10-30，PATCH · opt-in 优先成本降档；同发 App 2.0.76）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.51.py（__version__=2.2.51；引擎侧零行为差）；
+  App 2.0.76。
+- ★ budget.prefer_cost_when_unverified（默认 false）：开启 + 预算 ok + tier=quality +
+  该题型 expected_verified_pct=0 ⇒ 自动降 fast；fact（verified 2/2）不降；
+  预算 warn/critical 已降档不变。
+- ★ plan.prefer_cost_when_unverified / tier_downgraded_by 可审计；默认关闭 ⇒ 既有行为不变。
+- 判据：test_dynamic_opt 129→132（X1 默认关、X2 开启 reasoning 降 fast、X3 fact 不降）；
+  回归 fused_optimal 30 / fused_full_chain 24 / daosheng_unified 27 / auto_mode_local 12。
+- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 456/0；
+  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
+  发布流程门 pre/post-tag 全 PASS。本轮零 API 花费。
+- 兼容性：默认关；显式开启才降档；fact 永不因此降档。
+- 标签：V2.2.51 / engine-V2.2.51 / app-V2.0.76。
+
 【V2.2.50（2026-10-30，PATCH · tier_advice A/B 证据；同发 App 2.0.75）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.50.py（__version__=2.2.50；引擎侧零行为差）；
   App 2.0.75。

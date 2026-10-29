@@ -673,6 +673,37 @@ ck("W3 fact（current）不携带 tier_evidence（不误导）",
    not (_p_v2.get("quality_retry") or {}).get("tier_evidence"))
 
 
+print("── X opt-in prefer_cost_when_unverified（V2.2.51）──")
+_p_x1 = DS.build_plan(REASON_Q, {}, requested="daosheng", is_mock=True,
+                      balance_cny=50.0)
+ck("X1 默认关：reasoning tier=quality 且 prefer=False",
+   _p_x1.get("tier") == "quality"
+   and _p_x1.get("prefer_cost_when_unverified") is False
+   and not _p_x1.get("tier_downgraded_by"))
+_pres_x = DS.load_preset()
+_pres_x2 = dict(_pres_x)
+_pres_x2["budget"] = dict(_pres_x.get("budget") or {},
+                          prefer_cost_when_unverified=True)
+_orig_load_x = DS.load_preset
+try:
+    DS.load_preset = lambda force=False: _pres_x2
+    _p_x2 = DS.build_plan(REASON_Q, {}, requested="daosheng", is_mock=True,
+                          balance_cny=50.0)
+    _p_x3 = DS.build_plan(FACT_Q, {}, requested="daosheng", is_mock=True,
+                          balance_cny=50.0)
+finally:
+    DS.load_preset = _orig_load_x
+ck("X2 开启 + reasoning（verified 0）：tier 降 fast 且可审计",
+   _p_x2.get("tier") == "fast" and _p_x2.get("engine_mode") == "fast"
+   and _p_x2.get("prefer_cost_when_unverified") is True
+   and _p_x2.get("tier_downgraded_by") == "prefer_cost"
+   and any("prefer_cost" in str(w) for w in (_p_x2.get("warnings") or [])),
+   (_p_x2.get("tier"), _p_x2.get("tier_downgraded_by")))
+ck("X3 开启 + fact（verified 2/2）：不降档（tier=quality）",
+   _p_x3.get("tier") == "quality"
+   and not _p_x3.get("tier_downgraded_by"))
+
+
 print("── T fact+web on 质量证据 + fact 高圈锚点（V2.2.43）──")
 _qev2 = json.loads((ROOT / "docs" / "quality_retry_ab_20261029.json")
                    .read_text(encoding="utf-8"))

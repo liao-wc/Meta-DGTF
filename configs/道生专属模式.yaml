@@ -91,6 +91,8 @@ app_daosheng:
     reserve_ratio: 0.5
     # ★ [V2.2.38] 余额续航：按估算成本至少还能跑 N 次；不足则质量档降 fast
     reserve_runs: 2
+    # ★ [V2.2.51] opt-in：verified 0 题型 + 预算 ok 时可优先成本降 fast（默认关）
+    prefer_cost_when_unverified: false
     #   临界倍数：余额 < 估算成本 × critical_est_mult ⇒ budget_level=critical（压到最低圈）。
     critical_est_mult: 1.2
     #   预算紧张档/临界档的圈数模板（动态配置据此降圈，显式 opts.rounds 永远优先）。
