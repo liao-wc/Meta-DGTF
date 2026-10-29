@@ -6,6 +6,9 @@
 """
 from __future__ import annotations
 
+from _serial_lock import acquire_serial_lock  # [V2.2.59] 串行锁
+_SERIAL_LOCK = acquire_serial_lock("local_chain")
+
 import glob
 import json
 import os
@@ -121,7 +124,7 @@ try:
         "output.save_dir": "outputs/_e2e_local/fused_chain",
     }
     body = {"question": "HTTP 404 状态码表示什么？", "mode": "auto",
-            "opts": {"mock": False, "timeout_s": 900,
+            "opts": {"mock": False, "timeout_s": 900, "no_cache": True,
                      "route": "0", "rounds": "0:1", "web": "off",
                      "overrides": overrides}}
     before = {p: os.path.getmtime(p) for p in glob.glob(str(SAVE / "*.packed.json"))}
@@ -224,15 +227,19 @@ try:
     # 缓存扫描 outputs 根目录（oi.OUTPUTS_DIR），故先用根目录 seed 一次，再提交同题复用。
     _root = ROOT / "outputs"
     _root_before = set(glob.glob(str(_root / "*.packed.json")))
+    # ★ D 用非事实题：事实题会被强制 quality_retry（no cache），无法验证未验证复用
+    _dq = "为什么城市热岛效应在夜间比白天更明显？"
 
     def _opts_root():
         _o = json.loads(json.dumps(body["opts"]))
+        _o.pop("no_cache", None)   # D 组测缓存复用，不能带主任务的强制重跑
+        _o["use_cache"] = True
         _ov = dict(_o.get("overrides") or {})
         _ov["output.save_dir"] = "outputs"
         _o["overrides"] = _ov
         return _o
 
-    _seed_body = {"question": body["question"], "mode": "auto", "opts": _opts_root()}
+    _seed_body = {"question": _dq, "mode": "auto", "opts": _opts_root()}
     _seed_s, _seed_r = _req(base + "/api/tasks", token, _seed_body, timeout=120)
     _seed_tid = str((_seed_r or {}).get("id") or "")
     _seed_st = ""
@@ -259,7 +266,7 @@ try:
         except Exception:  # noqa: BLE001
             _seed_q = {}
     _before2 = set(glob.glob(str(_root / "*.packed.json")))
-    _body2 = {"question": body["question"], "mode": "auto",
+    _body2 = {"question": _dq, "mode": "auto",
               "opts": dict(_opts_root(), allow_unverified_cache=True)}
     _t2 = time.time()
     _s2, _r2 = _req(base + "/api/tasks", token, _body2, timeout=120)
@@ -295,7 +302,7 @@ try:
        _after2 == _before2, "new=%d" % len(_after2 - _before2))
 
     # ── D5/D6：未验证复用新鲜度门（V2.2.40）──
-    _body5 = {"question": body["question"], "mode": "auto",
+    _body5 = {"question": _dq, "mode": "auto",
               "opts": dict(_opts_root(), allow_unverified_cache=True,
                            cache_max_age_h=0.000001)}
     _s5, _r5 = _req(base + "/api/tasks", token, _body5, timeout=120)
@@ -315,7 +322,7 @@ try:
             break
         time.sleep(1.0)
     _root5 = set(glob.glob(str(_root / "*.packed.json")))
-    _body6 = {"question": body["question"], "mode": "auto",
+    _body6 = {"question": _dq, "mode": "auto",
               "opts": dict(_opts_root(), allow_unverified_cache=True,
                            cache_max_age_h=24)}
     _s6, _r6 = _req(base + "/api/tasks", token, _body6, timeout=120)

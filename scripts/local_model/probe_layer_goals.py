@@ -52,6 +52,9 @@ route=both / route=all 为什么带上游
 """
 from __future__ import annotations
 
+from _serial_lock import acquire_serial_lock  # [V2.2.59] 串行锁
+_SERIAL_LOCK = acquire_serial_lock("local_chain")
+
 import argparse
 import glob
 import inspect

@@ -9,6 +9,9 @@ D 变异体：去掉依赖闭包 / 去掉预算预留 / 事实题不强制 web �
 """
 from __future__ import annotations
 
+from _serial_lock import acquire_serial_lock  # [V2.2.59] 串行锁
+_SERIAL_LOCK = acquire_serial_lock("local_chain")
+
 import importlib.util
 import json
 import time

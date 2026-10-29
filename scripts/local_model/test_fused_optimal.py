@@ -11,6 +11,9 @@ D 变异体：删预算 CLI / 忽略 rounds_locked / 丢质量策略 => 判据�
 """
 from __future__ import annotations
 
+from _serial_lock import acquire_serial_lock  # [V2.2.59] 串行锁
+_SERIAL_LOCK = acquire_serial_lock("local_chain")
+
 import importlib.util
 import re
 import sys
