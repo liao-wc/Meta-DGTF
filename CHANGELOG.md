@@ -1,3 +1,21 @@
+【V2.2.35（2026-10-29，PATCH · rounds 依赖省层收益；同发 App 2.0.60）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.35.py（__version__=2.2.35；引擎侧零行为差）；
+  App 2.0.60。
+- ★ reasoning 高圈 A/B（2 跑约 ¥0.26，rounds=2/层）：route0 65,608 vs full 62,317 tokens
+  （高圈省层收益≈0，full 反而略省），两臂均 unverified；与单圈（route0 39.6-46k vs full
+  70.7-74.9k，省约 39%）对比 ⇒ 省层收益 rounds 依赖。
+- ★ route_pruning 高圈分支：reasoning 总圈数≥5 ⇒ keep_four_layers（证据 rounds2 JSON）；
+  单圈仍 subset_may_save；fact 任意长度 keep；choice may_save（≈40%）。
+- ★ 新增 _LONG_RUN_ANCHORS（reasoning、B、总圈数 5-10）：route0 65,608 / full 62,317，
+  动态成本 cost_source=measured_long_anchor。
+- 判据：test_dynamic_opt 83→87（高圈证据、高圈 keep、高圈 route0/full 锚点、单圈 may_save）；
+  回归 fused_optimal 30 / fused_full_chain 16 / daosheng_unified 27 / auto_mode_local 12。
+- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
+  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
+  发布流程门 pre/post-tag 全 PASS。
+- 兼容性：默认四层不变；高圈锚点只影响成本估算；判定仅提示。
+- 标签：V2.2.35 / engine-V2.2.35 / app-V2.0.60。
+
 【V2.2.34（2026-10-29，PATCH · choice 题型省层收益；同发 App 2.0.59）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.34.py（__version__=2.2.34；引擎侧零行为差）；
   App 2.0.59。

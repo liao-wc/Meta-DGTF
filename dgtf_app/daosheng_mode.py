@@ -1105,7 +1105,11 @@ _ROUTE_SAVINGS_EVIDENCE = {
              "note": "6 跑 route0/0,1/full tokens 61-67k 无显著差异"},
     "reasoning": {"saved_pct": 0.39, "n": 4,
                   "evidence": "docs/route_subset_reasoning_ab_20261029.json",
-                  "note": "reasoning route0 39.6-46k vs full 70.7-74.9k（约省 39%）"},
+                  "note": "reasoning route0 39.6-46k vs full 70.7-74.9k（约省 39%）",
+                  "high_rounds": {"saved_pct": 0.0, "n": 2, "min_total_rounds": 5,
+                                  "evidence": "docs/route_reasoning_rounds2_ab_20261029.json",
+                                  "note": "rounds=2/层时 route0 65.6k vs full 62.3k，"
+                                          "无省层收益（全层反而略省）"}},
     "choice": {"saved_pct": 0.40, "n": 4,
                "evidence": "docs/route_subset_choice_ab_20261029.json",
                "note": "choice route0 50.6-50.9k vs full 85.3k（约省 40%）"},
@@ -1126,6 +1130,42 @@ _SHORT_RUN_ANCHORS = {
                "full": 85342.0, "0": 50752.0, "n": 4,
                "evidence": "docs/route_subset_choice_ab_20261029.json"},
 }
+
+
+# ★ [V2.2.35] 高圈锚点（reasoning rounds=2/层，总 8 圈）：route0 65,608 / full 62,317
+_LONG_RUN_ANCHORS = {
+    "reasoning": {"web": "off", "mode": "B", "min_total": 5, "max_total": 10,
+                  "full": 62317.0, "0": 65608.0, "n": 2,
+                  "evidence": "docs/route_reasoning_rounds2_ab_20261029.json"},
+}
+
+
+def _long_run_anchor(kind, web, route, rounds, engine_mode):
+    """高圈实测锚点（reasoning 总圈数 5-10）；无匹配返回 None。"""
+    _a = _LONG_RUN_ANCHORS.get(str(kind or ""))
+    if not _a or engine_mode != _a.get("mode") or str(web or "") != _a.get("web"):
+        return None
+    entries = [e.strip() for e in str(route or "").split(",") if e.strip()]
+    total = 0
+    for part in str(rounds or "").split(","):
+        part = part.strip()
+        if ":" in part:
+            try:
+                total += int(part.rsplit(":", 1)[1])
+            except (TypeError, ValueError):
+                total += 1
+        elif part.isdigit():
+            total += int(part) * max(1, len(entries))
+    if not (_a.get("min_total", 5) <= total <= _a.get("max_total", 10)):
+        return None
+    key = ",".join(entries)
+    if key in _a:
+        return float(_a[key])
+    if len(entries) == 4:
+        return float(_a["full"])
+    if "0" in entries:
+        return float(_a.get("0") or _a["full"])
+    return float(_a["full"])
 
 
 def _short_run_anchor(kind, web, route, rounds, engine_mode):
@@ -1291,9 +1331,14 @@ def dynamic_config(*, ds: dict | None = None, tier: str = "quality",
         factor = 1.0 if cnt <= 0 else max(0.3, min(1.3, cnt / float(ref_count)))
         for wb in _web_opts:
             _anchor = _short_run_anchor(kind, wb, route, rd, engine_mode)
+            if _anchor is None:
+                _anchor = _long_run_anchor(kind, wb, route, rd, engine_mode)
+                _anchor_src = "measured_long_anchor"
+            else:
+                _anchor_src = "measured_short_anchor"
             if _anchor is not None:
                 tok = _anchor
-                _cost_source = "measured_short_anchor"
+                _cost_source = _anchor_src
             else:
                 try:
                     tok = _route_round_tokens(route, rd, engine_mode=engine_mode,
@@ -1752,6 +1797,16 @@ def build_plan(question: str, opts: dict | None = None, *,
                     "（省层收益≈0），质量方差主导 ⇒ 不值得为省层承担质量风险")
             _ev = "docs/route_subset_multisample_20261029.json"
             _pct = 0.0
+            _saved = 0.0
+        elif (_meas and _meas.get("high_rounds")
+              and _rounds_count(_est_rounds) >= int(
+                  _meas["high_rounds"].get("min_total_rounds") or 99)):
+            _hr = _meas["high_rounds"]
+            _advice = "keep_four_layers"
+            _why = ("%s 高圈实测省层收益≈0（n=%d：%s）⇒ 全层不更贵，保持四层"
+                    % (_dyn_kind_key, int(_hr.get("n") or 0), _hr.get("note")))
+            _ev = str(_hr.get("evidence") or "")
+            _pct = float(_hr.get("saved_pct") or 0.0)
             _saved = 0.0
         elif _meas and float(_meas.get("saved_pct") or 0) >= 0.10:
             _advice = "subset_may_save"

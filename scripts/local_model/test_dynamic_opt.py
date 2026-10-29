@@ -352,10 +352,10 @@ _rs = json.loads((ROOT / "docs" / "route_subset_reasoning_ab_20261029.json")
 ck("I9 reasoning 实测证据存在（route0 vs full，2 reps）",
    len(_rs.get("rows") or []) == 4 and "summary" in _rs)
 _p_long = DS.build_plan(REASON_Q, {"route": "0",
-                                   "rounds": "0:2,1:2,both:2,all:2"},
+                                   "rounds": "0:1,1:1,both:1,all:1"},
                         requested="daosheng", is_mock=True, balance_cny=50.0)
 _pl = (_p_long.get("dynamic_opt") or {}).get("route_pruning") or {}
-ck("I10 reasoning 长程：题型实测收益≈39% ⇒ advice=subset_may_save",
+ck("I10 reasoning 单圈：题型实测收益≈39% ⇒ advice=subset_may_save",
    _pl.get("advice") == "subset_may_save"
    and float(_pl.get("saved_pct_estimate") or 0) >= 0.30
    and str(_pl.get("evidence") or "").endswith("route_subset_reasoning_ab_20261029.json"),
@@ -367,6 +367,33 @@ _pf = (_p_fact_long.get("dynamic_opt") or {}).get("route_pruning") or {}
 ck("I11 fact 长程：题型实测≈0 覆盖模型估算 ⇒ keep_four_layers",
    _pf.get("advice") == "keep_four_layers"
    and float(_pf.get("saved_pct_estimate") or 0) < 0.05, _pf)
+
+
+print("── K2 rounds 依赖的省层收益（V2.2.35）──")
+_rr2 = json.loads((ROOT / "docs" / "route_reasoning_rounds2_ab_20261029.json")
+                  .read_text(encoding="utf-8"))
+ck("K4 reasoning 高圈证据存在（route0/full 各 1 跑）",
+   len(_rr2.get("rows") or []) == 2)
+_p_r2 = DS.build_plan(REASON_Q, {"route": "0",
+                                "rounds": "0:2,1:2,both:2,all:2"},
+                      requested="daosheng", is_mock=True, balance_cny=50.0)
+_rp2 = (_p_r2.get("dynamic_opt") or {}).get("route_pruning") or {}
+ck("K5 reasoning 高圈（总 8）：省层收益≈0 ⇒ keep_four_layers（证据 rounds2）",
+   _rp2.get("advice") == "keep_four_layers"
+   and str(_rp2.get("evidence") or "").endswith(
+       "route_reasoning_rounds2_ab_20261029.json"), _rp2)
+_cr2 = (_p_r2.get("dynamic_opt") or {}).get("chosen") or {}
+ck("K6 reasoning 高圈 route0：chosen≈65,608（高圈锚点）",
+   abs(int(_cr2.get("est_tokens") or 0) - 65608) / 65608 < 0.15
+   and _cr2.get("cost_source") == "measured_long_anchor",
+   (_cr2.get("est_tokens"), _cr2.get("cost_source")))
+_p_r2f = DS.build_plan(REASON_Q, {"route": "0,1,both,all",
+                                  "rounds": "0:2,1:2,both:2,all:2"},
+                       requested="daosheng", is_mock=True, balance_cny=50.0)
+_cr2f = (_p_r2f.get("dynamic_opt") or {}).get("chosen") or {}
+ck("K7 reasoning 高圈 full：chosen≈62,317（高圈锚点）",
+   abs(int(_cr2f.get("est_tokens") or 0) - 62317) / 62317 < 0.15,
+   _cr2f.get("est_tokens"))
 
 
 print("── J 短程实测锚点（V2.2.33，B 模式每层 1 圈）──")

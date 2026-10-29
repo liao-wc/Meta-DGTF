@@ -1,0 +1,41 @@
+{
+ "schema": "metadgtf.route_reasoning_rounds2_ab.v1",
+ "ts": "2026-10-29 17:20:20",
+ "question": "为什么城市热岛效应在夜间比白天更明显？",
+ "kind": "reasoning",
+ "fixed": {
+  "rounds": "2/层（总 8 圈）",
+  "web": "auto(off)",
+  "balance_assumed": 50.0,
+  "max_tokens": 150000
+ },
+ "rows": [
+  {
+   "arm": "A-route0-r2",
+   "route": "0",
+   "rounds": "0:2",
+   "status": "done",
+   "wall_s": 181.5,
+   "calls": 14,
+   "tokens": 65608,
+   "cost_cny": 0.131,
+   "answer_quality": "unverified",
+   "answer_ready": false,
+   "packed": "20261029_171738_为什么城市热岛效应在夜间比白天更明显.packed.json"
+  },
+  {
+   "arm": "B-full-r2",
+   "route": "0,1,both,all",
+   "rounds": "0:2,1:2,both:2,all:2",
+   "status": "done",
+   "wall_s": 160.9,
+   "calls": 14,
+   "tokens": 62317,
+   "cost_cny": 0.125,
+   "answer_quality": "unverified",
+   "answer_ready": false,
+   "packed": "20261029_172017_为什么城市热岛效应在夜间比白天更明显.packed.json"
+  }
+ ],
+ "note": "高圈 reasoning 省层/成本锚点（route0 vs full）；单次采样"
+}
