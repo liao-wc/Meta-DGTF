@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "2.0.64"
+APP_VERSION = "2.0.65"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -10395,7 +10395,8 @@ class Handler(BaseHTTPRequestHandler):
                         str(opts.get("_prompt_prefix") or ""),
                         semantic=bool(opts.get("use_semantic_cache", True)),
                         allow_unverified=bool(
-                            opts.get("allow_unverified_cache")))
+                            opts.get("allow_unverified_cache")),
+                        max_age_h=float(opts.get("cache_max_age_h") or 0))
                 except Exception:
                     _cached = None
             _online = None
@@ -10438,6 +10439,7 @@ class Handler(BaseHTTPRequestHandler):
                                    "dedup_hit": False,
                                    "semantic_cache": bool((_cached or {}).get("semantic")),
                                    "cache_unverified": bool((_cached or {}).get("unverified")),
+                                   "cache_age_h": (_cached or {}).get("age_h"),
                                    "cache_similarity": (_cached or {}).get("similarity"),
                                    "cached_from": _cached_from,
                                    "auto_pareto": _auto_pareto,
@@ -10561,7 +10563,8 @@ def _watch_v2_online_outcome(tid: str, assignment_id: str):
 
 
 def _find_cached_pack(question: str, opts: dict, prefix: str = "",
-                      semantic: bool = False, allow_unverified: bool = False):
+                      semantic: bool = False, allow_unverified: bool = False,
+                      max_age_h: float = 0.0):
     """查找同题、同 web/parallel 的 packed，复用其产物。
 
     allow_unverified=True（仅预算 warn/critical 时）：同题精确匹配可复用未验证产物，
@@ -10591,6 +10594,10 @@ def _find_cached_pack(question: str, opts: dict, prefix: str = "",
                     and q.get("answer_quality") == "verified")
             _unver = (not _ver and allow_unverified
                       and q.get("answer_quality") in ("unverified", "needs_evidence"))
+            if _unver and float(max_age_h or 0) > 0:
+                _age_h = (now - p.stat().st_mtime) / 3600.0
+                if _age_h > float(max_age_h):
+                    _unver = False
             if not (_ver or _unver):
                 continue
             usage = d.get("api_usage") or {}
@@ -10613,7 +10620,8 @@ def _find_cached_pack(question: str, opts: dict, prefix: str = "",
                     "output_name": out.name if out.exists() else "",
                     "log": str(log) if log.exists() else "",
                     "semantic": False, "similarity": 1.0,
-                    "unverified": bool(_unver)}
+                    "unverified": bool(_unver),
+                    "age_h": round((now - p.stat().st_mtime) / 3600.0, 2)}
         except Exception:
             continue
     if semantic and _sem_candidates:

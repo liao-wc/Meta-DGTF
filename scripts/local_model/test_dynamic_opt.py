@@ -499,6 +499,23 @@ DS.apply_plan(dict(_p_o2), _o_opt)
 ck("O3 apply_plan 透传 allow_unverified_cache", _o_opt.get("allow_unverified_cache") is True)
 
 
+print("── P 未验证缓存新鲜度门（V2.2.40）──")
+_p_p1 = DS.build_plan(FACT_Q, {"route": "0", "rounds": "0:1"},
+                      requested="daosheng", is_mock=True, balance_cny=3.0)
+_p_p1c = ((_p_p1.get("dynamic_opt") or {}).get("cache_policy") or {})
+ck("P1 预算 warn：cache_policy.max_age_h=24h、plan.cache_max_age_h=24",
+   float(_p_p1c.get("max_age_h") or 0) == 24.0
+   and float(_p_p1.get("cache_max_age_h") or 0) == 24.0,
+   _p_p1c)
+_p_p2 = DS.build_plan(FACT_Q, {"route": "0", "rounds": "0:1"},
+                      requested="daosheng", is_mock=True, balance_cny=50.0)
+ck("P2 预算 ok：max_age_h=0（未验证复用关闭）",
+   float((_p_p2.get("dynamic_opt") or {}).get("cache_policy", {}).get("max_age_h") or 0) == 0.0)
+_o_opt2 = {}
+DS.apply_plan(dict(_p_p1), _o_opt2)
+ck("P3 apply_plan 透传 cache_max_age_h", float(_o_opt2.get("cache_max_age_h") or 0) == 24.0)
+
+
 print("── J 短程实测锚点（V2.2.33，B 模式每层 1 圈）──")
 _p_j = DS.build_plan(FACT_Q, {"route": "0,1,both,all",
                               "rounds": "0:1,1:1,both:1,all:1"},

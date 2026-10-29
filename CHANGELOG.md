@@ -1,3 +1,20 @@
+【V2.2.40（2026-10-29，PATCH · 未验证缓存新鲜度门；同发 App 2.0.65）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.40.py（__version__=2.2.40；引擎侧零行为差）；
+  App 2.0.65。
+- ★ 问题：V2.2.39 未验证复用未限制产物年龄，旧产物复用会放大质量风险。
+- ★ 修法：plan.cache_policy.max_age_h（warn 24h / critical 72h / ok 0）+ plan.cache_max_age_h
+  透传；server._find_cached_pack(max_age_h) 对未验证产物按年龄过滤（verified 不受限）；
+  响应 cache_age_h。
+- ★ 全链路本地验证（零 API）：fused_full_chain 21→23——D5 max_age_h≈0 ⇒ cache_hit=False；
+  D6 max_age_h=24 ⇒ cache_hit=True；D 段结束清理 root 产物避免污染发布门。
+- 判据：test_dynamic_opt 102→105（P1 warn 24h、P2 ok 0、P3 apply_plan 透传）；
+  回归 fused_optimal 30 / fused_full_chain 23 / daosheng_unified 27 / auto_mode_local 12。
+- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
+  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
+  发布流程门 pre/post-tag 全 PASS。本轮零新增 API 花费。
+- 兼容性：verified 复用不变；未验证复用仅预算 warn/critical 且新鲜；no_cache 强制重跑。
+- 标签：V2.2.40 / engine-V2.2.40 / app-V2.0.65。
+
 【V2.2.39（2026-10-29，PATCH · 预算紧张复用未验证产物；同发 App 2.0.64）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.39.py（__version__=2.2.39；引擎侧零行为差）；
   App 2.0.64。

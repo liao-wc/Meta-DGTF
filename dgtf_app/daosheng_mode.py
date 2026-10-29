@@ -1934,11 +1934,15 @@ def build_plan(question: str, opts: dict | None = None, *,
     else:
         dyn["budget_forecast"] = None
     # ★ [V2.2.37] 缓存 ROI 读数（exact 已按 10%% 成本计；语义命中率未知→只报能力）
+    _cache_allow = bool(dyn.get("budget_level") in ("warn", "critical"))
+    _cache_age = (72.0 if dyn.get("budget_level") == "critical"
+                  else 24.0 if dyn.get("budget_level") == "warn" else 0.0)
     dyn["cache_policy"] = {
-        "allow_unverified": bool(dyn.get("budget_level") in ("warn", "critical")),
-        "why": ("预算 %s ⇒ 允许同题未验证产物复用（省整单）"
-                % dyn.get("budget_level")
-                if dyn.get("budget_level") in ("warn", "critical")
+        "allow_unverified": _cache_allow,
+        "max_age_h": _cache_age,
+        "why": ("预算 %s ⇒ 允许同题未验证产物复用（省整单，新鲜度≤%.0fh）"
+                % (dyn.get("budget_level"), _cache_age)
+                if _cache_allow
                 else "预算充足 ⇒ 只复用 verified 产物"),
     }
     dyn["cache_roi"] = {
@@ -2056,6 +2060,9 @@ def build_plan(question: str, opts: dict | None = None, *,
         # ★ [V2.2.39] 预算紧张时允许复用"未验证"产物缓存（同题精确匹配，省整单）
         "allow_unverified_cache": bool(
             dyn.get("budget_level") in ("warn", "critical")),
+        # ★ [V2.2.40] 未验证复用新鲜度上限（小时；0=不限）
+        "cache_max_age_h": float(
+            (dyn.get("cache_policy") or {}).get("max_age_h") or 0.0),
         "dual_judge_mode_via": djm_via,
         "history_fusion": hf,
         "history_fusion_via": hf_via,
@@ -2092,7 +2099,7 @@ def apply_plan(plan: dict, opts: dict) -> dict:
     for k in ("mode", "route", "rounds", "parallel", "web", "thinking",
               "effort", "self_check_mode", "dual_judge_mode",
               "history_fusion", "max_tokens", "max_minutes",
-              "allow_unverified_cache"):
+              "allow_unverified_cache", "cache_max_age_h"):
         v = plan.get(k)
         if v in (None, "", "auto"):
             continue

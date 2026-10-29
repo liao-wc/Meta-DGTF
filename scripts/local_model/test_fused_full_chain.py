@@ -280,6 +280,56 @@ try:
     _after2 = set(glob.glob(str(_root / "*.packed.json")))
     ck("D4 复用不生成新 packed（0 次新 LLM 调用）",
        _after2 == _before2, "new=%d" % len(_after2 - _before2))
+
+    # ── D5/D6：未验证复用新鲜度门（V2.2.40）──
+    _body5 = {"question": body["question"], "mode": "auto",
+              "opts": dict(_opts_root(), allow_unverified_cache=True,
+                           cache_max_age_h=0.000001)}
+    _s5, _r5 = _req(base + "/api/tasks", token, _body5, timeout=120)
+    _tid5 = str((_r5 or {}).get("id") or "")
+    ck("D5 新鲜度门命中拒绝（max_age_h≈0 ⇒ cache_hit=False）",
+       _s5 == 201 and not bool((_r5 or {}).get("cache_hit")),
+       "cache_hit=%s" % (_r5 or {}).get("cache_hit"))
+    _st5 = ""
+    _deadline5 = time.time() + 300
+    while time.time() < _deadline5:
+        try:
+            _ss5, _last5 = _req(base + "/api/tasks/" + _tid5, token, timeout=30)
+            _st5 = str((_last5 or {}).get("status") or "")
+        except Exception:  # noqa: BLE001
+            _st5 = ""
+        if _st5 in ("done", "error", "cancelled"):
+            break
+        time.sleep(1.0)
+    _root5 = set(glob.glob(str(_root / "*.packed.json")))
+    _body6 = {"question": body["question"], "mode": "auto",
+              "opts": dict(_opts_root(), allow_unverified_cache=True,
+                           cache_max_age_h=24)}
+    _s6, _r6 = _req(base + "/api/tasks", token, _body6, timeout=120)
+    ck("D6 新鲜度门放行（max_age_h=24 ⇒ cache_hit=True）",
+       _s6 == 201 and bool((_r6 or {}).get("cache_hit")),
+       "cache_hit=%s unverified=%s" % ((_r6 or {}).get("cache_hit"),
+                                       (_r6 or {}).get("cache_unverified")))
+    # 清理本轮 root 产物，保持 outputs 根目录干净（发布门只认生产 run）
+    try:
+        _new5 = (_root5 - _before2) | set(_seed_packs)
+        for _p in _new5:
+            try:
+                _pp = Path(_p)
+                if _pp.is_file():
+                    _pp.unlink()
+            except Exception:  # noqa: BLE001
+                pass
+            for _suf in (".md", ".run.log", ".run.json"):
+                _f = Path(str(_p).replace(".packed.json", "") + _suf) \
+                    if _suf == "" else Path(str(_p).replace(".packed.json", "") + _suf)
+                try:
+                    if _f.is_file():
+                        _f.unlink()
+                except Exception:  # noqa: BLE001
+                    pass
+    except Exception:  # noqa: BLE001
+        pass
 finally:
     if proc is not None and proc.poll() is None:
         _kill_tree(proc.pid)
