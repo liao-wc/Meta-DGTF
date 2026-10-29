@@ -1083,6 +1083,70 @@ def budget_guard(history: dict, preset: dict | None = None, *,
 _DYN_TIER_FLOOR = {"project": 0.95, "quality_first": 0.95, "default": 0.90}
 _WEB_TOKENS_EXTRA = 0.10   # 事实题 web on 的 token 增量（实测 ~+13.6 万 / 1.15M）
 
+# ★ [V2.2.26] route 子集感知成本模型（3 臂有界云实测校准：
+#   docs/dynamic_cost_calibration_20261029.json；fast/web-off/单层单圈口径）
+_CALIB = {
+    "u0": 31620.0,          # 层 0 每圈 tokens（fast；R3=63,240/2）
+    "u1": 37119.0,          # 层 1 每圈 tokens（fast；R1）
+    "multi_overlap": 0.905, # 两层可加性的重叠系数（R2 实测/可加预测）
+    "full_default_tokens": 816983.0,   # fast 四层默认圈数（2,3,2,2）整单实测
+    "web_fact_factor": 1.12, # 事实题 web on 的 token 增量（实测约 +12%）
+    "fast_default_rounds": {"0": 2, "1": 3, "both": 2, "all": 2},
+}
+_un0, _un1 = _CALIB["u0"], _CALIB["u1"]
+_avg = (_un0 + _un1) / 2.0
+_base01 = 2 * _un0 + 3 * _un1
+_remain = max(1.0, _CALIB["full_default_tokens"] - _base01)
+_uB = _remain / (2 + 2 * (4.0 / 3.0))
+_CALIB["both"] = round(_uB, 1)
+_CALIB["all"] = round(_uB * 4.0 / 3.0, 1)
+
+
+def _route_round_tokens(route, rounds, engine_mode="fast", web="off",
+                        kind="") -> float:
+    """层子集 × 圈数的 token 估算（fast 校准；其他 mode 按 MODES 比例缩放）。"""
+    import re as _re
+    entries = [e.strip() for e in str(route or "").split(",") if e.strip()]
+    if not entries:
+        entries = ["0", "1", "both", "all"]
+    rmap = dict(_CALIB["fast_default_rounds"])
+    _parts = [p.strip() for p in str(rounds or "").split(",") if p.strip()]
+    if _parts and all(":" not in p and p.isdigit() for p in _parts):
+        rmap = {e: int(_parts[0]) for e in entries}
+    else:
+        for part in _parts:
+            if ":" in part:
+                k, v = part.rsplit(":", 1)
+                try:
+                    rmap[k.strip()] = int(v)
+                except (TypeError, ValueError):
+                    pass
+    tok = 0.0
+    for e in entries:
+        if e == "0":
+            unit = _un0
+        elif e == "1":
+            unit = _un1
+        else:
+            unit = _CALIB.get(e)
+        if unit:
+            tok += float(unit) * float(rmap.get(e, 1) or 1)
+    # 两层 0/1 的实测重叠系数只在"纯 0/1 子集"生效；
+    # 含 both/all 时单位已按整单实测反解，不再叠系数（避免双重打折）。
+    if len(entries) > 1 and not any(e in ("both", "all") for e in entries):
+        tok *= _CALIB["multi_overlap"]
+    # mode 比例：以 fast 为基准，其余按 MODES tokens 比例
+    try:
+        from dgtf_v2.mode_fusion import MODES as _MODES
+        _fast = float((_MODES.get("fast") or {}).get("tokens") or 816983.0)
+        _mode = float((_MODES.get(engine_mode) or {}).get("tokens") or _fast)
+        tok *= (_mode / _fast)
+    except Exception:  # noqa: BLE001
+        pass
+    if str(web) == "on" and str(kind) == "fact":
+        tok *= _CALIB["web_fact_factor"]
+    return round(tok, 1)
+
 
 def _rounds_count(rounds) -> int:
     """解析 rounds 字符串里的总圈数（auto/空 => 0，表示交给引擎）。"""
@@ -1158,7 +1222,11 @@ def dynamic_config(*, ds: dict | None = None, tier: str = "quality",
         cnt = _rounds_count(rd)
         factor = 1.0 if cnt <= 0 else max(0.3, min(1.3, cnt / float(ref_count)))
         for wb in _web_opts:
-            tok = base_tok * factor
+            try:
+                tok = _route_round_tokens(route, rd, engine_mode=engine_mode,
+                                          web=wb, kind=kind)
+            except Exception:  # noqa: BLE001
+                tok = base_tok * factor
             q = base_q
             if wb == "on" and kind == "fact":
                 tok *= (1.0 + _WEB_TOKENS_EXTRA)
@@ -1171,7 +1239,8 @@ def dynamic_config(*, ds: dict | None = None, tier: str = "quality",
             cost_eff = round(cost * 0.1, 2) if _cache_hit else cost
             feasible = True
             if isinstance(balance, (int, float)):
-                feasible = cost_eff <= max(0.01, float(balance) * reserve)
+                # 估算误差容差 ±10%：预算线附近优先保留质量更高的可行档
+                feasible = cost_eff <= max(0.01, float(balance) * reserve) * 1.10
             candidates.append({"engine_mode": engine_mode, "parallel": parallel,
                                "thinking": thinking, "effort": effort, "web": wb,
                                "rounds": rd, "est_quality": round(q, 4),
@@ -1220,6 +1289,7 @@ def dynamic_config(*, ds: dict | None = None, tier: str = "quality",
             "balance_cny": balance, "reserve_ratio": reserve,
             "quality_floor": round(floor, 4), "require_web": bool(require_web),
             "scenario": kind, "route": route, "cache_hit": _cache_hit0,
+            "cost_model": "route_subset_rounds.v1",
             "candidates": candidates, "chosen": chosen,
             "applied": applied, "fallback": fallback, "why": why,
             "regret": 0.0 if not fallback else None}

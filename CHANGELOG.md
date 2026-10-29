@@ -1,3 +1,23 @@
+【V2.2.26（2026-10-29，PATCH · route 子集感知动态成本模型；同发 App 2.0.51）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.26.py（__version__=2.2.26；引擎侧零行为差）；
+  App 2.0.51。
+- ★ 问题：V2.2.25 动态配置按整单四层估算成本，显式 route=0 / rounds=0:1 会被高估 2-20 倍，
+  低余额误判不可行。
+- ★ 修法：3 臂有界云实测校准（合计约 ¥0.32）：R1 route=1/rounds=1=37,119 tokens；
+  R2 route=0,1/rounds 1+1=62,180（可加预测误差 0.05%）；R3 route=0/rounds=2=63,240。
+  拟合 u0=31,620/圈、u1=37,119/圈；两层重叠系数 0.905；both/all 由整单 816,983 反解
+  （uB=137,654/uA=183,539）；其他 mode 按 MODES 比例；事实题 web on ×1.12。
+  dynamic_config 候选成本改用该模型（route/rounds 取自候选本身），
+  plan.dynamic_opt 标注 cost_model=route_subset_rounds.v1，可行域保留 ±10% 容差。
+- 判据：test_dynamic_opt 36→46（单层/两层/整单/B 模式/web 增量、校准证据、route=0 接线、
+  cost_model）；回归 fused_optimal 30 / fused_full_chain 16 / daosheng_unified 27 /
+  auto_mode_local 12。
+- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
+  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 81/81；
+  发布流程门 pre/post-tag 全 PASS。
+- 兼容性：显式 opts 优先；余额未知 fail-open 只审计；quality 档不受影响。
+- 标签：V2.2.26 / engine-V2.2.26 / app-V2.0.51。
+
 【V2.2.25（2026-10-29，PATCH · 动态配置细化 + 缓存命中感知；同发 App 2.0.50）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.25.py（__version__=2.2.25；引擎侧零行为差）；
   App 2.0.50。

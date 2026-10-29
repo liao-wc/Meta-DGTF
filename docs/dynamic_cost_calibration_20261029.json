@@ -1,0 +1,61 @@
+{
+ "schema": "metadgtf.dynamic_cost_calibration.v1",
+ "ts": "2026-10-29 13:14:37",
+ "question": "成年人正常心率是多少次每分钟？",
+ "engine": "Meta-DGTF-V2.2.26.py",
+ "fixed": {
+  "parallel": "B",
+  "thinking": "off",
+  "mode": "fast",
+  "web": "off",
+  "max_tokens": 150000
+ },
+ "arms": [
+  {
+   "arm": "R1_route1_r1",
+   "route": "1",
+   "rounds": "1",
+   "rc": 0,
+   "wall_s": 60.8,
+   "llm_calls": 15,
+   "tokens": 37119,
+   "est_cost_cny": 0.074,
+   "answer_quality": "unverified",
+   "packed": "20261029_131129_成年人正常心率是多少次每分钟.packed.json"
+  },
+  {
+   "arm": "R2_route01_r1",
+   "route": "0,1",
+   "rounds": "0:1,1:1",
+   "rc": 0,
+   "wall_s": 93.9,
+   "llm_calls": 22,
+   "tokens": 62180,
+   "est_cost_cny": 0.124,
+   "answer_quality": "unverified",
+   "packed": "20261029_131303_成年人正常心率是多少次每分钟.packed.json"
+  },
+  {
+   "arm": "R3_route0_r2",
+   "route": "0",
+   "rounds": "0:2",
+   "rc": 0,
+   "wall_s": 93.2,
+   "llm_calls": 17,
+   "tokens": 63240,
+   "est_cost_cny": 0.126,
+   "answer_quality": "unverified",
+   "packed": "20261029_131436_成年人正常心率是多少次每分钟.packed.json"
+  }
+ ],
+ "fit": {
+  "u0_per_round": 31620.0,
+  "u1_per_round": 37119.0,
+  "two_layer_pred": 68739.0,
+  "two_layer_actual": 62180,
+  "additivity_err": 0.105,
+  "note": "fast/web-off 单层单圈口径；both/all 单位由整单实测反解（见 dynamic_config）"
+ },
+ "total_wall_s": 247.9,
+ "total_est_cost_cny": 0.324
+}

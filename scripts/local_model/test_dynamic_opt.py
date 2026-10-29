@@ -9,6 +9,7 @@ D 变异体：去掉依赖闭包 / 去掉预算预留 / 事实题不强制 web �
 """
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
@@ -166,6 +167,45 @@ finally:
     DS.cache_prediction = _orig_cache
 ck("E4 变异体：若忽略缓存（按原价），余额 1 元下可行域会收缩（判据有牙）",
    _cache_cfg["chosen"]["est_cost_effective_cny"] < _cache_cfg["chosen"]["est_cost_cny"])
+
+
+print("── F route 子集感知成本模型（V2.2.26，3 臂云实测校准）──")
+_rt = DS._route_round_tokens
+ck("F1 单层 0 每圈 ≈31,620（R3 实测 63,240/2）",
+   abs(_rt("0", "0:1") - 31620) < 500, _rt("0", "0:1"))
+ck("F2 单层 1 每圈 ≈37,119（R1 实测）",
+   abs(_rt("1", "1") - 37119) < 500, _rt("1", "1"))
+ck("F3 两层可加性（R2 实测 62,180，误差 <5%）",
+   abs(_rt("0,1", "0:1,1:1") - 62180) / 62180 < 0.05,
+   _rt("0,1", "0:1,1:1"))
+ck("F4 整单 fast 默认圈数 ≈816,983（整单实测，±2%）",
+   abs(_rt("0,1,both,all", "0:2,1:3,both:2,all:2") - 816983) / 816983 < 0.02,
+   _rt("0,1,both,all", "0:2,1:3,both:2,all:2"))
+ck("F5 B 模式按 MODES 比例放大（≈1,269,082，±2%）",
+   abs(_rt("0,1,both,all", "0:2,1:3,both:2,all:2", "B") - 1269082) / 1269082 < 0.02,
+   _rt("0,1,both,all", "0:2,1:3,both:2,all:2", "B"))
+ck("F6 事实题 web on 有 token 增量", _rt("0", "0:1", "fast", "on", "fact")
+   > _rt("0", "0:1", "fast", "off", "fact"))
+_calib = json.loads((ROOT / "docs" / "dynamic_cost_calibration_20261029.json")
+                    .read_text(encoding="utf-8"))
+_arm_pred = {a["route"] + "|" + a["rounds"]: a["tokens"]
+             for a in _calib["arms"]}
+ck("F7 校准证据存在且 3 臂齐全", len(_calib["arms"]) == 3
+   and "u0_per_round" in _calib["fit"])
+_pred_r1 = _rt("1", "1")
+ck("F8 模型对校准臂的误差 <12%（R1）",
+   abs(_pred_r1 - 37119) / 37119 < 0.12, _pred_r1)
+_dyn_route0 = DS.dynamic_config(
+    ds=_pres, tier="fast", engine_mode="fast", rounds=_pres.get("rounds_fast"),
+    web="on", budget_guard=_bg(2.0, "warn"), scenario={"kind": "fact"},
+    require_web=True, opts={}, route="0")
+ck("F9 route=0 任务候选成本按子集估算（≤ 余额×预留，不再用整单口径）",
+   _dyn_route0["chosen"]["est_tokens"] < 120000
+   and _dyn_route0["chosen"]["est_cost_effective_cny"]
+   <= 2.0 * _dyn_route0["reserve_ratio"] + 1e-9,
+   _dyn_route0["chosen"])
+ck("F10 dynamic_opt 标注成本模型口径", _dyn_route0.get("cost_model")
+   == "route_subset_rounds.v1")
 
 print("── C build_plan 接线 ──")
 _p6 = DS.build_plan(FACT_Q, {}, requested="daosheng", is_mock=True, balance_cny=6.0)
