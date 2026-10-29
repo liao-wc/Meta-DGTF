@@ -1,3 +1,15 @@
+【V2.2.61（2026-10-30，PATCH · 判据稳定性根因归档；App 2.0.80 不变）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.61.py（__version__=2.2.61；引擎侧零行为差）；
+  App 2.0.80 不变。
+- ★ 新增 docs/判据稳定性根因与修复_20261030.md：并发争用 ⇒ 串行锁/可重入；
+  ffc 缓存状态耦合（事实题 quality_retry + no_cache 继承）⇒ 主任务 no_cache、D 组非事实题；
+  层1 未测出 = decidability=undecidable / settlement.total=0（非回归）。
+- ★ 状态快照增加「判据稳定性」条目，维护约定写入文档。
+- 验收：fast_gate 17/17；V2 71/71（1208 checks）；App selftest 457/0；一键验收 PASS 30 / SKIP 0 /
+  FAIL 0；e2e 18/18；四层 probe 82/82；发布流程门 pre/post-tag 全 PASS。零 API 花费。
+- 兼容性：纯文档/状态摘要；引擎零行为差；App 不变。
+- 标签：V2.2.61 / engine-V2.2.61（app-V2.0.80 不变，不移动）。
+
 【V2.2.60（2026-10-30，PATCH · 串行锁可重入 + 扩展到验收/V2/App selftest；App 2.0.80 不变）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.60.py（__version__=2.2.60；引擎侧零行为差）；
   App 2.0.80 不变。
@@ -640,15 +652,3 @@
   能力对等（质量策略/缓存/预算/背景注入/web 规则/失败回退 + 道生能力）；
   更优（MEASURED_SCENARIOS 同题真跑：成本档质量 ±0.02 内、tokens 省 ≥15%，3 场景至少
   2 个成立；质量优先档 B 不降）；动态配置（引擎 _auto_mode_tick 真代码三场景：锁定不压圈 /
-  未锁定压圈 / fast 质量代理低升 B）；变异体（删预算 CLI / 忽略 rounds_locked / 丢质量策略）。
-- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
-  一键验收 --with-service PASS 29 / SKIP 0 / FAIL 0；fused_full_chain 16/16；
-  e2e 18/18；四层 probe 81/81；发布流程门 pre/post-tag 全 PASS。
-- 兼容性：不传预算参数行为与 V2.2.21 逐字相同；旧引擎能力门控自动不透传新 flag。
-- 标签：V2.2.22 / engine-V2.2.22 / app-V2.0.47。
-
-【V2.2.21（2026-10-29，PATCH · 道生模式与标准模式融合；同发 App 2.0.46）】
-- 生产引擎：`dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.21.py`（__version__=2.2.21；引擎侧零行为差，
-  参数通道沿用 V2.2.20）；App 2.0.46。
-- ★ 融合：道生模式 = 标准模式。resolve_mode：auto → daosheng（auto-fused；project_related
-  只决定背景注入，不改链路）；standard → daosheng（fused-standard，requested 保留）；

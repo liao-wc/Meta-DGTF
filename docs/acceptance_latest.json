@@ -1,7 +1,7 @@
 {
  "schema": "dgtf.acceptance.v1",
- "ts": 1793306178.7416625,
- "iso": "2026-10-30T04:36:18",
+ "ts": 1793307980.785699,
+ "iso": "2026-10-30T05:06:20",
  "with_service": true,
  "skip_service": false,
  "require_all": false,
@@ -12,13 +12,13 @@
   {
    "name": "fast_gate",
    "status": "PASS",
-   "sec": 20.7,
+   "sec": 20.1,
    "reason": ""
   },
   {
    "name": "v2_tests",
    "status": "PASS",
-   "sec": 167.8,
+   "sec": 166.6,
    "reason": ""
   },
   {
@@ -54,7 +54,7 @@
   {
    "name": "train_guard",
    "status": "PASS",
-   "sec": 31.0,
+   "sec": 30.3,
    "reason": ""
   },
   {
@@ -66,13 +66,13 @@
   {
    "name": "judge_fastfail",
    "status": "PASS",
-   "sec": 7.7,
+   "sec": 7.6,
    "reason": ""
   },
   {
    "name": "generate_batch",
    "status": "PASS",
-   "sec": 2.9,
+   "sec": 2.8,
    "reason": ""
   },
   {
@@ -84,7 +84,7 @@
   {
    "name": "probe_cover_wide",
    "status": "PASS",
-   "sec": 3.5,
+   "sec": 3.4,
    "reason": ""
   },
   {
@@ -96,7 +96,7 @@
   {
    "name": "outputs_consistency",
    "status": "PASS",
-   "sec": 2.2,
+   "sec": 2.1,
    "reason": ""
   },
   {
@@ -132,19 +132,19 @@
   {
    "name": "mem_reclaim",
    "status": "PASS",
-   "sec": 14.3,
+   "sec": 14.2,
    "reason": ""
   },
   {
    "name": "max_new_cap",
    "status": "PASS",
-   "sec": 1.5,
+   "sec": 1.6,
    "reason": ""
   },
   {
    "name": "app_selftest",
    "status": "PASS",
-   "sec": 50.4,
+   "sec": 56.5,
    "reason": ""
   },
   {
@@ -156,13 +156,13 @@
   {
    "name": "fused_optimal",
    "status": "PASS",
-   "sec": 13.1,
+   "sec": 14.1,
    "reason": ""
   },
   {
    "name": "fused_full_chain",
    "status": "PASS",
-   "sec": 71.9,
+   "sec": 105.1,
    "reason": ""
   },
   {
@@ -174,19 +174,19 @@
   {
    "name": "auto_mode_local",
    "status": "PASS",
-   "sec": 14.7,
+   "sec": 47.8,
    "reason": ""
   },
   {
    "name": "e2e_app_local",
    "status": "PASS",
-   "sec": 15.9,
+   "sec": 35.8,
    "reason": ""
   },
   {
    "name": "local_service",
    "status": "PASS",
-   "sec": 0.5,
+   "sec": 1.6,
    "reason": ""
   }
  ],
