@@ -1472,6 +1472,7 @@ _SEM_CAND_TTL_S = 300.0
 _SEM_PROBE_TTL_S = 120.0
 _SEM_CAND_CACHE = {"ts": 0.0, "items": None}
 _SEM_PROBE_CACHE: dict = {}
+_SEM_INDEX_FILE = Path(__file__).resolve().parent.parent / "dgtf_memory" / "semantic_cache_index.json"
 
 
 def _embed_batch(texts: list[str]):
@@ -1498,6 +1499,22 @@ def _semantic_candidates():
     if hit is not None and now - float(_SEM_CAND_CACHE.get("ts") or 0) < _SEM_CAND_TTL_S:
         return hit
     import json as _j
+    # ★ [V2.2.45] 跨进程持久索引：进程重启后 300s 内复用磁盘候选清单
+    try:
+        if _SEM_INDEX_FILE.is_file():
+            _disk = _j.loads(_SEM_INDEX_FILE.read_text(encoding="utf-8",
+                                                      errors="replace"))
+            _ts = float(_disk.get("ts") or 0)
+            _items = _disk.get("items") or []
+            if _items and now - _ts < _SEM_CAND_TTL_S:
+                _restored = [(str(x[0]), str(x[1]), bool(x[2])) for x in _items
+                             if isinstance(x, (list, tuple)) and len(x) >= 3]
+                if _restored:
+                    _SEM_CAND_CACHE["items"] = _restored
+                    _SEM_CAND_CACHE["ts"] = _ts
+                    return _restored
+    except Exception:  # noqa: BLE001
+        pass
     root = Path(__file__).resolve().parent.parent / "outputs"
     items = []
     try:
@@ -1524,6 +1541,13 @@ def _semantic_candidates():
             continue
     _SEM_CAND_CACHE["items"] = items
     _SEM_CAND_CACHE["ts"] = now
+    try:
+        _SEM_INDEX_FILE.parent.mkdir(parents=True, exist_ok=True)
+        _SEM_INDEX_FILE.write_text(_j.dumps(
+            {"ts": now, "items": [[p, q, bool(w)] for p, q, w in items]},
+            ensure_ascii=False), encoding="utf-8")
+    except Exception:  # noqa: BLE001
+        pass
     return items
 
 
@@ -1570,6 +1594,27 @@ def _semantic_cache_probe(question: str, opts: dict | None = None):
         return _out
     except Exception:  # noqa: BLE001
         return None
+
+
+def warm_semantic_cache(max_wait_s: float = 12.0) -> dict:
+    """启动预热：构建候选索引（持久化）并批量 embedding，降低首任务预判延迟。"""
+    try:
+        import time as _t
+        items = _semantic_candidates()
+        if not items:
+            return {"ok": False, "why": "no verified candidates"}
+        qs = [q for _p, q, _w in items[:8]]
+        deadline = _t.time() + max(0.0, float(max_wait_s or 0))
+        vecs = None
+        while True:
+            vecs = _embed_batch(qs)
+            if vecs or _t.time() >= deadline:
+                break
+            _t.sleep(1.5)
+        return {"ok": bool(vecs), "candidates": len(items),
+                "embedded": len(vecs or [])}
+    except Exception as _e:  # noqa: BLE001
+        return {"ok": False, "why": str(_e)}
 
 
 def cache_prediction(question: str, opts: dict | None = None) -> dict:

@@ -1,54 +1,54 @@
 {
  "ok": true,
- "version": "2.0.69",
+ "version": "2.0.70",
  "cache_tags": [
-  "2.0.69-quality-matrix"
+  "2.0.70-semantic-index"
  ],
  "checks": [
   {
    "name": "APP_VERSION 可读",
    "ok": true,
-   "detail": "2.0.69"
+   "detail": "2.0.70"
   },
   {
    "name": "静态查询串同版本",
    "ok": true,
-   "detail": "['2.0.69-quality-matrix']"
+   "detail": "['2.0.70-semantic-index']"
   },
   {
    "name": "根 README 当前版本",
    "ok": true,
-   "detail": "2.0.69"
+   "detail": "2.0.70"
   },
   {
    "name": "App README 当前版本",
    "ok": true,
-   "detail": "2.0.69"
+   "detail": "2.0.70"
   },
   {
    "name": "PROJECT_LAYOUT 当前版本",
    "ok": true,
-   "detail": "2.0.69"
+   "detail": "2.0.70"
   },
   {
    "name": "发布说明存在",
    "ok": true,
-   "detail": "2.0.69"
+   "detail": "2.0.70"
   },
   {
    "name": "CHANGELOG 含当前 App 版本",
    "ok": true,
-   "detail": "2.0.69"
+   "detail": "2.0.70"
   },
   {
    "name": "NAMING 当前 App 版本",
    "ok": true,
-   "detail": "2.0.69"
+   "detail": "2.0.70"
   },
   {
    "name": "NAMING App 发布标签",
    "ok": true,
-   "detail": "2.0.69"
+   "detail": "2.0.70"
   }
  ]
 }

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import time
 import re
 import sys
 from pathlib import Path
@@ -581,6 +582,27 @@ try:
 finally:
     DS._embed_batch = _pres_emb
 ck("S2 同一问题二次预判走结果缓存（embed 仅 1 次）", _calls["n"] == 1, _calls)
+
+
+print("── S2 候选索引持久化 + 启动预热（V2.2.45）──")
+_c3 = DS._semantic_candidates()
+ck("S3 候选索引落盘（dgtf_memory/semantic_cache_index.json）",
+   DS._SEM_INDEX_FILE.is_file() and len(_c3) > 0,
+   DS._SEM_INDEX_FILE.name)
+_pres_idx = dict(DS._SEM_CAND_CACHE)
+try:
+    DS._SEM_CAND_CACHE["items"] = None
+    _t0 = time.time()
+    _c4 = DS._semantic_candidates()
+    _dt = time.time() - _t0
+finally:
+    DS._SEM_CAND_CACHE.update(_pres_idx)
+ck("S4 进程内清空后从磁盘恢复（<0.5s，条数一致）",
+   len(_c4) == len(_c3) and _dt < 0.5, round(_dt, 3))
+_war = DS.warm_semantic_cache(0.5)
+ck("S5 启动预热返回结构（候选>0；8771 不在时 ok=False）",
+   isinstance(_war, dict) and int(_war.get("candidates") or 0) > 0
+   and ("ok" in _war), _war)
 
 
 print("── T fact+web on 质量证据 + fact 高圈锚点（V2.2.43）──")

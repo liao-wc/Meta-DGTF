@@ -1,3 +1,18 @@
+【V2.2.45（2026-10-29，PATCH · 语义候选索引持久化；同发 App 2.0.70）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.45.py（__version__=2.2.45；引擎侧零行为差）；
+  App 2.0.70。
+- ★ 候选清单落盘 dgtf_memory/semantic_cache_index.json（ts+items，300s 内跨进程复用）；
+  进程内缓存失效时优先读磁盘；实测清空后 0.01s 恢复 120 条候选。
+- ★ App 启动后台 warm_semantic_cache：构建索引并批量 embedding（等 8771 就绪最多 12s；
+  失败不影响主流程）。
+- 判据：test_dynamic_opt 118→121（S3 索引落盘、S4 磁盘恢复 <0.5s、S5 预热结构）；
+  回归 fused_optimal 30 / fused_full_chain 23 / daosheng_unified 27 / auto_mode_local 12。
+- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
+  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
+  发布流程门 pre/post-tag 全 PASS。本轮零 API 花费。
+- 兼容性：索引 300s 有效；8771 不在预热 ok=False；缺失/损坏自动回退扫描。
+- 标签：V2.2.45 / engine-V2.2.45 / app-V2.0.70。
+
 【V2.2.44（2026-10-29，PATCH · 题型 verified 期望矩阵；同发 App 2.0.69）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.44.py（__version__=2.2.44；引擎侧零行为差）；
   App 2.0.69。
