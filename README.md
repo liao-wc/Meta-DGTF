@@ -3,20 +3,20 @@
 一个**单文件四层螺旋推理引擎** + **V2 三平面核心** + **本地 Web 工作台**：
 修行 / 研究 / 对撞 / 元，跑出可审计、可回放、可融合的产物。
 
-- **当前版本**：V2.2.53（预期 vs 实测：quality_actual） / App 2.0.78（本地链路全生命周期守护 + health 读数 + 本地档预设；道生专属模式 + 三体动态计划 + 预算守卫）
-- **生产引擎**：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.53.py
+- **当前版本**：V2.2.54（README 实测数字自动同步；App 2.0.78 不变） / App 2.0.78（本地链路全生命周期守护 + health 读数 + 本地档预设；道生专属模式 + 三体动态计划 + 预算守卫）
+- **生产引擎**：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.54.py
 - **V2 核心**：dgtf_engine/dgtf_v2/
 - **人用界面**：dgtf_app/（App 2.0.78，本地链路两段守护 + 道生专属模式 + DSH 本对话实时镜像 + 会话列表实时打开 + 健康读数缓存）
 - **本地链路**：dgtf_local_llm/（8772 推理服务，fp32 底座 + CUDA graph 采样/复用）+ scripts/local_model/openai_shim.py（8773 OpenAI 适配层）
-- **融合实现**：单引擎内联（Meta-DGTF-V2.2.53.py）；V2.1 外部模块仅作回滚参考
+- **融合实现**：单引擎内联（Meta-DGTF-V2.2.54.py）；V2.1 外部模块仅作回滚参考
 - **历史清单**：dgtf_engine/dgtf_v2/history_manifest.json
 - **版本规范**：dgtf_engine/dgtf_v2/NAMING.md
 - **历史归档**：元DGTF-V1历史归档-20261023.zip（V1.0 → V1.30.4）
 
 > 这份 README 只写能被验证的事；详细来源、能力、版本演化见 docs/history/。
-> **2026-10-29 收束同步（V2.2.53 / App 2.0.78）**：V2 **71/71（1208 checks，SKIP 0）**；fast_gate **16/16**（动态选最高版引擎；含发布流程门自检；audit70 71/0）；
+> **2026-10-29 收束同步（V2.2.54 / App 2.0.78）**：V2 **71/71（1208 checks，SKIP 0）**；fast_gate **16/16**（动态选最高版引擎；含发布流程门自检；audit70 71/0）；
 > App selftest **457/0**（自动门）；一键验收 **PASS 30 / SKIP 0 / FAIL 0**；发布流程门 **PASS（N/A 项带原因）**；动态配置/优先成本 **132/132**、更优/route 安全门 **30/30**、全链路真跑 **25/25**、道生统一模式 **27/27**、自动模式真跑 **12/12**；服务适配器 self_check=v8b / self_check_min=v9b / dual_judge=judge_v3 / route=qwen05b_v1。
-| **四层目标探针**（route 0/1/0,1,both/0,1,all） | **82 / 82 PASS**（V2.2.53 复跑：4 case 共 179 calls，墙钟 415.2s）；层0 未达成（excavate=1.0，单次方差）/ 层1 未测出 / both 判据样本不足 / all 未达成（0.75） |
+| **四层目标探针**（route 0/1/0,1,both/0,1,all） | **82 / 82 PASS**（V2.2.54 复跑：4 case 共 179 calls，墙钟 67.4s）；层0 未达成（excavate=1.0，单次方差）/ 层1 未测出 / both 判据样本不足 / all 未达成（0.75） |
 > 四层目标逐层结论（V2.2.49 复跑）：层0 达成（excavate=0，读数在 0/0.25/0.5/1 间波动的单次方差已多轮记录）/ 层1 未测出（settlement.total=0）/ both 受阻（读数通道全通）/ all 未达成（0.5）。
 > 完整现状见 `docs/项目状态快照_20261030.md`。
 
@@ -38,7 +38,7 @@ Meta-DGTF-道生三阶模型源于用户与 DGTF 的长对话（分享 ID: 44iyn
 
 详细定义、边界、不是什么：docs/history/Meta-DGTF-道生三阶模型-来源与定义.md。
 
-## 二、V2.2.x 的核心能力（V2.2.0 行为融合 + V2.2.1–V2.2.13 补丁谱系 + V2.2.14 本地档 few-shot/降档 + V2.2.15 stage 登记闭环与本地链路提速 + V2.2.16 JSON 结构门与本地档自动切 + V2.2.17 本地 prompt 瘦身 + V2.2.18 发布流程门与证据出口 + V2.2.19 输入驱动自动模式/每模式专属配置/动态调整 + V2.2.20 道生支路接入统一模式体系 + V2.2.21 道生=标准模式融合 + V2.2.22 动态最优配置全流程可达与更优判据 + V2.2.23 route 安全门修复 + V2.2.24 动态配置/依赖优化 + V2.2.25 多圈档/缓存感知 + V2.2.26 route 子集成本模型 + V2.2.27 App 开销/阶段路由/引擎依赖闭包 + V2.2.28 预算 token 硬上限 + V2.2.29 预算墙钟硬上限 + V2.2.30 层子集质量风险 + V2.2.31 省层收益判定 + V2.2.32 kind-aware 收益 + V2.2.33 短程成本锚点 + V2.2.34 choice 省层收益 + V2.2.35 rounds 依赖收益 + V2.2.36 上下文成本 + V2.2.37 quality-retry 决策 + V2.2.38 续航预测 + V2.2.39 未验证缓存复用 + V2.2.40 新鲜度门 + V2.2.41 语义缓存预判 + V2.2.42 预判缓存 + V2.2.43 质量证据 + V2.2.44 题型矩阵 + V2.2.45 语义索引持久化 + V2.2.46 创建前预期 + V2.2.47 项目证据/预判落盘 + V2.2.48 前端预期展示 + V2.2.49 阈值/选档建议 + V2.2.50 tier A/B 证据 + V2.2.51 opt-in 优先成本 + V2.2.52 rl-qf 修复/提示 + V2.2.53 预期 vs 实测）
+## 二、V2.2.x 的核心能力（V2.2.0 行为融合 + V2.2.1–V2.2.13 补丁谱系 + V2.2.14 本地档 few-shot/降档 + V2.2.15 stage 登记闭环与本地链路提速 + V2.2.16 JSON 结构门与本地档自动切 + V2.2.17 本地 prompt 瘦身 + V2.2.18 发布流程门与证据出口 + V2.2.19 输入驱动自动模式/每模式专属配置/动态调整 + V2.2.20 道生支路接入统一模式体系 + V2.2.21 道生=标准模式融合 + V2.2.22 动态最优配置全流程可达与更优判据 + V2.2.23 route 安全门修复 + V2.2.24 动态配置/依赖优化 + V2.2.25 多圈档/缓存感知 + V2.2.26 route 子集成本模型 + V2.2.27 App 开销/阶段路由/引擎依赖闭包 + V2.2.28 预算 token 硬上限 + V2.2.29 预算墙钟硬上限 + V2.2.30 层子集质量风险 + V2.2.31 省层收益判定 + V2.2.32 kind-aware 收益 + V2.2.33 短程成本锚点 + V2.2.34 choice 省层收益 + V2.2.35 rounds 依赖收益 + V2.2.36 上下文成本 + V2.2.37 quality-retry 决策 + V2.2.38 续航预测 + V2.2.39 未验证缓存复用 + V2.2.40 新鲜度门 + V2.2.41 语义缓存预判 + V2.2.42 预判缓存 + V2.2.43 质量证据 + V2.2.44 题型矩阵 + V2.2.45 语义索引持久化 + V2.2.46 创建前预期 + V2.2.47 项目证据/预判落盘 + V2.2.48 前端预期展示 + V2.2.49 阈值/选档建议 + V2.2.50 tier A/B 证据 + V2.2.51 opt-in 优先成本 + V2.2.52 rl-qf 修复/提示 + V2.2.53 预期 vs 实测 + V2.2.54 README 数字同步）
 
 ### 四层螺旋
 
@@ -114,13 +114,13 @@ DGTF_BASE_URL=https://api.deepseek.com
 ### 跑一次
 
 ~~~bash
-python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.53.py "你的问题"
+python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.54.py "你的问题"
 
 # 四层各一圈
-python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.53.py --route 0,1,both,all --rounds 1 "你的问题"
+python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.54.py --route 0,1,both,all --rounds 1 "你的问题"
 
 # 质量/成本预设
-python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.53.py -c configs/方案F-帕累托最优.yaml "你的问题"
+python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.54.py -c configs/方案F-帕累托最优.yaml "你的问题"
 ~~~
 
 常用参数：
@@ -151,7 +151,8 @@ python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.53.py -c configs/方案F-帕累
 | **四层目标探针**（route 0/1/0,1,both/0,1,all） | **81 / 81 PASS**（V2.2.52 复跑：4 case 共 219 calls，墙钟 538.1s；层1 转为「判据样本不足」少 1 条断言）；层0 达成（excavate=0.0）/ 层1 判据样本不足 / both 判据样本不足 / all 未达成（0.75） |
 | 本地服务延迟 | p50 3.0–3.5s、p95 8–9s（单 token graph replay 59→28ms）；JSON 约束后单次中位 3842→1651ms |
 | 四层全跑 | 136 calls / 818.4s（V2.2.14 快照；四层读数全出） |
-| **预期 vs 实测（V2.2.53）** | 任务 GET 附加 quality_actual（packed 实测质量）；前端展示「实测 xxx」；selftest 457、fused chain 25 |
+| **README 数字同步（V2.2.54）** | scripts/sync_readme_numbers.py --check/--write：从证据 JSON 回写 App selftest/probe 等数字，消除发布门漂移 |
+| 预期 vs 实测（V2.2.53） | quality_actual 随任务 GET；前端展示实测 |
 | rl-qf 修复/提示（V2.2.52） | 修复 rl-qf 属性拼接 bug；tier_advice 提示 |
 | opt-in 优先成本（V2.2.51） | prefer_cost_when_unverified（默认关）；fact 不降 |
 | tier A/B 证据（V2.2.50） | fast 省 ~3.6% tokens、墙钟减半 |
@@ -230,7 +231,7 @@ local_model\envs\dgtf_llm_env\Scripts\python.exe -m pip check
 
 | 路径 | 是什么 |
 |---|---|
-| dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.53.py | 当前生产引擎 |
+| dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.54.py | 当前生产引擎 |
 | dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.19.py | 上一基线（输入驱动自动模式 + 动态调整） |
 | dgtf_local_llm/ + scripts/local_model/openai_shim.py | 本地链路：8772 推理服务 / 8773 OpenAI 适配层 |
 | configs/本地模型-全链路.yaml | App 本地档预设（零 API 成本链路） |
@@ -289,12 +290,12 @@ local_model\envs\dgtf_llm_env\Scripts\python.exe -m pip check
 
 ## 九、当前收束
 
-- 版本：V2.2.53（App 2.0.78）
+- 版本：V2.2.54（App 2.0.78）
 - 历史版本：178 个快照（V1.0 → V2.0.0）
 - 能力轴：17 条，readiness=1.00
 - 行为臂：5 个（v1_spiral / v1_frontier / v2_contract / v2_pareto / fusion_full）
-- 收束报告：V2.2.53-收束报告.md
-- 发布说明：docs/releases/V2.2.53.md / docs/releases/V2.2.52.md / docs/releases/app-V2.0.78.md
+- 收束报告：V2.2.54-收束报告.md
+- 发布说明：docs/releases/V2.2.54.md / docs/releases/V2.2.53.md / docs/releases/app-V2.0.78.md
 - **优化交付（Round 1–83）**：`docs/最终交付说明-20261026.md`、
   `docs/验收总览-20261026.md`、`docs/ab_evidence_20261025.md`（§1–§78）
 - **本地模型默认**：v8b（mixed 配方，质量持平 v6、p50/p95 更快；训练/评测/切换全链证据）
