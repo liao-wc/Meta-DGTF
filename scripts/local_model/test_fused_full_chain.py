@@ -122,7 +122,7 @@ try:
     }
     body = {"question": "HTTP 404 状态码表示什么？", "mode": "auto",
             "opts": {"mock": False, "timeout_s": 900,
-                     "route": "0", "rounds": "0:1",
+                     "route": "0", "rounds": "0:1", "web": "off",
                      "overrides": overrides}}
     before = {p: os.path.getmtime(p) for p in glob.glob(str(SAVE / "*.packed.json"))}
     t0 = time.time()
@@ -206,6 +206,80 @@ try:
     ck("C8 真跑了本地模型（llm_calls>0，非空跑）",
        int(packed.get("llm_calls") or 0) > 0, packed.get("llm_calls"))
     ck("C9 总墙钟在预算内（本地链路验证档）", wall < 900, wall)
+
+    # ── D：预算紧张复用未验证产物（V2.2.39）──
+    # 缓存扫描 outputs 根目录（oi.OUTPUTS_DIR），故先用根目录 seed 一次，再提交同题复用。
+    _root = ROOT / "outputs"
+    _root_before = set(glob.glob(str(_root / "*.packed.json")))
+
+    def _opts_root():
+        _o = json.loads(json.dumps(body["opts"]))
+        _ov = dict(_o.get("overrides") or {})
+        _ov["output.save_dir"] = "outputs"
+        _o["overrides"] = _ov
+        return _o
+
+    _seed_body = {"question": body["question"], "mode": "auto", "opts": _opts_root()}
+    _seed_s, _seed_r = _req(base + "/api/tasks", token, _seed_body, timeout=120)
+    _seed_tid = str((_seed_r or {}).get("id") or "")
+    _seed_st = ""
+    _seed_deadline = time.time() + 300
+    while time.time() < _seed_deadline:
+        try:
+            _ss, _seed_last = _req(base + "/api/tasks/" + _seed_tid, token,
+                                   timeout=30)
+            _seed_st = str((_seed_last or {}).get("status") or "")
+        except Exception:  # noqa: BLE001
+            _seed_st = ""
+        if _seed_st in ("done", "error", "cancelled"):
+            break
+        time.sleep(1.0)
+    ck("D0 根目录 seed 任务完成（未验证产物可缓存）",
+       _seed_st == "done", "status=%s" % _seed_st)
+    _seed_packs = [p for p in glob.glob(str(_root / "*.packed.json"))
+                   if p not in _root_before]
+    _seed_q = {}
+    if _seed_packs:
+        try:
+            _seed_q = (json.loads(Path(_seed_packs[-1]).read_text(
+                encoding="utf-8", errors="replace")).get("quality") or {})
+        except Exception:  # noqa: BLE001
+            _seed_q = {}
+    _before2 = set(glob.glob(str(_root / "*.packed.json")))
+    _body2 = {"question": body["question"], "mode": "auto",
+              "opts": dict(_opts_root(), allow_unverified_cache=True)}
+    _t2 = time.time()
+    _s2, _r2 = _req(base + "/api/tasks", token, _body2, timeout=120)
+    _tid2 = str((_r2 or {}).get("id") or "")
+    ck("D1 同题再提交（预算紧张+允许未验证缓存）⇒ cache_hit=True",
+       _s2 == 201 and bool((_r2 or {}).get("cache_hit")),
+       "status=%s id=%s" % (_s2, _tid2))
+    ck("D2 命中来自未验证产物（seed 非 verified）",
+       bool((_r2 or {}).get("cache_unverified")) is True
+       and str(_seed_q.get("answer_quality") or "") != "verified",
+       "cache_unverified=%s seed_quality=%s"
+       % ((_r2 or {}).get("cache_unverified"), _seed_q.get("answer_quality")))
+    _st2 = ""
+    _deadline2 = time.time() + 60
+    _last2 = {}
+    while time.time() < _deadline2:
+        try:
+            _ss, _last2 = _req(base + "/api/tasks/" + _tid2, token, timeout=30)
+            _st2 = str((_last2 or {}).get("status") or "")
+        except Exception:  # noqa: BLE001
+            _st2 = ""
+        if _st2 in ("done", "error", "cancelled"):
+            break
+        time.sleep(0.5)
+    ck("D3 复用任务迅速 done 且继承 seed 产物（新 id + 同 output）",
+       _st2 == "done" and _tid2 != _seed_tid
+       and str((_last2 or {}).get("output_name") or "")
+       == str((_seed_last or {}).get("output_name") or ""),
+       "status=%s new=%s out=%s" % (_st2, _tid2 != _seed_tid,
+                                    (_last2 or {}).get("output_name")))
+    _after2 = set(glob.glob(str(_root / "*.packed.json")))
+    ck("D4 复用不生成新 packed（0 次新 LLM 调用）",
+       _after2 == _before2, "new=%d" % len(_after2 - _before2))
 finally:
     if proc is not None and proc.poll() is None:
         _kill_tree(proc.pid)

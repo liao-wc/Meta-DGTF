@@ -1934,6 +1934,13 @@ def build_plan(question: str, opts: dict | None = None, *,
     else:
         dyn["budget_forecast"] = None
     # ★ [V2.2.37] 缓存 ROI 读数（exact 已按 10%% 成本计；语义命中率未知→只报能力）
+    dyn["cache_policy"] = {
+        "allow_unverified": bool(dyn.get("budget_level") in ("warn", "critical")),
+        "why": ("预算 %s ⇒ 允许同题未验证产物复用（省整单）"
+                % dyn.get("budget_level")
+                if dyn.get("budget_level") in ("warn", "critical")
+                else "预算充足 ⇒ 只复用 verified 产物"),
+    }
     dyn["cache_roi"] = {
         "exact": bool((cache or {}).get("exact")),
         "semantic_capable": bool((cache or {}).get("semantic_capable")),
@@ -2046,6 +2053,9 @@ def build_plan(question: str, opts: dict | None = None, *,
         "max_minutes": budget_max_minutes,
         # ★ [V2.2.37] quality-retry 决策（advisory）
         "quality_retry": _qr,
+        # ★ [V2.2.39] 预算紧张时允许复用"未验证"产物缓存（同题精确匹配，省整单）
+        "allow_unverified_cache": bool(
+            dyn.get("budget_level") in ("warn", "critical")),
         "dual_judge_mode_via": djm_via,
         "history_fusion": hf,
         "history_fusion_via": hf_via,
@@ -2081,7 +2091,8 @@ def apply_plan(plan: dict, opts: dict) -> dict:
         return applied
     for k in ("mode", "route", "rounds", "parallel", "web", "thinking",
               "effort", "self_check_mode", "dual_judge_mode",
-              "history_fusion", "max_tokens", "max_minutes"):
+              "history_fusion", "max_tokens", "max_minutes",
+              "allow_unverified_cache"):
         v = plan.get(k)
         if v in (None, "", "auto"):
             continue

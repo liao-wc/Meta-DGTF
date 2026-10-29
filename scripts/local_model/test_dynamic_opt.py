@@ -482,6 +482,23 @@ ck("N4 余额未知 ⇒ budget_forecast=None（fail-open 不预测）",
    (_p_n4.get("dynamic_opt") or {}).get("budget_forecast") is None)
 
 
+print("── O 预算紧张允许复用未验证产物（V2.2.39）──")
+_p_o1 = DS.build_plan(FACT_Q, {"route": "0", "rounds": "0:1"},
+                      requested="daosheng", is_mock=True, balance_cny=50.0)
+ck("O1 预算 ok：allow_unverified_cache=False",
+   _p_o1.get("allow_unverified_cache") is False)
+_p_o2 = DS.build_plan(FACT_Q, {"route": "0", "rounds": "0:1"},
+                      requested="daosheng", is_mock=True, balance_cny=3.0)
+_po2 = (( _p_o2.get("dynamic_opt") or {}).get("cache_policy") or {})
+ck("O2 预算 warn：allow_unverified_cache=True + cache_policy 说明",
+   _p_o2.get("allow_unverified_cache") is True
+   and _po2.get("allow_unverified") is True
+   and "未验证" in str(_po2.get("why")), _po2)
+_o_opt = {}
+DS.apply_plan(dict(_p_o2), _o_opt)
+ck("O3 apply_plan 透传 allow_unverified_cache", _o_opt.get("allow_unverified_cache") is True)
+
+
 print("── J 短程实测锚点（V2.2.33，B 模式每层 1 圈）──")
 _p_j = DS.build_plan(FACT_Q, {"route": "0,1,both,all",
                               "rounds": "0:1,1:1,both:1,all:1"},

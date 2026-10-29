@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "2.0.63"
+APP_VERSION = "2.0.64"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -10393,7 +10393,9 @@ class Handler(BaseHTTPRequestHandler):
                     _cached = _find_cached_pack(
                         question, opts,
                         str(opts.get("_prompt_prefix") or ""),
-                        semantic=bool(opts.get("use_semantic_cache", True)))
+                        semantic=bool(opts.get("use_semantic_cache", True)),
+                        allow_unverified=bool(
+                            opts.get("allow_unverified_cache")))
                 except Exception:
                     _cached = None
             _online = None
@@ -10435,6 +10437,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"id": tid, "cache_hit": True,
                                    "dedup_hit": False,
                                    "semantic_cache": bool((_cached or {}).get("semantic")),
+                                   "cache_unverified": bool((_cached or {}).get("unverified")),
                                    "cache_similarity": (_cached or {}).get("similarity"),
                                    "cached_from": _cached_from,
                                    "auto_pareto": _auto_pareto,
@@ -10558,8 +10561,12 @@ def _watch_v2_online_outcome(tid: str, assignment_id: str):
 
 
 def _find_cached_pack(question: str, opts: dict, prefix: str = "",
-                      semantic: bool = False):
-    """查找同题、同 web/parallel 的已验证 packed，复用其产物。"""
+                      semantic: bool = False, allow_unverified: bool = False):
+    """查找同题、同 web/parallel 的 packed，复用其产物。
+
+    allow_unverified=True（仅预算 warn/critical 时）：同题精确匹配可复用未验证产物，
+    省整单成本（质量同为 unverified，不额外劣化）。
+    """
     if _no_cache_requested(opts):
         return None
     import json as _json
@@ -10580,7 +10587,11 @@ def _find_cached_pack(question: str, opts: dict, prefix: str = "",
                 continue
             d = _json.loads(p.read_text(encoding="utf-8"))
             q = d.get("quality") or {}
-            if not (q.get("answer_ready") and q.get("answer_quality") == "verified"):
+            _ver = (q.get("answer_ready")
+                    and q.get("answer_quality") == "verified")
+            _unver = (not _ver and allow_unverified
+                      and q.get("answer_quality") in ("unverified", "needs_evidence"))
+            if not (_ver or _unver):
                 continue
             usage = d.get("api_usage") or {}
             if bool(usage.get("web_enabled")) != want_web:
@@ -10590,7 +10601,8 @@ def _find_cached_pack(question: str, opts: dict, prefix: str = "",
                 continue
             dq = str(d.get("question") or "")
             if dq != full_q:
-                if semantic and len(_sem_candidates) < 12:
+                # 语义回退只复用 verified（未验证产物仅同题精确匹配可复用）
+                if semantic and _ver and len(_sem_candidates) < 12:
                     _sem_candidates.append((p, d, dq, q))
                 continue
             name = p.name[:-len(".packed.json")]
@@ -10600,7 +10612,8 @@ def _find_cached_pack(question: str, opts: dict, prefix: str = "",
                     "pack": p.name,
                     "output_name": out.name if out.exists() else "",
                     "log": str(log) if log.exists() else "",
-                    "semantic": False, "similarity": 1.0}
+                    "semantic": False, "similarity": 1.0,
+                    "unverified": bool(_unver)}
         except Exception:
             continue
     if semantic and _sem_candidates:
