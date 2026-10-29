@@ -222,6 +222,12 @@ try:
     ck("C2 App 实例超时 ⇒ N/A",
        rp.classify_dsh_fail("[FAIL] C. App 运行态 The read operation timed out")[0] == rp.NA)
     ck("C3 真失败 ⇒ FAIL", rp.classify_dsh_fail("[FAIL] E. 遥测崩溃 Traceback")[0] == rp.FAIL)
+    _g5 = "[FAIL] B.  最新真跑离线质量门预检 x ⇒ - G5 质量门 quality：answer_quality=unverified（要求 verified）"
+    ck("C4 预算降级档的 G5 unverified ⇒ N/A（原因显式）",
+       rp.classify_dsh_fail(_g5, budget_degraded=True)[0] == rp.NA
+       and "预算" in rp.classify_dsh_fail(_g5, budget_degraded=True)[1])
+    ck("C5 非预算降级时 G5 unverified 仍是 FAIL（不泛化豁免）",
+       rp.classify_dsh_fail(_g5, budget_degraded=False)[0] == rp.FAIL)
 finally:
     shutil.rmtree(TMP, ignore_errors=True)
 

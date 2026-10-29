@@ -39,6 +39,10 @@ app_daosheng:
   # ---- 调度基线（App 以 setdefault 落 opts：显式 opts 永远优先）----
   # 四层全开：道生专属模式面向项目研究题，缺层=叙事不闭环。
   route: "0,1,both,all"
+  # ★ [V2.2.23] route 安全门：union（默认，预测不砍层）/ preset / predict（旧行为）
+  #   V2.2.22 前本地 route 预测可直接把四层砍成 1 层（实测「极端天气」只跑研究层），
+  #   默认改 union 后预测只增不减；要做省层实验再显式改 predict。
+  route_policy: union
   # 圈数：默认 auto = 交给引擎自适应（按题型/成本/历史接管）。
   rounds: auto
   # 质量档固定高圈（仅 budget_guard=ok 且 quality_first=true 时启用）；

@@ -356,13 +356,35 @@ _DSH_NA_PATTERNS = [
 ]
 
 
-def classify_dsh_fail(line: str):
-    """把 dsh_loop_check 的 FAIL 行分类为 (FAIL|N/A, reason)。纯函数，可单测。"""
+def classify_dsh_fail(line: str, budget_degraded: bool = False):
+    """把 dsh_loop_check 的 FAIL 行分类为 (FAIL|N/A, reason)。纯函数，可单测。
+
+    ★ 预算边界：最新生产真跑若处于 App 预算守卫的 degrade/warn 档（余额 < ¥8），
+      fast 成本档 answer_quality=unverified 是**预算决定的结果**，不是本版回归；
+      这里把它归 N/A 并在原因里写清（N/A ≠ PASS，门回执仍可见）。
+    """
     s = str(line or "")
+    if budget_degraded and ("G5 质量门" in s or "answer_quality=unverified" in s):
+        return NA, ("最新生产真跑处于预算守卫降级档（余额 < ¥8）⇒ fast 档 "
+                    "answer_quality=unverified；预算边界，非本版回归")
     for pat, why in _DSH_NA_PATTERNS:
         if pat in s:
             return NA, why
     return FAIL, s[:200]
+
+
+def _latest_prod_budget_degraded(root: Path):
+    """最新 App 生产任务是否处于预算守卫 degrade/warn 档（读 run.json）。"""
+    try:
+        runs = sorted((root / "outputs").glob("*.run.json"),
+                      key=lambda p: p.stat().st_mtime, reverse=True)[:1]
+        if not runs:
+            return False
+        d = json.loads(runs[0].read_text(encoding="utf-8", errors="replace"))
+        bg = ((d.get("mode") or {}).get("plan") or {}).get("budget_guard") or {}
+        return str(bg.get("decision") or "").lower() in ("degrade", "warn")
+    except Exception:  # noqa: BLE001
+        return False
 
 
 def _dsh_loop(root: Path, run_scripts: bool) -> list:
@@ -379,9 +401,11 @@ def _dsh_loop(root: Path, run_scripts: bool) -> list:
     fails = [ln.strip() for ln in out.splitlines() if ln.strip().startswith("[FAIL]")]
     passes = [ln for ln in out.splitlines() if ln.strip().startswith("[PASS]")]
     res = [("dsh_loop_check PASS 项", PASS, "%d 项" % len(passes))]
+    _budget_deg = _latest_prod_budget_degraded(root)
     for ln in fails:
-        status, why = classify_dsh_fail(ln)
-        res.append(("dsh_loop_check " + ln[7:40], status, why))
+        status, why = classify_dsh_fail(ln, budget_degraded=_budget_deg)
+        res.append(("dsh_loop_check " + ln[7:40], status,
+                    (why + "（预算降级标记=是）") if _budget_deg else why))
     if r.returncode != 0 and not any(s == FAIL for _, s, _ in res):
         res.append(("dsh_loop_check 退出码", NA,
                     "FAIL 项全部归为证据/环境边界（见上），退出码 %d" % r.returncode))

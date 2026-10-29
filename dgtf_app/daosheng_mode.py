@@ -74,6 +74,8 @@ _BUILTIN_DS = {
     "schema": "metadgtf.app_daosheng.v1",
     "version": "1.0.0",
     "route": "0,1,both,all",
+    # [V2.2.23] route 安全门默认：预测不砍层
+    "route_policy": "union",
     "rounds": "auto",
     "rounds_quality": "0:3,1:3,both:4,all:4",
     "rounds_fast": "0:2,1:3,both:2,all:2",
@@ -1201,7 +1203,33 @@ def build_plan(question: str, opts: dict | None = None, *,
     else:
         hf, hf_via = None, None
 
-    route = ",".join((local.get("route") or _norm_route(ds.get("route"))))
+    # ★ [V2.2.23] route 安全门：本地 route 预测默认**不砍层**。
+    #   route_policy:
+    #     union（默认）: 预设 route ∪ 预测 route（预设为四层时结果恒四层，预测仅供审计/补充）
+    #     preset       : 完全忽略预测（纯预设）
+    #     predict      : 旧行为（预测非空即采用，可砍层；用于显式省层实验）
+    _route_preset = _norm_route(ds.get("route"))
+    _route_pred = [str(x) for x in (local.get("route") or []) if str(x)]
+    _route_policy = str(ds.get("route_policy") or "union").strip().lower()
+    if _route_policy not in ("union", "preset", "predict"):
+        _route_policy = "union"
+    if _route_policy == "predict":
+        _route_list = _route_pred or _route_preset
+        _route_source = "predict" if _route_pred else "preset"
+    elif _route_policy == "preset":
+        _route_list = _route_preset
+        _route_source = "preset"
+    else:  # union
+        _route_list = list(_route_preset)
+        for _e in _route_pred:
+            if _e not in _route_list:
+                _route_list.append(_e)
+        _route_source = ("union" if _route_pred and _route_pred != _route_preset
+                         else "preset")
+    route = ",".join(_route_list)
+    if _route_policy != "predict" and _route_pred and _route_pred != _route_preset:
+        warnings.append("route 安全门（%s）：预测=%s 未砍层，实际=%s"
+                        % (_route_policy, ",".join(_route_pred), route))
     # ★ [V2.2.20 / 方案 A] 道生支路接入统一模式体系：
     #   engine_mode（B/fast/serial）对应 MODE_CONFIGS 的专门配置作为默认值；
     #   道生预设显式值（rounds/rounds_quality/rounds_fast/parallel）与场景规则
@@ -1353,6 +1381,10 @@ def build_plan(question: str, opts: dict | None = None, *,
         "preset": str(preset_path()),
         "preset_info": preset_info(),
         "route": route,
+        # [V2.2.23] route 安全门读数（可审计）
+        "route_policy": _route_policy,
+        "route_source": _route_source,
+        "route_prediction": list(_route_pred),
         "rounds": rounds,
         "parallel": parallel,
         "web": web,

@@ -85,6 +85,50 @@ ck("A8 standard 入口融合为道生（id=daosheng / fused=True / requested 保
    _std.get("id") == "daosheng" and _std.get("fused") is True
    and _std.get("requested") == "standard", _std)
 
+
+print("── A2 route 安全门（默认 union：预测不砍层，可显式 predict/preset）──")
+_pres0 = DS.load_preset()
+ck("A9 预设默认 route_policy=union（不再默认砍层）",
+   str(_pres0.get("route_policy") or "union") == "union",
+   _pres0.get("route_policy"))
+_orig_load = DS.load_preset
+_orig_pred = DS.predict_route_rounds
+try:
+    DS.predict_route_rounds = lambda *a, **k: {
+        "source": "stub", "route": ["1"], "rounds": {"1": 2}}
+    _p_union = DS.build_plan(REASON_Q, {}, requested="daosheng", is_mock=True,
+                             balance_cny=50.0)
+    ck("A10 union：预测=['1'] 但实际 route=四层（预测不砍层）",
+       _p_union.get("route") == "0,1,both,all"
+       and _p_union.get("route_policy") == "union"
+       and _p_union.get("route_prediction") == ["1"],
+       (_p_union.get("route"), _p_union.get("route_prediction")))
+    for _pol, _expect_route, _expect_src in (
+            ("predict", "1", "predict"),
+            ("preset", "0,1,both,all", "preset"),
+            ("bogus", "0,1,both,all", "union")):
+        _pr = dict(_pres0, route_policy=_pol)
+        DS.load_preset = lambda force=False, _pr=_pr: dict(_pr)
+        _pp = DS.build_plan(REASON_Q, {}, requested="daosheng", is_mock=True,
+                            balance_cny=50.0)
+        ck("A11 route_policy=%s => route=%s / source=%s"
+           % (_pol, _expect_route, _expect_src),
+           _pp.get("route") == _expect_route
+           and _pp.get("route_source") == _expect_src,
+           (_pp.get("route"), _pp.get("route_source")))
+finally:
+    DS.load_preset = _orig_load
+    DS.predict_route_rounds = _orig_pred
+
+# 真实本地预测（服务在时）：问题「极端天气…」预测 route=['1']，默认 union 结果必须四层
+_pr_real = DS.build_plan("极端天气为什么越来越频繁", {}, requested="daosheng",
+                         is_mock=False, balance_cny=6.43)
+ck("A12 复现修复：该问题 route 预测 ['1']，默认 union 实际 route=四层",
+   _pr_real.get("route") == "0,1,both,all"
+   and _pr_real.get("route_prediction") == ["1"],
+   (_pr_real.get("route"), _pr_real.get("route_prediction"),
+    (_pr_real.get("local_llm") or {}).get("source")))
+
 print("── B 更优：实测场景矩阵对比（质量不降 / 成本显著更低）──")
 _scen = MF.MEASURED_SCENARIOS
 
