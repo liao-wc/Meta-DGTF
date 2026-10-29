@@ -1,3 +1,15 @@
+【V2.2.62（2026-10-30，PATCH · fast_gate 稳定性护栏；App 2.0.80 不变）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.62.py（__version__=2.2.62；引擎侧零行为差）；
+  App 2.0.80 不变。
+- ★ fast_gate 新增 stability_guard 检查（17→18 项）：断言 _serial_lock.py 存在且含可重入
+  环境变量；10 个重资源脚本（7 判据 + final_acceptance/run_v2_tests/app_selftest_gate）
+  都接入 acquire_serial_lock，防止重构静默丢失。
+- ★ acceptance_semantics 检查清单期望 18，纳入 stability_guard。
+- 验收：fast_gate 18/18；V2 71/71（1208 checks）；App selftest 457/0；一键验收 PASS 30 /
+  SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；发布流程门 pre/post-tag 全 PASS。零 API。
+- 兼容性：只改测试/验证工具；引擎零行为差；App 不变。
+- 标签：V2.2.62 / engine-V2.2.62（app-V2.0.80 不变，不移动）。
+
 【V2.2.61（2026-10-30，PATCH · 判据稳定性根因归档；App 2.0.80 不变）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.61.py（__version__=2.2.61；引擎侧零行为差）；
   App 2.0.80 不变。
@@ -642,13 +654,3 @@
 
 【V2.2.22（2026-10-29，PATCH · 动态最优配置全流程可达 + 融合模式"更优"判据；同发 App 2.0.47）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.22.py（__version__=2.2.22）；App 2.0.47。
-- ★ 问题：MetaDGTF.run() 支持 max_minutes/max_tokens，但 main() 从不传 ⇒ 墙钟/令牌预算
-  只能从代码调用，CLI/App 全链路不可达；dynamic_adjust 的预算降档在真实任务里无法触发。
-- ★ 修法：引擎新增 --max-minutes / --max-tokens 并传入 meta.run()；App engine_runner
-  _ARG_SPEC 新增 max_minutes/max_tokens 映射 + 能力门控（旧引擎不透传）。
-  预算到达 ⇒ 层/波边界 dynamic_adjust 降档 fast（质量下限允许时）；rounds_locked
-  场景只调 thinking/web、不改圈。
-- ★ 判据：新增 scripts/local_model/test_fused_optimal.py（24 项，进一键验收 strict）：
-  能力对等（质量策略/缓存/预算/背景注入/web 规则/失败回退 + 道生能力）；
-  更优（MEASURED_SCENARIOS 同题真跑：成本档质量 ±0.02 内、tokens 省 ≥15%，3 场景至少
-  2 个成立；质量优先档 B 不降）；动态配置（引擎 _auto_mode_tick 真代码三场景：锁定不压圈 /

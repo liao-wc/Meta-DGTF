@@ -193,6 +193,27 @@ def _fail_cmd(msg: str) -> list:
             "import sys;print(%r);sys.exit(1)" % str(msg)]
 
 
+_STABILITY_PROBE = r"""
+import sys, pathlib
+root = pathlib.Path(sys.argv[1])
+lock = root / "scripts" / "local_model" / "_serial_lock.py"
+assert lock.is_file(), "缺少 _serial_lock.py"
+txt = lock.read_text(encoding="utf-8")
+assert "DGTF_SERIAL_LOCK_HELD" in txt, "串行锁缺少可重入环境变量"
+heavy = ["test_fused_full_chain.py", "test_fused_optimal.py",
+         "test_dynamic_opt.py", "e2e_app_local.py", "probe_layer_goals.py",
+         "test_daosheng_unified.py", "test_auto_mode_local.py",
+         "scripts/final_acceptance.py", "scripts/run_v2_tests.py",
+         "scripts/app_selftest_gate.py"]
+for rel in heavy:
+    q = (root / "scripts" / "local_model" / rel
+         if "/" not in rel else root / rel)
+    s = q.read_text(encoding="utf-8")
+    assert "acquire_serial_lock" in s, "未接串行锁: " + rel
+print("stability_guard ok (%d scripts)" % len(heavy))
+"""
+
+
 def build_checks(engine=None) -> list:
     """返回 [(name, cmd)]。engine=None ⇒ compile/audit70 用会判红的占位命令。"""
     checks = [
@@ -237,6 +258,8 @@ def build_checks(engine=None) -> list:
         # [V2.2.55] README 实测数字必须与证据一致（防发布门数字漂移）
         ("readme_numbers", [sys.executable,
          str(ROOT / "scripts" / "sync_readme_numbers.py"), "--check"]),
+        # [V2.2.62] 判据稳定性护栏：串行锁模块 + 重资源脚本接线（防重构静默丢失）
+        ("stability_guard", [sys.executable, "-c", _STABILITY_PROBE, str(ROOT)]),
     ]
     return checks
 
