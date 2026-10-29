@@ -1,3 +1,13 @@
+【V2.2.63（2026-10-30，PATCH · 历史/归档 quality 联动护栏；同发 App 2.0.81）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.63.py（__version__=2.2.63；引擎侧零行为差）；
+  App 2.0.81。
+- ★ App selftest 457→459：list_chats 每行必须带 quality_expected/quality_actual；
+  archivedTask 必须携带 quality_expected/quality_actual（防重构丢失归档联动）。
+- 验收：App selftest 459/0；fast_gate 18/18；V2 71/71（1208 checks）；一键验收 PASS 30 /
+  SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；发布流程门 pre/post-tag 全 PASS。零 API。
+- 兼容性：只加判据；引擎零行为差；无历史数据时跳过值断言。
+- 标签：V2.2.63 / engine-V2.2.63 / app-V2.0.81。
+
 【V2.2.62（2026-10-30，PATCH · fast_gate 稳定性护栏；App 2.0.80 不变）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.62.py（__version__=2.2.62；引擎侧零行为差）；
   App 2.0.80 不变。
@@ -644,13 +654,3 @@
   union（默认；预设 ∪ 预测，预设四层时结果恒四层，预测只作审计/补充，不砍层）、
   preset（忽略预测）、predict（旧砍层行为，显式实验用）；非法值回落 union；
   plan 新增 route_policy/route_source/route_prediction 读数，拦下时写 warnings。
-- ★ 判据：fused_optimal 24→30 项（route 安全门 A9–A12：默认 union、预测=["1"] 时实际四层、
-  predict/preset/非法值三种策略、真实本地预测复现「极端天气」问题修复）。
-- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
-  一键验收 --with-service PASS 29 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 81/81；
-  发布流程门 pre/post-tag 全 PASS（N/A 带原因）。
-- 兼容性：默认 union 是修复（四层不再被 0.5B 预测静默裁掉）；要省层需显式 route_policy: predict。
-- 标签：V2.2.23 / engine-V2.2.23 / app-V2.0.48。
-
-【V2.2.22（2026-10-29，PATCH · 动态最优配置全流程可达 + 融合模式"更优"判据；同发 App 2.0.47）】
-- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.22.py（__version__=2.2.22）；App 2.0.47。

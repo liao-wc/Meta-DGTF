@@ -1292,6 +1292,22 @@ def check_t3_daosheng(base: str, srv_src: str, runner_src: str,
           "quality_actual js=%s srv=%s" % ("quality_actual" in js,
                                            "quality_actual" in srv_src))
 
+    # ★ [V2.2.63] 历史会话/归档视图的 quality 联动（零成本护栏）
+    _chats_rows = []
+    try:
+        _chats_rows = dashboard.list_chats(10)
+    except Exception:  # noqa: BLE001
+        _chats_rows = []
+    check("★V2.2.63 历史会话：list_chats 每行带 quality_expected/quality_actual",
+          (not _chats_rows)
+          or all("quality_expected" in r and "quality_actual" in r
+                 for r in _chats_rows),
+          "rows=%d" % len(_chats_rows))
+    check("★V2.2.63 归档视图：archivedTask 携带 quality_expected/quality_actual",
+          "quality_expected: c.quality_expected" in js
+          and "quality_actual: c.quality_actual" in js,
+          "")
+
     # ── ⑩ mock HTTP 端到端（201 + plan + 可审计 + resume）─────
     def _post_status(path, obj):
         try:
