@@ -1442,6 +1442,11 @@ def dynamic_config(*, ds: dict | None = None, tier: str = "quality",
 # ★ [V2.2.41] 语义缓存命中预判：对最近 verified 产物做 BGE 余弦（本地 8771，零 API）
 _VERIFIED_CACHE_TTL_H = 168.0
 _SEMANTIC_MIN_SIM = 0.98
+# ★ [V2.2.42] 候选清单/命中结果双层缓存：避免每次 build_plan 重读 200+ packed
+_SEM_CAND_TTL_S = 300.0
+_SEM_PROBE_TTL_S = 120.0
+_SEM_CAND_CACHE = {"ts": 0.0, "items": None}
+_SEM_PROBE_CACHE: dict = {}
 
 
 def _embed_batch(texts: list[str]):
@@ -1460,56 +1465,84 @@ def _embed_batch(texts: list[str]):
         return None
 
 
-def _semantic_cache_probe(question: str, opts: dict | None = None):
-    """返回最近 verified 产物的最佳语义命中（>=0.98），否则 None。"""
+def _semantic_candidates():
+    """verified 产物候选清单（按 mtime 倒序；缓存 300s，最多 40 条）。"""
+    import time as _t
+    now = _t.time()
+    hit = _SEM_CAND_CACHE.get("items")
+    if hit is not None and now - float(_SEM_CAND_CACHE.get("ts") or 0) < _SEM_CAND_TTL_S:
+        return hit
+    import json as _j
+    root = Path(__file__).resolve().parent.parent / "outputs"
+    items = []
     try:
-        import json as _j
-        import math as _m
-        import time as _t
-        root = Path(__file__).resolve().parent.parent / "outputs"
         packs = sorted(root.glob("*.packed.json"),
                        key=lambda p: p.stat().st_mtime, reverse=True)[:300]
-        if not packs:
-            return None
-        want_web = str((opts or {}).get("web") or "")
-        now = _t.time()
-        cand = []
-        for p in packs:
-            try:
-                if now - p.stat().st_mtime > _VERIFIED_CACHE_TTL_H * 3600:
-                    continue
-                d = _j.loads(p.read_text(encoding="utf-8", errors="replace"))
-                q = d.get("quality") or {}
-                if not (q.get("answer_ready") and q.get("answer_quality") == "verified"):
-                    continue
-                if want_web in ("on", "off"):
-                    if bool((d.get("api_usage") or {}).get("web_enabled")) != (want_web == "on"):
-                        continue
-                dq = str(d.get("question") or "")
-                if dq:
-                    cand.append((p, dq, q))
-                if len(cand) >= 8:
-                    break
-            except Exception:  # noqa: BLE001
+    except Exception:  # noqa: BLE001
+        packs = []
+    for p in packs:
+        try:
+            if now - p.stat().st_mtime > _VERIFIED_CACHE_TTL_H * 3600:
                 continue
+            d = _j.loads(p.read_text(encoding="utf-8", errors="replace"))
+            q = d.get("quality") or {}
+            if not (q.get("answer_ready") and q.get("answer_quality") == "verified"):
+                continue
+            dq = str(d.get("question") or "")
+            if not dq:
+                continue
+            items.append((str(p), dq,
+                          bool((d.get("api_usage") or {}).get("web_enabled"))))
+            if len(items) >= 200:
+                break
+        except Exception:  # noqa: BLE001
+            continue
+    _SEM_CAND_CACHE["items"] = items
+    _SEM_CAND_CACHE["ts"] = now
+    return items
+
+
+def _semantic_cache_probe(question: str, opts: dict | None = None):
+    """返回最近 verified 产物的最佳语义命中（>=0.98），否则 None（结果缓存 120s）。"""
+    try:
+        import math as _m
+        import time as _t
+        want_web = str((opts or {}).get("web") or "")
+        _key = (str(question or ""), want_web)
+        now = _t.time()
+        _ph = _SEM_PROBE_CACHE.get(_key)
+        if _ph is not None and now - float(_ph[0]) < _SEM_PROBE_TTL_S:
+            return _ph[1]
+        cand = []
+        for _p, _dq, _web in _semantic_candidates():
+            if want_web in ("on", "off") and _web != (want_web == "on"):
+                continue
+            cand.append((_p, _dq))
+            if len(cand) >= 8:
+                break
         if not cand:
+            _SEM_PROBE_CACHE[_key] = (now, None)
             return None
         vecs = _embed_batch([str(question or "")] + [c[1] for c in cand])
         if not vecs:
+            _SEM_PROBE_CACHE[_key] = (now, None)
             return None
         v1 = vecs[0]
         n1 = _m.sqrt(sum(float(x) * float(x) for x in v1)) or 1.0
         best = None
-        for (p, dq, q), v2 in zip(cand, vecs[1:]):
+        for (_p, dq), v2 in zip(cand, vecs[1:]):
             n2 = _m.sqrt(sum(float(x) * float(x) for x in v2)) or 1.0
             sim = sum(float(a) * float(b) for a, b in zip(v1, v2)) / (n1 * n2)
             if sim >= _SEMANTIC_MIN_SIM and (best is None or sim > best[0]):
-                best = (sim, p.name.replace(".packed.json", ""), q)
+                best = (sim, Path(_p).name.replace(".packed.json", ""))
         if not best:
+            _SEM_PROBE_CACHE[_key] = (now, None)
             return None
-        sim, from_id, q = best
-        return {"hit": True, "similarity": round(sim, 4),
+        sim, from_id = best
+        _out = {"hit": True, "similarity": round(sim, 4),
                 "from": from_id, "evidence": "BGE 余弦>=0.98"}
+        _SEM_PROBE_CACHE[_key] = (now, _out)
+        return _out
     except Exception:  # noqa: BLE001
         return None
 

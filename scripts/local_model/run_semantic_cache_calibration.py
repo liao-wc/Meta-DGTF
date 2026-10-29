@@ -20,7 +20,11 @@ ROOT = Path(__file__).resolve().parents[2]
 AUD = ROOT / "outputs" / "_lead_audit"
 AUD.mkdir(parents=True, exist_ok=True)
 BASE = "为什么在高原上煮饭更容易夹生？"
-NEAR = "为什么高原上煮饭更容易夹生？"
+NEARS = [
+    ("semantic-0.996", "为什么高原上煮饭更容易夹生？"),
+    ("semantic-0.997", "为什么在高原上煮饭更容易夹生呢？"),
+    ("semantic-0.991", "请问为什么高原上煮饭更容易夹生？"),
+]
 OVER = {
     "api.base_url": "http://127.0.0.1:8773/v1",
     "api.key": "local-shim",
@@ -93,7 +97,8 @@ def main():
                 time.sleep(1.0)
         if not ready:
             raise SystemExit("server not ready")
-        for tag, q in (("exact", BASE), ("semantic", NEAR)):
+        _arms = [("exact", BASE)] + NEARS
+        for tag, q in _arms:
             body = {"question": q, "mode": "auto",
                     "opts": {"mock": False, "timeout_s": 600,
                              "route": "0", "rounds": "0:1",
@@ -112,7 +117,8 @@ def main():
             print("[sem]", json.dumps(rows[-1], ensure_ascii=False)[:400], flush=True)
         out = {"schema": "metadgtf.semantic_cache_calibration.v1",
                "ts": time.strftime("%Y-%m-%d %H:%M:%S"),
-               "base_question": BASE, "near_question": NEAR,
+               "base_question": BASE,
+               "near_questions": [x[1] for x in NEARS],
                "embed": {"model": "bge-small-zh-v1.5", "port": 8771},
                "cache_pack": "outputs/20261025_143654_为什么在高原上煮饭更容易夹生.packed.json",
                "rows": rows,

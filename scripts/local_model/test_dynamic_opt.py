@@ -554,12 +554,33 @@ ck("Q3 cache_prediction 语义命中带 similarity/from",
    _cp_q.get("note"))
 _qev = json.loads((ROOT / "docs" / "semantic_cache_hit_20261029.json")
                   .read_text(encoding="utf-8"))
-_semrows = [r for r in (_qev.get("rows") or []) if r.get("tag") == "semantic"]
-ck("Q4 语义缓存实测证据：semantic arm cache_hit=True 且 sim≈0.996",
-   bool(_semrows) and _semrows[0].get("cache_hit") is True
-   and _semrows[0].get("semantic_cache") is True
-   and abs(float(_semrows[0].get("cache_similarity") or 0) - 0.996) < 0.01,
-   _semrows[:1])
+_semrows = [r for r in (_qev.get("rows") or [])
+            if str(r.get("tag") or "").startswith("semantic")]
+ck("Q4 语义缓存实测证据：3 个近重复问法均 cache_hit/semantic/sim≥0.98",
+   len(_semrows) >= 3
+   and all(r.get("cache_hit") is True and r.get("semantic_cache") is True
+           and float(r.get("cache_similarity") or 0) >= 0.98 for r in _semrows),
+   [(r.get("tag"), r.get("cache_similarity")) for r in _semrows])
+
+print("── S 语义预判缓存层（V2.2.42）──")
+_c1 = DS._semantic_candidates()
+_c2 = DS._semantic_candidates()
+ck("S1 verified 候选清单缓存（两次同对象，TTL 300s）",
+   _c1 is _c2 and isinstance(_c1, list)
+   and float(DS._SEM_CAND_CACHE.get("ts") or 0) > 0)
+_pres_emb = DS._embed_batch
+_calls = {"n": 0}
+def _emb_count(texts):
+    _calls["n"] += 1
+    return _pres_emb(texts)
+try:
+    DS._embed_batch = _emb_count
+    DS._SEM_PROBE_CACHE.clear()
+    DS._semantic_cache_probe(REASON_Q, {"web": "off"})
+    DS._semantic_cache_probe(REASON_Q, {"web": "off"})
+finally:
+    DS._embed_batch = _pres_emb
+ck("S2 同一问题二次预判走结果缓存（embed 仅 1 次）", _calls["n"] == 1, _calls)
 
 
 print("── J 短程实测锚点（V2.2.33，B 模式每层 1 圈）──")
