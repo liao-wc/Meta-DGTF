@@ -1,0 +1,52 @@
+{
+ "schema": "metadgtf.project_context_rounds2_ab.v1",
+ "ts": "2026-10-29 23:04:04",
+ "question": "Meta-DGTF 道生三阶模型的项目当前状态如何？",
+ "kind": "project",
+ "fixed": {
+  "route": "full",
+  "rounds": "2/层",
+  "web": "off",
+  "balance_assumed": 50.0,
+  "max_tokens": 150000
+ },
+ "rows": [
+  {
+   "arm": "A-ctx-on-r2",
+   "opts_extra": {},
+   "status": "done",
+   "wall_s": 175.2,
+   "calls": 11,
+   "tokens": 61457,
+   "cost_cny": 0.123,
+   "answer_quality": "unverified",
+   "answer_ready": false,
+   "context_injected": [
+    "project_context:RAG",
+    "memory:EML(383字)"
+   ],
+   "cache_hit": false,
+   "packed": "20261029_230142_Meta-DGTF-道生三阶模型项目.packed.json"
+  },
+  {
+   "arm": "B-ctx-off-r2",
+   "opts_extra": {
+    "project_context": false
+   },
+   "status": "done",
+   "wall_s": 139.5,
+   "calls": 15,
+   "tokens": 62566,
+   "cost_cny": 0.125,
+   "answer_quality": "unverified",
+   "answer_ready": false,
+   "context_injected": [
+    "project_context:RAG",
+    "memory:EML(379字)"
+   ],
+   "cache_hit": false,
+   "packed": "20261029_230402_项目自进化记忆EML相关性摘要.packed.json"
+  }
+ ],
+ "note": "project 加圈 + 上下文开关 A/B（补 verified 证据）"
+}

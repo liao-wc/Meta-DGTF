@@ -1214,8 +1214,9 @@ _QUALITY_EXPECTATION = {
     "choice": {"verified": 0, "n": 6,
                "evidence": ["docs/route_subset_choice_ab_20261029.json",
                             "docs/choice_rounds_ab_20261029.json"]},
-    "project": {"verified": 0, "n": 2,
-                "evidence": "docs/project_context_ab_20261029.json"},
+    "project": {"verified": 0, "n": 4,
+                "evidence": ["docs/project_context_ab_20261029.json",
+                             "docs/project_context_rounds2_ab_20261029.json"]},
 }
 
 _QUALITY_RETRY_EVIDENCE = {
@@ -1473,6 +1474,7 @@ _SEM_PROBE_TTL_S = 120.0
 _SEM_CAND_CACHE = {"ts": 0.0, "items": None}
 _SEM_PROBE_CACHE: dict = {}
 _SEM_INDEX_FILE = Path(__file__).resolve().parent.parent / "dgtf_memory" / "semantic_cache_index.json"
+_SEM_PROBE_FILE = Path(__file__).resolve().parent.parent / "dgtf_memory" / "semantic_probe_index.json"
 
 
 def _embed_batch(texts: list[str]):
@@ -1551,9 +1553,29 @@ def _semantic_candidates():
     return items
 
 
+def _sem_probe_persist(key: tuple, ts: float, result) -> None:
+    try:
+        import json as _j
+        items = {}
+        if _SEM_PROBE_FILE.is_file():
+            d = _j.loads(_SEM_PROBE_FILE.read_text(encoding="utf-8",
+                                                  errors="replace"))
+            items = dict(d.get("items") or {})
+        items[str(key[0]) + "||" + str(key[1])] = [float(ts), result]
+        if len(items) > 300:
+            _old = sorted(items.items(), key=lambda kv: float((kv[1] or [0])[0]))
+            items = dict(_old[-300:])
+        _SEM_PROBE_FILE.parent.mkdir(parents=True, exist_ok=True)
+        _SEM_PROBE_FILE.write_text(_j.dumps({"items": items}, ensure_ascii=False),
+                                   encoding="utf-8")
+    except Exception:  # noqa: BLE001
+        pass
+
+
 def _semantic_cache_probe(question: str, opts: dict | None = None):
     """返回最近 verified 产物的最佳语义命中（>=0.98），否则 None（结果缓存 120s）。"""
     try:
+        import json as _j
         import math as _m
         import time as _t
         want_web = str((opts or {}).get("web") or "")
@@ -1562,6 +1584,18 @@ def _semantic_cache_probe(question: str, opts: dict | None = None):
         _ph = _SEM_PROBE_CACHE.get(_key)
         if _ph is not None and now - float(_ph[0]) < _SEM_PROBE_TTL_S:
             return _ph[1]
+        # ★ [V2.2.47] 跨进程结果缓存：进程重启后 120s 内复用上次预判
+        try:
+            if _SEM_PROBE_FILE.is_file():
+                _pd = _j.loads(_SEM_PROBE_FILE.read_text(encoding="utf-8",
+                                                        errors="replace"))
+                _pk = str(question or "") + "||" + want_web
+                _pe = (_pd.get("items") or {}).get(_pk)
+                if _pe and now - float((_pe[0] if isinstance(_pe, list) else 0) or 0) < _SEM_PROBE_TTL_S:
+                    _SEM_PROBE_CACHE[_key] = (float(_pe[0]), _pe[1])
+                    return _pe[1]
+        except Exception:  # noqa: BLE001
+            pass
         cand = []
         for _p, _dq, _web in _semantic_candidates():
             if want_web in ("on", "off") and _web != (want_web == "on"):
@@ -1571,6 +1605,7 @@ def _semantic_cache_probe(question: str, opts: dict | None = None):
                 break
         if not cand:
             _SEM_PROBE_CACHE[_key] = (now, None)
+            _sem_probe_persist(_key, now, None)
             return None
         vecs = _embed_batch([str(question or "")] + [c[1] for c in cand])
         if not vecs:
@@ -1586,11 +1621,13 @@ def _semantic_cache_probe(question: str, opts: dict | None = None):
                 best = (sim, Path(_p).name.replace(".packed.json", ""))
         if not best:
             _SEM_PROBE_CACHE[_key] = (now, None)
+            _sem_probe_persist(_key, now, None)
             return None
         sim, from_id = best
         _out = {"hit": True, "similarity": round(sim, 4),
                 "from": from_id, "evidence": "BGE 余弦>=0.98"}
         _SEM_PROBE_CACHE[_key] = (now, _out)
+        _sem_probe_persist(_key, now, _out)
         return _out
     except Exception:  # noqa: BLE001
         return None

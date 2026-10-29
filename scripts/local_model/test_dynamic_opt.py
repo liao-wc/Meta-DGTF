@@ -604,6 +604,29 @@ ck("S5 启动预热返回结构（候选>0；8771 不在时 ok=False）",
    isinstance(_war, dict) and int(_war.get("candidates") or 0) > 0
    and ("ok" in _war), _war)
 
+try:
+    DS._SEM_PROBE_FILE.unlink()
+except Exception:  # noqa: BLE001
+    pass
+DS._SEM_PROBE_CACHE.clear()
+_pres_emb2 = DS._embed_batch
+_calls2 = {"n": 0}
+def _fake_emb(texts):
+    _calls2["n"] += 1
+    return [[1.0, 0.0] for _ in texts]
+try:
+    DS._embed_batch = _fake_emb
+    DS._semantic_cache_probe("__persist_test__", {"web": "off"})
+    _n1 = _calls2["n"]
+    DS._SEM_PROBE_CACHE.clear()
+    DS._semantic_cache_probe("__persist_test__", {"web": "off"})
+    _n2 = _calls2["n"]
+finally:
+    DS._embed_batch = _pres_emb2
+ck("S6 预判结果跨进程落盘（清空内存后走磁盘，0 次新 embed）",
+   DS._SEM_PROBE_FILE.is_file() and _n1 >= 1 and _n2 == _n1,
+   (_n1, _n2))
+
 
 print("── T fact+web on 质量证据 + fact 高圈锚点（V2.2.43）──")
 _qev2 = json.loads((ROOT / "docs" / "quality_retry_ab_20261029.json")
@@ -649,9 +672,10 @@ ck("U2 choice 期望 0.0 verified（rounds1/2 均 needs_evidence）",
 _p_u3 = DS.build_plan(PROJ_Q, {"route": "0", "rounds": "0:1"},
                       requested="daosheng", is_mock=True, balance_cny=50.0)
 _qr3u = _p_u3.get("quality_retry") or {}
-ck("U3 project 期望 0.0 verified（证据 project_context_ab）",
+ck("U3 project 期望 0.0 verified（4 跑证据含 rounds2）",
    float(_qr3u.get("expected_verified_pct") or 0) == 0.0
-   and str(_qr3u.get("evidence") or "").endswith("project_context_ab_20261029.json"),
+   and any("project_context_rounds2_ab_20261029.json" in str(x)
+           for x in (_qr3u.get("evidence") or [])),
    _qr3u)
 _pexp = _p_u1.get("quality_expectation") or {}
 ck("U4 plan.quality_expectation 携带矩阵（4 类题型）",

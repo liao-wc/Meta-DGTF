@@ -1,3 +1,19 @@
+【V2.2.47（2026-10-29，PATCH · project 质量证据 + 预判结果持久化；同发 App 2.0.72）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.47.py（__version__=2.2.47；引擎侧零行为差）；
+  App 2.0.72。
+- ★ project 加圈+上下文 A/B（真 API 约 ¥0.25）：full、rounds=2/层、web off——ctx on
+  61,457 tokens / ctx off 62,566 tokens，两臂均 unverified；project 累计 0/4。
+  _QUALITY_EXPECTATION.project → 0/4，证据含 project_context_rounds2_ab JSON。
+- ★ 语义预判结果跨进程落盘 dgtf_memory/semantic_probe_index.json（120s/300 条）：
+  重启后 0 次 embedding 复用（与候选索引持久化配套）。
+- 判据：test_dynamic_opt 121→122（U3 4 跑证据、S6 结果落盘/0 新 embed）；
+  回归 fused_optimal 30 / fused_full_chain 24 / daosheng_unified 27 / auto_mode_local 12。
+- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
+  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
+  发布流程门 pre/post-tag 全 PASS。本轮 A/B 花费约 ¥0.25。
+- 兼容性：仅缓存/证据变化；预判结果 120s 过期自动重算；索引缺失/损坏回退扫描。
+- 标签：V2.2.47 / engine-V2.2.47 / app-V2.0.72。
+
 【V2.2.46（2026-10-29，PATCH · 创建前综合预期；同发 App 2.0.71）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.46.py（__version__=2.2.46；引擎侧零行为差）；
   App 2.0.71。
