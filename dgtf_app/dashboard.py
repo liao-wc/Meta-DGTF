@@ -130,6 +130,18 @@ def _load_run(name: str) -> dict:
     return d if isinstance(d, dict) else {}
 
 
+def _to_ts(v, default: float = 0.0) -> float:
+    """created_at 兼容 float/字符串（历史归档可能是 'YYYY-mm-dd HH:MM:SS'）。"""
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        try:
+            import time as _t
+            return float(_t.mktime(_t.strptime(str(v).strip(), "%Y-%m-%d %H:%M:%S")))
+        except Exception:  # noqa: BLE001
+            return float(default)
+
+
 def list_chats(limit: int = 80) -> list[dict]:
     """历次「会话」= 一次提交，按时间倒序；给「历史对话」用（只读）。
 
@@ -153,7 +165,7 @@ def list_chats(limit: int = 80) -> list[dict]:
             "status": str(meta.get("status") or ""),
             "partial": bool(meta.get("partial")),
             "mock": bool(meta.get("mock")),
-            "created_at": float(meta.get("created_at") or 0.0),
+            "created_at": _to_ts(meta.get("created_at")),
             "started_at": meta.get("started_at"),
             "ended_at": meta.get("ended_at"),
             "output_name": out,

@@ -1366,7 +1366,8 @@ def dynamic_config(*, ds: dict | None = None, tier: str = "quality",
                 q -= (1.0 - factor) * 0.03  # 圈数减少的保守质量折扣（线性）
             cost = round(tok / 1e6 * cny_m, 2)
             # ★ [V2.2.25] 缓存命中感知：精确命中 ⇒ 实际成本按 10% 计（近似零成本）
-            _cache_hit = bool((cache or {}).get("exact"))
+            _cache_hit = bool((cache or {}).get("exact")
+                              or (cache or {}).get("semantic_hit"))
             cost_eff = round(cost * 0.1, 2) if _cache_hit else cost
             feasible = True
             if isinstance(balance, (int, float)):
@@ -1378,6 +1379,9 @@ def dynamic_config(*, ds: dict | None = None, tier: str = "quality",
                                "est_tokens": int(tok), "est_cost_cny": cost,
                                "est_cost_effective_cny": cost_eff,
                                "cache_hit": _cache_hit,
+                               "cache_kind": ("exact" if (cache or {}).get("exact")
+                                              else "semantic" if (cache or {}).get("semantic_hit")
+                                              else ""),
                                "budget_level": level, "feasible": bool(feasible),
                                "cost_source": _cost_source,
                                "context_tokens": int(_ctx_cost)})
@@ -1401,7 +1405,9 @@ def dynamic_config(*, ds: dict | None = None, tier: str = "quality",
                 "balance_cny": balance, "reserve_ratio": reserve,
                 "quality_floor": round(floor, 4),
                 "require_web": bool(require_web), "scenario": kind,
-                "route": route, "cache_hit": bool((cache or {}).get("exact")),
+                "route": route,
+                "cache_hit": bool((cache or {}).get("exact")
+                                  or (cache or {}).get("semantic_hit")),
                 "candidates": candidates, "chosen": chosen,
                 "applied": applied, "fallback": fallback, "why": why,
                 "regret": 0.0}
@@ -1412,7 +1418,8 @@ def dynamic_config(*, ds: dict | None = None, tier: str = "quality",
     if (not opts.get("web") and str(web) not in ("", "auto")
             and str(chosen["web"]) != str(web)):
         applied["web"] = chosen["web"]
-    _cache_hit0 = bool((cache or {}).get("exact"))
+    _cache_hit0 = bool((cache or {}).get("exact")
+                       or (cache or {}).get("semantic_hit"))
     why = ("预算层级=%s 余额=%s 预留=%.0f%%%s → 选 quality=%.3f/tokens=%d/¥%.2f"
            % (level, ("¥%.2f" % float(balance)) if isinstance(balance, (int, float)) else "未知",
               reserve * 100, ("（缓存命中，按 10% 成本计）" if _cache_hit0 else ""),
@@ -1432,6 +1439,81 @@ def dynamic_config(*, ds: dict | None = None, tier: str = "quality",
 
 
 # ── 缓存命中预判 ───────────────────────────────────────────────
+# ★ [V2.2.41] 语义缓存命中预判：对最近 verified 产物做 BGE 余弦（本地 8771，零 API）
+_VERIFIED_CACHE_TTL_H = 168.0
+_SEMANTIC_MIN_SIM = 0.98
+
+
+def _embed_batch(texts: list[str]):
+    try:
+        import json as _j
+        import urllib.request as _u
+        req = _u.Request(
+            "http://127.0.0.1:8771/embed",
+            data=_j.dumps({"texts": list(texts)}).encode("utf-8"),
+            headers={"Content-Type": "application/json"}, method="POST")
+        with _u.urlopen(req, timeout=4) as resp:
+            d = _j.loads(resp.read().decode("utf-8"))
+        vs = d.get("vectors") or []
+        return vs if len(vs) == len(texts) else None
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def _semantic_cache_probe(question: str, opts: dict | None = None):
+    """返回最近 verified 产物的最佳语义命中（>=0.98），否则 None。"""
+    try:
+        import json as _j
+        import math as _m
+        import time as _t
+        root = Path(__file__).resolve().parent.parent / "outputs"
+        packs = sorted(root.glob("*.packed.json"),
+                       key=lambda p: p.stat().st_mtime, reverse=True)[:300]
+        if not packs:
+            return None
+        want_web = str((opts or {}).get("web") or "")
+        now = _t.time()
+        cand = []
+        for p in packs:
+            try:
+                if now - p.stat().st_mtime > _VERIFIED_CACHE_TTL_H * 3600:
+                    continue
+                d = _j.loads(p.read_text(encoding="utf-8", errors="replace"))
+                q = d.get("quality") or {}
+                if not (q.get("answer_ready") and q.get("answer_quality") == "verified"):
+                    continue
+                if want_web in ("on", "off"):
+                    if bool((d.get("api_usage") or {}).get("web_enabled")) != (want_web == "on"):
+                        continue
+                dq = str(d.get("question") or "")
+                if dq:
+                    cand.append((p, dq, q))
+                if len(cand) >= 8:
+                    break
+            except Exception:  # noqa: BLE001
+                continue
+        if not cand:
+            return None
+        vecs = _embed_batch([str(question or "")] + [c[1] for c in cand])
+        if not vecs:
+            return None
+        v1 = vecs[0]
+        n1 = _m.sqrt(sum(float(x) * float(x) for x in v1)) or 1.0
+        best = None
+        for (p, dq, q), v2 in zip(cand, vecs[1:]):
+            n2 = _m.sqrt(sum(float(x) * float(x) for x in v2)) or 1.0
+            sim = sum(float(a) * float(b) for a, b in zip(v1, v2)) / (n1 * n2)
+            if sim >= _SEMANTIC_MIN_SIM and (best is None or sim > best[0]):
+                best = (sim, p.name.replace(".packed.json", ""), q)
+        if not best:
+            return None
+        sim, from_id, q = best
+        return {"hit": True, "similarity": round(sim, 4),
+                "from": from_id, "evidence": "BGE 余弦>=0.98"}
+    except Exception:  # noqa: BLE001
+        return None
+
+
 def cache_prediction(question: str, opts: dict | None = None) -> dict:
     """精确/语义缓存命中预判（只读本地状态，不触发 embedding）。"""
     opts = dict(opts or {})
@@ -1458,8 +1540,17 @@ def cache_prediction(question: str, opts: dict | None = None) -> dict:
         out["semantic_capable"] = bool((MEMORY_DIR / "rag_index.json").is_file())
     except Exception:  # noqa: BLE001
         out["semantic_capable"] = False
+    if not out["exact"] and out["semantic_capable"]:
+        _probe = _semantic_cache_probe(question, opts)
+        if _probe:
+            out["semantic_hit"] = True
+            out["semantic_similarity"] = _probe.get("similarity")
+            out["semantic_from"] = _probe.get("from")
     if out["exact"]:
         out["note"] = "同题已完成的精确缓存候选：%s（真实任务会直接复用产物）" % out["exact_from"]
+    elif out.get("semantic_hit"):
+        out["note"] = ("语义缓存预判命中：%s（BGE 余弦 %.3f ≥ 0.98，真实任务可复用）"
+                       % (out.get("semantic_from"), float(out.get("semantic_similarity") or 0)))
     elif out["semantic_capable"]:
         out["note"] = "精确缓存未命中；语义缓存可用（BGE 余弦 ≥0.98 才复用）"
     else:
@@ -1945,12 +2036,21 @@ def build_plan(question: str, opts: dict | None = None, *,
                 if _cache_allow
                 else "预算充足 ⇒ 只复用 verified 产物"),
     }
+    _roi_any = bool((cache or {}).get("exact")
+                    or (cache or {}).get("semantic_hit"))
     dyn["cache_roi"] = {
         "exact": bool((cache or {}).get("exact")),
+        "semantic_hit": bool((cache or {}).get("semantic_hit")),
+        "semantic_similarity": (cache or {}).get("semantic_similarity"),
+        "semantic_from": (cache or {}).get("semantic_from"),
         "semantic_capable": bool((cache or {}).get("semantic_capable")),
-        "expected_saving_pct": 0.9 if (cache or {}).get("exact") else 0.0,
+        "expected_saving_pct": 0.9 if _roi_any else 0.0,
+        "evidence": "docs/semantic_cache_hit_20261029.json",
         "note": ("精确命中：成本已按 10%% 计" if (cache or {}).get("exact")
-                 else "语义缓存可用但命中率未标定；仅报能力不估算收益"
+                 else "语义缓存预判命中（BGE 余弦 %.3f）：成本按 10%% 计"
+                 % float((cache or {}).get("semantic_similarity") or 0)
+                 if (cache or {}).get("semantic_hit")
+                 else "语义缓存可用但未命中；仅报能力不估算收益"
                  if (cache or {}).get("semantic_capable")
                  else "无缓存可用"),
     }
@@ -2017,6 +2117,10 @@ def build_plan(question: str, opts: dict | None = None, *,
         reasons.append("已注入 EML 记忆 %d 字" % int(memory.get("chars") or 0))
     if cache.get("exact"):
         reasons.append("精确缓存命中预判：%s" % cache.get("exact_from"))
+    elif cache.get("semantic_hit"):
+        reasons.append("语义缓存命中预判：%s（余弦 %.3f）"
+                       % (cache.get("semantic_from"),
+                          float(cache.get("semantic_similarity") or 0)))
     plan = {
         "policy": POLICY,
         "mode_id": resolved["id"],

@@ -1,0 +1,36 @@
+{
+ "schema": "metadgtf.semantic_cache_calibration.v1",
+ "ts": "2026-10-29 20:01:24",
+ "base_question": "为什么在高原上煮饭更容易夹生？",
+ "near_question": "为什么高原上煮饭更容易夹生？",
+ "embed": {
+  "model": "bge-small-zh-v1.5",
+  "port": 8771
+ },
+ "cache_pack": "outputs/20261025_143654_为什么在高原上煮饭更容易夹生.packed.json",
+ "rows": [
+  {
+   "tag": "exact",
+   "question": "为什么在高原上煮饭更容易夹生？",
+   "status": 201,
+   "cache_hit": true,
+   "semantic_cache": false,
+   "cache_similarity": 1.0,
+   "cached_from": "20261025_142736",
+   "id": "20261029_200122_0d09a9",
+   "wall_s": 3.53
+  },
+  {
+   "tag": "semantic",
+   "question": "为什么高原上煮饭更容易夹生？",
+   "status": 201,
+   "cache_hit": true,
+   "semantic_cache": true,
+   "cache_similarity": 0.996,
+   "cached_from": "20261025_142736",
+   "id": "20261029_200124_283637",
+   "wall_s": 1.96
+  }
+ ],
+ "note": "exact 复用 verified 产物；semantic 用近重复问法命中同一产物（证据为本次本地链路零 API 标定）"
+}

@@ -1,7 +1,7 @@
 {
  "schema": "dgtf.acceptance.v1",
- "ts": 1793274502.8585007,
- "iso": "2026-10-29T19:48:22",
+ "ts": 1793276715.6988015,
+ "iso": "2026-10-29T20:25:15",
  "with_service": true,
  "skip_service": false,
  "require_all": false,
@@ -12,13 +12,13 @@
   {
    "name": "fast_gate",
    "status": "PASS",
-   "sec": 21.5,
+   "sec": 20.3,
    "reason": ""
   },
   {
    "name": "v2_tests",
    "status": "PASS",
-   "sec": 159.8,
+   "sec": 158.1,
    "reason": ""
   },
   {
@@ -36,25 +36,25 @@
   {
    "name": "app_plan_matrix",
    "status": "PASS",
-   "sec": 0.6,
+   "sec": 11.3,
    "reason": ""
   },
   {
    "name": "app_dual_judge_guard",
    "status": "PASS",
-   "sec": 0.5,
+   "sec": 7.0,
    "reason": ""
   },
   {
    "name": "compare_eval_selftest",
    "status": "PASS",
-   "sec": 0.6,
+   "sec": 0.7,
    "reason": ""
   },
   {
    "name": "train_guard",
    "status": "PASS",
-   "sec": 31.2,
+   "sec": 63.1,
    "reason": ""
   },
   {
@@ -78,13 +78,13 @@
   {
    "name": "graph_decode",
    "status": "PASS",
-   "sec": 7.6,
+   "sec": 8.0,
    "reason": ""
   },
   {
    "name": "probe_cover_wide",
    "status": "PASS",
-   "sec": 3.0,
+   "sec": 3.9,
    "reason": ""
   },
   {
@@ -96,43 +96,43 @@
   {
    "name": "outputs_consistency",
    "status": "PASS",
-   "sec": 2.0,
+   "sec": 3.9,
    "reason": ""
   },
   {
    "name": "fx_anchor_replay",
    "status": "PASS",
-   "sec": 0.2,
+   "sec": 0.3,
    "reason": ""
   },
   {
    "name": "scenario_matrix_guard",
    "status": "PASS",
-   "sec": 0.2,
+   "sec": 0.3,
    "reason": ""
   },
   {
    "name": "openai_shim",
    "status": "PASS",
-   "sec": 1.6,
+   "sec": 1.7,
    "reason": ""
   },
   {
    "name": "graph_sampling",
    "status": "PASS",
-   "sec": 0.3,
+   "sec": 0.4,
    "reason": ""
   },
   {
    "name": "json_force",
    "status": "PASS",
-   "sec": 0.1,
+   "sec": 0.2,
    "reason": ""
   },
   {
    "name": "mem_reclaim",
    "status": "PASS",
-   "sec": 15.7,
+   "sec": 15.5,
    "reason": ""
   },
   {
@@ -144,43 +144,43 @@
   {
    "name": "app_selftest",
    "status": "PASS",
-   "sec": 36.5,
+   "sec": 74.9,
    "reason": ""
   },
   {
    "name": "dynamic_opt",
    "status": "PASS",
-   "sec": 2.4,
+   "sec": 97.0,
    "reason": ""
   },
   {
    "name": "fused_optimal",
    "status": "PASS",
-   "sec": 2.4,
+   "sec": 44.7,
    "reason": ""
   },
   {
    "name": "fused_full_chain",
    "status": "PASS",
-   "sec": 108.0,
+   "sec": 103.8,
    "reason": ""
   },
   {
    "name": "daosheng_unified",
    "status": "PASS",
-   "sec": 0.6,
+   "sec": 7.3,
    "reason": ""
   },
   {
    "name": "auto_mode_local",
    "status": "PASS",
-   "sec": 40.7,
+   "sec": 16.6,
    "reason": ""
   },
   {
    "name": "e2e_app_local",
    "status": "PASS",
-   "sec": 13.2,
+   "sec": 15.1,
    "reason": ""
   },
   {

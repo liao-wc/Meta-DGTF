@@ -516,6 +516,52 @@ DS.apply_plan(dict(_p_p1), _o_opt2)
 ck("P3 apply_plan 透传 cache_max_age_h", float(_o_opt2.get("cache_max_age_h") or 0) == 24.0)
 
 
+print("── Q 语义缓存命中预判（V2.2.41）──")
+_pres_q = DS._semantic_cache_probe
+try:
+    DS._semantic_cache_probe = lambda q, o=None: {
+        "hit": True, "similarity": 0.996,
+        "from": "20261025_143654_test", "evidence": "BGE 余弦>=0.98"}
+    _p_q1 = DS.build_plan(REASON_Q, {"route": "0", "rounds": "0:1",
+                                     "web": "off", "parallel": "serial"},
+                          requested="daosheng", is_mock=True, balance_cny=50.0)
+finally:
+    DS._semantic_cache_probe = _pres_q
+_dq1 = (_p_q1.get("dynamic_opt") or {})
+_roi_q = _dq1.get("cache_roi") or {}
+ck("Q1 语义命中预判：dynamic_opt.cache_roi.semantic_hit=True + 省 90%",
+   _roi_q.get("semantic_hit") is True
+   and float(_roi_q.get("expected_saving_pct") or 0) == 0.9
+   and abs(float(_roi_q.get("semantic_similarity") or 0) - 0.996) < 1e-6,
+   _roi_q)
+_cq = _dq1.get("chosen") or {}
+ck("Q2 语义命中：chosen.cache_kind=semantic 且有效成本按 10% 计",
+   str(_cq.get("cache_kind") or "") == "semantic"
+   and abs(float(_cq.get("est_cost_effective_cny") or 0)
+           - float(_cq.get("est_cost_cny") or 0) * 0.1) <= 0.011,
+   (_cq.get("est_cost_cny"), _cq.get("est_cost_effective_cny")))
+_pres_q2 = DS._semantic_cache_probe
+try:
+    DS._semantic_cache_probe = lambda q, o=None: {
+        "hit": True, "similarity": 0.996,
+        "from": "20261025_143654_test", "evidence": "BGE 余弦>=0.98"}
+    _cp_q = DS.cache_prediction(REASON_Q, {"web": "off"})
+finally:
+    DS._semantic_cache_probe = _pres_q2
+ck("Q3 cache_prediction 语义命中带 similarity/from", 
+   bool(_cp_q.get("semantic_hit")) is True
+   and float(_cp_q.get("semantic_similarity") or 0) >= 0.98,
+   _cp_q.get("note"))
+_qev = json.loads((ROOT / "docs" / "semantic_cache_hit_20261029.json")
+                  .read_text(encoding="utf-8"))
+_semrows = [r for r in (_qev.get("rows") or []) if r.get("tag") == "semantic"]
+ck("Q4 语义缓存实测证据：semantic arm cache_hit=True 且 sim≈0.996",
+   bool(_semrows) and _semrows[0].get("cache_hit") is True
+   and _semrows[0].get("semantic_cache") is True
+   and abs(float(_semrows[0].get("cache_similarity") or 0) - 0.996) < 0.01,
+   _semrows[:1])
+
+
 print("── J 短程实测锚点（V2.2.33，B 模式每层 1 圈）──")
 _p_j = DS.build_plan(FACT_Q, {"route": "0,1,both,all",
                               "rounds": "0:1,1:1,both:1,all:1"},

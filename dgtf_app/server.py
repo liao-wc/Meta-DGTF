@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "2.0.65"
+APP_VERSION = "2.0.66"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -10484,6 +10484,9 @@ class Handler(BaseHTTPRequestHandler):
 
 
 _CACHE_TTL_S = 6 * 3600
+# ★ [V2.2.41] verified 产物 TTL（事实类稳定，允许复用 7 天；未验证仍受
+#   plan.cache_policy.max_age_h 新鲜度门约束）
+_VERIFIED_CACHE_TTL_H = 168.0
 
 
 def _no_cache_requested(opts: dict) -> bool:
@@ -10586,8 +10589,7 @@ def _find_cached_pack(question: str, opts: dict, prefix: str = "",
     _sem_candidates = []
     for p in packs:
         try:
-            if now - p.stat().st_mtime > _CACHE_TTL_S:
-                continue
+            _age_s = now - p.stat().st_mtime
             d = _json.loads(p.read_text(encoding="utf-8"))
             q = d.get("quality") or {}
             _ver = (q.get("answer_ready")
@@ -10599,6 +10601,8 @@ def _find_cached_pack(question: str, opts: dict, prefix: str = "",
                 if _age_h > float(max_age_h):
                     _unver = False
             if not (_ver or _unver):
+                continue
+            if _ver and _age_s > _VERIFIED_CACHE_TTL_H * 3600:
                 continue
             usage = d.get("api_usage") or {}
             if bool(usage.get("web_enabled")) != want_web:
