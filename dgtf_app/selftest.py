@@ -1281,6 +1281,10 @@ def check_t3_daosheng(base: str, srv_src: str, runner_src: str,
           "created.mode" in js and "rl-mode" in js and "模式 · " in js
           and "data-mode=" in js and "renderMeta" in js,
           "rl-mode=%d" % js.count("rl-mode"))
+    check("★V2.2.48 前端：创建前预期（quality_forecast）只读展示",
+          "quality_forecast" in js and "rl-qf" in js
+          and "expected_verified_pct" in js and "safe_runs" in js,
+          "rl-qf=%d" % js.count("rl-qf"))
 
     # ── ⑩ mock HTTP 端到端（201 + plan + 可审计 + resume）─────
     def _post_status(path, obj):

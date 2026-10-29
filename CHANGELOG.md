@@ -1,3 +1,17 @@
+【V2.2.48（2026-10-29，PATCH · 前端展示创建前预期；同发 App 2.0.73）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.48.py（__version__=2.2.48；引擎侧零行为差）；
+  App 2.0.73。
+- ★ 运行读数行（renderMeta）在「模式 · 道生」旁新增只读标签 rl-qf：预期验证率 /
+  续航（safe_runs）/ 缓存省（expected_saving_pct），数据来自 V2.2.46 quality_forecast。
+- ★ 无新按钮/新面板；无数据不显示；纯前端展示，API/引擎/任务执行不变。
+- 判据：App selftest 455→456（新增前端 quality_forecast 判据）；node --check app.js 通过；
+  回归 fused_optimal 30 / fused_full_chain 24 / daosheng_unified 27 / auto_mode_local 12。
+- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 456/0；
+  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
+  发布流程门 pre/post-tag 全 PASS。本轮零 API 花费。
+- 兼容性：纯前端；旧响应无字段自动不显示。
+- 标签：V2.2.48 / engine-V2.2.48 / app-V2.0.73。
+
 【V2.2.47（2026-10-29，PATCH · project 质量证据 + 预判结果持久化；同发 App 2.0.72）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.47.py（__version__=2.2.47；引擎侧零行为差）；
   App 2.0.72。

@@ -1245,7 +1245,7 @@ function renderMeta() {
                      standard: '标准模式' }[_mode.id] || _mode.id;
     const _eng = _mode.engine_mode || _plan.engine_mode || '';
     const _budget = (_mode.budget_guard || _plan.budget_guard || {}).decision || '';
-    const _hint = [(_mode.reason || _plan.reason || ''),
+    let _hint = [(_mode.reason || _plan.reason || ''),
                    _plan.quality_policy ? ('质量策略 ' + _plan.quality_policy) : '',
                    (_mode.context_injected || _plan.context_injected || []).length
                      ? ('注入 ' + (_mode.context_injected || _plan.context_injected).join('+'))
@@ -1253,6 +1253,31 @@ function renderMeta() {
                    _budget ? ('预算守卫 ' + _budget) : '',
                    _mode.preset ? ('预设 ' + _mode.preset) : '']
                   .filter(Boolean).join('；');
+    /* ★ [V2.2.48] 创建前综合预期（quality_forecast）只读展示：
+       预期验证率 / 续航（safe_runs）/ 缓存省（expected_saving_pct）。 */
+    const _qf = (_mode.quality_forecast && typeof _mode.quality_forecast === "object")
+      ? _mode.quality_forecast : null;
+    if (_qf) {
+      const _qparts = [];
+      if (_qf.expected_verified_pct != null) {
+        _qparts.push("预期验证率 "
+          + Math.round(Number(_qf.expected_verified_pct) * 100) + "%");
+      }
+      const _bf = (_qf.budget_forecast && typeof _qf.budget_forecast === "object")
+        ? _qf.budget_forecast : {};
+      if (_bf.safe_runs != null) _qparts.push("续航 " + _bf.safe_runs + " 次");
+      const _roi = (_qf.cache_roi && typeof _qf.cache_roi === "object")
+        ? _qf.cache_roi : {};
+      if (_roi.expected_saving_pct) {
+        _qparts.push("缓存省 "
+          + Math.round(Number(_roi.expected_saving_pct) * 100) + "%");
+      }
+      if (_qparts.length) {
+        const _qtext = _qparts.join(" · ");
+        _hint = (_hint ? _hint + "；" : "") + _qtext;
+        bits.push(`<span class="rl-qf" data-qf="' + esc(_qtext) + '" title="' + esc(_qtext) + '" style="margin-left:6px;padding:1px 6px;border-radius:8px;background:rgba(80,140,200,.12);color:#356;font-size:11px">'` + esc(_qtext) + `</span>`);
+      }
+    }
     bits.push(`<span class="rl-mode" data-mode="${esc(_mode.id)}" title="${esc(_hint)}">`
       + `模式 · ${esc(_label)}${_eng ? ' / ' + esc(_eng) : ''}</span>`);
   }
