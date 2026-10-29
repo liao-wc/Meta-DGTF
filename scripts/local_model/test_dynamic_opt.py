@@ -628,6 +628,33 @@ ck("S6 预判结果跨进程落盘（清空内存后走磁盘，0 次新 embed�
    (_n1, _n2))
 
 
+print("── V 语义阈值标定 + 题型选档建议（V2.2.49）──")
+_thr = json.loads((ROOT / "docs" / "semantic_threshold_calibration_20261030.json")
+                  .read_text(encoding="utf-8"))
+_tsum = _thr.get("summary") or {}
+_ones = [r for r in (_thr.get("rows") or []) if r["raw_similarity"] == 0.9856]
+_zeros = [r for r in (_thr.get("rows") or []) if r["raw_similarity"] == 0.9682]
+ck("V1 阈值标定：>=0.98 命中 3 / <0.98 不命中 3（边界 0.9856/0.9682）",
+   int(_tsum.get("hits_above_threshold") or 0) == 3
+   and int(_tsum.get("misses_below_threshold") or 0) == 3
+   and _ones and _ones[0].get("probe_hit") is True
+   and _zeros and _zeros[0].get("probe_hit") is False, _tsum)
+_p_v1 = DS.build_plan(REASON_Q, {}, requested="daosheng", is_mock=True,
+                      balance_cny=50.0)
+_v1 = (_p_v1.get("quality_retry") or {})
+ck("V2 reasoning（verified 0/6）+ 预算 ok：tier_advice=fast（advisory）",
+   _v1.get("tier_advice") == "fast" and _p_v1.get("tier") == "quality",
+   _v1.get("tier_advice_why"))
+_p_v2 = DS.build_plan(FACT_Q, {}, requested="daosheng", is_mock=True,
+                      balance_cny=50.0)
+ck("V3 fact（verified 2/2）：tier_advice=current（不误导降档）",
+   (_p_v2.get("quality_retry") or {}).get("tier_advice") == "current")
+_p_v4 = DS.build_plan(REASON_Q, {}, requested="daosheng", is_mock=True,
+                      balance_cny=3.0)
+ck("V4 reasoning + 预算 warn（已降 fast）：tier_advice=current",
+   (_p_v4.get("quality_retry") or {}).get("tier_advice") == "current")
+
+
 print("── T fact+web on 质量证据 + fact 高圈锚点（V2.2.43）──")
 _qev2 = json.loads((ROOT / "docs" / "quality_retry_ab_20261029.json")
                    .read_text(encoding="utf-8"))

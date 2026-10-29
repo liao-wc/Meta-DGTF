@@ -1,3 +1,21 @@
+【V2.2.49（2026-10-30，PATCH · 语义阈值标定 + 选档建议；同发 App 2.0.74）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.49.py（__version__=2.2.49；引擎侧零行为差）；
+  App 2.0.74。
+- ★ 语义阈值标定（本地 BGE 零 API）：0.98 边界成立——0.9960/0.9869/0.9856 命中，
+  0.9682/0.9675/0.9576 不命中；HTTP 变体 421/425 为同题 verified 包 exact 命中（非误命中），
+  432 相似度 0.8916 未命中；证据 docs/semantic_threshold_calibration_20261030.json。
+- ★ 选档建议（advisory）：该题型 expected_verified_pct=0 + 预算 ok + tier=quality ⇒
+  quality_retry.tier_advice=fast（理由：质量档未带来验证收益，fast 更省 tokens）；
+  fact → current；预算 warn 已降 fast → current；quality_forecast 同步输出。
+- 判据：test_dynamic_opt 122→126（V1 阈值边界、V2 reasoning fast、V3 fact current、
+  V4 预算 warn current）；回归 fused_optimal 30 / fused_full_chain 24 / daosheng_unified 27 /
+  auto_mode_local 12。
+- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 456/0；
+  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
+  发布流程门 pre/post-tag 全 PASS。本轮零 API 花费。
+- 兼容性：tier_advice 仅建议，不改变 tier/route/rounds。
+- 标签：V2.2.49 / engine-V2.2.49 / app-V2.0.74。
+
 【V2.2.48（2026-10-29，PATCH · 前端展示创建前预期；同发 App 2.0.73）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.48.py（__version__=2.2.48；引擎侧零行为差）；
   App 2.0.73。

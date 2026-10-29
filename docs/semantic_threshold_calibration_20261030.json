@@ -1,0 +1,78 @@
+{
+ "schema": "metadgtf.semantic_threshold_calibration.v1",
+ "ts": "2026-10-30 00:01:45",
+ "base_question": "为什么在高原上煮饭更容易夹生？",
+ "threshold": 0.98,
+ "rows": [
+  {
+   "question": "为什么高原上煮饭更容易夹生？",
+   "raw_similarity": 0.996,
+   "probe_hit": true,
+   "probe_similarity": 0.996,
+   "expected": true
+  },
+  {
+   "question": "在高原上煮饭为什么容易夹生？",
+   "raw_similarity": 0.9869,
+   "probe_hit": true,
+   "probe_similarity": 0.9869,
+   "expected": true
+  },
+  {
+   "question": "为什么高原上煮饭容易夹生？",
+   "raw_similarity": 0.9856,
+   "probe_hit": true,
+   "probe_similarity": 0.9856,
+   "expected": true
+  },
+  {
+   "question": "为什么在高原上煮饭容易夹生",
+   "raw_similarity": 0.9682,
+   "probe_hit": false,
+   "probe_similarity": null,
+   "expected": false
+  },
+  {
+   "question": "为什么在高原上做饭更容易夹生？",
+   "raw_similarity": 0.9675,
+   "probe_hit": false,
+   "probe_similarity": null,
+   "expected": false
+  },
+  {
+   "question": "为什么在高原上煮饭会夹生？",
+   "raw_similarity": 0.9576,
+   "probe_hit": false,
+   "probe_similarity": null,
+   "expected": false
+  }
+ ],
+ "http_false_positive": [
+  {
+   "question": "HTTP 421 状态码表示什么？",
+   "raw_similarity": 0.8504,
+   "probe_hit": true,
+   "probe_similarity": 1.0
+  },
+  {
+   "question": "HTTP 425 状态码表示什么？",
+   "raw_similarity": 0.8544,
+   "probe_hit": true,
+   "probe_similarity": 1.0
+  },
+  {
+   "question": "HTTP 432 状态码表示什么？",
+   "raw_similarity": 0.8916,
+   "probe_hit": false,
+   "probe_similarity": null
+  }
+ ],
+ "summary": {
+  "hits_above_threshold": 3,
+  "misses_below_threshold": 3,
+  "total": 6,
+  "max_http_similarity": 0.8916,
+  "http_hits": 2
+ },
+ "wall_s": 2.9
+}

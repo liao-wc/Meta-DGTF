@@ -2171,6 +2171,22 @@ def build_plan(question: str, opts: dict | None = None, *,
                                       % (_kind_qr, int(_qe2.get("verified") or 0),
                                          int(_qe2.get("n") or 1)) if _qe2 else None),
                     "why": "非事实题不需要 retry（且加圈未提升质量）"})
+    # ★ [V2.2.49] 选档建议（advisory）：该题型实测 verified=0 且预算 ok 时，
+    #   质量档未带来"已验证"收益（fast 更省 tokens），但不改变实际 tier。
+    try:
+        _pct_adv = _qr.get("expected_verified_pct")
+        if (tier == "quality" and dyn.get("budget_level") == "ok"
+                and _pct_adv is not None and float(_pct_adv) <= 0.0):
+            _qr["tier_advice"] = "fast"
+            _qr["tier_advice_why"] = (
+                "%s 实测 verified 0 次；质量档未带来验证收益，fast 可省 tokens"
+                % _kind_qr if _kind_qr else "该题型实测 verified 0 次")
+        else:
+            _qr["tier_advice"] = "current"
+            _qr["tier_advice_why"] = ""
+    except Exception:  # noqa: BLE001
+        _qr["tier_advice"] = "current"
+        _qr["tier_advice_why"] = ""
     dyn["quality_retry"] = _qr
     # ★ [V2.2.38] 续航预测（用最终 chosen 成本；余额未知 => None）
     _ch_cost = float((dyn.get("chosen") or {}).get(
@@ -2326,6 +2342,7 @@ def build_plan(question: str, opts: dict | None = None, *,
         "max_minutes": budget_max_minutes,
         # ★ [V2.2.37] quality-retry 决策（advisory）
         "quality_retry": _qr,
+        "tier_advice": _qr.get("tier_advice"),
         # ★ [V2.2.43] fact+web on 质量证据（2/2 verified；加圈无效）
         "quality_evidence": _qr.get("evidence"),
         # ★ [V2.2.44] 题型 verified 期望矩阵（真跑证据，加圈均未提升）
