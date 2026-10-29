@@ -607,6 +607,35 @@ ck("T3 加圈未提升质量且 rounds2 更省（67.8k < 85.4k）",
    _tok.get("B-rounds2", 0) < _tok.get("A-rounds1", 0), _tok)
 
 
+print("── U 题型 verified 期望矩阵（V2.2.44）──")
+_p_u1 = DS.build_plan(REASON_Q, {"route": "0", "rounds": "0:1"},
+                      requested="daosheng", is_mock=True, balance_cny=50.0)
+_qr1u = _p_u1.get("quality_retry") or {}
+ck("U1 reasoning 期望 0.0 verified（证据含 reasoning 两份）",
+   float(_qr1u.get("expected_verified_pct") or 0) == 0.0
+   and any("reasoning" in str(x) for x in (_qr1u.get("evidence") or [])), _qr1u)
+_p_u2 = DS.build_plan(CHOICE_Q, {"route": "0", "rounds": "0:1"},
+                      requested="daosheng", is_mock=True, balance_cny=50.0)
+_qr2u = _p_u2.get("quality_retry") or {}
+_cev = json.loads((ROOT / "docs" / "choice_rounds_ab_20261029.json")
+                  .read_text(encoding="utf-8"))
+ck("U2 choice 期望 0.0 verified（rounds1/2 均 needs_evidence）",
+   float(_qr2u.get("expected_verified_pct") or 0) == 0.0
+   and len(_cev.get("rows") or []) == 2
+   and all(r.get("answer_quality") == "needs_evidence"
+           for r in (_cev.get("rows") or [])), _qr2u)
+_p_u3 = DS.build_plan(PROJ_Q, {"route": "0", "rounds": "0:1"},
+                      requested="daosheng", is_mock=True, balance_cny=50.0)
+_qr3u = _p_u3.get("quality_retry") or {}
+ck("U3 project 期望 0.0 verified（证据 project_context_ab）",
+   float(_qr3u.get("expected_verified_pct") or 0) == 0.0
+   and str(_qr3u.get("evidence") or "").endswith("project_context_ab_20261029.json"),
+   _qr3u)
+_pexp = _p_u1.get("quality_expectation") or {}
+ck("U4 plan.quality_expectation 携带矩阵（4 类题型）",
+   set(_pexp.get("matrix") or {}) >= {"fact_web_on", "reasoning", "choice", "project"})
+
+
 print("── J 短程实测锚点（V2.2.33，B 模式每层 1 圈）──")
 _p_j = DS.build_plan(FACT_Q, {"route": "0,1,both,all",
                               "rounds": "0:1,1:1,both:1,all:1"},

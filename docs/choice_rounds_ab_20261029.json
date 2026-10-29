@@ -1,0 +1,41 @@
+{
+ "schema": "metadgtf.choice_rounds_ab.v1",
+ "ts": "2026-10-29 21:42:57",
+ "question": "以下哪项属于可再生能源？A. 煤炭 B. 太阳能 C. 石油 D. 天然气",
+ "kind": "choice",
+ "fixed": {
+  "route": "full",
+  "web": "on",
+  "balance_assumed": 50.0,
+  "max_tokens": 150000
+ },
+ "rows": [
+  {
+   "arm": "A-rounds1",
+   "rounds": "0:1,1:1,both:1,all:1",
+   "status": "done",
+   "cache_hit": false,
+   "wall_s": 68.4,
+   "calls": 16,
+   "tokens": 86858,
+   "cost_cny": 0.174,
+   "answer_quality": "needs_evidence",
+   "answer_ready": false,
+   "packed": "20261029_214149_以下哪项属于可再生能源A煤炭B.packed.json"
+  },
+  {
+   "arm": "B-rounds2",
+   "rounds": "0:2,1:2,both:2,all:2",
+   "status": "done",
+   "cache_hit": false,
+   "wall_s": 66.7,
+   "calls": 12,
+   "tokens": 67540,
+   "cost_cny": 0.135,
+   "answer_quality": "needs_evidence",
+   "answer_ready": false,
+   "packed": "20261029_214255_以下哪项属于可再生能源A煤炭B.packed.json"
+  }
+ ],
+ "note": "验证 choice 的 unverified/needs_evidence 是否能靠加圈改善"
+}

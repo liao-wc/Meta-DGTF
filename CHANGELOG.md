@@ -1,3 +1,21 @@
+【V2.2.44（2026-10-29，PATCH · 题型 verified 期望矩阵；同发 App 2.0.69）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.44.py（__version__=2.2.44；引擎侧零行为差）；
+  App 2.0.69。
+- ★ choice 加圈 A/B（真 API 约 ¥0.31）：rounds1 86,858 / rounds2 67,540 tokens，
+  两臂均 needs_evidence ⇒ 加圈未提升质量且 rounds2 更省。
+- ★ _QUALITY_EXPECTATION 矩阵：fact（web on）2/2 verified；reasoning 0/6；choice 0/6；
+  project 0/2（证据 quality_retry_ab / route_subset_reasoning / route_subset_choice /
+  choice_rounds / project_context_ab）。
+- ★ plan.quality_retry 输出 expected_verified_pct/evidence/evidence_note；
+  plan.quality_expectation 输出完整矩阵（可审计）。
+- 判据：test_dynamic_opt 114→118（U1 reasoning、U2 choice、U3 project、U4 矩阵）；
+  回归 fused_optimal 30 / fused_full_chain 23 / daosheng_unified 27 / auto_mode_local 12。
+- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
+  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
+  发布流程门 pre/post-tag 全 PASS。本轮 A/B 花费约 ¥0.31。
+- 兼容性：仅新增可审计字段，不改变 server/引擎行为。
+- 标签：V2.2.44 / engine-V2.2.44 / app-V2.0.69。
+
 【V2.2.43（2026-10-29，PATCH · fact+web on 质量证据；同发 App 2.0.68）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.43.py（__version__=2.2.43；引擎侧零行为差）；
   App 2.0.68。

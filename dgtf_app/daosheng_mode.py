@@ -1204,6 +1204,20 @@ def _short_run_anchor(kind, web, route, rounds, engine_mode):
 
 # ★ [V2.2.36] 项目背景注入成本（A/B：默认注入 48,173 vs 关闭 42,511，+5,662 tokens）
 # ★ [V2.2.43] fact+web on 质量证据（2 跑均 verified；加圈未提升质量且 rounds2 更省）
+# ★ [V2.2.44] 题型 verified 期望矩阵（真跑证据；加圈均未提升）
+_QUALITY_EXPECTATION = {
+    "fact_web_on": {"verified": 2, "n": 2,
+                    "evidence": "docs/quality_retry_ab_20261029.json"},
+    "reasoning": {"verified": 0, "n": 6,
+                  "evidence": ["docs/route_subset_reasoning_ab_20261029.json",
+                               "docs/route_reasoning_rounds2_ab_20261029.json"]},
+    "choice": {"verified": 0, "n": 6,
+               "evidence": ["docs/route_subset_choice_ab_20261029.json",
+                            "docs/choice_rounds_ab_20261029.json"]},
+    "project": {"verified": 0, "n": 2,
+                "evidence": "docs/project_context_ab_20261029.json"},
+}
+
 _QUALITY_RETRY_EVIDENCE = {
     "fact_web_on": {"verified": 2, "n": 2,
                     "tokens": [85362, 67753],
@@ -2037,9 +2051,18 @@ def build_plan(question: str, opts: dict | None = None, *,
     _qr = {"policy": str(quality_policy or "auto:stable"), "retry": False,
            "why": "", "advisory": True}
     if _prj or str(quality_policy or "").startswith("auto:verified"):
+        _qe3 = _QUALITY_EXPECTATION.get("project") or {}
         _qr.update({"policy": "verified", "retry": False,
+                    "expected_verified_pct": (
+                        round(float(_qe3.get("verified") or 0)
+                              / max(1, int(_qe3.get("n") or 1)), 2)
+                        if _qe3 else None),
+                    "evidence": _qe3.get("evidence"),
+                    "evidence_note": ("project 实测 verified %d/%d"
+                                      % (int(_qe3.get("verified") or 0),
+                                         int(_qe3.get("n") or 1)) if _qe3 else None),
                     "why": "项目/verified 依赖背景证据，不建议关闭验证"})
-    elif _kind_qr == "fact" or _require_web:
+    elif _kind_qr == "fact":
         _qe = _QUALITY_RETRY_EVIDENCE.get("fact_web_on") or {}
         _qr.update({"expected_verified_pct": (
             round(float(_qe.get("verified") or 0) / max(1, int(_qe.get("n") or 1)), 2)
@@ -2055,8 +2078,17 @@ def build_plan(question: str, opts: dict | None = None, *,
                         "why": "预算 %s ⇒ 建议关闭 web-retry 省成本"
                                % dyn.get("budget_level")})
     else:
+        _qe2 = _QUALITY_EXPECTATION.get(_kind_qr) or {}
         _qr.update({"policy": "auto:stable", "retry": False,
-                    "why": "非事实题不需要 retry"})
+                    "expected_verified_pct": (
+                        round(float(_qe2.get("verified") or 0)
+                              / max(1, int(_qe2.get("n") or 1)), 2)
+                        if _qe2 else None),
+                    "evidence": _qe2.get("evidence"),
+                    "evidence_note": ("%s 实测 verified %d/%d；加圈未提升质量"
+                                      % (_kind_qr, int(_qe2.get("verified") or 0),
+                                         int(_qe2.get("n") or 1)) if _qe2 else None),
+                    "why": "非事实题不需要 retry（且加圈未提升质量）"})
     dyn["quality_retry"] = _qr
     # ★ [V2.2.38] 续航预测（用最终 chosen 成本；余额未知 => None）
     _ch_cost = float((dyn.get("chosen") or {}).get(
@@ -2214,6 +2246,12 @@ def build_plan(question: str, opts: dict | None = None, *,
         "quality_retry": _qr,
         # ★ [V2.2.43] fact+web on 质量证据（2/2 verified；加圈无效）
         "quality_evidence": _qr.get("evidence"),
+        # ★ [V2.2.44] 题型 verified 期望矩阵（真跑证据，加圈均未提升）
+        "quality_expectation": {
+            "kind": _kind_qr,
+            "expected_verified_pct": _qr.get("expected_verified_pct"),
+            "matrix": dict(_QUALITY_EXPECTATION),
+        },
         # ★ [V2.2.39] 预算紧张时允许复用"未验证"产物缓存（同题精确匹配，省整单）
         "allow_unverified_cache": bool(
             dyn.get("budget_level") in ("warn", "critical")),
