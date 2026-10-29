@@ -234,6 +234,9 @@ def build_checks(engine=None) -> list:
         # [V2.2.18] 发布流程门自检：版本/文档/证据/标签/N-A 分类的构造性判据
         ("release_process_selftest", [sys.executable,
          str(ROOT / "scripts" / "tests_release_process.py")]),
+        # [V2.2.55] README 实测数字必须与证据一致（防发布门数字漂移）
+        ("readme_numbers", [sys.executable,
+         str(ROOT / "scripts" / "sync_readme_numbers.py"), "--check"]),
     ]
     return checks
 

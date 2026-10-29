@@ -104,6 +104,15 @@ def _patched(text: str, f: dict) -> tuple[str, list[str]]:
         return "%s%d%s" % (m.group(1), f["selftest_pass"], m.group(3))
 
     text2 = re.sub(pat3, _r3, text2, count=1)
+    # fast_gate 数字（顶部/摘要行）
+    pat4 = r"(fast_gate \*\*)(\d+)(/\d+\*\*)"
+
+    def _r4(m):
+        if int(m.group(2)) != f["fg_pass"]:
+            notes.append("fast_gate %s -> %s" % (m.group(2), f["fg_pass"]))
+        return "%s%d%s" % (m.group(1), f["fg_pass"], m.group(3))
+
+    text2 = re.sub(pat4, _r4, text2, count=1)
     return text2, notes
 
 

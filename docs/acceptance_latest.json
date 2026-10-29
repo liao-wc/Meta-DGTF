@@ -1,7 +1,7 @@
 {
  "schema": "dgtf.acceptance.v1",
- "ts": 1793299113.4817052,
- "iso": "2026-10-30T02:38:33",
+ "ts": 1793300056.8251047,
+ "iso": "2026-10-30T02:54:16",
  "with_service": true,
  "skip_service": false,
  "require_all": false,
@@ -12,19 +12,19 @@
   {
    "name": "fast_gate",
    "status": "PASS",
-   "sec": 20.1,
+   "sec": 20.0,
    "reason": ""
   },
   {
    "name": "v2_tests",
    "status": "PASS",
-   "sec": 168.7,
+   "sec": 168.0,
    "reason": ""
   },
   {
    "name": "replay_guard",
    "status": "PASS",
-   "sec": 3.1,
+   "sec": 3.0,
    "reason": ""
   },
   {
@@ -48,13 +48,13 @@
   {
    "name": "compare_eval_selftest",
    "status": "PASS",
-   "sec": 0.6,
+   "sec": 0.7,
    "reason": ""
   },
   {
    "name": "train_guard",
    "status": "PASS",
-   "sec": 31.6,
+   "sec": 31.0,
    "reason": ""
   },
   {
@@ -66,25 +66,25 @@
   {
    "name": "judge_fastfail",
    "status": "PASS",
-   "sec": 7.8,
+   "sec": 7.7,
    "reason": ""
   },
   {
    "name": "generate_batch",
    "status": "PASS",
-   "sec": 2.8,
+   "sec": 2.9,
    "reason": ""
   },
   {
    "name": "graph_decode",
    "status": "PASS",
-   "sec": 7.2,
+   "sec": 6.8,
    "reason": ""
   },
   {
    "name": "probe_cover_wide",
    "status": "PASS",
-   "sec": 3.5,
+   "sec": 3.7,
    "reason": ""
   },
   {
@@ -132,7 +132,7 @@
   {
    "name": "mem_reclaim",
    "status": "PASS",
-   "sec": 14.5,
+   "sec": 14.4,
    "reason": ""
   },
   {
@@ -144,7 +144,7 @@
   {
    "name": "app_selftest",
    "status": "PASS",
-   "sec": 46.2,
+   "sec": 44.2,
    "reason": ""
   },
   {
@@ -162,25 +162,25 @@
   {
    "name": "fused_full_chain",
    "status": "PASS",
-   "sec": 98.4,
+   "sec": 104.5,
    "reason": ""
   },
   {
    "name": "daosheng_unified",
    "status": "PASS",
-   "sec": 4.8,
+   "sec": 4.7,
    "reason": ""
   },
   {
    "name": "auto_mode_local",
    "status": "PASS",
-   "sec": 11.2,
+   "sec": 11.4,
    "reason": ""
   },
   {
    "name": "e2e_app_local",
    "status": "PASS",
-   "sec": 13.5,
+   "sec": 13.8,
    "reason": ""
   },
   {
