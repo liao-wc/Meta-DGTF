@@ -1752,6 +1752,11 @@ def build_plan(question: str, opts: dict | None = None, *,
                             % (dyn.get("budget_level"), budget_max_minutes, _est2))
             dyn.setdefault("applied", {})["max_minutes"] = budget_max_minutes
             dyn.setdefault("budget_cap", {})["max_minutes"] = budget_max_minutes
+    if budget_max_tokens:
+        _ctx_tok = int((dyn.get("context_cost") or {}).get("tokens") or 0)
+        dyn.setdefault("budget_cap", {})["context_tokens"] = _ctx_tok
+        dyn["budget_cap"]["base_tokens"] = max(
+            0, int((dyn.get("chosen") or {}).get("est_tokens") or 0) - _ctx_tok)
     # ★ [V2.2.30] 层子集质量风险标注：显式/预测省层未被单题 A/B 证实
     #   证据 docs/route_subset_quality_ab_20261029.json：
     #   route0=verified / route0,1=needs_evidence / full=verified+ready（单题单次，方差内）
@@ -1869,6 +1874,37 @@ def build_plan(question: str, opts: dict | None = None, *,
                                            % dyn.get("budget_level")}
             warnings.append("阶段动态路由：预算%s ⇒ dual_judge=cache"
                             % dyn.get("budget_level"))
+    # ★ [V2.2.37] quality-retry 决策显式化（advisory；本轮不改变 server 实际行为）：
+    #   项目/verified 需要背景证据；事实题仅在预算 ok 时才建议 web-retry；
+    #   预算 warn/critical 建议关闭 retry 以省成本。
+    _kind_qr = str(_sc1.get("kind") or "")
+    _qr = {"policy": str(quality_policy or "auto:stable"), "retry": False,
+           "why": "", "advisory": True}
+    if _prj or str(quality_policy or "").startswith("auto:verified"):
+        _qr.update({"policy": "verified", "retry": False,
+                    "why": "项目/verified 依赖背景证据，不建议关闭验证"})
+    elif _kind_qr == "fact" or _require_web:
+        if dyn.get("budget_level") == "ok":
+            _qr.update({"policy": "auto:web-retry", "retry": True,
+                        "why": "事实题且预算 ok ⇒ 建议保留 web-retry"})
+        else:
+            _qr.update({"policy": "auto:stable", "retry": False,
+                        "why": "预算 %s ⇒ 建议关闭 web-retry 省成本"
+                               % dyn.get("budget_level")})
+    else:
+        _qr.update({"policy": "auto:stable", "retry": False,
+                    "why": "非事实题不需要 retry"})
+    dyn["quality_retry"] = _qr
+    # ★ [V2.2.37] 缓存 ROI 读数（exact 已按 10%% 成本计；语义命中率未知→只报能力）
+    dyn["cache_roi"] = {
+        "exact": bool((cache or {}).get("exact")),
+        "semantic_capable": bool((cache or {}).get("semantic_capable")),
+        "expected_saving_pct": 0.9 if (cache or {}).get("exact") else 0.0,
+        "note": ("精确命中：成本已按 10%% 计" if (cache or {}).get("exact")
+                 else "语义缓存可用但命中率未标定；仅报能力不估算收益"
+                 if (cache or {}).get("semantic_capable")
+                 else "无缓存可用"),
+    }
     memory = memory_summary(question, ds, project_related=_prj, history=history)
     context_injected: list[str] = []
     if _prj:
@@ -1970,6 +2006,8 @@ def build_plan(question: str, opts: dict | None = None, *,
         "max_tokens": budget_max_tokens,
         # ★ [V2.2.29] 同期墙钟硬上限（分钟；0=不限）
         "max_minutes": budget_max_minutes,
+        # ★ [V2.2.37] quality-retry 决策（advisory）
+        "quality_retry": _qr,
         "dual_judge_mode_via": djm_via,
         "history_fusion": hf,
         "history_fusion_via": hf_via,

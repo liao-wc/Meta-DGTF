@@ -1,3 +1,21 @@
+【V2.2.37（2026-10-29，PATCH · quality-retry 决策显式化；同发 App 2.0.62）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.37.py（__version__=2.2.37；引擎侧零行为差）；
+  App 2.0.62。
+- ★ plan.quality_retry（advisory）：{policy, retry, why}——项目/auto:verified 不允许关闭验证；
+  事实/require_web + 预算 ok 建议 auto:web-retry；预算 warn/critical 建议 auto:stable；
+  其它 stable。本轮只显式化决策，不改变 server 重试行为。
+- ★ budget_cap 拆 context_tokens/base_tokens（项目题 context=5,662，基础量=估算-上下文）。
+- ★ dynamic_opt.cache_roi：exact/semantic_capable/expected_saving_pct/note；
+  语义缓存命中率未标定 → 只报能力不估算收益。
+- 判据：test_dynamic_opt 90→95（fact+ok web-retry、fact+warn stable、项目 verified、
+  budget_cap 分解、cache_roi 字段）；回归 fused_optimal 30 / fused_full_chain 16 /
+  daosheng_unified 27 / auto_mode_local 12。
+- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
+  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
+  发布流程门 pre/post-tag 全 PASS。本轮零新增 API 花费。
+- 兼容性：advisory 不改变实际行为；默认四层/预算上限/成本模型沿用前版。
+- 标签：V2.2.37 / engine-V2.2.37 / app-V2.0.62。
+
 【V2.2.36（2026-10-29，PATCH · 项目背景注入成本；同发 App 2.0.61）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.36.py（__version__=2.2.36；引擎侧零行为差）；
   App 2.0.61。

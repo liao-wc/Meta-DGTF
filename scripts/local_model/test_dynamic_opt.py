@@ -419,6 +419,36 @@ ck("L3 显式 project_context=false：不计上下文成本（chosen 42,798）",
    (_doff.get("context_cost"), (_doff.get("chosen") or {}).get("est_tokens")))
 
 
+print("── M quality-retry 决策 / 预算分解 / 缓存 ROI（V2.2.37）──")
+_p_m1 = DS.build_plan(FACT_Q, {}, requested="daosheng", is_mock=True,
+                      balance_cny=10.0)
+ck("M1 fact + 预算 ok：quality_retry 建议 web-retry",
+   (_p_m1.get("quality_retry") or {}).get("retry") is True
+   and (_p_m1.get("quality_retry") or {}).get("policy") == "auto:web-retry",
+   _p_m1.get("quality_retry"))
+_p_m2 = DS.build_plan(FACT_Q, {}, requested="daosheng", is_mock=True,
+                      balance_cny=3.0)
+ck("M2 fact + 预算 warn：建议关闭 web-retry（stable）",
+   (_p_m2.get("quality_retry") or {}).get("retry") is False
+   and (_p_m2.get("quality_retry") or {}).get("policy") == "auto:stable")
+_p_m3 = DS.build_plan(PROJ_Q, {}, requested="daosheng", is_mock=True,
+                      balance_cny=10.0)
+ck("M3 项目题：quality_retry=verified 且不建议关闭",
+   (_p_m3.get("quality_retry") or {}).get("policy") == "verified")
+_p_m4 = DS.build_plan(PROJ_Q, {"route": "0", "rounds": "0:1"},
+                      requested="daosheng", is_mock=True, balance_cny=3.0)
+_cap = ((_p_m4.get("dynamic_opt") or {}).get("budget_cap") or {})
+_est4 = ((_p_m4.get("dynamic_opt") or {}).get("chosen") or {}).get("est_tokens") or 0
+ck("M4 预算 warn + 项目题：budget_cap 拆出 context_tokens=5,662",
+   int(_cap.get("context_tokens") or 0) == 5662
+   and int(_cap.get("base_tokens") or 0) == max(0, int(_est4) - 5662),
+   (_cap.get("context_tokens"), _cap.get("base_tokens"), _est4))
+_roi = ((_p_m1.get("dynamic_opt") or {}).get("cache_roi") or {})
+ck("M5 cache_roi 读数齐（exact/semantic/expected_saving/note）",
+   set(("exact", "semantic_capable", "expected_saving_pct", "note")
+       ) <= set(_roi), _roi)
+
+
 print("── J 短程实测锚点（V2.2.33，B 模式每层 1 圈）──")
 _p_j = DS.build_plan(FACT_Q, {"route": "0,1,both,all",
                               "rounds": "0:1,1:1,both:1,all:1"},
