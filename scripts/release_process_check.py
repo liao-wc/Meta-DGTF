@@ -374,10 +374,22 @@ def classify_dsh_fail(line: str, budget_degraded: bool = False):
 
 
 def _latest_prod_budget_degraded(root: Path):
-    """最新 App 生产任务是否处于预算守卫 degrade/warn 档（读 run.json）。"""
+    """最新**生产 pack** 对应 run.json 是否处于预算守卫 degrade/warn 档。
+
+    ★ 按 pack 文件名时间戳前缀匹配 run.json，避免被本地/测试任务（无生产 packed）
+      覆盖成 ok 档而误判 FAIL。
+    """
     try:
-        runs = sorted((root / "outputs").glob("*.run.json"),
-                      key=lambda p: p.stat().st_mtime, reverse=True)[:1]
+        packs = sorted((root / "outputs").glob("*.packed.json"),
+                       key=lambda p: p.stat().st_mtime, reverse=True)
+        if not packs:
+            return False
+        prefix = packs[0].name[:15]  # YYYYmmdd_HHMMSS
+        runs = [p for p in (root / "outputs").glob("*.run.json")
+                if p.name.startswith(prefix)]
+        if not runs:
+            runs = sorted((root / "outputs").glob("*.run.json"),
+                          key=lambda p: p.stat().st_mtime, reverse=True)[:1]
         if not runs:
             return False
         d = json.loads(runs[0].read_text(encoding="utf-8", errors="replace"))
