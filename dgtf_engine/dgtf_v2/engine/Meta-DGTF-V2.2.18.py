@@ -25750,10 +25750,21 @@ class MetaDGTF:
             self.vp(f"\n🧵 并行模式：{mode}（用户指定）")
 
         rounds_plan = self._rounds_plan(rounds)
+        # ★ 显式 --rounds 是用户/巡检的硬意图：EML 可以建议，但不能把圈数抬回去。
+        #   否则 timeout 跑会出现“螺旋上限 1 圈、实际预热 3 圈/9 波”的墙钟放大。
+        _explicit_rounds = bool(rounds not in (None, 0, "", "auto"))
+        _user_rounds_plan = dict(rounds_plan)
         # ★ [EML] 跑前：读记忆（recall）→（仅 mode=on）落到生效面 → 留痕。
         try:
             self._eml_prepare(question)
             self._eml_apply(rounds_plan)
+            if _explicit_rounds:
+                _raised = {e: rounds_plan[e] for e in list(rounds_plan)
+                          if int(rounds_plan.get(e) or 0) > int(_user_rounds_plan.get(e) or 0)}
+                for e, cap in _user_rounds_plan.items():
+                    rounds_plan[e] = min(int(rounds_plan.get(e) or cap), int(cap))
+                if _raised:
+                    self.vp("   ✂️ 显式圈数优先：EML 抬圈已压回 %s" % _raised)
         except Exception as _ee:
             self.vp(f"\n🧠 EML 读记忆异常（不阻断）：{_ee}")
         # ★ 参考记忆按需注入 prompt：只给哈希特征，不注入正文、不照搬。

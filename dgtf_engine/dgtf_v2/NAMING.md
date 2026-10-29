@@ -19,13 +19,13 @@
 | 对象 | 命名 |
 |---|---|
 | 生产引擎 | dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.18.py |
-| App | 2.0.43（本地链路两段守护 + /api/health local_chain 读数 + 本地档预设 + DSH 视图隔离 + 版本同步门禁 + 安全文件回退 + 产物活动灯） |
+| App | 2.0.44（本地链路两段守护 + /api/health local_chain 读数 + 本地档预设 + DSH 视图隔离 + 版本同步门禁 + 安全文件回退 + 产物活动灯） |
 | V2 核心 | dgtf_engine/dgtf_v2/ |
 | 融合实现 | Meta-DGTF-V2.2.18.py 内联（history + behavior；融合目标版本仍为 2.2.0 谱系） |
 | 历史清单 | dgtf_engine/dgtf_v2/history_manifest.json（数据） |
 | 单引擎融合判据 | dgtf_engine/dgtf_v2/tests_inline_fusion.py |
 | 主版本标签 | V2.2.18 |
-| App 发布标签 | app-V2.0.43 |
+| App 发布标签 | app-V2.0.44 |
 | Engine 发布标签 | engine-V2.2.18 |
 | 发布说明 | docs/releases/V2.2.18.md |
 | 收束报告 | V2.2.18-收束报告.md |

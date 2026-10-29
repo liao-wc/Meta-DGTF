@@ -1,7 +1,7 @@
 {
  "ok": true,
  "app": "https://127.0.0.1:8765",
- "ts": 1793232864.3397672,
+ "ts": 1793233315.794092,
  "n": 56,
  "fails": [],
  "warnings": [
@@ -16,77 +16,77 @@
   {
    "name": "GET /api/health",
    "ok": true,
-   "detail": "code=200 715ms"
+   "detail": "code=200 903ms"
   },
   {
    "name": "GET /api/config",
    "ok": true,
-   "detail": "code=200 2334ms"
+   "detail": "code=200 2604ms"
   },
   {
    "name": "GET /api/dashboard",
    "ok": true,
-   "detail": "code=200 2683ms"
+   "detail": "code=200 2359ms"
   },
   {
    "name": "GET /api/tasks",
    "ok": true,
-   "detail": "code=200 18ms"
+   "detail": "code=200 25ms"
   },
   {
    "name": "GET /api/agent/knowledge",
    "ok": true,
-   "detail": "code=200 8ms"
+   "detail": "code=200 9ms"
   },
   {
    "name": "GET /api/agent/hot-topics",
    "ok": true,
-   "detail": "code=200 6ms"
+   "detail": "code=200 21ms"
   },
   {
    "name": "GET /api/status/activity",
    "ok": true,
-   "detail": "code=200 373ms"
+   "detail": "code=200 375ms"
   },
   {
    "name": "GET /api/status/sidebar",
    "ok": true,
-   "detail": "code=200 266ms"
+   "detail": "code=200 235ms"
   },
   {
    "name": "GET /api/schedule/v2",
    "ok": true,
-   "detail": "code=200 46ms"
+   "detail": "code=200 52ms"
   },
   {
    "name": "GET /api/schedule/v2/online",
    "ok": true,
-   "detail": "code=200 28ms"
+   "detail": "code=200 30ms"
   },
   {
    "name": "GET /api/schedule/v2/pareto",
    "ok": true,
-   "detail": "code=200 40ms"
+   "detail": "code=200 42ms"
   },
   {
    "name": "GET /api/schedule/policy",
    "ok": true,
-   "detail": "code=200 5ms"
+   "detail": "code=200 6ms"
   },
   {
    "name": "GET /api/dsh/guard",
    "ok": true,
-   "detail": "code=200 17ms"
+   "detail": "code=200 31ms"
   },
   {
    "name": "GET /api/dsh/proposals",
    "ok": true,
-   "detail": "code=200 312ms"
+   "detail": "code=200 370ms"
   },
   {
    "name": "静态缓存版本一致",
    "ok": true,
-   "detail": "2.0.43-timeout30"
+   "detail": "2.0.44-wallopt"
   },
   {
    "name": "GET /static/index.html",
@@ -261,12 +261,12 @@
   {
    "name": "关键文件完整性",
    "ok": true,
-   "detail": ",\n \"files\": [\n  {\n   \"file\": \"dgtf_app/server.py\",\n   \"ok\": true,\n   \"size\": 493622,\n   \"error\": \"\"\n  },\n  {\n   \"file\": \"dgtf_app/engine_runner.py\",\n   \"ok\": true,\n   \"size\": 54232,\n   \"error\": \"\"\n  },\n  {\n   \"file\": \"dgtf_app/static/app.js\",\n   \"ok\": true,\n   \"size\": 356635,\n   \"error\": \"\"\n  },\n  {"
+   "detail": ",\n \"files\": [\n  {\n   \"file\": \"dgtf_app/server.py\",\n   \"ok\": true,\n   \"size\": 493718,\n   \"error\": \"\"\n  },\n  {\n   \"file\": \"dgtf_app/engine_runner.py\",\n   \"ok\": true,\n   \"size\": 54232,\n   \"error\": \"\"\n  },\n  {\n   \"file\": \"dgtf_app/static/app.js\",\n   \"ok\": true,\n   \"size\": 356635,\n   \"error\": \"\"\n  },\n  {"
   },
   {
    "name": "App 版本一致性",
    "ok": true,
-   "detail": "查询串同版本\",\n   \"ok\": true,\n   \"detail\": \"['2.0.43-timeout30']\"\n  },\n  {\n   \"name\": \"根 README 当前版本\",\n   \"ok\": true,\n   \"detail\": \"2.0.43\"\n  },\n  {\n   \"name\": \"App README 当前版本\",\n   \"ok\": true,\n   \"detail\": \"2.0.43\"\n  },\n  {\n   \"name\": \"PROJECT_LAYOUT 当前版本\",\n   \"ok\": true,\n   \"detail\": \"2.0.43\"\n  },\n  {\n "
+   "detail": "静态查询串同版本\",\n   \"ok\": true,\n   \"detail\": \"['2.0.44-wallopt']\"\n  },\n  {\n   \"name\": \"根 README 当前版本\",\n   \"ok\": true,\n   \"detail\": \"2.0.44\"\n  },\n  {\n   \"name\": \"App README 当前版本\",\n   \"ok\": true,\n   \"detail\": \"2.0.44\"\n  },\n  {\n   \"name\": \"PROJECT_LAYOUT 当前版本\",\n   \"ok\": true,\n   \"detail\": \"2.0.44\"\n  },\n  {\n "
   },
   {
    "name": "UI 自动化回归",

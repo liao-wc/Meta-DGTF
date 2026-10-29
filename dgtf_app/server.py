@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "2.0.43"
+APP_VERSION = "2.0.44"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -10127,12 +10127,12 @@ class Handler(BaseHTTPRequestHandler):
                 opts["fused_ground_web"] = True
             elif _quality_policy == "stable" and _pctx_opt is None:
                 _pctx_opt = False
-            # 生产默认任务上限：防止真实跑失控；可通过环境变量调整。
+            # 默认不设硬截断（0）；停滞由 DGTF_TASK_STALL_S 看门狗兜底，可用 DGTF_TASK_TIMEOUT_S 显式设置。
             if not _is_mock_task and not opts.get("timeout_s") and not opts.get("max_seconds"):
                 try:
-                    opts["timeout_s"] = max(60, int(os.getenv("DGTF_TASK_TIMEOUT_S", "1800")))
+                    opts["timeout_s"] = max(0, int(os.getenv("DGTF_TASK_TIMEOUT_S", "0")))
                 except (TypeError, ValueError):
-                    opts["timeout_s"] = 3600
+                    opts["timeout_s"] = 0  # 不设硬截断；停滞由 DGTF_TASK_STALL_S 看门狗兜底
             if _pctx_opt is None:
                 # 项目背景内置：只对项目相关问题注入；通用任务不注入，
                 # 否则无关背景会把 1+1 这类题拖成高价长跑（真实链路实测）。

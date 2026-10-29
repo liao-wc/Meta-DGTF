@@ -24,7 +24,25 @@
   一键验收 --with-service PASS 25 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 81/81；
   file_integrity bad=0；verify_project_paths PASS；DSH 闭环 2 项 FAIL 归类 N/A（证据陈旧/
   用户实例不可达，原因显式）；历史融合 readiness 1.00；pareto_flow 基线可复跑。
-- 标签：V2.2.18 / engine-V2.2.18；App 2.0.43
+- 标签：V2.2.18 / engine-V2.2.18；App 2.0.44
+
+【主题】取消默认硬截断，优化显式圈数被 EML 抬高的墙钟放大。
+
+【根因】
+- 超时跑头部“螺旋上限 1 圈”，实际却预热 3 圈、跑到 9 波：EML 在 _eml_apply 中抬高了圈数计划。
+- 显式 --rounds 是用户/巡检的硬意图，EML 不应再抬回去。
+- 1200s/1800s 硬截断都是在上游放大后再截断，属于治标。
+
+【改变】
+- 引擎 run()：保存显式 rounds_plan，在 EML apply 后把被抬高的圈数压回用户上限，并留日志。
+- App 默认 DGTF_TASK_TIMEOUT_S = 0：不设置硬截断。
+- DGTF_TASK_STALL_S=600 停滞看门狗保留；只有日志长时间无增长才终止。
+- 显式 timeout_s / DGTF_TASK_TIMEOUT_S 仍可覆盖。
+
+【验证】
+- App 全方位检查；版本一致性；selftest；fast_gate；V2 tests。
+- 静态缓存串：2.0.44-wallopt。
+App 2.0.43
 
 【主题】修正默认总超时为 1800s，解决“跑得完却被 1200s 截断”的根因。
 
