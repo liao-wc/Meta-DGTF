@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "2.0.70"
+APP_VERSION = "2.0.71"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -10354,6 +10354,22 @@ class Handler(BaseHTTPRequestHandler):
                         "reason": str((_mode_resolved or {}).get("reason") or ""),
                     },
                 }
+            # ★ [V2.2.46] 创建前综合预期（质量 verified 率 / 预算续航 / 缓存 ROI）
+            try:
+                _qr_f = (_ds_plan or {}).get("quality_retry") or {}
+                _qe_f = (_ds_plan or {}).get("quality_expectation") or {}
+                _dyn_f = (_ds_plan or {}).get("dynamic_opt") or {}
+                _qf_f = {
+                    "kind": _qe_f.get("kind") or _qr_f.get("kind"),
+                    "expected_verified_pct": _qr_f.get("expected_verified_pct"),
+                    "evidence": _qr_f.get("evidence"),
+                    "budget_forecast": _dyn_f.get("budget_forecast"),
+                    "cache_roi": _dyn_f.get("cache_roi"),
+                    "quality_retry": _qr_f,
+                }
+            except Exception:  # noqa: BLE001
+                _qf_f = {}
+            _mode_info["quality_forecast"] = _qf_f
             # resume/重试不丢：请求档位随 opts 落盘（活痕迹/归档 run.json 都带 opts），
             # 单任务接口与 /api/tasks 列表都回 mode（完整 plan 走单任务接口）。
             try:

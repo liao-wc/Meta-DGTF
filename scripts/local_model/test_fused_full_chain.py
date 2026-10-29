@@ -150,6 +150,12 @@ try:
        bool(plan.get("parallel")) and bool(plan.get("thinking"))
        and isinstance(plan.get("rounds_locked"), bool),
        {k: plan.get(k) for k in ("parallel", "thinking", "rounds_locked")})
+    _qf = (mode.get("quality_forecast") or {})
+    ck("B6 创建前综合预期随响应下发（quality/budget/cache）",
+       isinstance(_qf, dict)
+       and "expected_verified_pct" in _qf
+       and "budget_forecast" in _qf and "cache_roi" in _qf,
+       {k: _qf.get(k) for k in ("kind", "expected_verified_pct")})
 
     # ── 等任务跑完 ──
     status, last = "", {}
