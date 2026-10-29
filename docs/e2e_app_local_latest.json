@@ -1,9 +1,9 @@
 {
   "ok": true,
   "question": "成年人正常心率是多少次每分钟",
-  "wall_sec": 12.1,
+  "wall_sec": 13.7,
   "exit": 0,
-  "packed": "D:\\Meta-DGTF-道生三阶模型\\outputs\\_e2e_local\\20261029_135151_成年人正常心率是多少次每分钟.packed.json",
+  "packed": "D:\\Meta-DGTF-道生三阶模型\\outputs\\_e2e_local\\20261029_141730_成年人正常心率是多少次每分钟.packed.json",
   "quality_keys": [
     "alert",
     "answer_gates",
@@ -63,85 +63,85 @@
   },
   "llm_by_stage": [
     {
-      "stage": "ing",
-      "calls": 3,
-      "tokens": 5585,
-      "ms": 65
+      "stage": "dual_judge",
+      "calls": 2,
+      "tokens": 2783,
+      "ms": 281
     },
     {
       "stage": "he_amps",
       "calls": 1,
-      "tokens": 2057,
-      "ms": 29
+      "tokens": 2272,
+      "ms": 25
+    },
+    {
+      "stage": "ing",
+      "calls": 1,
+      "tokens": 1592,
+      "ms": 5
     },
     {
       "stage": "expand_pair_merged",
       "calls": 1,
-      "tokens": 1561,
-      "ms": 29
+      "tokens": 1560,
+      "ms": 4
     },
     {
       "stage": "adjudicate_sub_tristate_multi",
       "calls": 3,
-      "tokens": 1532,
-      "ms": 44
+      "tokens": 1488,
+      "ms": 43
     },
     {
       "stage": "expand_pair_merged_fixup",
       "calls": 1,
-      "tokens": 1487,
-      "ms": 14
+      "tokens": 1469,
+      "ms": 25
+    },
+    {
+      "stage": "json_repair",
+      "calls": 4,
+      "tokens": 1333,
+      "ms": 0
     },
     {
       "stage": "manifest",
       "calls": 1,
-      "tokens": 1480,
-      "ms": 26
-    },
-    {
-      "stage": "self_check",
-      "calls": 1,
-      "tokens": 1397,
-      "ms": 0
+      "tokens": 1230,
+      "ms": 28
     },
     {
       "stage": "re_anchor",
       "calls": 1,
-      "tokens": 1043,
-      "ms": 16
+      "tokens": 1044,
+      "ms": 15
     },
     {
-      "stage": "dual_judge",
+      "stage": "self_check",
       "calls": 1,
-      "tokens": 708,
+      "tokens": 907,
       "ms": 0
     },
     {
       "stage": "check_input_sanity",
       "calls": 1,
       "tokens": 671,
-      "ms": 762
+      "ms": 731
     },
     {
       "stage": "assess_decidability",
       "calls": 1,
       "tokens": 599,
-      "ms": 15
+      "ms": 34
     },
     {
       "stage": "decompose_koan",
       "calls": 1,
-      "tokens": 385,
-      "ms": 14
-    },
-    {
-      "stage": "json_repair",
-      "calls": 1,
-      "tokens": 219,
-      "ms": 0
+      "tokens": 338,
+      "ms": 21
     }
   ],
-  "llm_calls": 17,
+  "llm_calls": 19,
   "checks": 18,
   "fails": []
 }

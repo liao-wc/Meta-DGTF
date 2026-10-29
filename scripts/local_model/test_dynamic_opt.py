@@ -261,6 +261,34 @@ ck("G8 引擎闭包：both⇒0/1、all⇒both/0/1、单层不变",
                                           ["both", "0", "1"])
    and _M2._close_route_deps(["1"]) == (["1"], []))
 
+
+print("── H 预算层级 → 运行期 token 硬上限（V2.2.28）──")
+_p_w = DS.build_plan(FACT_Q, {}, requested="daosheng", is_mock=True,
+                     balance_cny=3.0)
+_p_o = DS.build_plan(FACT_Q, {}, requested="daosheng", is_mock=True,
+                     balance_cny=50.0)
+_ch_w = ((_p_w.get("dynamic_opt") or {}).get("chosen") or {})
+ck("H1 warn 档：plan.max_tokens = 估算×1.5（硬边界）",
+   int(_p_w.get("max_tokens") or 0) > 0
+   and abs(int(_p_w.get("max_tokens") or 0)
+           / max(1.0, int(_ch_w.get("est_tokens") or 0) * 1.5) - 1.0) < 0.05,
+   (_p_w.get("max_tokens"), _ch_w.get("est_tokens")))
+ck("H2 ok/quality 档不设 token 硬上限（max_tokens=0）",
+   int(_p_o.get("max_tokens") or 0) == 0)
+_p_exp = DS.build_plan(FACT_Q, {"max_tokens": 123456}, requested="daosheng",
+                       is_mock=True, balance_cny=2.0)
+ck("H3 显式 opts.max_tokens 永远优先（plan 不覆盖）",
+   int(_p_exp.get("max_tokens") or 0) == 0)
+_o_cap = {}
+DS.apply_plan(dict(_p_w), _o_cap)
+ck("H4 apply_plan 把 max_tokens 透传到 opts", _o_cap.get("max_tokens")
+   == _p_w.get("max_tokens") and _o_cap.get("max_tokens", 0) > 0)
+cap_cmd = ER.build_cmd("问题", _o_cap)
+ck("H5 build_cmd 带 --max-tokens（运行期硬边界可达）",
+   "--max-tokens" in cap_cmd)
+ck("H6 dynamic_opt 记录 budget_cap（可审计）",
+   bool(((_p_w.get("dynamic_opt") or {}).get("budget_cap") or {}).get("max_tokens")))
+
 print("── C build_plan 接线 ──")
 _p6 = DS.build_plan(FACT_Q, {}, requested="daosheng", is_mock=True, balance_cny=6.0)
 _d6 = _p6.get("dynamic_opt") or {}

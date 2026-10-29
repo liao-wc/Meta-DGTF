@@ -1,0 +1,66 @@
+{
+ "schema": "metadgtf.dual_judge_ab.v1",
+ "ts": "2026-10-29 14:04:40",
+ "question": "成年人正常心率是多少次每分钟？",
+ "fixed": {
+  "route": "0",
+  "rounds": "0:1",
+  "web": "off",
+  "balance_assumed": 3.0,
+  "max_tokens": 150000
+ },
+ "arms": [
+  {
+   "arm": "A-cache",
+   "status": "done",
+   "wall_s": 58.5,
+   "opts_extra": {},
+   "mode": {
+    "id": "daosheng",
+    "tier": "fast",
+    "engine_mode": "fast",
+    "dual_judge_mode": null
+   },
+   "plan_djm": "cache",
+   "dynamic_apply": {
+    "dual_judge_mode": "cache"
+   },
+   "actual": {
+    "calls": 10,
+    "tokens": 30622,
+    "cost_cny": 0.061,
+    "quality": "unverified"
+   },
+   "packed": "20261029_140336_成年人正常心率是多少次每分钟.packed.json"
+  },
+  {
+   "arm": "B-llm",
+   "status": "done",
+   "wall_s": 60.3,
+   "opts_extra": {
+    "dual_judge_mode": "llm"
+   },
+   "mode": {
+    "id": "daosheng",
+    "tier": "fast",
+    "engine_mode": "fast",
+    "dual_judge_mode": null
+   },
+   "plan_djm": "auto",
+   "dynamic_apply": {},
+   "actual": {
+    "calls": 10,
+    "tokens": 29957,
+    "cost_cny": 0.06,
+    "quality": "unverified"
+   },
+   "packed": "20261029_140439_成年人正常心率是多少次每分钟.packed.json"
+  }
+ ],
+ "delta": {
+  "tokens": 665,
+  "calls": 0,
+  "cost_cny": 0.001
+ },
+ "note": "负值= cache 臂更省；单题单次，仅供动态依赖方向校准"
+}

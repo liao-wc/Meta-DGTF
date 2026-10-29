@@ -1,3 +1,20 @@
+【V2.2.28（2026-10-29，PATCH · 预算层级→运行期 token 硬上限；同发 App 2.0.53）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.28.py（__version__=2.2.28；引擎侧零行为差）；
+  App 2.0.53。
+- ★ 预算依赖闭环：warn/critical 档 plan.max_tokens = 动态配置估算 tokens × 1.5
+  （最低 20k，千位取整），apply_plan 透传 --max-tokens；显式 opts.max_tokens 优先，
+  ok/quality 档不设限；plan.dynamic_opt.budget_cap 记录依据（可审计）。
+- ★ dual_judge=cache 冷缓存单题 A/B（约 ¥0.12）：cache 臂 10 calls/30,622 tokens 约 ¥0.061，
+  llm 臂 10 calls/29,957 tokens 约 ¥0.060；cache 略高 +665（无显著节省）——如实记录，
+  保留为热缓存/预算极紧备选，下轮验证热缓存。
+- 判据：test_dynamic_opt 54→60（warn 上限/ok 不设限/显式优先/apply_plan/build_cmd/budget_cap）；
+  回归 fused_optimal 30 / fused_full_chain 16 / daosheng_unified 27 / auto_mode_local 12。
+- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
+  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
+  发布流程门 pre/post-tag 全 PASS。
+- 兼容性：显式参数优先；ok 档不设 token 上限；项目/quality_first 不降评审。
+- 标签：V2.2.28 / engine-V2.2.28 / app-V2.0.53。
+
 【V2.2.27（2026-10-29，PATCH · App 全流程开销校准 + 有效 route 成本 + 阶段动态路由；同发 App 2.0.52）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.27.py（__version__=2.2.27）；
   App 2.0.52。

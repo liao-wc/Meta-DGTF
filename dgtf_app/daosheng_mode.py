@@ -1592,6 +1592,21 @@ def build_plan(question: str, opts: dict | None = None, *,
         warnings.append("动态配置：无满足质量下限的可行解 → 取最低成本兜底"
                         "（质量下限 %.2f，余额 %s）"
                         % (dyn.get("quality_floor"), dyn.get("balance_cny")))
+    # ★ [V2.2.28] 动态依赖调整：预算 warn/critical ⇒ 运行期 token 硬上限
+    #   （est×1.5 的安全边界；显式 opts.max_tokens 永远优先）。
+    budget_max_tokens = 0
+    if (dyn.get("budget_level") in ("warn", "critical")
+            and opts.get("max_tokens") in (None, "")):
+        _est = int((dyn.get("chosen") or {}).get("est_tokens") or 0)
+        if _est > 0:
+            budget_max_tokens = max(20000, int(_est * 1.5 / 1000.0) * 1000)
+            warnings.append("预算依赖：%s 档 ⇒ 运行期 max_tokens=%d（估算 %d×1.5）"
+                            % (dyn.get("budget_level"), budget_max_tokens, _est))
+            dyn.setdefault("applied", {})["max_tokens"] = budget_max_tokens
+            dyn["budget_cap"] = {"max_tokens": budget_max_tokens,
+                                 "based_on_est_tokens": _est,
+                                 "why": "预算 %s 档的硬边界，防止估算偏差导致超支"
+                                        % dyn.get("budget_level")}
     # ★ [V2.2.27] 阶段动态路由：预算紧张时 dual_judge 走 cache（不牺牲项目/quality_first）
     plan_extra_djm = ""
     if (dyn.get("budget_level") in ("warn", "critical")
@@ -1703,6 +1718,8 @@ def build_plan(question: str, opts: dict | None = None, *,
         "self_check_mode": scm,
         "self_check_mode_via": scm_via,
         "dual_judge_mode": (plan_extra_djm or djm),
+        # ★ [V2.2.28] 预算 warn/critical 时的运行期 token 硬上限（0=不限）
+        "max_tokens": budget_max_tokens,
         "dual_judge_mode_via": djm_via,
         "history_fusion": hf,
         "history_fusion_via": hf_via,
@@ -1738,7 +1755,7 @@ def apply_plan(plan: dict, opts: dict) -> dict:
         return applied
     for k in ("mode", "route", "rounds", "parallel", "web", "thinking",
               "effort", "self_check_mode", "dual_judge_mode",
-              "history_fusion"):
+              "history_fusion", "max_tokens"):
         v = plan.get(k)
         if v in (None, "", "auto"):
             continue
