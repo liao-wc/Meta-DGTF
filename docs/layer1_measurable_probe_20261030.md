@@ -88,6 +88,22 @@ V2.2.67 曾观测到一次 case1 `settle=0.000（valued）`（44 calls、candida
 3. 说明：可测不是单靠 arm 或某组 playbook 条目就能复现，**那次 valued 是瞬态状态**（后又不可复现）；
 4. 结论：不再「碰运气」重建；要稳定可测，需要引擎侧**确定性的可判定性度量/输入**设计（后续工作）。
 
+
+## 7.5 min_rounds / rounds 实验（V2.2.89，零 API 本地链）
+
+为验证「层1 判据样本不足」是否只是圈数问题，用临时配置做两组本地实验：
+
+| 实验 | 配置 | 结果 |
+|---|---|---|
+| 事实短题（水三态） | soft_max=3/stable_need=3/min_rounds{1:3} + rounds=3 | 事实短题策略把圈数压回 2；settlement.total=0，candidates=6 |
+| reasoning（热岛） | 同上，题面非短事实 | **研究层实际跑满 3/3 圈**（min_rounds 拦截生效）；但 settlement.total=0、candidates=8、deferrals/resolutions 均为 0 |
+
+结论：**圈数上限不是层1可测性的唯一瓶颈**——即使跑满 3 圈，本地链路的候选仍未进入
+可判定通道（无 deferrals/resolutions），因此 settlement 仍为 0。要真正可测，需要
+候选注册/可判定性判定的工程化改动，而不是只加 min_rounds。
+
+证据：docs/min_rounds_probe_20261030.json（零云 API）。
+
 ## 8. 后续建议（需预算或明确方向）
 
 - 方案 A（有预算）：1 个 web on 的层1 小样本（单跑约与既有 A/B 同量级），验证能否产生 candidates>0；

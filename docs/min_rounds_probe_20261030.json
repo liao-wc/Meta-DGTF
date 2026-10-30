@@ -1,0 +1,25 @@
+{
+ "schema": "metadgtf.min_rounds_probe.v1",
+ "ts": "2026-10-30 23:45",
+ "note": "local chain 零 API：验证 min_rounds/rounds 对层1可测性的影响",
+ "fact_short_water": {
+  "pack": "20261030_233830_水的三态变化有哪些驱动因素.packed.json",
+  "llm_calls": 47,
+  "tokens": 69677,
+  "settlement_total": 0,
+  "answered": 0,
+  "candidates": 6,
+  "deferrals": 0,
+  "resolutions": 0
+ },
+ "reasoning_heat": {
+  "pack": "20261030_234104_为什么城市热岛效应在夜间比白天更明显.packed.json",
+  "llm_calls": 41,
+  "tokens": 51639,
+  "settlement_total": 0,
+  "answered": 0,
+  "candidates": 8,
+  "deferrals": 0,
+  "resolutions": 0
+ }
+}
