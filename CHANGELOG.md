@@ -1,3 +1,13 @@
+【V2.2.99（2026-10-31，PATCH · 方案Q 可判定优先 preset；App 2.0.83）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.99.py（__version__=2.2.99；引擎侧零行为差）。
+- ★ 新增 configs/方案Q-可判定优先.yaml（方案 D + opt-in）：min_rounds_judgeable=true、
+  layers [1,both]、target 3 ⇒ 研究/对撞层至少 3 圈、目标可判定；默认配置不变。
+  依据：case1 not_achieved 2/2（59 calls）、both achieved 2/2（98 calls）；代价约 ¥0.074/圈/层。
+- ★ audit_config_keys 合并扫描 dgtf_v2 模块，避免 opt-in 键被误判陈旧；24 preset 陈旧键 0。
+- 验收：V2 73/73（1233 checks）；fast_gate 26/26；App selftest；一键验收；e2e 18/18；probe；
+  发布流程门全 PASS。零云 API。
+- 标签：V2.2.99 / engine-V2.2.99（app-V2.0.83 不变，不移动）。
+
 【V2.2.98（2026-10-31，PATCH · lead 审计容差 + 层1 稳定 valued；App 2.0.83）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.98.py（__version__=2.2.98；引擎侧零行为差）。
 - ★ lead_layer_goal_audit：legacy_verdict_stale 容差 1e-6→1e-3；verdict_inconsistent 5e-4→1e-3
@@ -642,15 +652,3 @@
 - ★ App 启动后台 warm_semantic_cache：构建索引并批量 embedding（等 8771 就绪最多 12s；
   失败不影响主流程）。
 - 判据：test_dynamic_opt 118→121（S3 索引落盘、S4 磁盘恢复 <0.5s、S5 预热结构）；
-  回归 fused_optimal 30 / fused_full_chain 23 / daosheng_unified 27 / auto_mode_local 12。
-- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
-  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
-  发布流程门 pre/post-tag 全 PASS。本轮零 API 花费。
-- 兼容性：索引 300s 有效；8771 不在预热 ok=False；缺失/损坏自动回退扫描。
-- 标签：V2.2.45 / engine-V2.2.45 / app-V2.0.70。
-
-【V2.2.44（2026-10-29，PATCH · 题型 verified 期望矩阵；同发 App 2.0.69）】
-- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.44.py（__version__=2.2.44；引擎侧零行为差）；
-  App 2.0.69。
-- ★ choice 加圈 A/B（真 API 约 ¥0.31）：rounds1 86,858 / rounds2 67,540 tokens，
-  两臂均 needs_evidence ⇒ 加圈未提升质量且 rounds2 更省。

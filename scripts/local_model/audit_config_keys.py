@@ -41,7 +41,15 @@ def _flat(d, prefix=""):
 
 def main() -> int:
     eng_path = lga.latest_engine_path()
+    # ★ [V2.2.99] 引擎把部分配置键的读取下沉到 dgtf_v2 模块（如 judgeable_rounds），
+    #   只扫引擎单文件会把合法 opt-in 键误判成「陈旧」。这里合并扫描两者。
     src = Path(eng_path).read_text(encoding="utf-8", errors="replace")
+    for _m in sorted((ROOT / "dgtf_engine" / "dgtf_v2").glob("*.py")):
+        try:
+            src += chr(10) + _m.read_text(
+                encoding="utf-8", errors="replace")
+        except OSError:
+            pass
     eng = lga.load_engine(eng_path)
     known = set(_flat(eng.DEFAULT_CONFIG))
     rows = []
