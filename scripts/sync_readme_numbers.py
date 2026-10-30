@@ -25,6 +25,7 @@ def _facts() -> dict:
     v2 = _load("docs/v2_tests_latest.json")
     fg = _load("docs/fast_gate_latest.json")
     acc = _load("docs/acceptance_latest.json")
+    pv = _load("docs/probe_variance_20261030.json")
     eng = ""
     try:
         av = _load("docs/app_version_latest.json")
@@ -61,6 +62,8 @@ def _facts() -> dict:
         "acc_pass": int(acc.get("passed") or 0),
         "acc_skip": int(acc.get("skipped") or 0),
         "acc_fail": int(acc.get("failed") or 0),
+        "pv": (pv.get("cases") or {}),
+        "pv_path": "docs/probe_variance_20261030.json",
     }
 
 
@@ -131,6 +134,40 @@ def _patched(text: str, f: dict) -> tuple[str, list[str]]:
                                f["fg_total"], m.group(5))
 
     text2 = re.sub(pat5, _r5, text2, count=1)
+    # 四层读数方差行（顶部摘要 + 明细行）按前缀整行重写
+    _pv_cases = f.get("pv") or {}
+
+    def _fm(x):
+        return ("%g" % x) if isinstance(x, (int, float)) else "?"
+
+    _c0 = _pv_cases.get("0") or {}
+    _cb = _pv_cases.get("both") or {}
+    _ca = _pv_cases.get("all") or {}
+    _row_main = ("| **四层读数方差（刷新）** | %s 次历史复跑：case0 均值 **%s**"
+                 "（%s–%s）/ both **%s**（%s–%s）/ all **%s**（%s–%s，从未到 1.0）"
+                 "| %s |"
+                 % (_c0.get("n", 0), _fm(_c0.get("mean")), _fm(_c0.get("min")),
+                    _fm(_c0.get("max")), _fm(_cb.get("mean")),
+                    _fm(_cb.get("min")), _fm(_cb.get("max")),
+                    _fm(_ca.get("mean")), _fm(_ca.get("min")),
+                    _fm(_ca.get("max")), f.get("pv_path")))
+    _row_sum = ("| 读数方差统计（刷新） | %s 次历史：case0 均值 %s / both %s / all %s |"
+                % (_c0.get("n", 0), _fm(_c0.get("mean")),
+                   _fm(_cb.get("mean")), _fm(_ca.get("mean"))))
+    _lines = text2.splitlines()
+    _changed = 0
+    for _i, _ln in enumerate(_lines):
+        if _ln.startswith("| **四层读数方差"):
+            if _ln != _row_main:
+                _lines[_i] = _row_main
+                _changed += 1
+        elif _ln.startswith("| 读数方差统计"):
+            if _ln != _row_sum:
+                _lines[_i] = _row_sum
+                _changed += 1
+    if _changed:
+        notes.append("variance rows updated x%d" % _changed)
+    text2 = "\n".join(_lines) + "\n"
     return text2, notes
 
 
