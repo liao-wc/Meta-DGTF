@@ -1,14 +1,14 @@
 {
  "schema": "dgtf.release_process.v1",
- "ts": 1793376722.9752722,
- "iso": "2026-10-31T00:12:02",
+ "ts": 1793376811.5780828,
+ "iso": "2026-10-31T00:13:31",
  "engine": "dgtf_engine\\dgtf_v2\\engine\\Meta-DGTF-V2.2.90.py",
  "engine_version": "2.2.90",
  "app_version": "2.0.83",
  "pre_tag": true,
  "post_tag": false,
- "passed": 29,
- "failed": 2,
+ "passed": 31,
+ "failed": 0,
  "na": 4,
  "checks": [
   {
@@ -78,8 +78,8 @@
   },
   {
    "name": "状态快照含本版",
-   "status": "FAIL",
-   "detail": "缺 docs/项目状态快照_20261031.md 或其中无 V2.2.90"
+   "status": "PASS",
+   "detail": "项目状态快照_20261031.md"
   },
   {
    "name": "App 版本一致性",
@@ -89,7 +89,7 @@
   {
    "name": "fast_gate 证据新鲜且全绿",
    "status": "PASS",
-   "detail": "2026-10-31T00:02:26"
+   "detail": "2026-10-31T00:13:01"
   },
   {
    "name": "v2_tests 证据新鲜且全绿",
@@ -118,8 +118,8 @@
   },
   {
    "name": "README ↔ v2_tests 数字",
-   "status": "FAIL",
-   "detail": "**72 / 72 PASS（1216 项检查"
+   "status": "PASS",
+   "detail": ""
   },
   {
    "name": "README ↔ fast_gate 数字",
@@ -144,7 +144,7 @@
   {
    "name": "git 标签可读",
    "status": "PASS",
-   "detail": "218 个标签"
+   "detail": "220 个标签"
   },
   {
    "name": "V2.2.90",
@@ -187,5 +187,5 @@
    "detail": "FAIL 项全部归为证据/环境边界（见上），退出码 1"
   }
  ],
- "ok": false
+ "ok": true
 }

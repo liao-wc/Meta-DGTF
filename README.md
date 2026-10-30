@@ -16,7 +16,7 @@
 > 这份 README 只写能被验证的事；详细来源、能力、版本演化见 docs/history/。
 > **2026-10-31 收束同步（V2.2.90 / App 2.0.83）**
 > 
-> 一页看全「能力 ↔ 证据 ↔ 已知限制」：[docs/能力与证据矩阵_20261030.md](docs/能力与证据矩阵_20261030.md)。：V2 **71/71（1210 checks，SKIP 0）**；fast_gate **25/25**（动态选最高版引擎；含发布流程门自检；audit70 71/0）；
+> 一页看全「能力 ↔ 证据 ↔ 已知限制」：[docs/能力与证据矩阵_20261030.md](docs/能力与证据矩阵_20261030.md)。：V2 **72/72（1216 checks，SKIP 0）**；fast_gate **25/25**（动态选最高版引擎；含发布流程门自检；audit70 71/0）；
 > App selftest **459/0**（自动门）；一键验收 **PASS 30 / SKIP 0 / FAIL 0**；发布流程门 **PASS（N/A 项带原因）**；动态配置/优先成本 **132/132**、更优/route 安全门 **30/30**、全链路真跑 **25/25**、道生统一模式 **27/27**、自动模式真跑 **12/12**；服务适配器 self_check=v8b / self_check_min=v9b / dual_judge=judge_v3 / route=qwen05b_v1。
 | **四层目标探针**（route 0/1/0,1,both/0,1,all） | **82 / 82 PASS**（V2.2.90 复跑：4 case 共 278 calls，墙钟 460.5s）；层0 未达成（excavate=1.0，单次方差）/ 层1 未测出 / both 判据样本不足 / all 未达成（0.75） |
 | **四层读数方差（刷新）** | 62 次历史复跑：case0 均值 **0.332**（0–1）/ both **0.024**（0–0.37）/ all **0.573**（0.5–0.75，从未到 1.0）| docs/probe_variance_20261030.json |
@@ -145,7 +145,7 @@ python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.90.py -c configs/方案F-帕累
 | 门 | 结果 |
 |---|---|
 | fast_gate | **25 / 25 PASS**（动态选最高版引擎 + engine_alignment + release_process_selftest；audit70 71/0） |
-| V2 tests_*.py | **71 / 71 PASS（1210 项检查，SKIP 0）** |
+| V2 tests_*.py | **72 / 72 PASS（1216 项检查，SKIP 0）** |
 | App selftest | **PASS 459 / FAIL 0**（含本地链路 11 项） |
 | 一键验收 `scripts/final_acceptance.py --with-service` | **PASS 30 / SKIP 0 / FAIL 0**（29+1 步；含 dynamic_opt、fused_optimal、fused_full_chain、daosheng_unified、auto_mode_local） |
 | **APP→引擎→本地模型 e2e** | **18 / 18 PASS**，冷缓存真跑 **14.7～106.7s**（本地链路验证档；V2.2.15 同判据 124.9～157.9s；热缓存不计），零 API 成本 |
