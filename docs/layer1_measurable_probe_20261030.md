@@ -286,6 +286,20 @@ V2.2.97 全量 probe **三次**（各 82/82 PASS）：
 「判据样本不足」变为**稳定可判定**；默认仍关闭（成本考虑，单次多约 1 圈/层）。
 证据：docs/layer1_auto_judgeable_stable_20261031.json。
 
+
+## 7.18 both 层 opt-in 可判定且达成（V2.2.98，零 API）
+
+配置：`spiral.min_rounds_judgeable=true`（默认关），probe `--only both` + fresh，两次：
+
+| run | 断言 | calls | trace | 目标判定 | main |
+|---|---|---|---|---|---|
+| A | 24/24 | 98 | 3 | **achieved** | 0.0 |
+| B | 24/24 | 98 | 3 | **achieved** | 0.0 |
+
+结论：补到 3 个逐圈点后，both 层的「fuse 连续不涨」判据可判定并**达成**（fuse=0.0 且 3 点不涨）；
+默认 2 圈时它只能停在「判据样本不足」。这是原语判定（非质量宣称）：fuse 不涨 = 对撞层停止融合出新层面。
+证据：docs/layer1_auto_judgeable_stable_20261031.json。
+
 ## 8. 后续建议（需预算或明确方向）
 
 - 方案 A（有预算）：1 个 web on 的层1 小样本（单跑约与既有 A/B 同量级），验证能否产生 candidates>0；
