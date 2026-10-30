@@ -1,3 +1,17 @@
+【V2.2.71（2026-10-30，PATCH · playbook 只读基线；App 2.0.81 不变）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.71.py（__version__=2.2.71；默认零行为差）；
+  App 2.0.81 不变。
+- ★ 引擎 playbook.readonly（默认 false）：跑后 EML 学习不落盘，基线不被改写。
+- ★ probe --baseline-playbook DIR（复制顶层文件到私有目录并只读）/ --readonly-playbook；
+  meta 记录 baseline_playbook/readonly_playbook。
+- ★ 实验：temp0+只读基线两次完全一致（32/32 calls、3/3 cand、0/0 settle，unmeasured）⇒
+  可复现性达成；但该基线不可测；可写状态曾 settle=3 但不可复现。
+- ★ 下一步：在只读基线中播种可判定候选状态，实现「可复现+可测」。
+- 验收：fast_gate 18/18；V2 71/71（1208 checks）；App selftest 459/0；一键验收 PASS 30 /
+  SKIP 0 / FAIL 0；e2e 18/18；四层 probe 84/84；发布流程门 pre/post-tag 全 PASS。零云 API。
+- 兼容性：默认 playbook.readonly=false，生产行为不变。
+- 标签：V2.2.71 / engine-V2.2.71（app-V2.0.81 不变，不移动）。
+
 【V2.2.70（2026-10-30，PATCH · probe --fresh-playbook；App 2.0.81 不变）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.70.py（__version__=2.2.70；引擎侧零行为差）；
   App 2.0.81 不变。
@@ -646,17 +660,3 @@
 - 判据：test_dynamic_opt 54→60（warn 上限/ok 不设限/显式优先/apply_plan/build_cmd/budget_cap）；
   回归 fused_optimal 30 / fused_full_chain 16 / daosheng_unified 27 / auto_mode_local 12。
 - 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
-  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
-  发布流程门 pre/post-tag 全 PASS。
-- 兼容性：显式参数优先；ok 档不设 token 上限；项目/quality_first 不降评审。
-- 标签：V2.2.28 / engine-V2.2.28 / app-V2.0.53。
-
-【V2.2.27（2026-10-29，PATCH · App 全流程开销校准 + 有效 route 成本 + 阶段动态路由；同发 App 2.0.52）】
-- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.27.py（__version__=2.2.27）；
-  App 2.0.52。
-- ★ App 全流程开销：1 臂有界云校准（约 ¥0.07）：App 实际 34,727 tokens vs 引擎模型
-  31,620 → app_overhead≈1.10，已计入 dynamic_config 候选 token/成本。
-- ★ 有效 route 成本：成本估算改用显式 opts.route（优先）而非预设 route；省层任务不再被
-  四层口径高估；plan.dynamic_opt.route 记录实际生效 route。
-- ★ 阶段动态路由：预算 warn/critical 且非项目/非 quality_first 时 dual_judge=cache，
-  plan.dynamic_opt.applied/stage_routing 可审计；ok 档/项目题/quality_first 保持原评审档。

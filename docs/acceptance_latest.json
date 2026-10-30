@@ -1,7 +1,7 @@
 {
  "schema": "dgtf.acceptance.v1",
- "ts": 1793341969.747542,
- "iso": "2026-10-30T14:32:49",
+ "ts": 1793343647.038973,
+ "iso": "2026-10-30T15:00:47",
  "with_service": true,
  "skip_service": false,
  "require_all": false,
@@ -12,25 +12,25 @@
   {
    "name": "fast_gate",
    "status": "PASS",
-   "sec": 21.0,
+   "sec": 20.9,
    "reason": ""
   },
   {
    "name": "v2_tests",
    "status": "PASS",
-   "sec": 157.9,
+   "sec": 159.8,
    "reason": ""
   },
   {
    "name": "replay_guard",
    "status": "PASS",
-   "sec": 2.9,
+   "sec": 3.0,
    "reason": ""
   },
   {
    "name": "process_gate_guard",
    "status": "PASS",
-   "sec": 1.8,
+   "sec": 1.9,
    "reason": ""
   },
   {
@@ -54,13 +54,13 @@
   {
    "name": "train_guard",
    "status": "PASS",
-   "sec": 26.7,
+   "sec": 26.5,
    "reason": ""
   },
   {
    "name": "app_cache_bypass",
    "status": "PASS",
-   "sec": 0.3,
+   "sec": 0.2,
    "reason": ""
   },
   {
@@ -78,13 +78,13 @@
   {
    "name": "graph_decode",
    "status": "PASS",
-   "sec": 6.5,
+   "sec": 7.2,
    "reason": ""
   },
   {
    "name": "probe_cover_wide",
    "status": "PASS",
-   "sec": 3.2,
+   "sec": 3.1,
    "reason": ""
   },
   {
@@ -132,7 +132,7 @@
   {
    "name": "mem_reclaim",
    "status": "PASS",
-   "sec": 12.3,
+   "sec": 12.0,
    "reason": ""
   },
   {
@@ -144,25 +144,25 @@
   {
    "name": "app_selftest",
    "status": "PASS",
-   "sec": 60.4,
+   "sec": 51.7,
    "reason": ""
   },
   {
    "name": "dynamic_opt",
    "status": "PASS",
-   "sec": 21.2,
+   "sec": 21.3,
    "reason": ""
   },
   {
    "name": "fused_optimal",
    "status": "PASS",
-   "sec": 14.0,
+   "sec": 13.8,
    "reason": ""
   },
   {
    "name": "fused_full_chain",
    "status": "PASS",
-   "sec": 131.8,
+   "sec": 185.5,
    "reason": ""
   },
   {
@@ -174,13 +174,13 @@
   {
    "name": "auto_mode_local",
    "status": "PASS",
-   "sec": 14.9,
+   "sec": 17.1,
    "reason": ""
   },
   {
    "name": "e2e_app_local",
    "status": "PASS",
-   "sec": 47.6,
+   "sec": 81.6,
    "reason": ""
   },
   {

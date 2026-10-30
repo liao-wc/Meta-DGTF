@@ -577,6 +577,10 @@ def main(argv=None) -> int:
                     or "水的三态变化有哪些驱动因素", help="题面")
     ap.add_argument("--temperature", type=float, default=None,
                     help="透传 api.temperature（如 0.0 做确定性对照；默认不设=0.6）")
+    ap.add_argument("--baseline-playbook", default="",
+                    help="以该目录的 playbook.jsonl 为只读基线（复制到私有目录，不写回）")
+    ap.add_argument("--readonly-playbook", action="store_true",
+                    help="playbook.readonly=true（跑后学习不落盘）")
     ap.add_argument("--fresh-playbook", action="store_true",
                     help="每次运行用全新 playbook 目录（保留学习、隔离历史）")
     ap.add_argument("--isolate-eml", action="store_true",
@@ -683,6 +687,34 @@ def main(argv=None) -> int:
     if args.temperature is not None:
         _ov["api.temperature"] = float(args.temperature)
         print("温度对照：api.temperature=%s" % args.temperature)
+    if args.baseline_playbook:
+        import shutil
+        _src = Path(args.baseline_playbook)
+        if _src.is_dir():
+            _bd = (SAVE_DIR / "_probe_baseline"
+                   / time.strftime("%Y%m%d_%H%M%S"))
+            _bd.mkdir(parents=True, exist_ok=True)
+            for _f in _src.iterdir():
+                if _f.is_file():
+                    try:
+                        shutil.copy2(str(_f), str(_bd / _f.name))
+                    except OSError:
+                        pass
+            _src_disp = str(_src)
+        elif _src.is_file():
+            _bd = (SAVE_DIR / "_probe_baseline"
+                   / time.strftime("%Y%m%d_%H%M%S"))
+            _bd.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(str(_src), str(_bd / "playbook.jsonl"))
+            _src_disp = str(_src)
+        else:
+            print("基线目录/文件不存在：%s" % args.baseline_playbook)
+            return 2
+        _ov["playbook.dir"] = _bd.relative_to(ROOT).as_posix()
+        _ov["playbook.readonly"] = True
+        print("只读基线：%s（来源 %s）" % (_ov["playbook.dir"], _src_disp))
+    elif args.readonly_playbook:
+        _ov["playbook.readonly"] = True
     if args.fresh_playbook:
         _pb = (SAVE_DIR / "_probe_pb"
                / time.strftime("%Y%m%d_%H%M%S"))
@@ -723,6 +755,9 @@ def main(argv=None) -> int:
             "temperature": (None if args.temperature is None
                             else float(args.temperature)),
             "fresh_playbook": bool(args.fresh_playbook),
+            "baseline_playbook": str(args.baseline_playbook or ""),
+            "readonly_playbook": bool(args.readonly_playbook
+                                      or args.baseline_playbook),
             "services": {"8772": svc_ok, "8773": shim_ok,
                          "shim_health": shim_h},
             "finished_at": time.strftime("%Y-%m-%d %H:%M:%S")}
