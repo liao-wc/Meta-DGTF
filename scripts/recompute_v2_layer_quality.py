@@ -17,6 +17,8 @@ sys.path.insert(0, str(ROOT / "dgtf_engine"))
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--check", action="store_true",
+                    help="只读一致性：对比盘上层质量与重算值，有差异 exit 1（不写）")
     args = ap.parse_args()
     from dgtf_v2.bridge import _layer_quality
     packs = {}
@@ -30,6 +32,7 @@ def main() -> int:
             packs[rid] = d
     rows = []
     changed = 0
+    diff = []
     for ln in EVENTS.read_text(encoding="utf-8", errors="replace").splitlines():
         try:
             e = json.loads(ln)
@@ -54,8 +57,15 @@ def main() -> int:
                     for k, v in extra.items():
                         pl.setdefault(k, v)
                     changed += 1
+                    if args.check and str(pl.get("quality")) != str(q_local):
+                        diff.append((rid, tmpl, pl.get("quality"), q_local))
         rows.append(e)
-    print("outcomes_changed", changed, "rows", len(rows), "dry_run", args.dry_run)
+    print("outcomes_changed", changed, "rows", len(rows), "dry_run", args.dry_run,
+          "check", args.check, "diff", len(diff))
+    if args.check:
+        for _d in diff[:10]:
+            print("DIFF", _d)
+        return 0 if not diff else 1
     if args.dry_run or not changed:
         return 0
     bak = EVENTS.with_name("v2_events.jsonl.bak_requal_" + time.strftime("%Y%m%d_%H%M%S"))

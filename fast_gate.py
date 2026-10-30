@@ -273,6 +273,9 @@ def build_checks(engine=None) -> list:
         # [V2.2.81] 产物质量一致性（新包无矛盾/无跨位置 answer_ready 不一致）
         ("outputs_consistency", [sys.executable,
          str(ROOT / "scripts" / "outputs_quality_consistency.py")]),
+        # [V2.2.82] v2_events 层质量与 packed 重算一致（动态调度读它）
+        ("v2_quality_consistency", [sys.executable,
+         str(ROOT / "scripts" / "recompute_v2_layer_quality.py"), "--check"]),
     ]
     return checks
 
