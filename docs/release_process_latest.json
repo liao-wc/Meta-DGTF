@@ -1,15 +1,15 @@
 {
  "schema": "dgtf.release_process.v1",
- "ts": 1793396084.5073707,
- "iso": "2026-10-31T05:34:44",
+ "ts": 1793396118.4232512,
+ "iso": "2026-10-31T05:35:18",
  "engine": "dgtf_engine\\dgtf_v2\\engine\\Meta-DGTF-V2.2.99.py",
  "engine_version": "2.2.99",
  "app_version": "2.0.83",
  "pre_tag": true,
  "post_tag": false,
  "passed": 31,
- "failed": 1,
- "na": 3,
+ "failed": 0,
+ "na": 4,
  "checks": [
   {
    "name": "引擎动态发现",
@@ -174,18 +174,18 @@
   {
    "name": "dsh_loop_check PASS 项",
    "status": "PASS",
-   "detail": "4 项"
-  },
-  {
-   "name": "dsh_loop_check B.  最新真跑离线质量门预检  20261031_053422_",
-   "status": "FAIL",
-   "detail": "[FAIL] B.  最新真跑离线质量门预检  20261031_053422_为什么城市热岛效应在夜间比白天更明显.packed.json ⇒   - G5 质量门 quality：answer_quality=unverified（要求 verified）"
+   "detail": "5 项"
   },
   {
    "name": "dsh_loop_check C.  App 运行态 + DSH 本对话 full=1 视图  ",
    "status": "N/A",
-   "detail": "用户 App 实例不可达/超时（8765 为人工实例，非发版门）"
+   "detail": "用户 App 实例不可达/超时（8765 为人工实例，非发版门）（预算降级标记=是）"
+  },
+  {
+   "name": "dsh_loop_check 退出码",
+   "status": "N/A",
+   "detail": "FAIL 项全部归为证据/环境边界（见上），退出码 1"
   }
  ],
- "ok": false
+ "ok": true
 }

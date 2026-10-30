@@ -316,6 +316,10 @@ App 的 profile 列表可直接选择；默认配置不变。验证：App `profi
 - 研究层跑满 **3/3 圈**（serial 模式，min_rounds=3 拦截生效），43 calls / 52,896 tokens（本地）；
 - settlement.total=1（有值）；preset Q 与方案 D 的差异**仅 3 个 opt-in 键**；
 - 证据：docs/preset_q_verify_20261031.json。
+注：本次本地验证产物落在 outputs/，会被 dsh_loop_check B 当作「最新真跑」抽查
+（answer_quality=unverified ⇒ 预检 FAIL）；验证后已删除该本地产物，发布门恢复 PASS。
+今后本地 e2e 应写到临时目录，勿污染输出目录。
+
 
 ## 8. 后续建议（需预算或明确方向）
 
