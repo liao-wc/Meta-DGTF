@@ -49,7 +49,6 @@ runtime:
 external_input:
   enabled: true
   file_paths: []
-  fallback_web: true
 claim_gap:
   enabled: true
 api:

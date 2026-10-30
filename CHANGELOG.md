@@ -1,3 +1,14 @@
+【V2.2.94（2026-10-31，PATCH · 配置键卫生审计；App 2.0.83）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.94.py（__version__=2.2.94；引擎侧零行为差）。
+- ★ 新增 scripts/local_model/audit_config_keys.py：对照最高版引擎 DEFAULT_CONFIG + 源码引用，
+  找出 configs/*.yaml 中未被读取的陈旧键（排除 app_daosheng.* 等 App 自管段）；
+  证据 docs/config_key_audit_20261031.json。
+- ★ 清理 V1 遗留键 external_input.fallback_web（V2 引擎从未读取）：主配置 + 2 个 preset 各 1 行；
+  清理后 23 个 preset 陈旧键 0，YAML 全部解析通过。
+- 验收：V2 73/73（1228 checks）；fast_gate 25/25；App selftest；一键验收；e2e 18/18；probe；
+  发布流程门 pre/post-tag 全 PASS。零云 API。
+- 标签：V2.2.94 / engine-V2.2.94（app-V2.0.83 不变，不移动）。
+
 【V2.2.93（2026-10-31，PATCH · judgeable layers 字符串写法；App 2.0.83）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.93.py（__version__=2.2.93；引擎侧零行为差）；
   judgeable_rounds.py 修复字符串 layers 被拆字符的问题。
@@ -647,13 +658,3 @@
 - 判据：test_dynamic_opt 111（+2：S1 候选缓存、S2 结果缓存；Q4 扩到 3 语义臂）；
   回归 fused_optimal 30 / fused_full_chain 23 / daosheng_unified 27 / auto_mode_local 12。
 - 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
-  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
-  发布流程门 pre/post-tag 全 PASS。本轮零 API 花费。
-- 兼容性：8771 未运行 ⇒ 语义预判 fail-open；缓存只影响预判，真实缓存不变。
-- 标签：V2.2.42 / engine-V2.2.42 / app-V2.0.67。
-
-【V2.2.41（2026-10-29，PATCH · 语义缓存命中预判；同发 App 2.0.66）】
-- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.41.py（__version__=2.2.41；引擎侧零行为差）；
-  App 2.0.66。
-- ★ 语义缓存标定（本地链路零 API）：精确命中 sim=1.0；近重复问法 sim=0.996 命中同一
-  verified 产物，均 cache_hit=true 且 0 次新 LLM 调用；证据 docs/semantic_cache_hit_20261029.json。

@@ -1249,7 +1249,6 @@ claim_gap:
   enabled: true
 external_input:
   enabled: true
-  fallback_web: true
 
 api:
   tools:
