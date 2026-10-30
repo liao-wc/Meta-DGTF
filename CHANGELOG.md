@@ -1,3 +1,14 @@
+【V2.2.76（2026-10-30，PATCH · 动态矩阵探测器自检；App 2.0.81 不变）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.76.py（__version__=2.2.76；引擎侧零行为差）；
+  App 2.0.81 不变。
+- ★ audit_dynamic_matrix.py 抽出 detect_violations 纯函数 + self_test：3 个人为违法行必须被抓，
+  否则脚本失败（防「永远 PASS」）。
+- ★ 自检 3/3 mutants caught；36 组合 0 违反。
+- 验收：fast_gate 19/19；V2 71/71（1208 checks）；App selftest 459/0；一键验收 PASS 30 /
+  SKIP 0 / FAIL 0；e2e 18/18；四层 probe 84/84；发布流程门 pre/post-tag 全 PASS。零云 API。
+- 兼容性：只改测试工具；引擎零行为差；App 不变。
+- 标签：V2.2.76 / engine-V2.2.76（app-V2.0.81 不变，不移动）。
+
 【V2.2.75（2026-10-30，PATCH · fast_gate 动态矩阵检查；App 2.0.81 不变）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.75.py（__version__=2.2.75；引擎侧零行为差）；
   App 2.0.81 不变。
@@ -650,14 +661,3 @@
 - ★ 省层收益判定：plan.dynamic_opt.route_pruning = {advice, saved_tokens_estimate,
   saved_pct_estimate, evidence, note}。短程事实（require_web 且总圈数≤6）⇒ keep_four_layers；
   长程高圈且模型估算省≥10% ⇒ subset_may_save（仍需质量证据）；判定只记录/提示，不改实际 route。
-- ★ 风险标注更新：route_quality_risk.evidence 改为多样本 JSON（保留单题 A/B 为 evidence_prev），
-  note 明确"方差主导，不能据此判断省层安全"。
-- 判据：test_dynamic_opt 69→73（短程 keep、证据路径、full 无判定、长程 may_save）。
-  回归 fused_optimal 30 / fused_full_chain 16 / daosheng_unified 27 / auto_mode_local 12。
-- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
-  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
-  发布流程门 pre/post-tag 全 PASS。
-- 兼容性：默认四层不变；省层判定不改变实际 route。
-- 标签：V2.2.31 / engine-V2.2.31 / app-V2.0.56。
-
-【V2.2.30（2026-10-29，PATCH · 层子集质量风险标注；同发 App 2.0.55）】

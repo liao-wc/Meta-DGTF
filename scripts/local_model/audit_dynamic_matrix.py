@@ -53,7 +53,42 @@ def one(kind: str, q: str, bal: float) -> dict:
     }
 
 
+def detect_violations(rows) -> list:
+    bad = []
+    for r in rows:
+        if r.get("error"):
+            bad.append(r)
+            continue
+        if r["kind"] in ("fact", "choice") and r.get("web") != "on":
+            bad.append({"kind": r["kind"], "balance": r["balance"],
+                        "why": "%s web != on" % r["kind"], "row": r})
+        if r.get("tier") == "quality" and r.get("engine_mode") == "fast":
+            bad.append({"kind": r["kind"], "balance": r["balance"],
+                        "why": "tier=quality but engine_mode=fast", "row": r})
+        if r.get("tier") == "fast" and r.get("engine_mode") not in ("fast", None):
+            bad.append({"kind": r["kind"], "balance": r["balance"],
+                        "why": "tier=fast but engine_mode!=fast", "row": r})
+    return bad
+
+
+def self_test() -> None:
+    cases = [
+        ([{"kind": "fact", "balance": 50.0, "web": "off",
+           "tier": "quality", "engine_mode": "B"}], "fact web != on"),
+        ([{"kind": "reasoning", "balance": 50.0, "web": "auto",
+           "tier": "quality", "engine_mode": "fast"}],
+         "tier=quality but engine_mode=fast"),
+        ([{"kind": "choice", "balance": 4.0, "web": "off",
+           "tier": "fast", "engine_mode": "B"}],
+         "choice web != on"),
+    ]
+    for rows, why in cases:
+        got = detect_violations(rows)
+        assert any(why in (b.get("why") or "") for b in got), why
+    print("self-test: detector has teeth (3/3 mutants caught)")
+
 def main() -> int:
+    self_test()
     rows = []
     for kind, q in QUESTIONS.items():
         for bal in BALANCES:
@@ -62,20 +97,7 @@ def main() -> int:
             except Exception as e:  # noqa: BLE001
                 rows.append({"kind": kind, "balance": bal,
                              "error": "%s: %s" % (type(e).__name__, e)})
-    bad = []
-    for r in rows:
-        if r.get("error"):
-            bad.append(r)
-            continue
-        if r["kind"] == "fact" and r.get("web") != "on":
-            bad.append({"kind": "fact", "balance": r["balance"],
-                        "why": "fact web != on", "row": r})
-        if r.get("tier") == "quality" and r.get("engine_mode") == "fast":
-            bad.append({"kind": r["kind"], "balance": r["balance"],
-                        "why": "tier=quality 但 engine_mode=fast", "row": r})
-        if r.get("tier") == "fast" and r.get("engine_mode") not in ("fast", None):
-            bad.append({"kind": r["kind"], "balance": r["balance"],
-                        "why": "tier=fast 但 engine_mode!=fast", "row": r})
+    bad = detect_violations(rows)
     out = {"schema": "metadgtf.dynamic_matrix_audit.v1",
            "rows": rows, "violations": bad,
            "n": len(rows), "n_bad": len(bad)}
