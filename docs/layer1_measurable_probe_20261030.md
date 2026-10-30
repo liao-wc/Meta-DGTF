@@ -78,7 +78,17 @@ V2.2.67 曾观测到一次 case1 `settle=0.000（valued）`（44 calls、candida
 - 结论：层1 可测性受 **EML 状态 + 解码温度 + 候选可判定性** 多因素影响；
   当前 probe 对层1 继续如实标「未测出 + 结构化归因」，不伪造成可测。
 
-## 7. 后续建议（需预算或明确方向）
+## 7. 可测性不可重建（V2.2.72 后）
+
+尝试从历史「可测」时刻重建状态：
+
+1. 从 12:09 valued pack 提取 `playbook.applied`（carve_first/rounds_delta 等）；
+2. 强行把 `dgtf_memory/behavior_fusion_stats.json` 改为选 `fusion_full`（历史可测时 arm），跑 temp0：
+   **arm=fusion_full，但 cand=0、settle=0、unmeasured**；
+3. 说明：可测不是单靠 arm 或某组 playbook 条目就能复现，**那次 valued 是瞬态状态**（后又不可复现）；
+4. 结论：不再「碰运气」重建；要稳定可测，需要引擎侧**确定性的可判定性度量/输入**设计（后续工作）。
+
+## 8. 后续建议（需预算或明确方向）
 
 - 方案 A（有预算）：1 个 web on 的层1 小样本（单跑约与既有 A/B 同量级），验证能否产生 candidates>0；
 - 方案 B（零成本但改引擎）：让研究层候选生成不依赖 web（需设计 + V2 测试 + 发布），风险较高；
