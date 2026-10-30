@@ -885,6 +885,30 @@ _web_cands = DS.dynamic_config(ds=_pres, tier="fast", engine_mode="fast",
 ck("E3 非事实题允许 web off（事实题才会被强制 on）",
    any(c["web"] == "off" for c in _web_cands))
 
+print("── F tier_advice kind-aware（V2.2.78）──")
+_tier_cases = [
+    ("F1 reasoning 建议 fast",
+     "为什么城市热岛效应在夜间比白天更明显？", False, "fast"),
+    ("F2 choice 建议 fast",
+     "以下哪项属于可再生能源？A. 煤炭 B. 太阳能 C. 石油 D. 天然气", False, "fast"),
+    ("F3 project fast 更费 token ⇒ 建议 current",
+     "Meta-DGTF 道生三阶模型的项目当前状态如何？", True, "current"),
+]
+for _i, (_name, _q, _prj, _want) in enumerate(_tier_cases):
+    _pl = DS.build_plan(_q, {}, requested="daosheng",
+                        project_related=_prj, is_mock=False, balance_cny=50.0)
+    _qr = ((_pl.get("dynamic_opt") or {}).get("quality_retry") or {})
+    ck(_name, _qr.get("tier_advice") == _want,
+       "got=%r why=%s" % (_qr.get("tier_advice"),
+                          str(_qr.get("tier_advice_why"))[:80]))
+ck("F4 project 建议理由说明「fast 更费 tokens」",
+   "更费 tokens" in str((((DS.build_plan(
+       "Meta-DGTF 道生三阶模型的项目当前状态如何？", {},
+       requested="daosheng", project_related=True, is_mock=False,
+       balance_cny=50.0).get("dynamic_opt") or {}).get(
+           "quality_retry") or {}).get("tier_advice_why") or "")),
+)
+
 print("")
 print("PASS %d / FAIL %d" % (len(P), len(F)))
 raise SystemExit(1 if F else 0)

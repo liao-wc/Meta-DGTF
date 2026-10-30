@@ -1229,6 +1229,21 @@ _TIER_ADVICE_EVIDENCE = {
         "note": "reasoning：quality 69.4k/124.6s vs fast 66.9k/67.4s，均 unverified；"
                 "fast 省 ~3.6% tokens、墙钟约减半",
     },
+    # ★ [V2.2.78] choice/project 真 API A/B（App 默认 auto 下真跑，约 ¥0.6）：
+    "choice": {
+        "evidence": "docs/tier_advice_choice_project_ab_20261030.json",
+        "quality": {"tokens": 85208, "wall_s": 73.2, "verified": False},
+        "fast": {"tokens": 83265, "wall_s": 57.1, "verified": False},
+        "note": "choice：quality 85.2k/73.2s vs fast 83.3k/57.1s，均 needs_evidence；"
+                "fast 省 ~2.3% tokens、墙钟 -22%",
+    },
+    "project": {
+        "evidence": "docs/tier_advice_choice_project_ab_20261030.json",
+        "quality": {"tokens": 63051, "wall_s": 184.5, "verified": False},
+        "fast": {"tokens": 74791, "wall_s": 59.1, "verified": False},
+        "note": "project：quality 63.1k/184.5s vs fast 74.8k/59.1s，均 unverified；"
+                "fast **多 18.6% tokens**（只省墙钟）⇒ 不建议默认降 fast",
+    },
 }
 
 _QUALITY_RETRY_EVIDENCE = {
@@ -2158,6 +2173,9 @@ def build_plan(question: str, opts: dict | None = None, *,
     #   项目/verified 需要背景证据；事实题仅在预算 ok 时才建议 web-retry；
     #   预算 warn/critical 建议关闭 retry 以省成本。
     _kind_qr = str(_sc1.get("kind") or "")
+    # ★ [V2.2.78] 建议的题型口径：项目相关题优先按 project（与 project 证据对齐；
+    #   场景模型可能把项目题判成 reasoning/decision，不能因此套错证据）。
+    _adv_kind = "project" if _prj else _kind_qr
     _qr = {"policy": str(quality_policy or "auto:stable"), "retry": False,
            "why": "", "advisory": True}
     if _prj or str(quality_policy or "").startswith("auto:verified"):
@@ -2205,13 +2223,30 @@ def build_plan(question: str, opts: dict | None = None, *,
         _pct_adv = _qr.get("expected_verified_pct")
         if (tier == "quality" and dyn.get("budget_level") == "ok"
                 and _pct_adv is not None and float(_pct_adv) <= 0.0):
-            _qr["tier_advice"] = "fast"
-            _te = _TIER_ADVICE_EVIDENCE.get(_kind_qr) or {}
-            _qr["tier_evidence"] = _te.get("evidence")
-            _qr["tier_advice_why"] = (
-                ("%s 实测 verified 0 次；质量档未带来验证收益，fast 可省 tokens"
-                 % _kind_qr if _kind_qr else "该题型实测 verified 0 次")
-                + (("（%s）" % _te.get("note")) if _te.get("note") else ""))
+            _te = _TIER_ADVICE_EVIDENCE.get(_adv_kind) or {}
+            _q_tok = float((_te.get("quality") or {}).get("tokens") or 0)
+            _f_tok = float((_te.get("fast") or {}).get("tokens") or 0)
+            # ★ [V2.2.78] 只有「fast 的实测 tokens 更低」才建议 fast；
+            #   project 实测 fast 反而多 18.6% tokens（只省墙钟）⇒ 保持 current。
+            if _q_tok and _f_tok and _f_tok <= _q_tok:
+                _qr["tier_advice"] = "fast"
+                _qr["tier_evidence"] = _te.get("evidence")
+                _qr["tier_advice_why"] = (
+                    ("%s 实测 verified 0 次；质量档未带来验证收益，fast 可省 tokens"
+                     % _adv_kind if _adv_kind else "该题型实测 verified 0 次")
+                    + (("（%s）" % _te.get("note")) if _te.get("note") else ""))
+            elif _q_tok and _f_tok:
+                _qr["tier_advice"] = "current"
+                _qr["tier_evidence"] = _te.get("evidence")
+                _qr["tier_advice_why"] = (
+                    "%s 实测 fast 更费 tokens（quality %.1fk vs fast %.1fk）"
+                    "⇒ 不建议默认降 fast" % (_adv_kind or "该题型",
+                                              _q_tok / 1000.0, _f_tok / 1000.0))
+            else:
+                _qr["tier_advice"] = "fast"
+                _qr["tier_advice_why"] = (
+                    "%s 实测 verified 0 次；无 token 对照证据，按省墙钟建议 fast"
+                    % (_adv_kind or "该题型"))
         else:
             _qr["tier_advice"] = "current"
             _qr["tier_advice_why"] = ""
