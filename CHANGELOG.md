@@ -1,3 +1,12 @@
+【V2.2.100（2026-10-31，PATCH · 状态快照数字门禁；App 2.0.83）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.100.py（__version__=2.2.100；引擎侧零行为差）。
+- ★ 新增 scripts/local_model/audit_snapshot_numbers.py：快照 fast_gate/V2/selftest/验收/引擎版本
+  与最新证据逐项对齐；fast_gate 新增 snapshot_numbers（26→27）；acceptance_semantics 26→27。
+- ★ 首次运行即发现并修正快照过期数字（15/15、1208 checks、App 2.0.37 等 → 26/26、1233、459/0、30/0）。
+- 验收：V2 73/73（1233 checks）；fast_gate 27/27；App selftest；一键验收；e2e 18/18；probe；
+  发布流程门全 PASS。零云 API。
+- 标签：V2.2.100 / engine-V2.2.100（app-V2.0.83 不变，不移动）。
+
 【V2.2.99（2026-10-31，PATCH · 方案Q 可判定优先 preset；App 2.0.83）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.99.py（__version__=2.2.99；引擎侧零行为差）。
 - ★ 新增 configs/方案Q-可判定优先.yaml（方案 D + opt-in）：min_rounds_judgeable=true、
@@ -640,15 +649,3 @@
   test_dynamic_opt 121 不变；回归 fused_optimal 30 / daosheng_unified 27 / auto_mode_local 12。
 - 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
   一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
-  发布流程门 pre/post-tag 全 PASS。本轮零 API 花费。
-- 兼容性：仅新增响应字段；任务执行不变。
-- 标签：V2.2.46 / engine-V2.2.46 / app-V2.0.71。
-
-【V2.2.45（2026-10-29，PATCH · 语义候选索引持久化；同发 App 2.0.70）】
-- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.45.py（__version__=2.2.45；引擎侧零行为差）；
-  App 2.0.70。
-- ★ 候选清单落盘 dgtf_memory/semantic_cache_index.json（ts+items，300s 内跨进程复用）；
-  进程内缓存失效时优先读磁盘；实测清空后 0.01s 恢复 120 条候选。
-- ★ App 启动后台 warm_semantic_cache：构建索引并批量 embedding（等 8771 就绪最多 12s；
-  失败不影响主流程）。
-- 判据：test_dynamic_opt 118→121（S3 索引落盘、S4 磁盘恢复 <0.5s、S5 预热结构）；
