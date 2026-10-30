@@ -1,3 +1,13 @@
+【V2.2.90（2026-10-31，PATCH · 研究层拆解确定性回退；App 2.0.83）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.90.py（__version__=2.2.90）；
+  新增 dgtf_engine/dgtf_v2/decompose_fallback.py + tests_decompose_fallback.py。
+- ★ 根因：研究层拆解依赖 LLM JSON；本地 0.5B 解析失败静默返回 [] ⇒ settlement.total=0 ⇒ 层1 未测出。
+- ★ 修复：LLM 结果为空时从修行层探针/悬空线头原文确定性生成子问题（不调 LLM/不改写，保守 partial）。
+- ★ 验证：sub_questions 0→2；settlement.total 0→2；probe case1 unmeasured→**valued 0.000**（判据样本不足）。
+- 验收：tests_decompose_fallback 6/6；fast_gate 25/25；V2 72/72（1216 checks）；App selftest；
+  一键验收；e2e 18/18；probe 全四层；发布流程门 pre/post-tag 全 PASS。零云 API。
+- 标签：V2.2.90 / engine-V2.2.90（app-V2.0.83 不变，不移动）。
+
 【V2.2.89（2026-10-30，PATCH · 证据命名静态/日期扫描；App 2.0.83）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.89.py（__version__=2.2.89；引擎侧零行为差）；
   App 2.0.83 不变。
@@ -648,13 +658,3 @@
 - 标签：V2.2.40 / engine-V2.2.40 / app-V2.0.65。
 
 【V2.2.39（2026-10-29，PATCH · 预算紧张复用未验证产物；同发 App 2.0.64）】
-- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.39.py（__version__=2.2.39；引擎侧零行为差）；
-  App 2.0.64。
-- ★ 问题：产物缓存只复用 verified+answer_ready；本环境多数产出 unverified ⇒ 同题重复提交
-  仍整单重跑、重复计费。
-- ★ 修法：plan.allow_unverified_cache（预算 warn/critical）+ dynamic_opt.cache_policy；
-  server._find_cached_pack(allow_unverified=True) 对同题精确匹配可复用
-  unverified/needs_evidence 产物；语义回退仍只 verified；响应 cache_unverified；
-  no_cache/force_rerun 仍强制重跑；apply_plan 透传。
-- ★ 全链路本地验证（零 API）：fused_full_chain 16→21（D0 seed 完成、D1 cache_hit、
-  D2 cache_unverified、D3 继承 output、D4 0 新 packed/0 次新 LLM 调用）。

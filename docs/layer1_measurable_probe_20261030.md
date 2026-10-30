@@ -104,6 +104,26 @@ V2.2.67 曾观测到一次 case1 `settle=0.000（valued）`（44 calls、candida
 
 证据：docs/min_rounds_probe_20261030.json（零云 API）。
 
+
+## 7.6 拆解回退修复（V2.2.90，零 API 本地链）
+
+根因：研究层子问题只来自 `_decompose_from_pool` 的 LLM JSON；本地 0.5B 解析失败时
+静默返回 `[]` ⇒ `sub_questions=[]` ⇒ settlement.total=0 ⇒ 层1 恒「未测出」（与圈数无关）。
+
+修复：新增 `decompose_fallback.fallback_subquestions()`，从修行层**探针/线头原文**
+确定性生成子问题（不调 LLM、不改写，保守标 partial）；引擎在 LLM 结果为空时回退。
+
+实测（同题热岛，本地链）：
+
+| 指标 | 修复前 | 修复后 |
+|---|---|---|
+| sub_questions | 0 | 2（source P1/P2） |
+| settlement.total | 0 | 2 |
+| probe case1 | unmeasured | **valued 0.000（判据样本不足）** |
+
+注意：目标仍是「判据样本不足」（2 个逐圈点 < 3），只是从「未测出」变为「有值」；
+不宣称层1可达成，回退标签保守、由三态判决/清算继续修正。
+
 ## 8. 后续建议（需预算或明确方向）
 
 - 方案 A（有预算）：1 个 web on 的层1 小样本（单跑约与既有 A/B 同量级），验证能否产生 candidates>0；
