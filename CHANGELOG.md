@@ -1,3 +1,13 @@
+【V2.2.98（2026-10-31，PATCH · lead 审计容差 + 层1 稳定 valued；App 2.0.83）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.98.py（__version__=2.2.98；引擎侧零行为差）。
+- ★ lead_layer_goal_audit：legacy_verdict_stale 容差 1e-6→1e-3；verdict_inconsistent 5e-4→1e-3
+  （匹配 verdict 文本 3 位小数渲染，防 0.438 vs 0.4375 的舍入误判）。
+- ★ 稳定性：V2.2.97 全量 probe 连续两次逐项完全一致（82/82；case0 23/achieved 0.0、
+  case1 33/valued 0.0、both 80/valued 0.0、all 109/0.5）⇒ 层1 稳定 valued（仍判据样本不足）。
+- 验收：V2 73/73（1233 checks）；fast_gate 26/26；App selftest；一键验收；e2e 18/18；probe；
+  发布流程门全 PASS。零云 API。
+- 标签：V2.2.98 / engine-V2.2.98（app-V2.0.83 不变，不移动）。
+
 【V2.2.97（2026-10-31，PATCH · 回退增加 candidates 兜底；App 2.0.83）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.97.py（__version__=2.2.97）。
 - ★ 残留路径：拆解空输出 + 探针/线头/amps 全空 ⇒ 回退无来源 ⇒ 层1 unmeasured（层0 仅 candidates）。
@@ -644,15 +654,3 @@
   App 2.0.69。
 - ★ choice 加圈 A/B（真 API 约 ¥0.31）：rounds1 86,858 / rounds2 67,540 tokens，
   两臂均 needs_evidence ⇒ 加圈未提升质量且 rounds2 更省。
-- ★ _QUALITY_EXPECTATION 矩阵：fact（web on）2/2 verified；reasoning 0/6；choice 0/6；
-  project 0/2（证据 quality_retry_ab / route_subset_reasoning / route_subset_choice /
-  choice_rounds / project_context_ab）。
-- ★ plan.quality_retry 输出 expected_verified_pct/evidence/evidence_note；
-  plan.quality_expectation 输出完整矩阵（可审计）。
-- 判据：test_dynamic_opt 114→118（U1 reasoning、U2 choice、U3 project、U4 矩阵）；
-  回归 fused_optimal 30 / fused_full_chain 23 / daosheng_unified 27 / auto_mode_local 12。
-- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
-  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
-  发布流程门 pre/post-tag 全 PASS。本轮 A/B 花费约 ¥0.31。
-- 兼容性：仅新增可审计字段，不改变 server/引擎行为。
-- 标签：V2.2.44 / engine-V2.2.44 / app-V2.0.69。

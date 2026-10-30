@@ -256,6 +256,22 @@ V2.2.96 残留：拆解空输出 + 探针/线头/amps 全空 ⇒ 回退无来源
 （46 calls；subs=2 partial，source **T1 + C1**——本次 e2e 实际命中 candidates 分支）。
 证据：docs/layer1_candidates_fallback_20261031.json。
 
+
+## 7.16 全量 probe 稳定 valued（V2.2.98，零 API）
+
+V2.2.97 全量 probe **连续两次逐项完全一致**（各 82/82 PASS）：
+
+| case | calls | 状态 | main |
+|---|---|---|---|
+| 0 | 23 | achieved | 0.0 |
+| 1 | 33 | **not_judgeable（valued）** | **0.0** |
+| both | 80 | not_judgeable（valued） | 0.0 |
+| all | 109 | not_achieved | 0.5 |
+
+结论：层1 从“偶发 unmeasured”转为**整跑稳定 valued**（拆解回退三来源：探针/线头/候选）；
+目标仍判据样本不足（2 点<3），**不宣称达成**。
+证据：docs/layer1_stable_valued_20261031.json。
+
 ## 8. 后续建议（需预算或明确方向）
 
 - 方案 A（有预算）：1 个 web on 的层1 小样本（单跑约与既有 A/B 同量级），验证能否产生 candidates>0；

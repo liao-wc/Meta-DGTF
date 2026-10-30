@@ -487,7 +487,8 @@ def layer_row(view, L: str, eng) -> dict:
     # 旧引擎时序缺陷观察：旧 verdict（收尾前渲染）与最终视图复算不同。
     if (stored is None and pv["state"] == "valued"
             and fresh_value is not None and pv["value"] is not None):
-        row["legacy_verdict_stale"] = abs(pv["value"] - fresh_value) > 1e-6
+        # 渲染 3 位小数（0.4375 -> 0.438）：1e-6 会把舍入误判成 stale，取 1e-3。
+        row["legacy_verdict_stale"] = abs(pv["value"] - fresh_value) > 1e-3
 
     # 逐层依据字段（读数是哪些物理量算出来的）。
     d = stored if stored is not None else (fresh or {})
@@ -615,7 +616,8 @@ def analyze_parsed(d: dict, path: Path, eng) -> dict:
             if (r["verdict_state"] == "valued"
                     and r["verdict_value"] is not None
                     and r["main_value"] is not None
-                    and abs(r["verdict_value"] - r["main_value"]) > 5e-4):
+                    # 同 P5：verdict 文本 3 位小数，容差 1e-3（覆盖 ±0.0005 舍入）。
+                    and abs(r["verdict_value"] - r["main_value"]) > 1e-3):
                 an.append({"id": "verdict_inconsistent", "layer": L,
                            "detail": "verdict 数值(%s) 与 goal_now(%s) 不一致"
                                      % (_fmtval(r["verdict_value"]),
