@@ -6,6 +6,8 @@ V2.2.96：LLM 有输出但**全部不可判定** -> 追加探针/线头派生的
 保留原判定（不篡改），只补可答分母（source 前缀 FB: 便于审计）。
 V2.2.97：探针/线头也为空时，用修行层 candidates 兜底（source C#；题面前缀"候选判定："），
 覆盖「LLM 空输出 + 探针/线头全空」的整跑 unmeasured 路径。
+V2.2.102：以上来源**全为空**（连 candidates 都没有）时，用「原问题本身」兜底（source Q），
+保证 settlement 至少有一个可判定子问题；这是最后的可测性兜底，不代表质量。
 """
 from __future__ import annotations
 
@@ -70,3 +72,17 @@ def answerable_fallback(subs, probes=None, threads=None, candidates=None,
         if len(fb) >= limit:
             break
     return fb
+
+def question_fallback(question: str, limit: int = 1) -> list[dict]:
+    """V2.2.102：所有结构来源都为空时的**最后兜底**——用原问题本身。
+
+    - 只在拆解/探针/线头/候选全空时由引擎调用；
+    - source = "Q"，decidability = partial（保守）；
+    - 目的：让 settlement 分母存在（可测），不做质量宣称。
+    """
+    q = str(question or "").strip()
+    if len(q) < 4:
+        return []
+    return [{"id": 1, "question": q[:200], "weight": 1.0,
+             "decidability": "partial", "status": "open",
+             "depth": 1.0, "source": "Q"}]

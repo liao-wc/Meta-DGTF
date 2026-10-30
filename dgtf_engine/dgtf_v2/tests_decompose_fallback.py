@@ -10,7 +10,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from dgtf_v2.decompose_fallback import (  # noqa: E402
-    answerable_fallback, fallback_subquestions)
+    answerable_fallback, fallback_subquestions, question_fallback)
 
 _P, _F = [], []
 
@@ -57,6 +57,10 @@ def main() -> int:
        and fb2[0]["source"] == "C1", str(fb2[:1]))
     mixed = [{"question": "乙问题？", "decidability": "partial", "id": 1}]
     ck("F9 有可答子问题时不动", answerable_fallback(mixed, probes) == [])
+    qf = question_fallback("为什么城市热岛效应在夜间比白天更明显？")
+    ck("F12 全空来源时用原问题兜底（source Q）",
+       len(qf) == 1 and qf[0]["source"] == "Q"
+       and qf[0]["decidability"] == "partial", str(qf[:1]))
     print("PASS %d / FAIL %d" % (len(_P), len(_F)))
     return 1 if _F else 0
 

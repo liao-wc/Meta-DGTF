@@ -1,3 +1,13 @@
+【V2.2.102（2026-10-31，PATCH · 研究层拆解统一兜底；App 2.0.83）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.102.py（__version__=2.2.102）。
+- ★ V2.2.101 发现 case1 unmeasured：外部拆解路径（zero_view 为空）无兜底；
+- ★ 修复：_fallback_layer1_subs() 在串行/并行 B 统一兜底：层0 探针/线头 → candidates → 原问题（source Q）；
+  decompose_fallback 新增 question_fallback；tests_decompose_fallback 12/12（F12）。
+- ★ probe case1 隔离两次：40 calls、valued 0.0、subs=3 partial（source P1/T1/C1）。
+- 验收：V2 73/73（1234 checks）；fast_gate 27/27；App selftest；一键验收；e2e 18/18；probe；
+  发布流程门全 PASS。零云 API。
+- 标签：V2.2.102 / engine-V2.2.102（app-V2.0.83 不变，不移动）。
+
 【V2.2.101（2026-10-31，PATCH · snapshot audit 扩展；App 2.0.83）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.101.py（__version__=2.2.101；引擎侧零行为差）。
 - ★ snapshot_numbers 审计 5→12 项：README/CHANGELOG/配置头/App 版本一致；
@@ -639,12 +649,3 @@
   _QUALITY_EXPECTATION.project → 0/4，证据含 project_context_rounds2_ab JSON。
 - ★ 语义预判结果跨进程落盘 dgtf_memory/semantic_probe_index.json（120s/300 条）：
   重启后 0 次 embedding 复用（与候选索引持久化配套）。
-- 判据：test_dynamic_opt 121→122（U3 4 跑证据、S6 结果落盘/0 新 embed）；
-  回归 fused_optimal 30 / fused_full_chain 24 / daosheng_unified 27 / auto_mode_local 12。
-- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
-  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
-  发布流程门 pre/post-tag 全 PASS。本轮 A/B 花费约 ¥0.25。
-- 兼容性：仅缓存/证据变化；预判结果 120s 过期自动重算；索引缺失/损坏回退扫描。
-- 标签：V2.2.47 / engine-V2.2.47 / app-V2.0.72。
-
-【V2.2.46（2026-10-29，PATCH · 创建前综合预期；同发 App 2.0.71）】
