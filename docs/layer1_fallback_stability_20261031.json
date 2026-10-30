@@ -1,0 +1,38 @@
+{
+ "schema": "metadgtf.layer1_fallback_stability.v1",
+ "ts": "2026-10-31 00:25",
+ "note": "V2.2.90 拆解回退后：隔离复跑稳定性（零 API 本地链）",
+ "case1_isolated_runs": [
+  {
+   "calls": 38,
+   "status": "not_judgeable",
+   "main": 1.0,
+   "pack": "20261031_001606_2025年全球主要经济体的GDP增速分别.packed.json"
+  },
+  {
+   "calls": 38,
+   "status": "not_judgeable",
+   "main": 1.0,
+   "pack": "20261031_001627_2025年全球主要经济体的GDP增速分别.packed.json"
+  }
+ ],
+ "both_isolated_runs": [
+  {
+   "calls": 74,
+   "status": "not_judgeable",
+   "main": 0.5,
+   "pack": "20261031_002147_水的三态变化有哪些驱动因素.packed.json"
+  },
+  {
+   "calls": 74,
+   "status": "not_judgeable",
+   "main": 0.5,
+   "pack": "20261031_002217_水的三态变化有哪些驱动因素.packed.json"
+  }
+ ],
+ "full_probe_v2290": {
+  "case1_main": 0.0,
+  "both_main": 0.2917,
+  "note": "整跑顺序/EML 状态影响取值，但仍为 valued"
+ }
+}
