@@ -1,3 +1,13 @@
+【V2.2.92（2026-10-31，PATCH · opt-in 自动最小圈数；App 2.0.83）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.92.py（__version__=2.2.92）；
+  新增 dgtf_engine/dgtf_v2/judgeable_rounds.py + tests_judgeable_rounds.py（10 项）。
+- ★ spiral.min_rounds_judgeable（默认 false）：开启时研究/对撞层计划圈数与 min_rounds 自动抬到
+  min_rounds_judgeable_target（默认 3）；默认关闭时逐字零行为差。
+- ★ 零 API 端到端：仅 config-set 该键 ⇒ rounds_run=3、trace 3、目标 not_achieved(0.0)、probe 23/23。
+- 验收：单测 10/10；V2 73/73（1226 checks）；fast_gate 25/25；App selftest；一键验收；
+  e2e 18/18；probe 全四层；发布流程门 pre/post-tag 全 PASS。零云 API。
+- 标签：V2.2.92 / engine-V2.2.92（app-V2.0.83 不变，不移动）。
+
 【V2.2.91（2026-10-31，PATCH · probe --config-set/--question + 层1可判定验证；App 2.0.83）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.91.py（__version__=2.2.91；引擎侧零行为差）；
   App 2.0.83 不变。
@@ -647,15 +657,3 @@
   App selftest 断连的问题。
 - 判据：test_dynamic_opt 105→109（Q1–Q4）；App selftest 455/0；fused_full_chain 23/23；
   回归 fused_optimal 30 / daosheng_unified 27 / auto_mode_local 12。
-- 验收：fast_gate 16/16；V2 71/71（1208 checks）；一键验收 --with-service PASS 30 / SKIP 0 /
-  FAIL 0；e2e 18/18；四层 probe 82/82；发布流程门 pre/post-tag 全 PASS。本轮零 API 花费。
-- 兼容性：8771 未运行 ⇒ 语义预判 fail-open；未验证复用仍受预算+新鲜度门；no_cache 强制重跑。
-- 标签：V2.2.41 / engine-V2.2.41 / app-V2.0.66。
-
-【V2.2.40（2026-10-29，PATCH · 未验证缓存新鲜度门；同发 App 2.0.65）】
-- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.40.py（__version__=2.2.40；引擎侧零行为差）；
-  App 2.0.65。
-- ★ 问题：V2.2.39 未验证复用未限制产物年龄，旧产物复用会放大质量风险。
-- ★ 修法：plan.cache_policy.max_age_h（warn 24h / critical 72h / ok 0）+ plan.cache_max_age_h
-  透传；server._find_cached_pack(max_age_h) 对未验证产物按年龄过滤（verified 不受限）；
-  响应 cache_age_h。

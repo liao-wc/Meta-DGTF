@@ -192,6 +192,22 @@ V2.2.67 曾观测到一次 case1 `settle=0.000（valued）`（44 calls、candida
 
 证据：docs/layer1_judgeable_repeat_20261031.json。
 
+
+## 7.11 opt-in 自动最小圈数（V2.2.92，零 API）
+
+引擎新增 `spiral.min_rounds_judgeable`（默认 false 零行为差）：开启后研究/对撞层
+计划圈数与 min_rounds 自动抬到 target（默认 3）。**仅传该 config-set、不再手传圈数**：
+
+| 指标 | 结果 |
+|---|---|
+| 研究层 rounds_run | **3**（自动抬圈） |
+| trace | 3 点 |
+| 目标判定 | **not_achieved（main=0.0）** |
+| probe 断言 | 23/23 PASS |
+| llm_calls | 55（本地） |
+
+边界：默认不开；开启成本约 ¥0.074/圈/层（按既有校准）；建议 quality+预算 ok 时显式启用。
+
 ## 8. 后续建议（需预算或明确方向）
 
 - 方案 A（有预算）：1 个 web on 的层1 小样本（单跑约与既有 A/B 同量级），验证能否产生 candidates>0；

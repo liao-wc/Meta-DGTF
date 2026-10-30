@@ -138,6 +138,7 @@ def _shape_ok(v) -> bool:
 
 
 _QUESTION_OVERRIDE = None
+_CONFIG_SET = []
 
 CASES = [
     {"id": "0", "route": "0", "target": ["0"],
@@ -326,6 +327,21 @@ def check_target_layer(case: str, L: str, d: dict, pack_path: Path,
     _allow = {int(want_rounds)}
     if L == "all":
         _allow |= {int(want_rounds) + i for i in range(0, max(0, _extra) + 1)}
+    # ★ [V2.2.92] opt-in 自动最小圈数：允许目标层跑到 judgeable target
+    try:
+        _sp2 = ((d.get("_config") or {}).get("spiral") or {})
+        _cs_on = any(str(_kv).replace(" ", "").lower()
+                     in ("spiral.min_rounds_judgeable=true",
+                         "spiral.min_rounds_judgeable=1")
+                     for _kv in _CONFIG_SET)
+        if _sp2.get("min_rounds_judgeable") or _cs_on:
+            _jt = int(_sp2.get("min_rounds_judgeable_target") or 3)
+            _layers2 = [str(x) for x in
+                        (_sp2.get("min_rounds_judgeable_layers") or ["1", "both"])]
+            if L in _layers2:
+                _allow |= {max(int(want_rounds), _jt)}
+    except (TypeError, ValueError, AttributeError):
+        pass
     add("P2g 目标层 rounds_run 在允许集合（请求 %d；all 允许多 %d 圈）"
         % (want_rounds, _extra if L == "all" else 0),
         int(view.get("rounds_run") or 0) in _allow,
@@ -603,6 +619,8 @@ def main(argv=None) -> int:
     # 显式 --question ⇒ 覆盖所有 case（含 case1 的专属题面）；默认沿用设计。
     global _QUESTION_OVERRIDE
     _QUESTION_OVERRIDE = _explicit_q
+    global _CONFIG_SET
+    _CONFIG_SET = list(args.config_set or [])
 
     eng_path = lga.latest_engine_path()
     want_version = "V%d.%d.%d" % tuple(lga.vtuple(eng_path.name))

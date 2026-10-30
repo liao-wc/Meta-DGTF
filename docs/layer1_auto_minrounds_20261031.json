@@ -1,0 +1,14 @@
+{
+ "schema": "metadgtf.layer1_auto_minrounds.v1",
+ "ts": "2026-10-31 01:35",
+ "note": "V2.2.92 opt-in：仅 config-set spiral.min_rounds_judgeable=true（不传 --rounds 3）即可让研究层自动 3 圈并判定",
+ "config_set": [
+  "spiral.min_rounds_judgeable=true"
+ ],
+ "question": "为什么城市热岛效应在夜间比白天更明显？",
+ "llm_calls": 55,
+ "target_status": "not_achieved",
+ "main_value": 0.0,
+ "trace_len": 3,
+ "pack": "20261031_012521_为什么城市热岛效应在夜间比白天更明显.packed.json"
+}
