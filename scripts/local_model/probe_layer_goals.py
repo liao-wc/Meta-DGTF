@@ -575,6 +575,8 @@ def main(argv=None) -> int:
                     help="单个 case 的超时秒数（默认 900）")
     ap.add_argument("--question", default=os.environ.get("DGTF_LG_Q")
                     or "水的三态变化有哪些驱动因素", help="题面")
+    ap.add_argument("--temperature", type=float, default=None,
+                    help="透传 api.temperature（如 0.0 做确定性对照；默认不设=0.6）")
     ap.add_argument("--isolate-eml", action="store_true",
                     help="隔离 EML/playbook（playbook.mode=off + 独立目录），"
                          "用于跨跑可复现对照")
@@ -676,6 +678,9 @@ def main(argv=None) -> int:
               "（不是判红，是没跑）" % (svc_ok, shim_ok))
         return 2
     _ov = dict(OVERRIDES)
+    if args.temperature is not None:
+        _ov["api.temperature"] = float(args.temperature)
+        print("温度对照：api.temperature=%s" % args.temperature)
     if args.isolate_eml:
         _ov["playbook.mode"] = "off"
         _ov["playbook.dir"] = "outputs/_e2e_local/_probe_eml_off"
@@ -707,6 +712,8 @@ def main(argv=None) -> int:
             "app_engine": str(app_engine),
             "wall_sec": round(time.time() - t_all, 1),
             "isolate_eml": bool(args.isolate_eml),
+            "temperature": (None if args.temperature is None
+                            else float(args.temperature)),
             "services": {"8772": svc_ok, "8773": shim_ok,
                          "shim_health": shim_h},
             "finished_at": time.strftime("%Y-%m-%d %H:%M:%S")}

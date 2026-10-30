@@ -1,3 +1,17 @@
+【V2.2.69（2026-10-30，PATCH · api.temperature 可配 + probe --temperature；App 2.0.81 不变）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.69.py（__version__=2.2.69）；
+  App 2.0.81 不变。
+- ★ 引擎 api.temperature（默认 None ⇒ 仍 0.6，零行为差）；LLM.call 显式 None 时读
+  temperature_default 再回落 0.6。
+- ★ probe 新增 --temperature 透传（meta 记录）；temp=0 后层1 两次复跑完全一致：
+  42 calls / candidates=3 / settle=3 / main=0.0 ⇒ 层1 可测且可复现。
+- ★ 已知限制：目标判定仍「判据样本不足」（引擎 2 圈即收，3 圈门槛未满足，未硬凑）；
+  隔离 playbook 反而候选归零（EML 学习对候选有帮助）。
+- 验收：fast_gate 18/18；V2 71/71（1208 checks）；App selftest 459/0；一键验收 PASS 30 /
+  SKIP 0 / FAIL 0；e2e 18/18；四层 probe 84/84；发布流程门 pre/post-tag 全 PASS。零云 API。
+- 兼容性：默认温度 0.6 不变；显式配置才改变解码。
+- 标签：V2.2.69 / engine-V2.2.69（app-V2.0.81 不变，不移动）。
+
 【V2.2.68（2026-10-30，PATCH · 层1 不可复现根因 + probe --isolate-eml；App 2.0.81 不变）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.68.py（__version__=2.2.68；引擎侧零行为差）；
   App 2.0.81 不变。
@@ -648,16 +662,3 @@
   App 2.0.51。
 - ★ 问题：V2.2.25 动态配置按整单四层估算成本，显式 route=0 / rounds=0:1 会被高估 2-20 倍，
   低余额误判不可行。
-- ★ 修法：3 臂有界云实测校准（合计约 ¥0.32）：R1 route=1/rounds=1=37,119 tokens；
-  R2 route=0,1/rounds 1+1=62,180（可加预测误差 0.05%）；R3 route=0/rounds=2=63,240。
-  拟合 u0=31,620/圈、u1=37,119/圈；两层重叠系数 0.905；both/all 由整单 816,983 反解
-  （uB=137,654/uA=183,539）；其他 mode 按 MODES 比例；事实题 web on ×1.12。
-  dynamic_config 候选成本改用该模型（route/rounds 取自候选本身），
-  plan.dynamic_opt 标注 cost_model=route_subset_rounds.v1，可行域保留 ±10% 容差。
-- 判据：test_dynamic_opt 36→46（单层/两层/整单/B 模式/web 增量、校准证据、route=0 接线、
-  cost_model）；回归 fused_optimal 30 / fused_full_chain 16 / daosheng_unified 27 /
-  auto_mode_local 12。
-- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
-  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 81/81；
-  发布流程门 pre/post-tag 全 PASS。
-- 兼容性：显式 opts 优先；余额未知 fail-open 只审计；quality 档不受影响。
