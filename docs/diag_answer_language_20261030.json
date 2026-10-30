@@ -1,0 +1,44 @@
+{
+ "schema": "metadgtf.diag_answer_language.v1",
+ "ts": "2026-10-30 18:50",
+ "question": "HTTP 404 状态码表示什么？",
+ "note": "真 API 复验（默认 auto/fast 档）：V2.2.77 修 route/rounds 后答案日文；V2.2.79 语言降权后中文但缺 404 锚；V2.2.80 关键数字锚优先后英文含 404、verified/ready True",
+ "rows": [
+  {
+   "packed": "20261030_170757_HTTP404状态码表示什么.packed.json",
+   "llm_calls": 1,
+   "llm_tokens": 570,
+   "answer": "404 Not Found HTTP の404 Not Found はクライアントエラーレスポンスステータスコードで、サーバーがリクエストされたリソースを見つけることができないことを示します",
+   "answer_quality": "verified",
+   "answer_ready": false,
+   "reason": "事实未 answered 或四层不齐"
+  },
+  {
+   "packed": "20261030_171858_HTTP404状态码表示什么.packed.json",
+   "llm_calls": 91,
+   "llm_tokens": 699592,
+   "answer": "404 Not Found HTTP の404 Not Found はクライアントエラーレスポンスステータスコードで、サーバーがリクエストされたリソースを見つけることができないことを示します",
+   "answer_quality": "verified",
+   "answer_ready": true,
+   "reason": "官方事实卡 answered + 四层全进入"
+  },
+  {
+   "packed": "20261030_184208_HTTP404状态码表示什么.packed.json",
+   "llm_calls": 90,
+   "llm_tokens": 672880,
+   "answer": "HTTP返回值说明 最近更新时间：2021-06-25 15:25:32 HTTP 状态码（HTTP Status Code）是用以表示网页服务器 HTTP 响应状态的3位数字代码",
+   "answer_quality": "verified",
+   "answer_ready": false,
+   "reason": "答案未针对本题（数字锚 '404' 未命中答案）；跨视角一致性不足（α=-0.146 < 0.667（低于 Krippendorff 下限））"
+  },
+  {
+   "packed": "20261030_184845_HTTP404状态码表示什么.packed.json",
+   "llm_calls": 91,
+   "llm_tokens": 687008,
+   "answer": "So I just found out the hard way that the HTTP/2 protocol does not support HTTP status messages like404 **Not Found** in the old HTTP/1.1 protocol. ... - Wasn't",
+   "answer_quality": "verified",
+   "answer_ready": true,
+   "reason": "官方事实卡 answered + 四层全进入"
+  }
+ ]
+}

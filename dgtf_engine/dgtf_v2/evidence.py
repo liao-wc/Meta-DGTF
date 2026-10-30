@@ -1090,6 +1090,11 @@ def answer_from_evidence(items: Iterable, question: str = "",
             score += 0.5
         scored.append((score, -int(getattr(e, "rank", 0)), e))
     scored.sort(key=lambda x: (x[0], x[1]), reverse=True)
+    # ★ [V2.2.80] 题面关键数字锚（如 404/2023）优先：语言降权可能把带锚点的
+    #   证据压到后面（真 API 404 题：日文片段含 404，中文片段只是泛定义），
+    #   这里在两轮内选：先选「答案含关键数字锚」的最高分，其次才退回最高分。
+    _key_anchor = re.findall(r"\d{2,}", q)
+    _pref_ans, _fallback_ans = [], []
     for score, _neg_rank, e in scored:
         text = str(getattr(e, "snippet", "") or "")
         if wants_url and not re.search(r"https?://[^\s'\"<>]+", text):
@@ -1099,8 +1104,13 @@ def answer_from_evidence(items: Iterable, question: str = "",
         ans = _short_answer(text, q)
         if wants_url and not re.search(r"https?://[^\s'\"<>]+", ans):
             continue
-        return ans
-    return ""
+        if _key_anchor and not any(k in ans for k in _key_anchor):
+            _fallback_ans.append(ans)
+            continue
+        _pref_ans.append(ans)
+    if _pref_ans:
+        return _pref_ans[0]
+    return _fallback_ans[0] if _fallback_ans else ""
 
 
 # ============================================================ 引用绑定

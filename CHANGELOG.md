@@ -1,3 +1,15 @@
+【V2.2.80（2026-10-30，PATCH · 证据答案关键数字锚优先；App 2.0.83）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.80.py（__version__=2.2.80）；
+  evidence.py 增加关键数字锚优先。
+- ★ 背景：V2.2.79 语言降权后 404 题改中文泛定义、数字锚缺失、质量门 blocked。
+- ★ 修复：含题面数字锚（404/2023）的候选优先；语言偏好保留为同锚点内排序；
+  新增 case_answer_key_anchor_preference；tests_evidence 23/23。
+- ★ 真 API 复验：日文→中文泛定义(blocked)→英文含404(verified/ready True)；
+  锚点与语言两难如实记录；不翻译不改写。证据 docs/diag_answer_language_20261030.json。
+- 验收：fast_gate 19/19；V2 71/71（1210 checks）；App selftest；一键验收；e2e 18/18；probe；
+  发布流程门 pre/post-tag 全 PASS。云 API 约 ¥2.7（余额 8.49→6.40）。
+- 标签：V2.2.80 / engine-V2.2.80（app-V2.0.83 不变，不移动）。
+
 【V2.2.79（2026-10-30，PATCH · 证据答案语言匹配；App 2.0.83）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.79.py（__version__=2.2.79）；
   证据模块 dgtf_engine/dgtf_v2/evidence.py 增加语言匹配。
@@ -650,14 +662,3 @@
   发布流程门 pre/post-tag 全 PASS。
 - 兼容性：默认四层不变；判定只记录/提示，不改变实际 route。
 - 标签：V2.2.34 / engine-V2.2.34 / app-V2.0.59。
-
-【V2.2.33（2026-10-29，PATCH · 短程实测成本锚点；同发 App 2.0.58）】
-- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.33.py（__version__=2.2.33；引擎侧零行为差）；
-  App 2.0.58。
-- ★ 问题：动态配置短跑成本用可加模型高估 10 倍以上（fact 四层估 ~785k / B 模式 ~1.27M，
-  实测 65,427）。
-- ★ 修法：_SHORT_RUN_ANCHORS（B 模式、总圈数<=4）——fact full 65,427 / route0 65,360 /
-  route0,1 60,962（n=6）；reasoning full 72,799 / route0 42,798（n=4）。
-  dynamic_config 短跑直接使用实测锚点（cost_source=measured_short_anchor，不重复乘 App 开销）；
-  显式 opts.rounds 只评估该圈数档；长跑仍用可加模型 + App 开销。
-- 效果：短跑成本估算误差降到 <15%，预算可行域/budget_cap/动态选择更贴近真实账单。

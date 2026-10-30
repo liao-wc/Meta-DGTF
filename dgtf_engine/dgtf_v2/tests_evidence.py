@@ -277,6 +277,26 @@ def case_answer_language_preference():
     assert "クライアント" in ans3, ans3
 
 
+def case_answer_key_anchor_preference():
+    """★ [V2.2.80] 题面关键数字锚优先：语言降权不能牺牲 404 等锚点。"""
+    jp404 = from_search_hits([{
+        "title": "404 Not Found", "url": "https://example.jp/404",
+        "snippet": "404 Not Found HTTP の404 Not Found はクライアントエラーです"}])
+    jp404[0].official = True
+    cn_generic = from_search_hits([{
+        "title": "HTTP 状态码", "url": "https://example.cn/status",
+        "snippet": "HTTP 状态码是用以表示网页服务器 HTTP 响应状态的3位数字代码"}])
+    cn404 = from_search_hits([{
+        "title": "HTTP 404", "url": "https://example.cn/404",
+        "snippet": "HTTP 404 状态码表示客户端错误，服务器找不到请求的资源"}])
+    # 中文泛定义（无 404）vs 日文含 404：锚点优先 ⇒ 选含 404 的
+    ans = answer_from_evidence(cn_generic + jp404, "HTTP 404 状态码表示什么？")
+    assert "404" in ans, ans
+    # 中文含 404 vs 日文含 404：语言偏好 ⇒ 选中文
+    ans2 = answer_from_evidence(jp404 + cn404, "HTTP 404 状态码表示什么？")
+    assert "找不到" in ans2, ans2
+
+
 # ---------------------------------------------------------------- 引用绑定
 def case_bind_citations_explicit():
     items = from_search_hits([OFFICIAL, OFFICIAL2])
@@ -426,6 +446,7 @@ CASES = [
     case_answer_from_evidence,
     case_answer_relevance_gate,
     case_answer_language_preference,
+    case_answer_key_anchor_preference,
     case_bind_citations_explicit,
     case_bind_citations_overlap,
     case_consistency_match,
