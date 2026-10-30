@@ -1,0 +1,50 @@
+{
+ "schema": "metadgtf.diag_v2online_passthrough.v1",
+ "ts": "2026-10-30 17:35",
+ "question": "HTTP 404 状态码表示什么？",
+ "note": "App auto 任务（真 API）：修复前 route/rounds 被 str() 透传 → 四层跳过；修复后恢复",
+ "rows": [
+  {
+   "packed": "20261030_170757_HTTP404状态码表示什么.packed.json",
+   "llm_calls": 1,
+   "llm_tokens": 570,
+   "route": [
+    "['0'",
+    "'1'",
+    "'both'",
+    "'all']"
+   ],
+   "rounds": {
+    "0": 2,
+    "1": 2,
+    "both": 2,
+    "all": 2
+   },
+   "answer_len": 95,
+   "answer_quality": "verified",
+   "answer_ready": false,
+   "reason": "事实未 answered 或四层不齐"
+  },
+  {
+   "packed": "20261030_171858_HTTP404状态码表示什么.packed.json",
+   "llm_calls": 91,
+   "llm_tokens": 699592,
+   "route": [
+    "0",
+    "1",
+    "both",
+    "all"
+   ],
+   "rounds": {
+    "0": 2,
+    "1": 2,
+    "both": 2,
+    "all": 2
+   },
+   "answer_len": 95,
+   "answer_quality": "verified",
+   "answer_ready": true,
+   "reason": "官方事实卡 answered + 四层全进入"
+  }
+ ]
+}

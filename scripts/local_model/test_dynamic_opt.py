@@ -852,6 +852,19 @@ _applied = DS.apply_plan(_p6, _opts)
 ck("D1 apply_plan 落 rounds/web 到 opts", _opts.get("rounds") == _p6.get("rounds")
    and "web" in _opts, (_opts.get("rounds"), _opts.get("web")))
 cmd = ER.build_cmd("问题", _opts)
+# ★ [V2.2.77] 结构化 opts 必须规范成 CLI 字符串（v2_online bug 回归）
+_o_struct = {"route": ["0", "1", "both", "all"],
+             "rounds": {"0": 2, "1": 1, "both": 2, "all": 2}}
+_cmd_struct = ER.build_cmd("问题", _o_struct)
+ck("D2b build_cmd 把 list route / dict rounds 规范为 CLI 串",
+   "--route" in _cmd_struct and "0,1,both,all" in _cmd_struct
+   and "--rounds" in _cmd_struct and "0:2,1:1,both:2,all:2" in _cmd_struct,
+   "cmd=%s" % _cmd_struct)
+ck("D2c cli_value 空/auto 返回空串、字符串原样",
+   ER.cli_value("route", "auto") == ""
+   and ER.cli_value("rounds", "") == ""
+   and ER.cli_value("route", "0,1") == "0,1",
+   "route-auto=%r" % ER.cli_value("route", "auto"))
 ck("D2 build_cmd 把 --rounds/--web 传给引擎",
    "--rounds" in cmd and "--web" in cmd
    and cmd[cmd.index("--rounds") + 1] == _opts.get("rounds"), cmd[-6:])

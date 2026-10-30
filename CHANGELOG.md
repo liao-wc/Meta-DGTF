@@ -1,3 +1,17 @@
+【V2.2.77 / App 2.0.82（2026-10-30，PATCH · 修复 v2_online route/rounds 透传降质）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.77.py（__version__=2.2.77；引擎侧零行为差）；
+  App 2.0.82。
+- ★ 根因：v2_online 返回 route=list、rounds=dict，server 写入 opts，build_cmd 旧实现 str(v)
+  把 Python repr 传给引擎 ⇒ 四层全跳过、圈数全忽略、1 次 call、答案靠证据拼、质量门 blocked。
+- ★ 修复：engine_runner.cli_value（list→0,1,both,all；dict→0:2,1:2；空/auto→空）；
+  server 应用前规范化；test_dynamic_opt D2b/D2c 回归（134/134）。
+- ★ 端到端真 API 验证：calls 1→91、tokens 570→699,592、调度日志恢复 0 → 1 → both → all、
+  圈数 0:2,1:3,both:2,all:2、answer_quality needs_evidence→verified、answer_ready False→True。
+- ★ 遗留：答案文本含日文片假名片段（证据语言/卡片拼装），已记录待查。
+- 验收：fast_gate 19/19；V2 71/71（1208 checks）；App selftest；一键验收 --with-service；
+  e2e 18/18；四层 probe 84/84；发布流程门 pre/post-tag 全 PASS。
+- 标签：V2.2.77 / engine-V2.2.77 / app-V2.0.82。
+
 【V2.2.76（2026-10-30，PATCH · 动态矩阵探测器自检；App 2.0.81 不变）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.76.py（__version__=2.2.76；引擎侧零行为差）；
   App 2.0.81 不变。
@@ -652,12 +666,3 @@
 - 标签：V2.2.32 / engine-V2.2.32 / app-V2.0.57。
 
 【V2.2.31（2026-10-29，PATCH · 省层收益判定；同发 App 2.0.56）】
-- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.31.py（__version__=2.2.31；引擎侧零行为差）；
-  App 2.0.56。
-- ★ 6 跑多样本 A/B（约 ¥0.77，事实题/rounds=1/web on/预算 50）：route0 2/2 verified 但 0/2 ready
-  （tokens 中位 65,360）；route0,1 2/2 verified 但 0/2 ready（66,856）；full 1/2 verified+1/2 ready
-  （65,427）。三臂 tokens 无显著差异（61-67k）⇒ 短程事实题省层省不到 token，质量方差主导；
-  默认 route_policy=union（四层）继续是保守选择。
-- ★ 省层收益判定：plan.dynamic_opt.route_pruning = {advice, saved_tokens_estimate,
-  saved_pct_estimate, evidence, note}。短程事实（require_web 且总圈数≤6）⇒ keep_four_layers；
-  长程高圈且模型估算省≥10% ⇒ subset_may_save（仍需质量证据）；判定只记录/提示，不改实际 route。

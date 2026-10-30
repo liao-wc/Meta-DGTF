@@ -255,6 +255,29 @@ def profile_path(name: str):
     return p if p.is_file() else None
 
 
+def cli_value(key: str, v) -> str:
+    """结构化 opts 值 → 引擎 CLI 规范字符串。
+
+    ★ [V2.2.77] 修复：v2_online 等在线策略返回 route=list、rounds=dict，
+    旧实现 str(v) 会把 Python repr 直接传给引擎（如 "['0', '1']" /
+    "{'0': 2}"），引擎解析成全非法入口 ⇒ **四层全被跳过、圈数全忽略**，
+    答案只靠外部证据拼、质量门 blocked。这里统一转成：
+      route: "0,1,both,all"；rounds: "0:2,1:2,both:2,all:2"；
+    空/auto 返回 ""（build_cmd 跳过）。
+    """
+    if v in (None, "", "auto"):
+        return ""
+    if key == "route" and isinstance(v, (list, tuple)):
+        return ",".join(str(x).strip() for x in v if str(x).strip())
+    if key == "rounds" and isinstance(v, dict):
+        return ",".join("%s:%s" % (str(k).strip(), v[k]) for k in v)
+    if isinstance(v, (list, tuple)):
+        return ",".join(str(x).strip() for x in v if str(x).strip())
+    if isinstance(v, dict):
+        return ",".join("%s:%s" % (str(k).strip(), v[k]) for k in v)
+    return str(v)
+
+
 def build_cmd(question: str, opts: dict) -> list[str]:
     # 项目上下文只进引擎 argv，不污染任务标题/产物文件名。
     _prefix = str(opts.get("_prompt_prefix") or "")
@@ -273,7 +296,9 @@ def build_cmd(question: str, opts: dict) -> list[str]:
             #   否则 argparse 会因未知参数直接让整个任务失败。
             if flag in _GATED_FLAGS and not engine_supports_flag(flag):
                 continue
-            cmd += [flag, str(v)]
+            _sv = cli_value(key, v)
+            if _sv:
+                cmd += [flag, _sv]
     for key, flag in _BOOL_FLAGS.items():
         if opts.get(key):
             cmd.append(flag)

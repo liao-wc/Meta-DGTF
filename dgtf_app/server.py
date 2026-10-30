@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "2.0.81"
+APP_VERSION = "2.0.82"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -10432,8 +10432,17 @@ class Handler(BaseHTTPRequestHandler):
                                      "rounds": opts.get("rounds")}
                     _online = v2_online.choose(question, _oopts, base_arm=_base_arm)
                     if _online:
-                        opts["route"] = list(_online.get("route") or [])
-                        opts["rounds"] = dict(_online.get("rounds") or {})
+                        # ★ [V2.2.77] 在线策略给的是结构化 route/rounds，
+                        #   必须转 CLI 规范串再进 opts；否则引擎收到 Python repr，
+                        #   四层入口/圈数全部解析失败（静默降质）。
+                        _or = runner.cli_value("route",
+                                               _online.get("route"))
+                        _od = runner.cli_value("rounds",
+                                               _online.get("rounds"))
+                        if _or:
+                            opts["route"] = _or
+                        if _od:
+                            opts["rounds"] = _od
                         opts["_v2_online"] = _online
                 except Exception:
                     _online = None
