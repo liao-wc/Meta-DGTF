@@ -17,8 +17,9 @@ AUDIT = ROOT / "docs" / "四层目标读数审计_20261028.md"
 OUT = ROOT / "docs" / "probe_variance_20261030.json"
 
 _CASE_RE = re.compile(
-    r"^\|\s*(?P<case>0|1|both|all)\s*\|[^|]*\|[^|]*\|[^|]*\|\s*"
-    r"(?P<metric>[a-z]+)=(?P<val>-?\d+(?:\.\d+)?)", re.M)
+    r"^\|\s*(?P<case>0|1|both|all)\s*\|.*?"
+    r"(?P<metric>excavate|settle|fuse|crystallize)="
+    r"(?P<val>-?\d+(?:\.\d+)?)", re.M)
 
 
 def _collect() -> dict:
@@ -26,7 +27,7 @@ def _collect() -> dict:
     sections = re.split(r"^## ", text, flags=re.M)
     data: dict = {}
     for sec in sections:
-        m = re.match(r"(\d+)\.\s*V(2\.2\.\d+)\s*复跑", sec)
+        m = re.match(r"(\d+)\.\s*V(2\.2\.\d+)(?:\s*/\s*App[^\n]*)?\s*复跑", sec)
         if not m:
             continue
         ver = m.group(2)
