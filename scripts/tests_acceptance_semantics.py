@@ -157,10 +157,12 @@ def test_discovery():
                     "self_feedback", "api_policy", "vision", "agent_bridge",
                     "agent_worker", "agent_repair", "agent_daemon",
                     "acceptance_semantics", "release_process_selftest",
-                    "readme_numbers", "stability_guard", "dynamic_matrix"}
+                    "readme_numbers", "stability_guard", "dynamic_matrix",
+                    "outputs_consistency"}
         got_names = {n for n, _ in FG.build_checks(real)}
-        ck("A5f 检查清单完整（19 项；防重构时静默丢检查项，如 agent_daemon/"
-           "release_process_selftest/readme_numbers/stability_guard/dynamic_matrix）",
+        ck("A5f 检查清单完整（20 项；防重构时静默丢检查项，如 agent_daemon/"
+           "release_process_selftest/readme_numbers/stability_guard/dynamic_matrix/"
+           "outputs_consistency）",
            got_names == expected, sorted(expected - got_names) or sorted(got_names - expected))
         none_checks = dict(FG.build_checks(None))
         rc = subprocess.run(none_checks["compile"], capture_output=True, text=True,

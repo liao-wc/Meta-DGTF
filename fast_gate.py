@@ -270,6 +270,9 @@ def build_checks(engine=None) -> list:
         # [V2.2.75] 动态配置决策矩阵（纯函数，零 API；防 tier/web/engine_mode 配置回归）
         ("dynamic_matrix", [sys.executable,
          str(ROOT / "scripts" / "local_model" / "audit_dynamic_matrix.py")]),
+        # [V2.2.81] 产物质量一致性（新包无矛盾/无跨位置 answer_ready 不一致）
+        ("outputs_consistency", [sys.executable,
+         str(ROOT / "scripts" / "outputs_quality_consistency.py")]),
     ]
     return checks
 

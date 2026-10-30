@@ -1,3 +1,13 @@
+【V2.2.81（2026-10-30，PATCH · fast_gate 产物一致性检查；App 2.0.83）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.81.py（__version__=2.2.81；引擎侧零行为差）；
+  App 2.0.83 不变。
+- ★ 只读脚本冒烟审计：8 个脚本全部 rc=0/PASS（含 app_plan_matrix 19/19、problem_closure fixed 11）。
+- ★ fast_gate 新增 outputs_consistency（19→20）：新包矛盾/跨位置 answer_ready 不一致/缺
+  flags_normalized 即 FAIL；历史包只记录不改写；acceptance_semantics 期望同步 20。
+- 验收：fast_gate 20/20；acceptance_semantics 45/45；V2 71/71；App selftest；一键验收；
+  e2e 18/18；probe 84/84；发布流程门 pre/post-tag 全 PASS。零云 API。
+- 标签：V2.2.81 / engine-V2.2.81（app-V2.0.83 不变，不移动）。
+
 【V2.2.80（2026-10-30，PATCH · 证据答案关键数字锚优先；App 2.0.83）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.80.py（__version__=2.2.80）；
   evidence.py 增加关键数字锚优先。
@@ -650,15 +660,3 @@
 【V2.2.34（2026-10-29，PATCH · choice 题型省层收益；同发 App 2.0.59）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.34.py（__version__=2.2.34；引擎侧零行为差）；
   App 2.0.59。
-- ★ choice 省层 A/B（4 跑约 ¥0.55）：route0 50,582/50,922 tokens vs full 85,320/85,364
-  （省约 40%），两臂均 needs_evidence/ready=false；kind-aware 表补全：
-  fact≈0（n=6）、reasoning≈0.39（n=4）、choice≈0.40（n=4）。
-- ★ 短程锚点补 choice（full 85,342 / route0 50,752）；route_quality_risk.evidence 按题型
-  指向对应 A/B JSON；短程事实分支限定 kind=fact（修复 choice 被覆盖）。
-- 判据：test_dynamic_opt 80→83（choice 锚点≈85,342、choice may_save≈40%、choice 风险证据）；
-  回归 fused_optimal 30 / fused_full_chain 16 / daosheng_unified 27 / auto_mode_local 12。
-- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
-  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
-  发布流程门 pre/post-tag 全 PASS。
-- 兼容性：默认四层不变；判定只记录/提示，不改变实际 route。
-- 标签：V2.2.34 / engine-V2.2.34 / app-V2.0.59。
