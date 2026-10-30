@@ -259,17 +259,16 @@ V2.2.96 残留：拆解空输出 + 探针/线头/amps 全空 ⇒ 回退无来源
 
 ## 7.16 全量 probe 稳定 valued（V2.2.98，零 API）
 
-V2.2.97 全量 probe **连续两次逐项完全一致**（各 82/82 PASS）：
+V2.2.97 全量 probe **三次**（各 82/82 PASS）：
 
-| case | calls | 状态 | main |
-|---|---|---|---|
-| 0 | 23 | achieved | 0.0 |
-| 1 | 33 | **not_judgeable（valued）** | **0.0** |
-| both | 80 | not_judgeable（valued） | 0.0 |
-| all | 109 | not_achieved | 0.5 |
+| run | case0 | case1 | both | all |
+|---|---|---|---|---|
+| A | 23/achieved 0.0 | 33 / **valued 0.0** | 80 / **valued 0.0** | 109 / not_achieved 0.5 |
+| B | 23/achieved 0.0 | 33 / **valued 0.0** | 80 / **valued 0.0** | 109 / not_achieved 0.5 |
+| C | 23/achieved 0.0 | 44 / **valued 0.5** | 86 / **valued 0.0** | 117 / not_achieved 0.5 |
 
-结论：层1 从“偶发 unmeasured”转为**整跑稳定 valued**（拆解回退三来源：探针/线头/候选）；
-目标仍判据样本不足（2 点<3），**不宣称达成**。
+结论：层1 **状态稳定 valued（3/3）**，不再出现 unmeasured；但 **main 取值与调用数随状态/缓存波动**
+（0.0/0.0/0.5；33/33/44 calls），整跑数值复现仍有限。目标仍判据样本不足（2 点<3），**不宣称达成**。
 证据：docs/layer1_stable_valued_20261031.json。
 
 ## 8. 后续建议（需预算或明确方向）

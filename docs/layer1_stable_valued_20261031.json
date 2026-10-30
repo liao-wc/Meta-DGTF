@@ -1,7 +1,7 @@
 {
  "schema": "metadgtf.layer1_stable_valued.v1",
- "ts": "2026-10-31 06:20",
- "note": "V2.2.97 全量 probe 连续两次逐项完全一致：层1 稳定 valued（拆解回退三来源）",
+ "ts": "2026-10-31 06:55",
+ "note": "V2.2.97 全量 probe 三次：层1 状态稳定 valued（3/3），main 取值随状态波动",
  "run_a": {
   "pass": 82,
   "fail": 0,
@@ -57,6 +57,36 @@
    {
     "case": "all",
     "calls": 109,
+    "status": "not_achieved",
+    "main": 0.5
+   }
+  ]
+ },
+ "run_c": {
+  "pass": 82,
+  "fail": 0,
+  "rows": [
+   {
+    "case": "0",
+    "calls": 23,
+    "status": "achieved",
+    "main": 0.0
+   },
+   {
+    "case": "1",
+    "calls": 44,
+    "status": "not_judgeable",
+    "main": 0.5
+   },
+   {
+    "case": "both",
+    "calls": 86,
+    "status": "not_judgeable",
+    "main": 0.0
+   },
+   {
+    "case": "all",
+    "calls": 117,
     "status": "not_achieved",
     "main": 0.5
    }
