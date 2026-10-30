@@ -343,6 +343,25 @@ App 调度配置列表 `_schedule_profiles()` 实测返回 24 项，含 **方案
 **质量未对比、不宣称等价**。可作为「方案Q 是否改 parallel_mode」的下一轮决策依据。
 证据：docs/preset_q_parallel_ab_20261031.json。
 
+
+## 7.23 方案Q serial vs B：结构读数与冷/热跑（V2.2.99，零 API）
+
+同题同配置（route 0,1、rounds 2）对照：
+
+| 维度 | serial | parallel B |
+|---|---|---|
+| 冷跑墙钟 | 248.1s | 182.0s |
+| 热缓存墙钟 | 10.1s | 11.2s |
+| llm_calls / tokens | 43 / 52,896 | 46 / 66,864 |
+| views.1 candidates | 0 | 13 |
+| settle.total / main | 1 / 0.0 | 0 / null（unmeasured） |
+
+结论：
+- 冷跑墙钟 B 更快（−26.6%），但**热缓存后墙钟不可比**（同样 calls/tokens，10s 级）；
+- 两种模式**结构读数不同**（candidates/settle），质量未 verified，**不宣称等价**；
+- 本地链结果受缓存/状态影响，不能单独作为模式优劣结论；真 API A/B 仍需预算。
+证据：docs/preset_q_parallel_quality_20261031.json。
+
 ## 8. 后续建议（需预算或明确方向）
 
 - 方案 A（有预算）：1 个 web on 的层1 小样本（单跑约与既有 A/B 同量级），验证能否产生 candidates>0；

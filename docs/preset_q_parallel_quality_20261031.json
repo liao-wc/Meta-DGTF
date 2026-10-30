@@ -1,0 +1,71 @@
+{
+ "schema": "metadgtf.preset_q_parallel_quality.v1",
+ "ts": "2026-10-31 06:05",
+ "note": "方案Q serial vs parallel B：冷跑墙钟 248.1s vs 182.0s；热缓存复跑墙钟 ~10s（calls/tokens 与冷跑完全一致）；结构读数不同、质量未 verified",
+ "question": "为什么城市热岛效应在夜间比白天更明显？",
+ "serial": {
+  "label": "serial",
+  "rc": 0,
+  "wall_sec": 10.1,
+  "llm_calls": 43,
+  "tokens": 52896,
+  "moved": [
+   "_audit_tmp\\preset_q_ab\\20261031_054649_为什么城市热岛效应在夜间比白天更明显.md",
+   "_audit_tmp\\preset_q_ab\\20261031_054649_为什么城市热岛效应在夜间比白天更明显.packed.json"
+  ],
+  "metrics": {
+   "pack": "20261031_054649_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "candidates": 0,
+   "settle_total": 1,
+   "settle_answered": 0,
+   "settle_main": 0.0,
+   "both_fuse": null,
+   "all_crystallize": null,
+   "rounds_run": {
+    "0": 2,
+    "1": 3
+   },
+   "llm_calls": 43,
+   "tokens": 52896
+  }
+ },
+ "parallel_b": {
+  "label": "b",
+  "rc": 0,
+  "wall_sec": 11.2,
+  "llm_calls": 46,
+  "tokens": 66864,
+  "moved": [
+   "_audit_tmp\\preset_q_ab\\20261031_054700_为什么城市热岛效应在夜间比白天更明显.md",
+   "_audit_tmp\\preset_q_ab\\20261031_054700_为什么城市热岛效应在夜间比白天更明显.packed.json"
+  ],
+  "metrics": {
+   "pack": "20261031_054700_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "candidates": 13,
+   "settle_total": 0,
+   "settle_answered": 0,
+   "settle_main": null,
+   "both_fuse": null,
+   "all_crystallize": null,
+   "rounds_run": {
+    "0": 2,
+    "1": 3
+   },
+   "llm_calls": 46,
+   "tokens": 66864
+  }
+ },
+ "warm_rerun": {
+  "serial": {
+   "wall_sec": 10.1,
+   "llm_calls": 43,
+   "tokens": 52896
+  },
+  "parallel_b": {
+   "wall_sec": 11.2,
+   "llm_calls": 46,
+   "tokens": 66864
+  },
+  "note": "同样 calls/tokens ⇒ 本地响应缓存/确定性使热跑墙钟不可与冷跑比较"
+ }
+}
