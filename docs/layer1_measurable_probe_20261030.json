@@ -1,0 +1,272 @@
+{
+  "schema": "dgtf.layer1_measurable_probe.v1",
+  "note": "零成本本地链路探索：研究层 settlement 是否可测",
+  "rows": [
+    {
+      "id": "q1",
+      "question": "2025年全球主要经济体的GDP增速分别是多少？",
+      "engine": "V2.2.66",
+      "exit": 0,
+      "llm_calls": 21,
+      "wall_sec": 64.6,
+      "settlement": {
+        "clean": true,
+        "leftover": 0,
+        "coverage": null,
+        "answered": 0,
+        "total": 0,
+        "decidable_channel": {
+          "answers": [],
+          "coverage_history": [],
+          "last_coverage": 0.0
+        },
+        "undecidable_channel": {
+          "structural_amps": [],
+          "clarity_history": [
+            0.987433
+          ],
+          "last_clarity": 0.987433,
+          "und_aspects": [],
+          "struct_coverage_history": [
+            0.0
+          ],
+          "last_struct_coverage": 0.0,
+          "last_indep_ratio": null,
+          "last_indep_pool": 0,
+          "last_indep_free": 0,
+          "indep_history": [
+            null
+          ],
+          "last_sc_ratio": null,
+          "last_sc_pool": 0,
+          "last_sc_touched": 0,
+          "sc_history": [
+            null
+          ],
+          "sc_touched_amps": [],
+          "aligned_amps": [],
+          "last_struct_hit": 0,
+          "last_aligned_hit": 0,
+          "aligned_coverage_history": [
+            0.0
+          ],
+          "last_aligned_coverage": 0.0,
+          "aspect_first_hit": {},
+          "struct_trace": [
+            {
+              "layer": 2,
+              "hit": 0,
+              "total": 0,
+              "cov": 0.0,
+              "newly": []
+            }
+          ],
+          "last_carry_rate": null,
+          "last_carry_pool": 0,
+          "last_carry_hits": 0,
+          "carry_touched_ids": [],
+          "carry_history": [
+            null
+          ],
+          "aligned_first_hit": {},
+          "aligned_trace": [
+            {
+              "layer": 2,
+              "hit": 0,
+              "total": 0,
+              "cov": 0.0,
+              "newly": []
+            }
+          ]
+        },
+        "snapshot_coverage": null
+      },
+      "verdict": "本层目标（研究·收敛）：settle=未测出（无可判定子问题（settlement.total=0）：确定率分母为 0）",
+      "decidability": ""
+    },
+    {
+      "id": "q2",
+      "question": "比较太阳能与风能在中国的发电成本与装机趋势",
+      "engine": "V2.2.66",
+      "exit": 0,
+      "llm_calls": 20,
+      "wall_sec": 55.5,
+      "settlement": {
+        "clean": true,
+        "leftover": 0,
+        "coverage": null,
+        "answered": 0,
+        "total": 0,
+        "decidable_channel": {
+          "answers": [],
+          "coverage_history": [],
+          "last_coverage": 0.0
+        },
+        "undecidable_channel": {
+          "structural_amps": [],
+          "clarity_history": [
+            0.0
+          ],
+          "last_clarity": 0.0,
+          "und_aspects": [],
+          "struct_coverage_history": [
+            0.0
+          ],
+          "last_struct_coverage": 0.0,
+          "last_indep_ratio": null,
+          "last_indep_pool": 0,
+          "last_indep_free": 0,
+          "indep_history": [
+            null
+          ],
+          "last_sc_ratio": null,
+          "last_sc_pool": 0,
+          "last_sc_touched": 0,
+          "sc_history": [
+            null
+          ],
+          "sc_touched_amps": [],
+          "aligned_amps": [],
+          "last_struct_hit": 0,
+          "last_aligned_hit": 0,
+          "aligned_coverage_history": [
+            0.0
+          ],
+          "last_aligned_coverage": 0.0,
+          "aspect_first_hit": {},
+          "struct_trace": [
+            {
+              "layer": 2,
+              "hit": 0,
+              "total": 0,
+              "cov": 0.0,
+              "newly": []
+            }
+          ],
+          "last_carry_rate": null,
+          "last_carry_pool": 0,
+          "last_carry_hits": 0,
+          "carry_touched_ids": [],
+          "carry_history": [
+            null
+          ],
+          "aligned_first_hit": {},
+          "aligned_trace": [
+            {
+              "layer": 2,
+              "hit": 0,
+              "total": 0,
+              "cov": 0.0,
+              "newly": []
+            }
+          ]
+        },
+        "snapshot_coverage": null
+      },
+      "verdict": "本层目标（研究·收敛）：settle=未测出（无可判定子问题（settlement.total=0）：确定率分母为 0）",
+      "decidability": ""
+    },
+    {
+      "id": "q3",
+      "question": "列出三种常见空气污染物及其主要健康影响",
+      "engine": "V2.2.66",
+      "exit": 0,
+      "llm_calls": 13,
+      "wall_sec": 32.4,
+      "settlement": {
+        "clean": true,
+        "leftover": 0,
+        "coverage": null,
+        "answered": 0,
+        "total": 0,
+        "decidable_channel": {},
+        "undecidable_channel": {},
+        "snapshot_coverage": null
+      },
+      "verdict": "本层目标（研究·收敛）：settle=未测出（无可判定子问题（settlement.total=0）：确定率分母为 0）",
+      "decidability": ""
+    },
+    {
+      "id": "q4",
+      "question": "为什么城市热岛效应在夜间比白天更明显？",
+      "engine": "V2.2.66",
+      "exit": 0,
+      "llm_calls": 19,
+      "wall_sec": 46.9,
+      "settlement": {
+        "clean": true,
+        "leftover": 0,
+        "coverage": null,
+        "answered": 0,
+        "total": 0,
+        "decidable_channel": {
+          "answers": [],
+          "coverage_history": [],
+          "last_coverage": 0.0
+        },
+        "undecidable_channel": {
+          "structural_amps": [],
+          "clarity_history": [
+            0.0
+          ],
+          "last_clarity": 0.0,
+          "und_aspects": [],
+          "struct_coverage_history": [
+            0.0
+          ],
+          "last_struct_coverage": 0.0,
+          "last_indep_ratio": null,
+          "last_indep_pool": 0,
+          "last_indep_free": 0,
+          "indep_history": [
+            null
+          ],
+          "last_sc_ratio": null,
+          "last_sc_pool": 0,
+          "last_sc_touched": 0,
+          "sc_history": [
+            null
+          ],
+          "sc_touched_amps": [],
+          "aligned_amps": [],
+          "last_struct_hit": 0,
+          "last_aligned_hit": 0,
+          "aligned_coverage_history": [
+            0.0
+          ],
+          "last_aligned_coverage": 0.0,
+          "aspect_first_hit": {},
+          "struct_trace": [
+            {
+              "layer": 1,
+              "hit": 0,
+              "total": 0,
+              "cov": 0.0,
+              "newly": []
+            }
+          ],
+          "last_carry_rate": null,
+          "last_carry_pool": 0,
+          "last_carry_hits": 0,
+          "carry_touched_ids": [],
+          "carry_history": [
+            null
+          ],
+          "aligned_first_hit": {},
+          "aligned_trace": [
+            {
+              "layer": 1,
+              "hit": 0,
+              "total": 0,
+              "cov": 0.0,
+              "newly": []
+            }
+          ]
+        },
+        "snapshot_coverage": null
+      },
+      "verdict": "本层目标（研究·收敛）：settle=未测出（无可判定子问题（settlement.total=0）：确定率分母为 0）",
+      "decidability": ""
+    }
+  ]
+}
