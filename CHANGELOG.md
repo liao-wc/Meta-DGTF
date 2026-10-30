@@ -1,3 +1,12 @@
+【V2.2.85（2026-10-30，PATCH · v2_online 契约门禁；App 2.0.83）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.85.py（__version__=2.2.85；引擎侧零行为差）；
+  App 2.0.83 不变。
+- ★ 新增 audit_v2_online：ARMS/choose 输出的 route/rounds 必须合法，且经 cli_value 无损转 CLI 串；
+  fast_gate 新增 v2_online_contract（21→22）；acceptance_semantics 同步 22。
+- ★ 验证：3 臂 + 3 题 choice 全部 OK，violations 0；fast_gate 22/22；acceptance_semantics 45/45。
+- 验收：V2 71/71（1210）；App selftest；一键验收；e2e 18/18；probe 84/84；发布流程门。零云 API。
+- 标签：V2.2.85 / engine-V2.2.85（app-V2.0.83 不变，不移动）。
+
 【V2.2.84（2026-10-30，PATCH · 动态矩阵预算层级不变式；App 2.0.83）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.84.py（__version__=2.2.84；引擎侧零行为差）；
   App 2.0.83 不变。
@@ -649,12 +658,3 @@
   daosheng_unified 27 / auto_mode_local 12。
 - 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
   一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
-  发布流程门 pre/post-tag 全 PASS。本轮零新增 API 花费。
-- 兼容性：advisory 不改变实际行为；默认四层/预算上限/成本模型沿用前版。
-- 标签：V2.2.37 / engine-V2.2.37 / app-V2.0.62。
-
-【V2.2.36（2026-10-29，PATCH · 项目背景注入成本；同发 App 2.0.61）】
-- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.36.py（__version__=2.2.36；引擎侧零行为差）；
-  App 2.0.61。
-- ★ 项目背景 A/B（2 跑约 ¥0.18，route=0/rounds=0:1/web off）：默认注入 48,173 tokens vs
-  project_context=false 42,511（+5,662 tokens 约 ¥0.011）；两臂均 unverified。

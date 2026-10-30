@@ -1,0 +1,100 @@
+{
+ "schema": "metadgtf.v2_online_contract.v1",
+ "rows": [
+  {
+   "tag": "arm:baseline_all2",
+   "route": [
+    "0",
+    "1",
+    "both",
+    "all"
+   ],
+   "rounds": {
+    "0": 2,
+    "1": 2,
+    "both": 2,
+    "all": 2
+   }
+  },
+  {
+   "tag": "arm:explore_all3",
+   "route": [
+    "0",
+    "1",
+    "both",
+    "all"
+   ],
+   "rounds": {
+    "0": 3,
+    "1": 3,
+    "both": 3,
+    "all": 3
+   }
+  },
+  {
+   "tag": "arm:explore_lean3",
+   "route": [
+    "0",
+    "1"
+   ],
+   "rounds": {
+    "0": 3,
+    "1": 3
+   }
+  },
+  {
+   "tag": "choose:HTTP 404 状",
+   "id": "v2o-20261030213041-1495",
+   "arm": "explore_all3",
+   "route": [
+    "0",
+    "1",
+    "both",
+    "all"
+   ],
+   "rounds": {
+    "0": 3,
+    "1": 3,
+    "both": 3,
+    "all": 3
+   }
+  },
+  {
+   "tag": "choose:为什么城市热岛效应在",
+   "id": "v2o-20261030213041-1474",
+   "arm": "explore_all3",
+   "route": [
+    "0",
+    "1",
+    "both",
+    "all"
+   ],
+   "rounds": {
+    "0": 3,
+    "1": 3,
+    "both": 3,
+    "all": 3
+   }
+  },
+  {
+   "tag": "choose:以下哪项属于可再生能",
+   "id": "v2o-20261030213041-5390",
+   "arm": "baseline_all2",
+   "route": [
+    "0",
+    "1",
+    "both",
+    "all"
+   ],
+   "rounds": {
+    "0": 2,
+    "1": 2,
+    "both": 2,
+    "all": 2
+   }
+  }
+ ],
+ "violations": [],
+ "n": 6,
+ "n_bad": 0
+}

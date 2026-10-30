@@ -276,6 +276,10 @@ def build_checks(engine=None) -> list:
         # [V2.2.82] v2_events 层质量与 packed 重算一致（动态调度读它）
         ("v2_quality_consistency", [sys.executable,
          str(ROOT / "scripts" / "recompute_v2_layer_quality.py"), "--check"]),
+        # [V2.2.85] v2_online 契约（结构化 route/rounds 必须可无损转 CLI 串；
+        #   防 V2.2.77 那类「Python repr 透传 ⇒ 四层全跳过」回归）
+        ("v2_online_contract", [sys.executable,
+         str(ROOT / "scripts" / "local_model" / "audit_v2_online.py")]),
     ]
     return checks
 
