@@ -176,6 +176,22 @@ V2.2.67 曾观测到一次 case1 `settle=0.000（valued）`（44 calls、candida
 结论：层1 目标**可以被判定**（本次判「未达成」），前提是研究层跑满 3 圈；
 默认不启用该策略（成本），作为后续「动态 min_rounds」的证据。
 
+
+## 7.10 强制 3 圈的可判定性复跑（V2.2.91，零 API）
+
+同口径（--rounds 3 + min_rounds.1=3 + soft_max=3 + stable_need=3 + fresh-playbook）复跑：
+
+| run | calls | trace | 目标判定 | main |
+|---|---|---|---|---|
+| 1 | 53 | 3 | **not_achieved** | 0.5 |
+| 2 | 77 | 3 | **not_achieved** | 0.0 |
+| 3 | 77 | 3 | **not_achieved** | 0.0 |
+
+结论：**「可判定」本身可复现（3/3 均为 not_achieved、trace 3 点）**；main 取值随状态/缓存
+波动（0.5/0.0/0.0），不再出现「判据样本不足」。默认仍不启用强制加圈（成本）。
+
+证据：docs/layer1_judgeable_repeat_20261031.json。
+
 ## 8. 后续建议（需预算或明确方向）
 
 - 方案 A（有预算）：1 个 web on 的层1 小样本（单跑约与既有 A/B 同量级），验证能否产生 candidates>0；
