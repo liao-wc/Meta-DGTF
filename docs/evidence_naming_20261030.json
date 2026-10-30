@@ -44,6 +44,8 @@
    "ok": true
   }
  ],
+ "static_violations": [],
+ "date_violations": [],
  "violations": [],
  "n": 7,
  "n_bad": 0

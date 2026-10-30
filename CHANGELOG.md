@@ -1,3 +1,12 @@
+【V2.2.89（2026-10-30，PATCH · 证据命名静态/日期扫描；App 2.0.83）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.89.py（__version__=2.2.89；引擎侧零行为差）；
+  App 2.0.83 不变。
+- ★ evidence_naming 审计扩展：静态扫描 scripts 里的 docs/*.json 写入（文件名 token vs schema），
+  以及日期证据文件名 vs JSON ts 一致性；结果写入 evidence JSON 的 static/date_violations。
+- ★ 验证：7 个证据文件 + 静态 + 日期扫描 violations 0；fast_gate 25/25。
+- 验收：V2 71/71（1210）；App selftest；一键验收；e2e 18/18；probe 84/84；发布流程门。零云 API。
+- 标签：V2.2.89 / engine-V2.2.89（app-V2.0.83 不变，不移动）。
+
 【V2.2.88（2026-10-30，PATCH · 证据命名一致性门禁；App 2.0.83）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.88.py（__version__=2.2.88；引擎侧零行为差）；
   App 2.0.83 不变。
@@ -649,14 +658,3 @@
   no_cache/force_rerun 仍强制重跑；apply_plan 透传。
 - ★ 全链路本地验证（零 API）：fused_full_chain 16→21（D0 seed 完成、D1 cache_hit、
   D2 cache_unverified、D3 继承 output、D4 0 新 packed/0 次新 LLM 调用）。
-- 判据：test_dynamic_opt 99→102（O1 ok=False、O2 warn=True+policy、O3 apply_plan 透传）；
-  回归 fused_optimal 30 / fused_full_chain 21 / daosheng_unified 27 / auto_mode_local 12。
-- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
-  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
-  发布流程门 pre/post-tag 全 PASS。本轮零新增 API 花费。
-- 兼容性：仅预算 warn/critical 启用；预算充足仍只 verified；显式 no_cache 强制重跑。
-- 标签：V2.2.39 / engine-V2.2.39 / app-V2.0.64。
-
-【V2.2.38（2026-10-29，PATCH · 余额续航预测；同发 App 2.0.63）】
-- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.38.py（__version__=2.2.38；引擎侧零行为差）；
-  App 2.0.63。
