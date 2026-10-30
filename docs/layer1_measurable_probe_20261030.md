@@ -308,6 +308,15 @@ V2.2.97 全量 probe **三次**（各 82/82 PASS）：
 App 的 profile 列表可直接选择；默认配置不变。验证：App `profile_path` 可解析、
 引擎 `_spiral_for` 读到 min_rounds 1:3、24 preset 陈旧键 0。
 
+
+## 7.20 preset Q 端到端验证（V2.2.99，零 API）
+
+用方案Q preset（quality + opt-in）替换本地端点后真实跑一题（热岛，route 0,1，rounds 2）：
+
+- 研究层跑满 **3/3 圈**（serial 模式，min_rounds=3 拦截生效），43 calls / 52,896 tokens（本地）；
+- settlement.total=1（有值）；preset Q 与方案 D 的差异**仅 3 个 opt-in 键**；
+- 证据：docs/preset_q_verify_20261031.json。
+
 ## 8. 后续建议（需预算或明确方向）
 
 - 方案 A（有预算）：1 个 web on 的层1 小样本（单跑约与既有 A/B 同量级），验证能否产生 candidates>0；

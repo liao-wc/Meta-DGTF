@@ -1,0 +1,17 @@
+{
+ "schema": "metadgtf.preset_q_verify.v1",
+ "ts": "2026-10-31 08:50",
+ "note": "方案Q preset（quality + opt-in 自动最小圈数）本地端到端：研究层 3/3 圈、settle=1",
+ "preset": "configs/方案Q-可判定优先.yaml",
+ "diff_vs_D": [
+  "spiral.min_rounds_judgeable=True",
+  "spiral.min_rounds_judgeable_layers=[1,both]",
+  "spiral.min_rounds_judgeable_target=3"
+ ],
+ "parallel_mode": "serial（来自 preset D）",
+ "llm_calls": 43,
+ "tokens": 52896,
+ "rounds_run": 3,
+ "settle_total": 1,
+ "pack": "outputs/20261031_053422_为什么城市热岛效应在夜间比白天更明显.packed.json"
+}
