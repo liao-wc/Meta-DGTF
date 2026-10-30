@@ -1,3 +1,12 @@
+【V2.2.83（2026-10-30，PATCH · 离线质量门预检预算截断口径；App 2.0.83）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.83.py（__version__=2.2.83；引擎侧零行为差）；
+  App 2.0.83 不变。
+- ★ 发现：precheck_quality 的 G5 重算不认「体力耗尽（预算截断）」口径，把正确存证误判不一致。
+- ★ 修复：重算尊重截断口径；截断产物判 N/A（预算边界不计失败）；正常产物仍 PASS 5/5。
+- 验证：截断产物 PASS 4/0/N/A1；正常 verified 产物 PASS 5/0/0；V2 71/71（1210）；fast_gate 21/21。
+- 验收：App selftest；一键验收；e2e 18/18；probe 84/84；发布流程门 pre/post-tag 全 PASS。零云 API。
+- 标签：V2.2.83 / engine-V2.2.83（app-V2.0.83 不变，不移动）。
+
 【V2.2.82（2026-10-30，PATCH · v2 层质量一致性门禁；App 2.0.83）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.82.py（__version__=2.2.82；引擎侧零行为差）；
   App 2.0.83 不变。
@@ -649,14 +658,3 @@
   发布流程门 pre/post-tag 全 PASS。
 - 兼容性：显式 project_context=false 仍可关闭；默认四层/省层判定不变；仅成本估算变化。
 - 标签：V2.2.36 / engine-V2.2.36 / app-V2.0.61。
-
-【V2.2.35（2026-10-29，PATCH · rounds 依赖省层收益；同发 App 2.0.60）】
-- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.35.py（__version__=2.2.35；引擎侧零行为差）；
-  App 2.0.60。
-- ★ reasoning 高圈 A/B（2 跑约 ¥0.26，rounds=2/层）：route0 65,608 vs full 62,317 tokens
-  （高圈省层收益≈0，full 反而略省），两臂均 unverified；与单圈（route0 39.6-46k vs full
-  70.7-74.9k，省约 39%）对比 ⇒ 省层收益 rounds 依赖。
-- ★ route_pruning 高圈分支：reasoning 总圈数≥5 ⇒ keep_four_layers（证据 rounds2 JSON）；
-  单圈仍 subset_may_save；fact 任意长度 keep；choice may_save（≈40%）。
-- ★ 新增 _LONG_RUN_ANCHORS（reasoning、B、总圈数 5-10）：route0 65,608 / full 62,317，
-  动态成本 cost_source=measured_long_anchor。

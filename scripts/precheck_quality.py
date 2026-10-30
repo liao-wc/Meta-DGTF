@@ -414,6 +414,15 @@ def _fact_quality(packed: dict, process_ok: bool) -> dict:
         ready = True
         aq = "verified"
         reason = "非事实题：四层过程合同全达标且答案非空"
+    # ★ [V2.2.83] 预算截断口径：引擎在「体力耗尽（预算截断）」时**故意**写
+    #   answer_ready=False（质量门不允许截断产物 ready）；G5 重算必须尊重该规则，
+    #   否则会把正确的存证判成「不一致」（实测 1+1 题被误判 FAIL）。
+    _trunc = ("体力耗尽" in str((packed.get("quality") or {}).get(
+                   "answer_ready_reason") or "")
+              or "体力耗尽" in str(dt.get("answer_ready_reason") or ""))
+    if _trunc and ready:
+        ready = False
+        reason = "体力耗尽（预算截断），不视为 ready"
     return {"raw": raw, "raw_from": raw_from, "process_ok": bool(process_ok),
             "ready": bool(ready), "answer_ready_reason": reason,
             "answer_quality": aq, "hard_gaps": hard,
@@ -428,6 +437,23 @@ def gate_quality(packed: dict, process_ok: bool) -> dict:
     tri = _tri_readings(packed)
     tri_bad = _tri_consistency(tri)
     flags = [str(f) for f in ((packed.get("quality") or {}).get("flags") or [])]
+    # ★ [V2.2.83] 预算截断（体力耗尽）是**预算边界**，不是质量回归：
+    #   引擎故意写 answer_ready=False；此时 G5 判 N/A（不计 FAIL），
+    #   否则「最新真跑」一旦撞上预算线就会把发布门误判成质量失败。
+    _trunc = ("体力耗尽" in str(((packed.get("quality") or {}).get(
+                   "answer_ready_reason") or ""))
+              or "体力耗尽" in str(dt.get("answer_ready_reason") or ""))
+    if _trunc:
+        return {
+            "id": "G5", "name": "质量门 quality", "status": "N/A", "ok": True,
+            "reasons": ["预算截断（体力耗尽）：answer_ready=False 属引擎预期口径，"
+                        "不作为质量失败（预算边界 N/A）"],
+            "data": dict(rec, tri=tri, tri_inconsistent=tri_bad,
+                         stored={"answer_ready": dt.get("answer_ready"),
+                                 "answer_ready_reason":
+                                     dt.get("answer_ready_reason")},
+                         quality_flags=flags),
+        }
     ok = rec["ready"] and rec["answer_quality"] == "verified" \
         and not rec["hard_gaps"] and not tri_bad
     reasons = []
