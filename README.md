@@ -3,20 +3,20 @@
 一个**单文件四层螺旋推理引擎** + **V2 三平面核心** + **本地 Web 工作台**：
 修行 / 研究 / 对撞 / 元，跑出可审计、可回放、可融合的产物。
 
-- **当前版本**：V2.2.66（发布门证据时序检查） / App 2.0.81（本地链路全生命周期守护 + health 读数 + 本地档预设；道生专属模式 + 三体动态计划 + 预算守卫）
+- **当前版本**：V2.2.67（层1 可测：probe route 0,1 + 可生成候选题面） / App 2.0.81（本地链路全生命周期守护 + health 读数 + 本地档预设；道生专属模式 + 三体动态计划 + 预算守卫）
 - **生产引擎**：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.56.py
 - **V2 核心**：dgtf_engine/dgtf_v2/
 - **人用界面**：dgtf_app/（App 2.0.81，本地链路两段守护 + 道生专属模式 + DSH 本对话实时镜像 + 会话列表实时打开 + 健康读数缓存）
 - **本地链路**：dgtf_local_llm/（8772 推理服务，fp32 底座 + CUDA graph 采样/复用）+ scripts/local_model/openai_shim.py（8773 OpenAI 适配层）
-- **融合实现**：单引擎内联（Meta-DGTF-V2.2.66.py）；V2.1 外部模块仅作回滚参考
+- **融合实现**：单引擎内联（Meta-DGTF-V2.2.67.py）；V2.1 外部模块仅作回滚参考
 - **历史清单**：dgtf_engine/dgtf_v2/history_manifest.json
 - **版本规范**：dgtf_engine/dgtf_v2/NAMING.md
 - **历史归档**：元DGTF-V1历史归档-20261023.zip（V1.0 → V1.30.4）
 
 > 这份 README 只写能被验证的事；详细来源、能力、版本演化见 docs/history/。
-> **2026-10-30 收束同步（V2.2.66 / App 2.0.81）**：V2 **71/71（1208 checks，SKIP 0）**；fast_gate **18/18**（动态选最高版引擎；含发布流程门自检；audit70 71/0）；
+> **2026-10-30 收束同步（V2.2.67 / App 2.0.81）**：V2 **71/71（1208 checks，SKIP 0）**；fast_gate **18/18**（动态选最高版引擎；含发布流程门自检；audit70 71/0）；
 > App selftest **459/0**（自动门）；一键验收 **PASS 30 / SKIP 0 / FAIL 0**；发布流程门 **PASS（N/A 项带原因）**；动态配置/优先成本 **132/132**、更优/route 安全门 **30/30**、全链路真跑 **25/25**、道生统一模式 **27/27**、自动模式真跑 **12/12**；服务适配器 self_check=v8b / self_check_min=v9b / dual_judge=judge_v3 / route=qwen05b_v1。
-| **四层目标探针**（route 0/1/0,1,both/0,1,all） | **83 / 83 PASS**（V2.2.66 复跑：4 case 共 224 calls，墙钟 81.6s）；层0 未达成（excavate=1.0，单次方差）/ 层1 未测出 / both 判据样本不足 / all 未达成（0.75） |
+| **四层目标探针**（route 0/1/0,1,both/0,1,all） | **82 / 82 PASS**（V2.2.67 复跑：4 case 共 238 calls，墙钟 78.2s）；层0 未达成（excavate=1.0，单次方差）/ 层1 未测出 / both 判据样本不足 / all 未达成（0.75） |
 | **四层读数方差（V2.2.58）** | 40 次历史复跑：case0 均值 **0.415**（0.0–1.0）/ both **0.017**（0–0.37）/ all **0.594**（0.5–0.75，从未到 1.0）| `docs/probe_variance_20261030.json` |
 > 四层目标逐层结论（V2.2.49 复跑）：层0 达成（excavate=0，读数在 0/0.25/0.5/1 间波动的单次方差已多轮记录）/ 层1 未测出（settlement.total=0）/ both 受阻（读数通道全通）/ all 未达成（0.5）。
 > 完整现状见 `docs/项目状态快照_20261030.md`。
@@ -115,13 +115,13 @@ DGTF_BASE_URL=https://api.deepseek.com
 ### 跑一次
 
 ~~~bash
-python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.66.py "你的问题"
+python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.67.py "你的问题"
 
 # 四层各一圈
-python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.66.py --route 0,1,both,all --rounds 1 "你的问题"
+python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.67.py --route 0,1,both,all --rounds 1 "你的问题"
 
 # 质量/成本预设
-python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.66.py -c configs/方案F-帕累托最优.yaml "你的问题"
+python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.67.py -c configs/方案F-帕累托最优.yaml "你的问题"
 ~~~
 
 常用参数：
@@ -152,7 +152,8 @@ python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.66.py -c configs/方案F-帕累
 | **四层目标探针**（route 0/1/0,1,both/0,1,all） | **81 / 81 PASS**（V2.2.52 复跑：4 case 共 219 calls，墙钟 538.1s；层1 转为「判据样本不足」少 1 条断言）；层0 达成（excavate=0.0）/ 层1 判据样本不足 / both 判据样本不足 / all 未达成（0.75） |
 | 本地服务延迟 | p50 3.0–3.5s、p95 8–9s（单 token graph replay 59→28ms）；JSON 约束后单次中位 3842→1651ms |
 | 四层全跑 | 136 calls / 818.4s（V2.2.14 快照；四层读数全出） |
-| **证据时序检查（V2.2.66）** | release_process_check 断言 V2/fg/acceptance/app_selftest/probe 证据均不早于当前引擎构件（落后即 FAIL） |
+| **层1 可测（V2.2.67）** | probe case1 改 route 0,1 + GDP 题面：settle=0.000（valued，判据样本不足）；层1 依赖上游层0 已定位 |
+| 证据时序检查（V2.2.66） | 证据不得早于当前引擎构件 |
 | 研究层归因（V2.2.65） | probe P2g（82→83）结构化归因 |
 | 稳定性文档护栏（V2.2.64） | stability_guard 扩展文档/README 断言 |
 | 历史/归档 quality 护栏（V2.2.63） | App selftest 457→459：list_chats/archivedTask quality 字段 |
@@ -244,7 +245,7 @@ local_model\envs\dgtf_llm_env\Scripts\python.exe -m pip check
 
 | 路径 | 是什么 |
 |---|---|
-| dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.66.py | 当前生产引擎 |
+| dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.67.py | 当前生产引擎 |
 | dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.19.py | 上一基线（输入驱动自动模式 + 动态调整） |
 | dgtf_local_llm/ + scripts/local_model/openai_shim.py | 本地链路：8772 推理服务 / 8773 OpenAI 适配层 |
 | configs/本地模型-全链路.yaml | App 本地档预设（零 API 成本链路） |
@@ -303,12 +304,12 @@ local_model\envs\dgtf_llm_env\Scripts\python.exe -m pip check
 
 ## 九、当前收束
 
-- 版本：V2.2.66（App 2.0.81）
+- 版本：V2.2.67（App 2.0.81）
 - 历史版本：178 个快照（V1.0 → V2.0.0）
 - 能力轴：17 条，readiness=1.00
 - 行为臂：5 个（v1_spiral / v1_frontier / v2_contract / v2_pareto / fusion_full）
-- 收束报告：V2.2.66-收束报告.md
-- 发布说明：docs/releases/V2.2.66.md / docs/releases/V2.2.65.md / docs/releases/app-V2.0.81.md
+- 收束报告：V2.2.67-收束报告.md
+- 发布说明：docs/releases/V2.2.67.md / docs/releases/V2.2.66.md / docs/releases/app-V2.0.81.md
 - **优化交付（Round 1–83）**：`docs/最终交付说明-20261026.md`、
   `docs/验收总览-20261026.md`、`docs/ab_evidence_20261025.md`（§1–§78）
 - **本地模型默认**：v8b（mixed 配方，质量持平 v6、p50/p95 更快；训练/评测/切换全链证据）

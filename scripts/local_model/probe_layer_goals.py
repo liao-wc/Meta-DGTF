@@ -140,8 +140,11 @@ def _shape_ok(v) -> bool:
 CASES = [
     {"id": "0", "route": "0", "target": ["0"],
      "why": "修行层单跑"},
-    {"id": "1", "route": "1", "target": ["1"],
-     "why": "研究层单跑"},
+    # ★ [V2.2.67] 研究层需要上游层0：route=1 单跑时 candidates=0、settlement.total=0；
+    #   route=0,1 时 candidates>0、settle 有值。3 圈才能让「连续不涨」可判定。
+    {"id": "1", "route": "0,1", "target": ["1"],
+     "question": "2025年全球主要经济体的GDP增速分别是多少？",
+     "why": "研究层需上游层0 + 可生成候选的题面（原题面无候选）"},
     {"id": "both", "route": "0,1,both", "target": ["both"],
      "why": "对撞层依赖上游 0/1（_ENTRY_DEPS）；单跑 both 会被调度跳过"},
     {"id": "all", "route": "0,1,all", "target": ["all"],
@@ -410,9 +413,11 @@ def run_case(case: dict, question: str, rounds: int, timeout: float,
     print("\n" + "=" * 72)
     print("CASE route=%s 目标层=%s ｜ %s"
           % (case["route"], "+".join(case["target"]), case["why"]))
-    cmd = er.build_cmd(question, {"_config": str(CFG_PATH),
+    _rounds = int(case.get("rounds") or rounds)
+    _question = str(case.get("question") or question)
+    cmd = er.build_cmd(_question, {"_config": str(CFG_PATH),
                                   "route": case["route"],
-                                  "rounds": str(rounds)})
+                                  "rounds": str(_rounds)})
     print("   命令：" + subprocess.list2cmdline(cmd), flush=True)
     before = {p: os.path.getmtime(p)
               for p in glob.glob(str(SAVE_DIR / "*.packed.json"))}
@@ -428,7 +433,9 @@ def run_case(case: dict, question: str, rounds: int, timeout: float,
     wall = round(time.time() - t0, 1)
     print("   引擎退出码=%s 墙钟=%ss" % (rc, wall), flush=True)
     rec = {"case": case["id"], "route": case["route"],
-           "targets": list(case["target"]), "cmd": cmd, "exit": rc,
+           "targets": list(case["target"]), "requested_rounds": _rounds,
+           "question": _question,
+           "cmd": cmd, "exit": rc,
            "wall_sec": wall, "layers": [], "ok": False, "not_run": None}
     if rc != 0:
         rec["ok"] = False
@@ -501,7 +508,7 @@ def run_case(case: dict, question: str, rounds: int, timeout: float,
                          "dispatch=%s" % json.dumps(disp, ensure_ascii=False)[:300])
             continue
         rec["layers"].append(check_target_layer(
-            case["id"], L, d, pack_path, eng, rounds))
+            case["id"], L, d, pack_path, eng, _rounds))
     if rec["not_run"]:
         return rec
     rec["ok"] = all(all(c["ok"] for c in lay["checks"])

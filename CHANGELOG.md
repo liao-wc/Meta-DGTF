@@ -1,3 +1,16 @@
+【V2.2.67（2026-10-30，PATCH · 层1 可测：probe route 0,1 + 可生成候选题面；App 2.0.81 不变）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.67.py（__version__=2.2.67；引擎侧零行为差）；
+  App 2.0.81 不变。
+- ★ 零成本定位：层1 需要上游层0（route=1 单跑 candidates=0）；原题面即使带上游也无候选；
+  GDP 题面 + route=0,1 可测（settle 有值）。
+- ★ probe case1：route "1"→"0,1"，per-case question 覆盖 GDP 题；支持 per-case rounds；
+  证据记录 requested_rounds/question。
+- 结果：probe 82/82 PASS；case1 0.000（valued，判据样本不足：2 圈不足 3 圈门槛，未硬凑）。
+- 验收：fast_gate 18/18；V2 71/71（1208 checks）；App selftest 459/0；一键验收 PASS 30 /
+  SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；发布流程门 pre/post-tag 全 PASS。零云 API。
+- 兼容性：只改测试/证据设计；引擎零行为差；App 不变。
+- 标签：V2.2.67 / engine-V2.2.67（app-V2.0.81 不变，不移动）。
+
 【V2.2.66（2026-10-30，PATCH · 发布门证据时序检查；App 2.0.81 不变）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.66.py（__version__=2.2.66；引擎侧零行为差）；
   App 2.0.81 不变。
@@ -646,16 +659,3 @@
   增加 route / cache_hit 读数；余额未知 fail-open 只审计不改配置（不再误改 rounds）。
 - ★ 剩余预算有界 A/B（真实云端 2 臂，合计约 ¥0.28）：同题同 route=0/rounds=0:1/web off，
   ok 档（¥50 假设）→ quality B / auto 圈，实际 13 calls / 76,306 tokens 约 ¥0.15，verified；
-  warn 档（¥3）→ fast + economy 圈，实际 11 calls / 64,907 tokens 约 ¥0.13，verified。
-  结论：资源收紧自动降档且仍 verified；实际成本远低于整单估算（为 route 子集成本模型留证据）。
-- 判据：test_dynamic_opt 28→36 项；回归 fused_optimal 30 / fused_full_chain 16 /
-  daosheng_unified 27 / auto_mode_local 12。
-- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
-  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 81/81；
-  发布流程门 pre/post-tag 全 PASS。
-- 兼容性：显式 opts 永远优先；余额未知 fail-open 只审计；quality 档不受影响。
-- 标签：V2.2.25 / engine-V2.2.25 / app-V2.0.50。
-
-【V2.2.24（2026-10-29，PATCH · 全链路动态配置优化 + 动态依赖调整；同发 App 2.0.49）】
-- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.24.py（__version__=2.2.24；引擎侧零行为差）；
-  App 2.0.49。

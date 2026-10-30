@@ -1,9 +1,9 @@
 {
   "ok": true,
   "question": "成年人正常心率是多少次每分钟",
-  "wall_sec": 42.1,
+  "wall_sec": 17.6,
   "exit": 0,
-  "packed": "D:\\Meta-DGTF-道生三阶模型\\outputs\\_e2e_local\\20261030_064624_成年人正常心率是多少次每分钟.packed.json",
+  "packed": "D:\\Meta-DGTF-道生三阶模型\\outputs\\_e2e_local\\20261030_123604_成年人正常心率是多少次每分钟.packed.json",
   "quality_keys": [
     "alert",
     "answer_gates",
@@ -66,43 +66,43 @@
       "stage": "expand_pair_merged",
       "calls": 1,
       "tokens": 1532,
-      "ms": 762
+      "ms": 15
     },
     {
       "stage": "adjudicate_sub_tristate_multi",
       "calls": 3,
       "tokens": 1488,
-      "ms": 6468
+      "ms": 44
     },
     {
       "stage": "expand_pair_merged_fixup",
       "calls": 1,
       "tokens": 1446,
-      "ms": 707
-    },
-    {
-      "stage": "manifest",
-      "calls": 1,
-      "tokens": 1092,
-      "ms": 6749
+      "ms": 14
     },
     {
       "stage": "re_anchor",
       "calls": 1,
-      "tokens": 1041,
-      "ms": 1353
+      "tokens": 1042,
+      "ms": 14
+    },
+    {
+      "stage": "manifest",
+      "calls": 1,
+      "tokens": 908,
+      "ms": 28
     },
     {
       "stage": "check_input_sanity",
       "calls": 1,
       "tokens": 671,
-      "ms": 2867
+      "ms": 1423
     },
     {
       "stage": "assess_decidability",
       "calls": 1,
       "tokens": 599,
-      "ms": 1520
+      "ms": 27
     },
     {
       "stage": "json_repair",
@@ -114,7 +114,7 @@
       "stage": "decompose_koan",
       "calls": 1,
       "tokens": 338,
-      "ms": 1385
+      "ms": 15
     }
   ],
   "llm_calls": 12,
