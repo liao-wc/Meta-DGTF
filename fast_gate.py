@@ -267,6 +267,9 @@ def build_checks(engine=None) -> list:
          str(ROOT / "scripts" / "sync_readme_numbers.py"), "--check"]),
         # [V2.2.62] 判据稳定性护栏：串行锁模块 + 重资源脚本接线（防重构静默丢失）
         ("stability_guard", [sys.executable, "-c", _STABILITY_PROBE, str(ROOT)]),
+        # [V2.2.75] 动态配置决策矩阵（纯函数，零 API；防 tier/web/engine_mode 配置回归）
+        ("dynamic_matrix", [sys.executable,
+         str(ROOT / "scripts" / "local_model" / "audit_dynamic_matrix.py")]),
     ]
     return checks
 
