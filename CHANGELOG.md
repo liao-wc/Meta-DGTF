@@ -1,4 +1,4 @@
-【V2.2.77 / App 2.0.82（2026-10-30，PATCH · 修复 v2_online route/rounds 透传降质）】
+【V2.2.77（2026-10-30，PATCH · 修复 v2_online route/rounds 透传降质；App 2.0.82）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.77.py（__version__=2.2.77；引擎侧零行为差）；
   App 2.0.82。
 - ★ 根因：v2_online 返回 route=list、rounds=dict，server 写入 opts，build_cmd 旧实现 str(v)
