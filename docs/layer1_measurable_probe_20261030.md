@@ -321,6 +321,13 @@ App 的 profile 列表可直接选择；默认配置不变。验证：App `profi
 今后本地 e2e 应写到临时目录，勿污染输出目录。
 
 
+
+## 7.21 preset Q 在 App 可见（V2.2.99）
+
+App 调度配置列表 `_schedule_profiles()` 实测返回 24 项，含 **方案Q-可判定优先**
+（parallel_mode=serial）；用户可在 App 中选择该 preset 获得「研究/对撞层至少 3 圈」的可判定模式。
+证据：docs/preset_q_app_visibility_20261031.json。
+
 ## 8. 后续建议（需预算或明确方向）
 
 - 方案 A（有预算）：1 个 web on 的层1 小样本（单跑约与既有 A/B 同量级），验证能否产生 candidates>0；

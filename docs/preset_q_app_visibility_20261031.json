@@ -1,0 +1,11 @@
+{
+ "schema": "metadgtf.preset_q_app_visibility.v1",
+ "ts": "2026-10-31 05:50",
+ "note": "方案Q 已进入 App 调度配置列表（_schedule_profiles 24 项，含 方案Q-可判定优先）",
+ "app_entry": {
+  "id": "方案Q-可判定优先.yaml",
+  "name": "方案Q-可判定优先",
+  "parallel_mode": "serial",
+  "recommended": false
+ }
+}
