@@ -1,3 +1,16 @@
+【V2.2.74（2026-10-30，PATCH · 动态配置决策矩阵审计；App 2.0.81 不变）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.74.py（__version__=2.2.74；引擎侧零行为差）；
+  App 2.0.81 不变。
+- ★ 新增 scripts/local_model/audit_dynamic_matrix.py：4 题型 × 9 档余额 = 36 组合，
+  调用 build_plan 记录 tier/engine_mode/web/parallel 等并检查硬约束；证据
+  docs/dynamic_matrix_audit_20261030.json。
+- ★ 结果：0 违反；<¥8 一律 fast、≥¥8 quality/B；fact/choice 始终 web on；
+  reasoning/project fast 档 web off。
+- 验收：fast_gate 18/18；V2 71/71（1208 checks）；App selftest 459/0；一键验收 PASS 30 /
+  SKIP 0 / FAIL 0；e2e 18/18；四层 probe 84/84；发布流程门 pre/post-tag 全 PASS。零云 API。
+- 兼容性：纯审计脚本；引擎零行为差；App 不变。
+- 标签：V2.2.74 / engine-V2.2.74（app-V2.0.81 不变，不移动）。
+
 【V2.2.73（2026-10-30，PATCH · sync 方差行自动同步；App 2.0.81 不变）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.73.py（__version__=2.2.73；引擎侧零行为差）；
   App 2.0.81 不变。
@@ -646,15 +659,3 @@
 - ★ 风险标注：有效 route 缺层且事实/项目/verified 策略时，plan.dynamic_opt.route_quality_risk
   = {level(high/info), missing, evidence, note}，warnings 提示；默认四层不触发，显式省层可审计。
 - 判据：test_dynamic_opt 64→69（A/B 证据、项目 high、事实 info、四层无风险、warnings）。
-  回归 fused_optimal 30 / fused_full_chain 16 / daosheng_unified 27 / auto_mode_local 12。
-- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
-  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
-  发布流程门 pre/post-tag 全 PASS。
-- 兼容性：默认行为不变（四层）；成本模型/预算上限/阶段路由沿用前版。
-- 标签：V2.2.30 / engine-V2.2.30 / app-V2.0.55。
-
-【V2.2.29（2026-10-29，PATCH · 预算层级→运行期墙钟硬上限；同发 App 2.0.54）】
-- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.29.py（__version__=2.2.29；引擎侧零行为差）；
-  App 2.0.54。
-- ★ 墙钟硬上限：warn/critical 档 plan.max_minutes = ceil(估算 tokens/600×1.5/60)（最低 1），
-  apply_plan 透传 --max-minutes；显式 opts.max_minutes 优先，ok 档不设限；
