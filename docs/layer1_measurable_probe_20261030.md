@@ -142,6 +142,22 @@ V2.2.67 曾观测到一次 case1 `settle=0.000（valued）`（44 calls、candida
 
 证据：docs/layer1_fallback_stability_20261031.json。
 
+
+## 7.8 可复现 probe 模式：--fresh-playbook（V2.2.90，零 API）
+
+全量四层 probe 用 `--fresh-playbook`（每次全新 playbook 目录）跑两次：
+
+| run | 断言 | case0 | case1 | both | all |
+|---|---|---|---|---|---|
+| A | 82/82 | 19 calls / achieved 0.0 | 36 / **not_judgeable 0.0** | 82 / **not_judgeable 0.0** | 93 / not_achieved 0.5 |
+| B | 82/82 | 19 calls / achieved 0.0 | 36 / **not_judgeable 0.0** | 82 / **not_judgeable 0.0** | 93 / not_achieved 0.5 |
+
+**两次完全一致**（calls/读数/状态逐项相同）⇒ `--fresh-playbook` 可作为
+**可复现 probe 模式**（隔离生产 playbook 状态）；默认模式仍跑生产状态（受 EML 耦合，
+取值不同但仍 valued）。注意：层1/both 目标仍是「判据样本不足」（2 个逐圈点 < 3）。
+
+证据：docs/layer1_reproducible_probe_20261031.json。
+
 ## 8. 后续建议（需预算或明确方向）
 
 - 方案 A（有预算）：1 个 web on 的层1 小样本（单跑约与既有 A/B 同量级），验证能否产生 candidates>0；

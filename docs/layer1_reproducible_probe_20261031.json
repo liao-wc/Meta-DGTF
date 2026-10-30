@@ -1,0 +1,72 @@
+{
+ "schema": "metadgtf.layer1_reproducible_probe.v1",
+ "ts": "2026-10-31 00:50",
+ "note": "V2.2.90：--fresh-playbook 全量四层 probe 两次完全一致（零 API 本地链）",
+ "run_a": {
+  "pass": 82,
+  "fail": 0,
+  "fresh_playbook": true,
+  "rows": [
+   {
+    "case": "0",
+    "calls": 19,
+    "status": "achieved",
+    "main": 0.0
+   },
+   {
+    "case": "1",
+    "calls": 36,
+    "status": "not_judgeable",
+    "main": 0.0
+   },
+   {
+    "case": "both",
+    "calls": 82,
+    "status": "not_judgeable",
+    "main": 0.0
+   },
+   {
+    "case": "all",
+    "calls": 93,
+    "status": "not_achieved",
+    "main": 0.5
+   }
+  ]
+ },
+ "run_b": {
+  "pass": 82,
+  "fail": 0,
+  "fresh_playbook": true,
+  "rows": [
+   {
+    "case": "0",
+    "calls": 19,
+    "status": "achieved",
+    "main": 0.0
+   },
+   {
+    "case": "1",
+    "calls": 36,
+    "status": "not_judgeable",
+    "main": 0.0
+   },
+   {
+    "case": "both",
+    "calls": 82,
+    "status": "not_judgeable",
+    "main": 0.0
+   },
+   {
+    "case": "all",
+    "calls": 93,
+    "status": "not_achieved",
+    "main": 0.5
+   }
+  ]
+ },
+ "default_probe_v2290": {
+  "note": "默认（复用生产 playbook 状态）整跑读数受 EML 状态影响，仍 valued 但取值不同",
+  "case1_main": 0.0,
+  "both_main": 0.2917
+ }
+}
