@@ -1,0 +1,12 @@
+{
+ "schema": "metadgtf.layer1_parallel_b_judgeable.v1",
+ "ts": "2026-10-31 02:00",
+ "note": "V2.2.92 opt-in 自动最小圈数在并行 B 模式生效（本地链验证）",
+ "parallel_mode": "B",
+ "rounds_run": 3,
+ "settle_total": 2,
+ "trace_len": 3,
+ "target_status": "not_achieved",
+ "why": "settle=0.500 仍在涨（未连续 2 圈不涨）",
+ "pack": "20261031_015448_为什么城市热岛效应在夜间比白天更明显.packed.json"
+}

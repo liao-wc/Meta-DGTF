@@ -208,6 +208,18 @@ V2.2.67 曾观测到一次 case1 `settle=0.000（valued）`（44 calls、candida
 
 边界：默认不开；开启成本约 ¥0.074/圈/层（按既有校准）；建议 quality+预算 ok 时显式启用。
 
+
+## 7.12 并行 B 模式同样生效（V2.2.92，零 API）
+
+引擎默认并行模式 B（App 路径）验证 opt-in 自动最小圈数：
+
+- 配置：spiral.min_rounds_judgeable=true（target=3），`--parallel B --rounds 2`（不再手传更高圈数）；
+- 结果：研究层 **rounds_run=3**、trace **3 点**、settle=2，
+  lga.classify_target 判定 **not_achieved**（settle=0.5 仍在涨）；
+- 63 calls / 75,637 tokens（本地）；证据 docs/layer1_parallel_b_judgeable_20261031.json。
+
+结论：串行与并行 B 两条入口都遵守该 opt-in；默认关闭仍零行为差。
+
 ## 8. 后续建议（需预算或明确方向）
 
 - 方案 A（有预算）：1 个 web on 的层1 小样本（单跑约与既有 A/B 同量级），验证能否产生 candidates>0；
