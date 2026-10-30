@@ -1029,6 +1029,12 @@ def answer_from_evidence(items: Iterable, question: str = "",
                                        "哪里", "在什么地方", "位于"))
     _asks_name_q = any(k in q for k in ("名字", "名称", "叫什么", "命名", "代号",
                                         "全称", "简称"))
+    # ★ [V2.2.79] 语言匹配：中文题优先中文证据；日文假名片段降权。
+    #   背景（真 API 诊断）：HTTP 404 题曾把日文证据原文当答案（「…の…は…」），
+    #   题面/答案语言不一致。这里只做**排序降权**，不改写证据文本。
+    _q_kana = len(re.findall(r"[\u3040-\u30ff]", q))
+    _q_han = len(re.findall(r"[\u4e00-\u9fa5]", q))
+    _prefer_han = bool(_q_han and not _q_kana)
     scored = []
     _recent = bool(prefer_recent) and any(k in q for k in _RECENCY_CUES)
     _dates = [_text_date_score(str(getattr(e, "snippet", "") or ""))
@@ -1071,6 +1077,13 @@ def answer_from_evidence(items: Iterable, question: str = "",
             _hits = sum(1 for g in _qg if g in text)
             score += 0.35 * min(_hits, 3)
         score += _overall_quantity_bonus(text, q)
+        if _prefer_han and score > 0:
+            _t_kana = len(re.findall(r"[\u3040-\u30ff]", text))
+            _t_han = len(re.findall(r"[\u4e00-\u9fa5]", text))
+            if _t_kana >= 2:
+                score -= 0.9          # 日文片段：中文题下重降权
+            elif _t_han >= 4:
+                score += 0.25         # 中文证据：轻微加分
         if _recent and _max_date > 0 and _i < len(_dates) \
                 and _dates[_i] == _max_date:
             # 时效题：最新日期证据加权（0.5 足以反超非最新官方源的 0.15）

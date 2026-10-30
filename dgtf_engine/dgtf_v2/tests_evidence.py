@@ -255,6 +255,28 @@ def case_answer_relevance_gate():
         good, "DeepSeek API 的 base URL 是什么？")  # codeql[py/incomplete-url-substring-sanitization]
 
 
+def case_answer_language_preference():
+    """★ [V2.2.79] 中文题优先中文证据；日文假名片段降权（真 API 404 题回归）。"""
+    _jp = "404 Not Found HTTP の404 Not Found はクライアントエラーレスポンスステータスコードで、サーバーがリクエストされたリソースを見つけることができないことを示します"
+    jp = from_search_hits([{
+        "title": "404 Not Found", "url": "https://example.jp/404",
+        "snippet": _jp}])
+    cn = from_search_hits([{
+        "title": "HTTP 状态码", "url": "https://example.cn/404",
+        "snippet": "HTTP 404 状态码表示客户端错误，服务器找不到请求的资源"}])
+    # 官方日文证据 vs 非官方中文证据：中文题应选中文
+    jp[0].official = True
+    ans = answer_from_evidence(jp + cn, "HTTP 404 状态码表示什么？")
+    assert "クライアント" not in ans, ans
+    assert "找不到" in ans or "状态码" in ans, ans
+    # 顺序无关
+    ans2 = answer_from_evidence(cn + jp, "HTTP 404 状态码表示什么？")
+    assert ans2 == ans, (ans, ans2)
+    # 日文题不降权日文证据（避免误伤）
+    ans3 = answer_from_evidence(jp, "HTTP 404 とは何ですか？")
+    assert "クライアント" in ans3, ans3
+
+
 # ---------------------------------------------------------------- 引用绑定
 def case_bind_citations_explicit():
     items = from_search_hits([OFFICIAL, OFFICIAL2])
@@ -403,6 +425,7 @@ CASES = [
     case_detect_gaps,
     case_answer_from_evidence,
     case_answer_relevance_gate,
+    case_answer_language_preference,
     case_bind_citations_explicit,
     case_bind_citations_overlap,
     case_consistency_match,

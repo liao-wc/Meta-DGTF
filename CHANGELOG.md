@@ -1,3 +1,14 @@
+【V2.2.79（2026-10-30，PATCH · 证据答案语言匹配；App 2.0.83）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.79.py（__version__=2.2.79）；
+  证据模块 dgtf_engine/dgtf_v2/evidence.py 增加语言匹配。
+- ★ 根因：answer_from_evidence 只看相关度/官方性，中文题会把含 404 字面的日文网页片段当答案。
+- ★ 修复：中文题下日文假名片段 -0.9 降权、中文证据 +0.25；仅 score>0 生效（保 relevance gate）；
+  日文题不降权日文证据；只改排序不改写原文。
+- ★ 新增 case_answer_language_preference；tests_evidence 22/22；无回归。
+- 验收：fast_gate 19/19；V2 71/71（1208 checks）；App selftest；一键验收；e2e 18/18；probe；
+  发布流程门 pre/post-tag 全 PASS。零云 API。
+- 标签：V2.2.79 / engine-V2.2.79（app-V2.0.83 不变，不移动）。
+
 【V2.2.78（2026-10-30，PATCH · tier_advice 证据驱动 + kind-aware；App 2.0.83）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.78.py（__version__=2.2.78；引擎侧零行为差）；
   App 2.0.83。
@@ -650,16 +661,3 @@
   dynamic_config 短跑直接使用实测锚点（cost_source=measured_short_anchor，不重复乘 App 开销）；
   显式 opts.rounds 只评估该圈数档；长跑仍用可加模型 + App 开销。
 - 效果：短跑成本估算误差降到 <15%，预算可行域/budget_cap/动态选择更贴近真实账单。
-- 判据：test_dynamic_opt 75→80（fact/reasoning 短程锚点、预算 ¥10 可行不 fallback、
-  长程回退模型、cost_source）；回归 fused_optimal 30 / fused_full_chain 16 /
-  daosheng_unified 27 / auto_mode_local 12。
-- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
-  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
-  发布流程门 pre/post-tag 全 PASS。
-- 兼容性：默认四层不变；锚点只影响成本估算/可行域；显式 opts 优先。
-- 标签：V2.2.33 / engine-V2.2.33 / app-V2.0.58。
-
-【V2.2.32（2026-10-29，PATCH · kind-aware 省层收益；同发 App 2.0.57）】
-- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.32.py（__version__=2.2.32；引擎侧零行为差）；
-  App 2.0.57。
-- ★ reasoning 省层 A/B（4 跑约 ¥0.46）：route0 39,564/46,031 tokens vs full 74,922/70,676

@@ -1,7 +1,7 @@
 {
  "schema": "dgtf.acceptance.v1",
- "ts": 1793354784.1105459,
- "iso": "2026-10-30T18:06:24",
+ "ts": 1793356461.4000661,
+ "iso": "2026-10-30T18:34:21",
  "with_service": true,
  "skip_service": false,
  "require_all": false,
@@ -12,13 +12,13 @@
   {
    "name": "fast_gate",
    "status": "PASS",
-   "sec": 20.5,
+   "sec": 20.7,
    "reason": ""
   },
   {
    "name": "v2_tests",
    "status": "PASS",
-   "sec": 168.7,
+   "sec": 168.4,
    "reason": ""
   },
   {
@@ -36,7 +36,7 @@
   {
    "name": "app_plan_matrix",
    "status": "PASS",
-   "sec": 8.7,
+   "sec": 8.6,
    "reason": ""
   },
   {
@@ -54,7 +54,7 @@
   {
    "name": "train_guard",
    "status": "PASS",
-   "sec": 28.6,
+   "sec": 27.7,
    "reason": ""
   },
   {
@@ -66,7 +66,7 @@
   {
    "name": "judge_fastfail",
    "status": "PASS",
-   "sec": 7.9,
+   "sec": 7.7,
    "reason": ""
   },
   {
@@ -78,7 +78,7 @@
   {
    "name": "graph_decode",
    "status": "PASS",
-   "sec": 6.7,
+   "sec": 7.1,
    "reason": ""
   },
   {
@@ -114,7 +114,7 @@
   {
    "name": "openai_shim",
    "status": "PASS",
-   "sec": 1.4,
+   "sec": 0.9,
    "reason": ""
   },
   {
@@ -132,7 +132,7 @@
   {
    "name": "mem_reclaim",
    "status": "PASS",
-   "sec": 12.7,
+   "sec": 12.6,
    "reason": ""
   },
   {
@@ -144,7 +144,7 @@
   {
    "name": "app_selftest",
    "status": "PASS",
-   "sec": 61.1,
+   "sec": 59.8,
    "reason": ""
   },
   {
@@ -162,7 +162,7 @@
   {
    "name": "fused_full_chain",
    "status": "PASS",
-   "sec": 167.0,
+   "sec": 149.3,
    "reason": ""
   },
   {
@@ -174,13 +174,13 @@
   {
    "name": "auto_mode_local",
    "status": "PASS",
-   "sec": 11.8,
+   "sec": 17.2,
    "reason": ""
   },
   {
    "name": "e2e_app_local",
    "status": "PASS",
-   "sec": 51.8,
+   "sec": 38.8,
    "reason": ""
   },
   {
