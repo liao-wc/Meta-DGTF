@@ -16,7 +16,7 @@
 > 这份 README 只写能被验证的事；详细来源、能力、版本演化见 docs/history/。
 > **2026-10-30 收束同步（V2.2.67 / App 2.0.81）**：V2 **71/71（1208 checks，SKIP 0）**；fast_gate **18/18**（动态选最高版引擎；含发布流程门自检；audit70 71/0）；
 > App selftest **459/0**（自动门）；一键验收 **PASS 30 / SKIP 0 / FAIL 0**；发布流程门 **PASS（N/A 项带原因）**；动态配置/优先成本 **132/132**、更优/route 安全门 **30/30**、全链路真跑 **25/25**、道生统一模式 **27/27**、自动模式真跑 **12/12**；服务适配器 self_check=v8b / self_check_min=v9b / dual_judge=judge_v3 / route=qwen05b_v1。
-| **四层目标探针**（route 0/1/0,1,both/0,1,all） | **82 / 82 PASS**（V2.2.67 复跑：4 case 共 238 calls，墙钟 78.2s）；层0 未达成（excavate=1.0，单次方差）/ 层1 未测出 / both 判据样本不足 / all 未达成（0.75） |
+| **四层目标探针**（route 0/1/0,1,both/0,1,all） | **84 / 84 PASS**（V2.2.67 复跑：4 case 共 195 calls，墙钟 59.2s）；层0 未达成（excavate=1.0，单次方差）/ 层1 未测出 / both 判据样本不足 / all 未达成（0.75） |
 | **四层读数方差（V2.2.58）** | 40 次历史复跑：case0 均值 **0.415**（0.0–1.0）/ both **0.017**（0–0.37）/ all **0.594**（0.5–0.75，从未到 1.0）| `docs/probe_variance_20261030.json` |
 > 四层目标逐层结论（V2.2.49 复跑）：层0 达成（excavate=0，读数在 0/0.25/0.5/1 间波动的单次方差已多轮记录）/ 层1 未测出（settlement.total=0）/ both 受阻（读数通道全通）/ all 未达成（0.5）。
 > 完整现状见 `docs/项目状态快照_20261030.md`。
@@ -152,7 +152,7 @@ python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.67.py -c configs/方案F-帕累
 | **四层目标探针**（route 0/1/0,1,both/0,1,all） | **81 / 81 PASS**（V2.2.52 复跑：4 case 共 219 calls，墙钟 538.1s；层1 转为「判据样本不足」少 1 条断言）；层0 达成（excavate=0.0）/ 层1 判据样本不足 / both 判据样本不足 / all 未达成（0.75） |
 | 本地服务延迟 | p50 3.0–3.5s、p95 8–9s（单 token graph replay 59→28ms）；JSON 约束后单次中位 3842→1651ms |
 | 四层全跑 | 136 calls / 818.4s（V2.2.14 快照；四层读数全出） |
-| **层1 可测（V2.2.67）** | probe case1 改 route 0,1 + GDP 题面：settle=0.000（valued，判据样本不足）；层1 依赖上游层0 已定位 |
+| **层1 可测性（V2.2.67，复跑修正）** | route 0,1 + GDP 题面曾观测 valued 0.000 一次，但同配置复跑 3 次均 unmeasured（candidates=0）：必要不充分、不可稳定复现 |
 | 证据时序检查（V2.2.66） | 证据不得早于当前引擎构件 |
 | 研究层归因（V2.2.65） | probe P2g（82→83）结构化归因 |
 | 稳定性文档护栏（V2.2.64） | stability_guard 扩展文档/README 断言 |
