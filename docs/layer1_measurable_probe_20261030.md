@@ -158,6 +158,24 @@ V2.2.67 曾观测到一次 case1 `settle=0.000（valued）`（44 calls、candida
 
 证据：docs/layer1_reproducible_probe_20261031.json。
 
+
+## 7.9 强制 3 圈：层1 目标首次可判定（V2.2.91，零 API）
+
+用 probe 新能力 `--config-set` + `--question` 覆盖：
+`--rounds 3 --fresh-playbook --question 为什么城市热岛效应...` +
+`spiral.min_rounds.1=3 / soft_max=3 / stable_need=3`。
+
+| 指标 | 结果 |
+|---|---|
+| 研究层 rounds_run | **3** |
+| 逐圈 trace | **3 个点** |
+| settlement.total | 2 |
+| 目标判定 | **not_achieved（main=0.5）——不再「判据样本不足」** |
+| llm_calls | 53（本地） |
+
+结论：层1 目标**可以被判定**（本次判「未达成」），前提是研究层跑满 3 圈；
+默认不启用该策略（成本），作为后续「动态 min_rounds」的证据。
+
 ## 8. 后续建议（需预算或明确方向）
 
 - 方案 A（有预算）：1 个 web on 的层1 小样本（单跑约与既有 A/B 同量级），验证能否产生 candidates>0；

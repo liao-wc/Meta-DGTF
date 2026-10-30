@@ -137,6 +137,8 @@ def _shape_ok(v) -> bool:
     return num is None or (0.0 <= num <= 1.0)
 
 
+_QUESTION_OVERRIDE = None
+
 CASES = [
     {"id": "0", "route": "0", "target": ["0"],
      "why": "修行层单跑"},
@@ -414,7 +416,7 @@ def run_case(case: dict, question: str, rounds: int, timeout: float,
     print("CASE route=%s 目标层=%s ｜ %s"
           % (case["route"], "+".join(case["target"]), case["why"]))
     _rounds = int(case.get("rounds") or rounds)
-    _question = str(case.get("question") or question)
+    _question = str(_QUESTION_OVERRIDE or case.get("question") or question)
     cmd = er.build_cmd(_question, {"_config": str(CFG_PATH),
                                   "route": case["route"],
                                   "rounds": str(_rounds)})
@@ -573,8 +575,9 @@ def main(argv=None) -> int:
     ap.add_argument("--rounds", type=int, default=2, help="每层圈数（默认 2）")
     ap.add_argument("--timeout", type=float, default=900.0,
                     help="单个 case 的超时秒数（默认 900）")
-    ap.add_argument("--question", default=os.environ.get("DGTF_LG_Q")
-                    or "水的三态变化有哪些驱动因素", help="题面")
+    ap.add_argument("--question", default=None,
+                    help="覆盖所有 case 的题面（显式给出时含 case1 专属题面）；"
+                         "默认沿用各 case 设计")
     ap.add_argument("--temperature", type=float, default=None,
                     help="透传 api.temperature（如 0.0 做确定性对照；默认不设=0.6）")
     ap.add_argument("--baseline-playbook", default="",
@@ -586,10 +589,20 @@ def main(argv=None) -> int:
     ap.add_argument("--isolate-eml", action="store_true",
                     help="隔离 EML/playbook（playbook.mode=off + 独立目录），"
                          "用于跨跑可复现对照")
+    ap.add_argument("--config-set", action="append", default=[],
+                    metavar="KEY=VALUE",
+                    help="透传任意配置键（如 spiral.min_rounds.1=3），可重复")
     ap.add_argument("--evidence", default="",
                     help="证据 JSON 路径（真跑时默认 outputs/_e2e_local/"
                          "_layer_goals_probe_latest.json）")
     args = ap.parse_args(argv)
+    _explicit_q = args.question
+    args.question = (args.question
+                     or os.environ.get("DGTF_LG_Q")
+                     or "水的三态变化有哪些驱动因素")
+    # 显式 --question ⇒ 覆盖所有 case（含 case1 的专属题面）；默认沿用设计。
+    global _QUESTION_OVERRIDE
+    _QUESTION_OVERRIDE = _explicit_q
 
     eng_path = lga.latest_engine_path()
     want_version = "V%d.%d.%d" % tuple(lga.vtuple(eng_path.name))
@@ -725,6 +738,25 @@ def main(argv=None) -> int:
         _ov["playbook.mode"] = "off"
         _ov["playbook.dir"] = "outputs/_e2e_local/_probe_eml_off"
         print("EML 隔离模式：playbook.mode=off，dir=outputs/_e2e_local/_probe_eml_off")
+    for _kv in args.config_set:
+        if "=" not in _kv:
+            print("--config-set 需要 KEY=VALUE：%r" % _kv)
+            return 2
+        _k, _v = _kv.split("=", 1)
+        _k, _v = _k.strip(), _v.strip()
+        _lv = _v.lower()
+        if _lv in ("true", "false"):
+            _pv = (_lv == "true")
+        else:
+            try:
+                _pv = int(_v)
+            except ValueError:
+                try:
+                    _pv = float(_v)
+                except ValueError:
+                    _pv = _v
+        _ov[_k] = _pv
+        print("config-set：%s=%r" % (_k, _pv))
     cfg = params.build_temp_config(_ov, CFG_PATH)
     ck("E2 App params.build_temp_config() 生成本地档配置",
        bool(cfg) and Path(cfg).is_file(), str(cfg))
@@ -754,6 +786,7 @@ def main(argv=None) -> int:
             "isolate_eml": bool(args.isolate_eml),
             "temperature": (None if args.temperature is None
                             else float(args.temperature)),
+            "config_set": list(args.config_set or []),
             "fresh_playbook": bool(args.fresh_playbook),
             "baseline_playbook": str(args.baseline_playbook or ""),
             "readonly_playbook": bool(args.readonly_playbook
