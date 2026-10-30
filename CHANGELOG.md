@@ -1,3 +1,12 @@
+【V2.2.93（2026-10-31，PATCH · judgeable layers 字符串写法；App 2.0.83）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.93.py（__version__=2.2.93；引擎侧零行为差）；
+  judgeable_rounds.py 修复字符串 layers 被拆字符的问题。
+- ★ layers() 支持 "1,both" 字符串（中英文逗号），列表写法不变；新增 J11/J12 单测（12/12）。
+- ★ 端到端（并行 B、本地零 API）：min_rounds_judgeable_layers="1,both" ⇒ B 第 3 圈实际发生。
+- 验收：V2 73/73（1228 checks）；fast_gate 25/25；App selftest；一键验收；e2e 18/18；probe；
+  发布流程门 pre/post-tag 全 PASS。零云 API。
+- 标签：V2.2.93 / engine-V2.2.93（app-V2.0.83 不变，不移动）。
+
 【V2.2.92（2026-10-31，PATCH · opt-in 自动最小圈数；App 2.0.83）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.92.py（__version__=2.2.92）；
   新增 dgtf_engine/dgtf_v2/judgeable_rounds.py + tests_judgeable_rounds.py（10 项）。
@@ -648,12 +657,3 @@
   App 2.0.66。
 - ★ 语义缓存标定（本地链路零 API）：精确命中 sim=1.0；近重复问法 sim=0.996 命中同一
   verified 产物，均 cache_hit=true 且 0 次新 LLM 调用；证据 docs/semantic_cache_hit_20261029.json。
-- ★ verified 产物 TTL 6h → 168h（此前所有 verified 均过期、缓存实际无法命中）；
-  未验证仍受 V2.2.40 新鲜度门（warn 24h / critical 72h）。
-- ★ cache_prediction 用本地 BGE 8771 对最近 verified 产物批量 embedding（扫描 300/收 8），
-  余弦 ≥0.98 ⇒ semantic_hit；dynamic_config 语义命中成本按 10% 计（cache_kind=semantic），
-  cache_roi 输出 semantic_hit/similarity/from/expected_saving_pct=0.9；8771 不可用 fail-open。
-- ★ dashboard created_at 兼容字符串（_to_ts），修复 /api/chats ValueError 导致
-  App selftest 断连的问题。
-- 判据：test_dynamic_opt 105→109（Q1–Q4）；App selftest 455/0；fused_full_chain 23/23；
-  回归 fused_optimal 30 / daosheng_unified 27 / auto_mode_local 12。

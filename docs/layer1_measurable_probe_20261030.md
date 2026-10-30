@@ -220,6 +220,13 @@ V2.2.67 曾观测到一次 case1 `settle=0.000（valued）`（44 calls、candida
 
 结论：串行与并行 B 两条入口都遵守该 opt-in；默认关闭仍零行为差。
 
+
+## 7.13 字符串 layers 写法修复（V2.2.93，零 API）
+
+旧实现把 `min_rounds_judgeable_layers: "1,both"` 按字符迭代 ⇒ opt-in 静默失效。
+修复后按中英文逗号拆分；单测 J11/J12（共 12/12），并行 B 端到端出现
+`B 第 3 圈停止`（63 calls / 75,637 tokens，本地）。
+
 ## 8. 后续建议（需预算或明确方向）
 
 - 方案 A（有预算）：1 个 web on 的层1 小样本（单跑约与既有 A/B 同量级），验证能否产生 candidates>0；

@@ -44,6 +44,13 @@ def main() -> int:
     bad = {"spiral": {"min_rounds_judgeable": True,
                       "min_rounds_judgeable_target": "x"}}
     ck("J10 非法 target 回退默认", target(bad) == 3)
+    str_l = {"spiral": {"min_rounds_judgeable": True,
+                        "min_rounds_judgeable_layers": "1,both"}}
+    ck("J11 字符串 layers 正确拆分", layers(str_l) == ["1", "both"],
+       str(layers(str_l)))
+    plan4, ch4 = judgeable_rounds_plan(str_l, {"1": 2, "both": 2})
+    ck("J12 字符串 layers 的计划抬升生效", ch4 and plan4 == {"1": 3, "both": 3},
+       str(plan4))
     print("PASS %d / FAIL %d" % (len(_P), len(_F)))
     return 1 if _F else 0
 

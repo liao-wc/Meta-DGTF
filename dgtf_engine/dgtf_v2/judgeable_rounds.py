@@ -23,6 +23,11 @@ def enabled(config) -> bool:
 def layers(config) -> list:
     sp = _spiral(config)
     raw = sp.get("min_rounds_judgeable_layers") or list(DEFAULT_LAYERS)
+    # ★ [V2.2.93] 字符串写法（如 "1,both"）按逗号拆；否则 "both" 会被拆成
+    #   ['b','o','t','h']（假配置静默失效）。
+    if isinstance(raw, str):
+        raw = [x.strip() for x in raw.replace("，", ",").split(",")
+               if x.strip()]
     return [str(x) for x in raw]
 
 
