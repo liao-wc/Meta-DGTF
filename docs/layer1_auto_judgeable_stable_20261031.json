@@ -1,0 +1,26 @@
+{
+ "schema": "metadgtf.layer1_auto_judgeable_stable.v1",
+ "ts": "2026-10-31 07:10",
+ "note": "opt-in spiral.min_rounds_judgeable=true（默认关）在 probe 中两次复跑逐项一致：可判定（not_achieved）",
+ "config": [
+  "--only 1",
+  "--fresh-playbook",
+  "spiral.min_rounds_judgeable=true"
+ ],
+ "run_a": {
+  "pass": 23,
+  "calls": 59,
+  "status": "not_achieved",
+  "main": 0.0,
+  "trace_len": 3,
+  "pack": "20261031_045652_2025年全球主要经济体的GDP增速分别.packed.json"
+ },
+ "run_b": {
+  "pass": 23,
+  "calls": 59,
+  "status": "not_achieved",
+  "main": 0.0,
+  "trace_len": 3,
+  "pack": "20261031_045715_2025年全球主要经济体的GDP增速分别.packed.json"
+ }
+}

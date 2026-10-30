@@ -271,6 +271,21 @@ V2.2.97 全量 probe **三次**（各 82/82 PASS）：
 （0.0/0.0/0.5；33/33/44 calls），整跑数值复现仍有限。目标仍判据样本不足（2 点<3），**不宣称达成**。
 证据：docs/layer1_stable_valued_20261031.json。
 
+
+## 7.17 opt-in 自动最小圈数：可判定性稳定（V2.2.98，零 API）
+
+配置：仅加 `spiral.min_rounds_judgeable=true`（默认关），case1、fresh playbook，
+两次复跑：
+
+| run | 断言 | calls | trace | 目标判定 | main |
+|---|---|---|---|---|---|
+| A | 23/23 | 59 | 3 | **not_achieved（可判定）** | 0.0 |
+| B | 23/23 | 59 | 3 | **not_achieved（可判定）** | 0.0 |
+
+结论：开启该 opt-in 后，研究层**两次复跑逐项一致**（calls/状态/main 全同），目标从
+「判据样本不足」变为**稳定可判定**；默认仍关闭（成本考虑，单次多约 1 圈/层）。
+证据：docs/layer1_auto_judgeable_stable_20261031.json。
+
 ## 8. 后续建议（需预算或明确方向）
 
 - 方案 A（有预算）：1 个 web on 的层1 小样本（单跑约与既有 A/B 同量级），验证能否产生 candidates>0；
