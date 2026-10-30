@@ -1,0 +1,81 @@
+{
+ "schema": "metadgtf.tier_advice_choice_project_ab.v1",
+ "ts": "2026-10-30 17:07:06",
+ "fixed": {
+  "balance_assumed": 50.0,
+  "max_tokens": 150000,
+  "route": "full",
+  "rounds": "1/层"
+ },
+ "rows": [
+  {
+   "kind": "choice",
+   "arm": "A-quality",
+   "mode": "daosheng",
+   "status": "done",
+   "tier": "quality",
+   "engine_mode": "B",
+   "wall_s": 73.2,
+   "calls": 15,
+   "tokens": 85208,
+   "cost_cny": 0.17,
+   "answer_quality": "needs_evidence",
+   "answer_ready": false,
+   "reason": "答案未针对本题（答案为空）",
+   "tier_advice": "fast",
+   "packed": "20261030_170203_以下哪项属于可再生能源A煤炭B.packed.json"
+  },
+  {
+   "kind": "choice",
+   "arm": "B-fast",
+   "mode": "daosheng_fast",
+   "status": "done",
+   "tier": "fast",
+   "engine_mode": "fast",
+   "wall_s": 57.1,
+   "calls": 16,
+   "tokens": 83265,
+   "cost_cny": 0.167,
+   "answer_quality": "needs_evidence",
+   "answer_ready": false,
+   "reason": "答案未针对本题（答案为空）",
+   "tier_advice": "current",
+   "packed": "20261030_170300_以下哪项属于可再生能源A煤炭B.packed.json"
+  },
+  {
+   "kind": "project",
+   "arm": "A-quality",
+   "mode": "daosheng",
+   "status": "done",
+   "tier": "quality",
+   "engine_mode": "B",
+   "wall_s": 184.5,
+   "calls": 10,
+   "tokens": 63051,
+   "cost_cny": 0.126,
+   "answer_quality": "unverified",
+   "answer_ready": false,
+   "reason": "答案未针对本题（答案为空）",
+   "tier_advice": "fast",
+   "packed": "20261030_170605_Meta-DGTF-道生三阶模型项目.packed.json"
+  },
+  {
+   "kind": "project",
+   "arm": "B-fast",
+   "mode": "daosheng_fast",
+   "status": "done",
+   "tier": "fast",
+   "engine_mode": "fast",
+   "wall_s": 59.1,
+   "calls": 16,
+   "tokens": 74791,
+   "cost_cny": 0.15,
+   "answer_quality": "unverified",
+   "answer_ready": false,
+   "reason": "答案未针对本题（答案为空）",
+   "tier_advice": "current",
+   "packed": "20261030_170705_Meta-DGTF-道生三阶模型项目.packed.json"
+  }
+ ],
+ "note": "choice/project tier A/B：quality vs fast 同题"
+}
