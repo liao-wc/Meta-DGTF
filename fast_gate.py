@@ -280,6 +280,9 @@ def build_checks(engine=None) -> list:
         #   防 V2.2.77 那类「Python repr 透传 ⇒ 四层全跳过」回归）
         ("v2_online_contract", [sys.executable,
          str(ROOT / "scripts" / "local_model" / "audit_v2_online.py")]),
+        # [V2.2.86] 计划 → opts → CLI 全链路契约（route/rounds/web/profile 不丢失不变味）
+        ("plan_pipeline_contract", [sys.executable,
+         str(ROOT / "scripts" / "local_model" / "audit_plan_pipeline.py")]),
     ]
     return checks
 

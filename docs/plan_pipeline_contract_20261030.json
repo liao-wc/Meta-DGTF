@@ -1,0 +1,88 @@
+{
+ "schema": "metadgtf.plan_pipeline_contract.v1",
+ "rows": [
+  {
+   "kind": "fact",
+   "balance": 0.5,
+   "violations": []
+  },
+  {
+   "kind": "fact",
+   "balance": 4.0,
+   "violations": []
+  },
+  {
+   "kind": "fact",
+   "balance": 8.0,
+   "violations": []
+  },
+  {
+   "kind": "fact",
+   "balance": 50.0,
+   "violations": []
+  },
+  {
+   "kind": "reasoning",
+   "balance": 0.5,
+   "violations": []
+  },
+  {
+   "kind": "reasoning",
+   "balance": 4.0,
+   "violations": []
+  },
+  {
+   "kind": "reasoning",
+   "balance": 8.0,
+   "violations": []
+  },
+  {
+   "kind": "reasoning",
+   "balance": 50.0,
+   "violations": []
+  },
+  {
+   "kind": "choice",
+   "balance": 0.5,
+   "violations": []
+  },
+  {
+   "kind": "choice",
+   "balance": 4.0,
+   "violations": []
+  },
+  {
+   "kind": "choice",
+   "balance": 8.0,
+   "violations": []
+  },
+  {
+   "kind": "choice",
+   "balance": 50.0,
+   "violations": []
+  },
+  {
+   "kind": "project",
+   "balance": 0.5,
+   "violations": []
+  },
+  {
+   "kind": "project",
+   "balance": 4.0,
+   "violations": []
+  },
+  {
+   "kind": "project",
+   "balance": 8.0,
+   "violations": []
+  },
+  {
+   "kind": "project",
+   "balance": 50.0,
+   "violations": []
+  }
+ ],
+ "violations": [],
+ "n": 16,
+ "n_bad": 0
+}

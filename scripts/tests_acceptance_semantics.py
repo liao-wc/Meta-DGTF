@@ -159,11 +159,12 @@ def test_discovery():
                     "acceptance_semantics", "release_process_selftest",
                     "readme_numbers", "stability_guard", "dynamic_matrix",
                     "outputs_consistency", "v2_quality_consistency",
-                    "v2_online_contract"}
+                    "v2_online_contract", "plan_pipeline_contract"}
         got_names = {n for n, _ in FG.build_checks(real)}
-        ck("A5f 检查清单完整（22 项；防重构时静默丢检查项，如 agent_daemon/"
+        ck("A5f 检查清单完整（23 项；防重构时静默丢检查项，如 agent_daemon/"
            "release_process_selftest/readme_numbers/stability_guard/dynamic_matrix/"
-           "outputs_consistency/v2_quality_consistency/v2_online_contract）",
+           "outputs_consistency/v2_quality_consistency/v2_online_contract/"
+           "plan_pipeline_contract）",
            got_names == expected, sorted(expected - got_names) or sorted(got_names - expected))
         none_checks = dict(FG.build_checks(None))
         rc = subprocess.run(none_checks["compile"], capture_output=True, text=True,

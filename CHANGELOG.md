@@ -1,3 +1,12 @@
+【V2.2.86（2026-10-30，PATCH · 计划→opts→CLI 全链路契约门禁；App 2.0.83）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.86.py（__version__=2.2.86；引擎侧零行为差）；
+  App 2.0.83 不变。
+- ★ 新增 audit_plan_pipeline：4 题型 × 4 档 = 16 组合，校验 route/rounds/web、
+  profile→--config、结构化值注入后 CLI 非空；violations 0。
+- ★ fast_gate 新增 plan_pipeline_contract（22→23）；acceptance_semantics 同步 23。
+- 验收：V2 71/71（1210）；App selftest；一键验收；e2e 18/18；probe 84/84；发布流程门。零云 API。
+- 标签：V2.2.86 / engine-V2.2.86（app-V2.0.83 不变，不移动）。
+
 【V2.2.85（2026-10-30，PATCH · v2_online 契约门禁；App 2.0.83）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.85.py（__version__=2.2.85；引擎侧零行为差）；
   App 2.0.83 不变。
@@ -649,12 +658,3 @@
   App 2.0.62。
 - ★ plan.quality_retry（advisory）：{policy, retry, why}——项目/auto:verified 不允许关闭验证；
   事实/require_web + 预算 ok 建议 auto:web-retry；预算 warn/critical 建议 auto:stable；
-  其它 stable。本轮只显式化决策，不改变 server 重试行为。
-- ★ budget_cap 拆 context_tokens/base_tokens（项目题 context=5,662，基础量=估算-上下文）。
-- ★ dynamic_opt.cache_roi：exact/semantic_capable/expected_saving_pct/note；
-  语义缓存命中率未标定 → 只报能力不估算收益。
-- 判据：test_dynamic_opt 90→95（fact+ok web-retry、fact+warn stable、项目 verified、
-  budget_cap 分解、cache_roi 字段）；回归 fused_optimal 30 / fused_full_chain 16 /
-  daosheng_unified 27 / auto_mode_local 12。
-- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
-  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
