@@ -1,3 +1,12 @@
+【V2.2.101（2026-10-31，PATCH · snapshot audit 扩展；App 2.0.83）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.101.py（__version__=2.2.101；引擎侧零行为差）。
+- ★ snapshot_numbers 审计 5→12 项：README/CHANGELOG/配置头/App 版本一致；
+  docs/README 不得把历史快照当权威；必须引用当前快照；历史文件必须标注。
+- ★ 首次运行 12/12 PASS；fast_gate 仍 27/27（同一条检查内扩展）。
+- 验收：V2 73/73（1233 checks）；fast_gate 27/27；App selftest；一键验收；e2e 18/18；probe；
+  发布流程门全 PASS。零云 API。
+- 标签：V2.2.101 / engine-V2.2.101（app-V2.0.83 不变，不移动）。
+
 【V2.2.100（2026-10-31，PATCH · 状态快照数字门禁；App 2.0.83）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.100.py（__version__=2.2.100；引擎侧零行为差）。
 - ★ 新增 scripts/local_model/audit_snapshot_numbers.py：快照 fast_gate/V2/selftest/验收/引擎版本
@@ -639,13 +648,3 @@
 - 标签：V2.2.47 / engine-V2.2.47 / app-V2.0.72。
 
 【V2.2.46（2026-10-29，PATCH · 创建前综合预期；同发 App 2.0.71）】
-- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.46.py（__version__=2.2.46；引擎侧零行为差）；
-  App 2.0.71。
-- ★ 任务创建响应 mode.quality_forecast：kind / expected_verified_pct / evidence /
-  budget_forecast（safe_runs/balance_after）/ cache_roi（semantic_hit/similarity/
-  expected_saving_pct）/ quality_retry（policy/retry）；全部来自既有 plan 字段。
-- ★ 不改变服务器行为；标准链路 fail-open 时为空 dict；客户端可忽略。
-- 判据：fused_full_chain 23→24（B6 响应含 quality_forecast 三维字段）；
-  test_dynamic_opt 121 不变；回归 fused_optimal 30 / daosheng_unified 27 / auto_mode_local 12。
-- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
-  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；

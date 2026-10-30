@@ -87,6 +87,46 @@ def main() -> int:
         want = best[1]
         rows.append(("engine_version", want, want in text))
 
+    # ---- V2.2.101：中心版本号 / 权威指针 / 历史标注 ----
+    eng_ver = None
+    for name, want, ok in rows:
+        if name == "engine_version":
+            eng_ver = want
+    if eng_ver:
+        rd = (ROOT / "README.md")
+        rtxt = rd.read_text(encoding="utf-8", errors="replace") if rd.is_file() else ""
+        rows.append(("readme_current_version",
+                     eng_ver, ("当前版本**：" + eng_ver) in rtxt))
+        ch = ROOT / "CHANGELOG.md"
+        ctxt = ch.read_text(encoding="utf-8", errors="replace") if ch.is_file() else ""
+        head = next((ln for ln in ctxt.splitlines() if ln.strip()), "")
+        rows.append(("changelog_top_version", eng_ver, eng_ver in head))
+        cfg = ROOT / "dgtf_config.yaml"
+        ftxt = cfg.read_text(encoding="utf-8", errors="replace") if cfg.is_file() else ""
+        rows.append(("config_header_version", eng_ver,
+                     eng_ver in "\n".join(ftxt.splitlines()[:5])))
+        # App 版本
+        import re as _re
+        sp = ROOT / "dgtf_app" / "server.py"
+        stxt = sp.read_text(encoding="utf-8", errors="replace") if sp.is_file() else ""
+        m = _re.search(r'APP_VERSION\s*=\s*"([0-9.]+)"', stxt)
+        if m:
+            av = "**" + m.group(1) + "**"
+            rows.append(("app_version_in_snapshot", m.group(1),
+                         ("App | " + av) in text))
+    # 权威指针：docs/README 不得把历史文件当「为准」来源，且要引用当前快照
+    dr = ROOT / "docs" / "README.md"
+    drt = dr.read_text(encoding="utf-8", errors="replace") if dr.is_file() else ""
+    import re as _re2
+    rows.append(("no_historical_authority",
+                 "known_boundaries 不作权威",
+                 not _re2.search(r"known_boundaries[^。\n]*为准", drt)))
+    rows.append(("docs_readme_current_snapshot", snap.name, snap.name in drt))
+    kb = ROOT / "docs" / "known_boundaries_20261026.md"
+    kbt = kb.read_text(encoding="utf-8", errors="replace") if kb.is_file() else ""
+    rows.append(("known_boundaries_marked_historical", "historical",
+                 "历史快照（不再作为当前数字来源）" in kbt))
+
     bad = [r for r in rows if not r[2]]
     print("snapshot: %s" % snap.name)
     for name, want, ok in rows:
