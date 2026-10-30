@@ -950,7 +950,7 @@
       "est_cost_cny": 0.1,
       "dynamic_fallback": false,
       "dynamic_applied": {},
-      "tier_advice": "fast",
+      "tier_advice": "current",
       "prefer_cost": false,
       "cache": {
         "exact": false,
@@ -976,7 +976,7 @@
       "est_cost_cny": 0.1,
       "dynamic_fallback": false,
       "dynamic_applied": {},
-      "tier_advice": "fast",
+      "tier_advice": "current",
       "prefer_cost": false,
       "cache": {
         "exact": false,
@@ -1002,7 +1002,7 @@
       "est_cost_cny": 0.1,
       "dynamic_fallback": false,
       "dynamic_applied": {},
-      "tier_advice": "fast",
+      "tier_advice": "current",
       "prefer_cost": false,
       "cache": {
         "exact": false,

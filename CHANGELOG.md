@@ -1,3 +1,13 @@
+【V2.2.84（2026-10-30，PATCH · 动态矩阵预算层级不变式；App 2.0.83）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.84.py（__version__=2.2.84；引擎侧零行为差）；
+  App 2.0.83 不变。
+- ★ audit_dynamic_matrix 新增两条不变式：紧预算（warn/degrade/critical）必须 fast；
+  ok 默认 quality（除非 opt-in prefer_cost）；自检 3→5 个变异体。
+- ★ 验证：5/5 mutants caught；36 组合 0 违反；fast_gate 21/21。
+- 验收：V2 71/71（1210）；App selftest；一键验收；e2e 18/18；probe 84/84；
+  发布流程门 pre/post-tag 全 PASS。零云 API。
+- 标签：V2.2.84 / engine-V2.2.84（app-V2.0.83 不变，不移动）。
+
 【V2.2.83（2026-10-30，PATCH · 离线质量门预检预算截断口径；App 2.0.83）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.83.py（__version__=2.2.83；引擎侧零行为差）；
   App 2.0.83 不变。
@@ -648,13 +658,3 @@
   App 2.0.61。
 - ★ 项目背景 A/B（2 跑约 ¥0.18，route=0/rounds=0:1/web off）：默认注入 48,173 tokens vs
   project_context=false 42,511（+5,662 tokens 约 ¥0.011）；两臂均 unverified。
-- ★ 动态 context_cost：_CONTEXT_COST（project 5,662/n=2）；dynamic_config 项目题且未显式
-  关闭时候选 token += context 成本，记录 context_tokens；dynamic_opt.context_cost 可审计；
-  显式 project_context=false 不计成本（回到 42,798 基础锚点）。
-- 判据：test_dynamic_opt 87→90（上下文 A/B 证据、默认 context_cost=5,662、显式关闭不计）；
-  回归 fused_optimal 30 / fused_full_chain 16 / daosheng_unified 27 / auto_mode_local 12。
-- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
-  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
-  发布流程门 pre/post-tag 全 PASS。
-- 兼容性：显式 project_context=false 仍可关闭；默认四层/省层判定不变；仅成本估算变化。
-- 标签：V2.2.36 / engine-V2.2.36 / app-V2.0.61。

@@ -68,6 +68,15 @@ def detect_violations(rows) -> list:
         if r.get("tier") == "fast" and r.get("engine_mode") not in ("fast", None):
             bad.append({"kind": r["kind"], "balance": r["balance"],
                         "why": "tier=fast but engine_mode!=fast", "row": r})
+        # ★ [V2.2.84] 预算层级 ↔ tier：紧预算必须降 fast；ok 默认 quality（除非 opt-in）
+        _lvl = str(r.get("budget_level") or "")
+        if _lvl in ("warn", "degrade", "critical") and r.get("tier") != "fast":
+            bad.append({"kind": r["kind"], "balance": r["balance"],
+                        "why": "紧预算未降 fast", "row": r})
+        if (_lvl == "ok" and r.get("tier") == "fast"
+                and not r.get("prefer_cost")):
+            bad.append({"kind": r["kind"], "balance": r["balance"],
+                        "why": "ok 未用 quality（未 opt-in prefer_cost）", "row": r})
     return bad
 
 
@@ -81,11 +90,19 @@ def self_test() -> None:
         ([{"kind": "choice", "balance": 4.0, "web": "off",
            "tier": "fast", "engine_mode": "B"}],
          "choice web != on"),
+        ([{"kind": "fact", "balance": 4.0, "web": "on",
+           "tier": "quality", "engine_mode": "B",
+           "budget_level": "degrade"}],
+         "紧预算未降 fast"),
+        ([{"kind": "reasoning", "balance": 50.0, "web": "auto",
+           "tier": "fast", "engine_mode": "fast",
+           "budget_level": "ok", "prefer_cost": False}],
+         "ok 未用 quality"),
     ]
     for rows, why in cases:
         got = detect_violations(rows)
         assert any(why in (b.get("why") or "") for b in got), why
-    print("self-test: detector has teeth (3/3 mutants caught)")
+    print("self-test: detector has teeth (5/5 mutants caught)")
 
 def main() -> int:
     self_test()
