@@ -1,0 +1,23 @@
+{
+ "schema": "metadgtf.preset_q_parallel_ab.v1",
+ "ts": "2026-10-31 05:45",
+ "note": "方案Q（quality + opt-in）本地同题同配置：serial vs parallel B 的墙钟/调用/tokens 对照",
+ "question": "为什么城市热岛效应在夜间比白天更明显？",
+ "config": "_audit_tmp/cfg_preset_q_local.yaml",
+ "serial": {
+  "wall_sec": 248.1,
+  "llm_calls": 57,
+  "tokens": 79670
+ },
+ "parallel_b": {
+  "wall_sec": 182.0,
+  "llm_calls": 46,
+  "tokens": 66864
+ },
+ "delta": {
+  "wall_pct": -26.6,
+  "calls_pct": -19.3,
+  "tokens_pct": -16.1
+ },
+ "caution": "本地链单次对照；B 模式并行轮次语义与 serial 不同，质量未对比，不宣称等价"
+}

@@ -328,6 +328,21 @@ App 调度配置列表 `_schedule_profiles()` 实测返回 24 项，含 **方案
 （parallel_mode=serial）；用户可在 App 中选择该 preset 获得「研究/对撞层至少 3 圈」的可判定模式。
 证据：docs/preset_q_app_visibility_20261031.json。
 
+
+## 7.22 方案Q：serial vs parallel B 成本对照（V2.2.99，零 API）
+
+同题同配置（方案Q 本地端点、route 0,1、rounds 2）本地单次：
+
+| 模式 | 墙钟 | llm_calls | tokens |
+|---|---|---|---|
+| serial（方案Q 继承） | 248.1s | 57 | 79,670 |
+| parallel B | **182.0s** | **46** | **66,864** |
+| 变化 | −26.6% | −19.3% | −16.1% |
+
+初步结论：B 模式在该题上更快、更省调用/token；但并行轮次语义与 serial 不同，
+**质量未对比、不宣称等价**。可作为「方案Q 是否改 parallel_mode」的下一轮决策依据。
+证据：docs/preset_q_parallel_ab_20261031.json。
+
 ## 8. 后续建议（需预算或明确方向）
 
 - 方案 A（有预算）：1 个 web on 的层1 小样本（单跑约与既有 A/B 同量级），验证能否产生 candidates>0；
