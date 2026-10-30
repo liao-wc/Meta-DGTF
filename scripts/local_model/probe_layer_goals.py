@@ -264,8 +264,10 @@ def check_target_layer(case: str, L: str, d: dict, pack_path: Path,
     main = lga._num(gn.get(main_key))
     info["main_value"] = main
     if pv["state"] == "valued":
+        # 渲染只保留 3 位小数（如 0.4375 -> fuse=0.438）：容差取 1e-3，
+        # 覆盖 ±0.0005 的显示舍入，同时仍能抓住真正的读数分叉。
         add("P5 verdict 数值与 goal_now 一致",
-            main is not None and abs(pv["value"] - main) <= 5e-4,
+            main is not None and abs(pv["value"] - main) <= 1e-3,
             "verdict=%s goal_now=%s" % (pv.get("value"), main))
     elif pv["state"] == "unmeasured":
         add("P5 同为未测出（verdict 未测出 => goal_now 主读数 None）",

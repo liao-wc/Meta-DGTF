@@ -1,0 +1,21 @@
+{
+ "schema": "metadgtf.layer1_candidates_fallback.v1",
+ "ts": "2026-10-31 05:45",
+ "note": "V2.2.97：探针/线头为空时用 candidates 兜底（本次 e2e 命中 C1 来源）",
+ "unit_tests": "tests_decompose_fallback 11/11（F10 candidates 兜底 / F11 前缀与 source）",
+ "probe_case1": {
+  "calls": 46,
+  "status": "not_judgeable",
+  "main": 0.0,
+  "subs": [
+   {
+    "decidability": "partial",
+    "source": "T1"
+   },
+   {
+    "decidability": "partial",
+    "source": "C1"
+   }
+  ]
+ }
+}

@@ -1,3 +1,14 @@
+【V2.2.97（2026-10-31，PATCH · 回退增加 candidates 兜底；App 2.0.83）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.97.py（__version__=2.2.97）。
+- ★ 残留路径：拆解空输出 + 探针/线头/amps 全空 ⇒ 回退无来源 ⇒ 层1 unmeasured（层0 仅 candidates）。
+- ★ 修复：fallback_subquestions/answerable_fallback 增加 candidates 来源（题面"候选判定："，source C#）；
+  引擎两处回退调用传 view.candidates；tests_decompose_fallback 11/11（F10/F11）。
+- ★ e2e：probe case1 valued 0.0（46 calls；subs=2 partial，source T1 + C1——实际命中 candidates 分支）。
+- 同版 hotfix：probe P5 容差 5e-4→1e-3（3 位小数渲染舍入 0.438 vs 0.4375 误判红）；全量 probe 复跑 82/82。
+- 验收：V2 73/73（1233 checks）；fast_gate 26/26；App selftest；一键验收；e2e 18/18；probe；
+  发布流程门全 PASS。零云 API。
+- 标签：V2.2.97 / engine-V2.2.97（app-V2.0.83 不变，不移动）。
+
 【V2.2.96（2026-10-31，PATCH · 全不可判定补 provisional partial；App 2.0.83）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.96.py（__version__=2.2.96）。
 - ★ V2.2.95 发现：LLM 拆解有输出但全判 undecidable ⇒ settlement.total=0 ⇒ 层1 仍未测出。
@@ -645,15 +656,3 @@
   发布流程门 pre/post-tag 全 PASS。本轮 A/B 花费约 ¥0.31。
 - 兼容性：仅新增可审计字段，不改变 server/引擎行为。
 - 标签：V2.2.44 / engine-V2.2.44 / app-V2.0.69。
-
-【V2.2.43（2026-10-29，PATCH · fact+web on 质量证据；同发 App 2.0.68）】
-- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.43.py（__version__=2.2.43；引擎侧零行为差）；
-  App 2.0.68。
-- ★ 质量重试 A/B（真 API 约 ¥0.31）：fact 题 full route web on——rounds1 85,362 tokens/15 calls、
-  rounds2 67,753/12 calls，两臂均 verified；加圈未提升质量且 rounds2 更省 ⇒ 对 fact+web on
-  不实现质量 retry/加圈。
-- ★ plan.quality_retry 增加 expected_verified_pct=1.0/evidence/evidence_note（advisory）；
-  证据 docs/quality_retry_ab_20261029.json。
-- ★ fact 高圈锚点：_LONG_RUN_ANCHORS 增加 fact（web on、总圈数 5-10）full 67,753（n=2），
-  dynamic_config 对 fact 高圈 full 使用实测锚点。
-- 判据：test_dynamic_opt 111→114（T1 2/2 verified、T2 高圈锚点≈67,753、T3 rounds2 更省）；

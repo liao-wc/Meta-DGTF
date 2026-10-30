@@ -48,6 +48,13 @@ def main() -> int:
     ck("F8 补的 source 带 FB: 前缀",
        all(str(s["source"]).startswith("FB:") for s in fb),
        str([s["source"] for s in fb]))
+    cands = [{"desc": "2025 年 GDP 增速可直接给出数值"},
+             {"desc": "汇率口径差异是否影响可比性"}]
+    fb2 = fallback_subquestions([], [], cands)
+    ck("F10 探针/线头为空时 candidates 兜底", len(fb2) == 2, "n=%d" % len(fb2))
+    ck("F11 candidates 题面带候选判定前缀且 source=C#",
+       fb2 and fb2[0]["question"].startswith("候选判定：")
+       and fb2[0]["source"] == "C1", str(fb2[:1]))
     mixed = [{"question": "乙问题？", "decidability": "partial", "id": 1}]
     ck("F9 有可答子问题时不动", answerable_fallback(mixed, probes) == [])
     print("PASS %d / FAIL %d" % (len(_P), len(_F)))

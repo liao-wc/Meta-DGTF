@@ -246,6 +246,16 @@ provisional partial（source 前缀 `FB:`），**不修改原判定**；有可�
 - 结论：V2.2.96 修复的是「全不可判定」路径，**未覆盖**「拆解输出为空且探针/线头也为空」路径；
 - 下一步：为回退增加候选（candidates）来源（V2.2.97 候选）。
 
+
+## 7.15 candidates 兜底（V2.2.97，零 API）
+
+V2.2.96 残留：拆解空输出 + 探针/线头/amps 全空 ⇒ 回退无来源 ⇒ 整跑 unmeasured（层0 仅 candidates）。
+修复：fallback 增加 candidates 来源（题面 `候选判定：`，source `C#`）。
+
+验证：tests_decompose_fallback **11/11**（F10/F11）；probe case1 **valued 0.0**
+（46 calls；subs=2 partial，source **T1 + C1**——本次 e2e 实际命中 candidates 分支）。
+证据：docs/layer1_candidates_fallback_20261031.json。
+
 ## 8. 后续建议（需预算或明确方向）
 
 - 方案 A（有预算）：1 个 web on 的层1 小样本（单跑约与既有 A/B 同量级），验证能否产生 candidates>0；
