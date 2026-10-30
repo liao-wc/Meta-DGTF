@@ -1,0 +1,50 @@
+{
+ "schema": "metadgtf.evidence_naming.v1",
+ "rows": [
+  {
+   "file": "choice_rounds_ab_20261029.json",
+   "expected": "choice",
+   "actual": "choice",
+   "ok": true
+  },
+  {
+   "file": "project_context_ab_20261029.json",
+   "expected": "project",
+   "actual": "project",
+   "ok": true
+  },
+  {
+   "file": "project_context_rounds2_ab_20261029.json",
+   "expected": "project",
+   "actual": "project",
+   "ok": true
+  },
+  {
+   "file": "route_reasoning_rounds2_ab_20261029.json",
+   "expected": "reasoning",
+   "actual": "reasoning",
+   "ok": true
+  },
+  {
+   "file": "route_subset_choice_ab_20261029.json",
+   "expected": "choice",
+   "actual": "choice",
+   "ok": true
+  },
+  {
+   "file": "route_subset_reasoning_ab_20261029.json",
+   "expected": "reasoning",
+   "actual": "reasoning",
+   "ok": true
+  },
+  {
+   "file": "tier_advice_choice_project_ab_20261030.json",
+   "expected": "choice",
+   "actual": "choice",
+   "ok": true
+  }
+ ],
+ "violations": [],
+ "n": 7,
+ "n_bad": 0
+}

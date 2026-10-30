@@ -1,6 +1,6 @@
 {
  "ok": true,
- "ts": 1793183284.188672,
+ "ts": 1793232296.8583837,
  "root": "D:\\Meta-DGTF-道生三阶模型",
  "checks": [
   {
@@ -76,7 +76,7 @@
   {
    "name": "_app_out_8765.log < 10MB",
    "ok": true,
-   "detail": "size=1624B"
+   "detail": "size=7572B"
   },
   {
    "name": "_app_err_8765.log < 10MB",
@@ -86,22 +86,22 @@
   {
    "name": "_audit_tmp 大小 < 100MB",
    "ok": true,
-   "detail": "size=30264968B"
+   "detail": "size=30399091B"
   },
   {
    "name": "docs/app_audit_latest.json 新鲜(<2h)",
    "ok": true,
-   "detail": "age=4s"
+   "detail": "age=3s"
   },
   {
    "name": "docs/outputs_audit_latest.json 新鲜(<2h)",
    "ok": true,
-   "detail": "age=2s"
+   "detail": "age=1s"
   },
   {
    "name": "docs/proposals_reassess_latest.json 新鲜(<2h)",
    "ok": true,
-   "detail": "age=3201s"
+   "detail": "age=1940s"
   },
   {
    "name": "静态缓存版本一致",
@@ -113,6 +113,6 @@
  "warnings": [],
  "repairs": [],
  "free_gb": 207.8,
- "outputs_size_mb": 582.8,
- "memory_size_mb": 59.0
+ "outputs_size_mb": 584.6,
+ "memory_size_mb": 59.2
 }

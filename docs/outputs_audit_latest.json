@@ -1,10 +1,10 @@
 {
  "ok": true,
- "generated_at": 1793183282.5420172,
+ "generated_at": 1793232295.5243843,
  "counts": {
   "packed": 202,
-  "md": 716,
-  "run_json": 107,
+  "md": 721,
+  "run_json": 108,
   "verified": 146,
   "needs_evidence": 26,
   "unverified": 27,
@@ -109,16 +109,16 @@
  "run_status": {
   "error": 6,
   "done": 54,
-  "cancelled": 40,
+  "cancelled": 41,
   "interrupted": 7
  },
  "duplicate_questions": 50,
  "missing_md_n": 2,
- "missing_pack_n": 516,
+ "missing_pack_n": 521,
  "issues": [],
  "warnings": [
   "packed 无 md：2 条",
-  "md 无 packed：516 条",
+  "md 无 packed：521 条",
   "异常 run 状态：error=6, interrupted=7",
   "重复题目：50 组",
   "needs_evidence：26",

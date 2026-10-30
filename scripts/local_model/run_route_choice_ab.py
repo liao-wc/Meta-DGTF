@@ -143,7 +143,7 @@ def main():
                          "max_tokens": 150000, "reps": REPS},
                "rows": rows, "summary": summary,
                "note": "choice 题型省层（route0 vs full）tokens 差异；与 fact/reasoning 对比"}
-        (ROOT / "docs" / "route_subset_reasoning_ab_20261029.json").write_text(
+        (ROOT / "docs" / "route_subset_choice_ab_20261029.json").write_text(
             json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
         print("summary:", json.dumps(summary, ensure_ascii=False))
         print("evidence -> docs/route_subset_choice_ab_20261029.json")

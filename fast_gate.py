@@ -286,6 +286,9 @@ def build_checks(engine=None) -> list:
         # [V2.2.87] App 透传 flag 必须都在当前引擎 argparse 里（否则任务当场失败）
         ("flag_alignment", [sys.executable,
          str(ROOT / "scripts" / "local_model" / "audit_flag_alignment.py")]),
+        # [V2.2.88] 证据文件命名 ↔ 内容一致（防 choice 写进 reasoning 文件类污染）
+        ("evidence_naming", [sys.executable,
+         str(ROOT / "scripts" / "local_model" / "audit_evidence_naming.py")]),
     ]
     return checks
 

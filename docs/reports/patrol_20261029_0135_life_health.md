@@ -1,0 +1,64 @@
+# DSH 巡检报告 · 生命 / 健康领域
+
+时间：2026-10-29T01:35:00+08:00
+题目：部分血液蛋白水平与前列腺癌风险相关，这项研究说明了什么？
+状态：预算窗口低且长跑连续超时，未再启动新长跑；复用上一轮 verified 生命健康结果
+
+## 检查项
+
+- App 2.0.41 / Engine 2.2.18
+- App 全方位检查（含 UI 自动化）
+- 全产物库审计
+- 提案复评与新增
+- 技术知识 triage
+- 热门话题九领域更新
+- 依赖/门禁与工作区变更
+
+## 修复项
+
+- 本轮无 App 代码修改
+- 热点库更新至 82 条
+- audit 提案复核
+- 低余额/长超时边界保留
+
+## 真跑结果
+
+- 本轮未启动新长跑：start_balance 仅 ¥6.91，上一轮 1200s 超时；避免继续消耗
+- 复用生命健康领域上一轮 verified 结果：
+  - tag: patrol-life-20261026
+  - question: 部分血液蛋白水平与前列腺癌风险相关，这项研究说明了什么？
+  - quality: 0.8475 / verified
+  - tokens: 761106 / calls: 108 / wall: 553.0s
+  - packed: outputs/20261026_170458_部分血液蛋白水平与前列腺癌风险相关，这项.packed.json
+  - 原报告: docs/reports/patrol_20261026_170500_life_health.md
+- 成本：余额接口不可读；复用旧跑，不做单跑归因
+
+## App / 产物库
+
+- App 检查 PASS；版本一致性 PASS；UI 自动化 PASS
+- 产物审计完成；系统检查完成
+- 质量/配对/重复题仍需人工确认
+
+## 技术知识
+
+- triage：PASS
+- Search/Fetch 已落地；CADF 保留人工
+- 热点库 82 条
+
+## 验证
+
+- app_full_check PASS
+- app_version_check PASS
+- dependency audit RESULT PASS
+- fast_gate PASS 16/0
+- V2 tests PASS 70/70，1163 checks
+- App selftest PASS 455/0
+- guard_policy_check PASS
+- 巡检报告 CHECK PASS
+
+## 风险
+
+- 本轮未完成新真跑；生命健康证据为复用旧 verified
+- 连续长跑超时仍未解决，余额窗口低
+- 产物质量/配对/重复题仍需人工确认
+- 未执行 git push

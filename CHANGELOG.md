@@ -1,3 +1,14 @@
+【V2.2.88（2026-10-30，PATCH · 证据命名一致性门禁；App 2.0.83）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.88.py（__version__=2.2.88；引擎侧零行为差）；
+  App 2.0.83 不变。
+- ★ 发现并修复：run_route_choice_ab 把 choice 结果写入 route_subset_reasoning 文件（污染历史证据）；
+  已从 HEAD 还原被覆盖的 5 个日期证据。
+- ★ 新增 audit_evidence_naming：文件名 token 必须与 JSON kind/schema 一致；
+  fast_gate 新增 evidence_naming（24→25）；acceptance_semantics 同步 25。
+- 验收：7 个证据文件 violations 0；fast_gate 25/25；acceptance_semantics 45/45；V2 71/71（1210）；
+  App selftest；一键验收；e2e 18/18；probe 84/84；发布流程门。零云 API。
+- 标签：V2.2.88 / engine-V2.2.88（app-V2.0.83 不变，不移动）。
+
 【V2.2.87（2026-10-30，PATCH · App 透传 flag 对齐门禁；App 2.0.83）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.87.py（__version__=2.2.87；引擎侧零行为差）；
   App 2.0.83 不变。
@@ -649,13 +660,3 @@
 【V2.2.38（2026-10-29，PATCH · 余额续航预测；同发 App 2.0.63）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.38.py（__version__=2.2.38；引擎侧零行为差）；
   App 2.0.63。
-- ★ dynamic_opt.budget_forecast：{balance_cny, est_cost_cny, balance_after_cny, safe_runs,
-  reserve_runs, advice}；safe_runs=floor(balance/chosen 成本)，用最终动态选择成本
-  （含上下文/缓存折算）；余额未知 ⇒ None。
-- ★ budget.reserve_runs 默认 2：quality 档在安全续航 < reserve_runs 时自动降 fast
-  并写明 mode_reason（默认余额 10/估 0.13 → safe_runs≈76，不降级）。
-- 判据：test_dynamic_opt 95→99（续航字段/safe_runs/balance_after、reserve=500 触发 fast、
-  默认不降级、余额未知 None）；回归 fused_optimal 30 / fused_full_chain 16 /
-  daosheng_unified 27 / auto_mode_local 12。
-- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
-  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
