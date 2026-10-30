@@ -1,0 +1,130 @@
+{
+ "schema": "metadgtf.flag_alignment.v1",
+ "engine": "D:\\Meta-DGTF-道生三阶模型\\dgtf_engine\\dgtf_v2\\engine\\Meta-DGTF-V2.2.87.py",
+ "engine_version": "2.2.87",
+ "flags": [
+  {
+   "flag": "--actions-off",
+   "key": "actions-off",
+   "present": true
+  },
+  {
+   "flag": "--actions-on",
+   "key": "actions-on",
+   "present": true
+  },
+  {
+   "flag": "--appendix",
+   "key": "appendix",
+   "present": true
+  },
+  {
+   "flag": "--behavior-fusion",
+   "key": "behavior_fusion",
+   "present": true
+  },
+  {
+   "flag": "--channels",
+   "key": "channels",
+   "present": true
+  },
+  {
+   "flag": "--debug",
+   "key": "bool:debug",
+   "present": true
+  },
+  {
+   "flag": "--decidability",
+   "key": "decidability",
+   "present": true
+  },
+  {
+   "flag": "--dual-judge-mode",
+   "key": "dual_judge_mode",
+   "present": true
+  },
+  {
+   "flag": "--effort",
+   "key": "effort",
+   "present": true
+  },
+  {
+   "flag": "--history-fusion",
+   "key": "history_fusion",
+   "present": true
+  },
+  {
+   "flag": "--keep",
+   "key": "keep",
+   "present": true
+  },
+  {
+   "flag": "--landing",
+   "key": "landing",
+   "present": true
+  },
+  {
+   "flag": "--max-minutes",
+   "key": "max_minutes",
+   "present": true
+  },
+  {
+   "flag": "--max-tokens",
+   "key": "max_tokens",
+   "present": true
+  },
+  {
+   "flag": "--mode",
+   "key": "mode",
+   "present": true
+  },
+  {
+   "flag": "--no-self-check",
+   "key": "bool:no-self-check",
+   "present": true
+  },
+  {
+   "flag": "--orientation",
+   "key": "orientation",
+   "present": true
+  },
+  {
+   "flag": "--parallel",
+   "key": "parallel",
+   "present": true
+  },
+  {
+   "flag": "--quiet",
+   "key": "bool:quiet",
+   "present": true
+  },
+  {
+   "flag": "--rounds",
+   "key": "rounds",
+   "present": true
+  },
+  {
+   "flag": "--route",
+   "key": "route",
+   "present": true
+  },
+  {
+   "flag": "--self-check-mode",
+   "key": "self_check_mode",
+   "present": true
+  },
+  {
+   "flag": "--thinking",
+   "key": "thinking",
+   "present": true
+  },
+  {
+   "flag": "--web",
+   "key": "web",
+   "present": true
+  }
+ ],
+ "violations": [],
+ "n": 24,
+ "n_bad": 0
+}

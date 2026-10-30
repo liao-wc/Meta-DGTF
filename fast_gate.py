@@ -283,6 +283,9 @@ def build_checks(engine=None) -> list:
         # [V2.2.86] 计划 → opts → CLI 全链路契约（route/rounds/web/profile 不丢失不变味）
         ("plan_pipeline_contract", [sys.executable,
          str(ROOT / "scripts" / "local_model" / "audit_plan_pipeline.py")]),
+        # [V2.2.87] App 透传 flag 必须都在当前引擎 argparse 里（否则任务当场失败）
+        ("flag_alignment", [sys.executable,
+         str(ROOT / "scripts" / "local_model" / "audit_flag_alignment.py")]),
     ]
     return checks
 
