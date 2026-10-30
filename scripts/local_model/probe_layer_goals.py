@@ -575,6 +575,9 @@ def main(argv=None) -> int:
                     help="单个 case 的超时秒数（默认 900）")
     ap.add_argument("--question", default=os.environ.get("DGTF_LG_Q")
                     or "水的三态变化有哪些驱动因素", help="题面")
+    ap.add_argument("--isolate-eml", action="store_true",
+                    help="隔离 EML/playbook（playbook.mode=off + 独立目录），"
+                         "用于跨跑可复现对照")
     ap.add_argument("--evidence", default="",
                     help="证据 JSON 路径（真跑时默认 outputs/_e2e_local/"
                          "_layer_goals_probe_latest.json）")
@@ -672,7 +675,12 @@ def main(argv=None) -> int:
         print("\n⚠ 本地服务未起（8772=%s / 8773=%s）：本判据无法执行"
               "（不是判红，是没跑）" % (svc_ok, shim_ok))
         return 2
-    cfg = params.build_temp_config(OVERRIDES, CFG_PATH)
+    _ov = dict(OVERRIDES)
+    if args.isolate_eml:
+        _ov["playbook.mode"] = "off"
+        _ov["playbook.dir"] = "outputs/_e2e_local/_probe_eml_off"
+        print("EML 隔离模式：playbook.mode=off，dir=outputs/_e2e_local/_probe_eml_off")
+    cfg = params.build_temp_config(_ov, CFG_PATH)
     ck("E2 App params.build_temp_config() 生成本地档配置",
        bool(cfg) and Path(cfg).is_file(), str(cfg))
     if not cfg:
@@ -698,6 +706,7 @@ def main(argv=None) -> int:
             "engine_version": want_version,
             "app_engine": str(app_engine),
             "wall_sec": round(time.time() - t_all, 1),
+            "isolate_eml": bool(args.isolate_eml),
             "services": {"8772": svc_ok, "8773": shim_ok,
                          "shim_health": shim_h},
             "finished_at": time.strftime("%Y-%m-%d %H:%M:%S")}

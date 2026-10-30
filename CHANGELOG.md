@@ -1,3 +1,17 @@
+【V2.2.68（2026-10-30，PATCH · 层1 不可复现根因 + probe --isolate-eml；App 2.0.81 不变）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.68.py（__version__=2.2.68；引擎侧零行为差）；
+  App 2.0.81 不变。
+- ★ 根因：同配置两次 GDP run 对比（packed）——llm_calls 44→27、candidates 3→0、
+  behavior_fusion arm fusion_full→v2_contract、playbook 应用条目不同、freeze 1→0、config_hash 变化；
+  即 EML/playbook 跨跑学习状态改变行为。
+- ★ 隔离实验：playbook off + 独立 dir 后候选恢复 2，但 settle 仍 0 ⇒ EML 是候选波动主因，
+  层1 可测还受候选可判定性影响。
+- ★ probe 新增 --isolate-eml（默认关；meta 记录 isolate_eml）。
+- 验收：fast_gate 18/18；V2 71/71（1208 checks）；App selftest 459/0；一键验收 PASS 30 /
+  SKIP 0 / FAIL 0；e2e 18/18；四层 probe 84/84（isolate）；发布流程门 pre/post-tag 全 PASS。零云 API。
+- 兼容性：只改 probe/证据；引擎零行为差；App 不变。
+- 标签：V2.2.68 / engine-V2.2.68（app-V2.0.81 不变，不移动）。
+
 【V2.2.67（2026-10-30，PATCH · 层1 可测：probe route 0,1 + 可生成候选题面；App 2.0.81 不变）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.67.py（__version__=2.2.67；引擎侧零行为差）；
   App 2.0.81 不变。
@@ -647,15 +661,3 @@
   一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 81/81；
   发布流程门 pre/post-tag 全 PASS。
 - 兼容性：显式 opts 优先；余额未知 fail-open 只审计；quality 档不受影响。
-- 标签：V2.2.26 / engine-V2.2.26 / app-V2.0.51。
-
-【V2.2.25（2026-10-29，PATCH · 动态配置细化 + 缓存命中感知；同发 App 2.0.50）】
-- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.25.py（__version__=2.2.25；引擎侧零行为差）；
-  App 2.0.50。
-- ★ 多圈档多目标：fast 档枚举 fast/economy/critical 三档圈数，在成本约束（余额×预留）内
-  选质量最高者；质量随圈数线性折扣；fast 档质量下限对齐实测 0.90（项目 quality 仍 0.95）；
-  quality 档不受低圈候选干扰。
-- ★ 缓存命中感知：精确命中按 10% 成本计入可行域；缓存预判前移复用；plan.dynamic_opt
-  增加 route / cache_hit 读数；余额未知 fail-open 只审计不改配置（不再误改 rounds）。
-- ★ 剩余预算有界 A/B（真实云端 2 臂，合计约 ¥0.28）：同题同 route=0/rounds=0:1/web off，
-  ok 档（¥50 假设）→ quality B / auto 圈，实际 13 calls / 76,306 tokens 约 ¥0.15，verified；
