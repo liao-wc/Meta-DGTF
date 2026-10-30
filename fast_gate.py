@@ -289,6 +289,9 @@ def build_checks(engine=None) -> list:
         # [V2.2.88] 证据文件命名 ↔ 内容一致（防 choice 写进 reasoning 文件类污染）
         ("evidence_naming", [sys.executable,
          str(ROOT / "scripts" / "local_model" / "audit_evidence_naming.py")]),
+        # [V2.2.95] 配置键卫生：preset/主配置里的陈旧键必须为 0（防 V1 遗留键静默堆积）
+        ("config_keys", [sys.executable,
+         str(ROOT / "scripts" / "local_model" / "audit_config_keys.py")]),
     ]
     return checks
 

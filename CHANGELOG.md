@@ -1,3 +1,12 @@
+【V2.2.95（2026-10-31，PATCH · fast_gate config_keys；App 2.0.83）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.95.py（__version__=2.2.95；引擎侧零行为差）。
+- ★ fast_gate 新增 config_keys 检查：调用 scripts/local_model/audit_config_keys.py，
+  preset/主配置存在未被引擎读取的陈旧键即判红；
+- ★ acceptance_semantics 检查清单 25 → 26 项（45/45 PASS）；fast_gate 26/26；README 同步。
+- 验收：V2 73/73（1228 checks）；App selftest；一键验收；e2e 18/18；probe；发布流程门全 PASS。
+  零云 API。
+- 标签：V2.2.95 / engine-V2.2.95（app-V2.0.83 不变，不移动）。
+
 【V2.2.94（2026-10-31，PATCH · 配置键卫生审计；App 2.0.83）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.94.py（__version__=2.2.94；引擎侧零行为差）。
 - ★ 新增 scripts/local_model/audit_config_keys.py：对照最高版引擎 DEFAULT_CONFIG + 源码引用，
@@ -648,13 +657,3 @@
 【V2.2.42（2026-10-29，PATCH · 语义预判双层缓存；同发 App 2.0.67）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.42.py（__version__=2.2.42；引擎侧零行为差）；
   App 2.0.67。
-- ★ 问题：V2.2.41 语义预判每次 build_plan 扫描 300 packed 并重算 embedding，acceptance 的
-  dynamic_opt 从 2s 涨到 97s。
-- ★ 修法：verified 候选清单缓存 300s（最多 200 条）+ 命中结果缓存 120s；
-  命中时只 embed 当前问题 + ≤8 候选（batch 1 次）。
-- ★ 效果：test_dynamic_opt 109→111 且整套 97s→6.5s；acceptance dynamic_opt 6.5s。
-- ★ 语义标定扩展（本地链路零 API）：精确 sim=1.0；近重复 0.996 / 0.9971 / 0.9907
-  全部 cache_hit、0 次新 LLM 调用（证据 docs/semantic_cache_hit_20261029.json）。
-- 判据：test_dynamic_opt 111（+2：S1 候选缓存、S2 结果缓存；Q4 扩到 3 语义臂）；
-  回归 fused_optimal 30 / fused_full_chain 23 / daosheng_unified 27 / auto_mode_local 12。
-- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
