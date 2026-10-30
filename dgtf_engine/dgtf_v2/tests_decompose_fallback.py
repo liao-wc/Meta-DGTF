@@ -9,7 +9,8 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from dgtf_v2.decompose_fallback import fallback_subquestions  # noqa: E402
+from dgtf_v2.decompose_fallback import (  # noqa: E402
+    answerable_fallback, fallback_subquestions)
 
 _P, _F = [], []
 
@@ -39,6 +40,16 @@ def main() -> int:
     ck("F5 limit 生效", len(fallback_subquestions(probes, threads, limit=2)) == 2)
     ck("F6 线头兜底（无探针时）",
        [s["source"] for s in fallback_subquestions([], threads)] == ["T1"])
+    all_und = [{"question": "甲问题？", "decidability": "undecidable",
+                "id": 1, "source": ""}]
+    fb = answerable_fallback(all_und, probes, threads)
+    ck("F7 全不可判定时补 provisional partial", len(fb) >= 1 and
+       all(s["decidability"] == "partial" for s in fb), "n=%d" % len(fb))
+    ck("F8 补的 source 带 FB: 前缀",
+       all(str(s["source"]).startswith("FB:") for s in fb),
+       str([s["source"] for s in fb]))
+    mixed = [{"question": "乙问题？", "decidability": "partial", "id": 1}]
+    ck("F9 有可答子问题时不动", answerable_fallback(mixed, probes) == [])
     print("PASS %d / FAIL %d" % (len(_P), len(_F)))
     return 1 if _F else 0
 

@@ -1,3 +1,13 @@
+【V2.2.96（2026-10-31，PATCH · 全不可判定补 provisional partial；App 2.0.83）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.96.py（__version__=2.2.96）。
+- ★ V2.2.95 发现：LLM 拆解有输出但全判 undecidable ⇒ settlement.total=0 ⇒ 层1 仍未测出。
+- ★ 修复：decompose_fallback.answerable_fallback()——已有子问题但无一条可答时，
+  用探针/线头补 1-2 条 provisional partial（source FB:）；不篡改原判定；有可答时不介入。
+- ★ tests_decompose_fallback 扩到 9/9（F7/F8/F9）。probe case1 复跑 valued 0.0（48 calls）。
+- 验收：V2 73/73（1228 checks）；fast_gate 26/26；App selftest；一键验收；e2e 18/18；probe；
+  发布流程门全 PASS。零云 API。
+- 标签：V2.2.96 / engine-V2.2.96（app-V2.0.83 不变，不移动）。
+
 【V2.2.95（2026-10-31，PATCH · fast_gate config_keys；App 2.0.83）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.95.py（__version__=2.2.95；引擎侧零行为差）。
 - ★ fast_gate 新增 config_keys 检查：调用 scripts/local_model/audit_config_keys.py，
@@ -647,13 +657,3 @@
 - ★ fact 高圈锚点：_LONG_RUN_ANCHORS 增加 fact（web on、总圈数 5-10）full 67,753（n=2），
   dynamic_config 对 fact 高圈 full 使用实测锚点。
 - 判据：test_dynamic_opt 111→114（T1 2/2 verified、T2 高圈锚点≈67,753、T3 rounds2 更省）；
-  回归 fused_optimal 30 / fused_full_chain 23 / daosheng_unified 27 / auto_mode_local 12。
-- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 455/0；
-  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
-  发布流程门 pre/post-tag 全 PASS。
-- 兼容性：quality_retry 仍 advisory；高圈锚点仅成本估算；默认四层不变。
-- 标签：V2.2.43 / engine-V2.2.43 / app-V2.0.68。
-
-【V2.2.42（2026-10-29，PATCH · 语义预判双层缓存；同发 App 2.0.67）】
-- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.42.py（__version__=2.2.42；引擎侧零行为差）；
-  App 2.0.67。

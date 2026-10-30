@@ -227,6 +227,25 @@ V2.2.67 曾观测到一次 case1 `settle=0.000（valued）`（44 calls、candida
 修复后按中英文逗号拆分；单测 J11/J12（共 12/12），并行 B 端到端出现
 `B 第 3 圈停止`（63 calls / 75,637 tokens，本地）。
 
+
+## 7.14 全不可判定补 provisional partial（V2.2.96，零 API）
+
+V2.2.95 复跑发现：LLM 拆解成功但子问题**全判 undecidable** ⇒ settlement.total=0 ⇒ 仍未测出。
+修复：`answerable_fallback()` 在「有子问题但无一条 decidable/partial」时，用探针/线头补 1-2 条
+provisional partial（source 前缀 `FB:`），**不修改原判定**；有可答子问题时完全不介入。
+
+验证：tests_decompose_fallback **9/9**（F7/F8/F9）；probe case1 复跑 valued 0.0（48 calls，subs=2 partial P1/T1）。
+证据：docs/layer1_answerable_fallback_20261031.json。
+
+
+### 7.14 附：V2.2.96 复跑残留（2026-10-31 04:40）
+
+- 全量 probe：84/84 PASS，但 case1 仍 **unmeasured**（32 calls）；
+- 产物：subs=0，且 **probes=0 / threads=0 / amps=0**（层0 仅 2 个 candidates）⇒
+  V2.2.90/V2.2.96 回退都**没有可用来源**；
+- 结论：V2.2.96 修复的是「全不可判定」路径，**未覆盖**「拆解输出为空且探针/线头也为空」路径；
+- 下一步：为回退增加候选（candidates）来源（V2.2.97 候选）。
+
 ## 8. 后续建议（需预算或明确方向）
 
 - 方案 A（有预算）：1 个 web on 的层1 小样本（单跑约与既有 A/B 同量级），验证能否产生 candidates>0；

@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-"""研究层拆解失败时的确定性回退（V2.2.90）。
+"""研究层拆解失败/全不可判定时的确定性回退（V2.2.90 / V2.2.96）。
 
-背景：_decompose_from_pool 依赖 LLM 输出严格 JSON；本地 0.5B 链路经常
-解析失败 -> sub_questions 为空 -> settlement.total=0（层1 永远「未测出」）。
-回退策略：用修行层已有的探针/悬空线头确定性生成子问题（不调 LLM、
-不补写新知识），保守标 partial，交由后续三态判决/清算覆盖。
+V2.2.90：LLM 输出为空 -> 用探针/线头生成 partial 子问题（让分母存在）。
+V2.2.96：LLM 有输出但**全部不可判定** -> 追加探针/线头派生的 partial 子问题，
+保留原判定（不篡改），只补可答分母（source 前缀 FB: 便于审计）。
 """
 from __future__ import annotations
 
@@ -34,3 +33,28 @@ def fallback_subquestions(probes=None, threads=None, limit: int = 5) -> list[dic
         if len(out) >= limit:
             return out
     return out
+
+
+def answerable_fallback(subs, probes=None, threads=None,
+                        limit: int = 2) -> list[dict]:
+    """V2.2.96：已有子问题但**没有一条可答**时，补探针/线头 partial。
+
+    - 只要已有任一 decidable/partial ⇒ 返回 []（不打扰正常拆解）；
+    - 返回的每条 source 前缀 FB:，并避开与已有题面重复；
+    - 原 subs 的判定不被修改（想改由调用方自行合并）。
+    """
+    cur = [s for s in (subs or []) if isinstance(s, dict)]
+    if any(str(s.get("decidability")) in ("decidable", "partial") for s in cur):
+        return []
+    existing = {str(s.get("question") or "").strip() for s in cur}
+    fb = []
+    for i, s in enumerate(fallback_subquestions(probes, threads, limit), 1):
+        if s["question"] in existing:
+            continue
+        s = dict(s)
+        s["id"] = len(cur) + len(fb) + 1
+        s["source"] = "FB:" + s.get("source", "?")
+        fb.append(s)
+        if len(fb) >= limit:
+            break
+    return fb

@@ -1,9 +1,9 @@
 {
   "ok": true,
   "question": "成年人正常心率是多少次每分钟",
-  "wall_sec": 31.3,
+  "wall_sec": 73.8,
   "exit": 0,
-  "packed": "D:\\Meta-DGTF-道生三阶模型\\outputs\\_e2e_local\\20261031_031311_成年人正常心率是多少次每分钟.packed.json",
+  "packed": "D:\\Meta-DGTF-道生三阶模型\\outputs\\_e2e_local\\20261031_034228_成年人正常心率是多少次每分钟.packed.json",
   "quality_keys": [
     "alert",
     "answer_gates",
@@ -63,55 +63,85 @@
   },
   "llm_by_stage": [
     {
-      "stage": "adjudicate_sub_tristate_multi",
-      "calls": 3,
-      "tokens": 1593,
-      "ms": 7761
+      "stage": "he_amps",
+      "calls": 1,
+      "tokens": 2050,
+      "ms": 4203
+    },
+    {
+      "stage": "dual_judge",
+      "calls": 1,
+      "tokens": 1930,
+      "ms": 9062
+    },
+    {
+      "stage": "ing",
+      "calls": 1,
+      "tokens": 1597,
+      "ms": 7435
     },
     {
       "stage": "expand_pair_merged",
       "calls": 1,
       "tokens": 1532,
-      "ms": 757
+      "ms": 770
+    },
+    {
+      "stage": "adjudicate_sub_tristate_multi",
+      "calls": 3,
+      "tokens": 1488,
+      "ms": 6772
     },
     {
       "stage": "expand_pair_merged_fixup",
       "calls": 1,
-      "tokens": 1446,
-      "ms": 701
+      "tokens": 1473,
+      "ms": 1602
     },
     {
       "stage": "manifest",
       "calls": 1,
-      "tokens": 1096,
-      "ms": 6
+      "tokens": 1348,
+      "ms": 7690
     },
     {
       "stage": "re_anchor",
       "calls": 1,
-      "tokens": 1041,
-      "ms": 1338
+      "tokens": 1040,
+      "ms": 1351
+    },
+    {
+      "stage": "self_check",
+      "calls": 1,
+      "tokens": 1005,
+      "ms": 1401
+    },
+    {
+      "stage": "json_repair",
+      "calls": 4,
+      "tokens": 870,
+      "ms": 0
     },
     {
       "stage": "check_input_sanity",
       "calls": 1,
       "tokens": 671,
-      "ms": 2819
+      "ms": 2902
     },
     {
       "stage": "assess_decidability",
       "calls": 1,
       "tokens": 599,
-      "ms": 1513
+      "ms": 1556
     },
     {
       "stage": "decompose_koan",
       "calls": 1,
-      "tokens": 419,
-      "ms": 3849
+      "tokens": 338,
+      "ms": 1462
     }
   ],
-  "llm_calls": 10,
+  "llm_calls": 18,
   "checks": 18,
   "fails": []
 }

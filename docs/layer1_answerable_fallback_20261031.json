@@ -1,0 +1,21 @@
+{
+ "schema": "metadgtf.layer1_answerable_fallback.v1",
+ "ts": "2026-10-31 04:20",
+ "note": "V2.2.96：有子问题但全不可判定时补 provisional partial（source FB:）",
+ "unit_tests": "tests_decompose_fallback 9/9（F7 全不可判定补 partial / F8 FB: 前缀 / F9 有可答时不动）",
+ "probe_case1": {
+  "calls": 48,
+  "status": "not_judgeable",
+  "main": 0.0,
+  "subs": [
+   {
+    "decidability": "partial",
+    "source": "P1"
+   },
+   {
+    "decidability": "partial",
+    "source": "T1"
+   }
+  ]
+ }
+}
