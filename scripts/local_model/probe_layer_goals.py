@@ -577,6 +577,8 @@ def main(argv=None) -> int:
                     or "水的三态变化有哪些驱动因素", help="题面")
     ap.add_argument("--temperature", type=float, default=None,
                     help="透传 api.temperature（如 0.0 做确定性对照；默认不设=0.6）")
+    ap.add_argument("--fresh-playbook", action="store_true",
+                    help="每次运行用全新 playbook 目录（保留学习、隔离历史）")
     ap.add_argument("--isolate-eml", action="store_true",
                     help="隔离 EML/playbook（playbook.mode=off + 独立目录），"
                          "用于跨跑可复现对照")
@@ -681,6 +683,12 @@ def main(argv=None) -> int:
     if args.temperature is not None:
         _ov["api.temperature"] = float(args.temperature)
         print("温度对照：api.temperature=%s" % args.temperature)
+    if args.fresh_playbook:
+        _pb = (SAVE_DIR / "_probe_pb"
+               / time.strftime("%Y%m%d_%H%M%S"))
+        _pb.mkdir(parents=True, exist_ok=True)
+        _ov["playbook.dir"] = _pb.relative_to(ROOT).as_posix()
+        print("fresh playbook：%s" % _ov["playbook.dir"])
     if args.isolate_eml:
         _ov["playbook.mode"] = "off"
         _ov["playbook.dir"] = "outputs/_e2e_local/_probe_eml_off"
@@ -714,6 +722,7 @@ def main(argv=None) -> int:
             "isolate_eml": bool(args.isolate_eml),
             "temperature": (None if args.temperature is None
                             else float(args.temperature)),
+            "fresh_playbook": bool(args.fresh_playbook),
             "services": {"8772": svc_ok, "8773": shim_ok,
                          "shim_health": shim_h},
             "finished_at": time.strftime("%Y-%m-%d %H:%M:%S")}
