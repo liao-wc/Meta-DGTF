@@ -1,6 +1,6 @@
 {
- "n_packs_with_trace": 201,
- "n_fact": 173,
+ "n_packs_with_trace": 204,
+ "n_fact": 174,
  "all_standard_true": 161,
  "waived_runs": 12,
  "waived_unsettled": {
@@ -8,11 +8,11 @@
   "2": 3
  },
  "fact_fail_layers": {
-  "1": 3,
-  "both": 3,
-  "all": 10
+  "1": 4,
+  "both": 4,
+  "all": 11
  },
- "audit_repaired_rows": 49,
+ "audit_repaired_rows": 48,
  "audit_unrepaired_rows": 0,
  "rows": [
   {
@@ -1897,8 +1897,43 @@
    "standard_all": true,
    "notes": {},
    "layers_fail": [],
-   "audit_bad": 1,
-   "audit_repaired": 1
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261029_113915_极端天气为什么越来越频繁.packed.json",
+   "qtype": "reasoning",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "0",
+    "both",
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261030_033138_HTTP404状态码表示什么.packed.json",
+   "qtype": "fact",
+   "standard_all": false,
+   "notes": {},
+   "layers_fail": [
+    "1",
+    "both",
+    "all"
+   ],
+   "audit_bad": 0,
+   "audit_repaired": 0
+  },
+  {
+   "file": "20261030_192518_1+1等于几？.packed.json",
+   "qtype": "boundary",
+   "standard_all": true,
+   "notes": {},
+   "layers_fail": [],
+   "audit_bad": 0,
+   "audit_repaired": 0
   }
  ]
 }

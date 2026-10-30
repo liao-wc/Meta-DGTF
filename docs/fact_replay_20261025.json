@@ -4203,11 +4203,11 @@
     "E14",
     "E44"
    ],
-   "new_answer": "Date: ... DeepSeek-V4-Flash Update The official release of the DeepSeek-V4-Flash API is no",
-   "new_display": "Date: ... DeepSeek-V4-Flash Update The official release of the DeepSeek-V4-Flash API is no",
+   "new_answer": "动态2026 年 9 月 10 日 DeepSeek V4.1 Flash 正式发布，具备原生多模态视觉理解能力。",
+   "new_display": "动态2026 年 9 月 10 日 DeepSeek V4.1 Flash 正式发布，具备原生多模态视觉理解能力。",
    "numeric_q": false,
    "stored_answer_numeric": false,
-   "new_answer_numeric": false,
+   "new_answer_numeric": true,
    "gaps_cleared": false
   },
   {
@@ -4397,8 +4397,8 @@
     "E18",
     "E28"
    ],
-   "new_answer": "下面有不同的方式来指定哪个网址是规范的",
-   "new_display": "下面有不同的方式来指定哪个网址是规范的",
+   "new_answer": "2024-08-24 20:10: ... - 301——删除请求数据 ... - 306——前一版本HTTP中使用的代码，现行版本中不再使用",
+   "new_display": "2024-08-24 20:10: ... - 301——删除请求数据 ... - 306——前一版本HTTP中使用的代码，现行版本中不再使用",
    "numeric_q": false,
    "stored_answer_numeric": false,
    "new_answer_numeric": false,
@@ -4617,8 +4617,8 @@
     "E15",
     "E32"
    ],
-   "new_answer": "429 Too Many Requests The HTTP429 Too Many Requests client error response status code indi",
-   "new_display": "429 Too Many Requests The HTTP429 Too Many Requests client error response status code indi",
+   "new_answer": "HTTP协议中的429 Too Many Requests状态码 HTTP 429状态码 HTTP 429状态码，即“Too Many Requests”（请求过多），是HTTP协",
+   "new_display": "HTTP协议中的429 Too Many Requests状态码 HTTP 429状态码 HTTP 429状态码，即“Too Many Requests”（请求过多），是HTTP协",
    "numeric_q": false,
    "stored_answer_numeric": false,
    "new_answer_numeric": false,
@@ -4647,8 +4647,8 @@
     "E17",
     "E22"
    ],
-   "new_answer": "Retry-After 在 HTTP 协议中，响应首部Retry-After 表示用户代理需要等待多长时间之后才能继续发送请求",
-   "new_display": "Retry-After 在 HTTP 协议中，响应首部Retry-After 表示用户代理需要等待多长时间之后才能继续发送请求",
+   "new_answer": "503 Servicio No Disponible El envío de un código de error503 Servicio No Disponible como r",
+   "new_display": "503 Servicio No Disponible El envío de un código de error503 Servicio No Disponible como r",
    "numeric_q": false,
    "stored_answer_numeric": false,
    "new_answer_numeric": false,
@@ -4761,8 +4761,8 @@
     "E7",
     "E9"
    ],
-   "new_answer": "511 Network Authentication Required HTTP の511 Network Authentication Required はサーバーエラーレスポン",
-   "new_display": "511 Network Authentication Required HTTP の511 Network Authentication Required はサーバーエラーレスポン",
+   "new_answer": "* Exception representing an HTTP 511 (Network Authentication Required). ... * The client n",
+   "new_display": "* Exception representing an HTTP 511 (Network Authentication Required). ... * The client n",
    "numeric_q": false,
    "stored_answer_numeric": false,
    "new_answer_numeric": false,
@@ -4997,8 +4997,8 @@
     "E24",
     "E33"
    ],
-   "new_answer": "431 Request Header Fields Too Large Le code de statut de réponse d'erreur client HTTP431 R",
-   "new_display": "431 Request Header Fields Too Large Le code de statut de réponse d'erreur client HTTP431 R",
+   "new_answer": "更改密码认证域的服务器和IP后的HTTP错误431 ... 问更改密码认证域的服务器和IP后的HTTP错误431 ... 提问于 2018-02-05 08:44: ... 我有测",
+   "new_display": "更改密码认证域的服务器和IP后的HTTP错误431 ... 问更改密码认证域的服务器和IP后的HTTP错误431 ... 提问于 2018-02-05 08:44: ... 我有测",
    "numeric_q": false,
    "stored_answer_numeric": false,
    "new_answer_numeric": false,
