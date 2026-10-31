@@ -1,5 +1,7 @@
 # 验收语义对齐说明（2026-10-28 · task-3）
 
+> **数字时效说明**：本文中的验收计数（如 PASS 24/18 等）为 2026-10-28 当时实测；当前门禁数字以 `docs/项目状态快照_20261031.md` 与 `docs/能力与证据矩阵_20261030.md` 为准。三态语义/判据部分仍适用。
+
 > 范围：`fast_gate.py`（动态引擎发现）、`scripts/final_acceptance.py`（三态语义）、
 > 新增判据 `scripts/tests_acceptance_semantics.py`、`_probe_v1232_audit.py`（AST 一次解析性能重构）。
 > 同时记录 README 第四节 / `docs/项目状态快照_20261027.md` 第 1 节数字与当前代码的口径差异。
