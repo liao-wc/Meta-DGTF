@@ -295,6 +295,9 @@ def build_checks(engine=None) -> list:
         # [V2.2.100] 状态快照数字必须与各门禁最新证据一致（防「标题升版、正文旧数字」）
         ("snapshot_numbers", [sys.executable,
          str(ROOT / "scripts" / "local_model" / "audit_snapshot_numbers.py")]),
+        # [V2.2.106] 各门禁最新证据必须处于 PASS 状态（防失败证据被后续沿用）
+        ("evidence_health", [sys.executable,
+         str(ROOT / "scripts" / "local_model" / "audit_evidence_health.py")]),
     ]
     return checks
 

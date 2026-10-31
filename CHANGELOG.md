@@ -1,3 +1,11 @@
+【V2.2.106（2026-10-31，PATCH · fast_gate evidence_health；App 2.0.83）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.106.py（__version__=2.2.106；引擎侧零行为差）。
+- ★ 新增 scripts/local_model/audit_evidence_health.py：v2/selftest/acceptance/probe 最新证据
+  必须 fail=0 且 pass>0；否则 fast_gate 判红。
+- ★ fast_gate 27→28 项；acceptance_semantics 27→28（45/45）；README 同步 28/28。
+- 验收：V2 73/73（1234 checks）；App selftest；一键验收；e2e 18/18；probe；发布流程门全 PASS。零云 API。
+- 标签：V2.2.106 / engine-V2.2.106（app-V2.0.83 不变，不移动）。
+
 【V2.2.105（2026-10-31，PATCH · preflight 证据健康校验；App 2.0.83）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.105.py（__version__=2.2.105；引擎侧零行为差）。
 - ★ release_preflight 新增 evidence_sanity：fast_gate/v2/selftest/acceptance 失败计数非零即拒绝
@@ -639,9 +647,3 @@
 【V2.2.49（2026-10-30，PATCH · 语义阈值标定 + 选档建议；同发 App 2.0.74）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.49.py（__version__=2.2.49；引擎侧零行为差）；
   App 2.0.74。
-- ★ 语义阈值标定（本地 BGE 零 API）：0.98 边界成立——0.9960/0.9869/0.9856 命中，
-  0.9682/0.9675/0.9576 不命中；HTTP 变体 421/425 为同题 verified 包 exact 命中（非误命中），
-  432 相似度 0.8916 未命中；证据 docs/semantic_threshold_calibration_20261030.json。
-- ★ 选档建议（advisory）：该题型 expected_verified_pct=0 + 预算 ok + tier=quality ⇒
-  quality_retry.tier_advice=fast（理由：质量档未带来验证收益，fast 更省 tokens）；
-  fact → current；预算 warn 已降 fast → current；quality_forecast 同步输出。
