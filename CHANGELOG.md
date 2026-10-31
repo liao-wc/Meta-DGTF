@@ -1,3 +1,11 @@
+【V2.2.114（2026-10-31，PATCH · selftest 门校验启动文案；App 2.0.85）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.114.py（__version__=2.2.114；引擎侧零行为差）。
+- ★ app_selftest_gate 顺带读取临时 server 启动日志：`V2 自动策略：…` 必须是「冻结（原因）」或
+  「已选择」；退回「无样本，跳过」⇒ startup_msg_ok=false、门禁判红（防 App 2.0.84 类静默回归）。
+- ★ 实测：startup_msg_ok=true；App selftest 459/0。
+- 验收：V2 73/73（1234 checks）；fast_gate 28/28；一键验收；e2e 18/18；probe；发布流程门全 PASS。零云 API。
+- 标签：V2.2.114 / engine-V2.2.114（app-V2.0.85 不变，不移动）。
+
 【V2.2.113（2026-10-31，PATCH · main 配置陈旧键审计 + 启动文案检查；App 2.0.85）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.113.py（__version__=2.2.113；引擎侧零行为差）。
 - ★ 新增 scripts/local_model/audit_main_config_keys.py：审计 dgtf_config.yaml 陈旧键并接入
@@ -633,14 +641,3 @@
   发布流程门 pre/post-tag 全 PASS。零 API 花费。
 - 兼容性：只改工具链/文档；引擎零行为差；App 不变。
 - 标签：V2.2.55 / engine-V2.2.55（app-V2.0.78 不变，不移动）。
-
-【V2.2.54（2026-10-30，PATCH · README 数字自动同步；App 2.0.78 不变）】
-- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.54.py（__version__=2.2.54；引擎侧零行为差）；
-  App 2.0.78 不变。
-- ★ 新增 scripts/sync_readme_numbers.py：从 evidence JSON 回写/校验 README 实测数字
-  （App selftest 行、四层 probe 行、顶部 selftest），--check 不一致 exit 1、--write 自动修正。
-- ★ 事实来源：app_selftest / probe / v2_tests / fast_gate / acceptance / app_version /
-  引擎目录最高版。
-- 判据：脚本 --check PASS（App selftest 457、probe 82/82/179 calls/415.2s、V2 71/71、
-  fast_gate 16、acceptance 30）。
-- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 457/0；

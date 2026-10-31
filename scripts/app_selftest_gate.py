@@ -157,11 +157,27 @@ def _run_once(argv=None) -> int:
                 except Exception:  # noqa: BLE001
                     pass
                 break
+        # ★ [V2.2.114] 顺带校验启动日志「V2 自动策略」语义：
+        #   冻结必须显示「冻结（原因）」，不得退回误导性的「无样本，跳过」。
+        startup_msg = ""
+        try:
+            _srv = out_log.read_text(encoding="utf-8", errors="replace")
+            for _ln in _srv.splitlines():
+                if "V2 自动策略" in _ln:
+                    startup_msg = _ln.strip()
+        except OSError:
+            pass
+        startup_ok = not (startup_msg and "无样本" in startup_msg
+                          and "冻结" not in startup_msg)
+        _ok = bool(r.returncode == 0 and fail_n == 0 and startup_ok)
         ev.update({"pass": pass_n, "fail": fail_n,
                    "rc": int(r.returncode),
-                   "ok": bool(r.returncode == 0 and fail_n == 0),
-                   "status": "pass" if (r.returncode == 0 and fail_n == 0) else "fail",
-                   "tail": "\n".join(out.strip().splitlines()[-3:])[:600]})
+                   "startup_msg": startup_msg,
+                   "startup_msg_ok": bool(startup_ok),
+                   "ok": _ok,
+                   "status": "pass" if _ok else "fail",
+                   "tail": ("\n".join(out.strip().splitlines()[-3:])[:600]
+                            + ("" if startup_ok else " | 启动文案异常：" + startup_msg))})
         _write_ev(ev)
         if a.json:
             print(json.dumps(ev, ensure_ascii=False, indent=1))
