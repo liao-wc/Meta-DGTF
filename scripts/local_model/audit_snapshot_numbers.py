@@ -114,6 +114,16 @@ def main() -> int:
             av = "**" + m.group(1) + "**"
             rows.append(("app_version_in_snapshot", m.group(1),
                          ("App | " + av) in text))
+    # README 主头部必须指向最新引擎文件与最新快照（防「生产引擎路径过期」）
+    if eng_ver:
+        rd2 = ROOT / "README.md"
+        rtxt2 = rd2.read_text(encoding="utf-8", errors="replace") if rd2.is_file() else ""
+        import glob as _glob
+        _engs = _glob.glob(str(ROOT / "dgtf_engine" / "dgtf_v2" / "engine" / ("Meta-DGTF-%s.py" % eng_ver)))
+        rows.append(("readme_engine_path", eng_ver,
+                     bool(_engs) and ("engine/Meta-DGTF-%s.py" % eng_ver) in rtxt2))
+        rows.append(("readme_snapshot_ref", snap.name, snap.name in rtxt2))
+
     # 权威指针：docs/README 不得把历史文件当「为准」来源，且要引用当前快照
     dr = ROOT / "docs" / "README.md"
     drt = dr.read_text(encoding="utf-8", errors="replace") if dr.is_file() else ""

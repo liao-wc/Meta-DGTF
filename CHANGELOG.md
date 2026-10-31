@@ -1,3 +1,12 @@
+【V2.2.109（2026-10-31，PATCH · README 引擎/快照引用门禁；App 2.0.83）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.109.py（__version__=2.2.109；引擎侧零行为差）。
+- ★ 发现 README 顶部仍写 生产引擎 V2.2.56 / 快照 20261030（过期事实）；已修正并同步探针行。
+- ★ snapshot_numbers 审计 12→14 项：readme_engine_path（必须指向最新引擎文件）、
+  readme_snapshot_ref（必须引用最新快照文件名）。
+- 验收：V2 73/73（1234 checks）；fast_gate 28/28；App selftest；一键验收；e2e 18/18；probe；
+  发布流程门全 PASS。零云 API。
+- 标签：V2.2.109 / engine-V2.2.109（app-V2.0.83 不变，不移动）。
+
 【V2.2.108（2026-10-31，PATCH · 一致性判据区分读数/调用数；App 2.0.83）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.108.py（__version__=2.2.108；引擎侧零行为差）。
 - ★ 发现：连续两跑 status/main 一致，但 all 层 llm_calls 会波动（85 vs 96）；
@@ -637,13 +646,3 @@
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.51.py（__version__=2.2.51；引擎侧零行为差）；
   App 2.0.76。
 - ★ budget.prefer_cost_when_unverified（默认 false）：开启 + 预算 ok + tier=quality +
-  该题型 expected_verified_pct=0 ⇒ 自动降 fast；fact（verified 2/2）不降；
-  预算 warn/critical 已降档不变。
-- ★ plan.prefer_cost_when_unverified / tier_downgraded_by 可审计；默认关闭 ⇒ 既有行为不变。
-- 判据：test_dynamic_opt 129→132（X1 默认关、X2 开启 reasoning 降 fast、X3 fact 不降）；
-  回归 fused_optimal 30 / fused_full_chain 24 / daosheng_unified 27 / auto_mode_local 12。
-- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 456/0；
-  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
-  发布流程门 pre/post-tag 全 PASS。本轮零 API 花费。
-- 兼容性：默认关；显式开启才降档；fact 永不因此降档。
-- 标签：V2.2.51 / engine-V2.2.51 / app-V2.0.76。
