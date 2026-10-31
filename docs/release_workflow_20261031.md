@@ -1,4 +1,4 @@
-# 发布流程 runbook（2026-10-31 · V2.2.103 现行版）
+# 发布流程 runbook（2026-10-31 · V2.2.104 现行版）
 
 > 目的：把「预同步 → 验收 → 后同步 → 门禁」固定成可复跑顺序，
 > 防 V2.2.102 那类 README/快照/证据不同步导致的验收自伤。
@@ -13,12 +13,11 @@ $env:PYTHONPATH="$PWD;$PWD\dgtf_engine;$PWD\dgtf_app"
 # 0) 收尾：保证工作区干净（失败证据不计入发布提交）
 git status --porcelain
 
-# 1) 证据链（顺序敏感：probe → V2 → selftest → sync → fast_gate → sync）
+# 1) 证据链（顺序敏感：probe → V2 → selftest → preflight → fast_gate → preflight）
 python scripts/local_model/probe_layer_goals.py
 python scripts/run_v2_tests.py --timeout 240
 python scripts/app_selftest_gate.py
-python scripts/sync_readme_numbers.py --write
-python scripts/sync_snapshot_numbers.py --write
+python scripts/release_preflight.py --check
 python fast_gate.py
 python scripts/sync_readme_numbers.py --write
 python scripts/sync_snapshot_numbers.py --write

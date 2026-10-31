@@ -1,3 +1,12 @@
+【V2.2.104（2026-10-31，PATCH · release_preflight；App 2.0.83）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.104.py（__version__=2.2.104；引擎侧零行为差）。
+- ★ 新增 scripts/release_preflight.py：一键 README/快照数字同步 → 复核 → 发布门预检 → 工作区提醒；
+  --check 只校验；退出码 0 = 通过。
+- ★ runbook 建议以 preflight 取代手动 sync 顺序；实测 --check PASS。
+- 验收：V2 73/73（1234 checks）；fast_gate 27/27；App selftest；一键验收；e2e 18/18；probe；
+  发布流程门全 PASS。零云 API。
+- 标签：V2.2.104 / engine-V2.2.104（app-V2.0.83 不变，不移动）。
+
 【V2.2.103（2026-10-31，PATCH · 快照数字同步器 + 兜底稳定性；App 2.0.83）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.103.py（__version__=2.2.103；引擎侧零行为差）。
 - ★ 新增 scripts/sync_snapshot_numbers.py（--check/--write）：快照 4 处门禁数字按证据同步，
@@ -638,13 +647,3 @@
 - 标签：V2.2.49 / engine-V2.2.49 / app-V2.0.74。
 
 【V2.2.48（2026-10-29，PATCH · 前端展示创建前预期；同发 App 2.0.73）】
-- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.48.py（__version__=2.2.48；引擎侧零行为差）；
-  App 2.0.73。
-- ★ 运行读数行（renderMeta）在「模式 · 道生」旁新增只读标签 rl-qf：预期验证率 /
-  续航（safe_runs）/ 缓存省（expected_saving_pct），数据来自 V2.2.46 quality_forecast。
-- ★ 无新按钮/新面板；无数据不显示；纯前端展示，API/引擎/任务执行不变。
-- 判据：App selftest 455→456（新增前端 quality_forecast 判据）；node --check app.js 通过；
-  回归 fused_optimal 30 / fused_full_chain 24 / daosheng_unified 27 / auto_mode_local 12。
-- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 456/0；
-  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
-  发布流程门 pre/post-tag 全 PASS。本轮零 API 花费。
