@@ -408,6 +408,21 @@ B 候选多 1 条。**不宣称质量等价**；此前单样本“B 更省”的
 preset Q 保持 serial 是合理的；真 API A/B 仍需预算。
 证据：docs/preset_q_serial_vs_b_20261031.json。
 
+
+## 7.27 方案Q serial vs B：3 题 × 2 次（V2.2.108，零 API）
+
+| 题目 | serial（calls/tokens/settle/cands） | parallel B（同） |
+|---|---|---|
+| 热岛（reasoning） | 44 / 51,809 / 1 / 1 | 55 / 66,171 / 1 / 2 |
+| GDP（fact） | 48 / 60,135 / 1 / 1 | **43 / 49,546** / 1 / 0 |
+| 水三态（fact） | **57 / 71,147 / 5** / 3 | 63 / 79,420 / **1** / 2 |
+
+结论：
+- 模式优劣**随题型变化**：热岛 serial 省；GDP B 省；水三态 serial settle 明显更大（5 vs 1）；
+- **无可泛化赢家**；B 在部分题改变可判定分母（settle 5→1），不能仅以调用数论优劣；
+- preset Q 保持 serial 是合理默认（可判定分母更稳）；真 API/更大样本仍需预算。
+证据：docs/preset_q_multi_qa_20261031.json。
+
 ## 8. 后续建议（需预算或明确方向）
 
 - 方案 A（有预算）：1 个 web on 的层1 小样本（单跑约与既有 A/B 同量级），验证能否产生 candidates>0；

@@ -1,0 +1,316 @@
+{
+ "schema": "metadgtf.preset_q_multi_qa.v1",
+ "ts": "2026-10-31 11:20",
+ "note": "方案Q（quality+opt-in）本地端点：3 题 × 2 模式 × 2 次",
+ "rows": [
+  {
+   "q": "reason_heat",
+   "mode": "serial",
+   "run": "1",
+   "rc": 0,
+   "wall": 9.0,
+   "calls": 44,
+   "tokens": 51809,
+   "settle_total": 1,
+   "candidates": 1,
+   "rounds_run": 3
+  },
+  {
+   "q": "reason_heat",
+   "mode": "b",
+   "run": "1",
+   "rc": 0,
+   "wall": 8.7,
+   "calls": 55,
+   "tokens": 66171,
+   "settle_total": 1,
+   "candidates": 2,
+   "rounds_run": 3
+  },
+  {
+   "q": "reason_heat",
+   "mode": "serial",
+   "run": "2",
+   "rc": 0,
+   "wall": 8.5,
+   "calls": 44,
+   "tokens": 51809,
+   "settle_total": 1,
+   "candidates": 1,
+   "rounds_run": 3
+  },
+  {
+   "q": "reason_heat",
+   "mode": "b",
+   "run": "2",
+   "rc": 0,
+   "wall": 8.5,
+   "calls": 55,
+   "tokens": 66171,
+   "settle_total": 1,
+   "candidates": 2,
+   "rounds_run": 3
+  },
+  {
+   "q": "fact_gdp",
+   "mode": "serial",
+   "run": "1",
+   "rc": 0,
+   "wall": 125.0,
+   "calls": 48,
+   "tokens": 60135,
+   "settle_total": 1,
+   "candidates": 1,
+   "rounds_run": 3
+  },
+  {
+   "q": "fact_gdp",
+   "mode": "b",
+   "run": "1",
+   "rc": 0,
+   "wall": 64.1,
+   "calls": 43,
+   "tokens": 49546,
+   "settle_total": 1,
+   "candidates": 0,
+   "rounds_run": 3
+  },
+  {
+   "q": "fact_gdp",
+   "mode": "serial",
+   "run": "2",
+   "rc": 0,
+   "wall": 10.1,
+   "calls": 48,
+   "tokens": 60135,
+   "settle_total": 1,
+   "candidates": 1,
+   "rounds_run": 3
+  },
+  {
+   "q": "fact_gdp",
+   "mode": "b",
+   "run": "2",
+   "rc": 0,
+   "wall": 8.5,
+   "calls": 43,
+   "tokens": 49546,
+   "settle_total": 1,
+   "candidates": 0,
+   "rounds_run": 3
+  },
+  {
+   "q": "fact_water",
+   "mode": "serial",
+   "run": "1",
+   "rc": 0,
+   "wall": 148.9,
+   "calls": 57,
+   "tokens": 71147,
+   "settle_total": 5,
+   "candidates": 3,
+   "rounds_run": 3
+  },
+  {
+   "q": "fact_water",
+   "mode": "b",
+   "run": "1",
+   "rc": 0,
+   "wall": 151.9,
+   "calls": 63,
+   "tokens": 79420,
+   "settle_total": 1,
+   "candidates": 2,
+   "rounds_run": 3
+  },
+  {
+   "q": "fact_water",
+   "mode": "serial",
+   "run": "2",
+   "rc": 0,
+   "wall": 14.2,
+   "calls": 57,
+   "tokens": 71147,
+   "settle_total": 5,
+   "candidates": 3,
+   "rounds_run": 3
+  },
+  {
+   "q": "fact_water",
+   "mode": "b",
+   "run": "2",
+   "rc": 0,
+   "wall": 12.0,
+   "calls": 63,
+   "tokens": 79420,
+   "settle_total": 1,
+   "candidates": 2,
+   "rounds_run": 3
+  }
+ ],
+ "aggregate": {
+  "fact_gdp": {
+   "serial": {
+    "calls": [
+     48,
+     48
+    ],
+    "tokens": [
+     60135,
+     60135
+    ],
+    "settle": [
+     1,
+     1
+    ],
+    "cands": [
+     1,
+     1
+    ],
+    "rounds": [
+     3,
+     3
+    ],
+    "wall": [
+     125.0,
+     10.1
+    ]
+   },
+   "parallel_b": {
+    "calls": [
+     43,
+     43
+    ],
+    "tokens": [
+     49546,
+     49546
+    ],
+    "settle": [
+     1,
+     1
+    ],
+    "cands": [
+     0,
+     0
+    ],
+    "rounds": [
+     3,
+     3
+    ],
+    "wall": [
+     64.1,
+     8.5
+    ]
+   }
+  },
+  "fact_water": {
+   "serial": {
+    "calls": [
+     57,
+     57
+    ],
+    "tokens": [
+     71147,
+     71147
+    ],
+    "settle": [
+     5,
+     5
+    ],
+    "cands": [
+     3,
+     3
+    ],
+    "rounds": [
+     3,
+     3
+    ],
+    "wall": [
+     148.9,
+     14.2
+    ]
+   },
+   "parallel_b": {
+    "calls": [
+     63,
+     63
+    ],
+    "tokens": [
+     79420,
+     79420
+    ],
+    "settle": [
+     1,
+     1
+    ],
+    "cands": [
+     2,
+     2
+    ],
+    "rounds": [
+     3,
+     3
+    ],
+    "wall": [
+     151.9,
+     12.0
+    ]
+   }
+  },
+  "reason_heat": {
+   "serial": {
+    "calls": [
+     44,
+     44
+    ],
+    "tokens": [
+     51809,
+     51809
+    ],
+    "settle": [
+     1,
+     1
+    ],
+    "cands": [
+     1,
+     1
+    ],
+    "rounds": [
+     3,
+     3
+    ],
+    "wall": [
+     9.0,
+     8.5
+    ]
+   },
+   "parallel_b": {
+    "calls": [
+     55,
+     55
+    ],
+    "tokens": [
+     66171,
+     66171
+    ],
+    "settle": [
+     1,
+     1
+    ],
+    "cands": [
+     2,
+     2
+    ],
+    "rounds": [
+     3,
+     3
+    ],
+    "wall": [
+     8.7,
+     8.5
+    ]
+   }
+  }
+ },
+ "conclusion": "3 题 × 2 模式 × 2 次（同状态内逐项一致）：reason_heat serial 44/51.8k vs B 55/66.2k（serial 省）；fact_gdp serial 48/60.1k vs B 43/49.5k（B 省）；fact_water serial 57/71.1k/settle=5 vs B 63/79.4k/settle=1。结论：模式优劣随题型变化，无可泛化赢家；serial 在多题上 settle 更大（可判定分母更多），B 在 fact 题省调用但可能改变分母。不宣称质量等价；真 API/更大样本仍需预算。"
+}
