@@ -139,6 +139,18 @@ def main() -> int:
         rows.append(("overview_current_version", eng_ver, eng_ver in ovt))
         if appver:
             rows.append(("overview_app_version", appver, ("App " + appver) in ovt))
+        # App README / 结构文档同样面向当前版本（防 V2.2.3 那类过期入口）
+        ar = ROOT / "dgtf_app" / "README.md"
+        art = ar.read_text(encoding="utf-8", errors="replace") if ar.is_file() else ""
+        rows.append(("app_readme_engine_version", eng_ver, eng_ver in art))
+        rows.append(("app_readme_release_notes",
+                     "docs/releases/%s.md" % eng_ver,
+                     ("docs/releases/%s.md" % eng_ver) in art))
+        for fn, label in (("PROJECT_MAP.md", "project_map_engine_version"),
+                          ("PROJECT_LAYOUT.md", "project_layout_engine_version")):
+            fp = ROOT / fn
+            ft = fp.read_text(encoding="utf-8", errors="replace") if fp.is_file() else ""
+            rows.append((label, eng_ver, eng_ver in ft))
 
     # 权威指针：docs/README 不得把历史文件当「为准」来源，且要引用当前快照
     dr = ROOT / "docs" / "README.md"

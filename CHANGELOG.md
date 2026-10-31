@@ -1,3 +1,11 @@
+【V2.2.116（2026-10-31，PATCH · 快照审计 19→23；App 2.0.85）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.116.py（__version__=2.2.116；引擎侧零行为差）。
+- ★ snapshot_numbers 新增 4 项：app_readme_engine_version、app_readme_release_notes、
+  project_map_engine_version、project_layout_engine_version；审计 23/23 PASS。
+- 验收：V2 73/73（1234 checks）；fast_gate 28/28；App selftest；一键验收；e2e 18/18；probe；
+  发布流程门全 PASS。零云 API。
+- 标签：V2.2.116 / engine-V2.2.116（app-V2.0.85 不变，不移动）。
+
 【V2.2.115（2026-10-31，PATCH · 快照审计 14→19；App 2.0.85）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.115.py（__version__=2.2.115；引擎侧零行为差）。
 - ★ snapshot_numbers 新增 5 项：readme_release_notes_latest、matrix_current_version、
@@ -632,11 +640,3 @@
 - 验证：list_chats(80) 有 3 条归档匹配到实测（unverified/verified/needs_evidence）；
   App selftest 457/0；node --check app.js 通过。
 - 验收：fast_gate 17/17；V2 71/71（1208 checks）；一键验收 --with-service PASS 30 / SKIP 0 /
-  FAIL 0；e2e 18/18；四层 probe 82/82；发布流程门 pre/post-tag 全 PASS。零 API 花费。
-- 兼容性：仅只读字段/标签；任务执行不变；无 packed 时 quality_actual 为空。
-- 标签：V2.2.56 / engine-V2.2.56 / app-V2.0.79。
-
-【V2.2.55（2026-10-30，PATCH · fast_gate 接入 README 数字校验；App 2.0.78 不变）】
-- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.55.py（__version__=2.2.55；引擎侧零行为差）；
-  App 2.0.78 不变。
-- ★ fast_gate 新增 readme_numbers 检查（执行 sync_readme_numbers.py --check）：
