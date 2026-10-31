@@ -1,0 +1,133 @@
+{
+ "schema": "metadgtf.preset_q_serial_vs_b.v1",
+ "ts": "2026-10-31 10:55",
+ "question": "为什么城市热岛效应在夜间比白天更明显？",
+ "note": "方案Q（quality+opt-in）本地端点：serial vs parallel B 各 3 次",
+ "rows": [
+  {
+   "label": "serial1",
+   "rc": 0,
+   "wall": 87.9,
+   "calls": 44,
+   "tokens": 51809,
+   "settle_total": 1,
+   "candidates": 1,
+   "rounds_run": 3
+  },
+  {
+   "label": "b1",
+   "rc": 0,
+   "wall": 155.4,
+   "calls": 55,
+   "tokens": 66171,
+   "settle_total": 1,
+   "candidates": 2,
+   "rounds_run": 3
+  },
+  {
+   "label": "serial2",
+   "rc": 0,
+   "wall": 10.0,
+   "calls": 44,
+   "tokens": 51809,
+   "settle_total": 1,
+   "candidates": 1,
+   "rounds_run": 3
+  },
+  {
+   "label": "b2",
+   "rc": 0,
+   "wall": 9.6,
+   "calls": 55,
+   "tokens": 66171,
+   "settle_total": 1,
+   "candidates": 2,
+   "rounds_run": 3
+  },
+  {
+   "label": "serial3",
+   "rc": 0,
+   "wall": 9.1,
+   "calls": 44,
+   "tokens": 51809,
+   "settle_total": 1,
+   "candidates": 1,
+   "rounds_run": 3
+  },
+  {
+   "label": "b3",
+   "rc": 0,
+   "wall": 9.2,
+   "calls": 55,
+   "tokens": 66171,
+   "settle_total": 1,
+   "candidates": 2,
+   "rounds_run": 3
+  }
+ ],
+ "serial": {
+  "wall": [
+   87.9,
+   10.0,
+   9.1
+  ],
+  "calls": [
+   44,
+   44,
+   44
+  ],
+  "tokens": [
+   51809,
+   51809,
+   51809
+  ],
+  "settle_total": [
+   1,
+   1,
+   1
+  ],
+  "candidates": [
+   1,
+   1,
+   1
+  ],
+  "rounds_run": [
+   3,
+   3,
+   3
+  ]
+ },
+ "parallel_b": {
+  "wall": [
+   155.4,
+   9.6,
+   9.2
+  ],
+  "calls": [
+   55,
+   55,
+   55
+  ],
+  "tokens": [
+   66171,
+   66171,
+   66171
+  ],
+  "settle_total": [
+   1,
+   1,
+   1
+  ],
+  "candidates": [
+   2,
+   2,
+   2
+  ],
+  "rounds_run": [
+   3,
+   3,
+   3
+  ]
+ },
+ "conclusion": "同一状态下各 3 次：serial 44 calls/51,809 tokens/cands=1；B 55 calls/66,171 tokens/cands=2；settle 均 1、rounds 均 3；冷跑墙钟 serial 87.9s vs B 155.4s，热缓存后均 ~9-10s。结论：该题上 serial 成本更低（B +25% calls/+27.7% tokens），但 B 候选多 1 条；不宣称质量等价。"
+}
