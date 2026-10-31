@@ -1,3 +1,11 @@
+【V2.2.111（2026-10-31，PATCH · App 2.0.84 启动文案修正；引擎零行为差）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.111.py（__version__=2.2.111）。
+- App 2.0.84：V2 自动策略启动日志区分「冻结（层质量校准未通过）/ 无样本 / 已选择」，
+  不再把安全冻结误报为「无样本，跳过」；决策逻辑不变。
+- 验收：app_version_check PASS；App selftest 459/0；V2 73/73（1234 checks）；fast_gate 28/28；
+  一键验收；e2e 18/18；probe；发布流程门全 PASS。零云 API。
+- 标签：V2.2.111 / engine-V2.2.111 / app-V2.0.84。
+
 【V2.2.110（2026-10-31，PATCH · 验收 pre-sync + selftest 重试；App 2.0.83）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.110.py（__version__=2.2.110；引擎侧零行为差）。
 - ★ final_acceptance 首步前自动 PRE-SYNC（README/快照数字），失败只告警；--list-steps 不触发。
@@ -634,14 +642,3 @@
   test_dynamic_opt 132 不变；回归 fused_optimal 30 / daosheng_unified 27 / auto_mode_local 12。
 - 验收：fast_gate 16/16；V2 71/71（1208 checks）；一键验收 --with-service PASS 30 / SKIP 0 /
   FAIL 0；e2e 18/18；四层 probe 81/81；发布流程门 pre/post-tag 全 PASS。零 API 花费。
-- 兼容性：仅新增查询字段；任务执行不变。
-- 标签：V2.2.53 / engine-V2.2.53 / app-V2.0.78。
-
-【V2.2.52（2026-10-30，PATCH · rl-qf 修复 + tier_advice 提示；同发 App 2.0.77）】
-- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.52.py（__version__=2.2.52；引擎侧零行为差）；
-  App 2.0.77。
-- ★ 修复 V2.2.48 rl-qf 标签 bug：模板字符串拼接把 单引号+esc(_qtext)+单引号 当字面量写进
-  data-qf/title 属性；改为纯字符串拼接并正确转义。
-- ★ quality_forecast.tier_advice=fast 时追加「建议 fast」；App selftest 前端判据要求
-  tier_advice 渲染（456/0）。
-- 判据：App selftest 456/0；node --check app.js 通过；回归 fused_optimal 30 /
