@@ -1,7 +1,7 @@
 {
  "schema": "dgtf.release_process.v1",
- "ts": 1793430893.301263,
- "iso": "2026-10-31T15:14:53",
+ "ts": 1793433067.5599532,
+ "iso": "2026-10-31T15:51:07",
  "engine": "dgtf_engine\\dgtf_v2\\engine\\Meta-DGTF-V2.2.116.py",
  "engine_version": "2.2.116",
  "app_version": "2.0.85",
@@ -89,7 +89,7 @@
   {
    "name": "fast_gate 证据新鲜且全绿",
    "status": "PASS",
-   "detail": "2026-10-31T15:03:54"
+   "detail": "2026-10-31T15:15:31"
   },
   {
    "name": "v2_tests 证据新鲜且全绿",
@@ -144,7 +144,7 @@
   {
    "name": "git 标签可读",
    "status": "PASS",
-   "detail": "272 个标签"
+   "detail": "274 个标签"
   },
   {
    "name": "V2.2.116",

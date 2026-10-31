@@ -439,6 +439,22 @@ V2.2.98 44–59、V2.2.108 36–50），部分版本因缓存完全一致。call
 readings（status/main）才是质量/一致性判据。
 证据：docs/probe_calls_by_version_20261031.json。
 
+
+## 7.30 确定性解码对照（temperature=0，V2.2.116，零 API）
+
+`--temperature 0.0 --fresh-playbook` 连跑两次（各约 1000s）：
+
+| run | case0 | 0.calls | 1.calls | both.calls | all.calls |
+|---|---|---|---|---|---|
+| 1 | not_achieved 0.5 | 18 | 48 | 66 | 95 |
+| 2 | **achieved 0.0** | 16 | 45 | 74 | 108 |
+
+结论：
+- **确定性解码并未消除方差**：case0 读数仍从 0.5 变 0.0，calls 各层仍波动；
+- ⇒ case0 方差主因不是采样温度，而是链路/状态/结构生成的非确定性；
+- 「可复现」只能靠**多次重复 + readings 判据**，不能靠单一确定性开关。
+证据：docs/probe_temp0_determinism_20261031.json。
+
 ## 8. 后续建议（需预算或明确方向）
 
 - 方案 A（有预算）：1 个 web on 的层1 小样本（单跑约与既有 A/B 同量级），验证能否产生 candidates>0；
