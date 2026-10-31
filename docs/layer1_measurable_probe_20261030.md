@@ -423,6 +423,14 @@ preset Q 保持 serial 是合理的；真 API A/B 仍需预算。
 - preset Q 保持 serial 是合理默认（可判定分母更稳）；真 API/更大样本仍需预算。
 证据：docs/preset_q_multi_qa_20261031.json。
 
+
+## 7.28 调用数方差边界（V2.2.108，零 API）
+
+对 29 份 probe 证据统计 llm_calls：层1 30–77（均值 45.7，极差/均值 102.8%）、
+both 54–98、all 93–121、层0 15–24。**调用数是成本量、不是质量量**；
+一致性判据以 readings 为准（calls 差异在 V2.2.108 起降级 WARN）。
+证据：docs/probe_cost_variance_20261031.json。
+
 ## 8. 后续建议（需预算或明确方向）
 
 - 方案 A（有预算）：1 个 web on 的层1 小样本（单跑约与既有 A/B 同量级），验证能否产生 candidates>0；
