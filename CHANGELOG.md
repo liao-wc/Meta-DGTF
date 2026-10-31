@@ -1,3 +1,14 @@
+【V2.2.117（2026-10-31，PATCH · 层间串行实验开关；App 2.0.85）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.117.py（__version__=2.2.117）。
+- ★ 新增 spiral.layer_serial（默认 false）：true 时 A 模式顺序执行各层（实验/排障用，会更慢）；
+  默认路径零行为差。
+- ★ 实验：route 0,1/rounds1/temp0/串行 两跑 40 vs 44 calls、50,535 vs 50,481 tokens；
+  差异与「1 条失败记录 + 三态多票无有效票」同现 ⇒ 方差主因是本地链偶发失败触发的分支。
+  证据：docs/layer_serial_determinism_20261031.json。
+- 验收：V2 73/73（1234 checks）；fast_gate 28/28；App selftest；一键验收；e2e 18/18；probe；
+  发布流程门全 PASS。零云 API。
+- 标签：V2.2.117 / engine-V2.2.117（app-V2.0.85 不变，不移动）。
+
 【V2.2.116（2026-10-31，PATCH · 快照审计 19→23；App 2.0.85）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.116.py（__version__=2.2.116；引擎侧零行为差）。
 - ★ snapshot_numbers 新增 4 项：app_readme_engine_version、app_readme_release_notes、
@@ -633,10 +644,3 @@
 【V2.2.56（2026-10-30，PATCH · 历史卡片预期 vs 实测；同发 App 2.0.79）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.56.py（__version__=2.2.56；引擎侧零行为差）；
   App 2.0.79。
-- ★ dashboard.list_chats 每条会话附 quality_expected（run.json plan.quality_retry
-  expected_verified_pct）与 quality_actual（packed 的 answer_quality/answer_ready/verified）；
-  archive 无 output_name 时按问题匹配 packed，并加 120s 时间窗防同名题串档。
-- ★ 前端历史卡片追加「预期 x% · 实测 y」只读标签。
-- 验证：list_chats(80) 有 3 条归档匹配到实测（unverified/verified/needs_evidence）；
-  App selftest 457/0；node --check app.js 通过。
-- 验收：fast_gate 17/17；V2 71/71（1208 checks）；一键验收 --with-service PASS 30 / SKIP 0 /

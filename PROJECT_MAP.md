@@ -4,11 +4,11 @@
 
 | 类别 | 物理位置 | 说明 |
 |---|---|---|
-| V2 生产入口 | dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.116.py | 单文件生产引擎（V2.2.14 及更早只读保留），App 自动选用最高版本 |
+| V2 生产入口 | dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.117.py | 单文件生产引擎（V2.2.14 及更早只读保留），App 自动选用最高版本 |
 | 引擎总目录 | dgtf_engine/ | 统一存放 dgtf_v1/ 与 dgtf_v2/ |
 | V2 核心 | dgtf_engine/dgtf_v2/ | EML / Scheduler / 四层契约 / 证据与决策 |
-| V2 发布说明 | V2.2.116-发布报告.md、V2.2.116-收束报告.md、docs/releases/V2.2.116.md（历史 V2.2.115 保留） | 发布、验证、边界 |
-| 融合实现 | Meta-DGTF-V2.2.116.py 内联（history + behavior + self_check/dual_judge） | 单引擎文件：历史谱系、5 个 arm、auto 调度融合、outcome UCB |
+| V2 发布说明 | V2.2.117-发布报告.md、V2.2.117-收束报告.md、docs/releases/V2.2.117.md（历史 V2.2.116 保留） | 发布、验证、边界 |
+| 融合实现 | Meta-DGTF-V2.2.117.py 内联（history + behavior + self_check/dual_judge） | 单引擎文件：历史谱系、5 个 arm、auto 调度融合、outcome UCB |
 | 历史清单 | dgtf_engine/dgtf_v2/history_manifest.json | 178 个历史快照数据；仅文档/审计参考 |
 | 历史文档 | docs/history/ | 来源、定义、版本演化、能力矩阵 |
 | V2 门户 | docs/index.html | GitHub Pages 静态入口 |

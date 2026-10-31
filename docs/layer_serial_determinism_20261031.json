@@ -1,0 +1,24 @@
+{
+ "schema": "metadgtf.layer_serial_determinism.v1",
+ "ts": "2026-10-31 16:05",
+ "engine": "V2.2.117",
+ "setup": "route 0,1; rounds 1; api.temperature=0.0; spiral.layer_serial=true",
+ "runs": [
+  {
+   "run": 1,
+   "calls": 40,
+   "tokens": 50535,
+   "failed_records": 1,
+   "tristate_votes": "无有效票（全失败或弃票）→ 保留原标签"
+  },
+  {
+   "run": 2,
+   "calls": 44,
+   "tokens": 50481,
+   "failed_records": 0,
+   "tristate_votes": "未出现警告"
+  }
+ ],
+ "consistent": false,
+ "conclusion": "即使层间串行+贪心解码，两跑仍不同（40/44 calls）；差异与「偶发失败记录 + 三态多票无有效票」同现 ⇒ 方差主因是本地链偶发失败触发的分支，不是层并发本身。"
+}
