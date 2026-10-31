@@ -36,3 +36,4 @@
 - App 代码改动 → `python scripts/app_release.py --version <x> --cache-tag <tag>` + `app_version_check.py`；
 - 引擎/判据改动 → `fast_gate.py` + `scripts/run_v2_tests.py` + `final_acceptance.py`；
 - 新增文档须在本索引登记；每次收束/版本变更同步更新 `docs/项目状态快照_*.md` 与本文索引。
+| `docs/动态配置总览_20261031.md` | 动态配置/依赖一页总览（层级、profile、预算、门禁） |
