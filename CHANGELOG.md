@@ -1,3 +1,13 @@
+【V2.2.103（2026-10-31，PATCH · 快照数字同步器 + 兜底稳定性；App 2.0.83）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.103.py（__version__=2.2.103；引擎侧零行为差）。
+- ★ 新增 scripts/sync_snapshot_numbers.py（--check/--write）：快照 4 处门禁数字按证据同步，
+  发布前预同步，避免 V2.2.102 那类 README/快照/证据不同步导致 acceptance 首步失败。
+- ★ V2.2.102 统一兜底稳定性：全量 probe 连续两次逐项一致（82/82；case1 30 calls valued 0.0，
+  both 76 valued 0.0，all 121/0.5）⇒ 整跑 case1 不再 unmeasured。
+- 验收：V2 73/73（1234 checks）；fast_gate 27/27；App selftest；一键验收；e2e 18/18；probe；
+  发布流程门全 PASS。零云 API。
+- 标签：V2.2.103 / engine-V2.2.103（app-V2.0.83 不变，不移动）。
+
 【V2.2.102（2026-10-31，PATCH · 研究层拆解统一兜底；App 2.0.83）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.102.py（__version__=2.2.102）。
 - ★ V2.2.101 发现 case1 unmeasured：外部拆解路径（zero_view 为空）无兜底；
@@ -638,14 +648,3 @@
 - 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 456/0；
   一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
   发布流程门 pre/post-tag 全 PASS。本轮零 API 花费。
-- 兼容性：纯前端；旧响应无字段自动不显示。
-- 标签：V2.2.48 / engine-V2.2.48 / app-V2.0.73。
-
-【V2.2.47（2026-10-29，PATCH · project 质量证据 + 预判结果持久化；同发 App 2.0.72）】
-- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.47.py（__version__=2.2.47；引擎侧零行为差）；
-  App 2.0.72。
-- ★ project 加圈+上下文 A/B（真 API 约 ¥0.25）：full、rounds=2/层、web off——ctx on
-  61,457 tokens / ctx off 62,566 tokens，两臂均 unverified；project 累计 0/4。
-  _QUALITY_EXPECTATION.project → 0/4，证据含 project_context_rounds2_ab JSON。
-- ★ 语义预判结果跨进程落盘 dgtf_memory/semantic_probe_index.json（120s/300 条）：
-  重启后 0 次 embedding 复用（与候选索引持久化配套）。

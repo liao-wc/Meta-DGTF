@@ -377,6 +377,22 @@ App 调度配置列表 `_schedule_profiles()` 实测返回 24 项，含 **方案
 原则：**"可判定"只说明判据可执行；"achieved"只说明原语阈值命中**。质量结论必须另看
 verified/ready 与人工审阅，二者不可互换。
 
+
+## 7.25 统一兜底后的全量稳定性（V2.2.102/103，零 API）
+
+V2.2.102 统一兜底上线后，全量 probe **连续两次逐项完全一致**（各 82/82）：
+
+| case | calls | 状态 | main |
+|---|---|---|---|
+| 0 | 18 | not_achieved | 1.0 |
+| 1 | 30 | **not_judgeable（valued）** | **0.0** |
+| both | 76 | not_judgeable（valued） | 0.0 |
+| all | 121 | not_achieved | 0.5 |
+
+结论：**整跑 case1 不再 unmeasured**（统一兜底覆盖外部拆解/全空来源路径）；
+层0 单次方差仍在（本次 1.0 未达成），属已知边界。
+证据：docs/layer1_unified_fallback_stable_20261031.json。
+
 ## 8. 后续建议（需预算或明确方向）
 
 - 方案 A（有预算）：1 个 web on 的层1 小样本（单跑约与既有 A/B 同量级），验证能否产生 candidates>0；

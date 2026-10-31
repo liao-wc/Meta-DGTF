@@ -1,0 +1,65 @@
+{
+ "schema": "metadgtf.layer1_unified_fallback_stable.v1",
+ "ts": "2026-10-31 08:20",
+ "note": "V2.2.102 统一兜底后全量 probe 连续两次逐项一致（case1 稳定 valued，不再 unmeasured）",
+ "run_a": {
+  "pass": 82,
+  "fail": 0,
+  "rows": [
+   {
+    "case": "0",
+    "calls": 18,
+    "status": "not_achieved",
+    "main": 1.0
+   },
+   {
+    "case": "1",
+    "calls": 30,
+    "status": "not_judgeable",
+    "main": 0.0
+   },
+   {
+    "case": "both",
+    "calls": 76,
+    "status": "not_judgeable",
+    "main": 0.0
+   },
+   {
+    "case": "all",
+    "calls": 121,
+    "status": "not_achieved",
+    "main": 0.5
+   }
+  ]
+ },
+ "run_b": {
+  "pass": 82,
+  "fail": 0,
+  "rows": [
+   {
+    "case": "0",
+    "calls": 18,
+    "status": "not_achieved",
+    "main": 1.0
+   },
+   {
+    "case": "1",
+    "calls": 30,
+    "status": "not_judgeable",
+    "main": 0.0
+   },
+   {
+    "case": "both",
+    "calls": 76,
+    "status": "not_judgeable",
+    "main": 0.0
+   },
+   {
+    "case": "all",
+    "calls": 121,
+    "status": "not_achieved",
+    "main": 0.5
+   }
+  ]
+ }
+}
