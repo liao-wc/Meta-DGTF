@@ -1,474 +1,18 @@
 {
- "packs_with_quality": 302,
- "flagged": 92,
- "flag_ratio": 0.3046,
- "flagged_with_covers": 92,
+ "packs_with_quality": 186,
+ "flagged": 60,
+ "flag_ratio": 0.3226,
+ "flagged_with_covers": 60,
  "flagged_with_bad_ref": 0,
- "near_miss_no_bad_ref": 92,
- "fn_candidates_wide": 90,
- "fn_ratio_of_near": 0.9783,
+ "near_miss_no_bad_ref": 60,
+ "fn_candidates_wide": 58,
+ "fn_ratio_of_near": 0.9667,
  "by_aq": {
-  "None": 31,
-  "verified": 41,
-  "unverified": 9,
-  "needs_evidence": 11
+  "verified": 43,
+  "needs_evidence": 11,
+  "unverified": 6
  },
  "samples_fn": [
-  {
-   "file": "20261019_050622_一个远程办公团队如何在三个月内建立可验证.packed.json",
-   "question": "一个远程办公团队如何在三个月内建立可验证的信任机制？",
-   "probes": 2,
-   "untouched": 15,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.073,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  },
-  {
-   "file": "20261019_071413_一个开源项目如何在不增加维护者负担的情况.packed.json",
-   "question": "一个开源项目如何在不增加维护者负担的情况下扩大贡献者？",
-   "probes": 2,
-   "untouched": 9,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.071,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  },
-  {
-   "file": "20261019_080835_一个远程办公团队如何在三个月内建立可验证.packed.json",
-   "question": "一个远程办公团队如何在三个月内建立可验证的信任机制？",
-   "probes": 3,
-   "untouched": 12,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.154,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  },
-  {
-   "file": "20261019_085804_一个远程办公团队如何在三个月内建立可验证.packed.json",
-   "question": "一个远程办公团队如何在三个月内建立可验证的信任机制？",
-   "probes": 2,
-   "untouched": 14,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.145,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  },
-  {
-   "file": "20261019_101117_AI能否独立完成数字IC设计边界.packed.json",
-   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
-   "probes": 2,
-   "untouched": 13,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.115,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  }
- ],
- "samples_flagged": [
-  {
-   "file": "20261019_050622_一个远程办公团队如何在三个月内建立可验证.packed.json",
-   "question": "一个远程办公团队如何在三个月内建立可验证的信任机制？",
-   "probes": 2,
-   "untouched": 15,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.073,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  },
-  {
-   "file": "20261019_071413_一个开源项目如何在不增加维护者负担的情况.packed.json",
-   "question": "一个开源项目如何在不增加维护者负担的情况下扩大贡献者？",
-   "probes": 2,
-   "untouched": 9,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.071,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  },
-  {
-   "file": "20261019_080835_一个远程办公团队如何在三个月内建立可验证.packed.json",
-   "question": "一个远程办公团队如何在三个月内建立可验证的信任机制？",
-   "probes": 3,
-   "untouched": 12,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.154,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  },
-  {
-   "file": "20261019_085804_一个远程办公团队如何在三个月内建立可验证.packed.json",
-   "question": "一个远程办公团队如何在三个月内建立可验证的信任机制？",
-   "probes": 2,
-   "untouched": 14,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.145,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  },
-  {
-   "file": "20261019_101117_AI能否独立完成数字IC设计边界.packed.json",
-   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
-   "probes": 2,
-   "untouched": 13,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.115,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  }
- ],
- "rows": [
-  {
-   "file": "20261019_050622_一个远程办公团队如何在三个月内建立可验证.packed.json",
-   "question": "一个远程办公团队如何在三个月内建立可验证的信任机制？",
-   "probes": 2,
-   "untouched": 15,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.073,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  },
-  {
-   "file": "20261019_071413_一个开源项目如何在不增加维护者负担的情况.packed.json",
-   "question": "一个开源项目如何在不增加维护者负担的情况下扩大贡献者？",
-   "probes": 2,
-   "untouched": 9,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.071,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  },
-  {
-   "file": "20261019_080835_一个远程办公团队如何在三个月内建立可验证.packed.json",
-   "question": "一个远程办公团队如何在三个月内建立可验证的信任机制？",
-   "probes": 3,
-   "untouched": 12,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.154,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  },
-  {
-   "file": "20261019_085804_一个远程办公团队如何在三个月内建立可验证.packed.json",
-   "question": "一个远程办公团队如何在三个月内建立可验证的信任机制？",
-   "probes": 2,
-   "untouched": 14,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.145,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  },
-  {
-   "file": "20261019_101117_AI能否独立完成数字IC设计边界.packed.json",
-   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
-   "probes": 2,
-   "untouched": 13,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.115,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  },
-  {
-   "file": "20261019_132943_AI能否独立完成数字IC设计边界.packed.json",
-   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
-   "probes": 2,
-   "untouched": 13,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.162,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  },
-  {
-   "file": "20261019_140654_AI能否独立完成数字IC设计边界.packed.json",
-   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
-   "probes": 2,
-   "untouched": 8,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.043,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  },
-  {
-   "file": "20261019_161136_AI能否独立完成数字IC设计边界.packed.json",
-   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
-   "probes": 3,
-   "untouched": 6,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.188,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  },
-  {
-   "file": "20261019_164458_订单系统该选一致性还是可用性CAP怎.packed.json",
-   "question": "订单系统该选一致性还是可用性，CAP 怎么取舍",
-   "probes": 3,
-   "untouched": 17,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.071,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  },
-  {
-   "file": "20261019_164640_早高峰地铁站台拥挤越来越严重运营效率该.packed.json",
-   "question": "早高峰地铁站台拥挤越来越严重，运营效率该怎么提升",
-   "probes": 2,
-   "untouched": 11,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.11,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  },
-  {
-   "file": "20261019_172638_AI能否独立完成数字IC设计边界.packed.json",
-   "question": "AI 能否独立完成数字 IC 设计？边界在哪？",
-   "probes": 2,
-   "untouched": 6,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.054,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  },
-  {
-   "file": "20261019_181557_一家现金流紧张的中小制造企业该先裁员还.packed.json",
-   "question": "一家现金流紧张的中小制造企业，该先裁员还是先砍产线",
-   "probes": 2,
-   "untouched": 11,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.188,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  },
-  {
-   "file": "20261020_015222_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "probes": 2,
-   "untouched": 6,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.136,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  },
-  {
-   "file": "20261020_015933_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "probes": 3,
-   "untouched": 9,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.16,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  },
-  {
-   "file": "20261020_055412_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "probes": 2,
-   "untouched": 5,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.102,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  },
-  {
-   "file": "20261020_073134_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "probes": 2,
-   "untouched": 7,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.091,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  },
-  {
-   "file": "20261020_073959_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "probes": 3,
-   "untouched": 8,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.107,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  },
-  {
-   "file": "20261020_083208_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "probes": 3,
-   "untouched": 10,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.181,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  },
-  {
-   "file": "20261020_094536_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "probes": 3,
-   "untouched": 13,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.123,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  },
-  {
-   "file": "20261020_100816_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "probes": 2,
-   "untouched": 13,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.085,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  },
-  {
-   "file": "20261020_102957_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "probes": 3,
-   "untouched": 9,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.085,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  },
-  {
-   "file": "20261020_105722_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "probes": 3,
-   "untouched": 4,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.109,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  },
-  {
-   "file": "20261020_111220_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "probes": 2,
-   "untouched": 10,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.048,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  },
-  {
-   "file": "20261020_113141_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "probes": 1,
-   "untouched": 12,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.126,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  },
-  {
-   "file": "20261020_121030_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "probes": 3,
-   "untouched": 4,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.14,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  },
-  {
-   "file": "20261020_122958_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "probes": 1,
-   "untouched": 12,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.253,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  },
-  {
-   "file": "20261020_132800_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "probes": 2,
-   "untouched": 3,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.066,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  },
-  {
-   "file": "20261020_150402_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "probes": 1,
-   "untouched": 3,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.017,
-   "any_target_3gram_in_probe": false,
-   "aq": null
-  },
-  {
-   "file": "20261020_152037_DeepSeek-V41-Flash-.packed.json",
-   "question": "DeepSeek-V4.1-Flash-1017 是什么时候发布的",
-   "probes": 2,
-   "untouched": 8,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.075,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  },
-  {
-   "file": "20261021_125449_EML事件记忆如何提升元DGTF多模调.packed.json",
-   "question": "EML 事件记忆如何提升元DGTF多模调度的细度、准确性和动态调节精度？请给出可",
-   "probes": 3,
-   "untouched": 9,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.094,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  },
-  {
-   "file": "20261021_151144_本地LLM微调与EML事件记忆如何协同改.packed.json",
-   "question": "本地LLM微调与EML事件记忆如何协同改进元DGTF的四层调度、自我修复与知识更",
-   "probes": 1,
-   "untouched": 13,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.056,
-   "any_target_3gram_in_probe": true,
-   "aq": null
-  },
   {
    "file": "20261022_185552_DeepSeekAPI的base.packed.json",
    "question": "DeepSeek API 的 base URL 是什么？",
@@ -481,15 +25,118 @@
    "aq": "verified"
   },
   {
-   "file": "20261023_230954_Python中len函数的作用是什.packed.json",
+   "file": "20261024_082341_Python中len函数的作用是什.packed.json",
    "question": "Python 中 len 函数的作用是什么？",
    "probes": 2,
    "untouched": 11,
    "covers_seen": true,
    "bad_ref": 0,
-   "best_bigram_jaccard": 0.15,
+   "best_bigram_jaccard": 0.178,
    "any_target_3gram_in_probe": true,
-   "aq": "unverified"
+   "aq": "verified"
+  },
+  {
+   "file": "20261024_083648_Python中len函数的作用是什.packed.json",
+   "question": "Python 中 len 函数的作用是什么？",
+   "probes": 3,
+   "untouched": 10,
+   "covers_seen": true,
+   "bad_ref": 0,
+   "best_bigram_jaccard": 0.119,
+   "any_target_3gram_in_probe": true,
+   "aq": "verified"
+  },
+  {
+   "file": "20261024_113505_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "probes": 2,
+   "untouched": 10,
+   "covers_seen": true,
+   "bad_ref": 0,
+   "best_bigram_jaccard": 0.147,
+   "any_target_3gram_in_probe": true,
+   "aq": "needs_evidence"
+  },
+  {
+   "file": "20261024_163141_DeepSeekV41Flash.packed.json",
+   "question": "DeepSeek V4.1 Flash 是哪一天发布的？",
+   "probes": 2,
+   "untouched": 6,
+   "covers_seen": true,
+   "bad_ref": 0,
+   "best_bigram_jaccard": 0.079,
+   "any_target_3gram_in_probe": true,
+   "aq": "verified"
+  }
+ ],
+ "samples_flagged": [
+  {
+   "file": "20261022_185552_DeepSeekAPI的base.packed.json",
+   "question": "DeepSeek API 的 base URL 是什么？",
+   "probes": 2,
+   "untouched": 7,
+   "covers_seen": true,
+   "bad_ref": 0,
+   "best_bigram_jaccard": 0.37,
+   "any_target_3gram_in_probe": true,
+   "aq": "verified"
+  },
+  {
+   "file": "20261024_082341_Python中len函数的作用是什.packed.json",
+   "question": "Python 中 len 函数的作用是什么？",
+   "probes": 2,
+   "untouched": 11,
+   "covers_seen": true,
+   "bad_ref": 0,
+   "best_bigram_jaccard": 0.178,
+   "any_target_3gram_in_probe": true,
+   "aq": "verified"
+  },
+  {
+   "file": "20261024_083648_Python中len函数的作用是什.packed.json",
+   "question": "Python 中 len 函数的作用是什么？",
+   "probes": 3,
+   "untouched": 10,
+   "covers_seen": true,
+   "bad_ref": 0,
+   "best_bigram_jaccard": 0.119,
+   "any_target_3gram_in_probe": true,
+   "aq": "verified"
+  },
+  {
+   "file": "20261024_113505_为什么城市热岛效应在夜间比白天更明显.packed.json",
+   "question": "为什么城市热岛效应在夜间比白天更明显？",
+   "probes": 2,
+   "untouched": 10,
+   "covers_seen": true,
+   "bad_ref": 0,
+   "best_bigram_jaccard": 0.147,
+   "any_target_3gram_in_probe": true,
+   "aq": "needs_evidence"
+  },
+  {
+   "file": "20261024_163141_DeepSeekV41Flash.packed.json",
+   "question": "DeepSeek V4.1 Flash 是哪一天发布的？",
+   "probes": 2,
+   "untouched": 6,
+   "covers_seen": true,
+   "bad_ref": 0,
+   "best_bigram_jaccard": 0.079,
+   "any_target_3gram_in_probe": true,
+   "aq": "verified"
+  }
+ ],
+ "rows": [
+  {
+   "file": "20261022_185552_DeepSeekAPI的base.packed.json",
+   "question": "DeepSeek API 的 base URL 是什么？",
+   "probes": 2,
+   "untouched": 7,
+   "covers_seen": true,
+   "bad_ref": 0,
+   "best_bigram_jaccard": 0.37,
+   "any_target_3gram_in_probe": true,
+   "aq": "verified"
   },
   {
    "file": "20261024_082341_Python中len函数的作用是什.packed.json",
@@ -536,61 +183,6 @@
    "aq": "verified"
   },
   {
-   "file": "20261024_184338_为什么城市热岛效应在夜间比白天更明显.packed.json",
-   "question": "为什么城市热岛效应在夜间比白天更明显？",
-   "probes": 2,
-   "untouched": 12,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.235,
-   "any_target_3gram_in_probe": true,
-   "aq": "verified"
-  },
-  {
-   "file": "20261024_202740_为什么城市热岛效应在夜间比白天更明显.packed.json",
-   "question": "为什么城市热岛效应在夜间比白天更明显？",
-   "probes": 2,
-   "untouched": 11,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.162,
-   "any_target_3gram_in_probe": true,
-   "aq": "verified"
-  },
-  {
-   "file": "20261024_204953_为什么城市热岛效应在夜间比白天更明显.packed.json",
-   "question": "为什么城市热岛效应在夜间比白天更明显？",
-   "probes": 1,
-   "untouched": 11,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.034,
-   "any_target_3gram_in_probe": true,
-   "aq": "unverified"
-  },
-  {
-   "file": "20261024_221331_为什么城市热岛效应在夜间比白天更明显.packed.json",
-   "question": "为什么城市热岛效应在夜间比白天更明显？",
-   "probes": 3,
-   "untouched": 7,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.143,
-   "any_target_3gram_in_probe": true,
-   "aq": "verified"
-  },
-  {
-   "file": "20261025_022430_11等于几.packed.json",
-   "question": "1+1等于几？",
-   "probes": 1,
-   "untouched": 14,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.04,
-   "any_target_3gram_in_probe": true,
-   "aq": "needs_evidence"
-  },
-  {
    "file": "20261025_041804_为什么城市热岛效应在夜间比白天更明显.packed.json",
    "question": "为什么城市热岛效应在夜间比白天更明显？",
    "probes": 2,
@@ -611,28 +203,6 @@
    "best_bigram_jaccard": 0.094,
    "any_target_3gram_in_probe": true,
    "aq": "verified"
-  },
-  {
-   "file": "20261025_062041_为什么城市热岛效应在夜间比白天更明显.packed.json",
-   "question": "为什么城市热岛效应在夜间比白天更明显？",
-   "probes": 3,
-   "untouched": 8,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.169,
-   "any_target_3gram_in_probe": true,
-   "aq": "unverified"
-  },
-  {
-   "file": "20261025_123225_光在水中传播的速度是多少.packed.json",
-   "question": "光在水中传播的速度是多少？",
-   "probes": 3,
-   "untouched": 11,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.077,
-   "any_target_3gram_in_probe": true,
-   "aq": "unverified"
   },
   {
    "file": "20261025_124928_在城市热岛研究中应该优先补观测还是优先.packed.json",
@@ -723,17 +293,6 @@
    "aq": "needs_evidence"
   },
   {
-   "file": "20261025_170132_HTTP404状态码表示什么.packed.json",
-   "question": "HTTP 404状态码表示什么？",
-   "probes": 3,
-   "untouched": 12,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.151,
-   "any_target_3gram_in_probe": true,
-   "aq": "needs_evidence"
-  },
-  {
    "file": "20261025_174443_黄河的长度是多少千米.packed.json",
    "question": "黄河的长度是多少千米？",
    "probes": 3,
@@ -752,17 +311,6 @@
    "covers_seen": true,
    "bad_ref": 0,
    "best_bigram_jaccard": 0.056,
-   "any_target_3gram_in_probe": true,
-   "aq": "verified"
-  },
-  {
-   "file": "20261025_180653_HTTP404状态码表示什么.packed.json",
-   "question": "HTTP 404状态码表示什么？",
-   "probes": 3,
-   "untouched": 10,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.311,
    "any_target_3gram_in_probe": true,
    "aq": "verified"
   },
@@ -796,28 +344,6 @@
    "covers_seen": true,
    "bad_ref": 0,
    "best_bigram_jaccard": 0.14,
-   "any_target_3gram_in_probe": true,
-   "aq": "verified"
-  },
-  {
-   "file": "20261025_202718_为什么城市热岛效应在夜间比白天更明显.packed.json",
-   "question": "为什么城市热岛效应在夜间比白天更明显？",
-   "probes": 3,
-   "untouched": 11,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.164,
-   "any_target_3gram_in_probe": true,
-   "aq": "verified"
-  },
-  {
-   "file": "20261025_205120_HTTP404状态码表示什么.packed.json",
-   "question": "HTTP 404状态码表示什么？",
-   "probes": 2,
-   "untouched": 11,
-   "covers_seen": true,
-   "bad_ref": 0,
-   "best_bigram_jaccard": 0.073,
    "any_target_3gram_in_probe": true,
    "aq": "verified"
   },
@@ -1137,6 +663,127 @@
    "covers_seen": true,
    "bad_ref": 0,
    "best_bigram_jaccard": 0.15,
+   "any_target_3gram_in_probe": true,
+   "aq": "verified"
+  },
+  {
+   "file": "20261026_183755_嫦娥六号是哪一年发射的.packed.json",
+   "question": "嫦娥六号是哪一年发射的？",
+   "probes": 3,
+   "untouched": 13,
+   "covers_seen": true,
+   "bad_ref": 0,
+   "best_bigram_jaccard": 0.179,
+   "any_target_3gram_in_probe": true,
+   "aq": "verified"
+  },
+  {
+   "file": "20261026_185454_缓解社交焦虑AI效果接近人类治疗师这.packed.json",
+   "question": "缓解社交焦虑，AI效果接近人类治疗师，这说明什么？",
+   "probes": 2,
+   "untouched": 10,
+   "covers_seen": true,
+   "bad_ref": 0,
+   "best_bigram_jaccard": 0.12,
+   "any_target_3gram_in_probe": true,
+   "aq": "needs_evidence"
+  },
+  {
+   "file": "20261026_185946_缓解社交焦虑AI效果接近人类治疗师这.packed.json",
+   "question": "缓解社交焦虑，AI效果接近人类治疗师，这说明什么？",
+   "probes": 1,
+   "untouched": 10,
+   "covers_seen": true,
+   "bad_ref": 0,
+   "best_bigram_jaccard": 0.029,
+   "any_target_3gram_in_probe": false,
+   "aq": "needs_evidence"
+  },
+  {
+   "file": "20261027_100121_HTTP402状态码表示什么.packed.json",
+   "question": "HTTP 402状态码表示什么？",
+   "probes": 3,
+   "untouched": 10,
+   "covers_seen": true,
+   "bad_ref": 0,
+   "best_bigram_jaccard": 0.185,
+   "any_target_3gram_in_probe": true,
+   "aq": "verified"
+  },
+  {
+   "file": "20261027_105538_HTTP409状态码表示什么.packed.json",
+   "question": "HTTP 409状态码表示什么？",
+   "probes": 3,
+   "untouched": 8,
+   "covers_seen": true,
+   "bad_ref": 0,
+   "best_bigram_jaccard": 0.06,
+   "any_target_3gram_in_probe": true,
+   "aq": "verified"
+  },
+  {
+   "file": "20261027_132316_HTTP507状态码表示什么.packed.json",
+   "question": "HTTP 507状态码表示什么？",
+   "probes": 3,
+   "untouched": 9,
+   "covers_seen": true,
+   "bad_ref": 0,
+   "best_bigram_jaccard": 0.231,
+   "any_target_3gram_in_probe": true,
+   "aq": "verified"
+  },
+  {
+   "file": "20261027_133142_HTTP508状态码表示什么.packed.json",
+   "question": "HTTP 508状态码表示什么？",
+   "probes": 3,
+   "untouched": 10,
+   "covers_seen": true,
+   "bad_ref": 0,
+   "best_bigram_jaccard": 0.259,
+   "any_target_3gram_in_probe": true,
+   "aq": "verified"
+  },
+  {
+   "file": "20261027_133844_HTTP511状态码表示什么.packed.json",
+   "question": "HTTP 511状态码表示什么？",
+   "probes": 3,
+   "untouched": 3,
+   "covers_seen": true,
+   "bad_ref": 0,
+   "best_bigram_jaccard": 0.069,
+   "any_target_3gram_in_probe": true,
+   "aq": "verified"
+  },
+  {
+   "file": "20261027_191328_HTTP421状态码表示什么.packed.json",
+   "question": "HTTP 421状态码表示什么？",
+   "probes": 3,
+   "untouched": 10,
+   "covers_seen": true,
+   "bad_ref": 0,
+   "best_bigram_jaccard": 0.147,
+   "any_target_3gram_in_probe": true,
+   "aq": "verified"
+  },
+  {
+   "file": "20261027_210635_HTTP428状态码表示什么.packed.json",
+   "question": "HTTP 428状态码表示什么？",
+   "probes": 2,
+   "untouched": 10,
+   "covers_seen": true,
+   "bad_ref": 0,
+   "best_bigram_jaccard": 0.179,
+   "any_target_3gram_in_probe": true,
+   "aq": "unverified"
+  },
+  {
+   "file": "20261027_212315_HTTP431状态码表示什么.packed.json",
+   "question": "HTTP 431状态码表示什么？",
+   "probes": 2,
+   "untouched": 15,
+   "covers_seen": true,
+   "bad_ref": 0,
+   "best_bigram_jaccard": 0.122,
    "any_target_3gram_in_probe": true,
    "aq": "verified"
   }
