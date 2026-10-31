@@ -124,7 +124,14 @@ python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.110.py --route 0,1,both,all --r
 
 # 质量/成本预设
 python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.110.py -c configs/方案F-帕累托最优.yaml "你的问题"
+
+# 可判定优先（opt-in）：研究/对撞层至少 3 圈，使「连续不涨」类目标可判定
+python dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.110.py -c configs/方案Q-可判定优先.yaml "你的问题"
 ~~~
+
+> 方案Q 为**显式 opt-in**（App 的 profile 列表中可选择）：只多约 1 圈/层（≈¥0.074/圈/层），
+> 默认配置不开启。适用：quality 档、预算 ok、且需要层1/both 目标判定时。
+> 证据：[docs/layer1_auto_judgeable_stable_20261031.json](docs/layer1_auto_judgeable_stable_20261031.json)。
 
 常用参数：
 
