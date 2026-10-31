@@ -1,6 +1,6 @@
 {
  "schema": "dgtf.app_startup_msg.v1",
- "ts": "2026-10-31T13:46:09",
+ "ts": "2026-10-31T14:12:54",
  "app_version": "2.0.85",
  "matched": "V2 自动策略：冻结（自动策略冻结：层局部质量 layer_signals_v1 尚未通过整跑校准）",
  "expect_contains": "冻结",
