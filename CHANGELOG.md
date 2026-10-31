@@ -1,3 +1,13 @@
+【V2.2.113（2026-10-31，PATCH · main 配置陈旧键审计 + 启动文案检查；App 2.0.85）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.113.py（__version__=2.2.113；引擎侧零行为差）。
+- ★ 新增 scripts/local_model/audit_main_config_keys.py：审计 dgtf_config.yaml 陈旧键并接入
+  config_keys 门禁；实测 presets 24/0、main 0 陈旧。
+- ★ 新增 scripts/app_startup_msg_check.py：临时起 App 抓启动日志，要求「V2 自动策略：冻结（原因）」；
+  App 2.0.85 实测 ok=true；证据 docs/app_startup_msg_latest.json。
+- 验收：V2 73/73（1234 checks）；fast_gate 28/28；App selftest；一键验收；e2e 18/18；probe；
+  发布流程门全 PASS。零云 API。
+- 标签：V2.2.113 / engine-V2.2.113（app-V2.0.85 不变，不移动）。
+
 【V2.2.112（2026-10-31，PATCH · App 2.0.85 修正冻结文案；引擎零行为差）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.112.py（__version__=2.2.112）。
 - ★ App 2.0.85：修正 2.0.84 未生效的 V2 自动策略冻结文案（2.0.84 改动不完整且会破坏启动块）；
@@ -634,12 +644,3 @@
 - 判据：脚本 --check PASS（App selftest 457、probe 82/82/179 calls/415.2s、V2 71/71、
   fast_gate 16、acceptance 30）。
 - 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 457/0；
-  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
-  发布流程门 pre/post-tag 全 PASS。零 API 花费。
-- 兼容性：只改文档/工具链；引擎零行为差；App 不变。
-- 标签：V2.2.54 / engine-V2.2.54（app-V2.0.78 不变，不移动）。
-
-【V2.2.53（2026-10-30，PATCH · 预期 vs 实测 quality_actual；同发 App 2.0.78）】
-- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.53.py（__version__=2.2.53；引擎侧零行为差）；
-  App 2.0.78。
-- ★ 任务 GET（done 时）附加 quality_actual（answer_quality/answer_ready/verified/packed）：

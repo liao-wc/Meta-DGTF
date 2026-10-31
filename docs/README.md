@@ -22,8 +22,8 @@
 | `docs/ab_summary_20261027.md` | A/B 结果摘要（最新 rows=166 / questions=83 / verified=125） |
 | `docs/local_model_daosheng.md` | 本地模型文档（顶部 2026-10-27 同步段；历史轮次保留） |
 | `docs/产物问题审计_20261027.md` | 产物逐项审计（Round 128 历史快照，数字以最新快照为准） |
-| `docs/releases/` | 引擎发布说明（V2.2.112 … V2.2.3）+ App 版本发布说明（app-V2.0.2 … V2.0.44） |
-| `docs/releases/V2.2.112.md` | 本版发布说明（App 2.0.85：修正冻结文案并实测） |
+| `docs/releases/` | 引擎发布说明（V2.2.113 … V2.2.3）+ App 版本发布说明（app-V2.0.2 … V2.0.44） |
+| `docs/releases/V2.2.113.md` | 本版发布说明（main 配置审计 + 启动文案检查） |
 | `docs/releases/app-V2.0.85.md` | App 2.0.85（修正 2.0.84 未生效的冻结文案） |
 | `docs/release_workflow_20261031.md` | 发布流程 runbook（预同步 → 验收 → 后同步 → 门禁） |
 | `docs/patches/` | dual_judge local 补丁（已合并，历史证据） |

@@ -12,6 +12,7 @@ from __future__ import annotations
 import glob
 import json
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -77,7 +78,17 @@ def main() -> int:
     for r in rows:
         print("  %s: %s" % (r["preset"], r["keys"]))
     print("evidence -> %s" % OUT.relative_to(ROOT).as_posix())
-    return 0
+    # ★ [V2.2.113] 同时审计 main 配置（dgtf_config.yaml）陈旧键
+    rc2 = 0
+    main_audit = ROOT / "scripts" / "local_model" / "audit_main_config_keys.py"
+    if main_audit.is_file():
+        r2 = subprocess.run([sys.executable, str(main_audit)],
+                            cwd=str(ROOT), capture_output=True, text=True,
+                            encoding="utf-8", errors="replace", timeout=180)
+        print("--- main config ---")
+        print((r2.stdout or "").strip())
+        rc2 = int(r2.returncode or 0)
+    return 0 if (not rows and rc2 == 0) else 1
 
 
 if __name__ == "__main__":
