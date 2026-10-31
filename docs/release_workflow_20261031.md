@@ -73,3 +73,11 @@ python fast_gate.py                           # 28/28
 python scripts/local_model/probe_repeat_consistency.py --compare A B  # 快速自检（readings 一致；calls 波动仅 WARN）
 python scripts/run_v2_tests.py --require-replay    # 严格回放模式（无 SKIP 才算真跑；本轮 73/73）
 ```
+
+## 6. V2.2.110 起：验收自带 pre-sync
+
+final_acceptance.py 在首步 fast_gate 之前会自动跑：
+`sync_readme_numbers.py --write` 与 `sync_snapshot_numbers.py --write`（失败只告警）。
+因此「sync → fg → sync → acceptance」里的第二次 sync 可省略；
+但仍建议 gate 之后、commit 之前再跑一次 preflight 同步（发布证据收口）。
+`--list-steps` 或 `DGTF_ACCEPTANCE_NO_EVIDENCE=1` 时不触发 pre-sync。
