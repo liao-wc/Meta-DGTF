@@ -24,6 +24,7 @@
 | `docs/产物问题审计_20261027.md` | 产物逐项审计（Round 128 历史快照，数字以最新快照为准） |
 | `docs/releases/` | 引擎发布说明（V2.2.103 … V2.2.3）+ App 版本发布说明（app-V2.0.2 … V2.0.44） |
 | `docs/releases/V2.2.103.md` | 本版发布说明（快照数字同步器 + 兜底稳定性） |
+| `docs/release_workflow_20261031.md` | 发布流程 runbook（预同步 → 验收 → 后同步 → 门禁） |
 | `docs/patches/` | dual_judge local 补丁（已合并，历史证据） |
 
 ## 历史归档（勿引数字）
