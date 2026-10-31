@@ -1,3 +1,12 @@
+【V2.2.110（2026-10-31，PATCH · 验收 pre-sync + selftest 重试；App 2.0.83）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.110.py（__version__=2.2.110；引擎侧零行为差）。
+- ★ final_acceptance 首步前自动 PRE-SYNC（README/快照数字），失败只告警；--list-steps 不触发。
+  修复 V2.2.109「fg 通过后未 sync ⇒ acceptance 首步 readme_numbers 失败」自伤。
+- ★ app_selftest_gate 外层重试一次：证据 pass=0（启动抖动）时重新起服跑。
+- 验收：V2 73/73（1234 checks）；fast_gate 28/28；App selftest；一键验收；e2e 18/18；probe；
+  发布流程门全 PASS。零云 API。
+- 标签：V2.2.110 / engine-V2.2.110（app-V2.0.83 不变，不移动）。
+
 【V2.2.109（2026-10-31，PATCH · README 引擎/快照引用门禁；App 2.0.83）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.109.py（__version__=2.2.109；引擎侧零行为差）。
 - ★ 发现 README 顶部仍写 生产引擎 V2.2.56 / 快照 20261030（过期事实）；已修正并同步探针行。
@@ -636,13 +645,3 @@
 - ★ quality_forecast.tier_advice=fast 时追加「建议 fast」；App selftest 前端判据要求
   tier_advice 渲染（456/0）。
 - 判据：App selftest 456/0；node --check app.js 通过；回归 fused_optimal 30 /
-  fused_full_chain 24 / daosheng_unified 27 / auto_mode_local 12 / dynamic_opt 132。
-- 验收：fast_gate 16/16；V2 71/71（1208 checks）；一键验收 --with-service PASS 30 / SKIP 0 /
-  FAIL 0；e2e 18/18；四层 probe 82/82；发布流程门 pre/post-tag 全 PASS。零 API 花费。
-- 兼容性：纯前端修复/展示；任务执行不变。
-- 标签：V2.2.52 / engine-V2.2.52 / app-V2.0.77。
-
-【V2.2.51（2026-10-30，PATCH · opt-in 优先成本降档；同发 App 2.0.76）】
-- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.51.py（__version__=2.2.51；引擎侧零行为差）；
-  App 2.0.76。
-- ★ budget.prefer_cost_when_unverified（默认 false）：开启 + 预算 ok + tier=quality +

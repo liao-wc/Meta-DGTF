@@ -246,6 +246,31 @@ def _print_steps(steps: list) -> None:
               % (i, name, policy, _POLICY_LABEL[policy], " ".join(argv)))
 
 
+def _presync() -> bool:
+    """跑 README/快照数字同步（写模式）；失败只告警，不阻断验收。"""
+    import os as _os
+    if _os.environ.get("DGTF_ACCEPTANCE_NO_EVIDENCE") == "1":
+        return False
+    ok = True
+    for script in ("scripts/sync_readme_numbers.py",
+                   "scripts/sync_snapshot_numbers.py"):
+        p = ROOT / script
+        if not p.is_file():
+            continue
+        try:
+            r = subprocess.run([sys.executable, str(p), "--write"],
+                               cwd=str(ROOT), capture_output=True, text=True,
+                               encoding="utf-8", errors="replace", timeout=120)
+            tail = ((r.stdout or "") + (r.stderr or "")).strip().splitlines()
+            print("PRE-SYNC %s: %s" % (Path(script).name,
+                                       tail[-1] if tail else "rc=%s" % r.returncode))
+            ok = ok and r.returncode == 0
+        except Exception as exc:  # noqa: BLE001
+            print("PRE-SYNC %s 失败（不阻断）：%s" % (Path(script).name, exc))
+            ok = False
+    return ok
+
+
 def main(argv=None) -> int:
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -270,6 +295,10 @@ def main(argv=None) -> int:
               % (len(steps), len(build_steps(True))))
         _print_steps(steps)
         return 0
+
+    # ★ [V2.2.110] 首步 fast_gate 之前自动 pre-sync（README/快照数字 ↔ 证据）。
+    #   防「fg 通过后未 sync → acceptance 首步 readme_numbers 失败」自伤重演。
+    _pre_synced = _presync()
 
     results = []
     for name, step_argv, policy in steps:

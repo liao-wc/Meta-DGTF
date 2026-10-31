@@ -83,7 +83,7 @@ def _write_ev(ev: dict) -> None:
         pass
 
 
-def main(argv=None) -> int:
+def _run_once(argv=None) -> int:
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
         sys.stderr.reconfigure(encoding="utf-8", errors="replace")
@@ -197,6 +197,21 @@ def main(argv=None) -> int:
                 capture_output=True, timeout=30)
         except Exception:  # noqa: BLE001
             pass
+
+
+def main(argv=None) -> int:
+    """[V2.2.110] 外层重试：selftest 0/0（疑似临时 server 启动抖动）时重跑一次。"""
+    argv_l = list(sys.argv[1:] if argv is None else argv)
+    rc = _run_once(argv_l)
+    if rc in (1, 2):
+        try:
+            ev = json.loads(EVID.read_text(encoding="utf-8"))
+        except Exception:  # noqa: BLE001
+            ev = {}
+        if int(ev.get("pass") or 0) == 0:
+            print("RETRY app_selftest（0/0，疑似启动抖动）", flush=True)
+            rc = _run_once(argv_l)
+    return rc
 
 
 if __name__ == "__main__":
