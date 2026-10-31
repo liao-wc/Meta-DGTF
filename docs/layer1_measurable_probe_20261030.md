@@ -431,6 +431,14 @@ both 54–98、all 93–121、层0 15–24。**调用数是成本量、不是质
 一致性判据以 readings 为准（calls 差异在 V2.2.108 起降级 WARN）。
 证据：docs/probe_cost_variance_20261031.json。
 
+
+## 7.29 同版本 calls 波动（V2.2.108，零 API）
+
+按版本×层统计 62 条 probe 记录：层1 在同版本内可波动 ~30–40%（如 V2.2.90 36–53、
+V2.2.98 44–59、V2.2.108 36–50），部分版本因缓存完全一致。calls 只作成本参考，
+readings（status/main）才是质量/一致性判据。
+证据：docs/probe_calls_by_version_20261031.json。
+
 ## 8. 后续建议（需预算或明确方向）
 
 - 方案 A（有预算）：1 个 web on 的层1 小样本（单跑约与既有 A/B 同量级），验证能否产生 candidates>0；
