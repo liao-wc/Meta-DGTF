@@ -1,7 +1,7 @@
 {
  "schema": "dgtf.release_process.v1",
- "ts": 1793417068.4176025,
- "iso": "2026-10-31T11:24:28",
+ "ts": 1793417273.1765718,
+ "iso": "2026-10-31T11:27:53",
  "engine": "dgtf_engine\\dgtf_v2\\engine\\Meta-DGTF-V2.2.108.py",
  "engine_version": "2.2.108",
  "app_version": "2.0.83",
@@ -94,7 +94,7 @@
   {
    "name": "v2_tests 证据新鲜且全绿",
    "status": "PASS",
-   "detail": "2026-10-31T11:16:46"
+   "detail": "2026-10-31T11:27:35"
   },
   {
    "name": "app_selftest 证据新鲜且全绿",

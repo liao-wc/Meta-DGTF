@@ -71,4 +71,5 @@ git status --porcelain
 python scripts/release_preflight.py --check   # 证据健康 + 数字同步 + 发布门预检
 python fast_gate.py                           # 28/28
 python scripts/local_model/probe_repeat_consistency.py --compare A B  # 快速自检（readings 一致；calls 波动仅 WARN）
+python scripts/run_v2_tests.py --require-replay    # 严格回放模式（无 SKIP 才算真跑；本轮 73/73）
 ```
