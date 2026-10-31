@@ -54,3 +54,21 @@ git status --porcelain
 - 不要在验收运行中改引擎/脚本（证据与实现会错位）；
 - 不要把本地 unverified 包留在 outputs/；
 - 不要手写 README/快照数字（一律走 sync）。
+
+## 4. 2026-10-31 新增教训（V2.2.104–V2.2.107）
+
+| 教训 | 固化措施 |
+|---|---|
+| sync 曾把失败证据（26/27）写入 README | preflight 增加 evidence_sanity；fast_gate 增加 evidence_health |
+| 手工 sync 顺序易漏 | release_preflight --write/--check 一键化 |
+| 验证进行中新建引擎 → probe P6 provenance 旧版 FAIL | **验证窗口内禁止改引擎/脚本**；等 engine 稳定再跑 |
+| 快照标题升版、正文旧数字 | snapshot_numbers 门禁 + sync_snapshot_numbers 同步 |
+| 本地验证包写入 outputs/ 被 dsh_loop_check B 抽查 | 本地 e2e 写临时目录；清理只用精确路径 |
+
+## 5. 推荐的一次性预检
+
+```powershell
+python scripts/release_preflight.py --check   # 证据健康 + 数字同步 + 发布门预检
+python fast_gate.py                           # 28/28
+python scripts/local_model/probe_repeat_consistency.py --compare A B  # 已有证据对快速自检
+```
