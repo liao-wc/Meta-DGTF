@@ -70,5 +70,5 @@ git status --porcelain
 ```powershell
 python scripts/release_preflight.py --check   # 证据健康 + 数字同步 + 发布门预检
 python fast_gate.py                           # 28/28
-python scripts/local_model/probe_repeat_consistency.py --compare A B  # 已有证据对快速自检
+python scripts/local_model/probe_repeat_consistency.py --compare A B  # 快速自检（readings 一致；calls 波动仅 WARN）
 ```

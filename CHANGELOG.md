@@ -1,3 +1,13 @@
+【V2.2.108（2026-10-31，PATCH · 一致性判据区分读数/调用数；App 2.0.83）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.108.py（__version__=2.2.108；引擎侧零行为差）。
+- ★ 发现：连续两跑 status/main 一致，但 all 层 llm_calls 会波动（85 vs 96）；
+  「逐项一致」不应把调用数算作严格相等。
+- ★ 修复：_diff 拆 readings/cost；readings 差异才 MISMATCH，calls 差异降级 WARN 并写入证据。
+- ★ 验证：compare 显示 readings CONSISTENT + calls WARN；重跑 runs=2 readings 一致、calls 一致。
+- 验收：V2 73/73（1234 checks）；fast_gate 28/28；App selftest；一键验收；e2e 18/18；probe；
+  发布流程门全 PASS。零云 API。
+- 标签：V2.2.108 / engine-V2.2.108（app-V2.0.83 不变，不移动）。
+
 【V2.2.107（2026-10-31，PATCH · probe 复跑一致性脚本；App 2.0.83）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.107.py（__version__=2.2.107；引擎侧零行为差）。
 - ★ 新增 scripts/local_model/probe_repeat_consistency.py：--runs N 双跑逐 case 比较
@@ -637,14 +647,3 @@
   发布流程门 pre/post-tag 全 PASS。本轮零 API 花费。
 - 兼容性：默认关；显式开启才降档；fact 永不因此降档。
 - 标签：V2.2.51 / engine-V2.2.51 / app-V2.0.76。
-
-【V2.2.50（2026-10-30，PATCH · tier_advice A/B 证据；同发 App 2.0.75）】
-- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.50.py（__version__=2.2.50；引擎侧零行为差）；
-  App 2.0.75。
-- ★ tier_advice 有界 A/B（真 API 约 ¥0.27）：reasoning 同题 full rounds=1/层 web off——
-  quality/B 69,359 tokens/124.6s vs fast 66,869/67.4s，两臂均 unverified；fast 省 ~3.6% tokens、
-  墙钟约减半、质量未劣化。
-- ★ _TIER_ADVICE_EVIDENCE 接入：plan.quality_retry.tier_evidence 指向
-  docs/tier_advice_ab_20261030.json，tier_advice_why 附实测 note；fact（current）不携带。
-- 判据：test_dynamic_opt 126→129（W1 A/B 数据、W2 evidence/note、W3 fact 不携带）；
-  回归 fused_optimal 30 / fused_full_chain 24 / daosheng_unified 27 / auto_mode_local 12。

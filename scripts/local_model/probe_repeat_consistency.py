@@ -34,18 +34,27 @@ def _rows(path: Path) -> dict:
     return out
 
 
-def _diff(a: dict, b: dict) -> list:
-    diffs = []
+def _diff(a: dict, b: dict) -> tuple:
+    """返回 (readings_diffs, cost_diffs)。
+
+    readings = status/main + 汇总；cost = calls（LLM 调用数，允许随状态波动）。
+    ★ V2.2.108：只有 readings 差异才算 MISMATCH；calls 差异降级为 WARN。
+    """
+    readings, costs = [], []
     for k in sorted(set(a["cases"]) | set(b["cases"])):
         ra = a["cases"].get(k) or {}
         rb = b["cases"].get(k) or {}
-        for f in ("calls", "status", "main"):
+        for f in ("status", "main"):
             if ra.get(f) != rb.get(f):
-                diffs.append("%s.%s: %r != %r" % (k, f, ra.get(f), rb.get(f)))
+                readings.append("%s.%s: %r != %r"
+                                % (k, f, ra.get(f), rb.get(f)))
+        if ra.get("calls") != rb.get("calls"):
+            costs.append("%s.calls: %r != %r"
+                         % (k, ra.get("calls"), rb.get("calls")))
     if (a["pass"], a["fail"]) != (b["pass"], b["fail"]):
-        diffs.append("summary: %r != %r"
-                     % ((a["pass"], a["fail"]), (b["pass"], b["fail"])))
-    return diffs
+        readings.append("summary: %r != %r"
+                        % ((a["pass"], a["fail"]), (b["pass"], b["fail"])))
+    return readings, costs
 
 
 def main(argv=None) -> int:
@@ -56,11 +65,15 @@ def main(argv=None) -> int:
     if args.compare:
         pa, pb = Path(args.compare[0]), Path(args.compare[1])
         a, b = _rows(pa), _rows(pb)
-        diffs = _diff(a, b)
-        for d in diffs:
+        readings, costs = _diff(a, b)
+        for d in costs:
+            print("WARN " + d)
+        for d in readings:
             print("DIFF " + d)
-        print("compare: %s" % ("CONSISTENT" if not diffs else "MISMATCH"))
-        return 0 if not diffs else 1
+        print("compare: %s（readings）%s"
+              % ("CONSISTENT" if not readings else "MISMATCH",
+                 "" if not costs else "；calls 有波动（WARN）"))
+        return 0 if not readings else 1
     runs = max(2, int(args.runs or 2))
     tmp = ROOT / "_audit_tmp"
     tmp.mkdir(exist_ok=True)
@@ -76,17 +89,21 @@ def main(argv=None) -> int:
             return 1
         arts.append(ev)
     base = _rows(arts[0])
-    bad = []
+    bad, warns = [], []
     for i, ev in enumerate(arts[1:], 2):
-        bad += ["run%d %s" % (i, d) for d in _diff(base, _rows(ev))]
+        rd, cd = _diff(base, _rows(ev))
+        bad += ["run%d %s" % (i, d) for d in rd]
+        warns += ["run%d %s" % (i, d) for d in cd]
     out = {"schema": "metadgtf.probe_repeat_consistency.v1",
            "ts": "2026-10-31", "runs": runs,
-           "consistent": not bad, "diffs": bad,
-           "base": base}
+           "consistent_readings": not bad, "diffs": bad,
+           "cost_warnings": warns, "base": base}
     p = DOCS / "probe_repeat_consistency_20261031.json"
     p.write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
-    print("consistency: %s（diffs=%d）" % ("CONSISTENT" if not bad else "MISMATCH",
-                                          len(bad)))
+    print("consistency: %s（readings_diffs=%d；calls_warn=%d）"
+          % ("CONSISTENT" if not bad else "MISMATCH", len(bad), len(warns)))
+    for d in warns:
+        print("WARN " + d)
     for d in bad:
         print("DIFF " + d)
     print("evidence -> %s" % p.relative_to(ROOT).as_posix())
