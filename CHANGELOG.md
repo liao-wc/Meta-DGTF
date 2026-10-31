@@ -1,3 +1,11 @@
+【V2.2.115（2026-10-31，PATCH · 快照审计 14→19；App 2.0.85）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.115.py（__version__=2.2.115；引擎侧零行为差）。
+- ★ snapshot_numbers 新增 5 项：readme_release_notes_latest、matrix_current_version、
+  matrix_app_version、overview_current_version、overview_app_version；审计 19/19 PASS。
+- 验收：V2 73/73（1234 checks）；fast_gate 28/28；App selftest；一键验收；e2e 18/18；probe；
+  发布流程门全 PASS。零云 API。
+- 标签：V2.2.115 / engine-V2.2.115（app-V2.0.85 不变，不移动）。
+
 【V2.2.114（2026-10-31，PATCH · selftest 门校验启动文案；App 2.0.85）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.114.py（__version__=2.2.114；引擎侧零行为差）。
 - ★ app_selftest_gate 顺带读取临时 server 启动日志：`V2 自动策略：…` 必须是「冻结（原因）」或
@@ -632,12 +640,3 @@
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.55.py（__version__=2.2.55；引擎侧零行为差）；
   App 2.0.78 不变。
 - ★ fast_gate 新增 readme_numbers 检查（执行 sync_readme_numbers.py --check）：
-  README 实测数字与证据不一致 ⇒ 快速门禁判红（检查项 16→17）。
-- ★ sync_readme_numbers.py 增加 fast_gate 数字回写（顶部 fast_gate **N/N**）；
-  acceptance_semantics 检查清单期望同步 16→17（含 readme_numbers）。
-- 效果：数字漂移在 fast_gate 即暴露；--write 自动修正（本轮自动把 fast_gate 16→17）。
-- 判据：fast_gate 17/17；V2 71/71（1208 checks）；App selftest 457/0；
-  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
-  发布流程门 pre/post-tag 全 PASS。零 API 花费。
-- 兼容性：只改工具链/文档；引擎零行为差；App 不变。
-- 标签：V2.2.55 / engine-V2.2.55（app-V2.0.78 不变，不移动）。

@@ -89,6 +89,7 @@ def main() -> int:
 
     # ---- V2.2.101：中心版本号 / 权威指针 / 历史标注 ----
     eng_ver = None
+    appver = None
     for name, want, ok in rows:
         if name == "engine_version":
             eng_ver = want
@@ -111,7 +112,8 @@ def main() -> int:
         stxt = sp.read_text(encoding="utf-8", errors="replace") if sp.is_file() else ""
         m = _re.search(r'APP_VERSION\s*=\s*"([0-9.]+)"', stxt)
         if m:
-            av = "**" + m.group(1) + "**"
+            appver = m.group(1)
+            av = "**" + appver + "**"
             rows.append(("app_version_in_snapshot", m.group(1),
                          ("App | " + av) in text))
     # README 主头部必须指向最新引擎文件与最新快照（防「生产引擎路径过期」）
@@ -123,6 +125,20 @@ def main() -> int:
         rows.append(("readme_engine_path", eng_ver,
                      bool(_engs) and ("engine/Meta-DGTF-%s.py" % eng_ver) in rtxt2))
         rows.append(("readme_snapshot_ref", snap.name, snap.name in rtxt2))
+        rows.append(("readme_release_notes_latest",
+                     "docs/releases/%s.md" % eng_ver,
+                     ("docs/releases/%s.md" % eng_ver) in rtxt2))
+        # 当前面向文档：能力矩阵 / 动态配置总览 必须含当前版本
+        mx = ROOT / "docs" / "能力与证据矩阵_20261030.md"
+        mxt = mx.read_text(encoding="utf-8", errors="replace") if mx.is_file() else ""
+        rows.append(("matrix_current_version", eng_ver, eng_ver in mxt))
+        if appver:
+            rows.append(("matrix_app_version", appver, ("App " + appver) in mxt))
+        ov = ROOT / "docs" / "动态配置总览_20261031.md"
+        ovt = ov.read_text(encoding="utf-8", errors="replace") if ov.is_file() else ""
+        rows.append(("overview_current_version", eng_ver, eng_ver in ovt))
+        if appver:
+            rows.append(("overview_app_version", appver, ("App " + appver) in ovt))
 
     # 权威指针：docs/README 不得把历史文件当「为准」来源，且要引用当前快照
     dr = ROOT / "docs" / "README.md"
