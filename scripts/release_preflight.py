@@ -24,6 +24,37 @@ ROOT = Path(__file__).resolve().parent.parent
 PY = sys.executable
 
 
+def _j(name: str) -> dict:
+    p = ROOT / "docs" / name
+    try:
+        import json
+        return json.loads(p.read_text(encoding="utf-8"))
+    except Exception:  # noqa: BLE001
+        return {}
+
+
+def _evidence_bad() -> list:
+    """返回失败证据清单；为空 = 健康。
+
+    ★ [V2.2.105] V2.2.104 曾把一次失败的 fast_gate 证据（26/27）同步进 README；
+    预同步前必须先确认证据本身是 PASS 状态，否则拒绝写。
+    """
+    bad = []
+    fg = _j("fast_gate_latest.json")
+    if fg and (fg.get("failed") or fg.get("passed", 0) != fg.get("total", 0)):
+        bad.append("fast_gate %s/%s" % (fg.get("passed"), fg.get("total")))
+    v2 = _j("v2_tests_latest.json")
+    if v2 and v2.get("fail"):
+        bad.append("v2_tests fail=%s" % v2.get("fail"))
+    st = _j("app_selftest_latest.json")
+    if st and (st.get("fail") or not st.get("pass")):
+        bad.append("app_selftest %s/%s" % (st.get("pass"), st.get("fail")))
+    ac = _j("acceptance_latest.json")
+    if ac and ac.get("failed"):
+        bad.append("acceptance fail=%s" % ac.get("failed"))
+    return bad
+
+
 def _run(args: list) -> int:
     r = subprocess.run([PY] + args, cwd=str(ROOT), capture_output=True,
                        text=True, encoding="utf-8", errors="replace")
@@ -42,6 +73,12 @@ def main(argv=None) -> int:
     ap.add_argument("--write", action="store_true",
                     help="同步写回（默认行为；显式开关便于流水线）")
     args = ap.parse_args(argv)
+    bad = _evidence_bad()
+    print(("PASS " if not bad else "FAIL ") + "evidence_sanity"
+          + ("" if not bad else "：" + "；".join(bad)))
+    if bad:
+        print("\nRELEASE PREFLIGHT: FAIL（证据未全 PASS，拒绝同步/预检）")
+        return 1
     mode = "--check" if args.check else "--write"
     bad = 0
     # 1) 同步（写模式先 sync 再 check）

@@ -1,3 +1,11 @@
+【V2.2.105（2026-10-31，PATCH · preflight 证据健康校验；App 2.0.83）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.105.py（__version__=2.2.105；引擎侧零行为差）。
+- ★ release_preflight 新增 evidence_sanity：fast_gate/v2/selftest/acceptance 失败计数非零即拒绝
+  同步与预检（防 V2.2.104 那类「把 26/27 写进 README」）。
+- 验收：V2 73/73（1234 checks）；fast_gate 27/27；App selftest；一键验收；e2e 18/18；probe；
+  发布流程门全 PASS。零云 API。
+- 标签：V2.2.105 / engine-V2.2.105（app-V2.0.83 不变，不移动）。
+
 【V2.2.104（2026-10-31，PATCH · release_preflight；App 2.0.83）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.104.py（__version__=2.2.104；引擎侧零行为差）。
 - ★ 新增 scripts/release_preflight.py：一键 README/快照数字同步 → 复核 → 发布门预检 → 工作区提醒；
@@ -637,13 +645,3 @@
 - ★ 选档建议（advisory）：该题型 expected_verified_pct=0 + 预算 ok + tier=quality ⇒
   quality_retry.tier_advice=fast（理由：质量档未带来验证收益，fast 更省 tokens）；
   fact → current；预算 warn 已降 fast → current；quality_forecast 同步输出。
-- 判据：test_dynamic_opt 122→126（V1 阈值边界、V2 reasoning fast、V3 fact current、
-  V4 预算 warn current）；回归 fused_optimal 30 / fused_full_chain 24 / daosheng_unified 27 /
-  auto_mode_local 12。
-- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 456/0；
-  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
-  发布流程门 pre/post-tag 全 PASS。本轮零 API 花费。
-- 兼容性：tier_advice 仅建议，不改变 tier/route/rounds。
-- 标签：V2.2.49 / engine-V2.2.49 / app-V2.0.74。
-
-【V2.2.48（2026-10-29，PATCH · 前端展示创建前预期；同发 App 2.0.73）】
