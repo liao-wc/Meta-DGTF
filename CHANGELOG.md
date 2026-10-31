@@ -1,3 +1,13 @@
+【V2.2.107（2026-10-31，PATCH · probe 复跑一致性脚本；App 2.0.83）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.107.py（__version__=2.2.107；引擎侧零行为差）。
+- ★ 新增 scripts/local_model/probe_repeat_consistency.py：--runs N 双跑逐 case 比较
+  calls/status/main 并写证据；--compare A B 零跑自检；退出码 0=一致。
+- ★ 实跑：CONSISTENT（diffs=0，82/82；case1 46/valued 0.0、both 54/valued 0.0）。
+  首次实跑因中途新建引擎 provenance FAIL，稳定后重跑通过（过程记录）。
+- 验收：V2 73/73（1234 checks）；fast_gate 28/28；App selftest；一键验收；e2e 18/18；probe；
+  发布流程门全 PASS。零云 API。
+- 标签：V2.2.107 / engine-V2.2.107（app-V2.0.83 不变，不移动）。
+
 【V2.2.106（2026-10-31，PATCH · fast_gate evidence_health；App 2.0.83）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.106.py（__version__=2.2.106；引擎侧零行为差）。
 - ★ 新增 scripts/local_model/audit_evidence_health.py：v2/selftest/acceptance/probe 最新证据
@@ -638,12 +648,3 @@
   docs/tier_advice_ab_20261030.json，tier_advice_why 附实测 note；fact（current）不携带。
 - 判据：test_dynamic_opt 126→129（W1 A/B 数据、W2 evidence/note、W3 fact 不携带）；
   回归 fused_optimal 30 / fused_full_chain 24 / daosheng_unified 27 / auto_mode_local 12。
-- 验收：fast_gate 16/16；V2 71/71（1208 checks）；App selftest 456/0；
-  一键验收 --with-service PASS 30 / SKIP 0 / FAIL 0；e2e 18/18；四层 probe 82/82；
-  发布流程门 pre/post-tag 全 PASS。本轮 A/B 花费约 ¥0.27。
-- 兼容性：仍为 advisory，不改变实际 tier；证据字段仅审计/展示。
-- 标签：V2.2.50 / engine-V2.2.50 / app-V2.0.75。
-
-【V2.2.49（2026-10-30，PATCH · 语义阈值标定 + 选档建议；同发 App 2.0.74）】
-- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.49.py（__version__=2.2.49；引擎侧零行为差）；
-  App 2.0.74。
