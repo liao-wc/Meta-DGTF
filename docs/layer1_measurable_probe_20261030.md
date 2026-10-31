@@ -485,6 +485,21 @@ readings（status/main）才是质量/一致性判据。
 - 复现方案（未实现，属引擎改动）：提供"层间串行"实验开关，将 A 模式分层改为顺序执行，
   再测两次是否逐项一致。当前不宣称可复现数值，只认 readings 多次重复口径。
 
+
+## 7.33 失败可观测首跑（V2.2.118）
+
+probe 证据新增 failed_records / tristate_no_vote 后首跑（251 calls / 1269.9s）：
+
+| case | calls | failed_records | tristate_no_vote |
+|---|---|---|---|
+| 0 | 22 | 0 | False |
+| 1 | 39 | **1** | **True** |
+| both | 73 | **4** | False |
+| all | 117 | **9** | False |
+
+结论：一次「通过」的 probe 内部仍有 **14 条失败记录**（含 case1 三态无有效票）；
+这解释了 calls 与读数的跨次方差来源，后续可据此量化失败率并决定超时/重试治理。
+
 ## 8. 后续建议（需预算或明确方向）
 
 - 方案 A（有预算）：1 个 web on 的层1 小样本（单跑约与既有 A/B 同量级），验证能否产生 candidates>0；

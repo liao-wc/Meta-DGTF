@@ -1,3 +1,11 @@
+【V2.2.118（2026-10-31，PATCH · probe 失败可观测；App 2.0.85）】
+- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.118.py（__version__=2.2.118；引擎侧零行为差）。
+- ★ probe 每 case 证据新增 failed_records（失败记录条数）与 tristate_no_vote（三态无有效票），
+  不改变断言与判据；便于统计方差与本地链失败率的相关性。
+- 验收：V2 73/73（1234 checks）；fast_gate 28/28；App selftest；一键验收；e2e 18/18；probe；
+  发布流程门全 PASS。零云 API。
+- 标签：V2.2.118 / engine-V2.2.118（app-V2.0.85 不变，不移动）。
+
 【V2.2.117（2026-10-31，PATCH · 层间串行实验开关；App 2.0.85）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.117.py（__version__=2.2.117）。
 - ★ 新增 spiral.layer_serial（默认 false）：true 时 A 模式顺序执行各层（实验/排障用，会更慢）；
@@ -632,15 +640,3 @@
 【V2.2.57（2026-10-30，PATCH · 归档视图实测/预期质量；同发 App 2.0.80）】
 - 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.57.py（__version__=2.2.57；引擎侧零行为差）；
   App 2.0.80。
-- ★ openChat 打开归档时 archivedTask 携带 quality_expected/quality_actual；
-  renderMeta 在无 mode 的归档视图追加只读标签「预期 x% · 实测 y」。
-- ★ 与历史列表卡片同源（list_chats，120s 时间窗防串档）。
-- 验证：node --check app.js 通过；App selftest 457/0。
-- 验收：fast_gate 17/17；V2 71/71（1208 checks）；一键验收 --with-service PASS 30 / SKIP 0 /
-  FAIL 0；e2e 18/18；四层 probe 82/82；发布流程门 pre/post-tag 全 PASS。零 API 花费。
-- 兼容性：仅只读展示；任务执行不变；无实测时保持原样。
-- 标签：V2.2.57 / engine-V2.2.57 / app-V2.0.80。
-
-【V2.2.56（2026-10-30，PATCH · 历史卡片预期 vs 实测；同发 App 2.0.79）】
-- 生产引擎：dgtf_engine/dgtf_v2/engine/Meta-DGTF-V2.2.56.py（__version__=2.2.56；引擎侧零行为差）；
-  App 2.0.79。

@@ -452,11 +452,24 @@ def run_case(case: dict, question: str, rounds: int, timeout: float,
         rc, out = None, "TIMEOUT %.0fs" % timeout
     wall = round(time.time() - t0, 1)
     print("   引擎退出码=%s 墙钟=%ss" % (rc, wall), flush=True)
+    # ★ [V2.2.118] 本地链偶发失败可观测：记录失败条数与「三态无有效票」标记，
+    #   供方差分析（不改变任何断言/判据）。
+    import re as _re_f
+    _fail_n = 0
+    _m_f = _re_f.search(r"(\d+)\s*条失败记录", (out or ""))
+    if _m_f:
+        _fail_n = int(_m_f.group(1))
+    _no_vote = ("无有效票" in (out or ""))
+    if _fail_n:
+        print("   ⚠️ 失败记录 %d 条（已记录到证据）" % _fail_n, flush=True)
+    if _no_vote:
+        print("   ⚠️ 三态多票无有效票（已记录到证据）", flush=True)
     rec = {"case": case["id"], "route": case["route"],
            "targets": list(case["target"]), "requested_rounds": _rounds,
            "question": _question,
            "cmd": cmd, "exit": rc,
-           "wall_sec": wall, "layers": [], "ok": False, "not_run": None}
+           "wall_sec": wall, "layers": [], "ok": False, "not_run": None,
+           "failed_records": _fail_n, "tristate_no_vote": bool(_no_vote)}
     if rc != 0:
         rec["ok"] = False
         rec["not_run"] = "引擎非零退出（%s）" % rc
