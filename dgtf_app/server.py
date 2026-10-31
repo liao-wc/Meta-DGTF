@@ -30,7 +30,7 @@
 
 from __future__ import annotations
 
-APP_VERSION = "2.0.84"
+APP_VERSION = "2.0.85"
 
 # ── [v1.23.64] 终端编码兜底：Windows 管道下默认 cp936，打印非 ASCII 会崩 ──
 import sys as _sys_utf8
@@ -10954,8 +10954,14 @@ def main() -> int:
         if not _pol0.get("auto_strategy") and str(os.getenv(
                 "DGTF_V2_AUTO_ON_START", "1")).strip().lower() not in ("0", "false", "off", "no"):
             _auto0 = _v2_auto_apply("balanced")
-            print("  V2 自动策略：" + (("已选择 " + str((_auto0.get("chosen") or {}).get("name")))
-                                      if _auto0.get("ok") else "无样本，跳过"))
+            if _auto0.get("ok"):
+                _auto_msg = "已选择 " + str((_auto0.get("chosen") or {}).get("name"))
+            else:
+                # [App 2.0.85] 区分「冻结」与「无样本」：冻结是安全默认，不是没数据。
+                _auto_err = str(_auto0.get("error") or "")
+                _auto_msg = ("冻结（" + _auto_err[:120] + "）") if _auto0.get("frozen") \
+                    else ("跳过（" + (_auto_err[:120] or "无样本") + "）")
+            print("  V2 自动策略：" + _auto_msg)
     except Exception as _e:  # noqa: BLE001
         print("  V2 自动策略跳过：" + str(_e))
     # ★ [V2.2.0 fix] BGE 冷启动很慢（模型加载可达 30-120s）。
