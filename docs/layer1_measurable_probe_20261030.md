@@ -500,6 +500,24 @@ probe 证据新增 failed_records / tristate_no_vote 后首跑（251 calls / 126
 结论：一次「通过」的 probe 内部仍有 **14 条失败记录**（含 case1 三态无有效票）；
 这解释了 calls 与读数的跨次方差来源，后续可据此量化失败率并决定超时/重试治理。
 
+
+## 7.34 稳定负载下三连一致（V2.2.118，零 API）
+
+`--only all` 连续 3 次（期间无其他并发负载）：
+
+| run | calls | failed_records | status | main |
+|---|---|---|---|---|
+| 1 | 117 | 9 | not_achieved | 0.5 |
+| 2 | 117 | 9 | not_achieved | 0.5 |
+| 3 | 117 | 9 | not_achieved | 0.5 |
+
+结论：
+- 服务端默认 `temperature=req.get("temperature", 0.0)` ⇒ **本地链默认贪心**；
+- 稳定负载下同 case **逐项一致**（含 9 条可复现的失败记录）；
+- 此前全量 probe 的跨次方差主要来自**并发负载/超时等外部时序**，不是采样随机；
+- 与 §7.30（temp0 两跑不同）的差异在于：那两次运行期间有并发负载/其他进程。
+证据：docs/probe_stability_sample_20261031.json。
+
 ## 8. 后续建议（需预算或明确方向）
 
 - 方案 A（有预算）：1 个 web on 的层1 小样本（单跑约与既有 A/B 同量级），验证能否产生 candidates>0；
