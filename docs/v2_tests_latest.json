@@ -1,13 +1,13 @@
 {
  "schema": "dgtf.v2_tests.v1",
- "ts": 1793413290.3996701,
- "iso": "2026-10-31T10:21:30",
+ "ts": 1793416321.460287,
+ "iso": "2026-10-31T11:12:01",
  "files": 73,
  "passed": 73,
  "failed": 0,
  "skips": 0,
  "checks": 1234,
- "elapsed_sec": 159.2,
+ "elapsed_sec": 173.5,
  "failed_names": [],
  "ok": true
 }
